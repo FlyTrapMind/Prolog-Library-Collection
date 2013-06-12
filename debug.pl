@@ -10,7 +10,7 @@
 % Before doing much else, we start the documentation server that
 % generates Web sites based on the plDoc commenting in the swipl code files.
 :- use_module(library(http/http_path)).
-http:location(pldoc, root(help), [priority(10)]).
+:- assert(http:location(pldoc, root(help), [priority(10)])).
 
 :- use_module(library(pldoc)).
 :- doc_server(2222, [edit(true)]).

@@ -50,25 +50,15 @@ current logging stream.
 :- register_module(swote).
 :- register_module(web_message).
 
-:- multifile(http:location/3).
-:- dynamic(http:location/3).
-
 % Serve CSS files.
-http:location(css, root(css), []).
+:- db_add_novel(http:location(css, root(css), [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 
-% Serve images.
-%http:location(img, root(img), []).
-
 % Serve JavaScript files.
-http:location(js, root(js), []).
+:- db_add_novel(http:location(js, root(js), [])).
 :- db_add_novel(user:file_search_path(js, server(js))).
 :- http_handler(js(.), serve_files_in_directory(js), [prefix]).
-
-% Create a SPRAQL endpoint.
-%http:location(sparql, root(sparql), []).
-%:- http_handler(sparql(.), sparql, [spawn(sparql_query)]).
 
 % HTTP handlers for the Wallace server.
 :- http_handler(root(.), wallace, [prefix, piority(-10)]).
@@ -79,6 +69,7 @@ http:location(js, root(js), []).
 % HTML resources and their dependencies.
 :- html_resource(css('console_output.css'), [requires(css('wallace.css'))]).
 :- html_resource(css('status_pane.css'), [requires(css('wallace.css'))]).
+:- html_resource(css('wallace.css'), []).
 :- html_resource(js('console_output.js'), [requires(js('wallace.js'))]).
 :- html_resource(js('status_pane.js'), [requires(js('wallace.js'))]).
 
@@ -168,15 +159,12 @@ status_pane -->
     div(id(status_pane), [])
   ]).
 
-test(Out):-
-  format(Out, 'Content-type: application/xml~n~n', []),
-  format(Out, 'Hello!', []).
-
 user:body(wallace, _Body) -->
   html(
     body(
       onload('loadConsoleOutputFunctions(); loadStatusPaneFunctions();'),
       [
+        \html_requires(css('wallace.css')),
         \console_input,
         \console_output,
         \status_pane
@@ -214,7 +202,7 @@ wallace(Request):-
 wallace_uri(URI):-
   default_port(Port),
   http_open:parts_uri(
-    [host(localhost), path('/prasem/'), port(Port), scheme(http)],
+    [host(localhost), path('/'), port(Port), scheme(http)],
     %[host('semanticweb.cs.vu.nl'), path('/prasem/'), scheme(http)],
     URI
   ).

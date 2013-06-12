@@ -52,7 +52,7 @@ The Web-based console for PraSem.
 :- dynamic registered_module/1.
 
 % Serve CSS files.
-http:location(css, root(css), []).
+:- db_add_novel(http:location(css, root(css), [])).
 :- assert(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 :- html_resource(css('console_input.css'), [requires(css('wallace.css'))]).

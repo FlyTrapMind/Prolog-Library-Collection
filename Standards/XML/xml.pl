@@ -903,11 +903,8 @@ Examples:
 :- db_add_novel(user:prolog_file_type(dtd, dtd)).
 :- db_add_novel(user:prolog_file_type(xml, xml)).
 
-:- multifile(http:location/3).
-:- dynamic(http:location/3).
-
 % Serve CSS files.
-http:location(css, root(css),  []).
+:- db_add_novel(http:location(css, root(css),  [])).
 :- assert(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix, priority(10)]).
 
