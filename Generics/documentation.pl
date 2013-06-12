@@ -154,10 +154,8 @@ export_files(Files):-
   maplist(export_file, Files).
 
 %! file_to_name(File, Name) is det.
-% Breaks the given file name down to its local name.
-% @arg File
-% @arg Name
-% @tbd Remove the DynaLearn directory reference.
+% Breaks the given file name down to its local name,
+% relative to the project directory.
 
 file_to_name(File, Name):-
   file_search_path(project, ProjectDirectory),

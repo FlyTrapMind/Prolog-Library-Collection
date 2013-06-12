@@ -7,6 +7,7 @@
             % +DTD_Name:atom
             % +StyleName:atom
             % +DOM:list
+    start_wallace/0,
     wallace_uri/1 % -URI:uri
   ]
 ).
@@ -15,10 +16,13 @@
 
 Using this module automatically starts the server.
 
-http://semanticweb.cs.vu.nl/prasem/
+Logging is required once Wallace is started, because module
+=|web_message|= causes debug messages to be appended to the
+current logging stream.
 
 @author Wouter Beek
-@version 2012/05, 2012/09-2012/12, 2013/02-2013/05
+@see http://semanticweb.cs.vu.nl/prasem/
+@version 2012/05, 2012/09-2012/12, 2013/02-2013/06
 */
 
 :- use_module(generics(db_ext)).
@@ -92,16 +96,10 @@ start_wallace:-
   http_server_property(Port, start_time(_Time)),
   !.
 start_wallace:-
-  % Logging is required one Wallace is started, because module
-  % =|web_message|= causes debug messages to be appended to the
-  % current logging stream.
-  start_log,
-
   default_port(Port),
   % Make sure Wallace is shut down whenever Prolog shuts down.
   assert(user:at_halt(http_stop_server(Port, []))),
   http_server(http_dispatch, [port(Port)]).
-:- start_wallace.
 
 
 

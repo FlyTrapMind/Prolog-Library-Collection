@@ -7,20 +7,14 @@
     append_to_log/3, % +Category:atom
                      % +Format:atom
                      % +Arguments:list(term)
-    close_log_stream/1, % +Stream:atom
-    create_log_file/2, % -File:atom
-                       % -Stream:atom
-    create_log_file/3, % +Situation:atom
-                       % -File:atom
-                       % -Stream:atom
+    close_log_stream/0,
     current_log_file/1, % ?File:file
     current_log_stream/1, % ?Stream:stream
-    end_log/0,
-    send_log/1, % +File:atom
+    current_situation/1, % ?Situation:atom
+    send_current_log_file/0,
     set_current_log_file/1, % ?File:atom
     set_current_log_stream/1, % ?Stream:stream
     set_situation/1, % +Situation:atom
-    situation/1, % ?Situation:atom
     start_log/0
   ]
 ).
@@ -29,11 +23,26 @@
 
 Methods for logging.
 
+Logging is not possible if only the PGC is loaded, since it
+requires an outer project (with directory mnemonic =project=).
+
+The situation is used to tell different uses of the same codebase
+into account (examples of uses are =debug=, =production=, =experiment7=).
+
+Any logging has to be preceded by a call to start_log/0 which
+initializes the log file and stream.
+
+Logs are stored in a hidden subdirectory of the user's home.
+The individual files are stored by situation, year, month, and day.
+The file name indicates the hour, minute, and second at which
+logging started.
+
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/05
+@version 2012/05-2012/07, 2013/03-2013/06
 */
 
+:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(file_ext)).
 :- use_module(generics(os_ext)).
@@ -41,22 +50,11 @@ Methods for logging.
 
 :- multifile(prolog:message/1).
 
-:- dynamic(current_log_file/1).
-:- dynamic(current_log_stream/1).
-:- dynamic(situation0/1).
+:- dynamic(current_log_file(_File)).
+:- dynamic(current_log_stream(_Stream)).
+:- dynamic(situation(_SituationName)).
 
 :- db_add_novel(user:prolog_file_type(log, log)).
-
-init:-
-  file_search_path(log, _Directory),
-  !.
-init:-
-  assert_home_subdirectory(log),
-  project_name(Project),
-  format(atom(Project0), '.~w', [Project]),
-  assert(user:file_search_path(personal, home(Project0))),
-  assert(user:file_search_path(log, personal(log))).
-:- init.
 
 
 
@@ -88,24 +86,23 @@ append_to_log(Format, Arguments):-
 
 append_to_log(Category, Format, Arguments):-
   format(atom(Message), Format, Arguments),
-  append_to_log_(Category, Message).
+  append_to_log0(Category, Message).
 
-append_to_log_(_Category, _Message):-
+append_to_log0(Category, Message):-
   \+ current_log_stream(_Stream),
-  !.
-append_to_log_(Category, Message):-
+  !,
+  print_message(warning, cannot_log(Category, Message)).
+append_to_log0(Category, Message):-
   current_log_stream(Stream),
   !,
   date_time(DateTime),
-  situation(Situation),
+  current_situation(Situation),
   csv_write_stream(
     Stream,
     [row(Situation, DateTime, Category, Message)],
     [file_type(comma_separated_values)]
   ),
   flush_output(Stream).
-append_to_log_(Kind, Message):-
-  print_message(error, cannot_log(Kind, Message)).
 prolog:message(cannot_log(Kind, Message)):-
   [
     ansi([bold], '[~w] ', [Kind]),
@@ -114,14 +111,19 @@ prolog:message(cannot_log(Kind, Message)):-
     ansi([], '".', [])
   ].
 
-%! close_log_stream(+Stream) is det.
-% Closes the given log stream.
-%
-% @arg Stream A stream.
+%! close_log_stream is det.
+% Closes the current log stream.
 
-close_log_stream(Stream):-
+close_log_stream:-
+  \+ current_log_stream(_Stream),
+  !,
+  print_message(warning, no_current_log_stream).
+close_log_stream:-
+  current_log_stream(Stream),
   flush_output(Stream),
   close(Stream).
+prolog:message(no_current_log_stream):-
+  [ansi([], 'There is no current log stream.', [])].
 
 %! create_log_file(-File:atom, -Stream) is det.
 % Creates a log file in the log file directory and returns the absolute
@@ -131,7 +133,7 @@ close_log_stream(Stream):-
 % @arg Stream The atomic name of a file's stream.
 
 create_log_file(File, Stream):-
-  situation(Situation),
+  current_situation(Situation),
   create_log_file(Situation, File, Stream).
 
 %! create_log_file(+Situation:atom, -File:atom, -Stream:atom) is det.
@@ -149,6 +151,11 @@ create_log_file(Situation, AbsoluteFile, Stream):-
   create_file(LogDir, FileName, log, AbsoluteFile),
   open(AbsoluteFile, write, Stream, [close_on_abort(true), type(text)]).
 
+current_situation(Situation):-
+  situation(Situation),
+  !.
+current_situation(no_situation).
+
 %! end_log is det.
 % Ends the current logging activity.
 
@@ -157,21 +164,32 @@ end_log:-
   !.
 end_log:-
   append_to_log(build, 'Goodnight!', []),
-  current_log_file(File),
-  (
-    send_log(File)
-  ;
-    true
-  ),
-  current_log_stream(Stream),
-  close_log_stream(Stream).
+  send_current_log_file,
+  close_log_stream.
 
-%! send_log(File) is det.
+init:-
+  file_search_path(log, _Directory),
+  !.
+init:-
+  assert_home_subdirectory(log),
+  project_name(Project),
+  format(atom(Project0), '.~w', [Project]),
+  assert(user:file_search_path(personal, home(Project0))),
+  assert(user:file_search_path(log, personal(log))).
+
+%! send_current_log_file(File) is det.
 % Sends the log that is stored in the given file to the logging server.
 %
 % @arg File The atomic name of a file.
+% @tbd Construct the URL using =library(uri)=.
+% @tbd Add the PHP script (I seem to have deleted it on the remote :-().
 
-send_log(File):-
+send_current_log_file:-
+  \+ current_log_file(_File),
+  !,
+  print_message(warning, no_current_log_file).
+send_current_log_file:-
+  current_log_file(File),
   open(File, read, Stream, []),
   read_stream_to_codes(Stream, Codes),
   file_base_name(File, Base),
@@ -181,7 +199,9 @@ send_log(File):-
     _Error,
     fail
   ),
-  send(@pce, write_ln, Reply).
+  cowspeak('HTTP reply upon sending the log file:\n~w\n', [Reply]).
+prolog:message(no_current_log_file):-
+  [ansi([], 'There is no current log file.', [])].
 
 %! set_current_log_file(+File:atom) is det.
 % Sets the current file where logging messages are stored to.
@@ -189,6 +209,7 @@ send_log(File):-
 % @arg File The atomic name of a file.
 
 set_current_log_file(File):-
+  exists_file(File),
   retractall(current_log_file(_File)),
   assert(current_log_file(File)).
 
@@ -198,29 +219,30 @@ set_current_log_file(File):-
 % @arg Stream A stream.
 
 set_current_log_stream(Stream):-
+  is_stream(Stream),
   retractall(current_log_stream(_Stream)),
   assert(current_log_stream(Stream)).
 
-% Already set.
 set_situation(Situation):-
-  situation0(Situation),
-  !,
-  fail.
-% Set for the first (any only) time.
-set_situation(Situation):-
-  assert(situation0(Situation)).
-
-situation(Situation):-
-  situation0(Situation),
-  !.
-situation(no_situation).
+  nonvar(Situation),
+  db_replace_novel(Situation).
 
 %! start_log is det.
 % Starts logging.
 % This does nothing in case log mode is turned off.
 
 start_log:-
+  current_log_stream(_Stream),
+  !,
+  print_message(warning, already_logging).
+start_log:-
+  init,
   create_log_file(File, Stream),
   set_current_log_file(File),
   set_current_log_stream(Stream),
-  append_to_log(build, 'Goodday!', []).
+  append_to_log(build, 'Goodday!', []),
+  % Make sure logging stops once the program ends.
+  assert(user:at_halt(end_log)).
+prolog:message(already_logging):-
+  [ansi([], 'Logging was already started. End logging before starting it again.', [])].
+

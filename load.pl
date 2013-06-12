@@ -3,9 +3,26 @@
 % by the parent project (PGC is a library).
 
 load_pgc:-
+  source_file(load_pgc, ThisFile),
+  file_directory_name(ThisFile, ThisDirectory),
+  assert(user:file_search_path(pgc, ThisDirectory)),
+
+  % If there is no outer project, then PGC is the project.
+  once((
+    user:file_search_path(project, _)
+  ;
+    assert(user:file_search_path(project, ThisDirectory))
+  )),
+  % If there is not outer project, then PGC is the project.
+  once((
+    current_predicate(project_name/1)
+  ;
+    assert(user:project_name('PGC'))
+  )),
+  
   % Do not write module loads to the standard output stream.
   set_prolog_flag(verbose_load, silent),
-  
+
   % Assert the various search paths.
   assert(user:file_search_path(datasets,     pgc('Datasets'))),
     assert(user:file_search_path(dbnl,       datasets('DBNL'))),
@@ -29,5 +46,14 @@ load_pgc:-
     assert(user:file_search_path(xml,          standards('XML'))),
   assert(user:file_search_path(tms,          pgc('TMS'))),
   assert(user:file_search_path(vocabularies, pgc('Vocabularies'))),
-    assert(user:file_search_path(skos,         vocabularies('SKOS'))).
+    assert(user:file_search_path(skos,         vocabularies('SKOS'))),
+  
+  % Start logging.
+  use_module(generics(logging)),
+  start_log,
+
+  % Start Wallace.
+  use_module(server(wallace)),
+  start_wallace.
 :- load_pgc.
+
