@@ -26,7 +26,6 @@ current logging stream.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(logging)).
 :- use_module(generics(os_ext)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
@@ -35,11 +34,10 @@ current logging stream.
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/thread_httpd)).
-:- use_module(server(swote)).
 :- use_module(server(web_console)).
+:- use_module(server(web_message)). % Module registration.
 :- use_module(sparql(sparql_web)).
 :- use_module(standards(http)).
-:- use_module(standards(graphviz)).
 
 % This is used to push content for the console output and status pane.
 :- dynamic(content_queue(_Type, _DTD_Name, _StyleName, _DOM)).
@@ -47,7 +45,6 @@ current logging stream.
 
 % By registering these modules, their Web predicates become accessible
 % from the Web console.
-:- register_module(swote).
 :- register_module(web_message).
 
 % Serve CSS files.

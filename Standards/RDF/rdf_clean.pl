@@ -22,7 +22,8 @@
                          % ?Predicate:uri
                          % ?Graph:atom
                          % +Split:atom
-    rdf_strip_literal/3, % ?Subject:oneof([bnode,uri])
+    rdf_strip_literal/4, % +Strips:list(char)
+                         % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
                          % ?Graph:atom
 % REMOVAL %
@@ -60,7 +61,7 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- rdf_meta(rdf_convert_datatype(r,r,+,+,+,+)).
 % LITERALS %
 :- rdf_meta(rdf_split_literal(r,r,?,+)).
-:- rdf_meta(rdf_strip_literal(r,r,?)).
+:- rdf_meta(rdf_strip_literal(+,r,r,?)).
 % REMOVAL %
 :- rdf_meta(rdf_remove(r,r,r,?)).
 :- rdf_meta(rdf_remove_datatype(r,r,r,?,?)).
@@ -200,31 +201,32 @@ rdf_split_string0(Split, Subject, Predicate, OldLiteral, Graph):-
   rdf_retractall_literal(Subject, Predicate, OldLiteral, Graph).
 
 %! rdf_strip_literal(
+%!   +Strips:list(char),
 %!   ?Subject:oneof([bnode,uri]),
 %!   ?Predicate:uri,
 %!   ?Graph:atom
 %! ) is det.
 % Strip RDF string datatypes.
 
-rdf_strip_literal(Subject, Predicate, Graph):-
+rdf_strip_literal(Strips, Subject, Predicate, Graph):-
   findall(
     [Subject, Predicate, Literal1, Graph],
     (
       rdf_literal(Subject, Predicate, Literal1, Graph),
-      strip_atom([' '], Literal1, Literal2),
+      strip_atom(Strips, Literal1, Literal2),
       Literal1 \= Literal2
     ),
     Tuples
   ),
   user_interaction(
     'STRIP-RDF-DATATYPE-STRING',
-    rdf_strip_literal0,
+    rdf_strip_literal0(Strips),
     ['Subject', 'Predicate', 'Literal', 'Graph'],
     Tuples
   ).
-:- rdf_meta(rdf_strip_literal0(r,r,+,+)).
-rdf_strip_literal0(Subject, Predicate, OldLiteral, Graph):-
-  strip_atom([' '], OldLiteral, NewLiteral),
+:- rdf_meta(rdf_strip_literal0(+,r,r,+,+)).
+rdf_strip_literal0(Strips, Subject, Predicate, OldLiteral, Graph):-
+  strip_atom(Strips, OldLiteral, NewLiteral),
   rdf_assert_literal(Subject, Predicate, NewLiteral, Graph),
   rdf_retractall_literal(Subject, Predicate, OldLiteral, Graph).
 

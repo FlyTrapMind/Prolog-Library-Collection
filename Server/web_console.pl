@@ -24,9 +24,10 @@
 The Web-based console for PraSem.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/05
+@version 2012/10, 2013/02-2013/06
 */
 
+:- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/http_dispatch)).
@@ -34,9 +35,7 @@ The Web-based console for PraSem.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_server_files)).
 :- use_module(server(error_web)).
-:- use_module(server(web_message)).
 :- use_module(server(wallace)).
-:- use_module(standards(standards)).
 
 :- dynamic history/2.
 
