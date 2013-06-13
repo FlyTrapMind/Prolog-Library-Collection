@@ -5,9 +5,11 @@
                             % ?Parameters:list
     serve_nothing/1, % +Request
     serve_xml/1, % +XML
+    serve_xml/2, % +DTD_Name:atom
+                 % +DOM:dom
     serve_xml/3 % +DTD_Name:atom
                 % +Style_Name:atom
-                % +DOM
+                % +DOM:dom
   ]
 ).
 
@@ -46,6 +48,10 @@ serve_xml(XML):-
   % The User Agent needs to know the content type.
   format('Content-type: application/xml~n~n'),
   format(XML).
+
+serve_xml(DTD_Name, DOM):-
+  dom_to_xml(DTD_Name, DOM, XML),
+  serve_xml(XML).
 
 serve_xml(DTD_Name, Style_Name, DOM):-
   !,
