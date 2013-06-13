@@ -34,9 +34,6 @@
                        % -NewDir:atom
     new_file/2, % +File1:atom
                 % -File2:atom
-    path_walk_forest/3, % +Dirs:list(atom)
-                        % +RE:atom
-                        % -AbsoluteFileNames:list(atom)
     path_walk_tree/3, % +RootDir:file
                       % +FileExtension:regex
                       % -Paths:list(file)

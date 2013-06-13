@@ -18,7 +18,11 @@
                             % +ToDatatype:atom
                             % +Graph:atom
 % LITERALS %
-    rdf_split_literal/4, % ?Subject:onef([bnode,uri])
+    rdf_literal_to_uri/4, % ?Subject:oneof([bnode,uri])
+                          % ?Predicate:uri
+                          % +Namespace:atom
+                          % ?Graph:atom
+    rdf_split_literal/4, % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
                          % ?Graph:atom
                          % +Split:atom
@@ -60,6 +64,7 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 % DATATYPES %
 :- rdf_meta(rdf_convert_datatype(r,r,+,+,+,+)).
 % LITERALS %
+:- rdf_meta(rdf_literal_to_uri(r,r,+,r)).
 :- rdf_meta(rdf_split_literal(r,r,?,+)).
 :- rdf_meta(rdf_strip_literal(+,r,r,?)).
 % REMOVAL %
@@ -173,6 +178,26 @@ rdf_convert_datatype(
 
 
 % LITERALS %
+
+rdf_literal_to_uri(Subject, Predicate, Namespace, Graph):-
+  xml_current_namespace(Namespace, _),
+  findall(
+    [Subject, Predicate, Literal, Graph],
+    rdf_literal(Subject, Predicate, Literal, Graph),
+    Tuples
+  ),
+  format(atom(OperationName), 'LITERAL-TO-URI(~w)', [Namespace]),
+  user_interaction(
+    OperationName,
+    rdf_literal_to_uri0(Namespace),
+    ['Subject', 'Predicate', 'Literal', 'Graph'],
+    Tuples
+  ).
+:- rdf_meta(rdf_literal_to_uri(+,r,r,+,+)).
+rdf_literal_to_uri0(Namespace, Subject, Predicate, Literal, Graph):-
+  rdf_global_id(Namespace:Literal, Object),
+  rdf_assert(Subject, Predicate, Object, Graph),
+  rdf_retractall_literal(Subject, Predicate, Literal, Graph).
 
 rdf_split_literal(Subject, Predicate, Graph, Split):-
   findall(
