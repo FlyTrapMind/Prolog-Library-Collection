@@ -13,12 +13,22 @@
                    % +Name:atom
                    % +Type:atom
                    % -File:atom
+    directory_files/3, % +Directory:atom
+                       % +FileType:atom
+                       % -Entries:list(atom)
     file_name/4, % +File:atom
                  % ?Dir:atom
                  % ?Name:atom
                  % ?Ext:atom
+    file_name/4, % -File:atom
+                 % +Dir:atom
+                 % +Name:atom
+                 % +Ext:atom
     file_name_type/3, % ?Base:atom
                       % ?Type:atom
+                      % +Name:atom
+    file_name_type/3, % +Base:atom
+                      % +Type:atom
                       % ?Name:atom
     file_to_atom/2, % +File:file
                     % -Atom:atom
@@ -66,10 +76,11 @@ We use the following abbreviations in this module:
     RegularExpression
 
 @author Wouter Beek
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/05
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06
 */
 
 :- use_module(library(debug)).
+:- use_module(library(filesex)).
 
 :- nodebug(file_ext).
 
@@ -204,58 +215,84 @@ create_file(NestedDir, Base, Type, File):-
   (
     compound(NestedDir)
   ->
-    absolute_file_name(NestedDir, Dir)
+    absolute_file_name(NestedDir, Directory)
   ;
-    Dir = NestedDir
+    Directory = NestedDir
   ),
 
   % Make sure that the directory exists.
-  create_directory(Dir),
+  create_directory(Directory),
 
   % Create the local file name by appending the base and extension names.
   % The extension must be of the given type.
   file_name_type(Base, Type, Local),
 
   % Append directory and file name.
-  format(atom(File), '~w/~w', [Dir, Local]).
+  format(atom(File), '~w/~w', [Directory, Local]).
 
-%! file_name(+File:atom, ?Dir:atom, ?Base:atom, ?Ext:atom) is semidet.
-%! file_name(-File:atom, +Dir:atom, +Base:atom, +Ext:atom) is semidet.
+%! directory_files(
+%!   +Directory:atom,
+%!   +FileType:atom,
+%!   -Entries:list(atom)
+%! ) is det.
+
+directory_files(Directory, FileType, Entries):-
+  directory_files(Directory, Files),
+  bagof(
+    Entry,
+    (
+      member(Entry, Files),
+      file_name_type(_Base, FileType, Entry)
+    ),
+    Entries
+  ).
+
+%! file_name(+Path:atom, ?Directory:atom, ?Base:atom, ?Extension:atom) is semidet.
+%! file_name(-Path:atom, +Directory:atom, +Base:atom, +Extension:atom) is det.
 % The splitting of a file into its directory, local name and type parts.
 
-file_name(File, Dir, Base, Ext):-
-  nonvar(File),
+file_name(Path, Directory, Base, Extension):-
+  nonvar(Directory), nonvar(Base), nonvar(Extension), !,
+  file_name_extension(Base, Extension, File),
+  directory_file_path(Directory, File, Path).
+file_name(Path, Directory, Base, Extension):-
+  nonvar(Path), !,
+  directory_file_path(Directory, File, Path),
+  file_name_extension(Base, Extension, File).
+
+file_name(Path, Directory, Base, Ext):-
+  nonvar(Path),
   !,
-  file_directory_name(File, Dir),
-  file_base_name(File, Local),
+  file_directory_name(Path, Directory),
+  file_base_name(Path, Local),
   file_name_extension(Base, Ext, Local).
-file_name(File, Dir, Base, Ext):-
-  var(File),
-  maplist(nonvar, [Dir, Base, Ext]),
+file_name(Path, Directory, Base, Ext):-
+  var(Path),
+  maplist(nonvar, [Directory, Base, Ext]),
   !,
   file_name_extension(Base, Ext, Local),
-  absolute_file_name(Local, File, [relative_to(Dir)]).
+  absolute_file_name(Local, Path, [relative_to(Directory)]).
 
-%! file_name_type(?Name:atom, ?Type:atom, +File:atom) is semidet.
-%! file_name_type(+Name:atom, +Type:atom, ?File:atom) is semidet.
+%! file_name_type(?Name:atom, ?Type:atom, +Path:atom) is semidet.
+%! file_name_type(+Name:atom, +Type:atom, ?Path:atom) is semidet.
 % Decomposes a file name into its base name and its file type.
 %
 % @arg Name The atomic name of a file, without a directory and without
-%        an extension.
+%           an extension.
 % @arg Type An atomic file type. These are registered with
-%        prolog_file_type/2.
-% @arg File The full name of a file.
+%           prolog_file_type/2.
+% @arg Path The full name of a file.
 
-file_name_type(Name, Type, File):-
+file_name_type(Name, Type, Path):-
   nonvar(Name),
   nonvar(Type),
   !,
   user:prolog_file_type(Ext, Type),
-  file_name_extension(Name, Ext, File).
-file_name_type(Name, Type, File):-
-  nonvar(File),
+  file_name_extension(Name, Ext, Path).
+file_name_type(Name, Type, Path):-
+  nonvar(Path),
   !,
-  file_name_extension(Name, Ext, File),
+  file_name_extension(Name, Ext, Path),
   user:prolog_file_type(Ext, Type).
 
 %! file_to_atom(+File:file, -Atom:atom) is det.

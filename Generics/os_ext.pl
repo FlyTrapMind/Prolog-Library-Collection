@@ -15,10 +15,10 @@
     posix_time/1, % -Time:atom
 
 % DELETING FILES
-    delete_files/2, % +Directory:atom
-                    % +FileType:atom
-    delete_files/2, % +Directory:atom
-                    % +FileTypes:list(atom)
+    delete_directory_contents/2, % +Directory:atom
+                                 % +FileType:atom
+    delete_directory_contents/2, % +Directory:atom
+                                 % +FileTypes:list(atom)
 
 % HOME DIRECTORIES
     assert_home_directory/0,
@@ -65,13 +65,14 @@
 This module contains the OS extensions for SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/11-2012/06, 2012/12-2013/02, 2013/05
+@version 2011/11-2012/06, 2012/12-2013/02, 2013/05-2013/06
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
 :- use_module(generics(file_ext)).
 :- use_module(generics(print_ext)).
+:- use_module(library/filesex)).
 :- use_module(library(http/http_header)).
 :- use_module(library(pce)).
 :- use_module(library(www_browser)).
@@ -203,19 +204,20 @@ posix_time(Time):-
 
 
 
-% DELETE FILES %
+% DELETE DIRECTORY FILES %
 
-%! delete_files(+Dir:atom, +FileType:oneof([atom,list(atom)])) is det.
+%! delete_directory_contents(+Dir:atom, +FileType:atom) is det.
+%! delete_directory_contents(+Dir:atom, +FileType:list(atom)) is det.
 % Deletes all file in the given directory that are of the given file type.
-%
-% @throws existence_error In case a file type is not registered.
 %
 % @arg Dir The atomic absolute name of a directory.
 % @arg FileType The atomic name of a file type, registered via
-%        prolog_file_type/2.
+%               prolog_file_type/2.
+% @see delete_directory_contents/1
+% @throws existence_error In case a file type is not registered.
 
 % Remove all files that are of the given file type from the given directory.
-delete_files(Dir, FileType):-
+delete_directory_contents(Dir, FileType):-
   % Make sure that the given file type is registered.
   once(prolog_file_type(_Ext, FileType)),
   !,
@@ -237,18 +239,21 @@ delete_files(Dir, FileType):-
   % This may throw permission exceptions.
   maplist(delete_file, Files).
 % Allow multiple file types to be given.
-delete_files(Directory, FileTypes):-
+delete_directory_contents(Directory, FileTypes):-
   is_list(FileTypes),
   !,
-  maplist(delete_files(Directory), FileTypes).
+  maplist(delete_directory_contents(Directory), FileTypes).
 % Throw an exception if the given file type is not registered.
-delete_files(_Dir, FileType):-
+delete_directory_contents(_Dir, FileType):-
   atom(FileType),
   !,
   throw(
     error(
       existence_error(unknown_file_type, FileType),
-      context('delete_files/2', 'The given file type is not registered.')
+      context(
+        'delete_directory_contents/2',
+        'The given file type is not registered.'
+      )
     )
   ).
 
@@ -258,8 +263,6 @@ delete_files(_Dir, FileType):-
 
 %! assert_home_directory is det.
 % Asserts the home directory of the current user as a Prolog search path.
-%
-% @tbd See whether this can be done without using PCE.
 
 assert_home_directory:-
   file_search_path(home, _),
