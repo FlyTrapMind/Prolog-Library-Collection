@@ -1444,15 +1444,15 @@ graphsearch(_,Nodes):-
 
 theorysearch(S,Nodes):-
         next_node(_), !,
-        '$aleph_global'(atoms,atoms(pos,Pos)),
-        '$aleph_global'(atoms,atoms(neg,Neg)),
-        interval_sum(Pos,P),
-        interval_sum(Neg,N),
+        '$aleph_global'(atoms,atoms(pos,PositiveExampleIntervals)),
+        '$aleph_global'(atoms,atoms(neg,NegativeExampleIntervals)),
+        interval_sum(PositiveExampleIntervals, P),
+        interval_sum(NegativeExampleIntervals, N),
         repeat,
         next_node(NodeRef),
   '$aleph_search_node'(NodeRef,Theory,_,_,_,_,_,_),
         once(retract('$aleph_search'(current,current(_,Last,BestSoFar)))),
-        get_theory_gain(S,Last,BestSoFar,Theory,Pos,Neg,P,N,NextBest,Last1),
+        get_theory_gain(S,Last,BestSoFar,Theory,PositiveExampleIntervals, NegativeExampleIntervals,P,N,NextBest,Last1),
         asserta('$aleph_search'(current,current(0,Last1,NextBest))),
         (discontinue_search(S,NextBest,Last1) ->
                 '$aleph_search'(current,current(_,Nodes,_));
@@ -1854,7 +1854,16 @@ get_sibgain(SearchSettings,LVars,LitNum,Node,LastSib,Last,Best,Path,C,TV,L,Min,P
   get_sibgain(SearchSettings,LVars,LitNum,NextNode,LastSib,Last,Best,Path,C,TV,L,Min,PositiveExampleIntervals,NegativeExampleIntervals,OVars,E,Best1,Node1),
   !.
 
-get_sibpncover(Lazy,NodeNum,Desc,Pos,Neg,Sib,PC,NC):-
+get_sibpncover(
+  Lazy,
+  NodeNum,
+  Desc,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  Sib,
+  PC,
+  NC
+):-
   '$aleph_search_node'(NodeNum,Sib,_,_,Pos1,Neg1,_,_),
   '$aleph_sat_litinfo'(Sib,_,Atom,_,_,_),
   \+(memberchk(Sib,Desc)),
@@ -1862,10 +1871,10 @@ get_sibpncover(Lazy,NodeNum,Desc,Pos,Neg,Sib,PC,NC):-
   (
     memberchk(Name/Arity,Lazy)
   ->
-    PC = Pos, NC = Neg
+    PC = PositiveExampleIntervals, NC = NegativeExampleIntervals
   ;
-    calc_intersection(Pos,Pos1,PC),
-    calc_intersection(Neg,Neg1,NC)
+    calc_intersection(PositiveExampleIntervals,Pos1,PC),
+    calc_intersection(NegativeExampleIntervals,Neg1,NC)
   ).
 
 % in some cases, it is possible to simply use the intersection of
@@ -1889,12 +1898,58 @@ calc_intersection(A1,A2/_,A):-
 calc_intersection(A1,A2,A):-
   intervals_intersection(A1,A2,A).
 
-get_gain(SearchSettings,_,Last,Best,Path,_,_,_,MinLength,_,Pos,Neg,OVars,E,Best1,NewLast):-
+get_gain(
+  SearchSettings,
+  _,
+  Last,
+  Best,
+  Path,
+  _,
+  _,
+  _,
+  MinLength,
+  _,
+  Pos,
+  Neg,
+  OVars,
+  E,
+  Best1,
+  NewLast
+):-
   arg(3,SearchSettings,RefineOp),
   RefineOp \= false,
   !,
-  get_refine_gain(SearchSettings,Last,Best,Path,MinLength,Pos,Neg,OVars,E,Best1,NewLast).
-get_gain(SearchSettings,Flag,Last,Best/Node,Path,C,TV,Len1,MinLen,L1,Pos,Neg,OVars,E,Best1,Last1):-
+  get_refine_gain(
+    SearchSettings,
+    Last,
+    Best,
+    Path,
+    MinLength,
+    Pos,
+    Neg,
+    OVars,
+    E,
+    Best1,
+    NewLast
+  ).
+get_gain(
+  SearchSettings,
+  Flag,
+  Last,
+  Best/Node,
+  Path,
+  C,
+  TV,
+  Len1,
+  MinLen,
+  L1,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  OVars,
+  E,
+  Best1,
+  Last1
+):-
   arg(26,SearchSettings,RCheck),
   arg(33,SearchSettings,SplitVars),
   retractall('$aleph_search'(covers,_)),
@@ -1938,65 +1993,183 @@ get_gain(SearchSettings,Flag,Last,Best/Node,Path,C,TV,Len1,MinLen,L1,Pos,Neg,OVa
     Best/Node,
     Path,
     L1,
-    Pos,
-    Neg,
+    PositiveExampleIntervals,
+    NegativeExampleIntervals,
     OVars,
     E,
     Best1
   ),
   retractall('$aleph_search'(pclause,_)),
   Last1 is Last + 1.
-get_gain(_SearchSettings,_,Last,Best,_,_,_,_,_,_,_,_,_,_,Best,Last).
+get_gain(
+  _SearchSettings,
+  _,
+  Last,
+  Best,
+  _,
+  _,
+  _,
+  _,
+  _,
+  _,
+  _PositiveExampleIntervals,
+  _NegativeExampleIntervals,
+  _,
+  _,
+  Best,
+  Last
+).
 
-get_refine_gain(S,Last,Best/Node,Path,MinLength,Pos,Neg,OVars,E,Best1,NewLast):-
-  arg(3,S,RefineOp),
+get_refine_gain(
+  SearchSettings,
+  Last,
+  Best/Node,
+  Path,
+  MinLength,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  OVars,
+  E,
+  Best1,
+  NewLast
+):-
+  arg(3, SearchSettings, RefineOp),
   RefineOp = rls,
   refine_prelims(Best/Node,Last),
   rls_refine(clauses,Path,Path1),
-  get_refine_gain1(S,Path1,MinLength,Pos,Neg,OVars,E,Best1,NewLast),
+  get_refine_gain1(
+    SearchSettings,
+    Path1,
+    MinLength,
+    PositiveExampleIntervals,
+    NegativeExampleIntervals,
+    OVars,
+    E,
+    Best1,
+    NewLast
+  ),
   !.
-get_refine_gain(S,Last,Best/Node,Path,MinLength,Pos,Neg,OVars,E,Best1,NewLast):-
-  arg(3,S,RefineOp),
+get_refine_gain(
+  SearchSettings,
+  Last,
+  Best/Node,
+  Path,
+  MinLength,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  OVars,
+  E,
+  Best1,
+  NewLast
+):-
+  arg(3, SearchSettings, RefineOp),
   RefineOp \= rls,
   refine_prelims(Best/Node,Last),
   Path = CL-[Example,Type,_,Clause],
-  arg(30,S,ConstructBottom),
-  arg(43,S,LookAhead),
+  arg(30, SearchSettings, ConstructBottom),
+  arg(43, SearchSettings, LookAhead),
   get_user_refinement(RefineOp,LookAhead,Clause,R,_),
   match_bot(ConstructBottom,R,R1,LitNums),
   Path1 = CL-[Example,Type,LitNums,R1],
-  get_refine_gain1(S,Path1,MinLength,Pos,Neg,OVars,E,Best1,NewLast),
+  get_refine_gain1(
+    SearchSettings,
+    Path1,
+    MinLength,
+    PositiveExampleIntervals,
+    NegativeExampleIntervals,
+    OVars,
+    E,
+    Best1,
+    NewLast
+  ),
   !.
-get_refine_gain(_,_,_,_,_,_,_,_,_,Best,Last):-
+get_refine_gain(
+  _SearchSettings,
+  _,
+  _,
+  _,
+  _,
+  _PositiveExampleIntervals,
+  _NegativeExampleIntervals,
+  _,
+  _,
+  Best,
+  Last
+):-
   retract('$aleph_search'(best_refinement,best_refinement(Best))),
   retract('$aleph_search'(last_refinement,last_refinement(Last))).
 
-get_theory_gain(S,Last,BestSoFar,T0,Pos,Neg,P,N,Best1,NewLast):-
+get_theory_gain(
+  SearchSettings,
+  Last,
+  BestSoFar,
+  T0,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  P,
+  N,
+  Best1,
+  NewLast
+):-
   refine_prelims(BestSoFar,Last),
-  arg(3,S,RefineOp),
+  arg(3, SearchSettings, RefineOp),
   (RefineOp = rls -> rls_refine(theories,T0,T1); fail),
-  arg(23,S,LazyPreds),
-  (LazyPreds = [] -> Theory = T1;
-    lazy_evaluate_theory(T1,LazyPreds,Pos,Neg,Theory)),
+  arg(23, SearchSettings, LazyPreds),
+  (
+    LazyPreds = []
+  ->
+    Theory = T1
+  ;
+    lazy_evaluate_theory(T1,LazyPreds,PositiveExampleIntervals, NegativeExampleIntervals,Theory)
+  ),
   retract('$aleph_search'(best_refinement,best_refinement(OldBest))),
   retract('$aleph_search'(last_refinement,last_refinement(OldLast))),
-        arg(6,S,Verbosity),
-        (Verbosity >= 1 ->
-                p_message('new refinement'),
-                pp_dclauses(Theory);
-        true),
+  arg(6, SearchSettings, Verbosity),
+  (
+    Verbosity >= 1
+  ->
+    p_message('new refinement'),
+    pp_dclauses(Theory)
+  ;
+    true
+  ),
   record_pclauses(Theory),
-  get_theory_gain1(S,Theory,OldLast,OldBest,Pos,Neg,P,N,Best1),
+  get_theory_gain1(
+    SearchSettings,
+    Theory,
+    OldLast,
+    OldBest,
+    PositiveExampleIntervals,
+    NegativeExampleIntervals,
+    P,
+    N,
+    Best1
+  ),
   retractall('$aleph_search'(pclause,_)),
-        NewLast is OldLast + 1,
+  NewLast is OldLast + 1,
   asserta('$aleph_search'(last_refinement,last_refinement(NewLast))),
-        asserta('$aleph_search'(best_refinement,best_refinement(Best1))),
-  (discontinue_search(S,Best1,NewLast) ->
+  asserta('$aleph_search'(best_refinement,best_refinement(Best1))),
+  (
+    discontinue_search(SearchSettings, Best1, NewLast)
+  ->
     retract('$aleph_search'(last_refinement,last_refinement(_))),
-    retract('$aleph_search'(best_refinement,best_refinement(_)));
-    fail),
+    retract('$aleph_search'(best_refinement,best_refinement(_)))
+  ;
+    fail
+  ),
   !.
-get_theory_gain(_,_,_,_,_,_,_,_,Best,Last):-
+get_theory_gain(
+  _SearchSettings,
+  _,
+  _,
+  _,
+  _PositiveExampleIntervals,
+  _NegativeExampleIntervals,
+  _,
+  _,
+  Best,
+  Last
+):-
   '$aleph_search'(best_refinement,best_refinement(Best)),
   '$aleph_search'(last_refinement,last_refinement(Last)).
 
@@ -2006,35 +2179,46 @@ refine_prelims(Best,Last):-
         asserta('$aleph_search'(best_refinement,best_refinement(Best))),
   asserta('$aleph_search'(last_refinement,last_refinement(Last))).
 
-get_refine_gain1(S,Path,MinLength,Pos,Neg,OVars,E,Best1,NewLast):-
-        arg(23,S,LazyPreds),
+get_refine_gain1(
+  SearchSettings,
+  Path,
+  MinLength,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  OVars,
+  E,
+  Best1,
+  NewLast
+):-
+  arg(23, SearchSettings, LazyPreds),
   Path = CL-[Example,Type,Ids,Refine],
-  (LazyPreds = [] -> Ids1 = Ids, Clause = Refine;
-    lazy_evaluate_refinement(Ids,Refine,LazyPreds,Pos,Neg,Ids1,Clause)),
+  (
+    LazyPreds = []
+  ->
+    Ids1 = Ids,
+    Clause = Refine
+  ;
+    lazy_evaluate_refinement(Ids,Refine,LazyPreds,PositiveExampleIntervals, NegativeExampleIntervals,Ids1,Clause)
+  ),
   retractall('$aleph_search'(covers,_)),
   retractall('$aleph_search'(coversn,_)),
   Path1 = CL-[Example,Type,Ids1,Clause],
   split_clause(Clause,Head,Body),
   nlits(Body,CLength0),
   CLength is CLength0 + 1,
-  length_ok(S,MinLength,CLength,0,EMin,ELength),
-  arg(41,S,Prolog),
+  length_ok(SearchSettings,MinLength,CLength,0,EMin,ELength),
   split_clause(Clause,Head,Body),
-  (Prolog = yap ->
-    assertz('$aleph_search'(pclause,pclause(Head,Body)),DbRef);
-    assertz('$aleph_search'(pclause,pclause(Head,Body)))),
+  assertz('$aleph_search'(pclause,pclause(Head,Body))),
   retract('$aleph_search'(best_refinement,best_refinement(OldBest))),
   retract('$aleph_search'(last_refinement,last_refinement(OldLast))),
-        arg(6,S,Verbosity),
+  arg(6, SearchSettings, Verbosity),
         (Verbosity >= 1 ->
     p_message('new refinement'),
     pp_dclause(Clause);
   true),
   once(get_gain1(SearchSettings,upper,Clause,CLength,EMin/ELength,OldLast,OldBest,
-    Path1,[],Pos,Neg,OVars,E,Best1)),
-  (Prolog = yap ->
-    erase(DbRef);
-    retractall('$aleph_search'(pclause,_))),
+    Path1,[],PositiveExampleIntervals, NegativeExampleIntervals,OVars,E,Best1)),
+  retractall('$aleph_search'(pclause,_)),
   NewLast is OldLast + 1,
   asserta('$aleph_search'(last_refinement,last_refinement(NewLast))),
         asserta('$aleph_search'(best_refinement,best_refinement(Best1))),
@@ -2043,8 +2227,17 @@ get_refine_gain1(S,Path,MinLength,Pos,Neg,OVars,E,Best1,NewLast):-
     retract('$aleph_search'(best_refinement,best_refinement(_)));
     fail),
   !.
-
-get_theory_gain1(SearchSettings,Theory,Last,Best,Pos,Neg,P,N,Best1):-
+get_theory_gain1(
+  SearchSettings,
+  Theory,
+  Last,
+  Best,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  P,
+  N,
+  Best1
+):-
         (false -> p_message('constraint violated'),
                 Contradiction = true;
                 Contradiction = false),
@@ -2057,8 +2250,8 @@ get_theory_gain1(SearchSettings,Theory,Last,Best,Pos,Neg,P,N,Best1):-
   arg(14,SearchSettings,Depth),
   arg(29,SearchSettings,Time),
   arg(34,SearchSettings,Proof),
-        prove(Depth/Time/Proof,pos,(X:-X),Pos,PCvr,TP),
-        prove(Depth/Time/Proof,neg,(X:-X),Neg,NCvr,FP),
+  prove(Depth/Time/Proof,pos,(X:-X),PositiveExampleIntervals,PCvr,TP),
+  prove(Depth/Time/Proof,neg,(X:-X),NegativeExampleIntervals,NCvr,FP),
   arg(4,SearchSettings,_/Evalfn),
   Correct is TP + (N - FP),
   Incorrect is FP + (P - TP),
@@ -2070,10 +2263,35 @@ get_theory_gain1(SearchSettings,Theory,Last,Best,Pos,Neg,P,N,Best1):-
   (Verbosity >= 1 -> p_message(Correct/Incorrect); true),
   asserta('$aleph_search_node'(Node1,Theory,[],0,PCvr,NCvr,[],0)),
   update_open_list(SearchKeys,Node1,Label1),
-  update_best_theory(SearchSettings,Theory,PCvr,NCvr,Best,Label1/Node1,Best1), !.
-get_theory_gain1(_SearchSettings,_,_,Best,_,_,_,_,Best).
-
-get_gain1(SearchSettings,_,C,CL,_,Last,Best,Path,_,Pos,Neg,_,E,Best):-
+  update_best_theory(SearchSettings,Theory,PCvr,NCvr,Best,Label1/Node1,Best1),
+  !.
+  get_theory_gain1(
+    _SearchSettings,
+    _,
+    _,
+    Best,
+    _PositiveExampleIntervals,
+    _NegativeExampleIntervals,
+    _,
+    _,
+    Best
+  ).
+get_gain1(
+  SearchSettings,
+  _,
+  C,
+  CL,
+  _,
+  Last,
+  Best,
+  Path,
+  _,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  _,
+  E,
+  Best
+):-
   abandon_branch(SearchSettings,C),
   !,
         Node1 is Last + 1,
@@ -2082,7 +2300,7 @@ get_gain1(SearchSettings,_,C,CL,_,Last,Best,Path,_,Pos,Neg,_,E,Best):-
   arg(35,SearchSettings,VSearch),
         (ClauseLength = CL -> true;
                 (RefineOp = false  ->
-                        asserta('$aleph_search_node'(Node1,0,Path,0,Pos,Neg,[],E));
+                        asserta('$aleph_search_node'(Node1,0,Path,0,PositiveExampleIntervals, NegativeExampleIntervals,[],E));
       true)),
   (VSearch = true ->
     asserta('$aleph_search'(bad,Node1)),
@@ -2095,7 +2313,22 @@ get_gain1(SearchSettings,_,Clause,_,_,_,Best,_,_,_,_,_,_,Best):-
         '$aleph_search_prunecache'([SHead|SBody]), !,
   arg(6,SearchSettings,Verbosity),
         (Verbosity >= 1 -> p_message('in prune cache'); true).
-get_gain1(SearchSettings,Flag,C,CL,EMin/EL,Last,Best/Node,Path,L1,Pos,Neg,OVars,E,Best1):-
+get_gain1(
+  SearchSettings,
+  Flag,
+  C,
+  CL,
+  EMin/EL,
+  Last,
+  Best/Node,
+  Path,
+  L1,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  OVars,
+  E,
+  Best1
+):-
   split_clause(C,Head,Body),
   arg(22,SearchSettings,Search),
   (
@@ -2141,6 +2374,10 @@ get_gain1(SearchSettings,Flag,C,CL,EMin/EL,Last,Best/Node,Path,L1,Pos,Neg,OVars,
     Label = [_,_,CL],
     ccheck(SearchSettings,(Head1:-Body1),NCvr,Label)
   ;
+    % =Label= is a list containing:
+    %   1. The number of positive training examples covered.
+    %   2. The number of negative training examples covered.
+    %   3. =CL=, simply returned back to you.
     prove_examples(
       SearchSettings,
       Flag,
@@ -2150,8 +2387,8 @@ get_gain1(SearchSettings,Flag,C,CL,EMin/EL,Last,Best/Node,Path,L1,Pos,Neg,OVars,
       CL,
       EL,
       (Head1:-Body1),
-      Pos,
-      Neg,
+      PositiveExampleIntervals,
+      NegativeExampleIntervals,
       PCvr,
       NCvr,
       Label
@@ -2190,8 +2427,19 @@ get_gain1(SearchSettings,Flag,C,CL,EMin/EL,Last,Best/Node,Path,L1,Pos,Neg,OVars,
     LContra = false,
     LCost = false
   ->
-    Label = [A,B|_],
-    p_message(A/B)
+    Label =
+      [NumberOfProvenPositiveExamples, NumberOfProvenNegativeExamples | _],
+    setting(record_stream, Stream),
+    format(
+      Stream,
+      '|~w\tPOSITIVE examples covered.\n',
+      [NumberOfProvenPositiveExamples]
+    ),
+    format(
+      Stream,
+      '|~w\tNEGATIVE examples covered.\n',
+      [NumberOfProvenNegativeExamples]
+    )
   ;
     true
   ),
@@ -2240,8 +2488,22 @@ get_gain1(SearchSettings,Flag,C,CL,EMin/EL,Last,Best/Node,Path,L1,Pos,Neg,OVars,
     Best1=Best/Node
   ),
   !.
-get_gain1(_SearchSettings,_,_,_,_,_,Best,_,_,_,_,_,_,Best).
-
+get_gain1(
+  _SearchSettings,
+  _,
+  _,
+  _,
+  _,
+  _,
+  Best,
+  _,
+  _,
+  _PositiveExampleIntervals,
+  _NegativeExampleIntervals,
+  _,
+  _,
+  Best
+).
 
 abandon_branch(S,C):-
         arg(9,S,PruneDefined),
@@ -2569,7 +2831,23 @@ lazy_ccheck(S,Body,N):-
 lazy_ccheck(_,_,N):-
   retract('$aleph_local'(subst_count,N)).
 
-% posonly formula as described by Muggleton, ILP-96
+%! prove_examples(
+%!   +SearchSettings:compound,
+%!   Flag,
+%!   Contradiction,
+%!   Entry,
+%!   Best,
+%!   CL,
+%!   EL,
+%!   Clause,
+%!   PositiveExampleIntervals,
+%!   NegativeExampleIntervals,
+%!   PCover,
+%!   RCover,
+%!   Label
+%! )
+
+% @see The posonly formula as described by Muggleton, ILP-96.
 prove_examples(
   SearchSettings,
   Flag,
@@ -2579,73 +2857,195 @@ prove_examples(
   CL,
   L2,
   Clause,
-  Pos,
+  PositiveExampleIntervals,
   Rand,
   PCover,
   RCover,
   [P,B,CL,I,G]
 ):-
-  arg(4,SearchSettings,_/Evalfn),
-  Evalfn = posonly, !,
-        arg(11,SearchSettings,LazyOnContra),
-        ((LazyOnContra = true, Contradiction = true) ->
-                prove_lazy_cached(SearchSettings,Entry,Pos,Rand,PCover,RCover),
-                interval_sum(PCover,PC),
-                interval_sum(RCover,RC);
-                prove_pos(SearchSettings,Flag,Entry,Best,[PC,L2],Clause,Pos,PCover,PC),
-                prove_rand(SearchSettings,Flag,Entry,Clause,Rand,RCover,RC)),
-        find_posgain(PCover,P),
-        arg(16,SearchSettings,M), arg(20,SearchSettings,N),
-        GC is (RC+1.0)/(N+2.0), % Laplace correction for small numbers
-        A is log(P),
-        B is log(GC),
-        G is GC*M/P,
-        C is CL/P,
-        % Sz is CL*M/P,
-        % D is M*G,
-        %  I is M - D - Sz,
-        I is A - B - C.
-prove_examples(SearchSettings,_,_,Entry,_,CL,_,_,Pos,Neg,Pos,Neg,[PC,NC,CL]):-
+  arg(4, SearchSettings, _/Evalfn),
+  Evalfn = posonly,
+  !,
+  arg(11, SearchSettings, LazyOnContra),
+  (
+    LazyOnContra = true,
+    Contradiction = true
+  ->
+    prove_lazy_cached(
+      SearchSettings,
+      Entry,
+      PositiveExampleIntervals,
+      Rand,
+      PCover,
+      RCover
+    ),
+    interval_sum(PCover,PC),
+    interval_sum(RCover,RC)
+  ;
+    prove_positive_examples(
+      SearchSettings,
+      Flag,
+      Entry,
+      Best,
+      [PC,L2],
+      Clause,
+      PositiveExampleIntervals,
+      PCover,
+      PC
+    ),
+    prove_rand(SearchSettings,Flag,Entry,Clause,Rand,RCover,RC)
+  ),
+  find_posgain(PCover,P),
+  arg(16, SearchSettings, M),
+  arg(20, SearchSettings, N),
+  % Laplace correction for small numbers.
+  GC is (RC+1.0)/(N+2.0),
+  A is log(P),
+  B is log(GC),
+  G is GC*M/P,
+  C is CL/P,
+  % Sz is CL*M/P,
+  % D is M*G,
+  %  I is M - D - Sz,
+  I is A - B - C.
+prove_examples(SearchSettings,_,_,Entry,_,CL,_,_,PositiveExampleIntervals, NegativeExampleIntervals,PositiveExampleIntervals, NegativeExampleIntervals,[PC,NC,CL]):-
         arg(10,SearchSettings,LazyOnCost),
         LazyOnCost = true, !,
-        prove_lazy_cached(SearchSettings,Entry,Pos,Neg,Pos1,Neg1),
+        prove_lazy_cached(SearchSettings,Entry,PositiveExampleIntervals, NegativeExampleIntervals,Pos1,Neg1),
         interval_sum(Pos1,PC),
         interval_sum(Neg1,NC).
-prove_examples(SearchSettings,_,true,Entry,_,CL,_,_,Pos,Neg,Pos,Neg,[PC,NC,CL]):-
+prove_examples(SearchSettings,_,true,Entry,_,CL,_,_,PositiveExampleIntervals, NegativeExampleIntervals,PositiveExampleIntervals, NegativeExampleIntervals,[PC,NC,CL]):-
         arg(11,SearchSettings,LazyOnContra),
         LazyOnContra = true, !,
-        prove_lazy_cached(SearchSettings,Entry,Pos,Neg,Pos1,Neg1),
+        prove_lazy_cached(SearchSettings,Entry,PositiveExampleIntervals, NegativeExampleIntervals,Pos1,Neg1),
         interval_sum(Pos1,PC),
         interval_sum(Neg1,NC).
-prove_examples(SearchSettings,Flag,_,Ent,Best,CL,L2,Clause,Pos,Neg,PCover,NCover,[PC,NC,CL]):-
+prove_examples(
+  SearchSettings,
+  Flag,
+  _,
+  Entry,
+  Best,
+  CL,
+  L2,
+  Clause,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  PCover,
+  NCover,
+  [PC,NC,CL]
+):-
   arg(3,SearchSettings,RefineOp),
-  (RefineOp = false; RefineOp = auto),
-        arg(7,SearchSettings,ClauseLength),
-        ClauseLength = CL, !,
-  interval_sum(Pos,MaxPCount),
-        prove_neg(SearchSettings,Flag,Ent,Best,[MaxPCount,CL],Clause,Neg,NCover,NC),
-        arg(17,SearchSettings,Noise), arg(18,SearchSettings,MinAcc),
-        maxlength_neg_ok(Noise/MinAcc,Ent,MaxPCount,NC),
-        prove_pos(SearchSettings,Flag,Ent,Best,[PC,L2],Clause,Pos,PCover,PC),
-        maxlength_neg_ok(Noise/MinAcc,Ent,PC,NC),
+  (
+    RefineOp = false
+  ;
+    RefineOp = auto
+  ),
+  arg(7,SearchSettings,ClauseLength),
+  ClauseLength = CL,
+  !,
+  interval_sum(PositiveExampleIntervals,MaxPCount),
+  prove_negative_examples(
+    SearchSettings,
+    Flag,
+    Entry,
+    Best,
+    [MaxPCount,CL],
+    Clause,
+    NegativeExampleIntervals,
+    NCover,
+    NC
+  ),
+  arg(17,SearchSettings,Noise),
+  arg(18,SearchSettings,MinAcc),
+  maxlength_neg_ok(Noise/MinAcc,Entry,MaxPCount,NC),
+  prove_positive_examples(
+    SearchSettings,
+    Flag,
+    Entry,
+    Best,
+    [PC,L2],
+    Clause,
+    PositiveExampleIntervals,
+    PCover,
+    PC
+  ),
+  maxlength_neg_ok(Noise/MinAcc,Entry,PC,NC),
   !.
-prove_examples(SearchSettings,Flag,_,Ent,Best,CL,L2,Clause,Pos,Neg,PCover,NCover,[PC,NC,CL]):-
-  prove_pos(SearchSettings,Flag,Ent,Best,[PC,L2],Clause,Pos,PCover,PC),
-  prove_neg(SearchSettings,Flag,Ent,Best,[PC,CL],Clause,Neg,NCover,NC),
+prove_examples(
+  SearchSettings,
+  Flag,
+  _,
+  Entry,
+  Best,
+  CL,
+  L2,
+  Clause,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  PCover,
+  NCover,
+  [PC,NC,CL]
+):-
+  prove_positive_examples(
+    SearchSettings,
+    Flag,
+    Entry,
+    Best,
+    [PC,L2],
+    Clause,
+    PositiveExampleIntervals,
+    PCover,
+    PC
+  ),
+  prove_negative_examples(
+    SearchSettings,
+    Flag,
+    Entry,
+    Best,
+    [PC,CL],
+    Clause,
+    NegativeExampleIntervals,
+    NCover,
+    NC
+  ),
   !.
 
-prove_lazy_cached(S,Entry,Pos,Neg,Pos1,Neg1):-
-        arg(8,S,Caching),
-  Caching = true, !,
-  (check_cache(Entry,pos,Pos1)->
-    true;
-    add_cache(Entry,pos,Pos),
-    Pos1 = Pos),
-  (check_cache(Entry,neg,Neg1)->
-    true;
-    add_cache(Entry,neg,Neg),
-    Neg1 = Neg).
-prove_lazy_cached(_,_,Pos,Neg,Pos,Neg).
+prove_lazy_cached(
+  SearchSettings,
+  Entry,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  Pos1,
+  Neg1
+):-
+  arg(8, SearchSettings, Caching),
+  Caching = true,
+  !,
+  (
+    check_cache(Entry,pos,Pos1)
+  ->
+    true
+  ;
+    add_cache(Entry,pos,PositiveExampleIntervals),
+    Pos1 = PositiveExampleIntervals
+  ),
+  (
+    check_cache(Entry,neg,Neg1)
+  ->
+    true
+  ;
+    add_cache(Entry,neg,NegativeExampleIntervals),
+    Neg1 = NegativeExampleIntervals
+  ).
+prove_lazy_cached(
+  _SearchSettings,
+  _,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals,
+  PositiveExampleIntervals,
+  NegativeExampleIntervals
+).
 
 complete_label(posonly,_,L,L):- !.
 complete_label(user,Clause,[P,N,L],[P,N,L,Val]):-
@@ -2682,33 +3082,87 @@ get_search_keys(df,[_,_,L,F|_],[L|F]):- !.
 get_search_keys(_,[_,_,L,F|_],[F|L1]):-
   L1 is -1*L.
 
-prove_pos(_SearchSettings,_,_,_,_,_,[],[],0):- !.
-prove_pos(SearchSettings,_,Entry,BestSoFar,PosSoFar,Clause,_,PCover,PCount):-
-        '$aleph_search'(covers,covers(PCover,PCount)), !,
-        pos_ok(SearchSettings,Entry,BestSoFar,PosSoFar,Clause,PCover).
-prove_pos(SearchSettings,Flag,Entry,BestSoFar,PosSoFar,Clause,Pos,PCover,PCount):-
-        prove_cache(Flag,SearchSettings,pos,Entry,Clause,Pos,PCover,PCount),
-        pos_ok(SearchSettings,Entry,BestSoFar,PosSoFar,Clause,PCover), !.
+%! prove_positive_examples(
+%!   +SearchSettings:compound,
+%!   +Flag,
+%!   +Entry,
+%!   +BestSoFar,
+%!   -PosSoFar,
+%!   +Clause,
+%!   +PositiveExampleIntervals:list,
+%!   -PCover,
+%!   -PCount
+%! )
 
-prove_neg(SearchSettings,_,Entry,_,_,_,[],[],0):-
+prove_positive_examples(
+  _SearchSettings,
+  _Flag,
+  _Entry,
+  _Best,
+  _PosSoFar,
+  _Clause,
+  [],
+  [],
+  0
+):-
+  !.
+prove_positive_examples(
+  SearchSettings,
+  _Flag,
+  Entry,
+  BestSoFar,
+  PosSoFar,
+  Clause,
+  _PositiveExampleIntervals,
+  PCover,
+  PCount
+):-
+  '$aleph_search'(covers, covers(PCover, PCount)),
+  !,
+  pos_ok(SearchSettings, Entry, BestSoFar, PosSoFar, Clause, PCover).
+prove_positive_examples(
+  SearchSettings,
+  Flag,
+  Entry,
+  BestSoFar,
+  PosSoFar,
+  Clause,
+  PositiveExampleIntervals,
+  PCover,
+  PCount
+):-
+  prove_cache(
+    Flag,
+    SearchSettings,
+    pos,
+    Entry,
+    Clause,
+    PositiveExampleIntervals,
+    PCover,
+    PCount
+  ),
+  pos_ok(SearchSettings, Entry, BestSoFar, PosSoFar, Clause, PCover),
+  !.
+
+prove_negative_examples(SearchSettings,_,Entry,_,_,_,[],[],0):-
   arg(8,SearchSettings,Caching),
   (Caching = true -> add_cache(Entry,neg,[]); true), !.
-prove_neg(SearchSettings,Flag,Entry,_,_,Clause,Neg,NCover,NCount):-
+prove_negative_examples(SearchSettings,Flag,Entry,_,_,Clause,Neg,NCover,NCount):-
   arg(3,SearchSettings,RefineOp),
   RefineOp = rls,  !,
         prove_cache(Flag,SearchSettings,neg,Entry,Clause,Neg,NCover,NCount).
-prove_neg(_SearchSettings,_,_,_,_,_,_,NCover,NCount):-
+prove_negative_examples(_SearchSettings,_,_,_,_,_,_,NCover,NCount):-
         '$aleph_search'(coversn,coversn(NCover,NCount)), !.
-prove_neg(SearchSettings,Flag,Entry,BestSoFar,PosSoFar,Clause,Neg,NCover,NCount):-
+prove_negative_examples(SearchSettings,Flag,Entry,BestSoFar,PosSoFar,Clause,Neg,NCover,NCount):-
         arg(12,SearchSettings,LazyNegs),
         LazyNegs = true, !,
         lazy_prove_neg(SearchSettings,Flag,Entry,BestSoFar,PosSoFar,Clause,Neg,NCover,NCount).
-prove_neg(SearchSettings,Flag,Entry,[P,0,L1|_],[P,L2],Clause,Neg,[],0):-
+prove_negative_examples(SearchSettings,Flag,Entry,[P,0,L1|_],[P,L2],Clause,Neg,[],0):-
   arg(4,SearchSettings,bf/coverage),
         L2 is L1 - 1,
   !,
         prove_cache(Flag,SearchSettings,neg,Entry,Clause,Neg,0,[],0), !.
-prove_neg(SearchSettings,Flag,Entry,[P,N|_],[P,L1],Clause,Neg,NCover,NCount):-
+prove_negative_examples(SearchSettings,Flag,Entry,[P,N|_],[P,L1],Clause,Neg,NCover,NCount):-
   arg(4,SearchSettings,bf/coverage),
         !,
         arg(7,SearchSettings,ClauseLength),
@@ -2720,7 +3174,7 @@ prove_neg(SearchSettings,Flag,Entry,[P,N|_],[P,L1],Clause,Neg,NCover,NCount):-
     NCount =< MaxNegs;
                 prove_cache(Flag,SearchSettings,neg,Entry,Clause,Neg,NCover,NCount)),
         !.
-prove_neg(SearchSettings,Flag,Entry,_,[P1,L1],Clause,Neg,NCover,NCount):-
+prove_negative_examples(SearchSettings,Flag,Entry,_,[P1,L1],Clause,Neg,NCover,NCount):-
         arg(7,SearchSettings,ClauseLength),
         ClauseLength = L1,  !,
         arg(17,SearchSettings,Noise), arg(18,SearchSettings,MinAcc),
@@ -2728,7 +3182,7 @@ prove_neg(SearchSettings,Flag,Entry,_,[P1,L1],Clause,Neg,NCover,NCount):-
         prove_cache(Flag,SearchSettings,neg,Entry,Clause,Neg,N1,NCover,NCount),
   NCount =< N1,
         !.
-prove_neg(SearchSettings,Flag,Entry,_,_,Clause,Neg,NCover,NCount):-
+prove_negative_examples(SearchSettings,Flag,Entry,_,_,Clause,Neg,NCover,NCount):-
         prove_cache(Flag,SearchSettings,neg,Entry,Clause,Neg,NCover,NCount),
         !.
 
@@ -3064,45 +3518,115 @@ potentially_good([_,N|_],[_,N1|_]):-
 
 % PROVE
 
-% prove with caching
+%! prove_cache(
+%!   +Flag:oneof([exact,upper]),
+%!   +SearchSettings:compound,
+%!   +Type:oneof([neg,pos]),
+%!   +Entry,
+%!   +Clause,
+%!   +PositiveExampleIntervals:list,
+%!   -IList,
+%!   -Count
+%! )
+% Prove with caching
 % if entry exists in cache, then return it
 % otherwise find and cache cover
 % if ``exact'' flag is set then only check proof for examples
 % in the part left over due to lazy theorem-proving
 % ideas in caching developed in discussions with James Cussens
 
-prove_cache(exact,S,Type,Entry,Clause,Intervals,IList,Count):-
+prove_cache(
+  exact,
+  SearchSettings,
+  Type,
+  Entry,
+  Clause,
+  PositiveExampleIntervals,
+  IList,
+  Count
+):-
   !,
-  (Intervals = Exact/Left ->
-          arg(14,S,Depth),
-          arg(29,S,Time),
-          arg(34,S,Proof),
-          prove(Depth/Time/Proof,Type,Clause,Left,IList1,Count1),
+  (
+    PositiveExampleIntervals = Exact/Left
+  ->
+    arg(14, SearchSettings, Depth),
+    arg(29, SearchSettings, Time),
+    arg(34, SearchSettings, Proof),
+    prove(Depth/Time/Proof,Type,Clause,Left,IList1,Count1),
     append(Exact, IList1, IList),
     interval_sum(Exact,Count0),
     Count is Count0 + Count1;
-    IList = Intervals,
+    IList = PositiveExampleIntervals,
     interval_sum(IList,Count)),
-        arg(8,S,Caching),
-        (Caching = true -> add_cache(Entry,Type,IList); true).
-prove_cache(upper,S,Type,Entry,Clause,Intervals,IList,Count):-
-        arg(8,S,Caching),
-        Caching = true, !,
-        arg(14,S,Depth),
-        arg(29,S,Time),
-        arg(34,S,Proof),
-        (check_cache(Entry,Type,Cached)->
-                prove_cached(S,Type,Entry,Cached,Clause,Intervals,IList,Count);
-                prove_intervals(Depth/Time/Proof,Type,Clause,Intervals,IList,Count),
-                add_cache(Entry,Type,IList)).
-prove_cache(upper,S,Type,_,Clause,Intervals,IList,Count):-
-        arg(14,S,Depth),
-        arg(29,S,Time),
-        arg(34,S,Proof),
-  (Intervals = Exact/Left ->
+    arg(8, SearchSettings, Caching),
+    (
+      Caching = true
+    ->
+      add_cache(Entry,Type,IList)
+    ;
+      true
+    ).
+prove_cache(
+  upper,
+  SearchSettings,
+  Type,
+  Entry,
+  Clause,
+  PositiveExampleIntervals,
+  IList,
+  Count
+):-
+  arg(8, SearchSettings, Caching),
+  Caching = true,
+  !,
+  arg(14, SearchSettings, Depth),
+  arg(29, SearchSettings, Time),
+  arg(34, SearchSettings, Proof),
+  (
+    check_cache(Entry,Type,Cached)
+  ->
+    prove_cached(
+      SearchSettings,
+      Type,
+      Entry,
+      Cached,
+      Clause,
+      PositiveExampleIntervals,
+      IList,
+      Count
+    )
+  ;
+    prove_intervals(
+      Depth/Time/Proof,
+      Type,
+      Clause,
+      PositiveExampleIntervals,
+      IList,
+      Count
+    ),
+    add_cache(Entry,Type,IList)
+  ).
+prove_cache(
+  upper,
+  SearchSettings,
+  Type,
+  _Entry,
+  Clause,
+  PositiveExampleIntervals,
+  IList,
+  Count
+):-
+  arg(14, SearchSettings, Depth),
+  arg(29, SearchSettings, Time),
+  arg(34, SearchSettings, Proof),
+  (
+    PositiveExampleIntervals = Exact/Left
+  ->
     append(Exact, Left, IList1),
-          prove(Depth/Time/Proof,Type,Clause,IList1,IList,Count);
-          prove(Depth/Time/Proof,Type,Clause,Intervals,IList,Count)).
+    prove(Depth/Time/Proof,Type,Clause,IList1,IList,Count)
+  ;
+    prove(Depth/Time/Proof,Type,Clause,PositiveExampleIntervals,IList,Count)
+  ).
 
 prove_intervals(DepthTime,Type,Clause,I1/Left,IList,Count):-
   !,
@@ -3196,7 +3720,6 @@ prove_intervals(S,Type,Clause,Intervals,Max,IList,Count):-
         arg(34,S,Proof),
         prove(LNegs/Caching,Depth/Time/Proof,Type,Clause,Intervals,Max,IList,Count).
 
-
 prove_cached(S,Type,Entry, I1/Left,Clause,_,Max,IList/Left1,Count):-
         !,
         arg(8,S,Caching),
@@ -3247,21 +3770,30 @@ find_lazy_left(S,Type,[_-F],Left):-
 find_lazy_left(S,Type,[_|T1],Left):-
         find_lazy_left(S,Type,T1,Left).
 
+%! prove(
+%!   +Flags,
+%!   +Type:oneof([neg,pos]),
+%!   +Clause,
+%!   +Intervals:list,
+%!   -IList,
+%!   -Count
+%! )
+% Prove atoms specified by =Type= and index set using =Clause=.
+%
+% This is dependent on the data structure that is used for the index set.
+% Currently index set is a list of intervals.
+%
+% @arg IList A list of proved atoms.
+% @arg Count The number of atoms that were proved.
+%
+% @see prove2/7 If tail-recursive version is needed.
 
-% prove atoms specified by Type and index set using Clause.
-% dependent on data structure used for index set:
-% currently index set is a list of intervals
-% return atoms proved and their count
-% if tail-recursive version is needed see below
-
-prove(_,_,_,[],[],0).
-prove(Flags,Type,Clause,[Interval|Intervals],IList,Count):-
+prove(_Flags, _Type, _Clause, [], [], 0).
+prove(Flags, Type, Clause, [Interval | Intervals], IList, Count):-
   index_prove(Flags,Type,Clause,Interval,I1,C1),
-  prove(Flags,Type,Clause,Intervals,I2,C2),
+  prove(Flags, Type, Clause, Intervals, I2, C2),
   append(I1, I2, IList),
   Count is C1 + C2.
-
-
 
 % TAIL-RECURSIVE PROVE/6
 
@@ -3311,42 +3843,71 @@ prove3([Current-Finish|Intervals],ProofFlags,Type,Clause,InCount,Sofar,OutCount)
             Next is Current+1,!,
             prove3([Next-Finish|Intervals],ProofFlags,Type,Clause,InCount,Sofar,OutCount)
         ).
+% Code for tail recursive cover testing ends here.
 
-% code for tail recursive cover testing ends here
+%! index_prove(
+%!   +ProofFlags,
+%!   +Type:oneof([neg,pos]),
+%!   +Clause,
+%!   +Interval,
+%!   -IList,
+%!   -Count
+%! )
 
-index_prove(_,_,_,Start-Finish,[],0):-
-  Start > Finish, !.
-index_prove(ProofFlags,Type,Clause,Start-Finish,IList,Count):-
-  index_prove1(ProofFlags,Type,Clause,Start,Finish,Last),
-  Last0 is Last - 1 ,
+index_prove(_ProofFlags, _Type, _Clause, Start-Finish, [], 0):-
+  Start > Finish,
+  !.
+index_prove(ProofFlags, Type, Clause, Start-Finish, IList, Count):-
+  index_prove1(ProofFlags, Type, Clause, Start, Finish, Last),
+  Last0 is Last - 1,
   Last1 is Last + 1,
-  (Last0 >= Start->
+  (
+    Last0 >= Start
+  ->
     index_prove(ProofFlags,Type,Clause,Last1-Finish,Rest,Count1),
     IList = [Start-Last0|Rest],
-    Count is Last - Start + Count1;
-    index_prove(ProofFlags,Type,Clause,Last1-Finish,IList,Count)).
+    Count is Last - Start + Count1
+  ;
+    index_prove(ProofFlags,Type,Clause,Last1-Finish,IList,Count)
+  ).
 
 prove1(G):-
   depth_bound_call(G), !.
 
-prove1(user,_,Example,Clause):-
-  prove(Clause,Example), !.
-prove1(restricted_sld,Depth/Time,Example,(Head:-Body)):-
-  \+((\+(((Example = Head),resource_bound_call(Time,Depth,Body))))), !.
-prove1(sld,Depth/Time,Example,_):-
-  \+(\+(resource_bound_call(Time,Depth,Example))), !.
+%! proof1(
+%!   +Proof:oneof([restricted,sld,user]),
+%!   +DepthAndTime,
+%!   +Example,
+%!   +Clause
+%! )
 
-index_prove1(_,_,_,Num,Last,Num):-
-  Num > Last, !.
-index_prove1(Depth/Time/Proof,Type,Clause,Num,Finish,Last):-
-  example(Num,Type,Example),
-  prove1(Proof,Depth/Time,Example,Clause), !,
-  Num1 is Num + 1,
-  index_prove1(Depth/Time/Proof,Type,Clause,Num1,Finish,Last).
-index_prove1(_,_,_,Last,_,Last).
+prove1(user, _DepthAndTime, Example, Clause):-
+  prove(Clause, Example),
+  !.
+prove1(restricted_sld, Depth/Time, Example, (Head:-Body)):-
+  \+((
+    \+((
+      (Example = Head),
+      resource_bound_call(Time, Depth,Body)
+    ))
+  )),
+  !.
+prove1(sld, Depth/Time, Example, _Clause):-
+  \+(\+(resource_bound_call(Time, Depth, Example))),
+  !.
 
+index_prove1(_ProofFlags, _Type, _Clause, Start, Last, Start):-
+  Start > Last,
+  !.
+index_prove1(Depth/Time/Proof, Type, Clause, Start, Finish, Last):-
+  example(Start, Type, Example),
+  prove1(Proof, Depth/Time, Example, Clause),
+  !,
+  NewStart is Start + 1,
+  index_prove1(Depth/Time/Proof, Type, Clause, NewStart, Finish, Last).
+index_prove1(_ProofFlags, _Type, _Clause, Start, _Last, Start).
 
-% proves at most Max atoms using Clause.
+% Proves at most =Max= atoms using =Clause=.
 
 prove(_,_,_,_,[],_,[],0).
 prove(Flags,ProofFlags,Type,Clause,[Interval|Intervals],Max,IList,Count):-
@@ -3357,8 +3918,9 @@ prove(Flags,ProofFlags,Type,Clause,[Interval|Intervals],Max,IList,Count):-
         Count is C1 + C2.
 
 
-index_prove(_,_,_,_,Start-Finish,_,[],0):-
-        Start > Finish, !.
+index_prove(_Flags, _ProofFlags, _Type, _Clause, Start-Finish, _Max, [], 0):-
+  Start > Finish,
+  !.
 index_prove(Flags,ProofFlags,Type,Clause,Start-Finish,Max,IList,Count):-
         index_prove1(Flags,ProofFlags,Type,Clause,Start,Finish,0,Max,Last),
         Last0 is Last - 1 ,
@@ -3391,21 +3953,36 @@ index_prove1(LNegs/Caching,Depth/Time/Proof,Type,Clause,Num,Finish,Proved,Allowe
         index_prove1(LNegs/Caching,Depth/Time/Proof,Type,Clause,Num1,Finish,Proved1,Allowed,Last).
 index_prove1(_,_,_,_,Last,_,_,_,Last).
 
-% resource_bound_call(Time,Depth,Goals)
-%  attempt to prove Goals using depth bounded theorem-prover
-%  in at most Time secs
-resource_bound_call(T,Depth,Goals):-
-  Inf is 1e10,
-  T =:= Inf,
-  !,
-  depth_bound_call(Goals,Depth).
-resource_bound_call(T,Depth,Goals):-
-        catch(time_bound_call(T,prooflimit,depth_bound_call(Goals,Depth)),
-    prooflimit,fail).
+%! resource_bound_call(+Time, +Depth, +Goals)
+% Attempts to prove Goals using depth bounded theorem-prover
+% in at most Time secs
 
-time_bound_call(T,Exception,Goal):-
-  alarm(T,throw(Exception),X),
-        (Goal -> remove_alarm(X); remove_alarm(X), fail).
+resource_bound_call(Time, Depth, Goals):-
+  Inf is 1e10,
+  Time =:= Inf,
+  !,
+  depth_bound_call(Goals, Depth).
+resource_bound_call(Time, Depth, Goals):-
+  catch(
+    time_bound_call(Time, prooflimit, depth_bound_call(Goals, Depth)),
+    prooflimit,
+    fail
+  ).
+
+time_bound_call(Time, Exception, Goal):-
+  alarm(
+    Time,
+    throw(Exception),
+    X
+  ),
+  (
+    Goal
+  ->
+    remove_alarm(X)
+  ;
+    remove_alarm(X),
+    fail
+  ).
 
 
 
@@ -4877,8 +5454,8 @@ find_theory1(_):-
         interval_sum(Pos,P),
         interval_sum(Neg,N),
         complete_label(Evalfn,[0-[0,0,[],false]],[P,N,1],Label),
-  asserta('$aleph_search'(selected,selected(Label,[0-[0,0,[],false]],Pos,Neg))),
-  get_theory_gain(SearchSettings,0,Label/0,[0-[0,0,[],false]],Pos,Neg,P,N,NextBest,Last),
+  asserta('$aleph_search'(selected,selected(Label,[0-[0,0,[],false]],PositiveExampleIntervals, NegativeExampleIntervals))),
+  get_theory_gain(SearchSettings,0,Label/0,[0-[0,0,[],false]],PositiveExampleIntervals, NegativeExampleIntervals,P,N,NextBest,Last),
   asserta('$aleph_search'(current,current(0,Last,NextBest))),
   get_nextbest(SearchSettings,_),
   tsearch(SearchSettings,Nodes),
@@ -6050,20 +6627,20 @@ skippable(Pred):-
 % evaluate lazy preds in a set of clauses
 % untested
 lazy_evaluate_theory([],_,_,_,[]).
-lazy_evaluate_theory([Refine|T],LazyPreds,Pos,Neg,[Refine1|T1]):-
+lazy_evaluate_theory([Refine|T],LazyPreds,PositiveExampleIntervals, NegativeExampleIntervals,[Refine1|T1]):-
   Refine = A-[B,C,D,Clause],
-  lazy_evaluate_refinement(D,Clause,LazyPreds,Pos,Neg,D1,Clause1),
+  lazy_evaluate_refinement(D,Clause,LazyPreds,PositiveExampleIntervals, NegativeExampleIntervals,D1,Clause1),
   Refine1 = A-[B,C,D1,Clause1],
-  lazy_evaluate_theory(T,LazyPreds,Pos,Neg,T1).
+  lazy_evaluate_theory(T,LazyPreds,PositiveExampleIntervals, NegativeExampleIntervals,T1).
 
 % lazy evaluation of literals in a refinement operation
-lazy_evaluate_refinement([],Refine,Lazy,Pos,Neg,[],NewRefine):-
+lazy_evaluate_refinement([],Refine,Lazy,PositiveExampleIntervals, NegativeExampleIntervals,[],NewRefine):-
   clause_to_list(Refine,Lits),
-  lazy_evaluate_refinement(Lits,Lazy,[],Pos,Neg,Lits1),
+  lazy_evaluate_refinement(Lits,Lazy,[],PositiveExampleIntervals, NegativeExampleIntervals,Lits1),
   list_to_clause(Lits1,NewRefine), !.
-lazy_evaluate_refinement(Lits,_,Lazy,Pos,Neg,Lits1,NewRefine):-
+lazy_evaluate_refinement(Lits,_,Lazy,PositiveExampleIntervals, NegativeExampleIntervals,Lits1,NewRefine):-
   Lits \= [],
-  lazy_evaluate_refinement(Lits,Lazy,[],Pos,Neg,Lits1),
+  lazy_evaluate_refinement(Lits,Lazy,[],PositiveExampleIntervals, NegativeExampleIntervals,Lits1),
   get_pclause(Lits1,[],NewRefine,_,_,_), !.
 lazy_evaluate_refinement(Lits,Refine,_,_,_,Lits,Refine).
 
