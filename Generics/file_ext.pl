@@ -16,6 +16,9 @@
     directory_files/3, % +Directory:atom
                        % +FileType:atom
                        % -Entries:list(atom)
+    file_extension_alternative/3, % +FromFile:atom
+                                  % +ToExtension:atom
+                                  % -ToFile:atom
     file_name/4, % +File:atom
                  % ?Dir:atom
                  % ?Name:atom
@@ -241,11 +244,16 @@ directory_files(Directory, FileType, Entries):-
   bagof(
     Entry,
     (
-      member(Entry, Files),
-      file_name_type(_Base, FileType, Entry)
+      member(File, Files),
+      file_name_type(_Base, FileType, File),
+      directory_file_path(Directory, File, Entry)
     ),
     Entries
   ).
+
+file_extension_alternative(FromFile, ToExtension, ToFile):-
+  file_name_extension(Base, _FromExtension, FromFile),
+  file_name_extension(Base, ToExtension, ToFile).
 
 %! file_name(+Path:atom, ?Directory:atom, ?Base:atom, ?Extension:atom) is semidet.
 %! file_name(-Path:atom, +Directory:atom, +Base:atom, +Extension:atom) is det.

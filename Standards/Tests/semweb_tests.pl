@@ -1,7 +1,7 @@
 :- module(
   semweb_tests,
   [
-    run_tests/0
+    run_semweb_tests/0
   ]
 ).
 
@@ -112,7 +112,7 @@ load_manifest:-
   ),
   rdf_load2(TestFile, test).
 
-run_tests:-
+run_semweb_tests:-
   load_manifest,
   forall(
     (

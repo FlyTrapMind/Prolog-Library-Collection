@@ -222,6 +222,9 @@ uri_to_html(URI, DOM):-
         Exception,
         process_exception(Exception, http_open(URI, Stream, []))
       ),
+      % @tbd Can this not be given as an option to http_open/3?
+      % I expect that otpions are passed to open/4, but the documentation
+      % does not mention this.
       set_stream(Stream, encoding(utf8))
     ),
     stream_to_html(Stream, DOM),

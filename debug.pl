@@ -4,6 +4,9 @@
 % =text= encoding. This did _not_ process special characters correctly.
 :- set_prolog_flag(encoding, utf8).
 
+% Print code strings with their code table replacements.
+:- use_module(library(portray_text)).
+
 % Do not write module loads to the standard output stream.
 :- set_prolog_flag(verbose_load, silent).
 

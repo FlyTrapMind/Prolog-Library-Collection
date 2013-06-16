@@ -69,12 +69,9 @@ This module contains the OS extensions for SWI-Prolog.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(exception_handling)).
 :- use_module(generics(file_ext)).
-:- use_module(generics(print_ext)).
-:- use_module(library/filesex)).
+:- use_module(library(filesex)).
 :- use_module(library(http/http_header)).
-:- use_module(library(pce)).
 :- use_module(library(www_browser)).
 
 :- multifile(prolog:message/3).
@@ -439,6 +436,10 @@ open_pdf_unix(File):-
 
 :- if(is_windows).
 open_pdf_windows(_File).
+%open_pdf_windows(File):-
+%  process_create(path('AcroRd32'), [File], [detached(true), process(PID)]),
+%  process_wait(PID, exit(ShellStatus)),
+%  shell_status(ShellStatus).
 :- endif.
 
 %! text_to_speech(+Text:atom) is det.
@@ -502,6 +503,9 @@ shell_error(Formal, Context):-
 % @throws shell_error Throws a shell error when a shell process exits with
 %         a non-zero code.
 
+shell_status(exit(StatusCode)):-
+  !,
+  shell_status(StatusCode).
 shell_status(0):-
   !.
 shell_status(StatusCode):-
@@ -602,9 +606,11 @@ prolog:message(outdated_version(Component, Current, Minimum)) -->
   prolog:message(version(Minimum)).
 
 prolog:message(version(Version)) -->
-  {Major is Version // 10000,
-   Minor is (Version rem Major) // 100,
-   Patch is Version rem 100},
+  {
+    Major is Version // 10000,
+    Minor is (Version rem Major) // 100,
+    Patch is Version rem 100
+  },
   ['~w.~w.~w'-[Major, Minor, Patch]].
 
 

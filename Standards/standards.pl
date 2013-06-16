@@ -17,12 +17,11 @@
                     % +Head:list
                     % +Body:list
                     % -Root:list
-    root_element/5, % ?Language:atom
-                    % ?Version:version
-                    % +Head:list
-                    % +Body:list
-                    % -Root:list
-    set_stream/1 % +Attribute:compound
+    root_element/5 % ?Language:atom
+                   % ?Version:version
+                   % +Head:list
+                   % +Body:list
+                   % -Root:list
   ]
 ).
 

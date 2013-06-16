@@ -1,3 +1,8 @@
 *~
 Data/
 *#
+
+*.aux
+*.log
+*.pdf
+*.tex

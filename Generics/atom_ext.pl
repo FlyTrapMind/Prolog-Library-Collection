@@ -81,6 +81,10 @@ scheme.
 
 
 
+atom_codes_(Atom1-Atom2, Codes1-Codes2):-
+  atom_codes(Atom1, Codes1),
+  atom_codes(Atom2, Codes2).
+
 %! atom_to_term(+Atom:atom, -Term:term) is det.
 % Returns the term described by the atom.
 %
@@ -93,7 +97,7 @@ atom_to_term(Atom, Term):-
 
 %! atom_replace(
 %!   +Atom:atom,
-%!   +Replacement:list(char-char),
+%!   +Replacement:list(pair(atom)),
 %!   -NewAtom:atom
 %! ) is det.
 % Returns a new atom that is like the given atom, but with the given
@@ -104,10 +108,14 @@ atom_to_term(Atom, Term):-
 % @arg NewAtom An atom.
 
 atom_replace(Atom, Replacements, NewAtom):-
+  is_list(Replacements),
+  !,
   atom_codes(Atom, Codes),
-  maplist(char_code_, Replacements, CodesReplacements),
+  maplist(atom_codes_, Replacements, CodesReplacements),
   list_replace(Codes, CodesReplacements, NewCodes),
   atom_codes(NewAtom, NewCodes).
+atom_replace(Atom, Replacement, NewAtom):-
+  atom_replace(Atom, [Replacement], NewAtom).
 
 %! atom_until(
 %!   +Split:oneof([atom,list(atom)]),
@@ -120,10 +128,6 @@ atom_replace(Atom, Replacements, NewAtom):-
 atom_until(Split, Atom, H, Rest):-
   split_atom_exclusive(Split, Atom, [H | _T]),
   atom_concat(H, Rest, Atom).
-
-char_code_(Atom1-Atom2, Code1-Code2):-
-  char_code(Atom1, Code1),
-  char_code(Atom2, Code2).
 
 codes_replace([], _From, _To, []):-
   !.
@@ -148,7 +152,7 @@ decapitalize(Old, New):-
 % Use backslash-encoding for underscores.
 
 escape_underscores(Atom, NewAtom):-
-  atom_replace(Atom, ['_'-['\\', '_']], NewAtom).
+  atom_replace(Atom, '_'-'\\_', NewAtom).
 
 %! first_char(+Atom:atom, ?First:char) is semidet.
 % The first character in the given atom.
@@ -247,7 +251,7 @@ repeating_atom(SubAtom, Repeats, Atom):-
   atomic_concat(Atom1, SubAtom, Atom).
 
 slashes_to_underscores(Atom, NewAtom):-
-  atom_replace(Atom, ['/'-'_'], NewAtom).
+  atom_replace(Atom, '/'-'_', NewAtom).
 
 %! spaces_to_underscores(+Old:atom, -New:atom) is det.
 % Returns the atom that is like the give atom, but with all spaces replaced
@@ -257,7 +261,7 @@ slashes_to_underscores(Atom, NewAtom):-
 % @arg New An atom with spaces replaced by underscores.
 
 spaces_to_underscores(Atom, NewAtom):-
-  atom_replace(Atom, [' '-'_'], NewAtom).
+  atom_replace(Atom, ' '-'_', NewAtom).
 
 %! split_atom_exclusive(
 %!   +Split:oneof([atom,list(atom)]),
@@ -445,5 +449,5 @@ truncate(Atom, _AtomLen, MaxLen, Truncated):-
 % @arg New An atom with underscores replaced by spaces.
 
 underscores_to_spaces(Old, New):-
-  atom_replace(Old, ['_'-' '], New).
+  atom_replace(Old, '_'-' ', New).
 

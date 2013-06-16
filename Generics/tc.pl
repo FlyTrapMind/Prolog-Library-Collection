@@ -77,8 +77,7 @@ load_examples:-
   forall(
     member(File, Files),
     (
-      open(File, read, Stream, []),
-      set_stream(Stream, buffer(line)),
+      open(File, read, Stream, [buffer(line)]),
       load_examples(Stream),
       close(Stream)
     )

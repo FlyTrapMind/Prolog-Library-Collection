@@ -106,7 +106,7 @@ google_tts(Encoding, Language, Query, URI):-
 %%%!  % But Google translate uses plusses.
 %%%!  uri_normalized(Query, NormalizedQuery),
   % Replace spaces with '+'-es.
-  atom_replace(Query, [' '-'+'], NormalizedQuery),
+  atom_replace(Query, ' '-'+', NormalizedQuery),
 
   % Create the search components for the URI.
 %%%!  % The swipl builtin uri_query_components/3 turns spaces and
@@ -154,7 +154,7 @@ load:-
 microsoft_translate(From, To, Query, URI):-
   microsoft_app_id(AppID),
   % Replace spaces with '+'-es.
-  atom_replace(Query, [' '-'+'], NormalizedQuery),
+  atom_replace(Query, ' '-'+', NormalizedQuery),
   format(
     atom(Search),
     'oncomplete=doneCallback&appId=~w&from=~w&to=~w&text=~w',
