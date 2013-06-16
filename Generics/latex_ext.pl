@@ -44,6 +44,7 @@ Predicates for handling LaTeX files.
 :- db_add_novel(user:prolog_file_type(tex, latex_in)).
 
 
+
 %! file_to_latex_title(+PrologFile:atom, -Title:atom) is det.
 % Returns the title for the TeX file that is generated based on the given
 % Prolog source file.
@@ -63,7 +64,7 @@ file_to_latex_title(PrologFile, Title):-
   % Underscores must be escaped in LaTeX.
   escape_underscores(Module, Title).
 file_to_latex_title(PrologFile, Local):-
-  file_name(File, _Directory, Local, _Extension).
+  file_name(PrologFile, _Directory, Local, _Extension).
 
 %! latex(+Command:oneof([begin,end]))// is semidet.
 % Succeeds if the codes list starts with a LaTeX commmand.
@@ -71,10 +72,24 @@ file_to_latex_title(PrologFile, Local):-
 % Currently the commands =|begin(latex)|= and =|end(latex)|= are defined.
 
 latex(Command) -->
+  % Allow Prolog multiline commenting.
+  (
+    forward_slash,
+    asterisk
+  ;
+    ""
+  ),
   atom(Command),
   opening_round_bracket,
   atom(latex),
-  closing_round_bracket.
+  closing_round_bracket,
+  % Allow Prolog multiline commenting.
+  (
+    asterisk,
+    forward_slash
+  ;
+    ""
+  ).
 
 %! latex_clean(+File:atom) is det.
 % Cleans the LaTeX output files in the given directory recursively.
@@ -148,12 +163,12 @@ latex_code_convert(Local, Directory):-
           ]),
           author('Wouter Beek'),
           document_attributes(['10pt',a4paper,draft,twocolumn,twoside]),
-          packages([amsthm,latexsym,mdframed]),
+          packages([amsthm,latexsym,listings,mdframed]),
           title(Title)
         ]
       )
     ),
-    latex_code_convert(InStream, OutStream, false),
+    latex_code_convert(InStream, OutStream, none),
     (
       close(InStream),
       write_latex_footer(OutStream),
@@ -181,37 +196,59 @@ latex_code_convert(_Local, _Directory).
 %! latex_code_convert(
 %!   +InStream:stream,
 %!   +OutStream:stream,
-%!   +LaTeXMode:boolean
+%!   +Mode:oneof([latex,none,prolog])
 %! ) is det.
 
-latex_code_convert(InStream, _OutStream, _LaTeXMode):-
+latex_code_convert(InStream, OutStream, Mode):-
   at_end_of_stream(InStream),
-  !.
-latex_code_convert(InStream, OutStream, false):-
+  !,
+  if_then(
+    Mode == prolog,
+    (
+      write(OutStream, '\\end{lstlisting}'),
+      nl(OutStream)
+    )
+  ).
+latex_code_convert(InStream, OutStream, none):-
   !,
   read_line_to_codes(InStream, Codes),
   (
     phrase(latex(begin), Codes)
   ->
-    LaTeXMode = true
+    Mode = latex
   ;
-    LaTeXMode = false
+    Mode = none
   ),
-  latex_code_convert(InStream, OutStream, LaTeXMode).
-latex_code_convert(InStream, OutStream, true):-
+  latex_code_convert(InStream, OutStream, Mode).
+latex_code_convert(InStream, OutStream, latex):-
   !,
   read_line_to_codes(InStream, Codes),
   (
     phrase(latex(end), Codes)
   ->
-    LaTeXMode = false
-  ;
-    atom_codes(Atom, Codes),
-    write(OutStream, Atom),
     nl(OutStream),
-    LaTeXMode = true
+    write(OutStream, '\\begin{lstlisting}'),
+    LaTeXMode = prolog
+  ;
+    write_latex_codes_nl(OutStream, Codes),
+    LaTeXMode = latex
   ),
   latex_code_convert(InStream, OutStream, LaTeXMode).
+latex_code_convert(InStream, OutStream, prolog):-
+  !,
+  read_line_to_codes(InStream, Codes),
+  (
+    phrase(latex(begin), Codes)
+  ->
+    % LaTeX begin found: end listing.
+    write(OutStream, '\\end{lstlisting}'),
+    nl(OutStream),
+    Mode = latex
+  ;
+    write_latex_codes_nl(OutStream, Codes),
+    Mode = prolog
+  ),
+  latex_code_convert(InStream, OutStream, Mode).
 
 latex_convert(Entry):-
   directory_file_path(To, _File, Entry),
@@ -273,6 +310,15 @@ print_output(Codes, Status):-
   print_message(warning, latex(error(Codes))).
 prolog:message(latex(error(Codes))) -->
   ['~s'-[Codes]].
+
+write_latex_codes(Stream, Codes):-
+  atom_codes(Atom1, Codes),
+  escape_underscores(Atom1, Atom2),
+  write(Stream, Atom2).
+
+write_latex_codes_nl(Stream, Codes):-
+  write_latex_codes(Stream, Codes),
+  nl(Stream).
 
 write_latex_documentclass(Stream, DocumentClass, Options1):-
   atomic_list_concat(Options1, ',', Options2),

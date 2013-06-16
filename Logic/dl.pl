@@ -15,8 +15,9 @@
 
 :- use_module(library(ordsets)).
 
-/*
-begin(latex)
+
+
+/*begin(latex)
 \begin{boxdefinition}[Cyclic terminology]
 \label{def:cyclic}
 $\mathcal{T}$ is cyclic iff there is an equality $X \equiv Y$ in $\mathcal{T}$
@@ -28,8 +29,7 @@ and $Z$ uses $Y$ in $\mathcal{T}$.
 $X$ directly uses $Y$ in $\mathcal{T}$ iff there is an equality $X \equiv Z$
 in $\mathcal{T}$ such that $Y$ is a subformula of $Z$.
 \end{boxdefinition}
-end(latex)
-*/
+end(latex)*/
 
 circular(T):-
   member(equality(X, _Y), T),
