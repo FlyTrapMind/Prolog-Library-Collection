@@ -41,7 +41,7 @@ Aleph is freely available for academic purposes.
 If you intend to use it for commercial purposes then
 please contact Ashwin Srinivasan first.
 
----+ Changes from Aleph5
+# Changes from Aleph5
 
   * Use =|library(settings)|= to cover the many settings that Aleph uses.
     This makes the settings module-aware and module-specific.
