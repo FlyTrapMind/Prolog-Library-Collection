@@ -84,6 +84,7 @@ We use the following abbreviations in this module:
 
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
+:- use_module(library(lists)).
 
 :- nodebug(file_ext).
 
@@ -240,16 +241,22 @@ create_file(NestedDir, Base, Type, File):-
 %! ) is det.
 
 directory_files(Directory, FileType, Entries):-
-  directory_files(Directory, Files),
-  bagof(
+  directory_files2(Directory, Files),
+  setoff(
     Entry,
     (
       member(File, Files),
-      file_name_type(_Base, FileType, File),
+      member(FileType0, [FileType, directory]),
+      file_name_type(_Base, FileType0, File),
       directory_file_path(Directory, File, Entry)
     ),
     Entries
   ).
+
+directory_files2(Directory, Files):-
+  directory_files(Directory, Files0),
+  once(select('.', Files0, Files1)),
+  once(select('..', Files1, Files)).
 
 file_extension_alternative(FromFile, ToExtension, ToFile):-
   file_name_extension(Base, _FromExtension, FromFile),
@@ -291,12 +298,19 @@ file_name(Path, Directory, Base, Ext):-
 %           prolog_file_type/2.
 % @arg Path The full name of a file.
 
+file_name_type(Path, directory, Path):-
+  exists_directory(Path),
+  !.
 file_name_type(Name, Type, Path):-
   nonvar(Name),
   nonvar(Type),
   !,
   user:prolog_file_type(Ext, Type),
   file_name_extension(Name, Ext, Path).
+file_name_type(Path, directory, Path):-
+  nonvar(Path),
+  exists_directory(Path),
+  !.
 file_name_type(Name, Type, Path):-
   nonvar(Path),
   !,

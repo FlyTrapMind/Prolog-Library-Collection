@@ -7,13 +7,11 @@
     latex_convert/1, % +File:atom
     latex_convert/2, % +File:atom
                      % +To:atom
-    latex_convert_directory/1, % +Directory:atom
-    latex_convert_directory/2 % +From:atom
-                              % +To:atom
+    latex_convert_directory/1 % +Directory:atom
   ]
 ).
 
-/** <module> LATEX
+/** <module> LATEX_EXT
 
 Predicates for handling LaTeX files.
 
@@ -163,7 +161,7 @@ latex_code_convert(Local, Directory):-
           ]),
           author('Wouter Beek'),
           document_attributes(['10pt',a4paper,draft,twocolumn,twoside]),
-          packages([amsthm,latexsym,listings,mdframed]),
+          packages([amsfonts,amsmath,amsthm,latexsym,listings,mdframed]),
           title(Title)
         ]
       )
@@ -288,16 +286,19 @@ latex_convert(Entry, To):-
     format(user_output, '~w', [Exception])
   ).
 
-latex_convert_directory(Directory):-
-  latex_convert_directory(Directory, Directory).
+latex_convert_file(File):-
+  exists_directory(File),
+  !,
+  latex_convert_directory(File).
+latex_convert_file(File):-
+  latex_convert(File).
 
-latex_convert_directory(From, To):-
+latex_convert_directory(From):-
   access_file(From, read),
   directory_files(From, latex_in, Entries),
-  access_file(To, write),
   forall(
     member(Entry, Entries),
-    latex_convert(Entry, To)
+    latex_convert_file(Entry)
   ).
 
 print_error([]):- !.
@@ -393,3 +394,4 @@ write_latex_header(Stream, Options):-
 
 write_latex_package(Stream, Package):-
   format(Stream, '\\usepackage{~w}\n', [Package]).
+
