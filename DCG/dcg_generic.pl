@@ -16,32 +16,26 @@
                     % -Codes:list(code)
     dcg_without_atom//2, % :End:dcg
                          % -Atom:atom
-
 % DEBUG %
     dcg_debug//0,
-
 % DOM %
     dcg_element//3, % ?Name:atom
                     % ?Attrs:list(nvpair)
                     % ?Content:dom
-
 % LIST %
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
-
 % OTHERS %
     conj//1, % ?Lang:atom
     disj//1, % ?Lang:atom
     language//1, % ?Lang:atom
     uncertainty//1, % ?Lang:atom
-
 % PEEK %
     dcg_peek//1, % ?X:code
     dcg_peek_atom//1, % -Atom:atom
     dcg_peek_char//1, % ?Char:char
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
-
 % PHRASE EXTENSION %
     dcg_phrase/2, % :DCGBody:dcg
                   % ?In
@@ -51,7 +45,12 @@
 
 % RE %
     dcg_plus//1, % +DCGBody:dcg
-    dcg_star//1 % +DCGBody:dcg
+    dcg_star//1, % +DCGBody:dcg
+% REPLACE $
+    dcg_replace//2, % +From:atom
+                    % +To:atom
+    dcg_replace//2 % +From:list(code)
+                   % +To:list(code)
   ]
 ).
 
@@ -66,9 +65,9 @@ Generic DCG clauses.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(generics(cowspeak)).
 :- use_module(html(html)).
+:- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 
-:- use_module(library(dcg/basics)).
 :- reexport(library(dcg/basics)).
 
 % ALL/UNTIL %
@@ -87,6 +86,9 @@ Generic DCG clauses.
 % RE %
 :- meta_predicate(dcg_plus(//,?,?)).
 :- meta_predicate(dcg_star(//,?,?)).
+% REPLACE %
+:- meta_predicate(dcg_replace(//,//,?,?)).
+:- meta_predicate(dcg_replace_(//,//,?,?)).
 
 
 
@@ -343,4 +345,38 @@ dcg_star(DCGBody) -->
   DCGBody,
   dcg_star(DCGBody).
 dcg_star(_DCGBody) --> [].
+
+
+
+% REPLACE %
+
+dcg_end([], []).
+
+%! dcg_replace(+From:atom, +To:atom) is det.
+%! dcg_replace(+From:list(code), +To:list(code)) is det.
+% @author http://stackoverflow.com/users/1613573/mat
+% @see http://stackoverflow.com/questions/6392725/using-a-prolog-dcg-to-find-replace-code-review
+
+dcg_replace(From, To) -->
+  {
+    atomic(From),
+    atomic(To),
+    atom_codes(From, FromCodes),
+    atom_codes(To, ToCodes)
+  },
+  !,
+  dcg_replace_(FromCodes, ToCodes).
+dcg_replace(From, To) -->
+  dcg_replace_(From, To).
+
+dcg_replace_(_From, _To) -->
+  dcg_end,
+  !.
+dcg_replace_(From, To), To -->
+  From,
+  !,
+  dcg_replace_(From, To).
+dcg_replace_(From, To), [X] -->
+  [X],
+  dcg_replace_(From, To).
 

@@ -78,9 +78,10 @@ Name(Value)
 representing a name-value pair.
 
 @author Wouter Beek
-@version 2011-2013/05
+@version 2011-2013/06
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
 :- use_module(generics(os_ext)).
@@ -535,7 +536,7 @@ stream_attribute(Stream, Separator, Attribute):-
   (
     attribute(Name, _Type, _Context, _Attributes, _Default)
   ->
-    c_convert(Value, C_Value),
+    dcg_phrase(c_convert, Value, C_Value),
     format(Stream, '~w="~w"~w', [Name, C_Value, Separator])
   ;
     true
