@@ -17,18 +17,18 @@ Conversions to make strings compatible with C syntax.
 
 % Replace the bell character with '\b'.
 c_convert, bell -->
-  backslash, b_lowercase, !,
+  "\b", !,
   c_convert.
 % Replace the line feed character with '\n'.
 c_convert, line_feed -->
-  backslash, n_lowercase, !,
+  "\n", !,
   c_convert.
 % Replace the horizontal tab character with '\t'.
 c_convert, horizontal_tab -->
-  backslash, t_lowercase, !,
+  "\t", !,
   c_convert.
 % Other characters do not need to be replaced.
 c_convert, [X] -->
-  [X],!,
+  [X], !,
   c_convert.
 c_convert --> [].

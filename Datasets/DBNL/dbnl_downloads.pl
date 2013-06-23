@@ -26,6 +26,7 @@ There are two typoes of download page:
 
 :- use_module(dbnl(dbnl_generic)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_html)).
 :- use_module(generics(uri_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).

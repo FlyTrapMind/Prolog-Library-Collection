@@ -51,6 +51,7 @@ S --> [niet, in, druk, verschenen].
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_dict)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_ordinal)).
 :- use_module(dcg(dcg_volume)).

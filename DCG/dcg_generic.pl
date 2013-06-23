@@ -18,23 +18,12 @@
                          % -Atom:atom
 % DEBUG %
     dcg_debug//0,
-% DOM %
-    dcg_element//3, % ?Name:atom
-                    % ?Attrs:list(nvpair)
-                    % ?Content:dom
 % LIST %
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
 % MULTIPLE OCCURRENCES %
     dcg_multi//2, % :DCGBody:dcg
                   % ?Occurrences:integer
-% NUMBERS %
-    exponent//0,
-% OTHERS %
-    conj//1, % ?Lang:atom
-    disj//1, % ?Lang:atom
-    language//1, % ?Lang:atom
-    uncertainty//1, % ?Lang:atom
 % PEEK %
     dcg_peek//1, % ?Code:code
     dcg_peek_atom//1, % -Atom:atom
@@ -84,7 +73,23 @@ and the positive integers. This is why we add the DCG rules:
 :- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 
-:- reexport(library(dcg/basics)).
+:- reexport(
+  library(dcg/basics),
+  [
+    alpha_to_lower//1,
+    atom//1,
+    blank//0,
+    blanks//0,
+    blanks_to_nl//0,
+    nonblank//1,
+    nonblanks//1,
+    prolog_var_name//1,
+    string//1,
+    string_without//2,
+    white//0,
+    whites//0
+  ]
+).
 
 % ALL/UNTIL %
 :- meta_predicate(dcg_until(//,-,+,-)).
@@ -136,6 +141,11 @@ dcg_word_atom(Word) -->
 
 % ALL/UNTIL %
 
+dcg_all([]) --> [].
+dcg_all([H|T]) -->
+  [H],
+  dcg_all(T).
+
 dcg_all_atom(Atom) -->
   {var(Atom)},
   dcg_all(Codes),
@@ -144,6 +154,22 @@ dcg_all_atom(Atom) -->
   {nonvar(Atom)},
   {atom_codes(Atom, Codes)},
   dcg_all(Codes).
+
+%! dcg_until(+End:dcg, -Codes:list(code))// is det.
+% Returns the codes that occur before =End= can be consumed.
+%
+% =End= is not an arbitrary DCG body, since disjunction does not play out
+% well (note that =End= occurs before and fater the =|-->|=).
+%
+% We enforce determinism after the first occurrence of =End= is consumed.
+%
+% @tbd There are problems with list elements: meta_predicate/1 cannot
+%      identity the modules for DCGs in this case.
+
+dcg_until(End, []), End --> End, !.
+dcg_until(End, [H|T]) -->
+  [H],
+  dcg_until(End, T).
 
 %! dcg_until_atom(+End:dcg, -Atom:atom)// is det.
 % @see dcg_until//2
@@ -157,6 +183,13 @@ dcg_until_atom(End, Atom) -->
   {atom_codes(Atom, Codes)},
   dcg_until(End, Codes).
 
+%! dcg_without(+End:dcg, -Codes:list(code))// is det.
+
+dcg_without(End, []) --> End, !.
+dcg_without(End, [H|T]) -->
+  [H],
+  dcg_without(End, T).
+
 dcg_without_atom(End, Atom) -->
   {var(Atom)},
   dcg_without(End, Codes),
@@ -165,39 +198,6 @@ dcg_without_atom(End, Atom) -->
   {nonvar(Atom)},
   {atom_codes(Atom, Codes)},
   dcg_without(End, Codes).
-
-dcg_all([]) -->
-  [].
-dcg_all([H|T]) -->
-  [H],
-  dcg_all(T).
-
-%! dcg_until(+End:dcg, -Codes:list(code))// is det.
-% Returns the codes that occur before =End= can be consumed.
-%
-% =End= is not an arbitrary DCG body, since disjunction does not play out
-% well (note that =End= occurs before and fater the =|-->|=).
-%
-% We enforce determinism after the first occurrence of =End= is consumed.
-%
-% @tbd There are problems with list elements: meta_predicate/1 cannot
-%      identity the modules for DCGs in this case.
-
-dcg_until(End, []), End -->
-  End,
-  !.
-dcg_until(End, [H|T]) -->
-  [H],
-  dcg_until(End, T).
-
-%! dcg_without(+End:dcg, -Codes:list(code))// is det.
-
-dcg_without(End, []) -->
-  End,
-  !.
-dcg_without(End, [H|T]) -->
-  [H],
-  dcg_without(End, T).
 
 
 
@@ -213,21 +213,6 @@ dcg_debug(Codes, []):-
   ),
   thread_create(cowspeak(Text), _ID, []),
   gtrace. %DEB
-
-
-
-% HTML %
-
-dcg_element(Name, MatchAttrs, Content) -->
-  {var(MatchAttrs)},
-  dcg_element(Name, [], Content).
-dcg_element(Name, MatchAttrs, Content) -->
-  {is_list(MatchAttrs)},
-  [element(Name, Attrs, Content)],
-  {maplist(html_attribute(Attrs), MatchAttrs)}.
-dcg_element(Name, MatchAttr, Content) -->
-  {\+ is_list(MatchAttr)},
-  dcg_element(Name, [MatchAttr], Content).
 
 
 
@@ -254,38 +239,6 @@ dcg_multi(DCGBody, N) -->
   dcg_multi(DCGBody, N_),
   {N is N_ + 1}.
 dcg_multi(_DCGBody, 0) --> [].
-
-
-
-% NUMBERS %
-
-exponent --> exponent_sign, dcg_plus(decimal_digit).
-
-
-
-% OTHERS %
-
-conj(en) --> "and".
-conj(nl) --> "en".
-conj(_Lang) --> comma.
-
-disj(nl) --> "of".
-
-language(nl) --> "Latijn".
-
-% Three dots uncertainty representation.
-uncertainty(_Lang) --> "...".
-% Question mark uncertainty representation.
-uncertainty(Lang) -->
-  opening_round_bracket,
-  uncertainty(Lang),
-  closing_round_bracket.
-uncertainty(Lang) -->
-  opening_square_bracket,
-  uncertainty(Lang),
-  closing_square_bracket.
-uncertainty(_Lang) --> question_mark.
-uncertainty(_Lang) --> "ca.".
 
 
 
@@ -345,12 +298,10 @@ dcg_phrase(DCGBody, In):-
   dcg_phrase(DCGBody, In, []).
 
 dcg_phrase(DCGBody, In, Out):-
-  is_list(In),
-  !,
+  is_list(In), !,
   phrase(DCGBody, In, Out).
 dcg_phrase(DCGBody, In1, Out):-
-  atomic(In1),
-  !,
+  atomic(In1), !,
   atom_codes(In1, In2),
   dcg_phrase(DCGBody, In2, Out).
 
@@ -399,11 +350,9 @@ dcg_end([], []).
 % @see http://stackoverflow.com/questions/6392725/using-a-prolog-dcg-to-find-replace-code-review
 
 dcg_replace(_From, _To) -->
-  dcg_end,
-  !.
+  dcg_end, !.
 dcg_replace(From, To), To -->
-  From,
-  !,
+  From, !,
   dcg_replace(From, To).
 dcg_replace(From, To), [X] -->
   [X],

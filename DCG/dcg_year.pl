@@ -71,16 +71,11 @@ is immaterial to me, since both should be formalized proper.)
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_century)).
+:- use_module(dcg(dcg_dict)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(dcg/basics)).
 
 
-
-pre(en) --> "after".
-pre(en) --> "before".
-pre(nl) --> "na".
-pre(nl) --> "voor".
-pre(nl) --> "vóór".
 
 %! year(?Languag:atom, Year:oneof([integer,pair(integer)]))// is nondet.
 

@@ -3,6 +3,7 @@
   [
     binary_digit//0,
     decimal_digit//0,
+    exponent//0,
     exponent_sign//0,
     hexadecimal_digit//0,
     octal_digit//0
@@ -18,6 +19,7 @@ DCGs for cardinal numbers.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
 
 :- reexport(
   library(dcg/basics),
@@ -41,6 +43,10 @@ binary_digit --> one.
 decimal_digit --> octal_digit.
 decimal_digit --> eight.
 decimal_digit --> nine.
+
+exponent -->
+  exponent_sign,
+  dcg_plus(decimal_digit).
 
 exponent_sign --> e.
 

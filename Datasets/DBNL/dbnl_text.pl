@@ -72,6 +72,7 @@ http://www.dbnl.org/tekst/ferr002atma01_01/ferr002atma01_01_0006.php
 :- use_module(dbnl(dbnl_text_left)).
 :- use_module(dbnl(dbnl_toc)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_html)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 :- use_module(rdf(rdf_build)).
@@ -279,7 +280,7 @@ dbnl_text0(Graph, Text) -->
     [
       '* Van dit werk zijn alleen scans beschikbaar. Voor een snelle oriëntatie is hieronder een viewer beschikbaar.',
       '* Bij deze tekst wordt ook de mogelijkheid geboden om de originele pagina\'s te bekijken via de knop ‘origineel’ naast het paginanummer.'
-    ]
+    ] %'
   )},
   !,
   dbnl_text0(Graph, Text).

@@ -11,11 +11,10 @@
 DCGs for ordinal numbers.
 
 @author Wouter Beek
-@version 2013/05
+@version 2013/05-2013/06
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_cardinal)).
 
 
 
@@ -26,7 +25,7 @@ ordinal(Lang, Ordinal) -->
   integer(Ordinal),
   ordinal_noun(Lang).
 
-ordinal_noun(de) --> dot.
+ordinal_noun(de) --> ".".
 ordinal_noun(nl) --> "e".
 ordinal_noun(nl) --> "de".
 ordinal_noun(nl) --> "ste".

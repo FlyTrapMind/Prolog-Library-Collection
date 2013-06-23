@@ -1,6 +1,9 @@
 :- module(
   dcg_html,
   [
+    dcg_element//3, % ?Name:atom
+                    % ?Attrs:list(nvpair)
+                    % ?Content:dom
     html_convert//1 % -Converted:list(code)
   ]
 ).
@@ -14,6 +17,17 @@ Convert HTML strings.
 */
 
 
+
+dcg_element(Name, MatchAttrs, Content) -->
+  {var(MatchAttrs)},
+  dcg_element(Name, [], Content).
+dcg_element(Name, MatchAttrs, Content) -->
+  {is_list(MatchAttrs)},
+  [element(Name, Attrs, Content)],
+  {maplist(html_attribute(Attrs), MatchAttrs)}.
+dcg_element(Name, MatchAttr, Content) -->
+  {\+ is_list(MatchAttr)},
+  dcg_element(Name, [MatchAttr], Content).
 
 html_convert([]) --> [].
 html_convert([H|T]) -->

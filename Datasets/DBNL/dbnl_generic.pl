@@ -338,16 +338,15 @@ dbnl_year0(Lang, Year1-Year2) -->
 dbnl_year0(Lang, _Year) -->
   "z.j.",
   (blanks, uncertainty(Lang) ; "").
-dbnl_year0(_Lang, _Year) -->
-  question_mark.
+dbnl_year0(_Lang, _Year) --> "?".
 dbnl_year0(_Lang, Year1-Year2) -->
-  year(Lang, Year1), comma, blank,
+  year(Lang, Year1), ",", blank,
   year(Lang, Year2),
-  opening_square_bracket, integer(_), closing_square_bracket.
+  opening_bracket, integer(_), closing_bracket.
 dbnl_year0(Lang, Year1-Year2) -->
   integer(Year1), blanks, conj(Lang), blanks, integer(Year2).
 dbnl_year0(Lang, Year1-Year3) -->
-  integer(Year1), hyphen_minus, integer(_Year2),
+  integer(Year1), "-", integer(_Year2),
   blanks, conj(Lang), blanks,
   integer(Year3).
 % @tbd Not yet parsed. What is the implication of status 'written' for the

@@ -46,4 +46,3 @@ page_word(nl) --> "P".
 page_word(nl) --> "p".
 page_word(nl) --> "Pagina".
 page_word(nl) --> "pagina".
-

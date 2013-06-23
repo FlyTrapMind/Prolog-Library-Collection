@@ -62,6 +62,7 @@ http://www.dbnl.org/titels/titel.php?id=ferr002atma01
 :- use_module(dbnl(dbnl_primary)).
 :- use_module(dbnl(dbnl_secondary_summary)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_html)).
 :- use_module(generics(atom_ext)).
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).

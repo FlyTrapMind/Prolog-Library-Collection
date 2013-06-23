@@ -34,15 +34,8 @@ holders([H]) --> last_holder(H).
 middle_holder(H) -->
   dcg_until_atom((blank, separator), H),
   blank, separator, blank.
-%middle_holder(H) --> dcg_until_atom(, H), blank, ampersand, blank.
 
 last_holder(H) --> dcg_all_atom(H).
 
-% Separators:
-%   * " /"
-%   * " &"
-separator -->
-  forward_slash.
-separator -->
-  ampersand.
-
+separator --> "/"
+separator --> "&"

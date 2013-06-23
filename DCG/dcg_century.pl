@@ -17,6 +17,7 @@ DCGs for parsing/generating century information.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_dict)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_ordinal)).
 :- use_module(library(dcg/basics)).
@@ -58,6 +59,5 @@ century_interval0(Lang, Year1-Year2) -->
 
 century_noun(nl) --> "eeuw".
 
-century_separator --> forward_slash.
-century_separator --> hyphen_minus.
-
+century_separator --> "/".
+century_separator --> "-".
