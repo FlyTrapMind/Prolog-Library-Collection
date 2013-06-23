@@ -73,7 +73,7 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
    When I add it RDF/XML files load 0 triples!
 
 @author Wouter Beek
-@version 2013/04
+@version 2013/04, 2013/06
 */
 
 :- use_module(generics(atom_ext)).
@@ -163,7 +163,7 @@ run_test(Test):-
   run_test0(Test, Status),
 
   % Write the status to the terminal.
-  switch(Status-Color, ['FAIL'-red, 'PASS'-green], black),
+  member_default(Status-Color, ['FAIL'-red, 'PASS'-green], _Default-black),
   ansi_format([bold, fg(Color)], 'STATUS: ~w\n\n', [Status]).
 
 run_test0(Test, Status):-

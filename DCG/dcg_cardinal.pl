@@ -3,6 +3,7 @@
   [
     binary_digit//0,
     decimal_digit//0,
+    exponent_sign//0,
     hexadecimal_digit//0,
     octal_digit//0
   ]
@@ -12,6 +13,8 @@
 
 DCGs for cardinal numbers.
 
+@author Wouter Beek
+@version 2013/06
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -32,13 +35,14 @@ DCGs for cardinal numbers.
 
 
 
-
 binary_digit --> zero.
 binary_digit --> one.
 
 decimal_digit --> octal_digit.
 decimal_digit --> eight.
 decimal_digit --> nine.
+
+exponent_sign --> e.
 
 hexadecimal_digit --> decimal_digit.
 hexadecimal_digit --> a.
@@ -55,4 +59,3 @@ octal_digit --> four.
 octal_digit --> five.
 octal_digit --> six.
 octal_digit --> seven.
-

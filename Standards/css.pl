@@ -12,39 +12,27 @@
 Support for Cascading Style Sheets.
 
 @author Wouter Beek
-@version 2012/10, 2013/02
+@version 2012/10, 2013/02, 2013/06
 */
 
-:- use_module(generics(parse_ext)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_generic)).
 
 
 
 % PARSER %
 
-escape(C1-C0):-
-  parse_char(backslash, C1-C2),
-  parse_char(backslash, C2-C3),
-  parse_re([q(1/6)], hexadecimal_digit, C3-C4),
-  parse_re(
-    [q('?')],
-    [carriage_return, form_feed, horizontal_tab, line_feed, space],
-    C4-C0
+css_escape -->
+  "\\",
+  dcg_plus(hexadecimal_digit),
+  dcg_questionmark(
+    (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space)
   ).
 
-ident(C1-C0):-
-  parse_re([q('?')], dash, C1-C2),
-  parse_char(nmstart, C2-C3),
-  parse_re([q('*')], nmchar, C3-C0).
-
-nmstart(C1-C0):-
-  parse_char(underscore, C1-C0).
-nmstart(C1-C0):-
-  parse_char(letter_lowercase, C1-C0).
-%nmstart(C1-C0):-
-%  nonascii(C1-C0).
-nmstart(C1-C0):-
-  escape(C1-C0).
-
+nmstart --> underscore.
+nmstart --> letter_lowercase.
+nmstart --> css_escape.
 
 
 

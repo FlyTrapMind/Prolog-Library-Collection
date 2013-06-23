@@ -14,7 +14,6 @@
 :- use_module(generics(atom_ext)).
 :- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
-%:- use_module(standards(ascii)).
 
 :- dynamic(doc(_Doc)).
 :- dynamic(word0(_Word, _Sum, _Docs)).
@@ -88,8 +87,7 @@ load_examples(Stream):-
   !.
 load_examples(Stream):-
   read_line_to_codes(Stream, Line),
-  parse_char(SpaceCode, 'SP', 'White space'),
-  split_codes(Line, [SpaceCode], ListOfCodes),
+  split_codes(Line, [" "], ListOfCodes),
   flag(ex, Examples, Examples + 1),
   format(atom(Doc), 'd~w', [Examples]),
   assert(doc(Doc)),

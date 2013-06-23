@@ -13,7 +13,9 @@
     if_then_else/3, % :If
                     % :Then
                     % :Else
-    switch/3, % ?Map:pair
+    switch/2, % +Value
+              % +Maps:list(pair)
+    switch/3, % +Value
               % +Maps:list(pair)
               % +Default
     unless/2, % :Unless
@@ -128,6 +130,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(run_on_sublists(+,1)).
 :- meta_predicate(setoff(+,0,-)).
 :- meta_predicate(setoff_alt(+,0,-)).
+:- meta_predicate(switch(+,:,+)).
 :- meta_predicate(unless(0,0)).
 :- meta_predicate(user_interaction(+,:,+,+)).
 :- meta_predicate(xor(0,0)).
@@ -184,12 +187,20 @@ if_then_else(If, Then, Else):-
     call(Else)
   ).
 
-%! switch(?Map:pair, +Maps:list(pair), +Default) is det.
+%! switch(+Value, +Maps:list(pair)) is det.
 
-switch(X-Y, Maps, _Default):-
-  memberchk(X-Y, Maps),
-  !.
-switch(_X-Default, _Maps, Default).
+switch(Value, Maps):-
+  switch(Value, Maps, fail).
+
+%! switch(+Value, +Maps:list(pair), +Default) is det.
+
+switch(Value, Maps, _Default):-
+  member(Value-Goal, Maps), !,
+  % Make sure the variables in the goal are bound outside the switch call.
+  call(Goal).
+switch(_Value, _Maps, Default):-
+  % Make sure the variables in the goal are bound outside the switch call.
+  call(Default).
 
 unless(Unless, Do):-
   (

@@ -6,19 +6,16 @@
                    % -SVG:dom
     stream_to_svg/2, % +Stream:stream
                      % -SVG:dom
-
 % GENERATING
     svg_head/2, % +Size:size
                 % -Head:list
     svg_head/3, % +Width:number
                 % +Height:number
                 % -Head:list
-
 % PARSING
     parse_attributes_svg/3, % +Context:oneof([circle,line])
                             % +Attributes:list(nvpair)
                             % -ParsedAttributes:list(nvassignment)
-
 % SPECIFIC SHAPES
     circle/6, % +Options:list(nvpair)
               % +X0:number
@@ -33,11 +30,8 @@
             % +Y2:number
             % +Tooltip:atom
             % -Line:element
-
-% SVG COLOR SPACE
-    svg_color/2, % ?Color:atom
-                 % ?RGB:rgb
-    svg_colors/1 % -Colors:list(atom)
+% COLORS
+  svg_colors/1 % -Colors:list(atom)
   ]
 ).
 
@@ -48,17 +42,19 @@ the SVG standards.
 
 # Prolog datatypes
 
-## rgb
+## RGB
 
 A compound term =rgb(Red, Green, Blue)=, where the three color parts are
 represent by an integer between 0 and 255 (inclusive).
 
 @author Wouter Beek
-@version 2012/10, 2013/01-2013/05
+@version 2012/10, 2013/01-2013/06
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(parse_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(standards(markup)).
 :- use_module(xml(xml_namespace)).
@@ -108,11 +104,11 @@ attribute0(cy, coordinate, [circle], '0').
 
 attribute0(fill, paint, [circle], black).
 
-attribute0(r, length_svg, [circle]).
+attribute0(r, svg_length, [circle]).
 
 attribute0(stroke, paint, [circle, line], none).
 
-attribute0('stroke-width', length_svg, [circle, line]).
+attribute0('stroke-width', svg_length, [circle, line]).
 
 attribute0(x1, coordinate, [line], '0').
 attribute0(x2, coordinate, [line], '0').
@@ -143,186 +139,115 @@ svg_head(Width, Height, [height=Height_cm, width=Width_cm]):-
 
 % PARSING %
 
-char0([X | C0]-C0):-
-  atom_codes(X, [Y]),
-  % [comma, round_bracket]
-  \+ memberchk(Y, [40, 41, 44]).
+char0 -->
+  [X],
+  % [comma, round_brackets]
+  {\+ member(X, [40, 41, 44])}.
 
 % SVG color.
-color_svg(C1-C0):-
-  parse_char(number_sign, C1-C2),
-  hexdigit_mod_3(C2-C0).
-color_svg(C1-C0):-
-  parse_atom(rgb, C1-C2),
-  parse_char(opening_round_bracket, C2-C3),
-  parse_re([q('?')], wsp, C3-C4),
-  integer_svg(C4-C5),
-  comma0(C5-C6),
-  integer_svg(C6-C7),
-  comma0(C7-C8),
-  integer_svg(C8-C9),
-  parse_re([q('?')], wsp, C9-C10),
-  parse_char(closing_round_bracket, C10-C0).
-color_svg(C1-C0):-
-  parse_atom(rgb, C1-C2),
-  parse_char(opening_round_bracket, C2-C3),
-  parse_re([q('?')], wsp, C3-C4),
-  integer_svg(C4-C5),
-  parse_char(percent_sign, C5-C6),
-  comma0(C6-C7),
-  integer_svg(C7-C8),
-  parse_char(percent_sign, C8-C9),
-  comma0(C9-C10),
-  integer_svg(C10-C11),
-  parse_char(percent_sign, C11-C12),
-  parse_re([q('?')], wsp, C12-C13),
-  parse_char(closing_round_bracket, C13-C0).
-color_svg(C1-C0):-
-  color-keyword(C1-C0).
+svg_color -->
+  number_sign,
+  hexdigit_mod_3.
+svg_color -->
+  "rgb(", (wsp ; ""),
+    svg_integer,
+  comma0,
+    svg_integer,
+  comma0,
+    svg_integer,
+  (wsp ; ""), ")".
+svg_color -->
+  "rgb(", (wsp ; ""),
+    svg_integer, "%",
+  comma0,
+    svg_integer, "%",
+  comma0,
+    svg_integer, "%",
+  (wsp ; ""), ")".
+svg_color --> color_keyword.
 
 % SVG color names defined in the specification.
-color-keyword(C1-C0):-
-  svg_color(Color),
-  atom_codes(Color, C2),
-  append(C2, C0, C1).
+color_keyword -->
+  {
+    svg_color0(Color),
+    atom_codes(Color, Codes)
+  },
+  Codes.
 
 % Comma, respecting whitespace.
-comma0(C1-C0):-
-  parse_re([q('?')], wsp, C1-C2),
-  parse_char(comma, C2-C3),
-  parse_re([q('?')], wsp, C3-C0).
+comma0 --> (wsp ; ""), comma, (wsp ; "").
 
-comma_wsp(C1-C0):-
-  wsp(C1-C0).
-comma_wsp(C1-C0):-
-  wsp(C1-C0),
-  parse_char(comma, C1-C0),
-  parse_re([q('?')], wsp, C1-C0).
-comma_wsp(C1-C0):-
-  parse_char(comma, C1-C0),
-  parse_re([q('?')], wsp, C1-C0).
+comma_wsp --> wsp.
+comma_wsp --> wsp, comma, (wsp ; "").
+comma_wsp --> comma, (wsp ; "").
 
-comma_wsp_numberZ(C1-C0):-
-  comma_wsp(C1-C2),
-  number0(C2-C0).
-comma_wsp_numberZ(C1-C0):-
-  comma_wsp_numberZ(C1-C2),
-  comma_wsp(C2-C3),
-  number0(C3-C0).
+comma_wsp_numberZ -->
+  comma_wsp,
+  number0.
+comma_wsp_numberZ -->
+  comma_wsp_numberZ,
+  comma_wsp,
+  number0.
 
 % Coordiantes in SVG.
-coordinate(C1-C0):-
-  length_svg(C1-C0).
+coordinate --> svg_length.
 
 % Functional notation for an IRI.
-funciri(C1-C0):-
-  parse_atom(url, C1-C2),
-  parse_char(opening_round_bracket, C2-C3),
-  iri(C3-C4),
-  parse_char(closing_round_bracket, C4-C0).
+funciri --> "url(", iri, ")".
 
-hexdigit_mod_3(C1-C0):-
-  parse_re([q(3)], hexadecimal_digit, C1-C0).
-hexdigit_mod_3(C1-C0):-
-  parse_re([q(3)], hexadecimal_digit, C1-C2),
-  hexdigit_mod_3(C2-C0).
+hexdigit_mod_3 --> dcg_multi(hexadecimal_digit, 3), (hexdigit_mod_3 ; "").
 
 % ICC color specification. References a =|color-profile|= element, and one
 % or more color component values.
 
-icccolor(C1-C0):-
-  parse_atom(icc, C1-C2),
-  parse_char(hyphen, C2-C3),
-  parse_atom(color, C3-C4),
-  parse_char(opening_round_bracket, C4-C5),
-  name_svg(C5-C6),
-  comma_wsp_numberZ(C6-C7),
-  parse_char(closing_round_bracket, C7-C0).
+icccolor --> "icc-color(", name_svg, comma_wsp_numberZ, ")".
 
 % Signed integers in SVG.
-integer_svg(C1-C0):-
-  parse_re([q('?')], sign, C1-C2),
-  parse_re([q('+')], decimal_digit, C2-C0).
+svg_integer --> (sign ; ""), dcg_plus(decimal_digit).
 
 % @tbd Check whether this is a reliable check for IRIs.
-iri(C1-C0):-
-  append(_, C0, C1).
+iri --> string(_).
 
-length_svg(C1-C0):-
-  number0(C1-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(cm, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(em, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(ex, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(in, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(mm, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(pc, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(pt, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_atom(px, C2-C0).
-length_svg(C1-C0):-
-  number0(C1-C2),
-  parse_char(percent_sign, C2-C0).
+svg_length --> number0.
+svg_length --> number0, svg_length_measure.
+
+svg_length_measure --> "%".
+svg_length_measure --> "cm".
+svg_length_measure --> "em".
+svg_length_measure --> "ex".
+svg_length_measure --> "in".
+svg_length_measure --> "mm".
+svg_length_measure --> "pc".
+svg_length_measure --> "pt".
+svg_length_measure --> "px".
 
 % SVG names are sequences of characters not containing ',', '(', ')'.
-name_svg(C1-C0):-
-  char0(C1-C0).
-name_svg(C1-C0):-
-  char0(C1-C2),
-  name_svg(C2-C0).
+name_svg --> char0.
+name_svg --> char0, name_svg.
 
 % Real numbers in SVG.
-number0(C1-C0):-
-  integer_svg(C1-C2),
-  parse_re([q(1)], exponent, C2-C0).
-number0(C1-C0):-
-  parse_re([q('?')], sign, C1-C2),
-  parse_re([q('?')], decimal_digit, C2-C3),
-  parse_char(dot, C3-C4),
-  parse_re([q('+')], decimal_digit, C4-C5),
-  parse_re([q('?')], exponent, C5-C0).
+number0 --> svg_integer, exponent.
+number0 -->
+  (sign ; ""),
+  (decimal_digit ; ""),
+  ".",
+  (decimal_digit ; ""),
+  (exponent ; "").
 
-paint(C1-C0):-
-  paint0(C1-C0).
-paint(C1-C0):-
-  funciri(C1-C2),
-  parse_re([q('?')], paint0, C2-C0).
-paint(C1-C0):-
-  parse_atom(inherit, C1-C0).
+paint --> paint0.
+paint --> funciri, (paint0 ; "").
+paint --> "inherit".
 
-paint0(C1-C0):-
-  parse_atom(none, C1-C0).
-paint0(C1-C0):-
-  parse_atom(currentColor, C1-C0).
-paint0(C1-C0):-
-  color_svg(C1-C0).
-paint0(C1-C0):-
-  color_svg(C1-C2),
-  icccolor(C2-C0).
+paint0 --> "none".
+paint0 --> "currentColor".
+paint0 --> svg_color.
+paint0 --> svg_color, icccolor.
 
 % Whitespace in SVG:
-wsp(C1-C0):-
-  parse_char(carriage_return, C1-C0).
-wsp(C1-C0):-
-  parse_char(horizontal_tab, C1-C0).
-wsp(C1-C0):-
-  parse_char(line_feed, C1-C0).
-wsp(C1-C0):-
-  parse_char(space, C1-C0).
+wsp --> carriage_return.
+wsp --> horizontal_tab.
+wsp --> line_feed.
+wsp --> space.
 
 %! parse_attribute(
 %!   +Context:oneof([circle,line]),
@@ -371,161 +296,161 @@ line(Options, X1, Y1, X2, Y2, Tooltip, Element):-
 
 % SVG COLOR SPACE %
 
-% svg_color(?Color:name) is nondet.
-% @see color/2
+% svg_color0(?Color:name) is nondet.
+% @see svg_color0/2
 
-svg_color(Color):-
-  svg_color(Color, _RGB).
+svg_color0(Color):-
+  svg_color0(Color, _RGB).
 
 %! svg_color(?Name:atom, ?RGB:rgb) is nondet.
 
-svg_color(aliceblue, rgb(240, 248, 255)).
-svg_color(antiquewhite, rgb(250, 235, 215)).
-svg_color(aqua, rgb(0, 255, 255)).
-svg_color(aquamarine, rgb(127, 255, 212)).
-svg_color(azure, rgb(240, 255, 255)).
-svg_color(beige, rgb(245, 245, 220)).
-svg_color(bisque, rgb(255, 228, 196)).
-svg_color(black, rgb(0, 0, 0)).
-svg_color(blanchedalmond, rgb(255, 235, 205)).
-svg_color(blue, rgb(0, 0, 255)).
-svg_color(blueviolet, rgb(138, 43, 226)).
-svg_color(brown, rgb(165, 42, 42)).
-svg_color(burlywood, rgb(222, 184, 135)).
-svg_color(cadetblue, rgb(95, 158, 160)).
-svg_color(chartreuse, rgb(127, 255, 0)).
-svg_color(chocolate, rgb(210, 105, 30)).
-svg_color(coral, rgb(255, 127, 80)).
-svg_color(cornflowerblue, rgb(100, 149, 237)).
-svg_color(cornsilk, rgb(255, 248, 220)).
-svg_color(crimson, rgb(220, 20, 60)).
-svg_color(cyan, rgb(0, 255, 255)).
-svg_color(darkblue, rgb(0, 0, 139)).
-svg_color(darkcyan, rgb(0, 139, 139)).
-svg_color(darkgoldenrod, rgb(184, 134, 11)).
-svg_color(darkgray, rgb(169, 169, 169)).
-svg_color(darkgreen, rgb(0, 100, 0)).
-svg_color(darkgrey, rgb(169, 169, 169)).
-svg_color(darkkhaki, rgb(189, 183, 107)).
-svg_color(darkmagenta, rgb(139, 0, 139)).
-svg_color(darkolivegreen, rgb(85, 107, 47)).
-svg_color(darkorange, rgb(255, 140, 0)).
-svg_color(darkorchid, rgb(153, 50, 204)).
-svg_color(darkred, rgb(139, 0, 0)).
-svg_color(darksalmon, rgb(233, 150, 122)).
-svg_color(darkseagreen, rgb(143, 188, 143)).
-svg_color(darkslateblue, rgb(72, 61, 139)).
-svg_color(darkslategray, rgb(47, 79, 79)).
-svg_color(darkslategrey, rgb(47, 79, 79)).
-svg_color(darkturquoise, rgb(0, 206, 209)).
-svg_color(darkviolet, rgb(148, 0, 211)).
-svg_color(deeppink, rgb(255, 20, 147)).
-svg_color(deepskyblue, rgb(0, 191, 255)).
-svg_color(dimgray, rgb(105, 105, 105)).
-svg_color(dimgrey, rgb(105, 105, 105)).
-svg_color(dodgerblue, rgb(30, 144, 255)).
-svg_color(firebrick, rgb(178, 34, 34)).
-svg_color(floralwhite, rgb(255, 250, 240)).
-svg_color(forestgreen, rgb(34, 139, 34)).
-svg_color(fuchsia, rgb(255, 0, 255)).
-svg_color(gainsboro, rgb(220, 220, 220)).
-svg_color(ghostwhite, rgb(248, 248, 255)).
-svg_color(gold, rgb(255, 215, 0)).
-svg_color(goldenrod, rgb(218, 165, 32)).
-svg_color(gray, rgb(128, 128, 128)).
-svg_color(grey, rgb(128, 128, 128)).
-svg_color(green, rgb(0, 128, 0)).
-svg_color(greenyellow, rgb(173, 255, 47)).
-svg_color(honeydew, rgb(240, 255, 240)).
-svg_color(hotpink, rgb(255, 105, 180)).
-svg_color(indianred, rgb(205, 92, 92)).
-svg_color(indigo, rgb(75, 0, 130)).
-svg_color(ivory, rgb(255, 255, 240)).
-svg_color(khaki, rgb(240, 230, 140)).
-svg_color(lavender, rgb(230, 230, 250)).
-svg_color(lavenderblush, rgb(255, 240, 245)).
-svg_color(lawngreen, rgb(124, 252, 0)).
-svg_color(lemonchiffon, rgb(255, 250, 205)).
-svg_color(lightblue, rgb(173, 216, 230)).
-svg_color(lightcoral, rgb(240, 128, 128)).
-svg_color(lightcyan, rgb(224, 255, 255)).
-svg_color(lightgoldenrodyellow, rgb(250, 250, 210)).
-svg_color(lightgray, rgb(211, 211, 211)).
-svg_color(lightgreen, rgb(144, 238, 144)).
-svg_color(lightgrey, rgb(211, 211, 211)).
-svg_color(lightpink, rgb(255, 182, 193)).
-svg_color(lightsalmon, rgb(255, 160, 122)).
-svg_color(lightseagreen, rgb(32, 178, 170)).
-svg_color(lightskyblue, rgb(135, 206, 250)).
-svg_color(lightslategray, rgb(119, 136, 153)).
-svg_color(lightslategrey, rgb(119, 136, 153)).
-svg_color(lightsteelblue, rgb(176, 196, 222)).
-svg_color(lightyellow, rgb(255, 255, 224)).
-svg_color(lime, rgb(0, 255, 0)).
-svg_color(limegreen, rgb(50, 205, 50)).
-svg_color(linen, rgb(250, 240, 230)).
-svg_color(magenta, rgb(255, 0, 255)).
-svg_color(maroon, rgb(128, 0, 0)).
-svg_color(mediumaquamarine, rgb(102, 205, 170)).
-svg_color(mediumblue, rgb(0, 0, 205)).
-svg_color(mediumorchid, rgb(186, 85, 211)).
-svg_color(mediumpurple, rgb(147, 112, 219)).
-svg_color(mediumseagreen, rgb(60, 179, 113)).
-svg_color(mediumslateblue, rgb(123, 104, 238)).
-svg_color(mediumspringgreen, rgb(0, 250, 154)).
-svg_color(mediumturquoise, rgb(72, 209, 204)).
-svg_color(mediumvioletred, rgb(199, 21, 133)).
-svg_color(midnightblue, rgb(25, 25, 112)).
-svg_color(mintcream, rgb(245, 255, 250)).
-svg_color(mistyrose, rgb(255, 228, 225)).
-svg_color(moccasin, rgb(255, 228, 181)).
-svg_color(navajowhite, rgb(255, 222, 173)).
-svg_color(navy, rgb(0, 0, 128)).
-svg_color(oldlace, rgb(253, 245, 230)).
-svg_color(olive, rgb(128, 128, 0)).
-svg_color(olivedrab, rgb(107, 142, 35)).
-svg_color(orange, rgb(255, 165, 0)).
-svg_color(orangered, rgb(255, 69, 0)).
-svg_color(orchid, rgb(218, 112, 214)).
-svg_color(palegoldenrod, rgb(238, 232, 170)).
-svg_color(palegreen, rgb(152, 251, 152)).
-svg_color(paleturquoise, rgb(175, 238, 238)).
-svg_color(palevioletred, rgb(219, 112, 147)).
-svg_color(papayawhip, rgb(255, 239, 213)).
-svg_color(peachpuff, rgb(255, 218, 185)).
-svg_color(peru, rgb(205, 133, 63)).
-svg_color(pink, rgb(255, 192, 203)).
-svg_color(plum, rgb(221, 160, 221)).
-svg_color(powderblue, rgb(176, 224, 230)).
-svg_color(purple, rgb(128, 0, 128)).
-svg_color(red, rgb(255, 0, 0)).
-svg_color(rosybrown, rgb(188, 143, 143)).
-svg_color(royalblue, rgb(65, 105, 225)).
-svg_color(saddlebrown, rgb(139, 69, 19)).
-svg_color(salmon, rgb(250, 128, 114)).
-svg_color(sandybrown, rgb(244, 164, 96)).
-svg_color(seagreen, rgb(46, 139, 87)).
-svg_color(seashell, rgb(255, 245, 238)).
-svg_color(sienna, rgb(160, 82, 45)).
-svg_color(silver, rgb(192, 192, 192)).
-svg_color(skyblue, rgb(135, 206, 235)).
-svg_color(slateblue, rgb(106, 90, 205)).
-svg_color(slategray, rgb(112, 128, 144)).
-svg_color(slategrey, rgb(112, 128, 144)).
-svg_color(snow, rgb(255, 250, 250)).
-svg_color(springgreen, rgb(0, 255, 127)).
-svg_color(steelblue, rgb(70, 130, 180)).
-svg_color(tan, rgb(210, 180, 140)).
-svg_color(teal, rgb(0, 128, 128)).
-svg_color(thistle, rgb(216, 191, 216)).
-svg_color(tomato, rgb(255, 99, 71)).
-svg_color(turquoise, rgb(64, 224, 208)).
-svg_color(violet, rgb(238, 130, 238)).
-svg_color(wheat, rgb(245, 222, 179)).
-svg_color(white, rgb(255, 255, 255)).
-svg_color(whitesmoke, rgb(245, 245, 245)).
-svg_color(yellow, rgb(255, 255, 0)).
-svg_color(yellowgreen, rgb(154, 205, 50)).
+svg_color0(aliceblue, rgb(240, 248, 255)).
+svg_color0(antiquewhite, rgb(250, 235, 215)).
+svg_color0(aqua, rgb(0, 255, 255)).
+svg_color0(aquamarine, rgb(127, 255, 212)).
+svg_color0(azure, rgb(240, 255, 255)).
+svg_color0(beige, rgb(245, 245, 220)).
+svg_color0(bisque, rgb(255, 228, 196)).
+svg_color0(black, rgb(0, 0, 0)).
+svg_color0(blanchedalmond, rgb(255, 235, 205)).
+svg_color0(blue, rgb(0, 0, 255)).
+svg_color0(blueviolet, rgb(138, 43, 226)).
+svg_color0(brown, rgb(165, 42, 42)).
+svg_color0(burlywood, rgb(222, 184, 135)).
+svg_color0(cadetblue, rgb(95, 158, 160)).
+svg_color0(chartreuse, rgb(127, 255, 0)).
+svg_color0(chocolate, rgb(210, 105, 30)).
+svg_color0(coral, rgb(255, 127, 80)).
+svg_color0(cornflowerblue, rgb(100, 149, 237)).
+svg_color0(cornsilk, rgb(255, 248, 220)).
+svg_color0(crimson, rgb(220, 20, 60)).
+svg_color0(cyan, rgb(0, 255, 255)).
+svg_color0(darkblue, rgb(0, 0, 139)).
+svg_color0(darkcyan, rgb(0, 139, 139)).
+svg_color0(darkgoldenrod, rgb(184, 134, 11)).
+svg_color0(darkgray, rgb(169, 169, 169)).
+svg_color0(darkgreen, rgb(0, 100, 0)).
+svg_color0(darkgrey, rgb(169, 169, 169)).
+svg_color0(darkkhaki, rgb(189, 183, 107)).
+svg_color0(darkmagenta, rgb(139, 0, 139)).
+svg_color0(darkolivegreen, rgb(85, 107, 47)).
+svg_color0(darkorange, rgb(255, 140, 0)).
+svg_color0(darkorchid, rgb(153, 50, 204)).
+svg_color0(darkred, rgb(139, 0, 0)).
+svg_color0(darksalmon, rgb(233, 150, 122)).
+svg_color0(darkseagreen, rgb(143, 188, 143)).
+svg_color0(darkslateblue, rgb(72, 61, 139)).
+svg_color0(darkslategray, rgb(47, 79, 79)).
+svg_color0(darkslategrey, rgb(47, 79, 79)).
+svg_color0(darkturquoise, rgb(0, 206, 209)).
+svg_color0(darkviolet, rgb(148, 0, 211)).
+svg_color0(deeppink, rgb(255, 20, 147)).
+svg_color0(deepskyblue, rgb(0, 191, 255)).
+svg_color0(dimgray, rgb(105, 105, 105)).
+svg_color0(dimgrey, rgb(105, 105, 105)).
+svg_color0(dodgerblue, rgb(30, 144, 255)).
+svg_color0(firebrick, rgb(178, 34, 34)).
+svg_color0(floralwhite, rgb(255, 250, 240)).
+svg_color0(forestgreen, rgb(34, 139, 34)).
+svg_color0(fuchsia, rgb(255, 0, 255)).
+svg_color0(gainsboro, rgb(220, 220, 220)).
+svg_color0(ghostwhite, rgb(248, 248, 255)).
+svg_color0(gold, rgb(255, 215, 0)).
+svg_color0(goldenrod, rgb(218, 165, 32)).
+svg_color0(gray, rgb(128, 128, 128)).
+svg_color0(grey, rgb(128, 128, 128)).
+svg_color0(green, rgb(0, 128, 0)).
+svg_color0(greenyellow, rgb(173, 255, 47)).
+svg_color0(honeydew, rgb(240, 255, 240)).
+svg_color0(hotpink, rgb(255, 105, 180)).
+svg_color0(indianred, rgb(205, 92, 92)).
+svg_color0(indigo, rgb(75, 0, 130)).
+svg_color0(ivory, rgb(255, 255, 240)).
+svg_color0(khaki, rgb(240, 230, 140)).
+svg_color0(lavender, rgb(230, 230, 250)).
+svg_color0(lavenderblush, rgb(255, 240, 245)).
+svg_color0(lawngreen, rgb(124, 252, 0)).
+svg_color0(lemonchiffon, rgb(255, 250, 205)).
+svg_color0(lightblue, rgb(173, 216, 230)).
+svg_color0(lightcoral, rgb(240, 128, 128)).
+svg_color0(lightcyan, rgb(224, 255, 255)).
+svg_color0(lightgoldenrodyellow, rgb(250, 250, 210)).
+svg_color0(lightgray, rgb(211, 211, 211)).
+svg_color0(lightgreen, rgb(144, 238, 144)).
+svg_color0(lightgrey, rgb(211, 211, 211)).
+svg_color0(lightpink, rgb(255, 182, 193)).
+svg_color0(lightsalmon, rgb(255, 160, 122)).
+svg_color0(lightseagreen, rgb(32, 178, 170)).
+svg_color0(lightskyblue, rgb(135, 206, 250)).
+svg_color0(lightslategray, rgb(119, 136, 153)).
+svg_color0(lightslategrey, rgb(119, 136, 153)).
+svg_color0(lightsteelblue, rgb(176, 196, 222)).
+svg_color0(lightyellow, rgb(255, 255, 224)).
+svg_color0(lime, rgb(0, 255, 0)).
+svg_color0(limegreen, rgb(50, 205, 50)).
+svg_color0(linen, rgb(250, 240, 230)).
+svg_color0(magenta, rgb(255, 0, 255)).
+svg_color0(maroon, rgb(128, 0, 0)).
+svg_color0(mediumaquamarine, rgb(102, 205, 170)).
+svg_color0(mediumblue, rgb(0, 0, 205)).
+svg_color0(mediumorchid, rgb(186, 85, 211)).
+svg_color0(mediumpurple, rgb(147, 112, 219)).
+svg_color0(mediumseagreen, rgb(60, 179, 113)).
+svg_color0(mediumslateblue, rgb(123, 104, 238)).
+svg_color0(mediumspringgreen, rgb(0, 250, 154)).
+svg_color0(mediumturquoise, rgb(72, 209, 204)).
+svg_color0(mediumvioletred, rgb(199, 21, 133)).
+svg_color0(midnightblue, rgb(25, 25, 112)).
+svg_color0(mintcream, rgb(245, 255, 250)).
+svg_color0(mistyrose, rgb(255, 228, 225)).
+svg_color0(moccasin, rgb(255, 228, 181)).
+svg_color0(navajowhite, rgb(255, 222, 173)).
+svg_color0(navy, rgb(0, 0, 128)).
+svg_color0(oldlace, rgb(253, 245, 230)).
+svg_color0(olive, rgb(128, 128, 0)).
+svg_color0(olivedrab, rgb(107, 142, 35)).
+svg_color0(orange, rgb(255, 165, 0)).
+svg_color0(orangered, rgb(255, 69, 0)).
+svg_color0(orchid, rgb(218, 112, 214)).
+svg_color0(palegoldenrod, rgb(238, 232, 170)).
+svg_color0(palegreen, rgb(152, 251, 152)).
+svg_color0(paleturquoise, rgb(175, 238, 238)).
+svg_color0(palevioletred, rgb(219, 112, 147)).
+svg_color0(papayawhip, rgb(255, 239, 213)).
+svg_color0(peachpuff, rgb(255, 218, 185)).
+svg_color0(peru, rgb(205, 133, 63)).
+svg_color0(pink, rgb(255, 192, 203)).
+svg_color0(plum, rgb(221, 160, 221)).
+svg_color0(powderblue, rgb(176, 224, 230)).
+svg_color0(purple, rgb(128, 0, 128)).
+svg_color0(red, rgb(255, 0, 0)).
+svg_color0(rosybrown, rgb(188, 143, 143)).
+svg_color0(royalblue, rgb(65, 105, 225)).
+svg_color0(saddlebrown, rgb(139, 69, 19)).
+svg_color0(salmon, rgb(250, 128, 114)).
+svg_color0(sandybrown, rgb(244, 164, 96)).
+svg_color0(seagreen, rgb(46, 139, 87)).
+svg_color0(seashell, rgb(255, 245, 238)).
+svg_color0(sienna, rgb(160, 82, 45)).
+svg_color0(silver, rgb(192, 192, 192)).
+svg_color0(skyblue, rgb(135, 206, 235)).
+svg_color0(slateblue, rgb(106, 90, 205)).
+svg_color0(slategray, rgb(112, 128, 144)).
+svg_color0(slategrey, rgb(112, 128, 144)).
+svg_color0(snow, rgb(255, 250, 250)).
+svg_color0(springgreen, rgb(0, 255, 127)).
+svg_color0(steelblue, rgb(70, 130, 180)).
+svg_color0(tan, rgb(210, 180, 140)).
+svg_color0(teal, rgb(0, 128, 128)).
+svg_color0(thistle, rgb(216, 191, 216)).
+svg_color0(tomato, rgb(255, 99, 71)).
+svg_color0(turquoise, rgb(64, 224, 208)).
+svg_color0(violet, rgb(238, 130, 238)).
+svg_color0(wheat, rgb(245, 222, 179)).
+svg_color0(white, rgb(255, 255, 255)).
+svg_color0(whitesmoke, rgb(245, 245, 245)).
+svg_color0(yellow, rgb(255, 255, 0)).
+svg_color0(yellowgreen, rgb(154, 205, 50)).
 
 %! svg_colors(-Colors:list(atom)) is det.
 % Returns the list with supported color names.
@@ -533,8 +458,4 @@ svg_color(yellowgreen, rgb(154, 205, 50)).
 % @arg Colors A list with atomic color names.
 
 svg_colors(Colors):-
-  findall(
-    Color,
-    svg_color(Color),
-    Colors
-  ).
+  findall(Color, svg_color0(Color), Colors).

@@ -36,6 +36,9 @@
     member/3, % ?Element1
               % ?Element2
               % ?List
+    member_default/3, % +Member
+                      % +List:list
+                      % +Default
     nth_minus_0/3, % +I:integer
                    % +L:list
                    % -Element:term
@@ -254,6 +257,10 @@ list_to_orderd_pairs_(H, [T | TT], [Pair | S]):-
 member(X, Y, L):-
   member(X, L),
   member(Y, L).
+
+member_default(Member, List, _Default):-
+  member(Member, List), !.
+member_default(Default, _List, Default).
 
 %! nth_minus_0(+I:integer, +L:list, -Element) is det.
 % Succeeds if the given element occurs at =|length(List) - I|= in list =L=.

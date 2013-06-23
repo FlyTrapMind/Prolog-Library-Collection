@@ -82,20 +82,6 @@ pre(nl) --> "na".
 pre(nl) --> "voor".
 pre(nl) --> "vóór".
 
-question_marks(1) -->
-  question_mark.
-question_marks(N) -->
-  question_mark,
-  question_marks(M),
-  {N is M + 1}.
-
-xs(1) -->
-  x.
-xs(N) -->
-  x,
-  xs(M),
-  {N is M + 1}.
-
 %! year(?Languag:atom, Year:oneof([integer,pair(integer)]))// is nondet.
 
 % 1. Years sometime occur between round brackets.
@@ -183,11 +169,23 @@ year_separator --> hyphen_minus.
 year_uncertainty(Year1-Year2) -->
   digits(Ds),
   {Ds \== []},
-  (question_marks(N) ; xs(N)),
-  {number_codes(X, Ds)},
-  {Multiplier is 10**N},
-  {Year1 is X * Multiplier},
-  {Y is X + 1},
-  {Z is Y * Multiplier},
-  {Year2 is Z - 1}.
+  (
+    dcg_multi(question_mark, N)
+  ;
+    dcg_multi(question_mark, N)
+  ),
+  {
+    number_codes(X, Ds),
+    Multiplier is 10**N,
+    Year1 is X * Multiplier,
+    Y is X + 1,
+    Z is Y * Multiplier,
+    Year2 is Z - 1
+  }.
 
+convert_epoch(Year, 'AD', Year):- !.
+convert_epoch(UnsignedYear, 'BC', SignedYear):-
+  SignedYear is -1 * UnsignedYear.
+
+epoch('BC') --> "v", blanks, ".", blanks, "Chr".
+epoch('AD').

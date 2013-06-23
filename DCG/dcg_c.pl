@@ -1,27 +1,34 @@
-:- module(dcg_c, [c_convert//0]).
+:- module(
+  dcg_c,
+  [c_convert//0]
+).
 
-c_convert -->
-  dcg_replace(c_from(X), c_to(X)).
+/** <module> DCG_C
 
-c_from(X) -->
-  {c_trans(X,_Y)},
-  X.
+Conversions to make strings compatible with C syntax.
 
-c_to(X) -->
-  {c_trans(X,Y)},
-  Y.
+@author Wouter Beek
+@version 2013/02, 2013/06
+*/
 
-dcg_replace(_From, _To, [], []):- !.
-dcg_replace(From, To), To -->
-  From, !,
-  dcg_replace(From, To).
-dcg_replace(From, To), [X] -->
-  [X],
-  dcg_replace(From, To).
+:- use_module(dcg(dcg_ascii)).
+
+
 
 % Replace the bell character with '\b'.
-c_trans([92, 98], [7]).
+c_convert, bell -->
+  backslash, b_lowercase, !,
+  c_convert.
 % Replace the line feed character with '\n'.
-c_trans([92, 110], [10]).
+c_convert, line_feed -->
+  backslash, n_lowercase, !,
+  c_convert.
 % Replace the horizontal tab character with '\t'.
-c_trans([92, 116], [9]).
+c_convert, horizontal_tab -->
+  backslash, t_lowercase, !,
+  c_convert.
+% Other characters do not need to be replaced.
+c_convert, [X] -->
+  [X],!,
+  c_convert.
+c_convert --> [].

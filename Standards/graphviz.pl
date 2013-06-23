@@ -81,6 +81,7 @@ representing a name-value pair.
 @version 2011-2013/06
 */
 
+:- use_module(dcg(dcg_c)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
@@ -90,7 +91,6 @@ representing a name-value pair.
 :- use_module(library(process)).
 :- use_module(library(sha)).
 :- use_module(standards(brewer)).
-:- use_module(standards(c)).
 :- use_module(svg(svg)).
 :- use_module(standards(x11)).
 

@@ -25,30 +25,34 @@
 % LIST %
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
+% MULTIPLE OCCURRENCES %
+    dcg_multi//2, % :DCGBody:dcg
+                  % ?Occurrences:integer
+% NUMBERS %
+    exponent//0,
 % OTHERS %
     conj//1, % ?Lang:atom
     disj//1, % ?Lang:atom
     language//1, % ?Lang:atom
     uncertainty//1, % ?Lang:atom
 % PEEK %
-    dcg_peek//1, % ?X:code
+    dcg_peek//1, % ?Code:code
     dcg_peek_atom//1, % -Atom:atom
     dcg_peek_char//1, % ?Char:char
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
 % PHRASE EXTENSION %
     dcg_phrase/2, % :DCGBody:dcg
-                  % ?In
+                  % ?In:atom
     dcg_phrase/3, % :DCGBody:dcg
-                  % ?In
-                  % ?Out
+                  % ?In:atom
+                  % ?Out:atom
 
 % RE %
-    dcg_plus//1, % +DCGBody:dcg
-    dcg_star//1, % +DCGBody:dcg
+    dcg_plus//1, % :DCGBody:dcg
+    dcg_questionmark//1, % :DCGBody:dcg
+    dcg_star//1, % :DCGBody:dcg
 % REPLACE $
-    dcg_replace//2, % +From:atom
-                    % +To:atom
     dcg_replace//2 % +From:list(code)
                    % +To:list(code)
   ]
@@ -58,11 +62,23 @@
 
 Generic DCG clauses.
 
+Shall we use DCGs for parsing or REs?
+
+We need DCGs, because they allow us to define a complex grammar in a
+modular way.
+
+REs allow easy quantification using the _Wilcards_ =|*|=, =|+|=, =|?|=,
+and the positive integers. This is why we add the DCG rules:
+  * dcg_plus//1
+  * dcg_questionmark//1
+  * dcg_star//1
+
 @author Wouter Beek
 @version 2013/05-2013/06
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(generics(cowspeak)).
 :- use_module(html(html)).
 :- use_module(library(dcg/basics)).
@@ -77,6 +93,8 @@ Generic DCG clauses.
 :- meta_predicate(dcg_without_atom(//,-,+,-)).
 % LIST %
 :- meta_predicate(dcg_separated_list(//,-,+,-)).
+% MULTIPLE OCCURRENCES %
+:- meta_predicate(dcg_multi(//,?,?,?)).
 % PEEK %
 :- meta_predicate(dcg_peek_length(?,?,?,?)).
 :- meta_predicate(dcg_peek_length(+,?,?,?,?)).
@@ -85,10 +103,10 @@ Generic DCG clauses.
 :- meta_predicate(dcg_phrase(//,?,?)).
 % RE %
 :- meta_predicate(dcg_plus(//,?,?)).
+:- meta_predicate(dcg_questionmark(//,?,?)).
 :- meta_predicate(dcg_star(//,?,?)).
 % REPLACE %
 :- meta_predicate(dcg_replace(//,//,?,?)).
-:- meta_predicate(dcg_replace_(//,//,?,?)).
 
 
 
@@ -97,16 +115,18 @@ Generic DCG clauses.
 %! dcg_word(-Word:list(code)) is semidet.
 % Returns the first word that occurs in the codes list.
 %
-% A word is defined as any sequence af alphabetic characters
-% delimited by a non-alphabetic character.
+% A word is defined as any sequence af alphanumeric characters
+% and underscores, delimited by any other character.
 %
 % The delimiting character is not consumed.
+%
+% @arg Word A list of codes. Codes for uppercase letters are
+%           returned as codes for lowercase letters.
 
-dcg_word([Char|Word]) -->
-  alpha_to_lower(Char),
-  dcg_word(Word).
-dcg_word([]), [Char] -->
-  [Char].
+dcg_word([H|T]) -->
+  (alpha_to_lower(H) ; digit(H) ; ("_", {H = '_'})),
+  dcg_word(T).
+dcg_word([]), [Code] --> [Code].
 
 dcg_word_atom(Word) -->
   dcg_word(Codes),
@@ -224,6 +244,25 @@ dcg_separated_list(_Separator, [H]) -->
 
 
 
+% MULTIPLE OCCURRENCES %
+
+%! dcg_multi(:DCGBody, -Occurrences:integer)
+% Counts the consecutive occurrences of the given DCG body.
+
+dcg_multi(DCGBody, N) -->
+  DCGBody, !,
+  dcg_multi(DCGBody, N_),
+  {N is N_ + 1}.
+dcg_multi(_DCGBody, 0) --> [].
+
+
+
+% NUMBERS %
+
+exponent --> exponent_sign, dcg_plus(decimal_digit).
+
+
+
 % OTHERS %
 
 conj(en) --> "and".
@@ -333,6 +372,9 @@ dcg_plus(DCGBody) -->
 dcg_plus(DCGBody) -->
   DCGBody.
 
+dcg_questionmark(DCGBody) -->
+  (DCGBody ; "").
+
 %! dcg_star(:DCGBody:dcg) is nondet.
 % Applies the given DCGBody zero or more times to the codes list.
 %
@@ -352,31 +394,17 @@ dcg_star(_DCGBody) --> [].
 
 dcg_end([], []).
 
-%! dcg_replace(+From:atom, +To:atom) is det.
-%! dcg_replace(+From:list(code), +To:list(code)) is det.
+%! dcg_replace(:From:dcg, :To:dcg) is det.
 % @author http://stackoverflow.com/users/1613573/mat
 % @see http://stackoverflow.com/questions/6392725/using-a-prolog-dcg-to-find-replace-code-review
 
-dcg_replace(From, To) -->
-  {
-    atomic(From),
-    atomic(To),
-    atom_codes(From, FromCodes),
-    atom_codes(To, ToCodes)
-  },
-  !,
-  dcg_replace_(FromCodes, ToCodes).
-dcg_replace(From, To) -->
-  dcg_replace_(From, To).
-
-dcg_replace_(_From, _To) -->
+dcg_replace(_From, _To) -->
   dcg_end,
   !.
-dcg_replace_(From, To), To -->
+dcg_replace(From, To), To -->
   From,
   !,
-  dcg_replace_(From, To).
-dcg_replace_(From, To), [X] -->
+  dcg_replace(From, To).
+dcg_replace(From, To), [X] -->
   [X],
-  dcg_replace_(From, To).
-
+  dcg_replace(From, To).

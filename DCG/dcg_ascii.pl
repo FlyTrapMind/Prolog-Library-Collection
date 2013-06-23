@@ -5,8 +5,10 @@
     a_lowercase//0,
     a_uppercase//0,
     acknowledgement//0,
+    alpha_numeric//0,
     ampersand//0,
     apostrophe//0,
+    ascii//0,
     asterisk//0,
     at_sign//0,
     b//0,
@@ -57,7 +59,6 @@
     equals_sign//0,
     escape//0,
     exclamation_mark//0,
-    exponent_sign//0,
     f//0,
     f_lowercase//0,
     f_uppercase//0,
@@ -69,6 +70,7 @@
     g//0,
     g_lowercase//0,
     g_uppercase//0,
+    graph//0,
     grave_accent//0,
     greater_than_sign//0,
     group_separator//0,
@@ -120,7 +122,7 @@
     percent_sign//0,
     plus_sign//0,
     positive_acknowledgement//0,
-    print//0,
+    print2//0,
     punctuation//0,
     q//0,
     q_lowercase//0,
@@ -151,7 +153,7 @@
     t//0,
     t_lowercase//0,
     t_uppercase//0,
-    tab//0,
+    tab2//0,
     three//0,
     tilde//0,
     two//0,
@@ -191,9 +193,11 @@ Codes 129-159 contain the Microsoft® Windows Latin-1 extended characters.
 
 @author Wouter Beek
 @compat http://www.ascii-code.com/
-@version 2013/01-2013/02, 2013/05
+@version 2013/01-2013/02, 2013/05-2013/06
 */
 
+:- use_module(library(dcg/basics)).
+:- use_module(dcg(dcg_cardinal)).
 
 
 a --> a_lowercase.
@@ -206,9 +210,16 @@ a_uppercase --> [65].
 acknowledgement --> negative_acknowledgement.
 acknowledgement --> positive_acknowledgement.
 
+alpha_numeric --> letter.
+alpha_numeric --> decimal_digit.
+
 ampersand --> [38].
 
 apostrophe --> [39].
+
+ascii --> control.
+ascii --> graph.
+ascii --> white.
 
 asterisk --> [42].
 
@@ -227,10 +238,8 @@ backspace --> [8].
 
 bell --> [7].
 
-bracket -->
-  closing_bracket.
-bracket -->
-  opening_bracket.
+bracket --> closing_bracket.
+bracket --> opening_bracket.
 
 c --> c_lowercase.
 c --> c_uppercase.
@@ -354,8 +363,6 @@ escape --> [27].
 
 exclamation_mark --> [33].
 
-exponent_sign --> e.
-
 f --> f_lowercase.
 f --> f_uppercase.
 
@@ -379,6 +386,9 @@ g --> g_uppercase.
 g_lowercase --> [103].
 
 g_uppercase --> [71].
+
+graph --> alpha_numeric.
+graph --> punctuation.
 
 grave_accent --> [96].
 
@@ -543,8 +553,8 @@ plus_sign --> [43].
 
 positive_acknowledgement --> [6].
 
-print --> [Code], {code_type(Code, graph)}.
-print --> space.
+print2 --> [Code], {code_type(Code, graph)}.
+print2 --> space.
 
 punctuation --> ampersand.
 punctuation --> apostrophe.
@@ -642,8 +652,8 @@ t_lowercase --> [116].
 
 t_uppercase --> [84].
 
-tab --> horizontal_tab.
-tab --> vertical_tab.
+tab2 --> horizontal_tab.
+tab2 --> vertical_tab.
 
 three --> [51].
 
@@ -680,6 +690,11 @@ w_lowercase --> [119].
 
 w_uppercase --> [87].
 
+% white --> end_of_line.
+% white --> form_feed.
+% white --> space.
+% white --> tab.
+
 x --> x_lowercase.
 x --> x_uppercase.
 
@@ -702,4 +717,3 @@ z_lowercase --> [122].
 z_uppercase --> [90].
 
 zero --> [48].
-

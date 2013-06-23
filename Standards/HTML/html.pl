@@ -21,10 +21,6 @@
 % PARSING
     html_attribute/2, % +Attributes:list(nvpair)
                       % +Attribute:nvpair
-    html_char//2, % +Options:list(nvpair)
-                  % ?Results
-    html_convert/2, % +Atom:atom
-                    % -HTML_Atom:atom
     parse_attributes_html/3 % +Context:oneof([table])
                             % +Attributes:list(nvpair)
                             % -ParsedAttributes:list(nvassignment)
@@ -54,7 +50,6 @@ HTML attribute parsing, used in HTML table generation.
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(file_ext)).
-:- use_module(generics(parse_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
@@ -357,24 +352,6 @@ attribute(border, pixels, [table]).
 
 html_attribute(Attributes, Attribute):-
   memberchk(Attribute, Attributes).
-
-%! html_char(+Options:list(nvpair), ?Results)//
-% Returns the HTML atom representing the character given.
-
-html_char(_Options, ['>' | Rest]-Rest) --> "&#62;".
-html_char(_Options, ['<' | Rest]-Rest) --> "&#60;".
-html_char(_Options, [X | Rest]-Rest) --> [X].
-
-html_convert(Atom, HTML_Atom):-
-  atom_codes(Atom, C),
-  % Read the codes that constitute the given atom. This may include codes for
-  % escape characters that are not legitimate C-characters.
-  parse_re(
-    [case(sensitive), out(atom), q(+)],
-    html_char,
-    HTML_Atom,
-    C-[]
-  ).
 
 parse_attribute(Context, Attribute, Name=Value):-
   Attribute =.. [Name, Value],
