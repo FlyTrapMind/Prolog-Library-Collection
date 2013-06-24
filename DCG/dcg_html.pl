@@ -37,3 +37,4 @@ html_convert([H|T]) -->
 html_char('>') --> "&#62;".
 html_char('<') --> "&#60;".
 html_char(X) --> [X].
+

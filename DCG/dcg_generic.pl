@@ -357,3 +357,4 @@ dcg_replace(From, To), To -->
 dcg_replace(From, To), [X] -->
   [X],
   dcg_replace(From, To).
+

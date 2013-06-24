@@ -70,7 +70,7 @@
     g//0,
     g_lowercase//0,
     g_uppercase//0,
-    graph//0,
+    dcg_graph//0,
     grave_accent//0,
     greater_than_sign//0,
     group_separator//0,
@@ -122,7 +122,7 @@
     percent_sign//0,
     plus_sign//0,
     positive_acknowledgement//0,
-    print2//0,
+    dcg_print//0,
     punctuation//0,
     q//0,
     q_lowercase//0,
@@ -153,7 +153,7 @@
     t//0,
     t_lowercase//0,
     t_uppercase//0,
-    tab2//0,
+    dcg_tab//0,
     three//0,
     tilde//0,
     two//0,
@@ -191,6 +191,15 @@ There are several different variations of the 8-bit ASCII table.
 The table below is according to ISO 8859-1, also called ISO Latin-1.
 Codes 129-159 contain the Microsoft® Windows Latin-1 extended characters.
 
+---+ Alternative names
+
+Some DCG rules are prepended with =|dcg_|=, since they would otherwise
+conflict with builtins or with predicates from other modules.
+
+  * graph
+  * print
+  * tab
+
 @author Wouter Beek
 @compat http://www.ascii-code.com/
 @version 2013/01-2013/02, 2013/05-2013/06
@@ -218,7 +227,7 @@ ampersand --> [38].
 apostrophe --> [39].
 
 ascii --> control.
-ascii --> graph.
+ascii --> dcg_graph.
 ascii --> white.
 
 asterisk --> [42].
@@ -387,8 +396,8 @@ g_lowercase --> [103].
 
 g_uppercase --> [71].
 
-graph --> alpha_numeric.
-graph --> punctuation.
+dcg_graph --> alpha_numeric.
+dcg_graph --> punctuation.
 
 grave_accent --> [96].
 
@@ -553,8 +562,8 @@ plus_sign --> [43].
 
 positive_acknowledgement --> [6].
 
-print2 --> [Code], {code_type(Code, graph)}.
-print2 --> space.
+dcg_print --> dcg_graph.
+dcg_print --> space.
 
 punctuation --> ampersand.
 punctuation --> apostrophe.
@@ -652,8 +661,8 @@ t_lowercase --> [116].
 
 t_uppercase --> [84].
 
-tab2 --> horizontal_tab.
-tab2 --> vertical_tab.
+dcg_tab --> horizontal_tab.
+dcg_tab --> vertical_tab.
 
 three --> [51].
 
