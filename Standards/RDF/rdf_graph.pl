@@ -188,10 +188,6 @@ rdf_bnode(Graph, BNode):-
 %! rdf_bnode_replace(+SharedBNodes:list, +Triple, -NewTriple) is det.
 % Replaces shared bnodes in triples.
 
-% In case there are not shared blank nodes we can skip
-% rdf_bnode_replace/4.
-rdf_bnode_replace([], rdf(S, P, O, _Graph), rdf(S, P, O)):-
-  !.
 rdf_bnode_replace(SharedBNodes, rdf(S, P, O, Graph), rdf(NewS, P, NewO)):-
   maplist(rdf_bnode_replace(SharedBNodes, Graph), [S,O], [NewS, NewO]).
 
@@ -260,18 +256,30 @@ rdf_graph_merge(Graphs, MergedGraph):-
   ),
 
   % Replace the blank nodes.
-  forall(
-    (
-      member(Graph, Graphs),
-      rdf(S, P, O, Graph)
-    ),
-    (
-      rdf_bnode_replace(
-        SharedBNodes,
-        rdf(S, P, O, Graph),
-        rdf(NewS, P, NewO)
+  (
+    SharedBNodes == []
+  ->
+    forall(
+      (
+        member(Graph, Graphs),
+        rdf(S, P, O, Graph)
       ),
-      rdf_assert(NewS, P, NewO, MergedGraph)
+      rdf_assert(S, P, O, MergedGraph)
+    )
+  ;
+    forall(
+      (
+        member(Graph, Graphs),
+        rdf(S, P, O, Graph)
+      ),
+      (
+        rdf_bnode_replace(
+          SharedBNodes,
+          rdf(S, P, O, Graph),
+          rdf(NewS, P, NewO)
+        ),
+        rdf_assert(NewS, P, NewO, MergedGraph)
+      )
     )
   ).
 rdf_graph(Graph, MergedGraph):-
