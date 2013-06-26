@@ -7,15 +7,15 @@
                        % +PointPredicate:uri
                        % +Year:oneof([integer,pair(integer)])
                        % +Graph:atom
-    rdf_clean_year/6, % ?Subject:oneof([bnode,uri])
-                      % ?Predicate:uri
-                      % ?Graph:atom
-                      % +IntervalPredicate1:uri
-                      % +IntervalPredicate2:uri
-                      % +PointPredicate:uri
-    rdf_year/3 % ?Subject:oneof([bnode,uri])
-               % ?Year:oneof([integer,pair(integer))
-               % ?Graph:atom
+    rdf_clean_year/6 % ?Subject:oneof([bnode,uri])
+                     % ?Predicate:uri
+                     % ?Graph:atom
+                     % +IntervalPredicate1:uri
+                     % +IntervalPredicate2:uri
+                     % +PointPredicate:uri
+    %rdf_year/3 % ?Subject:oneof([bnode,uri])
+    %           % ?Year:oneof([integer,pair(integer))
+    %           % ?Graph:atom
   ]
 ).
 
@@ -30,7 +30,7 @@ Support for year data in RDF graphs.
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_year)).
 :- use_module(generics(meta_ext)).
-:- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdf_db)). % rdf_meta/1.
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_read)).
 
@@ -68,9 +68,12 @@ rdf_clean_year0(IntervalP1, IntervalP2, PointP, S, P, Lit, G):-
   dcg_phrase(year(_Lang, Year), Lit),
   rdf_assert_year(S, IntervalP1, IntervalP2, PointP, Year, G).
 
-rdf_year(Subject, Year, Graph):-
-  rdf_datatype(Subject, stcnv:exact_publication_year, gYear, Year, Graph).
-rdf_year(Subject, Year1-Year2, Graph):-
-  rdf_datatype(Subject, stcnv:earliest_publication_year, gYear, Year1, Graph),
-  rdf_datatype(Subject, stcnv:latest_publication_year, gYear, Year2, Graph).
+%rdf_year(Subject, Year, Graph):-
+%  rdf_datatype(Subject, stcnv:exact_publication_year, gYear, Year,
+%  Graph).
+%rdf_year(Subject, Year1-Year2, Graph):-
+%  rdf_datatype(Subject, stcnv:earliest_publication_year, gYear, Year1,
+%  Graph),
+%  rdf_datatype(Subject, stcnv:latest_publication_year, gYear, Year2,
+%  Graph).
 
