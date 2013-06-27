@@ -5,7 +5,7 @@
                  % ?BNode:bnode
     rdf_graph_equivalence/2, % +Graph1:atom
                              % +Graph2:atom
-    rdf_graph_merge/2, % +Graphs:list(atom)
+    rdf_graph_merge/2, % +In:list(atom)
                        % +MergedGraph:atom
     rdf_graph_source_file/2, % +Graph:atom
                              % -File:atom
@@ -159,6 +159,7 @@ as their lean subgraphs.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_export)).
+:- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 :- use_module(rdf(rdf_graph)).
@@ -230,11 +231,18 @@ bnode_translation0(Graph1, Resource1, Graph2, Resource2):-
   rdf_bnode(Graph2, Resource2),
   !.
 
-%! rdf_graph_merge(+Graphs:list(atom), +MergedGraph:atom) is det.
+%! rdf_graph_merge(+In:list(atom), +MergedGraph:atom) is det.
+% Merges RDF graphs.
+% The input is is a (possibly mixed) list of RDF graph names and
+% names of files that store an RDF graph.
+%
 % When merging RDF graphs we have to make sure that their blank nodes are
 % standardized apart.
 
-rdf_graph_merge(Graphs, MergedGraph):-
+rdf_graph_merge(FilesOrGraphs, MergedGraph):-
+  % Be liberal with respect to the input.
+  files_or_rdf_graphs(FilesOrGraphs, Graphs),
+  
   % Type checking.
   maplist(rdf_graph, Graphs),
   atom(MergedGraph),

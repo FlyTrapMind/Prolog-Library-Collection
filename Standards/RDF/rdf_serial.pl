@@ -1,6 +1,10 @@
 :- module(
   rdf_serial,
   [
+    file_or_rdf_graph/2, % +File:atom
+                         % -Graph:atom
+    files_or_rdf_graphs/2, % +Files:list(atom)
+                           % -Graphs:list(atom)
     rdf_convert/3, % +FromFile:atom
                    % +ToFormat:atom
                    % +ToFile:atom
@@ -44,6 +48,7 @@ reflect the serialization format:
 :- use_module(generics(db_ext)).
 :- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
@@ -59,6 +64,22 @@ reflect the serialization format:
 :- db_add_novel(user:prolog_file_type(ttl, rdf)).
 
 
+
+%! file_or_rdf_graph(+File:atom, -Graph:atom) is det.
+% This can be used to allow either a file or a graph.
+
+file_or_rdf_graph(File, Graph):-
+  is_absolute_file_name(File),
+  !,
+  access_file(File, read),
+  rdf_load2(File, Options),
+  option(graph(Graph), Options).
+
+%! files_or_rdf_graphs(+Files:list(atom), -Graphs:list(atom)) is det.
+% This can be used to allow a (possibly mixed) list of files and graphs.
+
+files_or_rdf_graphs(Files, Graphs):-
+  maplist(file_or_rdf_graph, Files, Graphs).
 
 %! rdf_convert(
 %!   +FromFile:atom,
@@ -145,7 +166,8 @@ rdf_load2(File, Options):-
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
-  \+ option(graph(_Graph), Options),
+  % Returns the graph name in case it was a variable.
+  \+ (option(graph(Graph), Options), nonvar(Graph)),
   !,
   file_name(File, _Directory, Graph1, _Extension),
   % The graph does not already exist.
@@ -155,7 +177,8 @@ rdf_load2(File, Options):-
 % The format is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
-  \+ option(fornat(Format), Options),
+  % Returns the format in case it was a variable.
+  \+ (option(format(Format), Options), nonvar(Format))
   !,
   file_name_extension(_Base, Extension, File),
   rdf_serialization(Extension, Format, _URI),

@@ -1,6 +1,10 @@
 :- module(
   file_ext,
   [
+    absolute_file_name_number/4, % +Spec
+                                 % +Options:list(nvpair)
+                                 % +Number:integer
+                                 % -Absolute:atom
     atom_to_file/2, % +Atom:atom
                     % +File:atom
     base_or_file_to_file/3, % +BaseOrFile:atom
@@ -90,28 +94,21 @@ We use the following abbreviations in this module:
 
 
 
-%! absolute_directory_name(+OldDir:atom, +SubDirSpec, -Dir:atom) is det.
-% Returns an absolute directory name relative to another absolute directory
-% name.
+%! absolute_file_name_number(
+%!   +Spec,
+%!   +Options:list(nvpair),
+%!   +Number:integer,
+%!   -Absolute:atom
+%! ) is det.
+% This comes in handy for numbered files, e.g. '/home/some_user/test_7.txt'.
 %
-% This causes problems when it is unknown in advance whether the directory
-% exists or not:
-%  * If it exists, then the former call throws an exception.
-%  * If it does not exist, then the latter call would have thrown
-%    an exception.
-%
-% @tbd This does not work. Why is it so hard to go into subdirectories?
+% The order of the arguments differs from absolute_file_name/3
+% to be compliant with =library(apply)=.
 
-absolute_directory_name(OldDir, SubDirSpec, NewDir):-
-  catch(
-    absolute_file_name(SubDirSpec, NewDir, [relative_to(OldDir)]),
-    error(existence_error(file, _SubDirSpec), context(_Var, _NewDir)),
-    absolute_file_name(
-      SubDirSpec,
-      NewDir,
-      [file_type(directory), relative_to(OldDir)]
-    )
-  ).
+absolute_file_name_number(Spec, Options, Number, Absolute):-
+  atom_number(Atomic, Number),
+  spec_atomic_concat(Spec, Atomic, NumberSpec),
+  absolute_file_name(NumberSpec, Absolute, Options).
 
 %! atom_to_file(+Atom:atom, -File:atom) is det.
 % Stores the given atom in the given file.
@@ -501,6 +498,19 @@ read_terms0(_Stream, end_of_file, [], _Options):-
 read_terms0(Stream, Term, [Term | Terms], Options):-
   read_terms(Stream, Terms, Options).
 
+%! spec_atomic_concat(+Spec, +Atomic:atom, -NewSpec) is det.
+% Concatenates the given atom to the inner atomic term of the given
+% specification.
+
+spec_atomic_concat(Atomic1, Atomic2, Atom):-
+  atomic(Atomic1), !,
+  atomic_concat(Atomic1, Atomic2, Atom).
+spec_atomic_concat(Spec1, Atomic, Spec2):-
+  compound(Spec), !,
+  Spec1 =.. [Outer, Inner1],
+  spec_atomic_concat(Inner1, Atomic, Inner2),
+  Spec2 =.. [Outer, Inner2]].
+
 %! stream_to_atom(+Stream:stream, -Content:atom) is det.
 % Stores the contents of an atom stream to an atom.
 
@@ -516,3 +526,4 @@ stream_to_atom(Stream, Atom):-
 stream_to_file(Stream, File):-
   stream_to_atom(Stream, Atom),
   atom_to_file(Atom, File).
+
