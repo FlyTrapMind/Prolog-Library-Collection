@@ -1,6 +1,10 @@
 :- module(
   codes_ext,
   [
+    codes_replace/4, % +Old:list(code)
+                     % +From:list(code)
+                     % +To:list(code)
+                     % -New:list(code)
     split_codes/3, % +Codes:list(code)
                    % +Split:list(code)
                    % -Results:list(list(code))
@@ -15,12 +19,16 @@
 Predicates for handling codes.
 
 @author Wouter Beek
-@version 2013/05
+@version 2013/05-2013/06
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(lists)).
 
 
+
+codes_replace(Old, From, To, New):-
+  phrase(dcg_replace(From, To), Old, New).
 
 split_codes(Codes, Split, Results):-
   \+ is_list(Split),

@@ -13,10 +13,10 @@
 
 /** <module> OS_EXT
 
-
+Operating System interactions.
 
 @author Wouter Beek
-@version 2013/06
+@version 2011/11-2012/06, 2013/12-2013/02, 2013/05-2013/06
 */
 
 :- use_module(library(debug)).

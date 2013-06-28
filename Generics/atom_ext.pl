@@ -129,16 +129,6 @@ atom_until(Split, Atom, H, Rest):-
   split_atom_exclusive(Split, Atom, [H | _T]),
   atom_concat(H, Rest, Atom).
 
-codes_replace([], _From, _To, []):-
-  !.
-codes_replace(Codes, From, To, NewCodes):-
-  append(From, Rest, Codes),
-  !,
-  append(To, Rest, Codes1),
-  codes_replace(Codes1, From, To, NewCodes).
-codes_replace([Code | Codes], From, To, [Code | NewCodes]):-
-  codes_replace(Codes, From, To, NewCodes).
-
 %! decapitalize(+Old:atom, -New:atom) is det.
 % Ensure that the first letter of the atom is lower case.
 % This can be used to concatenate natural language sentences.

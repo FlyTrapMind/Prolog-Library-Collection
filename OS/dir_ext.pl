@@ -2,8 +2,9 @@
   [
     create_personal_subdirectory/1, % +SubDir:list(atom)
     create_directory/1, % +Dir:atom
+    create_nested_directory/1, % +NestedDirs:compound
     create_nested_directory/2, % +NestedDirs:compound
-                               % -Dir:atom
+                               % -Absolute:atom
     directory_files/3, % +Directory:atom
                        % +FileType:atom
                        % -Entries:list(atom)
@@ -24,6 +25,7 @@ Extensions for handling directories.
 @version 2013/06
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -86,28 +88,31 @@ create_directory(CurrentDir, [NextSubDir | SubDirs]):-
   !,
   create_directory(Dir, SubDirs).
 
-%! create_nested_directory(+NestedDir:compound, -Dir:atom) is det.
+create_nested_directory(NestedDir):-
+  create_nested_directory(NestedDir, _Absolute).
+
+%! create_nested_directory(+NestedDir:compound, -Absolute:atom) is det.
 % Returns a nested file path.
 %
 % @arg NestedDir A compound term of linearly nested atoms
 %      representing the subsequent subdirectories. The final atom
 %      is the name of the file.
-% @arg Dir The absolute path of the nested directory specification.
+% @arg Absolute The absolute path of the nested directory specification.
 
-create_nested_directory(AbsoluteDir, AbsoluteDir):-
-  atom(AbsoluteDir), is_absolute_file_name(AbsoluteDir), !,
-  create_directory(AbsoluteDir).
-create_nested_directory(NestedDir, Dir):-
+create_nested_directory(Absolute, Absolute):-
+  is_absolute_file_name(Absolute), !,
+  create_directory(Absolute).
+create_nested_directory(NestedDir, Absolute):-
   atom(NestedDir), !,
   Spec =.. [NestedDir, '.'],
-  absolute_file_name(Spec, Dir),
-  create_directory(Dir).
-create_nested_directory(NestedDir, Dir):-
+  absolute_file_name(Spec, Absolute),
+  create_directory(Absolute).
+create_nested_directory(NestedDir, Absolute):-
   % First we construct the atomic name of the outer directory.
-  NestedDir =.. [OuterDir, InnerNestedDir],
-  create_nested_directory(OuterDir, OuterDirAtom),
+  NestedDir =.. [NestedOuter, NestedInner],
+  create_nested_directory(NestedOuter, AbsoluteOuter),
   % Then we add the inner directories recursively.
-  create_nested_directory(InnerNestedDir, OuterDirAtom, Dir).
+  create_nested_directory(NestedInner, AbsoluteOuter, Absolute).
 
 %! create_nested_directory(+NestedDir:term, +OldDir:atom, -NewDir:atom) is det.
 % Adds the nested directories term to the given atomic directory,
