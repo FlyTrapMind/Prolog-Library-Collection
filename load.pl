@@ -37,6 +37,7 @@ load_pgc:-
   assert(user:file_search_path(ilp,          pgc('ILP'))),
   assert(user:file_search_path(logic,        pgc('Logic'))),
   assert(user:file_search_path(math,         pgc('Math'))),
+  assert(user:file_search_path(os,           pgc('OS'))),
   assert(user:file_search_path(server,       pgc('Server'))),
   assert(user:file_search_path(standards,    pgc('Standards'))),
     assert(user:file_search_path(html,         standards('HTML'))),

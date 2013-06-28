@@ -26,7 +26,6 @@ current logging stream.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -34,6 +33,7 @@ current logging stream.
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/thread_httpd)).
+:- use_module(os(datetime_ext)).
 :- use_module(server(web_console)).
 :- use_module(server(web_message)). % Module registration.
 :- use_module(sparql(sparql_web)).

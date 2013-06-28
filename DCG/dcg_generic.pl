@@ -1,11 +1,10 @@
 :- module(
   dcg_generic,
   [
-% AGGREGATES %
+% AGGREGATES
     dcg_word//1, % -Word:list(code)
     dcg_word_atom//1, % -Word:atom
-
-% ALL/UNTIL %
+% ALL/UNTIL
     dcg_all//1, % -Codes:list(code)
     dcg_all_atom//1, % -Atom:atom
     dcg_until//2, % :End:dcg
@@ -16,32 +15,31 @@
                     % -Codes:list(code)
     dcg_without_atom//2, % :End:dcg
                          % -Atom:atom
-% DEBUG %
+% DEBUG
     dcg_debug//0,
-% LIST %
+% LIST
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
-% MULTIPLE OCCURRENCES %
+% MULTIPLE OCCURRENCES
     dcg_multi//2, % :DCGBody:dcg
                   % ?Occurrences:integer
-% PEEK %
+% PEEK
     dcg_peek//1, % ?Code:code
     dcg_peek_atom//1, % -Atom:atom
     dcg_peek_char//1, % ?Char:char
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
-% PHRASE EXTENSION %
+% PHRASE EXTENSION
     dcg_phrase/2, % :DCGBody:dcg
                   % ?In:atom
     dcg_phrase/3, % :DCGBody:dcg
                   % ?In:atom
                   % ?Out:atom
-
-% RE %
+% RE
     dcg_plus//1, % :DCGBody:dcg
     dcg_questionmark//1, % :DCGBody:dcg
     dcg_star//1, % :DCGBody:dcg
-% REPLACE $
+% REPLACE
     dcg_replace//2 % +From:list(code)
                    % +To:list(code)
   ]

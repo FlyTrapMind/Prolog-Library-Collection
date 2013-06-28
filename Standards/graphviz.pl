@@ -85,11 +85,12 @@ representing a name-value pair.
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
-:- use_module(generics(os_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(process)).
 :- use_module(library(sha)).
+:- use_module(os(file_ext)).
+:- use_module(os(shell_ext)).
 :- use_module(standards(brewer)).
 :- use_module(svg(svg)).
 :- use_module(standards(x11)).
@@ -312,7 +313,7 @@ convert_graphviz(FromFile, Method, ToFileType, ToFile):-
 graphviz_to_svg(FromFile, Method, SVG):-
   convert_graphviz(FromFile, Method, svg, ToFile),
   file_to_svg(ToFile, SVG),
-  delete_file(ToFile).
+  safe_delete_file(ToFile).
 
 
 

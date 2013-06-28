@@ -23,14 +23,15 @@ Predicates for handling LaTeX files.
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
+:- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
+:- use_module(os(shell_ext)).
 
 :- db_add_novel(user:prolog_file_type(aux, aux)).
 :- db_add_novel(user:prolog_file_type(aux, latex_out)).
@@ -93,22 +94,20 @@ latex(Command) -->
 % Cleans the LaTeX output files in the given directory recursively.
 
 latex_clean(File):-
-  access_file(File, read),
-  !,
+  access_file(File, read), !,
   forall(
     (
       file_type_alternative(File, latex_out, DeleteFile),
       access_file(DeleteFile, write)
     ),
-    delete_file(DeleteFile)
+    safe_delete_file(DeleteFile)
   ).
 
 %! latex_clean_directory(+Directory:atom) is det.
 
 latex_clean_directory(Directory):-
-  exists_directory(Directory),
-  !,
-  delete_directory_contents(Directory, latex_out).
+  exists_directory(Directory), !,
+  safe_delete_directory_contents(Directory, latex_out).
 
 %! latex_code_convert(+File:atom) is det.
 % @see Wrapper for latex_code_convert/2

@@ -46,7 +46,6 @@ reflect the serialization format:
 
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
@@ -54,6 +53,8 @@ reflect the serialization format:
 :- use_module(library(semweb/rdf_ntriples)).
 :- use_module(library(semweb/rdf_turtle)).
 :- use_module(library(semweb/rdf_turtle_write)).
+:- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(xml(xml)).
@@ -178,7 +179,7 @@ rdf_load2(File, Options):-
 rdf_load2(File, Options):-
   access_file(File, read),
   % Returns the format in case it was a variable.
-  \+ (option(format(Format), Options), nonvar(Format))
+  \+ (option(format(Format), Options), nonvar(Format)),
   !,
   file_name_extension(_Base, Extension, File),
   rdf_serialization(Extension, Format, _URI),

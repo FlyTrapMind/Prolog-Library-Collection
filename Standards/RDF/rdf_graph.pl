@@ -3,6 +3,8 @@
   [
     rdf_bnode/2, % ?Graph:graph
                  % ?BNode:bnode
+    rdf_graph_copy/2, % +From:atom
+                      % +To:atom
     rdf_graph_equivalence/2, % +Graph1:atom
                              % +Graph2:atom
     rdf_graph_merge/2, % +In:list(atom)
@@ -155,7 +157,6 @@ as their lean subgraphs.
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_export)).
@@ -199,6 +200,14 @@ rdf_bnode_replace(SharedBNodes, G, R, NewR):-
   rdf_bnode(NewR).
 rdf_bnode_replace(_SharedBNodes, _G, R, R).
 
+%! rdf_graph_copy(+From:atom, +To:atom) is det.
+% Copying a graph is the same as merging a single graph
+% and storing the result under a new name.
+
+rdf_graph_copy(From, To):-
+  From \== To,
+  rdf_graph_merge([From], To).
+
 %! rdf_graph_equivalence(+Graph1:atom, +Graph2:atom) is semidet.
 
 rdf_graph_equivalence(Graph1, Graph2):-
@@ -240,6 +249,7 @@ bnode_translation0(Graph1, Resource1, Graph2, Resource2):-
 % standardized apart.
 
 rdf_graph_merge(FilesOrGraphs, MergedGraph):-
+  is_list(FilesOrGraphs),
   % Be liberal with respect to the input.
   files_or_rdf_graphs(FilesOrGraphs, Graphs),
   
@@ -291,8 +301,7 @@ rdf_graph_merge(FilesOrGraphs, MergedGraph):-
     )
   ).
 rdf_graph(Graph, MergedGraph):-
-  rdf_graph(Graph),
-  !,
+  rdf_graph(Graph), !,
   rdf_graph([Graph], MergedGraph).
 
 %! rdf_graph_source_file(+Graph:atom, -File:atom) is semidet.
@@ -318,8 +327,7 @@ rdf_graph_triples(G, Triples):-
   \+ (rdf(S, P, O, G), \+ member(rdf(S, P, O, G), Triples)).
 % Instantiation (+,-)-det.
 rdf_graph_triples(G, Triples):-
-  rdf_graph(G),
-  !,
+  rdf_graph(G), !,
   findall(
     rdf(S, P, O, G),
     rdf(S, P, O, G),
@@ -333,8 +341,7 @@ rdf_graph_triples(G, Triples):-
 % The predicate cannot be a blank node by definition.
 
 rdf_ground(G):-
-  catch(rdf_graph(G), _Exception, fail),
-  !,
+  rdf_graph(G), !,
   forall(
     rdf(S, P, O, G),
     rdf_ground(rdf(S, P, O))
@@ -410,8 +417,7 @@ rdf_is_instance_of(rdf(SI, P, OI, GI), rdf(S, P, O, G), BNodeMap):-
 %! ) is semidet.
 
 rdf_is_instance_of(GI, R, _G, R, _BNodeMap):-
-  rdf_name(GI, R),
-  !.
+  rdf_name(GI, R), !.
 rdf_is_instance_of(_GI, RI, _G, R, BNodeMap):-
   memberchk([R,RI], BNodeMap).
 

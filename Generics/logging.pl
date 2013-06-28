@@ -44,9 +44,10 @@ logging started.
 
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(file_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(library(http/http_client)).
+:- use_module(os(datetime_ext)).
+:- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
 
 :- multifile(prolog:message/1).
 
@@ -168,14 +169,10 @@ end_log:-
   close_log_stream.
 
 init:-
-  file_search_path(log, _Directory),
-  !.
+  file_search_path(log, _Dir), !.
 init:-
-  assert_home_subdirectory(log),
-  project_name(Project),
-  format(atom(Project0), '.~w', [Project]),
-  assert(user:file_search_path(personal, home(Project0))),
-  assert(user:file_search_path(log, personal(log))).
+  assert_personal_subdirectory(log),
+  db_add_novel(user:file_search_path(log, personal(log))).
 
 %! send_current_log_file(File) is det.
 % Sends the log that is stored in the given file to the logging server.

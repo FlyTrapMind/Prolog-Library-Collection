@@ -16,9 +16,9 @@ GeoNames predicates.
 @version 2013/01, 2013/06
 */
 
-:- use_module(generics(file_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(http/http_open)).
+:- use_module(os(io_ext)).
 
 
 
@@ -67,20 +67,23 @@ query_geonames(Service, Format, Attributes, Result):-
   port(Port),
   service_path(Service, Path),
   user_name(UserName),
-  http_open(
-    [
-      % Note that http_open/3 and parse_url/2 use different attribute names
-      % for the same thing, namely scheme/1 and protocol/1 respectively.
-      scheme(Protocol),
-      host(Host),
-      port(Port),
-      path(Path),
-      search([type(Format), username(UserName) | Attributes])
-    ],
-    Stream,
-    []
-  ),
-  stream_to_atom(Stream, Result).
+  setup_call_cleanup(
+    http_open(
+      [
+        % Note that http_open/3 and parse_url/2 use different attribute names
+        % for the same thing, namely scheme/1 and protocol/1 respectively.
+        scheme(Protocol),
+        host(Host),
+        port(Port),
+        path(Path),
+        search([type(Format), username(UserName) | Attributes])
+      ],
+      Stream,
+      []
+    ),
+    stream_to_atom(Stream, Result),
+    close(Stream)
+  ).
 
 
 

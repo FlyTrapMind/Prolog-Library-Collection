@@ -48,9 +48,9 @@ Bad to the bone but fine as wine
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
+:- use_module(os(file_ext)).
 
 
 

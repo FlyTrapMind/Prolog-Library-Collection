@@ -6,9 +6,9 @@
 @version 2012/07, 2013/05
 */
 
-:- use_module(generics(file_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(os(file_ext)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_read)).

@@ -27,9 +27,9 @@ in combination with the open source speech synthesizer eSpeak.
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(library(debug)).
 :- use_module(library(process)).
+:- use_module(os(tts_ext)).
 
 :- debug(cowspeak).
 

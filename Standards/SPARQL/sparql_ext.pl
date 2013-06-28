@@ -65,7 +65,6 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 @version 2012/12-2013/01, 2013/03-2013/05
 */
 
-:- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/http_open)).
 :- use_module(library(semweb/sparql_client)).

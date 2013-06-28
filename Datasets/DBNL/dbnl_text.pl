@@ -75,6 +75,7 @@ http://www.dbnl.org/tekst/ferr002atma01_01/ferr002atma01_01_0006.php
 :- use_module(dcg(dcg_html)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
+:- use_module(os(file_ext)).
 :- use_module(rdf(rdf_build)).
 :- use_module(standards(xpath_ext)).
 :- use_module(xml(xml_namespace)).

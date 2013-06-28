@@ -12,8 +12,8 @@
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(os(filepath_ext)).
 
 :- dynamic(doc(_Doc)).
 :- dynamic(word0(_Word, _Sum, _Docs)).

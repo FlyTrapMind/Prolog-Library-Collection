@@ -81,9 +81,10 @@ For the output formats we require the following things:
 
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
-:- use_module(math(math_ext)).
-:- use_module(standards(graphviz)).
 :- use_module(html(html)).
+:- use_module(math(math_ext)).
+:- use_module(os(file_ext)).
+:- use_module(standards(graphviz)).
 :- use_module(standards(markup)).
 :- use_module(standards(graphviz)).
 :- use_module(standards(standards)).
@@ -274,8 +275,7 @@ graph_element_to_dom(Options, GraphElement, SVG):-
     graphviz_to_svg(FromFile, sfdp, SVG)
   ),
   close(FromStream),
-  delete_file(FromFile).
-  %free_memory_file(Handle).
+  safe_delete_file(FromFile).
 
 %! graph_to_dom(
 %!   +Options:list(nvpair),

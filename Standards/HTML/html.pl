@@ -49,12 +49,12 @@ HTML attribute parsing, used in HTML table generation.
 
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
+:- use_module(os(file_ext)).
 
 % Assert DTD file locations.
 :- db_add_novel(user:file_search_path(dtd, html(.))).

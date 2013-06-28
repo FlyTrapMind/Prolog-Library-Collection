@@ -132,7 +132,6 @@ Only SL-justifications can be well-founded justifications.
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(generics(set_theory)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).

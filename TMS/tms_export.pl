@@ -17,14 +17,15 @@ Exports TMS belief states,
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(os(run_ext)).
 :- use_module(rdf(rdf_read)).
 :- use_module(standards(graphviz)).
 :- use_module(tms(tms)).
+:- use_module(xml(xml_namespace)).
 
-:- rdf_register_ns(doyle, 'http://www.wouterbeek.com/doyle.owl#').
+:- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
 
 
 

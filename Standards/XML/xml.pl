@@ -885,7 +885,6 @@ Examples:
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(file_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
@@ -894,6 +893,8 @@ Examples:
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(sgml)).
 :- use_module(library(sgml_write)).
+:- use_module(os(file_ext)).
+:- use_module(os(io_ext)).
 :- use_module(rdf(rdf_build)).
 :- use_module(standards(sgml_parse)).
 :- use_module(standards(standards), [charset/1]).
@@ -959,10 +960,14 @@ dom_to_xml(DTD_Name, DOM, XML):-
   % We do add the stylesheet parsing instruction, since this is allowed by
   % Firefox.
   dom_to_xml_file(DTD_Name, DOM, Out, [header(false)]),
-  open(TemporaryFile, read, In, [type(text)]),
-  stream_to_atom(In, XML),
-  close(In),
-  delete_file(TemporaryFile).
+  setup_call_cleanup(
+    open(TemporaryFile, read, In, [type(text)]),
+    stream_to_atom(In, XML),
+    (
+      close(In),
+      safe_delete_file(TemporaryFile)
+    )
+  ).
 
 %! dom_to_xml(+DTD_Name:atom, +Style_Name:atom, +DOM:list, -XML:atom) is det.
 % Translates DOM to XML, applying DTD checks and Style decoration.

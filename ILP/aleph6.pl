@@ -65,11 +65,11 @@ please contact Ashwin Srinivasan first.
 :- use_module(generics(listing_ext)).
 :- use_module(generics(logging)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(os_ext)).
 :- use_module(library(dialect/hprolog), [memberchk_eq/2]).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(library(time)).
+:- use_module(os(file_ext)).
 
 % This must come before this predicate is defined dynamic.
 :- redefine_system_predicate(false).
@@ -3941,8 +3941,8 @@ gen_ab_examples(Ab/_,PCover,NCover):-
   interval_count(NCover1,NSize),
   asserta('$aleph_global'(size,size(pos,PSize))),
   asserta('$aleph_global'(size,size(neg,NSize))),
-  delete_file(PosFile),
-  delete_file(NegFile).
+  safe_delete_file(PosFile),
+  safe_delete_file(NegFile).
 
 % create_examples(+File,+OldType,+OldE,+NewType,-NewE)
 % copy OldE examples of OldType to give NewE examples of NewType

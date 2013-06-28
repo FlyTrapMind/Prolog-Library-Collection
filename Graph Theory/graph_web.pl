@@ -33,7 +33,6 @@ Web front-end for generic graph visualizations.
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(exception_handling)).
-:- use_module(generics(os_ext)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(spring_embedding)).
