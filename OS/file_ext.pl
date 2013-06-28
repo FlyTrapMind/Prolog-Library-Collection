@@ -35,6 +35,8 @@
                         % -HiddenFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
+    safe_copy_file/2, % +From:atom
+                      % +To:atom
     safe_delete_file/1, % +File:atom
     safe_rename_file/2, % +From:atom
                         % +To:atom
@@ -249,6 +251,10 @@ new_file(File, NewFile):-
   maplist(atom_codes, NewAtoms, NewCodess),
   atomic_list_concat(NewAtoms, '_', NewBase),
   file_name_extension(NewBase, Extension, NewFile).
+
+safe_copy_file(From, To):-
+  safe_rename_file(From, To),
+  safe_delete_file(From).
 
 %! safe_delete_file(+File:atom) is det.
 % Delete the given file, but keep a copy around in the trashcan.
