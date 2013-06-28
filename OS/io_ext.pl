@@ -5,6 +5,9 @@
                     % +File:atom
     file_to_atom/2, % +File:file
                     % -Atom:atom
+    read_terms/3, % +Stream:stream
+                  % -Terms:list(term)
+                  % +Options:list(atom)
     stream_to_atom/2, % +Stream:stream
                       % -Atom:atom
     stream_to_file/2, % +Stream:stream
@@ -56,6 +59,22 @@ file_to_atom(File, Atom):-
     stream_to_atom(Stream, Atom),
     close(Stream)
   ).
+
+%! read_terms(+Stream:stream, -Terms:list(term), +Options:list(atom)) is det.
+% Returns the terms as they occur on the given stream.
+%
+% @arg Stream
+% @arg Terms
+% @arg Options
+
+read_terms(Stream, Terms, Options):-
+  read_term(Stream, Term, Options),
+  read_terms0(Stream, Term, Terms, Options).
+
+read_terms0(_Stream, end_of_file, [], _Options):-
+  !.
+read_terms0(Stream, Term, [Term | Terms], Options):-
+  read_terms(Stream, Terms, Options).
 
 %! stream_to_atom(+Stream:stream, -Content:atom) is det.
 % Stores the contents of an atom stream to an atom.
