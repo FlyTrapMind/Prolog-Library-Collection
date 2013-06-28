@@ -171,7 +171,7 @@ end_log:-
 init:-
   file_search_path(log, _Dir), !.
 init:-
-  assert_personal_subdirectory(log),
+  create_personal_subdirectory(log),
   db_add_novel(user:file_search_path(log, personal(log))).
 
 %! send_current_log_file(File) is det.

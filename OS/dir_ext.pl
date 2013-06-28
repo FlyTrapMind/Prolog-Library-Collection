@@ -1,7 +1,6 @@
 :- module(dir_ext,
   [
-    assert_personal_directory/0,
-    assert_personal_subdirectory/1, % +SubDir:list(atom)
+    create_personal_subdirectory/1, % +SubDir:list(atom)
     create_directory/1, % +Dir:atom
     create_nested_directory/2, % +NestedDirs:compound
                                % -Dir:atom
@@ -33,12 +32,12 @@ Extensions for handling directories.
 
 
 
-%! assert_personal_directory is det.
+%! create_personal_directory is det.
 % Asserts the home directory of the current user as a Prolog search path.
 
-assert_personal_directory:-
+create_personal_directory:-
   file_search_path(home, _), !.
-assert_personal_directory:-
+create_personal_directory:-
   % Make sure that the project name has been asserted.
   current_predicate(project_name/1),
   expand_file_name('~', [Home]),
@@ -48,7 +47,7 @@ assert_personal_directory:-
   create_nested_directory(home(Hidden), _Dir),
   db_add_novel(user:file_search_path(personal, home(Hidden))).
 
-%! assert_personal_subdirectory(+SubDir:atom) is det.
+%! create_personal_subdirectory(+SubDir:atom) is det.
 % Asserts a project-specific directory that is a direct subdirectory of the
 % current user's home.
 %
@@ -57,8 +56,8 @@ assert_personal_directory:-
 %
 % This requires that the project name has been set using project_name/1.
 
-assert_personal_subdirectory(SubDir):-
-  assert_personal_directory,
+create_personal_subdirectory(SubDir):-
+  create_personal_directory,
   create_nested_directory(project(SubDir), _Dir).
 
 %! create_directory(+Dir:atom) is det.
@@ -71,7 +70,21 @@ create_directory(Dir):-
   exists_directory(Dir), !.
 % The directory does not already exist, so create it.
 create_directory(Dir):-
-  make_directory(Dir).
+  is_absolute_file_name(Dir), !,
+  split_atom_exclusive(['/'], Dir, [Root | SubDirs]),
+  % Recursively assert all subpaths.
+  create_directory(Root, SubDirs).
+
+create_directory(_CurrentDir, []):- !.
+create_directory(CurrentDir, [NextSubDir | SubDirs]):-
+  directory_file_path(CurrentDir, NextSubDir, Dir),
+  (
+    exists_directory(Dir)
+  ;
+    make_directory(Dir)
+  ),
+  !,
+  create_directory(Dir, SubDirs).
 
 %! create_nested_directory(+NestedDir:compound, -Dir:atom) is det.
 % Returns a nested file path.
@@ -191,7 +204,7 @@ safe_delete_directory_contents(_Dir, FileType):-
 trashcan_init:-
   file_search_path(trash, _Dir), !.
 trashcan_init:-
-  assert_personal_subdirectory(trash).
+  create_personal_subdirectory(trash).
 
 trashcan(Dir):-
   trashcan_init,

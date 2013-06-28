@@ -258,7 +258,11 @@ safe_delete_file(File):-
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
   relative_file_name(File, ProjectDir, RelativeFile),
   trashcan(Trashcan),
-  directory_file_path(Trashcan, RelativeFile, CopyFile),
+  directory_file_path(Trashcan, RelativeFile, CopyFile),\
+  % =cp= will not work for nonexisting directories, so first
+  % we need to recursively create the directory.
+  file_directory_name(CopyFile, CopyDirectory),
+  create_directory(CopyDirectory),
   process_create(path(cp), [File, CopyFile], [detached(true)]),
   delete_file(File).
 
