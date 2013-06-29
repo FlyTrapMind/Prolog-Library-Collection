@@ -111,7 +111,7 @@ create_nested_directory(NestedDir, OldDir, NewDir):-
 % Asserts the home directory of the current user as a Prolog search path.
 
 create_personal_directory:-
-  file_search_path(home, _), !.
+  file_search_path(personal, _), !.
 create_personal_directory:-
   % Make sure that the project name has been asserted.
   current_predicate(project_name/1),

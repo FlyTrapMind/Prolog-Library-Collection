@@ -16,7 +16,7 @@
 :- assert(http:location(pldoc, root(help), [priority(10)])).
 
 :- use_module(library(pldoc)).
-:- doc_server(2222, [edit(true)]).
+%:- doc_server(2222, [edit(true)]).
 
 % This library allows for exploiting the color and attribute facilities
 % of most modern terminals using ANSI escape sequences.

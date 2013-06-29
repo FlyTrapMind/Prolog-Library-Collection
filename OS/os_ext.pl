@@ -20,6 +20,7 @@ Operating System interactions.
 */
 
 :- use_module(library(debug)).
+:- use_module(os(tts_ext)).
 
 :- meta_predicate(os_dependent_call(:)).
 
@@ -72,15 +73,15 @@ mac_y_pixel(YPixel, MacYPixel):-
 % The supported operating systems are registered with supported_os/1.
 
 os_dependent_call(Goal):-
+  strip_module(Goal, Module, PlainGoal),
   supported_os(OS),
   format(atom(Check), 'is_~w', [OS]),
   call(Check),
   !,
-  strip_module(Goal, _Module, Call),
-  Call =.. [Pred | Args],
-  format(atom(Pred0), '~w_~w', [Pred, OS]),
-  Call0 =.. [Pred0 | Args],
-  call(Call0).
+  PlainGoal =.. [Pred | Args],
+  format(atom(OS_Pred), '~w_~w', [Pred, OS]),
+  OS_Goal =.. [OS_Pred | Args],
+  call(Module:OS_Goal).
 os_dependent_call(Goal):-
   debug(os_ext, 'The call ~w is not supported on your OS.', [Goal]).
 

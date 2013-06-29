@@ -245,13 +245,14 @@ xmls_datatype0(string, String, xsd:string, Atom):-
 xmls_datatype_check(xsd:boolean, Boolean):-
   memberchk(Boolean, [0, 1, false, true]),
   !.
+xmls_datatype_check(Datatype, DateTime):-
+  compound(DateTime),
+  rdf_memberchk(Datatype, [xsd:date, xsd:dateTime]),
+  date_time_stamp(DateTime, _TimeStamp),
+  !.
 xmls_datatype_check(Datatype, TimeStamp):-
   rdf_memberchk(Datatype, [xsd:date, xsd:dateTime]),
   stamp_date_time(TimeStamp, _DateTime, 'UTC'),
-  !.
-xmls_datatype_check(Datatype, DateTime):-
-  rdf_memberchk(Datatype, [xsd:date, xsd:dateTime]),
-  date_time_stamp(DateTime, _TimeStamp),
   !.
 xmls_datatype_check(xsd:double, Double):-
   float(Double),

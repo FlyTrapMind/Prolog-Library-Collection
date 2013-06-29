@@ -262,12 +262,15 @@ new_file(File, NewFile):-
   file_name_extension(NewBase, Extension, NewFile).
 
 safe_copy_file(From, To):-
-  safe_rename_file(From, To),
-  safe_delete_file(From).
+  access_file(From, read), access_file(To, write), !,
+  safe_delete_file(To),
+  copy_file(From, To).
 
 %! safe_delete_file(+File:atom) is det.
 % Delete the given file, but keep a copy around in the trashcan.
 
+safe_delete_file(File):-
+  \+ exists_file(File), !.
 safe_delete_file(File):-
   access_file(File, write), !,
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),

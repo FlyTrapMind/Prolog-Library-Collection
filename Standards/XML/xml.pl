@@ -998,8 +998,7 @@ dom_to_xml_file(DTD_Name, DOM, Out):-
 %! ) is det.
 
 dom_to_xml_file(DTD_Name, DOM, Out, Options1):-
-  is_stream(Out),
-  !,
+  is_stream(Out), !,
   new_dtd(DTD_Name, DTD),
   % Retrieve the first DTD file with the given name.
   dtd_file(DTD_Name, DTD_File),

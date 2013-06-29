@@ -1,10 +1,14 @@
 :- module(
   codes_ext,
   [
-    codes_replace/4, % +Old:list(code)
-                     % +From:list(code)
-                     % +To:list(code)
-                     % -New:list(code)
+    codes_replace1/4, % +Old:list(code)
+                      % +From:list(code)
+                      % +To:list(code)
+                      % -New:list(code)
+    codes_replace2/4, % +Old:list(code)
+                      % +From:list(code)
+                      % +To:list(code)
+                      % -New:list(code)
     split_codes/3, % +Codes:list(code)
                    % +Split:list(code)
                    % -Results:list(list(code))
@@ -27,8 +31,15 @@ Predicates for handling codes.
 
 
 
-codes_replace(Old, From, To, New):-
+codes_replace1(Old, From, To, New):-
   phrase(dcg_replace(From, To), Old, New).
+codes_replace2([], _From, _To, []):- !.
+codes_replace2(Old, From, To, New):-
+  append(From, OldRest, Old), !,
+  codes_replace2(OldRest, From, To, NewRest),
+  append(To, NewRest, New).
+codes_replace2([H|T], From, To, [H|NewT]):-
+  codes_replace2(T, From, To, NewT).
 
 split_codes(Codes, Split, Results):-
   \+ is_list(Split),

@@ -69,6 +69,8 @@ reflect the serialization format:
 %! file_or_rdf_graph(+File:atom, -Graph:atom) is det.
 % This can be used to allow either a file or a graph.
 
+file_or_rdf_graph(Graph, Graph):-
+  rdf_graph(Graph), !.
 file_or_rdf_graph(File, Graph):-
   is_absolute_file_name(File), !,
   access_file(File, read),
@@ -79,6 +81,7 @@ file_or_rdf_graph(File, Graph):-
 % This can be used to allow a (possibly mixed) list of files and graphs.
 
 files_or_rdf_graphs(Files, Graphs):-
+gtrace,
   maplist(file_or_rdf_graph, Files, Graphs).
 
 %! rdf_convert(
@@ -151,18 +154,19 @@ rdf_load2(Directory, Options):-
 % The format and graph are set.
 rdf_load2(File, Options):-
   access_file(File, read),
-  option(format(Format), Options),
-  option(graph(Graph), Options),
+  option(format(_Format), Options),
+  option(graph(_Graph), Options),
   !,
   % Combine the given with the standard options.
   merge_options([register_namespaces(true), silent(true)], Options, Options0),
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  cowspeak(
-    'Graph ~w was loaded in ~w serialization from file ~w.',
-    [Graph, Format, File]
-  ).
+  %cowspeak(
+  %  'Graph ~w was loaded in ~w serialization from file ~w.',
+  %  [Graph, Format, File]
+  %),
+  true.
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
@@ -275,10 +279,11 @@ rdf_save2(File, Options):-
   once(rdf_serialization(_Extension, Format, _URI)),
   !,
   rdf_save2(File, Options, Format),
-  cowspeak(
-    'Graph ~w was saved in ~w serialization to file ~w.',
-    [Graph, Format, File]
-  ).
+  %cowspeak(
+  %  'Graph ~w was saved in ~w serialization to file ~w.',
+  %  [Graph, Format, File]
+  %),
+  true.
 
 %! rdf_save2(
 %!   +File:atom,
