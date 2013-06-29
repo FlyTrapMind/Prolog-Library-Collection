@@ -9,7 +9,7 @@
 
 /** <module> LIST_SCRIPT
 
-List scripting is the practive of running some arbitrary goal on items
+List scripting is the practice of running some arbitrary goal on items
 that are read in from a list that is stored in a file.
 
 There are two lists:

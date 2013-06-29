@@ -70,8 +70,7 @@ reflect the serialization format:
 % This can be used to allow either a file or a graph.
 
 file_or_rdf_graph(File, Graph):-
-  is_absolute_file_name(File),
-  !,
+  is_absolute_file_name(File), !,
   access_file(File, read),
   rdf_load2(File, Options),
   option(graph(Graph), Options).

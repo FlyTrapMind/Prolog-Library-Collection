@@ -33,6 +33,8 @@
                              % -ToFile:atom
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
+    merge_into_one_file/2, % +RE
+                           % +File:atom
     new_file/2, % +File1:atom
                 % -File2:atom
     safe_copy_file/2, % +From:atom
@@ -40,9 +42,12 @@
     safe_delete_file/1, % +File:atom
     safe_rename_file/2, % +From:atom
                         % +To:atom
-    spec_atomic_concat/3 % +Spec
-                         % +Atomic:atom
-                         % -NewSpec
+    spec_atomic_concat/3, % +Spec
+                          % +Atomic:atom
+                          % -NewSpec
+    split_into_smaller_files/3 % +BigFile:atom
+                               % +SmallDir:atom
+                               % +Prefix:atom
   ]
 ).
 
@@ -229,6 +234,10 @@ hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
 
+merge_into_one_file(RE, File):-
+  process_create(path(cat), [RE, '>', File], []).
+  %process_create(path(cat), ['temp_*', '>', 'big.xml'], [cwd(ToDir)]).
+
 %! new_file(+File1:atom, -File2:atom) is det.
 % If a file with the same name exists in the same directory, then
 % then distinguishing integer is appended to the file name.
@@ -293,3 +302,11 @@ spec_atomic_concat(Spec1, Atomic, Spec2):-
   spec_atomic_concat(Inner1, Atomic, Inner2),
   Spec2 =.. [Outer, Inner2].
 
+split_into_smaller_files(BigFile, SmallDir, Prefix):-
+  % Split the big file by byte size into small files.
+  % (We cannot split on the number of lines since the file is one big line.)
+  process_create(
+    path(split),
+    ['--bytes=1m', '-d', '--suffix-length=4', BigFile, Prefix],
+    [cwd(SmallDir)]
+  ).

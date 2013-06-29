@@ -1,6 +1,7 @@
 :- module(dir_ext,
   [
-    create_personal_subdirectory/1, % +SubDir:list(atom)
+    create_personal_subdirectory/2, % +SubDir:list(atom)
+                                    % -Absolute:atom
     create_directory/1, % +Dir:atom
     create_nested_directory/1, % +NestedDirs:compound
     create_nested_directory/2, % +NestedDirs:compound
@@ -33,34 +34,6 @@ Extensions for handling directories.
 :- use_module(os(filepath_ext)).
 
 
-
-%! create_personal_directory is det.
-% Asserts the home directory of the current user as a Prolog search path.
-
-create_personal_directory:-
-  file_search_path(home, _), !.
-create_personal_directory:-
-  % Make sure that the project name has been asserted.
-  current_predicate(project_name/1),
-  expand_file_name('~', [Home]),
-  db_add_novel(user:file_search_path(home, Home)),
-  project_name(Project),
-  hidden_file_name(Project, Hidden),
-  create_nested_directory(home(Hidden), _Dir),
-  db_add_novel(user:file_search_path(personal, home(Hidden))).
-
-%! create_personal_subdirectory(+SubDir:atom) is det.
-% Asserts a project-specific directory that is a direct subdirectory of the
-% current user's home.
-%
-% This can be used to write files to. Something that is not guaranteed for
-% the location where the code is run from.
-%
-% This requires that the project name has been set using project_name/1.
-
-create_personal_subdirectory(SubDir):-
-  create_personal_directory,
-  create_nested_directory(project(SubDir), _Dir).
 
 %! create_directory(+Dir:atom) is det.
 % Creates a directory with the given name.
@@ -100,7 +73,7 @@ create_nested_directory(NestedDir):-
 % @arg Absolute The absolute path of the nested directory specification.
 
 create_nested_directory(Absolute, Absolute):-
-  is_absolute_file_name(Absolute), !,
+  atomic(Absolute), is_absolute_file_name(Absolute), !,
   create_directory(Absolute).
 create_nested_directory(NestedDir, Absolute):-
   atom(NestedDir), !,
@@ -133,6 +106,34 @@ create_nested_directory(NestedDir, OldDir, NewDir):-
   atomic_list_concat([OldDir, '/', OuterDir], TempDir),
   create_directory(TempDir),
   create_nested_directory(InnerNestedDir, TempDir, NewDir).
+
+%! create_personal_directory is det.
+% Asserts the home directory of the current user as a Prolog search path.
+
+create_personal_directory:-
+  file_search_path(home, _), !.
+create_personal_directory:-
+  % Make sure that the project name has been asserted.
+  current_predicate(project_name/1),
+  expand_file_name('~', [Home]),
+  db_add_novel(user:file_search_path(home, Home)),
+  project_name(Project),
+  hidden_file_name(Project, Hidden),
+  create_nested_directory(home(Hidden), _Dir),
+  db_add_novel(user:file_search_path(personal, home(Hidden))).
+
+%! create_personal_subdirectory(+SubDir:atom, -Absolute:atom) is det.
+% Asserts a project-specific directory that is a direct subdirectory of the
+% current user's home.
+%
+% This can be used to write files to. Something that is not guaranteed for
+% the location where the code is run from.
+%
+% This requires that the project name has been set using project_name/1.
+
+create_personal_subdirectory(SubDir, Absolute):-
+  create_personal_directory,
+  create_nested_directory(personal(SubDir), Absolute).
 
 %! directory_files(
 %!   +Directory:atom,
@@ -206,11 +207,6 @@ safe_delete_directory_contents(_Dir, FileType):-
     )
   ).
 
-trashcan_init:-
-  file_search_path(trash, _Dir), !.
-trashcan_init:-
-  create_personal_subdirectory(trash).
-
 trashcan(Dir):-
   trashcan_init,
   absolute_file_name(
@@ -218,4 +214,10 @@ trashcan(Dir):-
     Dir,
     [access(write), file_type(directory)]
   ).
+
+trashcan_init:-
+  file_search_path(trash, _Dir), !.
+trashcan_init:-
+  create_personal_subdirectory(trash, Absolute),
+  db_add_novel(user:file_search_path(trash, Absolute)).
 

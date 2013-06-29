@@ -171,8 +171,8 @@ end_log:-
 init:-
   file_search_path(log, _Dir), !.
 init:-
-  create_personal_subdirectory(log),
-  db_add_novel(user:file_search_path(log, personal(log))).
+  create_personal_subdirectory('Logging', Absolute),
+  db_add_novel(user:file_search_path(log, Absolute)).
 
 %! send_current_log_file(File) is det.
 % Sends the log that is stored in the given file to the logging server.
