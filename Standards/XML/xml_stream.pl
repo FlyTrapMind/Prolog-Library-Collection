@@ -1,9 +1,10 @@
 :- module(
   xml_stream,
   [
-    xml_stream/3 % +File:atom
+    xml_stream/4 % +File:atom
                  % +Tag:atom
                  % :Goal
+                 % :StoreGoal
   ]
 ).
 
@@ -34,28 +35,42 @@ is ignored by this methods.
 :- use_module(generics(db_ext)).
 :- use_module(os(io_ext)).
 
-:- meta_predicate(xml_stream(+,+,1)).
-:- meta_predicate(xml_stream0(+,+,1)).
+:- meta_predicate(xml_stream(+,+,1,0)).
+:- meta_predicate(xml_stream0(+,+,1,0,+)).
 
 :- db_add_novel(user:prolog_file_type(tmp, temporary)).
 
+:- setting(
+  store_number,
+  integer,
+  100000,
+  'The number of items after which an intermediate save is made.'
+).
 
 
-xml_stream(File, Tag, Goal):-
+
+xml_stream(File, Tag, Goal, StoreGoal):-
   is_absolute_file_name(File), !,
+  setting(store_number, StoreNumber),
   format(atom(StartTag), '<~w>', [Tag]),
   format(atom(EndTag), '</~w>', [Tag]),
   setup_call_cleanup(
     open(File, read, Stream),
-    xml_stream0(Stream, StartTag-EndTag, Goal),
+    xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber),
     close(Stream)
   ).
 
+% Intermediate storage of results.
+xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber):-
+  flag(processed_items, StoreNumber, 0), !,
+  call(StoreGoal),
+  xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber).
 % End of stream.
-xml_stream0(Stream, _Tags, _Goal):-
-  at_end_of_stream(Stream), !.
+xml_stream0(Stream, _Tags, _Goal, StoreGoal, _StoreNumber):-
+  at_end_of_stream(Stream), !,
+  call(StoreGoal).
 % Starts an entry
-xml_stream0(Stream, StartTag-EndTag, Goal):-
+xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber):-
   peek_atom(Stream, StartTag), !,
   
   absolute_file_name(
@@ -79,13 +94,16 @@ xml_stream0(Stream, StartTag-EndTag, Goal):-
       close(In)
     )
   ),
-  xml_stream0(Stream, StartTag-EndTag, Goal).
+  
+  flag(processed_items, X, X + 1),
+  xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber).
 % Skips a line. Notify user.
-xml_stream0(Stream, Tags, Goal):-
+xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber):-
   read_line_to_codes(Stream, Codes),
+  line_count(Stream, Line),
   atom_codes(Atom, Codes),
-  cowsay('Skipping: ~w', [Atom]),
-  xml_stream0(Stream, Tags, Goal).
+  cowsay('Skipping line ~w: ~w', [Line, Atom]),
+  xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber).
 
 % Closes an entry.
 xml_stream1(Stream, _StartTag-EndTag, Out):-
