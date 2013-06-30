@@ -57,7 +57,7 @@ atom_to_file(Atom, File):-
 copy_stream_line(From, To):-
   read_line_to_codes(From, Codes),
   maplist(put_code(To), Codes),
-  flush_ouput(To).
+  flush_output(To).
 
 %! file_to_atom(+File:file, -Atom:atom) is det.
 % Turns the given file's contents into a string.

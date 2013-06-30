@@ -1,12 +1,12 @@
 :- module(
   cowspeak,
   [
-    cowsay/1, % +Text:oneof([atom,list(atom)])
+    cowsay/1, % +Term
     cowsay/2, % +Format:oneof([atom,list(code),string])
               % :Arguments:list
     cowsay_web/2, % +Text:atom
                   % -Markup:list
-    cowspeak/1, % +Text:oneof([atom,list(atom)])
+    cowspeak/1, % +Term
     cowspeak/2, % +Format:oneof([atom,list(code),string])
                 % :Arguments:list
     speech/1 % +Text:oneof([atom,list(atom)])
@@ -28,18 +28,18 @@ in combination with the open source speech synthesizer eSpeak.
 
 :- use_module(generics(atom_ext)).
 :- use_module(library(debug)).
-:- use_module(library(process)).
 :- use_module(os(tts_ext)).
 
 :- debug(cowspeak).
 
 
 
-%! cowsay(+Text:oneof([atom,list(atom)])) is det.
+%! cowsay(+Term) is det.
 % Sends the given text in a cowified format to user output.
 
-cowsay(Text):-
-  cowsay0(Text, Cow),
+cowsay(Term):-
+  term_to_atom(Term, Atom),
+  cowsay0(Atom, Cow),
   format(user_output, '~w', [Cow]).
 
 cowsay(Format, Arguments):-
@@ -135,9 +135,9 @@ cowsay_web(
 % Combines cowsay/1 and speech/1.
 % Both predicates do their own list-to-atom or atom-to-list conversions.
 
-cowspeak(Text):-
-  cowsay(Text),
-  speech(Text).
+cowspeak(Term):-
+  cowsay(Term),
+  speech(Term).
 
 %! cowspeak(+Format:oneof([atom,list(code),string]), :Arguments:list) is det.
 % Allows a text with filled-in arguments to be send to the cow.
@@ -164,10 +164,18 @@ speech(Line):-
   atomic(Line),
   text_to_speech(Line),
   !.
+speech(Term):-
+  term_to_atom(Term, Atom), !,
+  speech(Atom).
 speech(_):-
   debug(
     cowspeak,
     'The cow\'s speech cannot be played on the current OS.',
     [detached(true)]
   ).
+
+
+
+
+
 

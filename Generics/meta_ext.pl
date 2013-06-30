@@ -361,10 +361,18 @@ modules(Modules):-
 
 run_on_sublists(List, Module:Goal):-
   split_list_by_number_of_sublists(List, 10, Sublists),
-  forall(
-    member(TaskList, Sublists),
-    thread_start(Module, Goal, TaskList, _ThreadId)
-  ).
+  findall(
+    ThreadId,
+    (
+      member(TaskList, Sublists),
+      thread_start(Module, Goal, TaskList, ThreadId)
+    ),
+    ThreadIds
+  ),
+  % Collect the threads after execution and display any failures to user.
+  maplist(thread_join, ThreadIds, Statuses),
+  exclude(==(true), Statuses, OopsStatuses),
+  forall(member(OopsStatus, OopsStatuses), cowsay(OopsStatus)).
 
 
 

@@ -18,31 +18,32 @@ DCG rules for parsing/generating dates.
 @version 2013/06
 */
 
-:- use_module(dcg(dcg_year)).
-
 
 
 date(Lang, date(Year,Month,Day)) -->
+  % DCG_YEAR cannot be used for consecutive YYYYMMDD representations,
+  % since we need the unwarrented asseumption that a year lies between
+  % 0000 and 9999.
   year(Lang, Year),
-  % Exclude intervals.
-  {integer(Year)},
   ("-" ; ""),
-  Month(Lang, Month),
+  month(Lang, Month),
   ("-" ; ""),
   day(Lang, Day).
 
 day(_Lang, Day) -->
-  digit(X),
-  digit(Y),
+  [D1,D2],
   {
-    Day is X * 10 + Y,
+    number_codes(Day, [D1,D2]),
     between(1, 31, Day)
   }.
 
 month(_Lang, Month) -->
-  digit(X),
-  digit(Y),
+  [D1,D2],
   {
-    Month is X * 10 + Y,
+    number_codes(Month, [D1,D2]),
     between(1, 12, Month)
   }.
+
+year(_Lang, Year) -->
+  [Y1,Y2,Y3,Y4],
+  {number_codes(Year, [Y1,Y2,Y3,Y4])}.

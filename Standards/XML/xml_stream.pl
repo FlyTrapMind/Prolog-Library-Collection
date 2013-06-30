@@ -30,9 +30,14 @@ is ignored by this methods.
 @version 2013/06
 */
 
+:- use_module(generics(cowspeak)).
+:- use_module(generics(db_ext)).
 :- use_module(os(io_ext)).
 
-:- meta_predicate(+,+,1).
+:- meta_predicate(xml_stream(+,+,1)).
+:- meta_predicate(xml_stream0(+,+,1)).
+
+:- db_add_novel(user:prolog_file_type(tmp, temporary)).
 
 
 
@@ -52,39 +57,42 @@ xml_stream0(Stream, _Tags, _Goal):-
 % Starts an entry
 xml_stream0(Stream, StartTag-EndTag, Goal):-
   peek_atom(Stream, StartTag), !,
-  tmp_file_stream(utf8, _TmpFile, TmpStream),
-  copy_stream_line(Stream, TmpStream)
-  % Note that xml_stream0/4 is going to call xml_stream0/3 back.
-  xml_stream0(Stream, StartTag-EndTag, Goal, TmpStream).
+  
+  absolute_file_name(
+    data(copybuffer),
+    CopyBuffer,
+    [access(write),file_type(temporary)]
+  ),
+  setup_call_cleanup(
+    open(CopyBuffer, write, Out, [encoding(utf8)]),
+    xml_stream1(Stream, StartTag-EndTag, Out),
+    (
+      close(Out),
+      % Turn the situatiun around: from writing to reading.
+      open(CopyBuffer, read, In),
+      load_structure(
+        In,
+        DOM,
+        [dialect(xml),shorttag(false),space(remove)]
+      ),
+      call(Goal, DOM),
+      close(In)
+    )
+  ),
+  xml_stream0(Stream, StartTag-EndTag, Goal).
 % Skips a line. Notify user.
 xml_stream0(Stream, Tags, Goal):-
   read_line_to_codes(Stream, Codes),
   atom_codes(Atom, Codes),
-  cowsay(energylabels, 'Skipping: ~w', [Atom]),
+  cowsay('Skipping: ~w', [Atom]),
   xml_stream0(Stream, Tags, Goal).
 
 % Closes an entry.
-xml_stream0(Stream, TmpStream, _StartTag-EndTag, Goal):-
+xml_stream1(Stream, _StartTag-EndTag, Out):-
   peek_atom(Stream, EndTag), !,
-  
-  % Finalize the XML.
-  copy_stream_line(Stream, TmpStream),
-  
-  % Turn the situatiun around: from writing to reading.
-  stream_property(TmpStream, file_name(TmpFile)),
-  setup_call_cleanup(
-    open(TmpFile, read, EntryStream),
-    (
-      load_structure(EntryStream, DOM, []),
-      call(Goal, DOM)
-    ),
-    close(EntryStream),
-    delete_file(TmpFile)
-  ),
-  
-  % Start looking for the next entry.
-  xml_stream0(Stream, TmpStream, StartTag-EndTag, Goal).
+  copy_stream_line(Stream, Out).
 % Continues an entry.
-xml_stream0(Stream, TmpStream, Tags, Goal):-
-  copy_stream_line(Stream, TmpStream),
-  xml_stream0(Stream, TmpStream, Tags, Goal).
+xml_stream1(Stream, Tags, Out):-
+  copy_stream_line(Stream, Out),
+  xml_stream1(Stream, Tags, Out).
+

@@ -40,6 +40,8 @@
     safe_copy_file/2, % +From:atom
                       % +To:atom
     safe_delete_file/1, % +File:atom
+    safe_move_file/2, % +From:atom
+                      % +To:atom
     safe_rename_file/2, % +From:atom
                         % +To:atom
     spec_atomic_concat/3, % +Spec
@@ -234,9 +236,14 @@ hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
 
-merge_into_one_file(RE, File):-
-  process_create(path(cat), [RE, '>', File], []).
-  %process_create(path(cat), ['temp_*', '>', 'big.xml'], [cwd(ToDir)]).
+%! merge_into_one_file(+RE, +To) is det.
+% RE and To must be in the same directory.
+% How arbitrary this restriction is!
+
+merge_into_one_file(RE, To):-
+  directory_file_path(Dir, RE1, RE),
+  directory_file_path(Dir, To1, To),
+  process_create(path(cat), [RE1, '>', To1], [cwd(Dir)]).
 
 %! new_file(+File1:atom, -File2:atom) is det.
 % If a file with the same name exists in the same directory, then
@@ -283,6 +290,10 @@ safe_delete_file(File):-
   create_directory(CopyDirectory),
   process_create(path(cp), [File, CopyFile], [detached(true)]),
   delete_file(File).
+
+safe_move_file(From, To):-
+  safe_copy_file(From, To),
+  safe_delete_file(From).
 
 safe_rename_file(From, To):-
   access_file(From, write), \+ exists_file(To), !,

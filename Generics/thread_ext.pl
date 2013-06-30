@@ -120,11 +120,8 @@ thread_restart(ThreadAlias):-
   once(thread_start(Module, Goal, TaskList, _ThreadId)).
 
 thread_start(Module, Goal, TaskList, ThreadAlias):-
-  Goal =.. [Predicate | Arguments],
-  append(Arguments, [TaskList], NewArguments),
-  NewGoal =.. [Predicate | NewArguments],
   thread_alias(ThreadAlias),
-  thread_create(Module:NewGoal, _ThreadId, [alias(ThreadAlias)]),
+  thread_create(call(Module:Goal, TaskList), _ThreadId, [alias(ThreadAlias)]),
   length(TaskList, NumberOfTasks),
   assert(end_flag(ThreadAlias, NumberOfTasks)),
   assert(workload(ThreadAlias, Module, Goal, TaskList)).
@@ -132,6 +129,18 @@ thread_start(Module, Goal, TaskList, ThreadAlias):-
 thread_status(ThreadAlias, Status):-
   thread_property(ThreadId, alias(ThreadAlias)),
   thread_property(ThreadId, status(Status)).
+
+%! thread_success(+ThreadAlias:atom) is det.
+% If the given atom is a registered thread alias,
+% then the statistics for that running thread are
+% upped by one.
+%
+% Notice that this predicate has to be called by
+% the threaded goal, after each successful iteration
+% inside goal.
+%
+% The thread alias is not passed around, by sould be
+% retrieved inside the threaded goal using thread_self/1.
 
 thread_success(ThreadAlias):-
   flag(ThreadAlias, ID, ID + 1),
