@@ -2,8 +2,8 @@
   cowspeak,
   [
     cowsay/1, % +Text:oneof([atom,list(atom)])
-    cowsay/2, % +Text:oneof([atom,list(atom)])
-              % -Cow:atom
+    cowsay/2, % +Format:oneof([atom,list(code),string])
+              % :Arguments:list
     cowsay_web/2, % +Text:atom
                   % -Markup:list
     cowspeak/1, % +Text:oneof([atom,list(atom)])
@@ -39,10 +39,14 @@ in combination with the open source speech synthesizer eSpeak.
 % Sends the given text in a cowified format to user output.
 
 cowsay(Text):-
-  cowsay(Text, Cow),
+  cowsay0(Text, Cow),
   format(user_output, '~w', [Cow]).
 
-%! cowsay(+Text:oneof([atom,list(atom)]), -Cow:atom) is det.
+cowsay(Format, Arguments):-
+  format(atom(Text), Format, Arguments),
+  cowsay(Text).
+
+%! cowsay0(+Text:oneof([atom,list(atom)]), -Cow:atom) is det.
 % Turns the given text into a cowified message, displaying the given
 % text in the cow's speech bubble.
 %
@@ -63,11 +67,11 @@ cowsay(Text):-
 % @tbd When tabs are used in cowspeak/2 the width of the speech balloon
 %      cannot be reliable ascertained right now.
 
-cowsay(Atom, Cow):-
+cowsay0(Atom, Cow):-
   atomic(Atom),
   !,
-  cowsay([Atom], Cow).
-cowsay(Atoms, Cow):-
+  cowsay0([Atom], Cow).
+cowsay0(Atoms, Cow):-
   % Split the given atoms to fit nicely into the speech bubble.
   max_line(MaxLength),
   findall(
@@ -125,7 +129,7 @@ cowsay_web(
   [element(title, [], ['Cow says'])]/[element(pre, [], [CowText])]
 ):-
   speech(Text),
-  cowsay(Text, CowText).
+  cowsay0(Text, CowText).
 
 %! cowspeak(+Text:oneof([atom,list(atom)])) is det.
 % Combines cowsay/1 and speech/1.

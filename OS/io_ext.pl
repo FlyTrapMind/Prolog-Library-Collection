@@ -3,6 +3,8 @@
   [
     atom_to_file/2, % +Atom:atom
                     % +File:atom
+    copy_stream_line/2, % +From:stream
+                        % +To:stream
     file_to_atom/2, % +File:file
                     % -Atom:atom
     read_terms/3, % +Stream:stream
@@ -29,6 +31,7 @@ Predicates that extend the swipl builtin I/O predicates operating on streams.
 @version 2013/01, 2013/06
 */
 
+:- use_module(library(apply)).
 :- use_module(library(readutil)).
 
 
@@ -46,6 +49,15 @@ atom_to_file(Atom, File):-
     format(Stream, '~w', [Atom]),
     close(Stream)
   ).
+
+%! copy_stream_line(+From:stream, +To:stream) is det.
+% Copy the next line on the former stream to the latter stream.
+% @see Uses put_code/2.
+
+copy_stream_line(From, To):-
+  read_line_to_codes(From, Codes),
+  maplist(put_code(To), Codes),
+  flush_ouput(To).
 
 %! file_to_atom(+File:file, -Atom:atom) is det.
 % Turns the given file's contents into a string.
