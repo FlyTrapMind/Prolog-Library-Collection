@@ -6,6 +6,8 @@
     create_nested_directory/1, % +NestedDirs:compound
     create_nested_directory/2, % +NestedDirs:compound
                                % -Absolute:atom
+    directory_files2/2, % +Directory:atom
+                        % -Absolutes:list(atom)
     directory_files/3, % +Directory:atom
                        % +FileType:atom
                        % -Entries:list(atom)
@@ -23,7 +25,7 @@ Extensions for handling directories.
 
 @author Wouter Beek
 @tbd Add safe_delete_directory/1.
-@version 2013/06
+@version 2013/06-2013/07
 */
 
 :- use_module(generics(atom_ext)).
@@ -141,23 +143,34 @@ create_personal_subdirectory(SubDir, Absolute):-
 %!   -Entries:list(atom)
 %! ) is det.
 
-directory_files(Directory, FileType, Entries):-
-  directory_files2(Directory, Files),
+directory_files(Directory, FileType, Absolutes2):-
+  directory_files2(Directory, Absolutes1),
   setoff(
-    Entry,
+    Absolute,
     (
-      member(File, Files),
+      member(Absolute, Absolutes1),
       member(FileType0, [FileType, directory]),
-      file_name_type(_Base, FileType0, File),
-      directory_file_path(Directory, File, Entry)
+      file_name_type(_Base, FileType0, Absolute)
     ),
-    Entries
+    Absolutes2
   ).
 
-directory_files2(Directory, Files):-
-  directory_files(Directory, Files0),
-  once(select('.', Files0, Files1)),
-  once(select('..', Files1, Files)).
+%! directory_files2(+Directory:atom, -Absolutes:list(atom)) is det.
+% @see Variant of directory_files/2 that returns absolute file names
+%      instead of relative ones.
+
+directory_files2(Directory, Absolutes):-
+  directory_files(Directory, Files1),
+  selectchk('.', Files1, Files2),
+  selectchk('..', Files2, Files3),
+  findall(
+    Absolute,
+    (
+      member(File, Files3),
+      directory_file_path(Directory, File, Absolute)
+    ),
+    Absolutes
+  ).
 
 %! safe_delete_directory_contents(+Dir:atom, +FileType:atom) is det.
 %! safe_delete_directory_contents(+Dir:atom, +FileType:list(atom)) is det.

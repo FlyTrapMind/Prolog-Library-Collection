@@ -11,7 +11,7 @@
     rdf_guess_data_format/2, % +Stream:stream
                              % ?Format:atom
     rdf_serialization/3, % ?Extension:oneof([nt,triples,ttl,rdf])
-                         % ?Format:oneof([ntriples,tripels,turtle,xml])
+                         % ?Format:oneof([ntriples,tripels,turtle,rdf_xml])
                          % ?URI:uri
 
 % RDF LOAD
@@ -46,7 +46,6 @@ reflect the serialization format:
 
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
@@ -56,9 +55,7 @@ reflect the serialization format:
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_namespace)).
 :- use_module(xml(xml)).
-:- use_module(xml(xml_namespace)).
 
 :- db_add_novel(user:prolog_file_type(nt,  rdf)).
 :- db_add_novel(user:prolog_file_type(rdf, rdf)).
@@ -81,7 +78,6 @@ file_or_rdf_graph(File, Graph):-
 % This can be used to allow a (possibly mixed) list of files and graphs.
 
 files_or_rdf_graphs(Files, Graphs):-
-gtrace,
   maplist(file_or_rdf_graph, Files, Graphs).
 
 %! rdf_convert(
@@ -130,10 +126,12 @@ rdf_load2(Spec):-
 %! rdf_load2(+File:atom, +Options:list) is det.
 %! rdf_load2(+Files:list(atom), +Options:list) is det.
 %! rdf_load2(+Directory:atom, +Options:list) is det.
+% Load RDF from a file, a list of files, or a directory.
+%
 % @arg Spec Either a file, a list of files, or a directory.
 % @arg Options Supported options are:
-%              * format(+Format:oneof([ntriples,triples,turtle,xml]))
-%              * graph(+Graph:atom)
+%      * format(+Format:oneof([ntriples,triples,turtle,xml]))
+%      * graph(+Graph:atom)
 %
 % @see wrapper to rdf_load/2 in the semweb/rdf_db library.
 
@@ -292,8 +290,7 @@ rdf_save2(File, Options):-
 %! ) is det.
 
 % Save to N-Triples.
-rdf_save2(File, Options, ntriples):-
-  !,
+rdf_save2(File, Options, ntriples):- !,
   merge_options(
     [
       align_prefixes(true),
@@ -305,27 +302,37 @@ rdf_save2(File, Options, ntriples):-
     Options0
   ),
   rdf_save_turtle(File, Options0).
+rdf_save2(File, Options1, rdf_xml):- !,
+  select_option(format(rdf_xml), Options1, Options2),
+  rdf_save(File, Options2).
 % Save to Triples (binary storage format).
-rdf_save2(File, Options, triples):-
-  !,
+rdf_save2(File, Options, triples):- !,
   option(graph(Graph), Options),
   rdf_save_db(File, Graph).
 % Save to Turtle.
-rdf_save2(File, Options, turtle):-
-  !,
+rdf_save2(File, Options1, turtle):- !,
+  % Remove the format option.
+  select_option(format(turtle), Options1, Options2),
   merge_options(
     [
       align_prefixes(true),
+      encoding(utf8),
       indent(2),
       only_known_prefixes(true),
       tab_distance(0)
     ],
-    Options,
-    Options0
+    Options2,
+    Options3
   ),
-  rdf_save_turtle(File, Options0).
+  rdf_save_turtle(File, Options3).
+
+%! rdf_serialization(
+%!   ?Extension:oneof([nt,rdf,triples,ttl]),
+%!   ?Serialization:oneof([ntriples,rdf_xml,triples,turtle]),
+%!   ?URI:uri
+%! ) is nondet.
 
 rdf_serialization(nt, ntriples, 'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf, xml, 'http://www.w3.org/ns/formats/RDF_XML').
+rdf_serialization(rdf, rdf_xml, 'http://www.w3.org/ns/formats/RDF_XML').
 rdf_serialization(triples, triples, '').
 rdf_serialization(ttl, turtle, 'http://www.w3.org/ns/formats/Turtle').

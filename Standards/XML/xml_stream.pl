@@ -91,7 +91,8 @@ xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber):-
         [dialect(xml),shorttag(false),space(remove)]
       ),
       call(Goal, DOM),
-      close(In)
+      close(In),
+      delete_file(CopyBuffer)
     )
   ),
   

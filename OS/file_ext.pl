@@ -33,8 +33,8 @@
                              % -ToFile:atom
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
-    merge_into_one_file/2, % +RE
-                           % +File:atom
+    merge_into_one_file/2, % +FromDir:atom
+                           % +ToFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
     safe_copy_file/2, % +From:atom
@@ -236,14 +236,23 @@ hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
 
-%! merge_into_one_file(+RE, +To) is det.
+%! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.
 % RE and To must be in the same directory.
 % How arbitrary this restriction is!
 
-merge_into_one_file(RE, To):-
-  directory_file_path(Dir, RE1, RE),
-  directory_file_path(Dir, To1, To),
-  process_create(path(cat), [RE1, '>', To1], [cwd(Dir)]).
+merge_into_one_file(FromDir, ToFile):-
+  directory_files(FromDir, text, FromFiles),
+  setup_call_cleanup(
+    open(ToFile, write, Out),
+    maplist(merge_into_one_file0(Out), FromFiles),
+    close(Out)
+  ).
+merge_into_one_file0(Out, FromFile):-
+  setup_call_cleanup(
+    open(FromFile, read, In),
+    copy_stream_data(In, Out),
+    close(In)
+  ).
 
 %! new_file(+File1:atom, -File2:atom) is det.
 % If a file with the same name exists in the same directory, then
@@ -324,3 +333,4 @@ split_into_smaller_files(BigFile, SmallDir, Prefix):-
     ['--bytes=1m', '-d', '--suffix-length=4', BigFile, Prefix],
     [cwd(SmallDir)]
   ).
+
