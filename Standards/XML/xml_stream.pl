@@ -73,26 +73,25 @@ xml_stream0(Stream, _Tags, _Goal, StoreGoal, _StoreNumber):-
 xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber):-
   peek_atom(Stream, StartTag), !,
   
-  absolute_file_name(
-    data(copybuffer),
-    CopyBuffer,
-    [access(write),file_type(temporary)]
-  ),
   setup_call_cleanup(
-    open(CopyBuffer, write, Out, [encoding(utf8)]),
+    tmp_file_stream(utf8, File, Out),
     xml_stream1(Stream, StartTag-EndTag, Out),
+    close(Out)
+  ),
+  % Turn the situatiun around: from writing to reading.
+  setup_call_cleanup(
+    open(File, read, In),
     (
-      close(Out),
-      % Turn the situatiun around: from writing to reading.
-      open(CopyBuffer, read, In),
       load_structure(
         In,
         DOM,
         [dialect(xml),shorttag(false),space(remove)]
       ),
-      call(Goal, DOM),
+      call(Goal, DOM)
+    ),
+    (
       close(In),
-      delete_file(CopyBuffer)
+      delete_file(File)
     )
   ),
   
