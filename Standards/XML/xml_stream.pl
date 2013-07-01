@@ -28,7 +28,7 @@ Everything that appears outside of the indicated tag constructs
 is ignored by this methods.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06-2013/07
 */
 
 :- use_module(generics(cowspeak)).
@@ -43,7 +43,7 @@ is ignored by this methods.
 :- setting(
   store_number,
   integer,
-  100000,
+  500000,
   'The number of items after which an intermediate save is made.'
 ).
 
@@ -70,39 +70,42 @@ xml_stream0(Stream, _Tags, _Goal, StoreGoal, _StoreNumber):-
   at_end_of_stream(Stream), !,
   call(StoreGoal).
 % Starts an entry
-xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber):-
-  peek_atom(Stream, StartTag), !,
-  
-  setup_call_cleanup(
-    tmp_file_stream(utf8, File, Out),
-    xml_stream1(Stream, StartTag-EndTag, Out),
-    close(Out)
-  ),
-  % Turn the situatiun around: from writing to reading.
-  setup_call_cleanup(
-    open(File, read, In),
-    (
-      load_structure(
-        In,
-        DOM,
-        [dialect(xml),shorttag(false),space(remove)]
-      ),
-      call(Goal, DOM)
+xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
+  (
+    peek_atom(Stream, StartTag)
+  ->
+    setup_call_cleanup(
+      tmp_file_stream(utf8, File, Out),
+      xml_stream1(Stream, StartTag-EndTag, Out),
+      close(Out)
     ),
-    (
-      close(In),
-      delete_file(File)
-    )
+    % Turn the situatiun around: from writing to reading.
+    setup_call_cleanup(
+      open(File, read, In),
+      (
+        load_structure(
+          In,
+          DOM,
+          [dialect(xml),shorttag(false),space(remove)]
+        ),
+        call(Goal, DOM)
+      ),
+      (
+        close(In),
+        delete_file(File)
+      )
+    ),
+    
+    flag(processed_items, X, X + 1)
+  ;
+    read_line_to_codes(Stream, Codes),
+    line_count(Stream, Line),
+    atom_codes(Atom, Codes),
+    cowsay('Skipping line ~w: ~w', [Line, Atom])
   ),
-  
-  flag(processed_items, X, X + 1),
-  xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber).
+  fail.
 % Skips a line. Notify user.
 xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber):-
-  read_line_to_codes(Stream, Codes),
-  line_count(Stream, Line),
-  atom_codes(Atom, Codes),
-  cowsay('Skipping line ~w: ~w', [Line, Atom]),
   xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber).
 
 % Closes an entry.
