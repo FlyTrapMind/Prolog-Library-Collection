@@ -59,6 +59,7 @@ load_modules_for_pldoc:-
       DirectoryName,
       [
         datasets,
+        dcg,
         generics,
         graph_theory,
         logic,
@@ -67,6 +68,7 @@ load_modules_for_pldoc:-
         standards,
         html,
         iso,
+        os,
         owl,
         rdf,
         rdfs,

@@ -52,14 +52,14 @@ check_prolog_version:-
 % Thus, feel free to lower the number and try the PGC out on an older
 % SWI-Prolog version to your liking.
 %
-% This is currently set to 6.3.15.
+% This is currently set to 6.3.18.
 % 6.2.6 is the latest stable release.
-% 6.3.15 is the latest development release.
+% 6.3.18 is the latest development release.
 %
 % @arg The version indicator is of the form =|Major/Minor/Paths|=,
 %      with three integers.
 
-minimum_prolog_version(6/3/15).
+minimum_prolog_version(6/3/18).
 
 prolog:message(outdated_version(Component, Current, Minimum)) -->
   [

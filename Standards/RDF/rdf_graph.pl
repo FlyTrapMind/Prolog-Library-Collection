@@ -159,6 +159,7 @@ as their lean subgraphs.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).

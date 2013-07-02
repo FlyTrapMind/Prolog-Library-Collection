@@ -1,6 +1,9 @@
 :- module(
   xml_stream,
   [
+    xml_stream/3, % +File:atom
+                  % +Tag:atom
+                  % :Goal
     xml_stream/4 % +File:atom
                  % +Tag:atom
                  % :Goal
@@ -35,6 +38,7 @@ is ignored by this methods.
 :- use_module(generics(db_ext)).
 :- use_module(os(io_ext)).
 
+:- meta_predicate(xml_stream(+,+,1)).
 :- meta_predicate(xml_stream(+,+,1,0)).
 :- meta_predicate(xml_stream0(+,+,1,0,+)).
 
@@ -43,11 +47,14 @@ is ignored by this methods.
 :- setting(
   store_number,
   integer,
-  500000,
+  100000, % Set to 100,000.
   'The number of items after which an intermediate save is made.'
 ).
 
 
+
+xml_stream(File, Tag, Goal):-
+  xml_stream(File, Tag, Goal, true).
 
 xml_stream(File, Tag, Goal, StoreGoal):-
   is_absolute_file_name(File), !,
@@ -55,7 +62,7 @@ xml_stream(File, Tag, Goal, StoreGoal):-
   format(atom(StartTag), '<~w>', [Tag]),
   format(atom(EndTag), '</~w>', [Tag]),
   setup_call_cleanup(
-    open(File, read, Stream),
+    open(File, read, Stream, [alias(big_stream)]),
     xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber),
     close(Stream)
   ).

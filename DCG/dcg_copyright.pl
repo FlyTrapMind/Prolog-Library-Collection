@@ -37,5 +37,6 @@ middle_holder(H) -->
 
 last_holder(H) --> dcg_all_atom(H).
 
-separator --> "/"
-separator --> "&"
+separator --> "/".
+separator --> "&".
+

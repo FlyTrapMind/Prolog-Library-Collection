@@ -103,6 +103,7 @@ Extensions to the SWI-Prolog meta predicates.
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04
 */
 
+:- use_module(generics(cowspeak)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(thread_ext)).
 

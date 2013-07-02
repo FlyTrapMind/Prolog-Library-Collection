@@ -30,6 +30,7 @@ Extensions for handling directories.
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(os(file_ext)).

@@ -176,14 +176,14 @@ np0(Lang, Print, B) -->
 popular_edition(nl) --> "Volksuitgaaf".
 
 pp(Lang, Print, B) -->
-  pre(Lang), blank,
+  print_pre(Lang), blank,
   np(Lang, Print, B).
 
-pre(nl) --> "in".
-pre(nl) --> "met".
-pre(nl) --> "naar".
-pre(nl) --> "van".
-pre(nl) --> "voor".
+print_pre(nl) --> "in".
+print_pre(nl) --> "met".
+print_pre(nl) --> "naar".
+print_pre(nl) --> "van".
+print_pre(nl) --> "voor".
 
 publication_print(Lang, Print, Changes) -->
   s(Lang, Print, Changes).
