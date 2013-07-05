@@ -39,10 +39,9 @@ logging started.
 
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/06
+@version 2012/05-2012/07, 2013/03-2013/07
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(library(http/http_client)).
 :- use_module(os(datetime_ext)).
@@ -196,7 +195,7 @@ send_current_log_file:-
     _Error,
     fail
   ),
-  cowspeak('HTTP reply upon sending the log file:\n~w\n', [Reply]).
+  format(user_output, 'HTTP reply upon sending the log file:\n~w\n', [Reply]).
 prolog:message(no_current_log_file):-
   [ansi([], 'There is no current log file.', [])].
 

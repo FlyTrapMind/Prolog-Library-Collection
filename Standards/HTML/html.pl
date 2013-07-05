@@ -109,12 +109,10 @@ http_open_wrapper(URI, Stream, Options):-
   http_open_wrapper(URI, Stream, Options, 0).
 
 % The maximum number of HTTP attempts.
-http_open_wrapper(URI, _Stream, _Options, 5):-
+http_open_wrapper(URI, _Stream, _Options, 5):- !,
   cowspeak(
-    'The maximum number of HTTP attempts was reached for <~w>.',
-    [URI]
-  ),
-  !.
+    'The maximum number of HTTP attempts was reached for <~w>.'-[URI]
+  ).
 http_open_wrapper(URI, Stream, Options, Attempts):-
   catch(
     http_open(URI, Stream, Options),
@@ -132,32 +130,31 @@ http_open_wrapper(URI, Stream, Options, Attempts):-
 % Processes an exception thrown by load_structure/3
 
 % Retry after a while upon exceeding a limit.
-process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):-
-  !,
-  cowspeak(
-    'Encountered ~w error(s) while parsing HTML.\nContext:\t~w\n',
-    [Max, Context]
-  ),
+process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- !,
+  cowspeak([
+    'Encountered ~w error(s) while parsing HTML.'-[Max],
+    'Context:\t~w'-[Context]
+  ]),
   sleep(10),
   call(Goal).
 % Retry after a while upon existence error.
-process_exception(error(existence_error(url, URI), Context), Goal):-
-  !,
-  cowspeak('Resource <~w> does not seem to exist.\n[~w]\n', [URI, Context]),
+process_exception(error(existence_error(url, URI), Context), Goal):- !,
+  cowspeak([
+    'Resource <~w> does not seem to exist.'-[URI],
+    '[~w]'-[Context]
+  ]),
   sleep(10),
   call(Goal).
 % Retry upon socket error.
-process_exception(error(socket_error('Try Again'), _Context), Goal):-
-  !,
-  cowspeak('[SOCKET ERROR] Try again!\n', []),
+process_exception(error(socket_error('Try Again'), _Context), Goal):- !,
+  cowspeak('[SOCKET ERROR] Try again!'),
   call(Goal).
 % Retry upon I/O error.
 process_exception(
   error(io_error(read, _Stream), context(_Predicate, Reason)),
   Goal
-):-
-  !,
-  cowspeak('[IO-EXCEPTION] ~w\n', [Reason]),
+):- !,
+  cowspeak('[IO-EXCEPTION] ~w'-[Reason]),
   call(Goal).
 process_exception(Exception, _Goal):-
   gtrace, %DEB

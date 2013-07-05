@@ -152,18 +152,18 @@ rdf_load2(Directory, Options):-
 % The format and graph are set.
 rdf_load2(File, Options):-
   access_file(File, read),
-  option(format(_Format), Options),
-  option(graph(_Graph), Options),
+  option(format(Format), Options),
+  option(graph(Graph), Options),
   !,
   % Combine the given with the standard options.
   merge_options([register_namespaces(true), silent(true)], Options, Options0),
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  %cowspeak(
-  %  'Graph ~w was loaded in ~w serialization from file ~w.',
-  %  [Graph, Format, File]
-  %),
+  cowspeak(
+    [speech(false)],
+    'Graph ~w was loaded in ~w serialization from file ~w.'-[Graph, Format, File]
+  ),
   true.
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
@@ -277,10 +277,10 @@ rdf_save2(File, Options):-
   once(rdf_serialization(_Extension, Format, _URI)),
   !,
   rdf_save2(File, Options, Format),
-  %cowspeak(
-  %  'Graph ~w was saved in ~w serialization to file ~w.',
-  %  [Graph, Format, File]
-  %),
+  cowspeak(
+    [speech(false)],
+    'Graph ~w was saved in ~w serialization to file ~w.'-[Graph, Format, File]
+  ),
   true.
 
 %! rdf_save2(

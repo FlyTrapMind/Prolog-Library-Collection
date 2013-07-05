@@ -1,6 +1,8 @@
 :- module(
   thread_ext,
   [
+    run_on_sublists/2, % +List:list
+                       % :Goal
     thread_alias/1, % ?ThreadAlias:atom
     thread_end/1, % +ThreadAlias:atom
     thread_overview/0,
@@ -25,13 +27,34 @@ Allows one to monitor running threads that register.
 @version 2013/03
 */
 
+:- use_module(generics(cowspeak)).
 :- use_module(generics(atom_ext)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
 
 :- dynamic(end_flag(_ThreadAlias, _NumberOfTasks)).
 :- dynamic(workload(_ThreadAlias, _Module, _Goal, _TaskList)).
 
 
+
+run_on_sublists(List, Module:Goal):-
+  split_list_by_number_of_sublists(List, 10, Sublists),
+  findall(
+    ThreadId,
+    (
+      member(TaskList, Sublists),
+      thread_start(Module, Goal, TaskList, ThreadId)
+    ),
+    ThreadIds
+  ),
+  % Collect the threads after execution and display any failures to user.
+  maplist(thread_join, ThreadIds, Statuses),
+  exclude(==(true), Statuses, OopsStatuses),
+  forall(
+    member(OopsStatus, OopsStatuses),
+    cowspeak(OopsStatus)
+  ).
 
 thread_alias(ThreadAlias):-
   nonvar(ThreadAlias),

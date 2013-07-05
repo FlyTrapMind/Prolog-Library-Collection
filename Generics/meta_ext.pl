@@ -54,10 +54,6 @@
 % MODULES
     modules/1, % -Modules:list(atom)
 
-% MULTI-THREADING
-    run_on_sublists/2, % +List:list
-                       % :Goal
-
 % MULTIPLE CALLS
     call_nth/2, % :Goal
                 % +C:integer
@@ -103,9 +99,7 @@ Extensions to the SWI-Prolog meta predicates.
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(thread_ext)).
 
 :- meta_predicate(call_nth(0,-)).
 :- meta_predicate(call_semidet(0)).
@@ -355,25 +349,6 @@ modules(Modules):-
     current_module(Module),
     Modules
   ).
-
-
-
-% MULTI-THREADING %
-
-run_on_sublists(List, Module:Goal):-
-  split_list_by_number_of_sublists(List, 10, Sublists),
-  findall(
-    ThreadId,
-    (
-      member(TaskList, Sublists),
-      thread_start(Module, Goal, TaskList, ThreadId)
-    ),
-    ThreadIds
-  ),
-  % Collect the threads after execution and display any failures to user.
-  maplist(thread_join, ThreadIds, Statuses),
-  exclude(==(true), Statuses, OopsStatuses),
-  forall(member(OopsStatus, OopsStatuses), cowsay(OopsStatus)).
 
 
 

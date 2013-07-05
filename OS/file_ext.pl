@@ -82,6 +82,7 @@ We use the following abbreviations in this module:
 :- use_module(library(lists)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
+:- use_module(os(os_ext)).
 
 :- nodebug(file_ext).
 
@@ -121,7 +122,7 @@ base_or_file_to_file(BaseOrFile, FileType, File):-
 
 create_file(File):-
   is_absolute_file_name(File), !,
-  process_create(path(touch), [File], [detached(true)]).
+  touch(File).
 
 %! create_file(+NestedDir:term, +Name:atom, +Type:atom, -File:atom) is det.
 % Creates a file with the given name, inside the given directory, and that

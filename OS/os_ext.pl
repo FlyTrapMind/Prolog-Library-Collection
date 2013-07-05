@@ -4,10 +4,11 @@
     is_mac/0,
     is_unix/0,
     is_windows/0,
-    os_dependent_call/1, % :Goal
     mac_y_pixel/2, % +YPixel:number
                    % -MacYPixel:number
-    set_os_flag/0
+    os_dependent_call/1, % :Goal
+    set_os_flag/0,
+    touch/1 % +File:atom
   ]
 ).
 
@@ -16,11 +17,11 @@
 Operating System interactions.
 
 @author Wouter Beek
-@version 2011/11-2012/06, 2013/12-2013/02, 2013/05-2013/06
+@version 2011/11-2012/06, 2013/12-2013/02, 2013/05-2013/07
 */
 
 :- use_module(library(debug)).
-:- use_module(os(tts_ext)).
+:- use_module(library(process)).
 
 :- meta_predicate(os_dependent_call(:)).
 
@@ -35,7 +36,8 @@ Operating System interactions.
 % Prolog flag that is accessed here.
 
 is_mac:-
-  current_prolog_flag(mac, true).
+  current_prolog_flag(arch, Architecture),
+  sub_string(Architecture, _, _, _, darwin).
 
 %! is_unix is semidet.
 % Succeeds if the running OS is Unix.
@@ -93,8 +95,7 @@ os_dependent_call(Goal):-
 % @see Since this is no [[current_prolog_flag/2]] for Mac OS-X yet.
 
 set_os_flag:-
-  is_mac,
-  !,
+  is_mac, !,
   create_prolog_flag(mac, true, [access(read_only), type(boolean)]).
 set_os_flag.
 
@@ -106,3 +107,19 @@ supported_os(mac).
 supported_os(unix).
 supported_os(windows).
 
+touch(File):-
+  os_dependent_call(touch(File)).
+:- if(is_unix).
+touch_unix(File):-
+  process_create(path(touch), [File], [detached(true)]).
+:- endif.
+:- if(is_windows).
+%! touch_windows(+File:atom) is det.
+% @see http://stackoverflow.com/questions/51435/windows-version-of-the-unix-touch-command
+touch_windows(File):-
+  open(File, write, Stream),
+  close(Stream).
+  %%%%% I have never seen process_create/3 work on Windows.
+  %%%%format(atom(Command), 'type nul >>~w & copy ~w +,,', [File, File]),
+  %%%%process_create(path(cmd), [Command], []).
+:- endif.

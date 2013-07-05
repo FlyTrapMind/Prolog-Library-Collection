@@ -139,12 +139,12 @@ det(nl) --> "het".
 
 facsimile(nl) --> "facsimile".
 
-n(Lang) --> n0(Lang).
-n(Lang) --> language(Lang).
-n(Lang) --> year(Lang, _Year).
+noun(Lang) --> n0(Lang).
+noun(Lang) --> language(Lang).
+noun(Lang) --> year(Lang, _Year).
 % @tbd The connection to the previous edtion is not yet asserted.
-n(Lang) --> n0(Lang), blank, year(Lang, _Year).
-n(Lang) --> name(Lang).
+noun(Lang) --> n0(Lang), blank, year(Lang, _Year).
+noun(Lang) --> name(Lang).
 
 n0(de) --> "Auflage".
 n0(nl) --> "druk".
@@ -166,12 +166,12 @@ np(Lang, Print, B) -->
   {boolean_or(B1, B2, B)}.
 np(Lang, Print, B) -->
   adjs(Lang, Print, B),
-  n(Lang).
+  noun(Lang).
 
 np0(Lang, Print, B) -->
   (det(Lang), blank ; ""),
   adjs(Lang, Print, B), blanks,
-  n(Lang).
+  noun(Lang).
 
 popular_edition(nl) --> "Volksuitgaaf".
 

@@ -59,8 +59,13 @@
     truncate/3, % +Atom:atom
                 % +MaximumLength:integer
                 % -Truncated:atom
-    underscores_to_spaces/2 % +Atom:atom
-                            % -SpacesAtom:atom
+    underscores_to_spaces/2, % +Atom:atom
+                             % -SpacesAtom:atom
+    wrap_atom/2, % +Content:atom
+                 % +NewContent:atom
+    wrap_atom/3 % +Options
+                % +Content:atom
+                % +NewContent:atom
   ]
 ).
 
@@ -72,9 +77,10 @@ We assume atoms to be encoded using ASCII (or an ASCII-compatible) encoding
 scheme.
 
 @author Wouter Beek
-@version 2011/08-2013/05
+@version 2011/08-2013/05, 2013/07
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(math(math_ext)).
@@ -269,8 +275,7 @@ spaces_to_underscores(Atom, NewAtom):-
 % @see split_atom_inclusive/3 includes the split atom in the split results.
 
 split_atom_exclusive(Split, Atom, Splits):-
-  atom(Split),
-  !,
+  atom(Split), !,
   split_atom_exclusive([Split], Atom, Splits).
 split_atom_exclusive(SplitList, Atom, [Split1 | Splits]):-
   member(SplitMember, SplitList),
@@ -424,8 +429,7 @@ truncate(Atom, MaxLen, Truncated):-
   truncate(Atom, AtomLen, MaxLen, Truncated).
 
 truncate(Atom, AtomLen, MaxLen, Atom):-
-  AtomLen =< MaxLen,
-  !.
+  AtomLen =< MaxLen, !.
 truncate(Atom, _AtomLen, MaxLen, Truncated):-
   TruncatedLen is max(3, MaxLen - 4),
   sub_atom(Atom, 0, TruncatedLen, _, Truncated1),
@@ -441,3 +445,11 @@ truncate(Atom, _AtomLen, MaxLen, Truncated):-
 underscores_to_spaces(Old, New):-
   atom_replace(Old, '_'-' ', New).
 
+%! wrap(+Options, +Length:integer, +Content:atom, -NewContent:atom) is det.
+% Support for wrapping atoms.
+
+wrap_atom(Content, NewContent):-
+  wrap_atom([], Content, NewContent).
+
+wrap_atom(Options, Content, NewContent):-
+  dcg_phrase(dcg_word_wrap(Options), Content, NewContent).

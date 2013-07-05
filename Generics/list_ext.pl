@@ -3,18 +3,15 @@
   [
     after/3, % ?X
              % ?Y
-             % +L
+             % ?List:list
     before/3, % ?X
               % ?Y
-              % +L
+              % ?List:list
     combination/2, % +Lists:list(list(term))
                    % -Combination:list(term)
     combination/3, % +List:list(term)
                    % +Length:integer
                    % -Combination:list(term)
-    delete_list/3, % +List:list,
-                   % +Delete:list,
-                   % -NewList:list
     element_cut/4, % +L:list,
                    % +Element,
                    % -L1:list,
@@ -31,6 +28,9 @@
     list_replace/3, % +List:list
                     % +Replacements:list(term-term)
                     % -NewList:list
+    list_separator_concat/3, % +Lists:list(list)
+                             % +Separator:list
+                             % ?List:list
     list_to_ordered_pairs/2, % +L:list
                              % -Pairs:ordset(ordset)
     member/3, % ?Element1
@@ -91,26 +91,25 @@
 Extra list functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05, 2013/07
 */
 
+:- use_module(library(lists)).
 :- use_module(math(math_ext)).
 
 
 
-%! after(?X, ?Y, +L:list) is nondet.
+%! after(?X, ?Y, ?List:list) is nondet.
 % X appears after Y in the given list.
 
-after(X, Y, L):-
-  before(Y, X, L).
+after(X, Y, List):-
+  before(Y, X, List).
 
-%! before(?X, ?Y, +L:list) is nondet.
+%! before(?X, ?Y, ?List:list) is nondet.
 % X appears before Y in the given list.
 
-before(X, Y, L):-
-  nth0(I, L, X),
-  nth0(J, L, Y),
-  I < J.
+before(X, Y, List):-
+  nextto(X, Y, List).
 
 %! combination(+Lists:list(list(term)), -Combination:list(term)) is nondet.
 % Returns a combination of items from the given lists.
@@ -130,20 +129,6 @@ combination(List, Length, [H | T]):-
   succ(Length, NewLength),
   combination(List, NewLength, T).
 
-%! delete_list(+List:list, +Deletes:list, -NewList:list) is det.
-% Deletes the second list from the first one, returning the third.
-%
-% @arg List Then list from which elements are deleted.
-% @arg Deletes The list of element that are deleted.
-% @arg NewList The result of deleting the given elements from the given
-%    list.
-% @see Allows an arbitrary number of applications of delete/3.
-
-delete_list(NewList, [], NewList).
-delete_list(List, [Delete | Deletes], NewList):-
-  delete(List, Delete, TempNewList),
-  delete_list(TempNewList, Deletes, NewList).
-
 %! element_cut(+L:list, +Element:atom, -L1:list, -L2:list) is det.
 % Cuts the given list at the given element, returning the two cut lists.
 % The cut element is itself not part of any of the results.
@@ -153,10 +138,8 @@ delete_list(List, [Delete | Deletes], NewList):-
 % @arg L2 The list of elements that occur before the cut.
 % @arg L2 The list of elements that occur after the cut.
 
-element_cut([], _Element, [], []):-
-  !.
-element_cut([Element | T], Element, [], T):-
-  !.
+element_cut([], _Element, [], []):- !.
+element_cut([Element | T], Element, [], T):- !.
 element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
   element_cut(L, Element, L1, L2).
 
@@ -225,6 +208,13 @@ list_replace(List, Replacements, NewList):-
   ).
 list_replace([H | T], Replacements, [H | NewT]):-
   list_replace(T, Replacements, NewT).
+
+list_separator_concat([], _Separator, []):- !.
+list_separator_concat([List], _Separator, [List]):- !.
+list_separator_concat([List | Lists], Separator, NewList):-
+  append(List, Separator, FirstList),
+  list_separator_concat(Lists, Separator, RestLists),
+  append(FirstList, RestLists, NewList).
 
 %! list_to_ordered_pairs(+L:list, -Pairs:ordset(ordset)) is det.
 % Returns the ordered list of ordered pairs that occur in the given list.
@@ -299,8 +289,7 @@ pair([X1,X2], X1, X2).
 
 pairs([], [], []).
 pairs([Pair | Pairs], [X1 | T1], [X2 | T2]):-
-  pair(Pair, X1, X2),
-  !,
+  pair(Pair, X1, X2), !,
   pairs(Pairs, T1, T2).
 
 %! random_member(+List:list, -Member) is det.
@@ -322,8 +311,7 @@ random_member(List, Member):-
 % @arg List
 
 repeating_list(Object, Repeats, List):-
-  nonvar(List),
-  !,
+  nonvar(List), !,
   repeating_list1(Object, Repeats, List).
 repeating_list(Object, Repeats, List):-
   nonvar(Repeats),
@@ -405,10 +393,18 @@ split_list_by_number_of_sublists(List, NumberOfSublists, Sublists):-
   SizeOfSublists is Length div ReducedNumberOfSublists,
   split_list_by_size(List, SizeOfSublists, Sublists).
 
+%! split_list_by_size(
+%!   +List:list,
+%!   +MaxmimumLength:integer,
+%!   -SubLists:list(list)
+%! ) is det.
+% Splits the given list into lists of maximally the given length.
+
 % The last sublists is exactly of the requested size.
 % The empty list indicates this.
-split_list_by_size([], _SizeOfSublists, []):-
-  !.
+split_list_by_size([], _SizeOfSublists, []):- !.
+% The main case: use length/2 and append/3 to extract the list
+% prefix that is one of the sublist results.
 split_list_by_size(List, SizeOfSublists, [Sublist | Sublists]):-
   length(Sublist, SizeOfSublists),
   append(Sublist, NewList, List),
@@ -424,12 +420,15 @@ split_list_exclusive(List, Split, Chunks):-
   split_list_exclusive(List, Split, [], Chunks).
 
 % The final chunk.
-split_list_exclusive([], _Split, Chunk, [Chunk]):-
-  !.
+split_list_exclusive([], _Split, Chunk, [Chunk]):- !.
 % Process a split.
-split_list_exclusive([Match | List1], [Match | Split], Chunk, [Chunk | Chunks]):-
-  append(Split, List2, List1),
-  !,
+split_list_exclusive(
+  [Match | List1],
+  [Match | Split],
+  Chunk,
+  [Chunk | Chunks]
+):-
+  append(Split, List2, List1), !,
   split_list_exclusive(List2, [Match | Split], [], Chunks).
 % Process a chunk.
 split_list_exclusive([Part | List], Split, Chunk, Chunks):-

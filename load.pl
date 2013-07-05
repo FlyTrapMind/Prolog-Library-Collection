@@ -24,7 +24,7 @@ load_pgc:-
   ;
     assert(user:project_name('PGC'))
   )),
-  
+
   % Do not write module loads to the standard output stream.
   set_prolog_flag(verbose_load, silent),
 
@@ -53,7 +53,11 @@ load_pgc:-
   assert(user:file_search_path(tms,          pgc('TMS'))),
   assert(user:file_search_path(vocabularies, pgc('Vocabularies'))),
     assert(user:file_search_path(skos,         vocabularies('SKOS'))),
-  
+
+  % Allow OS-dependent calls.
+  use_module(os(os_ext)),
+  set_os_flag,
+
   % Start logging.
   use_module(generics(logging)),
   start_log,

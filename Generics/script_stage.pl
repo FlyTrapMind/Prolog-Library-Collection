@@ -36,7 +36,7 @@ script_stage(Stage, Goal):-
   NextStage is Stage + 1,
   stage_directory(NextStage, To),
   call(Goal, From, To),
-  cowspeak('Stage ~w is done.', [Stage]).
+  cowspeak('Stage ~w is done.'-[Stage]).
 
 stage_directory(0, StageDir):- !,
   absolute_file_name(

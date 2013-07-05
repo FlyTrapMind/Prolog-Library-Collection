@@ -108,7 +108,7 @@ xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
     read_line_to_codes(Stream, Codes),
     line_count(Stream, Line),
     atom_codes(Atom, Codes),
-    cowsay('Skipping line ~w: ~w', [Line, Atom])
+    cowspeak([speech(false)], 'Skipping line ~w: ~w'-[Line, Atom])
   ),
   fail.
 % Skips a line. Notify user.

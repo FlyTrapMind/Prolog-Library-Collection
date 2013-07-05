@@ -40,11 +40,11 @@ rdf_class_status(Class):-
     Individuals
   ),
   length(Individuals, NumberOfIndividuals),
-  cowspeak('Individuals: ~w\n', [NumberOfIndividuals]).
+  cowspeak('Individuals: ~w\n'-[NumberOfIndividuals]).
 
 rdf_graph_status(Graph):-
   rdf_statistics(triples_by_graph(Graph, NumberOfTriples)),
-  cowspeak('Triples: ~w\n', [NumberOfTriples]).
+  cowspeak('Triples: ~w\n'-[NumberOfTriples]).
 
 %! test(:Goal, +Stream) is det.
 % Runs the given goal as a test.
