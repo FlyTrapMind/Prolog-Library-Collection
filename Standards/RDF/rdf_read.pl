@@ -19,6 +19,8 @@
                               % +After:uri
     rdf_list_previous/2, % ?Element:uri
                          % ?PreviousElement:uri
+    rdf_list_member/2, % ?Element
+                       % ?RDF_List:list
 
 % LITERALS
     rdf_datatype/5, % ?Subject:oneof([bnode,uri])
@@ -74,7 +76,7 @@ Predicates for reading from RDF, customized for specific datatypes and
 literals.
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07
 */
 
 :- use_module(generics(meta_ext)).
@@ -82,6 +84,7 @@ literals.
 :- use_module(math(math_ext)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(xml(xml_namespace)).
 
 % LISTS %
 :- rdf_meta(rdf_list(+,r,-)).
@@ -92,6 +95,7 @@ literals.
 :- rdf_meta(rdf_list_occurs_after(r,r)).
 :- rdf_meta(rdf_list_occurs_before(r,r)).
 :- rdf_meta(rdf_list_previous(r,r)).
+:- rdf_meta(rdf_list_member(r,r)).
 % LITERALS %
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?)).
@@ -108,11 +112,17 @@ literals.
 :- rdf_meta(rdf_term(?,r)).
 :- rdf_meta(rdf_valuetype(?,r)).
 
-:- rdf_register_prefix(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', [keep(true)]).
+:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 
 
 % LISTS %
+
+%! rdf_list(+RDF_List:rdf_list, -List:list) is det.
+% @see Wrapper around rdf_list/3.
+
+rdf_list(RDF_List, List):-
+  rdf_list([], RDF_List, List).
 
 %! rdf_list(+O:list(nvpair), +RDFList:uri, -List:list) is det
 % Returns the list that starts at the given node.
@@ -126,8 +136,7 @@ literals.
 % @author Sander Latour
 
 rdf_list(_O, RDFList, []):-
-  rdf_global_id(rdf:nil, RDFList),
-  !.
+  rdf_global_id(rdf:nil, RDFList), !.
 rdf_list(O, RDFList, [H1 | T]):-
   rdf(RDFList, rdf:first, H),
   (
@@ -158,8 +167,7 @@ rdf_list_first(List, First):-
 % @arg Last The last element of an RDF list.
 
 rdf_list_last(List, Last):-
-  rdf(List, rdf:rest, rdf:nil),
-  !,
+  rdf(List, rdf:rest, rdf:nil), !,
   rdf(List, rdf:first, Last).
 rdf_list_last(List, Last):-
   rdf(List, rdf:rest, NextList),
@@ -175,8 +183,7 @@ rdf_list_length(List, Length):-
   rdf_list_length(List, 0, Length).
 
 rdf_list_length(List, Length, Length):-
-  rdf(List, rdf:rest, rdf:nil),
-  !.
+  rdf(List, rdf:rest, rdf:nil), !.
 rdf_list_length(List, Length, Length):-
   rdf(List, rdf:rest, PartialList),
   rdf_list_length(PartialList, PartialLength, Length),
@@ -218,6 +225,17 @@ rdf_list_occurs_before0(Before1, After):-
 
 rdf_list_previous(Element, PreviousElement):-
   rdf_list_next(PreviousElement, Element).
+
+%! rdf_list_member(?Element, ?RDF_List:rdf_list) is nondet.
+% @see Variant of member/2 for RDF lists.
+
+rdf_list_member(Element, RDF_List):-
+  rdf_list_first(RDF_List, FirstElement),
+  rdf_list_member_(Element, FirstElement).
+rdf_list_member_(Element, Element).
+rdf_list_member_(Element, TempElement1):-
+  rdf_list_next(TempElement1, TempElement2),
+  rdf_list_member_(Element, TempElement2).
 
 
 

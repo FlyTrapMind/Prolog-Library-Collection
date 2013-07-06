@@ -7,8 +7,9 @@
     formatnl/3, % +Output
                 % +Format
                 % :Arguments
-    print_indent/2, % +Out
-                    % +Indent:integer
+    indent/1, % +Indent:integer
+    indent/2, % +Out
+              % +Indent:integer
     print_list/2, % +Out
                   % +List:list
     print_list/3 % +Out
@@ -19,69 +20,81 @@
 
 /** <module> PRINT
 
-Predicates for printing stuff.
+Predicates for printing.
 
-# proof
+# Proof
 
-A datatype of the form
-
+A datatype of the following form:
 ~~~{.pl}
 proof(Conclusion, Premises)
 ~~~
 
-where =Conclusion= is written using =print_conclusion/3= and =Premises=
-is a list of proofs and/or premises that are written using =print_premise/3=.
-
 @author Wouter Beek
-@version 2013/01-2013/02, 2013/04-2013/05
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07
 */
 
 :- use_module(generics(atom_ext)). % Meta-calls.
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(library(memfile)).
+:- use_module(library(settings)).
 
 % The number of spaces that go into one indent.
-indent_size(2).
+:- setting(
+  indent_size,
+  integer,
+  2,
+  'The default indentation used by the print predicates.'
+).
 
 
+
+%! formatnl(+Format) is det.
+% @see Variant of format/1 with a newline appended.
 
 formatnl(Format):-
   format(Format),
-  current_output(Stream),
-  nl(Stream).
+  current_output(Stream), nl(Stream).
+
+%! formatnl(+Format, :Arguments) is det.
+% @see Variant of format/2 with a newline appended.
 
 formatnl(Format, Arguments):-
   format(Format, Arguments),
-  current_output(Stream),
-  nl(Stream).
+  current_output(Stream), nl(Stream).
+
+%! formatnl(+Output, +Format, :Arguments) is det.
+% @see Variant of format/3 with a newline appended.
 
 formatnl(Out, Format, Arguments):-
   format(Out, Format, Arguments),
   nl(Out).
 
-%! print_indent(+Stream:stream, +Indent:integer) is det.
-% Print the given number of indents to the given stream.
+%! indent(+Indent:integer) is det.
+% @see Like tab/1, but writes the given number of indents, where
+%      a single indent can be multiple spaces.
 
-print_indent(Stream, Indent):-
-  indent_size(IndentSize),
-  Spaces is Indent * IndentSize,
-  multi(format(Stream, ' ', []), Spaces).
+indent(Indent):-
+  setting(indent_size, IndentSize),
+  NumberOfSpaces is IndentSize * Indent,
+  tab(NumberOfSpaces).
 
-%! print_list(
-%!   +Out:oneof([atom_handle,codes_handle,stream]),
-%!   +List:list
-%! ) is det.
-% @see Wrapper predicate for print_list/3, using no indent.
+%! indent(+Stream, +Indent:integer) is det.
+% @see Like tab/2, but writes the given number of indents, where
+%      a single indent can be multiple spaces.
+
+indent(Stream, Indent):-
+  setting(indent_size, IndentSize),
+  NumberOfSpaces is IndentSize * Indent,
+  tab(Stream, NumberOfSpaces).
+
+%! print_list(+Output, +List:list) is det.
+% @see Wrapper predicate for print_list/3, using no indentation.
 
 print_list(Out, List):-
   print_list(Out, 0, List).
 
-%! print_list(
-%!   +Out:oneof([atom_handle,codes_handle,stream]),
-%!   +Indent:integer,
-%!   +List:list
-%! ) is det.
+%! print_list(+Output, +Indent:integer, +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.
 %
 % Lists are printed recursively, using indentation relative to the given
@@ -89,60 +102,23 @@ print_list(Out, List):-
 %
 % @arg Indent The number of tabs prefixed to each written line.
 %
-% @see The use of an atom and codes handle is copied from with_output_to/2.
+% @tbd Do not explicitly distinguish between codes and atoms output.
+%      with_output_to/2 writes characters to both.
 
-print_list(Stream, Indent, List):-
-  is_stream(Stream),
-  print_list(Stream, Indent, List).
-% Print the list to an atom or codes handle, as in with_output_to/2.
 print_list(Out, Indent, List):-
-  (
-    Out = atom(_Atom)
-  ;
-    Out = codes(_Codes)
-  ),
-  !,
-  setup_call_cleanup(
-    (
-      new_memory_file(Handle),
-      open_memory_file(Handle, write, Stream)
-    ),
-    (
-      print_list0(Stream, Indent, List),
-      (
-        Out = atom(Atom)
-      ->
-        memory_file_to_atom(Handle, Atom)
-      ;
-        Out = codes(Codes)
-      ->
-        memory_file_to_codes(Handle, Codes)
-      )
-    ),
-    (
-      close(Stream),
-      free_memory_file(Handle)
-    )
-  ).
+  with_output_to(Out, print_list_(Indent, List)).
 
 % Done!
-print_list0(_Stream, _Indent, []):-
-  !.
+print_list_(_Indent, []):- !.
 % Nested lists.
-print_list0(Stream, Indent, [H | T]):-
-  is_list(H),
-  !,
-  NewIndent is Indent + 1,
-  print_list0(Stream, NewIndent, H),
-  print_list0(Stream, Indent, T).
-% Next...
-print_list0(Stream, Indent, [H | T]):-
-  print_indent(Stream, Indent),
-  format(Stream, '~w', [H]),
-  % @tbd Is this really needed?
-  if_then(is_stream(Stream), flush_output(Stream)),
-  format(Stream, '\n', []),
-  print_list0(Stream, Indent, T).
+print_list_(Indent, [H | T]):-
+  is_list(H), !, NewIndent is Indent + 1,
+  print_list_(NewIndent, H),
+  print_list_(Indent, T).
+% Next list entry.
+print_list_(Indent, [H | T]):-
+  indent(Indent), write(H), format('\n'),
+  print_list_(Indent, T).
 
 % @tbd The predicates that appear below should be unified with some RDF module
 %      used for exporting triples and with some TMS module used for exporting
@@ -152,16 +128,15 @@ print_proposition(Stream, Options, rdf(S, P, O)):-
   maplist(vertex_naming(Options), [S, P, O], [S0, P0, O0]),
   option(indent(Indent), Options, 0),
   option(index(Index), Options, 'c'),
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   format(Stream, '[~w] ~w ~w ~w\n', [Index, S0, P0, O0]).
 
 print_proposition0(Stream, Options, Proposition):-
-  print_proposition(Stream, Options, Proposition),
-  !.
+  print_proposition(Stream, Options, Proposition), !.
 print_proposition0(Stream, Options, Proposition):-
   option(indent(Indent), Options, 0),
   option(index(Index), Options, c),
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   format(Stream, '[~w]:\t~w', [Index, Proposition]).
 
 print_proof(_Stream, _Options, []).

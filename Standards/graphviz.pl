@@ -581,7 +581,7 @@ stream_attributes0(Stream, [Attribute | Attributes], Separator):-
 % @arg Edge A GraphViz edge compound term.
 
 stream_edge(Stream, Indent, edge(FromVertexID, ToVertexID, EdgeAttributes)):-
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   format(Stream, 'node_~w -> node_~w ', [FromVertexID, ToVertexID]),
   stream_attributes(Stream, EdgeAttributes, ', '),
   formatnl(Stream, ';', []).
@@ -603,7 +603,7 @@ stream_edge(Stream, Indent, edge(FromVertexID, ToVertexID, EdgeAttributes)):-
 % @arg GraphAttributes A list of name-value pairs.
 
 stream_graph_attributes(Stream, Indent, GraphAttributes):-
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   stream_attributes0(Stream, GraphAttributes, '\n  '),
   nl(Stream).
 
@@ -656,13 +656,13 @@ stream_graphviz(Stream, graph(Vertices, Ranks, Edges, GraphAttributes)):-
 % @arg Indent An integer indicating the indentation.
 
 stream_rank(Stream, Indent, rank(RankVertex, ContentVertices)):-
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   formatnl(Stream, '{', []),
   NewIndent is Indent + 1,
-  print_indent(Stream, NewIndent),
+  indent(Stream, NewIndent),
   formatnl(Stream, 'rank=same;', []),
   maplist(stream_vertex(Stream, NewIndent), [RankVertex | ContentVertices]),
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   formatnl(Stream, '}', []).
 
 stream_rank_edges(_Stream, _Indent, []):-
@@ -685,7 +685,7 @@ stream_rank_edges(
 % @arg Vertex A GraphViz vertex compound term.
 
 stream_vertex(Stream, Indent, node(VertexID, VerticeAttributes)):-
-  print_indent(Stream, Indent),
+  indent(Stream, Indent),
   format(Stream, 'node_~w ', [VertexID]),
   stream_attributes(Stream, VerticeAttributes, ', '),
   formatnl(Stream, ';', []).

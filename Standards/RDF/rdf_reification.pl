@@ -85,8 +85,7 @@ rdf_assert_predicate(Stmt, Predicate, Graph):-
   rdf_assert(Stmt, rdf:predicate, Predicate, Graph).
 
 rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
-  rdf_statement(Subject, Predicate, Object, Graph, Stmt),
-  !.
+  rdf_statement(Subject, Predicate, Object, Graph, Stmt), !.
 rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
   rdf_bnode(Stmt),
   rdf_assert(Stmt, rdf:type, rdf:'Statement', Graph),

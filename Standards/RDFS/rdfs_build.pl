@@ -100,15 +100,15 @@ using the following triples:
 :- rdf_meta(rdfs_assert_property(r,+)).
 :- rdf_meta(rdfs_assert_subproperty(r,r,+)).
 
-:- load_rdfs_schema.
+:- initialization(load_rdfs_schema).
 
 
 
 % CLASS HIERARCHY %
 
 rdfs_assert_class(Class, Graph):-
-  % Materialization
-  %rdfs_assert_individual(Class, rdfs:'Class', Graph),
+  % Materialization would figure this one out as well.
+  rdfs_assert_individual(Class, rdfs:'Class', Graph),
   rdfs_assert_subclass(Class, rdfs:'Resource', Graph).
 
 %! rdfs_assert_individual(+Individual:uri, +Class:class, +Graph:graph) is det.
@@ -122,8 +122,8 @@ rdfs_assert_individual(Individual, Class, Graph):-
   rdf_assert(Individual, rdf:type, Class, Graph).
 
 rdfs_assert_property_class(PropertyClass, Graph):-
-  % Materialization
-  %rdfs_assert_individual(PropertyClass, rdfs:'Class', Graph),
+  % Materialization would figure this one out as well.
+  rdfs_assert_individual(PropertyClass, rdfs:'Class', Graph),
   rdfs_assert_subclass(PropertyClass, rdf:'Property', Graph).
 
 rdfs_assert_subclass(Class, SuperClass, Graph):-
