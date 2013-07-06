@@ -12,9 +12,11 @@
     split_codes/3, % +Codes:list(code)
                    % +Split:list(code)
                    % -Results:list(list(code))
-    strip_codes/3 % +Strip:list(code)
-                  % +In:list(code)
-                  % -Out:list(code)
+    strip_codes/3, % +Strip:list(code)
+                   % +In:list(code)
+                   % -Out:list(code)
+    to_codes/2 % +AtomOrCodes
+               % -Codes:list(code)
   ]
 ).
 
@@ -23,7 +25,7 @@
 Predicates for handling codes.
 
 @author Wouter Beek
-@version 2013/05-2013/06
+@version 2013/05-2013/07
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -60,4 +62,9 @@ strip_codes(Strip, [H | In], Out):-
   strip_codes(Strip, In, Out).
 strip_codes(Strip, [H | In], [H | Out]):-
   strip_codes(Strip, In, Out).
+
+to_codes(Atom, Codes):-
+  atom(Atom), !,
+  atom_codes(Atom, Codes).
+to_codes(Codes, Codes).
 

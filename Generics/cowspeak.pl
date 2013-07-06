@@ -31,6 +31,7 @@ in combination with the open source speech synthesizer eSpeak.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(library(debug)).
+:- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(os(os_ext)).
@@ -44,7 +45,7 @@ in combination with the open source speech synthesizer eSpeak.
 :- setting(
   default_max_width,
   integer,
-  50,
+  40,
   'The default width of the speech bubble in the number characters.'
 ).
 
@@ -77,36 +78,42 @@ cowspeak(Content):-
 %      constituting a message.
 % @arg Options A list of name-value pairs.
 %      The following options are supported:
+%      * eyes(+Eyes:list(code))
 %      * maximum_width(?MaximumWidth:integer)
 %        The maximum number of characters the speech bubble is allowed to
 %        have.
 %        If the maximum width is exceeded by any content line, then the
 %        wrap option -- if set -- is used.
-%     * output(+Output)
-%       The same output alternatives that apply to with_output_to/1.
-%       The default value is =|stream(user_output)|=.
-%     * speech(+OnOrOff:boolean)
-%     * wrap(+Wrap:oneof([line,word]))
-%       Whether line wrapping or word wrapping (the default) should be applied.
+%      * mode(+Mode)
+%        The following process_modes are supported: `Borg`, `dead`, `greedy`,
+%        `paranoia`, `stoned`, `tired`, `wired`, `youth`.
+%      * output(+Output)
+%        The same output alternatives that apply to with_output_to/1.
+%        The default value is =|stream(user_output)|=.
+%      * speech(+OnOrOff:boolean)
+%      * wrap(+Wrap:oneof([line,none,word]))
+%        Whether line wrapping or word wrapping (the default)
+%        should be applied, or neither of those (e.g. for ASCII art).
 %
 % @tbd Split lines by words (in whitespace). Add this to module ATOM_EXT.
 % @tbd When tabs are used in cowspeak/2 the width of the speech balloon
 %      cannot be reliable ascertained right now.
 
-cowspeak(Options, Contents):-
+cowspeak(O, Contents):-
   is_list(Contents), !,
   maplist(cow_atom, Contents, Atoms),
-  cowspeak_(Options, Atoms).
+  cowspeak_(O, Atoms).
 % Since we work with lists, we create a singleton list for single terms.
-cowspeak(Options, Content):-
-  cowspeak(Options, [Content]).
+cowspeak(O, Content):-
+  cowspeak(O, [Content]).
 
-cowspeak_(Options, Atoms):-
+cowspeak_(O1, Atoms):-
   % Establish the maximum width of the speech bubble.
   setting(default_max_width, DefaultMaxWidth),
-  option(maximum_width(MaximumWidth), Options, DefaultMaxWidth),
+  option(maximum_width(MaximumWidth), O1, DefaultMaxWidth),
   % Some characters are needed to display the speech bubble itself.
   MaximumEffectiveWidth is MaximumWidth - 4,
+  merge_options([maximum_line_width(MaximumEffectiveWidth)], O1, O2),
 
   findall(
     CodeLine3,
@@ -122,11 +129,7 @@ cowspeak_(Options, Atoms):-
       % the type of wrapping that is used.
       atom_codes(Line1, CodeLine1),
       % Word wrapping.
-      phrase(
-        dcg_word_wrap([maximum_line_width(MaximumEffectiveWidth)]),
-        CodeLine1,
-        CodeLine2
-      ),
+      phrase(dcg_wrap(O2), CodeLine1, CodeLine2),
       % We need a list for each line in order to determine
       % the speech bubble width.
       phrase(dcg_separated_list(newline, CodeLines1), CodeLine2),
@@ -140,32 +143,76 @@ cowspeak_(Options, Atoms):-
   max_list(LineLengths, LineWidth),
 
   % Cow DCG.
-  phrase(dcg_cowsay(LineWidth, CodeLines2), CowCodes),
+  phrase(dcg_cowsay(O2, LineWidth, CodeLines2), CowCodes),
 
+  % Write to the given stream.
+  option(output(Output), O2, user_output),
+  atom_codes(CowAtom, CowCodes),
+  with_output_to(Output, write(CowAtom)),
+  
   % It can talk!
-  option(speech(Speech), Options, false),
+  option(speech(Speech), O2, true),
   if_then(
     Speech == true,
     text_to_speech(Atoms)
-  ),
+  ).
 
-  % Write to the given stream.
-  option(output(Output), Options, user_output),
-  atom_codes(CowAtom, CowCodes),
-  with_output_to(Output, write(CowAtom)).
+dcg_cow(O1) -->
+  {
+    process_modes(O1, O2),
+    Indent = 8,
+    AddToIndent = 4,
+    AddedIndent is Indent + AddToIndent,
+    CowLength = 4
+  },
 
-dcg_cow -->
-  " |  ^__^", newline,
-  "  - (oo)______", newline,
-  "    (__)      )/|/", newline,
-  "      ||----w||", newline,
-  "     ||       ||", newline.
+  % First line.
+  dcg_multi(space, Indent), backslash, "   ^__^", newline,
 
-dcg_cowsay(LineWidth, CodeLines) -->
+  % Second line.
+  dcg_multi(space, Indent), space, backslash,
+  "  (", dcg_cow_eyes(O2), ")",
+  backslash, "___", dcg_multi(underscore, CowLength), newline,
+
+  % Third line.
+  dcg_multi(space, AddedIndent),
+  "(__)", backslash, "   ", dcg_multi(space, CowLength), ")",
+  dcg_cow_tail, newline,
+
+  % Fourth line.
+  dcg_multi(space, AddedIndent),
+  " ", dcg_cow_tongue(O2),
+  " ||", dcg_multi(hyphen, CowLength), "w |", newline,
+
+  % Fifth line.
+  dcg_multi(space, AddedIndent),
+  "    ", "||", dcg_multi(space, CowLength), " ||", newline.
+
+dcg_cow_eyes(O) -->
+  {
+    option(eyes(Eyes1), O, "oo"),
+    to_codes(Eyes1, Eyes2),
+    Eyes2 = [X, Y | _], !
+  },
+  [X, Y].
+dcg_cow_eyes(_O) --> "oo".
+
+dcg_cow_tail -->
+  backslash, forward_slash, backslash.
+
+dcg_cow_tongue(O) -->
+  {
+    option(tongue(Tongue1), O, "  "),
+    to_codes(Tongue1, Tongue2),
+    Tongue2 = [X, Y | _], !
+  },
+  [X, Y].
+dcg_cow_tongue(_O) --> "  ".
+
+dcg_cowsay(O, LineWidth, CodeLines) -->
   newline,
   dcg_speech_bubble(LineWidth, CodeLines),
-  dcg_multi(dcg_speech_bubble_stick, 3),
-  dcg_cow,
+  dcg_cow(O),
   newline.
 
 %! dcg_speech_bubble(+LineWidth:integer, +CodeLines:list(list(code)))//
@@ -198,25 +245,41 @@ dcg_speech_bubble_lines(LineWidth, [CodeLine|CodeLines]) -->
   dcg_speech_bubble_line(LineWidth, CodeLine),
   dcg_speech_bubble_lines(LineWidth, CodeLines).
 
-dcg_speech_bubble_stick -->
-  space, vertical_bar, newline.
-
 dcg_speech_bubble_top(LineWidth) -->
   forward_slash, hyphen,
   dcg_multi(hyphen, LineWidth),
   hyphen, backslash.
 
 %! cowspeak_web(+Content, -Markup:list) is det.
+% @see Like cowspeak/1, but returns the result in markup.
 
 cowspeak_web(Content, Markup):-
   cowspeak_web([], Content, Markup).
 
+%! cowspeak_web(+Options, +Content, -Markup:list) is det.
+% @see Like cowspeak/2, but returns the result in markup.
+
 cowspeak_web(
-  Options1,
+  O1,
   Content,
   [element(title, [], ['Cow says'])]/[element(pre, [], [Atom])]
 ):-
-  select_option(output(_Output), Options1, Options2),
-  merge_options([output(atom(Atom))], Options2, Options3),
-  cowspeak(Options3, Content).
+  select_option(output(_Output), O1, O2),
+  merge_options([output(atom(Atom))], O2, O3),
+  cowspeak(O3, Content).
+
+mode('Borg', [eyes("==")]).
+mode(dead, [eyes("XX"), tongue("U")]).
+mode(greedy, [eyes("$$")]).
+mode(paranoia, [eyes("@@")]).
+mode(stoned, [eyes("**"), tongue("U")]).
+mode(tired, [eyes("--")]).
+mode(wired, [eyes("OO")]).
+mode(youth, [eyes("..")]).
+
+process_modes(O1, O2):-
+  option(mode(Mode), O1),
+  mode(Mode, ModeO), !,
+  merge_options(ModeO, O1, O2).
+process_modes(O, O).
 

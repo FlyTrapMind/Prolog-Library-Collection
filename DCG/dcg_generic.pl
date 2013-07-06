@@ -6,6 +6,7 @@
     dcg_word//1, % -Word:list(code)
     dcg_word_atom//1, % -Word:atom
 % ALL/UNTIL
+    dcg_all//0,
     dcg_all//1, % -Codes:list(code)
     dcg_all_atom//1, % -Atom:atom
     dcg_until//2, % :End:dcg
@@ -165,10 +166,10 @@ dcg_word_atom(Word) -->
 
 % ALL/UNTIL %
 
+dcg_all --> dcg_all(_).
+
 dcg_all([]) --> [].
-dcg_all([H|T]) -->
-  [H],
-  dcg_all(T).
+dcg_all([H|T]) --> [H], dcg_all(T).
 
 dcg_all_atom(Atom) -->
   {var(Atom)},
@@ -416,8 +417,9 @@ dcg_wrap -->
 dcg_wrap(Options) -->
   {select_option(wrap(Mode), Options, RestOptions, word)},
   dcg_wrap_(Mode, RestOptions).
-dcg_wrap_(line, Options)--> dcg_line_wrap(Options), !.
-dcg_wrap_(word, Options)--> dcg_word_wrap(Options), !.
+dcg_wrap_(line, Options) --> dcg_line_wrap(Options), !.
+dcg_wrap_(none, _Options) --> dcg_all, !.
+dcg_wrap_(word, Options) --> dcg_word_wrap(Options), !.
 
 %! dcg_line_wrap//
 % @see dcg_line_wrap//1
@@ -446,8 +448,8 @@ dcg_line_wrap(Options) -->
 
 dcg_line_wrap(0, MaximumLineWidth), newline --> !,
   dcg_line_wrap(MaximumLineWidth, MaximumLineWidth).
-dcg_line_wrap(Remaining, MaximumLineWidth) -->
-  [_Code],
+dcg_line_wrap(Remaining, MaximumLineWidth), [Code] -->
+  [Code],
   {NewRemaining is Remaining - 1}, !,
   dcg_line_wrap(NewRemaining, MaximumLineWidth).
 dcg_line_wrap(_Remaining, _MaximumLineWidth) --> [], !.
@@ -503,3 +505,4 @@ dcg_word_wrap(Remaining, MaximumLineWidth), (Emit, EmitPostfix) --> !,
     )
   },
   dcg_word_wrap(NewRemaining, MaximumLineWidth).
+
