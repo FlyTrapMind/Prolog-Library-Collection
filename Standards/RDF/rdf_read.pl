@@ -1,27 +1,6 @@
 :- module(
   rdf_read,
   [
-% LISTS
-    rdf_list/3, % +O:list(nvpair)
-                % +RDFList:uri
-                % -List:list
-    rdf_list_first/2, % +List:uri
-                      % -FirstElement:uri
-    rdf_list_last/2, % +List:uri
-                     % -LastElement:uri
-    rdf_list_length/2, % +List:uri
-                       % -Length:number
-    rdf_list_next/2, % ?Element:uri
-                     % ?NextElement:uri
-    rdf_list_occurs_after/2, % +After:uri
-                             % +Before:uri
-    rdf_list_occurs_before/2, % +Before:uri
-                              % +After:uri
-    rdf_list_previous/2, % ?Element:uri
-                         % ?PreviousElement:uri
-    rdf_list_member/2, % ?Element
-                       % ?RDF_List:list
-
 % LITERALS
     rdf_datatype/5, % ?Subject:oneof([bnode,uri])
                     % ?Predicate:uri
@@ -38,7 +17,7 @@
                    % ?Literal:atom
                    % ?Graph:graph
 
-% MEMBERSHIP
+% LIST MEMBERSHIP
     rdf_member/2, % ?Member:uri
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
@@ -86,21 +65,13 @@ literals.
 :- use_module(rdf(rdf_graph)).
 :- use_module(xml(xml_namespace)).
 
-% LISTS %
-:- rdf_meta(rdf_list(+,r,-)).
-:- rdf_meta(rdf_list_first(r,r)).
-:- rdf_meta(rdf_list_last(r,r)).
-:- rdf_meta(rdf_list_length(r,-)).
-:- rdf_meta(rdf_list_next(r,r)).
-:- rdf_meta(rdf_list_occurs_after(r,r)).
-:- rdf_meta(rdf_list_occurs_before(r,r)).
-:- rdf_meta(rdf_list_previous(r,r)).
-:- rdf_meta(rdf_list_member(r,r)).
+:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
+
 % LITERALS %
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?)).
-% MEMBERSHIP %
+% LIST MEMBERSHIP %
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
 % RDF HAS %
@@ -111,131 +82,6 @@ literals.
 :- rdf_meta(rdf_random(r,r,r,?,-)).
 :- rdf_meta(rdf_term(?,r)).
 :- rdf_meta(rdf_valuetype(?,r)).
-
-:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
-
-
-
-% LISTS %
-
-%! rdf_list(+RDF_List:rdf_list, -List:list) is det.
-% @see Wrapper around rdf_list/3.
-
-rdf_list(RDF_List, List):-
-  rdf_list([], RDF_List, List).
-
-%! rdf_list(+O:list(nvpair), +RDFList:uri, -List:list) is det
-% Returns the list that starts at the given node.
-%
-% @arg Options Thw following options are supported:
-%        1. =|recursive(boolean)|=
-% @arg StartNode The URI of a node that starts the RDF list.
-% @arg List A prolog list.
-%
-% @author Wouter Beek
-% @author Sander Latour
-
-rdf_list(_O, RDFList, []):-
-  rdf_global_id(rdf:nil, RDFList), !.
-rdf_list(O, RDFList, [H1 | T]):-
-  rdf(RDFList, rdf:first, H),
-  (
-    option(recursive(true), O, true),
-    rdf(H, rdf:type, rdf:'List')
-  ->
-    rdf_list(O, H, H1)
-  ;
-    H1 = H
-  ),
-  rdf(RDFList, rdf:rest, RDFTail),
-  !,
-  rdf_list(O, RDFTail, T).
-
-%! rdf_list_first(?List:uri, ?First:uri) is nondet.
-% Pairs of lists and their first element.
-%
-% @arg List an RDF list.
-% @arg First The first element of an RDF list.
-
-rdf_list_first(List, First):-
-  rdf(List, rdf:first, First).
-
-%! rdf_list_first(?List:uri, ?Last:uri) is nondet.
-% Pairs of lists and their last element.
-%
-% @arg List an RDF list.
-% @arg Last The last element of an RDF list.
-
-rdf_list_last(List, Last):-
-  rdf(List, rdf:rest, rdf:nil), !,
-  rdf(List, rdf:first, Last).
-rdf_list_last(List, Last):-
-  rdf(List, rdf:rest, NextList),
-  rdf_list_last(NextList, Last).
-
-%! rdf_list_length(+List:uri, -Length:integer) is det.
-% Returns the number of elements in the given list.
-%
-% @arg List An RDF list.
-% @arg Length An integer.
-
-rdf_list_length(List, Length):-
-  rdf_list_length(List, 0, Length).
-
-rdf_list_length(List, Length, Length):-
-  rdf(List, rdf:rest, rdf:nil), !.
-rdf_list_length(List, Length, Length):-
-  rdf(List, rdf:rest, PartialList),
-  rdf_list_length(PartialList, PartialLength, Length),
-  succ(PartialLength, Length).
-
-%! rdf_list_next(Element, NextElement) is nondet.
-% Returns pairs of consecutive elements in a list.
-%
-% @arg Element A resource that is an element in an RDF list.
-% @arg NextElement A resource that is an element in an RDF list.
-
-rdf_list_next(Element, NextElement):-
-  rdf(List, rdf:first, Element),
-  rdf(List, rdf:rest, NextList),
-  \+ rdf_global_id(rdf:nil, NextList),
-  rdf(NextList, rdf:first, NextElement).
-
-rdf_list_occurs_after(After, Before):-
-  After \== Before,
-  rdf_list_occurs_after0(After, Before).
-rdf_list_occurs_after0(X, X).
-rdf_list_occurs_after0(After1, Before):-
-  rdf_list_previous(After1, After2),
-  rdf_list_occurs_after0(After2, Before).
-
-rdf_list_occurs_before(Before, After):-
-  Before \== After,
-  rdf_list_occurs_before0(Before, After).
-rdf_list_occurs_before0(X, X).
-rdf_list_occurs_before0(Before1, After):-
-  rdf_list_next(Before1, Before2),
-  rdf_list_occurs_before0(Before2, After).
-
-%! rdf_list_previous(Element, PreviousElement) is nondet.
-% Returns pairs of inverted consecutive elements in a list.
-%
-% @arg Element A resource that is an element in an RDF list.
-% @arg PreviousElement A resource that is an element in an RDF list.
-
-rdf_list_previous(Element, PreviousElement):-
-  rdf_list_next(PreviousElement, Element).
-
-%! rdf_list_member(?Element, ?RDF_List:rdf_list) is nondet.
-% @see Variant of member/2 for RDF lists.
-
-rdf_list_member(Element, RDF_List):-
-  rdf_list_first(RDF_List, FirstElement),
-  rdf_list_member_(Element, FirstElement).
-rdf_list_member_(Element, Element).
-rdf_list_member_(Element, TempElement1):-
-  rdf_list_next(TempElement1, TempElement2),
-  rdf_list_member_(Element, TempElement2).
 
 
 
@@ -250,8 +96,7 @@ rdf_list_member_(Element, TempElement1):-
 %! ) is nondet.
 
 rdf_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph):-
-  nonvar(LexicalValue),
-  !,
+  nonvar(LexicalValue), !,
   rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue),
   rdf(Subject, Predicate, literal(type(Datatype, CanonicalValue)), Graph).
 rdf_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph):-
@@ -294,7 +139,7 @@ rdf_literal(Subject, Predicate, Language, Literal, Graph):-
 
 
 
-% MEMBERSHIP %
+% LIST MEMBERSHIP %
 
 rdf_member(Member, List):-
   member(Member0, List),
@@ -308,8 +153,7 @@ rdf_memberchk(Member, List):-
 % RDF HAS %
 
 rdf_has_datatype(Subject, Predicate, DatatypeName, LexicalValue):-
-  nonvar(LexicalValue),
-  !,
+  nonvar(LexicalValue), !,
   rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue),
   rdf_has(Subject, Predicate, literal(type(Datatype, CanonicalValue))).
 rdf_has_datatype(Subject, Predicate, DatatypeName, LexicalValue):-

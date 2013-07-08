@@ -119,6 +119,7 @@ rdfs_individual(X, Y, G):-
 :- use_module(math(math_ext)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 

@@ -1,17 +1,10 @@
 :- module(
   rdf_export,
   [
-    rdf_edge_coloring/3, % +Options:list(nvpair)
-                         % +Edge:edge
-                         % -Color:color
-    rdf_edge_naming/3, % +Options:list(nvpair)
-                       % +Edge:edge
-                       % -Name:atom
-    rdf_edge_styling/3, % +Options:list(nvpair)
-                        % +Edge:edge
-                        % -Style:pair(oneof([bold,dashed,dotted,solid]),atom)
-    rdf_graph_naming/2, % +Options:list(nvpair)
-                        % -Name:atom
+    export_rdf_graph/4, % +Options
+                        % :CoordFunc
+                        % +RDF_Graph:atom
+                        % -G_Term:compound
     rdf_register_class_color/3, % +Graph:atom
                                 % +Class:class
                                 % +Color:atom
@@ -22,22 +15,9 @@
                            % -Name:atom
     rdf_schema/2, % +Graph:atom
                   % -Triples:list(rdf_triple)
-    rdf_triple_naming/4, % +Subject:oneof([bnode,uri])
-                         % +Predicate:uri
-                         % +Object:oneof([bnode,literal,uri])
-                         % -Name:atom
-    rdf_vertex_coloring/3, % +Options:list(nvpair)
-                           % +Vertex:vertex
-                           % -Color:atom
-    rdf_vertex_naming/3, % +Options:list(nvpair)
-                         % +Vertex:vertex
-                         % -Name:atom
-    rdf_vertex_picturing/3, % +Options:list(nvpair)
-                            % +Vertex:vertex
-                            % -Image:atom
-    rdf_vertex_shaping/3 % +Options:list(nvpair)
-                         % +Vertex:vertex
-                         % -Name:atom
+    rdf_vertex_naming/3 % +Options:list(nvpair)
+                        % +RDF_Term:oneof([bnode,literal,uri])
+                        % -Name:atom
   ]
 ).
 
@@ -64,7 +44,7 @@ The procedure for determining the color of a vertex:
 # Vertex naming
 
 @author Wouter Beek
-@version 2013/01-2013/03
+@version 2013/01-2013/03, 2013/07
 */
 
 :- use_module(generics(atom_ext)).
@@ -72,11 +52,13 @@ The procedure for determining the color of a vertex:
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_graph_theory)).
+:- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_read)).
@@ -99,11 +81,9 @@ The procedure for determining the color of a vertex:
 % @tbd Throw exception for unknown colorscheme.
 
 colorize_namespaces(Graph, _ColorScheme):-
-  \+ rdf_graph(Graph),
-  !,
+  \+ rdf_graph(Graph), !,
   existence_error(atom, Graph).
-colorize_namespaces(Graph, svg):-
-  !,
+colorize_namespaces(Graph, svg):- !,
   rdf_current_namespaces(Graph, Namespaces),
   length(Namespaces, N),
   N > 0,
@@ -124,9 +104,16 @@ colorize_namespaces(Graph, svg):-
 colorize_namespaces(_Graph, ColorScheme):-
   existence_error(atom, ColorScheme).
 
+export_rdf_graph(
+  Options,
+  CoordFunc,
+  RDF_Graph,
+  graph(V_Terms, [], E_Terms, Attrs)
+):-
+  
+
 rdf_edge_coloring(Options, _Edge, black):-
-  option(colorscheme(none), Options),
-  !.
+  option(colorscheme(none), Options, none), !.
 rdf_edge_coloring(Options, FromVertex-ToVertex, Color):-
   rdf_vertex_coloring(Options, FromVertex, FromColor),
   rdf_vertex_coloring(Options, ToVertex, ToColor),
@@ -147,8 +134,7 @@ rdf_edge_coloring(Options, FromVertex-ToVertex, Color):-
 %            1. =|edge_labels(oneof([all,replace]))|=
 
 rdf_edge_naming(Options, FromVertex-ToVertex, Name):-
-  option(in(rdf), Options),
-  !,
+  option(in(rdf), Options), !,
   option(graph(Graph), Options, user),
   rdf(FromVertex, Predicate, ToVertex, Graph),
   % Some edge labels are not displayed.
@@ -201,8 +187,7 @@ rdf_register_namespace_color(Graph, Namespace, Color):-
   assertz(namespace_color(Graph, Namespace, Color)).
 
 rdf_resource_naming(List, Name):-
-  is_list(List),
-  !,
+  is_list(List), !,
   maplist(rdf_resource_naming, List, Names),
   atomic_list_concat(Names, ',', NamesAtom),
   format(atom(Name), '{~w}', [NamesAtom]).
@@ -211,18 +196,14 @@ rdf_resource_naming(literal(type(Datatype, Value)), Name):-
   format(atom(Name), '"~w"^^~w:~w', [Value,DatatypeNamespace,DatatypeLocal]),
   !.
 rdf_resource_naming(literal(lang(Language, Literal)), Name):-
-  format(atom(Name), '"~w"@~w', [Literal,Language]),
-  !.
+  format(atom(Name), '"~w"@~w', [Literal,Language]), !.
 rdf_resource_naming(literal(Literal), Name):-
-  format(atom(Name), '"~w"', [Literal]),
-  !.
+  format(atom(Name), '"~w"', [Literal]), !.
 rdf_resource_naming(BNode, Name):-
-  rdf_is_bnode(BNode),
-  !,
+  rdf_is_bnode(BNode), !,
   Name = BNode.
 rdf_resource_naming(URI, Name):-
-  rdf_global_id(Namespace:Local, URI),
-  !,
+  rdf_global_id(Namespace:Local, URI), !,
   format(atom(Name), '~w:~w', [Namespace,Local]).
 % We're out of options.
 rdf_resource_naming(Name, Name).
@@ -236,7 +217,7 @@ rdf_schema(Graph, Triples):-
       ;
         rdfs_individual_of(Vertex, rdf:'Property')
       ),
-      rdf_export:rdf_vertex([graph(Graph)], Vertex)
+      rdf_vertex(Graph, Vertex)
     ),
     Vertices
   ),
@@ -294,13 +275,10 @@ rdf_vertex_color_by_namespace(Graph, ColorScheme, Vertex, Color):-
 % @arg Color The atomic name of a color for the given vertex.
 
 rdf_vertex_coloring(Options, _Vertex, black):-
-  option(colorscheme(none), Options),
-  !.
+  option(colorscheme(none), Options), !.
 % Literals.
-rdf_vertex_coloring(_Options, literal(lang(_Language, _Label)), blue):-
-  !.
-rdf_vertex_coloring(_Options, literal(type(_Datatype, _Value)), blue):-
-  !.
+rdf_vertex_coloring(_Options, literal(lang(_Language, _Label)), blue):- !.
+rdf_vertex_coloring(_Options, literal(type(_Datatype, _Value)), blue):- !.
 % Individual or subclass of a color-registered class.
 rdf_vertex_coloring(Options, Vertex, Color):-
   option(graph(Graph), Options),
@@ -330,140 +308,124 @@ rdf_vertex_coloring(Options, Vertex, Color):-
     Color = purple
   ).
 
-vertex_label(Options, Vertex, Label):-
-  option(language(Language), Options),
-  % We prefer labels with the given language code.
-  rdfs_label(Vertex, Language, Label),
-  !.
-vertex_label(_Options, Vertex, Label):-
-  rdfs_label(Vertex, _OtherLanguage, Label).
+% We prefer labels with the given language code.
+vertex_label(RDF_Term, Language, Label):-
+  rdfs_label(RDF_Term, Language, Label), !.
+% If the preferred language is not available,
+% then we look for an arbitrary other language.
+vertex_label(RDF_Term, _PreferredLanguage, Label):-
+  rdfs_label(RDF_Term, _OtherLanguage, Label).
 
-%! rdf_vertex_naming(+Options:list(nvpair), +Vertex, -VertexName:atom) is det.
+%! rdf_vertex_naming(+Options:list(nvpair), +RDF_Term, -Name:atom) is det.
 % Returns a display name for the given RDF graph vertex.
 %
 % @arg Options A list of name-value pairs.
-%        1. =graph(Graph:atom)=
-%        2. =language(Language:atom)= The atomic tag of the language that is
+%        1. =language(Language:atom)= The atomic tag of the language that is
 %           preferred for vertex naming.
 %           Defaults to =en=.
-%        3. =|literals(oneof([collapse,hide,labels_only,show]))|=
+%        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
 %           Whether or not literals are allowed as vertices in the =Edge=.
 %           Default: =collapse=.
-% @arg Vertex A vertex.
-% @arg VertexName An atomic name for the vertex.
+% @arg RDF_Term An RDF term.
+% @arg Name The atomic name of an RDF term.
 
-% The vertex is a list.
-% This comes before all this others, since all the others could be members of
-% a list.
-rdf_vertex_naming(Options, Vertices, Name):-
-  is_list(Vertices),
-  !,
-  maplist(rdf_vertex_naming(Options), Vertices, Names),
+% First we process lists of RDF vertices.
+rdf_vertex_naming(Options, RDF_Terms, Name):-
+  is_list(RDF_Terms), !,
+  maplist(rdf_vertex_naming(Options), RDF_Terms, Names),
   print_list(atom(Name), Names).
-rdf_vertex_naming(Options, Vertex, Name):-
-  rdfs_individual_of(Vertex, rdf:'List'),
-  !,
-  rdf_list([recursive(true)], Vertex, Vertices),
-  maplist(rdf_vertex_naming(Options), Vertices, Names),
+% The RDF term is an RDF list.
+rdf_vertex_naming(Options, RDF_Term, Name):-
+  is_rdf_list(RDF_Term), !,
+  % Recursively retrieve the contents of the RDF list.
+  rdf_list(RDF_Term, RDF_Terms),
+  maplist(rdf_vertex_naming(Options), RDF_Terms, Names),
   print_list(atom(Name), Names).
-% The vertex is itself a label, with some language tag.
-rdf_vertex_naming(_Options, literal(lang(Language, Name0)), Name):-
-  !,
-  format(atom(Name), '~w^~w', [Name0, Language]).
-% The vertex is a literal that is of an XML Schema datatype.
+% The vertex is a label with a language tag.
+rdf_vertex_naming(_Options, literal(lang(Language, Name0)), Name):- !,
+  format(atom(Name), '~w@~w', [Name0, Language]).
+% The vertex is a literal that has an XML Schema 2 datatype.
 rdf_vertex_naming(_Options, literal(type(Datatype, CanonicalValue)), Name):-
-  rdf_datatype(DatatypeName, _LexicalValue, Datatype, CanonicalValue),
-  !,
+  rdf_datatype(DatatypeName, _LexicalValue, Datatype, CanonicalValue), !,
   format(atom(Name), '~w^~w', [CanonicalValue, DatatypeName]).
-% The vertex has a label and is set to displaying labels as the only literals.
-% Note that =|labels_only|= is only a preferred option. If there is no label
-% then we use a name that is based on the URI of the vertex.
-rdf_vertex_naming(Options, Vertex, Name):-
+% The RDF term has a label and is set to displaying labels as the only literals.
+% Note that `labels_only` is the preferred option.
+% If there is no label, then we use a name that is based on the URI of the
+% RDF term.
+rdf_vertex_naming(Options, RDF_Term, Name):-
   option(literals(labels_only), Options),
-  vertex_label(Options, Vertex, Name),
-  !.
-% The vertex is set to collate all literals that (directly) relate to it.
+  option(language(Language, Options, en), !,
+  vertex_label(RDF_Term, Language, Name).
+% The RDF term is set to collate all literals that (directly) relate to it.
 % Only do this when there is at least one literal.
-rdf_vertex_naming(Options, Vertex, Name):-
-  option(graph(Graph), Options),
-  % We first dispaly the name.
+rdf_vertex_naming(Options, RDF_Term, Name3):-
+  option(language(Language), Options, en),
+  
+  % We first display the name.
   (
-    % Use the label as name, if any (prefering the given language).
-    vertex_label(Options, Vertex, Name1)
+    % Use the label as name, if one is present.
+    % Also prefer the given language.
+    vertex_label(RDF_Term, Language, Name2)
   ->
     true
   ;
-    % Or use the namespace (if non-graph) name plus the local name.
-    rdf_resource_to_namespace(Vertex, Namespace, Name0),
-    !,
-    (
-      Namespace == Graph
-    ->
-      % If namespace and graph name are the same, then the namespace is not
-      % displayed as part of the vertex name.
-      Name1 = Name0
-    ;
-      format(atom(Name1), '~w:~w', [Namespace, Name0])
-    )
+    % Otherwise, we use the namespace (if non-graph) name plus the local name.
+    rdf_resource_to_namespace(RDF_Term, Namespace, Name1)
+  ->
+    atomic_list_concat([Namespace, Name1], ':', Name2)
   ;
     % If all else fails...
-    term_to_atom(Vertex, Name1)
+    term_to_atom(RDF_Term, Name2)
   ),
-  % Then come the literals, but only if these are set to be collapsed into
-  % the (directly) related vertex.
+  
+  % Now come the related literals, but only if these are set to be
+  % collapsed into the (directly) related RDF term.
   (
     option(literals(collapse), Options, collapse)
   ->
     findall(
-      Literal1,
+      Literal2,
       (
-        rdf(Vertex, _Predicate, Literal, Graph),
-        rdf_is_literal(Literal),
-        rdf_vertex_naming(Options, Literal, Literal1)
+        rdf_has(RDF_Term, _Predicate, Literal1),
+        rdf_is_literal(Literal1),
+        rdf_vertex_naming(Options, Literal1, Literal2)
       ),
-      Names
+      Names1
     ),
-    % When there are no literals, then use the name. Otherwise, use the
-    % literals.
+    % In case there are no literals we use the name from the prior procedure.
+    % Otherwise, use these literals.
     (
-      Names == []
+      Names1 == []
     ->
-      Names1 = [Name1]
+      Names2 = [Name2]
     ;
-      Names1 = Names
+      Names2 = Names1
     )
   ;
-    Names1 = [Name1]
+    Names2 = [Name2]
   ),
+  
   % Done!
-  print_list(atom(Name), Names1).
+  print_list(atom(Name3), Names2).
 
-rdf_vertex_picturing(Options, Vertex, Picture):-
-  option(graph(Graph), Options),
+rdf_vertex_picturing(Graph, RDF_Term, Picture):-
   % Only display the first picutre that is related to this vertex.
-  rdf_datatype(Vertex, _Predicate, image, Picture, Graph).
+  rdf_datatype(RDF_Term, _Predicate, image, Picture, Graph).
 
 % Non-resource vertex (e.g. literals).
-rdf_vertex_shaping(_Options, literal(_), [peripheries(0), shape(plaintext)]):-
-  !.
+rdf_vertex_shaping(literal(_), [peripheries(0), shape(plaintext)]):- !.
 % Class vertex.
-rdf_vertex_shaping(_Options, Vertex, [peripheries(2), shape(octagon)]):-
-  rdfs_individual_of(Vertex, rdfs:'Class'),
-  !.
+rdf_vertex_shaping(RDF_Term, [peripheries(2), shape(octagon)]):-
+  rdfs_individual_of(RDF_Term, rdfs:'Class'), !.
 % Property vertex.
-rdf_vertex_shaping(_Options, Vertex, [peripheries(1), shape(hexagon)]):-
-  rdfs_individual_of(Vertex, rdf:'Property'),
-  !.
+rdf_vertex_shaping(RDF_Term, [peripheries(1), shape(hexagon)]):-
+  rdfs_individual_of(RDF_Term, rdf:'Property'), !.
 % Non-class and non-property resource vertex.
-rdf_vertex_shaping(_Options, Vertex, [peripheries(1), shape(ellipse)]):-
-  rdfs_individual_of(Vertex, rdfs:'Resource'),
-  !.
+rdf_vertex_shaping(RDF_Term, [peripheries(1), shape(ellipse)]):-
+  rdfs_individual_of(RDF_Term, rdfs:'Resource'), !.
 % Blank nodes.
-rdf_vertex_shaping(_Options, Vertex, [peripheries(1), shape(circle)]):-
-  rdf_is_bnode(Vertex),
-  !.
-% Debugging.
-rdf_vertex_shaping(_Options, _Vertex, [peripheries(1), shape(ellipse)]):-
-  %gtrace, % DEB
-  true.
+rdf_vertex_shaping(RDF_Term, [peripheries(1), shape(circle)]):-
+  rdf_is_bnode(RDF_Term), !.
+% Catch-all.
+rdf_vertex_shaping(_RDF_Term, [peripheries(1), shape(ellipse)]):.
 

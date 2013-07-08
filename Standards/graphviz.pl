@@ -14,10 +14,6 @@
     parse_attributes_graphviz/2, % +Context:oneof([edge,graph,node])
                                  % +Attributes:list(nvpair)
 
-% STREAMING
-    stream_graphviz/2, % +Stream:stream
-                       % +Graph:element
-
 % HASHING
     clear_indexed_sha_hash/0,
     indexed_sha_hash/2, % +Input:oneof([atom,list])
@@ -52,7 +48,7 @@ representing a GraphViz edge.
 A compound term of the form
 
 ~~~{.pl}
-graph(Vertices, Edges, GraphAttributes)
+graph(Vertices, Edges, GraphAttrs)
 ~~~
 
 representing a GraphViz graph.
@@ -523,195 +519,23 @@ gv_typecheck(Type, Value):-
 
 
 
-% STREAMING %
-
-%! stream_attribute(+Stream:stream, +Attribute:nvpair, +Separator:atom) is det.
-% Writes an attribute, together with a separator.
-%
-% @arg Stream An output stream.
-% @arg Attribute A name-value pair.
-% @arg Separator An atomic separator.
-
-stream_attribute(Stream, Separator, Attribute):-
-  Attribute =.. [Name, Value],
-  (
-    attribute(Name, _Type, _Context, _Attributes, _Default)
-  ->
-    dcg_phrase(c_convert, Value, C_Value),
-    format(Stream, '~w="~w"~w', [Name, C_Value, Separator])
-  ;
-    true
-  ).
-
-%! stream_attributes(
-%!   +Stream:stream,
-%!   +Attributes:list(nvpair),
-%!   +Separator:atom
-%! ) is det.
-% Writes the given list of attributes to an atom.
-%
-% @arg Stream An output stream.
-% @arg Attributes A list of name-value pairs.
-% @arg Separator An atomic separator that is written between the attributes.
-
-% Empty attribute list.
-stream_attributes(_Stream, [], _Separator):-
-  !.
-% Non-empty attribute list.
-% Write the open and colsing signs of the attribute list.
-stream_attributes(Stream, Attributes, Separator):-
-  format(Stream, '[', []),
-  stream_attributes0(Stream, Attributes, Separator),
-  format(Stream, ']', []).
-
-% We know that the list in not empty.
-% For the last attribute in the list we use the empty separator.
-stream_attributes0(Stream, [Attribute], _Separator):-
-  !,
-  stream_attribute(Stream, '', Attribute).
-stream_attributes0(Stream, [Attribute | Attributes], Separator):-
-  stream_attribute(Stream, Separator, Attribute),
-  stream_attributes0(Stream, Attributes, Separator).
-
-%! stream_edge(+Stream:stream, +Indent:integer, +Edge:edge) is det.
-% Writes an edge term.
-%
-% @arg Stream An output stream.
-% @arg Indent An integer indicating the indentation.
-% @arg Edge A GraphViz edge compound term.
-
-stream_edge(Stream, Indent, edge(FromVertexID, ToVertexID, EdgeAttributes)):-
-  indent(Stream, Indent),
-  format(Stream, 'node_~w -> node_~w ', [FromVertexID, ToVertexID]),
-  stream_attributes(Stream, EdgeAttributes, ', '),
-  formatnl(Stream, ';', []).
-
-%! stream_graph_attributes(
-%!   +Stream:stream,
-%!   +Indent:integer,
-%!   +GraphAttributes:list(nvpair)
-%! ) is det.
-% Writes the given GraphViz graph attributes.
-%
-% The writing of graph attributes deviates a little bit from the writing of
-% edge and node attributes, because the written attributes are not enclosed in
-% square brackets and they are written on separate lines (and not as
-% comma-separated lists).
-%
-% @arg Stream An output stream.
-% @arg Indent An integer indicating the indentation.
-% @arg GraphAttributes A list of name-value pairs.
-
-stream_graph_attributes(Stream, Indent, GraphAttributes):-
-  indent(Stream, Indent),
-  stream_attributes0(Stream, GraphAttributes, '\n  '),
-  nl(Stream).
-
-%! stream_graphviz(+Stream:stream, +GraphElement:compound) is det.
-% Writes a GraphViz structure to an output stream.
-%
-% @arg Stream An output stream.
-% @arg GraphElement A GraphViz graph compound term of the form
-%        =|graph(Vertices, Edges, GraphAttributes)|=.
-
-stream_graphviz(Stream, graph(Vertices, Ranks, Edges, GraphAttributes)):-
-  Indent = 1,
-
-  % Header
-  option(graph_name(GraphName), GraphAttributes, noname),
-  formatnl(Stream, 'digraph ~w {', [GraphName]),
-
-  % Vertices: ranked
-  maplist(stream_rank(Stream, Indent), Ranks),
-  nl(Stream),
-
-  % Vertices: unranked
-  maplist(stream_vertex(Stream, Indent), Vertices),
-  nl(Stream),
-
-  % Edges: rank edges
-  findall(
-    RankVertexID,
-    member(
-      rank(node(RankVertexID, _RankVertexAttributes), _ContentVertices),
-      Ranks
-    ),
-    RankVertexIDs
-  ),
-  stream_rank_edges(Stream, Indent, RankVertexIDs),
-  nl(Stream),
-
-  % Edges: nonrank edges
-  maplist(stream_edge(Stream, Indent), Edges),
-  nl(Stream),
-
-  % Graph properties
-  stream_graph_attributes(Stream, Indent, GraphAttributes),
-
-  % Footer
-  formatnl(Stream, '}', []),
-  flush_output(Stream).
-
-%! stream_rank(+Stream:stream, +Indent:integer, +Rank:rank) is det.
-% @arg Indent An integer indicating the indentation.
-
-stream_rank(Stream, Indent, rank(RankVertex, ContentVertices)):-
-  indent(Stream, Indent),
-  formatnl(Stream, '{', []),
-  NewIndent is Indent + 1,
-  indent(Stream, NewIndent),
-  formatnl(Stream, 'rank=same;', []),
-  maplist(stream_vertex(Stream, NewIndent), [RankVertex | ContentVertices]),
-  indent(Stream, Indent),
-  formatnl(Stream, '}', []).
-
-stream_rank_edges(_Stream, _Indent, []):-
-  !.
-stream_rank_edges(_Stream, _Indent, [_RankVertexID]):-
-  !.
-stream_rank_edges(
-  Stream,
-  Indent,
-  [RankVertexID1, RankVertexID2 | RankVertexIDs]
-):-
-  stream_edge(Stream, Indent, edge(RankVertexID1, RankVertexID2, [])),
-  stream_rank_edges(Stream, Indent, [RankVertexID2 | RankVertexIDs]).
-
-%! stream_vertex(+Stream:stream, +Indent:integer, +Vertex:vertex) is det.
-% Writes a vertex term.
-%
-% @arg Stream An output stream.
-% @arg Indent An integer indicating the indentation.
-% @arg Vertex A GraphViz vertex compound term.
-
-stream_vertex(Stream, Indent, node(VertexID, VerticeAttributes)):-
-  indent(Stream, Indent),
-  format(Stream, 'node_~w ', [VertexID]),
-  stream_attributes(Stream, VerticeAttributes, ', '),
-  formatnl(Stream, ';', []).
-
-
-
 % HASHING %
 
 clear_indexed_sha_hash:-
   retractall(indexed_sha_hash0(_Key, _Hash)).
 
 indexed_sha_hash(Input, Hash):-
-  indexed_sha_hash0(Input, Hash),
-  !.
+  indexed_sha_hash0(Input, Hash), !.
 indexed_sha_hash(Input, Hash):-
   sha_hash_atom(Input, Hash),
   assert(indexed_sha_hash0(Input, Hash)).
 
 sha_hash_atom(Atom, Hash):-
-  atom(Atom),
-  !,
+  atom(Atom), !,
   sha_hash(Atom, HashCodes, []),
   hash_atom(HashCodes, Hash).
 sha_hash_atom(List, Hash):-
-  is_list(List),
-  !,
+  is_list(List), !,
   atomic_list_concat(List, Atom),
   sha_hash_atom(Atom, Hash).
 

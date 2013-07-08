@@ -55,13 +55,14 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 ~~~
 
 @author Wouter Beek
-@version 2012/10, 2013/01
+@version 2012/10, 2013/01, 2013/07
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(vertex_coordinate)).
 :- use_module(math(math_ext)).
+:- use_module(library(settings)).
 
 :- dynamic(tempval0(_Name, _Value)).
 
@@ -71,20 +72,17 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 
 %! initial_spring_embedding(
 %!   +Graph:graph,
-%!   -RandomVerticeCoordinates:list(vertex_coordinate)
+%!   :V_P,
+%!   -RandomVertexCoords:list(vertex_coordinate)
 %! ) is det.
 % Returns random coordinates for the vertices in the given ugraph.
 %
 % @arg Graph A graph.
-% @arg RandomVerticeCoordinates A list of vertex coordinates in the
-%        dimension set by the given size specifier.
+% @arg RandomVertexCoords A list of vertex coordinates in the
+%      dimension set by the given size specifier.
 
-initial_spring_embedding(Graph, RandomVerticeCoordinates):-
-  graph_export:default_surface(DefaultSurface),
-  random_vertice_coordinates(
-    [graph(Graph), surface(DefaultSurface)],
-    RandomVerticeCoordinates
-  ).
+initial_spring_embedding(G, V_P, RandomVertexCoords):-
+  random_vertex_coordinates([], G, V_P, RandomVertexCoords).
 
 %! inter_v(
 %!   +Graph:graph,
@@ -199,6 +197,7 @@ next_spring_embedding(
 
 %! spring_embedding(
 %!   +Graph:graph,
+%!   :V_P,
 %!   +Attractors:list,
 %!   +Repulsors:list,
 %!   +Iteration:integer,
@@ -209,6 +208,7 @@ next_spring_embedding(
 % iterations. The intermediary results are returned as history.
 %
 % @arg Graph A graph.
+% @arg V_P
 % @arg Attractors A list of atomic names of predicates that are used to
 %        calculate the attraction forces between vertices.
 % @arg Repulsors A list of atomic names of predicates that are used to
@@ -223,23 +223,21 @@ next_spring_embedding(
 %        spring embedding.
 
 spring_embedding(
-  Graph, Attractors, Repulsors, Iteration,
-  FinalVerticeCoordinates, History
+  G, V_P, Attractors, Repulsors, Iteration, FinalVerticeCoordinates, History
 ):-
-  initial_spring_embedding(Graph, VerticeCoordinates),
+  initial_spring_embedding(G, V_P, VCoords),
   flag(spring_embedding_iterations, _, 1),
   % Subsequent function application.
   multi(
-    next_spring_embedding(Graph, Attractors, Repulsors),
+    next_spring_embedding(G, Attractors, Repulsors),
     Iteration,
-    VerticeCoordinates,
-    FinalVerticeCoordinates,
+    VCoords,
+    FinalVCoords,
     History
   ).
 
 tempval(Name, Value):-
-  tempval0(Name, Value),
-  !.
+  tempval0(Name, Value), !.
 
 %! update_position(
 %!   +PositionV:float,
@@ -335,13 +333,13 @@ distance_force_dimension(
   0.0
 ).
 
-default_spring_embedding(Graph, Iteration, Final, History):-
+default_spring_embedding(G, V_P, E_P, N_P, Iteration, Final, History):-
   % Assert the maximum distance between two nodes in the graph as a
   % temporary value.
-  vertices1([graph(Graph)], Vertices),
+  call(V_P, Graph, Vs),
   maplist_pairs(
-    travel_min([graph(Graph), unique_vertex(true)]),
-    Vertices,
+    travel_min([unique_vertex(true)]), G, E_P, N_P),
+    Vs,
     MinimumDistances
   ),
   max_list(MinimumDistances, MaximumMinimumDistance),
@@ -353,7 +351,7 @@ default_spring_embedding(Graph, Iteration, Final, History):-
 
   % Assert the minimum limits of the drawing serface as temporary values.
   % Every dimension has its own limit.
-  graph_export:default_surface(size(_Dimensions, Limits)),
+  default_surface(size(_Dimensions, Limits)),
   forall(
     nth0(Dimension, Limits, Limit),
     assert(tempval0(limit(Dimension), Limit))

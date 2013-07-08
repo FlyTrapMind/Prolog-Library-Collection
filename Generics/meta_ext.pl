@@ -307,7 +307,7 @@ app_list([Module:Pred | Preds], Args, [Result | Results]):-
   app_list(Preds, Args, Results).
 
 %! maplist_pairs(:Goal, +List1:list, -List2:list) is det.
-% Applies the given goal to all pairs of elements occuring in =List1=.
+% Applies the given goal to all pairs of elements occuring in `List1`.
 
 maplist_pairs(Goal, List1, List2):-
   findall(

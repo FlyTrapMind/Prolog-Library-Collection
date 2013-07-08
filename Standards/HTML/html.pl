@@ -50,6 +50,7 @@ HTML attribute parsing, used in HTML table generation.
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_open)).
@@ -276,8 +277,7 @@ list_to_table(Options, Rows1, element(table, [border=1], TableContents)):-
   append([CaptionMarkup, HeaderMarkup, RowsMarkup], TableContents).
 
 list_to_table_caption(Options, [element(caption, [], [Caption])]):-
-  option(caption(Caption), Options),
-  !.
+  option(caption(Caption), Options), !.
 list_to_table_caption(_Options, []).
 
 %! list_to_table_header(
@@ -294,8 +294,7 @@ list_to_table_header(
   [element(tr, [], MarkupCells)],
   Rows
 ):-
-  option(header(true), Options),
-  !,
+  option(header(true), Options), !,
   table_row0(Header, th, MarkupCells).
 list_to_table_header(_Options, Rows, [], Rows).
 
@@ -361,7 +360,6 @@ parse_attributes_html(Context, Attributes, ParsedAttributes):-
   maplist(parse_attribute(Context), Attributes, ParsedAttributes).
 
 html_typecheck(pixels, Value):-
-  html_typecheck(integer, Value),
-  !.
+  html_typecheck(integer, Value), !.
 html_typecheck(Type, Value):-
   typecheck(Type, Value).

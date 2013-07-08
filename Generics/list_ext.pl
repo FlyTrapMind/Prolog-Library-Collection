@@ -45,6 +45,12 @@
     nth_minus_1/3, % +I:integer
                    % +L:list
                    % -Element:term
+    nth0chk/3, % ?Index:integer
+               % ?List:List
+               % ?Element
+    nth1chk/3, % ?Index:integer
+               % ?List:List
+               % ?Element
     pair/3, % ?Pair
             % ?Former
             % ?Latter
@@ -275,6 +281,16 @@ nth_minus_0(I, L, Element):-
 nth_minus_1(I, L, Element):-
   reverse(L, RevL),
   nth1(I, RevL, Element).
+
+%! nth0chk(?Index:integer, ?List:list, ?Element) is det.
+
+nth0chk(Index, List, Element):-
+  once(nth0(Index, List, Element)).
+
+%! nth1chk(?Index:integer, ?List:list, ?Element) is det.
+
+nth1chk(Index, List, Element):-
+  once(nth1(Index, List, Element)).
 
 %! pair(-Pair, +Former, +Latter) is det.
 %! pair(+Pair, -Former, -Latter) is det.

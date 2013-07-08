@@ -43,12 +43,6 @@
                 % ?Z:float
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
-    nth0chk/3, % ?Index:integer
-               % ?List:List
-               % ?Element
-    nth1chk/3, % ?Index:integer
-               % ?List:List
-               % ?Element
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -289,21 +283,11 @@ multiply(X, Y, Z):-
 % @see Extends the builin list manipulators sum_list/2, max_list/2
 %      and min_list/2.
 
-multiply_list([], 0):-
-  !.
-multiply_list([Number], Number):-
-  !.
+multiply_list([], 0):- !.
+multiply_list([Number], Number):- !.
 multiply_list([Number | Numbers], Multiplication):-
   multiply_list(Numbers, Multiplication1),
   Multiplication is Number * Multiplication1.
-
-nth0chk(Index, List, Element):-
-  nth0(Index, List, Element),
-  !.
-
-nth1chk(Index, List, Element):-
-  nth1(Index, List, Element),
-  !.
 
 %! odd(?Integer:integer) is semidet.
 % Succeeds if the integer is odd.

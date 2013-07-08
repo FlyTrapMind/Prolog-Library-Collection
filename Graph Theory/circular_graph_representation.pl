@@ -1,0 +1,83 @@
+:- module(
+  circular_graph_representation,
+  [
+    circular_vertice_coordinate/4 % +Options
+                                  % +Vs:list
+                                  % +V
+                                  % -Coord:coord
+  ]
+).
+
+/** <module> CIRCULAR_GRAPH_REPRESENTATION
+
+Circular graph representation.
+
+@author Wouter Beek
+@version 2013/07
+*/
+
+:- use_module(generics(list_ext)).
+:- use_module(library(option)).
+:- use_module(library(settings)).
+
+:- setting(
+  default_border,
+  float,
+  coord(2, [0.5, 0.5]),
+  'The default border.'
+).
+:- setting(
+  default_surface,
+  coord,
+  size(2, [10.0, 10.0]),
+  'The default surface to draw graphs on.'
+).
+
+
+
+%! circular_vertice_coordinate(+Options, +Vs:list, +V, -Coord:coord) is det.
+% Returns the coordinate of the given vertex, so that all vertices in a
+% graph are plotted on a circle.
+%
+% @arg Options Supported values:
+%      * `border(+Border:coord)`
+%      * `surface(+Surface:coord)`
+% @arg Vs A list of vertices.
+% @arg V A vertex.
+% @arg Coord A compound term of the form
+%      `coord(Dimension:integer, Coordinates:list)`,
+%      where `Dimension` is the length of `Coordinates`.
+
+circular_vertice_coordinate(Options, Vs, V, coordinate(2,[X_cm,Y_cm])):-
+  % Surface
+  setting(default_surface, DefaultSurface),
+  option(surface(size(2, [Width, Height])), Options, DefaultSurface),
+  
+  % Borders
+  setting(default_border, DefaultBorder),
+  option(border(size(2, [X_Border, Y_Border])), Options, DefaultBorder),
+  
+  % Graph radius.
+  GraphXDiameter is Width - 2 * X_Border,
+  GraphYDiameter is Height - 2 * Y_Border,
+  GraphDiameter is max(GraphXDiameter, GraphYDiameter),
+  GraphRadius is GraphDiameter / 2,
+
+  % V index
+  nth0chk(I, Vs, V),
+
+  % Angle
+  length(Vs, NumberOfVertices),
+  % Specifically cater for the case in which there are no vertices.
+  (
+    NumberOfVertices == 0
+  ->
+    AnglePerVertice is 2 * pi
+  ;
+    AnglePerVertice is 2 * pi / NumberOfVertices
+  ),
+
+  % (X,Y)-coordinate.
+  X is X_Border + GraphRadius + GraphRadius * cos(I * AnglePerVertice),
+  Y is Y_Border + GraphRadius + GraphRadius * sin(I * AnglePerVertice),
+  maplist(format_number(cm), [X,Y], [X_cm,Y_cm]).

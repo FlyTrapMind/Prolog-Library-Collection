@@ -1,15 +1,18 @@
 :- module(
   print_ext,
   [
-    formatnl/1, % +Format
-    formatnl/2, % +Format
+    formatln/1, % +Format
+    formatln/2, % +Format
                 % :Arguments
-    formatnl/3, % +Output
+    formatln/3, % +Output
                 % +Format
                 % :Arguments
     indent/1, % +Indent:integer
     indent/2, % +Out
               % +Indent:integer
+    print_nvpair/1, % +NVPair
+    print_nvpair/2, % +Out
+                    % +NVPair
     print_list/2, % +Out
                   % +List:list
     print_list/3 % +Out
@@ -38,6 +41,7 @@ proof(Conclusion, Premises)
 :- use_module(graph_theory(graph_generic)).
 :- use_module(library(memfile)).
 :- use_module(library(settings)).
+:- use_module(rdf(rdf_export)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -49,24 +53,24 @@ proof(Conclusion, Premises)
 
 
 
-%! formatnl(+Format) is det.
+%! formatln(+Format) is det.
 % @see Variant of format/1 with a newline appended.
 
-formatnl(Format):-
+formatln(Format):-
   format(Format),
   current_output(Stream), nl(Stream).
 
-%! formatnl(+Format, :Arguments) is det.
+%! formatln(+Format, :Arguments) is det.
 % @see Variant of format/2 with a newline appended.
 
-formatnl(Format, Arguments):-
+formatln(Format, Arguments):-
   format(Format, Arguments),
   current_output(Stream), nl(Stream).
 
-%! formatnl(+Output, +Format, :Arguments) is det.
+%! formatln(+Output, +Format, :Arguments) is det.
 % @see Variant of format/3 with a newline appended.
 
-formatnl(Out, Format, Arguments):-
+formatln(Out, Format, Arguments):-
   format(Out, Format, Arguments),
   nl(Out).
 
@@ -87,6 +91,13 @@ indent(Stream, Indent):-
   setting(indent_size, IndentSize),
   NumberOfSpaces is IndentSize * Indent,
   tab(Stream, NumberOfSpaces).
+
+print_nvpair(NVPair):-
+  NVPair =.. [Name, Value],
+  write(Name), write(': '), write(Value), write(';').
+
+print_nvpair(Out, NVPair):-
+  with_output_to(Out, print_nvpair(NVPair)).
 
 %! print_list(+Output, +List:list) is det.
 % @see Wrapper predicate for print_list/3, using no indentation.
@@ -125,7 +136,7 @@ print_list_(Indent, [H | T]):-
 %      justification chains.
 
 print_proposition(Stream, Options, rdf(S, P, O)):-
-  maplist(vertex_naming(Options), [S, P, O], [S0, P0, O0]),
+  maplist(rdf_vertex_naming(Options), [S, P, O], [S0, P0, O0]),
   option(indent(Indent), Options, 0),
   option(index(Index), Options, 'c'),
   indent(Stream, Indent),

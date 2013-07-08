@@ -37,6 +37,10 @@
                     % -Subjects:ordset(uri)
     rdf_triples/2, % +In:oneof([atom,uri])
                    % -Triples:list(rdf_triple)
+    rdf_triples_to_edges/2, % +Triples:list(rdf_triple)
+                            % -Edges:ord_set(rdf_term)
+    rdf_triples_to_vertices/2, % +Triples:list(rdf_triple)
+                               % -Vertices:ord_set(rdf_term)
     rdf_vocabulary/2, % +Graph:atom
                       % -Vocabulary:ordset(oneof([uri,literal]))
     select_shared_properties/5, % +X_Pairs1:ordset(list)
@@ -153,7 +157,7 @@ graph. Non-lean graphs have internal redundancy and express the same content
 as their lean subgraphs.
 
 @author Wouter Beek
-@version 2012/01-2013/05
+@version 2012/01-2013/05, 2013/07
 */
 
 :- use_module(generics(atom_ext)).
@@ -531,21 +535,32 @@ rdf_subjects(Graph, Subjects):-
 % @arg In The atomic name of a loaded RDF graph, or a URI.
 % @arg Triples A list of triple compound term.
 
-rdf_triples(Graph, Triples):-
-  rdf_graph(Graph),
-  !,
+rdf_triples(G, Ts):-
+  rdf_graph(G), !,
   findall(
     rdf(S, P, O),
-    rdf(S, P, O, Graph),
-    Triples
+    rdf(S, P, O, G),
+    Ts
   ).
-rdf_triples(Resource, Triples):-
-  is_uri(Resource),
-  !,
+rdf_triples(URI, Ts):-
+  is_uri(URI), !,
   setoff(
-    rdf(Resource, P, O),
-    rdf(Resource, P, O, _Graph),
-    Triples
+    rdf(URI, P, O),
+    rdf(URI, P, O, _G),
+    Ts
+  ).
+
+rdf_triples_to_edges(Ts, Es):-
+  setoff(FromV-ToV, member(rdf(FromV, _P, ToV), Ts), Es).
+
+rdf_triples_to_vertices(Ts, Vs):-
+  setoff(
+    V,
+    (
+      member(rdf(V1, _P, V2), Ts),
+      (V = V1 ; V = V2)
+    ),
+    Vs
   ).
 
 rdf_vocabulary(Graph, Vocabulary):-

@@ -30,6 +30,7 @@ in combination with the open source speech synthesizer eSpeak.
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(library(debug)).
 :- use_module(library(apply)).
 :- use_module(library(option)).

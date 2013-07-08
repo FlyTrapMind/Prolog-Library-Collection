@@ -96,7 +96,7 @@ harary_web(K, N, Markup):-
 % @arg Markup
 
 random_graph_web(Graph, [GraphElement, TableElement]):-
-  random_vertice_coordinates([graph(Graph)], RandomVerticeCoordinates),
+  random_vertex_coordinates([graph(Graph)], RandomVerticeCoordinates),
   vertice_coordinates_web(Graph, RandomVerticeCoordinates, GraphElement),
   vertice_coordinates_table(RandomVerticeCoordinates, TableElement).
 

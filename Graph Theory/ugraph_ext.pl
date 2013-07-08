@@ -25,25 +25,67 @@
     ugraph_empty/1, % ?Graph:ugraph
     ugraph_maximum_components/2, % +Graph:ugraph
                                  % -MaximumComponent:ugraph
-    ugraph_neighbor/3, % +Options:list(nvpair)
-                       % ?Vertex:vertex
+    ugraph_neighbor/3, % ?Vertex:vertex
+                       % ?Graph:atom
                        % ?Neighbor:vertex
-    ugraph_neighbors/3, % +Options:list(nvpair)
-                        % +Vertex:vertex
-                        % -Neighbors:ordset(vertex)
     ugraph_subgraph/2, % ?G1:ugraph
                        % +G2:ugraph
     ugraph_vertex/2, % +Options:list(nvpair)
                      % ?Vertex:vertex
-    ugraph_vertex_induced_subgraph/3, % +Graph:ugraph
-                                      % +VSubG:list(vertex)
-                                      % -SubG:ugraph
-    ugraph_vertices/2 % +Options:list(nvpair)
-                      % ?Vertices:ordset(vertex)
+    ugraph_vertex_induced_subgraph/3 % +Graph:ugraph
+                                     % +VSubG:list(vertex)
+                                     % -SubG:ugraph
+  ]
+).
+:- reexport(
+  library(ugraphs),
+  [
+    add_edges/3 as ugraph_add_edges, % +Graph
+                                     % +Edges
+                                     % -NewGraph
+    add_vertices/3 as ugraph_add_vertices, % +Graph
+                                           % +Vertices
+                                           % -NewGraph
+    complement/2 as ugraph_complement, % +Graph
+                                       % -NewGraph
+    compose/3 as ugraph_compose, % +LeftGraph
+                                 % +RightGraph
+                                 % -NewGraph
+    del_edges/3 as ugraph_del_edges, % +Graph
+                                     % +Edges
+                                     % -NewGraph
+    del_vertices/3 as ugraph_del_vertices, % +Graph
+                                           % +Vertices
+                                           % -NewGraph
+    edges/2 as ugraph_edges, % +Graph
+                             % -Edges
+    neighbors/3 as ugraph_neighbors, % +Vertex
+                                     % +Graph
+                                     % -Vertices
+    reachable/3 as ugraph_reachable, % +Vertex
+                                     % +Graph
+                                     % -Vertices
+    top_sort/2 as ugraph_top_sort, % +Graph
+                                   % -Sort
+    top_sort/3 as ugraph_top_sort, % +Graph
+                                   % -Sort0
+                                   % -Sort
+    transitive_closure/2 as ugraph_transitive_closure, % +Graph
+                                                       % -Closure
+    transpose/2 as ugraph_transpose, % +Graph
+                                     % -NewGraph
+    vertices/2 as ugraph_vertices, % +Graph
+                                   % -Vertices
+    vertices_edges_to_ugraph/3 as ugraph_vertices_edges_to_ugraph, % +Vertices
+                                                                   % +Edges
+                                                                   % -Graph
+    ugraph_union/3 % +Graph1
+                   % +Graph2
+                   % -Graph
   ]
 ).
 
-/** <module> UGRAPH extensions
+/** <module> UGRAPH_EXT
 
 Methods that extend the SWI-Prolog builtin library for undirected graphs.
 
@@ -65,12 +107,13 @@ a 2D representation of a vertex.
 It has the form =|vertex_coordinate(<vertive>, <2d_coordinate>)|=.
 
 @author Wouter Beek
-@version 2012/09-2013/02
+@version 2012/09-2013/02, 2013/07
 */
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext), except([complete/3])).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(library(lists)).
 :- use_module(math(math_ext)).
 
 :- meta_predicate harary(+,2,+,-).
@@ -129,27 +172,12 @@ complete(VG, [V | Vs], [V-Ws | Graph]):-
   ord_del_element(VG, V, Ws),
   complete(VG, Vs, Graph).
 
-%! component(+C:ugraph, +Graph:ugraph) is semidet.
-% Succeeds of the former graph is a component of the latter.
-%
-% *Definition*: A component is a maximal connected subgraph.
-
-component(C, G):-
-  subgraph([graph(G)], C),
-  connected([graph(C)]),
-  \+((
-    subgraph([graph(G)], D),
-    strict_subgraph([graph(D)], C),
-    connected([graph(D)])
-  )).
-
 ugraph_maximum_components(Graph, MaxComps):-
   ugraph_maximum_components0([Graph], MaxComps).
 
 ugraph_maximum_components0([], []).
 ugraph_maximum_components0([H | T], [H | Sol]):-
-  connected(H),
-  !,
+  connected(ugraph_vertices, ugraph_edges, H), !,
   ugraph_maximum_components0(T, Sol).
 ugraph_maximum_components0([H | T], Sol):-
   findall(
@@ -168,33 +196,14 @@ ugraph_direct_subgraph(DirectSubGraph, Graph):-
   nth0(_J, Edges2, W-V, Edges3),
   vertices_edges_to_ugraph(Vertices, Edges3, DirectSubGraph).
 
-%! ugraph_edge(+Options:list(nvpair), ?Edge:edge) is nondet.
-% Edges in a UGRAPH.
+%! ugraph_edge(+UG:ugraph, ?Edge:edge) is nondet.
+% Edges in an undirected graph.
 %
-% @arg Options A list of the following name-value pairs:
-%        1. =directed(DirectedGraph:boolean)= Whether or not the
-%           directionality of the edge is taken into account.
-%        2. =graph(Graph:atom)= The atomic name of the graph to which =Edge=
-%           must belong.
-% @arg Edge An edge, of the form =|From-To|=.
+% @tbd Undirected behavior?
 
-ugraph_edge(Options, From-To):-
-  option(graph(Graph), Options),
-  ugraphs:edges(Graph, Edges),
-
-  % Whether the edge's directionality is relevant or not.
-  %option(directed(DirectedGraph), Options, false),
-  %(
-  %  call(DirectedGraph)
-  %->
-    member(From-To, Edges).
-  %;
-  %  (
-  %    member(From-To, Edges)
-  %  ;
-  %    member(To-From, Edges)
-  %  )
-  %).
+ugraph_edge(Graph, From-To):-
+  ugraph_edges(Graph, Edges),
+  member(From-To, Edges).
 
 %! edge_induced_subgraph(
 %!   +Graph:ugraph,
@@ -208,15 +217,7 @@ edge_induced_subgraph(Graph, ESubG, SubG):-
   ord_subtract(Es, ESubG, DelEs),
   del_edges(Graph, DelEs, SubG).
 
-%! ugraph_edges(+Options:list(nvpair), -Edges:ordset(edge)) is det.
-
-ugraph_edges(Options, Edges):-
-  option(graph(Graph), Options),
-  % Use the swipl builtin.
-  ugraphs:edges(Graph, Edges).
-
-%! ugraph_empty(+Graph:ugraph) is semidet.
-%! ugraph_empty(-Graph:ugraph) is det.
+%! ugraph_empty(?Graph:ugraph) is semidet.
 % Succeeds on the empty graph or returns the empty graph.
 
 ugraph_empty([]).
@@ -232,8 +233,7 @@ ugraph_empty([]).
 % @arg H An undirected Harary graph.
 
 harary(K, N, H):-
-  even(K),
-  !,
+  even(K), !,
   V_Last is N - 1,
   numlist(0, V_Last, Vs),
   Half_K is K / 2,
@@ -249,8 +249,7 @@ harary(K, N, H):-
     H
   ).
 harary(K, N, H):-
-  even(N),
-  !,
+  even(N), !,
   NewK is K - 1,
   harary(NewK, N, Graph),
   harary(Graph, id, N, H).
@@ -278,9 +277,11 @@ harary(Graph, Mod:P, N, H):-
     H
   ).
 
+is_ugraph(UG):-
+  is_list(UG), maplist(is_ugraph_edge, UG).
+
 is_ugraph_edge(V-Ws):-
-  atomic(V),
-  is_list(Ws).
+  atomic(V), is_list(Ws).
 
 %! line_graph(+Graph:ugraph, -LineG:ugraph) is det.
 % Returns the line graph for the given graph.
@@ -302,8 +303,8 @@ is_ugraph_edge(V-Ws):-
 % @tbd Allow a comparator argument, so that vertices that do not compare
 %      with < are allowed as well.
 
-line_graph(Graph, LineG):-
-  ugraphs:edges(Graph, EG),
+line_graph(UG, LineG):-
+  ugraph_edges(UG, EG),
   findall(
     V/W-Neighbors,
     (
@@ -342,37 +343,24 @@ line_graph(Graph, LineG):-
 % intention of the programmer, since a directed graph may have symmetric
 % closure of its edges as well.
 
-ugraph(Graph):-
-  ugraphs:edges(Graph, Edges),
+ugraph(UG):-
+  ugraph_edges(UG, Es),
   forall(
-    member(V-W, Edges),
-    member(W-V, Edges)
+    member(V-W, Es),
+    member(W-V, Es)
   ).
 
-%! ugraph_neighbor(
-%!   +Options:list(nvpair),
-%!   ?Vertex:vertex,
-%!   ?Neighbor:vertex
-%! ) is nondet.
+%! ugraph_neighbor(+Vertex:vertex, +UG:ugraph, -Neighbor:vertex) is nondet.
 % Neighboring vertex.
-%
-% @arg Options A list of the following name-value pairs:
-%        1. =graph(Graph:ugraph)=
 
-ugraph_neighbor(Options0, Vertex, Neighbor):-
-  merge_options([directed(true)], Options0, Options),
-  ugraph_edge(Options, Vertex-Neighbor).
+ugraph_neighbor(Vertex, UG, Neighbor):-
+  ugraph_edge(UG, Vertex-Neighbor).
 
-ugraph_neighbors(Options0, Vertex, Neighbors):-
-  setoff(Neighbor, ugraph_neighbor(Options0, Vertex, Neighbor), Neighbors).
-
-%! ugraph_subgraph(+G1:ugraph, +G2:ugraph) is semidet.
-%! ugraph_subgraph(-G1:ugraph, +G2:ugraph) is nondet.
+%! ugraph_subgraph(?G1:ugraph, +G2:ugraph) is nondet.
 % G1 is a subgraph of G2.
 
 ugraph_subgraph(G1, G2):-
   ugraph_subgraph0(G1, G2, [], []).
-
 ugraph_subgraph0([], [], _In, _Out).
 ugraph_subgraph0([V-V1s | G1], [V-V2s | G2], In, Out):-
   % Predicate used from LIST_EXT.
@@ -385,20 +373,12 @@ ugraph_subgraph0(G1, [V-_Vs | G2], In, Out):-
   ord_add_element(Out, V, NewOut),
   ugraph_subgraph0(G1, G2, In, NewOut).
 
-%! ugraph_vertex(+Options:list(nvpair), ?Vertex:vertex) is nondet.
+%! ugraph_vertex(+G:ugraph, ?Vertex:vertex) is nondet.
 % Vertices in a graph.
-%
-% @arg Options A list of name-value pairs.
-%        1. =graph(Graph:ugraph)= A UGRAPH.
-% @arg Vertex A vertex in =Graph=.
 
-ugraph_vertex(Options, Vertex):-
-  option(graph(Graph), Options),
-  ugraphs:vertices(Graph, Vertices),
-  member(Vertex, Vertices).
-
-ugraph_vertices(Options, Vertices):-
-  setoff(Vertex, ugraph_vertex(Options, Vertex), Vertices).
+ugraph_vertex(G, V):-
+  ugraph_vertices(G, Vs),
+  member(V, Vs).
 
 %! unsymmetric_edges(+Edges:list(edge), -UnsymmetricEdges:list(edge)) is det.
 % Returns the unsymmetric edges for the given edges.

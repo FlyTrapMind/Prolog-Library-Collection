@@ -1,10 +1,8 @@
 :- module(
   markup,
   [
-    file_to_uri/2, % +File
-                   % -URI
-    format_number/3, % +Number:float
-                     % +Unit:unit
+    format_number/3, % +Unit:unit
+                     % +Number:float
                      % -Atom:atom
     integer_sequence/2, % +Sequence:list(integer)
                         % -Markup:compound
@@ -16,7 +14,7 @@
 /** <module> Markup
 
 @author Wouter Beek
-@version 2012/10
+@version 2012/10, 2013/07
 */
 
 :- use_module(standards(css), [attribute_value/3 as css_attribute_value]).
@@ -24,29 +22,27 @@
 
 
 
-%! file_to_uri(+File, -URI) is det.
-% Returns the URI representation of the given file.
-
-file_to_uri(File, URI):-
-  format(atom(URI), 'file://~w', [File]).
-
-%! format_number(+Number:float, +Unit:unit, -Atom:atom) is det.
+%! format_number(+Unit:unit, +Number:float, -FormattedNumber:atom) is det.
 % Formats a number according to a certain unit scale.
 %
+% @arg Unit An atomic unit descriptor.
 % @arg Number Any number (e.g., integer, float).
-% @arg Unit An atomic unit descriptor. Units must be registered as unit/3.
-% @arg Atom The atomic result of formatting.
+% @arg FormattedNumber The atomic result of formatting the number.
+%
+% @tbd Make sure the values for unit are registered with
+%      specific markup languages.
 
-format_number(Number, Unit, Atom):-
-  format(atom(Atom), '~w~w', [Number, Unit]).
+format_number(Unit, Number, FormattedNumber):-
+  atom_number(Atom, Number),
+  atomic_concat(Atom, Unit, FormattedNumber).
 
 %! integer_sequence(+Sequence:list(integer), -Markup:compound) is det.
 
-integer_sequence([], []).
+integer_sequence([], []):- !.
 integer_sequence([H | T], [element(span, [style=Style], [H1]) | Markup]):-
   FontSize is 100 + 10 * H,
   atom_number(H1, H),
-  format_number(FontSize, '%', FontSize_pct),
+  format_number('%', FontSize, FontSize_pct),
   css_attribute_value('font-size', FontSize_pct, Style),
   integer_sequence(T, Markup).
 
@@ -58,7 +54,7 @@ sonnet(Sonnet, element(figure, [], Ts)):-
 sonnet0(
   [Sentence1, Sentence2],
   [element(p, [], [Sentence1, element(br, [], []), Sentence2])]
-).
+):- !.
 sonnet0(
   [Sentence1, Sentence2, Sentence3, Sentence4 | Sentences],
   [

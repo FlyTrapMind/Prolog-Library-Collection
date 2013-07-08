@@ -1,15 +1,17 @@
 :- module(
-  vertex_coordinate,
+  vertex_coord,
   [
-    random_vertice_coordinates/2, % +Options:list(nvpair)
-                                  % -VerticeCoordinates:list(vertex_coordinate)
+    random_vertex_coordinates/4, % +Options:list(nvpair)
+                                 % +Graph
+                                 % :V_P
+                                 % -VertexCoords:list(vertex_coord)
     vertice_coordinates_to_size/3, % +Options:list(nvpair)
-                                   % +VerticeCoordinates:list(vertex_coordinate)
+                                   % +VertexCoords:list(vertex_coord)
                                    % -Size:size
-    vertice_coordinates_table/2, % +VerticeCoordinates:list(vertex_coordinate)
+    vertice_coordinates_table/2, % +VertexCoords:list(vertex_coord)
                                  % -MarkupElement:element
     vertice_coordinates_web/3 % +Graph:graph
-                              % +VerticeCoordinates:list(vertex_coordinate)
+                              % +VertexCoords:list(vertex_coord)
                               % -MarkupElement:element
   ]
 ).
@@ -22,7 +24,7 @@ These are used for visualizing graphs and for calculating the vertex
 positions in iterations of spring embedding.
 
 @author Wouter Beek
-@version 2013/01
+@version 2013/01, 2013/07
 */
 
 :- use_module(generics(list_ext)).
@@ -30,27 +32,40 @@ positions in iterations of spring embedding.
 :- use_module(graph_theory(graph_generic)).
 :- use_module(math(math_ext)).
 :- use_module(html(html)).
+:- use_module(library(option)).
+:- use_module(library(settings)).
+
+:- meta_predicate(random_vertex_coordinates(+,+,:,-)).
+
+:- setting(
+  default_surface,
+  coord,
+  size(2, [10.0, 10.0]),
+  'The default surface to draw graphs on.'
+).
 
 
 
-%! random_vertice_coordinates(
+%! random_vertex_coordinates(
 %!   +Options:list(nvpair),
-%!   -VerticeCoordinates:list(vertex_coordinate)
+%!   +Graph,
+%!   :V_P,
+%!   -VertexCoords:list(vertex_coord)
 %! ) is det.
 %
 % @arg Options A list of name-value pairs.
 %        1. =graph(Graph:graph)=
 %        2. =surface(Size:size)=
-% @arg VerticeCoordinates A list of vertex coordinates.
+% @arg VertexCoords A list of vertex coordinates.
 
-random_vertice_coordinates(Options, RandomVerticeCoordinates):-
-  graph_export:default_surface(DefaultSurface),
+random_vertex_coordinates(Options, Graph, V_P, RandomVerticeCoordinates):-
+  setting(default_surface, DefaultSurface),
   option(surface(Surface), Options, DefaultSurface),
-  vertices1(Options, Vertices),
+  call(V_P, Graph, Vs),
   findall(
-    vertex_coordinate(Vertex, RandomCoordinate),
+    vertex_coord(V, RandomCoordinate),
     (
-      member(Vertex, Vertices),
+      member(V, Vs),
       random_coordinate(Surface, RandomCoordinate)
     ),
     RandomVerticeCoordinates
@@ -58,7 +73,7 @@ random_vertice_coordinates(Options, RandomVerticeCoordinates):-
 
 %! vertice_coordinates_to_size(
 %!   +Options:list(nvpair),
-%!   +VCs:list(vertex_coordinate),
+%!   +VCs:list(vertex_coord),
 %!   -Size:size
 %! ) is det.
 % Returns the size structure that is big enough to display the given vertex
@@ -75,7 +90,7 @@ random_vertice_coordinates(Options, RandomVerticeCoordinates):-
 vertice_coordinates_to_size(Options, VCs, size(Dimension, Limits)):-
   % Retrieve the dimension of the vertex coordinates, so that the default
   % borders can be generated.
-  memberchk(vertex_coordinate(_, coordinate(Dimension, _)), VCs),
+  memberchk(vertex_coord(_, coordinate(Dimension, _)), VCs),
   repeating_list(0.5, Dimension, DefaultBorders),
   option(
     border(size(Dimension, Borders)),
@@ -92,7 +107,7 @@ vertice_coordinates_to_size(Options, VCs, size(Dimension, Limits)):-
       findall(
         Arg,
         (
-          member(vertex_coordinate(_, coordinate(Dimension, Args)), VCs),
+          member(vertex_coord(_, coordinate(Dimension, Args)), VCs),
           nth0(I, Args, Arg)
         ),
         Args
@@ -104,16 +119,16 @@ vertice_coordinates_to_size(Options, VCs, size(Dimension, Limits)):-
   ).
 
 %! vertice_coordinates_table(
-%!   +VerticeCoordinates:list(vertex_coordinate),
+%!   +VertexCoords:list(vertex_coord),
 %!   -MarkupElement:element
 %! ) is det.
 % Returns the markup for a table showing vertex coordinates.
 
-vertice_coordinates_table(VerticeCoordinates, MarkupElement):-
+vertice_coordinates_table(VertexCoords, MarkupElement):-
   % Generate the header row for the table.
   memberchk(
-    vertex_coordinate(_Vertex, coordinate(MaxDimension, _Coordinates)),
-    VerticeCoordinates
+    vertex_coord(_Vertex, coordinate(MaxDimension, _Coordinates)),
+    VertexCoords
   ),
   MaxDimension0 is MaxDimension - 1,
   findall(
@@ -128,8 +143,8 @@ vertice_coordinates_table(VerticeCoordinates, MarkupElement):-
   findall(
     [Vertex | Coordinates],
     member(
-      vertex_coordinate(Vertex, coordinate(_Dimension, Coordinates)),
-      VerticeCoordinates
+      vertex_coord(Vertex, coordinate(_Dimension, Coordinates)),
+      VertexCoords
     ),
     Rows
   ),
@@ -141,19 +156,23 @@ vertice_coordinates_table(VerticeCoordinates, MarkupElement):-
 
 %! vertice_coordinates_web(
 %!   +Graph:graph,
-%!   +VerticeCoordinates:list(vertex_coordinate),
+%!   +VertexCoords:list(vertex_coord),
 %!   -MarkupElement:element
 %! ) is det.
 % Returns the markup for the given graph and vertex coordinates.
 
-vertice_coordinates_web(Graph, VerticeCoordinates, MarkupElement):-
+vertice_coordinates_web(Graph, VertexCoords, MarkupElement):-
   export_graph(
     [
       out(svg),
-      vertex_coordinate(lookup_vertice_coordinates),
-      vertice_coordinates(VerticeCoordinates)
+      vertex_coord(lookup_vertice_coordinates),
+      vertice_coordinates(VertexCoords)
     ],
     Graph,
     MarkupElement
   ).
+
+lookup_vertice_coordinates(Options, Vertex, Coordinate):-
+  option(vertice_coordinates(VertexCoords), Options),
+  memberchk(vertex_coord(Vertex, Coordinate), VertexCoords).
 

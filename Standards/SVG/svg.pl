@@ -6,16 +6,19 @@
                    % -SVG:dom
     stream_to_svg/2, % +Stream:stream
                      % -SVG:dom
+
 % GENERATING
     svg_head/2, % +Size:size
                 % -Head:list
     svg_head/3, % +Width:number
                 % +Height:number
                 % -Head:list
+
 % PARSING
     parse_attributes_svg/3, % +Context:oneof([circle,line])
                             % +Attributes:list(nvpair)
                             % -ParsedAttributes:list(nvassignment)
+
 % SPECIFIC SHAPES
     circle/6, % +Options:list(nvpair)
               % +X0:number
@@ -30,8 +33,9 @@
             % +Y2:number
             % +Tooltip:atom
             % -Line:element
+
 % COLORS
-  svg_colors/1 % -Colors:list(atom)
+    svg_colors/1 % -Colors:list(atom)
   ]
 ).
 
@@ -122,9 +126,9 @@ attribute0(y2, coordinate, [line], '0').
 %! svg_head(+Size:size, -Head:list) is det.
 % Returns the markup for the SVG head for graphics with the given 2D size.
 %
-% @see svg_head/3
+% @see Wrapper around svg_head/3.
 
-svg_head(size(2, [Width, Height]), Head):-
+svg_head(size(2,[Width,Height]), Head):-
   svg_head(Width, Height, Head).
 
 %! svg_head(+Width:integer, +Height:integer, -Head:list) is det.
@@ -132,8 +136,8 @@ svg_head(size(2, [Width, Height]), Head):-
 % height and width.
 
 svg_head(Width, Height, [height=Height_cm, width=Width_cm]):-
-  format_number(Width, cm, Width_cm),
-  format_number(Height, cm, Height_cm).
+  format_number(cm, Width, Width_cm),
+  format_number(cm, Height, Height_cm).
 
 
 
@@ -282,15 +286,15 @@ svg_typecheck(Type, Value):-
 
 % SPECIFIC SHAPES %
 
-circle(Options, X0, Y0, R, Tooltip, Element):-
-  Attributes = [cx(X0), cy(Y0), r(R) | Options],
-  parse_attributes_svg(circle, Attributes, ParsedAttributes),
-  Element = element(circle, ParsedAttributes, [Tooltip]).
+circle(O1, X0, Y0, R, Tooltip, Element):-
+  merge_options([cx(X0), cy(Y0), r(R)], O1, O2),
+  parse_attributes_svg(circle, O2, Attrs),
+  Element = element(circle, Attrs, [Tooltip]).
 
-line(Options, X1, Y1, X2, Y2, Tooltip, Element):-
-  Attributes = [x1(X1), y1(Y1), x2(X2), y2(Y2) | Options],
-  parse_attributes_svg(line, Attributes, ParsedAttributes),
-  Element = element(line, ParsedAttributes, [Tooltip]).
+line(O1, X1, Y1, X2, Y2, Tooltip, Element):-
+  merge_options([x1(X1), y1(Y1), x2(X2), y2(Y2)], O1, O2),
+  parse_attributes_svg(line, O2, Attrs),
+  Element = element(line, Attrs, [Tooltip]).
 
 
 

@@ -1,200 +1,219 @@
 :- module(
   graph_generic,
   [
-    beam/5, % +Options:list(nvpair)
-            % +Vertex:vertex
-            % +Predicates:list(predicate)
-            % -Vertices:ordset(vertex)
+    beam/6, % +Options:list(nvpair)
+            % :EsVs_P
+            % +Vertex
+            % +Predicates:list
+            % -Vertices:ordset
             % -Edges:ordset(edge)
-    betweenness/3, % +G:graph
-                   % +V:vertex
+    betweenness/5, % +Graph
+                   % :V_P
+                   % :E_P
+                   % :N_P
+                   % +V
                    % -Betweenness:float
-    connected/1, % +Options:list(nvpair)
-    cubic/1, % +Graph:ugraph
-    degree/3, % +Options:list(nvpair)
-              % +Vertex:vertex
+    component/4, % :V_P
+                 % :E_P
+                 % ?Component
+                 % +Graph
+    connected/3, % :V_P
+                 % :E_P
+                 % +Graph
+    cubic/2, % :V_P
+             % +Graph:ugraph
+    degree/3, % +Graph
+              % +Vertex
               % -Degree:integer
-    degree_sequence/2, % +Options:list(nvpair)
+    degree_sequence/3, % +Graph
+                       % :V_P
                        % -DegreeSequence:list(integer)
-    depth/5, % +Options:list(nvpair)
-             % +Vertex:vertex
+    depth/6, % +Options:list(nvpair)
+             % :N_P
+             % +Vertex
              % +Depth:integer
-             % -Vertices:ordset(vertex)
+             % -Vertices:ordset
              % -Edges:ordset(edge)
-    edge/2, % +Options:list(nvpair)
-            % ?Edge:edge
-    edge_coloring/3, % +Options:list(nvpair)
-                     % +Edge:edge
-                     % -Color:color
-    edge_naming/3, % +Options:list(nvpair)
-                   % +Edge:edge
-                   % -Name:atom
-    edge_styling/3, % +Options:list(nvpair)
-                    % +Edge:edge
-                    % -Style:pair(oneof([bold,dashed,dotted,solid]),atom)
-    edges1/2, % +Options:list(nvpair)
-              % -Edges:ordset(edge)
-    graph/3, % ?G:graph
-             % ?V:ordset(vertice)
-             % ?E:ordset(edge)
-    graph_format/2, % +Graph:graph
-                    % -Format:oneof([rdf,ugraph])
-    graph_naming/2, % +Options:list(nvpair)
-                    % -Name:atom
-    graph_to_ugraph/2, % +Graph:graph
-                       % -UGraph:ugraph
     graphic/1, % +S:list(integer)
-    has_cycle/1, % +Options:list(nvpair)
-    neighbor/3, % +Options:list(nvpair)
-                % ?Vertex:vertex
-                % ?Neighbor:vertex
-    neighbors/3, % +Options:list(nvpair)
-                 % +Vertex:vertex
-                 % -Neighbors:ordset(vertex)
-    regular/1, % +Graph:ugraph
-    regular/2, % +Graph:ugraph
+    has_cycle/3, % :V_P
+                 % :E_P
+                 % +Graph
+    regular/2, % :V_P
+               % +Graph
+    regular/3, % :V_P
+               % +Graph
                % ?K:integer
-    shortest_paths/5, % +G:graph
-                      % +X:vertex
-                      % +Y:vertex
-                      % +V:vertex
-                      % -ShortestPaths:list(path)
-    simple/1, % +Options:list(nvpair)
-    strict_subgraph/2, % +Options:list(nvpair)
-                       % ?StrictSubGraph:graph
-    subgraph/2, % +Options:list(nvpair)
-                % +SubGraph:graph
-    travel/4, % +Options:list(nvpair)
-              % +First:vertex
-              % +Last:vertex
-              % -Distance:integer
+    shortest_paths/7, % +Graph
+                      % :E_P
+                      % :N_P
+                      % +From
+                      % +To
+                      % +Pass
+                      % -ShortestPaths:list
+    simple/3, % :V_P
+              % :E_P
+              % +Graph
+    strict_subgraph/4, % :V_P
+                       % :E_P
+                       % ?StrictSubGraph
+                       % ?Graph
+    subgraph/4, % :V_P
+                % :E_P
+                % ?SubGraph
+                % +Graph
     travel/7, % +Options:list(nvpair)
+              % +Graph
+              % :E_P
+              % :N_P
               % +First:vertex
               % +Last:vertex
               % -Distance:integer
-              % -Vertices:ordset(vertex)
-              % -Edges:ordset(edge)
-              % -History:list
-    travel_min/4, % +Options:list(nvpair)
+    travel/10, % +Options:list(nvpair)
+               % +Graph
+               % :E_P
+               % :N_P
+               % +First:vertex
+               % +Last:vertex
+               % -Distance:integer
+               % -Vertices:ordset(vertex)
+               % -Edges:ordset(edge)
+               % -History:list
+    travel_min/7, % +Options:list(nvpair)
+                  % +Graph
+                  % :E_P
+                  % :N_P
                   % +First:vertex
                   % +Last:vertex
                   % -MinimumDistance:integer
-    travel_min/7, % +Options:list(nvpair)
+    travel_min/10 % +Options:list(nvpair)
+                  % +Graph
+                  % :N_P
+                  % :E_P
                   % +First:vertex
                   % +Last:vertex
                   % -MinimumDistance:integer
                   % -Vertices:ordset(vertex)
                   % -Edges:ordset(edge)
                   % -History:list
-    vertex/2, % +Options:list(nvpair)
-              % ?Vertex:vertex
-    vertex_coloring/3, % +Options:list(nvpair)
-                       % +Vertex:vertex
-                       % -Color:atom
-    vertex_naming/3, % +Options:list(nvpair)
-                     % +Vertex:vertex
-                     % -Name:atom
-    vertex_picturing/3, % +Options:list(nvpair)
-                        % +Vertex:vertex
-                        % -Image:atom
-    vertex_shaping/3, % +Options:list(nvpair)
-                      % +Vertex:vertex
-                      % -Shape:list
-    vertices1/2 % +Options:list(nvpair)
-                % -Vertices:ordset(vertex)
   ]
 ).
 
-/** <module> Generic graph methods
+/** <module> GRAPH_GENERIC
 
-# Which graph format?
+Predicate that implement generic graph operations.
 
-graph_format/2
-    1. =rdf=
-    2. =ugraph=
-
-# Datatypes
-
-## Edge
-
-## Graph
-
-## Vertex
+Generic operations are possible via meta-arguments for retrieving
+the edges and vertices.
 
 @author Wouter Beek
-@version 2013/01-2013/04
+@version 2013/01-2013/04, 2013/07
 */
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(ugraph_ext)).
+:- use_module(library(lists)).
+:- use_module(library(ordsets)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_export)). % Meta-predicates.
 :- use_module(rdf(rdf_graph_theory)).
 
-:- rdf_meta(beam(+,r,+,-,-)).
+:- meta_predicate(beam(+,2,+,+,-,-)).
+:- meta_predicate(beam(+,2,+,+,-,+,-)).
+:- meta_predicate(betweennes(+,2,2,-)).
+:- meta_predicate(betweennes(+,2,2,+,-)).
+:- meta_predicate(component(2,2,?,+)).
+:- meta_predicate(connected(2,2,+)).
+:- meta_predicate(degree_sequence(+,2,-)).
+:- meta_predicate(depth(+,2,+,?,-,-)).
+:- meta_predicate(depth_(+,2,+,?,+,-,+,-)).
+:- meta_predicate(has_cycle(2,2,+)).
+:- meta_predicate(regular(2,+)).
+:- meta_predicate(regular(2,+,-)).
+:- meta_predicate(shortest_paths(+,2,2,+,+,?,-)).
+:- meta_predicate(simple(2,2,+)).
+:- meta_predicate(strict_subgraph(2,2,?,+)).
+:- meta_predicate(subgraph(2,2,?,+)).
+:- meta_predicate(travel(+,+,2,2,+,+,-)).
+:- meta_predicate(travel(+,+,2,2,+,+,-,-,-,-)).
+:- meta_predicate(travel_min(+,+,2,2,+,+,-)).
+:- meta_predicate(travel_min(+,+,2,2,+,+,-,-,-,-)).
+
+:- rdf_meta(beam(+,:,r,+,-,-)).
+:- rdf_meta(beam(+,:,+,+,-,+,-)).
+:- rdf_meta(betweennes(+,:,:,r,-)).
 :- rdf_meta(degree(+,r,-)).
-:- rdf_meta(travel(+,r,r,-)).
-:- rdf_meta(travel(+,r,r,-,-,-,-)).
-:- rdf_meta(travel_min(+,r,r,-)).
-:- rdf_meta(travel_min(+,r,r,-,-,-,-)).
+:- rdf_meta(depth(+,2,r,?,-,-)).
+:- rdf_meta(depth_(+,2,r,?,+,-,+,-)).
+:- rdf_meta(shortest_paths(+,:,:,r,r,r,-)).
+:- rdf_meta(travel(+,+,:,:,r,r,-)).
+:- rdf_meta(travel(+,+,:,:,r,r,-,-,-,-)).
+:- rdf_meta(travel_min(+,+,:,:,r,r,-)).
+:- rdf_meta(travel_min(+,+,:,:,r,r,-,-,-,-)).
 
 
 
-beam(Options, Vertex, Predicates, Vertices, Edges):-
-  beam(Options, [Vertex], Predicates, Vertices, [], Edges).
+beam(O, EsVs_P, V, Ps, Vs, Es):-
+  beam(O, EsVs_P, [V], Ps, Vs, [], Es).
 
-beam(_Options, [], _Predicates, AllVertices, AllEdges, AllEdges):-
-  edges_to_vertices(AllEdges, AllVertices),
-  !.
-beam(Options, Vertices, Predicates, AllVertices, Edges, AllEdges):-
+beam(_O, EsVs_P, [], _Ps, AllVs, AllEs, AllEs):-
+  call(EsVs_P, AllEs, AllVs), !.
+beam(O, EsVs_P, Vs, Ps, AllVs, Es, AllEs):-
   setoff(
-    Vertex-NextVertex,
+    V-NextV,
     (
-      member(Vertex, Vertices),
-      member(Predicate, Predicates),
-      rdf_has(Vertex, Predicate, NextVertex),
-      \+ member(Vertex-NextVertex, Edges)
+      member(V, Vs),
+      member(P, Ps),
+      rdf_has(V, P, NextV),
+      \+ member(V-NextV, Es)
     ),
-    NextEdges
+    NextEs
   ),
-  ord_union(Edges, NextEdges, NewEdges),
-  edges_to_vertices(NextEdges, NextVertices),
-  beam(Options, NextVertices, Predicates, AllVertices, NewEdges, AllEdges).
+  ord_union(Es, NextEs, NewEs),
+  call(EsVs_P, NextEs, NextVs),
+  beam(O, EsVs_P, NextVs, Ps, AllVs, NewEs, AllEs).
 
-betweenness(Graph, SortedPairs):-
-  vertices1([graph(Graph)], Vs1),
+%! betweenness(+Graph, :V_P, :E_P, :N_P, -SortedPairs) is det.
+
+betweenness(G, V_P, E_P, N_P, SortedPairs):-
+  call(V_P, G, Vs1),
   rdf_global_id(rdfs:'Class', RDFS_Class),
   once(select(RDFS_Class, Vs1, Vs2)),
-  map_list_to_pairs(betweenness(Graph), Vs2, Pairs1),
-  edges1([graph(Graph)], Edges),
+  map_list_to_pairs(betweenness(G, V_P, E_P, N_P), Vs2, Pairs1),
+  call(E_P, G, Es),
   findall(
-    Sum-V/W,
+    Sum-V1/V2,
     (
-      member(V-W, Edges),
-      member(X-V, Pairs1),
-      member(Y-W, Pairs1),
+      member(V1-V2, Es),
+      member(X-V1, Pairs1),
+      member(Y-V2, Pairs1),
       Sum is X + Y
     ),
     Pairs2
   ),
   sort([duplicates(true), inverted(true)], Pairs2, SortedPairs).
 
-%! betweenness(+G:graph, +V:vertex, -Betweenness:float) is det.
+%! betweenness(
+%!   +Graph,
+%!   :V_P,
+%!   :E_P,
+%!   :N_P,
+%!   +Vertex:vertex,
+%!   -Betweenness:float
+%! ) is det.
 % Betweenness centrality.
 
-betweenness(G, V, Betweenness):-
-  graph_to_ugraph(G, UG),
-  vertices1([graph(UG)], Vs),
+betweenness(G, V_P, E_P, N_P, V, Betweenness):-
+  call(V_P, G, Vs),
   findall(
     O,
     (
-      member(X, Y, Vs),
-      shortest_paths(UG, X, Y, _, GenericShortestPaths),
+      member(From, To, Vs),
+      shortest_paths(UG, E_P, N_P, From, To, _, GenericShortestPaths),
       length(GenericShortestPaths, NumberOfGenericShortestPaths),
-      shortest_paths(UG, X, Y, V, SpecificShortestPaths),
+      shortest_paths(UG, E_P, N_P, From, To, V, SpecificShortestPaths),
       length(SpecificShortestPaths, NumberOfSpecificShortestPaths),
       O is NumberOfSpecificShortestPaths / NumberOfGenericShortestPaths
     ),
@@ -202,34 +221,45 @@ betweenness(G, V, Betweenness):-
   ),
   sum_list(Os, Betweenness).
 
-%! connected(+Options:list(nvpair)) is semidet.
+%! component(:V_P, :E_P, ?Component, +Graph) is nondet.
+% Succeeds of the former graph is a component of the latter.
+%
+% *Definition*: A component is a maximally connected subgraph.
+
+component(V_P, E_P, C, G):-
+  subgraph(V_P, E_P, C, G),
+  connected(V_P, E_P, C),
+  \+((
+    subgraph(V_P, E_P, D, G),
+    strict_subgraph(V_P, E_P, C, D),
+    connected(V_P, E_P, D)
+  )).
+
+%! connected(:V_P, :E_P, +Graph) is semidet.
 % Succeeds if the given graph is connected.
 %
 % *Definition*: A graph is connected if all pairs of vertices are connected.
 %
 % *Definition*: Two vertices are connected if there is a path between them.
 % So vertice connectedness is just path existence.
-%
-% @see connected/3
 
-connected(O1):-
-  vertices1(O1, Vertices),
-  merge_options([unique_vertex(true)], O1, O2),
+connected(V_P, E_P, G):-
+  call(V_P, G, Vs),
   forall(
-    member(V, W, Vertices),
-    % A path connects vertices V and W.
-    travel(O2, V, W, _Distance)
+    member(V1, V2, Vs),
+    % A path connects vertices V1 and V2.
+    travel([unique_vertex(true)], G, V_P, E_P, V1, V2, _Distance)
   ).
 
-%! cubic(+Options:list(nvpair)) is semidet.
+%! cubic(:V_P, +Graph) is semidet.
 % Succeeds if the given graph is cubic.
 %
 % *Definition*: A cubic graph is a 3-regular graph.
 
-cubic(Options):-
-  regular(Options, 3).
+cubic(V_P, G):-
+  regular(V_P, G, 3).
 
-%! degree(+Options:list(nvpair), +Vertex:vertex, -Degree:integer) is det.
+%! degree(+Graph, +Vertex:vertex, -Degree:integer) is det.
 % Returns the degree of the given vertex.
 %
 % @arg Options A list of name-value pairs.
@@ -239,31 +269,20 @@ cubic(Options):-
 %           Whether or not literals are allowed as vertices in the =Edge=.
 %           Supported for: RDF.
 
-degree(Options, Vertex, Degree):-
-  neighbors(Options, Vertex, Neighbors),
-  length(Neighbors, Degree).
+degree(G, V, Degree):-
+  neighbors(G, V, Ns),
+  length(Ns, Degree).
 
-%! degree_sequence(
-%!   +Options:list(nvpair),
-%!   -DegreeSequence:list(integer)
-%! ) is det.
+%! degree_sequence(+Graph, :V_P, -DegreeSequence:list(integer)) is det.
 % Returns the degree sequence of the given graph.
-%
-% @arg Options A list of name-value pairs.
-%        1. =graph(Graph:ugraph)=
-%           Supported: RDF, UGRAPH.
-%        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether or not literals are allowed as vertices in the =Edge=.
-%           Supported for: RDF.
-% @arg DegreeSequence A list of integers.
 
-degree_sequence(Options, DegreeSequence):-
-  vertices1(Options, Vertices),
+degree_sequence(G, V_P, DegreeSequence):-
+  call(V_P, G, Vs),
   findall(
     Degree,
     (
-      member(Vertex, Vertices),
-      degree(Options, Vertex, Degree)
+      member(V, Vs),
+      degree(G, V, Degree)
     ),
     UnsortedDegreeSequence
   ),
@@ -276,6 +295,7 @@ degree_sequence(Options, DegreeSequence):-
 
 %! depth(
 %!   +Options:list(nvpair),
+%!   :N_P,
 %!   +Vertex:vertex,
 %!   +Depth:integer,
 %!   -Vertices:ordset(vertex),
@@ -285,183 +305,40 @@ degree_sequence(Options, DegreeSequence):-
 % distance from the given vertex.
 %
 % @arg Options A list of name-value pairs, consisting of the following:
-%        1. =|directed(boolean)|= Whether only outgoing or also incoming arcs
-%           are included in the export.
-%        2. =graph(Graph:graph)=
-%        3. =in(Format:oneof([rdf,ugraph]))=
+%      1. `directed(boolean)`
+%         Whether only outgoing or also incoming arcs are included
+%         in the export.
+%      2. `graph(Graph:graph)`
+%      3. `in(Format:oneof([rdf,ugraph]))`
 
-depth(Options, Vertex, Depth, Vertices, Edges):-
-  Depth > 0,
-  depth0(Options, [Vertex], Depth, [], Vertices, [], Edges).
-
-depth0(_Options, Vertices, 0, VerticesH, AllVertices, AllEdges, AllEdges):-
-  !,
-  ord_union(VerticesH, Vertices, AllVertices).
-depth0(
-  Options,
-  CurrentVertices,
-  Depth,
-  VerticesH,
-  AllVertices,
-  EdgesH,
-  AllEdges
-):-
+depth(O, N_P, V, Depth, Vs, Es):-
+  if_then(
+    nonvar(Depth),
+    Depth > 0
+  ),
+  depth_(O, N_P, [V], Depth, [], Vs, [], Es).
+depth_(_O, _N_P, Vs, 0, VerticesH, AllVs, AllEs, AllEs):- !,
+  ord_union(VerticesH, Vs, AllVs).
+depth_(O, N_P, CurrentVs, Depth, VerticesH, AllVs, EdgesH, AllEs):-
   setoff(
-    Vertex-Neighbor,
+    V-N,
     (
-      member(Vertex, CurrentVertices),
-      neighbor(Options, Vertex, Neighbor)
+      member(V, CurrentVs),
+      call(N_P, V, N)
     ),
     CurrentEdges0
   ),
-  ord_subtract(CurrentEdges0, EdgesH, CurrentEdges),
+  ord_subtract(CurrentEdges0, EdgesH, CurrentEs),
   setoff(
-    Neighbor,
-    member(_Vertex-Neighbor, CurrentEdges),
-    Neighbors
+    N,
+    member(_V-N, CurrentEs),
+    Ns
   ),
-  ord_union(CurrentVertices, VerticesH, NewVerticesH),
-  ord_subtract(Neighbors, NewVerticesH, NextVertices),
+  ord_union(CurrentVs, VerticesH, NewVerticesH),
+  ord_subtract(Ns, NewVerticesH, NextVs),
   NewDepth is Depth - 1,
   ord_union(EdgesH, CurrentEdges0, NewEdgesH),
-  depth0(
-    Options,
-    NextVertices,
-    NewDepth,
-    NewVerticesH,
-    AllVertices,
-    NewEdgesH,
-    AllEdges
-  ).
-
-%! edge(+Options:list(nvpair), ?Edge:edge) is nondet.
-% Edges in a UGRAPH.
-%
-% @arg Options A list of the following name-value pairs:
-%        1. =directed(DirectedGraph:boolean)= Whether or not the
-%           directionality of the edge is taken into account.
-%           Supported for: RDF, UGRAPH.
-%        2. =graph(Graph:atom)= The atomic name of the graph to which =Edge=
-%           must belong.
-%           Supported for: RDF, UGRAPH.
-%        3. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether or not literals are allowed as vertices in the =Edge=.
-%           Default: =collapse=.
-%           Supported for: RDF.
-%        4. =in(Format:oneof([rdf,ugraph_ext]))=
-% @arg Edge An edge, of the form =|From-To|=.
-
-edge(Options, Edge):-
-  generic(Options, edge, [Edge]).
-
-edge_coloring(Options, Edge, Color):-
-  generic(Options, edge_coloring, [Edge, Color]).
-
-%! edge_naming(+Options:list(nvpair), +Edge:edge, -Name:atom) is det.
-% Returns a name for the given edge.
-%
-% @arg Options A list of name-value pairs.
-%        1. =in(Format:oneof([rdf,ugraph_ext]))=
-% @arg Edge An edge of the form =|FromVertex-ToVertex|=.
-% @arg Name An atomic name for the given edge.
-
-edge_naming(Options, Edge, Name):-
-  generic(Options, edge_naming, [Edge, Name]).
-
-edge_styling(Options, Edge, Style):-
-  generic(Options, edge_styling, [Edge, Style]).
-
-edges_to_vertices(Edges, Vertices):-
-  setoff(
-    Vertex,
-    (
-      member(Vertex1-Vertex2, Edges),
-      (
-        Vertex = Vertex1
-      ;
-        Vertex = Vertex2
-      )
-    ),
-    Vertices
-  ).
-
-%! edges1(+Options:list(nvpair), -Edges:ordset(edge)) is det.
-% Returns the edges in the given graph.
-%
-% @arg Options A list of name-value pairs.
-%        1. =|graph(Graph)|=
-%           Supported by: RDF, UGRAPH.
-%        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether literals are seen as vertices as well.
-%           Default: =collapse=.
-%           Supported by: RDF.
-% @arg Edges An ordered set of edges.
-
-edges1(Options, Edges):-
-  setoff(Edge, edge(Options, Edge), Edges).
-
-%! graph_generic(
-%!   +Options:list(nvpair),
-%!   +GenericPredicate:atom,
-%!   +OtherArguments:list
-%! ) is det.
-% Calls a specific predicate based on its generic names and the
-% =input_format= option.
-
-graph_generic(Options, GenericPredicate, OtherArguments):-
-  (
-    option(in(InputFormat), Options)
-  ;
-    option(graph(Graph), Options),
-    graph_format(Graph, InputFormat)
-  ),
-  !,
-  generic(InputFormat, GenericPredicate, [Options | OtherArguments]).
-
-graph(Options, Vertices, Edges):-
-  edges1(Options, Edges),
-  vertices1(Options, Vertices).
-
-%! graph_format(+Graph:graph, -Format:oneof([rdf,ugraph])) is semidet.
-% Succeeds if the representation format of the given graph can be determined.
-%
-% @arg Graph
-% @arg Format One of the following values:
-%        1. =rdf=
-%        2. =ugraph=
-
-graph_format(Graph, rdf):-
-  catch(rdf_graph(Graph), _Exception, fail),
-  !.
-graph_format(UGraph, ugraph):-
-  is_list(UGraph),
-  maplist(ugraph_ext:is_ugraph_edge, UGraph),
-  !.
-graph_format(Graph, unrecognized):-
-  existence_error(graph, Graph).
-
-graph_format(Options, Format):-
-  option(in(Format), Options),
-  !.
-graph_format(Options, Format):-
-  option(graph(Graph), Options),
-  graph_format(Graph, Format).
-
-%! graph_naming(+Options:list(nvpair), -GraphName:atom) is det.
-% Return a name of a graph in =Options=.
-% The following options are required:
-%     1. =|graph(Graph:graph)|=
-%     2. =|in(Format:oneof([rdf,ugraph]))|=
-
-graph_naming(Options, GraphName):-
-  generic(Options, graph_naming, [GraphName]).
-
-graph_to_ugraph(UG, UG):-
-  graph_format(UG, ugraph),
-  !.
-graph_to_ugraph(G, UG):-
-  graph_format(G, rdf),
-  rdf_graph_to_ugraph(G, UG).
+  depth_(O, N_P, NextVs, NewDepth, NewVerticesH, AllVs, NewEdgesH, AllEs).
 
 %! graphic(+Seq:list(integer)) is semidet.
 % Succeeds if the given degree sequence represents a simple graph.
@@ -477,8 +354,7 @@ graph_to_ugraph(G, UG):-
 %          d_{i + 1}, \text{otherwise}$
 
 graphic(Zeros):-
-  repeating_list(0, _Length, Zeros),
-  !.
+  repeating_list(0, _Length, Zeros), !.
 graphic([H | T]):-
   length(T, LT),
   H =< LT,
@@ -488,95 +364,63 @@ graphic([H | T]):-
   sort([duplicates(true), inverted(true)], NewT_, NewT),
   graphic(NewT).
 
-%! has_cycle(+Options:list(nvpair)) is semidet.
-% Succeeds if Options contains a graph setting that has a cycle.
-%
-% @arg Options A list of name-value pairs. The following options are
-%        supported:
-%        1. =|grah(Graph:graph)|=
+%! has_cycle(:V_P, :E_P, +G) is semidet.
+% Succeeds if the given graph has a cycle.
 
-has_cycle(O1):-
-  vertices1(O1, Vertices),
-  member(FirstLast, Vertices),
-  merge_options(
+has_cycle(V_P, E_P, G):-
+  call(V_P, G, Vs),
+  member(FirstLast, Vs),
+  travel(
     [closed(true), unique_edge(true), unique_vertex(true)],
-    O1,
-    O2
-  ),
-  travel(O2, FirstLast, FirstLast, _Distance),
-  !.
+    G,
+    V_P,
+    E_P,
+    FirstLast,
+    FirstLast,
+    _Distance
+  ), !.
 
-%! neighbor(
-%!   +Options:list(nvpair),
-%!   ?Vertex:vertex,
-%!   ?Neighbor:vertex
-%! ) is nondet.
-% Neighboring vertices.
-%
-% @arg Options A list of the following name-value pairs:
-%        1. =graph(Graph:atom)=
-%           Supported for: RDF, UGRAPH.
-%        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether or not literals are allowed as vertices in the =Edge=.
-%           Supported for: RDF.
-
-neighbor(Options, Vertex, Neighbor):-
-  generic(Options, neighbor, [Vertex, Neighbor]).
-
-%! neighbors(
-%!   +Options:list(nvpair),
-%!   +Vertex:vertex,
-%!   -Neighbors:ordset(vertex)
-%! ) is nondet.
-% All neighboring vertices.
-%
-% @arg Options A list of the following name-value pairs:
-%        1. =graph(Graph:atom)=
-%           Supported for: RDF, UGRAPH.
-%        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether or not literals are allowed as vertices in the =Edge=.
-%           Supported for: RDF.
-
-neighbors(Options, FromVertex, ToVertices):-
-  setoff(ToVertex, neighbor(Options, FromVertex, ToVertex), ToVertices).
-
-%! regular(+Options:list(nvpair)) is semidet.
+%! regular(:V_P, +Graph) is semidet.
 % Succeeds if the graph is regular.
 %
 % *Definition*: In a regular graph each vertex has the same degree.
 
-regular(Options):-
-  regular(Options, _K).
+regular(V_P, G):-
+  regular(V_P, G, _K).
 
-%! regular(+Options:list(nvpair), ?K:integer) is semidet.
+%! regular(:V_P, +Graph, -K:integer) is semidet.
 % Returns the degree of the given graph, if it is regular.
 %
-% Definition: A graph is regular if all its vertices have the same degree.
+% *Definition*: A graph is regular if all its vertices have the same degree.
 
-regular(Options, K):-
-  vertices1(Options, [Vertex | Vertices]),
-  degree(Options, Vertex, K),
+regular(V_P, G, K):-
+  call(V_P, G, [V1 | Vs]),
+  degree(G, V1, K),
   forall(
-    member(OtherVertex, Vertices),
-    degree(Options, OtherVertex, K)
+    member(V2, Vs),
+    degree(G, V2, K)
   ).
 
 %! shortest_paths(
-%!   +G:graph,
-%!   +X:vertex,
-%!   +Y:vertex,
-%!   +V:vertex,
+%!   +Graph,
+%!   :E_P,
+%!   :N_P,
+%!   +From:vertex,
+%!   +To:vertex,
+%!   ?Pass:vertex,
 %!   -ShortestPaths:list(path)
 %! ) is det.
-% Returns the shortest paths in graph Graph from vertex X to vertex Y,
-% passing vertex V.
+% Returns the shortest paths in graph Graph from vertex `From` to vertex `To`,
+% passing vertex `Pass`.
+%
+% @arg Pass This one is optional. "Wir haben ein Abstich gemacht."
 
-shortest_paths(G, X, Y, V, ShortestPaths):-
+shortest_paths(G, E_P, N_P, From, To, Pass, ShortestPaths):-
   setoff(
     Length-Path,
     (
-      travel([graph(G), unique_vertex(true)], X, Y, Length, Vs, _Es, Path),
-      member(V, Vs)
+      travel([unique_vertex(true)], G, E_P, N_P, From, To, Length, Vs, _Es, Path),
+      member(Pass, Vs)
     ),
     KeyValuePairs
   ),
@@ -589,54 +433,47 @@ shortest_paths(G, X, Y, V, ShortestPaths):-
     Joined = [_ShortestDistance-ShortestPaths | _]
   ).
 
-%! simple(+Graph:ugraph) is semidet.
+%! simple(:V_P, :E_P, +Graph) is semidet.
 % Generates simple graphs.
 %
 % *Definition*: A simple graph has no doubly occurring edges and no loops.
 
-simple(O1):-
-  \+(has_cycle(O1)).
+simple(V_P, E_P, G):-
+  \+ has_cycle(V_P, E_P, G).
 
-strict_subgraph(Options, SubGraph):-
-  subgraph(Options, SubGraph),
-  option(graph(Graph), Options),
-  SubGraph \== Graph.
+%! strict_subgraph(:V_P, :E_P, ?SubGraph, +Graph) is nondet.
 
-%! subgraph(+Options:list(nvpair), +SubGraph:graph) is semidet.
-% Succeeds if the graph in Options has SubGraph as one of its subgraphs.
+strict_subgraph(V_P, E_P, SubG, G):-
+  subgraph(V_P, E_P, SubG, G),
+  SubG \== G.
 
-% Semidet / subgraph checking.
-subgraph(Options, SubGraph):-
-  nonvar(SubGraph),
-  !,
-  merge_options([graph(SubGraph)], Options, SubOptions),
-  vertices1(Options, Vertices),
-  vertices1(SubOptions, SubVertices),
-  ord_subset(SubVertices, Vertices),
-  edges1(Options, Edges),
-  edges1(SubOptions, SubEdges),
-  ord_subset(SubEdges, Edges).
-% Nondet / subclass generator.
-subgraph(Options, SubGraph):-
-  option(graph(G), Options),
-  graph_to_ugraph(G, UG),
-  ugraph_subgraph(SubGraph, UG).
+%! subgraph(:V_P, :E_P, ?SubGraph:graph, +Graph:graph) is nondet.
+
+subgraph(V_P, E_P, SubG, G):-
+  call(V_P, G, Vs),
+  ord_subset(SubVs, Vs),
+  call(E_P, SubG, Es),
+  ord_subset(SubEs, Es).
 
 %! travel(
 %!   +Options:list(nvpair),
+%!   +Graph,
+%!   :E_P,
+%!   :N_P,
 %!   +First:vertex,
 %!   +Last:vertex,
 %!   -Distance:uinteger
 %! ) is nondet.
-% Works together with maplist/4 and maplist_pairs/3 calls.
-%
-% @see travel/7
+% @see Wrapper around travel/10.
 
-travel(Options, First, Last, Distance):-
-  travel(Options, First, Last, Distance, _Vertexs, _Edges, _History).
+travel(O, G, E_P, N_P, First, Last, Distance):-
+  travel(O, G, E_P, N_P, First, Last, Distance, _Vertexs, _Edges, _History).
 
 %! travel(
 %!   +Options:list(nvpair),
+%!   +Graph,
+%!   :E_P,
+%!   :N_P,
 %!   +First:vertex,
 %!   +Last:vertex,
 %!   -Distance:integer
@@ -677,109 +514,97 @@ travel(Options, First, Last, Distance):-
 %        6. =|graph(Graph)|=
 %        7. =|unique_edge(boolean)=
 %        8. =|unique_vertex(boolean)=
+% @arg Graph
+% @arg E_P
+% @arg N_P
 % @arg First The first vertex in the path.
 % @arg Last The last vertex in the path.
 % @arg Distance An integer representing a distance between the first and
-%        the last vertex, counted as the number of traversed edges.
+%      the last vertex, counted as the number of traversed edges.
 % @arg Vertices A list of vertices.
 % @arg Edges A list of edges.
 % @arg History
 
-travel(Options, First, Last, Distance, Vertices, Edges, History):-
+travel(O, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
   travel0(
-    Options, First, Last,
+    O, G, E_P, N_P, First, Last,
     Distance, [First], Vertices, [], Edges, History
   ).
 
-travel0(Options, Last, Last, Distance, SolV, SolV, SolE, SolE, [Last]):-
+travel0(
+  O, G, _E_P, _N_P, Last, Last, Distance, SolV, SolV, SolE, SolE, [Last]
+):-
   % Check whether this is a tour, i.e., whether the walk is closed.
-  (
-    option(close(true), Options, false)
-  ->
+  if_then(
+    option(close(true), O, false),
     % The first and the last vertex must be the same.
     last(SolV, Last)
-  ;
-    true
   ),
 
   % Check whether this is an Euler, i.e., all edges were visited.
-  (
-    option(every_edge(true), Options, false)
-  ->
-    edges1(Options, AllEdges),
-    ord_subtract(AllEdges, SolE, UntraversedEdges),
-    ord_empty(UntraversedEdges)
-  ;
-    true
+  if_then(
+    option(every_edge(true), O, false),
+    (
+      call(E_P, G, AllEs),
+      ord_subtract(AllEs, SolE, UntraversedEdges),
+      ord_empty(UntraversedEdges)
+    )
   ),
 
   % Distance metric. The statistics we return.
-  option(distance(DistanceMetric), Options, edge),
-  (
-    DistanceMetric == edge
-  ->
+  option(distance(DistanceMetric), O, edge),
+  if_then(
+    DistanceMetric == edge,
     length(SolE, Distance)
-  ;
-    DistanceMetric == vertex
-  ->
-    length(SolV, Distance)
   ),
-  !.
+  if_then(
+    DistanceMetric == vertex,
+    length(SolV, Distance)
+  ), !.
 travel0(
-  Options, First, Last,
-  Distance, Vertices, SolV, Edges, SolE, [First, First-X | History]
+  O, G, E_P, N_P, First, Last,
+  Distance, Vs, SolV, Es, SolE, [FirstV, FirstV-NextV | History]
 ):-
   % Neighbor
-  neighbor(Options, First, X),
+  call(N_P, FirstV, NextV),
 
   % Check the walk restriction: no duplicate vertices.
-  (
-    option(unique_vertex(true), Options, false)
-  ->
-    \+ member(X, Vertices)
-  ;
-    true
+  if_then(
+    option(unique_vertex(true), O, false),
+    \+ member(NextV, Vs)
   ),
 
   % Check the Euler restriction: no duplicate edges.
-  (
-    option(trail(true), Options, false)
-  ->
-    \+ member(First-X, Edges)
-  ;
-    true
+  if_then(
+    option(trail(true), O, false),
+    \+ member(FirstV-NextV, Es)
   ),
 
-  ord_add_element(Vertices, X, NewVertices),
-  ord_add_element(Edges, First-X, NewEdges),
+  ord_add_element(Vs, NextV, NewVs),
+  ord_add_element(Es, FirstV-NextV, NewEs),
   travel0(
-    Options, X, Last,
-    Distance, NewVertices, SolV, NewEdges, SolE, History
+    O, G, E_P, N_P, NextV, Last, Distance, NewVs, SolV, NewEs, SolE, History
   ).
 
 %! tarvel_min(
 %!   +Options:list(nvpair),
+%!   +Graph,
+%!   :E_P,
+%!   :N_P,
 %!   +First:vertex,
 %!   +Last:vertex,
 %!   -MinimumDistance:integer
 %! ) is det.
-% Works together with maplist/4 and maplist_pairs/3 calls.
-%
-% @see travel_min/7
+% @see Wrapper around travel_min/10.
 
-travel_min(Options, First, Last, MinimumDistance):-
-  travel_min(
-    Options,
-    First,
-    Last,
-    MinimumDistance,
-    _Vertexs,
-    _Edges,
-    _History
-  ).
+travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
+  travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, _Vs, _Es, _History).
 
 %! travel_min(
 %!   +Options:list(nvpair),
+%!   +Graph,
+%!   :E_P,
+%!   :N_P,
 %!   +First:vertex,
 %!   +Last:vertex,
 %!   -MinimumDistance:integer,
@@ -789,88 +614,25 @@ travel_min(Options, First, Last, MinimumDistance):-
 %! ) is det.
 % Returns the minimum distance between the given subject and predicate terms.
 %
-% @arg Options A list of name-value pairs. See travel/7 for the list
-%        of supported options.
+% @arg Options A list of name-value pairs.
+%      See travel/7 for the list of supported options.
+% @arg Graph
+% @arg E_P
+% @arg N_P
 % @arg First A vertex, the first in the travel.
 % @arg Last A respource, the last in the travel.
 % @arg MinimumDistance An integer representing the minimum distance
-%        between the first and last vertex. The kind of distances is set
-%        in =Options=.
+%      between the first and last vertex. The kind of distances is set
+%      in =Options=.
 % @arg Vertices An ordered set of vertices.
 % @arg Edges An ordered set of Edges.
 % @arg History A list representing a minimum travel between the first and
-%        last resources.
+%      last resources.
 
-travel_min(Options, First, Last, MinimumDistance, Vertices, Edges, History):-
+travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, Vs, Es, History):-
   setoff(
     Distance-History,
-    travel(Options, First, Last, Distance, Vertices, Edges, History),
+    travel(O, G, E_P, N_P, First, Last, Distance, Vs, Es, History),
     Pairs
   ),
   first(Pairs, MinimumDistance-History).
-
-vertex(Options, Vertex):-
-  generic(Options, vertex, [Vertex]).
-
-%! vertex_coloring(+Options:list(nvpair), +Vertex:vertex, -Color:atom) is det.
-% Returns a color name for the given vertex.
-%
-% @arg Options A list of name-value pairs.
-%        1. =colorscheme(ColorScheme:oneof([none,svg,x11]))= The atomic name
-%           of the color scheme from which the color names are drawn.
-%           Supported for: RDF.
-%        2. =graph(Graph:atom)= The atomic name of a graph.
-%           Supported for: RDF.
-% @arg Vertex A vertex.
-% @arg Color The atomic name of a color for the given vertex.
-
-vertex_coloring(Options, Vertex, Color):-
-  is_uri(Vertex),
-  !,
-  rdf_vertex_coloring(Options, Vertex, Color).
-vertex_coloring(_Options, _Vertex, black).
-
-%! vertex_naming(+Options:list(nvpair), +Vertex, -VertexName:atom) is det.
-% Returns a display name for the given RDF graph vertex.
-%
-% @arg Options A list of name-value pairs.
-%        1. =graph(Graph:atom)=
-%           Supported for: RDF.
-%        2. =language(Language:atom)= The atomic tag of the language that is
-%           preferred for vertex naming.
-%           Defaults to =en=.
-%           Supported for: RDF.
-%        3. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether or not literals are allowed as vertices in the =Edge=.
-%           Default: =collapse=.
-%           Supported for: RDF.
-% @arg Vertex A vertex.
-% @arg VertexName An atomic name for the vertex.
-
-vertex_naming(Options, Vertex, Name):-
-  (rdf_is_resource(Vertex) ; rdf_is_literal(Vertex); rdf_is_bnode(Vertex)),
-  !,
-  rdf_vertex_naming(Options, Vertex, Name).
-vertex_naming(_Options, Vertex, Name):-
-  term_to_atom(Vertex, Name).
-
-vertex_picturing(Options, Vertex, Image):-
-  generic(Options, vertex_picturing, [Vertex, Image]).
-
-vertex_shaping(Options, Vertex, Shape):-
-  is_uri(Vertex),
-  !,
-  rdf_vertex_shaping(Options, Vertex, Shape).
-vertex_shaping(_Options, _Vertex, [peripheries(1), shape(ellipse)]).
-
-%! vertices1(+Options:list(nvpair), -Vertices:ordset(vertex)) is det.
-% Returns the nodes in the graph with the given name.
-%
-% @arg Options A list of name-value pairs.
-%        1. =in(Format:oneof([rdf,ugraph]))=
-%           Supported for: RDF, UGRAPH.
-% @arg Vertices An ordered set of vertices.
-
-vertices1(Options, Vertices):-
-  setoff(Vertex, vertex(Options, Vertex), Vertices).
-
