@@ -13,6 +13,10 @@
                    % :N_P
                    % +V
                    % -Betweenness:float
+    bipartite/4, % +Graph
+                 % :E_P
+                 % -Vs1:ord_set
+                 % -Vs2:ord_set
     component/4, % :V_P
                  % :E_P
                  % ?Component
@@ -38,6 +42,8 @@
     has_cycle/3, % :V_P
                  % :E_P
                  % +Graph
+    is_undirected/2, % :E_P
+                     % +Graph
     regular/2, % :V_P
                % +Graph
     regular/3, % :V_P
@@ -59,7 +65,7 @@
                        % ?Graph
     subgraph/4, % :V_P
                 % :E_P
-                % ?SubGraph
+                % +SubGraph
                 % +Graph
     travel/7, % +Options:list(nvpair)
               % +Graph
@@ -124,12 +130,15 @@ the edges and vertices.
 :- meta_predicate(beam(+,2,+,+,-,+,-)).
 :- meta_predicate(betweennes(+,2,2,-)).
 :- meta_predicate(betweennes(+,2,2,+,-)).
+:- meta_predicate(bipartite(+,2,-,-)).
+:- meta_predicate(cubic(2,+)).
 :- meta_predicate(component(2,2,?,+)).
 :- meta_predicate(connected(2,2,+)).
 :- meta_predicate(degree_sequence(+,2,-)).
 :- meta_predicate(depth(+,2,+,?,-,-)).
 :- meta_predicate(depth_(+,2,+,?,+,-,+,-)).
 :- meta_predicate(has_cycle(2,2,+)).
+:- meta_predicate(is_undirected(2,+)).
 :- meta_predicate(regular(2,+)).
 :- meta_predicate(regular(2,+,-)).
 :- meta_predicate(shortest_paths(+,2,2,+,+,?,-)).
@@ -138,6 +147,7 @@ the edges and vertices.
 :- meta_predicate(subgraph(2,2,?,+)).
 :- meta_predicate(travel(+,+,2,2,+,+,-)).
 :- meta_predicate(travel(+,+,2,2,+,+,-,-,-,-)).
+:- meta_predicate(travel_(+,+,2,2,+,+,-,-,-,-,-,-)).
 :- meta_predicate(travel_min(+,+,2,2,+,+,-)).
 :- meta_predicate(travel_min(+,+,2,2,+,+,-,-,-,-)).
 
@@ -145,11 +155,12 @@ the edges and vertices.
 :- rdf_meta(beam(+,:,+,+,-,+,-)).
 :- rdf_meta(betweennes(+,:,:,r,-)).
 :- rdf_meta(degree(+,r,-)).
-:- rdf_meta(depth(+,2,r,?,-,-)).
-:- rdf_meta(depth_(+,2,r,?,+,-,+,-)).
+:- rdf_meta(depth(+,:,r,?,-,-)).
+:- rdf_meta(depth_(+,:,r,?,+,-,+,-)).
 :- rdf_meta(shortest_paths(+,:,:,r,r,r,-)).
 :- rdf_meta(travel(+,+,:,:,r,r,-)).
 :- rdf_meta(travel(+,+,:,:,r,r,-,-,-,-)).
+:- rdf_meta(travel_(+,+,:,:,r,r,-,-,-,-,-,-)).
 :- rdf_meta(travel_min(+,+,:,:,r,r,-)).
 :- rdf_meta(travel_min(+,+,:,:,r,r,-,-,-,-)).
 
@@ -220,6 +231,29 @@ betweenness(G, V_P, E_P, N_P, V, Betweenness):-
     Os
   ),
   sum_list(Os, Betweenness).
+
+bipartite(G, E_P, Vs1, Vs2):-
+  call(E_P, G, Es),
+  bipartite_(Es, [], Vs1, [], Vs2).
+
+bipartite_([], Vs1, Vs1, Vs2, Vs2).
+bipartite_([V-W | Es], H_S1, Vs1, H_S2, Vs2):-
+  % For unordered graphs we only need to consider each edge in one direction.
+  V > W, !,
+  bipartite_(Es, H_S1, Vs1, H_S2, Vs2).
+bipartite_([V-W | Es], H_S1, Vs1, H_S2, Vs2):-
+  \+(member(W, H_S1)),
+  \+(member(V, H_S2)),
+  ord_add_element(H_S1, V, New_H_S1),
+  ord_add_element(H_S2, W, New_H_S2),
+  bipartite_(Es, New_H_S1, Vs1, New_H_S2, Vs2).
+% Fit the edge either way.
+bipartite_([W-V | Es], H_S1, Vs1, H_S2, Vs2):-
+  \+(member(W, H_S1)),
+  \+(member(V, H_S2)),
+  ord_add_element(H_S1, V, New_H_S1),
+  ord_add_element(H_S2, W, New_H_S2),
+  bipartite_(Es, New_H_S1, Vs1, New_H_S2, Vs2).
 
 %! component(:V_P, :E_P, ?Component, +Graph) is nondet.
 % Succeeds of the former graph is a component of the latter.
@@ -380,6 +414,24 @@ has_cycle(V_P, E_P, G):-
     _Distance
   ), !.
 
+%! is_undirected(:E_P, +Graph) is semidet.
+% Succeeds if the given graph could be undirected.
+%
+% An undirected graph is represented as a ugraph that has a symmerical
+% closure over its edges.
+%
+% Every undirected graph succeeds for this predicate, but not every graph
+% that succeeds for this predicate is undirected. This depends on the
+% intention of the programmer, since a directed graph may have symmetric
+% closure of its edges as well.
+
+is_undirected(E_P, G):-
+  call(E_P, G, Es),
+  forall(
+    member(V-W, Es),
+    member(W-V, Es)
+  ).
+
 %! regular(:V_P, +Graph) is semidet.
 % Succeeds if the graph is regular.
 %
@@ -447,12 +499,17 @@ strict_subgraph(V_P, E_P, SubG, G):-
   subgraph(V_P, E_P, SubG, G),
   SubG \== G.
 
-%! subgraph(:V_P, :E_P, ?SubGraph:graph, +Graph:graph) is nondet.
+%! subgraph(:V_P, :E_P, +SubGraph:graph, +Graph:graph) is semidet.
 
 subgraph(V_P, E_P, SubG, G):-
+  % Vertices.
+  call(V_P, SubG, SubVs),
   call(V_P, G, Vs),
   ord_subset(SubVs, Vs),
-  call(E_P, SubG, Es),
+  
+  % Edges.
+  call(E_P, SubG, SubEs),
+  call(E_P, G, Es),
   ord_subset(SubEs, Es).
 
 %! travel(
@@ -526,13 +583,13 @@ travel(O, G, E_P, N_P, First, Last, Distance):-
 % @arg History
 
 travel(O, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
-  travel0(
+  travel_(
     O, G, E_P, N_P, First, Last,
     Distance, [First], Vertices, [], Edges, History
   ).
 
-travel0(
-  O, G, _E_P, _N_P, Last, Last, Distance, SolV, SolV, SolE, SolE, [Last]
+travel_(
+  O, G, E_P, _N_P, Last, Last, Distance, SolV, SolV, SolE, SolE, [Last]
 ):-
   % Check whether this is a tour, i.e., whether the walk is closed.
   if_then(
@@ -561,8 +618,8 @@ travel0(
     DistanceMetric == vertex,
     length(SolV, Distance)
   ), !.
-travel0(
-  O, G, E_P, N_P, First, Last,
+travel_(
+  O, G, E_P, N_P, FirstV, Last,
   Distance, Vs, SolV, Es, SolE, [FirstV, FirstV-NextV | History]
 ):-
   % Neighbor
@@ -582,7 +639,7 @@ travel0(
 
   ord_add_element(Vs, NextV, NewVs),
   ord_add_element(Es, FirstV-NextV, NewEs),
-  travel0(
+  travel_(
     O, G, E_P, N_P, NextV, Last, Distance, NewVs, SolV, NewEs, SolE, History
   ).
 

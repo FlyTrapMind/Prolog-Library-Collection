@@ -13,6 +13,7 @@
 @version 2013/07
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_c)).
 :- use_module(generics(print_ext)).
@@ -22,59 +23,47 @@
 
 
 
-%! export_graph_attribute(+Separator:atom, +Attribute:nvpair) is det.
-% Writes an attribute, together with a separator.
-%
-% @arg Attribute A name-value pair.
-% @arg Separator An atomic separator.
+inline_attribute(Separator, Attribute) -->
+  {
+    Attribute =.. [Name, Value],
+    atom_codes(Value, ValueCodes),
+    dcg_phrase(c_convert, ValueCodes, C_ValueCodes),
+    atom_codes(Name, NameCodes)
+  },
+  [NameCodes],
+  equals_sign,
+  double_quote,
+  [C_ValueCodes],
+  double_quote,
+  [Separator].
 
-export_graph_attribute(Separator, Attribute):-
-  Attribute =.. [Name, Value],
-  (
-    attribute(Name, _Type, _Context, _Attributes, _Default)
-  ->
-    dcg_phrase(c_convert, Value, C_Value),
-    format('~w="~w"~w', [Name, C_Value, Separator])
-  ;
-    true
-  ).
+inline_attributes(Separator, Attributes) -->
+  opening_square_bracket,
+  dcg_multi_list(inline_attribute(Separator), Attributes),
+  closing_square_bracket.
 
-%! export_graph_attributes(+Attributes:list(nvpair), +Separator:atom) is det.
-% Writes the given list of attributes to an atom.
-%
-% @arg Attributes A list of name-value pairs.
-% @arg Separator An atomic separator that is written between the attributes.
-
-% Empty attribute list.
-export_graph_attributes([], _Separator):- !.
-% Non-empty attribute list.
-% Write the open and colsing signs of the attribute list.
-export_graph_attributes(Attributes, Separator):-
-  write('['),
-  export_graph_attributes_(Attributes, Separator),
-  write(']').
-
-% We know that the list in not empty.
-% For the last attribute in the list we use the empty separator.
-export_graph_attributes_(Stream, [Attribute], _Separator):- !,
-  export_graph_attribute(Stream, '', Attribute).
-export_graph_attributes_(Stream, [Attribute | Attributes], Separator):-
-  export_graph_attribute(Stream, Separator, Attribute),
-  export_graph_attributes_(Stream, Attributes, Separator).
-
-%! export_edge_graphviz(+Indent:integer, +Edge:edge) is det.
+%! edge(+Indent:integer, +Edge:compound)//
 % Writes an edge term.
 %
 % @arg Indent An integer indicating the indentation.
 % @arg Edge A GraphViz edge compound term.
 
-export_edge_graphviz(Indent, edge(_FromV/FromV_Id, _ToV/ToV_Id, E_Attrs)):-
-  indent(Indent),
-  format('node_~w -> node_~w ', [FromV_Id, ToV_Id]),
-  export_graph_attributes(E_Attrs, ', '),
-  writeln(';').
+edge(Indent, edge(_FromV/FromV_Id1, _ToV/ToV_Id, E_Attrs)) -->
+  dcg_indent(Indent),
+  "node_", {number_codes(FromV_Id1, FromV_Id2)}, [FromV_Id2],
+  space,
+  dcg_arrow(2),
+  space,
+  "node_", {number_codes(ToV_Id1, ToV_Id2)}, [ToV_Id2],
+  space,
+  inline_attributes(", ", E_Attrs),
+  semi_colon.
 
-%! stream_graph_attributes(+Indent:integer, +G_Attrs:list(nvpair)) is det.
+multiline_attribute_separator -->
+  newline,
+  dcg_multi(space, 2).
+
+%! multiline_attributes(+Indent:integer, +G_Attrs:list(nvpair))//
 % Writes the given GraphViz graph attributes.
 %
 % The writing of graph attributes deviates a little bit from the writing of
@@ -85,85 +74,105 @@ export_edge_graphviz(Indent, edge(_FromV/FromV_Id, _ToV/ToV_Id, E_Attrs)):-
 % @arg Indent An integer indicating the indentation.
 % @arg G_Attrs A list of name-value pairs.
 
-stream_graph_attributes(Indent, G_Attrs):-
-  indent(Indent),
-  export_graph_attributes_(G_Attrs, '\n  '),
-  nl.
+multiline_attributes(Indent, G_Attrs) -->
+  dcg_indent(Indent),
+  dcg_multi_list(
+    multiline_attribute(multiline_attribute_separator),
+    G_Attrs
+  ),
+  newline.
 
-%! export_graph_graphviz(+Stream:stream, +G:compound) is det.
-% Writes a GraphViz structure to an output stream.
+%! export_graph_graphviz(+Stream:stream, +Graph:compound) is det.
+% Writes a graph term that is in Graph Intermediary Format
+% to the given output stream.
 %
 % @arg Stream An output stream.
-% @arg G A graph representation in the intermediate format
-%      `graph(Vertices, Edges, GraphAttrs)`.
+% @arg Graph A graph representation in the following format:
+%      `graph(Vertices, Ranks, Edges, GraphAttrs)`.
 
 export_graph_graphviz(Out, G):-
-  with_output_to(Out, export_graph_graphviz(G)).
+  phrase(export_graph(G), Codes, []),
+  put_codes(Out, Codes).
 
-export_graph_graphviz(graph(Vs, Ranks, Es, G_Attrs)):-
-  Indent = 1,
-
-  % Header
-  option(graph_name(G_Name), G_Attrs, noname),
-  formatln('digraph ~w {', [G_Name]),
+export_graph(graph(Vs, Ranks, Es, G_Attrs)) -->
+  {
+    Indent = 1,
+    option(graph_name(G_Name), G_Attrs, noname),
+    atom_codes(G_Name, G_NameCodes)
+  },
+  "digraph",
+  space,
+  G_NameCodes,
+  opening_curly_bracket.
 
   % Vertices: ranked
-  maplist(export_graph_rank(Indent), Ranks),
-  nl,
+  dcg_multi_list(rank(Indent), Ranks),
+  newline,
 
   % Vertices: unranked
-  maplist(export_graph_vertex(Indent), Vs),
-  nl,
+  dcg_multi_list(vertex(Indent), Vs),
+  newline,
 
   % Edges: rank edges
-  findall(
-    RankV_Id,
-    member(
-      rank(vertex(RankV_Id, _RankV_Attrs), _ContentVs),
-      Ranks
-    ),
-    RankV_Ids
-  ),
-  export_graph_rank_edges(Indent, RankV_Ids),
-  nl,
+  {
+    findall(
+      RankV_Id,
+      member(
+        rank(vertex(RankV_Id, _RankV_Attrs), _ContentVs),
+        Ranks
+      ),
+      RankV_Ids
+    )
+  },
+  rank_edges(Indent, RankV_Ids),
+  newline,
 
   % Edges: nonrank edges
-  maplist(export_edge_graphviz(Indent), Es),
-  nl,
+  dcg_multi_list(edge(Indent), Es),
+  newline,
 
   % Graph properties
-  stream_graph_attributes(Indent, G_Attrs),
+  multiline_attributes(Indent, G_Attrs),
+  closing_curly_bracket.
 
-  % Footer
-  writeln('}').
-
-%! export_graph_rank(+Indent:integer, +Rank:rank) is det.
+%! rank(+Indent:integer, +Rank:rank)//
 % @arg Indent An integer indicating the indentation.
 
-export_graph_rank(Indent, rank(RankVertex, ContentVertices)):-
-  indent(Indent),
-  writeln('{'),
-  NewIndent is Indent + 1,
-  indent(NewIndent),
-  writeln('rank=same;'),
-  maplist(export_graph_vertex(NewIndent), [RankVertex | ContentVertices]),
-  indent(Indent),
-  writeln('}').
+rank(Indent, rank(RankVertex, ContentVertices)) -->
+  % Open rank.
+  dcg_indent(Indent),
+  opening_curly_bracket,
+  
+  % Rank property.
+  {NewIndent is Indent + 1},
+  dcg_indent(NewIndent),
+  "rank=same;",
+  newline,
+  
+  % Write vertices.
+  dcg_multi_list(vertex(NewIndent), [RankVertex | ContentVertices]),
+  
+  % Close rank.
+  dcg_indent(Indent),
+  closing_curly_bracket.
 
-export_graph_rank_edges(_Indent, []):- !.
-export_graph_rank_edges(_Indent, [_RankV_Id]):- !.
-export_graph_rank_edges(Indent, [RankV1_Id, RankV2_Id | RankV_Ids]):-
-  export_edge_graphviz(Indent, edge(RankV1/RankV1_Id, RankV2/RankV2_Id, [])),
+rank_edges(_Indent, []) --> [].
+rank_edges(_Indent, [_RankV_Id]) --> [].
+rank_edges(Indent, [RankV1_Id, RankV2_Id | RankV_Ids]) -->
+  % No edge properties are written.
+  edge(Indent, edge(RankV1/RankV1_Id, RankV2/RankV2_Id, [])),
   export_graph_rank_edges(Indent, [RankV2_Id | RankV_Ids]).
 
-%! export_graph_vertex(+Indent:integer, +Vertex:vertex) is det.
+%! vertex(+Indent:integer, +Vertex:vertex)//
 % Writes a vertex term.
 %
 % @arg Indent An integer indicating the indentation.
-% @arg Vertex A GraphViz vertex compound term.
+% @arg Vertex A vertex compound term.
 
-export_graph_vertex(Indent, vertex(V_Id, V_Attrs)):-
-  indent(Indent),
-  format('node_~w ', [V_Id]),
-  export_graph_attributes(V_Attrs, ', '),
-  writeln(';').
+export_graph_vertex(Indent, vertex(V_Id, V_Attrs)) -->
+  dcg_indent(Indent),
+  {atom_codes(V_Id, V_Id_Codes)},
+  "node_", V_Id_Codes, space,
+  inline_attributes(", ", V_Attrs),
+  ";".
+

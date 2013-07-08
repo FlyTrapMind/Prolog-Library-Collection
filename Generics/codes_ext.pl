@@ -9,6 +9,9 @@
                       % +From:list(code)
                       % +To:list(code)
                       % -New:list(code)
+    put_codes/1, % +Codes:list(code)
+    put_codes/2, % +Stream:stream
+                 % +Codes:list(code)
     split_codes/3, % +Codes:list(code)
                    % +Split:list(code)
                    % -Results:list(list(code))
@@ -29,6 +32,7 @@ Predicates for handling codes.
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 
 
@@ -43,22 +47,24 @@ codes_replace2(Old, From, To, New):-
 codes_replace2([H|T], From, To, [H|NewT]):-
   codes_replace2(T, From, To, NewT).
 
+put_codes(Codes):-
+  maplist(put_code, Codes).
+
+put_codes(Out, Codes):-
+  maplist(put_code(Out), Codes).
+
 split_codes(Codes, Split, Results):-
-  \+ is_list(Split),
-  !,
+  \+ is_list(Split), !,
   split_codes(Codes, [Split], Results).
 split_codes(Codes, Split, [Result | Results]):-
   append(Result, Temp, Codes),
-  append(Split, NewCodes, Temp),
-  !,
+  append(Split, NewCodes, Temp), !,
   split_codes(NewCodes, Split, Results).
 split_codes(Result, _Split, [Result]).
 
-strip_codes(_Strip, [], []):-
-  !.
+strip_codes(_Strip, [], []):- !.
 strip_codes(Strip, [H | In], Out):-
-  memberchk(H, Strip),
-  !,
+  memberchk(H, Strip), !,
   strip_codes(Strip, In, Out).
 strip_codes(Strip, [H | In], [H | Out]):-
   strip_codes(Strip, In, Out).

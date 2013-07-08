@@ -1,40 +1,37 @@
 :- module(
   ugraph_ext,
   [
-    bipartite/3, % +Graph:ugraph
-                 % -S1:list(vertex)
-                 % -S2:list(vertex)
-    complete/1, % +Graph:ugraph
-    complete/2, % +VG:list(vertex)
-                % ?Graph:ugraph
-    component/2, % +C:ugraph
-                 % +Graph:ugraph
-    edge_induced_subgraph/3, % +Graph:ugraph
-                             % +ESubG:list(edge)
-                             % -SubG:ugraph
-    harary/3, % +K:integer
-              % +N:integer
-              % -H:ugraph
-    line_graph/2, % +Graph:ugraph
-                  % -LineG:ugraph
-    ugraph/1, % +Graph:ugraph
+    is_ugraph/1, % +Graph:ugraph
+    ugraph_complete/1, % +Graph:ugraph
+    ugraph_complete/2, % +Vs:ord_set
+                       % ?Graph:ugraph
     ugraph_direct_subgraph/2, % ?SubGraph:ugraph
                               % +Graph:ugraph
     ugraph_edge/2, % +Options:list(nvpair)
                    % ?Edge:edge
+    ugraph_edge_induced_subgraph/3, % +Graph:ugraph
+                                    % +ESubG:list(edge)
+                                    % -SubG:ugraph
     ugraph_empty/1, % ?Graph:ugraph
+    ugraph_harary/3, % +K:integer
+                     % +N:integer
+                     % -H:ugraph
+    ugraph_line_graph/2, % +Graph:ugraph
+                         % -LineG:ugraph
     ugraph_maximum_components/2, % +Graph:ugraph
-                                 % -MaximumComponent:ugraph
+                                 % -MaximumComponents:list(ugraph)
     ugraph_neighbor/3, % ?Vertex:vertex
                        % ?Graph:atom
                        % ?Neighbor:vertex
-    ugraph_subgraph/2, % ?G1:ugraph
-                       % +G2:ugraph
-    ugraph_vertex/2, % +Options:list(nvpair)
+    ugraph_subgraph/2, % ?SubGraph:ugraph
+                       % +Graph:ugraph
+    ugraph_unsymmetric_edges/2, % +Graph:ugraph
+                                % -UnsymmetricEdges:ordset(edge)
+    ugraph_vertex/2, % +Graph:ugraph
                      % ?Vertex:vertex
     ugraph_vertex_induced_subgraph/3 % +Graph:ugraph
-                                     % +VSubG:list(vertex)
-                                     % -SubG:ugraph
+                                     % +Vertices:ordset(vertex)
+                                     % -SubGraph:ugraph
   ]
 ).
 :- reexport(
@@ -116,85 +113,52 @@ It has the form =|vertex_coordinate(<vertive>, <2d_coordinate>)|=.
 :- use_module(library(lists)).
 :- use_module(math(math_ext)).
 
-:- meta_predicate harary(+,2,+,-).
+:- meta_predicate(ugraph_harary(+,2,+,-)).
 
 
 
-bipartite(Graph, S1, S2):-
-  ugraphs:edges(Graph, EG),
-  bipartite0(EG, [], S1, [], S2).
+is_ugraph(UG):-
+  is_list(UG),
+  maplist(is_ugraph_edge, UG).
 
-bipartite0([], S1, S1, S2, S2).
-bipartite0([V-W | EG], H_S1, S1, H_S2, S2):-
-  % For unordered graphs we only need to consider each edge in one direction.
-  V > W,
-  !,
-  bipartite0(EG, H_S1, S1, H_S2, S2).
-bipartite0([V-W | EG], H_S1, S1, H_S2, S2):-
-  \+(member(W, H_S1)),
-  \+(member(V, H_S2)),
-  ord_add_element(H_S1, V, New_H_S1),
-  ord_add_element(H_S2, W, New_H_S2),
-  bipartite0(EG, New_H_S1, S1, New_H_S2, S2).
-% Fit the edge either way.
-bipartite0([W-V | EG], H_S1, S1, H_S2, S2):-
-  \+(member(W, H_S1)),
-  \+(member(V, H_S2)),
-  ord_add_element(H_S1, V, New_H_S1),
-  ord_add_element(H_S2, W, New_H_S2),
-  bipartite0(EG, New_H_S1, S1, New_H_S2, S2).
+is_ugraph_edge(V-Ws):-
+  atomic(V),
+  is_list(Ws).
 
-%! complete(+Graph:ugraph) is semidet.
+%! ugraph_complete(+Graph:ugraph) is semidet.
 % Succeeds for complete graphs.
 %
-% @see complete/2
+% @see Wrapper around ugraph_complete/2.
 
-complete(Graph):-
-  ugraphs:vertices(Graph, VG),
-  complete(VG, Graph).
+ugraph_complete(UG):-
+  ugraph_vertices(UG, Vs),
+  ugraph_complete(Vs, UG).
 
-%! complete(+VG:list(vertex), +Graph:ugraph) is semidet.
-%! complete(+VG:list(vertex), -Graph:ugraph) is det.
+%! ugraph_complete(+Vs:ord_set, ?Graph:ugraph) is semidet.
 % Succeeds if the given graph is complete, or generates the complete graph
 % from the given vertices.
 %
 % *Definition*: A complete graph is one in which all different vertices
 %               are connected.
 %
-% @arg VG An ordered set of vertices.
+% @arg Vs An ordered set of vertices.
 % @arg Graph A ugraph, i.e., a list of S-expressions.
 
-complete(VG, Graph):-
-  complete(VG, VG, Graph).
+ugraph_complete(Vs, UG):-
+  ugraph_complete_(Vs, Vs, UG).
 
-complete(_VG, [], []).
-complete(VG, [V | Vs], [V-Ws | Graph]):-
-  ord_del_element(VG, V, Ws),
-  complete(VG, Vs, Graph).
+ugraph_complete_(_Vs, [], []).
+ugraph_complete_(Vs, [FromV | FromVs], [FromV-ToVs | UG]):-
+  ord_del_element(Vs, FromV, ToVs),
+  ugraph_complete_(Vs, FromVs, UG).
 
-ugraph_maximum_components(Graph, MaxComps):-
-  ugraph_maximum_components0([Graph], MaxComps).
-
-ugraph_maximum_components0([], []).
-ugraph_maximum_components0([H | T], [H | Sol]):-
-  connected(ugraph_vertices, ugraph_edges, H), !,
-  ugraph_maximum_components0(T, Sol).
-ugraph_maximum_components0([H | T], Sol):-
-  findall(
-    DSG,
-    ugraph_direct_subgraph(DSG, H),
-    DSGs
-  ),
-  append(T, DSGs, NewT),
-  ugraph_maximum_components0(NewT, Sol).
-
-ugraph_direct_subgraph(DirectSubGraph, Graph):-
-  ugraphs:vertices(Graph, Vertices),
-  ugraphs:edges(Graph, Edges1),
-  nth0(_I, Edges1, V-W, Edges2),
+ugraph_direct_subgraph(DirSubG, G):-
+  ugraph_vertices(G, Vs),
+  ugraph_edges(G, Es1),
+  select(V-W, Es1, Es2),
   V > W,
-  nth0(_J, Edges2, W-V, Edges3),
-  vertices_edges_to_ugraph(Vertices, Edges3, DirectSubGraph).
+  select(W-V, E2, E3),
+  ugraph_vertices_edges_to_ugraph(Vs, Es3, DirSubG).
 
 %! ugraph_edge(+UG:ugraph, ?Edge:edge) is nondet.
 % Edges in an undirected graph.
@@ -205,24 +169,24 @@ ugraph_edge(Graph, From-To):-
   ugraph_edges(Graph, Edges),
   member(From-To, Edges).
 
-%! edge_induced_subgraph(
+%! ugraph_edge_induced_subgraph(
 %!   +Graph:ugraph,
 %!   +ESubG:list(edge),
 %!  -SubG:ugraph
 %! ) is det.
 % Returns the edge-induced subgraph.
 
-edge_induced_subgraph(Graph, ESubG, SubG):-
-  ugraphs:edges(Graph, Es),
+ugraph_edge_induced_subgraph(G, ESubG, SubG):-
+  ugraph_edges(Graph, Es),
   ord_subtract(Es, ESubG, DelEs),
-  del_edges(Graph, DelEs, SubG).
+  del_edges(G, DelEs, SubG).
 
 %! ugraph_empty(?Graph:ugraph) is semidet.
 % Succeeds on the empty graph or returns the empty graph.
 
 ugraph_empty([]).
 
-%! harary(+K:integer, +N:integer, -H:ugraph) is det.
+%! ugraph_harary(+K:integer, +N:integer, -H:ugraph) is det.
 % Generates a Harary graph that is K-connected and that has N vertices.
 %
 % *Definition*: A Harary graph is a K-connected simple graph with
@@ -232,7 +196,7 @@ ugraph_empty([]).
 % @arg N The number of vertices.
 % @arg H An undirected Harary graph.
 
-harary(K, N, H):-
+ugraph_harary(K, N, H):-
   even(K), !,
   V_Last is N - 1,
   numlist(0, V_Last, Vs),
@@ -248,42 +212,35 @@ harary(K, N, H):-
     ),
     H
   ).
-harary(K, N, H):-
+ugraph_harary(K, N, H):-
   even(N), !,
   NewK is K - 1,
-  harary(NewK, N, Graph),
-  harary(Graph, id, N, H).
-harary(K, N, H):-
+  ugraph_harary(NewK, N, Graph),
+  ugraph_harary(Graph, id, N, H).
+ugraph_harary(K, N, H):-
   NewK is K - 1,
-  harary(NewK, N, Graph),
-  harary(Graph, pred, N, H).
+  ugraph_harary(NewK, N, Graph),
+  ugraph_harary(Graph, pred, N, H).
 
-harary(Graph, Mod:P, N, H):-
-  Call =.. [P, N, NewN],
-  call(Mod:Call),
+ugraph_harary(G, P, N, H):-
+  call(P, N, NewN),
   findall(
-    V-Neighbors,
+    V-Ns,
     (
-      member(V-Ms, Graph),
+      member(V-Ms, G),
       W is V + (NewN / 2),
       (
         W =< N
       ->
-        Neighbors = [V | Ms]
+        Ns = [V | Ms]
       ;
-        Neighbors = Ms
+        Ns = Ms
       )
     ),
     H
   ).
 
-is_ugraph(UG):-
-  is_list(UG), maplist(is_ugraph_edge, UG).
-
-is_ugraph_edge(V-Ws):-
-  atomic(V), is_list(Ws).
-
-%! line_graph(+Graph:ugraph, -LineG:ugraph) is det.
+%! ugraph_line_graph(+Graph:ugraph, -LineG:ugraph) is det.
 % Returns the line graph for the given graph.
 %
 % *Definition*: The line graph G' of graph G has V(G') = E(G) and
@@ -303,7 +260,7 @@ is_ugraph_edge(V-Ws):-
 % @tbd Allow a comparator argument, so that vertices that do not compare
 %      with < are allowed as well.
 
-line_graph(UG, LineG):-
+ugraph_line_graph(UG, LineG):-
   ugraph_edges(UG, EG),
   findall(
     V/W-Neighbors,
@@ -332,55 +289,49 @@ line_graph(UG, LineG):-
     LineG
   ).
 
-%! ugraph(+Graph:ugraph) is semidet.
-% Succeeds if the given graph could be undirected.
-%
-% An undirected graph is represented as a ugraph that has a symmerical
-% closure over its edges.
-%
-% Every undirected graph succeeds for this predicate, but not every graph
-% that succeeds for this predicate is undirected. This depends on the
-% intention of the programmer, since a directed graph may have symmetric
-% closure of its edges as well.
+%! ugraph_maximum_components(+G:ugraph, -MaxComps:list(ugraph)) is det.
 
-ugraph(UG):-
-  ugraph_edges(UG, Es),
-  forall(
-    member(V-W, Es),
-    member(W-V, Es)
-  ).
+ugraph_maximum_components(G, MaxComps):-
+  ugraph_maximum_components_([G], MaxComps).
+ugraph_maximum_components_([], []).
+ugraph_maximum_components_([H | T], [H | Sol]):-
+  connected(ugraph_vertices, ugraph_edges, H), !,
+  ugraph_maximum_components_(T, Sol).
+ugraph_maximum_components_([H | T], Sol):-
+  findall(
+    DSG,
+    ugraph_direct_subgraph(DSG, H),
+    DSGs
+  ),
+  append(T, DSGs, NewT),
+  ugraph_maximum_components_(NewT, Sol).
 
-%! ugraph_neighbor(+Vertex:vertex, +UG:ugraph, -Neighbor:vertex) is nondet.
+%! ugraph_neighbor(+Vertex:vertex, +Graph:ugraph, -Neighbor:vertex) is nondet.
 % Neighboring vertex.
 
 ugraph_neighbor(Vertex, UG, Neighbor):-
   ugraph_edge(UG, Vertex-Neighbor).
 
-%! ugraph_subgraph(?G1:ugraph, +G2:ugraph) is nondet.
-% G1 is a subgraph of G2.
+%! ugraph_subgraph(?SubGraph:ugraph, +Graph:ugraph) is nondet.
+% `SubGraph` is a subgraph of `Graph`.
 
-ugraph_subgraph(G1, G2):-
-  ugraph_subgraph0(G1, G2, [], []).
-ugraph_subgraph0([], [], _In, _Out).
-ugraph_subgraph0([V-V1s | G1], [V-V2s | G2], In, Out):-
-  % Predicate used from LIST_EXT.
-  sublist(V1s_, V2s),
-  ord_subtract(V1s_, Out, V1s),
-  ord_union(In, V1s, NewIn),
-  ugraph_subgraph0(G1, G2, NewIn, Out).
-ugraph_subgraph0(G1, [V-_Vs | G2], In, Out):-
+ugraph_subgraph(SubG, G):-
+  ugraph_subgraph_(SubG, G, [], []).
+ugraph_subgraph_([], [], _In, _Out).
+ugraph_subgraph_([V-SubNs | SubG], [V-Ns | G], N_P, In, Out):-
+  sublist(SubNs_, Ns),
+  ord_subtract(SubNs_, Out, SubNs),
+  ord_union(In, SubNs, NewIn),
+  ugraph_subgraph_(SubG, G, NewIn, Out).
+ugraph_subgraph_(SubG, [V | G], In, Out):-
   \+ member(V, In),
   ord_add_element(Out, V, NewOut),
-  ugraph_subgraph0(G1, G2, In, NewOut).
+  ugraph_subgraph_(SubG, G, In, NewOut).
 
-%! ugraph_vertex(+G:ugraph, ?Vertex:vertex) is nondet.
-% Vertices in a graph.
-
-ugraph_vertex(G, V):-
-  ugraph_vertices(G, Vs),
-  member(V, Vs).
-
-%! unsymmetric_edges(+Edges:list(edge), -UnsymmetricEdges:list(edge)) is det.
+%! ugraph_unsymmetric_edges(
+%!   +Graph:ugraph,
+%!   -UnsymmetricEdges:ordset(edge)
+%! ) is det.
 % Returns the unsymmetric edges for the given edges.
 % For every pair of symmetric edges $\set{\tuple{V, W}, \tuple{W, V}}$
 % we only take the edge for which the first member is smaller than the
@@ -389,25 +340,33 @@ ugraph_vertex(G, V):-
 % *|Special case|*: Reflexive edges are symmetric and therefore removed
 %                   entirely.
 
-unsymmetric_edges(Edges, UnsymmetricEdges):-
-  findall(
+ugraph_unsymmetric_edges(G, UnsymmetricEs):-
+  ugraph_edges(G, Es),
+  setoff(
     V-W,
     (
-      member(V-W, Edges),
+      member(V-W, Es),
       V < W
     ),
-    UnsymmetricEdges
+    UnsymmetricEs
   ).
+
+%! ugraph_vertex(+Graph:ugraph, ?Vertex:vertex) is nondet.
+% Vertices in a graph.
+
+ugraph_vertex(G, V):-
+  ugraph_vertices(G, Vs),
+  member(V, Vs).
 
 %! ugraph_vertex_induced_subgraph(
 %!   +Graph:ugraph,
-%!   +VSubG:list(vertex),
-%!   -SubG:ugraph
+%!   ?Vertices:list(vertex),
+%!   ?SubGra[h:ugraph
 %! ) is det.
 % Returns the vertex-induced subgraph.
 
-ugraph_vertex_induced_subgraph(Graph, VSubG, SubG):-
-  ugraphs:vertices(Graph, Vs),
+ugraph_vertex_induced_subgraph(G, SubVs, SubG):-
+  ugraph_vertices(G, Vs),
   ord_subtract(Vs, VSubG, DelVs),
-  del_vertices(Graph, DelVs, SubG).
+  ugraph_del_vertices(Graph, DelVs, SubG).
 

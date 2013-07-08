@@ -2,7 +2,11 @@
   dcg_generic,
   [
 % AGGREGATES
+    dcg_arrow//1, % +Length:integer
+    dcg_arrow//2, % +Options:list(nvpair)
+                  % +Length:integer
     dcg_graphic//1, % -Graphic:list(code)
+    dcg_indent//1, % +Indent:integer
     dcg_word//1, % -Word:list(code)
     dcg_word_atom//1, % -Word:atom
 % ALL/UNTIL
@@ -23,8 +27,10 @@
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
 % MULTIPLE OCCURRENCES
-    dcg_multi//2, % :DCGBody:dcg
+    dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
+    dcg_multi_list//2, % :DCG_Body:dcg
+                       % +List:list
 % PEEK
     dcg_peek//1, % ?Code:code
     dcg_peek_atom//1, % -Atom:atom
@@ -32,15 +38,15 @@
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
 % PHRASE EXTENSION
-    dcg_phrase/2, % :DCGBody:dcg
+    dcg_phrase/2, % :DCG_Body:dcg
                   % ?In:atom
-    dcg_phrase/3, % :DCGBody:dcg
+    dcg_phrase/3, % :DCG_Body:dcg
                   % ?In:atom
                   % ?Out:atom
 % RE
-    dcg_plus//1, % :DCGBody:dcg
-    dcg_questionmark//1, % :DCGBody:dcg
-    dcg_star//1, % :DCGBody:dcg
+    dcg_plus//1, % :DCG_Body:dcg
+    dcg_questionmark//1, % :DCG_Body:dcg
+    dcg_star//1, % :DCG_Body:dcg
 % REPLACE
     dcg_replace//2, % +From:list(code)
                     % +To:list(code)
@@ -51,6 +57,23 @@
     dcg_line_wrap//1, % +Options
     dcg_word_wrap//0,
     dcg_word_wrap//1 % +Options
+  ]
+).
+:- reexport(
+  library(dcg/basics),
+  [
+    alpha_to_lower//1,
+    atom//1,
+    blank//0,
+    blanks//0,
+    blanks_to_nl//0,
+    nonblank//1,
+    nonblanks//1,
+    prolog_var_name//1,
+    string//1,
+    string_without//2,
+    white//0,
+    whites//0
   ]
 ).
 
@@ -77,6 +100,7 @@ and the positive integers. This is why we add the DCG rules:
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(cowspeak)).
+:- use_module(generics(list_ext)).
 :- use_module(html(html)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
@@ -84,29 +108,18 @@ and the positive integers. This is why we add the DCG rules:
 :- use_module(library(settings)).
 :- use_module(os(os_ext)).
 
+% The number of spaces that go into one indent.
 :- setting(
-  default_maxmimum_line_width,
+  indent_size,
+  integer,
+  2,
+  'The default indentation used by the print predicates.'
+).
+:- setting(
+  maxmimum_line_width,
   integer,
   80,
   'The default maximum line width, after which line wrapping occurs.'
-).
-
-:- reexport(
-  library(dcg/basics),
-  [
-    alpha_to_lower//1,
-    atom//1,
-    blank//0,
-    blanks//0,
-    blanks_to_nl//0,
-    nonblank//1,
-    nonblanks//1,
-    prolog_var_name//1,
-    string//1,
-    string_without//2,
-    white//0,
-    whites//0
-  ]
 ).
 
 % ALL/UNTIL %
@@ -118,6 +131,7 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_separated_list(//,-,+,-)).
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_multi(//,?,?,?)).
+:- meta_predicate(dcg_multi_list(//,?,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
 % PEEK %
@@ -137,10 +151,42 @@ and the positive integers. This is why we add the DCG rules:
 
 % AGGREGATES %
 
+dcg_arrow(L) -->
+  dcg_arrow([], L).
+
+%! dcg_arrow(+Options:list(nvpair), +Length:integer)//
+% A simple ASCII arrow.
+%
+% Example:
+% ~~~{.txt}
+% -------->
+% ~~~
+%
+% @arg Options The following options are supported:
+%      1. `head(+HeadType:oneof([both,left,right]))`
+% @arg Length A non-negative integer.
+
+dcg_arrow(O, L) -->
+  {option(head(Head), O, right)},
+  ({dcg_arrow_left_head(Head)} -> less_than_sign ; ""),
+  dcg_multi(hyphen, L),
+  ({dcg_arrow_right_head(Head)} -> greater_than_sign ; "").
+
+dcg_arrow_left_head(both).
+dcg_arrow_left_head(left).
+dcg_arrow_right_head(right).
+
 dcg_graphic([H|T]) -->
   dcg_graph(H),
   dcg_graphic(T).
 dcg_graphic([]) --> [].
+
+dcg_indent(I) -->
+  {
+    setting(indent_size, Size),
+    NumberOfSpaces is I * Size
+  },
+  dcg_multi(space, NumberOfSpaces).
 
 %! dcg_word(-Word:list(code)) is semidet.
 % Returns the first word that occurs in the codes list.
@@ -256,28 +302,40 @@ dcg_separated_list(_Separator, [H]) -->
 
 % MULTIPLE OCCURRENCES %
 
-%! dcg_multi(:DCGBody, ?Occurrences:integer)
+%! dcg_multi(:DCG_Body, ?Occurrences:integer)
 % Counts the consecutive occurrences of the given DCG body.
 % Or produces the given number of occurrences of the given DCG body.
 
-dcg_multi(DCGBody, N) -->
+dcg_multi(DCG_Body, N) -->
   {nonvar(N)}, !,
-  dcg_multi_nonvar(DCGBody, N).
-dcg_multi(DCGBody, N) -->
+  dcg_multi_nonvar(DCG_Body, N).
+dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
-  dcg_multi_var(DCGBody, N).
+  dcg_multi_var(DCG_Body, N).
 
 dcg_multi_nonvar(_DCGBody, 0) --> !, [].
-dcg_multi_nonvar(DCGBody, N) -->
-  DCGBody, !,
+dcg_multi_nonvar(DCG_Body, N) -->
+  DCG_Body, !,
   {NewN is N - 1},
-  dcg_multi_nonvar(DCGBody, NewN).
+  dcg_multi_nonvar(DCG_Body, NewN).
 
-dcg_multi_var(DCGBody, N) -->
-  DCGBody, !,
-  dcg_multi_var(DCGBody, N_),
+dcg_multi_var(DCG_Body, N) -->
+  DCG_Body, !,
+  dcg_multi_var(DCG_Body, N_),
   {N is N_ + 1}.
 dcg_multi_var(_DCGBody, 0) --> [].
+
+%! dcg_multi_list(:DCG_Body, +List:list)//
+
+dcg_multi_list(_DCG_Body, []) --> [].
+dcg_multi_list(DCG_Body1, [H|T]) -->
+  {
+    DCG_Body1 =.. [P | Args1],
+    append(Args1, [H], Args2),
+    DCG_Body2 =.. [P | Args2]
+  },
+  DCG_Body2,
+  dcg_multi_list(DCG_Body1, T).
 
 
 
@@ -333,54 +391,54 @@ dcg_peek_length(MaxLength, Length, Peek), Peek -->
 % PHRASE EXTENSION
 
 % Codes match codes.
-dcg_phrase(DCGBody, In):-
+dcg_phrase(DCG_Body, In):-
   is_list(In), !,
-  dcg_phrase(DCGBody, In, []).
+  dcg_phrase(DCG_Body, In, []).
 % Atom matches atom.
-dcg_phrase(DCGBody, In):-
-  dcg_phrase(DCGBody, In, '').
+dcg_phrase(DCG_Body, In):-
+  dcg_phrase(DCG_Body, In, '').
 
-dcg_phrase(DCGBody, In, Out):-
+dcg_phrase(DCG_Body, In, Out):-
   is_list(In), !,
-  phrase(DCGBody, In, Out).
-dcg_phrase(DCGBody, In1, Out1):-
+  phrase(DCG_Body, In, Out).
+dcg_phrase(DCG_Body, In1, Out1):-
   atomic(In1), !,
   atom_codes(In1, In2),
-  dcg_phrase(DCGBody, In2, Out2),
+  dcg_phrase(DCG_Body, In2, Out2),
   atom_codes(Out1, Out2).
 
 
 
 % RE %
 
-%! dcg_plus(:DCGBody:dcg) is nondet.
-% Applies the given DCGBody one or more times to the codes list.
+%! dcg_plus(:DCG_Body:dcg) is nondet.
+% Applies the given DCG_Body one or more times to the codes list.
 %
 % The longest codes list that can be parsed by the given DCG body
 % is returned first. The singleton codes list is retuned last.
 %
 % @compat Inspired by the regular expression operator =+=.
 
-dcg_plus(DCGBody) -->
-  DCGBody,
-  dcg_plus(DCGBody).
-dcg_plus(DCGBody) -->
-  DCGBody.
+dcg_plus(DCG_Body) -->
+  DCG_Body,
+  dcg_plus(DCG_Body).
+dcg_plus(DCG_Body) -->
+  DCG_Body.
 
-dcg_questionmark(DCGBody) -->
-  (DCGBody ; "").
+dcg_questionmark(DCG_Body) -->
+  (DCG_Body ; "").
 
-%! dcg_star(:DCGBody:dcg) is nondet.
-% Applies the given DCGBody zero or more times to the codes list.
+%! dcg_star(:DCG_Body:dcg) is nondet.
+% Applies the given DCG_Body zero or more times to the codes list.
 %
 % The longest codes list that can be parsed by the given DCG body
 % is returned first. The empty codes list is retuned last.
 %
 % @compat Inspired by the regular expression operator =*=.
 
-dcg_star(DCGBody) -->
-  DCGBody,
-  dcg_star(DCGBody).
+dcg_star(DCG_Body) -->
+  DCG_Body,
+  dcg_star(DCG_Body).
 dcg_star(_DCGBody) --> [].
 
 
@@ -437,7 +495,7 @@ dcg_line_wrap --> dcg_line_wrap([]).
 
 dcg_line_wrap(Options) -->
   {
-    setting(default_maxmimum_line_width, DefaultMaximumLineWidth),
+    setting(maxmimum_line_width, DefaultMaximumLineWidth),
     option(
       maximum_line_width(MaximumLineWidth),
       Options,
@@ -470,7 +528,7 @@ dcg_word_wrap --> dcg_word_wrap([]).
 
 dcg_word_wrap(Options) -->
   {
-    setting(default_maxmimum_line_width, DefaultMaximumLineWidth),
+    setting(maxmimum_line_width, DefaultMaximumLineWidth),
     option(
       maximum_line_width(MaximumLineWidth),
       Options,

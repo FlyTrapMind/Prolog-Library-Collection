@@ -1,6 +1,8 @@
 :- module(
   dcg_c,
-  [c_convert//0]
+  [
+    c_convert//0
+  ]
 ).
 
 /** <module> DCG_C
