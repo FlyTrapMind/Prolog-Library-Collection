@@ -13,11 +13,12 @@
     print_nvpair/1, % +NVPair
     print_nvpair/2, % +Out
                     % +NVPair
+    print_collection/2 % +Options:list(nvpair)
+                       % +Collection:list
     print_list/2, % +Out
                   % +List:list
-    print_list/3 % +Out
-                 % +Indent:integer
-                 % +List:list
+    print_set/2 % +Out
+                % +Set:ordset
   ]
 ).
 
@@ -92,6 +93,44 @@ indent(Stream, Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(Stream, NumberOfSpaces).
 
+%! print_collection(+Options:list(nvpair), +Collection:list) is det.
+% @arg Options The following options are supported:
+%      1. `begin(+Begin:atom)`
+%      2. `end(+End:atom)`
+%      3. `separator(+Separator:atom)`
+%      4. `transformation(:Pred)`
+%         The binary predicate that is applied to the collection.
+
+print_collection(O, Collection1):-
+  % E.g., list -> set.
+  option(transformation(P), O, =),
+  once(call(P, Collection1, Collection2)),
+  % Open a set.
+  option(begin(Begin), O),
+  write(Begin),
+  print_collection_(O, Collection2).
+
+% Done!
+print_collection_(O, []):- !,
+  option(close(Close), P),
+  write(Close).
+% Nested set.
+print_collection_(O, [H|T]):-
+  is_list(H), !,
+  % Notice that set members that are sets may contain multiple occurrences,
+  % since they will first be explicitly converted to ordset format.
+  option(transformation(P), O, =),
+  once(call(P, H1, H2)),
+  print_collection(O, H2),
+  print_collection_(O, T).
+% Next set member.
+print_collection_(O, [H|T]):-
+  write(H),
+  % Do not add the separator after the last set member.
+  option(separator(Separator), O),
+  unless(T == [], write(Separatoe)),
+  print_collection_(O, T).
+
 print_nvpair(NVPair):-
   NVPair =.. [Name, Value],
   write(Name), write(': '), write(Value), write(';').
@@ -116,27 +155,38 @@ print_list(Out, List):-
 % @tbd Do not explicitly distinguish between codes and atoms output.
 %      with_output_to/2 writes characters to both.
 
-print_list(Out, Indent, List):-
-  with_output_to(Out, print_list_(Indent, List)).
+print_list(Out, I, List):-
+  with_output_to(
+    Out,
+    print_collection([begin(')'),end(']'),separator(',')], I, List)
+  ).
 
-% Done!
-print_list_(_Indent, []):- !.
-% Nested lists.
-print_list_(Indent, [H | T]):-
-  is_list(H), !, NewIndent is Indent + 1,
-  print_list_(NewIndent, H),
-  print_list_(Indent, T).
-% Next list entry.
-print_list_(Indent, [H | T]):-
-  indent(Indent), write(H), format('\n'),
-  print_list_(Indent, T).
+print_set(Out, List):-
+  print_set(Out, 0, List).
+
+print_set(Out, I, List):-
+  with_output_to(
+    Out,
+    print_collection(
+      [
+        begin('{'),
+        end('}'),
+        separator(','),
+        transformation(ordsets:list_to_ord_set)
+      ],
+      I,
+      List
+    )
+  ).
+
+
 
 % @tbd The predicates that appear below should be unified with some RDF module
 %      used for exporting triples and with some TMS module used for exporting
 %      justification chains.
 
 print_proposition(Stream, Options, rdf(S, P, O)):-
-  maplist(rdf_vertex_naming(Options), [S, P, O], [S0, P0, O0]),
+  maplist(rdf_vertex_name(Options), [S, P, O], [S0, P0, O0]),
   option(indent(Indent), Options, 0),
   option(index(Index), Options, 'c'),
   indent(Stream, Indent),

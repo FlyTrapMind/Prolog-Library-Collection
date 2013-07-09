@@ -100,13 +100,13 @@ write_assoc(Out, KeyIndent, Assoc):-
     member(Key, Keys),
     (
       indent(Out, KeyIndent),
-      rdf_resource_naming(Key, KeyName),
+      rdf_term_name(Key, KeyName),
       format(Out, '~w:\n', [KeyName]),
       forall(
         get_assoc(Key, Assoc, Value),
         (
           indent(Out, ValueIndent),
-          rdf_resource_naming(Value, ValueName),
+          rdf_term_name(Value, ValueName),
           format(Out, '~w\n', [ValueName])
         )
       )

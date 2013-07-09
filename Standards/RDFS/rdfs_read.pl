@@ -25,6 +25,9 @@
                       % ?Graph:atom
 
 % LABELS
+    rdfs_preferred_label/3, % +RDF_Term:oneof([bnode,uri])
+                            % +Language:atom
+                            % ?PreferredLabel:atom
     rdfs_list_label/3, % +List:uri
                        % +Label:atom
                        % -Element:uri
@@ -110,7 +113,7 @@ rdfs_individual(X, Y, G):-
 
 @author Wouter Beek
 @author Sander Latour
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07
 */
 
 :- use_module(generics(db_ext)).
@@ -123,25 +126,21 @@ rdfs_individual(X, Y, G):-
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 
-% ALTS %
+% ALTS
 :- rdf_meta(rdfs_alt(r,?)).
 :- rdf_meta(rdfs_alt(r,-,?)).
-
-% BAGS %
+% BAGS
 :- rdf_meta(rdfs_bag(r,?)).
 :- rdf_meta(rdfs_bag(r,-,?)).
-
-% COLLECTIONS %
+% COLLECTIONS
 :- rdf_meta(rdfs_collection(r,?)).
 :- rdf_meta(rdfs_collection(r,-,?)).
-
-% LABELS %
+% LABELS
+:- rdf_meta(rdfs_preferred_label(r,+,-)).
 :- rdf_meta(rdfs_list_label(r,+,-)).
-
-% RDF-HAS %
+% RDF-HAS
 :- rdf_meta(rdfs(r,r,r,?)).
-
-% SEQUENCES %
+% SEQUENCES
 :- rdf_meta(rdfs_seq(r,?)).
 :- rdf_meta(rdfs_seq(r,-,?)).
 
@@ -249,6 +248,21 @@ rdf_collection0(Collection, Contents, Graph):-
 
 
 % LABELS %
+
+%! rdfs_preferred_label(
+%!   +RDF_Term:oneof([bnode,uri]),
+%!   +Language:atom,
+%!   ?Label:atom
+%! ) is nondet.
+% Multiple labels are returned (nondet) in a descending preference order.
+
+% Labels with the given language code are preferred.
+rdfs_preferred_label(RDF_Term, Language, Label):-
+  rdfs_label(RDF_Term, Language, Label).
+% If the preferred language is not available,
+% then we look for an arbitrary other language.
+rdfs_preferred_label(RDF_Term, _PreferredLanguage, Label):-
+  rdfs_label(RDF_Term, _OtherLanguage, Label).
 
 %! rdfs_list_label(+RDF_List:uri, +Label:atom, -Element:uri) is nondet.
 % Returns RDF list elements that have the given label.

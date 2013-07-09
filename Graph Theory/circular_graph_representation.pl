@@ -55,7 +55,7 @@ circular_vertice_coordinate(Options, Vs, V, coordinate(2,[X_cm,Y_cm])):-
   
   % Borders
   setting(default_border, DefaultBorder),
-  option(border(size(2, [X_Border, Y_Border])), Options, DefaultBorder),
+  option(border_size(size(2, [X_Border, Y_Border])), Options, DefaultBorder),
   
   % Graph radius.
   GraphXDiameter is Width - 2 * X_Border,

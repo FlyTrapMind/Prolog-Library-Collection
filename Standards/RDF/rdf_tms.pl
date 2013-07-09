@@ -87,7 +87,7 @@ rdf_materialize(Graphs, TMS):-
     ),
     (
       (rdf_global_id(cp:'WouterBeek', S) -> gtrace ; true), %DEB
-      rdf_triple_naming(S, P, O, TripleName),
+      rdf_triple_name(S, P, O, TripleName),
       doyle_add_node(TMS, TripleName, Node),
       doyle_add_justification(TMS, [], [], 'Assumption', Node, _),
       % Connect TMS node and triple content.
@@ -119,7 +119,7 @@ rdf_materialize_tms(TMS):-
   \+ rdf_node(S, P, O, TMS, _ExistingNode),
 
   % Store the new triple in a node.
-  rdf_triple_naming(S, P, O, ConsequenceLabel),
+  rdf_triple_name(S, P, O, ConsequenceLabel),
   doyle_add_node(TMS, ConsequenceLabel, Consequence),
 
   % Connect the consequence node to an RDF triple.
@@ -432,5 +432,5 @@ rdf_tms_test1(TripleName):-
   rdf_materialize(Graph, TMS),
   rdf(S, P, O, TMS),
   \+ rdf(S, P, O, Graph),
-  rdf_triple_naming(S, P, O, TripleName).
+  rdf_triple_name(S, P, O, TripleName).
 

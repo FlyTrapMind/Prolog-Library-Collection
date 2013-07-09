@@ -24,7 +24,7 @@ Generic graph export module.
 
 
 %        The following options are supported:
-%        1. =|colorscheme(oneof([none,svg,x11]))|= The colorscheme for the
+%        1. =|color_scheme(oneof([none,svg,x11]))|= The color_scheme for the
 %           colors assigned to vertices and edges.
 %           Supported for: GraphViz, HTML_TABLE.
 %           Default: =svg=.

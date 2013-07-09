@@ -51,7 +51,7 @@ This module uses the =|img|= search file name for finding images.
 
 :- rdf_meta(rdf_convert_datatype(r,+,r,-)).
 :- rdf_meta(rdf_datatype(?,r)).
-:- rdf_meta(rdf_datatype0(?,r)).
+:- rdf_meta(rdf_datatype_(?,r)).
 :- rdf_meta(rdf_datatype(r,?,?)).
 :- rdf_meta(rdf_datatype(?,?,r,?)).
 
@@ -75,15 +75,13 @@ rdf_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue):-
 % @arg Datatype The URI of an XML Schema datatype.
 
 rdf_datatype(DatatypeName, Datatype):-
-  var(DatatypeName),
-  var(Datatype),
-  !,
-  rdf_datatype0(DatatypeName, Datatype).
+  var(DatatypeName), var(Datatype), !,
+  rdf_datatype_(DatatypeName, Datatype).
 rdf_datatype(DatatypeName, Datatype):-
-  once(rdf_datatype0(DatatypeName, Datatype)).
+  once(rdf_datatype_(DatatypeName, Datatype)).
 
-rdf_datatype0(image, prasem:image).
-rdf_datatype0(DatatypeName, Datatype):-
+rdf_datatype_(image, prasem:image).
+rdf_datatype_(DatatypeName, Datatype):-
   xmls_datatype(DatatypeName, Datatype).
 
 %! rdf_datatype(
@@ -99,8 +97,7 @@ rdf_datatype0(DatatypeName, Datatype):-
 % @arg CanonicalValue
 
 rdf_datatype(Datatype, LexicalValue, CanonicalValue):-
-  is_uri(Datatype),
-  !,
+  is_uri(Datatype), !,
   rdf_datatype(_DatatypeName, LexicalValue, Datatype, CanonicalValue).
 rdf_datatype(DatatypeName, LexicalValue, CanonicalValue):-
   rdf_datatype(DatatypeName, LexicalValue, _Datatype, CanonicalValue).
@@ -118,28 +115,23 @@ rdf_datatype(DatatypeName, LexicalValue, CanonicalValue):-
 % @arg Datatype The URI of a datatype.
 % @arg CanonicalValue
 
-rdf_datatype('XMLLiteral', Value, prasem:'XMLLiteral', Value):-
-  !,
+rdf_datatype('XMLLiteral', Value, prasem:'XMLLiteral', Value):- !,
   atom(Value).
 rdf_datatype(file, LexicalValue, prasem:file, CanonicalValue):-
-  nonvar(CanonicalValue),
-  !,
+  nonvar(CanonicalValue), !,
   absolute_file_name(file(CanonicalValue), LexicalValue, [access(read)]).
 rdf_datatype(file, LexicalValue, prasem:file, CanonicalValue):-
-  nonvar(LexicalValue),
-  !,
+  nonvar(LexicalValue), !,
   file_base_name(LexicalValue, CanonicalValue).
 rdf_datatype(image, LexicalValue, prasem:image, CanonicalValue):-
-  nonvar(CanonicalValue),
-  !,
+  nonvar(CanonicalValue), !,
   file_name_type(_Base, FileType, CanonicalValue),
   user:image_file_type(FileType),
   absolute_file_name(img(CanonicalValue), LexicalValue, [access(read)]),
   % Do not backtrack on image file types.
   !.
 rdf_datatype(image, LexicalValue, prasem:image, CanonicalValue):-
-  nonvar(LexicalValue),
-  !,
+  nonvar(LexicalValue), !,
   file_base_name(LexicalValue, CanonicalValue).
 rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue):-
   xmls_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue).

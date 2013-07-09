@@ -1,6 +1,11 @@
 :- module(
   rdf_graph,
   [
+    is_rdf_graph_instance_of/3, % +GraphInstance:atom
+                                % +Graph:atom
+                                % -BNodeMap:list(list)
+    is_rdf_graph_proper_instance_of/2, % +GraphInstance:atom
+                                       % +Graph:atom
     rdf_bnode/2, % ?Graph:graph
                  % ?BNode:bnode
     rdf_graph_copy/2, % +From:atom
@@ -14,13 +19,8 @@
     rdf_graph_triples/2, % ?Graph:atom
                          % ?Triples:list
     rdf_ground/1, % +Graph:atom
-    rdf_is_graph_instance_of/3, % +GraphInstance:atom
-                                % +Graph:atom
-                                % -BNodeMap:list(list)
-    rdf_is_graph_proper_instance_of/2, % +GraphInstance:atom
-                                       % +Graph:atom
     rdf_name/2, % ?Graph:atom
-                % +Name:oneof([literal,uri])
+                % +RDF_Name:oneof([literal,uri])
     rdf_new_graph/2, % +Graph1:atom
                      % -Graph2:atom
     rdf_object/2, % ?Graph:graph
@@ -31,10 +31,17 @@
                      % ?Predicate:uri
     rdf_predicates/2, % +Graph:atom
                       % -Predicates:ordset(uri)
+    rdf_term_name/3, % +Options:list(nvpair)
+                     % +RDF_Term:oneof([bnode,literal,uri])
+                     % -Name:atom
+    rdf_schema/2, % +Graph:atom
+                  % -Triples:ordset(rdf_triple)
     rdf_subject/2, % ?Graph:atom
                    % ?Subject:oneof([bnode,uri])
-    rdf_subjects/2, % +Graph:atom
-                    % -Subjects:ordset(uri)
+    rdf_triple_name/4, % +S:oneof([bnode,uri])
+                       % +P:uri
+                       % +O:oneof([bnode,literal,uri])
+                       % -T_Name:atom
     rdf_triples/2, % +In:oneof([atom,uri])
                    % -Triples:list(rdf_triple)
     rdf_triples_to_edges/2, % +Triples:list(rdf_triple)
@@ -355,7 +362,7 @@ rdf_ground(rdf(S, _P, O)):-
   \+ rdf_is_bnode(S),
   \+ rdf_is_bnode(O).
 
-%! rdf_is_graph_instance_of(
+%! is_rdf_graph_instance_of(
 %!   +GraphInstance:atom,
 %!   +Graph:atom,
 %!   -BNodeMap:list(list)
@@ -368,7 +375,7 @@ rdf_ground(rdf(S, _P, O)):-
 % an instance of an instance of G is an instance of G, and if H is
 % an instance of G then every triple in H is an instance of some triple in G.
 
-rdf_is_graph_instance_of(GI, G, BNodeMap):-
+is_rdf_graph_instance_of(GI, G, BNodeMap):-
   maplist(rdf_graph, [GI,G]),
   rdf_graph_triples(G, Triples),
   rdf_is_graph_instance_of0(GI, Triples, [], BNodeMap),
@@ -386,7 +393,7 @@ rdf_is_graph_instance_of0(GI, [rdf(S, P, O, G) | Triples], BNodeMap, Solution):-
   append([NewMap1, NewMap2, BNodeMap], NewBNodeMap),
   rdf_is_graph_instance_of0(GI, Triples, NewBNodeMap, Solution).
 
-%! rdf_is_graph_proper_instance_of(
+%! is_rdf_graph_proper_instance_of(
 %!   +GraphProperInstance:atom,
 %!   +Graph:atom
 %! ) is semidet.
@@ -395,8 +402,8 @@ rdf_is_graph_instance_of0(GI, [rdf(S, P, O, G) | Triples], BNodeMap, Solution):-
 % has been replaced by a name, or two blank nodes in the graph have
 % been mapped into the same node in the instance.
 
-rdf_is_graph_proper_instance_of(GI, G):-
-  rdf_is_graph_instance_of(GI, G, BNodeMap),
+is_rdf_graph_proper_instance_of(GI, G):-
+  is_rdf_graph_instance_of(GI, G, BNodeMap),
   (
     member([_BNode,Name], BNodeMap),
     rdf_name(GI, Name)
@@ -427,7 +434,7 @@ rdf_is_instance_of(_GI, RI, _G, R, BNodeMap):-
   memberchk([R,RI], BNodeMap).
 
 %! test_rdf_is_graph_instance_of(-Maps:list(list)) is det.
-% Tests predicate rdf_is_graph_instance_of/2.
+% Tests predicate is_rdf_graph_instance_of/2.
 % Should return two lists of mappings from blank nodes to uriRefs.
 
 test_rdf_is_graph_instance_of(Maps):-
@@ -435,34 +442,27 @@ test_rdf_is_graph_instance_of(Maps):-
   rdf_bnode(X1), rdf_bnode(X2), rdf_bnode(X3), rdf_bnode(X4),
   rdf_assert(X1, rdf:p, X2, g), rdf_assert(X3, rdf:p, X4, g),
   rdf_assert(rdf:a, rdf:p, rdf:b, gi), rdf_assert(rdf:c, rdf:p, rdf:d, gi),
-  findall(Map, rdf_is_graph_instance_of(gi, g, Map), Maps).
+  findall(Map, is_rdf_graph_instance_of(gi, g, Map), Maps).
 
-%! rdf_name(?G:atom, ?Name:oneof([literal,uri])) is nondet.
-%! rdf_name(-Name) is nondet.
-% Succeeds if the given object is an RDF name, i.e., an RDF URI reference or
-% an RDF literal.
+%! rdf_name(?G:atom, ?RDF_Name:oneof([literal,uri])) is nondet.
+% Succeeds if the given object is an RDF name,
+% i.e., an RDF URI reference or an RDF literal.
 
-rdf_name(Graph, Name):-
-  rdf_name([literal(true)], Graph, Name).
-
-rdf_name(Options, Graph, Name):-
-  nonvar_det(rdf_name0(Options, Graph, Name)).
-rdf_name0(_Options, Graph, Name):-
-  rdf_subject(Graph, Name),
-  \+ rdf_is_bnode(Name).
-rdf_name0(_Options, Graph, Name):-
-  rdf_predicate(Graph, Name).
-rdf_name0(Options, Graph, Name):-
-  rdf_object(Graph, Object),
+rdf_name(G, RDF_Name):-
+  nonvar_det(rdf_name_(G, RDF_Name)).
+rdf_name_(G, RDF_Name):-
+  rdf_subject(G, RDF_Name),
+  \+ rdf_is_bnode(RDF_Name).
+rdf_name_(G, RDF_Name):-
+  rdf_predicate(G, RDF_Name).
+rdf_name_(G, RDF_Name):-
+  rdf_object(G, Object),
+  \+ rdf_is_bnode(Object),
   (
-    option(literal(true), Options),
-    Object = literal(type(_LexicalValue, Datatype))
+    Object = literal(type(Datatype, _LexicalValue))
   ->
-    (Name = Object ; Name = Datatype)
-  ;
-    rdf_is_bnode(Object)
-  ->
-    fail
+    % Specifically include datatypes that are strictly speaking not RDF terms.
+    (RDF_Name = Object ; RDF_Name = Datatype)
   ;
     Name = Object
   ).
@@ -470,8 +470,7 @@ rdf_name0(Options, Graph, Name):-
 %! rdf_new_graph(+Graph1:atom, -Graph2:atom) is det.
 
 rdf_new_graph(Graph, Graph):-
-  \+ rdf_graph(Graph),
-  !.
+  \+ rdf_graph(Graph), !.
 rdf_new_graph(Graph1, Graph3):-
   split_atom_exclusive('_', Graph1, Splits),
   reverse(Splits, [LastSplit | RSplits]),
@@ -513,21 +512,172 @@ rdf_predicates(Graph, Predicates):-
     Predicates
   ).
 
-rdf_subject(G, S):-
-  nonvar_det(rdf_subject0(G, S)).
-rdf_subject0(G, S):-
-  rdf(S, _, _, G).
+%        1. =language(Language:atom)= 
+%           Defaults to =en=.
 
-rdf_subjects(Graph, Subjects):-
-  rdf_graph(Graph),
-  setoff(
-    Subject,
-    (
-      rdf(Subject, _Predicate, _Object, Graph),
-      \+ rdf_is_bnode(Subject)
-    ),
-    Subjects
+%! rdf_term_name(
+%!   +Options:list(nvpair),
+%!   +RDF_Term:oneof([bnode,literal,uri]),
+%!   -Name:atom
+%!) is det.
+% Returns a display name for the given RDF term.
+%
+% @arg Options The following options are supported:
+%       1. `language(+Language:atom)`
+%          The atomic language tag of the language that is preferred for
+%          use in the RDF term's name.
+%          The default value is `en`.
+%       2. `literals(+DisplayLiterals:oneof([collapse,labels_only]))`
+%          Whether or not literals are included in the name of the RDF term.
+%          The default value is `collapse`.
+% @arg RDF_Term An RDF term.
+% @arg Name The atomic name of an RDF term.
+
+% This method also works for a list of RDF terms.
+% @tbd What's the use case for this?
+rdf_term_name(O, RDF_Terms, Name):-
+  is_list(RDF_Terms), !,
+  maplist(rdf_term_name(O), RDF_Terms, Names),
+  print_set(atom(Name), Names).
+% An RDF list.
+rdf_term_name(O, RDF_Term, Name):-
+  is_rdf_list(RDF_Term), !,
+  % Recursively retrieve the contents of the RDF list.
+  rdf_list(RDF_Term, RDF_Terms),
+  maplist(rdf_term_name(O), RDF_Terms, Names),
+  print_list(atom(Name), Names).
+% A literal with a datatype.
+rdf_term_name(_O, literal(type(Datatype,LexicalValue)), Name):- !,
+  (
+    % Model RDF_DATATYPE supports this datatype.
+    rdf_datatype(DatatypeName, _LexicalValue, Datatype, CanonicalValue)
+  ->
+    format(atom(Name), '"~w"^^~w', [CanonicalValue,DatatypeName])
+  ;
+    % The datatype has a registered namespace prefix.
+    rdf_global_id(DatatypeNamespace:DatatypeLocal, Datatype)
+  ->
+    format(atom(Name), '"~w"^^~w:~w', [Value,DatatypeNamespace,DatatypeLocal])
+  ;
+    % Not all datatypes have their namespace defined.
+    format(atom(Name), '"~w"^^~w', [Value,Datatype])
   ).
+% A plain literal with a language tag.
+rdf_term_name(literal(lang(Language,Literal)), Name):- !,
+  format(atom(Name), '"~w"@~w', [Literal,Language]).
+% A simple literal / a plain literal without a language tag.
+rdf_term_name(literal(Literal), Name):- !,
+  format(atom(Name), '"~w"', [Literal]).
+% A blank node.
+% @tbd Make this less implementation-dependent, e.g. by mapping
+%      internal blank nodes to integers.
+rdf_term_name(BNode, Name):-
+  rdf_is_bnode(BNode), !,
+  Name = BNode.
+% Now come the various URIs...
+% The RDF term has a label and is set to displaying labels
+% as the only literals.
+% If there is no label, then we use a name that is based on the URI
+% of the RDF term.
+rdf_term_name(O, RDF_Term, Name):-
+  option(literals(labels_only), O, collapse),
+  option(language(Lang), O, en), !,
+  rdfs_preferred_label(RDF_Term, Lang, Name).
+% The RDF term is set to collate all literals that (directly) relate to it.
+% Only do this when there is at least one literal that can be collated.
+rdf_term_name(O, RDF_Term, Name3):-
+  % First display the name.
+  (
+    % Use the label as the name, if it is present.
+    % Also, prefer the given language.
+    option(language(Lang), O, en),
+    rdfs_preferred_label(RDF_Term, Lang, Name1)
+  ->
+    % Quite a useless step, I admit.
+    Name2 = Name1
+  ;
+    % Otherwise, compase a name out of the namespace prefix
+    % and the local name.
+    rdf_resource_to_namespace(RDF_Term, Namespace, Name1)
+  ->
+    atomic_list_concat([Namespace, Name1], ':', Name2)
+  ;
+    % If all else fails...
+    term_to_atom(RDF_Term, Name2)
+  ),
+  
+  % Now come the related literals, but only if these are set to be
+  % collapsed into the (directly) related RDF term.
+  % Note that this is not the default, but has to be set explicitly
+  % in the options.
+  (
+    option(literals(collapse), O, collapse)
+  ->
+    findall(
+      LitName,
+      (
+        rdf_has(RDF_Term, _P, Lit),
+        rdf_is_literal(Lit),
+        rdf_term_name(O, Lit, LitName)
+      ),
+      Names1
+    ),
+    % In case there are no literals we use the name from the prior procedure.
+    % Otherwise, use these literals.
+    Names1 \== []
+  ->
+    Names2 = Names1
+  ;
+    Names2 = [Name2]
+  ),
+  
+  % Done!
+  print_set(atom(Name3), Names2).
+% URI reference.
+rdf_term_name(URI, Name):- !,
+  (
+    rdf_global_id(Namespace:Local, URI)
+  ->
+    format(atom(Name), '~w:~w', [Namespace,Local])
+  ;
+    % Not all URIs have a registered namespace prefix.
+    Name = URI
+  ).
+% We're out of options here...
+rdf_term_name(Name, Name).
+
+
+
+rdf_schema(G, Ts):-
+  setoff(
+    V,
+    (
+      (
+        rdfs_individual_of(V, rdfs:'Class')
+      ;
+        rdfs_individual_of(V, rdf:'Property')
+      ),
+      rdf_vertex(G, V)
+    ),
+    Vs
+  ),
+  setoff(
+    rdf(S, P, O),
+    (
+      member(S, O, Vs),
+      rdf(S, P, O, G)
+    ),
+    Ts
+  ).
+
+rdf_subject(G, S):-
+  nonvar_det(rdf_subject_(G, S)).
+rdf_subject_(G, S):-
+  rdf(S, _P, _O, G).
+
+rdf_triple_name(S, P, O, T_Name):-
+  maplist(rdf_term_name, [S,P,O], [S_Name,P_Name,O_Name]),
+  format(atom(T_Name), '<~w,~w,~w>', [S_Name,P_Name,O_Name]).
 
 %! rdf_triples(+In:oneof([atom,uri]) -Triples:list(rdf_triple)) is det.
 % Returns an unsorted list containing all the triples in a graph.
@@ -542,6 +692,7 @@ rdf_triples(G, Ts):-
     rdf(S, P, O, G),
     Ts
   ).
+% The RDF triples that describe a given URI reference.
 rdf_triples(URI, Ts):-
   is_uri(URI), !,
   setoff(
@@ -563,10 +714,10 @@ rdf_triples_to_vertices(Ts, Vs):-
     Vs
   ).
 
-rdf_vocabulary(Graph, Vocabulary):-
+rdf_vocabulary(G, Vocabulary):-
   setoff(
-    Name,
-    rdf_name([literal(false)], Graph, Name),
+    RDF_Name,
+    rdf_name(G, RDF_Name),
     Vocabulary
   ).
 

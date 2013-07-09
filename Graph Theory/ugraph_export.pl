@@ -59,13 +59,13 @@ The following attributes are supported:
   'The default encoding for undirected graph exports.'
 ).
 :- setting(
-  colorscheme,
+  color_scheme,
   oneof([none,svg,x11]),
   svg,
-  'The default colorscheme used for exporting undirected graphs.'
+  'The default color_scheme used for exporting undirected graphs.'
 ).
 :- setting(
-  fontsize,
+  font_size,
   float,
   11.0,
   'The default font size for text that occurs in undirected graph exports.'
@@ -123,13 +123,13 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
   % Graph properties.
   ugraph_name(G, G_Name),
   setting(charset, Charset),
-  setting(colorscheme, ColorScheme),
-  setting(fontsize, FontSize),
+  setting(color_scheme, ColorScheme),
+  setting(font_size, FontSize),
   setting(overlap, Overlap),
   G_Attrs = [
     charset(Charset),
-    colorscheme(ColorScheme),
-    fontsize(FontSize),
+    color_scheme(ColorScheme),
+    font_size(FontSize),
     label(G_Name),
     overlap(Overlap)
   ].
@@ -141,18 +141,18 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
 ugraph_edge(FromV-ToV, Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs)):-
   nth0(FromV_Id, Vs, FromV),
   nth0(ToV_Id, Vs, ToV),
-  ugraph_edge_arrow_type(FromV-ToV, E_ArrowType),
+  ugraph_edge_arrow_head(FromV-ToV, E_ArrowHead),
   ugraph_edge_color(FromV-ToV, E_Color),
   ugraph_edge_name(FromV-ToV, E_Name),
   ugraph_edge_style(FromV-ToV, E_Style),
   E_Attrs = [
-    arrow_type(E_ArrowType),
+    arrow_type(E_ArrowHead),
     color(E_Color),
     label(E_Name),
     style(E_Style)
   ]
 
-%! ugraph_edge_arrow_type(+E:edge, -ArrowType:atom) is det.
+%! ugraph_edge_arrow_head(+E:edge, -ArrowType:atom) is det.
 % @arg ArrowType One of the following values:
 %      * `box`
 %      * `crow`
@@ -174,7 +174,7 @@ ugraph_edge(FromV-ToV, Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs)):-
 %      * `tee`
 %      * `vee`
 
-ugraph_edge_arrow_type(_FromV-_ToV, normal).
+ugraph_edge_arrow_head(_FromV-_ToV, normal).
 
 ugraph_edge_color(_FromV-_ToV, black).
 

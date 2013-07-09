@@ -160,14 +160,14 @@ attribute(
 ).
 
 % Color schemes from which values of the =color= attribute have to be drawn.
-attribute(colorscheme, oneof([svg,x11]), [edge,graph,node], svg).
+attribute(color_scheme, oneof([svg,x11]), [edge,graph,node], svg).
 
 attribute(dir, oneof([back,both,forward,none]), [edge], forward).
 
 attribute(image, atom, [node], '').
 
 % The font size that is used for text.
-attribute(fontsize, double, [graph], 1.0).
+attribute(font_size, double, [graph], 1.0).
 
 attribute(label, lblString, [edge,graph,node], '').
 
@@ -220,12 +220,12 @@ attribute(style, oneof(Styles), [node], ''):-
 % @arg Default The default value for the attribute.
 
 attribute(color, oneof(Colors), [edge,graph,node], Attributes, black):-
-  % The default =colorscheme= is either set by its own argument assertion,
-  % or is assumed to be =x11=. We check whether the =colorscheme=
+  % The default =color_scheme= is either set by its own argument assertion,
+  % or is assumed to be =x11=. We check whether the =color_scheme=
   % setting applies to the current context.
   (
-    attribute(colorscheme, _Type, _Context, DefaultColorscheme),
-    option(colorscheme(Colorscheme), Attributes, DefaultColorscheme)
+    attribute(color_scheme, _Type, _Context, DefaultColorscheme),
+    option(color_scheme(Colorscheme), Attributes, DefaultColorscheme)
   ->
     color_scheme_default_color(Colorscheme, DefaultColor)
   ;

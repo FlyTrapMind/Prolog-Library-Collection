@@ -61,8 +61,9 @@ export_graph_html(graph(Vs, _Ranks, Es, G_Attrs1), G_DOM):-
                   element(th, [], ['To'])])
   ),
   setting(default_border_width, DefaultBorderWidth),
-  select_option(border(BoderWidth), G_Attrs2, _G_Attrs3, DefaultBorderWidth),
+  select_option(border_width(BoderWidth), G_Attrs2, _G_Attrs3, DefaultBorderWidth),
   maplist(export_edge_html(Vs), Es, E_Rows),
+  % The HTML property that sets the border width is called `border`.
   dcg_phrase(dcg_style([border(BorderWidth)]), StyleContents),
   G_DOM = element(table, [style(StyleContents)], [HeaderRow | E_Rows]).
 

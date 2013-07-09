@@ -24,18 +24,22 @@ ready for web browser display.
 
 # Datatypes
 
-## =graph=
+## `graph`
 
-The parent of the datatypes =ugraph= (i.e., undirected graph) and
-=dgraph= (i.e., directed graph).
+The parent of the datatypes `ugraph` (i.e., undirected graph),
+`dgraph` (i.e., directed graph), and `rdf_graph`.
 
-## =dgraph=
+## `dgraph`
 
-A directed graph, see [dgraph.pl].
+A directed graph, see [dgraph_ext.pl].
 
-## =ugraph=
+## `ugraph`
 
 An undirected graph, see [udgraph_ext.pl].
+
+## `rdf_graph`
+
+See [rdf_graph.pl].
 
 @author Wouter Beek
 @version 2012/10, 2012/12-2013/01, 2013/05

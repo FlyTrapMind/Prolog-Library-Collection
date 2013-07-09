@@ -111,6 +111,7 @@ It has the form =|vertex_coordinate(<vertive>, <2d_coordinate>)|=.
 :- use_module(generics(meta_ext), except([complete/3])).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(library(lists)).
+:- use_module(library(ordsets)).
 :- use_module(math(math_ext)).
 
 :- meta_predicate(ugraph_harary(+,2,+,-)).
@@ -157,7 +158,7 @@ ugraph_direct_subgraph(DirSubG, G):-
   ugraph_edges(G, Es1),
   select(V-W, Es1, Es2),
   V > W,
-  select(W-V, E2, E3),
+  select(W-V, Es2, Es3),
   ugraph_vertices_edges_to_ugraph(Vs, Es3, DirSubG).
 
 %! ugraph_edge(+UG:ugraph, ?Edge:edge) is nondet.
@@ -177,7 +178,7 @@ ugraph_edge(Graph, From-To):-
 % Returns the edge-induced subgraph.
 
 ugraph_edge_induced_subgraph(G, ESubG, SubG):-
-  ugraph_edges(Graph, Es),
+  ugraph_edges(G, Es),
   ord_subtract(Es, ESubG, DelEs),
   del_edges(G, DelEs, SubG).
 
@@ -318,7 +319,7 @@ ugraph_neighbor(Vertex, UG, Neighbor):-
 ugraph_subgraph(SubG, G):-
   ugraph_subgraph_(SubG, G, [], []).
 ugraph_subgraph_([], [], _In, _Out).
-ugraph_subgraph_([V-SubNs | SubG], [V-Ns | G], N_P, In, Out):-
+ugraph_subgraph_([V-SubNs | SubG], [V-Ns | G], In, Out):-
   sublist(SubNs_, Ns),
   ord_subtract(SubNs_, Out, SubNs),
   ord_union(In, SubNs, NewIn),
@@ -361,12 +362,12 @@ ugraph_vertex(G, V):-
 %! ugraph_vertex_induced_subgraph(
 %!   +Graph:ugraph,
 %!   ?Vertices:list(vertex),
-%!   ?SubGra[h:ugraph
+%!   ?SubGraph:ugraph
 %! ) is det.
 % Returns the vertex-induced subgraph.
 
 ugraph_vertex_induced_subgraph(G, SubVs, SubG):-
   ugraph_vertices(G, Vs),
-  ord_subtract(Vs, VSubG, DelVs),
-  ugraph_del_vertices(Graph, DelVs, SubG).
+  ord_subtract(Vs, SubVs, DelVs),
+  ugraph_del_vertices(G, DelVs, SubG).
 

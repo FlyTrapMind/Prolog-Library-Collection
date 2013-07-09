@@ -67,7 +67,7 @@ circle_graph_web(Graph, html/wallace/[GraphElement | TableMarkup]):-
 graph_web(Graph, svg11/wallace/SVG):-
   graph_to_dom(
     [
-      colorscheme(svg),
+      color_scheme(svg),
       edge_labels(replace),
       in(rdf),
       language(en),
@@ -140,7 +140,7 @@ spring_embedding_web(Graph, Iterations, Markup):-
 table_graph_web(Graph, html/wallace/[TableElement]):-
   export_graph(
     [
-      colorscheme(none),
+      color_scheme(none),
       edge_labels(all),
       in(rdf),
       literals(collapse),

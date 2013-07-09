@@ -93,7 +93,7 @@ vertice_coordinates_to_size(Options, VCs, size(Dimension, Limits)):-
   memberchk(vertex_coord(_, coordinate(Dimension, _)), VCs),
   repeating_list(0.5, Dimension, DefaultBorders),
   option(
-    border(size(Dimension, Borders)),
+    border_size(size(Dimension, Borders)),
     Options,
     size(Dimension, DefaultBorders)
   ),
