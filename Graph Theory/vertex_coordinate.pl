@@ -1,10 +1,6 @@
 :- module(
   vertex_coord,
   [
-    random_vertex_coordinates/4, % +Options:list(nvpair)
-                                 % +Graph
-                                 % :V_P
-                                 % -VertexCoords:list(vertex_coord)
     vertice_coordinates_to_size/3, % +Options:list(nvpair)
                                    % +VertexCoords:list(vertex_coord)
                                    % -Size:size
@@ -33,43 +29,8 @@ positions in iterations of spring embedding.
 :- use_module(math(math_ext)).
 :- use_module(html(html)).
 :- use_module(library(option)).
-:- use_module(library(settings)).
-
-:- meta_predicate(random_vertex_coordinates(+,+,:,-)).
-
-:- setting(
-  default_surface,
-  coord,
-  size(2, [10.0, 10.0]),
-  'The default surface to draw graphs on.'
-).
 
 
-
-%! random_vertex_coordinates(
-%!   +Options:list(nvpair),
-%!   +Graph,
-%!   :V_P,
-%!   -VertexCoords:list(vertex_coord)
-%! ) is det.
-%
-% @arg Options A list of name-value pairs.
-%        1. =graph(Graph:graph)=
-%        2. =surface(Size:size)=
-% @arg VertexCoords A list of vertex coordinates.
-
-random_vertex_coordinates(Options, Graph, V_P, RandomVerticeCoordinates):-
-  setting(default_surface, DefaultSurface),
-  option(surface(Surface), Options, DefaultSurface),
-  call(V_P, Graph, Vs),
-  findall(
-    vertex_coord(V, RandomCoordinate),
-    (
-      member(V, Vs),
-      random_coordinate(Surface, RandomCoordinate)
-    ),
-    RandomVerticeCoordinates
-  ).
 
 %! vertice_coordinates_to_size(
 %!   +Options:list(nvpair),

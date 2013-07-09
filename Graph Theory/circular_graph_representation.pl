@@ -4,7 +4,7 @@
     circular_vertice_coordinate/4 % +Options
                                   % +Vs:list
                                   % +V
-                                  % -Coord:coord
+                                  % -VCoord:coord
   ]
 ).
 
@@ -21,15 +21,15 @@ Circular graph representation.
 :- use_module(library(settings)).
 
 :- setting(
-  default_border,
-  float,
-  coord(2, [0.5, 0.5]),
+  default_border_size,
+  compound,
+  coord(2,[0.5,0.5]),
   'The default border.'
 ).
 :- setting(
   default_surface,
-  coord,
-  size(2, [10.0, 10.0]),
+  compound,
+  size(2,[10.0,10.0]),
   'The default surface to draw graphs on.'
 ).
 
@@ -54,8 +54,12 @@ circular_vertice_coordinate(Options, Vs, V, coordinate(2,[X_cm,Y_cm])):-
   option(surface(size(2, [Width, Height])), Options, DefaultSurface),
   
   % Borders
-  setting(default_border, DefaultBorder),
-  option(border_size(size(2, [X_Border, Y_Border])), Options, DefaultBorder),
+  setting(default_border_size, DefaultBorderSize),
+  option(
+    border_size(size(2,[X_Border,Y_Border])),
+    Options,
+    DefaultBorderSize
+  ),
   
   % Graph radius.
   GraphXDiameter is Width - 2 * X_Border,

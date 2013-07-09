@@ -56,23 +56,23 @@ There are two typoes of download page:
 
 % Parse nested DIVs.
 dbnl_downloads(Graph, Text) -->
-  dcg_element(div, [], DIV_T),
+  html_element(div, [], DIV_T),
   !,
   {phrase(dbnl_downloads(Graph, Text), DIV_T)},
   dbnl_downloads(Graph, Text).
 % Skip subheaders.
 dbnl_downloads(Graph, Text) -->
-  dcg_element(h3, [], _),
+  html_element(h3, [], _),
   !,
   dbnl_downloads(Graph, Text).
 % Skip line breaks.
 dbnl_downloads(Graph, Text) -->
-  dcg_element(br, [], _),
+  html_element(br, [], _),
   !,
   dbnl_downloads(Graph, Text).
 % Process links. There are four categories.
 dbnl_downloads(Graph, Text) -->
-  dcg_element(a, [name=Name1], _),
+  html_element(a, [name=Name1], _),
   !,
   {dbnl_downloads_translate(Name1, Name2)},
   dbnl_downloads_link(Graph, Text, Name2),
@@ -84,21 +84,21 @@ dbnl_downloads(_Graph, _Text) -->
 
 % Zero links. Only a message saying nothing is here.
 dbnl_downloads_link(Graph, Text, Name) -->
-  dcg_element(p, [], [Atom]),
+  html_element(p, [], [Atom]),
   {atom(Atom)},
   !,
   dbnl_downloads_link(Graph, Text, Name).
 % A paragraph with DOM content.
 dbnl_downloads_link(Graph, Text, Name) -->
-  dcg_element(p, [], Content),
+  html_element(p, [], Content),
   !,
   {phrase(dbnl_downloads_link(Graph, Text, Name), Content)},
   dbnl_downloads_link(Graph, Text, Name).
 % A download link. This is scraped.
 dbnl_downloads_link(Graph, Text, Name) -->
-  dcg_element(a, [href=RelativeURI], [download]),
+  html_element(a, [href=RelativeURI], [download]),
   ['-'],
-  dcg_element(a, [href=_RelativeURI], [bekijk]),
+  html_element(a, [href=_RelativeURI], [bekijk]),
   [_FileSizeAtom],
   !,
   {dbnl_downloads_link0(Graph, Text, RelativeURI, Name)},
@@ -106,8 +106,8 @@ dbnl_downloads_link(Graph, Text, Name) -->
 % Consecutive download links may occur, interspersed by linebreaks.
 dbnl_downloads_link(Graph, Text, Name) -->
   [_Atom],
-  dcg_element(a, [href=RelativeURI], _),
-  dcg_element(br, [], _),
+  html_element(a, [href=RelativeURI], _),
+  html_element(br, [], _),
   !,
   {dbnl_downloads_link0(Graph, Text, RelativeURI, Name)},
   dbnl_downloads_link(Graph, Text, Name).

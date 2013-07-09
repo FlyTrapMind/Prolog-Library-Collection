@@ -1,21 +1,21 @@
 :- module(
   rdf_export,
   [
-    export_rdf_graph/4, % +Options:list(nvpair)
-                        % :CoordFunc
-                        % +RDF_Graph:atom
-                        % -GraphTerm:compound
+% COLORS
     rdf_register_class_color/3, % +Graph:atom
                                 % +Class:class
                                 % +Color:atom
+    rdf_register_edge_style/2, % +RDF_Term
+                               % -EdgeStyle:atom
     rdf_register_namespace_color/3, % +Graph:graph
                                     % +Namespace:atom
                                     % +Color:atom
-    rdf_schema/2, % +Graph:atom
-                  % -Triples:list(rdf_triple)
-    rdf_vertex_name/3 % +Options:list(nvpair)
-                        % +RDF_Term:oneof([bnode,literal,uri])
-                        % -Name:atom
+
+% GRAPH EXPORT
+    export_rdf_graph/4 % +Options:list(nvpair)
+                       % :CoordFunc
+                       % +RDF_Graph:atom
+                       % -GraphTerm:compound
   ]
 ).
 
@@ -63,12 +63,26 @@ The procedure for determining the color of a vertex:
 :- use_module(rdfs(rdfs_read)).
 :- use_module(svg(svg)).
 
-:- dynamic(class_color(_Graph, _Class, _Color)).
-:- dynamic(namespace_color(_Graph, _Namespace, _Color)).
+:- dynamic(class_color(_G, _Class, _Color)).
+:- dynamic(namespace_color(_G, _Namespace, _Color)).
+:- dynamic(rdf_edge_style(_RDF_Term, _EdgeStyle)).
 
-:- rdf_meta(rdf_edge_label_replace(r,r)).
-:- rdf_meta(rdf_edge_style(r,?)).
+:- meta_predicate(export_rdf_graph(+,4,+,-)).
+:- meta_predicate(rdf_vertex_term(+,+,+,4,+,-)).
+
+% COLOR
 :- rdf_meta(rdf_register_class_color(+,r,+)).
+:- rdf_meta(rdf_vertex_color_by_namespace(+,+,r,-)).
+% EDGES
+:- rdf_meta(rdf_edge_arrow_head(r,-)).
+:- rdf_meta(rdf_edge_name(r,-)).
+:- rdf_meta(rdf_edge_style(r,?)).
+% VERTICES
+:- rdf_meta(rdf_vertex_color(+,+,r,-)).
+:- rdf_meta(rdf_vertex_peripheries(r,-)).
+:- rdf_meta(rdf_vertex_picture(+,r,-)).
+:- rdf_meta(rdf_vertex_shape(r,-)).
+:- rdf_meta(rdf_vertex_term(+,+,+,:,r,-)).
 
 
 
@@ -105,16 +119,19 @@ rdf_colorize_namespaces(_G, ColorScheme):-
   existence_error(atom, ColorScheme).
 
 rdf_register_class_color(G, Class, ClassColor):-
-  db_add_novel(class_color(G, Class, ClassColor)).
+  db_replace_novel(class_color(G, Class, ClassColor)).
+
+rdf_register_edge_style(RDF_Term, EdgeStyle):-
+  db_replace_novel(rdf_edge_style(RDF_Term, EdgeStyle)).
 
 rdf_register_namespace_color(G, Namespace, NamespaceColor):-
-  db_add_novel(namespace_color(G, Namespace, NamespaceColor)).
+  db_replace_novel(namespace_color(G, Namespace, NamespaceColor)).
 
 %! rdf_vertex_color_by_namespace(
 %!   +Graph:atom,
 %!   +ColorScheme:atom,
 %!   +Vertex,
-%!   -Color:atom
+%!   -VertexColor:atom
 %! ) is det.
 % Returns the automatically assigned color name.
 % The color names belong to the given color_scheme.
@@ -126,30 +143,30 @@ rdf_register_namespace_color(G, Namespace, NamespaceColor):-
 %      1. `svg`
 %      2. `x11`
 % @arg Vertex A resource.
-% @arg Color The atomic name of a color within the color_scheme.
+% @arg VertexColor The atomic name of a color within the color_scheme.
 
-rdf_vertex_color_by_namespace(Graph, _ColorScheme, Vertex, Color):-
-  rdf_global_id(Namespace:_, Vertex),
-  namespace_color(Graph, Namespace, Color), !.
-rdf_vertex_color_by_namespace(Graph, ColorScheme, Vertex, Color):-
-  rdf_colorize_namespaces(Graph, ColorScheme),
-  rdf_vertex_color_by_namespace(Graph, ColorScheme, Vertex, Color).
+rdf_vertex_color_by_namespace(G, _ColorScheme, V, V_Color):-
+  rdf_global_id(Namespace:_, V),
+  namespace_color(G, Namespace, V_Color), !.
+rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
+  rdf_colorize_namespaces(G, ColorScheme),
+  rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color).
 
 
 
-% GRAPH %
+% GRAPH EXPORT %
 
 export_rdf_graph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
   % Vertices
   rdf_vertices(G, Vs),
-  maplist(rdf_vertex_term(O), Vs, V_Terms),
-  
+  maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
+
   % Edges
   rdf_edges(G, Es),
-  maplist(rdf_edge_term(O), Es, E_Terms),
-  
+  maplist(rdf_edge_term(O, G, Vs), Es, E_Terms),
+
   % Graph
-  rdf_graph_name(G_Name),
+  rdf_graph_name(G, G_Name),
   G_Attrs = [label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
@@ -159,29 +176,11 @@ rdf_graph_name(G, G).
 
 
 
-% EDGES %
+% EDGE EXPORT %
 
-rdf_edge_term(O, E, edge(E_Id, E_Attrs)):-
-  rdf_edge_arrow_head(O, G, E, E_ArrowHead),
-  rdf_edge_color(O, G, E, E_Color),
-  rdf_edge_name(O, G, E, E_Name),
-  rdf_edge_style(O, G, E, E_Style),
-  E_Attrs = [
-    arrow_type(E_ArrowHead),
-    color(E_Color),
-    label(E_Name),
-    style(E_Style)
-  ].
+%! rdf_edge_arrow_head(+Edge:edge, -E_ArrowHead:atom) is det.
 
-%! rdf_edge_arrow_head(
-%!   +Options:list(nvpair),
-%!   +Graph:rdf_graph,
-%!   +Edge:edge,
-%!   -E_ArrowHead:atom
-%! ) is det.
-
-rdf_edge_arrow_head(O, G, FromV-ToV, E_ArrowHead):-
-  rdf(FromV, P, ToV, G),
+rdf_edge_arrow_head(_FromV-P-_ToV, E_ArrowHead):-
   once(rdf_edge_arrow_head(P, E_ArrowHead)).
 
 rdf_edge_arrow_head(rdf:type,           empty  ).
@@ -192,57 +191,44 @@ rdf_edge_arrow_head(_RDF_Property,      normal ).
 
 rdf_edge_color(O, _G, _E, black):-
   option(color_scheme(none), O, none), !.
-rdf_edge_color(O, _G, FromV-ToV, E_Color):-
-  rdf_vertex_color(O, FromV, FromV_Color),
-  rdf_vertex_color(O, ToV, ToV_Color), !,
-  % Notice that color can be uninstantiated in rdf_vertex_color/3?
-  FromColor = ToColor,
-  Color = FromColor.
-rdf_edge_color(O, G, FromV-ToV, E_Color):-
-  rdf(FromV, P, ToV, G),
-  rdf_vertex_color(O, P, E_Color).
+rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
+  rdf_vertex_color(O, G, FromV, FromV_Color),
+  rdf_vertex_color(O, G, ToV, ToV_Color), !,
+  % Notice that color can be uninstantiated in rdf_vertex_color/4?
+  FromV_Color = ToV_Color,
+  E_Color = FromV_Color.
+rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
+  rdf_vertex_color(O, G, P, E_Color).
 
-%! rdf_edge_name(
-%!   +Options:list(nvpair),
-%!   +Graph:rdf_graph,
-%!   +Edge:edge,
-%!   -EdgeName:atom
-%! ) is det.
+%! rdf_edge_name(+Options:list(nvpair), +Edge:edge, -EdgeName:atom) is det.
 % Returns a name for the given edge.
 %
 % @arg Options The following options are supported:
 %      1. `edge_labels(oneof([all,replace]))`
 
-rdf_edge_name(O, G, FromV-ToV, E_Name):-
-  rdf(FromV, P, ToV, G),
+rdf_edge_name(O, _FromV-P-_ToV, E_Name):-
   % Some edge labels are not displayed.
   % This concerns RDF(S) terminology.
   (
     % Make use of explicit replacements.
     option(edge_labels(replace), O),
     % Apply the explicit replacement.
-    rdf_edge_label_replace(P, E_Name)
+    rdf_edge_name(P, E_Name)
   ->
     true
   ;
     % The edge name is the predicate RDF term.
-    rdf_vertex_name(O, P, E_Name)
+    rdf_term_name(O, P, E_Name)
   ).
 
-rdf_edge_label_replace(rdf:type,           '').
-rdf_edge_label_replace(rdfs:label,         '').
-rdf_edge_label_replace(rdfs:subClassOf,    '').
-rdf_edge_label_replace(rdfs:subPropertyOf, '').
+rdf_edge_name(rdf:type,           '').
+rdf_edge_name(rdfs:label,         '').
+rdf_edge_name(rdfs:subClassOf,    '').
+rdf_edge_name(rdfs:subPropertyOf, '').
 
-%! rdf_edge_style(
-%!   +Options:list(nvpair),
-%!   +Graph:rdf_graph,
-%!   +Edge:edge,
-%!   -E_Style:atom
-%! ) is det.
+%! rdf_edge_style(+Edge:edge, -E_Style:atom) is det.
 
-rdf_edge_style(O, G, FromV-ToV, E_Style):-
-  rdf(FromV, P, ToV, G),
+rdf_edge_style(_FromV-P-_ToV, E_Style):-
   once(rdf_edge_style(P, E_Style)).
 
 rdf_edge_style(rdf:type,           solid ).
@@ -251,17 +237,38 @@ rdf_edge_style(rdfs:subClassOf,    solid ).
 rdf_edge_style(rdfs:subPropertyOf, solid ).
 rdf_edge_style(_RDF_Property,      solid ).
 
+rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
+  % Ids.
+  E = FromV-_P-ToV,
+  nth0(FromV_Id, Vs, FromV),
+  nth0(ToV_Id, Vs, ToV),
+
+  % Arrow head.
+  rdf_edge_arrow_head(E, E_ArrowHead),
+
+  % Color.
+  rdf_edge_color(O, G, E, E_Color),
+
+  % Label.
+  rdf_edge_name(O, E, E_Name),
+
+  % Style.
+  rdf_edge_style(E, E_Style),
+
+  E_Attrs = [
+    arrow_type(E_ArrowHead),
+    color(E_Color),
+    label(E_Name),
+    style(E_Style)
+  ].
 
 
-% VERTICES %
 
-rdf_vertex_term(O, G, V, vertex(V_Id, V_Attrs)):-
-  rdf_vertex_name(V, V_Name),
-  rdf_vertex_color(O, G, V, V_Color),
-  V_Attrs = [color(V_Color),label(V_Name)].
+% VERTEX EXPORT %
 
 %! rdf_vertex_color(
 %!   +Options:list(nvpair),
+%!   +Graph:atom,
 %!   +Vertex:vertex,
 %!   -Color:atom
 %! ) is det.
@@ -275,13 +282,13 @@ rdf_vertex_term(O, G, V, vertex(V_Id, V_Attrs)):-
 % @arg Color The atomic name of a color for the given vertex.
 
 rdf_vertex_color(O, _G, _V, black):-
-  option(color_scheme(none), Options), !.
+  option(color_scheme(none), O), !.
 % Literals.
 rdf_vertex_color(_O, _G, literal(_Value), blue):- !.
 rdf_vertex_color(_O, _G, literal(lang(_Lang, _Value)), blue):- !.
 rdf_vertex_color(_O, _G, literal(type(_Datatype, _LexicalValue)), blue):- !.
 % Individual or subclass of a color-registered class.
-rdf_vertex_color(O, G, V, V_Color):-
+rdf_vertex_color(_O, G, V, V_Color):-
   (
     rdfs_individual_of(V, Class)
   ;
@@ -293,9 +300,10 @@ rdf_vertex_color(O, G, V, V_Color):-
   option(color_scheme(ColorScheme), O, svg),
   (
     % URI resources with registered namespace/prefix.
-    rdf_global_id(_:_, V)
+    rdf_global_id(_:_, V),
+    rdf_vertex_color_by_namespace(G, ColorScheme, V, V_NamespaceColor)
   ->
-    rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color)
+     V_Color = V_NamespaceColor
   ;
     % URI resources with unregistered namespace/prefix.
     is_uri(V)
@@ -306,24 +314,77 @@ rdf_vertex_color(O, G, V, V_Color):-
     V_Color = purple
   ).
 
-rdf_vertex_picture(G, V, V_Picture):-
-  % Only display the first picutre that is related to this vertex.
-  rdf_datatype(V, _P, image, V_Picture, G).
+%! rdf_vertex_peripheries(
+%!   +RDF_Term:oneof([bnode,literal,uri]),
+%!   -Peripheries:integer
+%!) is det.
 
-% Non-resource vertex (e.g. literals).
-rdf_vertex_shaping(literal(_), [peripheries(0), shape(plaintext)]):- !.
-% Class vertex.
-rdf_vertex_shaping(RDF_Term, [peripheries(2), shape(octagon)]):-
+% RDF literals.
+rdf_vertex_peripheries(literal(_Literal), 0):- !.
+% RDFS classes.
+rdf_vertex_peripheries(RDF_Term, 2):-
   rdfs_individual_of(RDF_Term, rdfs:'Class'), !.
-% Property vertex.
-rdf_vertex_shaping(RDF_Term, [peripheries(1), shape(hexagon)]):-
+% RDF properties.
+rdf_vertex_peripheries(RDF_Term, 1):-
   rdfs_individual_of(RDF_Term, rdf:'Property'), !.
-% Non-class and non-property resource vertex.
-rdf_vertex_shaping(RDF_Term, [peripheries(1), shape(ellipse)]):-
+% RDFS resources that are not RDF properties or RDFS classes.
+rdf_vertex_peripheries(RDF_Term, 1):-
   rdfs_individual_of(RDF_Term, rdfs:'Resource'), !.
 % Blank nodes.
-rdf_vertex_shaping(RDF_Term, [peripheries(1), shape(circle)]):-
+rdf_vertex_peripheries(RDF_Term, 1):-
   rdf_is_bnode(RDF_Term), !.
 % Catch-all.
-rdf_vertex_shaping(_RDF_Term, [peripheries(1), shape(ellipse)]):.
+rdf_vertex_peripheries(_RDF_Term, 1).
+
+rdf_vertex_picture(G, V, V_Picture):-
+  % Only display the first picture that is related to this vertex.
+  once(rdf_datatype(V, _P, image, V_Picture, G)).
+
+%! rdf_vertex_shape(+RDF_Term:oneof([bnode,literal,uri]), -Shape:atom) is det.
+% @arg Shape The atomic name of a vertex shape.
+%      The following shapes are supported:
+%      * `circle`
+%      * `ellipse`
+%      * `hexagon`
+%      * `octagon`
+%      * `plaintext`
+
+% RDF literals.
+rdf_vertex_shape(literal(_Literal), plaintext):- !.
+% RDFS class.
+rdf_vertex_shape(RDF_Term, octagon):-
+  rdfs_individual_of(RDF_Term, rdfs:'Class'), !.
+% RDF property.
+rdf_vertex_shape(RDF_Term, hexagon):-
+  rdfs_individual_of(RDF_Term, rdf:'Property'), !.
+% RDFS resources that are not RDF properties or RDFS classes.
+rdf_vertex_shape(RDF_Term, ellipse):-
+  rdfs_individual_of(RDF_Term, rdfs:'Resource'), !.
+% Blank nodes.
+rdf_vertex_shape(RDF_Term, circle):-
+  rdf_is_bnode(RDF_Term), !.
+% Catch-all.
+rdf_vertex_shape(_RDF_Term, ellipse).
+
+rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V_Attrs2)):-
+  nth0(V_Id, Vs, V),
+  rdf_term_name(O, V, V_Name),
+  rdf_vertex_color(O, G, V, V_Color),
+  call(CoordFunc, O, Vs, V, V_Coord),
+  rdf_vertex_peripheries(V, V_Peripheries),
+  rdf_vertex_shape(V, V_Shape),
+  V_Attrs1 = [
+    color(V_Color),
+    coord(V_Coord),
+    label(V_Name),
+    peripheries(V_Peripheries),
+    shape(V_Shape)
+  ],
+  (
+    rdf_vertex_picture(G, V, V_Picture)
+  ->
+    merge_options([image(V_Picture)], V_Attrs1, V_Attrs2)
+  ;
+    V_Attrs2 = V_Attrs1
+  ).
 

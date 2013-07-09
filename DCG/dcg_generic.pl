@@ -93,6 +93,8 @@ and the positive integers. This is why we add the DCG rules:
   * dcg_star//1
 
 @author Wouter Beek
+@tbd Ask about the combination of meta_predicate/1 and rdf_meta/1.
+@tbd Ask about the combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
 @version 2013/05-2013/07
 */
 
@@ -131,7 +133,8 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_separated_list(//,-,+,-)).
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_multi(//,?,?,?)).
-:- meta_predicate(dcg_multi_list(//,?,?,?)).
+:- meta_predicate(dcg_multi_list(3,?,?,?)).
+%:- meta_predicate(dcg_multi_list(//,?,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
 % PEEK %
@@ -328,14 +331,13 @@ dcg_multi_var(_DCGBody, 0) --> [].
 %! dcg_multi_list(:DCG_Body, +List:list)//
 
 dcg_multi_list(_DCG_Body, []) --> [].
-dcg_multi_list(DCG_Body1, [H|T]) -->
-  {
-    DCG_Body1 =.. [P | Args1],
-    append(Args1, [H], Args2),
-    DCG_Body2 =.. [P | Args2]
-  },
-  DCG_Body2,
-  dcg_multi_list(DCG_Body1, T).
+dcg_multi_list(DCG_Body1, [H|T], In, Out):-
+  strip_module(DCG_Body1, Module, Plain_DCG_Body1),
+  Plain_DCG_Body1 =.. [P | Args1],
+  append(Args1, [H], Args2),
+  DCG_Body2 =.. [P | Args2],
+  call(Module:DCG_Body2, In, Temp),
+  dcg_multi_list(DCG_Body1, T, Temp, Out).
 
 
 

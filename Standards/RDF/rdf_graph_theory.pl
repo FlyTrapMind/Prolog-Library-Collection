@@ -1,6 +1,11 @@
 :- module(
   rdf_graph_theory,
   [
+    rdf_beam/5, % +Options:list(nvpair)
+                % +RootVertex:vertex
+                % +Predicates:list
+                % -Vertices:ordset(vertex)
+                % -Edges:ordset(edge)
     rdf_edge/2, % +Graph:atom
                 % ?Edge:edge
     rdf_edge/3, % +Options:list(nvpair)
@@ -11,6 +16,8 @@
     rdf_edges/3, % +Options:list(nvpair)
                  % +Graph:atom
                  % ?Edges:ord_set(edge)
+    rdf_edges_to_vertices/2, % +Edges:ord_set(edge)
+                             % -Vertices:ord_set(vertex)
     rdf_graph_to_ugraph/2, % +Graph:atom
                            % -UG:ugraph
     rdf_subgraph/2, % +SubVertices:ordset(vertex)
@@ -18,6 +25,9 @@
     rdf_neighbor/3, % +Graph:atom
                     % ?Vertex:vertex
                     % ?Neighbor:vertex
+    rdf_neighbors/3, % +Graph:atom
+                     % +Vertex:vertex
+                     % -Neighbors:ordset(vertex)
     rdf_vertex/2, % +Graph:atom
                   % ?Vertex:vertex
     rdf_vertex/3, % +Options:list(nvpair)
@@ -57,16 +67,46 @@ theoretic operations of RDF data must be redefined.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
+:- rdf_meta(rdf_beam(+,r,+,-,-)).
 :- rdf_meta(rdf_edge(+,r)).
 :- rdf_meta(rdf_edge(+,+,r)).
 :- rdf_meta(rdf_edges(+,r)).
 :- rdf_meta(rdf_edges(+,+,r)).
 :- rdf_meta(rdf_neighbor(+,r,r)).
+:- rdf_meta(rdf_neighbors(+,r,-)).
 :- rdf_meta(rdf_vertex(+,r)).
 :- rdf_meta(rdf_vertex(+,+,r)).
 :- rdf_meta(rdf_vertex_equivalence(r,r)).
 
 
+
+%! rdf_beam(
+%!   +Options:list(nvpair),
+%!   +RootVertex,
+%!   +Predicates:list,
+%!   -Vertices:ord_set(vertex),
+%!   -Edges:ord_set(edge)
+%! ) is det.
+
+rdf_beam(O, V, Ps, Vs, Es):-
+  rdf_beam(O, [V], Ps, Vs, [], Es).
+
+rdf_beam(_O, [], _Ps, AllVs, AllEs, AllEs):-
+  rdf_edges_to_vertices(AllEs, AllVs), !.
+rdf_beam(O, Vs, Ps, AllVs, Es, AllEs):-
+  setoff(
+    V-NextV,
+    (
+      member(V, Vs),
+      member(P, Ps),
+      rdf_has(V, P, NextV),
+      \+ member(V-NextV, Es)
+    ),
+    NextEs
+  ),
+  ord_union(Es, NextEs, NewEs),
+  rdf_edges_to_vertices(NextEs, NextVs),
+  rdf_beam(O, NextVs, Ps, AllVs, NewEs, AllEs).
 
 rdf_bnode_to_var(S, _):-
   rdf_is_bnode(S), !.
@@ -130,6 +170,9 @@ rdf_edges(G, Es):-
 rdf_edges(O, G, Es):-
   setoff(E, rdf_edge(O, G, E), Es).
 
+rdf_edges_to_vertices(Es, Vs):-
+  setoff(V, (member(V-_W1, Es) ; member(_W2-V, Es)), Vs).
+
 %! rdf_graph_to_ugraph(+Graph:atom, -UGraph:ugraph) is det.
 % Returns the UG representation of a loaded RDF graph.
 %
@@ -153,8 +196,11 @@ rdf_graph_to_ugraph(G, UG):-
 %! rdf_neighbor(+Graph:atom, ?Vertex:vertex, ?Neighbor:vertex) is nondet.
 % Neighboring vertices.
 
-rdf_neighbor(Graph, V1, V2):-
-  rdf_edge(Graph, V1-V2).
+rdf_neighbor(G, V1, V2):-
+  rdf_edge(G, V1-V2).
+
+rdf_neighbors(G, V, Ns):-
+  setoff(N, rdf_neighbor(G, V, N), Ns).
 
 %! rdf_subgraph(+Vertices:ordset(vertice), +SubGraph:graph) is semidet.
 % Succeeds if the graph in Options has SubGraph as one of its vertice-induced

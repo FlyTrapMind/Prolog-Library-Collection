@@ -27,7 +27,7 @@ This extends library assoc by overloading get_assoc/3 and put_assoc/4,
 and by adding ord_member/2.
 
 @author Wouter Beek
-@version 2013/04-2013/05
+@version 2013/04-2013/05, 2013/07
 */
 
 :- reexport(library(assoc), except([get_assoc/3, put_assoc/4])).
@@ -36,6 +36,7 @@ and by adding ord_member/2.
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
 :- use_module(library(ordsets)).
+:- use_module(rdf(rdf_graph)).
 
 :- dynamic(current_assoc(_Name, _Assoc)).
 

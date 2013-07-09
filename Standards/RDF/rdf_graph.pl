@@ -31,6 +31,8 @@
                      % ?Predicate:uri
     rdf_predicates/2, % +Graph:atom
                       % -Predicates:ordset(uri)
+    rdf_term_name/2, % +RDF_Term:oneof([bnode,literal,uri])
+                     % -Name:atom
     rdf_term_name/3, % +Options:list(nvpair)
                      % +RDF_Term:oneof([bnode,literal,uri])
                      % -Name:atom
@@ -170,15 +172,21 @@ as their lean subgraphs.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(print_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(library(uri)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_graph_theory)).
+:- use_module(rdf(rdf_list)).
+:- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdfs(rdfs_read)).
 :- use_module(standards(graphviz)).
 
 :- rdf_meta(rdf_bnode(?,r)).
@@ -464,7 +472,7 @@ rdf_name_(G, RDF_Name):-
     % Specifically include datatypes that are strictly speaking not RDF terms.
     (RDF_Name = Object ; RDF_Name = Datatype)
   ;
-    Name = Object
+    RDF_Name = Object
   ).
 
 %! rdf_new_graph(+Graph1:atom, -Graph2:atom) is det.
@@ -512,8 +520,8 @@ rdf_predicates(Graph, Predicates):-
     Predicates
   ).
 
-%        1. =language(Language:atom)= 
-%           Defaults to =en=.
+rdf_term_name(RDF_Term, Name):-
+  rdf_term_name([], RDF_Term, Name).
 
 %! rdf_term_name(
 %!   +Options:list(nvpair),
@@ -550,7 +558,7 @@ rdf_term_name(O, RDF_Term, Name):-
 rdf_term_name(_O, literal(type(Datatype,LexicalValue)), Name):- !,
   (
     % Model RDF_DATATYPE supports this datatype.
-    rdf_datatype(DatatypeName, _LexicalValue, Datatype, CanonicalValue)
+    rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue)
   ->
     format(atom(Name), '"~w"^^~w', [CanonicalValue,DatatypeName])
   ;
@@ -563,15 +571,15 @@ rdf_term_name(_O, literal(type(Datatype,LexicalValue)), Name):- !,
     format(atom(Name), '"~w"^^~w', [Value,Datatype])
   ).
 % A plain literal with a language tag.
-rdf_term_name(literal(lang(Language,Literal)), Name):- !,
+rdf_term_name(_O, literal(lang(Language,Literal)), Name):- !,
   format(atom(Name), '"~w"@~w', [Literal,Language]).
 % A simple literal / a plain literal without a language tag.
-rdf_term_name(literal(Literal), Name):- !,
+rdf_term_name(_O, literal(Literal), Name):- !,
   format(atom(Name), '"~w"', [Literal]).
 % A blank node.
 % @tbd Make this less implementation-dependent, e.g. by mapping
 %      internal blank nodes to integers.
-rdf_term_name(BNode, Name):-
+rdf_term_name(_O, BNode, Name):-
   rdf_is_bnode(BNode), !,
   Name = BNode.
 % Now come the various URIs...
@@ -634,7 +642,7 @@ rdf_term_name(O, RDF_Term, Name3):-
   % Done!
   print_set(atom(Name3), Names2).
 % URI reference.
-rdf_term_name(URI, Name):- !,
+rdf_term_name(_O, URI, Name):- !,
   (
     rdf_global_id(Namespace:Local, URI)
   ->
@@ -644,7 +652,7 @@ rdf_term_name(URI, Name):- !,
     Name = URI
   ).
 % We're out of options here...
-rdf_term_name(Name, Name).
+rdf_term_name(_O, Name, Name).
 
 
 

@@ -48,9 +48,14 @@ The following attributes are supported:
 */
 
 :- use_module(graph_theory(ugraph_ext)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(semweb/rdf_db)).
 
 :- meta_predicate(export_ugraph(+,4,+,+)).
+:- meta_predicate(export_ugraph_vertex(+,+,4,+,-)).
+
+:- rdf_meta(export_ugraph_vertex(+,+,:,r,-)).
 
 :- setting(
   charset,
@@ -100,25 +105,11 @@ The following attributes are supported:
 export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
   % Vertices.
   ugraph_vertices(G, Vs),
-  findall(
-    V_Term,
-    (
-      member(V, Vs),
-      ugraph_vertex(O, V, Vs, V_Term)
-    ),
-    V_Terms
-  ),
+  maplist(export_ugraph_vertex(O, Vs, CoordFunc), Vs, V_Terms),
   
   % Edges.
   ugraph_edges(G, Es),
-  findall(
-    E_Term,
-    (
-      member(E, Es),
-      ugraph_edge(E, Vs, E_Term)
-    ),
-    E_Terms
-  ),
+  maplist(export_ugraph_edge(Vs), Es, E_Terms),
   
   % Graph properties.
   ugraph_name(G, G_Name),
@@ -138,7 +129,7 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
 
 % EDGE %
 
-ugraph_edge(FromV-ToV, Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs)):-
+export_ugraph_edge(Vs, FromV-ToV, edge(FromV_Id, ToV_Id, E_Attrs)):-
   nth0(FromV_Id, Vs, FromV),
   nth0(ToV_Id, Vs, ToV),
   ugraph_edge_arrow_head(FromV-ToV, E_ArrowHead),
@@ -150,7 +141,7 @@ ugraph_edge(FromV-ToV, Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs)):-
     color(E_Color),
     label(E_Name),
     style(E_Style)
-  ]
+  ].
 
 %! ugraph_edge_arrow_head(+E:edge, -ArrowType:atom) is det.
 % @arg ArrowType One of the following values:
@@ -213,15 +204,16 @@ ugraph_name(UG, Name):-
 
 % VERTEX %
 
-%! ugraph_vertex(
+%! export_ugraph_vertex(
 %!   +Options:list(nvpair),
-%!   +Vertex:vertex,
 %!   +Vertices:ordset(vertex),
+%!   :CoordFunc,
+%!   +Vertex:vertex,
 %!   -V_Term:compound
 %! ) is det.
 % @tbd Add support for the vertex/1 property on vertex terms.
 
-ugraph_vertex(O, V, Vs, vertex(V_Id, V_Attrs)):-
+export_ugraph_vertex(O, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs)):-
   nth0(V_Id, Vs, V),
   ugraph_vertex_color(V, V_Color),
   call(CoordFunc, O, Vs, V, V_Coord),
@@ -232,6 +224,7 @@ ugraph_vertex(O, V, Vs, vertex(V_Id, V_Attrs)):-
   V_Attrs = [
     color(V_Color),
     coord(V_Coord),
+    %image(V_Image),
     label(V_Name),
     radius(V_R),
     shape(V_Shape)

@@ -385,17 +385,17 @@ dbnl_text_definition_term(Graph, VolumeCollection) -->
 
 % Parse the contents of links.
 dbnl_text_right(Graph, Text) -->
-  dcg_element(a, [], Content),
+  html_element(a, [], Content),
   !,
   {phrase(dbnl_text_right(Graph, Text), Content)}.
 % Skip notes. These are retrieved for the center DIV.
 dbnl_text_right(Graph, Text) -->
-  dcg_element(div, [class='noten-blok'], _),
+  html_element(div, [class='noten-blok'], _),
   !,
   dbnl_text_right(Graph, Text).
 % Store the image of the titlepage.
 dbnl_text_right(Graph, Text) -->
-  dcg_element(img, [alt=titelpagina,src=RelativeURI], _),
+  html_element(img, [alt=titelpagina,src=RelativeURI], _),
   !,
   {
     rdf(Text, dbnl:original_page, BaseURI, Graph),

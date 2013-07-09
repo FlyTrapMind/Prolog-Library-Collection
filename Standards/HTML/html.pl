@@ -363,3 +363,4 @@ html_typecheck(pixels, Value):-
   html_typecheck(integer, Value), !.
 html_typecheck(Type, Value):-
   typecheck(Type, Value).
+

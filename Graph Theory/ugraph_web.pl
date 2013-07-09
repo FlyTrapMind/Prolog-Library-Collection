@@ -42,26 +42,40 @@ An undirected graph, see [udgraph_ext.pl].
 See [rdf_graph.pl].
 
 @author Wouter Beek
-@version 2012/10, 2012/12-2013/01, 2013/05
-@tbd Integrate this with GRAPH_EXPORT.
+@version 2012/10, 2012/12-2013/01, 2013/05, 2013/07
 */
 
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(library(lists)).
+:- use_module(library(settings)).
 :- use_module(server(error_web)).
 :- use_module(standards(standards)).
 :- use_module(svg(svg)).
 
+:- setting(
+  border_size,
+  compound,
+  size(2,[0.5,0.5]),
+  'The default border around the drawing.'
+).
+:- setting(
+  surface,
+  compound,
+  size(2,[10.0,10.0]),
+  'The default surface to draw graphs on.'
+).
+
 
 
 bipartite_web(UGraph, [SVG_Root, element(p, [], [AtomicG])]):-
-  default_surface(Size),
+  setting(surface, Size),
   svg_head(Size, SVG_Head),
-  bipartite(UGraph, S1, S2),
+  bipartite(UGraph, ugraph_edges, S1, S2),
 
   % Global parameters.
   Size = size(2, [Width, Height]),
-  default_border(size(2, [X_Border, Y_Border])),
+  setting(border_size, size(2,[X_Border,Y_Border])),
   VerticeRadius = 0.5,
 
   % The line for S1.
@@ -100,7 +114,7 @@ bipartite_web(UGraph, [SVG_Root, element(p, [], [AtomicG])]):-
     S2Circles
   ),
 
-  edges1(UGraph, EG),
+  ugraph_edges(UGraph, EG),
   findall(
     EdgeLine,
     (

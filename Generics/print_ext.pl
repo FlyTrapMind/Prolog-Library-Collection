@@ -13,8 +13,8 @@
     print_nvpair/1, % +NVPair
     print_nvpair/2, % +Out
                     % +NVPair
-    print_collection/2 % +Options:list(nvpair)
-                       % +Collection:list
+    print_collection/2, % +Options:list(nvpair)
+                        % +Collection:list
     print_list/2, % +Out
                   % +List:list
     print_set/2 % +Out
@@ -40,9 +40,11 @@ proof(Conclusion, Premises)
 :- use_module(generics(atom_ext)). % Meta-calls.
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(library(apply)).
 :- use_module(library(memfile)).
 :- use_module(library(settings)).
 :- use_module(rdf(rdf_export)).
+:- use_module(rdf(rdf_graph)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -112,11 +114,11 @@ print_collection(O, Collection1):-
 
 % Done!
 print_collection_(O, []):- !,
-  option(close(Close), P),
-  write(Close).
+  option(end(End), O),
+  write(End).
 % Nested set.
-print_collection_(O, [H|T]):-
-  is_list(H), !,
+print_collection_(O, [H1|T]):-
+  is_list(H1), !,
   % Notice that set members that are sets may contain multiple occurrences,
   % since they will first be explicitly converted to ordset format.
   option(transformation(P), O, =),
@@ -128,7 +130,7 @@ print_collection_(O, [H|T]):-
   write(H),
   % Do not add the separator after the last set member.
   option(separator(Separator), O),
-  unless(T == [], write(Separatoe)),
+  unless(T == [], write(Separator)),
   print_collection_(O, T).
 
 print_nvpair(NVPair):-
@@ -139,32 +141,18 @@ print_nvpair(Out, NVPair):-
   with_output_to(Out, print_nvpair(NVPair)).
 
 %! print_list(+Output, +List:list) is det.
-% @see Wrapper predicate for print_list/3, using no indentation.
-
-print_list(Out, List):-
-  print_list(Out, 0, List).
-
-%! print_list(+Output, +Indent:integer, +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.
 %
 % Lists are printed recursively, using indentation relative to the given
 % indentation level.
-%
-% @arg Indent The number of tabs prefixed to each written line.
-%
-% @tbd Do not explicitly distinguish between codes and atoms output.
-%      with_output_to/2 writes characters to both.
 
-print_list(Out, I, List):-
+print_list(Out, List):-
   with_output_to(
     Out,
-    print_collection([begin(')'),end(']'),separator(',')], I, List)
+    print_collection([begin(')'),end(']'),separator(',')], List)
   ).
 
 print_set(Out, List):-
-  print_set(Out, 0, List).
-
-print_set(Out, I, List):-
   with_output_to(
     Out,
     print_collection(
@@ -174,7 +162,6 @@ print_set(Out, I, List):-
         separator(','),
         transformation(ordsets:list_to_ord_set)
       ],
-      I,
       List
     )
   ).
@@ -186,7 +173,7 @@ print_set(Out, I, List):-
 %      justification chains.
 
 print_proposition(Stream, Options, rdf(S, P, O)):-
-  maplist(rdf_vertex_name(Options), [S, P, O], [S0, P0, O0]),
+  maplist(rdf_term_name(Options), [S, P, O], [S0, P0, O0]),
   option(indent(Indent), Options, 0),
   option(index(Index), Options, 'c'),
   indent(Stream, Indent),

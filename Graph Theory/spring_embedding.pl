@@ -1,11 +1,15 @@
 :- module(
   spring_embedding,
   [
-    default_spring_embedding/4, % +Graph:graph
+    default_spring_embedding/7, % +Graph:graph
+                                % :V_P
+                                % :E_P
+                                % :N_P
                                 % +Iteration:integer
                                 % -VerticeCoordinates:list(vertex_coordinate)
                                 % -History:list
-    simple_spring_embedding/4 % +Graph:graph
+    simple_spring_embedding/5 % +Graph:graph
+                              % :V_P
                               % +Iteration:integer
                               % -VerticeCoordinates:list(vertex_coordinate)
                               % -History:list
@@ -62,9 +66,27 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(vertex_coordinate)).
 :- use_module(math(math_ext)).
+:- use_module(library(semweb/rdf_db)). % For rdf_meta/1 statements.
 :- use_module(library(settings)).
 
 :- dynamic(tempval0(_Name, _Value)).
+
+:- meta_predicate(default_spring_embedding(+,2,2,3,+,-,-)).
+:- meta_predicate(distance_force_dimension(+,2,3,+,+,+,-)).
+:- meta_predicate(initial_spring_embedding(+,2,-)).
+:- meta_predicate(neighbor_attraction(+,3,+,+,-)).
+:- meta_predicate(neighbor_attraction_dimension(+,3,+,+,+,-)).
+:- meta_predicate(nonneighbor_repulsion(+,3,+,+,-)).
+:- meta_predicate(nonneighbor_repulsion_dimension(+,3,+,+,+,-)).
+:- meta_predicate(simple_spring_embedding(+,2,+,-,-)).
+:- meta_predicate(spring_embedding(+,2,+,+,+,-,-)).
+
+:- setting(
+  surface,
+  compound,
+  size(2,[10.0,10.0]),
+  'The size of the surface to draw on.'
+).
 
 
 
@@ -223,7 +245,7 @@ next_spring_embedding(
 %        spring embedding.
 
 spring_embedding(
-  G, V_P, Attractors, Repulsors, Iteration, FinalVerticeCoordinates, History
+  G, V_P, Attractors, Repulsors, Iteration, FinalVCoords, History
 ):-
   initial_spring_embedding(G, V_P, VCoords),
   flag(spring_embedding_iterations, _, 1),
@@ -282,7 +304,8 @@ degree_force_dimension(
 
 %! distance_force_dimension(
 %!   +Graph:graph,
-%!   +VerticeCoordinates:list(vertex_coordinate),
+%!   :E_P,
+%!   :N_P,
 %!   +Dimension:integer,
 %!   +V:vertex,
 %!   +W:vertex,
@@ -291,7 +314,8 @@ degree_force_dimension(
 % Returns the attraction between vertices V and W in the given dimension.
 %
 % @arg Graph
-% @arg VerticeCoordinates A list of vertex coordinates.
+% @arg E_P
+% @arg N_P
 % @arg Dimension An integer representing a dimension.
 % @arg V A vertex.
 % @arg W A vertex.
@@ -300,15 +324,16 @@ degree_force_dimension(
 
 distance_force_dimension(
   Graph,
+  E_P,
+  N_P,
   Dimension,
   vertex_coordinate(V, coordinate(Dimensions, PositionsV)),
   vertex_coordinate(W, coordinate(Dimensions, PositionsW)),
   DimensionForce
 ):-
   % This is only calculated for the X-axis.
-  Dimension == 0,
-  !,
-  travel_min([graph(Graph), unique_vertex(true)], V, W, MinimumDistance),
+  Dimension == 0, !,
+  travel_min([unique_vertex(true)], Graph, E_P, N_P, V, W, MinimumDistance),
   nth0chk(Dimension, PositionsV, PositionV),
   nth0chk(Dimension, PositionsW, PositionW),
   DeltaPos is abs(PositionV - PositionW),
@@ -329,36 +354,37 @@ distance_force_dimension(
     [V, DeltaPos, TargetDeltaPos, Dimension, DimensionForce]
   ).
 distance_force_dimension(
-  _Graph, _Dimension, _VertexCoordinateV, _VertexCoordinateW,
+  _G, _E_P, _N_P, _Dimension, _VertexCoordinateV, _VertexCoordinateW,
   0.0
 ).
 
 default_spring_embedding(G, V_P, E_P, N_P, Iteration, Final, History):-
   % Assert the maximum distance between two nodes in the graph as a
   % temporary value.
-  call(V_P, Graph, Vs),
+  call(V_P, G, Vs),
   maplist_pairs(
-    travel_min([unique_vertex(true)]), G, E_P, N_P),
+    travel_min([unique_vertex(true)], G, E_P, N_P),
     Vs,
     MinimumDistances
   ),
   max_list(MinimumDistances, MaximumMinimumDistance),
   assert(tempval0(maximum_edge_distance, MaximumMinimumDistance)),
 
-  maplist(degree(Graph), Vertices, Degrees),
+  maplist(degree(G), Vs, Degrees),
   max_list(Degrees, MaximumDegree),
   assert(tempval0(maximum_degree, MaximumDegree)),
 
   % Assert the minimum limits of the drawing serface as temporary values.
   % Every dimension has its own limit.
-  default_surface(size(_Dimensions, Limits)),
+  setting(surface, size(_Dimensions,Limits)),
   forall(
     nth0(Dimension, Limits, Limit),
     assert(tempval0(limit(Dimension), Limit))
   ),
 
   spring_embedding(
-    Graph,
+    G,
+    V_P,
     [
       spring_embedding:distance_force_dimension,
       spring_embedding:degree_force_dimension
@@ -377,7 +403,8 @@ default_spring_embedding(G, V_P, E_P, N_P, Iteration, Final, History):-
 % PUSH & PULL: GEOMETRIC DISTANCE TO NEIGHBOR
 
 %! neighbor_attraction(
-%!   +Graph:graph,
+%!   +Graph,
+%!   :N_P,
 %!   +VerticeCoordinateV:vertex_coordinate,
 %!   +VerticeCoordinateW:vertice_coordiante,
 %!   -Attraction:float
@@ -387,29 +414,31 @@ default_spring_embedding(G, V_P, E_P, N_P, Iteration, Final, History):-
 % For identical coordinates nothing happens.
 neighbor_attraction(
   _Graph,
+  _N_P,
   vertex_coordinate(_V, Coordinates),
   vertex_coordinate(_W, Coordinates),
   0.0
-):-
-  !.
+):- !.
 % Not at the same coordinates and neighbors.
 neighbor_attraction(
-  Graph,
+  G,
+  N_P,
   vertex_coordinate(V, CoordinatesV),
   vertex_coordinate(W, CoordinatesW),
   Attraction
 ):-
-  neighbor([graph(Graph)], V, W),
-  !,
+  % Single neighbor function.
+  call(N_P, V, G, W), !,
   cartesian_distance(CoordinatesV, CoordinatesW, CartesianDistance),
   debug(spring, '    d(~w,~w)=~w', [V, W, CartesianDistance]),
   Attraction is 2 * log10(CartesianDistance),
   debug(spring, '    F_att(~w,~w)=~w', [V, W, Attraction]).
 % Not at the same coordinates and not neighbors.
-neighbor_attraction(_Graph, _VertexCoordinateV, _VertexCoordinateW, 0.0).
+neighbor_attraction(_G, _N_P, _VertexCoordinateV, _VertexCoordinateW, 0.0).
 
 %! neighbor_attraction_dimension(
-%!   +Graph:graph,
+%!   +Graph,
+%!   :N_P,
 %!   +Dimension:integer,
 %!   +VerticeCoordinateV:vertex_coordinate,
 %!   +VerticeCoordinateW:vertice_coordiante,
@@ -419,6 +448,7 @@ neighbor_attraction(_Graph, _VertexCoordinateV, _VertexCoordinateW, 0.0).
 
 neighbor_attraction_dimension(
   Graph,
+  N_P,
   Dimension,
   vertex_coordinate(V, coordinate(Dimensions, PositionsV)),
   vertex_coordinate(W, coordinate(Dimensions, PositionsW)),
@@ -427,6 +457,7 @@ neighbor_attraction_dimension(
   % Neighbor attraction between V and W in all dimensions.
   neighbor_attraction(
     Graph,
+    N_P,
     vertex_coordinate(V, coordinate(Dimensions, PositionsV)),
     vertex_coordinate(W, coordinate(Dimensions, PositionsW)),
     Attraction
@@ -451,7 +482,8 @@ neighbor_attraction_dimension(
   ).
 
 %! nonneighbor_repulsion(
-%!   +Graph:ugraph,
+%!   +Graph,
+%!   :N_P,
 %!   +VerticeCoordinateV:vertex_coordinate,
 %!   +VerticeCoordinateW:vertex_coordinate,
 %!   -Repulsion:float
@@ -459,22 +491,24 @@ neighbor_attraction_dimension(
 % Returns the repulsion between V and W on in dimensions.
 
 nonneighbor_repulsion(
-  _Graph,
+  _G,
+  _N_P,
   vertex_coordinate(_V, Coordinates),
   vertex_coordinate(_W, Coordinates),
   0.0
-):-
-  !.
+):- !.
 nonneighbor_repulsion(
-  Graph,
+  G,
+  N_P,
   vertex_coordinate(V, _CoordinatesV),
   vertex_coordinate(W, _CoordinatesW),
   0.0
 ):-
-  neighbor([graph(Graph)], V, W),
-  !.
+  % Single neighbor function.
+  call(N_P, V, G, W), !.
 nonneighbor_repulsion(
-  _Graph,
+  _G,
+  _N_P,
   vertex_coordinate(V, CoordinatesV),
   vertex_coordinate(W, CoordinatesW),
   Repulsion
@@ -485,7 +519,8 @@ nonneighbor_repulsion(
   debug(spring, '    F_rep(~w,~w)=~w', [V, W, Repulsion]).
 
 %! nonneighbor_repulsion_dimension(
-%!   +Graph:ugraph,
+%!   +Graph,
+%!   :N_P,
 %!   +Dimension:integer,
 %!   +VerticeCoordinateV:vertex_coordinate,
 %!   +VerticeCoordinateW:vertex_coordinate,
@@ -495,6 +530,7 @@ nonneighbor_repulsion(
 
 nonneighbor_repulsion_dimension(
   Graph,
+  N_P,
   Dimension,
   vertex_coordinate(V, coordinate(Dimensions, PositionsV)),
   vertex_coordinate(W, coordinate(Dimensions, PositionsW)),
@@ -503,6 +539,7 @@ nonneighbor_repulsion_dimension(
   % The repulsion between V and W in all dimensions.
   nonneighbor_repulsion(
     Graph,
+    N_P,
     vertex_coordinate(V, coordinate(Dimensions, PositionsV)),
     vertex_coordinate(W, coordinate(Dimensions, PositionsW)),
     Repulsion
@@ -523,11 +560,12 @@ nonneighbor_repulsion_dimension(
   debug(spring, '  F_rep,~w(~w,~w)=~w', [Dimension, V, W, DimensionRepulsion]).
 
 simple_spring_embedding(
-  Graph, Iteration,
+  Graph, V_P, Iteration,
   FinalVerticeCoordinates, History
 ):-
   spring_embedding(
     Graph,
+    V_P,
     [spring_embedding:neighbor_attraction_dimension],
     [spring_embedding:nonneighbor_repulsion_dimension],
     Iteration,

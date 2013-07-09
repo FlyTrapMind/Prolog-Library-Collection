@@ -230,9 +230,9 @@ dbnl_title0(_Graph, _Title) -->
   dcg_debug.
 
 dbnl_primary_text_link(Graph, Title) -->
-  dcg_element(a, [href=RelativeURI], [TitleAtom]),
+  html_element(a, [href=RelativeURI], [TitleAtom]),
   % Sometimes a 'scans only' message occurs in italic. We skip this.
-  (dcg_element(i, _, _) ; ""),
+  (html_element(i, _, _) ; ""),
   [YearAtom],
   !,
   {

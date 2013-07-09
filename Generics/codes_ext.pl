@@ -51,7 +51,7 @@ put_codes(Codes):-
   maplist(put_code, Codes).
 
 put_codes(Out, Codes):-
-  maplist(put_code(Out), Codes).
+  with_output_to(Out, maplist(put_code, Codes)).
 
 split_codes(Codes, Split, Results):-
   \+ is_list(Split), !,

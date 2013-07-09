@@ -18,14 +18,19 @@
 /** <module> SKOS READ
 
 @author Wouter Beek
-@version 2013/04-2013/05
+@tbd rdf_beam/4 should return triples i.o. edges and vertices
+     (from which it is difficult to build an RDF graph).
+@version 2013/04-2013/05, 2013/07
 */
 
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(graph_theory(random_vertex_coordinates)).
+:- use_module(graph_theory(ugraph_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_graph_theory)).
 :- use_module(standards(graphviz)).
 :- use_module(xml(xml_namespace)).
 
@@ -39,13 +44,10 @@ skos_broader(Broader, Narrower, Graph):-
   rdf(Broader, skos:broader, Narrower, Graph).
 
 skos_export_hierarchy(Root):-
-  rdf_global_id(skos:broader, Predicate),
-  beam([], Root, [Predicate], Vertices, Edges),
-  graph_to_dom(
-    [edges(Edges), out(graphviz), vertices(Vertices)],
-    'STCN_Topics',
-    SVG
-  ),
+  rdf_global_id(skos:broader, P),
+  rdf_beam([], Root, [P], _Vs, Es),
+  export_ugraph([], random_vertex_coordinate, Es, G_Term),
+  export_graph_svg(G_Term, SVG),
   write(SVG).
 
 skos_narrower(Narrower, Broader, Graph):-
