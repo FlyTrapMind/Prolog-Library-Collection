@@ -35,15 +35,11 @@
                  % ?Object:uri
                  % ?Graph:graph
                  % ?Index:term
-    rdf_node/2, % ?Graph:graph
-                % ?Node:uri
     rdf_random/5, % -Subject:oneof([bnode,uri])
                   % -Predicate:uri
                   % -Object:uri
                   % +Graph:graph
                   % -Index:integer
-    rdf_term/2, % ?Graph:graph
-                % ?Term:uri
     rdf_valuetype/2 % ?Graph:graph
                     % ?Type:uri
   ]
@@ -184,13 +180,6 @@ rdf_index(Subject, Predicate, Object, Graph, Index):-
   rdf_triples(Graph, Triples),
   nth0(Index, Triples, rdf(Subject, Predicate, Object)).
 
-rdf_node(Graph, Node):-
-  nonvar_det(rdf_node0(Graph, Node)).
-rdf_node0(Graph, Node):-
-  rdf_subject(Graph, Node).
-rdf_node0(Graph, Node):-
-  rdf_object(Graph, Node).
-
 %! rdf_random(
 %!   -Subject:oneof([bnode,uri]),
 %!   -Predicate:uri,
@@ -212,19 +201,6 @@ rdf_random(Subject, Predicate, Object, Graph, RandomIndex):-
   succ(UpperIndex, NumberOfTriples),
   random_betwixt(UpperIndex, RandomIndex),
   rdf_index(Subject, Predicate, Object, Graph, RandomIndex).
-
-%! rdf_term(?Graph:graph, ?Term:uri) is nondet.
-% Pairs of graphs and terms that occur in that graph.
-% A term is either a subject, predicate or object term
-% in an RDF triple.
-%
-% @arg Graph The atomic name of a graph.
-% @arg Term A resource.
-
-rdf_term(Graph, Term):-
-  rdf_node(Graph, Term).
-rdf_term(Graph, Term):-
-  rdf_predicate(Graph, Term).
 
 rdf_valuetype(Graph, Type):-
   rdf(_Subject, _Predicate, literal(type(Type, _Value)), Graph).

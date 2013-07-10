@@ -41,10 +41,14 @@ Reification for RDF. Both reading and writing.
 
 @author Wouter Beek
 @tbd Assess this module after reading the semantics standard for reification.
-@version 2013/02
+@version 2013/02, 2013/07
 */
 
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdfs(rdfs_build)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 :- rdf_meta(rdf_object(r,r,?)).
 :- rdf_meta(rdf_predicate(r,r,?)).
@@ -88,7 +92,7 @@ rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
   rdf_statement(Subject, Predicate, Object, Graph, Stmt), !.
 rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
   rdf_bnode(Stmt),
-  rdf_assert(Stmt, rdf:type, rdf:'Statement', Graph),
+  rdfs_assert_individual(Stmt, rdf:'Statement', Graph),
   rdf_assert_subject(Stmt, Subject, Graph),
   rdf_assert_predicate(Stmt, Predicate, Graph),
   rdf_assert_object(Stmt, Object, Graph),

@@ -71,7 +71,7 @@ The supported datatypes:
     * integer
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07
 */
 
 :- use_module(library(debug)).
@@ -79,6 +79,7 @@ The supported datatypes:
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_typecheck)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_schema_datatypes)).
 
 % LISTS
@@ -140,7 +141,7 @@ rdf_assert_list0([H | T], RDF_List, Graph):-
 
 add_blank_list_individual(Blank, Graph):-
   rdf_bnode(Blank),
-  rdf_assert(Blank, rdf:type, rdf:'List', Graph).
+  rdfs_assert_individual(Blank, rdf:'List', Graph).
 
 
 
@@ -161,9 +162,9 @@ add_blank_list_individual(Blank, Graph):-
 % @arg Value
 % @arg Graph The atomic name of an RDF graph.
 
-rdf_assert_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph):-
-  rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue),
-  rdf_assert(Subject, Predicate, literal(type(Datatype, CanonicalValue)), Graph).
+rdf_assert_datatype(S, P, DatatypeName, LexicalValue, G):-
+  rdf_datatype(DatatypeName, LexicalValue, D, CanonicalValue),
+  rdf_assert(S, P, literal(type(D, CanonicalValue)), G).
 
 %! rdf_assert_literal(
 %!   +Subject:oneof([bnode,uri]),

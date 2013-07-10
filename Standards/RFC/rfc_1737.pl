@@ -88,9 +88,9 @@ characteristics of the resource or for access to the resource itself."
 :- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 
+:- initialization(init_rfc_1737).
 
-
-init:-
+init_rfc_1737:-
   Graph = rfc,
   rdf_global_id(rfc:'1737', This),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
@@ -98,5 +98,4 @@ init:-
   rdf_assert_literal(This, rfc:author, en, 'K. Sollins', Graph),
   rdf_assert_literal(This, rfc:author, en, 'L. Masinter', Graph),
   rdf_assert(This, foaf:homepage, 'http://www.ietf.org/rfc/rfc1737.txt', Graph).
-:- init.
 

@@ -73,7 +73,7 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
    When I add it RDF/XML files load 0 triples!
 
 @author Wouter Beek
-@version 2013/04, 2013/06
+@version 2013/04, 2013/06-2013/07
 */
 
 :- use_module(generics(atom_ext)).
@@ -135,7 +135,7 @@ run_test(Test):-
   % Clean up the graphs that were used in the previous test.
   maplist(rdf_unload_graph, [conclusion,doc,in,out,premise]),
 
-  rdf(Test, rdf:type, Class),
+  rdfs_individual_of(Test, Class),
   rdf_global_id(_Namespace:LocalName, Class),
   uri_to_subdirectory_file_fragment(
     Test,

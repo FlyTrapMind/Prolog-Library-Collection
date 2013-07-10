@@ -881,7 +881,7 @@ Examples:
 @compat XML 1.0 (Fifth Edition)
 @see http://www.w3.org/TR/2008/REC-xml-20081126/
 @tbd
-@version 2012/10, 2013/02-2013/05
+@version 2012/10, 2013/02-2013/05, 2013/07
 */
 
 :- use_module(generics(db_ext)).
@@ -896,6 +896,7 @@ Examples:
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(standards(sgml_parse)).
 :- use_module(standards(standards), [charset/1]).
 :- use_module(xml(xml_namespace)).
@@ -906,14 +907,18 @@ Examples:
 
 % Serve CSS files.
 :- db_add_novel(http:location(css, root(css),  [])).
-:- assert(user:file_search_path(css, server(css))).
+:- db_add_novel(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix, priority(10)]).
 
 :- xml_register_namespace(iso, 'http://www.iso.org/').
 :- xml_register_namespace(std, 'http://www.example.org/standards/').
 :- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-init:-
+:- initialization(init_xml).
+
+
+
+init_xml:-
   Graph = w3c,
 
   % XML Working Group
@@ -922,8 +927,8 @@ init:-
 
   % XML Recommendation
   rdf_global_id(w3c:'TR/2008/REC-xml-20081126/', This),
-  rdf_assert(This, rdf:type, w3c:'Recommendation', Graph),
-  rdf_assert(This, w3c:year, literal(type(gYear, '2008')), Graph),
+  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_datatype(This, w3c:year, gYear, 2008, Graph),
   rdf_assert(
     This,
     w3c:title,
@@ -946,9 +951,6 @@ init:-
   rdf_assert(This, w3c:requires, std:'IANA-LANGCODES', Graph),
   % Unicode
   rdf_assert(This, w3c:requires, std:'Unicode', Graph).
-:- init.
-
-
 
 %! dom_to_xml(+DTD_Name:atom, +DOM:list, -XML:atom) is det.
 % @see dom_to_xml/4

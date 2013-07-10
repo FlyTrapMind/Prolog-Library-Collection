@@ -23,6 +23,8 @@
                 % +RDF_Name:oneof([literal,uri])
     rdf_new_graph/2, % +Graph1:atom
                      % -Graph2:atom
+    rdf_node/2, % ?Graph:atom
+                % ?Node:or([bnode,uri,literal])
     rdf_object/2, % ?Graph:graph
                   % ?Objects:oneof([bnode,literal,uri])
     rdf_pairs/2, % +Resource:uri
@@ -31,6 +33,8 @@
                      % ?Predicate:uri
     rdf_predicates/2, % +Graph:atom
                       % -Predicates:ordset(uri)
+    rdf_term/2, % ?Graph:atom
+                % ?RDF_Term:or([bnode,literal,uri])
     rdf_term_name/2, % +RDF_Term:oneof([bnode,literal,uri])
                      % -Name:atom
     rdf_term_name/3, % +Options:list(nvpair)
@@ -271,7 +275,7 @@ rdf_graph_merge(FilesOrGraphs, MergedGraph):-
   is_list(FilesOrGraphs),
   % Be liberal with respect to the input.
   files_or_rdf_graphs(FilesOrGraphs, Graphs),
-  
+
   % Type checking.
   maplist(rdf_graph, Graphs),
   atom(MergedGraph),
@@ -493,6 +497,13 @@ rdf_new_graph(Graph1, Graph3):-
   atomic_list_concat(NewSplits, '_', Graph2),
   rdf_new_graph(Graph2, Graph3).
 
+rdf_node(Graph, Node):-
+  nonvar_det(rdf_node0(Graph, Node)).
+rdf_node0(Graph, Node):-
+  rdf_subject(Graph, Node).
+rdf_node0(Graph, Node):-
+  rdf_object(Graph, Node).
+
 rdf_object(G, O):-
   nonvar_det(rdf_object0(G, O)).
 rdf_object0(G, O):-
@@ -518,6 +529,19 @@ rdf_predicates(Graph, Predicates):-
     rdf_predicate(Graph, Predicate),
     Predicates
   ).
+
+%! rdf_term(?Graph:graph, ?Term:uri) is nondet.
+% Pairs of graphs and terms that occur in that graph.
+% A term is either a subject, predicate or object term
+% in an RDF triple.
+%
+% @arg Graph The atomic name of a graph.
+% @arg Term A resource.
+
+rdf_term(Graph, Term):-
+  rdf_node(Graph, Term).
+rdf_term(Graph, Term):-
+  rdf_predicate(Graph, Term).
 
 rdf_term_name(RDF_Term, Name):-
   rdf_term_name([], RDF_Term, Name).
@@ -554,12 +578,12 @@ rdf_term_name(O, RDF_Term, Name):-
   maplist(rdf_term_name(O), RDF_Terms, Names),
   print_list(atom(Name), Names).
 % A literal with a datatype.
-rdf_term_name(_O, literal(type(Datatype,LexicalValue)), Name):- !,
+rdf_term_name(_O, literal(type(Datatype,CanonicalValue)), Name):- !,
   (
     % Model RDF_DATATYPE supports this datatype.
     rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue)
   ->
-    format(atom(Name), '"~w"^^~w', [CanonicalValue,DatatypeName])
+    format(atom(Name), '"~w"^^~w', [LexicalValue,DatatypeName])
   ;
     % The datatype has a registered namespace prefix.
     rdf_global_id(DatatypeNamespace:DatatypeLocal, Datatype)
@@ -612,7 +636,7 @@ rdf_term_name(O, RDF_Term, Name3):-
     % If all else fails...
     term_to_atom(RDF_Term, Name2)
   ),
-  
+
   % Now come the related literals, but only if these are set to be
   % collapsed into the (directly) related RDF term.
   % Note that this is not the default, but has to be set explicitly
@@ -637,7 +661,7 @@ rdf_term_name(O, RDF_Term, Name3):-
   ;
     Names2 = [Name2]
   ),
-  
+
   % Done!
   print_set(atom(Name3), Names2).
 % URI reference.

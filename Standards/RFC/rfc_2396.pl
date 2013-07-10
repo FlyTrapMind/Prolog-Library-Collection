@@ -33,9 +33,11 @@ specifications of each URI scheme."
 :- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 
+:- initialization(init_rfc_2396).
 
 
-init:-
+
+init_rfc_2396:-
   Graph = rfc,
   rdf_global_id(rfc:'2396', This),
   rdf_assert_datatype(This, rfc:year, gYear, 1998, Graph),
@@ -50,5 +52,4 @@ init:-
   rdf_assert(This, rfc:implements, rfc:'1737', Graph),
   rdf_assert(This, rfc:updates, rfc:'1738', Graph),
   rdf_assert(This, rfc:updates, rfc:'1808', Graph).
-:- init.
 

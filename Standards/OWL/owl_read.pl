@@ -47,6 +47,6 @@ owl_resource_identity(Resource1, Graph1, Resource2, Graph2):-
 
 owl_resource_identity(Resource1, Graph1, Resource2, Graph2, LinkGraph):-
   rdf(Resource1, owl:sameAs, Resource2, LinkGraph),
-  rdf(Resource1, rdf:type, _Class1, Graph1),
-  rdf(Resource2, rdf:type, _Class2, Graph2).
+  rdf(Resource1, _P1, _O1, Graph1),
+  rdf(Resource2, _P2, _O2, Graph2).
 

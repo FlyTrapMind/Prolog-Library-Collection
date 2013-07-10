@@ -31,10 +31,11 @@
 Statistics for RDF data.
 
 @author Wouter Beek
-@version 2013/01, 2013/03-2013/04
+@version 2013/01, 2013/03-2013/04, 2013/07
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
@@ -50,8 +51,11 @@ Statistics for RDF data.
 
 count_classes(Graph, Count):-
   setoff(
-    Class,
-    rdf(_Individual, rdf:type, Class, Graph),
+    RDF_Term,
+    (
+      rdf_term(Graph, RDF_Term),
+      rdfs_individual_of(_SomeIndividual, RDF_Term)
+    ),
     Classes
   ),
   length(Classes, Count).

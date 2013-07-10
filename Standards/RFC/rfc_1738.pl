@@ -498,13 +498,21 @@ use enclosing angle brackets along with the prefix =|URL:|=.
 :- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 
+:- initialization(init_rfc_1738).
 
 
-init:-
+
+init_rfc_1738:-
   Graph = rfc,
   rdf_global_id(rfc:'1738', This),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
-  rdf_assert_literal(This, rfc:title, en, 'Uniform Resource Locators (URL)', Graph),
+  rdf_assert_literal(
+    This,
+    rfc:title,
+    en,
+    'Uniform Resource Locators (URL)',
+    Graph
+  ),
   rdf_assert_literal(This, rfc:author, en, 'Tim Berners-Lee', Graph),
   rdf_assert_literal(This, rfc:author, en, 'L. Masinter', Graph),
   rdf_assert_literal(This, rfc:author, en, 'M. McCahill', Graph),
@@ -516,5 +524,4 @@ init:-
   rdf_assert(This, rfc:mentions, rfc:'1436', Graph), % GOPHER
   rdf_assert(This, rfc:mentions, rfc:'1625', Graph), % WAIS
   rdf_assert(This, rfc:mentions, rfc:'1630', Graph). % URIs in WWW
-:- init.
 

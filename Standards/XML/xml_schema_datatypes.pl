@@ -66,12 +66,14 @@ A single defining aspect of a value space.
 @author Wouter Beek
 @compat XML Schema 2: Datatypes (Second Edition)
 @see http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/
-@tbd
-@version 2013/01, 2013/03-2013/05
+@tbd Read the rest of this document.
+@version 2013/01, 2013/03-2013/05, 2013/07
 */
 
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(xmls_convert_datatype(r,+,r,-)).
@@ -85,11 +87,15 @@ A single defining aspect of a value space.
 :- xml_register_namespace(std, 'http://www.example.org/standards/').
 :- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-init:-
+:- initialization(init_xml_schema_datatypes, restore).
+
+
+
+init_xml_schema_datatypes:-
   Graph = w3c,
   rdf_global_id(w3c:'TR/2004/REC-xmlschema-2-20041028/', This),
-  rdf_assert(This, rdf:type, w3c:'Recommendation', Graph),
-  rdf_assert(This, w3c:year, literal(type(gYear, '2004')), Graph),
+  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_datatype(This, w3c:year, gYear, 2004, Graph),
   rdf_assert(
     This,
     std:title,
@@ -102,9 +108,6 @@ init:-
   rdf_assert(This, w3c:mentions, iso:'11404', Graph),
   % SQL datatypes.
   rdf_assert(This, w3c:mentions, std:'SQL', Graph).
-:- init.
-
-
 
 %! xmls_datatype(?DatatypeName:atom, ?Datatype:uri) is nondet.
 % Translations between datatype names and datatype URIs.
