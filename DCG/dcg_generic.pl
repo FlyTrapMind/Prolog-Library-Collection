@@ -31,8 +31,7 @@
     dcg_multi_list//2, % :DCG_Body:dcg
                        % +List:list
 % PEEK
-    dcg_peek//1, % -X:code
-    dcg_peek//1, % :DCG_Body
+    dcg_peek//1, % ?X:code
     dcg_peek_atom//1, % -Atom:atom
     dcg_peek_char//1, % ?Char:char
     dcg_peek_length//2, % ?Length:integer
@@ -126,8 +125,6 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_plus(//,?,?)).
 :- meta_predicate(dcg_questionmark(//,?,?)).
 :- meta_predicate(dcg_star(//,?,?)).
-% PEEKING %
-:- meta_predicate(dcg_peek(//,?,?)).
 % REPLACE %
 :- meta_predicate(dcg_replace(//,//,?,?)).
 
@@ -265,17 +262,12 @@ dcg_multi_list(DCG_Body, [H|T]) -->
 
 % PEEK %
 
-%! dcg_peek(-X:code) is det.
-%! dcg_peek(:DCG_Body) is semidet.
+%! dcg_peek(?X:code) is det.
 % Returns the next code in the codes list, if any.
 % Does not consume anything.
 
 dcg_peek(X), [X] -->
-  {var(X)}, !,
   [X].
-dcg_peek(DCG_Body), DCG_Body -->
-  {nonvar(DCG_Body)}, !,
-  DCG_Body.
 
 %! dcg_peek_atom(+Atom:atom) is semidet.
 % Succeeds if the given atom occurs next in the codes list,

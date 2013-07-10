@@ -19,7 +19,6 @@ Attributes, their allowed values, and their default values for GraphViz.
 :- use_module(generics(typecheck)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
-:- use_module(svg(svg)).
 :- use_module(svg(svg_colors)).
 :- use_module(standards(brewer)).
 :- use_module(standards(x11_colors)).
@@ -31,10 +30,15 @@ Attributes, their allowed values, and their default values for GraphViz.
 gv_attribute_value(Attrs, Name=Value):-
   nonvar(Value), !,
   gv_attr(Attrs, Name, ValueType, _Categories, _DefaultValue),
-  typecheck(ValueType, Value).
+  % Adds several typechecks to module [typecheck.pl].
+  gv_typecheck(ValueType, Value).
 gv_attribute_value(Attrs, Name=DefaultValue):-
   var(DefaultValue), !,
   gv_attr(Attrs, Name, _ValueType, _Categories, DefaultValue).
+% Suport both option representation formats.
+gv_attribute_value(Attrs, Attr):-
+  Attr =.. [Name,Value],
+  gv_attribute_value(Attrs, Name=Value).
 
 %! gv_parse_attributes(+Attributes:list(nvpair)) is det.
 % Parses a list of attributes.

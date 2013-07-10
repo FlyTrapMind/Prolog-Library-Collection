@@ -3,15 +3,15 @@
   [
     export_graph/3, % +Options:list(nvpair)
                     % +Graph:oneof([dgraph,rdf_graph,ugraph])
-                    % +-GraphTerm:compound
+                    % -GraphTerm:compound
     export_graph/4, % +Options:list(nvpair)
                     % :CoordFunc
                     % +Graph:oneof([dgraph,rdf_graph,ugraph])
-                    % +-GraphTerm:compound
+                    % -GraphTerm:compound
     export_vertex/4, % +Options:list(nvpair)
                      % :N_P
                      % +Vertex
-                     % -G_term:compound
+                     % -GraphTerm:compound
     shared_attributes/3 % +Terms:list(compound)
                         % -SharedAttributes:list(nvpair)
                         % -NewTerms:list(compound)
@@ -77,6 +77,7 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 @version 2012/12-2013/04, 2013/07
 */
 
+:- use_module(generics(codes_ext)).
 :- use_module(graph_theory(dgraph_ext)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(random_vertex_coordinates)).
@@ -145,3 +146,11 @@ shared_attributes(Terms, SharedAttrs, NewTerms):-
     SharedAttrs
   ),
   maplist(remove_attribute(SharedAttrs), Terms, NewTerms).
+
+try:-
+  export_graph([], rfc, GraphTerm),
+  phrase(gv_graph(GraphTerm), Codes),
+  absolute_file_name(project(test), File, [access(write), file_type(dot)]),
+  open(File, write, Out),
+  with_output_to(Out, put_codes(Codes)),
+  close(Out).

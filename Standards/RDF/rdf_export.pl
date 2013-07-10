@@ -156,7 +156,7 @@ rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
 
 % GRAPH EXPORT %
 
-export_rdf_graph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
+export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   % Vertices
   rdf_vertices(G, Vs),
   maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),

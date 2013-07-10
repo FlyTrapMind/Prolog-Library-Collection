@@ -1,8 +1,8 @@
 :- module(
   graph_export_graphviz,
   [
-    export_graph_graphviz/2 % +Out
-                            % +Graph
+    export_graph_gv/2 % +Out
+                      % +Graph
   ]
 ).
 
@@ -62,19 +62,25 @@ export_edge_graphviz(Indent, edge(FromV_Id1, ToV_Id1, E_Attrs)) -->
   semi_colon,
   newline.
 
-%! export_graph_graphviz(+Stream:stream, +Graph:compound) is det.
+%! export_graph_gv(+Stream:stream, +GraphTerm:compound) is det.
 % Writes a graph term that is in Graph Intermediary Format
 % to the given output stream.
 %
 % @arg Stream An output stream.
-% @arg Graph A graph representation in the following format:
-%      `graph(Vertices, Ranks, Edges, GraphAttrs)`.
+% @arg GraphTerm A graph representation in the following format:
+% ~~~{.pl}
+% graph(
+%   VertexTerms:list(compound),
+%   EdgeTerms:list(compound),
+%   GraphAttributes:list(nvpair)
+% )
+% ~~~
 
-export_graph_graphviz(Out, G):-
-  phrase(export_graph_graphviz(G), Codes, []),
+export_graph_gv(Out, G_Term):-
+  phrase(export_graph_gv(G_Term), Codes, []),
   put_codes(Out, Codes).
 
-export_graph_graphviz(graph(Vs, Ranks, Es, G_Attrs)) -->
+export_graph_gv(graph(V_Terms, E_Terms, G_Attrs)) -->
   {
     Indent = 1,
     option(graph_name(G_Name), G_Attrs, noname),
@@ -86,29 +92,29 @@ export_graph_graphviz(graph(Vs, Ranks, Es, G_Attrs)) -->
   opening_curly_bracket,
 
   % Vertices: ranked
-  dcg_multi_list(export_rank_graphviz(Indent), Ranks),
-  newline,
+  %dcg_multi_list(export_rank_graphviz(Indent), Ranks),
+  %newline,
 
   % Vertices: unranked
-  dcg_multi_list(export_vertex_graphviz(Indent), Vs),
+  dcg_multi_list(export_vertex_graphviz(Indent), V_Terms),
   newline,
 
   % Edges: rank edges
-  {
-    findall(
-      RankV_Id,
-      member(
-        rank(vertex(RankV_Id, _RankV_Attrs), _ContentVs),
-        Ranks
-      ),
-      RankV_Ids
-    )
-  },
-  export_rank_edges_graphviz(Indent, RankV_Ids),
-  newline,
+  %{
+  %  findall(
+  %    RankV_Id,
+  %    member(
+  %      rank(vertex(RankV_Id, _RankV_Attrs), _ContentVs),
+  %      Ranks
+  %    ),
+  %    RankV_Ids
+  %  )
+  %},
+  %export_rank_edges_graphviz(Indent, RankV_Ids),
+  %newline,
 
   % Edges: nonrank edges
-  dcg_multi_list(export_edge_graphviz(Indent), Es),
+  dcg_multi_list(export_edge_graphviz(Indent), E_Terms),
   newline,
 
   % Graph properties

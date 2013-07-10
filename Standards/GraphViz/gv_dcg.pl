@@ -1,6 +1,7 @@
 :- module(
   gv_dcg,
   [
+    gv_graph//1 % +GraphTerm:compound
   ]
 ).
 
@@ -17,28 +18,44 @@ In GraphViz vertices are called 'nodes'.
 @version 2013/07
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_content)).
+:- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
+:- use_module(library(apply)).
+:- use_module(library(option)).
 
 
-% No attributes.
-gv_a_list(_Attrs, []) --> [].
-% A single attribute.
-gv_a_list(Attrs, [Name=Value]) -->
-  {gv_attribute_value(Attrs, Name=Value)},
+
+gv_a_list_item(Name=Value) --> !,
   gv_id(Name),
   "=",
   gv_id(Value).
+% @tbd The preferred format for option lists seems more cumbersome to me...
+gv_a_list_item(Attr) -->
+  {Attr =.. [Name,Value]},
+  gv_a_list_item(Name=Value).
+
+% No attributes.
+gv_a_list([]) --> [].
+% A single attribute.
+gv_a_list([Attr]) -->
+  gv_a_list_item(Attr).
 % Multiple attributes, separated by comma.
-gv_a_list(Attrs_, [Attr|Attrs]) -->
-  gv_a_list(Attrs_, [Attr]),
+gv_a_list([Attr|Attrs]) -->
+  gv_a_list_item(Attr),
   ",",
-  gv_a_list(Attrs_, Attrs).
+  gv_a_list(Attrs).
 
 % Attributes occur between square brackets.
-gv_attribute_list(G_Attrs, Attrs) -->
+gv_attribute_list(G_Attrs, Attrs1) -->
   "[",
-  {merge_options(G_Attrs, Attrs, Attrs_)},
-  gv_a_list(Attrs_, Attrs),
+  {
+    merge_options(G_Attrs, Attrs1, Attrs_),
+    include(gv_attribute_value(Attrs_), Attrs1, Attrs2)
+  },
+  gv_a_list(Attrs2),
   "]".
 
 gv_compass_pt --> "_".
@@ -79,15 +96,18 @@ gv_edge_statements(I, G_Attrs, [E_Term|E_Terms]) -->
   gv_edge_statement(I, G_Attrs, E_Term),
   gv_edge_statements(I, G_Attrs, E_Terms).
 
-gv_generic_edge_attributes_statement(I, G_Attrs, E_Attrs) -->
+gv_generic_edge_attributes_statement(void, _I, _G_Attrs, []) --> [], !.
+gv_generic_edge_attributes_statement(nonvoid, I, G_Attrs, E_Attrs) -->
   indent(I), e,d,g,e, space,
   gv_attribute_list(G_Attrs, E_Attrs), newline.
 
-gv_generic_graph_attributes_statement(I, G_Attrs, G_Attrs) -->
+gv_generic_graph_attributes_statement(void, _I, _G_Attrs, []) --> [], !.
+gv_generic_graph_attributes_statement(nonvoid, I, G_Attrs, G_Attrs) -->
   indent(I), g,r,a,p,h, space,
   gv_attribute_list(G_Attrs, G_Attrs), newline.
 
-gv_generic_node_attributes_statement(I, G_Attrs, V_Attrs) -->
+gv_generic_node_attributes_statement(void, _I, _G_Attrs, []) --> [], !.
+gv_generic_node_attributes_statement(nonvoid, I, G_Attrs, V_Attrs) -->
   indent(I), n,o,d,e, space,
   gv_attribute_list(G_Attrs, V_Attrs), newline.
 
@@ -114,23 +134,25 @@ gv_graph(graph(V_Terms, E_Terms, G_Attrs)) -->
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
     option(strict(Strict), G_Attrs, false),
     option(directedness(Dir), G_Attrs, undirected),
-    option(name(G_Name), G_Attrs),
+    option(name(G_Name), G_Attrs, noname),
     I = 0
   },
-  indent(I), gv_strict(Strict), space,
+  indent(I), gv_strict(Strict),
   gv_graph_type(Dir), space,
   gv_id(G_Name), space,
   "{", newline,
-  
+
   {NewI is I + 1},
-  gv_generic_graph_attributes_statement(NewI, G_Attrs3, G_Attrs3),
-  gv_generic_node_attributes_statement(NewI, G_Attrs3, V_Attrs),
-  gv_generic_edge_attributes_statement(NewI, G_Attrs3, E_Attrs),
-  newline,
+  gv_generic_graph_attributes_statement(Void1, NewI, G_Attrs3, G_Attrs3),
+  gv_generic_node_attributes_statement(Void2, NewI, G_Attrs3, V_Attrs),
+  gv_generic_edge_attributes_statement(Void3, NewI, G_Attrs3, E_Attrs),
+  % Only add a newline if some content was written in the previous three
+  % lines.
+  ({(Void1 == void, Void2 == void, Void3 == void)} -> "" ; newline),
   gv_node_statements(I, G_Attrs3, NewV_Terms),
   newline,
   gv_edge_statements(I, G_Attrs3, NewE_Terms),
-  
+
   indent(I), "}".
 
 gv_graph_type(directed) --> d,i,g,r,a,p,h.
@@ -153,22 +175,32 @@ gv_graph_type(undirected) --> g,r,a,p,h.
 %
 % @tbd Add the grammar for HTML strings. This requires an XML grammar!
 
-gv_id(X) -->
-  gv_id_(X),
+gv_id(Atom) -->
+  {atom_codes(Atom, Codes)},
+  gv_id_(Codes),
   % GraphViz ids that are not double-quotes cannot be one of
   % (the case-variants of) the GraphViz keywords.
-  {\+ gv_keyword(X)}.
+  {\+ gv_keyword(Codes)}.
 % Double-quoted ids may be GraphViz keywords.
-gv_id([H|T]) -->
+gv_id(Atom) -->
+  {
+    atom_codes(Atom, [H|T]),
+    append(S, [H], T)
+  },
   double_quote(H),
   gv_quoted_string(S),
-  double_quote(H),
-  {append(S, [H], T)}.
+  double_quote(H).
+gv_id(Atom) -->
+  {atom_codes(Atom, S)},
+  double_quote,
+  gv_quoted_string(S),
+  double_quote.
 
 gv_id_([H|T]) -->
   gv_id_first(H),
   gv_id_rest(T).
-gv_id_(N) --> float(N).
+gv_id_(Cs) -->
+  signed_number(_N, Cs).
 % HTML string.
 %gv_id_ -->
 %  "<",
@@ -237,20 +269,25 @@ gv_port_location -->
   gv_id(_),
   ")".
 
-% No double quote.
+gv_quoted_string([]) --> [].
+% Just to be sure, we do not allow the double quote
+% that closes the string to be escaped.
+gv_quoted_string([X]) -->
+  {X \== 92}, !,
+  [].
+% A double quote is only allowed if it is escaped by a backslash.
+gv_quoted_string([92,34|T]) --> !,
+  gv_quoted_string(T).
+% Add the backslash escape character.
+gv_quoted_string([34|T]) --> !,
+  backslash,
+  double_quote,
+  gv_quoted_string(T).
+% All other characters are allowed without escaping.
 gv_quoted_string([H|T]) -->
-  dcg_peek(H),
-  {H \== 34},
   [H],
   gv_quoted_string(T).
-% A double quote is only allowed if it is escaped by a backslash.
-gv_quoted_string([X,Y|T]) -->
-  backslash(X),
-  double_quote(Y),
-  gv_quoted_string(T).
-% May end normally / in non-backslash.
-gv_quoted_string([]) --> [].
 
 gv_strict(false) --> [].
 gv_strict(true) -->
-  s,t,r,i,c,t.
+  s,t,r,i,c,t, space.

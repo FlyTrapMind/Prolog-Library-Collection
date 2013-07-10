@@ -39,6 +39,14 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
+:- setting(
+  indent_size,
+  integer,
+  2,
+  'The number of spaces that go into one indent.'
+).
+
+
 
 dcg_arrow(L) -->
   dcg_arrow([], L).

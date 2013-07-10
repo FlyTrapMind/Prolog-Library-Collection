@@ -43,6 +43,8 @@
                 % ?Z:float
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
+    number_length/2, % +Number:number
+                     % -Length:integer
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -90,10 +92,11 @@ Extra arithmetic functions for use in SWI-Prolog.
 =|size(<dimension>, <list(<number>)>)|=.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(lists)).
 
 
 
@@ -288,6 +291,17 @@ multiply_list([Number], Number):- !.
 multiply_list([Number | Numbers], Multiplication):-
   multiply_list(Numbers, Multiplication1),
   Multiplication is Number * Multiplication1.
+
+%! number_length(+Number:number, -Length:integer) is det.
+% Returns the length of the given number 'before the dot'.
+% The number is in decimal notation.
+
+number_length(N1, L1):-
+  N2 is N1 / 10.0,
+  N2 >= 1.0, !,
+  number_length(N2, L2),
+  L1 is L2 + 1.
+number_length(_N, 1):- !.
 
 %! odd(?Integer:integer) is semidet.
 % Succeeds if the integer is odd.
