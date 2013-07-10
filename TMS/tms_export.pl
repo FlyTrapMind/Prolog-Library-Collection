@@ -13,6 +13,7 @@
 Exports TMS belief states,
 
 @author Wouter Beek
+@tbd Update Doyle export to the new GV modules.
 @version 2013/05
 */
 
@@ -21,7 +22,6 @@ Exports TMS belief states,
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(run_ext)).
 :- use_module(rdf(rdf_read)).
-:- use_module(standards(graphviz)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
@@ -79,8 +79,7 @@ export_tms(TMS, Justifications):-
 
 tms_to_graphviz(TMS, Stream):-
   % Type checking.
-  is_registered_tms(TMS),
-  !,
+  is_registered_tms(TMS), !,
 
   setoff(Node, node(TMS, Node), Nodes),
   setoff(Justification, justification(TMS, Justification), Justifications),
@@ -132,7 +131,7 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
       ),
       format(
         Stream,
-        '  n~w [color="~w", font_size="11", label="~w", shape="ellipse", style="solid"];\n',
+        '  n~w [color="~w", fontsize="11", label="~w", shape="ellipse", style="solid"];\n',
         [NodeID, Color, Label]
       )
     )
@@ -151,7 +150,7 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
       ),
       format(
         Stream,
-        '  j~w [color="blue", font_size="11", label="~w", shape="rectangle", style="solid"];\n',
+        '  j~w [color="blue", fontsize="11", label="~w", shape="rectangle", style="solid"];\n',
         [JustificationID, Label]
       )
     )
@@ -213,7 +212,7 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
   % Graph properties.
   format(Stream, '\n', []),
   format(Stream, '  charset="UTF-8"\n', []),
-  format(Stream, '  font_size="11"\n', []),
+  format(Stream, '  fontsize="11"\n', []),
   format(Stream, '  label="~w"\n', [TMS]),
   format(Stream, '  overlap=false\n', []),
 

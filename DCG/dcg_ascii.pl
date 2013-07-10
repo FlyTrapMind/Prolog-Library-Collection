@@ -281,8 +281,6 @@
     shift_in//1,
     shift_out//0,
     shift_out//1,
-    sign//0,
-    sign//1,
     six//0,
     six//1,
     slash//0,
@@ -1100,11 +1098,6 @@ shift_in(15) --> [15].
 
 shift_out --> [14].
 shift_out(14) --> [14].
-
-sign --> minus_sign.
-sign --> plus_sign.
-sign(X) --> minus_sign(X).
-sign(X) --> plus_sign(X).
 
 single_quote --> apostrophe.
 single_quote(X) --> apostrophe(X).

@@ -1,16 +1,14 @@
 :- module(
-  x11,
+  x11_colors,
   [
     x11_color/1, % ?Color:atom
     x11_colors/1 % -Colors:list(atom)
   ]
 ).
 
-/** <module> X11
+/** <module> X11_COLORS
 
-Predicates for X11.
-
-Currently only encompassing the X11 color names.
+The X11 color names.
 
 @author Wouter Beek
 @version 2013/01, 2013/03

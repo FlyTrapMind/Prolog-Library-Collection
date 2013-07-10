@@ -40,10 +40,10 @@ Circular graph representation.
 % graph are plotted on a circle.
 %
 % @arg Options Supported values:
-%      * `border(+Border:coord)`
-%      * `surface(+Surface:coord)`
-% @arg Vs A list of vertices.
-% @arg V A vertex.
+%      * `border(+Border:size)`
+%      * `surface(+Surface:size)`
+% @arg Vertices A list of vertices.
+% @arg Vertex A vertex.
 % @arg Coord A compound term of the form
 %      `coord(Dimension:integer, Coordinates:list)`,
 %      where `Dimension` is the length of `Coordinates`.

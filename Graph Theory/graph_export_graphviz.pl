@@ -20,17 +20,16 @@
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
+:- meta_predicate(attribute(//,+,?,?)).
+:- meta_predicate(inline_attributes(//,+,?,?)).
+
 
 
 %! attribute(+Separator:list(code), +Attribute:nvpair)// is det.
 
-attribute(Separator, Attribute) -->
-  {Attribute =.. [Name, Value]},
-  attribute(Separator, Name, Value).
-
-attribute(_Separator, Name, _Value) -->
+attribute(_Separator, Name=_Value) -->
   {disabled_attribute(Name)}, !.
-attribute(Separator, Name, Value) -->
+attribute(Separator, Name=Value) -->
   {
     atom_codes(Value, ValueCodes),
     phrase(c_convert, ValueCodes, C_ValueCodes),
@@ -52,7 +51,7 @@ disabled_attribute(coord).
 % @arg Edge A GraphViz edge compound term.
 
 export_edge_graphviz(Indent, edge(FromV_Id1, ToV_Id1, E_Attrs)) -->
-  dcg_indent(Indent),
+  indent(Indent),
   "node_", {number_codes(FromV_Id1, FromV_Id2)}, FromV_Id2,
   space,
   dcg_arrow(2),
@@ -121,12 +120,12 @@ export_graph_graphviz(graph(Vs, Ranks, Es, G_Attrs)) -->
 
 export_rank_graphviz(Indent, rank(RankVertex, ContentVertices)) -->
   % Open rank.
-  dcg_indent(Indent),
+  indent(Indent),
   opening_curly_bracket,
 
   % Rank property.
   {NewIndent is Indent + 1},
-  dcg_indent(NewIndent),
+  indent(NewIndent),
   "rank=same;",
   newline,
 
@@ -137,7 +136,7 @@ export_rank_graphviz(Indent, rank(RankVertex, ContentVertices)) -->
   ),
 
   % Close rank.
-  dcg_indent(Indent),
+  indent(Indent),
   closing_curly_bracket.
 
 export_rank_edges_graphviz(_Indent, []) --> [].
@@ -157,7 +156,7 @@ export_rank_edges_graphviz(Indent, [RankV1_Id, RankV2_Id | RankV_Ids]) -->
 % @arg Vertex A vertex compound term.
 
 export_vertex_graphviz(Indent, vertex(V_Id, V_Attrs)) -->
-  dcg_indent(Indent),
+  indent(Indent),
   {atom_codes(V_Id, V_Id_Codes)},
   "node_", V_Id_Codes, space,
   inline_attributes(", ", V_Attrs),
@@ -185,7 +184,7 @@ multiline_attribute_separator -->
 % @arg G_Attrs A list of name-value pairs.
 
 multiline_attributes(Indent, G_Attrs) -->
-  dcg_indent(Indent),
+  indent(Indent),
   dcg_multi_list(
     attribute(multiline_attribute_separator),
     G_Attrs

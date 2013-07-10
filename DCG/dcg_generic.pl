@@ -1,18 +1,11 @@
 :- module(
   dcg_generic,
   [
-% AGGREGATES
-    dcg_arrow//1, % +Length:integer
-    dcg_arrow//2, % +Options:list(nvpair)
-                  % +Length:integer
-    dcg_graphic//1, % -Graphic:list(code)
-    dcg_indent//1, % +Indent:integer
-    dcg_word//1, % -Word:list(code)
-    dcg_word_atom//1, % -Word:atom
 % ALL/UNTIL
     dcg_all//0,
     dcg_all//1, % -Codes:list(code)
     dcg_all_atom//1, % -Atom:atom
+    dcg_end//0,
     dcg_until//2, % :End:dcg
                   % -Codes:list(code)
     dcg_until_atom//2, % :End:dcg
@@ -26,13 +19,20 @@
 % LIST
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
+% META-DCG RULES
+    dcg_call/4, % :DCG_Body
+                % +A
+                % ?X:list
+                % ?Y:list
+
 % MULTIPLE OCCURRENCES
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
     dcg_multi_list//2, % :DCG_Body:dcg
                        % +List:list
 % PEEK
-    dcg_peek//1, % ?Code:code
+    dcg_peek//1, % -X:code
+    dcg_peek//1, % :DCG_Body
     dcg_peek_atom//1, % -Atom:atom
     dcg_peek_char//1, % ?Char:char
     dcg_peek_length//2, % ?Length:integer
@@ -48,32 +48,16 @@
     dcg_questionmark//1, % :DCG_Body:dcg
     dcg_star//1, % :DCG_Body:dcg
 % REPLACE
-    dcg_replace//2, % +From:list(code)
-                    % +To:list(code)
-% WRAPPING
-    dcg_wrap//0,
-    dcg_wrap//1, % +Options
-    dcg_line_wrap//0,
-    dcg_line_wrap//1, % +Options
-    dcg_word_wrap//0,
-    dcg_word_wrap//1 % +Options
+    dcg_replace//2 % +From:list(code)
+                   % +To:list(code)
   ]
 ).
 :- reexport(
   library(dcg/basics),
   [
-    alpha_to_lower//1,
     atom//1,
-    blank//0,
-    blanks//0,
-    blanks_to_nl//0,
-    nonblank//1,
-    nonblanks//1,
-    prolog_var_name//1,
     string//1,
-    string_without//2,
-    white//0,
-    whites//0
+    string_without//2
   ]
 ).
 
@@ -117,12 +101,6 @@ and the positive integers. This is why we add the DCG rules:
   2,
   'The default indentation used by the print predicates.'
 ).
-:- setting(
-  maxmimum_line_width,
-  integer,
-  80,
-  'The default maximum line width, after which line wrapping occurs.'
-).
 
 % ALL/UNTIL %
 :- meta_predicate(dcg_until(//,-,+,-)).
@@ -131,10 +109,11 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_without_atom(//,-,+,-)).
 % LIST %
 :- meta_predicate(dcg_separated_list(//,-,+,-)).
+% META-DCG RULES
+:- meta_predicate(dcg_call(3,+,?,?)).
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_multi(//,?,?,?)).
-:- meta_predicate(dcg_multi_list(3,?,?,?)).
-%:- meta_predicate(dcg_multi_list(//,?,?,?)).
+:- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
 % PEEK %
@@ -147,69 +126,10 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_plus(//,?,?)).
 :- meta_predicate(dcg_questionmark(//,?,?)).
 :- meta_predicate(dcg_star(//,?,?)).
+% PEEKING %
+:- meta_predicate(dcg_peek(//,?,?)).
 % REPLACE %
 :- meta_predicate(dcg_replace(//,//,?,?)).
-
-
-
-% AGGREGATES %
-
-dcg_arrow(L) -->
-  dcg_arrow([], L).
-
-%! dcg_arrow(+Options:list(nvpair), +Length:integer)//
-% A simple ASCII arrow.
-%
-% Example:
-% ~~~{.txt}
-% -------->
-% ~~~
-%
-% @arg Options The following options are supported:
-%      1. `head(+HeadType:oneof([both,left,right]))`
-% @arg Length A non-negative integer.
-
-dcg_arrow(O, L) -->
-  {option(head(Head), O, right)},
-  ({dcg_arrow_left_head(Head)} -> less_than_sign ; ""),
-  dcg_multi(hyphen, L),
-  ({dcg_arrow_right_head(Head)} -> greater_than_sign ; "").
-
-dcg_arrow_left_head(both).
-dcg_arrow_left_head(left).
-dcg_arrow_right_head(right).
-
-dcg_graphic([H|T]) -->
-  dcg_graph(H),
-  dcg_graphic(T).
-dcg_graphic([]) --> [].
-
-dcg_indent(I) -->
-  {
-    setting(indent_size, Size),
-    NumberOfSpaces is I * Size
-  },
-  dcg_multi(space, NumberOfSpaces).
-
-%! dcg_word(-Word:list(code)) is semidet.
-% Returns the first word that occurs in the codes list.
-%
-% A word is defined as any sequence af alphanumeric characters
-% and underscores, delimited by any other character.
-%
-% The delimiting character is not consumed.
-%
-% @arg Word A list of codes. Codes for uppercase letters are
-%           returned as codes for lowercase letters.
-
-dcg_word([H|T]) -->
-  letter(H),
-  dcg_word(T).
-dcg_word([]) --> [].
-
-dcg_word_atom(Word) -->
-  dcg_word(Codes),
-  {atom_codes(Word, Codes)}.
 
 
 
@@ -302,6 +222,12 @@ dcg_separated_list(_Separator, [H]) -->
   string(H).
 
 
+% META-DCG RULES %
+
+dcg_call(DCG_Body, H, X, Y):-
+  call(DCG_Body, H, X, Y).
+
+
 
 % MULTIPLE OCCURRENCES %
 
@@ -331,23 +257,25 @@ dcg_multi_var(_DCGBody, 0) --> [].
 %! dcg_multi_list(:DCG_Body, +List:list)//
 
 dcg_multi_list(_DCG_Body, []) --> [].
-dcg_multi_list(DCG_Body1, [H|T], In, Out):-
-  strip_module(DCG_Body1, Module, Plain_DCG_Body1),
-  Plain_DCG_Body1 =.. [P | Args1],
-  append(Args1, [H], Args2),
-  DCG_Body2 =.. [P | Args2],
-  call(Module:DCG_Body2, In, Temp),
-  dcg_multi_list(DCG_Body1, T, Temp, Out).
+dcg_multi_list(DCG_Body, [H|T]) -->
+  dcg_call(DCG_Body, H),
+  dcg_multi_list(DCG_Body, T).
 
 
 
 % PEEK %
 
-%! dcg_peek(-X:code) is semidet.
+%! dcg_peek(-X:code) is det.
+%! dcg_peek(:DCG_Body) is semidet.
 % Returns the next code in the codes list, if any.
 % Does not consume anything.
 
-dcg_peek(X), [X] --> [X].
+dcg_peek(X), [X] -->
+  {var(X)}, !,
+  [X].
+dcg_peek(DCG_Body), DCG_Body -->
+  {nonvar(DCG_Body)}, !,
+  DCG_Body.
 
 %! dcg_peek_atom(+Atom:atom) is semidet.
 % Succeeds if the given atom occurs next in the codes list,
@@ -461,108 +389,4 @@ dcg_replace(From, To), To -->
 dcg_replace(From, To), [X] -->
   [X],
   dcg_replace(From, To).
-
-
-
-% WRAPPING %
-
-%! dcg_wrap//
-% @see dcg_wrap//1
-
-dcg_wrap -->
-  dcg_wrap([]).
-
-%! dcg_wrap(+Options)//
-
-dcg_wrap(Options) -->
-  {select_option(wrap(Mode), Options, RestOptions, word)},
-  dcg_wrap_(Mode, RestOptions).
-dcg_wrap_(line, Options) --> dcg_line_wrap(Options), !.
-dcg_wrap_(none, _Options) --> dcg_all, !.
-dcg_wrap_(word, Options) --> dcg_word_wrap(Options), !.
-
-%! dcg_line_wrap//
-% @see dcg_line_wrap//1
-
-dcg_line_wrap --> dcg_line_wrap([]).
-
-%! dcg_line_wrap(+Options)//
-% Return the parsed codes list with newlines using line wrap.
-%
-% @arg Options A list of name-value pairs.
-%      The following options are supported:
-%      * maximum_line_width(+MaximumLineWidth:integer)
-%        The maxmim width of a line of characters.
-%        This is the length at which line wrapping occurs.
-
-dcg_line_wrap(Options) -->
-  {
-    setting(maxmimum_line_width, DefaultMaximumLineWidth),
-    option(
-      maximum_line_width(MaximumLineWidth),
-      Options,
-      DefaultMaximumLineWidth
-    )
-  },
-  dcg_line_wrap(MaximumLineWidth, MaximumLineWidth).
-
-dcg_line_wrap(0, MaximumLineWidth), newline --> !,
-  dcg_line_wrap(MaximumLineWidth, MaximumLineWidth).
-dcg_line_wrap(Remaining, MaximumLineWidth), [Code] -->
-  [Code],
-  {NewRemaining is Remaining - 1}, !,
-  dcg_line_wrap(NewRemaining, MaximumLineWidth).
-dcg_line_wrap(_Remaining, _MaximumLineWidth) --> [], !.
-
-%! dcg_word_wrap//
-% @see dcg_word_wrap//1
-
-dcg_word_wrap --> dcg_word_wrap([]).
-
-%! dcg_word_wrap(+Options)//
-% Return the parsed codes list with newlines using word wrap.
-%
-% @arg Options A list of name-value pairs.
-%      The following options are supported:
-%      * maximum_line_width(+MaximumLineWidth:integer)
-%        The maxmim width of a line of characters.
-%        This is the length at which line wrapping occurs.
-
-dcg_word_wrap(Options) -->
-  {
-    setting(maxmimum_line_width, DefaultMaximumLineWidth),
-    option(
-      maximum_line_width(MaximumLineWidth),
-      Options,
-      DefaultMaximumLineWidth
-    )
-  },
-  dcg_word_wrap(MaximumLineWidth, MaximumLineWidth).
-
-dcg_word_wrap(_Remaining, _MaximumLineWidth) --> dcg_end, !.
-dcg_word_wrap(Remaining, MaximumLineWidth), (Emit, EmitPostfix) --> !,
-  dcg_graphic(Word), (" "  -> {EmitPostfix = " "} ; {EmitPostfix = ""}), !,
-  {
-    length(Word, WordLength),
-    (
-      WordLength > MaximumLineWidth
-    ->
-      split_list_by_size(Word, MaximumLineWidth, SubWords),
-      phrase(newline, Newline),
-      list_separator_concat(SubWords, Newline, WrappedWord),
-      Emit = (newline, WrappedWord),
-      last(SubWords, LastSubWord),
-      length(LastSubWord, LastSubWordLength),
-      NewRemaining is MaximumLineWidth - LastSubWordLength
-    ;
-      WordLength > Remaining
-    ->
-      Emit = (newline, Word),
-      NewRemaining is MaximumLineWidth - WordLength
-    ;
-      Emit = Word,
-      NewRemaining is Remaining - WordLength
-    )
-  },
-  dcg_word_wrap(NewRemaining, MaximumLineWidth).
 

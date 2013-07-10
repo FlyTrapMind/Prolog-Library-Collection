@@ -1,16 +1,12 @@
 :- module(
   brewer,
   [
-    brewer_colors/2, % ?ColorSchemeName:atom
-                     % ?ColorNames:list(atom)
-    brewer_colorscheme/5, % ?ColorSchemeID:integer
-                          % ?Name:atom
-                          % ?Size:integer
-                          % ?Type:oneof([qualitative,sequential])
-                          % ?CriticalValue:integer
-    brewer_color/6 % ?ColorSchemeID:integer
-                   % ?Index:integer
-                   % ?Letter:char
+    brewer_colorschemes/1, % -ColorSchemes:ordset(atom)
+    brewer_colors/2, % ?ColorScheme:atom
+                     % ?Colors:ordset(atom)
+    brewer_color/6 % ?ColorScheme:atom
+                   % ?Color:integer
+                   % ?StrangeLetter:char
                    % ?R:byte
                    % ?G:byte
                    % ?B:byte
@@ -22,111 +18,96 @@
 The Brewer color scheme standard version 1.1.
 
 @authot Wouter Beek
-@version 2013/01, 2013/03
+@version 2013/01, 2013/03, 2013/07
 */
 
+:- use_module(generics(meta_ext)).
+
 :- discontiguous(
-  brewer_colorscheme(_ColorSchemeID, _Name, _Size, _Type, _CriticalValue)
+  brewer_color(_ColorScheme, _Color, _StrangeLetter, _R, _G, _B)
 ).
-:- discontiguous(brewer_color(_ColorSchemeID, _Index, _Letter, _R, _G, _B)).
 
 
 
-%! brewer_colors(?ColorSchemeName:atom, ?ColorNames:list(atom)) is nondet.
+brewer_colorschemes(ColorSchemes):-
+  setoff(
+    ColorScheme,
+    brewer_color(ColorScheme, _Color, _StrangeLetter, _R, _G, _B),
+    ColorSchemes
+  ).
+
+%! brewer_colors(?ColorScheme:atom, ?Colors:list(atom)) is nondet.
 % Color scheme lookup.
 %
 % @arg ColorSchemeName The atomic name of a Brewer color scheme.
 % @arg ColorNames A list of atomic color names.
 
-brewer_colors(ColorSchemeName, ColorNames):-
-  brewer_colorscheme(
-    ColorSchemeID,
-    ColorSchemeName,
-    _Size,
-    _Type,
-    _CriticalValue
-  ),
-  findall(
-    ColorName,
+brewer_colors(ColorScheme, Colors):-
+  setoff(
+    Color2,
     (
-      brewer_color(ColorSchemeID, Index, _Letter, _R, _G, _B),
-      atom_number(ColorName, Index)
+      brewer_color(ColorScheme, Color1, _StrangeLetter, _R, _G, _B),
+      atom_number(Color2, Color1)
     ),
-    ColorNames
+    Colors
   ).
 
-%! brewer_colorscheme(
-%!   ?ColorSchemeID:integer,
-%!   ?Name:atom,
-%!   ?Size:integer,
-%!   ?Type:oneof([qualitative,sequential]),
-%!   ?CriticalValue:integer
-%! ).
-
 %! brewer_color(
-%!   ?ColorSchemeID:integer,
-%!   ?Index:integer,
-%!   ?Letter:char,
+%!   ?ColorScheme:atom,
+%!   ?Color:integer,
+%!   ?StrangeLetter:char,
 %!   ?R:byte,
 %!   ?G:byte,
 %!   ?B:byte
 %! ) is nondet.
 
-brewer_colorscheme(0, accent, 3, qualitative, 0).
-brewer_color(0, 1, a, 127, 201, 127, qualitative).
-brewer_color(0, 2, b, 190, 174, 212).
-brewer_color(0, 3, c, 253, 192, 134).
+brewer_color(accent3, 1, a, 127, 201, 127).
+brewer_color(accent3, 2, b, 190, 174, 212).
+brewer_color(accent3, 3, c, 253, 192, 134).
 
-brewer_colorscheme(1, accent, 4, qualitative, 0).
-brewer_color(1, 1, a, 127, 201, 127).
-brewer_color(1, 2, b, 190, 174, 212).
-brewer_color(1, 3, c, 253, 192, 134).
-brewer_color(1, 4, d, 255, 255, 153).
+brewer_color(accent4, 1, a, 127, 201, 127).
+brewer_color(accent4, 2, b, 190, 174, 212).
+brewer_color(accent4, 3, c, 253, 192, 134).
+brewer_color(accent4, 4, d, 255, 255, 153).
 
-brewer_colorscheme(2, accent, 5, qualitative, 0).
-brewer_color(2, 1, a, 127, 201, 127).
-brewer_color(2, 2, b, 190, 174, 212).
-brewer_color(2, 3, c, 253, 192, 134).
-brewer_color(2, 4, d, 255, 255, 153).
-brewer_color(2, 5, e,  56, 108, 176).
+brewer_color(accent5, 1, a, 127, 201, 127).
+brewer_color(accent5, 2, b, 190, 174, 212).
+brewer_color(accent5, 3, c, 253, 192, 134).
+brewer_color(accent5, 4, d, 255, 255, 153).
+brewer_color(accent5, 5, e,  56, 108, 176).
 
-brewer_colorscheme(3, accent, 6, qualitative, 0).
-brewer_color(3, 1, a, 127, 201, 127).
-brewer_color(3, 2, b, 190, 174, 212).
-brewer_color(3, 3, c, 253, 192, 134).
-brewer_color(3, 4, d, 255, 255, 153).
-brewer_color(3, 5, e,  56, 108, 176).
-brewer_color(3, 6, f, 240,   2, 127).
+brewer_color(accent6, 1, a, 127, 201, 127).
+brewer_color(accent6, 2, b, 190, 174, 212).
+brewer_color(accent6, 3, c, 253, 192, 134).
+brewer_color(accent6, 4, d, 255, 255, 153).
+brewer_color(accent6, 5, e,  56, 108, 176).
+brewer_color(accent6, 6, f, 240,   2, 127).
 
-brewer_colorscheme(4, accent, 7, qualiative, 0).
-brewer_color(4, 1, a, 127, 201, 127).
-brewer_color(4, 2, b, 190, 174, 212).
-brewer_color(4, 3, c, 253, 192, 134).
-brewer_color(4, 4, d, 255, 255, 153).
-brewer_color(4, 5, e,  56, 108, 176).
-brewer_color(4, 6, f, 240,   2, 127).
-brewer_color(4, 7, g, 191,  91,  23).
+brewer_color(accent7, 1, a, 127, 201, 127).
+brewer_color(accent7, 2, b, 190, 174, 212).
+brewer_color(accent7, 3, c, 253, 192, 134).
+brewer_color(accent7, 4, d, 255, 255, 153).
+brewer_color(accent7, 5, e,  56, 108, 176).
+brewer_color(accent7, 6, f, 240,   2, 127).
+brewer_color(accent7, 7, g, 191,  91,  23).
 
-brewer_colorscheme(5, accent, 8, qualitative, 0).
-brewer_color(5, 1, a, 127, 201, 127).
-brewer_color(5, 2, b, 190, 174, 212).
-brewer_color(5, 3, c, 253, 192, 134).
-brewer_color(5, 4, d, 255, 255, 153).
-brewer_color(5, 5, e,  56, 108, 176).
-brewer_color(5, 6, f, 240,   2, 127).
-brewer_color(5, 7, g, 191,  91,  23).
-brewer_color(5, 8, h, 102, 102, 102).
+brewer_color(accent8, 1, a, 127, 201, 127).
+brewer_color(accent8, 2, b, 190, 174, 212).
+brewer_color(accent8, 3, c, 253, 192, 134).
+brewer_color(accent8, 4, d, 255, 255, 153).
+brewer_color(accent8, 5, e,  56, 108, 176).
+brewer_color(accent8, 6, f, 240,   2, 127).
+brewer_color(accent8, 7, g, 191,  91,  23).
+brewer_color(accent8, 8, h, 102, 102, 102).
 
-brewer_colorscheme(6, blues, 3, sequential, 0).
-brewer_color(6, 1, c, 222, 235, 247).
-brewer_color(6, 2, f, 158, 202, 225).
-brewer_color(6, 3, i,  49, 130, 189).
+brewer_color(blues3, 1, c, 222, 235, 247).
+brewer_color(blues3, 2, f, 158, 202, 225).
+brewer_color(blues3, 3, i,  49, 130, 189).
 
-brewer_colorscheme(7, blues, 4, sequential, 0).
-brewer_color(7, 1, b, 239, 243, 255).
-brewer_color(7, 2, e, 189, 215, 231).
-brewer_color(7, 3, g, 107, 174, 214).
-brewer_color(7, 4, j,  33, 113, 181).
+brewer_color(blues4, 1, b, 239, 243, 255).
+brewer_color(blues4, 2, e, 189, 215, 231).
+brewer_color(blues4, 3, g, 107, 174, 214).
+brewer_color(blues4, 4, j,  33, 113, 181).
 
 /*
 brewer_color(blues, 5, seq, , 1, b, 239, 243, 255).

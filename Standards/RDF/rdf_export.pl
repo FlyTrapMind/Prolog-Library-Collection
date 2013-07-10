@@ -33,7 +33,7 @@ rdf_edge_label_replace/2.
 # Vertex coloring
 
 The procedure for determining the color of a vertex:
-    1. Look whether the =color_scheme= option is not set to =none=.
+    1. Look whether the =colorscheme= option is not set to =none=.
     2. See whether the vertex is an individual of a colored class.
     3. See whether the vertex belongs to a colored namespace.
     4. If at least one vertex is not colored by class or namespace, then all
@@ -61,7 +61,7 @@ The procedure for determining the color of a vertex:
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_read)).
-:- use_module(svg(svg)).
+:- use_module(svg(svg_colors)).
 
 :- dynamic(class_color(_G, _Class, _Color)).
 :- dynamic(namespace_color(_G, _Namespace, _Color)).
@@ -134,16 +134,16 @@ rdf_register_namespace_color(G, Namespace, NamespaceColor):-
 %!   -VertexColor:atom
 %! ) is det.
 % Returns the automatically assigned color name.
-% The color names belong to the given color_scheme.
+% The color names belong to the given colorscheme.
 % The color assignments are based on the RDF node's namespace.
 % Note that the same node may have different colors in different graphs.
 %
 % @arg Graph The atomic name of a graph.
-% @arg ColorScheme The atomic name of a color_scheme. Currently supported:
+% @arg ColorScheme The atomic name of a colorscheme. Currently supported:
 %      1. `svg`
 %      2. `x11`
 % @arg Vertex A resource.
-% @arg VertexColor The atomic name of a color within the color_scheme.
+% @arg VertexColor The atomic name of a color within the colorscheme.
 
 rdf_vertex_color_by_namespace(G, _ColorScheme, V, V_Color):-
   rdf_global_id(Namespace:_, V),
@@ -190,7 +190,7 @@ rdf_edge_arrow_head(rdfs:subPropertyOf, diamond).
 rdf_edge_arrow_head(_RDF_Property,      normal ).
 
 rdf_edge_color(O, _G, _E, black):-
-  option(color_scheme(none), O, none), !.
+  option(colorscheme(none), O, none), !.
 rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
   rdf_vertex_color(O, G, FromV, FromV_Color),
   rdf_vertex_color(O, G, ToV, ToV_Color), !,
@@ -275,14 +275,14 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
 % Returns a color name for the given vertex.
 %
 % @arg Options A list of name-value pairs.
-%        1. =color_scheme(ColorScheme:oneof([none,svg,x11]))= The atomic name
+%        1. =colorscheme(ColorScheme:oneof([none,svg,x11]))= The atomic name
 %           of the color scheme from which the color names are drawn.
 %        2. =graph(Graph:atom)= The atomic name of a graph.
 % @arg Vertex A vertex.
 % @arg Color The atomic name of a color for the given vertex.
 
 rdf_vertex_color(O, _G, _V, black):-
-  option(color_scheme(none), O), !.
+  option(colorscheme(none), O), !.
 % Literals.
 rdf_vertex_color(_O, _G, literal(_Value), blue):- !.
 rdf_vertex_color(_O, _G, literal(lang(_Lang, _Value)), blue):- !.
@@ -297,7 +297,7 @@ rdf_vertex_color(_O, G, V, V_Color):-
   class_color(G, Class, V_Color), !.
 % Resource colored based on its namespace.
 rdf_vertex_color(O, G, V, V_Color):-
-  option(color_scheme(ColorScheme), O, svg),
+  option(colorscheme(ColorScheme), O, svg),
   (
     % URI resources with registered namespace/prefix.
     rdf_global_id(_:_, V),
@@ -366,7 +366,7 @@ rdf_vertex_shape(RDF_Term, circle):-
 % Catch-all.
 rdf_vertex_shape(_RDF_Term, ellipse).
 
-rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V_Attrs2)):-
+rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs2)):-
   nth0(V_Id, Vs, V),
   rdf_term_name(O, V, V_Name),
   rdf_vertex_color(O, G, V, V_Color),

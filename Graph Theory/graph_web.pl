@@ -42,7 +42,6 @@ Web front-end for generic graph visualizations.
 :- use_module(graph_theory(ugraph_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(server(error_web)).
-:- use_module(standards(graphviz)).
 
 
 
@@ -132,7 +131,7 @@ spring_embedding_web(Graph, Iterations, Markup):-
 table_graph_web(Graph, html/wallace/[TableElement]):-
   export_graph(
     [
-      color_scheme(none),
+      colorscheme(none),
       edge_labels(all),
       in(rdf),
       literals(collapse),

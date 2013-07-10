@@ -2,6 +2,7 @@
   typecheck,
   [
     typecheck/2, % +Type:compound
+                 % +Value
     is_uri/1
   ]
 ).
@@ -22,22 +23,38 @@ Predicates used for parsing and checking value-type conformance.
 % @arg Type A compound term representing a type.
 % @arg Value
 
-typecheck(or(AlternativeTypes), Value):-
-  member(Type, AlternativeTypes),
-  typecheck(Type, Value),
-  !.
-typecheck(boolean, Value):-
-  typecheck(oneof([false,true]), Value).
-typecheck(double, Value):-
-  typecheck(float, Value),
-  !.
-typecheck(oneof(Values), Value):-
-  memberchk(Value, Values),
-  !.
+typecheck(or(Types), Value):-
+  member(Type, Types),
+  typecheck(Type, Value), !.
+% Open numeric interval: open to the right.
+typecheck(between(Min, Var), Value):-
+  var(Var), !,
+  (
+    float(Min)
+  ->
+    float(Value)
+  ;
+    integer(Min)
+  ->
+    integer(Value)
+  ),
+  Min =< Value.
+% Open numeric interval: open to the left.
+typecheck(between(Var, Max), Value):-
+  var(Var), !,
+  (
+    float(Max)
+  ->
+    float(Value)
+  ;
+    integer(Max)
+  ->
+    integer(Value)
+  ),
+  Max >= Value.
 typecheck(Type, Value):-
-  must_be(Type, Value),
-  !.
-% DCG defined types
+  must_be(Type, Value), !.
+% DCG defined types.
 typecheck(Type, Value):-
   atom_chars(Value, ValueChars),
   Call =.. [Type, ValueChars, []],

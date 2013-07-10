@@ -8,10 +8,13 @@
                     % :CoordFunc
                     % +Graph:oneof([dgraph,rdf_graph,ugraph])
                     % +-GraphTerm:compound
-    export_vertex/4 % +Options:list(nvpair)
-                    % :N_P
-                    % +Vertex
-                    % -G_term:compound
+    export_vertex/4, % +Options:list(nvpair)
+                     % :N_P
+                     % +Vertex
+                     % -G_term:compound
+    shared_attributes/3 % +Terms:list(compound)
+                        % -SharedAttributes:list(nvpair)
+                        % -NewTerms:list(compound)
   ]
 ).
 
@@ -22,8 +25,8 @@ Generic graph export module.
 # Options
 
 The following options are used for exporting graphs:
-  1. `color_scheme(+ColorScheme:oneof([none,svg,x11]))`
-     The color_scheme for the colors assigned to vertices and edges.
+  1. `colorscheme(+ColorScheme:oneof([none,svg,x11]))`
+     The colorscheme for the colors assigned to vertices and edges.
      Default: `svg`.
      Supported for: GraphViz, HTML_TABLE.
   2. `edge_labels(oneof([all,none,replace])`
@@ -78,6 +81,7 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(graph_theory(ugraph_ext)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 
@@ -114,3 +118,30 @@ export_vertex(O1, N_P, V, G_Term):-
   depth(O3, N_P, V, Depth, Vs, Es),
   export_graph(O1, ugraph(Vs, Es), G_Term).
 
+remove_attribute(Attrs, T, NewT):-
+  T =.. L,
+  append(L1, [T_Attrs], L),
+  subtract(T_Attrs, Attrs, NewT_Attrs),
+  append(L1, [NewT_Attrs], NewL),
+  NewT =.. NewL.
+
+shared_attribute([T1|Ts], N=V):-
+  T1 =.. L1,
+  last(L1, Attrs1),
+  memberchk(N=V, Attrs1),
+  forall(
+    member(T2, Ts),
+    (
+      T2 =.. L2,
+      last(L2, Attrs2),
+      memberchk(N=V, Attrs2)
+    )
+  ).
+
+shared_attributes(Terms, SharedAttrs, NewTerms):-
+  findall(
+    SharedAttr,
+    shared_attribute(Terms, SharedAttr),
+    SharedAttrs
+  ),
+  maplist(remove_attribute(SharedAttrs), Terms, NewTerms).

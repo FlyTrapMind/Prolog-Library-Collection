@@ -64,13 +64,13 @@ The following attributes are supported:
   'The default encoding for undirected graph exports.'
 ).
 :- setting(
-  color_scheme,
+  colorscheme,
   oneof([none,svg,x11]),
   svg,
-  'The default color_scheme used for exporting undirected graphs.'
+  'The default colorscheme used for exporting undirected graphs.'
 ).
 :- setting(
-  font_size,
+  fontsize,
   float,
   11.0,
   'The default font size for text that occurs in undirected graph exports.'
@@ -114,13 +114,13 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
   % Graph properties.
   ugraph_name(G, G_Name),
   setting(charset, Charset),
-  setting(color_scheme, ColorScheme),
-  setting(font_size, FontSize),
+  setting(colorscheme, ColorScheme),
+  setting(fontsize, FontSize),
   setting(overlap, Overlap),
   G_Attrs = [
     charset(Charset),
-    color_scheme(ColorScheme),
-    font_size(FontSize),
+    colorscheme(ColorScheme),
+    fontsize(FontSize),
     label(G_Name),
     overlap(Overlap)
   ].

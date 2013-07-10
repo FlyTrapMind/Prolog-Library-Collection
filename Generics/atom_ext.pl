@@ -80,7 +80,7 @@ scheme.
 @version 2011/08-2013/05, 2013/07
 */
 
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_wrap)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(math(math_ext)).

@@ -187,7 +187,6 @@ as their lean subgraphs.
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdfs(rdfs_read)).
-:- use_module(standards(graphviz)).
 
 :- rdf_meta(rdf_bnode(?,r)).
 :- rdf_meta(rdf_name(?,r)).
