@@ -1,10 +1,10 @@
 :- module(
   dcg_content,
   [
-    dcg_arrow//1, % +Length:integer
-    dcg_arrow//2, % +Options:list(nvpair)
-                  % +Length:integer
-    dcg_graphic//1, % -Graphic:list(code)
+    arrow//1, % +Length:integer
+    arrow//2, % +Options:list(nvpair)
+              % +Length:integer
+    graphic//1, % -Graphic:list(code)
     indent//1, % +Indent:integer
     dcg_word//1, % -Word:list(code)
     dcg_word_atom//1 % -Word:atom
@@ -48,10 +48,10 @@ DCG rules for parsing/generating often-occuring content.
 
 
 
-dcg_arrow(L) -->
-  dcg_arrow([], L).
+arrow(L) -->
+  arrow([], L).
 
-%! dcg_arrow(+Options:list(nvpair), +Length:integer)//
+%! arrow(+Options:list(nvpair), +Length:integer)//
 % A simple ASCII arrow.
 %
 % Example:
@@ -63,20 +63,20 @@ dcg_arrow(L) -->
 %      1. `head(+HeadType:oneof([both,left,right]))`
 % @arg Length A non-negative integer.
 
-dcg_arrow(O, L) -->
+arrow(O, L) -->
   {option(head(Head), O, right)},
-  ({dcg_arrow_left_head(Head)} -> less_than_sign ; ""),
+  ({arrow_left_head(Head)} -> less_than_sign ; ""),
   dcg_multi(hyphen, L),
-  ({dcg_arrow_right_head(Head)} -> greater_than_sign ; "").
+  ({arrow_right_head(Head)} -> greater_than_sign ; "").
 
-dcg_arrow_left_head(both).
-dcg_arrow_left_head(left).
-dcg_arrow_right_head(right).
+arrow_left_head(both).
+arrow_left_head(left).
+arrow_right_head(right).
 
-dcg_graphic([H|T]) -->
+graphic([H|T]) -->
   dcg_graph(H),
-  dcg_graphic(T).
-dcg_graphic([]) --> [].
+  graphic(T).
+graphic([]) --> [].
 
 indent(I) -->
   {

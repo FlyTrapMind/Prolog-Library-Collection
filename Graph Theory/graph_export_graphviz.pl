@@ -54,7 +54,7 @@ export_edge_graphviz(Indent, edge(FromV_Id1, ToV_Id1, E_Attrs)) -->
   indent(Indent),
   "node_", {number_codes(FromV_Id1, FromV_Id2)}, FromV_Id2,
   space,
-  dcg_arrow(2),
+  arrow(2),
   space,
   "node_", {number_codes(ToV_Id1, ToV_Id2)}, ToV_Id2,
   space,

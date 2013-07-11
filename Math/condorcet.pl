@@ -11,7 +11,7 @@
 /** <module> Condorcet
 
 @author Wouter Beek
-@version 2011-2012/09
+@version 2011/09, 2012/09
 */
 
 :- use_module(generics(list_ext)).
@@ -85,16 +85,16 @@ go(ScoringPredicate, VotePredicate):-
     % There is a unique Copeland winner.
     copeland_winner(CopelandWinner)
   ->
-    writef('The Copeland winner is %w.\n', [CopelandWinner])
+    format('The Copeland winner is %w.\n', [CopelandWinner])
   ;
     % There is a unique Copeland loser.
     copeland_loser(CopelandLoser)
   ->
-    writef('Remove Copeland loser %w and iterate.\n', [CopelandLoser])
+    format('Remove Copeland loser %w and iterate.\n', [CopelandLoser])
   ;
     loser(Loser)
   ->
-    writef('Remove non-Copeland loser %w and iterate.\n', [Loser])
+    format('Remove non-Copeland loser %w and iterate.\n', [Loser])
   ).
 
 condorcet_matrix(ScoreMethod, DB):-
@@ -176,34 +176,34 @@ margins_score(X, Y, MarginsScore, DB):-
 % the current output stream.
 
 write_condorcet_matrix:-
-  writef('...'),
+  format('...'),
   forall(
     contestant(Runner),
-    writef('\t%w', [Runner])
+    format('\t%w', [Runner])
   ),
-  writef('\n'),
+  format('\n'),
   forall(
     contestant(Runner),
     (
-      writef('%w', [Runner]),
+      format('%w', [Runner]),
       forall(
         contestant(Opponent),
         write_condorcet_cell(Runner, Opponent)
       ),
-      writef('\n')
+      format('\n')
     )
   ),
-  writef('\n').
+  format('\n').
 
 %! write_condorcet_cell(+Runner, +Opponent) is det.
 % Writes a cell of the Condorcet matrix to the current output stream.
 
 % No value is given for the runner against himself.
 write_condorcet_cell(Runner, Runner):-
-  writef('\t-').
+  format('\t-').
 write_condorcet_cell(Runner, Opponent):-
   runner_opponent_result(Runner, Opponent, RunnerOpponentScore),
-  writef('\t%w', [RunnerOpponentScore]).
+  format('\t%w', [RunnerOpponentScore]).
 
 %! runner_results is det.
 % Calculates and asserts the results per runner, based on the asserted
@@ -233,7 +233,7 @@ runner_results:-
 write_runner_scores:-
   forall(
     runner_result(Runner, RunnerScore),
-    writef('%w: %w\n', [Runner, RunnerScore])
+    format('%w: %w\n', [Runner, RunnerScore])
   ).
 
 %! runner_score_runner_pairs(-SortedRunnerScoreRunnerPairs) is det.

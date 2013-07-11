@@ -116,7 +116,7 @@ dcg_word_wrap(Options) -->
 dcg_word_wrap(_Remaining, _MaximumLineWidth) -->
   dcg_end, !.
 dcg_word_wrap(Remaining, MaximumLineWidth), (Emit, EmitPostfix) --> !,
-  dcg_graphic(Word),
+  graphic(Word),
   % Whether or now a space follows the word. Specifically, the last word
   % in the codes list need not be followed by a space.
   (
