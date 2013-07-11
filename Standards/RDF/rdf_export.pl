@@ -65,7 +65,7 @@ The procedure for determining the color of a vertex:
 
 :- dynamic(class_color(_G, _Class, _Color)).
 :- dynamic(namespace_color(_G, _Namespace, _Color)).
-:- dynamic(rdf_edge_style(_RDF_Term, _EdgeStyle)).
+:- dynamic(rdf_edge_style_(_RDF_Term, _EdgeStyle)).
 
 :- meta_predicate(export_rdf_graph(+,4,+,-)).
 :- meta_predicate(rdf_vertex_term(+,+,+,4,+,-)).
@@ -74,9 +74,9 @@ The procedure for determining the color of a vertex:
 :- rdf_meta(rdf_register_class_color(+,r,+)).
 :- rdf_meta(rdf_vertex_color_by_namespace(+,+,r,-)).
 % EDGES
-:- rdf_meta(rdf_edge_arrow_head(r,-)).
+:- rdf_meta(rdf_edge_arrow_head_(r,-)).
 :- rdf_meta(rdf_edge_name(r,-)).
-:- rdf_meta(rdf_edge_style(r,?)).
+:- rdf_meta(rdf_edge_style_(r,?)).
 % VERTICES
 :- rdf_meta(rdf_vertex_color(+,+,r,-)).
 :- rdf_meta(rdf_vertex_peripheries(r,-)).
@@ -167,7 +167,7 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
 
   % Graph
   rdf_graph_name(G, G_Name),
-  G_Attrs = [label(G_Name)].
+  G_Attrs = [directedness(directed),label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
 % Returns a name for the given graph.
@@ -181,13 +181,13 @@ rdf_graph_name(G, G).
 %! rdf_edge_arrow_head(+Edge:edge, -E_ArrowHead:atom) is det.
 
 rdf_edge_arrow_head(_FromV-P-_ToV, E_ArrowHead):-
-  once(rdf_edge_arrow_head(P, E_ArrowHead)).
+  once(rdf_edge_arrow_head_(P, E_ArrowHead)).
 
-rdf_edge_arrow_head(rdf:type,           empty  ).
-rdf_edge_arrow_head(rdfs:label,         none   ).
-rdf_edge_arrow_head(rdfs:subClassOf,    box    ).
-rdf_edge_arrow_head(rdfs:subPropertyOf, diamond).
-rdf_edge_arrow_head(_RDF_Property,      normal ).
+rdf_edge_arrow_head_(rdf:type,           empty  ).
+rdf_edge_arrow_head_(rdfs:label,         none   ).
+rdf_edge_arrow_head_(rdfs:subClassOf,    box    ).
+rdf_edge_arrow_head_(rdfs:subPropertyOf, diamond).
+rdf_edge_arrow_head_(_RDF_Property,      normal ).
 
 rdf_edge_color(O, _G, _E, black):-
   option(colorscheme(none), O, none), !.
@@ -229,13 +229,13 @@ rdf_edge_name(rdfs:subPropertyOf, '').
 %! rdf_edge_style(+Edge:edge, -E_Style:atom) is det.
 
 rdf_edge_style(_FromV-P-_ToV, E_Style):-
-  once(rdf_edge_style(P, E_Style)).
+  once(rdf_edge_style_(P, E_Style)).
 
-rdf_edge_style(rdf:type,           solid ).
-rdf_edge_style(rdfs:label,         dotted).
-rdf_edge_style(rdfs:subClassOf,    solid ).
-rdf_edge_style(rdfs:subPropertyOf, solid ).
-rdf_edge_style(_RDF_Property,      solid ).
+rdf_edge_style_(rdf:type,           solid ).
+rdf_edge_style_(rdfs:label,         dotted).
+rdf_edge_style_(rdfs:subClassOf,    solid ).
+rdf_edge_style_(rdfs:subPropertyOf, solid ).
+rdf_edge_style_(_RDF_Property,      solid ).
 
 rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
   % Ids.

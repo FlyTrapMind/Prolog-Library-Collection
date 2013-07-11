@@ -77,14 +77,15 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 @version 2012/12-2013/04, 2013/07
 */
 
-:- use_module(dgraph(dgraph_ext)).
-:- use_module(generics(codes_ext)).
+:- use_module(generics(option_ext)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(random_vertex_coordinates)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(ugraph(ugraph_ext)).
+:- use_module(ugraph(ugraph_export)).
 
 :- meta_predicate(export_graph(+,4,+,-)).
 :- meta_predicate(export_vertex(+,3,+,-)).
@@ -122,20 +123,22 @@ export_vertex(O1, N_P, V, G_Term):-
 remove_attribute(Attrs, T, NewT):-
   T =.. L,
   append(L1, [T_Attrs], L),
-  subtract(T_Attrs, Attrs, NewT_Attrs),
+  subtract_option(T_Attrs, Attrs, NewT_Attrs),
   append(L1, [NewT_Attrs], NewL),
   NewT =.. NewL.
 
 shared_attribute([T1|Ts], N=V):-
   T1 =.. L1,
   last(L1, Attrs1),
-  memberchk(N=V, Attrs1),
+  member(Attr1, Attrs1),
+  option_dep(Attr1, N=V),
   forall(
     member(T2, Ts),
     (
       T2 =.. L2,
       last(L2, Attrs2),
-      memberchk(N=V, Attrs2)
+      member(Attr2, Attrs2),
+      option_dep(Attr2, N=V)
     )
   ).
 
@@ -146,13 +149,3 @@ shared_attributes(Terms, SharedAttrs, NewTerms):-
     SharedAttrs
   ),
   maplist(remove_attribute(SharedAttrs), Terms, NewTerms).
-
-try:-
-  gtrace,
-  export_graph([], rfc, GraphTerm),
-  phrase(gv_graph(GraphTerm), Codes),
-  absolute_file_name(project(test), File, [access(write), file_type(dot)]),
-  open(File, write, Out),
-  with_output_to(Out, put_codes(Codes)),
-  close(Out).
-:- initialization(try).

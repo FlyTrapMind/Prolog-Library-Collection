@@ -77,26 +77,26 @@ cowspeak(Content):-
 %     ||       ||
 % ~~~
 %
+% The following options are supported:
+%   * `eyes(+Eyes:list(code))`
+%   * `maximum_width(?MaximumWidth:integer)`
+%     The maximum number of characters the speech bubble is allowed to have.
+%     If the maximum width is exceeded by any content line, then the
+%     wrap option -- if set -- is used.
+%   * `mode(+Mode:oneof(['Borg',dead,greedy,paranoia,stoned,tired,wired,youth]))`
+%     The following process_modes are supported: `Borg`, `dead`, `greedy`,
+%     `paranoia`, `stoned`, `tired`, `wired`, `youth`.
+%   * `output(+Output)`
+%     The same output alternatives that apply to with_output_to/2.
+%     The default value is =|stream(user_output)|=.
+%   * `speech(+OnOrOff:boolean)`
+%   * `wrap(+Wrap:oneof([line,none,word]))`
+%     Whether line wrapping or word wrapping (the default)
+%     should be applied, or neither of those (e.g. for ASCII art).
+%
 % @arg Text Either an atomic text message or a list of atomic lines
 %      constituting a message.
 % @arg Options A list of name-value pairs.
-%      The following options are supported:
-%      * eyes(+Eyes:list(code))
-%      * maximum_width(?MaximumWidth:integer)
-%        The maximum number of characters the speech bubble is allowed to
-%        have.
-%        If the maximum width is exceeded by any content line, then the
-%        wrap option -- if set -- is used.
-%      * mode(+Mode)
-%        The following process_modes are supported: `Borg`, `dead`, `greedy`,
-%        `paranoia`, `stoned`, `tired`, `wired`, `youth`.
-%      * output(+Output)
-%        The same output alternatives that apply to with_output_to/1.
-%        The default value is =|stream(user_output)|=.
-%      * speech(+OnOrOff:boolean)
-%      * wrap(+Wrap:oneof([line,none,word]))
-%        Whether line wrapping or word wrapping (the default)
-%        should be applied, or neither of those (e.g. for ASCII art).
 %
 % @tbd Split lines by words (in whitespace). Add this to module ATOM_EXT.
 % @tbd When tabs are used in cowspeak/2 the width of the speech balloon

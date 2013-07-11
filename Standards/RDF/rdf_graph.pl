@@ -663,7 +663,7 @@ rdf_term_name(O, RDF_Term, Name3):-
   ),
 
   % Done!
-  print_set(atom(Name3), Names2).
+  print_set(atom(Name3), Names2), !.
 % URI reference.
 rdf_term_name(_O, URI, Name):- !,
   (

@@ -45,7 +45,7 @@ skos_broader(Broader, Narrower, Graph):-
 skos_export_hierarchy(Root):-
   rdf_global_id(skos:broader, P),
   rdf_beam([], Root, [P], _Vs, Es),
-  export_ugraph([], random_vertex_coordinate, Es, G_Term),
+  export_graph([], random_vertex_coordinate, Es, G_Term),
   export_graph_svg(G_Term, SVG),
   write(SVG).
 

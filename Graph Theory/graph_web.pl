@@ -40,6 +40,7 @@ Web front-end for generic graph visualizations.
 :- use_module(graph_theory(spring_embedding)).
 :- use_module(graph_theory(vertex_coordinate)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(server(error_web)).
 :- use_module(ugraph(ugraph_ext)).
 

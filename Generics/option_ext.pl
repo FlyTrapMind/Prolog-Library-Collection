@@ -1,9 +1,14 @@
 :- module(
   option_ext,
   [
-    option_ext/3 % ?Option
-                 % +Options:list
-                 % +Default
+    option_dep/2, % +AnyOption
+                  % -NondepOption
+    option_ext/3, % ?Option
+                  % +Options:list
+                  % +Default
+    subtract_option/3 % +OldOptions:list(nvpair)
+                      % +Delete:list(nvpair)
+                      % -NewOptions:list(nvpair)
   ]
 ).
 
@@ -17,11 +22,29 @@ first argument position in the given option term (probably under the
 assumption that the option term will always be unary).
 
 @author Wouter Beek
-@tbd Tests wheter this module works.
-@version 2013/01
+@version 2013/01, 2013/07
 */
 
+:- use_module(library(apply)).
+:- use_module(library(lists)).
+:- use_module(library(option)).
 
+
+
+%! option_dep(+AnyOption, -NondepOption) is det.
+% Ensures that an option uses the non-depracated format:
+% ~~~
+% Name(Value)
+% ~~~
+%
+% Also allows the deprecated format as input:
+% ~~~
+% Name=Value
+% ~~~
+
+option_dep(Name=Value, Name=Value):- !.
+option_dep(Option, Name=Value):-
+  Option =.. [Name, Value].
 
 option_ext(Option, Options, Default):-
   functor(Option, Name, Arity),
@@ -46,3 +69,8 @@ option_ext(Option, Options, Default):-
     % of the given option term.
     arg(1, Option, Default)
   ).
+
+subtract_option(Old1, Del1, New):-
+  maplist(option_dep, Old1, Old2),
+  maplist(option_dep, Del1, Del2),
+  subtract(Old2, Del2, New).

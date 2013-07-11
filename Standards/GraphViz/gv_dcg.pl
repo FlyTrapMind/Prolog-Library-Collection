@@ -71,7 +71,7 @@ gv_compass_pt --> "w".
 % @arg Directionality Either `directed` (operator `->`) or
 %      `undirected` (operator `--`).
 
-gv_edge_operator(directed) --> "->".
+gv_edge_operator(directed) --> arrow(2).
 gv_edge_operator(undirected) --> "--".
 
 %! gv_edge_rhs(+GraphAttributes:list(nvpair), +ToId:gv_node_id)//
@@ -144,45 +144,52 @@ gv_category(node) --> n,o,d,e.
 % @tbd Add support for escape strings:
 %      http://www.graphviz.org/doc/info/attrs.html#k:escString
 
-gv_graph(graph(V_Terms, E_Terms, G_Attrs)) -->
+gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
   {
     shared_attributes(V_Terms, V_Attrs, NewV_Terms),
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
-    option(strict(Strict), G_Attrs, false),
-    option(directedness(Dir), G_Attrs, undirected),
-    option(name(G_Name), G_Attrs, noname),
+    option(strict(Strict), G_Attrs1, false),
+    option(directedness(Dir), G_Attrs1, undirected),
+    option(name(G_Name), G_Attrs1, noname),
+    % Make sure that the default values are part of the graph
+    % attributes if they were not originally present.
+    merge_options(
+      G_Attrs1,
+      [directedness(Dir),name(G_Name),strict(Strict)],
+      G_Attrs2
+    ),
     I = 0
   },
-  
+
   % The first statement in the GraphViz output.
   % States that this file represents a graph according to the GraphViz format.
   indent(I), gv_strict(Strict),
   gv_graph_type(Dir), space,
   gv_id(G_Name), space,
-  "{", newline,
+  opening_curly_bracket, newline,
 
   % The following lines are indented.
   {NewI is I + 1},
   % Attributes that apply to the graph as a whole.
-  gv_generic_attributes_statement(graph, NewI, G_Attrs3, G_Attrs3),
+  gv_generic_attributes_statement(graph, NewI, G_Attrs2, G_Attrs2),
   % Attributes that are the same for all nodes.
-  gv_generic_attributes_statement(node, NewI, G_Attrs3, V_Attrs),
+  gv_generic_attributes_statement(node, NewI, G_Attrs2, V_Attrs),
   % Attributes that are the same for all edges.
-  gv_generic_attributes_statement(edge, NewI, G_Attrs3, E_Attrs),
+  gv_generic_attributes_statement(edge, NewI, G_Attrs2, E_Attrs),
   % Only add a newline if some content was written in the previous three
   % lines.
-  ({(G_Attrs3 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
-  
+  ({(G_Attrs2 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
+
   % The list of GraphViz nodes.
-  dcg_multi_list(gv_node_statement(I, G_Attrs3), NewV_Terms),
+  dcg_multi_list(gv_node_statement(NewI, G_Attrs2), NewV_Terms),
   newline,
-  
+
   % The list of GraphViz edges.
-  dcg_multi_list(gv_edge_statement(I, G_Attrs3), NewE_Terms),
+  dcg_multi_list(gv_edge_statement(NewI, G_Attrs2), NewE_Terms),
   % Note that we do not include a newline here.
 
   % The description of the grpah is closed (using the old indent level).
-  indent(I), "}".
+  indent(I), closing_curly_bracket.
 
 %! gv_graph_type(+Directionality:oneof([directed,undirected]))// is det.
 % The type of graph that is represented.
@@ -325,7 +332,7 @@ gv_quoted_string([]) --> [].
 % that closes the string to be escaped.
 gv_quoted_string([X]) -->
   {X \== 92}, !,
-  [].
+  [X].
 % A double quote is only allowed if it is escaped by a backslash.
 gv_quoted_string([92,34|T]) --> !,
   gv_quoted_string(T).

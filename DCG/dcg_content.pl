@@ -5,6 +5,7 @@
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
     graphic//1, % -Graphic:list(code)
+    horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
     word//1 % -Word:list(code)
   ]
@@ -64,11 +65,32 @@ arrow(L) -->
 % @arg Options A list of name-value pairs.
 % @arg Length A non-negative integer.
 
-arrow(O, L) -->
+arrow(O, L1) -->
   {option(head(Head), O, right)},
-  ({arrow_left_head(Head)} -> less_than_sign ; ""),
-  dcg_multi(hyphen, L),
-  ({arrow_right_head(Head)} -> greater_than_sign ; "").
+  (
+    {arrow_left_head(Head)}
+  ->
+    less_than_sign,
+    {L2 is L1 - 1}
+  ;
+    {L2 = L1}
+  ),
+  (
+    {arrow_right_head(Head)}
+  ->
+    {NumberOfDashes is L2 - 1}
+  ;
+    {NumberOfDashes = L2}
+  ),
+  {NumberOfDashes >= 0},
+  dcg_multi(hyphen, NumberOfDashes),
+  (
+    {arrow_right_head(Head)}
+  ->
+    greater_than_sign
+  ;
+    ""
+  ).
 
 arrow_left_head(both).
 arrow_left_head(left).
@@ -78,6 +100,9 @@ graphic([H|T]) -->
   dcg_graph(H),
   graphic(T).
 graphic([]) --> [].
+
+horizontal_line(L) -->
+  dcg_multi(hyphen, L).
 
 indent(I) -->
   {
