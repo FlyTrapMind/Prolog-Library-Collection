@@ -14,38 +14,54 @@
                     % -Codes:list(code)
     dcg_without_atom//2, % :End:dcg
                          % -Atom:atom
+
 % DEBUG
     dcg_debug//0,
+
 % LIST
     dcg_separated_list//2, % :Separator:dcg
                            % -Codess:list(list(codes))
+
 % META-DCG RULES
-    dcg_call/4, % :DCG_Body
-                % +A
-                % ?X:list
-                % ?Y:list
+    dcg_call//1,
+    dcg_call//2,
+    dcg_call//3,
+    dcg_call//4,
+    dcg_call//5,
+    dcg_switch//2, % +Value
+                   % +Map:list
+    dcg_switch//3, % +Value
+                   % +Map:list
+                   % +Default
 
 % MULTIPLE OCCURRENCES
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
     dcg_multi_list//2, % :DCG_Body:dcg
                        % +List:list
+    dcg_multi_list//3, % :DCG_Body:dcg
+                       % :DCG_Separator
+                       % +List:list
+
 % PEEK
     dcg_peek//1, % ?X:code
     dcg_peek_atom//1, % -Atom:atom
     dcg_peek_char//1, % ?Char:char
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
+
 % PHRASE EXTENSION
     dcg_phrase/2, % :DCG_Body:dcg
                   % ?In:atom
     dcg_phrase/3, % :DCG_Body:dcg
                   % ?In:atom
                   % ?Out:atom
+
 % RE
     dcg_plus//1, % :DCG_Body:dcg
     dcg_questionmark//1, % :DCG_Body:dcg
     dcg_star//1, % :DCG_Body:dcg
+
 % REPLACE
     dcg_replace//2 % +From:list(code)
                    % +To:list(code)
@@ -109,10 +125,17 @@ and the positive integers. This is why we add the DCG rules:
 % LIST %
 :- meta_predicate(dcg_separated_list(//,-,+,-)).
 % META-DCG RULES
-:- meta_predicate(dcg_call(3,+,?,?)).
+:- meta_predicate(dcg_call(2,?,?)).
+:- meta_predicate(dcg_call(3,?,?,?)).
+:- meta_predicate(dcg_call(4,?,?,?,?)).
+:- meta_predicate(dcg_call(5,?,?,?,?,?)).
+:- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
+:- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
+:- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_multi(//,?,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
+:- meta_predicate(dcg_multi_list(3,//,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
 % PEEK %
@@ -221,8 +244,38 @@ dcg_separated_list(_Separator, [H]) -->
 
 % META-DCG RULES %
 
-dcg_call(DCG_Body, H, X, Y):-
-  call(DCG_Body, H, X, Y).
+dcg_call(DCG_Body, X, Y):-
+  call(DCG_Body, X, Y).
+
+dcg_call(DCG_Body, A1, X, Y):-
+  call(DCG_Body, A1, X, Y).
+
+dcg_call(DCG_Body, A1, A2, X, Y):-
+  call(DCG_Body, A1, A2, X, Y).
+
+dcg_call(DCG_Body, A1, A2, A3, X, Y):-
+  call(DCG_Body, A1, A2, A3, X, Y).
+
+dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
+  call(DCG_Body, A1, A2, A3, A4, X, Y).
+
+dcg_call(DCG_Body, A1, A2, A3, A4, A5, X, Y):-
+  call(DCG_Body, A1, A2, A3, A4, A5, X, Y).
+
+%! dcg_switch(+Value, +Maps:list) is det.
+
+dcg_switch(Value, Maps) -->
+  dcg_switch(Value, Maps, dcg_end).
+
+%! dcg_switch(+Value, +Map:list, +Default) is det.
+
+dcg_switch(Value, Map, _Default) -->
+  {member(Value-Goal, Map)}, !,
+  % Make sure the variables in the goal are bound outside the switch call.
+  dcg_call(Goal).
+dcg_switch(_Value, _Map, Default) -->
+  % Make sure the variables in the goal are bound outside the switch call.
+  dcg_call(Default).
 
 
 
@@ -252,11 +305,30 @@ dcg_multi_var(DCG_Body, N) -->
 dcg_multi_var(_DCGBody, 0) --> [].
 
 %! dcg_multi_list(:DCG_Body, +List:list)//
+% Parses/generates multiple occurrences of a DCG rule based on
+% a list of items (one item for each occurrence).
 
 dcg_multi_list(_DCG_Body, []) --> [].
 dcg_multi_list(DCG_Body, [H|T]) -->
   dcg_call(DCG_Body, H),
   dcg_multi_list(DCG_Body, T).
+
+%! dcg_multi_list(:DCG_Body, :DCG_Separator, +List:list)//
+% Parses/generates multiple occurrences of a DCG rule based on
+% a list of items (one item for each occurrence) with interspersed
+% separator content.
+%
+% @see Like dcg_multi_list//2, but parses/generates the separator DCG
+%      in between list items that are parsed/generated according to
+%      the DCG body.
+
+dcg_multi_list(_DCG_Body, _DCG_Separator, []) --> [].
+dcg_multi_list(DCG_Body, _DCG_Separator, [H]) -->
+  dcg_call(DCG_Body, H).
+dcg_multi_list(DCG_Body, DCG_Separator, [H|T]) -->
+  dcg_call(DCG_Body, H),
+  DCG_Separator,
+  dcg_multi_list(DCG_Body, DCG_Separator, T).
 
 
 

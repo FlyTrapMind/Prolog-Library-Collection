@@ -13,9 +13,10 @@
 Language tag parsing.
 
 @author Wouter Beek
-@version 2013/02, 2013/06
+@version 2013/02, 2013/06-2013/07
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(iso(iso_639_1)).
 :- use_module(iso(iso_639_2)).
@@ -28,13 +29,11 @@ language_tag(Primary, Secondary) -->
   language_tag(Secondary).
 
 language_tag(Tag) -->
-  dcg_word_atom(Word),
-  {
-    atom_length(Word, Length),
-    switch(
-      Length,
-      % Length-2 codes must be ISO 639-1.
-      % Length-3 codes must be ISO 639-2.
-      [2-iso_639_1(Word, Tag), 3-iso_639_2(Word, Tag)]
-    )
-  }.
+  word(Word),
+  {length(Word, Length)},
+  dcg_switch(
+    Length,
+    % Length-2 codes must be ISO 639-1.
+    % Length-3 codes must be ISO 639-2.
+    [2-iso_639_1(Tag), 3-iso_639_2(Tag)]
+  ).

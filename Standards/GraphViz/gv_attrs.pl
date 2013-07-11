@@ -27,26 +27,40 @@ Attributes, their allowed values, and their default values for GraphViz.
 
 
 
+%! gv_attribute_value(+Attributes:list(nvpair), +Attribute:nvpair) is semidet.
+% Succeeds if the given attribute is a correct GraphViz attribute.
+%
+% @arg Attributes A list of name-value pairs.
+% @arg Attribute A name-value pair.
+
+% The value is instantiated. Check whether it is a valid value
+% for the attribute with the given name.
 gv_attribute_value(Attrs, Name=Value):-
   nonvar(Value), !,
   gv_attr(Attrs, Name, ValueType, _Categories, _DefaultValue),
-  % Adds several typechecks to module [typecheck.pl].
+  % Adds several typechecks to those in module [typecheck.pl].
   gv_typecheck(ValueType, Value).
+% The value is a variable, return the default value
+% for the attribute with the given name.
 gv_attribute_value(Attrs, Name=DefaultValue):-
   var(DefaultValue), !,
   gv_attr(Attrs, Name, _ValueType, _Categories, DefaultValue).
-% Suport both option representation formats.
+% Suport for the non-deprecated name-value pair representation format.
 gv_attribute_value(Attrs, Attr):-
   Attr =.. [Name,Value],
   gv_attribute_value(Attrs, Name=Value).
 
-%! gv_parse_attributes(+Attributes:list(nvpair)) is det.
+%! gv_parse_attributes(+Attributes:list(nvpair)) is semidet.
 % Parses a list of attributes.
+% Succeeds when the list contains only supported GraphViz attributes.
 %
 % @arg Attributes A list of name-value pairs.
 
 gv_parse_attributes(Attrs):-
   maplist(gv_attribute_value(Attrs), Attrs).
+
+%! gv_typecheck(+Type:compound, +Value) is semidet.
+% Succeeds if the given value can be validated as being of the given type.
 
 gv_typecheck(or(AlternativeTypes), Value):-
   member(Type, AlternativeTypes),
@@ -54,6 +68,7 @@ gv_typecheck(or(AlternativeTypes), Value):-
 gv_typecheck(polygon_based_shape, Value):-
   findall(Shape, shape(polygon, Shape), Shapes),
   typecheck(oneof(Shapes), Value).
+% Module [typecheck.pl] contains additional type checking predicates.
 gv_typecheck(Type, Value):-
   typecheck(Type, Value).
 

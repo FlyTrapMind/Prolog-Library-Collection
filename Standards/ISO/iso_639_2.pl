@@ -1,8 +1,7 @@
 :- module(
   iso_639_2,
   [
-    iso_639_2/2 % ?ISO:atom
-                % ?Lexvo:uri
+    iso_639_2//1 % ?URI:atom
   ]
 ).
 
@@ -10,524 +9,526 @@
 
 The ISO 639-2 standard for language codes with Lexvo Semantic Web URIs.
 
+# Table of supported languages
+
 !!iso_639_2!!iso_639_2!!2!!
 
-WWW: [http://www.sil.org/iso639-2/]
-
 @author Wouter Beek
-@version 2013/01e, 2013/06
+@see http://www.sil.org/iso639-2/
+@version 2013/01, 2013/06-2013/07
 */
 
+:- use_module(library(semweb/rdf_db)). % For rdf_meta/1.
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(iso_639_3, 'http://lexvo.org/id/iso639-3/').
 :- xml_register_namespace(iso_639_5, 'http://lexvo.org/id/iso639-5/').
 
-:- rdf_meta(iso_639_2(?,r)).
+:- rdf_meta(iso_639_2(r,?,?)).
 
 
 
-%! iso_639_2(?ISO:atom, ?Lexvo:uri) is nondet.
+%! iso_639_2(?URI:atom)//
 
-iso_639_2(aar, iso_639_3:aar).
-iso_639_2(abk, iso_639_3:abk).
-iso_639_2(ace, iso_639_3:ace).
-iso_639_2(ach, iso_639_3:ach).
-iso_639_2(ada, iso_639_3:ada).
-iso_639_2(ady, iso_639_3:ady).
-iso_639_2(afa, iso_639_5:afa).
-iso_639_2(afh, iso_639_3:afh).
-iso_639_2(afr, iso_639_3:afr).
-iso_639_2(ain, iso_639_3:ain).
-iso_639_2(aka, iso_639_3:aka).
-iso_639_2(akk, iso_639_3:akk).
-iso_639_2(alb, iso_639_3:sqi).
-iso_639_2(ale, iso_639_3:ale).
-iso_639_2(alg, iso_639_5:alg).
-iso_639_2(alt, iso_639_3:alt).
-iso_639_2(amh, iso_639_3:amh).
-iso_639_2(ang, iso_639_3:ang).
-iso_639_2(anp, iso_639_3:anp).
-iso_639_2(apa, iso_639_5:apa).
-iso_639_2(ara, iso_639_3:ara).
-iso_639_2(arc, iso_639_3:arc).
-iso_639_2(arg, iso_639_3:arg).
-iso_639_2(arm, iso_639_3:hye).
-iso_639_2(arn, iso_639_3:arn).
-iso_639_2(arp, iso_639_3:arp).
-iso_639_2(art, iso_639_5:art).
-iso_639_2(arw, iso_639_3:arw).
-iso_639_2(asm, iso_639_3:asm).
-iso_639_2(ast, iso_639_3:ast).
-iso_639_2(ath, iso_639_5:ath).
-iso_639_2(aus, iso_639_5:aus).
-iso_639_2(ava, iso_639_3:ava).
-iso_639_2(ave, iso_639_3:ave).
-iso_639_2(awa, iso_639_3:awa).
-iso_639_2(aym, iso_639_3:aym).
-iso_639_2(aze, iso_639_3:aze).
-iso_639_2(bad, iso_639_5:bad).
-iso_639_2(bai, iso_639_5:bai).
-iso_639_2(bak, iso_639_3:bak).
-iso_639_2(bal, iso_639_3:bal).
-iso_639_2(bam, iso_639_3:bam).
-iso_639_2(ban, iso_639_3:ban).
-iso_639_2(baq, iso_639_3:eus).
-iso_639_2(bas, iso_639_3:bas).
-iso_639_2(bat, iso_639_5:bat).
-iso_639_2(bej, iso_639_3:bej).
-iso_639_2(bel, iso_639_3:bel).
-iso_639_2(bem, iso_639_3:bem).
-iso_639_2(ben, iso_639_3:ben).
-iso_639_2(ber, iso_639_5:ber).
-iso_639_2(bho, iso_639_3:bho).
-iso_639_2(bik, iso_639_3:bik).
-iso_639_2(bin, iso_639_3:bin).
-iso_639_2(bis, iso_639_3:bis).
-iso_639_2(bla, iso_639_3:bla).
-iso_639_2(bnt, iso_639_5:bnt).
-iso_639_2(bod, iso_639_3:bod).
-iso_639_2(bos, iso_639_3:bos).
-iso_639_2(bra, iso_639_3:bra).
-iso_639_2(bre, iso_639_3:bre).
-iso_639_2(btk, iso_639_5:btk).
-iso_639_2(bua, iso_639_3:bua).
-iso_639_2(bug, iso_639_3:bug).
-iso_639_2(bul, iso_639_3:bul).
-iso_639_2(bur, iso_639_3:mya).
-iso_639_2(byn, iso_639_3:byn).
-iso_639_2(cad, iso_639_3:cad).
-iso_639_2(cai, iso_639_5:cai).
-iso_639_2(car, iso_639_3:car).
-iso_639_2(cat, iso_639_3:cat).
-iso_639_2(cau, iso_639_5:cau).
-iso_639_2(ceb, iso_639_3:ceb).
-iso_639_2(cel, iso_639_5:cel).
-iso_639_2(ces, iso_639_3:ces).
-iso_639_2(cha, iso_639_3:cha).
-iso_639_2(chb, iso_639_3:chb).
-iso_639_2(che, iso_639_3:che).
-iso_639_2(chg, iso_639_3:chg).
-iso_639_2(chi, iso_639_3:zho).
-iso_639_2(chk, iso_639_3:chk).
-iso_639_2(chm, iso_639_3:chm).
-iso_639_2(chn, iso_639_3:chn).
-iso_639_2(cho, iso_639_3:cho).
-iso_639_2(chp, iso_639_3:chp).
-iso_639_2(chr, iso_639_3:chr).
-iso_639_2(chu, iso_639_3:chu).
-iso_639_2(chv, iso_639_3:chv).
-iso_639_2(chy, iso_639_3:chy).
-iso_639_2(cmc, iso_639_5:cmc).
-iso_639_2(cop, iso_639_3:cop).
-iso_639_2(cor, iso_639_3:cor).
-iso_639_2(cos, iso_639_3:cos).
-iso_639_2(cpe, iso_639_5:cpe).
-iso_639_2(cpf, iso_639_5:cpf).
-iso_639_2(cpp, iso_639_5:cpp).
-iso_639_2(cre, iso_639_3:cre).
-iso_639_2(crh, iso_639_3:crh).
-iso_639_2(crp, iso_639_5:crp).
-iso_639_2(csb, iso_639_3:csb).
-iso_639_2(cus, iso_639_5:cus).
-iso_639_2(cym, iso_639_3:cym).
-iso_639_2(cze, iso_639_3:ces).
-iso_639_2(dak, iso_639_3:dak).
-iso_639_2(dan, iso_639_3:dan).
-iso_639_2(dar, iso_639_3:dar).
-iso_639_2(day, iso_639_5:day).
-iso_639_2(del, iso_639_3:del).
-iso_639_2(den, iso_639_3:den).
-iso_639_2(deu, iso_639_3:deu).
-iso_639_2(dgr, iso_639_3:dgr).
-iso_639_2(din, iso_639_3:din).
-iso_639_2(div, iso_639_3:div).
-iso_639_2(doi, iso_639_3:doi).
-iso_639_2(dra, iso_639_5:dra).
-iso_639_2(dsb, iso_639_3:dsb).
-iso_639_2(dua, iso_639_3:dua).
-iso_639_2(dum, iso_639_3:dum).
-iso_639_2(dut, iso_639_3:nld).
-iso_639_2(dyu, iso_639_3:dyu).
-iso_639_2(dzo, iso_639_3:dzo).
-iso_639_2(efi, iso_639_3:efi).
-iso_639_2(egy, iso_639_3:egy).
-iso_639_2(eka, iso_639_3:eka).
-iso_639_2(ell, iso_639_3:ell).
-iso_639_2(elx, iso_639_3:elx).
-iso_639_2(eng, iso_639_3:eng).
-iso_639_2(enm, iso_639_3:enm).
-iso_639_2(epo, iso_639_3:epo).
-iso_639_2(est, iso_639_3:est).
-iso_639_2(eus, iso_639_3:eus).
-iso_639_2(ewe, iso_639_3:ewe).
-iso_639_2(ewo, iso_639_3:ewo).
-iso_639_2(fan, iso_639_3:fan).
-iso_639_2(fao, iso_639_3:fao).
-iso_639_2(fas, iso_639_3:fas).
-iso_639_2(fat, iso_639_3:fat).
-iso_639_2(fij, iso_639_3:fij).
-iso_639_2(fil, iso_639_3:fil).
-iso_639_2(fin, iso_639_3:fin).
-iso_639_2(fiu, iso_639_5:fiu).
-iso_639_2(fon, iso_639_3:fon).
-iso_639_2(fra, iso_639_3:fra).
-iso_639_2(fre, iso_639_3:fra).
-iso_639_2(frm, iso_639_3:frm).
-iso_639_2(fro, iso_639_3:fro).
-iso_639_2(frr, iso_639_3:frr).
-iso_639_2(frs, iso_639_3:frs).
-iso_639_2(fry, iso_639_3:fry).
-iso_639_2(ful, iso_639_3:ful).
-iso_639_2(fur, iso_639_3:fur).
-iso_639_2(gaa, iso_639_3:gaa).
-iso_639_2(gay, iso_639_3:gay).
-iso_639_2(gba, iso_639_3:gba).
-iso_639_2(gem, iso_639_5:gem).
-iso_639_2(geo, iso_639_3:kat).
-iso_639_2(ger, iso_639_3:deu).
-iso_639_2(gez, iso_639_3:gez).
-iso_639_2(gil, iso_639_3:gil).
-iso_639_2(gla, iso_639_3:gla).
-iso_639_2(gle, iso_639_3:gle).
-iso_639_2(glg, iso_639_3:glg).
-iso_639_2(glv, iso_639_3:glv).
-iso_639_2(gmh, iso_639_3:gmh).
-iso_639_2(goh, iso_639_3:goh).
-iso_639_2(gon, iso_639_3:gon).
-iso_639_2(gor, iso_639_3:gor).
-iso_639_2(got, iso_639_3:got).
-iso_639_2(grb, iso_639_3:grb).
-iso_639_2(grc, iso_639_3:grc).
-iso_639_2(gre, iso_639_3:ell).
-iso_639_2(grn, iso_639_3:grn).
-iso_639_2(gsw, iso_639_3:gsw).
-iso_639_2(guj, iso_639_3:guj).
-iso_639_2(gwi, iso_639_3:gwi).
-iso_639_2(hai, iso_639_3:hai).
-iso_639_2(hat, iso_639_3:hat).
-iso_639_2(hau, iso_639_3:hau).
-iso_639_2(haw, iso_639_3:haw).
-iso_639_2(heb, iso_639_3:heb).
-iso_639_2(her, iso_639_3:her).
-iso_639_2(hil, iso_639_3:hil).
-iso_639_2(hin, iso_639_3:hin).
-iso_639_2(hit, iso_639_3:hit).
-iso_639_2(hmn, iso_639_3:hmn).
-iso_639_2(hmo, iso_639_3:hmo).
-iso_639_2(hrv, iso_639_3:hrv).
-iso_639_2(hsb, iso_639_3:hsb).
-iso_639_2(hun, iso_639_3:hun).
-iso_639_2(hup, iso_639_3:hup).
-iso_639_2(hye, iso_639_3:hye).
-iso_639_2(iba, iso_639_3:iba).
-iso_639_2(ibo, iso_639_3:ibo).
-iso_639_2(ice, iso_639_3:isl).
-iso_639_2(ido, iso_639_3:ido).
-iso_639_2(iii, iso_639_3:iii).
-iso_639_2(ijo, iso_639_5:ijo).
-iso_639_2(iku, iso_639_3:iku).
-iso_639_2(ile, iso_639_3:ile).
-iso_639_2(ilo, iso_639_3:ilo).
-iso_639_2(ina, iso_639_3:ina).
-iso_639_2(inc, iso_639_5:inc).
-iso_639_2(ind, iso_639_3:ind).
-iso_639_2(ine, iso_639_5:ine).
-iso_639_2(inh, iso_639_3:inh).
-iso_639_2(ipk, iso_639_3:ipk).
-iso_639_2(ira, iso_639_5:ira).
-iso_639_2(iro, iso_639_5:iro).
-iso_639_2(isl, iso_639_3:isl).
-iso_639_2(ita, iso_639_3:ita).
-iso_639_2(jav, iso_639_3:jav).
-iso_639_2(jbo, iso_639_3:jbo).
-iso_639_2(jpn, iso_639_3:jpn).
-iso_639_2(jpr, iso_639_3:jpr).
-iso_639_2(jrb, iso_639_3:jrb).
-iso_639_2(kaa, iso_639_3:kaa).
-iso_639_2(kab, iso_639_3:kab).
-iso_639_2(kac, iso_639_3:kac).
-iso_639_2(kal, iso_639_3:kal).
-iso_639_2(kam, iso_639_3:kam).
-iso_639_2(kan, iso_639_3:kan).
-iso_639_2(kar, iso_639_5:kar).
-iso_639_2(kas, iso_639_3:kas).
-iso_639_2(kat, iso_639_3:kat).
-iso_639_2(kau, iso_639_3:kau).
-iso_639_2(kaw, iso_639_3:kaw).
-iso_639_2(kaz, iso_639_3:kaz).
-iso_639_2(kbd, iso_639_3:kbd).
-iso_639_2(kha, iso_639_3:kha).
-iso_639_2(khi, iso_639_5:khi).
-iso_639_2(khm, iso_639_3:khm).
-iso_639_2(kho, iso_639_3:kho).
-iso_639_2(kik, iso_639_3:kik).
-iso_639_2(kin, iso_639_3:kin).
-iso_639_2(kir, iso_639_3:kir).
-iso_639_2(kmb, iso_639_3:kmb).
-iso_639_2(kok, iso_639_3:kok).
-iso_639_2(kom, iso_639_3:kom).
-iso_639_2(kon, iso_639_3:kon).
-iso_639_2(kor, iso_639_3:kor).
-iso_639_2(kos, iso_639_3:kos).
-iso_639_2(kpe, iso_639_3:kpe).
-iso_639_2(krc, iso_639_3:krc).
-iso_639_2(krl, iso_639_3:krl).
-iso_639_2(kro, iso_639_5:kro).
-iso_639_2(kru, iso_639_3:kru).
-iso_639_2(kua, iso_639_3:kua).
-iso_639_2(kum, iso_639_3:kum).
-iso_639_2(kur, iso_639_3:kur).
-iso_639_2(kut, iso_639_3:kut).
-iso_639_2(lad, iso_639_3:lad).
-iso_639_2(lah, iso_639_3:lah).
-iso_639_2(lam, iso_639_3:lam).
-iso_639_2(lao, iso_639_3:lao).
-iso_639_2(lat, iso_639_3:lat).
-iso_639_2(lav, iso_639_3:lav).
-iso_639_2(lez, iso_639_3:lez).
-iso_639_2(lim, iso_639_3:lim).
-iso_639_2(lin, iso_639_3:lin).
-iso_639_2(lit, iso_639_3:lit).
-iso_639_2(lol, iso_639_3:lol).
-iso_639_2(loz, iso_639_3:loz).
-iso_639_2(ltz, iso_639_3:ltz).
-iso_639_2(lua, iso_639_3:lua).
-iso_639_2(lub, iso_639_3:lub).
-iso_639_2(lug, iso_639_3:lug).
-iso_639_2(lui, iso_639_3:lui).
-iso_639_2(lun, iso_639_3:lun).
-iso_639_2(luo, iso_639_3:luo).
-iso_639_2(lus, iso_639_3:lus).
-iso_639_2(mac, iso_639_3:mkd).
-iso_639_2(mad, iso_639_3:mad).
-iso_639_2(mag, iso_639_3:mag).
-iso_639_2(mah, iso_639_3:mah).
-iso_639_2(mai, iso_639_3:mai).
-iso_639_2(mak, iso_639_3:mak).
-iso_639_2(mal, iso_639_3:mal).
-iso_639_2(man, iso_639_3:man).
-iso_639_2(mao, iso_639_3:mri).
-iso_639_2(map, iso_639_5:map).
-iso_639_2(mar, iso_639_3:mar).
-iso_639_2(mas, iso_639_3:mas).
-iso_639_2(may, iso_639_3:msa).
-iso_639_2(mdf, iso_639_3:mdf).
-iso_639_2(mdr, iso_639_3:mdr).
-iso_639_2(men, iso_639_3:men).
-iso_639_2(mga, iso_639_3:mga).
-iso_639_2(mic, iso_639_3:mic).
-iso_639_2(min, iso_639_3:min).
-iso_639_2(mis, iso_639_3:mis).
-iso_639_2(mkd, iso_639_3:mkd).
-iso_639_2(mkh, iso_639_5:mkh).
-iso_639_2(mlg, iso_639_3:mlg).
-iso_639_2(mlt, iso_639_3:mlt).
-iso_639_2(mnc, iso_639_3:mnc).
-iso_639_2(mni, iso_639_3:mni).
-iso_639_2(mno, iso_639_5:mno).
-iso_639_2(moh, iso_639_3:moh).
-iso_639_2(mon, iso_639_3:mon).
-iso_639_2(mos, iso_639_3:mos).
-iso_639_2(mri, iso_639_3:mri).
-iso_639_2(msa, iso_639_3:msa).
-iso_639_2(mul, iso_639_3:mul).
-iso_639_2(mun, iso_639_5:mun).
-iso_639_2(mus, iso_639_3:mus).
-iso_639_2(mwl, iso_639_3:mwl).
-iso_639_2(mwr, iso_639_3:mwr).
-iso_639_2(mya, iso_639_3:mya).
-iso_639_2(myn, iso_639_5:myn).
-iso_639_2(myv, iso_639_3:myv).
-iso_639_2(nah, iso_639_5:nah).
-iso_639_2(nai, iso_639_5:nai).
-iso_639_2(nap, iso_639_3:nap).
-iso_639_2(nau, iso_639_3:nau).
-iso_639_2(nav, iso_639_3:nav).
-iso_639_2(nbl, iso_639_3:nbl).
-iso_639_2(nde, iso_639_3:nde).
-iso_639_2(ndo, iso_639_3:ndo).
-iso_639_2(nds, iso_639_3:nds).
-iso_639_2(nep, iso_639_3:nep).
-iso_639_2(new, iso_639_3:new).
-iso_639_2(nia, iso_639_3:nia).
-iso_639_2(nic, iso_639_5:nic).
-iso_639_2(niu, iso_639_3:niu).
-iso_639_2(nld, iso_639_3:nld).
-iso_639_2(nno, iso_639_3:nno).
-iso_639_2(nob, iso_639_3:nob).
-iso_639_2(nog, iso_639_3:nog).
-iso_639_2(non, iso_639_3:non).
-iso_639_2(nor, iso_639_3:nor).
-iso_639_2(nqo, iso_639_3:nqo).
-iso_639_2(nso, iso_639_3:nso).
-iso_639_2(nub, iso_639_5:nub).
-iso_639_2(nwc, iso_639_3:nwc).
-iso_639_2(nya, iso_639_3:nya).
-iso_639_2(nym, iso_639_3:nym).
-iso_639_2(nyn, iso_639_3:nyn).
-iso_639_2(nyo, iso_639_3:nyo).
-iso_639_2(nzi, iso_639_3:nzi).
-iso_639_2(oci, iso_639_3:oci).
-iso_639_2(oji, iso_639_3:oji).
-iso_639_2(ori, iso_639_3:ori).
-iso_639_2(orm, iso_639_3:orm).
-iso_639_2(osa, iso_639_3:osa).
-iso_639_2(oss, iso_639_3:oss).
-iso_639_2(ota, iso_639_3:ota).
-iso_639_2(oto, iso_639_5:oto).
-iso_639_2(paa, iso_639_5:paa).
-iso_639_2(pag, iso_639_3:pag).
-iso_639_2(pal, iso_639_3:pal).
-iso_639_2(pam, iso_639_3:pam).
-iso_639_2(pan, iso_639_3:pan).
-iso_639_2(pap, iso_639_3:pap).
-iso_639_2(pau, iso_639_3:pau).
-iso_639_2(peo, iso_639_3:peo).
-iso_639_2(per, iso_639_3:fas).
-iso_639_2(phi, iso_639_5:phi).
-iso_639_2(phn, iso_639_3:phn).
-iso_639_2(pli, iso_639_3:pli).
-iso_639_2(pol, iso_639_3:pol).
-iso_639_2(pon, iso_639_3:pon).
-iso_639_2(por, iso_639_3:por).
-iso_639_2(pra, iso_639_5:pra).
-iso_639_2(pro, iso_639_3:pro).
-iso_639_2(pus, iso_639_3:pus).
-iso_639_2(que, iso_639_3:que).
-iso_639_2(raj, iso_639_3:raj).
-iso_639_2(rap, iso_639_3:rap).
-iso_639_2(rar, iso_639_3:rar).
-iso_639_2(roa, iso_639_5:roa).
-iso_639_2(roh, iso_639_3:roh).
-iso_639_2(rom, iso_639_3:rom).
-iso_639_2(ron, iso_639_3:ron).
-iso_639_2(rum, iso_639_3:ron).
-iso_639_2(run, iso_639_3:run).
-iso_639_2(rup, iso_639_3:rup).
-iso_639_2(rus, iso_639_3:rus).
-iso_639_2(sad, iso_639_3:sad).
-iso_639_2(sag, iso_639_3:sag).
-iso_639_2(sah, iso_639_3:sah).
-iso_639_2(sai, iso_639_5:sai).
-iso_639_2(sal, iso_639_5:sal).
-iso_639_2(sam, iso_639_3:sam).
-iso_639_2(san, iso_639_3:san).
-iso_639_2(sas, iso_639_3:sas).
-iso_639_2(sat, iso_639_3:sat).
-iso_639_2(scn, iso_639_3:scn).
-iso_639_2(sco, iso_639_3:sco).
-iso_639_2(sel, iso_639_3:sel).
-iso_639_2(sem, iso_639_5:sem).
-iso_639_2(sga, iso_639_3:sga).
-iso_639_2(sgn, iso_639_5:sgn).
-iso_639_2(shn, iso_639_3:shn).
-iso_639_2(sid, iso_639_3:sid).
-iso_639_2(sin, iso_639_3:sin).
-iso_639_2(sio, iso_639_5:sio).
-iso_639_2(sit, iso_639_5:sit).
-iso_639_2(sla, iso_639_5:sla).
-iso_639_2(slk, iso_639_3:slk).
-iso_639_2(slo, iso_639_3:slk).
-iso_639_2(slv, iso_639_3:slv).
-iso_639_2(sma, iso_639_3:sma).
-iso_639_2(sme, iso_639_3:sme).
-iso_639_2(smi, iso_639_5:smi).
-iso_639_2(smj, iso_639_3:smj).
-iso_639_2(smn, iso_639_3:smn).
-iso_639_2(smo, iso_639_3:smo).
-iso_639_2(sms, iso_639_3:sms).
-iso_639_2(sna, iso_639_3:sna).
-iso_639_2(snd, iso_639_3:snd).
-iso_639_2(snk, iso_639_3:snk).
-iso_639_2(sog, iso_639_3:sog).
-iso_639_2(som, iso_639_3:som).
-iso_639_2(son, iso_639_5:son).
-iso_639_2(sot, iso_639_3:sot).
-iso_639_2(spa, iso_639_3:spa).
-iso_639_2(sqi, iso_639_3:sqi).
-iso_639_2(srd, iso_639_3:srd).
-iso_639_2(srn, iso_639_3:srn).
-iso_639_2(srp, iso_639_3:srp).
-iso_639_2(srr, iso_639_3:srr).
-iso_639_2(ssa, iso_639_5:ssa).
-iso_639_2(ssw, iso_639_3:ssw).
-iso_639_2(suk, iso_639_3:suk).
-iso_639_2(sun, iso_639_3:sun).
-iso_639_2(sus, iso_639_3:sus).
-iso_639_2(sux, iso_639_3:sux).
-iso_639_2(swa, iso_639_3:swa).
-iso_639_2(swe, iso_639_3:swe).
-iso_639_2(syc, iso_639_3:syc).
-iso_639_2(syr, iso_639_3:syr).
-iso_639_2(tah, iso_639_3:tah).
-iso_639_2(tai, iso_639_5:tai).
-iso_639_2(tam, iso_639_3:tam).
-iso_639_2(tat, iso_639_3:tat).
-iso_639_2(tel, iso_639_3:tel).
-iso_639_2(tem, iso_639_3:tem).
-iso_639_2(ter, iso_639_3:ter).
-iso_639_2(tet, iso_639_3:tet).
-iso_639_2(tgk, iso_639_3:tgk).
-iso_639_2(tgl, iso_639_3:tgl).
-iso_639_2(tha, iso_639_3:tha).
-iso_639_2(tib, iso_639_3:bod).
-iso_639_2(tig, iso_639_3:tig).
-iso_639_2(tir, iso_639_3:tir).
-iso_639_2(tiv, iso_639_3:tiv).
-iso_639_2(tkl, iso_639_3:tkl).
-iso_639_2(tlh, iso_639_3:tlh).
-iso_639_2(tli, iso_639_3:tli).
-iso_639_2(tmh, iso_639_3:tmh).
-iso_639_2(tog, iso_639_3:tog).
-iso_639_2(ton, iso_639_3:ton).
-iso_639_2(tpi, iso_639_3:tpi).
-iso_639_2(tsi, iso_639_3:tsi).
-iso_639_2(tsn, iso_639_3:tsn).
-iso_639_2(tso, iso_639_3:tso).
-iso_639_2(tuk, iso_639_3:tuk).
-iso_639_2(tum, iso_639_3:tum).
-iso_639_2(tup, iso_639_5:tup).
-iso_639_2(tur, iso_639_3:tur).
-iso_639_2(tut, iso_639_5:tut).
-iso_639_2(tvl, iso_639_3:tvl).
-iso_639_2(twi, iso_639_3:twi).
-iso_639_2(tyv, iso_639_3:tyv).
-iso_639_2(udm, iso_639_3:udm).
-iso_639_2(uga, iso_639_3:uga).
-iso_639_2(uig, iso_639_3:uig).
-iso_639_2(ukr, iso_639_3:ukr).
-iso_639_2(umb, iso_639_3:umb).
-iso_639_2(und, iso_639_3:und).
-iso_639_2(urd, iso_639_3:urd).
-iso_639_2(uzb, iso_639_3:uzb).
-iso_639_2(vai, iso_639_3:vai).
-iso_639_2(ven, iso_639_3:ven).
-iso_639_2(vie, iso_639_3:vie).
-iso_639_2(vol, iso_639_3:vol).
-iso_639_2(vot, iso_639_3:vot).
-iso_639_2(wak, iso_639_5:wak).
-iso_639_2(wal, iso_639_3:wal).
-iso_639_2(war, iso_639_3:war).
-iso_639_2(was, iso_639_3:was).
-iso_639_2(wel, iso_639_3:cym).
-iso_639_2(wen, iso_639_5:wen).
-iso_639_2(wln, iso_639_3:wln).
-iso_639_2(wol, iso_639_3:wol).
-iso_639_2(xal, iso_639_3:xal).
-iso_639_2(xho, iso_639_3:xho).
-iso_639_2(yao, iso_639_3:yao).
-iso_639_2(yap, iso_639_3:yap).
-iso_639_2(yid, iso_639_3:yid).
-iso_639_2(yor, iso_639_3:yor).
-iso_639_2(ypk, iso_639_5:ypk).
-iso_639_2(zap, iso_639_3:zap).
-iso_639_2(zbl, iso_639_3:zbl).
-iso_639_2(zen, iso_639_3:zen).
-iso_639_2(zha, iso_639_3:zha).
-iso_639_2(zho, iso_639_3:zho).
-iso_639_2(znd, iso_639_5:znd).
-iso_639_2(zul, iso_639_3:zul).
-iso_639_2(zun, iso_639_3:zun).
-iso_639_2(zza, iso_639_3:zza).
+iso_639_2(iso_639_3:aar) --> "aar".
+iso_639_2(iso_639_3:abk) --> "abk".
+iso_639_2(iso_639_3:ace) --> "ace".
+iso_639_2(iso_639_3:ach) --> "ach".
+iso_639_2(iso_639_3:ada) --> "ada".
+iso_639_2(iso_639_3:ady) --> "ady".
+iso_639_2(iso_639_5:afa) --> "afa".
+iso_639_2(iso_639_3:afh) --> "afh".
+iso_639_2(iso_639_3:afr) --> "afr".
+iso_639_2(iso_639_3:ain) --> "ain".
+iso_639_2(iso_639_3:aka) --> "aka".
+iso_639_2(iso_639_3:akk) --> "akk".
+iso_639_2(iso_639_3:sqi) --> "alb".
+iso_639_2(iso_639_3:ale) --> "ale".
+iso_639_2(iso_639_5:alg) --> "alg".
+iso_639_2(iso_639_3:alt) --> "alt".
+iso_639_2(iso_639_3:amh) --> "amh".
+iso_639_2(iso_639_3:ang) --> "ang".
+iso_639_2(iso_639_3:anp) --> "anp".
+iso_639_2(iso_639_5:apa) --> "apa".
+iso_639_2(iso_639_3:ara) --> "ara".
+iso_639_2(iso_639_3:arc) --> "arc".
+iso_639_2(iso_639_3:arg) --> "arg".
+iso_639_2(iso_639_3:hye) --> "arm".
+iso_639_2(iso_639_3:arn) --> "arn".
+iso_639_2(iso_639_3:arp) --> "arp".
+iso_639_2(iso_639_5:art) --> "art".
+iso_639_2(iso_639_3:arw) --> "arw".
+iso_639_2(iso_639_3:asm) --> "asm".
+iso_639_2(iso_639_3:ast) --> "ast".
+iso_639_2(iso_639_5:ath) --> "ath".
+iso_639_2(iso_639_5:aus) --> "aus".
+iso_639_2(iso_639_3:ava) --> "ava".
+iso_639_2(iso_639_3:ave) --> "ave".
+iso_639_2(iso_639_3:awa) --> "awa".
+iso_639_2(iso_639_3:aym) --> "aym".
+iso_639_2(iso_639_3:aze) --> "aze".
+iso_639_2(iso_639_5:bad) --> "bad".
+iso_639_2(iso_639_5:bai) --> "bai".
+iso_639_2(iso_639_3:bak) --> "bak".
+iso_639_2(iso_639_3:bal) --> "bal".
+iso_639_2(iso_639_3:bam) --> "bam".
+iso_639_2(iso_639_3:ban) --> "ban".
+iso_639_2(iso_639_3:eus) --> "baq".
+iso_639_2(iso_639_3:bas) --> "bas".
+iso_639_2(iso_639_5:bat) --> "bat".
+iso_639_2(iso_639_3:bej) --> "bej".
+iso_639_2(iso_639_3:bel) --> "bel".
+iso_639_2(iso_639_3:bem) --> "bem".
+iso_639_2(iso_639_3:ben) --> "ben".
+iso_639_2(iso_639_5:ber) --> "ber".
+iso_639_2(iso_639_3:bho) --> "bho".
+iso_639_2(iso_639_3:bik) --> "bik".
+iso_639_2(iso_639_3:bin) --> "bin".
+iso_639_2(iso_639_3:bis) --> "bis".
+iso_639_2(iso_639_3:bla) --> "bla".
+iso_639_2(iso_639_5:bnt) --> "bnt".
+iso_639_2(iso_639_3:bod) --> "bod".
+iso_639_2(iso_639_3:bos) --> "bos".
+iso_639_2(iso_639_3:bra) --> "bra".
+iso_639_2(iso_639_3:bre) --> "bre".
+iso_639_2(iso_639_5:btk) --> "btk".
+iso_639_2(iso_639_3:bua) --> "bua".
+iso_639_2(iso_639_3:bug) --> "bug".
+iso_639_2(iso_639_3:bul) --> "bul".
+iso_639_2(iso_639_3:mya) --> "bur".
+iso_639_2(iso_639_3:byn) --> "byn".
+iso_639_2(iso_639_3:cad) --> "cad".
+iso_639_2(iso_639_5:cai) --> "cai".
+iso_639_2(iso_639_3:car) --> "car".
+iso_639_2(iso_639_3:cat) --> "cat".
+iso_639_2(iso_639_5:cau) --> "cau".
+iso_639_2(iso_639_3:ceb) --> "ceb".
+iso_639_2(iso_639_5:cel) --> "cel".
+iso_639_2(iso_639_3:ces) --> "ces".
+iso_639_2(iso_639_3:cha) --> "cha".
+iso_639_2(iso_639_3:chb) --> "chb".
+iso_639_2(iso_639_3:che) --> "che".
+iso_639_2(iso_639_3:chg) --> "chg".
+iso_639_2(iso_639_3:zho) --> "chi".
+iso_639_2(iso_639_3:chk) --> "chk".
+iso_639_2(iso_639_3:chm) --> "chm".
+iso_639_2(iso_639_3:chn) --> "chn".
+iso_639_2(iso_639_3:cho) --> "cho".
+iso_639_2(iso_639_3:chp) --> "chp".
+iso_639_2(iso_639_3:chr) --> "chr".
+iso_639_2(iso_639_3:chu) --> "chu".
+iso_639_2(iso_639_3:chv) --> "chv".
+iso_639_2(iso_639_3:chy) --> "chy".
+iso_639_2(iso_639_5:cmc) --> "cmc".
+iso_639_2(iso_639_3:cop) --> "cop".
+iso_639_2(iso_639_3:cor) --> "cor".
+iso_639_2(iso_639_3:cos) --> "cos".
+iso_639_2(iso_639_5:cpe) --> "cpe".
+iso_639_2(iso_639_5:cpf) --> "cpf".
+iso_639_2(iso_639_5:cpp) --> "cpp".
+iso_639_2(iso_639_3:cre) --> "cre".
+iso_639_2(iso_639_3:crh) --> "crh".
+iso_639_2(iso_639_5:crp) --> "crp".
+iso_639_2(iso_639_3:csb) --> "csb".
+iso_639_2(iso_639_5:cus) --> "cus".
+iso_639_2(iso_639_3:cym) --> "cym".
+iso_639_2(iso_639_3:ces) --> "cze".
+iso_639_2(iso_639_3:dak) --> "dak".
+iso_639_2(iso_639_3:dan) --> "dan".
+iso_639_2(iso_639_3:dar) --> "dar".
+iso_639_2(iso_639_5:day) --> "day".
+iso_639_2(iso_639_3:del) --> "del".
+iso_639_2(iso_639_3:den) --> "den".
+iso_639_2(iso_639_3:deu) --> "deu".
+iso_639_2(iso_639_3:dgr) --> "dgr".
+iso_639_2(iso_639_3:din) --> "din".
+iso_639_2(iso_639_3:div) --> "div".
+iso_639_2(iso_639_3:doi) --> "doi".
+iso_639_2(iso_639_5:dra) --> "dra".
+iso_639_2(iso_639_3:dsb) --> "dsb".
+iso_639_2(iso_639_3:dua) --> "dua".
+iso_639_2(iso_639_3:dum) --> "dum".
+iso_639_2(iso_639_3:nld) --> "dut".
+iso_639_2(iso_639_3:dyu) --> "dyu".
+iso_639_2(iso_639_3:dzo) --> "dzo".
+iso_639_2(iso_639_3:efi) --> "efi".
+iso_639_2(iso_639_3:egy) --> "egy".
+iso_639_2(iso_639_3:eka) --> "eka".
+iso_639_2(iso_639_3:ell) --> "ell".
+iso_639_2(iso_639_3:elx) --> "elx".
+iso_639_2(iso_639_3:eng) --> "eng".
+iso_639_2(iso_639_3:enm) --> "enm".
+iso_639_2(iso_639_3:epo) --> "epo".
+iso_639_2(iso_639_3:est) --> "est".
+iso_639_2(iso_639_3:eus) --> "eus".
+iso_639_2(iso_639_3:ewe) --> "ewe".
+iso_639_2(iso_639_3:ewo) --> "ewo".
+iso_639_2(iso_639_3:fan) --> "fan".
+iso_639_2(iso_639_3:fao) --> "fao".
+iso_639_2(iso_639_3:fas) --> "fas".
+iso_639_2(iso_639_3:fat) --> "fat".
+iso_639_2(iso_639_3:fij) --> "fij".
+iso_639_2(iso_639_3:fil) --> "fil".
+iso_639_2(iso_639_3:fin) --> "fin".
+iso_639_2(iso_639_5:fiu) --> "fiu".
+iso_639_2(iso_639_3:fon) --> "fon".
+iso_639_2(iso_639_3:fra) --> "fra".
+iso_639_2(iso_639_3:fra) --> "fre".
+iso_639_2(iso_639_3:frm) --> "frm".
+iso_639_2(iso_639_3:fro) --> "fro".
+iso_639_2(iso_639_3:frr) --> "frr".
+iso_639_2(iso_639_3:frs) --> "frs".
+iso_639_2(iso_639_3:fry) --> "fry".
+iso_639_2(iso_639_3:ful) --> "ful".
+iso_639_2(iso_639_3:fur) --> "fur".
+iso_639_2(iso_639_3:gaa) --> "gaa".
+iso_639_2(iso_639_3:gay) --> "gay".
+iso_639_2(iso_639_3:gba) --> "gba".
+iso_639_2(iso_639_5:gem) --> "gem".
+iso_639_2(iso_639_3:kat) --> "geo".
+iso_639_2(iso_639_3:deu) --> "ger".
+iso_639_2(iso_639_3:gez) --> "gez".
+iso_639_2(iso_639_3:gil) --> "gil".
+iso_639_2(iso_639_3:gla) --> "gla".
+iso_639_2(iso_639_3:gle) --> "gle".
+iso_639_2(iso_639_3:glg) --> "glg".
+iso_639_2(iso_639_3:glv) --> "glv".
+iso_639_2(iso_639_3:gmh) --> "gmh".
+iso_639_2(iso_639_3:goh) --> "goh".
+iso_639_2(iso_639_3:gon) --> "gon".
+iso_639_2(iso_639_3:gor) --> "gor".
+iso_639_2(iso_639_3:got) --> "got".
+iso_639_2(iso_639_3:grb) --> "grb".
+iso_639_2(iso_639_3:grc) --> "grc".
+iso_639_2(iso_639_3:ell) --> "gre".
+iso_639_2(iso_639_3:grn) --> "grn".
+iso_639_2(iso_639_3:gsw) --> "gsw".
+iso_639_2(iso_639_3:guj) --> "guj".
+iso_639_2(iso_639_3:gwi) --> "gwi".
+iso_639_2(iso_639_3:hai) --> "hai".
+iso_639_2(iso_639_3:hat) --> "hat".
+iso_639_2(iso_639_3:hau) --> "hau".
+iso_639_2(iso_639_3:haw) --> "haw".
+iso_639_2(iso_639_3:heb) --> "heb".
+iso_639_2(iso_639_3:her) --> "her".
+iso_639_2(iso_639_3:hil) --> "hil".
+iso_639_2(iso_639_3:hin) --> "hin".
+iso_639_2(iso_639_3:hit) --> "hit".
+iso_639_2(iso_639_3:hmn) --> "hmn".
+iso_639_2(iso_639_3:hmo) --> "hmo".
+iso_639_2(iso_639_3:hrv) --> "hrv".
+iso_639_2(iso_639_3:hsb) --> "hsb".
+iso_639_2(iso_639_3:hun) --> "hun".
+iso_639_2(iso_639_3:hup) --> "hup".
+iso_639_2(iso_639_3:hye) --> "hye".
+iso_639_2(iso_639_3:iba) --> "iba".
+iso_639_2(iso_639_3:ibo) --> "ibo".
+iso_639_2(iso_639_3:isl) --> "ice".
+iso_639_2(iso_639_3:ido) --> "ido".
+iso_639_2(iso_639_3:iii) --> "iii".
+iso_639_2(iso_639_5:ijo) --> "ijo".
+iso_639_2(iso_639_3:iku) --> "iku".
+iso_639_2(iso_639_3:ile) --> "ile".
+iso_639_2(iso_639_3:ilo) --> "ilo".
+iso_639_2(iso_639_3:ina) --> "ina".
+iso_639_2(iso_639_5:inc) --> "inc".
+iso_639_2(iso_639_3:ind) --> "ind".
+iso_639_2(iso_639_5:ine) --> "ine".
+iso_639_2(iso_639_3:inh) --> "inh".
+iso_639_2(iso_639_3:ipk) --> "ipk".
+iso_639_2(iso_639_5:ira) --> "ira".
+iso_639_2(iso_639_5:iro) --> "iro".
+iso_639_2(iso_639_3:isl) --> "isl".
+iso_639_2(iso_639_3:ita) --> "ita".
+iso_639_2(iso_639_3:jav) --> "jav".
+iso_639_2(iso_639_3:jbo) --> "jbo".
+iso_639_2(iso_639_3:jpn) --> "jpn".
+iso_639_2(iso_639_3:jpr) --> "jpr".
+iso_639_2(iso_639_3:jrb) --> "jrb".
+iso_639_2(iso_639_3:kaa) --> "kaa".
+iso_639_2(iso_639_3:kab) --> "kab".
+iso_639_2(iso_639_3:kac) --> "kac".
+iso_639_2(iso_639_3:kal) --> "kal".
+iso_639_2(iso_639_3:kam) --> "kam".
+iso_639_2(iso_639_3:kan) --> "kan".
+iso_639_2(iso_639_5:kar) --> "kar".
+iso_639_2(iso_639_3:kas) --> "kas".
+iso_639_2(iso_639_3:kat) --> "kat".
+iso_639_2(iso_639_3:kau) --> "kau".
+iso_639_2(iso_639_3:kaw) --> "kaw".
+iso_639_2(iso_639_3:kaz) --> "kaz".
+iso_639_2(iso_639_3:kbd) --> "kbd".
+iso_639_2(iso_639_3:kha) --> "kha".
+iso_639_2(iso_639_5:khi) --> "khi".
+iso_639_2(iso_639_3:khm) --> "khm".
+iso_639_2(iso_639_3:kho) --> "kho".
+iso_639_2(iso_639_3:kik) --> "kik".
+iso_639_2(iso_639_3:kin) --> "kin".
+iso_639_2(iso_639_3:kir) --> "kir".
+iso_639_2(iso_639_3:kmb) --> "kmb".
+iso_639_2(iso_639_3:kok) --> "kok".
+iso_639_2(iso_639_3:kom) --> "kom".
+iso_639_2(iso_639_3:kon) --> "kon".
+iso_639_2(iso_639_3:kor) --> "kor".
+iso_639_2(iso_639_3:kos) --> "kos".
+iso_639_2(iso_639_3:kpe) --> "kpe".
+iso_639_2(iso_639_3:krc) --> "krc".
+iso_639_2(iso_639_3:krl) --> "krl".
+iso_639_2(iso_639_5:kro) --> "kro".
+iso_639_2(iso_639_3:kru) --> "kru".
+iso_639_2(iso_639_3:kua) --> "kua".
+iso_639_2(iso_639_3:kum) --> "kum".
+iso_639_2(iso_639_3:kur) --> "kur".
+iso_639_2(iso_639_3:kut) --> "kut".
+iso_639_2(iso_639_3:lad) --> "lad".
+iso_639_2(iso_639_3:lah) --> "lah".
+iso_639_2(iso_639_3:lam) --> "lam".
+iso_639_2(iso_639_3:lao) --> "lao".
+iso_639_2(iso_639_3:lat) --> "lat".
+iso_639_2(iso_639_3:lav) --> "lav".
+iso_639_2(iso_639_3:lez) --> "lez".
+iso_639_2(iso_639_3:lim) --> "lim".
+iso_639_2(iso_639_3:lin) --> "lin".
+iso_639_2(iso_639_3:lit) --> "lit".
+iso_639_2(iso_639_3:lol) --> "lol".
+iso_639_2(iso_639_3:loz) --> "loz".
+iso_639_2(iso_639_3:ltz) --> "ltz".
+iso_639_2(iso_639_3:lua) --> "lua".
+iso_639_2(iso_639_3:lub) --> "lub".
+iso_639_2(iso_639_3:lug) --> "lug".
+iso_639_2(iso_639_3:lui) --> "lui".
+iso_639_2(iso_639_3:lun) --> "lun".
+iso_639_2(iso_639_3:luo) --> "luo".
+iso_639_2(iso_639_3:lus) --> "lus".
+iso_639_2(iso_639_3:mkd) --> "mac".
+iso_639_2(iso_639_3:mad) --> "mad".
+iso_639_2(iso_639_3:mag) --> "mag".
+iso_639_2(iso_639_3:mah) --> "mah".
+iso_639_2(iso_639_3:mai) --> "mai".
+iso_639_2(iso_639_3:mak) --> "mak".
+iso_639_2(iso_639_3:mal) --> "mal".
+iso_639_2(iso_639_3:man) --> "man".
+iso_639_2(iso_639_3:mri) --> "mao".
+iso_639_2(iso_639_5:map) --> "map".
+iso_639_2(iso_639_3:mar) --> "mar".
+iso_639_2(iso_639_3:mas) --> "mas".
+iso_639_2(iso_639_3:msa) --> "may".
+iso_639_2(iso_639_3:mdf) --> "mdf".
+iso_639_2(iso_639_3:mdr) --> "mdr".
+iso_639_2(iso_639_3:men) --> "men".
+iso_639_2(iso_639_3:mga) --> "mga".
+iso_639_2(iso_639_3:mic) --> "mic".
+iso_639_2(iso_639_3:min) --> "min".
+iso_639_2(iso_639_3:mis) --> "mis".
+iso_639_2(iso_639_3:mkd) --> "mkd".
+iso_639_2(iso_639_5:mkh) --> "mkh".
+iso_639_2(iso_639_3:mlg) --> "mlg".
+iso_639_2(iso_639_3:mlt) --> "mlt".
+iso_639_2(iso_639_3:mnc) --> "mnc".
+iso_639_2(iso_639_3:mni) --> "mni".
+iso_639_2(iso_639_5:mno) --> "mno".
+iso_639_2(iso_639_3:moh) --> "moh".
+iso_639_2(iso_639_3:mon) --> "mon".
+iso_639_2(iso_639_3:mos) --> "mos".
+iso_639_2(iso_639_3:mri) --> "mri".
+iso_639_2(iso_639_3:msa) --> "msa".
+iso_639_2(iso_639_3:mul) --> "mul".
+iso_639_2(iso_639_5:mun) --> "mun".
+iso_639_2(iso_639_3:mus) --> "mus".
+iso_639_2(iso_639_3:mwl) --> "mwl".
+iso_639_2(iso_639_3:mwr) --> "mwr".
+iso_639_2(iso_639_3:mya) --> "mya".
+iso_639_2(iso_639_5:myn) --> "myn".
+iso_639_2(iso_639_3:myv) --> "myv".
+iso_639_2(iso_639_5:nah) --> "nah".
+iso_639_2(iso_639_5:nai) --> "nai".
+iso_639_2(iso_639_3:nap) --> "nap".
+iso_639_2(iso_639_3:nau) --> "nau".
+iso_639_2(iso_639_3:nav) --> "nav".
+iso_639_2(iso_639_3:nbl) --> "nbl".
+iso_639_2(iso_639_3:nde) --> "nde".
+iso_639_2(iso_639_3:ndo) --> "ndo".
+iso_639_2(iso_639_3:nds) --> "nds".
+iso_639_2(iso_639_3:nep) --> "nep".
+iso_639_2(iso_639_3:new) --> "new".
+iso_639_2(iso_639_3:nia) --> "nia".
+iso_639_2(iso_639_5:nic) --> "nic".
+iso_639_2(iso_639_3:niu) --> "niu".
+iso_639_2(iso_639_3:nld) --> "nld".
+iso_639_2(iso_639_3:nno) --> "nno".
+iso_639_2(iso_639_3:nob) --> "nob".
+iso_639_2(iso_639_3:nog) --> "nog".
+iso_639_2(iso_639_3:non) --> "non".
+iso_639_2(iso_639_3:nor) --> "nor".
+iso_639_2(iso_639_3:nqo) --> "nqo".
+iso_639_2(iso_639_3:nso) --> "nso".
+iso_639_2(iso_639_5:nub) --> "nub".
+iso_639_2(iso_639_3:nwc) --> "nwc".
+iso_639_2(iso_639_3:nya) --> "nya".
+iso_639_2(iso_639_3:nym) --> "nym".
+iso_639_2(iso_639_3:nyn) --> "nyn".
+iso_639_2(iso_639_3:nyo) --> "nyo".
+iso_639_2(iso_639_3:nzi) --> "nzi".
+iso_639_2(iso_639_3:oci) --> "oci".
+iso_639_2(iso_639_3:oji) --> "oji".
+iso_639_2(iso_639_3:ori) --> "ori".
+iso_639_2(iso_639_3:orm) --> "orm".
+iso_639_2(iso_639_3:osa) --> "osa".
+iso_639_2(iso_639_3:oss) --> "oss".
+iso_639_2(iso_639_3:ota) --> "ota".
+iso_639_2(iso_639_5:oto) --> "oto".
+iso_639_2(iso_639_5:paa) --> "paa".
+iso_639_2(iso_639_3:pag) --> "pag".
+iso_639_2(iso_639_3:pal) --> "pal".
+iso_639_2(iso_639_3:pam) --> "pam".
+iso_639_2(iso_639_3:pan) --> "pan".
+iso_639_2(iso_639_3:pap) --> "pap".
+iso_639_2(iso_639_3:pau) --> "pau".
+iso_639_2(iso_639_3:peo) --> "peo".
+iso_639_2(iso_639_3:fas) --> "per".
+iso_639_2(iso_639_5:phi) --> "phi".
+iso_639_2(iso_639_3:phn) --> "phn".
+iso_639_2(iso_639_3:pli) --> "pli".
+iso_639_2(iso_639_3:pol) --> "pol".
+iso_639_2(iso_639_3:pon) --> "pon".
+iso_639_2(iso_639_3:por) --> "por".
+iso_639_2(iso_639_5:pra) --> "pra".
+iso_639_2(iso_639_3:pro) --> "pro".
+iso_639_2(iso_639_3:pus) --> "pus".
+iso_639_2(iso_639_3:que) --> "que".
+iso_639_2(iso_639_3:raj) --> "raj".
+iso_639_2(iso_639_3:rap) --> "rap".
+iso_639_2(iso_639_3:rar) --> "rar".
+iso_639_2(iso_639_5:roa) --> "roa".
+iso_639_2(iso_639_3:roh) --> "roh".
+iso_639_2(iso_639_3:rom) --> "rom".
+iso_639_2(iso_639_3:ron) --> "ron".
+iso_639_2(iso_639_3:ron) --> "rum".
+iso_639_2(iso_639_3:run) --> "run".
+iso_639_2(iso_639_3:rup) --> "rup".
+iso_639_2(iso_639_3:rus) --> "rus".
+iso_639_2(iso_639_3:sad) --> "sad".
+iso_639_2(iso_639_3:sag) --> "sag".
+iso_639_2(iso_639_3:sah) --> "sah".
+iso_639_2(iso_639_5:sai) --> "sai".
+iso_639_2(iso_639_5:sal) --> "sal".
+iso_639_2(iso_639_3:sam) --> "sam".
+iso_639_2(iso_639_3:san) --> "san".
+iso_639_2(iso_639_3:sas) --> "sas".
+iso_639_2(iso_639_3:sat) --> "sat".
+iso_639_2(iso_639_3:scn) --> "scn".
+iso_639_2(iso_639_3:sco) --> "sco".
+iso_639_2(iso_639_3:sel) --> "sel".
+iso_639_2(iso_639_5:sem) --> "sem".
+iso_639_2(iso_639_3:sga) --> "sga".
+iso_639_2(iso_639_5:sgn) --> "sgn".
+iso_639_2(iso_639_3:shn) --> "shn".
+iso_639_2(iso_639_3:sid) --> "sid".
+iso_639_2(iso_639_3:sin) --> "sin".
+iso_639_2(iso_639_5:sio) --> "sio".
+iso_639_2(iso_639_5:sit) --> "sit".
+iso_639_2(iso_639_5:sla) --> "sla".
+iso_639_2(iso_639_3:slk) --> "slk".
+iso_639_2(iso_639_3:slk) --> "slo".
+iso_639_2(iso_639_3:slv) --> "slv".
+iso_639_2(iso_639_3:sma) --> "sma".
+iso_639_2(iso_639_3:sme) --> "sme".
+iso_639_2(iso_639_5:smi) --> "smi".
+iso_639_2(iso_639_3:smj) --> "smj".
+iso_639_2(iso_639_3:smn) --> "smn".
+iso_639_2(iso_639_3:smo) --> "smo".
+iso_639_2(iso_639_3:sms) --> "sms".
+iso_639_2(iso_639_3:sna) --> "sna".
+iso_639_2(iso_639_3:snd) --> "snd".
+iso_639_2(iso_639_3:snk) --> "snk".
+iso_639_2(iso_639_3:sog) --> "sog".
+iso_639_2(iso_639_3:som) --> "som".
+iso_639_2(iso_639_5:son) --> "son".
+iso_639_2(iso_639_3:sot) --> "sot".
+iso_639_2(iso_639_3:spa) --> "spa".
+iso_639_2(iso_639_3:sqi) --> "sqi".
+iso_639_2(iso_639_3:srd) --> "srd".
+iso_639_2(iso_639_3:srn) --> "srn".
+iso_639_2(iso_639_3:srp) --> "srp".
+iso_639_2(iso_639_3:srr) --> "srr".
+iso_639_2(iso_639_5:ssa) --> "ssa".
+iso_639_2(iso_639_3:ssw) --> "ssw".
+iso_639_2(iso_639_3:suk) --> "suk".
+iso_639_2(iso_639_3:sun) --> "sun".
+iso_639_2(iso_639_3:sus) --> "sus".
+iso_639_2(iso_639_3:sux) --> "sux".
+iso_639_2(iso_639_3:swa) --> "swa".
+iso_639_2(iso_639_3:swe) --> "swe".
+iso_639_2(iso_639_3:syc) --> "syc".
+iso_639_2(iso_639_3:syr) --> "syr".
+iso_639_2(iso_639_3:tah) --> "tah".
+iso_639_2(iso_639_5:tai) --> "tai".
+iso_639_2(iso_639_3:tam) --> "tam".
+iso_639_2(iso_639_3:tat) --> "tat".
+iso_639_2(iso_639_3:tel) --> "tel".
+iso_639_2(iso_639_3:tem) --> "tem".
+iso_639_2(iso_639_3:ter) --> "ter".
+iso_639_2(iso_639_3:tet) --> "tet".
+iso_639_2(iso_639_3:tgk) --> "tgk".
+iso_639_2(iso_639_3:tgl) --> "tgl".
+iso_639_2(iso_639_3:tha) --> "tha".
+iso_639_2(iso_639_3:bod) --> "tib".
+iso_639_2(iso_639_3:tig) --> "tig".
+iso_639_2(iso_639_3:tir) --> "tir".
+iso_639_2(iso_639_3:tiv) --> "tiv".
+iso_639_2(iso_639_3:tkl) --> "tkl".
+iso_639_2(iso_639_3:tlh) --> "tlh".
+iso_639_2(iso_639_3:tli) --> "tli".
+iso_639_2(iso_639_3:tmh) --> "tmh".
+iso_639_2(iso_639_3:tog) --> "tog".
+iso_639_2(iso_639_3:ton) --> "ton".
+iso_639_2(iso_639_3:tpi) --> "tpi".
+iso_639_2(iso_639_3:tsi) --> "tsi".
+iso_639_2(iso_639_3:tsn) --> "tsn".
+iso_639_2(iso_639_3:tso) --> "tso".
+iso_639_2(iso_639_3:tuk) --> "tuk".
+iso_639_2(iso_639_3:tum) --> "tum".
+iso_639_2(iso_639_5:tup) --> "tup".
+iso_639_2(iso_639_3:tur) --> "tur".
+iso_639_2(iso_639_5:tut) --> "tut".
+iso_639_2(iso_639_3:tvl) --> "tvl".
+iso_639_2(iso_639_3:twi) --> "twi".
+iso_639_2(iso_639_3:tyv) --> "tyv".
+iso_639_2(iso_639_3:udm) --> "udm".
+iso_639_2(iso_639_3:uga) --> "uga".
+iso_639_2(iso_639_3:uig) --> "uig".
+iso_639_2(iso_639_3:ukr) --> "ukr".
+iso_639_2(iso_639_3:umb) --> "umb".
+iso_639_2(iso_639_3:und) --> "und".
+iso_639_2(iso_639_3:urd) --> "urd".
+iso_639_2(iso_639_3:uzb) --> "uzb".
+iso_639_2(iso_639_3:vai) --> "vai".
+iso_639_2(iso_639_3:ven) --> "ven".
+iso_639_2(iso_639_3:vie) --> "vie".
+iso_639_2(iso_639_3:vol) --> "vol".
+iso_639_2(iso_639_3:vot) --> "vot".
+iso_639_2(iso_639_5:wak) --> "wak".
+iso_639_2(iso_639_3:wal) --> "wal".
+iso_639_2(iso_639_3:war) --> "war".
+iso_639_2(iso_639_3:was) --> "was".
+iso_639_2(iso_639_3:cym) --> "wel".
+iso_639_2(iso_639_5:wen) --> "wen".
+iso_639_2(iso_639_3:wln) --> "wln".
+iso_639_2(iso_639_3:wol) --> "wol".
+iso_639_2(iso_639_3:xal) --> "xal".
+iso_639_2(iso_639_3:xho) --> "xho".
+iso_639_2(iso_639_3:yao) --> "yao".
+iso_639_2(iso_639_3:yap) --> "yap".
+iso_639_2(iso_639_3:yid) --> "yid".
+iso_639_2(iso_639_3:yor) --> "yor".
+iso_639_2(iso_639_5:ypk) --> "ypk".
+iso_639_2(iso_639_3:zap) --> "zap".
+iso_639_2(iso_639_3:zbl) --> "zbl".
+iso_639_2(iso_639_3:zen) --> "zen".
+iso_639_2(iso_639_3:zha) --> "zha".
+iso_639_2(iso_639_3:zho) --> "zho".
+iso_639_2(iso_639_5:znd) --> "znd".
+iso_639_2(iso_639_3:zul) --> "zul".
+iso_639_2(iso_639_3:zun) --> "zun".
+iso_639_2(iso_639_3:zza) --> "zza".
 
