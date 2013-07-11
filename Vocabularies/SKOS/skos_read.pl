@@ -26,11 +26,11 @@
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(random_vertex_coordinates)).
-:- use_module(graph_theory(ugraph_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_graph_theory)).
+:- use_module(rdf_graph(rdf_graph_theory)).
+:- use_module(ugraph(ugraph_ext)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(skos, 'http://www.w3.org/2004/02/skos/core#').

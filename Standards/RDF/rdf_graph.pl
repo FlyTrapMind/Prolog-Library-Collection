@@ -185,11 +185,11 @@ as their lean subgraphs.
 :- use_module(library(uri)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_graph_theory)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(rdfs(rdfs_read)).
 
 :- rdf_meta(rdf_bnode(?,r)).

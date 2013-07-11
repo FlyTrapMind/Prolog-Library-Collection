@@ -53,13 +53,15 @@ arrow(L) -->
 %! arrow(+Options:list(nvpair), +Length:integer)//
 % A simple ASCII arrow.
 %
+% The following options are supported:
+%   1. `head(+HeadType:oneof([both,left,right]))`%
+%
 % Example:
 % ~~~{.txt}
 % -------->
 % ~~~
 %
-% @arg Options The following options are supported:
-%      1. `head(+HeadType:oneof([both,left,right]))`
+% @arg Options A list of name-value pairs.
 % @arg Length A non-negative integer.
 
 arrow(O, L) -->

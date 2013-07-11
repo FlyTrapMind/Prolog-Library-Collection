@@ -62,11 +62,12 @@ dcg_line_wrap -->
 %! dcg_line_wrap(+Options)//
 % Return the parsed codes list with newlines using line wrap.
 %
+% The following options are supported:
+%   1. `maximum_line_width(+MaximumLineWidth:integer)`
+%      The maxmim width of a line of characters.
+%      This is the length at which line wrapping occurs.
+%
 % @arg Options A list of name-value pairs.
-%      The following options are supported:
-%      * `maximum_line_width(+MaximumLineWidth:integer)`
-%        The maxmim width of a line of characters.
-%        This is the length at which line wrapping occurs.
 
 dcg_line_wrap(Options) -->
   {
@@ -95,12 +96,12 @@ dcg_word_wrap -->
 
 %! dcg_word_wrap(+Options)//
 % Return the parsed codes list with newlines using word wrap.
+% The following options are supported:
+%   1. `maximum_line_width(+MaximumLineWidth:integer)`
+%      The maxmim width of a line of characters.
+%      This is the length at which line wrapping occurs.
 %
 % @arg Options A list of name-value pairs.
-%      The following options are supported:
-%      * `maximum_line_width(+MaximumLineWidth:integer)`
-%        The maxmim width of a line of characters.
-%        This is the length at which line wrapping occurs.
 
 dcg_word_wrap(Options) -->
   {

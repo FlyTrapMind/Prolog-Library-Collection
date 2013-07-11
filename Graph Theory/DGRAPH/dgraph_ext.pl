@@ -13,8 +13,8 @@
     dgraph_subgraph/2, % ?G1:dgraph
                        % +G2:dgraph
     dgraph_vertex_induced_subgraph/3, % +G:dgraph
-                                % +VSubG:list(vertex)
-                                % -SubG:dgraph
+                                      % +VSubG:list(vertex)
+                                      % -SubG:dgraph
     dgraph_vertices/2, % +Graph:dgraph
                        % -Vertices:ord_set(vertex)
     directed_cycle/2, % +V:vertex
@@ -120,9 +120,9 @@ Directed graphs.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(math(math_ext)).
-:- use_module(graph_theory(ugraph_ext)).
 :- use_module(library(apply)).
 :- use_module(library(ordsets)).
+:- use_module(ugraph(ugraph_ext)).
 
 :- meta_predicate(export_dgraph(+,4,+,-)).
 

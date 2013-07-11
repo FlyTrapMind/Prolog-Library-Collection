@@ -47,10 +47,10 @@ The following attributes are supported:
 @version 2013/02-2013/03, 2013/07
 */
 
-:- use_module(graph_theory(ugraph_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(ugraph(ugraph_ext)).
 
 :- meta_predicate(export_ugraph(+,4,+,+)).
 :- meta_predicate(export_ugraph_vertex(+,+,4,+,-)).

@@ -373,12 +373,11 @@ Codes 129-159 contain the Microsoft® Windows Latin-1 extended characters.
 ---+ Alternative names
 
 Some DCG rules are prepended with =|dcg_|=, since they would otherwise
-conflict with builtins or with predicates from other modules.
-
-  * delete
-  * graph
-  * print
-  * tab
+conflict with builtins or with predicates from other modules:
+  * `delete`
+  * `graph`
+  * `print`
+  * `tab`
 
 @author Wouter Beek
 @compat http://www.ascii-code.com/

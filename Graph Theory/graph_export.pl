@@ -77,14 +77,14 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 @version 2012/12-2013/04, 2013/07
 */
 
+:- use_module(dgraph(dgraph_ext)).
 :- use_module(generics(codes_ext)).
-:- use_module(graph_theory(dgraph_ext)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(random_vertex_coordinates)).
-:- use_module(graph_theory(ugraph_ext)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(ugraph(ugraph_ext)).
 
 :- meta_predicate(export_graph(+,4,+,-)).
 :- meta_predicate(export_vertex(+,3,+,-)).
@@ -148,9 +148,11 @@ shared_attributes(Terms, SharedAttrs, NewTerms):-
   maplist(remove_attribute(SharedAttrs), Terms, NewTerms).
 
 try:-
+  gtrace,
   export_graph([], rfc, GraphTerm),
   phrase(gv_graph(GraphTerm), Codes),
   absolute_file_name(project(test), File, [access(write), file_type(dot)]),
   open(File, write, Out),
   with_output_to(Out, put_codes(Codes)),
   close(Out).
+:- initialization(try).

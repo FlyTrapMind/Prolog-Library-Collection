@@ -124,13 +124,13 @@ the edges and vertices.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(graph_theory(ugraph_ext)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_export)). % Meta-predicates.
-:- use_module(rdf(rdf_graph_theory)).
+:- use_module(rdf_graph(rdf_graph_theory)).
+:- use_module(ugraph(ugraph_ext)).
 
 :- meta_predicate(betweenness1(+,2,2,2,-)).
 :- meta_predicate(betweenness1(+,2,2,2,+,-)).

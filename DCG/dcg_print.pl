@@ -13,6 +13,7 @@ DCGs for the print of a publication.
 
 # Sentences
 
+Example sentences:
   * "naar het Latijn herziene druk"
   * "fotomechanische herdruk van uitgave 1870"
   * "ongewijzigde herdruk van de 2de, herziene druk"
@@ -23,6 +24,7 @@ DCGs for the print of a publication.
 
 # Grammar
 
+~~~{.pl}
 ADJ --> ORD.
 ADJ --> dict
 ADJ --> PP, ADJ
@@ -45,6 +47,7 @@ S --> VOLUMES.
 S --> NP.
 S --> ''.
 S --> [niet, in, druk, verschenen].
+~~~
 
 @author Wouter Beek
 @version 2013/05

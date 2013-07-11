@@ -10,7 +10,7 @@
   ]
 ).
 
-/** <module>
+/** <module> DCG_DATE
 
 DCG rules for parsing/generating dates.
 
