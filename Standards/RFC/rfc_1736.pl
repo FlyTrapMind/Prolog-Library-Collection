@@ -88,33 +88,3 @@ The text mentions the following concepts without explaining them:
 @version 2013/05
 */
 
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
-:- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
-
-:- initialization(init_rfc_1736).
-
-
-init_rfc_1736:-
-  Graph = rfc,
-  rdf_global_id(rfc:'1736', This),
-  rdf_assert_datatype(This, rfc:year, gYear, 1995, Graph),
-  rdf_assert_literal(
-    This,
-    rfc:title,
-    en,
-    'Functional Recommendations for Internet Resource Locators',
-    Graph
-  ),
-  rdf_assert_literal(This, rfc:author, en, 'J. Kunze', Graph),
-  rdf_assert(
-    This,
-    foaf:homepage,
-    'http://www.ietf.org/rfc/rfc1736.txt',
-    Graph
-  ).
-

@@ -80,22 +80,3 @@ characteristics of the resource or for access to the resource itself."
 @version 2013/05
 */
 
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
-:- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
-
-:- initialization(init_rfc_1737).
-
-init_rfc_1737:-
-  Graph = rfc,
-  rdf_global_id(rfc:'1737', This),
-  rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
-  rdf_assert_literal(This, rfc:title, en, 'Functional Requirements for Uniform Resource Names', Graph),
-  rdf_assert_literal(This, rfc:author, en, 'K. Sollins', Graph),
-  rdf_assert_literal(This, rfc:author, en, 'L. Masinter', Graph),
-  rdf_assert(This, foaf:homepage, 'http://www.ietf.org/rfc/rfc1737.txt', Graph).
-

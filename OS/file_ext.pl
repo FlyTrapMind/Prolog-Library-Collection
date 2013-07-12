@@ -228,7 +228,7 @@ file_type_alternative(File1, File2):-
 
 file_type_alternative(FromFile, ToFileType, ToFile):-
   file_name_type(Base, _FromFileType, FromFile),
-  file_name_type(Base, ToFileType, ToFile).
+  file_name_type(Base, ToFileType, ToFile), !.
 
 %! hidden_file_name(+FileName:atom, -HiddenFileName:atom) is det.
 % Returns the hidden file name for the given atomic name.

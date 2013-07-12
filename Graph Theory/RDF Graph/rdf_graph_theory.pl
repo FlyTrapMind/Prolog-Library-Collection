@@ -132,7 +132,7 @@ rdf_edge(G, E):-
 rdf_edge(O1, G, Edge):-
   % Whether the edge's directionality is relevant or not.
   (
-    select_option(directed(true), O1, O2, false)
+    select_option(directed(true), O1, O2, true)
   ->
     rdf(FromV, Predicate, ToV, G)
   ;
@@ -142,11 +142,11 @@ rdf_edge(O1, G, Edge):-
       rdf(ToV, Predicate, FromV, G)
     )
   ),
-  
+
   % Make sure the vertices pass the vertex filter.
-  rdf_vertex(O2, FromV),
-  rdf_vertex(O2, ToV),
-  
+  rdf_vertex(O2, G, FromV),
+  rdf_vertex(O2, G, ToV),
+
   % Whether or not literal vertices are included.
   unless(
     select_option(literals(show), O2, O3, collapse),
@@ -157,7 +157,7 @@ rdf_edge(O1, G, Edge):-
       ToV \= literal(_)
     )
   ),
-  
+
   if_then_else(
     select_option(named_edges(true), O3, _O4, false),
     Edge = FromV-Predicate-ToV,

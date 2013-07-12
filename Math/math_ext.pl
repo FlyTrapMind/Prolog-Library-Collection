@@ -387,19 +387,13 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
 % @see The builin plus/3 only works for integers.
 
 plus_float(X, Y, Z):-
-  nonvar(X),
-  nonvar(Y),
-  !,
+  nonvar(X), nonvar(Y), !,
   Z is X + Y.
 plus_float(X, Y, Z):-
-  nonvar(X),
-  nonvar(Z),
-  !,
+  nonvar(X), nonvar(Z), !,
   Y is Z - X.
 plus_float(X, Y, Z):-
-  nonvar(Y),
-  nonvar(Z),
-  !,
+  nonvar(Y), nonvar(Z), !,
   X is Z - Y.
 
 %! pred(?Integer:integer, ?Predecessor:integer)
@@ -418,12 +412,10 @@ pred(Integer, Predecessor):-
 % @see random_betwixt/3
 
 random_betwixt(UpperLimit, Random):-
-  integer(UpperLimit),
-  !,
+  integer(UpperLimit), !,
   math_ext:random_betwixt(0, UpperLimit, Random).
 random_betwixt(UpperLimit, Random):-
-  float(UpperLimit),
-  !,
+  float(UpperLimit), !,
   math_ext:random_betwixt(0.0, UpperLimit, Random).
 
 %! random_betwixt(
@@ -444,21 +436,19 @@ random_betwixt(UpperLimit, Random):-
 %      the other values, i.e. =|[LowerLimit, UpperLimit)|=.
 
 random_betwixt(LowerLimit, UpperLimit, Random):-
-  integer(LowerLimit),
-  integer(UpperLimit),
-  !,
-  random_betwixt0(LowerLimit, UpperLimit, Random0),
+  integer(LowerLimit), integer(UpperLimit), !,
+  random_betwixt_(LowerLimit, UpperLimit, Random0),
   Random is floor(Random0).
 random_betwixt(LowerLimit, _UpperLimit, _Random):-
-  \+ number(LowerLimit),
+  \+ number(LowerLimit), !,
   type_error(number, LowerLimit).
 random_betwixt(_LowerLimit, UpperLimit, _Random):-
-  \+ number(UpperLimit),
+  \+ number(UpperLimit), !,
   type_error(number, UpperLimit).
 random_betwixt(LowerLimit, UpperLimit, Random):-
-  random_betwixt0(LowerLimit, UpperLimit, Random).
+  random_betwixt_(LowerLimit, UpperLimit, Random).
 
-random_betwixt0(LowerLimit, UpperLimit, Random):-
+random_betwixt_(LowerLimit, UpperLimit, Random):-
   Random is LowerLimit + random_float * (UpperLimit - LowerLimit).
 
 %! random_coordinate(+Size:size, -Coordinate:coord) is det.

@@ -45,22 +45,16 @@ The procedure for determining the color of a vertex:
 @version 2013/01-2013/03, 2013/07
 */
 
-:- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(generics(print_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf_graph(rdf_graph_theory)).
-:- use_module(rdfs(rdfs_read)).
 :- use_module(svg(svg_colors)).
 
 :- dynamic(class_color(_G, _Class, _Color)).

@@ -37,3 +37,4 @@ language_tag(Tag) -->
     % Length-3 codes must be ISO 639-2.
     [2-iso_639_1(Tag), 3-iso_639_2(Tag)]
   ).
+

@@ -22,12 +22,12 @@ Support for the Dublin Core vocabulary.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(xml(xml_namespace)).
 
-:- rdf_meta(dc_class(r,r)).
-:- rdf_meta(dc_property(r,r)).
-
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').
 :- xml_register_namespace(dcterms, 'http://purl.org/dc/terms/').
 :- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
+
+:- rdf_meta(dc_class(r,r)).
+:- rdf_meta(dc_property(r,r)).
 
 
 

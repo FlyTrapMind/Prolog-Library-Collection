@@ -80,7 +80,9 @@ The supported datatypes:
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_typecheck)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xml_schema_datatypes)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 % LISTS
 :- rdf_meta(rdf_assert_list(+,r,+)).

@@ -29,6 +29,7 @@ This module uses the =|img|= search file name for finding images.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(semweb/rdf_db)). % Used for rdf_meta/1.
 :- use_module(os(file_ext)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xml(xml_schema_datatypes)).

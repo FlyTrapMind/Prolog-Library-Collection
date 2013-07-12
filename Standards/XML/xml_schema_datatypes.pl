@@ -76,6 +76,8 @@ A single defining aspect of a value space.
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
+:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
+
 :- rdf_meta(xmls_convert_datatype(r,+,r,-)).
 :- rdf_meta(xmls_datatype(?,r)).
 :- rdf_meta(xmls_datatype0(?,r)).
