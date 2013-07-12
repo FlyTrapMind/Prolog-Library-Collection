@@ -25,8 +25,8 @@
                       % ?Graph:atom
 
 % LABELS
-    rdfs_preferred_label/3, % +RDF_Term:oneof([bnode,uri])
-                            % +Language:atom
+    rdfs_preferred_label/3, % ?RDF_Term:oneof([bnode,uri])
+                            % ?Language:atom
                             % ?PreferredLabel:atom
     rdfs_list_label/3, % +List:uri
                        % +Label:atom
@@ -250,15 +250,15 @@ rdf_collection0(Collection, Contents, Graph):-
 % LABELS %
 
 %! rdfs_preferred_label(
-%!   +RDF_Term:oneof([bnode,uri]),
-%!   +Language:atom,
+%!   ?RDF_Term:oneof([bnode,uri]),
+%!   ?Language:atom,
 %!   ?Label:atom
 %! ) is nondet.
 % Multiple labels are returned (nondet) in a descending preference order.
 
 % Labels with the given language code are preferred.
 rdfs_preferred_label(RDF_Term, Language, Label):-
-  rdfs_label(RDF_Term, Language, Label).
+  rdfs_label(RDF_Term, Language, Label), !.
 % If the preferred language is not available,
 % then we look for an arbitrary other language.
 rdfs_preferred_label(RDF_Term, _PreferredLanguage, Label):-
@@ -272,8 +272,7 @@ rdfs_list_label(RDF_List, Label, Element):-
   rdfs_list_label0(First, Label, Element).
 
 rdfs_list_label0(Element, Label, Element):-
-  rdfs_label(Element, Label),
-  !.
+  rdfs_label(Element, Label), !.
 rdfs_list_label0(Element, Label, Element0):-
   rdf_list_next(Element, NextElement),
   rdfs_list_label0(NextElement, Label, Element0).

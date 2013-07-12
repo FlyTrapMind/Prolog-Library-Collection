@@ -119,52 +119,19 @@ rdf_edge(G, E):-
 % RDF edges between resources.
 %
 % The following options are supported:
-%   1. `directed(+DirectedGraph:boolean)` Whether or not the
-%      directionality of the edge is taken into account.
-%   2. `literals(+DisplayLiterals:oneof([collapse,hide,labels_only,show]))`
-%      Whether or not literals are allowed as vertices in edges.
-%      Default: `collapse`.
-%   3. `named_edges(+Named:boolean)`
-%      Whether edges are qualified by the RDF predicate term.
+%   1. `literals(+Include:oneof([all,none,preferred_label]))`
+%      Whether all (`all`, default), none (`none`) or only preferred label
+%      literals (`preferred_label`) are included as vertices.
 %
 % @arg Options A list of name-value pairs.
 % @arg Graph The atomic name of an RDF graph.
 % @arg Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
 
-rdf_edge(O1, G, Edge):-
-  % Whether the edge's directionality is relevant or not.
-  (
-    select_option(directed(true), O1, O2, true)
-  ->
-    rdf(FromV, Predicate, ToV, G)
-  ;
-    (
-      rdf(FromV, Predicate, ToV, G)
-    ;
-      rdf(ToV, Predicate, FromV, G)
-    )
-  ),
-
+rdf_edge(O, G, FromV-P-ToV):-
+  rdf(FromV, P, ToV, G),
   % Make sure the vertices pass the vertex filter.
-  rdf_vertex(O2, G, FromV),
-  rdf_vertex(O2, G, ToV),
-
-  % Whether or not literal vertices are included.
-  unless(
-    select_option(literals(show), O2, O3, collapse),
-    (
-      % When the literals option is set to `collapse` or `hide`,
-      % then edges incident with a literal vertex are excluded.
-      FromV \= literal(_),
-      ToV \= literal(_)
-    )
-  ),
-
-  if_then_else(
-    select_option(named_edges(true), O3, _O4, false),
-    Edge = FromV-Predicate-ToV,
-    Edge = FromV-ToV
-  ).
+  rdf_vertex_check(O, FromV),
+  rdf_vertex_check(O, ToV).
 
 rdf_edges(G, Es):-
   rdf_edges([], G, Es).
@@ -226,50 +193,61 @@ rdf_subgraph(SubG, G):-
 rdf_vertex(G, V):-
   rdf_vertex([], G, V).
 
-%! rdf_vertex(+Options:list(nvpair), +Graph:atom, ?Vertex:uri) is nondet.
+%! rdf_vertex(+Options:list(nvpair), +Graph:atom, ?Vertex:rdf_term) is nondet.
 % Pairs of graphs and nodes that occur in that graph.
 % A node is either a subject or an object term in an
 % RDF triple.
 %
+% The following options are supported:
+%   1. `literals(+Include:oneof([all,none,preferred_label]))`
+%      Whether all (`all`, default), none (`none`) or only preferred label
+%      literals (`preferred_label`) are included as vertices.
+%   2. `rdf_list(+Include:boolean)`
+%      Whether vertices that are part of an RDF list should be included
+%      in full (`true`, default) or in a concise way (`false`).
+%
 % @arg Options A list of name-value pairs.
-%      1. `literals(oneof([collapse,hide,labels_only,show]))`
-%         Whether or not literals are allowed as vertices in the edge.
-%         Default: `collapse`.
-%      2. `rdf_list(onef([concise,full]))`
-%         Whether vertices that are part of an RDF list
-%         should be included in full (default) or in a concise way.
-%      3. `vertex(oneof([rdf_node,rdf_term])`
-%         Value `rdf_node` means that only subject and object terms are
-%         considered as vertices (default).
-%         Value `rdf_term` means that subject, predicate and object terms
-%         are considered as vertices.
 % @arg Graph The atomic name of an RDF graph.
 % @arg Vertex An RDF term.
 
-rdf_vertex(O1, G, V):-
-  % RDF nodes or RDF terms?
-  select_option(vertex(VerticePredicate), O1, O2, rdf_node),
-  call(VerticePredicate, G, V),
+rdf_vertex(O, G, V):-
+  (rdf(V, _, _, G) ; rdf(_, V, _, G) ; rdf(_, _, V, G)),
+  rdf_vertex_check(O, V).
 
-  % RDF literals.
-  % If the literal setting is `collapse` or `hide' then literals
-  % are not allowed as vertices.
-  unless(
-    select_option(literals(show), O2, O3, collapse),
-    V \= literal(_Literal)
-  ),
-
-  % RDF lists.
-  if_then(
-    select_option(rdf_list(concise), O3, _O4, full),
-    if_then_else(
-      is_rdf_list(V),
-      % Only RDF list vertices that are list heads are included.
-      \+ rdf_has(_, rdf:rest, V),
-      % Non-RDF list vertices should not occur as a member of an RDF list.
-      \+ rdf_has(_, rdf:first, V)
-    )
+% Typed literals are only included when `literals-all`.
+rdf_vertex_check(O, literal(type(_Datatype,_Value))):-
+  option(literals(all), O, all), !.
+% Untyped literals.
+rdf_vertex_check(O, Literal1):-
+  (
+    Literal1 = literal(Literal2)
+  ;
+    Literal1 = literal(lang(_Language, Literal2))
+  ), !,
+  
+  option(literals(IncludeLiterals), O, all),
+  % No literal is allowed as vertex.
+  IncludeLiterals \== none,
+  
+  (
+    IncludeLiterals == preferred_label
+  ->
+    % Only preferred labels are allowed as vertices.
+    option(language(Language), O, en),
+    rdfs_preferred_label(_RDF_Term, Language, Literal2)
+  ;
+    % All literals are vertices.
+    true
   ).
+% Non-literal RDF terms.
+% With setting `rdf_list=false` RDF terms should not be part of an RDF list.
+rdf_vertex_check(O, V):-
+  select_option(rdf_list(false), O, true),
+  % Only RDF list vertices that are list heads are included.
+  \+ rdf_has(_, rdf:rest, V),
+  % Non-RDF list vertices should not occur as a member of an RDF list.
+  \+ rdf_has(_, rdf:first, V).
+rdf_vertex_check(_O, _V).
 
 % @tbd What is this?
 rdf_vertex_equivalence(X, Y):-
@@ -306,3 +284,4 @@ rdf_vertices( G, Vs):-
 
 rdf_vertices(O, G, Vs):-
   setoff(V, rdf_vertex(O, G, V), Vs).
+

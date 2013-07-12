@@ -33,13 +33,15 @@ rdf_edge_label_replace/2.
 # Vertex coloring
 
 The procedure for determining the color of a vertex:
-    1. Look whether the =colorscheme= option is not set to =none=.
-    2. See whether the vertex is an individual of a colored class.
-    3. See whether the vertex belongs to a colored namespace.
-    4. If at least one vertex is not colored by class or namespace, then all
-       namespaces are (re)assigned colors.
+  1. Look whether the =colorscheme= option is not set to =none=.
+  2. See whether the vertex is an individual of a colored class.
+  3. See whether the vertex belongs to a colored namespace.
+  4. If at least one vertex is not colored by class or namespace, then all
+     namespaces are (re)assigned colors.
 
 # Vertex naming
+
+...
 
 @author Wouter Beek
 @version 2013/01-2013/03, 2013/07
@@ -67,10 +69,6 @@ The procedure for determining the color of a vertex:
 % COLOR
 :- rdf_meta(rdf_register_class_color(+,r,+)).
 :- rdf_meta(rdf_vertex_color_by_namespace(+,+,r,-)).
-% EDGES
-:- rdf_meta(rdf_edge_arrow_head_(r,-)).
-:- rdf_meta(rdf_edge_name(r,-)).
-:- rdf_meta(rdf_edge_style_(r,?)).
 % VERTICES
 :- rdf_meta(rdf_vertex_color(+,+,r,-)).
 :- rdf_meta(rdf_vertex_peripheries(r,-)).
@@ -156,13 +154,24 @@ rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
 %!   +GraphTerm:compound
 %! ) is det.
 % The following options are supported:
-%   1. `directed(+DirectedGraph:boolean)` Whether or not the
-%      directionality of the edge is taken into account.
-%   2. `literals(+DisplayLiterals:oneof([collapse,hide,labels_only,show]))`
-%      Whether or not literals are allowed as vertices in edges.
-%      Default: `collapse`.
-%   3. `named_edges(+Named:boolean)`
-%      Whether edges are qualified by the RDF predicate term.
+%   1. `colorscheme(+ColorScheme:atom)`
+%      The colorscheme for the colors assigned to vertices and edges.
+%      Supported values are `svg`, `x11` (default), and the
+%      Brewer colorschemes (see module [brewer.pl].
+%   2. `edge_labels(oneof([all,none,replace]))`
+%      Whether edge labels are included (`all`),
+%      not included (`none`), or
+%      replaced by alternative labels (`replace`, default).
+%   3. `language(+Language:atom)`
+%      The atomic language tag of the language that is preferred for
+%      use in the RDF term's name.
+%      The default value is `en`.
+%   4. `literals(+Include:oneof([all,none,preferred_label]))`
+%      Whether all (`all`, default), none (`none`) or only preferred label
+%      literals (`preferred_label`) are included as vertices.
+%   5. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
+%      Whether or not literals are included in the name of the RDF term.
+%      The default value is `uri_only`.
 
 export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   % Vertices
@@ -208,42 +217,55 @@ rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
 rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
   rdf_vertex_color(O, G, P, E_Color).
 
-%! rdf_edge_name(+Options:list(nvpair), +Edge:edge, -EdgeName:atom) is det.
+%! rdf_edge_name(
+%!   +Options:list(nvpair),
+%!   +Edge:compound,
+%!   -EdgeName:list(nvpair)
+%! ) is det.
 % Returns a name for the given edge.
 %
-% @arg Options The following options are supported:
-%      1. `edge_labels(oneof([all,replace]))`
+% The following options are supported:
+%   1. `colorscheme(+ColorScheme:atom)`
+%      The colorscheme for the colors assigned to vertices and edges.
+%      Supported values are `svg`, `x11` (default), and the
+%      Brewer colorschemes (see module [brewer.pl].
+%   2. `edge_labels(oneof([all,none,replace]))`
+%      Whether edge labels are included (`all`),
+%      not included (`none`), or
+%      replaced by alternative labels (`replace`, default).
 
-rdf_edge_name(O, _FromV-P-_ToV, E_Name):-
-  % Some edge labels are not displayed.
-  % This concerns RDF(S) terminology.
+% Make use of explicit replacements.
+rdf_edge_name(O, _FromV-P-_ToV, [label(E_Name)]):-
+  option(edge_labels(replace), O, replace), !,
   (
-    % Make use of explicit replacements.
-    option(edge_labels(replace), O),
-    % Apply the explicit replacement.
-    rdf_edge_name(P, E_Name)
+    rdf_edge_name(P, Replacement)
   ->
-    true
+    E_Name = Replacement
   ;
-    % The edge name is the predicate RDF term.
     rdf_term_name(O, P, E_Name)
   ).
+rdf_edge_name(O, _FromV-P-_ToV, [label(E_Name)]):-
+  option(edge_labels(all), O, replace), !,
+  % The edge name is the name of the predicate term.
+  rdf_term_name(O, P, E_Name).
+rdf_edge_name(_O, _E, []).
 
-rdf_edge_name(rdf:type,           '').
-rdf_edge_name(rdfs:label,         '').
-rdf_edge_name(rdfs:subClassOf,    '').
-rdf_edge_name(rdfs:subPropertyOf, '').
+%! rdf_edge_name(+Edge:uri, -Replacement:atom) is det.
+% Some edge labels are not displayed (e.g., RDF(S) terminology).
+
+rdf_edge_name(P, ''):-
+  rdf_memberchk(
+    P,
+    [rdf:type, rdfs:label, rdfs:subClassOf, rdfs:subPropertyOf]
+  ).
 
 %! rdf_edge_style(+Edge:edge, -E_Style:atom) is det.
 
-rdf_edge_style(_FromV-P-_ToV, E_Style):-
-  once(rdf_edge_style_(P, E_Style)).
-
-rdf_edge_style_(rdf:type,           solid ).
-rdf_edge_style_(rdfs:label,         dotted).
-rdf_edge_style_(rdfs:subClassOf,    solid ).
-rdf_edge_style_(rdfs:subPropertyOf, solid ).
-rdf_edge_style_(_RDF_Property,      solid ).
+rdf_edge_style(_FromV-P-_ToV, solid):-
+  rdf_memberchk(P, [rdf:type, rdfs:subClassOf, rdfs:subPropertyOf]), !.
+rdf_edge_style(_FromV-P-_ToV, dotted):-
+  rdf_memberchk(P, [rdfs:label]), !.
+rdf_edge_style(_E, solid).
 
 rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
   % Ids.
@@ -258,17 +280,16 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
   rdf_edge_color(O, G, E, E_Color),
 
   % Label.
-  rdf_edge_name(O, E, E_Name),
+  rdf_edge_name(O, E, E_NameLIST),
 
   % Style.
   rdf_edge_style(E, E_Style),
 
-  E_Attrs = [
-    arrow_type(E_ArrowHead),
-    color(E_Color),
-    label(E_Name),
-    style(E_Style)
-  ].
+  merge_options(
+    E_NameLIST,
+    [arrow_type(E_ArrowHead), color(E_Color), style(E_Style)],
+    E_Attrs
+  ).
 
 
 
@@ -282,12 +303,15 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
 %! ) is det.
 % Returns a color name for the given vertex.
 %
+% The following options are supported:
+%   1. `colorscheme(+ColorScheme:atom)`
+%      The colorscheme for the colors assigned to vertices and edges.
+%      Supported values are `svg`, `x11` (default), and the
+%      Brewer colorschemes (see module [brewer.pl].
+%
 % @arg Options A list of name-value pairs.
-%        1. =colorscheme(ColorScheme:oneof([none,svg,x11]))= The atomic name
-%           of the color scheme from which the color names are drawn.
-%        2. =graph(Graph:atom)= The atomic name of a graph.
 % @arg Vertex A vertex.
-% @arg Color The atomic name of a color for the given vertex.
+% @arg Color A color name.
 
 rdf_vertex_color(O, _G, _V, black):-
   option(colorscheme(none), O), !.

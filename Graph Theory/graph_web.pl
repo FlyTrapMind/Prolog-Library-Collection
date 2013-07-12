@@ -50,11 +50,8 @@ Web front-end for generic graph visualizations.
 
 circle_graph_web(Graph, html/wallace/[GraphElement | TableMarkup]):-
   export_graph(
-    [
-      edge_labels(all),
-      out(svg),
-      vertex_coordinate(circular_vertice_coordinate)
-    ],
+    [edge_labels(all)],
+    circular_vertice_coordinate,
     Graph,
     GraphElement
   ),
@@ -84,7 +81,7 @@ harary_web(K, N, Markup):-
 % @arg Graph
 % @arg Markup
 
-random_graph_web(G, [GraphElement, TableElement]):-
+random_graph_web(G, [GraphElement,TableElement]):-
   random_vertex_coordinate([], G, rdf_vertices, VCoords),
   vertice_coordinates_web(G, VCoords, GraphElement),
   vertice_coordinates_table(VCoords, TableElement).
@@ -153,7 +150,7 @@ vertex_web(G, V1, SVG):-
   term_to_atom(V1, V2),
   rdf_global_id(G:V2, V),
   export_vertex(
-    [directed(true),edge_labels(all),literals(collapse)],
+    [edge_labels(all), literals(preferred_label)],
     rdf_neighbors,
     V,
     G_Term

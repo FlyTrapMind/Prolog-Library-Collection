@@ -586,7 +586,7 @@ rdf_term_name(O, RDF_Term, Name):-
   % Recursively retrieve the contents of the RDF list.
   rdf_list(RDF_Term, RDF_Terms),
   maplist(rdf_term_name(O), RDF_Terms, Names),
-  print_list([begin(''),end(''),separator('\n')], atom(Name), Names).
+  print_list(atom(Name), Names).
 % A literal with a datatype.
 rdf_term_name(O, literal(type(Datatype,CanonicalValue)), Name):- !,
   % The datatype name.
@@ -686,17 +686,6 @@ rdf_schema(G, Ts):-
       rdf(S, P, O, G)
     ),
     Ts
-  ).
-
-rdf_term_name_uri(URI, URI_Name):-
-  % If the URI has XML namespace prefixes, then the one that replaces
-  % the longest URI substring is used.
-  (
-    rdf_resource_to_namespace(URI, XML_NamespacePrefix, URI_LocalName)
-  ->
-    atomic_list_concat([XML_NamespacePrefix,URI_LocalName], ':', URI_Name)
-  ;
-    term_to_atom(URI, URI_Name)
   ).
 
 rdf_triple_name(S, P, O, T_Name):-
