@@ -118,14 +118,16 @@ rdf_edge(G, E):-
 %! rdf_edge(+Options:list(nvpair), +Graph:atom, ?Edge:edge) is nondet.
 % RDF edges between resources.
 %
-% @arg Options A list of the following name-value pairs:
-%      1. `directed(+DirectedGraph:boolean)` Whether or not the
-%         directionality of the edge is taken into account.
-%      2. `literals(+ShowLiterals:oneof([collapse,hide,labels_only,show]))`
-%         Whether or not literals are allowed as vertices in edges.
-%         Default: `collapse`.
-%      3. `named_edges(+Named:boolean)`
-%         Whether edges are qualified by the RDF predicate term.
+% The following options are supported:
+%   1. `directed(+DirectedGraph:boolean)` Whether or not the
+%      directionality of the edge is taken into account.
+%   2. `literals(+DisplayLiterals:oneof([collapse,hide,labels_only,show]))`
+%      Whether or not literals are allowed as vertices in edges.
+%      Default: `collapse`.
+%   3. `named_edges(+Named:boolean)`
+%      Whether edges are qualified by the RDF predicate term.
+%
+% @arg Options A list of name-value pairs.
 % @arg Graph The atomic name of an RDF graph.
 % @arg Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
 

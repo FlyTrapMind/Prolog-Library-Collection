@@ -22,41 +22,6 @@
 
 Generic graph export module.
 
-# Options
-
-The following options are used for exporting graphs:
-  1. `colorscheme(+ColorScheme:oneof([none,svg,x11]))`
-     The colorscheme for the colors assigned to vertices and edges.
-     Default: `svg`.
-     Supported for: GraphViz, HTML_TABLE.
-  2. `edge_labels(oneof([all,none,replace])`
-     Whether edge labels are displayed, not displayed, or
-     replaced by alternative labels.
-     Default: `none`.
-     Supported for: RDF, UGRAPH.
-  4. `language(+Language:atom)`
-     The atomic tag of the language that is preferred for vertex naming.
-     Default: `en`.
-  5. `literals(oneof([collapse,hide,labels_only,show]))`
-     Whether or not literals are allowed as vertices in the edge.
-     Default: `collapse`.
-     Supported for: RDF.
-  7. `rdf_list(onef([concise,full]))`
-     Whether vertices that are part of an RDF list should be included or not.
-     Default: `full`.
-     Supported for: RDF.
-  8. `vertex(oneof([rdf_node,rdf_term])`
-     `rdf_node` means that only subject and object terms are
-     considered as vertices.
-     `rdf_term` means that subject, predicate and object terms
-     are considered as vertices.
-     Default: `rdf_node`.
-     Supported for: RDF.
-  9. `vertex_coordinate(oneof([none,circular_vertice_coordinate,lookup_vertice_coordinate,random]))`
-     The algorithm used for determining the vertex coordinates.
-     Default: `none`.
-     Supported for: SVG.
-
 # Graph Interchange Format
 
 Better known as the GIF format :-).
@@ -94,8 +59,43 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 
 
 
+%! export_graph(+Options:list(nvpair), +Graph, -GraphTerm:compound) is det.
+% @see A simplified version of export_graph/4.
+
 export_graph(O, G, G_Term):-
   export_graph(O, random_vertex_coordinate, G, G_Term).
+
+%! export_graph(
+%!   +Options:list(nvpair),
+%!   :CoordinateFunction,
+%!   +Graph,
+%!   -GraphTerm:compound
+%! ) is det.
+% The following options are used for exporting graphs:
+%  1. `colorscheme(+ColorScheme:atom)`
+%     The colorscheme for the colors assigned to vertices and edges.
+%     Supported values are `svg`, `x11` (default), and the
+%     Brewer colorschemes (see module [brewer.pl].
+%  2. `directed(+Directedness:boolean)`
+%      Whether or not the directionality of the edges is taken into account.
+%  3. `edge_labels(oneof([all,none,replace])`
+%     Whether edge labels are included (`all`),
+%     not included (`none`, default), or
+%     replaced by alternative labels.
+%  4. `language(+Language:atom)`
+%     The preferred language that is used for natural language content.
+%     The default value is `en` (English).
+%  5. `literals(+DisplayLiterals:oneof([all,none,preferred_label]))`
+%     Whether all (`all`, default), none (`none`) or only preferred label
+%     literals (`preferred_label`) are allowed as vertices in
+%     the exported graph term.
+%  6. `rdf_list(+Included:boolean)`
+%     Whether vertices that are part of an RDF list should be
+%     included (`true`, default) or not (`false`).
+%  7. `uri_desc(+URI_Description:oneof([uri_only,with_literals,with_preferred_label])`
+%     The way in which URI vertices are descibed.
+%
+% @tbd Enforce that language codes belong to the official RFC standard.
 
 %export_graph(O, CoordFunc, G, G_Term):-
 %  is_dgraph(G),

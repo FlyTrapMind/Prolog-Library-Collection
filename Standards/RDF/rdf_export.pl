@@ -150,6 +150,20 @@ rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
 
 % GRAPH EXPORT %
 
+%! export_rdf_graph(
+%!   +Options:list(nvpair),
+%!   +Graph:atom,
+%!   +GraphTerm:compound
+%! ) is det.
+% The following options are supported:
+%   1. `directed(+DirectedGraph:boolean)` Whether or not the
+%      directionality of the edge is taken into account.
+%   2. `literals(+DisplayLiterals:oneof([collapse,hide,labels_only,show]))`
+%      Whether or not literals are allowed as vertices in edges.
+%      Default: `collapse`.
+%   3. `named_edges(+Named:boolean)`
+%      Whether edges are qualified by the RDF predicate term.
+
 export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   % Vertices
   rdf_vertices(G, Vs),

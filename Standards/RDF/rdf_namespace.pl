@@ -165,8 +165,7 @@ rdf_resource_to_namespace(Resource, Namespace, Name):-
     Pairs
   ),
   (
-    Pairs == [Namespace-Name],
-    !
+    Pairs == [Namespace-Name]
   ;
     member(Namespace-Name, Pairs),
     atom_length(Name, NameLength),
@@ -175,5 +174,5 @@ rdf_resource_to_namespace(Resource, Namespace, Name):-
       atom_length(OtherName, OtherNameLength),
       OtherNameLength < NameLength
     ))
-  ).
+  ), !.
 

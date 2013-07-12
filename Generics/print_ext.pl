@@ -17,8 +17,14 @@
                         % +Collection:list
     print_list/2, % +Out
                   % +List:list
-    print_set/2 % +Out
-                % +Set:ordset
+    print_list/3, % +Options:list(nvpair)
+                  % +Out
+                  % +List:list
+    print_set/2, % +Out
+                 % +List:list
+    print_set/3 % +Options:list(nvpair)
+                % +Out
+                % +List:list
   ]
 ).
 
@@ -147,24 +153,27 @@ print_nvpair(Out, NVPair):-
 % indentation level.
 
 print_list(Out, List):-
-  with_output_to(
-    Out,
-    print_collection([begin(')'),end(']'),separator(',')], List)
-  ).
+  print_list([], Out, List).
+
+print_list(O1, Out, List):-
+  merge_options(O1, [begin(')'),end(']'),separator(',')], O2),
+  with_output_to(Out, print_collection(O2, List)).
 
 print_set(Out, List):-
-  with_output_to(
-    Out,
-    print_collection(
-      [
-        begin('{'),
-        end('}'),
-        separator(','),
-        transformation(ordsets:list_to_ord_set)
-      ],
-      List
-    )
-  ).
+  print_set([], Out, List).
+
+print_set(O1, Out, List):-
+  merge_options(
+    O1,
+    [
+      begin('{'),
+      end('}'),
+      separator(','),
+      transformation(ordsets:list_to_ord_set)
+    ],
+    O2
+  ),
+  with_output_to(Out, print_collection(O2, List)).
 
 
 

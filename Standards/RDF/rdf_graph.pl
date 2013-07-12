@@ -530,6 +530,11 @@ rdf_predicates(Graph, Predicates):-
     Predicates
   ).
 
+rdf_subject(G, S):-
+  nonvar_det(rdf_subject_(G, S)).
+rdf_subject_(G, S):-
+  rdf(S, _P, _O, G).
+
 %! rdf_term(?Graph:graph, ?Term:uri) is nondet.
 % Pairs of graphs and terms that occur in that graph.
 % A term is either a subject, predicate or object term
@@ -543,6 +548,9 @@ rdf_term(Graph, Term):-
 rdf_term(Graph, Term):-
   rdf_predicate(Graph, Term).
 
+%! rdf_term_name(+RDF_Term:oneof([bnode,literal,uri]), -Name:atom) is det.
+% @see Simplified version of rdf_term_name/3.
+
 rdf_term_name(RDF_Term, Name):-
   rdf_term_name([], RDF_Term, Name).
 
@@ -553,14 +561,16 @@ rdf_term_name(RDF_Term, Name):-
 %!) is det.
 % Returns a display name for the given RDF term.
 %
-% @arg Options The following options are supported:
-%       1. `language(+Language:atom)`
-%          The atomic language tag of the language that is preferred for
-%          use in the RDF term's name.
-%          The default value is `en`.
-%       2. `literals(+DisplayLiterals:oneof([collapse,labels_only]))`
-%          Whether or not literals are included in the name of the RDF term.
-%          The default value is `collapse`.
+% The following options are supported:
+%   1. `language(+Language:atom)`
+%      The atomic language tag of the language that is preferred for
+%      use in the RDF term's name.
+%      The default value is `en`.
+%   2. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
+%      Whether or not literals are included in the name of the RDF term.
+%      The default value is `uri_only`.
+%
+% @arg Options A list of name-value pairs.
 % @arg RDF_Term An RDF term.
 % @arg Name The atomic name of an RDF term.
 
@@ -569,30 +579,29 @@ rdf_term_name(RDF_Term, Name):-
 rdf_term_name(O, RDF_Terms, Name):-
   is_list(RDF_Terms), !,
   maplist(rdf_term_name(O), RDF_Terms, Names),
-  print_set(atom(Name), Names).
+  print_set([begin(''),end(''),separator('\n')], atom(Name), Names).
 % An RDF list.
 rdf_term_name(O, RDF_Term, Name):-
   is_rdf_list(RDF_Term), !,
   % Recursively retrieve the contents of the RDF list.
   rdf_list(RDF_Term, RDF_Terms),
   maplist(rdf_term_name(O), RDF_Terms, Names),
-  print_list(atom(Name), Names).
+  print_list([begin(''),end(''),separator('\n')], atom(Name), Names).
 % A literal with a datatype.
-rdf_term_name(_O, literal(type(Datatype,CanonicalValue)), Name):- !,
+rdf_term_name(O, literal(type(Datatype,CanonicalValue)), Name):- !,
+  % The datatype name.
+  rdf_term_name(O, Datatype, DatatypeName),
+  % The value name.
   (
     % Model RDF_DATATYPE supports this datatype.
     rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue)
   ->
-    format(atom(Name), '"~w"^^~w', [LexicalValue,DatatypeName])
+    ValueName = LexicalValue
   ;
-    % The datatype has a registered namespace prefix.
-    rdf_global_id(DatatypeNamespace:DatatypeLocal, Datatype)
-  ->
-    format(atom(Name), '"~w"^^~w:~w', [Value,DatatypeNamespace,DatatypeLocal])
-  ;
-    % Not all datatypes have their namespace defined.
-    format(atom(Name), '"~w"^^~w', [Value,Datatype])
-  ).
+    ValueName = CanonicalValue
+  ),
+  % The combined name.
+  format(atom(Name), '"~w"^^~w', [DatatypeName,ValueName]).
 % A plain literal with a language tag.
 rdf_term_name(_O, literal(lang(Language,Literal)), Name):- !,
   format(atom(Name), '"~w"@~w', [Literal,Language]).
@@ -606,78 +615,56 @@ rdf_term_name(_O, BNode, Name):-
   rdf_is_bnode(BNode), !,
   Name = BNode.
 % Now come the various URIs...
-% The RDF term has a label and is set to displaying labels
-% as the only literals.
-% If there is no label, then we use a name that is based on the URI
-% of the RDF term.
+% Only the URI is used. XML namespace prefixes are used when present.
 rdf_term_name(O, RDF_Term, Name):-
-  option(literals(labels_only), O, collapse),
-  option(language(Lang), O, en), !,
-  rdfs_preferred_label(RDF_Term, Lang, Name).
+  option(uri_desc(uri_only), O, uri_only), !,
+  rdf_term_uri(RDF_Term, Name).
+% If the RDF term has a label, then this is included in its name.
+% This is not the case for non-label literals.
+rdf_term_name(O, RDF_Term, Name):-
+  option(uri_desc(with_preferred_label), O, uri_only), !,
+  option(language(Lang), O, en),
+  rdfs_preferred_label(RDF_Term, Lang, Label),
+  print_list(O, atom(Name), [RDF_Term,Label]).
 % The RDF term is set to collate all literals that (directly) relate to it.
-% Only do this when there is at least one literal that can be collated.
-rdf_term_name(O, RDF_Term, Name3):-
-  % First display the name.
-  (
-    % Use the label as the name, if it is present.
-    % Also, prefer the given language.
-    option(language(Lang), O, en),
-    rdfs_preferred_label(RDF_Term, Lang, Name1)
-  ->
-    % Quite a useless step, I admit.
-    Name2 = Name1
-  ;
-    % Otherwise, compase a name out of the namespace prefix
-    % and the local name.
-    rdf_resource_to_namespace(RDF_Term, Namespace, Name1)
-  ->
-    atomic_list_concat([Namespace, Name1], ':', Name2)
-  ;
-    % If all else fails...
-    term_to_atom(RDF_Term, Name2)
-  ),
-
-  % Now come the related literals, but only if these are set to be
-  % collapsed into the (directly) related RDF term.
-  % Note that this is not the default, but has to be set explicitly
-  % in the options.
-  (
-    option(literals(collapse), O, collapse)
-  ->
-    findall(
-      LitName,
-      (
-        rdf_has(RDF_Term, _P, Lit),
-        rdf_is_literal(Lit),
-        rdf_term_name(O, Lit, LitName)
-      ),
-      Names1
+rdf_term_name(O, RDF_Term, Name):-
+  option(uri_desc(with_literals), O, uri_only), !,
+  rdf_term_uri(RDF_Term, URI_Name),
+  
+  % Labels are treated specially: only the preferred label is included.
+  option(language(Lang), O, en), !,
+  rdfs_preferred_label(RDF_Term, Lang, Label),
+  
+  % Now come the related non-label literals.
+  findall(
+    LiteralName,
+    (
+      rdf_has(RDF_Term, P, Literal),
+      rdf_is_literal(Literal),
+      % Exclude labels.
+      \+ rdf_global_id(rdfs:type, P),
+      rdf_term_name(O, Literal, LiteralName)
     ),
-    % In case there are no literals we use the name from the prior procedure.
-    % Otherwise, use these literals.
-    Names1 \== []
-  ->
-    Names2 = Names1
-  ;
-    Names2 = [Name2]
+    LiteralNames
   ),
-
-  % Done!
-  print_set(atom(Name3), Names2), !.
-% URI reference.
-rdf_term_name(_O, URI, Name):- !,
-  (
-    rdf_global_id(Namespace:Local, URI)
-  ->
-    format(atom(Name), '~w:~w', [Namespace,Local])
-  ;
-    % Not all URIs have a registered namespace prefix.
-    Name = URI
+  
+  print_set(
+    [begin(''),end(''),separator('\n')],
+    atom(Name),
+    [URI_Name,Label,LiteralNames]
   ).
 % We're out of options here...
-rdf_term_name(_O, Name, Name).
+rdf_term_name(_O, RDF_Term, Name):-
+  term_to_atom(RDF_Term, Name).
 
-
+% The URI has XML namespace prefixes. Take the one that stands for
+% the longest URI substring.
+rdf_term_uri(URI, Name):-
+  rdf_resource_to_namespace(URI, XML_NamespacePrefix, URI_LocalName), !,
+  atomic_list_concat([XML_NamespacePrefix,URI_LocalName], ':', Name).
+% The URI has no XML namespace prefix.
+rdf_term_uri(URI, Name):-
+  term_to_atom(URI, Name).
 
 rdf_schema(G, Ts):-
   setoff(
@@ -701,10 +688,16 @@ rdf_schema(G, Ts):-
     Ts
   ).
 
-rdf_subject(G, S):-
-  nonvar_det(rdf_subject_(G, S)).
-rdf_subject_(G, S):-
-  rdf(S, _P, _O, G).
+rdf_term_name_uri(URI, URI_Name):-
+  % If the URI has XML namespace prefixes, then the one that replaces
+  % the longest URI substring is used.
+  (
+    rdf_resource_to_namespace(URI, XML_NamespacePrefix, URI_LocalName)
+  ->
+    atomic_list_concat([XML_NamespacePrefix,URI_LocalName], ':', URI_Name)
+  ;
+    term_to_atom(URI, URI_Name)
+  ).
 
 rdf_triple_name(S, P, O, T_Name):-
   maplist(rdf_term_name, [S,P,O], [S_Name,P_Name,O_Name]),

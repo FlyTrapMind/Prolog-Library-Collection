@@ -327,13 +327,7 @@ cubic(V_P, G):-
 
 %! degree(+Graph, +Vertex:vertex, -Degree:integer) is det.
 % Returns the degree of the given vertex.
-%
-% @arg Options A list of name-value pairs.
-%        1. =graph(Graph:ugraph)=
-%           Supported: RDF, UGRAPH.
 %        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
-%           Whether or not literals are allowed as vertices in the =Edge=.
-%           Supported for: RDF.
 
 degree(G, V, Degree):-
   neighbors(G, V, Ns),
