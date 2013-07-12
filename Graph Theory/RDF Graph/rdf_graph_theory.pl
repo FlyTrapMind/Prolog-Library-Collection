@@ -224,11 +224,11 @@ rdf_vertex_check(O, Literal1):-
   ;
     Literal1 = literal(lang(_Language, Literal2))
   ), !,
-  
+
   option(literals(IncludeLiterals), O, all),
   % No literal is allowed as vertex.
   IncludeLiterals \== none,
-  
+
   (
     IncludeLiterals == preferred_label
   ->
@@ -240,14 +240,16 @@ rdf_vertex_check(O, Literal1):-
     true
   ).
 % Non-literal RDF terms.
+% No restriction on RDF lists.
+rdf_vertex_check(O, _V):-
+  option(rdf_list(true), O, true), !.
 % With setting `rdf_list=false` RDF terms should not be part of an RDF list.
 rdf_vertex_check(O, V):-
-  select_option(rdf_list(false), O, true),
+  option(rdf_list(false), O, true),
   % Only RDF list vertices that are list heads are included.
   \+ rdf_has(_, rdf:rest, V),
   % Non-RDF list vertices should not occur as a member of an RDF list.
   \+ rdf_has(_, rdf:first, V).
-rdf_vertex_check(_O, _V).
 
 % @tbd What is this?
 rdf_vertex_equivalence(X, Y):-

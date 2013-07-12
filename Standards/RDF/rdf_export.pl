@@ -48,6 +48,7 @@ The procedure for determining the color of a vertex:
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -114,7 +115,7 @@ rdf_register_class_color(G, Class, ClassColor):-
   db_replace_novel(class_color(G, Class, ClassColor)).
 
 rdf_register_edge_style(RDF_Term, EdgeStyle):-
-  db_replace_novel(rdf_edge_style(RDF_Term, EdgeStyle)).
+  db_replace_novel(rdf_edge_style_(RDF_Term, EdgeStyle)).
 
 rdf_register_namespace_color(G, Namespace, NamespaceColor):-
   db_replace_novel(namespace_color(G, Namespace, NamespaceColor)).
@@ -174,13 +175,19 @@ rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
 %      The default value is `uri_only`.
 
 export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
-  % Vertices
-  rdf_vertices(G, Vs),
-  maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
-
-  % Edges
-  rdf_edges(G, Es),
+  % First edges, them vertices.
+  rdf_edges(O, G, Es),
+  setoff(
+    V,
+    ((
+      member(V-_-_, Es)
+    ;
+      member(_-_-V, Es)
+    )),
+    Vs
+  ),
   maplist(rdf_edge_term(O, G, Vs), Es, E_Terms),
+  maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
 
   % Graph
   rdf_graph_name(G, G_Name),
@@ -197,14 +204,15 @@ rdf_graph_name(G, G).
 
 %! rdf_edge_arrow_head(+Edge:edge, -E_ArrowHead:atom) is det.
 
-rdf_edge_arrow_head(_FromV-P-_ToV, E_ArrowHead):-
-  once(rdf_edge_arrow_head_(P, E_ArrowHead)).
-
-rdf_edge_arrow_head_(rdf:type,           empty  ).
-rdf_edge_arrow_head_(rdfs:label,         none   ).
-rdf_edge_arrow_head_(rdfs:subClassOf,    box    ).
-rdf_edge_arrow_head_(rdfs:subPropertyOf, diamond).
-rdf_edge_arrow_head_(_RDF_Property,      normal ).
+rdf_edge_arrow_head(_FromV-P-_ToV, box):-
+  rdf_memberchk(P, [rdfs:subClassOf]), !.
+rdf_edge_arrow_head(_FromV-P-_ToV, diamond):-
+  rdf_memberchk(P, [rdfs:subPropertyOf]), !.
+rdf_edge_arrow_head(_FromV-P-_ToV, empty):-
+  rdf_memberchk(P, [rdf:type]), !.
+rdf_edge_arrow_head(_FromV-P-_ToV, none):-
+  rdf_memberchk(P, [rdfs:label]), !.
+rdf_edge_arrow_head(_E, normal).
 
 rdf_edge_color(O, _G, _E, black):-
   option(colorscheme(none), O, none), !.
@@ -265,6 +273,9 @@ rdf_edge_style(_FromV-P-_ToV, solid):-
   rdf_memberchk(P, [rdf:type, rdfs:subClassOf, rdfs:subPropertyOf]), !.
 rdf_edge_style(_FromV-P-_ToV, dotted):-
   rdf_memberchk(P, [rdfs:label]), !.
+% Dynamic assertion.
+rdf_edge_style(E, E_Style):-
+  rdf_edge_style_(E, E_Style), !.
 rdf_edge_style(_E, solid).
 
 rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
@@ -287,7 +298,7 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
 
   merge_options(
     E_NameLIST,
-    [arrow_type(E_ArrowHead), color(E_Color), style(E_Style)],
+    [arrowhead(E_ArrowHead), color(E_Color), style(E_Style)],
     E_Attrs
   ).
 
@@ -373,13 +384,14 @@ rdf_vertex_picture(G, V, V_Picture):-
   once(rdf_datatype(V, _P, image, V_Picture, G)).
 
 %! rdf_vertex_shape(+RDF_Term:oneof([bnode,literal,uri]), -Shape:atom) is det.
+% The following shapes are supported:
+%   * `circle`
+%   * `ellipse`
+%   * `hexagon`
+%   * `octagon`
+%   * `plaintext`
+%
 % @arg Shape The atomic name of a vertex shape.
-%      The following shapes are supported:
-%      * `circle`
-%      * `ellipse`
-%      * `hexagon`
-%      * `octagon`
-%      * `plaintext`
 
 % RDF literals.
 rdf_vertex_shape(literal(_Literal), plaintext):- !.

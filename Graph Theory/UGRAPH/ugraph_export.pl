@@ -38,7 +38,7 @@ The following attributes are supported:
   edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs)
 
 The following attributes are supported:
-  * `arrow_type(ArrowType:atom)`
+  * `arrowhead(ArrowType:atom)`
   * `color(Color:atom)`
   * `label(Name:atom)`
   * `style(Style:atom)`
@@ -137,7 +137,7 @@ export_ugraph_edge(Vs, FromV-ToV, edge(FromV_Id, ToV_Id, E_Attrs)):-
   ugraph_edge_name(FromV-ToV, E_Name),
   ugraph_edge_style(FromV-ToV, E_Style),
   E_Attrs = [
-    arrow_type(E_ArrowHead),
+    arrowhead(E_ArrowHead),
     color(E_Color),
     label(E_Name),
     style(E_Style)

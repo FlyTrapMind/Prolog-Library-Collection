@@ -2,7 +2,7 @@
   rdfs_read,
   [
     load_rdfs_schema/0,
-    
+
 % ALTS
     rdfs_alt/2, % ?Alt:uri
                 % ?Graph:atom
@@ -256,6 +256,11 @@ rdf_collection0(Collection, Contents, Graph):-
 %! ) is nondet.
 % Multiple labels are returned (nondet) in a descending preference order.
 
+% Ensure that given labels are atoms.
+rdfs_preferred_label(RDF_Term, Language, Label1):-
+  nonvar(Label1), \+ atom(Label1), !,
+  term_to_atom(Label1, Label2),
+  rdfs_preferred_label(RDF_Term, Language, Label2).
 % Labels with the given language code are preferred.
 rdfs_preferred_label(RDF_Term, Language, Label):-
   rdfs_label(RDF_Term, Language, Label), !.

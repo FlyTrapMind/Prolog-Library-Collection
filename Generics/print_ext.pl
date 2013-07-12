@@ -156,7 +156,7 @@ print_list(Out, List):-
   print_list([], Out, List).
 
 print_list(O1, Out, List):-
-  merge_options(O1, [begin(')'),end(']'),separator(',')], O2),
+  merge_options(O1, [begin('['),end(']'),separator(',')], O2),
   with_output_to(Out, print_collection(O2, List)).
 
 print_set(Out, List):-

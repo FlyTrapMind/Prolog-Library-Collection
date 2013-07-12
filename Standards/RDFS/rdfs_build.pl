@@ -1,7 +1,7 @@
 :- module(
   rdfs_build,
   [
-% CLASS HIERARCHY %
+% CLASS HIERARCHY
     rdfs_assert_class/2, % +Class:uri
                          % +Graph:graph
     rdfs_assert_individual/3, % +Individual:uri
@@ -13,7 +13,7 @@
                             % +SuperClass:uri
                             % +Graph:graph
 
-% LABELS %
+% LABELS
     rdfs_assert_label/3, % +Subject:oneof([bnode,uri])
                          % +Label:atom
                          % +Graph:graph
@@ -29,7 +29,7 @@
                              % +Label:atom
                              % +Graph:graph
 
-% PROPERTY HIERARCHY %
+% PROPERTY HIERARCHY
     rdfs_assert_property/2, % +Property:uri
                             % +Graph:atom
     rdfs_assert_subproperty/3 % +Property:uri
@@ -38,7 +38,7 @@
   ]
 ).
 
-/** <module> RDFS build
+/** <module> RDFS_BUILD
 
 Predicates for asseritng RDFS statements in an easy way.
 
@@ -146,7 +146,9 @@ rdfs_assert_subclass(Class, SuperClass, Graph):-
 % @see rdfs_assert_label/4 also specifies the label.
 
 rdfs_assert_label(Subject, Label, Graph):-
-  rdf_assert_literal(Subject, rdfs:label, Label, Graph).
+  % @ tbd Why is this necessary?
+  rdf_global_id(rdfs:label, P),
+  rdf_assert_literal(Subject, P, Label, Graph).
 
 %! rdfs_assert_label(
 %!   +Subject:oneof([bnode,uri]),
@@ -162,13 +164,17 @@ rdfs_assert_label(Subject, Label, Graph):-
 % @arg Graph The atomic name of an RDF graph.
 
 rdfs_assert_label(Subject, Language, Label, Graph):-
-  rdf_assert_literal(Subject, rdfs:label, Language, Label, Graph).
+  % @ tbd Why is this necessary?
+  rdf_global_id(rdfs:label, P),
+  rdf_assert_literal(Subject, P, Language, Label, Graph).
 
 rdfs_retractall_label(Subject, Label, Graph):-
-  rdf_retractall_literal(Subject, rdfs:label, Label, Graph).
+  rdf_global_id(rdfs:label, P),
+  rdf_retractall_literal(Subject, P, Label, Graph).
 
 rdfs_retractall_label(Subject, Language, Label, Graph):-
-  rdf_retractall_literal(Subject, rdfs:label, Language, Label, Graph).
+  rdf_global_id(rdfs:label, P),
+  rdf_retractall_literal(Subject, P, Language, Label, Graph).
 
 
 
