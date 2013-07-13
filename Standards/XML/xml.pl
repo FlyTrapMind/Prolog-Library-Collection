@@ -956,7 +956,7 @@ init_xml:-
 % @see dom_to_xml/4
 
 dom_to_xml(DTD_Name, DOM, XML):-
-  tmp_file_stream(text, TemporaryFile, Out),
+  tmp_file_stream(utf8, TemporaryFile, Out),
   % Set the header to false, since this XML content will be inserted inside
   % a Web page.
   % We do add the stylesheet parsing instruction, since this is allowed by
@@ -967,7 +967,8 @@ dom_to_xml(DTD_Name, DOM, XML):-
     stream_to_atom(In, XML),
     (
       close(In),
-      safe_delete_file(TemporaryFile)
+      % Do not safe-delete temporary files.
+      delete_file(TemporaryFile)
     )
   ).
 

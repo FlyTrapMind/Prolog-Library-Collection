@@ -99,6 +99,7 @@ xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
       ),
       (
         close(In),
+        % Do not safe-delete temporary files.
         delete_file(File)
       )
     ),
