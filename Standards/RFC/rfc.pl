@@ -24,14 +24,16 @@
 
 
 init_rfc:-
-  Graph = rfc,
-  rdfs_assert_class(rfc:'Standard', Graph),
-  init_rfc_1630(Graph),
-  init_rfc_1736(Graph),
-  init_rfc_1737(Graph),
-  init_rfc_1738(Graph),
-  init_rfc_1808(Graph),
-  init_rfc_2396(Graph).
+  RFC_Graph = rfc,
+  rdfs_assert_class(rfc:'Standard', RFC_Graph),
+  init_rfc_1630(RFC_Graph),
+  init_rfc_1736(RFC_Graph),
+  init_rfc_1737(RFC_Graph),
+  init_rfc_1738(RFC_Graph),
+  init_rfc_1808(RFC_Graph),
+  init_rfc_2396(RFC_Graph),
+  W3C_Graph = w3c,
+  init_xml(W3C_Graph).
 
 init_rfc_1630(Graph):-
   rdf_global_id(rfc:'1630', This),
@@ -145,3 +147,36 @@ init_rfc_2396(Graph):-
   rdf_assert(This, rfc:updates, rfc:'1738', Graph),
   rdf_assert(This, rfc:updates, rfc:'1808', Graph).
 
+init_xml(Graph):-
+  % Atoms that are used multiple times.
+  rdf_global_id(w3c:'XML/Core/', XMLWG),
+  rdf_global_id(w3c:'TR/2008/REC-xml-20081126/', This),
+
+  % XML Working Group
+  rdfs_assert_label(XMLWG, 'XML Core Working Group', Graph),
+
+  % XML Recommendation
+  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_datatype(This, w3c:year, gYear, 2008, Graph),
+  rdf_assert_literal(
+    This,
+    w3c:title,
+    'Extensible Markup Language (XML) 1.0 (Fifth Edition)',
+    Graph
+  ),
+  rdf_assert(This, w3c:developed_by, XMLWG, Graph),
+  rdf_assert_literal(This, w3c:author, 'Tim Bray', Graph),
+  rdf_assert_literal(This, w3c:author, 'Jean Paoli', Graph),
+  rdf_assert_literal(This, w3c:author, 'C. M. Sperberg-McQueen', Graph),
+  rdf_assert_literal(This, w3c:author, 'Eve Maler', Graph),
+  rdf_assert_literal(This, w3c:author, 'François Yergeau', Graph),
+  rdf_assert(This, w3c:supercedes, w3c:'TR/2006/REC-xml-20060816/', Graph),
+  % SGML
+  rdf_assert(This, w3c:mentions, iso:'8879', Graph),
+  % Characters
+  rdf_assert(This, w3c:requires, iso:'10646', Graph),
+  rdf_assert(This, w3c:requires, std:'BCP47', Graph),
+  % Language identification tags
+  rdf_assert(This, w3c:requires, std:'IANA-LANGCODES', Graph),
+  % Unicode
+  rdf_assert(This, w3c:requires, std:'Unicode', Graph).

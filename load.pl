@@ -14,9 +14,9 @@ load_pgc:-
 
   % If there is no outer project, then PGC is the project.
   once((
-    user:file_search_path(project, _)
+    user:file_search_path(pgc, _)
   ;
-    assert(user:file_search_path(project, ThisDirectory))
+    assert(user:file_search_path(pgc, ThisDirectory))
   )),
   % If there is not outer project, then PGC is the project.
   once((
@@ -67,7 +67,12 @@ load_pgc:-
   start_log,
 
   % Start Wallace.
-  use_module(server(wallace)),
-  start_wallace.
+  %use_module(server(wallace)),
+  %start_wallace,
+  
+  % @tbd THIS DOES NOT BREAK!
+  %use_module(webqr(test)),
+  
+  true.
 :- load_pgc.
 
