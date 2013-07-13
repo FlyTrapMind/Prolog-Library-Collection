@@ -21,7 +21,7 @@ Web front-end for SPARQL queries.
 @version 2012/12, 2013/03-2013/04
 */
 
-:- use_module(server(web_console)).
+%:- use_module(server(web_console)).
 :- use_module(sparql(sparql_ext)).
 :- use_module(html(html)).
 
@@ -32,8 +32,7 @@ Web front-end for SPARQL queries.
 
 
 default_remote(Remote):-
-  default_remote0(Remote),
-  !.
+  default_remote0(Remote), !.
 default_remote(localhost).
 
 % The default remote musy be registered at the SPARQL backend.
