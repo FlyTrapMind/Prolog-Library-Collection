@@ -914,43 +914,7 @@ Examples:
 :- xml_register_namespace(std, 'http://www.example.org/standards/').
 :- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-:- initialization(init_xml).
 
-
-
-init_xml:-
-  Graph = w3c,
-
-  % XML Working Group
-  rdf_global_id(w3c:'XML/Core/', XMLWG),
-  rdf_assert(XMLWG, rdfs:label, 'XML Core Working Group', Graph),
-
-  % XML Recommendation
-  rdf_global_id(w3c:'TR/2008/REC-xml-20081126/', This),
-  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
-  rdf_assert_datatype(This, w3c:year, gYear, 2008, Graph),
-  rdf_assert(
-    This,
-    w3c:title,
-    literal('Extensible Markup Language (XML) 1.0 (Fifth Edition)'),
-    Graph
-  ),
-  rdf_assert(This, w3c:developed_by, XMLWG, Graph),
-  rdf_assert(This, w3c:author, literal('Tim Bray'), Graph),
-  rdf_assert(This, w3c:author, literal('Jean Paoli'), Graph),
-  rdf_assert(This, w3c:author, literal('C. M. Sperberg-McQueen'), Graph),
-  rdf_assert(This, w3c:author, literal('Eve Maler'), Graph),
-  rdf_assert(This, w3c:author, literal('François Yergeau'), Graph),
-  rdf_assert(This, w3c:supercedes, w3c:'TR/2006/REC-xml-20060816/', Graph),
-  % SGML
-  rdf_assert(This, w3c:mentions, iso:'8879', Graph),
-  % Characters
-  rdf_assert(This, w3c:requires, iso:'10646', Graph),
-  rdf_assert(This, w3c:requires, std:'BCP47', Graph),
-  % Language identification tags
-  rdf_assert(This, w3c:requires, std:'IANA-LANGCODES', Graph),
-  % Unicode
-  rdf_assert(This, w3c:requires, std:'Unicode', Graph).
 
 %! dom_to_xml(+DTD_Name:atom, +DOM:list, -XML:atom) is det.
 % @see dom_to_xml/4

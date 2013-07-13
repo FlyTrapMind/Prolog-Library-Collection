@@ -208,7 +208,7 @@ rdf_save2:-
 
 rdf_save2(Graph):-
   absolute_file_name(
-    project(Graph),
+    project_name(Graph),
     File,
     [access(write), file_type(turtle)]
   ),
