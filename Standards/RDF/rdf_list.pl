@@ -41,6 +41,7 @@ Support for RDF lists.
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 :- rdf_meta(is_rdf_list(r)).
+:- rdf_meta(rdf_list(r,-)).
 :- rdf_meta(rdf_list(+,r,-)).
 :- rdf_meta(rdf_list_first(r,r)).
 :- rdf_meta(rdf_list_last(r,r)).
@@ -80,7 +81,7 @@ rdf_list(RDF_List, List):-
 rdf_list(_O, RDFList, []):-
   rdf_global_id(rdf:nil, RDFList), !.
 rdf_list(O, RDFList, [H1 | T]):-
-  rdf(RDFList, rdf:first, H),
+  rdf_has(RDFList, rdf:first, H),
   (
     option(recursive(true), O, true),
     is_rdf_list(H)

@@ -246,10 +246,13 @@ rdf_vertex_check(O, _V):-
 % With setting `rdf_list=false` RDF terms should not be part of an RDF list.
 rdf_vertex_check(O, V):-
   option(rdf_list(false), O, true),
-  % Only RDF list vertices that are list heads are included.
-  \+ rdf_has(_, rdf:rest, V),
-  % Non-RDF list vertices should not occur as a member of an RDF list.
-  \+ rdf_has(_, rdf:first, V).
+  % The vertex must have some occurrence outside an RDF list.
+  once((
+    rdf(V, _, _)
+  ;
+    rdf(_, P, V),
+    \+ rdf_memberchk(P, [rdf:first,rdf:rest])
+  )).
 
 % @tbd What is this?
 rdf_vertex_equivalence(X, Y):-
