@@ -206,8 +206,7 @@ messages_web(Markup):-
 
 % The module is already registered, do nothing.
 register_module(Module):-
-  registered_module(Module),
-  !.
+  registered_module(Module), !.
 % Register the module.
 register_module(Module):-
   % The module must already be loaded.

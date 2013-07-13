@@ -20,7 +20,7 @@
 
 % LIST
     dcg_separated_list//2, % :Separator:dcg
-                           % -Codess:list(list(codes))
+                           % ?Codess:list(list(codes))
 
 % META-DCG RULES
     dcg_call//1,
@@ -123,7 +123,9 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_without(//,-,+,-)).
 :- meta_predicate(dcg_without_atom(//,-,+,-)).
 % LIST %
-:- meta_predicate(dcg_separated_list(//,-,+,-)).
+:- meta_predicate(dcg_separated_list(//,?,?,?)).
+:- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
+:- meta_predicate(dcg_separated_list_var(//,-,?,?)).
 % META-DCG RULES
 :- meta_predicate(dcg_call(2,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
@@ -232,14 +234,32 @@ dcg_debug(Codes, []):-
 
 % LIST %
 
-dcg_separated_list(Separator, [H|T]) -->
+%! dcg_separated_list(
+%!   +Separator:dcg_rule,
+%!   ?CodeLists:list(list(code))
+%! ) is det.
+% @tbd This does not work for the following string:
+% ~~~
+% "error(permission_error(delete,file,\'c:/users/quirinus/.webqr/export.svg\'),context(system:delete_file/1,\'Permission denied\'))"
+% ~~~
+
+dcg_separated_list(Separator, L) -->
+  {nonvar(L)}, !,
+  dcg_separated_list_nonvar(Separator, L).
+dcg_separated_list(Separator, L) -->
+  {var(L)}, !,
+  dcg_separated_list_var(Separator, L).
+dcg_separated_list_nonvar(Separator, [H|T]) -->
+  H,
+  dcg_separated_list_nonvar(Separator, T).
+dcg_separated_list_var(Separator, [H|T]) -->
   string(H),
-  % Allow symmetric spaces.
-  (Separator ; blank, Separator, blank),
-  !,
+  blanks, Separator, blanks, !,
   dcg_separated_list(Separator, T).
-dcg_separated_list(_Separator, [H]) -->
+dcg_separated_list_var(_Separator, [H]) -->
   string(H).
+dcg_separated_list_var(_Separator, []) --> [].
+
 
 
 % META-DCG RULES %

@@ -77,6 +77,7 @@ We use the following abbreviations in this module:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(cowspeak)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
@@ -284,7 +285,7 @@ safe_copy_file(From, To):-
   copy_file(From, To).
 
 %! safe_delete_file(+File:atom) is det.
-% Delete the given file, but keep a copy around in the trashcan.
+% Delete the given file, but keep a copy around in thake trashcan.
 
 safe_delete_file(File):-
   \+ exists_file(File), !.
@@ -294,12 +295,16 @@ safe_delete_file(File):-
   relative_file_name(File, ProjectDir, RelativeFile),
   trashcan(Trashcan),
   directory_file_path(Trashcan, RelativeFile, CopyFile),
-  % =cp= will not work for nonexisting directories, so first
+  % Copying to a nonexisting directory does not work, so first
   % we need to recursively create the directory.
   file_directory_name(CopyFile, CopyDirectory),
   create_directory(CopyDirectory),
-  process_create(path(cp), [File, CopyFile], [detached(true)]),
-  delete_file(File).
+  copy_file(File, CopyFile),
+  catch(
+    delete_file(File),
+    Exception,
+    format(user_output, '~w', [Exception])
+  ).
 
 safe_move_file(From, To):-
   safe_copy_file(From, To),

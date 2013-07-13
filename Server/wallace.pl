@@ -81,8 +81,7 @@ default_port(5000).
 
 start_wallace:-
   default_port(Port),
-  http_server_property(Port, start_time(_Time)),
-  !.
+  http_server_property(Port, start_time(_Time)), !.
 start_wallace:-
   default_port(Port),
   % Make sure Wallace is shut down whenever Prolog shuts down.
@@ -101,8 +100,7 @@ console_output -->
   ]).
 
 console_output(_Request):-
-  retract(content_queue(console_output, DTD_Name, Style_Name, DOM)),
-  !,
+  retract(content_queue(console_output, DTD_Name, Style_Name, DOM)), !,
   serve_xml(DTD_Name, Style_Name, DOM).
 console_output(Request):-
   serve_nothing(Request).
@@ -114,8 +112,7 @@ documentation(Request):-
 
 history(_Request):-
   % Fixate the DTD and Style used.
-  history(status_pane, _DateTime, DTD_Name, StyleName, _DOM),
-  !,
+  history(status_pane, _DateTime, DTD_Name, StyleName, _DOM), !,
   findall(
     [element(h1, [], [DateTime]) | DOM],
     history(status_pane, DateTime, DTD_Name, StyleName, DOM),
@@ -143,8 +140,7 @@ push(Type, DTD_Name, StyleName, DOM):-
   assertz(history(Type, DateTime, DTD_Name, StyleName, DOM)).
 
 status_pane(_Request):-
-  retract(content_queue(status_pane, DTD_Name, Style_Name, DOM)),
-  !,
+  retract(content_queue(status_pane, DTD_Name, Style_Name, DOM)), !,
   serve_xml(DTD_Name, Style_Name, DOM).
 status_pane(Request):-
   serve_nothing(Request).
