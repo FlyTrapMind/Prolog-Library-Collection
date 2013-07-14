@@ -4,6 +4,8 @@
 % CLASS HIERARCHY
     rdfs_assert_class/2, % +Class:uri
                          % +Graph:graph
+    rdfs_assert_individual/2, % +Individual:uri
+                              % +Graph:graph
     rdfs_assert_individual/3, % +Individual:uri
                               % +Class:uri
                               % +Graph:graph
@@ -78,8 +80,6 @@ using the following triples:
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_export)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
@@ -88,6 +88,7 @@ using the following triples:
 
 % CLASS HIERARCHY %
 :- rdf_meta(rdfs_assert_class(r,+)).
+:- rdf_meta(rdfs_assert_individual(r,+)).
 :- rdf_meta(rdfs_assert_individual(r,r,+)).
 :- rdf_meta(rdfs_assert_property_class(r,+)).
 :- rdf_meta(rdfs_assert_subclass(r,r,+)).
@@ -110,6 +111,9 @@ rdfs_assert_class(Class, Graph):-
   % Materialization would figure this one out as well.
   rdfs_assert_individual(Class, rdfs:'Class', Graph),
   rdfs_assert_subclass(Class, rdfs:'Resource', Graph).
+
+rdfs_assert_individual(Individual, Graph):-
+  rdfs_assert_individual(Individual, rdfs:'Resource', Graph).
 
 %! rdfs_assert_individual(+Individual:uri, +Class:class, +Graph:graph) is det.
 % Asserts an individual/class relationship.
