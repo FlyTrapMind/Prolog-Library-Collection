@@ -80,7 +80,7 @@ deregister_tms(Type, TMS):-
 
 generic_tms(TMS, Pred, Args):-
   once(registered_tms(Type, TMS)),
-  generic(Type, Pred, Args).
+  generic(Pred, Type, Args).
 
 is_registered_tms(TMS):-
   nonvar(TMS),

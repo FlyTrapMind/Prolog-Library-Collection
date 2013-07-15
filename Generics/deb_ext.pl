@@ -1,6 +1,7 @@
 :- module(
   deb_ext,
   [
+    printw/1, % +Term
     rdf_class_status/1, % +Class:uri
     rdf_graph_status/1, % +Graph:atom
     test/2, % +Goal:term
@@ -32,6 +33,10 @@ Methods that are used while developing and inspecting code.
 :- rdf_meta(rdf_class_status(r)).
 
 
+
+printw(X):-
+  format(user_output, '~w\n', [X]),
+  flush_output(user_output).
 
 rdf_class_status(Class):-
   findall(

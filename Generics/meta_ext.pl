@@ -105,7 +105,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(call_semidet(0)).
 :- meta_predicate(complete(2,+,-)).
 :- meta_predicate(count(0,-)).
-:- meta_predicate(generic(+,:,+)).
+:- meta_predicate(generic(:,:,+)).
 :- meta_predicate(if_else(0,0)).
 :- meta_predicate(if_then(0,0)).
 :- meta_predicate(if_then_else(0,0,0)).
@@ -253,14 +253,17 @@ nonvar_det(Goal):-
 
 % GENERIC CALLS %
 
-generic(Context, GenericPredicate, Arguments):-
+%! generic(+GenericPredicate:atom, +Context:atom, +Arguments:list)
+
+generic(P1, Context, Args):-
   % Make sure the calling module prefix is discarded.
-  strip_module(GenericPredicate, Module, PlainPredicate),
-  format(atom(SpecificPredicate), '~w_~w', [Context, PlainPredicate]),
-  length(Arguments, Arity),
+  strip_module(P1, M, P0),
+  strip_module(Context, M, Context0),
+  atomic_list_concat([P0, Context0], '_', P2),
+  length(Args, Arity),
   if_then(
-    current_predicate(Module:SpecificPredicate/Arity),
-    apply(Module:SpecificPredicate, Arguments)
+    current_predicate(M:P2/Arity),
+    apply(M:P2, Args)
   ).
 
 
