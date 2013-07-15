@@ -6,14 +6,22 @@
                          % +Graph:graph
     rdfs_assert_individual/2, % +Individual:uri
                               % +Graph:graph
-    rdfs_assert_individual/3, % +Individual:uri
-                              % +Class:uri
-                              % +Graph:graph
     rdfs_assert_property_class/2, % +PropertyClass:uri
                                   % +Graph:graph
     rdfs_assert_subclass/3, % +Class:uri
                             % +SuperClass:uri
                             % +Graph:graph
+
+% DOMAIN & RANGE
+    rdfs_assert_domain/3, % +Property:uri
+                          % +Class:uri
+                          % +Graph:atom
+    rdfs_assert_domain_range/3, % +Property:uri
+                                % +Class:uri
+                                % +Graph:atom
+    rdfs_assert_range/3, % +Property:uri
+                         % +Class:uri
+                         % +Graph:atom
 
 % LABELS
     rdfs_assert_label/3, % +Subject:oneof([bnode,uri])
@@ -32,8 +40,6 @@
                              % +Graph:graph
 
 % PROPERTY HIERARCHY
-    rdfs_assert_property/2, % +Property:uri
-                            % +Graph:atom
     rdfs_assert_subproperty/3 % +Property:uri
                               % +SuperProperty:uri
                               % +Graph:graph
@@ -86,19 +92,21 @@ using the following triples:
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 :- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
 
-% CLASS HIERARCHY %
+% CLASS HIERARCHY
 :- rdf_meta(rdfs_assert_class(r,+)).
 :- rdf_meta(rdfs_assert_individual(r,+)).
-:- rdf_meta(rdfs_assert_individual(r,r,+)).
 :- rdf_meta(rdfs_assert_property_class(r,+)).
 :- rdf_meta(rdfs_assert_subclass(r,r,+)).
-% LABELS %
+% DOMAIN & RANGE
+:- rdf_meta(rdfs_assert_domain(r,r,+)).
+:- rdf_meta(rdfs_assert_domain_range(r,r,+)).
+:- rdf_meta(rdfs_assert_range(r,r,+)).
+% LABELS
 :- rdf_meta(rdfs_assert_label(r,+,+)).
 :- rdf_meta(rdfs_assert_label(r,+,+,+)).
 :- rdf_meta(rdfs_retractall_label(r,+,+)).
 :- rdf_meta(rdfs_retractall_label(r,+,+,+)).
-% PROPERTY HIERARCHY %
-:- rdf_meta(rdfs_assert_property(r,+)).
+% PROPERTY HIERARCHY
 :- rdf_meta(rdfs_assert_subproperty(r,r,+)).
 
 :- initialization(load_rdfs_schema).
@@ -107,31 +115,42 @@ using the following triples:
 
 % CLASS HIERARCHY %
 
-rdfs_assert_class(Class, Graph):-
+rdfs_assert_class(Class, G):-
   % Materialization would figure this one out as well.
-  rdfs_assert_individual(Class, rdfs:'Class', Graph),
-  rdfs_assert_subclass(Class, rdfs:'Resource', Graph).
+  rdf_assert_individual(Class, rdfs:'Class',    G),
+  rdfs_assert_subclass( Class, rdfs:'Resource', G).
 
-rdfs_assert_individual(Individual, Graph):-
-  rdfs_assert_individual(Individual, rdfs:'Resource', Graph).
+rdfs_assert_individual(Individual, G):-
+  rdf_assert_individual(Individual, rdfs:'Resource', G).
 
-%! rdfs_assert_individual(+Individual:uri, +Class:class, +Graph:graph) is det.
-% Asserts an individual/class relationship.
-%
-% @arg Individual An instance resource.
-% @arg Class A class resource.
-% @arg Graph The atomic name of an RDF graph.
-
-rdfs_assert_individual(Individual, Class, Graph):-
-  rdf_assert(Individual, rdf:type, Class, Graph).
-
-rdfs_assert_property_class(PropertyClass, Graph):-
+rdfs_assert_property_class(PropertyClass, G):-
   % Materialization would figure this one out as well.
-  rdfs_assert_individual(PropertyClass, rdfs:'Class', Graph),
-  rdfs_assert_subclass(PropertyClass, rdf:'Property', Graph).
+  rdf_assert_individual(PropertyClass, rdfs:'Class',   G),
+  rdfs_assert_subclass( PropertyClass, rdf:'Property', G).
 
-rdfs_assert_subclass(Class, SuperClass, Graph):-
-  rdf_assert(Class, rdfs:subClassOf, SuperClass, Graph).
+rdfs_assert_subclass(Class, SuperClass, G):-
+  rdf_assert(Class, rdfs:subClassOf, SuperClass, G).
+
+
+
+% DOMAIN & RANGE %
+
+%! rdfs_assert_domain(+Property:uri, +Class:uri, +Graph:atom) is det.
+
+rdfs_assert_domain(P, C, G):-
+  rdf_assert(P, rdfs:domain, C, G).
+
+%! rdfs_assert_domain_range(+Property:uri, +Class:uri, +Graph:atom) is det.
+% RDFS properties whose domain and range are the same RDFS class.
+
+rdfs_assert_domain_range(P, C, G):-
+  rdf_assert(P, rdfs:domain, C, G),
+  rdf_assert(P, rdfs:range, C, G).
+
+%! rdfs_assert_range(+Property:uri, Class:uri, Graph:atom) is det.
+
+rdfs_assert_range(P, C, G):-
+  rdf_assert(P, rdfs:range, C, G).
 
 
 
@@ -149,10 +168,10 @@ rdfs_assert_subclass(Class, SuperClass, Graph):-
 % @arg Graph The atomic name of an RDF graph.
 % @see rdfs_assert_label/4 also specifies the label.
 
-rdfs_assert_label(Subject, Label, Graph):-
+rdfs_assert_label(Subject, Label, G):-
   % @ tbd Why is this necessary?
   rdf_global_id(rdfs:label, P),
-  rdf_assert_literal(Subject, P, Label, Graph).
+  rdf_assert_literal(Subject, P, Label, G).
 
 %! rdfs_assert_label(
 %!   +Subject:oneof([bnode,uri]),
@@ -167,25 +186,22 @@ rdfs_assert_label(Subject, Label, Graph):-
 % @arg Label An atomic description of a resource.
 % @arg Graph The atomic name of an RDF graph.
 
-rdfs_assert_label(Subject, Language, Label, Graph):-
+rdfs_assert_label(Subject, Language, Label, G):-
   % @ tbd Why is this necessary?
   rdf_global_id(rdfs:label, P),
-  rdf_assert_literal(Subject, P, Language, Label, Graph).
+  rdf_assert_literal(Subject, P, Language, Label, G).
 
-rdfs_retractall_label(Subject, Label, Graph):-
+rdfs_retractall_label(Subject, Label, G):-
   rdf_global_id(rdfs:label, P),
-  rdf_retractall_literal(Subject, P, Label, Graph).
+  rdf_retractall_literal(Subject, P, Label, G).
 
-rdfs_retractall_label(Subject, Language, Label, Graph):-
+rdfs_retractall_label(Subject, Language, Label, G):-
   rdf_global_id(rdfs:label, P),
-  rdf_retractall_literal(Subject, P, Language, Label, Graph).
+  rdf_retractall_literal(Subject, P, Language, Label, G).
 
 
 
 % PROPERTY HIERARCHY %
-
-rdfs_assert_property(Property, Graph):-
-  rdfs_assert_individual(Property, rdf:'Property', Graph).
 
 %! rdfs_assert_subproperty(
 %!   +Property:property,
@@ -198,8 +214,8 @@ rdfs_assert_property(Property, Graph):-
 % @arg SuperProperty An RDF property.
 % @arg Graph The atomic name of an RDF graph.
 
-rdfs_assert_subproperty(Property, SuperProperty, Graph):-
+rdfs_assert_subproperty(Property, SuperProperty, G):-
   % Materialization
-  %rdf_assert(Property, rdf:type, rdf:'Property', Graph),
-  rdf_assert(Property, rdfs:subPropertyOf, SuperProperty, Graph).
+  %rdf_assert(Property, rdf:type, rdf:'Property', G),
+  rdf_assert(Property, rdfs:subPropertyOf, SuperProperty, G).
 

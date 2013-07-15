@@ -91,7 +91,7 @@ dbnl_assert_author(Graph, URI, AuthorName, Author):-
     flag(author, AuthorFlag, AuthorFlag + 1),
     format(atom(AuthorID), 'author/~w', [AuthorFlag]),
     rdf_global_id(dbnl:AuthorID, Author),
-    rdfs_assert_individual(Author, dbnl:'Author', Graph),
+    rdf_assert_individual(Author, dbnl:'Author', Graph),
     rdfs_assert_label(Author, AuthorName, Graph),
     rdf_assert(Author, dbnl:orignal_page, URI, Graph)
   ).
@@ -103,13 +103,13 @@ dbnl_assert_bibliography(Graph, URI, Bibliography):-
   flag(bibliography, Flag, Flag + 1),
   format(atom(ID), 'editor/~w', [Flag]),
   rdf_global_id(dbnl:ID, Bibliography),
-  rdfs_assert_individual(Bibliography, dbnl:'Bibliography', Graph),
+  rdf_assert_individual(Bibliography, dbnl:'Bibliography', Graph),
   rdf_assert(Bibliography, dbnl:original_page, URI).
 
 dbnl_assert_copyright(Graph, Holders1, Year, Copyright):-
   maplist(dbnl_assert_organization(Graph), Holders1, Holders2),
   rdf_bnode(Copyright),
-  rdfs_assert_individual(Copyright, dbnl:'Copyright', Graph),
+  rdf_assert_individual(Copyright, dbnl:'Copyright', Graph),
   forall(
     member(Holder, Holders2),
     rdf_assert(Copyright, dbnl:organization, Holder, Graph)
@@ -126,7 +126,7 @@ dbnl_assert_editor(Graph, EditorName, URI, Editor):-
   flag(editor, EditorFlag, EditorFlag + 1),
   format(atom(EditorID), 'editor/~w', [EditorFlag]),
   rdf_global_id(dbnl:EditorID, Editor),
-  rdfs_assert_individual(Editor, dbnl:'Editor', Graph),
+  rdf_assert_individual(Editor, dbnl:'Editor', Graph),
   rdfs_assert_label(Editor, EditorName, Graph),
   rdf_assert(Editor, dbnl:original_page, URI, Graph).
 
@@ -138,7 +138,7 @@ dbnl_assert_genre(_Graph, GenreName, Genre):-
 dbnl_assert_genre(Graph, GenreName, Genre):-
   format(atom(GenreID), 'genre/~w', [GenreName]),
   rdf_global_id(dbnl:GenreID, Genre),
-  rdfs_assert_individual(Genre, dbnl:'Genre', Graph),
+  rdf_assert_individual(Genre, dbnl:'Genre', Graph),
   rdfs_assert_label(Genre, GenreName, Graph).
 
 dbnl_assert_journal(Graph, URI, _Name, Journal):-
@@ -148,7 +148,7 @@ dbnl_assert_journal(Graph, URI, Name, Journal):-
   flag(journal, Flag, Flag + 1),
   format(atom(ID), 'journal/~w', [Flag]),
   rdf_global_id(dbnl:ID, Journal),
-  rdfs_assert_individual(Journal, dbnl:'Journal', Graph),
+  rdf_assert_individual(Journal, dbnl:'Journal', Graph),
   rdfs_assert_label(Journal, Name, Graph),
   rdf_assert(Journal, dbnl:orignal_page, URI, Graph).
 
@@ -158,7 +158,7 @@ dbnl_assert_organization(_Graph, OrganizationName, Organization):-
 dbnl_assert_organization(Graph, OrganizationName, Organization):-
   format(atom(OrganizationID), 'organization/~w', [OrganizationName]),
   rdf_global_id(dbnl:OrganizationID, Organization),
-  rdfs_assert_individual(Organization, dbnl:'Organization', Graph),
+  rdf_assert_individual(Organization, dbnl:'Organization', Graph),
   rdfs_assert_label(Organization, OrganizationName, Graph).
 
 %! dbnl_assert_subgenre(
@@ -203,7 +203,7 @@ dbnl_assert_text(Graph, URI, Text):-
   flag(text, ID, ID + 1),
   format(atom(TextID), 'text/~w', [ID]),
   rdf_global_id(dbnl:TextID, Text),
-  rdfs_assert_individual(Text, dbnl:'Text', Graph),
+  rdf_assert_individual(Text, dbnl:'Text', Graph),
   rdf_assert(Text, dbnl:original_page, URI, Graph).
 
 %! dbnl_assert_title(+Graph:atom, +URI:uri, +Name:atom, -Title:uri) is det.
@@ -215,7 +215,7 @@ dbnl_assert_title(Graph, URI, Name, Title):-
   flag(title, TitleFlag, TitleFlag + 1),
   format(atom(TitleID), 'title/~w', [TitleFlag]),
   rdf_global_id(dbnl:TitleID, Title),
-  rdfs_assert_individual(Title, dbnl:'Title', Graph),
+  rdf_assert_individual(Title, dbnl:'Title', Graph),
   rdfs_assert_label(Title, Name, Graph),
   % The original DBNL page where this title was described.
   rdf_assert(Title, dbnl:original_page, URI, Graph).
@@ -227,7 +227,7 @@ dbnl_assert_toc(Graph, URI, TOC):-
   flag(toc, TOC_ID, TOC_ID + 1),
   format(atom(TOC_Name), 'toc/~w', [TOC_ID]),
   rdf_global_id(dbnl:TOC_Name, TOC),
-  rdfs_assert_individual(TOC, dbnl:'TOC', Graph),
+  rdf_assert_individual(TOC, dbnl:'TOC', Graph),
   rdf_assert(TOC, dbnl:original_page, URI, Graph).
 
 dbnl_assert_volume_collection(Graph, URI, VolumeCollection):-
@@ -237,7 +237,7 @@ dbnl_assert_volume_collection(Graph, URI, VolumeCollection):-
   flag(volume_collection, VolumeCollectionID, VolumeCollectionID + 1),
   format(atom(VolumeCollectionName), 'part/~w', [VolumeCollectionID]),
   rdf_global_id(dbnl:VolumeCollectionName, VolumeCollection),
-  rdfs_assert_individual(VolumeCollection, dbnl:'VolumeCollection', Graph),
+  rdf_assert_individual(VolumeCollection, dbnl:'VolumeCollection', Graph),
   rdf_assert(VolumeCollection, dbnl:original_page, URI, Graph).
 
 dbnl_assert_year(_Graph, _Resource, Year):-

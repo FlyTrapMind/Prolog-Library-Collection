@@ -380,7 +380,7 @@ dbnl_save_image(Graph, ImageURI, Caption, BNode):-
   absolute_file_name(file(ImageFileName), ImageFile, []),
   uri_to_file(ImageURI, ImageFile),
   rdf_bnode(BNode),
-  rdfs_assert_individual(BNode, dbnl:'Image', Graph),
+  rdf_assert_individual(BNode, dbnl:'Image', Graph),
   rdf_assert_datatype(BNode, dbnl:file, file, ImageFile, Graph),
   (
     Caption \== []

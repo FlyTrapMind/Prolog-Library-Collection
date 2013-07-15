@@ -37,7 +37,7 @@ init_rfc:-
 
 init_rfc_1630(Graph):-
   rdf_global_id(rfc:'1630', This),
-  rdfs_assert_individual(This, rfc:'Standard', Graph),
+  rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
   rdf_assert_literal(
     This,
@@ -58,7 +58,7 @@ init_rfc_1630(Graph):-
 
 init_rfc_1736(Graph):-
   rdf_global_id(rfc:'1736', This),
-  rdfs_assert_individual(This, rfc:'Standard', Graph),
+  rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1995, Graph),
   rdf_assert_literal(
     This,
@@ -72,7 +72,7 @@ init_rfc_1736(Graph):-
 
 init_rfc_1737(Graph):-
   rdf_global_id(rfc:'1737', This),
-  rdfs_assert_individual(This, rfc:'Standard', Graph),
+  rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
   rdf_assert_literal(
     This,
@@ -87,7 +87,7 @@ init_rfc_1737(Graph):-
 
 init_rfc_1738(Graph):-
   rdf_global_id(rfc:'1738', This),
-  rdfs_assert_individual(This, rfc:'Standard', Graph),
+  rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
   rdf_assert_literal(
     This,
@@ -110,7 +110,7 @@ init_rfc_1738(Graph):-
 
 init_rfc_1808(Graph):-
   rdf_global_id(rfc:'1808', This),
-  rdfs_assert_individual(This, rfc:'Standard', Graph),
+  rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1995, Graph),
   rdf_assert_literal(
     This,
@@ -127,7 +127,7 @@ init_rfc_1808(Graph):-
 
 init_rfc_2396(Graph):-
   rdf_global_id(rfc:'2396', This),
-  rdfs_assert_individual(This, rfc:'Standard', Graph),
+  rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1998, Graph),
   rdf_assert_literal(
     This,
@@ -156,7 +156,7 @@ init_xml(Graph):-
   rdfs_assert_label(XMLWG, 'XML Core Working Group', Graph),
 
   % XML Recommendation
-  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_individual(This, w3c:'Recommendation', Graph),
   rdf_assert_datatype(This, w3c:year, gYear, 2008, Graph),
   rdf_assert_literal(
     This,

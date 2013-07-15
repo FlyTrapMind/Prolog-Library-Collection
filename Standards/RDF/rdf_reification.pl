@@ -92,7 +92,7 @@ rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
   rdf_statement(Subject, Predicate, Object, Graph, Stmt), !.
 rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
   rdf_bnode(Stmt),
-  rdfs_assert_individual(Stmt, rdf:'Statement', Graph),
+  rdf_assert_individual(Stmt, rdf:'Statement', Graph),
   rdf_assert_subject(Stmt, Subject, Graph),
   rdf_assert_predicate(Stmt, Predicate, Graph),
   rdf_assert_object(Stmt, Object, Graph),

@@ -1,6 +1,11 @@
 :- module(
   rdf_build,
   [
+% INDIVIDUALS
+    rdf_assert_individual/3, % +Individual:uri
+			     % +Class:uri
+                             % +Graph:atom
+
 % LISTS
     rdf_assert_list/3, % +List:list
                        % -RDF_List:uri
@@ -46,11 +51,15 @@
                               % ?Predicate:uri
                               % ?Literal:atom
                               % ?Graph:atom
-    rdf_retractall_literal/5 % ?Subject:oneof([bnode,uri])
-                             % ?Predicate:uri
-                             % ?Language:atom
-                             % ?Literal:atom
-                             % ?Graph:atom
+    rdf_retractall_literal/5, % ?Subject:oneof([bnode,uri])
+                              % ?Predicate:uri
+                              % ?Language:atom
+                              % ?Literal:atom
+                              % ?Graph:atom
+
+% PROPERTIES
+    rdf_assert_property/2 % +Property:uri
+                          % +Graph:atom
   ]
 ).
 
@@ -79,11 +88,12 @@ The supported datatypes:
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_typecheck)).
-:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
+% INDIVIDUALS %
+:- rdf_meta(rdf_assert_individual(r,r,+)).
 % LISTS
 :- rdf_meta(rdf_assert_list(+,r,+)).
 % LITERAL ASSERTIONS
@@ -98,8 +108,24 @@ The supported datatypes:
 :- rdf_meta(rdf_retractall_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_retractall_literal(r,r,?,?)).
 :- rdf_meta(rdf_retractall_literal(r,r,?,?,?)).
+% PROPERTIES %
+:- rdf_meta(rdf_assert_property(r,+)).
 
 :- debug(rdf_build).
+
+
+
+% INDIVIDUALS %
+
+%! rdf_assert_individual(+Individual:uri, +Class:uri, +Graph:graph) is det.
+% Asserts an individual/class relationship.
+%
+% @arg Individual An instance resource.
+% @arg Class A class resource.
+% @arg Graph The atomic name of an RDF graph.
+
+rdf_assert_individual(I, C, G):-
+  rdf_assert(I, rdf:type, C, G).
 
 
 
@@ -143,7 +169,7 @@ rdf_assert_list0([H | T], RDF_List, Graph):-
 
 add_blank_list_individual(Blank, Graph):-
   rdf_bnode(Blank),
-  rdfs_assert_individual(Blank, rdf:'List', Graph).
+  rdf_assert_individual(Blank, rdf:'List', Graph).
 
 
 
@@ -310,8 +336,7 @@ rdf_overwrite_datatype(Subject, Predicate, Datatype, NewValue, Graph):-
   rdf_is_subject(Subject),
   rdf_is_predicate(Predicate),
   rdf_datatype(Datatype, NewValue, _CanonicalValue),
-  rdf_graph(Graph),
-  !,
+  rdf_graph(Graph), !,
   findall(
     OldValue,
     rdf_datatype(Subject, Predicate, Datatype, OldValue, Graph),
@@ -328,6 +353,11 @@ rdf_overwrite_datatype(Subject, Predicate, Datatype, NewValue, Graph):-
       [Subject, Predicate, OldValues, Datatype, Graph, Subject, Predicate,
       NewValue, Datatype, Graph]
     )
-  ),
-  !.
+  ), !.
 
+
+
+% PROPERTIES %
+
+rdf_assert_property(Property, Graph):-
+  rdf_assert_individual(Property, rdf:'Property', Graph).

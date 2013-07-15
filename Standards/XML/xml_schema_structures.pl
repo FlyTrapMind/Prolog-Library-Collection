@@ -24,7 +24,7 @@ Substantially reconstructs and considerable extends the capabilities of DTD.
 init:-
   Graph = w3c,
   rdf_global_id(w3c:'TR/2012/REC-xmlschema11-1-20120405/', This),
-  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_individual(This, w3c:'Recommendation', Graph),
   rdf_assert_datatype(This, w3c:year, gYear, 2012, Graph),
   rdf_assert_literal(
     This,

@@ -22,7 +22,7 @@ go:-
   absolute_file_name(debug(tests), AbsoluteFileName, [file_type(hypertext)]),
   parse_html(AbsoluteFileName, DOM),
   format(user_output, '~w', [DOM]),
-  rdfs_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
+  rdf_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
   rdf_assert_literal('http://www.wouterbeek.com', xfn:name, 'Wouter Beek', xfn),
   find_contacts('http://www.wouterbeek.com', DOM),
   export_contacts.
@@ -92,7 +92,7 @@ find_contacts(Person1, element(a, LinkAttributes, [Name])):-
         rdf_assert(Relationship, rdfs:subPropertyOf, xfn:relation, xfn)
       ),
       rdf_assert(Person1, Relationship, Person2, xfn),
-      rdfs_assert_individual(Person2, xfn:person, xfn)
+      rdf_assert_individual(Person2, xfn:person, xfn)
     )
   ).
 find_contacts(Person1, element(_Tag, _Attributes, ListOfContents)):-

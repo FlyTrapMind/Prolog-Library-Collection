@@ -423,7 +423,7 @@ Nil values can only be defined for element values (not attribute values).
 init:-
   Graph = w3c,
   rdf_global_id(w3c:'TR/2004/REC-xmlschema-0-20041028/', This),
-  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_individual(This, w3c:'Recommendation', Graph),
   rdf_assert_datatype(This, w3c:year, gYear, 2004, Graph),
   rdf_assert_literal(This, std:title, 'XML Schema Part 0: Primer Second Edition', Graph),
   rdf_assert_literal(This, w3c:author, 'David C. Fallside', Graph),

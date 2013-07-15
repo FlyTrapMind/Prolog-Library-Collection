@@ -16,6 +16,7 @@ Scripts for asserting RDF graphs that can be used for debugging.
 */
 
 :- use_module(owl(owl_build)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
@@ -23,25 +24,27 @@ Scripts for asserting RDF graphs that can be used for debugging.
 :- xml_register_namespace(dbp, 'http://www.wouterbeek.com/dbp.owl#').
 :- xml_register_namespace(nl,  'http://www.wouterbeek.com/nl.owl#' ).
 
+
+
 assert_visum:-
-  Graph = visum,
+  G = visum,
   
   % Chinese namespace
-  rdfs_assert_subclass(  ch:cityWithAirport, rdfs:'Resource',    Graph),
-  rdfs_assert_subclass(  ch:capital,         ch:cityWithAirport, Graph),
-  rdfs_assert_individual(ch:'Amsterdam',     ch:capital,         Graph),
-  rdfs_assert_subclass(  ch:visumNeeded,     rdfs:'Resource',    Graph),
-  rdfs_assert_subclass(  ch:europeanCity,    ch:visumNeeded,     Graph),
-  rdfs_assert_individual(ch:'Amsterdam',     ch:europeanCity,    Graph),
+  rdfs_assert_class(    ch:cityWithAirport,                     G),
+  rdfs_assert_subclass( ch:capital,         ch:cityWithAirport, G),
+  rdf_assert_individual(ch:'Amsterdam',     ch:capital,         G),
+  rdfs_assert_class(    ch:visumNeeded,                         G),
+  rdfs_assert_subclass( ch:europeanCity,    ch:visumNeeded,     G),
+  rdf_assert_individual(ch:'Amsterdam',     ch:europeanCity,    G),
   
   % Dutch namespace
-  rdfs_assert_subclass(  nl:europeanCity, rdfs:'Resources', Graph),
-  rdfs_assert_subclass(  nl:visumFree,    nl:europeanCity,  Graph),
-  rdfs_assert_individual(nl:'Amsterdam',  nl:europeanCity,  Graph),
-  rdfs_assert_subclass(  nl:capital,      rdfs:'Resource',  Graph),
-  rdfs_assert_individual(nl:'Amsterdam',  nl:capital,       Graph),
+  rdfs_assert_class(    nl:europeanCity,                   G),
+  rdfs_assert_subclass( nl:visumFree,    nl:europeanCity,  G),
+  rdf_assert_individual(nl:'Amsterdam',  nl:europeanCity,  G),
+  rdfs_assert_class(    nl:capital,                        G),
+  rdf_assert_individual(nl:'Amsterdam',  nl:capital,       G),
   
   % Interrelations
-  owl_assert_class_equivalence(ch:capital,      nl:capital,     Graph),
-  owl_assert_resource_identity(dbp:'Amsterdam', ch:'Amsterdam', Graph),
-  owl_assert_resource_identity(dbp:'Amsterdam', nl:'Amsterdam', Graph).
+  owl_assert_class_equivalence(ch:capital,      nl:capital,     G),
+  owl_assert_resource_identity(dbp:'Amsterdam', ch:'Amsterdam', G),
+  owl_assert_resource_identity(dbp:'Amsterdam', nl:'Amsterdam', G).

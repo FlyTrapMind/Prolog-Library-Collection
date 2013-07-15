@@ -96,7 +96,7 @@ A single defining aspect of a value space.
 init_xml_schema_datatypes:-
   Graph = w3c,
   rdf_global_id(w3c:'TR/2004/REC-xmlschema-2-20041028/', This),
-  rdfs_assert_individual(This, w3c:'Recommendation', Graph),
+  rdf_assert_individual(This, w3c:'Recommendation', Graph),
   rdf_assert_datatype(This, w3c:year, gYear, 2004, Graph),
   rdf_assert(
     This,
