@@ -13,6 +13,10 @@
     alpha_numeric//1,
     ampersand//0,
     ampersand//1,
+    ampersat//0,
+    apetail//0,
+    apetail//1,
+    ampersat//1,
     apostrophe//0,
     apostrophe//1,
     ascii//0,
@@ -21,6 +25,8 @@
     asterisk//1,
     at_sign//0,
     at_sign//1,
+    at_symbol//0,
+    at_symbol//1,
     b//0,
     b//1,
     b_lowercase//0,
@@ -47,6 +53,8 @@
     caret//1,
     carriage_return//0,
     carriage_return//1,
+    circle_bracket//0,
+    circle_bracket//1,
     closing_bracket//0,
     closing_bracket//1,
     closing_curly_bracket//0,
@@ -59,6 +67,8 @@
     colon//1,
     comma//0,
     comma//1,
+    commercial_at//0,
+    commercial_at//1,
     control//0,
     control//1,
     copyright//0,
@@ -183,8 +193,6 @@
     l_lowercase//1,
     l_uppercase//0,
     l_uppercase//1,
-    line_feed//0,
-    line_feed//1,
     less_than_sign//0,
     less_than_sign//1,
     letter//0,
@@ -193,6 +201,8 @@
     letter_lowercase//1,
     letter_uppercase//0,
     letter_uppercase//1,
+    line_feed//0,
+    line_feed//1,
     m//0,
     m//1,
     m_lowercase//0,
@@ -237,6 +247,8 @@
     p_lowercase//1,
     p_uppercase//0,
     p_uppercase//1,
+    parenthesis//0,
+    parenthesis//1,
     percent_sign//0,
     percent_sign//1,
     plus_sign//0,
@@ -285,6 +297,8 @@
     six//1,
     slash//0,
     slash//1,
+    soft_bracket//0,
+    soft_bracket//1,
     space//0,
     space//1,
     square_bracket//0,
@@ -413,6 +427,12 @@ alpha_numeric(C) --> decimal_digit(_N, C).
 ampersand --> [38].
 ampersand(38) --> [38].
 
+ampersat --> at_sign.
+ampersat(C) --> at_sign(C).
+
+apetail --> at_sign.
+apetail(C) --> at_sign(C).
+
 apostrophe --> [39].
 apostrophe(39) --> [39].
 
@@ -426,8 +446,11 @@ ascii(C) --> dcg_white(C).
 asterisk --> [42].
 asterisk(42) --> [42].
 
-at_sign --> [65].
-at_sign(65) --> [65].
+at_sign --> [64].
+at_sign(64) --> [64].
+
+at_symbol --> at_sign.
+at_symbol(C) --> at_sign(C).
 
 b --> b_lowercase.
 b --> b_uppercase.
@@ -474,6 +497,9 @@ caret(94) --> [94].
 carriage_return --> [13].
 carriage_return(13) --> [13].
 
+circle_bracket --> round_bracket.
+circle_bracket(C) --> round_bracket(C).
+
 closing_bracket --> closing_curly_bracket.
 closing_bracket --> closing_round_bracket.
 closing_bracket --> closing_square_bracket.
@@ -496,6 +522,9 @@ colon(58) --> [58].
 
 comma --> [44].
 comma(44) --> [44].
+
+commercial_at --> at_sign.
+commercial_at(C) --> at_sign(C).
 
 control --> acknowledgement.
 control --> backspace.
@@ -777,9 +806,6 @@ l_lowercase(108) --> [108].
 l_uppercase --> [76].
 l_uppercase(76) --> [76].
 
-line_feed --> [10].
-line_feed(10) --> [10].
-
 less_than_sign --> [60].
 less_than_sign(60) --> [60].
 
@@ -846,6 +872,7 @@ letter_uppercase --> b_uppercase.
 letter_uppercase --> c_uppercase.
 letter_uppercase --> d_uppercase.
 letter_uppercase --> e_uppercase.
+letter_uppercase --> f_uppercase.
 letter_uppercase --> g_uppercase.
 letter_uppercase --> h_uppercase.
 letter_uppercase --> i_uppercase.
@@ -871,6 +898,7 @@ letter_uppercase(C) --> b_uppercase(C).
 letter_uppercase(C) --> c_uppercase(C).
 letter_uppercase(C) --> d_uppercase(C).
 letter_uppercase(C) --> e_uppercase(C).
+letter_uppercase(C) --> f_uppercase(C).
 letter_uppercase(C) --> g_uppercase(C).
 letter_uppercase(C) --> h_uppercase(C).
 letter_uppercase(C) --> i_uppercase(C).
@@ -891,6 +919,9 @@ letter_uppercase(C) --> w_uppercase(C).
 letter_uppercase(C) --> x_uppercase(C).
 letter_uppercase(C) --> y_uppercase(C).
 letter_uppercase(C) --> z_uppercase(C).
+
+line_feed --> [10].
+line_feed(10) --> [10].
 
 m --> m_lowercase.
 m --> m_uppercase.
@@ -969,6 +1000,9 @@ p_lowercase(112) --> [112].
 
 p_uppercase --> [80].
 p_uppercase(80) --> [80].
+
+parenthesis --> round_bracket.
+parenthesis(C) --> round_bracket(C).
 
 percent_sign --> [37].
 percent_sign(37) --> [37].
@@ -1108,6 +1142,9 @@ slash --> backslash.
 slash --> forward_slash.
 slash(C) --> backslash(C).
 slash(C) --> forward_slash(C).
+
+soft_bracket --> round_bracket.
+soft_bracket(C) --> round_bracket(C).
 
 space --> [32].
 space(32) --> [32].

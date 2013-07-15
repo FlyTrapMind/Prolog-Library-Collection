@@ -45,6 +45,7 @@ load_pgc:-
   assert(user:file_search_path(standards,    pgc('Standards'))),
     assert(user:file_search_path(gv,           standards('GraphViz'))),
     assert(user:file_search_path(html,         standards('HTML'))),
+    assert(user:file_search_path(http,         standards('HTTP'))),
     assert(user:file_search_path(iso,          standards('ISO'))),
     assert(user:file_search_path(owl,          standards('OWL'))),
     assert(user:file_search_path(rdf,          standards('RDF'))),

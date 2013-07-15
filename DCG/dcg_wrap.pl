@@ -19,6 +19,7 @@ DCG rules for wrapping text.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(list_ext)).

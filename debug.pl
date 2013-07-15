@@ -64,6 +64,7 @@ load_modules_for_pldoc:-
         graph_theory,
         gv,
         html,
+        http,
         iso,
         logic,
         math,

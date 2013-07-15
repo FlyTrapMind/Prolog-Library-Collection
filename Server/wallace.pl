@@ -37,7 +37,7 @@ current logging stream.
 :- use_module(server(web_console)).
 :- use_module(server(web_message)). % Module registration.
 :- use_module(sparql(sparql_web)).
-:- use_module(standards(http)).
+:- use_module(http(http)).
 
 % This is used to push content for the console output and status pane.
 :- dynamic(content_queue(_Type, _DTD_Name, _StyleName, _DOM)).

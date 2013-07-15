@@ -23,6 +23,7 @@
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
 :- use_module(os(shell_ext)).
+:- use_module(svg(svg)).
 
 :- db_add_novel(user:prolog_file_type(dot,  graphviz       )).
 :- db_add_novel(user:prolog_file_type(jpeg, jpeg           )).

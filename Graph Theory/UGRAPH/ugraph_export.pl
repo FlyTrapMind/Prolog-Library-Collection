@@ -47,6 +47,8 @@ The following attributes are supported:
 @version 2013/02-2013/03, 2013/07
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).

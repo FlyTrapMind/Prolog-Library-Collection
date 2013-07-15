@@ -434,10 +434,10 @@ dcg_phrase(DCG_Body, In1, Out1):-
 % @compat Inspired by the regular expression operator =+=.
 
 dcg_plus(DCG_Body) -->
+  DCG_Body.
+dcg_plus(DCG_Body) -->
   DCG_Body,
   dcg_plus(DCG_Body).
-dcg_plus(DCG_Body) -->
-  DCG_Body.
 
 dcg_questionmark(DCG_Body) -->
   (DCG_Body ; "").
@@ -450,10 +450,10 @@ dcg_questionmark(DCG_Body) -->
 %
 % @compat Inspired by the regular expression operator =*=.
 
+dcg_star(_DCGBody) --> [].
 dcg_star(DCG_Body) -->
   DCG_Body,
   dcg_star(DCG_Body).
-dcg_star(_DCGBody) --> [].
 
 
 

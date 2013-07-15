@@ -40,6 +40,7 @@ Namespace support for RDF(S).
 :- use_module(generics(meta_ext)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_read)).
 :- use_module(xml(xml_namespace)).
 
