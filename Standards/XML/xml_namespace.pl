@@ -4,6 +4,7 @@
     xml_current_namespace/2, % ?Prefix:atom
                              % ?URI:uri
     xml_current_namespaces/1, % -Namespaces:ordset(atom)
+    xml_register_namespace/1, % +Prefix:atom
     xml_register_namespace/2 % +Prefix:atom
                              % +URI:uri
   ]
@@ -63,11 +64,14 @@ URI references can contain characters that are not allowed in names.
 @author Wouter Beek
 @compat Namespaces in XML 1.0 (Third Edition)
 @see http://www.w3.org/TR/xml-names/
-@version 2013/05
+@version 2013/05, 2013/07
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(www_browser)).
 
 % The prefix =xml= is by definition bound to the namespace name
 % =http://www.w3.org/XML/1998/namespace=. It MAY, but need not, be declared,
@@ -101,6 +105,16 @@ xml_current_namespaces(Namespaces):-
     Namespaces
   ).
 
+xml_register_namespace(Namespace):-
+  Spec =.. [Namespace, '.'],
+  expand_url_path(Spec, URI1),
+  (
+    last_char(URI1, '/')
+  ;
+    atomic_concat(URI1, '/', URI2)
+  ),
+  xml_register_namespace(Namespace, URI2).
+
 %! xml_register_namespace(+Namespace:atom, +URI:uri) is det.
 % Registers the given URI references are identifying the XML namespace
 % with the given name.
@@ -124,8 +138,7 @@ xml_register_namespace(Namespace, _URI):-
   ;
     sub_atom(Namespace, 0, 3, _After, Prefix),
     downcase_atom(Prefix, xml)
-  ),
-  !,
+  ), !,
   throw(
     error(
       domain_error(reserved_xml_namespace_value, Namespace),
@@ -137,13 +150,13 @@ xml_register_namespace(Namespace, _URI):-
   ).
 % The XML namespace is already registered, so do nothing.
 xml_register_namespace(Namespace, URI):-
-  rdf_current_prefix(Namespace, URI),
-  !.
+  is_uri(URI),
+  rdf_current_prefix(Namespace, URI), !.
 % The XML namespace has already been registered to a different URI reference.
 xml_register_namespace(Namespace, URI1):-
+  is_uri(URI1),
   rdf_current_prefix(Namespace, URI2),
-  URI1 \== URI2,
-  !,
+  URI1 \== URI2, !,
   throw(
     error(
       existence_error(xml_namespace_already_exists, Namespace),
@@ -154,5 +167,5 @@ xml_register_namespace(Namespace, URI1):-
     )
   ).
 xml_register_namespace(Namespace, URI):-
+  is_uri(URI), !,
   rdf_register_prefix(Namespace, URI, []).
-

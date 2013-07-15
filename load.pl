@@ -64,15 +64,6 @@ load_pgc:-
 
   % Start logging.
   use_module(generics(logging)),
-  start_log,
-
-  % Start Wallace.
-  %use_module(server(wallace)),
-  %start_wallace,
-  
-  % @tbd THIS DOES NOT BREAK!
-  %use_module(webqr(test)),
-  
-  true.
+  start_log.
 :- load_pgc.
 
