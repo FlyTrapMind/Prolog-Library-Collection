@@ -13,10 +13,20 @@ specifications of each URI scheme."
 
 # Abbreviations
 
-    * Uniform Resource Identifier (URI)
-      A means for identifying a resource.
-    * Resource
-      ???
+  * Uniform Resource Identifier (URI)
+    A means for identifying a resource.
+  * Resource
+    ???
+
+# Variants
+
+  * URL
+    A location or name or both.
+    Identification by primary access mechanism (e.g., network location)
+    rather than by name.
+  * URN
+    Globally unique and persistent.
+    Even when the resource caeses to exist or becomes unavailable.
 
 @author Wouter Beek
 @compat RFC 2396
