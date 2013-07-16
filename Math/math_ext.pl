@@ -45,6 +45,9 @@
                      % -Multiplication:number
     number_length/2, % +Number:number
                      % -Length:integer
+    number_length/3, % +Number:number
+                     % +Radix:integer
+                     % -Length:integer
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -293,15 +296,28 @@ multiply_list([Number | Numbers], Multiplication):-
   Multiplication is Number * Multiplication1.
 
 %! number_length(+Number:number, -Length:integer) is det.
+% @see number_length/3 with radix set to `10` (decimal).
+
+number_length(M, L):-
+  number_length(M, 10.0, L).
+
+%! number_length(+Number:number, +Radix:integer, -Length:integer) is det.
 % Returns the length of the given number 'before the dot'.
 % The number is in decimal notation.
+%
+% @arg An integer representing a decimal number.
+% @arg Radix An integer representing the radix used.
+%      Common values are `2` (binary), `8` (octal),
+%      `10` (decimal), and `16` (hexadecimal).
+% @arg Length An integer representing the number of digits in
+%      the given number.
 
-number_length(N1, L1):-
-  N2 is N1 / 10.0,
+number_length(N1, Radix, L1):-
+  N2 is N1 / Radix,
   N2 >= 1.0, !,
-  number_length(N2, L2),
+  number_length(N2, Radix, L2),
   L1 is L2 + 1.
-number_length(_N, 1):- !.
+number_length(_N, _Radix, 1):- !.
 
 %! odd(?Integer:integer) is semidet.
 % Succeeds if the integer is odd.

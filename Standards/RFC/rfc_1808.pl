@@ -50,9 +50,9 @@ for _parsing_ purposes.
 URL         = ( absoluteURL | relativeURL ) [ "#" fragment ]
 absoluteURL = generic-RL | ( scheme ":" *( uchar | reserved ) )
 generic-RL  = scheme ":" relativeURL
-relativeURL = net_path | abs_path | rel_path
+relativeURL = network_path | abs_path | rel_path
 
-net_path    = "//" net_loc [ abs_path ]
+network_path    = "//" net_loc [ abs_path ]
 abs_path    = "/"  rel_path
 rel_path    = [ path ] [ ";" params ] [ "?" query ]
 

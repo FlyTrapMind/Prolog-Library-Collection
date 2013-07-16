@@ -73,6 +73,8 @@
     control//1,
     copyright//0,
     copyright//1,
+    crosshatch//0,
+    crosshatch//1,
     curly_bracket//0,
     curly_bracket//1,
     d//0,
@@ -293,6 +295,8 @@
     shift_in//1,
     shift_out//0,
     shift_out//1,
+    single_quote//0,
+    single_quote//1,
     six//0,
     six//1,
     slash//0,
@@ -419,10 +423,8 @@ acknowledgement --> positive_acknowledgement.
 acknowledgement(C) --> negative_acknowledgement(C).
 acknowledgement(C) --> positive_acknowledgement(C).
 
-alpha_numeric --> letter.
-alpha_numeric --> decimal_digit.
-alpha_numeric(C) --> letter(C).
-alpha_numeric(C) --> decimal_digit(_N, C).
+alpha_numeric --> alpha_numeric(_C).
+alpha_numeric(C) --> [C], {code_type(C, alnum)}.
 
 ampersand --> [38].
 ampersand(38) --> [38].
@@ -584,6 +586,9 @@ control(C) --> unit_separator(C).
 
 copyright --> [169].
 copyright(169) --> [169].
+
+crosshatch --> number_sign.
+crosshatch(C) --> number_sign(C).
 
 curly_bracket --> closing_curly_bracket.
 curly_bracket --> opening_curly_bracket.

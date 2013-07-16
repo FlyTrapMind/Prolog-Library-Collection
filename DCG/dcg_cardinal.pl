@@ -2,29 +2,24 @@
   dcg_cardinal,
   [
     binary_digit//0,
-    binary_digit//2, % ?DecimalDigit:between(0,1)
-                     % ?Code:code
+    binary_digit//1, % ?DecimalDigit:between(0,1)
+    binary_number//1, % ?DecimalNumber:integer
     decimal_digit//0,
-    decimal_digit//2, % ?DecimalDigit:between(0,9)
-                      % ?Code:code
-    decimal_number//2, % ?DecimalNumber:integer
-                       % ?Codes:list(code)
+    decimal_digit//1, % ?DecimalDigit:between(0,9)
+    decimal_number//1, % ?DecimalNumber:integer
     exponent//0,
     exponent_sign//0,
     exponent_sign//1, % ?Code:code
     hexadecimal_digit//0,
-    hexadecimal_digit//2, % ?DecimalDigit:between(0,15)
-                          % ?Code:code
+    hexadecimal_digit//1, % ?DecimalDigit:between(0,15)
+    hexadecimal_number//1, % -DecinalNumber:integer
     octal_digit//0,
-    octal_digit//2, % ?DecimalDigit:between(0,7)
-                    % ?Code:code
+    octal_digit//1, % ?DecimalDigit:between(0,7)
+    octal_number//1, % -DecinalNumber:integer
     sign//0,
-    sign//2, % ?Sign:oneof([-1,1])
-             % ?Code:code
-    signed_number//2, % -SignedNumberal:float
-                      % ?Codes:list(code)
-    unsigned_number//2 % -UnsignedNumberal:float
-                       % ?Codes:list(code)
+    sign//1, % ?Sign:oneof([-1,1])
+    signed_number//1, % -SignedNumber:float
+    unsigned_number//1 % -UnsignedNumber:float
   ]
 ).
 :- reexport(
@@ -51,29 +46,74 @@ DCGs for cardinal numbers.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(math(math_ext)).
+
+:- meta_predicate(digits_to_decimal_number(//,+,-,?,?)).
+:- meta_predicate(digits_to_decimal_number(//,+,+,-,?,?)).
 
 
+
+%! binary_digit//
 
 binary_digit --> zero.
 binary_digit --> one.
 
-binary_digit(0, C) --> zero(C).
-binary_digit(1, C) --> one(C).
+%! binary_digit(-DecimalDigit:between(0,1))//
+
+binary_digit(0) --> zero.
+binary_digit(1) --> one.
+
+%! binary_number(-DecimalNumber:integer)//
+
+binary_number(N) -->
+  digits_to_decimal_number(binary_digit, 2, N).
+
+%! decimal_digit//
 
 decimal_digit --> octal_digit.
 decimal_digit --> eight.
 decimal_digit --> nine.
 
-decimal_digit(N, C) --> octal_digit(N, C).
-decimal_digit(8, C) --> eight(C).
-decimal_digit(9, C) --> nine(C).
+%! decimal_digit(-DecimalDigit:between(0,9))//
 
-decimal_number(N, [C]) -->
-  decimal_digit(N, C).
-decimal_number(N, [C|Cs]) -->
-  decimal_digit(_N1, C),
-  decimal_number(_N2, Cs),
-  {number_codes(N, [C|Cs])}.
+decimal_digit(N) --> octal_digit(N).
+decimal_digit(8) --> eight.
+decimal_digit(9) --> nine.
+
+%! decimal_number(-DecimalNumber:integer)//
+
+decimal_number(N) -->
+  digits_to_decimal_number(decimal_digit, 10, N).
+
+%! digits_to_decimal_number(
+%!   :DCGBody,
+%!   +Radix:integer,
+%!   -DecimalNumber:integer
+%! )//
+% Processes digits of arbitrary radix and returns the decimal equivalent.
+%
+% @arg DCGBody processes a single digit if the given radix.
+% @arg Radix An integer representing the radix used.
+%      Common values are `2` (binary), `8` (octal),
+%      `10` (decimal), and `16` (hexadecimal).
+% @arg An integer representing the processed number, converted to
+%      the decimal number system.
+
+digits_to_decimal_number(Digit, Radix, M) -->
+  % We start with processing the first digit.
+  dcg_call(Digit, N),
+  % We keep track of the decimal equivalent if the digits that we have
+  % seen so far, in order to do the radix multiplication with.
+  digits_to_decimal_number(Digit, Radix, N, M).
+
+% End of code segment, the decimal number we have built so far is the result.
+digits_to_decimal_number(_Digit, _Radix, M, M) --> [].
+digits_to_decimal_number(Digit, Radix, M1, M) -->
+  % Process the next digit.
+  dcg_call(Digit, N),
+  % Perform radix multiplication.
+  {M2 is M1 * Radix + N},
+  digits_to_decimal_number(Digit, Radix, M2, M).
 
 exponent -->
   exponent_sign,
@@ -83,6 +123,8 @@ exponent_sign --> e.
 
 exponent_sign(C) --> e(C).
 
+%! hexadecimal_digit//
+
 hexadecimal_digit --> decimal_digit.
 hexadecimal_digit --> a.
 hexadecimal_digit --> b.
@@ -91,13 +133,22 @@ hexadecimal_digit --> d.
 hexadecimal_digit --> e.
 hexadecimal_digit --> f.
 
-hexadecimal_digit(N, C) --> decimal_digit(N, C).
-hexadecimal_digit(10, C) --> a(C).
-hexadecimal_digit(11, C) --> b(C).
-hexadecimal_digit(12, C) --> c(C).
-hexadecimal_digit(13, C) --> d(C).
-hexadecimal_digit(14, C) --> e(C).
-hexadecimal_digit(15, C) --> f(C).
+%! hexadecimal_digit(-DecimalNumber:integer)//
+
+hexadecimal_digit(N) --> decimal_digit(N).
+hexadecimal_digit(10) --> a.
+hexadecimal_digit(11) --> b.
+hexadecimal_digit(12) --> c.
+hexadecimal_digit(13) --> d.
+hexadecimal_digit(14) --> e.
+hexadecimal_digit(15) --> f.
+
+%! hexadecimal_number(-DecimalDigit:integer)//
+
+hexadecimal_number(N) -->
+  digits_to_decimal_number(hexadecimal_digit, 16, N).
+
+%! octal_digit//
 
 octal_digit --> binary_digit.
 octal_digit --> two.
@@ -107,48 +158,42 @@ octal_digit --> five.
 octal_digit --> six.
 octal_digit --> seven.
 
-octal_digit(N, C) --> binary_digit(N, C).
-octal_digit(2, C) --> two(C).
-octal_digit(3, C) --> three(C).
-octal_digit(4, C) --> four(C).
-octal_digit(5, C) --> five(C).
-octal_digit(6, C) --> six(C).
-octal_digit(7, C) --> seven(C).
+%! octal_digit(-DecimalDigit:between(0,7))//
+
+octal_digit(N) --> binary_digit(N).
+octal_digit(2) --> two.
+octal_digit(3) --> three.
+octal_digit(4) --> four.
+octal_digit(5) --> five.
+octal_digit(6) --> six.
+octal_digit(7) --> seven.
+
+%! octal_number(-DecimalDigit:integer)//
+
+octal_number(N) -->
+  digits_to_decimal_number(octal_digit, 8, N).
 
 sign --> minus_sign.
 sign --> plus_sign.
 
-sign(-1, C) --> minus_sign(C).
-sign(1, C) --> plus_sign(C).
+sign(-1) --> minus_sign.
+sign(1) --> plus_sign.
 
-signed_number(SgN, Cs) -->
-  unsigned_number(SgN, Cs).
-signed_number(SgN, [C|Cs]) -->
-  sign(Sg, C),
-  unsigned_number(N, Cs),
-  {SgN is Sg * N}.
+signed_number(N) -->
+  unsigned_number(N).
+signed_number(N) -->
+  sign(Sg),
+  unsigned_number(N1),
+  {N is Sg * N1}.
 
-% @tbd number_codes/2 does not support code lists that
-%      start with dot//.
-%unsigned_number(N, [C|Cs]) -->
-%  dot(C),
-%  decimal_number(_N, Cs),
-%  {number_codes(N, [C|Cs])}.
-unsigned_number(N, Cs) -->
-  decimal_number(N, Cs).
-unsigned_number(N, [X|Cs2]) -->
-  decimal_number(_N, [X|Cs1]),
-  dot(C),
+unsigned_number(N) -->
+  decimal_number(N).
+unsigned_number(N) -->
+  ("", {N1 = 0} ; decimal_number(N1)),
+  dot,
+  ("", {N2 = 0} ; decimal_number(N2)),
   {
-    append(Cs1, [C], Cs2),
-    number_codes(N, [X|Cs2])
+    number_length(N2, L),
+    N3 is N2 / 10 ** (L + 1),
+    N is N1 + N3
   }.
-unsigned_number(N, [X|Cs]) -->
-  decimal_number(_N1, [X|Cs1]),
-  dot(C),
-  decimal_number(_N2, Cs2),
-  {
-    append([Cs1, [C], Cs2], Cs),
-    number_codes(N, [X|Cs])
-  }.
-

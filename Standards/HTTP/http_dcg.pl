@@ -78,6 +78,7 @@ crlf([CR,LF]) -->
 %!   -Fragment:atom
 %! )//
 
+/*
 http_url(L, Host, Port, AbsolutePath, Search, Fragment) -->
   {
     uri_authority_components(
@@ -89,26 +90,9 @@ http_url(L, Host, Port, AbsolutePath, Search, Fragment) -->
       uri_components(http, Authority, AbsolutePath, Search, Fragment)
     )
   }.
-/*
-http_url(L, Host, Port, AbsolutePath) -->
-  h_lowercase(H1), t_lowercase(H2), t_lowercase(H3), p_lowercase(H4),
-  colon(H5),
-  forward_slash(H6), forward_slash(H7),
-  http_url_host(T1, Host),
-  http_url_port(T2, Port),
-  http_url_absolute_path(T3, AbsolutePath),
-  {append(T2, T3, T23)},
-  {append([H1,H2,H3,H4,H5,H6,H7|T1], T23, L)}.
-
-http_url_absolute_path([], _NoAbsolutePath) --> [].
-http_url_absolute_path(
-
-http_url_port([], _NoPort) --> [].
-http_url_port(Cs, Port) -->
-  decimal_number(Port, Cs).
 */
 
-%! http_version(+Codes:list(code), -Major:integer, -Minor:integer) is det.
+%! http_version(-Major:integer, -Minor:integer) is det.
 % HTTP uses a `<major>.<minor>` numbering scheme to indicate versions
 % of the protocol.
 % The version of an HTTP message is indicated by an HTTP-Version field
@@ -118,13 +102,12 @@ http_url_port(Cs, Port) -->
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
 
-http_version(L, Major, Minor) -->
-  h_uppercase(H1), t_uppercase(H2), t_uppercase(H3), p_uppercase(H4),
-  forward_slash(H5),
-  decimal_number(Major, T1),
-  dot(H6),
-  decimal_number(Minor, T2),
-  {append([H1,H2,H3,H4,H5|T1], [H6|T2], L)}.
+http_version(Major, Minor) -->
+  "HTTP",
+  forward_slash,
+  decimal_number(Major),
+  dot,
+  decimal_number(Minor).
 
 %! linear_white_space(+Codes:list(code))//
 % HTTP/1.1 header field values can be folded onto multiple lines if the

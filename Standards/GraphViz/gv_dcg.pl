@@ -222,11 +222,15 @@ gv_graph_type(undirected) --> g,r,a,p,h.
 
 % Alpha-numeric strings (variant 1) and numerals (variant 2).
 gv_id(Atom) -->
-  {atom_codes(Atom, Codes)},
-  gv_id_(Codes),
+  {atom_codes(Atom, [H|T])},
+  gv_id_first(H),
+  gv_id_rest(T),
   % Variant 1 identifiers should not be (case-variants of) a
   % GraphViz keyword.
-  {\+ gv_keyword(Codes)}.
+  {\+ gv_keyword([H|T])}.
+gv_id(Atom) -->
+  {atom_number(Atom, N)},
+  signed_number(N).
 % Double-quoted strings (variant 3).
 % The quotes are already part of the given atom.
 gv_id(Atom) -->
@@ -244,16 +248,10 @@ gv_id(Atom) -->
   double_quote,
   gv_quoted_string(S),
   double_quote.
-
-gv_id_([H|T]) -->
-  gv_id_first(H),
-  gv_id_rest(T).
-gv_id_(Cs) -->
-  signed_number(_N, Cs).
 % HTML strings (variant 4).
-%gv_id_ -->
+%gv_id(Atom) -->
 %  "<",
-%  gv_html_string,
+%  gv_html_string(Atom),
 %  ">".
 
 gv_id_first(X) --> letter(X).
