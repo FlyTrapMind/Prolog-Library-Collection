@@ -132,23 +132,23 @@ gv_attr(
 ).
 
 gv_attr(Attrs, color, oneof(Colors), [edge,graph,node], black):-
-  gv_attribute_value(Attrs, colorscheme=ColorScheme),
-  colorscheme_colors(ColorScheme, Colors).
+  gv_attribute_value(Attrs, colorscheme=Colorscheme),
+  colorscheme_colors(Colorscheme, Colors).
 
 colorscheme_colors(svg, Colors):-
   svg_colors(Colors), !.
 colorscheme_colors(x11, Colors):-
   x11_colors(Colors), !.
-colorscheme_colors(ColorScheme, Colors):-
-  brewer_colors(ColorScheme, Colors).
+colorscheme_colors(Colorscheme, Colors):-
+  brewer_colors(Colorscheme, Colors).
 
 % Color schemes from which values of the =color= gv_attr have to be drawn.
 % For example, if `colorscheme=bugn9`, then `color=7` is interpreted as
 % `/bugn9/7`.
 
-gv_attr(_Attrs, colorscheme, oneof(ColorSchemes), [edge,graph,node], x11):-
-  brewer_colorschemes(BrewerColorSchemes),
-  ord_union(BrewerColorSchemes, [svg,x11], ColorSchemes).
+gv_attr(_Attrs, colorscheme, oneof(Colorschemes), [edge,graph,node], x11):-
+  brewer_colorschemes(BrewerColorschemes),
+  ord_union(BrewerColorschemes, [svg,x11], Colorschemes).
 
 % Note that the default value is dependent on the directionality feature.
 gv_attr(Attrs, dir, oneof(DirTypes), [edge], DefaultValue):-

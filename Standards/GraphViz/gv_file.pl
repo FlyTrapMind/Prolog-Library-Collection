@@ -5,7 +5,8 @@
                   % +Method:onef([dot,sfdp])
                   % +ToFileType:oneof([jpeg,pdf,svg,xdot])
                   % ?ToFile:atom
-    convert_tree_to_gv/4, % +Tree:compound
+    convert_tree_to_gv/5, % +Options:list(nvpair)
+                          % +Tree:compound
                           % +Method:onef([dot,sfdp])
                           % +ToFileType:oneof([jpeg,pdf,svg,xdot])
                           % ?ToFile:atom
@@ -102,8 +103,8 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
     )
   ).
 
-convert_tree_to_gv(Tree, Method, ToFileType, ToFile):-
-  once(phrase(gv_tree(Tree), Codes)),
+convert_tree_to_gv(O, Tree, Method, ToFileType, ToFile):-
+  once(phrase(gv_tree(O, Tree), Codes)),
   absolute_file_name(project(tmp), FromFile, [access(write), file_type(dot)]),
   setup_call_cleanup(
     open(FromFile, write, Out),

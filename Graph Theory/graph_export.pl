@@ -73,7 +73,7 @@ export_graph(O, G, G_Term):-
 %!   -GraphTerm:compound
 %! ) is det.
 % The following options are used for exporting graphs:
-%   1. `colorscheme(+ColorScheme:atom)`
+%   1. `colorscheme(+Colorscheme:atom)`
 %      The colorscheme for the colors assigned to vertices and edges.
 %      Supported values are `svg`, `x11` (default), and the
 %      Brewer colorschemes (see module [brewer.pl].

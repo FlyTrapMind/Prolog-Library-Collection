@@ -74,7 +74,7 @@ The following attributes are supported:
 :- setting(
   colorscheme,
   oneof([none,svg,x11]),
-  svg,
+  x11,
   'The default colorscheme used for exporting undirected graphs.'
 ).
 :- setting(
@@ -122,11 +122,26 @@ export_ugraph(O, G, G_Term):-
 % Exports the given unordered graph to the intermediate graph format.
 % The following options are supported:
 %   1. `border(+Border:coord)`
-%   2. `edge_labels(+IncludeEdgeLabels:boolean)`
+%   2. `charset(+Characterset:atom)`
+%      The name of the character set that is used to encode text in the graph
+%      (default `UTF-8`).
+%   3. `colorscheme(+Colorscheme:atom)`
+%      The name of the colorscheme that is used for colors in the graph
+%      (default `x11`).
+%   4. `edge_labels(+IncludeEdgeLabels:boolean)`
 %      Whether edge labels are included (`all`),
 %      not included (`none`), or
 %      replaced by alternative labels (`replace`, default).
-%   3. `surface(+Surface:coord)`
+%   5. `fontsize(+FontSize:float)`
+%      The font size of text in the graph (default `11.0`).
+%   6. `name(+GraphName:atom)`
+%      The atomic name of the graph.
+%      Defaults to the atomic representation of the graph term.
+%   7. `overlap(+Overlap:boolean)`
+%      Whether the vertices are allowed to overlap (default `false`).
+%   8. `surface(+Surface:coord)`
+%      The 2D surface on which the graph is drawn.
+%      The default surface is `10.0` cubic.
 %
 % @arg Options A list of nane-value pairs.
 % @arg CoordFunc A function that maps vertices to coordinates.
@@ -143,14 +158,18 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   maplist(export_ugraph_edge(O, Vs), Es, E_Terms),
 
   % Graph properties.
-  ugraph_name(G, G_Name),
-  setting(charset, Charset),
-  setting(colorscheme, ColorScheme),
-  setting(fontsize, FontSize),
-  setting(overlap, Overlap),
+  ugraph_name(O, G, G_Name),
+  setting(charset, DefaultCharset),
+  option(charset(Charset), O, DefaultCharset),
+  setting(colorscheme, DefaultColorscheme),
+  option(colorscheme(Colorscheme), O, DefaultColorscheme),
+  setting(fontsize, DefaultFontSize),
+  option(fontsize(FontSize), O, DefaultFontSize),
+  setting(overlap, DefaultOverlap),
+  option(overlap(Overlap), O, DefaultOverlap),
   G_Attrs = [
     charset(Charset),
-    colorscheme(ColorScheme),
+    colorscheme(Colorscheme),
     fontsize(FontSize),
     label(G_Name),
     overlap(Overlap)
@@ -256,7 +275,12 @@ ugraph_edge_name(FromV_Name, ToV_Name) -->
 
 ugraph_edge_style(_FromV-_ToV, solid).
 
-ugraph_name(UG, Name):-
+% The graph name was explicitly set.
+ugraph_name(O, _UG, Name2):-
+  option(name(Name1), O), !,
+  term_to_atom(Name1, Name2).
+% The graph name is not set, take the atom representing the graph term.
+ugraph_name(_O, UG, Name):-
   term_to_atom(UG, Name).
 
 

@@ -2,7 +2,8 @@
   gv_dcg,
   [
     gv_graph//1, % +GraphTerm:compound
-    gv_tree//1 % +Tree:compound
+    gv_tree//2 % +Options:list(nvpair)
+               % +Tree:compound
   ]
 ).
 
@@ -359,10 +360,11 @@ gv_strict(false) --> [].
 gv_strict(true) -->
   s,t,r,i,c,t, space.
 
-gv_tree(T) -->
+gv_tree(O1, T) -->
   {
     tree_to_ugraph(T, UG),
-    export_ugraph([edge_labels(false)], UG, G_Term)
+    merge_options([edge_labels(false)], O1, O2),
+    export_ugraph(O2, UG, G_Term)
   },
   gv_graph(G_Term).
 

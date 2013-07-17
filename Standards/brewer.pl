@@ -1,10 +1,10 @@
 :- module(
   brewer,
   [
-    brewer_colorschemes/1, % -ColorSchemes:ordset(atom)
-    brewer_colors/2, % ?ColorScheme:atom
+    brewer_colorschemes/1, % -Colorschemes:ordset(atom)
+    brewer_colors/2, % ?Colorscheme:atom
                      % ?Colors:ordset(atom)
-    brewer_color/6 % ?ColorScheme:atom
+    brewer_color/6 % ?Colorscheme:atom
                    % ?Color:integer
                    % ?StrangeLetter:char
                    % ?R:byte
@@ -24,36 +24,36 @@ The Brewer color scheme standard version 1.1.
 :- use_module(generics(meta_ext)).
 
 :- discontiguous(
-  brewer_color(_ColorScheme, _Color, _StrangeLetter, _R, _G, _B)
+  brewer_color(_Colorscheme, _Color, _StrangeLetter, _R, _G, _B)
 ).
 
 
 
-brewer_colorschemes(ColorSchemes):-
+brewer_colorschemes(Colorschemes):-
   setoff(
-    ColorScheme,
-    brewer_color(ColorScheme, _Color, _StrangeLetter, _R, _G, _B),
-    ColorSchemes
+    Colorscheme,
+    brewer_color(Colorscheme, _Color, _StrangeLetter, _R, _G, _B),
+    Colorschemes
   ).
 
-%! brewer_colors(?ColorScheme:atom, ?Colors:list(atom)) is nondet.
+%! brewer_colors(?Colorscheme:atom, ?Colors:list(atom)) is nondet.
 % Color scheme lookup.
 %
-% @arg ColorSchemeName The atomic name of a Brewer color scheme.
+% @arg ColorschemeName The atomic name of a Brewer color scheme.
 % @arg ColorNames A list of atomic color names.
 
-brewer_colors(ColorScheme, Colors):-
+brewer_colors(Colorscheme, Colors):-
   setoff(
     Color2,
     (
-      brewer_color(ColorScheme, Color1, _StrangeLetter, _R, _G, _B),
+      brewer_color(Colorscheme, Color1, _StrangeLetter, _R, _G, _B),
       atom_number(Color2, Color1)
     ),
     Colors
   ).
 
 %! brewer_color(
-%!   ?ColorScheme:atom,
+%!   ?Colorscheme:atom,
 %!   ?Color:integer,
 %!   ?StrangeLetter:char,
 %!   ?R:byte,

@@ -81,13 +81,13 @@ The procedure for determining the color of a vertex:
 
 % COLOR %
 
-%! rdf_colorize_namespaces(+Graph:atom, +ColorScheme:atom) is det.
+%! rdf_colorize_namespaces(+Graph:atom, +Colorscheme:atom) is det.
 % Uses colors from the given color scheme to colorize the namespaces in the
 % given graph.
 %
 % @tbd Throw exception for unknown color scheme.
 
-rdf_colorize_namespaces(G, _ColorScheme):-
+rdf_colorize_namespaces(G, _Colorscheme):-
   \+ rdf_graph(G), !,
   existence_error(atom, G).
 rdf_colorize_namespaces(G, svg):- !,
@@ -108,8 +108,8 @@ rdf_colorize_namespaces(G, svg):- !,
       assert(namespace_color(G, Namespace, Color))
     )
   ).
-rdf_colorize_namespaces(_G, ColorScheme):-
-  existence_error(atom, ColorScheme).
+rdf_colorize_namespaces(_G, Colorscheme):-
+  existence_error(atom, Colorscheme).
 
 rdf_register_class_color(G, Class, ClassColor):-
   db_replace_novel(class_color(G, Class, ClassColor)).
@@ -122,7 +122,7 @@ rdf_register_namespace_color(G, Namespace, NamespaceColor):-
 
 %! rdf_vertex_color_by_namespace(
 %!   +Graph:atom,
-%!   +ColorScheme:atom,
+%!   +Colorscheme:atom,
 %!   +Vertex,
 %!   -VertexColor:atom
 %! ) is det.
@@ -132,18 +132,18 @@ rdf_register_namespace_color(G, Namespace, NamespaceColor):-
 % Note that the same node may have different colors in different graphs.
 %
 % @arg Graph The atomic name of a graph.
-% @arg ColorScheme The atomic name of a colorscheme. Currently supported:
+% @arg Colorscheme The atomic name of a colorscheme. Currently supported:
 %      1. `svg`
 %      2. `x11`
 % @arg Vertex A resource.
 % @arg VertexColor The atomic name of a color within the colorscheme.
 
-rdf_vertex_color_by_namespace(G, _ColorScheme, V, V_Color):-
+rdf_vertex_color_by_namespace(G, _Colorscheme, V, V_Color):-
   rdf_global_id(Namespace:_, V),
   namespace_color(G, Namespace, V_Color), !.
-rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
-  rdf_colorize_namespaces(G, ColorScheme),
-  rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color).
+rdf_vertex_color_by_namespace(G, Colorscheme, V, V_Color):-
+  rdf_colorize_namespaces(G, Colorscheme),
+  rdf_vertex_color_by_namespace(G, Colorscheme, V, V_Color).
 
 
 
@@ -155,7 +155,7 @@ rdf_vertex_color_by_namespace(G, ColorScheme, V, V_Color):-
 %!   +GraphTerm:compound
 %! ) is det.
 % The following options are supported:
-%   1. `colorscheme(+ColorScheme:atom)`
+%   1. `colorscheme(+Colorscheme:atom)`
 %      The colorscheme for the colors assigned to vertices and edges.
 %      Supported values are `svg`, `x11` (default), and the
 %      Brewer colorschemes (see module [brewer.pl].
@@ -320,7 +320,7 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
 % Returns a color name for the given vertex.
 %
 % The following options are supported:
-%   1. `colorscheme(+ColorScheme:atom)`
+%   1. `colorscheme(+Colorscheme:atom)`
 %      The colorscheme for the colors assigned to vertices and edges.
 %      Supported values are `svg`, `x11` (default), and the
 %      Brewer colorschemes (see module [brewer.pl].
@@ -345,11 +345,11 @@ rdf_vertex_color(_O, G, V, V_Color):-
   class_color(G, Class, V_Color), !.
 % Resource colored based on its namespace.
 rdf_vertex_color(O, G, V, V_Color):-
-  option(colorscheme(ColorScheme), O, svg),
+  option(colorscheme(Colorscheme), O, svg),
   (
     % URI resources with registered namespace/prefix.
     rdf_global_id(_:_, V),
-    rdf_vertex_color_by_namespace(G, ColorScheme, V, V_NamespaceColor)
+    rdf_vertex_color_by_namespace(G, Colorscheme, V, V_NamespaceColor)
   ->
      V_Color = V_NamespaceColor
   ;
