@@ -11,11 +11,12 @@
 /** <module> RUN_EXT
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06-2013/07
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(library(process)).
+:- use_module(library(settings)).
 :- use_module(library(www_browser)).
 :- use_module(os(file_ext)).
 :- use_module(os(os_ext)).
@@ -26,6 +27,13 @@
 :- db_add_novel(user:prolog_file_type(pdf,  pdf)).
 
 :- multifile(prolog:message/3).
+
+:- setting(
+  dot_viewers,
+  list,
+  [dotty,dotx],
+  'The programs that are used to view DOT files, in order of preference.'
+).
 
 
 
@@ -46,9 +54,12 @@ open_dot(BaseOrFile):-
 %
 % This requires the installation of package =dotty=.
 
-:- if(is_unix).
+:- if((is_mac ; is_unix ; is_windows)).
 open_dot_unix(File):-
-  process_create(path(dotty), [File], [detached(true)]).
+gtrace,
+  setting(dot_viewers, L),
+  member(Program, L),
+  process_create(path(Program), [File], [detached(true)]), !.
 :- endif.
 
 %! open_in_webbrowser(+URI:uri) is det.

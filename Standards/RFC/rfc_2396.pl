@@ -1,4 +1,11 @@
-:- module(rfc_2396, []).
+:- module(
+  rfc_2396,
+  [
+    uri_reference//3 % -Scheme:atom
+                     % -SchemeSpecificPart:compound
+                     % -Fragment:atom
+  ]
+).
 
 /** <module> URI
 
@@ -109,7 +116,7 @@ it is used for the encoding of escaped characters.
 delims = "<" | ">" | "#" | "%" | <">
 ~~~
 
-# Others
+## Others
 
 Other characters are excluded because gateways and other transport
 agents are known to sometimes modify such characters, or they are
@@ -118,6 +125,36 @@ used as delimiters.
 ~~~{.bnf}
 unwise = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
 ~~~
+
+# Regular expressions
+
+~~~{.txt}
+^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+       12            3  4          5       6  7        8 9
+~~~
+
+For example, matching the above expression to
+~~~{.txt}
+http://www.ics.uci.edu/pub/ietf/uri/#Related
+~~~
+results in the following subexpression matches:
+  * `$1 = http:`
+  * `$2 = http`
+  * `$3 = //www.ics.uci.edu`
+  * `$4 = www.ics.uci.edu`
+  * `$5 = /pub/ietf/uri/`
+  * `$6 = <undefined>`
+  * `$7 = <undefined>`
+  * `$8 = #Related`
+  * `$9 = Related`
+where `<undefined>` indicates that the component is not present, as is
+the case for the query component in the above example.  Therefore, we
+can determine the value of the four components and fragment as
+  * `scheme    = $2`
+  * `authority = $4`
+  * `path      = $5`
+  * `query     = $7`
+  * `fragment  = $9`
 
 @author Wouter Beek
 @compat RFC 2396
@@ -206,25 +243,25 @@ authority(server(User, Host, Port)) -->
 authority(registry_based_naming_authority(Authority)) -->
   registry_based_naming_authority(Authority).
 
-dashed_alpha_numerics([]) --> [].
 dashed_alpha_numerics([H|T]) -->
   (alpha_numeric(H) ; hyphen_minus(H)),
   dashed_alpha_numerics(T).
+dashed_alpha_numerics([]) --> [].
 
 %! domain_label(-DomainLabel:atom)//
 % ~~~{.bnf}
 % domainlabel = alphanum | alphanum *( alphanum | "-" ) alphanum
 % ~~~
 
-domain_label(Char) -->
-  alpha_numeric(Code),
-  {char_code(Char, Code)}.
 domain_label(DomainLabel) -->
   alpha_numeric(H),
   dashed_alpha_numerics(T),
   alpha_numeric(X),
   {append([H|T], [X], Codes),
    atom_codes(DomainLabel, Codes)}.
+domain_label(Char) -->
+  alpha_numeric(Code),
+  {char_code(Char, Code)}.
 
 %! domain_labels(-DomainLabels:list(atom))//
 % Hostnames take the form described in Section 3 of [RFC1034] and
@@ -232,13 +269,13 @@ domain_label(DomainLabel) -->
 % dot//1, each domain label starting and ending with an alphanumeric
 % character and possibly also containing hyphen_minus//1 characters.
 
-domain_labels([]) --> [].
 domain_labels([DomainLabel|DomainLabels]) -->
   domain_label(L),
   dot(X),
   {append(L, [X], Codes)},
   {atom_codes(DomainLabel, Codes)},
   domain_labels(DomainLabels).
+domain_labels([]) --> [].
 
 %! escaped_character(-Code:code)//
 % An **escaped octet** is encoded as a character triplet, consisting of the
@@ -322,11 +359,11 @@ host(ipv4(Address)) --> ipv4_address(Address).
 % hostport = host [ ":" port ]
 % ~~~
 
-host_and_port(Host, _NoPort) --> host(Host).
 host_and_port(Host, Port) -->
   host(Host),
   colon,
   port(Port).
+host_and_port(Host, _NoPort) --> host(Host).
 
 %! host_name(-HostNameLabels:list(atom))//
 % Hostnames take the form described in Section 3 of [RFC1034] and
@@ -581,10 +618,10 @@ scheme_character(C) --> plus_sign(C).
 scheme_character(C) --> hyphen_minus(C).
 scheme_character(C) --> dot(C).
 
-scheme_characters([]) --> [].
 scheme_characters([H|T]) -->
   scheme_character(H),
   scheme_characters(T).
+scheme_characters([]) --> [].
 
 %! server(-User:atom, -Host:compound, -Port:integer)//
 % URL schemes that involve the direct use of an IP-based protocol to a
@@ -603,12 +640,12 @@ scheme_characters([H|T]) -->
 % server = [ [ userinfo "@" ] hostport ]
 % ~~~
 
-server(_NoUser, _NoHost, _NoPort) --> [].
-server(_NoUser, Host, Port) --> host_and_port(Host, Port).
 server(User, Host, Port) -->
   user_info(User),
   at_sign,
   host_and_port(Host, Port).
+server(_NoUser, Host, Port) --> host_and_port(Host, Port).
+server(_NoUser, _NoHost, _NoPort) --> [].
 
 %! top_label(+Codes:list(code))//
 % The rightmost domain label of a fully qualified host or domain name will
@@ -621,12 +658,12 @@ server(User, Host, Port) -->
 % toplabel = alpha | alpha *( alphanum | "-" ) alphanum
 % ~~~
 
-top_label([C]) --> letter(C).
 top_label(L) -->
   letter(H),
   dashed_alpha_numerics(T),
   letter(X),
   {append([H|T], [X], L)}.
+top_label([C]) --> letter(C).
 
 %! unreserved_character(+Code:code)//
 % Unreserved characters can be escaped without changing the semantics
@@ -677,7 +714,7 @@ uri_characters([H|T]) -->
   uri_character(H),
   uri_characters(T).
 
-%! uri_reference//
+%! uri_reference(-Scheme:atom, -SchemeSpecificPart:compound, -Fragment:atom)//
 % The term "URI-reference" is used here to denote the common usage of a
 % resource identifier.  A URI reference may be absolute or relative,
 % and may have additional information attached in the form of a
@@ -696,7 +733,7 @@ uri_characters([H|T]) -->
 
 uri_reference(Scheme, SchemeSpecificPart, Fragment) -->
   absolute_uri(Scheme, SchemeSpecificPart),
-  ("", number_sign, fragment(Fragment)).
+  ("" ; number_sign, fragment(Fragment)).
 /*
 uri_reference(_Scheme, _SchemeSpecificPart, Fragment) -->
   relative_uri,
