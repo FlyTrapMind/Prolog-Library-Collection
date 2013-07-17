@@ -2,7 +2,7 @@
   random_vertex_coordinates,
   [
     random_vertex_coordinate/4, % +Options:list(nvpair)
-                                % +Vertices:ord_set(vertex)
+                                % +Vertices:ordset(vertex)
                                 % +Vertex:vertex
                                 % -VertexCoords:list(vcoord)
     random_vertex_coordinates/4 % +Options:list(nvpair)
@@ -38,7 +38,7 @@ Genrates random coordinates for vertices in a graph.
 
 %! random_vertex_coordinate(
 %!   +Options:list(nvpair),
-%!   +Vertices:ord_set(vertex),
+%!   +Vertices:ordset(vertex),
 %!   +Vertex:vertex,
 %!   -VertexCoordinate:vcoord
 %! ) is det.

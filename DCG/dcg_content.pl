@@ -66,7 +66,10 @@ arrow(L) -->
 % @arg Length A non-negative integer.
 
 arrow(O, L1) -->
+  % Set the default arrow head.
   {option(head(Head), O, right)},
+
+  % The left arrow head.
   (
     {arrow_left_head(Head)}
   ->
@@ -75,6 +78,8 @@ arrow(O, L1) -->
   ;
     {L2 = L1}
   ),
+
+  % The dashes in between the arrow heads.
   (
     {arrow_right_head(Head)}
   ->
@@ -84,6 +89,8 @@ arrow(O, L1) -->
   ),
   {NumberOfDashes >= 0},
   dcg_multi(hyphen, NumberOfDashes),
+
+  % The right arrow head.
   (
     {arrow_right_head(Head)}
   ->
@@ -94,6 +101,7 @@ arrow(O, L1) -->
 
 arrow_left_head(both).
 arrow_left_head(left).
+arrow_right_head(both).
 arrow_right_head(right).
 
 graphic([H|T]) -->

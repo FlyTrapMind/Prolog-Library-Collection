@@ -3,7 +3,7 @@
   [
     is_ugraph/1, % +Graph:ugraph
     ugraph_complete/1, % +Graph:ugraph
-    ugraph_complete/2, % +Vs:ord_set
+    ugraph_complete/2, % +Vs:ordset
                        % ?Graph:ugraph
     ugraph_direct_subgraph/2, % ?SubGraph:ugraph
                               % +Graph:ugraph
@@ -135,7 +135,7 @@ ugraph_complete(UG):-
   ugraph_vertices(UG, Vs),
   ugraph_complete(Vs, UG).
 
-%! ugraph_complete(+Vs:ord_set, ?Graph:ugraph) is semidet.
+%! ugraph_complete(+Vs:ordset, ?Graph:ugraph) is semidet.
 % Succeeds if the given graph is complete, or generates the complete graph
 % from the given vertices.
 %

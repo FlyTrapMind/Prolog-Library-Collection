@@ -1,13 +1,17 @@
 :- module(
   gv_file,
   [
-    convert_graphviz/4, % +FromFile
-                        % +Method:onef([dot,sfdp])
-                        % +ToFileType:oneof([jpeg,pdf,svg,xdot])
-                        % ?ToFile
-    graphviz_to_svg/3 % +FromFile:stream
-                      % +Method:onef([dot,sfdp])
-                      % -SVG:list
+    convert_gv/4, % +FromFile
+                  % +Method:onef([dot,sfdp])
+                  % +ToFileType:oneof([jpeg,pdf,svg,xdot])
+                  % ?ToFile:atom
+    convert_tree_to_gv/4, % +Tree:compound
+                          % +Method:onef([dot,sfdp])
+                          % +ToFileType:oneof([jpeg,pdf,svg,xdot])
+                          % ?ToFile:atom
+    gv_to_svg/3 % +FromFile:stream
+                % +Method:onef([dot,sfdp])
+                % -SVG:list
   ]
 ).
 
@@ -17,9 +21,11 @@
 @version 2011-2013/07
 */
 
+:- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
 :- use_module(generics(print_ext)).
+:- use_module(gv(gv_dcg)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
 :- use_module(os(shell_ext)).
@@ -40,7 +46,7 @@
 
 
 
-%! convert_graphviz(
+%! convert_gv(
 %!   +FromFile,
 %!   +Method:oneof([dot,sfdp]),
 %!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
@@ -54,7 +60,7 @@
 % @arg ToFileType
 % @arg ToFile
 
-convert_graphviz(FromFile, Method, ToFileType, ToFile):-
+convert_gv(FromFile, Method, ToFileType, ToFile):-
   % Type checks.
   access_file(FromFile, read),
   must_be(oneof([dot,sfdp]), Method),
@@ -96,7 +102,18 @@ convert_graphviz(FromFile, Method, ToFileType, ToFile):-
     )
   ).
 
-graphviz_to_svg(FromFile, Method, SVG):-
-  convert_graphviz(FromFile, Method, svg, ToFile),
+convert_tree_to_gv(Tree, Method, ToFileType, ToFile):-
+  once(phrase(gv_tree(Tree), Codes)),
+  absolute_file_name(project(tmp), FromFile, [access(write), file_type(dot)]),
+  setup_call_cleanup(
+    open(FromFile, write, Out),
+    put_codes(Out, Codes),
+    close(Out)
+  ),
+  convert_gv(FromFile, Method, ToFileType, ToFile).
+
+gv_to_svg(FromFile, Method, SVG):-
+  convert_gv(FromFile, Method, svg, ToFile),
   file_to_svg(ToFile, SVG),
   safe_delete_file(ToFile).
+

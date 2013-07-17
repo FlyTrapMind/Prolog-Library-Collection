@@ -18,8 +18,8 @@
     octal_number//1, % -DecinalNumber:integer
     sign//0,
     sign//1, % ?Sign:oneof([-1,1])
-    signed_number//1, % -SignedNumber:float
-    unsigned_number//1 % -UnsignedNumber:float
+    signed_number//1, % ?SignedNumber:float
+    unsigned_number//1 % ?UnsignedNumber:float
   ]
 ).
 :- reexport(
@@ -179,6 +179,9 @@ sign --> plus_sign.
 sign(-1) --> minus_sign.
 sign(1) --> plus_sign.
 
+signed_number(N, H, T):-
+  number(N), !,
+  format(codes(H, T), '~w', [N]).
 signed_number(N) -->
   unsigned_number(N).
 signed_number(N) -->
@@ -186,6 +189,9 @@ signed_number(N) -->
   unsigned_number(N1),
   {N is Sg * N1}.
 
+unsigned_number(N, H, T):-
+  number(N), !,
+  format(codes(H, T), '~w', [N]).
 unsigned_number(N) -->
   decimal_number(N).
 unsigned_number(N) -->
@@ -197,3 +203,4 @@ unsigned_number(N) -->
     N3 is N2 / 10 ** (L + 1),
     N is N1 + N3
   }.
+

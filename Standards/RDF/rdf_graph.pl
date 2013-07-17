@@ -51,9 +51,9 @@
     rdf_triples/2, % +In:oneof([atom,uri])
                    % -Triples:list(rdf_triple)
     rdf_triples_to_edges/2, % +Triples:list(rdf_triple)
-                            % -Edges:ord_set(rdf_term)
+                            % -Edges:ordset(rdf_term)
     rdf_triples_to_vertices/2, % +Triples:list(rdf_triple)
-                               % -Vertices:ord_set(rdf_term)
+                               % -Vertices:ordset(rdf_term)
     rdf_vocabulary/2, % +Graph:atom
                       % -Vocabulary:ordset(oneof([uri,literal]))
     select_shared_properties/5, % +X_Pairs1:ordset(list)
@@ -549,7 +549,7 @@ rdf_term(Graph, Term):-
   rdf_predicate(Graph, Term).
 
 %! rdf_term_name(+RDF_Term:oneof([bnode,literal,uri]), -Name:atom) is det.
-% @see Simplified version of rdf_term_name/3.
+% @see Wrapper around rdf_term_name/3 with empty settings.
 
 rdf_term_name(RDF_Term, Name):-
   rdf_term_name([], RDF_Term, Name).

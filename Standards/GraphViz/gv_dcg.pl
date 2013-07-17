@@ -1,7 +1,8 @@
 :- module(
   gv_dcg,
   [
-    gv_graph//1 % +GraphTerm:compound
+    gv_graph//1, % +GraphTerm:compound
+    gv_tree//1 % +Tree:compound
   ]
 ).
 
@@ -23,10 +24,12 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_os)).
+:- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(ugraph(ugraph_export)).
 
 
 
@@ -220,16 +223,17 @@ gv_graph_type(undirected) --> g,r,a,p,h.
 %      http://www.graphviz.org/doc/info/shapes.html#html
 %      This requires an XML grammar!
 
-% Alpha-numeric strings (variant 1) and numerals (variant 2).
+% Alpha-numeric strings (variant 1).
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
   gv_id_first(H),
-  gv_id_rest(T),
+  gv_id_rest(T), !,
   % Variant 1 identifiers should not be (case-variants of) a
   % GraphViz keyword.
   {\+ gv_keyword([H|T])}.
-gv_id(Atom) -->
-  {atom_number(Atom, N)},
+% Numerals (variant 2)
+gv_id(N) -->
+  {number(N)}, !,
   signed_number(N).
 % Double-quoted strings (variant 3).
 % The quotes are already part of the given atom.
@@ -240,14 +244,14 @@ gv_id(Atom) -->
   },
   double_quote(H),
   gv_quoted_string(S),
-  double_quote(H).
+  double_quote(H), !.
 % Double-quoted strings (variant 3).
 % The quotes are not in the given atom. They are written anyway.
 gv_id(Atom) -->
   {atom_codes(Atom, S)},
   double_quote,
   gv_quoted_string(S),
-  double_quote.
+  double_quote, !.
 % HTML strings (variant 4).
 %gv_id(Atom) -->
 %  "<",
@@ -354,3 +358,11 @@ gv_quoted_string([H|T]) -->
 gv_strict(false) --> [].
 gv_strict(true) -->
   s,t,r,i,c,t, space.
+
+gv_tree(T) -->
+  {
+    tree_to_ugraph(T, UG),
+    export_ugraph([edge_labels(false)], UG, G_Term)
+  },
+  gv_graph(G_Term).
+

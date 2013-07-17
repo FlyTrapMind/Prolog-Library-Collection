@@ -233,14 +233,19 @@ rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
 % Returns a name for the given edge.
 %
 % The following options are supported:
-%   1. `colorscheme(+ColorScheme:atom)`
-%      The colorscheme for the colors assigned to vertices and edges.
-%      Supported values are `svg`, `x11` (default), and the
-%      Brewer colorschemes (see module [brewer.pl].
-%   2. `edge_labels(oneof([all,none,replace]))`
+%   1. `edge_labels(oneof([all,none,replace]))`
 %      Whether edge labels are included (`all`),
 %      not included (`none`), or
 %      replaced by alternative labels (`replace`, default).
+%   2. `language(+Language:atom)`
+%      The atomic language tag of the language that is preferred for
+%      use in the RDF term's name.
+%      The default value is `en`.
+%      (Passed to rdf_term_name/3.)
+%   3. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
+%      Whether or not literals are included in the name of the RDF term.
+%      The default value is `uri_only`.
+%      (Passed to rdf_term_name/3.)
 
 % Make use of explicit replacements.
 rdf_edge_name(O, _FromV-P-_ToV, [label(E_Name)]):-

@@ -54,7 +54,7 @@ export_file(File, Stream):-
 %! export_pdf(+GV_File:atom) is det.
 
 export_pdf(GV_File):-
-  convert_graphviz(GV_File, dot, pdf, PDF_File),
+  convert_gv(GV_File, dot, pdf, PDF_File),
   open_pdf(PDF_File).
 
 %! export_tms(+TMS:atom) is det.

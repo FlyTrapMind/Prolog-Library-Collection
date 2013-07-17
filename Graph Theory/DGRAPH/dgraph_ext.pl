@@ -2,7 +2,7 @@
   dgraph_ext,
   [
     dgraph_arcs/2, % +Graph:dgraph
-                   % -Arcs:ord_set(arc)
+                   % -Arcs:ordset(arc)
     dgraph_empty/1, % ?Graph:dgraph
     dgraph_neighbor/3, % +V:vertex
                        % +G:dgraph
@@ -16,7 +16,7 @@
                                       % +VSubG:list(vertex)
                                       % -SubG:dgraph
     dgraph_vertices/2, % +Graph:dgraph
-                       % -Vertices:ord_set(vertex)
+                       % -Vertices:ordset(vertex)
     directed_cycle/2, % +V:vertex
                       % +G:dgraph
     directed_cycle/3, % +V:vertex
@@ -128,7 +128,7 @@ Directed graphs.
 
 
 
-%! dgraph_arcs(+Graph:dgraph, -Arcs:ord_set(arc)) is det.
+%! dgraph_arcs(+Graph:dgraph, -Arcs:ordset(arc)) is det.
 % Returns the arcs of the directed graph.
 
 dgraph_arcs(dgraph(InG, OutG), Arcs):-
@@ -173,7 +173,7 @@ dgraph_vertex_induced_subgraph(dgraph(InG, OutG), VSubG, dgraph(SubInG, SubOutG)
   ugraph_vertex_induced_subgraph(InG, VSubG, SubInG),
   ugraph_vertex_induced_subgraph(OutG, VSubG, SubOutG).
 
-%! dgraph_vertices(+Graph:dgraph, -Vertices:ord_set(vertex)) is det.
+%! dgraph_vertices(+Graph:dgraph, -Vertices:ordset(vertex)) is det.
 % Returns the vertices that occur in the given digraph.
 %
 % @arg Graph A directed graph.

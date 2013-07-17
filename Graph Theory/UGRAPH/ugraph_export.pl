@@ -1,6 +1,11 @@
 :- module(
   ugraph_export,
   [
+    export_ugraph/2, % +Graph:ugraph
+                     % -GraphTerm:compound
+    export_ugraph/3, % +Options:list(nvpair)
+                     % +Graph:ugraph
+                     % -GraphTerm:compound
     export_ugraph/4 % +Options:list(nvpair)
                     % :CoordFunc
                     % +Graph:ugraph
@@ -49,6 +54,7 @@ The following attributes are supported:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
+:- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -72,6 +78,12 @@ The following attributes are supported:
   'The default colorscheme used for exporting undirected graphs.'
 ).
 :- setting(
+  edge_name,
+  atom,
+  ugraph_edge_name,
+  'The predicate for assigning names to edges.'
+).
+:- setting(
   fontsize,
   float,
   11.0,
@@ -89,6 +101,18 @@ The following attributes are supported:
 
 % GRAPH %
 
+%! export_ugraph(+Graph:ugraph, -GraphTerm:compound) is det.
+% @see Wrapper around export_ugraph/4.
+
+export_ugraph(G, G_Term):-
+  export_ugraph([], G, G_Term).
+
+%! export_ugraph(+Graph:ugraph, -GraphTerm:compound) is det.
+% @see Wrapper around export_ugraph/4.
+
+export_ugraph(O, G, G_Term):-
+  export_ugraph(O, random_vertex_coordinate, G, G_Term).
+
 %! export_ugraph(
 %!   +Options:list(nvpair),
 %!   :CoordFunc,
@@ -96,23 +120,28 @@ The following attributes are supported:
 %!   -GraphTerm:compound
 %! ) is det.
 % Exports the given unordered graph to the intermediate graph format.
+% The following options are supported:
+%   1. `border(+Border:coord)`
+%   2. `edge_labels(+IncludeEdgeLabels:boolean)`
+%      Whether edge labels are included (`all`),
+%      not included (`none`), or
+%      replaced by alternative labels (`replace`, default).
+%   3. `surface(+Surface:coord)`
 %
-% @arg Options Supported values:
-%      * `border(+Border:coord)`
-%      * `surface(+Surface:coord)`
+% @arg Options A list of nane-value pairs.
 % @arg CoordFunc A function that maps vertices to coordinates.
 % @arg Graph An undirected graph.
 % @arg GraphTerm A compound term in the intermediate graph format.
 
-export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
+export_ugraph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   % Vertices.
   ugraph_vertices(G, Vs),
   maplist(export_ugraph_vertex(O, Vs, CoordFunc), Vs, V_Terms),
-  
+
   % Edges.
   ugraph_edges(G, Es),
-  maplist(export_ugraph_edge(Vs), Es, E_Terms),
-  
+  maplist(export_ugraph_edge(O, Vs), Es, E_Terms),
+
   % Graph properties.
   ugraph_name(G, G_Name),
   setting(charset, Charset),
@@ -129,20 +158,32 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, [], E_Terms, G_Attrs)):-
 
 
 
-% EDGE %
+% EDGE EXPORT %
 
-export_ugraph_edge(Vs, FromV-ToV, edge(FromV_Id, ToV_Id, E_Attrs)):-
+%! export_ugraph_edge(
+%!   +Options:list(nvpair),
+%!   +Vertices:ordset(vertex),
+%!   +Edge:edge,
+%!   -EdgeTerm:compound
+%! ) is det.
+% The following options are supported:
+%   1. `edge_labels(+IncludeEdgeLabels:boolean)`
+%      Whether edge labels are included (`all`),
+%      not included (`none`), or
+%      replaced by alternative labels (`replace`, default).
+
+export_ugraph_edge(O, Vs, FromV-ToV, edge(FromV_Id, ToV_Id, E_Attrs)):-
   nth0(FromV_Id, Vs, FromV),
   nth0(ToV_Id, Vs, ToV),
   ugraph_edge_arrow_head(FromV-ToV, E_ArrowHead),
   ugraph_edge_color(FromV-ToV, E_Color),
-  ugraph_edge_name(FromV-ToV, E_Name),
+  ugraph_edge_name(O, FromV-ToV, E_NameOptions),
   ugraph_edge_style(FromV-ToV, E_Style),
   E_Attrs = [
     arrowhead(E_ArrowHead),
     color(E_Color),
-    label(E_Name),
     style(E_Style)
+  | E_NameOptions
   ].
 
 %! ugraph_edge_arrow_head(+E:edge, -ArrowType:atom) is det.
@@ -171,19 +212,35 @@ ugraph_edge_arrow_head(_FromV-_ToV, normal).
 
 ugraph_edge_color(_FromV-_ToV, black).
 
-%! ugraph_edge_name(+Edge:edge, -EdgeName:atom) is det.
-% Returns a name for the given edge.
-
 ugraph_edge_name(FromV-ToV, EdgeName):-
   maplist(ugraph_vertex_name, [FromV, ToV], [FromV_Name, ToV_Name]),
   phrase(ugraph_edge_name(FromV_Name, ToV_Name), Codes),
   atom_codes(EdgeName, Codes).
 
+%! ugraph_edge_name(+Options:list(nvpair), +Edge:edge, -EdgeName:atom) is det.
+% Returns a name for the given edge.
+% The following options are supported:
+%   1. `edge_labels(+IncludeEdgeLabels:boolean)`
+%      Whether edge labels are included (`all`),
+%      not included (`none`), or
+%      replaced by alternative labels (`replace`, default).
+%   2. `edge_name(:Goal)`
+%      The predicate that is used to assign names to edges.
+
+% Edge names are enabled.
+ugraph_edge_name(O, Edge, [label(EdgeName)]):-
+  option(edge_labels(true), O, true), !,
+  setting(edge_name, DefaultP),
+  option(edge_name(P), O, DefaultP),
+  call(P, Edge, EdgeName).
+% Edge names are disabled.
+ugraph_edge_name(_O, _FromV-_ToV, []).
+
 ugraph_edge_name(FromV_Name, ToV_Name) -->
   {atom_codes(FromV_Name, FromV_NameCodes)},
   FromV_NameCodes,
   space,
-  arrow([head(both)], 1),
+  arrow([head(both)], 3),
   space,
   {atom_codes(ToV_Name, ToV_NameCodes)},
   ToV_NameCodes.
@@ -236,6 +293,8 @@ ugraph_vertex_color(_V, black).
 
 %ugraph_vertex_image(V, V_Image):-
 
+ugraph_vertex_name(vertex(_Id, V), V_Name):- !,
+  ugraph_vertex_name(V, V_Name).
 ugraph_vertex_name(V, V_Name):-
   term_to_atom(V, V_Name).
 

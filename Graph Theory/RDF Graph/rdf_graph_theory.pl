@@ -12,12 +12,12 @@
                 % +Graph:atom
                 % ?Edge:edge
     rdf_edges/2, % +Graph:atom
-                 % ?Edges:ord_set(edge)
+                 % ?Edges:ordset(edge)
     rdf_edges/3, % +Options:list(nvpair)
                  % +Graph:atom
-                 % ?Edges:ord_set(edge)
-    rdf_edges_to_vertices/2, % +Edges:ord_set(edge)
-                             % -Vertices:ord_set(vertex)
+                 % ?Edges:ordset(edge)
+    rdf_edges_to_vertices/2, % +Edges:ordset(edge)
+                             % -Vertices:ordset(vertex)
     rdf_graph_to_ugraph/2, % +Graph:atom
                            % -UG:ugraph
     rdf_subgraph/2, % +SubVertices:ordset(vertex)
@@ -36,10 +36,10 @@
     rdf_vertex_equivalence/2, % +Resource1:uri
                               % +Resource2:uri
     rdf_vertices/2, % +Graph:atom
-                    % -Vertices:ord_set(vertex)
+                    % -Vertices:ordset(vertex)
     rdf_vertices/3 % +Options:list(nvpair)
                    % +Graph:atom
-                   % -Vertices:ord_set(vertex)
+                   % -Vertices:ordset(vertex)
   ]
 ).
 
@@ -85,8 +85,8 @@ theoretic operations of RDF data must be redefined.
 %!   +Options:list(nvpair),
 %!   +RootVertex,
 %!   +Predicates:list,
-%!   -Vertices:ord_set(vertex),
-%!   -Edges:ord_set(edge)
+%!   -Vertices:ordset(vertex),
+%!   -Edges:ordset(edge)
 %! ) is det.
 
 rdf_beam(O, V, Ps, Vs, Es):-

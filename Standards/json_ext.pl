@@ -36,3 +36,4 @@ http_read_json2(Request, JSON):-
     domain_error(mimetype, Type)
   ),
   http_read_data(Request, JSON, []).
+

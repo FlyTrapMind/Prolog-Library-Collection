@@ -14,8 +14,8 @@
                     % SortedE_Sums:list
     bipartite/4, % +Graph
                  % :E_P
-                 % -Vs1:ord_set
-                 % -Vs2:ord_set
+                 % -Vs1:ordset
+                 % -Vs2:ordset
     component/4, % :V_P
                  % :E_P
                  % ?Component
