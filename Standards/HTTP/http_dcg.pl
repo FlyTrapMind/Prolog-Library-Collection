@@ -11,6 +11,7 @@ DCG rules for the HTTP 1.1 specification.
 Tag suggested by Anne Ogborn on the SWI-Prolog mailing list: `doc-needs-help`.
 
 @author Wouter Beek
+@see Based on RFC 2616, http://tools.ietf.org/html/rfc2616
 @version 2013/07
 */
 

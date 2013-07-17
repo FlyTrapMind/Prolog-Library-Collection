@@ -65,8 +65,9 @@ proof(Conclusion, Premises)
 %! formatln(+Format) is det.
 % @see Variant of format/1 with a newline appended.
 
-formatln(Format):-
-  format(Format),
+formatln(Format1):-
+  term_to_atom(Format1, Format2),
+  format(Format2),
   current_output(Stream), nl(Stream).
 
 %! formatln(+Format, :Arguments) is det.
