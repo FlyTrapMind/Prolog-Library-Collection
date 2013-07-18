@@ -192,23 +192,16 @@ prolog:message(open_uri(URI)) -->
 
 open_pdf(BaseOrFile):-
   base_or_file_to_file(BaseOrFile, pdf, File),
-  os_dependent_call(open_pdf(File)).
-
-%! open_pdf_unix(+File:atom) is det.
-
-:- if(is_unix).
-:- db_add_novel(user:file_type_program(pdf, xpdf)).
-open_pdf_unix(File):-
   once(find_program_by_file_type(pdf, Predicate)),
   run_program(Predicate, [File]).
+
+:- if((is_unix ; is_mac)).
+:- db_add_novel(user:file_type_program(pdf, evince)).
+:- db_add_novel(user:file_type_program(pdf, xpdf)).
 :- endif.
 
 :- if(is_windows).
-open_pdf_windows(_File).
-%open_pdf_windows(File):-
-%  process_create(path('AcroRd32'), [File], [detached(true), process(PID)]),
-%  process_wait(PID, exit(ShellStatus)),
-%  shell_status(ShellStatus).
+:- db_add_novel(user:file_type_program(pdf, 'AcroRd32')).
 :- endif.
 
 run_program(Program, Args):-
