@@ -49,8 +49,8 @@ DCGs for cardinal numbers.
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
 
-:- meta_predicate(digits_to_decimal_number(//,+,-,?,?)).
-:- meta_predicate(digits_to_decimal_number(//,+,+,-,?,?)).
+:- meta_predicate(digits_to_decimal_number(//,+,?,?,?)).
+:- meta_predicate(digits_to_decimal_number(//,+,+,?,?,?)).
 
 
 
@@ -89,7 +89,7 @@ decimal_number(N) -->
 %! digits_to_decimal_number(
 %!   :DCGBody,
 %!   +Radix:integer,
-%!   -DecimalNumber:integer
+%!   ?DecimalNumber:integer
 %! )//
 % Processes digits of arbitrary radix and returns the decimal equivalent.
 %
@@ -102,8 +102,8 @@ decimal_number(N) -->
 
 digits_to_decimal_number(_Digit, Radix, M, H, T):-
   number(M), !,
-  radix_to_decimal(M, Radix, N),
-  format(codes(H, T), '~w', [N]).
+  atomic_list_concat(['~', Radix, r], Format),
+  format(codes(H, T), Format, [M]).
 digits_to_decimal_number(Digit, Radix, M) -->
   % We start with processing the first digit.
   dcg_call(Digit, N),
