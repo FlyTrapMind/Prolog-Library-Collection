@@ -28,8 +28,8 @@
     nonvar_det/1, % :Goal
 
 % GENERIC CALLS
-    generic/3, % +Context:atom
-               % :GenericPredicate:atom
+    generic/3, % :GenericPredicate
+               % +Context:atom
                % +Arguments:list
 
 % FINDALL RELATED PREDICATES
@@ -105,7 +105,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(call_semidet(0)).
 :- meta_predicate(complete(2,+,-)).
 :- meta_predicate(count(0,-)).
-:- meta_predicate(generic(:,:,+)).
+:- meta_predicate(generic(:,+,+)).
 :- meta_predicate(if_else(0,0)).
 :- meta_predicate(if_then(0,0)).
 :- meta_predicate(if_then_else(0,0,0)).
@@ -253,7 +253,7 @@ nonvar_det(Goal):-
 
 % GENERIC CALLS %
 
-%! generic(+GenericPredicate:atom, +Context:atom, +Arguments:list)
+%! generic(:GenericPredicate, +Context:atom, +Arguments:list)
 
 generic(P1, Context, Args):-
   % Make sure the calling module prefix is discarded.

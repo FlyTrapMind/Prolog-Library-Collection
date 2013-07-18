@@ -1,10 +1,10 @@
 :- module(
   print_ext,
   [
-    formatln/1, % +Format
-    formatln/2, % +Format
+    formatnl/1, % +Format
+    formatnl/2, % +Format
                 % :Arguments
-    formatln/3, % +Output
+    formatnl/3, % +Output
                 % +Format
                 % :Arguments
     indent/1, % +Indent:integer
@@ -62,25 +62,25 @@ proof(Conclusion, Premises)
 
 
 
-%! formatln(+Format) is det.
+%! formatnl(+Format) is det.
 % @see Variant of format/1 with a newline appended.
 
-formatln(Format1):-
+formatnl(Format1):-
   term_to_atom(Format1, Format2),
   format(Format2),
-  current_output(Stream), nl(Stream).
+  nl.
 
-%! formatln(+Format, :Arguments) is det.
+%! formatnl(+Format, :Arguments) is det.
 % @see Variant of format/2 with a newline appended.
 
-formatln(Format, Arguments):-
+formatnl(Format, Arguments):-
   format(Format, Arguments),
-  current_output(Stream), nl(Stream).
+  nl.
 
-%! formatln(+Output, +Format, :Arguments) is det.
+%! formatnl(+Output, +Format, :Arguments) is det.
 % @see Variant of format/3 with a newline appended.
 
-formatln(Out, Format, Arguments):-
+formatnl(Out, Format, Arguments):-
   format(Out, Format, Arguments),
   nl(Out).
 

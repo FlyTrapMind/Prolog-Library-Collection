@@ -36,8 +36,7 @@ db_add(New):-
 % Asserts the given fact only if it does not already exist.
 
 db_add_novel(New):-
-  call(New),
-  !.
+  call(New), !.
 db_add_novel(New):-
   assert(New).
 
@@ -50,8 +49,7 @@ db_replace(New):-
 
 % There is something to overwrite.
 db_replace(Old, New):-
-  retract(Old),
-  !,
+  retract(Old), !,
   assert(New).
 % There is nothing to overwrite.
 db_replace(_Old, New):-
@@ -63,8 +61,7 @@ db_replace_novel(New):-
 
 db_replace_novel(Old, New):-
   call(New),
-  \+ call(Old),
-  !.
+  \+ call(Old), !.
 db_replace_novel(Old, New):-
   db_replace(Old, New).
 
