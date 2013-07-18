@@ -269,12 +269,27 @@ dashed_alpha_numerics([]) --> [].
 % domainlabel = alphanum | alphanum *( alphanum | "-" ) alphanum
 % ~~~
 
+domain_label(domain_label(Char), Char) -->
+  {nonvar(Char), atom_length(Char, 1)}, !,
+  {char_code(Char, Code)},
+  alpha_numeric(Code).
+domain_label(domain_label(DomainLabel), DomainLabel) -->
+  {nonvar(DomainLabel)}, !,
+  {
+    atom_codes(DomainLabel, Codes),
+    append([H|T], [X], Codes)
+  },
+  alpha_numeric(H),
+  dashed_alpha_numerics(T),
+  alpha_numeric(X).
 domain_label(domain_label(DomainLabel), DomainLabel) -->
   alpha_numeric(H),
   dashed_alpha_numerics(T),
   alpha_numeric(X),
-  {append([H|T], [X], Codes),
-   atom_codes(DomainLabel, Codes)}.
+  {
+    append([H|T], [X], Codes),
+    atom_codes(DomainLabel, Codes)
+  }.
 domain_label(domain_label(Char), Char) -->
   alpha_numeric(Code),
   {char_code(Char, Code)}.
@@ -328,6 +343,10 @@ escaped_character(N) -->
 % intended for retrieval and the result of that retrieval is a document
 % for which the identified fragment is consistently defined.
 
+fragment(fragment(Fragment), Fragment) -->
+  {nonvar(Fragment)}, !,
+  {atom_codes(Fragment, Codes)},
+  fragment_(Codes).
 fragment(fragment(Fragment), Fragment) -->
   fragment_(Codes),
   {atom_codes(Fragment, Codes)}.
@@ -548,6 +567,10 @@ port(port(Port), Port) --> decimal_number(Port).
 % `&`, `=`, `+`, `,`, and `$` are reserved.
 
 query(query(Query), Query) -->
+  {nonvar(Query)}, !,
+  {atom_codes(Query, Codes)},
+  uri_characters(Codes).
+query(query(Query), Query) -->
   uri_characters(Codes),
   {atom_codes(Query, Codes)}.
 
@@ -594,12 +617,12 @@ registry_based_naming_authority_character(C) -->
 % interpreting a relative path.  The relative URI syntax is defined in
 % Section 5.
 
-relative_uri(relative_uri(T)) -->
+relative_uri(relative_uri(T), Query) -->
   (absolute_path(T1) ; network_path(T1)),
   (
     "", {T = relative_uri(T1)}
   ;
-    question_mark, query(T2), {T = relative_uri(T1,'?',T2)}
+    question_mark, query(T2, Query), {T = relative_uri(T1,'?',T2)}
   ).
 */
 
@@ -640,6 +663,10 @@ reserved_character(C) --> comma(C).
 % scheme = alpha *( alpha | digit | "+" | "-" | "." )
 % ~~~
 
+scheme(scheme(Scheme), Scheme) -->
+  {nonvar(Scheme)}, !,
+  {atom_codes(Scheme, Codes)},
+  scheme_(Codes).
 scheme(scheme(Scheme), Scheme) -->
   scheme_(Codes),
   {atom_codes(Scheme, Codes)}.
@@ -832,6 +859,10 @@ uri_reference(T, Fragment) -->
 %                    ";" | ":" | "&" | "=" | "+" | "$" | "," )
 % ~~~
 
+user_info(user_info(User), User) -->
+  {nonvar(User)}, !,
+  {atom_codes(User, Codes)},
+  user_info_(Codes).
 user_info(user_info(User), User) -->
   user_info_(Codes),
   {atom_codes(User, Codes)}.

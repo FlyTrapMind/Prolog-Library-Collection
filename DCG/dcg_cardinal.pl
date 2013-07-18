@@ -47,6 +47,7 @@ DCGs for cardinal numbers.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(math(math_ext)).
+:- use_module(math(radix)).
 
 :- meta_predicate(digits_to_decimal_number(//,+,-,?,?)).
 :- meta_predicate(digits_to_decimal_number(//,+,+,-,?,?)).
@@ -99,6 +100,10 @@ decimal_number(N) -->
 % @arg An integer representing the processed number, converted to
 %      the decimal number system.
 
+digits_to_decimal_number(_Digit, Radix, M, H, T):-
+  number(M), !,
+  radix_to_decimal(M, Radix, N),
+  format(codes(H, T), '~w', [N]).
 digits_to_decimal_number(Digit, Radix, M) -->
   % We start with processing the first digit.
   dcg_call(Digit, N),

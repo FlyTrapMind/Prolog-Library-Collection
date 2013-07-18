@@ -32,15 +32,6 @@ Predicates for running external programs.
 :- use_module(os(os_ext)).
 :- use_module(os(shell_ext)).
 
-% DOT
-:- db_add_novel(user:prolog_file_type(dot,  dot)).
-:- db_add_novel(user:prolog_file_type(xdot, dot)).
-:- db_add_novel(user:file_type_program(dot, dotty)).
-:- db_add_novel(user:file_type_program(dot, dotx)).
-
-% PDF
-:- db_add_novel(user:prolog_file_type(pdf,  pdf)).
-
 :- multifile(prolog:message/3).
 
 % This is used to kill the processes that are still running
@@ -51,6 +42,15 @@ Predicates for running external programs.
 :- dynamic(user:file_type_program/2).
 
 :- initialization(db_add_novel(at_halt(kill_processes))).
+
+% DOT
+:- db_add_novel(user:prolog_file_type(dot,  dot)).
+:- db_add_novel(user:prolog_file_type(xdot, dot)).
+:- db_add_novel(user:file_type_program(dot, dotty)).
+:- db_add_novel(user:file_type_program(dot, dotx)).
+
+% PDF
+:- db_add_novel(user:prolog_file_type(pdf,  pdf)).
 
 
 
