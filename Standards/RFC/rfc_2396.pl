@@ -1,6 +1,7 @@
 :- module(
   rfc_2396,
   [
+% SURFACE PREDICATES
     uri_reference//1, % -Tree:compound
     uri_reference//6, % -Tree:compound
                       % ?Scheme
@@ -8,7 +9,56 @@
                       % ?Path
                       % ?Query
                       % ?Fragment
-    uri_to_gv/1 % +URI:atom
+    uri_to_gv/1, % +URI:atom
+
+% DEEP PREDICATES
+    absolute_path//2, % -Tree:compound
+                      % ?Path:list(list(atom))
+    authority//2, % -Tree:compound
+                  % ?Authority:compound
+    authority//2, % -Tree:compound
+                  % ?Authority:atom
+    domain_label//2, % -Tree:compound
+                     % ?DomainLabel:atom
+    domain_labels//2, % -Tree:compound
+                      % ?DomainLabels:list(atom)
+    fragment//2, % -Tree:compound
+                 % ?Fragment:atom
+    hierarchical_part//4, % -Tree:compound
+                          % ?Authority:compound
+                          % ?Path:list(list(atom))
+                          % ?Query:atom
+    host//2, % -Tree:compound
+             % ?Host:list(atomic)
+    host_name//2, % -Tree:compound
+                  % ?DomainLabels:list(atom)
+    ipv4_address//2, % -Tree:compound
+                     % ?IPv4Address:list(integer)
+    network_path//3, % -Tree:compound
+                     % ?Authority:compound
+                     % ?Path:list(list(atom))
+    opaque_part//2, % -Tree:compound
+                    % ?OpaquePart:atom
+    parameter//2, % -Tree:compound
+                  % ?Parameter:atom
+    path//2, % -Tree:compound
+             % ?Path:list
+    path_segment//2, % -Tree:compound
+                     % ?PathSegment:list(atom)
+    port//2, % -Tree:compound
+             % ?Port:integer
+    query//2, % -Tree:compound
+              % ?Query:atom
+    registry_based_naming_authority//2, % -Tree:compound
+                                         % ?Authority:atom
+    scheme//2, % -Tree:compound
+               % ?Scheme:atom
+    server//2, % -Tree:compound
+               % ?Server:compound
+    top_label//2, % -Tree:compound
+                  % ?TopLabel:atom
+    user_info//2 % -Tree:compound
+                 % ?User:atom
   ]
 ).
 
@@ -169,6 +219,7 @@ can determine the value of the four components and fragment as
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
 
@@ -241,7 +292,7 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
   colon,
   opaque_part(T2, Path).
 
-%! authority(-Tree:compound)//
+%! authority(-Tree:compound, ?Authority)//
 % Many URI schemes include a top hierarchical element for a naming
 % authority, such that the namespace defined by the remainder of the
 % URI is governed by that authority. This authority component is
@@ -253,7 +304,7 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
 % ~~~
 %
 % @Tree A parse tree.
-% @arg Authority A compound term of the form
+% @arg Authority Either an atom or a compound term of the form
 %      `authority(User:atom,Host:list(or([atom,integer])),Port:integer)`.
 
 authority(authority(T), Authority) --> server(T, Authority).
@@ -357,7 +408,7 @@ fragment_([H|T]) -->
   fragment_(T).
 
 %! hierarchical_part(
-%!   ?Tree:compound,
+%!   -Tree:compound,
 %!   ?Authority:compound,
 %!   ?Path:list(list(atom)),
 %!   ?Query:atom
@@ -448,7 +499,7 @@ mark(C) --> asterisk(C).
 mark(C) --> single_quote(C).
 mark(C) --> round_bracket(C).
 
-%! network_path(-Tree:compound, ?Authority:compound, ?Path)//
+%! network_path(-Tree:compound, ?Authority:compound, ?Path:list(list(atom)))//
 % ~~~{.bnf}
 % net_path = "//" authority [ abs_path ]
 % ~~~
@@ -587,7 +638,7 @@ query(query(Query), Query) -->
   uri_characters(Codes),
   {atom_codes(Query, Codes)}.
 
-%! registry_based_naming_authority(-Tree:compound, -Authority:atom)//
+%! registry_based_naming_authority(-Tree:compound, ?Authority:atom)//
 % The structure of a registry-based naming authority is specific to the
 % URI scheme, but constrained to the allowed characters for an
 % authority component.

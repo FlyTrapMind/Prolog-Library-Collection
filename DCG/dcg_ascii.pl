@@ -399,6 +399,7 @@ conflict with builtins or with predicates from other modules:
 
 @author Wouter Beek
 @compat http://www.ascii-code.com/
+@tbd Compare the implementation to the ANSI X3.4-1986 standard.
 @version 2013/01-2013/02, 2013/05-2013/07
 */
 

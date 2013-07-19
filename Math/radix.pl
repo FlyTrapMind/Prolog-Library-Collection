@@ -1,9 +1,16 @@
 :- module(
   radix,
   [
-    radix_to_decimal/3 % +RadixNumber:atom
-                       % +Radix:between(2,16)
-                       % -DecimalNumber:integer
+    decimal_to_digits/2, % +DecimalNumber:integer
+                         % -DecimalDigits:list(between(0,9))
+    digits_to_decimal/2, % +DecimalDigits:list(between(0,9))
+                         % -DecimalNumber:integer
+    digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
+                         % +Radix:integer
+                         % -DecimalNumber:integer
+    number_to_decimal/3 % +RadixNumber:atomic
+                        % +Radix:between(2,16)
+                        % -DecimalNumber:integer
   ]
 ).
 
@@ -12,6 +19,8 @@
 Predicate for transforming numbers with a different radix.
 
 @author Wouter Beek
+@tbd Study the radix topic further and reimplement these predicates
+     in a more generic way.
 @version 2013/07
 */
 
@@ -19,7 +28,14 @@ Predicate for transforming numbers with a different radix.
 
 
 
-%! radix(
+decimal_to_digits(DecimalNumber, DecimalDigits):-
+  atom_chars(DecimalNumber, Chars),
+  maplist(atom_number, Chars, DecimalDigits).
+
+digits_to_decimal(DecimalDigits, DecimalNumber):-
+  digits_to_decimal(DecimalDigits, 10, DecimalNumber).
+
+%! digits_to_decimal(
 %!   +DecimalDigits:list(integer),
 %!   +Radix:integer,
 %!   -DecimalNumber:integer
@@ -34,24 +50,24 @@ Predicate for transforming numbers with a different radix.
 % @arg DecimalNumber An integer that is the given decimal digits
 %      under the given radix.
 
-radix(DecimalDigits, Radix, DecimalNumber):-
-  radix(DecimalDigits, Radix, 0, DecimalNumber).
+digits_to_decimal(DecimalDigits, Radix, DecimalNumber):-
+  digits_to_decimal(DecimalDigits, Radix, 0, DecimalNumber).
 
-radix([], _Radix, DecimalNumber, DecimalNumber).
-radix([H|T], Radix, M1, DecimalNumber):-
+digits_to_decimal([], _Radix, DecimalNumber, DecimalNumber).
+digits_to_decimal([H|T], Radix, M1, DecimalNumber):-
   M2 is M1 * Radix + H,
-  radix(T, Radix, M2, DecimalNumber).
+  digits_to_decimal(T, Radix, M2, DecimalNumber).
 
-%! radix_to_decimal(
-%!   +RadixNumber:atom,
+%! number_to_decimal(
+%!   +RadixNumber:atomic,
 %!   +Radix:between(2,16),
 %!   -DecimalNumber:integer
 %! ) is det.
 
-radix_to_decimal(RadixNumber, Radix, DecimalNumber):-
+number_to_decimal(RadixNumber, Radix, DecimalNumber):-
   atom_chars(RadixNumber, RadixDigits),
-  maplist(radix_to_decimal, RadixDigits, DecimalDigits),
-  radix(DecimalDigits, Radix, DecimalNumber).
+  maplist(number_to_decimal, RadixDigits, DecimalDigits),
+  digits_to_decimal(DecimalDigits, Radix, DecimalNumber).
 
-radix_to_decimal(RadixDigit, DecimalNumber):-
+number_to_decimal(RadixDigit, DecimalNumber):-
   char_type(RadixDigit, xdigit(DecimalNumber)).

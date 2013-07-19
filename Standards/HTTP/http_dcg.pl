@@ -10,6 +10,87 @@ DCG rules for the HTTP 1.1 specification.
 
 Tag suggested by Anne Ogborn on the SWI-Prolog mailing list: `doc-needs-help`.
 
+# Concepts
+
+  * **Age**
+    The age of a response is the time since it was sent by, or
+    successfully validated with, the origin server.
+  * **Expiration date**
+    * **Explicit expiration time**
+      The time at which the origin server intends that an entity should
+      no longer be returned by a cache without further validation.
+    * **Heuristic expiration time**
+      An expiration time assigned by a cache when no explicit expiration
+      time is available.
+  * **First-hand**
+    A response is first-hand if it comes directly and without
+    unnecessary delay from the origin server, perhaps via one or more
+    proxies, or if its validity has just been checked directly with
+    the origin server.
+  * **Fresh**
+    The property of a response for which `age < freshness lifetime`.
+  * **Freshness lifetime**
+    The length of time between the generation of a response and its
+    expiration time.
+  * **Inbound/outbound**
+    Traveling toward the origin server. / Traveling toward the user agent.
+  * **Intermediary**
+    * **Gateway**
+      A receiving agent.
+      Acting as if it were the origin server for the requested resource.
+    * **Proxy**
+      A forwarding agent, making requests on behalf of other clients.
+      * **Transparent proxy**
+        A proxy that does not modify the request or response beyond
+        what is required for proxy authentication and identification.
+    * **Tunnel**
+      An intermediary program which is acting as a blind relay between
+      two connections.
+      A tunnel is not considered a party to the HTTP communication.
+  * **Representation**
+    An entity included with a response that is subject to content negotiation.
+  * **Resource**
+    A network data object or service that can be identified by a URI.
+  * **Stale**
+    The property of a response for which `age >= freshness lifetime`.
+  * **Upstream/downstream**
+    All messages flow from upstream to downstream.
+  * **Validator**
+    A protocol element (e.g., an entity tag or a Last-Modified time)
+    that is used to find out whether a cache entry is an equivalent
+    copy of an entity.
+  * **Variant**
+    A resource may have one, or more than one, representation(s)
+    associated with it at any given instant.
+    Use of the term 'variant' does not necessarily imply that the resource
+    is subject to content negotiation.
+
+# Client request
+
+Components:
+  * Method
+  * URI
+  * Protocol version
+  * MIME-like message
+    * Request modifiers
+    * Client information
+    * Body content
+
+# Server response
+
+Components:
+  * Protocol version
+  * Success or error code
+  * MIME-like message
+    * Server information
+    * Entity meta-information
+    * Entity-body content
+
+# Caching
+
+All non-tunnel parties (i.e., client, server, gateway, proxy)
+may employ an internal cache.
+
 @author Wouter Beek
 @see Based on RFC 2616, http://tools.ietf.org/html/rfc2616
 @version 2013/07
@@ -19,8 +100,12 @@ Tag suggested by Anne Ogborn on the SWI-Prolog mailing list: `doc-needs-help`.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(lists)).
+:- use_module(library(settings)).
+:- use_module(rfc(rfc_2396)).
 
 
+
+:- setting(default_port, integer, 80, 'The default TCP port.').
 
 %! comment(+Codes:list(code))//
 % Comments can be included in some HTTP header fields by surrounding
@@ -71,29 +156,44 @@ crlf([CR,LF]) -->
   line_feed(LF).
 
 %! http_url(
-%!   +Codes:list(code),
-%!   -Host:aton,
-%!   -Port:integer,
-%!   -AbsolutePath:atom,
-%!   -Search:atom,
-%!   -Fragment:atom
+%!   -Tree:compound,
+%!   ?Host:list(atomic),
+%!   ?Port:integer,
+%!   ?Path:list(list(atom)),
+%!   ?Query:atom
 %! )//
+% ~~~{.bnf}
+% http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
+% ~~~
+%
+% @arg Tree A parse tree.
+% @arg Host
+% @arg Port An integer representing a port.
+%      Defaults to the value for setting `default_port`.
+% @arg Path
+% @arg Query
 
-/*
-http_url(L, Host, Port, AbsolutePath, Search, Fragment) -->
-  {
-    uri_authority_components(
-      Authority,
-      uri_authority_components(_User, Password, Host, Port)
-    ),
-    uri_components(
-      URI,
-      uri_components(http, Authority, AbsolutePath, Search, Fragment)
+http_url(T, Host, Port, Path, Query) -->
+  "http://",
+  host(T1, Host),
+  (
+    "", {var(Port), setting(default_port, Port)}
+  ;
+    ":'", port(T2, Port)
+  ),
+  (
+    "", {var(Path), var(Query)}
+  ;
+    absolute_path(T3, Path),
+    (
+      "", {var(Query)}
+    ;
+      "?", query(T4, Query)
     )
-  }.
-*/
+  ),
+  {parse_tree(http_url, [T1,T2,T3,T4], T)}.
 
-%! http_version(-Major:integer, -Minor:integer) is det.
+%! http_version(-Tree:compound, ?Major:integer, ?Minor:integer) is det.
 % HTTP uses a `<major>.<minor>` numbering scheme to indicate versions
 % of the protocol.
 % The version of an HTTP message is indicated by an HTTP-Version field
@@ -103,7 +203,7 @@ http_url(L, Host, Port, AbsolutePath, Search, Fragment) -->
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
 
-http_version(Major, Minor) -->
+http_version(http_version('HTTP','/',Major,'.',Minor), Major, Minor) -->
   "HTTP",
   forward_slash,
   decimal_number(Major),
@@ -137,6 +237,7 @@ linear_white_space_([H|T]) -->
 
 qdtext(C) -->
   text(C),
+  % Exclude double quote.
   {\+ C == 34}.
 
 %! quoted_pair(+Codes:list(code))//

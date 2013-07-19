@@ -39,6 +39,10 @@
 %:- ignore(send(@pce, show_console, iconic)).
 :- ignore(send(@pce, show_console, open)).
 
+% Run unit tests, unless compiled with optimisation turned on.
+:- use_module(library(plunit)).
+:- set_test_options([load(normal),run(all)]).
+
 % Debug monitor.
 % @tbd The PCE-based debug monitor in swipl is not the most versatile
 %      debug tool in existence. I would like to write a Web-based version
