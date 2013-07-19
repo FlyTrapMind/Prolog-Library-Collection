@@ -37,6 +37,9 @@
 % MULTIPLE OCCURRENCES
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
+    dcg_multi//3, % :DCG_Body:dcg
+                  % +Max:integer
+                  % +Min:integer
     dcg_multi_list//2, % :DCG_Body:dcg
                        % +List:list
     dcg_multi_list//3, % :DCG_Body:dcg
@@ -141,6 +144,7 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_multi(//,?,?,?)).
+:- meta_predicate(dcg_multi(//,+,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,//,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
@@ -317,9 +321,17 @@ dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
 
+dcg_multi(DCG_Body, Max, Min) -->
+  {Max >= Min},
+  dcg_multi(DCG_Body, Max), !.
+dcg_multi(DCG_Body, Max, Min) -->
+  {Max >= Min},
+  {NewMax is Max - 1},
+  dcg_multi(DCG_Body, NewMax, Min).
+
 dcg_multi_nonvar(_DCGBody, 0) --> !, [].
 dcg_multi_nonvar(DCG_Body, N) -->
-  DCG_Body, !,
+  DCG_Body,
   {NewN is N - 1},
   dcg_multi_nonvar(DCG_Body, NewN).
 

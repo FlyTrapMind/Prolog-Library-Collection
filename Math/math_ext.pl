@@ -20,6 +20,9 @@
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
+    integers_to_float/3, % +Before:integer
+                         % +After:integer
+                         % -Number:float
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -174,16 +177,18 @@ factorial(N, F):-
 % E.g., $0!$.
 factorial(_N, 1).
 
-fibonacci(0, 1):-
-  !.
-fibonacci(1, 1):-
-  !.
+fibonacci(0, 1):- !.
+fibonacci(1, 1):- !.
 fibonacci(N, F):-
   N1 is N - 1,
   N2 is N - 2,
   fibonacci(N1, F1),
   fibonacci(N2, F2),
   F is F1 + F2.
+
+integers_to_float(Before, After, Number):-
+  number_length(After, Length),
+  Number is Before + After / 10 ** (Length + 1).
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.

@@ -203,9 +203,4 @@ unsigned_number(N) -->
   ("", {N1 = 0} ; decimal_number(N1)),
   dot,
   ("", {N2 = 0} ; decimal_number(N2)),
-  {
-    number_length(N2, L),
-    N3 is N2 / 10 ** (L + 1),
-    N is N1 + N3
-  }.
-
+  {integers_to_float(N1, N2, N)}.

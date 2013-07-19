@@ -39,8 +39,8 @@
                      % ?Path:list(list(atom))
     opaque_part//2, % -Tree:compound
                     % ?OpaquePart:atom
-    parameter//2, % -Tree:compound
-                  % ?Parameter:atom
+    %parameter//2, % -Tree:compound
+    %              % ?Parameter:atom
     path//2, % -Tree:compound
              % ?Path:list
     path_segment//2, % -Tree:compound
