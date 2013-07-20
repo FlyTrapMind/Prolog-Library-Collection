@@ -14,10 +14,13 @@
 % DEEP PREDICATES
     absolute_path//2, % -Tree:compound
                       % ?Path:list(list(atom))
+    absolute_uri//5, % -Tree:compound
+                     % ?Scheme
+                     % ?Authority
+                     % ?Path
+                     % ?Query
     authority//2, % -Tree:compound
                   % ?Authority:compound
-    authority//2, % -Tree:compound
-                  % ?Authority:atom
     domain_label//2, % -Tree:compound
                      % ?DomainLabel:atom
     domain_labels//2, % -Tree:compound

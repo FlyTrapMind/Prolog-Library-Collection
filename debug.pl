@@ -52,6 +52,11 @@
 
 :- [load].
 
+:- use_module(library(apply)).
+:- use_module(library(lists)).
+
+%:- initialization(load_modules_for_pldoc).
+
 %! load_modules_for_pldoc is det.
 % Loads all modules in PGC for debugging purposes:
 %   1. Early catching of errors.
@@ -98,6 +103,3 @@ load_modules_for_pldoc:-
       maplist(use_module, Files)
     )
   ).
-
-:- load_modules_for_pldoc.
-

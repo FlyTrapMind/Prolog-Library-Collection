@@ -1,10 +1,10 @@
 :- module(
   rfc_1766,
   [
-    language_header//2, % -Tree:compound
-                        % ?LanguageTags:list(atom)
-    language_tag//2 % -Tree:compound
-                    % ?LanguageTag:atom
+    rfc1766_language_header//2, % -Tree:compound
+                                % ?LanguageTags:list(atom)
+    rfc1766_language_tag//2 % -Tree:compound
+                            % ?LanguageTag:atom
   ]
 ).
 
@@ -22,7 +22,7 @@ Stupport for RFC 1766: *Tags for the Identification of Languages*.
 
 
 
-%! language_header(-Tree:compound, ?LanguageTags:list(atom))//
+%! rfc1766_language_header(-Tree:compound, ?LanguageTags:list(atom))//
 % The **Language header** is intended for use in the case where one desires
 % to indicate the language(s) of something that has RFC-822-like
 % headers, like MIME body parts or Web documents.
@@ -70,12 +70,12 @@ Stupport for RFC 1766: *Tags for the Identification of Languages*.
 % Content-Language: x-klingon
 % ~~~
 
-language_header(language_header('Content-Language',':',T), LanguageTags) -->
+rfc1766_language_header(language_header('Content-Language',':',T), LanguageTags) -->
   "Content-Language",
   colon,
-  language_tags(T, LanguageTags).
+  rfc1766_language_tags(T, LanguageTags).
 
-%! language_tag(-Tree:compound, ?LanguageTag:atom)//
+%! rfc1766_language_tag(-Tree:compound, ?LanguageTag:atom)//
 % A language tag identifies a natural language spoken, written, or
 % otherwise conveyed by human beings for communication of information
 % to other human beings. Computer languages are explicitly excluded.
@@ -102,24 +102,24 @@ language_header(language_header('Content-Language',':',T), LanguageTags) -->
 % x-pig-latin
 % ~~~
 
-language_tag(language_tag(T1,T2), LanguageTag) -->
+rfc1766_language_tag(language_tag(T1,T2), LanguageTag) -->
   {nonvar(LanguageTag)}, !,
   {split_atom_exclusive(['-'], LanguageTag, [PrimaryTag|SubTags])},
   primary_tag(T1, PrimaryTag),
   subtags(T2, SubTags).
-language_tag(language_tag(T1,T2), LanguageTag) -->
+rfc1766_language_tag(language_tag(T1,T2), LanguageTag) -->
   primary_tag(T1, PrimaryTag),
   subtags(T2, SubTags),
   {atomic_list_concat([PrimaryTag|SubTags], '-', LanguageTag)}.
 
-%! language_tags(-Tree:compound, ?LanguageTags:list(atom))//
+%! rfc1766_language_tags(-Tree:compound, ?LanguageTags:list(atom))//
 % @tbd Allow comments in between list items.
 
-language_tags(language_tags(T), [H]) -->
-  language_tag(T, H).
-language_tags(language_tags(T1,',',T2), [H|T]) -->
-  language_tag(T1, H),
-  language_tags(T2, T).
+rfc1766_language_tags(language_tags(T), [H]) -->
+  rfc1766_language_tag(T, H).
+rfc1766_language_tags(language_tags(T1,',',T2), [H|T]) -->
+  rfc1766_language_tag(T1, H),
+  rfc1766_language_tags(T2, T).
 
 %! primary_tag(-Tree:compound, ?PrimaryTag:atom)//
 % ~~~{.bnf}
