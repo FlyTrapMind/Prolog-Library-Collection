@@ -103,8 +103,7 @@ write_statistics(Options, element(p, [], [Message])):-
 % SPARQL query.
 
 write_table(Rows, Options, [Statistics, Table]):-
-  is_list(Rows),
-  !,
+  is_list(Rows), !,
   length(Rows, Count),
   write_statistics([count(Count) | Options], Statistics),
   findall(

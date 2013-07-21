@@ -5,6 +5,8 @@
                                 % +Graph:atom
     assert_resource/2, % +Resource:uri
                        % +Graph:atom
+    dbpedia_find_concept/2, % +Name:atom
+                            % -ConceptName:uri
     describe_resource/2, % +Resource:uri
                          % -Rows:list(row)
     find_dbpedia_agent/4 % +Name:atom
@@ -117,6 +119,28 @@ assert_resource(Subject, Graph):-
   forall(
     member(row(Predicate, Object), Rows),
     rdf_assert(Subject, Predicate, Object, Graph)
+  ).
+
+%! dbpedia_find_concept(+Name:atom, -ConceptName:uri) is det.
+
+dbpedia_find_concept(Name, ConceptName):-
+  Where1 = '?concept rdfs:label ?label .',
+  format(atom(Where2), 'FILTER regex(?label, "~w", "i")', [Name]),
+  Where = [Where1,Where2],
+  formulate_sparql(
+    [],
+    'SELECT DISTINCT ?concept',
+    Where,
+    10,
+    Query
+  ),
+  enqueue_sparql(dbpedia, Query, _VarNames, Resources),
+  (
+    Resources = []
+  ->
+    debug(dbpedia, 'Could not find a resource for \'~w\'.', [Name])
+  ;
+    first(Resources, row(ConceptName))
   ).
 
 describe_resource(Resource, Rows):-

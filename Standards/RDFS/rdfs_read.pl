@@ -26,7 +26,7 @@
 
 % LABELS
     rdfs_preferred_label/3, % ?RDF_Term:oneof([bnode,uri])
-                            % ?Language:atom
+                            % ?Languages:list(atom)
                             % ?PreferredLabel:atom
     rdfs_list_label/3, % +List:uri
                        % +Label:atom
@@ -256,18 +256,28 @@ rdf_collection0(Collection, Contents, Graph):-
 %! ) is nondet.
 % Multiple labels are returned (nondet) in a descending preference order.
 
-% Ensure that given labels are atoms.
-rdfs_preferred_label(RDF_Term, Language, Label1):-
-  nonvar(Label1), \+ atom(Label1), !,
-  term_to_atom(Label1, Label2),
-  rdfs_preferred_label(RDF_Term, Language, Label2).
-% Labels with the given language code are preferred.
-rdfs_preferred_label(RDF_Term, Language, Label):-
-  rdfs_label(RDF_Term, Language, Label), !.
 % If the preferred language is not available,
 % then we look for an arbitrary other language.
-rdfs_preferred_label(RDF_Term, _PreferredLanguage, Label):-
+rdfs_preferred_label(RDF_Term, [], Label):- !,
   rdfs_label(RDF_Term, _OtherLanguage, Label).
+% Look for the preferred languages, in order of occurrence in the list.
+rdfs_preferred_label(RDF_Term, [H|_T], PreferredLabel):-
+  rdfs_preferred_label_(RDF_Term, H, PreferredLabel), !.
+% Next language...
+rdfs_preferred_label(RDF_Term, [_H|T], PreferredLabel):- !,
+  rdfs_preferred_label_(RDF_Term, T, PreferredLabel).
+rdfs_preferred_label(RDF_Term, Language, Label):-
+  \+ is_list(Language), !,
+  rdfs_preferred_label(RDF_Term, [Language], Label).
+
+% Ensure that given labels are atoms.
+rdfs_preferred_label_(RDF_Term, Language, Label1):-
+  nonvar(Label1), \+ atom(Label1), !,
+  term_to_atom(Label1, Label2),
+  rdfs_preferred_label_(RDF_Term, Language, Label2).
+% Labels with the given language code are preferred.
+rdfs_preferred_label_(RDF_Term, Language, Label):-
+  rdfs_label(RDF_Term, Language, Label), !.
 
 %! rdfs_list_label(+RDF_List:uri, +Label:atom, -Element:uri) is nondet.
 % Returns RDF list elements that have the given label.

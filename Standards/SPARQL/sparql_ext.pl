@@ -62,7 +62,9 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 ~~~
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05
+@see SPARQL 1.1 Recommendation 2013/03
+     http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07
 */
 
 :- use_module(generics(meta_ext)).
@@ -80,8 +82,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % QUERY FORMULATION %
 
 formulate_limit(Limit, LimitStatement):-
-  integer(Limit),
-  !,
+  integer(Limit), !,
   format(atom(LimitStatement), 'LIMIT ~w', [Limit]).
 
 %! formulate_prefix(+Prefix:atom, +URL:atom, -SPARQL_Prefix:atom) is det.
@@ -152,14 +153,12 @@ register_sparql_prefix(Prefix):-
   register_sparql_prefix(Prefix, URI).
 
 register_sparql_prefix(Prefix, URI):-
-  sparql_prefix(Prefix, URI),
-  !.
+  sparql_prefix(Prefix, URI), !.
 register_sparql_prefix(Prefix, URI):-
   assert(sparql_prefix(Prefix, URI)).
 
 register_sparql_remote(Remote, Server, Port, Path):-
-  sparql_remote(Remote, Server, Port, Path),
-  !.
+  sparql_remote(Remote, Server, Port, Path), !.
 register_sparql_remote(Remote, Server, Port, Path):-
   assert(sparql_remote(Remote, Server, Port, Path)).
 :- register_sparql_remote(localhost, localhost, 5000, '/sparql/').
@@ -213,128 +212,4 @@ query_sparql(Remote, Query, VarNames, Results):-
     ),
     Results
   ).
-
-/*
-sparql_debug(Remote, Query, VarNames, Result):-
-  once(sparql_remote(Remote, Host, Port, Path)),
-  (
-    Port == default
-  ->
-    PortOption = []
-  ;
-    PortOption = [port(Port)]
-  ),
-  sparql_http(
-    Query,
-    Result,
-    [host(Host), path(Path), variable_names(VarNames) | PortOption]
-  ).
-
-sparql_http(Query, Result, Options):-
-  (
-    option(port(Port), Options, Options)
-  ->
-    PortOptions = [port(Port)]
-  ;
-    PortOptions = []
-  ),
-  option(host(Host), Options),
-  option(path(Path), Options, '/sparql/'),
-  option(search(Extra), Options, []),
-  option(variable_names(_VarNames), Options, _),
-  http_open(
-    [
-      protocol(http),
-      host(Host),
-      path(Path),
-      search([query = Query | Extra])
-    |
-      PortOptions
-    ],
-    Stream,
-    [header(content_type, ContentType), request_header('Accept' = '*')]
-  ),
-  write(ContentType),nl,
-  stream_to_atom(Stream, Result).
-*/
-
-/* DCG
-% Pose a SELECT SPARQL query from Prolog.
-
-sparql_select(Subject, Predicate, Object):-
-  sparql_select(Subject, Predicate, Object, QueryList, []),
-  sparql_select0(QueryList).
-
-%  Pose a SELECT SPARQL query with a maximum to the number of retrieved rows.
-
-sparql_select(Subject, Predicate, Object, Max):-
-  sparql_select(Subject, Predicate, Object, Max, QueryList, []),
-  sparql_select0(QueryList).
-
-sparql_select0(QueryList):-
-  atomic_list_concat(QueryList, Query),
-  default_service(Service),
-  service(Service, Host, Path),
-  sparql_query(Query, Row, [host(Host), path(Path)]),
-  write(Row).
-
-% Builds a SELECT SPARQL query.
-
-sparql_select(Subject, Predicate, Object) -->
-  head(Subject, Predicate, Object),
-  where(Subject, Predicate, Object).
-
-sparql_select(Subject, Predicate, Object, Max) -->
-  sparql_select(Subject, Predicate, Object),
-  limit(Max).
-
-% Builds the SELECT clause of a SPARQL query.
-
-head(Subject, Predicate, Object) -->
-  ['SELECT'],
-  ({var(Subject)}->[' '],['?s'];{true}),
-  ({var(Predicate)}->[' '],['?p'];{true}),
-  ({var(Object);Object=literal(substring(_))}->[' '],['?o'];{true}),
-  ['\n'].
-
-% Builds the LIMIT clause of a SPARQL query.
-
-limit(Max) -->
-  ['LIMIT'],[' '],
-  {term_to_atom(Max, Max0)},[Max0],['\n'].
-
-% A regular expression function that is part of a FILTER statement.
-
-regex(Object, Text, Case) -->
-  ['regex('],[Object],[', '],value(Text),[', '],value(Case),[')'].
-
-% Values between double quotes.
-
-value(Value) -->
-  ['"'], [Value], ['"'].
-
-% Builds the WHERE clause of a SPARQL query.
-
-where(Subject, Predicate, Object) -->
-  ['WHERE'],[' '],['{'],[' '],
-  ({var(Subject)}->['?s'];{term_to_atom(Subject, Subject0)},[Subject0]),[' '],
-  ({var(Predicate)}->['?p'];{term_to_atom(Predicate, Predicate0)},[Predicate0]),[' '],
-  where_object(Object),[' '],
-  ['}'], ['\n'].
-
-where_object(Object) -->
-  {var(Object),!},['?o'].
-where_object(Object) -->
-  {Object=literal(substring(Text)),!},['?o'],['\n'],
-  ['FILTER'],[' '],
-  {A='?o',B='i'},regex(A, Text, B).
-where_object(Object) -->
-  {Object=literal(Value),!},
-  value(Value).
-where_object(Object) -->
-  {Object=lang(Language,Value),!},
-  ['"'],[Value],['"'],['@'],[Language].
-where_object(Object) -->
-  {term_to_atom(Object, Object0)},[Object0].
-*/
 
