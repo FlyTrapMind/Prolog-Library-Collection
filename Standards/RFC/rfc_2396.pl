@@ -880,7 +880,7 @@ test1(URI):-
       Codes
     )
   ),
-  maplist(formatln, [Tree, Scheme, Authority, Path, Query, Fragment]).
+  maplist(formatnl, [Tree, Scheme, Authority, Path, Query, Fragment]).
 
 test2:-
   test2(http, 'www.example.com', [], _Query, _Fragment).
@@ -891,4 +891,4 @@ test2(Scheme, Authority, Path, Query, Fragment):-
     Codes
   ),
   atom_codes(URI, Codes),
-  formatln(URI).
+  formatnl(URI).
