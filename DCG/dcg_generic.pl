@@ -37,11 +37,19 @@
 % MULTIPLE OCCURRENCES
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
+    dcg_multi//3, % :DCG_Body:dcg
+                  % +Max:integer
+                  % +Min:integer
     dcg_multi_list//2, % :DCG_Body:dcg
                        % +List:list
     dcg_multi_list//3, % :DCG_Body:dcg
                        % :DCG_Separator
                        % +List:list
+
+% PARSE TREES
+    parse_tree/3, % +TreeName:atom
+                  % +SubTrees:list
+                  % -Tree:compound
 
 % PEEK
     dcg_peek//1, % ?X:code
@@ -136,6 +144,7 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_multi(//,?,?,?)).
+:- meta_predicate(dcg_multi(//,+,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,//,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
@@ -312,9 +321,17 @@ dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
 
+dcg_multi(DCG_Body, Max, Min) -->
+  {Max >= Min},
+  dcg_multi(DCG_Body, Max), !.
+dcg_multi(DCG_Body, Max, Min) -->
+  {Max >= Min},
+  {NewMax is Max - 1},
+  dcg_multi(DCG_Body, NewMax, Min).
+
 dcg_multi_nonvar(_DCGBody, 0) --> !, [].
 dcg_multi_nonvar(DCG_Body, N) -->
-  DCG_Body, !,
+  DCG_Body,
   {NewN is N - 1},
   dcg_multi_nonvar(DCG_Body, NewN).
 
@@ -349,6 +366,26 @@ dcg_multi_list(DCG_Body, DCG_Separator, [H|T]) -->
   dcg_call(DCG_Body, H),
   DCG_Separator,
   dcg_multi_list(DCG_Body, DCG_Separator, T).
+
+
+
+% PARSE TREES
+
+%! parse_tree(+TreeName:atom, +SubTrees:list, -Tree:compound) is det.
+% Constructs a tree based on a list of direct subtrees and variables
+% (excluded).
+%
+% The variables come from unused optional rules in the DCG body.
+%
+% @arg TreeName The atomic name of the grammar rule for which
+%      the tree is constructed.
+% @arg SubTrees A list of compound terms (direct subtrees)
+%      and variables (excluded from the created tree).
+% @arg Tree A compound term representing a parse tree.
+
+parse_tree(P, SubT1, T):-
+  include(nonvar, SubT1, SubT2),
+  T =.. [P | SubT2].
 
 
 

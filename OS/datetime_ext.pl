@@ -11,7 +11,10 @@
     latest_file/2, % +Files:list(atom)
                    % -File:atom
     posix_date/1, % -Date:atom
-    posix_time/1 % -Time:atom
+    posix_time/1, % -Time:atom
+    seconds/3 % ?Hours:integer
+              % ?Minutes:integer
+              % ?Second:integer
   ]
 ).
 
@@ -20,9 +23,10 @@
 Extensions for date and time.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06-2013/07
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(library(http/http_header)).
 :- use_module(os(dir_ext)).
 
@@ -141,3 +145,18 @@ posix_time(Time):-
   get_time(TimeStamp),
   format_time(atom(Time), '%T', TimeStamp).
 
+%! seconds(?Hours:integer, ?Minutes:integer, ?Seconds:integer) is det.
+% Converts hours and minutes into seconds and vice versa.
+%
+% @arg Hours An integer
+% @arg Minutes An integer
+% @arg Seconds An integer
+
+seconds(Hours, Minutes, Seconds):-
+  nonvar(Seconds), !,
+  Minutes is Seconds mod 60,
+  Hours is Seconds / 60.
+seconds(Hours, Minutes, Seconds):-
+  default(Hours, 0, SetHours),
+  default(Minutes, 0, SetMinutes),
+  Seconds is (SetMinutes + (SetHours * 60)) * 60.

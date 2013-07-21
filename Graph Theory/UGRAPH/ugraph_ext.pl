@@ -217,7 +217,7 @@ ugraph_harary(K, N, H):-
   even(N), !,
   NewK is K - 1,
   ugraph_harary(NewK, N, Graph),
-  ugraph_harary(Graph, id, N, H).
+  ugraph_harary(Graph, =, N, H).
 ugraph_harary(K, N, H):-
   NewK is K - 1,
   ugraph_harary(NewK, N, Graph),

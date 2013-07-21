@@ -23,13 +23,18 @@
     xor/2, % :X
            % :Y
 
+% DEFAULTS
+    default/3, % ?Value
+               % +Default:term
+               % +SetValue:term
+
 % DETERMINISM
     call_semidet/1, % :Goal
     nonvar_det/1, % :Goal
 
 % GENERIC CALLS
     generic/3, % :GenericPredicate
-               % +Context:atom
+               % :Context
                % +Arguments:list
 
 % FINDALL RELATED PREDICATES
@@ -105,7 +110,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(call_semidet(0)).
 :- meta_predicate(complete(2,+,-)).
 :- meta_predicate(count(0,-)).
-:- meta_predicate(generic(:,+,+)).
+:- meta_predicate(generic(:,:,+)).
 :- meta_predicate(if_else(0,0)).
 :- meta_predicate(if_then(0,0)).
 :- meta_predicate(if_then_else(0,0,0)).
@@ -215,6 +220,22 @@ xor(_X, Y):-
 
 
 
+% DEFAULTS %
+
+%! default(?Value, +Default:term, -SetValue:term) is det.
+% Returns either the given value or the default value in case there is no
+% value given.
+%
+% @arg Value A term or a variable.
+% @arg Default A term.
+% @arg SetValue A term.
+
+default(Value, Default, Default):-
+  var(Value), !.
+default(Value, _Default, Value).
+
+
+
 % DETERMINISM %
 
 %! call_semidet(:Goal) is det.
@@ -253,7 +274,7 @@ nonvar_det(Goal):-
 
 % GENERIC CALLS %
 
-%! generic(:GenericPredicate, +Context:atom, +Arguments:list)
+%! generic(:GenericPredicate, :Context, +Arguments:list)
 
 generic(P1, Context, Args):-
   % Make sure the calling module prefix is discarded.
@@ -417,13 +438,11 @@ count(Goal, Count):-
 % @arg List A list of terms.
 % @arg Compound A compound term of the form =x_1/.../x_n=.
 
-list_compound([X], X):-
-  !.
+list_compound([X], X):- !.
 list_compound([H | T], H/CompoundT):-
   list_compound(T, CompoundT).
 
-multi(_Goal, 0):-
-  !.
+multi(_Goal, 0):- !.
 multi(Goal, Count):-
   call(Goal),
   NewCount is Count - 1,

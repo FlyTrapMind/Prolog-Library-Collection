@@ -32,10 +32,6 @@ Predicates for running external programs.
 :- use_module(os(os_ext)).
 :- use_module(os(shell_ext)).
 
-:- db_add_novel(user:prolog_file_type(dot,  dot)).
-:- db_add_novel(user:prolog_file_type(xdot, dot)).
-:- db_add_novel(user:prolog_file_type(pdf,  pdf)).
-
 :- multifile(prolog:message/3).
 
 % This is used to kill the processes that are still running
@@ -47,6 +43,15 @@ Predicates for running external programs.
 
 :- initialization(db_add_novel(at_halt(kill_processes))).
 
+% DOT
+:- db_add_novel(user:prolog_file_type(dot,  dot)).
+:- db_add_novel(user:prolog_file_type(xdot, dot)).
+:- db_add_novel(user:file_type_program(dot, dotty)).
+:- db_add_novel(user:file_type_program(dot, dotx)).
+
+% PDF
+:- db_add_novel(user:prolog_file_type(pdf,  pdf)).
+
 
 
 %! exists_program(+Program:atom) is semidet.
@@ -55,7 +60,7 @@ Predicates for running external programs.
 exists_program(Program):-
   catch(
     process_create(path(Program), [], [process(PID)]),
-    error(existence_error(_, _)),
+    error(existence_error(_, _), _Context),
     fail
   ),
   process_kill(PID).
@@ -82,7 +87,7 @@ kill_processes:-
 % and whether a file type's external dependencies are met.
 
 list_external_programs:-
-  setoff(FileType, prolog_file_type(_Extension, FileType), FileTypes),
+  setoff(FileType, file_type_program(FileType, _Program), FileTypes),
   maplist(list_external_programs, FileTypes).
 
 %! list_external_programs(+FileType:atom) is det.
@@ -95,25 +100,51 @@ list_external_programs:-
 
 list_external_programs(FileType):-
   findall(Program, file_type_program(FileType, Program), Programs),
-  maplist(write_program_support(Support), Programs),
-  (Support == true -> SupportText = 'SUPPORTED' ; SupportText = 'UNSUPPORTED'),
-  ansi_formatnl(['File type ~w is '-[FileType], [bold,fg(green)]-SupportText-[]]).
+  include(write_program_support, Programs, SupportedPrograms),
+  (
+    SupportedPrograms == []
+  ->
+    Color = red,
+    SupportText = 'UNSUPPORTED'
+  ;
+    Color = green,
+    SupportText = 'SUPPORTED'
+  ),
+  ansi_formatnl(
+    [
+      'File type ',
+      [bold]-'~w'-[FileType],
+      ' is ',
+      [bold,fg(Color)]-'~w'-[SupportText],
+      '.'
+    ]
+  ).
 
-write_program_support(true, Program):-
+%! write_program_suport(+Program:atom) is semidet.
+% Succeeds if the program with the given name exists on PATH.
+% Always writes a message to the standard user output as side effect.
+
+write_program_support(Program):-
   exists_program(Program), !,
-  indent(1),
-  ansi_formatnl(['Program ', [bold]-'~w'-[Program], ' is supported.']).
-write_program_support(_False, Program):-
   indent(1),
   ansi_formatnl(
     [
       'Program ',
       [bold]-'~w'-[Program],
       ' is ',
-      [bold]-'not'-[],
-      ' supported.'
+      [fg(green)]-'supported',
+      '.'
     ]
   ).
+write_program_support(Program):-
+  indent(1),
+  ansi_formatnl(
+    [
+      'Program ',
+      [bold]-'~w'-[Program],
+      ' is not supported.'
+    ]
+  ), !, fail.
 
 open(File):-
   file_name_type(_Base, FileType, File),
@@ -123,26 +154,11 @@ open(File):-
 % Opens the given DOT file.
 %
 % @arg BaseOrFile The atomic name of a DOT file.
-%
-% @tbd Add support for Windows.
-% @tbd Test support on Mac OS-X.
 
 open_dot(BaseOrFile):-
   base_or_file_to_file(BaseOrFile, dot, File),
-  os_dependent_call(open_dot(File)).
-
-%! open_dot_unix(+File:atom) is det.
-% Opens the DOT file with the given name in UNIX.
-%
-% This requires the installation of package =dotty=.
-
-:- if((is_mac ; is_unix ; is_windows)).
-:- db_add_novel(user:file_type_program(dot, dotty)).
-:- db_add_novel(user:file_type_program(dot, dotx)).
-open_dot_unix(File):-
   once(find_program_by_file_type(dot, Program)),
   run_program(Program, [File]).
-:- endif.
 
 %! open_in_webbrowser(+URI:uri) is det.
 % Opens the given URI in the default webbrowser.
@@ -176,23 +192,16 @@ prolog:message(open_uri(URI)) -->
 
 open_pdf(BaseOrFile):-
   base_or_file_to_file(BaseOrFile, pdf, File),
-  os_dependent_call(open_pdf(File)).
-
-%! open_pdf_unix(+File:atom) is det.
-
-:- if(is_unix).
-:- db_add_novel(user:file_type_program(pdf, xpdf)).
-open_pdf_unix(File):-
   once(find_program_by_file_type(pdf, Predicate)),
   run_program(Predicate, [File]).
+
+:- if((is_unix ; is_mac)).
+:- db_add_novel(user:file_type_program(pdf, evince)).
+:- db_add_novel(user:file_type_program(pdf, xpdf)).
 :- endif.
 
 :- if(is_windows).
-open_pdf_windows(_File).
-%open_pdf_windows(File):-
-%  process_create(path('AcroRd32'), [File], [detached(true), process(PID)]),
-%  process_wait(PID, exit(ShellStatus)),
-%  shell_status(ShellStatus).
+:- db_add_novel(user:file_type_program(pdf, 'AcroRd32')).
 :- endif.
 
 run_program(Program, Args):-

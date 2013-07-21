@@ -15,20 +15,14 @@
                       % +Max:integer
                       % +CycleLength:integer
                       % -NumList:list(integer)
-    default/3, % ?Value
-               % +Default:term
-               % +SetValue:term
-    dpred/2, % +X:integer
-             % -Y:integer
-    dsucc/2, % +X:integer
-             % -Y:integer
     even/1, % +Integer:integer
     factorial/2, % +N:integer
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
-    id/2, % ?X:integer
-          % ?Y:integer
+    integers_to_float/3, % +Before:integer
+                         % +After:integer
+                         % -Number:float
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -69,12 +63,6 @@
                       % -Random:number
     random_coordinate/2, % +Size:size,
                          % -Coordinate:coordinate
-    seconds/3, % ?Hours:integer
-               % ?Minutes:integer
-               % ?Second:integer
-    sign_multiply/3, % +Sign1:atom
-                     % +Sign2:atom
-                     % -Sign:atom
     square/2 % +X:float
              % -Square:float
   ]
@@ -159,45 +147,13 @@ combinations(NumberOfObjects, CombinationLength, NumberOfCombinations):-
 % We return the numbers in a sorted order.
 
 cyclic_numlist(Min, Max, _CycleLength, NumList):-
-  Min < Max,
-  !,
+  Min < Max, !,
   numlist(Min, Max, NumList).
 cyclic_numlist(Min, Max, CycleLength, NumList):-
   Top is CycleLength - 1,
   numlist(Min, Top, HigherNumList),
   numlist(0, Max, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
-
-%! default(?Value, +Default:term, -SetValue:term) is det.
-% Returns either the given value or the default value in case there is no
-% value given.
-%
-% @arg Value A term or a variable.
-% @arg Default A term.
-% @arg SetValue A term.
-
-default(Value, Default, Default):-
-  var(Value),
-  !.
-default(Value, _Default, Value).
-
-%! dpred(+X:integer, -Y:integer) is det.
-% Returns the double predecessor of the given integer.
-%
-% @arg X An integer.
-% @arg Y An integer.
-
-dpred(X, Y):-
-  multi(pred, 2, X, Y).
-
-%! dsucc(+X:integer, -NewX:integer) is det.
-% Returns the double successor of the given integer.
-%
-% @arg X An integer.
-% @arg NewX An integer.
-
-dsucc(X, NewX):-
-  multi(succ, 2, X, NewX).
 
 %! even(+Integer:integer) is semidet.
 % Succeeds if the integer is even.
@@ -221,10 +177,8 @@ factorial(N, F):-
 % E.g., $0!$.
 factorial(_N, 1).
 
-fibonacci(0, 1):-
-  !.
-fibonacci(1, 1):-
-  !.
+fibonacci(0, 1):- !.
+fibonacci(1, 1):- !.
 fibonacci(N, F):-
   N1 is N - 1,
   N2 is N - 2,
@@ -232,8 +186,9 @@ fibonacci(N, F):-
   fibonacci(N2, F2),
   F is F1 + F2.
 
-id(X, Y):-
-  X = Y.
+integers_to_float(Before, After, Number):-
+  number_length(After, Length),
+  Number is Before + After / 10 ** (Length + 1).
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
@@ -480,44 +435,6 @@ random_betwixt_(LowerLimit, UpperLimit, Random):-
 
 random_coordinate(size(Dimension, Sizes), coordinate(Dimension, Args)):-
   maplist(random_betwixt, Sizes, Args).
-
-%! seconds(?Hours:integer, ?Minutes:integer, ?Seconds:integer) is det.
-% Converts hours and minutes into seconds and vice versa.
-%
-% @arg Hours An integer
-% @arg Minutes An integer
-% @arg Seconds An integer
-
-seconds(Hours, Minutes, Seconds):-
-  nonvar(Seconds),
-  !,
-  Minutes is Seconds mod 60,
-  Hours is Seconds / 60.
-seconds(Hours, Minutes, Seconds):-
-  default(Hours, 0, SetHours),
-  default(Minutes, 0, SetMinutes),
-  Seconds is (SetMinutes + (SetHours * 60)) * 60.
-
-%! sign_multiply(+Sign1, +Sign2, -Sign3)
-% Performs sign multiplication according to the following table:
-%
-% |   | + | 0 | - |
-% | + | + | 0 | - |
-% | 0 | 0 | 0 | 0 |
-% | - | - | 0 | + |
-%
-% @arg Sign1 The first argument for the sign multiplication.
-% @arg Sign2 The second argument for the sign multiplication.
-% @arg Sign3 The result of the multiplication of the given two signs.
-
-sign_multiply(zero, _Sign, zero):-
-  !.
-sign_multiply(_Sign, zero, zero):-
-  !.
-sign_multiply(Sign, Sign, plus):-
-  !.
-sign_multiply(Sign1, Sign2, min):-
-  Sign1 \== Sign2.
 
 %! square(+X:float, -Square:float) is det.
 % Returns the square of the given number.

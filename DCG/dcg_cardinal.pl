@@ -47,9 +47,10 @@ DCGs for cardinal numbers.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(math(math_ext)).
+:- use_module(math(radix)).
 
-:- meta_predicate(digits_to_decimal_number(//,+,-,?,?)).
-:- meta_predicate(digits_to_decimal_number(//,+,+,-,?,?)).
+:- meta_predicate(digits_to_decimal_number(//,+,?,?,?)).
+:- meta_predicate(digits_to_decimal_number(//,+,+,?,?,?)).
 
 
 
@@ -88,7 +89,7 @@ decimal_number(N) -->
 %! digits_to_decimal_number(
 %!   :DCGBody,
 %!   +Radix:integer,
-%!   -DecimalNumber:integer
+%!   ?DecimalNumber:integer
 %! )//
 % Processes digits of arbitrary radix and returns the decimal equivalent.
 %
@@ -99,6 +100,10 @@ decimal_number(N) -->
 % @arg An integer representing the processed number, converted to
 %      the decimal number system.
 
+digits_to_decimal_number(_Digit, Radix, M, H, T):-
+  number(M), !,
+  atomic_list_concat(['~', Radix, r], Format),
+  format(codes(H, T), Format, [M]).
 digits_to_decimal_number(Digit, Radix, M) -->
   % We start with processing the first digit.
   dcg_call(Digit, N),
@@ -198,9 +203,4 @@ unsigned_number(N) -->
   ("", {N1 = 0} ; decimal_number(N1)),
   dot,
   ("", {N2 = 0} ; decimal_number(N2)),
-  {
-    number_length(N2, L),
-    N3 is N2 / 10 ** (L + 1),
-    N is N1 + N3
-  }.
-
+  {integers_to_float(N1, N2, N)}.

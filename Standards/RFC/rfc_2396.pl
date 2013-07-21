@@ -1,6 +1,7 @@
 :- module(
   rfc_2396,
   [
+% SURFACE PREDICATES
     uri_reference//1, % -Tree:compound
     uri_reference//6, % -Tree:compound
                       % ?Scheme
@@ -8,7 +9,59 @@
                       % ?Path
                       % ?Query
                       % ?Fragment
-    uri_to_gv/1 % +URI:atom
+    uri_to_gv/1, % +URI:atom
+
+% DEEP PREDICATES
+    absolute_path//2, % -Tree:compound
+                      % ?Path:list(list(atom))
+    absolute_uri//5, % -Tree:compound
+                     % ?Scheme
+                     % ?Authority
+                     % ?Path
+                     % ?Query
+    authority//2, % -Tree:compound
+                  % ?Authority:compound
+    domain_label//2, % -Tree:compound
+                     % ?DomainLabel:atom
+    domain_labels//2, % -Tree:compound
+                      % ?DomainLabels:list(atom)
+    fragment//2, % -Tree:compound
+                 % ?Fragment:atom
+    hierarchical_part//4, % -Tree:compound
+                          % ?Authority:compound
+                          % ?Path:list(list(atom))
+                          % ?Query:atom
+    host//2, % -Tree:compound
+             % ?Host:list(atomic)
+    host_name//2, % -Tree:compound
+                  % ?DomainLabels:list(atom)
+    ipv4_address//2, % -Tree:compound
+                     % ?IPv4Address:list(integer)
+    network_path//3, % -Tree:compound
+                     % ?Authority:compound
+                     % ?Path:list(list(atom))
+    opaque_part//2, % -Tree:compound
+                    % ?OpaquePart:atom
+    %parameter//2, % -Tree:compound
+    %              % ?Parameter:atom
+    path//2, % -Tree:compound
+             % ?Path:list
+    path_segment//2, % -Tree:compound
+                     % ?PathSegment:list(atom)
+    port//2, % -Tree:compound
+             % ?Port:integer
+    query//2, % -Tree:compound
+              % ?Query:atom
+    registry_based_naming_authority//2, % -Tree:compound
+                                         % ?Authority:atom
+    scheme//2, % -Tree:compound
+               % ?Scheme:atom
+    server//2, % -Tree:compound
+               % ?Server:compound
+    top_label//2, % -Tree:compound
+                  % ?TopLabel:atom
+    user_info//2 % -Tree:compound
+                 % ?User:atom
   ]
 ).
 
@@ -169,6 +222,7 @@ can determine the value of the four components and fragment as
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
 
@@ -235,12 +289,13 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
   scheme(T1, Scheme),
   colon,
   hierarchical_part(T2, Authority, Path, Query).
-absolute_uri(absolute_uri(T1,':',T2), Scheme, _Authority, Path, _Query) -->
+absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
+  {maplist(var, [Authority,Query])},
   scheme(T1, Scheme),
   colon,
   opaque_part(T2, Path).
 
-%! authority(-Tree:compound)//
+%! authority(-Tree:compound, ?Authority)//
 % Many URI schemes include a top hierarchical element for a naming
 % authority, such that the namespace defined by the remainder of the
 % URI is governed by that authority. This authority component is
@@ -252,7 +307,7 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, _Authority, Path, _Query) -->
 % ~~~
 %
 % @Tree A parse tree.
-% @arg Authority A compound term of the form
+% @arg Authority Either an atom or a compound term of the form
 %      `authority(User:atom,Host:list(or([atom,integer])),Port:integer)`.
 
 authority(authority(T), Authority) --> server(T, Authority).
@@ -269,12 +324,27 @@ dashed_alpha_numerics([]) --> [].
 % domainlabel = alphanum | alphanum *( alphanum | "-" ) alphanum
 % ~~~
 
+domain_label(domain_label(Char), Char) -->
+  {nonvar(Char), atom_length(Char, 1)}, !,
+  {char_code(Char, Code)},
+  alpha_numeric(Code).
+domain_label(domain_label(DomainLabel), DomainLabel) -->
+  {nonvar(DomainLabel)}, !,
+  {
+    atom_codes(DomainLabel, Codes),
+    append([H|T], [X], Codes)
+  },
+  alpha_numeric(H),
+  dashed_alpha_numerics(T),
+  alpha_numeric(X).
 domain_label(domain_label(DomainLabel), DomainLabel) -->
   alpha_numeric(H),
   dashed_alpha_numerics(T),
   alpha_numeric(X),
-  {append([H|T], [X], Codes),
-   atom_codes(DomainLabel, Codes)}.
+  {
+    append([H|T], [X], Codes),
+    atom_codes(DomainLabel, Codes)
+  }.
 domain_label(domain_label(Char), Char) -->
   alpha_numeric(Code),
   {char_code(Char, Code)}.
@@ -289,7 +359,7 @@ domain_labels(domain_labels(T1,'.',T2), [DomainLabel|DomainLabels]) -->
   domain_label(T1, DomainLabel),
   dot,
   domain_labels(T2, DomainLabels).
-domain_labels(T, [TopLabel]) --> top_label(T, TopLabel).
+domain_labels(domain_labels(T), [TopLabel]) --> top_label(T, TopLabel).
 
 %! escaped_character(-DecimalNumber:integer)//
 % An **escaped octet** is encoded as a character triplet, consisting of the
@@ -329,6 +399,10 @@ escaped_character(N) -->
 % for which the identified fragment is consistently defined.
 
 fragment(fragment(Fragment), Fragment) -->
+  {nonvar(Fragment)}, !,
+  {atom_codes(Fragment, Codes)},
+  fragment_(Codes).
+fragment(fragment(Fragment), Fragment) -->
   fragment_(Codes),
   {atom_codes(Fragment, Codes)}.
 fragment_([]) --> [].
@@ -337,7 +411,7 @@ fragment_([H|T]) -->
   fragment_(T).
 
 %! hierarchical_part(
-%!   ?Tree:compound,
+%!   -Tree:compound,
 %!   ?Authority:compound,
 %!   ?Path:list(list(atom)),
 %!   ?Query:atom
@@ -351,9 +425,13 @@ fragment_([H|T]) -->
 % @arg Authority A compound term of the form
 
 hierarchical_part(T, Authority, Path, Query) -->
-  (network_path(T1, Authority, Path) ; absolute_path(T1, Path)),
   (
-    "", {T = hierarchical_part(T1)}
+    network_path(T1, Authority, Path)
+  ;
+    absolute_path(T1, Path), {var(Authority)}
+  ),
+  (
+    "", {T = hierarchical_part(T1), var(Query)}
   ;
     question_mark, query(T2, Query), {T = hierchical_part(T1,'?',T2)}
   ).
@@ -424,7 +502,7 @@ mark(C) --> asterisk(C).
 mark(C) --> single_quote(C).
 mark(C) --> round_bracket(C).
 
-%! network_path(-Tree:compound, ?Authority:compound, ?Path)//
+%! network_path(-Tree:compound, ?Authority:compound, ?Path:list(list(atom)))//
 % ~~~{.bnf}
 % net_path = "//" authority [ abs_path ]
 % ~~~
@@ -437,7 +515,7 @@ mark(C) --> round_bracket(C).
 network_path(network_path('//',T1,T2), Authority, Path) -->
   forward_slash, forward_slash,
   authority(T1, Authority),
-  ({T2 = []} ; absolute_path(T2, Path)).
+  ({T2 = [], Path = []} ; absolute_path(T2, Path)).
 
 %! opaque_part(-Tree:compound, ?OpaquePart:atom)//
 % URIs that do not make use of the forward_slash//1 for separating
@@ -448,6 +526,10 @@ network_path(network_path('//',T1,T2), Authority, Path) -->
 % opaque_part = uric_no_slash *uric
 % ~~~
 
+opaque_part(opaque_parth(OpaquePart), OpaquePart) -->
+  {nonvar(OpaquePart)}, !,
+  {atom_codes(OpaquePart, Codes)},
+  opaque_part_(Codes).
 opaque_part(opaque_parth(OpaquePart), OpaquePart) -->
   opaque_part_(Codes),
   {atom_codes(OpaquePart, Codes)}.
@@ -462,6 +544,10 @@ opaque_part_([H|T]) -->
 % param = *parameter_character
 % ~~~
 
+parameter(parameter(Parameter), Parameter) -->
+  {nonvar(Parameter)}, !,
+  {atom_codes(Parameter, Codes)},
+  parameter_(Codes).
 parameter(parameter(Parameter), Parameter) -->
   parameter_(Codes),
   {atom_codes(Parameter, Codes)}.
@@ -481,9 +567,9 @@ parameter_character(C) --> colon(C).
 parameter_character(C) --> comma(C).
 parameter_character(C) --> dollar_sign(C).
 parameter_character(C) --> equals_sign(C).
-parameter_character(C) --> escaped_character(C).
 parameter_character(C) --> plus_sign(C).
 parameter_character(C) --> unreserved_character(C).
+parameter_character(C) --> escaped_character(C).
 
 %! path(-Tree:compound, ?Path:list)//
 % The path component contains data, specific to the authority (or the
@@ -548,10 +634,14 @@ port(port(Port), Port) --> decimal_number(Port).
 % `&`, `=`, `+`, `,`, and `$` are reserved.
 
 query(query(Query), Query) -->
+  {nonvar(Query)}, !,
+  {atom_codes(Query, Codes)},
+  uri_characters(Codes).
+query(query(Query), Query) -->
   uri_characters(Codes),
   {atom_codes(Query, Codes)}.
 
-%! registry_based_naming_authority(-Tree:compound, -Authority:atom)//
+%! registry_based_naming_authority(-Tree:compound, ?Authority:atom)//
 % The structure of a registry-based naming authority is specific to the
 % URI scheme, but constrained to the allowed characters for an
 % authority component.
@@ -565,6 +655,13 @@ registry_based_naming_authority(
   registry_based_naming_authority(Authority),
   Authority
 ) -->
+  {nonvar(Authority)}, !,
+  {atom_codes(Authority, Codes)},
+  registry_based_naming_authority_(Codes).
+registry_based_naming_authority(
+  registry_based_naming_authority(Authority),
+  Authority
+) -->
   registry_based_naming_authority_(Codes),
   {atom_codes(Authority, Codes)}.
 registry_based_naming_authority_([H|T]) -->
@@ -574,7 +671,6 @@ registry_based_naming_authority_([H]) -->
   registry_based_naming_authority_character(H).
 
 registry_based_naming_authority_character(C) --> unreserved_character(C).
-registry_based_naming_authority_character(C) --> escaped_character(C).
 registry_based_naming_authority_character(C) -->
   ( dollar_sign(C)
   ; comma(C)
@@ -585,21 +681,22 @@ registry_based_naming_authority_character(C) -->
   ; equals_sign(C)
   ; plus_sign(C)
   ).
+registry_based_naming_authority_character(C) --> escaped_character(C).
 
 /*
-%! relative_uri(-Tree:compound)//
+%! relative_uri(-Tree:compound, ?Path:list(list(atom)), ?Query:atom)//
 % The syntax for relative URI is a shortened form of that for absolute
 % URI, where some prefix of the URI is missing and certain path
 % components ("." and "..") have a special meaning when, and only when,
 % interpreting a relative path.  The relative URI syntax is defined in
 % Section 5.
 
-relative_uri(relative_uri(T)) -->
-  (absolute_path(T1) ; network_path(T1)),
+relative_uri(relative_uri(T), Path, Query) -->
+  (absolute_path(T1, Path) ; network_path(T1, Path)),
   (
     "", {T = relative_uri(T1)}
   ;
-    question_mark, query(T2), {T = relative_uri(T1,'?',T2)}
+    question_mark, query(T2, Query), {T = relative_uri(T1,'?',T2)}
   ).
 */
 
@@ -640,6 +737,10 @@ reserved_character(C) --> comma(C).
 % scheme = alpha *( alpha | digit | "+" | "-" | "." )
 % ~~~
 
+scheme(scheme(Scheme), Scheme) -->
+  {nonvar(Scheme)}, !,
+  {atom_codes(Scheme, Codes)},
+  scheme_(Codes).
 scheme(scheme(Scheme), Scheme) -->
   scheme_(Codes),
   {atom_codes(Scheme, Codes)}.
@@ -690,18 +791,21 @@ server(T, authority(User,Host,Port)) -->
 
   host(T2, Host),
   (
-    "", {T = server(T1,'@',T2)}
+    "", {T = server(T1,'@',T2), var(Port)}
   ;
     colon, port(T3, Port), {T = server(T1,'@',T2,':',T3)}
   ).
-server(T, authority(_User,Host,Port)) -->
+server(T, authority(User,Host,Port)) -->
+  {var(User)},
   host(T1, Host),
   (
-    "", {T = server(T1)}
+    "", {T = server(T1), var(Port)}
   ;
     colon, port(T2, Port), {T = server(T1,':',T2)}
   ).
-server(server(''), authority(_User,_Host,_Port)) --> [].
+server(server(''), authority(User,Host,Port)) -->
+  {maplist(nonvar, [User,Host,Port])},
+  [].
 
 %! top_label(-Tree:compound, ?TopLabel:atom)//
 % A top label is the rightmost domain label of a fully qualified host
@@ -715,6 +819,15 @@ server(server(''), authority(_User,_Host,_Port)) --> [].
 % toplabel = alpha | alpha *( alphanum | "-" ) alphanum
 % ~~~
 
+top_label(top_label(TopLabel), TopLabel) -->
+  {nonvar(TopLabel)}, !,
+  {
+    atom_codes(TopLabel, Codes),
+    append([H|T], [X], Codes)
+  },
+  letter(H),
+  dashed_alpha_numerics(T),
+  letter(X).
 top_label(top_label(TopLabel), TopLabel) -->
   letter(H),
   dashed_alpha_numerics(T),
@@ -754,7 +867,6 @@ uri_character(C) --> escaped_character(C).
 % ~~~
 
 uri_character_no_slash(C) --> unreserved_character(C).
-uri_character_no_slash(C) --> escaped_character(C).
 uri_character_no_slash(C) -->
   ( semi_colon(C)
   ; question_mark(C)
@@ -766,6 +878,7 @@ uri_character_no_slash(C) -->
   ; dollar_sign(C)
   ; comma(C)
   ).
+uri_character_no_slash(C) --> escaped_character(C).
 
 %! uri_characters(-Codes:list(code))//
 
@@ -807,7 +920,7 @@ uri_reference(T) -->
 uri_reference(T, Scheme, Authority, Path, Query, Fragment) -->
   absolute_uri(T1, Scheme, Authority, Path, Query),
   (
-    "", {T = uri_reference(T1)}
+    "", {T = uri_reference(T1), var(Fragment)}
   ;
     number_sign, fragment(T2, Fragment), {T = uri_reference(T1,'#',T2)}
   ).
@@ -815,7 +928,7 @@ uri_reference(T, Scheme, Authority, Path, Query, Fragment) -->
 uri_reference(T, Fragment) -->
   relative_uri(T1),
   (
-    "", {T = uri_reference(T1)}
+    "", {T = uri_reference(T1), var(Fragment)}
   ;
     number_sign, fragment(T2, Fragment), {T = uri_reference(T1,'#',T2)}
   ).
@@ -833,6 +946,10 @@ uri_reference(T, Fragment) -->
 % ~~~
 
 user_info(user_info(User), User) -->
+  {nonvar(User)}, !,
+  {atom_codes(User, Codes)},
+  user_info_(Codes).
+user_info(user_info(User), User) -->
   user_info_(Codes),
   {atom_codes(User, Codes)}.
 user_info_([H|T]) -->
@@ -841,7 +958,6 @@ user_info_([H|T]) -->
 user_info_([]) --> [].
 
 user_info__(C) --> unreserved_character(C).
-user_info__(C) --> escaped_character(C).
 user_info__(C) -->
   ( semi_colon(C)
   ; colon(C)
@@ -851,6 +967,7 @@ user_info__(C) -->
   ; dollar_sign(C)
   ; comma(C)
   ).
+user_info__(C) --> escaped_character(C).
 
 %! uri_to_gv(+URI:atom) is det.
 % Generates a graphical representation of the parse tree for the given URI.
@@ -883,12 +1000,21 @@ test1(URI):-
   maplist(formatnl, [Tree, Scheme, Authority, Path, Query, Fragment]).
 
 test2:-
-  test2(http, 'www.example.com', [], _Query, _Fragment).
+  test2(http, 'www.example.com', [[a,b],[c,d],[e],[f]], 'q=aap', me),
+  test2(
+    https,
+    authority(wouter,[44,55,33,11],7777),
+    [[a,b],[c,d],[e],[f]],
+    'q=aap',
+    me
+  ).
 
 test2(Scheme, Authority, Path, Query, Fragment):-
-  phrase(
-    uri_reference(_Tree, Scheme, Authority, Path, Query, Fragment),
-    Codes
+  once(
+    phrase(
+      uri_reference(_Tree, Scheme, Authority, Path, Query, Fragment),
+      Codes
+    )
   ),
   atom_codes(URI, Codes),
   formatnl(URI).

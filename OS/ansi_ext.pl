@@ -35,13 +35,18 @@ Predicates for using ANSI markup in Unix consoles.
 
 
 ansi_format([]).
-ansi_format([Attrs-Format-Args|T]):-
+ansi_format([Attrs-Format-Args|T]):- !,
   ansi_format(Attrs, Format, Args),
   ansi_format(T).
+ansi_format([ANSI-Format|T]):-
+  is_list(ANSI), !,
+  ansi_format(ANSI, Format, []),
+  ansi_format(T).
 ansi_format([Format-Args|T]):-
+  is_list(Args), !,
   ansi_format([], Format, Args),
   ansi_format(T).
-ansi_format([Format|T]):-
+ansi_format([Format|T]):- !,
   ansi_format([], Format, []),
   ansi_format(T).
 
