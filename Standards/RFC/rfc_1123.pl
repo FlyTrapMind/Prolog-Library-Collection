@@ -25,6 +25,7 @@ The standard for datatime that is used by HTTP 1.1.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(gv(gv_file)).
 :- use_module(math(radix)).
 

@@ -8,9 +8,11 @@
     digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
                          % +Radix:integer
                          % -DecimalNumber:integer
-    number_to_decimal/3 % +RadixNumber:atomic
-                        % +Radix:between(2,16)
-                        % -DecimalNumber:integer
+    number_to_decimal/3, % +RadixNumber:atomic
+                         % +Radix:between(2,16)
+                         % -DecimalNumber:integer
+    number_to_digits/2 % +DecimalNumber:integer
+                       % +DecimalDigits:list(between(0,9))
   ]
 ).
 
@@ -71,3 +73,8 @@ number_to_decimal(RadixNumber, Radix, DecimalNumber):-
 
 number_to_decimal(RadixDigit, DecimalNumber):-
   char_type(RadixDigit, xdigit(DecimalNumber)).
+
+number_to_digits(DecimalNumber, DecimalDigits):-
+  atom_chars(DecimalNumber, Chars),
+  maplist(atom_number, Chars, DecimalDigits).
+

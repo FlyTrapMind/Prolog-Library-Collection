@@ -28,7 +28,6 @@
 
 :- use_module(library(error)).
 :- use_module(library(http/http_client)).
-:- use_module(library(http/http_parameters)).
 :- use_module(library(option)).
 
 :- meta_predicate(http_parameters2(+,?,:)).

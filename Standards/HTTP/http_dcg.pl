@@ -1,12 +1,18 @@
 :- module(
   http_dcg,
   [
-    request//6 % -Tree:compound
-               % ?Method:atom
-               % ?URI:compound
-               % ?Version:compound
-               % ?MessageHeaders:list(pair)
-               % ?MessageBody:list(code)
+    http_to_gv/1, % +Tree:compound
+    request//6, % -Tree:compound
+                % ?Method:atom
+                % ?URI:compound
+                % ?Version:compound
+                % ?MessageHeaders:list(pair)
+                % ?MessageBody:list(code)
+    response//5 % -Tree:compound
+                % ?Version:compound
+                % ?Status:compound
+                % ?MessageHeaders:list(pair)
+                % ?MessageBody:list(code)
   ]
 ).
 
@@ -147,9 +153,11 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(gv(gv_file)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
+:- use_module(math(radix)).
 :- use_module(rfc(rfc_1123)). % Date and time
 :- use_module(rfc(rfc_1766)). % Language tag
 :- use_module(rfc(rfc_2396)). % URIs
@@ -160,6 +168,11 @@ constructed. (Decision procedure versus structural analysis.)
 :- setting(default_port, integer, 80, 'The default TCP port.').
 
 
+
+allow(allow('Allow',':',T1), Methods) -->
+  "Allow",
+  colon,
+  methods(T1, Methods).
 
 %! attribute(-Tree:compound, ?Attribute:atom)//
 
@@ -206,19 +219,17 @@ charset(charset(T), Charset) -->
 %!   ?ChunkExtension:list
 %! )//
 
-chunk(T, ChunkSize, ChunkData, ChunkExtension) -->
+chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
   chunk_size(T1, ChunkSize),
   (
-    "",
-    {ChunkExtension = []},
-    {T = chunk(T1,T3)}
+    "", {ChunkExtension = []}
   ;
-    chunk_extension(T2, ChunkExtension),
-    {T = chunk(T1,T2,T3)}
+    chunk_extension(T2, ChunkExtension)
   ),
-  crlf,
-  chunk_data(T3, ChunkSize, ChunkData),
-  crlf.
+  crlf(T3),
+  chunk_data(T4, ChunkSize, ChunkData),
+  crlf(T5),
+  {parse_tree(chunk, [T1,T2,T3,T4,T5], T0)}.
 
 %! chunked_body(-
 %!   Tree:compound,
@@ -250,19 +261,15 @@ chunk(T, ChunkSize, ChunkData, ChunkExtension) -->
 % @arg LastChunkExtension A list of name-value pairs.
 % @arg EntityHeaders A list of ???.
 
-chunked_body(
-  chunked_body(T1,T2,T3),
-  Chunks,
-  LastChunkExtension,
-  EntityHeaders
-) -->
+chunked_body(T0, Chunks, LastChunkExtension, EntityHeaders) -->
   % A non-negative number of chunks.
   chunks(T1, Chunks),
   % The last chunk.
   last_chunk(T2, LastChunkExtension),
   % The trailer of the chunk body.
-  trailer(T3, EntityHeaders),
-  crlf.
+  ("" ; trailer(T3, EntityHeaders)),
+  crlf(T4),
+  {parse_tree(chunked_body, [T1,T2,T3,T4], T0)}.
 
 %! chunk_data(-Tree:compound, ?ChunkSize:integer, :ChunkData:list(code))//
 % ~~~{.bnf}
@@ -395,17 +402,17 @@ ctext(C) -->
 
 %! crlf//
 
-crlf -->
-  crlf(_Codes).
+crlf(T1) -->
+  crlf(T1, _Codes).
 
-%! crlf(?Codes:list(code))//
+%! crlf(-Tree:atom, ?Codes:list(code))//
 % HTTP/1.1 defines the sequence carriage_return//1 line_feed//1
 % as the end-of-line marker for all protocol elements except
 % the entity-body (see appendix 19.3 for tolerant applications).
 % The end-of-line marker within an entity-body is defined by its
 % associated media type, as described in section 3.7.
 
-crlf([CR,LF]) -->
+crlf(crlf, [CR,LF]) -->
   carriage_return(CR),
   line_feed(LF).
 
@@ -462,8 +469,9 @@ entity_body(entity_body(EntityBody), EntityBody) -->
 %               | Last-Modified
 %               | extension-header
 % ~~~
+
+entity_header(entity_header(T1), allow=Methods) --> allow(T1, Methods).
 /*
-entity_header --> allow.
 entity_header --> content_encoding.
 entity_header --> content_language.
 entity_header --> content_length.
@@ -473,9 +481,9 @@ entity_header --> content_range.
 entity_header --> content_type.
 entity_header --> expires.
 entity_header --> last_modified.
-*/
 entity_header(entity_header(T1), ExtensionHeader) -->
   extension_header(T1, ExtensionHeader).
+*/
 
 %! entity_tag(-Tree:compound, ?Weak:boolean, ?EntityTag:atom)//
 % Entity tags are used for comparing two or more entities from the same
@@ -510,7 +518,8 @@ extension_code(extension_code(Status)) -->
 % extension-header = message-header
 % ~~~
 
-extension_header(extension_header(T1), Header) --> message_header(T1, Header).
+extension_header(extension_header(T1), Header) -->
+  message_header(T1, Header).
 
 %! extension_method(-Tree:compound, ?ExtensionMethod:atom)//
 % ~~~{.bnf}
@@ -616,10 +625,10 @@ general_header --> warning.
 
 generic_message(T, MessageHeaders, MessageBody) -->
   start_line(T1),
-  (message_headers(T2, MessageHeaders), ""),
-  crlf,
-  (message_body(T3, MessageBody) ; "", {MessageBody = []}),
-  {parse_tree(generic_message, [T1,T2,'crlf',T3], T)}.
+  ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
+  crlf(T3),
+  (message_body(T4, MessageBody) ; "", {MessageBody = []}),
+  {parse_tree(generic_message, [T1,T2,T3,T4], T)}.
 
 %! http_message(-Tree:compound)//
 % ~~~{.bnf}
@@ -629,7 +638,11 @@ generic_message(T, MessageHeaders, MessageBody) -->
 http_message(http_message(T)) -->
   request(T, _Method, _URI, _Version, _MessageHeaders, _MessageBody).
 http_message(http_message(T)) -->
-  response(T, _Version, _Status, _Reason, _MessageHeaders, _MessaageBody).
+  response(T, _Version, _Status, _MessageHeaders, _MessaageBody).
+
+http_to_gv(Tree):-
+  absolute_file_name(project(temp), File, [access(write), file_type(jpeg)]),
+  convert_tree_to_gv([name('HTTP message')], Tree, dot, jpeg, File).
 
 %! http_url(
 %!   -Tree:compound,
@@ -679,7 +692,11 @@ http_url(T, Host, Port, Path, Query) -->
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
 
-http_version(http_version('HTTP','/',Major,'.',Minor), Major, Minor) -->
+http_version(
+  http_version('HTTP','/',major(Major),'.',minor(Minor)),
+  Major,
+  Minor
+) -->
   "HTTP",
   forward_slash,
   decimal_number(Major),
@@ -696,19 +713,19 @@ http_version(http_version('HTTP','/',Major,'.',Minor), Major, Minor) -->
 % Notice that chunk_extension//2 could be left out completely,
 % i.e., no empty list either.
 
-last_chunk(T, ChunkExtension) -->
+last_chunk(T0, ChunkExtension) -->
   % A positive number of zeros.
   dcg_plus(zero),
   % Optional chunk extension (attribute-value pairs).
   (
     "",
     {var(ChunkExtension)},
-    {T = last_chunk}
+    {T0 = last_chunk(T2)}
   ;
     chunk_extension(T1, ChunkExtension),
-    {T = last_chunk(T1)}
+    {T0 = last_chunk(T1,T2)}
   ),
-  crlf.
+  crlf(T2).
 
 %! linear_white_space//
 
@@ -858,16 +875,20 @@ message_body(message_body(T0), MessageBody) -->
 message_body(message_body(T0), MessageBody) -->
   encoded_entity_body(T0, MessageBody).
 
-%! message_header(-Tree:compound, ?NameValuePair)//
+%! message_header(-Tree:compound, ?NVPair)//
 % ~~~{.bnf}
 % message-header = field-name ":" [ field-value ]
 % ~~~
 
-message_header(T, FieldName-FieldValue) -->
+message_header(message_header(T1), Name-Value) -->
+  dcg_call(Name, T1, Value).
+
+/* THE  GENERIC MESSAGE HEADER GRAMMAR
   field_name(T1, FieldName),
   colon,
   (field_value(T2, FieldValue) ; "", {FieldValue = []}),
   {parse_tree(message_header, [T1,':',T2], T)}.
+*/
 
 %! message_heades(-Tree:compound, ?MessageHeaders:list)//
 % The order in which header fields with differing field names are
@@ -886,13 +907,13 @@ message_header(T, FieldName-FieldValue) -->
 % interpretation of the combined field value, and thus a proxy MUST NOT
 % change the order of these field values when a message is forwarded.
 
-message_headers(message_headers(T1,'crlf',T2), [H|T]) -->
+message_headers(message_headers(T1,T2), [H]) -->
   message_header(T1, H),
-  crlf,
-  message_headers(T2, T).
-message_headers(message_headers(T,'crlf'), H) -->
-  message_header(T, H),
-  crlf.
+  crlf(T2).
+message_headers(message_headers(T1,T2,T3), [H|T]) -->
+  message_header(T1, H),
+  crlf(T2),
+  message_headers(T3, T).
 
 %! method(-Tree:compound, ?Method:atom)//
 % The method is case-sensitive.
@@ -925,6 +946,13 @@ method(method('POST'), post) --> "POST".
 method(method('PUT'), put) --> "PUT".
 method(method('TRACE'), trace) --> "TRACE".
 method(method(T), ExtensionMethod) --> extension_method(T, ExtensionMethod).
+
+methods(methods(T1,',',T2), [H|T]) -->
+  method(T1, H),
+  comma,
+  methods(T2, T).
+methods(methods(T1), [H]) -->
+  method(T1, H).
 
 %! opaque_tag(-Tree:compound, ?OpaqueTag:atom)//
 
@@ -1136,10 +1164,10 @@ reason_phrase_([]) --> [].
 
 request(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
   request_line(T1, Method, URI, Version),
-  message_headers(T2, MessageHeaders),
-  crlf,
-  (message_body(T3, MessageBody) ; ""),
-  {parse_tree(request, [T1,T2,T3], T0)}.
+  ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
+  crlf(T3),
+  (message_body(T4, MessageBody) ; ""),
+  {parse_tree(request, [T1,T2,T3,T4], T0)}.
 
 %! request_header//
 % Request-header field names can be extended reliably only in
@@ -1204,17 +1232,17 @@ request_header --> user_agent.
 % ~~~
 
 request_line(
-  request_line(T1,T2,T3),
+  request_line(T1,T2,T3,T4,T5,T6),
   Method,
   uri(Scheme, Authority, Path, Query),
   version(Major, Minor)
 ) -->
   method(T1, Method),
-  space,
-  request_uri(T2, Scheme, Authority, Path, Query),
-  space,
-  http_version(T3, Major, Minor),
-  crlf.
+  space, {T2 = sp},
+  request_uri(T3, Scheme, Authority, Path, Query),
+  space, {T4 = sp},
+  http_version(T5, Major, Minor),
+  crlf(T6).
 
 %! request_uri(
 %!   -Tree:compound,
@@ -1285,20 +1313,19 @@ request_line(
 % The absolute_path//2 cannot be empty. If none is present it MUST be
 % given as `/` (i.e., the server root).
 
-request_uri(request_uri(T), Scheme, Authority, Path, Query) -->
-  absolute_uri(T, Scheme, Authority, Path, Query).
-request_uri(request_uri(T), _Scheme, _Authority, Path, _Query) -->
-  absolute_path(T, Path).
-request_uri(request_uri(T), _Scheme, Authority, _Path, _Query) -->
-  authority(T, Authority).
+request_uri(request_uri(T1), Scheme, Authority, Path, Query) -->
+  absolute_uri(T1, Scheme, Authority, Path, Query).
+request_uri(request_uri(T1), _Scheme, _Authority, Path, _Query) -->
+  absolute_path(T1, Path).
+request_uri(request_uri(T1), _Scheme, Authority, _Path, _Query) -->
+  authority(T1, Authority).
 request_uri(request_uri('*'), _Scheme, _Authority, _Path, _Query) -->
   asterisk.
 
 %! response(
 %!   -Tree:compound,
 %!   ?Version:compound,
-%!   ?Status:integer,
-%!   ?Reason:atom,
+%!   ?Status:compound,
 %!   ?MessageHeaders:list(pair),
 %!   ?MessageBody:list(code)
 %! )//
@@ -1312,12 +1339,12 @@ request_uri(request_uri('*'), _Scheme, _Authority, _Path, _Query) -->
 %            [ message-body ]
 % ~~~
 
-response(T0, Version, Status, Reason, MessageHeaders, MessageBody) -->
-  status_line(T1, Version, Status, Reason),
-  message_headers(T2, MessageHeaders),
-  crlf,
-  (message_body(T3, MessageBody) ; "", {MessageBody = []}),
-  {parse_tree(response, [T1,T2,T3], T0)}.
+response(T0, Version, Status, MessageHeaders, MessageBody) -->
+  status_line(T1, Version, Status),
+  ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
+  crlf(T3),
+  (message_body(T4, MessageBody) ; "", {MessageBody = []}),
+  {parse_tree(response, [T1,T2,T3,T4], T0)}.
 
 %! response_header//
 % ~~~{.bnf}
@@ -1382,9 +1409,9 @@ separator(C) --> space(C). % 32
 % ~~~
 
 start_line(start_line(T0)) --> request_line(T0, _Method, _URI, _Version).
-start_line(start_line(T0)) --> status_line(T0, _Version, _Status, _Reason).
+start_line(start_line(T0)) --> status_line(T0, _Version, _Status).
 
-%! status_code(?Status:integer, ?Name:atom) is nondet.
+%! status_code(?Status:integer, ?Reason:atom) is nondet.
 % The first digit of the status_code/2 defines the class of response.
 % The last two digits do not have any categorization role.
 %
@@ -1449,7 +1476,7 @@ status_code(503, 'Service Unavailable').
 status_code(504, 'Gateway Timeout').
 status_code(505, 'HTTP Version not supported').
 
-%! status_code(-Tree:compound, ?Status:integer)//
+%! status_code(-Tree:compound, ?Status:integer, ?Reason:atom)//
 % A 3-digit integer result code of the attempt to understand and satisfy
 % the request.
 %
@@ -1461,32 +1488,42 @@ status_code(505, 'HTTP Version not supported').
 % `x00` status code of that class, with the exception that an
 % unrecognized response MUST NOT be cached.
 
-status_code(status_code(Status), Status) -->
+status_code(status_code(Status), Status, Reason1) -->
   {nonvar(Status)}, !,
-  {status_code(Status, _Name)},
-  {atom_chars(Status, [D1,D2,D3])},
-  decimal_digit(D1),
-  decimal_digit(D2),
-  decimal_digit(D3).
-status_code(status_code(Status), Status) -->
+  {
+    status_code(Status, Reason2),
+    number_to_digits(Status, [D1,D2,D3])
+  },
   decimal_digit(D1),
   decimal_digit(D2),
   decimal_digit(D3),
-  {digits_to_decimal([D1,D2,D3], Status)},
-  {status_code(Status, _Name)}.
-status_code(status_code(Status), Status) -->
+  % Use the default reason for the given status.
+  {(var(Reason1) -> Reason1 = Reason2 ; true)}.
+status_code(status_code(Status), Status, _Reason1) -->
+  decimal_digit(D1),
+  decimal_digit(D2),
+  decimal_digit(D3),
+  {
+    digits_to_decimal([D1,D2,D3], Status),
+    status_code(Status, _Reason2)
+  }.
+status_code(status_code(Status), Status, _Reason) -->
   extension_code(Status).
 
-%! status_line(-Tree:compound, ?Version:compound, ?Status, ?Reason)//
+%! status_line(-Tree:compound, ?Version:compound, ?Status:compound)//
 % The first line of a response// message.
 
-status_line(status_line(T1,T2,T3), version(Major, Minor), Status, Reason) -->
+status_line(
+  status_line(T1,T2,T3,T4,T5,T6),
+  version(Major, Minor),
+  status(Status, Reason)
+) -->
   http_version(T1, Major, Minor),
-  space,
-  status_code(T2, Status),
-  space,
-  reason_phrase(T3, Reason),
-  crlf.
+  space, {T2 = sp},
+  status_code(T3, Status, Reason),
+  space, {T4 = sp},
+  reason_phrase(T5, Reason),
+  crlf(T6).
 
 %! subtype(-Tree:compound, ?SubType:atom)//
 % Media subtype.
@@ -1571,13 +1608,13 @@ token_(C) -->
 % trailer = *(entity-header CRLF)
 % ~~~
 
-trailer(trailer(L), L) -->
-  trailer(L).
-trailer([H|T]) -->
-  entity_header(H, _EntityHeader),
-  crlf,
-  trailer(T).
-trailer([]) --> [].
+trailer(trailer(T1,T2), [H]) -->
+  entity_header(T1, H),
+  crlf(T2).
+trailer(trailer(T1,T2,T3), [H|T]) -->
+  entity_header(T1, H),
+  crlf(T2),
+  trailer(T3, T).
 
 %! transfer_coding(-Tree:compound, ?Token:atom, ?Parameters:list)//
 % Transfer-coding values are used to indicate an encoding
@@ -1632,3 +1669,4 @@ value(value(T), Value) -->
 %! weak(-Tree:compound)//
 
 weak(weak('W/'), true) --> "W/".
+
