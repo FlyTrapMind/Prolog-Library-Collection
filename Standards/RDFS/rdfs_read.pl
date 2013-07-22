@@ -24,6 +24,14 @@
                       % -Contents:list(uri)
                       % ?Graph:atom
 
+% DOMAIN & RANGE
+    rdfs_domain/3, % ?Property:uri
+                   % ?Domain:uri
+                   % ?Graph:atom
+    rdfs_range/3, % ?Property:uri
+                  % ?Range:uri
+                  % ?Graph:atom
+
 % LABELS
     rdfs_preferred_label/3, % ?RDF_Term:oneof([bnode,uri])
                             % ?Languages:list(atom)
@@ -135,6 +143,9 @@ rdfs_individual(X, Y, G):-
 % COLLECTIONS
 :- rdf_meta(rdfs_collection(r,?)).
 :- rdf_meta(rdfs_collection(r,-,?)).
+% DOMAIN & RANGE
+:- rdf_meta(rdfs_domain(r,r,?)).
+:- rdf_meta(rdfs_range(r,r,?)).
 % LABELS
 :- rdf_meta(rdfs_preferred_label(r,+,-)).
 :- rdf_meta(rdfs_list_label(r,+,-)).
@@ -244,6 +255,18 @@ rdf_collection0(Collection, Contents, Graph):-
     ),
     Contents
   ).
+
+
+
+% DOMAIN & RANGE
+
+rdfs_domain(Property1, Domain, Graph):-
+  rdfs_subproperty_of(Property1, Property2),
+  rdf(Property2, rdfs:domain, Domain, Graph).
+
+rdfs_range(Property1, Range, Graph):-
+  rdfs_subproperty_of(Property1, Property2),
+  rdf(Property2, rdfs:range, Range, Graph).
 
 
 
