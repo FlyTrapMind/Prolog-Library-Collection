@@ -35,6 +35,9 @@
                    % +Default
 
 % MULTIPLE OCCURRENCES
+    dcg_list//1, % +DCG_Bodies:list(dcg)
+    dcg_list//2, % +DCG_Bodies:list(dcg)
+                 % :Separator:dcg
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
     dcg_multi//3, % :DCG_Body:dcg
@@ -45,6 +48,7 @@
     dcg_multi_list//3, % :DCG_Body:dcg
                        % :DCG_Separator
                        % +List:list
+    dcg_void//0,
 
 % PARSE TREES
     parse_tree/3, % +TreeName:atom
@@ -143,6 +147,9 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES %
+:- meta_predicate(dcg_list(//,?,?)).
+:- meta_predicate(dcg_list(//,//,?,?)).
+:- meta_predicate(dcg_list(+,+,//,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?)).
 :- meta_predicate(dcg_multi(//,+,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
@@ -310,6 +317,19 @@ dcg_switch(_Value, _Map, Default) -->
 
 % MULTIPLE OCCURRENCES %
 
+dcg_list(L) -->
+  dcg_list(L, dcg_void).
+
+dcg_list(Mod:L, Sep) -->
+  dcg_list(Mod, L, Sep).
+
+dcg_list(_Mod, [], _Sep) --> [].
+dcg_list(Mod, [H], _Sep) --> !, Mod:H.
+dcg_list(Mod, [H|T], Sep) -->
+  Mod:H, Sep,
+  dcg_list(Mod, T, Sep).
+dcg_list(Mod, L, Sep) --> {write(Mod), write(L), write(Sep)}.
+
 %! dcg_multi(:DCG_Body, ?Occurrences:integer)
 % Counts the consecutive occurrences of the given DCG body.
 % Or produces the given number of occurrences of the given DCG body.
@@ -359,13 +379,15 @@ dcg_multi_list(DCG_Body, [H|T]) -->
 %      in between list items that are parsed/generated according to
 %      the DCG body.
 
-dcg_multi_list(_DCG_Body, _DCG_Separator, []) --> [].
-dcg_multi_list(DCG_Body, _DCG_Separator, [H]) -->
+dcg_multi_list(_DCG_Body, _Sep, []) --> [].
+dcg_multi_list(DCG_Body, _Sep, [H]) -->
   dcg_call(DCG_Body, H).
-dcg_multi_list(DCG_Body, DCG_Separator, [H|T]) -->
+dcg_multi_list(DCG_Body, Sep, [H|T]) -->
   dcg_call(DCG_Body, H),
-  DCG_Separator,
-  dcg_multi_list(DCG_Body, DCG_Separator, T).
+  Sep,
+  dcg_multi_list(DCG_Body, Sep, T).
+
+dcg_void --> [].
 
 
 

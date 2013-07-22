@@ -7,7 +7,9 @@
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
-    word//1 % -Word:list(code)
+    word//1, % -Word:atom
+    word//2 % -Tree:compound
+            % ?Word:atom
   ]
 ).
 
@@ -119,18 +121,29 @@ indent(I) -->
   },
   dcg_multi(space, NumberOfSpaces).
 
-%! word(-Word:list(code)) is semidet.
+%! word(-Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.
 %
 % A word is defined as any sequence af alphanumeric characters
 % and underscores, delimited by any other character.
 %
 % The delimiting character is not consumed.
-%
-% @arg Word A list of codes. Codes for uppercase letters are
-%           returned as codes for lowercase letters.
 
-word([H|T]) -->
+word(Word) -->
+  {nonvar(Word)}, !,
+  {atom_codes(Word, Codes)},
+  word_(Codes).
+word(Word) -->
+  word_(Codes),
+  {atom_codes(Word, Codes)}.
+
+%! word(-Tree:compound, ?Word:atom)//
+
+word(word(Word), Word) -->
+  word(Word).
+
+word_([H|T]) -->
   letter(H),
-  word(T).
-word([]) --> [].
+  word_(T).
+word_([]) --> [].
+

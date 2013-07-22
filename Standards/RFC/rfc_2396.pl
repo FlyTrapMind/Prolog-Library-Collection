@@ -4,21 +4,21 @@
 % SURFACE PREDICATES
     uri_reference//1, % -Tree:compound
     uri_reference//6, % -Tree:compound
-                      % ?Scheme
-                      % ?Authority
-                      % ?Path
-                      % ?Query
-                      % ?Fragment
+                      % ?Scheme:atom
+                      % ?Authority:compound
+                      % ?Path:list(list(atom))
+                      % ?Query:atom
+                      % ?Fragment:atom
     uri_to_gv/1, % +URI:atom
 
 % DEEP PREDICATES
     absolute_path//2, % -Tree:compound
                       % ?Path:list(list(atom))
     absolute_uri//5, % -Tree:compound
-                     % ?Scheme
-                     % ?Authority
-                     % ?Path
-                     % ?Query
+                     % ?Scheme:atom
+                     % ?Authority:compound
+                     % ?Path:list(list(atom))
+                     % ?Query:atom
     authority//2, % -Tree:compound
                   % ?Authority:compound
     domain_label//2, % -Tree:compound
@@ -45,7 +45,7 @@
     %parameter//2, % -Tree:compound
     %              % ?Parameter:atom
     path//2, % -Tree:compound
-             % ?Path:list
+             % ?Path:list(list(atom))
     path_segment//2, % -Tree:compound
                      % ?PathSegment:list(atom)
     port//2, % -Tree:compound
@@ -222,16 +222,14 @@ can determine the value of the four components and fragment as
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
 
 
 
-%! absolute_path(
-%!   -Tree:compound,
-%!   ?Path:list(list(or([atom,integer])))
-%! )//
+%! absolute_path(-Tree:compound, ?Path:list(list(atom)))//
 % The path may consist of a sequence of path segments separated by a
 % single forward_slash//1.
 %
@@ -252,7 +250,13 @@ absolute_path(absolute_path('/', T), [PathSegment]) -->
   forward_slash,
   path_segment(T, PathSegment).
 
-%! absolute_uri(-Tree:compound, ?Scheme, ?Authority, ?Path, ?Query)//
+%! absolute_uri(
+%!   -Tree:compound,
+%!   ?Scheme:atom,
+%!   ?Authority:compound,
+%!   ?Path:list(list(atom)),
+%!   ?Query:atom
+%! )//
 % An absolute URI contains the name of the scheme being used (`<scheme>`)
 % followed by a colon//1 and then a string (the `<scheme-specific-part>`)
 % whose interpretation depends on the scheme.
@@ -284,6 +288,12 @@ absolute_path(absolute_path('/', T), [PathSegment]) -->
 % ~~~{.bnf}
 % absoluteURI = scheme ":" ( hier_part | opaque_part )
 % ~~~
+%
+% @arg Scheme An atom.
+% @arg Authority Either an atom or a compound term of the form
+%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
+% @arg Path A list of lists of atoms.
+% @arg Query An atom.
 
 absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
   scheme(T1, Scheme),
@@ -295,7 +305,7 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
   colon,
   opaque_part(T2, Path).
 
-%! authority(-Tree:compound, ?Authority)//
+%! authority(-Tree:compound, ?Authority:or([atom,compound]))//
 % Many URI schemes include a top hierarchical element for a naming
 % authority, such that the namespace defined by the remainder of the
 % URI is governed by that authority. This authority component is
@@ -308,9 +318,10 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
 %
 % @Tree A parse tree.
 % @arg Authority Either an atom or a compound term of the form
-%      `authority(User:atom,Host:list(or([atom,integer])),Port:integer)`.
+%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
-authority(authority(T), Authority) --> server(T, Authority).
+authority(authority(T), Authority) -->
+  server(T, Authority).
 authority(authority(T), Authority) -->
   registry_based_naming_authority(T, Authority).
 
@@ -397,6 +408,9 @@ escaped_character(N) -->
 %  A fragment identifier is only meaningful when a URI reference is
 % intended for retrieval and the result of that retrieval is a document
 % for which the identified fragment is consistently defined.
+%
+% @arg Tree A compound term.
+% @arg Fragment An atom.
 
 fragment(fragment(Fragment), Fragment) -->
   {nonvar(Fragment)}, !,
@@ -422,7 +436,11 @@ fragment_([H|T]) -->
 % hier_part = ( net_path | abs_path ) [ "?" query ]
 % ~~~
 %
-% @arg Authority A compound term of the form
+% @arg Tree A compound term.
+% @arg Authority Either an atom or a compound term of the form
+%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
+% @arg Path A list of lists of atoms.
+% @arg Query An atom.
 
 hierarchical_part(T, Authority, Path, Query) -->
   (
@@ -431,7 +449,7 @@ hierarchical_part(T, Authority, Path, Query) -->
     absolute_path(T1, Path), {var(Authority)}
   ),
   (
-    "", {T = hierarchical_part(T1), var(Query)}
+    "", {T = hierarchical_part(T1), Query = ''}
   ;
     question_mark, query(T2, Query), {T = hierchical_part(T1,'?',T2)}
   ).
@@ -451,6 +469,9 @@ hierarchical_part(T, Authority, Path, Query) -->
 % and any local domain.
 %
 % @tbd Literal IPv6 addresses are not supported.
+%
+% @arg Tree A compound term.
+% @arg Host Either a list of atoms or a list of integers.
 
 host(host(T), Host) --> host_name(T, Host).
 host(host(T), Host) --> ipv4_address(T, Host).
@@ -502,15 +523,19 @@ mark(C) --> asterisk(C).
 mark(C) --> single_quote(C).
 mark(C) --> round_bracket(C).
 
-%! network_path(-Tree:compound, ?Authority:compound, ?Path:list(list(atom)))//
+%! network_path(
+%!   -Tree:compound,
+%!   ?Authority:compound,
+%!   ?Path:list(list(atom))
+%! )//
 % ~~~{.bnf}
 % net_path = "//" authority [ abs_path ]
 % ~~~
 %
 % @Tree A parse tree.
-% @arg Authority A compound term of the form
-%      `authority(User:atom,Host:list(or([atom,integer])),Port:integer)`.
-% @arg Path
+% @arg Authority Either an atom or a compound term of the form
+%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
+% @arg Path A list of lists of atoms.
 
 network_path(network_path('//',T1,T2), Authority, Path) -->
   forward_slash, forward_slash,
@@ -571,7 +596,7 @@ parameter_character(C) --> plus_sign(C).
 parameter_character(C) --> unreserved_character(C).
 parameter_character(C) --> escaped_character(C).
 
-%! path(-Tree:compound, ?Path:list)//
+%! path(-Tree:compound, ?Path:list(list(atom)))//
 % The path component contains data, specific to the authority (or the
 % scheme if there is no authority component), identifying the resource
 % within the scope of that scheme and authority.
@@ -582,8 +607,8 @@ parameter_character(C) --> escaped_character(C).
 %
 % Note that path//1 is not used in any production.
 %
-% @arg Tree
-% @arg Path
+% @arg Tree A compound term.
+% @arg Path A list of lists of atoms.
 
 path(path([]), []) --> [].
 path(path(T), Path) --> absolute_path(T, Path).
@@ -632,6 +657,9 @@ port(port(Port), Port) --> decimal_number(Port).
 %
 % Within a query component, the characters `;`, `/`, `?`, `:`, `@`,
 % `&`, `=`, `+`, `,`, and `$` are reserved.
+%
+% @arg Tree A compound term.
+% @arg Query An atom.
 
 query(query(Query), Query) -->
   {nonvar(Query)}, !,
@@ -781,31 +809,13 @@ scheme_characters([]) --> [].
 %
 % @arg Tree A parse tree.
 % @arg Authority A compound term of the form
-%      `authority(User:atom,Host:list(or([atom,integer])),Port:integer)`.
+%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
-server(T, authority(User,Host,Port)) -->
-  user_info(T1, User),
-  % Note that the user info cannot contain an at_sign//0
-  % and is greedy. Therefore, cut.
-  at_sign, !,
-
-  host(T2, Host),
-  (
-    "", {T = server(T1,'@',T2), var(Port)}
-  ;
-    colon, port(T3, Port), {T = server(T1,'@',T2,':',T3)}
-  ).
-server(T, authority(User,Host,Port)) -->
-  {var(User)},
-  host(T1, Host),
-  (
-    "", {T = server(T1), var(Port)}
-  ;
-    colon, port(T2, Port), {T = server(T1,':',T2)}
-  ).
-server(server(''), authority(User,Host,Port)) -->
-  {maplist(nonvar, [User,Host,Port])},
-  [].
+server(T0, authority(User,Host,Port)) -->
+  ("", {var(User)} ; user_info(T1, User), at_sign, {T2 = '@'}),
+  host(T3, Host),
+  ("", {var(Port)} ; colon, {T4 = ':'}, port(T5, Port)),
+  {parse_tree(server, [T1,T2,T3,T4,T5], T0)}.
 
 %! top_label(-Tree:compound, ?TopLabel:atom)//
 % A top label is the rightmost domain label of a fully qualified host
@@ -895,11 +905,11 @@ uri_reference(T) -->
 
 %! uri_reference(
 %!   -Tree:compound,
-%!   ?Scheme,
-%!   ?Authority,
-%!   ?Path,
-%!   ?Query,
-%!   ?Fragment
+%!   ?Scheme:atom,
+%!   ?Authority:compound,
+%!   ?Path:list(list(atom)),
+%!   ?Query:atom,
+%!   ?Fragment:atom
 %! )//
 % The term "URI-reference" is used here to denote the common usage of a
 % resource identifier.  A URI reference may be absolute or relative,
@@ -916,11 +926,18 @@ uri_reference(T) -->
 % ~~~{.bnf}
 % URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
 % ~~~
+%
+% @arg Scheme An atom.
+% @arg Authority Either an atom or a compound term of the form
+%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
+% @arg Path A list of lists of atoms.
+% @arg Query An atom.
+% @arg Fragment An atom.
 
 uri_reference(T, Scheme, Authority, Path, Query, Fragment) -->
   absolute_uri(T1, Scheme, Authority, Path, Query),
   (
-    "", {T = uri_reference(T1), var(Fragment)}
+    "", {T = uri_reference(T1), Fragment = ''}
   ;
     number_sign, fragment(T2, Fragment), {T = uri_reference(T1,'#',T2)}
   ).
@@ -1018,3 +1035,4 @@ test2(Scheme, Authority, Path, Query, Fragment):-
   ),
   atom_codes(URI, Codes),
   formatnl(URI).
+

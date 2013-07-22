@@ -169,3 +169,4 @@ xml_register_namespace(Namespace, URI1):-
 xml_register_namespace(Namespace, URI):-
   is_uri(URI), !,
   rdf_register_prefix(Namespace, URI, []).
+

@@ -39,8 +39,8 @@
 
 /** <module> XML
 
-The XML (Extensible Markup Language) is a subset of SGML (Standard Generalized
-Markup Language).
+The XML (Extensible Markup Language) is a subset of
+SGML (Standard Generalized Markup Language).
 
 
 
@@ -908,7 +908,11 @@ Examples:
 % Serve CSS files.
 :- db_add_novel(http:location(css, root(css),  [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(css(.), serve_files_in_directory(css), [prefix, priority(10)]).
+:- http_handler(
+  css(.),
+  serve_files_in_directory(css),
+  [prefix, priority(10)]
+).
 
 :- xml_register_namespace(iso, 'http://www.iso.org/').
 :- xml_register_namespace(std, 'http://www.example.org/standards/').

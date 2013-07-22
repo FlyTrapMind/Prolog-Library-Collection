@@ -30,7 +30,7 @@ language_tag(Primary, Secondary) -->
 
 language_tag(Tag) -->
   word(Word),
-  {length(Word, Length)},
+  {atom_length(Word, Length)},
   dcg_switch(
     Length,
     % Length-2 codes must be ISO 639-1.
