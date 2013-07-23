@@ -238,17 +238,14 @@ can determine the value of the four components and fragment as
 % path_segments = segment *( "/" segment )
 % ~~~
 
-absolute_path(T, [PathSegment|PathSegments]) -->
+absolute_path(T0, [PathSegment|PathSegments]) -->
+  forward_slash, {T1 = '/'},
+  path_segment(T2, PathSegment),
+  ("", {PathSegments = []} ; absolute_path(T3, PathSegments)),
+  {parse_tree(absolute_path, [T1,T2,T3], T0)}.
+absolute_path(absolute_path('/',T1), [PathSegment]) -->
   forward_slash,
-  path_segment(T1, PathSegment),
-  (
-    "", {T = absolute_path('/',T1), PathSegments = []}
-  ;
-    absolute_path(T2, PathSegments), {T = absolute_path('/',T1,T2)}
-  ).
-absolute_path(absolute_path('/', T), [PathSegment]) -->
-  forward_slash,
-  path_segment(T, PathSegment).
+  path_segment(T1, PathSegment).
 
 %! absolute_uri(
 %!   -Tree:compound,
@@ -370,7 +367,8 @@ domain_labels(domain_labels(T1,'.',T2), [DomainLabel|DomainLabels]) -->
   domain_label(T1, DomainLabel),
   dot,
   domain_labels(T2, DomainLabels).
-domain_labels(domain_labels(T), [TopLabel]) --> top_label(T, TopLabel).
+domain_labels(domain_labels(T1), [TopLabel]) -->
+  top_label(T1, TopLabel).
 
 %! escaped_character(-DecimalNumber:integer)//
 % An **escaped octet** is encoded as a character triplet, consisting of the
@@ -442,17 +440,14 @@ fragment_([H|T]) -->
 % @arg Path A list of lists of atoms.
 % @arg Query An atom.
 
-hierarchical_part(T, Authority, Path, Query) -->
+hierarchical_part(T0, Authority, Path, Query) -->
   (
     network_path(T1, Authority, Path)
   ;
     absolute_path(T1, Path), {var(Authority)}
   ),
-  (
-    "", {T = hierarchical_part(T1), Query = ''}
-  ;
-    question_mark, query(T2, Query), {T = hierchical_part(T1,'?',T2)}
-  ).
+  ("" ; question_mark, {T2 = '?'}, query(T3, Query)),
+  {parse_tree(hierarchical_part, [T1,T2,T3], T0)}.
 
 %! host(-Tree:compound, ?Host:list(atomic))//
 % The host is a domain name of a network host, or its IPv4 address as a
@@ -486,10 +481,11 @@ host(host(T), Host) --> ipv4_address(T, Host).
 % hostname = *( domainlabel "." ) toplabel [ "." ]
 % ~~~
 
-host_name(T, DomainLabels) -->
+host_name(T0, DomainLabels) -->
   domain_labels(T1, DomainLabels),
   % Optional dot//0.
-  ("", {T = host_name(T1)} ; dot, {T = host_name(T1,'.')}).
+  ("" ; dot, {T2 = '.'}),
+  {parse_tree(host_name, [T1,T2], T0)}.
 
 %! ipv4_address(-Tree:compound, ?IPv4Address:list(integer))//
 % An IPv4 address.
@@ -537,10 +533,11 @@ mark(C) --> round_bracket(C).
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 % @arg Path A list of lists of atoms.
 
-network_path(network_path('//',T1,T2), Authority, Path) -->
-  forward_slash, forward_slash,
-  authority(T1, Authority),
-  ({T2 = [], Path = []} ; absolute_path(T2, Path)).
+network_path(T0, Authority, Path) -->
+  forward_slash, {T1 = '/'}, forward_slash, {T2 = '/'},
+  authority(T3, Authority),
+  ("" ; absolute_path(T4, Path)),
+  {parse_tree(network_path, [T1,T2,T3,T4], T0)}.
 
 %! opaque_part(-Tree:compound, ?OpaquePart:atom)//
 % URIs that do not make use of the forward_slash//1 for separating
@@ -611,8 +608,8 @@ parameter_character(C) --> escaped_character(C).
 % @arg Path A list of lists of atoms.
 
 path(path([]), []) --> [].
-path(path(T), Path) --> absolute_path(T, Path).
-path(path(T), [OpaquePart]) --> opaque_part(T, OpaquePart).
+path(path(T1), Path) --> absolute_path(T1, Path).
+path(path(T1), [OpaquePart]) --> opaque_part(T1, OpaquePart).
 
 %! path_segment(-Tree:compound, ?PathSegment:list(atom))//
 % Each path segment may include a sequence of parameters,
@@ -625,16 +622,17 @@ path(path(T), [OpaquePart]) --> opaque_part(T, OpaquePart).
 % segment = *pchar *( ";" param )
 % ~~~
 
-path_segment(T, [Parameter|PathSegment]) -->
+path_segment(T0, [Parameter|PathSegment]) -->
   parameter(T1, Parameter),
   % Note that parameter does not contain a semi_colon//0
   % and is greedy. Therefore, cut.
   !,
   (
-    "", {T = path_segment(T1), PathSegment = []}
+    "", {PathSegment = []}
   ;
-    semi_colon, path_segment(T2, PathSegment), {T = path_segment(T1,';',T2)}
-  ).
+    semi_colon, {T2 = ';'}, path_segment(T3, PathSegment)
+  ),
+  {parse_tree(path_segment, [T1,T2,T3], T0)}.
 
 %! port(-Tree:compound, ?Port:integer)//
 % The port is the network port number for the server. Most schemes
@@ -934,21 +932,15 @@ uri_reference(T) -->
 % @arg Query An atom.
 % @arg Fragment An atom.
 
-uri_reference(T, Scheme, Authority, Path, Query, Fragment) -->
+uri_reference(T0, Scheme, Authority, Path, Query, Fragment) -->
   absolute_uri(T1, Scheme, Authority, Path, Query),
-  (
-    "", {T = uri_reference(T1), Fragment = ''}
-  ;
-    number_sign, fragment(T2, Fragment), {T = uri_reference(T1,'#',T2)}
-  ).
+  ("" ; number_sign, {T2 = '#'}, fragment(T3, Fragment)),
+  {parse_tree(uri_reference, [T1,T2,T3], T0)}.
 /*
-uri_reference(T, Fragment) -->
+uri_reference(T0, Fragment) -->
   relative_uri(T1),
-  (
-    "", {T = uri_reference(T1), var(Fragment)}
-  ;
-    number_sign, fragment(T2, Fragment), {T = uri_reference(T1,'#',T2)}
-  ).
+  ("", {var(Fragment)} ; number_sign, {T2 = '#'}, fragment(T3, Fragment)),
+  {parse_tree(uri_reference, [T1,T2,T3], T0)}.
 */
 
 %! user_info(-Tree:compound, ?User:atom)//

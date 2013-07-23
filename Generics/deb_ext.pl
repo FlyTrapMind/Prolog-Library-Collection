@@ -18,6 +18,12 @@ Extensions for debugging and running in debug mode.
 
 Methods that are used while developing and inspecting code.
 
+# SWI-Prolog changelog
+
+~~~
+http://www.swi-prolog.org/ChangeLog?branch=stable&from=5.10.4&to=6.4.0
+~~~
+
 @author Wouter Beek
 @tbd Test this module.
 @version 2011/11-2012/07, 2012/09, 2013/06

@@ -1,7 +1,12 @@
 :- module(
   svg_dcg,
   [
-    svg_document//1, % ?SVG_DCGs:list(dcg)
+    svg_document//2, % -Tree:compound
+                     % ?SVG_DCGs:list(dcg)
+    svg_fragment_base//2, % -Tree:compound
+                          % +SVG_DCGs:list(dcg)
+    svg_fragment_nonbase//2, % -Tree:compound
+                             % +SVG_DCGs:list(dcg)
     svg_rect//3 % -Tree:compound
                 % :DCG_Namespace
                 % ?Attributes:list
@@ -71,6 +76,7 @@ Raster images have their original sample resampled to the output device.
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(rfc(rfc_2396)).
+:- use_module(svg(svg_attributes)).
 :- use_module(svg(svg_colors)).
 :- use_module(xml(xml_dcg)).
 
@@ -103,28 +109,14 @@ Raster images have their original sample resampled to the output device.
 
 
 
-svg_attributes([], [], []).
-svg_attributes([H1|T1], [H2|T2], [Tree|Trees]):-
-  H1 =.. [P1 | Args],
-  atom_concat(svg_, P1, P2),
-  H2 =.. [P2, Tree | Args],
-  svg_attributes(T1, T2, Trees).
+%! svg_document(-Tree:compound, ?SVG_DCGs:list(dcg))//
 
-svg_color(color(T1), Color) -->
-  {nonvar(Color)}, !,
-  {svg_color(Color, _RGB)},
-  word(T1, Color).
-svg_color(color(T1), Color) -->
-  word(T1, Color),
-  {svg_color(Color, _RGB)}.
+svg_document(T0, SVG_DCGs) -->
+  xml_header(T1, version(1,0), standalone(true)),
+  dcg_list(SVG_DCGs, dcg_void, Ts, []),
+  {parse_tree(document, [T1|Ts], T0)}.
 
-%! svg_document(?SVG_DCGs:list(dcg))//
-
-svg_document(SVG_DCGs) -->
-  xml_header(_T1, version(1,0), standalone(true)),
-  dcg_list(SVG_DCGs).
-
-%! svg_fragment(SVG_DCGs)//
+%! svg_fragment_base(-Tree:compound, +SVG_DCGs:list(dcg))//
 % An `xmlns` attribute without a namespace prefix could be specified on an
 % `svg` element, which means that SVG is the default namespace for all
 % elements within the scope of the element with the `xmlns` attribute.
@@ -135,16 +127,40 @@ svg_document(SVG_DCGs) -->
 % </svg>
 % ~~~
 
-svg_fragment(SVG_DCGs) -->
-  xml_entity(word(svg), [svg_xmlns]),
-  dcg_list(SVG_DCGs).
+svg_fragment_base(T0, SVG_DCGs) -->
+  {xml_inject_attributes([xmlns], Attrs, [T1])},
+  xml_entity(word(svg), Attrs),
+  dcg_list(SVG_DCGs, dcg_void, Ts, []),
+  {parse_tree(fragment, [T1|Ts], T0)}.
 
-svg_height(height(T1), Amount, Unit) -->
-  xml_attribute(word(height), svg_length(T1, Amount, Unit)).
+%! svg_fragment_nonbase(-Tree:compound, +SVG_DCGs:list(dcg))//
+% If a namespace prefix is specified on the `xmlns` attribute
+% (e.g., =|xmlns:svg="http://www.w3.org/2000/svg"|=),
+% then the corresponding namespace is not the default namespace,
+% so an explicit namespace prefix must be assigned to the elements.
+%
+% ~~~{.xml}
+% <svg:svg xmlns:svg="http://www.w3.org/2000/svg" …>
+%   <svg:rect …/>
+% </svg:svg>
+% ~~~
 
-svg_length(length(amount(Amount),unit(Unit)), Amount, Unit) -->
-  unsigned_number(Amount),
-  svg_unit(Unit).
+svg_fragment_nonbase(T0, SVG_DCGs) -->
+  {xml_inject_attributes(word(xmlns), [xmlns], Attrs, [T1])},
+  xml_entity(word(svg), word(svg), Attrs),
+  % The word `svg` is the first argument for ever DCG rule in `SCG_DCGs`.
+  % There are no separators between the DCG rules.
+  dcg_list(SVG_DCGs, dcg_void, Ts, [word(svg)]),
+  {parse_tree(fragment, [T1|Ts], T0)}.
+
+%! svg_header(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
+% The following attrobutes are supported:
+%   1. =|version(?Major:integer,?Minor:integer)|=
+
+svg_header(Tree, DCG_Namespace, Attrs1) -->
+  {xml_inject_attributes(Attrs1, Attrs2, Trees)},
+  xml_entity(DCG_Namespace, word(svg), Attrs2),
+  {parse_tree(svg, Trees, Tree)}.
 
 %! svg_rect(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The following attributes are supported:
@@ -156,30 +172,17 @@ svg_length(length(amount(Amount),unit(Unit)), Amount, Unit) -->
 %   6. =|x(?Amount:float,?Unit:oneof([cm]))|=
 %   7. =|y(?Amount:float,?Unit:oneof([cm]))|=
 
-svg_rect(T, DCG_Namespace, Attrs1) -->
-  {svg_attributes(Attrs1, Attrs2, Trees)},
+svg_rect(Tree, DCG_Namespace, Attrs1) -->
+  {xml_inject_attributes(DCG_Namespace, Attrs1, Attrs2, Trees)},
   xml_entity(DCG_Namespace, word(rect), Attrs2),
-  {parse_tree(rect, Trees, T)}.
+  {parse_tree(rect, Trees, Tree)}.
 
-svg_stroke(stroke(T1), Color) -->
-  xml_attribute(word(stroke), svg_color(T1, Color)).
-
-svg_stroke_width(stroke_width(T1), Amount, Unit) -->
-  xml_attribute(word(stroke-width), svg_length(T1, Amount, Unit)).
-
-svg_unit(cm) --> word(cm).
-
-svg_width(width(T1), Amount, Unit) -->
-  xml_attribute(word(width), svg_length(T1, Amount, Unit)).
-
-svg_x(x(T1), Amount, Unit) -->
-  xml_attribute(word(x), svg_length(T1, Amount, Unit)).
-
-svg_xmlns -->
+svg_xmlns(xmlns(T1), DCG_Namespace) -->
   xml_attribute(
+    DCG_Namespace,
     word(xmlns),
     uri_reference(
-      _Tree,
+      T1,
       http,
       authority(_User,[www,w3,org],_Port),
       [['2000'],[svg]],
@@ -187,7 +190,4 @@ svg_xmlns -->
       _Fragment
     )
   ).
-
-svg_y(y(T1), Amount, Unit) -->
-  xml_attribute(word(y), svg_length(T1, Amount, Unit)).
 

@@ -3,9 +3,19 @@
   [
     xml_attribute//2, % :DCG_Name
                       % :DCG_Value
+    xml_attribute//3, % :DCG_Namespace
+                      % :DCG_Name
+                      % :DCG_Value
+    xml_inject_attributes/3, % :DCG_Namespace,
+                             % +Attributes1:list(dcg),
+                             % -Attributes2:list(dcg),
+    xml_inject_attributes/4, % :DCG_Namespace,
+                             % +Attributes1:list(dcg),
+                             % -Attributes2:list(dcg),
+                             % -Trees:list(compound)
     xml_entity//2, % :DCG_Name
                    % ?DCG_Attributes
-    xml_entity//3, % :DCG_Name
+    xml_entity//3, % :DCG_Namespace
                    % :DCG_Name
                    % ?DCG_Attributes
     xml_header//3 % -Tree:compound
@@ -46,6 +56,31 @@ xml_attribute(DCG_Name, DCG_Value) -->
   DCG_Name,
   equals_sign,
   xml_value(DCG_Value).
+
+xml_attribute(DCG_Namespace, DCG_Name, DCG_Value) -->
+  xml_attribute(xml_namespaced_name(DCG_Namespace, DCG_Name), DCG_Value).
+
+xml_inject_attributes([], [], []).
+xml_inject_attributes([H1|T1], [H2|T2], [Tree|Trees]):-
+  H1 =.. [P1 | Args],
+  atom_concat(svg_, P1, P2),
+  H2 =.. [P2, Tree | Args],
+  xml_inject_attributes(T1, T2, Trees).
+
+%! xml_inject_attributes(
+%!   :DCG_Namespace,
+%!   +Attributes1:list(dcg),
+%!   -Attributes2:list(dcg),
+%!   -Trees:list(compound)
+%! ) is det.
+% Prepares the given XML attributes for being passed to xml_attribute//2.
+
+xml_inject_attributes(_DCG_Namespace, [], [], []).
+xml_inject_attributes(DCG_Namespace, [H1|T1], [H2|T2], [Tree|Trees]):-
+  H1 =.. [P1 | Args],
+  atom_concat(svg_, P1, P2),
+  H2 =.. [P2, Tree, DCG_Namespace | Args],
+  xml_inject_attributes(T1, T2, Trees).
 
 xml_boolean(boolean(no), false) --> "no".
 xml_boolean(boolean(yes), true) --> "yes".
