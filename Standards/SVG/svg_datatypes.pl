@@ -55,8 +55,8 @@ svg_color(color(T1), Color) -->
 %
 % @see Syntax is the same as for svg_length//3.
 
-svg_coordinate(coordinate(T1), Number, Unit) -->
-  svg_length(length(T1), Number, Unit).
+svg_coordinate(coordinate(number(Number),unit(Unit)), Number, Unit) -->
+  svg_length(_T1, Number, Unit).
 
 %! svg_length(-Tree:compund, ?Number:float, ?Unit:atom)//
 % A length is a distance measurement, given as a number along with
@@ -95,7 +95,7 @@ svg_coordinate(coordinate(T1), Number, Unit) -->
 %   8. `px`
 %   9. `%`
 
-svg_length(length(amount(Number),unit(Unit)), Number, Unit) -->
+svg_length(length(number(Number),unit(Unit)), Number, Unit) -->
   unsigned_number(Number),
   (svg_unit(Unit) ; percent_sign, {Unit = '%'}).
 

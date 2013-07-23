@@ -1,15 +1,19 @@
 :- module(
   svg_dcg,
   [
-    svg_document//2, % -Tree:compound
+    svg_document//3, % -Tree:compound
+                     % :DCG_Namespace
                      % ?SVG_DCGs:list(dcg)
     svg_fragment_base//2, % -Tree:compound
                           % +SVG_DCGs:list(dcg)
     svg_fragment_nonbase//2, % -Tree:compound
                              % +SVG_DCGs:list(dcg)
+    svg_header//3, % -Tree:compound
+                   % :DCG_Namespace
+                   % ?Attributes:list(compound)
     svg_rect//3 % -Tree:compound
                 % :DCG_Namespace
-                % ?Attributes:list
+                % ?Attributes:list(compound)
   ]
 ).
 
@@ -75,6 +79,7 @@ Raster images have their original sample resampled to the output device.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
+:- use_module(library(plunit)).
 :- use_module(rfc(rfc_2396)).
 :- use_module(svg(svg_attributes)).
 :- use_module(svg(svg_colors)).
@@ -85,6 +90,8 @@ Raster images have their original sample resampled to the output device.
 :- dynamic(user:system_identifier/2).
 
 :- meta_predicate(svg_document(//,?,?)).
+:- meta_predicate(svg_fragment_base(-,//,?,?)).
+:- meta_predicate(svg_fragment_nonbase(-,//,?,?)).
 :- meta_predicate(svg_rect(-,//,?,?,?)).
 
 :- db_add_novel(user:prolog_file_type(svgz, gzip)).
@@ -111,9 +118,9 @@ Raster images have their original sample resampled to the output device.
 
 %! svg_document(-Tree:compound, ?SVG_DCGs:list(dcg))//
 
-svg_document(T0, SVG_DCGs) -->
-  xml_header(T1, version(1,0), standalone(true)),
-  dcg_list(SVG_DCGs, dcg_void, Ts, []),
+svg_document(T0, DCG_Namespace, SVG_DCGs) -->
+  xml_header(T1, DCG_Namespace, [version(1,0),standalone(true)]),
+  xml_entities(SVG_DCGs, Ts, DCG_Namespace),
   {parse_tree(document, [T1|Ts], T0)}.
 
 %! svg_fragment_base(-Tree:compound, +SVG_DCGs:list(dcg))//
@@ -128,9 +135,8 @@ svg_document(T0, SVG_DCGs) -->
 % ~~~
 
 svg_fragment_base(T0, SVG_DCGs) -->
-  {xml_inject_attributes([xmlns], Attrs, [T1])},
-  xml_entity(word(svg), Attrs),
-  dcg_list(SVG_DCGs, dcg_void, Ts, []),
+  xml_entity(word(svg), svg_xmlns_base(T1, void)),
+  xml_entities(SVG_DCGs, Ts, void),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
 %! svg_fragment_nonbase(-Tree:compound, +SVG_DCGs:list(dcg))//
@@ -146,19 +152,17 @@ svg_fragment_base(T0, SVG_DCGs) -->
 % ~~~
 
 svg_fragment_nonbase(T0, SVG_DCGs) -->
-  {xml_inject_attributes(word(xmlns), [xmlns], Attrs, [T1])},
-  xml_entity(word(svg), word(svg), Attrs),
-  % The word `svg` is the first argument for ever DCG rule in `SCG_DCGs`.
-  % There are no separators between the DCG rules.
-  dcg_list(SVG_DCGs, dcg_void, Ts, [word(svg)]),
+  xml_entity(word(svg), word(svg), svg_xmlns_nonbase(T1, word(xmlns))),
+  xml_entities(SVG_DCGs, Ts, word(svg)),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
 %! svg_header(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The following attrobutes are supported:
-%   1. =|version(?Major:integer,?Minor:integer)|=
+%   1. =|standalone(?Alone:boolean)|=
+%   2. =|version(?Major:integer,?Minor:integer)|=
 
 svg_header(Tree, DCG_Namespace, Attrs1) -->
-  {xml_inject_attributes(Attrs1, Attrs2, Trees)},
+  {xml_inject_attributes(DCG_Namespace, Attrs1, Attrs2, Trees)},
   xml_entity(DCG_Namespace, word(svg), Attrs2),
   {parse_tree(svg, Trees, Tree)}.
 
@@ -177,9 +181,9 @@ svg_rect(Tree, DCG_Namespace, Attrs1) -->
   xml_entity(DCG_Namespace, word(rect), Attrs2),
   {parse_tree(rect, Trees, Tree)}.
 
-svg_xmlns(xmlns(T1), DCG_Namespace) -->
+svg_xmlns_base(xmlns(T1), _DCG_Namespace) -->
   xml_attribute(
-    DCG_Namespace,
+    void,
     word(xmlns),
     uri_reference(
       T1,
@@ -191,3 +195,33 @@ svg_xmlns(xmlns(T1), DCG_Namespace) -->
     )
   ).
 
+svg_xmlns_nonbase(xmlns(T1), DCG_Namespace) -->
+  xml_attribute(
+    DCG_Namespace,
+    word(svg),
+    uri_reference(
+      T1,
+      http,
+      authority(_User,[www,w3,org],_Port),
+      [['2000'],[svg]],
+      _Query,
+      _Fragment
+    )
+  ).
+
+
+
+:- begin_tests(svg_dcg).
+
+:- use_module(dcg(dcg_content)).
+:- use_module(generics(print_ext)).
+:- use_module(gv(gv_file)).
+
+test(svg_rect, []):-
+  once(phrase(svg_rect(Tree, void, [x(0.5,cm),y(1.5,cm)]), Codes)),
+  atom_codes(Atom, Codes),
+  formatnl(Atom),
+  convert_tree_to_gv([], Tree, dot, pdf, File),
+  formatnl(File).
+
+:- end_tests(svg_dcg).

@@ -7,6 +7,7 @@
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
+    void//0,
     word//1, % -Word:atom
     word//2 % -Tree:compound
             % ?Word:atom
@@ -120,6 +121,8 @@ indent(I) -->
     NumberOfSpaces is I * Size
   },
   dcg_multi(space, NumberOfSpaces).
+
+void --> [].
 
 %! word(-Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.

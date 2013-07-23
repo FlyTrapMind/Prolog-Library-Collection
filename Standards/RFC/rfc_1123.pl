@@ -27,6 +27,7 @@ The standard for datatime that is used by HTTP 1.1.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(gv(gv_file)).
+:- use_module(library(plunit)).
 :- use_module(math(radix)).
 
 
@@ -186,11 +187,13 @@ rfc1123_weekday(weekday(sunday), sunday) --> "Sun".
 
 
 :- begin_tests(rfc1123).
+
 :- use_module(generics(print_ext)).
+:- use_module(library(apply)).
 
 rfc1123_atom('Sun, 06 Nov 1994 08:49:37 GMT').
 
-test(rfc123_parsem, [forall(rfc1123_atom(Datetime))]):-
+test(rfc123_parse, [forall(rfc1123_atom(Datetime))]):-
   atom_codes(Datetime, Codes),
   once(
     phrase(

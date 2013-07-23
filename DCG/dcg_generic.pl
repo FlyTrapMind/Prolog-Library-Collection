@@ -40,13 +40,6 @@
     dcg_list//1, % +DCG_Bodies:list(dcg)
     dcg_list//2, % +DCG_Bodies:list(dcg)
                  % :Separator:dcg
-    dcg_list//3, % +DCG_Bodies:list(dcg)
-                 % :Separator:dcg
-                 % +StaticArgument
-    dcg_list//4, % +DCG_Bodies:list(dcg)
-                 % :Separator:dcg
-                 % -Trees:list(compound)
-                 % +StaticArguments:list
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:integer
     dcg_multi//3, % :DCG_Body:dcg
@@ -57,7 +50,6 @@
     dcg_multi_list//3, % :DCG_Body:dcg
                        % :DCG_Separator
                        % +List:list
-    dcg_void//0,
 
 % PARSE TREES
     parse_tree/3, % +TreeName:atom
@@ -120,6 +112,7 @@ and the positive integers. This is why we add the DCG rules:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(cowspeak)).
 :- use_module(generics(list_ext)).
@@ -159,11 +152,7 @@ and the positive integers. This is why we add the DCG rules:
 % MULTIPLE OCCURRENCES %
 :- meta_predicate(dcg_list(//,?,?)).
 :- meta_predicate(dcg_list(//,//,?,?)).
-:- meta_predicate(dcg_list(//,//,+,?,?)).
-:- meta_predicate(dcg_list(//,//,-,+,?,?)).
 :- meta_predicate(dcg_list_(+,+,//,?,?)).
-:- meta_predicate(dcg_list_(+,+,//,+,?,?)).
-:- meta_predicate(dcg_list_(+,+,//,-,+,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?)).
 :- meta_predicate(dcg_multi(//,+,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
@@ -336,54 +325,16 @@ dcg_switch(_Value, _Map, Default) -->
 % MULTIPLE OCCURRENCES %
 
 dcg_list(L) -->
-  dcg_list(L, dcg_void).
+  dcg_list(L, void).
 
 dcg_list(Mod:L, Sep) -->
   dcg_list_(Mod, L, Sep).
 
-%! dcg_list(:DCG_Bodies:list, :DCG_Separator, +Argument)//
-% Inserts the same argument as the frist parameter of each DCG_Body.
-%
-% For example, this is used to insert a shared namespace.
-
-dcg_list(Mod:L, Sep, A1) -->
-  dcg_list_(Mod, L, Sep, A1).
-
-%! dcg_list(:DCG_Bodies:list, :DCG_Separator, +Argument)//
-% Builds a list of arguments by inserting them as the frist parameter
-% of each DCG_Body.
-% In addition to that, insertes the same arguments as the second parameter
-% of each DCG_Body.
-%
-% For example, this is used to collect subtrees for each DCG rule,
-% while also inserting a shared namespace.
-
-dcg_list(Mod:L, Sep, L, As) -->
-  dcg_list_(Mod, L, Sep, L, As).
-
 dcg_list_(_Mod, [], _Sep) --> [].
 dcg_list_(Mod, [H], _Sep) --> !, Mod:H.
-dcg_list_(_Mod, [H|T], Sep) -->
+dcg_list_(Mod, [H|T], Sep) -->
   Mod:H, Sep,
   dcg_list_(Mod, T, Sep).
-
-dcg_list_(_Mod, [], _Sep, _A1) --> [].
-dcg_list_(Mod, [H], _Sep, A1) --> !,
-  {H =.. [P|Args]},
-  dcg_apply(Mod:P, [A1|Args]).
-dcg_list_(_Mod, [H|T], Sep, A1) -->
-  {H =.. [P|Args]},
-  dcg_apply(Mod:P, [A1|Args]), Sep,
-  dcg_list_(Mod, T, Sep, A1).
-
-dcg_list_(_Mod, [], _Sep, [], _As) --> [].
-dcg_list_(Mod, [H], _Sep, [Tree], As) --> !,
-  {H =.. [P|Args1], append([Tree|As], Args1, Args2)},
-  dcg_apply(Mod:P, Args2).
-dcg_list_(_Mod, [H|T], Sep, [Tree|Trees], As) -->
-  {H =.. [P|Args1], append([Tree|As], Args1, Args2)},
-  dcg_apply(Mod:P, Args2), Sep,
-  dcg_list_(Mod, T, Sep, Trees, As).
 
 %! dcg_multi(:DCG_Body, ?Occurrences:integer)
 % Counts the consecutive occurrences of the given DCG body.
@@ -441,8 +392,6 @@ dcg_multi_list(DCG_Body, Sep, [H|T]) -->
   dcg_call(DCG_Body, H),
   Sep,
   dcg_multi_list(DCG_Body, Sep, T).
-
-dcg_void --> [].
 
 
 
