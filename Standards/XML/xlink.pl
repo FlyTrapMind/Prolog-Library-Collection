@@ -1,6 +1,9 @@
 :- module(
   xlink,
   [
+    xlink_href//3 % -Tree:compound
+                  % :DCG_Namespace
+                  % ?Fragment:atom
   ]
 ).
 
@@ -42,13 +45,34 @@ Create and describe links between resources from within XML documents.
 ~~~
 
 @author Wouter Beek
-@version 2013/05
+@version 2013/05, 2013/07
 */
 
+:- use_module(dcg(dcg_content)).
+:- use_module(rfc(rfc_2396)).
+:- use_module(xml(xml_dcg)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(xlink, 'http://www.w3.org/1999/xlink').
 
+:- meta_predicate(xlink_attribute(//,+,//,?,?)).
+:- meta_predicate(xlink_href(-,//,?,?,?)).
 
 
 
+% Attributes inside namespace `xlink` need no namespace prefix.
+xlink_attribute(DCG_Namespace, Name, DCG_Value) -->
+  {phrase(DCG_Namespace, "xlink")}, !,
+  xlink_attribute(void, Name, DCG_Value).
+xlink_attribute(DCG_Namespace, Name, DCG_Value) -->
+  xml_attribute(DCG_Namespace, word(Name), DCG_Value).
+
+%! xlink_href(-Tree:compound, :DCG_Namespace, ?Fragment:atom)//
+% @tbd Support for IRIs.
+
+xlink_href(href(T1), DCG_Namespace, Fragment) -->
+  xlink_attribute(
+    DCG_Namespace,
+    href,
+    uri_reference(T1, _Scheme, _Authority, _Path, _Query, Fragment)
+  ).

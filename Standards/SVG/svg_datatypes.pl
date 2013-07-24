@@ -10,7 +10,7 @@
     svg_length//3, % -Tree:compound
                    % ?Amount:float
                    % ?Unit:atom
-    svg_mime_type//1, % ?MimeType:atom
+    svg_content_type//1, % ?MimeType:atom
     svg_profile_name//2, % -Tree:compound
                          % ?ProfileName:atom
 % SVG PARAMETERS
@@ -100,11 +100,11 @@ svg_length(length(number(Number),unit(Unit)), Number, Unit) -->
   unsigned_number(Number),
   (svg_unit(Unit) ; percent_sign, {Unit = '%'}).
 
-%! svg_mime_type(?MediaType:atom)//
+%! svg_content_type(?MediaType:atom)//
 %
 % @tbd Implement the full RFC 2046 standard for media types.
 
-svg_mime_type(MediaType) -->
+svg_content_type(MediaType) -->
   word(First),
   forward_slash,
   word(Second),

@@ -165,9 +165,8 @@ xml_header(header(T1,T2), Version, Standalone) -->
 
 xml_inject_attributes([], [], []).
 xml_inject_attributes([H1|T1], [H2|T2], [Tree|Trees]):-
-  H1 =.. [P1 | Args],
-  atom_concat(svg_, P1, P2),
-  H2 =.. [P2, Tree | Args],
+  H1 =.. [P | Args],
+  H2 =.. [P, Tree | Args],
   xml_inject_attributes(T1, T2, Trees).
 
 %! xml_inject_attributes(
@@ -180,14 +179,14 @@ xml_inject_attributes([H1|T1], [H2|T2], [Tree|Trees]):-
 
 xml_inject_attributes(_DCG_Namespace, [], [], []).
 xml_inject_attributes(DCG_Namespace, [H1|T1], [H2|T2], [Tree|Trees]):-
-  H1 =.. [P1 | Args],
-  atom_concat(svg_, P1, P2),
-  H2 =.. [P2, Tree, DCG_Namespace | Args],
+  H1 =.. [P | Args],
+  H2 =.. [P, Tree, DCG_Namespace | Args],
   xml_inject_attributes(DCG_Namespace, T1, T2, Trees).
 
 %! xml_namespaced_name(:DCG_Namespace, :DCG_Name)//
 
-xml_namespaced_name(_Mod:void, DCG_Name) -->
+xml_namespaced_name(DCG_Namespace, DCG_Name) -->
+  {phrase(DCG_Namespace, "")},
   DCG_Name.
 xml_namespaced_name(DCG_Namespace, DCG_Name) -->
   DCG_Namespace,

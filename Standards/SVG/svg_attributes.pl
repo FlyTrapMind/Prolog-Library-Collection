@@ -37,6 +37,13 @@
               % ?DCG_Namespace
               % ?Number:float
               % ?Unit:atom
+    svg_xml_namespace//7, % -Tree:compound
+                          % :DCG_Namespace
+                          % ?Scheme:atom
+                          % ?Authority:compound
+                          % ?Path:list(list(atom))
+                          % ?Query:atom
+                          % ?Fragment:atom
     svg_y//4, % -Tree:compound
               % ?DCG_Namespace
               % ?Number:float
@@ -58,11 +65,14 @@ DCGs for SVG datatypes.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
+:- use_module(rfc(rfc_2396)).
 :- use_module(svg(svg_datatypes)).
 :- use_module(xml(xml_dcg)).
 
+:- meta_predicate(svg_attribute(//,+,//,?,?)).
 :- meta_predicate(svg_base_profile(-,//,?,?,?)).
 :- meta_predicate(svg_content_script_type(-,//,?,?,?)).
+:- meta_predicate(svg_content_style_type(-,//,?,?,?)).
 :- meta_predicate(svg_height(-,//,?,?,?,?)).
 :- meta_predicate(svg_preserve_aspect_ratio(-,//,?,?,?,?,?)).
 :- meta_predicate(svg_stroke(-,//,?,?,?)).
@@ -70,10 +80,18 @@ DCGs for SVG datatypes.
 :- meta_predicate(svg_version(-,//,?,?,?)).
 :- meta_predicate(svg_width(-,//,?,?,?,?)).
 :- meta_predicate(svg_x(-,//,?,?,?,?)).
+:- meta_predicate(svg_xml_namespace(-,//,?,?,?,?,?,?,?)).
 :- meta_predicate(svg_y(-,//,?,?,?,?)).
 :- meta_predicate(svg_zoom_and_pan(-,//,?,?,?)).
 
 
+
+% Attributes inside namespace `svg` need no namespace prefix.
+svg_attribute(DCG_Namespace, Name, DCG_Value) -->
+  {phrase(DCG_Namespace, "svg")}, !,
+  svg_attribute(void, Name, DCG_Value).
+svg_attribute(DCG_Namespace, Name, DCG_Value) -->
+  xml_attribute(DCG_Namespace, word(Name), DCG_Value).
 
 %! svg_base_profile(-Tree:compound, :DCG_Namespace, ?ProfileName:atom)//
 % ?ProfileName:atom)//Describes the minimum SVG language profile
@@ -88,9 +106,9 @@ DCGs for SVG datatypes.
 % were specified.
 
 svg_base_profile(base_profile(T1), DCG_Namespace, ProfileName) -->
-  xml_attribute(
+  svg_attribute(
     DCG_Namespace,
-    word(base_profile),
+    baseProfile,
     svg_profile_name(T1, ProfileName)
   ).
 
@@ -113,10 +131,10 @@ svg_content_script_type(
   DCG_Namespace,
   MediaType
 ) -->
-  xml_attribute(
+  svg_attribute(
     DCG_Namespace,
-    word(content_script_type),
-    svg_mime_type(MediaType)
+    contentScriptType,
+    svg_content_type(MediaType)
   ).
 
 %! svg_content_style_type(-Tree:compound, :DCG_Namespace, ?MediaType:atom)//
@@ -125,7 +143,7 @@ svg_content_script_type(
 % specify their own style sheet language.
 %
 % ~~~
-% contentStyleType = "content-type" 
+% contentStyleType = "content-type"
 % ~~~
 %
 % The value specifies a media type, per MIME Part Two: Media Types [RFC2046].
@@ -136,11 +154,7 @@ svg_content_style_type(
   DCG_Namespace,
   MediaType
 ) -->
-  xml_attribute(
-    DCG_Namespace,
-    word(content_style_type),
-    svg_mime_type(MediaType)
-  ).
+  svg_attribute(DCG_Namespace, contentStyleType, svg_content_type(MediaType)).
 
 %! svg_height(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % For **outermost SVG elements**, the intrinsic width of
@@ -154,7 +168,7 @@ svg_content_style_type(
 % were specified.
 
 svg_height(height(T1), DCG_Namespace, Number, Unit) -->
-  xml_attribute(DCG_Namespace, word(height), svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, height, svg_length(T1, Number, Unit)).
 
 %! svg_preserve_aspect_ratio(
 %!   -Tree:compound,
@@ -220,9 +234,9 @@ svg_preserve_aspect_ratio(
   align(XAlign,YAlign),
   MeetOrSlice
 ) -->
-  xml_attribute(
+  svg_attribute(
     DCG_Namespace,
-    word(preserveAspectRatio),
+    preserveAspectRatio,
     (
       svg_defer(T1, Defer),
       svg_align(T2, XAlign, YAlign),
@@ -231,12 +245,12 @@ svg_preserve_aspect_ratio(
   ).
 
 svg_stroke(stroke(T1), DCG_Namespace, Color) -->
-  xml_attribute(DCG_Namespace, word(stroke), svg_color(T1, Color)).
+  svg_attribute(DCG_Namespace, stroke, svg_color(T1, Color)).
 
 svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
-  xml_attribute(
+  svg_attribute(
     DCG_Namespace,
-    word(stroke-width),
+    'stroke-width',
     svg_length(T1, Number, Unit)
   ).
 
@@ -253,9 +267,9 @@ svg_version(
   DCG_Namespace,
   version(Major,Minor)
 ) -->
-  xml_attribute(
+  svg_attribute(
     DCG_Namespace,
-    word(version),
+    version,
     (
       decimal_number(Major),
       dot,
@@ -275,7 +289,7 @@ svg_version(
 % were specified.
 
 svg_width(width(T1), DCG_Namespace, Number, Unit) -->
-  xml_attribute(DCG_Namespace, word(width), svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, width, svg_length(T1, Number, Unit)).
 
 %! svg_x(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The x-axis coordinate of one corner of the rectangular region
@@ -285,7 +299,39 @@ svg_width(width(T1), DCG_Namespace, Number, Unit) -->
 % were specified.
 
 svg_x(x(T1), DCG_Namespace, Number, Unit) -->
-  xml_attribute(DCG_Namespace, word(x), svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, x, svg_coordinate(T1, Number, Unit)).
+
+%! svg_xml_namespace(
+%!   -Tree:compound,
+%!   :DCG_Namespace,
+%!   ?Scheme:atom,
+%!   ?Authority:compound,
+%!   ?Path:list(list(atom)),
+%!   ?Query:atom,
+%!   ?Fragment:atom
+%! )//
+
+svg_xml_namespace(
+  xml_namespace(T1),
+  DCG_Namespace,
+  Scheme,
+  Authority,
+  Path,
+  Query,
+  Fragment
+) -->
+  svg_attribute(
+    DCG_Namespace,
+    xmlns,
+    uri_reference(
+      T1,
+      Scheme,
+      Authority,
+      Path,
+      Query,
+      Fragment
+    )
+  ).
 
 %! svg_y(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The y-axis coordinate of one corner of the rectangular region
@@ -295,7 +341,7 @@ svg_x(x(T1), DCG_Namespace, Number, Unit) -->
 % were specified.
 
 svg_y(y(T1), DCG_Namespace, Number, Unit) -->
-  xml_attribute(DCG_Namespace, word(y), svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, y, svg_coordinate(T1, Number, Unit)).
 
 %! svg_zoom_and_pan(
 %!   -Tree:compound,
@@ -313,6 +359,7 @@ svg_y(y(T1), DCG_Namespace, Number, Unit) -->
 %      shall provide controls to allow the user to perform a magnify
 %      operation on the document fragment.
 
-svg_zoom_and_pan(zoom_and_pan(disable), disable) --> "disable".
-svg_zoom_and_pan(zoom_and_pan(magnify), magnify) --> "magnify".
+svg_zoom_and_pan(zoom_and_pan(Value), DCG_Namespace, Value) -->
+  {member(Value, [disable,magnify])},
+  svg_attribute(DCG_Namespace, zoomAndPan, word(Value)).
 

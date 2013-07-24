@@ -146,7 +146,7 @@ word(word(Word), Word) -->
   word(Word).
 
 word_([H|T]) -->
-  letter(H),
+  (letter(H) ; hyphen_minus(H)),
   word_(T).
 word_([]) --> [].
 

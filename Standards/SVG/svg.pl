@@ -5,13 +5,11 @@
     svg_document//3, % -Tree:compound
                      % :DCG_Namespace
                      % ?SVG_DCGs:list(dcg)
-    svg_fragment_base//2, % -Tree:compound
-                          % +SVG_DCGs:list(dcg)
-    svg_fragment_nonbase//2, % -Tree:compound
-                             % +SVG_DCGs:list(dcg)
-    svg_header//3, % -Tree:compound
-                   % :DCG_Namespace
-                   % ?Attributes:list(compound)
+    svg_fragment//2, % -Tree:compound
+                     % +SVG_DCGs:list(dcg)
+    svg_fragment//3, % -Tree:compound
+                     % :DCG_Namespace
+                     % +SVG_DCGs:list(dcg)
 % FILE
     file_to_svg/2, % +File:atom
                    % -SVG:dom
@@ -91,11 +89,13 @@ Raster images have their original sample resampled to the output device.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
+:- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rfc(rfc_2396)).
 :- use_module(standards(markup)).
 :- use_module(svg(svg_attributes)).
 :- use_module(svg(svg_colors)).
+:- use_module(svg(svg_entities)).
 :- use_module(xml(xml_dcg)).
 :- use_module(xml(xml_namespace)).
 
@@ -134,10 +134,8 @@ Raster images have their original sample resampled to the output device.
 :- xml_register_namespace(svg, 'http://www.w3.org/2000/svg').
 
 :- meta_predicate(svg_document(-,//,?,?,?)).
-:- meta_predicate(svg_fragment_base(-,//,?,?)).
-:- meta_predicate(svg_fragment_nonbase(-,//,?,?)).
-:- meta_predicate(svg_header(-,//,?,?,?)).
-:- meta_predicate(svg_xmlns_nonbase(-,//,?,?)).
+:- meta_predicate(svg_fragment(-,//,?,?)).
+:- meta_predicate(svg_fragment(-,//,//,?,?)).
 
 
 
@@ -146,11 +144,11 @@ Raster images have their original sample resampled to the output device.
 %! svg_document(-Tree:compound, :DCG_Namespace, ?SVG_DCGs:list(dcg))//
 
 svg_document(T0, DCG_Namespace, SVG_DCGs) -->
-  xml_header(T1, DCG_Namespace, [version(1,0),standalone(true)]),
+  xml_header(T1, version(1,0), true),
   xml_entities(SVG_DCGs, Ts, DCG_Namespace),
   {parse_tree(document, [T1|Ts], T0)}.
 
-%! svg_fragment_base(-Tree:compound, +SVG_DCGs:list(dcg))//
+%! svg_fragment(-Tree:compound, +SVG_DCGs:list(dcg))//
 % An `xmlns` attribute without a namespace prefix could be specified on an
 % `svg` element, which means that SVG is the default namespace for all
 % elements within the scope of the element with the `xmlns` attribute.
@@ -161,12 +159,25 @@ svg_document(T0, DCG_Namespace, SVG_DCGs) -->
 % </svg>
 % ~~~
 
-svg_fragment_base(T0, SVG_DCGs) -->
-  xml_entity(word(svg), svg_xmlns_base(T1)),
+svg_fragment(T0, SVG_DCGs) -->
+  svg_entity(
+    T1,
+    word(svg),
+    svg,
+    [
+      xml_namespace(
+        http,
+        authority(_User,[www,w3,org],_Port),
+        [['2000'],[svg]],
+        _Query,
+        _Fragment
+      )
+    ]
+  ),
   xml_entities(SVG_DCGs, Ts, void),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
-%! svg_fragment_nonbase(-Tree:compound, +SVG_DCGs:list(dcg))//
+%! svg_fragment(-Tree:compound, :DCG_Namespace, +SVG_DCGs:list(dcg))//
 % If a namespace prefix is specified on the `xmlns` attribute
 % (e.g., =|xmlns:svg="http://www.w3.org/2000/svg"|=),
 % then the corresponding namespace is not the default namespace,
@@ -177,56 +188,31 @@ svg_fragment_base(T0, SVG_DCGs) -->
 %   <svg:rect …/>
 % </svg:svg>
 % ~~~
+%
+% @arg DCG_Namespace An XML namespace prefix that is not `svg`.
 
-svg_fragment_nonbase(T0, SVG_DCGs) -->
-  xml_entity(word(svg), word(svg), svg_xmlns_nonbase(T1, word(xmlns))),
-  xml_entities(SVG_DCGs, Ts, word(svg)),
-  {parse_tree(fragment, [T1|Ts], T0)}.
-
-%! svg_header(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
-% The following attrobutes are supported:
-%   1. =|base_profile(?ProfileName:atom)|=
-%   2. =|content_script_type(MediaType:atom)|=
-%   3. =|content_style_type(MediaType:atom)|=
-%   4. =|height(?Number:float,?Unit:atom)|=
-%   5. =|preserve_aspect_ratio(?Defer:boolean,?Align:compound,?MeetOrSlice:oneof([meet,slice]))|=
-%   6. =|stroke(?Color:atom)|=
-%   7. =|stroke_width(?Number:float,?Unit:atom)|=
-%   1. =|standalone(?Alone:boolean)|=
-%   2. =|version(?Major:integer,?Minor:integer)|=
-
-svg_header(Tree, DCG_Namespace, Attrs1) -->
-  {xml_inject_attributes(DCG_Namespace, Attrs1, Attrs2, Trees)},
-  xml_entity(DCG_Namespace, word(svg), Attrs2),
-  {parse_tree(svg, Trees, Tree)}.
-
-svg_xmlns_base(xmlns(T1)) -->
-  xml_attribute(
-    void,
-    word(xmlns),
-    uri_reference(
-      T1,
-      http,
-      authority(_User,[www,w3,org],_Port),
-      [['2000'],[svg]],
-      _Query,
-      _Fragment
-    )
-  ).
-
-svg_xmlns_nonbase(xmlns(T1), DCG_Namespace) -->
-  xml_attribute(
-    DCG_Namespace,
+svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
+  % Directly go to XML entity (not via SVG entity).
+  xml_entity(
     word(svg),
-    uri_reference(
-      T1,
-      http,
-      authority(_User,[www,w3,org],_Port),
-      [['2000'],[svg]],
-      _Query,
-      _Fragment
-    )
-  ).
+    word(svg),
+    [
+      xml_attribute(
+        word(xmlns),
+        word(svg),
+        uri_reference(
+          T1,
+          http,
+          authority(_User,[www,w3,org],_Port),
+          [['2000'],[svg]],
+          _Query,
+          _Fragment
+        )
+      )
+    ]
+  ),
+  xml_entities(SVG_DCGs, Ts, DCG_Namespace),
+  {parse_tree(fragment, [T1|Ts], T0)}.
 
 
 
@@ -268,4 +254,31 @@ svg_head(size(2,[Width,Height]), Head):-
 svg_head(Width, Height, [height=Height_cm, width=Width_cm]):-
   format_number(cm, Width, Width_cm),
   format_number(cm, Height, Height_cm).
+
+
+
+% PLUNIT %
+
+:- begin_tests(svg).
+
+:- use_module(generics(print_ext)).
+:- use_module(gv(gv_file)).
+
+test(svg_document, []):-
+  once(
+    phrase(
+      svg_document(
+        Tree,
+        word(svg),
+        [svg_rectangle([svg_x(0.5,cm),svg_y(1.5,cm)])]
+      ),
+      Codes
+    )
+  ),
+  atom_codes(Atom, Codes),
+  formatnl(Atom),
+  convert_tree_to_gv([], Tree, dot, pdf, File),
+  formatnl(File).
+
+:- end_tests(svg).
 
