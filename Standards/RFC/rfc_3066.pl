@@ -29,7 +29,7 @@ language_tag(Primary, Secondary) -->
   language_tag(Secondary).
 
 language_tag(Tag) -->
-  word(Word),
+  dcg_word(Word),
   {atom_length(Word, Length)},
   dcg_switch(
     Length,

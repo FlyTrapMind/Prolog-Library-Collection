@@ -44,9 +44,9 @@ DCGs for SVG datatypes.
 svg_color(color(T1), Color) -->
   {nonvar(Color)}, !,
   {svg_color(Color, _RGB)},
-  word(T1, Color).
+  dcg_word(T1, Color).
 svg_color(color(T1), Color) -->
-  word(T1, Color),
+  dcg_word(T1, Color),
   {svg_color(Color, _RGB)}.
 
 %! svg_coordinate(-Tree:compound, ?Number:float, ?Unit:atom)//
@@ -105,9 +105,9 @@ svg_length(length(number(Number),unit(Unit)), Number, Unit) -->
 % @tbd Implement the full RFC 2046 standard for media types.
 
 svg_content_type(MediaType) -->
-  word(First),
+  dcg_word(First),
   forward_slash,
-  word(Second),
+  dcg_word(Second),
   {atomic_list_concat([First,'/',Second], MediaType)}.
 
 svg_profile_name(profile_name(none), none) --> "none".
@@ -197,12 +197,12 @@ svg_min_mid_max(min) --> "Min".
 svg_min_mid_max(mid) --> "Mid".
 svg_min_mid_max(max) --> "Max".
 
-svg_unit(cm) --> word(cm).
-svg_unit(em) --> word(em).
-svg_unit(ex) --> word(ex).
-svg_unit(in) --> word(in).
-svg_unit(mm) --> word(mm).
-svg_unit(pc) --> word(pc).
-svg_unit(pt) --> word(pt).
-svg_unit(px) --> word(px).
+svg_unit(cm) --> "cm".
+svg_unit(em) --> "em".
+svg_unit(ex) --> "ex".
+svg_unit(in) --> "in".
+svg_unit(mm) --> "mm".
+svg_unit(pc) --> "pc".
+svg_unit(pt) --> "pt".
+svg_unit(px) --> "px".
 

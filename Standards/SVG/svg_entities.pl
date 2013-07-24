@@ -7,11 +7,13 @@
     svg_description//3,
     svg_entity//4, % -Tree:compound
                    % :DCG_Namespace
-                   % +Name:atom
+                   % :DCG_Name:atom
                    % ?Attributes:list(compound)
     svg_group//3,
+    svg_image//3,
     svg_rectangle//3,
     svg_svg//3,
+    svg_switch//3,
     svg_symbol//3,
     svg_title//3,
     svg_use//3
@@ -21,16 +23,19 @@
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(plunit)).
+:- use_module(svg(svg)).
 :- use_module(svg(svg_attributes)).
 :- use_module(xml(xml_dcg)).
 :- use_module(xml(xlink)). % Supported attributes.
 
 :- meta_predicate(svg_definitions(-,//,?,?,?)).
 :- meta_predicate(svg_description(-,//,?,?,?)).
-:- meta_predicate(svg_entity(-,//,+,?,?,?)).
+:- meta_predicate(svg_entity(-,//,//,?,?,?)).
 :- meta_predicate(svg_group(-,//,?,?,?)).
+:- meta_predicate(svg_image(-,//,?,?,?)).
 :- meta_predicate(svg_rectangle(-,//,?,?,?)).
 :- meta_predicate(svg_svg(-,//,?,?,?)).
+:- meta_predicate(svg_switch(-,//,?,?,?)).
 :- meta_predicate(svg_symbol(-,//,?,?,?)).
 :- meta_predicate(svg_title(-,//,?,?,?)).
 :- meta_predicate(svg_use(-,//,?,?,?)).
@@ -112,7 +117,7 @@
 % ~~~
 
 svg_definitions(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, defs, Attrs).
+  svg_entity(Tree, DCG_Namespace, dcg_word(defs), Attrs).
 
 %! svg_description(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % Each container element or graphics element in an SVG drawing can supply
@@ -163,15 +168,14 @@ svg_definitions(Tree, DCG_Namespace, Attrs) -->
 % ~~~
 
 svg_description(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, desc, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(desc), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
-svg_entity(Tree, DCG_Namespace, Name, Attrs) -->
-  {phrase(DCG_Namespace, "svg")}, !,
-  svg_entity(Tree, void, Name, Attrs).
-svg_entity(Tree, DCG_Namespace, Name, Attrs1) -->
-  {xml_inject_attributes(DCG_Namespace, Attrs1, Attrs2, Trees)},
-  xml_entity(DCG_Namespace, word(Name), Attrs2),
-  {parse_tree(Name, Trees, Tree)}.
+svg_entity(Trees, DCG_Namespace, DCG_Name, Attrs1) -->
+  {
+    xml_inject_attributes(svg_namespace(DCG_Namespace), Attrs1, Attrs2, Trees)
+  },
+  xml_entity(svg_namespace(DCG_Namespace), DCG_Name, Attrs2).
 
 %! svg_group(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The `g` element is a container element for grouping together
@@ -211,7 +215,109 @@ svg_entity(Tree, DCG_Namespace, Name, Attrs1) -->
 % ~~~
 
 svg_group(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, group, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(group), Attrs),
+  {parse_tree(description, Trees, Tree)}.
+
+%! svg_image(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
+% The image element indicates that the contents of a complete file are to be
+% rendered into a given rectangle within the current user coordinate system.
+% The image element can refer to raster image files such as PNG or JPEG or to
+% files with MIME type of `image/svg+xml`. Conforming SVG viewers need to
+% support at least PNG, JPEG and SVG format files.
+%
+% ## Color channels
+%
+% The result of processing an image is always a four-channel RGBA result.
+% When an `image` element references a raster image file such as PNG or JPEG
+% files which only have three channels (RGB), then the effect is as if the
+% object were converted into a 4-channel RGBA image with the alpha channel
+% uniformly set to `1`. For a single-channel raster image, the effect is as if
+% the object were converted into a 4-channel RGBA image, where the single
+% channel from the referenced object is used to compute the three color
+% channels and the alpha channel is uniformly set to `1`.
+%
+% %% Viewport
+%
+% An `image` element establishes a new viewport for the referenced file.
+% The bounds for the new viewport are defined by attributes `x`, `y`,
+% `width` and `height`. The placement and scaling of the referenced image
+% are controlled by the `preserveAspectRatio` attribute.
+%
+% ## Overruled SVG properties
+%
+% When an `image` element references an SVG image, the `clip` and `overflow`
+% properties on the root element in the referenced SVG image are ignored
+% (in the same manner as the `x`, `y`, `width` and `height` attributes are
+% ignored). Unless the value of `preserveAspectRatio` on the `image` element
+% starts with `defer`, the `preserveAspectRatio` attribute on the root
+% element in the referenced SVG image is also ignored. Instead, the
+% `preserveAspectRatio` attribute on the referencing `image` element defines
+% how the SVG image content is fitted into the viewport and the `clip` and
+% `overflow` properties on the `image` element define how the SVG image
+% content is clipped relative to the viewport.
+%
+% ## Viewbox
+%
+% The value of the `viewBox` attribute to use when evaluating the
+% `preserveAspectRatio` attribute is defined by the referenced content.
+%    * For content that clearly identifies a viewbox (e.g. an SVG file with
+%      the `viewBox` attribute on the outermost svg element) that value should
+%      be used.
+%    * For most raster content (PNG, JPEG) the bounds of the image should be
+%      used.
+%    * Where no value is readily available (e.g. an SVG file with no `viewBox`
+%      attribute on the outermost svg element) the `preserveAspectRatio`
+%      attribute is ignored, and only the translation due to the `x` and `y`
+%      attributes of the viewport is used to display the content.
+%
+% The resource referenced by the `image` element represents a separate
+% document which generates its own parse tree and DOM (if XML).
+%
+% ## Example
+%
+% ~~~{.xml}
+% <?xml version="1.0" standalone="no"?>
+% <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+%   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+% <svg width="4in"
+%      height="3in"
+%      version="1.1"
+%      xmlns="http://www.w3.org/2000/svg"
+%      xmlns:xlink="http://www.w3.org/1999/xlink">
+%   <desc>This graphic links to an external image
+%   </desc>
+%   <image x="200"
+%          y="200"
+%          width="100px"
+%          height="100px"
+%          xlink:href="myimage.png">
+%     <title>My image</title>
+%   </image>
+% </svg>
+% ~~~
+%
+% ## Attributes
+%
+% The following attributes are supported:
+%   1. =|svg_height(Amount:float,Unit:atom)|=
+%      The height of the rectangular region into which the referenced
+%      document is placed. `0` does not render the image.
+%   2. =|svg_preserve_aspect_ratio(?Defer:boolean,?Align:compound,?MeetOrSlice:oneof([meet,slice]))|=
+%      Default `xMidyMid meet`.
+%   3. =|svg_width(?Amount:float,?Unit:atom)|=
+%      The width of the rectangular region into which the referenced
+%      document is placed. `0` does not render the image.
+%   4. =|svg_x(?Amount:float,?Unit:atom)|=
+%      The x-axis coordinate of one corner of the rectangular region into
+%      which the referenced document is placed. Default `0`.
+%   5. =|svg_y(?Amount:float,?Unit:atom)|=
+%      The y-axis coordinate of one corner of the rectangular region into
+%      which the referenced document is placed. Default `0`.
+%   6. =|xlink_href(?IRI:iri)|=
+
+svg_image(Tree, DCG_Namespace, Attrs) -->
+  svg_entity(Trees, DCG_Namespace, dcg_word(image), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
 %! svg_rectangle(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The following attributes are supported:
@@ -224,7 +330,8 @@ svg_group(Tree, DCG_Namespace, Attrs) -->
 %   7. =|svg_y(?Amount:float,?Unit:atom)|=
 
 svg_rectangle(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, rect, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(rect), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
 %! svg_svg(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The following attrobutes are supported:
@@ -239,7 +346,20 @@ svg_rectangle(Tree, DCG_Namespace, Attrs) -->
 %   2. =|svg_version(?Major:integer,?Minor:integer)|=
 
 svg_svg(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, svg, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(svg), Attrs),
+  {parse_tree(description, Trees, Tree)}.
+
+%! svg_switch(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
+% The switch element evaluates the `requiredFeatures`, `requiredExtensions`
+% and `systemLanguage` attributes on its direct child elements in order,
+% and then processes and renders the first child for which these attributes
+% evaluate to `true`. All others will be bypassed and therefore not rendered.
+% If the child element is a container element such as `g`, then the entire
+% subtree is either processed/rendered or bypassed/not rendered.
+
+svg_switch(Tree, DCG_Namespace, Attrs) -->
+  svg_entity(Trees, DCG_Namespace, dcg_word(switch), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
 %! svg_symbol(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The symbol element is used to define graphical template objects which can be
@@ -256,7 +376,8 @@ svg_svg(Tree, DCG_Namespace, Attrs) -->
 %   1. =|svg_preserve_aspect_ratio(?Defer:boolean,?Align:compound,?MeetOrSlice:oneof([meet,slice]))|=
 
 svg_symbol(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, symbol, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(symbol), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
 %! svg_title(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The `title` child element to an `svg` element identifies the content
@@ -285,7 +406,8 @@ svg_symbol(Tree, DCG_Namespace, Attrs) -->
 % @see Has similarities with svg_description//3.
 
 svg_title(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, title, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(title), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
 %! svg_use(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % Any `svg`, `symbol`, `g`, graphics element or other `use` is potentially
@@ -529,7 +651,8 @@ svg_title(Tree, DCG_Namespace, Attrs) -->
 %      which the referenced element is placed. Default `0`.
 
 svg_use(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, use, Attrs).
+  svg_entity(Trees, DCG_Namespace, dcg_word(use), Attrs),
+  {parse_tree(description, Trees, Tree)}.
 
 
 
@@ -543,7 +666,7 @@ svg_use(Tree, DCG_Namespace, Attrs) -->
 test(svg_rectangle, []):-
   once(
     phrase(
-      svg_rectangle(Tree, word(svg), [svg_x(0.5,cm),svg_y(1.5,cm)]),
+      svg_rectangle(Tree, dcg_word(svg), [svg_x(0.5,cm),svg_y(1.5,cm)]),
       Codes
     )
   ),

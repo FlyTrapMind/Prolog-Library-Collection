@@ -1,23 +1,20 @@
 :- module(
   xml_dcg,
   [
-    xml_attribute//2, % :DCG_Name
-                      % :DCG_Value
     xml_attribute//3, % :DCG_Namespace
                       % :DCG_Name
                       % :DCG_Value
-    xml_inject_attributes/3, % :DCG_Namespace,
-                             % +Attributes1:list(dcg),
-                             % -Attributes2:list(dcg),
+    xml_attribute//4, % :DCG_Namespace
+                      % :DCG_Name
+                      % :DCG_Value
+                      % :DCG_Sepatator
     xml_inject_attributes/4, % :DCG_Namespace,
                              % +Attributes1:list(dcg),
                              % -Attributes2:list(dcg),
                              % -Trees:list(compound)
-    xml_entities//3, % +EntityRules:list(dcg)
-                     % -Trees:list(compound)
+    xml_entities//3, % -Trees:list(compound)
                      % :DCG_Namespace
-    xml_entity//2, % :DCG_Name
-                   % ?DCG_Attributes
+                     % +EntityRules:list(dcg)
     xml_entity//3, % :DCG_Namespace
                    % :DCG_Name
                    % ?DCG_Attributes
@@ -42,14 +39,17 @@ DCG rules implementing the XML standard.
 
 :- meta_predicate(xml_attribute(//,//,?,?)).
 :- meta_predicate(xml_attribute(//,//,//,?,?)).
-:- meta_predicate(xml_entities(//,-,//,?,?)).
-:- meta_predicate(xml_entities(+,+,-,//,?,?)).
+:- meta_predicate(xml_attribute(//,//,//,//,?,?)).
+:- meta_predicate(xml_attribute_list(-,//,//,?,?,?)).
+:- meta_predicate(xml_entities(-,//,//,?,?)).
+:- meta_predicate(xml_entities(-,//,+,+,?,?)).
 :- meta_predicate(xml_entity(//,//,?,?)).
 :- meta_predicate(xml_entity(//,//,//,?,?)).
 :- meta_predicate(xml_entity(//,//,//,//,?,?)).
 :- meta_predicate(xml_entity(//,//,//,//,//,?,?)).
 :- meta_predicate(xml_entity_q(//,//,?,?)).
 :- meta_predicate(xml_entity_q(//,//,//,?,?)).
+:- meta_predicate(xml_inject_attributes(//,+,-,-)).
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
 :- meta_predicate(xml_value(//,?,?)).
 
@@ -66,6 +66,23 @@ xml_attribute(DCG_Name, DCG_Value) -->
 
 xml_attribute(DCG_Namespace, DCG_Name, DCG_Value) -->
   xml_attribute(xml_namespaced_name(DCG_Namespace, DCG_Name), DCG_Value).
+
+xml_attribute(DCG_Namespace, DCG_Name, DCG_Value1, DCG_Separator) -->
+  {DCG_Value1 =.. [P, Trees, A1s], DCG_Value2 =.. [P]},
+  xml_attribute(
+    xml_namespaced_name(DCG_Namespace, DCG_Name),
+    xml_attribute_list(Trees, DCG_Value2, A1s, DCG_Separator)
+  ).
+
+xml_attribute_list([], _DCG_Value, [], _DCG_Separator) --> [].
+xml_attribute_list([Tree], DCG_Value1, [A1], _DCG_Separator) -->
+  {DCG_Value1 =.. [P], DCG_Value2 =.. [P, Tree, A1]},
+  dcg_call(DCG_Value2).
+xml_attribute_list([Tree|Trees], DCG_Value1, [A1|A1s], DCG_Separator) -->
+  {DCG_Value1 =.. [P], DCG_Value2 =.. [P, Tree, A1]},
+  dcg_call(DCG_Value2),
+  dcg_call(DCG_Separator),
+  xml_attribute_list(Trees, DCG_Value1, A1s, DCG_Separator).
 
 xml_boolean(boolean(no), false) --> "no".
 xml_boolean(boolean(yes), true) --> "yes".
@@ -84,23 +101,17 @@ xml_comment(comment(Comment), Comment) -->
   space, hyphen_minus, hyphen_minus, greater_than_sign,
   {atom_codes(Comment, Codes)}.
 
-xml_entities(Mod:L, Trees, DCG_Namespace) -->
-  xml_entities(Mod, L, Trees, DCG_Namespace).
+xml_entities(Trees, DCG_Namespace, Mod:L) -->
+  xml_entities(Trees, DCG_Namespace, Mod, L).
 
-xml_entities(_Mod, [], [], _DCG_Namespace) --> [].
-xml_entities(Mod, [H], [Tree], DCG_Namespace) -->
+xml_entities([], _DCG_Namespace, _Mod, []) --> [].
+xml_entities([Tree], DCG_Namespace, Mod, [H]) -->
   {H =.. [P|Args]},
   dcg_apply(Mod:P, [Tree,DCG_Namespace|Args]).
-xml_entities(Mod, [H|T], [Tree|Trees], DCG_Namespace) -->
+xml_entities([Tree|Trees], DCG_Namespace, Mod, [H|T]) -->
   {H =.. [P|Args]},
   dcg_apply(Mod:P, [Tree,DCG_Namespace|Args]),
-  xml_entities(Mod, T, Trees, DCG_Namespace).
-
-%! xml_entity(:DCG_Name, :DCG_Attributes)//
-% @see Like xml_entity//3 but without a namespace.
-
-xml_entity(DCG_Name, DCG_Attributes) -->
-  xml_entity(void, DCG_Name, DCG_Attributes).
+  xml_entities(Trees, DCG_Namespace, Mod, T).
 
 %! xml_entity(:DCG_Namespace, :DCG_Name, +DCG_Attributes:list(dcg))//
 % Processes a regular XML entity (i.e., one that does not use
@@ -136,7 +147,7 @@ xml_entity(DCG_Open, DCG_Namespace, DCG_Name, DCG_Attributes, DCG_Close) -->
 % @see Like xml_entity_q//3 but without a namespace.
 
 xml_entity_q(DCG_Name, DCG_Attributes) -->
-  xml_entity_q(void, DCG_Name, DCG_Attributes).
+  xml_entity_q(dcg_void, DCG_Name, DCG_Attributes).
 
 %! xml_entity_q(:DCG_Namespace, :DCG_Name, :DCG_Attributes)//
 % Processes an XML entity that uses question marks in its tags.
@@ -162,12 +173,6 @@ xml_header(header(T1,T2), Version, Standalone) -->
     "xml",
     [xml_version(T1, Version), xml_standalone(T2, Standalone)]
   ).
-
-xml_inject_attributes([], [], []).
-xml_inject_attributes([H1|T1], [H2|T2], [Tree|Trees]):-
-  H1 =.. [P | Args],
-  H2 =.. [P, Tree | Args],
-  xml_inject_attributes(T1, T2, Trees).
 
 %! xml_inject_attributes(
 %!   :DCG_Namespace,

@@ -325,7 +325,7 @@ dcg_switch(_Value, _Map, Default) -->
 % MULTIPLE OCCURRENCES %
 
 dcg_list(L) -->
-  dcg_list(L, void).
+  dcg_list(L, dcg_void).
 
 dcg_list(Mod:L, Sep) -->
   dcg_list_(Mod, L, Sep).
@@ -367,7 +367,7 @@ dcg_multi_var(DCG_Body, N) -->
   {N is N_ + 1}.
 dcg_multi_var(_DCGBody, 0) --> [].
 
-%! dcg_multi_list(:DCG_Body, +List:list)//
+%! dcg_multi_list(:DCG_Body, ?List:list)//
 % Parses/generates multiple occurrences of a DCG rule based on
 % a list of items (one item for each occurrence).
 
@@ -376,7 +376,7 @@ dcg_multi_list(DCG_Body, [H|T]) -->
   dcg_call(DCG_Body, H),
   dcg_multi_list(DCG_Body, T).
 
-%! dcg_multi_list(:DCG_Body, :DCG_Separator, +List:list)//
+%! dcg_multi_list(:DCG_Body, :DCG_Separator, ?List:list)//
 % Parses/generates multiple occurrences of a DCG rule based on
 % a list of items (one item for each occurrence) with interspersed
 % separator content.

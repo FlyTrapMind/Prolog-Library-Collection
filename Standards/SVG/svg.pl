@@ -10,6 +10,7 @@
     svg_fragment//3, % -Tree:compound
                      % :DCG_Namespace
                      % +SVG_DCGs:list(dcg)
+    svg_namespace//1, % :DCG_Namespace
 % FILE
     file_to_svg/2, % +File:atom
                    % -SVG:dom
@@ -136,6 +137,7 @@ Raster images have their original sample resampled to the output device.
 :- meta_predicate(svg_document(-,//,?,?,?)).
 :- meta_predicate(svg_fragment(-,//,?,?)).
 :- meta_predicate(svg_fragment(-,//,//,?,?)).
+:- meta_predicate(svg_namespace(//,?,?)).
 
 
 
@@ -145,7 +147,7 @@ Raster images have their original sample resampled to the output device.
 
 svg_document(T0, DCG_Namespace, SVG_DCGs) -->
   xml_header(T1, version(1,0), true),
-  xml_entities(SVG_DCGs, Ts, DCG_Namespace),
+  xml_entities(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
   {parse_tree(document, [T1|Ts], T0)}.
 
 %! svg_fragment(-Tree:compound, +SVG_DCGs:list(dcg))//
@@ -162,8 +164,8 @@ svg_document(T0, DCG_Namespace, SVG_DCGs) -->
 svg_fragment(T0, SVG_DCGs) -->
   svg_entity(
     T1,
-    word(svg),
-    svg,
+    dcg_word(svg),
+    dcg_word(svg),
     [
       xml_namespace(
         http,
@@ -174,7 +176,7 @@ svg_fragment(T0, SVG_DCGs) -->
       )
     ]
   ),
-  xml_entities(SVG_DCGs, Ts, void),
+  xml_entities(Ts, dcg_void, SVG_DCGs),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
 %! svg_fragment(-Tree:compound, :DCG_Namespace, +SVG_DCGs:list(dcg))//
@@ -194,12 +196,12 @@ svg_fragment(T0, SVG_DCGs) -->
 svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
   % Directly go to XML entity (not via SVG entity).
   xml_entity(
-    word(svg),
-    word(svg),
+    dcg_word(svg),
+    dcg_word(svg),
     [
       xml_attribute(
-        word(xmlns),
-        word(svg),
+        dcg_word(xmlns),
+        dcg_word(svg),
         uri_reference(
           T1,
           http,
@@ -211,8 +213,14 @@ svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
       )
     ]
   ),
-  xml_entities(SVG_DCGs, Ts, DCG_Namespace),
+  xml_entities(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
   {parse_tree(fragment, [T1|Ts], T0)}.
+
+svg_namespace(DCG_Namespace) -->
+  {phrase(DCG_Namespace, "svg")},
+  dcg_void.
+svg_namespace(DCG_Namespace) -->
+  DCG_Namespace.
 
 
 
@@ -269,8 +277,13 @@ test(svg_document, []):-
     phrase(
       svg_document(
         Tree,
-        word(svg),
-        [svg_rectangle([svg_x(0.5,cm),svg_y(1.5,cm)])]
+        dcg_word(svg),
+        [
+          svg_rectangle([svg_x(0.5,cm),svg_y(1.5,cm)]),
+          svg_rectangle([svg_x(1.5,cm),svg_y(2.5,cm)]),
+          svg_rectangle([svg_x(2.5,cm),svg_y(3.5,cm)]),
+          svg_rectangle([svg_x(3.5,cm),svg_y(0.5,cm)])
+        ]
       ),
       Codes
     )

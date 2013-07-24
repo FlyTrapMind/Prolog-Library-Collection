@@ -57,22 +57,26 @@ Create and describe links between resources from within XML documents.
 
 :- meta_predicate(xlink_attribute(//,+,//,?,?)).
 :- meta_predicate(xlink_href(-,//,?,?,?)).
+:- meta_predicate(xlink_namespace(//,?,?)).
 
 
 
-% Attributes inside namespace `xlink` need no namespace prefix.
-xlink_attribute(DCG_Namespace, Name, DCG_Value) -->
-  {phrase(DCG_Namespace, "xlink")}, !,
-  xlink_attribute(void, Name, DCG_Value).
-xlink_attribute(DCG_Namespace, Name, DCG_Value) -->
-  xml_attribute(DCG_Namespace, word(Name), DCG_Value).
+xlink_attribute(DCG_Namespace, DCG_Name, DCG_Value) -->
+  xml_attribute(xlink_namespace(DCG_Namespace), DCG_Name, DCG_Value).
 
 %! xlink_href(-Tree:compound, :DCG_Namespace, ?Fragment:atom)//
 % @tbd Support for IRIs.
 
 xlink_href(href(T1), DCG_Namespace, Fragment) -->
   xlink_attribute(
-    DCG_Namespace,
-    href,
+    xlink_namespace(DCG_Namespace),
+    dcg_word(href),
     uri_reference(T1, _Scheme, _Authority, _Path, _Query, Fragment)
   ).
+
+xlink_namespace(DCG_Namespace) -->
+  {phrase(DCG_Namespace, "xlink")},
+  dcg_void.
+xlink_namespace(DCG_Namespace) -->
+  DCG_Namespace.
+

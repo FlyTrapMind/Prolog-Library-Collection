@@ -7,10 +7,10 @@
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
-    void//0,
-    word//1, % -Word:atom
-    word//2 % -Tree:compound
-            % ?Word:atom
+    dcg_void//0,
+    dcg_word//1, % -Word:atom
+    dcg_word//2 % -Tree:compound
+                % ?Word:atom
   ]
 ).
 
@@ -122,9 +122,9 @@ indent(I) -->
   },
   dcg_multi(space, NumberOfSpaces).
 
-void --> [].
+dcg_void --> [].
 
-%! word(-Word:atom)// is semidet.
+%! dcg_word(-Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.
 %
 % A word is defined as any sequence af alphanumeric characters
@@ -132,21 +132,21 @@ void --> [].
 %
 % The delimiting character is not consumed.
 
-word(Word) -->
+dcg_word(Word) -->
   {nonvar(Word)}, !,
   {atom_codes(Word, Codes)},
-  word_(Codes).
-word(Word) -->
-  word_(Codes),
+  dcg_word_(Codes).
+dcg_word(Word) -->
+  dcg_word_(Codes),
   {atom_codes(Word, Codes)}.
 
-%! word(-Tree:compound, ?Word:atom)//
+%! dcg_word(-Tree:compound, ?Word:atom)//
 
-word(word(Word), Word) -->
-  word(Word).
+dcg_word(word(Word), Word) -->
+  dcg_word(Word).
 
-word_([H|T]) -->
-  (letter(H) ; hyphen_minus(H)),
-  word_(T).
-word_([]) --> [].
+dcg_word_([H|T]) -->
+  letter(H),
+  dcg_word_(T).
+dcg_word_([]) --> [].
 

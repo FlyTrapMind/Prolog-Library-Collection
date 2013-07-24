@@ -19,6 +19,9 @@
                                   % ?Defer:boolean,
                                   % ?Align:compound,
                                   % ?MeetOrSlice:oneof([meet,slice])
+    svg_referenced_features//3, % -Tree:compound
+                                % ?DCG_Namespace
+                                % ?Features:list
     svg_stroke//3, % -Tree:compound
                    % ?DCG_Namespace
                    % ?Color:atom
@@ -65,16 +68,20 @@ DCGs for SVG datatypes.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(rfc(rfc_2396)).
+:- use_module(svg(svg)).
 :- use_module(svg(svg_datatypes)).
 :- use_module(xml(xml_dcg)).
 
-:- meta_predicate(svg_attribute(//,+,//,?,?)).
+:- meta_predicate(svg_attribute(//,//,//,?,?)).
+:- meta_predicate(svg_attribute(//,//,//,//,?,?)).
 :- meta_predicate(svg_base_profile(-,//,?,?,?)).
 :- meta_predicate(svg_content_script_type(-,//,?,?,?)).
 :- meta_predicate(svg_content_style_type(-,//,?,?,?)).
 :- meta_predicate(svg_height(-,//,?,?,?,?)).
 :- meta_predicate(svg_preserve_aspect_ratio(-,//,?,?,?,?,?)).
+:- meta_predicate(svg_referenced_features(-,//,?,?,?)).
 :- meta_predicate(svg_stroke(-,//,?,?,?)).
 :- meta_predicate(svg_stroke_width(-,//,?,?,?,?)).
 :- meta_predicate(svg_version(-,//,?,?,?)).
@@ -86,12 +93,16 @@ DCGs for SVG datatypes.
 
 
 
-% Attributes inside namespace `svg` need no namespace prefix.
-svg_attribute(DCG_Namespace, Name, DCG_Value) -->
-  {phrase(DCG_Namespace, "svg")}, !,
-  svg_attribute(void, Name, DCG_Value).
-svg_attribute(DCG_Namespace, Name, DCG_Value) -->
-  xml_attribute(DCG_Namespace, word(Name), DCG_Value).
+svg_attribute(DCG_Namespace, DCG_Name, DCG_Value) -->
+  xml_attribute(svg_namespace(DCG_Namespace), DCG_Name, DCG_Value).
+
+svg_attribute(DCG_Namespace, DCG_Name, DCG_Value, DCG_Separator) -->
+  xml_attribute(
+    svg_namespace(DCG_Namespace),
+    DCG_Name,
+    DCG_Value,
+    DCG_Separator
+  ).
 
 %! svg_base_profile(-Tree:compound, :DCG_Namespace, ?ProfileName:atom)//
 % ?ProfileName:atom)//Describes the minimum SVG language profile
@@ -108,7 +119,7 @@ svg_attribute(DCG_Namespace, Name, DCG_Value) -->
 svg_base_profile(base_profile(T1), DCG_Namespace, ProfileName) -->
   svg_attribute(
     DCG_Namespace,
-    baseProfile,
+    dcg_word(baseProfile),
     svg_profile_name(T1, ProfileName)
   ).
 
@@ -133,7 +144,7 @@ svg_content_script_type(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    contentScriptType,
+    dcg_word(contentScriptType),
     svg_content_type(MediaType)
   ).
 
@@ -154,7 +165,11 @@ svg_content_style_type(
   DCG_Namespace,
   MediaType
 ) -->
-  svg_attribute(DCG_Namespace, contentStyleType, svg_content_type(MediaType)).
+  svg_attribute(
+    DCG_Namespace,
+    dcg_word(contentStyleType),
+    svg_content_type(MediaType)
+  ).
 
 %! svg_height(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % For **outermost SVG elements**, the intrinsic width of
@@ -168,7 +183,7 @@ svg_content_style_type(
 % were specified.
 
 svg_height(height(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, height, svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, dcg_word(height), svg_length(T1, Number, Unit)).
 
 %! svg_preserve_aspect_ratio(
 %!   -Tree:compound,
@@ -199,7 +214,8 @@ svg_height(height(T1), DCG_Namespace, Number, Unit) -->
 % Othewise svg_preserve_aspect_ratio// is ignored.
 %
 % ## Image
-% For svg_image// this indicates how referenced images should be fitted
+%
+% For `image` elements this indicates how referenced images should be fitted
 % with respect to the reference rectangle and whether the aspect ratio
 % of the referenced image should be preserved with respect to
 % the current user coordinate system.
@@ -236,7 +252,7 @@ svg_preserve_aspect_ratio(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    preserveAspectRatio,
+    dcg_word(preserveAspectRatio),
     (
       svg_defer(T1, Defer),
       svg_align(T2, XAlign, YAlign),
@@ -244,13 +260,47 @@ svg_preserve_aspect_ratio(
     )
   ).
 
+%! svg_referenced_features(-Tree:compound, :DCG_Namespace, ?Features:list)//
+% ~~~
+% requiredFeatures = list-of-features
+% ~~~
+%
+% The features are a list of strings separated by white space.
+% All features must be supported by the user agent in order for this
+% attribute to evaluate to `true`.
+% If it evaluates to `false`, then the current element and its children are
+% skipped / not rendered.
+%
+% Evaluates to `true` if absent.
+%
+% Evaluates to `false` if one of the features is the null or empty string.
+%
+% Without a `switch` element, this attribute represents a simple switch
+% on the given element whether to render the element or not.
+%
+% @tbd Add feature strings.
+
+svg_referenced_features(T0, DCG_Namespace, Features) -->
+  svg_attribute(
+    DCG_Namespace,
+    dcg_word(referencedFeatures),
+    svg_feature_string(Trees, Features),
+    space
+  ),
+  {parse_tree(referenced_features, Trees, T0)}.
+
+% @tbd STUB!
+svg_feature_string(feature_string(Feature), Feature) --> dcg_word(Feature).
+
+%svg_required_extensions(required_extensions(T1),
+
 svg_stroke(stroke(T1), DCG_Namespace, Color) -->
-  svg_attribute(DCG_Namespace, stroke, svg_color(T1, Color)).
+  svg_attribute(DCG_Namespace, dcg_word(stroke), svg_color(T1, Color)).
 
 svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
   svg_attribute(
     DCG_Namespace,
-    'stroke-width',
+    (dcg_word(stroke), hyphen_minus, dcg_word(width)),
     svg_length(T1, Number, Unit)
   ).
 
@@ -269,7 +319,7 @@ svg_version(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    version,
+    dcg_word(version),
     (
       decimal_number(Major),
       dot,
@@ -289,7 +339,7 @@ svg_version(
 % were specified.
 
 svg_width(width(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, width, svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, dcg_word(width), svg_length(T1, Number, Unit)).
 
 %! svg_x(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The x-axis coordinate of one corner of the rectangular region
@@ -299,7 +349,7 @@ svg_width(width(T1), DCG_Namespace, Number, Unit) -->
 % were specified.
 
 svg_x(x(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, x, svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, dcg_word(x), svg_coordinate(T1, Number, Unit)).
 
 %! svg_xml_namespace(
 %!   -Tree:compound,
@@ -322,7 +372,7 @@ svg_xml_namespace(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    xmlns,
+    dcg_word(xmlns),
     uri_reference(
       T1,
       Scheme,
@@ -341,7 +391,7 @@ svg_xml_namespace(
 % were specified.
 
 svg_y(y(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, y, svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, dcg_word(y), svg_coordinate(T1, Number, Unit)).
 
 %! svg_zoom_and_pan(
 %!   -Tree:compound,
@@ -361,5 +411,5 @@ svg_y(y(T1), DCG_Namespace, Number, Unit) -->
 
 svg_zoom_and_pan(zoom_and_pan(Value), DCG_Namespace, Value) -->
   {member(Value, [disable,magnify])},
-  svg_attribute(DCG_Namespace, zoomAndPan, word(Value)).
+  svg_attribute(DCG_Namespace, dcg_word(zoomAndPan), dcg_word(Value)).
 
