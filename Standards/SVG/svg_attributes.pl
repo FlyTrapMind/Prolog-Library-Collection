@@ -1,32 +1,49 @@
 :- module(
   svg_attributes,
   [
+    svg_base_profile//3, % -Tree:compound
+                         % :DCG_Namespace
+                         % ?ProfileName:atom
+    svg_content_script_type//3, % -Tree:compound
+                                % :DCG_Namespace
+                                % ?MediaType:atom
+    svg_content_style_type//3, % -Tree:compound
+                               % :DCG_Namespace
+                               % ?MediaType:atom
     svg_height//4, % -Tree:compound
                    % ?DCG_Namespace
                    % ?Number:float
-                   % ?Unit:oneof([cm])
+                   % ?Unit:atom
+    svg_preserve_aspect_ratio//5, % -Tree:compound,
+                                  % :DCG_Namespace,
+                                  % ?Defer:boolean,
+                                  % ?Align:compound,
+                                  % ?MeetOrSlice:oneof([meet,slice])
     svg_stroke//3, % -Tree:compound
                    % ?DCG_Namespace
                    % ?Color:atom
     svg_stroke_width//4, % -Tree:compound
                          % ?DCG_Namespace
                          % ?Number:float
-                         % ?Unit:oneof([cm])
+                         % ?Unit:atom
     svg_version//3, % -Tree:compound
                     % ?DCG_Namespace
                     % ?Version:compound
     svg_width//4, % -Tree:compound
                   % ?DCG_Namespace
                   % ?Number:float
-                  % ?Unit:oneof([cm])
+                  % ?Unit:atom
     svg_x//4, % -Tree:compound
               % ?DCG_Namespace
               % ?Number:float
-              % ?Unit:oneof([cm])
-    svg_y//4 % -Tree:compound
-             % ?DCG_Namespace
-             % ?Number:float
-             % ?Unit:oneof([cm])
+              % ?Unit:atom
+    svg_y//4, % -Tree:compound
+              % ?DCG_Namespace
+              % ?Number:float
+              % ?Unit:atom
+    svg_zoom_and_pan//3 % -Tree:compound
+                        % :DCG_Namespace
+                        % ?Value:oneof([disable,magnify])
   ]
 ).
 
@@ -44,8 +61,21 @@ DCGs for SVG datatypes.
 :- use_module(svg(svg_datatypes)).
 :- use_module(xml(xml_dcg)).
 
+:- meta_predicate(svg_base_profile(-,//,?,?,?)).
+:- meta_predicate(svg_content_script_type(-,//,?,?,?)).
+:- meta_predicate(svg_height(-,//,?,?,?,?)).
+:- meta_predicate(svg_preserve_aspect_ratio(-,//,?,?,?,?,?)).
+:- meta_predicate(svg_stroke(-,//,?,?,?)).
+:- meta_predicate(svg_stroke_width(-,//,?,?,?,?)).
+:- meta_predicate(svg_version(-,//,?,?,?)).
+:- meta_predicate(svg_width(-,//,?,?,?,?)).
+:- meta_predicate(svg_x(-,//,?,?,?,?)).
+:- meta_predicate(svg_y(-,//,?,?,?,?)).
+:- meta_predicate(svg_zoom_and_pan(-,//,?,?,?)).
 
-% ! svg_base_profile(_Tree:compound, :DCG_Namespace,
+
+
+%! svg_base_profile(-Tree:compound, :DCG_Namespace, ?ProfileName:atom)//
 % ?ProfileName:atom)//Describes the minimum SVG language profile
 % that the author believes is necessary to correctly render the content.
 % The attribute does not specify any processing restrictions; It can be
@@ -64,6 +94,54 @@ svg_base_profile(base_profile(T1), DCG_Namespace, ProfileName) -->
     svg_profile_name(T1, ProfileName)
   ).
 
+%! svg_content_script_type(-Tree:compound, :DCG_Namespace, ?MediaType:atom)//
+% Identifies the default scripting language for the given SVG document
+% fragment. This attribute sets the default scripting language used
+% to process the value strings in event attributes. This language must be
+% used for all instances of script that do not specify their own scripting
+% language.
+%
+% ~~~
+% contentScriptType = "content-type"
+% ~~~
+%
+% The value specifies a media type, per MIME Part Two: Media Types [RFC2046].
+% The default value is =application/ecmascript= [RFC4329].
+
+svg_content_script_type(
+  content_script_type(MediaType),
+  DCG_Namespace,
+  MediaType
+) -->
+  xml_attribute(
+    DCG_Namespace,
+    word(content_script_type),
+    svg_mime_type(MediaType)
+  ).
+
+%! svg_content_style_type(-Tree:compound, :DCG_Namespace, ?MediaType:atom)//
+% Identifies the default style sheet language for the given document.
+% That language must then be used for all instances of style that do not
+% specify their own style sheet language.
+%
+% ~~~
+% contentStyleType = "content-type" 
+% ~~~
+%
+% The value specifies a media type, per MIME Part Two: Media Types [RFC2046].
+% The default value is `text/css` [RFC2318].
+
+svg_content_style_type(
+  content_style_type(MediaType),
+  DCG_Namespace,
+  MediaType
+) -->
+  xml_attribute(
+    DCG_Namespace,
+    word(content_style_type),
+    svg_mime_type(MediaType)
+  ).
+
 %! svg_height(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % For **outermost SVG elements**, the intrinsic width of
 % the SVG document fragment.
@@ -78,7 +156,7 @@ svg_base_profile(base_profile(T1), DCG_Namespace, ProfileName) -->
 svg_height(height(T1), DCG_Namespace, Number, Unit) -->
   xml_attribute(DCG_Namespace, word(height), svg_length(T1, Number, Unit)).
 
-%! scg_preserve_aspect_ratio(
+%! svg_preserve_aspect_ratio(
 %!   -Tree:compound,
 %!   :DCG_Namespace,
 %!   ?Defer:boolean,
@@ -218,4 +296,23 @@ svg_x(x(T1), DCG_Namespace, Number, Unit) -->
 
 svg_y(y(T1), DCG_Namespace, Number, Unit) -->
   xml_attribute(DCG_Namespace, word(y), svg_coordinate(T1, Number, Unit)).
+
+%! svg_zoom_and_pan(
+%!   -Tree:compound,
+%!   :DCG_Namespace,
+%!   ?Value:oneof([disable,magnify])
+%! )//
+% The outermost svg element in an SVG document fragment has this attribute.
+% The following values are supported:
+%   1. `disable`
+%      The user agent shall disable any magnification and panning controls
+%      and not allow the user to magnify or pan on the given
+%      document fragment.
+%   2. `magnify` (the default)
+%      In environments that support user interactivity, the user agent
+%      shall provide controls to allow the user to perform a magnify
+%      operation on the document fragment.
+
+svg_zoom_and_pan(zoom_and_pan(disable), disable) --> "disable".
+svg_zoom_and_pan(zoom_and_pan(magnify), magnify) --> "magnify".
 
