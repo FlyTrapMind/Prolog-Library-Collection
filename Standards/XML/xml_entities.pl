@@ -25,6 +25,7 @@ DCG rules for XML entities.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 
 :- meta_predicate(xml_entities(-,//,//,?,?)).
@@ -115,7 +116,8 @@ xml_entity_q(DCG_Namespace, DCG_Name, DCG_Attributes) -->
 
 xml_header(header(T1,T2), DCG_Namespace, Version, Standalone) -->
   xml_entity_q(
-    xml_name(xml),
+    % Note that this cannot be processed by xml_name//1.
+    dcg_word(xml),
     [
       xml_version(T1, DCG_Namespace, Version),
       xml_standalone(T2, DCG_Namespace, Standalone)

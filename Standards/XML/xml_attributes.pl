@@ -25,8 +25,11 @@
     xml_language//3, % -Tree:compound
                      % :DCG_Namespace
                      % ?LanguageTag
+    xml_standalone//3, % -Tree:compound
+                       % :DCG_Namespace
+                       % ?Standalone:boolean
     xml_version//3 % -Tree:compound
-		   % :DCG_Namespace
+                   % :DCG_Namespace
                    % ?Version:compound
   ]
 ).
@@ -50,10 +53,15 @@ DCG rules for XML attributes.
 :- meta_predicate(xml_attribute(//,//,?,?)).
 :- meta_predicate(xml_attribute(//,//,//,?,?)).
 :- meta_predicate(xml_attribute(//,//,//,//,?,?)).
+:- meta_predicate(xml_attribute_(//,//,//,?,?)).
 :- meta_predicate(xml_attribute_list(-,//,//,?,?,?)).
+:- meta_predicate(xml_base(-,//,?,?,?,?,?,?,?)).
 :- meta_predicate(xml_id(-,//,?,?,?)).
 :- meta_predicate(xml_inject_attributes(//,+,-,-)).
+:- meta_predicate(xml_language(-,//,?,?,?)).
+:- meta_predicate(xml_standalone(-,//,?,?,?)).
 :- meta_predicate(xml_value(//,?,?)).
+:- meta_predicate(xml_version(-,//,?,?,?)).
 
 
 
@@ -164,7 +172,7 @@ xml_language(xml_language(T1), DCG_Namespace, LanguageTag) -->
   ),
   {atomic_list_concat([Primary,Secondary], '-', LanguageTag)}.
 
-%! xml_standalone(-Tree:compound, ?Standalone:boolean)//
+%! xml_standalone(-Tree:compound, :DCG_Namespace, ?Standalone:boolean)//
 % Processes the XML standalone attribute.
 
 xml_standalone(standalone(T1), DCG_Namespace, Standalone) -->
@@ -183,7 +191,7 @@ xml_value(DCG_Body) -->
   DCG_Body,
   double_quote.
 
-%! xml_version(-Tree:compound, ?Version:compound)//
+%! xml_version(-Tree:compound, :DCG_Namespace, ?Version:compound)//
 % Processes the XML version attribute.
 
 xml_version(
