@@ -1,5 +1,5 @@
 :- module(
-  rfc_1766,
+  rfc1766,
   [
     rfc1766_language_header//2, % -Tree:compound
                                 % ?LanguageTags:list(atom)

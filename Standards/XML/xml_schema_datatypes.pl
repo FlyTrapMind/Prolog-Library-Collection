@@ -74,6 +74,7 @@ A single defining aspect of a value space.
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_build)).
+:- use_module(standards(standards)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
@@ -85,31 +86,7 @@ A single defining aspect of a value space.
 :- rdf_meta(xmls_datatype0(?,?,r,?)).
 :- rdf_meta(xmls_datatype_check(r,+)).
 
-:- xml_register_namespace(iso, 'http://www.iso.org/').
-:- xml_register_namespace(std, 'http://www.example.org/standards/').
-:- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-:- initialization(init_xml_schema_datatypes, restore).
-
-
-
-init_xml_schema_datatypes:-
-  Graph = w3c,
-  rdf_global_id(w3c:'TR/2004/REC-xmlschema-2-20041028/', This),
-  rdf_assert_individual(This, w3c:'Recommendation', Graph),
-  rdf_assert_datatype(This, w3c:year, gYear, 2004, Graph),
-  rdf_assert(
-    This,
-    std:title,
-    literal('XML Schema Part 2: Datatypes Second Edition'),
-    Graph
-  ),
-  rdf_assert(This, w3c:author, literal('Paul V. Biron'), Graph),
-  rdf_assert(This, w3c:author, literal('Ashok Malhotra'), Graph),
-  % Language-independent datatypes.
-  rdf_assert(This, w3c:mentions, iso:'11404', Graph),
-  % SQL datatypes.
-  rdf_assert(This, w3c:mentions, std:'SQL', Graph).
 
 %! xmls_datatype(?DatatypeName:atom, ?Datatype:uri) is nondet.
 % Translations between datatype names and datatype URIs.
@@ -148,10 +125,8 @@ xmls_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue):-
     nonvar(DatatypeName)
   ;
     nonvar(Datatype)
-  ),
-  !,
-  xmls_datatype0(DatatypeName, LexicalValue, Datatype, CanonicalValue),
-  !.
+  ), !,
+  xmls_datatype0(DatatypeName, LexicalValue, Datatype, CanonicalValue), !.
 xmls_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue):-
   xmls_datatype0(DatatypeName, LexicalValue, Datatype, CanonicalValue).
 
@@ -248,34 +223,26 @@ xmls_datatype0(string, String, xsd:string, Atom):-
 % Succeeds if the given value is of the given XML Schema datatype.
 
 xmls_datatype_check(xsd:boolean, Boolean):-
-  memberchk(Boolean, [0, 1, false, true]),
-  !.
+  memberchk(Boolean, [0, 1, false, true]), !.
 xmls_datatype_check(Datatype, DateTime):-
   compound(DateTime),
   rdf_memberchk(Datatype, [xsd:date, xsd:dateTime]),
-  date_time_stamp(DateTime, _TimeStamp),
-  !.
+  date_time_stamp(DateTime, _TimeStamp), !.
 xmls_datatype_check(Datatype, TimeStamp):-
   rdf_memberchk(Datatype, [xsd:date, xsd:dateTime]),
-  stamp_date_time(TimeStamp, _DateTime, 'UTC'),
-  !.
+  stamp_date_time(TimeStamp, _DateTime, 'UTC'), !.
 xmls_datatype_check(xsd:double, Double):-
-  float(Double),
-  !.
+  float(Double), !.
 xmls_datatype_check(xsd:float, Float):-
-  float(Float),
-  !.
+  float(Float), !.
 xmls_datatype_check(xsd:gDay, Day):-
   integer(Day),
-  between(1, 31, Day),
-  !.
+  between(1, 31, Day), !.
 xmls_datatype_check(xsd:gMonth, Month):-
   integer(Month),
-  between(1, 12, Month),
-  !.
+  between(1, 12, Month), !.
 xmls_datatype_check(xsd:gYear, Year):-
-  integer(Year),
-  !.
+  integer(Year), !.
 xmls_datatype_check(xsd:int, Integer):-
   integer(Integer),
   (

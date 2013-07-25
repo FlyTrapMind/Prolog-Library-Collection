@@ -122,11 +122,11 @@ dcg_word_wrap(Remaining, MaximumLineWidth), (Emit, EmitPostfix) --> !,
   % Whether or now a space follows the word. Specifically, the last word
   % in the codes list need not be followed by a space.
   (
-    " "
+    space
   ->
-    {EmitPostfix = " "}
+    {EmitPostfix = space}
   ;
-    {EmitPostfix = ""}
+    {EmitPostfix = dcg_void}
   ),
   {
     length(Word, WordLength),

@@ -152,8 +152,7 @@ create_log_file(Situation, AbsoluteFile, Stream):-
   open(AbsoluteFile, write, Stream, [close_on_abort(true), type(text)]).
 
 current_situation(Situation):-
-  situation(Situation),
-  !.
+  situation(Situation), !.
 current_situation(no_situation).
 
 %! end_log is det.

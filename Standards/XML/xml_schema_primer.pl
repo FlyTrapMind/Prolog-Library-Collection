@@ -2,8 +2,6 @@
 
 /** <module> XML SCHEMA PRIMER
 
-
-
 # Attribute
 
 An attribute can occur at most once for an element.
@@ -409,25 +407,4 @@ Nil values can only be defined for element values (not attribute values).
 @tbd
 @version 2013/05
 */
-
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(w3c, 'http://www.w3.org/').
-:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
-% XML Scheme namespace for instances.
-:- xml_register_namespace(xsi, 'http://www.w3.org/2001/XMLSchema-instance#').
-
-init:-
-  Graph = w3c,
-  rdf_global_id(w3c:'TR/2004/REC-xmlschema-0-20041028/', This),
-  rdf_assert_individual(This, w3c:'Recommendation', Graph),
-  rdf_assert_datatype(This, w3c:year, gYear, 2004, Graph),
-  rdf_assert_literal(This, std:title, 'XML Schema Part 0: Primer Second Edition', Graph),
-  rdf_assert_literal(This, w3c:author, 'David C. Fallside', Graph),
-  rdf_assert_literal(This, w3c:author, 'Priscilla Walmsley', Graph),
-  true.
-:- init.
 

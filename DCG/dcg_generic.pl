@@ -302,9 +302,6 @@ dcg_call(DCG_Body, A1, A2, A3, X, Y):-
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
 
-dcg_call(DCG_Body, A1, A2, A3, A4, A5, X, Y):-
-  call(DCG_Body, A1, A2, A3, A4, A5, X, Y).
-
 %! dcg_switch(+Value, +Maps:list) is det.
 
 dcg_switch(Value, Maps) -->

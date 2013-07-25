@@ -158,9 +158,9 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
-:- use_module(rfc(rfc_1123)). % Date and time
-:- use_module(rfc(rfc_1766)). % Language tag
-:- use_module(rfc(rfc_2396)). % URIs
+:- use_module(datetime(rfc1123)).
+:- use_module(lang(rfc1766)).
+:- use_module(uri(rfc2396)).
 
 :- meta_predicate(chunk(-,?,//,?,?,?)).
 :- meta_predicate(chunk_data(-,?,//,?,?)).

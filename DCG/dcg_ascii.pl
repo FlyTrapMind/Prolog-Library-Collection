@@ -424,6 +424,10 @@ acknowledgement --> positive_acknowledgement.
 acknowledgement(C) --> negative_acknowledgement(C).
 acknowledgement(C) --> positive_acknowledgement(C).
 
+%! alpha_numeric//
+% @tbd Make this ASCII specific and move the generic version to
+%      module [[dcg_unicode]].
+
 alpha_numeric --> alpha_numeric(_C).
 alpha_numeric(C) --> [C], {code_type(C, alnum)}.
 

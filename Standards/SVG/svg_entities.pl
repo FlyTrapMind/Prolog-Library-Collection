@@ -25,8 +25,8 @@
 :- use_module(library(plunit)).
 :- use_module(svg(svg)).
 :- use_module(svg(svg_attributes)).
-:- use_module(xml(xml_dcg)).
-:- use_module(xml(xlink)). % Supported attributes.
+:- use_module(xml(xml_attributes)).
+:- use_module(xml(xml_entities)).
 
 :- meta_predicate(svg_definitions(-,//,?,?,?)).
 :- meta_predicate(svg_description(-,//,?,?,?)).

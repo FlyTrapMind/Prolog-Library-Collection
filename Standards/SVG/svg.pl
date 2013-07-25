@@ -85,19 +85,13 @@ Raster images have their original sample resampled to the output device.
 @version 2012/10, 2013/01-2013/07
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(library(plunit)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rfc(rfc_2396)).
 :- use_module(standards(markup)).
-:- use_module(svg(svg_attributes)).
-:- use_module(svg(svg_colors)).
 :- use_module(svg(svg_entities)).
-:- use_module(xml(xml_dcg)).
+:- use_module(xml(xml_entities)).
 :- use_module(xml(xml_namespace)).
 
 :- dynamic(user:mime_type/2).
@@ -146,7 +140,7 @@ Raster images have their original sample resampled to the output device.
 %! svg_document(-Tree:compound, :DCG_Namespace, ?SVG_DCGs:list(dcg))//
 
 svg_document(T0, DCG_Namespace, SVG_DCGs) -->
-  xml_header(T1, version(1,0), true),
+  xml_header(T1, DCG_Namespace, version(1,0), true),
   xml_entities(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
   {parse_tree(document, [T1|Ts], T0)}.
 

@@ -1,12 +1,8 @@
-:- module(
-  rfc_uri,
-  [
-  ]
-).
+:- module(uri_std, []).
 
-/** <module> RFC_URI
+/** <module> URI_STD
 
-Overview of the RFCs that define URIs.
+Standard support for URIs, IRIs, URNs, and URLs.
 
 # Overview of standardization process
 
@@ -82,26 +78,27 @@ in more detail.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(rfc(rfc)).
+:- use_module(standards(standards)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 
-:- initialization(init_rfc_uri).
+:- initialization(init_uri_std).
 
 
 
-init_rfc_uri:-
-  rfc_graph(G),
-  init_rfc_1630(G),
-  init_rfc_1736(G),
-  init_rfc_1737(G),
-  init_rfc_1738(G),
-  init_rfc_1808(G),
-  init_rfc_2396(G).
+init_uri_std:-
+  standards_graph(G),
+  init_rfc1630(G),
+  init_rfc1736(G),
+  init_rfc1737(G),
+  init_rfc1738(G),
+  init_rfc1808(G),
+  init_rfc2396(G).
 
-init_rfc_1630(G):-
+init_rfc1630(G):-
   rdf_global_id(rfc:'1630', This),
+  rdfs_assert_class(rfc:'Standard', G),
   rdf_assert_individual(This, rfc:'Standard', G),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, G),
   rdf_assert_literal(
@@ -122,7 +119,7 @@ init_rfc_1630(G):-
   rdf_assert_literal(This, rfc:author, en, 'Tim Berners-Lee', G),
   rdf_assert(This, foaf:homepage, rfc:'rfc1630.txt', G).
 
-init_rfc_1736(G):-
+init_rfc1736(G):-
   rdf_global_id(rfc:'1736', This),
   rdf_assert_individual(This, rfc:'Standard', G),
   rdf_assert_datatype(This, rfc:year, gYear, 1995, G),
@@ -136,7 +133,7 @@ init_rfc_1736(G):-
   rdf_assert_literal(This, rfc:author, en, 'J. Kunze', G),
   rdf_assert(This, foaf:homepage, rfc:'rfc1736.txt', G).
 
-init_rfc_1737(G):-
+init_rfc1737(G):-
   rdf_global_id(rfc:'1737', This),
   rdf_assert_individual(This, rfc:'Standard', G),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, G),
@@ -151,7 +148,7 @@ init_rfc_1737(G):-
   rdf_assert_literal(This, rfc:author, en, 'L. Masinter', G),
   rdf_assert(This, foaf:homepage, rfc:'rfc1737.txt', G).
 
-init_rfc_1738(Graph):-
+init_rfc1738(Graph):-
   rdf_global_id(rfc:'1738', This),
   rdf_assert_individual(This, rfc:'Standard', Graph),
   rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
@@ -174,7 +171,7 @@ init_rfc_1738(Graph):-
   rdf_assert(This, rfc:mentions, rfc:'1625', Graph), % WAIS
   rdf_assert(This, rfc:mentions, rfc:'1630', Graph). % URIs in WWW
 
-init_rfc_1808(G):-
+init_rfc1808(G):-
   rdf_global_id(rfc:'1808', This),
   rdf_assert_individual(This, rfc:'Standard', G),
   rdf_assert_datatype(This, rfc:year, gYear, 1995, G),
@@ -191,7 +188,7 @@ init_rfc_1808(G):-
   rdf_assert(This, rfc:mentions, rfc:'1630', G), % Partial URLs
   rdf_assert(This, rfc:mentions, rfc:'1738', G). % URL
 
-init_rfc_2396(G):-
+init_rfc2396(G):-
   rdf_global_id(rfc:'2396', This),
   rdf_assert_individual(This, rfc:'Standard', G),
   rdf_assert_datatype(This, rfc:year, gYear, 1998, G),

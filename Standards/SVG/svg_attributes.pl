@@ -10,8 +10,11 @@
     svg_content_style_type//3, % -Tree:compound
                                % :DCG_Namespace
                                % ?MediaType:atom
+    svg_external_resources_required//3, % -Tree:compound
+                                        % :DCG_Namespace
+                                        % ?Value:boolean
     svg_height//4, % -Tree:compound
-                   % ?DCG_Namespace
+                   % :DCG_Namespace
                    % ?Number:float
                    % ?Unit:atom
     svg_preserve_aspect_ratio//5, % -Tree:compound,
@@ -21,7 +24,10 @@
                                   % ?MeetOrSlice:oneof([meet,slice])
     svg_referenced_features//3, % -Tree:compound
                                 % ?DCG_Namespace
-                                % ?Features:list
+                                % ?Features:list(iri)
+    svg_required_extensions//3, % -Tree:compound,
+                                % :DCG_Namespace,
+                                % ?Extensions:list(iri)
     svg_stroke//3, % -Tree:compound
                    % ?DCG_Namespace
                    % ?Color:atom
@@ -29,6 +35,9 @@
                          % ?DCG_Namespace
                          % ?Number:float
                          % ?Unit:atom
+    svg_system_language//3, % -Tree:compound
+                            % ?DCG_Namespace
+                            % ?LanguageTags:list
     svg_version//3, % -Tree:compound
                     % ?DCG_Namespace
                     % ?Version:compound
@@ -59,7 +68,7 @@
 
 /** <module> SVG_ATTRIBUTES
 
-DCGs for SVG datatypes.
+DCG rules for SVG datatypes.
 
 @author Wouter Beek
 @version 2013/07
@@ -69,21 +78,26 @@ DCGs for SVG datatypes.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(rfc(rfc_2396)).
+:- use_module(lang(rfc5646)).
 :- use_module(svg(svg)).
 :- use_module(svg(svg_datatypes)).
-:- use_module(xml(xml_dcg)).
+:- use_module(uri(rfc2396)).
+:- use_module(xml(xml_attributes)).
+:- use_module(xml(xml_datatypes)).
 
 :- meta_predicate(svg_attribute(//,//,//,?,?)).
 :- meta_predicate(svg_attribute(//,//,//,//,?,?)).
 :- meta_predicate(svg_base_profile(-,//,?,?,?)).
 :- meta_predicate(svg_content_script_type(-,//,?,?,?)).
 :- meta_predicate(svg_content_style_type(-,//,?,?,?)).
+:- meta_predicate(svg_external_resources_required(-,//,?,?,?)).
 :- meta_predicate(svg_height(-,//,?,?,?,?)).
 :- meta_predicate(svg_preserve_aspect_ratio(-,//,?,?,?,?,?)).
 :- meta_predicate(svg_referenced_features(-,//,?,?,?)).
+:- meta_predicate(svg_required_extensions(-,//,?,?,?)).
 :- meta_predicate(svg_stroke(-,//,?,?,?)).
 :- meta_predicate(svg_stroke_width(-,//,?,?,?,?)).
+:- meta_predicate(svg_system_language(-,//,?,?,?)).
 :- meta_predicate(svg_version(-,//,?,?,?)).
 :- meta_predicate(svg_width(-,//,?,?,?,?)).
 :- meta_predicate(svg_x(-,//,?,?,?,?)).
@@ -169,6 +183,57 @@ svg_content_style_type(
     DCG_Namespace,
     dcg_word(contentStyleType),
     svg_content_type(MediaType)
+  ).
+
+%! svg_external_resources_required(
+%!   -Tree:compound,
+%!   :DCG_Namespace,
+%!   ?Value:boolean
+%! )//
+% Specifies whether referenced resources that are not part of the current
+% document are required for proper rendering of the given container element
+% or graphics element.
+%
+% ~~~ {.bnf}
+% externalResourcesRequired = "false | true"
+% ~~~
+%
+% ## Supported values
+%
+% The following values are supported:
+%   * `false` (default)
+%     Resources external to the current document are optional.
+%   * `true`
+%     Resources external to the current document are required.
+%     If absent, progressive rendering is suspended, the document's
+%     `SVGLoad` event is not fired and the animation timeline does not begin
+%     until that resource and all other required resources become available,
+%     have been parsed and are ready to be rendered.
+%     If a timeout event occurs on a required resource, then the document goes
+%     into an error state. The document remains in an error state until all
+%     required resources become available.
+%
+% ## Applicability
+%
+% This attribute applies to all types of resource references, including
+% style sheets, color profiles and fonts specified by an IRI reference using
+% a `font-face` element or a CSS `@font-face` specification.
+%
+% ## Inheritance
+%
+% Attribute ‘externalResourcesRequired’ is not inheritable (from a sense of
+% attribute value inheritance), but if set on a container element, its value
+% will apply to all elements within the container.
+
+svg_external_resources_required(
+  external_resources_required(T1),
+  DCG_Namespace,
+  Required
+) -->
+  svg_attribute(
+    DCG_Namespace,
+    xml_name(externalResourcesRequired),
+    xml_boolean(T1, Required)
   ).
 
 %! svg_height(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
@@ -260,7 +325,11 @@ svg_preserve_aspect_ratio(
     )
   ).
 
-%! svg_referenced_features(-Tree:compound, :DCG_Namespace, ?Features:list)//
+%! svg_referenced_features(
+%!   -Tree:compound,
+%!   :DCG_Namespace,
+%!   ?Features:list(iri)
+%! )//
 % ~~~
 % requiredFeatures = list-of-features
 % ~~~
@@ -277,8 +346,6 @@ svg_preserve_aspect_ratio(
 %
 % Without a `switch` element, this attribute represents a simple switch
 % on the given element whether to render the element or not.
-%
-% @tbd Add feature strings.
 
 svg_referenced_features(T0, DCG_Namespace, Features) -->
   svg_attribute(
@@ -289,10 +356,50 @@ svg_referenced_features(T0, DCG_Namespace, Features) -->
   ),
   {parse_tree(referenced_features, Trees, T0)}.
 
-% @tbd STUB!
-svg_feature_string(feature_string(Feature), Feature) --> dcg_word(Feature).
+%! svg_required_extensions(
+%!   -Tree:compound,
+%!   :DCG_Namespace,
+%!   ?Extensions:list(iri)
+%! )//
+% The `requiredExtensions` attribute defines a list of required language
+% extensions.
+%
+% **Language extensions** are capabilities within a user agent that go beyond
+% he feature set defined in this specification. Each extension is identified
+% by an IRI reference.
+%
+% ~~~
+% requiredExtensions = list-of-extensions
+% ~~~
+%
+% The value is a list of IRI references which identify the required
+% extensions, with the individual values separated by white space.
+%
+% Determines whether all of the named extensions are supported by the user
+% agent. If all of the given extensions are supported, then the attribute
+% evaluates to `true`; otherwise, the current element and its children are
+% skipped / not rendered.
+%
+% If a given IRI reference contains white space within itself,
+% that white space must be escaped. **Is this possible AT ALL?**
+%
+% If the attribute is not present, then its implicit return value is `true`.
+% If a null or empty string is given, then it returns `false`.
+%
+% Without a `switch` element, this attribute represents a simple switch
+% on the given element whether to render the element or not.
+%
+% The IRI names for the extension should include versioning information,
+% so that script writers can distinguish between versions.
 
-%svg_required_extensions(required_extensions(T1),
+svg_required_extensions(T0, DCG_Namespace, Extensions) -->
+  svg_attribute(
+    DCG_Namespace,
+    xml_name(requiredExtensions),
+    svg_extension(Trees, Extensions),
+    space
+  ),
+  {parse_tree(required_extensions, Trees, T0)}.
 
 svg_stroke(stroke(T1), DCG_Namespace, Color) -->
   svg_attribute(DCG_Namespace, dcg_word(stroke), svg_color(T1, Color)).
@@ -303,6 +410,43 @@ svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
     (dcg_word(stroke), hyphen_minus, dcg_word(width)),
     svg_length(T1, Number, Unit)
   ).
+
+%! svg_system_language
+% The attribute value is a comma-separated list of language names as defined
+% in BCP 47 [BCP47].
+%
+% Evaluates to `true` if one of the languages indicated by user preferences
+% exactly equals one of the languages given in the value of this parameter,
+% or if one of the languages indicated by user preferences exactly equals a
+% prefix of one of the languages given in the value of this parameter such
+% that the first tag character following the prefix is `-`.
+% Evaluates to `false` otherwise.
+%
+% Note: If a user understands a language `L1` with language tag `T1`, then
+% this does not imply that the user will understand every langugae `L2`
+% such that `L2` has language tag `T2` and `T1` is a prefix of `T2`.
+%
+% **[W]Values for the `systemLanguage` cannot be given automatically, based on
+% a language dictionary, since an object may have content in language `L1`
+% while being directed towards an audience that understands/prefers language
+% `L2`.[/W]**
+%
+% It is recommended to include a catch-all choice at the end of a `switch`.
+%
+% If the attribute is not present, then its implicit return value is `true`.
+% If a null or empty string is given, then it returns `false`.
+%
+% Without a `switch` element, this attribute represents a simple switch
+% on the given element whether to render the element or not.
+
+svg_system_language(T0, DCG_Namespace, LanguageTags) -->
+  svg_attribute(
+    DCG_Namespace,
+    dcg_word(systemLanguage),
+    rfc5646_language_tag(Trees, LanguageTags),
+    space
+  ),
+  {parse_tree(required_extensions, Trees, T0)}.
 
 %! svg_version(-Tree:compound, :DCG_Namespace, ?Version:compound)//
 % Indicates the SVG language version to which this document fragment conforms.

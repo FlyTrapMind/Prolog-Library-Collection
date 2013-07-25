@@ -1,4 +1,4 @@
-:- module(rfc_1736, []).
+:- module(rfc1736, []).
 
 /** <module> RFC 1736
 

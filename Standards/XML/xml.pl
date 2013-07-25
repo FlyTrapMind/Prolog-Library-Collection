@@ -1,39 +1,7 @@
 :- module(
   xml,
   [
-    dom_to_xml/3, % +DTD_File:atom
-                  % +DOM
-                  % -XML:atom
-    dom_to_xml/4, % +DTD_File:atom
-                  % +StyleName:atom
-                  % +DOM
-                  % -XML:atom
-    dom_to_xml_file/3, % +DTD_Name:atom,
-                       % +DOM:list
-                       % +Out:oneof([atom,stream])
-    dom_to_xml_file/4, % +DTD_Name:atom,
-                       % +DOM:list
-                       % +Out:oneof([atom,stream])
-                       % +Options:list(nvpair)
-    file_to_xml/2, % +File:atom
-                   % -XML:dom
-    stream_to_xml/2, % +Stream:stream
-                     % -XML:dom
-    stylesheet_pi/2, % +CSS_FileSpecification
-                     % -PI:atom
-    stylesheet_pi/3, % +Type:oneof(['text/css'])
-                     % +CSS_FileSpecification
-                     % -PI:atom
-    uri_to_xml/2, % +URI:uri
-                  % -XML:dom
-    xml_declaration//2, % +Version:versionm
-                        % +Standalone:atom
-    xml_doctype/2, % +Stream:stream
-                   % -DocType
-    xml_inject_attribute/4 % +OldDOM:dom
-                           % +Class:atom
-                           % AttributeValuePairs:list(nvpair)
-                           % -NewDOM:dom
+    xml_namespace//1 % :DCG_Namespace
   ]
 ).
 
@@ -41,8 +9,6 @@
 
 The XML (Extensible Markup Language) is a subset of
 SGML (Standard Generalized Markup Language).
-
-
 
 # Design goals
 
@@ -57,16 +23,14 @@ SGML (Standard Generalized Markup Language).
 * XML documents shall be easy to create.
 * Terseness is of minimal importance.
 
-
-
 # Concepts
 
-  * *|Document element|*
+  * **Document element**
     The single element in an XML document that has no parent element.
-  * *|Logical structure|*
+  * **Logical structure**
     The declarations, elements, comments, characters references, and
     processing instructions of an XML document.
-  * *|Physical structure|*
+  * **Physical structure**
     The entities / units that compose and XML document.
   * *Root*
     Synonym of _|document element|_.
@@ -77,26 +41,90 @@ SGML (Standard Generalized Markup Language).
     The property that an XML document matches the productions in the XML
     specification, meets all the well-formedness constraints, and contains
     only parsed entities that are well-formed.
-  * *|XML document|*
+  * **XML document**
     Can be split up in logical and physical structure.
-  * *|XML processor|*
+  * **XML processor**
     A software module that can access the content and structure of
     XML documents.
 
-XML document grammar rule:
+@author Wouter Beek
+@compat XML 1.0 (Fifth Edition)
+@see http://www.w3.org/TR/2008/REC-xml-20081126/
+@version 2013/07
+*/
 
-~~~{.txt}
-document ::= prolog element Misc*
-~~~
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_build)).
+:- use_module(standards(standards)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(iso, 'http://www.iso.org/').
+:- xml_register_namespace(std, 'http://www.example.org/standards/').
+
+:- meta_predicate(xml_namespace(//,?,?)).
+
+/*
+%! xml_document(-Tree:compound)//
+% A data object is an **XML document** if it is *well-formed*.
+%
+% ~~~{.bnf}
+% document ::= prolog element Misc*
+% ~~~
+%
+% ## Logical and physical structure
+%
+% Each XML document has both a logical and a physical structure.
+% *Physically*, the document is composed of units called entities.
+% *Logically*, the document is composed of declarations, elements, comments,
+% character references, and processing instructions.
+%
+% ## Validity
+%
+% It is *valid* if:
+%   1. Taken as a whole, it matches the production xml_document//.
+%   2. It meets all the well-formedness constraints.
+%   3. Each of the parsed entities which is referenced directly or indirectly
+%      within the document is well-formed.
+
+xml_document(
+  xml_prolog,
+  xml_element,
+  ("" ; xml_miscs).
+*/
+
+/*
+xml_miscs --> [].
+xml_miscs -->
+  xml_misc,
+  xml_miscs.
+*/
+
+%! xml_comment(-Tree:compound, ?Comment:atom)//
+
+xml_comment(comment(Comment), Comment) -->
+  {nonvar(Comment)}, !,
+  {atom_codes(Comment, Codes)},
+  less_than_sign, exclamation_mark, hyphen_minus, hyphen_minus, space,
+  Codes,
+  space, hyphen_minus, hyphen_minus, greater_than_sign.
+xml_comment(comment(Comment), Comment) -->
+  less_than_sign, exclamation_mark, hyphen_minus, hyphen_minus, space,
+  Codes,
+  space, hyphen_minus, hyphen_minus, greater_than_sign,
+  {atom_codes(Comment, Codes)}.
+
+xml_namespace(DCG_Namespace) -->
+  {phrase(DCG_Namespace, "xml")},
+  dcg_void.
+xml_namespace(DCG_Namespace) -->
+  DCG_Namespace.
 
 
 
-# Logical structure
-
-The template that entitles the elements (and their order)
-to be included in an XML document.
-
-
+/*
 ## Character references
 
 Refer to specific characters in the ISO/IEC 10646 character set.
@@ -130,7 +158,7 @@ Direct inclusion of _|markup declarations|_ in an XML document.
 
 ## Markup declaration
 
-*|External markup declaration|*: A _|markup declaration|_ that occurs in the
+**External markup declaration|*: A _|markup declaration|_ that occurs in the
 _|external subject|_ or in an (internal or external) _|parameter entity|_.
 
 ### Attribute-list declaration
@@ -243,9 +271,9 @@ Examples:
 
 ##++ Element content
 
-An element has *|element content|* if its content must only contain child
+An element has **element content** if its content must only contain child
 elements and no character data. The constrain on the element's content is
-then a *|content model|*.
+then a **content model|*.
 
 Examples:
 ~~~{.dtd}
@@ -273,7 +301,7 @@ standalone declaration.
 
 ### Mixed content
 
-An element has *|mixed content|* if it may contain character data
+An element has **mixed content** if it may contain character data
 and child elements. _|In this case the order and the number of occurrences
 of child elements cannot be constrained.|_
 
@@ -291,7 +319,7 @@ Examples:
 
 ## Processing instructions
 
-*|Processing instructions|* must be passed through to applications.
+**Processing instructions** must be passed through to applications.
 
 
 
@@ -307,7 +335,7 @@ The actual data used in an XML document.
 
 ### Parsed entities / text entities
 
-*|Parsed entities|* contain text data that becomes part of the XML document
+**Parsed entities** contain text data that becomes part of the XML document
 after processing.
 
 ##++ Text
@@ -319,33 +347,6 @@ after processing.
 Normalize all line endings
 (i.e. occurrences and/or combinations of #xD (carriage return) and #xA)
 to #xA / line feeds.
-
-##+++ Character
-
-A *character* is an atomic unit of text specified by ISO/IEC 10646.
-
-~~~{.txt}
-Char ::= #x9 |   // Horizontal tab
-         #xA |   // Line feed
-         #xD |   // Carriage return
-         [#x20-#xD7FF] |      // Unicode characters, excluding the
-         [#xE000-#xFFFD] |    // surrogate blocks #xFFFE and
-         [#x10000-#x10FFFF]   // #xFFFF.
-~~~
-
-Avoid comapatibility characters [Unicode, section 2.3].
-Avoid the following characters (control characters,
-permanently undefined Unicode characters):
-
-~~~{.txt}
-[#x7F-#x84], [#x86-#x9F], [#xFDD0-#xFDEF],
-[#x1FFFE-#x1FFFF], [#x2FFFE-#x2FFFF], [#x3FFFE-#x3FFFF],
-[#x4FFFE-#x4FFFF], [#x5FFFE-#x5FFFF], [#x6FFFE-#x6FFFF],
-[#x7FFFE-#x7FFFF], [#x8FFFE-#x8FFFF], [#x9FFFE-#x9FFFF],
-[#xAFFFE-#xAFFFF], [#xBFFFE-#xBFFFF], [#xCFFFE-#xCFFFF],
-[#xDFFFE-#xDFFFF], [#xEFFFE-#xEFFFF], [#xFFFFE-#xFFFFF],
-[#x10FFFE-#x10FFFF].
-~~~
 
 ##+++ CDATA
 
@@ -368,7 +369,7 @@ CDEnd   ::= ']]>'
 
 ##+++ Character data
 
-_Text_ that is not _markup_ is *|character data|*.
+_Text_ that is not _markup_ is **character data|*.
 
 ~~~{.txt}
 CharData ::= [^<&]* - ([^<&]* ']]>' [^<&]*)
@@ -394,10 +395,10 @@ Compatibility: Double hyphen must not occur in comments.
 
 ##+++ Literal data
 
-*|Literal data|* is any quoted string not containing the quotation mark that
+**Literal data** is any quoted string not containing the quotation mark that
 is used as the delimiter for that string.
 
-*|Literal data|*: Any quoted string not containing the quotation mark that
+**Literal data|*: Any quoted string not containing the quotation mark that
 is used as the delimiter for that string.
 
 Used for:
@@ -506,7 +507,7 @@ Attribute value normalization algorithm:
 
 The boundaries of non-empty elements are delimited by start- and end-tags.
 
-*|GI, Generic Indentifier|*: the name of an element's type.
+**GI, Generic Indentifier|*: the name of an element's type.
 
 An element type may have associated attribute specifications.
 
@@ -608,17 +609,17 @@ Another example:
 
 ## Entity
 
-  * *|Parsed entity|*
+  * **Parsed entity**
     The contents of a parsed entity (called 'replacement text') are an
     integral part of an XML document.
-    Invoked by name using *|entity references|*.
-  * *|Unparsed entity|*
+    Invoked by name using **entity references|*.
+  * **Unparsed entity**
     The contents of an unparsed entity need not be XML and need not even be
     text. The notation of an unparsed entity is identityfied by name.
     Invoked by name, given in the value of ENTITY or ENTITIES attributes. [???]
-  * *|General entities|*
+  * **General entities**
     Entities for use within document content.
-  * *|Parameter entities|*
+  * **Parameter entities**
     Parsed entities for use in the DTD.
 
 General and parameter entities:
@@ -677,7 +678,7 @@ Example:
 <!ENTITY footer SYSTEM "http://www.oreilly.com/boilerplate/footer.xml">
 ~~~
 
-The external file starts with a *|text declaration|*.
+The external file starts with a **text declaration|*.
 This is like an XML declaration, but with required encoding declaration,
 optional version information, and absent standalone declaration.
 
@@ -756,7 +757,7 @@ and notes in English:
 
 Multiple elements may (partially) share the same attributes.
 
-*|Parameter entities|* can be using in a DTD to introduce the same text
+**Parameter entities** can be using in a DTD to introduce the same text
 at multiple locations.
 
 Example of a parameter entity specification:
@@ -806,7 +807,7 @@ VersionNum  ::= '1.' [0-9]+
 Misc        ::= Comment | PI | S
 ~~~
 
-A DTD consists of *|markup declarations|*:
+A DTD consists of **markup declarations|*:
   * Element type declarations
   * Attribute-list declarations
   * Entity declarations
@@ -831,10 +832,10 @@ Example:
 
 * =Name= must match the element type of the root element.
 
-*|Entity references|* provide replacement text for parts of the DTD
+**Entity references** provide replacement text for parts of the DTD
 that will be included in the XML document.
 
-*|Parameter entities|* provide replacement text for excluse use inside a DTD.
+**Parameter entities** provide replacement text for excluse use inside a DTD.
 
 ## External subset
 
@@ -843,7 +844,7 @@ extSubset     ::= TextDecl? extSubsetDecl
 extSubsetDecl ::= ( markupdecl | conditionalSect | DeclSep)*
 ~~~
 
-*|External markup declaration|*:
+**External markup declaration|*:
 A markup declaration occurring in an external subset or
 in a parameter entity. [???]
 
@@ -854,14 +855,6 @@ SDDecl ::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'
 # Text
 
 *Text*: A sequence of characters that may represent markup or character data.
-
-# White space
-
-~~~{.txt}
-S ::= (#x20 | #x9 | #xD | #xA)+   // Any consecutive number of spaces,
-                                  // carriage returns, line feeds, and
-                                  // horizontal tabs.
-~~~
 
 ## White space preservation
 
@@ -876,285 +869,5 @@ Examples:
 <!ATTLIST poem  xml:space (default|preserve) 'preserve'>
 <!ATTLIST pre xml:space (preserve) #FIXED 'preserve'>
 ~~~
-
-@author Wouter Beek
-@compat XML 1.0 (Fifth Edition)
-@see http://www.w3.org/TR/2008/REC-xml-20081126/
-@tbd
-@version 2012/10, 2013/02-2013/05, 2013/07
 */
-
-:- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_open)).
-:- use_module(library(http/http_path)).
-:- use_module(library(http/http_server_files)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(library(sgml)).
-:- use_module(library(sgml_write)).
-:- use_module(os(file_ext)).
-:- use_module(os(io_ext)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(standards(sgml_parse)).
-:- use_module(standards(standards), [charset/1]).
-:- use_module(xml(xml_namespace)).
-
-:- db_add_novel(user:prolog_file_type(css, css)).
-:- db_add_novel(user:prolog_file_type(dtd, dtd)).
-:- db_add_novel(user:prolog_file_type(xml, xml)).
-
-% Serve CSS files.
-:- db_add_novel(http:location(css, root(css),  [])).
-:- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(
-  css(.),
-  serve_files_in_directory(css),
-  [prefix, priority(10)]
-).
-
-:- xml_register_namespace(iso, 'http://www.iso.org/').
-:- xml_register_namespace(std, 'http://www.example.org/standards/').
-:- xml_register_namespace(w3c, 'http://www.w3.org/').
-
-
-
-%! dom_to_xml(+DTD_Name:atom, +DOM:list, -XML:atom) is det.
-% @see dom_to_xml/4
-
-dom_to_xml(DTD_Name, DOM, XML):-
-  tmp_file_stream(utf8, TemporaryFile, Out),
-  % Set the header to false, since this XML content will be inserted inside
-  % a Web page.
-  % We do add the stylesheet parsing instruction, since this is allowed by
-  % Firefox.
-  dom_to_xml_file(DTD_Name, DOM, Out, [header(false)]),
-  setup_call_cleanup(
-    open(TemporaryFile, read, In, [type(text)]),
-    stream_to_atom(In, XML),
-    (
-      close(In),
-      % Do not safe-delete temporary files.
-      delete_file(TemporaryFile)
-    )
-  ).
-
-%! dom_to_xml(+DTD_Name:atom, +Style_Name:atom, +DOM:list, -XML:atom) is det.
-% Translates DOM to XML, applying DTD checks and Style decoration.
-%
-% @arg DTD_Name The atomic name of a DTD file. File locations that
-%   contain DTD files must be asserted using
-%   =|file_search_path/3|=.
-
-dom_to_xml(DTD_Name, Style_Name, DOM, XML):-
-  file_name_type(Style_Name, css, Style),
-  stylesheet_pi(css(Style), PI),
-  dom_to_xml(DTD_Name, [PI | DOM], XML).
-
-%! dom_to_xml_file(
-%!   +DTD_Name:atom,
-%!   +DOM:list,
-%!   +Out:oneof([atom,stream])
-%! ) is det.
-
-dom_to_xml_file(DTD_Name, DOM, Out):-
-  dom_to_xml_file(DTD_Name, DOM, Out, []).
-
-%! dom_to_xml_file(
-%!   +DTD_Name:atom,
-%!   +DOM:list,
-%!   +Out:oneof([atom,stream]),
-%!   +Options:list(nvpair)
-%! ) is det.
-
-dom_to_xml_file(DTD_Name, DOM, Out, Options1):-
-  is_stream(Out), !,
-  new_dtd(DTD_Name, DTD),
-  % Retrieve the first DTD file with the given name.
-  dtd_file(DTD_Name, DTD_File),
-  load_dtd(DTD, DTD_File),
-  merge_options([dtd(DTD)], Options1, Options2),
-  xml_write(Out, DOM, Options2),
-  close(Out),
-  free_dtd(DTD).
-dom_to_xml_file(DTD_Name, DOM, File, Options):-
-  open(File, write, Out, []),
-  dom_to_xml_file(DTD_Name, DOM, Out, Options).
-
-%! dtd_file(+Name:atom, -File:atom) is det.
-% Returns the first DTD file with the given name or throws an
-% existence error.
-%
-% @arg Name The atomic name of a DTD file.
-% @arg File The atomic name of the path of a DTD file.
-
-dtd_file(Name, File):-
-  % By setting option =solutions= to value =all= we backtrack over
-  % the various file search paths that are defined for =dtd=.
-  once(
-    absolute_file_name(
-      dtd(Name),
-      File,
-      [access(read), file_type(dtd), solutions(all)]
-    )
-  ).
-
-%! file_to_xml(+File:atom, -XML:dom) is det.
-% Reads the XML from the given file and return the DOM.
-
-file_to_xml(File, XML):-
-  setup_call_cleanup(
-    open(File, read, Stream),
-    stream_to_xml(Stream, XML),
-    close(Stream)
-  ).
-
-%! stream_to_xml(+Stream:stream, -XML:dom) is det.
-% Reads the XML DOM from the given stream.
-
-stream_to_xml(Stream, XML):-
-  load_structure(
-    stream(Stream),
-    XML,
-    [
-      dialect(xml),
-      max_errors(-1),
-      shorttag(false),
-      space(remove),
-      syntax_errors(quiet)
-    ]
-  ).
-
-stylesheet_pi(CSS_FileSpecification, PI):-
-  stylesheet_pi('text/css', CSS_FileSpecification, PI).
-
-stylesheet_pi(Type, CSS_FileSpecification, pi(PI)):-
-  http_absolute_location(CSS_FileSpecification, CSS_File, []),
-  format(atom(PI), 'xml-stylesheet type="~w" href="~w"', [Type, CSS_File]).
-
-%! uri_to_xml(+URI:uri, -XML:dom) is det.
-% Returns the HTML Document Object Model (DOM)
-% for the website with the given URI.
-
-uri_to_xml(URI, XML):-
-  setup_call_cleanup(
-    % First perform this setup once/1.
-    http_open(URI, Stream, [timeout(60)]),
-    % The try to make this goal succeed.
-    stream_to_xml(Stream, XML),
-    % If goal succeeds, then perform this cleanup.
-    close(Stream)
-  ).
-
-%! xml_declaration(+Version:version, +Standalone:yes_no)//
-% DCG for XML declarations.
-% Based on the XML version and whether the XML is a standalone file.
-%
-% @arg Version A version of XML.
-% @arg Standalone Whether the XML file is standalone or not.
-%        Possible values:
-%        1. =yes=
-%        2. =no=
-
-xml_declaration(version(Major/Minor/_Variant, _Year), Standalone) -->
-  ['<?xml'],
-  {format(atom(VersionInfo), 'version="~w.~w"', [Major, Minor])},
-  [VersionInfo],
-  {
-    charset(Encoding),
-    format(atom(EncodingDeclaration), 'encoding="~w"', [Encoding])
-  },
-  [EncodingDeclaration],
-  {format(atom(StandaloneDeclaration), 'standalone="~w"', [Standalone])},
-  [StandaloneDeclaration],
-  ['?>'].
-
-%! xml_doctype(+Stream, -DocType) is semidet.
-% Parse a _repositional_ stream and get the  name of the first XML
-% element *and* demand that this   element defines XML namespaces.
-% Fails if the document is illegal XML before the first element.
-%
-% Note that it is not  possible   to  define valid RDF/XML without
-% namespaces, while it is not possible  to define a valid absolute
-% Turtle URI (using <URI>) with a valid xmlns declaration.
-%
-% @author Jan Wielemaker
-% @version 2011
-
-xml_doctype(Stream, DocType):-
-  catch(
-    setup_call_cleanup(
-      make_parser(Stream, Parser, State),
-      sgml_parse(
-        Parser,
-        [
-          call(begin, on_begin),
-          call(cdata, on_cdata),
-          max_errors(1),
-          source(Stream),
-          syntax_errors(quiet)
-        ]
-      ),
-      cleanup_parser(Stream, Parser, State)
-    ),
-    Exception,
-    true
-  ),
-  nonvar(Exception),
-  Exception = tag(DocType).
-
-on_begin(Tag, Attributes, _Parser):-
-  memberchk(xmlns:_=_, Attributes),
-  throw(tag(Tag)).
-
-on_cdata(_CDATA, _Parser):-
-  throw(error(cdata)).
-
-%! xml_inject_attribute(
-%!   +OldDOM:dom,
-%!   +Class:atom,
-%!   +AttributeValuePairs:pair,
-%!   -NewDOM:dom
-%! ) is det.
-% Sometimes we use a DOM that is generated by some external application.
-% This DOM may then miss some attribute that we want to amplify it with.
-%
-% For instance, when GraphViz generated an SVG graph representation, we
-% want to add an onclick attribute to add user interaction.
-%
-% For these cases we want to travese the entire DOM tree and insert a
-% given list of attribute-value pairs into the elements that have the
-% given class.
-
-% onclick="function(){...};"
-xml_inject_attribute([], _Class, _AttributeValuePair, []):-
-  !.
-xml_inject_attribute(
-  [Atom | DOM1],
-  Class,
-  AttributeValuePair,
-  [Atom | DOM2]
-):-
-  atom(Atom),
-  !,
-  xml_inject_attribute(DOM1, Class, AttributeValuePair, DOM2).
-xml_inject_attribute(
-  [element(Type, Attributes1, Contents1) | DOM1],
-  Class,
-  AttributeValuePair,
-  [element(Type, Attributes2, Contents2) | DOM2]
-):-
-  if_then_else(
-    member(class=Class, Attributes1),
-    (
-      xml_current_namespace(svg, SVG_Namespace),
-      member(element(SVG_Namespace:title, [], [Name]), Contents1),
-      format(atom(Function), 'clickme(\'~w\')', [Name]),
-      Attributes2 = [onclick=Function | Attributes1]
-    ),
-    Attributes2 = Attributes1
-  ),
-  xml_inject_attribute(Contents1, Class, AttributeValuePair, Contents2),
-  xml_inject_attribute(DOM1, Class, AttributeValuePair, DOM2).
 

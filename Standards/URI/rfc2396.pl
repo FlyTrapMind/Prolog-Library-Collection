@@ -1,5 +1,5 @@
 :- module(
-  rfc_2396,
+  rfc2396,
   [
 % SURFACE PREDICATES
     uri_reference//1, % -Tree:compound
@@ -981,7 +981,7 @@ user_info__(C) --> escaped_character(C).
 %! uri_to_gv(+URI:atom) is det.
 % Generates a graphical representation of the parse tree for the given URI.
 %
-% ![An example parse of a URI, according to RFC standard 2396.](rfc_2396_example.jpeg)
+% ![An example parse of a URI, according to RFC standard 2396.](rfc2396_example.jpeg)
 
 uri_to_gv(URI):-
   atom_codes(URI, Codes),

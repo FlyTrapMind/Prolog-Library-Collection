@@ -1,5 +1,5 @@
 :- module(
-  rfc_1123,
+  rfc1123,
   [
     rfc1123_datetime//1, % -Tree:compound
     rfc1123_datetime//8, % -Tree:compound

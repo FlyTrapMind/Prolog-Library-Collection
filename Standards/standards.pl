@@ -17,11 +17,13 @@
                     % +Head:list
                     % +Body:list
                     % -Root:list
-    root_element/5 % ?Language:atom
-                   % ?Version:version
-                   % +Head:list
-                   % +Body:list
-                   % -Root:list
+    root_element/5, % ?Language:atom
+                    % ?Version:version
+                    % +Head:list
+                    % +Body:list
+                    % -Root:list
+% METADATA
+    standards_graph/1 % ?Graph:atom
   ]
 ).
 
@@ -30,15 +32,18 @@
 Methods for serving Web pages according to Web specifications.
 
 @author Wouter Beek
-@version Oct2012
+@version 2012/10, 2013/07
 */
 
-:- discontiguous charset/1.
+:- use_module(rdfs(rdfs_build)).
+:- use_module(xml(xml_namespace)).
 
-:- discontiguous is_sgml_based/2.
+:- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
+:- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-:- discontiguous is_xml_based/2.
-
+:- discontiguous(charset/1).
+:- discontiguous(is_sgml_based/2).
+:- discontiguous(is_xml_based/2).
 %! language(
 %!   ?Shorthand:atom,
 %!   ?Version:version,
@@ -47,12 +52,9 @@ Methods for serving Web pages according to Web specifications.
 %!   ?DTD_Link:dtd_link,
 %!   ?Default:boolean
 %! ) is nondet.
-
-:- discontiguous language/6.
-
-:- discontiguous namespace/2.
-
-:- discontiguous root_element/5.
+:- discontiguous(language/6).
+:- discontiguous(namespace/2).
+:- discontiguous(root_element/5).
 
 
 
@@ -481,3 +483,10 @@ language(
   _No_DTD_Link,
   false
 ).
+
+
+
+% METADATA %
+
+standards_graph(std).
+

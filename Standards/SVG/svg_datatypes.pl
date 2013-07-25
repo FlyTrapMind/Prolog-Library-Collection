@@ -7,6 +7,8 @@
     svg_coordinate//3, % -Tree:compound
                        % ?Amount:float
                        % ?Unit:atom
+    svg_extension//2, % -Tree:compound
+                      % ?Extension:iri
     svg_length//3, % -Tree:compound
                    % ?Amount:float
                    % ?Unit:atom
@@ -19,6 +21,8 @@
                   % ?YAlign:oneof([min,mid,max,none])
     svg_defer//2, % -Tree:compound
                   % ?Defer:boolean
+    svg_feature_string//2, % -Tree:compound
+                           % ?Feature:atom
     svg_meet_or_slice//2 % -Tree:compound
                          % ?Value:oneof([meet,slice])
   ]
@@ -136,7 +140,8 @@ svg_profile_name(profile_name(tiny), tiny) --> "tiny".
 %      Force uniform scaling.
 %      Align the svg_min_x// of the element's svg_view_box// with
 %      the smallest X value of the viewport.
-%      Align the svg_min_y// of the element's svg_view_box// with the smallest Y value of the viewport.
+%      Align the svg_min_y// of the element's svg_view_box// with
+%      the smallest Y value of the viewport.
 %   3. `xMidYMin`
 %      Force uniform scaling.
 %      Align the midpoint X value of the element's svg_view_box// with
@@ -163,6 +168,16 @@ svg_align(align(x(X),y(Y)), X, Y) -->
 
 svg_defer(defer(false), false) --> [].
 scg_defer(defer(true), true) --> "defer".
+
+%! svg_extension(-Tree:compound, ?Extension:iri)//
+% @tbd Add extensions IRIs. (What are these anyway?)
+
+svg_extension(extension(Extension), Extension) --> dcg_word(Extension).
+
+%! svg_feature_string(-Tree:compound, ?Feature:iri)//
+% @tbd Add feature string IRIs.
+
+svg_feature_string(feature_string(Feature), Feature) --> dcg_word(Feature).
 
 %! svg_meet_or_slice(-Tree:compound, ?Value:oneof([meet,slice]))//
 % The scg_meet_or_slice// parameter is optional and, if provided,
