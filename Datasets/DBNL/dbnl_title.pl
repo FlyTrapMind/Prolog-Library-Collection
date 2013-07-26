@@ -177,8 +177,7 @@ dbnl_title0(Graph, Title) -->
   dbnl_title0(Graph, Title).
 % Title + year.
 dbnl_title0(Graph, Title) -->
-  [element(span, [class='titelpagina-titel'], [Atom])],
-  !,
+  [element(span, [class='titelpagina-titel'], [Atom])], !,
   % A year may occur after the title.
   {
     dcg_phrase(
@@ -189,39 +188,32 @@ dbnl_title0(Graph, Title) -->
   dbnl_title0(Graph, Title).
 % Summary
 dbnl_title0(Graph, Title) -->
-  [element(h4, [], ['Algemene informatie/samenvatting(en)'])],
-  !,
+  [element(h4, [], ['Algemene informatie/samenvatting(en)'])], !,
   dbnl_summary(Graph, Title),
   dbnl_title0(Graph, Title).
 % Primary text links.
 dbnl_title0(Graph, Title) -->
-  [element(h4, [], ['Beschikbare tekst in de dbnl'])],
-  !,
-  % Due to determinism issues we cannot use dcg_plus//1 here.
-  dcg_star(dbnl_primary_text_link(Graph, Title)),
+  [element(h4, [], ['Beschikbare tekst in de dbnl'])], !,
+  dcg_multi(dbnl_primary_text_link(Graph, Title), between(1,_)),
   dbnl_title0(Graph, Title).
 % Secondary text links.
 dbnl_title0(Graph, Title) -->
-  [element(h4, [], ['Secundaire literatuur in de dbnl'])],
-  !,
+  [element(h4, [], ['Secundaire literatuur in de dbnl'])], !,
 {gtrace},
   dbnl_summary(Graph, Title),
   dbnl_title0(Graph, Title).
 % Skip linebreaks.
 dbnl_title0(Graph, Title) -->
-  [element(br, _, _)],
-  !,
+  [element(br, _, _)], !,
   dbnl_title0(Graph, Title).
 % Skip italic text message on availability of scans.
 dbnl_title0(Graph, Title) -->
-  [element(i, [], ['(alleen scans beschikbaar)'])],
-  !,
+  [element(i, [], ['(alleen scans beschikbaar)'])], !,
   dbnl_title0(Graph, Title).
 % Atom
 dbnl_title0(Graph, Title) -->
   [Atom],
-  atom(Atom),
-  !,
+  atom(Atom), !,
 {gtrace},
   dbnl_title0(Graph, Title).
 dbnl_title0(_Graph, _Title) --> [], !.

@@ -7,13 +7,10 @@
     dcg_all_atom//1, % -Atom:atom
     dcg_end//0,
     dcg_until//2, % :End:dcg
-                  % -Codes:list(code)
-    dcg_until_atom//2, % :End:dcg
-                       % -Atom:atom
-    dcg_without//2, % :End:dcg
-                    % -Codes:list(code)
-    dcg_without_atom//2, % :End:dcg
-                         % -Atom:atom
+                  % ?Value
+    dcg_until//3, % +Options:list(nvpair)
+                  % :End:dcg
+                  % ?Value
 
 % DEBUG
     dcg_debug//0,
@@ -41,10 +38,13 @@
     dcg_list//2, % +DCG_Bodies:list(dcg)
                  % :Separator:dcg
     dcg_multi//2, % :DCG_Body:dcg
-                  % ?Occurrences:integer
+                  % ?Occurrences:or([integer,between/3])
     dcg_multi//3, % :DCG_Body:dcg
-                  % +Max:integer
-                  % +Min:integer
+                  % ?Occurrences:or([integer,between/3])
+                  % ?Arguments:list
+    dcg_multi_atom//3, % :DCG_Body
+                       % ?Occurrences
+                       % ?Value:atom
     dcg_multi_list//2, % :DCG_Body:dcg
                        % +List:list
     dcg_multi_list//3, % :DCG_Body:dcg
@@ -70,11 +70,6 @@
                   % ?In:atom
                   % ?Out:atom
 
-% RE
-    dcg_plus//1, % :DCG_Body:dcg
-    dcg_questionmark//1, % :DCG_Body:dcg
-    dcg_star//1, % :DCG_Body:dcg
-
 % REPLACE
     dcg_replace//2 % +From:list(code)
                    % +To:list(code)
@@ -98,15 +93,9 @@ Shall we use DCGs for parsing or REs?
 We need DCGs, because they allow us to define a complex grammar in a
 modular way.
 
-REs allow easy quantification using the _Wilcards_ =|*|=, =|+|=, =|?|=,
-and the positive integers. This is why we add the DCG rules:
-  * dcg_plus//1
-  * dcg_questionmark//1
-  * dcg_star//1
-
 @author Wouter Beek
-@tbd Ask about the combination of meta_predicate/1 and rdf_meta/1.
-@tbd Ask about the combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
+@tbd The combination of meta_predicate/1 and rdf_meta/1.
+@tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
 @version 2013/05-2013/07
 */
 
@@ -121,6 +110,7 @@ and the positive integers. This is why we add the DCG rules:
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+:- use_module(math(math_ext)).
 :- use_module(os(os_ext)).
 
 % The number of spaces that go into one indent.
@@ -131,12 +121,11 @@ and the positive integers. This is why we add the DCG rules:
   'The default indentation used by the print predicates.'
 ).
 
-% ALL/UNTIL %
-:- meta_predicate(dcg_until(//,-,+,-)).
-:- meta_predicate(dcg_until_atom(//,-,+,-)).
-:- meta_predicate(dcg_without(//,-,+,-)).
-:- meta_predicate(dcg_without_atom(//,-,+,-)).
-% LIST %
+% ALL/UNTIL
+:- meta_predicate(dcg_until(//,?,?,?)).
+:- meta_predicate(dcg_until(+,//,?,?,?)).
+:- meta_predicate(dcg_until_(+,//,?,?,?)).
+% LIST
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
@@ -149,27 +138,26 @@ and the positive integers. This is why we add the DCG rules:
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
-% MULTIPLE OCCURRENCES %
+% MULTIPLE OCCURRENCES
 :- meta_predicate(dcg_list(//,?,?)).
 :- meta_predicate(dcg_list(//,//,?,?)).
 :- meta_predicate(dcg_list_(+,+,//,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?)).
-:- meta_predicate(dcg_multi(//,+,+,?,?)).
+:- meta_predicate(dcg_multi(//,?,?,?,?)).
+:- meta_predicate(dcg_multi_atom(//,?,?,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,//,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(3,?,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
-% PEEK %
+:- meta_predicate(dcg_multi_var(3,?,?,?,?)).
+% PEEK
 :- meta_predicate(dcg_peek_length(?,?,?,?)).
 :- meta_predicate(dcg_peek_length(+,?,?,?,?)).
-% PHRASE EXTENSIONS %
+% PHRASE EXTENSIONS
 :- meta_predicate(dcg_phrase(//,?)).
 :- meta_predicate(dcg_phrase(//,?,?)).
-% RE %
-:- meta_predicate(dcg_plus(//,?,?)).
-:- meta_predicate(dcg_questionmark(//,?,?)).
-:- meta_predicate(dcg_star(//,?,?)).
-% REPLACE %
+% REPLACE
 :- meta_predicate(dcg_replace(//,//,?,?)).
 
 
@@ -190,49 +178,63 @@ dcg_all_atom(Atom) -->
   {atom_codes(Atom, Codes)},
   dcg_all(Codes).
 
-%! dcg_until(+End:dcg, -Codes:list(code))// is det.
-% Returns the codes that occur before =End= can be consumed.
-%
-% =End= is not an arbitrary DCG body, since disjunction does not play out
-% well (note that =End= occurs before and fater the =|-->|=).
-%
-% We enforce determinism after the first occurrence of =End= is consumed.
-%
-% @tbd There are problems with list elements: meta_predicate/1 cannot
-%      identity the modules for DCGs in this case.
+dcg_until(DCG_End, Value) -->
+  dcg_until([], DCG_End, Value).
 
-dcg_until(End, []), End --> End, !.
-dcg_until(End, [H|T]) -->
+%! dcg_until(+Options:list(nvpair), :DCG_End, ?Value)// is det.
+% Returns the codes that occur before `DCG_End` can be consumed.
+%
+% The following options are supported:
+%   * =|end_mode(?EndMode:oneof([exclusive,inclusive]))|=
+%   * =|output_format(?OutFormat:oneof([atom,codes]))|=
+%
+% @arg A list of name-value pairs.
+% @arg DCG_End Not an arbitrary DCG body, since disjunction
+%      does not play out well.
+% @arg Value Either an atom or a list of codes (see options).
+
+dcg_until(O, DCG_End, Out) -->
+  {var(Out)}, !,
+  dcg_until_(O, DCG_End, Codes),
+  {
+    option(output_format(OutFormat), O, codes),
+    (
+      OutFormat == atom
+    ->
+      atom_codes(Out, Codes)
+    ;
+      Out = Codes
+    )
+  }.
+dcg_until(O, DCG_End, In) -->
+  {nonvar(In)}, !,
+  {
+    option(output_format(OutFormat), O, codes),
+    (
+      OutFormat == atom
+    ->
+      atom_codes(In, Codes)
+    ;
+      Codes = In
+    )
+  },
+  dcg_until_(O, DCG_End, Codes).
+
+dcg_until_(O, DCG_End, []), InclusiveExclusive -->
+  DCG_End, !,
+  {
+    option(end_mode(EndMode), O, exclusive),
+    (
+      EndMode == inclusive
+    ->
+      InclusiveExclusive = dcg_void
+    ;
+      InclusiveExclusive = DCG_End
+    )
+  }.
+dcg_until_(O, DCG_End, [H|T]) -->
   [H],
-  dcg_until(End, T).
-
-%! dcg_until_atom(+End:dcg, -Atom:atom)// is det.
-% @see dcg_until//2
-
-dcg_until_atom(End, Atom) -->
-  {var(Atom)},
-  dcg_until(End, Codes),
-  {atom_codes(Atom, Codes)}.
-dcg_until_atom(End, Atom) -->
-  {nonvar(Atom)},
-  {atom_codes(Atom, Codes)},
-  dcg_until(End, Codes).
-
-%! dcg_without(+End:dcg, -Codes:list(code))// is det.
-
-dcg_without(End, []) --> End, !.
-dcg_without(End, [H|T]) -->
-  [H],
-  dcg_without(End, T).
-
-dcg_without_atom(End, Atom) -->
-  {var(Atom)},
-  dcg_without(End, Codes),
-  {atom_codes(Atom, Codes)}.
-dcg_without_atom(End, Atom) -->
-  {nonvar(Atom)},
-  {atom_codes(Atom, Codes)},
-  dcg_without(End, Codes).
+  dcg_until_(O, DCG_End, T).
 
 
 
@@ -333,36 +335,115 @@ dcg_list_(Mod, [H|T], Sep) -->
   Mod:H, Sep,
   dcg_list_(Mod, T, Sep).
 
-%! dcg_multi(:DCG_Body, ?Occurrences:integer)
+%! dcg_multi(:DCG_Body, ?Occurrences)//
 % Counts the consecutive occurrences of the given DCG body.
 % Or produces the given number of occurrences of the given DCG body.
+%
+% The nesting of applications of dcg_multi//2 is allowed (see example).
+%
+% ## Example
+%
+% ~~~
+% ?- phrase(dcg_multi(dcg_multi(one, 3), 4, X), Y).
+% X = ["111", "111", "111", "111"],
+% Y = "111111111111".
+% ~~~
+%
+% @arg DCG_Body A DCG rule.
+% @arg Occurrences When  instantiated, either an integer or a compound term
+%      of the form=|`between(+Min:integer,+Max:integer)|=.
+%      When uninstantiated, this can instantiate with an integer.
 
-dcg_multi(DCG_Body, N) -->
-  {nonvar(N)}, !,
-  dcg_multi_nonvar(DCG_Body, N).
+dcg_multi(DCG_Body, Occurrences) -->
+  {nonvar(Occurrences)}, !,
+  dcg_multi_nonvar(DCG_Body, Occurrences).
 dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
 
-dcg_multi(DCG_Body, Max, Min) -->
-  {Max >= Min},
-  dcg_multi(DCG_Body, Max), !.
-dcg_multi(DCG_Body, Max, Min) -->
-  {Max >= Min},
-  {NewMax is Max - 1},
-  dcg_multi(DCG_Body, NewMax, Min).
+%! dcg_multi_atom(:DCG_Body, ?Occurrences, ?Codes:list(code))//
 
-dcg_multi_nonvar(_DCGBody, 0) --> !, [].
+dcg_multi(DCG_Body, Occurrences, As) -->
+  {nonvar(Occurrences)}, !,
+  dcg_multi_nonvar(DCG_Body, Occurrences, As).
+dcg_multi(DCG_Body, N, As) -->
+  {var(N)}, !,
+  dcg_multi_var(DCG_Body, N, As).
+
+%! dcg_multi_atom(:DCG_Body, ?Occurrences, ?Value:atom)//
+% ## Example
+%
+% ~~~
+% ?- phrase(dcg_multi(dcg_multi_atom(one, 3), 4, X), Y).
+% X = ['111', '111', '111', '111'],
+% Y = "111111111111".
+% ~~~
+%
+% @see Like dcg_multi//3, but returns an atom.
+
+dcg_multi_atom(DCG_Body, Occurrences, Atom) -->
+  {nonvar(Atom)}, !,
+  {atom_codes(Atom, Codes)},
+  dcg_multi(DCG_Body, Occurrences, Codes).
+dcg_multi_atom(DCG_Body, Occurrences, Atom) -->
+  dcg_multi(DCG_Body, Occurrences, Codes),
+  {atom_codes(Atom, Codes)}.
+
+% Upper and lower bound.
+dcg_multi_nonvar(DCG_Body, between(Min,Max)) -->
+  {integer(Min), integer(Max)}, !,
+  {rbetween(Min, Max, N)},
+  dcg_multi_nonvar(DCG_Body, N).
+% Upper bound.
+dcg_multi_nonvar(DCG_Body, between(Min,Max)) -->
+  {integer(Max)}, !,
+  {rbetween(Min, Max, N)},
+  dcg_multi_nonvar(DCG_Body, N).
+% Lower bound: from small to big.
+dcg_multi_nonvar(DCG_Body, between(Min,_Max)) -->
+  {integer(Min)}, !,
+  {between(Min, inf, N)},
+  dcg_multi_nonvar(DCG_Body, N).
+dcg_multi_nonvar(_DCG_Body, 0) --> !, [].
 dcg_multi_nonvar(DCG_Body, N) -->
+  {N >= 0},
   DCG_Body,
   {NewN is N - 1},
   dcg_multi_nonvar(DCG_Body, NewN).
 
+% Upper and lower bound.
+dcg_multi_nonvar(DCG_Body, between(Min,Max), As) -->
+  {integer(Min), integer(Max)}, !,
+  {rbetween(Min, Max, N)},
+  dcg_multi_nonvar(DCG_Body, N, As).
+% Upper bound.
+dcg_multi_nonvar(DCG_Body, between(Min,Max), As) -->
+  {integer(Max)}, !,
+  {rbetween(Min, Max, N)},
+  dcg_multi_nonvar(DCG_Body, N, As).
+% Lower bound: from small to big.
+dcg_multi_nonvar(DCG_Body, between(Min,_Max), As) -->
+  {integer(Min)}, !,
+  {between(Min, inf, N)},
+  dcg_multi_nonvar(DCG_Body, N, As).
+dcg_multi_nonvar(_DCG_Body, 0, []) --> !, [].
+dcg_multi_nonvar(DCG_Body, N, [A|As]) -->
+  {N >= 0},
+  dcg_call(DCG_Body, A),
+  {NewN is N - 1},
+  dcg_multi_nonvar(DCG_Body, NewN, As).
+
 dcg_multi_var(DCG_Body, N) -->
-  DCG_Body, !,
+  DCG_Body,
   dcg_multi_var(DCG_Body, N_),
   {N is N_ + 1}.
-dcg_multi_var(_DCGBody, 0) --> [].
+dcg_multi_var(_DCG_Body, 0) --> [].
+
+dcg_multi_var(DCG_Body, NewN, [A|As]) -->
+  dcg_call(DCG_Body, A),
+  dcg_multi_var(DCG_Body, N, As),
+  {NewN is N + 1}.
+dcg_multi_var(_DCG_Body, 0, []) --> [].
 
 %! dcg_multi_list(:DCG_Body, ?List:list)//
 % Parses/generates multiple occurrences of a DCG rule based on
@@ -480,40 +561,6 @@ dcg_phrase(DCG_Body, In1, Out1):-
   atom_codes(In1, In2),
   dcg_phrase(DCG_Body, In2, Out2),
   atom_codes(Out1, Out2).
-
-
-
-% RE %
-
-%! dcg_plus(:DCG_Body:dcg) is nondet.
-% Applies the given DCG_Body one or more times to the codes list.
-%
-% The longest codes list that can be parsed by the given DCG body
-% is returned first. The singleton codes list is retuned last.
-%
-% @compat Inspired by the regular expression operator =+=.
-
-dcg_plus(DCG_Body) -->
-  DCG_Body.
-dcg_plus(DCG_Body) -->
-  DCG_Body,
-  dcg_plus(DCG_Body).
-
-dcg_questionmark(DCG_Body) -->
-  (DCG_Body ; "").
-
-%! dcg_star(:DCG_Body:dcg) is nondet.
-% Applies the given DCG_Body zero or more times to the codes list.
-%
-% The longest codes list that can be parsed by the given DCG body
-% is returned first. The empty codes list is retuned last.
-%
-% @compat Inspired by the regular expression operator =*=.
-
-dcg_star(_DCGBody) --> [].
-dcg_star(DCG_Body) -->
-  DCG_Body,
-  dcg_star(DCG_Body).
 
 
 

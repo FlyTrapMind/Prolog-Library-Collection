@@ -25,9 +25,10 @@ Support for Cascading Style Sheets.
 
 css_escape -->
   "\\",
-  dcg_plus(hexadecimal_digit),
-  dcg_questionmark(
-    (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space)
+  dcg_multi(hexadecimal_digit, between(1,_)),
+  dcg_multi(
+    (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space),
+    between(0,1)
   ).
 
 nmstart --> underscore.

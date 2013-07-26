@@ -715,7 +715,7 @@ http_version(
 
 last_chunk(T0, ChunkExtension) -->
   % A positive number of zeros.
-  dcg_plus(zero),
+  dcg_multi(zero, between(1,_)),
   % Optional chunk extension (attribute-value pairs).
   (
     "",
@@ -1100,7 +1100,7 @@ qvalue(qvalue(QValue), QValue) -->
 qvalue(qvalue(1.0), 1.0) -->
   one,
   dot,
-  dcg_multi(zero, 3, 0).
+  dcg_multi(zero, between(0,3)).
 
 %! range_unit(-Tree:compound, ?RangeUnit:atom)//
 % HTTP/1.1 allows a client to request that only part (a range of) the

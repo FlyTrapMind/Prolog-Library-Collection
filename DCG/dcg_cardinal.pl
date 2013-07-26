@@ -141,7 +141,7 @@ digits_to_decimal_number(Digit, Radix, M1, M) -->
 
 exponent -->
   exponent_sign,
-  dcg_plus(decimal_digit).
+  dcg_multi(decimal_digit, between(1,_)).
 
 exponent_sign --> e.
 

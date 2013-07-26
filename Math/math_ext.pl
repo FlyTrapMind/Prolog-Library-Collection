@@ -63,6 +63,9 @@
                       % -Random:number
     random_coordinate/2, % +Size:size,
                          % -Coordinate:coordinate
+    rbetween/3, % +Low:integer
+                % +High:integer
+                % ?Value:integer
     square/2 % +X:float
              % -Square:float
   ]
@@ -435,6 +438,23 @@ random_betwixt_(LowerLimit, UpperLimit, Random):-
 
 random_coordinate(size(Dimension, Sizes), coordinate(Dimension, Args)):-
   maplist(random_betwixt, Sizes, Args).
+
+%! rbetween(?Min:integer, +Max:integer, ?Value:integer) is semidet.
+% If `Min` and `Max` are given, `Value` is instantiated with `Max` and
+% whith predecessor integers upon backtracking, until `Value` is `Min`.
+%
+% If only `Max` is given there is no lowest value for `Value`.
+
+rbetween(Min, Max, Value):-
+  nonvar(Max), (nonvar(Min) -> Min =< Max ; true),
+  rbetween(Min, Max, Max, Value).
+
+rbetween(Min, Value, _Max, Value):-
+  nonvar(Min), Min == Value, !.
+rbetween(_Min, Value, _Max, Value).
+rbetween(Min, Between, Max, Value):-
+  NewBetween is Between - 1,
+  rbetween(Min, NewBetween, Max, Value).
 
 %! square(+X:float, -Square:float) is det.
 % Returns the square of the given number.
