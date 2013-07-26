@@ -226,6 +226,7 @@ can determine the value of the four components and fragment as
 :- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
+:- use_module(library(plunit)).
 
 
 
@@ -989,16 +990,39 @@ uri_to_gv(URI):-
   absolute_file_name(project(temp), File, [access(write), file_type(jpeg)]),
   convert_tree_to_gv([name(URI)], Tree, dot, jpeg, File).
 
-test1:-
-  maplist(
-    test1,
-    [
-      'https://www.example.com/a/b;g/c?q=aba#rr',
-      'https://11.22.33.44:5566/a/b;g/c?q=aba#rr'
-    ]
-  ).
 
-test1(URI):-
+
+:- begin_tests(rfc2396).
+
+:- use_module(generics(print_ext)).
+:- use_module(library(apply)).
+
+rfc2396_atom('https://www.example.com/a/b;g/c?q=aba#rr').
+rfc2396_atom('https://11.22.33.44:5566/a/b;g/c?q=aba#rr').
+
+rfc2396_term(http, 'www.example.com', [[a,b],[c,d],[e],[f]], 'q=aap', me).
+rfc2396_term(
+  https,
+  authority(wouter,[44,55,33,11],7777),
+  [[a,b],[c,d],[e],[f]],
+  'q=aap',
+  me
+).
+
+test(
+  rfc2396_generate,
+  [forall(rfc2396_term(Scheme, Authority, Path, Query, Fragment))]
+):-
+  once(
+    phrase(
+      uri_reference(Tree, Scheme, Authority, Path, Query, Fragment),
+      Codes
+    )
+  ),
+  atom_codes(URI, Codes),
+  maplist(formatnl, [Tree,URI]).
+
+test(rfc2396_parse, [forall(rfc2396_atom(URI))]):-
   atom_codes(URI, Codes),
   once(
     phrase(
@@ -1007,24 +1031,4 @@ test1(URI):-
     )
   ),
   maplist(formatnl, [Tree, Scheme, Authority, Path, Query, Fragment]).
-
-test2:-
-  test2(http, 'www.example.com', [[a,b],[c,d],[e],[f]], 'q=aap', me),
-  test2(
-    https,
-    authority(wouter,[44,55,33,11],7777),
-    [[a,b],[c,d],[e],[f]],
-    'q=aap',
-    me
-  ).
-
-test2(Scheme, Authority, Path, Query, Fragment):-
-  once(
-    phrase(
-      uri_reference(_Tree, Scheme, Authority, Path, Query, Fragment),
-      Codes
-    )
-  ),
-  atom_codes(URI, Codes),
-  formatnl(URI).
 

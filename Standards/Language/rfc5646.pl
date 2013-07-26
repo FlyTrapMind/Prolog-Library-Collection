@@ -1,6 +1,8 @@
 :- module(
   rfc5646,
   [
+    rfc5646_language_tag//2 % -Tree:compound
+                            % ?LanguageTag:compound
   ]
 ).
 
@@ -115,6 +117,7 @@ A tag is valid if:
 :- use_module(lang('iso639-1')). % Used in meta-call.
 :- use_module(lang('iso639-2')). % Used in meta-call.
 :- use_module(library(pio)).
+:- use_module(library(plunit)).
 
 :- meta_predicate(iana_find(//)).
 
@@ -293,10 +296,12 @@ extension_components(extension_components('-',H), [H]) -->
 
 %! extensions(-Tree:compound, ?Extensions:list(list(atomic)))//
 
-extensions(extensions(T1,T2), [H|T]) -->
+extensions(extensions('-',T1,T2), [H|T]) -->
+  hyphen_minus,
   extension(T1, H),
   extensions(T2, T).
-extensions(extensions(T1), [H]) -->
+extensions(extensions('-',T1), [H]) -->
+  hyphen_minus,
   extension(T1, H).
 
 %! grandfathered(-Tree:compound, ?LanguageTag:list(atom))//
@@ -392,22 +397,30 @@ langtag(
   PrivateLanguage
 ) -->
   language(T1, Primary, Extended),
-  ("" ; hyphen_minus, script(T2, Script)),
-  ("" ; hyphen_minus, region(T3, Region)),
-  ("" ; variants(T4, Variants)),
-  ("" ; extensions(T5, Extensions)),
-  ("" ; hyphen_minus, {T6 = '-'}, privateuse(T7, PrivateLanguage)),
-  {parse_tree(langtag, [T1,T2,T3,T4,T5,T6,T7], T0)}.
+  (hyphen_minus, {H1 = '-'}, script(T2, Script) ; ""),
+  (hyphen_minus, {H2 = '-'}, region(T3, Region) ; ""),
+  (variants(T4, Variants) ; ""),
+  (extensions(T5, Extensions) ; ""),
+  (hyphen_minus, {H3 = '-'}, privateuse(T6, PrivateLanguage) ; ""),
+  {parse_tree(langtag, [T1,H1,T2,H2,T3,T4,T5,H3,T6], T0)}.
 
-%! 'Language-Tag'//
+%! rfc5646_language_tag//
 % ~~~{.abnf}
 % Language-Tag  = langtag / privateuse / grandfathered
 % ~~~
 
 % Normal language tags.
-'Language-Tag'(
-  'Language-Tag'(T1),
-  'Language-Tag'(Primary,Extended,Script,Region,Variants,Extensions,Private)
+rfc5646_language_tag(
+  rfc5646_language_tag(T1),
+  rfc5646_language_tag(
+    Primary,
+    Extended,
+    Script,
+    Region,
+    Variants,
+    Extensions,
+    Private
+  )
 ) -->
   langtag(
     T1,
@@ -420,10 +433,10 @@ langtag(
     Private
   ).
 % Private use tags.
-'Language-Tag'('Language-Tag'(T1), LanguageTag) -->
+rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
   privateuse(T1, LanguageTag).
 % Grandfathered tags.
-'Language-Tag'('Language-Tag'(T1), LanguageTag) -->
+rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
   grandfathered(T1, LanguageTag).
 
 %! language(-Tree:compound, ?Language:atom, ?LanguageExtensions:list(atom))//
@@ -671,7 +684,7 @@ regular(regular('zh-xiang'), [zh,xiang]) --> "zh-xiang".
 % `sr-Latn` represents Serbian written using the Latin script.
 
 script(script(Script), Script) -->
-  dcg_multi_atom(decimal_digit, 4, Script).
+  dcg_multi_atom(letter, 4, Script).
 
 %! singleton(-Tree:compound, ?Char:atomic)//
 % Single alphanumerics. x// is reserved for private use.
@@ -764,4 +777,26 @@ variants(variants('-',T1,T2), [H|T]) -->
 variants(variants('-',T1), [H]) -->
   hyphen_minus,
   variant(T1, H).
+
+
+
+:- begin_tests(rfc5646).
+
+:- use_module(generics(print_ext)).
+:- use_module(library(apply)).
+
+rfc5646_atom('zh').
+rfc5646_atom('zh-Latn').
+rfc5646_atom('zh-Latn-CN').
+rfc5646_atom('zh-Latn-CN-variant1').
+rfc5646_atom('zh-Latn-CN-variant1-a-extend1').
+rfc5646_atom('zh-Latn-CN-variant1-a-extend1-x-wadegile').
+rfc5646_atom('zh-Latn-CN-variant1-a-extend1-x-wadegile-private1').
+
+test(rfc5646_parse, [forall(rfc5646_atom(LanguageTag))]):-
+  atom_codes(LanguageTag, Codes),
+  once(phrase(rfc5646_language_tag(Tree, Term), Codes)),
+  maplist(formatnl, [Tree, Term]).
+
+:- end_tests(rfc5646).
 
