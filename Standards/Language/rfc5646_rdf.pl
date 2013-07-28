@@ -8,7 +8,6 @@ Convert the IANA registry text file for RFC 5646 to RDF.
 @version 2013/07
 */
 
-:- use_module(dcg(dcg_generic)).
 :- use_module(lang(rfc5646_iana)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -16,6 +15,8 @@ Convert the IANA registry text file for RFC 5646 to RDF.
 :- use_module(rdfs(rdfs_build)).
 :- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(rfc5646, 'http://www.rfc5646.com/').
 
 rfc5646_graph(rfc5646).
 rfc5646_host([www,rfc5646,com]).
@@ -97,22 +98,7 @@ create_subtag_resource(Type, Subtag, G, LanguageSubtag):-
   rdfs_assert_label(LanguageSubtag, Subtag, G).
 
 init_rfc5646_rdf:-
-gtrace,
   rfc5646_graph(G),
-  rfc5646_scheme(Scheme),
-  rfc5646_host(Host),
-  dcg_phrase(
-    rfc2396_uri_reference(
-      _Tree,
-      Scheme,
-      authority(_User,Host,_Port),
-      [],
-      _Query,
-      _Fragment
-    ),
-    BaseURI
-  ),
-  xml_register_namespace(rfc5646, BaseURI),
   rdfs_assert_class(rfc5646:'Subtag', G),
   rdfs_assert_subclass(rfc5646:'Extension', rfc5646:'Subtag', G),
   rdfs_assert_label(rfc5646:'Extension', en, extension, G),

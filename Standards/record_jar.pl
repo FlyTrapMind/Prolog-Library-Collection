@@ -152,6 +152,14 @@ encodingSig(Encoding) -->
   {digits_to_decimal(DecimalDigits, C)}.
 
 %! field(?Field:nvpair)//
+%
+% ## Single line / multiple lines
+%
+% A field is a single, logical line of characters.
+% However, to accommodate line limits, readability, and presentational
+% purposes, the field-body portion of a field can be split into a
+% multiple-line representation; this is called *folding*.
+%
 % ~~~{.abnf}
 % field = ( field-name field-sep field-body CRLF )
 % ~~~
@@ -163,6 +171,15 @@ field(Name=Body) -->
   'CRLF'.
 
 %! 'field-body'(?Body:list(atom))//
+% The field-body contains the data value. Logically, the field-body
+% consists of a single line of text using any combination of characters
+% from the Universal Character Set followed by a `CRLF` (newline).
+%
+% ## Escaping
+%
+% The carriage return, newline, and tab characters, when they occur in the
+% data value stored in the field-body, are represented by their common
+% backslash escapes (=\r=, =\n=, and =\t= respectively).
 %
 % ~~~{.abnf}
 % field-body   = *(continuation 1*character)
@@ -175,25 +192,62 @@ field(Name=Body) -->
   {maplist(atom_codes, Body, CodeLists)}.
 
 %! 'field-name'(-Tree:compound, ?Name:atom)//
+% The field-name is an identifer. Field-names consist of a sequence of
+% Unicode characters. Whitespace characters and colon (=:=, =%x3A=) are
+% not permitted in a field-name.
+%
+% ## Case
+%
+% Field-names are case sensitive.  Upper and lowercase letters are
+% often used to visually break up the name, for example using
+% CamelCase.  It is a common convention that field names use an initial
+% capital letter, although this is not enforced.
 %
 % ~~~{.abnf}
 % field-name = 1*character
 % ~~~
+%
+% ## Inconsistency
+%
+% The ABNF seems to be wrong. Th working draft states the following:
+% ~~~{.txt}
+% Whitespace characters and colon (":", %x3A) are not permitted in a
+% field-name.
+% ~~~
+% We therefore introduce the extra DCG rule 'field-name-character'//1.
 
 'field-name'(Name) -->
-  dcg_multi(character, between(1,_), Codes),
+  dcg_multi('field-name-character', between(1,_), Codes),
   {atom_codes(Name, Codes)}.
 
+'field-name-character'(C) -->
+  character(C),
+  % Explicitly exclude space// and colon//.
+  {\+ memberchk(C, [32, 58])}.
+
 %! 'field-sep'//
+% The field separator is the colon character (=:=, =%x3A=).
+% The separator MAY be surrounded on either side by any amount of
+% horizontal whitespace (tab or space characters). The normal
+% convention is one space on each side.
 %
 % ~~~{.abnf}
 % field-sep = *SP ":" *SP
 % ~~~
+%
+% ## Inconsistency
+%
+% The ABNF does not mention the (horizontal) tab, only the space character.
+% We solve this by adding a DCG rule called 'field-sep-space'//.
 
 'field-sep' -->
   dcg_multi('SP'),
   ":",
   dcg_multi('SP').
+
+'field-sep-space' -->
+  'SP'.
+'field-sep-space' -->
 
 %! 'record-jar'(?Encoding:atom, ?Records:list(list(nvpair)))//
 %

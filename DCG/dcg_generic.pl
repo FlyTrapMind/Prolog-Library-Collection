@@ -122,6 +122,7 @@ modular way.
 :- meta_predicate(dcg_until(//,?,?,?)).
 :- meta_predicate(dcg_until(+,//,?,?,?)).
 :- meta_predicate(dcg_until_(+,//,?,?,?)).
+:- meta_predicate(dcg_until__(+,//,?,?,?)).
 % LIST
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
@@ -448,32 +449,42 @@ dcg_multi_atom(DCG_Body, Occurrences, Atom) -->
   dcg_multi(DCG_Body, Occurrences, Codes),
   {atom_codes(Atom, Codes)}.
 
+dcg_multi_nonvar(_DCG_Body, N, SolC, SolC) -->
+  {N == 0}, !, [].
+dcg_multi_nonvar(DCG_Body, N, C, SolC) -->
+  dcg_call(DCG_Body), !,
+  {dcg_multi_pred(N, NewN), NewC is C + 1},
+  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC).
+dcg_multi_nonvar(_DCG_Body, _N, SolC, SolC) --> [].
+
+dcg_multi_nonvar(_DCG_Body, N, SolC, SolC, []) -->
+  {N == 0}, !, [].
+dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s]) -->
+  dcg_call(DCG_Body, A1), !,
+  {dcg_multi_pred(N, NewN), NewC is C + 1},
+  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC, A1s).
+dcg_multi_nonvar(_DCG_Body, _N, SolC, SolC, []) --> [].
+
+dcg_multi_nonvar(_DCG_Body, N, SolC, SolC, [], []) -->
+  {N == 0}, !, [].
+dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s], [A2|A2s]) -->
+  dcg_call(DCG_Body, A1, A2), !,
+  {dcg_multi_pred(N, NewN), NewC is C + 1},
+  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC, A1s, A2s).
+dcg_multi_nonvar(_DCG_Body, _N, SolC, SolC, [], []) --> [].
+
 dcg_multi_occurrences(between(Min,Max), Min, Max):-
-  integer(Min), integer(Max), !,
+  integer(Min), integer(Max), !.
 dcg_multi_occurrences(between(_Min,Max), 0, Max):-
   integer(Max), !.
-dcg_multi_occurrences(between(Min,_Max), Min, inf):-
+dcg_multi_occurrences(between(Min,_Max), Min, _Inf):-
   integer(Min), !.
 dcg_multi_occurrences(N, N, N):-
   integer(N), !.
 
-dcg_multi_nonvar(_DCG_Body, 0, SolC, SolC) --> [], !.
-dcg_multi_nonvar(DCG_Body, N, C, SolC) -->
-  dcg_call(DCG_Body),
-  {NewN is N - 1, NewC is C + 1},
-  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC).
-
-dcg_multi_nonvar(_DCG_Body, 0, SolC, SolC, []) --> [], !.
-dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s]) -->
-  dcg_call(DCG_Body, A1),
-  {NewN is N - 1, NewC is C + 1},
-  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC, A1s).
-
-dcg_multi_nonvar(_DCG_Body, 0, SolC, SolC, [], []) --> !, [].
-dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s], [A2|A2s]) -->
-  dcg_call(DCG_Body, A1, A2),
-  {NewN is N - 1, NewC is C + 1},
-  dcg_multi_nonvar(DCG_Body, NewN, NewC, A1s, A2s).
+dcg_multi_pred(inf, inf):- !.
+dcg_multi_pred(M,   N  ):-
+  N is M - 1.
 
 dcg_multi_var(DCG_Body, N) -->
   DCG_Body,
