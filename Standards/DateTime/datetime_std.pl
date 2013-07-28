@@ -1,10 +1,10 @@
 :- module(
-  datetime_ext,
+  datetime_std,
   [
   ]
 ).
 
-/** <module> RFC_URI
+/** <module> DATETIME_STD
 
 Overview of the RFCs that define DateTime.
 

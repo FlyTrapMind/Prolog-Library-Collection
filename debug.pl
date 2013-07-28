@@ -78,7 +78,7 @@ load_modules_for_pldoc:-
         gv,
         html,
         http,
-        ilp,
+        %ilp,
         lang,
         logic,
         math,

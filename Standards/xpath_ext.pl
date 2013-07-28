@@ -23,15 +23,13 @@ Extensions to the XPath library.
 
 
 xpath2(DOM, Spec, Content):-
-  is_list(DOM),
-  !,
+  is_list(DOM), !,
   xpath2(element(outer, [], DOM), Spec, Content).
 xpath2(DOM, Spec, Content):-
   xpath(DOM, Spec, Content).
 
 xpath_chk2(DOM, Spec, Content):-
-  is_list(DOM),
-  !,
+  is_list(DOM), !,
   xpath_chk2(element(outer, [], DOM), Spec, Content).
 xpath_chk2(DOM, Spec, Content):-
   xpath_chk(DOM, Spec, Content).

@@ -24,7 +24,7 @@ Digitale Bibliotheek der Nederlanden
 :- use_module(dbnl(dbnl_index)).
 :- use_module(generics(db_ext)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xlink)).
+:- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(dbnl, 'http://www.dbnl.org/').
 

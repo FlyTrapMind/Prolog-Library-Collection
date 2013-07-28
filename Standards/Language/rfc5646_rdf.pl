@@ -46,7 +46,7 @@ iana_rdf_conversion:-
     assert_subtag(
       Type,
       Subtag,
-      Description,
+      Descriptions,
       Added,
       SuppressScript,
       Scope,
@@ -61,26 +61,27 @@ iana_rdf_conversion:-
 assert_subtag(
   Type,
   Subtag,
-  Description,
+  Descriptions,
   Added1,
-  SuppressScript,
-  Scope,
-  Prefixes,
-  Macrolanguage,
+  _SuppressScript,
+  _Scope,
+  _Prefixes,
+  _Macrolanguage,
   Comment,
-  Deprecated,
-  PreferredValue
+  _Deprecated,
+  _PreferredValue
 ):-
   rfc5646_graph(G),
   create_subtag_resource(Type, Subtag, G, LanguageSubtag),
-  rdf_assert_literal(LanguageSubtag, rfc5646:description, en, Description),
+  maplist(rdf_assert_literal(LanguageSubtag, rfc5646:description, en), Descriptions),
   rdf_assert_literal(LanguageSubtag, rfc5646:comment, en, Comment),
-  date(Y,M,D)
-  rdf_assert_datatype(LanguageSubtag, rfc5646:added, date, Added2, G),
+  rdf_assert_datatype(LanguageSubtag, rfc5646:added, date, Added1, G),
+  true.
 
 create_subtag_resource(Type, Subtag, G, LanguageSubtag):-
   rfc5646_scheme(Scheme),
   rfc5646_host(Host),
+  phrase(
     rfc2396_uri_reference(
       _Tree,
       Scheme,
@@ -96,7 +97,10 @@ create_subtag_resource(Type, Subtag, G, LanguageSubtag):-
   rdfs_assert_label(LanguageSubtag, Subtag, G).
 
 init_rfc5646_rdf:-
+gtrace,
   rfc5646_graph(G),
+  rfc5646_scheme(Scheme),
+  rfc5646_host(Host),
   dcg_phrase(
     rfc2396_uri_reference(
       _Tree,
@@ -124,4 +128,6 @@ init_rfc5646_rdf:-
   rdfs_assert_label(rfc5646:'Script', en, script, G),
   rdfs_assert_subclass(rfc5646:'Variant', rfc5646:'Subtag', G),
   rdfs_assert_label(rfc5646:'Variant', en, variant, G).
+
+
 

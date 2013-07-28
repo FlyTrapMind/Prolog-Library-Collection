@@ -115,9 +115,9 @@ uncertainty of an *unexpressed* digit. What is means is the interval
 :- use_module(standards(xpath_ext)).
 :- use_module(xml(xml_namespace)).
 
-:- dynamic(dbnl_current_uri(_URI)).
-
 :- xml_register_namespace(dbnl, 'http://www.dbnl.org/').
+
+:- dynamic(dbnl_current_uri(_URI)).
 
 
 
@@ -193,7 +193,7 @@ dbnl_dom_right(DOM, Content):-
 
 % Ended by a separator.
 dbnl_author(AuthorName) -->
-  dcg_until_atom(comma, AuthorName).
+  dcg_until([output_format(atom)], comma, AuthorName).
 % The entiry input.
 dbnl_author(AuthorName) -->
   dcg_all_atom(AuthorName).
@@ -226,7 +226,7 @@ dbnl_genres(_Graph, _Text) --> [].
 dbnl_genres(Graph, Text) -->
   (colon, blank ; ""),
   (
-    dcg_until_atom(comma, GenreAtom), comma, blank
+    dcg_until([output_format(atom)], comma, GenreAtom), comma, blank
   ;
     dcg_all_atom(GenreAtom), {GenreAtom \== ''}
   ),
@@ -275,8 +275,8 @@ dbnl_source(Graph, Text) -->
   !,
   dbnl_author(Author), comma, blank,
   % Book title. Publisher. Cities.
-  dcg_until_atom(dot, Title), dot, blank,
-  dcg_until_atom(comma, Publisher), comma, blank,
+  dcg_until([output_format(atom)], dot, Title), dot, blank,
+  dcg_until([output_format(atom)], comma, Publisher), comma, blank,
   dcg_separated_list(forward_slash, Cities1), blank,
   year(_Lang2, _Year), blank,
   !,
@@ -294,15 +294,13 @@ dbnl_source(Graph, Text) -->
 */
 
 dbnl_title(Graph, Text) -->
-  % Notice that cannot give the DCG body
-  % =|((dot, blank) ; (space, opening_bracket))|= to dcg_until_atom//2.
-  (
-    dcg_until_atom((dot, space), TitleName),
-    dot, space
-  ;
-    dcg_until_atom((space, opening_bracket), TitleName),
-    space
+  dcg_until(
+    [output_format(atom)],
+    ((dot, space) ; (space, opening_bracket)),
+    TitleName
   ),
+  (dot ; ""),
+  space,
   % Volume is optional. There are cases in which it is not
   % followed by a blank.
   (dbnl_volume(Graph, Text), blanks ; ""),
@@ -436,10 +434,10 @@ journal(Lang, Title, Volume) -->
 
   (
     % Volume information after the comma.
-    dcg_until_atom(comma, Title), comma, blank
+    dcg_until([output_format(atom)], comma, Title), comma, blank
   ;
     % Volume information after the dot.
-    dcg_until_atom(dot, Title), dot, blank
+    dcg_until([output_format(atom)], dot, Title), dot, blank
   ;
     % No volume information.
     dcg_all(_)

@@ -102,19 +102,13 @@ modular way.
 @version 2013/05-2013/07
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_os)).
 :- use_module(generics(cowspeak)).
-:- use_module(generics(list_ext)).
-:- use_module(html(html)).
 :- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
-:- use_module(os(os_ext)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -245,21 +239,30 @@ dcg_until(O, DCG_End, In) -->
   },
   dcg_until_(O, DCG_End, Codes).
 
-dcg_until_(O, DCG_End, []), InclusiveExclusive -->
+dcg_until_(O, DCG_Disjunction, Codes) -->
+  {DCG_Disjunction =.. [;|DCG_Ends]}, !,
+  {member(DCG_End, DCG_Ends)},
+  dcg_until_(O, DCG_End, Codes).
+dcg_until_(O, DCG_End, Codes) -->
+  dcg_until__(O, DCG_End, Codes).
+
+dcg_until__(O, DCG_End, EndCodes), InclusiveExclusive -->
   DCG_End, !,
   {
     option(end_mode(EndMode), O, exclusive),
     (
       EndMode == inclusive
     ->
-      InclusiveExclusive = dcg_void
+      InclusiveExclusive = dcg_void,
+      phrase(DCG_End, EndCodes)
     ;
-      InclusiveExclusive = DCG_End
+      InclusiveExclusive = DCG_End,
+      EndCodes = []
     )
   }.
-dcg_until_(O, DCG_End, [H|T]) -->
+dcg_until__(O, DCG_End, [H|T]) -->
   [H],
-  dcg_until_(O, DCG_End, T).
+  dcg_until__(O, DCG_End, T).
 
 
 
