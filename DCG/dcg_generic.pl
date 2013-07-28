@@ -134,8 +134,8 @@ modular way.
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
-:- meta_predicate(dcg_goal(//,//)).
-:- meta_predicate(dcg_goal(:,:)).
+%:- meta_predicate(dcg_goal(//,//)).
+%:- meta_predicate(dcg_goal(:,:)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES
 :- meta_predicate(dcg_list(//,?,?)).
@@ -149,21 +149,15 @@ modular way.
 :- meta_predicate(dcg_multi(3,?,?,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?,?,?)).
 :- meta_predicate(dcg_multi(4,?,?,?,?,?)).
-:- meta_predicate(dcg_multi_(//,?,?,?)).
-:- meta_predicate(dcg_multi_(2,?,?,?)).
-:- meta_predicate(dcg_multi_(//,?,?,?,?)).
-:- meta_predicate(dcg_multi_(3,?,?,?,?)).
-:- meta_predicate(dcg_multi_(//,?,?,?,?,?)).
-:- meta_predicate(dcg_multi_(4,?,?,?,?,?)).
 :- meta_predicate(dcg_multi_atom(//,?,?,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,//,+,?,?)).
-:- meta_predicate(dcg_multi_nonvar(2,?,?,?)).
-:- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
-:- meta_predicate(dcg_multi_nonvar(3,?,?,?,?)).
-:- meta_predicate(dcg_multi_nonvar(//,?,?,?,?)).
-:- meta_predicate(dcg_multi_nonvar(4,?,?,?,?,?)).
-:- meta_predicate(dcg_multi_nonvar(//,?,?,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(2,+,+,-,?,?)).
+:- meta_predicate(dcg_multi_nonvar(//,+,+,-,?,?)).
+:- meta_predicate(dcg_multi_nonvar(3,+,+,-,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(//,+,+,-,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(4,+,+,-,?,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(//,+,+,-,?,?,?,?)).
 :- meta_predicate(dcg_multi_var(2,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
 :- meta_predicate(dcg_multi_var(3,?,?,?,?)).
@@ -247,12 +241,8 @@ dcg_until(O, DCG_End, In) -->
   },
   dcg_until_(O, DCG_End, Codes).
 
-dcg_until_(O, DCG_Disjunction1, Codes) -->
-  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
-  {DCG_Disjunction2 =.. [;|DCG_Ends]}, !,
-  {member(DCG_End, DCG_Ends)},
-  dcg_until_(O, Module:DCG_End, Codes).
-dcg_until_(O, DCG_End, Codes) -->
+dcg_until_(O, DCG_Disjunction, Codes) -->
+  {dcg_goal(DCG_Disjunction, DCG_End)},
   dcg_until__(O, DCG_End, Codes).
 
 dcg_until__(O, DCG_End, EndCodes), InclusiveExclusive -->
@@ -322,24 +312,30 @@ dcg_separated_list_var(_Separator, []) --> [].
 
 % META-DCG RULES %
 
-dcg_apply(DCG_Body, Args1, X, Y):-
+dcg_apply(DCG_Body1, Args1, X, Y):-
   append(Args1, [X,Y], Args2),
-  apply(DCG_Body, Args2).
+  dcg_goal(DCG_Body1, DCG_Body2),
+  apply(DCG_Body2, Args2).
 
-dcg_call(DCG_Body, X, Y):-
-  call(DCG_Body, X, Y).
+dcg_call(DCG_Body1, X, Y):-
+  dcg_goal(DCG_Body1, DCG_Body2),
+  call(DCG_Body2, X, Y).
 
-dcg_call(DCG_Body, A1, X, Y):-
-  call(DCG_Body, A1, X, Y).
+dcg_call(DCG_Body1, A1, X, Y):-
+  dcg_goal(DCG_Body1, DCG_Body2),
+  call(DCG_Body2, A1, X, Y).
 
-dcg_call(DCG_Body, A1, A2, X, Y):-
-  call(DCG_Body, A1, A2, X, Y).
+dcg_call(DCG_Body1, A1, A2, X, Y):-
+  dcg_goal(DCG_Body1, DCG_Body2),
+  call(DCG_Body2, A1, A2, X, Y).
 
-dcg_call(DCG_Body, A1, A2, A3, X, Y):-
-  call(DCG_Body, A1, A2, A3, X, Y).
+dcg_call(DCG_Body1, A1, A2, A3, X, Y):-
+  dcg_goal(DCG_Body1, DCG_Body2),
+  call(DCG_Body2, A1, A2, A3, X, Y).
 
-dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
-  call(DCG_Body, A1, A2, A3, A4, X, Y).
+dcg_call(DCG_Body1, A1, A2, A3, A4, X, Y):-
+  dcg_goal(DCG_Body1, DCG_Body2),
+  call(DCG_Body2, A1, A2, A3, A4, X, Y).
 
 %! dcg_goal(:DCG_Disjunction, :DCG_Body) is nondet.
 
@@ -404,50 +400,32 @@ dcg_multi(DCG_Body) -->
 %      of the form=|`between(+Min:integer,+Max:integer)|=.
 %      When uninstantiated, this can instantiate with an integer.
 
-dcg_multi(DCG_Disjunction1, Occurrences) -->
-  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
-  {DCG_Disjunction2 =.. [;|DCG_Bodies]}, !,
-  {member(DCG_Body, DCG_Bodies)},
-  dcg_multi_(Module:DCG_Body, Occurrences).
 dcg_multi(DCG_Body, Occurrences) -->
-  dcg_multi_(DCG_Body, Occurrences).
-
-dcg_multi_(DCG_Body, Occurrences) -->
   {nonvar(Occurrences)}, !,
-  dcg_multi_nonvar(DCG_Body, Occurrences).
-dcg_multi_(DCG_Body, N) -->
+  {dcg_multi_occurrences(Occurrences, Min, Max)},
+  dcg_multi_nonvar(DCG_Body, Max, 0, Count),
+  {between(Min, Max, Count)}.
+dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
 
 %! dcg_multi(:DCG_Body, ?Occurrences, ?Arguments1:list)//
 
-dcg_multi(DCG_Disjunction1, Occurrences, A1s) -->
-  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
-  {DCG_Disjunction2 =.. [;|DCG_Bodies]}, !,
-  {member(DCG_Body, DCG_Bodies)},
-  dcg_multi_(Module:DCG_Body, Occurrences, A1s).
 dcg_multi(DCG_Body, Occurrences, A1s) -->
-  dcg_multi_(DCG_Body, Occurrences, A1s).
-
-dcg_multi_(DCG_Body, Occurrences, A1s) -->
   {nonvar(Occurrences)}, !,
-  dcg_multi_nonvar(DCG_Body, Occurrences, A1s).
-dcg_multi_(DCG_Body, N, A1s) -->
+  {dcg_multi_occurrences(Occurrences, Min, Max)},
+  dcg_multi_nonvar(DCG_Body, Max, 0, Count, A1s),
+  {between(Min, Max, Count)}.
+dcg_multi(DCG_Body, N, A1s) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N, A1s).
 
-dcg_multi(DCG_Disjunction1, Occurrences, A1s, A2s) -->
-  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
-  {DCG_Disjunction2 =.. [;|DCG_Bodies]}, !,
-  {member(DCG_Body, DCG_Bodies)},
-  dcg_multi_(Module:DCG_Body, Occurrences, A1s, A2s).
 dcg_multi(DCG_Body, Occurrences, A1s, A2s) -->
-  dcg_multi_(DCG_Body, Occurrences, A1s, A2s).
-
-dcg_multi_(DCG_Body, Occurrences, A1s, A2s) -->
   {nonvar(Occurrences)}, !,
-  dcg_multi_nonvar(DCG_Body, Occurrences, A1s, A2s).
-dcg_multi_(DCG_Body, N, A1s, A2s) -->
+  {dcg_multi_occurrences(Occurrences, Min, Max)},
+  dcg_multi_nonvar(DCG_Body, Max, 0, Count, A1s, A2s),
+  {between(Min, Max, Count)}.
+dcg_multi(DCG_Body, N, A1s, A2s) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N, A1s, A2s).
 
@@ -470,71 +448,32 @@ dcg_multi_atom(DCG_Body, Occurrences, Atom) -->
   dcg_multi(DCG_Body, Occurrences, Codes),
   {atom_codes(Atom, Codes)}.
 
-% Upper and lower bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max)) -->
-  {integer(Min), integer(Max)}, !,
-  {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N).
-% Upper bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max)) -->
-  {integer(Max)}, !,
-  {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N).
-% Lower bound: from small to big.
-dcg_multi_nonvar(DCG_Body, between(Min,_Max)) -->
-  {integer(Min)}, !,
-  {between(Min, inf, N)},
-  dcg_multi_nonvar(DCG_Body, N).
-dcg_multi_nonvar(_DCG_Body, 0) --> !, [].
-dcg_multi_nonvar(DCG_Body, N) -->
-  {N >= 0},
-  DCG_Body,
-  {NewN is N - 1},
-  dcg_multi_nonvar(DCG_Body, NewN).
+dcg_multi_occurrences(between(Min,Max), Min, Max):-
+  integer(Min), integer(Max), !,
+dcg_multi_occurrences(between(_Min,Max), 0, Max):-
+  integer(Max), !.
+dcg_multi_occurrences(between(Min,_Max), Min, inf):-
+  integer(Min), !.
+dcg_multi_occurrences(N, N, N):-
+  integer(N), !.
 
-% Upper and lower bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s) -->
-  {integer(Min), integer(Max)}, !,
-  {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N, A1s).
-% Upper bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s) -->
-  {integer(Max)}, !,
-  {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N, A1s).
-% Lower bound: from small to big.
-dcg_multi_nonvar(DCG_Body, between(Min,_Max), A1s) -->
-  {integer(Min)}, !,
-  {between(Min, inf, N)},
-  dcg_multi_nonvar(DCG_Body, N, A1s).
-dcg_multi_nonvar(_DCG_Body, 0, []) --> !, [].
-dcg_multi_nonvar(DCG_Body, N, [A1|A1s]) -->
-  {N >= 0},
+dcg_multi_nonvar(_DCG_Body, 0, SolC, SolC) --> [], !.
+dcg_multi_nonvar(DCG_Body, N, C, SolC) -->
+  dcg_call(DCG_Body),
+  {NewN is N - 1, NewC is C + 1},
+  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC).
+
+dcg_multi_nonvar(_DCG_Body, 0, SolC, SolC, []) --> [], !.
+dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s]) -->
   dcg_call(DCG_Body, A1),
-  {NewN is N - 1},
-  dcg_multi_nonvar(DCG_Body, NewN, A1s).
+  {NewN is N - 1, NewC is C + 1},
+  dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC, A1s).
 
-% Upper and lower bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s, A2s) -->
-  {integer(Min), integer(Max)}, !,
-  {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N, A1s, A2s).
-% Upper bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s, A2s) -->
-  {integer(Max)}, !,
-  {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N, A1s, A2s).
-% Lower bound: from small to big.
-dcg_multi_nonvar(DCG_Body, between(Min,_Max), A1s, A2s) -->
-  {integer(Min)}, !,
-  {between(Min, inf, N)},
-  dcg_multi_nonvar(DCG_Body, N, A1s, A2s).
-dcg_multi_nonvar(_DCG_Body, 0, [], []) --> !, [].
-dcg_multi_nonvar(DCG_Body, N, [A1|A1s], [A2|A2s]) -->
-  {N >= 0},
+dcg_multi_nonvar(_DCG_Body, 0, SolC, SolC, [], []) --> !, [].
+dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s], [A2|A2s]) -->
   dcg_call(DCG_Body, A1, A2),
-  {NewN is N - 1},
-  dcg_multi_nonvar(DCG_Body, NewN, A1s, A2s).
+  {NewN is N - 1, NewC is C + 1},
+  dcg_multi_nonvar(DCG_Body, NewN, NewC, A1s, A2s).
 
 dcg_multi_var(DCG_Body, N) -->
   DCG_Body,

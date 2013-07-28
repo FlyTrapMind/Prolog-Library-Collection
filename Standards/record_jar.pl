@@ -46,6 +46,7 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(apply)).
+:- use_module(library(plunit)).
 :- use_module(math(radix)).
 :- use_module(standards(abnf)).
 
@@ -238,4 +239,23 @@ separator_(Comment) -->
 'UNICHAR'(C) -->
   [C],
   {between(128, 1114111, C)}.
+
+
+
+:- begin_tests(record_jar).
+
+:- use_module(generics(print_ext)).
+:- use_module(library(apply)).
+:- use_module(library(pio)).
+
+test(record_jar, []):-
+  absolute_file_name(
+    lang(rfc5646_iana_registry),
+    File,
+    [access(read), file_type(text)]
+  ),
+  phrase_from_file('record-jar'(E, Rs), File),
+  maplist(formatnl, [E|Rs]).
+
+:- end_tests(record_jar).
 
