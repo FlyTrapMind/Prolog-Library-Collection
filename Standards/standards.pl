@@ -35,12 +35,6 @@ Methods for serving Web pages according to Web specifications.
 @version 2012/10, 2013/07
 */
 
-:- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
-:- xml_register_namespace(w3c, 'http://www.w3.org/').
-
 :- discontiguous(charset/1).
 :- discontiguous(is_sgml_based/2).
 :- discontiguous(is_xml_based/2).

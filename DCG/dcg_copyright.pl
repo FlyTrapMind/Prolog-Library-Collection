@@ -32,7 +32,7 @@ holders([H|T]) --> middle_holder(H), holders(T).
 holders([H]) --> last_holder(H).
 
 middle_holder(H) -->
-  dcg_until_atom((blank, separator), H),
+  dcg_until([output_format(atom)], (blank, separator), H),
   blank, separator, blank.
 
 last_holder(H) --> dcg_all_atom(H).

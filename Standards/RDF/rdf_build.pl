@@ -3,7 +3,7 @@
   [
 % INDIVIDUALS
     rdf_assert_individual/3, % +Individual:uri
-			     % +Class:uri
+                             % +Class:uri
                              % +Graph:atom
 
 % LISTS
@@ -183,6 +183,18 @@ add_blank_list_individual(Blank, Graph):-
 %!   +Graph:atom
 %! ) is det.
 % Asserts a float value for a resource.
+%
+% At least the following datatypes are supported (XML Schema 2):
+%   * `boolean`
+%   * `boolean`
+%   * `date`
+%   * `dateTime`
+%   * `double`
+%   * `float`
+%   * `gDay`
+%   * `gMonth`
+%   * `gYear`
+%   * `int`
 %
 % @arg Subject A resource.
 % @arg Predicate A resource.

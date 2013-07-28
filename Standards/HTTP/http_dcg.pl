@@ -160,7 +160,7 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(math(radix)).
 :- use_module(datetime(rfc1123)).
 :- use_module(lang(rfc1766)).
-:- use_module(uri(rfc2396)).
+:- use_module(uri(rfc2396_dcg)).
 
 :- meta_predicate(chunk(-,?,//,?,?,?)).
 :- meta_predicate(chunk_data(-,?,//,?,?)).
@@ -664,20 +664,20 @@ http_to_gv(Tree):-
 
 http_url(T, Host, Port, Path, Query) -->
   "http://",
-  host(T1, Host),
+  rfc2396_host(T1, Host),
   (
     "", {var(Port), setting(default_port, Port)}
   ;
-    ":'", port(T2, Port)
+    ":'", rfc2396_port(T2, Port)
   ),
   (
     "", {var(Path), var(Query)}
   ;
-    absolute_path(T3, Path),
+    rfc2396_absolute_path(T3, Path),
     (
       "", {var(Query)}
     ;
-      "?", query(T4, Query)
+      "?", rfc2396_query(T4, Query)
     )
   ),
   {parse_tree(http_url, [T1,T2,T3,T4], T)}.
@@ -1310,15 +1310,15 @@ request_line(
 % Host: www.w3.org
 % ~~~
 %
-% The absolute_path//2 cannot be empty. If none is present it MUST be
+% The rfc2396_absolute_path//2 cannot be empty. If none is present it MUST be
 % given as `/` (i.e., the server root).
 
 request_uri(request_uri(T1), Scheme, Authority, Path, Query) -->
-  absolute_uri(T1, Scheme, Authority, Path, Query).
+  rfc2396_absolute_uri(T1, Scheme, Authority, Path, Query).
 request_uri(request_uri(T1), _Scheme, _Authority, Path, _Query) -->
-  absolute_path(T1, Path).
+  rfc2396_absolute_path(T1, Path).
 request_uri(request_uri(T1), _Scheme, Authority, _Path, _Query) -->
-  authority(T1, Authority).
+  rfc2396_authority(T1, Authority).
 request_uri(request_uri('*'), _Scheme, _Authority, _Path, _Query) -->
   asterisk.
 

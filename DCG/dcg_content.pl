@@ -7,6 +7,7 @@
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
+    spaces//0,
     dcg_void//0,
     dcg_word//1, % -Word:atom
     dcg_word//2 % -Tree:compound
@@ -121,6 +122,12 @@ indent(I) -->
     NumberOfSpaces is I * Size
   },
   dcg_multi(space, NumberOfSpaces).
+
+spaces -->
+  space, !,
+  spaces.
+spaces -->
+  [].
 
 dcg_void --> [].
 

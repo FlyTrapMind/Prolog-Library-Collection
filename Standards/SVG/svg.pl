@@ -196,7 +196,7 @@ svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
       xml_attribute(
         dcg_word(xmlns),
         dcg_word(svg),
-        uri_reference(
+        rfc2396_uri_reference(
           T1,
           http,
           authority(_User,[www,w3,org],_Port),

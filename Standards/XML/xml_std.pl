@@ -21,7 +21,7 @@ Standards support for XML.
 % XML Scheme namespace for instances.
 :- xml_register_namespace(xsi, 'http://www.w3.org/2001/XMLSchema-instance#').
 
-:- initialitation(init_xml_std).
+:- initialization(init_xml_std).
 
 
 
@@ -69,7 +69,7 @@ init_xml(G):-
 
 init_xml_schema(G):-
   rdf_global_id(w3c:'TR/2012/REC-xmlschema11-1-20120405/', This),
-  rdfs_assert_class(w3c:'Recommendation', G).
+  rdfs_assert_class(w3c:'Recommendation', G),
   rdf_assert_individual(This, w3c:'Recommendation', G),
   rdf_assert_datatype(This, w3c:year, gYear, 2012, G),
   rdf_assert_literal(
@@ -104,7 +104,7 @@ init_xml_schema_datatypes(G):-
 
 init_xml_scheme_primer(G):-
   rdf_global_id(w3c:'TR/2004/REC-xmlschema-0-20041028/', This),
-  rdfs_assert_class(w3c:'Recommendation', G).
+  rdfs_assert_class(w3c:'Recommendation', G),
   rdf_assert_individual(This, w3c:'Recommendation', G),
   rdf_assert_datatype(This, w3c:year, gYear, 2004, G),
   rdf_assert_literal(

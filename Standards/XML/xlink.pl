@@ -49,7 +49,7 @@ Create and describe links between resources from within XML documents.
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(uri(rfc2396)).
+:- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_namespace)).
 
@@ -71,7 +71,7 @@ xlink_href(href(T1), DCG_Namespace, Fragment) -->
   xlink_attribute(
     xlink_namespace(DCG_Namespace),
     xml_name(href),
-    uri_reference(T1, _Scheme, _Authority, _Path, _Query, Fragment)
+    rfc2396_uri_reference(T1, _Scheme, _Authority, _Path, _Query, Fragment)
   ).
 
 xlink_namespace(DCG_Namespace) -->

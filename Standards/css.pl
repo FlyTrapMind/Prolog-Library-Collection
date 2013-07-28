@@ -12,7 +12,7 @@
 Support for Cascading Style Sheets.
 
 @author Wouter Beek
-@version 2012/10, 2013/02, 2013/06
+@version 2012/10, 2013/02, 2013/06-2013/07
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -24,12 +24,9 @@ Support for Cascading Style Sheets.
 % PARSER %
 
 css_escape -->
-  "\\",
+  backslash, backslash,
   dcg_multi(hexadecimal_digit, between(1,_)),
-  dcg_multi(
-    (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space),
-    between(0,1)
-  ).
+  (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space ; "").
 
 nmstart --> underscore.
 nmstart --> letter_lowercase.

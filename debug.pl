@@ -55,7 +55,7 @@
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 
-%:- initialization(load_modules_for_pldoc).
+:- initialization(load_modules_for_pldoc).
 
 %! load_modules_for_pldoc is det.
 % Loads all modules in PGC for debugging purposes:
@@ -68,31 +68,35 @@ load_modules_for_pldoc:-
       DirectoryName,
       [
         datasets,
+        datetime,
+        dbnl,
         dcg,
+        dgraph,
         generics,
+        geo,
         graph_theory,
         gv,
         html,
         http,
-        iso,
+        ilp,
+        lang,
         logic,
         math,
-        %server,
-        standards,
-        html,
-        iso,
         os,
         owl,
         rdf,
+        rdf_graph,
         rdfs,
-        rfc,
-        %sparql,
+        server,
+        skos,
+        sparql,
+        standards,
         svg,
         tests,
-        xml,
         tms,
+        ugraph,
         vocabularies,
-        skos
+        xml
       ]
     ),
     (

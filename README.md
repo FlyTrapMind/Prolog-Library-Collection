@@ -12,22 +12,28 @@ This repository contains the following subcollections of Prolog modules:
   * DCG
   * Generics
   * Graph theory
+    * DGRAPH
+    * RDF Graph
+    * UGRAPH
   * ILP
   * Logic
   * Math
   * OS
   * Server
   * Standards
+    * DateTime
+    * Geography
     * GraphViz
     * HTML
-    * ISO
+    * HTTP
+    * Language
     * OWL
     * RDF
     * RDFS
-    * RFC
     * SPARQL
     * SVG
     * Tests
+    * URI
     * XML
   * TMS
   * Vocabularies

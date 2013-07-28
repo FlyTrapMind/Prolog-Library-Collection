@@ -46,7 +46,7 @@ DCG rules for XML attributes.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(lang(rfc3066)).
-:- use_module(uri(rfc2396)).
+:- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_datatypes)).
 :- use_module(xml(xml)).
 
@@ -127,7 +127,7 @@ xml_base(
   xml_attribute_(
     DCG_Namespace,
     xml_name(base),
-    uri_reference(T1, Scheme, Authority, Path, Query, Fragment)
+    rfc2396_uri_reference(T1, Scheme, Authority, Path, Query, Fragment)
   ).
 
 %! xml_id(-Tree:compound, :DCG_Namespace, ?Name:atom)//

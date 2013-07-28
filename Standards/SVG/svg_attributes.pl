@@ -78,10 +78,10 @@ DCG rules for SVG datatypes.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(lang(rfc5646)).
+:- use_module(lang(rfc5646_dcg)).
 :- use_module(svg(svg)).
 :- use_module(svg(svg_datatypes)).
-:- use_module(uri(rfc2396)).
+:- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 
@@ -517,7 +517,7 @@ svg_xml_namespace(
   svg_attribute(
     DCG_Namespace,
     dcg_word(xmlns),
-    uri_reference(
+    rfc2396_uri_reference(
       T1,
       Scheme,
       Authority,

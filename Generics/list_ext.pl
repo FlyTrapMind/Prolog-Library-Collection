@@ -4,6 +4,9 @@
     after/3, % ?X
              % ?Y
              % ?List:list
+    append_intersperse/3, % +List:list
+                          % +Separator
+                          % -NewList:list
     before/3, % ?X
               % ?Y
               % ?List:list
@@ -111,6 +114,18 @@ Extra list functions for use in SWI-Prolog.
 after(X, Y, List):-
   before(Y, X, List).
 
+%! append_intersperse(+List:list, +Separator, -NewList:list)//
+% Returns a list that is based on the given list, but interspersed with
+% copies of the separator term.
+%
+% If the length of the given list is `n`, then the length of the new list
+% is `2n - 1` for `n > 0`.
+
+append_intersperse([], _S, []):- !.
+append_intersperse([H], _S, [H]):- !.
+append_intersperse([H|T1], S, [H,S|T2]):-
+  append_intersperse(T1, S, T2).
+
 %! before(?X, ?Y, ?List:list) is nondet.
 % X appears before Y in the given list.
 
@@ -128,8 +143,7 @@ combination([List | Lists], [H | T]):-
   member(H, List),
   combination(Lists, T).
 
-combination(_List, 0, []):-
-  !.
+combination(_List, 0, []):- !.
 combination(List, Length, [H | T]):-
   member(H, List),
   succ(Length, NewLength),
@@ -182,8 +196,7 @@ first(L, N, First):-
 
 length_cut(L, Cut, L, []):-
   length(L, N),
-  N < Cut,
-  !.
+  N < Cut, !.
 length_cut(L, Cut, L1, L2):-
   length(L1, Cut),
   append(L1, L2, L).
@@ -228,8 +241,7 @@ list_separator_concat([List | Lists], Separator, NewList):-
 % @arg L The given list.
 % @arg Pairs An ordered list of ordered pairs.
 
-list_to_ordered_pairs([], []):-
-  !.
+list_to_ordered_pairs([], []):- !.
 % The pairs need to be internally ordered, but the order in which the
 % pairs occur is immaterial.
 list_to_ordered_pairs([H | T], S):-

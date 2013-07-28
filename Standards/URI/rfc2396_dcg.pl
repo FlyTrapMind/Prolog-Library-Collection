@@ -1,26 +1,26 @@
 :- module(
-  rfc2396,
+  rfc2396_dcg,
   [
 % SURFACE PREDICATES
-    uri_reference//1, % -Tree:compound
-    uri_reference//6, % -Tree:compound
-                      % ?Scheme:atom
-                      % ?Authority:compound
-                      % ?Path:list(list(atom))
-                      % ?Query:atom
-                      % ?Fragment:atom
+    rfc2396_uri_reference//1, % -Tree:compound
+    rfc2396_uri_reference//6, % -Tree:compound
+                              % ?Scheme:atom
+                              % ?Authority:compound
+                              % ?Path:list(list(atom))
+                              % ?Query:atom
+                              % ?Fragment:atom
     uri_to_gv/1, % +URI:atom
 
 % DEEP PREDICATES
-    absolute_path//2, % -Tree:compound
-                      % ?Path:list(list(atom))
-    absolute_uri//5, % -Tree:compound
-                     % ?Scheme:atom
-                     % ?Authority:compound
-                     % ?Path:list(list(atom))
-                     % ?Query:atom
-    authority//2, % -Tree:compound
-                  % ?Authority:compound
+    rfc2396_absolute_path//2, % -Tree:compound
+                              % ?Path:list(list(atom))
+    rfc2396_absolute_uri//5, % -Tree:compound
+                             % ?Scheme:atom
+                             % ?Authority:compound
+                             % ?Path:list(list(atom))
+                             % ?Query:atom
+    rfc2396_authority//2, % -Tree:compound
+                          % ?Authority:compound
     domain_label//2, % -Tree:compound
                      % ?DomainLabel:atom
     domain_labels//2, % -Tree:compound
@@ -31,8 +31,8 @@
                           % ?Authority:compound
                           % ?Path:list(list(atom))
                           % ?Query:atom
-    host//2, % -Tree:compound
-             % ?Host:list(atomic)
+    rfc2396_host//2, % -Tree:compound
+                     % ?Host:list(atomic)
     host_name//2, % -Tree:compound
                   % ?DomainLabels:list(atom)
     ipv4_address//2, % -Tree:compound
@@ -42,16 +42,14 @@
                      % ?Path:list(list(atom))
     opaque_part//2, % -Tree:compound
                     % ?OpaquePart:atom
-    %parameter//2, % -Tree:compound
-    %              % ?Parameter:atom
     path//2, % -Tree:compound
              % ?Path:list(list(atom))
     path_segment//2, % -Tree:compound
                      % ?PathSegment:list(atom)
-    port//2, % -Tree:compound
-             % ?Port:integer
-    query//2, % -Tree:compound
-              % ?Query:atom
+    rfc2396_port//2, % -Tree:compound
+                     % ?Port:integer
+    rfc2396_query//2, % -Tree:compound
+                      % ?Query:atom
     registry_based_naming_authority//2, % -Tree:compound
                                          % ?Authority:atom
     scheme//2, % -Tree:compound
@@ -76,7 +74,7 @@ possible identifier type. This document does not define a generative
 grammar for URI; that task will be performed by the individual
 specifications of each URI scheme."
 
-# Characters
+## Characters
 
   * **Character**
     A distinguishable semantic entity.
@@ -87,7 +85,7 @@ specifications of each URI scheme."
   * **Octet**
     An 8-bit byte
 
-## Mappings:
+### Mappings
 
   * From URI characters to octets.
   * From octets to original characters.
@@ -99,7 +97,7 @@ URI character sequence -> octet sequence -> original character sequence
 Simplest situation: US-ASCII original character `C` is represented by
 the octet for the US-ASCII code for `C`.
 
-# Concepts
+## Concepts
 
   * **Identifier**
     An object that can act as a reference to something that has identity.
@@ -108,14 +106,14 @@ the octet for the US-ASCII code for `C`.
   * **Uniform Resource Identifier (URI)**
     A means for identifying a resource.
 
-# The big divide
+## The big divide
 
-## Category 1
+### Category 1
 
-**Propert names**, rigid designators, e.g., electronic documents, images.
+**Proper names**, rigid designators, e.g., electronic documents, images.
 Extensional semantics.
 
-## Category 2
+### Category 2
 
 **Services**, descriptions, e.g., "today's weather report for Los Angeles".
 Intensional semantics.
@@ -127,19 +125,19 @@ Intensional semantics.
 > which it currently corresponds -- changes over time, provided
 > that the conceptual mapping is not changed in the process.
 
-# Variants
+## Variants
 
-  * URL
+  * **URL**
     A location or name or both.
     Identification by primary access mechanism (e.g., network location)
     rather than by name.
-  * URN
+  * **URN**
     Globally unique and persistent.
     Even when the resource caeses to exist or becomes unavailable.
 
-# Excluded characters
+## Excluded characters
 
-## Control characters
+### Control characters
 
 The control characters in the US-ASCII coded character set are not
 used within a URI, both because they are non-printable and because
@@ -149,7 +147,7 @@ they are likely to be misinterpreted by some control mechanisms.
 control = <US-ASCII coded characters 00-1F and 7F hexadecimal>
 ~~~
 
-## Space character
+### Space character
 
 The space character is excluded because significant spaces may
 disappear and insignificant spaces may be introduced when URI are
@@ -161,7 +159,7 @@ contexts.
 space = <US-ASCII coded character 20 hexadecimal>
 ~~~
 
-## URI delimiters
+### URI delimiters
 
 The angle-bracket `<` and `>` and double-quote (`"`) characters are
 excluded because they are often used as the delimiters around URI in
@@ -174,7 +172,7 @@ it is used for the encoding of escaped characters.
 delims = "<" | ">" | "#" | "%" | <">
 ~~~
 
-## Others
+### Others
 
 Other characters are excluded because gateways and other transport
 agents are known to sometimes modify such characters, or they are
@@ -184,7 +182,7 @@ used as delimiters.
 unwise = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
 ~~~
 
-# Regular expressions
+## Regular expressions
 
 ~~~{.txt}
 ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
@@ -226,11 +224,10 @@ can determine the value of the four components and fragment as
 :- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
-:- use_module(library(plunit)).
 
 
 
-%! absolute_path(-Tree:compound, ?Path:list(list(atom)))//
+%! rfc2396_absolute_path(-Tree:compound, ?Path:list(list(atom)))//
 % The path may consist of a sequence of path segments separated by a
 % single forward_slash//1.
 %
@@ -239,16 +236,16 @@ can determine the value of the four components and fragment as
 % path_segments = segment *( "/" segment )
 % ~~~
 
-absolute_path(T0, [PathSegment|PathSegments]) -->
+rfc2396_absolute_path(T0, [PathSegment|PathSegments]) -->
   forward_slash, {T1 = '/'},
   path_segment(T2, PathSegment),
-  ("", {PathSegments = []} ; absolute_path(T3, PathSegments)),
+  ("", {PathSegments = []} ; rfc2396_absolute_path(T3, PathSegments)),
   {parse_tree(absolute_path, [T1,T2,T3], T0)}.
 absolute_path(absolute_path('/',T1), [PathSegment]) -->
   forward_slash,
   path_segment(T1, PathSegment).
 
-%! absolute_uri(
+%! rfc2396_absolute_uri(
 %!   -Tree:compound,
 %!   ?Scheme:atom,
 %!   ?Authority:compound,
@@ -263,7 +260,7 @@ absolute_path(absolute_path('/',T1), [PathSegment]) -->
 % <scheme>:<scheme-specific-part>
 % ~~~
 %
-% ## Hierarchical relationships
+% ### Hierarchical relationships
 %
 % A subset of URI share a common syntax for representing
 % hierarchical relationships within the namespace.
@@ -293,17 +290,29 @@ absolute_path(absolute_path('/',T1), [PathSegment]) -->
 % @arg Path A list of lists of atoms.
 % @arg Query An atom.
 
-absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
+rfc2396_absolute_uri(
+  absolute_uri(T1,':',T2),
+  Scheme,
+  Authority,
+  Path,
+  Query
+) -->
   scheme(T1, Scheme),
   colon,
   hierarchical_part(T2, Authority, Path, Query).
-absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
+rfc2396_absolute_uri(
+  absolute_uri(T1,':',T2),
+  Scheme,
+  Authority,
+  Path,
+  Query
+) -->
   {maplist(var, [Authority,Query])},
   scheme(T1, Scheme),
   colon,
   opaque_part(T2, Path).
 
-%! authority(-Tree:compound, ?Authority:or([atom,compound]))//
+%! rfc2396_authority(-Tree:compound, ?Authority:or([atom,compound]))//
 % Many URI schemes include a top hierarchical element for a naming
 % authority, such that the namespace defined by the remainder of the
 % URI is governed by that authority. This authority component is
@@ -314,13 +323,13 @@ absolute_uri(absolute_uri(T1,':',T2), Scheme, Authority, Path, Query) -->
 % authority = server | registry_based_naming_authority
 % ~~~
 %
-% @Tree A parse tree.
+% @arg Tree A parse tree.
 % @arg Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
-authority(authority(T), Authority) -->
+rfc2396_authority(authority(T), Authority) -->
   server(T, Authority).
-authority(authority(T), Authority) -->
+rfc2396_authority(authority(T), Authority) -->
   registry_based_naming_authority(T, Authority).
 
 dashed_alpha_numerics([H|T]) -->
@@ -445,12 +454,12 @@ hierarchical_part(T0, Authority, Path, Query) -->
   (
     network_path(T1, Authority, Path)
   ;
-    absolute_path(T1, Path), {var(Authority)}
+    rfc2396_absolute_path(T1, Path), {var(Authority)}
   ),
-  ("" ; question_mark, {T2 = '?'}, query(T3, Query)),
+  ("" ; question_mark, {T2 = '?'}, rfc2396_query(T3, Query)),
   {parse_tree(hierarchical_part, [T1,T2,T3], T0)}.
 
-%! host(-Tree:compound, ?Host:list(atomic))//
+%! rfc2396_host(-Tree:compound, ?Host:list(atomic))//
 % The host is a domain name of a network host, or its IPv4 address as a
 % set of four decimal_digits//1 groups separated by dot//0.
 %
@@ -469,8 +478,8 @@ hierarchical_part(T0, Authority, Path, Query) -->
 % @arg Tree A compound term.
 % @arg Host Either a list of atoms or a list of integers.
 
-host(host(T), Host) --> host_name(T, Host).
-host(host(T), Host) --> ipv4_address(T, Host).
+rfc2396_host(host(T), Host) --> host_name(T, Host).
+rfc2396_host(host(T), Host) --> ipv4_address(T, Host).
 
 %! host_name(-Tree:compound, -DomainLabels:list(atom))//
 % Hostnames take the form described in Section 3 of [RFC1034] and
@@ -529,15 +538,15 @@ mark(C) --> round_bracket(C).
 % net_path = "//" authority [ abs_path ]
 % ~~~
 %
-% @Tree A parse tree.
+% @arg Tree A parse tree.
 % @arg Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 % @arg Path A list of lists of atoms.
 
 network_path(T0, Authority, Path) -->
   forward_slash, {T1 = '/'}, forward_slash, {T2 = '/'},
-  authority(T3, Authority),
-  ("" ; absolute_path(T4, Path)),
+  rfc2396_authority(T3, Authority),
+  ("" ; rfc2396_absolute_path(T4, Path)),
   {parse_tree(network_path, [T1,T2,T3,T4], T0)}.
 
 %! opaque_part(-Tree:compound, ?OpaquePart:atom)//
@@ -609,7 +618,7 @@ parameter_character(C) --> escaped_character(C).
 % @arg Path A list of lists of atoms.
 
 path(path([]), []) --> [].
-path(path(T1), Path) --> absolute_path(T1, Path).
+path(path(T1), Path) --> rfc2396_absolute_path(T1, Path).
 path(path(T1), [OpaquePart]) --> opaque_part(T1, OpaquePart).
 
 %! path_segment(-Tree:compound, ?PathSegment:list(atom))//
@@ -635,7 +644,7 @@ path_segment(T0, [Parameter|PathSegment]) -->
   ),
   {parse_tree(path_segment, [T1,T2,T3], T0)}.
 
-%! port(-Tree:compound, ?Port:integer)//
+%! rfc2396_port(-Tree:compound, ?Port:integer)//
 % The port is the network port number for the server. Most schemes
 % designate protocols that have a default port number.
 % If the port is omitted, the default port number is assumed.
@@ -644,9 +653,9 @@ path_segment(T0, [Parameter|PathSegment]) -->
 % port = *digit
 % ~~~
 
-port(port(Port), Port) --> decimal_number(Port).
+rfc2396_port(port(Port), Port) --> decimal_number(Port).
 
-%! query(-Tree:compound, ?Query:atom)//
+%! rfc2396_query(-Tree:compound, ?Query:atom)//
 % The query component is a string of information to be interpreted by
 % the resource.
 %
@@ -660,11 +669,11 @@ port(port(Port), Port) --> decimal_number(Port).
 % @arg Tree A compound term.
 % @arg Query An atom.
 
-query(query(Query), Query) -->
+rfc2396_query(query(Query), Query) -->
   {nonvar(Query)}, !,
   {atom_codes(Query, Codes)},
   uri_characters(Codes).
-query(query(Query), Query) -->
+rfc2396_query(query(Query), Query) -->
   uri_characters(Codes),
   {atom_codes(Query, Codes)}.
 
@@ -719,11 +728,11 @@ registry_based_naming_authority_character(C) --> escaped_character(C).
 % Section 5.
 
 relative_uri(relative_uri(T), Path, Query) -->
-  (absolute_path(T1, Path) ; network_path(T1, Path)),
+  (rfc2396_absolute_path(T1, Path) ; network_path(T1, Path)),
   (
     "", {T = relative_uri(T1)}
   ;
-    question_mark, query(T2, Query), {T = relative_uri(T1,'?',T2)}
+    question_mark, rfc2396_query(T2, Query), {T = relative_uri(T1,'?',T2)}
   ).
 */
 
@@ -812,8 +821,8 @@ scheme_characters([]) --> [].
 
 server(T0, authority(User,Host,Port)) -->
   ("", {var(User)} ; user_info(T1, User), at_sign, {T2 = '@'}),
-  host(T3, Host),
-  ("", {var(Port)} ; colon, {T4 = ':'}, port(T5, Port)),
+  rfc2396_host(T3, Host),
+  ("", {var(Port)} ; colon, {T4 = ':'}, rfc2396_port(T5, Port)),
   {parse_tree(server, [T1,T2,T3,T4,T5], T0)}.
 
 %! top_label(-Tree:compound, ?TopLabel:atom)//
@@ -896,13 +905,13 @@ uri_characters([H|T]) -->
   uri_characters(T).
 uri_characters([]) --> [].
 
-%! uri_reference(-Tree:compound)//
-% @see Wrapper around uri_reference//6.
+%! rfc2396_uri_reference(-Tree:compound)//
+% @see Wrapper around rfc2396_uri_reference//6.
 
-uri_reference(T) -->
-  uri_reference(T, _Scheme, _Authority, _Path, _Query, _Fragment).
+rfc2396_uri_reference(T) -->
+  rfc2396_uri_reference(T, _Scheme, _Authority, _Path, _Query, _Fragment).
 
-%! uri_reference(
+%! rfc2396_uri_reference(
 %!   -Tree:compound,
 %!   ?Scheme:atom,
 %!   ?Authority:compound,
@@ -933,12 +942,12 @@ uri_reference(T) -->
 % @arg Query An atom.
 % @arg Fragment An atom.
 
-uri_reference(T0, Scheme, Authority, Path, Query, Fragment) -->
-  absolute_uri(T1, Scheme, Authority, Path, Query),
+rfc2396_uri_reference(T0, Scheme, Authority, Path, Query, Fragment) -->
+  rfc2396_absolute_uri(T1, Scheme, Authority, Path, Query),
   ("" ; number_sign, {T2 = '#'}, fragment(T3, Fragment)),
   {parse_tree(uri_reference, [T1,T2,T3], T0)}.
 /*
-uri_reference(T0, Fragment) -->
+rfc2396_uri_reference(T0, Fragment) -->
   relative_uri(T1),
   ("", {var(Fragment)} ; number_sign, {T2 = '#'}, fragment(T3, Fragment)),
   {parse_tree(uri_reference, [T1,T2,T3], T0)}.
@@ -967,7 +976,8 @@ user_info_([H|T]) -->
   user_info_(T).
 user_info_([]) --> [].
 
-user_info__(C) --> unreserved_character(C).
+user_info__(C) -->
+  unreserved_character(C).
 user_info__(C) -->
   ( semi_colon(C)
   ; colon(C)
@@ -977,7 +987,8 @@ user_info__(C) -->
   ; dollar_sign(C)
   ; comma(C)
   ).
-user_info__(C) --> escaped_character(C).
+user_info__(C) -->
+  escaped_character(C).
 
 %! uri_to_gv(+URI:atom) is det.
 % Generates a graphical representation of the parse tree for the given URI.
@@ -986,49 +997,7 @@ user_info__(C) --> escaped_character(C).
 
 uri_to_gv(URI):-
   atom_codes(URI, Codes),
-  once(phrase(uri_reference(Tree), Codes)),
+  once(phrase(rfc2396_uri_reference(Tree), Codes)),
   absolute_file_name(project(temp), File, [access(write), file_type(jpeg)]),
   convert_tree_to_gv([name(URI)], Tree, dot, jpeg, File).
-
-
-
-:- begin_tests(rfc2396).
-
-:- use_module(generics(print_ext)).
-:- use_module(library(apply)).
-
-rfc2396_atom('https://www.example.com/a/b;g/c?q=aba#rr').
-rfc2396_atom('https://11.22.33.44:5566/a/b;g/c?q=aba#rr').
-
-rfc2396_term(http, 'www.example.com', [[a,b],[c,d],[e],[f]], 'q=aap', me).
-rfc2396_term(
-  https,
-  authority(wouter,[44,55,33,11],7777),
-  [[a,b],[c,d],[e],[f]],
-  'q=aap',
-  me
-).
-
-test(
-  rfc2396_generate,
-  [forall(rfc2396_term(Scheme, Authority, Path, Query, Fragment))]
-):-
-  once(
-    phrase(
-      uri_reference(Tree, Scheme, Authority, Path, Query, Fragment),
-      Codes
-    )
-  ),
-  atom_codes(URI, Codes),
-  maplist(formatnl, [Tree,URI]).
-
-test(rfc2396_parse, [forall(rfc2396_atom(URI))]):-
-  atom_codes(URI, Codes),
-  once(
-    phrase(
-      uri_reference(Tree, Scheme, Authority, Path, Query, Fragment),
-      Codes
-    )
-  ),
-  maplist(formatnl, [Tree, Scheme, Authority, Path, Query, Fragment]).
 

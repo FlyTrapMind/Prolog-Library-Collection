@@ -49,15 +49,11 @@ Predicates that operate on / generate XML DOM.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
-:- use_module(library(semweb/rdf_db)).
 :- use_module(library(sgml)).
 :- use_module(library(sgml_write)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
 :- use_module(standards(sgml_parse)).
-:- use_module(standards(standards), [charset/1]).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(iso, 'http://www.iso.org/').

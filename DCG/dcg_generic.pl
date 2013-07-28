@@ -37,11 +37,16 @@
     dcg_list//1, % +DCG_Bodies:list(dcg)
     dcg_list//2, % +DCG_Bodies:list(dcg)
                  % :Separator:dcg
+    dcg_multi//1, % :DCG_Body:dcg
     dcg_multi//2, % :DCG_Body:dcg
                   % ?Occurrences:or([integer,between/3])
     dcg_multi//3, % :DCG_Body:dcg
                   % ?Occurrences:or([integer,between/3])
-                  % ?Arguments:list
+                  % ?Arguments1:list
+    dcg_multi//4, % :DCG_Body:dcg
+                  % ?Occurrences:or([integer,between/3])
+                  % ?Arguments1:list
+                  % ?Arguments2:list
     dcg_multi_atom//3, % :DCG_Body
                        % ?Occurrences
                        % ?Value:atom
@@ -57,9 +62,7 @@
                   % -Tree:compound
 
 % PEEK
-    dcg_peek//1, % ?X:code
-    dcg_peek_atom//1, % -Atom:atom
-    dcg_peek_char//1, % ?Char:char
+    dcg_peek//1, % :DCG_Body
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
 
@@ -142,16 +145,31 @@ modular way.
 :- meta_predicate(dcg_list(//,?,?)).
 :- meta_predicate(dcg_list(//,//,?,?)).
 :- meta_predicate(dcg_list_(+,+,//,?,?)).
+:- meta_predicate(dcg_multi(//,?,?)).
+:- meta_predicate(dcg_multi(2,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?)).
+:- meta_predicate(dcg_multi(2,?,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?,?)).
+:- meta_predicate(dcg_multi(3,?,?,?,?)).
+:- meta_predicate(dcg_multi(//,?,?,?,?,?)).
+:- meta_predicate(dcg_multi(4,?,?,?,?,?)).
 :- meta_predicate(dcg_multi_atom(//,?,?,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,//,+,?,?)).
+:- meta_predicate(dcg_multi_nonvar(2,?,?,?)).
 :- meta_predicate(dcg_multi_nonvar(//,?,?,?)).
 :- meta_predicate(dcg_multi_nonvar(3,?,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(//,?,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(4,?,?,?,?,?)).
+:- meta_predicate(dcg_multi_nonvar(//,?,?,?,?,?)).
+:- meta_predicate(dcg_multi_var(2,?,?,?)).
 :- meta_predicate(dcg_multi_var(//,?,?,?)).
 :- meta_predicate(dcg_multi_var(3,?,?,?,?)).
+:- meta_predicate(dcg_multi_var(//,?,?,?,?)).
+:- meta_predicate(dcg_multi_var(4,?,?,?,?,?)).
+:- meta_predicate(dcg_multi_var(//,?,?,?,?,?)).
 % PEEK
+:- meta_predicate(dcg_peek(//,?,?)).
 :- meta_predicate(dcg_peek_length(?,?,?,?)).
 :- meta_predicate(dcg_peek_length(+,?,?,?,?)).
 % PHRASE EXTENSIONS
@@ -178,6 +196,9 @@ dcg_all_atom(Atom) -->
   {atom_codes(Atom, Codes)},
   dcg_all(Codes).
 
+%! dcg_until(:DCG_End, ?Value)// is det.
+% @see dcg_until//3 with the default options.
+
 dcg_until(DCG_End, Value) -->
   dcg_until([], DCG_End, Value).
 
@@ -186,9 +207,13 @@ dcg_until(DCG_End, Value) -->
 %
 % The following options are supported:
 %   * =|end_mode(?EndMode:oneof([exclusive,inclusive]))|=
+%     Whether the codes that satisfy the DCG rule are included in
+%     (`inclusive`) or excluded from (`exclusive`, default) the results.
 %   * =|output_format(?OutFormat:oneof([atom,codes]))|=
+%     Whether the results should be returned in codes (`codes`, default)
+%     or as an atom (`atom`).
 %
-% @arg A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 % @arg DCG_End Not an arbitrary DCG body, since disjunction
 %      does not play out well.
 % @arg Value Either an atom or a list of codes (see options).
@@ -258,7 +283,7 @@ dcg_debug(Codes, []):-
 %! dcg_separated_list(
 %!   +Separator:dcg_rule,
 %!   ?CodeLists:list(list(code))
-%! ) is det.
+%! )// is det.
 % @tbd This does not work for the following string:
 % ~~~
 % "error(permission_error(delete,file,\'c:/users/quirinus/.webqr/export.svg\'),context(system:delete_file/1,\'Permission denied\'))"
@@ -304,12 +329,12 @@ dcg_call(DCG_Body, A1, A2, A3, X, Y):-
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
 
-%! dcg_switch(+Value, +Maps:list) is det.
+%! dcg_switch(+Value, +Maps:list)// is det.
 
 dcg_switch(Value, Maps) -->
   dcg_switch(Value, Maps, dcg_end).
 
-%! dcg_switch(+Value, +Map:list, +Default) is det.
+%! dcg_switch(+Value, +Map:list, +Default)// is det.
 
 dcg_switch(Value, Map, _Default) -->
   {member(Value-Goal, Map)}, !,
@@ -335,13 +360,18 @@ dcg_list_(Mod, [H|T], Sep) -->
   Mod:H, Sep,
   dcg_list_(Mod, T, Sep).
 
+%! dcg_multi(:DCG_Body)//
+
+dcg_multi(DCG_Body) -->
+  dcg_multi(DCG_Body, _N).
+
 %! dcg_multi(:DCG_Body, ?Occurrences)//
 % Counts the consecutive occurrences of the given DCG body.
 % Or produces the given number of occurrences of the given DCG body.
 %
 % The nesting of applications of dcg_multi//2 is allowed (see example).
 %
-% ## Example
+% ### Example
 %
 % ~~~
 % ?- phrase(dcg_multi(dcg_multi(one, 3), 4, X), Y).
@@ -361,17 +391,24 @@ dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
 
-%! dcg_multi_atom(:DCG_Body, ?Occurrences, ?Codes:list(code))//
+%! dcg_multi(:DCG_Body, ?Occurrences, ?Arguments1:list)//
 
-dcg_multi(DCG_Body, Occurrences, As) -->
+dcg_multi(DCG_Body, Occurrences, A1s) -->
   {nonvar(Occurrences)}, !,
-  dcg_multi_nonvar(DCG_Body, Occurrences, As).
-dcg_multi(DCG_Body, N, As) -->
+  dcg_multi_nonvar(DCG_Body, Occurrences, A1s).
+dcg_multi(DCG_Body, N, A1s) -->
   {var(N)}, !,
-  dcg_multi_var(DCG_Body, N, As).
+  dcg_multi_var(DCG_Body, N, A1s).
+
+dcg_multi(DCG_Body, Occurrences, A1s, A2s) -->
+  {nonvar(Occurrences)}, !,
+  dcg_multi_nonvar(DCG_Body, Occurrences, A1s, A2s).
+dcg_multi(DCG_Body, N, A1s, A2s) -->
+  {var(N)}, !,
+  dcg_multi_var(DCG_Body, N, A1s, A2s).
 
 %! dcg_multi_atom(:DCG_Body, ?Occurrences, ?Value:atom)//
-% ## Example
+% ### Example
 %
 % ~~~
 % ?- phrase(dcg_multi(dcg_multi_atom(one, 3), 4, X), Y).
@@ -412,26 +449,48 @@ dcg_multi_nonvar(DCG_Body, N) -->
   dcg_multi_nonvar(DCG_Body, NewN).
 
 % Upper and lower bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max), As) -->
+dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s) -->
   {integer(Min), integer(Max)}, !,
   {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N, As).
+  dcg_multi_nonvar(DCG_Body, N, A1s).
 % Upper bound.
-dcg_multi_nonvar(DCG_Body, between(Min,Max), As) -->
+dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s) -->
   {integer(Max)}, !,
   {rbetween(Min, Max, N)},
-  dcg_multi_nonvar(DCG_Body, N, As).
+  dcg_multi_nonvar(DCG_Body, N, A1s).
 % Lower bound: from small to big.
-dcg_multi_nonvar(DCG_Body, between(Min,_Max), As) -->
+dcg_multi_nonvar(DCG_Body, between(Min,_Max), A1s) -->
   {integer(Min)}, !,
   {between(Min, inf, N)},
-  dcg_multi_nonvar(DCG_Body, N, As).
+  dcg_multi_nonvar(DCG_Body, N, A1s).
 dcg_multi_nonvar(_DCG_Body, 0, []) --> !, [].
-dcg_multi_nonvar(DCG_Body, N, [A|As]) -->
+dcg_multi_nonvar(DCG_Body, N, [A1|A1s]) -->
   {N >= 0},
-  dcg_call(DCG_Body, A),
+  dcg_call(DCG_Body, A1),
   {NewN is N - 1},
-  dcg_multi_nonvar(DCG_Body, NewN, As).
+  dcg_multi_nonvar(DCG_Body, NewN, A1s).
+
+% Upper and lower bound.
+dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s, A2s) -->
+  {integer(Min), integer(Max)}, !,
+  {rbetween(Min, Max, N)},
+  dcg_multi_nonvar(DCG_Body, N, A1s, A2s).
+% Upper bound.
+dcg_multi_nonvar(DCG_Body, between(Min,Max), A1s, A2s) -->
+  {integer(Max)}, !,
+  {rbetween(Min, Max, N)},
+  dcg_multi_nonvar(DCG_Body, N, A1s, A2s).
+% Lower bound: from small to big.
+dcg_multi_nonvar(DCG_Body, between(Min,_Max), A1s, A2s) -->
+  {integer(Min)}, !,
+  {between(Min, inf, N)},
+  dcg_multi_nonvar(DCG_Body, N, A1s, A2s).
+dcg_multi_nonvar(_DCG_Body, 0, [], []) --> !, [].
+dcg_multi_nonvar(DCG_Body, N, [A1|A1s], [A2|A2s]) -->
+  {N >= 0},
+  dcg_call(DCG_Body, A1, A2),
+  {NewN is N - 1},
+  dcg_multi_nonvar(DCG_Body, NewN, A1s, A2s).
 
 dcg_multi_var(DCG_Body, N) -->
   DCG_Body,
@@ -439,11 +498,17 @@ dcg_multi_var(DCG_Body, N) -->
   {N is N_ + 1}.
 dcg_multi_var(_DCG_Body, 0) --> [].
 
-dcg_multi_var(DCG_Body, NewN, [A|As]) -->
-  dcg_call(DCG_Body, A),
-  dcg_multi_var(DCG_Body, N, As),
+dcg_multi_var(DCG_Body, NewN, [A1|A1s]) -->
+  dcg_call(DCG_Body, A1),
+  dcg_multi_var(DCG_Body, N, A1s),
   {NewN is N + 1}.
 dcg_multi_var(_DCG_Body, 0, []) --> [].
+
+dcg_multi_var(DCG_Body, NewN, [A1|A1s], [A2|A2s]) -->
+  dcg_call(DCG_Body, A1, A2),
+  dcg_multi_var(DCG_Body, N, A1s, A2s),
+  {NewN is N + 1}.
+dcg_multi_var(_DCG_Body, 0, [], []) --> [].
 
 %! dcg_multi_list(:DCG_Body, ?List:list)//
 % Parses/generates multiple occurrences of a DCG rule based on
@@ -475,7 +540,7 @@ dcg_multi_list(DCG_Body, Sep, [H|T]) -->
 
 % PARSE TREES
 
-%! parse_tree(+TreeName:atom, +SubTrees:list, -Tree:compound) is det.
+%! parse_tree(+TreeName:atom, +SubTrees:list, -Tree:compound)// is det.
 % Constructs a tree based on a list of direct subtrees and variables
 % (excluded).
 %
@@ -495,33 +560,14 @@ parse_tree(P, SubT1, T):-
 
 % PEEK %
 
-%! dcg_peek(?X:code) is det.
+%! dcg_peek(:DCG_Body)// is det.
 % Returns the next code in the codes list, if any.
 % Does not consume anything.
 
-dcg_peek(X), [X] -->
-  [X].
+dcg_peek(DCG_Body), DCG_Body -->
+  DCG_Body.
 
-%! dcg_peek_atom(+Atom:atom) is semidet.
-% Succeeds if the given atom occurs next in the codes list,
-% but does not consume anything.
-
-dcg_peek_atom(Atom), Codes -->
-  {atom_codes(Atom, Codes)},
-  Codes.
-
-%! dcg_peek_char(?Char) is semidet.
-
-dcg_peek_char(Char), [Code] -->
-  {nonvar(Char)},
-  {char_code(Char, Code)},
-  [Code].
-dcg_peek_char(Char), [Code] -->
-  {var(Char)},
-  [Code],
-  {char_code(Char, Code)}.
-
-%! dcg_peek_length(?Length:integer, ?Peek:list(code)) is nondet.
+%! dcg_peek_length(?Length:integer, ?Peek:list(code))// is nondet.
 
 % In order to prevent the generative call of DCG rule to result in an
 % infinite loop over increasingly bigger lengths in length/2, we
@@ -568,7 +614,7 @@ dcg_phrase(DCG_Body, In1, Out1):-
 
 dcg_end([], []).
 
-%! dcg_replace(:From:dcg, :To:dcg) is det.
+%! dcg_replace(:From:dcg, :To:dcg)// is det.
 % @author http://stackoverflow.com/users/1613573/mat
 % @see http://stackoverflow.com/questions/6392725/using-a-prolog-dcg-to-find-replace-code-review
 

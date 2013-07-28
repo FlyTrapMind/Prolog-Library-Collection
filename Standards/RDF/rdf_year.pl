@@ -40,8 +40,7 @@ Support for year data in RDF graphs.
 
 
 
-rdf_assert_year(S, IntervalP1, IntervalP2, _PointP, Year1-Year2, G):-
-  !,
+rdf_assert_year(S, IntervalP1, IntervalP2, _PointP, Year1-Year2, G):- !,
   rdf_assert_datatype(S, IntervalP1, gYear, Year1, G),
   rdf_assert_datatype(S, IntervalP2, gYear, Year2, G).
 rdf_assert_year(S, _IntervalP1, _IntervalP2, PointP, Year, G):-
