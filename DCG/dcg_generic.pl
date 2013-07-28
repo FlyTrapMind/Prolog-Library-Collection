@@ -134,6 +134,8 @@ modular way.
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
+:- meta_predicate(dcg_goal(//,//)).
+:- meta_predicate(dcg_goal(:,:)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES
 :- meta_predicate(dcg_list(//,?,?)).
@@ -147,6 +149,12 @@ modular way.
 :- meta_predicate(dcg_multi(3,?,?,?,?)).
 :- meta_predicate(dcg_multi(//,?,?,?,?,?)).
 :- meta_predicate(dcg_multi(4,?,?,?,?,?)).
+:- meta_predicate(dcg_multi_(//,?,?,?)).
+:- meta_predicate(dcg_multi_(2,?,?,?)).
+:- meta_predicate(dcg_multi_(//,?,?,?,?)).
+:- meta_predicate(dcg_multi_(3,?,?,?,?)).
+:- meta_predicate(dcg_multi_(//,?,?,?,?,?)).
+:- meta_predicate(dcg_multi_(4,?,?,?,?,?)).
 :- meta_predicate(dcg_multi_atom(//,?,?,?,?)).
 :- meta_predicate(dcg_multi_list(3,+,?,?)).
 :- meta_predicate(dcg_multi_list(3,//,+,?,?)).
@@ -333,6 +341,14 @@ dcg_call(DCG_Body, A1, A2, A3, X, Y):-
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
 
+%! dcg_goal(:DCG_Disjunction, :DCG_Body) is nondet.
+
+dcg_goal(DCG_Disjunction1, Module:DCG_Body):-
+  strip_module(DCG_Disjunction1, Module, DCG_Disjunction2),
+  DCG_Disjunction2 =.. [;|DCG_Bodies], !,
+  member(DCG_Body, DCG_Bodies).
+dcg_goal(DCG_Body, DCG_Body).
+
 %! dcg_switch(+Value, +Maps:list)// is det.
 
 dcg_switch(Value, Maps) -->
@@ -388,26 +404,50 @@ dcg_multi(DCG_Body) -->
 %      of the form=|`between(+Min:integer,+Max:integer)|=.
 %      When uninstantiated, this can instantiate with an integer.
 
+dcg_multi(DCG_Disjunction1, Occurrences) -->
+  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
+  {DCG_Disjunction2 =.. [;|DCG_Bodies]}, !,
+  {member(DCG_Body, DCG_Bodies)},
+  dcg_multi_(Module:DCG_Body, Occurrences).
 dcg_multi(DCG_Body, Occurrences) -->
+  dcg_multi_(DCG_Body, Occurrences).
+
+dcg_multi_(DCG_Body, Occurrences) -->
   {nonvar(Occurrences)}, !,
   dcg_multi_nonvar(DCG_Body, Occurrences).
-dcg_multi(DCG_Body, N) -->
+dcg_multi_(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
 
 %! dcg_multi(:DCG_Body, ?Occurrences, ?Arguments1:list)//
 
+dcg_multi(DCG_Disjunction1, Occurrences, A1s) -->
+  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
+  {DCG_Disjunction2 =.. [;|DCG_Bodies]}, !,
+  {member(DCG_Body, DCG_Bodies)},
+  dcg_multi_(Module:DCG_Body, Occurrences, A1s).
 dcg_multi(DCG_Body, Occurrences, A1s) -->
+  dcg_multi_(DCG_Body, Occurrences, A1s).
+
+dcg_multi_(DCG_Body, Occurrences, A1s) -->
   {nonvar(Occurrences)}, !,
   dcg_multi_nonvar(DCG_Body, Occurrences, A1s).
-dcg_multi(DCG_Body, N, A1s) -->
+dcg_multi_(DCG_Body, N, A1s) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N, A1s).
 
+dcg_multi(DCG_Disjunction1, Occurrences, A1s, A2s) -->
+  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
+  {DCG_Disjunction2 =.. [;|DCG_Bodies]}, !,
+  {member(DCG_Body, DCG_Bodies)},
+  dcg_multi_(Module:DCG_Body, Occurrences, A1s, A2s).
 dcg_multi(DCG_Body, Occurrences, A1s, A2s) -->
+  dcg_multi_(DCG_Body, Occurrences, A1s, A2s).
+
+dcg_multi_(DCG_Body, Occurrences, A1s, A2s) -->
   {nonvar(Occurrences)}, !,
   dcg_multi_nonvar(DCG_Body, Occurrences, A1s, A2s).
-dcg_multi(DCG_Body, N, A1s, A2s) -->
+dcg_multi_(DCG_Body, N, A1s, A2s) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N, A1s, A2s).
 

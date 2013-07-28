@@ -113,7 +113,7 @@ continuation -->
   (backslash ; ""),
   (
     (dcg_multi('SP'), 'CRLF' ; ""),
-    dcg_multi('SP', between(0,_))
+    dcg_multi('SP', between(1,_))
   ;
     ""
   ).
