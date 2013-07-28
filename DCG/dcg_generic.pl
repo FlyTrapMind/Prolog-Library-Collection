@@ -239,10 +239,11 @@ dcg_until(O, DCG_End, In) -->
   },
   dcg_until_(O, DCG_End, Codes).
 
-dcg_until_(O, DCG_Disjunction, Codes) -->
-  {DCG_Disjunction =.. [;|DCG_Ends]}, !,
+dcg_until_(O, DCG_Disjunction1, Codes) -->
+  {strip_module(DCG_Disjunction1, Module, DCG_Disjunction2)},
+  {DCG_Disjunction2 =.. [;|DCG_Ends]}, !,
   {member(DCG_End, DCG_Ends)},
-  dcg_until_(O, DCG_End, Codes).
+  dcg_until_(O, Module:DCG_End, Codes).
 dcg_until_(O, DCG_End, Codes) -->
   dcg_until__(O, DCG_End, Codes).
 
