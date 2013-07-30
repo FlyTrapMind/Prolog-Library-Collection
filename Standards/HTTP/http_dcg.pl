@@ -1163,6 +1163,7 @@ reason_phrase_([]) --> [].
 % @tbd Implement requested resource determination.
 
 request(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
+{gtrace},
   request_line(T1, Method, URI, Version),
   ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
   crlf(T3),

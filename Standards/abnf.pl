@@ -64,7 +64,7 @@ Support for Augmented Backus-Naur Format (ABNF).
 %! 'ALPHA'(?Code:code)//
 % The ASCII letters, i.e. =|A-Z / a-z|=.
 %
-% Hexadecimal character range: `%x41-5A` through `%x61-7A`.
+% Hexadecimal character range: =|%x41-5A|= through =|%x61-7A|=.
 %
 % ~~~{.abnf}
 % ALPHA = %x41-5A / %x61-7A   ; A-Z / a-z

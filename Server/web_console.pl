@@ -35,7 +35,7 @@ The Web-based console for PraSem.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_server_files)).
 :- use_module(server(error_web)).
-:- use_module(server(wallace)).
+:- use_module(server(dev_server)).
 
 :- dynamic history/2.
 
@@ -54,7 +54,7 @@ The Web-based console for PraSem.
 :- db_add_novel(http:location(css, root(css), [])).
 :- assert(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
-:- html_resource(css('console_input.css'), [requires(css('wallace.css'))]).
+:- html_resource(css('console_input.css'), [requires(css('dev_server.css'))]).
 
 
 
@@ -86,7 +86,7 @@ console_input -->
     history_length(HistoryLength),
     first(Commands, HistoryLength, History_),
     atomic_list_concat(History_, '\n', History),
-    wallace_uri(URI)
+    dev_server_uri(URI)
   },
   html([
     div(id(console_input), [
@@ -163,14 +163,11 @@ input_ui([
       [name=submit, type=submit, value='Submit'],
       ['Submit'])])]
 ):-
-  wallace_uri(URI).
+  dev_server_uri(URI).
 
-markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):-
-  !.
-markup_mold(StyleName/DOM, html, StyleName, DOM):-
-  !.
-markup_mold(DOM, html, wallace, DOM):-
-  !.
+markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
+markup_mold(StyleName/DOM, html, StyleName, DOM):- !.
+markup_mold(DOM, html, dev_server, DOM):- !.
 
 maximum_number_of_messages(100).
 
@@ -178,7 +175,7 @@ messages_web(Markup):-
   maximum_number_of_messages(MaximumNumberOfMessages),
   findall(
     [element(h1, [], [DateTime]) | DOM],
-    wallace:history(status_pane, DateTime, _DTD_Name, _StyleName, DOM),
+    dev_server:history(status_pane, DateTime, _DTD_Name, _StyleName, DOM),
     DOMs
   ),
   reverse(DOMs, RDOMs),

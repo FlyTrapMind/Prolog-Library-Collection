@@ -48,7 +48,7 @@ Web front-end for generic graph visualizations.
 
 %! circle_graph_web(+Graph:graph, -Markup:list) is det.
 
-circle_graph_web(Graph, html/wallace/[GraphElement | TableMarkup]):-
+circle_graph_web(Graph, html/dev_server/[GraphElement | TableMarkup]):-
   export_graph(
     [edge_labels(all)],
     circular_vertice_coordinate,
@@ -63,7 +63,7 @@ circle_graph_web(Graph, html/wallace/[GraphElement | TableMarkup]):-
 % @arg Graph
 % @arg Markup
 
-graph_web(G, svg11/wallace/SVG):-
+graph_web(G, svg11/dev_server/SVG):-
   export_graph_svg(G, SVG).
 
 %! harary_web(+K:integer, +N:integer, -Markup:list) is det.
@@ -126,7 +126,7 @@ spring_embedding_web(Graph, Iterations, Markup):-
 
 %! table_graph_web(+Graph:graph, -Markup:triple) is det.
 
-table_graph_web(Graph, html/wallace/[TableElement]):-
+table_graph_web(Graph, html/dev_server/[TableElement]):-
   export_graph(
     [
       colorscheme(none),

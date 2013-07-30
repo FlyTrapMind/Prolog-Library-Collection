@@ -16,8 +16,8 @@ Acts on messages printed by print_message/2.
 
 :- use_module(html(html)).
 :- use_module(library(http/http_open)).
+:- use_module(server(dev_server)).
 :- use_module(server(error_web)).
-:- use_module(server(wallace)).
 
 :- dynamic(current_log_row/1).
 
@@ -43,7 +43,7 @@ log_web([HTML_Table]):-
 
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   error_web(Exception, Markup),
-  push(status_pane, html, wallace, Markup),
+  push(status_pane, html, dev_server, Markup),
   !.
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   !,
@@ -54,14 +54,14 @@ prolog:debug_print_hook(Type, Format, Arguments):-
   push(
     status_pane,
     html,
-    wallace,
+    dev_server,
     [element(p, [], ['[', Type, ']', ' ', Message])]
   ),
   append_to_log(Type, Format, Arguments).
 
 web_message(open_uri(_URI)):-
   format(user, 'YES!', []),
-  wallace_uri(URI),
+  dev_server_uri(URI),
   http_open(
     URI,
     _Stream,

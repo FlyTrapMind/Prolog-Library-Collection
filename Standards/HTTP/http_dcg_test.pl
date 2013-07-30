@@ -9,7 +9,7 @@
 :- multifile(thread_httpd:open_client_hook/5).
 
 
-
+/*
 thread_httpd:open_client_hook(
   tcp_client(ClientSocket, Goal, _Peer),
   Goal,
@@ -30,6 +30,7 @@ thread_httpd:open_client_hook(
     [Tree,Method,URI,Version,MessageHeaders,MessageBody]
   ),
   flush_output(user_output).
+*/
 
 to_terminal(Name, Value):-
   format(user_output, '~w\t~w\n', [Name,Value]).

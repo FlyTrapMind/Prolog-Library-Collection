@@ -83,11 +83,15 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 % ~~~
 %
 % Note that ampersand// and backslash// are explicitly excluded.
+%
+% ## Inconsistency
+%
+% I assume the horizontal tab is also allowed in comments, as is space.
 
 character(C) -->
   'ASCCHAR'(C).
 character(C) -->
-  'SP'(C).
+  'WSP'(C).
 character(C) -->
   'ESCAPE'(C).
 character(C) -->
@@ -98,9 +102,13 @@ character(C) -->
 % ~~~{.abnf}
 % comment = SP *69(character)
 % ~~~
+%
+% ## Inconsistency
+%
+% I assume the horizontal tab is also allowed in comments, as is space.
 
 comment(Comment) -->
-  'SP',
+  'WSP',
   dcg_multi(character, between(0,69), Codes),
   {atom_codes(Comment, Codes)}.
 
@@ -109,12 +117,16 @@ comment(Comment) -->
 % ~~~{.abnf}
 % continuation = ["\"] [[*SP CRLF] 1*SP]
 % ~~~
+%
+% ## Inconsistency
+%
+% I assume the horizontal tab is also allowed in comments, as is space.
 
 continuation -->
   (backslash ; ""),
   (
-    (dcg_multi('SP'), 'CRLF' ; ""),
-    dcg_multi('SP', between(1,_))
+    (dcg_multi('WSP'), 'CRLF' ; ""),
+    dcg_multi('WSP', between(1,_))
   ;
     ""
   ).
@@ -153,13 +165,6 @@ encodingSig(Encoding) -->
 
 %! field(?Field:nvpair)//
 %
-% ## Single line / multiple lines
-%
-% A field is a single, logical line of characters.
-% However, to accommodate line limits, readability, and presentational
-% purposes, the field-body portion of a field can be split into a
-% multiple-line representation; this is called *folding*.
-%
 % ~~~{.abnf}
 % field = ( field-name field-sep field-body CRLF )
 % ~~~
@@ -184,6 +189,18 @@ field(Name=Body) -->
 % ~~~{.abnf}
 % field-body   = *(continuation 1*character)
 % ~~~
+%
+% ## Folding
+%
+% To accommodate line limits (enforced by another standard or implementation),
+% readability, and presentational purposes, the field-body portion of a field
+% can be split into a multi-line representation; this is called *folding*.
+%
+% @tbd It is RECOMMENDED that folding not occur between characters inside a
+%      Unicode grapheme cluster (since this will alter the display of
+%      characters in the file and might result in unintentional alteration
+%      of the file's semantics).
+% @see Information on grapheme clusters, UAX29.
 
 'field-body'(Body) -->
   dcg_multi((continuation, dcg_multi(character, _N, CodeLists)), _M, Codes),
@@ -238,16 +255,12 @@ field(Name=Body) -->
 % ## Inconsistency
 %
 % The ABNF does not mention the (horizontal) tab, only the space character.
-% We solve this by adding a DCG rule called 'field-sep-space'//.
+% We solve this by using 'WSP'// instead of 'SP'//.
 
 'field-sep' -->
-  dcg_multi('SP'),
+  dcg_multi('WSP'),
   ":",
-  dcg_multi('SP').
-
-'field-sep-space' -->
-  'SP'.
-'field-sep-space' -->
+  dcg_multi('WSP').
 
 %! 'record-jar'(?Encoding:atom, ?Records:list(list(nvpair)))//
 %

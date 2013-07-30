@@ -119,7 +119,6 @@ modular way.
 ).
 
 % ALL/UNTIL
-:- meta_predicate(dcg_until(//,?,?,?)).
 :- meta_predicate(dcg_until(+,//,?,?,?)).
 :- meta_predicate(dcg_until_(+,//,?,?,?)).
 :- meta_predicate(dcg_until__(+,//,?,?,?)).
@@ -198,6 +197,7 @@ dcg_all_atom(Atom) -->
 
 dcg_until(DCG_End, Value) -->
   dcg_until([], DCG_End, Value).
+:- meta_predicate(dcg_until(//,?,?,?)).
 
 %! dcg_until(+Options:list(nvpair), :DCG_End, ?Value)// is det.
 % Returns the codes that occur before `DCG_End` can be consumed.

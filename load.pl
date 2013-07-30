@@ -25,9 +25,6 @@ load_pgc:-
     assert(user:project_name('PGC'))
   )),
 
-  % Do not write module loads to the standard output stream.
-  set_prolog_flag(verbose_load, silent),
-
   % Assert the various search paths.
   assert(user:file_search_path(datasets,     pgc('Datasets'))),
     assert(user:file_search_path(dbnl,       datasets('DBNL'))),
