@@ -446,6 +446,56 @@ hh,hh
 ~~~
 Example: =|23,3|=
 
+### Time designator
+
+In expressions of local time, applications may put the time designator =|[T]|=
+immediately in front of the representations defined above.
+
+### Midnight
+
+The complete representations in basic and extended format for midnight:
+
+#### The beginning of a calendar day
+
+Basic format:
+~~~
+000000
+~~~
+
+Extended format:
+~~~
+00:00:00
+~~~
+
+#### The end of a calendar day
+
+Basic format:
+~~~
+240000
+~~~
+
+Extended format:
+~~~
+24:00:00
+~~~
+
+These representations may have reduced accuracy and/or may contain the time
+designator.
+
+These representations may be expanded with a decimal fraction containing only
+zeros.
+
+Midnight will normally be represented as =|00:00|= or =|24:00|=.
+
+The end of one calendar day =|24:00|= coincides with =|00:00|= at the start
+of the next calendar day. For example, =|24:00|= on 12 April 1985 is the same
+as =|00:00|= on 13 April 1985. If there is no association with a date or a
+time interval, then these representations represent the same local time in
+the 24-hour timekeeping system.
+
+Representations where =|hh|= has the value =|24|= are only preferred to
+represent the end of a time interval or recurring time interval (see below).
+
 --
 
 @author Wouter Beek
@@ -571,29 +621,72 @@ test(
 %!   ?Minute:float,
 %!   ?Second:float
 %! )//
+% *|[A1]|* If hour is =24=, then minute (if present) must be =00=,
+%          and any decimal expansion must consist of zeros.
+%
+% *|[A2]|* If hour is =24=, then second (if present) must be =00=,
+%          and any decimal expansion must consist of zeros.
+%
+% *|[B1]|* If hour is =00= and hour has a decimal expansion, than that
+%          expansion must consist of zeros exclusively.
+%
+% *|[B2]|* If hour and minute are =00= and minute has
+%          a decimal expansion than that expansion must consist
+%         of zeros exclusively.
+%
+% *|[B3]|* If hour, minute, and second are =00= and second has
+%          a decimal expansion, than that expansion must consist
+%          of zeros exclusively.
+%
+% *|[C1]|* If minute is instantiated, then hour must not have
+%          a decimal expansion.
+%
+% *|[C2]|* If minute and second are instantiated, then hour and
+%          minute must not have a decimal expansion.
 
 iso8601_local_time(T0, Format, H, M, S) -->
-  iso8601_hour(T1, H),
+  ("" ; time_designator(T1)),
+  iso8601_hour(T2, H),
+  {number_components(H, H_I, H_F)},
   (
     {var(M)},
-    {var(S)}
+    {var(S)},
+    % [A1] If hour is =24=, then its decimal expansion must
+    %      consist of zeros exclusively.
+    % [B1] If hour is =00=, then its decimal expansion must
+    %      consist of zeros exclusively.
+    {(H_I =:= 0 -> H_F = 0 ; true)}
   ;
-    % Since a minute value occurs after the hour value, the hour value
-    % cannot contain a decimal fraction.
-    {float_fractional_part(H) =:= 0},
+    % [C1] If minute is instantiated, then hour must not have
+    %      a decimal expansion.
+    {H_F = 0},
     (colon, {Format = extended} ; {Format = basic}),
-    iso8601_minute(T2, M),
+    iso8601_minute(T3, M),
+    {number_components(M, M_I, M_F)},
+    % [A1] If hour is =24=, then minutes must be =00= and its
+    %      decimal expansion (if any) must consist of zeros exclusively.
+    {(H_I =:= 24 -> M_I =:= 0, M_F = 0 ; true)},
     (
-      {var(S)}
+      {var(S)},
+      % [B2] If hour and minute are =00=, then minutes's decimal extension
+      %      must consist of zeros exclusively.
+      {(H_I =:= 0, M_I =:= 0 -> M_F = 0 ; true)}
     ;
-      % Since a second value occurs after the minute value, the minute value
-      % cannot contain a decimal fraction.
-      {float_fractional_part(M) =:= 0},
+      % [C2] If minute and second are instantiated, then hour and minute
+      %      must not have a decimal expansion.
+      {H_F = 0, M_F = 0},
       (colon, {Format = extended} ; {Format = basic}),
-      iso8601_second(T3, S)
+      iso8601_second(T4, S),
+      {number_components(S, S_I, S_F)},
+      % [C3] If hour, minute, and second are =00=, then minutes's decimal
+      %      extension must consist of zeros exclusively.
+      {(H_I =:= 0, M_I =:= 0, S_I =:= 0 -> S_F = 0 ; true)},
+      % [A2] If hour is =24=, then second must be =00= and its
+      %      decimal expansion (if any) must consist of zeros exclusively.
+      {(H_I =:= 24 -> S_I =:= 0, S_F = 0 ; true)}
     )
   ),
-  {parse_tree(local_time, [T1,T2,T3], T0)}.
+  {parse_tree(local_time, [T1,T2,T3,T4], T0)}.
 
 :- begin_tests(iso8601_local_time).
 
@@ -615,6 +708,10 @@ iso8601_local_time_example(extended, '23:20:50,5', 23  , 20,   50.5).
 iso8601_local_time_example(basic,    '2320,8',     23  , 20.8, _   ).
 iso8601_local_time_example(extended, '23:20,8',    23  , 20.8, _   ).
 iso8601_local_time_example(basic,    '23,3',       23.3, _,    _   ).
+iso8601_local_time_example(basic,    '000000',     0,    0,    0   ).
+iso8601_local_time_example(extended, '00:00:00',   0,    0,    0   ).
+iso8601_local_time_example(basic,    '240000',     24,   0,    0   ).
+iso8601_local_time_example(extended, '24:00:00',   24,   0,    0   ).
 
 test(
   iso8601_local_time_generate,
@@ -794,7 +891,7 @@ iso8601_float(T0, Name, Length, N) -->
     fraction_separator(T2),
     % Unspecified length.
     iso8601_integer(T3, fraction, _UnspecifiedLength, N_F),
-    {float_components(N, N_I, N_F)}
+    {number_components(N, N_I, N_F)}
   ;
     {N = N_I}
   ),
@@ -804,7 +901,7 @@ iso8601_float(T0, Name, Length, N) -->
   iso8601_integer(T0, Name, Length, N).
 iso8601_float(T0, Name, Length, N) -->
   {float(N)}, !,
-  {float_components(N, N_I, N_F)},
+  {number_components(N, N_I, N_F)},
   iso8601_integer(T1, integer, Length, N_I),
   fraction_separator(T2),
   iso8601_integer(T3, fraction, _UnspecifiedLength, N_F),
@@ -851,6 +948,9 @@ padded_number(DecimalNumber, Length, DecimalDigits2):-
   length(DecimalDigits1, NumberOfDigits),
   NumberOfZeros is Length - NumberOfDigits,
   padded_list(DecimalDigits1, NumberOfZeros, DecimalDigits2).
+
+time_designator(time_designator('T')) -->
+  "T".
 
 
 

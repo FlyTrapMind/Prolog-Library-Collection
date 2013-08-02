@@ -20,9 +20,6 @@
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
-    float_components/3, % ?Float:float
-                        % ?IntegerComponent:integer
-                        % ?FractionalComponent:integer
     float_fractional_component/2, % ?Float:float
                                   % ?FractionalComponent:integer
     float_integer_component/2, % ?Float:float
@@ -41,6 +38,9 @@
                 % ?Z:float
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
+    number_components/3, % ?Number:number
+                         % ?IntegerComponent:integer
+                         % ?FractionalComponent:integer
     number_length/2, % +Number:number
                      % -Length:integer
     number_length/3, % +Number:number
@@ -272,15 +272,6 @@ fibonacci(N, F):-
   fibonacci(N2, F2),
   F is F1 + F2.
 
-float_components(N, N_I, N_F):-
-  var(N), !,
-  number_length(N_F, N_F_Length),
-  N is N_I + N_F / 10 ** N_F_Length.
-float_components(N, N_I, N_F):-
-  float(N),
-  float_integer_component(N, N_I),
-  float_fractional_component(N, N_F).
-
 float_fractional_component(N, N_F):-
   atom_number(N_A, N),
   sub_atom(N_A, N_I_Length, 1, _, '.'),
@@ -350,6 +341,17 @@ multiply_list([Number], Number):- !.
 multiply_list([Number | Numbers], Multiplication):-
   multiply_list(Numbers, Multiplication1),
   Multiplication is Number * Multiplication1.
+
+number_components(N, N_I, N_F):-
+  var(N), !,
+  number_length(N_F, N_F_Length),
+  N is N_I + N_F / 10 ** N_F_Length.
+number_components(N, N, _NoFractionalComponent):-
+  integer(N), !.
+number_components(N, N_I, N_F):-
+  float(N), !,
+  float_integer_component(N, N_I),
+  float_fractional_component(N, N_F).
 
 %! number_length(+Number:number, -Length:integer) is det.
 % @see number_length/3 with radix set to `10` (decimal).
