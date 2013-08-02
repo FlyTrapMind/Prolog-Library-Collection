@@ -236,13 +236,13 @@ test(
   [
     forall(
       iso8601_local_time_example(
-        Atom, Format, T1, H1, M1, S1, UTC1, Sign1, H1_, M1_)
+        Atom, Format, T1, H1, M1, S1, UTC1, Sign1, HH1, MM1)
     ),
     true(
       maplist(
         =,
-        [T1, H1, M1, S1, UTC1, Sign1, H1_, M1_],
-        [T2, H2, M2, S2, UTC2, Sign2, H2_, M2_]
+        [T1,H1,M1,S1,UTC1,Sign1,HH1,MM1],
+        [T2,H2,M2,S2,UTC2,Sign2,HH2,MM2]
       )
     )
   ]
@@ -250,7 +250,7 @@ test(
   atom_codes(Atom, Codes),
   once(
     phrase(
-      iso8601_local_time(_T0, Format, T2, H2, M2, S2, UTC2, Sign2, H2_, M2_),
+      iso8601_local_time(_T0, Format, T2, H2, M2, S2, UTC2, Sign2, HH2, MM2),
       Codes
     )
   ).
@@ -288,6 +288,139 @@ test(
 ):-
   atom_codes(Atom, Codes),
   once(phrase(iso8601_ordinal_date(_T0, Format, Y2, D2), Codes)).
+
+
+
+% TIME INTERVALS %
+
+iso8601_time_interval_example(
+  '19850412T232050/19850625T103000', basic,
+  1985, 4, 12, true, 23, 20, 50, false, _, _, _,
+  1985, 6, 25, true, 10, 30, 0,  false, _, _, _
+).
+iso8601_time_interval_example(
+  '1985-04-12T23:20:50/1985-06-25T10:30:00', extended,
+  1985, 4, 12, true, 23, 20, 50, false, _, _, _,
+  1985, 6, 25, true, 10, 30, 0,  false, _, _, _
+).
+
+test(
+  iso8601_time_interval_generate,
+  [
+    forall(
+      iso8601_time_interval_example(
+        Atom1, Format,
+        Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1,
+        Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
+      )
+    ),
+    true(Atom1 == Atom2)
+  ]
+):-
+  once(
+    phrase(
+      iso8601_time_interval(
+        _T0, Format,
+        Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1,
+        Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
+      ),
+      Codes
+    )
+  ),
+  atom_codes(Atom2, Codes).
+
+test(
+  iso8601_time_interval_parse,
+  [
+    forall(
+      iso8601_time_interval_example(
+        Atom, Format,
+        Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1,
+        Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
+      )
+    ),
+    true(
+      maplist(
+        =,
+        [
+          Y1,M1,D1,T1,H1,MM1,S1,UTC1,Sign1,HH1,MMM1,
+          Y2,M2,D2,T2,H2,MM2,S2,UTC2,Sign2,HH2,MMM2
+        ],
+        [
+          Y3,M3,D3,T3,H3,MM3,S3,UTC3,Sign3,HH3,MMM3,
+          Y4,M4,D4,T4,H4,MM4,S4,UTC4,Sign4,HH4,MMM4
+        ]
+      )
+    )
+  ]
+):-
+  atom_codes(Atom, Codes),
+  once(
+    phrase(
+      iso8601_time_interval(
+        _T0, Format,
+        Y3, M3, D3, T3, H3, MM3, S3, UTC3, Sign3, HH3, MMM3,
+        Y4, M4, D4, T4, H4, MM4, S4, UTC4, Sign4, HH4, MMM4
+      ),
+      Codes
+    )
+  ).
+
+%! iso8601_time_interval_example(
+%!   ?TimeInterval:atom,
+%!   ?Format:oneof([basic,extended]),
+%!   ?Year:integer,
+%!   ?Month:integer,
+%!   ?Week:integer,
+%!   ?Day:integer
+%!   ?TimeSeparator:boolean,
+%!   ?Hour:integer,
+%!   ?Minute:integer,
+%!   ?Second:integer
+%! ) is nondet.
+
+iso8601_time_interval_example(
+  'P2Y10M15DT10H30M20S', basic, 2, 10, _, 15, true, 10, 30, 20
+).
+iso8601_time_interval_example(
+  'P2Y10M15DT10H30M20S', extended, 2, 10, _, 15, true, 10, 30, 20
+).
+iso8601_time_interval_example('P6W', basic, _, _, 6, _, false, _, _, _).
+iso8601_time_interval_example('P6W', extended, _, _, 6, _, false, _, _, _).
+
+test(
+  iso8601_time_interval_generate,
+  [
+    forall(
+      iso8601_time_interval_example(Atom1, Format, Y, M, W, D, T, H, MM, S)
+    ),
+    true(Atom1 == Atom2)
+  ]
+):-
+  once(
+    phrase(
+      iso8601_time_interval(_T0, Format, Y, M, W, D, T, H, MM, S),
+      Codes
+    )
+  ),
+  atom_codes(Atom2, Codes).
+
+test(
+  iso8601_time_interval_parse,
+  [
+    forall(
+      iso8601_time_interval_example(Atom, Format, Y1, M1, W1, D1, T1, H1, MM1, S1)
+    ),
+    true(maplist(=, [Y1,M1,W1,D1,T1,H1,MM1,S1], [Y2,M2,W2,D2,T2,H2,MM2,S2]))
+  ]
+):-
+  atom_codes(Atom, Codes),
+  once(
+    phrase(
+      iso8601_time_interval(_T0, Format, Y2, M2, W2, D2, T2, H2, MM2, S2),
+      Codes
+    )
+  ).
 
 
 
