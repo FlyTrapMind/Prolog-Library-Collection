@@ -1,26 +1,72 @@
 :- module(
   iso8601_dcg,
   [
+% CALENDAR DATE
     iso8601_calendar_date//5, % ?Tree:compound
                               % ?Format:oneof([basic,extended])
                               % ?Year:between(0,9999)
                               % ?Month:between(1,12)
                               % ?Day:between(28,31)
-    iso8601_local_time//6, % -Tree:compound
-                           % ?Format:oneof([basic,extended])
-                           % ?Hour:float
-                           % ?Minute:float
-                           % ?Second:float
-                           % ?UTC:boolean
+    iso8601_calendar_date_time//13, % -Tree:compound
+                                    % ?Format:oneof([basic,extended])
+                                    % ?Year:between(0,9999)
+                                    % ?Month:between(1,12)
+                                    % ?Day:between(28,31)
+                                    % ?TimeDesignator:boolean
+                                    % ?Hour:float
+                                    % ?Minute:float
+                                    % ?Second:float
+                                    % ?UTC:boolean
+                                    % ?Sign:boolean
+                                    % ?HourCorrection:float
+                                    % ?MinuteCorrection:float
+% LOCAL DATE
+    iso8601_local_time//10, % -Tree:compound
+                            % ?Format:oneof([basic,extended])
+                            % ?TimeDesignator:boolean
+                            % ?Hour:float
+                            % ?Minute:float
+                            % ?Second:float
+                            % ?UTC:boolean
+                            % ?Sign:boolean
+                            % ?HourCorrection:float
+                            % ?MinuteCorrection:float
+% ORDINAL DATE
     iso8601_ordinal_date//4, % -Tree:compound
                              % ?Format:oneof([basic,extended])
                              % ?Year:between(0,9999)
                              % ?Day:between(1,366)
-    iso8601_week_date//5 % -Tree:compound
-                         % ?Format:oneof([basic,extended])
-                         % ?Year:between(0,9999)
-                         % ?Week:between(1,53)
-                         % ?Day:between(1,7)
+    iso8601_ordinal_date_time//12, % -Tree:compound
+                                   % ?Format:oneof([basic,extended])
+                                   % ?Year:between(0,9999)
+                                   % ?Day:between(1,366)
+                                   % ?TimeDesignator:boolean
+                                   % ?Hour:float
+                                   % ?Minute:float
+                                   % ?Second:float
+                                   % ?UTC:boolean
+                                   % ?Sign:boolean
+                                   % ?HourCorrection:float
+                                   % ?MinuteCorrection:float
+% WEEK DATE
+    iso8601_week_date//5, % -Tree:compound
+                          % ?Format:oneof([basic,extended])
+                          % ?Year:between(0,9999)
+                          % ?Week:between(1,53)
+                          % ?Day:between(1,7)
+    iso8601_week_date_time//13 % -Tree:compound
+                               % ?Format:oneof([basic,extended])
+                               % ?Year:between(0,9999)
+                               % ?Week:between(1,53)
+                               % ?Day:between(1,7)
+                               % ?TimeDesignator:boolean
+                               % ?Hour:float
+                               % ?Minute:float
+                               % ?Second:float
+                               % ?UTC:boolean
+                               % ?Sign:boolean
+                               % ?HourCorrection:float
+                               % ?MinuteCorrection:float
   ]
 ).
 
@@ -530,18 +576,142 @@ Examples:
   * =|23:20:30Z|=
   * =|23:20Z|=
 
+### Local time and UTC time
+
+When it is required to indicate the difference between local time and UTC of
+day, the representation of the difference can be expressed in hours and
+minutes, or hours only. It shall be expressed as positive (i.e. with the
+leading plus sign =|[+]|=) if the local time is ahead of or equal to UTC
+of day and as negative (i.e. with the leading minus sign =|[-]|=) if it is
+behind UTC of day.
+
+The minutes time element of the difference may only be omitted if the
+difference between the time scales is exactly an integral number of hours.
+
+Basic format:
+~~~
+±hhmm
+±hh
+~~~
+Examples:
+  * =|+0100|=
+  * =|+01|=
+
+Extended format:
+~~~
+±hh:mm
+~~~
+Example: =|+01:00|=
+
+Expressions of the difference between local time and UTC of day are a
+component in the representations defined below.
+They are not used in isolation.
+
+When it is required to indicate local time and the difference between
+the time scale of local time and UTC, the representation of the difference
+shall be appended to the representation of the local time following
+immediately, without space, the lowest order (extreme right-hand) time
+element of the local time expression.
+
+The difference between the time scale of local time and UTC shall be
+expressed in hours-and-minutes, or hours-only independent of the accuracy of
+the local time expression associated with it.
+
+In the following examples we represent the complete representation of the time
+of 27 minutes and 46 seconds past 15 hours locally in Geneva (in winter one
+hour ahead of UTC), and in New York (in winter five hours behind UTC),
+together with the indication of the difference between the time scale of
+local time and UTC, are used as examples.
+
+Basic format:
+~~~
+hhmmss±hhmm
+hhmmss±hh
+~~~
+Examples:
+  * =|152746+0100|=
+  * =|152746−0500|=
+  * =|152746+01|=
+  * =|152746−05|=
+
+Extended format:
+~~~
+hh:mm:ss±hh:mm
+hh:mm:ss±hh
+~~~
+
+Examples:
+  * =|15:27:46+01:00|=
+  * =|15:27:46−05:00|=
+  * =|15:27:46+01|=
+  * =|15:27:46−05|=
+
+In these expressions the local time component may be represented with
+reduced accuracy and/or with decimal fraction.
+
+# Date and time of day representations
+
+There are 3 variants:
+  1. For *|calendar dates|*: year – month – day of the month –
+     time designator – hour – minute – second – zone designator.
+  2. For *|ordinal dates|*: year – day of the year – time designator – hour –
+     minute – second – zone designator
+  3. For *|week dates|*: year – week designator – week – day of the week –
+     time designator – hour – minute – second – zone designator.
+
+The zone indicator is either =|[Z]|=, in case of UTC of day, or a difference
+components, in case of local time.
+
+Time designator =|[T]|= is used to indicate the start of the representation of
+the time of day component. It may be omitted in applications where there is no
+risk of confusing a date and time of day representation with others defined in
+this International Standard, and where there is mutual agreement between the
+partners in information interchange.
+
+## Examples of complete representations
+
+Basic format:
+~~~
+YYYYMMDDThhmmss
+YYYYMMDDThhmmssZ
+YYYYMMDDThhmmss±hhmm
+YYYYMMDDThhmmss±hh
+~~~
+Examples:
+  * =|19850412T101530|=
+  * =|19850412T101530Z|=
+  * =|19850412T101530+0400|=
+  * =|19850412T101530+04|=
+
+Extended format:
+~~~
+YYYY-MM-DDThh:mm:ss
+YYYY-MM-DDThh:mm:ssZ
+YYYY-MM-DDThh:mm:ss±hh:mm
+YYYY-MM-DDThh:mm:ss±hh
+~~~
+Examples:
+  * =|1985-04-12T10:15:30|=
+  * =|1985-04-12T10:15:30Z|=
+  * =|1985-04-12T10:15:30+04:00|=
+  * =|1985-04-12T10:15:30+04|=
+
+In complete representations, calendar dates, ordinal dates, and week dates
+may be use.
+
 --
 
 @author Wouter Beek
+@see Unit tests are in [iso8601_test].
 @tbd Implement the extended representations of the various date and time
      formats.
 @version 2013/07-2013/08
 */
 
+:- use_module(datetime(iso8601)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(library(plunit)).
 :- use_module(math(radix)).
 
 
@@ -556,18 +726,16 @@ Examples:
 %!   ?Day:between(28,31)
 %! )//
 
-% Reduced representation may consist only of a century.
-iso8601_calendar_date(century(T1), basic, Y, M, D) -->
-  iso8601_century(T1, Y),
-  {var(M)},
-  {var(D)}.
 % We put several representation forms together in this DCG rule
 % for compactness.
 iso8601_calendar_date(T0, Format, Y, M, D) -->
-  iso8601_year(T1, Y),
+  % Note that a reduced representation may consist only of a century.
+  % For generation purposes, we want to put the century before the year
+  % (in generation we prefer shorter strings).
+  ({Format = basic}, iso8601_century(T1, Y) ; iso8601_year(T1, Y)),
   (
     % Reduced representations may end here.
-    {var(M), var(D)}
+    {(var(M), var(D))}
   ;
     % Sometimes a separator occurs between year and month.
     (
@@ -583,7 +751,7 @@ iso8601_calendar_date(T0, Format, Y, M, D) -->
       % has no hyphen between year and month.
       {Format = basic}
     ),
-    iso8601_month(T2, M),
+    iso8601_month_in_year(T2, M),
     (
       % Reduced representations may end here.
       {var(D)}
@@ -601,44 +769,12 @@ iso8601_calendar_date(T0, Format, Y, M, D) -->
   ),
   {parse_tree(calendar_date, [T1,T2,T3], T0)}.
 
-:- begin_tests(iso8601_calendar_date).
-
-%! iso8601_calendar_date_example(
-%!   ?Format:oneof([basic,extended]),
-%!   ?Date:atom,
-%!   ?Year:between(0,9999),
-%!   ?Month:between(1,12),
-%!   ?Day:between(1,31)
-%! ) is nondet.
-
-iso8601_calendar_date_example(basic,    '19850412'  , 1985, 4, 12).
-iso8601_calendar_date_example(extended, '1985-04-12', 1985, 4, 12).
-% Reduced examples:
-iso8601_calendar_date_example(basic,    '1985-04'   , 1985, 4, _ ).
-iso8601_calendar_date_example(basic,    '1985'      , 1985, _, _ ).
-iso8601_calendar_date_example(basic,    '19'        , 1900, _, _ ).
-
-test(
-  iso8601_calendar_date_generate,
-  [
-    forall(iso8601_calendar_date_example(Format, Atom1, Y, M, D)),
-    true(Atom1 == Atom2)
-  ]
-):-
-  once(phrase(iso8601_calendar_date(_T0, Format, Y, M, D), Codes)),
-  atom_codes(Atom2, Codes).
-
-test(
-  iso8601_calendar_date_parse,
-  [
-    forall(iso8601_calendar_date_example(Format, Atom, Y1, M1, D1)),
-    true(maplist(=, [Y1, M1, D1], [Y2, M2, D2]))
-  ]
-):-
-  atom_codes(Atom, Codes),
-  once(phrase(iso8601_calendar_date(_T0, Format, Y2, M2, D2), Codes)).
-
-:- end_tests(iso8601_calendar_date).
+iso8601_calendar_date_time(
+  T0, Format, Y, M, D, T, H, MM, S, UTC, Sign, HH, MMM
+) -->
+  iso8601_calendar_date(T1, Format, Y, M, D),
+  iso8601_local_time(T2, Format, T, H, MM, S, UTC, Sign, HH, MMM),
+  {parse_tree(date_time, [T1,T2], T0)}.
 
 
 
@@ -647,10 +783,14 @@ test(
 %! iso8601_local_time(
 %!   -Tree:compound,
 %!   ?Format:oneof([basic,extended]),
+%!   ?TimeDesignator:boolean,
 %!   ?Hour:float,
 %!   ?Minute:float,
 %!   ?Second:float,
-%!   ?UTC:boolean
+%!   ?UTC:boolean,
+%!   ?Sign:boolean,
+%!   ?HourCorrection:float,
+%!   ?MinuteCorrection:float
 %! )//
 % Processes local time representations.
 %
@@ -682,28 +822,31 @@ test(
 % *|[C2]|* If minute and second are instantiated, then hour and
 %          minute must not have a decimal expansion.
 %
-% *|[D]|* If the UTC designator is used, then the time designator
-%         cannot occur.
-%
 % @arg Tree A compound term representing a parse tree.
 % @arg Format Either `basic` for the basic or compressed format,
-%             or `extended` for the extended or human readable format.
+%      or `extended` for the extended or human readable format.
+% @arg TimeDesignator A boolean indicating whether the time designator is
+%      included or not.
 % @arg Hour Either an integer between 0 and 24,
-%           or a float between 0.0 and 24.0.
+%      or a float between 0.0 and 24.0.
 % @arg Minute Either an integer between 0 and 60,
-%             or a float between 0.0 and 60.0 EXCLUSIVE.
+%      or a float between 0.0 and 60.0 EXCLUSIVE.
 % @arg Second Either an integer between 0 and 60,
-%             or a float between 0.0 and 60.0 EXCLUSIVE.
+%      or a float between 0.0 and 60.0 EXCLUSIVE.
 % @arg UTC A boolean, representing whether the string represents local
-%          or univesal time.
+%      or univesal time.
 
-iso8601_local_time(T0, Format, H, M, S, UTC) -->
-  ("" ; time_designator(T1)),
-  iso8601_hour(T2, H),
+iso8601_local_time(T0, Format, T, H, M, S, UTC, Sign, HH, MM) -->
+  % Time designator.
+  ({T = false} ; {T = true}, iso8601_time_designator(T1)),
+
+  % Hour
+  iso8601_hour_in_day(T2, H),
   {number_components(H, H_I, H_F)},
+
+  % Minute and second
   (
-    {var(M)},
-    {var(S)},
+    {(var(M), var(S))},
     % [A1] If hour is =24=, then its decimal expansion must
     %      consist of zeros exclusively.
     % [B1] If hour is =00=, then its decimal expansion must
@@ -714,11 +857,13 @@ iso8601_local_time(T0, Format, H, M, S, UTC) -->
     %      a decimal expansion.
     {H_F = 0},
     (colon, {Format = extended} ; {Format = basic}),
-    iso8601_minute(T3, M),
+    iso8601_minute_in_hour(T3, M),
     {number_components(M, M_I, M_F)},
     % [A1] If hour is =24=, then minutes must be =00= and its
     %      decimal expansion (if any) must consist of zeros exclusively.
     {(H_I =:= 24 -> M_I =:= 0, M_F = 0 ; true)},
+
+    % Second
     (
       {var(S)},
       % [B2] If hour and minute are =00=, then minutes's decimal extension
@@ -729,7 +874,7 @@ iso8601_local_time(T0, Format, H, M, S, UTC) -->
       %      must not have a decimal expansion.
       {H_F = 0, M_F = 0},
       (colon, {Format = extended} ; {Format = basic}),
-      iso8601_second(T4, S),
+      iso8601_second_in_minute(T4, S),
       {number_components(S, S_I, S_F)},
       % [C3] If hour, minute, and second are =00=, then minutes's decimal
       %      extension must consist of zeros exclusively.
@@ -739,63 +884,46 @@ iso8601_local_time(T0, Format, H, M, S, UTC) -->
       {(H_I =:= 24 -> S_I =:= 0, S_F = 0 ; true)}
     )
   ),
-  % *|[D]|* If the UTC designator is used, then the time designator
-  %         cannot occur.
-  ({UTC = false} ; {var(T1)}, utc_designator(T5), {UTC = true}),
-  {parse_tree(local_time, [T1,T2,T3,T4,T5], T0)}.
 
-:- begin_tests(iso8601_local_time).
+  % UTC designator
+  (iso8601_utc_designator(T5), {UTC = true} ; {var(T5), UTC = false}),
 
-%! iso8601_local_time_example(
+  % UTC correction time (only hour and minute).
+  (
+    {UTC = false},
+    iso8601_utc_correction(T6, Format, Sign, HH, MM)
+  ;
+    {var(Sign), var(HH), var(MM)}
+  ),
+
+  % Parse tree
+  {parse_tree(local_time, [T1,T2,T3,T4,T5,T6], T0)}.
+
+%! iso8601_utc_correction(
+%!   -Tree:compound,
 %!   ?Format:oneof([basic,extended]),
-%!   ?Time:atom,
-%!   ?Hour:between(0,24),
-%!   ?Minute:between(0,59),
-%!   ?Second:between(0,60),
-%!   ?UTC:boolean
-%! ) is nondet.
+%!   ?Sign:boolean,
+%!   ?Hour:between(0,59),
+%!   ?Minute:between(0,59)
+%! )//
 
-iso8601_local_time_example(basic,    '232050',     23,   20,   50,   false).
-iso8601_local_time_example(extended, '23:20:50',   23,   20,   50,   false).
-iso8601_local_time_example(basic,    '2320',       23,   20,   _,    false).
-iso8601_local_time_example(extended, '23:20',      23,   20,   _,    false).
-iso8601_local_time_example(basic,    '23',         23,   _,    _,    false).
-iso8601_local_time_example(basic,    '232050,5',   23,   20,   50.5, false).
-iso8601_local_time_example(extended, '23:20:50,5', 23,   20,   50.5, false).
-iso8601_local_time_example(basic,    '2320,8',     23,   20.8, _,    false).
-iso8601_local_time_example(extended, '23:20,8',    23,   20.8, _,    false).
-iso8601_local_time_example(basic,    '23,3',       23.3, _,    _,    false).
-iso8601_local_time_example(basic,    '000000',     0,    0,    0,    false).
-iso8601_local_time_example(extended, '00:00:00',   0,    0,    0,    false).
-iso8601_local_time_example(basic,    '240000',     24,   0,    0,    false).
-iso8601_local_time_example(extended, '24:00:00',   24,   0,    0,    false).
-iso8601_local_time_example(basic,    '232030Z',    23,   20,   30,   true ).
-iso8601_local_time_example(basic,    '2320Z',      23,   20,   _,    true ).
-iso8601_local_time_example(basic,    '23Z',        23,   _,    _,    true ).
-iso8601_local_time_example(extended, '23:20:30Z',  23,   20,   30,   true ).
-iso8601_local_time_example(extended, '23:20Z',     23,   20,   _,    true ).
+iso8601_utc_correction(T0, Format, Sign, H, M) -->
+  % Sign
+  iso8601_sign(T1, Sign),
 
-test(
-  iso8601_local_time_generate,
-  [
-    forall(iso8601_local_time_example(Format, Atom1, H, M, S, UTC)),
-    true(Atom1 = Atom2)
-  ]
-):-
-  once(phrase(iso8601_local_time(_T0, Format, H, M, S, UTC), Codes)),
-  atom_codes(Atom2, Codes).
+  % Hour
+  iso8601_hour_in_day(T2, H),
 
-test(
-  iso8601_local_time_parse,
-  [
-    forall(iso8601_local_time_example(Format, Atom, H1, M1, S1, UTC1)),
-    true(maplist(=, [H1, M1, S1, UTC1], [H2, M2, S2, UTC2]))
-  ]
-):-
-  atom_codes(Atom, Codes),
-  once(phrase(iso8601_local_time(_T0, Format, H2, M2, S2, UTC2), Codes)).
+  % Minute
+  (
+    {var(M)}
+  ;
+    (colon, {Format = extended} ; {Format = basic}),
+    iso8601_minute_in_hour(T3, M)
+  ),
 
-:- end_tests(iso8601_local_time).
+  % Parse tree
+  {parse_tree(utc_correction, [T1,T2,T3], T0)}.
 
 
 
@@ -822,39 +950,10 @@ iso8601_ordinal_date(T0, Format, Y, D) -->
   iso8601_day_in_year(T2, D),
   {parse_tree(ordinal_date, [T1,T2], T0)}.
 
-:- begin_tests(iso8601_ordinal_date).
-
-%! iso8601_ordinal_date_example(
-%!   ?Format:oneof([basic,extended]),
-%!   ?Date:atom,
-%!   ?Year:between(0,9999),
-%!   ?Day:between(1,366)
-%! ) is nondet.
-
-iso8601_ordinal_date_example(basic,    '1985102',  1985, 102).
-iso8601_ordinal_date_example(extended, '1985-102', 1985, 102).
-
-test(
-  iso8601_ordinal_date_generate,
-  [
-    forall(iso8601_ordinal_date_example(Format, Atom1, Y, D)),
-    true(Atom1 == Atom2)
-  ]
-):-
-  once(phrase(iso8601_ordinal_date(_T0, Format, Y, D), Codes)),
-  atom_codes(Atom2, Codes).
-
-test(
-  iso8601_ordinal_date_parse,
-  [
-    forall(iso8601_ordinal_date_example(Format, Atom, Y1, D1)),
-    true(maplist(=, [Y1, D1], [Y2, D2]))
-  ]
-):-
-  atom_codes(Atom, Codes),
-  once(phrase(iso8601_ordinal_date(_T0, Format, Y2, D2), Codes)).
-
-:- end_tests(iso8601_ordinal_date).
+iso8601_ordinal_date_time(T0, Format, Y, D, T, H, M, S, UTC, Sign, HH, MM) -->
+  iso8601_ordinal_date(T1, Format, Y, D),
+  iso8601_local_time(T2, Format, T, H, M, S, UTC, Sign, HH, MM),
+  {parse_tree(date_time, [T1,T2], T0)}.
 
 
 
@@ -872,7 +971,7 @@ iso8601_week_date(T0, Format, Y, W, D) -->
   iso8601_year(T1, Y),
   (hyphen_minus, {Format = extended} ; {Format = basic}),
   "W",
-  iso8601_week(T2, W),
+  iso8601_week_in_year(T2, W),
   (
     {var(D)}
   ;
@@ -881,43 +980,10 @@ iso8601_week_date(T0, Format, Y, W, D) -->
     {parse_tree(week_date, [T1,T2,T3], T0)}
   ).
 
-:- begin_tests(iso8601_week_date).
-
-%! iso8601_week_date_example(
-%!   ?Format:oneof([basic,extended]),
-%!   ?Date:atom,
-%!   ?Year:between(0,9999),
-%!   ?Week:between(1,53),
-%!   ?Day:between(1,7)
-%! ) is nondet.
-
-iso8601_week_date_example(basic,    '1985W155',   1985, 15, 5).
-iso8601_week_date_example(extended, '1985-W15-5', 1985, 15, 5).
-% Reduced accuracy:
-iso8601_week_date_example(basic,    '1985W15',    1985, 15, _).
-iso8601_week_date_example(extended, '1985-W15',   1985, 15, _).
-
-test(
-  iso8601_week_date_generate,
-  [
-    forall(iso8601_week_date_example(Format, Atom1, Y, W, D)),
-    true(Atom1 == Atom2)
-  ]
-):-
-  once(phrase(iso8601_week_date(_Tree, Format, Y, W, D), Codes)),
-  atom_codes(Atom2, Codes).
-
-test(
-  iso8601_week_date_parse,
-  [
-    forall(iso8601_week_date_example(Format, Atom, Y1, W1, D1)),
-    true(maplist(=, [Y1, W1, D1], [Y2, W2, D2]))
-  ]
-):-
-  atom_codes(Atom, Codes),
-  once(phrase(iso8601_week_date(_Tree, Format, Y2, W2, D2), Codes)).
-
-:- end_tests(iso8601_week_date).
+iso8601_week_date_time(T0, Format, Y, W, D, T, H, M, S, UTC, Sign, HH, MM) -->
+  iso8601_week_date(T1, Format, Y, W, D),
+  iso8601_local_time(T2, Format, T, H, M, S, UTC, Sign, HH, MM),
+  {parse_tree(date_time, [T1,T2], T0)}.
 
 
 
@@ -999,12 +1065,6 @@ padded_number(DecimalNumber, Length, DecimalDigits2):-
   NumberOfZeros is Length - NumberOfDigits,
   padded_list(DecimalDigits1, NumberOfZeros, DecimalDigits2).
 
-time_designator(time_designator('T')) -->
-  "T".
-
-utc_designator(utc_designator('Z')) -->
-  "Z".
-
 
 
 % SPECIFIC COMPONENTS %
@@ -1012,35 +1072,57 @@ utc_designator(utc_designator('Z')) -->
 iso8601_century(T0, C) -->
   {var(C)}, !,
   iso8601_integer(T0, century, 2, C_),
-  {C is C_ * 100}.
+  {C is C_ * 100},
+  {iso8601_year(C)}.
 iso8601_century(T0, C) -->
   {C_ is C / 100},
-  iso8601_integer(T0, century, 2, C_).
+  iso8601_integer(T0, century, 2, C_),
+  {iso8601_year(C)}.
 
 iso8601_day_in_month(T0, D) -->
-  iso8601_integer(T0, day_in_month, 2, D).
-
-iso8601_day_in_year(T0, D) -->
-  iso8601_integer(T0, day_in_year, 3, D).
+  iso8601_integer(T0, day_in_month, 2, D),
+  {iso8601_day_in_month(D)}.
 
 iso8601_day_in_week(T0, D) -->
-  iso8601_integer(T0, day_in_week, 1, D).
+  iso8601_integer(T0, day_in_week, 1, D),
+  {iso8601_day_in_week(D)}.
 
-iso8601_hour(T0, H) -->
-  iso8601_float(T0, hour, 2, H).
+iso8601_day_in_year(T0, D) -->
+  iso8601_integer(T0, day_in_year, 3, D),
+  {iso8601_day_in_year(D)}.
 
-iso8601_minute(T0, M) -->
-  iso8601_float(T0, minute, 2, M).
+iso8601_hour_in_day(T0, H) -->
+  iso8601_float(T0, hour, 2, H),
+  {iso8601_hour_in_day(H)}.
 
-iso8601_month(T0, M) -->
-  iso8601_integer(T0, month, 2, M).
+iso8601_minute_in_hour(T0, M) -->
+  iso8601_float(T0, minute, 2, M),
+  {iso8601_minute_in_hour(M)}.
 
-iso8601_second(T0, S) -->
-  iso8601_float(T0, second, 2, S).
+iso8601_month_in_year(T0, M) -->
+  iso8601_integer(T0, month, 2, M),
+  {iso8601_month_in_year(M)}.
 
-iso8601_week(T0, W) -->
-  iso8601_integer(T0, week, 2, W).
+iso8601_second_in_minute(T0, S) -->
+  iso8601_float(T0, second, 2, S),
+  {iso8601_second_in_minute(S)}.
+
+iso8601_sign(sign('+'), true) -->
+  "+".
+iso8601_sign(sign('-'), false) -->
+  "-".
+
+iso8601_week_in_year(T0, W) -->
+  iso8601_integer(T0, week, 2, W),
+  {iso8601_week_in_year(W)}.
 
 iso8601_year(T0, Y) -->
-  iso8601_integer(T0, year, 4, Y).
+  iso8601_integer(T0, year, 4, Y),
+  {iso8601_year(Y)}.
+
+iso8601_time_designator(time_designator('T')) -->
+  "T".
+
+iso8601_utc_designator(utc_designator('Z')) -->
+  "Z".
 

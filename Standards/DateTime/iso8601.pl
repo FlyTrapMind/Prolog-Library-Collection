@@ -8,20 +8,28 @@
                       % ?NumberOfDaysInMonth:between(28,31),
                       % ?DatesOfDays:pair(between(1,336),between(31,366))
     centennial_year/1, % ?Year:between(0,9999)
+    iso8601_day_in_month/1, % ?Day:between(1,31)
+    iso8601_day_in_week/1, % ?Day:between(1,7)
     day_in_week/4, % +Year:between(0,9999)
                    % +Month:between(1,12)
                    % +Day:between(1,31)
                    % -DayInWeek:between(1,7)
+    iso8601_day_in_year/1, % ?Day:between(1,366)
+    iso8601_hour_in_day/1, % ?Hour:between(0,24)
     leap_year/1, % ?Year:between(0,9999)
+    iso8601_minute_in_hour/1, % ?Minute:between(1,59)
+    iso8601_month_in_year/1, % ?Month:between(1,12)
     number_of_days_in_year/2, % +Year:between(0,9999)
                               % -NumberOfDaysInYear:integer
     number_of_weeks_in_year/2, % +Year:between(0,9999)
                                % -NumberOfWeeksInYear:between(52,53)
+    iso8601_second_in_minute/1, % ?Second:between(1,59)
+    iso8601_week_in_year/1, % ?Week:between(1,53)
     week_in_year/4, % +Year:between(0,9999)
                     % +Month:between(1,12)
                     % +Day:between(1,31)
                     % -WeekInYear:pair(between(0,9999),between(1,53))
-    year/1 % ?Year:between(0,9999)
+    iso8601_year/1 % ?Year:between(0,9999)
   ]
 ).
 
@@ -438,7 +446,7 @@ calendar_month_name(12, 'December' ).
 % integral number of times.
 
 centennial_year(Y):-
-  year(Y),
+  iso8601_year(Y),
   Y rem 100 =:= 0.
 
 %! day_diff(
@@ -492,6 +500,12 @@ day_diff(Y1, M1, Y2, M2, X, Diff):-
   NewM1 is M1 - 1,
   day_diff(Y1, NewM1, Y2, M2, NewX, Diff).
 
+iso8601_day_in_month(D):-
+  between(1, 31, D).
+
+iso8601_day_in_week(D):-
+  between(1, 7, D).
+
 %! day_in_week(
 %!   +Year:between(0,9999),
 %!   +Month:between(1,12),
@@ -522,6 +536,12 @@ first_thursday_of_the_year(Y, FirstThursday):-
   day_in_week(Y, 1, 1, DayOfWeek),
   FirstThursday is (7 - ((DayOfWeek + 2) mod 7)) mod 7.
 
+iso8601_day_in_year(D):-
+  between(1, 366, D).
+
+iso8601_hour_in_day(H):-
+  between(0, 24, H).
+
 %! last_day_of_last_week_of_year(+Year:between(0,9999), -Day:integer) is det.
 % The last day of the last week of the year is not always the last day of the
 % year.
@@ -539,7 +559,7 @@ last_day_of_last_week_of_year(Y, D):-
 % year number is divisible by 400 an integral number of times.
 
 leap_year(Y):-
-  year(Y),
+  iso8601_year(Y),
   Y rem 4 =:= 0,
   (\+ centennial_year(Y) ; Y rem 400 =:= 0).
 
@@ -551,9 +571,15 @@ leap_year(Y):-
 % A legal date has integers for year, month, and day within specific ranges.
 
 legal_date(Y, M, D):-
-  year(Y),
+  iso8601_year(Y),
   calendar_month(Y, M, NumberOfDays, _),
   between(1, NumberOfDays, D).
+
+iso8601_minute_in_hour(M):-
+  between(1, 59, M).
+
+iso8601_month_in_year(M):-
+  between(1, 12 , M).
 
 %! number_of_days_in_year(
 %!   +Year:between(0,9999),
@@ -582,6 +608,12 @@ number_of_weeks_in_year(Y, NumberOfWeeksInYear):-
   first_thursday_of_the_year(SuccY, FirstThursdayOfSuccY),
   day_diff(SuccY, 1, FirstThursdayOfSuccY, Y, 1, FirstThursdayOfY, Diff),
   NumberOfWeeksInYear is Diff / 7.
+
+iso8601_second_in_minute(S):-
+  between(1, 59, S).
+
+iso8601_week_in_year(W):-
+  between(1, 53, W).
 
 %! week_in_year(
 %!   +Year:between(0,9999),
@@ -649,9 +681,9 @@ week_in_year_(Y, M, D, W):-
   day_diff(Y, M, D, Y, 1, 1, Diff),
   W is ceil(Diff / 7).
 
-%! year(?Year:between(0,9999)) is nondet.
+%! iso8601_year(?Year:between(0,9999)) is nondet.
 
-year(Y):-
+iso8601_year(Y):-
   between(0, 9999, Y).
 
 
