@@ -15,12 +15,6 @@ The ISO 639-1 standard for language codes with Lexvo Semantic Web URIs.
 
 # RE
 
-The old, non-DCG representation looked like this:
-
-~~~{.pl}
-'iso639-1'('iso639-3':aar) --> "aa".
-~~~
-
 The following RE notation was used to replace this representation to
 the DCG representation:
   * From: `'iso639-1'\(([a-z]+), ([^)]+)\).`

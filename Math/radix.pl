@@ -23,7 +23,7 @@ Predicate for transforming numbers with a different radix.
 @author Wouter Beek
 @tbd Study the radix topic further and reimplement these predicates
      in a more generic way.
-@version 2013/07
+@version 2013/07-2013/08
 */
 
 :- use_module(library(apply)).

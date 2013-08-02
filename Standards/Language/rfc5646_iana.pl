@@ -15,6 +15,13 @@ subtags that are valid in language tags.
 The registry is a [Unicode] text file and consists of a series of
 records in a format based on "record-jar".
 
+## Inconsistency
+
+The IANA file uses linefeeds to end fields. The `record-jar` working note
+states that these should be sequences of a carriage return and a linefeed.
+The IANA file was changed to be in accordance with the working note's
+specification.
+
 @author Wouter Beek
 @version 2013//07
 */

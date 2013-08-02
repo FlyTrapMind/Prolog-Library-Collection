@@ -1,4 +1,4 @@
-:- module(rfc5646_rdf, []).
+:- module(rfc5646_rdf, [rfc5646_rdf/0]).
 
 /** <module> RFC5646_RDF
 
@@ -13,6 +13,7 @@ Convert the IANA registry text file for RFC 5646 to RDF.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
+:- use_module(standards(record_jar)).
 :- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_namespace)).
 
@@ -26,76 +27,86 @@ rfc5646_scheme(http).
 
 
 
-iana_rdf_conversion:-
-  forall(
-    iana_find(
-      registration(
-        _Tree,
-        Type,
-        Subtag,
-        Descriptions,
-        Added,
-        SuppressScript,
-        Scope,
-        Prefixes,
-        Macrolanguage,
-        Comment,
-        Deprecated,
-        PreferredValue
-      )
-    ),
-    assert_subtag(
-      Type,
-      Subtag,
-      Descriptions,
-      Added,
-      SuppressScript,
-      Scope,
-      Prefixes,
-      Macrolanguage,
-      Comment,
-      Deprecated,
-      PreferredValue
-    )
-  ).
+rfc5646_rdf:-
+  absolute_file_name(
+    lang(rfc5646_iana_registry),
+    File,
+    [access(read), file_type(text)]
+  ),
+  setup_call_cleanup(
+    open(File, read, Stream, [type(binary)]),
+    once(phrase_from_stream('record-jar'(_Encoding, [_Date|Rs]), Stream)),
+    close(Stream)
+  ),
+  maplist(rfc5646_rdf_record, Rs).
 
-assert_subtag(
-  Type,
-  Subtag,
-  Descriptions,
-  Added1,
-  _SuppressScript,
-  _Scope,
-  _Prefixes,
-  _Macrolanguage,
-  Comment,
-  _Deprecated,
-  _PreferredValue
-):-
+rfc5646_rdf_record(R1):-
   rfc5646_graph(G),
+  % Subtag resource
+  selectchk('Type'=Type, R1, R2),
+  selectchk('Subtag'=Subtag, R2, R3),
   create_subtag_resource(Type, Subtag, G, LanguageSubtag),
-  maplist(rdf_assert_literal(LanguageSubtag, rfc5646:description, en), Descriptions),
-  rdf_assert_literal(LanguageSubtag, rfc5646:comment, en, Comment),
-  rdf_assert_datatype(LanguageSubtag, rfc5646:added, date, Added1, G),
-  true.
+  rfc5646_rdf_record_(G, LanguageSubtag, R3).
 
-create_subtag_resource(Type, Subtag, G, LanguageSubtag):-
+rfc5646_rdf_record_(_G, _I, []):- !.
+rfc5646_rdf_record_(G, I, [Name=Value|T]):-
+gtrace,
+  rfc5646_rdf_nvpair(G, I, Name, Value),
+  rfc5646_rdf_record_(G, I, T).
+
+% Added
+rfc5646_rdf_nvpair(G, I, 'Added', V):-
+  rdf_assert_datatype(I, rfc5646:added, date, V, G).
+% Comment
+rfc5646_rdf_nvpair(G, I, 'Comment', V):-
+  rdf_assert_literal(I, rfc5646:comment, en, V, G).
+% Deprecated
+rfc5646_rdf_nvpair(G, I, 'Deprecated', V):-
+  rdf_assert_datatype(I, rfc5646:deprecated, date, V, G).
+% Description
+rfc5646_rdf_nvpair(G, I, 'Description', V):-
+  rdf_assert_literal(I, rfc5646:description, en, V, G).
+% Macrolanguage
+rfc5646_rdf_nvpair(G, I, 'Macrolanguage', V1):-
+  create_subtag_resource(language, V1, G, V2),
+  rdf_assert(I, rfc5646:macrolanguage, V2, G).
+% Preferred-Value
+rfc5646_rdf_nvpair(G, I, 'Preferred-Value', V1):-
+  create_subtag_resource(language, V1, G, V2),
+  rdf_assert(I, rfc5646:preferred_value, V2, G).
+% Prefix
+rfc5646_rdf_nvpair(G, I, 'Prefix', V1):-
+  create_subtag_resource(language, V1, G, V2),
+  rdf_assert(I, rfc5646:prefix, V2, G).
+% Scope
+rfc5646_rdf_nvpair(G, I, 'Scope', V1):-
+  rdf_global_id(rfc5646:V1, V2),
+  rdf_assert(I, rfc5646:scope, V2, G).
+% Suppresses script
+rfc5646_rdf_nvpair(G, I, 'Suppress-Script', V1):-
+  create_subtag_resource(script, V1, G, V2),
+  rdf_assert(I, rfc5646:suppress_script, V2, G).
+
+create_subtag_resource(Type, Subtag, G, LanguageSubtag2):-
   rfc5646_scheme(Scheme),
   rfc5646_host(Host),
-  phrase(
-    rfc2396_uri_reference(
-      _Tree,
-      Scheme,
-      authority(_User,Host,_Port),
-      [[Type],[Subtag]],
-      _Query,
-      _Fragment
-    ),
-    LanguageSubtag
+  once(
+    phrase(
+      rfc2396_uri_reference(
+        _Tree,
+        Scheme,
+        authority(_User,Host,_Port),
+        [[Type],[Subtag]],
+        _Query,
+        _Fragment
+      ),
+      LanguageSubtag1
+    )
   ),
+  atom_codes(LanguageSubtag2, LanguageSubtag1),
   rdfs_label(Class, Type),
-  rdf_assert_individual(LanguageSubtag, Class, G),
-  rdfs_assert_label(LanguageSubtag, Subtag, G).
+  rdf_assert_individual(LanguageSubtag2, Class, G),
+  rdfs_assert_label(LanguageSubtag2, Subtag, G).
 
 init_rfc5646_rdf:-
   rfc5646_graph(G),
@@ -114,6 +125,4 @@ init_rfc5646_rdf:-
   rdfs_assert_label(rfc5646:'Script', en, script, G),
   rdfs_assert_subclass(rfc5646:'Variant', rfc5646:'Subtag', G),
   rdfs_assert_label(rfc5646:'Variant', en, variant, G).
-
-
 

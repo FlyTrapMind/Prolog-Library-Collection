@@ -14,6 +14,7 @@
 */
 
 :- use_module(library(ordsets)).
+:- use_module(library(plunit)).
 
 
 
@@ -85,6 +86,7 @@ uses(X, Y, T):-
 uses(X, Y, T):-
   directly_uses(X, Z, T),
   uses(Z, Y, T).
+
 
 
 :- begin_tests(dl).

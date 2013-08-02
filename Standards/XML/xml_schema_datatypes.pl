@@ -14,7 +14,6 @@
 
 XML Schema 2: Datatypes (Second Edition)
 
-
 # Datatype
 
 A triple consisting of:

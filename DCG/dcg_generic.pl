@@ -134,8 +134,6 @@ modular way.
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
-%:- meta_predicate(dcg_goal(//,//)).
-%:- meta_predicate(dcg_goal(:,:)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % MULTIPLE OCCURRENCES
 :- meta_predicate(dcg_list(//,?,?)).
@@ -242,11 +240,7 @@ dcg_until(O, DCG_End, In) -->
   },
   dcg_until_(O, DCG_End, Codes).
 
-dcg_until_(O, DCG_Disjunction, Codes) -->
-  {dcg_goal(DCG_Disjunction, DCG_End)},
-  dcg_until__(O, DCG_End, Codes).
-
-dcg_until__(O, DCG_End, EndCodes), InclusiveExclusive -->
+dcg_until_(O, DCG_End, EndCodes), InclusiveExclusive -->
   DCG_End, !,
   {
     option(end_mode(EndMode), O, exclusive),
@@ -260,9 +254,9 @@ dcg_until__(O, DCG_End, EndCodes), InclusiveExclusive -->
       EndCodes = []
     )
   }.
-dcg_until__(O, DCG_End, [H|T]) -->
+dcg_until_(O, DCG_End, [H|T]) -->
   [H],
-  dcg_until__(O, DCG_End, T).
+  dcg_until_(O, DCG_End, T).
 
 
 
@@ -313,38 +307,24 @@ dcg_separated_list_var(_Separator, []) --> [].
 
 % META-DCG RULES %
 
-dcg_apply(DCG_Body1, Args1, X, Y):-
+dcg_apply(DCG_Body, Args1, X, Y):-
   append(Args1, [X,Y], Args2),
-  dcg_goal(DCG_Body1, DCG_Body2),
-  apply(DCG_Body2, Args2).
+  apply(DCG_Body, Args2).
 
-dcg_call(DCG_Body1, X, Y):-
-  dcg_goal(DCG_Body1, DCG_Body2),
-  call(DCG_Body2, X, Y).
+dcg_call(DCG_Body, X, Y):-
+  call(DCG_Body, X, Y).
 
-dcg_call(DCG_Body1, A1, X, Y):-
-  dcg_goal(DCG_Body1, DCG_Body2),
-  call(DCG_Body2, A1, X, Y).
+dcg_call(DCG_Body, A1, X, Y):-
+  call(DCG_Body, A1, X, Y).
 
-dcg_call(DCG_Body1, A1, A2, X, Y):-
-  dcg_goal(DCG_Body1, DCG_Body2),
-  call(DCG_Body2, A1, A2, X, Y).
+dcg_call(DCG_Body, A1, A2, X, Y):-
+  call(DCG_Body, A1, A2, X, Y).
 
-dcg_call(DCG_Body1, A1, A2, A3, X, Y):-
-  dcg_goal(DCG_Body1, DCG_Body2),
-  call(DCG_Body2, A1, A2, A3, X, Y).
+dcg_call(DCG_Body, A1, A2, A3, X, Y):-
+  call(DCG_Body, A1, A2, A3, X, Y).
 
-dcg_call(DCG_Body1, A1, A2, A3, A4, X, Y):-
-  dcg_goal(DCG_Body1, DCG_Body2),
-  call(DCG_Body2, A1, A2, A3, A4, X, Y).
-
-%! dcg_goal(:DCG_Disjunction, :DCG_Body) is nondet.
-
-dcg_goal(DCG_Disjunction1, Module:DCG_Body):-
-  strip_module(DCG_Disjunction1, Module, DCG_Disjunction2),
-  DCG_Disjunction2 =.. [;|DCG_Bodies], !,
-  member(DCG_Body, DCG_Bodies).
-dcg_goal(DCG_Body, DCG_Body).
+dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
+  call(DCG_Body, A1, A2, A3, A4, X, Y).
 
 %! dcg_switch(+Value, +Maps:list)// is det.
 
@@ -405,7 +385,7 @@ dcg_multi(DCG_Body, Occurrences) -->
   {nonvar(Occurrences)}, !,
   {dcg_multi_occurrences(Occurrences, Min, Max)},
   dcg_multi_nonvar(DCG_Body, Max, 0, Count),
-  {between(Min, Max, Count)}.
+  {dcg_multi_between(Min, Max, Count)}.
 dcg_multi(DCG_Body, N) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N).
@@ -416,7 +396,7 @@ dcg_multi(DCG_Body, Occurrences, A1s) -->
   {nonvar(Occurrences)}, !,
   {dcg_multi_occurrences(Occurrences, Min, Max)},
   dcg_multi_nonvar(DCG_Body, Max, 0, Count, A1s),
-  {between(Min, Max, Count)}.
+  {dcg_multi_between(Min, Max, Count)}.
 dcg_multi(DCG_Body, N, A1s) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N, A1s).
@@ -425,7 +405,7 @@ dcg_multi(DCG_Body, Occurrences, A1s, A2s) -->
   {nonvar(Occurrences)}, !,
   {dcg_multi_occurrences(Occurrences, Min, Max)},
   dcg_multi_nonvar(DCG_Body, Max, 0, Count, A1s, A2s),
-  {between(Min, Max, Count)}.
+  {dcg_multi_between(Min, Max, Count)}.
 dcg_multi(DCG_Body, N, A1s, A2s) -->
   {var(N)}, !,
   dcg_multi_var(DCG_Body, N, A1s, A2s).
@@ -448,6 +428,15 @@ dcg_multi_atom(DCG_Body, Occurrences, Atom) -->
 dcg_multi_atom(DCG_Body, Occurrences, Atom) -->
   dcg_multi(DCG_Body, Occurrences, Codes),
   {atom_codes(Atom, Codes)}.
+
+dcg_multi_between(Min, Max, N):-
+  var(Min), !,
+  dcg_multi_between(0, Max, N).
+dcg_multi_between(Min, Max, N):-
+  var(Max), !,
+  dcg_multi_between(Min, inf, N).
+dcg_multi_between(Min, Max, N):-
+  between(Min, Max, N).
 
 dcg_multi_nonvar(_DCG_Body, N, SolC, SolC) -->
   {N == 0}, !, [].

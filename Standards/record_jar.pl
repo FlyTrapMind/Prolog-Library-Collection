@@ -203,10 +203,12 @@ field(Name=Body) -->
 % @see Information on grapheme clusters, UAX29.
 
 'field-body'(Body) -->
-  dcg_multi((continuation, dcg_multi(character, _N, CodeLists)), _M, Codes),
-  {write(CodeLists)}, %DEB
-  {write(Codes)}, %DEB
-  {maplist(atom_codes, Body, CodeLists)}.
+  dcg_multi('field-body_', _M, Atoms),
+  {atomic_list_concat(Atoms, Body)}.
+'field-body_'(Atom) -->
+  continuation,
+  dcg_multi(character, between(1,_), Codes),
+  {atom_codes(Atom, Codes)}.
 
 %! 'field-name'(-Tree:compound, ?Name:atom)//
 % The field-name is an identifer. Field-names consist of a sequence of
@@ -270,7 +272,10 @@ field(Name=Body) -->
 
 'record-jar'(Encoding, Records) -->
   (encodingSig(Encoding) ; ""),
-  (separator(_Comments) ; ""),
+  % The disjunction with the empty string is not needed here,
+  % since the production of the separator can process
+  % the empty string as well.
+  separator(_Comments),
   dcg_multi(record, _N, Records).
 
 %! record(?Fields:list(nvpair))//
@@ -309,9 +314,8 @@ separator_(Comment) -->
 
 
 
-:- begin_tests(record_jar).
+:- begin_tests(record_jar, [blocked('Takes too long to run each time.')]).
 
-:- use_module(generics(print_ext)).
 :- use_module(library(apply)).
 :- use_module(library(pio)).
 
@@ -321,7 +325,11 @@ test(record_jar, []):-
     File,
     [access(read), file_type(text)]
   ),
-  phrase_from_file('record-jar'(E, Rs), File),
+  setup_call_cleanup(
+    open(File, read, Stream, [type(binary)]),
+    once(phrase_from_stream('record-jar'(E, Rs), Stream)),
+    close(Stream)
+  ),
   maplist(formatnl, [E|Rs]).
 
 :- end_tests(record_jar).

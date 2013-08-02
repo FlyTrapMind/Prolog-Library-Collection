@@ -27,7 +27,10 @@
     sign//0,
     sign//1, % ?Sign:oneof([-1,1])
     signed_number//1, % ?SignedNumber:float
-    unsigned_number//1 % ?UnsignedNumber:float
+    unsigned_number//1, % ?UnsignedNumber:float
+    unsigned_number//3 % ?Number:float
+                       % ?IntegerComponent:integer
+                       % ?FractionalComponent:integer
   ]
 ).
 :- reexport(
@@ -130,14 +133,15 @@ digits_to_decimal_number(Digit, Radix, M) -->
   % seen so far, in order to do the radix multiplication with.
   digits_to_decimal_number(Digit, Radix, N, M).
 
-% End of code segment, the decimal number we have built so far is the result.
-digits_to_decimal_number(_Digit, _Radix, M, M) --> [].
+% Look for the next number...
 digits_to_decimal_number(Digit, Radix, M1, M) -->
   % Process the next digit.
   dcg_call(Digit, N),
   % Perform radix multiplication.
   {M2 is M1 * Radix + N},
   digits_to_decimal_number(Digit, Radix, M2, M).
+% End of code segment, the decimal number we have built so far is the result.
+digits_to_decimal_number(_Digit, _Radix, M, M) --> [].
 
 exponent -->
   exponent_sign,
@@ -239,7 +243,17 @@ unsigned_number(N, H, T):-
 unsigned_number(N) -->
   decimal_number(N).
 unsigned_number(N) -->
-  ("", {N1 = 0} ; decimal_number(N1)),
+  unsigned_number(N, _Integer, _Fraction).
+
+%! unsigned_number(
+%!   ?Number:float,
+%!   ?IntegerComponent:integer,
+%!   ?FractionalComponent:integer
+%! )//
+
+unsigned_number(N, N_I, N_F) -->
+  ({N_I = 0} ; decimal_number(N_I)),
   dot,
-  ("", {N2 = 0} ; decimal_number(N2)),
-  {integers_to_float(N1, N2, N)}.
+  ({N_F = 0} ; decimal_number(N_F)),
+  {float_components(N, N_I, N_F)}.
+

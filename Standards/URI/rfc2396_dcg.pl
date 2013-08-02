@@ -456,7 +456,7 @@ hierarchical_part(T0, Authority, Path, Query) -->
   ;
     rfc2396_absolute_path(T1, Path), {var(Authority)}
   ),
-  ("" ; question_mark, {T2 = '?'}, rfc2396_query(T3, Query)),
+  ("", {var(Query)} ; question_mark, {T2 = '?'}, rfc2396_query(T3, Query)),
   {parse_tree(hierarchical_part, [T1,T2,T3], T0)}.
 
 %! rfc2396_host(-Tree:compound, ?Host:list(atomic))//
@@ -546,7 +546,7 @@ mark(C) --> round_bracket(C).
 network_path(T0, Authority, Path) -->
   forward_slash, {T1 = '/'}, forward_slash, {T2 = '/'},
   rfc2396_authority(T3, Authority),
-  ("" ; rfc2396_absolute_path(T4, Path)),
+  ("", {var(Path)} ; rfc2396_absolute_path(T4, Path)),
   {parse_tree(network_path, [T1,T2,T3,T4], T0)}.
 
 %! opaque_part(-Tree:compound, ?OpaquePart:atom)//

@@ -20,9 +20,13 @@
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
-    integers_to_float/3, % +Before:integer
-                         % +After:integer
-                         % -Number:float
+    float_components/3, % ?Float:float
+                        % ?IntegerComponent:integer
+                        % ?FractionalComponent:integer
+    float_fractional_component/2, % ?Float:float
+                                  % ?FractionalComponent:integer
+    float_integer_component/2, % ?Float:float
+                               % ?IntegerComponent:integer
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -75,15 +79,94 @@
 
 Extra arithmetic functions for use in SWI-Prolog.
 
-# Types
+# Issue with float_fractional_part/2
 
-## Coordinates
+The fractional part of floats seems to off a bit:
+~~~
+3 ?- X = 23.3, X_F is float_fractional_part(X), X_I is float_integer_part(X), Y is X_I + X_F.
+X = Y, Y = 23.3,
+X_F = 0.3000000000000007,
+X_I = 23.0.
+~~~
 
-=|coordinate(<dimension>, <list(<float>)>)|=.
+In C I create a small test file:
+~~~{.c}
+#include <stdio.h>
+#include <math.h>
 
-## Sizes
+int main() {
+  double param, fractional_part, integer_part;
 
-=|size(<dimension>, <list(<number>)>)|=.
+  param = 23.3;
+  fractional_part = modf(param, &integer_part);
+  printf("%f = %f + %f \n", param, integer_part, fractional_part);
+
+  return 0;
+}
+~~~
+Then I run the test file:
+~~~
+$ gcc -Wall test.c -o test
+$ ./test
+23.300000 = 23.000000 + 0.300000
+~~~
+To find out that the deviation I see in SWI-Prolog is not in C.
+
+Here is the relevant code, collected from various spots in the SWI-Prolog
+codebase:
+~~~{.c}
+// O_GMP
+// Use GNU gmp library for infinite precision arthmetic
+#define O_GMP 1
+
+// the numtype enum requires total ordering.
+typedef enum {
+  V_INTEGER,   // integer (64-bit) value
+#ifdef O_GMP
+  // The C data type for multiple precision integers is mpz_t.
+  V_MPZ,   // mpz_t
+  // Rational number means a multiple precision fraction.
+  // The C data type for these fractions is mpq_t.
+  V_MPQ,   // mpq_t
+#endif
+  V_FLOAT   // Floating point number (double)
+} numtype;
+
+// X is float_integer_part(X) + float_fractional_part(X)
+// If X < 0, both float_integer_part(X) and float_integer_part(X) are <= 0
+static int
+ar_float_fractional_part(Number n1, Number r) {
+  switch(n1->type) {
+    case V_INTEGER:
+#ifdef O_GMP
+    case V_MPZ:
+#endif
+      r->value.i = 0;
+      r->type = V_INTEGER;
+      succeed;
+#ifdef O_GMP
+    case V_MPQ:
+      r->type = V_MPQ;
+      mpq_init(r->value.mpq);
+      mpz_tdiv_q(mpq_numref(r->value.mpq),
+      mpq_numref(n1->value.mpq),
+      mpq_denref(n1->value.mpq));
+      mpz_set_ui(mpq_denref(r->value.mpq), 1);
+      mpq_sub(r->value.mpq, n1->value.mpq, r->value.mpq);
+      succeed;
+#endif
+    case V_FLOAT:
+      {
+        double ip;
+        // The member `value` of the object pointed to by `r`.
+        // The member `f` of object `(r->value)`.
+        r->value.f = modf(n1->value.f, &ip);
+        r->type = V_FLOAT;
+      }
+  }
+  succeed;
+}
+~~~
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07
@@ -189,9 +272,24 @@ fibonacci(N, F):-
   fibonacci(N2, F2),
   F is F1 + F2.
 
-integers_to_float(Before, After, Number):-
-  number_length(After, Length),
-  Number is Before + After / 10 ** (Length + 1).
+float_components(N, N_I, N_F):-
+  var(N), !,
+  number_length(N_F, N_F_Length),
+  N is N_I + N_F / 10 ** N_F_Length.
+float_components(N, N_I, N_F):-
+  float(N),
+  float_integer_component(N, N_I),
+  float_fractional_component(N, N_F).
+
+float_fractional_component(N, N_F):-
+  atom_number(N_A, N),
+  sub_atom(N_A, N_I_Length, 1, _, '.'),
+  succ(N_I_Length, Skip),
+  sub_atom(N_A, Skip, _, 0, N_F_A),
+  atom_number(N_F_A, N_F).
+
+float_integer_component(N, I):-
+  I is integer(float_integer_part(N)).
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.

@@ -28,9 +28,12 @@ Language tags that are used by XML are covered by [[rfc1766]] and [[rfc3066]].
 :- use_module(standards(standards)).
 :- use_module(xml(xml_namespace)).
 
+:- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 
 :- initialization(init_lang_ext).
+
+
 
 init_lang_ext:-
   standards_graph(G),
