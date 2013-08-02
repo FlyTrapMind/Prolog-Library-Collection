@@ -178,7 +178,6 @@ iso8601_local_time_example('15:27:46',   extended, 15,   27,   46,   false).
 %!   ?Minute:between(0,59)
 %! ) is nondet.
 
-/*
 iso8601_local_time_example(Atom, Format, T, H, M, S, true, _Sign, _HH, _MM):-
   % UTC correction cannot occur with the UTC indicator.
   iso8601_local_time_example(Atom1, Format, H, M, S, true),
@@ -187,7 +186,6 @@ iso8601_local_time_example(Atom, Format, T, H, M, S, true, _Sign, _HH, _MM):-
   ;
     T = true, atomic_concat('T', Atom1, Atom)
   ).
-*/
 iso8601_local_time_example(Atom, Format, T, H, M, S, false, Sign, HH, MM):-
   iso8601_local_time_example(Atom1, Format, H, M, S, false),
   iso8601_utc_correction_example(Atom2, Format, Sign, HH, MM),
