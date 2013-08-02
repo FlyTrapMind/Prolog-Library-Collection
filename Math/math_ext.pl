@@ -169,7 +169,7 @@ ar_float_fractional_part(Number n1, Number r) {
 ~~~
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/08
 */
 
 :- use_module(generics(meta_ext)).

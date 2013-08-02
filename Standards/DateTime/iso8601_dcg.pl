@@ -451,7 +451,7 @@ Example: =|23,3|=
 @author Wouter Beek
 @tbd Implement the extended representations of the various date and time
      formats.
-@version 2013/07
+@version 2013/07-2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -462,9 +462,7 @@ Example: =|23,3|=
 
 
 
-% Comma is prefered.
-fraction_separator(',') --> comma.
-fraction_separator('.') --> dot.
+% CALENDAR DATE %
 
 %! iso8601_calendar_date(
 %!   ?Tree:compound,
@@ -562,61 +560,9 @@ test(
 
 :- end_tests(iso8601_calendar_date).
 
-iso8601_century(T0, C1) -->
-  {var(C1)}, !,
-  dcg_multi(decimal_digit, 2, CC),
-  {parse_tree(century, CC, T0)},
-  {digits_to_decimal(CC, C2)},
-  {C1 is C2 * 100}.
-iso8601_century(T0, C1) -->
-  {C2 is C1 / 100},
-  {padded_number(C2, 2, CC)},
-  dcg_multi(decimal_digit, 2, CC),
-  {parse_tree(century, CC, T0)}.
 
-iso8601_day_in_month(T0, D) -->
-  {var(D)}, !,
-  dcg_multi(decimal_digit, 2, DD),
-  {parse_tree(day, DD, T0)},
-  {digits_to_decimal(DD, D)}.
-iso8601_day_in_month(T0, D) -->
-  {padded_number(D, 2, DD)},
-  dcg_multi(decimal_digit, 2, DD),
-  {parse_tree(day, DD, T0)}.
 
-iso8601_day_in_year(T0, D) -->
-  {var(D)}, !,
-  dcg_multi(decimal_digit, 3, DDD),
-  {parse_tree(day, DDD, T0)},
-  {digits_to_decimal(DDD, D)}.
-iso8601_day_in_year(T0, D) -->
-  {padded_number(D, 3, DDD)},
-  dcg_multi(decimal_digit, 3, DDD),
-  {parse_tree(day, DDD, T0)}.
-
-iso8601_day_in_week(day(D), D) -->
-  decimal_digit(D).
-
-iso8601_hour(hour(H), H) -->
-  {integer(H)}, !,
-  decimal_number(H).
-iso8601_hour(T0, H) -->
-  {float(H)}, !,
-  {float_components(H, H_I, H_F)},
-  decimal_number(H_I),
-  fraction_separator(Separator),
-  decimal_number(H_F),
-  {parse_tree(hour, [H_I,Separator,H_F], T0)}.
-iso8601_hour(T0, H) -->
-  decimal_number(H_I),
-  (
-    fraction_separator(Separator),
-    decimal_number(H_F),
-    {float_components(H, H_I, H_F)}
-  ;
-    {H = H_I}
-  ),
-  {parse_tree(hour, [H_I,Separator,H_F], T0)}.
+% LOCAL TIME %
 
 %! iso8601_local_time(
 %!   -Tree:compound,
@@ -659,12 +605,16 @@ iso8601_local_time(T0, Format, H, M, S) -->
 %!   ?Second:between(0,60)
 %! ) is nondet.
 
-iso8601_local_time_example(basic,    '232050',   23  , 20, 50).
-iso8601_local_time_example(extended, '23:20:50', 23  , 20, 50).
-iso8601_local_time_example(basic,    '2320',     23  , 20, _ ).
-iso8601_local_time_example(extended, '23:20',    23  , 20, _ ).
-iso8601_local_time_example(basic,    '23',       23  , _,  _ ).
-iso8601_local_time_example(basic,    '23,3',     23.3, _,  _ ).
+iso8601_local_time_example(basic,    '232050',     23  , 20,   50  ).
+iso8601_local_time_example(extended, '23:20:50',   23  , 20,   50  ).
+iso8601_local_time_example(basic,    '2320',       23  , 20,   _   ).
+iso8601_local_time_example(extended, '23:20',      23  , 20,   _   ).
+iso8601_local_time_example(basic,    '23',         23  , _,    _   ).
+iso8601_local_time_example(basic,    '232050,5',   23  , 20,   50.5).
+iso8601_local_time_example(extended, '23:20:50,5', 23  , 20,   50.5).
+iso8601_local_time_example(basic,    '2320,8',     23  , 20.8, _   ).
+iso8601_local_time_example(extended, '23:20,8',    23  , 20.8, _   ).
+iso8601_local_time_example(basic,    '23,3',       23.3, _,    _   ).
 
 test(
   iso8601_local_time_generate,
@@ -692,25 +642,9 @@ test(
 
 :- end_tests(iso8601_local_time).
 
-iso8601_minute(T0, M) -->
-  {var(M)}, !,
-  dcg_multi(decimal_digit, 2, MM),
-  {parse_tree(minute, MM, T0)},
-  {digits_to_decimal(MM, M)}.
-iso8601_minute(T0, M) -->
-  {padded_number(M, 2, MM)},
-  dcg_multi(decimal_digit, 2, MM),
-  {parse_tree(minute, MM, T0)}.
 
-iso8601_month(T0, M) -->
-  {var(M)}, !,
-  dcg_multi(decimal_digit, 2, MM),
-  {parse_tree(month, MM, T0)},
-  {digits_to_decimal(MM, M)}.
-iso8601_month(T0, M) -->
-  {padded_number(M, 2, MM)},
-  dcg_multi(decimal_digit, 2, MM),
-  {parse_tree(month, MM, T0)}.
+
+% ORDINAL DATE %
 
 %! iso8601_ordinal_date(
 %!   -Tree:compound,
@@ -771,25 +705,9 @@ test(
 
 :- end_tests(iso8601_ordinal_date).
 
-iso8601_second(T0, S) -->
-  {var(S)}, !,
-  dcg_multi(decimal_digit, 2, SS),
-  {parse_tree(second, SS, T0)},
-  {digits_to_decimal(SS, S)}.
-iso8601_second(T0, S) -->
-  {padded_number(S, 2, SS)},
-  dcg_multi(decimal_digit, 2, SS),
-  {parse_tree(second, SS, T0)}.
 
-iso8601_week(T0, W) -->
-  {var(W)}, !,
-  dcg_multi(decimal_digit, 2, WW),
-  {parse_tree(week, WW, T0)},
-  {digits_to_decimal(WW, W)}.
-iso8601_week(T0, W) -->
-  {padded_number(W, 2, WW)},
-  dcg_multi(decimal_digit, 2, WW),
-  {parse_tree(week, WW, T0)}.
+
+% WEEK DATE %
 
 %! iso8601_week_date(
 %!   -Tree:compound,
@@ -854,15 +772,63 @@ test(
 
 :- end_tests(iso8601_week_date).
 
-iso8601_year(T0, Y) -->
-  {var(Y)}, !,
-  dcg_multi(decimal_digit, 4, YYYY),
-  {parse_tree(year, YYYY, T0)},
-  {digits_to_decimal(YYYY, Y)}.
-iso8601_year(T0, Y) -->
-  {padded_number(Y, 4, YYYY)},
-  dcg_multi(decimal_digit, 4, YYYY),
-  {parse_tree(year, YYYY, T0)}.
+
+
+% GENERIC COMPONENTS %
+
+% Comma is prefered.
+fraction_separator(',') --> comma.
+fraction_separator('.') --> dot.
+
+%! iso8601_float(
+%!   -Tree:compound,
+%!   +Name:atom,
+%!   +Length:integer,
+%!   ?Number:number
+%! )//
+
+iso8601_float(T0, Name, Length, N) -->
+  {var(N)}, !,
+  iso8601_integer(T1, integer, Length, N_I),
+  (
+    fraction_separator(T2),
+    % Unspecified length.
+    iso8601_integer(T3, fraction, _UnspecifiedLength, N_F),
+    {float_components(N, N_I, N_F)}
+  ;
+    {N = N_I}
+  ),
+  {parse_tree(Name, [T1,T2,T3], T0)}.
+iso8601_float(T0, Name, Length, N) -->
+  {integer(N)}, !,
+  iso8601_integer(T0, Name, Length, N).
+iso8601_float(T0, Name, Length, N) -->
+  {float(N)}, !,
+  {float_components(N, N_I, N_F)},
+  iso8601_integer(T1, integer, Length, N_I),
+  fraction_separator(T2),
+  iso8601_integer(T3, fraction, _UnspecifiedLength, N_F),
+  {parse_tree(Name, [T1,T2,T3], T0)}.
+
+%! iso8601_integer(
+%!   -Tree:compound,
+%!   +Name:atom,
+%!   +Length:integer,
+%!   ?Number:integer
+%! )//
+
+iso8601_integer(T0, Name, Length, I) -->
+  {var(I)}, !,
+  dcg_multi(decimal_digit, Length, Is),
+  % Notice that we cannot use the decimal number in the parse tree,
+  % because then we would miss any padding zeros.
+  {digits_to_decimal(Is, I)},
+  {parse_tree(Name, Is, T0)}.
+iso8601_integer(T0, Name, Length, I) -->
+  {(nonvar(Length) -> Length_ = Length ; number_length(I, Length_))},
+  {padded_number(I, Length_, Is)},
+  dcg_multi(decimal_digit, Length, Is),
+  {parse_tree(Name, Is, T0)}.
 
 %! padded_list(+List1:list, +Length:integer, -List2:list) is det.
 % Padds the given list with zeros until it has the indicated length.
@@ -885,4 +851,43 @@ padded_number(DecimalNumber, Length, DecimalDigits2):-
   length(DecimalDigits1, NumberOfDigits),
   NumberOfZeros is Length - NumberOfDigits,
   padded_list(DecimalDigits1, NumberOfZeros, DecimalDigits2).
+
+
+
+% SPECIFIC COMPONENTS %
+
+iso8601_century(T0, C) -->
+  {var(C)}, !,
+  iso8601_integer(T0, century, 2, C_),
+  {C is C_ * 100}.
+iso8601_century(T0, C) -->
+  {C_ is C / 100},
+  iso8601_integer(T0, century, 2, C_).
+
+iso8601_day_in_month(T0, D) -->
+  iso8601_integer(T0, day_in_month, 2, D).
+
+iso8601_day_in_year(T0, D) -->
+  iso8601_integer(T0, day_in_year, 3, D).
+
+iso8601_day_in_week(T0, D) -->
+  iso8601_integer(T0, day_in_week, 1, D).
+
+iso8601_hour(T0, H) -->
+  iso8601_float(T0, hour, 2, H).
+
+iso8601_minute(T0, M) -->
+  iso8601_float(T0, minute, 2, M).
+
+iso8601_month(T0, M) -->
+  iso8601_integer(T0, month, 2, M).
+
+iso8601_second(T0, S) -->
+  iso8601_float(T0, second, 2, S).
+
+iso8601_week(T0, W) -->
+  iso8601_integer(T0, week, 2, W).
+
+iso8601_year(T0, Y) -->
+  iso8601_integer(T0, year, 4, Y).
 

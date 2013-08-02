@@ -52,7 +52,7 @@
 DCGs for cardinal numbers.
 
 @author Wouter Beek
-@version 2013/06-2013/07
+@version 2013/06-2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
