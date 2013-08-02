@@ -13,6 +13,7 @@ Unit tests for the ISO 8061 DCG.
 :- begin_tests(iso8601_dcg).
 
 :- use_module(datetime(iso8601_dcg)).
+:- use_module(generics(print_ext)).
 :- use_module(library(lists)).
 
 :- discontiguous(test/2).
@@ -54,7 +55,8 @@ test(
       Codes
     )
   ),
-  atom_codes(Atom2, Codes).
+  atom_codes(Atom2, Codes),
+  formatnl(Atom2).
 
 test(
   iso8601_calendar_date_time_parse,
@@ -127,8 +129,8 @@ test(
 % LOCAL TIME %
 
 %! iso8601_local_time_example(
-%!   ?Format:oneof([basic,extended]),
 %!   ?Time:atom,
+%!   ?Format:oneof([basic,extended]),
 %!   ?Hour:between(0,24),
 %!   ?Minute:between(0,59),
 %!   ?Second:between(0,60),
@@ -176,7 +178,8 @@ iso8601_local_time_example('15:27:46',   extended, 15,   27,   46,   false).
 %!   ?Minute:between(0,59)
 %! ) is nondet.
 
-iso8601_local_time_example(Atom, Format, T, H, M, S, true, _Sign, _H_, _M_):-
+/*
+iso8601_local_time_example(Atom, Format, T, H, M, S, true, _Sign, _HH, _MM):-
   % UTC correction cannot occur with the UTC indicator.
   iso8601_local_time_example(Atom1, Format, H, M, S, true),
   (
@@ -184,14 +187,15 @@ iso8601_local_time_example(Atom, Format, T, H, M, S, true, _Sign, _H_, _M_):-
   ;
     T = true, atomic_concat('T', Atom1, Atom)
   ).
-iso8601_local_time_example(Atom, Format, T, H, M, S, false, Sign, H_, M_):-
+*/
+iso8601_local_time_example(Atom, Format, T, H, M, S, false, Sign, HH, MM):-
   iso8601_local_time_example(Atom1, Format, H, M, S, false),
-  iso8601_utc_correction_example(Atom2, Format, Sign, H_, M_),
+  iso8601_utc_correction_example(Atom2, Format, Sign, HH, MM),
   (
     T = false, atomic_concat(Atom1, Atom2, Atom)
   ;
     T = true, atomic_list_concat(['T',Atom1,Atom2], Atom)
-  ),
+  ).
 
 %! iso8601_utc_correction_example(
 %!   ?Correction:atom,

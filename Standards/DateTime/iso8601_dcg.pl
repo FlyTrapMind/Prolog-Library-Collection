@@ -909,17 +909,21 @@ iso8601_local_time(T0, Format, T, H, M, S, UTC, Sign, HH, MM) -->
 
 iso8601_utc_correction(T0, Format, Sign, H, M) -->
   % Sign
-  iso8601_sign(T1, Sign),
-
-  % Hour
-  iso8601_hour_in_day(T2, H),
-
-  % Minute
   (
-    {var(M)}
+    {var(Sign), var(H), var(M)}
   ;
-    (colon, {Format = extended} ; {Format = basic}),
-    iso8601_minute_in_hour(T3, M)
+    iso8601_sign(T1, Sign),
+    
+    % Hour
+    iso8601_hour_in_day(T2, H),
+    
+    % Minute
+    (
+      {var(M)}
+    ;
+      (colon, {Format = extended} ; {Format = basic}),
+      iso8601_minute_in_hour(T3, M)
+    )
   ),
 
   % Parse tree

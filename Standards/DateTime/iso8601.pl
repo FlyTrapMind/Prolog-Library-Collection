@@ -17,13 +17,13 @@
     iso8601_day_in_year/1, % ?Day:between(1,366)
     iso8601_hour_in_day/1, % ?Hour:between(0,24)
     leap_year/1, % ?Year:between(0,9999)
-    iso8601_minute_in_hour/1, % ?Minute:between(1,59)
+    iso8601_minute_in_hour/1, % ?Minute:between(0,59)
     iso8601_month_in_year/1, % ?Month:between(1,12)
     number_of_days_in_year/2, % +Year:between(0,9999)
                               % -NumberOfDaysInYear:integer
     number_of_weeks_in_year/2, % +Year:between(0,9999)
                                % -NumberOfWeeksInYear:between(52,53)
-    iso8601_second_in_minute/1, % ?Second:between(1,59)
+    iso8601_second_in_minute/1, % ?Second:between(0,59)
     iso8601_week_in_year/1, % ?Week:between(1,53)
     week_in_year/4, % +Year:between(0,9999)
                     % +Month:between(1,12)
@@ -536,11 +536,15 @@ first_thursday_of_the_year(Y, FirstThursday):-
   day_in_week(Y, 1, 1, DayOfWeek),
   FirstThursday is (7 - ((DayOfWeek + 2) mod 7)) mod 7.
 
+%! iso8601_day_in_year(?Day:between(1,366)) is nondet.
+
 iso8601_day_in_year(D):-
   between(1, 366, D).
 
+%! iso8601_hour_in_day(?Hour:between(0,24)) is nondet.
+
 iso8601_hour_in_day(H):-
-  between(0, 24, H).
+  0.0 =< H, H =< 24.0.
 
 %! last_day_of_last_week_of_year(+Year:between(0,9999), -Day:integer) is det.
 % The last day of the last week of the year is not always the last day of the
@@ -575,8 +579,10 @@ legal_date(Y, M, D):-
   calendar_month(Y, M, NumberOfDays, _),
   between(1, NumberOfDays, D).
 
+%! iso8601_minute_in_hour(?Minute:between(0,59)) is nondet.
+
 iso8601_minute_in_hour(M):-
-  between(1, 59, M).
+  0.0 =< M, M < 60.0.
 
 iso8601_month_in_year(M):-
   between(1, 12 , M).
@@ -592,6 +598,7 @@ number_of_days_in_year(Y, NumberOfDaysInYear):-
     number_of_days_in_month_(Y, N),
     NumberOfDaysInYear
   ).
+
 number_of_days_in_month_(Y, N):-
   between(1, 12, M),
   calendar_month(Y, M, N, _).
@@ -609,15 +616,17 @@ number_of_weeks_in_year(Y, NumberOfWeeksInYear):-
   day_diff(SuccY, 1, FirstThursdayOfSuccY, Y, 1, FirstThursdayOfY, Diff),
   NumberOfWeeksInYear is Diff / 7.
 
+%! iso8601_second_in_minute(?Second:between(0,59)) is nondet.
+
 iso8601_second_in_minute(S):-
-  between(1, 59, S).
+  0.0 =< S, S < 60.0.
 
 iso8601_week_in_year(W):-
   between(1, 53, W).
 
 %! week_in_year(
 %!   +Year:between(0,9999),
-%!   +M:between(1,12),
+%!   +Month:between(1,12),
 %!   +Day:between(28,31),
 %!   -WeekInYear:pair(between(0,9999),between(1,53))
 %! ) is det.
