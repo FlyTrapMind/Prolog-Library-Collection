@@ -41,7 +41,8 @@
 
 % Run unit tests, unless compiled with optimisation turned on.
 :- use_module(library(plunit)).
-:- set_test_options([load(normal),run(make(all))]).
+:- set_test_options([load(normal),run(manual)]).
+%:- set_test_options([load(normal),run(make(all))]).
 
 % Debug monitor.
 % @tbd The PCE-based debug monitor in swipl is not the most versatile

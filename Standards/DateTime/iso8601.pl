@@ -695,39 +695,3 @@ week_in_year_(Y, M, D, W):-
 iso8601_year(Y):-
   between(0, 9999, Y).
 
-
-
-:- begin_tests(iso8601).
-
-:- use_module(generics(print_ext)).
-:- use_module(library(apply)).
-
-%! iso8604_compound(Year, MonthInYear, DayInMonth, WeekInYear, DayInWeek)
-
-iso8601_compound(1995, 1, 1, 1994-52, 7).
-iso8601_compound(1996, 12, 31, 1997-1, 2).
-
-test(
-  day_in_week,
-  [
-    forall(
-      iso8601_compound(Y, M, D, _WeekInYear1, DayInWeek1)
-    ),
-    true(DayInWeek1 == DayInWeek2)
-  ]
-):-
-  day_in_week(Y, M, D, DayInWeek2).
-
-test(
-  week_in_year,
-  [
-    forall(
-      iso8601_compound(Y, M, D, WeekInYear1, _DayInWeek1)
-    ),
-    true(WeekInYear1 == WeekInYear2)
-  ]
-):-
-  week_in_year(Y, M, D, WeekInYear2).
-
-:- end_tests(iso8601).
-

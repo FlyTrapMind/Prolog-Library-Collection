@@ -1095,7 +1095,7 @@ qvalue(qvalue(QValue), QValue) -->
   decimal_number(After),
   {
     between(0, 999, After),
-    float_component(QValue, 1, After)
+    number_components(QValue, 1, After)
   }.
 qvalue(qvalue(1.0), 1.0) -->
   one,

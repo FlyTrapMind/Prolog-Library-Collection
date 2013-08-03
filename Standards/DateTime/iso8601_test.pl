@@ -10,9 +10,12 @@ Unit tests for the ISO 8061 DCG.
 
 :- use_module(library(plunit)).
 
-:- begin_tests(iso8601_dcg).
+:- begin_tests(iso8601).
 
-:- use_module(datetime(iso8601_dcg)).
+:- use_module(datetime(iso8601_date)).
+:- use_module(datetime(iso8601_date_time)).
+:- use_module(datetime(iso8601_time_interval)).
+:- use_module(datetime(iso8601_time_point)).
 :- use_module(generics(print_ext)).
 :- use_module(library(lists)).
 
@@ -20,70 +23,60 @@ Unit tests for the ISO 8061 DCG.
 
 
 
+% API %
+
+%! iso8604_compound(Year, MonthInYear, DayInMonth, WeekInYear, DayInWeek)
+
+iso8601_compound(1995, 1, 1, 1994-52, 7).
+iso8601_compound(1996, 12, 31, 1997-1, 2).
+
+test(
+  day_in_week,
+  [
+    forall(iso8601_compound(Y, M, D, _WeekInYear1, DayInWeek1)),
+    true(DayInWeek1 == DayInWeek2)
+  ]
+):-
+  day_in_week(Y, M, D, DayInWeek2).
+
+test(
+  week_in_year,
+  [
+    forall(iso8601_compound(Y, M, D, WeekInYear1, _DayInWeek1)),
+    true(WeekInYear1 == WeekInYear2)
+  ]
+):-
+  week_in_year(Y, M, D, WeekInYear2).
+
+
+
 % DATE & TIME
 
-iso8601_calendar_date_time_example(
-  Atom, Format, Y, M, D, T, H, MM, S, UTC, Sign, HH, MMM
-):-
-  iso8601_calendar_date_example(Atom1, Format, Y, M, D),
-  % Notice that we are strict in that we require the time designator to be
-  % in place. Otherwise, there are abmbiguities.
-  % For example =198504122320Z= can be parsed as =|1985-04-12T23:20Z=|
-  % or as =|1985-04T12:23:20Z|=.
-  T = true,
-  iso8601_local_time_example(
-    Atom2, Format, T, H, MM, S, UTC, Sign, HH, MMM
-  ),
+iso8601_calendar_date_time_example(Atom, Format, date_time(Date,UTC_Time)):-
+  iso8601_calendar_date_example(Atom1, Format, Date),
+  iso8601_local_time_example(Atom2, Format, true, UTC_Time),
   atomic_concat(Atom1, Atom2, Atom).
 
 test(
   iso8601_calendar_date_time_generate,
   [
-    forall(
-      iso8601_calendar_date_time_example(
-        Atom1, Format, Y, M, D, T, H, MM, S, UTC, Sign, HH, MMM
-      )
-    ),
+    forall(iso8601_calendar_date_time_example(Atom1, Format, DateTime)),
     true(Atom1 == Atom2)
   ]
 ):-
-  once(
-    phrase(
-      iso8601_calendar_date_time(
-        _T0, Format, Y, M, D, T, H, MM, S, UTC, Sign, HH, MMM
-      ),
-      Codes
-    )
-  ),
+  once(phrase(iso8601_calendar_date_time(_T0, Format, DateTime), Codes)),
   atom_codes(Atom2, Codes),
   formatnl(Atom2).
 
 test(
   iso8601_calendar_date_time_parse,
   [
-    forall(
-      iso8601_calendar_date_time_example(
-        Atom, Format, Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1
-      )
-    ),
-    true(
-      maplist(
-        =,
-        [Y1,M1,D1,T1,H1,MM1,S1,UTC1,Sign1,HH1,MMM1],
-        [Y2,M2,D2,T2,H2,MM2,S2,UTC2,Sign2,HH2,MMM2]
-      )
-    )
+    forall(iso8601_calendar_date_time_example(Atom, Format, DateTime1)),
+    true(DateTime1 = DateTime2)
   ]
 ):-
   atom_codes(Atom, Codes),
-  once(
-    phrase(
-      iso8601_calendar_date_time(
-        _T0, Format, Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
-      ),
-      Codes
-    )
-  ).
+  once(phrase(iso8601_calendar_date_time(_T0, Format, DateTime2), Codes)).
 
 
 
@@ -92,37 +85,35 @@ test(
 %! iso8601_calendar_date_example(
 %!   ?Date:atom,
 %!   ?Format:oneof([basic,extended]),
-%!   ?Year:between(0,9999),
-%!   ?Month:between(1,12),
-%!   ?Day:between(1,31)
+%!   ?Date:compound
 %! ) is nondet.
 
-iso8601_calendar_date_example('19850412'  , basic,    1985, 4, 12).
-iso8601_calendar_date_example('1985-04-12', extended, 1985, 4, 12).
+iso8601_calendar_date_example('19850412'  , basic,    date(1985,4,_,12)).
+iso8601_calendar_date_example('1985-04-12', extended, date(1985,4,_,12)).
 % Reduced examples:
-iso8601_calendar_date_example('1985-04'   , basic,    1985, 4, _ ).
-iso8601_calendar_date_example('1985'      , basic,    1985, _, _ ).
-iso8601_calendar_date_example('19'        , basic,    1900, _, _ ).
+iso8601_calendar_date_example('1985-04'   , basic,    date(1985,4,_,_ )).
+iso8601_calendar_date_example('1985'      , basic,    date(1985,_,_,_ )).
+iso8601_calendar_date_example('19'        , basic,    date(1900,_,_,_ )).
 
 test(
   iso8601_calendar_date_generate,
   [
-    forall(iso8601_calendar_date_example(Atom1, Format, Y, M, D)),
+    forall(iso8601_calendar_date_example(Atom1, Format, Date)),
     true(Atom1 == Atom2)
   ]
 ):-
-  once(phrase(iso8601_calendar_date(_T0, Format, Y, M, D), Codes)),
+  once(phrase(iso8601_calendar_date(_T0, Format, Date), Codes)),
   atom_codes(Atom2, Codes).
 
 test(
   iso8601_calendar_date_parse,
   [
-    forall(iso8601_calendar_date_example(Atom, Format, Y1, M1, D1)),
-    true(maplist(=, [Y1, M1, D1], [Y2, M2, D2]))
+    forall(iso8601_calendar_date_example(Atom, Format, Date1)),
+    true(Date1 = Date2)
   ]
 ):-
   atom_codes(Atom, Codes),
-  once(phrase(iso8601_calendar_date(_T0, Format, Y2, M2, D2), Codes)).
+  once(phrase(iso8601_calendar_date(_T0, Format, Date2), Codes)).
 
 
 
@@ -131,129 +122,97 @@ test(
 %! iso8601_local_time_example(
 %!   ?Time:atom,
 %!   ?Format:oneof([basic,extended]),
-%!   ?Hour:between(0,24),
-%!   ?Minute:between(0,59),
-%!   ?Second:between(0,60),
-%!   ?UTC:boolean
-%! ) is nondet.
-%
-% ### RE replace
-% Swap the first two arguments, preserving spaces:
-%   * From:
-%     =|iso8601_local_time_example\(([a-z]+),([" "]+)'([0-9:,A-Za-z]+)',([" "]+)|=
-%   * To: =|iso8601_local_time_example\('\3',\4\1,\2|=
-
-iso8601_local_time_example('232050',     basic,    23,   20,   50,   false).
-iso8601_local_time_example('23:20:50',   extended, 23,   20,   50,   false).
-iso8601_local_time_example('2320',       basic,    23,   20,   _,    false).
-iso8601_local_time_example('23:20',      extended, 23,   20,   _,    false).
-iso8601_local_time_example('23',         basic,    23,   _,    _,    false).
-iso8601_local_time_example('232050,5',   basic,    23,   20,   50.5, false).
-iso8601_local_time_example('23:20:50,5', extended, 23,   20,   50.5, false).
-iso8601_local_time_example('2320,8',     basic,    23,   20.8, _,    false).
-iso8601_local_time_example('23:20,8',    extended, 23,   20.8, _,    false).
-iso8601_local_time_example('23,3',       basic,    23.3, _,    _,    false).
-iso8601_local_time_example('000000',     basic,    0,    0,    0,    false).
-iso8601_local_time_example('00:00:00',   extended, 0,    0,    0,    false).
-iso8601_local_time_example('240000',     basic,    24,   0,    0,    false).
-iso8601_local_time_example('24:00:00',   extended, 24,   0,    0,    false).
-iso8601_local_time_example('232030Z',    basic,    23,   20,   30,   true ).
-iso8601_local_time_example('2320Z',      basic,    23,   20,   _,    true ).
-iso8601_local_time_example('23Z',        basic,    23,   _,    _,    true ).
-iso8601_local_time_example('23:20:30Z',  extended, 23,   20,   30,   true ).
-iso8601_local_time_example('23:20Z',     extended, 23,   20,   _,    true ).
-iso8601_local_time_example('152746',     basic,    15,   27,   46,   false).
-iso8601_local_time_example('15:27:46',   extended, 15,   27,   46,   false).
-
-%! iso8601_local_time_example(
-%!   ?Time:atom,
-%!   ?Format:oneof([basic,extended]),
 %!   ?TimeDesignator:boolean,
-%!   ?Hour:between(0,24),
-%!   ?Minute:between(0,59),
-%!   ?Second:between(0,60),
-%!   ?UTC:boolean,
-%!   ?Sign:boolean,
-%!   ?Hour:between(0,24),
-%!   ?Minute:between(0,59)
+%!   ?UTC_Time:compound
 %! ) is nondet.
 
-iso8601_local_time_example(Atom, Format, T, H, M, S, true, _Sign, _HH, _MM):-
+iso8601_local_time_example(Atom, Format, T, utc_time(Time,true)):-
   % UTC correction cannot occur with the UTC indicator.
-  iso8601_local_time_example(Atom1, Format, H, M, S, true),
+  iso8601_local_time_example_(Atom1, Format, Time, true),
   (
     T = false, Atom = Atom1
   ;
     T = true, atomic_concat('T', Atom1, Atom)
   ).
-iso8601_local_time_example(Atom, Format, T, H, M, S, false, Sign, HH, MM):-
-  iso8601_local_time_example(Atom1, Format, H, M, S, false),
-  iso8601_utc_correction_example(Atom2, Format, Sign, HH, MM),
+iso8601_local_time_example(
+  Atom,
+  Format,
+  T,
+  utc_time(Time,UTC_Correction)
+):-
+  iso8601_local_time_example_(Atom1, Format, Time, false),
+  iso8601_utc_correction_example(Atom2, Format, UTC_Correction),
   (
     T = false, atomic_concat(Atom1, Atom2, Atom)
   ;
     T = true, atomic_list_concat(['T',Atom1,Atom2], Atom)
   ).
 
+%! iso8601_local_time_example_(
+%!   ?Time:atom,
+%!   ?Format:oneof([basic,extended]),
+%!   ?Time:compound,
+%!   ?UTC:boolean
+%! ) is nondet.
+
+iso8601_local_time_example_('232050',     basic,    time(23,  20,  50  ), false).
+iso8601_local_time_example_('23:20:50',   extended, time(23,  20,  50  ), false).
+iso8601_local_time_example_('2320',       basic,    time(23,  20,  _   ), false).
+iso8601_local_time_example_('23:20',      extended, time(23,  20,  _   ), false).
+iso8601_local_time_example_('23',         basic,    time(23,  _,   _   ), false).
+iso8601_local_time_example_('232050,5',   basic,    time(23,  20,  50.5), false).
+iso8601_local_time_example_('23:20:50,5', extended, time(23,  20,  50.5), false).
+iso8601_local_time_example_('2320,8',     basic,    time(23,  20.8,_   ), false).
+iso8601_local_time_example_('23:20,8',    extended, time(23,  20.8,_   ), false).
+iso8601_local_time_example_('23,3',       basic,    time(23.3,_,   _   ), false).
+iso8601_local_time_example_('000000',     basic,    time(0,   0,   0   ), false).
+iso8601_local_time_example_('00:00:00',   extended, time(0,   0,   0   ), false).
+iso8601_local_time_example_('240000',     basic,    time(24,  0,   0   ), false).
+iso8601_local_time_example_('24:00:00',   extended, time(24,  0,   0   ), false).
+iso8601_local_time_example_('232030Z',    basic,    time(23,  20,  30  ), true ).
+iso8601_local_time_example_('2320Z',      basic,    time(23,  20,  _   ), true ).
+iso8601_local_time_example_('23Z',        basic,    time(23,  _,   _   ), true ).
+iso8601_local_time_example_('23:20:30Z',  extended, time(23,  20,  30  ), true ).
+iso8601_local_time_example_('23:20Z',     extended, time(23,  20,  _   ), true ).
+iso8601_local_time_example_('152746',     basic,    time(15,  27,  46  ), false).
+iso8601_local_time_example_('15:27:46',   extended, time(15,  27,  46  ), false).
+
 %! iso8601_utc_correction_example(
 %!   ?Correction:atom,
 %!   ?Format:oneof([basic,extended]),
 %!   ?TimeDesignator:boolean,
-%!   ?Sign:boolean,
-%!   ?Hour:between(0,24),
-%!   ?Minute:between(0,59)
+%!   ?UTC_Correction:compound
 %! ) is nondet.
 
-iso8601_utc_correction_example('',       _,        _,     _, _).
-iso8601_utc_correction_example('+0100',  basic,    true,  1, 0).
-iso8601_utc_correction_example('+01:00', extended, true,  1, 0).
-iso8601_utc_correction_example('+01',    basic,    true,  1, _).
-iso8601_utc_correction_example('+01',    extended, true,  1, _).
-iso8601_utc_correction_example('-0500',  basic,    false, 5, 0).
-iso8601_utc_correction_example('-05:00', extended, false, 5, 0).
-iso8601_utc_correction_example('-05',    basic,    false, 5, _).
-iso8601_utc_correction_example('-05',    extended, false, 5, _).
+iso8601_utc_correction_example('',       _,        false           ).
+iso8601_utc_correction_example('+0100',  basic,    utc(true,  1, 0)).
+iso8601_utc_correction_example('+01:00', extended, utc(true,  1, 0)).
+iso8601_utc_correction_example('+01',    basic,    utc(true,  1, _)).
+iso8601_utc_correction_example('+01',    extended, utc(true,  1, _)).
+iso8601_utc_correction_example('-0500',  basic,    utc(false, 5, 0)).
+iso8601_utc_correction_example('-05:00', extended, utc(false, 5, 0)).
+iso8601_utc_correction_example('-05',    basic,    utc(false, 5, _)).
+iso8601_utc_correction_example('-05',    extended, utc(false, 5, _)).
 
 test(
   iso8601_local_time_generate,
   [
-    forall(
-      iso8601_local_time_example(Atom1, Format, T, H, M, S, UTC, Sign, H_, M_)
-    ),
+    forall(iso8601_local_time_example(Atom1, Format, T, UTC_Time)),
     true(Atom1 = Atom2)
   ]
 ):-
-  once(
-    phrase(
-      iso8601_local_time(_T0, Format, T, H, M, S, UTC, Sign, H_, M_),
-      Codes
-    )
-  ),
+  once(phrase(iso8601_local_time(_T0, Format, T, UTC_Time), Codes)),
   atom_codes(Atom2, Codes).
 
 test(
   iso8601_local_time_parse,
   [
-    forall(
-      iso8601_local_time_example(
-        Atom, Format, T1, H1, M1, S1, UTC1, Sign1, HH1, MM1)
-    ),
-    true(
-      maplist(
-        =,
-        [T1,H1,M1,S1,UTC1,Sign1,HH1,MM1],
-        [T2,H2,M2,S2,UTC2,Sign2,HH2,MM2]
-      )
-    )
+    forall(iso8601_local_time_example(Atom, Format, T1, UTC_Time1)),
+    true(maplist(=, [T1,UTC_Time1], [T2,UTC_Time2]))
   ]
 ):-
   atom_codes(Atom, Codes),
-  once(
-    phrase(
-      iso8601_local_time(_T0, Format, T2, H2, M2, S2, UTC2, Sign2, HH2, MM2),
-      Codes
-    )
-  ).
+  once(phrase(iso8601_local_time(_T0, Format, T2, UTC_Time2), Codes)).
 
 
 
@@ -262,165 +221,128 @@ test(
 %! iso8601_ordinal_date_example(
 %!   ?Date:atom,
 %!   ?Format:oneof([basic,extended]),
-%!   ?Year:between(0,9999),
-%!   ?Day:between(1,366)
+%!   ?Date:compound
 %! ) is nondet.
 
-iso8601_ordinal_date_example('1985102',  basic,    1985, 102).
-iso8601_ordinal_date_example('1985-102', extended, 1985, 102).
+iso8601_ordinal_date_example('1985102',  basic,    date(1985,_,_,102)).
+iso8601_ordinal_date_example('1985-102', extended, date(1985,_,_,102)).
 
 test(
   iso8601_ordinal_date_generate,
   [
-    forall(iso8601_ordinal_date_example(Atom1, Format, Y, D)),
+    forall(iso8601_ordinal_date_example(Atom1, Format, Date)),
     true(Atom1 == Atom2)
   ]
 ):-
-  once(phrase(iso8601_ordinal_date(_T0, Format, Y, D), Codes)),
+  once(phrase(iso8601_ordinal_date(_T0, Format, Date), Codes)),
   atom_codes(Atom2, Codes).
 
 test(
   iso8601_ordinal_date_parse,
   [
-    forall(iso8601_ordinal_date_example(Atom, Format, Y1, D1)),
-    true(maplist(=, [Y1, D1], [Y2, D2]))
+    forall(iso8601_ordinal_date_example(Atom, Format, Date1)),
+    true(Date1 = Date2)
   ]
 ):-
   atom_codes(Atom, Codes),
-  once(phrase(iso8601_ordinal_date(_T0, Format, Y2, D2), Codes)).
+  once(phrase(iso8601_ordinal_date(_T0, Format, Date2), Codes)).
 
 
 
 % TIME INTERVALS %
 
+%! iso8601_time_interval_example(
+%!   ?TimeInterval:atom,
+%!   ?Format:oneof([basic,extended]),
+%!   ?DateTime1:compound,
+%!   ?DateTime2:compound
+%! ) is nondet.
+
 iso8601_time_interval_example(
-  '19850412T232050/19850625T103000', basic,
-  1985, 4, 12, true, 23, 20, 50, false, _, _, _,
-  1985, 6, 25, true, 10, 30, 0,  false, _, _, _
+  '19850412T232050/19850625T103000',
+  basic,
+  date_time(date(1985,4,_,12),utc_time(time(23,20,50),false)),
+  date_time(date(1985,6,_,25),utc_time(time(10,30,0 ),false))
 ).
 iso8601_time_interval_example(
-  '1985-04-12T23:20:50/1985-06-25T10:30:00', extended,
-  1985, 4, 12, true, 23, 20, 50, false, _, _, _,
-  1985, 6, 25, true, 10, 30, 0,  false, _, _, _
+  '1985-04-12T23:20:50/1985-06-25T10:30:00',
+  extended,
+  date_time(date(1985,4,_,12),utc_time(time(23,20,50),false)),
+  date_time(date(1985,6,_,25),utc_time(time(10,30,0 ),false))
 ).
 
 test(
   iso8601_time_interval_generate,
   [
     forall(
-      iso8601_time_interval_example(
-        Atom1, Format,
-        Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1,
-        Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
-      )
+      iso8601_time_interval_example(Atom1, Format, DateTime1, DateTime2)
     ),
     true(Atom1 == Atom2)
   ]
 ):-
   once(
-    phrase(
-      iso8601_time_interval(
-        _T0, Format,
-        Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1,
-        Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
-      ),
-      Codes
-    )
+    phrase(iso8601_time_interval(_T0, Format, DateTime1, DateTime2), Codes)
   ),
   atom_codes(Atom2, Codes).
 
 test(
   iso8601_time_interval_parse,
   [
-    forall(
-      iso8601_time_interval_example(
-        Atom, Format,
-        Y1, M1, D1, T1, H1, MM1, S1, UTC1, Sign1, HH1, MMM1,
-        Y2, M2, D2, T2, H2, MM2, S2, UTC2, Sign2, HH2, MMM2
-      )
-    ),
-    true(
-      maplist(
-        =,
-        [
-          Y1,M1,D1,T1,H1,MM1,S1,UTC1,Sign1,HH1,MMM1,
-          Y2,M2,D2,T2,H2,MM2,S2,UTC2,Sign2,HH2,MMM2
-        ],
-        [
-          Y3,M3,D3,T3,H3,MM3,S3,UTC3,Sign3,HH3,MMM3,
-          Y4,M4,D4,T4,H4,MM4,S4,UTC4,Sign4,HH4,MMM4
-        ]
-      )
-    )
+    forall(iso8601_time_interval_example(Atom, Format, DateTime1, DateTime2)),
+    true(maplist(=, [DateTime1, DateTime2], [DateTime3, DateTime4]))
   ]
 ):-
   atom_codes(Atom, Codes),
   once(
-    phrase(
-      iso8601_time_interval(
-        _T0, Format,
-        Y3, M3, D3, T3, H3, MM3, S3, UTC3, Sign3, HH3, MMM3,
-        Y4, M4, D4, T4, H4, MM4, S4, UTC4, Sign4, HH4, MMM4
-      ),
-      Codes
-    )
+    phrase(iso8601_time_interval(_T0, Format, DateTime3, DateTime4), Codes)
   ).
 
 %! iso8601_time_interval_example(
 %!   ?TimeInterval:atom,
 %!   ?Format:oneof([basic,extended]),
-%!   ?Year:integer,
-%!   ?Month:integer,
-%!   ?Week:integer,
-%!   ?Day:integer
-%!   ?TimeSeparator:boolean,
-%!   ?Hour:integer,
-%!   ?Minute:integer,
-%!   ?Second:integer
+%!   ?DateTime:compound
 %! ) is nondet.
 
 iso8601_time_interval_example(
-  'P2Y10M15DT10H30M20S', basic, 2, 10, _, 15, true, 10, 30, 20
+  'P2Y10M15DT10H30M20S',
+  basic,
+  date_time(date(2,10,_,15),utc_time(time(10,30,20),false))
 ).
 iso8601_time_interval_example(
-  'P2Y10M15DT10H30M20S', extended, 2, 10, _, 15, true, 10, 30, 20
+  'P2Y10M15DT10H30M20S',
+  extended,
+  date_time(date(2,10,_,15),utc_time(time(10,30,20),false))
 ).
-iso8601_time_interval_example('P6W', basic, _, _, 6, _, false, _, _, _).
-iso8601_time_interval_example('P6W', extended, _, _, 6, _, false, _, _, _).
+iso8601_time_interval_example(
+  'P6W',
+  basic,
+  date_time(date(_,_,6,_),utc_time(time(_,_,_),false))
+).
+iso8601_time_interval_example(
+  'P6W',
+  extended,
+  date_time(date(_,_,6,_),utc_time(time(_,_,_),false))
+).
 
 test(
   iso8601_time_interval_generate,
   [
-    forall(
-      iso8601_time_interval_example(Atom1, Format, Y, M, W, D, T, H, MM, S)
-    ),
+    forall(iso8601_time_interval_example(Atom1, Format, DateTime)),
     true(Atom1 == Atom2)
   ]
 ):-
-  once(
-    phrase(
-      iso8601_time_interval(_T0, Format, Y, M, W, D, T, H, MM, S),
-      Codes
-    )
-  ),
+  once(phrase(iso8601_time_interval(_T0, Format, DateTime), Codes)),
   atom_codes(Atom2, Codes).
 
 test(
   iso8601_time_interval_parse,
   [
-    forall(
-      iso8601_time_interval_example(Atom, Format, Y1, M1, W1, D1, T1, H1, MM1, S1)
-    ),
-    true(maplist(=, [Y1,M1,W1,D1,T1,H1,MM1,S1], [Y2,M2,W2,D2,T2,H2,MM2,S2]))
+    forall(iso8601_time_interval_example(Atom, Format, DateTime1)),
+    true(DateTime1 = DateTime2)
   ]
 ):-
   atom_codes(Atom, Codes),
-  once(
-    phrase(
-      iso8601_time_interval(_T0, Format, Y2, M2, W2, D2, T2, H2, MM2, S2),
-      Codes
-    )
-  ).
+  once(phrase(iso8601_time_interval(_T0, Format, DateTime2), Codes)).
 
 
 
@@ -429,36 +351,34 @@ test(
 %! iso8601_week_date_example(
 %!   ?Date:atom,
 %!   ?Format:oneof([basic,extended]),
-%!   ?Year:between(0,9999),
-%!   ?Week:between(1,53),
-%!   ?Day:between(1,7)
+%!   ?Date:compound
 %! ) is nondet.
 
-iso8601_week_date_example('1985W155',   basic,    1985, 15, 5).
-iso8601_week_date_example('1985-W15-5', extended, 1985, 15, 5).
+iso8601_week_date_example('1985W155',   basic,    date(1985,_,15,5)).
+iso8601_week_date_example('1985-W15-5', extended, date(1985,_,15,5)).
 % Reduced accuracy:
-iso8601_week_date_example('1985W15',    basic,    1985, 15, _).
-iso8601_week_date_example('1985-W15',   extended, 1985, 15, _).
+iso8601_week_date_example('1985W15',    basic,    date(1985,_,15,_)).
+iso8601_week_date_example('1985-W15',   extended, date(1985,_,15,_)).
 
 test(
   iso8601_week_date_generate,
   [
-    forall(iso8601_week_date_example(Atom1, Format, Y, W, D)),
+    forall(iso8601_week_date_example(Atom1, Format, Date)),
     true(Atom1 == Atom2)
   ]
 ):-
-  once(phrase(iso8601_week_date(_Tree, Format, Y, W, D), Codes)),
+  once(phrase(iso8601_week_date(_Tree, Format, Date), Codes)),
   atom_codes(Atom2, Codes).
 
 test(
   iso8601_week_date_parse,
   [
-    forall(iso8601_week_date_example(Atom, Format, Y1, W1, D1)),
-    true(maplist(=, [Y1, W1, D1], [Y2, W2, D2]))
+    forall(iso8601_week_date_example(Atom, Format, Date1)),
+    true(Date1 = Date2)
   ]
 ):-
   atom_codes(Atom, Codes),
-  once(phrase(iso8601_week_date(_Tree, Format, Y2, W2, D2), Codes)).
+  once(phrase(iso8601_week_date(_Tree, Format, Date2), Codes)).
 
-:- end_tests(iso8601_dcg).
+:- end_tests(iso8601).
 
