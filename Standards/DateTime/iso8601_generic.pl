@@ -143,9 +143,7 @@ then leading zeros shall be used as required.
 --
 
 @author Wouter Beek
-@see Unit tests are in [iso8601_test].
-@tbd Implement the extended representations of the various date and time
-     formats.
+@tbd Appendix A, relations to earlier ISO standards, is not processed.
 @version 2013/07-2013/08
 */
 

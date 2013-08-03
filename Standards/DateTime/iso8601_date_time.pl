@@ -4,6 +4,9 @@
     iso8601_calendar_date_time//3, % -Tree:compound
                                    % ?Format:oneof([basic,extended])
                                    % ?DateTime:compound
+    iso8601_date_time//3, % -Tree:compound
+                          % ?Format:oneof([basic,extended])
+                          % ?DateTime:compound
     iso8601_ordinal_date_time//3, % -Tree:compound
                                   % ?Format:oneof([basic,extended])
                                   % ?DateTime:compound
@@ -111,6 +114,19 @@ iso8601_calendar_date_time(T0, Format, date_time(Date,UTC_Time)) -->
   {iso8601_time_designator(UTC_Time, T)},
   iso8601_local_time(T2, Format, T, UTC_Time),
   {parse_tree(date_time, [T1,T2], T0)}.
+
+%! iso8601_date_time(
+%!   -Tree:compound,
+%!   ?Format:oneof([basic,extended]),
+%!   ?DateTime:compound
+%! )//
+
+iso8601_date_time(T0, Format, DateTime) -->
+  iso8601_calendar_date_time(T0, Format, DateTime).
+iso8601_date_time(T0, Format, DateTime) -->
+  iso8601_ordinal_date_time(T0, Format, DateTime).
+iso8601_date_time(T0, Format, DateTime) -->
+  iso8601_week_date_time(T0, Format, DateTime).
 
 iso8601_ordinal_date_time(T0, Format, date_time(Date,UTC_Time)) -->
   iso8601_ordinal_date(T1, Format, Date),

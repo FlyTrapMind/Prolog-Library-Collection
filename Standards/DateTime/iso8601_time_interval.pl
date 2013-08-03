@@ -1,10 +1,14 @@
 :- module(
   iso8601_time_interval,
   [
-    iso8601_time_interval//3, % -Tree:compound,
-                               % ?Format:oneof([basic,extended]),
-                               % ?DateTime:compound
-    iso8601_time_interval//4 % -Tree:compound,
+    iso8601_recurring_time_interval//6, % -Tree:compound,
+                                        % ?Variant:between(1,4)
+                                        % ?Format:oneof([basic,extended])
+                                        % ?Recurrences:integer
+                                        % ?DateTime1:compound
+                                        % ?DateTime2:compound
+    iso8601_time_interval//5 % -Tree:compound,
+                             % ?Variant:between(1,4)
                              % ?Format:oneof([basic,extended])
                              % ?DateTime1:compound
                              % ?DateTime2:compound
@@ -177,59 +181,181 @@ Example 2 represents a time interval with a duration of six weeks.
 
 #### Alternative format
 
-If, by agreement, a complete representation of a time interval through its duration and context information,
-with duration in the alternative format, is used, the expression shall be in accordance with 4.4.2 and use a
-complete duration representation as defined in 4.4.3.3.
-Basic format: PYYYYMMDDThhmmss Example: P00021015T103020
-Extended format: PYYYY-MM-DDThh:mm:ss Example: P0002-10-15T10:30:20
-The examples represent a time interval with a duration of 2 years, 10 months, 15 days, 10 hours, 30 minutes
-and 20 seconds.
+If, by agreement, a complete representation of a time interval through
+its duration and context information, with duration in the alternative format,
+is used, the expression shall be in accordance with the alternative
+representation described above.
+
+Basic format:
+~~~
+PYYYYMMDDThhmmss
+~~~
+Example: =|P00021015T103020|=
+
+Extended format:
+~~~
+PYYYY-MM-DDThh:mm:ss
+~~~
+Example: =|P0002-10-15T10:30:20|=
+
+The examples represent a time interval with a duration of 2 years,
+10 months, 15 days, 10 hours, 30 minutes and 20 seconds.
+
+### Intervals identified by start and duration
+
+Combines any complete date and time of day representation with any complete
+representation of duration.
+
+Basic format:
+~~~
+YYYYMMDDThhmmss/PnnYnnMnnDTnnHnnMnnS
+YYYYMMDDThhmmss/PYYYYMMDDThhmmss
+~~~
+Examples:
+  * =|19850412T232050/P1Y2M15DT12H30M0S|=
+  * =|19850412T232050/P00010215T123000|=
+
+Extended format:
+~~~
+YYYY-MM-DDThh:mm:ss/PnnYnnMnnDTnnHnnMnnS
+YYYY-MM-DDThh:mm:ss/PYYYY-MM-DDThh:mm:ss
+~~~
+Examples:
+  * =|1985-04-12T23:20:50/P1Y2M15DT12H30M0S|=
+  * =|1985-04-12T23:20:50/P0001-02-15T12:30:00|=
+
+The examples represent a time interval of 1 year, 2 months, 15 days,
+12 hours and 30 minutes, beginning on 12 April 1985 at 20 minutes and
+50 seconds past 23 hours local time.
+
+## Intervals identified by duration and end
+
+Complete a representation of the duration with any complete representation
+of date and time of day.
+
+Basic format:
+~~~
+PnnYnnMnnDTnnHnnMnnS/YYYYMMDDThhmmss
+PYYYYMMDDThhmmss/YYYYMMDDThhmmss
+~~~
+Examples:
+  * =|P1Y2M15DT12H30M0S/19850412T232050|=
+  * =|P00010215T123000/19850412T232050|=
+
+Extended format:
+~~~
+PnnYnnMnnDTnnHnnMnnS/YYYY-MM-DDThh:mm:ss
+PYYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss
+~~~
+Examples:
+  * =|P1Y2M15DT12H30M0S/1985-04-12T23:20:50|=
+  * =|P0001-02-15T12:30:00/1985-04-12T23:20:50|=
+
+The examples represent a time interval of 1 year, 2 months, 15 days and
+12 hours and 30 minutes, ending on 12 April 1985 at 20 minutes and
+50 seconds past 23 hours local time.
+
+## Other complete representations
+
+A complete representation of ordinal dates or week dates can be used instead
+of calendar dates,
+
+Instead of local time UTC time and local time plus UTC difference can be used.
+
+## Non-complete representations
+
+### For intervals represented by using a start and an end time point
+
+Higher order time elements may be omitted from the expression following
+the solidus (i.e. the representation for "end of time interval");
+in such a case it shall be assumed that the corresponding time elements from
+the "start of time interval" expression apply
+(e.g. if =|[YYYYMM]|= are omitted, the end of the time interval is in
+the same calendar year and calendar month as the start of the time interval).
+
+Representations for time zones and UTC included with the component preceding
+the solidus shall be assumed to apply to the component following the solidus,
+unless a corresponding alternative is included.
+
+--
+
+# Recurring time interval
+
+A recurring time interval shall be expressed in one of the following ways:
+  * By a number of recurrences (optional), a start and an end.
+    This represents a recurring time interval of which the first
+    time interval is identified by the last two components of
+    the expression and the number of recurrences by the first component.
+    If the number of recurrences is absent, the number of occurrences is
+    unbounded.
+  * By a number of recurrences (optional), a duration and context.
+    This represents a recurring time interval with the indicated duration
+    for each time interval and with the indicated number of recurrences.
+    If the number of recurrences is absent, the number of occurrences is
+    unbounded.
+  * By a number of recurrences (optional), a start and a duration.
+    This represents a recurring time interval of which the first time
+    interval is identified by the last two components of the expression
+    and the number of recurrences by the first component. If the number
+    of recurrences is absent, the number of occurrences is unbounded.
+  * By a number of recurrences (optional), a duration and an end.
+    This represents a recurring time interval of which the last time interval
+    is identified by the last two components of the expression and
+    the number of recurrences by the first component. If the number of
+    recurrences is absent, the number of occurrences is unbounded.
+
+All representations start with the designator =|[R]|=, followed,
+without spaces, by the number of recurrences, if present, followed,
+without spaces, by a solidus =|[/]|=, followed,
+without spaces, by the expression of a time interval (see above).
+
+## Complete representations
+
+Basic format:
+~~~
+Rn/YYYYMMDDThhmmss/YYYYMMDDThhmmss
+Rn/PnnYnnMnnDTnnHnnMnnS
+Rn/YYYYMMDDThhmmss/PnnYnnMnnDTnnHnnMnnS
+RnPnnYnnMnnDTnnHnnMnnS/YYYYMMDDThhmmss
+~~~
+Examples:
+  * =|R12/19850412T232050/19850625T103000|=
+  * =|R12/P2Y10M15DT10H30M20S|=
+  * =|R12/19850412T232050/P1Y2M15DT12H30M0S|=
+  * =|R12/P1Y2M15DT12H30M0S/19850412T232050|=
+
+Extended format:
+~~~
+Rn/YYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss
+Rn/YYYY-MM-DDThh:mm:ss/PnYnMnDTnHnMnS
+Rn/PnnYnnMnnDTnnHnnMnnS/YYYY-MM-DDThh:mm:ss
+~~~
+Examples:
+  * =|R12/l985-04-12T23:20:50/1985-06-25T10:30:00|=
+  * =|R12/1985-04-12T23:20:50/P1Y2M15DT12H30M0S|=
+  * =|R12/P1Y2M15DT12H30M0S/1985-04-12T23:20:50|=
+
+## Non-complete representations
+
+Using a non-complete time interval representation (see above).
 
 --
 
 @author Wouter Beek
+@tbd The alternative representations for time intervals are not supported.
+@tbd The non-complete representations are not supported.
 @version 2013/08
 */
 
 :- use_module(datetime(iso8601_date_time)).
 :- use_module(datetime(iso8601_generic)).
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 
 
 
-% Start and end of interval.
-% Any two date and time-of-day formats.
-iso8601_time_interval(T0, Format, DateTime1, DateTime2) -->
-  (
-    iso8601_calendar_date_time(T1, Format, DateTime1)
-  ;
-    iso8601_ordinal_date_time(T1, Format, DateTime1)
-  ),
-  iso8601_interval_separator(T2),
-  (
-    iso8601_calendar_date_time(T3, Format, DateTime2)
-  ;
-    iso8601_ordinal_date_time(T3, Format, DateTime2)
-  ),
-  {parse_tree(time_interval, [T1,T2,T3], T0)}.
-
-%! iso8601_time_interval(
-%!   -Tree:compound,
-%!   ?Format:oneof([basic,extended]),
-%!   ?Year:integer,
-%!   ?Month:integer,
-%!   ?Week:integer,
-%!   ?Day:integer,
-%!   ?TimeSeparator:boolean,
-%!   ?Hour:integer,
-%!   ?Minute:integer,
-%!   ?Second:integer
-%! )//
-% Duration and context information.
-% Any two date and time-of-day formats.
-
-iso8601_time_interval(T0, _Format, date_time(date(Y,M,W,D),UTC_Time)) -->
+iso8601_duration(T0, date_time(date(Y,M,W,D),UTC_Time)) -->
   {var(M), var(W), UTC_Time = utc_time(time(H,MM,S),_UTC)},
   iso8601_duration_designator(T1),
   ({var(Y)} ; iso8601_number_of_years(T2, Y)),
@@ -244,7 +370,7 @@ iso8601_time_interval(T0, _Format, date_time(date(Y,M,W,D),UTC_Time)) -->
   ({var(MM)} ; iso8601_number_of_minutes(T6, MM)),
   ({var(S)} ; iso8601_number_of_seconds(T7, S)),
   {parse_tree(time_interval, [T1,T2,T3,T4,T5,T6,T7], T0)}.
-iso8601_time_interval(T0, _Format, date_time(date(Y,M,W,D),UTC_Time)) -->
+iso8601_duration(T0, date_time(date(Y,M,W,D),UTC_Time)) -->
   {var(W), UTC_Time = utc_time(time(H,MM,S),_UTC)},
   iso8601_duration_designator(T1),
   ({var(Y)} ; iso8601_number_of_years(T2, Y)),
@@ -260,7 +386,7 @@ iso8601_time_interval(T0, _Format, date_time(date(Y,M,W,D),UTC_Time)) -->
   ({var(MM)} ; iso8601_number_of_minutes(T7, MM)),
   ({var(S)} ; iso8601_number_of_seconds(T8, S)),
   {parse_tree(time_interval, [T1,T2,T3,T4,T5,T6,T7,T8], T0)}.
-iso8601_time_interval(T0, _Format, date_time(date(Y,M,W,D),UTC_Time)) -->
+iso8601_duration(T0, date_time(date(Y,M,W,D),UTC_Time)) -->
   {var(M), UTC_Time = utc_time(time(H,MM,S),_UTC)},
   iso8601_duration_designator(T1),
   ({var(Y)} ; iso8601_number_of_years(T2, Y)),
@@ -276,6 +402,42 @@ iso8601_time_interval(T0, _Format, date_time(date(Y,M,W,D),UTC_Time)) -->
   ({var(MM)} ; iso8601_number_of_minutes(T7, MM)),
   ({var(S)} ; iso8601_number_of_seconds(T8, S)),
   {parse_tree(time_interval, [T1,T2,T3,T4,T5,T6,T7,T8], T0)}.
+
+iso8601_recurring_time_interval(
+  T0,
+  Variant,
+  Format,
+  N,
+  DateTime1,
+  DateTime2
+) -->
+  iso8601_recurence_designator(T1),
+  ({var(N)} ; decimal_number(N), {T2 = recurrences(N)}),
+  forward_slash,
+  iso8601_time_interval(T3, Variant, Format, DateTime1, DateTime2),
+  {parse_tree(recurring_time_interval, [T1,T2,'/',T3], T0)}.
+
+% Start of interval and end of interval.
+iso8601_time_interval(T0, 1, Format, DateTime1, DateTime2) -->
+  iso8601_date_time(T1, Format, DateTime1),
+  iso8601_interval_separator(T2),
+  iso8601_date_time(T3, Format, DateTime2),
+  {parse_tree(time_interval, [T1,T2,T3], T0)}.
+% Duration only.
+iso8601_time_interval(T0, 2, _Format, DateTime1, _DateTime2) -->
+  iso8601_duration(T0, DateTime1).
+% Start of interval and duration.
+iso8601_time_interval(T0, 3, Format, DateTime1, DateTime2) -->
+  iso8601_date_time(T1, Format, DateTime1),
+  iso8601_interval_separator(T2),
+  iso8601_duration(T3, DateTime2),
+  {parse_tree(time_interval, [T1,T2,T3], T0)}.
+% Duration and end of interval.
+iso8601_time_interval(T0, 4, Format, DateTime1, DateTime2) -->
+  iso8601_duration(T1, DateTime1),
+  iso8601_interval_separator(T2),
+  iso8601_date_time(T3, Format, DateTime2),
+  {parse_tree(time_interval, [T1,T2,T3], T0)}.
 
 
 
@@ -326,6 +488,9 @@ iso8601_number_of_weeks(weeks(W,X), W) -->
 iso8601_number_of_years(years(Y,X), Y) -->
   decimal_number(Y),
   iso8601_year_designator(X).
+
+iso8601_recurence_designator(recurrence_designator('R')) -->
+  "R".
 
 iso8601_second_designator('S') -->
   "S".
