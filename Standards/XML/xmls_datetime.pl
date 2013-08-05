@@ -124,13 +124,10 @@ time zone specificiation.
 */
 
 :- use_module(datetime(iso8601_time_interval)).
-:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(plunit)).
 
 
-
-dateTime_smaller_than
 
 %! duration_smaller_than(+Duration1:compound, +Duration2:compound) is semidet.
 % Definition: =|x < y|= iff =|s+x < s+y|= for each qualified =dateTime= =s=
@@ -340,25 +337,25 @@ summate_time(
   MX is M1 + (Sign * M2),
   modulo(MX, 1, 13, MY),
   'fQuotient'(MX, 1, 13, Y_Carry),
-  
+
   % Year
   YX is Y1 + (Sign * Y2) + Y_Carry,
-  
+
   % Second
   SX is S1 + (Sign * S2),
   modulo(SX, 60, S3),
   'fQuotient'(SX, 60, MM_Carry),
-  
+
   % Minute
   MMX is MM1 + (Sign * MM2) + MM_Carry,
   modulo(MMX, 60, MM3),
   'fQuotient'(MMX, 60, H_Carry),
-  
+
   % Hour
   HX is H1 + (Sign * H2) + H_Carry,
   modulo(HX, 60, H3),
   'fQuotient'(HX, 60, D_Carry),
-  
+
   % Day
   calendar_month(YX, MY, MaxD, _),
   (D1 < 1 -> DX = MaxD ;
@@ -475,7 +472,7 @@ summate_time_(Y1, M1, D1, Y3, M3, D3):-
 % order relation is indeterminate. Note that because of leap-seconds,
 % a seconds field can vary from 59 to 60. However, because of the way that
 % addition is defined, they are still totally ordered.
-% 
+%
 % | *|=|P1Y|=|* | =|> P364D|= | =|<> P365D|= | =|<> P366D|= | =|< P367D|=  |              |             |
 % | *|=|P1M|=|* | =|> P27D|=  | =|<> P28D|=  | =|<> P29D|=  | =|<> P30D|=  | =|<> P31D|=  | =|< P32D|=  |
 % | *|=|P5M|=|* | =|> P149D|= | =|<> P150D|= | =|<> P151D|= | =|<> P152D|= | =|<> P153D|= | =|< P154D|= |

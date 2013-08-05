@@ -21,16 +21,47 @@
 
 XML Schema 2: Datatypes (Second Edition)
 
+# Standards version 1.0 or 1.1
+
+When this specification is used to check the datatype validity of XML input,
+implementations may provide the heuristic of using the 1.1 datatypes if
+the input is labeled as XML 1.1, and using the 1.0 datatypes if the input
+is labeled 1.0, but this heuristic should be subject to override by users,
+to support cases where users wish to accept XML 1.1 input but validate it
+using the 1.0 datatypes, or accept XML 1.0 input and validate it using
+the 1.1 datatypes.
+
+# Concepts
+
+  * *|Ineffable value|*
+    A value in a value space that is not mapped to by any literal
+    from the corresponding lexical space.
+  * 
+
 # Datatype
 
 A triple consisting of:
   * *|Value space|*
     A set of distinct values.
+    This is only abstractly defined.
+    An actual implementation has to implement these values
+    (e.g. C, SWI-Prolog).
   * *|Lexical space|*
-    A set of lexical representations.
+    A set of lexical representations or literals denoting values.
   * *Facets*
     Characterizing properties of the value space, individual values, or the
     lexical space.
+  * *|Functions, relations, operations|*
+    * A _|lexical mapping|_ from lexical to value space.
+      This mapping is used by me to read values from a specific
+      serialization (e.g. RDF-XML) to an implementation-specific
+      datatype format (e.g. C).
+    * A _|canonical mapping|_ from value to lexical space.
+      This mapping is used by me to write implementation-specific (e.g. C)
+      values to a specific serialization (e.g. RDF-XML).
+    * _|Identity relation|_
+    * _|Equality relation|_
+    * _|Order relation|_
 
 # Value space
 
@@ -40,15 +71,80 @@ Each value in the value space of a datatype is denoted by at least one
 literal in the lexical space of the same datatype.
 
 Value space definitions:
-  * *Intensional*: axiomatically from fundamental notions.
-  * *Extensional*: enumeration.
-  * *Restriction* of the value space of an already defined datatype.
-  * * Combination* of value from different value spaces, according to some
-    construction procedure (XMLS list, XMLS union).
+  * *Intensional*
+    Axiomatic definition from fundamental notions.
+  * *Extensional*
+    Enumeration of the values.
+  * *Derived*
+    Defined by restricting an existing value space.
+  * *Combined* out of existing value spaces, according to some
+    construction procedure (e.g., list, union).
+
+## Identity
+
+I do not understand what the following means:
+"The identity relation is always defined.
+Every value space inherently has an identity relation.
+Two things are identical if and only if they are actually the same thing:
+i.e., if there is no way whatever to tell them apart." [XSD v1.1 sec2.2.1]
+
+Lists =A= and =B= are identical iff they have the same length and
+their items are pairwise identical.
+
+Note that all the empty lists are identical.
+
+Values from the value spaces of different primitive datatypes are
+never identical.
+
+## Equality
+
+Each primitive datatype has prescribed an equality relation for its
+value space.
+
+The equality relation is not always the same as the identity relation.
+Examples:
+  * Float and double =-0= and =+0= are equal but not identical.
+  * Two dateTime values may denote the same moment in time,
+    but doing so with different local times and different (correcting)
+    time zone offsets.
+    These values are equal but not identical.
+
+The equality relation is not always complete.
+Example:
+  * Float and double =NaN= is not even equal to itself,
+    but is identical to itself.
+
+Lists =A= and =B= are equal iff they have the same length and
+their items are pairwise identical.
+
+Note that all the empty lists are equal.
+
+A list of length one containing value =V1= is equal to an atomic value =V2=
+iff =V1= is equal to =V2=. (I.e., =|[V1] = V2|= iff =|V1 = V2|=.)
+
+Values from the value spaces of different primitive datatypes are
+never equal.
+
+## Order
+
+Values =a= and =b= are *incomparable* iff
+$a \nleq b \land a \neq b \land a \ngeq b$.
+Values are comparable if there are not incomparable.
+
+The *|incomparable relation|* is denoted =|<>|=.
+
+The weak order $\leq$ means $<$ or $=$ and _|one can tell which|_.
+For example, the duration =P1M= (one month) is not $\leq$ =P31D=
+(thirty-one days) because =P1M= $<$ =P31D= nor =P1M= $=$ =P31D= is the case.
+Instead, =P1M= is incomparable with =P31D=.
+
+Values from the value spaces of different primitive datatypes are always
+incomparable.
 
 # Lexical space
 
-The set of valid literals for a datatype.
+The set of lexica representations or literals that represent the values
+of the value space of a datatype.
 
 Characteristics:
   * Interoperability: minimum number of literals for the same value.
