@@ -1,6 +1,10 @@
 :- module(
   iso8601_generic,
   [
+    iso8601_float//4, % -Tree:compound
+                      % +Name:atom
+                      % +Length:integer
+                      % ?Number:number
     iso8601_integer//4, % -Tree:compound
                         % +Name:atom
                         % +Length:integer
@@ -8,6 +12,10 @@
     iso8601_time_designator/2, % +UTC_Time:compound
                                % -TimeDesignator:boolean
     iso8601_time_designator//1, % -Tree:compound
+    iso8601_time_designator/4, % ?Hour:integter
+                               % ?Minute:integer
+                               % ?Second:float
+                               % -TimeDesignator:boolean
     iso8601_week_designator//1 % -Tree:compound
   ]
 ).
@@ -140,9 +148,100 @@ In representations the following characters are used as separators:
 If a time element in a defined representation has a defined length,
 then leading zeros shall be used as required.
 
+# Notes by Markus Kuhn
+
+## On the year-day format
+
+Both day and year are useful units of structuring time, because the position
+of the sun on the sky, which influences our lives, is described by them.
+However the 12 months of a year are of some obscure mystic origin and have no
+real purpose today except that people are used to having them (they do not
+even describe the current position of the moon).
+
+## On the leap second
+
+The value =60= for =ss= might sometimes be needed during an inserted leap
+second in an atomic time scale like Coordinated Universal Time (UTC).
+A single leap second =|23:59:60|= is inserted into the UTC time scale every
+few years as announced by the International Earth Rotation Service in Paris,
+to keep UTC from wandering away more than =|0.9|= seconds from the less
+constant astronomical time scale UT1, which is defined by the actual rotation
+of the earth. In practice you are not very likely to see a clock showing
+=|23:59:60|=. Most synchronized clocks resynchronize again to UTC some time
+after a leap second has happened, or they temporarily slow down near the time
+of a leap seconds, to avoid any disruption that an out-of-range timestamp
+might otherwise cause.
+
+## On 12h-based notations used in several English-speaking countries
+
+The old English 12h notation has the following disadvantages:
+* Longer to write down.
+* Comparison is more difficult than plain string comparison.
+* It is not clear how =|00:00|=, =|12:00|= and =|24:00|= are represented.
+* It is easy to make the mistake that the next day starts at the overflow
+  from =|12:59 a.m.|= to =|1:00 a.m.|=.
+
+## On German national standards
+
+The German standard DIN 5008, which specifies typographical rules for German
+texts written on typewriters, was updated in 1996-05. The old German numeric
+date notations =|DD.MM.YYYY|= and =|DD.MM.YY|= have been replaced by ISO 8601
+conforming ones. Similarly for the old German time notations =|hh.mm|= and
+=|hh.mm.ss|=.
+
+The new notations are mentioned in the latest edition of the _Duden_.
+
+The German alphanumeric date notation continues to be for example
+"3. August 1994" or "3. Aug. 1994".
+
+The corresponding Austrian standard has used ISO 8601 date and time notations
+for some time.
+
+## On EU standards
+
+ISO 8601 has been adopted as European Standard EN 28601.
+
+## On the UTC designator
+
+The =Z= stands for the "zero meridian", which goes through Greenwich in
+London, and it is also commonly used in radio communication where it is
+pronounced "Zulu" (the word for Z in the international radio alphabet).
+
+## On the difference between UTC and GMT
+
+Universal Time (sometimes also called "Zulu Time") was called
+Greenwich Mean Time (GMT) before 1972, however this term should no longer be
+used. Since the introduction of an international atomic time scale, almost
+all existing civil time zones are now related to UTC, which is slightly
+different from the old and now unused GMT.
+
+## Names for specific UTC corrections
+
+There exists no international standard that specifies abbreviations for
+civil time zones like CET, EST, etc. and sometimes the same abbreviation
+is even used for two very different time zones. In addition, politicians
+enjoy modifying the rules for civil time zones, especially for daylight
+saving times, every few years, so the only really reliable way of
+describing a local time zone is to specify numerically the difference of
+local time to UTC.
+
+| *|Abbreviated name|* | *|Full name|*                       | *|UTC correction|* |
+| CET                  | Central European Time               | =|+0100|=          |
+| EST                  | U.S./Canadian Eastern Standard Time | =|-0500|=          |
+
+## ISO 8601 notation with C and POSIX
+
+Function =|strftime()|= and utility =date=.
+
+| =|%Y-%m-%d|=  | =|1999-12-31|= |
+| =|%Y-%j|=     | =|1999-365|=   |
+| =|%G-W%V-%u|= | =|1999-W52-5|= |
+| =|%H:%M:%S|=  | =|23:59:59|=   |
+
 --
 
 @author Wouter Beek
+@see http://www.cl.cam.ac.uk/~mgk25/iso-time.html
 @tbd Appendix A, relations to earlier ISO standards, is not processed.
 @version 2013/07-2013/08
 */
@@ -152,6 +251,43 @@ then leading zeros shall be used as required.
 :- use_module(math(radix)).
 
 
+
+%! iso8601_float(
+%!   -Tree:compound,
+%!   +Name:atom,
+%!   +Length:integer,
+%!   ?Number:number
+%! )//
+
+iso8601_float(T0, Name, Length, N) -->
+  {var(N)}, !,
+  iso8601_integer(T1, integer, Length, N_I),
+  (
+    iso8601_fraction_separator(T2),
+    iso8601_integer(T3, fraction, F_Length, N_F),
+    % At least one digit must follow the decimal point if it appears.
+    {F_Length > 0},
+    {number_components(N, N_I, N_F)}
+  ;
+    {N = N_I}
+  ),
+  {parse_tree(Name, [T1,T2,T3], T0)}.
+iso8601_float(T0, Name, Length, N) -->
+  {integer(N)}, !,
+  iso8601_integer(T0, Name, Length, N).
+iso8601_float(T0, Name, Length, N) -->
+  {float(N)}, !,
+  {number_components(N, N_I, N_F)},
+  iso8601_integer(T1, integer, Length, N_I),
+  iso8601_fraction_separator(T2),
+  iso8601_integer(T3, fraction, F_Length, N_F),
+  % At least one digit must follow the decimal point if it appears.
+  {F_Length > 0},
+  {parse_tree(Name, [T1,T2,T3], T0)}.
+
+% Comma is prefered.
+iso8601_fraction_separator(',') --> comma.
+iso8601_fraction_separator('.') --> dot.
 
 %! iso8601_integer(
 %!   -Tree:compound,
@@ -185,9 +321,20 @@ iso8601_integer(T0, Name, Length, I) -->
 % For example =198504122320Z= can be parsed as =|1985-04-12T23:20Z=|
 % or as =|1985-04T12:23:20Z|=.
 
-iso8601_time_designator(utc_time(time(H,M,S),_UTC), false):-
+iso8601_time_designator(utc_time(time(H,M,S),_UTC_Correction), T):-
+  iso8601_time_designator(H, M, S, T).
+
+%! iso8601_time_designator(
+%!   ?Hour:integter,
+%!   ?Minute:integer,
+%!   ?Second:float,
+%!   -TimeDesignator:boolean
+%! ) is det.
+
+iso8601_time_designator(H, M, S, false):-
   var(H), var(M), var(S).
-iso8601_time_designator(_UTC_Time, true).
+iso8601_time_designator(H, M, S, true):-
+  (nonvar(H) ; nonvar(M) ; nonvar(S)).
 
 iso8601_time_designator(time_designator('T')) -->
   "T".

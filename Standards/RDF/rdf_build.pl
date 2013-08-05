@@ -15,7 +15,7 @@
     rdf_assert_datatype/5, % +Subject:oneof([bnode,uri])
                            % +Predicate:uri
                            % +Datatype:oneof([atom,uri])
-                           % +Value
+                           % +ExternalValue
                            % +Graph:atom
     rdf_assert_literal/4, % +Subject:oneof([bnode,uri])
                           % +Predicate:uri
@@ -45,7 +45,7 @@
     rdf_retractall_datatype/5, % ?Subject:oneof([bnode,uri])
                                % ?Predicate:uri
                                % ?Datatype:oneof([atom,uri])
-                               % ?Value
+                               % ?ExternalValue
                                % ?Graph:atom
     rdf_retractall_literal/4, % ?Subject:oneof([bnode,uri])
                               % ?Predicate:uri
@@ -80,7 +80,7 @@ The supported datatypes:
     * integer
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/08
 */
 
 :- use_module(library(debug)).
@@ -89,6 +89,7 @@ The supported datatypes:
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_typecheck)).
 :- use_module(xml(xml_namespace)).
+:- use_module(xml(xml_schema_datatypes)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
@@ -179,16 +180,23 @@ add_blank_list_individual(Blank, Graph):-
 %!   +Subject:oneof([bnode,uri]),
 %!   +Predicate:uri,
 %!   +DatatypeName:oneof([]),
-%!   +Value,
+%!   +ExternalValue,
 %!   +Graph:atom
 %! ) is det.
-% Asserts a float value for a resource.
+% Asserts a datatyped value for a blank node or IRI reference.
 %
-% At least the following datatypes are supported (XML Schema 2):
-%   * `boolean`
+% We choose to use the XML Schema 2 Datatypes (2nd Edition)
+% for this. The asserted values are the atomic equivalent of the
+% *|canonical lexical representations|* as defined by that standard.
+%
+% The value conversion from external to canonical lexical is treated by
+% module [xml_schema_datatypes.pl].
+%
+% At least the following datatypes are supported:
 %   * `boolean`
 %   * `date`
 %   * `dateTime`
+%   * `decimal`
 %   * `double`
 %   * `float`
 %   * `gDay`
@@ -202,9 +210,10 @@ add_blank_list_individual(Blank, Graph):-
 % @arg Value
 % @arg Graph The atomic name of an RDF graph.
 
-rdf_assert_datatype(S, P, DatatypeName, LexicalValue, G):-
-  rdf_datatype(DatatypeName, LexicalValue, D, CanonicalValue),
-  rdf_assert(S, P, literal(type(D, CanonicalValue)), G).
+rdf_assert_datatype(S, P, DatatypeName, ExternalValue, G):-
+  xmls_datatype(DatatypeName, Datatype),
+  xmls_canonical_value(Datatype, ExternalValue, CanonicalValue),
+  rdf_assert(S, P, literal(type(Datatype, CanonicalValue)), G).
 
 %! rdf_assert_literal(
 %!   +Subject:oneof([bnode,uri]),
@@ -261,7 +270,7 @@ rdf_assert_xml_literal(Subject, Predicate, XMLLiteral, Graph):-
 %!   ?Subject:oneof([bnode,uri]),
 %!   ?Predicate:uri,
 %!   ?DatatypeName:oneof([]),
-%!   ?Value,
+%!   ?ExternalValue,
 %!   ?Graph:atom
 %! ) is det.
 % Retracts all matching RDF triples that assert an integer property.
@@ -269,14 +278,14 @@ rdf_assert_xml_literal(Subject, Predicate, XMLLiteral, Graph):-
 % @arg Subject A resource.
 % @arg Predicate A resource.
 % @arg DatatypeName
-% @arg Value
+% @arg ExternalValue
 % @arg Graph The atomic name of an RDF graph.
 
-rdf_retractall_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph):-
+rdf_retractall_datatype(Subject, Predicate, DatatypeName, ExternalValue, Graph):-
   forall(
-    rdf_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph),
+    rdf_datatype(Subject, Predicate, DatatypeName, ExternalValue, Graph),
     (
-      rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue),
+      rdf_datatype(DatatypeName, ExternalValue, Datatype, CanonicalValue),
       rdf_retractall(Subject, Predicate, literal(type(Datatype, CanonicalValue)), Graph)
     )
   ).

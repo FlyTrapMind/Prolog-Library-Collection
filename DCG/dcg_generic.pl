@@ -70,8 +70,8 @@
     dcg_phrase/2, % :DCG_Body:dcg
                   % ?In:atom
     dcg_phrase/3, % :DCG_Body:dcg
-                  % ?In:atom
-                  % ?Out:atom
+                  % +In:atom
+                  % -Out:atom
 
 % REPLACE
     dcg_replace//2 % +From:list(code)
@@ -99,7 +99,7 @@ modular way.
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
-@version 2013/05-2013/07
+@version 2013/05-2013/08
 */
 
 :- use_module(dcg(dcg_content)).
@@ -168,7 +168,7 @@ modular way.
 :- meta_predicate(dcg_peek_length(+,?,?,?,?)).
 % PHRASE EXTENSIONS
 :- meta_predicate(dcg_phrase(//,?)).
-:- meta_predicate(dcg_phrase(//,?,?)).
+:- meta_predicate(dcg_phrase(//,+,-)).
 % REPLACE
 :- meta_predicate(dcg_replace(//,//,?,?)).
 
@@ -574,22 +574,19 @@ dcg_peek_length(MaxLength, Length, Peek), Peek -->
 
 % PHRASE EXTENSION
 
-% Codes match codes.
-dcg_phrase(DCG_Body, In):-
-  is_list(In), !,
-  dcg_phrase(DCG_Body, In, []).
-% Atom matches atom.
-dcg_phrase(DCG_Body, In):-
-  dcg_phrase(DCG_Body, In, '').
+dcg_phrase(DCG_Body, InAtom):-
+  var(InAtom), !,
+  phrase(DCG_Body, InCodes),
+  atom_codes(InAtom, InCodes).
+dcg_phrase(DCG_Body, InAtom):-
+  atom_codes(InAtom, InCodes),
+  phrase(DCG_Body, InCodes).
 
-dcg_phrase(DCG_Body, In, Out):-
-  is_list(In), !,
-  phrase(DCG_Body, In, Out).
-dcg_phrase(DCG_Body, In1, Out1):-
-  atomic(In1), !,
-  atom_codes(In1, In2),
-  dcg_phrase(DCG_Body, In2, Out2),
-  atom_codes(Out1, Out2).
+dcg_phrase(DCG_Body, InAtom, OutAtom):-
+  atom(InAtom),
+  atom_codes(InAtom, InCodes),
+  phrase(DCG_Body, InCodes, OutCodes),
+  atom_codes(OutAtom, OutCodes).
 
 
 

@@ -1,6 +1,8 @@
 :- module(
   iso8601_time_interval,
   [
+    iso8601_duration//2, % -Tree:compound
+                         % ?ISO8601_Duration:compound
     iso8601_recurring_time_interval//6, % -Tree:compound,
                                         % ?Variant:between(1,4)
                                         % ?Format:oneof([basic,extended])
@@ -24,6 +26,19 @@ Date-time combinations:
 date_time(
   ?Date:compound,
   ?UTC_Time:compound
+)
+~~~
+
+Duration:
+~~~
+iso8601_duration(
+  ?Year:between(0,9999),
+  ?Month:between(1,12),
+  ?Week:between(1,53),
+  ?Day:between(1,366),
+  ?Hour:between(0,24),
+  ?Minute:between(0,59),
+  ?Second:between(0.0,60.0)
 )
 ~~~
 
@@ -354,54 +369,41 @@ Using a non-complete time interval representation (see above).
 :- use_module(dcg(dcg_generic)).
 
 
-
-iso8601_duration(T0, date_time(date(Y,M,W,D),UTC_Time)) -->
-  {var(M), var(W), UTC_Time = utc_time(time(H,MM,S),_UTC)},
+iso8601_duration(T0, iso8601_duration(Y,M,W,D,H,MM,S)) -->
+  {var(M), var(W)},
   iso8601_duration_designator(T1),
   ({var(Y)} ; iso8601_number_of_years(T2, Y)),
   ({var(D)} ; iso8601_number_of_days(T3, D)),
-  {iso8601_time_designator(UTC_Time, T)},
-  (
-    {T = true}, iso8601_generic:iso8601_time_designator(T4)
-  ;
-    {T = false, var(H), var(MM), var(S), var(T4)}
-  ),
+  {iso8601_time_designator(H, M, S, T)},
+  ({T = true}, iso8601_time_designator(T4) ; {T = false}),
   ({var(H)} ; iso8601_number_of_hours(T5, H)),
   ({var(MM)} ; iso8601_number_of_minutes(T6, MM)),
   ({var(S)} ; iso8601_number_of_seconds(T7, S)),
-  {parse_tree(time_interval, [T1,T2,T3,T4,T5,T6,T7], T0)}.
-iso8601_duration(T0, date_time(date(Y,M,W,D),UTC_Time)) -->
-  {var(W), UTC_Time = utc_time(time(H,MM,S),_UTC)},
+  {parse_tree(iso8601_duration, [T1,T2,T3,T4,T5,T6,T7], T0)}.
+iso8601_duration(T0, iso8601_duration(Y,M,W,D,H,MM,S)) -->
+  {var(W)},
   iso8601_duration_designator(T1),
   ({var(Y)} ; iso8601_number_of_years(T2, Y)),
   ({var(M)} ; iso8601_number_of_months(T3, M)),
   ({var(D)} ; iso8601_number_of_days(T4, D)),
-  {iso8601_time_designator(UTC_Time, T)},
-  (
-    {T = true}, iso8601_generic:iso8601_time_designator(T5)
-  ;
-    {T = false, var(H), var(MM), var(S), var(T5)}
-  ),
+  {iso8601_time_designator(H, M, S, T)},
+  ({T = true}, iso8601_time_designator(T5) ; {T = false}),
   ({var(H)} ; iso8601_number_of_hours(T6, H)),
   ({var(MM)} ; iso8601_number_of_minutes(T7, MM)),
   ({var(S)} ; iso8601_number_of_seconds(T8, S)),
-  {parse_tree(time_interval, [T1,T2,T3,T4,T5,T6,T7,T8], T0)}.
-iso8601_duration(T0, date_time(date(Y,M,W,D),UTC_Time)) -->
-  {var(M), UTC_Time = utc_time(time(H,MM,S),_UTC)},
+  {parse_tree(iso8601_duration, [T1,T2,T3,T4,T5,T6,T7,T8], T0)}.
+iso8601_duration(T0, iso8601_duration(Y,M,W,D,H,MM,S)) -->
+  {var(M)},
   iso8601_duration_designator(T1),
   ({var(Y)} ; iso8601_number_of_years(T2, Y)),
   ({var(W)} ; iso8601_number_of_weeks(T3, W)),
   ({var(D)} ; iso8601_number_of_days(T4, D)),
-  {iso8601_time_designator(UTC_Time, T)},
-  (
-    {T = true}, iso8601_generic:iso8601_time_designator(T5)
-  ;
-    {T = false, var(H), var(MM), var(S), var(T5)}
-  ),
+  {iso8601_time_designator(H, M, S, T)},
+  ({T = true}, iso8601_time_designator(T5) ; {T = false}),
   ({var(H)} ; iso8601_number_of_hours(T6, H)),
   ({var(MM)} ; iso8601_number_of_minutes(T7, MM)),
   ({var(S)} ; iso8601_number_of_seconds(T8, S)),
-  {parse_tree(time_interval, [T1,T2,T3,T4,T5,T6,T7,T8], T0)}.
+  {parse_tree(iso8601_duration, [T1,T2,T3,T4,T5,T6,T7,T8], T0)}.
 
 iso8601_recurring_time_interval(
   T0,
@@ -424,8 +426,14 @@ iso8601_time_interval(T0, 1, Format, DateTime1, DateTime2) -->
   iso8601_date_time(T3, Format, DateTime2),
   {parse_tree(time_interval, [T1,T2,T3], T0)}.
 % Duration only.
-iso8601_time_interval(T0, 2, _Format, DateTime1, _DateTime2) -->
-  iso8601_duration(T0, DateTime1).
+iso8601_time_interval(
+  time_interval(T0),
+  2,
+  _Format,
+  date_time(date(Y,M,W,D),utc_time(time(H,MM,S),_UTC_Correction)),
+  _DateTime2
+) -->
+  iso8601_duration(T0, duration(Y,M,W,D,H,MM,S)).
 % Start of interval and duration.
 iso8601_time_interval(T0, 3, Format, DateTime1, DateTime2) -->
   iso8601_date_time(T1, Format, DateTime1),
@@ -477,10 +485,12 @@ iso8601_number_of_months(months(M,X), M) -->
   decimal_number(M),
   iso8601_month_designator(X).
 
-iso8601_number_of_seconds(seconds(S,X), S) -->
-  decimal_number(S),
+iso8601_number_of_seconds(seconds(T1,X), S) -->
+  iso8601_float(T1, seconds, _Length, S),
   iso8601_second_designator(X).
 
+% Since weeks have no defined carry over point (52 or 53),
+% weeks should not be used in these applications.
 iso8601_number_of_weeks(weeks(W,X), W) -->
   decimal_number(W),
   iso8601_week_designator(X).

@@ -454,3 +454,4 @@ wrap_atom(Content, NewContent):-
 
 wrap_atom(Options, Content, NewContent):-
   dcg_phrase(dcg_word_wrap(Options), Content, NewContent).
+

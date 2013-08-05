@@ -17,13 +17,11 @@
                     % +Head:list
                     % +Body:list
                     % -Root:list
-    root_element/5, % ?Language:atom
-                    % ?Version:version
-                    % +Head:list
-                    % +Body:list
-                    % -Root:list
-% METADATA
-    standards_graph/1 % ?Graph:atom
+    root_element/5 % ?Language:atom
+                   % ?Version:version
+                   % +Head:list
+                   % +Body:list
+                   % -Root:list
   ]
 ).
 
@@ -32,7 +30,7 @@
 Methods for serving Web pages according to Web specifications.
 
 @author Wouter Beek
-@version 2012/10, 2013/07
+@version 2012/10
 */
 
 :- discontiguous(charset/1).
@@ -477,10 +475,4 @@ language(
   _No_DTD_Link,
   false
 ).
-
-
-
-% METADATA %
-
-standards_graph(std).
 

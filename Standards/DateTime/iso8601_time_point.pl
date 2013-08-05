@@ -441,44 +441,6 @@ iso8601_utc_correction(T0, Format, utc(Sign,H,M)) -->
 
 
 
-% GENERIC SUPPORT PREDICATES %
-
-%! iso8601_float(
-%!   -Tree:compound,
-%!   +Name:atom,
-%!   +Length:integer,
-%!   ?Number:number
-%! )//
-
-iso8601_float(T0, Name, Length, N) -->
-  {var(N)}, !,
-  iso8601_integer(T1, integer, Length, N_I),
-  (
-    iso8601_fraction_separator(T2),
-    % Unspecified length.
-    iso8601_integer(T3, fraction, _UnspecifiedLength, N_F),
-    {number_components(N, N_I, N_F)}
-  ;
-    {N = N_I}
-  ),
-  {parse_tree(Name, [T1,T2,T3], T0)}.
-iso8601_float(T0, Name, Length, N) -->
-  {integer(N)}, !,
-  iso8601_integer(T0, Name, Length, N).
-iso8601_float(T0, Name, Length, N) -->
-  {float(N)}, !,
-  {number_components(N, N_I, N_F)},
-  iso8601_integer(T1, integer, Length, N_I),
-  iso8601_fraction_separator(T2),
-  iso8601_integer(T3, fraction, _UnspecifiedLength, N_F),
-  {parse_tree(Name, [T1,T2,T3], T0)}.
-
-% Comma is prefered.
-iso8601_fraction_separator(',') --> comma.
-iso8601_fraction_separator('.') --> dot.
-
-
-
 % SPECIFIC SUPPORT PREDICATES %
 
 iso8601_hour_in_day(T0, H) -->

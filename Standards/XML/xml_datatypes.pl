@@ -3,6 +3,7 @@
   [
     xml_boolean//2, % -Tree:compound
                     % ?Value:boolean
+    xml_char//1, % ?Char:code
     xml_name//1, % ?Name:atom
     xml_namespaced_name//2, % :DCG_Namespace
                             % :DCG_Name
@@ -16,7 +17,7 @@
 DCG rules for XML datatypes.
 
 @author Wouter Beek
-@version 2013/07
+@version 2013/07-2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -29,9 +30,9 @@ DCG rules for XML datatypes.
 
 
 xml_boolean(xml_boolean(false), false) --> "false".
-xml_boolean(xml_boolean(true), true) --> "true".
+xml_boolean(xml_boolean(true),  true) --> "true".
 
-%! xml_char
+%! xml_char(?Char:code)//
 % An **XML Character** is an atomic unit of text specified by ISO/IEC 10646.
 %
 % ~~~{.bnf}
