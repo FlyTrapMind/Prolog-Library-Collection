@@ -267,7 +267,7 @@ iso8601_float(T0, Name, Length, N) -->
     iso8601_integer(T3, fraction, F_Length, N_F),
     % At least one digit must follow the decimal point if it appears.
     {F_Length > 0},
-    {number_components(N, N_I, N_F)}
+    {number_parts(N, N_I, N_F)}
   ;
     {N = N_I}
   ),
@@ -277,7 +277,7 @@ iso8601_float(T0, Name, Length, N) -->
   iso8601_integer(T0, Name, Length, N).
 iso8601_float(T0, Name, Length, N) -->
   {float(N)}, !,
-  {number_components(N, N_I, N_F)},
+  {number_parts(N, N_I, N_F)},
   iso8601_integer(T1, integer, Length, N_I),
   iso8601_fraction_separator(T2),
   iso8601_integer(T3, fraction, F_Length, N_F),

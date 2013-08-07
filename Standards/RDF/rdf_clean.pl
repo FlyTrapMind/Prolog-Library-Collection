@@ -13,9 +13,9 @@
 % DATATYPES %
     rdf_convert_datatype/6, % +Subject:oneof([bnode,uri])
                             % +Predicate:uri
-                            % +FromDatatype:atom
+                            % +FromDatatypeName:atom
                             % +FromValue
-                            % +ToDatatype:atom
+                            % +ToDatatypeName:atom
                             % +Graph:atom
 % LITERALS %
     rdf_literal_to_uri/4, % ?Subject:oneof([bnode,uri])
@@ -48,7 +48,7 @@
 Predicates that allow RDF graphs to be cleaned in a controlled way.
 
 @author Wouter Beek
-@version 2013/03-2013/04, 2013/06
+@version 2013/03-2013/04, 2013/06, 2013/08
 */
 
 :- use_module(generics(atom_ext)).
@@ -150,12 +150,24 @@ rdf_expand_namespace0(S1, P1, 1, G):-
 
 % DATATYPES %
 
-rdf_convert_datatype(S, P, FromDatatype, FromValue, ToDatatype, G):-
+%! rdf_convert_datatype(
+%!   +Subject:oneof([bnode,uri]),
+%!   +Predicate:uri,
+%!   +FromDatatypeName:atom,
+%!   +FromValue,
+%!   +ToDatatypeName:atom,
+%!   +Graph:atom
+%! )//
+
+rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
   forall(
-    rdf_datatype(S, P, FromDatatype, FromValue, G),
+    rdf_datatype(S, P, FromDatatypeName, FromValue, G),
     (
-      rdf_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue),
-      rdf_assert_datatype(S, P, ToDatatype, ToValue, G)
+      xsd_datatype(FromDatatypeName, FromDatatype),
+      xsd_datatype(ToDatatypeName, ToDatatype),
+      xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue),
+      rdf_assert_datatype(S, P, ToDatatype, ToValue, G),
+      rdf_retractall_datatype(S, P, FromDatatypeName, FromValue, G)
     )
   ).
 

@@ -1,10 +1,14 @@
 :- module(
   xsd_decimal,
   [
-    decimalCanonicalMap/2, % +Decimal
+    decimalCanonicalMap/2, % +Decimal:number
                            % -LEX:list(code)
-    decimalLexicalMap/2 % ?LEX:list(code)
-                        % ?Decimal
+    decimalLexicalMap/2, % +LEX:list(code)
+                         % -Decimal:number
+    decimalLexicalMap1/2, % ?LEX:list(code)
+                          % ?Decimal:number
+    decimalLexicalMap2/2 % ?LEX:list(code)
+                         % ?Decimal:compound
   ]
 ).
 
@@ -68,58 +72,242 @@ In all cases, leading and trailing zeroes are prohibited subject to the
 following: there must be at least one digit to the right and to the left
 of the decimal point which may be a zero.
 
+#### Facets
+
+Decimal has the following constraining facets with fixed values:
+  * =|whiteSpace = collapse|=
+
+Datatypes derived by restriction from decimal may also specify values for
+the following constraining facets:
+  * =assertions=
+  * =enumeration=
+  * =fractionDigits=
+  * =maxInclusive=
+  * =maxExclusive=
+  * =minInclusive=
+  * =minExclusive=
+  * =pattern=
+  * =totalDigits=
+
+The decimal datatype has the following values for its fundamental facets:
+  * =|ordered = total|=
+  * =|bounded = false|=
+  * =|cardinality = countably infinite|=
+  * =|numeric = true|=
+
 --
 
 @author Wouter Beek
 @version 2013/07-2013/08
 */
 
-:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(math(math_ext)).
+
+
+
+% CANONICAL MAPPING %
+
+%! decimalCanonicalMap(
+%!   +Decimal:oneof([integer,rational]),
+%!   -LEX:list(code)
+%! ) is det.
+
+decimalCanonicalMap(N, LEX):-
+  phrase(decimalCanonicalMap(N), LEX).
+
+%! decimalCanonicalMap(+Decimal:oneof([integer,rational]))//
+
+decimalCanonicalMap(I) -->
+  {integer(I)}, !,
+  noDecimalPtCanonicalMap(I).
+decimalCanonicalMap(F) -->
+  {rational(F)}, !,
+  decimalPtCanonicalMap(F).
+
+%! decimalPtCanonicalMap(+Decimal:rational)//
+
+decimalPtCanonicalMap(F) -->
+  {F < 0}, !,
+  "-",
+  {G is copysign(F, -1)},
+  unsignedDecimalPtCanonicalMap(G).
+decimalPtCanonicalMap(F) -->
+  unsignedDecimalPtCanonicalMap(F).
+
+%! fractionDigitsCanonicalFragmentMap(?Fraction:rational)//
+
+fractionDigitsCanonicalFragmentMap(F) -->
+  {F =:= 0}, !,
+  [].
+fractionDigitsCanonicalFragmentMap(F) -->
+  {
+    G is F * 10,
+    div(G, 1, H),
+    mod(G, 1, NewF)
+  },
+  decimal_digit(H),
+  fractionDigitsCanonicalFragmentMap(NewF).
+
+%! noDecimalPtCanonicalMap(+Integer:integer)//
+
+noDecimalPtCanonicalMap(I) -->
+  {I < 0},
+  "-",
+  {J is copysign(I, -1)},
+  unsignedNoDecimalPtCanonicalMap(J).
+noDecimalPtCanonicalMap(I) -->
+  unsignedNoDecimalPtCanonicalMap(I).
+
+%! unsignedDecimalPtCanonicalMap(+Decimal:rational)//
+
+unsignedDecimalPtCanonicalMap(F) -->
+  {rational_parts(F, F_I, F_F)},
+  unsignedNoDecimalPtCanonicalMap(F_I),
+  ".",
+  fractionDigitsCanonicalFragmentMap(F_F).
+
+%! unsignedNoDecimalPtCanonicalMap(+Integer:nonneg)//
+
+unsignedNoDecimalPtCanonicalMap(0) --> !, [].
+unsignedNoDecimalPtCanonicalMap(F) -->
+  {
+    mod(F, 10, G),
+    div(F, 10 ,H)
+  },
+  unsignedNoDecimalPtCanonicalMap(H),
+  decimal_digit(G).
+
+
+
+% LEXICAL MAPPING %
+
+%! decimalLexicalMap(+LEX:list(code), -Decimal:number) is nondet.
+% This predicate cannot work for instantiation (-,+) due to the following
+% DCG rules contain arithmetic functions that are unidirectional:
+%   * fracFrag//1
+%   * unsignedNoDecimalPtNumeral//1
+%
+% @see decimalLexicalMap1/2 and decimalLexicalMap2/2 for bidirectional
+%      implementations.
+
+decimalLexicalMap(LEX, N):-
+  phrase(decimalLexicalRep(N), LEX).
+
+%! decimalLexicalRep(-Decimal:float)//
+% ~~~{.ebnf}
+% decimalLexicalRep ::= decimalPtNumeral | noDecimalPtNumeral
+% ~~~
+
+decimalLexicalRep(N) -->
+  decimalPtNumeral(N).
+decimalLexicalRep(N) -->
+  noDecimalPtNumeral(N).
+
+%! decimalPtNumeral(-Decimal:float)//
+% ~~~{.ebnf}
+% decimalPtNumeral ::= ('+' | '-')? unsignedDecimalPtNumeral
+% ~~~
+
+decimalPtNumeral(N) -->
+  (sign(S) ; {S = 1}),
+  unsignedDecimalPtNumeral(M),
+  {N is copysign(M, S)}.
+
+%! fracFrag(-Fraction:between(0.0,1.0))//
+% ~~~{.ebnf}
+% fracFrag ::= digit+
+% ~~~
+
+fracFrag(F) -->
+  fracFrag(0, F).
+
+fracFrag(I, NewSum) -->
+  decimal_digit(D),
+  {succ(I, NewI)},
+  fracFrag(NewI, Sum),
+  {NewSum is Sum + D * 10 ** (-1 * NewI)}.
+fracFrag(_, 0.0) --> !, [].
+
+%! noDecimalPtNumeral(-Integer:integer)//
+% ~~~{.ebnf}
+% noDecimalPtNumeral ::= ('+' | '-')? unsignedNoDecimalPtNumeral
+% ~~~
+
+noDecimalPtNumeral(N) -->
+  (sign(S) ; {S = 1}),
+  unsignedNoDecimalPtNumeral(M),
+  {N is copysign(M, S)}.
+
+%! unsignedDecimalPtNumeral(-Decimal:float)//
+% ~~~{.ebnf}
+% unsignedDecimalPtNumeral ::= (unsignedNoDecimalPtNumeral '.' fracFrag?)
+%                              | ('.' fracFrag)
+% ~~~
+
+unsignedDecimalPtNumeral(N) -->
+  unsignedNoDecimalPtNumeral(I),
+  ".",
+  (fracFrag(F), {N is I + F} ; {N = I}).
+unsignedDecimalPtNumeral(F) -->
+  ".",
+  fracFrag(F).
+
+%! unsignedNoDecimalPtNumeral(-Integer:nonneg)//
+% ~~~{.ebnf}
+% unsignedNoDecimalPtNumeral ::= digit+
+% ~~~
+
+unsignedNoDecimalPtNumeral(N) -->
+  unsignedNoDecimalPtNumeral(_, N).
+
+unsignedNoDecimalPtNumeral(NewToEnd, NewN) -->
+  decimal_digit(D),
+  unsignedNoDecimalPtNumeral(ToEnd, N),
+  {
+    NewN is N + D * 10 ** ToEnd,
+    succ(ToEnd, NewToEnd)
+  }.
+unsignedNoDecimalPtNumeral(0, 0) --> [].
+
+
+
+% BIDIRECTIONAL IMPLEMENTATIONS %
+
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(list_ext)).
 :- use_module(library(lists)).
 :- use_module(math(radix)).
 
+decimalLexicalMap1(LEX, D):-
+  phrase(decimalLexicalRep1(D), LEX).
 
+decimalLexicalMap2(LEX, D):-
+  phrase(decimalLexicalRep2(_Tree, D), LEX).
 
-%! decimalCanonicalMap(+Decimal, -LEX:list(code))
-% Maps a decimal to its canonical representation, a decimalLexicalRep//1.
-%
-% If the given decimal is an integer, then return noDecimalPtCanonicalMap//1.
-% Otherwise, return decimalPtCanonicalMap//1.
-%
-% @param Decimal A decimal value.
-% @param LEX A literal matching decimalLexicalRep//1.
-
-decimalCanonicalMap(Decimal, LEX):-
-  integer(Decimal), !,
-  phrase(noDecimalPtCanonicalMap(Decimal), LEX).
-decimalCanonicalMap(Decimal, LEX):-
-  phrase(decimalPtCanonicalMap(Decimal), LEX).
-
-%! decimalLexicalRep(D)//
+%! decimalLexicalRep1(D)//
 % Processes a decimal value that is internally represented as
 % a SWI-Prolog float.
 %
 % @see For a full DCG alternative, that does not use number_codes/2
-%      nor format/3, see decimalLexicalRep//2.
+%      nor format/3, see decimalLexicalRep2//2.
 
-decimalLexicalRep(D) -->
+decimalLexicalRep1(D) -->
   {var(D)}, !,
   (sign(H1) -> {L1 = [H1|T1]} ; {L1 = T1}),
   dcg_multi(decimal_digit, between(1,_), T1),
   (dot(H2), dcg_multi(decimal_digit, _, T2) -> {L2 = [H2|T2]} ; {L2 = T2}),
   {append(L1, L2, L), number_codes(D, L)}.
-decimalLexicalRep(D, H, T):-
+decimalLexicalRep1(D, H, T):-
   number(D), !,
   format(codes(H,T), '~w', [D]).
 
-%! decimalLexicalRep(-Tree:compound, ?Decimal:compound)//
+%! decimalLexicalRep2(-Tree:compound, ?Decimal:compound)//
 % Processes a decimal value using the compound term notation for a decimal.
 % Also returns the parse tree.
 
-decimalLexicalRep(T0, decimal(I,N)) -->
+decimalLexicalRep2(T0, decimal(I,N)) -->
   {var(I), var(N)}, !,
   (sign(T1, Sign) ; {Sign = 1}),
   dcg_multi(decimal_digit, between(1,_), I1s),
@@ -132,16 +320,16 @@ decimalLexicalRep(T0, decimal(I,N)) -->
   {
     append(I1s, I2s, Is),
     digits_to_decimal(Is, I_),
-    I is Sign * I_,
+    I is copysign(I_, Sign),
     length(I2s, N),
     parse_tree(decimalLexicalRep, [T1,I1s,T3,I2s], T0)
   }.
-decimalLexicalRep(T0, decimal(I,N)) -->
+decimalLexicalRep2(T0, decimal(I,N)) -->
   {
     integer(I), integer(N), !,
     length(I2s, N),
     (I < 0 -> Sign = -1 ; Sign = 1),
-    I_ is Sign * I,
+    I_ is copysign(I, Sign),
     decimal_to_digits(I_, Is),
     append(I1s, I2s, Is)
   },
@@ -156,84 +344,4 @@ decimalLexicalRep(T0, decimal(I,N)) -->
     {I2s  = []}
   ),
   {parse_tree(decimalLexicalRep, [T1,I1s,T3,I2s], T0)}.
-
-%! digit(+Integer:between(0,9), Digit:char) is det.
-% Maps each integer between 0 and 9 to the corresponding digit.
-%
-% @param Integer An integer between 0 and 9 inclusive.
-% @param Digit Matches digit//.
-%
-% @see Builtin char_type/1.
-
-digit(I, D):-
-  char_type(D, digit(I)).
-
-%! digitRemainderSeq(+Integer:nonneg, Sequence:list(nonneg)) is det.
-% Maps each nonnegative integer to a sequence of integers.
-%
-% Definition of sequence $s$:
-%   * $s_0 = i$
-%   * $s_{j+1} = s_j div 10$
-%
-% @param Integer A nonnegative integer.
-% @param Sequence A list of of nonnegative integers.
-%
-% @bug The definition of this function does not put a limit on the length
-%      of the list. It is reasonable to not include any zeros.
-
-digitRemainderSeq(N, []):-
-  N < 10, !.
-digitRemainderSeq(N, [H|T]):-
-  H is N div 10,
-  digitRemainderSeq(H, T).
-
-%! digitSeq(+Integer:nonneg, -Sequence:list(Integer)) is det.
-% Maps each nonnegative integer to a sequence of integers.
-%
-% Returns the sequence $s$ for which  $s_j = digitRemainderSeq(i)_j mod 10$.
-%
-% @param Integer A nonnegative integer.
-% @param Sequence A list of decimal digigts.
-%
-% @see decimal_to_digits/2 in module RADIX.
-
-digitSeq(I, S2):-
-  digitRemainderSeq(I, S1),
-  findall(X2, (member(X1, S1), X2 is X1 mod 10), S2).
-
-%! lastSignificantDigit(+Sequence:list(between(0,9)), -Integer) is det.
-% Maps a sequence of nonnegative integers to the index of the first zero term.
-%
-% Return the smallest nonnegative integer $j$ such that $s(i)_{j+1} = 0$.
-%
-% @param Sequence A sequence of nonnegative integers.
-% @param A nonnegative integer.
-
-lastSignificantDigit(S, I):-
-  nth0chk(J, S, 0),
-  I is J - 1.
-
-%! noDecimalPtCanonicalMap(+Integer, -LEX) is det.
-% Maps an integer to a noDecimalPtNumeral//, its canonical representation.
-%
-% If the integer is negative, return "-" followed by
-% unsignedNoDecimalPtCanonicalMap/1 with the positive variant of integer.
-% Otherwise, return unsignedNoDecimalPtCanonicalMap/1.
-%
-% @param Integer An integer.
-% @param LEX Matches noDecimalPtNumeral//
-
-noDecimalPtCanonicalMap(I1, LEX):-
-  I2 is abs(I1),
-  unsignedNoDecimalPtCanonicalMap(I2, LEX).
-
-%! unsignedNoDecimalPtCanonicalMap(+Integer:nonneg, -LEX) is det.
-% Maps a nonnegative integer to a unsignedNoDecimalPtNumeral//,
-% its canonical representation.
-%
-% @param Integer A nonnegative integer.
-% @param LEX Matches unsignedNoDecimalPtNumeral//.
-
-unsignedNoDecimalPtCanonicalMap(I, LEX):-
-  digit(·digitSeq·(i)·lastSignificantDigit·(·digitRemainderSeq·(i))) & . . . & ·digit·(·digitSeq·(i)0) .   (Note that the concatenation is in reverse order.)
 

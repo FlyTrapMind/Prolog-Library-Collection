@@ -13,7 +13,7 @@
 
 #### Value space
 
-The value space of two-valued logic:  $\{true, false \}$.
+The value space of two-valued logic:  $\{ \text{true}, \text{false} \}$.
 
 #### Lexical representation
 
@@ -35,7 +35,7 @@ Values for the funcamental facets:
   * =|bounded = false|=
   * =|cardinality = finite|=
   * =|numeric = false|=
-  * =|ordered = false=
+  * =|ordered = false|=
 
 --
 

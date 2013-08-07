@@ -1,14 +1,18 @@
 :- module(
   xsd,
   [
-    canonicalMap/3, % +Datatype:uri
-                    % +Value
-                    % -LEX:atom
-    datatype/2, % ?Name:atom
-                % ?Datatype:uri
-    lexicalMap/3 % +Datatype:uri
-                 % ?LEX:atom
-                 % ?Value
+    xsd_canonicalMap/3, % +Datatype:uri
+                        % +Value
+                        % -LEX:atom
+    xsd_convert_datatype/4, % +FromDatatype:uri
+                            % +FromValue
+                            % +ToDatatype:uri
+                            % -ToValue
+    xsd_datatype/2, % ?Name:atom
+                    % ?Datatype:uri
+    xsd_lexicalMap/3 % +Datatype:uri
+                     % ?LEX:atom
+                     % ?Value
   ]
 ).
 
@@ -560,32 +564,55 @@ supplied as implementation-defined), and =anyAtomicType= is their base type.
 
 :- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
-:- rdf_meta(canonicalMap(r,+,-)).
-:- rdf_meta(canonicalMap_(r,+,-)).
-:- rdf_meta(datatype(+,r)).
-:- rdf_meta(lexicalMap(r,+,-)).
-:- rdf_meta(lexicalMap_(r,+,-)).
+:- rdf_meta(xsd_canonicalMap(r,+,-)).
+:- rdf_meta(xsd_canonicalMap_(r,+,-)).
+:- rdf_meta(xsd_convert_datatype(r,+,r,-)).
+:- rdf_meta(xsd_datatype(+,r)).
+:- rdf_meta(xsd_lexicalMap(r,+,-)).
+:- rdf_meta(xsd_lexicalMap_(r,+,-)).
 
 
 
-canonicalMap(Datatype, Value, LEX2):-
-  canonicalMap_(Datatype, Value, LEX1),
-  atom_codes(LEX1, LEX2).
+%! xsd_canonicalMap(+Datatype:uri, +Value, -Literal:atom) is det.
 
-canonicalMap_(xsd:boolean, Boolean, LEX):-
+xsd_canonicalMap(Datatype, Value, LEX2):-
+  xsd_canonicalMap_(Datatype, Value, LEX1),
+  atom_codes(LEX2, LEX1).
+
+xsd_canonicalMap_(xsd:boolean, Boolean, LEX):-
   booleanCanonicalMap(Boolean, LEX).
-canonicalMap_(xsd:string, String, LEX):-
+xsd_canonicalMap_(xsd:decimal, Decimal, LEX):-
+  decimalCanonicalMap(Decimal, LEX).
+xsd_canonicalMap_(xsd:string, String, LEX):-
   stringCanonicalMap(String, LEX).
 
-datatype(Name, Datatype):-
+%! xsd_convert_datatype(
+%!   +FromDatatype:uri,
+%!   +FromValue,
+%!   +ToDatatype:uri,
+%!   -ToValue
+%! ) is det.
+
+xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue):-
+  xsd_lexicalMap(FromDatatype, LEX, FromValue),
+  xsd_lexicalMap(ToDatatype, LEX, ToValue).
+
+%! xsd_datatype(+Name:atom, -Datatype:uri) is semidet.
+%! xsd_datatype(-Name:atom, +Datatype:uri) is det.
+
+xsd_datatype(Name, Datatype):-
   rdf_global_id(xsd:Name, Datatype).
 
-lexicalMap(Datatype, LEX1, Value):-
-  atom_codes(LEX1, LEX2),
-  lexicalMap_(Datatype, LEX2, Value).
+%! xsd_lexicalMap(+Datatype:uri, +Literal:atom, -Value) is det.
 
-lexicalMap_(xsd:boolean, LEX, Boolean):-
+xsd_lexicalMap(Datatype, LEX1, Value):-
+  atom_codes(LEX1, LEX2),
+  xsd_lexicalMap_(Datatype, LEX2, Value).
+
+xsd_lexicalMap_(xsd:boolean, LEX, Boolean):-
   booleanLexicalMap(LEX, Boolean).
-lexicalMap_(xsd:string, LEX, String):-
+xsd_lexicalMap_(xsd:decimal, LEX, Decimal):-
+  decimalLexicalMap(LEX, Decimal).
+xsd_lexicalMap_(xsd:string, LEX, String):-
   stringLexicalMap(LEX, String).
 

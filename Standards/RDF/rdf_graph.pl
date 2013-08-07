@@ -595,9 +595,9 @@ rdf_term_name(O, literal(type(Datatype,LEX)), Name):- !,
   (
     % The datatype is recognized, so the datatyped value can be displayed
     % as a SWI-Prolog native.
-    datatype(DatatypeName, Datatype)
+    xsd_datatype(DatatypeName, Datatype)
   ->
-    lexicalMap(Datatype, LEX, ValueName)
+    xsd_lexicalMap(Datatype, LEX, ValueName)
   ;
     ValueName = LEX
   ),

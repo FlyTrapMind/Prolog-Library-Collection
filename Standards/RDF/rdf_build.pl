@@ -188,21 +188,6 @@ add_blank_list_individual(Blank, G):-
 % for this. The asserted values are the atomic equivalent of the
 % *|canonical lexical representations|* as defined by that standard.
 %
-% The value conversion from external to canonical lexical is treated by
-% module [xml_schema_datatypes.pl].
-%
-% At least the following datatypes are supported:
-%   * `boolean`
-%   * `date`
-%   * `dateTime`
-%   * `decimal`
-%   * `double`
-%   * `float`
-%   * `gDay`
-%   * `gMonth`
-%   * `gYear`
-%   * `int`
-%
 % @param Subject A resource.
 % @param Predicate A resource.
 % @param DatatypeName
@@ -210,9 +195,9 @@ add_blank_list_individual(Blank, G):-
 % @param Graph The atomic name of an RDF graph.
 
 rdf_assert_datatype(S, P, DatatypeName, Value, G):-
-  datatype(DatatypeName, Datatype),
+  xsd_datatype(DatatypeName, Datatype),
   % We only emit canonical representations for XSD values.
-  canonicalMap(Datatype, Value, LEX),
+  xsd_canonicalMap(Datatype, Value, LEX),
   rdf_assert(S, P, literal(type(Datatype, LEX)), G).
 
 %! rdf_assert_literal(
@@ -282,10 +267,10 @@ rdf_assert_xml_literal(S, P, XMLLiteral, G):-
 % @param Graph The atomic name of an RDF graph.
 
 rdf_retractall_datatype(S, P, DatatypeName, Value, G):-
-  datatype(DatatypeName, Datatype),
+  xsd_datatype(DatatypeName, Datatype),
   forall(
     % The given value may have several possible literals representing it.
-    lexicalMap(Datatype, LEX, Value),
+    xsd_lexicalMap(Datatype, LEX, Value),
     rdf_retractall(S, P, literal(type(Datatype, LEX)), G)
   ).
 

@@ -357,7 +357,7 @@ iso8601_local_time(T0, Format, T, utc_time(time(H,M,S),UTC)) -->
 
   % Hour
   iso8601_hour_in_day(T2, H),
-  {number_components(H, H_I, H_F)},
+  {number_parts(H, H_I, H_F)},
 
   % Minute and second
   (
@@ -373,7 +373,7 @@ iso8601_local_time(T0, Format, T, utc_time(time(H,M,S),UTC)) -->
     {H_F = 0},
     (colon, {Format = extended} ; {Format = basic}),
     iso8601_minute_in_hour(T3, M),
-    {number_components(M, M_I, M_F)},
+    {number_parts(M, M_I, M_F)},
     % [A1] If hour is =24=, then minutes must be =00= and its
     %      decimal expansion (if any) must consist of zeros exclusively.
     {(H_I =:= 24 -> M_I =:= 0, M_F = 0 ; true)},
@@ -390,7 +390,7 @@ iso8601_local_time(T0, Format, T, utc_time(time(H,M,S),UTC)) -->
       {H_F = 0, M_F = 0},
       (colon, {Format = extended} ; {Format = basic}),
       iso8601_second_in_minute(T4, S),
-      {number_components(S, S_I, S_F)},
+      {number_parts(S, S_I, S_F)},
       % [C3] If hour, minute, and second are =00=, then minutes's decimal
       %      extension must consist of zeros exclusively.
       {(H_I =:= 0, M_I =:= 0, S_I =:= 0 -> S_F = 0 ; true)},

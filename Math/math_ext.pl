@@ -15,15 +15,12 @@
                       % +Max:integer
                       % +CycleLength:integer
                       % -NumList:list(integer)
+    div/3,
     even/1, % +Integer:integer
     factorial/2, % +N:integer
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
-    float_fractional_component/2, % ?Float:float
-                                  % ?FractionalComponent:integer
-    float_integer_component/2, % ?Float:float
-                               % ?IntegerComponent:integer
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -33,12 +30,10 @@
     minus_list/3, % +N:number
                   % +Ms:list(number)
                   % -N_Minus_Ms:number
-    multiply/3, % ?X:float
-                % ?Y:float
-                % ?Z:float
+    mod/3,
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
-    number_components/3, % ?Number:number
+    number_parts/3, % ?Number:number
                          % ?IntegerComponent:integer
                          % ?FractionalComponent:integer
     number_length/2, % +Number:number
@@ -55,18 +50,8 @@
     permutations/3, % +NumberOfObjects:integer
                     % +PermutationLength:integer
                     % -NumberOfPermutations:integer
-    plus_float/3, % ?X:number
-                  % ?Y:number
-                  % ?Z:number
     pred/2, % +X:integer
             % -Y:integer
-    random_betwixt/2, % +UpperLimit:number
-                      % -Random:number
-    random_betwixt/3, % +LowerLimit:number
-                      % +UpperLimit:number
-                      % -Random:number
-    random_coordinate/2, % +Size:size,
-                         % -Coordinate:coordinate
     rbetween/3, % +Low:integer
                 % +High:integer
                 % ?Value:integer
@@ -79,101 +64,16 @@
 
 Extra arithmetic functions for use in SWI-Prolog.
 
-# Issue with float_fractional_part/2
-
-The fractional part of floats seems to off a bit:
-~~~
-3 ?- X = 23.3, X_F is float_fractional_part(X), X_I is float_integer_part(X), Y is X_I + X_F.
-X = Y, Y = 23.3,
-X_F = 0.3000000000000007,
-X_I = 23.0.
-~~~
-
-In C I create a small test file:
-~~~{.c}
-#include <stdio.h>
-#include <math.h>
-
-int main() {
-  double param, fractional_part, integer_part;
-
-  param = 23.3;
-  fractional_part = modf(param, &integer_part);
-  printf("%f = %f + %f \n", param, integer_part, fractional_part);
-
-  return 0;
-}
-~~~
-Then I run the test file:
-~~~
-$ gcc -Wall test.c -o test
-$ ./test
-23.300000 = 23.000000 + 0.300000
-~~~
-To find out that the deviation I see in SWI-Prolog is not in C.
-
-Here is the relevant code, collected from various spots in the SWI-Prolog
-codebase:
-~~~{.c}
-// O_GMP
-// Use GNU gmp library for infinite precision arthmetic
-#define O_GMP 1
-
-// the numtype enum requires total ordering.
-typedef enum {
-  V_INTEGER,   // integer (64-bit) value
-#ifdef O_GMP
-  // The C data type for multiple precision integers is mpz_t.
-  V_MPZ,   // mpz_t
-  // Rational number means a multiple precision fraction.
-  // The C data type for these fractions is mpq_t.
-  V_MPQ,   // mpq_t
-#endif
-  V_FLOAT   // Floating point number (double)
-} numtype;
-
-// X is float_integer_part(X) + float_fractional_part(X)
-// If X < 0, both float_integer_part(X) and float_integer_part(X) are <= 0
-static int
-ar_float_fractional_part(Number n1, Number r) {
-  switch(n1->type) {
-    case V_INTEGER:
-#ifdef O_GMP
-    case V_MPZ:
-#endif
-      r->value.i = 0;
-      r->type = V_INTEGER;
-      succeed;
-#ifdef O_GMP
-    case V_MPQ:
-      r->type = V_MPQ;
-      mpq_init(r->value.mpq);
-      mpz_tdiv_q(mpq_numref(r->value.mpq),
-      mpq_numref(n1->value.mpq),
-      mpq_denref(n1->value.mpq));
-      mpz_set_ui(mpq_denref(r->value.mpq), 1);
-      mpq_sub(r->value.mpq, n1->value.mpq, r->value.mpq);
-      succeed;
-#endif
-    case V_FLOAT:
-      {
-        double ip;
-        // The member `value` of the object pointed to by `r`.
-        // The member `f` of object `(r->value)`.
-        r->value.f = modf(n1->value.f, &ip);
-        r->type = V_FLOAT;
-      }
-  }
-  succeed;
-}
-~~~
-
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/08
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(math(float_ext)).
+:- use_module(math(int_ext)).
+:- use_module(math(rational_ext)).
 
 
 
@@ -241,13 +141,17 @@ cyclic_numlist(Min, Max, CycleLength, NumList):-
   numlist(0, Max, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
 
-%! even(+Integer:integer) is semidet.
-% Succeeds if the integer is even.
-%
-% @param Integer An integer.
+div(X, Y, Z):-
+  rational(X), rational(Y), !,
+  rational_div(X, Y, Z).
+div(X, Y, Z):-
+  float_div(X, Y, Z).
 
-even(Integer):-
-  0 is Integer mod 2.
+%! even(+Number:number) is semidet.
+% Succeeds if the integer is even.
+
+even(N):-
+  mod(N, 2, 0).
 
 %! factorial(+N:integer, -F:integer) is det.
 % Returns the factorial of the given number.
@@ -257,8 +161,7 @@ even(Integer):-
 % *Definition*: $n! = \prod_{i = 1}^n i$
 
 factorial(N, F):-
-  numlist(1, N, Numbers),
-  !,
+  numlist(1, N, Numbers), !,
   multiply_list(Numbers, F).
 % E.g., $0!$.
 factorial(_N, 1).
@@ -271,16 +174,6 @@ fibonacci(N, F):-
   fibonacci(N1, F1),
   fibonacci(N2, F2),
   F is F1 + F2.
-
-float_fractional_component(N, N_F):-
-  atom_number(N_A, N),
-  sub_atom(N_A, N_I_Length, 1, _, '.'),
-  succ(N_I_Length, Skip),
-  sub_atom(N_A, Skip, _, 0, N_F_A),
-  atom_number(N_F_A, N_F).
-
-float_integer_component(N, I):-
-  I is integer(float_integer_part(N)).
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
@@ -295,19 +188,13 @@ log(Base, X, Y):-
   Y is Numerator / Denominator.
 
 minus(X, Y, Z):-
-  nonvar(X),
-  nonvar(Y),
-  !,
+  nonvar(X), nonvar(Y), !,
   Z is X - Y.
 minus(X, Y, Z):-
-  nonvar(X),
-  nonvar(Z),
-  !,
+  nonvar(X), nonvar(Z), !,
   Y is X - Z.
 minus(X, Y, Z):-
-  nonvar(Y),
-  nonvar(Z),
-  !,
+  nonvar(Y), nonvar(Z), !,
   X is Y + Z.
 
 %! minus_list(+N:number, +Ms:list(number), -N_Minus_Ms:number) is det.
@@ -318,15 +205,11 @@ minus_list(N, Ms, N_Minus_Ms):-
   sum_list(Ms, M),
   N_Minus_Ms is N - M.
 
-%! multiply(+X:number, +Y:number, -Z:number) is det.
-% Predicate alternative for the builtin multiplication function.
-%
-% @param X A number.
-% @param Y A number.
-% @param Z A number.
-
-multiply(X, Y, Z):-
-  Z is X * Y.
+mod(X, Y, Z):-
+  rational(X), rational(Y), !,
+  rational_mod(X, Y, Z).
+mod(X, Y, Z):-
+  float_mod(X, Y, Z).
 
 %! multiply_list(+List:list(number), -Multiplication:number) is det.
 % Multiplies the numbers in the given list.
@@ -342,16 +225,19 @@ multiply_list([Number | Numbers], Multiplication):-
   multiply_list(Numbers, Multiplication1),
   Multiplication is Number * Multiplication1.
 
-number_components(N, N_I, N_F):-
+number_parts(N, N_I, N_F):-
   var(N), !,
   number_length(N_F, N_F_Length),
   N is N_I + N_F / 10 ** N_F_Length.
-number_components(N, N, _NoFractionalComponent):-
-  integer(N), !.
-number_components(N, N_I, N_F):-
+number_parts(N, N_I, N_F):-
+  integer(N), !,
+  int_parts(N, N_I, N_F).
+number_parts(N, N_I, N_F):-
+  rational(N), !,
+  rational_parts(N, N_I, N_F).
+number_parts(N, N_I, N_F):-
   float(N), !,
-  float_integer_component(N, N_I),
-  float_fractional_component(N, N_F).
+  float_parts(N, N_I, N_F).
 
 %! number_length(+Number:number, -Length:integer) is det.
 % @see number_length/3 with radix set to `10` (decimal).
@@ -377,13 +263,11 @@ number_length(N1, Radix, L1):-
   L1 is L2 + 1.
 number_length(_N, _Radix, 1):- !.
 
-%! odd(?Integer:integer) is semidet.
+%! odd(?Number:number) is semidet.
 % Succeeds if the integer is odd.
-%
-% @param Integer An integer.
 
-odd(Integer):-
-  1 is Integer mod 2.
+odd(N):-
+  mod(N, 2, 1).
 
 %! permutations(
 %!   +NumbersOfObjects:list(integer),
@@ -399,8 +283,7 @@ odd(Integer):-
 % @see permutations/3
 
 permutations(NumbersOfObjects, NumberOfPermutations):-
-  is_list(NumbersOfObjects),
-  !,
+  is_list(NumbersOfObjects), !,
   sum_list(NumbersOfObjects, NumberOfObjects),
   permutations(NumbersOfObjects, NumberOfObjects, NumberOfPermutations).
 permutations(NumberOfObjects, NumberOfPermutations):-
@@ -432,8 +315,7 @@ permutations(NumberOfObjects, NumberOfPermutations):-
 % @param NumberOfPermutations The number of permutations that can be created.
 
 permutations(NumbersOfObjects, PermutationLength, NumberOfPermutations):-
-  is_list(NumbersOfObjects),
-  !,
+  is_list(NumbersOfObjects), !,
 
   % The objects.
   sum_list(NumbersOfObjects, NumberOfObjects),
@@ -454,22 +336,6 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
   factorial(Compensation, F2),
   NumberOfPermutations is F1 / F2.
 
-%! plus_float(?X:number, ?Y:number, ?Z:number) is det.
-% Calculates the sum Z = X + Y as long as at least two arguments are
-% instantiated.
-%
-% @see The builin plus/3 only works for integers.
-
-plus_float(X, Y, Z):-
-  nonvar(X), nonvar(Y), !,
-  Z is X + Y.
-plus_float(X, Y, Z):-
-  nonvar(X), nonvar(Z), !,
-  Y is Z - X.
-plus_float(X, Y, Z):-
-  nonvar(Y), nonvar(Z), !,
-  X is Z - Y.
-
 %! pred(?Integer:integer, ?Predecessor:integer)
 % A integer and its direct predecessor integer.
 %
@@ -481,63 +347,6 @@ plus_float(X, Y, Z):-
 
 pred(Integer, Predecessor):-
   succ(Predecessor, Integer).
-
-%! random_betwixt(+UpperLimit:number, -Random:float) is det.
-% @see random_betwixt/3
-
-random_betwixt(UpperLimit, Random):-
-  integer(UpperLimit), !,
-  math_ext:random_betwixt(0, UpperLimit, Random).
-random_betwixt(UpperLimit, Random):-
-  float(UpperLimit), !,
-  math_ext:random_betwixt(0.0, UpperLimit, Random).
-
-%! random_betwixt(
-%!   +LowerLimit:number,
-%!   +UpperLimit:number,
-%!   -Random:number
-%! ) is det.
-% Returns a random floating point number between the given lower and
-% upper limits, inclusive.
-%
-% @param LowerLimit A number.
-% @param UpperLimit A number.
-% @param Random In case the lower and upper limits are integers, the
-%	 return value is an integer as well. Otherwise it is a floating
-%	 point number.
-% @tbd Because we take the floor for the random value between two integers,
-%      the chance that =UpperLimit= comes out is very much lower than all
-%      the other values, i.e. =|[LowerLimit, UpperLimit)|=.
-
-random_betwixt(LowerLimit, UpperLimit, Random):-
-  integer(LowerLimit), integer(UpperLimit), !,
-  random_betwixt_(LowerLimit, UpperLimit, Random0),
-  Random is floor(Random0).
-random_betwixt(LowerLimit, _UpperLimit, _Random):-
-  \+ number(LowerLimit), !,
-  type_error(number, LowerLimit).
-random_betwixt(_LowerLimit, UpperLimit, _Random):-
-  \+ number(UpperLimit), !,
-  type_error(number, UpperLimit).
-random_betwixt(LowerLimit, UpperLimit, Random):-
-  random_betwixt_(LowerLimit, UpperLimit, Random).
-
-random_betwixt_(LowerLimit, UpperLimit, Random):-
-  Random is LowerLimit + random_float * (UpperLimit - LowerLimit).
-
-%! random_coordinate(+Size:size, -Coordinate:coord) is det.
-% Returns a random coordinate of the indicates dimension, i.e.,
-% the dimension argument of the given size compound term.
-%
-% @param Size A compound term specifying the dimension of the generated
-%        coordinate, as well as the ceiling limit values for each dimension.
-%        The floor limit value for every dimension is 0.0.
-% @param Coordinate A coordinate that has the same dimension as the given
-%        size. Its second argument is a list of lists of floating point
-%        values.
-
-random_coordinate(size(Dimension, Sizes), coordinate(Dimension, Args)):-
-  maplist(random_betwixt, Sizes, Args).
 
 %! rbetween(?Min:integer, +Max:integer, ?Value:integer) is semidet.
 % If `Min` and `Max` are given, `Value` is instantiated with `Max` and

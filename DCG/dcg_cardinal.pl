@@ -267,5 +267,5 @@ unsigned_number(N, N_I, N_F) -->
   ({N_I = 0} ; decimal_number(N_I)),
   dot,
   ({N_F = 0} ; decimal_number(N_F)),
-  {number_components(N, N_I, N_F)}.
+  {number_parts(N, N_I, N_F)}.
 

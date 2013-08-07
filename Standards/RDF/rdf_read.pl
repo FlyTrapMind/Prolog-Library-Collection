@@ -88,17 +88,17 @@ literals.
 %! ) is nondet.
 
 rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
-  datatype(DatatypeName, Datatype),
+  xsd_datatype(DatatypeName, Datatype),
   (
     nonvar(Value)
   ->
     % Interpret all literals, not just the canonical ones.
-    lexicalMap(Datatype, LEX, Value),
+    xsd_lexicalMap(Datatype, LEX, Value),
     rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph)
   ;
     rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
     % This may be nondet!
-    lexicalMap(LEX, Value)
+    xsd_lexicalMap(Datatype, LEX, Value)
   ).
 
 %! rdf_has_datatype(
@@ -110,17 +110,17 @@ rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
 %! ) is nondet.
 
 rdf_has_datatype(Subject, Predicate, DatatypeName, Value):-
-  datatype(DatatypeName, Datatype),
+  xsd_datatype(DatatypeName, Datatype),
   (
     nonvar(Value)
   ->
     % Interpret all literals, not just the canonical ones.
-    lexicalMap(Datatype, LEX, Value),
+    xsd_lexicalMap(Datatype, LEX, Value),
     rdf_has(Subject, Predicate, literal(type(Datatype, LEX)))
   ;
     rdf_has(Subject, Predicate, literal(type(Datatype, LEX))),
     % This may be nondet!
-    lexicalMap(Datatype, LEX, Value)
+    xsd_lexicalMap(Datatype, LEX, Value)
   ).
 
 %! rdf_literal(

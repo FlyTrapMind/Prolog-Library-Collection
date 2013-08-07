@@ -233,11 +233,6 @@ modulo(A, L, H, M):-
   modulo(X, Y, M_),
   M is M_ + L.
 
-sign(_NoTree, true) -->
-  [].
-sign(sign('-'), false) -->
-  minus.
-
 %! summate_time(+DateTime:compound, +Duration:compound, -Sum:compound) is det.
 % =S= stands for the =dateTime= value; =D= stands for the =duration= value.
 %
