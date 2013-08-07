@@ -103,7 +103,7 @@ indent(Stream, Indent):-
   tab(Stream, NumberOfSpaces).
 
 %! print_collection(+Options:list(nvpair), +Collection:list) is det.
-% @arg Options The following options are supported:
+% @param Options The following options are supported:
 %      1. `begin(+Begin:atom)`
 %      2. `end(+End:atom)`
 %      3. `separator(+Separator:atom)`

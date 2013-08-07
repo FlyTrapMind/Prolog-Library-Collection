@@ -41,7 +41,7 @@ Extensions for handling directories.
 %! create_directory(+Dir:atom) is det.
 % Creates a directory with the given name.
 %
-% @arg Dir The atomic name of a directory.
+% @param Dir The atomic name of a directory.
 
 % The directory already exists, so do nothing.
 create_directory(Dir):-
@@ -70,10 +70,10 @@ create_nested_directory(NestedDir):-
 %! create_nested_directory(+NestedDir:compound, -Absolute:atom) is det.
 % Returns a nested file path.
 %
-% @arg NestedDir A compound term of linearly nested atoms
+% @param NestedDir A compound term of linearly nested atoms
 %      representing the subsequent subdirectories. The final atom
 %      is the name of the file.
-% @arg Absolute The absolute path of the nested directory specification.
+% @param Absolute The absolute path of the nested directory specification.
 
 create_nested_directory(Absolute, Absolute):-
   atomic(Absolute), is_absolute_file_name(Absolute), !,
@@ -177,8 +177,8 @@ directory_files2(Directory, Absolutes):-
 %! safe_delete_directory_contents(+Dir:atom, +FileType:list(atom)) is det.
 % Deletes all file in the given directory that are of the given file type.
 %
-% @arg Dir The atomic absolute name of a directory.
-% @arg FileType The atomic name of a file type, registered via
+% @param Dir The atomic absolute name of a directory.
+% @param FileType The atomic name of a file type, registered via
 %      prolog_file_type/2.
 % @see safe_delete_directory_contents/1
 % @throws existence_error In case a file type is not registered.

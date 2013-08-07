@@ -135,8 +135,8 @@ before(X, Y, List):-
 %! combination(+Lists:list(list(term)), -Combination:list(term)) is nondet.
 % Returns a combination of items from the given lists.
 %
-% @arg Lists A list of lists of terms.
-% @arg Combination A list of terms.
+% @param Lists A list of lists of terms.
+% @param Combination A list of terms.
 
 combination([], []).
 combination([List | Lists], [H | T]):-
@@ -153,10 +153,10 @@ combination(List, Length, [H | T]):-
 % Cuts the given list at the given element, returning the two cut lists.
 % The cut element is itself not part of any of the results.
 %
-% @arg L The list that is to be cut.
-% @arg Element The element at which the cut is made.
-% @arg L2 The list of elements that occur before the cut.
-% @arg L2 The list of elements that occur after the cut.
+% @param L The list that is to be cut.
+% @param Element The element at which the cut is made.
+% @param L2 The list of elements that occur before the cut.
+% @param L2 The list of elements that occur after the cut.
 
 element_cut([], _Element, [], []):- !.
 element_cut([Element | T], Element, [], T):- !.
@@ -167,8 +167,8 @@ element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
 % Succeeds if the given element is the head of the given list.
 % Fails if the list has no head.
 %
-% @arg List Any list.
-% @arg Element The head element of the list, if any.
+% @param List Any list.
+% @param Element The head element of the list, if any.
 % @see This is the inverse of the default method last/2.
 
 first([Element | _List], Element).
@@ -178,9 +178,9 @@ first([Element | _List], Element).
 % This never fails but returns a list of length $0 < l(F) < N$ in case
 % $l(L) < N$.
 %
-% @arg L The given list.
-% @arg N The length of the returned sublist.
-% @arg First The prepended sublist of =L=.
+% @param L The given list.
+% @param N The length of the returned sublist.
+% @param First The prepended sublist of =L=.
 
 first(L, N, First):-
   length_cut(L, N, First, _L2).
@@ -189,10 +189,10 @@ first(L, N, First):-
 % Cuts the given list in two sublists, where the former sublist
 % has the given length.
 %
-% @arg L The full list.
-% @arg Cut An integer indicating the length of the former sublist.
-% @arg L1 The sublist that is the beginning of =L= with length =Cut=.
-% @arg L2 The sublist that remains after =L1= has been removed from =L=.
+% @param L The full list.
+% @param Cut An integer indicating the length of the former sublist.
+% @param L1 The sublist that is the beginning of =L= with length =Cut=.
+% @param L2 The sublist that remains after =L1= has been removed from =L=.
 
 length_cut(L, Cut, L, []):-
   length(L, N),
@@ -208,9 +208,9 @@ length_cut(L, Cut, L1, L2):-
 %! ) is det.
 % Returns the given list in which the given replacements have been made.
 %
-% @arg List The original list.
-% @arg Replacements A list of replacements of the form =|term-term|=.
-% @arg NewList The list in which all replacants have been replaced.
+% @param List The original list.
+% @param Replacements A list of replacements of the form =|term-term|=.
+% @param NewList The list in which all replacants have been replaced.
 
 list_replace([], _Replacements, []).
 list_replace(List, Replacements, NewList):-
@@ -238,8 +238,8 @@ list_separator_concat([List | Lists], Separator, NewList):-
 %! list_to_ordered_pairs(+L:list, -Pairs:ordset(ordset)) is det.
 % Returns the ordered list of ordered pairs that occur in the given list.
 %
-% @arg L The given list.
-% @arg Pairs An ordered list of ordered pairs.
+% @param L The given list.
+% @param Pairs An ordered list of ordered pairs.
 
 list_to_ordered_pairs([], []):- !.
 % The pairs need to be internally ordered, but the order in which the
@@ -258,9 +258,9 @@ list_to_orderd_pairs_(H, [T | TT], [Pair | S]):-
 %! member(X, Y, L) is nondet.
 % Pairs from a list.
 %
-% @arg X The first argument of the pair.
-% @arg Y The second argument of the pair.
-% @arg L The list from which pairs are taken.
+% @param X The first argument of the pair.
+% @param Y The second argument of the pair.
+% @param L The list from which pairs are taken.
 
 member(X, Y, L):-
   member(X, L),
@@ -273,9 +273,9 @@ member_default(Default, _List, Default).
 %! nth_minus_0(+I:integer, +L:list, -Element) is det.
 % Succeeds if the given element occurs at =|length(List) - I|= in list =L=.
 %
-% @arg I The index, an integer in =|[0, length(List) - 1]|=.
-% @arg L Any list.
-% @arg Element An element occurring in the given list.
+% @param I The index, an integer in =|[0, length(List) - 1]|=.
+% @param L Any list.
+% @param Element An element occurring in the given list.
 % @see The inverse of default method nth0/3.
 
 nth_minus_0(I, L, Element):-
@@ -285,9 +285,9 @@ nth_minus_0(I, L, Element):-
 %! nth_minus_1(-I:integer, +L:list, +Element) is semidet.
 % Succeeds if the given element occurs at =|length(L) - I|= in list =L=.
 %
-% @arg I The index, an integer in =|[0, length(List)]|=.
-% @arg L Any list.
-% @arg Element An element occurring in the given list.
+% @param I The index, an integer in =|[0, length(List)]|=.
+% @param L Any list.
+% @param Element An element occurring in the given list.
 % @see The inverse of default method nth1/3.
 
 nth_minus_1(I, L, Element):-
@@ -323,8 +323,8 @@ pairs([Pair | Pairs], [X1 | T1], [X2 | T2]):-
 %! random_member(+List:list, -Member) is det.
 % Returns a randomly chosen member from the given list.
 %
-% @arg List
-% @arg Member
+% @param List
+% @param Member
 
 random_member(List, Member):-
   length(List, Length),
@@ -334,9 +334,9 @@ random_member(List, Member):-
 %! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
 % Returns the list of the given number of repeats of the given term.
 %
-% @arg Term
-% @arg Repeats
-% @arg List
+% @param Term
+% @param Repeats
+% @param List
 
 repeating_list(Object, Repeats, List):-
   nonvar(List), !,
@@ -369,8 +369,8 @@ repeating_list2(Object, Repeats, [Object | List]):-
 % Returns a list that is like the given list, but without the first element.
 % Fails if there is no first element in the given list.
 %
-% @arg List Any nonempty list.
-% @arg ListWithoutFirst A new list without the first elemnent.
+% @param List Any nonempty list.
+% @param ListWithoutFirst A new list without the first elemnent.
 % @see The inverse of remove_last/2.
 
 remove_first([_First | ListWithoutFirst], ListWithoutFirst).
@@ -378,8 +378,8 @@ remove_first([_First | ListWithoutFirst], ListWithoutFirst).
 %! remove_firsts(+Lists, -ListsWithoutFirst)
 % Returns the given lists without the first elements.
 %
-% @arg Lists Any list of non-empty lists.
-% @arg ListsWithoutFirst ...
+% @param Lists Any list of non-empty lists.
+% @param ListsWithoutFirst ...
 % @see Uses remove_first/2.
 
 remove_firsts([], []).
@@ -393,8 +393,8 @@ remove_firsts(
 %! remove_last(+List, -NewList)
 % Returns the given list with the last element removed.
 %
-% @arg List The original list.
-% @arg NewList The original list with the last element remove.
+% @param List The original list.
+% @param NewList The original list with the last element remove.
 % @see The inverse of remove_first/2.
 
 remove_last([], []).
@@ -406,9 +406,9 @@ remove_last([Element | Rest], [Element | NewRest]):-
 %! shorter(+Order:pred/2, +List:list(term), +List2:list(term)) is semidet.
 % Succeeds if =List1= has relation =Order= to =List2=.
 %
-% @arg Order A binary predicate. Either <, =, or >.
-% @arg List1 A list of objects.
-% @arg List2 A list of objects.
+% @param Order A binary predicate. Either <, =, or >.
+% @param List1 A list of objects.
+% @param List2 A list of objects.
 
 shorter(Order, List1, List2):-
   length(List1, Length1),
@@ -479,8 +479,8 @@ sublist(SubT, [_H | T]):-
 % Inverter of order relations.
 % This is used for sorting with the =inverted= option set to =true=.
 %
-% @arg Order1 An order relation, i.e. <, > or =.
-% @arg Order1 An order relation, i.e. <, > or =.
+% @param Order1 An order relation, i.e. <, > or =.
+% @param Order1 An order relation, i.e. <, > or =.
 
 i(<, >).
 i(>, <).
@@ -494,9 +494,9 @@ i(=, =).
 % cost of reverse/2.
 % This is used for sorting with the =inverted= option set to =true=.
 %
-% @arg InvertedOrder One of <, > or =.
-% @arg Term1
-% @arg Term2
+% @param InvertedOrder One of <, > or =.
+% @param Term1
+% @param Term2
 % @see compare/3 using uninverted order predicates.
 
 icompare(InvertedOrder, Term1, Term2):-
@@ -504,7 +504,7 @@ icompare(InvertedOrder, Term1, Term2):-
   i(Order, InvertedOrder).
 
 %! sort(+Options:list(nvpair), +List:list, -Sorted:list) is det.
-% @arg Options A list of name-value pairs. The following options are
+% @param Options A list of name-value pairs. The following options are
 %        supported:
 %        1. =|duplicates(boolean)|= Whether duplicate elements are retained
 %           in the sorted list.

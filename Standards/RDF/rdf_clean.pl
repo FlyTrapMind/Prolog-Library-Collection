@@ -56,7 +56,6 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_read)).
 
 :- rdf_meta(rdf_duplicate(r,r,r,?,?)).
@@ -82,29 +81,25 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 %! ) is nondet.
 % Duplicate triples, that occur in at least two graphs.
 
-rdf_duplicate(Subject, Predicate, Object, Graph1, Graph2):-
-  rdf(Subject, Predicate, Object, Graph1:_),
-  rdf(Subject, Predicate, Object, Graph2:_),
-  Graph1 \== Graph2.
+rdf_duplicate(S, P, O, G1, G2):-
+  rdf(S, P, O, G1:_),
+  rdf(S, P, O, G2:_),
+  G1 \== G2.
 
 rdf_expand_namespace(BNode, BNode):-
-  rdf_is_bnode(BNode),
-  !.
+  rdf_is_bnode(BNode), !.
 rdf_expand_namespace(
   literal(lang(Language, Literal)),
   literal(lang(Language, Literal))
-):-
-  !.
+):- !.
 % Datatypes in typed literals are treaded in a special way.
 rdf_expand_namespace(literal(type(Atom, Value)), literal(type(URI, Value))):-
   rdf_expand_namespace(Atom, URI).
 % No namespace.
-rdf_expand_namespace(literal(Literal), literal(Literal)):-
-  !.
+rdf_expand_namespace(literal(Literal), literal(Literal)):- !.
 % Already a URI.
 rdf_expand_namespace(URI, URI):-
-  is_uri(URI),
-  !.
+  is_uri(URI), !.
 % An atom that can be converted to a URI.
 rdf_expand_namespace(Atom, URI):-
   split_atom_exclusive(':', Atom, [Namespace, LocalName]),
@@ -123,7 +118,7 @@ rdf_expand_namespace(Atom, URI):-
 
 rdf_expand_namespace(S1, P1, O1, G):-
   findall(
-    [S1, P1, O1, G],
+    [S1,P1,O1,G],
     (
       rdf(S1, P1, O1, G),
       (
@@ -142,36 +137,25 @@ rdf_expand_namespace(S1, P1, O1, G):-
   user_interaction(
     'EXPAND-NAMESPACE',
     rdf_expand_namespace0,
-    ['Subject', 'Predicate', 'Object', 'Graph'],
+    ['Subject','Predicate','Object','Graph'],
     Tuples
   ).
 :- rdf_meta(rdf_expand_namespace0(r,r,r,?)).
-rdf_expand_namespace0(Subject1, Predicate1, Object1, Graph):-
-  maplist(
-    rdf_expand_namespace,
-    [Subject1, Predicate1, Object1],
-    [Subject2, Predicate2, Object2]
-  ),
-  rdf_retractall(Subject1, Predicate1, Object1, Graph),
-  rdf_assert(Subject2, Predicate2, Object2, Graph).
+rdf_expand_namespace0(S1, P1, 1, G):-
+  maplist(rdf_expand_namespace, [S1,P1,O1], [S2,P2,O2]),
+  rdf_retractall(S1, P1, O1, G),
+  rdf_assert(S2, P2, O2, G).
 
 
 
 % DATATYPES %
 
-rdf_convert_datatype(
-  Subject,
-  Predicate,
-  FromDatatype,
-  FromValue,
-  ToDatatype,
-  Graph
-):-
+rdf_convert_datatype(S, P, FromDatatype, FromValue, ToDatatype, G):-
   forall(
-    rdf_datatype(Subject, Predicate, FromDatatype, FromValue, Graph),
+    rdf_datatype(S, P, FromDatatype, FromValue, G),
     (
       rdf_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue),
-      rdf_assert_datatype(Subject, Predicate, ToDatatype, ToValue, Graph)
+      rdf_assert_datatype(S, P, ToDatatype, ToValue, G)
     )
   ).
 
@@ -179,31 +163,31 @@ rdf_convert_datatype(
 
 % LITERALS %
 
-rdf_literal_to_uri(Subject, Predicate, Namespace, Graph):-
+rdf_literal_to_uri(S, P, Namespace, G):-
   xml_current_namespace(Namespace, _),
   findall(
-    [Subject, Predicate, Literal, Graph],
-    rdf_literal(Subject, Predicate, Literal, Graph),
+    [S,P,Literal,G],
+    rdf_literal(S, P, Literal, G),
     Tuples
   ),
   format(atom(OperationName), 'LITERAL-TO-URI(~w)', [Namespace]),
   user_interaction(
     OperationName,
     rdf_literal_to_uri0(Namespace),
-    ['Subject', 'Predicate', 'Literal', 'Graph'],
+    ['Subject','Predicate','Literal','Graph'],
     Tuples
   ).
 :- rdf_meta(rdf_literal_to_uri(+,r,r,+,+)).
-rdf_literal_to_uri0(Namespace, Subject, Predicate, Literal, Graph):-
-  rdf_global_id(Namespace:Literal, Object),
-  rdf_assert(Subject, Predicate, Object, Graph),
-  rdf_retractall_literal(Subject, Predicate, Literal, Graph).
+rdf_literal_to_uri0(Namespace, S, P, Literal, G):-
+  rdf_global_id(Namespace:Literal, O),
+  rdf_assert(S, P, O, G),
+  rdf_retractall_literal(S, P, Literal, G).
 
-rdf_split_literal(Subject, Predicate, Graph, Split):-
+rdf_split_literal(S, P, G, Split):-
   findall(
-    [Subject, Predicate, Literal, Graph],
+    [S, P, Literal, G],
     (
-      rdf_literal(Subject, Predicate, Literal, Graph),
+      rdf_literal(S, P, Literal, G),
       split_atom_exclusive(Split, Literal, Splits),
       length(Splits, Length),
       Length > 1
@@ -217,13 +201,13 @@ rdf_split_literal(Subject, Predicate, Graph, Split):-
     Tuples
   ).
 :- rdf_meta(rdf_split_string0(+,r,r,+,+)).
-rdf_split_string0(Split, Subject, Predicate, OldLiteral, Graph):-
+rdf_split_string0(Split, S, P, OldLiteral, G):-
   split_atom_exclusive(Split, OldLiteral, NewLiterals),
   forall(
     member(NewLiteral, NewLiterals),
-    rdf_assert_literal(Subject, Predicate, NewLiteral, Graph)
+    rdf_assert_literal(S, P, NewLiteral, G)
   ),
-  rdf_retractall_literal(Subject, Predicate, OldLiteral, Graph).
+  rdf_retractall_literal(S, P, OldLiteral, G).
 
 %! rdf_strip_literal(
 %!   +Strips:list(char),
@@ -233,11 +217,11 @@ rdf_split_string0(Split, Subject, Predicate, OldLiteral, Graph):-
 %! ) is det.
 % Strip RDF string datatypes.
 
-rdf_strip_literal(Strips, Subject, Predicate, Graph):-
+rdf_strip_literal(Strips, S, P, G):-
   findall(
-    [Subject, Predicate, Literal1, Graph],
+    [S,P,Literal1,G],
     (
-      rdf_literal(Subject, Predicate, Literal1, Graph),
+      rdf_literal(S, P, Literal1, G),
       strip_atom(Strips, Literal1, Literal2),
       Literal1 \= Literal2
     ),
@@ -246,14 +230,14 @@ rdf_strip_literal(Strips, Subject, Predicate, Graph):-
   user_interaction(
     'STRIP-RDF-DATATYPE-STRING',
     rdf_strip_literal0(Strips),
-    ['Subject', 'Predicate', 'Literal', 'Graph'],
+    ['Subject','Predicate','Literal','Graph'],
     Tuples
   ).
 :- rdf_meta(rdf_strip_literal0(+,r,r,+,+)).
-rdf_strip_literal0(Strips, Subject, Predicate, OldLiteral, Graph):-
+rdf_strip_literal0(Strips, S, P, OldLiteral, G):-
   strip_atom(Strips, OldLiteral, NewLiteral),
-  rdf_assert_literal(Subject, Predicate, NewLiteral, Graph),
-  rdf_retractall_literal(Subject, Predicate, OldLiteral, Graph).
+  rdf_assert_literal(S, P, NewLiteral, G),
+  rdf_retractall_literal(S, P, OldLiteral, G).
 
 
 
@@ -267,16 +251,16 @@ rdf_strip_literal0(Strips, Subject, Predicate, OldLiteral, Graph):-
 %! ) is det.
 % Clean RDF triples with explicit user-consent.
 
-rdf_remove(Subject, Predicate, Object, Graph):-
+rdf_remove(S, P, O, G):-
   findall(
-    [Subject, Predicate, Object, Graph],
-    rdf(Subject, Predicate, Object, Graph),
+    [S,P,O,G],
+    rdf(S, P, O, G),
     Tuples
   ),
   user_interaction(
     'REMOVE-RDF-TRIPLE',
     rdf_retractall,
-    ['Subject', 'Predicate', 'Object', 'Graph'],
+    ['Subject','Predicate','Object','Graph'],
     Tuples
   ).
 
@@ -289,16 +273,16 @@ rdf_remove(Subject, Predicate, Object, Graph):-
 %! ) is det.
 % Clean RDF datatype triples with explicit user-consent.
 
-rdf_remove_datatype(Subject, Predicate, Datatype, Value, Graph):-
+rdf_remove_datatype(S, P, Datatype, Value, G):-
   findall(
-    [Subject, Predicate, Datatype, Value, Graph],
-    rdf_datatype(Subject, Predicate, Datatype, Value, Graph),
+    [S,P,Datatype,Value,G],
+    rdf_datatype(S, P, Datatype, Value, G),
     Tuples
   ),
   user_interaction(
     'REMOVE-RDF-DATATYPE-TRIPLE',
     rdf_retractall_datatype,
-    ['Subject', 'Predicate', 'Datatype', 'Value', 'Graph'],
+    ['Subject','Predicate','Datatype','Value','Graph'],
     Tuples
   ).
 

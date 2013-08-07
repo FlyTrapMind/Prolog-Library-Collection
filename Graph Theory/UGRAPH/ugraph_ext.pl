@@ -142,8 +142,8 @@ ugraph_complete(UG):-
 % *Definition*: A complete graph is one in which all different vertices
 %               are connected.
 %
-% @arg Vs An ordered set of vertices.
-% @arg Graph A ugraph, i.e., a list of S-expressions.
+% @param Vs An ordered set of vertices.
+% @param Graph A ugraph, i.e., a list of S-expressions.
 
 ugraph_complete(Vs, UG):-
   ugraph_complete_(Vs, Vs, UG).
@@ -193,9 +193,9 @@ ugraph_empty([]).
 % *Definition*: A Harary graph is a K-connected simple graph with
 %               N vertices and the minimal number of edges.
 %
-% @arg K The connectedness of the Harary graph.
-% @arg N The number of vertices.
-% @arg H An undirected Harary graph.
+% @param K The connectedness of the Harary graph.
+% @param N The number of vertices.
+% @param H An undirected Harary graph.
 
 ugraph_harary(K, N, H):-
   even(K), !,

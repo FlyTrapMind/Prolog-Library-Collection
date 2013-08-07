@@ -54,6 +54,7 @@ load_pgc:-
     assert(user:file_search_path(tests,        standards('Tests'))),
     assert(user:file_search_path(uri,          standards('URI'))),
     assert(user:file_search_path(xml,          standards('XML'))),
+      assert(user:file_search_path(xsd,          xml('XSD'))),
   assert(user:file_search_path(tms,          pgc('TMS'))),
   assert(user:file_search_path(vocabularies, pgc('Vocabularies'))),
     assert(user:file_search_path(skos,         vocabularies('SKOS'))),

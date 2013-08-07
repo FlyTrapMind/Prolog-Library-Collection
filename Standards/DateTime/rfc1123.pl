@@ -40,10 +40,10 @@ The standard for datatime that is used by HTTP 1.1.
 % 02 Jun 1982
 % ~~~
 %
-% @arg Tree A parse tree.
-% @arg Day An integer between 1 and 99 (going beyond intended use).
-% @arg Month An atom. See rfc1123_month//2.
-% @arg Year An integer between 0 and 9999.
+% @param Tree A parse tree.
+% @param Day An integer between 1 and 99 (going beyond intended use).
+% @param Month An atom. See rfc1123_month//2.
+% @param Year An integer between 0 and 9999.
 
 rfc1123_date(date(day(Day),T1,year(Year)), Day, Month, Year) -->
   {maplist(nonvar, [Day,Month,Year])}, !,
@@ -134,8 +134,8 @@ rfc1123_datetime_to_gv(Datetime):-
 %! )//
 % Times between `00:00:00` and `23:59:59`.
 %
-% @arg Tree A parse tree.
-% @arg Time A list of three integers in the `00-23`, `00-59`,
+% @param Tree A parse tree.
+% @param Time A list of three integers in the `00-23`, `00-59`,
 %      and `00-59` range.
 
 rfc1123_time(

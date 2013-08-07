@@ -97,7 +97,8 @@ load_modules_for_pldoc:-
         tms,
         ugraph,
         vocabularies,
-        xml
+        xml,
+        xsd
       ]
     ),
     (

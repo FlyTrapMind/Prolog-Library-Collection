@@ -119,11 +119,11 @@ formulate_select(SelectStatement, SelectStatement).
 %! ) is det.
 % Formulate a SPARQL query, build out of the given components.
 %
-% @arg Prefixes A list of atomic prefix names, registered as prefix/4.
-% @arg Select An atomic SELECT-statements.
-% @arg Where An atomic WHERE-statement.
-% @arg Limit An integer representing the maximum number of results.
-% @arg Query An atomic SPARQL query.
+% @param Prefixes A list of atomic prefix names, registered as prefix/4.
+% @param Select An atomic SELECT-statements.
+% @param Where An atomic WHERE-statement.
+% @param Limit An integer representing the maximum number of results.
+% @param Query An atomic SPARQL query.
 
 formulate_sparql(Prefixes, Select, Where, Limit, Query):-
   formulate_prefixes(Prefixes, PrefixStatements),

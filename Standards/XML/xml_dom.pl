@@ -98,7 +98,7 @@ dom_to_xml(DTD_Name, DOM, XML):-
 %! dom_to_xml(+DTD_Name:atom, +Style_Name:atom, +DOM:list, -XML:atom) is det.
 % Translates DOM to XML, applying DTD checks and Style decoration.
 %
-% @arg DTD_Name The atomic name of a DTD file. File locations that
+% @param DTD_Name The atomic name of a DTD file. File locations that
 %   contain DTD files must be asserted using
 %   =|file_search_path/3|=.
 
@@ -141,8 +141,8 @@ dom_to_xml_file(DTD_Name, DOM, File, Options):-
 % Returns the first DTD file with the given name or throws an
 % existence error.
 %
-% @arg Name The atomic name of a DTD file.
-% @arg File The atomic name of the path of a DTD file.
+% @param Name The atomic name of a DTD file.
+% @param File The atomic name of the path of a DTD file.
 
 dtd_file(Name, File):-
   % By setting option =solutions= to value =all= we backtrack over

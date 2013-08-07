@@ -344,12 +344,12 @@ reduced accuracy and/or with decimal fraction.
 % *|[C2]|* If minute and second are instantiated, then hour and
 %          minute must not have a decimal expansion.
 %
-% @arg Tree A compound term representing a parse tree.
-% @arg Format Either `basic` for the basic or compressed format,
+% @param Tree A compound term representing a parse tree.
+% @param Format Either `basic` for the basic or compressed format,
 %      or `extended` for the extended or human readable format.
-% @arg TimeDesignator A boolean indicating whether the time designator is
+% @param TimeDesignator A boolean indicating whether the time designator is
 %      included or not.
-% @arg UTC_Time A compound term.
+% @param UTC_Time A compound term.
 
 iso8601_local_time(T0, Format, T, utc_time(time(H,M,S),UTC)) -->
   % Time designator.

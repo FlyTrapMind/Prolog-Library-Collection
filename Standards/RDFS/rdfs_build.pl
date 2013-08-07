@@ -163,9 +163,9 @@ rdfs_assert_range(P, C, G):-
 %! ) is det.
 % Assert the subject's label description.
 %
-% @arg Subject A resource.
-% @arg Label An atomic description of a resource.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Label An atomic description of a resource.
+% @param Graph The atomic name of an RDF graph.
 % @see rdfs_assert_label/4 also specifies the label.
 
 rdfs_assert_label(Subject, Label, G):-
@@ -181,10 +181,10 @@ rdfs_assert_label(Subject, Label, G):-
 %! ) is det.
 % Assert the subject's label description in the given label.
 %
-% @arg Subject A resource.
-% @arg Language The atomic name of a language.
-% @arg Label An atomic description of a resource.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Language The atomic name of a language.
+% @param Label An atomic description of a resource.
+% @param Graph The atomic name of an RDF graph.
 
 rdfs_assert_label(Subject, Language, Label, G):-
   % @ tbd Why is this necessary?
@@ -210,9 +210,9 @@ rdfs_retractall_label(Subject, Language, Label, G):-
 %! ) is det.
 % Creates a new property that is a subproperty of the given parent property.
 %
-% @arg Property An RDF property.
-% @arg SuperProperty An RDF property.
-% @arg Graph The atomic name of an RDF graph.
+% @param Property An RDF property.
+% @param SuperProperty An RDF property.
+% @param Graph The atomic name of an RDF graph.
 
 rdfs_assert_subproperty(Property, SuperProperty, G):-
   % Materialization

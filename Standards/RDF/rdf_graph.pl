@@ -183,7 +183,6 @@ as their lean subgraphs.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(uri)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
@@ -191,6 +190,7 @@ as their lean subgraphs.
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(rdfs(rdfs_read)).
+:- use_module(xsd(xsd)).
 
 :- rdf_meta(rdf_bnode(?,r)).
 :- rdf_meta(rdf_name(?,r)).
@@ -540,8 +540,8 @@ rdf_subject_(G, S):-
 % A term is either a subject, predicate or object term
 % in an RDF triple.
 %
-% @arg Graph The atomic name of a graph.
-% @arg Term A resource.
+% @param Graph The atomic name of a graph.
+% @param Term A resource.
 
 rdf_term(Graph, Term):-
   rdf_node(Graph, Term).
@@ -570,9 +570,9 @@ rdf_term_name(RDF_Term, Name):-
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 %
-% @arg Options A list of name-value pairs.
-% @arg RDF_Term An RDF term.
-% @arg Name The atomic name of an RDF term.
+% @param Options A list of name-value pairs.
+% @param RDF_Term An RDF term.
+% @param Name The atomic name of an RDF term.
 
 % This method also works for a list of RDF terms.
 % @tbd What's the use case for this?
@@ -588,17 +588,18 @@ rdf_term_name(O, RDF_Term, Name):-
   maplist(rdf_term_name(O), RDF_Terms, Names),
   print_list(atom(Name), Names).
 % A literal with a datatype.
-rdf_term_name(O, literal(type(Datatype,CanonicalValue)), Name):- !,
+rdf_term_name(O, literal(type(Datatype,LEX)), Name):- !,
   % The datatype name.
   rdf_term_name(O, Datatype, DatatypeName),
-  % The value name.
+  % The datatyped value.
   (
-    % Model RDF_DATATYPE supports this datatype.
-    rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue)
+    % The datatype is recognized, so the datatyped value can be displayed
+    % as a SWI-Prolog native.
+    datatype(DatatypeName, Datatype)
   ->
-    ValueName = LexicalValue
+    lexicalMap(Datatype, LEX, ValueName)
   ;
-    ValueName = CanonicalValue
+    ValueName = LEX
   ),
   % The combined name.
   format(atom(Name), '"~w"^^~w', [DatatypeName,ValueName]).
@@ -695,8 +696,8 @@ rdf_triple_name(S, P, O, T_Name):-
 %! rdf_triples(+In:oneof([atom,uri]) -Triples:list(rdf_triple)) is det.
 % Returns an unsorted list containing all the triples in a graph.
 %
-% @arg In The atomic name of a loaded RDF graph, or a URI.
-% @arg Triples A list of triple compound term.
+% @param In The atomic name of a loaded RDF graph, or a URI.
+% @param Triples A list of triple compound term.
 
 rdf_triples(G, Ts):-
   rdf_graph(G), !,

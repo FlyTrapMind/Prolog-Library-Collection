@@ -39,8 +39,8 @@ Predicates that extend the swipl builtin I/O predicates operating on streams.
 %! atom_to_file(+Atom:atom, -File:atom) is det.
 % Stores the given atom in the given file.
 %
-% @arg Atom An atom.
-% @arg File An atomic file name.
+% @param Atom An atom.
+% @param File An atomic file name.
 
 atom_to_file(Atom, File):-
   access_file(File, write),!,
@@ -62,8 +62,8 @@ copy_stream_line(From, To):-
 %! file_to_atom(+File:file, -Atom:atom) is det.
 % Turns the given file's contents into a string.
 %
-% @arg File The file whose contents are put in a string.
-% @arg Atom The atom containing the contents of the given file.
+% @param File The file whose contents are put in a string.
+% @param Atom The atom containing the contents of the given file.
 
 file_to_atom(File, Atom):-
   setup_call_cleanup(
@@ -75,9 +75,9 @@ file_to_atom(File, Atom):-
 %! read_terms(+Stream:stream, -Terms:list(term), +Options:list(atom)) is det.
 % Returns the terms as they occur on the given stream.
 %
-% @arg Stream
-% @arg Terms
-% @arg Options
+% @param Stream
+% @param Terms
+% @param Options
 
 read_terms(Stream, Terms, Options):-
   read_term(Stream, Term, Options),

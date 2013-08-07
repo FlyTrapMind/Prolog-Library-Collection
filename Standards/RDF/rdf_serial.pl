@@ -128,8 +128,8 @@ rdf_load2(Spec):-
 %! rdf_load2(+Directory:atom, +Options:list) is det.
 % Load RDF from a file, a list of files, or a directory.
 %
-% @arg Spec Either a file, a list of files, or a directory.
-% @arg Options Supported options are:
+% @param Spec Either a file, a list of files, or a directory.
+% @param Options Supported options are:
 %      * format(+Format:oneof([ntriples,triples,turtle,xml]))
 %      * graph(+Graph:atom)
 %
@@ -223,14 +223,14 @@ rdf_save2(Graph):-
 %      If the format is specified as well, then this is used to determine
 %      the file extension.
 %
-% @arg File A variable.
-% @arg Options A list of options, containing at least =graph/1=
+% @param File A variable.
+% @param Options A list of options, containing at least =graph/1=
 %              and possibly format/1.
 %
 % @see Wrapper for rdf_save2(+,+).
 %! rdf_save2(+File:atom, +Options:list) is det.
-% @arg File An atomic absolute file name.
-% @arg Options A list of options. The following options are supported:
+% @param File An atomic absolute file name.
+% @param Options A list of options. The following options are supported:
 %              * format(+Format:oneof([rdf_xml,turtle])
 %                The serialization format in which the graph is exported.
 %              * graph(+Graph:atom)

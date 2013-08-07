@@ -67,12 +67,3 @@ rdf_clean_year0(IntervalP1, IntervalP2, PointP, S, P, Lit, G):-
   dcg_phrase(year(_Lang, Year), Lit),
   rdf_assert_year(S, IntervalP1, IntervalP2, PointP, Year, G).
 
-%rdf_year(Subject, Year, Graph):-
-%  rdf_datatype(Subject, stcnv:exact_publication_year, gYear, Year,
-%  Graph).
-%rdf_year(Subject, Year1-Year2, Graph):-
-%  rdf_datatype(Subject, stcnv:earliest_publication_year, gYear, Year1,
-%  Graph),
-%  rdf_datatype(Subject, stcnv:latest_publication_year, gYear, Year2,
-%  Graph).
-

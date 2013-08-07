@@ -60,8 +60,8 @@ rdf_graph_status(Graph):-
 %! test(:Goal, +Stream) is det.
 % Runs the given goal as a test.
 %
-% @arg Goal A compound term that is the goal that is tested.
-% @arg Stream The stream to which the test results are written.
+% @param Goal A compound term that is the goal that is tested.
+% @param Stream The stream to which the test results are written.
 % @see test/3 allows the name of the test to be specified.
 
 test(Goal, Stream):-
@@ -71,9 +71,9 @@ test(Goal, Stream):-
 %! test(:Goal, +TestName:atom, +Stream) is det.
 % Runs a test that is the given goal.
 %
-% @arg Goal A compound term that is the goal that is tested.
-% @arg TestName The name of the test.
-% @arg Stream The stream to which the test results are written.
+% @param Goal A compound term that is the goal that is tested.
+% @param TestName The name of the test.
+% @param Stream The stream to which the test results are written.
 
 test(Goal, TestName, Stream):-
   get_time(BeginTime),

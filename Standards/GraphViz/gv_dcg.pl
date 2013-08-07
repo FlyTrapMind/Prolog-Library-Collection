@@ -74,7 +74,7 @@ gv_compass_pt --> "w".
 % The operator that is used depends on whether the graph is directed or
 % undirected.
 %
-% @arg Directionality Either `directed` (operator `->`) or
+% @param Directionality Either `directed` (operator `->`) or
 %      `undirected` (operator `--`).
 
 gv_edge_operator(directed) --> arrow(2).
@@ -97,10 +97,10 @@ gv_edge_rhs(G_Attrs, To_Id) -->
 %! )// is det.
 % A GraphViz statement describing an edge.
 %
-% @arg Indent The indentation level at which the edge statement is written.
-% @arg GraphAttributes The attributes of the graph. Some of these attributes
+% @param Indent The indentation level at which the edge statement is written.
+% @param GraphAttributes The attributes of the graph. Some of these attributes
 %      may be used in the edge statement (e.g., the colorscheme).
-% @arg EdgeTerm A compound term in the GIFormat, representing an edge.
+% @param EdgeTerm A compound term in the GIFormat, representing an edge.
 %
 % @see Module [graph_export.pl] for the GIFormat.
 % @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1 here.
@@ -120,11 +120,11 @@ gv_edge_statement(I, G_Attrs, edge(From_Id, To_Id, E_Attrs)) -->
 %! )//
 % A GraphViz statement describing generic attributes for a category of items.
 %
-% @arg Category The category of items for to the attributes apply.
+% @param Category The category of items for to the attributes apply.
 %      Possible values: * `edge`, `graph`, `node`.
-% @arg Indent An integer.
-% @arg GraphAttributes A list of name-value pairs.
-% @arg CategoryAttributes A list of name-value pairs.
+% @param Indent An integer.
+% @param GraphAttributes A list of name-value pairs.
+% @param CategoryAttributes A list of name-value pairs.
 
 gv_generic_attributes_statement(_Cat, _I, _G_Attrs, []) --> [], !.
 gv_generic_attributes_statement(Cat, I, G_Attrs, CatAttrs) -->
@@ -200,7 +200,7 @@ gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
 %! gv_graph_type(+Directionality:oneof([directed,undirected]))// is det.
 % The type of graph that is represented.
 %
-% @arg Directionality Either `directed` or `undirected`.
+% @param Directionality Either `directed` or `undirected`.
 
 gv_graph_type(directed) --> d,i,g,r,a,p,h.
 gv_graph_type(undirected) --> g,r,a,p,h.

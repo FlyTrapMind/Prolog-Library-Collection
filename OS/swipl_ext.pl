@@ -56,7 +56,7 @@ check_prolog_version:-
 % 6.2.6 is the latest stable release.
 % 6.3.18 is the latest development release.
 %
-% @arg The version indicator is of the form =|Major/Minor/Paths|=,
+% @param The version indicator is of the form =|Major/Minor/Paths|=,
 %      with three integers.
 
 minimum_prolog_version(6/3/18).

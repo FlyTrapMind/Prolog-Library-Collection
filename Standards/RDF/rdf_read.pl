@@ -7,6 +7,10 @@
                     % ?Datatype:oneof([atom,uri])
                     % ?Value:atomic
                     % ?Graph:graph
+    rdf_has_datatype/4, % ?Subject:oneof([bnode,uri])
+                        % ?Predicate:uri
+                        % ?DatatypeName:atom
+                        % ?Value
     rdf_literal/4, % ?Subject:oneof([bnode,uri])
                    % ?Predicate:uri
                    % ?Literal:atom
@@ -22,12 +26,6 @@
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
                      % ?Members:list(uri)
-
-% RDF HAS
-    rdf_has_datatype/4, % ?Subject:oneof([bnode,uri])
-                        % ?Predicate:uri
-                        % ?Datatype:oneof([atom,uri])
-                        % ?Value:atomic
 
 % STRUCTURE-BASED READS
     rdf_index/5, % ?Subject:oneof([bnode,uri])
@@ -51,27 +49,25 @@ Predicates for reading from RDF, customized for specific datatypes and
 literals.
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07-2013/08
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(math(math_ext)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(xml(xml_namespace)).
+:- use_module(xsd(xsd)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 % LITERALS %
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
+:- rdf_meta(rdf_has_datatype(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?)).
 % LIST MEMBERSHIP %
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
-% RDF HAS %
-:- rdf_meta(rdf_has_datatype(r,r,?,?)).
 % STRUCTURE-BASED READS %
 :- rdf_meta(rdf_index(r,r,r,?,?)).
 :- rdf_meta(rdf_node(?,r)).
@@ -86,19 +82,46 @@ literals.
 %! rdf_datatype(
 %!   ?Subject:oneof([bnode,uri]),
 %!   ?Predicate:uri,
-%!   ?DatatypeName:oneof([boolean,dateTime,double,float,gDay,gMonth,gYear,image,integer]),
-%!   ?LexicalValue,
+%!   ?DatatypeName:atom,
+%!   ?Value,
 %!   ?Graph:atom
 %! ) is nondet.
 
-rdf_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph):-
-  nonvar(LexicalValue), !,
-  rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue),
-  rdf(Subject, Predicate, literal(type(Datatype, CanonicalValue)), Graph).
-rdf_datatype(Subject, Predicate, DatatypeName, LexicalValue, Graph):-
-  rdf_datatype(DatatypeName, Datatype),
-  rdf(Subject, Predicate, literal(type(Datatype, CanonicalValue)), Graph),
-  rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue).
+rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
+  datatype(DatatypeName, Datatype),
+  (
+    nonvar(Value)
+  ->
+    % Interpret all literals, not just the canonical ones.
+    lexicalMap(Datatype, LEX, Value),
+    rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph)
+  ;
+    rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
+    % This may be nondet!
+    lexicalMap(LEX, Value)
+  ).
+
+%! rdf_has_datatype(
+%!   ?Subject:oneof([bnode,uri]),
+%!   ?Predicate:uri,
+%!   ?DatatypeName:atom,
+%!   ?Value,
+%!   ?Graph:atom
+%! ) is nondet.
+
+rdf_has_datatype(Subject, Predicate, DatatypeName, Value):-
+  datatype(DatatypeName, Datatype),
+  (
+    nonvar(Value)
+  ->
+    % Interpret all literals, not just the canonical ones.
+    lexicalMap(Datatype, LEX, Value),
+    rdf_has(Subject, Predicate, literal(type(Datatype, LEX)))
+  ;
+    rdf_has(Subject, Predicate, literal(type(Datatype, LEX))),
+    % This may be nondet!
+    lexicalMap(Datatype, LEX, Value)
+  ).
 
 %! rdf_literal(
 %!   ?Subject:oneof([bnode,uri]),
@@ -124,11 +147,11 @@ rdf_literal(Subject, Predicate, Literal, Graph):-
 %! ) is nondet.
 % The RDF triple for a literal valued property, encoded in a certain language.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Language The atomic name of a language.
-% @arg Literal An atom.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Language The atomic name of a language.
+% @param Literal An atom.
+% @param Graph The atomic name of an RDF graph.
 
 rdf_literal(Subject, Predicate, Language, Literal, Graph):-
   rdf(Subject, Predicate, literal(lang(Language, Literal)), Graph).
@@ -146,18 +169,6 @@ rdf_memberchk(Member, List):-
 
 
 
-% RDF HAS %
-
-rdf_has_datatype(Subject, Predicate, DatatypeName, LexicalValue):-
-  nonvar(LexicalValue), !,
-  rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue),
-  rdf_has(Subject, Predicate, literal(type(Datatype, CanonicalValue))).
-rdf_has_datatype(Subject, Predicate, DatatypeName, LexicalValue):-
-  rdf_has(Subject, Predicate, literal(type(Datatype, CanonicalValue))),
-  rdf_datatype(DatatypeName, LexicalValue, Datatype, CanonicalValue).
-
-
-
 % STRUCTURE-BASED READS %
 
 %! rdf_index(
@@ -170,10 +181,10 @@ rdf_has_datatype(Subject, Predicate, DatatypeName, LexicalValue):-
 % Returns the rdf triple that has the given index in the arbitrary sequence
 % in which SWI-Prolog returns its triples.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Object A resource.
-% @arg Index A compound term of the form =Graph:Line= with =Graph= the
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Object A resource.
+% @param Index A compound term of the form =Graph:Line= with =Graph= the
 %        atomic name of an RDF graph and =Line= an integer.
 
 rdf_index(Subject, Predicate, Object, Graph, Index):-
@@ -189,11 +200,11 @@ rdf_index(Subject, Predicate, Object, Graph, Index):-
 %! ) is det.
 % Returns a random triple from the given graph.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Object A resource.
-% @arg Graph The atomic name of a graph.
-% @arg Index An integer representating the index of the randomly selected
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Object A resource.
+% @param Graph The atomic name of a graph.
+% @param Index An integer representating the index of the randomly selected
 %        triple.
 
 rdf_random(Subject, Predicate, Object, Graph, RandomIndex):-

@@ -94,9 +94,9 @@ cowspeak(Content):-
 %     Whether line wrapping or word wrapping (the default)
 %     should be applied, or neither of those (e.g. for ASCII art).
 %
-% @arg Text Either an atomic text message or a list of atomic lines
+% @param Text Either an atomic text message or a list of atomic lines
 %      constituting a message.
-% @arg Options A list of name-value pairs.
+% @param Options A list of name-value pairs.
 %
 % @tbd Split lines by words (in whitespace). Add this to module ATOM_EXT.
 % @tbd When tabs are used in cowspeak/2 the width of the speech balloon

@@ -284,11 +284,11 @@ absolute_path(absolute_path('/',T1), [PathSegment]) -->
 % absoluteURI = scheme ":" ( hier_part | opaque_part )
 % ~~~
 %
-% @arg Scheme An atom.
-% @arg Authority Either an atom or a compound term of the form
+% @param Scheme An atom.
+% @param Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @arg Path A list of lists of atoms.
-% @arg Query An atom.
+% @param Path A list of lists of atoms.
+% @param Query An atom.
 
 rfc2396_absolute_uri(
   absolute_uri(T1,':',T2),
@@ -323,8 +323,8 @@ rfc2396_absolute_uri(
 % authority = server | registry_based_naming_authority
 % ~~~
 %
-% @arg Tree A parse tree.
-% @arg Authority Either an atom or a compound term of the form
+% @param Tree A parse tree.
+% @param Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
 rfc2396_authority(authority(T), Authority) -->
@@ -417,8 +417,8 @@ escaped_character(N) -->
 % intended for retrieval and the result of that retrieval is a document
 % for which the identified fragment is consistently defined.
 %
-% @arg Tree A compound term.
-% @arg Fragment An atom.
+% @param Tree A compound term.
+% @param Fragment An atom.
 
 fragment(fragment(Fragment), Fragment) -->
   {nonvar(Fragment)}, !,
@@ -444,11 +444,11 @@ fragment_([H|T]) -->
 % hier_part = ( net_path | abs_path ) [ "?" query ]
 % ~~~
 %
-% @arg Tree A compound term.
-% @arg Authority Either an atom or a compound term of the form
+% @param Tree A compound term.
+% @param Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @arg Path A list of lists of atoms.
-% @arg Query An atom.
+% @param Path A list of lists of atoms.
+% @param Query An atom.
 
 hierarchical_part(T0, Authority, Path, Query) -->
   (
@@ -475,8 +475,8 @@ hierarchical_part(T0, Authority, Path, Query) -->
 %
 % @tbd Literal IPv6 addresses are not supported.
 %
-% @arg Tree A compound term.
-% @arg Host Either a list of atoms or a list of integers.
+% @param Tree A compound term.
+% @param Host Either a list of atoms or a list of integers.
 
 rfc2396_host(host(T), Host) --> host_name(T, Host).
 rfc2396_host(host(T), Host) --> ipv4_address(T, Host).
@@ -504,8 +504,8 @@ host_name(T0, DomainLabels) -->
 % IPv4address = 1*digit "." 1*digit "." 1*digit "." 1*digit
 % ~~~
 %
-% @arg Tree A parse tree.
-% @arg Address A list of four integers.
+% @param Tree A parse tree.
+% @param Address A list of four integers.
 %
 % @tbd A suitable representation for including a literal IPv6
 %      address as the host part of a URL is desired, but has not yet been
@@ -538,10 +538,10 @@ mark(C) --> round_bracket(C).
 % net_path = "//" authority [ abs_path ]
 % ~~~
 %
-% @arg Tree A parse tree.
-% @arg Authority Either an atom or a compound term of the form
+% @param Tree A parse tree.
+% @param Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @arg Path A list of lists of atoms.
+% @param Path A list of lists of atoms.
 
 network_path(T0, Authority, Path) -->
   forward_slash, {T1 = '/'}, forward_slash, {T2 = '/'},
@@ -614,8 +614,8 @@ parameter_character(C) --> escaped_character(C).
 %
 % Note that path//1 is not used in any production.
 %
-% @arg Tree A compound term.
-% @arg Path A list of lists of atoms.
+% @param Tree A compound term.
+% @param Path A list of lists of atoms.
 
 path(path([]), []) --> [].
 path(path(T1), Path) --> rfc2396_absolute_path(T1, Path).
@@ -666,8 +666,8 @@ rfc2396_port(port(Port), Port) --> decimal_number(Port).
 % Within a query component, the characters `;`, `/`, `?`, `:`, `@`,
 % `&`, `=`, `+`, `,`, and `$` are reserved.
 %
-% @arg Tree A compound term.
-% @arg Query An atom.
+% @param Tree A compound term.
+% @param Query An atom.
 
 rfc2396_query(query(Query), Query) -->
   {nonvar(Query)}, !,
@@ -815,8 +815,8 @@ scheme_characters([]) --> [].
 % A non-default port number may optionally be supplied, in decimal,
 % separated from the host//1 by a colon//0.
 %
-% @arg Tree A parse tree.
-% @arg Authority A compound term of the form
+% @param Tree A parse tree.
+% @param Authority A compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
 server(T0, authority(User,Host,Port)) -->
@@ -935,12 +935,12 @@ rfc2396_uri_reference(T) -->
 % URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
 % ~~~
 %
-% @arg Scheme An atom.
-% @arg Authority Either an atom or a compound term of the form
+% @param Scheme An atom.
+% @param Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @arg Path A list of lists of atoms.
-% @arg Query An atom.
-% @arg Fragment An atom.
+% @param Path A list of lists of atoms.
+% @param Query An atom.
+% @param Fragment An atom.
 
 rfc2396_uri_reference(T0, Scheme, Authority, Path, Query, Fragment) -->
   rfc2396_absolute_uri(T1, Scheme, Authority, Path, Query),

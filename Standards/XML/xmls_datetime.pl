@@ -193,7 +193,7 @@ duration_smaller_than(D1, D2):-
   Y is H - L,
   'fQuotient'(X, Y, Q).
 
-%! modulo(+A:float, +B:nonneg, -Modulo:float) is det.\
+%! modulo(+A:float, +B:nonneg, -Modulo:float) is det.
 % Definition:
 % ~~~
 % modulo(a, b) = a - fQuotient(a,b)*b
@@ -372,7 +372,7 @@ summate_time(Y1, M1, D1, Y2, M2, D2):-
   MX is M1 - 1,
   summate_time_(Y1, MX, DX, Y2, M2, D2).
 summate_time(Y1, M1, D1, Y2, M2, D2):-
-  calendar_month(YX, MY, MaxD, _),
+  calendar_month(Y1, M1, MaxD, _),
   D1 > MaxD, !,
   DX is D1 - MaxD,
   MX is M1 + 1,
@@ -383,7 +383,7 @@ summate_time_(Y1, M1, D1, Y3, M3, D3):-
   modulo(M1, 1, 13, M2),
   'fQuotient'(M1, 1, 13, YX),
   Y2 is Y1 + YX,
-  summate_time(Y2, M2, D2, Y3, M3, D3).
+  summate_time(Y2, M2, D1, Y3, M3, D3).
 
 %! xmls_duration(External, Canonical:atom)
 % Duration represents a duration of time. The value space of duration is a
@@ -512,7 +512,7 @@ test(
   atom_codes(DT1_A, DT1_Cs),
   once(phrase(xmls_dateTime(_T1, F, DT1), DT1_Cs)),
   atom_codes(D_A, D_Cs),
-  once(phrase(xmls_duration(_T2, Sign, D), D_Cs),
+  once(phrase(xmls_duration(_T2, Sign, D), D_Cs)),
   summate_time(DT1, Sign-D, DT3),
   once(phrase(xmls_dateTime(_T3, F, DT3), DT3_Cs)),
   atom_codes(DT3_A, DT3_Cs).

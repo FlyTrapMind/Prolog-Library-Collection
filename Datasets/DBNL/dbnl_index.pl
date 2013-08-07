@@ -81,7 +81,7 @@ dbnl_ordering_translate(genre,                   genre).
 %! dbnl_scrape(+Category:atom, +Ordering:atom) is det.
 % Scrape the DBNL for the given category and using the given ordering.
 %
-% @arg Category The atomic name of a DBNL category. Supported categories:
+% @param Category The atomic name of a DBNL category. Supported categories:
 %   * "alle titels"
 %   * "middeleeuwen"
 %   * "gouden eeuw"
@@ -89,7 +89,7 @@ dbnl_ordering_translate(genre,                   genre).
 %   * "negentiende eeuw"
 %   * "twintigste eeuw"
 %   * "eenentwintigste eeuw"
-% @arg Ordering The atomic name of a DBNL ordering. Supported orderings:
+% @param Ordering The atomic name of a DBNL ordering. Supported orderings:
 %   * "alfabetisch op auteur"
 %   * "alfaberisch op titel"
 %   * "chronologisch"

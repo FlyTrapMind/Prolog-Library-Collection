@@ -47,8 +47,8 @@ Extra set functions for use in SWI-Prolog.
 %! cardinality(+Set:oneof([list,ordset]), -Cardinality:integer) is det.
 % Returns the cardinality of the given set.
 %
-% @arg Set An ordered set or a list.
-% @arg Cardinality An integer representing the number of elements in the set.
+% @param Set An ordered set or a list.
+% @param Cardinality An integer representing the number of elements in the set.
 
 cardinality(Set, Cardinality):-
   is_ordset(Set), !,
@@ -70,12 +70,12 @@ cardinality(List, Cardinality):-
 % The comparison is performed by the binary semideterministic predicate
 % =Comparator=.
 %
-% @arg Sets A set of sets.
-% @arg CompareSets A set of sets.
-% @arg Comparator The atomic name of a binary semideterministic
+% @param Sets A set of sets.
+% @param CompareSets A set of sets.
+% @param Comparator The atomic name of a binary semideterministic
 %        predicate.
-% @arg ResultSets A set of sets.
-% @arg RestSets A set of sets.
+% @param ResultSets A set of sets.
+% @param RestSets A set of sets.
 % @see An example of this, using comparator subset/2, can be found
 %      in delete_supersets/4.
 
@@ -115,10 +115,10 @@ delete_sets(
 % Deletes from =Sets= all sets that are a superset of some member of
 % =CompareEnvironments=.
 %
-% @arg Sets A set of sets.
-% @arg CompareSets A set of sets.
-% @arg ResultSets A set of sets.
-% @arg RestSets A set of sets.
+% @param Sets A set of sets.
+% @param CompareSets A set of sets.
+% @param ResultSets A set of sets.
+% @param RestSets A set of sets.
 
 delete_supersets(Sets, CompareSets, ResultSets, RestSets):-
   delete_sets(Sets, CompareSets, subset, ResultSets, RestSets).
@@ -130,8 +130,8 @@ delete_supersets(Sets, CompareSets, ResultSets, RestSets):-
 % Succeeds if the given sets are equinumerous, i.e.,
 % if they have the same cardinality.
 %
-% @arg Set1 An ordered set or a list.
-% @arg Set2 An ordered set or a list.
+% @param Set1 An ordered set or a list.
+% @param Set2 An ordered set or a list.
 
 % @see cardinality/2 takes care of the list-to-set conversion.
 equinumerous(Set1, Set2):-
@@ -141,8 +141,8 @@ equinumerous(Set1, Set2):-
 %! is_minimal(+Set:ordset, +Sets:ordset(ordset)) is semidet.
 % Succeeds if =Set= is a minimal set with respect to =Sets=.
 %
-% @arg Set A set of unique objects.
-% @arg Sets A set of sets.
+% @param Set A set of unique objects.
+% @param Sets A set of sets.
 
 is_minimal(Set, Sets):-
   \+((
@@ -154,8 +154,8 @@ is_minimal(Set, Sets):-
 % Returns the next subset. Subsets are represented as lists of bits.
 % Positions in the list correspond to potential elements in the set.
 %
-% @arg Set A list of bits.
-% @arg NextSet A list of bits.
+% @param Set A list of bits.
+% @param NextSet A list of bits.
 
 next_subset([0 | T], [1 | T]).
 next_subset([1 | T1], [0 | T2]):-
@@ -164,8 +164,8 @@ next_subset([1 | T1], [0 | T2]):-
 %! subsets(+Set:ordset, -Subsets:list(list(bit))) is det.
 % Returns all subsets of the given set as a list of binary lists.
 %
-% @arg Set An ordered set.
-% @arg Subsets A list of bitlists representing subsets of =Set=.
+% @param Set An ordered set.
+% @param Subsets A list of bitlists representing subsets of =Set=.
 
 subsets(Set, Subsets):-
   cardinality(Set, Cardinality),
@@ -179,9 +179,9 @@ subsets(Set, Subsets):-
 %! ) is det.
 % Returns the transitive closure of =Predicate= applied to =Input=.
 %
-% @arg Predicate The atomic name of a predicate.
-% @arg Input Either a term or a list of terms.
-% @arg Outputs A list of terms. This is the transitive closure.
+% @param Predicate The atomic name of a predicate.
+% @param Input Either a term or a list of terms.
+% @param Outputs A list of terms. This is the transitive closure.
 
 transitive_closure(Predicate, Input, Outputs):-
   \+(is_list(Input)),

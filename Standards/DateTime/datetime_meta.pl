@@ -23,7 +23,6 @@ Meta-data on the standards that define date-time formats.
 
 
 init_lang_ext:-
-gtrace,
   standards_graph(G),
   init_iso2014(G),
   init_iso2015(G),

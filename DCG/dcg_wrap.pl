@@ -68,7 +68,7 @@ dcg_line_wrap -->
 %      The maxmim width of a line of characters.
 %      This is the length at which line wrapping occurs.
 %
-% @arg Options A list of name-value pairs.
+% @param Options A list of name-value pairs.
 
 dcg_line_wrap(Options) -->
   {
@@ -102,7 +102,7 @@ dcg_word_wrap -->
 %      The maxmim width of a line of characters.
 %      This is the length at which line wrapping occurs.
 %
-% @arg Options A list of name-value pairs.
+% @param Options A list of name-value pairs.
 
 dcg_word_wrap(Options) -->
   {

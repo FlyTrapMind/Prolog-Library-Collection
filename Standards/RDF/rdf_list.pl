@@ -69,11 +69,11 @@ rdf_list(RDF_List, List):-
 %! rdf_list(+O:list(nvpair), +RDFList:uri, -List:list) is det
 % Returns the list that starts at the given node.
 %
-% @arg Options The following options are supported:
+% @param Options The following options are supported:
 %      1. =|recursive(+RecursivelyApplied:boolean)|=
 %         The default value is `true`.
-% @arg StartNode The URI of a node that starts the RDF list.
-% @arg List A prolog list.
+% @param StartNode The URI of a node that starts the RDF list.
+% @param List A prolog list.
 %
 % @author Wouter Beek
 % @author Sander Latour
@@ -96,8 +96,8 @@ rdf_list(O, RDFList, [H1 | T]):-
 %! rdf_list_first(?List:uri, ?First:uri) is nondet.
 % Pairs of lists and their first element.
 %
-% @arg List an RDF list.
-% @arg First The first element of an RDF list.
+% @param List an RDF list.
+% @param First The first element of an RDF list.
 
 rdf_list_first(List, First):-
   rdf_has(List, rdf:first, First).
@@ -105,8 +105,8 @@ rdf_list_first(List, First):-
 %! rdf_list_first(?List:uri, ?Last:uri) is nondet.
 % Pairs of lists and their last element.
 %
-% @arg List an RDF list.
-% @arg Last The last element of an RDF list.
+% @param List an RDF list.
+% @param Last The last element of an RDF list.
 
 rdf_list_last(List, Last):-
   rdf_has(List, rdf:rest, rdf:nil), !,
@@ -118,8 +118,8 @@ rdf_list_last(List, Last):-
 %! rdf_list_length(+List:uri, -Length:integer) is det.
 % Returns the number of elements in the given list.
 %
-% @arg List An RDF list.
-% @arg Length An integer.
+% @param List An RDF list.
+% @param Length An integer.
 
 rdf_list_length(List, Length):-
   rdf_list_length(List, 0, Length).
@@ -134,8 +134,8 @@ rdf_list_length(List, Length, Length):-
 %! rdf_list_next(Element, NextElement) is nondet.
 % Returns pairs of consecutive elements in a list.
 %
-% @arg Element A resource that is an element in an RDF list.
-% @arg NextElement A resource that is an element in an RDF list.
+% @param Element A resource that is an element in an RDF list.
+% @param NextElement A resource that is an element in an RDF list.
 
 rdf_list_next(Element, NextElement):-
   rdf_has(List, rdf:first, Element),
@@ -162,8 +162,8 @@ rdf_list_occurs_before0(Before1, After):-
 %! rdf_list_previous(Element, PreviousElement) is nondet.
 % Returns pairs of inverted consecutive elements in a list.
 %
-% @arg Element A resource that is an element in an RDF list.
-% @arg PreviousElement A resource that is an element in an RDF list.
+% @param Element A resource that is an element in an RDF list.
+% @param PreviousElement A resource that is an element in an RDF list.
 
 rdf_list_previous(Element, PreviousElement):-
   rdf_list_next(PreviousElement, Element).

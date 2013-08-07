@@ -59,7 +59,7 @@ rdf_materialize(Graphs):-
 %! rdf_materialize(+Graphs:list(atom), -TMS:atom) is det.
 % Performs materialization closure on the triples in the given graphs.
 %
-% @arg Graphs A list of atomic names of RDF graphs.
+% @param Graphs A list of atomic names of RDF graphs.
 
 rdf_materialize(Graphs, TMS):-
   % Type checking.
@@ -108,7 +108,7 @@ rdf_materialize(Graph, TMS):-
 %! rdf_materialize_tms(+TMS:atom) is det.
 % Performs materialization closure on the triples in the given TMS.
 %
-% @arg TMS The atomic name of a TMS that is registered with module TMS.
+% @param TMS The atomic name of a TMS that is registered with module TMS.
 
 rdf_materialize_tms(TMS):-
   % Type checking.
@@ -136,7 +136,7 @@ rdf_materialize_tms(_TMS).
 % Tests whether the given TMS is in accordance with the standards for
 % RDF(S) semantics.
 %
-% @arg TMS The atomic name of a TMS.
+% @param TMS The atomic name of a TMS.
 
 rdf_materialize_tms_test(TMS):-
   % Type checking.
@@ -418,11 +418,7 @@ test1:-
   Graph = rdf_tms_test,
   rdf_assert(rdf:a, rdf:b, rdf:c, Graph),
   rdf_materialize(Graph, TMS),
-  tms_export:export_tms(TMS),
-  %rdfs_individual_of(N, tms:'Node'),
-  %rdf_datatype(N, tms:has_id, int, 103, TMS),
-  %tms_export:export_argument(N),
-  true.
+  tms_export:export_tms(TMS).
 
 %! rdf_tms_test1(-S, -P, -O) is det.
 

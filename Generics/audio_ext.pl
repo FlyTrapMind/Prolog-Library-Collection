@@ -59,8 +59,8 @@ Bad to the bone but fine as wine
 % Creates an MP3 file with the given line's text in spoken form.
 % If no file name is given, then one is generated using =Line='s MD5 hash.
 %
-% @arg Line An atom, preferable a natural language expression.
-% @arg MP3 The atomic name of an MP3 file.
+% @param Line An atom, preferable a natural language expression.
+% @param MP3 The atomic name of an MP3 file.
 % @tbd Currently only works for English.
 
 atom_to_mp3(Line, MP3):-

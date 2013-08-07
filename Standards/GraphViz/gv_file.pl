@@ -56,10 +56,10 @@
 % Converts a GraphViz DOT file to an image file, using a specific
 % visualization method.
 %
-% @arg FromFile
-% @arg Method
-% @arg ToFileType
-% @arg ToFile
+% @param FromFile
+% @param Method
+% @param ToFileType
+% @param ToFile
 
 convert_gv(FromFile, Method, ToFileType, ToFile):-
   % Type checks.

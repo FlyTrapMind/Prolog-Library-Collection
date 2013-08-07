@@ -30,9 +30,9 @@ Exception handling predicates.
 % conversion to *jpeg* that causes the exception, reusing a generic exception
 % for convesions.
 %
-% @arg Goal
-% @arg Catcher
-% @arg Exception
+% @param Goal
+% @param Catcher
+% @param Exception
 
 rethrow(Goal, Catcher, Exception):-
   catch(Goal, Catcher, throw(Exception)).

@@ -79,7 +79,7 @@ dbnl_indexed_lines(
 %! dbnl_markup(+Options:list(nvpair), +HTML:dom, -XML:dom) is det.
 % Parsed DBNL HTML as SemDBNL XML.
 %
-% @arg Options A list of name-value pairs.
+% @param Options A list of name-value pairs.
 %      The following options are supported:
 %        * base_uri(uri)
 %        * graph(atom)

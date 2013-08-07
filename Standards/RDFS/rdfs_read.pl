@@ -98,9 +98,9 @@ rdfs_subproperty0(X, Y, G):-
 %! rdfs_individual(?Individual:uri, ?Class:uri, ?Graph:atom) is nondet.
 % Individual and class pairs.
 %
-% @arg Individual An instance resource.
-% @arg Class A class resource.
-% @arg Graph The atomic name of a graph.
+% @param Individual An instance resource.
+% @param Class A class resource.
+% @param Graph The atomic name of a graph.
 
 % We make the memberhip of RDFS class to itself explicit because otherwise
 % the class checks in method rdfs_subclass_of/2 cause rdfs_individual/3 to go
@@ -128,7 +128,6 @@ rdfs_individual(X, Y, G):-
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(math(math_ext)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_read)).
@@ -182,8 +181,8 @@ rdfs_alt(Alt, Contents, Graph):-
 %! rdfs_bag(-Bag:uri, +Graph:atom) is nondet.
 % Returns bags in the given graph.
 %
-% @arg Bag An RDF bag resource.
-% @arg Graph The atomic name of a graph.
+% @param Bag An RDF bag resource.
+% @param Graph The atomic name of a graph.
 
 rdfs_bag(Bag, Graph):-
   rdfs_individual_of(Bag, rdf:'Bag'),
@@ -192,9 +191,9 @@ rdfs_bag(Bag, Graph):-
 %! rdfs_bag(+Bag:uri, -Contents:list(uri), +Graph:atom) is nondet.
 % Returns bags and their contents in the given graph.
 %
-% @arg Bag An RDF bag.
-% @arg Contents A list of resources.
-% @arg Graph The atomic name of a graph.
+% @param Bag An RDF bag.
+% @param Contents A list of resources.
+% @param Graph The atomic name of a graph.
 
 rdfs_bag(Bag, Contents, Graph):-
   rdfs_bag(Bag, Graph),

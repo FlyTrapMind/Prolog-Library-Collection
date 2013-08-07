@@ -66,8 +66,8 @@ arrow(L) -->
 % -------->
 % ~~~
 %
-% @arg Options A list of name-value pairs.
-% @arg Length A non-negative integer.
+% @param Options A list of name-value pairs.
+% @param Length A non-negative integer.
 
 arrow(O, L1) -->
   % Set the default arrow head.

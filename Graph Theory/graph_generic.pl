@@ -364,7 +364,7 @@ degree_sequence(G, V_P, DegreeSequence):-
 % Returns all vertices and edges that are found within the given depth
 % distance from the given vertex.
 %
-% @arg Options A list of name-value pairs, consisting of the following:
+% @param Options A list of name-value pairs, consisting of the following:
 %      1. `directed(boolean)`
 %         Whether only outgoing or also incoming arcs are included
 %         in the export.
@@ -491,7 +491,7 @@ regular(V_P, G, K):-
 % Returns the shortest paths in graph Graph from vertex `From` to vertex `To`,
 % passing vertex `Pass`.
 %
-% @arg Pass This one is optional. "Wir haben ein Abstich gemacht."
+% @param Pass This one is optional. "Wir haben ein Abstich gemacht."
 
 shortest_paths1(G, E_P, N_P, From, To, Pass, ShortestPaths):-
   setoff(
@@ -616,7 +616,7 @@ travel1(O, G, E_P, N_P, First, Last, Distance):-
 % An *Euler tour* is a tour in which all edges are traversed exactly one.
 % Options = [closed(true), every_edge(true), unique_edge(true)]
 %
-% @arg Options A list of name-value pairs. The following options are
+% @param Options A list of name-value pairs. The following options are
 %        defined:
 %        1. =|closed(boolean)|=
 %        2. =|distance(oneof([edge,vertex]))|= For statiscs we return either
@@ -628,16 +628,16 @@ travel1(O, G, E_P, N_P, First, Last, Distance):-
 %        6. =|graph(Graph)|=
 %        7. =|unique_edge(boolean)=
 %        8. =|unique_vertex(boolean)=
-% @arg Graph
-% @arg E_P
-% @arg N_P
-% @arg First The first vertex in the path.
-% @arg Last The last vertex in the path.
-% @arg Distance An integer representing a distance between the first and
+% @param Graph
+% @param E_P
+% @param N_P
+% @param First The first vertex in the path.
+% @param Last The last vertex in the path.
+% @param Distance An integer representing a distance between the first and
 %      the last vertex, counted as the number of traversed edges.
-% @arg Vertices A list of vertices.
-% @arg Edges A list of edges.
-% @arg History
+% @param Vertices A list of vertices.
+% @param Edges A list of edges.
+% @param History
 
 travel1(O, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
   travel1_(
@@ -741,19 +741,19 @@ travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
 %! ) is det.
 % Returns the minimum distance between the given subject and predicate terms.
 %
-% @arg Options A list of name-value pairs.
+% @param Options A list of name-value pairs.
 %      See travel/7 for the list of supported options.
-% @arg Graph
-% @arg E_P
-% @arg N_P
-% @arg First A vertex, the first in the travel.
-% @arg Last A respource, the last in the travel.
-% @arg MinimumDistance An integer representing the minimum distance
+% @param Graph
+% @param E_P
+% @param N_P
+% @param First A vertex, the first in the travel.
+% @param Last A respource, the last in the travel.
+% @param MinimumDistance An integer representing the minimum distance
 %      between the first and last vertex. The kind of distances is set
 %      in =Options=.
-% @arg Vertices An ordered set of vertices.
-% @arg Edges An ordered set of Edges.
-% @arg History A list representing a minimum travel between the first and
+% @param Vertices An ordered set of vertices.
+% @param Edges An ordered set of Edges.
+% @param History A list representing a minimum travel between the first and
 %      last resources.
 
 travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, Vs, Es, History):-

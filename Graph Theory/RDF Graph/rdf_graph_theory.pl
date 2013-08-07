@@ -124,9 +124,9 @@ rdf_edge(G, E):-
 %      Whether all (`all`, default), none (`none`) or only preferred label
 %      literals (`preferred_label`) are included as vertices.
 %
-% @arg Options A list of name-value pairs.
-% @arg Graph The atomic name of an RDF graph.
-% @arg Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
+% @param Options A list of name-value pairs.
+% @param Graph The atomic name of an RDF graph.
+% @param Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
 
 rdf_edge(O, G, FromV-P-ToV):-
   rdf(FromV, P, ToV, G),
@@ -146,8 +146,8 @@ rdf_edges_to_vertices(Es, Vs):-
 %! rdf_graph_to_ugraph(+Graph:atom, -UGraph:ugraph) is det.
 % Returns the UG representation of a loaded RDF graph.
 %
-% @arg G The atomic name of a loaded RDF graph.
-% @arg UG:ugraph A UG datastructure.
+% @param G The atomic name of a loaded RDF graph.
+% @param UG:ugraph A UG datastructure.
 
 rdf_graph_to_ugraph(G, UG):-
   setoff(
@@ -207,9 +207,9 @@ rdf_vertex(G, V):-
 %      Whether vertices that are part of an RDF list should be included
 %      in full (`true`, default) or in a concise way (`false`).
 %
-% @arg Options A list of name-value pairs.
-% @arg Graph The atomic name of an RDF graph.
-% @arg Vertex An RDF term.
+% @param Options A list of name-value pairs.
+% @param Graph The atomic name of an RDF graph.
+% @param Vertex An RDF term.
 
 rdf_vertex(O, G, V):-
   (rdf(V, _, _, G) ; rdf(_, V, _, G) ; rdf(_, _, V, G)),

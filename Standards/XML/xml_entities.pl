@@ -108,11 +108,11 @@ xml_entity_q(DCG_Namespace, DCG_Name, DCG_Attributes) -->
 %! )//
 % Processes an XML header tag.
 %
-% @arg Tree A compound term representing the parse tree.
-% @arg DCG_Namespace
-% @arg Version A compound term of the form
+% @param Tree A compound term representing the parse tree.
+% @param DCG_Namespace
+% @param Version A compound term of the form
 %      `version(?Major:integer,?Minor:integer)`.
-% @arg Standalone A boolean (i.e, either `true` or `false`).
+% @param Standalone A boolean (i.e, either `true` or `false`).
 
 xml_header(header(T1,T2), DCG_Namespace, Version, Standalone) -->
   xml_entity_q(

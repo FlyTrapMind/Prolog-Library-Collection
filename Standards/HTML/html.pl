@@ -83,10 +83,10 @@ HTML attribute parsing, used in HTML table generation.
 %! reply_html_file(+Style:atom, +File:atom) is det.
 % Serve the given HTML file using the given styling.
 %
-% @arg Style The atomic name of the HTML style of the page served.
+% @param Style The atomic name of the HTML style of the page served.
 %        This style has to be defined using the multifile
 %        preficates user:body//2 and user:head//2.
-% @arg File The atomic base name of the HTML file that is served.
+% @param File The atomic base name of the HTML file that is served.
 
 reply_html_file(Style, File):-
   absolute_file_name(stcn_html(File), HTML, [access(read), file_type(html)]),
@@ -202,8 +202,8 @@ stream_to_html(Stream, DOM, Attempts):-
 % Returns the HTML Document Object Model (DOM)
 % for the website with the given URI.
 %
-% @arg URI
-% @arg HTML
+% @param URI
+% @param HTML
 % @throws existence_error(url, Id)
 
 uri_to_html(URI, DOM):-
@@ -231,9 +231,9 @@ uri_to_html(URI, DOM):-
 %! html_image(+Description:atom, +Base:atom, -DIV:element) is det.
 % Constructs an IMG element.
 %
-% @arg Description An atomic description of the image.
-% @arg Base The atomic base name of the image file.
-% @arg DIV The HTML image element.
+% @param Description An atomic description of the image.
+% @param Base The atomic base name of the image file.
+% @param DIV The HTML image element.
 
 html_image(Description, File, DIV):-
   % Make sure the file has a supported image file type.
@@ -267,8 +267,8 @@ html_image(Description, File, DIV):-
 %        1. =|caption(atom)|= The caption of the header.
 %        2. =|header(boolean)|= Whether or not the first sublist should be
 %           displayed as the table header row.
-% @arg Rows A 2D table of terms.
-% @arg Markup An HTML table element.
+% @param Rows A 2D table of terms.
+% @param Markup An HTML table element.
 
 list_to_table(Options, Rows1, element(table, [border=1], TableContents)):-
   list_to_table_caption(Options, CaptionMarkup),
@@ -301,8 +301,8 @@ list_to_table_header(_Options, Rows, [], Rows).
 %! table_row(+Elements:list(term), -Markup) is det.
 % Returns the row of an HTML table containing the given elements.
 %
-% @arg Elements A list of terms.
-% @arg Markup An HTML entity.
+% @param Elements A list of terms.
+% @param Markup An HTML entity.
 
 table_row(Elements, element(tr, [], MarkupCells)):-
   table_row0(Elements, td, MarkupCells).

@@ -95,8 +95,8 @@ atom_codes_(Atom1-Atom2, Codes1-Codes2):-
 %! atom_to_term(+Atom:atom, -Term:term) is det.
 % Returns the term described by the atom.
 %
-% @arg Atom An atom.
-% @arg Term A term.
+% @param Atom An atom.
+% @param Term A term.
 % @see Dumbed down version of atom_to_term/3.
 
 atom_to_term(Atom, Term):-
@@ -110,9 +110,9 @@ atom_to_term(Atom, Term):-
 % Returns a new atom that is like the given atom, but with the given
 % character replacement.
 %
-% @arg Atom An atom.
-% @arg Replacements A list of elements of the form =|char-char|=.
-% @arg NewAtom An atom.
+% @param Atom An atom.
+% @param Replacements A list of elements of the form =|char-char|=.
+% @param NewAtom An atom.
 
 atom_replace(Atom, Replacements, NewAtom):-
   is_list(Replacements),
@@ -164,10 +164,10 @@ first_char(Atom, Char):-
 % If the length of the formatted integer exceeds the given length, then
 % the integer is simply converted to an atom.
 %
-% @arg Integer An integer, the formatted value.
-% @arg Length An integer, indicating the character lenght of the
+% @param Integer An integer, the formatted value.
+% @param Length An integer, indicating the character lenght of the
 %        formatted integer atom.
-% @arg Atom An atom, the formatted version of the integer value.
+% @param Atom An atom, the formatted version of the integer value.
 
 format_integer(Integer, Length, Atom):-
   atom_length(Integer, IntegerLength),
@@ -193,9 +193,9 @@ last_char(Atom, Char):-
 % Returns an atomic progress bar that displays the current value onto
 % the scale that runs from one to the given end value.
 %
-% @arg Current An integer, representing the current processed value.
-% @arg End An integer, representing the last value to be processed.
-% @arg ProgressBar The atomic representation of a progress bar.
+% @param Current An integer, representing the current processed value.
+% @param End An integer, representing the last value to be processed.
+% @param ProgressBar The atomic representation of a progress bar.
 
 progress_bar(End, End, ProgressBar2):-
   !,
@@ -233,9 +233,9 @@ punctuate(Old, New):-
 % Returns the atom that is the repetition of the given subatom the given
 % number of times.
 %
-% @arg SubAtom An atom, the element that gets repeated.
-% @arg Repeats A integer, the number of repeats of the subatom.
-% @arg Atom An atom, the result of repeating the given atom.
+% @param SubAtom An atom, the element that gets repeated.
+% @param Repeats A integer, the number of repeats of the subatom.
+% @param Atom An atom, the result of repeating the given atom.
 
 repeating_atom(_SubAtom, 0, ''):-
   !.
@@ -254,8 +254,8 @@ slashes_to_underscores(Atom, NewAtom):-
 % Returns the atom that is like the give atom, but with all spaces replaced
 % by underscores.
 %
-% @arg Old Any atom.
-% @arg New An atom with spaces replaced by underscores.
+% @param Old Any atom.
+% @param New An atom with spaces replaced by underscores.
 
 spaces_to_underscores(Atom, NewAtom):-
   atom_replace(Atom, ' '-'_', NewAtom).
@@ -269,9 +269,9 @@ spaces_to_underscores(Atom, NewAtom):-
 % The first split does not include the split atom, making this method
 % exclusive.
 %
-% @arg Split The occurrence atoms where the splittable atom will be split.
-% @arg Atom The original, unsplit atom.
-% @arg Splits The results of splitting.
+% @param Split The occurrence atoms where the splittable atom will be split.
+% @param Atom The original, unsplit atom.
+% @param Splits The results of splitting.
 %
 % @see split_atom_inclusive/3 includes the split atom in the split results.
 
@@ -297,9 +297,9 @@ split_atom_exclusive(_SplitList, Atom, [Atom]).
 % Returns the given atom split up in two, according to the given split.
 % Earlier splits includes the split atom, making this method inclusive.
 %
-% @arg Split The occurrence in atom where atom will be split.
-% @arg Atom The original, unsplit atom.
-% @arg Splits The results of splitting.
+% @param Split The occurrence in atom where atom will be split.
+% @param Atom The original, unsplit atom.
+% @param Splits The results of splitting.
 %
 % @see split_atom_exclusive/3 does not include the split atom in the split
 %      results.
@@ -403,8 +403,8 @@ strip_end(RemovableChars, UnstrippedChars, StrippedChars):-
 % Returns an atom that is like the given atom, except for the first character
 % which must be either no letter or a capitalized letter.
 %
-% @arg Old Any atom.
-% @arg New A new atom that starts with a capital letter or with
+% @param Old Any atom.
+% @param New A new atom that starts with a capital letter or with
 %        no letter at all.
 
 titlecase(Atom, TitlecaseAtom):-
@@ -418,9 +418,9 @@ titlecase(Atom, TitlecaseAtom):-
 % If =Atom='s length exceeds the given maximum length, then its truncated
 % name will include '...' to indicate that is has been truncated.
 %
-% @arg Atom An atom.
-% @arg MaxLen An integer.
-% @arg Truncated An atom.
+% @param Atom An atom.
+% @param MaxLen An integer.
+% @param Truncated An atom.
 %
 % @author Jan Wielemaker, taken from Cliopatria.
 % @author Wouter Beek, some alterations.
@@ -440,8 +440,8 @@ truncate(Atom, _AtomLen, MaxLen, Truncated):-
 % Retruns an atom that is like the given atom, but with any underscore
 % characters replaced by spaces.
 %
-% @arg Old An atom.
-% @arg New An atom with underscores replaced by spaces.
+% @param Old An atom.
+% @param New An atom with underscores replaced by spaces.
 
 underscores_to_spaces(Old, New):-
   atom_replace(Old, '_'-' ', New).

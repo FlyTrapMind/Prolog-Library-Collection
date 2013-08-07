@@ -19,13 +19,15 @@
     hexadecimal_digit//2, % ?DecimalDigit:between(0,15)
                           % ?Code:code
     hexadecimal_number//1, % -DecinalNumber:integer
+    int_codes//1, % ?Codes:list(code)
     octal_digit//0,
     octal_digit//1, % ?DecimalDigit:between(0,7)
     octal_digit//2, % ?DecimalDigit:between(0,7)
                     % ?Code:code
     octal_number//1, % -DecinalNumber:integer
-    sign//0,
-    sign//1, % ?Sign:oneof([-1,1])
+    sign//1, % ?Sign:code
+    sign//2, % -Tree:compound
+             % ?Sign:oneof([-1,1])
     signed_number//1, % ?SignedNumber:float
     unsigned_number//1, % ?UnsignedNumber:float
     unsigned_number//3 % ?Number:float
@@ -58,7 +60,6 @@ DCGs for cardinal numbers.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(math(math_ext)).
-:- use_module(math(radix)).
 
 :- meta_predicate(digits_to_decimal_number(//,+,?,?,?)).
 :- meta_predicate(digits_to_decimal_number(//,+,+,?,?,?)).
@@ -115,11 +116,11 @@ decimal_number(N) -->
 %! )//
 % Processes digits of arbitrary radix and returns the decimal equivalent.
 %
-% @arg DCGBody processes a single digit if the given radix.
-% @arg Radix An integer representing the radix used.
+% @param DCGBody processes a single digit if the given radix.
+% @param Radix An integer representing the radix used.
 %      Common values are `2` (binary), `8` (octal),
 %      `10` (decimal), and `16` (hexadecimal).
-% @arg An integer representing the processed number, converted to
+% @param An integer representing the processed number, converted to
 %      the decimal number system.
 
 digits_to_decimal_number(_Digit, Radix, M, H, T):-
@@ -186,6 +187,17 @@ hexadecimal_digit(15, C) --> f(C).
 hexadecimal_number(N) -->
   digits_to_decimal_number(hexadecimal_digit, 16, N).
 
+%! int_codes(?Codes:list(code))//
+% A positive number of digits, possibly followed by a sign.
+
+int_codes([C,D0|D]) -->
+  sign(C), !,
+  digit(D0),
+  digits(D).
+int_codes([D0|D]) -->
+  digit(D0),
+  digits(D).
+
 %! octal_digit//
 
 octal_digit --> binary_digit.
@@ -221,11 +233,11 @@ octal_digit(7, C) --> seven(C).
 octal_number(N) -->
   digits_to_decimal_number(octal_digit, 8, N).
 
-sign --> minus_sign.
-sign --> plus_sign.
+sign(0'-) --> "-". %'
+sign(0'+) --> "+". %'
 
-sign(-1) --> minus_sign.
-sign(1) --> plus_sign.
+sign(sign(-1), -1) --> "-".
+sign(sign(1), 1) --> "+".
 
 signed_number(N, H, T):-
   number(N), !,

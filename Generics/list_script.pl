@@ -54,9 +54,9 @@ file_to_items(File, Items):-
 % Applies the given goal to items that do occur in the TODO file,
 % but that do not occur in the DONE file.
 %
-% @arg Any unary predicate letter.
-% @arg TodoFile The TODO file must exist.
-% @arg DoneFile The DONE file may exist.
+% @param Any unary predicate letter.
+% @param TodoFile The TODO file must exist.
+% @param DoneFile The DONE file may exist.
 
 list_script(Goal, Todo, Done):-
   % The TODO file must exist.

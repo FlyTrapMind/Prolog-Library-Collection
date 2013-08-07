@@ -255,11 +255,11 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
 % fields at the end of the message. The Trailer header field can be
 % used to indicate which header fields are included in a trailer.
 %
-% @arg Tree A parse tree.
-% @arg Chunks A list of compound terms of the form
+% @param Tree A parse tree.
+% @param Chunks A list of compound terms of the form
 %      `chunk(ChunkSize:integer,ChunkData:list(code),ChunkExtension:list)`.
-% @arg LastChunkExtension A list of name-value pairs.
-% @arg EntityHeaders A list of ???.
+% @param LastChunkExtension A list of name-value pairs.
+% @param EntityHeaders A list of ???.
 
 chunked_body(T0, Chunks, LastChunkExtension, EntityHeaders) -->
   % A non-negative number of chunks.
@@ -312,8 +312,8 @@ chunk_extension([H|T]) -->
 % chunk-size = 1*HEX
 % ~~~
 %
-% @arg Tree A parse tree.
-% @arg ChunkSize A decimal number.
+% @param Tree A parse tree.
+% @param ChunkSize A decimal number.
 
 chunk_size(chunk_size(ChunkSize), ChunkSize) -->
   hexadecimal_number(ChunkSize).
@@ -655,12 +655,12 @@ http_to_gv(Tree):-
 % http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
 % ~~~
 %
-% @arg Tree A parse tree.
-% @arg Host
-% @arg Port An integer representing a port.
+% @param Tree A parse tree.
+% @param Host
+% @param Port An integer representing a port.
 %      Defaults to the value for setting `default_port`.
-% @arg Path
-% @arg Query
+% @param Path
+% @param Query
 
 http_url(T, Host, Port, Path, Query) -->
   "http://",
@@ -1493,7 +1493,7 @@ status_code(status_code(Status), Status, Reason1) -->
   {nonvar(Status)}, !,
   {
     status_code(Status, Reason2),
-    number_to_digits(Status, [D1,D2,D3])
+    decimal_to_digits(Status, [D1,D2,D3])
   },
   decimal_digit(D1),
   decimal_digit(D2),

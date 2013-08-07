@@ -61,7 +61,7 @@ logging started.
 %! append_to_log(+Format:atom) is det.
 % Logs the given message in the current log file.
 %
-% @arg Format An atomic message.
+% @param Format An atomic message.
 % @see Like format/1.
 
 append_to_log(Format):-
@@ -70,8 +70,8 @@ append_to_log(Format):-
 %! append_to_log(+Format:atom, +Arguments:list(term)) is det.
 % Logs the given message in the current log file.
 %
-% @arg Format An atomic message.
-% @arg Arguments A list of terms.
+% @param Format An atomic message.
+% @param Arguments A list of terms.
 % @see Like format/2.
 
 append_to_log(Format, Arguments):-
@@ -80,9 +80,9 @@ append_to_log(Format, Arguments):-
 %! append_to_log(+Category:atom, +Format:atom, +Arguments:list(term)) is det.
 % Logs the given message in the current log file under the given category.
 %
-% @arg Category An atom.
-% @arg Format An atomic message.
-% @arg Arguments A list of terms.
+% @param Category An atom.
+% @param Format An atomic message.
+% @param Arguments A list of terms.
 
 append_to_log(Category, Format, Arguments):-
   format(atom(Message), Format, Arguments),
@@ -129,8 +129,8 @@ prolog:message(no_current_log_stream):-
 % Creates a log file in the log file directory and returns the absolute
 % path of that file as well as its stream name.
 %
-% @arg File The atomic name of a file's path.
-% @arg Stream The atomic name of a file's stream.
+% @param File The atomic name of a file's path.
+% @param Stream The atomic name of a file's stream.
 
 create_log_file(File, Stream):-
   current_situation(Situation),
@@ -140,9 +140,9 @@ create_log_file(File, Stream):-
 % Creates a log file in the log file directory and returns the absolute
 % path of that file as well as its stream.
 %
-% @arg Situation An atomic descriptor of a logging situation.
-% @arg File The atomic name of a file's path.
-% @arg Stream The atomic name of a file's stream.
+% @param Situation An atomic descriptor of a logging situation.
+% @param File The atomic name of a file's path.
+% @param Stream The atomic name of a file's stream.
 
 create_log_file(Situation, AbsoluteFile, Stream):-
   absolute_file_name(log(Situation), Dir),
@@ -175,7 +175,7 @@ init:-
 %! send_current_log_file(File) is det.
 % Sends the log that is stored in the given file to the logging server.
 %
-% @arg File The atomic name of a file.
+% @param File The atomic name of a file.
 % @tbd Construct the URL using =library(uri)=.
 % @tbd Add the PHP script (I seem to have deleted it on the remote :-().
 
@@ -201,7 +201,7 @@ prolog:message(no_current_log_file):-
 %! set_current_log_file(+File:atom) is det.
 % Sets the current file where logging messages are stored to.
 %
-% @arg File The atomic name of a file.
+% @param File The atomic name of a file.
 
 set_current_log_file(File):-
   exists_file(File),
@@ -211,7 +211,7 @@ set_current_log_file(File):-
 %! set_current_log_stream(+Stream) is det.
 % Sets the current stream where logging messages are written to.
 %
-% @arg Stream A stream.
+% @param Stream A stream.
 
 set_current_log_stream(Stream):-
   is_stream(Stream),

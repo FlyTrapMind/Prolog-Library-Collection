@@ -244,7 +244,7 @@ cyclic_numlist(Min, Max, CycleLength, NumList):-
 %! even(+Integer:integer) is semidet.
 % Succeeds if the integer is even.
 %
-% @arg Integer An integer.
+% @param Integer An integer.
 
 even(Integer):-
   0 is Integer mod 2.
@@ -285,9 +285,9 @@ float_integer_component(N, I):-
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
 %
-% @arg Base An integer.
-% @arg X An integer.
-% @arg Y A double.
+% @param Base An integer.
+% @param X An integer.
+% @param Y A double.
 
 log(Base, X, Y):-
   Numerator is log(X),
@@ -321,9 +321,9 @@ minus_list(N, Ms, N_Minus_Ms):-
 %! multiply(+X:number, +Y:number, -Z:number) is det.
 % Predicate alternative for the builtin multiplication function.
 %
-% @arg X A number.
-% @arg Y A number.
-% @arg Z A number.
+% @param X A number.
+% @param Y A number.
+% @param Z A number.
 
 multiply(X, Y, Z):-
   Z is X * Y.
@@ -331,8 +331,8 @@ multiply(X, Y, Z):-
 %! multiply_list(+List:list(number), -Multiplication:number) is det.
 % Multiplies the numbers in the given list.
 %
-% @arg List A list of numbers.
-% @arg Multiplication A number.
+% @param List A list of numbers.
+% @param Multiplication A number.
 % @see Extends the builin list manipulators sum_list/2, max_list/2
 %      and min_list/2.
 
@@ -363,11 +363,11 @@ number_length(M, L):-
 % Returns the length of the given number 'before the dot'.
 % The number is in decimal notation.
 %
-% @arg An integer representing a decimal number.
-% @arg Radix An integer representing the radix used.
+% @param An integer representing a decimal number.
+% @param Radix An integer representing the radix used.
 %      Common values are `2` (binary), `8` (octal),
 %      `10` (decimal), and `16` (hexadecimal).
-% @arg Length An integer representing the number of digits in
+% @param Length An integer representing the number of digits in
 %      the given number.
 
 number_length(N1, Radix, L1):-
@@ -380,7 +380,7 @@ number_length(_N, _Radix, 1):- !.
 %! odd(?Integer:integer) is semidet.
 % Succeeds if the integer is odd.
 %
-% @arg Integer An integer.
+% @param Integer An integer.
 
 odd(Integer):-
   1 is Integer mod 2.
@@ -425,11 +425,11 @@ permutations(NumberOfObjects, NumberOfPermutations):-
 %               (i.e., tokens), for $0 \leq i \leq m$ and that are (exactly)
 %               of length _|r|_ is $\frac{n!}{\mult_{i = 1}^m(n_i!)(n - r)!}$.
 %
-% @arg NumbersOfObject A list of numbers, each indicating the number of
+% @param NumbersOfObject A list of numbers, each indicating the number of
 %        objects in a certain group.
-% @arg PermutationLength The (exact) number of objects that occur
+% @param PermutationLength The (exact) number of objects that occur
 %        in a permutation.
-% @arg NumberOfPermutations The number of permutations that can be created.
+% @param NumberOfPermutations The number of permutations that can be created.
 
 permutations(NumbersOfObjects, PermutationLength, NumberOfPermutations):-
   is_list(NumbersOfObjects),
@@ -475,8 +475,8 @@ plus_float(X, Y, Z):-
 %
 % This is used by meta-predicates that require uniform instantiation patterns.
 %
-% @arg Integer An integer.
-% @arg Predecessor An integer.
+% @param Integer An integer.
+% @param Predecessor An integer.
 % @see This extends the builin succ/2.
 
 pred(Integer, Predecessor):-
@@ -500,9 +500,9 @@ random_betwixt(UpperLimit, Random):-
 % Returns a random floating point number between the given lower and
 % upper limits, inclusive.
 %
-% @arg LowerLimit A number.
-% @arg UpperLimit A number.
-% @arg Random In case the lower and upper limits are integers, the
+% @param LowerLimit A number.
+% @param UpperLimit A number.
+% @param Random In case the lower and upper limits are integers, the
 %	 return value is an integer as well. Otherwise it is a floating
 %	 point number.
 % @tbd Because we take the floor for the random value between two integers,
@@ -529,10 +529,10 @@ random_betwixt_(LowerLimit, UpperLimit, Random):-
 % Returns a random coordinate of the indicates dimension, i.e.,
 % the dimension argument of the given size compound term.
 %
-% @arg Size A compound term specifying the dimension of the generated
+% @param Size A compound term specifying the dimension of the generated
 %        coordinate, as well as the ceiling limit values for each dimension.
 %        The floor limit value for every dimension is 0.0.
-% @arg Coordinate A coordinate that has the same dimension as the given
+% @param Coordinate A coordinate that has the same dimension as the given
 %        size. Its second argument is a list of lists of floating point
 %        values.
 

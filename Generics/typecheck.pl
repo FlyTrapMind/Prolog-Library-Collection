@@ -20,8 +20,8 @@ Predicates used for parsing and checking value-type conformance.
 %! typecheck(+Type:compound, +Value) is semidet.
 % Succeeds if the given value is of the given type.
 %
-% @arg Type A compound term representing a type.
-% @arg Value
+% @param Type A compound term representing a type.
+% @param Value
 
 typecheck(or(Types), Value):-
   member(Type, Types),

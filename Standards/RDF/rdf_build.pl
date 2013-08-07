@@ -14,8 +14,8 @@
 % LITERAL ASSERTIONS
     rdf_assert_datatype/5, % +Subject:oneof([bnode,uri])
                            % +Predicate:uri
-                           % +Datatype:oneof([atom,uri])
-                           % +ExternalValue
+                           % +Datatype:atom
+                           % +Value
                            % +Graph:atom
     rdf_assert_literal/4, % +Subject:oneof([bnode,uri])
                           % +Predicate:uri
@@ -37,15 +37,15 @@
                      % +Graph:atom
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,uri])
                               % +Predicate:uri
-                              % +Datatype:oneof([atom,uri])
+                              % +DatatypeName:atom
                               % +NewValue
                               % +Graph:atom
 
 % LITERAL RETRACTIONS
     rdf_retractall_datatype/5, % ?Subject:oneof([bnode,uri])
                                % ?Predicate:uri
-                               % ?Datatype:oneof([atom,uri])
-                               % ?ExternalValue
+                               % ?DatatypeName:atom
+                               % ?Value
                                % ?Graph:atom
     rdf_retractall_literal/4, % ?Subject:oneof([bnode,uri])
                               % ?Predicate:uri
@@ -85,11 +85,10 @@ The supported datatypes:
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_typecheck)).
 :- use_module(xml(xml_namespace)).
-:- use_module(xml(xml_schema_datatypes)).
+:- use_module(xsd(xsd)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
@@ -121,9 +120,9 @@ The supported datatypes:
 %! rdf_assert_individual(+Individual:uri, +Class:uri, +Graph:graph) is det.
 % Asserts an individual/class relationship.
 %
-% @arg Individual An instance resource.
-% @arg Class A class resource.
-% @arg Graph The atomic name of an RDF graph.
+% @param Individual An instance resource.
+% @param Class A class resource.
+% @param Graph The atomic name of an RDF graph.
 
 rdf_assert_individual(I, C, G):-
   rdf_assert(I, rdf:type, C, G).
@@ -135,42 +134,42 @@ rdf_assert_individual(I, C, G):-
 %! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
 % Asserts the given, possibly nested list into RDF.
 %
-% @arg List The, possibly nested, Prolog list.
-% @arg RDF_List The URI of the node at which the RDF list starts.
-% @arg Graph The atomic name of a graph or unbound.
+% @param List The, possibly nested, Prolog list.
+% @param RDF_List The URI of the node at which the RDF list starts.
+% @param Graph The atomic name of a graph or unbound.
 %
 % @author Wouter Beek, elaborating on Sanders original, allowing the graph
 %         to be optional and returning the root of the asserted list.
 % @author Sander Latour, who wrote the original version, dealing with
 %         nested lists.
 
-rdf_assert_list(List, RDF_List, Graph):-
-  add_blank_list_individual(RDF_List, Graph),
-  rdf_assert_list0(List, RDF_List, Graph).
+rdf_assert_list(List, RDF_List, G):-
+  add_blank_list_individual(RDF_List, G),
+  rdf_assert_list0(List, RDF_List, G).
 
 rdf_assert_list0([], rdf:nil, _Graph).
-rdf_assert_list0([H | T], RDF_List, Graph):-
+rdf_assert_list0([H|T], RDF_List, G):-
   (
     is_list(H)
   ->
-    rdf_assert_list0(H, H1, Graph)
+    rdf_assert_list0(H, H1, G)
   ;
     H1 = H
   ),
-  rdf_assert(RDF_List, rdf:first, H1, Graph),
+  rdf_assert(RDF_List, rdf:first, H1, G),
   (
     T == []
   ->
     rdf_global_id(rdf:nil, TList)
   ;
-    add_blank_list_individual(TList, Graph),
-    rdf_assert_list0(T, TList, Graph)
+    add_blank_list_individual(TList, G),
+    rdf_assert_list0(T, TList, G)
   ),
-  rdf_assert(RDF_List, rdf:rest, TList, Graph).
+  rdf_assert(RDF_List, rdf:rest, TList, G).
 
-add_blank_list_individual(Blank, Graph):-
+add_blank_list_individual(Blank, G):-
   rdf_bnode(Blank),
-  rdf_assert_individual(Blank, rdf:'List', Graph).
+  rdf_assert_individual(Blank, rdf:'List', G).
 
 
 
@@ -179,8 +178,8 @@ add_blank_list_individual(Blank, Graph):-
 %! rdf_assert_datatype(
 %!   +Subject:oneof([bnode,uri]),
 %!   +Predicate:uri,
-%!   +DatatypeName:oneof([]),
-%!   +ExternalValue,
+%!   +DatatypeName:atom,
+%!   +Value,
 %!   +Graph:atom
 %! ) is det.
 % Asserts a datatyped value for a blank node or IRI reference.
@@ -204,16 +203,17 @@ add_blank_list_individual(Blank, Graph):-
 %   * `gYear`
 %   * `int`
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg DatatypeName
-% @arg Value
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param DatatypeName
+% @param Value
+% @param Graph The atomic name of an RDF graph.
 
-rdf_assert_datatype(S, P, DatatypeName, ExternalValue, G):-
-  xmls_datatype(DatatypeName, Datatype),
-  xmls_canonical_value(Datatype, ExternalValue, CanonicalValue),
-  rdf_assert(S, P, literal(type(Datatype, CanonicalValue)), G).
+rdf_assert_datatype(S, P, DatatypeName, Value, G):-
+  datatype(DatatypeName, Datatype),
+  % We only emit canonical representations for XSD values.
+  canonicalMap(Datatype, Value, LEX),
+  rdf_assert(S, P, literal(type(Datatype, LEX)), G).
 
 %! rdf_assert_literal(
 %!   +Subject:oneof([bnode,uri]),
@@ -223,15 +223,15 @@ rdf_assert_datatype(S, P, DatatypeName, ExternalValue, G):-
 %! ) is det.
 % Asserts a literal value for a resource.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Literal An atom.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Literal An atom.
+% @param Graph The atomic name of an RDF graph.
 % @see rdf_assert_literal/5 also specifies the language.
 
-rdf_assert_literal(Subject, Predicate, Literal, Graph):-
+rdf_assert_literal(S, P, Literal, G):-
   % Make sure that the literal is atomic.
-  rdf_assert(Subject, Predicate, literal(Literal), Graph).
+  rdf_assert(S, P, literal(Literal), G).
 
 %! rdf_assert_literal(
 %!   +Subject:oneof([bnode,uri]),
@@ -242,15 +242,15 @@ rdf_assert_literal(Subject, Predicate, Literal, Graph):-
 %! ) is det.
 % Asserts a integer value for a resource.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Language The atomic name of a language.
-% @arg Literal An atom.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Language The atomic name of a language.
+% @param Literal An atom.
+% @param Graph The atomic name of an RDF graph.
 
-rdf_assert_literal(Subject, Predicate, Language, Literal, Graph):-
+rdf_assert_literal(S, P, Language, Literal, G):-
   % Make sure that the literal is atomic.
-  rdf_assert(Subject, Predicate, literal(lang(Language, Literal)), Graph).
+  rdf_assert(S, P, literal(lang(Language, Literal)), G).
 
 %! rdf_assert_xml_literal(
 %!   +Subject:oneof([bnode,uri]),
@@ -259,35 +259,34 @@ rdf_assert_literal(Subject, Predicate, Language, Literal, Graph):-
 %!   +Graph:atom
 %! ) is det.
 
-rdf_assert_xml_literal(Subject, Predicate, XMLLiteral, Graph):-
-  rdf_assert_datatype(Subject, Predicate, 'XMLLiteral', XMLLiteral, Graph).
+rdf_assert_xml_literal(S, P, XMLLiteral, G):-
+  rdf_assert_datatype(S, P, 'XMLLiteral', XMLLiteral, G).
 
 
 
 % LITERAL RETRACTIONS %
 
 %! rdf_retractall_datatype(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?DatatypeName:oneof([]),
-%!   ?ExternalValue,
-%!   ?Graph:atom
+%!   +Subject:oneof([bnode,uri]),
+%!   +Predicate:uri,
+%!   +DatatypeName:atom,
+%!   +Value,
+%!   +Graph:atom
 %! ) is det.
-% Retracts all matching RDF triples that assert an integer property.
+% Retracts all matching RDF triples that assert a datatypes value.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg DatatypeName
-% @arg ExternalValue
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param DatatypeName
+% @param Value
+% @param Graph The atomic name of an RDF graph.
 
-rdf_retractall_datatype(Subject, Predicate, DatatypeName, ExternalValue, Graph):-
+rdf_retractall_datatype(S, P, DatatypeName, Value, G):-
+  datatype(DatatypeName, Datatype),
   forall(
-    rdf_datatype(Subject, Predicate, DatatypeName, ExternalValue, Graph),
-    (
-      rdf_datatype(DatatypeName, ExternalValue, Datatype, CanonicalValue),
-      rdf_retractall(Subject, Predicate, literal(type(Datatype, CanonicalValue)), Graph)
-    )
+    % The given value may have several possible literals representing it.
+    lexicalMap(Datatype, LEX, Value),
+    rdf_retractall(S, P, literal(type(Datatype, LEX)), G)
   ).
 
 %! rdf_retractall_literal(
@@ -298,15 +297,15 @@ rdf_retractall_datatype(Subject, Predicate, DatatypeName, ExternalValue, Graph):
 %! ) is det.
 % Retracts all matching RDF triples that assert a literal property.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Literal An atom.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Literal An atom.
+% @param Graph The atomic name of an RDF graph.
 % @see rdf_retractall_literal/5 only retracts triples with literals of
 %      a specific name.
 
-rdf_retractall_literal(Subject, Predicate, Literal, Graph):-
-  rdf_retractall(Subject, Predicate, literal(Literal), Graph).
+rdf_retractall_literal(S, P, Literal, G):-
+  rdf_retractall(S, P, literal(Literal), G).
 
 %! rdf_retractall_literal(
 %!   ?Subject:oneof([bnode,uri]),
@@ -318,14 +317,14 @@ rdf_retractall_literal(Subject, Predicate, Literal, Graph):-
 % Retracts all matching RDF triples that assert a literal property
 % in a specific language.
 %
-% @arg Subject A resource.
-% @arg Predicate A resource.
-% @arg Language The atomic name of a language.
-% @arg Literal An atom.
-% @arg Graph The atomic name of an RDF graph.
+% @param Subject A resource.
+% @param Predicate A resource.
+% @param Language The atomic name of a language.
+% @param Literal An atom.
+% @param Graph The atomic name of an RDF graph.
 
-rdf_retractall_literal(Subject, Predicate, Language, Literal, Graph):-
-  rdf_retractall(Subject, Predicate, literal(lang(Language, Literal)), Graph).
+rdf_retractall_literal(S, P, Language, Literal, G):-
+  rdf_retractall(S, P, literal(lang(Language, Literal)), G).
 
 
 
@@ -334,16 +333,16 @@ rdf_retractall_literal(Subject, Predicate, Language, Literal, Graph):-
 %! rdf_increment(+Link:uri, +Relation:uri, +Graph:atom) is det.
 % Inrements an integer stored in RDF.
 
-rdf_increment(Subject, Predicate, Graph):-
-  once(rdf_datatype(Subject, Predicate, int, OldValue, Graph)),
+rdf_increment(S, P, G):-
+  once(rdf_datatype(S, P, int, OldValue, G)),
   NewValue is OldValue + 1,
-  rdf_retractall_datatype(Link, Relation, int, OldValue, Graph),
-  rdf_assert_datatype(Link, Relation, int, NewValue, Graph).
+  rdf_retractall_datatype(Link, Relation, int, OldValue, G),
+  rdf_assert_datatype(Link, Relation, int, NewValue, G).
 
 %! rdf_overwrite_datatype(
 %!   +Subject:oneof([bnode,uri]),
 %!   +Predicate:uri,
-%!   +Datatype:oneof([atom,uri]),
+%!   +DatatypeName:atom,
 %!   +NewValue,
 %!   +Graph:atom
 %! ) is det.
@@ -351,28 +350,26 @@ rdf_increment(Subject, Predicate, Graph):-
 % value is already asserted. In that case none of the other values gets
 % retracted.
 
-rdf_overwrite_datatype(Subject, Predicate, Datatype, NewValue, Graph):-
+rdf_overwrite_datatype(S, P, DatatypeName, NewValue, G):-
   % Type checking.
   % We need a completely qualified RDF triple.
-  rdf_is_subject(Subject),
-  rdf_is_predicate(Predicate),
-  rdf_datatype(Datatype, NewValue, _CanonicalValue),
-  rdf_graph(Graph), !,
+  rdf_is_subject(S),
+  rdf_is_predicate(P),
+  rdf_graph(G), !,
   findall(
     OldValue,
-    rdf_datatype(Subject, Predicate, Datatype, OldValue, Graph),
+    rdf_datatype(S, P, DatatypeName, OldValue, G),
     OldValues
   ),
   (
     member(NewValue, OldValues)
   ;
-    rdf_retractall_datatype(Subject, Predicate, Datatype, OldValue, Graph),
-    rdf_assert_datatype(Subject, Predicate, Datatype, NewValue, Graph),
+    rdf_retractall_datatype(S, P, DatatypeName, OldValue, G),
+    rdf_assert_datatype(S, P, DatatypeName, NewValue, G),
     debug(
       rdf_build,
       'Updated value <~w, ~w, ~w^^~w, ~w> --> <~w, ~w, ~w^^~w, ~w>\n',
-      [Subject, Predicate, OldValues, Datatype, Graph, Subject, Predicate,
-      NewValue, Datatype, Graph]
+      [S, P, OldValues, DatatypeName, G, S, P, NewValue, DatatypeName, G]
     )
   ), !.
 
@@ -380,5 +377,6 @@ rdf_overwrite_datatype(Subject, Predicate, Datatype, NewValue, Graph):-
 
 % PROPERTIES %
 
-rdf_assert_property(Property, Graph):-
-  rdf_assert_individual(Property, rdf:'Property', Graph).
+rdf_assert_property(Property, G):-
+  rdf_assert_individual(Property, rdf:'Property', G).
+

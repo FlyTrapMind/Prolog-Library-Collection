@@ -49,9 +49,9 @@ absolute_file_name_number(Spec, Options, Number, Absolute):-
 % Returns the absolute paths of all files that are in the given directories.
 % Search recurses through subdirectories.
 %
-% @arg Dirs A list of directory names.
-% @arg RE A regular expression filter on file search.
-% @arg AbsoluteFileNames A list of absolute file names.
+% @param Dirs A list of directory names.
+% @param RE A regular expression filter on file search.
+% @param AbsoluteFileNames A list of absolute file names.
 
 path_walk_forest([], _RE, []).
 path_walk_forest([Dir | Dirs], RE, AbsoluteFileNames):-
@@ -63,9 +63,9 @@ path_walk_forest([Dir | Dirs], RE, AbsoluteFileNames):-
 % Returns the file paths in the given directory answering the given regular
 % expression. The directories are searched recursively.
 %
-% @arg MainDir A directory path.
-% @arg RE A regular expression filter. Example: =|'.*.pl$'|=
-% @arg Paths A list of absolute file paths.
+% @param MainDir A directory path.
+% @param RE A regular expression filter. Example: =|'.*.pl$'|=
+% @param Paths A list of absolute file paths.
 
 path_walk_tree(MainDir, RE, AbsoluteFileNames1):-
   % Find all relative file names.

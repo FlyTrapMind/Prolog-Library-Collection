@@ -8,11 +8,9 @@
     digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
                          % +Radix:integer
                          % -DecimalNumber:integer
-    number_to_decimal/3, % +RadixNumber:atomic
-                         % +Radix:between(2,16)
-                         % -DecimalNumber:integer
-    number_to_digits/2 % +DecimalNumber:integer
-                       % +DecimalDigits:list(between(0,9))
+    number_to_decimal/3 % +RadixNumber:atomic
+                        % +Radix:between(2,16)
+                        % -DecimalNumber:integer
   ]
 ).
 
@@ -45,11 +43,11 @@ digits_to_decimal(DecimalDigits, DecimalNumber):-
 % Process the decimal digits from left to right, using the radix to multiply
 % the result at each step; returning the decimal number.
 %
-% @arg DecimalDigits A list of decimal digits.
+% @param DecimalDigits A list of decimal digits.
 %      Conversion from -- for instance -- hexadecimal digits has
 %      already occured before this predicate is invoked.
-% @arg Radix An integer indicating the radix of the decimal digits.
-% @arg DecimalNumber An integer that is the given decimal digits
+% @param Radix An integer indicating the radix of the decimal digits.
+% @param DecimalNumber An integer that is the given decimal digits
 %      under the given radix.
 
 digits_to_decimal(DecimalDigits, Radix, DecimalNumber):-
@@ -73,8 +71,4 @@ number_to_decimal(RadixNumber, Radix, DecimalNumber):-
 
 number_to_decimal(RadixDigit, DecimalNumber):-
   char_type(RadixDigit, xdigit(DecimalNumber)).
-
-number_to_digits(DecimalNumber, DecimalDigits):-
-  atom_chars(DecimalNumber, Chars),
-  maplist(atom_number, Chars, DecimalDigits).
 

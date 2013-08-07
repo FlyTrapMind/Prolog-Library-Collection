@@ -226,9 +226,9 @@ xor(_X, Y):-
 % Returns either the given value or the default value in case there is no
 % value given.
 %
-% @arg Value A term or a variable.
-% @arg Default A term.
-% @arg SetValue A term.
+% @param Value A term or a variable.
+% @param Default A term.
+% @param SetValue A term.
 
 default(Value, Default, Default):-
   var(Value), !.
@@ -294,9 +294,9 @@ generic(P1, Context, Args):-
 %! setoff(+Format, :Goal, -Set:ordset) is det.
 % The sorted version of forall/2.
 %
-% @arg Format A compound term.
-% @arg Goal A predicate name.
-% @arg Set An ordered set.
+% @param Format A compound term.
+% @param Goal A predicate name.
+% @param Set An ordered set.
 % @see forall/2
 
 setoff(Format, Goal, Set):-
@@ -346,9 +346,9 @@ maplist_pairs(Goal, List1, List2):-
 %! mapset(:Goal, +List:list(term), -Set:ordset(term)) is det.
 % The sorted version of maplist/3.
 %
-% @arg Goal A goal.
-% @arg List A list of terms.
-% @arg Set An ordered set of terms.
+% @param Goal A goal.
+% @param List A list of terms.
+% @param Set An ordered set of terms.
 
 mapset(Goal, List, Set):-
   maplist(Goal, List, NewList),
@@ -365,7 +365,7 @@ mapsum(Goal, List, Sum):-
 %! modules(-Modules:list(atom)) is det.
 % Returns a list of the names of all the loaded modules.
 %
-% @arg Modules A list of atomic module names.
+% @param Modules A list of atomic module names.
 
 modules(Modules):-
   findall(
@@ -413,8 +413,8 @@ complete(_Goal, Input, [Input]).
 %! count(:Goal, -Count:integer) is det.
 % Returns the number of calls that can be made of the given goal.
 %
-% @arg Goal A goal.
-% @arg Count An integer.
+% @param Goal A goal.
+% @param Count An integer.
 
 count(Goal, Count):-
   (
@@ -435,8 +435,8 @@ count(Goal, Count):-
 %! list_compound(?List:list(term), ?Compound:compound_term) is nondet.
 % Converts between lists and compound terms of the form =x_1/.../x_n=.
 %
-% @arg List A list of terms.
-% @arg Compound A compound term of the form =x_1/.../x_n=.
+% @param List A list of terms.
+% @param Compound A compound term of the form =x_1/.../x_n=.
 
 list_compound([X], X):- !.
 list_compound([H | T], H/CompoundT):-
@@ -452,11 +452,11 @@ multi(Goal, Count):-
 % Applies a predicate multiple times on the given input and its
 % subsequent outputs, i.e. repeated function application.
 %
-% @arg Goal
-% @arg Count The integer counter, indicating the number of times the
+% @param Goal
+% @param Count The integer counter, indicating the number of times the
 %        predicate is applied repeaterly.
-% @arg Input A term.
-% @arg Output A term.
+% @param Input A term.
+% @param Output A term.
 
 multi(Goal, Count, Input, Output):-
   multi(Goal, Count, Input, Output, _History).
@@ -484,12 +484,12 @@ run_in_working_directory(Call, WorkingDirectory):-
 %! predmerge_with_duplicates(+Predicate, +List1, +List2, -Solution)
 % Merges the given lists based on the given sort predicate.
 % @precondition It is assumed that both lists are themselves sorted.
-% @arg Predicate The sort predicate. It should be tertiary, of the form
+% @param Predicate The sort predicate. It should be tertiary, of the form
 % <{ <, =, > }, Element1, Element2>.
 %
-% @arg List1 An ordered list.
-% @arg List2 An ordered list.
-% @arg Solution An ordered list.
+% @param List1 An ordered list.
+% @param List2 An ordered list.
+% @param Solution An ordered list.
 
 predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):-
   !.
@@ -528,9 +528,9 @@ predmerge_with_duplicates(<, Predicate, H1, H2, T1, T2, [H1 | Result]):-
 % Variation of the standard predicate predsort/3 that does keeps any
 % duplicates (instead of removing them).
 %
-% @arg Predicate An atomic predicate name of a tertiary predicate.
-% @arg UnsortedList ...
-% @arg SortedList ...
+% @param Predicate An atomic predicate name of a tertiary predicate.
+% @param UnsortedList ...
+% @param SortedList ...
 % @see Slight alteration of predsort/3.
 
 predsort_with_duplicates(Predicate, UnsortedList, SortedList):-
@@ -555,11 +555,11 @@ predsort_with_duplicates(Predicate, UnsortedList, SortedList):-
 % The =SortedListHalf= is sorted in this predicate. The
 % =UnsortedListHalf= will be sorted in the next iteration.
 %
-% @arg Predicate The atomic name of a binary semideterministic predicate.
-% @arg Length An integer.
-% @arg SortedListHalf A list of terms that are already sorted.
-% @arg UnsortedListHalf A list of terms that are not yet sorted.
-% @arg SortedList An ordered set of terms.
+% @param Predicate The atomic name of a binary semideterministic predicate.
+% @param Length An integer.
+% @param SortedListHalf A list of terms that are already sorted.
+% @param UnsortedListHalf A list of terms that are not yet sorted.
+% @param SortedList An ordered set of terms.
 
 % There are 2 more unsorted terms.
 predsort_with_duplicates(
@@ -623,14 +623,14 @@ sort_with_duplicates(>, H1, H2, [H2, H1]).
 %
 % Receiving input from the user does not work in threads!
 %
-% @arg Action An atomic description of the action that is performed by
+% @param Action An atomic description of the action that is performed by
 %             the goal.
-% @arg Goal An arbitrary Prolog goal that takes the number of elements
+% @param Goal An arbitrary Prolog goal that takes the number of elements
 %           in each tuple as the number of arguments.
-% @arg Headers A list of atoms describing the entries in each tuple.
+% @param Headers A list of atoms describing the entries in each tuple.
 %              The number of headers and the number of elements in each
 %              tuple are assumed to be the same.
-% @arg Tuples A list of tuples. These are the element lists for which goal
+% @param Tuples A list of tuples. These are the element lists for which goal
 %             is executed after user-confirmation.
 
 user_interaction(Action, Goal, Headers, Tuples):-

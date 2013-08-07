@@ -380,8 +380,8 @@ ilp(Base):-
 %! ilp(+Base:atom, +Mode:atom) is det.
 % Runs the ILP algorithm.
 %
-% @arg Base The base name of the input files.
-% @arg Mode Either 'det', 'nondet' and 'both'. Whether the algorithm
+% @param Base The base name of the input files.
+% @param Mode Either 'det', 'nondet' and 'both'. Whether the algorithm
 %           gives all results (slow) or only the top result (fast).
 
 ilp(Base, Mode):-
@@ -416,7 +416,7 @@ ilp(Base, Mode):-
 %! ilp_file(+File:atom) is det.
 % Perform ILP for the given input file.
 %
-% @arg File The atomic name of a file.
+% @param File The atomic name of a file.
 
 ilp_file(File):-
   % Make sure the file has a correct extension for being
@@ -451,12 +451,12 @@ ilp_mode(nondet).
 %! get_atoms(+Predicates, +Depth, +MaxDepth, +Last, -LastLit)
 % Layered generation of ground atoms to add to the bottom clause.
 %
-% @arg Predicates A list of Predicate/Arity entries obtained from the
+% @param Predicates A list of Predicate/Arity entries obtained from the
 %        determinations.
-% @arg Depth The current variable-chain depth.
-% @arg MaxDepth The maximum allowed variable chain depth (i setting).
-% @arg Last The last atom number so far.
-% @arg Lastlit The atom number after all atoms to MaxDepths have been
+% @param Depth The current variable-chain depth.
+% @param MaxDepth The maximum allowed variable chain depth (i setting).
+% @param Last The last atom number so far.
+% @param Lastlit The atom number after all atoms to MaxDepths have been
 %        generated.
 
 get_atoms([], _, _, Last, Last):-
@@ -1071,9 +1071,9 @@ remove_lits(_).
 % Generate a new literal at depth Depth.
 % Forced backtracking will give all lits.
 %
-% @arg Name The name of a predicate.
-% @arg Arity A numeric arity indicator.
-% @arg Depth A numeric depth indicator.
+% @param Name The name of a predicate.
+% @param Arity A numeric arity indicator.
+% @param Depth A numeric depth indicator.
 
 gen_layer(Name/Arity, Depth):-
   (
@@ -9410,7 +9410,7 @@ get_start_label(Evalfn,[1,0,2,Val]):-
 % Read ILP files with the given name. Background knowledge and
 % examples all have the same base name.
 %
-% @arg Base An atomic base name.
+% @param Base An atomic base name.
 
 read_all(Base):-
   read_all(Base, Base, Base).
@@ -9419,8 +9419,8 @@ read_all(Base):-
 % Read ILP files with the given name. The examples files have
 % the same base name.
 %
-% @arg BackgroundBase An atomic base name.
-% @arg ExamplesBase An atomic base names.
+% @param BackgroundBase An atomic base name.
+% @param ExamplesBase An atomic base names.
 
 read_all(BackgroundBase, ExamplesBase):-
   read_all(BackgroundBase, ExamplesBase, ExamplesBase).
@@ -9432,9 +9432,9 @@ read_all(BackgroundBase, ExamplesBase):-
 %! ) is det.
 % Read ILP files with the given names.
 %
-% @arg BackgroundBase An atomic base name.
-% @arg PositiveExamplesBase An atomic base name.
-% @arg NegativeExamplesBase An atomic base name.
+% @param BackgroundBase An atomic base name.
+% @param PositiveExamplesBase An atomic base name.
+% @param NegativeExamplesBase An atomic base name.
 % @tbd Fix the lacking determinism of this predicate
 %       (now enforced by the green cut).
 
@@ -9455,7 +9455,7 @@ read_all(BackgroundBase, PositiveExamplesBase, NegativeExamplesBase):-
 % Reads background knowledge from the background file with the
 % given base name.
 %
-% @arg BackgroundBase The atomic name of a background file's base.
+% @param BackgroundBase The atomic name of a background file's base.
 
 read_background(BackgroundBase):-
   absolute_file_name(
@@ -9478,9 +9478,9 @@ read_background(BackgroundBase):-
 %! ) is det.
 % Reads examples from files that have the given base names.
 %
-% @arg PositiveExamplesBase The atomic base name of a positive
+% @param PositiveExamplesBase The atomic base name of a positive
 %        examples file.
-% @arg NegativeExamplesBase The atomic base name of a negative
+% @param NegativeExamplesBase The atomic base name of a negative
 %        examples file.
 
 read_examples(PositiveExamplesBase, NegativeExamplesBase):-
@@ -9528,10 +9528,10 @@ read_negative_examples(NegativeExamplesBase):-
 % Reads examples from the given bases and returns their absolute files.
 % The exampels are loaded as being of the given type.
 %
-% @arg Type The atomic type of the examples file. Either
+% @param Type The atomic type of the examples file. Either
 %        'pos' or 'neg'.
-% @arg ExamplesBases Either an atomic base or a list of such bases.
-% @arg ExamplesFiles Either an atomic abolsute file name or a list
+% @param ExamplesBases Either an atomic base or a list of such bases.
+% @param ExamplesFiles Either an atomic abolsute file name or a list
 %        of such file names.
 
 read_examples_files(Type, ExamplesBases, ExamplesFiles):-
@@ -9553,10 +9553,10 @@ read_examples_files(Type, ExamplesBases, ExamplesFiles):-
 %! read_examples_from_file(Type, ExamplesBase, ExamplesFile) is det.
 % Reads the examples file with the given base name that is of the given type.
 %
-% @arg Type The atomic type of examples file. This is either
+% @param Type The atomic type of examples file. This is either
 %        'pos' or 'neg'.
-% @arg ExamplesBase The atomic base of the examples file.
-% @arg ExamplesFile The atomic absolute examples file name.
+% @param ExamplesBase The atomic base of the examples file.
+% @param ExamplesFile The atomic absolute examples file name.
 
 read_examples_from_file(Type, ExamplesBase, ExamplesFile):-
   absolute_file_name(data(ExamplesBase), ExamplesFile, [access(read), file_type(Type)]),

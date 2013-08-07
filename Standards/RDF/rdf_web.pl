@@ -34,7 +34,7 @@ Web predicates for RDF graphs.
 %! rdf_graphs_web(-Markup:list) is det.
 % Returns the markup for an enumeration of the currently loaded graphs.
 %
-% @arg Markup A list of HTML markup elements.
+% @param Markup A list of HTML markup elements.
 
 rdf_graphs_web(Markup):-
   findall(
@@ -60,8 +60,8 @@ rdf_graphs_web(Markup):-
 % Graphs that are loaded via this front-end should be located in the user's
 % =data= subdirectory.
 %
-% @arg Graph The atomic name of a graph.
-% @arg Markup
+% @param Graph The atomic name of a graph.
+% @param Markup
 
 % Prefer turtle.
 rdf_load_web(Graph, Markup):-
@@ -76,7 +76,7 @@ rdf_load_web(Graph, Markup):-
 %! rdf_namespaces_web(-Markup:list) is det.
 % Returns a list of the currently defined namespaces in HTML markup format.
 %
-% @arg Markup A list of HTML markup elements.
+% @param Markup A list of HTML markup elements.
 
 rdf_namespaces_web(Markup):-
   xml_current_namespaces(Namespaces),
@@ -87,8 +87,8 @@ rdf_namespaces_web(Markup):-
 % Returns a list of the namespaces that occur in a specific graph,
 % in HTML markup format.
 %
-% @arg Graph The atomic name of a graph.
-% @arg Markup A list of HTML markup elements.
+% @param Graph The atomic name of a graph.
+% @param Markup A list of HTML markup elements.
 
 rdf_namespaces_web(Graph, Markup):-
   rdf_current_namespaces(Graph, Namespaces),
@@ -98,8 +98,8 @@ rdf_namespaces_web(Graph, Markup):-
 %! rdf_namespaces_web0(+Namespaces:list(atom), -Table:dom) is det.
 % Returns the markup for an enumeration of the given namespaces.
 %
-% @arg Namespaces A list of atomic names of namespaces.
-% @arg Markup A list of HTML markup elements.
+% @param Namespaces A list of atomic names of namespaces.
+% @param Markup A list of HTML markup elements.
 
 rdf_namespaces_web0(Namespaces, Table):-
   findall(

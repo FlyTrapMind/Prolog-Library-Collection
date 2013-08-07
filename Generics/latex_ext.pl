@@ -116,7 +116,7 @@ latex_code_convert(Local):-
   latex_code_convert(Local, '.').
 
 %!latex_code_convert(+Spec:atom, +Directory:atom) is det.
-% @arg Spec Either an absolute file name or a relative file name that can
+% @param Spec Either an absolute file name or a relative file name that can
 %           be resolved relative to the given directory.
 %           File names may denote files proper or directories.
 %           In the of a directory, all the containing files (including

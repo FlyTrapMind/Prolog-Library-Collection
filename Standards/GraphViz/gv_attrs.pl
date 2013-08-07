@@ -30,8 +30,8 @@ Attributes, their allowed values, and their default values for GraphViz.
 %! gv_attribute_value(+Attributes:list(nvpair), +Attribute:nvpair) is semidet.
 % Succeeds if the given attribute is a correct GraphViz attribute.
 %
-% @arg Attributes A list of name-value pairs.
-% @arg Attribute A name-value pair.
+% @param Attributes A list of name-value pairs.
+% @param Attribute A name-value pair.
 
 % The value is instantiated. Check whether it is a valid value
 % for the attribute with the given name.
@@ -54,7 +54,7 @@ gv_attribute_value(Attrs, Attr):-
 % Parses a list of attributes.
 % Succeeds when the list contains only supported GraphViz attributes.
 %
-% @arg Attributes A list of name-value pairs.
+% @param Attributes A list of name-value pairs.
 
 gv_parse_attributes(Attrs):-
   maplist(gv_attribute_value(Attrs), Attrs).
@@ -86,17 +86,17 @@ gv_typecheck(Type, Value):-
 %! ) is nondet.
 % Registered GraphViz attributes.
 %
-% @arg Attributes A list of name-value pairs.
-% @arg Name The atomic name of a GraphViz gv_attr.
-% @arg Type The type of the values for this gv_attr.
-% @arg Context A list representing the elements for which the gv_attr can
+% @param Attributes A list of name-value pairs.
+% @param Name The atomic name of a GraphViz gv_attr.
+% @param Type The type of the values for this gv_attr.
+% @param Context A list representing the elements for which the gv_attr can
 %      be specified. Any non-empty combination of the following values:
 %      1. `edge`, the gv_attr applies to edges.
 %      2. `graph`, the gv_attr applies to graphs.
 %      3. `node`, the gv_attr applies to nodes.
-% @arg Attributess A list of gv_attr-value pairs. Used for looking up the
+% @param Attributess A list of gv_attr-value pairs. Used for looking up the
 %      interactions between multiple attributes.
-% @arg Default The default value for the `gv_attr`.
+% @param Default The default value for the `gv_attr`.
 
 gv_attr(_Attrs, arrowhead, oneof(ArrowTypes), [edge], normal):-
   findall(ArrowType, arrow_type(ArrowType), ArrowTypes).

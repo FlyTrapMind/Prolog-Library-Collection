@@ -4,6 +4,7 @@
     xml_boolean//2, % -Tree:compound
                     % ?Value:boolean
     xml_char//1, % ?Char:code
+    xml_chars//1, % ?Chars:list(code)
     xml_name//1, % ?Name:atom
     xml_namespaced_name//2, % :DCG_Namespace
                             % :DCG_Name
@@ -77,6 +78,12 @@ xml_char(C) --> horizontal_tab(C).
 xml_char(C) --> line_feed(C).
 xml_char(C) --> carriage_return(C).
 xml_char(C) --> dcg_graph(C).
+
+xml_chars([H|T]) -->
+  xml_char(H),
+  xml_chars(T).
+xml_chars([]) -->
+  [].
 
 %! xml_name(?Name:atom)//
 % A **XML Name** is an Nmtoken with a restricted set of initial characters.

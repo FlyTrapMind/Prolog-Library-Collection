@@ -56,8 +56,8 @@ is_windows:-
 %
 % Mac OS-X uses 21 pixels for the title bar.
 %
-% @arg YPixel The normal y-position of a pixel.
-% @arg MacYPixel The y-position of a pixel adapted for display
+% @param YPixel The normal y-position of a pixel.
+% @param MacYPixel The y-position of a pixel adapted for display
 %        on a Mac OS-X system.
 
 mac_y_pixel(YPixel, MacYPixel):-

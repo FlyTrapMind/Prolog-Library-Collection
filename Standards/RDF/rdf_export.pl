@@ -131,12 +131,12 @@ rdf_register_namespace_color(G, Namespace, NamespaceColor):-
 % The color assignments are based on the RDF node's namespace.
 % Note that the same node may have different colors in different graphs.
 %
-% @arg Graph The atomic name of a graph.
-% @arg Colorscheme The atomic name of a colorscheme. Currently supported:
+% @param Graph The atomic name of a graph.
+% @param Colorscheme The atomic name of a colorscheme. Currently supported:
 %      1. `svg`
 %      2. `x11`
-% @arg Vertex A resource.
-% @arg VertexColor The atomic name of a color within the colorscheme.
+% @param Vertex A resource.
+% @param VertexColor The atomic name of a color within the colorscheme.
 
 rdf_vertex_color_by_namespace(G, _Colorscheme, V, V_Color):-
   rdf_global_id(Namespace:_, V),
@@ -325,9 +325,9 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
 %      Supported values are `svg`, `x11` (default), and the
 %      Brewer colorschemes (see module [brewer.pl].
 %
-% @arg Options A list of name-value pairs.
-% @arg Vertex A vertex.
-% @arg Color A color name.
+% @param Options A list of name-value pairs.
+% @param Vertex A vertex.
+% @param Color A color name.
 
 rdf_vertex_color(O, _G, _V, black):-
   option(colorscheme(none), O), !.
@@ -396,7 +396,7 @@ rdf_vertex_picture(G, V, V_Picture):-
 %   * `octagon`
 %   * `plaintext`
 %
-% @arg Shape The atomic name of a vertex shape.
+% @param Shape The atomic name of a vertex shape.
 
 % RDF literals.
 rdf_vertex_shape(literal(_Literal), plaintext):- !.

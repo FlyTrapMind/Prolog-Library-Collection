@@ -39,12 +39,12 @@
                  % :Separator:dcg
     dcg_multi//1, % :DCG_Body:dcg
     dcg_multi//2, % :DCG_Body:dcg
-                  % ?Occurrences:or([integer,between/3])
+                  % ?Occurrences:or([integer,between/2])
     dcg_multi//3, % :DCG_Body:dcg
-                  % ?Occurrences:or([integer,between/3])
+                  % ?Occurrences:or([integer,between/2])
                   % ?Arguments1:list
     dcg_multi//4, % :DCG_Body:dcg
-                  % ?Occurrences:or([integer,between/3])
+                  % ?Occurrences:or([integer,between/2])
                   % ?Arguments1:list
                   % ?Arguments2:list
     dcg_multi_atom//3, % :DCG_Body
@@ -208,10 +208,10 @@ dcg_until(DCG_End, Value) -->
 %     Whether the results should be returned in codes (`codes`, default)
 %     or as an atom (`atom`).
 %
-% @arg Options A list of name-value pairs.
-% @arg DCG_End Not an arbitrary DCG body, since disjunction
+% @param Options A list of name-value pairs.
+% @param DCG_End Not an arbitrary DCG body, since disjunction
 %      does not play out well.
-% @arg Value Either an atom or a list of codes (see options).
+% @param Value Either an atom or a list of codes (see options).
 
 dcg_until(O, DCG_End, Out) -->
   {var(Out)}, !,
@@ -376,8 +376,8 @@ dcg_multi(DCG_Body) -->
 % Y = "111111111111".
 % ~~~
 %
-% @arg DCG_Body A DCG rule.
-% @arg Occurrences When  instantiated, either an integer or a compound term
+% @param DCG_Body A DCG rule.
+% @param Occurrences When  instantiated, either an integer or a compound term
 %      of the form=|`between(+Min:integer,+Max:integer)|=.
 %      When uninstantiated, this can instantiate with an integer.
 
@@ -529,11 +529,11 @@ dcg_multi_list(DCG_Body, Sep, [H|T]) -->
 %
 % The variables come from unused optional rules in the DCG body.
 %
-% @arg TreeName The atomic name of the grammar rule for which
+% @param TreeName The atomic name of the grammar rule for which
 %      the tree is constructed.
-% @arg SubTrees A list of compound terms (direct subtrees)
+% @param SubTrees A list of compound terms (direct subtrees)
 %      and variables (excluded from the created tree).
-% @arg Tree A compound term representing a parse tree.
+% @param Tree A compound term representing a parse tree.
 
 parse_tree(P, SubT1, T):-
   include(nonvar, SubT1, SubT2),

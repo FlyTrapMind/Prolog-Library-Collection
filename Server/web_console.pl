@@ -46,7 +46,7 @@ The Web-based console for PraSem.
 % Web modules must be registered before their web methods can be accessed
 % from the web console.
 %
-% @arg Module The atomic name of a Prolog module.
+% @param Module The atomic name of a Prolog module.
 
 :- dynamic registered_module/1.
 
@@ -74,7 +74,7 @@ command_input -->
 % Returns the markup for the web-based console.
 % This can be inserted in (X)HTML web pages.
 %
-% @arg Markup A list of compound terms representing (X)HTML markup.
+% @param Markup A list of compound terms representing (X)HTML markup.
 
 console_input -->
   {
@@ -199,7 +199,7 @@ messages_web(Markup):-
 % If the module is a web module, i.e. contains =|_web|=-predicates,
 % then these can now be accessed from the web console.
 %
-% @arg Module The atomic name of a module.
+% @param Module The atomic name of a module.
 
 % The module is already registered, do nothing.
 register_module(Module):-
@@ -215,7 +215,7 @@ registered_module(web_console).
 %! registered_modules(-Modules:list(atom)) is det.
 % Returns all modules that are currently registered with the web console.
 %
-% @arg Modules A list of atomic names of modules.
+% @param Modules A list of atomic names of modules.
 
 registered_modules(Modules):-
   findall(
@@ -248,8 +248,8 @@ registered_modules_web(
 % Returns a table markup element representing the header of
 % the given request.
 %
-% @arg Request A compound term representing an HTTP header.
-% @arg Markup A compound term encoding an (X)HTML table.
+% @param Request A compound term representing an HTTP header.
+% @param Markup A compound term encoding an (X)HTML table.
 
 request_web(
   Request,
