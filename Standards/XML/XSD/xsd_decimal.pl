@@ -7,8 +7,17 @@
                          % -Decimal:number
     decimalLexicalMap1/2, % ?LEX:list(code)
                           % ?Decimal:number
-    decimalLexicalMap2/2 % ?LEX:list(code)
-                         % ?Decimal:compound
+    decimalLexicalMap2/2, % ?LEX:list(code)
+                          % ?Decimal:compound
+% DCG COMPONENTS
+    decimalPtNumeral//2, % -Sign:oneof([-1,1])
+                         % -Decimal:float
+    noDecimalPtCanonicalMap//1, % +Integer:integer
+    noDecimalPtNumeral//2, % -Sign:oneof([-1,1])
+                           % -Integer:integer
+    unsignedDecimalPtCanonicalMap//1, % +Decimal:rational
+    unsignedDecimalPtNumeral//1, % -Decimal:float
+    unsignedNoDecimalPtNumeral//1 % -Integer:nonneg
   ]
 ).
 
@@ -103,6 +112,7 @@ The decimal datatype has the following values for its fundamental facets:
 
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(math(math_ext)).
+:- use_module(math(rational_ext)).
 
 
 
@@ -154,7 +164,7 @@ fractionDigitsCanonicalFragmentMap(F) -->
 noDecimalPtCanonicalMap(I) -->
   {I < 0},
   "-",
-  {J is copysign(I, -1)},
+  {J is copysign(I, 1)},
   unsignedNoDecimalPtCanonicalMap(J).
 noDecimalPtCanonicalMap(I) -->
   unsignedNoDecimalPtCanonicalMap(I).
@@ -200,19 +210,19 @@ decimalLexicalMap(LEX, N):-
 % ~~~
 
 decimalLexicalRep(N) -->
-  decimalPtNumeral(N).
+  decimalPtNumeral(_Sign, N).
 decimalLexicalRep(N) -->
-  noDecimalPtNumeral(N).
+  noDecimalPtNumeral(_Sign, N).
 
-%! decimalPtNumeral(-Decimal:float)//
+%! decimalPtNumeral(-Sign:oneof([-1,1]), -Decimal:float)//
 % ~~~{.ebnf}
 % decimalPtNumeral ::= ('+' | '-')? unsignedDecimalPtNumeral
 % ~~~
 
-decimalPtNumeral(N) -->
-  (sign(S) ; {S = 1}),
-  unsignedDecimalPtNumeral(M),
-  {N is copysign(M, S)}.
+decimalPtNumeral(Sign, N) -->
+  (sign(Sign) ; {Sign = 1}),
+  unsignedDecimalPtNumeral(N1),
+  {N is copysign(N1, Sign)}.
 
 %! fracFrag(-Fraction:between(0.0,1.0))//
 % ~~~{.ebnf}
@@ -229,15 +239,15 @@ fracFrag(I, NewSum) -->
   {NewSum is Sum + D * 10 ** (-1 * NewI)}.
 fracFrag(_, 0.0) --> !, [].
 
-%! noDecimalPtNumeral(-Integer:integer)//
+%! noDecimalPtNumeral(-Sign:oneof([-1,1]), -Integer:integer)//
 % ~~~{.ebnf}
 % noDecimalPtNumeral ::= ('+' | '-')? unsignedNoDecimalPtNumeral
 % ~~~
 
-noDecimalPtNumeral(N) -->
-  (sign(S) ; {S = 1}),
-  unsignedNoDecimalPtNumeral(M),
-  {N is copysign(M, S)}.
+noDecimalPtNumeral(Sign, N) -->
+  (sign(Sign) ; {Sign = 1}),
+  unsignedNoDecimalPtNumeral(N1),
+  {N is copysign(N1, Sign)}.
 
 %! unsignedDecimalPtNumeral(-Decimal:float)//
 % ~~~{.ebnf}
@@ -276,7 +286,6 @@ unsignedNoDecimalPtNumeral(0, 0) --> [].
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(list_ext)).
 :- use_module(library(lists)).
 :- use_module(math(radix)).
 

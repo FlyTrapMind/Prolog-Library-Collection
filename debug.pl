@@ -7,6 +7,9 @@
 % Print code strings with their code table replacements.
 :- use_module(library(portray_text)).
 
+% Print a message when an autoloaded module import is missing.
+:- set_prolog_flag(verbose_autoload, true).
+
 % Do not write module loads to the standard output stream.
 :- set_prolog_flag(verbose_load, silent).
 
@@ -48,15 +51,15 @@
 % @tbd The PCE-based debug monitor in swipl is not the most versatile
 %      debug tool in existence. I would like to write a Web-based version
 %      at some point.
-%:- use_module(library(swi_ide)).
-%:- prolog_ide(debug_monitor).
+:- use_module(library(swi_ide)).
+:- prolog_ide(debug_monitor).
 
 :- [load].
 
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 
-:- initialization(load_modules_for_pldoc).
+:- initialization(load_modules_for_pldoc, after_load).
 
 %! load_modules_for_pldoc is det.
 % Loads all modules in PGC for debugging purposes:

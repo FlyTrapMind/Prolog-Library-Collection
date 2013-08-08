@@ -23,7 +23,7 @@ Genrates random coordinates for vertices in a graph.
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(math(math_ext)).
+:- use_module(math(random_ext)).
 
 :- meta_predicate(random_vertex_coordinates(+,+,2,-)).
 

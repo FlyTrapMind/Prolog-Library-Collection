@@ -53,7 +53,7 @@ literals.
 */
 
 :- use_module(library(semweb/rdf_db)).
-:- use_module(math(math_ext)).
+:- use_module(math(random_ext)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).

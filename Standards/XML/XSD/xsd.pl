@@ -560,6 +560,8 @@ supplied as implementation-defined), and =anyAtomicType= is their base type.
 :- use_module(library(semweb/rdf_db)). % RDF-meta assertions.
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd_boolean)).
+:- use_module(xsd(xsd_decimal)).
+:- use_module(xsd(xsd_float)).
 :- use_module(xsd(xsd_string)).
 
 :- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
@@ -583,6 +585,10 @@ xsd_canonicalMap_(xsd:boolean, Boolean, LEX):-
   booleanCanonicalMap(Boolean, LEX).
 xsd_canonicalMap_(xsd:decimal, Decimal, LEX):-
   decimalCanonicalMap(Decimal, LEX).
+xsd_canonicalMap_(xsd:double, Double, LEX):-
+  doubleCanonicalMap(Double, LEX).
+xsd_canonicalMap_(xsd:float, Float, LEX):-
+  floatCanonicalMap(Float, LEX).
 xsd_canonicalMap_(xsd:string, String, LEX):-
   stringCanonicalMap(String, LEX).
 
@@ -613,6 +619,10 @@ xsd_lexicalMap_(xsd:boolean, LEX, Boolean):-
   booleanLexicalMap(LEX, Boolean).
 xsd_lexicalMap_(xsd:decimal, LEX, Decimal):-
   decimalLexicalMap(LEX, Decimal).
+xsd_lexicalMap_(xsd:double, LEX, Double):-
+  doubleLexicalMap(LEX, Double).
+xsd_lexicalMap_(xsd:float, LEX, Float):-
+  floatLexicalMap(LEX, Float).
 xsd_lexicalMap_(xsd:string, LEX, String):-
   stringLexicalMap(LEX, String).
 

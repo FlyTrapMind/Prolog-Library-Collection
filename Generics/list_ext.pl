@@ -104,7 +104,7 @@ Extra list functions for use in SWI-Prolog.
 */
 
 :- use_module(library(lists)).
-:- use_module(math(math_ext)).
+:- use_module(math(random_ext)).
 
 
 
