@@ -16,7 +16,7 @@
                    % -DayInWeek:between(1,7)
     iso8601_day_in_year/1, % ?Day:between(1,366)
     iso8601_hour_in_day/1, % ?Hour:between(0,24)
-    leap_year/1, % ?Year:between(0,9999)
+    iso8601_leap_year/1, % ?Year:between(0,9999)
     iso8601_minute_in_hour/1, % ?Minute:between(0,59)
     iso8601_month_in_year/1, % ?Month:between(1,12)
     number_of_days_in_year/2, % +Year:between(0,9999)
@@ -394,7 +394,7 @@ calendar_day_name(7, 'Sunday').
 calendar_month(_Y, 1, 31, 1-31).
 calendar_month(Y, 2, NumberOfNamesInMonth, DatesOfDays):-
   (
-    leap_year(Y)
+    iso8601_leap_year(Y)
   ->
     NumberOfNamesInMonth = 29,
     DatesOfDays = 32-59
@@ -403,25 +403,25 @@ calendar_month(Y, 2, NumberOfNamesInMonth, DatesOfDays):-
     DatesOfDays = 32-60
   ).
 calendar_month(Y, 3, 31, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 60-90 ; DatesOfDays = 61-91).
+  (iso8601_leap_year(Y) -> DatesOfDays = 60-90 ; DatesOfDays = 61-91).
 calendar_month(Y, 4, 30, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 91-120 ; DatesOfDays = 92-121).
+  (iso8601_leap_year(Y) -> DatesOfDays = 91-120 ; DatesOfDays = 92-121).
 calendar_month(Y, 5, 31, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 121-151 ; DatesOfDays = 122-152).
+  (iso8601_leap_year(Y) -> DatesOfDays = 121-151 ; DatesOfDays = 122-152).
 calendar_month(Y, 6, 30, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 152-181 ; DatesOfDays = 153-182).
+  (iso8601_leap_year(Y) -> DatesOfDays = 152-181 ; DatesOfDays = 153-182).
 calendar_month(Y, 7, 31, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 182-212 ; DatesOfDays = 183-213).
+  (iso8601_leap_year(Y) -> DatesOfDays = 182-212 ; DatesOfDays = 183-213).
 calendar_month(Y, 8, 31, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 213-243 ; DatesOfDays = 214-244).
+  (iso8601_leap_year(Y) -> DatesOfDays = 213-243 ; DatesOfDays = 214-244).
 calendar_month(Y, 9, 30, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 244-273 ; DatesOfDays = 245-274).
+  (iso8601_leap_year(Y) -> DatesOfDays = 244-273 ; DatesOfDays = 245-274).
 calendar_month(Y, 10, 31, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 274-304 ; DatesOfDays = 275-304).
+  (iso8601_leap_year(Y) -> DatesOfDays = 274-304 ; DatesOfDays = 275-304).
 calendar_month(Y, 11, 30, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 305-334 ; DatesOfDays = 306-335).
+  (iso8601_leap_year(Y) -> DatesOfDays = 305-334 ; DatesOfDays = 306-335).
 calendar_month(Y, 12, 31, DatesOfDays):-
-  (leap_year(Y) -> DatesOfDays = 335-365 ; DatesOfDays = 336-366).
+  (iso8601_leap_year(Y) -> DatesOfDays = 335-365 ; DatesOfDays = 336-366).
 
 %! calendar_month_name(?DayOrdinal:between(1,12), ?DayName:atom) is nondet.
 % Names for calendar month ordinals.
@@ -555,14 +555,14 @@ last_day_of_last_week_of_year(Y, D):-
   day_in_week(Y, 12, LastDay, DayInWeek),
   D is LastDay - (DayInWeek mod 7).
 
-%! leap_year(?Year:between(0,9999)) is nondet.
+%! iso8601_leap_year(?Year:between(0,9999)) is nondet.
 % Leap years according to the Gregorian calendar.
 %
 % A *|leap year|* is a year whose year number is divisible by 4 an integral
 % number of times. However, a centennial year is not a leap year unless its
 % year number is divisible by 400 an integral number of times.
 
-leap_year(Y):-
+iso8601_leap_year(Y):-
   iso8601_year(Y),
   Y rem 4 =:= 0,
   (\+ centennial_year(Y) ; Y rem 400 =:= 0).

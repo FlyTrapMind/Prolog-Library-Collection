@@ -12,11 +12,13 @@
 % DCG COMPONENTS
     decimalPtNumeral//2, % -Sign:oneof([-1,1])
                          % -Decimal:float
+    fractionDigitsCanonicalFragmentMap//1, % ?Fraction:rational
     noDecimalPtCanonicalMap//1, % +Integer:integer
     noDecimalPtNumeral//2, % -Sign:oneof([-1,1])
                            % -Integer:integer
     unsignedDecimalPtCanonicalMap//1, % +Decimal:rational
     unsignedDecimalPtNumeral//1, % -Decimal:float
+    unsignedNoDecimalPtCanonicalMap//1, %+Integer:nonneg
     unsignedNoDecimalPtNumeral//1 % -Integer:nonneg
   ]
 ).

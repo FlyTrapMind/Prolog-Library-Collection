@@ -20,6 +20,12 @@
                           % ?Code:code
     hexadecimal_number//1, % -DecinalNumber:integer
     int_codes//1, % ?Codes:list(code)
+    nonzero_decimal_digit//1, % ?DecimalDigit:between(1,9)
+    nonzero_decimal_digit//2, % ?DecimalDigit:between(1,9)
+                              % ?Code:code
+    nonzero_octal_digit//1, % ?DecimalDigit:between(1,7)
+    nonzero_octal_digit//2, % ?DecimalDigit:between(1,7)
+                            % ?Code:code
     octal_digit//0,
     octal_digit//1, % ?DecimalDigit:between(0,7)
     octal_digit//2, % ?DecimalDigit:between(0,7)
@@ -197,6 +203,30 @@ int_codes([C,D0|D]) -->
 int_codes([D0|D]) -->
   digit(D0),
   digits(D).
+
+nonzero_decimal_digit(D) --> nonzero_octal_digit(D).
+nonzero_decimal_digit(8) --> eight.
+nonzero_decimal_digit(9) --> nine.
+
+nonzero_decimal_digit(D, C) --> nonzero_octal_digit(D, C).
+nonzero_decimal_digit(8, C) --> eight(C).
+nonzero_decimal_digit(9, C) --> nine(C).
+
+nonzero_octal_digit(1) --> one.
+nonzero_octal_digit(2) --> two.
+nonzero_octal_digit(3) --> three.
+nonzero_octal_digit(4) --> four.
+nonzero_octal_digit(5) --> five.
+nonzero_octal_digit(6) --> six.
+nonzero_octal_digit(7) --> seven.
+
+nonzero_octal_digit(1, C) --> one(C).
+nonzero_octal_digit(2, C) --> two(C).
+nonzero_octal_digit(3, C) --> three(C).
+nonzero_octal_digit(4, C) --> four(C).
+nonzero_octal_digit(5, C) --> five(C).
+nonzero_octal_digit(6, C) --> six(C).
+nonzero_octal_digit(7, C) --> seven(C).
 
 %! octal_digit//
 

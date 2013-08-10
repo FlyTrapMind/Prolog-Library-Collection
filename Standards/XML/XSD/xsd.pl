@@ -520,6 +520,73 @@ The fragment identifier is either the name of a datatype, the name of a facet,
 or the name of a Simple Type Definition followed by a dot followed by
 the name of a facet.
 
+## Infinite datatypes
+
+Some primitive datatypes defined in this specification have infinite
+value spaces; no finite implementation can completely handle all their
+possible values. For some such datatypes, minimum implementation limits
+are specified below. For other infinite types such as =string=, =hexBinary=,
+and =base64Binary=, no minimum implementation limits are specified.
+
+When presented with a literal or value exceeding the capacity of its partial
+implementation of a datatype, a minimally conforming implementation of this
+specification will sometimes be unable to determine with certainty whether
+the value is datatype-valid or not. Sometimes it will be unable to represent
+the value correctly through its interface to any downstream application.
+
+When either of these is so, a conforming processor must indicate to the
+user and/or downstream application that it cannot process the input data
+with assured correctness (much as it would indicate if it ran out of memory).
+When the datatype validity of a value or literal is uncertain because it
+exceeds the capacity of a partial implementation, the literal or value must
+not be treated as invalid, and the unsupported value must not be quietly
+changed to a supported value. 
+
+Minimally conforming processors which set an application- or
+implementation-defined limit on the size of the values supported must clearly
+document that limit.
+
+These are the partial-implementation minimal conformance requirements:
+  * Must support decimal values whose absolute value can be expressed as
+    =|i / 10k|=, where =i= and =k= are nonnegative integers such that
+    =|i < 1016|= and =|k ≤ 16|= (i.e., those expressible with sixteen total
+    digits).
+  * Must support nonnegative year values less than =10000=
+    (i.e., those expressible with four digits) in all datatypes which use
+    the seven-property model and have a non-absent value for year
+    (i.e. =dateTime=, =dateTimeStamp=, =date=, =gYearMonth=, and =gYear=).
+  * Must support second values to milliseconds (i.e. those expressible with
+    three fraction digits) in all datatypes which use the seven-property
+    model and have a non-absent value for second (i.e. =dateTime=,
+    =dateTimeStamp=, and =time=).
+  * Must support fractional-second duration values to milliseconds
+    (i.e. those expressible with three fraction digits).
+  * Must support duration values with months values in the range =−119999=
+    to =119999= months (=9999= years and =11= months) and seconds values
+    in the range =−31622400= to =31622400= seconds (one leap-year).
+
+## Property models
+
+For some datatypes the values are described as objects that have various
+properties, which in turn have more primitive values.
+
+An *|optional property|* is one that is permitted but not required to have
+the distinguished value *absent*.
+
+The value *absent* is used as a distinguished value to indicate that
+a given instance of a property "has no value" or "is absent".
+
+More primitive values that are used to construct object value spaces:
+  * A *number* (without precision) is an ordinary mathematical number;
+    =1=, =1.0=, and =1.000000000000= are the same number.
+  * A *|special value|* is an object whose only relevant properties for
+    purposes of this specification are that it is distinct from, and
+    unequal to, any other values (special or otherwise).
+    Special values can be distinguished from each other in the general case
+    by considering both the name and the primitive datatype of the value.
+    E.g., =float='s =positiveInfinity= is not the same special value as
+    =double='s =positiveInfinity=.
+
 ## Datatypes
 
 [[xsd_hierarchy.jpg]]
@@ -549,20 +616,72 @@ The value and lexical spaces of =anyAtomicType= are the unions of the value
 and lexical spaces of all the primitive datatypes (either defined here or
 supplied as implementation-defined), and =anyAtomicType= is their base type.
 
+## Common definitions
+
+#### =div=
+
+If =m= and =n= are numbers, then =|m div n|= is the greatest integer less
+than or equal to =|m / n|=.
+
+=|n div 1|= is a convenient and short way of expressing
+"the greatest integer less than or equal to n".
+
+#### =mod=
+
+If =m= and =n= are numbers, then =|m mod n|= is  =|m − n × (m div n)|=.
+
+## Facets
+
+### =ordered
+
+For some datatypes, this document specifies an order relation for their
+value spaces; the =ordered= facet reflects this. It takes the values =total=,
+=partial=, and =false=, with the meanings described below.
+
+For the *|primitive datatypes|*, the value of the =ordered= facet is specified
+in xsd_facets.txt.
+For *|ordinary datatypes|*, the value is inherited without change from the
+base type. For a *list*, the value is always false; for a *union*,
+the value is computed as described below.
+
+Values:
+  * =false=, no order.
+  * =partial=, partial order.
+  * =total=, total order.
+
+The value =false= in the ordered facet does not mean no partial or
+total ordering exists for the value space, only that none is specified
+by this document for use in checking upper and lower bounds.
+Mathematically, any set of values possesses at least one trivial partial
+ordering, in which every value pair that is not equal is incomparable.
+
+When new datatypes are derived from datatypes with partial orders,
+the constraints imposed can sometimes result in a value space for which the ordering is total, or trivial. The value of the ordered facet is not, however, changed to reflect this. The value partial should therefore be interpreted with appropriate caution.
+
 --
 
 @author Wouter Beek
 @compat XML Schema 2: Datatypes (Second Edition)
 @see http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/
+@see Turn the infinite datatype requirements into a unit test.
 @version 2013/08
 */
 
 :- use_module(library(semweb/rdf_db)). % RDF-meta assertions.
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd_boolean)).
+:- use_module(xsd(xsd_date)).
+:- use_module(xsd(xsd_dateTime)).
 :- use_module(xsd(xsd_decimal)).
+:- use_module(xsd(xsd_duration)).
 :- use_module(xsd(xsd_float)).
+:- use_module(xsd(xsd_gDay)).
+:- use_module(xsd(xsd_gMonth)).
+:- use_module(xsd(xsd_gMonthDay)).
+:- use_module(xsd(xsd_gYear)).
+:- use_module(xsd(xsd_gYearMonth)).
 :- use_module(xsd(xsd_string)).
+:- use_module(xsd(xsd_time)).
 
 :- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
@@ -583,14 +702,32 @@ xsd_canonicalMap(Datatype, Value, LEX2):-
 
 xsd_canonicalMap_(xsd:boolean, Boolean, LEX):-
   booleanCanonicalMap(Boolean, LEX).
+xsd_canonicalMap_(xsd:date, Date, LEX):-
+  dateCanonicalMap(Date, LEX).
+xsd_canonicalMap_(xsd:dateTime, DateTime, LEX):-
+  dateTimeCanonicalMap(DateTime, LEX).
 xsd_canonicalMap_(xsd:decimal, Decimal, LEX):-
   decimalCanonicalMap(Decimal, LEX).
 xsd_canonicalMap_(xsd:double, Double, LEX):-
   doubleCanonicalMap(Double, LEX).
+xsd_canonicalMap_(xsd:duration, Duration, LEX):-
+  durationCanonicalMap(Duration, LEX).
 xsd_canonicalMap_(xsd:float, Float, LEX):-
   floatCanonicalMap(Float, LEX).
+xsd_canonicalMap_(xsd:gDay, GregorianDay, LEX):-
+  gDayCanonicalMap(GregorianDay, LEX).
+xsd_canonicalMap_(xsd:gMonth, GregorianMonth, LEX):-
+  gMonthCanonicalMap(GregorianMonth, LEX).
+xsd_canonicalMap_(xsd:gMonthDay, GregorianMonthDay, LEX):-
+  gMonthDayCanonicalMap(GregorianMonthDay, LEX).
+xsd_canonicalMap_(xsd:gYear, GregorianYear, LEX):-
+  gYearCanonicalMap(GregorianYear, LEX).
+xsd_canonicalMap_(xsd:gYearMonth, GregorianYearMonth, LEX):-
+  gYearMonthCanonicalMap(GregorianYearMonth, LEX).
 xsd_canonicalMap_(xsd:string, String, LEX):-
   stringCanonicalMap(String, LEX).
+xsd_canonicalMap_(xsd:time, Time, LEX):-
+  timeCanonicalMap(Time, LEX).
 
 %! xsd_convert_datatype(
 %!   +FromDatatype:uri,
@@ -617,12 +754,30 @@ xsd_lexicalMap(Datatype, LEX1, Value):-
 
 xsd_lexicalMap_(xsd:boolean, LEX, Boolean):-
   booleanLexicalMap(LEX, Boolean).
+xsd_lexicalMap_(xsd:date, LEX, Date):-
+  dateLexicalMap(LEX, Date).
+xsd_lexicalMap_(xsd:dateTime, LEX, DateTime):-
+  dateTimeLexicalMap(LEX, DateTime).
 xsd_lexicalMap_(xsd:decimal, LEX, Decimal):-
   decimalLexicalMap(LEX, Decimal).
 xsd_lexicalMap_(xsd:double, LEX, Double):-
   doubleLexicalMap(LEX, Double).
+xsd_lexicalMap_(xsd:duration, LEX, Duration):-
+  durationLexicalMap(LEX, Duration).
 xsd_lexicalMap_(xsd:float, LEX, Float):-
   floatLexicalMap(LEX, Float).
+xsd_lexicalMap_(xsd:gDay, LEX, GregorianDay):-
+  gDayLexicalMap(LEX, GregorianDay).
+xsd_lexicalMap_(xsd:gMonth, LEX, GregorianMonth):-
+  gMonthLexicalMap(LEX, GregorianMonth).
+xsd_lexicalMap_(xsd:gMonthDay, LEX, GregorianMonthDay):-
+  gMonthDayLexicalMap(LEX, GregorianMonthDay).
+xsd_lexicalMap_(xsd:gYear, LEX, GregorianYear):-
+  gYearLexicalMap(LEX, GregorianYear).
+xsd_lexicalMap_(xsd:gYearMonth, LEX, GregorianYearMonth):-
+  gYearMonthLexicalMap(LEX, GregorianYearMonth).
 xsd_lexicalMap_(xsd:string, LEX, String):-
   stringLexicalMap(LEX, String).
+xsd_lexicalMap_(xsd:time, LEX, Time):-
+  timeLexicalMap(LEX, Time).
 

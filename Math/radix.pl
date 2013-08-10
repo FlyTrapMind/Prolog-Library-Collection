@@ -3,11 +3,18 @@
   [
     decimal_to_digits/2, % +DecimalNumber:integer
                          % -DecimalDigits:list(between(0,9))
+    decimal_to_digits/3, % +DecimalNumber:integer
+                         % +Radix:oneof([2,8,10])
+                         % -DecimalDigits:list(between(0,9))
     digits_to_decimal/2, % +DecimalDigits:list(between(0,9))
                          % -DecimalNumber:integer
     digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
                          % +Radix:integer
                          % -DecimalNumber:integer
+    digits_to_digits/4, % +FromDigigts:list(between(0,15))
+                        % +From:oneof([2,8,10,16])
+                        % +To:oneof([2,8,10,16])
+                        % -ToDigits:list(between(0,15))
     number_to_decimal/3 % +RadixNumber:atomic
                         % +Radix:between(2,16)
                         % -DecimalNumber:integer
@@ -24,6 +31,7 @@ Predicate for transforming numbers with a different radix.
 @version 2013/07-2013/08
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 
 
@@ -31,6 +39,16 @@ Predicate for transforming numbers with a different radix.
 decimal_to_digits(DecimalNumber, DecimalDigits):-
   atom_chars(DecimalNumber, Chars),
   maplist(atom_number, Chars, DecimalDigits).
+
+decimal_to_digits(D, R, Sol):-
+  decimal_to_digits(D, R, [], Sol).
+
+decimal_to_digits(D, R, A, A):-
+  D < R, !.
+decimal_to_digits(D, R, A, Sol):-
+  H is D mod R,
+  NewD is D // R,
+  decimal_to_digits(NewD, R, [H|A], Sol).
 
 digits_to_decimal(DecimalDigits, DecimalNumber):-
   digits_to_decimal(DecimalDigits, 10, DecimalNumber).
@@ -57,6 +75,39 @@ digits_to_decimal([], _Radix, DecimalNumber, DecimalNumber).
 digits_to_decimal([H|T], Radix, M1, DecimalNumber):-
   M2 is M1 * Radix + H,
   digits_to_decimal(T, Radix, M2, DecimalNumber).
+
+%! digits_to_digit(
+%!   +FromDigits:list(between(0,15)),
+%!   +From:oneof([2,8,10,16]),
+%!   +To:oneof([2,8,10,16]),
+%!   -ToDigit:between(0,15)
+%! ) is det.
+
+digits_to_digit(FromDs, From, To, ToD):-
+  aggregate(
+    sum(ToDPart),
+    (
+      nth0(Position, FromDs, FromD),
+      ToDPart is FromD * From ** Position
+    ),
+    ToD
+  ).
+
+%! digits_to_digits(
+%!   +FromDigits:list(between(0,15)),
+%!   +From:oneof([2,8,10,16]),
+%!   +To:oneof([2,8,10,16]),
+%!   -ToDigits:list(between(0,15))
+%! ) is det.
+
+digits_to_digits([], _From, _To, []):- !.
+digits_to_digits(L1, From, To, [L2H|L2]):-
+  From > To, !,
+  NumberOfDigits is To // From,
+  length(L1_, NumberOfDigits),
+  append(L1_, NewL1, L1),
+  digits_to_digit(L1_, From, To, L2H),
+  digits_to_digits(NewL1, From, To, L2).
 
 %! number_to_decimal(
 %!   +RadixNumber:atomic,
