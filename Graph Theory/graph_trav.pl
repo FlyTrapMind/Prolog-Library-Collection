@@ -80,7 +80,8 @@ cyclic_graph_traversal(
     Keep is LastSizeY - Remove,
     length(KeepSubset, Keep),
     append(KeepSubset, RemoveSubset, LastSetY),
-    ord_subtract(NewSetY_, RemoveSubset, NewSetY)
+    ord_subtract(NewSetY_, RemoveSubset, NewSetY),
+    Solution = [SetX, NewSetY | Sets]
   ;
     NewSetY = NewSetY_,
     append(Predicates, [Module:PredicateXY], NewPredicates),

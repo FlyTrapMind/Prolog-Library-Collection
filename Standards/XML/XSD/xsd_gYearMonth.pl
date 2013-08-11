@@ -112,6 +112,6 @@ gYearMonthLexicalMap(LEX, GYM):-
 
 gYearMonthLexicalRep(GYM) -->
   yearFrag(Y), hyphen, monthFrag(M),
-  ({var(TZ)} ; timezoneFrag(TZ)), !,
+  ("" ; timezoneFrag(TZ)), !,
   {newDateTime(Y, M, _D, _H, _MM, _S, TZ, GYM)}.
 

@@ -40,9 +40,13 @@ http://www.swi-prolog.org/ChangeLog?branch=stable&from=5.10.4&to=6.4.0
 
 
 
-printw(X):-
-  format(user_output, '~w\n', [X]),
+printw(Atomic):-
+  atomic(Atomic), !,
+  format(user_output, '~w\n', [Atomic]),
   flush_output(user_output).
+printw(Codes):-
+  atom_codes(Atom, Codes),
+  printw(Atom).
 
 rdf_class_status(Class):-
   findall(

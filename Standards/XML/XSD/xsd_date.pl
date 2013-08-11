@@ -102,6 +102,6 @@ dateLexicalMap(LEX, Date):-
 dateLexicalRep(DT) -->
   yearFrag(Y), hyphen, monthFrag(M), hyphen, dayFrag(D),
   {dayInMonth(Y, M, D)},
-  ({var(TZ)} ; timezoneFrag(TZ)),
+  ("" ; timezoneFrag(TZ)),
   {newDateTime(Y,M,D,_H,_MM,_S,TZ,DT)}.
 

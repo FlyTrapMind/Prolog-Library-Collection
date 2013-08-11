@@ -62,15 +62,15 @@
              % ?Latters:list
     random_member/2, % +List:list
                      % -Member
-    repeating_list/3, % +Term:term
-                      % +Repeats:integer
-                      % -List:list(object)
     remove_first/2, % +List:list,
                     % -NewList:list
     remove_firsts/2, % +List:list
                      % -NewList:list
     remove_last/2, % +List:list
                    % -NewList:list
+    repeating_list/3, % +Term:term
+                      % +Repeats:integer
+                      % -List:list(object)
     shorter/3, % +Comparator:pred
                % +List1:list(object)
                % +List2:list(object)
@@ -331,40 +331,6 @@ random_member(List, Member):-
   random_betwixt(Length, Random),
   nth0(Random, List, Member).
 
-%! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
-% Returns the list of the given number of repeats of the given term.
-%
-% @param Term
-% @param Repeats
-% @param List
-
-repeating_list(Object, Repeats, List):-
-  nonvar(List), !,
-  repeating_list1(Object, Repeats, List).
-repeating_list(Object, Repeats, List):-
-  nonvar(Repeats),
-  !,
-  repeating_list2(Object, Repeats, List).
-
-%! repeating_list1(-Object, -Repeats:integer, +List:list) is nondet.
-% Returns the object and how often it occurs in the repeating list.
-
-repeating_list1(_Object, 0, []).
-repeating_list1(Object, Repeats, [Object | T]):-
-  forall(
-    member(X, T),
-    X = Object
-  ),
-  length([Object | T], Repeats).
-
-%! repeating_list2(+Object, +Repeats:integer, -List:list) is det.
-
-repeating_list2(_Object, 0, []):-
-  !.
-repeating_list2(Object, Repeats, [Object | List]):-
-  succ(NewRepeats, Repeats),
-  repeating_list2(Object, NewRepeats, List).
-
 %! remove_first(+List, -ListWithoutFirst)
 % Returns a list that is like the given list, but without the first element.
 % Fails if there is no first element in the given list.
@@ -402,6 +368,38 @@ remove_last([Element], []):-
   atomic(Element).
 remove_last([Element | Rest], [Element | NewRest]):-
   remove_last(Rest, NewRest).
+
+%! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
+% Returns the list of the given number of repeats of the given term.
+%
+% @param Term
+% @param Repeats
+% @param List
+
+repeating_list(Object, Repeats, List):-
+  nonvar(List), !,
+  repeating_list1(Object, Repeats, List).
+repeating_list(Object, Repeats, List):-
+  nonvar(Repeats), !,
+  repeating_list2(Object, Repeats, List).
+
+%! repeating_list1(-Object, -Repeats:integer, +List:list) is nondet.
+% Returns the object and how often it occurs in the repeating list.
+
+repeating_list1(_Object, 0, []).
+repeating_list1(Object, Repeats, [Object | T]):-
+  forall(
+    member(X, T),
+    X = Object
+  ),
+  length([Object | T], Repeats).
+
+%! repeating_list2(+Object, +Repeats:integer, -List:list) is det.
+
+repeating_list2(_Object, 0, []):- !.
+repeating_list2(Object, Repeats, [Object | List]):-
+  succ(NewRepeats, Repeats),
+  repeating_list2(Object, NewRepeats, List).
 
 %! shorter(+Order:pred/2, +List:list(term), +List2:list(term)) is semidet.
 % Succeeds if =List1= has relation =Order= to =List2=.

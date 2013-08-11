@@ -4,6 +4,7 @@
     arrow//1, % +Length:integer
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
+    dcg_codes//1, % +Codes:list(code)
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
@@ -107,6 +108,12 @@ arrow_left_head(both).
 arrow_left_head(left).
 arrow_right_head(both).
 arrow_right_head(right).
+
+dcg_codes([]) -->
+  [].
+dcg_codes([H|T]) -->
+  [H],
+  dcg_codes(T).
 
 graphic([H|T]) -->
   dcg_graph(H),

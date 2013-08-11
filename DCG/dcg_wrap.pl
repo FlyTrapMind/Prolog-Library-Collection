@@ -115,39 +115,62 @@ dcg_word_wrap(Options) -->
   },
   dcg_word_wrap(MaximumLineWidth, MaximumLineWidth).
 
-dcg_word_wrap(_Remaining, _MaximumLineWidth) -->
-  dcg_end, !.
-dcg_word_wrap(Remaining, MaximumLineWidth), (Emit, EmitPostfix) --> !,
-  graphic(Word),
-  % Whether or now a space follows the word. Specifically, the last word
-  % in the codes list need not be followed by a space.
+dcg_word_wrap(Remaining, _MaximumLineWidth), dcg_codes(Spaces) -->
+  dcg_end, !,
+  {repeating_list(32, Remaining, Spaces)}.
+
+dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
+  dcg_peek(graphic(Word1)),
+  {length(Word1, WordLength)},
+
   (
-    space
+    % Split occurs within word.
+    % Insert part of the word and consume this part.
+    % Insert a newline, no space.
+    % Consume the rest of the word later.
+    {WordLength > MaximumLineWidth}
   ->
-    {EmitPostfix = space}
+    {
+      length(Word2, Remaining),
+      append(Word2, _Word3, Word1),
+      Postfix = newline,
+      NewRemaining = MaximumLineWidth
+    },
+    dcg_codes(Word2)
   ;
-    {EmitPostfix = dcg_void}
-  ),
-  {
-    length(Word, WordLength),
+    % Split occurs right after word.
+    % Insert word and insert newline right after it, no space.
+    {WordLength == Remaining}
+  ->
+    {
+      Word2 = Word1,
+      Postfix = newline,
+      NewRemaining = MaximumLineWidth
+    },
+    dcg_codes(Word1)
+  ;
+    % Fill the rest of the line with spaces and insert a newline
+    % Process the word later.
+    {WordLength > Remaining}
+  ->
+    {
+      repeating_list(32, Remaining, Word2),
+      Postfix = newline,
+      NewRemaining = MaximumLineWidth
+    }
+  ;
+    {Word2 = Word1},
     (
-      WordLength > MaximumLineWidth
+      dcg_peek(space)
     ->
-      split_list_by_size(Word, MaximumLineWidth, SubWords),
-      phrase(newline, Newline),
-      list_separator_concat(SubWords, Newline, WrappedWord),
-      Emit = (newline, WrappedWord),
-      last(SubWords, LastSubWord),
-      length(LastSubWord, LastSubWordLength),
-      NewRemaining is MaximumLineWidth - LastSubWordLength
+      space,
+      {Postfix = space, SpaceLength = 1}
     ;
-      WordLength > Remaining
-    ->
-      Emit = (newline, Word),
-      NewRemaining is MaximumLineWidth - WordLength
-    ;
-      Emit = Word,
-      NewRemaining is Remaining - WordLength
-    )
-  },
+      {Postfix = dcg_void, SpaceLength = 0}
+    ),
+    {NewRemaining is Remaining - WordLength - SpaceLength},
+    dcg_codes(Word1)
+  ),
+
   dcg_word_wrap(NewRemaining, MaximumLineWidth).
+

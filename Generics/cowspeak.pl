@@ -33,8 +33,8 @@ in combination with the open source speech synthesizer eSpeak.
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(library(debug)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(os(os_ext)).
@@ -117,7 +117,6 @@ cowspeak_(O1, Atoms):-
   % Some characters are needed to display the speech bubble itself.
   MaximumEffectiveWidth is MaximumWidth - 4,
   merge_options([maximum_line_width(MaximumEffectiveWidth)], O1, O2),
-
   findall(
     CodeLine3,
     (
@@ -152,7 +151,7 @@ cowspeak_(O1, Atoms):-
   option(output(Output), O2, user_output),
   atom_codes(CowAtom, CowCodes),
   with_output_to(Output, write(CowAtom)),
-  
+
   % It can talk!
   option(speech(Speech), O2, true),
   if_then(

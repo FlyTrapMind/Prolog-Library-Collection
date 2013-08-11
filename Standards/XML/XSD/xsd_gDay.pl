@@ -128,6 +128,6 @@ gDayLexicalMap(LEX, GD):-
 gDayLexicalRep(DT) -->
   dcg_multi(hyphen, 3),
   dayFrag(D),
-  ({var(TZ)} ; timezoneFrag(TZ)), !,
+  ("" ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, _M, D, _H, _MM, _S, TZ, DT)}.
 

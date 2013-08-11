@@ -1,22 +1,8 @@
 :- module(
   rfc5646_dcg,
   [
-    rfc5646_grandfathered_language_tag//2, % -Tree:compound
-                                           % ?LanguageTag:list(atom)
-    rfc5646_irregular_grandfathered_language_tag//2, % -Tree:compound
-                                                     % ?LanguageTag:list(atom)
-    rfc5646_language_tag//2, % -Tree:compound
-                             % ?LanguageTag:compound
-    rfc5646_regular_grandfathered_language_tag//2, % -Tree:compound
-                                                   % ?LanguageTag:list(atom)
-    rfc5646_standard_language_tag//8 % -Tree:compound
-                                     % ?Primary:atom
-                                     % ?Extensions:list(atom)
-                                     % ?Script:atom
-                                     % ?Region:atomic
-                                     % ?Variants:list(atom)
-                                     % ?Extensions:list(list(atomic))
-                                     % ?Private:list(atom)
+    rfc5646_language_tag//2 % -Tree:compound
+                            % ?LanguageTag:compound
   ]
 ).
 
@@ -751,7 +737,7 @@ rfc5646_extensions(extensions('-',T1), [H]) -->
 % their meaning is defined by their registration and all of these are
 % deprecated in favor of a more modern subtag or sequence of subtags.
 
-rfc5646_grandfathered_language_tag(T0, LanguageTag) -->
+rfc5646_grandfathered_language_tag(T0, Tag) -->
   dcg_multi_list(dcg_word, hyphen, L1),
   {
     atomic_list_concat(L1, '-', Tag),
@@ -778,6 +764,7 @@ rfc5646_language_tag(
     Private
   )
 ) -->
+  {rfc5646_init},
   rfc5646_standard_language_tag(
     T1,
     Primary,
@@ -790,9 +777,11 @@ rfc5646_language_tag(
   ).
 % Private use tags.
 rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
+  {rfc5646_init},
   rfc5646_privateuse(T1, LanguageTag).
 % Grandfathered tags.
 rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
+  {rfc5646_init},
   rfc5646_grandfathered_language_tag(T1, LanguageTag).
 
 %! rfc5646_language(

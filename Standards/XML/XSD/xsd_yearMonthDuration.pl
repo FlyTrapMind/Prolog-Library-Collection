@@ -123,8 +123,9 @@ yearMonthDurationLexicalMap(LEX, YMD):-
 % yearMonthDurationLexicalRep ::= '-'? 'P' duYearMonthFrag
 % ~~~
 
-yearMonthDurationLexicalRep(duration(M,0)) -->
+yearMonthDurationLexicalRep(duration(M2,0)) -->
   (minus_sign, {Sign = -1} ; {Sign = 1}),
   "P",
-  duYearMonthFrag(M).
+  duYearMonthFrag(M1),
+  {M2 is copysign(M1, Sign)}.
 

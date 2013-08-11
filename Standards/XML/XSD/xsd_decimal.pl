@@ -308,7 +308,7 @@ decimalLexicalRep1(D) -->
   {var(D)}, !,
   (sign(H1) -> {L1 = [H1|T1]} ; {L1 = T1}),
   dcg_multi(decimal_digit, between(1,_), T1),
-  (dot(H2), dcg_multi(decimal_digit, _, T2) -> {L2 = [H2|T2]} ; {L2 = T2}),
+  (dot(H2), dcg_multi(decimal_digit, _, T2) -> {L2 = [H2|T2]} ; {L2 = []}),
   {append(L1, L2, L), number_codes(D, L)}.
 decimalLexicalRep1(D, H, T):-
   number(D), !,

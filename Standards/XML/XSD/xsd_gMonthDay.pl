@@ -23,7 +23,7 @@ Because day/month combinations in one calendar only rarely correspond to
 day/month combinations in other calendars, values of this type do not,
 in general, have any straightforward or intuitive representation in terms of
 most other calendars. This type should therefore be used with caution in
-contexts where conversion to other calendars is desired. 
+contexts where conversion to other calendars is desired.
 
 ### Value Space
 
@@ -130,7 +130,7 @@ gMonthDayLexicalMap(LEX, GY):-
 % Maps a gMonthDayLexicalRep// to a gMonthDay value.
 %
 % ~~~{.ebnf}
-% gMonthDayLexicalRep ::= '--' monthFrag '-' dayFrag timezoneFrag? 
+% gMonthDayLexicalRep ::= '--' monthFrag '-' dayFrag timezoneFrag?
 % ~~~
 %
 % ~~~{.re}
@@ -144,6 +144,6 @@ gMonthDayLexicalRep(GMD) -->
   hyphen,
   dayFrag(D),
   {dayInMonth(M, D)},
-  ({var(TZ)} ; timezoneFrag(TZ)), !,
+  ("" ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, M, D, _H, _MM, _S, TZ, GMD)}.
 

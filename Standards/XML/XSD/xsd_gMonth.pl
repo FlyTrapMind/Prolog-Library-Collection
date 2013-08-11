@@ -109,6 +109,6 @@ gMonthLexicalMap(LEX, GD):-
 gMonthLexicalRep(DT) -->
   dcg_multi(hyphen, 2),
   monthFrag(M),
-  ({var(TZ)} ; timezoneFrag(TZ)), !,
+  ("" ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, M, _D, _H, _MM, _S, TZ, DT)}.
 

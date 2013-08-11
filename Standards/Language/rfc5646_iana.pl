@@ -36,6 +36,7 @@ specification.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(record_jar)). % Used in phrase_from_stream/2.
@@ -48,12 +49,10 @@ rfc5646_graph(rfc5646).
 rfc5646_host([www,rfc5646,com]).
 rfc5646_scheme(http).
 
-:- initialization(init_rfc5646_rdf).
 
 
-
-%! rfc5646_class(+SubtagName:atom, +Class:atom) is semidet
-%! rfc5646_class(SubtagName:atom, +Class:atom) is semidet
+%! rfc5646_class(+SubtagName:atom, +Class:atom) is semidet.
+%! rfc5646_class(SubtagName:atom, +Class:atom) is semidet.
 % Succeeds if the given subtag is of the given IANA class.
 % The following classes are supported:
 %   * =Extension=
@@ -64,9 +63,10 @@ rfc5646_scheme(http).
 %   * =Script=
 %   * =Variant=
 
-rfc5646_class(SubtagName, Class):-
+rfc5646_class(Subtag, Class1):-
   rdfs_label(Resource, Subtag),
-  rdfs_individual_of(Resource, rfc5646:Class).
+  rdf_global_id(rfc5646:Class1, Class2),
+  rdfs_individual_of(Resource, Class2).
 
 rfc5646_init:-
   absolute_file_name(
@@ -74,7 +74,14 @@ rfc5646_init:-
     File,
     [access(read), file_type(rdf)]
   ), !,
-  rdf_load2(File, [graph(rfc5646)]).
+  once((
+    % The RDF graph is already loaded.
+    rdf_graph_source_file(_Graph, File)
+  ;
+    % The RDF graph is availalbe in serialized format but not loaded.
+    rdf_load2(File, [graph(rfc5646)])
+  )).
+% The RDF graph is not available, create it from the text file.
 rfc5646_init:-
   absolute_file_name(
     lang(rfc5646_iana_registry),
@@ -86,6 +93,7 @@ rfc5646_init:-
     once(phrase_from_stream('record-jar'(_Encoding, [_Date|Rs]), Stream)),
     close(Stream)
   ),
+  init_rfc5646_schema,
   maplist(rfc5646_rdf_record, Rs),
   absolute_file_name(
     lang(rfc5646_iana_registry),
@@ -168,7 +176,7 @@ create_subtag_resource(Type, Subtag, G, LanguageSubtag2):-
   rdf_assert_individual(LanguageSubtag2, Class, G),
   rdfs_assert_label(LanguageSubtag2, Subtag, G).
 
-init_rfc5646_rdf:-
+init_rfc5646_schema:-
   rfc5646_graph(G),
   rdfs_assert_class(rfc5646:'Subtag', G),
   rdfs_assert_subclass(rfc5646:'Extension', rfc5646:'Subtag', G),

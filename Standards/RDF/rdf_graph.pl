@@ -14,8 +14,8 @@
                              % +Graph2:atom
     rdf_graph_merge/2, % +In:list(atom)
                        % +MergedGraph:atom
-    rdf_graph_source_file/2, % +Graph:atom
-                             % -File:atom
+    rdf_graph_source_file/2, % ?Graph:atom
+                             % ?File:atom
     rdf_graph_triples/2, % ?Graph:atom
                          % ?Triples:list
     rdf_ground/1, % +Graph:atom
@@ -327,16 +327,17 @@ rdf_graph(Graph, MergedGraph):-
   rdf_graph(Graph), !,
   rdf_graph([Graph], MergedGraph).
 
-%! rdf_graph_source_file(+Graph:atom, -File:atom) is semidet.
+%! rdf_graph_source_file(?Graph:atom, ?File:atom) is semidet.
 % Returns the name of the file from which the graph with the given name
 % was loaded.
 
-rdf_graph_source_file(Graph, File):-
+rdf_graph_source_file(Graph, File2):-
   rdf_graph_property(Graph, source(Source)),
   uri_components(
     Source,
-    uri_components(file, _Authority, File, _Search, _Fragments)
-  ).
+    uri_components(file, _Authority, File1, _Search, _Fragments)
+  ),
+  sub_atom(File1, 1, _Length, 0, File2).
 
 % Instantiations (+,+)-semidet and (-,+)-nondet.
 rdf_graph_triples(G, Triples):-

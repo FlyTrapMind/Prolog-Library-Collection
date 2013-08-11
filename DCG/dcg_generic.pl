@@ -62,7 +62,7 @@
                   % -Tree:compound
 
 % PEEK
-    dcg_peek//1, % :DCG_Body
+    dcg_peek//1, % :DCG_Body:dcg
     dcg_peek_length//2, % ?Length:integer
                         % ?Codes:list(code)
 
@@ -81,9 +81,10 @@
 :- reexport(
   library(dcg/basics),
   [
-    atom//1,
-    string//1,
-    string_without//2
+    atom//1, % +Atom:atom
+    string//1, % -Codes:list(code)
+    string_without//2 % +End:list(code)
+                      % -Codes:list(code)
   ]
 ).
 
@@ -286,22 +287,26 @@ dcg_debug(Codes, []):-
 % "error(permission_error(delete,file,\'c:/users/quirinus/.webqr/export.svg\'),context(system:delete_file/1,\'Permission denied\'))"
 % ~~~
 
-dcg_separated_list(Separator, L) -->
+dcg_separated_list(Sep, L) -->
   {nonvar(L)}, !,
-  dcg_separated_list_nonvar(Separator, L).
-dcg_separated_list(Separator, L) -->
+  dcg_separated_list_nonvar(Sep, L).
+dcg_separated_list(Sep, L) -->
   {var(L)}, !,
-  dcg_separated_list_var(Separator, L).
-dcg_separated_list_nonvar(Separator, [H|T]) -->
+  dcg_separated_list_var(Sep, L).
+
+dcg_separated_list_nonvar(_Sep, [H]) --> !,
+  H.
+dcg_separated_list_nonvar(Sep, [H|T]) -->
   H,
-  dcg_separated_list_nonvar(Separator, T).
-dcg_separated_list_var(Separator, [H|T]) -->
-  string(H),
-  blanks, Separator, blanks, !,
-  dcg_separated_list(Separator, T).
-dcg_separated_list_var(_Separator, [H]) -->
-  string(H).
-dcg_separated_list_var(_Separator, []) --> [].
+  Sep,
+  dcg_separated_list_nonvar(Sep, T).
+
+dcg_separated_list_var(Sep, [H|T]) -->
+  dcg_until([end_mode(exclusive),output_format(codes)], Sep, H),
+  Sep, !,
+  dcg_separated_list_var(Sep, T).
+dcg_separated_list_var(_Sep, [H]) -->
+  dcg_all(H).
 
 
 

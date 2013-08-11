@@ -106,6 +106,6 @@ gYearLexicalMap(LEX, GY):-
 
 gYearLexicalRep(GY) -->
   yearFrag(Y),
-  ({var(TZ)} ; timezoneFrag(TZ)), !,
+  ("" ; timezoneFrag(TZ)), !,
   {newDateTime(Y, _M, _D, _H, _MM, _S, TZ, GY)}.
 

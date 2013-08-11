@@ -937,7 +937,7 @@ timeOnTimeline(dt(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
       % Hour.
       + 3600 * H2
       % Minute.
-      + 60 * MM2
+      + 60 * MM3
       % Second.
       + S2.
 
