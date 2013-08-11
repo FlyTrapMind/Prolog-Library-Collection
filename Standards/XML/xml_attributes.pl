@@ -8,13 +8,6 @@
                       % :DCG_Name
                       % :DCG_Value
                       % :DCG_Sepatator
-    xml_base//7, % -Tree:compound
-                 % :DCG_Namespace
-                 % ?Scheme:atom
-                 % ?Authority:compound
-                 % ?Path:list(list(atom))
-                 % ?Query:atom
-                 % ?Fragment:atom
     xml_id//3, % -Tree:compound
                % :DCG_Namespace
                % ?Name:atom
@@ -39,6 +32,7 @@
 DCG rules for XML attributes.
 
 @author Wouter Beek
+@see XML 1.0-5 http://www.w3.org/TR/2008/REC-xml-20081126/
 @version 2013/07
 */
 
@@ -97,41 +91,18 @@ xml_attribute_list([Tree|Trees], DCG_Value1, [A1|A1s], DCG_Separator) -->
   dcg_call(DCG_Separator),
   xml_attribute_list(Trees, DCG_Value1, A1s, DCG_Separator).
 
-%! xml_base(
-%!   -Tree:compound,
-%!   :DCG_Namespace,
-%!   ?Scheme:atom,
-%!   ?Authority:compound,
-%!   ?Path:list(list(atom)),
-%!   ?Query:atom,
-%!   ?Fragment:atom
-%! )//
-% Specifies a base IRI other than the base IRI of the document or external
-% entity.
-%
-% ~~~{.bnf}
-% xml:base = "<iri>"
-% ~~~
-%
-% @tbd Implement the XML Base specification.
-
-xml_base(
-  xml_base(T1),
-  DCG_Namespace,
-  Scheme,
-  Authority,
-  Path,
-  Query,
-  Fragment
-) -->
-  xml_attribute_(
-    DCG_Namespace,
-    xml_name(base),
-    rfc2396_uri_reference(T1, Scheme, Authority, Path, Query, Fragment)
-  ).
-
 %! xml_id(-Tree:compound, :DCG_Namespace, ?Name:atom)//
 % Standard XML attribute for assigning a unique name to an element.
+%
+% =ID= is a =TokenizedType= of an =AttType=.
+% Values of type =ID= MUST match the =Name= production. A name MUST NOT
+% appear more than once in an XML document as a value of this type;
+% i.e., =ID= values MUST uniquely identify the elements which bear them.
+% 
+% An element type MUST NOT have more than one =ID= attribute specified.
+%
+% An =ID= attribute MUST have a declared default of
+% =|#IMPLIED|= or =|#REQUIRED|=.
 %
 % ~~~{.bnf}
 % id = "name"
@@ -159,10 +130,28 @@ xml_inject_attributes(DCG_Namespace, [H1|T1], [H2|T2], [Tree|Trees]):-
 % element in an XML document. In valid documents, this attribute, like any
 % other, MUST be declared if it is used.
 %
-% The values of the attribute are language identifiers as defined by
-% IETF RFC 3066.
+% ~~~{.bnf}
+% xml:base = "<iri>"
+% ~~~
 %
-% @tbd Implement RFC 3066.
+% The values of the attribute are language identifiers as defined by
+% IETF BCP 47, "Tags for the Identification of Languages"; in addition,
+% the empty string may be specified.
+%
+% Examples of declarations:
+% ~~~{.dtd}
+% <!ATTLIST example xml:lang CDATA #IMPLIED>
+% <!ATTLIST poem    xml:lang CDATA 'fr'    >
+% <!ATTLIST gloss   xml:lang CDATA 'en'    >
+% <!ATTLIST note    xml:lang CDATA 'en'    >
+% ~~~
+%
+% @see The XML 1.0-5 specification references IETF RFC 4646 and RFC 4647
+%      for the valid values of this attribute.
+%      The XML 1.1-2 specification references IETF RFC 3066, a precursor of
+%      RFC 4646 and RFC 4647, instead.
+%      This module implements RFC 5646, the successor to 4646.
+% @tbd Implement RFC 4647.
 
 xml_language(xml_language(T1), DCG_Namespace, LanguageTag) -->
   xml_attribute_(

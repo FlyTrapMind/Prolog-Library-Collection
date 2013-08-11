@@ -20,6 +20,12 @@
   ]
 ).
 
+/** <module> SVG_ENTITIES
+
+@author Wouter Beek
+@version 2013/07-2013/08
+*/
+
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(plunit)).
