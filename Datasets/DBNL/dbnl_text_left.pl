@@ -205,7 +205,7 @@ dbnl_text_left(Graph, Text) -->
       sub_atom(PlaceYear, _Before, 4, 0, Year1),
       atom_number(Year1, Year2)
     ->
-      rdf_assert_datatype(Text, dbnl:year, int, Year2, Graph),
+      rdf_assert_datatype(Text, dbnl:year, integer, Year2, Graph),
       sub_atom(PlaceYear, 0, _Length, 4, Place1)
     ;
       Place1 = PlaceYear

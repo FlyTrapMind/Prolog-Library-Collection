@@ -10,6 +10,9 @@
     dayFrag//1, % -Day:between(1,31)
     dayInMonth/2, % +Month:between(1,12)
                   % +DayInMonth:between(1,31)
+    dayInMonth/3, % +Year:integer
+                  % +Month:between(1,12)
+                  % +DayInMonth:between(1,31)
     daysInMonth/3, % ?Year:integer
                    % +Month:between(1,12)
                    % ?DaysInMonth:between(28,31)
@@ -22,16 +25,18 @@
     minuteFrag//1, % -Minute:between(1-59)
     monthCanonicalFragmentMap//1, % +Month:between(1,12)
     monthFrag//1, % -Month:between(1,12)
-    newDateTime//8, % ?Year:integer
-                    % ?Month:between(1,12)
-                    % ?Day:between(1,31)
-                    % ?Hour:between(0,24)
-                    % ?Minute:between(0,59)
-                    % ?Second:between(0.0,60.0)
-                    % ?Timezone:between(-840,840)
-                    % -DateTime:compound
+    newDateTime/8, % ?Year:integer
+                   % ?Month:between(1,12)
+                   % ?Day:between(1,31)
+                   % ?Hour:between(0,24)
+                   % ?Minute:between(0,59)
+                   % ?Second:between(0.0,60.0)
+                   % ?Timezone:between(-840,840)
+                   % -DateTime:compound
     secondCanonicalFragmentMap//1, % +Second:between(0.0,60.0)
     secondFrag//1, % -Second:float
+    timeOnTimeline/2, % +DateTime:compound
+                      % -Seconds:float
     timezoneCanonicalFragmentMap//1, % +Timezone:between(-840,840)
     timezoneFrag//1, % -Minutes:between(-840,840)
     yearCanonicalFragmentMap//1, % +Year:integer
@@ -396,7 +401,7 @@ yearCanonicalFragmentMap(Y) -->
   {abs(Y) > 9999}, !,
   noDecimalPtCanonicalMap(Y).
 yearCanonicalFragmentMap(Y) -->
-  fourDigitCanonicalFragmentMap(y).
+  fourDigitCanonicalFragmentMap(Y).
 
 
 
@@ -460,7 +465,7 @@ dateTimeLexicalRep(DT) -->
     endOfDayFrag(H, MM, D)
   ),
   (timezoneFrag(TZ) ; ""),
-  {newDateTime(Y, M, D, H, MM, S, TZ, DT)
+  {newDateTime(Y, M, D, H, MM, S, TZ, DT)}.
 
 %! dayFrag(-Day:between(1,31))//
 % Processes a day value, i.e. a numeral consisting of exactly two
@@ -471,16 +476,16 @@ dateTimeLexicalRep(DT) -->
 % ~~~
 
 dayFrag(D) -->
-  zero(_, C1),
+  zero(C1),
   nonzero_decimal_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 dayFrag(D) -->
-  binary_digigt(_, C1),
-  decimal_digit(_, C2).
+  (one(C1) ; two(C1)),
+  decimal_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 dayFrag(D) -->
-  three(_, C1),
-  binary_digigt(_, C2),
+  three(C1),
+  binary_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 
 %! endOfDayFrag(-Hour:oneof([24]), -Minute:oneof([0]), -Second:oneof([0]))//
@@ -494,7 +499,7 @@ dayFrag(D) -->
 
 endOfDayFrag(24, 0, 0) -->
   "24:00:00",
-  (dot, dcg_multi(zero, _, _)).
+  (dot, dcg_multi(zero, _)).
 
 %! hourFrag(-Hour:between(1,23))//
 % Processes an hour value, i.e. a numeral consisting of exactly two
@@ -505,12 +510,12 @@ endOfDayFrag(24, 0, 0) -->
 % ~~~
 
 hourFrag(H) -->
-  binary_digigt(_, C1),
+  binary_digit(_, C1),
   decimal_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(H), [C1,C2])}.
 hourFrag(H) -->
-  two(_, C1),
-  (binary_digigt(_, C2) ; two(_, C2) ; three(_, C2)),
+  two(C1),
+  (binary_digit(_, C2) ; two(C2) ; three(C2)),
   {phrase(unsignedNoDecimalPtNumeral(H), [C1,C2])}.
 
 %! minuteFrag(-Minute:between(1-59))//
@@ -523,15 +528,15 @@ hourFrag(H) -->
 
 minuteFrag(M) -->
   (
-    binary_digigt(_, C1)
+    binary_digit(_, C1)
   ;
-    two(_, C1)
+    two(C1)
   ;
-    three(_, C1)
+    three(C1)
   ;
-    four(_, C1)
+    four(C1)
   ;
-    five(_, C1)
+    five(C1)
   ),
   decimal_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
@@ -545,12 +550,12 @@ minuteFrag(M) -->
 % ~~~
 
 monthFrag(M) -->
-  zero(_, C1),
+  zero(C1),
   nonzero_decimal_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
 monthFrag(M) -->
-  one(_, C1),
-  (binary_digigt(_, C2) ; two(_, C2)),
+  one(C1),
+  (binary_digit(_, C2) ; two(C2)),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
 
 %! secondFrag(-Second:float)//
@@ -563,17 +568,7 @@ monthFrag(M) -->
 % ~~~
 
 secondFrag(S) -->
-  (
-    binary_digigt(_, C1)
-  ;
-    two(_, C1)
-  ;
-    three(_, C1)
-  ;
-    four(_, C1)
-  ;
-    five(_, C1)
-  ),
+  (binary_digit(_, C1) ; two(C1) ; three(C1) ; four(C1) ; five(C1)),
   decimal_digit(_, C2),
   (
     dot(C3),
@@ -605,11 +600,11 @@ timezoneFrag(840) -->
 timezoneFrag(TZ) -->
   sign(Sign),
   (
-    zero(_, C1), decimal_digit(_, C2)
+    zero(C1), decimal_digit(_, C2)
   ;
-    one(_, C1), (binary_digit(_, C2) ; three(_, C2))
+    one(C1), (binary_digit(_, C2) ; three(C2))
   ),
-  {phrase(unsignedDecimalPtNumeral(N1), [C1.C2])},
+  {phrase(unsignedDecimalPtNumeral(N1), [C1,C2])},
   colon,
   minuteFrag(N2),
   {TZ is copysign(N1 * 60 + N2, Sign)}.
@@ -632,10 +627,13 @@ yearFrag(Y) -->
     nonzero_decimal_digit(_, H),
     dcg_multi(decimal_digit, between(3,_), _, T)
   ;
-    zero(_, H),
+    zero(H),
     dcg_multi(decimal_digit, 3, _, T)
   ),
-  {phrase(noDecimalPtNumeral(S, I), Cs), Y is copysign(I, S)}.
+  {
+    phrase(noDecimalPtNumeral(S, I), Cs),
+    Y is copysign(I, S)
+  }.
 
 
 
@@ -652,8 +650,15 @@ dayInMonth(2, D):- !,
 dayInMonth(M, D):-
   memberchk(M, [4,6,9,11]), !,
   between(1, 30, D).
-dayInMonth(M, D):-
+dayInMonth(_M, D):-
   between(1, 31, D).
+
+dayInMonth(Y, M, D):-
+  var(Y), !,
+  dayInMonth(M, D).
+dayInMonth(Y, M, D):-
+  daysInMonth(Y, M, MaxD),
+  between(1, MaxD, D).
 
 %! daysInMonth(
 %!   ?Year:integer,
@@ -733,12 +738,12 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
   % Set the values that are used for performing the nprmalization.
   default(Y1,  1,   Y2 ),
   default(M1,  1,   M2 ),
-  default(D1,  1,   D1 ),
+  default(D1,  1,   D2 ),
   default(H1,  0,   H2 ),
   default(MM1, 0,   MM2),
   default(S1,  0.0, S2 ),
   normalizeSecond(Y2, M2, D2, H2, MM2, S2, Y3, M3, D3, H3, MM3, S3),
-  
+
   % Variables stay variable.
   % Non-variables get the normalized value.
   var_or_value(Y1,  Y3,  Y4 ),
@@ -747,7 +752,7 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
   var_or_value(H1,  H3,  H4 ),
   var_or_value(MM1, MM3, MM4),
   var_or_value(S1,  S3,  S4 ),
-  DT = dateTime(Y2,M2,D2,H2,MM2,S2,TZ).
+  DT = dateTime(Y4,M4,D4,H4,MM4,S4,TZ).
 
 %! normalizeDay(
 %!   +Year:integer,
@@ -775,14 +780,14 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
 
 normalizeDay(Y1, M1, D1, Y2, M2, D2):-
   normalizeMonth(Y1, M1, Y3, M3),
-  normalizeDay_(Y3, M3, D1, Y2, M2, D2):-
+  normalizeDay_(Y3, M3, D1, Y2, M2, D2).
 
 normalizeDay_(Y1, M1, D1, Y2, M2, D2):-
   daysInMonth(Y1, M1, D1Max),
   (
-    D1 > DMax
+    D1 > D1Max
   ->
-    D3 is D1 - DMax,
+    D3 is D1 - D1Max,
     MX is M1 + 1,
     normalizeMonth(Y1, MX, Y3, M3),
     normalizeDay_(Y3, M3, D3, Y2, M2, D2)
@@ -824,8 +829,8 @@ normalizeDay_(Y1, M1, D1, Y2, M2, D2):-
 % ~~~
 
 normalizeMinute(Y1, M1, D1, H1, MM1, Y2, M2, D2, H2, MM2):-
-  HX is H1 + M1 div 60,
-  M2 is M1 mod 60,
+  HX is H1 + MM1 div 60,
+  MM2 is MM1 mod 60,
   DX is D1 + HX div 24,
   H2 is HX mod 24,
   normalizeDay(Y1, M1, DX, Y2, M2, D2).
@@ -853,7 +858,7 @@ normalizeMonth(Y1, M1, Y2, M2):-
   % Add (mo − 1) div 12 to yr.
   Y2 is Y1 + (M1 - 1) div 12,
   % Set mo to (mo − 1) mod 12 + 1.
-  M2 is (M1 - 1) mod 13.
+  M2 is (M1 - 1) mod 13 + 1.
 
 %! normalizeSecond(
 %!   +Year:integer,
@@ -880,9 +885,9 @@ normalizeMonth(Y1, M1, Y2, M2):-
 
 normalizeSecond(Y1, M1, D1, H1, MM1, S1, Y2, M2, D2, H2, MM2, S2):-
   div(S1, 60, MMX),
-  MMY is M1 + MMX,
-  mod(S1, 60, SX),
-  normalizeMinute(Y1, M1, D1, H1, MMY, SX, Y2, M2, D2, H2, MM2, S2).
+  MMY is MM1 + MMX,
+  mod(S1, 60, S2),
+  normalizeMinute(Y1, M1, D1, H1, MMY, Y2, M2, D2, H2, MM2).
 
 %! timeOnTimeline(+DateTime:compound, -Seconds:float) is det.
 % Maps a date/timeSevenPropertyModel value to the decimal number representing
@@ -940,5 +945,5 @@ timeOnTimeline(dt(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
 
 var_or_value(Arg, _Val, _Var):-
   var(Arg), !.
-var_or_value(Arg_, Val, Val).
+var_or_value(_Arg, Val, Val).
 

@@ -179,7 +179,7 @@ doyle_add_justification(TMS, Ins, Outs, Label, Consequence, Justification):-
   rdf_global_id(doyle:Name, Justification),
   % @tbd For now we only support SL-justifications.
   rdf_assert_individual(Justification, doyle:'SL-Justification', TMS:1),
-  rdf_assert_datatype(Justification, tms:has_id, int, ID, TMS:1),
+  rdf_assert_datatype(Justification, tms:has_id, integer, ID, TMS:1),
   rdfs_assert_label(Justification, Label, TMS:1),
 
   % Add the new justification to the node's justification-set.
@@ -384,7 +384,7 @@ doyle_add_node(TMS, Label, Node):-
   format(atom(Name), '~w_n~w', [TMS,ID]),
   rdf_global_id(doyle:Name, Node),
   rdf_assert_individual(Node, tms:'Node', TMS:1),
-  rdf_assert_datatype(Node, tms:has_id, int, ID, TMS:1),
+  rdf_assert_datatype(Node, tms:has_id, integer, ID, TMS:1),
   rdfs_assert_label(Node, Label, TMS:1),
 
   % The initial support status.

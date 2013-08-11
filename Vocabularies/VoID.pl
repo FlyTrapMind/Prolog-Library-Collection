@@ -115,7 +115,7 @@ void_assert_statistics(Dataset, DatasetGraph, VoID_Graph):-
   rdf_overwrite_datatype(
     Dataset,
     void:classes,
-    int,
+    integer,
     NumberOfClasses,
     VoID_Graph
   ),
@@ -125,7 +125,7 @@ void_assert_statistics(Dataset, DatasetGraph, VoID_Graph):-
   rdf_overwrite_datatype(
     Dataset,
     void:distinctObjects,
-    int,
+    integer,
     NumberOfObjects,
     VoID_Graph
   ),
@@ -135,7 +135,7 @@ void_assert_statistics(Dataset, DatasetGraph, VoID_Graph):-
   rdf_overwrite_datatype(
     Dataset,
     void:distinctSubjects,
-    int,
+    integer,
     NumberOfSubjects,
     VoID_Graph
   ),
@@ -145,7 +145,7 @@ void_assert_statistics(Dataset, DatasetGraph, VoID_Graph):-
   rdf_overwrite_datatype(
     Dataset,
     void:properties,
-    int,
+    integer,
     NumberOfProperties,
     VoID_Graph
   ),
@@ -155,7 +155,7 @@ void_assert_statistics(Dataset, DatasetGraph, VoID_Graph):-
   rdf_overwrite_datatype(
     Dataset,
     void:triples,
-    int,
+    integer,
     NumberOfTriples,
     VoID_Graph
   ).

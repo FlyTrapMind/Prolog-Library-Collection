@@ -3,8 +3,8 @@
   [
     yearMonthDurationCanonicalMap/2, % +YearMonthDuration:compound
                                      % -LEX:list(code)
-    yearMonthDurationLexicalMap/2, % +LEX:list(code)
-                                   % -YearMonthDuration:compound
+    yearMonthDurationLexicalMap/2 % +LEX:list(code)
+                                  % -YearMonthDuration:compound
   ]
 ).
 
@@ -86,7 +86,7 @@ facets:
   * =|numeric = false|=
 
 The ordered facet has the value partial even though the datatype is in fact
-totally ordered, because the value of that facet is unchanged by derivation. 
+totally ordered, because the value of that facet is unchanged by derivation.
 
 --
 

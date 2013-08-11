@@ -248,7 +248,7 @@ dbnl_journal(Graph, Text) -->
     ),
     unless(
       var(Volume),
-      rdf_assert_datatype(Text, dbnl:volume, int, Volume, Graph)
+      rdf_assert_datatype(Text, dbnl:volume, integer, Volume, Graph)
     )
   }.
 
@@ -311,7 +311,7 @@ dbnl_title(Graph, Text) -->
 
 dbnl_volume(Graph, Text) -->
   volume(_Lang, Volume),
-  {rdf_assert_datatype(Text, dbnl:volume, int, Volume, Graph)}.
+  {rdf_assert_datatype(Text, dbnl:volume, integer, Volume, Graph)}.
 
 dbnl_year(Graph, Text) -->
   (dot, blank ; ""),

@@ -219,7 +219,7 @@ durationCanonicalMap(duration(M1,S1)) -->
   {M2 is abs(M1)},
   duYearMonthCanonicalFragmentMap(M2),
   {S2 is abs(S1)},
-  duDayTimeCanonicalFragmentMap(S2),
+  duDayTimeCanonicalFragmentMap(S2).
 durationCanonicalMap(duration(M1,S1)) -->
   {M1 =\= 0, S1 =:= 0}, !,
   minus_sign,
@@ -281,22 +281,18 @@ duTimeCanonicalFragmentMap(H, M, S) -->
 duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
   {NumberOfYears is NumberOfMonths1 div 12},
   (
-    NumberOfYears =:= 0
-  ->
-    ""
+    {NumberOfYears =:= 0}
   ;
     unsignedNoDecimalPtCanonicalMap(NumberOfYears),
     "Y"
-  ),
+  ), !,
   {NumberOfMonths2 is NumberOfMonths1 mod 12},
   (
-    NumberOfMonths2 =:= 0
-  ->
-    ""
+    {NumberOfMonths2 =:= 0}
   ;
     unsignedNoDecimalPtCanonicalMap(NumberOfMonths2),
     "M"
-  ).
+  ), !.
 
 
 

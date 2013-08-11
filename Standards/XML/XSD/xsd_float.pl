@@ -301,7 +301,7 @@ unsignedScientificCanonicalMap(N) -->
 doubleLexicalMap(LEX, Double):-
   phrase(doubleRep(Double), LEX).
 
-%! doubleRep(-Double:or([double,atom)))//
+%! doubleRep(-Double:or([atom,double]))//
 % ~~~{.ebnf}
 % doubleRep ::= noDecimalPtNumeral
 %             | decimalPtNumeral

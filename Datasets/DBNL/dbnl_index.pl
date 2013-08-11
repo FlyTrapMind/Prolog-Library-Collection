@@ -206,7 +206,7 @@ dbnl_index_title(
         Print \== fail,
         nonvar(Print)
       ),
-      rdf_assert_datatype(Title, dbnl:print, int, Print, Graph)
+      rdf_assert_datatype(Title, dbnl:print, integer, Print, Graph)
     ),
     if_then(
       nonvar(Changes),

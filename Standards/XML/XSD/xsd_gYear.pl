@@ -61,7 +61,6 @@ The gYear datatype has the following values for its fundamental facets:
 @version 2013/08
 */
 
-:- use_module(dcg(dcg_ascii)).
 :- use_module(xsd(xsd_dateTime)).
 
 
@@ -78,9 +77,12 @@ gYearCanonicalMap(GY, LEX):-
 %
 % @param GregorianYear A complete gYear value.
 
-gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,TZ)) -->
+gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,TZ)) --> !,
   yearCanonicalFragmentMap(Y),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
+% Alternative input format for ease of input.
+gYearCanonicalMap(Y) -->
+  gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,_TZ)).
 
 
 

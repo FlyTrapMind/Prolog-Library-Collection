@@ -54,7 +54,7 @@ such as =|05:00:00-03:00|= and =|10:00:00+02:00|=, now denote equal though
 distinct values (because they identify the same points on the time line);
 others, such as =|23:00:00-03:00|= and =|02:00:00Z|=, now denote unequal
 values (=|23:00:00−03:00 > 02:00:00Z|= because =|23:00:00−03:00|= on any
-given day is equal to =|02:00:00Z|= on the next day). 
+given day is equal to =|02:00:00Z|= on the next day).
 
 ### Lexical Mappings
 
@@ -156,6 +156,6 @@ timeLexicalRep(DT) -->
   ;
     endOfDayFrag(H, M, S)
   ),
-  (timezoneFrag(TZ) ; "").
+  (timezoneFrag(TZ) ; ""),
   {newDateTime(_Y, _M, _D, H, M, S, TZ, DT)}.
 

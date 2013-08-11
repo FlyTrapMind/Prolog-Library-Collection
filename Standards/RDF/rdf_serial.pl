@@ -105,11 +105,9 @@ rdf_convert(FromFile, ToFormat, ToFile):-
 % @version 2011
 
 rdf_guess_data_format(_, Format):-
-  nonvar(Format),
-  !.
+  nonvar(Format), !.
 rdf_guess_data_format(Stream, xml):-
-  xml_doctype(Stream, _),
-  !.
+  xml_doctype(Stream, _), !.
 rdf_guess_data_format(_, turtle).
 
 %! rdf_load2(+File:atom) is det.
@@ -128,33 +126,30 @@ rdf_load2(Spec):-
 %! rdf_load2(+Directory:atom, +Options:list) is det.
 % Load RDF from a file, a list of files, or a directory.
 %
-% @param Spec Either a file, a list of files, or a directory.
-% @param Options Supported options are:
-%      * format(+Format:oneof([ntriples,triples,turtle,xml]))
-%      * graph(+Graph:atom)
+% The following options are supported:
+%   * format(+Format:oneof([ntriples,triples,turtle,xml]))
+%   * graph(+Graph:atom)
 %
-% @see wrapper to rdf_load/2 in the semweb/rdf_db library.
+% @param Spec Either a file, a list of files, or a directory.
+% @param Options A list of name-value pairs.
 
 % Loads multiple files and/or directories.
 rdf_load2(Files, Options):-
-  is_list(Files),
-  !,
+  is_list(Files), !,
   forall(
     member(File, Files),
     rdf_load2(File, Options)
   ).
 % Load all files from a given directory.
 rdf_load2(Directory, Options):-
-  exists_directory(Directory),
-  !,
+  exists_directory(Directory), !,
   directory_files(Directory, rdf, Files),
   rdf_load2(Files, Options).
 % The format and graph are set.
 rdf_load2(File, Options):-
   access_file(File, read),
   option(format(Format), Options),
-  option(graph(Graph), Options),
-  !,
+  option(graph(Graph), Options), !,
   % Combine the given with the standard options.
   merge_options([register_namespaces(true), silent(true)], Options, Options0),
   % The real job is performed by a predicate from the semweb library.
@@ -169,8 +164,7 @@ rdf_load2(File, Options):-
 rdf_load2(File, Options):-
   access_file(File, read),
   % Returns the graph name in case it was a variable.
-  \+ (option(graph(Graph), Options), nonvar(Graph)),
-  !,
+  \+ (option(graph(Graph), Options), nonvar(Graph)), !,
   file_name(File, _Directory, Graph1, _Extension),
   % The graph does not already exist.
   rdf_new_graph(Graph1, Graph2),
@@ -180,8 +174,7 @@ rdf_load2(File, Options):-
 rdf_load2(File, Options):-
   access_file(File, read),
   % Returns the format in case it was a variable.
-  \+ (option(format(Format), Options), nonvar(Format)),
-  !,
+  \+ (option(format(Format), Options), nonvar(Format)), !,
   file_name_extension(_Base, Extension, File),
   rdf_serialization(Extension, Format, _URI),
   merge_options([format(Format)], Options, Options0),
@@ -208,7 +201,7 @@ rdf_save2:-
 
 rdf_save2(Graph):-
   absolute_file_name(
-    project_name(Graph),
+    project(Graph),
     File,
     [access(write), file_type(turtle)]
   ),
@@ -226,17 +219,15 @@ rdf_save2(Graph):-
 % @param File A variable.
 % @param Options A list of options, containing at least =graph/1=
 %              and possibly format/1.
-%
-% @see Wrapper for rdf_save2(+,+).
 %! rdf_save2(+File:atom, +Options:list) is det.
-% @param File An atomic absolute file name.
-% @param Options A list of options. The following options are supported:
-%              * format(+Format:oneof([rdf_xml,turtle])
-%                The serialization format in which the graph is exported.
-%              * graph(+Graph:atom)
-%                The name of the graph that is exported.
+% The following options are supported:
+%   * =|format(+Format:oneof([rdf_xml,turtle])|=
+%     The serialization format in which the graph is exported.
+%   * =|graph(+Graph:atom)|=
+%     The name of the graph that is exported.
 %
-% @see Wrapper for rdf_save/2 from library =semweb/rdf_db=.
+% @param File An atomic absolute file name.
+% @param Options A list of name-value pairs.
 
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
@@ -244,16 +235,14 @@ rdf_save2(File, Options):-
   var(File),
   option(graph(Graph), Options),
   rdf_graph_source_file(Graph, File),
-  access_file(File, write),
-  !,
+  access_file(File, write), !,
   % Recurse once, to extract the serialization format.
   rdf_save2(File, Options).
 % Derive the file name from the graph name.
 % The file is located in the project directory.
 rdf_save2(File, Options):-
   var(File),
-  option(graph(Graph), Options),
-  !,
+  option(graph(Graph), Options), !,
   option(format(Format), Options, turtle),
   absolute_file_name(project(Graph), File, [access(write), file_type(Format)]),
   rdf_save2(File, Options).
@@ -262,8 +251,7 @@ rdf_save2(File, Options):-
   access_file(File, write),
   option(graph(Graph), Options),
   rdf_graph(Graph),
-  \+ option(format(_Format), Options),
-  !,
+  \+ option(format(_Format), Options), !,
   file_name_extension(_Base, Extension, File),
   rdf_serialization(Extension, Format, _URI),
   merge_options([format(Format)], Options, Options0),
@@ -274,8 +262,7 @@ rdf_save2(File, Options):-
   option(graph(Graph), Options),
   rdf_graph(Graph),
   option(format(Format), Options),
-  once(rdf_serialization(_Extension, Format, _URI)),
-  !,
+  once(rdf_serialization(_Extension, Format, _URI)), !,
   rdf_save2(File, Options, Format),
   cowspeak(
     [speech(false)],

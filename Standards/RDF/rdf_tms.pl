@@ -91,7 +91,7 @@ rdf_materialize(Graphs, TMS):-
       doyle_add_node(TMS, TripleName, Node),
       doyle_add_justification(TMS, [], [], 'Assumption', Node, _),
       % Connect TMS node and triple content.
-      rdf_datatype(Node, tms:has_id, int, Node_ID, TMS),
+      rdf_datatype(Node, tms:has_id, integer, Node_ID, TMS),
       rdf_assert(S, P, O, TMS:Node_ID)
     )
   ),
@@ -123,7 +123,7 @@ rdf_materialize_tms(TMS):-
   doyle_add_node(TMS, ConsequenceLabel, Consequence),
 
   % Connect the consequence node to an RDF triple.
-  rdf_datatype(Consequence, tms:has_id, int, ID, TMS),
+  rdf_datatype(Consequence, tms:has_id, integer, ID, TMS),
   rdf_assert(S, P, O, TMS:ID),
   doyle_add_justification(TMS, Ins, Outs, RuleLabel, Consequence, _J),
 
@@ -159,7 +159,7 @@ rdf_materialize_tms_test(TMS):-
 rdf_node(S, P, O, TMS, Node):-
   is_registered_tms(TMS),
   rdf(S, P, O, TMS:ID),
-  rdf_datatype(Node, tms:has_id, int, ID, TMS),
+  rdf_datatype(Node, tms:has_id, integer, ID, TMS),
   rdfs_individual_of(Node, tms:'Node').
 
 %! rdf_rule(

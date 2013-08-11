@@ -110,7 +110,7 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
   forall(
     member(Node, Nodes),
     (
-      rdf_datatype(Node, tms:has_id, int, NodeID, TMS),
+      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
       rdfs_label(Node, L),
       if_then_else(
         debug,
@@ -141,7 +141,7 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
   forall(
     member(Justification, Justifications),
     (
-      rdf_datatype(Justification, tms:has_id, int, JustificationID, TMS),
+      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
       rdfs_label(Justification, L),
       if_then_else(
         debug,
@@ -165,8 +165,8 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
       rdf(Justification, tms:has_in, Node, TMS)
     ),
     (
-      rdf_datatype(Node, tms:has_id, int, NodeID, TMS),
-      rdf_datatype(Justification, tms:has_id, int, JustificationID, TMS),
+      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
+      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
       format(
         Stream,
         '  n~w -> j~w [color="black", style="solid"];\n',
@@ -182,8 +182,8 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
       rdf(Justification, tms:has_out, Node, TMS)
     ),
     (
-      rdf_datatype(Node, tms:has_id, int, NodeID, TMS),
-      rdf_datatype(Justification, tms:has_id, int, JustificationID, TMS),
+      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
+      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
       format(
         Stream,
         '  n~w -> j~w [color="black", style="dashed"];\n',
@@ -199,8 +199,8 @@ tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
       rdf(Justification, tms:has_consequent, Node, TMS)
     ),
     (
-      rdf_datatype(Node, tms:has_id, int, NodeID, TMS),
-      rdf_datatype(Justification, tms:has_id, int, JustificationID, TMS),
+      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
+      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
       format(
         Stream,
         '  j~w -> n~w [color="black", style="solid"];\n',

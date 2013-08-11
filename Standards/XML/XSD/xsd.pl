@@ -3,15 +3,18 @@
   [
     xsd_canonicalMap/3, % +Datatype:uri
                         % +Value
-                        % -LEX:atom
+                        % -CanonicalLiteral:atom
     xsd_convert_datatype/4, % +FromDatatype:uri
                             % +FromValue
                             % +ToDatatype:uri
                             % -ToValue
     xsd_datatype/2, % ?Name:atom
                     % ?Datatype:uri
+    xsd_lexicalCanonicalMap/3, % +Datatype:uri
+                               % +Literal:atom
+                               % -CanonicalLiteral:atom
     xsd_lexicalMap/3 % +Datatype:uri
-                     % ?LEX:atom
+                     % +Literal:atom
                      % ?Value
   ]
 ).
@@ -540,7 +543,7 @@ with assured correctness (much as it would indicate if it ran out of memory).
 When the datatype validity of a value or literal is uncertain because it
 exceeds the capacity of a partial implementation, the literal or value must
 not be treated as invalid, and the unsupported value must not be quietly
-changed to a supported value. 
+changed to a supported value.
 
 Minimally conforming processors which set an application- or
 implementation-defined limit on the size of the values supported must clearly
@@ -664,6 +667,16 @@ the constraints imposed can sometimes result in a value space for which the orde
 @compat XML Schema 2: Datatypes (Second Edition)
 @see http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/
 @see Turn the infinite datatype requirements into a unit test.
+@tbd Implement =base64Binary=.
+@tbd Implement =anyURI=.
+@tbd Implement =QNAME=.
+@tbd Implement =NOTATION=.
+@tbd Implement the non-primitive built-in atomic and list datatypes.
+@tbd Read section 4: Datatype components.
+@tbd Read section 5: Conformance.
+@tbd Read section E.3.3 on adding durations to dateTime.
+@tbd Read section G on REs.
+@tbd Read section H on implementation-defined datatypes.
 @version 2013/08
 */
 
@@ -680,6 +693,8 @@ the constraints imposed can sometimes result in a value space for which the orde
 :- use_module(xsd(xsd_gMonthDay)).
 :- use_module(xsd(xsd_gYear)).
 :- use_module(xsd(xsd_gYearMonth)).
+:- use_module(xsd(xsd_hexBinary)).
+:- use_module(xsd(xsd_integer)).
 :- use_module(xsd(xsd_string)).
 :- use_module(xsd(xsd_time)).
 
@@ -689,6 +704,7 @@ the constraints imposed can sometimes result in a value space for which the orde
 :- rdf_meta(xsd_canonicalMap_(r,+,-)).
 :- rdf_meta(xsd_convert_datatype(r,+,r,-)).
 :- rdf_meta(xsd_datatype(+,r)).
+:- rdf_meta(xsd_lexicalCanonicalMap(r,+,-)).
 :- rdf_meta(xsd_lexicalMap(r,+,-)).
 :- rdf_meta(xsd_lexicalMap_(r,+,-)).
 
@@ -697,7 +713,7 @@ the constraints imposed can sometimes result in a value space for which the orde
 %! xsd_canonicalMap(+Datatype:uri, +Value, -Literal:atom) is det.
 
 xsd_canonicalMap(Datatype, Value, LEX2):-
-  xsd_canonicalMap_(Datatype, Value, LEX1),
+  once(xsd_canonicalMap_(Datatype, Value, LEX1)),
   atom_codes(LEX2, LEX1).
 
 xsd_canonicalMap_(xsd:boolean, Boolean, LEX):-
@@ -724,6 +740,10 @@ xsd_canonicalMap_(xsd:gYear, GregorianYear, LEX):-
   gYearCanonicalMap(GregorianYear, LEX).
 xsd_canonicalMap_(xsd:gYearMonth, GregorianYearMonth, LEX):-
   gYearMonthCanonicalMap(GregorianYearMonth, LEX).
+xsd_canonicalMap_(xsd:hexBinary, HexBinary, LEX):-
+  hexBinaryCanonicalMap(HexBinary, LEX).
+xsd_canonicalMap_(xsd:integer, Integer, LEX):-
+  integerCanonicalMap(Integer, LEX).
 xsd_canonicalMap_(xsd:string, String, LEX):-
   stringCanonicalMap(String, LEX).
 xsd_canonicalMap_(xsd:time, Time, LEX):-
@@ -746,11 +766,25 @@ xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue):-
 xsd_datatype(Name, Datatype):-
   rdf_global_id(xsd:Name, Datatype).
 
-%! xsd_lexicalMap(+Datatype:uri, +Literal:atom, -Value) is det.
+%! xsd_lexicalCanonicalMap(
+%!   +Datatype:uri,
+%!   +Literal:atom,
+%!   -CanonicalLiteral:atom
+%! ) is det.
+% Reads an XSD 1.1 datatype value and writes it into its canonical form.
 
-xsd_lexicalMap(Datatype, LEX1, Value):-
+xsd_lexicalCanonicalMap(Datatype, Literal, CanonicalLiteral):-
+  xsd_lexicalMap(Datatype, Literal, Value),
+  xsd_canonicalMap(Datatype, Value, CanonicalLiteral).
+
+%! xsd_lexicalMap(+Datatype:uri, +Literal:atom, -Value) is det.
+%
+% @tbd rdf_meta/1 directive does not work for the Datatype parameter!
+
+xsd_lexicalMap(Datatype1, LEX1, Value):-
+  rdf_global_id(Datatype1, Datatype2),
   atom_codes(LEX1, LEX2),
-  xsd_lexicalMap_(Datatype, LEX2, Value).
+  once(xsd_lexicalMap_(Datatype2, LEX2, Value)).
 
 xsd_lexicalMap_(xsd:boolean, LEX, Boolean):-
   booleanLexicalMap(LEX, Boolean).
@@ -776,6 +810,10 @@ xsd_lexicalMap_(xsd:gYear, LEX, GregorianYear):-
   gYearLexicalMap(LEX, GregorianYear).
 xsd_lexicalMap_(xsd:gYearMonth, LEX, GregorianYearMonth):-
   gYearMonthLexicalMap(LEX, GregorianYearMonth).
+xsd_lexicalMap_(xsd:hexBinary, LEX, HexBinary):-
+  hexBinaryLexicalMap(LEX, HexBinary).
+xsd_lexicalMap_(xsd:integer, LEX, Integer):-
+  integerLexicalMap(LEX, Integer).
 xsd_lexicalMap_(xsd:string, LEX, String):-
   stringLexicalMap(LEX, String).
 xsd_lexicalMap_(xsd:time, LEX, Time):-

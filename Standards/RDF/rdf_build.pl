@@ -225,7 +225,7 @@ rdf_assert_literal(S, P, Literal, G):-
 %!   +Literal:atom,
 %!   +Graph:atom
 %! ) is det.
-% Asserts a integer value for a resource.
+% Asserts a language-tagged literal value for a resource.
 %
 % @param Subject A resource.
 % @param Predicate A resource.
@@ -319,10 +319,10 @@ rdf_retractall_literal(S, P, Language, Literal, G):-
 % Inrements an integer stored in RDF.
 
 rdf_increment(S, P, G):-
-  once(rdf_datatype(S, P, int, OldValue, G)),
+  once(rdf_datatype(S, P, integer, OldValue, G)),
   NewValue is OldValue + 1,
-  rdf_retractall_datatype(Link, Relation, int, OldValue, G),
-  rdf_assert_datatype(Link, Relation, int, NewValue, G).
+  rdf_retractall_datatype(Link, Relation, integer, OldValue, G),
+  rdf_assert_datatype(Link, Relation, integer, NewValue, G).
 
 %! rdf_overwrite_datatype(
 %!   +Subject:oneof([bnode,uri]),

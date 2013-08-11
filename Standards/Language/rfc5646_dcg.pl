@@ -490,9 +490,10 @@ a buffer limit in combination with truncation may be applied:
    variant2      =  9 ; very rare, as it needs
                       ;   'language-variant1' as a prefix
 
+--
 
 @author Wouter Beek
-@version 2013/07
+@version 2013/07-2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -579,23 +580,27 @@ regular([zh,xiang]).
 
 rfc5646_extended_language_subtag(T0, L) -->
   dcg_multi_atom(letter, 3, X1),
+  {rfc5646_class(X1, 'Subtag')},
   (
     "", {L = [X1]}
   ;
     hyphen_minus, {H1 = '-'},
     dcg_multi_atom(letter, 3, X2),
+    {rfc5646_class(X2, 'Subtag')},
     (
       "",
       {L = [X1,X2]}
     ;
       hyphen_minus, {H2 = '-'},
       dcg_multi_atom(letter, 3, X3),
+      {rfc5646_class(X3, 'Subtag')},
       (
         "",
         {L = [X1,X2,X3]}
       ;
         hyphen_minus, {H3 = '-'},
         dcg_multi_atom(letter, 3, X4),
+        {rfc5646_class(X4, 'Subtag')},
         {L = [X1,X2,X3,X4]}
       )
     )
@@ -667,10 +672,12 @@ rfc5646_extension(extension(T1, T2), [Singleton|ExtensionComponents]) -->
 rfc5646_extension_components(extension_components('-',H,T1), [H|T]) -->
   hyphen_minus,
   dcg_multi_atom(alpha_numeric, between(2,8), H),
+  {rfc5646_class(H, 'Extension')},
   rfc5646_extension_components(T1, T).
 rfc5646_extension_components(extension_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi_atom(alpha_numeric, between(2,8), H).
+  dcg_multi_atom(alpha_numeric, between(2,8), H),
+  {rfc5646_class(H, 'Extension')}.
 
 %! rfc5646_extensions(-Tree:compound, ?Extensions:list(list(atomic)))//
 
@@ -725,22 +732,9 @@ rfc5646_extensions(extensions('-',T1), [H]) -->
 % field that ought to be used to form language tags representing that value.
 % For example, the tag `art-lojban` is superseded by the primary language
 % subtag `jbo`.
-
-rfc5646_grandfathered_language_tag(
-  grandfathered_language_tag(T1),
-  LanguageTag
-) -->
-  rfc5646_regular_grandfathered_language_tag(T1, LanguageTag).
-rfc5646_grandfathered_language_tag(
-  grandfathered_language_tag(T1),
-  LanguageTag
-) -->
-  rfc5646_irregular_grandfathered_language_tag(T1, LanguageTag).
-
-%! rfc5646_irregular_grandfathered_language_tag(
-%!   -Tree:compound,
-%!   ?LanguageTag:list(atom)
-%! )//
+%
+% ## Irregular
+%
 % Irregular tags do not match the rfc5646_standard_language_tag// production
 % and would not otherwise
 % be considered well-formed. These tags are all valid, but most are deprecated
@@ -749,11 +743,19 @@ rfc5646_grandfathered_language_tag(
 % The single-character subtag `i` is used by some grandfathered tags.
 % (Other grandfathered tags have a primary language subtag in their first
 % position.)
+%
+% ## Regular
+%
+% These tags match the rfc5646_standard_language_tag// production,
+% but their subtags are not extended language or variant subtags:
+% their meaning is defined by their registration and all of these are
+% deprecated in favor of a more modern subtag or sequence of subtags.
 
-rfc5646_irregular_grandfathered_language_tag(T0, L1) -->
-  {irregular(L1)},
-  dcg_multi_list(dcg_word, hyphen_minus, L1),
+rfc5646_grandfathered_language_tag(T0, LanguageTag) -->
+  dcg_multi_list(dcg_word, hyphen, L1),
   {
+    atomic_list_concat(L1, '-', Tag),
+    rfc5646_class(Tag, 'Grandfathered'),
     append_intersperse(L1, '-', L2),
     parse_tree(irregular_grandfathered_language_tag, L2, T0)
   }.
@@ -831,18 +833,23 @@ rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
 % The shortest ISO639 code, sometimes followed by extended language subtags.
 rfc5646_language(T0, Language, LanguageExtensions) -->
   dcg_multi_atom(letter, between(2,3), Language),
+  {rfc5646_class(Language, 'Language')},
   (
-    hyphen_minus, rfc5646_extended_language_subtag(T2, LanguageExtensions)
+    hyphen,
+    rfc5646_extended_language_subtag(T2, LanguageExtensions)
   ;
     ""
   ),
   {parse_tree(language, [Language,T2], T0)}.
-% Reserved for future use.
 rfc5646_language(language(Language), Language, []) -->
-  dcg_multi_atom(letter, 4, Language).
-% Registered language subtag.
-rfc5646_language(language(Language), Language, []) -->
-  dcg_multi_atom(letter, between(5,8), Language).
+  (
+    % Reserved for future use.
+    dcg_multi_atom(letter, 4, Language)
+  ;
+    % Registered language subtag.
+    dcg_multi_atom(letter, between(5,8), Language)
+  ),
+  {rfc5646_class(Language, 'Language')}.
 
 %! rfc5646_privateuse(-Tree:compound, ?PrivateLanguage:list(atom))//
 % Private use subtags are used to indicate distinctions in language
@@ -991,23 +998,13 @@ rfc5646_privateuse_components(privateuse_components('-',H,T2), [H|T]) -->
 % Latin America and Caribbean region (`419`).
 
 rfc5646_region(region(Region), Region) -->
-  dcg_multi_atom(letter, 2, Region).
+  dcg_multi_atom(letter, 2, Region),
+  {rfc5646_class(Region, 'Region')}.
 rfc5646_region(region(Region), Region) -->
   dcg_multi(decimal_digit, 3, Codes),
-  {number_codes(Region, Codes)}.
-
-%! rfc5646_regular(-Tree:compound, ?LanguageTag:list(atom))//
-% These tags match the rfc5646_standard_language_tag// production,
-% but their subtags are not extended language or variant subtags:
-% their meaning is defined by their registration and all of these are
-% deprecated in favor of a more modern subtag or sequence of subtags.
-
-rfc5646_regular_grandfathered_language_tag(T0, L1) -->
-  {regular(L1)},
-  dcg_multi_list(dcg_word, hyphen_minus, L1),
   {
-    append_intersperse(L1, '-', L2),
-    parse_tree(regular_grandfathered_language_tag, L2, T0)
+    number_codes(Region, Codes),
+    rfc5646_class(Region, 'Region')
   }.
 
 %! rfc5646_script(-Tree:compound, ?Script:atom)//
@@ -1044,7 +1041,8 @@ rfc5646_regular_grandfathered_language_tag(T0, L1) -->
 % `sr-Latn` represents Serbian written using the Latin script.
 
 rfc5646_script(script(Script), Script) -->
-  dcg_multi_atom(letter, 4, Script).
+  dcg_multi_atom(letter, 4, Script),
+  {rfc5646_class(Script, 'Script')}.
 
 %! singleton(-Tree:compound, ?Char:atomic)//
 % Single alphanumerics. x// is reserved for private use.
@@ -1152,9 +1150,13 @@ rfc5646_standard_language_tag(
 rfc5646_variant(variant(Variant), Variant) -->
   decimal_digit(_N, H),
   dcg_multi(alpha_numeric, 3, T),
-  {atom_codes(Variant, [H|T])}.
+  {
+    atom_codes(Variant, [H|T]),
+    rfc5646_class(Variant, 'Variant')
+  }.
 rfc5646_variant(variant(Variant), Variant) -->
-  dcg_multi_atom(alpha_numeric, between(5,8), Variant).
+  dcg_multi_atom(alpha_numeric, between(5,8), Variant),
+  {rfc5646_class(Variant, 'Variant')}.
 
 %! rfc5646_variants(-Tree:compound, ?Variants:list(atom))//
 

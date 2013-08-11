@@ -3,7 +3,7 @@
   [
     hexBinaryCanonicalMap/2, % +HexBinary:list(between(0,1))
                              % -LEX:list(code)
-    hexBinaryLexicalMap/2, % +LEX:list(code)
+    hexBinaryLexicalMap/2 % +LEX:list(code)
                           % -HexBinary:list(between(0,1))
   ]
 ).
@@ -54,7 +54,6 @@ The hexBinary datatype has the following values for its ·fundamental facets·:
 */
 
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(math(radix)).
 
 
@@ -66,7 +65,7 @@ The hexBinary datatype has the following values for its ·fundamental facets·:
 %!   -LEX:list(code)
 %! ) is det.
 
-hexBinaryCanonicalMap(BinaryDigigts, LEX):-
+hexBinaryCanonicalMap(BinaryDigits, LEX):-
   phrase(hexBinaryCanonicalMap(BinaryDigits), LEX).
 
 %! hexBinaryCanonicalMap(+HexBinary:list(between(0,1)))//

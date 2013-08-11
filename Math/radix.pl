@@ -11,10 +11,6 @@
     digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
                          % +Radix:integer
                          % -DecimalNumber:integer
-    digits_to_digits/4, % +FromDigigts:list(between(0,15))
-                        % +From:oneof([2,8,10,16])
-                        % +To:oneof([2,8,10,16])
-                        % -ToDigits:list(between(0,15))
     number_to_decimal/3 % +RadixNumber:atomic
                         % +Radix:between(2,16)
                         % -DecimalNumber:integer
@@ -68,46 +64,15 @@ digits_to_decimal(DecimalDigits, DecimalNumber):-
 % @param DecimalNumber An integer that is the given decimal digits
 %      under the given radix.
 
-digits_to_decimal(DecimalDigits, Radix, DecimalNumber):-
-  digits_to_decimal(DecimalDigits, Radix, 0, DecimalNumber).
-
-digits_to_decimal([], _Radix, DecimalNumber, DecimalNumber).
-digits_to_decimal([H|T], Radix, M1, DecimalNumber):-
-  M2 is M1 * Radix + H,
-  digits_to_decimal(T, Radix, M2, DecimalNumber).
-
-%! digits_to_digit(
-%!   +FromDigits:list(between(0,15)),
-%!   +From:oneof([2,8,10,16]),
-%!   +To:oneof([2,8,10,16]),
-%!   -ToDigit:between(0,15)
-%! ) is det.
-
-digits_to_digit(FromDs, From, To, ToD):-
+digits_to_decimal(Ds, Radix, D):-
   aggregate(
     sum(ToDPart),
     (
-      nth0(Position, FromDs, FromD),
-      ToDPart is FromD * From ** Position
+      nth0(Position, Ds, FromD),
+      ToDPart is FromD * Radix ** Position
     ),
-    ToD
+    D
   ).
-
-%! digits_to_digits(
-%!   +FromDigits:list(between(0,15)),
-%!   +From:oneof([2,8,10,16]),
-%!   +To:oneof([2,8,10,16]),
-%!   -ToDigits:list(between(0,15))
-%! ) is det.
-
-digits_to_digits([], _From, _To, []):- !.
-digits_to_digits(L1, From, To, [L2H|L2]):-
-  From > To, !,
-  NumberOfDigits is To // From,
-  length(L1_, NumberOfDigits),
-  append(L1_, NewL1, L1),
-  digits_to_digit(L1_, From, To, L2H),
-  digits_to_digits(NewL1, From, To, L2).
 
 %! number_to_decimal(
 %!   +RadixNumber:atomic,

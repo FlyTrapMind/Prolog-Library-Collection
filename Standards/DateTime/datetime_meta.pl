@@ -53,7 +53,7 @@ init_iso4031(G):-
 init_iso8601_1(G):-
   assert_standard(G, iso, '8601-1', This),
   rdf_assert_datatype(This, iso:year, gYear, 1988, G),
-  rdf_assert_datatype(This, iso:edition, int, 1, G),
+  rdf_assert_datatype(This, iso:edition, integer, 1, G),
   rdf_assert_literal(
     This,
     iso:title,
@@ -73,7 +73,7 @@ init_iso8601_1(G):-
 
 init_iso8601_2(G):-
   assert_standard(G, iso, '8601-2', This),
-  rdf_assert_datatype(This, iso:edition, int, 2, G),
+  rdf_assert_datatype(This, iso:edition, integer, 2, G),
   rdf_assert_literal(This, iso:editor, 'Louis Visser', G),
   rdf_assert_literal(
     This,
@@ -88,7 +88,7 @@ init_iso8601_2(G):-
 init_iso8601_3(G):-
   assert_standard(G, iso, '8601-3', This),
   rdf_assert_datatype(This, iso:year, gYear, 2004, G),
-  rdf_assert_datatype(This, iso:edition, int, 3, G),
+  rdf_assert_datatype(This, iso:edition, integer, 3, G),
   rdf_assert_literal(
     This,
     iso:title,

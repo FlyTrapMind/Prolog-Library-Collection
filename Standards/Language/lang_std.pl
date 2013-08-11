@@ -25,7 +25,7 @@ Language tags that are used by XML are covered by [[rfc1766]] and [[rfc3066]].
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(standards(standards)).
+:- use_module(standards(std_meta)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').

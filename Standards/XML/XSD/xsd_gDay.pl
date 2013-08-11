@@ -125,9 +125,9 @@ gDayLexicalMap(LEX, GD):-
 % ---(0[1-9]|[12][0-9]|3[01])(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 
-gDayLexicalRep(GD) -->
+gDayLexicalRep(DT) -->
   dcg_multi(hyphen, 3),
   dayFrag(D),
   ({var(TZ)} ; timezoneFrag(TZ)), !,
-  {newDateTime(_Y, _M, D, _H, _MM, _S, TZ, GY)}.
+  {newDateTime(_Y, _M, D, _H, _MM, _S, TZ, DT)}.
 

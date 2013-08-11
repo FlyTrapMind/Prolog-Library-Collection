@@ -75,7 +75,7 @@ dateCanonicalMap(Date, LEX):-
 %
 % @param Date A complete date value.
 
-dateCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)) -->
+dateCanonicalMap(dateTime(Y,M,D,_H,_MM,_S,TZ)) -->
   yearCanonicalFragmentMap(Y), hyphen,
   monthCanonicalFragmentMap(M), hyphen,
   dayCanonicalFragmentMap(D),
@@ -101,7 +101,7 @@ dateLexicalMap(LEX, Date):-
 
 dateLexicalRep(DT) -->
   yearFrag(Y), hyphen, monthFrag(M), hyphen, dayFrag(D),
-  {daysInMonth(Y, MM, D)},
-  ({var(TZ)} : timezoneFrag(TZ)),
+  {dayInMonth(Y, M, D)},
+  ({var(TZ)} ; timezoneFrag(TZ)),
   {newDateTime(Y,M,D,_H,_MM,_S,TZ,DT)}.
 
