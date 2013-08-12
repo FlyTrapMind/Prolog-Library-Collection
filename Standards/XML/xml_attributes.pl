@@ -49,7 +49,6 @@ DCG rules for XML attributes.
 :- meta_predicate(xml_attribute(//,//,//,//,?,?)).
 :- meta_predicate(xml_attribute_(//,//,//,?,?)).
 :- meta_predicate(xml_attribute_list(-,//,//,?,?,?)).
-:- meta_predicate(xml_base(-,//,?,?,?,?,?,?,?)).
 :- meta_predicate(xml_id(-,//,?,?,?)).
 :- meta_predicate(xml_inject_attributes(//,+,-,-)).
 :- meta_predicate(xml_language(-,//,?,?,?)).

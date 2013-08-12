@@ -22,11 +22,13 @@ applets, form-processing programs, style sheets, and so on.
 
 The attribute =|xml:base|= may be inserted in XML documents to specify
 a base URI other than the base URI of the document or external entity.
-The value of this attribute is interpreted as a Legacy Extended IRI (LEIRI)
-as defined in the W3C Note "Legacy extended IRIs for XML resource
-identification".
 
-Note that =|xml:base|= can also be used by non-namespace-aware processors.
+The value of this attribute is a Legacy Extended IRI (LEIRI)
+and may contain characters not allowed in URIs.
+(However, some characters allowed in LEIRIs are not legal
+XML characters, and cannot therefore appear in xml:base values.)
+
+=|xml:base|= can also be used by non-namespace-aware processors.
 
 ### Example
 
@@ -72,6 +74,8 @@ The full URIs:
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 :- use_module(uri(rfc2396_dcg)).
+
+:- meta_predicate(xml_base(-,//,?,?,?,?,?,?,?)).
 
 
 

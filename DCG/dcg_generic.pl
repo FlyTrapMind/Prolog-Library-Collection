@@ -90,12 +90,17 @@
 
 /** <module>
 
-Generic DCG clauses.
+Generic DCG clauses. DCGs allow the definition of a complex grammar in
+a modular way.
 
-Shall we use DCGs for parsing or REs?
+## Concepts
 
-We need DCGs, because they allow us to define a complex grammar in a
-modular way.
+  * *|Lexical analysis|*
+    *Tokenization*
+    The process of converting characters to tokens
+    (i.e., strings of characters).
+
+--
 
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
@@ -467,14 +472,11 @@ dcg_multi_nonvar(DCG_Body, N, C, SolC, [A1|A1s], [A2|A2s]) -->
   dcg_multi_nonvar(DCG_Body, NewN, NewC, SolC, A1s, A2s).
 dcg_multi_nonvar(_DCG_Body, _N, SolC, SolC, [], []) --> [].
 
-dcg_multi_occurrences(between(Min,Max), Min, Max):-
-  integer(Min), integer(Max), !.
-dcg_multi_occurrences(between(_Min,Max), 0, Max):-
-  integer(Max), !.
-dcg_multi_occurrences(between(Min,_Max), Min, _Inf):-
-  integer(Min), !.
 dcg_multi_occurrences(N, N, N):-
   integer(N), !.
+dcg_multi_occurrences(Min1-Max1, Min2, Max2):-
+  default(Min1, 0, Min2),
+  default(Max1, inf, Max2).
 
 dcg_multi_pred(inf, inf):- !.
 dcg_multi_pred(M,   N  ):-

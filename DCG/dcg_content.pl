@@ -4,6 +4,8 @@
     arrow//1, % +Length:integer
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
+    dcg_cicode//1, % +Code:code
+    dcg_cistring//1, % +String:string
     dcg_codes//1, % +Codes:list(code)
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
@@ -36,7 +38,7 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07
+@version 2013/07-2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -108,6 +110,50 @@ arrow_left_head(both).
 arrow_left_head(left).
 arrow_right_head(both).
 arrow_right_head(right).
+
+%! dcg_cicode(+Code:code)//
+% Generates the case-insensitive variants of the given code.
+
+dcg_cicode(Lower) -->
+  {code_type(Lower, lower(Upper))}, !,
+  ([Lower] ; [Upper]).
+dcg_cicode(Upper) -->
+  {code_type(Upper, upper(Lower))}, !,
+  ([Upper] ; [Lower]).
+dcg_cicode(Code) -->
+  [Code].
+
+%! dcg_string(+String:string)//
+% Generates the case-insensitive variants of the given string.
+%
+% Example:
+% ~~~
+% ?- phrase(dcg_cistring("http"), Codes) ,atom_codes(Atom, Codes).
+% Codes = "http",
+% Codes = "httP",
+% Codes = "htTp",
+% Codes = "htTP",
+% Codes = "hTtp",
+% Codes = "hTtP",
+% Codes = "hTTp",
+% Codes = "hTTP",
+% Codes = "Http",
+% Codes = "HttP",
+% Codes = "HtTp",
+% Codes = "HtTP",
+% Codes = "HTtp",
+% Codes = "HTtP",
+% Codes = "HTTp",
+% Codes = "HTTP",
+% false.
+% ~~~
+%
+% @param String A SWI-Prolog string.
+% @see http://www.swi-prolog.org/pldoc/man?section=strings
+
+dcg_cistring(String) -->
+  {string_to_list(String, Codes)},
+  dcg_multi(dcg_cicode, _, Codes).
 
 dcg_codes([]) -->
   [].
