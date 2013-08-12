@@ -307,7 +307,7 @@ prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
 
 
 rulelist -->
-  dcg_multi((rule ; dcg_multi('c-wsp', 'c-nl')), 1).
+  dcg((rule ; dcg('c-wsp', 'c-nl')), 1).
 
 rule -->
   rulename,
@@ -318,17 +318,17 @@ rule -->
 
 rulename -->
   'ALPHA',
-  dcg_multi(('ALPHA' ; 'DIGIT' ; "-")).
+  dcg(('ALPHA' ; 'DIGIT' ; "-")).
 
 % Basic rules definition and incremental alternatives.
 'defined-as' -->
-  dcg_multi('c-wsp'),
+  dcg('c-wsp'),
   ("=" ; "=/"),
-  dcg_multi('c-wsp').
+  dcg('c-wsp').
 
 elements -->
   alternation,
-  dcg_multi('c-wsp').
+  dcg('c-wsp').
 
 'c-wsp' -->
   'WSP'.
@@ -344,27 +344,27 @@ elements -->
 
 comment -->
   ";",
-  dcg_multi(('WSP' ; 'VCHAR')),
+  dcg(('WSP' ; 'VCHAR')),
   'CRLF'.
 
 alternation -->
   concatenation,
-  dcg_multi(dcg_multi('c-wsp'), "/", dcg_multi('c-wsp'), concatenation).
+  dcg(dcg('c-wsp'), "/", dcg('c-wsp'), concatenation).
 
 concatenation -->
   repetition,
-  dcg_multi(dcg_multi('c-wsp', 1), repetition).
+  dcg(dcg('c-wsp', 1), repetition).
 
 repetition -->
   (repeat ; ""),
   element.
 
 repeat -->
-  dcg_multi('DIGIT', 1).
+  dcg('DIGIT', 1).
 repeat -->
-  dcg_multi('DIGIT'),
+  dcg('DIGIT'),
   "*",
-  dcg_multi('DIGIT').
+  dcg('DIGIT').
 
 element -->
   rulename.
@@ -381,23 +381,23 @@ element -->
 
 group -->
   "(",
-  dcg_multi('c-wsp'),
+  dcg('c-wsp'),
   alternation,
-  dcg_multi('c-wsp'),
+  dcg('c-wsp'),
   ")".
 
 option -->
   "[",
-  dcg_multi('c-wsp'),
+  dcg('c-wsp'),
   alternation,
-  dcg_multi('c-wsp'),
+  dcg('c-wsp'),
   "]".
 
 % Quoted string of SP and VCHAR without DQUOTE.
 'char-val' -->
   'DQUOTE',
   % *(%x20-21 / %x23-7E)
-  dcg_multi([C], {between(32, 33, C), between(35, 126, C)}),
+  dcg([C], {between(32, 33, C), between(35, 126, C)}),
   'DQUOTE'.
 
 'num-val' -->
@@ -409,20 +409,20 @@ option -->
 % Series of concatenated bit values or single ONEOF range.
 'bin-val' -->
   "b",
-  dcg_multi('BIT', 1),
-  ( dcg_multi((".", dcg_multi('BIT', 1) ; "-", dcg_multi('BIT', 1)), 1)
+  dcg('BIT', 1),
+  ( dcg((".", dcg('BIT', 1) ; "-", dcg('BIT', 1)), 1)
   ; "").
 
 'dec-val' -->
   "d",
-  dcg_multi('DIGIT', 1),
-  ( dcg_multi(".", dcg_multi('DIGIT', 1) ; "-", dcg_multi('DIGIT', 1))
+  dcg('DIGIT', 1),
+  ( dcg(".", dcg('DIGIT', 1) ; "-", dcg('DIGIT', 1))
   ; "" ).
 
 'hex-val' -->
   dcg_cistring("x"),
-  dcg_multi('HEXDIG', 1),
-  ( dcg_multi((".", dcg_multi('HEXDIG', 1) ; "-", dcg_multi('HEXDIG', 1)), 1)
+  dcg('HEXDIG', 1),
+  ( dcg((".", dcg('HEXDIG', 1) ; "-", dcg('HEXDIG', 1)), 1)
   ; "" ).
 
 % Bracketed string of SP and VCHAR without angles.
@@ -430,7 +430,7 @@ option -->
 'prose-val' -->
   "<",
   % *(%x20-3D / %x3F-7E)
-  dcg_multi(([C], ({between(32, 61, C)} ; {between(63, 126, C)}))),
+  dcg(([C], ({between(32, 61, C)} ; {between(63, 126, C)}))),
   ">".
 
 
