@@ -4,6 +4,7 @@
     'ALPHA'//0,
     'ALPHA'//1,
     'BIT'//0,
+    'BIT'//1, % ?DecimalDigit:between(0,1)
     'BIT'//2, % ?DecimalDigit:between(0,1)
               % ?Code:code
     'CHAR'//0,
@@ -16,11 +17,13 @@
     'CTL'//1,
     'DIGIT'//0,
     'DIGIT'//1, % ?Code:code
+    'DIGIT'//1, % ?DecimalDigit:between(0,9)
     'DIGIT'//2, % ?DecimalDigit:between(0,9)
                 % ?Code:code
     'DQUOTE'//0,
     'DQUOTE'//1,
     'HEXDIG'//0,
+    'HEXDIG'//1, % ?DecimalDigit:between(0,15)
     'HEXDIG'//2, % ?DecimalDigit:between(0,15)
                  % ?Code:code
     'HTAB'//0,
@@ -305,36 +308,30 @@ prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
 :- use_module(dcg(dcg_generic)).
 
 
+/*
+alternation -->
+  concatenation,
+  dcg(dcg('c-wsp'), "/", dcg('c-wsp'), concatenation).
 
-rulelist -->
-  dcg((rule ; dcg('c-wsp', 'c-nl')), 1).
+%! 'bin-val'
+% ~~~{.abnf}
+% bin-val  =  "b" 1*BIT
+%             [ 1*("." 1*BIT) / ("-" 1*BIT) ]
+% ~~~
 
-rule -->
-  rulename,
-  'defined-as',
-  elements,
-  % Continues if next line starts with white space
-  'c-nl'.
+%! 'bin-val'(-Code:code)//
+% Series of concatenated bit values or single ONEOF range.
 
-rulename -->
-  'ALPHA',
-  dcg(('ALPHA' ; 'DIGIT' ; "-")).
-
-% Basic rules definition and incremental alternatives.
-'defined-as' -->
-  dcg('c-wsp'),
-  ("=" ; "=/"),
-  dcg('c-wsp').
-
-elements -->
-  alternation,
-  dcg('c-wsp').
-
-'c-wsp' -->
-  'WSP'.
-'c-wsp' -->
-  'c-nl',
-  'WSP'.
+% A single binary value.
+'bin-val'([N]) -->
+  "b",
+  dcg('BIT', 1, Bits),
+  {digits_to_decimal(Bits, 2 N)}.
+% Multiple binary values.
+'bin-val'(
+  ( dcg((".", dcg('BIT', 1)), 1)
+  ; "-", dcg('BIT', 1)
+  ; "").
 
 % Comment or newline.
 'c-nl' -->
@@ -342,42 +339,56 @@ elements -->
 'c-nl' -->
   'CRLF'.
 
+'c-wsp' -->
+  'WSP'.
+'c-wsp' -->
+  'c-nl',
+  'WSP'.
+
+% Quoted string of SP and VCHAR without DQUOTE.
+'char-val'(dcg_cistring(Cs)) -->
+  'DQUOTE',
+  % *(%x20-21 / %x23-7E)
+  dcg(([C], {between(32, 33, C), between(35, 126, C)}), [Cs]),
+  'DQUOTE'.
+
 comment -->
   ";",
   dcg(('WSP' ; 'VCHAR')),
   'CRLF'.
 
-alternation -->
-  concatenation,
-  dcg(dcg('c-wsp'), "/", dcg('c-wsp'), concatenation).
-
 concatenation -->
   repetition,
   dcg(dcg('c-wsp', 1), repetition).
 
-repetition -->
-  (repeat ; ""),
-  element.
+'dec-val' -->
+  "d",
+  dcg('DIGIT', 1),
+  ( dcg(".", dcg('DIGIT', 1) ; "-", dcg('DIGIT', 1))
+  ; "" ).
 
-repeat -->
-  dcg('DIGIT', 1).
-repeat -->
-  dcg('DIGIT'),
-  "*",
-  dcg('DIGIT').
+% Basic rules definition and incremental alternatives.
+'defined-as' -->
+  dcg('c-wsp'),
+  ("=" ; "=/"),
+  dcg('c-wsp').
 
-element -->
-  rulename.
+element(RuleName) -->
+  rulename(RuleName).
 element -->
   group.
 element -->
   option.
-element -->
-  'char-val'.
+element(DCG_Rule) -->
+  'char-val'(DCG_Rule).
 element -->
   'num-val'.
 element -->
   'prose-val'.
+
+elements -->
+  alternation,
+  dcg('c-wsp').
 
 group -->
   "(",
@@ -386,19 +397,11 @@ group -->
   dcg('c-wsp'),
   ")".
 
-option -->
-  "[",
-  dcg('c-wsp'),
-  alternation,
-  dcg('c-wsp'),
-  "]".
-
-% Quoted string of SP and VCHAR without DQUOTE.
-'char-val' -->
-  'DQUOTE',
-  % *(%x20-21 / %x23-7E)
-  dcg([C], {between(32, 33, C), between(35, 126, C)}),
-  'DQUOTE'.
+'hex-val' -->
+  dcg_cistring("x"),
+  dcg('HEXDIG', 1),
+  ( dcg((".", dcg('HEXDIG', 1) ; "-", dcg('HEXDIG', 1)), 1)
+  ; "" ).
 
 'num-val' -->
   "%",
@@ -406,24 +409,12 @@ option -->
   ; 'dec-val'
   ; 'hex-val').
 
-% Series of concatenated bit values or single ONEOF range.
-'bin-val' -->
-  "b",
-  dcg('BIT', 1),
-  ( dcg((".", dcg('BIT', 1) ; "-", dcg('BIT', 1)), 1)
-  ; "").
-
-'dec-val' -->
-  "d",
-  dcg('DIGIT', 1),
-  ( dcg(".", dcg('DIGIT', 1) ; "-", dcg('DIGIT', 1))
-  ; "" ).
-
-'hex-val' -->
-  dcg_cistring("x"),
-  dcg('HEXDIG', 1),
-  ( dcg((".", dcg('HEXDIG', 1) ; "-", dcg('HEXDIG', 1)), 1)
-  ; "" ).
+option -->
+  "[",
+  dcg('c-wsp'),
+  alternation,
+  dcg('c-wsp'),
+  "]".
 
 % Bracketed string of SP and VCHAR without angles.
 % Prose description, to be used as last resort.
@@ -433,6 +424,44 @@ option -->
   dcg(([C], ({between(32, 61, C)} ; {between(63, 126, C)}))),
   ">".
 
+%! repeat(-NumberOfRepeats:pair(nonneg,nonneg))//
+
+repeat(Min-_) -->
+  dcg('DIGIT', 1, [Ds]),
+  {digits_to_decimal(Ds, Min)}.
+repeat(Min-Max) -->
+  dcg('DIGIT', 1, [D1s]),
+  {digits_to_decimal(D1s, Min)}.
+  "*",
+  dcg('DIGIT', 1, [D2s]),
+  {digits_to_decimal(D2s, Max)}.
+
+repetition(dcg(DCG, Repeat)) -->
+  (repeat(Repeat) ; ""),
+  element(DCG).
+
+%! rule(-DCG_Rule)//
+
+rule(DCG_Rule) -->
+  rulename(DCG_Head),
+  'defined-as',
+  elements(DCG_Body),
+  % Continues if next line starts with white space
+  'c-nl',
+  {DCG_Rule =.. [-->,DCG_Head,DCG_Body]}.
+
+%! rulelist(-DCG_Rules:list)//
+
+rulelist(DCG_Rules) -->
+  dcg((rule ; dcg('c-wsp', 'c-nl')), 1, DCG_Rules).
+
+%! rulename(-RuleName:atom)//
+
+rulename(RuleName) -->
+  'ALPHA'(H),
+  dcg(('ALPHA' ; 'DIGIT' ; "-"), _, T),
+  {atom_codes(RuleName, [H|T])}.
+*/
 
 
 %! 'ALPHA'//
@@ -458,6 +487,9 @@ option -->
 
 'BIT' -->
   binary_digit.
+
+'BIT'(D) -->
+  binary_digit(D).
 
 %! 'BIT'(?DecimalDigit:between(0,1), ?Code:code)//
 % A binary digit, i.e. `0` or `1`.
@@ -542,6 +574,9 @@ option -->
 'DIGIT' -->
   decimal_digit.
 
+'DIGIT'(D) -->
+  decimal_digit(D).
+
 %! 'DIGIT'(?Code:code)//
 % @see 'DIGIT'//2
 
@@ -578,6 +613,9 @@ option -->
 
 'HEXDIG' -->
   hexadecimal_digit.
+
+'HEXDIG'(D) -->
+  hexadecimal_digit(D).
 
 %! 'HEXDIG'(?DecimalDigit:between(0,15), ?Code:code)//
 % Hexadecimal digits.

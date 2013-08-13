@@ -5,6 +5,7 @@
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
     dcg_cicode//1, % +Code:code
+    dcg_code//1, % ?Code:code
     dcg_cistring//1, % +String:string
     dcg_codes//1, % +Codes:list(code)
     graphic//1, % -Graphic:list(code)
@@ -41,6 +42,7 @@ DCG rules for parsing/generating often-occuring content.
 @version 2013/07-2013/08
 */
 
+:- use_module(dcg(dcg)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(option)).
@@ -123,7 +125,10 @@ dcg_cicode(Upper) -->
 dcg_cicode(Code) -->
   [Code].
 
-%! dcg_string(+String:string)//
+dcg_code(C) -->
+  [C].
+
+%! dcg_string(+String:list(code))//
 % Generates the case-insensitive variants of the given string.
 %
 % Example:
@@ -147,13 +152,9 @@ dcg_cicode(Code) -->
 % Codes = "HTTP",
 % false.
 % ~~~
-%
-% @param String A SWI-Prolog string.
-% @see http://www.swi-prolog.org/pldoc/man?section=strings
 
-dcg_cistring(String) -->
-  {string_to_list(String, Codes)},
-  dcg_multi(dcg_cicode, _, Codes).
+dcg_cistring(Codes) -->
+  dcg_nonvar(dcg_cicode, _, Codes).
 
 dcg_codes([]) -->
   [].

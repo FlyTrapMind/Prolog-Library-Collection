@@ -124,6 +124,8 @@ The following built-in datatypes are derived from duration:
 @version 2013/07-2013/08
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(math(math_ext)).
 :- use_module(xsd(xsd_decimal)).
 
 

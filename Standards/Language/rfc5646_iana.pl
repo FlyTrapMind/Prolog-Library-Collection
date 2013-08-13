@@ -42,6 +42,7 @@ specification.
 :- use_module(standards(record_jar)). % Used in phrase_from_stream/2.
 :- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_namespace)).
+:- use_module(xsd(xsd)).
 
 :- xml_register_namespace(rfc5646, 'http://www.rfc5646.com/').
 

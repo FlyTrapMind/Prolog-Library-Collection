@@ -258,6 +258,7 @@ the original two values are incomparable.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
+:- use_module(math(math_ext)).
 :- use_module(xsd(xsd_decimal)).
 
 

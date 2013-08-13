@@ -140,9 +140,13 @@ continuation -->
 encodingSig(Encoding) -->
   "%%encoding",
   'field-sep',
-  dcg_multi(('ALPHA' ; 'DIGIT' ; hyphen_minus ; underscore), _N, Codes),
+  dcg_multi(encodingSig_, _N, Codes),
   {atom_codes(Encoding, Codes)},
   'CRLF'.
+encodingSig_(C) --> 'ALPHA'(C).
+encodingSig_(C) --> 'DIGIT'(_D, C).
+encodingSig_(C) --> hyphen(C).
+encodingSig_(C) --> underscore(C).
 
 %! 'ESCAPE'(?Code:code)//
 %
