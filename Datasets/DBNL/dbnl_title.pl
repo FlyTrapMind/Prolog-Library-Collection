@@ -63,6 +63,7 @@ http://www.dbnl.org/titels/titel.php?id=ferr002atma01
 :- use_module(dbnl(dbnl_secondary_summary)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_html)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(generics(atom_ext)).
 :- use_module(library(apply)).
 :- use_module(library(dcg/basics)).
@@ -194,7 +195,7 @@ dbnl_title0(Graph, Title) -->
 % Primary text links.
 dbnl_title0(Graph, Title) -->
   [element(h4, [], ['Beschikbare tekst in de dbnl'])], !,
-  dcg_multi(dbnl_primary_text_link(Graph, Title), between(1,_)),
+  dcg_multi(dbnl_primary_text_link(Graph, Title), 1),
   dbnl_title0(Graph, Title).
 % Secondary text links.
 dbnl_title0(Graph, Title) -->

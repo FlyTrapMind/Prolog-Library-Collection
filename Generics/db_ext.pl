@@ -20,6 +20,8 @@ Database extensions.
 @version 2013/04-2013/05
 */
 
+:- use_module(library(lists)).
+
 :- meta_predicate(db_add(:)).
 :- meta_predicate(db_add_novel(:)).
 :- meta_predicate(db_replace(:)).
@@ -68,7 +70,6 @@ db_replace_novel(Old, New):-
 new_to_old(New, Module:Old):-
   strip_module(New, Module, Plain),
   Plain =.. [Predicate | NewArguments],
-  length(NewArguments, Length),
-  length(OldArguments, Length),
+  same_length(NewArguments, OldArguments),
   Old =.. [Predicate | OldArguments].
 

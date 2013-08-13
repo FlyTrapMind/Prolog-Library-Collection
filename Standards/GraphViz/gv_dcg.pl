@@ -55,7 +55,7 @@ gv_attribute_list(G_Attrs, Attrs1) -->
     merge_options(Attrs1, G_Attrs, AllAttrs),
     include(gv_attribute_value(AllAttrs), Attrs1, Attrs2)
   },
-  dcg_multi_list(gv_attribute, comma, Attrs2),
+  dcg_multi(gv_attribute, _, Attrs2, [separator(comma)]),
   closing_square_bracket.
 
 gv_compass_pt --> "_".
@@ -187,11 +187,11 @@ gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
   ({(G_Attrs2 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
 
   % The list of GraphViz nodes.
-  dcg_multi_list(gv_node_statement(NewI, G_Attrs2), NewV_Terms),
+  dcg_multi(gv_node_statement(NewI, G_Attrs2), _, NewV_Terms, []),
   newline,
 
   % The list of GraphViz edges.
-  dcg_multi_list(gv_edge_statement(NewI, G_Attrs2), NewE_Terms),
+  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, NewE_Terms, []),
   % Note that we do not include a newline here.
 
   % The description of the grpah is closed (using the old indent level).

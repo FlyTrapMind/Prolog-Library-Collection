@@ -486,6 +486,7 @@ a buffer limit in combination with truncation may be applied:
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(lang('iso639-1')). % Used in meta-call.
@@ -565,27 +566,27 @@ regular([zh,xiang]).
 %      with arguments.
 
 rfc5646_extended_language_subtag(T0, L) -->
-  dcg_multi_atom(letter, 3, X1),
+  dcg_multi(letter, 3, X1, [out(atom)]),
   {rfc5646_class(X1, 'Subtag')},
   (
     "", {L = [X1]}
   ;
     hyphen_minus, {H1 = '-'},
-    dcg_multi_atom(letter, 3, X2),
+    dcg_multi(letter, 3, X2, [convert(atom_codes)]),
     {rfc5646_class(X2, 'Subtag')},
     (
       "",
       {L = [X1,X2]}
     ;
       hyphen_minus, {H2 = '-'},
-      dcg_multi_atom(letter, 3, X3),
+      dcg_multi(letter, 3, X3, [convert(atom_codes)]),
       {rfc5646_class(X3, 'Subtag')},
       (
         "",
         {L = [X1,X2,X3]}
       ;
         hyphen_minus, {H3 = '-'},
-        dcg_multi_atom(letter, 3, X4),
+        dcg_multi(letter, 3, X4, [convert(atom_codes)]),
         {rfc5646_class(X4, 'Subtag')},
         {L = [X1,X2,X3,X4]}
       )
@@ -657,12 +658,12 @@ rfc5646_extension(extension(T1, T2), [Singleton|ExtensionComponents]) -->
 
 rfc5646_extension_components(extension_components('-',H,T1), [H|T]) -->
   hyphen_minus,
-  dcg_multi_atom(alpha_numeric, between(2,8), H),
+  dcg_multi(alpha_numeric, 2-8, H, [convert(atom_codes)]),
   {rfc5646_class(H, 'Extension')},
   rfc5646_extension_components(T1, T).
 rfc5646_extension_components(extension_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi_atom(alpha_numeric, between(2,8), H),
+  dcg_multi(alpha_numeric, 2-8, H, [convert(atom_codes)]),
   {rfc5646_class(H, 'Extension')}.
 
 %! rfc5646_extensions(-Tree:compound, ?Extensions:list(list(atomic)))//
@@ -738,7 +739,7 @@ rfc5646_extensions(extensions('-',T1), [H]) -->
 % deprecated in favor of a more modern subtag or sequence of subtags.
 
 rfc5646_grandfathered_language_tag(T0, Tag) -->
-  dcg_multi_list(dcg_word, hyphen, L1),
+  dcg_multi(dcg_word, _, L1, [separator(hyphen)]),
   {
     atomic_list_concat(L1, '-', Tag),
     rfc5646_class(Tag, 'Grandfathered'),
@@ -821,7 +822,7 @@ rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
 
 % The shortest ISO639 code, sometimes followed by extended language subtags.
 rfc5646_language(T0, Language, LanguageExtensions) -->
-  dcg_multi_atom(letter, between(2,3), Language),
+  dcg_multi(letter, 2-3, Language, [convert(atom_codes)]),
   {rfc5646_class(Language, 'Language')},
   (
     hyphen,
@@ -833,10 +834,10 @@ rfc5646_language(T0, Language, LanguageExtensions) -->
 rfc5646_language(language(Language), Language, []) -->
   (
     % Reserved for future use.
-    dcg_multi_atom(letter, 4, Language)
+    dcg_multi(letter, 4, Language, [convert(atom_codes)])
   ;
     % Registered language subtag.
-    dcg_multi_atom(letter, between(5,8), Language)
+    dcg_multi(letter, 5-8, Language, [convert(atom_codes)])
   ),
   {rfc5646_class(Language, 'Language')}.
 
@@ -894,10 +895,10 @@ rfc5646_privateuse(pivateuse(T1), PrivateTags) -->
 
 rfc5646_privateuse_components(privateuse_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi_atom(alpha_numeric, between(1,8), H).
+  dcg_multi(alpha_numeric, 1-8, H, [convert(atom_codes)]).
 rfc5646_privateuse_components(privateuse_components('-',H,T2), [H|T]) -->
   hyphen_minus,
-  dcg_multi_atom(alpha_numeric, between(1,8), H),
+  dcg_multi(alpha_numeric, 1-8, H, [convert(atom_codes)]),
   rfc5646_privateuse_components(T2, T).
 
 %! rfc5646_region(-Tree:compound, ?Region:atomic)//
@@ -987,14 +988,11 @@ rfc5646_privateuse_components(privateuse_components('-',H,T2), [H|T]) -->
 % Latin America and Caribbean region (`419`).
 
 rfc5646_region(region(Region), Region) -->
-  dcg_multi_atom(letter, 2, Region),
+  dcg_multi(letter, 2, Region, [convert(atom_codes)]),
   {rfc5646_class(Region, 'Region')}.
 rfc5646_region(region(Region), Region) -->
-  dcg_multi(decimal_digit, 3, Codes),
-  {
-    number_codes(Region, Codes),
-    rfc5646_class(Region, 'Region')
-  }.
+  dcg_multi(decimal_digit, 3, Region, [convert(codes_number)]),
+  {rfc5646_class(Region, 'Region')}.
 
 %! rfc5646_script(-Tree:compound, ?Script:atom)//
 % Script or writing system variations that distinguish the written forms of a
@@ -1030,7 +1028,7 @@ rfc5646_region(region(Region), Region) -->
 % `sr-Latn` represents Serbian written using the Latin script.
 
 rfc5646_script(script(Script), Script) -->
-  dcg_multi_atom(letter, 4, Script),
+  dcg_multi(letter, 4, Script, [convert(atom_codes)]),
   {rfc5646_class(Script, 'Script')}.
 
 %! singleton(-Tree:compound, ?Char:atomic)//
@@ -1144,7 +1142,7 @@ rfc5646_variant(variant(Variant), Variant) -->
     rfc5646_class(Variant, 'Variant')
   }.
 rfc5646_variant(variant(Variant), Variant) -->
-  dcg_multi_atom(alpha_numeric, between(5,8), Variant),
+  dcg_multi(alpha_numeric, 5-8, Variant, [convert(atom_codes)]),
   {rfc5646_class(Variant, 'Variant')}.
 
 %! rfc5646_variants(-Tree:compound, ?Variants:list(atom))//

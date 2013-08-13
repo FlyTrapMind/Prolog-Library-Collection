@@ -18,6 +18,7 @@ Support for Cascading Style Sheets.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 
 
 
@@ -25,7 +26,7 @@ Support for Cascading Style Sheets.
 
 css_escape -->
   backslash, backslash,
-  dcg_multi(hexadecimal_digit, between(1,_)),
+  dcg_multi(hexadecimal_digit, 1-_),
   (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space ; "").
 
 nmstart --> underscore.

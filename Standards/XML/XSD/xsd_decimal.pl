@@ -113,6 +113,7 @@ The decimal datatype has the following values for its fundamental facets:
 */
 
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(math(math_ext)).
 :- use_module(math(rational_ext)).
 
@@ -307,8 +308,12 @@ decimalLexicalMap2(LEX, D):-
 decimalLexicalRep1(D) -->
   {var(D)}, !,
   (sign(H1) -> {L1 = [H1|T1]} ; {L1 = T1}),
-  dcg_multi(decimal_digit, between(1,_), T1),
-  (dot(H2), dcg_multi(decimal_digit, _, T2) -> {L2 = [H2|T2]} ; {L2 = []}),
+  dcg_multi(decimal_digit, 1-_, T1, []),
+  (  dot(H2),
+     dcg_multi(decimal_digit, _, T2, [])
+  -> {L2 = [H2|T2]}
+  ;  {L2 = []}
+  ),
   {append(L1, L2, L), number_codes(D, L)}.
 decimalLexicalRep1(D, H, T):-
   number(D), !,
@@ -321,10 +326,10 @@ decimalLexicalRep1(D, H, T):-
 decimalLexicalRep2(T0, decimal(I,N)) -->
   {var(I), var(N)}, !,
   (sign(T1, Sign) ; {Sign = 1}),
-  dcg_multi(decimal_digit, between(1,_), I1s),
+  dcg_multi(decimal_digit, 1-_, I1s, []),
   (
     dot, {T3 = '.'},
-    dcg_multi(decimal_digit, _, I2s)
+    dcg_multi(decimal_digit, _, I2s, [])
   ;
     {I2s  = []}
   ),
@@ -345,10 +350,10 @@ decimalLexicalRep2(T0, decimal(I,N)) -->
     append(I1s, I2s, Is)
   },
   (sign(T1, Sign) ; {Sign = 1}),
-  dcg_multi(decimal_digit, between(1,_), I1s),
+  dcg_multi(decimal_digit, 1-_, I1s, []),
   (
     dot,
-    dcg_multi(decimal_digit, _, I2s)
+    dcg_multi(decimal_digit, _, I2s, [])
   ->
     {T3 = '.'}
   ;

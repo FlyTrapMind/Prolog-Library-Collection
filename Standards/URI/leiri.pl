@@ -64,6 +64,7 @@ iprivate        ::= %xE000-F8FF / %xE0000-E0FFF / %xF0000-FFFFD
 @version 2013/08
 */
 
+:- use_module(dcg(dcg_multi)).
 :- use_module(standards(abnf)).
 
 
@@ -113,7 +114,11 @@ iauthority -->
   (":", port ; "").
 
 iuserinfo -->
-  dcg_multi((iunreserved ; 'pct-encoded' ; 'sub-delims' ; ":"), _).
+  dcg_multi(iuserinfo_).
+iuserinfo_ --> iunreserved.
+iuserinfo_ --> 'pct-encoded'.
+iuserinfo_ --> 'sub-delims'.
+iuserinfo_ --> ":".
 
 ihost -->
   'IP-literal'.
@@ -123,7 +128,10 @@ ihost -->
   'ireg-name'.
 
 'ireg-name' -->
-  dcg_multi((iunreserved ; 'pct-encoded' ; 'sub-delims'), _).
+  dcg_multi('ireg-name_').
+'ireg-name_' --> iunreserved.
+'ireg-name_' --> 'pct-encoded'.
+'ireg-name_' --> 'sub-delims'.
 
 % Begins with "/" or is empty.
 ipath -->
@@ -142,30 +150,46 @@ ipath -->
   'ipath-empty'.
 
 'ipath-abempty' -->
-  dcg_multi(("/", isegment), _).
+  dcg_multi('ipath-abempty_').
+'ipath-abempty_' -->
+  "/",
+  isegment.
 
 'ipath-absolute' -->
   "/",
-  ('isegment-nz', dcg_multi(("/", isegment), _) ; "").
+  ('isegment-nz', dcg_multi('ipath-absolute_') ; "").
+'ipath-absolute_' -->
+  "/",
+  isegment.
 
 'ipath-noscheme' -->
   'isegment-nz-nc',
-  dcg_multi(("/", isegment), _).
+  dcg_multi('ipath-noscheme_', _).
+'ipath-noscheme_' -->
+  "/",
+  isegment.
 
 'ipath-rootless' -->
   'isegment-nz',
-  dcg_multi(("/", isegment), _).
+  dcg_multi('ipath-rootless_').
+'ipath-rootless_' -->
+  "/",
+  isegment.
 
 'ipath-empty' --> 0<ipchar>
 
 isegment -->
-  dcg_multi(ipchar, _).
+  dcg_multi(ipchar).
 
 'isegment-nz' -->
-  dcg_multi(ipchar, between(1,_)).
+  dcg_multi(ipchar, 1-_).
 % Non-zero-length segment without any colon ":".
 'isegment-nz-nc' -->
-  dcg_multi((iunreserved ; 'pct-encoded' ; 'sub-delims' ; "@"), between(1,_)).
+  dcg_multi('isegment-nz-nc_', 1-_).
+'isegment-nz-nc_' --> iunreserved.
+'isegment-nz-nc_' --> 'pct-encoded'.
+'isegment-nz-nc_' --> 'sub-delims'.
+'isegment-nz-nc_' --> "@".
 
 ipchar -->
   iunreserved.
@@ -179,10 +203,17 @@ ipchar -->
   "@".
 
 iquery -->
-  dcg_multi((ipchar ; iprivate ; "/" ; "?"), _).
+  dcg_multi(iquery_).
+iquery_ --> ipchar.
+iquery_ --> iprivate.
+iquery_ --> "/".
+iquery_ --> "?".
 
 ifragment -->
-  dcg_multi((ipchar ; "/" ; "?")).
+  dcg_multi(ifragment_).
+ifragment_ --> ipchar.
+ifragment_ --> "/".
+ifragment_ --> "?".
 
 iunreserved -->
   'ALPHA'.

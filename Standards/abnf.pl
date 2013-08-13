@@ -577,12 +577,6 @@ rulename(RuleName) -->
 'DIGIT'(D) -->
   decimal_digit(D).
 
-%! 'DIGIT'(?Code:code)//
-% @see 'DIGIT'//2
-
-'DIGIT'(C) -->
-  decimal_digit(C).
-
 %! 'DIGIT'(?DecimalDigit:integer, ?Code:code)//
 % Decimal digits.
 %

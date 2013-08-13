@@ -42,9 +42,9 @@ DCG rules for parsing/generating often-occuring content.
 @version 2013/07-2013/08
 */
 
-:- use_module(dcg(dcg)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
@@ -154,7 +154,7 @@ dcg_code(C) -->
 % ~~~
 
 dcg_cistring(Codes) -->
-  dcg_nonvar(dcg_cicode, _, Codes).
+  dcg_multi(dcg_cicode, _, Codes, []).
 
 dcg_codes([]) -->
   [].

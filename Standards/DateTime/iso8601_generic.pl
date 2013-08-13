@@ -248,6 +248,7 @@ Function =|strftime()|= and utility =date=.
 
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(math(radix)).
 
 
@@ -298,7 +299,8 @@ iso8601_fraction_separator('.') --> dot.
 
 iso8601_integer(T0, Name, Length, I) -->
   {var(I)}, !,
-  dcg_multi(decimal_digit, Length, Is),
+  % Notice that we do not use the convert/1 option here. See below.
+  dcg_multi(decimal_digit, Length, Is, []),
   % Notice that we cannot use the decimal number in the parse tree,
   % because then we would miss any padding zeros.
   {digits_to_decimal(Is, I)},
@@ -306,7 +308,7 @@ iso8601_integer(T0, Name, Length, I) -->
 iso8601_integer(T0, Name, Length, I) -->
   {(nonvar(Length) -> Length_ = Length ; number_length(I, Length_))},
   {padded_number(I, Length_, Is)},
-  dcg_multi(decimal_digit, Length, Is),
+  dcg_multi(decimal_digit, Length, Is, []),
   {parse_tree(Name, Is, T0)}.
 
 %! iso8601_time_designator(

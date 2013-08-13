@@ -153,6 +153,7 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
@@ -715,7 +716,7 @@ http_version(
 
 last_chunk(T0, ChunkExtension) -->
   % A positive number of zeros.
-  dcg_multi(zero, between(1,_)),
+  dcg_multi(zero, 1-_),
   % Optional chunk extension (attribute-value pairs).
   (
     "",
@@ -1100,7 +1101,7 @@ qvalue(qvalue(QValue), QValue) -->
 qvalue(qvalue(1.0), 1.0) -->
   one,
   dot,
-  dcg_multi(zero, between(0,3)).
+  dcg_multi(zero, 0-3).
 
 %! range_unit(-Tree:compound, ?RangeUnit:atom)//
 % HTTP/1.1 allows a client to request that only part (a range of) the

@@ -18,6 +18,7 @@ Stupport for RFC 1766: *Tags for the Identification of Languages*.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(generics(atom_ext)).
 
 
@@ -184,10 +185,9 @@ tag(Tag) -->
     atom_length(Tag, Length),
     between(1, 8, Length)
   }, !,
-  {atom_codes(Tag, Codes)},
-  dcg_multi_list(letter, Codes).
+  dcg_multi(letter, _, Tag, [convert(atom_codes)]).
 tag(Tag) -->
-  dcg_multi_list(letter, Codes),
+  dcg_multi(letter, _, Codes, []),
   {
     length(Codes, Length),
     between(1, 8, Length),

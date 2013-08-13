@@ -25,6 +25,7 @@ DCG rules for XML entities.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 
@@ -79,7 +80,7 @@ xml_entity(DCG_Open, DCG_Namespace, DCG_Name, DCG_Attributes, DCG_Close) -->
   DCG_Open,
   xml_namespaced_name(DCG_Namespace, DCG_Name),
   space,
-  dcg_list(DCG_Attributes, space),
+  dcg_multi(DCG_Attributes, _, [separator(space)]),
   DCG_Close.
 
 %! xml_entity_q(:DCG_Name, :DCG_Attributes)//

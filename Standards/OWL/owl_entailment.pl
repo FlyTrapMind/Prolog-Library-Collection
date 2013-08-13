@@ -60,9 +60,6 @@ materialize0(Triples):-
     rdfm(S, P, O),
     Triples
   ).
-  %length(Triples1, Length),
-  %sort(Triples1, Triples2),
-  %length(Triples2, Length),
 
 % @tbd should move to compiler
 rdfm(literal(L), _, _):-

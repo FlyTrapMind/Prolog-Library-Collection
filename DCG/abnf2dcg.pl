@@ -29,10 +29,10 @@ c --> [].
 @version 2013/08
 */
 
-:- use_module(dcg(dcg)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(standards(abnf)).
 
 :- dynamic(term_expansion/2).
@@ -95,7 +95,7 @@ rule(Rules) -->
 
 rulename(Name) -->
   'ALPHA'(H),
-  dcg_var(rulename_, 1-_, T),
+  dcg_multi(rulename_, 1-_, T, []),
   {atom_codes(Name, [H|T])}.
 rulename_(X) --> 'ALPHA'(X).
 rulename_(X) --> 'DIGIT'(X).

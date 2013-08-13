@@ -27,6 +27,7 @@ in combination with the open source speech synthesizer eSpeak.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(dcg(dcg_wrap)).
 :- use_module(generics(atom_ext)).

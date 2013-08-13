@@ -55,6 +55,7 @@ pred(Converted2, AlsoConverted2, NotConvertedLabel):-
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(lists)).
 
 :- dynamic(rdf_meta_expand_db(_Term)).
 
@@ -106,10 +107,8 @@ system:term_expansion(TermIn, TermOut):-
     % ... separate `Functor` from `Args`.
     Head =.. [Functor|Args],
     
-    % Create a list of unbounded variables 
-    % of length `ArgLen`.
-    length(Args, ArgLen),
-    length(ArgTypes, ArgLen),
+    % Create a list of unbounded variables that has the same length.
+    same_length(Args, ArgTypes),
     
     % Create a query term that can be used
     % to match `TermIn` on the list of

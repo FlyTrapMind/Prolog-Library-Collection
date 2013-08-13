@@ -257,6 +257,7 @@ the original two values are incomparable.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(generics(meta_ext)).
 :- use_module(math(math_ext)).
 :- use_module(xsd(xsd_decimal)).
@@ -500,7 +501,7 @@ dayFrag(D) -->
 
 endOfDayFrag(24, 0, 0) -->
   "24:00:00",
-  (dot, dcg_multi(zero, _)).
+  (dot, dcg_multi(zero)).
 
 %! hourFrag(-Hour:between(1,23))//
 % Processes an hour value, i.e. a numeral consisting of exactly two
@@ -573,7 +574,7 @@ secondFrag(S) -->
   decimal_digit(_, C2),
   (
     dot(C3),
-    dcg_multi(decimal_digit, _, _, CT),
+    dcg_multi(decimal_digit, 1-_, CT, []),
     {phrase(unsignedDecimalPtNumeral(S), [C1,C2,C3|CT])}
   ;
     {phrase(unsignedNoDecimalPtNumeral(S), [C1,C2])}
@@ -626,10 +627,10 @@ yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,H|T]} ; {Cs = [H|T]}),
   (
     nonzero_decimal_digit(_, H),
-    dcg_multi(decimal_digit, between(3,_), _, T)
+    dcg_multi(decimal_digit, 3-_, T, [])
   ;
     zero(H),
-    dcg_multi(decimal_digit, 3, _, T)
+    dcg_multi(decimal_digit, 3, T, [])
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),

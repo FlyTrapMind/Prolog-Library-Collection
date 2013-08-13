@@ -65,6 +65,7 @@ DCGs for cardinal numbers.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(math(math_ext)).
 
 :- meta_predicate(digits_to_decimal_number(//,+,?,?,?)).
@@ -152,7 +153,7 @@ digits_to_decimal_number(_Digit, _Radix, M, M) --> [].
 
 exponent -->
   exponent_sign,
-  dcg_multi(decimal_digit, between(1,_)).
+  dcg_multi(decimal_digit, 1-_).
 
 exponent_sign --> e.
 
