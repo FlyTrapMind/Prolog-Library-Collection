@@ -33,10 +33,13 @@ c --> [].
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(library(quasi_quotations)).
 :- use_module(standards(abnf)).
 
 :- dynamic(term_expansion/2).
 :- multifile(term_expansion/2).
+
+:- quasi_quotation_syntax(abnf).
 
 
 
@@ -121,7 +124,11 @@ write(DCGs).
 %'DIGIT'(D, C) --> decimal_digit(D, C).
 % ~~~
 
-abnf('MIDGET = %x30-31'):- true.
+%abnf('MIDGET = %x30-31'):- true.
+{|abnf||MIDGET = %x30-31|}.
+
+abnf(Content, _Vars, _Dict, _) :-
+  phrase_from_quasi_quotation(rule(DCGs), Content).
 
 system:term_expansion(From, To):-
   From =.. [-->,feed,C],
