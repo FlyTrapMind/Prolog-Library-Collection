@@ -27,7 +27,7 @@
                 % ?Node:or([bnode,uri,literal])
     rdf_object/2, % ?Graph:graph
                   % ?Objects:oneof([bnode,literal,uri])
-    rdf_pairs/2, % +Resource:uri
+    rdf_po_pairs/2, % +Resource:uri
                  % -PredicateObjectPairs:list(pair)
     rdf_predicate/2, % ?Graph:atom
                      % ?Predicate:uri
@@ -186,7 +186,7 @@ as their lean subgraphs.
 :- rdf_meta(rdf_bnode(?,r)).
 :- rdf_meta(rdf_name(?,r)).
 :- rdf_meta(rdf_object(?,r)).
-:- rdf_meta(rdf_pairs(r,-)).
+:- rdf_meta(rdf_po_pairs(r,-)).
 :- rdf_meta(rdf_predicate(?,r)).
 :- rdf_meta(rdf_subject(?,r)).
 :- rdf_meta(rdf_triples(r,-)).
@@ -508,11 +508,10 @@ rdf_object(G, O):-
 rdf_object0(G, O):-
   rdf(_, _, O, G).
 
-rdf_pairs(Resource, PredicateObjectPairs):-
-  is_uri(Resource),
-  !,
+rdf_po_pairs(Resource, PredicateObjectPairs):-
+  is_uri(Resource), !,
   setoff(
-    [P, O],
+    [P,O],
     rdf(Resource, P, O, _Graph),
     PredicateObjectPairs
   ).
@@ -611,6 +610,13 @@ rdf_vocabulary(G, Vocabulary):-
     Vocabulary
   ).
 
+%! select_shared_properties(
+%!   +X_Pairs1:ordset(list),
+%!   +Y_Pairs1:ordset(list),
+%!   -SharedPropertyPairs:ordset(list),
+%!   -X_Pairs2:ordset(list),
+%!   -Y_Pairs2:ordset(list)
+%! ) is det.
 select_shared_properties(
   X_Pairs1,
   Y_Pairs1,
@@ -620,6 +626,14 @@ select_shared_properties(
 ):-
   ord_intersection(X_Pairs1, Y_Pairs1, SharedPropertyPairs, Y_Pairs2),
   ord_subtract(X_Pairs1, SharedPropertyPairs, X_Pairs2).
+
+%! select_shared_predicates(
+%!   +X_Pairs1:ordset(list),
+%!   +Y_Pairs1:ordset(list),
+%!   -SharedPredicateTuples:ordset(list),
+%!   -X_Pairs2:ordset(list),
+%!   -Y_Pairs2:ordset(list)
+%! ) is det.
 
 select_shared_predicates(
   X_Pairs1,

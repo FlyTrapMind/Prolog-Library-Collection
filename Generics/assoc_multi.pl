@@ -27,6 +27,8 @@ This extends library assoc by overloading get_assoc/3 and put_assoc/4,
 and by adding ord_member/2.
 
 @author Wouter Beek
+@tbd All assoc functions should use pass by reference via
+     =|assoc_by_name(+Name,-Assoc)|=.
 @version 2013/04-2013/05, 2013/07-2013/08
 */
 
@@ -41,6 +43,7 @@ and by adding ord_member/2.
 
 :- meta_predicate(write_assoc(+,+,2,+)).
 
+:- dynamic(assoc_by_name(_Name, _Assoc)).
 :- dynamic(current_assoc(_Name, _Assoc)).
 
 :- nodebug(assoc_multi).
