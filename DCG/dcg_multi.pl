@@ -134,6 +134,7 @@ dcg_multi(DCG, Rep, L2, M2, O) -->
   {(option(convert(Pred), O) -> call(Pred, M1, M2) ; M2 = M1)}.
 
 % Zero arguments: no distinction between `var` and `nonvar`.
+dcg_multi_no_arguments(_DCG, _Max, C, C, _O) --> [].
 dcg_multi_no_arguments(DCG, Max, C1, C, O) -->
   dcg_call(DCG),
   % Process the separator, if any.
@@ -141,7 +142,6 @@ dcg_multi_no_arguments(DCG, Max, C1, C, O) -->
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_no_arguments(DCG, Max, C2, C, O).
-dcg_multi_no_arguments(_DCG, _Max, C, C, _O) --> [].
 
 
 
@@ -219,7 +219,7 @@ in_between(Min, Max, N):-
 repetition(Rep, Min, Max):-
   repetition_(Rep, Min, Max),
   greater_than_or_equal_to(Max, Min).
-repetition_(N, 1, N):-
+repetition_(N, N, N):-
   integer(N), !.
 repetition_(Min1-Max1, Min2, Max2):-
   default(Min1, 0, Min2),

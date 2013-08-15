@@ -95,19 +95,33 @@ rdf_convert(FromFile, ToFormat, ToFile):-
   rdf_save2(ToFile, [format(ToFormat), graph(TempGraph)]),
   rdf_unload_graph(TempGraph).
 
-%! rdf_guess_data_format(+Stream, ?Format:oneof([turtle,xml])) is det.
+%! rdf_guess_data_format(
+%!   +In:or(atom,stream),
+%!   ?Format:oneof([turtle,xml])
+%! ) is det.
 % Guess the format of an RDF file from the actual content.
 % Currently, this seeks for a valid XML document upto the rdf:RDF
 % element before concluding that the file is RDF/XML. Otherwise it
 % assumes that the document is Turtle.
 %
-% @author Jan Wielemaker
-% @version 2011
+% @author Based on a predicate written by Jan Wielemaker.
+% @author Extended to work with files and
+%         registered file extensions by Wouter Beek.
 
-rdf_guess_data_format(_, Format):-
-  nonvar(Format), !.
 rdf_guess_data_format(Stream, xml):-
+  is_stream(Stream), !,
   xml_doctype(Stream, _), !.
+rdf_guess_data_format(File, xml):-
+  exists_file(File), !,
+  setup_call_cleanup(
+    open(File, read, Stream),
+    xml_doctype(Stream, _),
+    close(Stream)
+  ), !.
+rdf_guess_data_format(File, Format):-
+  exists_file(File), !,
+  file_name_extension(_Base, Extension, File),
+  rdf_serialization(Extension, Format, _URI), !.
 rdf_guess_data_format(_, turtle).
 
 %! rdf_load2(+File:atom) is det.
@@ -116,7 +130,7 @@ rdf_guess_data_format(_, turtle).
 % Then format is derived from the file itself or from the file extension.
 % The graph name is the base of the file name.
 %
-% @see Wrapper to rdf_laod/2.
+% @see Wrapper to rdf_load/2.
 
 rdf_load2(Spec):-
   rdf_load2(Spec, []).
@@ -155,7 +169,7 @@ rdf_load2(File, Options):-
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  cowspeak(
+  gtrace,cowspeak(
     [speech(false)],
     'Graph ~w was loaded in ~w serialization from file ~w.'-[Graph, Format, File]
   ),
@@ -175,8 +189,7 @@ rdf_load2(File, Options):-
   access_file(File, read),
   % Returns the format in case it was a variable.
   \+ (option(format(Format), Options), nonvar(Format)), !,
-  file_name_extension(_Base, Extension, File),
-  rdf_serialization(Extension, Format, _URI),
+  rdf_guess_data_format(File, Format),
   merge_options([format(Format)], Options, Options0),
   rdf_load2(File, Options0).
 
