@@ -42,7 +42,6 @@ DCG rules for parsing/generating often-occuring content.
 @version 2013/07-2013/08
 */
 
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(library(option)).

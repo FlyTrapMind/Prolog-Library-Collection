@@ -28,10 +28,10 @@
                   % -XML:dom
     xml_doctype/2, % +Stream:stream
                    % -DocType
-    xml_inject_dom_attribute/4 % +OldDOM:dom
-                           % +Class:atom
-                           % AttributeValuePairs:list(nvpair)
-                           % -NewDOM:dom
+    xml_inject_dom_with_attribute/4 % +OldDOM:dom
+                                    % +Class:atom
+                                    % AttributeValuePairs:list(nvpair)
+                                    % -NewDOM:dom
   ]
 ).
 
@@ -243,7 +243,7 @@ on_begin(Tag, Attributes, _Parser):-
 on_cdata(_CDATA, _Parser):-
   throw(error(cdata)).
 
-%! xml_inject_dom_attribute(
+%! xml_inject_dom_with_attribute(
 %!   +OldDOM:dom,
 %!   +Class:atom,
 %!   +AttributeValuePairs:pair,
@@ -260,16 +260,16 @@ on_cdata(_CDATA, _Parser):-
 % given class.
 
 % onclick="function(){...};"
-xml_inject_dom_attribute([], _Class, _AttributeValuePair, []):- !.
-xml_inject_dom_attribute(
+xml_inject_dom_with_attribute([], _Class, _AttributeValuePair, []):- !.
+xml_inject_dom_with_attribute(
   [Atom | DOM1],
   Class,
   AttributeValuePair,
   [Atom | DOM2]
 ):-
   atom(Atom), !,
-  xml_inject_dom_attribute(DOM1, Class, AttributeValuePair, DOM2).
-xml_inject_dom_attribute(
+  xml_inject_dom_with_attribute(DOM1, Class, AttributeValuePair, DOM2).
+xml_inject_dom_with_attribute(
   [element(Type, Attributes1, Contents1) | DOM1],
   Class,
   AttributeValuePair,
@@ -285,6 +285,6 @@ xml_inject_dom_attribute(
     ),
     Attributes2 = Attributes1
   ),
-  xml_inject_dom_attribute(Contents1, Class, AttributeValuePair, Contents2),
-  xml_inject_dom_attribute(DOM1, Class, AttributeValuePair, DOM2).
+  xml_inject_dom_with_attribute(Contents1, Class, AttributeValuePair, Contents2),
+  xml_inject_dom_with_attribute(DOM1, Class, AttributeValuePair, DOM2).
 

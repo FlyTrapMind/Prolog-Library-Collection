@@ -78,6 +78,7 @@ http://www.dbnl.org/tekst/ferr002atma01_01/ferr002atma01_01_0006.php
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_build)).
 :- use_module(standards(xpath_ext)).
+:- use_module(xml(xml_dom)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(dbnl, 'http://www.dbnl.org/').
@@ -87,8 +88,7 @@ http://www.dbnl.org/tekst/ferr002atma01_01/ferr002atma01_01_0006.php
 dbnl_maximum_xmlliteral_length(1000).
 
 dbnl_text(Graph, _Title, URI, Text):-
-  rdf(Text, dbnl:original_page, URI, Graph),
-  !.
+  rdf(Text, dbnl:original_page, URI, Graph), !.
 dbnl_text(Graph, Title, URI, Text):-
 (
   memberchk(

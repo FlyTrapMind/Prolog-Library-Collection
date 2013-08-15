@@ -24,6 +24,7 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
@@ -37,6 +38,8 @@ In GraphViz vertices are called 'nodes'.
 %! gv_attribute(+Attribute:nvpair)// is det.
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
+%
+% @tbd Add attribute checks.
 
 gv_attribute(Name=Value) --> !,
   gv_id(Name),

@@ -34,8 +34,11 @@ Entailment regime for RDF(S) and OWL.
 */
 
 :- use_module(generics(print_ext)).
+:- use_module(library(apply)).
+:- use_module(library(options)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdfs(rdfs_read)).
 
 :- rdf_meta(rdf_entails(r,r,r,?,-)).
@@ -194,4 +197,34 @@ rdf_entails_dev(S, P, O, G):-
 rdf_entails_dev(S, P, O, G, MaxD):-
   rdf_entails(S, P, O, G, MaxD, D, Proof),
   debug(proof, '~w', [Proof]),
-  print_ext:print_proof(user, [depth(D), indent(0), max_depth(MaxD)], [Proof]).
+  print_proof(user, [depth(D), indent(0), max_depth(MaxD)], [Proof]).
+
+% @tbd The predicates that appear below should be unified with some RDF module
+%      used for exporting triples and with some TMS module used for exporting
+%      justification chains.
+
+print_proposition(Stream, Options, rdf(S, P, O)):-
+  maplist(rdf_term_name(Options), [S, P, O], [S0, P0, O0]),
+  option(indent(Indent), Options, 0),
+  option(index(Index), Options, 'c'),
+  indent(Stream, Indent),
+  format(Stream, '[~w] ~w ~w ~w\n', [Index, S0, P0, O0]).
+
+print_proposition0(Stream, Options, Proposition):-
+  print_proposition(Stream, Options, Proposition), !.
+print_proposition0(Stream, Options, Proposition):-
+  option(indent(Indent), Options, 0),
+  option(index(Index), Options, c),
+  indent(Stream, Indent),
+  format(Stream, '[~w]:\t~w', [Index, Proposition]).
+
+print_proof(_Stream, _Options, []).
+print_proof(Stream, Options, [proof(Conclusion, Premises) | Proofs]):-
+  print_proposition0(Stream, Options, Conclusion),
+  select_option(indent(Indent), Options, Options0),
+  succ(Indent, NewIndent),
+  select_option(index(Index), Options0, Options1, 1),
+  succ(Index, NewIndex),
+  print_proof(Stream, [indent(NewIndent), index(1) | Options1], Premises),
+  print_proof(Stream, [indent(Indent), index(NewIndex) | Options1], Proofs).
+

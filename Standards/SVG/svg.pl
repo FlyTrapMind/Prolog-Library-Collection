@@ -284,7 +284,7 @@ test(svg_document, []):-
   ),
   atom_codes(Atom, Codes),
   formatnl(Atom),
-  convert_tree_to_gv([], Tree, dot, pdf, File),
+  tree_to_gv_file([], Tree, dot, pdf, File),
   formatnl(File).
 
 :- end_tests(svg).

@@ -28,10 +28,10 @@
 Predicates that extend the swipl builtin I/O predicates operating on streams.
 
 @author Wouter Beek
-@version 2013/01, 2013/06
+@version 2013/01, 2013/06, 2013/08
 */
 
-:- use_module(library(apply)).
+:- use_module(generics(codes_ext)).
 :- use_module(library(readutil)).
 
 
@@ -56,7 +56,7 @@ atom_to_file(Atom, File):-
 
 copy_stream_line(From, To):-
   read_line_to_codes(From, Codes),
-  maplist(put_code(To), Codes),
+  put_codes(To, Codes),
   flush_output(To).
 
 %! file_to_atom(+File:file, -Atom:atom) is det.
@@ -83,8 +83,7 @@ read_terms(Stream, Terms, Options):-
   read_term(Stream, Term, Options),
   read_terms0(Stream, Term, Terms, Options).
 
-read_terms0(_Stream, end_of_file, [], _Options):-
-  !.
+read_terms0(_Stream, end_of_file, [], _Options):- !.
 read_terms0(Stream, Term, [Term | Terms], Options):-
   read_terms(Stream, Terms, Options).
 
@@ -143,8 +142,7 @@ peek_length(Stream, Length, Codes):-
   set_stream_position(Stream, OriginalPosition),
   call(Status).
 
-peek_length0(_Stream, 0, []):-
-  !.
+peek_length0(_Stream, 0, []):- !.
 peek_length0(Stream, Length, [Code | Codes]):-
   get_code(Stream, Code),
   NewLength is Length - 1,

@@ -22,9 +22,14 @@
                   % +List:list
     print_set/2, % +Out
                  % +List:list
-    print_set/3 % +Options:list(nvpair)
-                % +Out
-                % +List:list
+    print_set/3, % +Options:list(nvpair)
+                 % +Out
+                 % +List:list
+    print_tuple/2, % +Out
+                   % +List:list
+    print_tuple/3 % +Options:list(nvpair)
+                  % +Out
+                  % +List:list
   ]
 ).
 
@@ -40,7 +45,7 @@ proof(Conclusion, Premises)
 ~~~
 
 @author Wouter Beek
-@version 2013/01-2013/02, 2013/04-2013/05, 2013/07
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/08
 */
 
 :- use_module(generics(atom_ext)). % Meta-calls.
@@ -103,12 +108,12 @@ indent(Stream, Indent):-
   tab(Stream, NumberOfSpaces).
 
 %! print_collection(+Options:list(nvpair), +Collection:list) is det.
-% @param Options The following options are supported:
-%      1. `begin(+Begin:atom)`
-%      2. `end(+End:atom)`
-%      3. `separator(+Separator:atom)`
-%      4. `transformation(:Pred)`
-%         The binary predicate that is applied to the collection.
+% The following options are supported:
+%   1. =|begin(+Begin:atom)|=
+%   2. =|end(+End:atom)|=
+%   3. =|separator(+Separator:atom)|=
+%   4. =|transformation(:Pred)|=
+%   The binary predicate that is applied to the collection.
 
 print_collection(O, Collection1):-
   % E.g., list -> set.
@@ -176,33 +181,10 @@ print_set(O1, Out, List):-
   ),
   with_output_to(Out, print_collection(O2, List)).
 
+print_tuple(Out, List):-
+  print_tuple([], Out, List).
 
+print_tuple(O1, Out, List):-
+  merge_options(O1, [begin('<'),end('>'),separator(',')], O2),
+  with_output_to(Out, print_collection(O2, List)).
 
-% @tbd The predicates that appear below should be unified with some RDF module
-%      used for exporting triples and with some TMS module used for exporting
-%      justification chains.
-
-print_proposition(Stream, Options, rdf(S, P, O)):-
-  maplist(rdf_term_name(Options), [S, P, O], [S0, P0, O0]),
-  option(indent(Indent), Options, 0),
-  option(index(Index), Options, 'c'),
-  indent(Stream, Indent),
-  format(Stream, '[~w] ~w ~w ~w\n', [Index, S0, P0, O0]).
-
-print_proposition0(Stream, Options, Proposition):-
-  print_proposition(Stream, Options, Proposition), !.
-print_proposition0(Stream, Options, Proposition):-
-  option(indent(Indent), Options, 0),
-  option(index(Index), Options, c),
-  indent(Stream, Indent),
-  format(Stream, '[~w]:\t~w', [Index, Proposition]).
-
-print_proof(_Stream, _Options, []).
-print_proof(Stream, Options, [proof(Conclusion, Premises) | Proofs]):-
-  print_proposition0(Stream, Options, Conclusion),
-  select_option(indent(Indent), Options, Options0),
-  succ(Indent, NewIndent),
-  select_option(index(Index), Options0, Options1, 1),
-  succ(Index, NewIndex),
-  print_proof(Stream, [indent(NewIndent), index(1) | Options1], Premises),
-  print_proof(Stream, [indent(Indent), index(NewIndex) | Options1], Proofs).

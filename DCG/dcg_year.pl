@@ -72,7 +72,7 @@ is immaterial to me, since both should be formalized proper.)
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_century)).
 :- use_module(dcg(dcg_dict)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(library(dcg/basics)).
 
 

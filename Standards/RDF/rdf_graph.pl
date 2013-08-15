@@ -35,19 +35,10 @@
                       % -Predicates:ordset(uri)
     rdf_term/2, % ?Graph:atom
                 % ?RDF_Term:or([bnode,literal,uri])
-    rdf_term_name/2, % +RDF_Term:oneof([bnode,literal,uri])
-                     % -Name:atom
-    rdf_term_name/3, % +Options:list(nvpair)
-                     % +RDF_Term:oneof([bnode,literal,uri])
-                     % -Name:atom
     rdf_schema/2, % +Graph:atom
                   % -Triples:ordset(rdf_triple)
     rdf_subject/2, % ?Graph:atom
                    % ?Subject:oneof([bnode,uri])
-    rdf_triple_name/4, % +S:oneof([bnode,uri])
-                       % +P:uri
-                       % +O:oneof([bnode,literal,uri])
-                       % -T_Name:atom
     rdf_triples/2, % +In:oneof([atom,uri])
                    % -Triples:list(rdf_triple)
     rdf_triples_to_edges/2, % +Triples:list(rdf_triple)
@@ -480,9 +471,16 @@ rdf_name_(G, RDF_Name):-
   ).
 
 %! rdf_new_graph(+Graph1:atom, -Graph2:atom) is det.
+% Returns a graph name that is close to the given graph name,
+% and which it is guaranteed to not already exist.
+%
+% @param Graph1 The atomic name of the graph the user wants to use.
+% @param Graph2 An atomic name that is close to the name the user gave.
 
+% No RDF graph with the given name exists, so it is safe to use.
 rdf_new_graph(Graph, Graph):-
   \+ rdf_graph(Graph), !.
+% An RDF graph with the same name already exists, so the name is altered.
 rdf_new_graph(Graph1, Graph3):-
   split_atom_exclusive('_', Graph1, Splits),
   reverse(Splits, [LastSplit | RSplits]),
@@ -531,143 +529,6 @@ rdf_predicates(Graph, Predicates):-
     Predicates
   ).
 
-rdf_subject(G, S):-
-  nonvar_det(rdf_subject_(G, S)).
-rdf_subject_(G, S):-
-  rdf(S, _P, _O, G).
-
-%! rdf_term(?Graph:graph, ?Term:uri) is nondet.
-% Pairs of graphs and terms that occur in that graph.
-% A term is either a subject, predicate or object term
-% in an RDF triple.
-%
-% @param Graph The atomic name of a graph.
-% @param Term A resource.
-
-rdf_term(Graph, Term):-
-  rdf_node(Graph, Term).
-rdf_term(Graph, Term):-
-  rdf_predicate(Graph, Term).
-
-%! rdf_term_name(+RDF_Term:oneof([bnode,literal,uri]), -Name:atom) is det.
-% @see Wrapper around rdf_term_name/3 with empty settings.
-
-rdf_term_name(RDF_Term, Name):-
-  rdf_term_name([], RDF_Term, Name).
-
-%! rdf_term_name(
-%!   +Options:list(nvpair),
-%!   +RDF_Term:oneof([bnode,literal,uri]),
-%!   -Name:atom
-%!) is det.
-% Returns a display name for the given RDF term.
-%
-% The following options are supported:
-%   1. `language(+Language:atom)`
-%      The atomic language tag of the language that is preferred for
-%      use in the RDF term's name.
-%      The default value is `en`.
-%   2. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
-%      Whether or not literals are included in the name of the RDF term.
-%      The default value is `uri_only`.
-%
-% @param Options A list of name-value pairs.
-% @param RDF_Term An RDF term.
-% @param Name The atomic name of an RDF term.
-
-% This method also works for a list of RDF terms.
-% @tbd What's the use case for this?
-rdf_term_name(O, RDF_Terms, Name):-
-  is_list(RDF_Terms), !,
-  maplist(rdf_term_name(O), RDF_Terms, Names),
-  print_set([begin(''),end(''),separator('\n')], atom(Name), Names).
-% An RDF list.
-rdf_term_name(O, RDF_Term, Name):-
-  is_rdf_list(RDF_Term), !,
-  % Recursively retrieve the contents of the RDF list.
-  rdf_list(RDF_Term, RDF_Terms),
-  maplist(rdf_term_name(O), RDF_Terms, Names),
-  print_list(atom(Name), Names).
-% A literal with a datatype.
-rdf_term_name(O, literal(type(Datatype,LEX)), Name):- !,
-  % The datatype name.
-  rdf_term_name(O, Datatype, DatatypeName),
-  % The datatyped value.
-  (
-    % The datatype is recognized, so the datatyped value can be displayed
-    % as a SWI-Prolog native.
-    xsd_datatype(DatatypeName, Datatype)
-  ->
-    xsd_lexicalMap(Datatype, LEX, ValueName)
-  ;
-    ValueName = LEX
-  ),
-  % The combined name.
-  format(atom(Name), '"~w"^^~w', [DatatypeName,ValueName]).
-% A plain literal with a language tag.
-rdf_term_name(_O, literal(lang(Language,Literal)), Name):- !,
-  format(atom(Name), '"~w"@~w', [Literal,Language]).
-% A simple literal / a plain literal without a language tag.
-rdf_term_name(_O, literal(Literal), Name):- !,
-  format(atom(Name), '"~w"', [Literal]).
-% A blank node.
-% @tbd Make this less implementation-dependent, e.g. by mapping
-%      internal blank nodes to integers.
-rdf_term_name(_O, BNode, Name):-
-  rdf_is_bnode(BNode), !,
-  Name = BNode.
-% Now come the various URIs...
-% Only the URI is used. XML namespace prefixes are used when present.
-rdf_term_name(O, RDF_Term, Name):-
-  option(uri_desc(uri_only), O, uri_only), !,
-  rdf_term_uri(RDF_Term, Name).
-% If the RDF term has a label, then this is included in its name.
-% This is not the case for non-label literals.
-rdf_term_name(O, RDF_Term, Name):-
-  option(uri_desc(with_preferred_label), O, uri_only), !,
-  option(language(Lang), O, en),
-  rdfs_preferred_label(RDF_Term, Lang, Label),
-  print_list(O, atom(Name), [RDF_Term,Label]).
-% The RDF term is set to collate all literals that (directly) relate to it.
-rdf_term_name(O, RDF_Term, Name):-
-  option(uri_desc(with_literals), O, uri_only), !,
-  rdf_term_uri(RDF_Term, URI_Name),
-  
-  % Labels are treated specially: only the preferred label is included.
-  option(language(Lang), O, en), !,
-  rdfs_preferred_label(RDF_Term, Lang, Label),
-  
-  % Now come the related non-label literals.
-  findall(
-    LiteralName,
-    (
-      rdf_has(RDF_Term, P, Literal),
-      rdf_is_literal(Literal),
-      % Exclude labels.
-      \+ rdf_global_id(rdfs:type, P),
-      rdf_term_name(O, Literal, LiteralName)
-    ),
-    LiteralNames
-  ),
-  
-  print_set(
-    [begin(''),end(''),separator('\n')],
-    atom(Name),
-    [URI_Name,Label,LiteralNames]
-  ).
-% We're out of options here...
-rdf_term_name(_O, RDF_Term, Name):-
-  term_to_atom(RDF_Term, Name).
-
-% The URI has XML namespace prefixes. Take the one that stands for
-% the longest URI substring.
-rdf_term_uri(URI, Name):-
-  rdf_resource_to_namespace(URI, XML_NamespacePrefix, URI_LocalName), !,
-  atomic_list_concat([XML_NamespacePrefix,URI_LocalName], ':', Name).
-% The URI has no XML namespace prefix.
-rdf_term_uri(URI, Name):-
-  term_to_atom(URI, Name).
-
 rdf_schema(G, Ts):-
   setoff(
     V,
@@ -690,9 +551,23 @@ rdf_schema(G, Ts):-
     Ts
   ).
 
-rdf_triple_name(S, P, O, T_Name):-
-  maplist(rdf_term_name, [S,P,O], [S_Name,P_Name,O_Name]),
-  format(atom(T_Name), '<~w,~w,~w>', [S_Name,P_Name,O_Name]).
+rdf_subject(G, S):-
+  nonvar_det(rdf_subject_(G, S)).
+rdf_subject_(G, S):-
+  rdf(S, _P, _O, G).
+
+%! rdf_term(?Graph:graph, ?Term:uri) is nondet.
+% Pairs of graphs and terms that occur in that graph.
+% A term is either a subject, predicate or object term
+% in an RDF triple.
+%
+% @param Graph The atomic name of a graph.
+% @param Term A resource.
+
+rdf_term(Graph, Term):-
+  rdf_node(Graph, Term).
+rdf_term(Graph, Term):-
+  rdf_predicate(Graph, Term).
 
 %! rdf_triples(+In:oneof([atom,uri]) -Triples:list(rdf_triple)) is det.
 % Returns an unsorted list containing all the triples in a graph.

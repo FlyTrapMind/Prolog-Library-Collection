@@ -19,7 +19,7 @@
   ]
 ).
 
-/** <module> ASSOC MULTI
+/** <module> ASSOC_MULTI
 
 An association list with multiple values per keys, using ordered sets.
 
@@ -27,7 +27,7 @@ This extends library assoc by overloading get_assoc/3 and put_assoc/4,
 and by adding ord_member/2.
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/07
+@version 2013/04-2013/05, 2013/07-2013/08
 */
 
 :- reexport(library(assoc), except([get_assoc/3, put_assoc/4])).
@@ -35,8 +35,11 @@ and by adding ord_member/2.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
+:- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(rdf(rdf_graph)).
+
+:- meta_predicate(write_assoc(+,+,2,+)).
 
 :- dynamic(current_assoc(_Name, _Assoc)).
 
@@ -53,8 +56,7 @@ get_assoc(Key, Assoc, Value):-
 %! ord_member(?Member, ?List:list) is nondet.
 
 ord_member(Value, Ordset):-
-  nonvar(Value),
-  !,
+  nonvar(Value), !,
   ord_memberchk(Value, Ordset).
 ord_member(Value, Ordset):-
   member(Value, Ordset).
@@ -70,8 +72,7 @@ put_assoc(Key, AssocName, Value):-
 
 % Put the given value into the existing ordset.
 put_assoc(Key, OldAssoc, Value, NewAssoc):-
-  assoc:get_assoc(Key, OldAssoc, OldOrdset),
-  !,
+  assoc:get_assoc(Key, OldAssoc, OldOrdset), !,
   ord_add_element(OldOrdset, Value, NewOrdset),
   assoc:put_assoc(Key, OldAssoc, NewOrdset, NewAssoc),
   length(NewOrdset, NewOrdsetLength), %DEB
@@ -90,24 +91,23 @@ register_assoc(Name):-
   assert(current_assoc(Name, EmptyAssoc)).
 
 write_assoc(Assoc):-
-  write_assoc(user_output, 0, Assoc).
+  write_assoc(user_output, 0, term_to_atom, Assoc).
 
-write_assoc(Out, KeyIndent, Assoc):-
-  is_assoc(Assoc),
-  !,
+write_assoc(Out, KeyIndent, KeyTransform, Assoc):-
+  is_assoc(Assoc), !,
   assoc_to_keys(Assoc, Keys),
   ValueIndent is KeyIndent + 1,
   forall(
     member(Key, Keys),
     (
       indent(Out, KeyIndent),
-      rdf_term_name(Key, KeyName),
+      call(KeyTransform, Key, KeyName),
       format(Out, '~w:\n', [KeyName]),
       forall(
         get_assoc(Key, Assoc, Value),
         (
           indent(Out, ValueIndent),
-          rdf_term_name(Value, ValueName),
+          call(KeyTransform, Value, ValueName),
           format(Out, '~w\n', [ValueName])
         )
       )

@@ -56,7 +56,7 @@
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 
-:- initialization(load_modules_for_pldoc, after_load).
+%:- initialization(load_modules_for_pldoc, after_load).
 
 %! load_modules_for_pldoc is det.
 % Loads all modules in PGC for debugging purposes:
