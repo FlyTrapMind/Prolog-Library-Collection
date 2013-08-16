@@ -13,7 +13,7 @@
     indent//1, % +Indent:integer
     spaces//0,
     dcg_void//0,
-    dcg_word//1, % -Word:atom
+    dcg_word//1, % ?Word:atom
     dcg_word//2 % -Tree:compound
                 % ?Word:atom
   ]
@@ -184,7 +184,7 @@ spaces -->
 
 dcg_void --> [].
 
-%! dcg_word(-Word:atom)// is semidet.
+%! dcg_word(?Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.
 %
 % A word is defined as any sequence af alphanumeric characters
