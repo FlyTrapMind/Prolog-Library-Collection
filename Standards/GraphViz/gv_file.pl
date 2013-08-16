@@ -27,7 +27,6 @@
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
-:- use_module(generics(print_ext)).
 :- use_module(gv(gv_dcg)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).

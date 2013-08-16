@@ -41,7 +41,7 @@ reflect the serialization format:
   4. =rdf= for RDF/XML. Format name =xml=.
 
 @author Wouter Beek
-@version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06
+@version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06, 2013/08
 */
 
 :- use_module(generics(cowspeak)).
@@ -162,18 +162,17 @@ rdf_load2(Directory, Options):-
 % The format and graph are set.
 rdf_load2(File, Options):-
   access_file(File, read),
-  option(format(Format), Options),
-  option(graph(Graph), Options), !,
+  option(format(Format), Options), nonvar(Format),
+  option(graph(Graph), Options), nonvar(Graph), !,
   % Combine the given with the standard options.
-  merge_options([register_namespaces(true), silent(true)], Options, Options0),
+  merge_options([register_namespaces(true),silent(true)], Options, Options0),
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  gtrace,cowspeak(
+  cowspeak(
     [speech(false)],
-    'Graph ~w was loaded in ~w serialization from file ~w.'-[Graph, Format, File]
-  ),
-  true.
+    'Graph ~w was loaded from file ~w.'-[Graph,File]
+  ).
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
@@ -216,9 +215,9 @@ rdf_save2(Graph):-
   absolute_file_name(
     project(Graph),
     File,
-    [access(write), file_type(turtle)]
+    [access(write),file_type(turtle)]
   ),
-  rdf_save2(File, [format(turtle), graph(Graph)]).
+  rdf_save2(File, [format(turtle),graph(Graph)]).
 
 %! rdf_save2(-File, +Options:list) is det.
 % If the file name is not given, then a file name is construed.
@@ -257,7 +256,7 @@ rdf_save2(File, Options):-
   var(File),
   option(graph(Graph), Options), !,
   option(format(Format), Options, turtle),
-  absolute_file_name(project(Graph), File, [access(write), file_type(Format)]),
+  absolute_file_name(project(Graph), File, [access(write),file_type(Format)]),
   rdf_save2(File, Options).
 % Make up the format.
 rdf_save2(File, Options):-
@@ -279,9 +278,8 @@ rdf_save2(File, Options):-
   rdf_save2(File, Options, Format),
   cowspeak(
     [speech(false)],
-    'Graph ~w was saved in ~w serialization to file ~w.'-[Graph, Format, File]
-  ),
-  true.
+    'Graph ~w was saved in ~w serialization to file ~w.'-[Graph,Format,File]
+  ).
 
 %! rdf_save2(
 %!   +File:atom,

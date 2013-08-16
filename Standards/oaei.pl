@@ -106,9 +106,10 @@ Mismatch types:
     * Data semantic transformation
 
 @author Wouter Beek
-@version 2013/04-2013/05
+@version 2013/04-2013/05, 2013/08
 */
 
+:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(ordsets)).
@@ -140,7 +141,15 @@ Mismatch types:
 oaei_alignment(Graph, From, To):-
   oaei_graph(Graph),
   rdf(BNode, align:entity1, From, Graph),
-  rdf(BNode, align:entity2, To, Graph).
+  rdf(BNode, align:entity2, To, Graph),
+  once(
+    (
+      rdf_literal(BNode, align:relation, '=', Graph),
+      rdf_datatype(BNode, align:measure, float, 1.0, Graph)
+    ;
+      cowspeak('Non-standard alignment was read from graph ~w.'-[Graph])
+    )
+  ).
 
 %! oaei_check_alignment(
 %!   +ReferenceAlignments:list(pair),

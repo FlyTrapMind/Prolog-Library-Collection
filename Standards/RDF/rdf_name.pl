@@ -6,6 +6,11 @@
     rdf_term_name/3, % +Options:list(nvpair)
                      % +RDF_Term:oneof([bnode,literal,uri])
                      % -Name:atom
+    rdf_terms_name/2, % +RDF_Terms:list(or(bnode,literal,uri))
+                      % -Name:atom
+    rdf_terms_name/3, % +Options:list(nvpair)
+                      % +RDF_Terms:list(or(bnode,literal,uri))
+                      % -Name:atom
     rdf_triple_name/4 % +Subject:oneof([bnode,uri])
                       % +Predicate:uri
                       % +Object:oneof([bnode,literal,uri])
@@ -144,6 +149,24 @@ rdf_term_uri(URI, Name):-
 % The URI has no XML namespace prefix.
 rdf_term_uri(URI, Name):-
   term_to_atom(URI, Name).
+
+%! rdf_terms_name(+RDF_Terms:list(or(bnode,literal,iri)), -Name:atom) is det.
+% @see rdf_terms_name/3
+
+rdf_terms_name(RDF_Terms, Name):-
+  rdf_terms_name([], RDF_Terms, Name).
+
+%! rdf_terms_name(
+%!   +Options:list(nvpair),
+%!   +RDF_Terms:list(or(bnode,literal,iri)),
+%!   -Name:atom
+%! ) is det.
+% Retruns an atomic name for the given list of RDF terms.
+% List order and duplicates is retained.
+
+rdf_terms_name(Options, RDF_Terms, Name):-
+  maplist(rdf_term_name(Options), RDF_Terms, Names),
+  print_list(Options, atom(Name), Names).
 
 rdf_triple_name(S, P, O, T_Name):-
   maplist(rdf_term_name, [S,P,O], [S_Name,P_Name,O_Name]),
