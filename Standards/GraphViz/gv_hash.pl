@@ -2,9 +2,9 @@
   gv_hash,
   [
     clear_indexed_sha_hash/0,
-    indexed_sha_hash/2, % +Input:oneof([atom,list])
+    indexed_sha_hash/2, % +Input:or(atom,list(atom))
                         % -Hash:atom
-    sha_hash_atom/2 % +Input:oneof([atom,list])
+    sha_hash_atom/2 % +Input:or(atom,list(atom))
                     % -Hash:atom
   ]
 ).

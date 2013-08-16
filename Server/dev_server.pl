@@ -22,9 +22,10 @@ current logging stream.
 
 @author Wouter Beek
 @see http://semanticweb.cs.vu.nl/prasem/
-@version 2012/05, 2012/09-2012/12, 2013/02-2013/07
+@version 2012/05, 2012/09-2012/12, 2013/02-2013/08
 */
 
+:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(http(http)).
 :- use_module(library(http/html_head)).
@@ -32,6 +33,7 @@ current logging stream.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_error)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(lists)).
@@ -40,13 +42,25 @@ current logging stream.
 :- use_module(server(web_message)). % Module registration.
 :- use_module(sparql(sparql_web)).
 
-% This is used to push content for the console output and status pane.
-:- dynamic(content_queue(_Type, _DTD_Name, _StyleName, _DOM)).
-:- dynamic(history(_Type, _DataTime, _DTD_Name, _StyleName, _DOM)).
+%! content_queue(
+%!   ?Type:oneof([console_output,status_pane]),
+%!   ?DTD_Name:atom,
+%!   ?StyleName:atom,
+%!   ?DOM:list
+%! ) is nondet.
+% This is used to push content for the Web front-end.
 
-% By registering these modules, their Web predicates become accessible
-% from the Web console.
-:- register_module(web_message).
+:- dynamic(content_queue/4).
+
+%! history(
+%!   ?Type:oneof([console_output,status_pane]),
+%!   ?DateTime,
+%!   ?DTD_Name:atom,
+%!   ?StyleName:atom,
+%!   ?DOM:list
+%! ) is nondet.
+
+:- dynamic(history/5).
 
 :- db_add_novel(http:location(dev_server, root(dev_server), [])).
 
@@ -73,6 +87,10 @@ current logging stream.
 :- html_resource(js('console_output.js'), [requires(js('dev_server.js'))]).
 :- html_resource(js('status_pane.js'), [requires(js('dev_server.js'))]).
 
+% By registering these modules, their Web predicates become accessible
+% from the Web console.
+:- register_module(web_message).
+
 :- multifile(user:body//2).
 :- multifile(user:head//2).
 
@@ -80,11 +98,14 @@ current logging stream.
 
 % START SERVER %
 
-default_port(6666).
+default_port(5000).
 
+% A server is already running.
+% Notice that its port need not be the default port.
 start_dev_server:-
-  default_port(Port),
-  http_server_property(Port, start_time(_Time)), !.
+  http_server_property(Port, start_time(_Time)), !,
+  cowspeak('The server at port ~w is used as the debug server.'-[Port]).
+% No server is running yet, so start a server at the default port.
 start_dev_server:-
   default_port(Port),
   % Make sure Wallace is shut down whenever Prolog shuts down.
@@ -109,7 +130,6 @@ console_output(Request):-
   serve_nothing(Request).
 
 dev_server(Request):-
-gtrace,
   http_parameters(
     Request,
     [
@@ -133,12 +153,7 @@ gtrace,
   reply_html_page(dev_server, [], []).
 
 dev_server_uri(URI):-
-  default_port(Port),
-  http_open:parts_uri(
-    [host(localhost), path('/'), port(Port), scheme(http)],
-    %[host('semanticweb.cs.vu.nl'), path('/prasem/'), scheme(http)],
-    URI
-  ).
+  http_absolute_location(dev_server(.), URI, []).
 
 documentation(Request):-
   doc_browser,

@@ -99,7 +99,10 @@ console_input -->
         br([]),
         \command_input,
         \submit_button,
-        \html_requires(css('console_input.css'))])])]).
+        \html_requires(css('console_input.css'))
+      ])
+    ])
+  ]).
 
 %! deregister_module(+Module:atom) is det.
 % Deregisters the given module. This means that the =|_web|=-predicates

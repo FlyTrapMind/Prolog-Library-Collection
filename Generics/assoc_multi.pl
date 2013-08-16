@@ -2,20 +2,26 @@
   assoc_multi,
   [
     get_assoc/3, % ?Key
-                 % +Assoc
+                 % +Assoc:assoc
                  % ?Value
     put_assoc/3, % +Key
-                 % +AssocName:atom
+                 % +Name:atom
                  % +Value
     put_assoc/4, % +Key
-                 % +OldAssoc
+                 % +OldAssoc:assoc
                  % +Value
-                 % ?NewAssoc
-    register_assoc/1, % ?Assoc
-    write_assoc/1, % +Assoc
-    write_assoc/3 % +Out
+                 % ?NewAssoc:assoc
+% REGISTRATION
+    assoc_by_name/2, % ?Name:atom
+                     % ?Assoc:assoc
+    register_assoc/2, % ?Name:atom
+                      % ?Assoc:assoc
+% DEBUG
+    write_assoc/1, % +Assoc:assoc
+    write_assoc/4 % +Out
                   % +Indent:integer
-                  % +Assoc
+                  % :KeyTransform
+                  % +Assoc:or(assoc,atom)
   ]
 ).
 
@@ -27,13 +33,12 @@ This extends library assoc by overloading get_assoc/3 and put_assoc/4,
 and by adding ord_member/2.
 
 @author Wouter Beek
-@tbd All assoc functions should use pass by reference via
-     =|assoc_by_name(+Name,-Assoc)|=.
 @version 2013/04-2013/05, 2013/07-2013/08
 */
 
 :- reexport(library(assoc), except([get_assoc/3, put_assoc/4])).
 
+:- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
@@ -44,7 +49,6 @@ and by adding ord_member/2.
 :- meta_predicate(write_assoc(+,+,2,+)).
 
 :- dynamic(assoc_by_name(_Name, _Assoc)).
-:- dynamic(current_assoc(_Name, _Assoc)).
 
 :- nodebug(assoc_multi).
 
@@ -67,11 +71,13 @@ ord_member(Value, Ordset):-
 %! put_assoc(+Key, +AssocName:atom, +Value) is det.
 
 put_assoc(Key, AssocName, Value):-
-  retract(current_assoc(AssocName, OldAssoc)),
-  put_assoc(Key, OldAssoc, Value, NewAssoc),
-  assert(current_assoc(AssocName, NewAssoc)).
+  setup_call_cleanup(
+    retract(assoc_by_name(AssocName, OldAssoc)),
+    put_assoc(Key, OldAssoc, Value, NewAssoc),
+    assert(assoc_by_name(AssocName, NewAssoc))
+  ).
 
-%! put_assoc(+Key, +OldAssoc, +Value, ?NewAssoc) is semidet.
+%! put_assoc(+Key, +OldAssoc:assoc, +Value, ?NewAssoc:assoc) is semidet.
 
 % Put the given value into the existing ordset.
 put_assoc(Key, OldAssoc, Value, NewAssoc):-
@@ -89,9 +95,8 @@ put_assoc(Key, OldAssoc, Value, NewAssoc):-
   assoc:put_assoc(Key, OldAssoc, [Value], NewAssoc),
   debug(assoc_multi, 'Added <~w,~w> to NEW assoc.', [Key, Value]).
 
-register_assoc(Name):-
-  empty_assoc(EmptyAssoc),
-  assert(current_assoc(Name, EmptyAssoc)).
+register_assoc(Name, Assoc):-
+  db_add_novel(assoc_by_name(Name, Assoc)).
 
 write_assoc(Assoc):-
   write_assoc(user_output, 0, term_to_atom, Assoc).
@@ -116,7 +121,8 @@ write_assoc(Out, KeyIndent, KeyTransform, Assoc):-
       )
     )
   ).
-write_assoc(Out, Indent, AssocName):-
-  current_assoc(AssocName, Assoc),
-  write_assoc(Out, Indent, Assoc).
+write_assoc(Out, KeyIndent, KeyTransform, AssocName):-
+  atom(AssocName), !,
+  assoc_by_name(AssocName, Assoc),
+  write_assoc(Out, KeyIndent, KeyTransform, Assoc).
 

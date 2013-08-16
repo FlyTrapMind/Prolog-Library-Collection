@@ -26,10 +26,12 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(ugraph(ugraph_export)).
 
@@ -223,12 +225,27 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   % The list of GraphViz nodes.
   dcg_multi(gv_node_statement(NewI, G_Attrs2), _, NewV_Terms, []),
   newline,
-  
+
   % The ranked GraphViz nodes (displayed at the same height).
   dcg_multi(gv_ranked_node_collection(NewI, G_Attrs2), _, Ranked_V_Terms, []),
   newline,
 
-  % The list of GraphViz edges.
+  {
+    findall(
+      edge(From_Id,To_Id,[]),
+      (
+        nth0(Index1, Ranked_V_Terms, rank(vertex(From_Id,_,_),_)),
+        nth0(Index2, Ranked_V_Terms, rank(vertex(To_Id,_,_),_)),
+        % We assume that the rank vertices are nicely ordered.
+        succ(Index1, Index2)
+      ),
+      Rank_Edges
+    )
+  },
+
+  % The rank edges.
+  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, Rank_Edges, []),
+  % The non-rank edges.
   dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, NewE_Terms, []),
   % Note that we do not include a newline here.
 
