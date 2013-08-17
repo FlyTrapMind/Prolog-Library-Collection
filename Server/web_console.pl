@@ -281,33 +281,24 @@ request_web(
 submit_button -->
   html(button([name=submit, type=submit, value='Submit'], 'Submit')).
 
-%! web_console(+Command:atom, -DTD_Name:atom, -StyleName:atom, -DOM) is det.
-% This returns either the markup that results from the execution of =Command=,
-% or it returns the markup for an error messahe that occured.
-
-web_console(Command, DTD_Name, StyleName, DOM):-
-  % Catch errors and display their error messages in the Web browser.
-  catch_web(web_console0(Command), Markup),
-  markup_mold(Markup, DTD_Name, StyleName, DOM).
-
 % Lets see if we can figure out the predicate
 % indicated by the command issued via the Web console interface.
-web_console0(Command, Markup):-
+web_console(Command, Markup):-
   atom_to_term(Command, Compound, _Bindings),
-  Compound =.. [Predicate | Arguments_],
-  atom_concat(Predicate, '_web', Predicate0),
-  functor(Compound, Predicate, Arity),
+  Compound =.. [Predicate1|Arguments1],
+  atom_concat(Predicate1, '_web', Predicate2),
+  functor(Compound, Predicate1, Arity),
   WebArity is Arity + 1,
   (
     registered_module(Module),
-    current_predicate(Module:Predicate0/WebArity)
+    current_predicate(Module:Predicate2/WebArity)
   ->
     get_time(Time),
     % Assert to the beginning, so running a findall will automatically
     % retrieve the commands in the order in which they were given.
     asserta(history(Time, Command)),
-    append(Arguments_, [Markup], Arguments),
-    Call =.. [Predicate0 | Arguments],
+    append(Arguments1, [Markup], Arguments2),
+    Call =.. [Predicate2|Arguments2],
     (
       call(Module:Call)
     ->
@@ -318,7 +309,7 @@ web_console0(Command, Markup):-
   ;
     throw(
       error(
-        existence_error(predicate, Predicate),
+        existence_error(predicate, Predicate1),
         context(
           web_console:web_console/4,
           'Unrecognized predicate entered in Web console.'
@@ -326,4 +317,13 @@ web_console0(Command, Markup):-
       )
     )
   ).
+
+%! web_console(+Command:atom, -DTD_Name:atom, -StyleName:atom, -DOM) is det.
+% This returns either the markup that results from the execution of =Command=,
+% or it returns the markup for an error messahe that occured.
+
+web_console(Command, DTD_Name, StyleName, DOM):-
+  % Catch errors and display their error messages in the Web browser.
+  catch_web(web_console(Command), Markup),
+  markup_mold(Markup, DTD_Name, StyleName, DOM).
 

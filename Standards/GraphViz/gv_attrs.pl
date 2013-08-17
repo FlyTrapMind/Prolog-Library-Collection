@@ -133,7 +133,12 @@ gv_attr(
 ).
 
 gv_attr(Attrs, color, oneof(Colors), [edge,graph,node], black):-
-  gv_attribute_value(Attrs, colorscheme=Colorscheme),
+  (
+    option(colorscheme(Colorscheme), Attrs),
+    !
+  ;
+    gv_attribute_value(Attrs, colorscheme=Colorscheme)
+  ),
   colorscheme_colors(Colorscheme, Colors).
 
 colorscheme_colors(svg, Colors):-
