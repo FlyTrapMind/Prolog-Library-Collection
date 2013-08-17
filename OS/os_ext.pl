@@ -1,13 +1,12 @@
 :- module(
   os_ext,
   [
-    is_mac/0,
+    is_apple/0,
     is_unix/0,
     is_windows/0,
     mac_y_pixel/2, % +YPixel:number
                    % -MacYPixel:number
     os_dependent_call/1, % :Goal
-    set_os_flag/0,
     touch/1 % +File:atom
   ]
 ).
@@ -29,15 +28,11 @@ Operating System interactions.
 
 
 
-%! is_mac is semidet.
-% Succeeds if the running OS is Mac OS-X.
-%
-% This presupposes that set_os_flag/0 has been run, in order to create the
-% Prolog flag that is accessed here.
+%! is_apple is semidet.
+% Succeeds if the running OS is owned by Apple, i.e. Mac OS-X.
 
-is_mac:-
-  current_prolog_flag(arch, Architecture),
-  sub_string(Architecture, _, _, _, darwin).
+is_apple:-
+  current_prolog_flag(apple, true).
 
 %! is_unix is semidet.
 % Succeeds if the running OS is Unix.
@@ -87,23 +82,11 @@ os_dependent_call(Goal):-
 os_dependent_call(Goal):-
   debug(os_ext, 'The call ~w is not supported on your OS.', [Goal]).
 
-%! set_os_flag is det.
-% Distinguish between Unix and MacOSX.
-%
-% @author Inspired by Jochem Liem, who set this flag for the first time
-%         in the context of the DynaLearn project.
-% @see Since this is no [[current_prolog_flag/2]] for Mac OS-X yet.
-
-set_os_flag:-
-  is_mac, !,
-  create_prolog_flag(mac, true, [access(read_only), type(boolean)]).
-set_os_flag.
-
-%! supported_os(?OS_Name:atom) is nondet.
+%! supported_os(?OS_Name:oneof([apple,unix,windows])) is nondet.
 % The names of supported OS-es.
 % The name for Mac-OS is made up since it is not supported by SWI-Prolog.
 
-supported_os(mac).
+supported_os(apple).
 supported_os(unix).
 supported_os(windows).
 

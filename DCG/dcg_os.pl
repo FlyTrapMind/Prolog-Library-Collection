@@ -30,7 +30,7 @@ OS-specific DCG rules.
 newline(List, Rest):-
   os_dependent_call(newline(List, Rest)).
 
-:- if((is_mac ; is_unix)).
+:- if((is_apple ; is_unix)).
 newline_unix --> line_feed.
 :- endif.
 

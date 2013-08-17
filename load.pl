@@ -58,11 +58,11 @@ load_pgc:-
   assert(user:file_search_path(tms,          pgc('TMS'))),
   assert(user:file_search_path(vocabularies, pgc('Vocabularies'))),
     assert(user:file_search_path(skos,         vocabularies('SKOS'))),
-
-  % Allow OS-dependent calls.
-  use_module(os(os_ext)),
-  set_os_flag,
-
+  
+  % Check whether the PGC runs on the current SWI-Prolog version.
+  use_module(os(swipl_ext)),
+  check_prolog_version,
+  
   % Start logging.
   use_module(generics(logging)),
   start_log.
