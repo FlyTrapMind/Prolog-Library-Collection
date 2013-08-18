@@ -90,24 +90,17 @@ literals.
 
 rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
   xsd_datatype(DatatypeName, Datatype),
-  (
-    nonvar(Value)
-  ->
-    % Ideally, we would like to interpret all literals, not just the canonical ones.
-    % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
-    % Interpreting literals could be useful for search, i.e. does a specific value
-    % from the value space of the given datatype occur in the currently loaded RDF graph?
-    % For this one needs the inverse of the lexical map.
-    % In the absence of this inverse lexical map, we have to look for a lexical map
-    % of a datatype literal that matches value (this is not so bad as it seems,
-    % if subject, predicate, datatype, and graph are specified).
-    rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
-    xsd_lexicalMap(Datatype, LEX, Value)
-  ;
-    rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
-    % This may be nondet!
-    xsd_lexicalMap(Datatype, LEX, Value)
-  ).
+  % Ideally, we would like to interpret all literals, not just the canonical ones.
+  % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
+  % Interpreting literals could be useful for search, i.e. does a specific value
+  % from the value space of the given datatype occur in the currently loaded RDF graph?
+  % For this one needs the inverse of the lexical map.
+  % In the absence of this inverse lexical map, we have to look for a lexical map
+  % of a datatype literal that matches value (this is not so bad as it seems,
+  % if subject, predicate, datatype, and graph are specified).
+  rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
+  % This may be nondet!
+  xsd_lexicalMap(Datatype, LEX, Value).
 
 %! rdf_has_datatype(
 %!   ?Subject:oneof([bnode,uri]),

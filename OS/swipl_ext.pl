@@ -22,6 +22,7 @@ Predicates that are specific to the operation of SWI-Prolog.
 :- use_module(dcg(dcg_multi)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(ansi_term)).
 
 
 
@@ -100,7 +101,7 @@ major_minor_patch_to_integer(Major1, Minor1, Patch1, Version):-
 %! minimum_prolog_version(
 %!   ?Major:nonneg,
 %!   ?Minor:nonneg,
-%!   ?Patch:nonneg,
+%!   ?Patch:nonneg
 %! ) is nondet.
 % The minimum SWI-Prolog version that is needed for the features the
 % PGC project uses.
@@ -129,10 +130,10 @@ minimum_prolog_version(6, 5, 2).
 
 prolog:message(outdated_version(Component, Current, Minimum)) -->
   [
-    ansi([fg(red), intensity(normal)], 'Your version of ', []),
-    ansi([bold, fg(red)], '~w', [Component]),
+    ansi([fg(red),intensity(normal)], 'Your version of ', []),
+    ansi([bold,fg(red)], '~w', [Component]),
     ansi(
-      [fg(red), intensity(normal)],
+      [fg(red),intensity(normal)],
       ' is outdated. You are using version ',
       []
     )
@@ -140,7 +141,7 @@ prolog:message(outdated_version(Component, Current, Minimum)) -->
   prolog:message(version(Current)),
   [
     ansi(
-      [fg(red), intensity(normal)],
+      [fg(red),intensity(normal)],
       ' whereas the minimum required version is ',
       []
     )
@@ -152,7 +153,7 @@ prolog:message(version(Version)) -->
     Minor is (Version rem 10000) // 100,
     Patch is Version rem 100
   },
-  ['~w.~w.~w'-[Major, Minor, Patch]].
+  ['~w.~w.~w'-[Major,Minor,Patch]].
 
 %! prolog_version(-Version:nonneg)//
 % Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.

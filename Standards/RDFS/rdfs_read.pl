@@ -128,10 +128,10 @@ rdfs_individual(X, Y, G):-
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(math(math_ext)).
-:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf(rdf_term)).
 
 % ALTS
 :- rdf_meta(rdfs_alt(r,?)).

@@ -8,8 +8,12 @@
     rdf_convert/3, % +FromFile:atom
                    % +ToFormat:atom
                    % +ToFile:atom
+    rdf_graph_source_file/2, % ?Graph:atom
+                             % ?File:atom
     rdf_guess_data_format/2, % +Stream:stream
                              % ?Format:atom
+    rdf_new_graph/2, % +Graph1:atom
+                     % -Graph2:atom
     rdf_serialization/3, % ?Extension:oneof([nt,triples,ttl,rdf])
                          % ?Format:oneof([ntriples,tripels,turtle,rdf_xml])
                          % ?URI:uri
@@ -44,6 +48,7 @@ reflect the serialization format:
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06, 2013/08
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
@@ -52,6 +57,7 @@ reflect the serialization format:
 :- use_module(library(semweb/rdf_ntriples)).
 :- use_module(library(semweb/rdf_turtle)).
 :- use_module(library(semweb/rdf_turtle_write)).
+:- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_graph)).
@@ -94,6 +100,18 @@ rdf_convert(FromFile, ToFormat, ToFile):-
   rdf_load2(FromFile, [graph(TempGraph)]),
   rdf_save2(ToFile, [format(ToFormat), graph(TempGraph)]),
   rdf_unload_graph(TempGraph).
+
+%! rdf_graph_source_file(?Graph:atom, ?File:atom) is semidet.
+% Returns the name of the file from which the graph with the given name
+% was loaded.
+
+rdf_graph_source_file(Graph, File2):-
+  rdf_graph_property(Graph, source(Source)),
+  uri_components(
+    Source,
+    uri_components(file, _Authority, File1, _Search, _Fragments)
+  ),
+  sub_atom(File1, 1, _Length, 0, File2).
 
 %! rdf_guess_data_format(
 %!   +In:or(atom,stream),
@@ -191,6 +209,32 @@ rdf_load2(File, Options):-
   rdf_guess_data_format(File, Format),
   merge_options([format(Format)], Options, Options0),
   rdf_load2(File, Options0).
+
+%! rdf_new_graph(+Graph1:atom, -Graph2:atom) is det.
+% Returns a graph name that is close to the given graph name,
+% and which it is guaranteed to not already exist.
+%
+% @param Graph1 The atomic name of the graph the user wants to use.
+% @param Graph2 An atomic name that is close to the name the user gave.
+
+% No RDF graph with the given name exists, so it is safe to use.
+rdf_new_graph(Graph, Graph):-
+  \+ rdf_graph(Graph), !.
+% An RDF graph with the same name already exists, so the name is altered.
+rdf_new_graph(Graph1, Graph3):-
+  split_atom_exclusive('_', Graph1, Splits),
+  reverse(Splits, [LastSplit | RSplits]),
+  (
+    atom_number(LastSplit, OldNumber)
+  ->
+    NewNumber is OldNumber + 1,
+    atom_number(NewLastSplit, NewNumber),
+    reverse([NewLastSplit | RSplits], NewSplits)
+  ;
+    reverse(['1', LastSplit | RSplits], NewSplits)
+  ),
+  atomic_list_concat(NewSplits, '_', Graph2),
+  rdf_new_graph(Graph2, Graph3).
 
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.

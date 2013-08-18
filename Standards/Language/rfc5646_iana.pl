@@ -75,13 +75,13 @@ rfc5646_init:-
     File,
     [access(read), file_type(rdf)]
   ), !,
-  once((
+  (
     % The RDF graph is already loaded.
-    rdf_graph_source_file(_Graph, File)
+    rdf_graph_source_file(_Graph, File), !
   ;
     % The RDF graph is availalbe in serialized format but not loaded.
     rdf_load2(File, [graph(rfc5646)])
-  )).
+  ).
 % The RDF graph is not available, create it from the text file.
 rfc5646_init:-
   absolute_file_name(

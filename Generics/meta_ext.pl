@@ -263,10 +263,8 @@ call_semidet(Goal):-
 
 nonvar_det(Mod:Goal):-
   Goal =.. [P | Args],
-  maplist(nonvar, Args),
-  !,
-  apply(Mod:P, Args),
-  !.
+  maplist(nonvar, Args), !,
+  apply(Mod:P, Args), !.
 nonvar_det(Goal):-
   call(Goal).
 

@@ -15,8 +15,8 @@
 :- use_module(library(http/http_path)).
 :- assert(http:location(pldoc, root(help), [priority(10)])).
 
-%:- use_module(library(pldoc)).
-%:- doc_server(2222, [edit(true)]).
+:- use_module(library(pldoc)).
+:- doc_server(2222, [edit(true)]).
 
 % This library allows for exploiting the color and attribute facilities
 % of most modern terminals using ANSI escape sequences.
@@ -48,8 +48,8 @@
 % @tbd The PCE-based debug monitor in swipl is not the most versatile
 %      debug tool in existence. I would like to write a Web-based version
 %      at some point.
-:- use_module(library(swi_ide)).
-:- prolog_ide(debug_monitor).
+%:- use_module(library(swi_ide)).
+%:- prolog_ide(debug_monitor).
 
 :- [load].
 
