@@ -109,7 +109,7 @@ using the following triples:
 % PROPERTY HIERARCHY
 :- rdf_meta(rdfs_assert_subproperty(r,r,+)).
 
-:- initialization(load_rdfs_schema).
+%:- initialization(load_rdfs_schema).
 
 
 

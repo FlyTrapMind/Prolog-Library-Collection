@@ -11,10 +11,12 @@
     rdf_terms_name/3, % +Options:list(nvpair)
                       % +RDF_Terms:list(or(bnode,literal,uri))
                       % -Name:atom
+    rdf_triple_name/2, % +Triple:triple(oneof([bnode,uri]),uri,oneof([bnode,literal,uri]))
+                       % -TripleName:atom
     rdf_triple_name/4 % +Subject:oneof([bnode,uri])
                       % +Predicate:uri
                       % +Object:oneof([bnode,literal,uri])
-                      % -Term_Name:atom
+                      % -TripleName:atom
   ]
 ).
 
@@ -167,6 +169,10 @@ rdf_terms_name(RDF_Terms, Name):-
 rdf_terms_name(Options, RDF_Terms, Name):-
   maplist(rdf_term_name(Options), RDF_Terms, Names),
   print_list(Options, atom(Name), Names).
+
+rdf_triple_name(S-P-O, T_Name):- !,
+  rdf_triple_name(S, P, O, T_Name).
+rdf_triple_name(T_Name, T_Name).
 
 rdf_triple_name(S, P, O, T_Name):-
   maplist(rdf_term_name, [S,P,O], [S_Name,P_Name,O_Name]),

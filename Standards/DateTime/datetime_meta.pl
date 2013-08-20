@@ -18,7 +18,7 @@ Meta-data on the standards that define date-time formats.
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 :- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-:- initialization(init_lang_ext).
+%:- initialization(init_lang_ext).
 
 
 

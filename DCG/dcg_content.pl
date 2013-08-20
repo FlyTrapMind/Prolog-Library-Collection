@@ -23,6 +23,7 @@
   library(dcg/basics),
   [
     alpha_to_lower//1,
+    atom//1, % +Atom:atom
     blank//0,
     blanks//0,
     blanks_to_nl//0,

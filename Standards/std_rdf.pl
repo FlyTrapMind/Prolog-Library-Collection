@@ -18,7 +18,7 @@ Standards metadata.
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 :- xml_register_namespace(w3c, 'http://www.w3.org/').
 
-:- initialization(init_standards).
+%:- initialization(init_standards).
 
 
 

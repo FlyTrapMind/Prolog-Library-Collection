@@ -58,7 +58,6 @@
 :- reexport(
   library(dcg/basics),
   [
-    atom//1, % +Atom:atom
     string//1, % -Codes:list(code)
     string_without//2 % +End:list(code)
                       % -Codes:list(code)

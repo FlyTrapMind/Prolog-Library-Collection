@@ -232,3 +232,4 @@ repetition_(N, N, N):-
 repetition_(Min1-Max1, Min2, Max2):-
   default(Min1, 0, Min2),
   default(Max1, inf, Max2).
+

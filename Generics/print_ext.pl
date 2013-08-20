@@ -15,6 +15,11 @@
                     % +NVPair
     print_collection/2, % +Options:list(nvpair)
                         % +Collection:list
+    print_proof/2, % ?Out
+                   % +Proof:tree
+    print_proof/3, % :Options:list(nvpair)
+                   % ?Out
+                   % +Proof:tree
     print_list/2, % +Out
                   % +List:list
     print_list/3, % +Options:list(nvpair)
@@ -48,14 +53,17 @@ proof(Conclusion, Premises)
 @version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/08
 */
 
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_os)).
 :- use_module(generics(atom_ext)). % Meta-calls.
+:- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(graph_theory(graph_generic)).
-:- use_module(library(apply)).
-:- use_module(library(memfile)).
+:- use_module(generics(option_ext)).
+:- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(rdf(rdf_export)).
-:- use_module(rdf(rdf_graph)).
+
+:- meta_predicate(print_proof(:,?,+)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -107,22 +115,25 @@ indent(Stream, Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(Stream, NumberOfSpaces).
 
+is_meta(transformation).
+
 %! print_collection(+Options:list(nvpair), +Collection:list) is det.
 % The following options are supported:
 %   1. =|begin(+Begin:atom)|=
 %   2. =|end(+End:atom)|=
 %   3. =|separator(+Separator:atom)|=
 %   4. =|transformation(:Pred)|=
-%   The binary predicate that is applied to the collection.
+%      The binary predicate that is applied to the collection.
 
-print_collection(O, Collection1):-
+print_collection(O1, Collection1):-
+  meta_options(is_meta, O1, O2),
   % E.g., list -> set.
-  option(transformation(P), O, =),
+  option(transformation(P), O2, =),
   once(call(P, Collection1, Collection2)),
   % Open a set.
-  option(begin(Begin), O),
+  option(begin(Begin), O2),
   write(Begin),
-  print_collection_(O, Collection2).
+  print_collection_(O2, Collection2).
 
 % Done!
 print_collection_(O, []):- !,
@@ -164,6 +175,40 @@ print_list(Out, List):-
 print_list(O1, Out, List):-
   merge_options(O1, [begin('['),end(']'),separator(',')], O2),
   with_output_to(Out, print_collection(O2, List)).
+
+print_proof(Out, Proof):-
+  print_proof([], Out, Proof).
+
+print_proof(O1, Out, Proof):-
+  meta_options(is_meta, O1, O2),
+  default_option(O2, indent, 0, O3),
+  once(phrase(print_proof(O3, Proof), Codes)),
+  put_codes(Out, Codes).
+
+print_proof(O1, Proof) -->
+  {Proof =.. [Rule,Premises,Conclusion]},
+  
+  % Indentation.
+  {update_option(O1, indent, succ, I, O2)},
+  indent(I),
+  
+  % The name of the rule that was used for deduction.
+  "[", atom(Rule), "]",
+  
+  % Separator between rule name and conclusion.
+  " ",
+  
+  % The conclusion.
+  print_proposition(O1, Conclusion),
+  newline,
+
+  % Print premises / subproofs.
+  dcg_multi(print_proof(O2), _, Premises, []).
+
+print_proposition(O1, Proposition) -->
+  {option(transformation(Predicate), O1, identity)},
+  {call(Predicate, Proposition, Atom)},
+  atom(Atom).
 
 print_set(Out, List):-
   print_set([], Out, List).
