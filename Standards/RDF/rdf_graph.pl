@@ -21,6 +21,10 @@
                   % -Triples:ordset(compound)
     rdf_subgraph/2, % +Graph1:atom
                     % +Graph2:atom
+    rdf_triple/4, % ?Subject:or([bnode,iri])
+                  % ?Predicate:iri
+                  % ?Object:or([bnode,literal,iri])
+                  % ?Triple:triple
     rdf_triples/2 % +In:oneof([atom,uri])
                   % -Triples:list(compound)
   ]
@@ -33,33 +37,25 @@ Predicates that apply to entire RDF graphs.
 @author Wouter Beek
 @see Graph theory support for RDF is found in module rdf_graph_theory.pl.
 @see For conversions from/to serialization formats, see module rdf_serial.pl.
+@tbd How to do backward chaining in query/[3,4]?
 @version 2012/01-2013/05, 2013/07-2013/08
 */
 
-:- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(graph_theory(graph_export)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
-:- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(library(uri)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_list)).
-:- use_module(rdf(rdf_namespace)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
-:- use_module(rdf_graph(rdf_graph_theory)).
-:- use_module(rdfs(rdfs_read)).
-:- use_module(xsd(xsd)).
 
+:- rdf_meta(rdf_triple(r,r,r,?)).
 :- rdf_meta(rdf_triples(r,-)).
 
 
@@ -247,6 +243,12 @@ rdf_schema(G, RDFS_Classes, RDF_Properties, Triples):-
 rdf_subgraph(G, H):-
   rdf_graph(G), rdf_graph(H), !,
   \+ (rdf(S, P, O, G), \+ rdf(S, P, O, H)).
+
+rdf_triple(S1, P1, O1, Triple):-
+  var(Triple), !,
+  maplist(rdf_global_id, [S1,P1,O1], [S2,P2,O2]),
+  Triple = S2-P2-O2.
+rdf_triple(S, P, O, S-P-O).
 
 %! rdf_triples(+In:oneof([atom,uri]) -Triples:list(rdf_triple)) is det.
 % Returns an unsorted list containing all the triples in a graph.

@@ -12,7 +12,7 @@ Support for ISO 31.
 :- use_module(rdf(rdf_build)).
 :- use_module(standards(std_meta)).
 
-:- initialization(init_iso31).
+%:- initialization(init_iso31).
 
 
 

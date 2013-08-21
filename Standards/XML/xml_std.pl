@@ -21,7 +21,7 @@ Standards support for XML.
 % XML Scheme namespace for instances.
 :- xml_register_namespace(xsi, 'http://www.w3.org/2001/XMLSchema-instance#').
 
-:- initialization(init_xml_std).
+%:- initialization(init_xml_std).
 
 
 

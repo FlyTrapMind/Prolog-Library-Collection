@@ -83,7 +83,7 @@ in more detail.
 
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
 
-:- initialization(init_uri_std).
+%:- initialization(init_uri_std).
 
 
 

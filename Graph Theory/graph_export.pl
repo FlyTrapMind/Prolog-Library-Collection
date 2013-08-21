@@ -131,14 +131,14 @@ shared_attribute([T1|Ts], N=V):-
   T1 =.. L1,
   last(L1, Attrs1),
   member(Attr1, Attrs1),
-  option_dep(Attr1, N=V),
+  option_deprecated(Attr1, N=V),
   forall(
     member(T2, Ts),
     (
       T2 =.. L2,
       last(L2, Attrs2),
       member(Attr2, Attrs2),
-      option_dep(Attr2, N=V)
+      option_deprecated(Attr2, N=V)
     )
   ).
 
