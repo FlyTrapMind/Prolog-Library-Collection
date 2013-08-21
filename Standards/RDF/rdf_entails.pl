@@ -66,19 +66,17 @@ rdf_entails(S, P, O, G, Proof):-
 % @param MaxD An integer indicating the maximum depth at which predicates
 %        are searched to fit into the proof.
 % @param D An integer indicating the highest depth at which predicates were
-%        search for the proof.
+%        searched for the proof.
 % @param Proof A compound term of the form =|proof(Conclusion, Predicates)|=
 %        representing a proof.
 
 rdf_entails(S, P, O, G, MaxD, D, Proof):-
   (
-    MaxD == infinite,
-    !
+    MaxD == infinite, !
   ;
     must_be(positive_integer, MaxD)
   ),
-  var(D),
-  !,
+  var(D), !,
   rdf_entails0(S, P, O, G, MaxD, 0, D, Proof).
 
 %! rdf_entails0(S, P, O, G, MaxD, MaxD, _D, _Proof) is nondet.
@@ -97,8 +95,7 @@ rdf_entails(S, P, O, G, MaxD, D, Proof):-
 %        representing a proof.
 
 % The maximum depth has been reached.
-rdf_entails0(_S, _P, _O, _G, MaxD, MaxD, _D, _Proof):-
-  !,
+rdf_entails0(_S, _P, _O, _G, MaxD, MaxD, _D, _Proof):- !,
   fail.
 % Basic relation.
 rdf_entails0(S, P, O, G, _MaxD, D, D, proof(rdf(S, P, O), [])):-

@@ -24,6 +24,8 @@ Q: Why does rdf_meta/1 argument 'r' not expand datatype uriRefs?
 @version 2013/05
 */
 
+:- use_module(generics(meta_ext)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(logic(model_theory)).
 :- use_module(rdf(rdf_read)).
@@ -39,12 +41,28 @@ rdf_rdf(S, P, O):-
 % If a resource appears as a predicate term in some triple, then it
 % is an instance of class RDF-Property.
 rdf_rdf(S, rdf:type, rdf:'Property', Gs):-
-  (nonvar(S) -> once(rdf_rdf0(_, S, _, Gs))
-  ; setoff(S0, rdf_rdf0(_, S0, _, Gs), S0s), member(S, S0s)).
+  (
+    nonvar(S)
+  ->
+    once(rdf_rdf0(_, S, _, Gs))
+  ;
+    setoff(S0, rdf_rdf0(_, S0, _, Gs), S0s),
+    member(S, S0s)
+  ).
 rdf_rdf(RDF_V, rdf:type, rdf:'Property', _Gs):-
-  rdf_member(RDF_V,
-    [rdf:first,rdf:nil,rdf:object,rdf:predicate,rdf:rest,rdf:subject,rdf:type,
-     rdf:value]).
+  rdf_member(
+    RDF_V,
+    [
+      rdf:first,
+      rdf:nil,
+      rdf:object,
+      rdf:predicate,
+      rdf:rest,
+      rdf:subject,
+      rdf:type,
+      rdf:value
+    ]
+  ).
 rdf_rdf(RDF_LI, rdf:type, rdf:'Property', _Gs):-
   between(1, 3, I),
   format(atom(J), '_~w', [I]),
@@ -53,18 +71,31 @@ rdf_rdf(rdf:nil, rdf:type, rdf:'List', _Gs).
 % If a literal is of a well-typed XML literal string, then it is an
 % instance of class RDF-XML-Literal.
 rdf_rdf(Lit, rdf:type, rdf:'XMLLiteral', Gs):-
-  (nonvar(Lit) -> once(rdf_rdf0(_, _, literal(type(rdf:'XMLLiteral', Lit)), Gs))
-  ; setoff(Lit0, rdf_rdf0(_, _, literal(type(rdf:'XMLLiteral', Lit0)), Gs), Lit0s),
-    member(Lit, Lit0s)).
+  (
+    nonvar(Lit)
+  ->
+    once(rdf_rdf0(_, _, literal(type(rdf:'XMLLiteral', Lit)), Gs))
+  ;
+    setoff(
+      Lit0,
+      rdf_rdf0(_, _, literal(type(rdf:'XMLLiteral', Lit0)), Gs),
+      Lit0s
+    ),
+    member(Lit, Lit0s)
+  ).
 % 'Simple' triples.
 rdf_rdf(S, P, O, Gs):-
   rdf_rdf0(S, P, O, Gs),
   % Predicate terms must be instances of class RDF-Property.
   rdf_rdf(P, rdf:type, rdf:'Property', Gs),
   % Type XML literal strings must be instances of class RDF-XML-Literal.
-  (O = literal(type(rdf:'XMLLiteral', Lit))
-  -> rdf_rdf(Lit, rdf:type, rdf:'XMLLiteral', Gs)
-  ; true).
+  (
+    O = literal(type(rdf:'XMLLiteral', Lit))
+  ->
+    rdf_rdf(Lit, rdf:type, rdf:'XMLLiteral', Gs)
+  ;
+    true
+  ).
 
 % Allow the graph list argument to be completely neglected.
 rdf_rdf0(S, P, O, Gs):-
