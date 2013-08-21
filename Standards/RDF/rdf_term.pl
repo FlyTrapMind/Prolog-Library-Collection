@@ -1,16 +1,22 @@
 :- module(
   rdf_term,
   [
-    rdf_bnode/2, % ?Graph:graph
+    rdf_bnode/2, % ?Graph:atom
                  % ?BNode:bnode
+    rdf_iri/2, % ?Graph:atom
+               % ?IRI:iri
+    rdf_is_iri/1, % +Resource
     rdf_literal_equality/2, % +Literal1:literal
                             % +Literal2:literal
     rdf_name/2, % ?Graph:atom
                 % +RDF_Name:oneof([literal,uri])
     rdf_node/2, % ?Graph:atom
                 % ?Node:or([bnode,uri,literal])
-    rdf_object/2, % ?Graph:graph
+    rdf_object/2, % ?Graph:atom
                   % ?Objects:oneof([bnode,literal,uri])
+    rdf_plain_literal/1, % ?PlainLiteral:compound
+    rdf_plain_literal/2, % ?Graph:atom
+                         % ?PlainLiteral:compound
     rdf_po_pairs/2, % +Resource:uri
                     % -PredicateObjectPairs:list(pair)
     rdf_predicate/2, % ?Graph:atom
@@ -27,10 +33,16 @@
                              % -SharedPredicateTuples:ordset(list)
                              % -X_P_Pairs2:ordset(list)
                              % -Y_P_Pairs2:ordset(list)
+    rdf_simple_literal/1, % ?SimpleLiteral:compound
+    rdf_simple_literal/2, % ?Graph:atom
+                          % ?SimpleLiteral:compound
     rdf_subject/2, % ?Graph:atom
                    % ?Subject:oneof([bnode,uri])
     rdf_term/2, % ?Graph:atom
                 % ?RDF_Term:or([bnode,literal,uri])
+    rdf_typed_literal/1, % ?TypedLiteral:compound
+    rdf_typed_literal/2, % ?Graph:atom
+                         % ?TypedLiteral:compound
     rdf_vocabulary/2 % +Graph:atom
                      % -Vocabulary:ordset(oneof([literal,uri]))
   ]
@@ -55,6 +67,8 @@
 :- rdf_meta(rdf_po_pairs(r,-)).
 :- rdf_meta(rdf_predicate(?,r)).
 :- rdf_meta(rdf_subject(?,r)).
+:- rdf_meta(rdf_typed_literal(r)).
+:- rdf_meta(rdf_typed_literal(?,r)).
 
 
 
@@ -65,6 +79,28 @@ rdf_bnode(Graph, BNode):-
     rdf_object(Graph, BNode)
   ),
   rdf_is_bnode(BNode).
+
+rdf_iri(G, IRI):-
+  rdf_term(G, IRI),
+  % Exclude blank nodes and literals.
+  rdf_is_iri(IRI).
+
+%! rdf_is_iri(+IRI) is semidet.
+% The predicate rdf_is_resource/1 in SWI-Prolog's Semweb library is
+% quite misleading. A first mistake one might make is thinking that
+% the predicate applies to semantic objects (since a resource is
+% a semantic object according to RDFS Semantics).
+% However, the predicate applies to syntactic constructs instead.
+%
+% A second mistake one is likely to make, is to assume that
+% rdf_is_resource/1 will succeed for precisely those syntactic constructs
+% that have a resource as their meaning.
+% But this is not the case either, since typed literals are mapped onto
+% resources, but rdf_is_resource/1 fails for them.
+
+rdf_is_iri(IRI):-
+  rdf_is_resource(IRI),
+  \+ rdf_is_bnode(IRI).
 
 %! rdf_literal_equality(+Literal1:literal, +Literal2:literal) is semidet.
 % Succeeds if the given literals are equivalent.
@@ -131,6 +167,26 @@ rdf_object(G, O):-
   nonvar_det(rdf_object0(G, O)).
 rdf_object0(G, O):-
   rdf(_, _, O, G).
+
+%! rdf_plain_literal(?PlainLiteral:compound) is nondet.
+% @see rdf_plain_literal/2
+
+rdf_plain_literal(PlainLit):-
+  rdf_plain_literal(_G, PlainLit).
+
+%! rdf_plain_literal(?Graph:atom, ?PlainLiteral:compound) is nondet.
+
+rdf_plain_literal(G, Lit):-
+  % rdf/[3,4] throws an exception for numeric input.
+  \+ number(Lit),
+  rdf(_, _, Lit, G),
+  Lit = literal(lang(Lang,_)),
+  % It is apparently a feature of rdf/[3,4] to match
+  % =|literal(lang(Language,Literal))|= against =|literal(Literal)|=,
+  % so we need to check for the language tag being instantiated.
+  nonvar(Lang).
+rdf_plain_literal(G, Lit):-
+  rdf_simple_literal(G, Lit).
 
 rdf_po_pairs(Resource, PO_Pairs):-
   is_uri(Resource), !,
@@ -201,6 +257,23 @@ rdf_shared_p_triples(
   ord_subtract(X_PO_Pairs, Shared_P_Triples, X_Exclusive_P_Pairs),
   ord_subtract(Y_PO_Pairs, Shared_P_Triples, Y_Exclusive_P_Pairs).
 
+%! rdf_simple_literal(?SimpleLiteral:atom) is nondet.
+% @see rdf_simple_literal/2
+
+rdf_simple_literal(Lit):-
+  rdf_simple_literal(_, Lit).
+
+%! rdf_simple_literal(?Graph:atom, ?SimpleLiteral:atom) is nondet.
+
+rdf_simple_literal(G, Lit):-
+  % rdf/[3,4] throws an exception for numeric input.
+  \+ number(Lit),
+  rdf(_, _, Lit, G),
+  Lit = literal(Lex),
+  % Exclude cases in which `Lex` is a compound term,
+  % i.e., either `lang(Lang,Lexical)` or `type(Type,Lexical)`.
+  atomic(Lex).
+
 rdf_subject(G, S):-
   nonvar_det(rdf_subject_(G, S)).
 rdf_subject_(G, S):-
@@ -218,6 +291,19 @@ rdf_term(Graph, Term):-
   rdf_node(Graph, Term).
 rdf_term(Graph, Term):-
   rdf_predicate(Graph, Term).
+
+%! rdf_typed_literal(?TypedLiteral:compound) is nondet.
+% @see rdf_typed_literal/2
+
+rdf_typed_literal(Lit):-
+  rdf_typed_literal(_, Lit).
+
+%! rdf_typed_literal(?Graph:atom, TypedLiteral:compound) is nondet.
+
+rdf_typed_literal(G, Lit1):-
+  rdf_global_object(Lit1, Lit2),
+  rdf(_, _, Lit2, G),
+  Lit2 = literal(type(_,_)).
 
 %! rdf_vocabulary(+Graph:atom, -Vocabulary:ordset([literal,iri])) is det.
 % Returns the vocabulary of the given graph.

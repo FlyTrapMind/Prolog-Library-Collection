@@ -13,6 +13,8 @@
                                  % -BNodeMap:list(pair(bnode,or([iri,literal])))
     rdf_graph_merge/2, % +In:list(atom)
                        % +MergedGraph:atom
+    rdf_graph_to_triples/2, % +Graph:atom
+                            % -Triples:list(compound)
     rdf_ground/1, % +Graph:atom
     rdf_ground/1, % +Triple:compound
     rdf_schema/4, % +Graph:atom
@@ -21,12 +23,10 @@
                   % -Triples:ordset(compound)
     rdf_subgraph/2, % +Graph1:atom
                     % +Graph2:atom
-    rdf_triple/4, % ?Subject:or([bnode,iri])
-                  % ?Predicate:iri
-                  % ?Object:or([bnode,literal,iri])
-                  % ?Triple:triple
-    rdf_triples/2 % +In:oneof([atom,uri])
-                  % -Triples:list(compound)
+    rdf_triple/4 % ?Subject:or([bnode,iri])
+                 % ?Predicate:iri
+                 % ?Object:or([bnode,literal,iri])
+                 % ?Triple:triple
   ]
 ).
 
@@ -56,7 +56,6 @@ Predicates that apply to entire RDF graphs.
 :- use_module(rdf(rdf_term)).
 
 :- rdf_meta(rdf_triple(r,r,r,?)).
-:- rdf_meta(rdf_triples(r,-)).
 
 
 
@@ -67,7 +66,7 @@ Predicates that apply to entire RDF graphs.
 %! ) is det.
 % Replaces bnodes in triples with variables.
 
-rdf_bnode_replace(S1-P-O1, Map, S2-P-O2):- !,
+rdf_bnode_replace(rdf(S1,P,O1), Map, rdf(S2,P,O2)):- !,
   rdf_bnode_replace(S1, Map, S2),
   rdf_bnode_replace(O1, Map, O2).
 % Not a blank node, do not replace.
@@ -212,6 +211,16 @@ rdf_graph_proper_instance(G, H, Map):-
     X1 \== X2
   ), !.
 
+%! rdf_graph_to_triples(+Graph:atom, -Triples:list(rdf_triple)) is det.
+% Returns an unsorted list containing all the triples in a graph.
+%
+% @param In The atomic name of a loaded RDF graph, or a URI.
+% @param Triples A list of triple compound term.
+
+rdf_graph_to_triples(G, Ts):-
+  rdf_graph(G), !,
+  findall(rdf(S,P,O), rdf(S, P, O, G), Ts).
+
 %! rdf_ground(+Graph:graph) is semidet.
 % Succeeds if the given graph is ground, i.e., contains no blank node.
 %! rdf_ground(+Triple) is semidet.
@@ -220,20 +229,20 @@ rdf_graph_proper_instance(G, H, Map):-
 %
 % @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
 
-rdf_ground(S-_-O):- !,
+rdf_ground(rdf(S,_,O)):- !,
   \+ rdf_is_bnode(S),
   \+ rdf_is_bnode(O).
 rdf_ground(G):-
   forall(
     rdf(S, P, O, G),
-    rdf_ground(S-P-O)
+    rdf_ground(rdf(S,P,O))
   ).
 
 rdf_schema(G, RDFS_Classes, RDF_Properties, Triples):-
   setoff(C, rdfs_individual_of(C, rdfs:'Class'), RDFS_Classes),
   setoff(P, rdfs_individual_of(P, rdf:'Property'), RDF_Properties),
   ord_union(RDFS_Classes, RDF_Properties, Vocabulary),
-  setoff(S-P-O, (member(S, O, Vocabulary), rdf(S, P, O, G)), Triples).
+  setoff(rdf(S,P,O), (member(S, O, Vocabulary), rdf(S, P, O, G)), Triples).
 
 %! rdf_subgraph(+Graph1:atom, +Graph2:atom) is semidet.
 % Succeeds if the former graph is a subgraph of the latter.
@@ -241,28 +250,16 @@ rdf_schema(G, RDFS_Classes, RDF_Properties, Triples):-
 % @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
 
 rdf_subgraph(G, H):-
-  rdf_graph(G), rdf_graph(H), !,
-  \+ (rdf(S, P, O, G), \+ rdf(S, P, O, H)).
+  rdf_graph(G),
+  rdf_graph(H), !,
+  \+ (rdf(S, P, O, G),
+  \+ rdf(S, P, O, H)).
 
 rdf_triple(S1, P1, O1, Triple):-
   var(Triple), !,
   maplist(rdf_global_id, [S1,P1,O1], [S2,P2,O2]),
-  Triple = S2-P2-O2.
-rdf_triple(S, P, O, S-P-O).
-
-%! rdf_triples(+In:oneof([atom,uri]) -Triples:list(rdf_triple)) is det.
-% Returns an unsorted list containing all the triples in a graph.
-%
-% @param In The atomic name of a loaded RDF graph, or a URI.
-% @param Triples A list of triple compound term.
-
-rdf_triples(G, Ts):-
-  rdf_graph(G), !,
-  findall(S-P-O, rdf(S, P, O, G), Ts).
-% The RDF triples that describe a given URI reference.
-rdf_triples(URI, Ts):-
-  is_uri(URI), !,
-  setoff(S-P-O, rdf(S, P, O, _G), Ts).
+  Triple = rdf(S2,P2,O2).
+rdf_triple(S, P, O, rdf(S,P,O)).
 
 
 

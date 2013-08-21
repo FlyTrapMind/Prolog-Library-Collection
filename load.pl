@@ -36,6 +36,7 @@ load_pgc:-
     assert(user:file_search_path(ugraph,     graph_theory('UGRAPH'))),
   assert(user:file_search_path(ilp,          pgc('ILP'))),
   assert(user:file_search_path(logic,        pgc('Logic'))),
+    assert(user:file_search_path(rdf_mt,       logic('RDF MT'))),
   assert(user:file_search_path(math,         pgc('Math'))),
   assert(user:file_search_path(os,           pgc('OS'))),
   assert(user:file_search_path(server,       pgc('Server'))),

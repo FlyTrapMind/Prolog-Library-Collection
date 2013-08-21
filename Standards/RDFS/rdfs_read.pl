@@ -1,8 +1,6 @@
 :- module(
   rdfs_read,
   [
-    load_rdfs_schema/0,
-
 % ALTS
     rdfs_alt/2, % ?Alt:uri
                 % ?Graph:atom
@@ -333,10 +331,4 @@ rdfs_seq(Seq, Graph):-
 rdfs_seq(Seq, Contents, Graph):-
   rdfs_seq(Seq, Graph),
   rdfs_collection(Seq, Contents, Graph).
-
-
-
-load_rdfs_schema:-
-  absolute_file_name(rdfs(rdfs), File, [access(read), file_type(rdf)]),
-  rdf_load(File, [graph(rdfs_schema)]).
 

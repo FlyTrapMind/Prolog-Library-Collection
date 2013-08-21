@@ -379,8 +379,8 @@ modules(Modules):-
 %! call_nth(:Goal, +C:integer) is semidet.
 % Multiple calls of the same nondeterministic goal.
 % Calls the given goal the given number of times.
-% This does not exclude the case in which the goal could have been executed
-% more than =C= times.
+% This does not exclude the case in which the goal
+% could have been executed more than =C= times.
 %
 % @author Ulrich Neumerkel
 
@@ -388,7 +388,7 @@ call_nth(Goal, C):-
   State = count(0),
   Goal,
   arg(1, State, C1),
-  C2 is C1+1,
+  C2 is C1 + 1,
   nb_setarg(1, State, C2),
   C = C2.
 
@@ -459,8 +459,7 @@ multi(Goal, Count):-
 multi(Goal, Count, Input, Output):-
   multi(Goal, Count, Input, Output, _History).
 
-multi(_Goal, 0, Output, Output, [Output]):-
-  !.
+multi(_Goal, 0, Output, Output, [Output]):- !.
 multi(Goal, Count, Input, Output, [Intermediate | History]):-
   call(Goal, Input, Intermediate),
   NewCount is Count - 1,

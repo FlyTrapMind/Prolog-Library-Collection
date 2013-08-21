@@ -189,7 +189,7 @@ rdf_memberchk(Member, List):-
 %        atomic name of an RDF graph and =Line= an integer.
 
 rdf_index(Subject, Predicate, Object, Graph, Index):-
-  rdf_triples(Graph, Triples),
+  rdf_graph:rdf_graph_to_triples(Graph, Triples),
   nth0(Index, Triples, rdf(Subject, Predicate, Object)).
 
 %! rdf_random(

@@ -87,7 +87,7 @@ rdf_term_name(O, literal(type(Datatype,LEX)), Name):- !,
     ValueName = LEX
   ),
   % The combined name.
-  format(atom(Name), '"~w"^^~w', [DatatypeName,ValueName]).
+  format(atom(Name), '"~w"^^~w', [ValueName,DatatypeName]).
 % A plain literal with a language tag.
 rdf_term_name(_O, literal(lang(Language,Literal)), Name):- !,
   format(atom(Name), '"~w"@~w', [Literal,Language]).
@@ -170,7 +170,7 @@ rdf_terms_name(Options, RDF_Terms, Name):-
   maplist(rdf_term_name(Options), RDF_Terms, Names),
   print_list(Options, atom(Name), Names).
 
-rdf_triple_name(S-P-O, T_Name):- !,
+rdf_triple_name(rdf(S,P,O), T_Name):- !,
   rdf_triple_name(S, P, O, T_Name).
 rdf_triple_name(T_Name, T_Name).
 

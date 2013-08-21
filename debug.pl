@@ -79,7 +79,7 @@ load_modules_for_pldoc:-
         gv,
         html,
         http,
-        %ilp,
+        %ilp, % Many undefined predicates...
         lang,
         logic,
         math,
@@ -87,6 +87,7 @@ load_modules_for_pldoc:-
         owl,
         rdf,
         rdf_graph,
+        rdf_mt,
         rdfs,
         server,
         skos,

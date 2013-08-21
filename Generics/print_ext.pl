@@ -15,6 +15,7 @@
                     % +NVPair
     print_collection/2, % +Options:list(nvpair)
                         % +Collection:list
+    print_pair/1, % Pair:nvpair
     print_proof/2, % ?Out
                    % +Proof:tree
     print_proof/3, % :Options:list(nvpair)
@@ -50,6 +51,8 @@ proof(Conclusion, Premises)
 ~~~
 
 @author Wouter Beek
+@tbd Remove all predicate variants that have an `Out` parameter.
+     The calling context should use with_output_to/2 instead.
 @version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/08
 */
 
@@ -116,6 +119,7 @@ indent(Stream, Indent):-
   tab(Stream, NumberOfSpaces).
 
 is_meta(transformation).
+is_meta(write_method).
 
 %! print_collection(+Options:list(nvpair), +Collection:list) is det.
 % The following options are supported:
@@ -124,6 +128,9 @@ is_meta(transformation).
 %   3. =|separator(+Separator:atom)|=
 %   4. =|transformation(:Pred)|=
 %      The binary predicate that is applied to the collection.
+%   5. =|write_method(:Pred)|=
+%      The unary predicate that is used for writing the individual items
+%      in the collection.
 
 print_collection(O1, Collection1):-
   meta_options(is_meta, O1, O2),
@@ -150,18 +157,12 @@ print_collection_(O, [H1|T]):-
   print_collection_(O, T).
 % Next set member.
 print_collection_(O, [H|T]):-
-  write(H),
+  option(write_method(P), O, write),
+  call(P, H),
   % Do not add the separator after the last set member.
   option(separator(Separator), O),
   unless(T == [], write(Separator)),
   print_collection_(O, T).
-
-print_nvpair(NVPair):-
-  NVPair =.. [Name, Value],
-  write(Name), write(': '), write(Value), write(';').
-
-print_nvpair(Out, NVPair):-
-  with_output_to(Out, print_nvpair(NVPair)).
 
 %! print_list(+Output, +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.
@@ -176,6 +177,25 @@ print_list(O1, Out, List):-
   merge_options(O1, [begin('['),end(']'),separator(',')], O2),
   with_output_to(Out, print_collection(O2, List)).
 
+print_nvpair(NVPair):-
+  NVPair =.. [Name, Value],
+  write(Name), write(': '), write(Value), write(';').
+
+print_nvpair(Out, NVPair):-
+  with_output_to(Out, print_nvpair(NVPair)).
+
+print_pair(Pair):-
+  (
+    Pair = Name-Value, !
+  ;
+    Pair =.. [Name,Value]
+  ),
+  write('<'),
+  write(Name),
+  write(','),
+  write(Value),
+  write('>').
+
 print_proof(Out, Proof):-
   print_proof([], Out, Proof).
 
@@ -187,17 +207,17 @@ print_proof(O1, Out, Proof):-
 
 print_proof(O1, Proof) -->
   {Proof =.. [Rule,Premises,Conclusion]},
-  
+
   % Indentation.
   {update_option(O1, indent, succ, I, O2)},
   indent(I),
-  
+
   % The name of the rule that was used for deduction.
   "[", atom(Rule), "]",
-  
+
   % Separator between rule name and conclusion.
   " ",
-  
+
   % The conclusion.
   print_proposition(O1, Conclusion),
   newline,
