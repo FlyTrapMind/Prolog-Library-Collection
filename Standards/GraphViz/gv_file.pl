@@ -128,5 +128,6 @@ to_gv_file(Codes, Method, ToFileType, ToFile):-
     put_codes(Out, Codes),
     close(Out)
   ),
-  convert_gv(FromFile, Method, ToFileType, ToFile).
+  convert_gv(FromFile, Method, ToFileType, ToFile),
+  safe_delete_file(FromFile).
 

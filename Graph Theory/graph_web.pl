@@ -150,7 +150,7 @@ vertex_web(G, V1, SVG):-
   term_to_atom(V1, V2),
   rdf_global_id(G:V2, V),
   export_vertex(
-    [edge_labels(all), literals(preferred_label)],
+    [edge_labels(all),literals(preferred_label)],
     rdf_neighbors,
     V,
     G_Term
