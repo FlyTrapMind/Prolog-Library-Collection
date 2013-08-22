@@ -12,6 +12,9 @@
                                     % +Color:atom
 
 % GRAPH EXPORT
+    export_rdf_graph/3, % +Options:list(nvpair)
+                        % +RDF_Graph:atom
+                        % -GraphTerm:compound
     export_rdf_graph/4 % +Options:list(nvpair)
                        % :CoordFunc
                        % +RDF_Graph:atom
@@ -44,24 +47,26 @@ The procedure for determining the color of a vertex:
 ...
 
 @author Wouter Beek
-@version 2013/01-2013/03, 2013/07
+@version 2013/01-2013/03, 2013/07-2013/08
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(typecheck)).
+:- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdf(rdf_term)).
 :- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(svg(svg_colors)).
 
-:- dynamic(class_color(_G, _Class, _Color)).
-:- dynamic(namespace_color(_G, _Namespace, _Color)).
+:- dynamic(rdf_class_color(_G, _Class, _Color)).
+:- dynamic(rdf_namespace_color(_G, _Namespace, _Color)).
 :- dynamic(rdf_edge_style_(_RDF_Term, _EdgeStyle)).
 
 :- meta_predicate(export_rdf_graph(+,4,+,-)).
@@ -105,20 +110,23 @@ rdf_colorize_namespaces(G, svg):- !,
       J is (I * Delta) mod NumberOfColors,
       % J can be 0 becasue of the modulus function, so do not use nth1/3.
       nth0(J, Colors, Color),
-      assert(namespace_color(G, Namespace, Color))
+      assert(rdf_namespace_color(G, Namespace, Color))
     )
   ).
 rdf_colorize_namespaces(_G, Colorscheme):-
   existence_error(atom, Colorscheme).
 
 rdf_register_class_color(G, Class, ClassColor):-
-  db_replace_novel(class_color(G, Class, ClassColor)).
+  db_replace_novel(rdf_class_color(G, Class, ClassColor), [e,e,r]).
 
 rdf_register_edge_style(RDF_Term, EdgeStyle):-
-  db_replace_novel(rdf_edge_style_(RDF_Term, EdgeStyle)).
+  db_replace_novel(rdf_edge_style_(RDF_Term, EdgeStyle), [e,r]).
 
 rdf_register_namespace_color(G, Namespace, NamespaceColor):-
-  db_replace_novel(namespace_color(G, Namespace, NamespaceColor)).
+  db_replace_novel(
+    rdf_namespace_color(G, Namespace, NamespaceColor),
+    [e,e,r]
+  ).
 
 %! rdf_vertex_color_by_namespace(
 %!   +Graph:atom,
@@ -140,7 +148,7 @@ rdf_register_namespace_color(G, Namespace, NamespaceColor):-
 
 rdf_vertex_color_by_namespace(G, _Colorscheme, V, V_Color):-
   rdf_global_id(Namespace:_, V),
-  namespace_color(G, Namespace, V_Color), !.
+  rdf_namespace_color(G, Namespace, V_Color), !.
 rdf_vertex_color_by_namespace(G, Colorscheme, V, V_Color):-
   rdf_colorize_namespaces(G, Colorscheme),
   rdf_vertex_color_by_namespace(G, Colorscheme, V, V_Color).
@@ -151,6 +159,17 @@ rdf_vertex_color_by_namespace(G, Colorscheme, V, V_Color):-
 
 %! export_rdf_graph(
 %!   +Options:list(nvpair),
+%!   +Graph:atom,
+%!   +GraphTerm:compound
+%! ) is det.
+% @see export_rdf_graph/4
+
+export_rdf_graph(O, G, GIF):-
+  export_rdf_graph(O, random_vertex_coordinate, G, GIF).
+
+%! export_rdf_graph(
+%!   +Options:list(nvpair),
+%!   :CoordFunc,
 %!   +Graph:atom,
 %!   +GraphTerm:compound
 %! ) is det.
@@ -191,12 +210,13 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
 
   % Graph
   rdf_graph_name(G, G_Name),
-  G_Attrs = [directedness(directed),label(G_Name)].
+  option(colorscheme(Colorscheme), O, x11),
+  G_Attrs = [colorscheme(Colorscheme),directedness(directed),label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
 % Returns a name for the given graph.
 
-rdf_graph_name(G, G).
+rdf_graph_name(G, G):- !.
 
 
 
@@ -216,12 +236,14 @@ rdf_edge_arrow_head(_E, normal).
 
 rdf_edge_color(O, _G, _E, black):-
   option(colorscheme(none), O, none), !.
+% If the vertices have the same color, then the edge has that color as well.
 rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
   rdf_vertex_color(O, G, FromV, FromV_Color),
-  rdf_vertex_color(O, G, ToV, ToV_Color), !,
-  % Notice that color can be uninstantiated in rdf_vertex_color/4?
-  FromV_Color = ToV_Color,
+  rdf_vertex_color(O, G, ToV, ToV_Color),
+  FromV_Color = ToV_Color, !,
   E_Color = FromV_Color.
+% If the vertices have a different color,
+% then the edge color is based on the predicate term.
 rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
   rdf_vertex_color(O, G, P, E_Color).
 
@@ -269,7 +291,7 @@ rdf_edge_name(_O, _E, []).
 rdf_edge_name(P, ''):-
   rdf_memberchk(
     P,
-    [rdf:type, rdfs:label, rdfs:subClassOf, rdfs:subPropertyOf]
+    [rdf:type,rdfs:label,rdfs:subClassOf,rdfs:subPropertyOf]
   ).
 
 %! rdf_edge_style(+Edge:edge, -E_Style:atom) is det.
@@ -301,9 +323,17 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
   % Style.
   rdf_edge_style(E, E_Style),
 
+  % The colorscheme cannot be set on the graph or shared edge, apparently.
+  (
+    option(colorscheme(Colorscheme), O)
+  ->
+    ColorschemeAttrs = [colorscheme(Colorscheme)]
+  ;
+    ColorschemeAttrs = []
+  ),
   merge_options(
     E_NameLIST,
-    [arrowhead(E_ArrowHead), color(E_Color), style(E_Style)],
+    [arrowhead(E_ArrowHead),color(E_Color),style(E_Style)|ColorschemeAttrs],
     E_Attrs
   ).
 
@@ -342,7 +372,7 @@ rdf_vertex_color(_O, G, V, V_Color):-
   ;
     rdfs_subclass_of(V, Class)
   ),
-  class_color(G, Class, V_Color), !.
+  rdf_class_color(G, Class, V_Color), !.
 % Resource colored based on its namespace.
 rdf_vertex_color(O, G, V, V_Color):-
   option(colorscheme(Colorscheme), O, svg),
@@ -354,7 +384,7 @@ rdf_vertex_color(O, G, V, V_Color):-
      V_Color = V_NamespaceColor
   ;
     % URI resources with unregistered namespace/prefix.
-    is_uri(V)
+    rdf_is_iri(V)
   ->
     V_Color = red
   ;
@@ -415,7 +445,7 @@ rdf_vertex_shape(RDF_Term, circle):-
 % Catch-all.
 rdf_vertex_shape(_RDF_Term, ellipse).
 
-rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs2)):-
+rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs3)):-
   nth0(V_Id, Vs, V),
   rdf_term_name(O, V, V_Name),
   rdf_vertex_color(O, G, V, V_Color),
@@ -435,5 +465,13 @@ rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs2)):-
     merge_options([image(V_Picture)], V_Attrs1, V_Attrs2)
   ;
     V_Attrs2 = V_Attrs1
+  ),
+  % The colorscheme cannot be set on the graph or shared edge, apparently.
+  (
+    option(colorscheme(Colorscheme), O)
+  ->
+    merge_options([colorscheme(Colorscheme)], V_Attrs2, V_Attrs3)
+  ;
+    V_Attrs3 = V_Attrs2
   ).
 

@@ -22,7 +22,7 @@ in combination with the open source speech synthesizer eSpeak.
 @author Wouter Beek
 @see http://en.wikipedia.org/wiki/Cowsay pointers to cowsay resources.
 @see http://espeak.sourceforge.net/ home of eSpeak.
-@version 2012/09-2012/10, 2013/05-2013/07
+@version 2012/09-2012/10, 2013/05-2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -104,7 +104,9 @@ cowspeak(Content):-
 cowspeak(O, Contents):-
   is_list(Contents), !,
   maplist(cow_atom, Contents, Atoms),
-  cowspeak_(O, Atoms).
+  % Cut off the choicepoints that are due to the various DCGs
+  % that are used to draw the cow and its speech bubble and contents.
+  once(cowspeak_(O, Atoms)).
 % Since we work with lists, we create a singleton list for single terms.
 cowspeak(O, Content):-
   cowspeak(O, [Content]).

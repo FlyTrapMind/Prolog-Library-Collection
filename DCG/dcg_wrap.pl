@@ -140,6 +140,7 @@ dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
   ;
     % Split occurs right after word.
     % Insert word and insert newline right after it, no space.
+    % Also, skip any directly following white characters.
     {WordLength == Remaining}
   ->
     {
@@ -147,7 +148,8 @@ dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
       Postfix = newline,
       NewRemaining = MaximumLineWidth
     },
-    dcg_codes(Word1)
+    dcg_codes(Word1),
+    whites
   ;
     % Fill the rest of the line with spaces and insert a newline
     % Process the word later.

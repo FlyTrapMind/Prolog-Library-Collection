@@ -141,7 +141,7 @@ dbnl_debug(URI):-
 
 dbnl_set_current_uri(URI):-
   flag(number_of_uris, ID, ID + 1),
-  db_replace_novel(dbnl_current_uri(URI)).
+  db_replace_novel(dbnl_current_uri(URI), [r]).
 
 
 

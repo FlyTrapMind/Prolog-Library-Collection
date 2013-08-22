@@ -2,12 +2,12 @@
   gv_file,
   [
     graph_to_gv_file/5, % +Options:list(nvpair)
-                        % +Graph:compound
+                        % +GraphInterchangeFormat:compound
                         % +Method:onef([dot,sfdp])
                         % +ToFileType:oneof([jpeg,pdf,svg,xdot])
                         % ?ToFile:atom
     graph_to_svg_dom/4, % +Options:list(nvpair)
-                        % +Graph:compound
+                        % +GraphInterchangeFormat:compound
                         % +Method:onef([dot,sfdp])
                         % -SVG:list
     tree_to_gv_file/5 % +Options:list(nvpair)

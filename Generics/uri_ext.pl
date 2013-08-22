@@ -39,8 +39,7 @@ uri_to_file_name(URI, FileName):-
 
 % Debug: Do not download a file that is already present.
 uri_to_file(_URI, File):-
-  access_file(File, exist),
-  !.
+  access_file(File, exist), !.
 uri_to_file(URI, File):-
   setup_call_cleanup(
     % First perform this setup once/1.
