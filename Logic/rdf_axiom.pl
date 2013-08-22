@@ -20,6 +20,7 @@ An axiomatic approach towards RDF(S) materialization.
 
 @author Wouter Beek
 @see Hayes2004
+@tbd Use a CPS for calculating the deductive closure and individual queries.
 @version 2013/05, 2013/08
 */
 
@@ -28,7 +29,6 @@ An axiomatic approach towards RDF(S) materialization.
 :- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(debug)).
-:- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(run_ext)).
 :- use_module(rdf(rdf_graph)).
@@ -122,6 +122,14 @@ query(fact([],S-P-O), S, P, O):-
 query(Tree, S, P, O):-
   rule(Tree, q, S, P, O).
 
+%! rule(
+%!   -Tree:compound,
+%!   ?Mode:oneof([m,q]),
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:or([bnode,literal,iri])
+%! ) is nondet.
+
 rule(Tree, Mode, S, P, O):-
   rule(Rule, Premises, Mode, S, P, O),
   % @tbd What's this?
@@ -147,7 +155,6 @@ stmt(Tree, q, S, P, O):-
 
 % RDF RULES & AXIOMS %
 
-/*
 % [se1] Simple entailment w.r.t. the object term.
 % [lg]  Literal generalization is a special case of [se1],
 %       where the object term is a literal.
@@ -168,7 +175,6 @@ rule(se1, [T1], M, S, P, B):-
 rule(se2, [T1], M, B, P, O):-
   stmt(T1, M, _, P, O),
   rdf_bnode(B).
-*/
 
 % [rdf1] Predicate terms are instances of =|rdf:'Property'|=.
 rule(rdf1, [T1], M, P, rdf:type, rdf:'Property'):-
@@ -246,7 +252,9 @@ rule(rdfs4b, [T1], M, O, rdf:type, rdfs:'Resource'):-
 % [rdfs5] Transitive closure of the property hierarchy relation.
 rule(rdfs5, [T1,T2], M, P1, rdfs:subPropertyOf, P3):-
   stmt(T1, M, P1, rdfs:subPropertyOf, P2),
-  stmt(T2, M, P2, rdfs:subPropertyOf, P3).
+  P1 \== P2,
+  stmt(T2, M, P2, rdfs:subPropertyOf, P3),
+  P2 \== P3.
 
 % [rdfs6] Reflexivity of the property hierarchy relation.
 rule(rdfs6, [T1], M, P, rdfs:subPropertyOf, P):-
@@ -255,6 +263,7 @@ rule(rdfs6, [T1], M, P, rdfs:subPropertyOf, P):-
 % [rdfs7] Using the property hierarchy.
 rule(rdfs7, [T1,T2], M, S, P2, O):-
   stmt(T1, M, P1, rdfs:subPropertyOf, P2),
+  P1 \== P2,
   stmt(T2, M, S, P1, O).
 
 % [rdfs8] Classes are instances of =|rdfs:Resource|=.
@@ -264,7 +273,8 @@ rule(rdfs8, [T1], M, C, rdfs:subClassOf, rdfs:'Resource'):-
 % [rdfs9] Using the class hierarchy.
 rule(rdfs9, [T1,T2], M, S, rdf:type, C2):-
   stmt(T1, M, C1, rdfs:subClassOf, C2),
-  stmt(T2, M, S, rdf:type, C1).
+  C1 \== C2,
+  stmt(T2, M, S,  rdf:type, C1).
 
 % [rdfs10] Reflexivity of the class hierarchy relation.
 rule(rdfs10, [T1], M, C, rdfs:subClassOf, C):-
@@ -273,7 +283,9 @@ rule(rdfs10, [T1], M, C, rdfs:subClassOf, C):-
 % [rdfs11] Transitivity of the class hierarchy relation.
 rule(rdfs11, [T1,T2], M, C1, rdfs:subClassOf, C3):-
   stmt(T1, M, C1, rdfs:subClassOf, C2),
-  stmt(T2, M, C2, rdfs:subClassOf, C3).
+  C1 \== C2,
+  stmt(T2, M, C2, rdfs:subClassOf, C3),
+  C2 \== C3.
 
 % [rdfs12]
 rule(rdfs12, [T1], M, S, rdf:subClassOf, rdfs:member):-
@@ -360,119 +372,3 @@ axiom(UriRef, rdfs:range, rdfs:'Resource'):-
   format(atom(Local), '_~w', [Integer]),
   rdf_global_id(rdf:Local, UriRef).
 */
-
-
-
-/*
-% [RDFS-1] If a resource has in instance, then it must be an =|rdfs:'Class'|=.
-axiom(Y, rdf:type, rdfs:'Class'):-
-  stmt(M, _, rdf:type, Y).
-% [RDFS-2] Everything is an =|rdfs:'Resource'|=.
-axiom(X, rdf:type, rdfs:'Resource'):-
-  stmt(M, S, P, O),
-  (X = S ; X = P ; X = O).
-% [RDFS-3] Plain literals are individuals of =|rdfs:'Literal'|=.
-axiom(Lit, rdf:type, rdfs:'Literal'):-
-  stmt(M, _, _, literal(Lit)).
-% [RDFS-12] Individuals of =|rdfs:'Datatype'|= are subclasses of
-%           =|rdfs:'Literal'|=.
-axiom(X, rdfs:subClassOf, rdfs:'Literal'):-
-  stmt(M, X, rdf:type, rdfs:'Datatype').
-% [RDFS-11] Individuals of =|rdfs:'ContainerMembershipProperty'|= are
-%           subproeprties of =|rdf:member|=.
-axiom(X, rdfs:subPropertyOf, rdfs:member):-
-  stmt(M, X, rdf:type, rdfs:'ContainerMembershipProperty').
-% [RDFS-10b] Transitivity of subclass relation.
-axiom(C1, rdfs:subClassOf, C3):-
-  stmt(M, C1, rdfs:subClassOf, C2),
-  C1 \== C2,
-  stmt(M, C2, rdfs:subClassOf, C3),
-  C2 \== C3.
-% [RDFS-10a] Reflexivity of subclass relation.
-axiom(C, rdfs:subClassOf, C):-
-  stmt(M, C, rdf:type, rdfs:'Class').
-% [RDFS-9b] Individuals are closed under transitivity of the
-%           subclass hierarchy.
-axiom(X, rdf:type, C2):-
-  stmt(M, C1, rdfs:subClassOf, C2),
-  stmt(M, X, rdf:type, C1).
-% [RDFS-9a] Resources that occur in the subclass hierarchy are
-%           individuals of =|rdfs:'Class'|=.
-axiom(C, rdf:type, rdfs:'Class'):-
-  stmt(M, C1, rdfs:subClassOf, C2),
-  (C = C1 ; C = C2).
-% [RDFS-8] Classes are subclasses of =|rdfs:'Resource'|=.
-axiom(C, rdfs:subClassOf, rdfs:'Resource'):-
-  stmt(M, C, rdf:type, rdfs:'Class').
-% [RDFS-7b] Use the subproperty hierarchy to derive an arbitrary triple.
-axiom(S, P2, O):-
-  stmt(M, P1, rdfs:subPropertyOf, P2),
-  stmt(M, S, P1, O).
-% [RDFS-7a] Resources that occur in the subproperty relation are
-%           individuals of =|rdf:'Property'|=.
-axiom(P, rdf:type, rdf:'Property'):-
-  stmt(M, P1, rdfs:subPropertyOf, P2),
-  (P = P1 ; P = P2).
-% [RDFS-6a] Transitivity of subproperty relation.
-axiom(X, rdfs:subPropertyOf, Z):-
-  stmt(M, X, rdfs:subPropertyOf, Y),
-  X \== Y,
-  stmt(M, Y, rdfs:subPropertyOf, Z),
-  Y \== Z.
-% [RDFS-6a] Reflexivity of subproperty relation.
-axiom(X, rdfs:subPropertyOf, X):-
-  stmt(M, X, rdf:type, rdfs:'Property').
-% [RDFS-5] If <P,rdfs:range,R> and <X,P,Y>, then <Y,rdf:type,R>.
-axiom(Y, rdf:type, R):-
-  stmt(M, P, rdfs:range, R),
-  stmt(M, _, P, Y).
-% [RDFS-4] If <P,rdfs:domain,D> and <X,P,Y>, then <X,rdf:type,D>.
-axiom(X, rdf:type, D):-
-  stmt(M, P, rdfs:domain, D),
-  stmt(M, X, P, _).
-*/
-
-
-
-:- begin_tests(rdf_axiom).
-
-:- use_module(library(semweb/rdf_db)). % rdf_meta/1
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
-:- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
-
-:- rdf_meta(test_triple(?,r,r,r)).
-
-%! test_triple(
-%!   ?Language:oneof([rdf,rdfs]),
-%!   ?Subject:or([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?Object:or([bnode,literal,iri])
-%! ) is nondet.
-
-test_triple(rdfs, rdfs:'Resource', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdfs:'Class', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdfs:'Literal', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'XMLLiteral', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdfs:'Datatype', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'Seq', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'Bag', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'Alt', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdfs:'Container', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'List', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdfs:'ContainerMembershipProperty', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'Property', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdf:'Statement', rdf:type, rdfs:'Class').
-test_triple(rdfs, rdfs:domain, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:range, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:subPropertyOf, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:subClassOf, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:member, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:seeAlso, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:isDefinedBy, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:comment, rdf:type, rdf:'Property').
-test_triple(rdfs, rdfs:label, rdf:type, rdf:'Property').
-
-:- end_tests(rdf_axiom).
-

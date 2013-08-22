@@ -46,13 +46,16 @@ rdf_mt_print_graph(G):-
 
 % MAP %
 
+rdf_mt_print_asssignments(_G, _M, []):- !.
 rdf_mt_print_asssignments(G, M, A):-
   format('ASSIGNMENTS ~w -> ~w\n', [G,M]),
   forall(
     member([BNode,Resource], A),
-    format('\t~w\t->~w\n', [BNode,Resource])
+    format('\t~w\t->\t~w\n', [BNode,Resource])
   ).
 
+rdf_mt_print_i_l(G, M):-
+  \+ i_l(G, _TypedLiteral, M, _Resource), !.
 rdf_mt_print_i_l(G, M):-
   format('IL : ~w -> ~w\n', [G, M]),
   forall(
@@ -64,12 +67,16 @@ rdf_mt_print_i_l(G, M):-
   ).
 
 rdf_mt_print_i_s(G, M):-
+  \+ i_s(G, _IRI, M, _Resource), !.
+rdf_mt_print_i_s(G, M):-
   format('IS : ~w -> ~w\n', [G, M]),
   forall(
     i_s(G, IRI, M, Resource),
     format('\t~w\t->\t~w\n', [IRI,Resource])
   ).
 
+rdf_mt_print_lv(G, M):-
+  \+ lv(G, M, _PlainLiteral), !.
 rdf_mt_print_lv(G, M):-
   format('LV ~w ~w:\n', [G,M]),
   forall(
@@ -87,6 +94,7 @@ rdf_mt_print_map(G, M, A):-
   rdf_mt_print_asssignments(G, M, A).
 
 
+
 % MODEL %
 
 rdf_mt_print_model(M):-
@@ -98,18 +106,23 @@ rdf_mt_print_model(Out, G, M):-
   with_output_to(Out, rdf_mt_print_model_(G, M)).
 
 rdf_mt_print_model(Out, G, M, A):-
-  with_output_to(Out, rdf_mt_print_model_(G, M, A)).
+  with_output_to(Out, rdf_mt_print_model_(G, M, A)),
+  flush_output(Out).
 
 rdf_mt_print_model_(G, M):-
+  nl, write('***'), nl,
   rdf_mt_print_graph(G),
   rdf_mt_print_model(M),
   rdf_mt_print_map(G, M).
 
 rdf_mt_print_model_(G, M, A):-
+  nl, write('***'), nl,
   rdf_mt_print_graph(G),
   rdf_mt_print_model(M),
   rdf_mt_print_map(G, M, A).
 
+rdf_mt_print_properties(M):-
+  \+ property(M, _P), !.
 rdf_mt_print_properties(M):-
   format(user_output, 'PROPERTIES ~w:\n', [M]),
   forall(
@@ -118,12 +131,16 @@ rdf_mt_print_properties(M):-
   ).
 
 rdf_mt_print_resources(M):-
+  \+ resource(M, _R), !.
+rdf_mt_print_resources(M):-
   format(user_output, 'RESOURCES ~w:\n', [M]),
   forall(
     resource(M, R),
     format('\t~w\n', [R])
   ).
 
+rdf_mt_print_i_ext(M):-
+  \+ i_ext(M, _Property, _Resource1, _Resource2), !.
 rdf_mt_print_i_ext(M):-
   format(user_output, 'IEXT ~w:\n', [M]),
   forall(

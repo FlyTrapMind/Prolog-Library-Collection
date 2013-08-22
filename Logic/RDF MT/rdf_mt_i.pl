@@ -116,7 +116,7 @@ i(G, M, rdf(SYN_S1,SYN_P1,SYN_O1), A1, A4):-
   i(G, M, SYN_S2, Resource1, A1, A2),
   i(G, M, SYN_P2, Property,  A2, A3),
   i(G, M, SYN_O2, Resource2, A3, A4),
-  i_ext(M, Property, Resource1, Resource2).
+  once(i_ext(M, Property, Resource1, Resource2)).
 
 %! i(
 %!   +Graph:atom,
@@ -132,7 +132,7 @@ i(G, M, rdf(SYN_S1,SYN_P1,SYN_O1), A1, A4):-
 i(_G, M, BNode, Resource, A1, A2):-
   rdf_is_bnode(BNode), !,
   (
-    member([BNode,Resource], A1)
+    memberchk([BNode,Resource], A1)
   ->
     A2 = A1
   ;
@@ -143,13 +143,13 @@ i(_G, M, BNode, Resource, A1, A2):-
   ).
 % Plain literals. There map onto themselves.
 i(G, M, PlainLit, PlainLit, A, A):-
-  lv(G, M, PlainLit), !.
+  once(lv(G, M, PlainLit)), !.
 % Typed literals. These map onto resources.
 i(G, M, TypedLiteral, Resource, A, A):-
-  i_l(G, TypedLiteral, M, Resource), !.
+  once(i_l(G, TypedLiteral, M, Resource)), !.
 % IRIs. These map onto properties and resources.
 i(G, M, IRI, ResourceOrProperty, A, A):-
   % Checking for resources is not that good.
   rdf_is_iri(IRI), !,
-  i_s(G, IRI, M, ResourceOrProperty).
+  once(i_s(G, IRI, M, ResourceOrProperty)).
 

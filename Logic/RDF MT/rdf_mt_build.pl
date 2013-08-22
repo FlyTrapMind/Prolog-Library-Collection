@@ -147,9 +147,8 @@ rdf_add_resource(M, R):-
 %! rdf_unload_model(+Model:atom) is det.
 
 rdf_unload_model(M):-
-  model(M), !,
+  retractall(model(M)), !,
   rdf_unload_map(_, M),
   retractall(rdf_mt:i_ext(M,_,_,_)),
   retractall(rdf_mt:property(M,_)),
   retractall(rdf_mt:resource(M,_)).
-
