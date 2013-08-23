@@ -15,10 +15,11 @@ This repository contains the following subcollections of Prolog modules:
     * DGRAPH
     * RDF Graph
     * UGRAPH
-  * ILP
+  * Inductive Logic Programming (ILP)
   * Logic
-  * Math
-  * OS
+    * RDF Model Theory
+  * Mathematics
+  * Operating System interaction
   * Server
   * Standards
     * DateTime
@@ -35,7 +36,8 @@ This repository contains the following subcollections of Prolog modules:
     * Tests
     * URI
     * XML
-  * TMS
+      * XML Schema (XSD)
+  * Truth-Maintenance System (TMS)
   * Vocabularies
     * SKOS
 

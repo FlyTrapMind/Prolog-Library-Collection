@@ -110,8 +110,8 @@ rdf_term_name(O, RDF_Term, Name):-
 rdf_term_name(O, RDF_Term, Name):-
   option(uri_desc(with_preferred_label), O, uri_only), !,
   option(language(Lang), O, en),
-  rdfs_preferred_label(RDF_Term, Lang, Label),
-  print_list(O, atom(Name), [RDF_Term,Label]).
+  rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel),
+  print_list(O, atom(Name), [RDF_Term,PreferredLabel]).
 % The RDF term is set to collate all literals that (directly) relate to it.
 rdf_term_name(O, RDF_Term, Name):-
   option(uri_desc(with_literals), O, uri_only), !,
@@ -119,7 +119,7 @@ rdf_term_name(O, RDF_Term, Name):-
 
   % Labels are treated specially: only the preferred label is included.
   option(language(Lang), O, en), !,
-  rdfs_preferred_label(RDF_Term, Lang, Label),
+  rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel),
 
   % Now come the related non-label literals.
   findall(
@@ -137,7 +137,7 @@ rdf_term_name(O, RDF_Term, Name):-
   print_set(
     [begin(''),end(''),separator('\n')],
     atom(Name),
-    [URI_Name,Label,LiteralNames]
+    [URI_Name,PreferredLabel,LiteralNames]
   ).
 % We're out of options here...
 rdf_term_name(_O, RDF_Term, Name):-

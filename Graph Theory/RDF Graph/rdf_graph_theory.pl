@@ -133,6 +133,10 @@ rdf_graph_to_ugraph(G, UG):-
     UG
   ).
 
+rdf_literal_to_value(literal(lang(_Lang,LitVal)), LitVal):- !.
+rdf_literal_to_value(literal(type(_Type,LitVal)), LitVal):- !.
+rdf_literal_to_value(literal(LitVal), LitVal):- !.
+
 %! rdf_neighbor(+Graph:atom, ?Vertex:vertex, ?Neighbor:vertex) is nondet.
 % Neighboring vertices.
 
@@ -172,27 +176,41 @@ rdf_vertex(O, G, V):-
   (rdf(V, _, _, G) ; rdf(_, V, _, G) ; rdf(_, _, V, G)),
   rdf_vertex_check(O, V).
 
-% Typed literals are only included when `literals-all`.
+% Typed literals are only included when `literals=all`.
 rdf_vertex_check(O, literal(type(_Datatype,_Value))):-
   option(literals(all), O, all), !.
-% Untyped literals.
-rdf_vertex_check(O, Literal1):-
-  (
-    Literal1 = literal(Literal2)
-  ;
-    Literal1 = literal(lang(_Language, Literal2))
-  ), !,
-
+% Untyped literals are included:
+%   * if the language tag is matched, under option `literals=preferred_label`.
+%   * never, under option `literals=none`.
+%   * always, under option `literals=all`
+rdf_vertex_check(O, Lit):-
+  rdf_is_literal(Lit), !,
   option(literals(IncludeLiterals), O, all),
-  % No literal is allowed as vertex.
+
+  % No literal is allowed as vertex under option `literals=none`.
   IncludeLiterals \== none,
 
+  % Under option `literal=preferred_label`,
+  % the given literal must be the preferred literal
+  % for the subject-predicate pair involved.
   (
     IncludeLiterals == preferred_label
   ->
+    % We must know the subject and predicate terms
+    % that occur in the same triple as the given literal.
+    rdf(S, P, Lit),
+    rdf_literal_to_value(Lit, LitValue),
     % Only preferred labels are allowed as vertices.
-    option(language(Language), O, en),
-    rdfs_preferred_label(_RDF_Term, Language, Literal2)
+    option(language(Lang), O, en),
+    % The given literal must be the preferred literal,
+    % otherwise this predicate should fail.
+    rdf_preferred_literal(S, P, Lang, PreferredLang, PreferredLit),
+    LitValue == PreferredLit,
+    % Note that in some cases there is both a literal in the preferred
+    % language and a literal with no language tag, but both with the same
+    % literal value.
+    % In those cases the variant with no language tag should be discarded.
+    PreferredLang == Lang, !
   ;
     % All literals are vertices.
     true

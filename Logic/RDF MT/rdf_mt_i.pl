@@ -41,6 +41,8 @@ Interpretation function `I`:
 
 @author Wouter Beek
 @see Hayes2004
+@tbd Add the additional semantic constraints imposed by
+     the RDF vocabulary and the RDFS vocabulary.
 @version 2013/05, 2013/08
 */
 

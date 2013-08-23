@@ -31,9 +31,10 @@
                   % ?Graph:atom
 
 % LABELS
-    rdfs_preferred_label/3, % ?RDF_Term:oneof([bnode,uri])
-                            % ?Languages:list(atom)
-                            % ?PreferredLabel:atom
+    rdfs_preferred_label/4, % ?RDF_Term:oneof([bnode,uri])
+                            % +LanguageTag:atom
+                            % -PreferredLanguageTag:atom
+                            % ?PreferredLiteral:atom
     rdfs_list_label/3, % +List:uri
                        % +Label:atom
                        % -Element:uri
@@ -119,7 +120,7 @@ rdfs_individual(X, Y, G):-
 
 @author Wouter Beek
 @author Sander Latour
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/08
 */
 
 :- use_module(generics(db_ext)).
@@ -144,7 +145,7 @@ rdfs_individual(X, Y, G):-
 :- rdf_meta(rdfs_domain(r,r,?)).
 :- rdf_meta(rdfs_range(r,r,?)).
 % LABELS
-:- rdf_meta(rdfs_preferred_label(r,+,-)).
+:- rdf_meta(rdfs_preferred_label(r,+,-,?)).
 :- rdf_meta(rdfs_list_label(r,+,-)).
 % RDF-HAS
 :- rdf_meta(rdfs(r,r,r,?)).
@@ -267,37 +268,26 @@ rdfs_range(Property1, Range, Graph):-
 
 
 
-% LABELS %
+% LITERALS %
 
 %! rdfs_preferred_label(
-%!   ?RDF_Term:oneof([bnode,uri]),
-%!   ?Language:atom,
+%!   ?RDF_Term:or([bnode,iri]),
+%!   +LanguageTag:atom,
+%!   -PreferredLangTag:atom,
 %!   ?Label:atom
 %! ) is nondet.
 % Multiple labels are returned (nondet) in a descending preference order.
 
-% If the preferred language is not available,
-% then we look for an arbitrary other language.
-rdfs_preferred_label(RDF_Term, [], Label):- !,
-  rdfs_label(RDF_Term, _OtherLanguage, Label).
-% Look for the preferred languages, in order of occurrence in the list.
-rdfs_preferred_label(RDF_Term, [H|_T], PreferredLabel):-
-  rdfs_preferred_label_(RDF_Term, H, PreferredLabel), !.
-% Next language...
-rdfs_preferred_label(RDF_Term, [_H|T], PreferredLabel):- !,
-  rdfs_preferred_label_(RDF_Term, T, PreferredLabel).
-rdfs_preferred_label(RDF_Term, Language, Label):-
-  \+ is_list(Language), !,
-  rdfs_preferred_label(RDF_Term, [Language], Label).
-
-% Ensure that given labels are atoms.
-rdfs_preferred_label_(RDF_Term, Language, Label1):-
-  nonvar(Label1), \+ atom(Label1), !,
-  term_to_atom(Label1, Label2),
-  rdfs_preferred_label_(RDF_Term, Language, Label2).
-% Labels with the given language code are preferred.
-rdfs_preferred_label_(RDF_Term, Language, Label):-
-  rdfs_label(RDF_Term, Language, Label), !.
+rdfs_preferred_label(RDF_Term, LangTags, PreferredLangTag, PreferredLabel):-
+  rdfs_label(RDF_Term, Label1),
+  rdf_preferred_literal(
+    RDF_Term,
+    rdfs:label,
+    LangTags,
+    PreferredLangTag,
+    PreferredLabel
+  ),
+  Label1 == PreferredLabel, !.
 
 %! rdfs_list_label(+RDF_List:uri, +Label:atom, -Element:uri) is nondet.
 % Returns RDF list elements that have the given label.

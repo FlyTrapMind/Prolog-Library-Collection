@@ -54,4 +54,3 @@ rdfs_voc_to_pdf:-
   ),
   graph_to_gv_file([], GIF, sfdp, pdf, PDF_File),
   open_pdf(PDF_File).
-

@@ -20,13 +20,16 @@
                    % ?Language:atom
                    % ?Literal:atom
                    % ?Graph:graph
-
+    rdf_preferred_literal/5, % ?Subject:or([bnode,iri])
+                             % ?Predicate:iri
+                             % +LanguageTag:atom
+                             % ?PreferredLangTag:atom
+                             % ?PreferredLiteral:atom
 % LIST MEMBERSHIP
     rdf_member/2, % ?Member:uri
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
                      % ?Members:list(uri)
-
 % STRUCTURE-BASED READS
     rdf_index/5, % ?Subject:oneof([bnode,uri])
                  % ?Predicate:uri
@@ -65,6 +68,7 @@ literals.
 :- rdf_meta(rdf_has_datatype(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?)).
+:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
 % LIST MEMBERSHIP %
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
@@ -134,15 +138,15 @@ rdf_has_datatype(Subject, Predicate, DatatypeName, Value):-
 %
 % @see rdf_literal/5.
 
-rdf_literal(Subject, Predicate, Literal, Graph):-
-  rdf(Subject, Predicate, literal(Literal), Graph).
-rdf_literal(Subject, Predicate, Literal, Graph):-
-  rdf_literal(Subject, Predicate, en, Literal, Graph).
+rdf_literal(S, P, Lit, G):-
+  rdf(S, P, literal(Lit), G).
+rdf_literal(S, P, Lit, G):-
+  rdf_literal(S, P, _Lang, Lit, G).
 
 %! rdf_literal(
 %!   ?Subject:oneof([bnode,uri]),
 %!   ?Predicate:uri,
-%!   ?Language:atom,
+%!   ?LanguageTag:atom,
 %!   ?Literal:atom,
 %!   ?Graph:graph
 %! ) is nondet.
@@ -154,9 +158,29 @@ rdf_literal(Subject, Predicate, Literal, Graph):-
 % @param Literal An atom.
 % @param Graph The atomic name of an RDF graph.
 
-rdf_literal(Subject, Predicate, Language, Literal, Graph):-
-  rdf(Subject, Predicate, literal(lang(Language, Literal)), Graph).
+rdf_literal(S, P, LangTag, Lit, G):-
+  rdf(S, P, literal(lang(LangTag, Lit)), G).
 
+%! rdf_preferred_literal(
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?LanguageTag:atom,
+%!   ?PreferredLanguageTag:atom,
+%!   ?PreferredLiteral:atom
+%! ) is det.
+% Look for the preferred languages, in order of occurrence in
+% the given list of language subtags.
+%
+% @tbd Make sure the language subtags are standards compliant.
+
+rdf_preferred_literal(S, P, LangTag, PreferredLangTag, PreferredLit):-
+  % Takes both atoms and lists of atoms as argument.
+  rdf_literal(S, P, LangTag, PreferredLit, _G),
+  PreferredLangTag = LangTag, !.
+% If the given language tag cannot be matched at all,
+% then take an arbitrary literal.
+rdf_preferred_literal(S, P, _LangTag, _NoPreferredLangTag, PreferredLit):-
+  rdf_literal(S, P, PreferredLit, _G), !.
 
 
 % LIST MEMBERSHIP %
