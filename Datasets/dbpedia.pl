@@ -3,8 +3,8 @@
   [
     assert_identity_resource/2, % +Resource:uri
                                 % +Graph:atom
-    assert_resource/2, % +Resource:uri
-                       % +Graph:atom
+    assert_resource/2, % +Graph:atom
+                       % +Resource:uri
     dbpedia_find_concept/2, % +Name:atom
                             % -ConceptName:uri
     describe_resource/2, % +Resource:uri
@@ -16,14 +16,13 @@
   ]
 ).
 
-/** <module> DBpedia
+/** <module> DBPEDIA
 
-Querying DBpedia using SPARQL.
+Query DBpedia using SPARQL.
 
-# Examples
+### Examples
 
-First query for a resource:
-
+Query for a resource:
 ~~~{.sparql}
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -38,8 +37,7 @@ LIMIT 1
 OFFSET 0
 ~~~
 
-Then retrieve all known facts about the result:
-
+Retrieve all known facts about a query result:
 ~~~{.sparql}
 PREFIX dbpedia: <http://dbpedia.org/resource/>
 SELECT ?p ?o
@@ -49,19 +47,16 @@ WHERE
 }
 ~~~
 
-# tmp
-
-    <instance_types_en.ttl> ,
-    <mappingbased_properties_en.ttl> ,
-    <specific_mappingbased_properties_en.ttl> .
-
 @author Wouter Beek
-@version 2013/03-2013/05
+@version 2013/03-2013/05, 2013/08
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
+:- use_module(library(debug)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(owl(owl_build)).
@@ -69,6 +64,7 @@ WHERE
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdf(rdf_term)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(sparql(sparql_ext)).
 :- use_module(xml(xml_namespace)).
@@ -89,7 +85,7 @@ WHERE
 :- register_sparql_prefix(umbel).
 :- register_sparql_prefix(yago).
 
-:- rdf_meta(assert_resource(r,+)).
+:- rdf_meta(assert_resource(+,r)).
 :- rdf_meta(describe_resource(r,-)).
 :- rdf_meta(find_dbpedia_agent(+,+,+,r)).
 
@@ -99,26 +95,17 @@ WHERE
 
 
 
-assert_identity_resource(FromSubject, Graph):-
-  setoff(
-    ToSubject,
-    owl_resource_identity(FromSubject, ToSubject),
-    ToSubjects
-  ),
-  forall(
-    member(Subject, [FromSubject | ToSubjects]),
-    (
-      assert_resource(Subject, Graph)
-    )
-  ).
+assert_identity_resource(IRI, G):-
+  owl_identity_set(IRI, I_Set),
+  maplist(assert_resource(G), I_Set).
 
-assert_resource(Subject, Graph):-
-  rdf_is_resource(Subject),
-  atom(Graph),
-  describe_resource(Subject, Rows),
+assert_resource(G, IRI):-
+  rdf_is_iri(IRI),
+  rdf_graph(G), !,
+  describe_resource(IRI, PO_Rows),
   forall(
-    member(row(Predicate, Object), Rows),
-    rdf_assert(Subject, Predicate, Object, Graph)
+    member(row(P, O), PO_Rows),
+    rdf_assert(IRI, P, O, G)
   ).
 
 %! dbpedia_find_concept(+Name:atom, -ConceptName:uri) is det.
@@ -142,6 +129,12 @@ dbpedia_find_concept(Name, ConceptName):-
   ;
     first(Resources, row(ConceptName))
   ).
+
+%! describe_resource(+Resource:iri, -Rows:list(compound)) is det.
+% Returns a depth-1 description of the given resource
+% in terms of predicate-object rows.
+%
+% @tbd Make the depth of the description a parameter.
 
 describe_resource(Resource, Rows):-
   format(atom(Where), '  <~w> ?p ?o .', [Resource]),
@@ -194,23 +187,4 @@ find_dbpedia_agent(Name, Birth, Death, DBpediaAuthor):-
   ;
     first(Resources, row(DBpediaAuthor))
   ).
-
-/*
-load:-
-  assert(user:file_search_path(data_dbpedia, data('DBpedia'))),
-  % Check for existence and read access.
-  absolute_file_name(
-    data('DBpedia'),
-    _Directory,
-    [access(read), file_type(directory)]
-  ),
-  absolute_file_name(
-    data_dbpedia(void),
-    File,
-    [access(read), file_type(turtle)]
-  ),
-  rdf_attach_library(File),
-  rdf_load_library('dbpedia-owl'),
-  rdf_load_library(dbpedia).
-*/
 

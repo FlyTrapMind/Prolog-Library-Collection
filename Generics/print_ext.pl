@@ -118,7 +118,7 @@ indent(Stream, Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(Stream, NumberOfSpaces).
 
-is_meta(transformation).
+is_meta(ordering).
 is_meta(write_method).
 
 %! print_collection(+Options:list(nvpair), +Collection:list) is det.
@@ -126,8 +126,9 @@ is_meta(write_method).
 %   1. =|begin(+Begin:atom)|=
 %   2. =|end(+End:atom)|=
 %   3. =|separator(+Separator:atom)|=
-%   4. =|transformation(:Pred)|=
-%      The binary predicate that is applied to the collection.
+%   4. =|ordering(:Pred)|=
+%      The binary predicate that is applied to the collection
+%      to determine the order in which its elements occur.
 %   5. =|write_method(:Pred)|=
 %      The unary predicate that is used for writing the individual items
 %      in the collection.
@@ -135,23 +136,24 @@ is_meta(write_method).
 print_collection(O1, Collection1):-
   meta_options(is_meta, O1, O2),
   % E.g., list -> set.
-  option(transformation(P), O2, =),
+  option(ordering(P), O2, =),
   once(call(P, Collection1, Collection2)),
-  % Open a set.
+  % Open a collection.
   option(begin(Begin), O2),
   write(Begin),
   print_collection_(O2, Collection2).
-
-% Done!
-print_collection_(O, []):- !,
+  % End a collection.
   option(end(End), O),
   write(End).
-% Nested set.
+
+% Done!
+print_collection_(O, []):- !.
+% Nested collection.
 print_collection_(O, [H1|T]):-
   is_list(H1), !,
   % Notice that set members that are sets may contain multiple occurrences,
   % since they will first be explicitly converted to ordset format.
-  option(transformation(P), O, =),
+  option(ordering(P), O, =),
   once(call(P, H1, H2)),
   print_collection(O, H2),
   print_collection_(O, T).

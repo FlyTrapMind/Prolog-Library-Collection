@@ -78,6 +78,10 @@
              % +Input:term
              % -Output:term
              % -History:list(term)
+    update_datastructure/4, % :Call
+                            % +OldDatastructure
+                            % +Arguments:list
+                            % -NewDatastructurte
 
 % OTHERS
     run_in_working_directory/2, % :Call
@@ -132,6 +136,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(switch(+,:,+)).
 :- meta_predicate(unless(0,0)).
+:- meta_predicate(update_datastructure(3,+,+,-)).
 :- meta_predicate(user_interaction(+,:,+,+)).
 :- meta_predicate(xor(0,0)).
 
@@ -464,6 +469,23 @@ multi(Goal, Count, Input, Output, [Intermediate | History]):-
   call(Goal, Input, Intermediate),
   NewCount is Count - 1,
   multi(Goal, NewCount, Intermediate, Output, History).
+
+%! update_datastructure(
+%!   :Call,
+%!   +OldDatastructure,
+%!   +Arguments:list,
+%!   -NewDatastructurte
+%! ) is det.
+% Prolog cannot do pass-by-reference.
+% This means that when a datastructure has to be repeatedly updated,
+% both its old and its new version have to be passed around in full.
+% Examples of these are in the SWI-Prolog libraries for association lists
+% and ordered sets.
+
+update_datastructure(_Call, Datastructure, [], Datastructure).
+update_datastructure(Call, Datastructure1, [H|T], Datastructure3):-
+  call(Call, Datastructure1, H, Datastructure2),
+  update_datastructure(Call, Datastructure2, T, Datastructure3).
 
 
 
