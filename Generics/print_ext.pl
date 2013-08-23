@@ -238,12 +238,7 @@ print_set(Out, List):-
 print_set(O1, Out, List):-
   merge_options(
     O1,
-    [
-      begin('{'),
-      end('}'),
-      separator(','),
-      transformation(ordsets:list_to_ord_set)
-    ],
+    [begin('{'),end('}'),ordering(ordsets:list_to_ord_set),separator(',')],
     O2
   ),
   with_output_to(Out, print_collection(O2, List)).
