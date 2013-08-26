@@ -54,7 +54,8 @@ graph_to_gv_file(_Options, Graph, Method, ToFileType, ToFile):-
 
 graph_to_svg_dom(Options, Graph, Method, SVG):-
   graph_to_gv_file(Options, Graph, Method, svg, ToFile),
-  file_to_svg(ToFile, SVG),
+  % @tbd Why the module?!
+  svg:file_to_svg(ToFile, SVG),
   safe_delete_file(ToFile).
 
 tree_to_gv_file(O, Tree, Method, ToFileType, ToFile):-
@@ -122,7 +123,11 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
   ).
 
 to_gv_file(Codes, Method, ToFileType, ToFile):-
-  absolute_file_name(project(tmp), FromFile, [access(write), file_type(dot)]),
+  absolute_file_name(
+    project(tmp),
+    FromFile,
+    [access(write),file_type(graphviz)]
+  ),
   setup_call_cleanup(
     open(FromFile, write, Out),
     put_codes(Out, Codes),

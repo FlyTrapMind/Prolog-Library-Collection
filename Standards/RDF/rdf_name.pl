@@ -170,6 +170,14 @@ rdf_terms_name(Options, RDF_Terms, Name):-
   maplist(rdf_term_name(Options), RDF_Terms, Names),
   print_list(Options, atom(Name), Names).
 
+rdf_term_pair_name(O1, RDF_Term1-RDF_Term2, Name):-
+  maplist(rdf_term_name(O1), [RDF_Term1,RDF_Term2], [Name1,Name2]),
+  format(atom(Name), '~w-~w', [Name1,Name2]).
+
+rdf_term_pairs_name(O1, RDF_TermPairs, Name):-
+  maplist(rdf_term_pair_name(O1), RDF_TermPairs, Names),
+  print_list(O1, atom(Name), Names).
+
 rdf_triple_name(rdf(S,P,O), T_Name):- !,
   rdf_triple_name(S, P, O, T_Name).
 rdf_triple_name(T_Name, T_Name).

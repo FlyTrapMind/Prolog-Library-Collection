@@ -104,7 +104,10 @@ default_port(5000).
 % Notice that its port need not be the default port.
 start_dev_server:-
   http_server_property(Port, start_time(_Time)), !,
-  cowspeak('The server at port ~w is used as the debug server.'-[Port]).
+  cowspeak(
+    [speech(false)],
+    'The server at port ~w is used as the debug server.'-[Port]
+  ).
 % No server is running yet, so start a server at the default port.
 start_dev_server:-
   default_port(Port),
