@@ -20,6 +20,7 @@ Predicates for handling LaTeX files.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).

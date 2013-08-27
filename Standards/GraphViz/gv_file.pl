@@ -85,7 +85,7 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
   access_file(FromFile, read),
   must_be(oneof([dot,sfdp]), Method),
   prolog_file_type(ToExtension, ToFileType),
-  prolog_file_type(ToExtension, graphviz_output),
+  prolog_file_type(ToExtension, graphviz_output), !,
 
   % The output file is either given or created.
   (

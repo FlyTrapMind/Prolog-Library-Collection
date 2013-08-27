@@ -51,6 +51,7 @@ The procedure for determining the color of a vertex:
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
@@ -109,7 +110,7 @@ rdf_colorize_namespaces(G, svg):- !,
       % the same color for all namespaces with index I mod M.
       J is (I * Delta) mod NumberOfColors,
       % J can be 0 becasue of the modulus function, so do not use nth1/3.
-      nth0(J, Colors, Color),
+      nth0chk(J, Colors, Color),
       assert(rdf_namespace_color(G, Namespace, Color))
     )
   ).
@@ -308,8 +309,8 @@ rdf_edge_style(_E, solid).
 rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
   % Ids.
   E = FromV-_P-ToV,
-  nth0(FromV_Id, Vs, FromV),
-  nth0(ToV_Id, Vs, ToV),
+  nth0chk(FromV_Id, Vs, FromV),
+  nth0chk(ToV_Id, Vs, ToV),
 
   % Arrow head.
   rdf_edge_arrow_head(E, E_ArrowHead),
@@ -446,7 +447,7 @@ rdf_vertex_shape(RDF_Term, circle):-
 rdf_vertex_shape(_RDF_Term, ellipse).
 
 rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs3)):-
-  nth0(V_Id, Vs, V),
+  nth0chk(V_Id, Vs, V),
   rdf_term_name(O, V, V_Name),
   rdf_vertex_color(O, G, V, V_Color),
   call(CoordFunc, O, Vs, V, V_Coord),

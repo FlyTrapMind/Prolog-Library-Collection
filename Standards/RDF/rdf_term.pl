@@ -50,7 +50,79 @@
 
 /** <module> RDF_TERM
 
+RDF triples consist of three terms:
+  * _Subject_, which is an RDF URI reference or a blank node
+  * _Predicate_, which is an RDF URI reference
+  * _Object_, which is an RDF URI reference, a literal or a blank node
+
+## Blank node
+
+## Literal
+
+## URI reference
+
+A URI reference within an RDF graph (an RDF URI reference) is
+a Unicode string that:
+  * does not contain any control characters (#x00-#x1F, #x7F-#x9F)
+  * and would produce a valid URI character sequence
+    (per RFC-2396, sections 2.1) representing an absolute URI with
+    optional fragment identifier when subjected to the encoding
+    described below.
+
+The encoding consists of:
+  * encoding the Unicode string as UTF-8 [RFC-2279],
+    giving a sequence of octet values.
+  * %-escaping octets that do not correspond to
+    permitted US-ASCII characters.
+
+The disallowed octets that must be %-escaped include
+all those that do not correspond to US-ASCII characters,
+and the excluded characters listed in Section 2.4 of RFC-2396,
+except for the number sign (#), percent sign (%), and
+the square bracket characters re-allowed in RFC-2732.
+
+Disallowed octets must be escaped with the URI escaping mechanism
+(that is, converted to =|%HH|=, where =HH= is the 2-digit hexadecimal
+numeral corresponding to the octet value).
+
+### Equality
+
+Two RDF URI references are equal if and only if they compare as equal,
+character by character, as Unicode strings.
+
+### Relation to "XML Schema 2: Datatypes"
+
+RDF URI references are compatible with the =anyURI= datatype
+as defined by XML Schema Part 2: Datatypes, constrained to be
+an absolute rather than a relative URI reference.
+
+### Relation to "XML Namespaces 1.1"
+
+RDF URI references are compatible with International Resource Identifiers
+as defined by XML Namespaces 1.1.
+
+### Relation to an IRI RFC standard
+
+This section anticipates an RFC on Internationalized Resource Identifiers.
+Implementations may issue warnings concerning the use of RDF URI References
+that do not conform with the IRI draft or its successors.
+
+### Relation to concrete syntaxes
+
+The restriction to absolute URI references is found in this abstract syntax.
+When there is a well-defined base URI, concrete syntaxes, such as RDF/XML,
+may permit relative URIs as a shorthand for such absolute URI references.
+
+### Warning for seemingly equal RDF URI references
+
+Because of the risk of confusion between RDF URI references that
+would be equivalent if derefenced, the use of %-escaped characters
+in RDF URI references is strongly discouraged.
+
+See also the URI equivalence issue of the Technical Architecture Group [TAG].
+
 @author Wouter Beek
+@see KlyneCarroll2004 http://www.w3.org/TR/rdf-concepts/#dfn-URI-reference
 @version 2012/01-2013/05, 2013/07-2013/08
 */
 

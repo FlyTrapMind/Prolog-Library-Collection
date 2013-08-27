@@ -30,6 +30,9 @@
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
                      % ?Members:list(uri)
+% PROPERTY
+    rdf_property/2, % +Graph:atom
+                    % ?Property:iri
 % STRUCTURE-BASED READS
     rdf_index/5, % ?Subject:oneof([bnode,uri])
                  % ?Predicate:uri
@@ -56,8 +59,10 @@ literals.
 */
 
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(math(random_ext)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
@@ -72,6 +77,8 @@ literals.
 % LIST MEMBERSHIP %
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
+% PROPERTY
+:- rdf_meta(rdf_property(+,r)).
 % STRUCTURE-BASED READS %
 :- rdf_meta(rdf_index(r,r,r,?,?)).
 :- rdf_meta(rdf_node(?,r)).
@@ -191,6 +198,14 @@ rdf_member(Member, List):-
 
 rdf_memberchk(Member, List):-
   once(rdf_member(Member, List)).
+
+
+
+% PROPERTY %
+
+rdf_property(G, P):-
+  rdf_term(G, P),
+  rdfs_individual_of(P, rdf:'Property').
 
 
 

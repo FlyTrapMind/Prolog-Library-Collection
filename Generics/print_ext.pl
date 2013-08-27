@@ -141,13 +141,13 @@ print_collection(O1, Collection1):-
   % Open a collection.
   option(begin(Begin), O2),
   write(Begin),
-  print_collection_(O2, Collection2).
+  print_collection_(O2, Collection2),
   % End a collection.
-  option(end(End), O),
+  option(end(End), O2),
   write(End).
 
 % Done!
-print_collection_(O, []):- !.
+print_collection_(_O, []):- !.
 % Nested collection.
 print_collection_(O, [H1|T]):-
   is_list(H1), !,

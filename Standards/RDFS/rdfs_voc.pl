@@ -1,7 +1,8 @@
 :- module(
   rdfs_voc,
   [
-    rdfs_voc_to_pdf/0
+    rdfs_voc_pdf/1, % ?File:atom
+    rdfs_voc_web/1 % -SVG:dom
   ]
 ).
 
@@ -13,34 +14,53 @@ Exports the vocabulary for RDFS.
 @version 2013/08
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(gv(gv_file)).
+:- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(os(run_ext)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdfs(rdfs_build)).
+:- use_module(rdfs(rdfs_read)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
 
 
 
-rdfs_voc_to_pdf:-
-  % Load the W3C file specifying the vocabulary for RDFS.
-  rdf_new_graph(rdfs_schema, G1),
-  absolute_file_name(rdfs(rdfs), File, [access(read), file_type(rdf)]),
-  rdf_load2(File, [graph(G1)]),
+% RDF VOCABULARY %
+
+rdf_voc(GIF):-
+  load_in_graph(G),
+
+  % Customization.
+  rdf_retractall(_, rdfs:isDefinedBy, _, G),
+  rdf_register_namespace_color(G, rdf, darkblue),
+  % Remove the RDFS classes.
+  setoff(
+    RDFS_Class,
+    (
+      rdfs_class(G, RDFS_Class),
+      rdf_global_id(rdfs:_, RDFS_Class)
+    ),
+    RDFS_Classes
+  ),
+  maplist(rdfs_remove_class(G), RDFS_Classes),
+  % Remove the RDFS properties.
+  setoff(
+    RDFS_Property,
+    (
+      rdf_property(G, RDFS_Property),
+      rdf_global_id(rdfs:_, RDFS_Property)
+    ),
+    RDFS_Properties
+  ),
+  maplist(rdf_remove_property(G), RDFS_Properties),
   
-  % We want to hide some aspects from the displayed version:
-  % Every concept has an =|rdfs:isDefinedBy|= relation to
-  % either =|:rdf|= or =|:rdfs|=.
-  % We indicate this distinction using colors instead.
-  rdf_new_graph(rdfs_schema, G2),
-  % @tbd Modules?!
-  rdf_graph:rdf_graph_copy(G1, G2),
-  rdf_retractall(_, rdfs:isDefinedBy, _, G2),
-  rdf_register_namespace_color(G2, rdf, darkblue),
-  rdf_register_namespace_color(G2, rdfs, darkgreen),
-  
-  % Thats it, let's export the RDF graph and convert it
-  % to a PDF using GraphViz.
+  % Thats it, let's export the RDF graph to GIF.
   export_rdf_graph(
     [
       colorscheme(svg),
@@ -49,8 +69,70 @@ rdfs_voc_to_pdf:-
       literals(preferred_label),
       uri_desc(uri_only)
     ],
-    G2,
+    G,
     GIF
-  ),
-  graph_to_gv_file([], GIF, sfdp, pdf, PDF_File),
-  open_pdf(PDF_File).
+  ).
+
+rdf_voc_pdf(File):-
+  (nonvar(File) -> access_file(File, write); true),
+  rdf_voc(GIF),
+  graph_to_gv_file([], GIF, sfdp, pdf, File).
+
+rdf_voc_web(SVG):-
+  rdf_voc(GIF),
+  graph_to_svg_dom([], GIF, sfdp, SVG).
+
+
+
+% RDFS VOCABULARY %
+
+rdfs_voc(GIF):-
+  load_in_graph(G),
+
+  % Customization.
+  rdf_retractall(_, rdfs:isDefinedBy, _, G),
+  rdf_register_namespace_color(G, rdf, darkblue),
+  rdf_register_namespace_color(G, rdfs, darkgreen),
+
+  % Thats it, let's export the RDF graph to GIF.
+  export_rdf_graph(
+    [
+      colorscheme(svg),
+      edge_labels(replace),
+      language(en),
+      literals(preferred_label),
+      uri_desc(uri_only)
+    ],
+    G,
+    GIF
+  ).
+
+rdfs_voc_pdf(File):-
+  (nonvar(File) -> access_file(File, write); true),
+  rdfs_voc(GIF),
+  graph_to_gv_file([], GIF, sfdp, pdf, File).
+
+rdfs_voc_web(SVG):-
+  rdfs_voc(GIF),
+  graph_to_svg_dom([], GIF, sfdp, SVG).
+
+
+
+% GENERICS %
+
+%! load_in_graph(-Graph:atom) is det.
+
+load_in_graph(G2):-
+  % Load the W3C file specifying the vocabulary for RDFS.
+  rdf_new_graph(rdfs_schema, G1),
+  absolute_file_name(rdfs(rdfs), File, [access(read), file_type(rdf)]),
+  rdf_load2(File, [graph(G1)]),
+
+  % We want to hide some aspects from the displayed version:
+  % Every concept has an =|rdfs:isDefinedBy|= relation to
+  % either =|:rdf|= or =|:rdfs|=.
+  % We indicate this distinction using colors instead.
+  rdf_new_graph(rdfs_schema, G2),
+  % @tbd Modules?!
+  rdf_graph:rdf_graph_copy(G1, G2).
+

@@ -6,11 +6,6 @@
                              % +Class:uri
                              % +Graph:atom
 
-% LISTS
-    rdf_assert_list/3, % +List:list
-                       % -RDF_List:uri
-                       % +Graph:atom
-
 % LITERAL ASSERTIONS
     rdf_assert_datatype/5, % +Subject:oneof([bnode,uri])
                            % +Predicate:uri
@@ -58,8 +53,10 @@
                               % ?Graph:atom
 
 % PROPERTIES
-    rdf_assert_property/2 % +Property:uri
-                          % +Graph:atom
+    rdf_assert_property/2, % +Property:uri
+                           % +Graph:atom
+    rdf_remove_property/2 % +Graph:atom
+                          % +Property:iri
   ]
 ).
 
@@ -94,8 +91,6 @@ The supported datatypes:
 
 % INDIVIDUALS %
 :- rdf_meta(rdf_assert_individual(r,r,+)).
-% LISTS
-:- rdf_meta(rdf_assert_list(+,r,+)).
 % LITERAL ASSERTIONS
 :- rdf_meta(rdf_assert_datatype(r,r,+,+,+)).
 :- rdf_meta(rdf_assert_literal(r,r,+,+)).
@@ -110,6 +105,7 @@ The supported datatypes:
 :- rdf_meta(rdf_retractall_literal(r,r,?,?,?)).
 % PROPERTIES %
 :- rdf_meta(rdf_assert_property(r,+)).
+:- rdf_meta(rdf_remove_property(+,r)).
 
 :- debug(rdf_build).
 
@@ -126,50 +122,6 @@ The supported datatypes:
 
 rdf_assert_individual(I, C, G):-
   rdf_assert(I, rdf:type, C, G).
-
-
-
-% LISTS %
-
-%! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
-% Asserts the given, possibly nested list into RDF.
-%
-% @param List The, possibly nested, Prolog list.
-% @param RDF_List The URI of the node at which the RDF list starts.
-% @param Graph The atomic name of a graph or unbound.
-%
-% @author Wouter Beek, elaborating on Sanders original, allowing the graph
-%         to be optional and returning the root of the asserted list.
-% @author Sander Latour, who wrote the original version, dealing with
-%         nested lists.
-
-rdf_assert_list(List, RDF_List, G):-
-  add_blank_list_individual(RDF_List, G),
-  rdf_assert_list0(List, RDF_List, G).
-
-rdf_assert_list0([], rdf:nil, _Graph).
-rdf_assert_list0([H|T], RDF_List, G):-
-  (
-    is_list(H)
-  ->
-    rdf_assert_list0(H, H1, G)
-  ;
-    H1 = H
-  ),
-  rdf_assert(RDF_List, rdf:first, H1, G),
-  (
-    T == []
-  ->
-    rdf_global_id(rdf:nil, TList)
-  ;
-    add_blank_list_individual(TList, G),
-    rdf_assert_list0(T, TList, G)
-  ),
-  rdf_assert(RDF_List, rdf:rest, TList, G).
-
-add_blank_list_individual(Blank, G):-
-  rdf_bnode(Blank),
-  rdf_assert_individual(Blank, rdf:'List', G).
 
 
 
@@ -364,4 +316,10 @@ rdf_overwrite_datatype(S, P, DatatypeName, NewValue, G):-
 
 rdf_assert_property(Property, G):-
   rdf_assert_individual(Property, rdf:'Property', G).
+
+rdf_remove_property(G, P):-
+  rdf_property(G, P), !,
+  rdf_retractall(P, _, _, G),
+  rdf_retractall(_, P, _, G),
+  rdf_retractall(_, _, P, G).
 

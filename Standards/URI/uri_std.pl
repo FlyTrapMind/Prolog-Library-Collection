@@ -6,6 +6,16 @@ Standard support for URIs, IRIs, URNs, and URLs.
 
 # Overview of standardization process
 
+In June 1994, the IETF published Berners-Lee's RFC 1630:
+the first RFC that (in its non-normative text) acknowledged
+the existence of URLs and URNs, and, more importantly,
+defined a formal syntax for Universal Resource Identifiers
+— URL-like strings whose precise syntaxes and semantics depended
+on their schemes. In addition, this RFC attempted to summarize
+the syntaxes of URL schemes in use at the time.
+It also acknowledged, but did not standardize, the existence of
+relative URLs and fragment identifiers.
+
 In December 1994, RFC 1738 formally defined relative and absolute URLs,
 refined the general URL syntax, defined how to resolve relative URLs
 to absolute form, and better enumerated the URL schemes then in use.
@@ -63,16 +73,51 @@ the Interest Group Note *Cool URIs for the Semantic Web*.
 This explains the use of content negotiation and the 303-redirect code
 in more detail.
 
+## Examples
+
+### Absolute URIs
+
+~~~
+http://example.org/absolute/URI/with/absolute/path/to/resource.txt
+ftp://example.org/resource.txt
+urn:issn:1535-3613
+~~~
+
+### URI references
+
+~~~
+http://en.wikipedia.org/wiki/URI#Examples_of_URI_references ("http" specifies the 'scheme' name, "en.wikipedia.org" is the 'authority', "/wiki/URI" the 'path' pointing to this article, and "#Examples_of_URI_references" is a 'fragment' pointing to this section.)
+http://example.org/absolute/URI/with/absolute/path/to/resource.txt
+//example.org/scheme-relative/URI/with/absolute/path/to/resource.txt
+/relative/URI/with/absolute/path/to/resource.txt
+relative/path/to/resource.txt
+../../../resource.txt
+./resource.txt#frag01
+resource.txt
+#frag01
+(empty string)
+~~~
+
 @author Wouter Beek
 @see http://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Refinement_of_specifications
+@tbd Add RFC 1630
+@tbd Add RFC 1738
 @tbd Add RFC 2141 on URNs.
+@tbd Add RFC 2396
+@tbd Add RFC 2396bis
 @tbd Add RFC 2616 on the HTTP URI scheme.
 @tbd Add RFC 2717 on IANA registration process for schemes.
 @tbd Add RFC 2732 updating RFC 2396 on URIs.
 @tbd Add RFC 2386.
-@tbd Add RFC 3989 on revisions to RFC 2396 and RFC 2732 on URIs.
 @tbd Add RFC 3305.
-@version 2013/07
+@tbd Add RFC 3986 (STD 66).
+@tbd Add "On Linking Alternative Representations To Enable Discovery
+     And Publishing" a guide to best practices and canonical URIs
+     for publishing multiple versions of a given resource.
+@tbd Add httpRange-14 resolution.
+@tbd Add "Cool URIs for the Semantic Web", on the use of
+     content negotiation and the 303-redirect code.
+@version 2013/07-2013/08
 */
 
 :- use_module(library(semweb/rdf_db)).
