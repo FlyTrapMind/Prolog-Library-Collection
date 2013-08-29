@@ -1,13 +1,14 @@
 :- module(
   latex_ext,
   [
+    bibtex_convert_file/1, % +File:atom
     latex_clean/1, % +File:atom
     latex_clean_directory/1, % +Directory:atom
     latex_code_convert/1, % +File:atom
-    latex_convert/1, % +File:atom
-    latex_convert/2, % +File:atom
-                     % +To:atom
-    latex_convert_directory/1 % +Directory:atom
+    latex_convert_directory/1, % +Directory:atom
+    latex_convert_file/1, % +File:atom
+    latex_convert_file/2 % +File:atom
+                         % +To:atom
   ]
 ).
 
@@ -16,12 +17,11 @@
 Predicates for handling LaTeX files.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06, 2013/08
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
@@ -34,16 +34,22 @@ Predicates for handling LaTeX files.
 :- use_module(os(file_ext)).
 :- use_module(os(shell_ext)).
 
-:- db_add_novel(user:prolog_file_type(aux, aux)).
+:- db_add_novel(user:prolog_file_type(aux, aux      )).
 :- db_add_novel(user:prolog_file_type(aux, latex_out)).
-:- db_add_novel(user:prolog_file_type(log, log)).
+:- db_add_novel(user:prolog_file_type(bib, bibtex   )).
+:- db_add_novel(user:prolog_file_type(log, log      )).
 :- db_add_novel(user:prolog_file_type(log, latex_out)).
-:- db_add_novel(user:prolog_file_type(pdf, pdf)).
+:- db_add_novel(user:prolog_file_type(pdf, pdf      )).
 :- db_add_novel(user:prolog_file_type(pdf, latex_out)).
-:- db_add_novel(user:prolog_file_type(tex, tex)).
-:- db_add_novel(user:prolog_file_type(tex, latex_in)).
+:- db_add_novel(user:prolog_file_type(tex, tex      )).
+:- db_add_novel(user:prolog_file_type(tex, latex_in )).
 
 
+
+bibtex_convert_file(File):-
+  file_name_type(Base, tex, File),
+  directory_file_path(Dir, _, File),
+  process_wrapper(bibtex, [Base], [cwd(Dir)]).
 
 %! file_to_latex_title(+PrologFile:atom, -Title:atom) is det.
 % Returns the title for the TeX file that is generated based on the given
@@ -171,7 +177,7 @@ latex_code_convert(Local, Directory):-
       close(InStream),
       write_latex_footer(OutStream),
       close(OutStream),
-      latex_convert(TeXFile)
+      latex_convert_file(TeXFile)
     )
   ).
 % Dive into directories.
@@ -198,8 +204,7 @@ latex_code_convert(_Local, _Directory).
 %! ) is det.
 
 latex_code_convert(InStream, OutStream, Mode):-
-  at_end_of_stream(InStream),
-  !,
+  at_end_of_stream(InStream), !,
   if_then(
     Mode == prolog,
     (
@@ -207,8 +212,7 @@ latex_code_convert(InStream, OutStream, Mode):-
       nl(OutStream)
     )
   ).
-latex_code_convert(InStream, OutStream, none):-
-  !,
+latex_code_convert(InStream, OutStream, none):- !,
   read_line_to_codes(InStream, Codes),
   (
     phrase(latex(begin), Codes)
@@ -218,8 +222,7 @@ latex_code_convert(InStream, OutStream, none):-
     Mode = none
   ),
   latex_code_convert(InStream, OutStream, Mode).
-latex_code_convert(InStream, OutStream, latex):-
-  !,
+latex_code_convert(InStream, OutStream, latex):- !,
   read_line_to_codes(InStream, Codes),
   (
     phrase(latex(end), Codes)
@@ -232,8 +235,7 @@ latex_code_convert(InStream, OutStream, latex):-
     LaTeXMode = latex
   ),
   latex_code_convert(InStream, OutStream, LaTeXMode).
-latex_code_convert(InStream, OutStream, prolog):-
-  !,
+latex_code_convert(InStream, OutStream, prolog):- !,
   read_line_to_codes(InStream, Codes),
   (
     phrase(latex(begin), Codes)
@@ -248,25 +250,50 @@ latex_code_convert(InStream, OutStream, prolog):-
   ),
   latex_code_convert(InStream, OutStream, Mode).
 
-latex_convert(Entry):-
-  directory_file_path(To, _File, Entry),
-  latex_convert(Entry, To).
+latex_convert_file(File):-
+  exists_directory(File), !,
+  latex_convert_directory(File).
+latex_convert_file(FromFile):-
+  directory_file_path(ToDir, _, FromFile),
+  latex_convert_file(FromFile, ToDir).
 
-latex_convert(Entry, To):-
-  is_absolute_file_name(Entry),
-  access_file(Entry, read),
-  access_file(To, write),
+latex_convert_file(FromFile, ToDir):-
+  % Check arguments.
+  is_absolute_file_name(FromFile),
+  access_file(FromFile, read),
+  access_file(ToDir, write),
+
+  % Exit with an error code when an error is encountered.
+  process_wrapper(pdflatex, ['-halt-on-error',FromFile], [cwd(ToDir)]).
+
+latex_convert_directory(From):-
+  access_file(From, read),
+  directory_files(From, latex_in, Entries),
+  maplist(latex_convert_file, Entries).
+
+print_error([]):- !.
+print_error(Codes):-
+  print_message(warning, latex(error(Codes))).
+print_output(Codes, 0):-
+  print_message(information, latex(error(Codes))).
+print_output(Codes, Status):-
+  Status =\= 0,
+  print_message(warning, latex(error(Codes))).
+prolog:message(latex(error(Codes))) -->
+  ['~s'-[Codes]].
+
+process_wrapper(ProcessName, ProcessArguments, ProcessOptions1):-
+  merge_options(
+    ProcessOptions1,
+    [process(PID),stderr(pipe(Error)),stdout(pipe(Out))],
+    ProcessOptions2
+  ),
+
   setup_call_cleanup(
     process_create(
-      path(pdflatex),
-      % Exit with an error code when an error is encountered.
-      ['-halt-on-error', Entry],
-      [
-        cwd(To),
-        process(PID),
-        stderr(pipe(Error)),
-        stdout(pipe(Out))
-      ]
+      path(ProcessName),
+      ProcessArguments,
+      ProcessOptions2
     ),
     (
       read_stream_to_codes(Out, OutCodes, []),
@@ -285,32 +312,6 @@ latex_convert(Entry, To):-
     Exception,
     format(user_output, '~w', [Exception])
   ).
-
-latex_convert_file(File):-
-  exists_directory(File),
-  !,
-  latex_convert_directory(File).
-latex_convert_file(File):-
-  latex_convert(File).
-
-latex_convert_directory(From):-
-  access_file(From, read),
-  directory_files(From, latex_in, Entries),
-  forall(
-    member(Entry, Entries),
-    latex_convert_file(Entry)
-  ).
-
-print_error([]):- !.
-print_error(Codes):-
-  print_message(warning, latex(error(Codes))).
-print_output(Codes, 0):-
-  print_message(information, latex(error(Codes))).
-print_output(Codes, Status):-
-  Status =\= 0,
-  print_message(warning, latex(error(Codes))).
-prolog:message(latex(error(Codes))) -->
-  ['~s'-[Codes]].
 
 write_latex_codes(Stream, Codes):-
   atom_codes(Atom1, Codes),

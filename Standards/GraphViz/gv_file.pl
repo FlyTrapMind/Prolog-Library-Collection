@@ -1,6 +1,10 @@
 :- module(
   gv_file,
   [
+    convert_gv/4, % +FromFile:atom
+                  % +Method:oneof([dot,sfdp])
+                  % +ToFileType:oneof([jpeg,pdf,svg,xdot])
+                  % ?ToFile:atom
     graph_to_gv_file/5, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
                         % +Method:onef([dot,sfdp])
@@ -67,7 +71,7 @@ tree_to_gv_file(O, Tree, Method, ToFileType, ToFile):-
 % SUPPORT PREDICATES %
 
 %! convert_gv(
-%!   +FromFile,
+%!   +FromFile:atom,
 %!   +Method:oneof([dot,sfdp]),
 %!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
 %!   ?ToFile:atom
