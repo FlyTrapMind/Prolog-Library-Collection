@@ -63,7 +63,7 @@ The generic predicates for Truth-Maintenance Systems.
 % TMS EXPLANATIONS %
 
 tms_argument(Node, Argument):-
-  breadth_first_rdf_traversal(
+  rdf_breadth_first(
     Node,
     tms:has_consequent,
     tms:has_antecedent,

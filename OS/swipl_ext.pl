@@ -1,72 +1,139 @@
 :- module(
   swipl_ext,
   [
-    check_prolog_version/0
+    check_prolog_version/0,
+    check_prolog_version/1, % +MinimumVersion:nonneg
+    check_prolog_version/3 % ?MinimumMajor:nonneg
+                           % ?MinimumMinor:nonneg
+                           % ?MinimumPatch:nonneg
   ]
 ).
 
 /** <module> SWIPL_EXT
 
-Predicate for SWI-Prolog.
+Predicates that are specific to the operation of SWI-Prolog.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06, 2013/08
 */
+
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_multi)).
+:- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
+:- use_module(library(ansi_term)).
 
 
 
 %! check_prolog_version is semidet.
-% Checks whether a correct version of SWI-Prolog is installed.
+% Checks whether a sufficient version of SWI-Prolog is installed for the PGC.
 
 check_prolog_version:-
-  current_prolog_flag(version, CurrentVersion),
-  minimum_prolog_version(MinimumMajor/MinimumMinor/MinimumPatch),
-  MinimumVersion is
-    (MinimumMajor * 10000) + (MinimumMinor * 100) + (MinimumPatch),
+  minimum_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch),
+  check_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch).
+
+%! check_prolog_version(+MinimumVersion:nonneg) is semidet.
+% Checks whether at least the given version of SWI-Prolog is installed.
+% (to be used for non-PGC project requirements that exceed
+% the PGC requirement).
+%
+% @param MinimumVersion:
+
+check_prolog_version(MinimumVersion):-
+  % Type check.
+  nonneg(MinimumVersion), !,
+
+  % Retrieve the current version as a single integer.
+  current_prolog_flag(version, CurrentVersion1),
   (
-    CurrentVersion >= MinimumVersion
+    % The representation used since SWI-Prolog 2.7.10.
+    integer(CurrentVersion1)
   ->
-    true
+    CurrentVersion2 = CurrentVersion1
+  ;
+    atom_codes(CurrentVersion1, Codes),
+    % The representation used before SWI-Prolog 2.7.10.
+    phrase(prolog_version(CurrentVersion2), Codes)
+  ),
+
+  (
+    CurrentVersion2 >= MinimumVersion, !
   ;
     print_message(
       error,
-      outdated_version(swipl, CurrentVersion, MinimumVersion)
-    ),
-    fail
+      outdated_version(swipl, CurrentVersion2, MinimumVersion)
+    )
   ).
 
-%! minimum_prolog_version(-Version:compound) is det.
-% The minimal SWI-Prolog version that is needed for the features the
-% application uses.
+%! check_prolog_version(
+%!   ?MinimumMajor:nonneg,
+%!   ?MinimumMinor:nonneg,
+%!   ?MinimumPatch:nonneg
+%! ) is semidet.
+% Checks whether at least the given version of SWI-Prolog is installed
+% (to be used for non-PGC project requirements that exceed
+% the PGC requirement).
+
+check_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch):-
+  % Calculate the minimum version as an integer.
+  major_minor_patch_to_integer(
+    MinimumMajor,
+    MinimumMinor,
+    MinimumPatch,
+    MinimumVersion
+  ),
+  check_prolog_version(MinimumVersion).
+
+%! major_minor_patch_to_integer(
+%!   ?Major:nonneg,
+%!   ?Minor:nonneg,
+%!   ?Patch:nonneg,
+%!   -Version:integer
+%! ) is det.
+
+major_minor_patch_to_integer(Major1, Minor1, Patch1, Version):-
+  default(Major1, 0, Major2),
+  default(Minor1, 0, Minor2),
+  default(Patch1, 0, Patch2),
+  Version is (Major2 * 10000) + (Minor2 * 100) + Patch2.
+
+%! minimum_prolog_version(
+%!   ?Major:nonneg,
+%!   ?Minor:nonneg,
+%!   ?Patch:nonneg
+%! ) is nondet.
+% The minimum SWI-Prolog version that is needed for the features the
+% PGC project uses.
 %
 % During active development, i.e. now, I pay little attention to
-% compatibility with older SWI-Prolog versions. I try to run the
-% latest development release on Linux systems (currently:
-% Arch and Fedora) and Windows systems (currently: 7 and 8)
-% (all my systems are 64-bit). I always try to use new SWI-Prolog
-% features immediately in order to keep up with recent advances in
-% logic programming. I do not try to keep the codebase compatible
+% compatibility with older SWI-Prolog versions.
+% I usually run a SWI-Prolog version that is compiled off of the
+% development Git branch.
+% As OS I mostly use Fedora (currently 19) and Windows (currently 8.1).
+%
+% I usually try to use new SWI-Prolog features as soon as they come out
+% in order to keep up with recent advances in logic programming.
+% I do not try to keep the codebase compatible
 % with other Prologs (e.g., Yap), which is a nontrivial chore in the
-% absense of broad standards. All this means that the required version
-% number is probably set higher than it need be for most functionality.
-% Thus, feel free to lower the number and try the PGC out on an older
-% SWI-Prolog version to your liking.
+% absense of broad standards.
 %
-% This is currently set to 6.3.18.
-% 6.2.6 is the latest stable release.
-% 6.3.18 is the latest development release.
+% All this means that the version that is required for running the PGC
+% is probably higher than it need be for most functionality.
+% Thefore, one should feel free to lower the number and try the PGC out on
+% older SWI-Prolog versions as well.
 %
-% @param The version indicator is of the form =|Major/Minor/Paths|=,
-%      with three integers.
+% 6.4.1 is the latest stable release.
+% 6.5.1 is the latest development release.
 
-minimum_prolog_version(6/3/18).
+minimum_prolog_version(6, 5, 2).
 
 prolog:message(outdated_version(Component, Current, Minimum)) -->
   [
-    ansi([fg(red), intensity(normal)], 'Your version of ', []),
-    ansi([bold, fg(red)], '~w', [Component]),
+    ansi([fg(red),intensity(normal)], 'Your version of ', []),
+    ansi([bold,fg(red)], '~w', [Component]),
     ansi(
-      [fg(red), intensity(normal)],
+      [fg(red),intensity(normal)],
       ' is outdated. You are using version ',
       []
     )
@@ -74,7 +141,7 @@ prolog:message(outdated_version(Component, Current, Minimum)) -->
   prolog:message(version(Current)),
   [
     ansi(
-      [fg(red), intensity(normal)],
+      [fg(red),intensity(normal)],
       ' whereas the minimum required version is ',
       []
     )
@@ -83,8 +150,15 @@ prolog:message(outdated_version(Component, Current, Minimum)) -->
 prolog:message(version(Version)) -->
   {
     Major is Version // 10000,
-    Minor is (Version rem Major) // 100,
+    Minor is (Version rem 10000) // 100,
     Patch is Version rem 100
   },
-  ['~w.~w.~w'-[Major, Minor, Patch]].
+  ['~w.~w.~w'-[Major,Minor,Patch]].
+
+%! prolog_version(-Version:nonneg)//
+% Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.
+
+prolog_version(Version) -->
+  dcg_multi(decimal_number, 3, [Major,Minor,Patch], [separator(comma)]),
+  {major_minor_patch_to_integer(Major, Minor, Patch, Version)}.
 

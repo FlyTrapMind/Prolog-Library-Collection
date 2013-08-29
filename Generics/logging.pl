@@ -220,7 +220,7 @@ set_current_log_stream(Stream):-
 
 set_situation(Situation):-
   nonvar(Situation),
-  db_replace_novel(Situation).
+  db_replace_novel(_, Situation).
 
 %! start_log is det.
 % Starts logging.

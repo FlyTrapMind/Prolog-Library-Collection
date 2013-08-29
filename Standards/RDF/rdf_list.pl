@@ -2,6 +2,9 @@
   rdf_list,
   [
     is_rdf_list/1, % +RDF_List:uri
+    rdf_assert_list/3, % +List:list
+                       % -RDF_List:uri
+                       % +Graph:atom
     rdf_list/2, % +RDF_List:uri
                 % -List:list
     rdf_list/3, % +O:list(nvpair)
@@ -31,16 +34,18 @@
 Support for RDF lists.
 
 @author Wouter Beek
-@version 2013/07
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/08
 */
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_build)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 :- rdf_meta(is_rdf_list(r)).
+:- rdf_meta(rdf_assert_list(+,r,+)).
 :- rdf_meta(rdf_list(r,-)).
 :- rdf_meta(rdf_list(+,r,-)).
 :- rdf_meta(rdf_list_first(r,r)).
@@ -59,6 +64,46 @@ Support for RDF lists.
 
 is_rdf_list(RDF_List):-
   rdfs_individual_of(RDF_List, rdf:'List').
+
+%! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
+% Asserts the given, possibly nested list into RDF.
+%
+% @param List The, possibly nested, Prolog list.
+% @param RDF_List The URI of the node at which the RDF list starts.
+% @param Graph The atomic name of a graph or unbound.
+%
+% @author Wouter Beek, elaborating on Sanders original, allowing the graph
+%         to be optional and returning the root of the asserted list.
+% @author Sander Latour, who wrote the original version, dealing with
+%         nested lists.
+
+rdf_assert_list(List, RDF_List, G):-
+  add_blank_list_individual(RDF_List, G),
+  rdf_assert_list0(List, RDF_List, G).
+
+rdf_assert_list0([], rdf:nil, _Graph).
+rdf_assert_list0([H|T], RDF_List, G):-
+  (
+    is_list(H)
+  ->
+    rdf_assert_list0(H, H1, G)
+  ;
+    H1 = H
+  ),
+  rdf_assert(RDF_List, rdf:first, H1, G),
+  (
+    T == []
+  ->
+    rdf_global_id(rdf:nil, TList)
+  ;
+    add_blank_list_individual(TList, G),
+    rdf_assert_list0(T, TList, G)
+  ),
+  rdf_assert(RDF_List, rdf:rest, TList, G).
+
+add_blank_list_individual(Blank, G):-
+  rdf_bnode(Blank),
+  rdf_assert_individual(Blank, rdf:'List', G).
 
 %! rdf_list(+RDF_List:rdf_list, -List:list) is det.
 % @see Wrapper around rdf_list/3.
@@ -178,3 +223,4 @@ rdf_list_member_(Element, Element).
 rdf_list_member_(Element, TempElement1):-
   rdf_list_next(TempElement1, TempElement2),
   rdf_list_member_(Element, TempElement2).
+

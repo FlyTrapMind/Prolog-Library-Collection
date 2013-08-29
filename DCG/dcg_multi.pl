@@ -6,16 +6,16 @@
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
     dcg_multi//3, % :DCG_Body
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
-                  % +Options:list(nvpair)
+                  % :Options:list(nvpair)
     dcg_multi//4, % :DCG_Body
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
                   % ?Arguments1:list
-                  % +Options:list(nvpair)
+                  % :Options:list(nvpair)
     dcg_multi//5 % :DCG_Body
                  % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
                  % ?Arguments1:list
                  % ?Arguments2:list
-                 % +Options:list(nvpair)
+                 % :Options:list(nvpair)
   ]
 ).
 
@@ -38,12 +38,12 @@ Call a DCG rule multiple times while aggregating the arguments.
 %:- meta_predicate(dcg_multi(//,?,?)).
 :- meta_predicate(dcg_multi(2,?,?,?)).
 %:- meta_predicate(dcg_multi(//,?,?,?)).
-:- meta_predicate(dcg_multi(2,?,+,?,?)).
-%:- meta_predicate(dcg_multi(//,?,+,?,?)).
-:- meta_predicate(dcg_multi(3,?,+,+,?,?)).
-%:- meta_predicate(dcg_multi(//,?,+,+,?,?)).
-:- meta_predicate(dcg_multi(4,?,+,+,+,?,?)).
-%:- meta_predicate(dcg_multi(//,?,+,+,+,?,?)).
+:- meta_predicate(dcg_multi(2,?,:,?,?)).
+%:- meta_predicate(dcg_multi(//,?,:,?,?)).
+:- meta_predicate(dcg_multi(3,?,+,:,?,?)).
+%:- meta_predicate(dcg_multi(//,?,+,:,?,?)).
+:- meta_predicate(dcg_multi(4,?,+,+,:,?,?)).
+%:- meta_predicate(dcg_multi(//,?,+,+,:,?,?)).
 :- meta_predicate(dcg_multi_no_arguments(2,+,+,-,+,?,?)).
 %:- meta_predicate(dcg_multi_no_arguments(//,+,+,-,+,?,?)).
 % DCG_NONVAR
@@ -80,9 +80,10 @@ dcg_multi(DCG, Rep) -->
 %! )//
 % @see dcg_multi//5
 
-dcg_multi(DCG, Rep, O) -->
+dcg_multi(DCG, Rep, O1) -->
+  {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_no_arguments(DCG, Max, 0, C, O),
+  dcg_multi_no_arguments(DCG, Max, 0, C, O2),
   {in_between(Min, Max, C)}.
 
 %! dcg_multi(
@@ -93,19 +94,21 @@ dcg_multi(DCG, Rep, O) -->
 %! )//
 % @see dcg_multi//5
 
-dcg_multi(DCG, Rep, L1, O) -->
+dcg_multi(DCG, Rep, L1, O1) -->
   {nonvar(L1)}, !,
+  {meta_options(is_meta, O1, O2)},
   % Apply conversion: atom_to_codes/2.
-  {(atomic(L1), option(convert(Pred), O) -> call(Pred, L1, L2) ; L2 = L1)},
+  {(atomic(L1), option(convert(Pred), O1) -> call(Pred, L1, L2) ; L2 = L1)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_nonvar(DCG, Max, 0, Count, L2, O),
+  dcg_multi_nonvar(DCG, Max, 0, Count, L2, O2),
   {in_between(Min, Max, Count)}.
-dcg_multi(DCG, Rep, L2, O) -->
+dcg_multi(DCG, Rep, L2, O1) -->
   {var(L2)}, !,
+  {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_var(DCG, Min, Max, L1, O),
+  dcg_multi_var(DCG, Min, Max, L1, O2),
   % Apply conversion: atom_to_codes/2.
-  {(option(convert(Pred), O) -> call(Pred, L1, L2) ; L2 = L1)}.
+  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}.
 
 %! dcg_multi(
 %!   :DCG_Rule,
@@ -118,22 +121,25 @@ dcg_multi(DCG, Rep, L2, O) -->
 %   * =|convert(:ConversionPredicate)|=
 %   * =|separator(:SeparatorDCG)|=
 
-dcg_multi(DCG, Rep, L1, M1, O) -->
+dcg_multi(DCG, Rep, L1, M1, O1) -->
   {nonvar(L1), nonvar(M1)}, !,
+  {meta_options(is_meta, O1, O2)},
   % Apply conversion: atom_to_codes/2.
-  {(atomic(L1), option(convert(Pred), O) -> call(Pred, L1, L2) ; L2 = L1)},
-  {(atomic(M1), option(convert(Pred), O) -> call(Pred, M1, M2) ; M2 = M1)},
+  {(atomic(L1), option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
+  {(atomic(M1), option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_nonvar(DCG, Max, 0, Count, L2, M2, O),
+  dcg_multi_nonvar(DCG, Max, 0, Count, L2, M2, O2),
   {in_between(Min, Max, Count)}.
-dcg_multi(DCG, Rep, L2, M2, O) -->
+dcg_multi(DCG, Rep, L2, M2, O1) -->
+  {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_var(DCG, Min, Max, L1, M1, O),
+  dcg_multi_var(DCG, Min, Max, L1, M1, O2),
   % Apply conversion: atom_to_codes/2.
-  {(option(convert(Pred), O) -> call(Pred, L1, L2) ; L2 = L1)},
-  {(option(convert(Pred), O) -> call(Pred, M1, M2) ; M2 = M1)}.
+  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
+  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)}.
 
 % Zero arguments: no distinction between `var` and `nonvar`.
+dcg_multi_no_arguments(_DCG, _Max, C, C, _O) --> [].
 dcg_multi_no_arguments(DCG, Max, C1, C, O) -->
   dcg_call(DCG),
   % Process the separator, if any.
@@ -141,7 +147,6 @@ dcg_multi_no_arguments(DCG, Max, C1, C, O) -->
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_no_arguments(DCG, Max, C2, C, O).
-dcg_multi_no_arguments(_DCG, _Max, C, C, _O) --> [].
 
 
 
@@ -216,11 +221,15 @@ in_between(Min, Max, N):-
   greater_than_or_equal_to(N, Min),
   greater_than_or_equal_to(Max, N).
 
+is_meta(convert).
+is_meta(separator).
+
 repetition(Rep, Min, Max):-
   repetition_(Rep, Min, Max),
   greater_than_or_equal_to(Max, Min).
-repetition_(N, 1, N):-
+repetition_(N, N, N):-
   integer(N), !.
 repetition_(Min1-Max1, Min2, Max2):-
   default(Min1, 0, Min2),
   default(Max1, inf, Max2).
+

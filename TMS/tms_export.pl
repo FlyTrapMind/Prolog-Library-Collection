@@ -39,40 +39,34 @@ export_argument(Node):-
   % Export the justifications that constitute the argument.
   export_tms(TMS, Justifications).
 
-%! export_file(-File:atom, -Stream:stream) is det.
+%! export_file(-File:atom) is det.
 
-export_file(File, Stream):-
+export_file(File):-
   flag(tms_export, ID, ID + 1),
   format(atom(FileName), 'export_~w', [ID]),
   absolute_file_name(
     personal(FileName),
     File,
     [access(write), file_type(dot)]
-  ),
-  open(File, write, Stream, []).
-
-%! export_pdf(+GV_File:atom) is det.
-
-export_pdf(GV_File):-
-  convert_gv(GV_File, dot, pdf, PDF_File),
-  open_pdf(PDF_File).
+  ).
 
 %! export_tms(+TMS:atom) is det.
 % Exports the TMS using GraphViz.
 
 export_tms(TMS):-
   is_registered_tms(TMS),
-  export_file(GV_File, Stream),
+  export_file(GV_File),
   tms_to_graphviz(TMS, Stream),
   close(Stream),
-  export_pdf(GV_File).
+  convert_gv(GV_File, dot, pdf, PDF_File),
+  open_pdf(PDF_File).
 
 %! export_tms(+TMS:atom, +Justifications:list(justification)) is det.
 % Exports the TMS using GraphViz.
 
 export_tms(TMS, Justifications):-
   is_registered_tms(TMS),
-  export_file(GV_File, Stream),
+  export_file(GV_File),
   tms_to_graphviz(TMS, Justifications, Stream),
   close(Stream),
   export_pdf(GV_File).

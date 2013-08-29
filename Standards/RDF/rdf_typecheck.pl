@@ -36,3 +36,4 @@ rdf_is_subject(Subject):-
   rdf_is_bnode(Subject).
 rdf_is_subject(Subject):-
   is_uri(Subject).
+

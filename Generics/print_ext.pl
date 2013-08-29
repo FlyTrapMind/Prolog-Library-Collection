@@ -15,6 +15,12 @@
                     % +NVPair
     print_collection/2, % +Options:list(nvpair)
                         % +Collection:list
+    print_pair/1, % Pair:nvpair
+    print_proof/2, % ?Out
+                   % +Proof:tree
+    print_proof/3, % :Options:list(nvpair)
+                   % ?Out
+                   % +Proof:tree
     print_list/2, % +Out
                   % +List:list
     print_list/3, % +Options:list(nvpair)
@@ -22,9 +28,14 @@
                   % +List:list
     print_set/2, % +Out
                  % +List:list
-    print_set/3 % +Options:list(nvpair)
-                % +Out
-                % +List:list
+    print_set/3, % +Options:list(nvpair)
+                 % +Out
+                 % +List:list
+    print_tuple/2, % +Out
+                   % +List:list
+    print_tuple/3 % +Options:list(nvpair)
+                  % +Out
+                  % +List:list
   ]
 ).
 
@@ -40,17 +51,22 @@ proof(Conclusion, Premises)
 ~~~
 
 @author Wouter Beek
-@version 2013/01-2013/02, 2013/04-2013/05, 2013/07
+@tbd Remove all predicate variants that have an `Out` parameter.
+     The calling context should use with_output_to/2 instead.
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/08
 */
 
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_os)).
 :- use_module(generics(atom_ext)). % Meta-calls.
+:- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(graph_theory(graph_generic)).
-:- use_module(library(apply)).
-:- use_module(library(memfile)).
+:- use_module(generics(option_ext)).
+:- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(rdf(rdf_export)).
-:- use_module(rdf(rdf_graph)).
+
+:- meta_predicate(print_proof(:,?,+)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -102,50 +118,53 @@ indent(Stream, Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(Stream, NumberOfSpaces).
 
-%! print_collection(+Options:list(nvpair), +Collection:list) is det.
-% @param Options The following options are supported:
-%      1. `begin(+Begin:atom)`
-%      2. `end(+End:atom)`
-%      3. `separator(+Separator:atom)`
-%      4. `transformation(:Pred)`
-%         The binary predicate that is applied to the collection.
+is_meta(ordering).
+is_meta(write_method).
 
-print_collection(O, Collection1):-
+%! print_collection(+Options:list(nvpair), +Collection:list) is det.
+% The following options are supported:
+%   1. =|begin(+Begin:atom)|=
+%   2. =|end(+End:atom)|=
+%   3. =|separator(+Separator:atom)|=
+%   4. =|ordering(:Pred)|=
+%      The binary predicate that is applied to the collection
+%      to determine the order in which its elements occur.
+%   5. =|write_method(:Pred)|=
+%      The unary predicate that is used for writing the individual items
+%      in the collection.
+
+print_collection(O1, Collection1):-
+  meta_options(is_meta, O1, O2),
   % E.g., list -> set.
-  option(transformation(P), O, =),
+  option(ordering(P), O2, =),
   once(call(P, Collection1, Collection2)),
-  % Open a set.
-  option(begin(Begin), O),
+  % Open a collection.
+  option(begin(Begin), O2),
   write(Begin),
-  print_collection_(O, Collection2).
+  print_collection_(O2, Collection2),
+  % End a collection.
+  option(end(End), O2),
+  write(End).
 
 % Done!
-print_collection_(O, []):- !,
-  option(end(End), O),
-  write(End).
-% Nested set.
+print_collection_(_O, []):- !.
+% Nested collection.
 print_collection_(O, [H1|T]):-
   is_list(H1), !,
   % Notice that set members that are sets may contain multiple occurrences,
   % since they will first be explicitly converted to ordset format.
-  option(transformation(P), O, =),
+  option(ordering(P), O, =),
   once(call(P, H1, H2)),
   print_collection(O, H2),
   print_collection_(O, T).
 % Next set member.
 print_collection_(O, [H|T]):-
-  write(H),
+  option(write_method(P), O, write),
+  call(P, H),
   % Do not add the separator after the last set member.
   option(separator(Separator), O),
   unless(T == [], write(Separator)),
   print_collection_(O, T).
-
-print_nvpair(NVPair):-
-  NVPair =.. [Name, Value],
-  write(Name), write(': '), write(Value), write(';').
-
-print_nvpair(Out, NVPair):-
-  with_output_to(Out, print_nvpair(NVPair)).
 
 %! print_list(+Output, +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.
@@ -160,49 +179,74 @@ print_list(O1, Out, List):-
   merge_options(O1, [begin('['),end(']'),separator(',')], O2),
   with_output_to(Out, print_collection(O2, List)).
 
+print_nvpair(NVPair):-
+  NVPair =.. [Name, Value],
+  write(Name), write(': '), write(Value), write(';').
+
+print_nvpair(Out, NVPair):-
+  with_output_to(Out, print_nvpair(NVPair)).
+
+print_pair(Pair):-
+  (
+    Pair = Name-Value, !
+  ;
+    Pair =.. [Name,Value]
+  ),
+  write('<'),
+  write(Name),
+  write(','),
+  write(Value),
+  write('>').
+
+print_proof(Out, Proof):-
+  print_proof([], Out, Proof).
+
+print_proof(O1, Out, Proof):-
+  meta_options(is_meta, O1, O2),
+  default_option(O2, indent, 0, O3),
+  once(phrase(print_proof(O3, Proof), Codes)),
+  put_codes(Out, Codes).
+
+print_proof(O1, Proof) -->
+  {Proof =.. [Rule,Premises,Conclusion]},
+
+  % Indentation.
+  {update_option(O1, indent, succ, I, O2)},
+  indent(I),
+
+  % The name of the rule that was used for deduction.
+  "[", atom(Rule), "]",
+
+  % Separator between rule name and conclusion.
+  " ",
+
+  % The conclusion.
+  print_proposition(O1, Conclusion),
+  newline,
+
+  % Print premises / subproofs.
+  dcg_multi(print_proof(O2), _, Premises, []).
+
+print_proposition(O1, Proposition) -->
+  {option(transformation(Predicate), O1, identity)},
+  {call(Predicate, Proposition, Atom)},
+  atom(Atom).
+
 print_set(Out, List):-
   print_set([], Out, List).
 
 print_set(O1, Out, List):-
   merge_options(
     O1,
-    [
-      begin('{'),
-      end('}'),
-      separator(','),
-      transformation(ordsets:list_to_ord_set)
-    ],
+    [begin('{'),end('}'),ordering(ordsets:list_to_ord_set),separator(',')],
     O2
   ),
   with_output_to(Out, print_collection(O2, List)).
 
+print_tuple(Out, List):-
+  print_tuple([], Out, List).
 
+print_tuple(O1, Out, List):-
+  merge_options(O1, [begin('<'),end('>'),separator(',')], O2),
+  with_output_to(Out, print_collection(O2, List)).
 
-% @tbd The predicates that appear below should be unified with some RDF module
-%      used for exporting triples and with some TMS module used for exporting
-%      justification chains.
-
-print_proposition(Stream, Options, rdf(S, P, O)):-
-  maplist(rdf_term_name(Options), [S, P, O], [S0, P0, O0]),
-  option(indent(Indent), Options, 0),
-  option(index(Index), Options, 'c'),
-  indent(Stream, Indent),
-  format(Stream, '[~w] ~w ~w ~w\n', [Index, S0, P0, O0]).
-
-print_proposition0(Stream, Options, Proposition):-
-  print_proposition(Stream, Options, Proposition), !.
-print_proposition0(Stream, Options, Proposition):-
-  option(indent(Indent), Options, 0),
-  option(index(Index), Options, c),
-  indent(Stream, Indent),
-  format(Stream, '[~w]:\t~w', [Index, Proposition]).
-
-print_proof(_Stream, _Options, []).
-print_proof(Stream, Options, [proof(Conclusion, Premises) | Proofs]):-
-  print_proposition0(Stream, Options, Conclusion),
-  select_option(indent(Indent), Options, Options0),
-  succ(Indent, NewIndent),
-  select_option(index(Index), Options0, Options1, 1),
-  succ(Index, NewIndex),
-  print_proof(Stream, [indent(NewIndent), index(1) | Options1], Premises),
-  print_proof(Stream, [indent(Indent), index(NewIndex) | Options1], Proofs).

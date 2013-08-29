@@ -643,7 +643,7 @@ http_message(http_message(T)) -->
 
 http_to_gv(Tree):-
   absolute_file_name(project(temp), File, [access(write), file_type(jpeg)]),
-  convert_tree_to_gv([name('HTTP message')], Tree, dot, jpeg, File).
+  tree_to_gv_file([name('HTTP message')], Tree, dot, jpeg, File).
 
 %! http_url(
 %!   -Tree:compound,

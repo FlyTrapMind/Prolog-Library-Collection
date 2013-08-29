@@ -1,31 +1,36 @@
 :- module(
   gv_file,
   [
-    convert_gv/4, % +FromFile
-                  % +Method:onef([dot,sfdp])
+    convert_gv/4, % +FromFile:atom
+                  % +Method:oneof([dot,sfdp])
                   % +ToFileType:oneof([jpeg,pdf,svg,xdot])
                   % ?ToFile:atom
-    convert_tree_to_gv/5, % +Options:list(nvpair)
-                          % +Tree:compound
-                          % +Method:onef([dot,sfdp])
-                          % +ToFileType:oneof([jpeg,pdf,svg,xdot])
-                          % ?ToFile:atom
-    gv_to_svg/3 % +FromFile:stream
-                % +Method:onef([dot,sfdp])
-                % -SVG:list
+    graph_to_gv_file/5, % +Options:list(nvpair)
+                        % +GraphInterchangeFormat:compound
+                        % +Method:onef([dot,sfdp])
+                        % +ToFileType:oneof([jpeg,pdf,svg,xdot])
+                        % ?ToFile:atom
+    graph_to_svg_dom/4, % +Options:list(nvpair)
+                        % +GraphInterchangeFormat:compound
+                        % +Method:onef([dot,sfdp])
+                        % -SVG:list
+    tree_to_gv_file/5 % +Options:list(nvpair)
+                      % +Tree:compound
+                      % +Method:onef([dot,sfdp])
+                      % +ToFileType:oneof([jpeg,pdf,svg,xdot])
+                      % ?ToFile:atom
   ]
 ).
 
 /** <module> GV_FILE
 
 @author Wouter Beek
-@version 2011-2013/07
+@version 2011-2013/08
 */
 
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
-:- use_module(generics(print_ext)).
 :- use_module(gv(gv_dcg)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
@@ -47,8 +52,26 @@
 
 
 
+graph_to_gv_file(_Options, Graph, Method, ToFileType, ToFile):-
+  once(phrase(gv_graph(Graph), Codes)),
+  to_gv_file(Codes, Method, ToFileType, ToFile).
+
+graph_to_svg_dom(Options, Graph, Method, SVG):-
+  graph_to_gv_file(Options, Graph, Method, svg, ToFile),
+  % @tbd Why the module?!
+  svg:file_to_svg(ToFile, SVG),
+  safe_delete_file(ToFile).
+
+tree_to_gv_file(O, Tree, Method, ToFileType, ToFile):-
+  once(phrase(gv_tree(O, Tree), Codes)),
+  to_gv_file(Codes, Method, ToFileType, ToFile).
+
+
+
+% SUPPORT PREDICATES %
+
 %! convert_gv(
-%!   +FromFile,
+%!   +FromFile:atom,
 %!   +Method:oneof([dot,sfdp]),
 %!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
 %!   ?ToFile:atom
@@ -66,7 +89,7 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
   access_file(FromFile, read),
   must_be(oneof([dot,sfdp]), Method),
   prolog_file_type(ToExtension, ToFileType),
-  prolog_file_type(ToExtension, graphviz_output),
+  prolog_file_type(ToExtension, graphviz_output), !,
 
   % The output file is either given or created.
   (
@@ -103,18 +126,17 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
     )
   ).
 
-convert_tree_to_gv(O, Tree, Method, ToFileType, ToFile):-
-  once(phrase(gv_tree(O, Tree), Codes)),
-  absolute_file_name(project(tmp), FromFile, [access(write), file_type(dot)]),
+to_gv_file(Codes, Method, ToFileType, ToFile):-
+  absolute_file_name(
+    project(tmp),
+    FromFile,
+    [access(write),file_type(graphviz)]
+  ),
   setup_call_cleanup(
     open(FromFile, write, Out),
     put_codes(Out, Codes),
     close(Out)
   ),
-  convert_gv(FromFile, Method, ToFileType, ToFile).
-
-gv_to_svg(FromFile, Method, SVG):-
-  convert_gv(FromFile, Method, svg, ToFile),
-  file_to_svg(ToFile, SVG),
-  safe_delete_file(ToFile).
+  convert_gv(FromFile, Method, ToFileType, ToFile),
+  safe_delete_file(FromFile).
 

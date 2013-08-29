@@ -124,7 +124,7 @@ rfc1123_datetime_to_gv(Datetime):-
   atom_codes(Datetime, Codes),
   once(phrase(rfc1123_datetime(Tree), Codes)),
   absolute_file_name(project(temp), File, [access(write), file_type(jpeg)]),
-  convert_tree_to_gv([name(Datetime)], Tree, dot, jpeg, File).
+  tree_to_gv_file([name(Datetime)], Tree, dot, jpeg, File).
 
 %! rfc1123_time(
 %!   -Tree:compound,

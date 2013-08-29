@@ -23,7 +23,7 @@ Predicates for sending out HTTP requests.
 
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_parameters)).
-:- use_module(xml(xml)).
+:- use_module(xml(xml_dom)).
 
 
 

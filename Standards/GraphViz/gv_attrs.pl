@@ -13,6 +13,7 @@ Attributes, their allowed values, and their default values for GraphViz.
 
 @author Wouter Beek
 @see http://www.graphviz.org/doc/info/attrs.html
+@tbd Add context check (i.e., node, graph, edges, etc.).
 @version 2011-2013/07
 */
 
@@ -132,7 +133,12 @@ gv_attr(
 ).
 
 gv_attr(Attrs, color, oneof(Colors), [edge,graph,node], black):-
-  gv_attribute_value(Attrs, colorscheme=Colorscheme),
+  (
+    option(colorscheme(Colorscheme), Attrs),
+    !
+  ;
+    gv_attribute_value(Attrs, colorscheme=Colorscheme)
+  ),
   colorscheme_colors(Colorscheme, Colors).
 
 colorscheme_colors(svg, Colors):-

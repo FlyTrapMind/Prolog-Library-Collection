@@ -11,6 +11,8 @@
     rdfs_assert_subclass/3, % +Class:uri
                             % +SuperClass:uri
                             % +Graph:graph
+    rdfs_remove_class/2, % +Graph:atom
+                         % +Class:iri
 
 % DOMAIN & RANGE
     rdfs_assert_domain/3, % +Property:uri
@@ -97,6 +99,7 @@ using the following triples:
 :- rdf_meta(rdfs_assert_individual(r,+)).
 :- rdf_meta(rdfs_assert_property_class(r,+)).
 :- rdf_meta(rdfs_assert_subclass(r,r,+)).
+:- rdf_meta(rdfs_remove_class(+,r)).
 % DOMAIN & RANGE
 :- rdf_meta(rdfs_assert_domain(r,r,+)).
 :- rdf_meta(rdfs_assert_domain_range(r,r,+)).
@@ -108,8 +111,6 @@ using the following triples:
 :- rdf_meta(rdfs_retractall_label(r,+,+,+)).
 % PROPERTY HIERARCHY
 :- rdf_meta(rdfs_assert_subproperty(r,r,+)).
-
-:- initialization(load_rdfs_schema).
 
 
 
@@ -130,6 +131,11 @@ rdfs_assert_property_class(PropertyClass, G):-
 
 rdfs_assert_subclass(Class, SuperClass, G):-
   rdf_assert(Class, rdfs:subClassOf, SuperClass, G).
+
+rdfs_remove_class(G, C):-
+  rdfs_class(G, C), !,
+  rdf_retractall(C, _, _, G),
+  rdf_retractall(_, _, C, G).
 
 
 

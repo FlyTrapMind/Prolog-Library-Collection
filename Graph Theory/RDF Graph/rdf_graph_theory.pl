@@ -1,11 +1,6 @@
 :- module(
   rdf_graph_theory,
   [
-    rdf_beam/5, % +Options:list(nvpair)
-                % +RootVertex:vertex
-                % +Predicates:list
-                % -Vertices:ordset(vertex)
-                % -Edges:ordset(edge)
     rdf_edge/2, % +Graph:atom
                 % ?Edge:edge
     rdf_edge/3, % +Options:list(nvpair)
@@ -20,14 +15,16 @@
                              % -Vertices:ordset(vertex)
     rdf_graph_to_ugraph/2, % +Graph:atom
                            % -UG:ugraph
-    rdf_subgraph/2, % +SubVertices:ordset(vertex)
-                    % +SubGraph:graph
     rdf_neighbor/3, % +Graph:atom
                     % ?Vertex:vertex
                     % ?Neighbor:vertex
     rdf_neighbors/3, % +Graph:atom
                      % +Vertex:vertex
                      % -Neighbors:ordset(vertex)
+    rdf_triples_to_edges/2, % +Triples:list(rdf_triple)
+                            % -Edges:ordset(rdf_term)
+    rdf_triples_to_vertices/2, % +Triples:list(rdf_triple)
+                               % -Vertices:ordset(rdf_term)
     rdf_vertex/2, % +Graph:atom
                   % ?Vertex:vertex
     rdf_vertex/3, % +Options:list(nvpair)
@@ -53,11 +50,12 @@ another. This means that the definitions 'edge' and 'vertex' for graph
 theoretic operations of RDF data must be redefined.
 
 @author Wouter Beek
-@version 2012/01-2013/03, 2013/07
+@version 2012/01-2013/03, 2013/08
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
@@ -80,34 +78,6 @@ theoretic operations of RDF data must be redefined.
 :- rdf_meta(rdf_vertex_equivalence(r,r)).
 
 
-
-%! rdf_beam(
-%!   +Options:list(nvpair),
-%!   +RootVertex,
-%!   +Predicates:list,
-%!   -Vertices:ordset(vertex),
-%!   -Edges:ordset(edge)
-%! ) is det.
-
-rdf_beam(O, V, Ps, Vs, Es):-
-  rdf_beam(O, [V], Ps, Vs, [], Es).
-
-rdf_beam(_O, [], _Ps, AllVs, AllEs, AllEs):-
-  rdf_edges_to_vertices(AllEs, AllVs), !.
-rdf_beam(O, Vs, Ps, AllVs, Es, AllEs):-
-  setoff(
-    V-NextV,
-    (
-      member(V, Vs),
-      member(P, Ps),
-      rdf_has(V, P, NextV),
-      \+ member(V-NextV, Es)
-    ),
-    NextEs
-  ),
-  ord_union(Es, NextEs, NewEs),
-  rdf_edges_to_vertices(NextEs, NextVs),
-  rdf_beam(O, NextVs, Ps, AllVs, NewEs, AllEs).
 
 rdf_bnode_to_var(S, _):-
   rdf_is_bnode(S), !.
@@ -163,6 +133,10 @@ rdf_graph_to_ugraph(G, UG):-
     UG
   ).
 
+rdf_literal_to_value(literal(lang(_Lang,LitVal)), LitVal):- !.
+rdf_literal_to_value(literal(type(_Type,LitVal)), LitVal):- !.
+rdf_literal_to_value(literal(LitVal), LitVal):- !.
+
 %! rdf_neighbor(+Graph:atom, ?Vertex:vertex, ?Neighbor:vertex) is nondet.
 % Neighboring vertices.
 
@@ -172,24 +146,11 @@ rdf_neighbor(G, V1, V2):-
 rdf_neighbors(G, V, Ns):-
   setoff(N, rdf_neighbor(G, V, N), Ns).
 
-%! rdf_subgraph(+Vertices:ordset(vertice), +SubGraph:graph) is semidet.
-% Succeeds if the graph in Options has SubGraph as one of its vertice-induced
-% subgraph.
+rdf_triples_to_edges(Ts, Es):-
+  setoff(FromV-ToV, member(rdf(FromV,_P,ToV), Ts), Es).
 
-rdf_subgraph(SubG, G):-
-  % Make sure that the vertices are a subset.
-  rdf_vertices(SubG, SubVs),
-  rdf_vertices(G, Vs),
-  ord_subset(SubVs, Vs),
-  % Make sure all triples in the subgraph occur in the supergraph as well.
-  % Note that this can be tricky for blank nodes.
-  forall(
-    rdf(S1, P, O1, SubG),
-    (
-      maplist(rdf_bnode_to_var, [S1,O1], [S2,O2]),
-      rdf(S2, P, O2, G)
-    )
-  ).
+rdf_triples_to_vertices(Ts, Vs):-
+  setoff(V, (member(rdf(V1,_P,V2), Ts), (V = V1 ; V = V2)), Vs).
 
 rdf_vertex(G, V):-
   rdf_vertex([], G, V).
@@ -215,27 +176,41 @@ rdf_vertex(O, G, V):-
   (rdf(V, _, _, G) ; rdf(_, V, _, G) ; rdf(_, _, V, G)),
   rdf_vertex_check(O, V).
 
-% Typed literals are only included when `literals-all`.
+% Typed literals are only included when `literals=all`.
 rdf_vertex_check(O, literal(type(_Datatype,_Value))):-
   option(literals(all), O, all), !.
-% Untyped literals.
-rdf_vertex_check(O, Literal1):-
-  (
-    Literal1 = literal(Literal2)
-  ;
-    Literal1 = literal(lang(_Language, Literal2))
-  ), !,
-
+% Untyped literals are included:
+%   * if the language tag is matched, under option `literals=preferred_label`.
+%   * never, under option `literals=none`.
+%   * always, under option `literals=all`
+rdf_vertex_check(O, Lit):-
+  rdf_is_literal(Lit), !,
   option(literals(IncludeLiterals), O, all),
-  % No literal is allowed as vertex.
+
+  % No literal is allowed as vertex under option `literals=none`.
   IncludeLiterals \== none,
 
+  % Under option `literal=preferred_label`,
+  % the given literal must be the preferred literal
+  % for the subject-predicate pair involved.
   (
     IncludeLiterals == preferred_label
   ->
+    % We must know the subject and predicate terms
+    % that occur in the same triple as the given literal.
+    rdf(S, P, Lit),
+    rdf_literal_to_value(Lit, LitValue),
     % Only preferred labels are allowed as vertices.
-    option(language(Language), O, en),
-    rdfs_preferred_label(_RDF_Term, Language, Literal2)
+    option(language(Lang), O, en),
+    % The given literal must be the preferred literal,
+    % otherwise this predicate should fail.
+    rdf_preferred_literal(S, P, Lang, PreferredLang, PreferredLit),
+    LitValue == PreferredLit,
+    % Note that in some cases there is both a literal in the preferred
+    % language and a literal with no language tag, but both with the same
+    % literal value.
+    % In those cases the variant with no language tag should be discarded.
+    PreferredLang == Lang, !
   ;
     % All literals are vertices.
     true

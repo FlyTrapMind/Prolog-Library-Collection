@@ -342,11 +342,11 @@ floatRep(_Precision, N) -->
   numericalSpecialRep(N).
 floatRep(Precision, N) -->
   (
-    noDecimalPtNumeral(Sign, N1)
-  ;
     decimalPtNumeral(Sign, N1)
   ;
     scientificNotationNumeral(Sign, N1)
+  ;
+    noDecimalPtNumeral(Sign, N1)
   ),
   {
     floating_point_precision(Precision, P, EMin, EMax),
@@ -368,7 +368,9 @@ minimalNumericalSpecialRep(negativeInfinity) -->
 minimalNumericalSpecialRep('NaN') -->
   "NaN".
 
-%! numericalSpecialRep(?Literal:oneof([negativeInfinity,positiveInfinity,'NaN']))//
+%! numericalSpecialRep(
+%!   ?Literal:oneof([negativeInfinity,positiveInfinity,'NaN'])
+%! )//
 % ~~~{.ebnf}
 % numericalSpecialRep ::= '+INF' | minimalNumericalSpecialRep
 % ~~~
@@ -399,7 +401,11 @@ scientificNotationNumeral(Sign, N) -->
 % @see The DCG subrules are defined in module [xsd_decimal.pl].
 
 unsignedScientificNotationNumeral(N) -->
-  (unsignedNoDecimalPtNumeral(N1) ; unsignedDecimalPtNumeral(N1)),
+  (
+    unsignedDecimalPtNumeral(N1)
+  ;
+    unsignedNoDecimalPtNumeral(N1)
+  ),
   e,
   noDecimalPtNumeral(_Sign, N2),
   {N is N1 * 10 ** N2}.
@@ -474,7 +480,7 @@ floatingPointRound(NV1, CWidth, EMin, EMax, Round):-
     X is C * 2 ** E2 - 2 ** (E2 - 1),
     catch(
       assign_nv(ABS, X, C, E2, NV2),
-      E,
+      _Exception,
       (
         Sign > 0
       ->
@@ -483,7 +489,7 @@ floatingPointRound(NV1, CWidth, EMin, EMax, Round):-
         Round = negativeInfinity
       )
     ),
-    write(E), nl,
+
     % Return:
     %   * =|S * NV|=, when =|NV < 2 ** CWidth * 2 ** EMax|=.
     %   * =positiveInfinity=, when =S= is positive.

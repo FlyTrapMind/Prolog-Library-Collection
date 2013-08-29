@@ -82,13 +82,14 @@ Raster images have their original sample resampled to the output device.
 
 @author Wouter Beek
 @see SVG 1.1 (Second Edition) http://www.w3.org/TR/2011/REC-SVG11-20110816/
-@version 2012/10, 2013/01-2013/07
+@version 2012/10, 2013/01-2013/08
 */
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(library(plunit)).
+:- use_module(os(os_ext)).
 :- use_module(standards(markup)).
 :- use_module(svg(svg_entities)).
 :- use_module(xml(xml_entities)).
@@ -117,7 +118,7 @@ Raster images have their original sample resampled to the output device.
 ).
 
 % A special SVG file extension is used on Macintosh HFS file systems.
-:- if(is_mac).
+:- if(is_apple).
 :- db_add_novel(user:prolog_file_type('svg ', svg)).
 :- endif.
 % The default SVG file extension is used on Unix and Windows.
@@ -284,7 +285,7 @@ test(svg_document, []):-
   ),
   atom_codes(Atom, Codes),
   formatnl(Atom),
-  convert_tree_to_gv([], Tree, dot, pdf, File),
+  tree_to_gv_file([], Tree, dot, pdf, File),
   formatnl(File).
 
 :- end_tests(svg).

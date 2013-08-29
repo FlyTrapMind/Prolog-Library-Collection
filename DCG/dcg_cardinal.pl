@@ -264,8 +264,8 @@ octal_digit(7, C) --> seven(C).
 octal_number(N) -->
   digits_to_decimal_number(octal_digit, 8, N).
 
-sign(0'-) --> "-". %'
-sign(0'+) --> "+". %'
+sign(-1) --> "-". %'
+sign(1) --> "+". %'
 
 sign(sign(-1), -1) --> "-".
 sign(sign(1), 1) --> "+".

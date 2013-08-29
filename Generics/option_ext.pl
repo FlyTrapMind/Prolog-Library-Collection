@@ -1,14 +1,37 @@
 :- module(
   option_ext,
   [
-    option_dep/2, % +AnyOption
-                  % -NondepOption
+    default_option/4, % +OldOptions:list(nvpair)
+                      % +Name:atom
+                      % +DefaultValue
+                      % -NewOptions:list(nvpair)
+    default_option/5, % +OldOptions:list(nvpair)
+                      % +Name:atom
+                      % +DefaultValue
+                      % -StoredValue
+                      % -NewOptions:list(nvpair)
+    option_deprecated/2, % +AnyOption
+                         % -NondepOption
     option_ext/3, % ?Option
                   % +Options:list
                   % +Default
-    subtract_option/3 % +OldOptions:list(nvpair)
-                      % +Delete:list(nvpair)
+    replace_option/5, % +OldOptions:list(nvpair)
+                      % +Name:atom
+                      % +NewValue
+                      % -OldValue
                       % -NewOptions:list(nvpair)
+    subtract_option/3, % +OldOptions:list(nvpair)
+                       % +Delete:list(nvpair)
+                       % -NewOptions:list(nvpair)
+    update_option/4, % +OldOptions:list(nvpair)
+                     % +Name:atom
+                     % :Predicate
+                     % -NewOptions:list(nvpair)
+    update_option/5 % +OldOptions:list(nvpair)
+                    % +Name:atom
+                    % :Predicate
+                    % -OldValue
+                    % -NewOptions:list(nvpair)
   ]
 ).
 
@@ -22,16 +45,45 @@ first argument position in the given option term (probably under the
 assumption that the option term will always be unary).
 
 @author Wouter Beek
-@version 2013/01, 2013/07
+@version 2013/01, 2013/07-2013/08
 */
 
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
+:- meta_predicate(update_option(+,+,2,-)).
+:- meta_predicate(update_option(+,+,2,-,-)).
 
 
-%! option_dep(+AnyOption, -NondepOption) is det.
+
+%! default_option(
+%!   +OldOptions:list(nvpair),
+%!   +Name:atom,
+%!   +DefaultValue,
+%!   -NewOptions:list(nvpair)
+%! ) is det.
+% @see default_option/5
+
+default_option(OldOptions, Name, DefaultValue, NewOptions):-
+  default_option(OldOptions, Name, DefaultValue, _StoredValue, NewOptions).
+
+%! default_option(
+%!   +OldOptions:list(nvpair),
+%!   +Name:atom,
+%!   +DefaultValue,
+%!   -StoredValue,
+%!   -NewOptions:list(nvpair)
+%! ) is det.
+
+default_option(Options, Name, _DefaultValue, StoredValue, Options):-
+  Option =.. [Name,StoredValue],
+  option(Option, Options), !.
+default_option(OldOptions, Name, DefaultValue, DefaultValue, NewOptions):-
+  Option =.. [Name,DefaultValue],
+  merge_options([Option], OldOptions, NewOptions).
+
+%! option_deprecated(+AnyOption, -NondepOption) is det.
 % Ensures that an option uses the non-depracated format:
 % ~~~
 % Name(Value)
@@ -42,8 +94,8 @@ assumption that the option term will always be unary).
 % Name=Value
 % ~~~
 
-option_dep(Name=Value, Name=Value):- !.
-option_dep(Option, Name=Value):-
+option_deprecated(Name=Value, Name=Value):- !.
+option_deprecated(Option, Name=Value):-
   Option =.. [Name, Value].
 
 option_ext(Option, Options, Default):-
@@ -70,7 +122,32 @@ option_ext(Option, Options, Default):-
     arg(1, Option, Default)
   ).
 
+%! replace_option(
+%!   +OldOptions:list(nvpair),
+%!   +Name:atom,
+%!   +NewValue,
+%!   -OldValue,
+%!   -NewOptions:list(nvpair)
+%! ) is det.
+
+replace_option(OldOptions, Name, NewValue, OldValue, NewOptions):-
+  OldOption =.. [Name,OldValue],
+  select_option(OldOption, OldOptions, TempOptions),
+  NewOption =.. [Name,NewValue],
+  merge_options([NewOption], TempOptions, NewOptions).
+
 subtract_option(Old1, Del1, New):-
-  maplist(option_dep, Old1, Old2),
-  maplist(option_dep, Del1, Del2),
+  maplist(option_deprecated, Old1, Old2),
+  maplist(option_deprecated, Del1, Del2),
   subtract(Old2, Del2, New).
+
+update_option(OldOptions, Name, Predicate, NewOptions):-
+  update_option(OldOptions, Name, Predicate, _OldValue, NewOptions).
+
+update_option(OldOptions, Name, Predicate, OldValue, NewOptions):-
+  OldOption =.. [Name,OldValue],
+  select_option(OldOption, OldOptions, TempOptions),
+  call(Predicate, OldValue, NewValue),
+  NewOption =.. [Name,NewValue],
+  merge_options([NewOption], TempOptions, NewOptions).
+

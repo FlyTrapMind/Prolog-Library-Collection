@@ -104,7 +104,7 @@ export_graph(O, CoordFunc, G, G_Term):-
   atomic(G), rdf_graph(G), !,
   export_rdf_graph(O, CoordFunc, G, G_Term).
 export_graph(O, CoordFunc, G, G_Term):-
-  is_ugraph(G),
+  is_ugraph(G), !,
   export_ugraph(O, CoordFunc, G, G_Term).
 
 %! export_vertex(
@@ -131,14 +131,16 @@ shared_attribute([T1|Ts], N=V):-
   T1 =.. L1,
   last(L1, Attrs1),
   member(Attr1, Attrs1),
-  option_dep(Attr1, N=V),
+  option_deprecated(Attr1, N=V),
+  % The colorscheme cannot be part of this, apparently.
+  N \== colorscheme,
   forall(
     member(T2, Ts),
     (
       T2 =.. L2,
       last(L2, Attrs2),
       member(Attr2, Attrs2),
-      option_dep(Attr2, N=V)
+      option_deprecated(Attr2, N=V)
     )
   ).
 
@@ -149,3 +151,4 @@ shared_attributes(Terms, SharedAttrs, NewTerms):-
     SharedAttrs
   ),
   maplist(remove_attribute(SharedAttrs), Terms, NewTerms).
+

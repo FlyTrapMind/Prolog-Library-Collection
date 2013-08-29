@@ -24,11 +24,14 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(ugraph(ugraph_export)).
 
@@ -37,6 +40,8 @@ In GraphViz vertices are called 'nodes'.
 %! gv_attribute(+Attribute:nvpair)// is det.
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
+%
+% @tbd Add attribute checks.
 
 gv_attribute(Name=Value) --> !,
   gv_id(Name),
@@ -46,6 +51,15 @@ gv_attribute(Name=Value) --> !,
 gv_attribute(Attr) -->
   {Attr =.. [Name,Value]},
   gv_attribute(Name=Value).
+
+%! gv_attribute_list(
+%!   +GraphAttributes:list(nvpair),
+%!   +Attributes:list(nvpair)
+%! )//
+% ~~~{.abnf}
+% attr_list = "[" [a_list] "]" [attr_list]
+% a_list = ID "=" ID [","] [a_list]
+% ~~~
 
 % Attributes occur between square brackets.
 gv_attribute_list(G_Attrs, Attrs1) -->
@@ -125,6 +139,10 @@ gv_edge_statement(I, G_Attrs, edge(From_Id, To_Id, E_Attrs)) -->
 % @param Indent An integer.
 % @param GraphAttributes A list of name-value pairs.
 % @param CategoryAttributes A list of name-value pairs.
+%
+% ~~~
+% attr_stmt = (graph / node / edge) attr_list
+% ~~~
 
 gv_generic_attributes_statement(_Cat, _I, _G_Attrs, []) --> [], !.
 gv_generic_attributes_statement(Cat, I, G_Attrs, CatAttrs) -->
@@ -146,11 +164,29 @@ gv_category(node) --> n,o,d,e.
 %      they are ignored in the input file.
 %      Only in combinattion with directionality `directed`.
 %
-% @tbd Add support for subgraphs in edge statements.
+% ~~~{.abnf}
+% graph = ["strict"] ("graph" / "digraph") [ID] "{" stmt_list "}"
+% ~~~
+%
+% `GraphTerm` is a compound term of the following form:
+% ~~~{.pl}
+% graph(VertexTerms,RankedVertexTerms,EdgeTerms,GraphAttributes)
+% ~~~
+%
+% `RankedVertexTerms` is a list of compound terms of the following form:
+% ~~~{.pl}
+% rank(RankNode,ContentNodes)
+% ~~~
+%
+% @tbd Add support for subgraphs (arbitrary nesting).
 % @tbd Add support for escape strings:
 %      http://www.graphviz.org/doc/info/attrs.html#k:escString
+% @tbd Assert attributes that are generic with respect to a subgraph.
 
 gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
+  gv_graph(graph(V_Terms, [], E_Terms, G_Attrs1)).
+
+gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   {
     shared_attributes(V_Terms, V_Attrs, NewV_Terms),
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
@@ -190,7 +226,26 @@ gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
   dcg_multi(gv_node_statement(NewI, G_Attrs2), _, NewV_Terms, []),
   newline,
 
-  % The list of GraphViz edges.
+  % The ranked GraphViz nodes (displayed at the same height).
+  dcg_multi(gv_ranked_node_collection(NewI, G_Attrs2), _, Ranked_V_Terms, []),
+  newline,
+
+  {
+    findall(
+      edge(From_Id,To_Id,[]),
+      (
+        nth0(Index1, Ranked_V_Terms, rank(vertex(From_Id,_,_),_)),
+        nth0(Index2, Ranked_V_Terms, rank(vertex(To_Id,_,_),_)),
+        % We assume that the rank vertices are nicely ordered.
+        succ(Index1, Index2)
+      ),
+      Rank_Edges
+    )
+  },
+
+  % The rank edges.
+  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, Rank_Edges, []),
+  % The non-rank edges.
   dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, NewE_Terms, []),
   % Note that we do not include a newline here.
 
@@ -304,7 +359,7 @@ gv_node_id(V_Id) -->
 %! )// is det.
 % A GraphViz statement describing a vertex (GraphViz calls vertices 'nodes').
 
-gv_node_statement(I, G_Attrs, vertex(V_Id, _V, V_Attrs)) -->
+gv_node_statement(I, G_Attrs, vertex(V_Id,_V,V_Attrs)) -->
   indent(I), gv_node_id(V_Id), space,
   gv_attribute_list(G_Attrs, V_Attrs), newline.
 
@@ -350,6 +405,24 @@ gv_quoted_string([34|T]) --> !,
 gv_quoted_string([H|T]) -->
   [H],
   gv_quoted_string(T).
+
+gv_ranked_node_collection(I, G_Attrs, rank(Rank_V_Term,Content_V_Terms)) -->
+  % Open the subgraph.
+  indent(I), "{", newline,
+
+  % The rank attribute.
+  {NewI is I + 1},
+  indent(NewI), gv_attribute(rank=same), semi_colon, newline,
+
+  dcg_multi(
+    gv_node_statement(NewI, G_Attrs),
+    _,
+    [Rank_V_Term|Content_V_Terms],
+    []
+  ),
+
+  % Close the subgraph.
+  indent(I), "}", newline.
 
 %! gv_strict(+Strict:boolean)// is det.
 % The keyword denoting that the graph is strict, i.e., has no self-arcs and

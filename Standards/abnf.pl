@@ -160,7 +160,6 @@ ruleset =/ alt3
 ruleset =/ alt4 / alt5
 ~~~
 
-
 ### Value range alternatives
 
 A range of alternative numeric values can be specified compactly,

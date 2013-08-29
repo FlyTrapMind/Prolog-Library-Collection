@@ -195,7 +195,7 @@ open_pdf(BaseOrFile):-
   once(find_program_by_file_type(pdf, Predicate)),
   run_program(Predicate, [File]).
 
-:- if((is_unix ; is_mac)).
+:- if((is_apple ; is_unix)).
 :- db_add_novel(user:file_type_program(pdf, evince)).
 :- db_add_novel(user:file_type_program(pdf, xpdf)).
 :- endif.

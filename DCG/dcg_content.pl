@@ -13,7 +13,7 @@
     indent//1, % +Indent:integer
     spaces//0,
     dcg_void//0,
-    dcg_word//1, % -Word:atom
+    dcg_word//1, % ?Word:atom
     dcg_word//2 % -Tree:compound
                 % ?Word:atom
   ]
@@ -23,6 +23,7 @@
   library(dcg/basics),
   [
     alpha_to_lower//1,
+    atom//1, % +Atom:atom
     blank//0,
     blanks//0,
     blanks_to_nl//0,
@@ -42,7 +43,6 @@ DCG rules for parsing/generating often-occuring content.
 @version 2013/07-2013/08
 */
 
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(library(option)).
@@ -185,7 +185,7 @@ spaces -->
 
 dcg_void --> [].
 
-%! dcg_word(-Word:atom)// is semidet.
+%! dcg_word(?Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.
 %
 % A word is defined as any sequence af alphanumeric characters

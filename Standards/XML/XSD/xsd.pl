@@ -777,14 +777,14 @@ xsd_lexicalCanonicalMap(Datatype, Literal, CanonicalLiteral):-
   xsd_lexicalMap(Datatype, Literal, Value),
   xsd_canonicalMap(Datatype, Value, CanonicalLiteral).
 
-%! xsd_lexicalMap(+Datatype:uri, +Literal:atom, -Value) is det.
+%! xsd_lexicalMap(+Datatype:uri, +Literal:atom, -Value) is nondet.
 %
 % @tbd rdf_meta/1 directive does not work for the Datatype parameter!
 
 xsd_lexicalMap(Datatype1, LEX1, Value):-
   rdf_global_id(Datatype1, Datatype2),
-  atom_codes(LEX1, LEX2),
-  once(xsd_lexicalMap_(Datatype2, LEX2, Value)).
+  format(codes(LEX2), '~w', [LEX1]),
+  xsd_lexicalMap_(Datatype2, LEX2, Value).
 
 xsd_lexicalMap_(xsd:boolean, LEX, Boolean):-
   booleanLexicalMap(LEX, Boolean).

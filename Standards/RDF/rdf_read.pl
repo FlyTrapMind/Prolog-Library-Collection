@@ -20,13 +20,19 @@
                    % ?Language:atom
                    % ?Literal:atom
                    % ?Graph:graph
-
+    rdf_preferred_literal/5, % ?Subject:or([bnode,iri])
+                             % ?Predicate:iri
+                             % +LanguageTag:atom
+                             % ?PreferredLangTag:atom
+                             % ?PreferredLiteral:atom
 % LIST MEMBERSHIP
     rdf_member/2, % ?Member:uri
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
                      % ?Members:list(uri)
-
+% PROPERTY
+    rdf_property/2, % +Graph:atom
+                    % ?Property:iri
 % STRUCTURE-BASED READS
     rdf_index/5, % ?Subject:oneof([bnode,uri])
                  % ?Predicate:uri
@@ -53,8 +59,10 @@ literals.
 */
 
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(math(random_ext)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
@@ -65,9 +73,12 @@ literals.
 :- rdf_meta(rdf_has_datatype(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?)).
+:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
 % LIST MEMBERSHIP %
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
+% PROPERTY
+:- rdf_meta(rdf_property(+,r)).
 % STRUCTURE-BASED READS %
 :- rdf_meta(rdf_index(r,r,r,?,?)).
 :- rdf_meta(rdf_node(?,r)).
@@ -86,20 +97,21 @@ literals.
 %!   ?Value,
 %!   ?Graph:atom
 %! ) is nondet.
+% @tbd Implement the inverse lexical map to fascilitate search (besides read and write).
 
 rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
   xsd_datatype(DatatypeName, Datatype),
-  (
-    nonvar(Value)
-  ->
-    % Interpret all literals, not just the canonical ones.
-    xsd_lexicalMap(Datatype, LEX, Value),
-    rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph)
-  ;
-    rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
-    % This may be nondet!
-    xsd_lexicalMap(Datatype, LEX, Value)
-  ).
+  % Ideally, we would like to interpret all literals, not just the canonical ones.
+  % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
+  % Interpreting literals could be useful for search, i.e. does a specific value
+  % from the value space of the given datatype occur in the currently loaded RDF graph?
+  % For this one needs the inverse of the lexical map.
+  % In the absence of this inverse lexical map, we have to look for a lexical map
+  % of a datatype literal that matches value (this is not so bad as it seems,
+  % if subject, predicate, datatype, and graph are specified).
+  rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
+  % This may be nondet!
+  xsd_lexicalMap(Datatype, LEX, Value).
 
 %! rdf_has_datatype(
 %!   ?Subject:oneof([bnode,uri]),
@@ -133,15 +145,15 @@ rdf_has_datatype(Subject, Predicate, DatatypeName, Value):-
 %
 % @see rdf_literal/5.
 
-rdf_literal(Subject, Predicate, Literal, Graph):-
-  rdf(Subject, Predicate, literal(Literal), Graph).
-rdf_literal(Subject, Predicate, Literal, Graph):-
-  rdf_literal(Subject, Predicate, en, Literal, Graph).
+rdf_literal(S, P, Lit, G):-
+  rdf(S, P, literal(Lit), G).
+rdf_literal(S, P, Lit, G):-
+  rdf_literal(S, P, _Lang, Lit, G).
 
 %! rdf_literal(
 %!   ?Subject:oneof([bnode,uri]),
 %!   ?Predicate:uri,
-%!   ?Language:atom,
+%!   ?LanguageTag:atom,
 %!   ?Literal:atom,
 %!   ?Graph:graph
 %! ) is nondet.
@@ -153,9 +165,29 @@ rdf_literal(Subject, Predicate, Literal, Graph):-
 % @param Literal An atom.
 % @param Graph The atomic name of an RDF graph.
 
-rdf_literal(Subject, Predicate, Language, Literal, Graph):-
-  rdf(Subject, Predicate, literal(lang(Language, Literal)), Graph).
+rdf_literal(S, P, LangTag, Lit, G):-
+  rdf(S, P, literal(lang(LangTag, Lit)), G).
 
+%! rdf_preferred_literal(
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?LanguageTag:atom,
+%!   ?PreferredLanguageTag:atom,
+%!   ?PreferredLiteral:atom
+%! ) is det.
+% Look for the preferred languages, in order of occurrence in
+% the given list of language subtags.
+%
+% @tbd Make sure the language subtags are standards compliant.
+
+rdf_preferred_literal(S, P, LangTag, PreferredLangTag, PreferredLit):-
+  % Takes both atoms and lists of atoms as argument.
+  rdf_literal(S, P, LangTag, PreferredLit, _G),
+  PreferredLangTag = LangTag, !.
+% If the given language tag cannot be matched at all,
+% then take an arbitrary literal.
+rdf_preferred_literal(S, P, _LangTag, _NoPreferredLangTag, PreferredLit):-
+  rdf_literal(S, P, PreferredLit, _G), !.
 
 
 % LIST MEMBERSHIP %
@@ -166,6 +198,14 @@ rdf_member(Member, List):-
 
 rdf_memberchk(Member, List):-
   once(rdf_member(Member, List)).
+
+
+
+% PROPERTY %
+
+rdf_property(G, P):-
+  rdf_term(G, P),
+  rdfs_individual_of(P, rdf:'Property').
 
 
 
@@ -188,7 +228,7 @@ rdf_memberchk(Member, List):-
 %        atomic name of an RDF graph and =Line= an integer.
 
 rdf_index(Subject, Predicate, Object, Graph, Index):-
-  rdf_triples(Graph, Triples),
+  rdf_graph:rdf_graph_to_triples(Graph, Triples),
   nth0(Index, Triples, rdf(Subject, Predicate, Object)).
 
 %! rdf_random(

@@ -3,6 +3,9 @@
   [
     average/2, % +Numbers:list(number)
                % -Average:number
+    binomial_coefficient/3, % +M:integer
+                            % +N:integer
+                            % -BinomialCoefficient:integer
     cartesian_distance/3, % +Coordinate1:coordinate
                           % +Coordinate2:coordinate
                           % -CartesianDistance:float
@@ -68,7 +71,6 @@ Extra arithmetic functions for use in SWI-Prolog.
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/08
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(math(float_ext)).
@@ -81,6 +83,13 @@ average(Numbers, Average):-
   sum_list(Numbers, Sum),
   length(Numbers, NumberOfNumbers),
   Average is Sum / NumberOfNumbers.
+
+binomial_coefficient(M, N, BC):-
+  factorial(M, F_M),
+  factorial(N, F_N),
+  MminN is M - N,
+  factorial(MminN, F_MminN),
+  BC is F_M / (F_N * F_MminN).
 
 %! cartesian_distance(
 %!   +Coordinate1:coordinate,

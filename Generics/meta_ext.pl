@@ -78,6 +78,10 @@
              % +Input:term
              % -Output:term
              % -History:list(term)
+    update_datastructure/4, % :Call
+                            % +OldDatastructure
+                            % +Arguments:list
+                            % -NewDatastructurte
 
 % OTHERS
     run_in_working_directory/2, % :Call
@@ -132,6 +136,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(switch(+,:,+)).
 :- meta_predicate(unless(0,0)).
+:- meta_predicate(update_datastructure(3,+,+,-)).
 :- meta_predicate(user_interaction(+,:,+,+)).
 :- meta_predicate(xor(0,0)).
 
@@ -263,10 +268,8 @@ call_semidet(Goal):-
 
 nonvar_det(Mod:Goal):-
   Goal =.. [P | Args],
-  maplist(nonvar, Args),
-  !,
-  apply(Mod:P, Args),
-  !.
+  maplist(nonvar, Args), !,
+  apply(Mod:P, Args), !.
 nonvar_det(Goal):-
   call(Goal).
 
@@ -381,8 +384,8 @@ modules(Modules):-
 %! call_nth(:Goal, +C:integer) is semidet.
 % Multiple calls of the same nondeterministic goal.
 % Calls the given goal the given number of times.
-% This does not exclude the case in which the goal could have been executed
-% more than =C= times.
+% This does not exclude the case in which the goal
+% could have been executed more than =C= times.
 %
 % @author Ulrich Neumerkel
 
@@ -390,7 +393,7 @@ call_nth(Goal, C):-
   State = count(0),
   Goal,
   arg(1, State, C1),
-  C2 is C1+1,
+  C2 is C1 + 1,
   nb_setarg(1, State, C2),
   C = C2.
 
@@ -461,12 +464,28 @@ multi(Goal, Count):-
 multi(Goal, Count, Input, Output):-
   multi(Goal, Count, Input, Output, _History).
 
-multi(_Goal, 0, Output, Output, [Output]):-
-  !.
+multi(_Goal, 0, Output, Output, [Output]):- !.
 multi(Goal, Count, Input, Output, [Intermediate | History]):-
   call(Goal, Input, Intermediate),
   NewCount is Count - 1,
   multi(Goal, NewCount, Intermediate, Output, History).
+
+%! update_datastructure(
+%!   :Call,
+%!   +OldDatastructure,
+%!   +Arguments:list,
+%!   -NewDatastructurte
+%! ) is det.
+% Prolog cannot do pass-by-reference.
+% This means that when a datastructure has to be repeatedly updated,
+% both its old and its new version have to be passed around in full.
+% Examples of these are in the SWI-Prolog libraries for association lists
+% and ordered sets.
+
+update_datastructure(_Call, Datastructure, [], Datastructure).
+update_datastructure(Call, Datastructure1, [H|T], Datastructure3):-
+  call(Call, Datastructure1, H, Datastructure2),
+  update_datastructure(Call, Datastructure2, T, Datastructure3).
 
 
 

@@ -25,6 +25,7 @@ Uses a the Doyle TMS to keep track of RDF(S) materialization.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
 :- use_module(tms(doyle)).
 :- use_module(tms(tms)).

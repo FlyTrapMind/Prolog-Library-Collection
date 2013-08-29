@@ -8,8 +8,12 @@
     rdf_convert/3, % +FromFile:atom
                    % +ToFormat:atom
                    % +ToFile:atom
+    rdf_graph_source_file/2, % ?Graph:atom
+                             % ?File:atom
     rdf_guess_data_format/2, % +Stream:stream
                              % ?Format:atom
+    rdf_new_graph/2, % +Graph1:atom
+                     % -Graph2:atom
     rdf_serialization/3, % ?Extension:oneof([nt,triples,ttl,rdf])
                          % ?Format:oneof([ntriples,tripels,turtle,rdf_xml])
                          % ?URI:uri
@@ -41,9 +45,10 @@ reflect the serialization format:
   4. =rdf= for RDF/XML. Format name =xml=.
 
 @author Wouter Beek
-@version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06
+@version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06, 2013/08
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
@@ -52,6 +57,7 @@ reflect the serialization format:
 :- use_module(library(semweb/rdf_ntriples)).
 :- use_module(library(semweb/rdf_turtle)).
 :- use_module(library(semweb/rdf_turtle_write)).
+:- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_graph)).
@@ -95,19 +101,45 @@ rdf_convert(FromFile, ToFormat, ToFile):-
   rdf_save2(ToFile, [format(ToFormat), graph(TempGraph)]),
   rdf_unload_graph(TempGraph).
 
-%! rdf_guess_data_format(+Stream, ?Format:oneof([turtle,xml])) is det.
+%! rdf_graph_source_file(?Graph:atom, ?File:atom) is semidet.
+% Returns the name of the file from which the graph with the given name
+% was loaded.
+
+rdf_graph_source_file(Graph, File2):-
+  rdf_graph_property(Graph, source(Source)),
+  uri_components(
+    Source,
+    uri_components(file, _Authority, File1, _Search, _Fragments)
+  ),
+  sub_atom(File1, 1, _Length, 0, File2).
+
+%! rdf_guess_data_format(
+%!   +In:or(atom,stream),
+%!   ?Format:oneof([turtle,xml])
+%! ) is det.
 % Guess the format of an RDF file from the actual content.
 % Currently, this seeks for a valid XML document upto the rdf:RDF
 % element before concluding that the file is RDF/XML. Otherwise it
 % assumes that the document is Turtle.
 %
-% @author Jan Wielemaker
-% @version 2011
+% @author Based on a predicate written by Jan Wielemaker.
+% @author Extended to work with files and
+%         registered file extensions by Wouter Beek.
 
-rdf_guess_data_format(_, Format):-
-  nonvar(Format), !.
 rdf_guess_data_format(Stream, xml):-
+  is_stream(Stream), !,
   xml_doctype(Stream, _), !.
+rdf_guess_data_format(File, xml):-
+  exists_file(File), !,
+  setup_call_cleanup(
+    open(File, read, Stream),
+    xml_doctype(Stream, _),
+    close(Stream)
+  ), !.
+rdf_guess_data_format(File, Format):-
+  exists_file(File), !,
+  file_name_extension(_Base, Extension, File),
+  rdf_serialization(Extension, Format, _URI), !.
 rdf_guess_data_format(_, turtle).
 
 %! rdf_load2(+File:atom) is det.
@@ -116,7 +148,7 @@ rdf_guess_data_format(_, turtle).
 % Then format is derived from the file itself or from the file extension.
 % The graph name is the base of the file name.
 %
-% @see Wrapper to rdf_laod/2.
+% @see Wrapper to rdf_load/2.
 
 rdf_load2(Spec):-
   rdf_load2(Spec, []).
@@ -148,18 +180,17 @@ rdf_load2(Directory, Options):-
 % The format and graph are set.
 rdf_load2(File, Options):-
   access_file(File, read),
-  option(format(Format), Options),
-  option(graph(Graph), Options), !,
+  option(format(Format), Options), nonvar(Format),
+  option(graph(Graph), Options), nonvar(Graph), !,
   % Combine the given with the standard options.
-  merge_options([register_namespaces(true), silent(true)], Options, Options0),
+  merge_options([register_namespaces(true),silent(true)], Options, Options0),
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
   cowspeak(
     [speech(false)],
-    'Graph ~w was loaded in ~w serialization from file ~w.'-[Graph, Format, File]
-  ),
-  true.
+    'Graph ~w was loaded from file ~w.'-[Graph,File]
+  ).
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
@@ -175,10 +206,35 @@ rdf_load2(File, Options):-
   access_file(File, read),
   % Returns the format in case it was a variable.
   \+ (option(format(Format), Options), nonvar(Format)), !,
-  file_name_extension(_Base, Extension, File),
-  rdf_serialization(Extension, Format, _URI),
+  rdf_guess_data_format(File, Format),
   merge_options([format(Format)], Options, Options0),
   rdf_load2(File, Options0).
+
+%! rdf_new_graph(+Graph1:atom, -Graph2:atom) is det.
+% Returns a graph name that is close to the given graph name,
+% and which it is guaranteed to not already exist.
+%
+% @param Graph1 The atomic name of the graph the user wants to use.
+% @param Graph2 An atomic name that is close to the name the user gave.
+
+% No RDF graph with the given name exists, so it is safe to use.
+rdf_new_graph(Graph, Graph):-
+  \+ rdf_graph(Graph), !.
+% An RDF graph with the same name already exists, so the name is altered.
+rdf_new_graph(Graph1, Graph3):-
+  split_atom_exclusive('_', Graph1, Splits),
+  reverse(Splits, [LastSplit | RSplits]),
+  (
+    atom_number(LastSplit, OldNumber)
+  ->
+    NewNumber is OldNumber + 1,
+    atom_number(NewLastSplit, NewNumber),
+    reverse([NewLastSplit | RSplits], NewSplits)
+  ;
+    reverse(['1', LastSplit | RSplits], NewSplits)
+  ),
+  atomic_list_concat(NewSplits, '_', Graph2),
+  rdf_new_graph(Graph2, Graph3).
 
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.
@@ -203,9 +259,9 @@ rdf_save2(Graph):-
   absolute_file_name(
     project(Graph),
     File,
-    [access(write), file_type(turtle)]
+    [access(write),file_type(turtle)]
   ),
-  rdf_save2(File, [format(turtle), graph(Graph)]).
+  rdf_save2(File, [format(turtle),graph(Graph)]).
 
 %! rdf_save2(-File, +Options:list) is det.
 % If the file name is not given, then a file name is construed.
@@ -244,7 +300,7 @@ rdf_save2(File, Options):-
   var(File),
   option(graph(Graph), Options), !,
   option(format(Format), Options, turtle),
-  absolute_file_name(project(Graph), File, [access(write), file_type(Format)]),
+  absolute_file_name(project(Graph), File, [access(write),file_type(Format)]),
   rdf_save2(File, Options).
 % Make up the format.
 rdf_save2(File, Options):-
@@ -266,9 +322,8 @@ rdf_save2(File, Options):-
   rdf_save2(File, Options, Format),
   cowspeak(
     [speech(false)],
-    'Graph ~w was saved in ~w serialization to file ~w.'-[Graph, Format, File]
-  ),
-  true.
+    'Graph ~w was saved in ~w serialization to file ~w.'-[Graph,Format,File]
+  ).
 
 %! rdf_save2(
 %!   +File:atom,

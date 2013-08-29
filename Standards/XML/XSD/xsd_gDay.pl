@@ -83,7 +83,7 @@ The gDay datatype has the following values for its fundamental facets:
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(xsd(xsd_dateTime)).
 
 

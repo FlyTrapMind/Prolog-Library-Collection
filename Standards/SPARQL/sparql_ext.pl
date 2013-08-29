@@ -136,7 +136,7 @@ formulate_sparql(Prefixes, Select, Where, Limit, Query):-
   ;
     formulate_limit(Limit, LimitStatement),
     Statements =
-        [PrefixStatements, SelectStatement, WhereStatement, LimitStatement]
+        [PrefixStatements,SelectStatement,WhereStatement,LimitStatement]
   ),
   atomic_list_concat(Statements, '\n', Query).
 
@@ -148,9 +148,18 @@ formulate_where(Statements, WhereStatement):-
 
 % QUERY PART REGISTRATION %
 
+%! register_sparql_prefix(+Prefix:atom) is det.
+% @see register_sparql_prefix/2
+
 register_sparql_prefix(Prefix):-
   once(xml_current_namespace(Prefix, URI)),
   register_sparql_prefix(Prefix, URI).
+
+%! register_sparql_prefix(+Prefix:atom, +IRI:iri) is det.
+% XML namespace registrations and SPARQL predix registrations are separated,
+% because they may not be the same thing.
+%
+% @tbd Check the SPARQL 1.1 standard whether they are indeed different.
 
 register_sparql_prefix(Prefix, URI):-
   sparql_prefix(Prefix, URI), !.
