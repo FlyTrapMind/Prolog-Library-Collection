@@ -24,7 +24,9 @@
 @version 2013/04-2013/05, 2013/07-2013/08
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
@@ -60,12 +62,11 @@ identity(X, X).
 is_meta(transformation).
 
 print_node(O1, Node1) -->
-  % Indentation.
-  {option(indent(I), O1, 0)},
-  indent(I),
-
   % Hierarchic structure prefixing the node representation.
-  "|- ",
+  {option(indent(I), O1, 0)},
+  "|",
+  dcg_multi(hyphen, I),
+  "- ",
 
   % The node, written after arbitrary transformation.
   {option(transformation(Predicate), O1, identity)},

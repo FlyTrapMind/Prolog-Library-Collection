@@ -30,6 +30,7 @@ Predicates for reading from OWL data.
 :- use_module(generics(meta_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
@@ -47,8 +48,7 @@ owl_class_equivalence(Class1, Class2):-
 % Returns the identity set for the given IRI.
 
 owl_identity_set(IRI, I_Set):-
-  rdf_is_iri(IRI),
-  rdf_graph(G), !,
+  rdf_is_iri(IRI), !,
   % No double occurrences.
   findall(
     I_IRI,

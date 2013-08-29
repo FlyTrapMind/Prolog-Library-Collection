@@ -232,6 +232,8 @@ print_proposition(O1, Proposition) -->
   {call(Predicate, Proposition, Atom)},
   atom(Atom).
 
+identity(X, X).
+
 print_set(Out, List):-
   print_set([], Out, List).
 
