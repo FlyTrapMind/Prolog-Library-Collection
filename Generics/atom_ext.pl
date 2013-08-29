@@ -164,20 +164,19 @@ first_char(Atom, Char):-
 % If the length of the formatted integer exceeds the given length, then
 % the integer is simply converted to an atom.
 %
-% @param Integer An integer, the formatted value.
+% @param Integer An integer, the value that is to be formatted.
 % @param Length An integer, indicating the character lenght of the
 %        formatted integer atom.
 % @param Atom An atom, the formatted version of the integer value.
 
 format_integer(Integer, Length, Atom):-
   atom_length(Integer, IntegerLength),
-  format_integer0(Integer, IntegerLength, Length, Atom).
+  format_integer_(Integer, IntegerLength, Length, Atom).
 
-format_integer0(Integer, IntegerLength, Length, Atom):-
-  Length < IntegerLength,
-  !,
+format_integer_(Integer, IntegerLength, Length, Atom):-
+  Length < IntegerLength, !,
   atom_number(Atom, Integer).
-format_integer0(Integer, IntegerLength, Length, Atom):-
+format_integer_(Integer, IntegerLength, Length, Atom):-
   ZeroLength is Length - IntegerLength,
   repeating_atom('0', ZeroLength, Zeros),
   atomic_concat(Zeros, Integer, Atom).

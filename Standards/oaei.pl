@@ -122,7 +122,10 @@ Mismatch types:
 :- use_module(xml(xml_namespace)).
 
 % Register the namespaces.
-:- xml_register_namespace(align, 'http://knowledgeweb.semanticweb.org/heterogeneity/alignment#').
+:- xml_register_namespace(
+  align,
+  'http://knowledgeweb.semanticweb.org/heterogeneity/alignment#'
+).
 
 % Assert the used file types.
 :- db_add_novel(user:prolog_file_type(owl, owl)).
