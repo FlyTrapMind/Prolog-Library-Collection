@@ -51,10 +51,7 @@ elements(Name) -->
   element(Name).
 
 element(Name) -->
-  single_terminal_value(Code),
-  {Head =.. [Name,T1,T2]},
-  {Body =.. [
-  {db_add_clause(Head, Body)}.
+  single_terminal_value(Code).
 
 name(Name) -->
   dcg_cistring(Name).
