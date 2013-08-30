@@ -54,14 +54,11 @@ theoretic operations of RDF data must be redefined.
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(graph_theory(graph_generic)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
-:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_list)).
-:- use_module(rdf(rdf_read)). % Used for meta-calls.
-:- use_module(rdfs(rdfs_read)).
+:- use_module(rdf(rdf_read)).
+:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -200,6 +197,19 @@ rdf_vertex_check(O, Lit):-
     % that occur in the same triple as the given literal.
     rdf(S, P, Lit),
     rdf_literal_to_value(Lit, LitValue),
+
+    % Make sure the same literal with the preferred language tag does
+    % not exist.
+    % This excludes `literal(aap)` and `literal(aap,nl)` form
+    % being both displayed.
+    (
+      rdf_is_simple_literal(Lit)
+    ->
+      \+ rdf(S, P, literal(lang(_,LitValue)))
+    ;
+      true
+    ),
+
     % Only preferred labels are allowed as vertices.
     option(language(Lang), O, en),
     % The given literal must be the preferred literal,

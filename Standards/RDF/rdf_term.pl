@@ -6,6 +6,8 @@
     rdf_iri/2, % ?Graph:atom
                % ?IRI:iri
     rdf_is_iri/1, % +Resource
+    rdf_is_plain_literal/1, % ?PlainLiteral:compound
+    rdf_is_simple_literal/1, % ?SimpleLiteral:compound
     rdf_literal_equality/2, % +Literal1:literal
                             % +Literal2:literal
     rdf_name/2, % ?Graph:atom
@@ -173,6 +175,13 @@ rdf_iri(G, IRI):-
 rdf_is_iri(IRI):-
   rdf_is_resource(IRI),
   \+ rdf_is_bnode(IRI).
+
+rdf_is_plain_literal(literal(lang(Lang,Lit))):-
+  atomic(Lang),
+  atomic(Lit).
+
+rdf_is_simple_literal(literal(Lit)):-
+  atomic(Lit).
 
 %! rdf_literal_equality(+Literal1:literal, +Literal2:literal) is semidet.
 % Succeeds if the given literals are equivalent.

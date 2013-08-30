@@ -75,6 +75,8 @@ default_option(OldOptions, Name, DefaultValue, NewOptions):-
 %!   -StoredValue,
 %!   -NewOptions:list(nvpair)
 %! ) is det.
+% Gives either the stored value, if it is available,
+% or the given default value.
 
 default_option(Options, Name, _DefaultValue, StoredValue, Options):-
   Option =.. [Name,StoredValue],

@@ -1,6 +1,8 @@
 :- module(
   rdfs_voc,
   [
+    rdf_voc_pdf/1, % ?File:atom
+    rdf_voc_web/1, % -SVG:dom
     rdfs_voc_pdf/1, % ?File:atom
     rdfs_voc_web/1 % -SVG:dom
   ]
@@ -39,26 +41,17 @@ rdf_voc(GIF):-
   % Customization.
   rdf_retractall(_, rdfs:isDefinedBy, _, G),
   rdf_register_namespace_color(G, rdf, darkblue),
-  % Remove the RDFS classes.
-  setoff(
-    RDFS_Class,
+  
+  % Remove the RDFS-only triples.
+  forall(
     (
-      rdfs_class(G, RDFS_Class),
-      rdf_global_id(rdfs:_, RDFS_Class)
+      rdf(S, P, O, G),
+      rdf_global_id(rdfs:_, S),
+      rdf_global_id(rdfs:_, P),
+      rdf_global_id(rdfs:_, O)
     ),
-    RDFS_Classes
+    rdf_retractall(S, P, O, G)
   ),
-  maplist(rdfs_remove_class(G), RDFS_Classes),
-  % Remove the RDFS properties.
-  setoff(
-    RDFS_Property,
-    (
-      rdf_property(G, RDFS_Property),
-      rdf_global_id(rdfs:_, RDFS_Property)
-    ),
-    RDFS_Properties
-  ),
-  maplist(rdf_remove_property(G), RDFS_Properties),
   
   % Thats it, let's export the RDF graph to GIF.
   export_rdf_graph(
@@ -100,7 +93,7 @@ rdfs_voc(GIF):-
       colorscheme(svg),
       edge_labels(replace),
       language(en),
-      literals(preferred_label),
+      literals(all),
       uri_desc(uri_only)
     ],
     G,

@@ -7,10 +7,10 @@
              % ?Object:or([bnode,literal,iri])
     bnode_literal_map/2, % ?BNode:bnode
                          % ?Literal:compound
-    materialize/0,
-    query/3 % ?Subject:or([bnode,iri])
-            % ?Predicate:iri
-            % ?Object:or([bnode,literal,iri])
+    materialize/0
+    %query/3 % ?Subject:or([bnode,iri])
+    %        % ?Predicate:iri
+    %        % ?Object:or([bnode,literal,iri])
   ]
 ).
 
@@ -113,14 +113,13 @@ materialize:-
   rdf_assert(S, P, O),
   !,
   materialize.
-materialize.
+materialize:-
+  flag(deductions, _OldId, 0).
 
+/*
 query(S, P, O):-
   query(T0, S, P, O),
   print_proof(user_output, T0).
-  %absolute_file_name(project(query), F, [access(write),file_type(pdf)]),
-  %tree_to_gv_file([], T0, dot, pdf, F),
-  %open_pdf(F).
 
 % Explicitly asserted.
 query(fact([],TripleName), S, P, O):-
@@ -129,6 +128,7 @@ query(fact([],TripleName), S, P, O):-
 % Derived using rules and axioms.
 query(Tree, S, P, O):-
   rule(Tree, S, P, O, 0).
+*/
 
 %! rule(
 %!   -Tree:compound,
@@ -153,11 +153,13 @@ rule(axiom, [], S, P, O, _D):-
 stmt(fact([],TripleName), S, P, O, _D):-
   rdf(S, P, O),
   rdf_triple_name(S, P, O, TripleName).
+/*
 % Since queries can traverse the search space until arbitrary depth,
 % they can use rules a predicates of rules.
 stmt(Tree, S, P, O, D1):-
   D1 =< 3, !, D2 is D1 + 1,
   rule(Tree, S, P, O, D2).
+*/
 
 
 

@@ -237,16 +237,16 @@ rdf_edge_arrow_head(_E, normal).
 
 rdf_edge_color(O, _G, _E, black):-
   option(colorscheme(none), O, none), !.
-% If the vertices have the same color, then the edge has that color as well.
+% The edge color is based on the predicate term.
+rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
+  rdf_vertex_color(O, G, P, E_Color).
+% If the edge color is not specified, then see whether its vertices
+% agree on their color.
 rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
   rdf_vertex_color(O, G, FromV, FromV_Color),
   rdf_vertex_color(O, G, ToV, ToV_Color),
   FromV_Color = ToV_Color, !,
   E_Color = FromV_Color.
-% If the vertices have a different color,
-% then the edge color is based on the predicate term.
-rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
-  rdf_vertex_color(O, G, P, E_Color).
 
 %! rdf_edge_name(
 %!   +Options:list(nvpair),

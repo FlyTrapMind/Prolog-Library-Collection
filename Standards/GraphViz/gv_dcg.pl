@@ -27,6 +27,7 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(option_ext)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
@@ -190,16 +191,10 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   {
     shared_attributes(V_Terms, V_Attrs, NewV_Terms),
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
-    option(strict(Strict), G_Attrs1, false),
-    option(directedness(Dir), G_Attrs1, undirected),
-    option(name(G_Name), G_Attrs1, noname),
-    % Make sure that the default values are part of the graph
-    % attributes if they were not originally present.
-    merge_options(
-      G_Attrs1,
-      [directedness(Dir),name(G_Name),strict(Strict)],
-      G_Attrs2
-    ),
+    default_option(G_Attrs1, strict, false, Strict, G_Attrs2),
+    default_option(G_Attrs2, directedness, undirected, Dir, G_Attrs3),
+    default_option(G_Attrs3, name, noname, G_Name, G_Attrs4),
+    default_option(G_Attrs4, overlap, false, G_Attrs5),
     I = 0
   },
 
@@ -213,21 +208,21 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   % The following lines are indented.
   {NewI is I + 1},
   % Attributes that apply to the graph as a whole.
-  gv_generic_attributes_statement(graph, NewI, G_Attrs2, G_Attrs2),
+  gv_generic_attributes_statement(graph, NewI, G_Attrs5, G_Attrs5),
   % Attributes that are the same for all nodes.
-  gv_generic_attributes_statement(node, NewI, G_Attrs2, V_Attrs),
+  gv_generic_attributes_statement(node, NewI, G_Attrs5, V_Attrs),
   % Attributes that are the same for all edges.
-  gv_generic_attributes_statement(edge, NewI, G_Attrs2, E_Attrs),
+  gv_generic_attributes_statement(edge, NewI, G_Attrs5, E_Attrs),
   % Only add a newline if some content was written in the previous three
   % lines.
-  ({(G_Attrs2 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
+  ({(G_Attrs5 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
 
   % The list of GraphViz nodes.
-  dcg_multi(gv_node_statement(NewI, G_Attrs2), _, NewV_Terms, []),
+  dcg_multi(gv_node_statement(NewI, G_Attrs5), _, NewV_Terms, []),
   newline,
 
   % The ranked GraphViz nodes (displayed at the same height).
-  dcg_multi(gv_ranked_node_collection(NewI, G_Attrs2), _, Ranked_V_Terms, []),
+  dcg_multi(gv_ranked_node_collection(NewI, G_Attrs5), _, Ranked_V_Terms, []),
   newline,
 
   {
@@ -244,9 +239,9 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   },
 
   % The rank edges.
-  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, Rank_Edges, []),
+  dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, Rank_Edges, []),
   % The non-rank edges.
-  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, NewE_Terms, []),
+  dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, NewE_Terms, []),
   % Note that we do not include a newline here.
 
   % The description of the grpah is closed (using the old indent level).
