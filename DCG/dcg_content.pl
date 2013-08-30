@@ -135,7 +135,8 @@ dcg_cicode(Code) -->
     [Code]
   ).
 dcg_cicode(CI_Code) -->
-  [Code],
+  dcg_graph(Code),
+  
   (
     {code_type(Code, upper(CI_Code))}
   ;

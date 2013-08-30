@@ -19,6 +19,7 @@ Converts ABNF grammars to DCGs.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(generics(db_ext)).
 :- use_module(library(pio)).
 :- use_module(math(radix)).
 
@@ -51,13 +52,15 @@ elements(Name) -->
   element(Name).
 
 element(Name) -->
-  single_terminal_value(Code).
+  single_terminal_value(Code),
+  {db_add_dcg_rule(Name, [Code])}.
 
 name(Name) -->
   dcg_cistring(Name).
 
 rule -->
   name(Name),
+gtrace,
   blanks, equals_sign, blanks,
   elements(Name),
   crlf.

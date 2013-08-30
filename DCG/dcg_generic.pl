@@ -14,6 +14,7 @@
 
 % DEBUG
     dcg_debug//0,
+    gtrace//0,
 
 % LIST
     dcg_separated_list//2, % :Separator:dcg
@@ -216,6 +217,9 @@ dcg_until_(O, DCG_End, [H|T]) -->
 
 
 % DEBUG %
+
+gtrace -->
+  {gtrace}.
 
 dcg_debug(Codes, []):-
   atom_codes(Atom, Codes),
