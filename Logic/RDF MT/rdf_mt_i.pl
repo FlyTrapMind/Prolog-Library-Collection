@@ -1,9 +1,9 @@
 :- module(
   rdf_mt_i,
   [
-    i/3 % +In:or([atom,compound,list(compound)])
-        % +Model:atom
-        % -AssignmentsOut:list(pair(bnode,resource))
+    mt_i/3 % +In:or([atom,compound,list(compound)])
+           % +Model:atom
+           % -AssignmentsOut:list(pair(bnode,resource))
   ]
 ).
 
@@ -53,21 +53,21 @@ Interpretation function `I`:
 :- use_module(rdf_mt(rdf_mt)).
 
 % The overarching interpretation plus assignment function.
-:- rdf_meta(i(r,-,+,-)).
+:- rdf_meta(mt_i(r,-,+,-)).
 
 
 
-%! i(
+%! mt_i(
 %!   +In:or([atom,compound,list(compound)]),
 %!   +Model:atom,
 %!   +AssingmentsOut:list(pair(bnode,resource))
 %! ) is nondet.
-% @see i/3.
+% @see mt_i/3.
 
-i(G, M, A):-
-  i(G, M, [], A).
+mt_i(G, M, A):-
+  mt_i(G, M, [], A).
 
-%! i(
+%! mt_i(
 %!   +Graph:atom,
 %!   +Model:atom,
 %!   +AssingmentsIn:list(pair(bnode,resource)),
@@ -76,7 +76,7 @@ i(G, M, A):-
 % Satisfaction for RDF graphs, lists of triples, and individual triples.
 %
 % Since the meaning of (a collection of) triples is a truth value,
-% the meaning no longer needs to be a parameter (as in i/4).
+% the meaning no longer needs to be a parameter (as in mt_i/4).
 %
 % @param In Either the atomic name of an RDF graph,
 %           a list of triple compound terms,
@@ -88,12 +88,12 @@ i(G, M, A):-
 %                       from blank nodes to resources.
 
 % Satisfaction for an RDF graph.
-i(G, M, A1, A2):-
+mt_i(G, M, A1, A2):-
   rdf_graph(G), model(M), !,
   rdf_graph:rdf_graph_to_triples(G, Ts),
-  i(G, M, Ts, A1, A2).
+  mt_i(G, M, Ts, A1, A2).
 
-%! i(
+%! mt_i(
 %!   +Graph:atom,
 %!   +Model:atom,
 %!   +Triples:list(compound),
@@ -102,25 +102,25 @@ i(G, M, A1, A2):-
 %! ) is nondet.
 
 % Satisfaction for a list of RDF triples.
-i(G, M, Ts, A1, An):-
+mt_i(G, M, Ts, A1, An):-
   is_list(Ts), !,
   % Notice that the assignments should be consistent accross
   % the meaning that is assigned to the list of triples.
-  foldl(i(G, M), Ts, A1, An).
+  foldl(mt_i(G, M), Ts, A1, An).
 % Satisfaction for an RDF triple.
-i(G, M, rdf(SYN_S1,SYN_P1,SYN_O1), A1, A4):-
+mt_i(G, M, rdf(SYN_S1,SYN_P1,SYN_O1), A1, A4):-
   maplist(
     % This works for subject and predicate terms as well...
     rdf_global_object,
     [SYN_S1,SYN_P1,SYN_O1],
     [SYN_S2,SYN_P2,SYN_O2]
   ),
-  i(G, M, SYN_S2, Resource1, A1, A2),
-  i(G, M, SYN_P2, Property,  A2, A3),
-  i(G, M, SYN_O2, Resource2, A3, A4),
+  mt_i(G, M, SYN_S2, Resource1, A1, A2),
+  mt_i(G, M, SYN_P2, Property,  A2, A3),
+  mt_i(G, M, SYN_O2, Resource2, A3, A4),
   once(i_ext(M, Property, Resource1, Resource2)).
 
-%! i(
+%! mt_i(
 %!   +Graph:atom,
 %!   +Model:atom,
 %!   +RDF_Term:or([bnode,literal,iri]),
@@ -131,7 +131,7 @@ i(G, M, rdf(SYN_S1,SYN_P1,SYN_O1), A1, A4):-
 % The interpretation function for subsentential components.
 
 % Blank nodes.
-i(_G, M, BNode, Resource, A1, A2):-
+mt_i(_G, M, BNode, Resource, A1, A2):-
   rdf_is_bnode(BNode), !,
   (
     memberchk([BNode,Resource], A1)
@@ -144,13 +144,13 @@ i(_G, M, BNode, Resource, A1, A2):-
     A2 = [BNode,Resource|A1]
   ).
 % Plain literals. There map onto themselves.
-i(G, M, PlainLit, PlainLit, A, A):-
+mt_i(G, M, PlainLit, PlainLit, A, A):-
   once(lv(G, M, PlainLit)), !.
 % Typed literals. These map onto resources.
-i(G, M, TypedLiteral, Resource, A, A):-
+mt_i(G, M, TypedLiteral, Resource, A, A):-
   once(i_l(G, TypedLiteral, M, Resource)), !.
 % IRIs. These map onto properties and resources.
-i(G, M, IRI, ResourceOrProperty, A, A):-
+mt_i(G, M, IRI, ResourceOrProperty, A, A):-
   % Checking for resources is not that good.
   rdf_is_iri(IRI), !,
   once(i_s(G, IRI, M, ResourceOrProperty)).

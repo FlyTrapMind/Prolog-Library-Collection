@@ -72,8 +72,8 @@ rdf_alt(Alt, G):-
 
 %! rdfs_alt(?Alt:uri, -Contents:list(uri), ?Graph:atom) is nondet.
 
-rdfs_alt(Alt, Contents, G):-
-  rdf_alt(Alt, Graph),
+rdf_alt(Alt, Contents, G):-
+  rdf_alt(Alt, G),
   rdf_collection_(Alt, Contents, G).
 
 
@@ -133,7 +133,7 @@ rdf_collection_(Collection, Contents, G):-
     Content,
     (
       rdf(Collection, ContainerMembershipProperty, Content, G),
-      container_membership_property(ContainerMembershipProperty)
+      rdf_container_membership_property(ContainerMembershipProperty)
     ),
     Contents
   ).

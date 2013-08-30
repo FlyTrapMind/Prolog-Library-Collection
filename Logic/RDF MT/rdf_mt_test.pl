@@ -27,7 +27,7 @@ test(
     setup(build_test(G,M))
   ]
 ):-
-  i(G, M, A),
+  mt_i(G, M, A),
   rdf_mt_print_model(user_output, G, M, A).
 
 test(
@@ -39,7 +39,7 @@ test(
     setup(build_test(G,M))
   ]
 ):-
-  i(G, M, A),
+  mt_i(G, M, A),
   rdf_mt_print_model(user_output, G, M, A).
 
 % @tbd This is in option setup/1 of test/2. Still red...

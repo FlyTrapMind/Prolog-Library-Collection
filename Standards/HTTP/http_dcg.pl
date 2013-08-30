@@ -401,7 +401,7 @@ ctext(C) -->
   text(C),
   {\+ memberchk(C, [40,41])}.
 
-%! crlf//
+%! crlf(-Tree)//
 
 crlf(T1) -->
   crlf(T1, _Codes).
