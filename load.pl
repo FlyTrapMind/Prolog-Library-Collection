@@ -27,7 +27,6 @@ load_pgc:-
 
   % Assert the various search paths.
   assert(user:file_search_path(datasets,     pgc('Datasets'))),
-    assert(user:file_search_path(dbnl,       datasets('DBNL'))),
   assert(user:file_search_path(dcg,          pgc('DCG'))),
   assert(user:file_search_path(generics,     pgc('Generics'))),
   assert(user:file_search_path(graph_theory, pgc('Graph Theory'))),

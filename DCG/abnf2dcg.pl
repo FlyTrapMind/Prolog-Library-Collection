@@ -23,8 +23,6 @@ Converts ABNF grammars to DCGs.
 :- use_module(library(pio)).
 :- use_module(math(radix)).
 
-:- initialization(test).
-
 test:-
   absolute_file_name(project('abnf.abnf'), File, [access(read)]),
   abnf2dcg(File).

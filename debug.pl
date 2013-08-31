@@ -70,7 +70,6 @@ load_modules_for_pldoc:-
       [
         datasets,
         datetime,
-        dbnl,
         dcg,
         dgraph,
         generics,
