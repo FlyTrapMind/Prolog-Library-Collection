@@ -87,11 +87,9 @@ a modular way.
 
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(cowspeak)).
-:- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(math(math_ext)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -102,9 +100,9 @@ a modular way.
 ).
 
 % ALL/UNTIL
+:- meta_predicate(dcg_until(//,?,?,?)).
 :- meta_predicate(dcg_until(+,//,?,?,?)).
 :- meta_predicate(dcg_until_(+,//,?,?,?)).
-:- meta_predicate(dcg_until__(+,//,?,?,?)).
 % LIST
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
@@ -151,7 +149,6 @@ dcg_all_atom(Atom) -->
 
 dcg_until(DCG_End, Value) -->
   dcg_until([], DCG_End, Value).
-:- meta_predicate(dcg_until(//,?,?,?)).
 
 %! dcg_until(+Options:list(nvpair), :DCG_End, ?Value)// is det.
 % Returns the codes that occur before `DCG_End` can be consumed.
