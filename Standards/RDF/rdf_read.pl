@@ -39,11 +39,11 @@
                  % ?Object:uri
                  % ?Graph:graph
                  % ?Index:term
-    rdf_random/5, % -Subject:oneof([bnode,uri])
-                  % -Predicate:uri
-                  % -Object:uri
-                  % +Graph:graph
-                  % -Index:integer
+    rdf_random_term/2, % +Graph:atom
+                       % -Term:or([bnode,literal,iri])
+    rdf_random_term/3, % +Graph:atom
+                       % :Requirement
+                       % -Term:or([bnode,literal,iri])
     rdf_valuetype/2 % ?Graph:graph
                     % ?Type:uri
   ]
@@ -68,6 +68,8 @@ literals.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
+:- meta_predicate(rdf_random_term(+,1,-)).
+
 % LITERALS %
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_has_datatype(r,r,?,?)).
@@ -82,7 +84,9 @@ literals.
 % STRUCTURE-BASED READS %
 :- rdf_meta(rdf_index(r,r,r,?,?)).
 :- rdf_meta(rdf_node(?,r)).
-:- rdf_meta(rdf_random(r,r,r,?,-)).
+:- rdf_meta(rdf_random_term(+,r)).
+:- rdf_meta(rdf_random_term(+,:,r)).
+:- rdf_meta(rdf_random_triple(r,r,r,?)).
 :- rdf_meta(rdf_term(?,r)).
 :- rdf_meta(rdf_valuetype(?,r)).
 
@@ -231,12 +235,26 @@ rdf_index(Subject, Predicate, Object, Graph, Index):-
   rdf_graph:rdf_graph_to_triples(Graph, Triples),
   nth0(Index, Triples, rdf(Subject, Predicate, Object)).
 
-%! rdf_random(
+rdf_random_term(G, T):-
+  rdf_random_term(G, rdf_term(G), T).
+
+rdf_random_term(G, Requirement, T2):-
+  rdf_random_triple(S, P, O, G),
+  random_betwixt(2, J),
+  nth0(J, [S,P,O], T1),
+  (
+    call(Requirement, T1)
+  ->
+    T2 = T1
+  ;
+    rdf_random_term(G, Requirement, T2)
+  ).
+
+%! rdf_random_triple(
 %!   -Subject:oneof([bnode,uri]),
 %!   -Predicate:uri,
 %!   -Object:uri,
-%!   ?Graph:graph,
-%!   -Index:integer
+%!   ?Graph:graph
 %! ) is det.
 % Returns a random triple from the given graph.
 %
@@ -244,10 +262,8 @@ rdf_index(Subject, Predicate, Object, Graph, Index):-
 % @param Predicate A resource.
 % @param Object A resource.
 % @param Graph The atomic name of a graph.
-% @param Index An integer representating the index of the randomly selected
-%        triple.
 
-rdf_random(Subject, Predicate, Object, Graph, RandomIndex):-
+rdf_random_triple(Subject, Predicate, Object, Graph):-
   rdf_graph_property(Graph, triples(NumberOfTriples)),
   succ(UpperIndex, NumberOfTriples),
   random_betwixt(UpperIndex, RandomIndex),
