@@ -187,7 +187,7 @@ rdf_load2(File, Options):-
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  cowspeak(
+  cowspeak:cowspeak(
     [speech(false)],
     'Graph ~w was loaded from file ~w.'-[Graph,File]
   ).
@@ -320,7 +320,7 @@ rdf_save2(File, Options):-
   option(format(Format), Options),
   once(rdf_serialization(_Extension, Format, _URI)), !,
   rdf_save2(File, Options, Format),
-  cowspeak(
+  cowspeak:cowspeak(
     [speech(false)],
     'Graph ~w was saved in ~w serialization to file ~w.'-[Graph,Format,File]
   ).

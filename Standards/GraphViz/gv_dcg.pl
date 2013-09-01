@@ -183,6 +183,7 @@ gv_category(node) --> n,o,d,e.
 % @tbd Add support for escape strings:
 %      http://www.graphviz.org/doc/info/attrs.html#k:escString
 % @tbd Assert attributes that are generic with respect to a subgraph.
+% @tbd Not all vertex and edge properties can be shared it seems (e.g., label).
 
 gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
   gv_graph(graph(V_Terms, [], E_Terms, G_Attrs1)).
