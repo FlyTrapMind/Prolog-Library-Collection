@@ -52,7 +52,7 @@ The generic predicates for Truth-Maintenance Systems.
 :- use_module(tms(doyle)).
 :- use_module(tms(tms_export)).
 
-:- dynamic(registered_tms(_Type, _TMS)).
+:- dynamic(registered_tms/2).
 
 :- rdf_register_ns(tms, 'http://www.wouterbeek.com/tms.owl#').
 

@@ -66,9 +66,9 @@ The procedure for determining the color of a vertex:
 :- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(svg(svg_colors)).
 
-:- dynamic(rdf_class_color(_G, _Class, _Color)).
-:- dynamic(rdf_namespace_color(_G, _Namespace, _Color)).
-:- dynamic(rdf_edge_style_(_RDF_Term, _EdgeStyle)).
+:- dynamic(rdf_class_color/3).
+:- dynamic(rdf_namespace_color/3).
+:- dynamic(rdf_edge_style_/2).
 
 :- meta_predicate(export_rdf_graph(+,4,+,-)).
 :- meta_predicate(rdf_vertex_term(+,+,+,4,+,-)).

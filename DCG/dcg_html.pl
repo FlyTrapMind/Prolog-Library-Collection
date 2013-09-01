@@ -18,7 +18,6 @@ Convert HTML strings.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(html(html)).
 :- use_module(library(apply)).
 

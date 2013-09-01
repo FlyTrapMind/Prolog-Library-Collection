@@ -140,7 +140,7 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
-:- dynamic(cp_consequence(_TMS, _CP_Justification)).
+:- dynamic(cp_consequence/2).
 
 :- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').

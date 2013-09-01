@@ -25,7 +25,7 @@ Web front-end for SPARQL queries.
 :- use_module(sparql(sparql_ext)).
 :- use_module(html(html)).
 
-:- dynamic(default_remote0(_Remote)).
+:- dynamic(default_remote0/1).
 
 :- debug(sparql_web).
 

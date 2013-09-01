@@ -31,9 +31,9 @@ A compound term of the form =|g(-Var,+Val:atom)|=
 :- use_module(library(ordsets)).
 
 %! domain(?Object:atom) is nondet.
-:- dynamic(domain(_Object)).
+:- dynamic(domain/1).
 %! f(?Arity:integer, ?Term:atom, ?Objects:list(atom)) is nondet.
-:- dynamic(f(_Arity, _Term, _Objects)).
+:- dynamic(f/3).
 
 
 

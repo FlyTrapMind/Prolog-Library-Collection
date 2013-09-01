@@ -43,6 +43,7 @@ logging started.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(ansi_term)). % Used in markup.
 :- use_module(library(http/http_client)).
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
@@ -50,9 +51,9 @@ logging started.
 
 :- multifile(prolog:message/1).
 
-:- dynamic(current_log_file(_File)).
-:- dynamic(current_log_stream(_Stream)).
-:- dynamic(situation(_SituationName)).
+:- dynamic(current_log_file/1).
+:- dynamic(current_log_stream/1).
+:- dynamic(situation/1).
 
 :- db_add_novel(user:prolog_file_type(log, log)).
 
@@ -89,12 +90,10 @@ append_to_log(Category, Format, Arguments):-
   append_to_log0(Category, Message).
 
 append_to_log0(Category, Message):-
-  \+ current_log_stream(_Stream),
-  !,
+  \+ current_log_stream(_Stream), !,
   print_message(warning, cannot_log(Category, Message)).
 append_to_log0(Category, Message):-
-  current_log_stream(Stream),
-  !,
+  current_log_stream(Stream), !,
   date_time(DateTime),
   current_situation(Situation),
   csv_write_stream(
@@ -159,8 +158,7 @@ current_situation(no_situation).
 % Ends the current logging activity.
 
 end_log:-
-  \+ current_log_file(_File),
-  !.
+  \+ current_log_file(_File), !.
 end_log:-
   append_to_log(build, 'Goodnight!', []),
   send_current_log_file,

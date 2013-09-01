@@ -21,13 +21,8 @@ Converts ABNF grammars to DCGs.
 :- use_module(dcg(dcg_multi)).
 :- use_module(generics(db_ext)).
 :- use_module(library(pio)).
+:- use_module(library(plunit)).
 :- use_module(math(radix)).
-
-test:-
-  absolute_file_name(project('abnf.abnf'), File, [access(read)]),
-  abnf2dcg(File).
-
-
 
 abnf2dcg(File):-
   access_file(File, read),
@@ -74,4 +69,14 @@ single_terminal_value(Code) -->
   hexadecimal_digit(H1),
   hexadecimal_digit(H2),
   {digits_to_decimal([H1,H2], Radix, Code)}.
+
+
+
+:- begin_tests(abnf2dcg).
+
+test(abnf1, [true]):-
+  absolute_file_name(project('abnf.abnf'), File, [access(read)]),
+  abnf2dcg(File).
+
+:- end_tests(abnf2dcg).
 

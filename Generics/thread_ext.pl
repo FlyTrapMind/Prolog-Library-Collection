@@ -33,8 +33,8 @@ Allows one to monitor running threads that register.
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 
-:- dynamic(end_flag(_ThreadAlias, _NumberOfTasks)).
-:- dynamic(workload(_ThreadAlias, _Module, _Goal, _TaskList)).
+:- dynamic(end_flag/2).
+:- dynamic(workload/4).
 
 
 

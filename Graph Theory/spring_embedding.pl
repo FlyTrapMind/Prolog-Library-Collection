@@ -69,7 +69,7 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 :- use_module(library(semweb/rdf_db)). % For rdf_meta/1 statements.
 :- use_module(library(settings)).
 
-:- dynamic(tempval0(_Name, _Value)).
+:- dynamic(tempval0/2).
 
 :- meta_predicate(default_spring_embedding(+,2,2,3,+,-,-)).
 :- meta_predicate(distance_force_dimension(+,2,3,+,+,+,-)).

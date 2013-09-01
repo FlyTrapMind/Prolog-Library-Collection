@@ -82,9 +82,7 @@ scheme.
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_wrap)).
-:- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(math(math_ext)).
 
 
 

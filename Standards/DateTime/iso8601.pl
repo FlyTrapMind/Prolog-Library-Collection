@@ -361,7 +361,6 @@ calendar week which includes 4 January".
 */
 
 :- use_module(library(aggregate)).
-:- use_module(library(plunit)).
 
 
 

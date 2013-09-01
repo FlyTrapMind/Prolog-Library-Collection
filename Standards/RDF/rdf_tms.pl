@@ -36,7 +36,7 @@ Uses a the Doyle TMS to keep track of RDF(S) materialization.
 :- rdf_meta(rdf_test_triple(r,r,r)).
 :- rdf_meta(rdf_tms(r,r,r)).
 
-:- dynamic(bnode_literal_map0(_BNode, _Literal)).
+:- dynamic(bnode_literal_map0/2).
 
 
 

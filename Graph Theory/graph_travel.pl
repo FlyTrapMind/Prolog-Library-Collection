@@ -40,6 +40,7 @@
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
@@ -59,6 +60,8 @@
 :- rdf_meta(travel2(+,:,r,r,-,+,-,-)).
 :- rdf_meta(travel_min(+,+,:,:,r,r,-)).
 :- rdf_meta(travel_min(+,+,:,:,r,r,-,-,-,-)).
+
+:- debug(graph_travel).
 
 
 
@@ -185,6 +188,9 @@ travel1_(
 ):-
   % Neighbor
   call(N_P, G, FirstV, NextV),
+  rdf_term_name(FirstV, X),
+  rdf_term_name(NextV, Y),
+  debug(graph_travel, '~w\t--->\t~w', [X,Y]),
 
   % Check the walk restriction: no duplicate vertices.
   if_then(
