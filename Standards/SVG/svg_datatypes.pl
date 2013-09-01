@@ -167,7 +167,7 @@ svg_align(align(x(X),y(Y)), X, Y) -->
   y_uppercase, svg_min_mid_max(Y).
 
 svg_defer(defer(false), false) --> [].
-scg_defer(defer(true), true) --> "defer".
+svg_defer(defer(true), true) --> "defer".
 
 %! svg_extension(-Tree:compound, ?Extension:iri)//
 % @tbd Add extensions IRIs. (What are these anyway?)

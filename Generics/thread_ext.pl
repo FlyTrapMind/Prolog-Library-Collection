@@ -27,14 +27,16 @@ Allows one to monitor running threads that register.
 @version 2013/03
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 
 :- dynamic(end_flag/2).
 :- dynamic(workload/4).
+
+:- debug(thread_ext).
 
 
 
@@ -53,7 +55,7 @@ run_on_sublists(List, Module:Goal):-
   exclude(==(true), Statuses, OopsStatuses),
   forall(
     member(OopsStatus, OopsStatuses),
-    cowspeak(OopsStatus)
+    debug(thread_ext, '~w', [OopsStatus])
   ).
 
 thread_alias(ThreadAlias):-

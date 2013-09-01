@@ -47,7 +47,6 @@ HTML attribute parsing, used in HTML table generation.
 @version 2012/09-2013/06
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
@@ -111,8 +110,10 @@ http_open_wrapper(URI, Stream, Options):-
 
 % The maximum number of HTTP attempts.
 http_open_wrapper(URI, _Stream, _Options, 5):- !,
-  cowspeak(
-    'The maximum number of HTTP attempts was reached for <~w>.'-[URI]
+  debug(
+    html,
+    'The maximum number of HTTP attempts was reached for <~w>.',
+    [URI]
   ).
 http_open_wrapper(URI, Stream, Options, Attempts):-
   catch(
@@ -132,30 +133,26 @@ http_open_wrapper(URI, Stream, Options, Attempts):-
 
 % Retry after a while upon exceeding a limit.
 process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- !,
-  cowspeak([
-    'Encountered ~w error(s) while parsing HTML.'-[Max],
-    'Context:\t~w'-[Context]
-  ]),
+  debug(html, 'Encountered ~w error(s) while parsing HTML.', [Max]),
+  debug(html, 'Context:\t~w', [Context]),
   sleep(10),
   call(Goal).
 % Retry after a while upon existence error.
 process_exception(error(existence_error(url, URI), Context), Goal):- !,
-  cowspeak([
-    'Resource <~w> does not seem to exist.'-[URI],
-    '[~w]'-[Context]
-  ]),
+  debug(html, 'Resource <~w> does not seem to exist.', [URI]),
+  debug(html, '[~w]', [Context]),
   sleep(10),
   call(Goal).
 % Retry upon socket error.
 process_exception(error(socket_error('Try Again'), _Context), Goal):- !,
-  cowspeak('[SOCKET ERROR] Try again!'),
+  debug(html, '[SOCKET ERROR] Try again!', []),
   call(Goal).
 % Retry upon I/O error.
 process_exception(
   error(io_error(read, _Stream), context(_Predicate, Reason)),
   Goal
 ):- !,
-  cowspeak('[IO-EXCEPTION] ~w'-[Reason]),
+  debug(html, '[IO-EXCEPTION] ~w', [Reason]),
   call(Goal).
 process_exception(Exception, _Goal):-
   gtrace, %DEB
@@ -171,11 +168,12 @@ stream_to_html(Stream, DOM):-
   stream_to_html(Stream, DOM, 0).
 
 stream_to_html(_Stream, _DOM, 5):-
-  cowspeak(
+  debug(
+    html,
     'The maximum number of attempts was reached for load_structure/3 \c
-     in stream_to_html/3.'
-  ),
-  !.
+     in stream_to_html/3.',
+    []
+  ), !.
 stream_to_html(Stream, DOM, Attempts):-
   dtd(html, DTD),
   catch(
@@ -352,8 +350,7 @@ html_attribute(Attributes, Attribute):-
 parse_attribute(Context, Attribute, Name=Value):-
   Attribute =.. [Name, Value],
   attribute(Name, Type, Contexts),
-  memberchk(Context, Contexts),
-  !,
+  memberchk(Context, Contexts), !,
   html_typecheck(Type, Value).
 
 parse_attributes_html(Context, Attributes, ParsedAttributes):-

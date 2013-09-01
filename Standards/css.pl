@@ -17,7 +17,6 @@ Support for Cascading Style Sheets.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 
 

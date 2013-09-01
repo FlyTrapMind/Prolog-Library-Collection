@@ -24,8 +24,7 @@ Acts on messages printed by print_message/2.
 
 
 log_web(Markup):-
-  \+ current_log_file(_File),
-  !,
+  \+ current_log_file(_File), !,
   Markup = [element(h1, [], ['Logging is currently switched off.'])].
 log_web([HTML_Table]):-
   current_log_file(File),
@@ -43,10 +42,8 @@ log_web([HTML_Table]):-
 
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   error_web(Exception, Markup),
-  push(status_pane, html, dev_server, Markup),
-  !.
-prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
-  !,
+  push(status_pane, html, dev_server, Markup), !.
+prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
   gtrace, %DEB
   format(user, '~w', [Exception]). %DEB
 prolog:debug_print_hook(Type, Format, Arguments):-

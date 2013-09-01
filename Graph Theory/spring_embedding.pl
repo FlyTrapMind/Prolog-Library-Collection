@@ -64,9 +64,7 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
-:- use_module(graph_theory(vertex_coordinate)).
 :- use_module(math(math_ext)).
-:- use_module(library(semweb/rdf_db)). % For rdf_meta/1 statements.
 :- use_module(library(settings)).
 
 :- dynamic(tempval0/2).

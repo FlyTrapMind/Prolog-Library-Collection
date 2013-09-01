@@ -17,10 +17,12 @@
 @version 2013/05
 */
 
-:- use_module(generics(cowspeak)).
+:- use_module(library(debug)).
 :- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
+
+:- debug(uri_ext).
 
 
 
@@ -56,7 +58,7 @@ uri_to_file(URI, File):-
     )
   ),
   format(atom(Text), 'A new text was downloaded.', [File]),
-  cowspeak(Text).
+  debug(uri_ext, '~w', [Text]).
 
 %! uri_query(+URI:uri, +Name:atom, -Value:atom) is semidet.
 % Returns the value for the query item with the given name, if present.

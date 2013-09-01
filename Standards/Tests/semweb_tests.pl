@@ -79,14 +79,11 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(owl(owl_entailment)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(xml(xml)).
 :- use_module(xml(xml_namespace)).
 
 :- db_add_novel(user:prolog_file_type(rdf, rdf)).
@@ -209,15 +206,15 @@ run_test0(Test, 'SKIPPED'):-
 % A test with an input and an output document.
 run_test0(Test, 'PASS'):-
   rdfs_individual_of(Test, test:'PositiveEntailmentTest'),
-  
+
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
   uri_to_file(Premise_URI, Premise_File),
   rdf_load2(Premise_File, [base_uri(Premise_URI), graph(premise)]),
-  
+
   % Run materialization.
   rdf_materialize(premise),
-  
+
   % The conclusion graph.
   % This is loaded after materialization (which cannot be restricted to
   % a graph).

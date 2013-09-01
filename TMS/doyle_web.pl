@@ -15,7 +15,6 @@ Web predicates for Doyle's TMS.
 */
 
 :- use_module(html(html)).
-:- use_module(tms(doyle)).
 :- use_module(tms(tms)).
 
 

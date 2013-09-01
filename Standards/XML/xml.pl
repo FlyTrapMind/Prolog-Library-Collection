@@ -55,10 +55,6 @@ SGML (Standard Generalized Markup Language).
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(standards(standards)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(iso, 'http://www.iso.org/').

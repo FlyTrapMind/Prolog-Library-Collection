@@ -221,7 +221,6 @@ can determine the value of the four components and fragment as
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(library(lists)).
 
@@ -241,7 +240,7 @@ rfc2396_absolute_path(T0, [PathSegment|PathSegments]) -->
   path_segment(T2, PathSegment),
   ("", {PathSegments = []} ; rfc2396_absolute_path(T3, PathSegments)),
   {parse_tree(absolute_path, [T1,T2,T3], T0)}.
-absolute_path(absolute_path('/',T1), [PathSegment]) -->
+rfc2396_absolute_path(absolute_path('/',T1), [PathSegment]) -->
   forward_slash,
   path_segment(T1, PathSegment).
 

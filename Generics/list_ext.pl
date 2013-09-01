@@ -24,6 +24,9 @@
     first/3, % +L:list,
              % +N:integer
              % -Firsts:list
+    icompare/3, % ?InvertedOrder
+                % @Term1
+                % @Term2
     length_cut/4, % +L:list
                   % +Cut:integer
                   % -L1:list

@@ -1,5 +1,5 @@
 :- module(
-  graph_short_path,
+  shortest_path,
   [
     shortest_paths1/7, % +Graph:graph
                        % :E_P
@@ -18,7 +18,7 @@
 ).
 
 :- use_module(generics(meta_ext)).
-:- use_module(graph_theory(graph_travel)).
+:- use_module(graph_theory(graph_traversal)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
@@ -49,7 +49,7 @@ shortest_paths1(G, E_P, N_P, From, To, Pass, ShortestPaths):-
   setoff(
     Length-Path,
     (
-      travel1(
+      traverse(
         [unique_vertex(true)],
         G,
         E_P,
@@ -79,7 +79,7 @@ shortest_paths2(G, N_P, FromV, ToV, ViaV, ShortestLength-ShortestPath):-
   setoff(
     Length-Path,
     (
-      travel1(G, N_P, FromV, ToV, Length, Vs, Path),
+      traverse(G, N_P, FromV, ToV, Length, Vs, Path),
       member(ViaV, Vs)
     ),
     Pairs

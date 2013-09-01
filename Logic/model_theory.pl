@@ -22,6 +22,7 @@
 A compound term of the form =|g(-Var,+Val:atom)|=
 
 @author Wouter Beek
+@tbd Add beta-reduction.
 @version 2013/05
 */
 
@@ -29,6 +30,7 @@ A compound term of the form =|g(-Var,+Val:atom)|=
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
+:- use_module(library(plunit)).
 
 %! domain(?Object:atom) is nondet.
 :- dynamic(domain/1).
@@ -97,36 +99,6 @@ add_relation(Arity, Term, Extension):-
 clear_model:-
   retractall(domain(_)),
   retractall(f(_, _, _)).
-
-load_model(test1):-
-  maplist(add_domain, [d1,d2,d3,d4,d5]),
-  maplist(
-    add_relation(0),
-    ['Jules','Vincent','Pumpkin','Honey Bunny','Yolanda'],
-    [d1,d2,d3,d4,d5]
-  ),
-  add_relation(1, customer, [[d1],[d2]]),
-  add_relation(1, robber, [[d3],[d4]]),
-  add_relation(2, love, [[d3,d4]]).
-load_model(test2):-
-  maplist(add_domain, [d1,d2,d3,d4,d5,d6]),
-  maplist(
-    add_relation(0),
-    ['Jules','Vincent','Pumpkin','Honey Bunny','Yolanda'],
-    [d1,d2,d3,d4,d4]
-  ),
-  add_relation(1, customer, [[d1],[d2],[d5],[d6]]),
-  add_relation(1, robber, [[d3],[d4]]),
-  add_relation(2, love, []).
-load_model(test3):-
-  maplist(add_domain, [d1,d2,d3,d4,d5,d6,d7,d8]),
-  maplist(add_relation(0), [mia,jody,'Jules','Vincent'], [d1,d2,d3,d4]),
-  add_relation(1, woman, [[d1],[d2]]),
-  add_relation(1, man, [[d3],[d4]]),
-  add_relation(1, joke, [[d5],[d6]]),
-  add_relation(1, episode, [[d7],[d8]]),
-  add_relation(2, in, [[d5,d7],[d5,d8]]),
-  add_relation(2, tell, [[d1,d5],[d2,d6]]).
 
 print_domain:-
   format(user_output, 'DOMAIN:\n', []),
@@ -253,3 +225,42 @@ i(G, X, V):-
 i(_G, X, V):-
   atom(X),
   f(0, X, V).
+
+
+
+:- begin_tests(model_theory).
+
+test(test1, [true]):-
+  maplist(add_domain, [d1,d2,d3,d4,d5]),
+  maplist(
+    add_relation(0),
+    ['Jules','Vincent','Pumpkin','Honey Bunny','Yolanda'],
+    [d1,d2,d3,d4,d5]
+  ),
+  add_relation(1, customer, [[d1],[d2]]),
+  add_relation(1, robber, [[d3],[d4]]),
+  add_relation(2, love, [[d3,d4]]).
+
+test(test2, [true]):-
+  maplist(add_domain, [d1,d2,d3,d4,d5,d6]),
+  maplist(
+    add_relation(0),
+    ['Jules','Vincent','Pumpkin','Honey Bunny','Yolanda'],
+    [d1,d2,d3,d4,d4]
+  ),
+  add_relation(1, customer, [[d1],[d2],[d5],[d6]]),
+  add_relation(1, robber, [[d3],[d4]]),
+  add_relation(2, love, []).
+
+test(test3, [true]):-
+  maplist(add_domain, [d1,d2,d3,d4,d5,d6,d7,d8]),
+  maplist(add_relation(0), [mia,jody,'Jules','Vincent'], [d1,d2,d3,d4]),
+  add_relation(1, woman, [[d1],[d2]]),
+  add_relation(1, man, [[d3],[d4]]),
+  add_relation(1, joke, [[d5],[d6]]),
+  add_relation(1, episode, [[d7],[d8]]),
+  add_relation(2, in, [[d5,d7],[d5,d8]]),
+  add_relation(2, tell, [[d1,d5],[d2,d6]]).
+
+:- end_tests(model_theory).
+

@@ -51,7 +51,6 @@ Predicates that apply to entire RDF graphs.
 :- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
 

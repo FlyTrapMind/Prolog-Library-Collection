@@ -1,23 +1,23 @@
 :- module(
   graph_travel,
   [
-    travel1/7, % +Options:list(nvpair)
-               % +Graph
-               % :E_P
-               % :N_P
-               % +First:vertex
-               % +Last:vertex
-               % -Distance:integer
-    travel1/10, % +Options:list(nvpair)
+    traverse/7, % +Options:list(nvpair)
                 % +Graph
                 % :E_P
                 % :N_P
                 % +First:vertex
                 % +Last:vertex
                 % -Distance:integer
-                % -Vertices:ordset(vertex)
-                % -Edges:ordset(edge)
-                % -History:list
+    traverse/10, % +Options:list(nvpair)
+                 % +Graph
+                 % :E_P
+                 % :N_P
+                 % +First:vertex
+                 % +Last:vertex
+                 % -Distance:integer
+                 % -Vertices:ordset(vertex)
+                 % -Edges:ordset(edge)
+                 % -History:list
     travel_min/7, % +Options:list(nvpair)
                   % +Graph
                   % :E_P
@@ -38,34 +38,41 @@
   ]
 ).
 
+/** <module> GRAPH_TRAVERSAL
+
+@author Wouter Beek
+@version 2013/01-2013/04, 2013/07, 2013/09
+*/
+
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(option_ext)).
 :- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
 
-:- meta_predicate(travel1(+,+,2,3,+,+,-)).
-:- meta_predicate(travel1(+,+,2,3,+,+,-,-,-,-)).
-:- meta_predicate(travel1_(+,+,2,3,+,+,-,-,-,-,-,-)).
-:- meta_predicate(travel2(+,3,+,+,-,-,-)).
-:- meta_predicate(travel2(+,3,+,+,-,+,-,-)).
+:- meta_predicate(traverse(+,+,2,3,+,+,-)).
+:- meta_predicate(traverse(+,+,2,3,+,+,-,-,-,-)).
+:- meta_predicate(traverse1(+,+,2,3,+,+,-,-,-,-,-,-)).
 :- meta_predicate(travel_min(+,+,2,3,+,+,-)).
 :- meta_predicate(travel_min(+,+,2,3,+,+,-,-,-,-)).
 
-:- rdf_meta(travel1(+,+,:,:,r,r,-)).
-:- rdf_meta(travel1(+,+,:,:,r,r,-,-,-,-)).
-:- rdf_meta(travel1_(+,+,:,:,r,r,-,-,-,-,-,-)).
-:- rdf_meta(travel2(+,:,r,r,-,-,-)).
-:- rdf_meta(travel2(+,:,r,r,-,+,-,-)).
+% Graph traversal can operate on abbreviated URIs.
+:- rdf_meta(traverse(+,+,:,:,r,r,-)).
+:- rdf_meta(traverse(+,+,:,:,r,r,-,-,-,-)).
+:- rdf_meta(traverse1(+,+,:,:,r,r,-,-,-,-,-,-)).
 :- rdf_meta(travel_min(+,+,:,:,r,r,-)).
 :- rdf_meta(travel_min(+,+,:,:,r,r,-,-,-,-)).
+
+% Meta-option.
+is_meta(deb_vertex_name).
 
 :- debug(graph_travel).
 
 
 
-%! travel1(
+%! traverse(
 %!   +Options:list(nvpair),
 %!   +Graph:graph,
 %!   :E_P,
@@ -74,12 +81,12 @@
 %!   +LastV:vertex,
 %!   -Distance:uinteger
 %! ) is nondet.
-% @see Wrapper around travel1/10.
+% @see Wrapper around traverse/10.
 
-travel1(O, G, E_P, N_P, First, Last, Distance):-
-  travel1(O, G, E_P, N_P, First, Last, Distance, _Vertexs, _Edges, _History).
+traverse(O, G, E_P, N_P, First, Last, Distance):-
+  traverse(O, G, E_P, N_P, First, Last, Distance, _Vertexs, _Edges, _History).
 
-%! travel1(
+%! traverse(
 %!   +Options:list(nvpair),
 %!   +Graph:graph,
 %!   :E_P,
@@ -93,8 +100,8 @@ travel1(O, G, E_P, N_P, First, Last, Distance):-
 %! ) is nondet.
 % Lets travel through graph land.
 %
-% A *walk* is an alternating sequence of vertices and edges, ending in a
-% vertex.
+% A *walk* is an alternating sequence of vertices and edges,
+% ending in a vertex.
 %
 % A *tour* is a closed walk. Closed means that the first and the last element
 % in the sequence are the same vertex.
@@ -124,15 +131,20 @@ travel1(O, G, E_P, N_P, First, Last, Distance):-
 %
 % The following options are defined:
 %   1. =|closed(boolean)|=
-%   2. =|distance(oneof([edge,vertex]))|= For statiscs we return either
-%      the number of edges or the number of vertices that were traversed.
-%      Default: =edge=.
+%   2. =|distance(oneof([edge,vertex]))|=
+%      For statiscs we return either
+%      the number of edges (value `edges`; the default value)
+%      or the number of vertices (value `vertices`) that were traversed.
 %   3. =|euler(boolean)|=
 %   4. =|every_edge(boolean)|=
 %   5. =|every_vertex(boolean)|=
 %   6. =|graph(Graph)|=
 %   7. =|unique_edge(boolean)=
 %   8. =|unique_vertex(boolean)=
+%   9. =|deb_vertex_name(:VertexNaming)|=
+%      Debugging option for assigning readable names to vertices.
+%      The predicate should have the arguments
+%      =|(+Vertex,-VertexName:atom)|=.
 %
 % @param Options A list of name-value pairs.
 % @param Graph
@@ -146,70 +158,93 @@ travel1(O, G, E_P, N_P, First, Last, Distance):-
 % @param Edges A list of edges.
 % @param History
 
-travel1(O, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
-  travel1_(
-    O, G, E_P, N_P, First, Last,
+traverse(O1, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
+  % First we make sure we have the right options set,
+  % so we do not have to do this in every iteration.
+  
+  % Cycles, tours, and Euler tours are closed.
+  default_option(O1, closed, false, O2),
+  
+  % Euler tours must use every edge.
+  default_option(O2, every_edge, false, O3),
+  
+  % The default distance metric is edges.
+  default_option(O3, distance, edge, O4),
+  
+  % Cycles and paths have a unique number of vertices.
+  default_option(O4, unique_vertex, false, O5),
+  
+  % Trails and Euler tours has a no duplicate edges.
+  default_option(O5, unique_edge, false, O6),
+  
+  meta_options(is_meta, O6, O7),
+  
+  traverse1(
+    O7, G, E_P, N_P, First, Last,
     Distance, [First], Vertices, [], Edges, History
   ).
 
-travel1_(
+% Done, perform some option-dependent checks
+% and calculate some option-dependent statistics.
+traverse1(
   O, G, E_P, _N_P, Last, Last, Distance, SolV, SolV, SolE, SolE, [Last]
 ):-
-  % Check whether this is a tour, i.e., whether the walk is closed.
-  if_then(
-    option(close(true), O, false),
-    % The first and the last vertex must be the same.
-    last(SolV, Last)
-  ),
-
-  % Check whether this is an Euler, i.e., all edges were visited.
-  if_then(
-    option(every_edge(true), O, false),
-    (
-      call(E_P, G, AllEs),
-      ord_subtract(AllEs, SolE, UntraversedEdges),
-      ord_empty(UntraversedEdges)
-    )
+  % In a closed walk (or tour) the first and the last vertex must be
+  % the same.
+  (option(closed(true), O) -> last(SolV, Last) ; true),
+  
+  % In an Euler tour all edges must be visited.
+  (
+    option(every_edge(true), O)
+  ->
+    call(E_P, G, AllEs),
+    ord_subtract(AllEs, SolE, UntraversedEdges),
+    ord_empty(UntraversedEdges)
+  ;
+    true
   ),
 
   % Distance metric. The statistics we return.
-  option(distance(DistanceMetric), O, edge),
-  if_then(
-    DistanceMetric == edge,
+  (
+    option(distance(edge), O)
+  ->
     length(SolE, Distance)
-  ),
-  if_then(
-    DistanceMetric == vertex,
+  ;
     length(SolV, Distance)
-  ), !.
-travel1_(
+  ).
+% Recursion: traversal by visiting neighboring vertices.
+traverse1(
   O, G, E_P, N_P, FirstV, Last,
-  Distance, Vs, SolV, Es, SolE, [FirstV, FirstV-NextV | History]
+  Distance, Vs, SolV, Es, SolE, [FirstV,FirstV-NextV|History]
 ):-
   % Neighbor
   call(N_P, G, FirstV, NextV),
-  rdf_term_name(FirstV, X),
-  rdf_term_name(NextV, Y),
-  debug(graph_travel, '~w\t--->\t~w', [X,Y]),
-
+  
+  % Debugging.
+  (
+    debugging(graph_traversal),
+    option(deb_vertex_name(V_Name), O)
+  ->
+    call(V_Name, FirstV, FirstV_Name),
+    call(V_Name, NextV, NextV_Name),
+    debug(graph_travel, '~w\t--->\t~w', [FirstV_Name,NextV_Name])
+  ;
+    true
+  ),
+  
   % Check the walk restriction: no duplicate vertices.
-  if_then(
-    option(unique_vertex(true), O, false),
-    \+ member(NextV, Vs)
-  ),
-
-  % Check the Euler restriction: no duplicate edges.
-  if_then(
-    option(trail(true), O, false),
-    \+ member(FirstV-NextV, Es)
-  ),
-
+  (option(unique_vertex(true), O) -> \+ member(NextV, Vs) ; true),
+  
+  % Check the trail and Euler tour restriction: no duplicate edges.
+  (option(unique_edge(true), O) -> \+ member(FirstV-NextV, Es) ; true),
+  
   ord_add_element(Vs, NextV, NewVs),
   ord_add_element(Es, FirstV-NextV, NewEs),
-  travel1_(
+  traverse1(
     O, G, E_P, N_P, NextV, Last, Distance, NewVs, SolV, NewEs, SolE, History
   ).
 
+/*
 travel2(G, N_P, FromV, ToV, Length, AllVs, Path):-
   travel2(G, N_P, FromV, ToV, Length, [FromV], AllVs, Path).
 
@@ -222,6 +257,7 @@ travel2(G, N_P, FromV, ToV, Length, Vs, AllVs, [FromV | Path]):-
   \+ member(ViaV, Vs),
   ord_add_element(Vs, ToV, NewVs),
   travel2(G, N_P, ViaV, ToV, Length, NewVs, AllVs, Path).
+*/
 
 %! tarvel_min(
 %!   +Options:list(nvpair),
@@ -269,7 +305,7 @@ travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
 travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, Vs, Es, History):-
   setoff(
     Distance-History,
-    travel1(O, G, E_P, N_P, First, Last, Distance, Vs, Es, History),
+    traverse(O, G, E_P, N_P, First, Last, Distance, Vs, Es, History),
     Pairs
   ),
   first(Pairs, MinimumDistance-History).
