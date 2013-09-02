@@ -167,7 +167,8 @@ stmt(fact([],TripleName), S, P, O, G):-
 
 start_materializer(G, I1):-
   default(I1, 30, I2),
-  intermittent_thread(materialize(G), I2, _Id, []).
+  intermittent_thread(materialize(G), I2, _Id, []),
+  debug(rdf_axiom, 'A materializer was started on graph ~w.', [G]).
 
 
 
