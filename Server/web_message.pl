@@ -16,7 +16,6 @@ Acts on messages printed by print_message/2.
 
 :- use_module(html(html)).
 :- use_module(library(http/http_open)).
-:- use_module(server(dev_server)).
 :- use_module(server(error_web)).
 
 :- dynamic(current_log_row/1).
@@ -58,7 +57,7 @@ prolog:debug_print_hook(Type, Format, Arguments):-
 
 web_message(open_uri(_URI)):-
   format(user, 'YES!', []),
-  dev_server_uri(URI),
+  http_absolute_location(dev_server(.), URI, []),
   http_open(
     URI,
     _Stream,

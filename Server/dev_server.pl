@@ -1,7 +1,6 @@
 :- module(
   dev_server,
   [
-    dev_server_uri/1, % -URI:uri
     push/2, % +Type:oneof([console_output,status_pane])
             % +DOM:list
     push/4, % +Type:oneof([console_output,status_pane])
@@ -160,9 +159,6 @@ dev_server(Request):-
     true
   ),
   reply_html_page(dev_server, [], []).
-
-dev_server_uri(URI):-
-  http_absolute_location(dev_server(.), URI, []).
 
 documentation(Request):-
   doc_browser,

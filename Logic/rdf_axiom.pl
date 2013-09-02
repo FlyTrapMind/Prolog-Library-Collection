@@ -68,7 +68,7 @@ An axiomatic approach towards RDF(S) materialization.
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
 %!   ?Object:or([bnode,literal,iri]),
-%!   ?Graph:atom.
+%!   ?Graph:atom
 %! ) is nondet.
 
 :- discontiguous(stmt/5).
