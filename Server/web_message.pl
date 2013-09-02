@@ -16,6 +16,8 @@ Acts on messages printed by print_message/2.
 
 :- use_module(html(html)).
 :- use_module(library(http/http_open)).
+:- use_module(library(http/http_path)).
+:- use_module(server(dev_server)).
 :- use_module(server(error_web)).
 
 :- dynamic(current_log_row/1).
