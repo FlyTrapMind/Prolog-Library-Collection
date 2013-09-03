@@ -1,4 +1,9 @@
-:- module(rdf_axiom_test, []).
+:- module(
+  rdf_axiom_test,
+  [
+    rdfs_deduction/0
+  ]
+).
 
 /** <module> RDF_AXIOM_TEST
 
@@ -6,12 +11,22 @@
 @version 2013/08
 */
 
+:- use_module(gv(gv_file)).
 :- use_module(library(plunit)).
+:- use_module(logic(rdf_axiom)).
+:- use_module(os(run_ext)).
+:- use_module(tms(tms_export)).
+
+rdfs_deduction:-
+  rdf_axioms:materialize(_),
+  tms_export_graph(tms_user, GIF),
+  graph_to_gv_file([], GIF, sfdp, pdf, PDF_File),
+  open_pdf(PDF_File).
+
 
 :- begin_tests(rdf_axiom).
 
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
-:- use_module(logic(rdf_axiom)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').

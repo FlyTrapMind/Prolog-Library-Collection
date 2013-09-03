@@ -212,7 +212,7 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % Graph
   rdf_graph_name(G, G_Name),
   option(colorscheme(Colorscheme), O, x11),
-  G_Attrs = [colorscheme(Colorscheme),directedness(directed),label(G_Name)].
+  G_Attrs = [colorscheme(Colorscheme),directedness(forward),label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
 % Returns a name for the given graph.

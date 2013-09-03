@@ -43,7 +43,7 @@ Exports TMS belief states,
 :- xml_register_namespace(tms,   'http://www.wouterbeek.com/tms.owl#'  ).
 
 :- rdf_meta(tms_export_edge_style(r,-)).
-:- rdf_meta(tms_export_edges(+,r,r,+,-)).
+:- rdf_meta(tms_export_edges(+,+,r,r,+,-)).
 :- rdf_meta(tms_export_node_color(+,r,-)).
 :- rdf_meta(tms_print_argument(+,r)).
 :- rdf_meta(tms_print_argument(+,+,r)).
@@ -77,7 +77,13 @@ tms_export_graph(TMS, Ns, Js, graph(Vs,Es4,G_Attrs)):-
   foldl(tms_export_cons_edges(TMS), Js, Es1, Es2),
   foldl(tms_export_in_edges(TMS), Js, Es2, Es3),
   foldl(tms_export_out_edges(TMS), Js, Es3, Es4),
-  G_Attrs = [charset('UTF-8'),fontsize(11),label(TMS),overlap(false)].
+  G_Attrs = [
+    charset('UTF-8'),
+    directedness(forward),
+    fontsize(11),
+    label(TMS),
+    overlap(false)
+  ].
 
 tms_export_justifications(TMS, Js, GIF):-
   setoff(
@@ -129,15 +135,16 @@ tms_print_node(O, N):-
 
 % EDGES %
 
-tms_export_edges(TMS, J, P, Es1, Es2):-
+tms_export_edges(TMS, Inv, J, P, Es1, Es2):-
   setoff(
-    edge(N_Id,J_Id,E_Attrs),
+    edge(From,To,E_Attrs),
     (
       rdf(J, P, N, TMS),
       rdf_global_id(_:N_Id, N),
       rdf_global_id(_:J_Id, J),
       tms_export_edge_style(P, Style),
-      E_Attrs = [color(black),style(Style)]
+      E_Attrs = [color(black),style(Style)],
+      (Inv == true -> From = J_Id, To = N_Id ; From = N_Id, To = J_Id)
     ),
     NewEs
   ),
@@ -148,13 +155,13 @@ tms_export_edge_style(tms:has_in,         solid ):- !.
 tms_export_edge_style(tms:has_out,        dashed):- !.
 
 tms_export_cons_edges(TMS, J, Es1, Es2):-
-  tms_export_edges(TMS, J, tms:has_consequent, Es1, Es2).
+  tms_export_edges(TMS, true, J, tms:has_consequent, Es1, Es2).
 
 tms_export_in_edges(TMS, J, Es1, Es2):-
-  tms_export_edges(TMS, J, tms:has_in, Es1, Es2).
+  tms_export_edges(TMS, false, J, tms:has_in, Es1, Es2).
 
 tms_export_out_edges(TMS, J, Es1, Es2):-
-  tms_export_edges(TMS, J, tms:has_out, Es1, Es2).
+  tms_export_edges(TMS, false, J, tms:has_out, Es1, Es2).
 
 
 
