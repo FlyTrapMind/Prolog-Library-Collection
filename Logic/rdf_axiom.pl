@@ -1,10 +1,6 @@
 :- module(
   rdf_axioms,
   [
-    axiom/4, % ?Language:oneof([rdf,rdfs])
-             % ?Subject:or([bnode,iri])
-             % ?Predicate:iri
-             % ?Object:or([bnode,literal,iri])
     bnode_literal_map/3, % ?Graph:atom
                          % ?BNode:bnode
                          % ?Literal:compound
@@ -19,8 +15,7 @@
 An axiomatic approach towards RDF(S) materialization.
 
 @author Wouter Beek
-@see Hayes2004
-@tbd Use a CPS for calculating the deductive closure and individual queries.
+@see Hayes2004, Hitzler2008
 @version 2013/05, 2013/08-2013/09
 */
 
@@ -48,9 +43,6 @@ An axiomatic approach towards RDF(S) materialization.
 :- discontiguous(axiom/4).
 :- rdf_meta(axiom(?,r,r,r)).
 
-:- rdf_meta(query(r,r,r)).
-:- rdf_meta(query(?,r,r,r)).
-
 %! rule(M,
 %!   -Rule:atom,
 %!   -Premises:list(triple),
@@ -63,15 +55,6 @@ An axiomatic approach towards RDF(S) materialization.
 :- discontiguous(rule/6).
 :- rdf_meta(rule(-,-,r,r,r,?)).
 
-%! stmt(
-%!   -Tree:compound,
-%!   ?Subject:or([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?Object:or([bnode,literal,iri]),
-%!   ?Graph:atom
-%! ) is nondet.
-
-:- discontiguous(stmt/5).
 :- rdf_meta(stmt(-,r,r,r,?)).
 
 :- debug(rdf_axiom).
@@ -124,7 +107,17 @@ rdf_both_bnode(_, _).
 alread_in_rdf(S, P, O, G):-
   maplist(rdf_bnode_to_var, [S,P,O], [SS,PP,OO]),
   rdf(SS, PP, OO, G),
-  rdf_both_bnode([S,P,O], [SS,PP,OO]).
+  maplist(rdf_both_bnode, [S,P,O], [SS,PP,OO]).
+
+%! materialize(?Graph:atom) is det.
+% Performs all depth-one deductions for either the given graph or no graph.
+%
+% If the graph parameter is given, then only triples from that graph
+% are considered for materialization.
+% The same graph is used for storing the results.
+%
+% @param Graph The atomic name of a graph
+%        or uninstantiated (not restricted to a particular graph).
 
 materialize(G):-
   % Notice that the depth setting constrains the deductions
@@ -164,6 +157,16 @@ rule(axiom, [], S, P, O, _G):-
 stmt(fact([],TripleName), S, P, O, G):-
   rdf(S, P, O, G),
   rdf_triple_name(S, P, O, TripleName).
+
+%! start_materializer(?Graph:atom, +Interval:positive_integer) is det.
+% Performs a depth-one materialization step every N seconds.
+%
+% @param Graph The atomic name of a graph
+%        or uninstantiated (not restricted to a particular graph).
+% @param Interval The number of seconds between consecutive
+%        materialization attempts.
+%
+% @see Performs materialization steps using materialize/1.
 
 start_materializer(G, I1):-
   default(I1, 30, I2),

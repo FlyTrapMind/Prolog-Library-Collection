@@ -194,7 +194,7 @@ export_rdf_graph(O, G, GIF):-
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 
-export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
+export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % First edges, them vertices.
   rdf_edges(O, G, Es),
   setoff(
@@ -306,7 +306,7 @@ rdf_edge_style(E, E_Style):-
   rdf_edge_style_(E, E_Style), !.
 rdf_edge_style(_E, solid).
 
-rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
+rdf_edge_term(O, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
   % Ids.
   E = FromV-_P-ToV,
   nth0chk(FromV_Id, Vs, FromV),
@@ -446,7 +446,7 @@ rdf_vertex_shape(RDF_Term, circle):-
 % Catch-all.
 rdf_vertex_shape(_RDF_Term, ellipse).
 
-rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs3)):-
+rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id,V,V_Attrs3)):-
   nth0chk(V_Id, Vs, V),
   rdf_term_name(O, V, V_Name),
   rdf_vertex_color(O, G, V, V_Color),

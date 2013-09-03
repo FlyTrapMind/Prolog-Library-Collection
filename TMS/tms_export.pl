@@ -1,10 +1,13 @@
 :- module(
   tms_export,
   [
-    export_argument/1, % +Node:node
-    export_tms/1, % +TMS:atom
-    export_tms/2 % +TMS:atom
-                 % +Justifications:list(justification)
+    tms_export_argument/2, % +Node:iri
+                           % -GraphInterchangeFormat:compound
+    tms_export_graph/2, % +TMS:atom
+                        % -GraphInterchangeFormat:compound
+    tms_export_justifications/3 % +TMS:atom
+                                % +Justifications:list(iri)
+                                % -GraphInterchangeFormat:compound
   ]
 ).
 
@@ -14,202 +17,126 @@ Exports TMS belief states,
 
 @author Wouter Beek
 @tbd Update Doyle export to the new GV modules.
-@version 2013/05
+@version 2013/05, 2013/09
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
+:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(os(run_ext)).
 :- use_module(rdf(rdf_read)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
+:- xml_register_namespace(tms,   'http://www.wouterbeek.com/tms.owl#'  ).
+
+:- rdf_meta(tms_export_edge_style(r,-)).
+:- rdf_meta(tms_export_edges(+,r,r,+,-)).
+:- rdf_meta(tms_export_node_color(+,r,-)).
 
 
 
-%! export_argument(+Node:node) is det.
+%! tms_export_argument(+Node:iri, -GIF:compound) is det.
 
-export_argument(Node):-
+tms_export_argument(N, GIF):-
   % Retrieve the TMS in which the node appears.
-  node(TMS, Node),
+  tms_node(TMS, N),
   % The argument for the node consists of a list of justifications.
-  tms_argument(Node, Justifications),
+  tms_argument(N, Js),
   % Export the justifications that constitute the argument.
-  export_tms(TMS, Justifications).
+  tms_export_justifications(TMS, Js, GIF).
 
-%! export_file(-File:atom) is det.
-
-export_file(File):-
-  flag(tms_export, ID, ID + 1),
-  format(atom(FileName), 'export_~w', [ID]),
-  absolute_file_name(
-    personal(FileName),
-    File,
-    [access(write), file_type(dot)]
-  ).
-
-%! export_tms(+TMS:atom) is det.
+%! tms_export(+TMS:atom) is det.
 % Exports the TMS using GraphViz.
 
-export_tms(TMS):-
+tms_export_graph(TMS, GIF):-
   is_registered_tms(TMS),
-  export_file(GV_File),
-  tms_to_graphviz(TMS, Stream),
-  close(Stream),
-  convert_gv(GV_File, dot, pdf, PDF_File),
-  open_pdf(PDF_File).
+  setoff(N, tms_node(TMS, N), Ns),
+  setoff(J, tms_justification(TMS, J), Js),
+  tms_export_graph(TMS, Ns, Js, GIF).
 
-%! export_tms(+TMS:atom, +Justifications:list(justification)) is det.
-% Exports the TMS using GraphViz.
+tms_export_graph(TMS, Ns, Js, graph(Vs,Es4,G_Attrs)):-
+  maplist(tms_export_node(TMS), Ns, N_Vs),
+  maplist(tms_export_justification(TMS), Js, J_Vs),
+  ord_union(N_Vs, J_Vs, Vs),
+  ord_empty(Es1),
+  foldl(tms_export_cons_edges(TMS), Js, Es1, Es2),
+  foldl(tms_export_in_edges(TMS), Js, Es2, Es3),
+  foldl(tms_export_out_edges(TMS), Js, Es3, Es4),
+  G_Attrs = [charset('UTF-8'),fontsize(11),label(TMS),overlap(false)].
 
-export_tms(TMS, Justifications):-
-  is_registered_tms(TMS),
-  export_file(GV_File),
-  tms_to_graphviz(TMS, Justifications, Stream),
-  close(Stream),
-  export_pdf(GV_File).
-
-tms_to_graphviz(TMS, Stream):-
-  % Type checking.
-  is_registered_tms(TMS), !,
-
-  setoff(Node, node(TMS, Node), Nodes),
-  setoff(Justification, justification(TMS, Justification), Justifications),
-
-  tms_to_graphviz(TMS, Nodes, Justifications, Stream).
-
-tms_to_graphviz(TMS, Justifications, Stream):-
+tms_export_justifications(TMS, Js, GIF):-
   setoff(
-    Node,
+    N,
     (
-      member(Justification, Justifications),
+      member(J, Js),
       (
-        rdf_has(Justification, tms:has_antecedent, Node)
+        rdf_has(J, tms:has_antecedent, N)
       ;
-        rdf_has(Justification, tms:has_consequent, Node)
+        rdf_has(J, tms:has_consequent, N)
       )
     ),
-    Nodes
+    Ns
   ),
+  tms_export_graph(TMS, Ns, Js, GIF).
 
-  tms_to_graphviz(TMS, Nodes, Justifications, Stream).
 
-tms_to_graphviz(TMS, Nodes, Justifications, Stream):-
-  % Begin of graph.
-  format(Stream, 'digraph circuit {\n', []),
 
-  % Nodes
-  forall(
-    member(Node, Nodes),
+% EDGES %
+
+tms_export_edges(TMS, J, P, Es1, Es2):-
+  setoff(
+    edge(N_Id,J_Id,E_Attrs),
     (
-      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
-      rdfs_label(Node, L),
-      if_then_else(
-        debug,
-        format(atom(Label), '~w: ~w', [NodeID, L]),
-        Label = L
-      ),
-      % The color indicates the support status of the node.
-      (
-        is_in_node(TMS, Node)
-      ->
-        Color = green
-      ;
-        is_out_node(TMS, Node)
-      ->
-        Color = red
-      ;
-        Color = black
-      ),
-      format(
-        Stream,
-        '  n~w [color="~w", fontsize="11", label="~w", shape="ellipse", style="solid"];\n',
-        [NodeID, Color, Label]
-      )
-    )
-  ),
-
-  % Justifications
-  forall(
-    member(Justification, Justifications),
-    (
-      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
-      rdfs_label(Justification, L),
-      if_then_else(
-        debug,
-        format(atom(Label), '~w: ~w', [JustificationID, L]),
-        Label = L
-      ),
-      format(
-        Stream,
-        '  j~w [color="blue", fontsize="11", label="~w", shape="rectangle", style="solid"];\n',
-        [JustificationID, Label]
-      )
-    )
-  ),
-
-  format(Stream, '\n', []),
-
-  % _In_list
-  forall(
-    (
-      member(Justification, Justifications),
-      rdf(Justification, tms:has_in, Node, TMS)
+      rdf(J, P, N, TMS),
+      rdf_datatype(N, tms:has_id, integer, Id1, TMS),
+      atom_concat(n, Id1, N_Id),
+      rdf_datatype(J, tms:has_id, integer, Id2, TMS),
+      atom_concat(j, Id2, J_Id),
+      tms_export_edge_style(P, Style),
+      E_Attrs = [color(black),style(Style)]
     ),
-    (
-      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
-      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
-      format(
-        Stream,
-        '  n~w -> j~w [color="black", style="solid"];\n',
-        [NodeID, JustificationID]
-      )
-    )
+    NewEs
   ),
+  ord_union(Es1, NewEs, Es2).
 
-  % _Out_list
-  forall(
-    (
-      member(Justification, Justifications),
-      rdf(Justification, tms:has_out, Node, TMS)
-    ),
-    (
-      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
-      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
-      format(
-        Stream,
-        '  n~w -> j~w [color="black", style="dashed"];\n',
-        [NodeID, JustificationID]
-      )
-    )
-  ),
+tms_export_edge_style(tms:has_consequent, solid ):- !.
+tms_export_edge_style(tms:has_in,         solid ):- !.
+tms_export_edge_style(tms:has_out,        dashed):- !.
 
-  % Consequences
-  forall(
-    (
-      member(Justification, Justifications),
-      rdf(Justification, tms:has_consequent, Node, TMS)
-    ),
-    (
-      rdf_datatype(Node, tms:has_id, integer, NodeID, TMS),
-      rdf_datatype(Justification, tms:has_id, integer, JustificationID, TMS),
-      format(
-        Stream,
-        '  j~w -> n~w [color="black", style="solid"];\n',
-        [JustificationID, NodeID]
-      )
-    )
-  ),
+tms_export_cons_edges(TMS, J, Es1, Es2):-
+  tms_export_edges(TMS, J, tms:has_consequent, Es1, Es2).
 
-  % Graph properties.
-  format(Stream, '\n', []),
-  format(Stream, '  charset="UTF-8"\n', []),
-  format(Stream, '  fontsize="11"\n', []),
-  format(Stream, '  label="~w"\n', [TMS]),
-  format(Stream, '  overlap=false\n', []),
+tms_export_in_edges(TMS, J, Es1, Es2):-
+  tms_export_edges(TMS, J, tms:has_in, Es1, Es2).
 
-  % End of graph.
-  format(Stream, '}\n', []).
+tms_export_out_edges(TMS, J, Es1, Es2):-
+  tms_export_edges(TMS, J, tms:has_out, Es1, Es2).
+
+
+
+% VERTICES %
+
+tms_export_justification(TMS, J, vertex(J_Id,J,V_Attrs)):-
+  rdf_datatype(J, tms:has_id, integer, Id, TMS),
+  atom_concat(j, Id, J_Id),
+  rdfs_label(J, L),
+  V_Attrs = [color(blue),label(L),shape(rectangle),style(solid)].
+
+tms_export_node(TMS, N, vertex(N_Id,N,V_Attrs)):-
+  rdf_datatype(N, tms:has_id, integer, Id, TMS),
+  atom_concat(n, Id, N_Id),
+  rdfs_label(N, L),
+  tms_export_node_color(TMS, N, C),
+  V_Attrs = [color(C),label(L),shape(ellipse),style(solid)].
+
+%! tms_export_node_color(+TMS:atom, +Node:iri, -Color:atom) is det.
+% Returns the color indicating the support status of the node.
+tms_export_node_color(TMS, N, green):-
+  is_in_node(TMS, N), !.
+tms_export_node_color(TMS, N, red):-
+  is_out_node(TMS, N), !.
+tms_export_node_color(_TMS, _N, black).
 

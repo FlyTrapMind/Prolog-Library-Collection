@@ -187,6 +187,8 @@ unsignedNoDecimalPtCanonicalMap(0) --> !, "0".
 unsignedNoDecimalPtCanonicalMap(F) -->
   unsignedNoDecimalPtCanonicalMap_(F).
 
+% Done!
+unsignedNoDecimalPtCanonicalMap_(0) --> !, [].
 unsignedNoDecimalPtCanonicalMap_(F) -->
   {
     mod(F, 10, G),

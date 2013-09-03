@@ -419,7 +419,7 @@ test1:-
   Graph = rdf_tms_test,
   rdf_assert(rdf:a, rdf:b, rdf:c, Graph),
   rdf_materialize(Graph, TMS),
-  tms_export:export_tms(TMS).
+  tms_export:tms_export(TMS).
 
 %! rdf_tms_test1(-S, -P, -O) is det.
 
