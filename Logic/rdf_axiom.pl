@@ -1,5 +1,5 @@
 :- module(
-  rdf_axioms,
+  rdf_axiom,
   [
     bnode_literal_map/3, % ?Graph:atom
                          % ?BNode:bnode
@@ -161,31 +161,30 @@ start_materializer(G, I1):-
 
 % RDF RULES & AXIOMS %
 
-% [se1] Simple entailment w.r.t. the object term.
 % [lg]  Literal generalization is a special case of [se1],
 %       where the object term is a literal.
 %       Literal generalization is used whenever something has to be
 %       predicated of a literal (since literals cannot occur
 %       as subject terms).
+rule(lg, [T1], S, P, B, G):-
+  stmt(T1, S, P, O, G),
+  rdf_is_literal(O),
+  bnode_literal_map(G, B, O).
+
+/*% [se1] Simple entailment w.r.t. the object term.
 rule(se1, [T1], S, P, B, G):-
   stmt(T1, S, P, O, G),
   % Constraining the standard.
-  \+ rdf_is_bnode(O),
-  (
-    rdf_is_literal(O)
-  ->
-    bnode_literal_map(G, B, O)
-  ;
-    rdf_bnode(B)
-  ).
+  rdf_is_iri(O),
+  rdf_bnode(B).*/
 
-% [se2] Simple entailment w.r.t. the subject term.
+/*% [se2] Simple entailment w.r.t. the subject term.
 rule(se2, [T1], B, P, O, G):-
   stmt(T1, S, P, O, G),
   % Constraining the standard.
   \+ rdf_is_bnode(S),
   T1 =.. [LastRule|_], LastRule \== se2,
-  rdf_bnode(B).
+  rdf_bnode(B).*/
 
 % [rdf1] Predicate terms are instances of =|rdf:'Property'|=.
 rule(rdf1, [T1], P, rdf:type, rdf:'Property', G):-

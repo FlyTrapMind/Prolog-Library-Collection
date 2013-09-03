@@ -18,7 +18,7 @@
 :- use_module(tms(tms_export)).
 
 rdfs_deduction:-
-  rdf_axioms:materialize(_),
+  rdf_axiom:materialize(_),
   tms_export_graph(tms_user, GIF),
   graph_to_gv_file([], GIF, sfdp, pdf, PDF_File),
   open_pdf(PDF_File).
