@@ -5,9 +5,15 @@
                            % -GraphInterchangeFormat:compound
     tms_export_graph/2, % +TMS:atom
                         % -GraphInterchangeFormat:compound
-    tms_export_justifications/3 % +TMS:atom
-                                % +Justifications:list(iri)
-                                % -GraphInterchangeFormat:compound
+    tms_export_justifications/3, % +TMS:atom
+                                 % +Justifications:list(iri)
+                                 % -GraphInterchangeFormat:compound
+    tms_print_argument/3, % +Options:list(nvpair)
+                          % +TMS:atom
+                          % +Node:iri
+    tms_print_justification/3 % +Options:list(nvpair)
+                              % +TMS:atom
+                              % +Justification:iri
   ]
 ).
 
@@ -21,11 +27,15 @@ Exports TMS belief states,
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(generics(option_ext)).
+:- use_module(generics(print_ext)).
 :- use_module(library(apply)).
+:- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdfs(rdfs_read)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
@@ -35,6 +45,8 @@ Exports TMS belief states,
 :- rdf_meta(tms_export_edge_style(r,-)).
 :- rdf_meta(tms_export_edges(+,r,r,+,-)).
 :- rdf_meta(tms_export_node_color(+,r,-)).
+:- rdf_meta(tms_print_argument(+,r)).
+:- rdf_meta(tms_print_argument(+,+,r)).
 
 
 
@@ -82,6 +94,37 @@ tms_export_justifications(TMS, Js, GIF):-
   ),
   tms_export_graph(TMS, Ns, Js, GIF).
 
+tms_print_argument(O1, TMS, C):-
+  default_option(O1, indent, 0, O2),
+  tms_print_argument_(O2, TMS, C).
+
+tms_print_argument_(O, TMS, C):-
+  tms_node(TMS, C),
+  rdf(J, tms:has_consequent, C, TMS), !,
+  tms_print_justification(O, TMS, J).
+tms_print_argument_(O, _TMS, C):-
+  option(indent(I), O, 0),
+  indent(I),
+  write('[rdf] '),
+  tms_print_node(O, C),
+  nl.
+
+tms_print_justification(O1, TMS, J):-
+  tms_justification(TMS, As, R, C, J),
+  option(indent(I), O1, 0),
+  indent(I),
+  write('['), write(R), write(']'),
+  write(' '),
+  tms_print_node(O1, C),
+  nl,
+  update_option(O1, indent, succ, _I, O2),
+  maplist(tms_print_argument(O2, TMS), As).
+
+tms_print_node(O, N):-
+  option(lang(Lang), O, en),
+  rdfs_preferred_label(N, Lang, _PreferredLang, L),
+  write(L).
+
 
 
 % EDGES %
@@ -91,10 +134,8 @@ tms_export_edges(TMS, J, P, Es1, Es2):-
     edge(N_Id,J_Id,E_Attrs),
     (
       rdf(J, P, N, TMS),
-      rdf_datatype(N, tms:has_id, integer, Id1, TMS),
-      atom_concat(n, Id1, N_Id),
-      rdf_datatype(J, tms:has_id, integer, Id2, TMS),
-      atom_concat(j, Id2, J_Id),
+      rdf_global_id(_:N_Id, N),
+      rdf_global_id(_:J_Id, J),
       tms_export_edge_style(P, Style),
       E_Attrs = [color(black),style(Style)]
     ),
@@ -119,15 +160,13 @@ tms_export_out_edges(TMS, J, Es1, Es2):-
 
 % VERTICES %
 
-tms_export_justification(TMS, J, vertex(J_Id,J,V_Attrs)):-
-  rdf_datatype(J, tms:has_id, integer, Id, TMS),
-  atom_concat(j, Id, J_Id),
+tms_export_justification(_TMS, J, vertex(J_Id,J,V_Attrs)):-
+  rdf_global_id(_:J_Id, J),
   rdfs_label(J, L),
   V_Attrs = [color(blue),label(L),shape(rectangle),style(solid)].
 
 tms_export_node(TMS, N, vertex(N_Id,N,V_Attrs)):-
-  rdf_datatype(N, tms:has_id, integer, Id, TMS),
-  atom_concat(n, Id, N_Id),
+  rdf_global_id(_:N_Id, N),
   rdfs_label(N, L),
   tms_export_node_color(TMS, N, C),
   V_Attrs = [color(C),label(L),shape(ellipse),style(solid)].

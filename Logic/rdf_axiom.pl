@@ -16,6 +16,7 @@ An axiomatic approach towards RDF(S) materialization.
 
 @author Wouter Beek
 @see Hayes2004, Hitzler2008
+@tbd Add the check for well-typed XML literals to rule `rdf2`.
 @version 2013/05, 2013/08-2013/09
 */
 
@@ -26,6 +27,12 @@ An axiomatic approach towards RDF(S) materialization.
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_read)).
+:- use_module(rdf(rdf_serial)).
+:- use_module(rdf(rdf_term)).
+:- use_module(tms(doyle)).
+:- use_module(tms(tms)).
+:- use_module(tms(tms_export)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -78,36 +85,15 @@ bnode_literal_map(G1, BNode, Lit):-
     db_add_novel(bnode_literal_map_(G2,BNode,Lit))
   ), !.
 
-%! rdf_bnode_to_var(
-%!   +RDF_Term:or([bnode,iri,literal]),
-%!   ?Out:or([iri,literal])
-%! ) is det.
-% Replaced blank nodes with uninstantiated variables.
-
-rdf_bnode_to_var(X, _):-
-  rdf_is_bnode(X), !.
-rdf_bnode_to_var(X, X).
-
-%! rdf_both_bnode(
-%!   +RDF_Term1:or([bnode,iri,literal]),
-%!   +RDF_Term2:or([bnode,iri,literal])
-%! ) is semidet.
-% Fails if only either of the RDF terms is a blank node.
-
-rdf_both_bnode(X, Y):-
-  rdf_is_bnode(X), !,
-  rdf_is_bnode(Y).
-rdf_both_bnode(_, _).
-
-%! alread_in_rdf(+S, +P, +O, +G) is semidet.
-% Since we cannot match blank nodes directly,
-% we replace them with variables.
-% This is valid under graph equivalence.
-
-alread_in_rdf(S, P, O, G):-
-  maplist(rdf_bnode_to_var, [S,P,O], [SS,PP,OO]),
-  rdf(SS, PP, OO, G),
-  maplist(rdf_both_bnode, [S,P,O], [SS,PP,OO]).
+init_materialization(G, TMS):-
+  atom_concat(tms_, G, TMS),
+  (
+    is_registered_tms(TMS)
+  ;
+    register_tms(doyle, TMS),
+    doyle_reset(TMS),
+    doyle_init(TMS)
+  ), !.
 
 %! materialize(?Graph:atom) is det.
 % Performs all depth-one deductions for either the given graph or no graph.
@@ -120,32 +106,30 @@ alread_in_rdf(S, P, O, G):-
 %        or uninstantiated (not restricted to a particular graph).
 
 materialize(G):-
-  % Notice that the depth setting constrains the deductions
-  % to direct rule applications.
-  rule(Tree, S, P, O, G),
-  % We only collect new triples, abstracting the blank nodes.
-  \+ alread_in_rdf(S, P, O, G),
+  (nonvar(G) ; G = user),
+
+  % A deduction of depth one.
+  rule(R, Premises, S, P, O, G),
+  % Only collect new triples, abstracting away from the blank nodes.
+  \+ rdf_find(S, P, O, G),
+
+  % Add to TMS.
+  init_materialization(G, TMS),
+  rdf_triple_name(S, P, O, Conclusion),
+  doyle_add_argument(TMS, Premises, R, Conclusion, J),
+
+  % DEB
   flag(deductions, Id, Id + 1),
   format(user_output, '~w: ', [Id]),
-  print_proof(user_output, Tree),
+  tms_print_justification([indent(0),lang(en)], TMS, J),
+
+  % Store the result.
   rdf_assert(S, P, O, G), !,
+  % Look for more results.
   materialize(G).
 materialize(_G):-
   flag(deductions, N, 0),
   debug(rdf_axiom, 'Added ~w deductions.', [N]).
-
-%! rule(
-%!   -Tree:compound,
-%!   ?Subject:or([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?Object:or([bnode,literal,iri]),
-%!   ?Graph:atom
-%! ) is nondet.
-
-rule(Tree, S, P, O, G):-
-  rule(Rule, Premises, S, P, O, G),
-  rdf_triple_name(S, P, O, Conclusion),
-  Tree =.. [Rule,Premises,Conclusion].
 
 % All axioms can be deduced as if they are the outcome of a rule.
 rule(axiom, [], S, P, O, _G):-
@@ -154,7 +138,7 @@ rule(axiom, [], S, P, O, _G):-
 % Statements occur inside rules (as premises).
 % We want to perform materialization in individual steps of depth 1.
 % This means that for materialization (mode `m`) we do not use rules.
-stmt(fact([],TripleName), S, P, O, G):-
+stmt(TripleName, S, P, O, G):-
   rdf(S, P, O, G),
   rdf_triple_name(S, P, O, TripleName).
 
@@ -209,9 +193,9 @@ rule(rdf1, [T1], P, rdf:type, rdf:'Property', G):-
 
 % [rdf2] XML literals are instances of =|rdf:'XMLLiteral'|=.
 rule(rdf2, [T1], BNode, rdf:type, rdf:'XMLLiteral', G):-
-  rdf_global_id(rdf:'XMLLiteral', XMLLiteralType),
-  TypedLiteral = literal(type(XMLLiteralType,_)),
   stmt(T1, _, _, TypedLiteral, G),
+  % This should be a well-typed XML literal...
+  rdf_is_literal(TypedLiteral),
   bnode_literal_map(G, BNode, TypedLiteral).
 
 % RDF axiomatic triples.
@@ -259,29 +243,33 @@ rule(rdfs1, [T1], BNode, rdf:type, rdfs:'Literal', G):-
   rdf_is_literal(O),
   bnode_literal_map(G, BNode, O).
 
-% [rdfs2]
+% [rdfs2] Class membership through domain restriction.
 rule(rdfs2, [T1,T2], S, rdf:type, C, G):-
   stmt(T1, P, rdfs:domain, C, G),
+  rdf_is_iri(P),
   stmt(T2, S, P, _, G).
 
-% [rdfs3]
+% [rdfs3] Class membership through range restriction.
 rule(rdfs3, [T1,T2], O, rdf:type, C, G):-
   stmt(T1, P, rdfs:range, C, G),
-  stmt(T2, _, P, O, G).
+  rdf_is_iri(P),
+  stmt(T2, _, P, O, G),
+  \+ rdf_is_literal(O).
 
-% [rdfs4a]
+% [rdfs4a] Subject terms are resources.
 rule(rdfs4a, [T1], S, rdf:type, rdfs:'Resource', G):-
   stmt(T1, S, _, _, G).
-% [rdfs4b]
+% [rdfs4b] Object terms are resources.
 rule(rdfs4b, [T1], O, rdf:type, rdfs:'Resource', G):-
-  stmt(T1, _, _, O, G).
+  stmt(T1, _, _, O, G),
+  \+ rdf_is_literal(O).
 
 % [rdfs5] Transitive closure of the property hierarchy relation.
 rule(rdfs5, [T1,T2], P1, rdfs:subPropertyOf, P3, G):-
   stmt(T1, P1, rdfs:subPropertyOf, P2, G),
-  P1 \== P2,
-  stmt(T2, P2, rdfs:subPropertyOf, P3, G),
-  P2 \== P3.
+  % `P2` is automatically constrained to blank nodes and IRIs,
+  % since is must appear as the subject term of some triple.
+  stmt(T2, P2, rdfs:subPropertyOf, P3, G).
 
 % [rdfs6] Reflexivity of the property hierarchy relation.
 rule(rdfs6, [T1], P, rdfs:subPropertyOf, P, G):-
@@ -290,7 +278,8 @@ rule(rdfs6, [T1], P, rdfs:subPropertyOf, P, G):-
 % [rdfs7] Using the property hierarchy.
 rule(rdfs7, [T1,T2], S, P2, O, G):-
   stmt(T1, P1, rdfs:subPropertyOf, P2, G),
-  P1 \== P2,
+  rdf_is_iri(P1),
+  rdf_is_iri(P2),
   stmt(T2, S, P1, O, G).
 
 % [rdfs8] Classes are instances of =|rdfs:Resource|=.
@@ -300,7 +289,8 @@ rule(rdfs8, [T1], C, rdfs:subClassOf, rdfs:'Resource', G):-
 % [rdfs9] Using the class hierarchy.
 rule(rdfs9, [T1,T2], S, rdf:type, C2, G):-
   stmt(T1, C1, rdfs:subClassOf, C2, G),
-  C1 \== C2,
+  % `C1` is automatically constrained to blank nodes and IRIs,
+  % since is must have appeared as the subject term of some triple.
   stmt(T2, S,  rdf:type, C1, G).
 
 % [rdfs10] Reflexivity of the class hierarchy relation.
@@ -310,12 +300,11 @@ rule(rdfs10, [T1], C, rdfs:subClassOf, C, G):-
 % [rdfs11] Transitivity of the class hierarchy relation.
 rule(rdfs11, [T1,T2], C1, rdfs:subClassOf, C3, G):-
   stmt(T1, C1, rdfs:subClassOf, C2, G),
-  C1 \== C2,
-  stmt(T2, C2, rdfs:subClassOf, C3, G),
-  C2 \== C3.
+  \+ rdf_is_literal(C2),
+  stmt(T2, C2, rdfs:subClassOf, C3, G).
 
 % [rdfs12]
-rule(rdfs12, [T1], S, rdf:subClassOf, rdfs:member, G):-
+rule(rdfs12, [T1], S, rdfs:subPropertyOf, rdfs:member, G):-
   stmt(T1, S, rdf:type, rdfs:'ContainerMembershipProperty', G).
 
 % [rdfs13]

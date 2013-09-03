@@ -6,15 +6,20 @@
     doyle_reset/1, % +TMS:atom
 
 % TMS CONSTRUCTION
+    doyle_add_argument/5, % +TMS:atom
+                          % +Premises:list(term)
+                          % +Rule:atom
+                          % +Conclusion:term
+                          % -Justification:atom
     doyle_add_justification/6, % +TMS:atom
                                % +Ins:list(node)
                                % +Outs:list(node)
                                % +Label:atom
-                               % +Consequence:node
-                               % -Justification:justification
+                               % +Consequence:iri
+                               % -Justification:iri
     doyle_add_node/3, % +TMS:tms
                       % +Statement:atom
-                      % -Node:node
+                      % -Node:iri
 
 % TMS ANALYSIS
     doyle_is_in_node/1, % +Node
@@ -128,133 +133,141 @@ Well-founded justifications form a non-circular argument for their node.
 Only SL-justifications can be well-founded justifications.
 
 @author Wouter Beek
-@version 2012/06, 2013/05
+@version 2012/06, 2013/05, 2013/09
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(generics(set_theory)).
+:- use_module(library(apply)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_build)).
+:- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
-
-:- dynamic(cp_consequence/2).
 
 :- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
+:- dynamic(cp_consequence/2).
+
+:- rdf_meta(doyle_add_argument(+,+,+,r,r)).
 :- rdf_meta(doyle_add_justification(+,+,+,+,r,r)).
 :- rdf_meta(doyle_add_node(+,+,r)).
 
 
 
 
-% DOYLE'S ALGORITHM %
+doyle_add_argument(TMS, Premises, Rule, Conclusion, J):-
+  maplist(doyle_add_node(TMS), [Conclusion|Premises], [Consequence|InNs]),
+  doyle_add_justification(TMS, InNs, [], Rule, Consequence, J).
 
 %! doyle_add_justification(
 %!   +TMS:atom,
 %!   +Ins:list(node),
 %!   +Outs:list(node),
 %!   +Label:atom,
-%!   +Consequence:node,
-%!   -Justification:justification
+%!   +Consequence:iri,
+%!   -Justification:iri
 %! ) is det.
 % Step 1: Adding a new justification.
 
-doyle_add_justification(TMS, Ins, Outs, Label, Consequence, Justification):-
+doyle_add_justification(TMS, Ins, Outs, Label, Consequence, J):-
   % Type checks.
   rdf_graph(TMS),
   maplist(is_node, Ins),
   maplist(is_node, Outs),
   atom(Label),
   is_node(Consequence),
-  var(Justification),
+  var(J),
 
   % Create the justification.
-  format(atom(JustificationsFlag), '~w_justifications', [TMS]),
-  flag(JustificationsFlag, ID, ID + 1),
-  format(atom(Name), '~w_j~w', [TMS,ID]),
-  rdf_global_id(doyle:Name, Justification),
-  % @tbd For now we only support SL-justifications.
-  rdf_assert_individual(Justification, doyle:'SL-Justification', TMS:1),
-  rdf_assert_datatype(Justification, tms:has_id, integer, ID, TMS:1),
-  rdfs_assert_label(Justification, Label, TMS:1),
-
-  % Add the new justification to the node's justification-set.
-  add_justification(TMS, Consequence, Justification),
-
-  % Add the node to the set of consequences of each of the nodes mentioned
-  % in the justification.
-  forall(
-    member(In, Ins),
-    (
-      add_consequence(TMS, In, Consequence),
-      rdf_assert(Justification, tms:has_in, In, TMS:1)
-    )
-  ),
-  forall(
-    member(Out, Outs),
-    (
-      add_consequence(TMS, Out, Consequence),
-      rdf_assert(Justification, tms:has_out, Out, TMS:1)
-    )
-  ),
-
-  % If the justification is a CP-justification, add the node to the
-  % CP-consequenct-list of the consequence of the CP-Justification,
-  % for use in step 6.
-  % @tbd Add CP-justification support.
-  if_then(
-    is_cp_justification(Justification),
-    assert(cp_consequence(TMS, Justification))
-  ),
-
-  % If the node is _out_, check the justification for validity.
+  variant_sha1(j(Ins,Outs,Label,Consequence), Id),
+  rdf_global_id(doyle:Id, J),
   (
-    doyle_is_in_node(Consequence)
+    tms_justification(TMS, J)
   ->
     true
   ;
-    doyle_is_out_node(Consequence)
-  ->
-    (
-      is_valid(Justification)
-    ->
-      % If valid, proceed to step 2.
-      update_belief(TMS, Justification, Consequence)
-    ;
-      % If invalid, add to the supporting-nodes either an _out_node
-      % from the _in_list, or an _in_ node from the _out_list.
-      % @tbd Are we supposed to retract over this?
+    % @tbd For now we only support SL-justifications.
+    rdf_assert_individual(J, doyle:'SL-Justification', TMS:1),
+    rdfs_assert_label(J, Label, TMS:1),
+  
+    % Add the new justification to the node's justification-set.
+    add_justification(TMS, Consequence, J),
+  
+    % Add the node to the set of consequences of each of the nodes mentioned
+    % in the justification.
+    forall(
+      member(In, Ins),
       (
-        member(In, Ins),
-        doyle_is_out_node(In),
-        add_supporting_node(TMS, Consequence, In)
+        add_consequence(TMS, In, Consequence),
+        rdf_assert(J, tms:has_in, In, TMS:1)
+      )
+    ),
+    forall(
+      member(Out, Outs),
+      (
+        add_consequence(TMS, Out, Consequence),
+        rdf_assert(J, tms:has_out, Out, TMS:1)
+      )
+    ),
+  
+    % If the justification is a CP-justification, add the node to the
+    % CP-consequenct-list of the consequence of the CP-Justification,
+    % for use in step 6.
+    % @tbd Add CP-justification support.
+    if_then(
+      is_cp_justification(J),
+      assert(cp_consequence(TMS, J))
+    ),
+  
+    % If the node is _out_, check the justification for validity.
+    (
+      doyle_is_in_node(Consequence)
+    ->
+      true
+    ;
+      doyle_is_out_node(Consequence)
+    ->
+      (
+        is_valid(J)
+      ->
+        % If valid, proceed to step 2.
+        update_belief(TMS, J, Consequence)
       ;
-        member(Out, Outs),
-        doyle_is_in_node(Out),
-        add_supporting_node(TMS, Consequence, Out)
-      ),
-      !
+        % If invalid, add to the supporting-nodes either an _out_node
+        % from the _in_list, or an _in_ node from the _out_list.
+        % @tbd Are we supposed to retract over this?
+        (
+          member(In, Ins),
+          doyle_is_out_node(In),
+          add_supporting_node(TMS, Consequence, In)
+        ;
+          member(Out, Outs),
+          doyle_is_in_node(Out),
+          add_supporting_node(TMS, Consequence, Out)
+        ), !
+      )
     )
   ).
 
-%! update_belief(+TMS:atom, +Justification:justification, +Node:node) is det.
+%! update_belief(+TMS:atom, +Justification:iri, +Node:iri) is det.
 % Step 2: Updating beliefs required.
 
-update_belief(TMS, Justification, Node):-
+update_belief(TMS, J, N):-
   % Check the affected-consequences of the node.
-  affected_consequences(Node, AffectedConsequences),
+  affected_consequences(N, AffectedConsequences),
   (
     AffectedConsequences == []
   ->
     % If there are none, change the support-status to _in_.
-    set_support_status(TMS, Node, in),
+    set_support_status(TMS, N, in),
 
     % Make the supporting-nodes the sum of the _in_list and _out_list.
-    set_supporting_nodes(TMS, valid, Node, Justification)
+    set_supporting_nodes(TMS, valid, N, J)
     % Then stop.
   ;
     % Otherwise, make a list containing the node and its repercussions,
@@ -262,32 +275,32 @@ update_belief(TMS, Justification, Node):-
     % We must collect all the repercussions of the node to avoid constructing
     % circular arguments which use reprecussions of the node in its
     % supposedly well-founded supporting argument.
-    repercussions(Node, Repercussions),
+    repercussions(N, Repercussions),
     % Proceed to Step 3.
-    marking_nodes(TMS, [Node | Repercussions])
+    marking_nodes(TMS, [N|Repercussions])
   ).
 
-%! marking_nodes(+TMS:atom, +Nodes:list(node)) is det.
+%! marking_nodes(+TMS:atom, +Nodes:list(iri)) is det.
 % Step 3: Marking the nodes.
 
-marking_nodes(TMS, Nodes):-
-  maplist(is_node, Nodes),
+marking_nodes(TMS, Ns):-
+  maplist(is_node, Ns),
 
   % Mark each node in the list with a support-status of _nil_.
   forall(
-    member(Node, Nodes),
-    set_support_status(TMS, Node, nil)
+    member(N, Ns),
+    set_support_status(TMS, N, nil)
   ),
   % Proceed to Step 4.
-  evaluating_justifications(TMS, Nodes).
+  evaluating_justifications(TMS, Ns).
 
 %! evaluating_justifications(+TMS:atom, +Nodes:list(node)) is det.
 % Step 4: Evaluating the nodes' justifications.
 
-evaluating_justifications(TMS, Nodes):-
-  maplist(evaluating_justification_set(TMS), Nodes).
+evaluating_justifications(TMS, Ns):-
+  maplist(evaluating_justification_set(TMS), Ns).
 
-%! evaluating_justification_set(+TMS:atom, +Node:node) is det.
+%! evaluating_justification_set(+TMS:atom, +Node:iri) is det.
 % Step 4a: Evaluating the justification-set.
 
 % If the node is either _in_ or _out_, do nothing.
@@ -303,17 +316,17 @@ evaluating_justification_set(TMS, Node):-
   % them for well-founded validity or invalidity (to be defined shortly)
   % until either a valid one is found or the justification-set is exhausted.
   % @tbd The TMS tries justifications in chronological order, oldest first.
-  member_of_justification_set(Node, Justification),
+  member_of_justification_set(Node, J),
   (
-    is_valid(Justification)
+    is_valid(J)
   ->
     % If a valid justification is found, then install it as the
     % supporting-justification.
     % @tbd Convert CP-justifications to SL-justifications.
-    set_supporting_justification(TMS, Node, Justification),
+    set_supporting_justification(TMS, Node, J),
 
     % Install the supporting-nodes as in Step 2.
-    set_supporting_nodes(TMS, valid, Node, Justification),
+    set_supporting_nodes(TMS, valid, Node, J),
 
     % Mark the node _in_.
     set_support_status(TMS, Node, in),
@@ -333,7 +346,7 @@ evaluating_justification_set(TMS, Node):-
     set_support_status(TMS, Node, out),
 
     % Install its supporting-nodes as in Step 1.
-    set_supporting_nodes(TMS, invalid, Node, Justification),
+    set_supporting_nodes(TMS, invalid, Node, J),
 
     % Recursively perform Step 4a for all _nil_-marked consequences
     % of the node.
@@ -350,7 +363,7 @@ evaluating_justification_set(TMS, Node):-
 
 % SUPPORT PREDICATES %
 
-%! add_consequence(+TMS:atom, +Node:node, +Consequence:node) is det.
+%! add_consequence(+TMS:atom, +Node:iri, +Consequence:iri) is det.
 % Adds a consequence node to another node.
 
 add_consequence(TMS, Node, Consequence):-
@@ -359,50 +372,49 @@ add_consequence(TMS, Node, Consequence):-
 
 %! add_justification(
 %!   +TMS:atom,
-%!   +Node:node,
-%!   +Justification:justification
+%!   +Node:iri,
+%!   +Justification:iri
 %! ) is det.
 % Add a justification to a node's justification set.
 
-add_justification(TMS, Node, Justification):-
+add_justification(TMS, Node, J):-
   % Type checks.
   is_node(Node),
-  is_justification(Justification),
-  
-  rdf_assert(Justification, tms:has_consequent, Node, TMS:1).
+  is_justification(J),
 
-%! doyle_add_node(+TMS:atom, +Label:atom, -Node:node) is det.
+  rdf_assert(J, tms:has_consequent, Node, TMS:1).
+
+%! doyle_add_node(+TMS:atom, +Label:atom, -Node:iri) is det.
 % Adds a node.
 
-doyle_add_node(TMS, Label, Node):-
+doyle_add_node(TMS, Label, N):-
   % Type checking.
   atom(Label),
-  var(Node),
+  var(N),
 
-  format(atom(NodesFlag), '~w_nodes', [TMS]),
-  flag(NodesFlag, ID, ID + 1),
-  format(atom(Name), '~w_n~w', [TMS,ID]),
-  rdf_global_id(doyle:Name, Node),
-  rdf_assert_individual(Node, tms:'Node', TMS:1),
-  rdf_assert_datatype(Node, tms:has_id, integer, ID, TMS:1),
-  rdfs_assert_label(Node, Label, TMS:1),
+  variant_sha1(n(Label), Id),
+  rdf_global_id(doyle:Id, N),
+  (
+    tms_node(TMS, N)
+  ->
+    true
+  ;
+    rdf_assert_individual(N, tms:'Node', TMS:1),
+    rdfs_assert_label(N, Label, TMS:1),
+    % The initial support status.
+    set_support_status(TMS, N, out)
+  ).
 
-  % The initial support status.
-  set_support_status(TMS, Node, out).
-
-%! add_supporting_node(+TMS:atom, +Node:node, +SupportingNode:node) is det.
+%! add_supporting_node(+TMS:atom, +Node:iri, +SupportingNode:iri) is det.
 
 add_supporting_node(TMS, Node, SupportingNode):-
   % Type checks.
   rdf_graph(TMS),
   maplist(is_node, [Node,SupportingNode]),
-  
+
   rdf_assert(Node, doyle:has_supporting_node, SupportingNode, TMS:1).
 
-%! affected_consequences(
-%!   +Node:node,
-%!   -AffectedConsequences:ordset(node)
-%! ) is det.
+%! affected_consequences(+Node:iri, -AffectedConsequences:ordset(iri)) is det.
 % For a node, those consequences of the node which contain the node in
 % their set of supporting nodes.
 %
@@ -410,52 +422,51 @@ add_supporting_node(TMS, Node, SupportingNode):-
 % For a node, those consequences of the node which contain the node in
 % their set of supporting nodes.
 
-affected_consequences(Node, AffectedConsequences):-
-  is_node(Node),
+affected_consequences(N, AffectedConsequences):-
+  is_node(N),
   setoff(
     AffectedConsequence,
     (
-      rdf(Node, doyle:has_consequence, AffectedConsequence),
-      rdf(AffectedConsequence, doyle:has_supporting_node, Node)
+      rdf(N, doyle:has_consequence, AffectedConsequence),
+      rdf(AffectedConsequence, doyle:has_supporting_node, N)
     ),
     AffectedConsequences
   ).
 
-%! antecedents(+Node:node, -Antecedents:ordset(node)) is det.
+%! antecedents(+Node:iri, -Antecedents:ordset(iri)) is det.
 % An antecedent is a supporting node of a believed node.
 %
 % *|Antecedents|*
 % For an _in_ node, its _|supporting nodes|_.
 % For an _out_ node, the empty set.
 
-antecedents(Node, Antecedents):-
-  doyle_is_in_node(Node),
-  !,
-  supporting_nodes(Node, Antecedents).
-antecedents(Node, []):-
-  doyle_is_out_node(Node).
+antecedents(N, Antecedents):-
+  doyle_is_in_node(N), !,
+  supporting_nodes(N, Antecedents).
+antecedents(N, []):-
+  doyle_is_out_node(N).
 
-%! assumption_justification(+TMS:atom, ?Assumption:justification) is nondet.
+%! assumption_justification(+TMS:atom, ?Assumption:iri) is nondet.
 % *|Assumption justification|*
 % A _|justification|_ with non-empty _out_-list.
 
-assumption_justification(TMS, Justification):-
+assumption_justification(TMS, J):-
   rdf_graph(TMS),
-  rdf(Justification, tms:has_out, _Out, TMS).
+  rdf(J, tms:has_out, _Out, TMS).
 
-%! assumption_node(+TMS:atom, ?Assumption:node) is nondet.
+%! assumption_node(+TMS:atom, ?Assumption:iri) is nondet.
 % *|Assumption node|*
 % A node with a _|non-monotonic justification|_ as _|well-founded support|_,
 % i.e. the nodes that explain support status _in_.
 
-assumption_node(TMS, Node):-
+assumption_node(TMS, N):-
   rdf_graph(TMS),
-  rdfs_individual_of(Node, tms:'Node'),
-  rdf(Node, doyle:supporting_justification, Justification, TMS),
-  assumption_justification(TMS, Justification).
+  rdfs_individual_of(N, tms:'Node'),
+  rdf(N, doyle:supporting_justification, J, TMS),
+  assumption_justification(TMS, J).
 
 %! believed_consequences(
-%!   +Node:node,
+%!   +Node:iri,
 %!   -BelievedConsequences:ordset(node)
 %! ) is det.
 % Returns the believed consequences of the given node.
@@ -463,27 +474,27 @@ assumption_node(TMS, Node):-
 % *|Believed consequences|*
 % Of a node, its _in_ consequences that have it in their *antecedents*.
 
-believed_consequences(Node, BelievedConsequences):-
-  is_node(Node),
+believed_consequences(N, BelievedConsequences):-
+  is_node(N),
   setoff(
     BelievedConsequence,
     (
-      rdf(BelievedConsequence, doyle:has_supporting_node, Node),
-      rdf(Node, doyle:has_consequence, BelievedConsequence)
+      rdf(BelievedConsequence, doyle:has_supporting_node, N),
+      rdf(N, doyle:has_consequence, BelievedConsequence)
     ),
     BelievedConsequences
   ).
 
-%! believed_repercussions(+Node:node, -Repercussions:ordset(node)) is det.
+%! believed_repercussions(+Node:iri, -Repercussions:ordset(node)) is det.
 % Returns the believed repercussions of the given node.
 %
 % *|Believed repercussions|*
 % For a node, the transitive closure of its believed consequences.
 
-believed_repercussions(Node, Repercussions):-
-  transitive_closure(believed_consequences, Node, Repercussions).
+believed_repercussions(N, Repercussions):-
+  transitive_closure(believed_consequences, N, Repercussions).
 
-%! consequences(+Node:node, -Consequences:ordset(node)) is det.
+%! consequences(+Node:iri, -Consequences:ordset(node)) is det.
 % A consequence of a node is a node which mentions the prior node
 % in one of its justifications.
 %
@@ -503,7 +514,7 @@ consequences(Node, Consequences):-
 cp_justification(CP_Justification):-
   rdfs_individual_of(CP_Justification, doyle:'CP-Justification').
 
-%! foundations(+Node:node, -Foundations:ordset(node)) is det.
+%! foundations(+Node:iri, -Foundations:ordset(node)) is det.
 % Returns the foundations of the given node.
 % The foundations are the transitive closure of the antecedents.
 
@@ -511,7 +522,7 @@ foundations(Node, Foundations):-
   transitive_closure(antecedents, Node, Foundations).
 
 %! has_support_status(
-%!   +Node:node,
+%!   +Node:iri,
 %!   +SupportStatus:oneof([in,nil,out])
 %! ) is semidet.
 
@@ -525,11 +536,11 @@ doyle_init(TMS):-
 
 %! is_cp_justification(+X) is semidet.
 
-is_cp_justification(Justification):-
-  nonvar(Justification),
-  cp_justification(Justification).
+is_cp_justification(J):-
+  nonvar(J),
+  cp_justification(J).
 
-%! doyle_is_in_node(+Node:node) is semidet.
+%! doyle_is_in_node(+Node:iri) is semidet.
 % A belief _b_ is _in_ iff a justification _|<In,Out>|_ of _b_ has
 % _|in(b')|_ for all _b'_ in _In_ and _|out(b')|_ for all _b'_ in _Out_.
 %
@@ -540,36 +551,36 @@ doyle_is_in_node(Node):-
 
 %! is_justification(+X) is semidet.
 
-is_justification(Justification):-
-  nonvar(Justification),
-  justification(Justification).
+is_justification(J):-
+  nonvar(J),
+  justification(J).
 
-%! is_node(+Node:node) is semidet.
+%! is_node(+Node:iri) is semidet.
 
 is_node(Node):-
   nonvar(Node),
   rdfs_individual_of(Node, tms:'Node').
 
-%! doyle_is_out_node(+Node:node) is semidet.
+%! doyle_is_out_node(+Node:iri) is semidet.
 
 doyle_is_out_node(Node):-
   has_support_status(Node, out).
 
-%! is_valid(+Justification:justification) is semidet.
+%! is_valid(+Justification:iri) is semidet.
 % A valid justification.
 
-is_valid(Justification):-
-  is_justification(Justification),
+is_valid(J):-
+  is_justification(J),
   forall(
-    rdf(Justification, tms:has_in, In),
+    rdf(J, tms:has_in, In),
     doyle_is_in_node(In)
   ),
   forall(
-    rdf(Justification, tms:has_out, Out),
+    rdf(J, tms:has_out, Out),
     doyle_is_out_node(Out)
   ).
 
-%! justification(?Justification:justification) is nondet.
+%! justification(?Justification:iri) is nondet.
 % *Justification*
 % There are two types of justification:
 %     1. Support-list (SL)
@@ -586,8 +597,8 @@ justification(SL_Justification):-
   sl_justification(SL_Justification).
 
 %! member_of_cp_justification_set(
-%!   ?CP_Justification:justification,
-%!   ?Node:node
+%!   ?CP_Justification:iri,
+%!   ?Node:iri
 %! ) is nondet.
 
 member_of_cp_justification_set(Node, CP_Justification):-
@@ -595,32 +606,32 @@ member_of_cp_justification_set(Node, CP_Justification):-
   rdfs_individual_of(CP_Justification, doyle:'CL-Justification').
 
 %! member_of_justification_set(
-%!   ?Justification:justification,
-%!   ?Node:node
+%!   ?Justification:iri,
+%!   ?Node:iri
 %! ) is nondet.
 
-member_of_justification_set(Node, Justification):-
-  member_of_sl_justification_set(Node, Justification).
-member_of_justification_set(Node, Justification):-
-  member_of_cp_justification_set(Node, Justification).
+member_of_justification_set(Node, J):-
+  member_of_sl_justification_set(Node, J).
+member_of_justification_set(Node, J):-
+  member_of_cp_justification_set(Node, J).
 
 %! member_of_sl_justification_set(
-%!   ?SL_Justification:justification,
-%!   ?Node:node
+%!   ?SL_Justification:iri,
+%!   ?Node:iri
 %! ) is nondet.
 
 member_of_sl_justification_set(SL_Justification, Node):-
   rdf(SL_Justification, tms:has_consequent, Node),
   rdfs_individual_of(SL_Justification, doyle:'SL-Justification').
 
-%! premise(?Justification:justification) is nondet.
+%! premise(?Justification:iri) is nondet.
 
-premise(Justification):-
-  justification(Justification),
-  \+ rdf(Justification, tms:has_in, _In),
-  \+ rdf(Justification, tms:has_out, _Out).
+premise(J):-
+  justification(J),
+  \+ rdf(J, tms:has_in, _In),
+  \+ rdf(J, tms:has_out, _Out).
 
-%! repercussions(+Node:node, -Repercussions:ordset(node)) is det.
+%! repercussions(+Node:iri, -Repercussions:ordset(node)) is det.
 
 repercussions(Node, Repercussions):-
   transitive_closure(affected_consequences, Node, Repercussions).
@@ -637,7 +648,7 @@ doyle_reset(TMS):-
 
 %! set_support_status(
 %!   +TMS:atom,
-%!   +Node:node,
+%!   +Node:iri,
 %!   +SupportStatus:oneof([in,nil,out])
 %! ) is det.
 
@@ -664,8 +675,8 @@ set_support_status(TMS, Node, SupportStatus):-
 
 %! set_supporting_justification(
 %!   +TMS:atom,
-%!   +Node:node,
-%!   +SupportingJustification:justification
+%!   +Node:iri,
+%!   +SupportingJustification:iri
 %! ) is det.
 
 set_supporting_justification(TMS, Node, SupportingJustification):-
@@ -685,15 +696,15 @@ set_supporting_justification(TMS, Node, SupportingJustification):-
 %! set_supporting_nodes(
 %!   +TMS:atom,
 %!   +Validity:oneof([invalid,valid]),
-%!   +Node:node,
-%!   +Justification:justification
+%!   +Node:iri,
+%!   +Justification:iri
 %! ) is det.
 
-set_supporting_nodes(TMS, Validity, Node, Justification):-
+set_supporting_nodes(TMS, Validity, Node, J):-
   % Type checking.
   rdf_graph(TMS),
   is_node(Node),
-  is_justification(Justification),
+  is_justification(J),
 
   % Remove the old supporting nodes.
   rdf_retractall(Node, doyle:has_supporting_node, _, TMS),
@@ -703,39 +714,39 @@ set_supporting_nodes(TMS, Validity, Node, Justification):-
     Validity == valid
   ->
     forall(
-      rdf(Justification, tms:has_in, In, TMS),
+      rdf(J, tms:has_in, In, TMS),
       add_supporting_node(TMS, Node, In)
     ),
     forall(
-      rdf(Justification, tms:has_out, Out, TMS),
+      rdf(J, tms:has_out, Out, TMS),
       add_supporting_node(TMS, Node, Out)
     )
   ;
     Validity == invalid,
-    rdf(Justification, tms:has_in, In, TMS),
+    rdf(J, tms:has_in, In, TMS),
     doyle_is_out_node(In)
   ->
     add_supporting_node(TMS, Node, In)
   ;
     Validity == invalid,
-    rdf(Justification, tms:has_out, Out, TMS),
+    rdf(J, tms:has_out, Out, TMS),
     doyle_is_in_node(Out)
   ->
     add_supporting_node(TMS, Node, Out)
   ).
 
-%! sl_justification(?SL_Justification:justification) is nondet.
+%! sl_justification(?SL_Justification:iri) is nondet.
 
 sl_justification(SL_Justification):-
   rdfs_individual_of(SL_Justification, doyle:'SL-Justification').
 
-%! support_status(+Node:node, ?SupportStatus:oneof([in,nil,out])) is nondet.
+%! support_status(+Node:iri, ?SupportStatus:oneof([in,nil,out])) is nondet.
 
 support_status(Node, SupportStatus):-
   is_node(Node),
   rdf_datatype(Node, doyle:has_support_status, string, SupportStatus, _TMS).
 
-%! supporting_nodes(+Node:node, -SupportingNodes:ordset(node)) is det.
+%! supporting_nodes(+Node:iri, -SupportingNodes:ordset(node)) is det.
 
 supporting_nodes(Node, SupportingNodes):-
   setoff(

@@ -25,6 +25,11 @@
                    % +Node:iri
     tms_justification/2, % +TMS:atom
                          % -Justification:iri
+    tms_justification/5, % ?TMS:atom
+                         % ?Antecedents:list(iri)
+                         % ?Rule:atom
+                         % ?Consequent:iri
+                         % ?Justification:iri
     tms_node/2 % +TMS:atom
                % -Node:iri
   ]
@@ -35,7 +40,7 @@
 The generic predicates for Truth-Maintenance Systems.
 
 @author Wouter Beek
-@version 2013/05
+@version 2013/05, 2013/09
 */
 
 :- use_module(generics(db_ext)).
@@ -53,6 +58,8 @@ The generic predicates for Truth-Maintenance Systems.
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
 :- rdf_meta(tms_argument(r,-)).
+:- rdf_meta(tms_justification(?,r)).
+:- rdf_meta(tms_justification(?,?,?,r,r)).
 
 
 
@@ -113,6 +120,12 @@ tms_init(TMS):-
 tms_justification(TMS, Justification):-
   rdfs_individual_of(Justification, tms:'Justification'),
   rdf(Justification, _, _, TMS:_).
+
+tms_justification(TMS, As, R, C, J):-
+  tms_justification(TMS, J),
+  findall(A, rdf_has(J, tms:has_antecedent, A), As),
+  rdfs_label(J, R),
+  rdf(J, tms:has_consequent, C, TMS).
 
 tms_node(TMS, Node):-
   rdfs_individual_of(Node, tms:'Node'),
