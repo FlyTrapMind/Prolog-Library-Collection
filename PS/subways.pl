@@ -1,8 +1,12 @@
 :- module(
   subways,
   [
-    subway_problem/2 % +InitialStation:atom
+    subway_problem/2, % +InitialStation:atom
+                      % +GoalStation:atom
+    subway_problem/4 % +InitialStation:atom
                      % +GoalStation:atom
+                     % -NumberExamined:nonneg
+                     % -SolutionPath:list(term)
   ]
 ).
 
@@ -15,6 +19,7 @@ A search problem for the Classical Problem Solver.
 */
 
 :- use_module(library(lists)).
+:- use_module(library(plunit)).
 :- use_module(math(math_ext)).
 :- use_module(ps(boston)).
 :- use_module(ps(cps)).
@@ -45,6 +50,13 @@ subway_distance(
   ).
 
 subway_problem(InitialState, GoalState):-
+  subway_problem(InitialState, GoalState, _NumberExamined, SolutionPath),
+  with_output_to(
+    current_output,
+    print_answer(state_printer, print_path_element, SolutionPath)
+  ).
+
+subway_problem(InitialState, GoalState, NumberExamined, SolutionPath):-
   bsolve(
     goal_recognizer(GoalState),
     state_printer,
@@ -53,12 +65,8 @@ subway_problem(InitialState, GoalState):-
     prune_subway_path,
     subway_states_identical,
     InitialState,
-    _NumberExamined,
+    NumberExamined,
     SolutionPath
-  ),
-  with_output_to(
-    current_output,
-    print_answer(state_printer, print_path_element, SolutionPath)
   ).
 
 subway_operator_finder(
@@ -73,4 +81,15 @@ subway_operator_finder(
   member(Line1, Lines2).
 
 subway_states_identical(State, State).
+
+
+
+:- begin_tests(subways).
+
+travel('Airport', 'North-Station', _, _).
+
+test(travel1, [forall(travel(From,To,Examined,Path)),true]):-
+  subway_problem(From, To, Examined, Path).
+
+:- end_tests(subways).
 

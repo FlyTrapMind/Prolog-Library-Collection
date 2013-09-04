@@ -10,6 +10,15 @@
               % +InitialState:term
               % -NumberExamined:nonneg
               % -SolutionPath:list(term)
+    dsolve/9, % :GoalRecognizer
+              % :StatePrinter
+              % +Operators:list(callable)
+              % :OperatorApplier
+              % :PathFilter
+              % :StatesIdentical
+              % +InitialState:term
+              % -NumberExamined:nonneg
+              % -SolutionPath:list(term)
     print_answer/3 % :StatePrinter,
                    % :SolutionElementPrinter,
                    % +Path:list(term)
@@ -29,6 +38,8 @@ Classical Problem Solving.
 :- use_module(library(lists)).
 
 :- meta_predicate(bsolve(1,2,+,3,1,2,+,-,-)).
+:- meta_predicate(bdsolve(+,1,2,+,3,1,2,+,-,-)).
+:- meta_predicate(dsolve(1,2,+,3,1,2,+,-,-)).
 :- meta_predicate(extend_path(+,3,1,2,+,-)).
 :- meta_predicate(path_has_loop(2,+)).
 :- meta_predicate(print_answer(2,3,+)).
@@ -61,9 +72,9 @@ bsolve(
   NumberExamined,
   SolutionPath
 ):-
-  \+ is_list(InitialState),
   flag('number-examined', _, 0),
-  bsolve(
+  bdsolve(
+    breadth,
     GoalRecognizer,
     StatePrinter,
     Operators,
@@ -74,7 +85,47 @@ bsolve(
     NumberExamined,
     SolutionPath
   ).
-bsolve(
+
+%! dsolve(
+%!   :GoalRecognizer,
+%!   :StatePrinter,
+%!   +Operators:list(callable),
+%!   :OperatorApplier,
+%!   :PathFilter,
+%!   :StatesIdentical,
+%!   +InitialState:term,
+%!   -NumberExamined:nonneg,
+%!   -SolutionPath:list(term)
+%! ) is semidet.
+
+dsolve(
+  GoalRecognizer,
+  StatePrinter,
+  Operators,
+  OperatorApplier,
+  PathFilter,
+  StatesIdentical,
+  InitialState,
+  NumberExamined,
+  SolutionPath
+):-
+  flag('number-examined', _, 0),
+  bdsolve(
+    depth,
+    GoalRecognizer,
+    StatePrinter,
+    Operators,
+    OperatorApplier,
+    PathFilter,
+    StatesIdentical,
+    [[InitialState]],
+    NumberExamined,
+    SolutionPath
+  ).
+
+% Search space exhausted.
+bdsolve(
+  _Mode,
   _GoalRecognizer,
   _StatePrinter,
   _Operators,
@@ -86,7 +137,9 @@ bsolve(
   _SolutionPath
 ):- !,
   fail.
-bsolve(
+% Goal state reached.
+bdsolve(
+  _Mode,
   GoalRecognizer,
   StatePrinter,
   _Operators,
@@ -97,11 +150,14 @@ bsolve(
   NumberExamined,
   [CurrentState|Path]
 ):-
-  call(GoalRecognizer, CurrentState), !,
+  % No cut; nondet.
+  call(GoalRecognizer, CurrentState),
   call(StatePrinter, CurrentState, CurrentStateMsg),
   debug(cps, 'Found goal state: ~w', [CurrentStateMsg]),
   flag('number-examined', NumberExamined, NumberExamined).
-bsolve(
+% Expand a state.
+bdsolve(
+  Mode,
   GoalRecognizer,
   StatePrinter,
   Operators,
@@ -136,12 +192,21 @@ bsolve(
   print_new_paths(ExtendedPaths),
 
   % This is the breadth-first search.
-  append(Paths, ExtendedPaths, NewPaths),
+  (
+    Mode == breadth
+  ->
+    append(Paths, ExtendedPaths, NewPaths)
+  ;
+    Mode == depth
+  ->
+    append(ExtendedPaths, Paths, NewPaths)
+  ),
 
   % Update statistics.
   flag('number-examined', Id, Id+1),
 
-  bsolve(
+  bdsolve(
+    Mode,
     GoalRecognizer,
     StatePrinter,
     Operators,

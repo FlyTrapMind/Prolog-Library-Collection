@@ -1,16 +1,20 @@
 :- module(
   oaei,
   [
-    oaei_alignment_pair/3, % ?Graph:atom
-                      % ?From:uri
-                      % ?To:uri
+% OBTAIN ALIGNMENTS
+    oaei_file_to_alignment_pairs/2, % +File:atom
+                                    % -AlignmentPairs:list(pair(iri))
+    oaei_file_to_alignment_sets/2, % +File:atom
+                                   % -AlignmentSets:list(ordset(iri))
+    oaei_graph_to_alignment_pairs/2, % +Graph:atom
+                                     % -AlignmentPairs:list(pair(iri))
+    oaei_graph_to_alignment_sets/2, % +Graph:atom
+                                    % -AlignmentSets:list(ordset(iri))
+% VERIFY ALIGNMENTS
     oaei_check_alignment/2, % +ReferenceAlignments:list(pair)
                             % +RawAlignments:list(pair)
-    oaei_file_to_alignment_pairs/2, % +File:atom
-                                    % -AlignmentPairs:list(pair)
+% ALIGNMENT PROPERTIES
     oaei_graph/1, % ?Graph:atom
-    oaei_graph_to_alignment_pairs/2, % +Graph:atom
-                                     % -AlignmentPairs:list(pair)
     oaei_ontologies/3, % +Graph:atom
                        % -File1:atom
                        % -File2:atom
@@ -141,24 +145,59 @@ Mismatch types:
 %! oaei_alignment_pair(?Graph:atom, ?From:uri, ?To:uri) is nondet.
 
 oaei_alignment_pair(G, From, To):-
-  oaei_graph(G),
   rdf(BNode, align:entity1, From, G),
   rdf(BNode, align:entity2, To, G),
-  once(
+  once((
+    rdf_literal(BNode, align:relation, '=', G),
+    rdf_datatype(BNode, align:measure, float, 1.0, G)
+  ;
+    debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
+  )).
+
+oaei_remove_alignment_pair(G, X1, Y1):-
+  forall(
     (
-      rdf_literal(BNode, align:relation, '=', G),
-      rdf_datatype(BNode, align:measure, float, 1.0, G)
-    ;
-      debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
-    )
+      % Symmetric.
+      (X2 = X1, Y2 = Y1 ; X2 = Y1, Y2 = X1),
+      rdf(BNode, align:entity1, X2, G),
+      rdf(BNode, align:entity2, Y2, G)
+    ),
+    rdf_retractall(BNode, _, _, G)
   ).
 
-%! oaei_alignment_set(+Graph:atom, -AlignmentSet:ordset(iri)) is nondet.
+%! oaei_alignment_set(
+%!   +Graph:atom,
+%!   -AlignmentSet:ordset(iri),
+%!   -AlignmentPairs:ordset(iri)
+%! ) is nondet.
 
-oaei_alignment_set(G, A_Set):-
+oaei_alignment_set(G, A_Set, A_Pairs):-
+  % Find the first alignment pair.
   oaei_alignment_pair(G, X, Y),
+  % Store pair as a sorted list.
+  list_to_ord_set([X,Y], S0),
+  oaei_remove_alignment_pair(G, X, Y),
+  % Add other alignment pairs that reach into the alignment set.
+  oaei_alignment_set(G, S0, A_Set, [X-Y], A_Pairs).
+
+oaei_alignment_set(G, S1, A_Set, Ps, A_Pairs):-
+  % The next alignments we add must relate to a resource
+  % that is already in the alignment set.
+  member(X, S1),
+  % The pair can be found in either direction.
   (
-    oaei_alignment_pair(G, X, Z),
+    oaei_alignment_pair(G, X, Y), P = X-Y
+  ;
+    oaei_alignment_pair(G, Y, X), P = Y-X
+  ),
+  % The added resource must not already appear in the alignment set.
+  \+ member(Y, S1), !,
+  ord_add_element(S1, Y, S2),
+  oaei_remove_alignment_pair(G, X, Y),
+  % Recurse.
+  oaei_alignment_set(G, S2, A_Set, [P|Ps], A_Pairs).
+% No new resources for the alignment set were found.
+oaei_alignment_set(_G, A_Set, A_Set, A_Pairs, A_Pairs).
 
 %! oaei_check_alignment(
 %!   +ReferenceAlignments:list(pair),
@@ -185,7 +224,7 @@ oaei_file_to_alignment_pairs(File, AlignmentPairs):-
   oaei_graph_to_alignment_pairs(G, AlignmentPairs),
   rdf_unload_graph(G).
 
-oaei_file_to_alignment_sets(File, A_Sets):-
+oaei_file_to_alignment_sets(F, A_Sets):-
   file_name(F, _Dir, G, _Ext),
   rdf_load2(F, [graph(G)]),
   oaei_graph_to_alignment_sets(G, A_Sets),
@@ -210,13 +249,13 @@ oaei_graph_to_alignment_pairs(G, AlignmentPairs):-
     AlignmentPairs
   ).
 
-oaei_graph_to_alignment_sets(G, A_Sets):-
-  % Avoid double occurrences in an alignment graph (you never know!).
-  setoff(
-    From-To,
-    oaei_alignment_set(G, From, To),
-    AlignmentPairs
-  ).
+oaei_graph_to_alignment_sets(G, SolS):-
+  oaei_graph_to_alignment_sets(G, [], SolS).
+
+oaei_graph_to_alignment_sets(G, Sets, SolSets):-
+  oaei_alignment_set(G, NewSet, _),
+  oaei_graph_to_alignment_sets(G, [NewSet|Sets], SolSets).
+oaei_graph_to_alignment_sets(_G, SolSets, SolSets).
 
 %! oaei_ontologies(+Graph:atom, -File1:atom, -File2:atom) is det.
 % Returns the files in which the linked ontologies are stored.
