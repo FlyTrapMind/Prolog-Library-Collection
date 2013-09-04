@@ -39,7 +39,6 @@ Exports TMS belief states,
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
@@ -188,9 +187,12 @@ tms_export_edges(TMS, Inv, J, P, Es1, Es2):-
   ),
   ord_union(Es1, NewEs, Es2).
 
-tms_export_edge_style(tms:has_consequent, solid ):- !.
-tms_export_edge_style(tms:has_in,         solid ):- !.
-tms_export_edge_style(tms:has_out,        dashed):- !.
+tms_export_edge_style(P, solid ):-
+  rdf_global_id(tms:has_consequent, P), !.
+tms_export_edge_style(P, solid ):-
+  rdf_global_id(tms:has_in, P), !.
+tms_export_edge_style(P, dashed):-
+  rdf_global_id(tms:has_out, P), !.
 
 tms_export_cons_edges(TMS, J, Es1, Es2):-
   tms_export_edges(TMS, true, J, tms:has_consequent, Es1, Es2).

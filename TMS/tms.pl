@@ -56,8 +56,6 @@ The generic predicates for Truth-Maintenance Systems.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_search)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(tms(doyle)).
-:- use_module(tms(tms_export)).
 :- use_module(xml(xml_namespace)).
 
 :- dynamic(registered_tms/2).

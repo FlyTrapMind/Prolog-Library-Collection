@@ -105,7 +105,6 @@ bnode_literal_map(G1, BNode, Lit):-
 
 explain_web(S, P, O, SVG):-
   rdf_triple_name(S, P, O, TripleName),
-gtrace,
   tms_export_argument_web(TripleName, SVG).
 
 init_materialization(G, TMS):-
