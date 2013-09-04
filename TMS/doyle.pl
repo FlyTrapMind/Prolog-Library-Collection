@@ -174,18 +174,17 @@ doyle_add_argument(TMS, Premises, Rule, Conclusion, J):-
 %! ) is det.
 % Step 1: Adding a new justification.
 
-doyle_add_justification(TMS, Ins, Outs, Label, Consequence, J):-
+doyle_add_justification(TMS, InNs, OutNs, Label, Consequence, J):-
   % Type checks.
   rdf_graph(TMS),
-  maplist(is_node, Ins),
-  maplist(is_node, Outs),
+  maplist(is_node, InNs),
+  maplist(is_node, OutNs),
   atom(Label),
   is_node(Consequence),
   var(J),
 
   % Create the justification.
-  variant_sha1(j(Ins,Outs,Label,Consequence), Id),
-  rdf_global_id(doyle:Id, J),
+  tms_create_justification_iri(InNs, OutNs, Label, Consequence, J),
   (
     tms_justification(TMS, J)
   ->
@@ -201,14 +200,14 @@ doyle_add_justification(TMS, Ins, Outs, Label, Consequence, J):-
     % Add the node to the set of consequences of each of the nodes mentioned
     % in the justification.
     forall(
-      member(In, Ins),
+      member(In, InNs),
       (
         add_consequence(TMS, In, Consequence),
         rdf_assert(J, tms:has_in, In, TMS:1)
       )
     ),
     forall(
-      member(Out, Outs),
+      member(Out, OutNs),
       (
         add_consequence(TMS, Out, Consequence),
         rdf_assert(J, tms:has_out, Out, TMS:1)
@@ -242,11 +241,11 @@ doyle_add_justification(TMS, Ins, Outs, Label, Consequence, J):-
         % from the _in_list, or an _in_ node from the _out_list.
         % @tbd Are we supposed to retract over this?
         (
-          member(In, Ins),
+          member(In, InNs),
           doyle_is_out_node(In),
           add_supporting_node(TMS, Consequence, In)
         ;
-          member(Out, Outs),
+          member(Out, OutNs),
           doyle_is_in_node(Out),
           add_supporting_node(TMS, Consequence, Out)
         ), !
@@ -391,9 +390,8 @@ doyle_add_node(TMS, Label, N):-
   % Type checking.
   atom(Label),
   var(N),
-
-  variant_sha1(n(Label), Id),
-  rdf_global_id(doyle:Id, N),
+  
+  tms_create_node_iri(Label, N),
   (
     tms_node(TMS, N)
   ->

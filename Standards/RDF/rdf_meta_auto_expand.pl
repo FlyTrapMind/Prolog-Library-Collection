@@ -49,13 +49,15 @@ pred(Converted2, AlsoConverted2, NotConvertedLabel):-
 
 --
 
-@author Sander Latour
-@author Wouter Beek
+@author Sander Latour wrote this module in 2011.
+@author Wouter Beek made lots of use of this module and updated it
+        slightly in 2013/08.
 @version 2011, 2013/08
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(library(lists)).
+:- use_module(library(semweb/rdf_db)).
 
 :- dynamic(rdf_meta_expand_db/1).
 
@@ -116,7 +118,8 @@ system:term_expansion(TermIn, TermOut):-
     MatchTerm =.. [Functor|ArgTypes],
     
     % Match query to auto-expand fact base.
-    rdf_meta_expand_db(MatchTerm),
+    % Notice the module prefix.
+    rdf_meta_expand_db(_Mod:MatchTerm),
     
     % Create lists of renamed arguments and 
     % expansions to the body.

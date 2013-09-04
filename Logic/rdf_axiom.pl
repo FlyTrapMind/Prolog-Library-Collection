@@ -4,6 +4,10 @@
     bnode_literal_map/3, % ?Graph:atom
                          % ?BNode:bnode
                          % ?Literal:compound
+    explain_web/4, % +Subject:or([bnode,iri])
+                   % +Predicate:iri
+                   % +Object:or([bnode,iri,literal])
+                   % -SVG:list
     materialize/1, % +Graph:atom
     start_materializer/2 % +Graph:atom
                          % +Interval:positive_integer
@@ -14,6 +18,12 @@
 
 An axiomatic approach towards RDF(S) materialization.
 
+Examples of commands to the Web console:
+~~~{.pl}
+explain(wikipedia:'Gordian_II',rdf:type,rdfs:'Resource')
+explain(schema:'Person',rdfs:subClassOf,schema:'Person')
+~~~
+
 @author Wouter Beek
 @see Hayes2004, Hitzler2008
 @tbd Add the check for well-typed XML literals to rule `rdf2`.
@@ -22,13 +32,12 @@ An axiomatic approach towards RDF(S) materialization.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(print_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_meta_auto_expand)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
 :- use_module(tms(doyle)).
 :- use_module(tms(tms)).
@@ -37,6 +46,8 @@ An axiomatic approach towards RDF(S) materialization.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 :- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
+
+:- rdf_meta_expand(rdf_axiom:explain_web(e,e,e,i)).
 
 :- dynamic(bnode_literal_map_/3).
 
@@ -84,6 +95,18 @@ bnode_literal_map(G1, BNode, Lit):-
   ;
     db_add_novel(bnode_literal_map_(G2,BNode,Lit))
   ), !.
+
+%! explain_web(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Object:or([bnode,iri,literal]),
+%!   -SVG:list
+%! ) is det.
+
+explain_web(S, P, O, SVG):-
+  rdf_triple_name(S, P, O, TripleName),
+gtrace,
+  tms_export_argument_web(TripleName, SVG).
 
 init_materialization(G, TMS):-
   atom_concat(tms_, G, TMS),

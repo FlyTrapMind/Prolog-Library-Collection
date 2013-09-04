@@ -23,6 +23,13 @@
                % +Node:iri
     is_out_node/2, % +TMS:atom
                    % +Node:iri
+    tms_create_node_iri/2, % +Label:atom
+                           % -Node:iri
+    tms_create_justification_iri/5, % +InNodes:list(iri)
+                                    % +OutNodes:list(iri)
+                                    % +Label:atom
+                                    % +Consequence:iri
+                                    % -Justification:iri
     tms_justification/2, % +TMS:atom
                          % -Justification:iri
     tms_justification/5, % ?TMS:atom
@@ -58,6 +65,7 @@ The generic predicates for Truth-Maintenance Systems.
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
 :- rdf_meta(tms_argument(r,-)).
+:- rdf_meta(tms_create_justification_iri(+,+,+,r,-)).
 :- rdf_meta(tms_justification(?,r)).
 :- rdf_meta(tms_justification(?,?,?,r,r)).
 
@@ -111,6 +119,14 @@ is_node(TMS, Node):-
 
 is_out_node(TMS, Node):-
   generic_tms(TMS, is_out_node, [Node]).
+
+tms_create_node_iri(Label, N):-
+  variant_sha1(n(Label), Id),
+  rdf_global_id(doyle:Id, N).
+
+tms_create_justification_iri(InNs, OutNs, L, C, J):-
+  variant_sha1(j(InNs,OutNs,L,C), Id),
+  rdf_global_id(doyle:Id, J).
 
 tms_init(TMS):-
   atom(TMS),

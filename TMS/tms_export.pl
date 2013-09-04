@@ -1,13 +1,17 @@
 :- module(
   tms_export,
   [
+% EXPORTING TO GRAPH INTERCHANGE FORMAT
     tms_export_argument/2, % +Node:iri
                            % -GraphInterchangeFormat:compound
+    tms_export_argument_web/2, % +NodeLabel:atom
+                               % -SVG:list
     tms_export_graph/2, % +TMS:atom
                         % -GraphInterchangeFormat:compound
     tms_export_justifications/3, % +TMS:atom
                                  % +Justifications:list(iri)
                                  % -GraphInterchangeFormat:compound
+% PRINTING TO CONSOLE
     tms_print_argument/3, % +Options:list(nvpair)
                           % +TMS:atom
                           % +Node:iri
@@ -17,7 +21,7 @@
   ]
 ).
 
-/** <module> TMS EXPORT
+/** <module> TMS Export
 
 Exports TMS belief states,
 
@@ -29,6 +33,7 @@ Exports TMS belief states,
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(print_ext)).
+:- use_module(gv(gv_file)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
@@ -42,13 +47,14 @@ Exports TMS belief states,
 :- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
 :- xml_register_namespace(tms,   'http://www.wouterbeek.com/tms.owl#'  ).
 
-:- rdf_meta(tms_export_edge_style(r,-)).
+:- rdf_meta(tms_export_argument(r,-)).
 :- rdf_meta(tms_export_edges(+,+,r,r,+,-)).
-:- rdf_meta(tms_export_node_color(+,r,-)).
-:- rdf_meta(tms_print_argument(+,r)).
 :- rdf_meta(tms_print_argument(+,+,r)).
+:- rdf_meta(tms_print_justification(+,+,r)).
 
 
+
+% EXPORTING TO GRAPH INTERCHANGE FORMAT %
 
 %! tms_export_argument(+Node:iri, -GIF:compound) is det.
 
@@ -59,6 +65,11 @@ tms_export_argument(N, GIF):-
   tms_argument(N, Js),
   % Export the justifications that constitute the argument.
   tms_export_justifications(TMS, Js, GIF).
+
+tms_export_argument_web(NodeLabel, SVG):-
+  tms_create_node_iri(NodeLabel, Node),
+  tms_export_argument(Node, GIF),
+  graph_to_svg_dom([], GIF, dot, SVG).
 
 %! tms_export(+TMS:atom) is det.
 % Exports the TMS using GraphViz.
@@ -100,6 +111,16 @@ tms_export_justifications(TMS, Js, GIF):-
   ),
   tms_export_graph(TMS, Ns, Js, GIF).
 
+
+
+% PRINTING TO CONSOLE %
+
+%! tms_print_argument(
+%!   +Options:list(nvpair),
+%!   +TMS:atom,
+%!   +Conclusion:iri
+%! ) is det.
+
 tms_print_argument(O1, TMS, C):-
   default_option(O1, indent, 0, O2),
   tms_print_argument_(O2, TMS, C).
@@ -115,6 +136,12 @@ tms_print_argument_(O, _TMS, C):-
   tms_print_node(O, C),
   nl.
 
+%! tms_print_justification(
+%!   +Options:list(nvpair),
+%!   +TMS:atom,
+%!   +Justification:iri
+%! ) is det.
+
 tms_print_justification(O1, TMS, J):-
   tms_justification(TMS, As, R, C, J),
   option(indent(I), O1, 0),
@@ -126,6 +153,8 @@ tms_print_justification(O1, TMS, J):-
   update_option(O1, indent, succ, _I, O2),
   maplist(tms_print_argument(O2, TMS), As).
 
+%! tms_print_node(+Options:list(nvpair), +Node:iri) is det.
+
 tms_print_node(O, N):-
   option(lang(Lang), O, en),
   rdfs_preferred_label(N, Lang, _PreferredLang, L),
@@ -134,6 +163,15 @@ tms_print_node(O, N):-
 
 
 % EDGES %
+
+%! tms_export_edges(
+%!   +TMS:atom,
+%!   +InverseDirection:boolean,
+%!   +Justification:iri,
+%!   +PredicateTerm:iri,
+%!   +EdgeTerms1:list(compound),
+%!   -EdgeTerms:list(compound)
+%! ) is det.
 
 tms_export_edges(TMS, Inv, J, P, Es1, Es2):-
   setoff(
@@ -166,6 +204,12 @@ tms_export_out_edges(TMS, J, Es1, Es2):-
 
 
 % VERTICES %
+
+%! tms_export_justification(
+%!   +TMS:atom,
+%!   +Justification:iri,
+%!   -VertexTerm:compound
+%! ) is det.
 
 tms_export_justification(_TMS, J, vertex(J_Id,J,V_Attrs)):-
   rdf_global_id(_:J_Id, J),
