@@ -17,6 +17,8 @@
                             % -Triples:list(compound)
     rdf_ground/1, % +Graph:atom
     rdf_ground/1, % +Triple:compound
+    rdf_same_graph/2, % +Graph1:atom
+                      % +Graph2:atom
     rdf_schema/4, % +Graph:atom
                   % -RDFS_Classes:ordset(iri)
                   % -RDF_Properties:ordset(iri)
@@ -44,14 +46,12 @@ Predicates that apply to entire RDF graphs.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
-:- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
 
@@ -237,6 +237,10 @@ rdf_ground(G):-
     rdf(S, P, O, G),
     rdf_ground(rdf(S,P,O))
   ).
+
+rdf_same_graph(G1, G2):-
+  (G1 = G ; G1 = G:_),
+  (G2 = G ; G2 = G:_).
 
 rdf_schema(G, RDFS_Classes, RDF_Properties, Triples):-
   setoff(C, rdfs_individual_of(C, rdfs:'Class'), RDFS_Classes),

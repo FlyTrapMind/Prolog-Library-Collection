@@ -95,11 +95,13 @@ rdf_edge(G, E):-
 % @param Graph The atomic name of an RDF graph.
 % @param Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
 
-rdf_edge(O, G, FromV-P-ToV):-
+rdf_edge(O, G, FromV-P-ToV):- !,
   rdf(FromV, P, ToV, G),
   % Make sure the vertices pass the vertex filter.
   rdf_vertex_check(O, FromV),
   rdf_vertex_check(O, ToV).
+rdf_edge(O, G, FromV-ToV):-
+  rdf_edge(O, G, FromV-_-ToV).
 
 rdf_edges(G, Es):-
   rdf_edges([], G, Es).
@@ -205,7 +207,10 @@ rdf_vertex_check(O, Lit):-
     (
       rdf_is_simple_literal(Lit)
     ->
-      \+ rdf(S, P, literal(lang(_,LitValue)))
+      \+ ((
+        rdf(S, P, literal(lang(Lang,LitValue))),
+        nonvar(Lang)
+      ))
     ;
       true
     ),
@@ -214,13 +219,8 @@ rdf_vertex_check(O, Lit):-
     option(language(Lang), O, en),
     % The given literal must be the preferred literal,
     % otherwise this predicate should fail.
-    rdf_preferred_literal(S, P, Lang, PreferredLang, PreferredLit),
-    LitValue == PreferredLit,
-    % Note that in some cases there is both a literal in the preferred
-    % language and a literal with no language tag, but both with the same
-    % literal value.
-    % In those cases the variant with no language tag should be discarded.
-    PreferredLang == Lang, !
+    rdf_preferred_literal(S, P, Lang, _PreferredLang, PreferredLit),
+    LitValue == PreferredLit
   ;
     % All literals are vertices.
     true

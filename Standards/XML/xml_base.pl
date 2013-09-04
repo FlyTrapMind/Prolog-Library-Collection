@@ -71,10 +71,6 @@ The full URIs:
 @version 2013/08
 */
 
-:- use_module(xml(xml_attributes)).
-:- use_module(xml(xml_datatypes)).
-:- use_module(uri(rfc2396_dcg)).
-
 :- meta_predicate(xml_base(-,//,?,?,?,?,?,?,?)).
 
 

@@ -32,7 +32,7 @@ Evaluate the results of algorithms.
 @version 2013/01
 */
 
-:- dynamic(process(_Name, _Aspects)).
+:- dynamic(process/2).
 
 
 

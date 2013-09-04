@@ -58,14 +58,8 @@ WHERE
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
-:- use_module(owl(owl_build)).
 :- use_module(owl(owl_read)).
-:- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_namespace)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_term)).
-:- use_module(rdfs(rdfs_read)).
 :- use_module(sparql(sparql_ext)).
 :- use_module(xml(xml_namespace)).
 

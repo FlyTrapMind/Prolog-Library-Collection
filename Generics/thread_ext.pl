@@ -1,6 +1,10 @@
 :- module(
   thread_ext,
   [
+    intermittent_thread/4, % :Goal
+                           % +Interval:positive_integer
+                           % -Id
+                           % +Options
     run_on_sublists/2, % +List:list
                        % :Goal
     thread_alias/1, % ?ThreadAlias:atom
@@ -27,16 +31,29 @@ Allows one to monitor running threads that register.
 @version 2013/03
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 
-:- dynamic(end_flag(_ThreadAlias, _NumberOfTasks)).
-:- dynamic(workload(_ThreadAlias, _Module, _Goal, _TaskList)).
+:- meta_predicate(intermittent_goal(:,+)).
+:- meta_predicate(intermittent_thread(:,+,-,+)).
+
+:- dynamic(end_flag/2).
+:- dynamic(workload/4).
+
+:- debug(thread_ext).
 
 
+
+intermittent_goal(G, I):-
+  call(G),
+  sleep(I),
+  intermittent_goal(G, I).
+
+intermittent_thread(G, I, Id, O):-
+  thread_create(intermittent_goal(G, I), Id, O).
 
 run_on_sublists(List, Module:Goal):-
   split_list_by_number_of_sublists(List, 10, Sublists),
@@ -53,7 +70,7 @@ run_on_sublists(List, Module:Goal):-
   exclude(==(true), Statuses, OopsStatuses),
   forall(
     member(OopsStatus, OopsStatuses),
-    cowspeak(OopsStatus)
+    debug(thread_ext, '~w', [OopsStatus])
   ).
 
 thread_alias(ThreadAlias):-

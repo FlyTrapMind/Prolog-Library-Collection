@@ -45,7 +45,8 @@ reflect the serialization format:
   4. =rdf= for RDF/XML. Format name =xml=.
 
 @author Wouter Beek
-@version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06, 2013/08
+@version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
+2013/08-2013/09
 */
 
 :- use_module(generics(atom_ext)).
@@ -60,12 +61,13 @@ reflect the serialization format:
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_graph)).
 :- use_module(xml(xml_dom)).
 
-:- db_add_novel(user:prolog_file_type(nt,  rdf)).
-:- db_add_novel(user:prolog_file_type(rdf, rdf)).
-:- db_add_novel(user:prolog_file_type(ttl, rdf)).
+:- db_add_novel(user:prolog_file_type(nt,  ntriples)).
+:- db_add_novel(user:prolog_file_type(nt,  rdf     )).
+:- db_add_novel(user:prolog_file_type(rdf, rdf     )).
+:- db_add_novel(user:prolog_file_type(ttl, turtle  )).
+:- db_add_novel(user:prolog_file_type(ttl, rdf     )).
 
 
 
@@ -187,7 +189,7 @@ rdf_load2(File, Options):-
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  cowspeak(
+  cowspeak:cowspeak(
     [speech(false)],
     'Graph ~w was loaded from file ~w.'-[Graph,File]
   ).
@@ -320,7 +322,7 @@ rdf_save2(File, Options):-
   option(format(Format), Options),
   once(rdf_serialization(_Extension, Format, _URI)), !,
   rdf_save2(File, Options, Format),
-  cowspeak(
+  cowspeak:cowspeak(
     [speech(false)],
     'Graph ~w was saved in ~w serialization to file ~w.'-[Graph,Format,File]
   ).

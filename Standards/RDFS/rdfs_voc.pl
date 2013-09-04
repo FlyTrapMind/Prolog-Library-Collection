@@ -16,17 +16,11 @@ Exports the vocabulary for RDFS.
 @version 2013/08
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(gv(gv_file)).
-:- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
@@ -41,7 +35,7 @@ rdf_voc(GIF):-
   % Customization.
   rdf_retractall(_, rdfs:isDefinedBy, _, G),
   rdf_register_namespace_color(G, rdf, darkblue),
-  
+
   % Remove the RDFS-only triples.
   forall(
     (
@@ -52,7 +46,7 @@ rdf_voc(GIF):-
     ),
     rdf_retractall(S, P, O, G)
   ),
-  
+
   % Thats it, let's export the RDF graph to GIF.
   export_rdf_graph(
     [

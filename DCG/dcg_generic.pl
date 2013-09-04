@@ -13,7 +13,6 @@
                   % ?Value
 
 % DEBUG
-    dcg_debug//0,
     gtrace//0,
 
 % LIST
@@ -86,12 +85,9 @@ a modular way.
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(generics(cowspeak)).
-:- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(math(math_ext)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -102,9 +98,9 @@ a modular way.
 ).
 
 % ALL/UNTIL
+:- meta_predicate(dcg_until(//,?,?,?)).
 :- meta_predicate(dcg_until(+,//,?,?,?)).
 :- meta_predicate(dcg_until_(+,//,?,?,?)).
-:- meta_predicate(dcg_until__(+,//,?,?,?)).
 % LIST
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
@@ -151,7 +147,6 @@ dcg_all_atom(Atom) -->
 
 dcg_until(DCG_End, Value) -->
   dcg_until([], DCG_End, Value).
-:- meta_predicate(dcg_until(//,?,?,?)).
 
 %! dcg_until(+Options:list(nvpair), :DCG_End, ?Value)// is det.
 % Returns the codes that occur before `DCG_End` can be consumed.
@@ -220,17 +215,6 @@ dcg_until_(O, DCG_End, [H|T]) -->
 
 gtrace -->
   {gtrace}.
-
-dcg_debug(Codes, []):-
-  atom_codes(Atom, Codes),
-  format(
-    atom(Text),
-    'Wouter, I have the feeling that something is wrong here.\n\c
-     Unable to phrase <~w>\n',
-    [Atom]
-  ),
-  thread_create(cowspeak(Text), _ID, []),
-  gtrace. %DEB
 
 
 

@@ -24,7 +24,6 @@ DCG rules for XML datatypes.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_unicode)).
-:- use_module(xml(xml)).
 
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
 

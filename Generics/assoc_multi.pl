@@ -24,6 +24,13 @@
                   % +Assoc:or(assoc,atom)
   ]
 ).
+:- reexport(
+  library(assoc),
+  except([
+    get_assoc/3,
+    put_assoc/4
+  ])
+).
 
 /** <module> ASSOC_MULTI
 
@@ -36,19 +43,15 @@ and by adding ord_member/2.
 @version 2013/04-2013/05, 2013/07-2013/08
 */
 
-:- reexport(library(assoc), except([get_assoc/3, put_assoc/4])).
-
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
-:- use_module(rdf(rdf_graph)).
 
 :- meta_predicate(write_assoc(+,+,2,+)).
 
-:- dynamic(assoc_by_name(_Name, _Assoc)).
+:- dynamic(assoc_by_name/2).
 
 :- nodebug(assoc_multi).
 

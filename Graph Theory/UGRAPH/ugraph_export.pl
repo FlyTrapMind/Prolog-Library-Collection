@@ -57,7 +57,6 @@ The following attributes are supported:
 :- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
-:- use_module(library(semweb/rdf_db)).
 :- use_module(ugraph(ugraph_ext)).
 
 :- meta_predicate(export_ugraph(+,4,+,+)).

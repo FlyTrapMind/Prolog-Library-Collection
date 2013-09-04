@@ -95,7 +95,7 @@ date_time(DateTime):-
 
 hash_date(Hash):-
   get_time(TimeStamp),
-  term_hash(TimeStamp, Hash).
+  variant_sha1(TimeStamp, Hash).
 
 %! latest_file(+Files:list(atom), -Latest:atom) is det.
 % Returns the most recently created or altered file from within a list of

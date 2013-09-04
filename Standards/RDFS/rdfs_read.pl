@@ -98,13 +98,10 @@ rdfs_individual(X, Y, G):-
 @version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/08
 */
 
-:- use_module(generics(db_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(math(math_ext)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 

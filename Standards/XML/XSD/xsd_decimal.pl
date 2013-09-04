@@ -5,10 +5,6 @@
                            % -LEX:list(code)
     decimalLexicalMap/2, % +LEX:list(code)
                          % -Decimal:number
-    decimalLexicalMap1/2, % ?LEX:list(code)
-                          % ?Decimal:number
-    decimalLexicalMap2/2, % ?LEX:list(code)
-                          % ?Decimal:compound
 % DCG COMPONENTS
     decimalPtNumeral//2, % -Sign:oneof([-1,1])
                          % -Decimal:float
@@ -191,6 +187,8 @@ unsignedNoDecimalPtCanonicalMap(0) --> !, "0".
 unsignedNoDecimalPtCanonicalMap(F) -->
   unsignedNoDecimalPtCanonicalMap_(F).
 
+% Done!
+unsignedNoDecimalPtCanonicalMap_(0) --> !, [].
 unsignedNoDecimalPtCanonicalMap_(F) -->
   {
     mod(F, 10, G),

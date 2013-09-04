@@ -18,7 +18,6 @@ Dictionary for DCGs.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
 
 
 

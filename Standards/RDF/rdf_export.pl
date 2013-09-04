@@ -66,9 +66,9 @@ The procedure for determining the color of a vertex:
 :- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(svg(svg_colors)).
 
-:- dynamic(rdf_class_color(_G, _Class, _Color)).
-:- dynamic(rdf_namespace_color(_G, _Namespace, _Color)).
-:- dynamic(rdf_edge_style_(_RDF_Term, _EdgeStyle)).
+:- dynamic(rdf_class_color/3).
+:- dynamic(rdf_namespace_color/3).
+:- dynamic(rdf_edge_style_/2).
 
 :- meta_predicate(export_rdf_graph(+,4,+,-)).
 :- meta_predicate(rdf_vertex_term(+,+,+,4,+,-)).
@@ -194,7 +194,7 @@ export_rdf_graph(O, G, GIF):-
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 
-export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
+export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % First edges, them vertices.
   rdf_edges(O, G, Es),
   setoff(
@@ -212,7 +212,7 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   % Graph
   rdf_graph_name(G, G_Name),
   option(colorscheme(Colorscheme), O, x11),
-  G_Attrs = [colorscheme(Colorscheme),directedness(directed),label(G_Name)].
+  G_Attrs = [colorscheme(Colorscheme),directedness(forward),label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
 % Returns a name for the given graph.
@@ -306,7 +306,7 @@ rdf_edge_style(E, E_Style):-
   rdf_edge_style_(E, E_Style), !.
 rdf_edge_style(_E, solid).
 
-rdf_edge_term(O, G, Vs, E, edge(FromV_Id, ToV_Id, E_Attrs)):-
+rdf_edge_term(O, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
   % Ids.
   E = FromV-_P-ToV,
   nth0chk(FromV_Id, Vs, FromV),
@@ -446,7 +446,7 @@ rdf_vertex_shape(RDF_Term, circle):-
 % Catch-all.
 rdf_vertex_shape(_RDF_Term, ellipse).
 
-rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs3)):-
+rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id,V,V_Attrs3)):-
   nth0chk(V_Id, Vs, V),
   rdf_term_name(O, V, V_Name),
   rdf_vertex_color(O, G, V, V_Color),

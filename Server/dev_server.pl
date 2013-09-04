@@ -1,7 +1,6 @@
 :- module(
   dev_server,
   [
-    dev_server_uri/1, % -URI:uri
     push/2, % +Type:oneof([console_output,status_pane])
             % +DOM:list
     push/4, % +Type:oneof([console_output,status_pane])
@@ -25,9 +24,9 @@ current logging stream.
 @version 2012/05, 2012/09-2012/12, 2013/02-2013/08
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(http(http)).
+:- use_module(library(debug)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -87,12 +86,17 @@ current logging stream.
 :- html_resource(js('console_output.js'), [requires(js('dev_server.js'))]).
 :- html_resource(js('status_pane.js'), [requires(js('dev_server.js'))]).
 
+% plDoc documentation.
+:- http_handler(dev_server(doc), documentation, [prefix,priority(0)]).
+
 % By registering these modules, their Web predicates become accessible
 % from the Web console.
 :- register_module(web_message).
 
 :- multifile(user:body//2).
 :- multifile(user:head//2).
+
+:- debug(dev_server).
 
 
 
@@ -104,9 +108,10 @@ default_port(5000).
 % Notice that its port need not be the default port.
 start_dev_server:-
   http_server_property(Port, start_time(_Time)), !,
-  cowspeak(
-    [speech(false)],
-    'The server at port ~w is used as the debug server.'-[Port]
+  debug(
+    dev_server,
+    'The server at port ~w is used as the debug server.',
+    [Port]
   ).
 % No server is running yet, so start a server at the default port.
 start_dev_server:-
@@ -154,9 +159,6 @@ dev_server(Request):-
     true
   ),
   reply_html_page(dev_server, [], []).
-
-dev_server_uri(URI):-
-  http_absolute_location(dev_server(.), URI, []).
 
 documentation(Request):-
   doc_browser,

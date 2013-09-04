@@ -16,6 +16,8 @@
 
 /** <module> RDF SEARCH
 
+Searching through an RDF graph.
+
 @author Wouter Beek
 @version 2013/05
 */
@@ -24,6 +26,7 @@
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf_graph(rdf_graph_theory)).
 
 :- rdf_meta(rdf_breadth_first(+,r,r,-,-)).
 :- rdf_meta(rdf_breadth_first(+,r,r,+,+,-,-)).

@@ -36,10 +36,11 @@ in combination with the open source speech synthesizer eSpeak.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(option)).
+:- use_module(library(plunit)).
 :- use_module(library(settings)).
 :- use_module(os(tts_ext)).
 
-:- debug(cowspeak).
+:- nodebug(cowspeak).
 
 % The automated finding of meta-predicates seems to be over-eager.
 :- meta_predicate(dcg_speech_bubble_line(+,+,?,?)).
@@ -60,21 +61,35 @@ cow_atom(Atom, Atom):-
 cow_atom(Term, Atom):-
   term_to_atom(Term, Atom).
 
+%! cowspeak(+Content:or([term,list(terms)])) is det.
+% @see cowspeak/2
+
 cowspeak(Content):-
   cowspeak([], Content).
 
-%! cowspeak(+Options, +TermOrTerms) is det.
+%! cowspeak(+Options, +Content:or([term,list(terms)])) is det.
 % Turns the given text into a cowified message, displaying the given
 % text in the cow's speech bubble.
 %
-% Meet the cow:
+% The cow, as it reflects upon its own cow life:
 % ~~~{.txt}
-%    ^__^
-%    (oo)|_____
-%    (__)|     )/|/
-%      ||----w |
-%     ||       ||
+% /--------------------------------------\
+% |     ^__^                             |
+% |     (oo)\_______                     |
+% |     (__)\       )\/\                 |
+% |         ||----w |                    |
+% |         ||     ||                    |
+% \--------------------------------------/
+%         \   ^__^
+%          \  (oo)\_______
+%             (__)\       )\/\
+%                 ||----w |
+%                 ||     ||
 % ~~~
+%
+% =Content= can be any term or list of terms.
+% Terms of the form =|Format-ListOfArguments|= are treated specially
+% and are passed on to format/3.
 %
 % The following options are supported:
 %   * `eyes(+Eyes:list(code))`
@@ -93,9 +108,9 @@ cowspeak(Content):-
 %     Whether line wrapping or word wrapping (the default)
 %     should be applied, or neither of those (e.g. for ASCII art).
 %
-% @param Text Either an atomic text message or a list of atomic lines
-%      constituting a message.
 % @param Options A list of name-value pairs.
+% @param Contents Either a term or a list of terms.
+%        Processes terms of the form =|Format-ListOfArguments|= specially.
 %
 % @tbd Split lines by words (in whitespace). Add this to module ATOM_EXT.
 % @tbd When tabs are used in cowspeak/2 the width of the speech balloon
@@ -285,4 +300,22 @@ process_modes(O1, O2):-
   mode(Mode, ModeO), !,
   merge_options(ModeO, O1, O2).
 process_modes(O, O).
+
+
+
+:- begin_tests(cowspeak).
+
+cow_sentence(test).
+cow_sentence('Interpret the next argument as a character code and add it to the output. This argument must be a valid Unicode character code. Note that the actually emitted bytes are defined by the character encoding of the output stream and an exception may be raised if the output stream is not capable of representing the requested Unicode character. See section 2.18.1 for details.').
+cow_sentence('%! cowspeak(+Options, +Content:or([term,list(terms)])) is det.').
+cow_sentence('    ^__^
+    (oo)\\_______
+    (__)\\       )\\/\\
+        ||----w |
+        ||     ||').
+
+test(cowspeak, [forall(cow_sentence(S)),true]):-
+  cowspeak(S).
+
+:- end_tests(cowspeak).
 

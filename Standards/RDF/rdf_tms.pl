@@ -18,6 +18,7 @@
 Uses a the Doyle TMS to keep track of RDF(S) materialization.
 
 @author Wouter Beek
+@tbd Phase this one out.
 @version 2013/05
 */
 
@@ -36,23 +37,21 @@ Uses a the Doyle TMS to keep track of RDF(S) materialization.
 :- rdf_meta(rdf_test_triple(r,r,r)).
 :- rdf_meta(rdf_tms(r,r,r)).
 
-:- dynamic(bnode_literal_map0(_BNode, _Literal)).
+:- dynamic(bnode_literal_map0/2).
 
 
 
 %! bnode_literal_map(-BNode:bnode, +Lit:literal) is det.
 
 bnode_literal_map(BNode, Lit):-
-  bnode_literal_map0(BNode, Lit),
-  !.
+  bnode_literal_map0(BNode, Lit), !.
 bnode_literal_map(BNode, Lit):-
   rdf_bnode(BNode),
   assert(bnode_literal_map0(BNode, Lit)).
 
 % @tbd
 rdfs_inconsistent(Graph):-
-  rdf_graph(Graph),
-  !.
+  rdf_graph(Graph), !.
 
 rdf_materialize(Graphs):-
   rdf_materialize(Graphs, _TMS).
@@ -419,7 +418,7 @@ test1:-
   Graph = rdf_tms_test,
   rdf_assert(rdf:a, rdf:b, rdf:c, Graph),
   rdf_materialize(Graph, TMS),
-  tms_export:export_tms(TMS).
+  tms_export:tms_export(TMS).
 
 %! rdf_tms_test1(-S, -P, -O) is det.
 

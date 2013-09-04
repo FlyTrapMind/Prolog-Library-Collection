@@ -77,7 +77,6 @@ We use the following abbreviations in this module:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(cowspeak)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).

@@ -30,7 +30,6 @@
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(plunit)).
 :- use_module(svg(svg)).
-:- use_module(svg(svg_attributes)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_entities)).
 

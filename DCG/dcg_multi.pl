@@ -11,11 +11,16 @@
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
                   % ?Arguments1:list
                   % :Options:list(nvpair)
-    dcg_multi//5 % :DCG_Body
-                 % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
-                 % ?Arguments1:list
-                 % ?Arguments2:list
-                 % :Options:list(nvpair)
+    dcg_multi//5, % :DCG_Body
+                  % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
+                  % ?Arguments1:list
+                  % ?Arguments2:list
+                  % :Options:list(nvpair)
+% OUTPUT FORMAT MODIFIERS
+    codes_atom/2, % ?Codes:list(code)
+                  % ?Atom:atom
+    codes_number/2 % ?Codes:list(code)
+                   % ?Number:number
   ]
 ).
 

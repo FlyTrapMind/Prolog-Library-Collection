@@ -1,6 +1,7 @@
 :- module(
   run_ext,
   [
+    exists_program/1, % +ProgramName:atom
     list_external_programs/0,
     list_external_programs/1, % +FileType:atom
     open/1, % +File:atom
@@ -40,6 +41,8 @@ Predicates for running external programs.
 
 % This is used to relate programs to file types.
 :- dynamic(user:file_type_program/2).
+% This is used to relate programs to modules.
+:- dynamic(user:module_uses_program/2).
 
 :- initialization(db_add_novel(at_halt(kill_processes))).
 
@@ -87,12 +90,16 @@ kill_processes:-
 % and whether a file type's external dependencies are met.
 
 list_external_programs:-
-  setoff(FileType, file_type_program(FileType, _Program), FileTypes),
-  maplist(list_external_programs, FileTypes).
+  setoff(
+    Module,
+    module_uses_program(Module, _Program),
+    Modules
+  ),
+  maplist(list_external_programs, Modules).
 
-%! list_external_programs(+FileType:atom) is det.
+%! list_external_programs(+FileTypeOrModule:atom) is det.
 % Writes a list of external programs that are registered
-% with the given file type to the console.
+% with the given file type or module to the console.
 %
 % The list indicates whether the external programs are available or not.
 % A file type's external dependencies are met if at least one
@@ -100,6 +107,13 @@ list_external_programs:-
 
 list_external_programs(FileType):-
   findall(Program, file_type_program(FileType, Program), Programs),
+  Programs \== [], !,
+  list_external_programs_(Programs, FileType, 'File type').
+list_external_programs(Module):-
+  findall(Program, module_uses_program(Module, Program), Programs),
+  list_external_programs_(Programs, Module, 'Module').
+
+list_external_programs_(Programs, Content, String):-
   include(write_program_support, Programs, SupportedPrograms),
   (
     SupportedPrograms == []
@@ -112,8 +126,8 @@ list_external_programs(FileType):-
   ),
   ansi_formatnl(
     [
-      'File type ',
-      [bold]-'~w'-[FileType],
+      '~w '-[String],
+      [bold]-'~w'-[Content],
       ' is ',
       [bold,fg(Color)]-'~w'-[SupportText],
       '.'

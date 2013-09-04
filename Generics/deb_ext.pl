@@ -29,7 +29,7 @@ http://www.swi-prolog.org/ChangeLog?branch=stable&from=5.10.4&to=6.4.0
 @version 2011/11-2012/07, 2012/09, 2013/06
 */
 
-:- use_module(generics(cowspeak)).
+:- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
@@ -37,6 +37,8 @@ http://www.swi-prolog.org/ChangeLog?branch=stable&from=5.10.4&to=6.4.0
 :- meta_predicate(test(0,+,+)).
 
 :- rdf_meta(rdf_class_status(r)).
+
+:- debug(deb_ext).
 
 
 
@@ -55,11 +57,11 @@ rdf_class_status(Class):-
     Individuals
   ),
   length(Individuals, NumberOfIndividuals),
-  cowspeak('Individuals: ~w\n'-[NumberOfIndividuals]).
+  debug(deb_ext, 'Individuals: ~w', [NumberOfIndividuals]).
 
 rdf_graph_status(Graph):-
   rdf_statistics(triples_by_graph(Graph, NumberOfTriples)),
-  cowspeak('Triples: ~w\n'-[NumberOfTriples]).
+  debug(deb_ext, 'Triples: ~w', [NumberOfTriples]).
 
 %! test(:Goal, +Stream) is det.
 % Runs the given goal as a test.

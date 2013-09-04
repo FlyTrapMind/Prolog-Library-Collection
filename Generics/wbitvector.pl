@@ -34,6 +34,7 @@
 
 Bitvector library.
 
+@author Jan Wielemaker, taken from the Garp3 project.
 */
 
 
@@ -78,9 +79,8 @@ map_list(bitvector(Map), Integers):-
 
 %! map_list_(+Map:bitvector, -Integers:list(integer)) is det.
 
-map_list_(0, []):-
-  !.
-map_list_(Map, [Integer | Integers]):-
+map_list_(0, []):- !.
+map_list_(Map, [Integer|Integers]):-
   % Return the smallest integer N such that (IntExpr >> N) /\ 1 =:= 1.
   % This is the (zero-origin) index of the least significant 1 bit in
   % the value of IntExpr, which must evaluate to a positive integer.
@@ -119,15 +119,14 @@ map_union_unique(bitvector(A), bitvector(B), bitvector(C)):-
 %  Remove intersection of both maps from both maps; fail if no
 %  intersection
 
-map_without_intersection(bitvector(A), bitvector(B),
-       bitvector(C), bitvector(D)):-
+map_without_intersection(bitvector(A), bitvector(B), bitvector(C), bitvector(D)):-
   Intersection is A /\ B,
-  Intersection \== 0, % FL nov 07 used to be =\= but arithmetic is not necessary here (and slower!)
+  % FL nov 07 used to be =\= but arithmetic is not necessary here (and slower!)
+  Intersection \== 0,
   C is A xor Intersection,
   D is B xor Intersection.
 
-:- multifile
-  user:portray/1.
+:- multifile(user:portray/1).
 
 user:portray(bitvector(Map)):-
   integer(Map),

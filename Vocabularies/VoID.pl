@@ -46,7 +46,7 @@ VoID is a W3C Interest Group Note as of 2011/03/03.
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
-:- dynamic(dataset(_VoID_Graph, _Dataset, _DatasetPath, _DatasetGraph)).
+:- dynamic(dataset/4).
 
 :- debug(void).
 

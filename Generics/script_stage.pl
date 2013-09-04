@@ -16,11 +16,13 @@ We presuppose that the =data= directory has been set and is writeable.
 @version 2013/06
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
+:- use_module(library(debug)).
 :- use_module(os(dir_ext)).
 
 :- meta_predicate(script_stage(+,2)).
+
+:- debug(script_stage).
 
 
 
@@ -36,7 +38,7 @@ script_stage(Stage, Goal):-
   NextStage is Stage + 1,
   stage_directory(NextStage, To),
   call(Goal, From, To),
-  cowspeak('Stage ~w is done.'-[Stage]).
+  debug(script_stage, 'Stage ~w is done.', [Stage]).
 
 stage_directory(0, StageDir):- !,
   absolute_file_name(

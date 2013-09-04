@@ -26,14 +26,11 @@ DCG rules for XML entities.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 
 :- meta_predicate(xml_entities(-,//,//,?,?)).
 :- meta_predicate(xml_entities(-,//,+,+,?,?)).
-:- meta_predicate(xml_entity(//,//,?,?)).
 :- meta_predicate(xml_entity(//,//,//,?,?)).
-:- meta_predicate(xml_entity(//,//,//,//,?,?)).
 :- meta_predicate(xml_entity(//,//,//,//,//,?,?)).
 :- meta_predicate(xml_entity_q(//,//,?,?)).
 :- meta_predicate(xml_entity_q(//,//,//,?,?)).
@@ -103,7 +100,7 @@ xml_entity_q(DCG_Namespace, DCG_Name, DCG_Attributes) -->
 
 %! xml_header(
 %!   -Tree:compound,
-%!   :DCG_Namespace, 
+%!   :DCG_Namespace,
 %!   ?Version:compound,
 %!   ?Standalone:boolean
 %! )//

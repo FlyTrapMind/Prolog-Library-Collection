@@ -68,12 +68,11 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(library(http/http_open)).
 :- use_module(library(semweb/sparql_client)).
 :- use_module(xml(xml_namespace)).
 
-:- dynamic(sparql_prefix(_Prefix, _URI)).
-:- dynamic(sparql_remote(_Remote, _Server, _Port, _Path)).
+:- dynamic(sparql_prefix/2).
+:- dynamic(sparql_remote/4).
 
 :- nodebug(sparql).
 

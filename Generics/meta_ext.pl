@@ -155,8 +155,7 @@ Extensions to the SWI-Prolog meta predicates.
 % There are no restrictions on the determinism of the goal.
 
 memo(Goal):-
-  memo_(Goal),
-  !.
+  memo_(Goal), !.
 memo(Goal):-
   call(Goal),
   assertz(memo_(Goal)).
@@ -217,11 +216,9 @@ unless(Unless, Do):-
   ).
 
 xor(X, _Y):-
-  call(X),
-  !.
+  call(X), !.
 xor(_X, Y):-
-  call(Y),
-  !.
+  call(Y), !.
 
 
 
@@ -421,11 +418,10 @@ complete(_Goal, Input, [Input]).
 
 count(Goal, Count):-
   (
-    Goal = _Module:Goal_,
-    !
+    Goal = _Module:Goal_
   ;
     Goal_ = Goal
-  ),
+  ), !,
   Goal_ =.. [_Predicate | Arguments],
   list_compound(Arguments, CompoundArgument),
   setoff(
@@ -510,10 +506,8 @@ run_in_working_directory(Call, WorkingDirectory):-
 % @param List2 An ordered list.
 % @param Solution An ordered list.
 
-predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):-
-  !.
-predmerge_with_duplicates(_Predicate, MergeResult, [], MergeResult):-
-  !.
+predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):- !.
+predmerge_with_duplicates(_Predicate, MergeResult, [], MergeResult):- !.
 predmerge_with_duplicates(Predicate, [H1 | T1], [H2 | T2], Result):-
   call(Predicate, Delta, H1, H2),
   predmerge_with_duplicates(Delta, Predicate, H1, H2, T1, T2, Result).
@@ -587,8 +581,7 @@ predsort_with_duplicates(
   [H1, H2 | TailUnsortedList],
   TailUnsortedList,
   SortedList
-):-
-  !,
+):- !,
   % We perform one last call to finalize the sorting.
   call(Predicate, Delta, H1, H2),
   sort_with_duplicates(Delta, H1, H2, SortedList).
@@ -599,11 +592,9 @@ predsort_with_duplicates(
   [H | UnsortedList],
   UnsortedList,
   [H]
-):-
-  !.
+):- !.
 % There are no more unsorted terms.
-predsort_with_duplicates(_Predicate, 0, UnsortedList, UnsortedList, []):-
-  !.
+predsort_with_duplicates(_Predicate, 0, UnsortedList, UnsortedList, []):- !.
 % The recursive case.
 predsort_with_duplicates(Predicate, Length, L1, L3, SortedList):-
   % Rounded division of the given length.
@@ -657,8 +648,7 @@ user_interaction(Action, Goal, Headers, Tuples):-
   user_interaction(Action, Goal, 1, NumberOfTuples, Headers, Tuples).
 
 user_interaction(Action, _Goal, _Index, _Length, _Headers, []):-
-  format(user_output, '\n-----\nDONE! <~w>\n-----\n', [Action]),
-  !.
+  format(user_output, '\n-----\nDONE! <~w>\n-----\n', [Action]), !.
 user_interaction(Action, Goal, Index, Length, Headers, Tuples):-
   % Display a question.
   nth1(Index, Tuples, Tuple),
@@ -714,3 +704,4 @@ user_interaction(Action, Goal, Index, Length, Headers, Tuples):-
   ;
     user_interaction(Action, Goal, Index, Length, Headers, Tuples)
   ).
+

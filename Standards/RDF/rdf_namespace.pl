@@ -46,7 +46,7 @@ Namespace support for RDF(S).
 
 :- rdf_meta(rdf_resource_to_namespace(r,-,-)).
 
-:- dynamic(rdf_current_namespace(_Graph, _Prefix)).
+:- dynamic(rdf_current_namespace/2).
 
 
 
