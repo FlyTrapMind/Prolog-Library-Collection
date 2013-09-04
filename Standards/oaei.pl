@@ -228,6 +228,8 @@ oaei_file_to_alignment_sets(F, A_Sets):-
   file_name(F, _Dir, G, _Ext),
   rdf_load2(F, [graph(G)]),
   oaei_graph_to_alignment_sets(G, A_Sets),
+  length(A_Sets, L), %DEB
+  debug(oaei, '~w alignment sets processed for graph ~w.', [L,G]),
   rdf_unload_graph(G).
 
 %! oaei_graph
