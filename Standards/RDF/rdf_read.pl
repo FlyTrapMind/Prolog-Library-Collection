@@ -34,11 +34,6 @@
     rdf_property/2, % +Graph:atom
                     % ?Property:iri
 % STRUCTURE-BASED READS
-    rdf_index/5, % ?Subject:oneof([bnode,uri])
-                 % ?Predicate:uri
-                 % ?Object:uri
-                 % ?Graph:graph
-                 % ?Index:term
     rdf_random/5, % -Subject:oneof([bnode,uri])
                   % -Predicate:uri
                   % -Object:uri
