@@ -6,9 +6,9 @@
     binomial_coefficient/3, % +M:integer
                             % +N:integer
                             % -BinomialCoefficient:integer
-    cartesian_distance/3, % +Coordinate1:coordinate
+    euclidean_distance/3, % +Coordinate1:coordinate
                           % +Coordinate2:coordinate
-                          % -CartesianDistance:float
+                          % -EuclideanDistance:float
     circumfence/2, % +Radius:float
                    % -Circumfence:float
     combinations/3, % +NumberOfObjects:integer
@@ -91,22 +91,22 @@ binomial_coefficient(M, N, BC):-
   factorial(MminN, F_MminN),
   BC is F_M / (F_N * F_MminN).
 
-%! cartesian_distance(
+%! euclidean_distance(
 %!   +Coordinate1:coordinate,
 %!   +Coordinate2:coordinate,
-%!   -CartesianDistance:float
+%!   -EuclideanDistance:float
 %! ) is det.
-% Returns the Cartesian distance between two coordinates.
+% Returns the Euclidean distance between two coordinates.
 
-cartesian_distance(
+euclidean_distance(
   coordinate(Dimension, Args1),
   coordinate(Dimension, Args2),
-  CartesianDistance
+  EuclideanDistance
 ):-
   maplist(minus, Args1, Args2, X1s),
   maplist(square, X1s, X2s),
   sum_list(X2s, X2),
-  CartesianDistance is sqrt(X2).
+  EuclideanDistance is sqrt(X2).
 
 %! circumfence(+Radius:float, -Circumfence:float) is det.
 % Returns the circumfence of a circle with the given radius.

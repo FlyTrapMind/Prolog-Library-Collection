@@ -38,6 +38,8 @@ load_pgc:-
     assert(user:file_search_path(rdf_mt,       logic('RDF MT'))),
   assert(user:file_search_path(math,         pgc('Math'))),
   assert(user:file_search_path(os,           pgc('OS'))),
+  assert(user:file_search_path(ps,           pgc('PS'))),
+    assert(user:file_search_path(tms,          ps('TMS'))),
   assert(user:file_search_path(server,       pgc('Server'))),
   assert(user:file_search_path(standards,    pgc('Standards'))),
     assert(user:file_search_path(datetime,     standards('DateTime'))),
@@ -55,7 +57,6 @@ load_pgc:-
     assert(user:file_search_path(uri,          standards('URI'))),
     assert(user:file_search_path(xml,          standards('XML'))),
       assert(user:file_search_path(xsd,          xml('XSD'))),
-  assert(user:file_search_path(tms,          pgc('TMS'))),
   assert(user:file_search_path(vocabularies, pgc('Vocabularies'))),
     assert(user:file_search_path(skos,         vocabularies('SKOS'))),
   

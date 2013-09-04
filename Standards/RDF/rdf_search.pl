@@ -79,3 +79,4 @@ rdf_breadth_first(A1, R_AB, R_BA, HistA1, HistB1, SolA, SolB):-
   ord_union(HistA1, A2, HistA2),
   ord_union(HistB1, B2, HistB2),
   rdf_breadth_first(A2, R_AB, R_BA, HistA2, HistB2, SolA, SolB).
+

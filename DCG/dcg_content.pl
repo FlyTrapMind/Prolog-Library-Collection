@@ -135,8 +135,9 @@ dcg_cicode(Code) -->
     [Code]
   ).
 dcg_cicode(CI_Code) -->
+  % This allows dcg_cistring//1 to use this DCG rule for reading words
+  % in a case-sensitive way. 
   dcg_graph(Code),
-  
   (
     {code_type(Code, upper(CI_Code))}
   ;
