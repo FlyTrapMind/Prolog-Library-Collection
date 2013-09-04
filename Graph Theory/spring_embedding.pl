@@ -427,7 +427,7 @@ neighbor_attraction(
 ):-
   % Single neighbor function.
   call(N_P, V, G, W), !,
-  cartesian_distance(CoordinatesV, CoordinatesW, CartesianDistance),
+  euclidean_distance(CoordinatesV, CoordinatesW, CartesianDistance),
   debug(spring, '    d(~w,~w)=~w', [V, W, CartesianDistance]),
   Attraction is 2 * log10(CartesianDistance),
   debug(spring, '    F_att(~w,~w)=~w', [V, W, Attraction]).
@@ -464,7 +464,7 @@ neighbor_attraction_dimension(
   % Neighbor attraction between V and W in the given dimension.
   nth0(Dimension, PositionsV, PositionV),
   nth0(Dimension, PositionsW, PositionW),
-  cartesian_distance(
+  euclidean_distance(
     coordinate(Dimension, PositionsV),
     coordinate(Dimension, PositionsW),
     CartesianDistance
@@ -511,7 +511,7 @@ nonneighbor_repulsion(
   vertex_coordinate(W, CoordinatesW),
   Repulsion
 ):-
-  cartesian_distance(CoordinatesV, CoordinatesW, CartesianDistance),
+  euclidean_distance(CoordinatesV, CoordinatesW, CartesianDistance),
   debug(spring, '    d(~w,~w)=~w', [V, W, CartesianDistance]),
   Repulsion is 1 / sqrt(CartesianDistance),
   debug(spring, '    F_rep(~w,~w)=~w', [V, W, Repulsion]).
@@ -546,7 +546,7 @@ nonneighbor_repulsion_dimension(
   % The repulsion between V and W in the given dimension.
   nth0(Dimension, PositionsV, PositionV),
   nth0(Dimension, PositionsW, PositionW),
-  cartesian_distance(
+  euclidean_distance(
     coordinate(Dimensions, PositionsV),
     coordinate(Dimensions, PositionsW),
     CartesianDistance

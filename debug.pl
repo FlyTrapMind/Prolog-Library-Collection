@@ -83,6 +83,7 @@ load_modules_for_pldoc:-
         logic,
         math,
         os,
+        ps,
         owl,
         rdf,
         rdf_graph,

@@ -46,13 +46,14 @@ reflect the serialization format:
 
 @author Wouter Beek
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-2013/08-2013/09
+         2013/08-2013/09
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
@@ -68,6 +69,8 @@ reflect the serialization format:
 :- db_add_novel(user:prolog_file_type(rdf, rdf     )).
 :- db_add_novel(user:prolog_file_type(ttl, turtle  )).
 :- db_add_novel(user:prolog_file_type(ttl, rdf     )).
+
+:- debug(rdf_serial).
 
 
 
@@ -189,10 +192,7 @@ rdf_load2(File, Options):-
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, Options0),
   % Send a debug message notifying that the RDF file was successfully loaded.
-  cowspeak:cowspeak(
-    [speech(false)],
-    'Graph ~w was loaded from file ~w.'-[Graph,File]
-  ).
+  debug(rdf_serial, 'Graph ~w was loaded from file ~w.', [Graph,File]).
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
@@ -322,9 +322,10 @@ rdf_save2(File, Options):-
   option(format(Format), Options),
   once(rdf_serialization(_Extension, Format, _URI)), !,
   rdf_save2(File, Options, Format),
-  cowspeak:cowspeak(
-    [speech(false)],
-    'Graph ~w was saved in ~w serialization to file ~w.'-[Graph,Format,File]
+  debug(
+    rdf_serial,
+    'Graph ~w was saved in ~w serialization to file ~w.',
+    [Graph,Format,File]
   ).
 
 %! rdf_save2(

@@ -1,7 +1,7 @@
 :- module(
   oaei,
   [
-    oaei_alignment/3, % ?Graph:atom
+    oaei_alignment_pair/3, % ?Graph:atom
                       % ?From:uri
                       % ?To:uri
     oaei_check_alignment/2, % +ReferenceAlignments:list(pair)
@@ -106,12 +106,12 @@ Mismatch types:
     * Data semantic transformation
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/08
+@version 2013/04-2013/05, 2013/08-2013/09
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(debug)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -134,22 +134,31 @@ Mismatch types:
 :- db_add_novel(user:file_search_path(ontology2, alignment2(ontology))).
 :- db_add_novel(user:file_search_path(reference2, alignment2(reference))).
 
+:- debug(oaei).
 
 
-%! oaei_alignment(?Graph:atom, ?From:uri, ?To:uri) is nondet.
 
-oaei_alignment(Graph, From, To):-
-  oaei_graph(Graph),
-  rdf(BNode, align:entity1, From, Graph),
-  rdf(BNode, align:entity2, To, Graph),
+%! oaei_alignment_pair(?Graph:atom, ?From:uri, ?To:uri) is nondet.
+
+oaei_alignment_pair(G, From, To):-
+  oaei_graph(G),
+  rdf(BNode, align:entity1, From, G),
+  rdf(BNode, align:entity2, To, G),
   once(
     (
-      rdf_literal(BNode, align:relation, '=', Graph),
-      rdf_datatype(BNode, align:measure, float, 1.0, Graph)
+      rdf_literal(BNode, align:relation, '=', G),
+      rdf_datatype(BNode, align:measure, float, 1.0, G)
     ;
-      cowspeak('Non-standard alignment was read from graph ~w.'-[Graph])
+      debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
     )
   ).
+
+%! oaei_alignment_set(+Graph:atom, -AlignmentSet:ordset(iri)) is nondet.
+
+oaei_alignment_set(G, A_Set):-
+  oaei_alignment_pair(G, X, Y),
+  (
+    oaei_alignment_pair(G, X, Z),
 
 %! oaei_check_alignment(
 %!   +ReferenceAlignments:list(pair),
@@ -171,44 +180,58 @@ oaei_check_alignment(ReferenceAlignments, RawAlignments):-
   flush_output(user_output).
 
 oaei_file_to_alignment_pairs(File, AlignmentPairs):-
-  file_name(File, _Directory, Graph, _Extension),
-  rdf_load2(File, [graph(Graph)]),
-  oaei_graph_to_alignment_pairs(Graph, AlignmentPairs),
-  rdf_unload_graph(Graph).
+  file_name(File, _Directory, G, _Extension),
+  rdf_load2(File, [graph(G)]),
+  oaei_graph_to_alignment_pairs(G, AlignmentPairs),
+  rdf_unload_graph(G).
+
+oaei_file_to_alignment_sets(File, A_Sets):-
+  file_name(F, _Dir, G, _Ext),
+  rdf_load2(F, [graph(G)]),
+  oaei_graph_to_alignment_sets(G, A_Sets),
+  rdf_unload_graph(G).
 
 %! oaei_graph
 
-oaei_graph(Graph):-
-  nonvar_det(oaei_graph0(Graph)).
-oaei_graph0(Graph):-
-  rdf_graph(Graph),
+oaei_graph(G):-
+  nonvar_det(oaei_graph0(G)).
+oaei_graph0(G):-
+  rdf_graph(G),
   once((
     rdfs_individual_of(Alignment, align:'Alignment'),
-    rdf(Alignment, _P, _O, Graph)
+    rdf(Alignment, _P, _O, G)
   )).
 
-oaei_graph_to_alignment_pairs(Graph, AlignmentPairs):-
+oaei_graph_to_alignment_pairs(G, AlignmentPairs):-
   % Avoid double occurrences in an alignment graph (you never know!).
   setoff(
     From-To,
-    oaei_alignment(Graph, From, To),
+    oaei_alignment_pair(G, From, To),
+    AlignmentPairs
+  ).
+
+oaei_graph_to_alignment_sets(G, A_Sets):-
+  % Avoid double occurrences in an alignment graph (you never know!).
+  setoff(
+    From-To,
+    oaei_alignment_set(G, From, To),
     AlignmentPairs
   ).
 
 %! oaei_ontologies(+Graph:atom, -File1:atom, -File2:atom) is det.
 % Returns the files in which the linked ontologies are stored.
 
-oaei_ontologies(Graph, File1, File2):-
-  oaei_ontology(Graph, File1),
-  oaei_ontology(Graph, File2),
+oaei_ontologies(G, File1, File2):-
+  oaei_ontology(G, File1),
+  oaei_ontology(G, File2),
   File1 \== File2,
   !.
 
 %! oaei_ontology(+Graph:atom, -File:atom) is nondet.
 % Returns an ontology file used in the given alignment graph.
 
-oaei_ontology(Graph, File):-
-  rdf_literal(Ontology, align:location, URI, Graph),
+oaei_ontology(G, File):-
+  rdf_literal(Ontology, align:location, URI, G),
   rdfs_individual_of(Ontology, align:'Ontology'),
   uri_components(
     URI,
