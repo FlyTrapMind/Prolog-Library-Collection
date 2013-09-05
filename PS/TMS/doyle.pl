@@ -143,6 +143,7 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(tms(tms)).
@@ -193,10 +194,10 @@ doyle_add_justification(TMS, InNs, OutNs, Label, Consequence, J):-
     % @tbd For now we only support SL-justifications.
     rdf_assert_individual(J, doyle:'SL-Justification', TMS:1),
     rdfs_assert_label(J, Label, TMS:1),
-  
+
     % Add the new justification to the node's justification-set.
     add_justification(TMS, Consequence, J),
-  
+
     % Add the node to the set of consequences of each of the nodes mentioned
     % in the justification.
     forall(
@@ -213,7 +214,7 @@ doyle_add_justification(TMS, InNs, OutNs, Label, Consequence, J):-
         rdf_assert(J, tms:has_out, Out, TMS:1)
       )
     ),
-  
+
     % If the justification is a CP-justification, add the node to the
     % CP-consequenct-list of the consequence of the CP-Justification,
     % for use in step 6.
@@ -222,7 +223,7 @@ doyle_add_justification(TMS, InNs, OutNs, Label, Consequence, J):-
       is_cp_justification(J),
       assert(cp_consequence(TMS, J))
     ),
-  
+
     % If the node is _out_, check the justification for validity.
     (
       doyle_is_in_node(Consequence)
@@ -390,7 +391,7 @@ doyle_add_node(TMS, Label, N):-
   % Type checking.
   atom(Label),
   var(N),
-  
+
   tms_create_node_iri(Label, N),
   (
     tms_node(TMS, N)
@@ -632,6 +633,7 @@ premise(J):-
 %! repercussions(+Node:iri, -Repercussions:ordset(node)) is det.
 
 repercussions(Node, Repercussions):-
+gtrace,
   transitive_closure(affected_consequences, Node, Repercussions).
 
 %! doyle_reset(+TMS:atom) is det.

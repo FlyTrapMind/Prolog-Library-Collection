@@ -105,14 +105,14 @@ rdfs_voc_web(SVG):-
 
 
 
-% GENERICS %
+% SUPPORT PREDICATES %
 
 %! load_in_graph(-Graph:atom) is det.
 
 load_in_graph(G2):-
   % Load the W3C file specifying the vocabulary for RDFS.
   rdf_new_graph(rdfs_schema, G1),
-  absolute_file_name(rdfs(rdfs), File, [access(read), file_type(rdf)]),
+  absolute_file_name(rdfs(rdfs), File, [access(read),file_type(rdf)]),
   rdf_load2(File, [graph(G1)]),
 
   % We want to hide some aspects from the displayed version:

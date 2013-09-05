@@ -67,7 +67,7 @@ rdf_term_name(RDF_Term, Name):-
 
 % An RDF list.
 rdf_term_name(O, RDF_Term, Name):-
-  is_rdf_list(RDF_Term), !,
+  rdf_is_list(RDF_Term), !,
   % Recursively retrieve the contents of the RDF list.
   rdf_list(RDF_Term, RDF_Terms),
   maplist(rdf_term_name(O), RDF_Terms, Names),
@@ -178,8 +178,9 @@ rdf_term_pairs_name(O1, RDF_TermPairs, Name):-
   maplist(rdf_term_pair_name(O1), RDF_TermPairs, Names),
   print_list(O1, atom(Name), Names).
 
-rdf_triple_name(rdf(S,P,O), T_Name):- !,
-  rdf_triple_name(S, P, O, T_Name).
+rdf_triple_name(rdf(S1,P1,O1), T_Name):- !,
+  maplist(rdf_global_id, [S1,P1,O1], [S2,P2,O2]),
+  rdf_triple_name(S2, P2, O2, T_Name).
 rdf_triple_name(T_Name, T_Name).
 
 rdf_triple_name(S, P, O, T_Name):-

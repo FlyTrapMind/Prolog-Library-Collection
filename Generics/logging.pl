@@ -230,8 +230,7 @@ set_situation(Situation):-
 % This does nothing in case log mode is turned off.
 
 start_log:-
-  current_log_stream(_Stream),
-  !,
+  current_log_stream(_Stream), !,
   print_message(warning, already_logging).
 start_log:-
   init,

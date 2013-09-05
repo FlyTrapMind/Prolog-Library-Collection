@@ -32,6 +32,7 @@ explain(schema:'Person',rdfs:subClassOf,schema:'Person')
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
+:- use_module(library(apply)).
 :- use_module(library(assoc)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
@@ -72,8 +73,6 @@ explain(schema:'Person',rdfs:subClassOf,schema:'Person')
 
 :- discontiguous(rule/6).
 :- rdf_meta(rule(-,-,r,r,r,?)).
-
-:- rdf_meta(stmt(-,r,r,r,?)).
 
 % The mapping between blank nodes and literals, which is used
 % to assert predications of literals, even though literals cannot
@@ -184,18 +183,20 @@ materialize(G):-
 
 materialize_(G, TMS):-
   % A deduction of depth one.
-  rule(R, Premises, S, P, O, G),
+  rule(R, Prems, S, P, O, G),
+
+  \+ rdf(S, P, O, G),
+  % THIS ONE IS NEEDED WHEN BLANK NODES ARE ADDED IN SOME DEDUCTIONS.
   % Only collect new triples, abstracting away from the blank nodes.
-  \+ rdf_find(S, P, O, G),
+  %\+ rdf_find(S, P, O, G),
 
   % Add to TMS.
-  rdf_triple_name(S, P, O, Conclusion),
-  doyle_add_argument(TMS, Premises, R, Conclusion, J),
+  maplist(rdf_triple_name, [rdf(S,P,O)|Prems], [C_Label|P_Labels]),
+  doyle_add_argument(TMS, P_Labels, R, C_Label, J),
 
   % DEB
   flag(deductions, Id, Id + 1),
   format(user_output, '~w: ', [Id]),
-
   with_output_to(
     user_output,
     tms_print_justification([indent(0),lang(en)], TMS, J)
@@ -209,21 +210,6 @@ materialize_(G, TMS):-
 materialize_(_G, _TMS):-
   flag(deductions, N, 0),
   debug(rdf_axiom, 'Added ~w deductions.', [N]).
-
-
-
-% RULES & AXIOMS %
-
-% All axioms can be deduced as if they are the outcome of a rule.
-rule(axiom, [], S, P, O, _G):-
-  axiom(_Lang, S, P, O).
-
-% Statements occur inside rules (as premises).
-% We want to perform materialization in individual steps of depth 1.
-% This means that for materialization (mode `m`) we do not use rules.
-stmt(TripleName, S, P, O, G):-
-  rdf(S, P, O, G),
-  rdf_triple_name(S, P, O, TripleName).
 
 %! start_materializer(?Graph:atom, +Interval:positive_integer) is det.
 % Performs a depth-one materialization step every N seconds.
@@ -244,13 +230,18 @@ start_materializer(G, I1):-
 
 % RDF RULES & AXIOMS %
 
+% All axioms can be deduced as if they are the outcome of a rule.
+rule(axiom, [], S, P, O, _G):-
+  axiom(_Lang, S, P, O).
+
+/*
 % [lg]  Literal generalization is a special case of [se1],
 %       where the object term is a literal.
 %       Literal generalization is used whenever something has to be
 %       predicated of a literal (since literals cannot occur
 %       as subject terms).
-rule(lg, [T1], S, P, BNode, G):-
-  stmt(T1, S, P, Lit, G),
+rule(lg, [rdf(S,P,Lit)], S, P, BNode, G):-
+  rdf(S, P, Lit, G),
   rdf_is_literal(Lit),
   % If no mapping exists, one is created.
   % Notice that this is the only rule that can add to the
@@ -261,18 +252,19 @@ rule(lg, [T1], S, P, BNode, G):-
     rdf_bnode(BNode),
     add_bnode_literal_map(G, BNode, Lit)
   )).
+*/
 
 /*
 % [se1] Simple entailment w.r.t. the object term.
-rule(se1, [T1], S, P, B, G):-
-  stmt(T1, S, P, O, G),
+rule(se1, [rdf(S,P,O)], S, P, B, G):-
+  rdf(S, P, O, G),
   % Constraining the standard.
   rdf_is_iri(O),
   rdf_bnode(B).
 
 % [se2] Simple entailment w.r.t. the subject term.
-rule(se2, [T1], B, P, O, G):-
-  stmt(T1, S, P, O, G),
+rule(se2, [rdf(S,P,O)], B, P, O, G):-
+  rdf(S, P, O, G),
   % Constraining the standard.
   \+ rdf_is_bnode(S),
   T1 =.. [LastRule|_], LastRule \== se2,
@@ -284,16 +276,18 @@ explanation(
   rdf1,
   'Terms that occur in the predicate position are instances of rdf:Property.'
 ).
-rule(rdf1, [T1], P, rdf:type, rdf:'Property', G):-
-  stmt(T1, _, P, _, G).
+rule(rdf1, [rdf(S,P,O)], P, rdf:type, rdf:'Property', G):-
+  rdf(S, P, O, G).
 
+/*
 % [rdf2] XML literals are instances of =|rdf:'XMLLiteral'|=.
 explanation(rdf2, 'All XML literals are instances of rdf:XMLLiteral.').
-rule(rdf2, [T1], BNode, rdf:type, rdf:'XMLLiteral', G):-
-  stmt(T1, _, _, TypedLiteral, G),
+rule(rdf2, [rdf(S,P,TypedLit)], BNode, rdf:type, rdf:'XMLLiteral', G):-
+  rdf(S, P, TypedLit, G),
   % @tbd This should be a well-typed XML literal...
-  rdf_is_literal(TypedLiteral),
-  literal_to_bnode(G, TypedLiteral, BNode).
+  rdf_is_literal(TypedLit),
+  literal_to_bnode(G, TypedLit, BNode).
+*/
 
 % RDF axiomatic triples.
 axiom(rdf, rdf:type,      rdf:type, rdf:'Property').
@@ -319,13 +313,14 @@ axiom(IRI, rdf:type, rdf:'Property'):-
 
 % RDFS AXIOMS %
 
+/*
 % [gl] Literal instantiation rule
 %      This ensures that every triple that contains a literal and
 %      its similar triple that contains the allocated blank node
 %      (according to the literal generation rule [lg])
 %      are derivable from each other.
-rule(gl, [T1], S, P, Lit, G):-
-  stmt(T1, S, P, BNode, G),
+rule(gl, [rdf(S,P,BNode)], S, P, Lit, G):-
+  rdf(S, P, BNode, G),
   % If the object term is not a blank node,
   % then we do not have to search the blank node-literal mapping.
   rdf_is_bnode(BNode),
@@ -333,28 +328,31 @@ rule(gl, [T1], S, P, Lit, G):-
   % is a generalization for a literal.
   % Therefore, it has to occur in the mapping established by rule [lg].
   bnode_to_literal(G, BNode, Lit).
+*/
 
+/*
 % [rdfs1] Literals are instances of =|rdfs:'Literal'|=.
 explanation(
   rdfs1,
   'Literal terms belong to the extension of the RDFS literal class.'
 ).
-rule(rdfs1, [T1], BNode, rdf:type, rdfs:'Literal', G):-
-  stmt(T1, _, _, Lit, G),
-  rdf_is_literal(Lit),
-  literal_to_bnode(G, Lit, BNode).
+rule(rdfs1, [rdf(S,P,PlainLit)], BNode, rdf:type, rdfs:'Literal', G):-
+  rdf(S, P, PlainLit, G),
+  rdf_is_plain_literal(PlainLit),
+  literal_to_bnode(G, PlainLit, BNode).
+*/
 
 % [rdfs2] Class membership through domain restriction.
-rule(rdfs2, [T1,T2], S, rdf:type, C, G):-
-  stmt(T1, P, rdfs:domain, C, G),
+rule(rdfs2, [rdf(P,rdfs:domain,C),rdf(S,P,O)], S, rdf:type, C, G):-
+  rdf(P, rdfs:domain, C, G),
   rdf_is_iri(P),
-  stmt(T2, S, P, _, G).
+  rdf(S, P, O, G).
 
 % [rdfs3] Class membership through range restriction.
-rule(rdfs3, [T1,T2], O, rdf:type, C, G):-
-  stmt(T1, P, rdfs:range, C, G),
+rule(rdfs3, [rdf(P,rdfs:range,C),rdf(S,P,O)], O, rdf:type, C, G):-
+  rdf(P, rdfs:range, C, G),
   rdf_is_iri(P),
-  stmt(T2, _, P, O, G),
+  rdf(S, P, O, G),
   \+ rdf_is_literal(O).
 
 % [rdfs4a] Subject terms are resources.
@@ -362,63 +360,69 @@ explanation(
   rdfs4a,
   'Terms that occur in the subject position are RDFS resources.'
 ).
-rule(rdfs4a, [T1], S, rdf:type, rdfs:'Resource', G):-
-  stmt(T1, S, _, _, G).
+rule(rdfs4a, [rdf(S,P,O)], S, rdf:type, rdfs:'Resource', G):-
+  rdf(S, P, O, G).
 % [rdfs4b] Object terms are resources.
 explanation(
   rdfs4b,
   'Terms that occur in the object position are RDFS resources.'
 ).
-rule(rdfs4b, [T1], O, rdf:type, rdfs:'Resource', G):-
-  stmt(T1, _, _, O, G),
+rule(rdfs4b, [rdf(S,P,O)], O, rdf:type, rdfs:'Resource', G):-
+  rdf(S, P, O, G),
   \+ rdf_is_literal(O).
 
 % [rdfs5] Transitive closure of the property hierarchy relation.
-rule(rdfs5, [T1,T2], P1, rdfs:subPropertyOf, P3, G):-
-  stmt(T1, P1, rdfs:subPropertyOf, P2, G),
+rule(rdfs5, Prems, P1, rdfs:subPropertyOf, P3, G):-
+  rdf(P1, rdfs:subPropertyOf, P2, G),
   % `P2` is automatically constrained to blank nodes and IRIs,
   % since is must appear as the subject term of some triple.
-  stmt(T2, P2, rdfs:subPropertyOf, P3, G).
+  rdf(P2, rdfs:subPropertyOf, P3, G),
+  Prems = [rdf(P1,rdfs:subPropertyOf,P2),rdf(P2,rdfs:subPropertyOf,P3)].
 
 % [rdfs6] Reflexivity of the property hierarchy relation.
-rule(rdfs6, [T1], P, rdfs:subPropertyOf, P, G):-
-  stmt(T1, P, rdf:type, rdf:'Property', G).
+rule(rdfs6, [rdf(P,rdf:type,rdf:'Property')], P, rdfs:subPropertyOf, P, G):-
+  rdf(P, rdf:type, rdf:'Property', G).
 
 % [rdfs7] Using the property hierarchy.
-rule(rdfs7, [T1,T2], S, P2, O, G):-
-  stmt(T1, P1, rdfs:subPropertyOf, P2, G),
+rule(rdfs7, [rdf(P1,rdfs:subPropertyOf,P2),rdf(S,P1,O)], S, P2, O, G):-
+  rdf(P1, rdfs:subPropertyOf, P2, G),
   rdf_is_iri(P1),
   rdf_is_iri(P2),
-  stmt(T2, S, P1, O, G).
+  rdf(S, P1, O, G).
 
 % [rdfs8] Classes are instances of =|rdfs:Resource|=.
-rule(rdfs8, [T1], C, rdfs:subClassOf, rdfs:'Resource', G):-
-  stmt(T1, C, rdf:type, rdfs:'Class', G).
+rule(rdfs8, Prems, C, rdfs:subClassOf, rdfs:'Resource', G):-
+  rdf(C, rdf:type, rdfs:'Class', G),
+  Prems = [rdf(C,rdf:type,rdfs:'Class')].
 
 % [rdfs9] Using the class hierarchy.
-rule(rdfs9, [T1,T2], S, rdf:type, C2, G):-
-  stmt(T1, C1, rdfs:subClassOf, C2, G),
+rule(rdfs9, Prems, S, rdf:type, C2, G):-
+  rdf(C1, rdfs:subClassOf, C2, G),
   % `C1` is automatically constrained to blank nodes and IRIs,
   % since is must have appeared as the subject term of some triple.
-  stmt(T2, S,  rdf:type, C1, G).
+  rdf(S, rdf:type, C1, G),
+  Prems = [rdf(C1,rdfs:subClassOf,C2),rdf(S,rdf:type,C1)].
 
 % [rdfs10] Reflexivity of the class hierarchy relation.
-rule(rdfs10, [T1], C, rdfs:subClassOf, C, G):-
-  stmt(T1, C, rdf:type, rdfs:'Class', G).
+rule(rdfs10, [rdf(C,rdf:type,rdfs:'Class')], C, rdfs:subClassOf, C, G):-
+  rdf(C, rdf:type, rdfs:'Class', G).
 
 % [rdfs11] Transitivity of the class hierarchy relation.
-rule(rdfs11, [T1,T2], C1, rdfs:subClassOf, C3, G):-
-  stmt(T1, C1, rdfs:subClassOf, C2, G),
+rule(rdfs11, Prems, C1, rdfs:subClassOf, C3, G):-
+  rdf(C1, rdfs:subClassOf, C2, G),
   \+ rdf_is_literal(C2),
-  stmt(T2, C2, rdfs:subClassOf, C3, G).
+  rdf(C2, rdfs:subClassOf, C3, G),
+  Prems = [rdf(C1,rdfs:subClassOf,C2),rdf(C2,rdfs:subClassOf,C3)].
 
 % [rdfs12]
-rule(rdfs12, [T1], S, rdfs:subPropertyOf, rdfs:member, G):-
-  stmt(T1, S, rdf:type, rdfs:'ContainerMembershipProperty', G).
+rule(rdfs12, Prems, S, rdfs:subPropertyOf, rdfs:member, G):-
+  rdf(S, rdf:type, rdfs:'ContainerMembershipProperty', G),
+  Prems = [rdf(S,rdf:type,rdfs:'ContainerMembershipProperty')].
 
 % [rdfs13]
-rule(rdfs13, [T1], S, rdfs:subClassOf, rdfs:'Literal', G):-
-  stmt(T1, S, rdf:type, rdfs:'Datatype', G).
+rule(rdfs13, Prems, S, rdfs:subClassOf, rdfs:'Literal', G):-
+  rdf(S, rdf:type, rdfs:'Datatype', G),
+  Prems = [rdf(S,rdf:type,rdfs:'Datatype')].
 
 
 

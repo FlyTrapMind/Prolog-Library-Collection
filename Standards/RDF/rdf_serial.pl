@@ -223,6 +223,7 @@ rdf_new_graph(Graph, Graph):-
   \+ rdf_graph(Graph), !.
 % An RDF graph with the same name already exists, so the name is altered.
 rdf_new_graph(Graph1, Graph3):-
+  var(Graph3),
   split_atom_exclusive('_', Graph1, Splits),
   reverse(Splits, [LastSplit | RSplits]),
   (
