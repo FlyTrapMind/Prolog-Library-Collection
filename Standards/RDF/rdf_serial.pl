@@ -196,9 +196,8 @@ rdf_load2(File, Options):-
 % The graph is missing, extrapolate it from the file.
 rdf_load2(File, Options):-
   access_file(File, read),
-  % Returns the graph name in case it was a variable.
   \+ (option(graph(Graph), Options), nonvar(Graph)), !,
-  file_name(File, _Directory, Graph1, _Extension),
+  file_name(File, _Dir, Graph1, _Ext),
   % The graph does not already exist.
   rdf_new_graph(Graph1, Graph2),
   merge_options([graph(Graph2)], Options, Options0),
