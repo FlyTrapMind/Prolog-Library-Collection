@@ -64,7 +64,7 @@ xml_stream(File, Tag, Goal, StoreGoal):-
   format(atom(StartTag), '<~w>', [Tag]),
   format(atom(EndTag), '</~w>', [Tag]),
   setup_call_cleanup(
-    open(File, read, Stream, [alias(big_stream)]),
+    open(File, read, Stream, [alias(big_stream),encoding(utf8),type(test)]),
     xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber),
     close(Stream)
   ).
@@ -90,7 +90,7 @@ xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
     ),
     % Turn the situatiun around: from writing to reading.
     setup_call_cleanup(
-      open(File, read, In),
+      open(File, read, In, [encoding(utf8),type(test)]),
       (
         load_structure(
           In,

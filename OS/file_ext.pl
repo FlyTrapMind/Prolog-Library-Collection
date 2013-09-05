@@ -244,13 +244,13 @@ hidden_file_name(FileName, HiddenFileName):-
 merge_into_one_file(FromDir, ToFile):-
   directory_files(FromDir, text, FromFiles),
   setup_call_cleanup(
-    open(ToFile, write, Out),
+    open(ToFile, write, Out, [type(binary)]),
     maplist(merge_into_one_file0(Out), FromFiles),
     close(Out)
   ).
 merge_into_one_file0(Out, FromFile):-
   setup_call_cleanup(
-    open(FromFile, read, In),
+    open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
   ).

@@ -102,7 +102,7 @@ reply_html_file(Style, File):-
 % absolute file name.
 
 file_to_html(File, HTML):-
-  open(File, read, Stream),
+  open(File, read, Stream, [encoding(utf8),type(test)]),
   stream_to_html(Stream, HTML).
 
 http_open_wrapper(URI, Stream, Options):-

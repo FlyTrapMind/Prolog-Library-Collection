@@ -174,16 +174,10 @@ oaei_alignment_set(G, Set1, Pairs1, Set3, Pairs3):-
   !,
 
   % The added resource must not already appear in the alignment set.
-  (
-    % Maybe some alignments contain double occurrences of the same pair.
-    % The alignment set stays the same in that case.
-    member(Y, Set1)
-  ->
-    Set2 = Set1
-  ;
-    ord_add_element(Set1, Y, Set2)
-  ),
-
+  % Maybe some alignments contain double occurrences of the same pair.
+  % The alignment set stays the same in that case.
+  ord_add_element(Set1, Y, Set2),
+  
   % Recurse.
   oaei_alignment_set(G, Set2, Pairs2, Set3, Pairs3).
 oaei_alignment_set(_G, Set, Pairs, Set, Pairs).

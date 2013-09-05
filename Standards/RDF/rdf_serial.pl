@@ -137,7 +137,7 @@ rdf_guess_data_format(Stream, xml):-
 rdf_guess_data_format(File, xml):-
   exists_file(File), !,
   setup_call_cleanup(
-    open(File, read, Stream),
+    open(File, read, Stream, [encoding(utf8),type(test)]),
     xml_doctype(Stream, _),
     close(Stream)
   ), !.

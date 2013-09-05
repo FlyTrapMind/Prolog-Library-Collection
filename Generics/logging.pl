@@ -148,7 +148,12 @@ create_log_file(Situation, AbsoluteFile, Stream):-
   date_directories(Dir, LogDir),
   current_time(FileName),
   create_file(LogDir, FileName, log, AbsoluteFile),
-  open(AbsoluteFile, write, Stream, [close_on_abort(true), type(text)]).
+  open(
+    AbsoluteFile,
+    write,
+    Stream,
+    [close_on_abort(true),encoding(utf8),type(test)]
+  ).
 
 current_situation(Situation):-
   situation(Situation), !.
@@ -183,7 +188,7 @@ send_current_log_file:-
   print_message(warning, no_current_log_file).
 send_current_log_file:-
   current_log_file(File),
-  open(File, read, Stream, []),
+  open(File, read, Stream, [encoding(utf8),type(test)]),
   read_stream_to_codes(Stream, Codes),
   file_base_name(File, Base),
   format(atom(URL), 'http://www.wouterbeek.com/post.php?filename=~w', [Base]),

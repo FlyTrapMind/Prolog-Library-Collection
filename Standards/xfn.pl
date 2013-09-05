@@ -27,7 +27,7 @@ export_contacts:-
     File,
     write,
     _Stream,
-    [alias(xfn), close_on_abort(true), type(text)]
+    [alias(xfn),close_on_abort(true),encoding(utf8),type(test)]
   ),
 
   format(xfn, 'digraph circuit {\n', []),
@@ -98,7 +98,7 @@ find_relationship(_L, nil).
 
 parse_html(File, DOM):-
   setup_call_cleanup(
-    open(File, read, Stream, [type(text)]),
+    open(File, read, Stream, [encoding(utf8),type(test)]),
     (
       dtd(html, DTD),
       load_structure(

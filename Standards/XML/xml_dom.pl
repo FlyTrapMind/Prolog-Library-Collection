@@ -86,7 +86,7 @@ dom_to_xml(DTD_Name, DOM, XML):-
   % Firefox.
   dom_to_xml_file(DTD_Name, DOM, Out, [header(false)]),
   setup_call_cleanup(
-    open(TemporaryFile, read, In, [type(text)]),
+    open(TemporaryFile, read, In, [encoding(utf8),type(text)]),
     stream_to_atom(In, XML),
     (
       close(In),
@@ -134,7 +134,7 @@ dom_to_xml_file(DTD_Name, DOM, Out, Options1):-
   close(Out),
   free_dtd(DTD).
 dom_to_xml_file(DTD_Name, DOM, File, Options):-
-  open(File, write, Out, []),
+  open(File, write, Out, [encoding(utf8),type(test)]),
   dom_to_xml_file(DTD_Name, DOM, Out, Options).
 
 %! dtd_file(+Name:atom, -File:atom) is det.
@@ -160,7 +160,7 @@ dtd_file(Name, File):-
 
 file_to_xml(File, XML):-
   setup_call_cleanup(
-    open(File, read, Stream),
+    open(File, read, Stream, [encoding(utf8),type(test)]),
     stream_to_xml(Stream, XML),
     close(Stream)
   ).

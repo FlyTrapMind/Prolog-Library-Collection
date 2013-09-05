@@ -100,7 +100,7 @@ touch_unix(File):-
 %! touch_windows(+File:atom) is det.
 % @see http://stackoverflow.com/questions/51435/windows-version-of-the-unix-touch-command
 touch_windows(File):-
-  open(File, write, Stream),
+  open(File, write, Stream, [type(binary)]),
   close(Stream).
   %%%%% I have never seen process_create/3 work on Windows.
   %%%%format(atom(Command), 'type nul >>~w & copy ~w +,,', [File, File]),
