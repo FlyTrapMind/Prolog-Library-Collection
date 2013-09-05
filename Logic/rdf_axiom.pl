@@ -1,9 +1,6 @@
 :- module(
   rdf_axiom,
   [
-    bnode_literal_map/3, % ?Graph:atom
-                         % ?BNode:bnode
-                         % ?Literal:compound
     explain_web/4, % +Subject:or([bnode,iri])
                    % +Predicate:iri
                    % +Object:or([bnode,iri,literal])
@@ -27,12 +24,15 @@ explain(schema:'Person',rdfs:subClassOf,schema:'Person')
 @author Wouter Beek
 @see Hayes2004, Hitzler2008
 @tbd Add the check for well-typed XML literals to rule `rdf2`.
+@tbd Store the blank node-to-literal assignment in a format
+     that allows faster retrieval, e.g. two ordered sets.
 @version 2013/05, 2013/08-2013/09
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
+:- use_module(library(assoc)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_meta_auto_expand)).
@@ -49,7 +49,7 @@ explain(schema:'Person',rdfs:subClassOf,schema:'Person')
 
 :- rdf_meta_expand(rdf_axiom:explain_web(e,e,e,i)).
 
-:- dynamic(bnode_literal_map_/3).
+:- discontiguous(explanation/2).
 
 %! axiom(
 %!   ?Language:oneof([rdf,rdfs]),
@@ -75,26 +75,52 @@ explain(schema:'Person',rdfs:subClassOf,schema:'Person')
 
 :- rdf_meta(stmt(-,r,r,r,?)).
 
+% The mapping between blank nodes and literals, which is used
+% to assert predications of literals, even though literals cannot
+% be subject terms according to RDF 1.0 syntax.
+:- dynamic(b2l/2).
+:- dynamic(l2b/2).
+
 :- debug(rdf_axiom).
 
 
 
-%! bnode_literal_map(?Graph:atom, ?BNode:bnode, ?Literal:literal) is nondet.
-% The mapping between blank nodes and literals, which is used
-% to assert predications of literals, even though literals cannot
-% be subject terms according to RDF 1.0 syntax.
-%
-% @param Graph If no graph is given, then `user` is used instead.
-% @param BNode
-% @param Literal
+% BLANK NODE-TO-LITERAL MAPPING %
 
-bnode_literal_map(G1, BNode, Lit):-
-  default(G1, user, G2),
-  (
-    bnode_literal_map_(G1,BNode,Lit)
-  ;
-    db_add_novel(bnode_literal_map_(G2,BNode,Lit))
-  ), !.
+%! add_bnode_literal_map(
+%!   +Graph:atom,
+%!   +BlankNode:bnode,
+%!   +Literal:compound
+%! ) is det.
+% Adds the mapping between a single blank node and a single literal
+% to the association lists that are used for storage.
+
+add_bnode_literal_map(G, BNode, Lit):-
+  % Add a mapping from blank node to literal.
+  retractall(b2l(G, OldB2L)),
+  put_assoc(BNode, OldB2L, Lit, NewB2L),
+  assert(b2l(G, NewB2L)),
+
+  % Add a mapping from literal to blank node.
+  retractall(l2b(G, OldL2B)),
+  put_assoc(Lit, OldL2B, BNode, NewL2B),
+  assert(l2b(G, NewL2B)).
+
+%! bnode_to_literal(+Graph:atom, +BNode:bnode, -Literal:compound) is semidet.
+
+bnode_to_literal(G, BNode, Lit):-
+  b2l(G, A),
+  get_assoc(BNode, A, Lit).
+
+%! literal_to_bnode(+Graph:atom, +Literal:compound, -BlankNode:bnode) is det.
+
+literal_to_bnode(G, Lit, BNode):-
+  l2b(G, A),
+  get_assoc(Lit, A, BNode).
+
+
+
+% EXPLANATION %
 
 %! explain_web(
 %!   +Subject:or([bnode,iri]),
@@ -107,15 +133,9 @@ explain_web(S, P, O, SVG):-
   rdf_triple_name(S, P, O, TripleName),
   tms_export_argument_web(TripleName, SVG).
 
-init_materialization(G, TMS):-
-  atom_concat(tms_, G, TMS),
-  (
-    is_registered_tms(TMS)
-  ;
-    register_tms(doyle, TMS),
-    doyle_reset(TMS),
-    doyle_init(TMS)
-  ), !.
+
+
+% MATERIALIZATION %
 
 %! materialize(?Graph:atom) is det.
 % Performs all depth-one deductions for either the given graph or no graph.
@@ -128,30 +148,71 @@ init_materialization(G, TMS):-
 %        or uninstantiated (not restricted to a particular graph).
 
 materialize(G):-
+  % The default graph is called `user`.
   (nonvar(G) ; G = user),
 
+  % Make sure there is a registered TMS that can be used.
+  atom_concat(tms_, G, TMS),
+  (
+    is_registered_tms(TMS)
+  ;
+    register_tms(doyle, TMS),
+    doyle_reset(TMS),
+    doyle_init(TMS)
+  ), !,
+
+  % Create the blank node-to-literal store if it does not already exist.
+  once((
+    b2l(G, _)
+  ;
+    retractall(b2l/2),
+    empty_assoc(A1),
+    assert(b2l(G, A1))
+  )),
+
+  % Create the literal-to-blank node store if it does not already exist.
+  once((
+    l2b(G, _)
+  ;
+    retractall(l2b/2),
+    empty_assoc(A2),
+    assert(l2b(G, A2))
+  )),
+
+  % Let's go!
+  materialize_(G, TMS).
+
+materialize_(G, TMS):-
   % A deduction of depth one.
   rule(R, Premises, S, P, O, G),
   % Only collect new triples, abstracting away from the blank nodes.
   \+ rdf_find(S, P, O, G),
 
   % Add to TMS.
-  init_materialization(G, TMS),
   rdf_triple_name(S, P, O, Conclusion),
   doyle_add_argument(TMS, Premises, R, Conclusion, J),
 
   % DEB
   flag(deductions, Id, Id + 1),
   format(user_output, '~w: ', [Id]),
-  tms_print_justification([indent(0),lang(en)], TMS, J),
+
+  with_output_to(
+    user_output,
+    tms_print_justification([indent(0),lang(en)], TMS, J)
+  ),
 
   % Store the result.
   rdf_assert(S, P, O, G), !,
+
   % Look for more results.
-  materialize(G).
-materialize(_G):-
+  materialize_(G, TMS).
+materialize_(_G, _TMS):-
   flag(deductions, N, 0),
   debug(rdf_axiom, 'Added ~w deductions.', [N]).
+
+
+
+% RULES & AXIOMS %
 
 % All axioms can be deduced as if they are the outcome of a rule.
 rule(axiom, [], S, P, O, _G):-
@@ -188,36 +249,51 @@ start_materializer(G, I1):-
 %       Literal generalization is used whenever something has to be
 %       predicated of a literal (since literals cannot occur
 %       as subject terms).
-rule(lg, [T1], S, P, B, G):-
-  stmt(T1, S, P, O, G),
-  rdf_is_literal(O),
-  bnode_literal_map(G, B, O).
+rule(lg, [T1], S, P, BNode, G):-
+  stmt(T1, S, P, Lit, G),
+  rdf_is_literal(Lit),
+  % If no mapping exists, one is created.
+  % Notice that this is the only rule that can add to the
+  % blank node-to-literal mapping.
+  once((
+    literal_to_bnode(G, Lit, BNode)
+  ;
+    rdf_bnode(BNode),
+    add_bnode_literal_map(G, BNode, Lit)
+  )).
 
-/*% [se1] Simple entailment w.r.t. the object term.
+/*
+% [se1] Simple entailment w.r.t. the object term.
 rule(se1, [T1], S, P, B, G):-
   stmt(T1, S, P, O, G),
   % Constraining the standard.
   rdf_is_iri(O),
-  rdf_bnode(B).*/
+  rdf_bnode(B).
 
-/*% [se2] Simple entailment w.r.t. the subject term.
+% [se2] Simple entailment w.r.t. the subject term.
 rule(se2, [T1], B, P, O, G):-
   stmt(T1, S, P, O, G),
   % Constraining the standard.
   \+ rdf_is_bnode(S),
   T1 =.. [LastRule|_], LastRule \== se2,
-  rdf_bnode(B).*/
+  rdf_bnode(B).
+*/
 
 % [rdf1] Predicate terms are instances of =|rdf:'Property'|=.
+explanation(
+  rdf1,
+  'Terms that occur in the predicate position are instances of rdf:Property.'
+).
 rule(rdf1, [T1], P, rdf:type, rdf:'Property', G):-
   stmt(T1, _, P, _, G).
 
 % [rdf2] XML literals are instances of =|rdf:'XMLLiteral'|=.
+explanation(rdf2, 'All XML literals are instances of rdf:XMLLiteral.').
 rule(rdf2, [T1], BNode, rdf:type, rdf:'XMLLiteral', G):-
   stmt(T1, _, _, TypedLiteral, G),
-  % This should be a well-typed XML literal...
+  % @tbd This should be a well-typed XML literal...
   rdf_is_literal(TypedLiteral),
-  bnode_literal_map(G, BNode, TypedLiteral).
+  literal_to_bnode(G, TypedLiteral, BNode).
 
 % RDF axiomatic triples.
 axiom(rdf, rdf:type,      rdf:type, rdf:'Property').
@@ -248,21 +324,25 @@ axiom(IRI, rdf:type, rdf:'Property'):-
 %      its similar triple that contains the allocated blank node
 %      (according to the literal generation rule [lg])
 %      are derivable from each other.
-rule(gl, [T1], S, P, Literal, G):-
-  stmt(T1, S, P, O, G),
+rule(gl, [T1], S, P, Lit, G):-
+  stmt(T1, S, P, BNode, G),
   % If the object term is not a blank node,
   % then we do not have to search the blank node-literal mapping.
-  rdf_is_bnode(O),
+  rdf_is_bnode(BNode),
   % Not every blank node that is an object term in some triple
   % is a generalization for a literal.
   % Therefore, it has to occur in the mapping established by rule [lg].
-  bnode_literal_map(G, O, Literal).
+  bnode_to_literal(G, BNode, Lit).
 
 % [rdfs1] Literals are instances of =|rdfs:'Literal'|=.
+explanation(
+  rdfs1,
+  'Literal terms belong to the extension of the RDFS literal class.'
+).
 rule(rdfs1, [T1], BNode, rdf:type, rdfs:'Literal', G):-
-  stmt(T1, _, _, O, G),
-  rdf_is_literal(O),
-  bnode_literal_map(G, BNode, O).
+  stmt(T1, _, _, Lit, G),
+  rdf_is_literal(Lit),
+  literal_to_bnode(G, Lit, BNode).
 
 % [rdfs2] Class membership through domain restriction.
 rule(rdfs2, [T1,T2], S, rdf:type, C, G):-
@@ -278,9 +358,17 @@ rule(rdfs3, [T1,T2], O, rdf:type, C, G):-
   \+ rdf_is_literal(O).
 
 % [rdfs4a] Subject terms are resources.
+explanation(
+  rdfs4a,
+  'Terms that occur in the subject position are RDFS resources.'
+).
 rule(rdfs4a, [T1], S, rdf:type, rdfs:'Resource', G):-
   stmt(T1, S, _, _, G).
 % [rdfs4b] Object terms are resources.
+explanation(
+  rdfs4b,
+  'Terms that occur in the object position are RDFS resources.'
+).
 rule(rdfs4b, [T1], O, rdf:type, rdfs:'Resource', G):-
   stmt(T1, _, _, O, G),
   \+ rdf_is_literal(O).

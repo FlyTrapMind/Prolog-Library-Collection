@@ -83,7 +83,7 @@ The supported datatypes:
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_typecheck)).
+:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
