@@ -285,7 +285,7 @@ test(rdf_graph_instance, []):-
     Map,
     (
       rdf_graph_instance(test_graph_instance, test_graph, Map),
-      print_list(user_output, Map),
+      print_list([], Map),
       nl(user_output)
     ),
     _Maps

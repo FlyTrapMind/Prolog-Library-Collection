@@ -18,8 +18,7 @@
                       % ?Assoc:assoc
 % DEBUG
     write_assoc/1, % +Assoc:assoc
-    write_assoc/4 % +Out
-                  % +Indent:integer
+    write_assoc/3 % +Indent:nonneg
                   % :KeyTransform
                   % +Assoc:or(assoc,atom)
   ]
@@ -49,7 +48,7 @@ and by adding ord_member/2.
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 
-:- meta_predicate(write_assoc(+,+,2,+)).
+:- meta_predicate(write_assoc(+,2,+)).
 
 :- dynamic(assoc_by_name/2).
 
@@ -102,30 +101,30 @@ register_assoc(Name, Assoc):-
   db_add_novel(assoc_by_name(Name, Assoc)).
 
 write_assoc(Assoc):-
-  write_assoc(user_output, 0, term_to_atom, Assoc).
+  write_assoc(0, term_to_atom, Assoc).
 
-write_assoc(Out, KeyIndent, KeyTransform, Assoc):-
+write_assoc(KeyIndent, KeyTransform, Assoc):-
   is_assoc(Assoc), !,
   assoc_to_keys(Assoc, Keys),
   ValueIndent is KeyIndent + 1,
   forall(
     member(Key, Keys),
     (
-      indent(Out, KeyIndent),
+      indent(KeyIndent),
       call(KeyTransform, Key, KeyName),
-      format(Out, '~w:\n', [KeyName]),
+      format('~w:\n', [KeyName]),
       forall(
         get_assoc(Key, Assoc, Value),
         (
-          indent(Out, ValueIndent),
+          indent(ValueIndent),
           call(KeyTransform, Value, ValueName),
-          format(Out, '~w\n', [ValueName])
+          format('~w\n', [ValueName])
         )
       )
     )
   ).
-write_assoc(Out, KeyIndent, KeyTransform, AssocName):-
+write_assoc(KeyIndent, KeyTransform, AssocName):-
   atom(AssocName), !,
   assoc_by_name(AssocName, Assoc),
-  write_assoc(Out, KeyIndent, KeyTransform, Assoc).
+  write_assoc(KeyIndent, KeyTransform, Assoc).
 
