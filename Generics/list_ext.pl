@@ -517,8 +517,7 @@ icompare(InvertedOrder, Term1, Term2):-
 % results.
 sort(Options, List, Sorted):-
   option(inverted(true), Options, false),
-  option(duplicates(false), Options, false),
-  !,
+  option(duplicates(false), Options, false), !,
   predsort(icompare, List, Sorted).
 sort(Options, List, Sorted):-
   (

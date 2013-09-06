@@ -71,6 +71,10 @@ gv_attribute_list(G_Attrs, Attrs1) -->
   dcg_multi(gv_attribute, _, Attrs2, [separator(comma)]),
   closing_square_bracket.
 
+gv_category(edge) --> e,d,g,e.
+gv_category(graph) --> g,r,a,p,h.
+gv_category(node) --> n,o,d,e.
+
 gv_compass_pt --> "_".
 gv_compass_pt --> "c".
 gv_compass_pt --> "e".
@@ -147,10 +151,6 @@ gv_generic_attributes_statement(_Cat, _I, _G_Attrs, []) --> [], !.
 gv_generic_attributes_statement(Cat, I, G_Attrs, CatAttrs) -->
   indent(I), gv_category(Cat), space,
   gv_attribute_list(G_Attrs, CatAttrs), newline.
-
-gv_category(edge) --> e,d,g,e.
-gv_category(graph) --> g,r,a,p,h.
-gv_category(node) --> n,o,d,e.
 
 %! gv_graph(+GraphTerm:compound)//
 % The follow graph attributes are supported:
