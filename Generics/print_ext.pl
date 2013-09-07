@@ -169,7 +169,7 @@ print_pair(O1, Pair):-
   meta_options(is_meta, O1, O2),
   % Support both notational forms for name-value pairs.
   (Pair = N-V, ! ;  Pair =.. [N,V]),
-  merge_options(O2, [begin('<'),end('>'),separator(',')], O3),
+  merge_options(O2, [begin('&lang;'),end('&rang;'),separator(',')], O3),
   print_collection(O3, [N,V]).
 
 print_proof(O1, Proof):-
