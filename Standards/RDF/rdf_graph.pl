@@ -143,8 +143,7 @@ rdf_graph_merge(FilesOrGraphs, MergedG):-
 
   % Type checking.
   maplist(rdf_graph, Gs),
-  atom(MergedG),
-  !,
+  atom(MergedG), !,
 
   % Collect the shared blank nodes.
   findall(

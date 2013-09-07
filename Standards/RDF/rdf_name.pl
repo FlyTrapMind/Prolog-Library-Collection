@@ -196,6 +196,6 @@ rdf_triple_name(rdf(S1,P1,O1), T_Name):- !,
 rdf_triple_name(T_Name, T_Name).
 
 rdf_triple_name(S, P, O, T_Name):-
-  maplist(rdf_term_name, [S,P,O], [S_Name,P_Name,O_Name]),
+  maplist(rdf_term_name([]), [S,P,O], [S_Name,P_Name,O_Name]),
   with_output_to(atom(T_Name), print_tuple([], [S_Name,P_Name,O_Name])).
 
