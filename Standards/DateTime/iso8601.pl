@@ -592,7 +592,7 @@ iso8601_month_in_year(M):-
 %! ) is det.
 
 number_of_days_in_year(Y, NumberOfDaysInYear):-
-  aggregate(
+  aggregate_all(
     sum(N),
     number_of_days_in_month_(Y, N),
     NumberOfDaysInYear

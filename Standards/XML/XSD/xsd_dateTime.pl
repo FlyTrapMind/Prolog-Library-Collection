@@ -916,7 +916,7 @@ timeOnTimeline(dt(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
   (var(UTC) -> MM3 = MM2 ; MM3 is MM2 - UTC),
 
   % Add 86400 × Summ < mo ·daysInMonth·(yr + 1, m) to ToTl.
-  aggregate(
+  aggregate_all(
     sum(D3_),
     (
       between(1,M2,M3),

@@ -65,7 +65,7 @@ digits_to_decimal(DecimalDigits, DecimalNumber):-
 %      under the given radix.
 
 digits_to_decimal(Ds, Radix, D):-
-  aggregate(
+  aggregate_all(
     sum(ToDPart),
     (
       nth0(Position, Ds, FromD),

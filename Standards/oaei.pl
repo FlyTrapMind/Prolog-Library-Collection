@@ -241,9 +241,9 @@ oaei_file_to_alignments_(G, A_Pairs, A_Sets):-
 
   % DEB: Number of alignment sets.
   length(A_Sets, L3),
-  aggregate(
+  aggregate_all(
     sum(L0),
-    A_Set^(
+    (
       member(A_Set, A_Sets),
       length(A_Set, L0)
     ),
