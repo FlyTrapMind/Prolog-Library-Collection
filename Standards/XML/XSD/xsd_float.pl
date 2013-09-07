@@ -157,7 +157,7 @@ between =−1074= and =971=, inclusive.
 % @param LEX A literal matching floatRep//.
 
 doubleCanonicalMap(Float, LEX):-
-  phrase(floatCanonicalMap(double, Float), LEX).
+  once(phrase(floatCanonicalMap(double, Float), LEX)).
 
 %! floatApprox(+C:nonneg, +E:integer, +J:nonneg, -D:decimal) is nondet.
 % Maps a decimal number =|C * 10 ** E|= to successive approximations.
@@ -178,7 +178,7 @@ floatApprox(C, E, J, D):-
 % @param LEX A literal matching floatRep//.
 
 floatCanonicalMap(Float, LEX):-
-  phrase(floatCanonicalMap(single, Float), LEX).
+  once(phrase(floatCanonicalMap(single, Float), LEX)).
 
 %! floatCanonicalMap(
 %!   +Precision:oneof([double,single]),
@@ -298,8 +298,10 @@ unsignedScientificCanonicalMap(N) -->
 
 % LEXICAL MAPPING %
 
+%! doubleLexicalMap(+LEX:list(code), -Double:float) is det.
+
 doubleLexicalMap(LEX, Double):-
-  phrase(doubleRep(Double), LEX).
+  once(phrase(doubleRep(Double), LEX)).
 
 %! doubleRep(-Double:or([atom,double]))//
 % ~~~{.ebnf}
@@ -321,7 +323,7 @@ doubleRep(N) -->
   floatRep(N).
 
 floatLexicalMap(LEX, Float):-
-  phrase(floatRep(Float), LEX).
+  once(phrase(floatRep(Float), LEX)).
 
 %! floatRep(-Float:or([float,atom]))//
 % ~~~{.ebnf}

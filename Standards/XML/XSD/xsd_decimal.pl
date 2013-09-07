@@ -211,7 +211,7 @@ unsignedNoDecimalPtCanonicalMap_(F) -->
 %      implementations.
 
 decimalLexicalMap(LEX, N):-
-  phrase(decimalLexicalRep(N), LEX).
+  once(phrase(decimalLexicalRep(N), LEX)).
 
 %! decimalLexicalRep(-Decimal:float)//
 % ~~~{.ebnf}

@@ -4,6 +4,7 @@
     xsd_canonicalMap/3, % +Datatype:uri
                         % +Value
                         % -CanonicalLiteral:atom
+    xsd_canonize_graph/1, % +Graph:atom
     xsd_convert_datatype/4, % +FromDatatype:uri
                             % +FromValue
                             % +ToDatatype:uri
@@ -665,6 +666,7 @@ the constraints imposed can sometimes result in a value space for which the orde
 
 @author Wouter Beek
 @compat XML Schema 2: Datatypes (Second Edition)
+@see Canonical map for double does not work (loops on log value =:= 0.
 @see http://www.w3.org/TR/2004/REC-xmlschema-2-20041028/
 @see Turn the infinite datatype requirements into a unit test.
 @tbd Implement =base64Binary=.
@@ -677,9 +679,10 @@ the constraints imposed can sometimes result in a value space for which the orde
 @tbd Read section E.3.3 on adding durations to dateTime.
 @tbd Read section G on REs.
 @tbd Read section H on implementation-defined datatypes.
-@version 2013/08
+@version 2013/08-2013/09
 */
 
+:- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % RDF-meta assertions.
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd_boolean)).
@@ -708,10 +711,15 @@ the constraints imposed can sometimes result in a value space for which the orde
 :- rdf_meta(xsd_lexicalMap(r,+,-)).
 :- rdf_meta(xsd_lexicalMap_(r,+,-)).
 
+:- debug(xsd).
+
 
 
 %! xsd_canonicalMap(+Datatype:uri, +Value, -Literal:atom) is det.
 
+xsd_canonicalMap(Datatype, Double, LEX):-
+  rdf_global_id(xsd:double, Datatype), !,
+  atom_number(LEX, Double).
 xsd_canonicalMap(Datatype, Value, LEX2):-
   once(xsd_canonicalMap_(Datatype, Value, LEX1)),
   atom_codes(LEX2, LEX1).
@@ -748,6 +756,24 @@ xsd_canonicalMap_(xsd:string, String, LEX):-
   stringCanonicalMap(String, LEX).
 xsd_canonicalMap_(xsd:time, Time, LEX):-
   timeCanonicalMap(Time, LEX).
+
+xsd_canonize_graph(G):-
+  forall(
+    (
+      rdf(S, P, literal(type(Datatype,Lexical)), G),
+      xsd_lexicalCanonicalMap(Datatype, Lexical, CanonicalLexical),
+      Lexical \== CanonicalLexical
+    ),
+    (
+      rdf_retractall(S, P, literal(type(Datatype,Lexical))),
+      rdf_assert(S, P, literal(type(Datatype,CanonicalLexical))),
+      debug(
+        xsd,
+        'Canonized ~w literal ~w -> ~w',
+        [Datatype,Lexical,CanonicalLexical]
+      )
+    )
+  ).
 
 %! xsd_convert_datatype(
 %!   +FromDatatype:uri,
