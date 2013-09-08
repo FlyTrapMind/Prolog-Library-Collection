@@ -34,6 +34,7 @@ VoID is a W3C Interest Group Note as of 2011/03/03.
 @version 2013/03-2013/05, 2013/09
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
@@ -208,6 +209,14 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
   % We assume that the datasets that are mentioned in the VoID file
   % are reachable from that VoID file's directory.
   file_directory_name(VoID_File, VoID_Dir),
+  forall(
+    (
+      rdfs_individual_of(Dataset, void:'Dataset'),
+      rdf(Dataset, void:dataDump, DatasetRelFile, VoID_G2)
+    ),
+    format(user_output, '~w\t:\t~w\n', [Dataset,DatasetRelFile])
+  ),
+  flush_output(user_output),
   findall(
     ThreadId,
     (
@@ -216,26 +225,29 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
       rdf(Dataset, void:dataDump, DatasetRelFile, VoID_G2),
       % Possibly relative file paths are made absolute.
       directory_file_path(VoID_Dir, DatasetRelFile, DatasetAbsFile),
+      % The graph name is derived from the file name.
+      file_to_graph_name(DatasetAbsFile, DatasetG),
       % Each dataset is loaded in a separate thread.
       thread_create(
         (
-          file_to_graph_name(DatasetAbsFile, DatasetG),
           rdf_load2(DatasetAbsFile, [graph(DatasetG)]),
           assert(dataset(VoID_G2, Dataset, DatasetAbsFile, DatasetG))
         ),
         ThreadId,
-        [detached(false)]
+        [alias(DatasetG),at_exit(thread_end(DatasetG)),detached(false)]
       ),
       debug(void, 'Added thread for loading dataset ~w.', [DatasetAbsFile])
     ),
     ThreadIds
   ),
+gtrace,
   forall(
     member(ThreadId, ThreadIds),
     thread_join(ThreadId, true)
   ),
   void_update_library(VoID_G2),
   rdf_save2(VoID_G2, VoID_File).
+
 /*
 void_load_library(Stream, LocalName):-
   rdf_guess_data_format(Stream, Format),
@@ -249,6 +261,11 @@ void_load_library(Stream, LocalName):-
     load_dataset(Dataset)
   ).
 */
+
+thread_end(Alias):-
+  thread_property(Id, alias(Alias)),
+  thread_property(Id, status(Status)),
+  format(user_output, 'Thread ~w ended with status ~w.\n', [Alias,Status]).
 
 void_save_library(VoID_Graph):-
   findall(

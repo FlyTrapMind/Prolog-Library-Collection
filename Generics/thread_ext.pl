@@ -5,6 +5,8 @@
                            % +Interval:positive_integer
                            % -Id
                            % +Options
+    print_thread/1, % +Alias:atom
+    print_threads/0,
     run_on_sublists/2, % +List:list
                        % :Goal
     thread_alias/1, % ?ThreadAlias:atom
@@ -28,7 +30,7 @@
 Allows one to monitor running threads that register.
 
 @author Wouter Beek
-@version 2013/03
+@version 2013/03, 2013/09
 */
 
 :- use_module(generics(atom_ext)).
@@ -55,6 +57,24 @@ intermittent_goal(G, I):-
 intermittent_thread(G, I, Id, O):-
   thread_create(intermittent_goal(G, I), Id, O).
 
+print_thread(Alias):-
+  thread_property(Id, alias(Alias)),
+  thread_property(Id, status(Status)),
+  write(Alias),tab(1),
+  write(Status),nl.
+
+print_threads:-
+  % Print the threads in the alphabetical order of their alias.
+  setoff(
+    Alias,
+    thread_property(_, alias(Alias)),
+    Aliases
+  ),
+  write('Alias'),tab(1),
+  write('Status'),nl,
+  maplist(print_thread, Aliases),
+  !.
+
 run_on_sublists(List, Module:Goal):-
   split_list_by_number_of_sublists(List, 10, Sublists),
   findall(
@@ -74,8 +94,7 @@ run_on_sublists(List, Module:Goal):-
   ).
 
 thread_alias(ThreadAlias):-
-  nonvar(ThreadAlias),
-  !,
+  nonvar(ThreadAlias), !,
   atom_concat('t', _, ThreadAlias).
 thread_alias(ThreadAlias):-
   flag(thread_alias, ID, ID + 1),
@@ -118,10 +137,16 @@ thread_overview(Atoms):-
 
 thread_overview_web(Markup):-
   thread_overview(Atoms),
-  findall(
-    element(pre, [], [Atom]),
-    member(Atom, Atoms),
-    Markup
+  (
+    Atoms == []
+  ->
+    Markup = [element(p,[],['No threads.'])]
+  ;
+    findall(
+      element(pre, [], [Atom]),
+      member(Atom, Atoms),
+      Markup
+    )
   ).
 
 thread_recover:-
