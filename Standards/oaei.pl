@@ -3,9 +3,8 @@
   [
     oaei_check_alignment/2, % +ReferenceAlignments:list(pair(iri))
                             % +RawAlignments:list(pair(iri))
-    oaei_file_to_alignments/3 % +File:atom
+    oaei_file_to_alignments/2 % +File:atom
                               % -AlignmentPairs:list(pair(iri))
-                              % -AlignmentSets:list(ordset(iri))
   ]
 ).
 
@@ -142,54 +141,6 @@ oaei_alignment_pair(G, From, To):-
     debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
   )).
 
-%! oaei_alignment_set(
-%!   +Graph:atom,
-%!   -AlignmentSet:ordset(iri),
-%!   -AlignmentPairs:ordset(iri)
-%! ) is nondet.
-
-oaei_alignment_set(G, Pairs1, Set2, Pairs3):-
-  % Take the first alignment pair.
-  selectchk(X-Y, Pairs1, Pairs2),
-  % Turn the pair into a sorted list.
-  list_to_ord_set([X,Y], Set1),
-  % Add the members from all the other alignment pairs
-  % that reach into this alignment set.
-  oaei_alignment_set(G, Set1, Pairs2, Set2, Pairs3).
-
-oaei_alignment_set(G, Set1, Pairs1, Set3, Pairs3):-
-  % The next alignments we add must relate to a resource
-  % that is already in the alignment set.
-  member(X, Set1),
-
-  % Look up a related resource in the alginment pairs.
-  % The pair can be found in either direction.
-  (
-    selectchk(X-Y, Pairs1, Pairs2)
-  ;
-    selectchk(Y-X, Pairs1, Pairs2)
-  ),
-  % We can safely add a cut here, since we will come back for any
-  % `Y-X` option that appears after a `X-Y` option.
-  !,
-
-  % The added resource must not already appear in the alignment set.
-  % Maybe some alignments contain double occurrences of the same pair.
-  % The alignment set stays the same in that case.
-  ord_add_element(Set1, Y, Set2),
-  
-  % Recurse.
-  oaei_alignment_set(G, Set2, Pairs2, Set3, Pairs3).
-oaei_alignment_set(_G, Set, Pairs, Set, Pairs).
-
-oaei_alignment_sets(G, A_Pairs, A_Sets):-
-  oaei_alignment_sets(G, A_Pairs, [], A_Sets).
-
-oaei_alignment_sets(_G, [], A_Sets, A_Sets):- !.
-oaei_alignment_sets(G, A_Pairs1, T, A_Sets):-
-  oaei_alignment_set(G, A_Pairs1, H, A_Pairs2),
-  oaei_alignment_sets(G, A_Pairs2, [H|T], A_Sets).
-
 %! oaei_check_alignment(
 %!   +ReferenceAlignments:list(pair),
 %!   +RawAlignments:list(pair)
@@ -209,7 +160,7 @@ oaei_check_alignment(ReferenceAlignments, RawAlignments):-
   ),
   flush_output(user_output).
 
-oaei_file_to_alignments(F, A_Pairs, A_Sets):-
+oaei_file_to_alignments(F, A_Pairs):-
   setup_call_cleanup(
     (
       file_name(F, _Dir, G1, _Ext),
@@ -217,10 +168,10 @@ oaei_file_to_alignments(F, A_Pairs, A_Sets):-
       rdf_new_graph(G1, G2),
       rdf_load2(F, [graph(G2)])
     ),
-    oaei_file_to_alignments_(G2, A_Pairs, A_Sets),
+    oaei_file_to_alignments_(G2, A_Pairs),
     rdf_unload_graph(G2)
   ).
-oaei_file_to_alignments_(G, A_Pairs, A_Sets):-
+oaei_file_to_alignments_(G, A_Pairs):-
   % Retrieve all alignment pairs.
   findall(
     X-Y,
@@ -234,34 +185,6 @@ oaei_file_to_alignments_(G, A_Pairs, A_Sets):-
     oaei,
     'Graph ~w contains ~w alignment pairs.',
     [G,L1]
-  ),
-  
-  % Retrieve all alignment sets.
-  oaei_alignment_sets(G, A_Pairs, A_Sets),
-
-  % DEB: Number of alignment sets.
-  length(A_Sets, L3),
-  aggregate_all(
-    sum(L0),
-    (
-      member(A_Set, A_Sets),
-      length(A_Set, L0)
-    ),
-    L4
-  ),
-  debug(
-    oaei,
-    'Graph ~w contains ~w alignment sets with ~w resources.',
-    [G,L3,L4]
-  ),
-
-  % DEB: Non-pair alignment sets.
-  forall(
-    (
-      member(A_Set, A_Sets),
-      \+ length(A_Set, 2)
-    ),
-    debug(oaei, 'Non-pair alignment set: ~w', [A_Set])
   ).
 
 

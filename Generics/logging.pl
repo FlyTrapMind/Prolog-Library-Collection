@@ -39,7 +39,7 @@ logging started.
 
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/07
+@version 2012/05-2012/07, 2013/03-2013/07, 2013/09
 */
 
 :- use_module(generics(db_ext)).
@@ -95,10 +95,9 @@ append_to_log0(Category, Message):-
 append_to_log0(Category, Message):-
   current_log_stream(Stream), !,
   date_time(DateTime),
-  current_situation(Situation),
   csv_write_stream(
     Stream,
-    [row(Situation, DateTime, Category, Message)],
+    [row(DateTime, Category, Message)],
     [file_type(comma_separated_values)]
   ),
   flush_output(Stream).
@@ -114,8 +113,7 @@ prolog:message(cannot_log(Kind, Message)):-
 % Closes the current log stream.
 
 close_log_stream:-
-  \+ current_log_stream(_Stream),
-  !,
+  \+ current_log_stream(_Stream), !,
   print_message(warning, no_current_log_stream).
 close_log_stream:-
   current_log_stream(Stream),
@@ -183,8 +181,7 @@ init:-
 % @tbd Add the PHP script (I seem to have deleted it on the remote :-().
 
 send_current_log_file:-
-  \+ current_log_file(_File),
-  !,
+  \+ current_log_file(_File), !,
   print_message(warning, no_current_log_file).
 send_current_log_file:-
   current_log_file(File),

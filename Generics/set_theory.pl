@@ -80,8 +80,7 @@ cardinality(List, Cardinality):-
 %      in delete_supersets/4.
 
 % The empty set has no supersets that need to be removed.
-delete_sets([], _CompareSets, _Comparator, [], []):-
-  !.
+delete_sets([], _CompareSets, _Comparator, [], []):- !.
 delete_sets(
   [Set | Sets],
   CompareSets,
@@ -92,8 +91,7 @@ delete_sets(
   member(CompareSet, CompareSets),
   % If the comparison succeeds, then =Set= is exclused from the results
   % (and included in the rest).
-  call(Comparator, CompareSet, Set),
-  !,
+  call(Comparator, CompareSet, Set), !,
   delete_sets(Sets, CompareSets, Comparator, ResultSets, RestSets).
 delete_sets(
   [Set | Sets],
@@ -184,8 +182,7 @@ subsets(Set, Subsets):-
 % @param Outputs A list of terms. This is the transitive closure.
 
 transitive_closure(Predicate, Input, Outputs):-
-  \+(is_list(Input)),
-  !,
+  \+(is_list(Input)), !,
   transitive_closure(Predicate, [Input], Outputs).
 transitive_closure(_Predicate, [], []).
 transitive_closure(Predicate, [Input | Inputs], Outputs):-
@@ -194,3 +191,4 @@ transitive_closure(Predicate, [Input | Inputs], Outputs):-
   ord_union(Intermediaries, Inputs, Inputs_),
   transitive_closure(Predicate, Inputs_, Outputs_),
   ord_union(Outputs_, Intermediaries, Outputs).
+

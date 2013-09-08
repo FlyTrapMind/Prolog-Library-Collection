@@ -11,7 +11,7 @@
 Acts on messages printed by print_message/2.
 
 @author Wouter Beek
-@version 2013/02, 2013/04-2013/05
+@version 2013/02, 2013/04-2013/05, 2013/08
 */
 
 :- use_module(html(html)).
@@ -26,18 +26,18 @@ Acts on messages printed by print_message/2.
 
 log_web(Markup):-
   \+ current_log_file(_File), !,
-  Markup = [element(h1, [], ['Logging is currently switched off.'])].
+  Markup = [element(h1,[],['Logging is currently switched off.'])].
 log_web([HTML_Table]):-
   current_log_file(File),
-  csv_read_file(File, Rows, [arity(4), functor(row)]),
+  csv_read_file(File, Rows, [arity(3),functor(row)]),
   findall(
-    [Situation, DateTime, Category, Message],
-    member(row(Situation, DateTime, Category, Message), Rows),
+    [DateTime,Category,Message],
+    member(row(DateTime,Category,Message), Rows),
     TRs
   ),
   list_to_table(
     [header(true)],
-    [['Situation', 'DateTime', 'Category', 'Message'] | TRs],
+    [['DateTime','Category','Message']|TRs],
     HTML_Table
   ).
 
@@ -53,7 +53,7 @@ prolog:debug_print_hook(Type, Format, Arguments):-
     status_pane,
     html,
     dev_server,
-    [element(p, [], ['[', Type, ']', ' ', Message])]
+    [element(p,[],['[',Type,']',' ',Message])]
   ),
   append_to_log(Type, Format, Arguments).
 
