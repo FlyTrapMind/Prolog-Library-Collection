@@ -268,13 +268,25 @@ the original two values are incomparable.
 %! dateTimeCanonicalMap(+DateTime:compound, -LEX:list(code)) is det.
 
 dateTimeCanonicalMap(DateTime, LEX):-
-  phrase(dateTimeCanonicalMap(DateTime), LEX).
+  once(phrase(dateTimeCanonicalMap(DateTime), LEX)).
 
 %! dateTimeCanonicalMap(+DateTime:compound)//
 % Maps a dateTime value to a dateTimeLexicalRep//.
 %
 % @param DateTime A compound term.
 
+% The SWI-Prolog float representation for date-time values.
+dateTimeCanonicalMap(Float) -->
+  {float(Float)}, !,
+  {stamp_date_time(Float, Compound, local)},
+  dateTimeCanonicalMap(Compound).
+% The SWI-Prolog compound term for date-time representations.
+% Notice that the timezone (`TZ`) is an atom (e.g. `CEST`) and `Offset`
+% is an integer representing the offset relative to UTC in seconds.
+% XSD defines the timezone as the offset relative to UTC in minutes.
+dateTimeCanonicalMap(date(Y,M,D,H,MM,S,Offset,_TZ,_DST)) --> !,
+  {TZ is Offset / 60},
+  dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)).
 dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)) -->
   yearCanonicalFragmentMap(Y),
   hyphen,
@@ -355,10 +367,10 @@ secondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsTwoDigitCanonicalFragmentMap(S).
 secondCanonicalFragmentMap(S) -->
-  {N1 is S div 1},
+  {div(S, 1.0, N1)},
   unsTwoDigitCanonicalFragmentMap(N1),
   dot,
-  {N2 is S mod 1},
+  {mod(S, 1.0, N2)},
   fractionDigitsCanonicalFragmentMap(N2).
 
 %! timezoneCanonicalFragmentMap(+Timezone:between(-840,840))//
@@ -411,7 +423,7 @@ yearCanonicalFragmentMap(Y) -->
 %! dateTimeLexicalMap(+LEX:list(code), -DateTime:compound) is det.
 
 dateTimeLexicalMap(LEX, DateTime):-
-  phrase(dateTimeLexicalRep(DateTime), LEX).
+  once(phrase(dateTimeLexicalRep(DateTime), LEX)).
 
 %! dateTimeLexicalRep(-DateTime:compound)//
 % Subsequent =|-|=, =T=, and =|:|=, separate the various numerals.

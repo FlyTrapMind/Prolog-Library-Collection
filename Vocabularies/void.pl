@@ -83,8 +83,8 @@ rdf_link(Subject, Predicate, Object, FromGraph, ToGraph):-
   )),
   FromGraph \== ToGraph.
 
-%! rdf_linkset(+Triples:list(rdf_triple), ?FromGraph:atom, ?ToGraph:atom) is semidet.
-%! rdf_linkset(-Triples:list(rdf_triple), +FromGraph:atom, +ToGraph:atom) is det
+%! rdf_linkset(+Triples:list(compound), ?FromGraph:atom, ?ToGraph:atom) is semidet.
+%! rdf_linkset(-Triples:list(compound), +FromGraph:atom, +ToGraph:atom) is det
 % An RDF linkset is a collection of RDF links between the same two datasets.
 
 rdf_linkset(Triples, FromGraph, ToGraph):-
@@ -99,6 +99,13 @@ rdf_linkset(Triples, FromGraph, ToGraph):-
     rdf_link(Subject, Predicate, Object, FromGraph, ToGraph),
     Triples
   ).
+
+%! void_assert_modified(
+%!   +Dataset:atom,
+%!   +DatasetPath:atom,
+%!   +VoID_Graph:atom
+%! ) is det.
+% Asserts a new modification date.
 
 void_assert_modified(Dataset, DatasetPath, VoID_Graph):-
   time_file(DatasetPath, LastModified),
@@ -209,14 +216,24 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
   % We assume that the datasets that are mentioned in the VoID file
   % are reachable from that VoID file's directory.
   file_directory_name(VoID_File, VoID_Dir),
-  forall(
-    (
-      rdfs_individual_of(Dataset, void:'Dataset'),
-      rdf(Dataset, void:dataDump, DatasetRelFile, VoID_G2)
+  
+  % DEB: Show a list of the datasets that are about to be loaded.
+  (
+    debugging(void)
+  ->
+    forall(
+      (
+        rdfs_individual_of(Dataset, void:'Dataset'),
+        rdf(Dataset, void:dataDump, DatasetRelFile, VoID_G2)
+      ),
+      format(user_output, '~w\t:\t~w\n', [Dataset,DatasetRelFile])
     ),
-    format(user_output, '~w\t:\t~w\n', [Dataset,DatasetRelFile])
+    flush_output(user_output)
+  ;
+    true
   ),
-  flush_output(user_output),
+  
+  % All datasets are loaded in multiple threads.
   findall(
     ThreadId,
     (
@@ -240,12 +257,18 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
     ),
     ThreadIds
   ),
-gtrace,
+  
+  % All threads are subsequently joined.
   forall(
     member(ThreadId, ThreadIds),
     thread_join(ThreadId, true)
   ),
+  
+  % The VoID graph itself is updated.
   void_update_library(VoID_G2),
+  
+  % The updated VoID graph is stored to the same file
+  % that it was loaded from.
   rdf_save2(VoID_G2, VoID_File).
 
 /*
@@ -262,6 +285,8 @@ void_load_library(Stream, LocalName):-
   ).
 */
 
+thread_end(_Alias):-
+  debugging(void, false), !.
 thread_end(Alias):-
   thread_property(Id, alias(Alias)),
   thread_property(Id, status(Status)),
@@ -287,7 +312,6 @@ void_save_library(VoID_Graph):-
   rdf_save2(_VoID_File, [format(turtle), graph(VoID_Graph)]).
 
 void_update_library(VoID_Graph):-
-  set_prolog_stack(global, limit(2*10**9)),
   forall(
     dataset(VoID_Graph, Dataset, DatasetPath, DatasetGraph),
     (
