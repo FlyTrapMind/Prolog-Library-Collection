@@ -52,9 +52,6 @@
     mapset/3, % :Goal
               % +List:list
               % -Set:ordset
-    mapsum/3, % :Goal
-              % +List:list
-              % -Number:number
 
 % MODULES
     modules/1, % -Modules:list(atom)
@@ -120,7 +117,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(if_then_else(0,0,0)).
 :- meta_predicate(maplist_pairs(3,+,-)).
 :- meta_predicate(mapset(2,+,-)).
-:- meta_predicate(mapsum(2,+,-)).
 :- meta_predicate(memo(0)).
 :- meta_predicate(multi(0,+)).
 :- meta_predicate(multi(2,+,+,-)).
@@ -353,10 +349,6 @@ maplist_pairs(Goal, List1, List2):-
 mapset(Goal, List, Set):-
   maplist(Goal, List, NewList),
   sort(NewList, Set).
-
-mapsum(Goal, List, Sum):-
-  maplist(Goal, List, Numbers),
-  sum_list(Numbers, Sum).
 
 
 

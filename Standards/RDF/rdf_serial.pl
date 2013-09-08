@@ -3,6 +3,8 @@
   [
     file_or_rdf_graph/2, % +File:atom
                          % -Graph:atom
+    file_to_graph_name/2, % +File:atom
+                          % -Graph:atom
     files_or_rdf_graphs/2, % +Files:list(atom)
                            % -Graphs:list(atom)
     rdf_convert/3, % +FromFile:atom
@@ -77,13 +79,22 @@ reflect the serialization format:
 %! file_or_rdf_graph(+File:atom, -Graph:atom) is det.
 % This can be used to allow either a file or a graph.
 
-file_or_rdf_graph(Graph, Graph):-
-  rdf_graph(Graph), !.
-file_or_rdf_graph(File, Graph):-
-  is_absolute_file_name(File), !,
-  access_file(File, read),
-  rdf_load2(File, Options),
-  option(graph(Graph), Options).
+file_or_rdf_graph(G, G):-
+  rdf_graph(G), !.
+file_or_rdf_graph(F, G):-
+  is_absolute_file_name(F),
+  access_file(F, read), !,
+  % This is the same method used by rdf_load2/2,
+  % when no graph option is given.
+  file_to_graph_name(F, G),
+  rdf_load2(F, [graph(G)]).
+
+%! file_to_graph_name(+File:atom, -Graph:atom) is det.
+
+file_to_graph_name(F, G2):-
+  file_name(F, _Dir, G1, _Ext),
+  % Make sure the graph does not already exist.
+  rdf_new_graph(G1, G2).
 
 %! files_or_rdf_graphs(+Files:list(atom), -Graphs:list(atom)) is det.
 % This can be used to allow a (possibly mixed) list of files and graphs.
@@ -106,7 +117,7 @@ rdf_convert(FromFile, ToFormat, ToFile):-
   rdf_save2(ToFile, [format(ToFormat), graph(TempGraph)]),
   rdf_unload_graph(TempGraph).
 
-%! rdf_graph_source_file(?Graph:atom, ?File:atom) is semidet.
+%! rdf_graph_source_file(?Graph:atom, ?File:atom) is nondet.
 % Returns the name of the file from which the graph with the given name
 % was loaded.
 
@@ -132,17 +143,17 @@ rdf_graph_source_file(Graph, File2):-
 %         registered file extensions by Wouter Beek.
 
 rdf_guess_data_format(Stream, xml):-
-  is_stream(Stream), !,
+  is_stream(Stream),
   xml_doctype(Stream, _), !.
 rdf_guess_data_format(File, xml):-
-  exists_file(File), !,
+  exists_file(File),
   setup_call_cleanup(
     open(File, read, Stream, [encoding(utf8),type(test)]),
     xml_doctype(Stream, _),
     close(Stream)
   ), !.
 rdf_guess_data_format(File, Format):-
-  exists_file(File), !,
+  exists_file(File),
   file_name_extension(_Base, Extension, File),
   rdf_serialization(Extension, Format, _URI), !.
 rdf_guess_data_format(_, turtle).
@@ -197,10 +208,8 @@ rdf_load2(File, Options):-
 rdf_load2(File, Options):-
   access_file(File, read),
   \+ (option(graph(Graph), Options), nonvar(Graph)), !,
-  file_name(File, _Dir, Graph1, _Ext),
-  % The graph does not already exist.
-  rdf_new_graph(Graph1, Graph2),
-  merge_options([graph(Graph2)], Options, Options0),
+  file_to_graph_name(File, Graph),
+  merge_options([graph(Graph)], Options, Options0),
   rdf_load2(File, Options0).
 % The format is missing, extrapolate it from the file.
 rdf_load2(File, Options):-

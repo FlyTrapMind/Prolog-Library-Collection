@@ -2,27 +2,21 @@
   rdf_statistics,
   [
     count_classes/2, % +Graph:atom
-                     % -Count:integer
-    count_individuals/3, % +Class:uri
-                         % +Graph:atom
-                         % -Count:integer
-    count_objects/4, % +Subject:oneof([bnode,uri])
-                     % +Predicate:uri
+                     % -Count:nonneg
+    count_objects/4, % +Subject:or([bnode,iri])
+                     % +Predicate:iri
                      % +Graph:atom
-                     % -Count:integer
-    count_predicates/4, % +Subject:oneof([bnode,uri])
-                        % +Object:resource
+                     % -Count:nonneg
+    count_predicates/4, % +Subject:or([bnode,iri])
+                        % +Object:or([bnode,iri,literal])
                         % +Graph:atom
-                        % -Count:integer
+                        % -Count:nonneg
     count_properties/2, % +Graph:atom
-                        % -Count:integer
-    count_subjects/3, % +PO_Pairs:list(pair)
-                      % +Graphs:oneof([atom,list(atom)])
-                      % -Count:integer
-    count_subjects/4 % +Predicate:uri
-                     % +Object:resource
-                     % +Graph:oneof([atom,list(atom)])
-                     % -Count:integer
+                        % -Count:nonneg
+    count_subjects/4 % +Predicate:iri
+                     % +Object:or([literal,iri])
+                     % +Graph:atom
+                     % -Count:nonneg
   ]
 ).
 
@@ -31,7 +25,7 @@
 Statistics for RDF data.
 
 @author Wouter Beek
-@version 2013/01, 2013/03-2013/04, 2013/07
+@version 2013/01, 2013/03-2013/04, 2013/07, 2013/09
 */
 
 :- use_module(generics(meta_ext)).
@@ -39,9 +33,9 @@ Statistics for RDF data.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_term)).
 
 :- rdf_meta(count_classes(+,-)).
-:- rdf_meta(count_individuals(r,+,-)).
 :- rdf_meta(count_objects(r,r,+,-)).
 :- rdf_meta(count_predicates(r,r,+,-)).
 :- rdf_meta(count_properties(+,-)).
@@ -49,86 +43,51 @@ Statistics for RDF data.
 
 
 
-count_classes(Graph, Count):-
-  setoff(
-    RDF_Term,
-    (
-      rdf_term(Graph, RDF_Term),
-      rdfs_individual_of(_SomeIndividual, RDF_Term)
-    ),
-    Classes
-  ),
-  length(Classes, Count).
+%! count_classes(+Graph:atom, -Count:nonneg) is det.
 
-count_individuals(Class, Graph, Count):-
-  setoff(
-    Individual,
-    (
-      rdfs_individual_of(Individual, Class),
-      rdf_subject(Graph, Individual)
-    ),
-    Individuals
-  ),
-  length(Individuals, Count).
+count_classes(G, Count):-
+  setoff(C, (rdf_term(G, C), rdfs_individual_of(C, rdfs:'Class')), Cs),
+  length(Cs, Count).
 
-count_objects(Subject, Predicate, Graph, Count):-
-  setoff(
-    Object,
-    rdf(Subject, Predicate, Object, Graph),
-    Objects
-  ),
-  length(Objects, Count).
+%! count_objects(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Graph:atom,
+%!   -Count:nonneg
+%! ) is det.
 
-count_predicates(Subject, Object, Graph, Count):-
-  setoff(
-    Predicate,
-    rdf(Subject, Predicate, Object, Graph),
-    Predicates
-  ),
-  length(Predicates, Count).
+count_objects(S, P, G, Count):-
+  setoff(O, rdf(S, P, O, G), Os),
+  length(Os, Count).
 
-count_properties(Graph, Count):-
-  setoff(
-    Property,
-    rdf(_Subject, Property, _Object, Graph),
-    Properties
-  ),
-  length(Properties, Count).
+%! count_predicates(
+%!   +Subject:or([bnode,iri]),
+%!   +Object:or([bnode,literal,iri]),
+%!   +Graph:atom,
+%!   -Count:nonneg
+%! ) is det.
 
-count_subjects(PO_Pairs, Gs, Count):-
-  PO_Pairs = [P1-O1 | Other_PO_Pairs],
-  setoff(
-    X,
-    (
-      member(G1, Gs),
-      rdf(X, P1, O1, G1),
-      forall(
-        member(P-O, Other_PO_Pairs),
-        (
-          member(G, Gs),
-          rdf(X, P, O, G)
-        )
-      )
-    ),
-    Xs
-  ),
-  length(Xs, Count).
+count_predicates(S, O, G, Count):-
+  setoff(P, rdf(S, P, O, G), Ps),
+  length(Ps, Count).
 
-count_subjects(Predicate, Object, Graph, Count):-
-  atom(Graph),
-  rdf_graph(Graph),
-  !,
-  count_subjects0(Predicate, Object, Graph, Count).
-count_subjects(Predicate, Object, Graphs, Count):-
-  is_list(Graphs),
-  maplist(rdf_graph, Graphs),
-  mapsum(count_subjects0(Predicate, Object), Graphs, Count).
+%! count_properties(+Graph:atom, -Count:nonneg) is det.
+% Returns the number of RDF properties in the given graph.
 
-count_subjects0(Predicate, Object, Graph, Count):-
-  setoff(
-    Subject,
-    rdf(Subject, Predicate, Object, Graph),
-    Subjects
-  ),
-  length(Subjects, Count).
+count_properties(G, Count):-
+  setoff(P, (rdf_term(G, P), rdfs_individual_of(P, rdf:'Property')), Ps),
+  length(Ps, Count).
+
+%! count_subjects(
+%!   +Predicate:iri,
+%!   +Object:or([bnode,literal,iri]),
+%!   +Graph:atom
+%!   -Count:nonneg
+%! ) is det.
+% Returns the number of unique subject terms that occur in triples
+% with the given predicate-object pair and in the given graph.
+
+count_subjects(P, O, G, Count):-
+  setoff(S, rdf(S, P, O, G), Ss),
+  length(Ss, Count).
 
