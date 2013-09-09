@@ -282,12 +282,7 @@ rdf_increment(S, P, G):-
 
 rdf_overwrite_datatype(S, P, DatatypeName, Value, G):-
   \+ rdf_datatype(S, P, DatatypeName, _, G), !,
-  rdf_assert_datatype(S, P, DatatypeName, Value, G),
-  debug(
-    rdf_build,
-    'There is no tuple <~w, ~w, DATATYPE[~w], ~w> to overwrite.',
-    [S,P,DatatypeName,G]
-  ).
+  rdf_assert_datatype(S, P, DatatypeName, Value, G).
 rdf_overwrite_datatype(S, P, DatatypeName, NewValue, G):-
   rdf_retractall_datatype(S, P, DatatypeName, G),
   rdf_assert_datatype(S, P, DatatypeName, NewValue, G),

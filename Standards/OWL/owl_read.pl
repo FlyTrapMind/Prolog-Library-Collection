@@ -7,6 +7,9 @@
                         % -IdentitySet:ordset(iri)
     owl_resource_identity/2, % ?Resource1:uri
                              % ?Resource2:uri
+    owl_resource_identity/3, % ?Resource1:uri
+                             % ?Resource2:uri
+                             % ?Graph:atom
     owl_resource_identity/4, % ?Resource1:uri
                              % ?Graph1:atom
                              % ?Resource2:uri
@@ -60,6 +63,9 @@ owl_identity_set(IRI, I_Set):-
 owl_resource_identity(Resource1, Resource2):-
   rdf_has(Resource1, owl:sameAs, Resource2).
 owl_resource_identity(Resource, Resource).
+
+owl_resource_identity(R1, R2, G):-
+  rdf(R1, owl:sameAs, R2, G).
 
 owl_resource_identity(Resource1, G1, Resource2, G2):-
   owl_resource_identity(Resource1, G1, Resource2, G2, _LinkG).

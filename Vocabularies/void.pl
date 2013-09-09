@@ -261,13 +261,15 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
     member(ThreadId, ThreadIds),
     thread_join(ThreadId, true)
   ),
-
+  
   % The VoID graph itself is updated.
   void_update_library(VoID_G2),
 
   % The updated VoID graph is stored to the same file
   % that it was loaded from.
   rdf_save2(VoID_File, [graph(VoID_G2)]).
+
+%! void_save_library(+VoID_Graph:atom, ?VoID_File:atom) is det.
 
 void_save_library(VoID_G, VoID_File):-
   findall(
