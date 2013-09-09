@@ -305,8 +305,8 @@ rdf_overwrite_datatype(S, P, DatatypeName, NewValue, G):-
     rdf_assert_datatype(S, P, DatatypeName, NewValue, G),
     debug(
       rdf_build,
-      'Updated value <~w, ~w, ~w^^~w, ~w> --> <~w, ~w, ~w^^~w, ~w>\n',
-      [S, P, OldValues, DatatypeName, G, S, P, NewValue, DatatypeName, G]
+      'Updated value\n\tFROM: <~w, ~w, ~w^^~w, ~w>\n\tTO:  <~w, ~w, ~w^^~w, ~w>',
+      [S,P,OldValues,DatatypeName,G,S,P,NewValue,DatatypeName,G]
     )
   ), !.
 

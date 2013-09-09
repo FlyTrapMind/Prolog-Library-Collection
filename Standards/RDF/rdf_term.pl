@@ -257,10 +257,8 @@ rdf_name_(G, RDF_Name):-
   ).
 
 rdf_node(Graph, Node):-
-  nonvar_det(rdf_node0(Graph, Node)).
-rdf_node0(Graph, Node):-
   rdf_subject(Graph, Node).
-rdf_node0(Graph, Node):-
+rdf_node(Graph, Node):-
   rdf_object(Graph, Node).
 
 rdf_object(G, O):-

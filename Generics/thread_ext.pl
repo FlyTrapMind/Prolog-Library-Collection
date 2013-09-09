@@ -1,12 +1,15 @@
 :- module(
   thread_ext,
   [
+    forall_thread/2, % :Antecedent
+                     % :Consequent
+    print_thread/1, % +Alias:atom
+    print_threads/0,
+% RUN ON SUBLISTS INFRASTRUCTURE
     intermittent_thread/4, % :Goal
                            % +Interval:positive_integer
                            % -Id
                            % +Options
-    print_thread/1, % +Alias:atom
-    print_threads/0,
     run_on_sublists/2, % +List:list
                        % :Goal
     thread_alias/1, % ?ThreadAlias:atom
@@ -38,7 +41,9 @@ Allows one to monitor running threads that register.
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(lists)).
 
+:- meta_predicate(forall_thread(0,0)).
 :- meta_predicate(intermittent_goal(:,+)).
 :- meta_predicate(intermittent_thread(:,+,-,+)).
 
@@ -49,13 +54,30 @@ Allows one to monitor running threads that register.
 
 
 
-intermittent_goal(G, I):-
-  call(G),
-  sleep(I),
-  intermittent_goal(G, I).
+forall_thread(Antecedent, Consequent):-
+  findall(
+    ThreadId,
+    (
+      call(Antecedent),
+      thread_create(
+        Consequent,
+        ThreadId,
+        [at_exit(forall_thread_end(ThreadId)),detached(false)]
+      )
+    ),
+    ThreadIds
+  ),
+  forall(
+    member(ThreadId, ThreadIds),
+    thread_join(ThreadId, true)
+  ).
 
-intermittent_thread(G, I, Id, O):-
-  thread_create(intermittent_goal(G, I), Id, O).
+forall_thread_end(_ThreadId):-
+  debugging(thread_ext, false), !.
+forall_thread_end(ThreadId):-
+  thread_property(ThreadId, alias(Alias)),
+  thread_property(ThreadId, status(Status)),
+  debug(thread_ext, 'Thread ~w ended with status ~w.', [Alias,Status]).
 
 print_thread(Alias):-
   thread_property(Id, alias(Alias)),
@@ -72,8 +94,19 @@ print_threads:-
   ),
   write('Alias'),tab(1),
   write('Status'),nl,
-  maplist(print_thread, Aliases),
-  !.
+  maplist(print_thread, Aliases), !.
+
+
+
+% RUN ON SUBLIST INFRASTRUCTURE %
+
+intermittent_goal(G, I):-
+  call(G),
+  sleep(I),
+  intermittent_goal(G, I).
+
+intermittent_thread(G, I, Id, O):-
+  thread_create(intermittent_goal(G, I), Id, O).
 
 run_on_sublists(List, Module:Goal):-
   split_list_by_number_of_sublists(List, 10, Sublists),
