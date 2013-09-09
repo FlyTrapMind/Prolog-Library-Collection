@@ -662,7 +662,6 @@ set_support_status(TMS, Node, SupportStatus):-
     Node,
     doyle:has_support_status,
     string,
-    _SupportStatus,
     TMS
   ),
   rdf_assert_datatype(

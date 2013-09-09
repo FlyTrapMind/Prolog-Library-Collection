@@ -72,11 +72,12 @@ We use the following abbreviations in this module:
     RegularExpression
 
 @author Wouter Beek
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/06
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(print_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
@@ -84,7 +85,7 @@ We use the following abbreviations in this module:
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).
 
-:- nodebug(file_ext).
+:- debug(file_ext).
 
 
 
@@ -247,7 +248,10 @@ merge_into_one_file(FromDir, ToFile):-
     open(ToFile, write, Out, [type(binary)]),
     maplist(merge_into_one_file0(Out), FromFiles),
     close(Out)
-  ).
+  ),
+  % DEB: Mention which files were merged.
+  with_output_to(atom(Files), print_list([], FromFiles)),
+  debug(file_ext, 'Files ~w were merged into ~w.', [Files,ToFile]).
 merge_into_one_file0(Out, FromFile):-
   setup_call_cleanup(
     open(FromFile, read, In, [type(binary)]),
@@ -279,15 +283,22 @@ new_file(File, NewFile):-
   file_name_extension(NewBase, Extension, NewFile).
 
 safe_copy_file(From, To):-
-  access_file(From, read), access_file(To, write), !,
+  access_file(From, read),
+  access_file(To, write), !,
   safe_delete_file(To),
-  copy_file(From, To).
+  copy_file(From, To),
+  debug(file_ext, 'File ~w was safe-copied to ~w.', [From,To]).
 
 %! safe_delete_file(+File:atom) is det.
 % Delete the given file, but keep a copy around in thake trashcan.
 
 safe_delete_file(File):-
-  \+ exists_file(File), !.
+  \+ exists_file(File), !,
+  debug(
+    file_ext,
+    'File ~w cannot be deleted since it does not exist.',
+    [File]
+  ).
 safe_delete_file(File):-
   access_file(File, write), !,
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
@@ -300,22 +311,29 @@ safe_delete_file(File):-
   create_directory(CopyDirectory),
   copy_file(File, CopyFile),
   catch(
-    delete_file(File),
+    (
+      delete_file(File),
+      debug(file_ext, 'File ~w was safe-deleted.', [File])
+    ),
     Exception,
-    format(user_output, '~w', [Exception])
+    debug(file_ext, '~w', [Exception])
   ).
 
 safe_move_file(From, To):-
   safe_copy_file(From, To),
-  safe_delete_file(From).
+  safe_delete_file(From),
+  debug(file_ext, 'File ~w was safe-moved to ~w.', [From,To]).
 
 safe_rename_file(From, To):-
-  access_file(From, write), \+ exists_file(To), !,
+  access_file(From, write),
+  \+ exists_file(To), !,
   rename_file(From, To).
 safe_rename_file(From, To):-
-  access_file(From, write), exists_file(To), !,
+  access_file(From, write),
+  exists_file(To), !,
   safe_delete_file(To),
-  safe_rename_file(From, To).
+  safe_rename_file(From, To),
+  debug(file_ext, 'File ~w was safe-renamed to ~w.', [From,To]).
 
 %! spec_atomic_concat(+Spec, +Atomic:atom, -NewSpec) is det.
 % Concatenates the given atom to the inner atomic term of the given
@@ -337,5 +355,10 @@ split_into_smaller_files(BigFile, SmallDir, Prefix):-
     path(split),
     ['--bytes=1m', '-d', '--suffix-length=4', BigFile, Prefix],
     [cwd(SmallDir)]
+  ),
+  debug(
+    file_ext,
+    'File ~w was split into smaller files in directory ~w.',
+    [BigFile,SmallDir]
   ).
 

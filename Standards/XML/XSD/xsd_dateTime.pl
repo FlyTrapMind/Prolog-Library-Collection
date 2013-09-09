@@ -637,7 +637,7 @@ timezoneFrag(TZ) -->
 yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,H|T]} ; {Cs = [H|T]}),
   (
-    nonzero_decimal_digit(_, H),
+    nonzero_decimal_digit(H),
     dcg_multi(decimal_digit, 3-_, T, [])
   ;
     zero(H),

@@ -3,6 +3,7 @@
   [
     forall_thread/2, % :Antecedent
                      % :Consequent
+    forall_thread_end/1, % +ThreadId:atom
     print_thread/1, % +Alias:atom
     print_threads/0,
 % RUN ON SUBLISTS INFRASTRUCTURE
@@ -59,10 +60,11 @@ forall_thread(Antecedent, Consequent):-
     ThreadId,
     (
       call(Antecedent),
+      variant_sha1(Consequent, Alias),
       thread_create(
         Consequent,
         ThreadId,
-        [at_exit(forall_thread_end(ThreadId)),detached(false)]
+        [alias(Alias),detached(false)]
       )
     ),
     ThreadIds
@@ -72,12 +74,17 @@ forall_thread(Antecedent, Consequent):-
     thread_join(ThreadId, true)
   ).
 
-forall_thread_end(_ThreadId):-
+forall_thread_end(_Id):-
   debugging(thread_ext, false), !.
-forall_thread_end(ThreadId):-
-  thread_property(ThreadId, alias(Alias)),
-  thread_property(ThreadId, status(Status)),
-  debug(thread_ext, 'Thread ~w ended with status ~w.', [Alias,Status]).
+forall_thread_end(Id):-
+  thread_property(Id, alias(Alias)),
+  thread_property(Id, status(Status)),
+  (Status == true -> Alarm = '' ; Alarm = '[!!!ALARM!!!]'),
+  debug(
+    thread_ext,
+    '~wThread ~w ended with status ~w.',
+    [Alarm,Alias,Status]
+  ).
 
 print_thread(Alias):-
   thread_property(Id, alias(Alias)),
