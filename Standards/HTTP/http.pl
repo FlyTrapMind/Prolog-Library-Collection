@@ -53,8 +53,7 @@ serve_xml(DTD_Name, DOM):-
   dom_to_xml(DTD_Name, DOM, XML),
   serve_xml(XML).
 
-serve_xml(DTD_Name, Style_Name, DOM):-
-  !,
+serve_xml(DTD_Name, Style_Name, DOM):- !,
   dom_to_xml(DTD_Name, Style_Name, DOM, XML),
   serve_xml(XML).
 
