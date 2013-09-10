@@ -1,9 +1,10 @@
 :- module(
   thread_ext,
   [
-    forall_thread/2, % :Antecedent
+    forall_thread/4, % :Antecedent
                      % :Consequent
-    forall_thread_end/1, % +ThreadId:atom
+                     % +DebugTopic:atom
+                     % +DebugMessage:atom
     print_thread/1, % +Alias:atom
     print_threads/0,
 % RUN ON SUBLISTS INFRASTRUCTURE
@@ -44,7 +45,7 @@ Allows one to monitor running threads that register.
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 
-:- meta_predicate(forall_thread(0,0)).
+:- meta_predicate(forall_thread(0,0,+,+)).
 :- meta_predicate(intermittent_goal(:,+)).
 :- meta_predicate(intermittent_thread(:,+,-,+)).
 
@@ -55,16 +56,20 @@ Allows one to monitor running threads that register.
 
 
 
-forall_thread(Antecedent, Consequent):-
+%! forall_thread(:Antecedent, :Consequent, +DebugTopic:atom, +DebugMessage:atom) is det.
+
+forall_thread(Antecedent, Consequent, Topic, Msg):-
   findall(
     ThreadId,
     (
       call(Antecedent),
-      variant_sha1(Consequent, Alias),
       thread_create(
-        Consequent,
+        (
+          call(Consequent),
+          thread_at_exit(forall_thread_end(Topic, Msg))
+        ),
         ThreadId,
-        [alias(Alias),detached(false)]
+        [detached(false)]
       )
     ),
     ThreadIds
@@ -74,17 +79,13 @@ forall_thread(Antecedent, Consequent):-
     thread_join(ThreadId, true)
   ).
 
-forall_thread_end(_Id):-
-  debugging(thread_ext, false), !.
-forall_thread_end(Id):-
-  thread_property(Id, alias(Alias)),
+forall_thread_end(Topic, _Msg):-
+  debugging(Topic, false), !.
+forall_thread_end(Topic, Msg):-
+  thread_self(Id),
   thread_property(Id, status(Status)),
   (Status == true -> Alarm = '' ; Alarm = '[!!!ALARM!!!]'),
-  debug(
-    thread_ext,
-    '~wThread ~w ended with status ~w.',
-    [Alarm,Alias,Status]
-  ).
+  debug(Topic, '~w~w exited with status ~w.', [Alarm,Msg,Status]).
 
 print_thread(Alias):-
   thread_property(Id, alias(Alias)),

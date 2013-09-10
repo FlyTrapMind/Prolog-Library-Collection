@@ -213,29 +213,8 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
   % are reachable from that VoID file's directory.
   file_directory_name(VoID_File, VoID_Dir),
 
-  % DEB: Show a list of the datasets that are about to be loaded.
-  (
-    debugging(void)
-  ->
-    forall(
-      (
-        rdfs_individual_of(Dataset, void:'Dataset'),
-        rdf(Dataset, void:dataDump, DatasetRelFile, VoID_G2)
-      ),
-      debug(
-        void,
-        'About to load dataset ~w from file ~w.',
-        [Dataset,DatasetRelFile]
-      )
-    ),
-    flush_output(user_output)
-  ;
-    true
-  ),
-
   % All datasets are loaded in multiple threads.
-  findall(
-    ThreadId,
+  forall_thread(
     (
       % This includes VoID linksets, accordiung to the VoID vocabulary.
       rdfs_individual_of(Dataset, void:'Dataset'),
@@ -244,22 +223,14 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
       directory_file_path(VoID_Dir, DatasetRelFile, DatasetAbsFile),
       % The graph name is derived from the file name.
       file_to_graph_name(DatasetAbsFile, DatasetG),
-      format(atom(Alias), 'load_~w', [DatasetG]),
-      % Each dataset is loaded in a separate thread.
-      thread_create(
-        (
-          rdf_load2(DatasetAbsFile, [graph(DatasetG)]),
-          assert(dataset(VoID_G2, Dataset, DatasetAbsFile, DatasetG))
-        ),
-        ThreadId,
-        [alias(Alias),at_exit(forall_thread_end(Alias)),detached(false)]
-      )
+      format(atom(Msg), 'Loading graph ~w', [DatasetG])
     ),
-    ThreadIds
-  ),
-  forall(
-    member(ThreadId, ThreadIds),
-    thread_join(ThreadId, true)
+    (
+      rdf_load2(DatasetAbsFile, [graph(DatasetG)]),
+      assert(dataset(VoID_G2, Dataset, DatasetAbsFile, DatasetG))
+    ),
+    void,
+    Msg
   ),
   
   % The VoID graph itself is updated.
@@ -272,44 +243,28 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
 %! void_save_library(+VoID_Graph:atom, ?VoID_File:atom) is det.
 
 void_save_library(VoID_G, VoID_File):-
-  findall(
-    ThreadId,
+  forall_thread(
     (
       dataset(VoID_G, _Dataset, DatasetPath, DatasetG),
-      format(atom(Alias), 'save_~w', [DatasetG]),
-      thread_create(
-        rdf_save2(DatasetPath, [format(turtle),graph(DatasetG)]),
-        ThreadId,
-        [alias(Alias),at_exit(forall_thread_end(Alias)),detached(false)]
-      )
+      format(atom(Msg), 'Saving graph ~w', [DatasetG])
     ),
-    ThreadIds
-  ),
-  forall(
-    member(ThreadId, ThreadIds),
-    thread_join(ThreadId, true)
+    rdf_save2(DatasetPath, [format(turtle),graph(DatasetG)]),
+    void,
+    Msg
   ),
   rdf_save2(VoID_File, [format(turtle),graph(VoID_G)]).
 
 void_update_library(VoID_Graph):-
-  findall(
-    ThreadId,
+  forall_thread(
     (
       dataset(VoID_Graph, Dataset, DatasetPath, DatasetGraph),
-      thread_create(
-        (
-          void_assert_modified(Dataset, DatasetPath, VoID_Graph),
-          void_assert_statistics(Dataset, DatasetGraph, VoID_Graph),
-          debug(void, 'Updated dataset ~w.', [Dataset])
-        ),
-        ThreadId,
-        [detached(false)]
-      )
+      format(atom(Msg), 'Updating dataset ~w', [Dataset])
     ),
-    ThreadIds
-  ),
-  forall(
-    member(ThreadId, ThreadIds),
-    thread_join(ThreadId, true)
+    (
+      void_assert_modified(Dataset, DatasetPath, VoID_Graph),
+      void_assert_statistics(Dataset, DatasetGraph, VoID_Graph)
+    ),
+    void,
+    Msg
   ).
 

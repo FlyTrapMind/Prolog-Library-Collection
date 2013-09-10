@@ -70,7 +70,7 @@ reflect the serialization format:
 :- db_add_novel(user:prolog_file_type(rdf, rdf     )).
 :- db_add_novel(user:prolog_file_type(ttl, turtle  )).
 
-:- debug(rdf_serial).
+:- nodebug(rdf_serial).
 
 
 
