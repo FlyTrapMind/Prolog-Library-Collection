@@ -21,9 +21,9 @@ Web front-end for SPARQL queries.
 @version 2012/12, 2013/03-2013/04
 */
 
+:- use_module(html(html_table)).
 :- use_module(server(web_console)).
 :- use_module(sparql(sparql_ext)).
-:- use_module(html(html)).
 
 :- dynamic(default_remote0/1).
 
@@ -115,7 +115,7 @@ write_table(Rows, Options, [Statistics, Table]):-
     Rows0
   ),
   option(variables(VarNames), Options),
-  list_to_table([header(true)], [VarNames | Rows0], Table).
+  html_table([header(true)], [VarNames | Rows0], Table).
 write_table(Row, Options, Markup):-
   write_table([Row], Options, Markup).
 

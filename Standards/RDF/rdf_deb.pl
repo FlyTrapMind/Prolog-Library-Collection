@@ -11,7 +11,7 @@
 @version 2013/09
 */
 
-:- use_module(html(html)).
+:- use_module(html(html_table)).
 :- use_module(library(semweb/rdf_db)).
 
 
@@ -28,7 +28,7 @@ rdf_graphs(Rows):-
 
 rdf_graphs_web(DOM):-
   rdf_graphs(Rows),
-  list_to_table(
+  html_table(
     [caption('Overview of currently loaded graphs.'),header(true)],
     [['Name','Number of triples']|Rows],
     DOM

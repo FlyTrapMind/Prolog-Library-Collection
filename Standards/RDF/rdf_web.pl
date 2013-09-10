@@ -23,7 +23,7 @@ Web predicates for RDF graphs.
 @version 2012/12-2013/01, 2013/03-2013/05
 */
 
-:- use_module(html(html)).
+:- use_module(html(html_table)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_serial)).
@@ -47,7 +47,7 @@ rdf_graphs_web(Markup):-
   ->
     Markup = [element(p, [], ['There are no loaded RDF graphs.'])]
   ;
-    list_to_table(
+    html_table(
       [header(true)],
       [['Graph', 'Number of triples'] | List],
       Table
@@ -110,7 +110,7 @@ rdf_namespaces_web0(Namespaces, Table):-
     ),
     List
   ),
-  list_to_table([header(true)], [['Prefix', 'URI'] | List], Table).
+  html_table([header(true)], [['Prefix', 'URI'] | List], Table).
 
 %! rdf_save_web(+Graph:atom, -Markup:dom) is det.
 % Saves the RDF graph with the given name from the Web interface.

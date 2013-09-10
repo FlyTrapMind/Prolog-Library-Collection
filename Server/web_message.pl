@@ -14,7 +14,7 @@ Acts on messages printed by print_message/2.
 @version 2013/02, 2013/04-2013/05, 2013/08-2013/09
 */
 
-:- use_module(html(html)).
+:- use_module(html(html_table)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(os(ansi_ext)).
@@ -36,7 +36,7 @@ log_web([HTML_Table]):-
     member(row(DateTime,Category,Message), Rows),
     TRs
   ),
-  list_to_table(
+  html_table(
     [header(true)],
     [['DateTime','Category','Message']|TRs],
     HTML_Table

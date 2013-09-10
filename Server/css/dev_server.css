@@ -93,6 +93,14 @@ pre:hover {
   color: white;
 }
 
+table {
+  min-width:600px;
+}
+
+caption {
+  font-weight: bold;
+}
+
 td:hover {
   background-color: black;
   color: white;

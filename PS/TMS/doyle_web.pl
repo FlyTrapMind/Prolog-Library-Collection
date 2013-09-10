@@ -14,7 +14,7 @@ Web predicates for Doyle's TMS.
 @version 2013/05
 */
 
-:- use_module(html(html)).
+:- use_module(html(html_table)).
 :- use_module(tms(tms)).
 
 
@@ -51,7 +51,7 @@ doyle_web(TMS, Markup):-
     ),
     Rows
   ),
-  list_to_table(
+  html_table(
     [header(true)],
     [
       [

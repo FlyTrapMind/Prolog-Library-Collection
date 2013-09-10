@@ -6,6 +6,8 @@
     memo/1, % :Goal
 
 % CONTROL STRUCTURES
+    boolean/2, % :Goal
+               % -Boolean:oneof([false,true])
     if_else/2, % :If
                % :Else
     if_then/2, % :If
@@ -102,11 +104,12 @@
 Extensions to the SWI-Prolog meta predicates.
 
 @author Wouter Beek
-@version 2012/07-2012/08, 2013/01, 2013/03-2013/04
+@version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09
 */
 
 :- use_module(generics(list_ext)).
 
+:- meta_predicate(boolean(0,-)).
 :- meta_predicate(call_nth(0,-)).
 :- meta_predicate(call_semidet(0)).
 :- meta_predicate(complete(2,+,-)).
@@ -162,6 +165,10 @@ reset_memo:-
 
 
 % CONTROL STRUCTURES %
+
+boolean(Goal, true):-
+  call(Goal), !.
+boolean(_Goal, false).
 
 %! if_else(:If, :Else) is det.
 % Procedural control structure.

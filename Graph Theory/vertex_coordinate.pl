@@ -25,7 +25,7 @@ positions in iterations of spring embedding.
 
 :- use_module(generics(list_ext)).
 :- use_module(graph_theory(graph_export)).
-:- use_module(html(html)).
+:- use_module(html(html_table)).
 :- use_module(library(option)).
 
 
@@ -107,7 +107,7 @@ vertice_coordinates_table(VertexCoords, MarkupElement):-
     ),
     Rows
   ),
-  list_to_table(
+  html_table(
     [header(true)],
     [['Vertex' | DimensionNames] | Rows],
     MarkupElement
