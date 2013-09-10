@@ -2,8 +2,6 @@
   deb_ext,
   [
     printw/1, % +Term
-    rdf_class_status/1, % +Class:uri
-    rdf_graph_status/1, % +Graph:atom
     test/2, % +Goal:term
             % +Stream
     test/3 % +Goal:term
@@ -49,19 +47,6 @@ printw(Atomic):-
 printw(Codes):-
   atom_codes(Atom, Codes),
   printw(Atom).
-
-rdf_class_status(Class):-
-  findall(
-    Individual,
-    rdfs_individual_of(Individual, Class),
-    Individuals
-  ),
-  length(Individuals, NumberOfIndividuals),
-  debug(deb_ext, 'Individuals: ~w', [NumberOfIndividuals]).
-
-rdf_graph_status(Graph):-
-  rdf_statistics(triples_by_graph(Graph, NumberOfTriples)),
-  debug(deb_ext, 'Triples: ~w', [NumberOfTriples]).
 
 %! test(:Goal, +Stream) is det.
 % Runs the given goal as a test.

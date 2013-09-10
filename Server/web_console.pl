@@ -109,8 +109,7 @@ console_input -->
 % of this module will no longer be accessible from the web console.
 
 deregister_module(Module):-
-  registered_module(Module),
-  !,
+  registered_module(Module), !,
   retract(registered_module(Module)).
 % Fails silently.
 deregister_module(_Module).

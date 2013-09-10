@@ -289,7 +289,7 @@ void_save_library(VoID_G, VoID_File):-
     member(ThreadId, ThreadIds),
     thread_join(ThreadId, true)
   ),
-  rdf_save2(VoID_File, [format(turtle), graph(VoID_G)]).
+  rdf_save2(VoID_File, [format(turtle),graph(VoID_G)]).
 
 void_update_library(VoID_Graph):-
   findall(

@@ -309,17 +309,23 @@ table_row0([], _HTML_Entity, []).
 table_row0(
   [H | T],
   HTML_Entity,
-  [element(HTML_Entity, [], [Atom]) | Markup]
+  [element(HTML_Entity, [], [Content]) | Markup]
 ):-
-  % If we use term_to_atom/2 for atom terms, extra single quotes are added
-  % in front and at the end of the atom. Therefore, we first check whether
-  % the term is an atom.
   (
+    % The table may contain markup.
+    H = element(_,_,_)
+  ->
+    Content = H
+  ;
+    % If we use term_to_atom/2 for atom terms, extra single quotes are added
+    % in front and at the end of the atom. Therefore, we first check whether
+    % the term is an atom.
     atom(H)
   ->
-    Atom = H
+    Content = H
   ;
-    term_to_atom(H, Atom)
+    % No other options are left, just make sure it does not break.
+    term_to_atom(H, Content)
   ),
   table_row0(T, HTML_Entity, Markup).
 
