@@ -21,7 +21,21 @@
 
 Support for the Vocabulary of Interlinked Datasets (VoID).
 
+VoID is an RDF Schema vocabulary for expressing metadata about RDF datasets.
+It is intended as a bridge between the publishers and users of RDF data,
+with applications ranging from data discovery to cataloging and archiving
+of datasets.
+
 VoID is a W3C Interest Group Note as of 2011/03/03.
+
+VoiD covers four areas of metadata:
+  * *|General metadata|* following the Dublin Core model.
+  * *|Access metadata|* describes how RDF data can be accessed
+  *  using various protocols.
+  * *|Structural metadata|* describes the structure and schema of datasets
+    and is useful for tasks such as querying and data integration.
+  * *|Description of links between datasets|* are helpful
+    for understanding how multiple datasets are related.
 
 @author WouterBeek
 @compat http://www.w3.org/TR/void/
