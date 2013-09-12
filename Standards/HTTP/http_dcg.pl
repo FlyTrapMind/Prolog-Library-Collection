@@ -159,8 +159,6 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
-:- use_module(datetime(rfc1123)).
-:- use_module(lang(rfc1766)).
 :- use_module(uri(rfc2396_dcg)).
 
 :- meta_predicate(chunk(-,?,//,?,?,?)).
@@ -401,7 +399,7 @@ ctext(C) -->
   text(C),
   {\+ memberchk(C, [40,41])}.
 
-%! crlf//
+%! crlf(-Tree)//
 
 crlf(T1) -->
   crlf(T1, _Codes).

@@ -46,7 +46,7 @@ Namespace support for RDF(S).
 
 :- rdf_meta(rdf_resource_to_namespace(r,-,-)).
 
-:- dynamic(rdf_current_namespace(_Graph, _Prefix)).
+:- dynamic(rdf_current_namespace/2).
 
 
 
@@ -159,7 +159,6 @@ rdf_lookup_namespace(Graph, Namespace, URI):-
 %! ) is det.
 
 rdf_resource_to_namespace(Resource, Namespace, Name):-
-  rdf_is_resource(Resource),
   findall(
     Namespace-Name,
     rdf_global_id(Namespace:Name, Resource),

@@ -2,6 +2,16 @@
   db_ext,
   [
     db_add/1, % +New
+    db_add_clause/2, % +Head:term
+                     % +Body:or([list(term),term])
+    db_add_clause/3, % +Module:atom
+                     % +Head:term
+                     % +Body:or([list(term),term])
+    db_add_dcg_rule/2, % +Head:term
+                       % +Body:or([list(term),term])
+    db_add_dcg_rule/3, % +Module:atom
+                       % +Head:term
+                       % +Body:or([list(term),term])
     db_add_novel/1, % +New
     db_replace/2, % +New
                   % +Pattern:list(oneof([e,r]))
@@ -38,8 +48,38 @@ Example: =|rdf_namespace_color(rdf, red)|= should replace
 
 
 
+construct_body([Body], Body):- !.
+construct_body([X,Y], Body):- !,
+  Body =.. [',',X,Y].
+construct_body([X|T], Outer):-
+  construct_body(T, Inner),
+  Outer =.. [',',X,Inner].
+
 db_add(New):-
   assert(New).
+
+%! db_add_clause(+Head:term, Body:or([list(term),term])) is det.
+% @see db_add_clause/3
+
+db_add_clause(Head, Body):-
+  db_add_clause(user, Head, Body).
+
+%! db_add_clause(+Module:atom, +Head:term, Body:or([list(term),term])) is det.
+% Simplifies the assertion of clauses.
+
+db_add_clause(Mod, Head, Body1):-
+  (is_list(Body1) -> construct_body(Body1, Body2) ; Body2 = Body1),
+  Clause =.. [':-',Head,Body2],
+  assert(Mod:Clause).
+
+db_add_dcg_rule(Head, Body):-
+  db_add_dcg_rule(user, Head, Body).
+
+db_add_dcg_rule(Mod, Head, Body1):-
+  (is_list(Body1) -> construct_body(Body1, Body2) ; Body2 = Body1),
+  DCG =.. ['-->',Head,Body2],
+  dcg_translate_rule(DCG, Clause),
+  assert(Mod:Clause).
 
 %! db_add_novel(+New) is det.
 % Asserts the given fact only if it does not already exist.

@@ -18,7 +18,6 @@
 */
 
 :- use_module(standards(css), [attribute_value/3 as css_attribute_value]).
-:- use_module(standards(standards)).
 
 
 

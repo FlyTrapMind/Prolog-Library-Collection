@@ -40,7 +40,6 @@ DCG rules for XML attributes.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(lang(rfc3066)).
-:- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_datatypes)).
 :- use_module(xml(xml)).
 
@@ -97,7 +96,7 @@ xml_attribute_list([Tree|Trees], DCG_Value1, [A1|A1s], DCG_Separator) -->
 % Values of type =ID= MUST match the =Name= production. A name MUST NOT
 % appear more than once in an XML document as a value of this type;
 % i.e., =ID= values MUST uniquely identify the elements which bear them.
-% 
+%
 % An element type MUST NOT have more than one =ID= attribute specified.
 %
 % An =ID= attribute MUST have a declared default of

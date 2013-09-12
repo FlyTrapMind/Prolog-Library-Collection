@@ -1,12 +1,17 @@
 :- module(
   rdf_read,
   [
-% LITERALS
+    rdf_datatype/2, % ?Graph:graph
+                    % ?Datatype:uri
     rdf_datatype/5, % ?Subject:oneof([bnode,uri])
                     % ?Predicate:uri
                     % ?Datatype:oneof([atom,uri])
                     % ?Value:atomic
                     % ?Graph:graph
+    rdf_find/4, % +Subject:or([bnode,iri]),
+                % +Predicate:iri,
+                % +Object:or([bnode,iri,literal]),
+                % +Graph:atom
     rdf_has_datatype/4, % ?Subject:oneof([bnode,uri])
                         % ?Predicate:uri
                         % ?DatatypeName:atom
@@ -20,32 +25,17 @@
                    % ?Language:atom
                    % ?Literal:atom
                    % ?Graph:graph
+    rdf_member/2, % ?Member:uri
+                  % ?Members:list(uri)
+    rdf_memberchk/2, % ?Member:uri
+                     % ?Members:list(uri)
     rdf_preferred_literal/5, % ?Subject:or([bnode,iri])
                              % ?Predicate:iri
                              % +LanguageTag:atom
                              % ?PreferredLangTag:atom
                              % ?PreferredLiteral:atom
-% LIST MEMBERSHIP
-    rdf_member/2, % ?Member:uri
-                  % ?Members:list(uri)
-    rdf_memberchk/2, % ?Member:uri
-                     % ?Members:list(uri)
-% PROPERTY
-    rdf_property/2, % +Graph:atom
-                    % ?Property:iri
-% STRUCTURE-BASED READS
-    rdf_index/5, % ?Subject:oneof([bnode,uri])
-                 % ?Predicate:uri
-                 % ?Object:uri
-                 % ?Graph:graph
-                 % ?Index:term
-    rdf_random/5, % -Subject:oneof([bnode,uri])
-                  % -Predicate:uri
-                  % -Object:uri
-                  % +Graph:graph
-                  % -Index:integer
-    rdf_valuetype/2 % ?Graph:graph
-                    % ?Type:uri
+    rdf_property/2 % +Graph:atom
+                   % ?Property:iri
   ]
 ).
 
@@ -55,12 +45,12 @@ Predicates for reading from RDF, customized for specific datatypes and
 literals.
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07-2013/08
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07-2013/09
 */
 
+:- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(math(random_ext)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
@@ -68,27 +58,41 @@ literals.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
-% LITERALS %
+:- rdf_meta(rdf_datatype(?,r)).
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_has_datatype(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?)).
-:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
-% LIST MEMBERSHIP %
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
-% PROPERTY
+:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
 :- rdf_meta(rdf_property(+,r)).
-% STRUCTURE-BASED READS %
-:- rdf_meta(rdf_index(r,r,r,?,?)).
-:- rdf_meta(rdf_node(?,r)).
-:- rdf_meta(rdf_random(r,r,r,?,-)).
-:- rdf_meta(rdf_term(?,r)).
-:- rdf_meta(rdf_valuetype(?,r)).
 
 
 
-% LITERALS %
+%! rdf_bnode_to_var(
+%!   +RDF_Term:or([bnode,iri,literal]),
+%!   ?Out:or([iri,literal])
+%! ) is det.
+% Replaced blank nodes with uninstantiated variables.
+
+rdf_bnode_to_var(X, _):-
+  rdf_is_bnode(X), !.
+rdf_bnode_to_var(X, X).
+
+%! rdf_both_bnode(
+%!   +RDF_Term1:or([bnode,iri,literal]),
+%!   +RDF_Term2:or([bnode,iri,literal])
+%! ) is semidet.
+% Fails if only either of the RDF terms is a blank node.
+
+rdf_both_bnode(X, Y):-
+  rdf_is_bnode(X), !,
+  rdf_is_bnode(Y).
+rdf_both_bnode(_, _).
+
+rdf_datatype(G, Datatype):-
+  rdf(_S, _P, literal(type(Datatype, _LitVal)), G).
 
 %! rdf_datatype(
 %!   ?Subject:oneof([bnode,uri]),
@@ -112,6 +116,24 @@ rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
   rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
   % This may be nondet!
   xsd_lexicalMap(Datatype, LEX, Value).
+
+%! rdf_find(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Object:or([bnode,iri,literal]),
+%!   +Graph:atom
+%! ) is semidet.
+% Finds an RDF triple according to an RDF triple.
+% This is different from rdf/[3,4], which are not RDF triples
+% (since their parameters may hold argments that are variables).
+%
+% Since we cannot match blank nodes directly, we replace them with variables.
+% This is valid under graph equivalence.
+
+rdf_find(S, P, O, G):-
+  maplist(rdf_bnode_to_var, [S,P,O], [SS,PP,OO]),
+  rdf(SS, PP, OO, G),
+  maplist(rdf_both_bnode, [S,P,O], [SS,PP,OO]).
 
 %! rdf_has_datatype(
 %!   ?Subject:oneof([bnode,uri]),
@@ -189,9 +211,6 @@ rdf_preferred_literal(S, P, LangTag, PreferredLangTag, PreferredLit):-
 rdf_preferred_literal(S, P, _LangTag, _NoPreferredLangTag, PreferredLit):-
   rdf_literal(S, P, PreferredLit, _G), !.
 
-
-% LIST MEMBERSHIP %
-
 rdf_member(Member, List):-
   member(Member0, List),
   rdf_global_id(Member0, Member).
@@ -199,60 +218,7 @@ rdf_member(Member, List):-
 rdf_memberchk(Member, List):-
   once(rdf_member(Member, List)).
 
-
-
-% PROPERTY %
-
 rdf_property(G, P):-
   rdf_term(G, P),
   rdfs_individual_of(P, rdf:'Property').
-
-
-
-% STRUCTURE-BASED READS %
-
-%! rdf_index(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?Object:uri,
-%!   ?Graph:graph,
-%!   ?Index:integer
-%! ) is nondet.
-% Returns the rdf triple that has the given index in the arbitrary sequence
-% in which SWI-Prolog returns its triples.
-%
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Object A resource.
-% @param Index A compound term of the form =Graph:Line= with =Graph= the
-%        atomic name of an RDF graph and =Line= an integer.
-
-rdf_index(Subject, Predicate, Object, Graph, Index):-
-  rdf_graph:rdf_graph_to_triples(Graph, Triples),
-  nth0(Index, Triples, rdf(Subject, Predicate, Object)).
-
-%! rdf_random(
-%!   -Subject:oneof([bnode,uri]),
-%!   -Predicate:uri,
-%!   -Object:uri,
-%!   ?Graph:graph,
-%!   -Index:integer
-%! ) is det.
-% Returns a random triple from the given graph.
-%
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Object A resource.
-% @param Graph The atomic name of a graph.
-% @param Index An integer representating the index of the randomly selected
-%        triple.
-
-rdf_random(Subject, Predicate, Object, Graph, RandomIndex):-
-  rdf_graph_property(Graph, triples(NumberOfTriples)),
-  succ(UpperIndex, NumberOfTriples),
-  random_betwixt(UpperIndex, RandomIndex),
-  rdf_index(Subject, Predicate, Object, Graph, RandomIndex).
-
-rdf_valuetype(Graph, Type):-
-  rdf(_Subject, _Predicate, literal(type(Type, _Value)), Graph).
 

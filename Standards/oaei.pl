@@ -1,21 +1,10 @@
 :- module(
   oaei,
   [
-    oaei_alignment/3, % ?Graph:atom
-                      % ?From:uri
-                      % ?To:uri
-    oaei_check_alignment/2, % +ReferenceAlignments:list(pair)
-                            % +RawAlignments:list(pair)
-    oaei_file_to_alignment_pairs/2, % +File:atom
-                                    % -AlignmentPairs:list(pair)
-    oaei_graph/1, % ?Graph:atom
-    oaei_graph_to_alignment_pairs/2, % +Graph:atom
-                                     % -AlignmentPairs:list(pair)
-    oaei_ontologies/3, % +Graph:atom
-                       % -File1:atom
-                       % -File2:atom
-    oaei_ontology/2 % +Graph:atom
-                    % -File1:atom
+    oaei_check_alignment/2, % +ReferenceAlignments:list(pair(iri))
+                            % +RawAlignments:list(pair(iri))
+    oaei_file_to_alignments/2 % +File:atom
+                              % -AlignmentPairs:list(pair(iri))
   ]
 ).
 
@@ -106,12 +95,14 @@ Mismatch types:
     * Data semantic transformation
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/08
+@version 2013/04-2013/05, 2013/08-2013/09
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
+:- use_module(library(debug)).
+:- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -137,22 +128,21 @@ Mismatch types:
 :- db_add_novel(user:file_search_path(ontology2, alignment2(ontology))).
 :- db_add_novel(user:file_search_path(reference2, alignment2(reference))).
 
+:- debug(oaei).
 
 
-%! oaei_alignment(?Graph:atom, ?From:uri, ?To:uri) is nondet.
 
-oaei_alignment(Graph, From, To):-
-  oaei_graph(Graph),
-  rdf(BNode, align:entity1, From, Graph),
-  rdf(BNode, align:entity2, To, Graph),
-  once(
-    (
-      rdf_literal(BNode, align:relation, '=', Graph),
-      rdf_datatype(BNode, align:measure, float, 1.0, Graph)
-    ;
-      cowspeak('Non-standard alignment was read from graph ~w.'-[Graph])
-    )
-  ).
+%! oaei_alignment_pair(?Graph:atom, ?From:uri, ?To:uri) is nondet.
+
+oaei_alignment_pair(G, From, To):-
+  rdf(BNode, align:entity1, From, G),
+  rdf(BNode, align:entity2, To, G),
+  once((
+    rdf_literal(BNode, align:relation, '=', G),
+    rdf_datatype(BNode, align:measure, float, 1.0, G)
+  ;
+    debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
+  )).
 
 %! oaei_check_alignment(
 %!   +ReferenceAlignments:list(pair),
@@ -173,45 +163,59 @@ oaei_check_alignment(ReferenceAlignments, RawAlignments):-
   ),
   flush_output(user_output).
 
-oaei_file_to_alignment_pairs(File, AlignmentPairs):-
-  file_name(File, _Directory, Graph, _Extension),
-  rdf_load2(File, [graph(Graph)]),
-  oaei_graph_to_alignment_pairs(Graph, AlignmentPairs),
-  rdf_unload_graph(Graph).
+oaei_file_to_alignments(F, A_Pairs):-
+  setup_call_cleanup(
+    (
+      file_name(F, _Dir, G1, _Ext),
+      % Make sure the graph name is unique.
+      rdf_new_graph(G1, G2),
+      rdf_load2(F, [graph(G2)])
+    ),
+    oaei_file_to_alignments_(G2, A_Pairs),
+    rdf_unload_graph(G2)
+  ).
+oaei_file_to_alignments_(G, A_Pairs):-
+  % Retrieve all alignment pairs.
+  findall(
+    X-Y,
+    oaei_alignment_pair(G, X, Y),
+    A_Pairs
+  ),
 
-%! oaei_graph
+  % DEB: Number of alignment pairs.
+  length(A_Pairs, L1),
+  debug(
+    oaei,
+    'Graph ~w contains ~w alignment pairs.',
+    [G,L1]
+  ).
 
-oaei_graph(Graph):-
-  nonvar_det(oaei_graph0(Graph)).
-oaei_graph0(Graph):-
-  rdf_graph(Graph),
+
+
+% TMP %
+
+oaei_graph(G):-
+  nonvar_det(oaei_graph0(G)).
+oaei_graph0(G):-
+  rdf_graph(G),
   once((
     rdfs_individual_of(Alignment, align:'Alignment'),
-    rdf(Alignment, _P, _O, Graph)
+    rdf(Alignment, _P, _O, G)
   )).
-
-oaei_graph_to_alignment_pairs(Graph, AlignmentPairs):-
-  % Avoid double occurrences in an alignment graph (you never know!).
-  setoff(
-    From-To,
-    oaei_alignment(Graph, From, To),
-    AlignmentPairs
-  ).
 
 %! oaei_ontologies(+Graph:atom, -File1:atom, -File2:atom) is det.
 % Returns the files in which the linked ontologies are stored.
 
-oaei_ontologies(Graph, File1, File2):-
-  oaei_ontology(Graph, File1),
-  oaei_ontology(Graph, File2),
-  File1 \== File2,
-  !.
+oaei_ontologies(G, File1, File2):-
+  oaei_ontology(G, File1),
+  oaei_ontology(G, File2),
+  File1 \== File2, !.
 
 %! oaei_ontology(+Graph:atom, -File:atom) is nondet.
 % Returns an ontology file used in the given alignment graph.
 
-oaei_ontology(Graph, File):-
-  rdf_literal(Ontology, align:location, URI, Graph),
+oaei_ontology(G, File):-
+  rdf_literal(Ontology, align:location, URI, G),
   rdfs_individual_of(Ontology, align:'Ontology'),
   uri_components(
     URI,

@@ -6,26 +6,18 @@
 @version 2012/07, 2013/05
 */
 
+:- use_module(library(apply)).
+:- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(xfn, 'http://vocab.sindice.com/xfn#').
 
 
-
-go:-
-  absolute_file_name(debug(tests), AbsoluteFileName, [file_type(hypertext)]),
-  parse_html(AbsoluteFileName, DOM),
-  format(user_output, '~w', [DOM]),
-  rdf_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
-  rdf_assert_literal('http://www.wouterbeek.com', xfn:name, 'Wouter Beek', xfn),
-  find_contacts('http://www.wouterbeek.com', DOM),
-  export_contacts.
 
 export_contacts:-
   flag(contacts_id, ID, ID + 1),
@@ -35,7 +27,7 @@ export_contacts:-
     File,
     write,
     _Stream,
-    [alias(xfn), close_on_abort(true), type(text)]
+    [alias(xfn),close_on_abort(true),encoding(utf8),type(test)]
   ),
 
   format(xfn, 'digraph circuit {\n', []),
@@ -69,14 +61,11 @@ export_contacts:-
   format(xfn, '}\n', []),
   close(xfn).
 
-find_contacts(_Person1, []):-
-  !.
+find_contacts(_Person1, []):- !.
 find_contacts(Person1, List):-
-  is_list(List),
-  !,
+  is_list(List), !,
   maplist(find_contacts(Person1), List).
-find_contacts(Person1, element(a, LinkAttributes, [Name])):-
-  !,
+find_contacts(Person1, element(a, LinkAttributes, [Name])):- !,
   find_link(LinkAttributes, Person2),
   find_relationship(LinkAttributes, RelationshipsAtom),
   atomic_list_concat(RelationshipAtoms, ' ', RelationshipsAtom),
@@ -95,24 +84,21 @@ find_contacts(Person1, element(a, LinkAttributes, [Name])):-
       rdf_assert_individual(Person2, xfn:person, xfn)
     )
   ).
-find_contacts(Person1, element(_Tag, _Attributes, ListOfContents)):-
-  !,
+find_contacts(Person1, element(_Tag, _Attributes, ListOfContents)):- !,
   find_contacts(Person1, ListOfContents).
 find_contacts(_Person1, _Atom).
 
 find_link(L, Link):-
-  member(href=Link, L),
-  !.
+  memberchk(href=Link, L).
 find_link(_L, nil).
 
 find_relationship(L, Relationship):-
-  member(rel=Relationship, L),
-  !.
+  memberchk(rel=Relationship, L).
 find_relationship(_L, nil).
 
 parse_html(File, DOM):-
   setup_call_cleanup(
-    open(File, read, Stream, [type(text)]),
+    open(File, read, Stream, [encoding(utf8),type(test)]),
     (
       dtd(html, DTD),
       load_structure(
@@ -129,3 +115,18 @@ parse_html(File, DOM):-
     ),
     close(Stream, [force(true)])
   ).
+
+
+
+:- begin_tests(xfn).
+
+test(xfn, [true]):-
+  absolute_file_name(debug(tests), AbsoluteFileName, [file_type(hypertext)]),
+  parse_html(AbsoluteFileName, DOM),
+  format(user_output, '~w', [DOM]),
+  rdf_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
+  rdf_assert_literal('http://www.wouterbeek.com', xfn:name, 'Wouter Beek', xfn),
+  find_contacts('http://www.wouterbeek.com', DOM),
+  export_contacts.
+
+:- end_tests(xfn).

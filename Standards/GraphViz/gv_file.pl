@@ -133,7 +133,7 @@ to_gv_file(Codes, Method, ToFileType, ToFile):-
     [access(write),file_type(graphviz)]
   ),
   setup_call_cleanup(
-    open(FromFile, write, Out),
+    open(FromFile, write, Out, [encoding(utf8),type(test)]),
     put_codes(Out, Codes),
     close(Out)
   ),

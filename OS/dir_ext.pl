@@ -1,42 +1,66 @@
 :- module(dir_ext,
   [
-    create_personal_subdirectory/2, % +SubDir:list(atom)
-                                    % -Absolute:atom
-    create_directory/1, % +Dir:atom
-    create_nested_directory/1, % +NestedDirs:compound
-    create_nested_directory/2, % +NestedDirs:compound
+    append_directories/3, % +Dir1:atom
+                          % +Dir2:atom
+                          % -Dir3:atom
+    create_personal_subdirectory/2, % +Subdirectory:list(atom)
+                                    % -AbsoluteDirectory:atom
+    create_directory/1, % +Directory:atom
+    create_nested_directory/1, % +NestedDirectories:compound
+    create_nested_directory/2, % +NestedDirectories:compound
                                % -Absolute:atom
     directory_files2/2, % +Directory:atom
                         % -Absolutes:list(atom)
     directory_files/3, % +Directory:atom
                        % +FileType:atom
                        % -Entries:list(atom)
+    directory_to_subdirectories/2, % +Directory:atom
+                                   % -Subdirectories:list(atom)
+    experiment_directory/1, % -Directory:atom
+    safe_copy_directory/2, % +FromDirectory:atom
+                           % +ToDirectory:atom
+    safe_copy_experiment_data/2, % +FromDirectory:atom
+                                 % -ToDirectory:atom
+    safe_delete_directory/1, % +Directory:atom
+    safe_delete_directory_contents/1, % +Directory:atom
     safe_delete_directory_contents/2, % +Directory:atom
-                                      % +FileType:atom
-    safe_delete_directory_contents/2, % +Directory:atom
-                                      % +FileTypes:list(atom)
-    trashcan/1 % -Dir:atom
+                                      % +FileTypes:or([atom,list(atom)])
+    subdirectories_to_directory/2, % +Subdirectories:list(atom)
+                                   % -Directory:atom
+    trashcan/1 % -Directory:atom
   ]
 ).
 
-/** <module> DIR_EXT
+/** <module> Directory extensions
 
 Extensions for handling directories.
 
 @author Wouter Beek
 @tbd Add safe_delete_directory/1.
-@version 2013/06-2013/07
+@version 2013/06-2013/07, 2013/09
 */
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(os(file_ext)).
 :- use_module(os(filepath_ext)).
 
+:- debug(dir_ext).
 
+
+
+%! append_directories(+Dir1:atom, +Dir2:atom, -Dir3:atom) is det.
+
+append_directories(Dir1, Dir2, Dir3):-
+  directory_to_subdirectories(Dir1, Subdirs1),
+  directory_to_subdirectories(Dir2, Subdirs2),
+  append(Subdirs1, Subdirs2, Subdirs3),
+  subdirectories_to_directory(Subdirs3, Dir3),
+  create_directory(Dir3).
 
 %! create_directory(+Dir:atom) is det.
 % Creates a directory with the given name.
@@ -49,19 +73,19 @@ create_directory(Dir):-
 % The directory does not already exist, so create it.
 create_directory(Dir):-
   is_absolute_file_name(Dir), !,
-  split_atom_exclusive(['/'], Dir, [Root | SubDirs]),
+  directory_to_subdirectories(Dir, SubDirs),
   % Recursively assert all subpaths.
-  create_directory(Root, SubDirs).
+  % The root node is indicated by the empty atom.
+  create_directory('', SubDirs).
 
 create_directory(_CurrentDir, []):- !.
-create_directory(CurrentDir, [NextSubDir | SubDirs]):-
+create_directory(CurrentDir, [NextSubDir|SubDirs]):-
   directory_file_path(CurrentDir, NextSubDir, Dir),
   (
     exists_directory(Dir)
   ;
     make_directory(Dir)
-  ),
-  !,
+  ), !,
   create_directory(Dir, SubDirs).
 
 create_nested_directory(NestedDir):-
@@ -173,20 +197,93 @@ directory_files2(Directory, Absolutes):-
     Absolutes
   ).
 
-%! safe_delete_directory_contents(+Dir:atom, +FileType:atom) is det.
-%! safe_delete_directory_contents(+Dir:atom, +FileType:list(atom)) is det.
+experiment_directory(Dir):-
+  experiment_directory_init,
+  absolute_file_name(
+    personal('Experiment'),
+    Dir,
+    [access(write),file_type(directory)]
+  ).
+
+experiment_directory_init:-
+  file_search_path(experiment, _Dir), !.
+experiment_directory_init:-
+  create_personal_subdirectory('Experiment', Absolute),
+  db_add_novel(user:file_search_path(experiment, Absolute)).
+
+safe_copy_directory(FromDir, ToDir):-
+  safe_delete_directory(ToDir),
+  copy_directory(FromDir, ToDir),
+  debug(dir_ext, 'Directory ~w was safe-copied to ~w.', [FromDir,ToDir]).
+
+safe_copy_experiment_data(FromDir, ToDir):-
+  % Make sure this is a directory name.
+  exists_directory(FromDir),
+
+  % Assemble a new directory name based on the two given directory names.
+  experiment_directory(ExperimentDir),
+  append_directories(ExperimentDir, FromDir, ToDir),
+
+  % Recreate the copied directory in the context of
+  % the experiment directory.
+  create_directory(ToDir),
+
+  % Now do the actual copying.
+  safe_copy_directory(FromDir, ToDir).
+
+%! directory_to_subdirectories(
+%!   +Directory:atom,
+%!   -Subdirectories:list(atom)
+%! ) is det.
+
+directory_to_subdirectories(Dir, Subdirs):-
+  is_absolute_file_name(Dir), !,
+  split_atom_exclusive(['/'], Dir, [_|Subdirs]).
+directory_to_subdirectories(Dir, Subdirs):-
+  split_atom_exclusive(['/'], Dir, Subdirs).
+
+safe_delete_directory(FromDir):-
+  trashcan(Trashcan),
+  append_directories(Trashcan, FromDir, ToDir),
+  copy_directory(FromDir, ToDir),
+  delete_directory_and_contents(FromDir),
+  debug(dir_ext, 'Directory ~w was safe-deleted.', [FromDir]).
+
+%! safe_delete_directory_contents(+Directory:atom) is det.
+% @see Wrapper around safe_delete_directory_contents/2.
+
+safe_delete_directory_contents(Dir):-
+  safe_delete_directory_contents(Dir, _NoFileType),
+  debug(dir_ext, 'The contents of directory ~w were safe-deleted.', [Dir]).
+
+%! safe_delete_directory_contents(
+%!   +Directory:atom,
+%!   +FileType:or([atom,list(atom)])
+%! ) is det.
 % Deletes all file in the given directory that are of the given file type.
 %
 % @param Dir The atomic absolute name of a directory.
-% @param FileType The atomic name of a file type, registered via
-%      prolog_file_type/2.
-% @see safe_delete_directory_contents/1
+% @param FileType The atomic name of a file type registered via
+%        prolog_file_type/2, or a list of such file types.
+%
 % @throws existence_error In case a file type is not registered.
 
 % Remove all files that are of the given file type from the given directory.
+% Allow multiple file types to be given.
+safe_delete_directory_contents(Dir, FileTypes):-
+  is_list(FileTypes), !,
+  maplist(safe_delete_directory_contents(Dir), FileTypes).
 safe_delete_directory_contents(Dir, FileType):-
-  % Make sure that the given file type is registered.
-  once(prolog_file_type(_Ext, FileType)), !,
+  % Allow the file type to be either set or not (i.e., delete all files).
+  (
+    var(FileType)
+  ->
+    RE_Format = '.*\\*'
+  ;
+    % Make sure that the given file type is registered.
+    once(prolog_file_type(_Ext, FileType)),
+    RE_Format = '.*\\.~w'
+  ),
 
   % Recurse over the given file type, since it may be associated with
   % multiple extensions.
@@ -194,7 +291,7 @@ safe_delete_directory_contents(Dir, FileType):-
     File,
     (
       prolog_file_type(Ext, FileType),
-      format(atom(RE), '.*\\.~w', [Ext]),
+      format(atom(RE), RE_Format, [Ext]),
       path_walk_tree(Dir, RE, Files0),
       member(File, Files0)
     ),
@@ -204,13 +301,8 @@ safe_delete_directory_contents(Dir, FileType):-
   % Delete all files.
   % This may throw permission exceptions.
   maplist(safe_delete_file, Files).
-% Allow multiple file types to be given.
-safe_delete_directory_contents(Directory, FileTypes):-
-  is_list(FileTypes), !,
-  maplist(safe_delete_directory_contents(Directory), FileTypes).
-% Throw an exception if the given file type is not registered.
+% Throw an exception if the given file type is nonvar and unregistered.
 safe_delete_directory_contents(_Dir, FileType):-
-  atom(FileType), !,
   throw(
     error(
       existence_error(unknown_file_type, FileType),
@@ -221,17 +313,21 @@ safe_delete_directory_contents(_Dir, FileType):-
     )
   ).
 
+subdirectories_to_directory(Subdirs, Dir2):-
+  atomic_list_concat(Subdirs, '/', Dir1),
+  atomic_concat('/', Dir1, Dir2).
+
 trashcan(Dir):-
   trashcan_init,
   absolute_file_name(
-   personal(trash),
+   personal('Trash'),
     Dir,
-    [access(write), file_type(directory)]
+    [access(write),file_type(directory)]
   ).
 
 trashcan_init:-
   file_search_path(trash, _Dir), !.
 trashcan_init:-
-  create_personal_subdirectory(trash, Absolute),
+  create_personal_subdirectory('Trash', Absolute),
   db_add_novel(user:file_search_path(trash, Absolute)).
 

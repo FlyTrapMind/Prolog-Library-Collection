@@ -45,7 +45,7 @@ Predicates that extend the swipl builtin I/O predicates operating on streams.
 atom_to_file(Atom, File):-
   access_file(File, write),!,
   setup_call_cleanup(
-    open(File, write, Stream),
+    open(File, write, Stream, [encoding(utf8),type(test)]),
     format(Stream, '~w', [Atom]),
     close(Stream)
   ).
@@ -67,7 +67,7 @@ copy_stream_line(From, To):-
 
 file_to_atom(File, Atom):-
   setup_call_cleanup(
-    open(File, read, Stream),
+    open(File, read, Stream, [encoding(utf8),type(test)]),
     stream_to_atom(Stream, Atom),
     close(Stream)
   ).

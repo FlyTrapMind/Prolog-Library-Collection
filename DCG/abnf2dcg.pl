@@ -1,27 +1,13 @@
-:- module(abnf2dcg, []).
+:- module(
+  abnf2dcg,
+  [
+    abnf2dcg/1 % +File:atom
+  ]
+).
 
 /** <module> ABNF2DCG
 
 Converts ABNF grammars to DCGs.
-
-### Examples of term expansion
-
-~~~{.dcg}
-system:goal_expansion(From, To):-
-  From =.. [:-,a,B],
-  write(found),
-  To =.. [:-,b,B].
-
-a:-
-  write(a).
-
-system:term_expansion(From, To):-
-  From =.. [-->,c,C],
-  write(found),
-  To =.. [-->,d,C].
-
-c --> [].
-~~~
 
 --
 
@@ -33,110 +19,64 @@ c --> [].
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(library(quasi_quotations)).
-:- use_module(standards(abnf)).
+:- use_module(generics(db_ext)).
+:- use_module(library(pio)).
+:- use_module(library(plunit)).
+:- use_module(math(radix)).
 
-:- dynamic(term_expansion/2).
-:- multifile(term_expansion/2).
-
-:- quasi_quotation_syntax(abnf).
-
-
-
-% PREDICATES USED IN TERM EXPANSIONS %
-% These must appear before term_expansion/2.
-
-%! rule(-Rules:list)//
-% Note that one ABNF rule may correspond to multiple DCG rules.
-
-rule(Rules) -->
-  rulename(Name),
-  spaces,
-  "=",
-  spaces,
-  'num-val'(Name, Rules).
-
-%! 'hex-val'(-ValueRange:pair(nonneg,nonneg))//
-
-'hex-val'(N-N) -->
-  "x",
-  hexadecimal_number(N).
-'hex-val'(N1-N2) -->
-  "x",
-  hexadecimal_number(N1),
-  "-",
-  hexadecimal_number(N2).
-
-%! 'num-val'(+Name, -Rules:list)//
-
-%'num-val'(N) --> "%', 'bin-val'(N).
-%'num-val'(N) --> "%', 'dec-val'(N).
-'num-val'(Name, Rules) -->
-  "%",
-  'hex-val'(N1-N2),
-  (
-    {N2 - N1 =< 3}
-  ->
-    {
-      findall(
-        Rule,
-        (
-          between(N1, N2, N),
-          Rule =.. [-->,Name,dcg_code(N)]
-        ),
-        Rules
-      )
-    }
-  ;
-    {
-      Rule =.. [-->,Name,(dcg_code(C), {between(N1, N2, C)})],
-      Rules = [Rule]
-    }
-  ).
-
-%! rulename(-Name:atom)//
-
-rulename(Name) -->
-  'ALPHA'(H),
-  dcg_multi(rulename_, 1-_, T, []),
-  {atom_codes(Name, [H|T])}.
-rulename_(X) --> 'ALPHA'(X).
-rulename_(X) --> 'DIGIT'(X).
-rulename_(X) --> hyphen(X).
+abnf2dcg(File):-
+  access_file(File, read),
+  phrase_from_file(abnf, File).
 
 
 
-% TERM EXPANSIONS %
+% GRAMMAR %
 
-system:term_expansion(ABNF, DCGs):-
-  ABNF =.. [:-,abnf(Atom),_],
-write(Atom),
-  atom_codes(Atom, Codes),
-  once(phrase(rule(DCGs), Codes)),
-write(DCGs).
+abnf -->
+  dcg_multi(rule).
+
+%! base(?Radix:oneof([2,10,16]))//
+
+base(2)  --> b.
+base(10) --> d.
+base(16) --> x.
+
+elements(Name) -->
+  element(Name).
+
+element(Name) -->
+  single_terminal_value(Code),
+  {db_add_dcg_rule(Name, [Code])}.
+
+name(Name) -->
+  dcg_cistring(Name).
+
+rule -->
+  name(Name),
+gtrace,
+  blanks, equals_sign, blanks,
+  elements(Name),
+  crlf.
+
+%! single_terminal_value(-Code:positive_integer)//
+% Reads a character code from the input stream.
+% The character code is described in a given radix or base
+% (either `2`, `10`, or `16`).
+
+single_terminal_value(Code) -->
+  percent_sign,
+  base(Radix),
+  hexadecimal_digit(H1),
+  hexadecimal_digit(H2),
+  {digits_to_decimal([H1,H2], Radix, Code)}.
 
 
 
-% TERMS TO BE EXPANDED %
+:- begin_tests(abnf2dcg).
 
-% Resulting DCG:
-% ~~~{.dcg}
-%'DIGIT'(D, C) --> decimal_digit(D, C).
-% ~~~
+test(abnf1, [true]):-
+  absolute_file_name(project('abnf.abnf'), File, [access(read)]),
+  abnf2dcg(File).
 
-%abnf('MIDGET = %x30-31'):- true.
-{|abnf||MIDGET = %x30-31|}.
-
-abnf(Content, _Vars, _Dict, _) :-
-  phrase_from_quasi_quotation(rule(DCGs), Content).
-
-system:term_expansion(From, To):-
-  From =.. [-->,feed,C],
-write(found),
-  To1 =.. [-->,baboon,C],
-  To2 =.. [-->,goon,C],
-  To = [To1,To2],
-write(To).
-
-feed --> [].
+:- end_tests(abnf2dcg).
 

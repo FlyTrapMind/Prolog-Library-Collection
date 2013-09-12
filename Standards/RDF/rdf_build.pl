@@ -37,10 +37,9 @@
                               % +Graph:atom
 
 % LITERAL RETRACTIONS
-    rdf_retractall_datatype/5, % ?Subject:oneof([bnode,uri])
+    rdf_retractall_datatype/4, % ?Subject:oneof([bnode,uri])
                                % ?Predicate:uri
                                % ?DatatypeName:atom
-                               % ?Value
                                % ?Graph:atom
     rdf_retractall_literal/4, % ?Subject:oneof([bnode,uri])
                               % ?Predicate:uri
@@ -83,7 +82,7 @@ The supported datatypes:
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_typecheck)).
+:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
@@ -100,7 +99,7 @@ The supported datatypes:
 :- rdf_meta(rdf_increment(r,r,+)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,+,+,+)).
 % LITERAL RETRACTIONS
-:- rdf_meta(rdf_retractall_datatype(r,r,?,?,?)).
+:- rdf_meta(rdf_retractall_datatype(r,r,?,?)).
 :- rdf_meta(rdf_retractall_literal(r,r,?,?)).
 :- rdf_meta(rdf_retractall_literal(r,r,?,?,?)).
 % PROPERTIES %
@@ -204,27 +203,21 @@ rdf_assert_xml_literal(S, P, XMLLiteral, G):-
 % LITERAL RETRACTIONS %
 
 %! rdf_retractall_datatype(
-%!   +Subject:oneof([bnode,uri]),
-%!   +Predicate:uri,
-%!   +DatatypeName:atom,
-%!   +Value,
-%!   +Graph:atom
+%!   ?Subject:oneof([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?DatatypeName:atom,
+%!   ?Graph:atom
 %! ) is det.
 % Retracts all matching RDF triples that assert a datatypes value.
 %
 % @param Subject A resource.
 % @param Predicate A resource.
 % @param DatatypeName
-% @param Value
 % @param Graph The atomic name of an RDF graph.
 
-rdf_retractall_datatype(S, P, DatatypeName, Value, G):-
+rdf_retractall_datatype(S, P, DatatypeName, G):-
   xsd_datatype(DatatypeName, Datatype),
-  forall(
-    % The given value may have several possible literals representing it.
-    xsd_lexicalMap(Datatype, LEX, Value),
-    rdf_retractall(S, P, literal(type(Datatype, LEX)), G)
-  ).
+  rdf_retractall(S, P, literal(type(Datatype,_LEX)), G).
 
 %! rdf_retractall_literal(
 %!   ?Subject:oneof([bnode,uri]),
@@ -273,7 +266,7 @@ rdf_retractall_literal(S, P, Language, Literal, G):-
 rdf_increment(S, P, G):-
   once(rdf_datatype(S, P, integer, OldValue, G)),
   NewValue is OldValue + 1,
-  rdf_retractall_datatype(Link, Relation, integer, OldValue, G),
+  rdf_retractall_datatype(Link, Relation, integer, G),
   rdf_assert_datatype(Link, Relation, integer, NewValue, G).
 
 %! rdf_overwrite_datatype(
@@ -287,28 +280,17 @@ rdf_increment(S, P, G):-
 % value is already asserted. In that case none of the other values gets
 % retracted.
 
+rdf_overwrite_datatype(S, P, DatatypeName, Value, G):-
+  \+ rdf_datatype(S, P, DatatypeName, _, G), !,
+  rdf_assert_datatype(S, P, DatatypeName, Value, G).
 rdf_overwrite_datatype(S, P, DatatypeName, NewValue, G):-
-  % Type checking.
-  % We need a completely qualified RDF triple.
-  rdf_is_subject(S),
-  rdf_is_predicate(P),
-  rdf_graph(G), !,
-  findall(
-    OldValue,
-    rdf_datatype(S, P, DatatypeName, OldValue, G),
-    OldValues
-  ),
-  (
-    member(NewValue, OldValues)
-  ;
-    rdf_retractall_datatype(S, P, DatatypeName, OldValue, G),
-    rdf_assert_datatype(S, P, DatatypeName, NewValue, G),
-    debug(
-      rdf_build,
-      'Updated value <~w, ~w, ~w^^~w, ~w> --> <~w, ~w, ~w^^~w, ~w>\n',
-      [S, P, OldValues, DatatypeName, G, S, P, NewValue, DatatypeName, G]
-    )
-  ), !.
+  rdf_retractall_datatype(S, P, DatatypeName, G),
+  rdf_assert_datatype(S, P, DatatypeName, NewValue, G),
+  debug(
+    rdf_build,
+    'Updated value <~w, ~w, ~w^^~w, ~w>',
+    [S,P,NewValue,DatatypeName,G]
+  ).
 
 
 

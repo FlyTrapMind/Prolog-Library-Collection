@@ -24,6 +24,9 @@
     first/3, % +L:list,
              % +N:integer
              % -Firsts:list
+    icompare/3, % ?InvertedOrder
+                % @Term1
+                % @Term2
     length_cut/4, % +L:list
                   % +Cut:integer
                   % -L1:list
@@ -514,8 +517,7 @@ icompare(InvertedOrder, Term1, Term2):-
 % results.
 sort(Options, List, Sorted):-
   option(inverted(true), Options, false),
-  option(duplicates(false), Options, false),
-  !,
+  option(duplicates(false), Options, false), !,
   predsort(icompare, List, Sorted).
 sort(Options, List, Sorted):-
   (

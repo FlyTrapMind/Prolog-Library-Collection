@@ -4,9 +4,10 @@
     arrow//1, % +Length:integer
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
-    dcg_cicode//1, % +Code:code
+    crlf//0,
+    dcg_cicode//1, % ?Code:code
+    dcg_cistring//1, % ?String:string
     dcg_code//1, % ?Code:code
-    dcg_cistring//1, % +String:string
     dcg_codes//1, % +Codes:list(code)
     graphic//1, % -Graphic:list(code)
     horizontal_line//1, % +Length:integer
@@ -113,22 +114,37 @@ arrow_left_head(left).
 arrow_right_head(both).
 arrow_right_head(right).
 
-%! dcg_cicode(+Code:code)//
+crlf -->
+  carriage_return,
+  line_feed.
+
+%! dcg_cicode(?Code:code)//
 % Generates the case-insensitive variants of the given code.
 
-dcg_cicode(Lower) -->
-  {code_type(Lower, lower(Upper))}, !,
-  ([Lower] ; [Upper]).
-dcg_cicode(Upper) -->
-  {code_type(Upper, upper(Lower))}, !,
-  ([Upper] ; [Lower]).
 dcg_cicode(Code) -->
-  [Code].
+  {nonvar(Code)}, !,
+  (
+    {code_type(Lower, lower(Upper))}
+  ->
+    ([Lower] ; [Upper])
+  ;
+    {code_type(Upper, upper(Lower))}
+  ->
+    ([Upper] ; [Lower])
+  ;
+    [Code]
+  ).
+dcg_cicode(CI_Code) -->
+  % This allows dcg_cistring//1 to use this DCG rule for reading words
+  % in a case-sensitive way. 
+  dcg_graph(Code),
+  (
+    {code_type(Code, upper(CI_Code))}
+  ;
+    {CI_Code = Code}
+  ), !.
 
-dcg_code(C) -->
-  [C].
-
-%! dcg_string(+String:list(code))//
+%! dcg_cistring(?String:list(code))//
 % Generates the case-insensitive variants of the given string.
 %
 % Example:
@@ -154,7 +170,10 @@ dcg_code(C) -->
 % ~~~
 
 dcg_cistring(Codes) -->
-  dcg_multi(dcg_cicode, _, Codes, []).
+  dcg_multi(dcg_cicode, _, Codes, []), !.
+
+dcg_code(C) -->
+  [C].
 
 dcg_codes([]) -->
   [].

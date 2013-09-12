@@ -5,10 +5,6 @@
                            % -LEX:list(code)
     decimalLexicalMap/2, % +LEX:list(code)
                          % -Decimal:number
-    decimalLexicalMap1/2, % ?LEX:list(code)
-                          % ?Decimal:number
-    decimalLexicalMap2/2, % ?LEX:list(code)
-                          % ?Decimal:compound
 % DCG COMPONENTS
     decimalPtNumeral//2, % -Sign:oneof([-1,1])
                          % -Decimal:float
@@ -109,11 +105,11 @@ The decimal datatype has the following values for its fundamental facets:
 --
 
 @author Wouter Beek
+@tbd Have a look at the bidirectional implementation.
 @version 2013/07-2013/08
 */
 
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(math(math_ext)).
 :- use_module(math(rational_ext)).
 
@@ -137,6 +133,9 @@ decimalCanonicalMap(I) -->
 decimalCanonicalMap(F) -->
   {rational(F)}, !,
   decimalPtCanonicalMap(F).
+decimalCanonicalMap(F1) -->
+  {F2 is rationalize(F1)},
+  decimalCanonicalMap(F2).
 
 %! decimalPtCanonicalMap(+Decimal:rational)//
 
@@ -182,13 +181,20 @@ unsignedDecimalPtCanonicalMap(F) -->
 
 %! unsignedNoDecimalPtCanonicalMap(+Integer:nonneg)//
 
-unsignedNoDecimalPtCanonicalMap(0) --> !, [].
+% For $0$ the emitted stirng should be "0" and not the empty string!
+% Check \ref{def:unsignedNoDecimalPtCanonicalMap} in the PraSem document.
+unsignedNoDecimalPtCanonicalMap(0) --> !, "0".
 unsignedNoDecimalPtCanonicalMap(F) -->
+  unsignedNoDecimalPtCanonicalMap_(F).
+
+% Done!
+unsignedNoDecimalPtCanonicalMap_(0) --> !, [].
+unsignedNoDecimalPtCanonicalMap_(F) -->
   {
     mod(F, 10, G),
     div(F, 10 ,H)
   },
-  unsignedNoDecimalPtCanonicalMap(H),
+  unsignedNoDecimalPtCanonicalMap_(H),
   decimal_digit(G).
 
 
@@ -205,7 +211,7 @@ unsignedNoDecimalPtCanonicalMap(F) -->
 %      implementations.
 
 decimalLexicalMap(LEX, N):-
-  phrase(decimalLexicalRep(N), LEX).
+  once(phrase(decimalLexicalRep(N), LEX)).
 
 %! decimalLexicalRep(-Decimal:float)//
 % ~~~{.ebnf}
@@ -285,6 +291,7 @@ unsignedNoDecimalPtNumeral(0, 0) --> [].
 
 
 
+/*
 % BIDIRECTIONAL IMPLEMENTATIONS %
 
 :- use_module(dcg(dcg_ascii)).
@@ -360,4 +367,5 @@ decimalLexicalRep2(T0, decimal(I,N)) -->
     {I2s  = []}
   ),
   {parse_tree(decimalLexicalRep, [T1,I1s,T3,I2s], T0)}.
+*/
 

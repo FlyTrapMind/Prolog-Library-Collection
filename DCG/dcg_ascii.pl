@@ -388,7 +388,7 @@ There are several different variations of the 8-bit ASCII table.
 The table below is according to ISO 8859-1, also called ISO Latin-1.
 Codes 129-159 contain the Microsoft® Windows Latin-1 extended characters.
 
----+ Alternative names
+# Alternative names
 
 Some DCG rules are prepended with =|dcg_|=, since they would otherwise
 conflict with builtins or with predicates from other modules:
@@ -402,9 +402,6 @@ conflict with builtins or with predicates from other modules:
 @tbd Compare the implementation to the ANSI X3.4-1986 standard.
 @version 2013/01-2013/02, 2013/05-2013/07
 */
-
-:- use_module(library(dcg/basics)).
-:- use_module(dcg(dcg_cardinal)).
 
 
 

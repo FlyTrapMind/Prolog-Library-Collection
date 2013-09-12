@@ -268,13 +268,25 @@ the original two values are incomparable.
 %! dateTimeCanonicalMap(+DateTime:compound, -LEX:list(code)) is det.
 
 dateTimeCanonicalMap(DateTime, LEX):-
-  phrase(dateTimeCanonicalMap(DateTime), LEX).
+  once(phrase(dateTimeCanonicalMap(DateTime), LEX)).
 
 %! dateTimeCanonicalMap(+DateTime:compound)//
 % Maps a dateTime value to a dateTimeLexicalRep//.
 %
 % @param DateTime A compound term.
 
+% The SWI-Prolog float representation for date-time values.
+dateTimeCanonicalMap(Float) -->
+  {float(Float)}, !,
+  {stamp_date_time(Float, Compound, local)},
+  dateTimeCanonicalMap(Compound).
+% The SWI-Prolog compound term for date-time representations.
+% Notice that the timezone (`TZ`) is an atom (e.g. `CEST`) and `Offset`
+% is an integer representing the offset relative to UTC in seconds.
+% XSD defines the timezone as the offset relative to UTC in minutes.
+dateTimeCanonicalMap(date(Y,M,D,H,MM,S,Offset,_TZ,_DST)) --> !,
+  {TZ is Offset / 60},
+  dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)).
 dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)) -->
   yearCanonicalFragmentMap(Y),
   hyphen,
@@ -355,10 +367,10 @@ secondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsTwoDigitCanonicalFragmentMap(S).
 secondCanonicalFragmentMap(S) -->
-  {N1 is S div 1},
+  {div(S, 1.0, N1)},
   unsTwoDigitCanonicalFragmentMap(N1),
   dot,
-  {N2 is S mod 1},
+  {mod(S, 1.0, N2)},
   fractionDigitsCanonicalFragmentMap(N2).
 
 %! timezoneCanonicalFragmentMap(+Timezone:between(-840,840))//
@@ -411,7 +423,7 @@ yearCanonicalFragmentMap(Y) -->
 %! dateTimeLexicalMap(+LEX:list(code), -DateTime:compound) is det.
 
 dateTimeLexicalMap(LEX, DateTime):-
-  phrase(dateTimeLexicalRep(DateTime), LEX).
+  once(phrase(dateTimeLexicalRep(DateTime), LEX)).
 
 %! dateTimeLexicalRep(-DateTime:compound)//
 % Subsequent =|-|=, =T=, and =|:|=, separate the various numerals.
@@ -457,8 +469,6 @@ dateTimeLexicalMap(LEX, DateTime):-
 
 dateTimeLexicalRep(DT) -->
   yearFrag(Y), hyphen, monthFrag(M), hyphen, dayFrag(D),
-  % Enforce the day-of-month values constraint.
-  {daysInMonth(Y, MM, D)},
   "T",
   (
     hourFrag(H), colon, minuteFrag(MM), colon, secondFrag(S)
@@ -569,11 +579,11 @@ monthFrag(M) -->
 % ~~~
 
 secondFrag(S) -->
-  (binary_digit(_, C1) ; two(C1) ; three(C1) ; four(C1) ; five(C1)),
-  decimal_digit(_, C2),
+  (binary_digit(_Digit1, C1) ; two(C1) ; three(C1) ; four(C1) ; five(C1)),
+  decimal_digit(_Digit2, C2),
   (
     dot(C3),
-    dcg_multi(decimal_digit, 1-_, CT, []),
+    dcg_multi(decimal_digit, 1-_, _Digits, CT, []),
     {phrase(unsignedDecimalPtNumeral(S), [C1,C2,C3|CT])}
   ;
     {phrase(unsignedNoDecimalPtNumeral(S), [C1,C2])}
@@ -605,7 +615,11 @@ timezoneFrag(TZ) -->
   ;
     one(C1), (binary_digit(_, C2) ; three(C2))
   ),
-  {phrase(unsignedDecimalPtNumeral(N1), [C1,C2])},
+  % @compat Here we deviate from the XSD 1.1 standard,
+  %         which uses unsignedDecimalPtNumeral//1 instead.
+  %         But note that the definition of timezoneFrag//1
+  %         excludes the appearance of a decimal separator.
+  {phrase(unsignedNoDecimalPtNumeral(N1), [C1,C2])},
   colon,
   minuteFrag(N2),
   {TZ is copysign(N1 * 60 + N2, Sign)}.
@@ -623,13 +637,13 @@ timezoneFrag(TZ) -->
 % @param Year An integer.
 
 yearFrag(Y) -->
-  (minus_sign(S), {Cs = [S,H|T]} ; {Cs = [H|T]}),
+  (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
-    nonzero_decimal_digit(_, H),
-    dcg_multi(decimal_digit, 3-_, T, [])
+    nonzero_decimal_digit(_Digit1, Code),
+    dcg_multi(decimal_digit, 3-_, _Digits1, Codes, [])
   ;
-    zero(H),
-    dcg_multi(decimal_digit, 3, T, [])
+    zero(Code),
+    dcg_multi(decimal_digit, 3, _Digits2, Codes, [])
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),
@@ -916,7 +930,7 @@ timeOnTimeline(dt(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
   (var(UTC) -> MM3 = MM2 ; MM3 is MM2 - UTC),
 
   % Add 86400 × Summ < mo ·daysInMonth·(yr + 1, m) to ToTl.
-  aggregate(
+  aggregate_all(
     sum(D3_),
     (
       between(1,M2,M3),

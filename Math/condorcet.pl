@@ -38,12 +38,6 @@ contestant(um).
 contestant(uva).
 contestant(vu).
 
-voter(run).
-voter(rug).
-voter(um).
-voter(uva).
-voter(vu).
-
 % From highest ranked (left) to lowest ranked (right).
 %%%%vote0(run, [um,  rug,  uva, vu ]).
 vote0(rug, [uva, run, um,  vu ]).

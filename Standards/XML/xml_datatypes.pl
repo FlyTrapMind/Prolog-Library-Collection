@@ -24,7 +24,6 @@ DCG rules for XML datatypes.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_unicode)).
-:- use_module(xml(xml)).
 
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
 
@@ -37,11 +36,11 @@ xml_boolean(xml_boolean(true),  true) --> "true".
 % An **XML Character** is an atomic unit of text specified by ISO/IEC 10646.
 %
 % ~~~{.bnf}
-% Char ::= #x9 |   // Horizontal tab
-%          #xA |   // Line feed
-%          #xD |   // Carriage return
-%          [#x20-#xD7FF] | // Space, punctuation, numbers, letters.
-%          [#xE000-#xFFFD] |
+% Char ::= #x9               | // Horizontal tab
+%          #xA               | // Line feed
+%          #xD               | // Carriage return
+%          [#x20-#xD7FF]     | // Space, punctuation, numbers, letters
+%          [#xE000-#xFFFD]   |
 %          [#x10000-#x10FFFF]
 % ~~~
 %
@@ -74,10 +73,19 @@ xml_boolean(xml_boolean(true),  true) --> "true".
 % @tbd Add Unicode support and make sure the right character ranges
 %      are selected.
 
-xml_char(C) --> horizontal_tab(C).
-xml_char(C) --> line_feed(C).
-xml_char(C) --> carriage_return(C).
-xml_char(C) --> dcg_graph(C).
+% Horizontal tab =|#x9|=
+xml_char(X) --> horizontal_tab(X).
+% Line feed =|#xA|=
+xml_char(X) --> line_feed(X).
+% Carriage return =|#xD|=
+xml_char(X) --> carriage_return(X).
+% Space, punctuation, numbers, letters
+% =|#x20-#xD7FF|=
+xml_char(X) --> [X], {between(20, 55295, X)}.
+% =|#xE000-#xFFFD|=
+xml_char(X) --> [X], {between(57344, 65533, X)}.
+% =|#x10000-#x10FFFF|=
+xml_char(X) --> [X], {between(65536, 1114111, X)}.
 
 xml_chars([H|T]) -->
   xml_char(H),

@@ -16,7 +16,6 @@ DCGs for parsing/generating page information.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(library(dcg/basics)).
 :- use_module(math(roman_numerals)).
 

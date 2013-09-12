@@ -62,7 +62,7 @@ Support for RDF containers (sequence, bag, and alternatives).
 
 % ALTERNATIVES %
 
-%! rdfs_alt(?Alt:uri, ?Graph:atom) is nondet.
+%! rdf_alt(?Alt:uri, ?Graph:atom) is nondet.
 % Alternative collections.
 % No duplicates and unordered.
 
@@ -70,17 +70,17 @@ rdf_alt(Alt, G):-
   rdfs_individual_of(Alt, rdf:'Alt'),
   rdf_subject(G, Alt).
 
-%! rdfs_alt(?Alt:uri, -Contents:list(uri), ?Graph:atom) is nondet.
+%! rdf_alt(?Alt:uri, -Contents:list(uri), ?Graph:atom) is nondet.
 
-rdfs_alt(Alt, Contents, G):-
-  rdf_alt(Alt, Graph),
+rdf_alt(Alt, Contents, G):-
+  rdf_alt(Alt, G),
   rdf_collection_(Alt, Contents, G).
 
 
 
 % BAG %
 
-%! rdfs_bag(-Bag:uri, +Graph:atom) is nondet.
+%! rdf_bag(-Bag:uri, +Graph:atom) is nondet.
 % Returns bags in the given graph.
 %
 % @param Bag An RDF bag resource.
@@ -90,7 +90,7 @@ rdf_bag(Bag, G):-
   rdfs_individual_of(Bag, rdf:'Bag'),
   rdf_subject(G, Bag).
 
-%! rdfs_bag(+Bag:uri, -Contents:list(uri), +Graph:atom) is nondet.
+%! rdf_bag(+Bag:uri, -Contents:list(uri), +Graph:atom) is nondet.
 % Returns bags and their contents in the given graph.
 %
 % @param Bag An RDF bag.
@@ -133,7 +133,7 @@ rdf_collection_(Collection, Contents, G):-
     Content,
     (
       rdf(Collection, ContainerMembershipProperty, Content, G),
-      container_membership_property(ContainerMembershipProperty)
+      rdf_container_membership_property(ContainerMembershipProperty)
     ),
     Contents
   ).
@@ -158,6 +158,6 @@ rdf_seq(Seq, G):-
   rdf_subject(G, Seq).
 
 rdf_seq(Seq, Contents, G):-
-  rdfs_seq(Seq, G),
+  rdf_seq(Seq, G),
   rdf_collection(Seq, Contents, G).
 

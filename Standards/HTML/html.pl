@@ -14,9 +14,6 @@
     html_image/3, % +Description:atom
                   % +Base:atom
                   % -DIV:element
-    list_to_table/3, % +Options:list(nvpair)
-                     % +List:list(list(term))
-                     % -Markup:element
 
 % PARSING
     html_attribute/2, % +Attributes:list(nvpair)
@@ -47,7 +44,6 @@ HTML attribute parsing, used in HTML table generation.
 @version 2012/09-2013/06
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
@@ -103,7 +99,7 @@ reply_html_file(Style, File):-
 % absolute file name.
 
 file_to_html(File, HTML):-
-  open(File, read, Stream),
+  open(File, read, Stream, [encoding(utf8),type(test)]),
   stream_to_html(Stream, HTML).
 
 http_open_wrapper(URI, Stream, Options):-
@@ -111,8 +107,10 @@ http_open_wrapper(URI, Stream, Options):-
 
 % The maximum number of HTTP attempts.
 http_open_wrapper(URI, _Stream, _Options, 5):- !,
-  cowspeak(
-    'The maximum number of HTTP attempts was reached for <~w>.'-[URI]
+  debug(
+    html,
+    'The maximum number of HTTP attempts was reached for <~w>.',
+    [URI]
   ).
 http_open_wrapper(URI, Stream, Options, Attempts):-
   catch(
@@ -132,30 +130,26 @@ http_open_wrapper(URI, Stream, Options, Attempts):-
 
 % Retry after a while upon exceeding a limit.
 process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- !,
-  cowspeak([
-    'Encountered ~w error(s) while parsing HTML.'-[Max],
-    'Context:\t~w'-[Context]
-  ]),
+  debug(html, 'Encountered ~w error(s) while parsing HTML.', [Max]),
+  debug(html, 'Context:\t~w', [Context]),
   sleep(10),
   call(Goal).
 % Retry after a while upon existence error.
 process_exception(error(existence_error(url, URI), Context), Goal):- !,
-  cowspeak([
-    'Resource <~w> does not seem to exist.'-[URI],
-    '[~w]'-[Context]
-  ]),
+  debug(html, 'Resource <~w> does not seem to exist.', [URI]),
+  debug(html, '[~w]', [Context]),
   sleep(10),
   call(Goal).
 % Retry upon socket error.
 process_exception(error(socket_error('Try Again'), _Context), Goal):- !,
-  cowspeak('[SOCKET ERROR] Try again!'),
+  debug(html, '[SOCKET ERROR] Try again!', []),
   call(Goal).
 % Retry upon I/O error.
 process_exception(
   error(io_error(read, _Stream), context(_Predicate, Reason)),
   Goal
 ):- !,
-  cowspeak('[IO-EXCEPTION] ~w'-[Reason]),
+  debug(html, '[IO-EXCEPTION] ~w', [Reason]),
   call(Goal).
 process_exception(Exception, _Goal):-
   gtrace, %DEB
@@ -171,11 +165,12 @@ stream_to_html(Stream, DOM):-
   stream_to_html(Stream, DOM, 0).
 
 stream_to_html(_Stream, _DOM, 5):-
-  cowspeak(
+  debug(
+    html,
     'The maximum number of attempts was reached for load_structure/3 \c
-     in stream_to_html/3.'
-  ),
-  !.
+     in stream_to_html/3.',
+    []
+  ), !.
 stream_to_html(Stream, DOM, Attempts):-
   dtd(html, DTD),
   catch(
@@ -255,76 +250,6 @@ html_image(Description, File, DIV):-
   % Construe the DIV containing the image, the link, and the description.
   DIV = element(div, [class=image], [LinkElement, Description_DIV]).
 
-%! list_to_table(
-%!   +Options:list(nvpair),
-%!   +Rows:list(list(term)),
-%!   -Markup
-%! ) is det.
-% Returns the HTML markup for a table.
-%
-% @apram Options A list of name-value pairs. The following options are
-%        supported:
-%        1. =|caption(atom)|= The caption of the header.
-%        2. =|header(boolean)|= Whether or not the first sublist should be
-%           displayed as the table header row.
-% @param Rows A 2D table of terms.
-% @param Markup An HTML table element.
-
-list_to_table(Options, Rows1, element(table, [border=1], TableContents)):-
-  list_to_table_caption(Options, CaptionMarkup),
-  list_to_table_header(Options, Rows1, HeaderMarkup, Rows2),
-  maplist(table_row, Rows2, RowsMarkup),
-  append([CaptionMarkup, HeaderMarkup, RowsMarkup], TableContents).
-
-list_to_table_caption(Options, [element(caption, [], [Caption])]):-
-  option(caption(Caption), Options), !.
-list_to_table_caption(_Options, []).
-
-%! list_to_table_header(
-%!   +Options:list(nvpair),
-%!   +AllRows:list(list),
-%!   -Markup:list,
-%!   -NonHeaderRows:list(list)
-%! ) is det.
-% Returns the header row of an HTML table, if the header option is present.
-
-list_to_table_header(
-  Options,
-  [Header | Rows],
-  [element(tr, [], MarkupCells)],
-  Rows
-):-
-  option(header(true), Options), !,
-  table_row0(Header, th, MarkupCells).
-list_to_table_header(_Options, Rows, [], Rows).
-
-%! table_row(+Elements:list(term), -Markup) is det.
-% Returns the row of an HTML table containing the given elements.
-%
-% @param Elements A list of terms.
-% @param Markup An HTML entity.
-
-table_row(Elements, element(tr, [], MarkupCells)):-
-  table_row0(Elements, td, MarkupCells).
-
-table_row0([], _HTML_Entity, []).
-table_row0(
-  [H | T],
-  HTML_Entity,
-  [element(HTML_Entity, [], [Atom]) | Markup]
-):-
-  % If we use term_to_atom/2 for atom terms, extra single quotes are added
-  % in front and at the end of the atom. Therefore, we first check whether
-  % the term is an atom.
-  (
-    atom(H)
-  ->
-    Atom = H
-  ;
-    term_to_atom(H, Atom)
-  ),
-  table_row0(T, HTML_Entity, Markup).
-
 
 
 % PARSING %
@@ -352,8 +277,7 @@ html_attribute(Attributes, Attribute):-
 parse_attribute(Context, Attribute, Name=Value):-
   Attribute =.. [Name, Value],
   attribute(Name, Type, Contexts),
-  memberchk(Context, Contexts),
-  !,
+  memberchk(Context, Contexts), !,
   html_typecheck(Type, Value).
 
 parse_attributes_html(Context, Attributes, ParsedAttributes):-

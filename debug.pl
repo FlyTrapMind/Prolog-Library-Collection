@@ -48,8 +48,8 @@
 % @tbd The PCE-based debug monitor in swipl is not the most versatile
 %      debug tool in existence. I would like to write a Web-based version
 %      at some point.
-:- use_module(library(swi_ide)).
-:- prolog_ide(debug_monitor).
+%:- use_module(library(swi_ide)).
+%:- prolog_ide(debug_monitor).
 
 :- [load].
 
@@ -70,7 +70,6 @@ load_modules_for_pldoc:-
       [
         datasets,
         datetime,
-        dbnl,
         dcg,
         dgraph,
         generics,
@@ -84,6 +83,7 @@ load_modules_for_pldoc:-
         logic,
         math,
         os,
+        ps,
         owl,
         rdf,
         rdf_graph,

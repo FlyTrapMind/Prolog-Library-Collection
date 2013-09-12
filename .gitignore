@@ -3,3 +3,5 @@ Data/
 *#
 *.aux
 *.log
+*.old
+*.pdf

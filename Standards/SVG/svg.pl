@@ -157,7 +157,7 @@ svg_document(T0, DCG_Namespace, SVG_DCGs) -->
 % ~~~
 
 svg_fragment(T0, SVG_DCGs) -->
-  svg_entity(
+  svg_entities:svg_entity(
     T1,
     dcg_word(svg),
     dcg_word(svg),
@@ -222,7 +222,7 @@ svg_namespace(DCG_Namespace) -->
 % FILE %
 
 file_to_svg(File, SVG):-
-  open(File, read, Stream),
+  open(File, read, Stream, [encoding(utf8),type(test)]),
   stream_to_svg(Stream, SVG).
 
 stream_to_svg(Stream, SVG):-

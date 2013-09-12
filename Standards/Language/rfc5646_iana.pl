@@ -36,7 +36,6 @@ specification.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(record_jar)). % Used in phrase_from_stream/2.

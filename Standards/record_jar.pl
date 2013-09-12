@@ -44,11 +44,9 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(library(apply)).
 :- use_module(library(plunit)).
-:- use_module(math(radix)).
 :- use_module(standards(abnf)).
 
 

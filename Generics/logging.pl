@@ -39,10 +39,11 @@ logging started.
 
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/07
+@version 2012/05-2012/07, 2013/03-2013/07, 2013/09
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(ansi_term)). % Used in markup.
 :- use_module(library(http/http_client)).
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
@@ -50,9 +51,9 @@ logging started.
 
 :- multifile(prolog:message/1).
 
-:- dynamic(current_log_file(_File)).
-:- dynamic(current_log_stream(_Stream)).
-:- dynamic(situation(_SituationName)).
+:- dynamic(current_log_file/1).
+:- dynamic(current_log_stream/1).
+:- dynamic(situation/1).
 
 :- db_add_novel(user:prolog_file_type(log, log)).
 
@@ -89,17 +90,14 @@ append_to_log(Category, Format, Arguments):-
   append_to_log0(Category, Message).
 
 append_to_log0(Category, Message):-
-  \+ current_log_stream(_Stream),
-  !,
+  \+ current_log_stream(_Stream), !,
   print_message(warning, cannot_log(Category, Message)).
 append_to_log0(Category, Message):-
-  current_log_stream(Stream),
-  !,
+  current_log_stream(Stream), !,
   date_time(DateTime),
-  current_situation(Situation),
   csv_write_stream(
     Stream,
-    [row(Situation, DateTime, Category, Message)],
+    [row(DateTime, Category, Message)],
     [file_type(comma_separated_values)]
   ),
   flush_output(Stream).
@@ -115,8 +113,7 @@ prolog:message(cannot_log(Kind, Message)):-
 % Closes the current log stream.
 
 close_log_stream:-
-  \+ current_log_stream(_Stream),
-  !,
+  \+ current_log_stream(_Stream), !,
   print_message(warning, no_current_log_stream).
 close_log_stream:-
   current_log_stream(Stream),
@@ -149,7 +146,12 @@ create_log_file(Situation, AbsoluteFile, Stream):-
   date_directories(Dir, LogDir),
   current_time(FileName),
   create_file(LogDir, FileName, log, AbsoluteFile),
-  open(AbsoluteFile, write, Stream, [close_on_abort(true), type(text)]).
+  open(
+    AbsoluteFile,
+    write,
+    Stream,
+    [close_on_abort(true),encoding(utf8),type(test)]
+  ).
 
 current_situation(Situation):-
   situation(Situation), !.
@@ -159,8 +161,7 @@ current_situation(no_situation).
 % Ends the current logging activity.
 
 end_log:-
-  \+ current_log_file(_File),
-  !.
+  \+ current_log_file(_File), !.
 end_log:-
   append_to_log(build, 'Goodnight!', []),
   send_current_log_file,
@@ -180,12 +181,11 @@ init:-
 % @tbd Add the PHP script (I seem to have deleted it on the remote :-().
 
 send_current_log_file:-
-  \+ current_log_file(_File),
-  !,
+  \+ current_log_file(_File), !,
   print_message(warning, no_current_log_file).
 send_current_log_file:-
   current_log_file(File),
-  open(File, read, Stream, []),
+  open(File, read, Stream, [encoding(utf8),type(test)]),
   read_stream_to_codes(Stream, Codes),
   file_base_name(File, Base),
   format(atom(URL), 'http://www.wouterbeek.com/post.php?filename=~w', [Base]),
@@ -227,8 +227,7 @@ set_situation(Situation):-
 % This does nothing in case log mode is turned off.
 
 start_log:-
-  current_log_stream(_Stream),
-  !,
+  current_log_stream(_Stream), !,
   print_message(warning, already_logging).
 start_log:-
   init,

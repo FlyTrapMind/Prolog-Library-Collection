@@ -5,7 +5,12 @@
                  % ?BNode:bnode
     rdf_iri/2, % ?Graph:atom
                % ?IRI:iri
-    rdf_is_iri/1, % +Resource
+    rdf_is_iri/1,
+    rdf_is_object/1,
+    rdf_is_predicate/1,
+    rdf_is_subject/1,
+    rdf_is_plain_literal/1, % ?PlainLiteral:compound
+    rdf_is_simple_literal/1, % ?SimpleLiteral:compound
     rdf_literal_equality/2, % +Literal1:literal
                             % +Literal2:literal
     rdf_name/2, % ?Graph:atom
@@ -134,6 +139,9 @@ See also the URI equivalence issue of the Technical Architecture Group [TAG].
 :- use_module(xsd(xsd)).
 
 :- rdf_meta(rdf_bnode(?,r)).
+:- rdf_meta(rdf_is_object(r)).
+:- rdf_meta(rdf_is_predicate(r)).
+:- rdf_meta(rdf_is_subject(r)).
 :- rdf_meta(rdf_name(?,r)).
 :- rdf_meta(rdf_object(?,r)).
 :- rdf_meta(rdf_po_pairs(r,-)).
@@ -173,6 +181,26 @@ rdf_iri(G, IRI):-
 rdf_is_iri(IRI):-
   rdf_is_resource(IRI),
   \+ rdf_is_bnode(IRI).
+
+rdf_is_object(Object):-
+  rdf_is_subject(Object), !.
+rdf_is_object(Object):-
+  rdf_is_literal(Object).
+
+rdf_is_plain_literal(literal(lang(Lang,Lit))):-
+  atomic(Lang),
+  atomic(Lit).
+
+rdf_is_predicate(Predicate):-
+  rdf_is_iri(Predicate).
+
+rdf_is_simple_literal(literal(Lit)):-
+  atomic(Lit).
+
+rdf_is_subject(Subject):-
+  rdf_is_bnode(Subject), !.
+rdf_is_subject(Subject):-
+  rdf_is_iri(Subject).
 
 %! rdf_literal_equality(+Literal1:literal, +Literal2:literal) is semidet.
 % Succeeds if the given literals are equivalent.
@@ -229,10 +257,8 @@ rdf_name_(G, RDF_Name):-
   ).
 
 rdf_node(Graph, Node):-
-  nonvar_det(rdf_node0(Graph, Node)).
-rdf_node0(Graph, Node):-
   rdf_subject(Graph, Node).
-rdf_node0(Graph, Node):-
+rdf_node(Graph, Node):-
   rdf_object(Graph, Node).
 
 rdf_object(G, O):-

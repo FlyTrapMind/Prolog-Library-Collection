@@ -1,6 +1,8 @@
 :- module(
   rdfs_voc,
   [
+    rdf_voc_pdf/1, % ?File:atom
+    rdf_voc_web/1, % -SVG:dom
     rdfs_voc_pdf/1, % ?File:atom
     rdfs_voc_web/1 % -SVG:dom
   ]
@@ -14,17 +16,11 @@ Exports the vocabulary for RDFS.
 @version 2013/08
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(gv(gv_file)).
-:- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
@@ -39,27 +35,18 @@ rdf_voc(GIF):-
   % Customization.
   rdf_retractall(_, rdfs:isDefinedBy, _, G),
   rdf_register_namespace_color(G, rdf, darkblue),
-  % Remove the RDFS classes.
-  setoff(
-    RDFS_Class,
+
+  % Remove the RDFS-only triples.
+  forall(
     (
-      rdfs_class(G, RDFS_Class),
-      rdf_global_id(rdfs:_, RDFS_Class)
+      rdf(S, P, O, G),
+      rdf_global_id(rdfs:_, S),
+      rdf_global_id(rdfs:_, P),
+      rdf_global_id(rdfs:_, O)
     ),
-    RDFS_Classes
+    rdf_retractall(S, P, O, G)
   ),
-  maplist(rdfs_remove_class(G), RDFS_Classes),
-  % Remove the RDFS properties.
-  setoff(
-    RDFS_Property,
-    (
-      rdf_property(G, RDFS_Property),
-      rdf_global_id(rdfs:_, RDFS_Property)
-    ),
-    RDFS_Properties
-  ),
-  maplist(rdf_remove_property(G), RDFS_Properties),
-  
+
   % Thats it, let's export the RDF graph to GIF.
   export_rdf_graph(
     [
@@ -100,7 +87,7 @@ rdfs_voc(GIF):-
       colorscheme(svg),
       edge_labels(replace),
       language(en),
-      literals(preferred_label),
+      literals(all),
       uri_desc(uri_only)
     ],
     G,
@@ -118,14 +105,14 @@ rdfs_voc_web(SVG):-
 
 
 
-% GENERICS %
+% SUPPORT PREDICATES %
 
 %! load_in_graph(-Graph:atom) is det.
 
 load_in_graph(G2):-
   % Load the W3C file specifying the vocabulary for RDFS.
   rdf_new_graph(rdfs_schema, G1),
-  absolute_file_name(rdfs(rdfs), File, [access(read), file_type(rdf)]),
+  absolute_file_name(rdfs(rdfs), File, [access(read),file_type(rdf)]),
   rdf_load2(File, [graph(G1)]),
 
   % We want to hide some aspects from the displayed version:

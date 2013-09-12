@@ -19,7 +19,6 @@ Support for the Dublin Core vocabulary.
 @version 2013/03, 2013/05
 */
 
-:- use_module(library(semweb/rdf_db)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').

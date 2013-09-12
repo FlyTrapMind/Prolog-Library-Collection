@@ -1,7 +1,7 @@
 :- module(
   rdf_list,
   [
-    is_rdf_list/1, % +RDF_List:uri
+    rdf_is_list/1, % +RDF_List:uri
     rdf_assert_list/3, % +List:list
                        % -RDF_List:uri
                        % +Graph:atom
@@ -40,11 +40,12 @@ Support for RDF lists.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
-:- rdf_meta(is_rdf_list(r)).
+:- rdf_meta(rdf_is_list(r)).
 :- rdf_meta(rdf_assert_list(+,r,+)).
 :- rdf_meta(rdf_list(r,-)).
 :- rdf_meta(rdf_list(+,r,-)).
@@ -59,11 +60,13 @@ Support for RDF lists.
 
 
 
-%! is_rdf_list(?RDF_List:rdf_list) is semidet.
+%! rdf_is_list(?RDF_List:rdf_list) is semidet.
 % Succeeds if the given term is an RDF list.
 
-is_rdf_list(RDF_List):-
-  rdfs_individual_of(RDF_List, rdf:'List').
+rdf_is_list(RDF_List):-
+  rdf_global_id(rdf:'List', C),
+  % This one is more efficient than `rdfs:rdfs_instance_of/2`.
+  rdfs_is_individual(RDF_List, C).
 
 %! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
 % Asserts the given, possibly nested list into RDF.
@@ -129,7 +132,7 @@ rdf_list(O, RDFList, [H1 | T]):-
   rdf_has(RDFList, rdf:first, H),
   (
     option(recursive(true), O, true),
-    is_rdf_list(H)
+    rdf_is_list(H)
   ->
     rdf_list(O, H, H1)
   ;

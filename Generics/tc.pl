@@ -15,8 +15,8 @@
 :- use_module(generics(meta_ext)).
 :- use_module(os(filepath_ext)).
 
-:- dynamic(doc(_Doc)).
-:- dynamic(word0(_Word, _Sum, _Docs)).
+:- dynamic(doc/1).
+:- dynamic(word0/3).
 
 :- debug(tc).
 

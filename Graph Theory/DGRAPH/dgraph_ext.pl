@@ -118,8 +118,7 @@ Directed graphs.
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(math(math_ext)).
+:- use_module(graph_theory(graph_generic)).
 :- use_module(library(apply)).
 :- use_module(library(ordsets)).
 :- use_module(ugraph(ugraph_ext)).

@@ -11,11 +11,13 @@
 Acts on messages printed by print_message/2.
 
 @author Wouter Beek
-@version 2013/02, 2013/04-2013/05
+@version 2013/02, 2013/04-2013/05, 2013/08-2013/09
 */
 
-:- use_module(html(html)).
+:- use_module(html(html_table)).
 :- use_module(library(http/http_open)).
+:- use_module(library(http/http_path)).
+:- use_module(os(ansi_ext)).
 :- use_module(server(dev_server)).
 :- use_module(server(error_web)).
 
@@ -24,44 +26,49 @@ Acts on messages printed by print_message/2.
 
 
 log_web(Markup):-
-  \+ current_log_file(_File),
-  !,
-  Markup = [element(h1, [], ['Logging is currently switched off.'])].
+  \+ current_log_file(_File), !,
+  Markup = [element(h1,[],['Logging is currently switched off.'])].
 log_web([HTML_Table]):-
   current_log_file(File),
-  csv_read_file(File, Rows, [arity(4), functor(row)]),
+  csv_read_file(File, Rows, [arity(3),functor(row)]),
   findall(
-    [Situation, DateTime, Category, Message],
-    member(row(Situation, DateTime, Category, Message), Rows),
+    [DateTime,Category,Message],
+    member(row(DateTime,Category,Message), Rows),
     TRs
   ),
-  list_to_table(
+  html_table(
     [header(true)],
-    [['Situation', 'DateTime', 'Category', 'Message'] | TRs],
+    [['DateTime','Category','Message']|TRs],
     HTML_Table
   ).
 
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   error_web(Exception, Markup),
-  push(status_pane, html, dev_server, Markup),
-  !.
-prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
-  !,
+  push(status_pane, html, dev_server, Markup), !.
+prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
   gtrace, %DEB
   format(user, '~w', [Exception]). %DEB
-prolog:debug_print_hook(Type, Format, Arguments):-
-  format(atom(Message), Format, Arguments),
+prolog:debug_print_hook(Type, Format, Args):-
+  format(atom(Msg), Format, Args),
+  
+  % Write to the status pane in the Web front-end.
   push(
     status_pane,
     html,
     dev_server,
-    [element(p, [], ['[', Type, ']', ' ', Message])]
+    [element(p,[],['[',Type,']',' ',Msg])]
   ),
-  append_to_log(Type, Format, Arguments).
+  
+  % Write to the terminal.
+  ansi_format(user_output, [bold,fg(green)], '[~w] ', [Type]),
+  ansi_formatnl(user_output, [fg(green)], '~w', [Msg]),
+  
+  % Write to the log stream/file.
+  append_to_log(Type, Format, Args).
 
 web_message(open_uri(_URI)):-
   format(user, 'YES!', []),
-  dev_server_uri(URI),
+  http_absolute_location(dev_server(.), URI, []),
   http_open(
     URI,
     _Stream,

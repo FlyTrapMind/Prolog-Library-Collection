@@ -7,7 +7,7 @@
     documentation_web/1, % -Markup:list
     help_web/1, % -Markup:list
     input_ui/1, % -Markup:list
-    messages_web/1, % -Markup:list
+    %messages_web/1, % -Markup:list
     register_module/1, % +Module:atom
     registered_module/1, % ?Module:atom
     registered_modules/1, % -Modules:list(atom)
@@ -33,9 +33,9 @@ The Web-based console for PraSem.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(server(error_web)).
-:- use_module(server(dev_server)).
 
 :- dynamic history/2.
 
@@ -86,7 +86,7 @@ console_input -->
     history_length(HistoryLength),
     first(Commands, HistoryLength, History_),
     atomic_list_concat(History_, '\n', History),
-    dev_server_uri(URI)
+    http_absolute_location(dev_server(.), URI, [])
   },
   html([
     div(id(console_input), [
@@ -109,8 +109,7 @@ console_input -->
 % of this module will no longer be accessible from the web console.
 
 deregister_module(Module):-
-  registered_module(Module),
-  !,
+  registered_module(Module), !,
   retract(registered_module(Module)).
 % Fails silently.
 deregister_module(_Module).
@@ -146,7 +145,12 @@ help_web([element(ul, [], ModuleItems)]):-
   ).
 
 history(History, HistoryLength) -->
-  html(textarea([cols=80, name=history, onclick='clickme(\'aap\')', rows=HistoryLength], History)).
+  html(
+    textarea(
+      [cols=80,name=history,onclick='clickme(\'aap\')',rows=HistoryLength],
+      History
+    )
+  ).
 
 history_length(5).
 
@@ -166,7 +170,7 @@ input_ui([
       [name=submit, type=submit, value='Submit'],
       ['Submit'])])]
 ):-
-  dev_server_uri(URI).
+  http_absolute_location(dev_server(.), URI, []).
 
 markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
 markup_mold(StyleName/DOM, html, StyleName, DOM):- !.
@@ -174,11 +178,11 @@ markup_mold(DOM, html, dev_server, DOM):- !.
 
 maximum_number_of_messages(100).
 
-messages_web(Markup):-
+/*messages_web(Markup):-
   maximum_number_of_messages(MaximumNumberOfMessages),
   findall(
-    [element(h1, [], [DateTime]) | DOM],
-    dev_server:history(status_pane, DateTime, _DTD_Name, _StyleName, DOM),
+    [element(h1,[],[DateTime])|DOM],
+    history(status_pane, DateTime, _DTD_Name, _StyleName, DOM),
     DOMs
   ),
   reverse(DOMs, RDOMs),
@@ -186,7 +190,7 @@ messages_web(Markup):-
   (
     NumberOfMessages == 0
   ->
-    DisplayedDOMs = [[element(p, [], ['There are no messages.'])]]
+    DisplayedDOMs = [[element(p,[],['There are no messages.'])]]
   ;
     NumberOfMessages =< MaximumNumberOfMessages
   ->
@@ -195,7 +199,7 @@ messages_web(Markup):-
     length(DisplayedDOMs, MaximumNumberOfMessages),
     append(DisplayedDOMs, _, RDOMs)
   ),
-  append(DisplayedDOMs, Markup).
+  append(DisplayedDOMs, Markup).*/
 
 %! register_module(+Module:atom) is det.
 % Registers the given module for the web console.

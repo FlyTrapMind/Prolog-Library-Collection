@@ -146,8 +146,8 @@ latex_code_convert(Local, Directory):-
   file_extension_alternative(PrologFile, tex, TeXFile),
   setup_call_cleanup(
     (
-      open(PrologFile, read, InStream, [encoding(utf8)]),
-      open(TeXFile, write, OutStream, [encoding(utf8)]),
+      open(PrologFile, read, InStream, [encoding(utf8),type(text)]),
+      open(TeXFile, write, OutStream, [encoding(utf8),type(test)]),
       file_to_latex_title(PrologFile, Title),
       write_latex_header(
         OutStream,

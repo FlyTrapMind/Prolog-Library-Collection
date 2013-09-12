@@ -6,6 +6,8 @@
     memo/1, % :Goal
 
 % CONTROL STRUCTURES
+    boolean/2, % :Goal
+               % -Boolean:oneof([false,true])
     if_else/2, % :If
                % :Else
     if_then/2, % :If
@@ -52,9 +54,6 @@
     mapset/3, % :Goal
               % +List:list
               % -Set:ordset
-    mapsum/3, % :Goal
-              % +List:list
-              % -Number:number
 
 % MODULES
     modules/1, % -Modules:list(atom)
@@ -105,11 +104,12 @@
 Extensions to the SWI-Prolog meta predicates.
 
 @author Wouter Beek
-@version 2012/07-2012/08, 2013/01, 2013/03-2013/04
+@version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09
 */
 
 :- use_module(generics(list_ext)).
 
+:- meta_predicate(boolean(0,-)).
 :- meta_predicate(call_nth(0,-)).
 :- meta_predicate(call_semidet(0)).
 :- meta_predicate(complete(2,+,-)).
@@ -120,7 +120,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(if_then_else(0,0,0)).
 :- meta_predicate(maplist_pairs(3,+,-)).
 :- meta_predicate(mapset(2,+,-)).
-:- meta_predicate(mapsum(2,+,-)).
 :- meta_predicate(memo(0)).
 :- meta_predicate(multi(0,+)).
 :- meta_predicate(multi(2,+,+,-)).
@@ -155,8 +154,7 @@ Extensions to the SWI-Prolog meta predicates.
 % There are no restrictions on the determinism of the goal.
 
 memo(Goal):-
-  memo_(Goal),
-  !.
+  memo_(Goal), !.
 memo(Goal):-
   call(Goal),
   assertz(memo_(Goal)).
@@ -167,6 +165,10 @@ reset_memo:-
 
 
 % CONTROL STRUCTURES %
+
+boolean(Goal, true):-
+  call(Goal), !.
+boolean(_Goal, false).
 
 %! if_else(:If, :Else) is det.
 % Procedural control structure.
@@ -217,11 +219,9 @@ unless(Unless, Do):-
   ).
 
 xor(X, _Y):-
-  call(X),
-  !.
+  call(X), !.
 xor(_X, Y):-
-  call(Y),
-  !.
+  call(Y), !.
 
 
 
@@ -357,10 +357,6 @@ mapset(Goal, List, Set):-
   maplist(Goal, List, NewList),
   sort(NewList, Set).
 
-mapsum(Goal, List, Sum):-
-  maplist(Goal, List, Numbers),
-  sum_list(Numbers, Sum).
-
 
 
 % MODULES %
@@ -421,11 +417,10 @@ complete(_Goal, Input, [Input]).
 
 count(Goal, Count):-
   (
-    Goal = _Module:Goal_,
-    !
+    Goal = _Module:Goal_
   ;
     Goal_ = Goal
-  ),
+  ), !,
   Goal_ =.. [_Predicate | Arguments],
   list_compound(Arguments, CompoundArgument),
   setoff(
@@ -510,10 +505,8 @@ run_in_working_directory(Call, WorkingDirectory):-
 % @param List2 An ordered list.
 % @param Solution An ordered list.
 
-predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):-
-  !.
-predmerge_with_duplicates(_Predicate, MergeResult, [], MergeResult):-
-  !.
+predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):- !.
+predmerge_with_duplicates(_Predicate, MergeResult, [], MergeResult):- !.
 predmerge_with_duplicates(Predicate, [H1 | T1], [H2 | T2], Result):-
   call(Predicate, Delta, H1, H2),
   predmerge_with_duplicates(Delta, Predicate, H1, H2, T1, T2, Result).
@@ -587,8 +580,7 @@ predsort_with_duplicates(
   [H1, H2 | TailUnsortedList],
   TailUnsortedList,
   SortedList
-):-
-  !,
+):- !,
   % We perform one last call to finalize the sorting.
   call(Predicate, Delta, H1, H2),
   sort_with_duplicates(Delta, H1, H2, SortedList).
@@ -599,11 +591,9 @@ predsort_with_duplicates(
   [H | UnsortedList],
   UnsortedList,
   [H]
-):-
-  !.
+):- !.
 % There are no more unsorted terms.
-predsort_with_duplicates(_Predicate, 0, UnsortedList, UnsortedList, []):-
-  !.
+predsort_with_duplicates(_Predicate, 0, UnsortedList, UnsortedList, []):- !.
 % The recursive case.
 predsort_with_duplicates(Predicate, Length, L1, L3, SortedList):-
   % Rounded division of the given length.
@@ -657,8 +647,7 @@ user_interaction(Action, Goal, Headers, Tuples):-
   user_interaction(Action, Goal, 1, NumberOfTuples, Headers, Tuples).
 
 user_interaction(Action, _Goal, _Index, _Length, _Headers, []):-
-  format(user_output, '\n-----\nDONE! <~w>\n-----\n', [Action]),
-  !.
+  format(user_output, '\n-----\nDONE! <~w>\n-----\n', [Action]), !.
 user_interaction(Action, Goal, Index, Length, Headers, Tuples):-
   % Display a question.
   nth1(Index, Tuples, Tuple),
@@ -714,3 +703,4 @@ user_interaction(Action, Goal, Index, Length, Headers, Tuples):-
   ;
     user_interaction(Action, Goal, Index, Length, Headers, Tuples)
   ).
+

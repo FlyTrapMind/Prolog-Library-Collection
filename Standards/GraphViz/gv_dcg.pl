@@ -23,10 +23,9 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
-:- use_module(generics(list_ext)).
+:- use_module(generics(option_ext)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
@@ -72,6 +71,10 @@ gv_attribute_list(G_Attrs, Attrs1) -->
   dcg_multi(gv_attribute, _, Attrs2, [separator(comma)]),
   closing_square_bracket.
 
+gv_category(edge) --> e,d,g,e.
+gv_category(graph) --> g,r,a,p,h.
+gv_category(node) --> n,o,d,e.
+
 gv_compass_pt --> "_".
 gv_compass_pt --> "c".
 gv_compass_pt --> "e".
@@ -83,16 +86,16 @@ gv_compass_pt --> "se".
 gv_compass_pt --> "sw".
 gv_compass_pt --> "w".
 
-%! gv_edge_operator(+Directionality:oneof([directed,undirected]))// is det.
+%! gv_edge_operator(+Directionality:oneof([forward,none]))// is det.
 % The binary edge operator between two vertices.
 % The operator that is used depends on whether the graph is directed or
 % undirected.
 %
-% @param Directionality Either `directed` (operator `->`) or
-%      `undirected` (operator `--`).
+% @param Directionality Either `forward` (directed, using operator `->`) or
+%        `none` (undirected, using operator `--`).
 
-gv_edge_operator(directed) --> arrow(2).
-gv_edge_operator(undirected) --> "--".
+gv_edge_operator(forward) --> arrow(2).
+gv_edge_operator(none) --> "--".
 
 %! gv_edge_rhs(+GraphAttributes:list(nvpair), +ToId:gv_node_id)//
 % The right-hand-side of a GraphViz edge representation.
@@ -100,7 +103,7 @@ gv_edge_operator(undirected) --> "--".
 % @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
 
 gv_edge_rhs(G_Attrs, To_Id) -->
-  {option(directedness(Dir), G_Attrs, undirected)},
+  {option(directedness(Dir), G_Attrs, none)},
   gv_edge_operator(Dir), space,
   gv_node_id(To_Id).
 
@@ -149,10 +152,6 @@ gv_generic_attributes_statement(Cat, I, G_Attrs, CatAttrs) -->
   indent(I), gv_category(Cat), space,
   gv_attribute_list(G_Attrs, CatAttrs), newline.
 
-gv_category(edge) --> e,d,g,e.
-gv_category(graph) --> g,r,a,p,h.
-gv_category(node) --> n,o,d,e.
-
 %! gv_graph(+GraphTerm:compound)//
 % The follow graph attributes are supported:
 %   1. `directonality(+Directionality:oneof([directed,undirected]))`
@@ -182,6 +181,7 @@ gv_category(node) --> n,o,d,e.
 % @tbd Add support for escape strings:
 %      http://www.graphviz.org/doc/info/attrs.html#k:escString
 % @tbd Assert attributes that are generic with respect to a subgraph.
+% @tbd Not all vertex and edge properties can be shared it seems (e.g., label).
 
 gv_graph(graph(V_Terms, E_Terms, G_Attrs1)) -->
   gv_graph(graph(V_Terms, [], E_Terms, G_Attrs1)).
@@ -190,44 +190,39 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   {
     shared_attributes(V_Terms, V_Attrs, NewV_Terms),
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
-    option(strict(Strict), G_Attrs1, false),
-    option(directedness(Dir), G_Attrs1, undirected),
-    option(name(G_Name), G_Attrs1, noname),
-    % Make sure that the default values are part of the graph
-    % attributes if they were not originally present.
-    merge_options(
-      G_Attrs1,
-      [directedness(Dir),name(G_Name),strict(Strict)],
-      G_Attrs2
-    ),
+    default_option(G_Attrs1, strict, false, Strict, G_Attrs2),
+    default_option(G_Attrs2, directedness, none, Dir, G_Attrs3),
+    default_option(G_Attrs3, name, noname, G_Name, G_Attrs4),
+    default_option(G_Attrs4, overlap, false, G_Attrs5),
     I = 0
   },
 
   % The first statement in the GraphViz output.
   % States that this file represents a graph according to the GraphViz format.
   indent(I), gv_strict(Strict),
-  gv_graph_type(Dir), space,
+  {(Dir == forward -> GraphType = digraph ; GraphType = graph)},
+  gv_graph_type(GraphType), space,
   gv_id(G_Name), space,
   opening_curly_bracket, newline,
 
   % The following lines are indented.
   {NewI is I + 1},
   % Attributes that apply to the graph as a whole.
-  gv_generic_attributes_statement(graph, NewI, G_Attrs2, G_Attrs2),
+  gv_generic_attributes_statement(graph, NewI, G_Attrs5, G_Attrs5),
   % Attributes that are the same for all nodes.
-  gv_generic_attributes_statement(node, NewI, G_Attrs2, V_Attrs),
+  gv_generic_attributes_statement(node, NewI, G_Attrs5, V_Attrs),
   % Attributes that are the same for all edges.
-  gv_generic_attributes_statement(edge, NewI, G_Attrs2, E_Attrs),
+  gv_generic_attributes_statement(edge, NewI, G_Attrs5, E_Attrs),
   % Only add a newline if some content was written in the previous three
   % lines.
-  ({(G_Attrs2 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
+  ({(G_Attrs5 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
 
   % The list of GraphViz nodes.
-  dcg_multi(gv_node_statement(NewI, G_Attrs2), _, NewV_Terms, []),
+  dcg_multi(gv_node_statement(NewI, G_Attrs5), _, NewV_Terms, []),
   newline,
 
   % The ranked GraphViz nodes (displayed at the same height).
-  dcg_multi(gv_ranked_node_collection(NewI, G_Attrs2), _, Ranked_V_Terms, []),
+  dcg_multi(gv_ranked_node_collection(NewI, G_Attrs5), _, Ranked_V_Terms, []),
   newline,
 
   {
@@ -244,21 +239,21 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   },
 
   % The rank edges.
-  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, Rank_Edges, []),
+  dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, Rank_Edges, []),
   % The non-rank edges.
-  dcg_multi(gv_edge_statement(NewI, G_Attrs2), _, NewE_Terms, []),
+  dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, NewE_Terms, []),
   % Note that we do not include a newline here.
 
   % The description of the grpah is closed (using the old indent level).
   indent(I), closing_curly_bracket.
 
-%! gv_graph_type(+Directionality:oneof([directed,undirected]))// is det.
+%! gv_graph_type(+Directionality:oneof([digraph,graph]))// is det.
 % The type of graph that is represented.
 %
-% @param Directionality Either `directed` or `undirected`.
+% @param Directionality Either `digraph` or `graph`.
 
-gv_graph_type(directed) --> d,i,g,r,a,p,h.
-gv_graph_type(undirected) --> g,r,a,p,h.
+gv_graph_type(digraph) --> d,i,g,r,a,p,h.
+gv_graph_type(graph) --> g,r,a,p,h.
 
 %! gv_id(-Codes:list(code))// is det.
 % Parse a GraphViz identifier.

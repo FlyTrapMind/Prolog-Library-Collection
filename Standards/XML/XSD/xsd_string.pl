@@ -83,7 +83,7 @@ Values for the fundamental facets:
 stringCanonicalMap(String, LEX):-
   phrase(stringRep(String), LEX).
 
-%! stringLexicalMap(?LEX:list(code), ?String:atom) is det.
+%! stringLexicalMap(+LEX:list(code), -String:atom) is det.
 % Maps a literal matching the stringRep//1 production to a string value.
 %
 % The function is the identity function on the domain.
@@ -92,7 +92,7 @@ stringCanonicalMap(String, LEX):-
 % @param String An XML string value; a Prolog atom.
 
 stringLexicalMap(LEX, String):-
-  phrase(stringRep(String), LEX).
+  once(phrase(stringRep(String), LEX)).
 
 %! stringRep(?String:atom)//
 

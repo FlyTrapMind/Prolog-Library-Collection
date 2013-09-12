@@ -4,6 +4,10 @@
 % CLASS
     rdfs_class/2, % +Graph:atom
                   % ?Class:iri
+    rdfs_is_individual/2, % +Individual:iri
+                          % +Class:iri
+    rdfs_is_subclass/2, % +Class1:iri
+                        % +Class2:iri
 
 % DOMAIN & RANGE
     rdfs_domain/3, % ?Property:uri
@@ -45,7 +49,6 @@ rdfs_subclass(X, Y, G):-
   % We add the restriction that both resources are classes.
   once(rdfs_individual(X, rdfs:'Class', G)),
   once(rdfs_individual(Y, rdfs:'Class', G)).
-
 rdfs_subclass0(X, X, _G).
 rdfs_subclass0(X, Y, G):-
   rdf(X, rdfs:subClassOf, Z, _SameOrOtherG),
@@ -60,7 +63,6 @@ rdfs_subproperty(X, Y, G):-
   % We add the restriction that both resources are properties.
   rdfs_individual(X, rdf:'Property', G),
   rdfs_individual(Y, rdf:'Property', G).
-
 rdfs_subproperty0(X, X, _G).
 rdfs_subproperty0(X, Y, G):-
   rdf(X, rdfs:subPropertyOf, Z, G),
@@ -70,21 +72,12 @@ rdfs_subproperty0(X, Y, G):-
 # rdf:type
 
 ~~~{.pl}
-%! rdfs_individual(?Individual:uri, ?Class:uri, ?Graph:atom) is nondet.
-% Individual and class pairs.
-%
-% @param Individual An instance resource.
-% @param Class A class resource.
-% @param Graph The atomic name of a graph.
-
 % We make the memberhip of RDFS class to itself explicit because otherwise
 % the class checks in method rdfs_subclass_of/2 cause rdfs_individual/3 to go
 % into a loop.
-
 rdfs_individual(rdfs:'Class', rdfs:'Class', _G).
 rdfs_individual(X, Y, G):-
-  nonvar(X),
-  !,
+  nonvar(X), !,
   rdf(X, rdf:type, Z, G),
   rdfs_subclass_of(Z, Y),
   \+ (rdf_global_id(rdfs:'Class', X), rdf_global_id(rdfs:'Class', Y)).
@@ -95,16 +88,13 @@ rdfs_individual(X, Y, G):-
 ~~~
 
 @author Wouter Beek
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/08
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
 */
 
-:- use_module(generics(db_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(math(math_ext)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
@@ -112,6 +102,8 @@ rdfs_individual(X, Y, G):-
 
 % CLASS
 :- rdf_meta(rdfs_class(+,r)).
+:- rdf_meta(rdfs_is_individual(r,r)).
+:- rdf_meta(rdfs_is_subclass(r,r)).
 % DOMAIN & RANGE
 :- rdf_meta(rdfs_domain(r,r,?)).
 :- rdf_meta(rdfs_range(r,r,?)).
@@ -128,6 +120,16 @@ rdfs_individual(X, Y, G):-
 rdfs_class(G, C):-
   rdf_term(G, C),
   rdfs_individual_of(C, rdfs:'Class').
+
+rdfs_is_individual(I, C):-
+  rdf(I, rdf:type, C0),
+  rdfs_is_subclass(C0, C).
+
+rdfs_is_subclass(C, C):- !.
+rdfs_is_subclass(C1, C2):-
+  rdf(C1, rdfs:subClassOf, C3),
+  C1 \== C3,
+  rdfs_is_subclass(C3, C2).
 
 
 

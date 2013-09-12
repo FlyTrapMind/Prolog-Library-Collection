@@ -106,10 +106,10 @@ rdf_expand_namespace(Atom, URI):-
   rdf_global_id(Namespace:LocalName, URI).
 
 %! rdf_expand_namespace(
-%!   ?S1:oneof([bnode,uri]),
-%!   ?P:uri,
-%!   ?O:oneof([bnode,literal,uri]),
-%!   ?G:atom
+%!   ?Subject:oneof([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:oneof([bnode,literal,iri]),
+%!   ?Graph:atom
 %! ) is det.
 % Expands namespaces that currently occur as atoms.
 %

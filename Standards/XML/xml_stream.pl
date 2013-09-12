@@ -34,8 +34,8 @@ is ignored by this methods.
 @version 2013/06-2013/07
 */
 
-:- use_module(generics(cowspeak)).
 :- use_module(generics(db_ext)).
+:- use_module(library(debug)).
 :- use_module(os(io_ext)).
 
 :- meta_predicate(xml_stream(+,+,1)).
@@ -43,6 +43,8 @@ is ignored by this methods.
 :- meta_predicate(xml_stream0(+,+,1,0,+)).
 
 :- db_add_novel(user:prolog_file_type(tmp, temporary)).
+
+:- debug(xml_stream).
 
 :- setting(
   store_number,
@@ -62,7 +64,7 @@ xml_stream(File, Tag, Goal, StoreGoal):-
   format(atom(StartTag), '<~w>', [Tag]),
   format(atom(EndTag), '</~w>', [Tag]),
   setup_call_cleanup(
-    open(File, read, Stream, [alias(big_stream)]),
+    open(File, read, Stream, [alias(big_stream),encoding(utf8),type(test)]),
     xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber),
     close(Stream)
   ).
@@ -88,7 +90,7 @@ xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
     ),
     % Turn the situatiun around: from writing to reading.
     setup_call_cleanup(
-      open(File, read, In),
+      open(File, read, In, [encoding(utf8),type(test)]),
       (
         load_structure(
           In,
@@ -109,7 +111,7 @@ xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
     read_line_to_codes(Stream, Codes),
     line_count(Stream, Line),
     atom_codes(Atom, Codes),
-    cowspeak([speech(false)], 'Skipping line ~w: ~w'-[Line, Atom])
+    debug(xml_stream, 'Skipping line ~w: ~w', [Line,Atom])
   ),
   fail.
 % Skips a line. Notify user.

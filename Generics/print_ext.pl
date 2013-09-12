@@ -8,42 +8,28 @@
                 % +Format
                 % :Arguments
     indent/1, % +Indent:integer
-    indent/2, % +Out
-              % +Indent:integer
-    print_nvpair/1, % +NVPair
-    print_nvpair/2, % +Out
+    print_nvpair/2, % :Options:list(nvpair)
                     % +NVPair
-    print_collection/2, % +Options:list(nvpair)
+    print_collection/2, % :Options:list(nvpair)
                         % +Collection:list
-    print_pair/1, % Pair:nvpair
-    print_proof/2, % ?Out
+    print_pair/2, % :Options:list(nvpair)
+                  % +Pair:pair
+    print_proof/2, % :Options:list(nvpair)
                    % +Proof:tree
-    print_proof/3, % :Options:list(nvpair)
-                   % ?Out
-                   % +Proof:tree
-    print_list/2, % +Out
+    print_list/2, % :Options:list(nvpair)
                   % +List:list
-    print_list/3, % +Options:list(nvpair)
-                  % +Out
-                  % +List:list
-    print_set/2, % +Out
+    print_set/2, % :Options:list(nvpair)
                  % +List:list
-    print_set/3, % +Options:list(nvpair)
-                 % +Out
-                 % +List:list
-    print_tuple/2, % +Out
-                   % +List:list
-    print_tuple/3 % +Options:list(nvpair)
-                  % +Out
+    print_tuple/2 % :Options:list(nvpair)
                   % +List:list
   ]
 ).
 
-/** <module> PRINT
+/** <module> Print extensions
 
 Predicates for printing.
 
-# Proof
+## Proof
 
 A datatype of the following form:
 ~~~{.pl}
@@ -53,20 +39,25 @@ proof(Conclusion, Premises)
 @author Wouter Beek
 @tbd Remove all predicate variants that have an `Out` parameter.
      The calling context should use with_output_to/2 instead.
-@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/08
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09
 */
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
-:- use_module(generics(atom_ext)). % Meta-calls.
 :- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
-:- meta_predicate(print_proof(:,?,+)).
+:- meta_predicate(print_collection(:,+)).
+:- meta_predicate(print_list(:,+)).
+:- meta_predicate(print_nvpair(:,+)).
+:- meta_predicate(print_pair(:,+)).
+:- meta_predicate(print_proof(:,+)).
+:- meta_predicate(print_set(:,+)).
+:- meta_predicate(print_tuple(:,+)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -109,15 +100,6 @@ indent(Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(NumberOfSpaces).
 
-%! indent(+Stream, +Indent:integer) is det.
-% @see Like tab/2, but writes the given number of indents, where
-%      a single indent can be multiple spaces.
-
-indent(Stream, Indent):-
-  setting(indent_size, IndentSize),
-  NumberOfSpaces is IndentSize * Indent,
-  tab(Stream, NumberOfSpaces).
-
 is_meta(ordering).
 is_meta(write_method).
 
@@ -147,65 +129,54 @@ print_collection(O1, Collection1):-
   write(End).
 
 % Done!
-print_collection_(_O, []):- !.
+print_collection_(_O1, []):- !.
 % Nested collection.
-print_collection_(O, [H1|T]):-
+print_collection_(O1, [H1|T]):-
   is_list(H1), !,
   % Notice that set members that are sets may contain multiple occurrences,
   % since they will first be explicitly converted to ordset format.
-  option(ordering(P), O, =),
+  option(ordering(P), O1, =),
   once(call(P, H1, H2)),
-  print_collection(O, H2),
-  print_collection_(O, T).
+  print_collection(O1, H2),
+  print_collection_(O1, T).
 % Next set member.
-print_collection_(O, [H|T]):-
-  option(write_method(P), O, write),
+print_collection_(O1, [H|T]):-
+  option(write_method(P), O1, write),
   call(P, H),
   % Do not add the separator after the last set member.
-  option(separator(Separator), O),
+  option(separator(Separator), O1),
   unless(T == [], write(Separator)),
-  print_collection_(O, T).
+  print_collection_(O1, T).
 
-%! print_list(+Output, +List:list) is det.
+%! print_list(+Options:list(nvpair), +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.
 %
 % Lists are printed recursively, using indentation relative to the given
 % indentation level.
 
-print_list(Out, List):-
-  print_list([], Out, List).
+print_list(O1, List):-
+  meta_options(is_meta, O1, O2),
+  merge_options(O2, [begin('['),end(']'),separator(',')], O3),
+  print_collection(O3, List).
 
-print_list(O1, Out, List):-
-  merge_options(O1, [begin('['),end(']'),separator(',')], O2),
-  with_output_to(Out, print_collection(O2, List)).
+print_nvpair(O1, NVPair):-
+  meta_options(is_meta, O1, O2),
+  NVPair =.. [N,V],
+  merge_options(O2, [begin(''),end(';'),separator(': ')], O3),
+  print_collection(O3, [N,V]).
 
-print_nvpair(NVPair):-
-  NVPair =.. [Name, Value],
-  write(Name), write(': '), write(Value), write(';').
+print_pair(O1, Pair):-
+  meta_options(is_meta, O1, O2),
+  % Support both notational forms for name-value pairs.
+  (Pair = N-V, ! ;  Pair =.. [N,V]),
+  merge_options(O2, [begin('&lang;'),end('&rang;'),separator(',')], O3),
+  print_collection(O3, [N,V]).
 
-print_nvpair(Out, NVPair):-
-  with_output_to(Out, print_nvpair(NVPair)).
-
-print_pair(Pair):-
-  (
-    Pair = Name-Value, !
-  ;
-    Pair =.. [Name,Value]
-  ),
-  write('<'),
-  write(Name),
-  write(','),
-  write(Value),
-  write('>').
-
-print_proof(Out, Proof):-
-  print_proof([], Out, Proof).
-
-print_proof(O1, Out, Proof):-
+print_proof(O1, Proof):-
   meta_options(is_meta, O1, O2),
   default_option(O2, indent, 0, O3),
   once(phrase(print_proof(O3, Proof), Codes)),
-  put_codes(Out, Codes).
+  put_codes(current_output, Codes).
 
 print_proof(O1, Proof) -->
   {Proof =.. [Rule,Premises,Conclusion]},
@@ -232,21 +203,19 @@ print_proposition(O1, Proposition) -->
   {call(Predicate, Proposition, Atom)},
   atom(Atom).
 
-print_set(Out, List):-
-  print_set([], Out, List).
+identity(X, X).
 
-print_set(O1, Out, List):-
+print_set(O1, List):-
+  meta_options(is_meta, O1, O2),
   merge_options(
-    O1,
-    [begin('{'),end('}'),ordering(ordsets:list_to_ord_set),separator(',')],
-    O2
+    O2,
+    [begin('{'),end('}'),ordering(list_to_ord_set),separator(',')],
+    O3
   ),
-  with_output_to(Out, print_collection(O2, List)).
+  print_collection(O3, List).
 
-print_tuple(Out, List):-
-  print_tuple([], Out, List).
-
-print_tuple(O1, Out, List):-
-  merge_options(O1, [begin('<'),end('>'),separator(',')], O2),
-  with_output_to(Out, print_collection(O2, List)).
+print_tuple(O1, List):-
+  meta_options(is_meta, O1, O2),
+  merge_options(O2, [begin('<'),end('>'),separator(',')], O3),
+  print_collection(O3, List).
 

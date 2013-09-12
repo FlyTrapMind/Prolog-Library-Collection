@@ -45,7 +45,7 @@ To process items again one should remove lines in Done.
 
 file_to_items(File, Items):-
   setup_call_cleanup(
-    open(File, read, Stream, []),
+    open(File, read, Stream, [encoding(utf8),type(text)]),
     stream_to_items(Stream, Items),
     close(Stream)
   ).
@@ -77,7 +77,7 @@ list_script(Goal, Todo, Done):-
   setup_call_cleanup(
     % The mode is either =append= (if the file already exists)
     % or =write= (if the file does not yet exist).
-    open(Done, Mode, DoneStream, []),
+    open(Done, Mode, DoneStream, [encoding(utf8),type(text)]),
     list_script(Goal, TodoItems, DoneItems, DoneStream),
     close(DoneStream)
   ).

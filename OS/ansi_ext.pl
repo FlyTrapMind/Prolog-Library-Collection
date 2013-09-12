@@ -26,7 +26,7 @@
 Predicates for using ANSI markup in Unix consoles.
 
 @author Wouter Beek
-@version 2013/06-2013/07
+@version 2013/06-2013/07, 2013/09
 */
 
 :- use_module(library(ansi_term)).
@@ -61,17 +61,7 @@ ansi_format(Stream, Triples):-
 % output stream.
 
 ansi_format(Stream, Attrs, Format, Args):-
-  setup_call_cleanup(
-    (
-      current_output(MainStream),
-      set_output(Stream)
-    ),
-    ansi_format(Attrs, Format, Args),
-    (
-      flush_output(Stream),
-      set_output(MainStream)
-    )
-  ).
+  with_output_to(Stream, ansi_format(Attrs, Format, Args)).
 
 ansi_formatnl(Format):-
   ansi_format(Format),

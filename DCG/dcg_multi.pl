@@ -11,11 +11,16 @@
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
                   % ?Arguments1:list
                   % :Options:list(nvpair)
-    dcg_multi//5 % :DCG_Body
-                 % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
-                 % ?Arguments1:list
-                 % ?Arguments2:list
-                 % :Options:list(nvpair)
+    dcg_multi//5, % :DCG_Body
+                  % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
+                  % ?Arguments1:list
+                  % ?Arguments2:list
+                  % :Options:list(nvpair)
+% OUTPUT FORMAT MODIFIERS
+    codes_atom/2, % ?Codes:list(code)
+                  % ?Atom:atom
+    codes_number/2 % ?Codes:list(code)
+                   % ?Number:number
   ]
 ).
 
@@ -139,64 +144,78 @@ dcg_multi(DCG, Rep, L2, M2, O1) -->
   {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)}.
 
 % Zero arguments: no distinction between `var` and `nonvar`.
-dcg_multi_no_arguments(_DCG, _Max, C, C, _O) --> [].
-dcg_multi_no_arguments(DCG, Max, C1, C, O) -->
+dcg_multi_no_arguments(DCG, Max, C1, C3, O1) -->
   dcg_call(DCG),
   % Process the separator, if any.
-  ({option(separator(Separator), O)} -> Separator ; ""),
+  ({option(separator(Separator), O1)} -> Separator ; ""),
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
-  dcg_multi_no_arguments(DCG, Max, C2, C, O).
+  dcg_multi_no_arguments(DCG, Max, C2, C3, O1).
+dcg_multi_no_arguments(DCG, Max, C1, C2, _O1) -->
+  dcg_call(DCG),
+  {succ(C1, C2), greater_than_or_equal_to(Max, C2)}.
+dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) -->
+  [].
 
 
 
 % DCG_NONVAR %
 
 % One argument.
-dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], O) -->
+dcg_multi_nonvar(DCG, Max, C1, C3, [H1|T1], O1) -->
   dcg_call(DCG, H1),
   % Process the separator, if any.
-  ({option(separator(Separator), O)} -> Separator ; ""),
+  ({option(separator(Separator), O1)} -> Separator ; ""),
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
-  dcg_multi_nonvar(DCG, Max, C2, C, T1, O).
-dcg_multi_nonvar(_DCG, _Max, C, C, [], _O) --> [].
+  dcg_multi_nonvar(DCG, Max, C2, C3, T1, O1).
+dcg_multi_nonvar(DCG, Max, C1, C2, [H1], _O1) -->
+  dcg_call(DCG, H1),
+  {succ(C1, C2), greater_than_or_equal_to(Max, C2)}.
+dcg_multi_nonvar(_DCG, _Max, C, C, _L, _O1) -->
+  [].
 
 % Two arguments.
-dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O) -->
+dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
   dcg_call(DCG, H1, H2),
   % Process the separator, if any.
-  ({option(separator(Separator), O)} -> Separator ; ""),
+  ({option(separator(Separator), O1)} -> Separator ; ""),
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
-  dcg_multi_nonvar(DCG, Max, C2, C, T1, T2, O).
-dcg_multi_nonvar(_DCG, _Max, C, C, [], [], _O) --> [].
+  dcg_multi_nonvar(DCG, Max, C2, C, T1, T2, O1).
+dcg_multi_nonvar(DCG, Max, C1, C2, [H1], [H2], _O1) -->
+  dcg_call(DCG, H1, H2),
+  {succ(C1, C2), greater_than_or_equal_to(Max, C2)}.
+dcg_multi_nonvar(_DCG, _Max, C, C, _L1, _L2, _O1) -->
+  [].
 
 
 
 % DCG_VAR %
 
 % One argument.
-dcg_multi_var(DCG, Min, Min, [H1], _O) --> !,
+dcg_multi_var(DCG, Min, Min, [H1], _O1) --> !,
   dcg_call(DCG, H1).
-dcg_multi_var(DCG, Min, Max1, [H1|T1], O) -->
+dcg_multi_var(DCG, Min, Max1, [H1|T1], O1) -->
   dcg_call(DCG, H1),
   % Process the separator, if any.
-  ({option(separator(Separator), O), T1 \= []} -> Separator ; ""),
+  ({option(separator(Separator), O1), T1 \= []} -> Separator ; ""),
   {count_down(Max1, Max2)},
-  dcg_multi_var(DCG, Min, Max2, T1, O).
-dcg_multi_var(_DCG, _Min, inf, [], _O) --> [].
+  dcg_multi_var(DCG, Min, Max2, T1, O1).
+dcg_multi_var(_DCG, _Min, inf, [], _O1) -->
+  [].
 
 % Two arguments
-dcg_multi_var(DCG, Min, Min, [H1], [H2], _O) --> !,
+dcg_multi_var(DCG, Min, Min, [H1], [H2], _O1) --> !,
   dcg_call(DCG, H1, H2).
-dcg_multi_var(DCG, Min, Max1, [H1|T1], [H2|T2], O) -->
+dcg_multi_var(DCG, Min, Max1, [H1|T1], [H2|T2], O1) -->
   dcg_call(DCG, H1, H2),
   % Process the separator, if any.
-  ({option(separator(Separator), O), T1 \= []} -> Separator ; ""),
+  ({option(separator(Separator), O1), T1 \= []} -> Separator ; ""),
   {count_down(Max1, Max2)},
-  dcg_multi_var(DCG, Min, Max2, T1, T2, O).
-dcg_multi_var(_DCG, _Min, inf, [], [], _O) --> [].
+  dcg_multi_var(DCG, Min, Max2, T1, T2, O1).
+dcg_multi_var(_DCG, _Min, inf, [], [], _O1) -->
+  [].
 
 
 
