@@ -52,12 +52,19 @@
 
 
 
-graph_to_gv_file(_Options, Graph, Method, ToFileType, ToFile):-
-  once(phrase(gv_graph(Graph), Codes)),
+graph_to_gv_file(_Options, GIF, Method, ToFileType, ToFile):-
+  once(phrase(gv_graph(GIF), Codes)),
   to_gv_file(Codes, Method, ToFileType, ToFile).
 
-graph_to_svg_dom(Options, Graph, Method, SVG):-
-  graph_to_gv_file(Options, Graph, Method, svg, ToFile),
+%! graph_to_svg_dom(
+%!   +Options:list(nvpair),
+%!   +GraphInterchangeFormat:compound,
+%!   +Method:onef([dot,sfdp]),
+%!   -SVG:list
+%! ) is det.
+
+graph_to_svg_dom(Options, GIF, Method, SVG):-
+  graph_to_gv_file(Options, GIF, Method, svg, ToFile),
   % @tbd Why the module?!
   svg:file_to_svg(ToFile, SVG),
   safe_delete_file(ToFile).

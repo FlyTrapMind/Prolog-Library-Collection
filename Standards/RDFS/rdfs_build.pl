@@ -33,6 +33,9 @@
                          % +Language:atom
                          % +Label:atom
                          % +Graph:graph
+    rdfs_replace_label/3, % +Subject:or([bnode,iri])
+                          % +Label:atom
+                          % +Graph:atom
     rdfs_retractall_label/3, % +Subject:oneof([bnode,uri])
                              % +Label:atom
                              % +Graph:graph
@@ -196,6 +199,10 @@ rdfs_assert_label(Subject, Language, Label, G):-
   % @ tbd Why is this necessary?
   rdf_global_id(rdfs:label, P),
   rdf_assert_literal(Subject, P, Language, Label, G).
+
+rdfs_replace_label(S, Label, G):-
+  rdfs_retractall_label(S, _OldLabel, G),
+  rdfs_assert_label(S, Label, G).
 
 rdfs_retractall_label(Subject, Label, G):-
   rdf_global_id(rdfs:label, P),

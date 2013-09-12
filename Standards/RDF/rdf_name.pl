@@ -75,7 +75,11 @@ rdf_term_name(RDF_Term):-
 rdf_term_name(O, RDF_Term):-
   rdf_is_list(RDF_Term), !,
   % Recursively retrieve the contents of the RDF list.
-  rdf_list(RDF_Term, RDF_Terms),
+  % This has to be done non-recursively, since the nested
+  % Prolog list `[a,[b,c]]` would bring rdf_term_name/3 into
+  % trouble when it comes accross `[b,c]`
+  % (which fails the check for RDF list).
+  rdf_list([recursive(false)], RDF_Term, RDF_Terms),
   maplist(rdf_term_name(O), RDF_Terms, Names),
   print_list([], Names).
 % A literal with a datatype.

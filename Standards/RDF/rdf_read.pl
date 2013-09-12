@@ -31,7 +31,7 @@
                      % ?Members:list(uri)
     rdf_preferred_literal/5, % ?Subject:or([bnode,iri])
                              % ?Predicate:iri
-                             % +LanguageTag:atom
+                             % +LanguageTags:or([atom,list(atom)])
                              % ?PreferredLangTag:atom
                              % ?PreferredLiteral:atom
     rdf_property/2 % +Graph:atom
@@ -193,7 +193,7 @@ rdf_literal(S, P, LangTag, Lit, G):-
 %! rdf_preferred_literal(
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
-%!   ?LanguageTag:atom,
+%!   ?LanguageTags:or([atom,list(atom)]),
 %!   ?PreferredLanguageTag:atom,
 %!   ?PreferredLiteral:atom
 %! ) is det.
@@ -202,7 +202,17 @@ rdf_literal(S, P, LangTag, Lit, G):-
 %
 % @tbd Make sure the language subtags are standards compliant.
 
-rdf_preferred_literal(S, P, LangTag, PreferredLangTag, PreferredLit):-
+rdf_preferred_literal(S, P, LangTags, PreferredLangTag, PreferredLit):-
+  % Accept lists of language tags as well as and single language tags.
+  (
+    is_list(LangTags), !,
+    % Backtracking over membership ensures
+    % that we try all given language tags.
+    member(LangTag, LangTags)
+  ;
+    LangTag = LangTags
+  ),
+
   % Takes both atoms and lists of atoms as argument.
   rdf_literal(S, P, LangTag, PreferredLit, _G),
   PreferredLangTag = LangTag, !.

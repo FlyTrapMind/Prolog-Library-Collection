@@ -19,7 +19,7 @@
 
 % LABELS
     rdfs_preferred_label/4, % ?RDF_Term:oneof([bnode,uri])
-                            % +LanguageTag:atom
+                            % +LanguageTags:or([atom,list(atom)])
                             % -PreferredLanguageTag:atom
                             % ?PreferredLiteral:atom
     rdfs_list_label/3, % +List:uri
@@ -150,7 +150,7 @@ rdfs_range(Property1, Range, Graph):-
 %! rdfs_preferred_label(
 %!   ?RDF_Term:or([bnode,iri]),
 %!   +LanguageTag:atom,
-%!   -PreferredLangTag:atom,
+%!   -PreferredLangTags:or([atom,list(atom)]),
 %!   ?Label:atom
 %! ) is nondet.
 % Multiple labels are returned (nondet) in a descending preference order.

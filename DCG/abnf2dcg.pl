@@ -53,7 +53,6 @@ name(Name) -->
 
 rule -->
   name(Name),
-gtrace,
   blanks, equals_sign, blanks,
   elements(Name),
   crlf.
