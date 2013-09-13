@@ -83,6 +83,8 @@ The procedure for determining the color of a vertex:
 :- rdf_meta(rdf_vertex_shape(r,-)).
 :- rdf_meta(rdf_vertex_term(+,+,+,:,r,-)).
 
+:- multifile(rdf_edge_name/2).
+
 
 
 % COLOR %
@@ -190,7 +192,7 @@ export_rdf_graph(O, G, GIF):-
 %   4. `literals(+Include:oneof([all,none,preferred_label]))`
 %      Whether all (`all`, default), none (`none`) or only preferred label
 %      literals (`preferred_label`) are included as vertices.
-%   5. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
+%   5. `uri_desc(+DescriptionMode:oneof([only_literals,uri_only,with_literals,with_preferred_label]))`
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 

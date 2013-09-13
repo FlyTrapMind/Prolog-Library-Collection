@@ -14,10 +14,13 @@ Attributes, their allowed values, and their default values for GraphViz.
 @author Wouter Beek
 @see http://www.graphviz.org/doc/info/attrs.html
 @tbd Add context check (i.e., node, graph, edges, etc.).
-@version 2011-2013/07
+@version 2011-2013/07, 2013/09
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(typecheck)).
+:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(svg(svg_colors)).
@@ -25,6 +28,8 @@ Attributes, their allowed values, and their default values for GraphViz.
 :- use_module(standards(x11_colors)).
 
 :- discontiguous(gv_attr/5).
+
+:- debug(gv_attrs).
 
 
 
@@ -291,3 +296,4 @@ style(node, rounded).
 style(node, solid).
 style(node, striped).
 style(node, wedged).
+

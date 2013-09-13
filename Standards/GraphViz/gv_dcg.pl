@@ -42,10 +42,10 @@ In GraphViz vertices are called 'nodes'.
 %
 % @tbd Add attribute checks.
 
-gv_attribute(Name=Value) --> !,
+gv_attribute(Name=Val) --> !,
   gv_id(Name),
   "=",
-  gv_id(Value).
+  gv_id(Val).
 % Support for the non-deprecated representation for name-value pairs.
 gv_attribute(Attr) -->
   {Attr =.. [Name,Value]},
@@ -207,23 +207,27 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 
   % The following lines are indented.
   {NewI is I + 1},
+
   % Attributes that apply to the graph as a whole.
   gv_generic_attributes_statement(graph, NewI, G_Attrs5, G_Attrs5),
+
   % Attributes that are the same for all nodes.
   gv_generic_attributes_statement(node, NewI, G_Attrs5, V_Attrs),
+
   % Attributes that are the same for all edges.
   gv_generic_attributes_statement(edge, NewI, G_Attrs5, E_Attrs),
+
   % Only add a newline if some content was written in the previous three
   % lines.
   ({(G_Attrs5 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
 
   % The list of GraphViz nodes.
   dcg_multi(gv_node_statement(NewI, G_Attrs5), _, NewV_Terms, []),
-  newline,
+  ({NewV_Terms == []} -> "" ; newline),
 
   % The ranked GraphViz nodes (displayed at the same height).
   dcg_multi(gv_ranked_node_collection(NewI, G_Attrs5), _, Ranked_V_Terms, []),
-  newline,
+  ({Ranked_V_Terms == []} -> "" ; newline),
 
   {
     findall(
@@ -240,8 +244,10 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 
   % The rank edges.
   dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, Rank_Edges, []),
+
   % The non-rank edges.
   dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, NewE_Terms, []),
+
   % Note that we do not include a newline here.
 
   % The description of the grpah is closed (using the old indent level).
@@ -255,7 +261,7 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 gv_graph_type(digraph) --> d,i,g,r,a,p,h.
 gv_graph_type(graph) --> g,r,a,p,h.
 
-%! gv_id(-Codes:list(code))// is det.
+%! gv_id(?Codes:list(code))// is det.
 % Parse a GraphViz identifier.
 % There are 4 variants:
 %   1. Any string of alphabetic (`[a-zA-Z'200-'377]`) characters,
@@ -304,10 +310,11 @@ gv_id(Atom) -->
   gv_quoted_string(S),
   double_quote, !.
 % HTML strings (variant 4).
-%gv_id(Atom) -->
-%  "<",
-%  gv_html_string(Atom),
-%  ">".
+gv_id(Atom) -->{gtrace},
+  {atom_codes(Atom, S)},
+  less_than_sign,
+  dcg_codes(S),
+  greater_than_sign.
 
 gv_id_first(X) --> letter(X).
 gv_id_first(X) --> underscore(X).

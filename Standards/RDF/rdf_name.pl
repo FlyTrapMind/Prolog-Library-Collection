@@ -110,28 +110,50 @@ rdf_term_name(_O, literal(Literal)):- !,
 rdf_term_name(_O, BNode):-
   rdf_is_bnode(BNode), !,
   write(BNode).
-% Now come the various URIs...
-% Only the URI is used. XML namespace prefixes are used when present.
-rdf_term_name(O, RDF_Term):-
-  option(uri_desc(uri_only), O, uri_only), !,
-  rdf_term_iri(RDF_Term).
 % If the RDF term has a label, then this is included in its name.
 % This is not the case for non-label literals.
 rdf_term_name(O1, RDF_Term):-
-  option(uri_desc(with_preferred_label), O1, uri_only), !,
+  option(uri_desc(O), O1, uri_only),
+  (O == only_preferred_label ; O == with_preferred_label),
+  
+  % See whether a preferred label can be found.
   option(language(Lang), O1, en),
-  rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel),
-  print_list(O1, [RDF_Term,PreferredLabel]).
+  rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel), !,
+  
+  % Whether to include the RDF term itself or not.
+  (
+    O == with_preferred_label
+  ->
+    with_output_to(atom(RDF_TermName), rdf_term_iri(RDF_Term)),
+    Rows = [RDF_TermName,PreferredLabel]
+  ;
+    Rows = [PreferredLabel]
+  ),
+  
+  print_collection(
+    [begin(''),end(''),ordering(list_to_ord_set),separator('\n')],
+    Rows
+  ).
 % The RDF term is set to collate all literals that (directly) relate to it.
-rdf_term_name(O, RDF_Term):-
-  option(uri_desc(with_literals), O, uri_only), !,
-  with_output_to(atom(IRI_Name), rdf_term_iri(RDF_Term)),
+rdf_term_name(O1, RDF_Term):-
+  option(uri_desc(O), O1, uri_only),
+  (O = with_literals ; O = only_literals), !,
+
+  % The URI, if included.
+  (
+    O = only_literals
+  ->
+    IRI_Name = []
+  ;
+    with_output_to(atom(IRI_Name0), rdf_term_iri(RDF_Term)),
+    IRI_Name = [IRI_Name0]
+  ),
 
   % Labels are treated specially: only the preferred label is included.
-  option(language(Lang), O, en), !,
+  option(language(Lang), O1, en), !,
   rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel),
 
-  % Now come the related non-label literals.
+  % Non-label literals are all included.
   findall(
     LiteralName,
     (
@@ -139,15 +161,21 @@ rdf_term_name(O, RDF_Term):-
       rdf_is_literal(Literal),
       % Exclude labels.
       \+ rdf_global_id(rdfs:type, P),
-      rdf_term_name(O, Literal, LiteralName)
+      rdf_term_name(O1, Literal, LiteralName)
     ),
     LiteralNames
   ),
-
-  print_set(
-    [begin(''),end(''),separator('\n')],
-    [IRI_Name,PreferredLabel,LiteralNames]
+  
+  append(IRI_Name, [PreferredLabel|LiteralNames], Rows),
+  print_collection(
+    [begin(''),end(''),ordering(list_to_ord_set),separator('\n')],
+    Rows
   ).
+% Only the URI is used. XML namespace prefixes are used when present.
+% This appears last, since it is the fallback option.
+% When option `uri_desc` is set to `uri_only` one ends up here as well.
+rdf_term_name(_O, RDF_Term):-
+  rdf_term_iri(RDF_Term).
 
 rdf_term_name(O1, RDF_Term, Name):-
   with_output_to(atom(Name), rdf_term_name(O1, RDF_Term)).
