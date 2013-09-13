@@ -40,11 +40,12 @@
 Predicates that operate on / generate XML DOM.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/05, 2013/07
+@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(html(html)). % This is required for the HTML DTD file path.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).

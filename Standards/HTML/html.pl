@@ -152,8 +152,7 @@ process_exception(
   debug(html, '[IO-EXCEPTION] ~w', [Reason]),
   call(Goal).
 process_exception(Exception, _Goal):-
-  gtrace, %DEB
-  format(user_output, '~w\n', [Exception]).
+  debug(html, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
 
 % stream_to_html(+Stream:stream, -HTML:dom) is det.
 % Retrieves the HTML DOM from the given stream.
@@ -164,13 +163,13 @@ process_exception(Exception, _Goal):-
 stream_to_html(Stream, DOM):-
   stream_to_html(Stream, DOM, 0).
 
-stream_to_html(_Stream, _DOM, 5):-
+stream_to_html(_Stream, _DOM, 5):- !,
   debug(
     html,
     'The maximum number of attempts was reached for load_structure/3 \c
      in stream_to_html/3.',
     []
-  ), !.
+  ).
 stream_to_html(Stream, DOM, Attempts):-
   dtd(html, DTD),
   catch(

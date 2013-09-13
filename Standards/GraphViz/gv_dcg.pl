@@ -310,7 +310,8 @@ gv_id(Atom) -->
   gv_quoted_string(S),
   double_quote, !.
 % HTML strings (variant 4).
-gv_id(Atom) -->{gtrace},
+% @tbd
+gv_id(Atom) -->
   {atom_codes(Atom, S)},
   less_than_sign,
   dcg_codes(S),
