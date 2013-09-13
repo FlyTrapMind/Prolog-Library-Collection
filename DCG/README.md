@@ -21,6 +21,7 @@ The DCG subcollection of the PGC contains the following Prolog modules:
   * [dcg_generic.pl] Generic extensions for the use of DCGs
     (e.g., meta-calls for DCGs, peeking, REs, replacements).
   * [dcg_html.pl] DCG rules for HTML content.
+  * [dcg_multi.pl] Multiple occurrences of the same DCG rule.
   * [dcg_ordinal.pl] DCG rules for the ordinal numbers.
   * [dcg_os.pl] DCG rules for OS-dependent symbols and sequences
     (e.g., newlines).

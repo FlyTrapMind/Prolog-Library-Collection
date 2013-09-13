@@ -129,7 +129,7 @@ literal_to_bnode(G, Lit, BNode):-
 %! ) is det.
 
 explain_web(S, P, O, SVG):-
-  rdf_triple_name(S, P, O, TripleName),
+  with_output_to(atom(TripleName), rdf_triple_name([], S, P, O)),
   tms_export_argument_web(TripleName, SVG).
 
 
@@ -191,7 +191,7 @@ materialize_(G, TMS):-
   %\+ rdf_find(S, P, O, G),
 
   % Add to TMS.
-  maplist(rdf_triple_name, [rdf(S,P,O)|Prems], [C_Label|P_Labels]),
+  maplist(rdf_triple_name([]), [rdf(S,P,O)|Prems], [C_Label|P_Labels]),
   doyle_add_argument(TMS, P_Labels, R, C_Label, J),
 
   % DEB

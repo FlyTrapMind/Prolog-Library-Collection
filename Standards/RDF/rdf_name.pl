@@ -1,24 +1,24 @@
 :- module(
   rdf_name,
   [
-    rdf_pair_name/1, % +Pair:pair(or([iri,literal]))
+    rdf_pair_name/3, % +Options:list(nvpair)
+                     % +RDF_Term1:pair(or([bnode,iri,literal]))
+                     % +RDF_Term1:pair(or([bnode,iri,literal]))
     rdf_term_name/1, % +RDF_Term:oneof([bnode,literal,uri])
     rdf_term_name/2, % +Options:list(nvpair)
                      % +RDF_Term:oneof([bnode,literal,uri])
     rdf_term_name/3, % +Options:list(nvpair)
                      % +RDF_Term:oneof([bnode,literal,uri])
                      % -Name:atom
-    rdf_terms_name/2, % +RDF_Terms:list(or(bnode,literal,uri))
-                      % -Name:atom
-    rdf_terms_name/3, % +Options:list(nvpair)
-                      % +RDF_Terms:list(or(bnode,literal,uri))
-                      % -Name:atom
-    rdf_triple_name/2, % +Triple:triple(oneof([bnode,uri]),uri,oneof([bnode,literal,uri]))
+    rdf_triple_name/2, % +Options:list(nvpair)
+                       % +Triple:triple(oneof([bnode,uri]),uri,oneof([bnode,literal,uri]))
+    rdf_triple_name/3, % +Options:list(nvpair)
+                       % +Triple:triple(oneof([bnode,uri]),uri,oneof([bnode,literal,uri]))
                        % -TripleName:atom
-    rdf_triple_name/4 % +Subject:oneof([bnode,uri])
+    rdf_triple_name/4 % +Options:list(nvpair)
+                      % +Subject:oneof([bnode,uri])
                       % +Predicate:uri
                       % +Object:oneof([bnode,literal,uri])
-                      % -TripleName:atom
   ]
 ).
 
@@ -39,15 +39,26 @@ Generate names for RDF terms and triples.
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xsd(xsd)).
 
+:- rdf_meta(rdf_pair_name(+,r,r)).
+:- rdf_meta(rdf_term_name(r)).
+:- rdf_meta(rdf_term_name(+,r)).
+:- rdf_meta(rdf_term_name(+,r,-)).
+:- rdf_meta(rdf_triple_name(+,t)).
+:- rdf_meta(rdf_triple_name(+,t,-)).
+:- rdf_meta(rdf_triple_name(+,r,r,r)).
 
 
-%! rdf_pair_name(+Pair:pair(or([iri,literal]))) is det.
-% Helper predicate for providing an atomic label for predicate-object pairs.
 
-rdf_pair_name(X1-Y1):-
-  rdf_global_id(X1, X2),
-  rdf_global_id(Y1, Y2),
-  print_pair([write_method(rdf_term_name)], X2-Y2).
+%! rdf_pair_name(
+%!   +Options:list(nvpair),
+%!   +RDF_Term1:pair(or([bnode,iri,literal])),
+%!   +RDF_Term2:pair(or([bnode,iri,literal]))
+%! ) is det.
+% Writes a pair of RDF terms, e.g., a predicate-object pair.
+
+rdf_pair_name(O1, X, Y):-
+  merge_options(O1, [write_method(rdf_term_name)], O2),
+  print_pair(O2, X, Y).
 
 rdf_term_name(RDF_Term):-
   rdf_term_name([], RDF_Term).
@@ -115,11 +126,11 @@ rdf_term_name(_O, BNode):-
 rdf_term_name(O1, RDF_Term):-
   option(uri_desc(O), O1, uri_only),
   (O == only_preferred_label ; O == with_preferred_label),
-  
+
   % See whether a preferred label can be found.
   option(language(Lang), O1, en),
   rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel), !,
-  
+
   % Whether to include the RDF term itself or not.
   (
     O == with_preferred_label
@@ -129,7 +140,7 @@ rdf_term_name(O1, RDF_Term):-
   ;
     Rows = [PreferredLabel]
   ),
-  
+
   print_collection(
     [begin(''),end(''),ordering(list_to_ord_set),separator('\n')],
     Rows
@@ -165,7 +176,7 @@ rdf_term_name(O1, RDF_Term):-
     ),
     LiteralNames
   ),
-  
+
   append(IRI_Name, [PreferredLabel|LiteralNames], Rows),
   print_collection(
     [begin(''),end(''),ordering(list_to_ord_set),separator('\n')],
@@ -196,38 +207,26 @@ rdf_term_iri(IRI):-
 rdf_term_iri(IRI):-
   write(IRI).
 
-%! rdf_terms_name(+RDF_Terms:list(or(bnode,literal,iri)), -Name:atom) is det.
-% @see rdf_terms_name/3
+%! rdf_triple_name(+Options:list(nvpair), +RDF_Triple:compound) is det.
+% @see Wrapper around rdf_triple_name/4.
 
-rdf_terms_name(RDF_Terms, Name):-
-  rdf_terms_name([], RDF_Terms, Name).
+rdf_triple_name(O1, rdf(S,P,O)):-
+  rdf_triple_name(O1, S, P, O).
 
-%! rdf_terms_name(
+rdf_triple_name(O1, rdf(S,P,O), TripleName):-
+  with_output_to(atom(TripleName), rdf_triple_name(O1, rdf(S,P,O))).
+
+%! rdf_triple_name(
 %!   +Options:list(nvpair),
-%!   +RDF_Terms:list(or(bnode,literal,iri)),
-%!   -Name:atom
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Object:or([bnode,iri,literal])
 %! ) is det.
-% Retruns an atomic name for the given list of RDF terms.
-% List order and duplicates is retained.
+% The supported options are:
+%   * The options supported by rdf_term_name/3.
+%   * The options supported by print_tuple/2.
 
-rdf_terms_name(O1, RDF_Terms, Name):-
-  maplist(rdf_term_name(O1), RDF_Terms, Names),
-  with_output_to(atom(Name), print_list(O1, Names)).
-
-rdf_term_pair_name(O1, RDF_Term1-RDF_Term2, Name):-
-  maplist(rdf_term_name(O1), [RDF_Term1,RDF_Term2], [Name1,Name2]),
-  format(atom(Name), '~w-~w', [Name1,Name2]).
-
-rdf_term_pairs_name(O1, RDF_TermPairs, Name):-
-  maplist(rdf_term_pair_name(O1), RDF_TermPairs, Names),
-  with_output_to(atom(Name), print_list(O1, Names)).
-
-rdf_triple_name(rdf(S1,P1,O1), T_Name):- !,
-  maplist(rdf_global_id, [S1,P1,O1], [S2,P2,O2]),
-  rdf_triple_name(S2, P2, O2, T_Name).
-rdf_triple_name(T_Name, T_Name).
-
-rdf_triple_name(S, P, O, T_Name):-
-  maplist(rdf_term_name([]), [S,P,O], [S_Name,P_Name,O_Name]),
-  with_output_to(atom(T_Name), print_tuple([], [S_Name,P_Name,O_Name])).
+rdf_triple_name(O1, S, P, O):-
+  maplist(rdf_term_name(O1), [S,P,O], [S_Name,P_Name,O_Name]),
+  print_tuple(O1, [S_Name,P_Name,O_Name]).
 

@@ -12,8 +12,9 @@
                     % +NVPair
     print_collection/2, % :Options:list(nvpair)
                         % +Collection:list
-    print_pair/2, % :Options:list(nvpair)
-                  % +Pair:pair
+    print_pair/3, % :Options:list(nvpair)
+                  % +X
+                  % +Y
     print_proof/2, % :Options:list(nvpair)
                    % +Proof:tree
     print_list/2, % :Options:list(nvpair)
@@ -54,7 +55,7 @@ proof(Conclusion, Premises)
 :- meta_predicate(print_collection(:,+)).
 :- meta_predicate(print_list(:,+)).
 :- meta_predicate(print_nvpair(:,+)).
-:- meta_predicate(print_pair(:,+)).
+:- meta_predicate(print_pair(:,+,+)).
 :- meta_predicate(print_proof(:,+)).
 :- meta_predicate(print_set(:,+)).
 :- meta_predicate(print_tuple(:,+)).
@@ -165,12 +166,36 @@ print_nvpair(O1, NVPair):-
   merge_options(O2, [begin(''),end(';'),separator(': ')], O3),
   print_collection(O3, [N,V]).
 
-print_pair(O1, Pair):-
+%! print_pair(+Options:list(nvpair), +X, +Y) is det.
+% Prints the given pair.
+%
+% The following options are supported:
+%   * =|brackets(+Brackets:oneof([ascii,html]))|=
+%     The brackets that are printed for this tuple,
+%     either using the ASCII characters `<` and `>` (value `ascii`, default)
+%     or using the HTML escape sequences `&lang;` and `&rang;`
+%     (value `html`).
+%   * The options that are supported for print_collection/2.
+
+print_pair(O1, X, Y):-
   meta_options(is_meta, O1, O2),
-  % Support both notational forms for name-value pairs.
-  (Pair = N-V, ! ;  Pair =.. [N,V]),
-  merge_options(O2, [begin('&lang;'),end('&rang;'),separator(',')], O3),
-  print_collection(O3, [N,V]).
+
+  % The begin and end signs depend on the mode.
+  select_option(brackets(Brackets), O2, O3, ascii),
+  (
+    Brackets == ascii
+  ->
+    Begin = '<',
+    End = '>'
+  ;
+    Brackets == html
+  ->
+    Begin = '&lang;',
+    End = '&rang;'
+  ),
+
+  merge_options(O3, [begin(Begin),end(End),separator(',')], O4),
+  print_collection(O4, [X,Y]).
 
 print_proof(O1, Proof):-
   meta_options(is_meta, O1, O2),
@@ -214,8 +239,32 @@ print_set(O1, List):-
   ),
   print_collection(O3, List).
 
+%! print_tuple(+Options:list(nvpair), +List:list) is det.
+% The following options are supported:
+%   * =|brackets(+Brackets:oneof([ascii,html]))|=
+%     The brackets that are printed for this tuple,
+%     either using the ASCII signs `<` and `>` (value `ascii`, default)
+%     or using the HTML escape sequences `&lang;` and `&rang;`
+%     (value `html`).
+%   * The options that are supported for print_collection/2.
+
 print_tuple(O1, List):-
   meta_options(is_meta, O1, O2),
-  merge_options(O2, [begin('<'),end('>'),separator(',')], O3),
+
+  % Set the left and right angles.
+  option(brackets(Bracket), O2, ascii),
+  (
+    Bracket == ascii
+  ->
+    Begin = '<',
+    End = '>'
+  ;
+    Bracket == html
+  ->
+    Begin = '&lang;',
+    End = '&rang;'
+  ),
+
+  merge_options(O2, [begin(Begin),end(End),separator(',')], O3),
   print_collection(O3, List).
 

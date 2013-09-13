@@ -18,6 +18,9 @@
 % PARSING
     html_attribute/2, % +Attributes:list(nvpair)
                       % +Attribute:nvpair
+    html_entity//1, % +EntityName:atom
+    html_entity//2, % +EntityName:atom
+                    % :Content:dcg
     parse_attributes_html/3 % +Context:oneof([table])
                             % +Attributes:list(nvpair)
                             % -ParsedAttributes:list(nvassignment)
@@ -41,7 +44,7 @@ HTML atom conversion, using HTML characters.
 HTML attribute parsing, used in HTML table generation.
 
 @author Wouter Beek
-@version 2012/09-2013/06
+@version 2012/09-2013/06, 2013/09
 */
 
 :- use_module(generics(db_ext)).
@@ -70,6 +73,7 @@ HTML attribute parsing, used in HTML table generation.
 :- db_add_novel(user:prolog_file_type(png, png)).
 :- db_add_novel(user:image_file_type(png)).
 
+:- meta_predicate(html_entity(+,//,?,?)).
 :- meta_predicate(process_exception(+,0)).
 
 :- debug(html).
@@ -272,6 +276,16 @@ attribute(border, pixels, [table]).
 
 html_attribute(Attributes, Attribute):-
   memberchk(Attribute, Attributes).
+
+html_entity(EntityName) -->
+  {atom_codes(EntityName, Codes)},
+  "<", Codes, "/>".
+
+html_entity(EntityName, Content) -->
+  {atom_codes(EntityName, Codes)},
+  "<", Codes, ">",
+  Content,
+  "</", Codes, ">".
 
 parse_attribute(Context, Attribute, Name=Value):-
   Attribute =.. [Name, Value],

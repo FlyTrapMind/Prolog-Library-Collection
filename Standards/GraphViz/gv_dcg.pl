@@ -17,7 +17,7 @@ In GraphViz vertices are called 'nodes'.
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07
+@version 2013/07, 2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -29,6 +29,7 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
+:- use_module(html(html)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
@@ -261,7 +262,48 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 gv_graph_type(digraph) --> d,i,g,r,a,p,h.
 gv_graph_type(graph) --> g,r,a,p,h.
 
-%! gv_id(?Codes:list(code))// is det.
+%! gv_html_label(+Codes:list(code))//
+%
+% @see http://www.graphviz.org/doc/info/shapes.html#html
+% @tbd Extend grammar.
+
+gv_html_label --> [].
+gv_html_label --> "<", (gv_html_text ; gv_html_table), ">".
+
+gv_html_text --> gv_html_textitem.
+gv_html_text --> gv_html_text, gv_html_textitem.
+
+gv_html_textitem --> gv_html_string.
+
+%! gv_html_string//
+% A _string_ is any collection of printable characters, including all spaces.
+
+gv_html_string --> dcg_multi(dcg_graph, _).
+gv_html_string --> html_entity(br).
+gv_html_string --> html_entity(font, gv_html_text).
+gv_html_string --> html_entity(i, gv_html_text).
+gv_html_string --> html_entity(b, gv_html_text).
+gv_html_string --> html_entity(u, gv_html_text).
+gv_html_string --> html_entity(sub, gv_html_text).
+gv_html_string --> html_entity(sup, gv_html_text).
+
+gv_html_table --> html_entity(table, gv_html_rows).
+gv_html_table --> html_entity(font, html_entity(table, gv_html_rows)).
+
+gv_html_rows --> gv_html_row.
+gv_html_rows --> gv_html_rows, gv_html_row.
+gv_html_rows --> gv_html_rows, html_entity(hr), gv_html_row.
+
+gv_html_row --> html_entity(tr, gv_html_cells).
+
+gv_html_cells --> gv_html_cell.
+gv_html_cells --> gv_html_cells, gv_html_cell.
+gv_html_cells --> gv_html_cells, html_entity(vr), gv_html_cell.
+
+gv_html_cell --> html_entity(td, gv_html_label).
+gv_html_cell --> html_entity(td, html_entity(img)).
+
+%! gv_id(?Atom:atom)// is det.
 % Parse a GraphViz identifier.
 % There are 4 variants:
 %   1. Any string of alphabetic (`[a-zA-Z'200-'377]`) characters,
@@ -280,6 +322,13 @@ gv_graph_type(graph) --> g,r,a,p,h.
 %      http://www.graphviz.org/doc/info/shapes.html#html
 %      This requires an XML grammar!
 
+% HTML strings (variant 4).
+gv_id(Atom) -->
+  {
+    atom_codes(Atom, Codes),
+    phrase(gv_html_label, Codes)
+  }, !,
+  dcg_codes(Codes).
 % Alpha-numeric strings (variant 1).
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},
@@ -309,13 +358,6 @@ gv_id(Atom) -->
   double_quote,
   gv_quoted_string(S),
   double_quote, !.
-% HTML strings (variant 4).
-% @tbd
-gv_id(Atom) -->
-  {atom_codes(Atom, S)},
-  less_than_sign,
-  dcg_codes(S),
-  greater_than_sign.
 
 gv_id_first(X) --> letter(X).
 gv_id_first(X) --> underscore(X).

@@ -87,16 +87,21 @@ print_statement(O1, Stmt):-
   select_option(mode(Mode), O1, O2, triple),
   print_statement(Mode, O2, Stmt).
 
-print_statement(natlang, _O1, Stmt):- !,
+print_statement(natlang, O1, Stmt):- !,
+  % Retrieve the natural language labels for the subject, object
+  % and predicate terms that constitute the statement.
   rdf_statement(S, P, O, _G, Stmt),
   once(rdfs_label(S, SName)),
   once(rdfs_label(P, PName)),
   once(rdfs_label(O, OName)),
-  print_collection([begin(''),end(''),separator(' ')], [SName,PName,OName]).
-print_statement(triple, _O1, Stmt):- !,
+
+  % The print of the statement as a collection can be influences
+  % by providing options.
+  merge_options(O1, [begin(''),end(''),separator(' ')], O2),
+  print_collection(O2, [SName,PName,OName]).
+print_statement(triple, O1, Stmt):- !,
   rdf_statement(S, P, O, _G, Stmt),
-  rdf_triple_name(rdf(S,P,O), TripleName),
-  write(TripleName).
+  rdf_triple_name(O1, S, P, O).
 
 
 
