@@ -45,8 +45,10 @@ serve_nothing(Request):-
   http_reply_header(Out, status(no_content), []).
 
 serve_xml(XML):-
-  % The User Agent needs to know the content type.
-  format('Content-type: application/xml~n~n'),
+  % The User Agent needs to know the content type and encoding.
+  % If the UTF-8 encoding is not given here explicitly,
+  % Prolog throws an IO exception on `format(XML)`.
+  format('Content-type: application/xml; charset=utf-8~n~n'),
   format(XML).
 
 serve_xml(DTD_Name, DOM):-

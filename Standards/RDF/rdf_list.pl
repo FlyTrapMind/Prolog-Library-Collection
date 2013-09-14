@@ -24,8 +24,11 @@
                               % +After:uri
     rdf_list_previous/2, % ?Element:uri
                          % ?PreviousElement:uri
-    rdf_list_member/2 % ?Element
-                      % ?RDF_List:uri
+    rdf_list_member/2, % ?Element
+                       % ?RDF_List:uri
+% DEBUG
+    rdf_list_name/2 % +Options:list(nvpair)
+                    % +RDF_List:iri
   ]
 ).
 
@@ -36,6 +39,10 @@ Support for RDF lists.
 @author Wouter Beek
 @version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/08
 */
+
+:- use_module(generics(print_ext)).
+:- use_module(library(apply)).
+:- use_module(rdf(rdf_name)).
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -226,4 +233,18 @@ rdf_list_member_(Element, Element).
 rdf_list_member_(Element, TempElement1):-
   rdf_list_next(TempElement1, TempElement2),
   rdf_list_member_(Element, TempElement2).
+
+
+
+% DEBUG %
+
+rdf_list_name(O1, RDF_List):-
+  % Recursively retrieve the contents of the RDF list.
+  % This has to be done non-recursively, since the nested
+  % Prolog list `[a,[b,c]]` would bring rdf_term_name/3 into
+  % trouble when it comes accross `[b,c]`
+  % (which fails the check for RDF list).
+  rdf_list([recursive(false)], RDF_List, RDF_Terms),
+  maplist(rdf_term_name(O1), RDF_Terms, Names),
+  print_list(O1, Names).
 

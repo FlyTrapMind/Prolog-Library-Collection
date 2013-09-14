@@ -23,6 +23,7 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_html)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(option_ext)).
@@ -268,24 +269,25 @@ gv_graph_type(graph) --> g,r,a,p,h.
 % @tbd Extend grammar.
 
 gv_html_label --> [].
-gv_html_label --> "<", (gv_html_text ; gv_html_table), ">".
+gv_html_label --> "<", {gtrace}, (gv_html_text ; gv_html_table), ">".
 
+gv_html_text --> gv_html_textitem, gv_html_text.
 gv_html_text --> gv_html_textitem.
-gv_html_text --> gv_html_text, gv_html_textitem.
 
+gv_html_textitem --> html_entity(br), !.
+gv_html_textitem --> html_entity(font, gv_html_text), !.
+gv_html_textitem --> html_entity(i, gv_html_text), !.
+gv_html_textitem --> html_entity(b, gv_html_text), !.
+gv_html_textitem --> html_entity(u, gv_html_text), !.
+gv_html_textitem --> html_entity(sub, gv_html_text), !.
+gv_html_textitem --> html_entity(sup, gv_html_text), !.
 gv_html_textitem --> gv_html_string.
 
 %! gv_html_string//
 % A _string_ is any collection of printable characters, including all spaces.
 
-gv_html_string --> dcg_multi(dcg_graph, _).
-gv_html_string --> html_entity(br).
-gv_html_string --> html_entity(font, gv_html_text).
-gv_html_string --> html_entity(i, gv_html_text).
-gv_html_string --> html_entity(b, gv_html_text).
-gv_html_string --> html_entity(u, gv_html_text).
-gv_html_string --> html_entity(sub, gv_html_text).
-gv_html_string --> html_entity(sup, gv_html_text).
+gv_html_string --> html_graph, gv_html_string.
+gv_html_string --> html_graph.
 
 gv_html_table --> html_entity(table, gv_html_rows).
 gv_html_table --> html_entity(font, html_entity(table, gv_html_rows)).

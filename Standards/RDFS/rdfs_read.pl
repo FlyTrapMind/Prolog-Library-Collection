@@ -17,15 +17,6 @@
                   % ?Range:uri
                   % ?Graph:atom
 
-% LABELS
-    rdfs_preferred_label/4, % ?RDF_Term:oneof([bnode,uri])
-                            % +LanguageTags:or([atom,list(atom)])
-                            % -PreferredLanguageTag:atom
-                            % ?PreferredLiteral:atom
-    rdfs_list_label/3, % +List:uri
-                       % +Label:atom
-                       % -Element:uri
-
 % RDF-HAS
     rdfs/4 % ?Subject:oneof([bnode,uri])
            % ?Predicate:uri
@@ -93,7 +84,6 @@ rdfs_individual(X, Y, G):-
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
@@ -107,9 +97,6 @@ rdfs_individual(X, Y, G):-
 % DOMAIN & RANGE
 :- rdf_meta(rdfs_domain(r,r,?)).
 :- rdf_meta(rdfs_range(r,r,?)).
-% LABELS
-:- rdf_meta(rdfs_preferred_label(r,+,-,?)).
-:- rdf_meta(rdfs_list_label(r,+,-)).
 % RDF-HAS
 :- rdf_meta(rdfs(r,r,r,?)).
 
@@ -142,42 +129,6 @@ rdfs_domain(Property1, Domain, Graph):-
 rdfs_range(Property1, Range, Graph):-
   rdfs_subproperty_of(Property1, Property2),
   rdf(Property2, rdfs:range, Range, Graph).
-
-
-
-% LITERALS %
-
-%! rdfs_preferred_label(
-%!   ?RDF_Term:or([bnode,iri]),
-%!   +LanguageTag:atom,
-%!   -PreferredLangTags:or([atom,list(atom)]),
-%!   ?Label:atom
-%! ) is nondet.
-% Multiple labels are returned (nondet) in a descending preference order.
-
-rdfs_preferred_label(RDF_Term, LangTags, PreferredLangTag, PreferredLabel):-
-  rdfs_label(RDF_Term, Label1),
-  rdf_preferred_literal(
-    RDF_Term,
-    rdfs:label,
-    LangTags,
-    PreferredLangTag,
-    PreferredLabel
-  ),
-  Label1 == PreferredLabel, !.
-
-%! rdfs_list_label(+RDF_List:uri, +Label:atom, -Element:uri) is nondet.
-% Returns RDF list elements that have the given label.
-
-rdfs_list_label(RDF_List, Label, Element):-
-  rdf_list_first(RDF_List, First),
-  rdfs_list_label0(First, Label, Element).
-
-rdfs_list_label0(Element, Label, Element):-
-  rdfs_label(Element, Label), !.
-rdfs_list_label0(Element, Label, Element0):-
-  rdf_list_next(Element, NextElement),
-  rdfs_list_label0(NextElement, Label, Element0).
 
 
 

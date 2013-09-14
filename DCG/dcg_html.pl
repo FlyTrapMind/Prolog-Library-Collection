@@ -5,6 +5,7 @@
     html_element//3, % ?Name:atom
                      % ?Attrs:list(nvpair)
                      % ?Content:dom
+    html_graph//0,
     html_style//1 % ?NVPairs:list(nvpair)
   ]
 ).
@@ -14,7 +15,7 @@
 Convert HTML strings.
 
 @author Wouter Beek
-@version 2013/06-2013/07
+@version 2013/06-2013/07, 2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -42,6 +43,43 @@ html_element(Name, MatchAttrs, Content) -->
 html_element(Name, MatchAttr, Content) -->
   {\+ is_list(MatchAttr)},
   html_element(Name, [MatchAttr], Content).
+
+%! html_graph//
+% HTML reserves the ASCII characters:
+%   * Ampersand
+%   * Apostrophe
+%   * Greater-than
+%   * Less-than
+%   * Quotation mark
+
+html_graph -->
+  dcg_white.
+html_graph -->
+  alpha_numeric.
+html_graph -->
+  html_punctuation.
+
+html_punctuation --> asterisk.
+html_punctuation --> at_sign.
+html_punctuation --> bracket.
+html_punctuation --> caret.
+html_punctuation --> colon.
+html_punctuation --> comma.
+html_punctuation --> dollar_sign.
+html_punctuation --> dot.
+html_punctuation --> equals_sign.
+html_punctuation --> exclamation_mark.
+html_punctuation --> grave_accent.
+html_punctuation --> hyphen_minus.
+html_punctuation --> number_sign.
+html_punctuation --> percent_sign.
+html_punctuation --> plus_sign.
+html_punctuation --> question_mark.
+html_punctuation --> semi_colon.
+html_punctuation --> slash.
+html_punctuation --> tilde.
+html_punctuation --> underscore.
+html_punctuation --> vertical_bar.
 
 html_style([]) --> [].
 html_style([NVPair|NVPairs]) -->

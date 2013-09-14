@@ -51,10 +51,9 @@ Reification for RDF. Both reading and writing.
 :- use_module(generics(print_ext)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdfs(rdfs_build)).
+:- use_module(rdfs(rdfs_label)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -82,23 +81,31 @@ Reification for RDF. Both reading and writing.
 %     Either `triple` (default) for an RDF triple representation
 %     (according to module RDF_NAME),
 %     or `natlang` for a natural language representation.
+%   * The options of print_collection/2, if `mode=natlang`.
+%   * The options of rdf_triple_name/4, if `mode=triple`.
 
 print_statement(O1, Stmt):-
   select_option(mode(Mode), O1, O2, triple),
   print_statement(Mode, O2, Stmt).
 
+% Print the natural language representation of the given statement.
 print_statement(natlang, O1, Stmt):- !,
   % Retrieve the natural language labels for the subject, object
   % and predicate terms that constitute the statement.
   rdf_statement(S, P, O, _G, Stmt),
-  once(rdfs_label(S, SName)),
-  once(rdfs_label(P, PName)),
-  once(rdfs_label(O, OName)),
+
+  % Extract natural language labels for the terms that compose the statement.
+  
+  rdfs_label2([], S, SName),
+  rdfs_label2([], P, PName),
+  rdfs_label2([], O, OName),
 
   % The print of the statement as a collection can be influences
   % by providing options.
   merge_options(O1, [begin(''),end(''),separator(' ')], O2),
+  
   print_collection(O2, [SName,PName,OName]).
+% Print the triple representation of the given statement.
 print_statement(triple, O1, Stmt):- !,
   rdf_statement(S, P, O, _G, Stmt),
   rdf_triple_name(O1, S, P, O).

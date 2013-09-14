@@ -68,6 +68,10 @@ proof(Conclusion, Premises)
   'The default indentation used by the print predicates.'
 ).
 
+% Meta-options used by predicates in this module.
+is_meta(ordering).
+is_meta(write_method).
+
 
 
 %! formatnl(+Format) is det.
@@ -95,14 +99,12 @@ formatnl(Out, Format, Arguments):-
 %! indent(+Indent:integer) is det.
 % @see Like tab/1, but writes the given number of indents, where
 %      a single indent can be multiple spaces.
+%      See setting `indent_size`.
 
 indent(Indent):-
   setting(indent_size, IndentSize),
   NumberOfSpaces is IndentSize * Indent,
   tab(NumberOfSpaces).
-
-is_meta(ordering).
-is_meta(write_method).
 
 %! print_collection(+Options:list(nvpair), +Collection:list) is det.
 % The following options are supported:

@@ -36,7 +36,7 @@ Generate names for RDF terms and triples.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
-:- use_module(rdfs(rdfs_read)).
+:- use_module(rdfs(rdfs_label)).
 :- use_module(xsd(xsd)).
 
 :- rdf_meta(rdf_pair_name(+,r,r)).
@@ -83,20 +83,13 @@ rdf_term_name(RDF_Term):-
 % @param Name The atomic name of an RDF term.
 
 % An RDF list.
-rdf_term_name(O, RDF_Term):-
+rdf_term_name(O1, RDF_Term):-
   rdf_is_list(RDF_Term), !,
-  % Recursively retrieve the contents of the RDF list.
-  % This has to be done non-recursively, since the nested
-  % Prolog list `[a,[b,c]]` would bring rdf_term_name/3 into
-  % trouble when it comes accross `[b,c]`
-  % (which fails the check for RDF list).
-  rdf_list([recursive(false)], RDF_Term, RDF_Terms),
-  maplist(rdf_term_name(O), RDF_Terms, Names),
-  print_list([], Names).
+  rdf_list_name(O1, RDF_Term).
 % A literal with a datatype.
-rdf_term_name(O, literal(type(Datatype,LEX))):- !,
+rdf_term_name(O1, literal(type(Datatype,LEX))):- !,
   % The datatype name.
-  rdf_term_name(O, Datatype, DatatypeName),
+  rdf_term_name(O1, Datatype, DatatypeName),
   % The datatyped value.
   (
     % The datatype is recognized, so the datatyped value can be displayed
@@ -110,15 +103,15 @@ rdf_term_name(O, literal(type(Datatype,LEX))):- !,
   % The combined name.
   format('"~w"^^~w', [ValueName,DatatypeName]).
 % A plain literal with a language tag.
-rdf_term_name(_O, literal(lang(Language,Literal))):- !,
+rdf_term_name(_O1, literal(lang(Language,Literal))):- !,
   format('"~w"@~w', [Literal,Language]).
 % A simple literal / a plain literal without a language tag.
-rdf_term_name(_O, literal(Literal)):- !,
+rdf_term_name(_O1, literal(Literal)):- !,
   format('"~w"', [Literal]).
 % A blank node.
 % @tbd Make this less implementation-dependent, e.g. by mapping
 %      internal blank nodes to integers.
-rdf_term_name(_O, BNode):-
+rdf_term_name(_O1, BNode):-
   rdf_is_bnode(BNode), !,
   write(BNode).
 % If the RDF term has a label, then this is included in its name.
@@ -185,7 +178,7 @@ rdf_term_name(O1, RDF_Term):-
 % Only the URI is used. XML namespace prefixes are used when present.
 % This appears last, since it is the fallback option.
 % When option `uri_desc` is set to `uri_only` one ends up here as well.
-rdf_term_name(_O, RDF_Term):-
+rdf_term_name(_O1, RDF_Term):-
   rdf_term_iri(RDF_Term).
 
 rdf_term_name(O1, RDF_Term, Name):-

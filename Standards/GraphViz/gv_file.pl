@@ -24,8 +24,14 @@
 
 /** <module> GV_FILE
 
+Predicates for converting GIF-formatted terms
+into GraphViz output files or SVG DOM structures.
+
+Also converts between GraphViz DOT formatted files
+and GraphViz output files or SVG DOM structures.
+
 @author Wouter Beek
-@version 2011-2013/08
+@version 2011-2013/09
 */
 
 :- use_module(generics(codes_ext)).
@@ -132,6 +138,13 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
       context(graphviz:dot/3, ContextMessage)
     )
   ).
+
+%! to_gv_file(
+%!   +Codes:list(code),
+%!   +Method:onef([dot,sfdp]),
+%!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
+%!   ?ToFile:atom
+%! ) is det.
 
 to_gv_file(Codes, Method, ToFileType, ToFile):-
   absolute_file_name(
