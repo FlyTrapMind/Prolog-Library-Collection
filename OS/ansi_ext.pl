@@ -76,6 +76,5 @@ ansi_formatnl(Attrs, Format, Args):-
   nl.
 
 ansi_formatnl(Stream, Attrs, Format, Args):-
-  ansi_format(Stream, Attrs, Format, Args),
-  nl.
+  with_output_to(Stream, ansi_formatnl(Attrs, Format, Args)).
 

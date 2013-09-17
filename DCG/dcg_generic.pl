@@ -51,8 +51,12 @@
                   % -Out:atom
 
 % REPLACE
-    dcg_replace//2 % +From:list(code)
-                   % +To:list(code)
+    dcg_replace//2, % +From:list(code)
+                    % +To:list(code)
+
+% STREAM
+    dcg_stream/2 % +Stream
+                 % :DCG_Body
   ]
 ).
 :- reexport(
@@ -81,10 +85,11 @@ a modular way.
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
-@version 2013/05-2013/08
+@version 2013/05-2013/09
 */
 
 :- use_module(dcg(dcg_content)).
+:- use_module(generics(codes_ext)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
@@ -123,6 +128,8 @@ a modular way.
 :- meta_predicate(dcg_phrase(//,+,-)).
 % REPLACE
 :- meta_predicate(dcg_replace(//,//,?,?)).
+% STREAM
+:- meta_predicate(dcg_stream(+,//)).
 
 
 
@@ -375,4 +382,12 @@ dcg_replace(From, To), To -->
 dcg_replace(From, To), [X] -->
   [X],
   dcg_replace(From, To).
+
+
+
+% STREAM %
+
+dcg_stream(Stream, DCG_Body):-
+  phrase(DCG_Body, Codes),
+  put_codes(Stream, Codes).
 

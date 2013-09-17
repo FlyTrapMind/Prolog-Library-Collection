@@ -269,7 +269,7 @@ gv_graph_type(graph) --> g,r,a,p,h.
 % @tbd Extend grammar.
 
 gv_html_label --> [].
-gv_html_label --> "<", {gtrace}, (gv_html_text ; gv_html_table), ">".
+gv_html_label --> "<", (gv_html_text ; gv_html_table), ">".
 
 gv_html_text --> gv_html_textitem, gv_html_text.
 gv_html_text --> gv_html_textitem.

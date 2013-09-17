@@ -28,10 +28,8 @@
 
 Call a DCG rule multiple times while aggregating the arguments.
 
---
-
 @author Wouter Beek
-@version 2013/08
+@version 2013/08-2013/09
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -83,13 +81,13 @@ dcg_multi(DCG, Rep) -->
 %!   ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])]),
 %!   +Options:list(nvpair)
 %! )//
-% @see dcg_multi//5
+% @see Like dcg_multi//5 but with no arguments.
 
 dcg_multi(DCG, Rep, O1) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_no_arguments(DCG, Max, 0, C, O2),
-  {in_between(Min, Max, C)}.
+  {in_between(Min, Max, C)}, !.
 
 %! dcg_multi(
 %!   :DCG_Rule,
@@ -97,7 +95,7 @@ dcg_multi(DCG, Rep, O1) -->
 %!   -Arguments1:list,
 %!   +Options:list(nvpair)
 %! )//
-% @see dcg_multi//5
+% @see Like dcg_multi//5 but wich a single argument.
 
 dcg_multi(DCG, Rep, L1, O1) -->
   {nonvar(L1)}, !,
@@ -106,14 +104,14 @@ dcg_multi(DCG, Rep, L1, O1) -->
   {(atomic(L1), option(convert(Pred), O1) -> call(Pred, L1, L2) ; L2 = L1)},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, Count, L2, O2),
-  {in_between(Min, Max, Count)}.
+  {in_between(Min, Max, Count)}, !.
 dcg_multi(DCG, Rep, L2, O1) -->
   {var(L2)}, !,
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_var(DCG, Min, Max, L1, O2),
   % Apply conversion: atom_to_codes/2.
-  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}.
+  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}, !.
 
 %! dcg_multi(
 %!   :DCG_Rule,
@@ -122,6 +120,9 @@ dcg_multi(DCG, Rep, L2, O1) -->
 %!   -Arguments2:list,
 %!   +Options:list(nvpair)
 %! )//
+% Executes the given DCG rule for the given number of repetitions,
+% and applied to the given two argument lists.
+%
 % The following options are supported:
 %   * =|convert(:ConversionPredicate)|=
 %   * =|separator(:SeparatorDCG)|=
@@ -134,14 +135,14 @@ dcg_multi(DCG, Rep, L1, M1, O1) -->
   {(atomic(M1), option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, Count, L2, M2, O2),
-  {in_between(Min, Max, Count)}.
+  {in_between(Min, Max, Count)}, !.
 dcg_multi(DCG, Rep, L2, M2, O1) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_var(DCG, Min, Max, L1, M1, O2),
   % Apply conversion: atom_to_codes/2.
   {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
-  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)}.
+  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)}, !.
 
 % Zero arguments: no distinction between `var` and `nonvar`.
 dcg_multi_no_arguments(DCG, Max, C1, C3, O1) -->
@@ -243,12 +244,48 @@ in_between(Min, Max, N):-
 is_meta(convert).
 is_meta(separator).
 
+%! is_repetition_value(+Value) is semidet.
+% Succeeds if the given value could be used to designate
+% a DCG-multi repetition interval,
+% i.e., is either an integer or the atom `inf`.
+
+is_repetition_value(V):-
+  integer(V), !.
+is_repetition_value(inf).
+
+%! repetition(
+%!   +Repetitions:or([pair(or([nonneg,oneof([inf])])),or([nonneg,oneof([inf])])]),
+%!   -Minimum:nonneg,
+%!   -Maximum:nonneg
+%! ) is det.
+% Determines a repetition interval for DCG-multi.
+%
+% ## Examples
+%
+% ~~~
+% ?- dcg_multi:repetition(10, Min, Max).
+% Min = Max, Max = 10.
+% ~~~
+%
+% ~~~
+% ?- dcg_multi:repetition(45-_, Min, Max).
+% Min = 45,
+% Max = inf.
+% ~~~
+
 repetition(Rep, Min, Max):-
-  repetition_(Rep, Min, Max),
+  (
+    % A single value.
+    is_repetition_value(Rep)
+  ->
+    Min = Rep,
+    Max = Rep
+  ;
+    Rep = Min1-Max1,
+    default(Min1, 0, Min2),
+    is_repetition_value(Min2),
+    default(Max1, inf, Max2),
+    is_repetition_value(Max2)
+  ),
   greater_than_or_equal_to(Max, Min).
-repetition_(N, N, N):-
-  integer(N), !.
-repetition_(Min1-Max1, Min2, Max2):-
-  default(Min1, 0, Min2),
-  default(Max1, inf, Max2).
 

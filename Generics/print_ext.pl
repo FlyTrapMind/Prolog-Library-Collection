@@ -12,6 +12,7 @@
                     % +NVPair
     print_collection/2, % :Options:list(nvpair)
                         % +Collection:list
+    print_hr/0,
     print_pair/3, % :Options:list(nvpair)
                   % +X
                   % +Y
@@ -66,6 +67,13 @@ proof(Conclusion, Premises)
   integer,
   2,
   'The default indentation used by the print predicates.'
+).
+
+:- setting(
+  screen_width,
+  integer,
+  80,
+  'The default width of the screen in number of characters.'
 ).
 
 % Meta-options used by predicates in this module.
@@ -150,6 +158,19 @@ print_collection_(O1, [H|T]):-
   option(separator(Separator), O1),
   unless(T == [], write(Separator)),
   print_collection_(O1, T).
+
+%! print_hr is det.
+% Prints a horizontal rule to the current output.
+
+print_hr:-
+  (
+    % Use the `termcap` library.
+    tty_get_capability(co, number, ScreenWidth), !
+  ;
+    % Alternatively, use a default screen width.
+    setting(screen_width, ScreenWidth)
+  ),
+  multi(write('-'), ScreenWidth).
 
 %! print_list(+Options:list(nvpair), +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.

@@ -440,6 +440,9 @@ list_compound([X], X):- !.
 list_compound([H | T], H/CompoundT):-
   list_compound(T, CompoundT).
 
+%! multi(:Goal, +Count:nonneg) is det.
+% Performs the given nondet goal the given number of times.
+
 multi(_Goal, 0):- !.
 multi(Goal, Count):-
   call(Goal),
