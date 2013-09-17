@@ -50,6 +50,7 @@ Reification for RDF. Both reading and writing.
 @version 2013/02, 2013/07, 2013/09
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(print_ext)).
 :- use_module(library(option)).
@@ -115,7 +116,11 @@ dcg_stmt(triple, O1, Stmt) -->
   {rdf_statement(S, P, O, _G, Stmt)},
 
   % A statement is serialized as a triple of RDF terms.
-  {merge_options(O1, [brackets(html),write_method(dcg_rdf_term_name(O1))], O2)},
+  {merge_options(
+    O1,
+    [brackets(html),write_method(dcg_rdf_term_name(O1))],
+    O2
+  )},
   tuple(O2, [S,P,O]).
 
 %! print_stmt(+Options:list(nvpair), +Statement:iri) is det.

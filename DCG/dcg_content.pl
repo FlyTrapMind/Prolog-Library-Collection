@@ -232,12 +232,11 @@ collection(O1, Collection1) -->
 
   % Open a collection.
   {option(begin(Begin), O2)},
-  (
-    % Include options, first tried alternative.
-    dcg_call(Begin, O2), !
-  ;
-    % Exclude options, if the DCG rule with options parameter
-    % does not exist or fails.
+  % First we try to include the options.
+  % If this DCG rule does not exist, then we exclude the options.
+  dcg_catch(
+    dcg_call(Begin, O2),
+    error(existence_error(procedure,_Predicate1),_Context1),
     dcg_call(Begin)
   ),
 
@@ -246,12 +245,11 @@ collection(O1, Collection1) -->
 
   % End a collection.
   {option(end(End), O2)},
-  (
-    % Include options, first tried alternative.
-    dcg_call(End, O2), !
-  ;
-    % Exclude options, if the DCG rule with options parameter
-    % does not exist or fails.
+  % First we try to include the options.
+  % If this DCG rule does not exist, then we exclude the options.
+  dcg_catch(
+    dcg_call(End, O2),
+    error(existence_error(procedure,_Predicate2),_Context2),
     dcg_call(End)
   ).
 

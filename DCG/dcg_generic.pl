@@ -13,6 +13,8 @@
                   % ?Value
 
 % DEBUG
+    dcg_debug/2, % +Topic:atom
+                 % :DCG_Rule
     gtrace//0,
 
 % LIST
@@ -27,6 +29,9 @@
     dcg_call//3,
     dcg_call//4,
     dcg_call//5,
+    dcg_catch//3, % :DCG_Rule
+                  % -Exception:compound
+                  % :Recover
     dcg_switch//2, % +Value
                    % +Map:list
     dcg_switch//3, % +Value
@@ -89,7 +94,9 @@ a modular way.
 */
 
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_os)).
 :- use_module(generics(codes_ext)).
+:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
@@ -106,6 +113,9 @@ a modular way.
 :- meta_predicate(dcg_until(//,?,?,?)).
 :- meta_predicate(dcg_until(+,//,?,?,?)).
 :- meta_predicate(dcg_until_(+,//,?,?,?)).
+% DEBUG
+:- meta_predicate(dcg_debug(+,//)).
+:- meta_predicate(dcg_debug_(+,//,?,?)).
 % LIST
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
@@ -117,7 +127,7 @@ a modular way.
 :- meta_predicate(dcg_call(4,?,?,?,?)).
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
-:- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
+:- meta_predicate(dcg_catch(2,?,2,?,?)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % PEEK
 :- meta_predicate(dcg_peek(//,?,?)).
@@ -220,6 +230,23 @@ dcg_until_(O, DCG_End, [H|T]) -->
 
 % DEBUG %
 
+dcg_debug(Topic, _DCG_Body):-
+  debugging(Topic, false), !.
+dcg_debug(Topic, DCG_Body):-
+  DebugStream = user_error,
+  dcg_stream(DebugStream, dcg_debug_(Topic, DCG_Body)).
+
+dcg_debug_(_Topic, DCG_Body) -->
+  %dcg_debug_topic(Topic),
+  %" ",
+  dcg_call(DCG_Body),
+  newline.
+
+dcg_debug_topic(Topic) -->
+  "[",
+  atom(Topic),
+  "]".
+
 gtrace -->
   {gtrace}.
 
@@ -279,6 +306,13 @@ dcg_call(DCG_Body, A1, A2, A3, X, Y):-
 
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
+
+dcg_catch(DCG_Rule, Exception, Recover, X, Y):-
+  catch(
+    dcg_call(DCG_Rule, X, Y),
+    Exception,
+    dcg_call(Recover, X, Y)
+  ).
 
 %! dcg_switch(+Value, +Maps:list)// is det.
 
