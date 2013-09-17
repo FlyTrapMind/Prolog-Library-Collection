@@ -133,7 +133,7 @@ svg_attribute(DCG_Namespace, DCG_Name, DCG_Value, DCG_Separator) -->
 svg_base_profile(base_profile(T1), DCG_Namespace, ProfileName) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(baseProfile),
+    word(baseProfile),
     svg_profile_name(T1, ProfileName)
   ).
 
@@ -158,7 +158,7 @@ svg_content_script_type(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(contentScriptType),
+    word(contentScriptType),
     svg_content_type(MediaType)
   ).
 
@@ -181,7 +181,7 @@ svg_content_style_type(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(contentStyleType),
+    word(contentStyleType),
     svg_content_type(MediaType)
   ).
 
@@ -248,7 +248,7 @@ svg_external_resources_required(
 % were specified.
 
 svg_height(height(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, dcg_word(height), svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, word(height), svg_length(T1, Number, Unit)).
 
 %! svg_preserve_aspect_ratio(
 %!   -Tree:compound,
@@ -317,7 +317,7 @@ svg_preserve_aspect_ratio(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(preserveAspectRatio),
+    word(preserveAspectRatio),
     (
       svg_defer(T1, Defer),
       svg_align(T2, XAlign, YAlign),
@@ -350,7 +350,7 @@ svg_preserve_aspect_ratio(
 svg_referenced_features(T0, DCG_Namespace, Features) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(referencedFeatures),
+    word(referencedFeatures),
     svg_feature_string(Trees, Features),
     space
   ),
@@ -402,12 +402,12 @@ svg_required_extensions(T0, DCG_Namespace, Extensions) -->
   {parse_tree(required_extensions, Trees, T0)}.
 
 svg_stroke(stroke(T1), DCG_Namespace, Color) -->
-  svg_attribute(DCG_Namespace, dcg_word(stroke), svg_color(T1, Color)).
+  svg_attribute(DCG_Namespace, word(stroke), svg_color(T1, Color)).
 
 svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
   svg_attribute(
     DCG_Namespace,
-    (dcg_word(stroke), hyphen_minus, dcg_word(width)),
+    (word(stroke), hyphen_minus, word(width)),
     svg_length(T1, Number, Unit)
   ).
 
@@ -442,7 +442,7 @@ svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
 svg_system_language(T0, DCG_Namespace, LanguageTags) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(systemLanguage),
+    word(systemLanguage),
     rfc5646_language_tag(Trees, LanguageTags),
     space
   ),
@@ -463,7 +463,7 @@ svg_version(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(version),
+    word(version),
     (
       decimal_number(Major),
       dot,
@@ -483,7 +483,7 @@ svg_version(
 % were specified.
 
 svg_width(width(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, dcg_word(width), svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, word(width), svg_length(T1, Number, Unit)).
 
 %! svg_x(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The x-axis coordinate of one corner of the rectangular region
@@ -493,7 +493,7 @@ svg_width(width(T1), DCG_Namespace, Number, Unit) -->
 % were specified.
 
 svg_x(x(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, dcg_word(x), svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, word(x), svg_coordinate(T1, Number, Unit)).
 
 %! svg_xml_namespace(
 %!   -Tree:compound,
@@ -516,7 +516,7 @@ svg_xml_namespace(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    dcg_word(xmlns),
+    word(xmlns),
     rfc2396_uri_reference(
       T1,
       Scheme,
@@ -535,7 +535,7 @@ svg_xml_namespace(
 % were specified.
 
 svg_y(y(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, dcg_word(y), svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, word(y), svg_coordinate(T1, Number, Unit)).
 
 %! svg_zoom_and_pan(
 %!   -Tree:compound,
@@ -555,5 +555,5 @@ svg_y(y(T1), DCG_Namespace, Number, Unit) -->
 
 svg_zoom_and_pan(zoom_and_pan(Value), DCG_Namespace, Value) -->
   {member(Value, [disable,magnify])},
-  svg_attribute(DCG_Namespace, dcg_word(zoomAndPan), dcg_word(Value)).
+  svg_attribute(DCG_Namespace, word(zoomAndPan), word(Value)).
 

@@ -251,7 +251,8 @@ is_meta(separator).
 
 is_repetition_value(V):-
   integer(V), !.
-is_repetition_value(inf).
+is_repetition_value(V):-
+  V == inf.
 
 %! repetition(
 %!   +Repetitions:or([pair(or([nonneg,oneof([inf])])),or([nonneg,oneof([inf])])]),
@@ -273,13 +274,13 @@ is_repetition_value(inf).
 % Max = inf.
 % ~~~
 
-repetition(Rep, Min, Max):-
+repetition(Rep, Min2, Max2):-
   (
     % A single value.
     is_repetition_value(Rep)
   ->
-    Min = Rep,
-    Max = Rep
+    Min2 = Rep,
+    Max2 = Rep
   ;
     Rep = Min1-Max1,
     default(Min1, 0, Min2),
@@ -287,5 +288,5 @@ repetition(Rep, Min, Max):-
     default(Max1, inf, Max2),
     is_repetition_value(Max2)
   ),
-  greater_than_or_equal_to(Max, Min).
+  greater_than_or_equal_to(Max2, Min2).
 

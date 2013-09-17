@@ -345,7 +345,7 @@ alternation -->
   'WSP'.
 
 % Quoted string of SP and VCHAR without DQUOTE.
-'char-val'(dcg_cistring(Cs)) -->
+'char-val'(ci_string(Cs)) -->
   'DQUOTE',
   % *(%x20-21 / %x23-7E)
   dcg(([C], {between(32, 33, C), between(35, 126, C)}), [Cs]),
@@ -397,7 +397,7 @@ group -->
   ")".
 
 'hex-val' -->
-  dcg_cistring("x"),
+  ci_string("x"),
   dcg('HEXDIG', 1),
   ( dcg((".", dcg('HEXDIG', 1) ; "-", dcg('HEXDIG', 1)), 1)
   ; "" ).

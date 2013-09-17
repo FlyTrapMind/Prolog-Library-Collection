@@ -5,17 +5,33 @@
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
     crlf//0,
-    dcg_cicode//1, % ?Code:code
-    dcg_cistring//1, % ?String:string
-    dcg_code//1, % ?Code:code
-    dcg_codes//1, % +Codes:list(code)
+    ci_code//1, % ?Code:code
+    ci_string//1, % ?String:string
+    code//1, % ?Code:code
+    codes//1, % +Codes:list(code)
+    collection//2, % +Options:list(nvpair)
+                   % +Elements:list
     graphic//1, % -Graphic:list(code)
+    horizontal_line//0,
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
+    nvpair//3, % +Options:list(nvpair)
+               % :Name:dcg
+               % :Value:dcg
+    pair//3,  % +Options:list(nvpair)
+              % +Element1
+              % +Element2
+    proof//2, % +Options:list(nvpair)
+              % +Proof:compound
+    set//2,  % +Options:list(nvpair)
+             % +Elements:list
     spaces//0,
-    dcg_void//0,
-    dcg_word//1, % ?Word:atom
-    dcg_word//2 % -Tree:compound
+    quote//1, % :DCG_Body
+    tuple//2, % +Options:list(nvpair)
+              % +Elements:list
+    void//0,
+    word//1, % ?Word:atom
+    word//2 % -Tree:compound
                 % ?Word:atom
   ]
 ).
@@ -41,13 +57,19 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/08
+@version 2013/07-2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_os)).
+:- use_module(generics(option_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+
+:- meta_predicate(nvpair(+,//,//)).
+:- meta_predicate(quote(//)).
 
 :- setting(
   indent_size,
@@ -118,10 +140,10 @@ crlf -->
   carriage_return,
   line_feed.
 
-%! dcg_cicode(?Code:code)//
+%! ci_code(?Code:code)//
 % Generates the case-insensitive variants of the given code.
 
-dcg_cicode(Code) -->
+ci_code(Code) -->
   {nonvar(Code)}, !,
   (
     {code_type(Lower, lower(Upper))}
@@ -134,22 +156,22 @@ dcg_cicode(Code) -->
   ;
     [Code]
   ).
-dcg_cicode(CI_Code) -->
-  % This allows dcg_cistring//1 to use this DCG rule for reading words
-  % in a case-sensitive way. 
+ci_code(CI_Code) -->
+  % This allows ci_string//1 to use this DCG rule for reading words
+  % in a case-sensitive way.
   dcg_graph(Code),
-  (
-    {code_type(Code, upper(CI_Code))}
+  {(
+    code_type(Code, upper(CI_Code))
   ;
-    {CI_Code = Code}
-  ), !.
+    CI_Code = Code
+  )}, !.
 
-%! dcg_cistring(?String:list(code))//
+%! ci_string(?String:list(code))//
 % Generates the case-insensitive variants of the given string.
 %
 % Example:
 % ~~~
-% ?- phrase(dcg_cistring("http"), Codes) ,atom_codes(Atom, Codes).
+% ?- phrase(ci_string("http"), Codes) ,atom_codes(Atom, Codes).
 % Codes = "http",
 % Codes = "httP",
 % Codes = "htTp",
@@ -169,22 +191,104 @@ dcg_cicode(CI_Code) -->
 % false.
 % ~~~
 
-dcg_cistring(Codes) -->
-  dcg_multi(dcg_cicode, _, Codes, []), !.
+ci_string(Codes) -->
+  dcg_multi(ci_code, _, Codes, []), !.
 
-dcg_code(C) -->
+code(C) -->
   [C].
 
-dcg_codes([]) -->
+codes([]) -->
   [].
-dcg_codes([H|T]) -->
+codes([H|T]) -->
   [H],
-  dcg_codes(T).
+  codes(T).
+
+%! collection(+Options:list(nvpair), +Collection:list) is det.
+% The following options are supported:
+%   1. =|begin(+Begin:atom)|=
+%   2. =|end(+End:atom)|=
+%   3. =|separator(+Separator:atom)|=
+%   4. =|ordering(:Pred)|=
+%      The binary predicate that is applied to the collection
+%      to determine the order in which its elements occur.
+%   5. =|write_method(:Pred)|=
+%      The unary predicate that is used for writing the individual items
+%      in the collection.
+
+collection(O1, Collection1) -->
+  {meta_options(is_meta, O1, O2)},
+
+  % E.g., list -> set.
+  {
+    option(ordering(P), O2, =),
+    once(call(P, Collection1, Collection2))
+  },
+
+  % Open a collection.
+  {option(begin(Begin), O2)},
+  (
+    % Include options, first tried alternative.
+    dcg_call(Begin, O2), !
+  ;
+    % Exclude options, if the DCG rule with options parameter
+    % does not exist or fails.
+    dcg_call(Begin)
+  ),
+
+  % The contents of the collection.
+  collection_(O2, Collection2),
+
+  % End a collection.
+  {option(end(End), O2)},
+  (
+    % Include options, first tried alternative.
+    dcg_call(End, O2), !
+  ;
+    % Exclude options, if the DCG rule with options parameter
+    % does not exist or fails.
+    dcg_call(End)
+  ).
+
+% Done!
+collection_(_O1, []) --> !.
+% Nested collection.
+collection_(O1, [H1|T]) -->
+  {is_list(H1)}, !,
+
+  % Notice that set members that are sets may contain multiple occurrences,
+  % since they will first be explicitly converted to ordset format.
+  {
+    option(ordering(P), O1, =),
+    once(call(P, H1, H2))
+  },
+
+  collection(O1, H2),
+
+  collection_(O1, T).
+% Next set member.
+collection_(O1, [H|T]) -->
+  {option(write_method(P), O1, atom)},
+  dcg_call(P, H),
+
+  % The separator does not occur after the last collection member.
+  {option(separator(Separator), O1)},
+  (
+    {T == []}, !
+  ;
+    dcg_call(Separator)
+  ),
+
+  collection_(O1, T).
 
 graphic([H|T]) -->
   dcg_graph(H),
   graphic(T).
 graphic([]) --> [].
+
+horizontal_line -->
+  % Use the `termcap` library.
+  {tty_get_capability(co, number, ScreenWidth)},
+  horizontal_line(ScreenWidth).
 
 horizontal_line(L) -->
   dcg_multi(hyphen, L).
@@ -196,15 +300,133 @@ indent(I) -->
   },
   dcg_multi(space, NumberOfSpaces).
 
+% Meta-options used by predicates in this module.
+is_meta(begin).
+is_meta(end).
+is_meta(ordering).
+is_meta(separator).
+is_meta(write_method).
+
+langle(O1) -->
+  {option(brackets(ascii), O1, ascii)},
+  "<".
+langle(O1) -->
+  {option(brackets(html), O1, ascii)},
+  "&lang;".
+
+nvpair(O1, N, V) -->
+  {
+    meta_options(is_meta, O1, O2),
+    merge_options(O2, [begin(''),end(';'),separator(': ')], O3)
+  },
+  collection(O3, [N,V]).
+
+%! pair(+Options:list(nvpair), +X, +Y)// is det.
+% Prints the given pair.
+%
+% The following options are supported:
+%   * =|brackets(+Brackets:oneof([ascii,html]))|=
+%     The brackets that are printed for this tuple,
+%     either using the ASCII characters `<` and `>` (value `ascii`, default)
+%     or using the HTML escape sequences `&lang;` and `&rang;`
+%     (value `html`).
+%   * The options that are supported for print_collection/2.
+
+pair(O1, X, Y) -->
+  {
+    merge_options(O1, [begin(langle),end(rangle),separator(comma)], O2),
+    meta_options(is_meta, O2, O3)
+  },
+  collection(O3, [X,Y]).
+
+proof(O1, Proof) -->
+  {
+    meta_options(is_meta, O1, O2),
+    default_option(O2, indent, 0, O3)
+  },
+  proof_(O3, Proof).
+
+proof_(O1, Proof) -->
+  {Proof =.. [Rule,Premises,Conclusion]},
+
+  % Indentation.
+  {update_option(O1, indent, succ, I, O2)},
+  indent(I),
+
+  % The name of the rule that was used for deduction.
+  "[", atom(Rule), "]",
+
+  % Separator between rule name and conclusion.
+  space,
+
+  % The conclusion.
+  proposition(O1, Conclusion),
+  newline,
+
+  % Print premises / subproofs.
+  dcg_multi(proof(O2), _, Premises, []).
+
+proposition(O1, Proposition) -->
+  {
+    option(transformation(Predicate), O1, identity),
+    call(Predicate, Proposition, Atom)
+  },
+  atom(Atom).
+
+quote(DCG_Body) -->
+  double_quote,
+  dcg_call(DCG_Body),
+  double_quote.
+
+rangle(O1) -->
+  {option(brackets(ascii), O1, ascii)},
+  ">".
+rangle(O1) -->
+  {option(brackets(html), O1, ascii)},
+  "&rang;".
+
+set(O1, List) -->
+  {
+    merge_options(
+      O1,
+      [
+        begin(opening_curly_bracket),
+        end(closing_curly_bracket),
+        ordering(list_to_ord_set),
+        separator(comma)
+      ],
+      O2
+    ),
+    meta_options(is_meta, O2, O3)
+  },
+  collection(O3, List).
+
 spaces -->
   space, !,
   spaces.
 spaces -->
   [].
 
-dcg_void --> [].
+%! tuple(+Options:list(nvpair), +List:list)// is det.
+% The following options are supported:
+%   * =|brackets(+Brackets:oneof([ascii,html]))|=
+%     The brackets that are printed for this tuple,
+%     either using the ASCII signs `<` and `>` (value `ascii`, default)
+%     or using the HTML escape sequences `&lang;` and `&rang;`
+%     (value `html`).
+%   * The options that are supported for print_collection/2.
 
-%! dcg_word(?Word:atom)// is semidet.
+tuple(O1, List) -->
+  {
+    merge_options(O1, [begin(langle),end(rangle),separator(comma)], O2),
+    meta_options(is_meta, O2, O3)
+  },
+  collection(O3, List).
+
+void -->
+  [].
+
+%! word(?Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.
 %
 % A word is defined as any sequence af alphanumeric characters
@@ -212,21 +434,21 @@ dcg_void --> [].
 %
 % The delimiting character is not consumed.
 
-dcg_word(Word) -->
+word(Word) -->
   {nonvar(Word)}, !,
   {atom_codes(Word, Codes)},
-  dcg_word_(Codes).
-dcg_word(Word) -->
-  dcg_word_(Codes),
+  word_(Codes).
+word(Word) -->
+  word_(Codes),
   {atom_codes(Word, Codes)}.
 
-%! dcg_word(-Tree:compound, ?Word:atom)//
+%! word(-Tree:compound, ?Word:atom)//
 
-dcg_word(word(Word), Word) -->
-  dcg_word(Word).
+word(word(Word), Word) -->
+  word(Word).
 
-dcg_word_([H|T]) -->
+word_([H|T]) -->
   letter(H),
-  dcg_word_(T).
-dcg_word_([]) --> [].
+  word_(T).
+word_([]) --> [].
 

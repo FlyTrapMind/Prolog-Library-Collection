@@ -159,8 +159,8 @@ svg_document(T0, DCG_Namespace, SVG_DCGs) -->
 svg_fragment(T0, SVG_DCGs) -->
   svg_entities:svg_entity(
     T1,
-    dcg_word(svg),
-    dcg_word(svg),
+    word(svg),
+    word(svg),
     [
       xml_namespace(
         http,
@@ -171,7 +171,7 @@ svg_fragment(T0, SVG_DCGs) -->
       )
     ]
   ),
-  xml_entities(Ts, dcg_void, SVG_DCGs),
+  xml_entities(Ts, void, SVG_DCGs),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
 %! svg_fragment(-Tree:compound, :DCG_Namespace, +SVG_DCGs:list(dcg))//
@@ -191,12 +191,12 @@ svg_fragment(T0, SVG_DCGs) -->
 svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
   % Directly go to XML entity (not via SVG entity).
   xml_entity(
-    dcg_word(svg),
-    dcg_word(svg),
+    word(svg),
+    word(svg),
     [
       xml_attribute(
-        dcg_word(xmlns),
-        dcg_word(svg),
+        word(xmlns),
+        word(svg),
         rfc2396_uri_reference(
           T1,
           http,
@@ -213,7 +213,7 @@ svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
 
 svg_namespace(DCG_Namespace) -->
   {phrase(DCG_Namespace, "svg")},
-  dcg_void.
+  void.
 svg_namespace(DCG_Namespace) -->
   DCG_Namespace.
 
@@ -272,7 +272,7 @@ test(svg_document, []):-
     phrase(
       svg_document(
         Tree,
-        dcg_word(svg),
+        word(svg),
         [
           svg_rectangle([svg_x(0.5,cm),svg_y(1.5,cm)]),
           svg_rectangle([svg_x(1.5,cm),svg_y(2.5,cm)]),

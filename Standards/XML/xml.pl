@@ -114,7 +114,7 @@ xml_comment(comment(Comment), Comment) -->
 
 xml_namespace(DCG_Namespace) -->
   {phrase(DCG_Namespace, "xml")},
-  dcg_void.
+  void.
 xml_namespace(DCG_Namespace) -->
   DCG_Namespace.
 

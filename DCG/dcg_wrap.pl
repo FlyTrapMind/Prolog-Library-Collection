@@ -115,11 +115,11 @@ dcg_word_wrap(Options) -->
   },
   dcg_word_wrap(MaximumLineWidth, MaximumLineWidth).
 
-dcg_word_wrap(Remaining, _MaximumLineWidth), dcg_codes(Spaces) -->
+dcg_word_wrap(Remaining, _MaximumLineWidth), codes(Spaces) -->
   dcg_end, !,
   {repeating_list(32, Remaining, Spaces)}.
 
-dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
+dcg_word_wrap(Remaining, MaximumLineWidth), codes(Word2), Postfix -->
   dcg_peek(graphic(Word1)),
   {length(Word1, WordLength)},
 
@@ -136,7 +136,7 @@ dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
       Postfix = newline,
       NewRemaining = MaximumLineWidth
     },
-    dcg_codes(Word2)
+    codes(Word2)
   ;
     % Split occurs right after word.
     % Insert word and insert newline right after it, no space.
@@ -148,7 +148,7 @@ dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
       Postfix = newline,
       NewRemaining = MaximumLineWidth
     },
-    dcg_codes(Word1),
+    codes(Word1),
     whites
   ;
     % Fill the rest of the line with spaces and insert a newline
@@ -168,10 +168,10 @@ dcg_word_wrap(Remaining, MaximumLineWidth), dcg_codes(Word2), Postfix -->
       space,
       {Postfix = space, SpaceLength = 1}
     ;
-      {Postfix = dcg_void, SpaceLength = 0}
+      {Postfix = void, SpaceLength = 0}
     ),
     {NewRemaining is Remaining - WordLength - SpaceLength},
-    dcg_codes(Word1)
+    codes(Word1)
   ),
 
   dcg_word_wrap(NewRemaining, MaximumLineWidth).

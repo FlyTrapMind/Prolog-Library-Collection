@@ -739,7 +739,7 @@ rfc5646_extensions(extensions('-',T1), [H]) -->
 % deprecated in favor of a more modern subtag or sequence of subtags.
 
 rfc5646_grandfathered_language_tag(T0, Tag) -->
-  dcg_multi(dcg_word, _, L1, [separator(hyphen)]),
+  dcg_multi(word, _, L1, [separator(hyphen)]),
   {
     atomic_list_concat(L1, '-', Tag),
     rfc5646_class(Tag, 'Grandfathered'),

@@ -3,7 +3,7 @@
   [
     xsd_canonicalMap/3, % +Datatype:uri
                         % +Value
-                        % -CanonicalLiteral:atom
+                        % -CanonicalLiteral:list(code)
     xsd_canonize_graph/1, % +Graph:atom
     xsd_convert_datatype/4, % +FromDatatype:uri
                             % +FromValue
@@ -715,14 +715,13 @@ the constraints imposed can sometimes result in a value space for which the orde
 
 
 
-%! xsd_canonicalMap(+Datatype:uri, +Value, -Literal:atom) is det.
+%! xsd_canonicalMap(+Datatype:uri, +Value, -LexicalValue:list(code)) is det.
 
 xsd_canonicalMap(Datatype, Double, LEX):-
   rdf_global_id(xsd:double, Datatype), !,
-  atom_number(LEX, Double).
-xsd_canonicalMap(Datatype, Value, LEX2):-
-  once(xsd_canonicalMap_(Datatype, Value, LEX1)),
-  atom_codes(LEX2, LEX1).
+  number_codes(Double, LEX).
+xsd_canonicalMap(Datatype, Value, LEX):-
+  once(xsd_canonicalMap_(Datatype, Value, LEX)).
 
 xsd_canonicalMap_(xsd:boolean, Boolean, LEX):- !,
   booleanCanonicalMap(Boolean, LEX).

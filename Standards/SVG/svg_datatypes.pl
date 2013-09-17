@@ -48,9 +48,9 @@ DCGs for SVG datatypes.
 svg_color(color(T1), Color) -->
   {nonvar(Color)}, !,
   {svg_color(Color, _RGB)},
-  dcg_word(T1, Color).
+  word(T1, Color).
 svg_color(color(T1), Color) -->
-  dcg_word(T1, Color),
+  word(T1, Color),
   {svg_color(Color, _RGB)}.
 
 %! svg_coordinate(-Tree:compound, ?Number:float, ?Unit:atom)//
@@ -109,9 +109,9 @@ svg_length(length(number(Number),unit(Unit)), Number, Unit) -->
 % @tbd Implement the full RFC 2046 standard for media types.
 
 svg_content_type(MediaType) -->
-  dcg_word(First),
+  word(First),
   forward_slash,
-  dcg_word(Second),
+  word(Second),
   {atomic_list_concat([First,'/',Second], MediaType)}.
 
 svg_profile_name(profile_name(none), none) --> "none".
@@ -172,12 +172,12 @@ svg_defer(defer(true), true) --> "defer".
 %! svg_extension(-Tree:compound, ?Extension:iri)//
 % @tbd Add extensions IRIs. (What are these anyway?)
 
-svg_extension(extension(Extension), Extension) --> dcg_word(Extension).
+svg_extension(extension(Extension), Extension) --> word(Extension).
 
 %! svg_feature_string(-Tree:compound, ?Feature:iri)//
 % @tbd Add feature string IRIs.
 
-svg_feature_string(feature_string(Feature), Feature) --> dcg_word(Feature).
+svg_feature_string(feature_string(Feature), Feature) --> word(Feature).
 
 %! svg_meet_or_slice(-Tree:compound, ?Value:oneof([meet,slice]))//
 % The scg_meet_or_slice// parameter is optional and, if provided,

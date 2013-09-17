@@ -32,7 +32,7 @@ rfc3066_language_tag(
   rfc3066_language_tag(Secondary).
 
 rfc3066_language_tag(Tag) -->
-  dcg_word(Word),
+  word(Word),
   {atom_length(Word, Length)},
   dcg_switch(
     Length,

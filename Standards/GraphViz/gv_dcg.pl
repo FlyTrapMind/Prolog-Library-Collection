@@ -330,7 +330,7 @@ gv_id(Atom) -->
     atom_codes(Atom, Codes),
     phrase(gv_html_label, Codes)
   }, !,
-  dcg_codes(Codes).
+  codes(Codes).
 % Alpha-numeric strings (variant 1).
 gv_id(Atom) -->
   {atom_codes(Atom, [H|T])},

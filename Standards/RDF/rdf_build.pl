@@ -148,8 +148,9 @@ rdf_assert_individual(I, C, G):-
 rdf_assert_datatype(S, P, DatatypeName, Value, G):-
   xsd_datatype(DatatypeName, Datatype),
   % We only emit canonical representations for XSD values.
-  xsd_canonicalMap(Datatype, Value, LEX),
-  rdf_assert(S, P, literal(type(Datatype, LEX)), G).
+  xsd_canonicalMap(Datatype, Value, LEX1),
+  atom_codes(LEX2, LEX1),
+  rdf_assert(S, P, literal(type(Datatype,LEX2)), G).
 
 %! rdf_assert_literal(
 %!   +Subject:oneof([bnode,uri]),

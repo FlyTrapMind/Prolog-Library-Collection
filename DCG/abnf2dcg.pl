@@ -49,7 +49,7 @@ element(Name) -->
   {db_add_dcg_rule(Name, [Code])}.
 
 name(Name) -->
-  dcg_cistring(Name).
+  ci_string(Name).
 
 rule -->
   name(Name),

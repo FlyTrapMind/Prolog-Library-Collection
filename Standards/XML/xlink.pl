@@ -76,7 +76,7 @@ xlink_href(href(T1), DCG_Namespace, Fragment) -->
 
 xlink_namespace(DCG_Namespace) -->
   {phrase(DCG_Namespace, "xlink")},
-  dcg_void.
+  void.
 xlink_namespace(DCG_Namespace) -->
   DCG_Namespace.
 

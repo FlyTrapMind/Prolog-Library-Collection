@@ -205,7 +205,7 @@ dcg_until_(O, DCG_End, EndCodes), InclusiveExclusive -->
     (
       EndMode == inclusive
     ->
-      InclusiveExclusive = dcg_void,
+      InclusiveExclusive = void,
       phrase(DCG_End, EndCodes)
     ;
       InclusiveExclusive = DCG_End,

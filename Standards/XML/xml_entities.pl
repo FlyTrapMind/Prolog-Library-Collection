@@ -84,7 +84,7 @@ xml_entity(DCG_Open, DCG_Namespace, DCG_Name, DCG_Attributes, DCG_Close) -->
 % @see Like xml_entity_q//3 but without a namespace.
 
 xml_entity_q(DCG_Name, DCG_Attributes) -->
-  xml_entity_q(dcg_void, DCG_Name, DCG_Attributes).
+  xml_entity_q(void, DCG_Name, DCG_Attributes).
 
 %! xml_entity_q(:DCG_Namespace, :DCG_Name, :DCG_Attributes)//
 % Processes an XML entity that uses question marks in its tags.
@@ -115,7 +115,7 @@ xml_entity_q(DCG_Namespace, DCG_Name, DCG_Attributes) -->
 xml_header(header(T1,T2), DCG_Namespace, Version, Standalone) -->
   xml_entity_q(
     % Note that this cannot be processed by xml_name//1.
-    dcg_word(xml),
+    word(xml),
     [
       xml_version(T1, DCG_Namespace, Version),
       xml_standalone(T2, DCG_Namespace, Standalone)
