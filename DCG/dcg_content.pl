@@ -68,8 +68,14 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
-:- meta_predicate(nvpair(+,//,//)).
-:- meta_predicate(quote(//)).
+:- meta_predicate(collection(:,+,?,?)).
+:- meta_predicate(list(:,+,?,?)).
+:- meta_predicate(nvpair(:,+,+,?,?)).
+:- meta_predicate(paor(:,+,+,?,?)).
+:- meta_predicate(proof(:,+,?,?)).
+:- meta_predicate(quote(//,?,?)).
+:- meta_predicate(set(:,+,?,?)).
+:- meta_predicate(tuple(:,+,?,?)).
 
 :- setting(
   indent_size,
@@ -314,6 +320,25 @@ langle(O1) -->
   {option(brackets(html), O1, ascii)},
   "&lang;".
 
+%! list(+Options:list(nvpair), +List:list)// is det.
+% Lists are printed recursively, using indentation relative to the given
+% indentation level.
+
+list(O1, List) -->
+  {
+    meta_options(is_meta, O1, O2),
+    merge_options(
+      O2,
+      [
+        begin(opening_square_bracket),
+        end(closing_square_bracket),
+        separator(comma)
+      ],
+      O3
+    )
+  },
+  collection(O3, List).
+
 nvpair(O1, N, V) -->
   {
     meta_options(is_meta, O1, O2),
@@ -418,8 +443,8 @@ spaces -->
 
 tuple(O1, List) -->
   {
-    merge_options(O1, [begin(langle),end(rangle),separator(comma)], O2),
-    meta_options(is_meta, O2, O3)
+    meta_options(is_meta, O1, O2),
+    merge_options(O2, [begin(langle),end(rangle),separator(comma)], O3)
   },
   collection(O3, List).
 

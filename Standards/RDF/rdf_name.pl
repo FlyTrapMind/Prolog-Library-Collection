@@ -1,6 +1,9 @@
 :- module(
   rdf_name,
   [
+    dcg_rdf_term_name//1, % +RDF_Term:oneof([bnode,literal,uri])
+    dcg_rdf_term_name//2, % +Options:list(nvpair)
+                          % +RDF_Term:oneof([bnode,literal,uri])
     rdf_pair_name/3, % +Options:list(nvpair)
                      % +RDF_Term1:pair(or([bnode,iri,literal]))
                      % +RDF_Term1:pair(or([bnode,iri,literal]))
@@ -30,6 +33,7 @@ Generate names for RDF terms and triples.
 @version 2013/07-2013/09
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(print_ext)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
@@ -39,6 +43,8 @@ Generate names for RDF terms and triples.
 :- use_module(rdfs(rdfs_label)).
 :- use_module(xsd(xsd)).
 
+:- rdf_meta(dcg_rdf_term_name(r,?,?)).
+:- rdf_meta(dcg_rdf_term_name(+,r,?,?)).
 :- rdf_meta(rdf_pair_name(+,r,r)).
 :- rdf_meta(rdf_term_name(r)).
 :- rdf_meta(rdf_term_name(+,r)).
@@ -48,6 +54,13 @@ Generate names for RDF terms and triples.
 :- rdf_meta(rdf_triple_name(+,r,r,r)).
 
 
+
+dcg_rdf_term_name(RDF_Term) -->
+  dcg_rdf_term_name([], RDF_Term).
+
+dcg_rdf_term_name(O1, RDF_Term) -->
+  {rdf_term_name(O1, RDF_Term, RDF_TermName)},
+  atom(RDF_TermName).
 
 %! rdf_pair_name(
 %!   +Options:list(nvpair),
