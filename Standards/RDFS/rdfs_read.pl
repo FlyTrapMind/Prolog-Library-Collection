@@ -4,10 +4,12 @@
 % CLASS
     rdfs_class/2, % +Graph:atom
                   % ?Class:iri
-    rdfs_is_individual/2, % +Individual:iri
+    rdfs_is_individual/3, % +Individual:iri
                           % +Class:iri
-    rdfs_is_subclass/2, % +Class1:iri
+                          % ?Graph:atom
+    rdfs_is_subclass/3, % +Class1:iri
                         % +Class2:iri
+                        % ?Graph:atom
 
 % DOMAIN & RANGE
     rdfs_domain/3, % ?Property:uri
@@ -92,8 +94,8 @@ rdfs_individual(X, Y, G):-
 
 % CLASS
 :- rdf_meta(rdfs_class(+,r)).
-:- rdf_meta(rdfs_is_individual(r,r)).
-:- rdf_meta(rdfs_is_subclass(r,r)).
+:- rdf_meta(rdfs_is_individual(r,r,+)).
+:- rdf_meta(rdfs_is_subclass(r,r,+)).
 % DOMAIN & RANGE
 :- rdf_meta(rdfs_domain(r,r,?)).
 :- rdf_meta(rdfs_range(r,r,?)).
@@ -108,15 +110,15 @@ rdfs_class(G, C):-
   rdf_term(G, C),
   rdfs_individual_of(C, rdfs:'Class').
 
-rdfs_is_individual(I, C):-
-  rdf(I, rdf:type, C0),
-  rdfs_is_subclass(C0, C).
+rdfs_is_individual(I, C, G):-
+  rdf2(I, rdf:type, C0, G),
+  rdfs_is_subclass(C0, C, G).
 
-rdfs_is_subclass(C, C):- !.
-rdfs_is_subclass(C1, C2):-
-  rdf(C1, rdfs:subClassOf, C3),
+rdfs_is_subclass(C, C, _G):- !.
+rdfs_is_subclass(C1, C2, G):-
+  rdf2(C1, rdfs:subClassOf, C3, G),
   C1 \== C3,
-  rdfs_is_subclass(C3, C2).
+  rdfs_is_subclass(C3, C2, G).
 
 
 

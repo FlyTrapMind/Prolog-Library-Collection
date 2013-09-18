@@ -1,6 +1,10 @@
 :- module(
   rdf_read,
   [
+    rdf2/4, % ?Subject:or([bnode,iri])
+            % ?Predicate:iri
+            % ?Object:or([bnode,iri,label])
+            % ?Graph:graph
     rdf_datatype/2, % ?Graph:graph
                     % ?Datatype:uri
     rdf_datatype/5, % ?Subject:oneof([bnode,uri])
@@ -58,6 +62,7 @@ literals.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
+:- rdf_meta(rdf2(r,r,o,?)).
 :- rdf_meta(rdf_datatype(?,r)).
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_has_datatype(r,r,?,?)).
@@ -69,6 +74,12 @@ literals.
 :- rdf_meta(rdf_property(+,r)).
 
 
+
+rdf2(S, P, O, G):-
+  var(G), !,
+  rdf(S, P, O).
+rdf2(S, P, O, G):-
+  rdf(S, P, O, G).
 
 %! rdf_bnode_to_var(
 %!   +RDF_Term:or([bnode,iri,literal]),

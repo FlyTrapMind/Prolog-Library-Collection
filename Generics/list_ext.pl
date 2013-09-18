@@ -63,6 +63,8 @@
     pairs/3, % ?Pairs:list
              % ?Formers:list
              % ?Latters:list
+    pairs_to_members/2, % +Pairs:list(pair)
+                        % -Members:list
     random_member/2, % +List:list
                      % -Member
     remove_first/2, % +List:list,
@@ -103,9 +105,11 @@
 Extra list functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05, 2013/07
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
+         2013/07, 2013/09
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(library(lists)).
 :- use_module(math(random_ext)).
 
@@ -311,17 +315,28 @@ nth1chk(Index, List, Element):-
 %! pair(+Pair, -Former, -Latter) is det.
 % Supporting various pair formats.
 
-pair(X1/X2, X1, X2).
-pair(X1-X2, X1, X2).
-pair([X1,X2], X1, X2).
+pair(X1/X2, X1, X2):- !.
+pair(X1-X2, X1, X2):- !.
+pair([X1,X2], X1, X2):- !.
 
 %! pairs(+Pairs:list, -Formers:list, -Latters:list) is det.
 %! pairs(-Pairs:list, +Formers:list, +Latters:list) is det.
 
-pairs([], [], []).
-pairs([Pair | Pairs], [X1 | T1], [X2 | T2]):-
-  pair(Pair, X1, X2), !,
+pairs([], [], []):- !.
+pairs([Pair|Pairs], [X1|T1], [X2|T2]):-
+  pair(Pair, X1, X2),
   pairs(Pairs, T1, T2).
+
+pairs_to_members(Pairs, Xs):-
+  setoff(
+    X,
+    ((
+      member(X-_, Pairs)
+    ;
+      member(_-X, Pairs)
+    )),
+    Xs
+  ).
 
 %! random_member(+List:list, -Member) is det.
 % Returns a randomly chosen member from the given list.
