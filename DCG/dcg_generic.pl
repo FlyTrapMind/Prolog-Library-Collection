@@ -54,14 +54,12 @@
     dcg_phrase/3, % :DCG_Body:dcg
                   % +In:atom
                   % -Out:atom
+    dcg_with_output_to/2, % +Out
+                          % :DCG_Body
 
 % REPLACE
-    dcg_replace//2, % +From:list(code)
-                    % +To:list(code)
-
-% STREAM
-    dcg_stream/2 % +Stream
-                 % :DCG_Body
+    dcg_replace//2 % +From:list(code)
+                   % +To:list(code)
   ]
 ).
 :- reexport(
@@ -139,7 +137,7 @@ a modular way.
 % REPLACE
 :- meta_predicate(dcg_replace(//,//,?,?)).
 % STREAM
-:- meta_predicate(dcg_stream(+,//)).
+:- meta_predicate(dcg_with_output_to(+,//)).
 
 
 
@@ -234,7 +232,7 @@ dcg_debug(Topic, _DCG_Body):-
   debugging(Topic, false), !.
 dcg_debug(Topic, DCG_Body):-
   DebugStream = user_error,
-  dcg_stream(DebugStream, dcg_debug_(Topic, DCG_Body)).
+  dcg_with_output_to(DebugStream, dcg_debug_(Topic, DCG_Body)).
 
 dcg_debug_(_Topic, DCG_Body) -->
   %dcg_debug_topic(Topic),
@@ -421,7 +419,7 @@ dcg_replace(From, To), [X] -->
 
 % STREAM %
 
-dcg_stream(Stream, DCG_Body):-
+dcg_with_output_to(Out, DCG_Body):-
   phrase(DCG_Body, Codes),
-  put_codes(Stream, Codes).
+  put_codes(Out, Codes).
 
