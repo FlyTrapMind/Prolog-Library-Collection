@@ -15,7 +15,7 @@ Predicates for exporting an intermediate graph structure to an HTML table.
 */
 
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_html)).
+:- use_module(html(html_dcg)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(settings)).

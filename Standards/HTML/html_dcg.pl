@@ -1,51 +1,64 @@
 :- module(
-  dcg_html,
+  html_dcg,
   [
-    html_convert//1, % -Converted:list(code)
-    html_element//3, % ?Name:atom
-                     % ?Attrs:list(nvpair)
-                     % ?Content:dom
+    html_element//1, % +ElementName:atom
+    html_element//2, % +ElementName:atom
+                     % :Content:dcg
+    html_entity//0,
+    html_entity//1, % +EntityName:atom
     html_graph//0,
+    html_string//0,
     html_style//1 % ?NVPairs:list(nvpair)
   ]
 ).
 
-/** <module> DCG_HTML
+/** <module> HTML_DCG
 
-Convert HTML strings.
+DCG rules for HTML expressions.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09
+@version 2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(html(html)).
-:- use_module(library(apply)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
+
+:- meta_predicate(html_element(+,//,?,?)).
 
 
 
-html_convert([]) --> [].
-html_convert([H|T]) -->
-  html_char(H),
-  html_convert(T).
+html_entity -->
+  "&",
+  html_string,
+  ";".
 
-html_char('>') --> "&#62;".
-html_char('<') --> "&#60;".
-html_char(X) --> [X].
+html_entity(EntityName) -->
+  "&",
+  atom(EntityName),
+  ";".
 
-html_element(Name, MatchAttrs, Content) -->
-  {var(MatchAttrs)},
-  html_element(Name, [], Content).
-html_element(Name, MatchAttrs, Content) -->
-  {is_list(MatchAttrs)},
-  [element(Name, Attrs, Content)],
-  {maplist(html_attribute(Attrs), MatchAttrs)}.
-html_element(Name, MatchAttr, Content) -->
-  {\+ is_list(MatchAttr)},
-  html_element(Name, [MatchAttr], Content).
+html_element(ElementName) -->
+  "<",
+  atom(ElementName),
+  "/>".
+
+html_element(ElementName, Content) -->
+  % Opening tab.
+  "<",
+  atom(ElementName),
+  ">",
+  
+  % Content.
+  dcg_call(Content),
+  
+  % Closing tab.
+  "</",
+  ElementName,
+  ">".
 
 %! html_graph//
-% HTML reserves the ASCII characters:
+% HTML reserves the following ASCII characters:
 %   * Ampersand
 %   * Apostrophe
 %   * Greater-than
@@ -81,11 +94,21 @@ html_punctuation --> tilde.
 html_punctuation --> underscore.
 html_punctuation --> vertical_bar.
 
+%! html_string//
+% A _string_ is any collection of printable characters, including all spaces.
+
+html_string -->
+  html_graph,
+  html_string.
+html_string -->
+  html_graph.
+
 html_style([]) --> [].
 html_style([NVPair|NVPairs]) -->
   {var(NVPair)}, !,
   html_style_word(Name1),
-  colon, (space ; ""),
+  colon,
+  (space ; void),
   html_style_word(Value1),
   semi_colon,
   {
@@ -102,7 +125,8 @@ html_style([NVPair|NVPairs]) -->
     atom_codes(Value1, Value2)
   },
   html_style_word(Name2),
-  colon, (space ; ""),
+  colon,
+  (space ; void),
   html_style_word(Value2),
   semi_colon,
   html_style(NVPairs).

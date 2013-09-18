@@ -23,14 +23,13 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_html)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
-:- use_module(html(html)).
+:- use_module(html(html_dcg)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
@@ -274,36 +273,31 @@ gv_html_label --> "<", (gv_html_text ; gv_html_table), ">".
 gv_html_text --> gv_html_textitem, gv_html_text.
 gv_html_text --> gv_html_textitem.
 
-gv_html_textitem --> html_entity(br), !.
-gv_html_textitem --> html_entity(font, gv_html_text), !.
-gv_html_textitem --> html_entity(i, gv_html_text), !.
-gv_html_textitem --> html_entity(b, gv_html_text), !.
-gv_html_textitem --> html_entity(u, gv_html_text), !.
-gv_html_textitem --> html_entity(sub, gv_html_text), !.
-gv_html_textitem --> html_entity(sup, gv_html_text), !.
-gv_html_textitem --> gv_html_string.
+gv_html_textitem --> html_entity, !.
+gv_html_textitem --> html_element(br), !.
+gv_html_textitem --> html_element(font, gv_html_text), !.
+gv_html_textitem --> html_element(i, gv_html_text), !.
+gv_html_textitem --> html_element(b, gv_html_text), !.
+gv_html_textitem --> html_element(u, gv_html_text), !.
+gv_html_textitem --> html_element(sub, gv_html_text), !.
+gv_html_textitem --> html_element(sup, gv_html_text), !.
+gv_html_textitem --> html_string.
 
-%! gv_html_string//
-% A _string_ is any collection of printable characters, including all spaces.
-
-gv_html_string --> html_graph, gv_html_string.
-gv_html_string --> html_graph.
-
-gv_html_table --> html_entity(table, gv_html_rows).
-gv_html_table --> html_entity(font, html_entity(table, gv_html_rows)).
+gv_html_table --> html_element(table, gv_html_rows).
+gv_html_table --> html_element(font, html_element(table, gv_html_rows)).
 
 gv_html_rows --> gv_html_row.
 gv_html_rows --> gv_html_rows, gv_html_row.
-gv_html_rows --> gv_html_rows, html_entity(hr), gv_html_row.
+gv_html_rows --> gv_html_rows, html_element(hr), gv_html_row.
 
-gv_html_row --> html_entity(tr, gv_html_cells).
+gv_html_row --> html_element(tr, gv_html_cells).
 
 gv_html_cells --> gv_html_cell.
 gv_html_cells --> gv_html_cells, gv_html_cell.
-gv_html_cells --> gv_html_cells, html_entity(vr), gv_html_cell.
+gv_html_cells --> gv_html_cells, html_element(vr), gv_html_cell.
 
-gv_html_cell --> html_entity(td, gv_html_label).
-gv_html_cell --> html_entity(td, html_entity(img)).
+gv_html_cell --> html_element(td, gv_html_label).
+gv_html_cell --> html_element(td, html_element(img)).
 
 %! gv_id(?Atom:atom)// is det.
 % Parse a GraphViz identifier.
