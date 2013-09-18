@@ -15,10 +15,20 @@
     export_rdf_graph/3, % +Options:list(nvpair)
                         % +RDF_Graph:atom
                         % -GraphTerm:compound
-    export_rdf_graph/4 % +Options:list(nvpair)
-                       % :CoordFunc
-                       % +RDF_Graph:atom
-                       % -GraphTerm:compound
+    export_rdf_graph/4, % +Options:list(nvpair)
+                        % :CoordFunc
+                        % +RDF_Graph:atom
+                        % -GraphTerm:compound
+    rdf_edge_term/5, % +Options:list(nvpair)
+                     % +Graph:atom
+                     % +Vertices:list(iri)
+                     % +Edge:pair(iri)
+                     % -EdgeTerm:compound
+    rdf_vertex_term/5 % +Options:list(nvpair)
+                      % +Graph:atom
+                      % +Vertices:list(iri)
+                      % +Vertex:iri
+                      % -VertexTerm:compound
   ]
 ).
 
@@ -47,12 +57,11 @@ The procedure for determining the color of a vertex:
 ...
 
 @author Wouter Beek
-@version 2013/01-2013/03, 2013/07-2013/08
+@version 2013/01-2013/03, 2013/07-2013/09
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -199,15 +208,8 @@ export_rdf_graph(O, G, GIF):-
 export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % First edges, them vertices.
   rdf_edges(O, G, Es),
-  setoff(
-    V,
-    ((
-      member(V-_-_, Es)
-    ;
-      member(_-_-V, Es)
-    )),
-    Vs
-  ),
+  pairs_to_members(Es, Vs),
+
   maplist(rdf_edge_term(O, G, Vs), Es, E_Terms),
   maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
 
@@ -310,7 +312,7 @@ rdf_edge_style(_E, solid).
 
 rdf_edge_term(O, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
   % Ids.
-  E = FromV-_P-ToV,
+  (E = FromV-_P-ToV, ! ; E = FromV-ToV),
   nth0chk(FromV_Id, Vs, FromV),
   nth0chk(ToV_Id, Vs, ToV),
 
@@ -447,6 +449,9 @@ rdf_vertex_shape(RDF_Term, circle):-
   rdf_is_bnode(RDF_Term), !.
 % Catch-all.
 rdf_vertex_shape(_RDF_Term, ellipse).
+
+rdf_vertex_term(O, G, Vs, V, GIF):-
+  rdf_vertex_term(O, G, Vs, random_vertex_coordinate, V, GIF).
 
 rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id,V,V_Attrs3)):-
   nth0chk(V_Id, Vs, V),
