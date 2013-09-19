@@ -48,6 +48,9 @@
     rdf_typed_literal/1, % ?TypedLiteral:compound
     rdf_typed_literal/2, % ?Graph:atom
                          % ?TypedLiteral:compound
+    rdf_typed_literal/3, % ?TypedLiteral:compound
+                         % ?LiteralValue:atom
+                         % ?Datatype:iri
     rdf_vocabulary/2 % +Graph:atom
                      % -Vocabulary:ordset(oneof([literal,uri]))
   ]
@@ -149,6 +152,7 @@ See also the URI equivalence issue of the Technical Architecture Group [TAG].
 :- rdf_meta(rdf_subject(?,r)).
 :- rdf_meta(rdf_typed_literal(r)).
 :- rdf_meta(rdf_typed_literal(?,r)).
+:- rdf_meta(rdf_typed_literal(o,?,r)).
 
 
 
@@ -402,6 +406,8 @@ rdf_typed_literal(G, Lit1):-
   rdf_global_object(Lit1, Lit2),
   rdf(_, _, Lit2, G),
   Lit2 = literal(type(_,_)).
+
+rdf_typed_literal(literal(type(Literal,Datatype)), Literal, Datatype).
 
 %! rdf_vocabulary(+Graph:atom, -Vocabulary:ordset([literal,iri])) is det.
 % Returns the vocabulary of the given graph.

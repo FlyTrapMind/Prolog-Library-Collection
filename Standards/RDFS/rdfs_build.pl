@@ -136,7 +136,7 @@ rdfs_assert_subclass(Class, SuperClass, G):-
   rdf_assert(Class, rdfs:subClassOf, SuperClass, G).
 
 rdfs_remove_class(G, C):-
-  rdfs_class(G, C), !,
+  rdfs_class(m(t,f,f), C, G), !,
   rdf_retractall(C, _, _, G),
   rdf_retractall(_, _, C, G).
 

@@ -73,7 +73,7 @@ Support for RDF lists.
 rdf_is_list(RDF_List):-
   rdf_global_id(rdf:'List', C),
   % This one is more efficient than `rdfs:rdfs_instance_of/2`.
-  rdfs_is_individual(RDF_List, C, _).
+  rdfs_individual(m(t,f,f), RDF_List, C, _).
 
 %! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
 % Asserts the given, possibly nested list into RDF.
