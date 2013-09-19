@@ -152,7 +152,7 @@ rdfs_domain_axiom(m(t,_,_), P, C):-
   ; rdf_global_id(rdfs:range,         P)
   ; rdf_global_id(rdfs:subPropertyOf, P)
   ),
-  rdf_global_id(rdfs:'Property', C).
+  rdf_global_id(rdf:'Property', C).
 % RDFS axioms: resource
 rdfs_domain_axiom(m(t,_,_), P, C):-
   ( rdf_global_id(rdfs:comment,     P)
@@ -195,13 +195,11 @@ rdfs_individual(M, I, C, G):-
 % RDFS 2
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdf_db_or_axiom(M, I, P, _, G),
-  rdf_is_iri(P),
   rdfs_domain(M, P, C, G),
   debug(rdfs_read, '[RDFS 2] ~w \\in ~w', [I,C]).
 % RDFS 3
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdf_db_or_axiom(M, _, P, I, G),
-  rdf_is_iri(P),
   rdfs_range(M, P, C, G),
   debug(rdfs_read, '[RDFS 3] ~w \\in ~w', [I,C]).
 % RDFS 4a
@@ -241,38 +239,6 @@ rdfs_individual_axiom(_, I, C):-
   ; rdf_global_id(rdf:value,     I)
   ),
   rdf_global_id(rdf:'Property', C).
-/*% RDFS axioms: class
-rdfs_individual_axiom(m(t,_,_), I, C):-
-  % RDF individuals of RDF class
-  ( rdf_global_id( rdf:'Alt',        I)
-  ; rdf_global_id( rdf:'Bag',        I)
-  ; rdf_global_id( rdf:'List',       I)
-  ; rdf_global_id( rdf:'Property',   I)
-  ; rdf_global_id( rdf:'Seq',        I)
-  ; rdf_global_id( rdf:'Statement',  I)
-  ; rdf_global_id( rdf:'XMLLiteral', I)
-  % RDFS individuals of RDFS class
-  ; rdf_global_id(rdfs:'Class',                       I)
-  ; rdf_global_id(rdfs:'Container',                   I)
-  ; rdf_global_id(rdfs:'ContainerMembershipProperty', I)
-  ; rdf_global_id(rdfs:'Datatype',                    I)
-  ; rdf_global_id(rdfs:'Literal',                     I)
-  ; rdf_global_id(rdfs:'Resource',                    I)
-  ),
-  rdf_global_id(rdfs:'Class', C).*/
-/*% RDFS axioms: property
-rdfs_individual_axiom(m(t,_,_), I, C):-
-  ( rdf_global_id(rdfs:comment,       I)
-  ; rdf_global_id(rdfs:domain,        I)
-  ; rdf_global_id(rdfs:isDefinedBy,   I)
-  ; rdf_global_id(rdfs:label,         I)
-  ; rdf_global_id(rdfs:member,        I)
-  ; rdf_global_id(rdfs:range,         I)
-  ; rdf_global_id(rdfs:seeAlso,       I)
-  ; rdf_global_id(rdfs:subClassOf,    I)
-  ; rdf_global_id(rdfs:subPropertyOf, I)
-  ),
-  rdf_global_id(rdf:'Property', C).*/
 
 rdfs_property(M, P, G):-
   rdfs_individual(M, P, rdf:'Property', G).
