@@ -9,7 +9,7 @@
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
-:- xml_register_namespace(m(t,f,f), 'http://www.w3.org/2000/01/rdf-schema#').
+:- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
 
 :- rdf_meta(test_triple(?,r,r,o)).
 

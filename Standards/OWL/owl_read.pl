@@ -3,6 +3,10 @@
   [
     owl_class_equivalence/2, % ?Class1:uri
                              % ?Class2:uri
+    owl_disjointWith/4, % +Mode:compound
+                        % ?Class:iri
+                        % ?Class:iri
+                        % ?Graph:atom
     owl_identity_set/2, % +IRI:iri
                         % -IdentitySet:ordset(iri)
     owl_resource_identity/2, % ?Resource1:uri
@@ -34,6 +38,7 @@ Predicates for reading from OWL data.
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_term)).
+:- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
@@ -46,6 +51,15 @@ Predicates for reading from OWL data.
 
 owl_class_equivalence(Class1, Class2):-
   rdf_has(Class1, owl:equivalentClass, Class2).
+
+owl_disjointWith(M, C1, C2, G):-
+  rdf(C1, owl:disjointWith, C2, G), !,
+  rdfs_class(M, C1, G),
+  rdfs_class(M, C2, G),
+  \+ ((
+    rdfs_individual(M, X, C1, G),
+    rdfs_individual(M, X, C1, G)
+  )).
 
 %! owl_identity_set(+IRI:iri, -IdentitySet:ordset(iri)) is det.
 % Returns the identity set for the given IRI.

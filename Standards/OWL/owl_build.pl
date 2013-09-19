@@ -4,6 +4,9 @@
     owl_assert_class_equivalence/3, % +Class1:class
                                     % +Class2:class
                                     % +Graph:atom
+    owl_assert_disjointWith/3, % +Class1:iri
+                               % +Class2:iri
+                               % +Graph:atom
     owl_assert_resource_identity/3, % +Resource1:class
                                     % +Resource2:class
                                     % +Graph:atom
@@ -38,8 +41,11 @@ Predicates for building OWL ontologies.
 
 %! owl_assert_class_equivalence(+Class1:iri, +Class2:iri, +Graph:atom) is det.
 
-owl_assert_class_equivalence(Class1, Class2, Graph):-
-  rdf_assert(Class1, owl:equivalentClass, Class2, Graph).
+owl_assert_class_equivalence(C1, C2, G):-
+  rdf_assert(C1, owl:equivalentClass, C2, G).
+
+owl_assert_disjointWith(C1, C2, G):-
+  rdf_assert(C1, owl:disjointWith, C2, G).
 
 %! owl_assert_resource_identity(
 %!   +Resource1:iri,
