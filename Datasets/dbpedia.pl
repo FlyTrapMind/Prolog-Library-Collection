@@ -65,17 +65,19 @@ WHERE
 
 :- db_add_novel(user:prolog_file_type(ttl, turtle)).
 
+% XML namespace prefixes that often occur in DBpedia.
+:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
+:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
 :- xml_register_namespace(dbpedia, 'http://dbpedia.org/resource/').
-:- xml_register_namespace('dbpedia-owl', 'http://dbpedia.org/ontology/').
-:- xml_register_namespace(dbpprop, 'http://dbpedia.org/property/').
-:- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
+:- xml_register_namespace(fb,      'http://rdf.freebase.com/ns/').
+:- xml_register_namespace(foaf,    'http://xmlns.com/foaf/0.1/').
 :- xml_register_namespace('powder-s', 'http://www.w3.org/2007/05/powder-s#').
-:- xml_register_namespace(umbel, 'http://umbel.org/umbel/rc/').
-:- xml_register_namespace(yago, 'http://dbpedia.org/class/yago/').
+:- xml_register_namespace(umbel,   'http://umbel.org/umbel/rc/').
+:- xml_register_namespace(yago, 'http://yago-knowledge.org/resource/').
 
+:- register_sparql_prefix(dbo).
+:- register_sparql_prefix(dbp).
 :- register_sparql_prefix(dbpedia).
-:- register_sparql_prefix('dbpedia-owl').
-:- register_sparql_prefix(dbpprop).
 :- register_sparql_prefix(umbel).
 :- register_sparql_prefix(yago).
 

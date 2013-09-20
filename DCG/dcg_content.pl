@@ -32,7 +32,7 @@
     void//0,
     word//1, % ?Word:atom
     word//2 % -Tree:compound
-                % ?Word:atom
+            % ?Word:atom
   ]
 ).
 

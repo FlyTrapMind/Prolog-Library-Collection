@@ -90,7 +90,7 @@ rdfs_individual_of(rdfs:Class, rdfs:Class)
 :- rdf_meta(rdfs_subclass_axiom(+,r,r)).
 :- rdf_meta(rdfs_subproperty(+,r,r,?)).
 
-:- debug(rdfs_read).
+:- nodebug(rdfs_read).
 
 
 

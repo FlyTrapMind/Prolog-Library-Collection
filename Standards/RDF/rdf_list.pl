@@ -71,6 +71,7 @@ Support for RDF lists.
 % Succeeds if the given term is an RDF list.
 
 rdf_is_list(RDF_List):-
+  \+ rdf_is_literal(RDF_List),
   rdf_global_id(rdf:'List', C),
   % This one is more efficient than `rdfs:rdfs_instance_of/2`.
   rdfs_individual(m(t,f,f), RDF_List, C, _).

@@ -45,6 +45,7 @@ Predicates for reading from OWL data.
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 :- rdf_meta(owl_class_equivalence(r,r)).
+:- rdf_meta(owl_disjointWith(+,r,r,?)).
 :- rdf_meta(owl_resource_identity(r,r)).
 
 
