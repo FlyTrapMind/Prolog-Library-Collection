@@ -22,6 +22,9 @@
                      % ?Path:atom
 
 % QUERYING
+    describe_resource/3, % +Remote:atom
+                         % +Resource:uri
+                         % -Rows:list(row)
     enqueue_sparql/4, % +Remote:atom
                       % +Query:atom
                       % -VarNames:list
@@ -64,12 +67,16 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 @author Wouter Beek
 @see SPARQL 1.1 Recommendation 2013/03
      http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/07
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(debug)).
+:- use_module(library(semweb/rdf_db)). % rdf_meta/1
 :- use_module(library(semweb/sparql_client)).
 :- use_module(xml(xml_namespace)).
+
+:- rdf_meta(describe_resource(+,r,-)).
 
 :- dynamic(sparql_prefix/2).
 :- dynamic(sparql_remote/4).
@@ -174,6 +181,31 @@ register_sparql_remote(Remote, Server, Port, Path):-
 
 
 % QUERYING %
+
+%! describe_resource(
+%!   +Remote:atom,
+%!   +Resource:iri,
+%!   -Rows:list(compound)
+%! ) is det.
+% Returns a depth-1 description of the given resource
+% in terms of predicate-object rows.
+%
+% @tbd Make the depth of the description a parameter.
+
+describe_resource(Remote, Resource, Rows):-
+  format(atom(Where), '  <~w> ?p ?o .', [Resource]),
+  formulate_sparql(
+    [],
+    'SELECT DISTINCT ?p ?o',
+    [Where],
+    0,
+    Query
+  ),
+  enqueue_sparql(Remote, Query, _VarNames, Rows),
+  
+  % DEB
+  ( Rows \== [], !
+  ; debug(sparql_ext, 'Empty results for DESCRIBE ~w.', [Resource])).
 
 %! enqueue_sparql(
 %!   +Remote:atom,

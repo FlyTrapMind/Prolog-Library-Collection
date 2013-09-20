@@ -7,8 +7,6 @@
                        % +Resource:uri
     dbpedia_find_concept/2, % +Name:atom
                             % -ConceptName:uri
-    describe_resource/2, % +Resource:uri
-                         % -Rows:list(row)
     find_dbpedia_agent/4 % +Name:atom
                          % +Birth:integer
                          % +Death:integer
@@ -82,7 +80,6 @@ WHERE
 :- register_sparql_prefix(yago).
 
 :- rdf_meta(assert_resource(+,r)).
-:- rdf_meta(describe_resource(r,-)).
 :- rdf_meta(find_dbpedia_agent(+,+,+,r)).
 
 :- register_sparql_remote(dbpedia, 'dbpedia.org', default, '/sparql').
@@ -98,7 +95,7 @@ assert_identity_resource(IRI, G):-
 assert_resource(G, IRI):-
   rdf_is_iri(IRI),
   rdf_graph(G), !,
-  describe_resource(IRI, PO_Rows),
+  describe_resource(dbpedia, IRI, PO_Rows),
   forall(
     member(row(P, O), PO_Rows),
     rdf_assert(IRI, P, O, G)
@@ -126,27 +123,6 @@ dbpedia_find_concept(Name, ConceptName):-
     first(Resources, row(ConceptName))
   ).
 
-%! describe_resource(+Resource:iri, -Rows:list(compound)) is det.
-% Returns a depth-1 description of the given resource
-% in terms of predicate-object rows.
-%
-% @tbd Make the depth of the description a parameter.
-
-describe_resource(Resource, Rows):-
-  format(atom(Where), '  <~w> ?p ?o .', [Resource]),
-  formulate_sparql(
-    [],
-    'SELECT DISTINCT ?p ?o',
-    [Where],
-    0,
-    Query
-  ),
-  enqueue_sparql(dbpedia, Query, _VarNames, Rows),
-  if_then(
-    Rows == [],
-    debug(dbpedia, 'Empty results for DESCRIBE ~w.', [Resource])
-  ).
-
 %! find_person(
 %!   +FullName:atom,
 %!   +Birth:integer,
@@ -169,7 +145,7 @@ find_dbpedia_agent(Name, Birth, Death, DBpediaAuthor):-
     [Name, Birth, Death]
   ),
   formulate_sparql(
-    [dbpprop, foaf],
+    [dbp,foaf],
     'SELECT DISTINCT ?writer',
     Where,
     10,
