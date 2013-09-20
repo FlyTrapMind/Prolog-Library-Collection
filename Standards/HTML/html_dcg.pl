@@ -1,6 +1,7 @@
 :- module(
   html_dcg,
   [
+    html_dcg//1, % +Content:list(or([atom,compound,list(code)]))
     html_element//1, % +ElementName:atom
     html_element//2, % +ElementName:atom
                      % :Content:dcg
@@ -9,7 +10,6 @@
     html_graph//0,
     html_graph//1, % ?Code:code
     html_string//0,
-    html_string//1, % +String:or([atom,list(code)])
     html_style//1 % ?NVPairs:list(nvpair)
   ]
 ).
@@ -33,6 +33,23 @@ DCG rules for HTML expressions.
 :- discontiguous(html_punctuation//1).
 
 
+
+%! html_dcg(+Content:list(or([atom,compound,list(code)])))//
+
+% Done.
+html_dcg([]) --> !, [].
+% Tag with no content.
+html_dcg([tag(Name)|T]) --> !,
+  html_element(Name),
+  html_dcg(T).
+% Tab with content.
+html_dcg([tag(Name,Contents)|T]) --> !,
+  html_element(Name, html_dcg(Contents)),
+  html_dcg(T).
+% Codes list.
+html_dcg([H|T]) -->
+  html_string(H), !,
+  html_dcg(T).
 
 html_entity -->
   "&",
@@ -129,22 +146,23 @@ html_punctuation --> vertical_bar.
 html_punctuation(C) --> vertical_bar(C).
 % Now come the translations for escaped characters.
 html_punctuation(34) --> "&quot;". % Double quotes (").
-html_punctuation(60) --> "&gt;".   % Greater than (>).
-html_punctuation(62) --> "&lt;".   % Smaller than (<).
+html_punctuation(60) --> "&lt;".   % Smaller than (<).
+html_punctuation(62) --> "&gt;".   % Greater than (>).
 html_punctuation(68) --> "&amp;".  % Ampersand (&).
 
 %! html_string//
 % A _string_ is any collection of printable characters, including all spaces.
 
-html_string --> html_graph, html_string.
-html_string --> html_graph.
+html_string -->
+  html_graph,
+  html_string.
+html_string -->
+  html_graph.
 
-html_string(Codes) -->
-  {is_list(Codes)}, !,
-  dcg_multi(html_graph, _Rep, Codes, []).
-html_string(Text) -->
-  {atom_codes(Text, Codes)},
-  html_string(Codes).
+html_string([]) --> [].
+html_string([H|T]) -->
+  html_graph(H),
+  html_string(T).
 
 html_style([]) --> [].
 html_style([NVPair|NVPairs]) -->

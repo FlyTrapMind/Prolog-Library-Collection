@@ -61,8 +61,6 @@
                 % -Truncated:atom
     underscores_to_spaces/2, % +Atom:atom
                              % -SpacesAtom:atom
-    wrap_atom/2, % +Content:atom
-                 % +NewContent:atom
     wrap_atom/3 % +Options
                 % +Content:atom
                 % +NewContent:atom
@@ -444,11 +442,8 @@ underscores_to_spaces(Old, New):-
   atom_replace(Old, '_'-' ', New).
 
 %! wrap(+Options, +Length:integer, +Content:atom, -NewContent:atom) is det.
-% Support for wrapping atoms.
-
-wrap_atom(Content, NewContent):-
-  wrap_atom([], Content, NewContent).
+% Support for wrapping atoms using module [dcg_wrap].
 
 wrap_atom(Options, Content, NewContent):-
-  dcg_phrase(dcg_word_wrap(Options), Content, NewContent).
+  dcg_phrase(dcg_wrap(Options), Content, NewContent).
 

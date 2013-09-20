@@ -83,11 +83,11 @@ rdf_term_name(RDF_Term):-
 % Returns a display name for the given RDF term.
 %
 % The following options are supported:
-%   1. `language(+Language:atom)`
+%   1. =|language(+Language:atom)|=
 %      The atomic language tag of the language that is preferred for
 %      use in the RDF term's name.
 %      The default value is `en`.
-%   2. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
+%   2. =|uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))|=
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 %

@@ -104,9 +104,9 @@ cowspeak(Content):-
 %     The same output alternatives that apply to with_output_to/2.
 %     The default value is =|stream(user_output)|=.
 %   * `speech(+OnOrOff:boolean)`
-%   * `wrap(+Wrap:oneof([line,none,word]))`
-%     Whether line wrapping or word wrapping (the default)
-%     should be applied, or neither of those (e.g. for ASCII art).
+%   * `wrap_mode(+WrapMode:oneof([line,none,word]))`
+%     Whether `line` wrapping or `word` wrapping (default)
+%     is applied, or neither of those (`none`, e.g. for ASCII art).
 %
 % @param Options A list of name-value pairs.
 % @param Contents Either a term or a list of terms.
@@ -116,23 +116,31 @@ cowspeak(Content):-
 % @tbd When tabs are used in cowspeak/2 the width of the speech balloon
 %      cannot be reliable ascertained right now.
 
-cowspeak(O, Contents):-
+cowspeak(O1, Contents):-
   is_list(Contents), !,
   maplist(cow_atom, Contents, Atoms),
   % Cut off the choicepoints that are due to the various DCGs
   % that are used to draw the cow and its speech bubble and contents.
-  once(cowspeak_(O, Atoms)).
+  once(cowspeak_(O1, Atoms)).
 % Since we work with lists, we create a singleton list for single terms.
-cowspeak(O, Content):-
-  cowspeak(O, [Content]).
+cowspeak(O1, Content):-
+  cowspeak(O1, [Content]).
 
 cowspeak_(O1, Atoms):-
+  % Make sure that some wrap mode is set.
+  default_option(O1, wrap_mode, word, O2),
+  
   % Establish the maximum width of the speech bubble.
   setting(default_max_width, DefaultMaxWidth),
-  option(maximum_width(MaximumWidth), O1, DefaultMaxWidth),
+  option(maximum_width(MaximumWidth), O2, DefaultMaxWidth),
+  
   % Some characters are needed to display the speech bubble itself.
   MaximumEffectiveWidth is MaximumWidth - 4,
-  merge_options([maximum_line_width(MaximumEffectiveWidth)], O1, O2),
+  merge_options(
+    [padding(true), separator(newline), wrap_margin(MaximumEffectiveWidth)],
+    O2,
+    O3
+  ),
   findall(
     CodeLine3,
     (
@@ -147,7 +155,7 @@ cowspeak_(O1, Atoms):-
       % the type of wrapping that is used.
       atom_codes(Line1, CodeLine1),
       % Word wrapping.
-      phrase(dcg_wrap(O2), CodeLine1, CodeLine2),
+      phrase(dcg_wrap(O3), CodeLine1, CodeLine2),
       % We need a list for each line in order to determine
       % the speech bubble width.
       phrase(dcg_separated_list(newline, CodeLines1), CodeLine2),
@@ -161,19 +169,18 @@ cowspeak_(O1, Atoms):-
   max_list(LineLengths, LineWidth),
 
   % Cow DCG.
-  phrase(dcg_cowsay(O2, LineWidth, CodeLines2), CowCodes),
+  phrase(dcg_cowsay(O3, LineWidth, CodeLines2), CowCodes),
 
   % Write to the given stream.
-  option(output(Output), O2, user_output),
+  option(output(Output), O3, user_output),
   atom_codes(CowAtom, CowCodes),
   with_output_to(Output, write(CowAtom)),
 
   % It can talk!
-  option(speech(Speech), O2, true),
-  if_then(
-    Speech == true,
-    text_to_speech(Atoms)
-  ).
+  option(speech(Speech), O3, true),
+  (  Speech == true,
+  -> text_to_speech(Atoms)
+  ;  true).
 
 dcg_cow(O1) -->
   {

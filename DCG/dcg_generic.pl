@@ -145,8 +145,8 @@ a modular way.
 
 dcg_all --> dcg_all(_).
 
-dcg_all([]) --> [].
 dcg_all([H|T]) --> [H], dcg_all(T).
+dcg_all([]) --> [].
 
 dcg_all_atom(Atom) -->
   {var(Atom)},
@@ -280,7 +280,7 @@ dcg_separated_list_var(Sep, [H|T]) -->
   Sep, !,
   dcg_separated_list_var(Sep, T).
 dcg_separated_list_var(_Sep, [H]) -->
-  dcg_all(H).
+  dcg_all(H), !.
 
 
 
