@@ -2,8 +2,10 @@
   html_dcg,
   [
     html_dcg//1, % +Content:list(or([atom,compound,list(code)]))
-    html_element//1, % +ElementName:atom
     html_element//2, % +ElementName:atom
+                     % +Attributes:list(nvpair)
+    html_element//3, % +ElementName:atom
+                     % +Attributes:list(nvpair)
                      % :Content:dcg
     html_entity//0,
     html_entity//1, % +EntityName:atom
@@ -27,24 +29,62 @@ DCG rules for HTML expressions.
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 
-:- meta_predicate(html_element(+,//,?,?)).
+:- meta_predicate(html_element(+,+,//,?,?)).
 
 :- discontiguous(html_punctuation//0).
 :- discontiguous(html_punctuation//1).
 
 
 
+%! html_attribute//
+% Used for *checking* GraphViz HTML-like labels.
+
+html_attribute -->
+  word(_),
+  "=",
+  double_quote,
+  word(_),
+  double_quote.
+
+%! html_attribute(+Name:atom, +Value:atom)//
+% Used for *generating* GraphViz HTML-like labels.
+
+html_attribute(N, V) -->
+  atom(N),
+  "=",
+  double_quote,
+  atom(V),
+  double_quote.
+
+html_attributes --> [].
+html_attributes -->
+  " ",
+  html_attribute,
+  html_attributes.
+
+html_attributes([]) --> [].
+html_attributes([N=V|T]) -->
+  " ",
+  html_attribute(N, V),
+  html_attributes(T).
+
+html_attributes_(Attrs) -->
+  {var(Attrs)}, !,
+  html_attributes.
+html_attributes_(Attrs) -->
+  html_attributes(Attrs).
+
 %! html_dcg(+Content:list(or([atom,compound,list(code)])))//
 
 % Done.
 html_dcg([]) --> !, [].
 % Tag with no content.
-html_dcg([tag(Name)|T]) --> !,
-  html_element(Name),
+html_dcg([tag(Name,Attrs)|T]) --> !,
+  html_element(Name, Attrs),
   html_dcg(T).
 % Tab with content.
-html_dcg([tag(Name,Contents)|T]) --> !,
-  html_element(Name, html_dcg(Contents)),
+html_dcg([tag(Name,Attrs,Contents)|T]) --> !,
+  html_element(Name, Attrs, html_dcg(Contents)),
   html_dcg(T).
 % Codes list.
 html_dcg([H|T]) -->
@@ -61,15 +101,17 @@ html_entity(EntityName) -->
   atom(EntityName),
   ";".
 
-html_element(ElementName) -->
+html_element(ElementName, Attrs) -->
   "<",
   atom(ElementName),
+  html_attributes_(Attrs),
   "/>".
 
-html_element(ElementName, Content) -->
+html_element(ElementName, Attrs, Content) -->
   % Opening tab.
   "<",
   atom(ElementName),
+  html_attributes_(Attrs),
   ">",
 
   % Content.

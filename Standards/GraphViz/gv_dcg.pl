@@ -263,12 +263,12 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 gv_graph_type(digraph) --> d,i,g,r,a,p,h.
 gv_graph_type(graph) --> g,r,a,p,h.
 
-gv_html_cell --> html_element(td, gv_html_label).
-gv_html_cell --> html_element(td, html_element(img)).
+gv_html_cell --> html_element(td, _, gv_html_label).
+gv_html_cell --> html_element(td, _, html_element(img, _)).
 
 gv_html_cells --> gv_html_cell, gv_html_cells.
 gv_html_cells --> gv_html_cell.
-gv_html_cells --> gv_html_cell, html_element(vr), gv_html_cells.
+gv_html_cells --> gv_html_cell, html_element(vr, _), gv_html_cells.
 
 %! gv_html_label(+Codes:list(code))//
 %
@@ -278,31 +278,31 @@ gv_html_label --> gv_html_text, !.
 gv_html_label --> gv_html_table, !.
 gv_html_label --> [].
 
-gv_html_like_label --> "<", gv_html_label, ">".
+gv_html_like_label --> "<", {gtrace}, gv_html_label, ">".
 
 gv_html_like_label(Content) --> "<", html_dcg(Content), ">".
 
-gv_html_table --> html_element(table, gv_html_rows).
-gv_html_table --> html_element(font, html_element(table, gv_html_rows)).
+gv_html_table --> html_element(table, _, gv_html_rows).
+gv_html_table --> html_element(font, _, html_element(table, _, gv_html_rows)).
 
 gv_html_text --> gv_html_textitem, gv_html_text.
 gv_html_text --> gv_html_textitem.
 
 gv_html_textitem --> html_string, !.
 gv_html_textitem --> html_entity, !.
-gv_html_textitem --> html_element(br), !.
-gv_html_textitem --> html_element(font, gv_html_text), !.
-gv_html_textitem --> html_element(i, gv_html_text), !.
-gv_html_textitem --> html_element(b, gv_html_text), !.
-gv_html_textitem --> html_element(u, gv_html_text), !.
-gv_html_textitem --> html_element(sub, gv_html_text), !.
-gv_html_textitem --> html_element(sup, gv_html_text), !.
+gv_html_textitem --> html_element(br, _), !.
+gv_html_textitem --> html_element(font, _, gv_html_text), !.
+gv_html_textitem --> html_element(i, _, gv_html_text), !.
+gv_html_textitem --> html_element(b, _, gv_html_text), !.
+gv_html_textitem --> html_element(u, _, gv_html_text), !.
+gv_html_textitem --> html_element(sub, _, gv_html_text), !.
+gv_html_textitem --> html_element(sup, _, gv_html_text), !.
 
 gv_html_rows --> gv_html_row, gv_html_rows.
-gv_html_rows --> gv_html_row, html_element(hr), gv_html_rows.
+gv_html_rows --> gv_html_row, html_element(hr, _), gv_html_rows.
 gv_html_rows --> gv_html_row.
 
-gv_html_row --> html_element(tr, gv_html_cells).
+gv_html_row --> html_element(tr, _, gv_html_cells).
 
 %! gv_id(?Atom:atom)// is det.
 % Parse a GraphViz identifier.

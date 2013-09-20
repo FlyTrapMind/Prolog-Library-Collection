@@ -70,7 +70,6 @@ HTML attribute parsing, used in HTML table generation.
 :- db_add_novel(user:prolog_file_type(png, png)).
 :- db_add_novel(user:image_file_type(png)).
 
-:- meta_predicate(html_element(+,//,?,?)).
 :- meta_predicate(process_exception(+,0)).
 
 :- debug(html).
