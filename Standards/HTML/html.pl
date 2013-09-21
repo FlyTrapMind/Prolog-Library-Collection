@@ -12,7 +12,7 @@
 
 % GENERATING
     html_image/3, % +Description:atom
-                  % +Base:atom
+                  % +File:atom
                   % -DIV:element
 
 % PARSING
@@ -222,11 +222,11 @@ uri_to_html(URI, DOM):-
 
 % GENERATING %
 
-%! html_image(+Description:atom, +Base:atom, -DIV:element) is det.
+%! html_image(+Description:atom, +File:atom, -DIV:element) is det.
 % Constructs an IMG element.
 %
 % @param Description An atomic description of the image.
-% @param Base The atomic base name of the image file.
+% @param File The atomic name of the image file.
 % @param DIV The HTML image element.
 
 html_image(Description, File, DIV):-
@@ -234,8 +234,10 @@ html_image(Description, File, DIV):-
   file_name_type(_Base, Type, File),
   user:image_file_type(Type),
   http_absolute_location(img(File), RelativeURI, []),
+
   % The DIV containing the image description.
   Description_DIV = element(div, [class=image_description], [Description]),
+
   % The image itself, using the description as alternative text.
   ImageElement =
     element(

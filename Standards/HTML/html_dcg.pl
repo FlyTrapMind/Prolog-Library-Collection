@@ -27,7 +27,6 @@ DCG rules for HTML expressions.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_unicode)).
 
 :- meta_predicate(html_element(+,+,//,?,?)).
@@ -41,7 +40,7 @@ html_attribute -->
   word(_),
   "=",
   double_quote,
-  word(_),
+  html_string,
   double_quote.
 
 %! html_attribute(+Name:atom, +Value:atom)//
@@ -83,6 +82,11 @@ html_dcg([tag(Name,Attrs)|T]) --> !,
 % Tab with content.
 html_dcg([tag(Name,Attrs,Contents)|T]) --> !,
   html_element(Name, Attrs, html_dcg(Contents)),
+  html_dcg(T).
+% Atom.
+html_dcg([H|T]) -->
+  {atom(H)}, !,
+  atom(H),
   html_dcg(T).
 % Codes list.
 html_dcg([H|T]) -->

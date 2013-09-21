@@ -56,6 +56,7 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
 
 :- rdf_meta(rdf_duplicate(r,r,r,?,?)).

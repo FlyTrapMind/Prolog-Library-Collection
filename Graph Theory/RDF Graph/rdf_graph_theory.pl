@@ -57,6 +57,7 @@ theoretic operations of RDF data must be redefined.
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).

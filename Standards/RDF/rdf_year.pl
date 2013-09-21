@@ -32,6 +32,7 @@ Support for year data in RDF graphs.
 :- use_module(generics(meta_ext)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1.
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
 
 :- rdf_meta(rdf_assert_year(r,r,r,r,+,+)).

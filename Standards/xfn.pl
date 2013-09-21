@@ -11,6 +11,7 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
+:- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_build)).
 :- use_module(xml(xml_namespace)).

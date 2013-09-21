@@ -20,24 +20,10 @@
                         % ?Predicate:uri
                         % ?DatatypeName:atom
                         % ?Value
-    rdf_literal/4, % ?Subject:oneof([bnode,uri])
-                   % ?Predicate:uri
-                   % ?Literal:atom
-                   % ?Graph:graph
-    rdf_literal/5, % ?Subject:oneof([bnode,uri])
-                   % ?Predicate:uri
-                   % ?Language:atom
-                   % ?Literal:atom
-                   % ?Graph:graph
     rdf_member/2, % ?Member:uri
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
                      % ?Members:list(uri)
-    rdf_preferred_literal/5, % ?Subject:or([bnode,iri])
-                             % ?Predicate:iri
-                             % +LanguageTags:or([atom,list(atom)])
-                             % ?PreferredLangTag:atom
-                             % ?PreferredLiteral:atom
     rdf_property/2 % +Graph:atom
                    % ?Property:iri
   ]
@@ -57,6 +43,7 @@ literals.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_term)).
+:- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
@@ -66,11 +53,8 @@ literals.
 :- rdf_meta(rdf_datatype(?,r)).
 :- rdf_meta(rdf_datatype(r,r,?,?,?)).
 :- rdf_meta(rdf_has_datatype(r,r,?,?)).
-:- rdf_meta(rdf_literal(r,r,?,?)).
-:- rdf_meta(rdf_literal(r,r,?,?,?)).
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
-:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
 :- rdf_meta(rdf_property(+,r)).
 
 
@@ -168,70 +152,6 @@ rdf_has_datatype(Subject, Predicate, DatatypeName, Value):-
     xsd_lexicalMap(Datatype, LEX, Value)
   ).
 
-%! rdf_literal(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?Literal:atom,
-%!   ?Graph:graph
-%! ) is nondet.
-% The RDF triple for a literal valued property.
-%
-% @see rdf_literal/5.
-
-rdf_literal(S, P, Lit, G):-
-  rdf(S, P, literal(Lit), G).
-rdf_literal(S, P, Lit, G):-
-  rdf_literal(S, P, _Lang, Lit, G).
-
-%! rdf_literal(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?LanguageTag:atom,
-%!   ?Literal:atom,
-%!   ?Graph:graph
-%! ) is nondet.
-% The RDF triple for a literal valued property, encoded in a certain language.
-%
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Language The atomic name of a language.
-% @param Literal An atom.
-% @param Graph The atomic name of an RDF graph.
-
-rdf_literal(S, P, LangTag, Lit, G):-
-  rdf(S, P, literal(lang(LangTag, Lit)), G).
-
-%! rdf_preferred_literal(
-%!   ?Subject:or([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?LanguageTags:or([atom,list(atom)]),
-%!   ?PreferredLanguageTag:atom,
-%!   ?PreferredLiteral:atom
-%! ) is det.
-% Look for the preferred languages, in order of occurrence in
-% the given list of language subtags.
-%
-% @tbd Make sure the language subtags are standards compliant.
-
-rdf_preferred_literal(S, P, LangTags, PreferredLangTag, PreferredLit):-
-  % Accept lists of language tags as well as and single language tags.
-  (
-    is_list(LangTags), !,
-    % Backtracking over membership ensures
-    % that we try all given language tags.
-    member(LangTag, LangTags)
-  ;
-    LangTag = LangTags
-  ),
-
-  % Takes both atoms and lists of atoms as argument.
-  rdf_literal(S, P, LangTag, PreferredLit, _G),
-  PreferredLangTag = LangTag, !.
-% If the given language tag cannot be matched at all,
-% then take an arbitrary literal.
-rdf_preferred_literal(S, P, _LangTag, _NoPreferredLangTag, PreferredLit):-
-  rdf_literal(S, P, PreferredLit, _G), !.
-
 rdf_member(Member, List):-
   member(Member0, List),
   rdf_global_id(Member0, Member).
@@ -240,6 +160,5 @@ rdf_memberchk(Member, List):-
   once(rdf_member(Member, List)).
 
 rdf_property(G, P):-
-  rdf_term(G, P),
-  rdfs_individual_of(P, rdf:'Property').
+  rdfs_individual(m(f,f,f), P, rdf:'Property', G).
 
