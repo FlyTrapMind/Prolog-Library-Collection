@@ -65,8 +65,8 @@ rule -->
 single_terminal_value(Code) -->
   percent_sign,
   base(Radix),
-  hexadecimal_digit(H1),
-  hexadecimal_digit(H2),
+  hexadecimal_digit(_, H1),
+  hexadecimal_digit(_, H2),
   {digits_to_decimal([H1,H2], Radix, Code)}.
 
 

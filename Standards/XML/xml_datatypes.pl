@@ -144,7 +144,7 @@ xml_name_([H]) -->
 xml_name_char(C) --> xml_name_start_char(C).
 xml_name_char(C) --> hyphen_minus(C).
 xml_name_char(C) --> dot(C).
-xml_name_char(C) --> decimal_digit(_N, C).
+xml_name_char(C) --> decimal_digit(C, _).
 % #xB7
 xml_name_char(C) --> middle_dot(C).
 % #x0300-#x036F
@@ -169,7 +169,7 @@ xml_name_chars([]) --> [].
 % ~~~
 
 xml_name_start_char(C) --> colon(C).
-xml_name_start_char(C) --> letter(C).
+xml_name_start_char(C) --> ascii_letter(C).
 xml_name_start_char(C) --> underscore(C).
 % #xC0-#xD6
 xml_name_start_char(C) --> {between(192, 214, C)}.

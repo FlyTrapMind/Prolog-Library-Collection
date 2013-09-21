@@ -278,7 +278,7 @@ gv_html_label --> gv_html_text, !.
 gv_html_label --> gv_html_table, !.
 gv_html_label --> [].
 
-gv_html_like_label --> "<", {gtrace}, gv_html_label, ">".
+gv_html_like_label --> "<", gv_html_label, ">".
 
 gv_html_like_label(Content) --> "<", html_dcg(Content), ">".
 
@@ -360,12 +360,12 @@ gv_id(Atom) -->
   gv_quoted_string(S),
   double_quote, !.
 
-gv_id_first(X) --> letter(X).
+gv_id_first(X) --> ascii_letter(X).
 gv_id_first(X) --> underscore(X).
 
 gv_id_rest([]) --> [].
 gv_id_rest([H|T]) -->
-  (alpha_numeric(H) ; underscore(H)),
+  (ascii_alpha_numeric(H) ; underscore(H)),
   gv_id_rest(T).
 
 gv_keyword(Codes):-

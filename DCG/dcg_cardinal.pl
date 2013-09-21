@@ -1,35 +1,21 @@
 :- module(
   dcg_cardinal,
   [
-    binary_digit//0,
-    binary_digit//1, % ?DecimalDigit:between(0,1)
-    binary_digit//2, % ?DecimalDigit:between(0,1)
-                     % ?Code:code
+    binary_digit//2, % ?Code:code
+                     % ?DecimalDigit:between(0,1)
     binary_number//1, % ?DecimalNumber:integer
-    decimal_digit//0,
-    decimal_digit//1, % ?DecimalDigit:between(0,9)
-    decimal_digit//2, % ?DecimalDigit:between(0,9)
-                      % ?Code:code
+    decimal_digit//2, % ?Code:code
+                      % ?DecimalDigit:between(0,9)
     decimal_number//1, % ?DecimalNumber:integer
     exponent//0,
     exponent_sign//0,
     exponent_sign//1, % ?Code:code
-    hexadecimal_digit//0,
-    hexadecimal_digit//1, % ?DecimalDigit:between(0,15)
-    hexadecimal_digit//2, % ?DecimalDigit:between(0,15)
-                          % ?Code:code
+    hexadecimal_digit//2, % ?Code:code
+                          % ?DecimalDigit:between(0,15)
     hexadecimal_number//1, % -DecinalNumber:integer
     int_codes//1, % ?Codes:list(code)
-    nonzero_decimal_digit//1, % ?DecimalDigit:between(1,9)
-    nonzero_decimal_digit//2, % ?DecimalDigit:between(1,9)
-                              % ?Code:code
-    nonzero_octal_digit//1, % ?DecimalDigit:between(1,7)
-    nonzero_octal_digit//2, % ?DecimalDigit:between(1,7)
-                            % ?Code:code
-    octal_digit//0,
-    octal_digit//1, % ?DecimalDigit:between(0,7)
-    octal_digit//2, % ?DecimalDigit:between(0,7)
-                    % ?Code:code
+    octal_digit//2, % ?Code:code
+                    % ?DecimalDigit:between(0,7)
     octal_number//1, % -DecinalNumber:integer
     sign//1, % ?Sign:code
     sign//2, % -Tree:compound
@@ -73,43 +59,21 @@ DCGs for cardinal numbers.
 
 
 
-%! binary_digit//
+%! binary_digit(?Code:code, ?DecimalDigit:between(0,1))//
 
-binary_digit --> zero.
-binary_digit --> one.
-
-%! binary_digit(?DecimalDigit:between(0,1))//
-
-binary_digit(0) --> zero.
-binary_digit(1) --> one.
-
-%! binary_digit(?DecimalDigit:between(0,1), ?Code:code)//
-
-binary_digit(0, C) --> zero(C).
-binary_digit(1, C) --> one(C).
+binary_digit(C, 0) --> zero(C).
+binary_digit(C, 1) --> one(C).
 
 %! binary_number(-DecimalNumber:integer)//
 
 binary_number(N) -->
   digits_to_decimal_number(binary_digit, 2, N).
 
-%! decimal_digit//
+%! decimal_digit(?Code:code, ?DecimalDigit:between(0,9))//
 
-decimal_digit --> octal_digit.
-decimal_digit --> eight.
-decimal_digit --> nine.
-
-%! decimal_digit(?DecimalDigit:between(0,9))//
-
-decimal_digit(N) --> octal_digit(N).
-decimal_digit(8) --> eight.
-decimal_digit(9) --> nine.
-
-%! decimal_digit(?DecimalDigit:between(0,9), ?Code:code)//
-
-decimal_digit(N, C) --> octal_digit(N, C).
-decimal_digit(8, C) --> eight(C).
-decimal_digit(9, C) --> nine(C).
+decimal_digit(C, N) --> octal_digit(C, N).
+decimal_digit(C, 8) --> eight(C).
+decimal_digit(C, 9) --> nine(C).
 
 %! decimal_number(-DecimalNumber:integer)//
 
@@ -159,35 +123,15 @@ exponent_sign --> e.
 
 exponent_sign(C) --> e(C).
 
-%! hexadecimal_digit//
+%! hexadecimal_digit(?Code:code, ?DecimalNumber:between(0,15))//
 
-hexadecimal_digit --> decimal_digit.
-hexadecimal_digit --> a.
-hexadecimal_digit --> b.
-hexadecimal_digit --> c.
-hexadecimal_digit --> d.
-hexadecimal_digit --> e.
-hexadecimal_digit --> f.
-
-%! hexadecimal_digit(?DecimalNumber:between(0,15))//
-
-hexadecimal_digit(N) --> decimal_digit(N).
-hexadecimal_digit(10) --> a.
-hexadecimal_digit(11) --> b.
-hexadecimal_digit(12) --> c.
-hexadecimal_digit(13) --> d.
-hexadecimal_digit(14) --> e.
-hexadecimal_digit(15) --> f.
-
-%! hexadecimal_digit(?DecimalNumber:between(0,15), ?Code:code)//
-
-hexadecimal_digit(N, C) --> decimal_digit(N, C).
-hexadecimal_digit(10, C) --> a(C).
-hexadecimal_digit(11, C) --> b(C).
-hexadecimal_digit(12, C) --> c(C).
-hexadecimal_digit(13, C) --> d(C).
-hexadecimal_digit(14, C) --> e(C).
-hexadecimal_digit(15, C) --> f(C).
+hexadecimal_digit(C, N) --> decimal_digit(C, N).
+hexadecimal_digit(C, 10) --> a(C).
+hexadecimal_digit(C, 11) --> b(C).
+hexadecimal_digit(C, 12) --> c(C).
+hexadecimal_digit(C, 13) --> d(C).
+hexadecimal_digit(C, 14) --> e(C).
+hexadecimal_digit(C, 15) --> f(C).
 
 %! hexadecimal_number(-DecimalDigit:integer)//
 
@@ -205,59 +149,15 @@ int_codes([D0|D]) -->
   digit(D0),
   digits(D).
 
-nonzero_decimal_digit(D) --> nonzero_octal_digit(D).
-nonzero_decimal_digit(8) --> eight.
-nonzero_decimal_digit(9) --> nine.
+%! octal_digit(?Code:code, ?DecimalDigit:between(0,7))//
 
-nonzero_decimal_digit(D, C) --> nonzero_octal_digit(D, C).
-nonzero_decimal_digit(8, C) --> eight(C).
-nonzero_decimal_digit(9, C) --> nine(C).
-
-nonzero_octal_digit(1) --> one.
-nonzero_octal_digit(2) --> two.
-nonzero_octal_digit(3) --> three.
-nonzero_octal_digit(4) --> four.
-nonzero_octal_digit(5) --> five.
-nonzero_octal_digit(6) --> six.
-nonzero_octal_digit(7) --> seven.
-
-nonzero_octal_digit(1, C) --> one(C).
-nonzero_octal_digit(2, C) --> two(C).
-nonzero_octal_digit(3, C) --> three(C).
-nonzero_octal_digit(4, C) --> four(C).
-nonzero_octal_digit(5, C) --> five(C).
-nonzero_octal_digit(6, C) --> six(C).
-nonzero_octal_digit(7, C) --> seven(C).
-
-%! octal_digit//
-
-octal_digit --> binary_digit.
-octal_digit --> two.
-octal_digit --> three.
-octal_digit --> four.
-octal_digit --> five.
-octal_digit --> six.
-octal_digit --> seven.
-
-%! octal_digit(?DecimalDigit:between(0,7))//
-
-octal_digit(N) --> binary_digit(N).
-octal_digit(2) --> two.
-octal_digit(3) --> three.
-octal_digit(4) --> four.
-octal_digit(5) --> five.
-octal_digit(6) --> six.
-octal_digit(7) --> seven.
-
-%! octal_digit(?DecimalDigit:between(0,7), ?Code:code)//
-
-octal_digit(N, C) --> binary_digit(N, C).
-octal_digit(2, C) --> two(C).
-octal_digit(3, C) --> three(C).
-octal_digit(4, C) --> four(C).
-octal_digit(5, C) --> five(C).
-octal_digit(6, C) --> six(C).
-octal_digit(7, C) --> seven(C).
+octal_digit(C, N) --> binary_digit(C, N).
+octal_digit(C, 2) --> two(C).
+octal_digit(C, 3) --> three(C).
+octal_digit(C, 4) --> four(C).
+octal_digit(C, 5) --> five(C).
+octal_digit(C, 6) --> six(C).
+octal_digit(C, 7) --> seven(C).
 
 %! octal_number(-DecimalDigit:integer)//
 

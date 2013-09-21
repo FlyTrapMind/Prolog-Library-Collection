@@ -4,9 +4,9 @@
     'ALPHA'//0,
     'ALPHA'//1,
     'BIT'//0,
-    'BIT'//1, % ?DecimalDigit:between(0,1)
-    'BIT'//2, % ?DecimalDigit:between(0,1)
-              % ?Code:code
+    'BIT'//1, % ?Code:code
+    'BIT'//2, % ?Code:code
+              % ?DecimalDigit:between(0,1)
     'CHAR'//0,
     'CHAR'//1,
     'CR'//0,
@@ -17,15 +17,14 @@
     'CTL'//1,
     'DIGIT'//0,
     'DIGIT'//1, % ?Code:code
-    'DIGIT'//1, % ?DecimalDigit:between(0,9)
-    'DIGIT'//2, % ?DecimalDigit:between(0,9)
-                % ?Code:code
+    'DIGIT'//2, % ?Code:code
+                % ?DecimalDigit:between(0,9)
     'DQUOTE'//0,
     'DQUOTE'//1,
     'HEXDIG'//0,
-    'HEXDIG'//1, % ?DecimalDigit:between(0,15)
-    'HEXDIG'//2, % ?DecimalDigit:between(0,15)
-                 % ?Code:code
+    'HEXDIG'//1, % ?Code:code
+    'HEXDIG'//2, % ?Code:code
+                 % ?DecimalDigit:between(0,15)
     'HTAB'//0,
     'HTAB'//1,
     'LF'//0,
@@ -467,7 +466,7 @@ rulename(RuleName) -->
 % @see 'ALPHA'//1
 
 'ALPHA' -->
-  letter.
+  ascii_letter.
 
 %! 'ALPHA'(?Code:code)//
 % The ASCII letters, i.e. =|A-Z / a-z|=.
@@ -479,7 +478,7 @@ rulename(RuleName) -->
 % ~~~
 
 'ALPHA'(C) -->
-  letter(C).
+  ascii_letter(C).
 
 %! 'BIT'//
 % @see 'BIT'//1
@@ -487,18 +486,18 @@ rulename(RuleName) -->
 'BIT' -->
   binary_digit.
 
-'BIT'(D) -->
-  binary_digit(D).
+'BIT'(C) -->
+  binary_digit(C).
 
-%! 'BIT'(?DecimalDigit:between(0,1), ?Code:code)//
+%! 'BIT'(?Code:code, ?DecimalDigit:between(0,1))//
 % A binary digit, i.e. `0` or `1`.
 %
 % ~~~{.abnf}
 % BIT = "0" / "1"
 % ~~~
 
-'BIT'(D, C) -->
-  binary_digit(D, C).
+'BIT'(C, D) -->
+  binary_digit(C, D).
 
 %! 'CHAR'//
 % @see 'CHAR'//1
@@ -573,18 +572,18 @@ rulename(RuleName) -->
 'DIGIT' -->
   decimal_digit.
 
-'DIGIT'(D) -->
-  decimal_digit(D).
+'DIGIT'(C) -->
+  decimal_digit(C).
 
-%! 'DIGIT'(?DecimalDigit:integer, ?Code:code)//
+%! 'DIGIT'(?Code:code, ?DecimalDigit:integer)//
 % Decimal digits.
 %
 % ~~~{.abnf}
 % DIGIT = %x30-39   ; 0-9
 % ~~~
 
-'DIGIT'(D, C) -->
-  decimal_digit(D, C).
+'DIGIT'(C, D) -->
+  decimal_digit(C, D).
 
 %! 'DQUOTE'//
 % @see 'DQUOTE'//1
@@ -607,18 +606,18 @@ rulename(RuleName) -->
 'HEXDIG' -->
   hexadecimal_digit.
 
-'HEXDIG'(D) -->
-  hexadecimal_digit(D).
+'HEXDIG'(C) -->
+  hexadecimal_digit(C).
 
-%! 'HEXDIG'(?DecimalDigit:between(0,15), ?Code:code)//
+%! 'HEXDIG'(?Code:code, ?DecimalDigit:between(0,15))//
 % Hexadecimal digits.
 %
 % ~~~{.abnf}
 % HEXDIG =  DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
 % ~~~
 
-'HEXDIG'(D, C) -->
-  hexadecimal_digit(D, C).
+'HEXDIG'(C, D) -->
+  hexadecimal_digit(C, D).
 
 %! 'HTAB'//
 % @see 'HTAB'//1
@@ -706,7 +705,7 @@ rulename(RuleName) -->
 % @see 'VCHAR'//1
 
 'VCHAR' -->
-  dcg_graph.
+  ascii_graphic.
 
 %! 'VCHAR'(?Code:code)//
 %
@@ -715,7 +714,7 @@ rulename(RuleName) -->
 % ~~~
 
 'VCHAR'(C) -->
-  dcg_graph(C).
+  ascii_graphic(C).
 
 %! 'WSP'//
 % @see 'WSP'//1

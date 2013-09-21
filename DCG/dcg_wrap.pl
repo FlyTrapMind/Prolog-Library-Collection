@@ -190,6 +190,18 @@ dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
   {length(Word1, WordLength)},
 
   (
+    % Case 0: There is no word.
+    % This happens in the serializations of languages I do not understand,
+    % e.g. Chinese (language tag `zh`).
+    % @tbd This is only a quick fix.
+    {WordLength == 0}
+  ->
+    {
+      gtrace,
+      Word2 = [],
+      Postfix = Separator
+    }
+  ;
     % Case 1: The word is too long to ever occur on a single line.
     % Therefore, we might as well split it now.
     % Insert the word prefix that fits in the current line.
@@ -214,7 +226,7 @@ dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
   ->
     {
       Word2 = Word1,
-      Postfix = newline,
+      Postfix = Separator,
       NewRemaining = WrapMargin
     },
     codes(Word1),
@@ -236,10 +248,12 @@ dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
     }
   ;
     % Case 4: The 'normal' case.
-    % The word fits in the current line, and there will be some
-    % (i.e. at least one character position) left after it.
+    % The word fits in the current line, and ont the current line
+    % there will be at least one character position left after it.
     % Place the word, and consume it.
     {Word2 = Word1},
+    codes(Word1),
+
     % Whether a space should be inserted after the word, depends on
     % whether such a space occurs in the processed string.
     % This is not always the case, e.g. when the word occurs
@@ -251,10 +265,9 @@ dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
        SpaceLength = 1}
     ; {Postfix = void,
        SpaceLength = 0}),
-    {NewRemaining is Remaining - WordLength - SpaceLength},
-    codes(Word1)
+    {NewRemaining is Remaining - WordLength - SpaceLength}
   ),
-  
+
   % No regrets.
   % Actually, this does not prevent Prolog from backtracking on codes/1
   % in the head!

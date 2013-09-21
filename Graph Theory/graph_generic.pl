@@ -26,7 +26,7 @@
              % +Depth:integer
              % -Vertices:ordset
              % -Edges:ordset(edge)
-    graphic/1, % +S:list(integer)
+    graphic_graph/1, % +S:list(integer)
     has_cycle/3, % :V_P
                  % :E_P
                  % +Graph
@@ -232,29 +232,29 @@ depth_(O, N_P, CurrentVs, Depth, VerticesH, AllVs, EdgesH, AllEs):-
   ord_union(EdgesH, CurrentEdges0, NewEdgesH),
   depth_(O, N_P, NextVs, NewDepth, NewVerticesH, AllVs, NewEdgesH, AllEs).
 
-%! graphic(+Seq:list(integer)) is semidet.
+%! graphic_graph(+Seq:list(integer)) is semidet.
 % Succeeds if the given degree sequence represents a simple graph.
 %
-% *Definition*: A sequence is graphic if the integers correspond
+% *Definition*: A sequence is graphic_graph if the integers correspond
 %               to the degrees of a simple graph.
 %
 % Havel-Hakimi theorem: Consider a list $s = [d_1, \ldots, d_n]$ of $n$
-% numbers in descending order. This list is graphic iff
+% numbers in descending order. This list is graphic_graph iff
 % $s^* = [d_1^*, \ldots, d_n^*]$ of $n - 1$ numbers is graph as well, where
 % $d_i^* =
 %          d_{i + 1} - 1, \text{for} i = 1, \ldots, d_1
 %          d_{i + 1}, \text{otherwise}$
 
-graphic(Zeros):-
+graphic_graph(Zeros):-
   repeating_list(0, _Length, Zeros), !.
-graphic([H | T]):-
+graphic_graph([H | T]):-
   length(T, LT),
   H =< LT,
   length_cut(T, H, T1, T2),
   maplist(succ, NewT1, T1),
   append(NewT1, T2, NewT_),
   sort([duplicates(true), inverted(true)], NewT_, NewT),
-  graphic(NewT).
+  graphic_graph(NewT).
 
 %! has_cycle(:V_P, :E_P, +G) is semidet.
 % Succeeds if the given graph has a cycle.

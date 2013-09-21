@@ -36,7 +36,6 @@
 
 
 describe_sameas(Remote, Resource, Rows):-
-gtrace,
   query_sameas(Remote, Resource, IdenticalResources),
   setoff(
     Rows0,

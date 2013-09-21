@@ -566,27 +566,27 @@ regular([zh,xiang]).
 %      with arguments.
 
 rfc5646_extended_language_subtag(T0, L) -->
-  dcg_multi(letter, 3, X1, [out(atom)]),
+  dcg_multi(ascii_letter, 3, X1, [out(atom)]),
   {rfc5646_class(X1, 'Subtag')},
   (
     "", {L = [X1]}
   ;
     hyphen_minus, {H1 = '-'},
-    dcg_multi(letter, 3, X2, [convert(atom_codes)]),
+    dcg_multi(ascii_letter, 3, X2, [convert(atom_codes)]),
     {rfc5646_class(X2, 'Subtag')},
     (
       "",
       {L = [X1,X2]}
     ;
       hyphen_minus, {H2 = '-'},
-      dcg_multi(letter, 3, X3, [convert(atom_codes)]),
+      dcg_multi(ascii_letter, 3, X3, [convert(atom_codes)]),
       {rfc5646_class(X3, 'Subtag')},
       (
         "",
         {L = [X1,X2,X3]}
       ;
         hyphen_minus, {H3 = '-'},
-        dcg_multi(letter, 3, X4, [convert(atom_codes)]),
+        dcg_multi(ascii_letter, 3, X4, [convert(atom_codes)]),
         {rfc5646_class(X4, 'Subtag')},
         {L = [X1,X2,X3,X4]}
       )
@@ -658,12 +658,12 @@ rfc5646_extension(extension(T1, T2), [Singleton|ExtensionComponents]) -->
 
 rfc5646_extension_components(extension_components('-',H,T1), [H|T]) -->
   hyphen_minus,
-  dcg_multi(alpha_numeric, 2-8, H, [convert(atom_codes)]),
+  dcg_multi(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
   {rfc5646_class(H, 'Extension')},
   rfc5646_extension_components(T1, T).
 rfc5646_extension_components(extension_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi(alpha_numeric, 2-8, H, [convert(atom_codes)]),
+  dcg_multi(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
   {rfc5646_class(H, 'Extension')}.
 
 %! rfc5646_extensions(-Tree:compound, ?Extensions:list(list(atomic)))//
@@ -895,10 +895,10 @@ rfc5646_privateuse(pivateuse(T1), PrivateTags) -->
 
 rfc5646_privateuse_components(privateuse_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi(alpha_numeric, 1-8, H, [convert(atom_codes)]).
+  dcg_multi(ascii_alpha_numeric, 1-8, H, [convert(atom_codes)]).
 rfc5646_privateuse_components(privateuse_components('-',H,T2), [H|T]) -->
   hyphen_minus,
-  dcg_multi(alpha_numeric, 1-8, H, [convert(atom_codes)]),
+  dcg_multi(ascii_alpha_numeric, 1-8, H, [convert(atom_codes)]),
   rfc5646_privateuse_components(T2, T).
 
 %! rfc5646_region(-Tree:compound, ?Region:atomic)//
@@ -1028,7 +1028,7 @@ rfc5646_region(region(Region), Region) -->
 % `sr-Latn` represents Serbian written using the Latin script.
 
 rfc5646_script(script(Script), Script) -->
-  dcg_multi(letter, 4, Script, [convert(atom_codes)]),
+  dcg_multi(ascii_letter, 4, Script, [convert(atom_codes)]),
   {rfc5646_class(Script, 'Script')}.
 
 %! singleton(-Tree:compound, ?Char:atomic)//
@@ -1045,9 +1045,9 @@ rfc5646_script(script(Script), Script) -->
 % @see extension//2
 
 rfc5646_singleton(singleton(Singleton), Singleton) -->
-  decimal_digit(Singleton).
+  decimal_digit(_, Singleton).
 rfc5646_singleton(singleton(Singleton), Singleton) -->
-  letter(Code),
+  ascii_letter(Code),
   {
     \+ memberchk(Code, [88,120]),
     char_code(Singleton, Code)
@@ -1135,14 +1135,14 @@ rfc5646_standard_language_tag(
 % written using the spelling reform beginning in the year 1996 C.E.
 
 rfc5646_variant(variant(Variant), Variant) -->
-  decimal_digit(_N, H),
-  dcg_multi(alpha_numeric, 3, T),
+  decimal_digit(H, _),
+  dcg_multi(ascii_alpha_numeric, 3, T),
   {
     atom_codes(Variant, [H|T]),
     rfc5646_class(Variant, 'Variant')
   }.
 rfc5646_variant(variant(Variant), Variant) -->
-  dcg_multi(alpha_numeric, 5-8, Variant, [convert(atom_codes)]),
+  dcg_multi(ascii_alpha_numeric, 5-8, Variant, [convert(atom_codes)]),
   {rfc5646_class(Variant, 'Variant')}.
 
 %! rfc5646_variants(-Tree:compound, ?Variants:list(atom))//

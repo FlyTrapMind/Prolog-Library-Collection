@@ -64,6 +64,7 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
+:- use_module(dcg(dcg_unicode)).
 :- use_module(generics(option_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
@@ -165,7 +166,7 @@ ci_code(Code) -->
 ci_code(CI_Code) -->
   % This allows ci_string//1 to use this DCG rule for reading words
   % in a case-sensitive way.
-  dcg_graph(Code),
+  u_graphic(Code),
   {(
     code_type(Code, upper(CI_Code))
   ;
@@ -245,6 +246,7 @@ collection(O1, Collection1) -->
 
   % End a collection.
   {option(end(End), O2)},
+  
   % First we try to include the options.
   % If this DCG rule does not exist, then we exclude the options.
   dcg_catch(
@@ -285,7 +287,7 @@ collection_(O1, [H|T]) -->
   collection_(O1, T).
 
 graphic([H|T]) -->
-  dcg_graph(H),
+  u_graphic(H),
   graphic(T).
 graphic([]) --> [].
 
@@ -471,7 +473,7 @@ word(word(Word), Word) -->
   word(Word).
 
 word_([H|T]) -->
-  letter(H),
+  u_letter(H),
   word_(T).
 word_([]) --> [].
 

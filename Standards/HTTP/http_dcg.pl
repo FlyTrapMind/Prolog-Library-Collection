@@ -502,13 +502,13 @@ extension_code(extension_code(Status)) -->
   {nonvar(Status)}, !,
   {\+ status_code(Status, _Name)},
   {atom_chars(Status, [D1,D2,D3])},
-  decimal_digit(D1),
-  decimal_digit(D2),
-  decimal_digit(D3).
+  decimal_digit(_, D1),
+  decimal_digit(_, D2),
+  decimal_digit(_, D3).
 extension_code(extension_code(Status)) -->
-  decimal_digit(D1),
-  decimal_digit(D2),
-  decimal_digit(D3),
+  decimal_digit(_, D1),
+  decimal_digit(_, D2),
+  decimal_digit(_, D3),
   {digits_to_decimal([D1,D2,D3], Status)},
   {\+ status_code(Status, _Name)}.
 
@@ -1493,15 +1493,15 @@ status_code(status_code(Status), Status, Reason1) -->
     status_code(Status, Reason2),
     decimal_to_digits(Status, [D1,D2,D3])
   },
-  decimal_digit(D1),
-  decimal_digit(D2),
-  decimal_digit(D3),
+  decimal_digit(_, D1),
+  decimal_digit(_, D2),
+  decimal_digit(_, D3),
   % Use the default reason for the given status.
   {(var(Reason1) -> Reason1 = Reason2 ; true)}.
 status_code(status_code(Status), Status, _Reason1) -->
-  decimal_digit(D1),
-  decimal_digit(D2),
-  decimal_digit(D3),
+  decimal_digit(_, D1),
+  decimal_digit(_, D2),
+  decimal_digit(_, D3),
   {
     digits_to_decimal([D1,D2,D3], Status),
     status_code(Status, _Reason2)

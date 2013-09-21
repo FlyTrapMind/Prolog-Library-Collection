@@ -60,15 +60,15 @@ rfc1123_date(date(day(Day),T1,year(Year)), Day, Month, Year) -->
   }.
 
 rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6) -->
-  decimal_digit(D1),
-  decimal_digit(D2),
+  decimal_digit(_, D1),
+  decimal_digit(_, D2),
   space,
   rfc1123_month(T1, Month),
   space,
-  decimal_digit(D3),
-  decimal_digit(D4),
-  decimal_digit(D5),
-  decimal_digit(D6).
+  decimal_digit(_, D3),
+  decimal_digit(_, D4),
+  decimal_digit(_, D5),
+  decimal_digit(_, D6).
 
 %! rfc1123_month(-Tree:compound, ?Month:atom)//
 
@@ -165,14 +165,14 @@ rfc1123_time(
   }.
 
 rfc1123_time(D1, D2, D3, D4, D5, D6) -->
-  decimal_digit(D1),
-  decimal_digit(D2),
+  decimal_digit(_, D1),
+  decimal_digit(_, D2),
   colon,
-  decimal_digit(D3),
-  decimal_digit(D4),
+  decimal_digit(_, D3),
+  decimal_digit(_, D4),
   colon,
-  decimal_digit(D5),
-  decimal_digit(D6).
+  decimal_digit(_, D5),
+  decimal_digit(_, D6).
 
 %! rfc1123_weekday(-Tree:compound, ?Weekday:atom)//
 

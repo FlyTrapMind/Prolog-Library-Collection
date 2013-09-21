@@ -158,7 +158,7 @@ fractionDigitsCanonicalFragmentMap(F) -->
     div(G, 1, H),
     mod(G, 1, NewF)
   },
-  decimal_digit(H),
+  decimal_digit(_, H),
   fractionDigitsCanonicalFragmentMap(NewF).
 
 %! noDecimalPtCanonicalMap(+Integer:integer)//
@@ -195,7 +195,7 @@ unsignedNoDecimalPtCanonicalMap_(F) -->
     div(F, 10 ,H)
   },
   unsignedNoDecimalPtCanonicalMap_(H),
-  decimal_digit(G).
+  decimal_digit(_, G).
 
 
 
@@ -242,7 +242,7 @@ fracFrag(F) -->
   fracFrag(0, F).
 
 fracFrag(I, NewSum) -->
-  decimal_digit(D),
+  decimal_digit(_, D),
   {succ(I, NewI)},
   fracFrag(NewI, Sum),
   {NewSum is Sum + D * 10 ** (-1 * NewI)}.
@@ -281,7 +281,7 @@ unsignedNoDecimalPtNumeral(N) -->
   unsignedNoDecimalPtNumeral(_, N).
 
 unsignedNoDecimalPtNumeral(NewToEnd, NewN) -->
-  decimal_digit(D),
+  decimal_digit(_, D),
   unsignedNoDecimalPtNumeral(ToEnd, N),
   {
     NewN is N + D * 10 ** ToEnd,

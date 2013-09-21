@@ -9,8 +9,8 @@
     a_uppercase//1,
     acknowledgement//0,
     acknowledgement//1,
-    alpha_numeric//0,
-    alpha_numeric//1,
+    ascii_alpha_numeric//0,
+    ascii_alpha_numeric//1,
     ampersand//0,
     ampersand//1,
     ampersat//0,
@@ -39,6 +39,8 @@
     backspace//1,
     bell//0,
     bell//1,
+    binary_digit//0,
+    binary_digit//1,
     bracket//0,
     bracket//1,
     c//0,
@@ -85,6 +87,8 @@
     d_uppercase//1,
     data_link_escape//0,
     data_link_escape//1,
+    decimal_digit//0,
+    decimal_digit//1,
     dcg_delete//0,
     dcg_delete//1,
     device_control//0,
@@ -151,8 +155,8 @@
     g_lowercase//1,
     g_uppercase//0,
     g_uppercase//1,
-    dcg_graph//0,
-    dcg_graph//1,
+    ascii_graphic//0,
+    ascii_graphic//1,
     grave_accent//0,
     grave_accent//1,
     greater_than_sign//0,
@@ -165,6 +169,8 @@
     h_lowercase//1,
     h_uppercase//0,
     h_uppercase//1,
+    hexadecimal_digit//0,
+    hexadecimal_digit//1,
     horizontal_tab//0,
     horizontal_tab//1,
     hyphen//0,
@@ -197,12 +203,12 @@
     l_uppercase//1,
     less_than_sign//0,
     less_than_sign//1,
-    letter//0,
-    letter//1,
-    letter_lowercase//0,
-    letter_lowercase//1,
-    letter_uppercase//0,
-    letter_uppercase//1,
+    ascii_letter//0,
+    ascii_letter//1,
+    ascii_letter_lowercase//0,
+    ascii_letter_lowercase//1,
+    ascii_letter_uppercase//0,
+    ascii_letter_uppercase//1,
     line_feed//0,
     line_feed//1,
     m//0,
@@ -233,6 +239,8 @@
     o_lowercase//1,
     o_uppercase//0,
     o_uppercase//1,
+    octal_digit//0,
+    octal_digit//1,
     one//0,
     one//1,
     opening_bracket//0,
@@ -257,10 +265,10 @@
     plus_sign//1,
     positive_acknowledgement//0,
     positive_acknowledgement//1,
-    dcg_print//0,
-    dcg_print//1,
-    punctuation//0,
-    punctuation//1,
+    ascii_print//0,
+    ascii_print//1,
+    ascii_punctuation//0,
+    ascii_punctuation//1,
     q//0,
     q//1,
     q_lowercase//0,
@@ -321,8 +329,8 @@
     t_lowercase//1,
     t_uppercase//0,
     t_uppercase//1,
-    dcg_tab//0,
-    dcg_tab//1,
+    ascii_tab//0,
+    ascii_tab//1,
     three//0,
     three//1,
     tilde//0,
@@ -355,8 +363,7 @@
     w_lowercase//1,
     w_uppercase//0,
     w_uppercase//1,
-    dcg_white//0,
-    dcg_white//1,
+    white//1,
     x//0,
     x//1,
     x_lowercase//0,
@@ -421,12 +428,10 @@ acknowledgement --> positive_acknowledgement.
 acknowledgement(C) --> negative_acknowledgement(C).
 acknowledgement(C) --> positive_acknowledgement(C).
 
-%! alpha_numeric//
-% @tbd Make this ASCII specific and move the generic version to
-%      module [[dcg_unicode]].
-
-alpha_numeric --> alpha_numeric(_C).
-alpha_numeric(C) --> [C], {code_type(C, alnum)}.
+ascii_alpha_numeric --> ascii_letter.
+ascii_alpha_numeric --> decimal_digit.
+ascii_alpha_numeric(C) --> ascii_letter(C).
+ascii_alpha_numeric(C) --> decimal_digit(C).
 
 ampersand --> [38].
 ampersand(38) --> [38].
@@ -441,11 +446,11 @@ apostrophe --> [39].
 apostrophe(39) --> [39].
 
 ascii --> control.
-ascii --> dcg_graph.
-ascii --> dcg_white.
+ascii --> ascii_graphic.
+ascii --> ascii_white.
 ascii(C) --> control(C).
-ascii(C) --> dcg_graph(C).
-ascii(C) --> dcg_white(C).
+ascii(C) --> ascii_graphic(C).
+ascii(C) --> ascii_white(C).
 
 asterisk --> [42].
 asterisk(42) --> [42].
@@ -475,6 +480,11 @@ backspace(8) --> [8].
 
 bell --> [7].
 bell(7) --> [7].
+
+binary_digit --> zero.
+binary_digit --> one.
+binary_digit(C) --> zero(C).
+binary_digit(C) --> one(C).
 
 bracket --> closing_bracket.
 bracket --> opening_bracket.
@@ -555,9 +565,8 @@ control --> start_of_heading.
 control --> start_of_text.
 control --> substitute.
 control --> synchronous_idle.
-control --> dcg_tab.
+control --> ascii_tab.
 control --> unit_separator.
-
 control(C) --> acknowledgement(C).
 control(C) --> backspace(C).
 control(C) --> bell(C).
@@ -583,7 +592,7 @@ control(C) --> start_of_heading(C).
 control(C) --> start_of_text(C).
 control(C) --> substitute(C).
 control(C) --> synchronous_idle(C).
-control(C) --> dcg_tab(C).
+control(C) --> ascii_tab(C).
 control(C) --> unit_separator(C).
 
 copyright --> [169].
@@ -610,6 +619,13 @@ d_uppercase(68) --> [68].
 
 data_link_escape --> [16].
 data_link_escape(16) --> [16].
+
+decimal_digit --> octal_digit.
+decimal_digit --> eight.
+decimal_digit --> nine.
+decimal_digit(C) --> octal_digit(C).
+decimal_digit(C) --> eight(C).
+decimal_digit(C) --> nine(C).
 
 dcg_delete --> [127].
 dcg_delete(127) --> [127].
@@ -668,7 +684,6 @@ end_of_line --> end_of_text.
 end_of_line --> end_of_transmission.
 end_of_line --> end_of_transmission_block.
 end_of_line --> line_feed.
-
 end_of_line(C) --> carriage_return(C).
 end_of_line(C) --> end_of_medium(C).
 end_of_line(C) --> end_of_text(C).
@@ -734,10 +749,10 @@ g_lowercase(103) --> [103].
 g_uppercase --> [71].
 g_uppercase(71) --> [71].
 
-dcg_graph --> alpha_numeric.
-dcg_graph --> punctuation.
-dcg_graph(C) --> alpha_numeric(C).
-dcg_graph(C) --> punctuation(C).
+ascii_graphic --> ascii_alpha_numeric.
+ascii_graphic --> ascii_punctuation.
+ascii_graphic(C) --> ascii_alpha_numeric(C).
+ascii_graphic(C) --> ascii_punctuation(C).
 
 grave_accent --> [96].
 grave_accent(96) --> [96].
@@ -758,6 +773,21 @@ h_lowercase(104) --> [104].
 
 h_uppercase --> [72].
 h_uppercase(72) --> [72].
+
+hexadecimal_digit --> decimal_digit.
+hexadecimal_digit --> a.
+hexadecimal_digit --> b.
+hexadecimal_digit --> c.
+hexadecimal_digit --> d.
+hexadecimal_digit --> e.
+hexadecimal_digit --> f.
+hexadecimal_digit(C) --> decimal_digit(C).
+hexadecimal_digit(C) --> a(C).
+hexadecimal_digit(C) --> b(C).
+hexadecimal_digit(C) --> c(C).
+hexadecimal_digit(C) --> d(C).
+hexadecimal_digit(C) --> e(C).
+hexadecimal_digit(C) --> f(C).
 
 horizontal_tab --> [9].
 horizontal_tab(9) --> [9].
@@ -781,7 +811,6 @@ i_uppercase(73) --> [73].
 
 j --> j_lowercase.
 j --> j_uppercase.
-
 j(C) --> j_lowercase(C).
 j(C) --> j_uppercase(C).
 
@@ -816,116 +845,116 @@ l_uppercase(76) --> [76].
 less_than_sign --> [60].
 less_than_sign(60) --> [60].
 
-letter --> letter_lowercase.
-letter --> letter_uppercase.
-letter(C) --> letter_lowercase(C).
-letter(C) --> letter_uppercase(C).
+ascii_letter --> ascii_letter_lowercase.
+ascii_letter --> ascii_letter_uppercase.
+ascii_letter(C) --> ascii_letter_lowercase(C).
+ascii_letter(C) --> ascii_letter_uppercase(C).
 
-letter_lowercase --> a_lowercase.
-letter_lowercase --> b_lowercase.
-letter_lowercase --> c_lowercase.
-letter_lowercase --> d_lowercase.
-letter_lowercase --> e_lowercase.
-letter_lowercase --> f_lowercase.
-letter_lowercase --> g_lowercase.
-letter_lowercase --> h_lowercase.
-letter_lowercase --> i_lowercase.
-letter_lowercase --> j_lowercase.
-letter_lowercase --> k_lowercase.
-letter_lowercase --> l_lowercase.
-letter_lowercase --> m_lowercase.
-letter_lowercase --> n_lowercase.
-letter_lowercase --> o_lowercase.
-letter_lowercase --> p_lowercase.
-letter_lowercase --> q_lowercase.
-letter_lowercase --> r_lowercase.
-letter_lowercase --> s_lowercase.
-letter_lowercase --> t_lowercase.
-letter_lowercase --> u_lowercase.
-letter_lowercase --> v_lowercase.
-letter_lowercase --> w_lowercase.
-letter_lowercase --> x_lowercase.
-letter_lowercase --> y_lowercase.
-letter_lowercase --> z_lowercase.
-letter_lowercase(C) --> a_lowercase(C).
-letter_lowercase(C) --> b_lowercase(C).
-letter_lowercase(C) --> c_lowercase(C).
-letter_lowercase(C) --> d_lowercase(C).
-letter_lowercase(C) --> e_lowercase(C).
-letter_lowercase(C) --> f_lowercase(C).
-letter_lowercase(C) --> g_lowercase(C).
-letter_lowercase(C) --> h_lowercase(C).
-letter_lowercase(C) --> i_lowercase(C).
-letter_lowercase(C) --> j_lowercase(C).
-letter_lowercase(C) --> k_lowercase(C).
-letter_lowercase(C) --> l_lowercase(C).
-letter_lowercase(C) --> m_lowercase(C).
-letter_lowercase(C) --> n_lowercase(C).
-letter_lowercase(C) --> o_lowercase(C).
-letter_lowercase(C) --> p_lowercase(C).
-letter_lowercase(C) --> q_lowercase(C).
-letter_lowercase(C) --> r_lowercase(C).
-letter_lowercase(C) --> s_lowercase(C).
-letter_lowercase(C) --> t_lowercase(C).
-letter_lowercase(C) --> u_lowercase(C).
-letter_lowercase(C) --> v_lowercase(C).
-letter_lowercase(C) --> w_lowercase(C).
-letter_lowercase(C) --> x_lowercase(C).
-letter_lowercase(C) --> y_lowercase(C).
-letter_lowercase(C) --> z_lowercase(C).
+ascii_letter_lowercase --> a_lowercase.
+ascii_letter_lowercase --> b_lowercase.
+ascii_letter_lowercase --> c_lowercase.
+ascii_letter_lowercase --> d_lowercase.
+ascii_letter_lowercase --> e_lowercase.
+ascii_letter_lowercase --> f_lowercase.
+ascii_letter_lowercase --> g_lowercase.
+ascii_letter_lowercase --> h_lowercase.
+ascii_letter_lowercase --> i_lowercase.
+ascii_letter_lowercase --> j_lowercase.
+ascii_letter_lowercase --> k_lowercase.
+ascii_letter_lowercase --> l_lowercase.
+ascii_letter_lowercase --> m_lowercase.
+ascii_letter_lowercase --> n_lowercase.
+ascii_letter_lowercase --> o_lowercase.
+ascii_letter_lowercase --> p_lowercase.
+ascii_letter_lowercase --> q_lowercase.
+ascii_letter_lowercase --> r_lowercase.
+ascii_letter_lowercase --> s_lowercase.
+ascii_letter_lowercase --> t_lowercase.
+ascii_letter_lowercase --> u_lowercase.
+ascii_letter_lowercase --> v_lowercase.
+ascii_letter_lowercase --> w_lowercase.
+ascii_letter_lowercase --> x_lowercase.
+ascii_letter_lowercase --> y_lowercase.
+ascii_letter_lowercase --> z_lowercase.
+ascii_letter_lowercase(C) --> a_lowercase(C).
+ascii_letter_lowercase(C) --> b_lowercase(C).
+ascii_letter_lowercase(C) --> c_lowercase(C).
+ascii_letter_lowercase(C) --> d_lowercase(C).
+ascii_letter_lowercase(C) --> e_lowercase(C).
+ascii_letter_lowercase(C) --> f_lowercase(C).
+ascii_letter_lowercase(C) --> g_lowercase(C).
+ascii_letter_lowercase(C) --> h_lowercase(C).
+ascii_letter_lowercase(C) --> i_lowercase(C).
+ascii_letter_lowercase(C) --> j_lowercase(C).
+ascii_letter_lowercase(C) --> k_lowercase(C).
+ascii_letter_lowercase(C) --> l_lowercase(C).
+ascii_letter_lowercase(C) --> m_lowercase(C).
+ascii_letter_lowercase(C) --> n_lowercase(C).
+ascii_letter_lowercase(C) --> o_lowercase(C).
+ascii_letter_lowercase(C) --> p_lowercase(C).
+ascii_letter_lowercase(C) --> q_lowercase(C).
+ascii_letter_lowercase(C) --> r_lowercase(C).
+ascii_letter_lowercase(C) --> s_lowercase(C).
+ascii_letter_lowercase(C) --> t_lowercase(C).
+ascii_letter_lowercase(C) --> u_lowercase(C).
+ascii_letter_lowercase(C) --> v_lowercase(C).
+ascii_letter_lowercase(C) --> w_lowercase(C).
+ascii_letter_lowercase(C) --> x_lowercase(C).
+ascii_letter_lowercase(C) --> y_lowercase(C).
+ascii_letter_lowercase(C) --> z_lowercase(C).
 
-letter_uppercase --> a_uppercase.
-letter_uppercase --> b_uppercase.
-letter_uppercase --> c_uppercase.
-letter_uppercase --> d_uppercase.
-letter_uppercase --> e_uppercase.
-letter_uppercase --> f_uppercase.
-letter_uppercase --> g_uppercase.
-letter_uppercase --> h_uppercase.
-letter_uppercase --> i_uppercase.
-letter_uppercase --> j_uppercase.
-letter_uppercase --> k_uppercase.
-letter_uppercase --> l_uppercase.
-letter_uppercase --> m_uppercase.
-letter_uppercase --> n_uppercase.
-letter_uppercase --> o_uppercase.
-letter_uppercase --> p_uppercase.
-letter_uppercase --> q_uppercase.
-letter_uppercase --> r_uppercase.
-letter_uppercase --> s_uppercase.
-letter_uppercase --> t_uppercase.
-letter_uppercase --> u_uppercase.
-letter_uppercase --> v_uppercase.
-letter_uppercase --> w_uppercase.
-letter_uppercase --> x_uppercase.
-letter_uppercase --> y_uppercase.
-letter_uppercase --> z_uppercase.
-letter_uppercase(C) --> a_uppercase(C).
-letter_uppercase(C) --> b_uppercase(C).
-letter_uppercase(C) --> c_uppercase(C).
-letter_uppercase(C) --> d_uppercase(C).
-letter_uppercase(C) --> e_uppercase(C).
-letter_uppercase(C) --> f_uppercase(C).
-letter_uppercase(C) --> g_uppercase(C).
-letter_uppercase(C) --> h_uppercase(C).
-letter_uppercase(C) --> i_uppercase(C).
-letter_uppercase(C) --> j_uppercase(C).
-letter_uppercase(C) --> k_uppercase(C).
-letter_uppercase(C) --> l_uppercase(C).
-letter_uppercase(C) --> m_uppercase(C).
-letter_uppercase(C) --> n_uppercase(C).
-letter_uppercase(C) --> o_uppercase(C).
-letter_uppercase(C) --> p_uppercase(C).
-letter_uppercase(C) --> q_uppercase(C).
-letter_uppercase(C) --> r_uppercase(C).
-letter_uppercase(C) --> s_uppercase(C).
-letter_uppercase(C) --> t_uppercase(C).
-letter_uppercase(C) --> u_uppercase(C).
-letter_uppercase(C) --> v_uppercase(C).
-letter_uppercase(C) --> w_uppercase(C).
-letter_uppercase(C) --> x_uppercase(C).
-letter_uppercase(C) --> y_uppercase(C).
-letter_uppercase(C) --> z_uppercase(C).
+ascii_letter_uppercase --> a_uppercase.
+ascii_letter_uppercase --> b_uppercase.
+ascii_letter_uppercase --> c_uppercase.
+ascii_letter_uppercase --> d_uppercase.
+ascii_letter_uppercase --> e_uppercase.
+ascii_letter_uppercase --> f_uppercase.
+ascii_letter_uppercase --> g_uppercase.
+ascii_letter_uppercase --> h_uppercase.
+ascii_letter_uppercase --> i_uppercase.
+ascii_letter_uppercase --> j_uppercase.
+ascii_letter_uppercase --> k_uppercase.
+ascii_letter_uppercase --> l_uppercase.
+ascii_letter_uppercase --> m_uppercase.
+ascii_letter_uppercase --> n_uppercase.
+ascii_letter_uppercase --> o_uppercase.
+ascii_letter_uppercase --> p_uppercase.
+ascii_letter_uppercase --> q_uppercase.
+ascii_letter_uppercase --> r_uppercase.
+ascii_letter_uppercase --> s_uppercase.
+ascii_letter_uppercase --> t_uppercase.
+ascii_letter_uppercase --> u_uppercase.
+ascii_letter_uppercase --> v_uppercase.
+ascii_letter_uppercase --> w_uppercase.
+ascii_letter_uppercase --> x_uppercase.
+ascii_letter_uppercase --> y_uppercase.
+ascii_letter_uppercase --> z_uppercase.
+ascii_letter_uppercase(C) --> a_uppercase(C).
+ascii_letter_uppercase(C) --> b_uppercase(C).
+ascii_letter_uppercase(C) --> c_uppercase(C).
+ascii_letter_uppercase(C) --> d_uppercase(C).
+ascii_letter_uppercase(C) --> e_uppercase(C).
+ascii_letter_uppercase(C) --> f_uppercase(C).
+ascii_letter_uppercase(C) --> g_uppercase(C).
+ascii_letter_uppercase(C) --> h_uppercase(C).
+ascii_letter_uppercase(C) --> i_uppercase(C).
+ascii_letter_uppercase(C) --> j_uppercase(C).
+ascii_letter_uppercase(C) --> k_uppercase(C).
+ascii_letter_uppercase(C) --> l_uppercase(C).
+ascii_letter_uppercase(C) --> m_uppercase(C).
+ascii_letter_uppercase(C) --> n_uppercase(C).
+ascii_letter_uppercase(C) --> o_uppercase(C).
+ascii_letter_uppercase(C) --> p_uppercase(C).
+ascii_letter_uppercase(C) --> q_uppercase(C).
+ascii_letter_uppercase(C) --> r_uppercase(C).
+ascii_letter_uppercase(C) --> s_uppercase(C).
+ascii_letter_uppercase(C) --> t_uppercase(C).
+ascii_letter_uppercase(C) --> u_uppercase(C).
+ascii_letter_uppercase(C) --> v_uppercase(C).
+ascii_letter_uppercase(C) --> w_uppercase(C).
+ascii_letter_uppercase(C) --> x_uppercase(C).
+ascii_letter_uppercase(C) --> y_uppercase(C).
+ascii_letter_uppercase(C) --> z_uppercase(C).
 
 line_feed --> [10].
 line_feed(10) --> [10].
@@ -978,6 +1007,21 @@ o_lowercase(111) --> [111].
 o_uppercase --> [79].
 o_uppercase(79) --> [79].
 
+octal_digit --> binary_digit.
+octal_digit --> two.
+octal_digit --> three.
+octal_digit --> four.
+octal_digit --> five.
+octal_digit --> six.
+octal_digit --> seven.
+octal_digit(C) --> binary_digit(C).
+octal_digit(C) --> two(C).
+octal_digit(C) --> three(C).
+octal_digit(C) --> four(C).
+octal_digit(C) --> five(C).
+octal_digit(C) --> six(C).
+octal_digit(C) --> seven(C).
+
 one --> [49].
 one(49) --> [49].
 
@@ -1020,63 +1064,63 @@ plus_sign(43) --> [43].
 positive_acknowledgement --> [6].
 positive_acknowledgement(6) --> [6].
 
-dcg_print --> dcg_graph.
-dcg_print --> space.
-dcg_print(C) --> dcg_graph(C).
-dcg_print(C) --> space(C).
+ascii_print --> ascii_graphic.
+ascii_print --> space.
+ascii_print(C) --> ascii_graphic(C).
+ascii_print(C) --> space(C).
 
-punctuation --> ampersand.
-punctuation --> apostrophe.
-punctuation --> asterisk.
-punctuation --> at_sign.
-punctuation --> bracket.
-punctuation --> caret.
-punctuation --> colon.
-punctuation --> comma.
-punctuation --> dollar_sign.
-punctuation --> dot.
-punctuation --> double_quote.
-punctuation --> equals_sign.
-punctuation --> exclamation_mark.
-punctuation --> grave_accent.
-punctuation --> greater_than_sign.
-punctuation --> hyphen_minus.
-punctuation --> less_than_sign.
-punctuation --> number_sign.
-punctuation --> percent_sign.
-punctuation --> plus_sign.
-punctuation --> question_mark.
-punctuation --> semi_colon.
-punctuation --> slash.
-punctuation --> tilde.
-punctuation --> underscore.
-punctuation --> vertical_bar.
-punctuation(C) --> ampersand(C).
-punctuation(C) --> apostrophe(C).
-punctuation(C) --> asterisk(C).
-punctuation(C) --> at_sign(C).
-punctuation(C) --> bracket(C).
-punctuation(C) --> caret(C).
-punctuation(C) --> colon(C).
-punctuation(C) --> comma(C).
-punctuation(C) --> dollar_sign(C).
-punctuation(C) --> dot(C).
-punctuation(C) --> double_quote(C).
-punctuation(C) --> equals_sign(C).
-punctuation(C) --> exclamation_mark(C).
-punctuation(C) --> grave_accent(C).
-punctuation(C) --> greater_than_sign(C).
-punctuation(C) --> hyphen_minus(C).
-punctuation(C) --> less_than_sign(C).
-punctuation(C) --> number_sign(C).
-punctuation(C) --> percent_sign(C).
-punctuation(C) --> plus_sign(C).
-punctuation(C) --> question_mark(C).
-punctuation(C) --> semi_colon(C).
-punctuation(C) --> slash(C).
-punctuation(C) --> tilde(C).
-punctuation(C) --> underscore(C).
-punctuation(C) --> vertical_bar(C).
+ascii_punctuation --> ampersand.
+ascii_punctuation --> apostrophe.
+ascii_punctuation --> asterisk.
+ascii_punctuation --> at_sign.
+ascii_punctuation --> bracket.
+ascii_punctuation --> caret.
+ascii_punctuation --> colon.
+ascii_punctuation --> comma.
+ascii_punctuation --> dollar_sign.
+ascii_punctuation --> dot.
+ascii_punctuation --> double_quote.
+ascii_punctuation --> equals_sign.
+ascii_punctuation --> exclamation_mark.
+ascii_punctuation --> grave_accent.
+ascii_punctuation --> greater_than_sign.
+ascii_punctuation --> hyphen_minus.
+ascii_punctuation --> less_than_sign.
+ascii_punctuation --> number_sign.
+ascii_punctuation --> percent_sign.
+ascii_punctuation --> plus_sign.
+ascii_punctuation --> question_mark.
+ascii_punctuation --> semi_colon.
+ascii_punctuation --> slash.
+ascii_punctuation --> tilde.
+ascii_punctuation --> underscore.
+ascii_punctuation --> vertical_bar.
+ascii_punctuation(C) --> ampersand(C).
+ascii_punctuation(C) --> apostrophe(C).
+ascii_punctuation(C) --> asterisk(C).
+ascii_punctuation(C) --> at_sign(C).
+ascii_punctuation(C) --> bracket(C).
+ascii_punctuation(C) --> caret(C).
+ascii_punctuation(C) --> colon(C).
+ascii_punctuation(C) --> comma(C).
+ascii_punctuation(C) --> dollar_sign(C).
+ascii_punctuation(C) --> dot(C).
+ascii_punctuation(C) --> double_quote(C).
+ascii_punctuation(C) --> equals_sign(C).
+ascii_punctuation(C) --> exclamation_mark(C).
+ascii_punctuation(C) --> grave_accent(C).
+ascii_punctuation(C) --> greater_than_sign(C).
+ascii_punctuation(C) --> hyphen_minus(C).
+ascii_punctuation(C) --> less_than_sign(C).
+ascii_punctuation(C) --> number_sign(C).
+ascii_punctuation(C) --> percent_sign(C).
+ascii_punctuation(C) --> plus_sign(C).
+ascii_punctuation(C) --> question_mark(C).
+ascii_punctuation(C) --> semi_colon(C).
+ascii_punctuation(C) --> slash(C).
+ascii_punctuation(C) --> tilde(C).
+ascii_punctuation(C) --> underscore(C).
+ascii_punctuation(C) --> vertical_bar(C).
 
 q --> q_lowercase.
 q --> q_uppercase.
@@ -1184,10 +1228,10 @@ t_lowercase(116) --> [116].
 t_uppercase --> [84].
 t_uppercase(84) --> [84].
 
-dcg_tab --> horizontal_tab.
-dcg_tab --> vertical_tab.
-dcg_tab(C) --> horizontal_tab(C).
-dcg_tab(C) --> vertical_tab(C).
+ascii_tab --> horizontal_tab.
+ascii_tab --> vertical_tab.
+ascii_tab(C) --> horizontal_tab(C).
+ascii_tab(C) --> vertical_tab(C).
 
 three --> [51].
 three(51) --> [51].
@@ -1243,14 +1287,18 @@ w_lowercase(119) --> [119].
 w_uppercase --> [87].
 w_uppercase(87) --> [87].
 
-dcg_white --> end_of_line.
-dcg_white --> form_feed.
-dcg_white --> space.
-dcg_white --> dcg_tab.
-dcg_white(C) --> end_of_line(C).
-dcg_white(C) --> form_feed(C).
-dcg_white(C) --> space(C).
-dcg_white(C) --> dcg_tab(C).
+white(C) -->
+  [C],
+  {code_type(C, white)}.
+
+ascii_white --> end_of_line.
+ascii_white --> form_feed.
+ascii_white --> space.
+ascii_white --> ascii_tab.
+ascii_white(C) --> end_of_line(C).
+ascii_white(C) --> form_feed(C).
+ascii_white(C) --> space(C).
+ascii_white(C) --> ascii_tab(C).
 
 x --> x_lowercase.
 x --> x_uppercase.
@@ -1287,3 +1335,4 @@ z_uppercase(90) --> [90].
 
 zero --> [48].
 zero(48) --> [48].
+

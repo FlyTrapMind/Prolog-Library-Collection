@@ -59,6 +59,7 @@ WHERE
 :- use_module(owl(owl_read)).
 :- use_module(rdf(rdf_term)).
 :- use_module(sparql(sparql_ext)).
+:- use_module(sparql(sparql_sameas)).
 :- use_module(xml(xml_namespace)).
 
 :- db_add_novel(user:prolog_file_type(ttl, turtle)).
@@ -95,7 +96,7 @@ assert_identity_resource(IRI, G):-
 assert_resource(G, IRI):-
   rdf_is_iri(IRI),
   rdf_graph(G), !,
-  describe_resource(dbpedia, IRI, PO_Rows),
+  describe_sameas(dbpedia, IRI, PO_Rows),
   forall(
     member(row(P, O), PO_Rows),
     rdf_assert(IRI, P, O, G)

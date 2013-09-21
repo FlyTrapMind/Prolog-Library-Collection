@@ -399,9 +399,9 @@ timezoneCanonicalFragmentMap(TZ1) -->
 
 unsTwoDigitCanonicalFragmentMap(I) -->
   {D1 is I div 10},
-  decimal_digit(D1),
+  decimal_digit(_, D1),
   {D2 is I mod 10},
-  decimal_digit(D2).
+  decimal_digit(_, D2).
 
 %! yearCanonicalFragmentMap(+Year:integer)//
 % Maps an integer, presumably the year property of a
@@ -488,7 +488,7 @@ dateTimeLexicalRep(DT) -->
 
 dayFrag(D) -->
   zero(C1),
-  nonzero_decimal_digit(_, C2),
+  nonzero_decimal_digit(C2, _),
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 dayFrag(D) -->
   (one(C1) ; two(C1)),
@@ -496,7 +496,7 @@ dayFrag(D) -->
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 dayFrag(D) -->
   three(C1),
-  binary_digit(_, C2),
+  binary_digit(C2),
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 
 %! endOfDayFrag(-Hour:oneof([24]), -Minute:oneof([0]), -Second:oneof([0]))//
@@ -521,12 +521,12 @@ endOfDayFrag(24, 0, 0) -->
 % ~~~
 
 hourFrag(H) -->
-  binary_digit(_, C1),
-  decimal_digit(_, C2),
+  binary_digit(C1),
+  decimal_digit(C2),
   {phrase(unsignedNoDecimalPtNumeral(H), [C1,C2])}.
 hourFrag(H) -->
   two(C1),
-  (binary_digit(_, C2) ; two(C2) ; three(C2)),
+  (binary_digit(C2) ; two(C2) ; three(C2)),
   {phrase(unsignedNoDecimalPtNumeral(H), [C1,C2])}.
 
 %! minuteFrag(-Minute:between(1-59))//
@@ -539,7 +539,7 @@ hourFrag(H) -->
 
 minuteFrag(M) -->
   (
-    binary_digit(_, C1)
+    binary_digit(C1)
   ;
     two(C1)
   ;
@@ -562,11 +562,11 @@ minuteFrag(M) -->
 
 monthFrag(M) -->
   zero(C1),
-  nonzero_decimal_digit(_, C2),
+  nonzero_decimal_digit(C2, _),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
 monthFrag(M) -->
   one(C1),
-  (binary_digit(_, C2) ; two(C2)),
+  (binary_digit(C2) ; two(C2)),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
 
 %! secondFrag(-Second:float)//
@@ -579,8 +579,8 @@ monthFrag(M) -->
 % ~~~
 
 secondFrag(S) -->
-  (binary_digit(_Digit1, C1) ; two(C1) ; three(C1) ; four(C1) ; five(C1)),
-  decimal_digit(_Digit2, C2),
+  (binary_digit(C1) ; two(C1) ; three(C1) ; four(C1) ; five(C1)),
+  decimal_digit(C2),
   (
     dot(C3),
     dcg_multi(decimal_digit, 1-_, _Digits, CT, []),
@@ -611,9 +611,15 @@ timezoneFrag(840) -->
 timezoneFrag(TZ) -->
   sign(Sign),
   (
-    zero(C1), decimal_digit(_, C2)
+    zero(C1),
+    decimal_digit(C2)
   ;
-    one(C1), (binary_digit(_, C2) ; three(C2))
+    one(C1),
+    (
+      binary_digit(C2)
+    ;
+      three(C2)
+    )
   ),
   % @compat Here we deviate from the XSD 1.1 standard,
   %         which uses unsignedDecimalPtNumeral//1 instead.
@@ -639,11 +645,11 @@ timezoneFrag(TZ) -->
 yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
-    nonzero_decimal_digit(_Digit1, Code),
-    dcg_multi(decimal_digit, 3-_, _Digits1, Codes, [])
+    nonzero_decimal_digit(Code, _),
+    dcg_multi(decimal_digit, 3-_, Codes, _Digits1, [])
   ;
     zero(Code),
-    dcg_multi(decimal_digit, 3, _Digits2, Codes, [])
+    dcg_multi(decimal_digit, 3, Codes, _Digits2, [])
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),
@@ -768,6 +774,16 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
   var_or_value(MM1, MM3, MM4),
   var_or_value(S1,  S3,  S4 ),
   DT = dateTime(Y4,M4,D4,H4,MM4,S4,TZ).
+
+nonzero_decimal_digit(C, 1) --> one(C).
+nonzero_decimal_digit(C, 2) --> two(C).
+nonzero_decimal_digit(C, 3) --> three(C).
+nonzero_decimal_digit(C, 4) --> four(C).
+nonzero_decimal_digit(C, 5) --> five(C).
+nonzero_decimal_digit(C, 6) --> six(C).
+nonzero_decimal_digit(C, 7) --> seven(C).
+nonzero_decimal_digit(C, 8) --> eight(C).
+nonzero_decimal_digit(C, 9) --> nine(C).
 
 %! normalizeDay(
 %!   +Year:integer,

@@ -332,7 +332,7 @@ rfc2396_authority(authority(T), Authority) -->
   registry_based_naming_authority(T, Authority).
 
 dashed_alpha_numerics([H|T]) -->
-  (alpha_numeric(H) ; hyphen_minus(H)),
+  (ascii_alpha_numeric(H) ; hyphen_minus(H)),
   dashed_alpha_numerics(T).
 dashed_alpha_numerics([]) --> [].
 
@@ -344,26 +344,26 @@ dashed_alpha_numerics([]) --> [].
 domain_label(domain_label(Char), Char) -->
   {nonvar(Char), atom_length(Char, 1)}, !,
   {char_code(Char, Code)},
-  alpha_numeric(Code).
+  ascii_alpha_numeric(Code).
 domain_label(domain_label(DomainLabel), DomainLabel) -->
   {nonvar(DomainLabel)}, !,
   {
     atom_codes(DomainLabel, Codes),
     append([H|T], [X], Codes)
   },
-  alpha_numeric(H),
+  ascii_alpha_numeric(H),
   dashed_alpha_numerics(T),
-  alpha_numeric(X).
+  ascii_alpha_numeric(X).
 domain_label(domain_label(DomainLabel), DomainLabel) -->
-  alpha_numeric(H),
+  ascii_alpha_numeric(H),
   dashed_alpha_numerics(T),
-  alpha_numeric(X),
+  ascii_alpha_numeric(X),
   {
     append([H|T], [X], Codes),
     atom_codes(DomainLabel, Codes)
   }.
 domain_label(domain_label(Char), Char) -->
-  alpha_numeric(Code),
+  ascii_alpha_numeric(Code),
   {char_code(Char, Code)}.
 
 %! domain_labels(-Tree:compound, ?DomainLabels:list(atom))//
@@ -393,7 +393,9 @@ domain_labels(domain_labels(T1), [TopLabel]) -->
 % be used as data within a URI.
 
 escaped_character(N) -->
-  percent_sign, hexadecimal_digit(D1), hexadecimal_digit(D2),
+  percent_sign,
+  hexadecimal_digit(_, D1),
+  hexadecimal_digit(_, D2),
   % Reconstruct the code from the hexadecimal digits.
   {N is D1 * 16 + D2}.
 
@@ -460,14 +462,14 @@ hierarchical_part(T0, Authority, Path, Query) -->
 
 %! rfc2396_host(-Tree:compound, ?Host:list(atomic))//
 % The host is a domain name of a network host, or its IPv4 address as a
-% set of four decimal_digits//1 groups separated by dot//0.
+% set of four decimal_digits//2 groups separated by dot//0.
 %
 % ~~~{.bnf}
 % host = hostname | IPv4address
 % ~~~
 %
 % The rightmost domain label of a fully qualified host or domain name
-% will never start with a decimal_digit//1, thus syntactically distinguishing
+% will never start with a decimal_digit//2, thus syntactically distinguishing
 % domain names from IPv4 addresses, and may be followed by a single dot//0
 % if it is necessary to distinguish between the complete host or domain name
 % and any local domain.
@@ -761,9 +763,10 @@ reserved_character(C) --> comma(C).
 % characters, with the first component defining the semantics for the
 % remainder of the URI string.
 %
-% Scheme names consist of a sequence of characters beginning with a
-% letter_lowercase//1 and followed by any combination of letter_lowercase//1,
-% decimal_digit//1, plus_sign//1, dot//1, or hyphen_minus//1.
+% Scheme names consist of a sequence of characters beginning with an
+% ascii_letter_lowercase//1 and followed by any combination of
+% ascii_letter_lowercase//1,
+% decimal_digit//2, plus_sign//1, dot//1, or hyphen_minus//1.
 % For resiliency, programs interpreting URI should treat upper case letters
 % as equivalent to lower case in scheme names (e.g., allow `HTTP` as
 % well as `http`).
@@ -780,10 +783,10 @@ scheme(scheme(Scheme), Scheme) -->
   scheme_(Codes),
   {atom_codes(Scheme, Codes)}.
 scheme_([H|T]) -->
-  letter(H),
+  ascii_letter(H),
   scheme_characters(T).
 
-scheme_character(C) --> alpha_numeric(C).
+scheme_character(C) --> ascii_alpha_numeric(C).
 scheme_character(C) --> plus_sign(C).
 scheme_character(C) --> hyphen_minus(C).
 scheme_character(C) --> dot(C).
@@ -827,7 +830,7 @@ server(T0, authority(User,Host,Port)) -->
 %! top_label(-Tree:compound, ?TopLabel:atom)//
 % A top label is the rightmost domain label of a fully qualified host
 % or domain name.
-% It will never start with a decimal_digit//1, thus syntactically
+% It will never start with a decimal_digit//2, thus syntactically
 % distinguishing domain names from IPv4 addresses, and may be followed by
 % a single dot//0 if it is necessary to distinguish between
 % the complete domain name and any local domain.
@@ -842,25 +845,25 @@ top_label(top_label(TopLabel), TopLabel) -->
     atom_codes(TopLabel, Codes),
     append([H|T], [X], Codes)
   },
-  letter(H),
+  ascii_letter(H),
   dashed_alpha_numerics(T),
-  letter(X).
+  ascii_letter(X).
 top_label(top_label(TopLabel), TopLabel) -->
-  letter(H),
+  ascii_letter(H),
   dashed_alpha_numerics(T),
-  letter(X),
+  ascii_letter(X),
   {
     append([H|T], [X], Codes),
     atom_codes(TopLabel, Codes)
   }.
-top_label(top_label(TopLabel), TopLabel) --> letter(TopLabel).
+top_label(top_label(TopLabel), TopLabel) --> ascii_letter(TopLabel).
 
 %! unreserved_character(+Code:code)//
 % Unreserved characters can be escaped without changing the semantics
 % of the URI, but this should not be done unless the URI is being used
 % in a context that does not allow the unescaped character to appear.
 
-unreserved_character(C) --> alpha_numeric(C).
+unreserved_character(C) --> ascii_alpha_numeric(C).
 unreserved_character(C) --> mark(C).
 
 %! uri_character(+Code:code)//

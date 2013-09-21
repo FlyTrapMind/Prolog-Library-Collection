@@ -89,7 +89,7 @@ hexBinaryCanonicalMap([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
 
 hexDigitCanonical(BinaryDigits) -->
   {digits_to_decimal(BinaryDigits, 2, Weight)},
-  hexadecimal_digit(Weight).
+  hexadecimal_digit(_, Weight).
 
 %! hexOctetCanonical(+BinaryOctet:list(between(0,1)))//
 % Maps a binary octet to a literal matching the hexOctet// production.
@@ -142,7 +142,7 @@ hexBinary([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
 % @param HexadecimalDigit An integer between 0 and 15 inclusive.
 
 hexDigit([BD1,BD2,BD3,BD4]) -->
-  hexadecimal_digit(Weight),
+  hexadecimal_digit(_, Weight),
   % Four binary digits represent one hexadecimal digit.
   {decimal_to_digits(Weight, 2, [BD1,BD2,BD3,BD4])}.
 
