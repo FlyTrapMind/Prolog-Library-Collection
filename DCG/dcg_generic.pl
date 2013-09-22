@@ -29,6 +29,8 @@
     dcg_call//3,
     dcg_call//4,
     dcg_call//5,
+    dcg_calls//2, % :DCG_Rules:list
+                  % :Separator
     dcg_catch//3, % :DCG_Rule
                   % -Exception:compound
                   % :Recover
@@ -125,6 +127,7 @@ a modular way.
 :- meta_predicate(dcg_call(4,?,?,?,?)).
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
+:- meta_predicate(dcg_calls(+,//,?,?)).
 :- meta_predicate(dcg_catch(2,?,2,?,?)).
 :- meta_predicate(dcg_switch(+,+,2,?,?)).
 % PEEK
@@ -304,6 +307,14 @@ dcg_call(DCG_Body, A1, A2, A3, X, Y):-
 
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
+
+dcg_calls(_Mod:[], _Separator) --> [].
+dcg_calls(Mod:DCG_Rules, Separator) -->
+  {DCG_Rules = [H|T]},
+  dcg_call(Mod:H),
+  ( {T == []}, !
+  ; dcg_call(Separator)),
+  dcg_calls(Mod:T, Separator).
 
 dcg_catch(DCG_Rule, Exception, Recover, X, Y):-
   catch(

@@ -250,7 +250,7 @@ the original two values are incomparable.
 @see USNO Historical List includes the times when the difference between
      TAI and UTC has changed tai_utc.txt.
 @tbd Document what TAI and UT1 are.
-@version 2013/08
+@version 2013/08-2013/09
 */
 
 :- use_module(datetime(iso8601)).
@@ -775,15 +775,7 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
   var_or_value(S1,  S3,  S4 ),
   DT = dateTime(Y4,M4,D4,H4,MM4,S4,TZ).
 
-nonzero_decimal_digit(C, 1) --> one(C).
-nonzero_decimal_digit(C, 2) --> two(C).
-nonzero_decimal_digit(C, 3) --> three(C).
-nonzero_decimal_digit(C, 4) --> four(C).
-nonzero_decimal_digit(C, 5) --> five(C).
-nonzero_decimal_digit(C, 6) --> six(C).
-nonzero_decimal_digit(C, 7) --> seven(C).
-nonzero_decimal_digit(C, 8) --> eight(C).
-nonzero_decimal_digit(C, 9) --> nine(C).
+nonzero_decimal_digit(C, D) --> between_digit(1, 9, C, D).
 
 %! normalizeDay(
 %!   +Year:integer,

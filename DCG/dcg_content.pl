@@ -4,6 +4,12 @@
     arrow//1, % +Length:integer
     arrow//2, % +Options:list(nvpair)
               % +Length:integer
+    between//3, % +Low:positive_integer
+                % +High:positive_integer
+                % -Code:code
+    between_hex//3, % +LowHex:atom
+                    % +HighHex:atom
+                    % -Code:code
     crlf//0,
     ci_code//1, % ?Code:code
     ci_string//1, % ?String:string
@@ -68,6 +74,7 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(generics(option_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+:- use_module(math(radix)).
 
 :- meta_predicate(collection(:,+,?,?)).
 :- meta_predicate(list(:,+,?,?)).
@@ -142,6 +149,15 @@ arrow_left_head(both).
 arrow_left_head(left).
 arrow_right_head(both).
 arrow_right_head(right).
+
+between(Low, High, Code) -->
+  [Code],
+  {between(Low, High, Code)}.
+
+between_hex(LowHex, HighHex, Code) -->
+  {number_to_decimal(LowHex, 16, Low)},
+  {number_to_decimal(HighHex, 16, High)},
+  between(Low, High, Code).
 
 crlf -->
   carriage_return,

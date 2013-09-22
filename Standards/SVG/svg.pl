@@ -91,8 +91,8 @@ Raster images have their original sample resampled to the output device.
 :- use_module(library(plunit)).
 :- use_module(os(os_ext)).
 :- use_module(standards(markup)).
-:- use_module(svg(svg_entities)).
-:- use_module(xml(xml_entities)).
+:- use_module(svg(svg_elements)).
+:- use_module(xml(xml_elements)).
 :- use_module(xml(xml_namespace)).
 
 :- dynamic(user:mime_type/2).
@@ -142,7 +142,7 @@ Raster images have their original sample resampled to the output device.
 
 svg_document(T0, DCG_Namespace, SVG_DCGs) -->
   xml_header(T1, DCG_Namespace, version(1,0), true),
-  xml_entities(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
+  xml_elements(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
   {parse_tree(document, [T1|Ts], T0)}.
 
 %! svg_fragment(-Tree:compound, +SVG_DCGs:list(dcg))//
@@ -157,7 +157,7 @@ svg_document(T0, DCG_Namespace, SVG_DCGs) -->
 % ~~~
 
 svg_fragment(T0, SVG_DCGs) -->
-  svg_entities:svg_entity(
+  svg_elements:svg_element(
     T1,
     word(svg),
     word(svg),
@@ -171,7 +171,7 @@ svg_fragment(T0, SVG_DCGs) -->
       )
     ]
   ),
-  xml_entities(Ts, void, SVG_DCGs),
+  xml_elements(Ts, void, SVG_DCGs),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
 %! svg_fragment(-Tree:compound, :DCG_Namespace, +SVG_DCGs:list(dcg))//
@@ -190,7 +190,7 @@ svg_fragment(T0, SVG_DCGs) -->
 
 svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
   % Directly go to XML entity (not via SVG entity).
-  xml_entity(
+  xml_element(
     word(svg),
     word(svg),
     [
@@ -208,7 +208,7 @@ svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
       )
     ]
   ),
-  xml_entities(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
+  xml_elements(Ts, svg_namespace(DCG_Namespace), SVG_DCGs),
   {parse_tree(fragment, [T1|Ts], T0)}.
 
 svg_namespace(DCG_Namespace) -->

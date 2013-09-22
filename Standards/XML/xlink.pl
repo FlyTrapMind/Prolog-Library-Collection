@@ -65,7 +65,6 @@ xlink_attribute(DCG_Namespace, DCG_Name, DCG_Value) -->
   xml_attribute(xlink_namespace(DCG_Namespace), DCG_Name, DCG_Value).
 
 %! xlink_href(-Tree:compound, :DCG_Namespace, ?Fragment:atom)//
-% @tbd Support for IRIs.
 
 xlink_href(href(T1), DCG_Namespace, Fragment) -->
   xlink_attribute(

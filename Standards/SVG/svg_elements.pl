@@ -1,14 +1,14 @@
 :- module(
-  svg_entities,
+  svg_elements,
   [
     svg_definitions//3, % -Tree:compound
                         % :DCG_Namespace
                         % ?Attributes:list(compound)
     svg_description//3,
-    svg_entity//4, % -Tree:compound
-                   % :DCG_Namespace
-                   % :DCG_Name:atom
-                   % ?Attributes:list(compound)
+    svg_element//4, % -Tree:compound
+                    % :DCG_Namespace
+                    % :DCG_Name:atom
+                    % ?Attributes:list(compound)
     svg_group//3,
     svg_image//3,
     svg_rectangle//3,
@@ -30,12 +30,13 @@
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(plunit)).
 :- use_module(svg(svg)).
+:- use_module(svg(svg_attributes)).
 :- use_module(xml(xml_attributes)).
-:- use_module(xml(xml_entities)).
+:- use_module(xml(xml_elements)).
 
 :- meta_predicate(svg_definitions(-,//,?,?,?)).
 :- meta_predicate(svg_description(-,//,?,?,?)).
-:- meta_predicate(svg_entity(-,//,//,?,?,?)).
+:- meta_predicate(svg_element(-,//,//,?,?,?)).
 :- meta_predicate(svg_group(-,//,?,?,?)).
 :- meta_predicate(svg_image(-,//,?,?,?)).
 :- meta_predicate(svg_rectangle(-,//,?,?,?)).
@@ -122,7 +123,7 @@
 % ~~~
 
 svg_definitions(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Tree, DCG_Namespace, word(defs), Attrs).
+  svg_element(Tree, DCG_Namespace, word(defs), Attrs).
 
 %! svg_description(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % Each container element or graphics element in an SVG drawing can supply
@@ -173,14 +174,12 @@ svg_definitions(Tree, DCG_Namespace, Attrs) -->
 % ~~~
 
 svg_description(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(desc), Attrs),
+  svg_element(Trees, DCG_Namespace, word(desc), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
-svg_entity(Trees, DCG_Namespace, DCG_Name, Attrs1) -->
-  {
-    xml_inject_attributes(svg_namespace(DCG_Namespace), Attrs1, Attrs2, Trees)
-  },
-  xml_entity(svg_namespace(DCG_Namespace), DCG_Name, Attrs2).
+svg_element(Trees, DCG_Namespace, DCG_Name, Attrs1) -->
+  {xml_inject_attributes(svg_namespace(DCG_Namespace), Attrs1, Attrs2, Trees)},
+  xml_element(svg_namespace(DCG_Namespace), DCG_Name, Attrs2).
 
 %! svg_group(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The `g` element is a container element for grouping together
@@ -220,7 +219,7 @@ svg_entity(Trees, DCG_Namespace, DCG_Name, Attrs1) -->
 % ~~~
 
 svg_group(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(group), Attrs),
+  svg_element(Trees, DCG_Namespace, word(group), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_image(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
@@ -321,7 +320,7 @@ svg_group(Tree, DCG_Namespace, Attrs) -->
 %   6. =|xlink_href(?IRI:iri)|=
 
 svg_image(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(image), Attrs),
+  svg_element(Trees, DCG_Namespace, word(image), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_rectangle(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
@@ -335,7 +334,7 @@ svg_image(Tree, DCG_Namespace, Attrs) -->
 %   7. =|svg_y(?Amount:float,?Unit:atom)|=
 
 svg_rectangle(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(rect), Attrs),
+  svg_element(Trees, DCG_Namespace, word(rect), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_svg(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
@@ -351,7 +350,7 @@ svg_rectangle(Tree, DCG_Namespace, Attrs) -->
 %   2. =|svg_version(?Major:integer,?Minor:integer)|=
 
 svg_svg(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(svg), Attrs),
+  svg_element(Trees, DCG_Namespace, word(svg), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_switch(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
@@ -363,7 +362,7 @@ svg_svg(Tree, DCG_Namespace, Attrs) -->
 % subtree is either processed/rendered or bypassed/not rendered.
 
 svg_switch(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(switch), Attrs),
+  svg_element(Trees, DCG_Namespace, word(switch), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_symbol(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
@@ -381,12 +380,12 @@ svg_switch(Tree, DCG_Namespace, Attrs) -->
 %   1. =|svg_preserve_aspect_ratio(?Defer:boolean,?Align:compound,?MeetOrSlice:oneof([meet,slice]))|=
 
 svg_symbol(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(symbol), Attrs),
+  svg_element(Trees, DCG_Namespace, word(symbol), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_title(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
 % The `title` child element to an `svg` element identifies the content
-% of its direct parent SVG document fragment.
+% of its direct parent SVG document fragment using textual content.
 %
 % Authors should always provide a `title` child element to the outermost
 % SVG element within a stand-alone SVG document.
@@ -411,7 +410,7 @@ svg_symbol(Tree, DCG_Namespace, Attrs) -->
 % @see Has similarities with svg_description//3.
 
 svg_title(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(title), Attrs),
+  svg_element(Trees, DCG_Namespace, word(title), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 %! svg_use(-Tree:compound, :DCG_Namespace, ?Attributes:list)//
@@ -656,14 +655,14 @@ svg_title(Tree, DCG_Namespace, Attrs) -->
 %      which the referenced element is placed. Default `0`.
 
 svg_use(Tree, DCG_Namespace, Attrs) -->
-  svg_entity(Trees, DCG_Namespace, word(use), Attrs),
+  svg_element(Trees, DCG_Namespace, word(use), Attrs),
   {parse_tree(description, Trees, Tree)}.
 
 
 
 % PLUNIT %
 
-:- begin_tests(svg_entities).
+:- begin_tests(svg_elements).
 
 :- use_module(generics(print_ext)).
 :- use_module(gv(gv_file)).
@@ -680,5 +679,5 @@ test(svg_rectangle, []):-
   tree_to_gv_file([], Tree, dot, pdf, File),
   formatnl(File).
 
-:- end_tests(svg_entities).
+:- end_tests(svg_elements).
 

@@ -1,6 +1,10 @@
 :- module(
   dcg_cardinal,
   [
+    between_digit//4, % +Low:between(0,9)
+                      % +High:between(0,9)
+                      % -Code:code
+                      % -Number:between(0,9)
     binary_digit//2, % ?Code:code
                      % ?DecimalDigit:between(0,1)
     binary_number//1, % ?DecimalNumber:integer
@@ -46,11 +50,12 @@
 DCGs for cardinal numbers.
 
 @author Wouter Beek
-@version 2013/06-2013/08
+@version 2013/06-2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(math(math_ext)).
 
@@ -58,6 +63,12 @@ DCGs for cardinal numbers.
 :- meta_predicate(digits_to_decimal_number(//,+,+,?,?,?)).
 
 
+
+between_digit(Low1, High1, Code, DecimalDigit) -->
+  {Low2 is Low1 + 48},
+  {High2 is High1 + 48},
+  between(Low2, High2, Code),
+  {DecimalDigit is Code - 48}.
 
 %! binary_digit(?Code:code, ?DecimalDigit:between(0,1))//
 

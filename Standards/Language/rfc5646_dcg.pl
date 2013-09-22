@@ -822,7 +822,7 @@ rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
 
 % The shortest ISO639 code, sometimes followed by extended language subtags.
 rfc5646_language(T0, Language, LanguageExtensions) -->
-  dcg_multi(letter, 2-3, Language, [convert(atom_codes)]),
+  dcg_multi(ascii_letter, 2-3, Language, [convert(atom_codes)]),
   {rfc5646_class(Language, 'Language')},
   (
     hyphen,
@@ -834,10 +834,10 @@ rfc5646_language(T0, Language, LanguageExtensions) -->
 rfc5646_language(language(Language), Language, []) -->
   (
     % Reserved for future use.
-    dcg_multi(letter, 4, Language, [convert(atom_codes)])
+    dcg_multi(ascii_letter, 4, Language, [convert(atom_codes)])
   ;
     % Registered language subtag.
-    dcg_multi(letter, 5-8, Language, [convert(atom_codes)])
+    dcg_multi(ascii_letter, 5-8, Language, [convert(atom_codes)])
   ),
   {rfc5646_class(Language, 'Language')}.
 
@@ -988,7 +988,7 @@ rfc5646_privateuse_components(privateuse_components('-',H,T2), [H|T]) -->
 % Latin America and Caribbean region (`419`).
 
 rfc5646_region(region(Region), Region) -->
-  dcg_multi(letter, 2, Region, [convert(atom_codes)]),
+  dcg_multi(ascii_letter, 2, Region, [convert(atom_codes)]),
   {rfc5646_class(Region, 'Region')}.
 rfc5646_region(region(Region), Region) -->
   dcg_multi(decimal_digit, 3, Region, [convert(codes_number)]),

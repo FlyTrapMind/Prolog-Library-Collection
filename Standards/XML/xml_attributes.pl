@@ -180,6 +180,11 @@ xml_value(DCG_Body) -->
 
 %! xml_version(-Tree:compound, :DCG_Namespace, ?Version:compound)//
 % Processes the XML version attribute.
+%
+% @param Tree A compound term representing a parse tree.
+% @param DCG_Namespace A DCG_Rule.
+% @param Version A compound term of the form
+%        =|version(Major:positive_integer,Minor:positive_integer)|=.
 
 xml_version(
   version(major(Major),minor(Minor)),
