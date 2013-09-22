@@ -50,7 +50,7 @@ See [rdf_graph.pl].
 :- use_module(library(settings)).
 :- use_module(server(error_web)).
 :- use_module(standards(standards)).
-:- use_module(svg(svg)).
+:- use_module(svg(svg_generic)).
 
 :- setting(
   border_size,

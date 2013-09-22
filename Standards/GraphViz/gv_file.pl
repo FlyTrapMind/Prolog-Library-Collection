@@ -41,7 +41,7 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
 :- use_module(os(shell_ext)).
-:- use_module(svg(svg)).
+:- use_module(svg(svg_file)).
 
 :- db_add_novel(user:prolog_file_type(dot,  graphviz       )).
 :- db_add_novel(user:prolog_file_type(jpeg, jpeg           )).
@@ -71,8 +71,7 @@ graph_to_gv_file(_Options, GIF, Method, ToFileType, ToFile):-
 
 graph_to_svg_dom(Options, GIF, Method, SVG):-
   graph_to_gv_file(Options, GIF, Method, svg, ToFile),
-  % @tbd Why the module?!
-  svg:file_to_svg(ToFile, SVG),
+  file_to_svg(ToFile, SVG),
   safe_delete_file(ToFile).
 
 tree_to_gv_file(O, Tree, Method, ToFileType, ToFile):-
@@ -157,7 +156,6 @@ to_gv_file(Codes, Method, ToFileType, ToFile):-
     put_codes(Out, Codes),
     close(Out)
   ),
-gtrace,
   convert_gv(FromFile, Method, ToFileType, ToFile),
   safe_delete_file(FromFile).
 

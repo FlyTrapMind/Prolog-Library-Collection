@@ -1,7 +1,8 @@
 :- module(
   rfc3987_dcg,
   [
-    'IRI-reference'//0
+    'IRI-reference'//0,
+    'IRI-reference'//1 % +IRI:or([atom,list(code)])
   ]
 ).
 
@@ -47,11 +48,23 @@
 @version 2013/09
 */
 
-:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_ascii)). % Used in meta-options.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(math(radix)).
 :- use_module(standards(abnf)).
+
+
+
+% APPLICATIONS %
+
+'IRI-reference'(IRI1) -->
+  {atom(IRI1)}, !,
+  {atom_codes(IRI1, IRI2)},
+  'IRI-reference'(IRI2).
+'IRI-reference'(IRI) -->
+  {phrase('IRI-reference', IRI)}.
 
 
 
@@ -68,8 +81,8 @@
 % An US-ASCII letter, followed by a sequence consisting of
 % US-ASCII letters, digits, plus, dash, and dot.
 scheme --> 'ALPHA', scheme_.
-scheme_ --> [].
 scheme_ --> ('ALPHA' ; 'DIGIT' ; "+" ; "-" ; "."), scheme_.
+scheme_ --> [].
 
 % IRI-2: IRI hierarchical part.
 'ihier-part' --> "//", iauthority, 'ipath-abempty'.
@@ -83,8 +96,8 @@ scheme_ --> ('ALPHA' ; 'DIGIT' ; "+" ; "-" ; "."), scheme_.
 iauthority --> (iuserinfo, "@" ; ""), ihost, (":", port ; "").
 
 % IRI-2.1.1: User info.
-iuserinfo --> [].
 iuserinfo --> (iunreserved ; 'pct-encoded' ; 'sub-delims' ; ":"), iuserinfo.
+iuserinfo --> [].
 
 % IRI-2.1.2: Host.
 % A host denotes a physical machine that is connected to the Internet.
@@ -128,38 +141,38 @@ ls32 --> 'IPv4address'.
 'IPvFuture' --> "v", dcg_multi('HEXDIG', 1-_), ".", dcg_multi('IPvFuture_', 1-_).
 'IPvFuture_' --> unreserved ; 'sub-delims' ; ":".
 
-'ireg-name' --> [].
 'ireg-name' --> (iunreserved ; 'pct-encoded' ; 'sub-delims'), 'ireg-name'.
+'ireg-name' --> [].
 
-'ipath-abempty' --> [].
 'ipath-abempty' --> "/", isegment, 'ipath-abempty'.
+'ipath-abempty' --> [].
 
-isegment --> [].
 isegment --> ipchar, isegment.
+isegment --> [].
 
 'ipath-absolute' --> "/", ('isegment-nz', isegments ; "").
 
 'isegment-nz' --> ipchar.
 'isegment-nz' --> ipchar, 'isegment-nz'.
 
-isegments --> [].
 isegments --> "/", isegment, isegments.
+isegments --> [].
 
 'ipath-rootless' --> 'isegment-nz', isegments.
 
 'ipath-empty' --> [].
 
 % IRI-2.1.3: Port.
-port --> [].
 port --> 'DIGIT', port.
+port --> [].
 
 % IRI-2.2: Query.
-iquery --> [].
 iquery --> ipchar ; iprivate ; "/" ; "?".
+iquery --> [].
 
 % IRI-2.3: Fragment identifier.
+ifragment --> (ipchar ; "/" ; "?"), ifragment.
 ifragment --> [].
-ifragment --> ipchar ; "/" ; "?".
 
 % Relative IRI.
 'irelative-ref' --> 'irelative-part', ("?", iquery ; ""), ("#", ifragment ; "").
@@ -184,42 +197,44 @@ ifragment --> ipchar ; "/" ; "?".
 ipchar --> iunreserved ; 'pct-encoded' ; 'sub-delims' ; ":" ; "@".
 
 iprivate -->
-  ( between_hex('E000',   'F8FF',   _)
-  ; between_hex('F0000',  'FFFFD',  _)
-  ; between_hex('100000', '10FFFD', _)
-  ).
+  [X],
+  {( between_hex('E000',   'F8FF',   X), !
+  ;  between_hex('F0000',  'FFFFD',  X), !
+  ;  between_hex('100000', '10FFFD', X)
+  )}.
 
-iunreserved --> 'ALPHA' ; 'DIGIT' ; "-" ; "." ; "_" ; "~" ; ucschar.
+iunreserved --> 'ALPHA' ; 'DIGIT' ; "-" ; "." ; "_" ; "~", ucschar.
 
 'pct-encoded' --> "%", 'HEXDIG', 'HEXDIG'.
 
 'sub-delims' --> "!" ; "$" ; "&" ; "'" ; "(" ; ")" ; "*" ; "+" ; "," ; ";" ; "=".
 
 ucschar -->
-  ( between_hex('A0',    'D7FF',  _)
-  ; between_hex('F900',  'FDCF',  _)
-  ; between_hex('FDF0',  'FFEF',  _)
-  ; between_hex('10000', '1FFFD', _)
-  ; between_hex('20000', '2FFFD', _)
-  ; between_hex('30000', '3FFFD', _)
-  ; between_hex('40000', '4FFFD', _)
-  ; between_hex('50000', '5FFFD', _)
-  ; between_hex('60000', '6FFFD', _)
-  ; between_hex('70000', '7FFFD', _)
-  ; between_hex('80000', '8FFFD', _)
-  ; between_hex('90000', '9FFFD', _)
-  ; between_hex('A0000', 'AFFFD', _)
-  ; between_hex('B0000', 'BFFFD', _)
-  ; between_hex('C0000', 'CFFFD', _)
-  ; between_hex('D0000', 'DFFFD', _)
-  ; between_hex('E1000', 'EFFFD', _)
-  ).
+  [X],
+  {( between_hex('A0',    'D7FF',  X), !
+  ;  between_hex('F900',  'FDCF',  X), !
+  ;  between_hex('FDF0',  'FFEF',  X), !
+  ;  between_hex('10000', '1FFFD', X), !
+  ;  between_hex('20000', '2FFFD', X), !
+  ;  between_hex('30000', '3FFFD', X), !
+  ;  between_hex('40000', '4FFFD', X), !
+  ;  between_hex('50000', '5FFFD', X), !
+  ;  between_hex('60000', '6FFFD', X), !
+  ;  between_hex('70000', '7FFFD', X), !
+  ;  between_hex('80000', '8FFFD', X), !
+  ;  between_hex('90000', '9FFFD', X), !
+  ;  between_hex('A0000', 'AFFFD', X), !
+  ;  between_hex('B0000', 'BFFFD', X), !
+  ;  between_hex('C0000', 'CFFFD', X), !
+  ;  between_hex('D0000', 'DFFFD', X), !
+  ;  between_hex('E1000', 'EFFFD', X)
+  )}.
 
 unreserved --> 'ALPHA' ; 'DIGIT' ; "-" ; "." ; "_" ; "~".
 
 
 
-% EXTRA RULES % 
+% EXTRA RULES %
 
 'absolute-IRI' --> scheme, ":", 'ihier-part', ("?", iquery ; "").
 

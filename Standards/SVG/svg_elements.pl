@@ -23,13 +23,13 @@
 /** <module> SVG_ENTITIES
 
 @author Wouter Beek
-@version 2013/07-2013/08
+@version 2013/07-2013/09
 */
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(plunit)).
-:- use_module(svg(svg)).
+:- use_module(svg(svg_generic)).
 :- use_module(svg(svg_attributes)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_elements)).
@@ -240,7 +240,7 @@ svg_group(Tree, DCG_Namespace, Attrs) -->
 % channel from the referenced object is used to compute the three color
 % channels and the alpha channel is uniformly set to `1`.
 %
-% %% Viewport
+% ## Viewport
 %
 % An `image` element establishes a new viewport for the referenced file.
 % The bounds for the new viewport are defined by attributes `x`, `y`,
@@ -657,27 +657,3 @@ svg_title(Tree, DCG_Namespace, Attrs) -->
 svg_use(Tree, DCG_Namespace, Attrs) -->
   svg_element(Trees, DCG_Namespace, word(use), Attrs),
   {parse_tree(description, Trees, Tree)}.
-
-
-
-% PLUNIT %
-
-:- begin_tests(svg_elements).
-
-:- use_module(generics(print_ext)).
-:- use_module(gv(gv_file)).
-
-test(svg_rectangle, []):-
-  once(
-    phrase(
-      svg_rectangle(Tree, word(svg), [svg_x(0.5,cm),svg_y(1.5,cm)]),
-      Codes
-    )
-  ),
-  atom_codes(Atom, Codes),
-  formatnl(Atom),
-  tree_to_gv_file([], Tree, dot, pdf, File),
-  formatnl(File).
-
-:- end_tests(svg_elements).
-

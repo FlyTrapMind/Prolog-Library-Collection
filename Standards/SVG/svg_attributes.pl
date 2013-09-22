@@ -49,13 +49,9 @@
               % ?DCG_Namespace
               % ?Number:float
               % ?Unit:atom
-    svg_xml_namespace//7, % -Tree:compound
+    svg_xml_namespace//3, % -Tree:compound
                           % :DCG_Namespace
-                          % ?Scheme:atom
-                          % ?Authority:compound
-                          % ?Path:list(list(atom))
-                          % ?Query:atom
-                          % ?Fragment:atom
+                          % +IRI:iri
     svg_y//4, % -Tree:compound
               % ?DCG_Namespace
               % ?Number:float
@@ -71,7 +67,7 @@
 DCG rules for SVG datatypes.
 
 @author Wouter Beek
-@version 2013/07
+@version 2013/07, 2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -79,9 +75,10 @@ DCG rules for SVG datatypes.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(lang(rfc5646_dcg)).
-:- use_module(svg(svg)).
+:- use_module(svg(svg_generic)).
 :- use_module(svg(svg_datatypes)).
-:- use_module(uri(rfc2396_dcg)).
+:- use_module(uri(rfc3987_dcg)).
+:- use_module(xml(xlink)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 
@@ -101,7 +98,7 @@ DCG rules for SVG datatypes.
 :- meta_predicate(svg_version(-,//,?,?,?)).
 :- meta_predicate(svg_width(-,//,?,?,?,?)).
 :- meta_predicate(svg_x(-,//,?,?,?,?)).
-:- meta_predicate(svg_xml_namespace(-,//,?,?,?,?,?,?,?)).
+:- meta_predicate(svg_xml_namespace(-,//,+,?,?)).
 :- meta_predicate(svg_y(-,//,?,?,?,?)).
 :- meta_predicate(svg_zoom_and_pan(-,//,?,?,?)).
 
@@ -495,37 +492,10 @@ svg_width(width(T1), DCG_Namespace, Number, Unit) -->
 svg_x(x(T1), DCG_Namespace, Number, Unit) -->
   svg_attribute(DCG_Namespace, word(x), svg_coordinate(T1, Number, Unit)).
 
-%! svg_xml_namespace(
-%!   -Tree:compound,
-%!   :DCG_Namespace,
-%!   ?Scheme:atom,
-%!   ?Authority:compound,
-%!   ?Path:list(list(atom)),
-%!   ?Query:atom,
-%!   ?Fragment:atom
-%! )//
+%! svg_xml_namespace(-Tree:compound, :DCG_Namespace, +IRI:iri)//
 
-svg_xml_namespace(
-  xml_namespace(T1),
-  DCG_Namespace,
-  Scheme,
-  Authority,
-  Path,
-  Query,
-  Fragment
-) -->
-  svg_attribute(
-    DCG_Namespace,
-    word(xmlns),
-    rfc2396_uri_reference(
-      T1,
-      Scheme,
-      Authority,
-      Path,
-      Query,
-      Fragment
-    )
-  ).
+svg_xml_namespace(xml_namespace(iri(IRI)), DCG_Namespace, IRI) -->
+  svg_attribute(DCG_Namespace, word(xmlns), 'IRI-reference'(IRI)).
 
 %! svg_y(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The y-axis coordinate of one corner of the rectangular region

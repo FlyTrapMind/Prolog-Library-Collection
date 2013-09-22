@@ -84,7 +84,6 @@ xml_element(DCG_Open, DCG_Namespace, DCG_Name, DCG_Attributes, DCG_Close) -->
   DCG_Open,
   xml_namespaced_name(DCG_Namespace, DCG_Name),
   space,
-{gtrace},
   dcg_calls(DCG_Attributes, space),
   DCG_Close.
 

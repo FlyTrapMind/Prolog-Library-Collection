@@ -1,6 +1,9 @@
 :- module(
   radix,
   [
+    between_hex/3, % +LowHex:atom
+                   % +HighHex:atom
+                   % ?Number:integer
     decimal_to_digits/2, % +DecimalNumber:integer
                          % -DecimalDigits:list(between(0,9))
     decimal_to_digits/3, % +DecimalNumber:integer
@@ -31,6 +34,11 @@ Predicate for transforming numbers with a different radix.
 :- use_module(library(apply)).
 
 
+
+between_hex(LowHex, HighHex, Number):-
+  number_to_decimal(LowHex, 16, Low),
+  number_to_decimal(HighHex, 16, High),
+  between(Low, High, Number).
 
 decimal_to_digits(DecimalNumber, DecimalDigits):-
   atom_chars(DecimalNumber, Chars),

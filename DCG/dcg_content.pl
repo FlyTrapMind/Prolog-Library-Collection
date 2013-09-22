@@ -67,6 +67,7 @@ DCG rules for parsing/generating often-occuring content.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
@@ -79,7 +80,7 @@ DCG rules for parsing/generating often-occuring content.
 :- meta_predicate(collection(:,+,?,?)).
 :- meta_predicate(list(:,+,?,?)).
 :- meta_predicate(nvpair(:,+,+,?,?)).
-:- meta_predicate(paor(:,+,+,?,?)).
+:- meta_predicate(pair(:,+,+,?,?)).
 :- meta_predicate(proof(:,+,?,?)).
 :- meta_predicate(quote(//,?,?)).
 :- meta_predicate(set(:,+,?,?)).
@@ -262,7 +263,7 @@ collection(O1, Collection1) -->
 
   % End a collection.
   {option(end(End), O2)},
-  
+
   % First we try to include the options.
   % If this DCG rule does not exist, then we exclude the options.
   dcg_catch(
