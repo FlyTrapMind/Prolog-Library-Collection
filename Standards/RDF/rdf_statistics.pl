@@ -5,6 +5,9 @@
                      % -Count:nonneg
     count_entities/2, % +Graph:atom
                       % -Count:nonneg
+    count_individuals/3, % +Class:iri
+                         % +Graph:atom
+                         % -NumberOfIndividuals:nonneg
     count_objects/4, % ?Subject:or([bnode,iri])
                      % ?Predicate:iri
                      % +Graph:atom
@@ -36,7 +39,9 @@ Statistics for RDF data.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_term)).
+:- use_module(rdfs(rdfs_read)).
 
+:- rdf_meta(count_individuals(r,+,-)).
 :- rdf_meta(count_objects(r,r,+,-)).
 :- rdf_meta(count_properties(r,r,+,-)).
 :- rdf_meta(count_subjects(r,r,+,-)).
@@ -75,6 +80,20 @@ count_classes(G, Count):-
 count_entities(G, Count):-
   setoff(E, rdf_iri(G, E), Es),
   length(Es, Count).
+
+%! count_individuals(
+%!   +Class:iri,
+%!   +Graph:atom,
+%!   -NumberOfIndividuals:nonneg
+%! ) is det.
+
+count_individuals(C, G, N):-
+  setoff(
+    I,
+    rdfs_individual(m(t,f,f), I, C, G),
+    Is
+  ),
+  length(Is, N).
 
 %! count_objects(
 %!   ?Subject:or([bnode,iri]),

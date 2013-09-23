@@ -1,6 +1,10 @@
 :- module(
   rdfs_read,
   [
+    rdfs/4, % ?Subject:or([bnode,iri])
+            % ?Predicate:iri
+            % ?Object:or([bnode,iri,literal])
+            % ?Graph:atom
     rdfs_class/3, % +Mode:compound
                   % ?Class:iri
                   % ?Graph:atom
@@ -78,6 +82,7 @@ rdfs_individual_of(rdfs:Class, rdfs:Class)
 :- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
 
 :- rdf_meta(rdf_db_or_axiom(+,r,r,r,?)).
+:- rdf_meta(rdfs(r,r,r,?)).
 :- rdf_meta(rdfs_class(+,r,?)).
 :- rdf_meta(rdfs_domain(+,r,r,?)).
 :- rdf_meta(rdfs_domain_axiom(+,r,r)).
@@ -113,6 +118,10 @@ rdf_db_or_axiom(M, C1, rdfs:subClassOf, C2, _):-
 rdf_db_or_axiom(_, S, P, O, G):-
   rdf2(S, P, O, G),
   debug(rdfs_read, '[DB] ~w ~w ~w', [S,P,O]).
+
+rdfs(S, P, O, G):-
+  rdfs_subproperty(m(t,f,f), SubP, P, G),
+  rdf(S, SubP, O, G).
 
 % This circumvents RDFS 9&10 loops.
 rdfs_class(m(t,_,_), C, _):-

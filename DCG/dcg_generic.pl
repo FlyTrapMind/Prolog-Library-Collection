@@ -182,11 +182,11 @@ dcg_until(DCG_End, Value) -->
 %      does not play out well.
 % @param Value Either an atom or a list of codes (see options).
 
-dcg_until(O, DCG_End, Out) -->
+dcg_until(O1, DCG_End, Out) -->
   {var(Out)}, !,
-  dcg_until_(O, DCG_End, Codes),
+  dcg_until_(O1, DCG_End, Codes),
   {
-    option(output_format(OutFormat), O, codes),
+    option(output_format(OutFormat), O1, codes),
     (
       OutFormat == atom
     ->
@@ -195,10 +195,10 @@ dcg_until(O, DCG_End, Out) -->
       Out = Codes
     )
   }.
-dcg_until(O, DCG_End, In) -->
+dcg_until(O1, DCG_End, In) -->
   {nonvar(In)}, !,
   {
-    option(output_format(OutFormat), O, codes),
+    option(output_format(OutFormat), O1, codes),
     (
       OutFormat == atom
     ->
@@ -207,12 +207,12 @@ dcg_until(O, DCG_End, In) -->
       Codes = In
     )
   },
-  dcg_until_(O, DCG_End, Codes).
+  dcg_until_(O1, DCG_End, Codes).
 
-dcg_until_(O, DCG_End, EndCodes), InclusiveExclusive -->
+dcg_until_(O1, DCG_End, EndCodes), InclusiveExclusive -->
   DCG_End, !,
   {
-    option(end_mode(EndMode), O, exclusive),
+    option(end_mode(EndMode), O1, exclusive),
     (
       EndMode == inclusive
     ->
@@ -223,9 +223,9 @@ dcg_until_(O, DCG_End, EndCodes), InclusiveExclusive -->
       EndCodes = []
     )
   }.
-dcg_until_(O, DCG_End, [H|T]) -->
+dcg_until_(O1, DCG_End, [H|T]) -->
   [H],
-  dcg_until_(O, DCG_End, T).
+  dcg_until_(O1, DCG_End, T).
 
 
 

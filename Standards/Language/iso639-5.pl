@@ -2,7 +2,7 @@
   'iso639-5',
   [
     'iso639-5'//2 % ?Name:atom
-                 % ?URI:atom
+                  % ?URI:atom
   ]
 ).
 

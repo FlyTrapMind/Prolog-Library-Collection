@@ -48,7 +48,7 @@
 Predicates that allow RDF graphs to be cleaned in a controlled way.
 
 @author Wouter Beek
-@version 2013/03-2013/04, 2013/06, 2013/08
+@version 2013/03-2013/04, 2013/06, 2013/08-2013/09
 */
 
 :- use_module(generics(atom_ext)).
@@ -58,6 +58,8 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
+:- use_module(xsd(xsd)).
+:- use_module(xml(xml_namespace)).
 
 :- rdf_meta(rdf_duplicate(r,r,r,?,?)).
 :- rdf_meta(rdf_expand_namespace(r,r,r,?)).
@@ -168,7 +170,7 @@ rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
       xsd_datatype(ToDatatypeName, ToDatatype),
       xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue),
       rdf_assert_datatype(S, P, ToDatatype, ToValue, G),
-      rdf_retractall_datatype(S, P, FromDatatypeName, FromValue, G)
+      rdf_retractall_datatype(S, P, FromDatatypeName, G)
     )
   ).
 
@@ -294,8 +296,10 @@ rdf_remove_datatype(S, P, Datatype, Value, G):-
   ),
   user_interaction(
     'REMOVE-RDF-DATATYPE-TRIPLE',
-    rdf_retractall_datatype,
+    rdf_retractall_datatype0,
     ['Subject','Predicate','Datatype','Value','Graph'],
     Tuples
   ).
+rdf_retractall_datatype0(S, P, Datatype, _Value, G):-
+  rdf_retractall_datatype(S, P, Datatype, G).
 

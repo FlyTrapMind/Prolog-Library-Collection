@@ -22,7 +22,7 @@ in combination with the open source speech synthesizer eSpeak.
 @author Wouter Beek
 @see http://en.wikipedia.org/wiki/Cowsay pointers to cowsay resources.
 @see http://espeak.sourceforge.net/ home of eSpeak.
-@version 2012/09-2012/10, 2013/05-2013/08
+@version 2012/09-2012/10, 2013/05-2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -33,6 +33,7 @@ in combination with the open source speech synthesizer eSpeak.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(option_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(option)).
@@ -129,11 +130,11 @@ cowspeak(O1, Content):-
 cowspeak_(O1, Atoms):-
   % Make sure that some wrap mode is set.
   default_option(O1, wrap_mode, word, O2),
-  
+
   % Establish the maximum width of the speech bubble.
   setting(default_max_width, DefaultMaxWidth),
   option(maximum_width(MaximumWidth), O2, DefaultMaxWidth),
-  
+
   % Some characters are needed to display the speech bubble itself.
   MaximumEffectiveWidth is MaximumWidth - 4,
   merge_options(
@@ -178,7 +179,7 @@ cowspeak_(O1, Atoms):-
 
   % It can talk!
   option(speech(Speech), O3, true),
-  (  Speech == true,
+  (  Speech == true
   -> text_to_speech(Atoms)
   ;  true).
 

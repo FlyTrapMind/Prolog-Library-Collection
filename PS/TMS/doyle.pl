@@ -658,12 +658,7 @@ set_support_status(TMS, Node, SupportStatus):-
   is_node(Node),
   memberchk(SupportStatus, [in,nil,out]),
 
-  rdf_retractall_datatype(
-    Node,
-    doyle:has_support_status,
-    string,
-    TMS
-  ),
+  rdf_retractall_datatype(Node, doyle:has_support_status, string, TMS),
   rdf_assert_datatype(
     Node,
     doyle:has_support_status,
