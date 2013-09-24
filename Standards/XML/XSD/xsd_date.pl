@@ -75,11 +75,13 @@ dateCanonicalMap(Date, LEX):-
 %
 % @param Date A complete date value.
 
+dateCanonicalMap(date(Y,M,D)) --> !,
+  dateCanonicalMap(dateTime(Y,M,D,_H,_MM,_S,_TZ)).
 dateCanonicalMap(dateTime(Y,M,D,_H,_MM,_S,TZ)) -->
   yearCanonicalFragmentMap(Y), hyphen,
   monthCanonicalFragmentMap(M), hyphen,
   dayCanonicalFragmentMap(D),
-  ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
+  ({var(TZ)}, ! ; timezoneCanonicalFragmentMap(TZ)).
 
 
 

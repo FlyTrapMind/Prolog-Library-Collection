@@ -116,13 +116,17 @@ intermittent_goal(G, I):-
 intermittent_thread(G, I, Id, O):-
   thread_create(intermittent_goal(G, I), Id, O).
 
-run_on_sublists(List, Module:Goal):-
+%! run_on_sublists(+List, :Goal) is det.
+% Run the given goal in different threads,
+% on different sublists of the given list.
+
+run_on_sublists(List, Mod:Goal):-
   split_list_by_number_of_sublists(List, 10, Sublists),
   findall(
     ThreadId,
     (
       member(TaskList, Sublists),
-      thread_start(Module, Goal, TaskList, ThreadId)
+      thread_start(Mod, Goal, TaskList, ThreadId)
     ),
     ThreadIds
   ),

@@ -72,7 +72,7 @@ xml_stream(File, Tag, Goal, StoreGoal):-
 % Intermediate storage of results.
 xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber):-
   flag(processed_items, StoreNumber, 0), !,
-  call(StoreGoal),
+  thread_create(StoreGoal, _Id, []),
   xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber).
 % End of stream.
 xml_stream0(Stream, _Tags, _Goal, StoreGoal, _StoreNumber):-

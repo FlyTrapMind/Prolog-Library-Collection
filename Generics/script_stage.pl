@@ -44,7 +44,7 @@ stage_directory(0, StageDir):- !,
   absolute_file_name(
     data('Input'),
     StageDir,
-    [access(write), file_type(directory)]
+    [access(write),file_type(directory)]
   ).
 stage_directory(Stage, StageDir):-
   format(atom(StageName), 'stage_~w', [Stage]),
