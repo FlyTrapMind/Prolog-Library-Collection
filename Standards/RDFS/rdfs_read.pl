@@ -296,7 +296,7 @@ rdfs_range_axiom(m(t,_,_), P, C):-
   ; rdf_global_id( rdf:value,       P)
   ; nonvar(P),
     rdf_global_id(rdf:Name, P),
-    sub_atom(Name, 0, 1, After, '_'),
+    sub_atom(Name, 1, _, 0, After),
     atom_number(After, N),
     integer(N)
     /*% The `var` case would introduce an infinite number of axioms.

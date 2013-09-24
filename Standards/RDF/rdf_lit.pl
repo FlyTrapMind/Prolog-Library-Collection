@@ -3,6 +3,7 @@
   [
     rdf_is_plain_literal/1, % ?PlainLiteral:compound
     rdf_is_simple_literal/1, % ?SimpleLiteral:compound
+    rdf_is_typed_literal/1, % ?TypedLiteral:compound
     rdf_literal/4, % ?Subject:oneof([bnode,uri])
                    % ?Predicate:uri
                    % ?Literal:atom

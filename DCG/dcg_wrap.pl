@@ -190,18 +190,6 @@ dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
   {length(Word1, WordLength)},
 
   (
-    % Case 0: There is no word.
-    % This happens in the serializations of languages I do not understand,
-    % e.g. Chinese (language tag `zh`).
-    % @tbd This is only a quick fix.
-    {WordLength == 0}
-  ->
-    {
-      gtrace,
-      Word2 = [],
-      Postfix = Separator
-    }
-  ;
     % Case 1: The word is too long to ever occur on a single line.
     % Therefore, we might as well split it now.
     % Insert the word prefix that fits in the current line.

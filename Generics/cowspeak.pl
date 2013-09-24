@@ -93,21 +93,23 @@ cowspeak(Content):-
 % and are passed on to format/3.
 %
 % The following options are supported:
-%   * `eyes(+Eyes:list(code))`
-%   * `maximum_width(?MaximumWidth:integer)`
+%   * =|eyes(+Eyes:or([atom,list(code)])|=
+%     Either a list of character codes or an atom, the first 2 characters
+%     of which will replace the eyes of the cow.
+%   * =|maximum_width(?MaximumWidth:integer)|=
 %     The maximum number of characters the speech bubble is allowed to have.
 %     If the maximum width is exceeded by any content line, then the
 %     wrap option -- if set -- is used.
-%   * `mode(+Mode:oneof(['Borg',dead,greedy,paranoia,stoned,tired,wired,youth]))`
-%     The following process_modes are supported: `Borg`, `dead`, `greedy`,
-%     `paranoia`, `stoned`, `tired`, `wired`, `youth`.
-%   * `output(+Output)`
+%   * =|mode(+Mode:oneof(['Borg',dead,greedy,paranoia,stoned,tired,wired,youth]))|=
+%     The following process_modes are supported: =Borg=, =dead=, =greedy=,
+%     =paranoia=, =stoned=, =tired=, =wired=, =youth=.
+%   * =|output(+Output)|=
 %     The same output alternatives that apply to with_output_to/2.
 %     The default value is =|stream(user_output)|=.
-%   * `speech(+OnOrOff:boolean)`
-%   * `wrap_mode(+WrapMode:oneof([line,none,word]))`
-%     Whether `line` wrapping or `word` wrapping (default)
-%     is applied, or neither of those (`none`, e.g. for ASCII art).
+%   * =|speech(+OnOrOff:boolean)|=
+%   * =|wrap_mode(+WrapMode:oneof([line,none,word]))|=
+%     Whether `line` wrapping or =word= wrapping (default)
+%     is applied, or neither of those (=none=, e.g. for ASCII art).
 %
 % @param Options A list of name-value pairs.
 % @param Contents Either a term or a list of terms.
@@ -217,10 +219,12 @@ dcg_cow(O1) -->
 dcg_cow_eyes(O) -->
   {
     option(eyes(Eyes1), O, "oo"),
+    % Enusre that the eyes are codes
+    % (i.e., apply atom2code conversion if needed).
     to_codes(Eyes1, Eyes2),
-    Eyes2 = [X, Y | _], !
+    Eyes2 = [X,Y|_], !
   },
-  [X, Y].
+  [X,Y].
 dcg_cow_eyes(_O) --> "oo".
 
 dcg_cow_tail -->
@@ -229,10 +233,12 @@ dcg_cow_tail -->
 dcg_cow_tongue(O) -->
   {
     option(tongue(Tongue1), O, "  "),
+    % Enusre that the eyes are codes
+    % (i.e., apply atom2code conversion if needed).
     to_codes(Tongue1, Tongue2),
-    Tongue2 = [X, Y | _], !
+    Tongue2 = [X,Y|_], !
   },
-  [X, Y].
+  [X,Y].
 dcg_cow_tongue(_O) --> "  ".
 
 dcg_cowsay(O, LineWidth, CodeLines) -->

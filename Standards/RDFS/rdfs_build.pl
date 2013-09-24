@@ -11,8 +11,14 @@
     rdfs_assert_subclass/3, % +Class:uri
                             % +SuperClass:uri
                             % +Graph:graph
-    rdfs_remove_class/2, % +Graph:atom
-                         % +Class:iri
+    rdfs_remove_class/2, % +Class:iri
+                         % +Graph:atom
+
+% COMMENTS
+    rdfs_assert_comment/4, % +Resource:or([blank,iri,literal])
+                           % +Comment:atom
+                           % ?LanguageTag:atom
+                           % +Graph:atom
 
 % DOMAIN & RANGE
     rdfs_assert_domain/3, % +Property:uri
@@ -102,7 +108,7 @@ using the following triples:
 :- rdf_meta(rdfs_assert_individual(r,+)).
 :- rdf_meta(rdfs_assert_property_class(r,+)).
 :- rdf_meta(rdfs_assert_subclass(r,r,+)).
-:- rdf_meta(rdfs_remove_class(+,r)).
+:- rdf_meta(rdfs_remove_class(r,+)).
 % DOMAIN & RANGE
 :- rdf_meta(rdfs_assert_domain(r,r,+)).
 :- rdf_meta(rdfs_assert_domain_range(r,r,+)).
@@ -135,10 +141,31 @@ rdfs_assert_property_class(PropertyClass, G):-
 rdfs_assert_subclass(Class, SuperClass, G):-
   rdf_assert(Class, rdfs:subClassOf, SuperClass, G).
 
-rdfs_remove_class(G, C):-
+rdfs_remove_class(C, G):-
   rdfs_class(m(t,f,f), C, G), !,
   rdf_retractall(C, _, _, G),
   rdf_retractall(_, _, C, G).
+
+
+
+% COMMENT %
+
+%! rdfs_assert_comment(
+%!   +Resource:or([blank,iri,literal]),
+%!   +Comment:atom,
+%!   ?LanguageTag:atom,
+%!   +Graph:atom
+%! ) is det.
+
+rdfs_assert_comment(R, Comment, LangTag, G):-
+  rdf_is_literal(R), !,
+  
+  rdfs_assert_comment(R, Comment, LangTag, G).
+rdfs_assert_comment(R, Comment, LangTag, G):-
+  var(LangTag), !,
+  rdf_assert_literal(R, rdfs:comment, Comment, G).
+rdfs_assert_comment(R, Comment, LangTag, G):-
+  rdf_assert_literal(R, rdfs:comment, Comment, LangTag, G).
 
 
 
