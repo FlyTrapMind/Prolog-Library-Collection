@@ -39,8 +39,11 @@ Web predicates for RDF graphs.
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(server(web_console)).
 :- use_module(tms(tms_export)).
 :- use_module(xml(xml_namespace)).
+
+:- register_module(rdf_web).
 
 % This allows a user to type `rdf:type` in the Web console and
 % have it translated to a full URI.
@@ -105,7 +108,7 @@ rdf_load_web(Graph, Markup):-
 rdf_mat_web(G, Regime, [DOM1,DOM2]):-
   % Run amterialization.
   materialize(G, Regime),
-  
+gtrace,
   % Collect all recently deduced triples.
   setoff(
     [S2,P2,O2,G],

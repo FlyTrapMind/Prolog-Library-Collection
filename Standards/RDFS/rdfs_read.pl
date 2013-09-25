@@ -67,6 +67,22 @@ rdfs_individual_of(rdfs:Class, rdfs:Class)
 ~false
 ~~~
 
+## Loops
+
+The X-in-X loop:
+~~~
+<X,rdfs:subClassOf,rdfs:Datatype>
+ [RDFS 10]
+  <rdfs:Datatype,rdf:type,rdfs:Class>
+   [RDFS 9]
+    <rdfs:Datatype,rdfs:subClassOf,rdfs:Class>
+    <rdfs:Datatype,rdf:type,rdfs:Datatype>
+     [RDFS 9]
+      <Y,rdfs:subClassOf,rdfs:Datatype>
+      <rdfs:Datatype,rdf:type,Y>
+      ...
+~~~
+
 @author Wouter Beek
 @version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
 */
@@ -182,6 +198,14 @@ rdfs_domain_axiom(m(t,_,_), P, C):-
   ),
   rdf_global_id(rdf:'Statement', C).
 
+% The X-in-X loop.
+rdfs_individual(m(t,f,f), C, C, _G):-
+  nonvar(C), !,
+  (
+    rdf_global_id(rdfs:'Class', C), !
+  ;
+    rdf_global_id(rdfs:'Resource', C)
+  ).
 rdfs_individual(M, I, C, G):-
   rdf_db_or_axiom(M, I, rdf:type, C, G).
 % RDF 1
@@ -203,15 +227,15 @@ rdfs_individual(M, I, C, G):-
 %  rdf_global_id(rdfs:'Literal', C),
 %  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
 % RDFS 2
-rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_db_or_axiom(M, I, P, _, G),
-  rdfs_domain(M, P, C, G),
-  debug(rdfs_read, '[RDFS 2] ~w IN ~w', [I,C]).
+%rdfs_individual(M, I, C, G):- M=m(t,_,_),
+%  rdf_db_or_axiom(M, I, P, _, G),
+%  rdfs_domain(M, P, C, G),
+%  debug(rdfs_read, '[RDFS 2] ~w IN ~w', [I,C]).
 % RDFS 3
-rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_db_or_axiom(M, _, P, I, G),
-  rdfs_range(M, P, C, G),
-  debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
+%rdfs_individual(M, I, C, G):- M=m(t,_,_),
+%  rdf_db_or_axiom(M, _, P, I, G),
+%  rdfs_range(M, P, C, G),
+%  debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
 % RDFS 4a
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdf_global_id(rdfs:'Resource', C),
@@ -227,7 +251,6 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdfs_subclass(M, C0, C, G),
   C0 \== C,
-  I \= C0,
   rdfs_individual(M, I, C0, G),
   debug(rdfs_read, '[RDFS 9] ~w IN ~w', [I,C]).
 % RDFD 1
@@ -299,10 +322,12 @@ rdfs_range_axiom(m(t,_,_), P, C):-
     sub_atom(Name, 1, _, 0, After),
     atom_number(After, N),
     integer(N)
-    /*% The `var` case would introduce an infinite number of axioms.
-    between(1, inf, I),
+  ; var(P),
+    % The `var` case would introduce an infinite number of axioms,
+    % so we restrict it.
+    between(1, 3, I),
     format(atom(Name), '_~w', [I]),
-    rdf_global_id(rdf:Name, P)*/
+    rdf_global_id(rdf:Name, P)
   ),
   rdf_global_id(rdfs:'Resource', C).
 
@@ -315,6 +340,10 @@ rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
   rdf_global_id(rdfs:'Resource', C2),
   rdfs_class(M, C1, G),
   debug(rdfs_read, '[RDFS 8] ~w SUBCLASS ~w', [C1,C2]).
+% RDFS 10
+rdfs_subclass(M, C, C, G):- M=m(t,_,_),
+  rdfs_class(M, C, G),
+  debug(rdfs_read, '[RDFS 10] ~w SUBCLASS ~w', [C,C]).
 % RDFS 11
 rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
   (
@@ -336,10 +365,6 @@ rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
   rdf_global_id(rdfs:'Literal', C2),
   rdfs_individual(M, C1, rdfs:'Datatype', G),
   debug(rdfs_read, '[RDFS 13] ~w SUBCLASS ~w', [C1,C2]).
-% RDFS 10
-rdfs_subclass(M, C, C, G):- M=m(t,_,_),
-  rdfs_class(M, C, G),
-  debug(rdfs_read, '[RDFS 10] ~w SUBCLASS ~w', [C,C]).
 % EXT 5
 rdfs_subclass(M, C1, C2, G):- M=m(t,t,_),
   rdf_global_id(rdfs:'Resource', C1),

@@ -37,15 +37,14 @@
 Support for RDF lists.
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/08
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/09
 */
 
 :- use_module(generics(print_ext)).
 :- use_module(library(apply)).
+:- use_module(rdf(rdf_bnode_map)).
 :- use_module(rdf(rdf_name)).
-
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
@@ -69,12 +68,24 @@ Support for RDF lists.
 
 %! rdf_is_list(?RDF_List:rdf_list) is semidet.
 % Succeeds if the given term is an RDF list.
+%
+% ## Tricky stuff
+%
+% For a triple [1] simple entailment can deduce [2].
+% We do *not* want to represent `bnode2` as an RDF list,
+% since `bnode2` maps to `bnode1` in the blank node map.
+%
+% ~~~
+% [1] <bnode1,rdf:type,rdf:List>
+% [2] <bnode2,rdf:type,rdf:List>
+% ~~~
 
-rdf_is_list(RDF_List):-
-  \+ rdf_is_literal(RDF_List),
+rdf_is_list(RDF_List1):-
+  \+ rdf_is_literal(RDF_List1),
   rdf_global_id(rdf:'List', C),
-  % This one is more efficient than `rdfs:rdfs_instance_of/2`.
-  rdfs_individual(m(t,f,f), RDF_List, C, _).
+  % WATCH OUT! THIS IS VERY TRICKY!
+  (b2r(_, RDF_List1, RDF_List2), ! ; RDF_List2 = RDF_List1),
+  rdfs_individual(m(t,f,f), RDF_List2, C, _).
 
 %! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
 % Asserts the given, possibly nested list into RDF.

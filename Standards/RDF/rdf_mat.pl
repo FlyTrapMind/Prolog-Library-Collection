@@ -121,11 +121,11 @@ materialize(G, Regime, TMS):-
 
   % A rule applies if one of its regimes is in the set of regimes
   % that we materialize for now.
-  regime(RuleRegime, Regime),
+  once(regime(RuleRegime, Regime)),
 
   % Only accept new stuff.
   \+ rdf(S, P, O, G),
-
+gtrace,
   % Add to TMS.
   maplist(rdf_triple_name([]), [rdf(S,P,O)|Prems], [C_Label|P_Labels]),
   doyle_add_argument(TMS, P_Labels, Rule, C_Label, J),
@@ -165,11 +165,17 @@ regime(X):-
 %! regime(?SubsumedRegime:atom, ?SubsumingRegime:atom) is nondet.
 
 regime(X, X):-
-  nonvar(X), !.
+  nonvar(X).
 regime(X, Y):-
   rdf_regime(X, Y).
 regime(X, Y):-
   rdfs_regime(X, Y).
+regime(X, Y):-
+   nonvar(Y),
+   regime(X, Z),
+   X \== Z,
+   Z \== Y,
+   regime(Z, Y).
 
 % RDF subsumes simple entailment.
 regime(se, rdf).
