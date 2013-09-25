@@ -12,7 +12,7 @@
 Support for generating HTML tables based on Prolog lists.
 
 @author Wouter Beek
-@version 2012/09-2013/06
+@version 2012/09-2013/06, 2013/09
 */
 
 :- use_module(library(apply)).

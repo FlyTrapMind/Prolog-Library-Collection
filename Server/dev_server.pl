@@ -7,7 +7,8 @@
             % +DTD_Name:atom
             % +StyleName:atom
             % +DOM:list
-    start_dev_server/0
+    start_dev_server/0,
+    start_dev_server/1 % +Port:nonneg
   ]
 ).
 
@@ -21,7 +22,7 @@ current logging stream.
 
 @author Wouter Beek
 @see http://semanticweb.cs.vu.nl/prasem/
-@version 2012/05, 2012/09-2012/12, 2013/02-2013/08
+@version 2012/05, 2012/09-2012/12, 2013/02-2013/09
 */
 
 :- use_module(generics(db_ext)).
@@ -36,6 +37,7 @@ current logging stream.
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(lists)).
+:- use_module(library(settings)).
 :- use_module(os(datetime_ext)).
 :- use_module(server(web_console)).
 :- use_module(server(web_message)). % Module registration.
@@ -96,13 +98,17 @@ current logging stream.
 :- multifile(user:body//2).
 :- multifile(user:head//2).
 
+:- setting(default_port, nonneg, 5000, 'The default port for the development server.').
+
 :- debug(dev_server).
 
 
 
-% START SERVER %
+% START DEV SERVER %
 
-default_port(5000).
+%! start_dev_server is det.
+% Starts the development server either on an existing server,
+% or on the default development server port.
 
 % A server is already running.
 % Notice that its port need not be the default port.
@@ -115,7 +121,13 @@ start_dev_server:-
   ).
 % No server is running yet, so start a server at the default port.
 start_dev_server:-
-  default_port(Port),
+  setting(default_port, Port),
+  start_dev_server(Port).
+
+%! start_dev_server(+Port:nonneg) is det.
+% Starts the development server on the given port.
+
+start_dev_server(Port):-
   % Make sure Wallace is shut down whenever Prolog shuts down.
   assert(user:at_halt(http_stop_server(Port, []))),
   http_server(http_dispatch, [port(Port)]).
