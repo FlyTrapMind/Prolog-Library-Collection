@@ -71,7 +71,7 @@
 
 :- discontiguous(rule/7).
 :- multifile(rule/7).
-:- rdf_meta(rule(?,?,?,r,r,r,?)).
+:- rdf_meta(rule(?,?,t,r,r,r,?)).
 
 
 
@@ -87,6 +87,7 @@ rule(rdfs, gl, [rdf(S,P,B)], S, P, Lit, G):-
   % If the object term is not a blank node,
   % then we do not have to search the blank node-literal mapping.
   rdf_is_bnode(B),
+
   % Not every blank node that is an object term in some triple
   % is a generalization for a literal.
   % Therefore, it has to occur in the mapping established by rule [lg].
@@ -102,6 +103,7 @@ explanation(
 rule(rdfs, rdfs1, [rdf(S,P,PlainLit)], B, rdf:type, rdfs:'Literal', G):-
   rdf(S, P, PlainLit, G),
   rdf_is_plain_literal(PlainLit),
+
   r2b(G, PlainLit, B).
 
 % [rdfs2] Class membership through domain restriction.

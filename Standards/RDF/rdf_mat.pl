@@ -97,12 +97,12 @@ materialize(G, Regimes):-
     doyle_reset(TMS),
     doyle_init(TMS)
   ),
-  
+
   % DEB
   (  debug(rdf_mat)
   -> retractall(recent_triple(_,_,_,_))
   ;  true),
-  
+
   % Let's go!
   materialize(G, Regimes, TMS).
 
@@ -118,7 +118,7 @@ materialize(G, Regimes):-
 materialize(G, Regime, TMS):-
   % A deduction of depth one.
   rule(RuleRegime, Rule, Prems, S, P, O, G),
-  
+
   % A rule applies if one of its regimes is in the set of regimes
   % that we materialize for now.
   regime(RuleRegime, Regime),

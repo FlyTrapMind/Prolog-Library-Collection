@@ -127,6 +127,7 @@ rdf_mat_web(G, Regime, [DOM1,DOM2]):-
     DOM1
   ),
   
+gtrace,
   % Collect the legend for the blank nodes that occur in
   % at least one of the recently deduced triples.
   setoff(

@@ -317,8 +317,17 @@ rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
   debug(rdfs_read, '[RDFS 8] ~w SUBCLASS ~w', [C1,C2]).
 % RDFS 11
 rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
-  rdf_db_or_axiom(M, C1, rdfs:subClassOf, C3, G),
-  rdfs_subclass(M, C3, C2, G),
+  (
+    nonvar(C1)
+  ->
+    rdf_db_or_axiom(M, C1, rdfs:subClassOf, C3, G),
+    C1 \== C3,
+    rdfs_subclass(M, C3, C2, G)
+  ;
+    rdf_db_or_axiom(M, C3, rdfs:subClassOf, C2, G),
+    C3 \== C2,
+    rdfs_subclass(M, C1, C3, G)
+  ),
   debug(rdfs_read, '[RDFS 11] ~w SUBCLASS ~w', [C1,C2]).
 % RDFS 13
 rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
