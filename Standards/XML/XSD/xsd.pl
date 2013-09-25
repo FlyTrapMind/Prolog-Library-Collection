@@ -788,11 +788,23 @@ xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue):-
   xsd_lexicalMap(FromDatatype, LEX, FromValue),
   xsd_lexicalMap(ToDatatype, LEX, ToValue).
 
-%! xsd_datatype(+Name:atom, -Datatype:uri) is semidet.
-%! xsd_datatype(-Name:atom, +Datatype:uri) is det.
+%! xsd_datatype(?Name:atom, ?Datatype:uri) is nondet.
 
-xsd_datatype(Name, Datatype):-
-  rdf_global_id(xsd:Name, Datatype).
+xsd_datatype(boolean, xsd:boolean).
+xsd_datatype(date, xsd:date).
+xsd_datatype(decimal, xsd:decimal).
+xsd_datatype(double, xsd:double).
+xsd_datatype(duration, xsd:duration).
+xsd_datatype(float, xsd:float).
+xsd_datatype(gDay, xsd:gDay).
+xsd_datatype(gMonth, xsd:gMonth).
+xsd_datatype(gMonthDay, xsd:gMonthDay).
+xsd_datatype(gYear, xsd:gYear).
+xsd_datatype(gYearMonth, xsd:gYearMonth).
+xsd_datatype(hexBinary, xsd:hexBinary).
+xsd_datatype(integer, xsd:integer).
+xsd_datatype(string, xsd:string).
+xsd_datatype(time, xsd:time).
 
 %! xsd_lexicalCanonicalMap(
 %!   +Datatype:uri,

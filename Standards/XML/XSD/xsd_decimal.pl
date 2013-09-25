@@ -1,7 +1,7 @@
 :- module(
   xsd_decimal,
   [
-    decimalCanonicalMap/2, % +Decimal:number
+    decimalCanonicalMap/2, % +Decimal:or([atom,integer,rational])
                            % -LEX:list(code)
     decimalLexicalMap/2, % +LEX:list(code)
                          % -Decimal:number
@@ -118,11 +118,16 @@ The decimal datatype has the following values for its fundamental facets:
 % CANONICAL MAPPING %
 
 %! decimalCanonicalMap(
-%!   +Decimal:oneof([integer,rational]),
+%!   +Decimal:oneof([atom,integer,rational]),
 %!   -LEX:list(code)
 %! ) is det.
 
+decimalCanonicalMap(N1, LEX):-
+  atom(N1), !,
+  atom_number(N1, N2),
+  decimalCanonicalMap(N2, LEX).
 decimalCanonicalMap(N, LEX):-
+  number(N), !,
   phrase(decimalCanonicalMap(N), LEX).
 
 %! decimalCanonicalMap(+Decimal:oneof([integer,rational]))//

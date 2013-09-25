@@ -57,10 +57,12 @@ The date datatype has the following values for its fundamental facets:
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08-2013/09
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_date)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(xsd(xsd_dateTime)).
 
 
@@ -75,6 +77,10 @@ dateCanonicalMap(Date, LEX):-
 %
 % @param Date A complete date value.
 
+dateCanonicalMap(Atom) -->
+  {atom(Atom)}, !,
+  {dcg_phrase(date(_Lang, Compound), Atom)},
+  dateCanonicalMap(Compound).
 dateCanonicalMap(date(Y,M,D)) --> !,
   dateCanonicalMap(dateTime(Y,M,D,_H,_MM,_S,_TZ)).
 dateCanonicalMap(dateTime(Y,M,D,_H,_MM,_S,TZ)) -->
