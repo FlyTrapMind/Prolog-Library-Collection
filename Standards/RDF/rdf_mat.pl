@@ -1,10 +1,6 @@
 :- module(
   rdf_mat,
   [
-    explain_web/4, % +Subject:or([bnode,iri])
-                   % +Predicate:iri
-                   % +Object:or([bnode,iri,literal])
-                   % -SVG:list
     materialize/2, % +Graph:atom
                    % +Regime:atom
     regime/1, % ?Regime:atom
@@ -24,6 +20,7 @@ Takes axioms, rules, and the RDF index and performs materializations.
 
 :- use_module(tms(doyle)).
 :- use_module(tms(tms)).
+:- use_module(tms(tms_export)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
@@ -37,7 +34,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
     rule/7 as rdf_rule
   ]
 ).
-:- use_module(rdf(rdf_meta_auto_expand)).
 :- use_module(rdf(rdf_name)).
 :- use_module(
   rdfs(rdfs_ent),
@@ -48,9 +44,10 @@ Takes axioms, rules, and the RDF index and performs materializations.
     rule/7 as rdfs_rule
   ]
 ).
-:- use_module(tms(tms_export)).
 
-:- rdf_meta_expand(rdf_axiom:explain_web(e,e,e,i)).
+:- dynamic(recent_triple/4).
+
+:- debug(rdf_mat).
 
 
 
@@ -65,17 +62,6 @@ axiom(Regime, S, P, O):-
   rdf_axiom(Regime, S, P, O).
 axiom(Regime, S, P, O):-
   rdfs_axiom(Regime, S, P, O).
-
-%! explain_web(
-%!   +Subject:or([bnode,iri]),
-%!   +Predicate:iri,
-%!   +Object:or([bnode,iri,literal]),
-%!   -SVG:list
-%! ) is det.
-
-explain_web(S, P, O, SVG):-
-  with_output_to(atom(TripleName), rdf_triple_name([], S, P, O)),
-  tms_export_argument_web(TripleName, SVG).
 
 explanation(Regime, Rule, Explanation):-
   rdf_explanation(Regime, Rule, Explanation).
@@ -112,6 +98,11 @@ materialize(G, Regimes):-
     doyle_init(TMS)
   ),
 
+  % DEB
+  (  debug(rdf_mat)
+  -> retractall(recent_triple(_,_,_,_))
+  ;  true),
+
   % Let's go!
   materialize(G, Regimes, TMS).
 
@@ -127,36 +118,41 @@ materialize(G, Regimes):-
 materialize(G, Regime, TMS):-
   % A deduction of depth one.
   rule(RuleRegime, Rule, Prems, S, P, O, G),
+
   % A rule applies if one of its regimes is in the set of regimes
   % that we materialize for now.
-  regime(RuleRegime, Regime),
+  once(regime(RuleRegime, Regime)),
 
+  % Only accept new stuff.
   \+ rdf(S, P, O, G),
-  % THIS ONE IS NEEDED WHEN BLANK NODES ARE ADDED IN SOME DEDUCTIONS.
-  % Only collect new triples, abstracting away from the blank nodes.
-  %\+ rdf_find(S, P, O, G),
-
+gtrace,
   % Add to TMS.
   maplist(rdf_triple_name([]), [rdf(S,P,O)|Prems], [C_Label|P_Labels]),
   doyle_add_argument(TMS, P_Labels, Rule, C_Label, J),
 
   % DEB
-  flag(deductions, Id, Id + 1),
-  format(user_output, '~w: ', [Id]),
-  with_output_to(
-    user_output,
-    tms_print_justification([indent(0),lang(en)], TMS, J)
-  ),
+  (  debug(rdf_mat)
+  -> flag(deductions, Id, Id + 1),
+     format(user_output, '~w: ', [Id]),
+     with_output_to(
+       user_output,
+       tms_print_justification([indent(0),lang(en)], TMS, J)
+     ),
+     assert(recent_triple(S, P, O, G))
+  ;  true),
 
   % Store the result.
   rdf_assert(S, P, O, G), !,
 
-  % Look for more results.
+  % Look for more results...
   materialize(G, Regime, TMS).
+% Done!
 materialize(_G, _Regime, _TMS):-
   % DEB
-  flag(deductions, N, 0),
-  debug(rdf_axiom, 'Added ~w deductions.', [N]).
+  (  debug(rdf_mat)
+  -> flag(deductions, N, 0),
+     debug(rdf_axiom, 'Added ~w deductions.', [N])
+  ;  true).
 
 %! regime(?Regime:atom) is nondet.
 
@@ -169,11 +165,17 @@ regime(X):-
 %! regime(?SubsumedRegime:atom, ?SubsumingRegime:atom) is nondet.
 
 regime(X, X):-
-  nonvar(X), !.
+  nonvar(X).
 regime(X, Y):-
   rdf_regime(X, Y).
 regime(X, Y):-
   rdfs_regime(X, Y).
+regime(X, Y):-
+   nonvar(Y),
+   regime(X, Z),
+   X \== Z,
+   Z \== Y,
+   regime(Z, Y).
 
 % RDF subsumes simple entailment.
 regime(se, rdf).
