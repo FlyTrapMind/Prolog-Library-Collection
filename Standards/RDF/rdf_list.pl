@@ -52,7 +52,7 @@ Support for RDF lists.
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 :- rdf_meta(rdf_is_list(r)).
-:- rdf_meta(rdf_assert_list(+,r,+)).
+:- rdf_meta(rdf_assert_list(t,r,+)).
 :- rdf_meta(rdf_list(r,-)).
 :- rdf_meta(rdf_list(+,r,-)).
 :- rdf_meta(rdf_list_first(r,r)).
