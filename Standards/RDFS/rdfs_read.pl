@@ -112,6 +112,7 @@ application of the subclass relation.
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_bnode_map)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
@@ -243,27 +244,15 @@ rdfs_individual(M, I, C, G):-
 %  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
 % RDFS 2
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  (
-    nonvar(C)
-  ->
-    rdfs_domain(M, P, C, G),
-    rdf_db_or_axiom(M, I, P, _, G)
-  ;
-    rdf_db_or_axiom(M, I, P, _, G),
-    rdfs_domain(M, P, C, G)
-  ),
+  rdfs_domain(M, P, C, G),
+  rdf_db_or_axiom(M, I, P, _, G),
   debug(rdfs_read, '[RDFS 2] ~w IN ~w', [I,C]).
 % RDFS 3
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  (
-    nonvar(C)
-  ->
-    rdfs_range(M, P, C, G),
-    rdf_db_or_axiom(M, _, P, I, G)
-  ;
-    rdf_db_or_axiom(M, _, P, I, G),
-    rdfs_range(M, P, C, G)
-  ),
+  rdfs_range(M, P, C, G),
+  rdf_db_or_axiom(M, _, P, I, G),
+  % The object term should not be a literal.
+  \+ rdf_is_literal(I),
   debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
 % RDFS 4a
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
@@ -274,12 +263,13 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdf_global_id(rdfs:'Resource', C),
   rdf_db_or_axiom(M, _, _, I, G),
+  % Literals are resources, but this is not deduced by this rule (see RDFS 1).
   \+ rdf_is_literal(I),
   debug(rdfs_read, '[RDFS 4b] ~w IN ~w', [I,C]).
 % RDFS 9
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdfs_subclass(r(f,_), M, C0, C, G),
-  C0 \== C,
+  \+ rdf_same(C0, C),
   rdfs_individual(M, I, C0, G),
   debug(rdfs_read, '[RDFS 9] ~w IN ~w', [I,C]).
 % RDFD 1
@@ -369,6 +359,28 @@ rdfs_range_axiom(m(t,_,_), P, C):-
   ),
   rdf_global_id(rdfs:'Resource', C).
 
+%! rdf_same(
+%!   +Resource1:or([bnode,iri,literal]),
+%!   +Resource1:or([bnode,iri,literal])
+%! ) is semidet.
+% For transitive hierarchic relations, we want to make sure that
+% some of their deduction rules (RDFS 9, RDFS 11, RDFS 13) do not consider
+% reflexive pairs of the relations which would cause loops.
+% (We guarantee that the reflexive cases are covered by other rules.)
+%
+% Semantic identity in RDF is not syntactic identity,
+% since simple entailment allows blank nodes to stand for
+% resources. This predicate checks for identity while taking the
+% blank node mappings into account.
+
+rdf_same(X, X):- !.
+rdf_same(X, Y):-
+  rdf_is_bnode(X),
+  b2r(_, X, Y).
+rdf_same(X, Y):-
+  rdf_is_bnode(Y),
+  b2r(_, Y, X).
+
 rdfs_subclass(M, C1, C2, G):-
   rdfs_subclass(r(t,t), M, C1, C2, G).
 
@@ -376,8 +388,8 @@ rdfs_subclass(_R, M, C1, C2, G):-
   rdf_db_or_axiom(M, C1, rdfs:subClassOf, C2, G).
 % RDFS 8
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,_,_),
-  % Putting the RDFS resource instantiation first rules out
-  % the RDFS 8&9 loop.
+  % Resource instantiation comes first, otherwise there may be an
+  % RDFS8-RDFS9 loop.
   rdf_global_id(rdfs:'Resource', C2),
   rdfs_class(M, C1, G),
   debug(rdfs_read, '[RDFS 8] ~w SUBCLASS ~w', [C1,C2]).
@@ -391,18 +403,18 @@ rdfs_subclass(r(_RC,RP), M, C1, C2, G):- M=m(t,_,_),
     nonvar(C1)
   ->
     rdf_db_or_axiom(M, C1, rdfs:subClassOf, C3, G),
-    C1 \== C3,
+    \+ rdf_same(C1, C3),
     rdfs_subclass(r(f,RP), M, C3, C2, G)
   ;
     rdf_db_or_axiom(M, C3, rdfs:subClassOf, C2, G),
-    C3 \== C2,
+    \+ rdf_same(C3, C2),
     rdfs_subclass(r(f,RP), M, C1, C3, G)
   ),
   debug(rdfs_read, '[RDFS 11] ~w SUBCLASS ~w', [C1,C2]).
 % RDFS 13
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,_,_),
-  % Putting the RDFS literal instantiation first
-  % prevents RDFS 9&13.
+  % Resource instantiation comes first, otherwise there may be an
+  % RDFS13-RDFS9 loop.
   rdf_global_id(rdfs:'Literal', C2),
   rdfs_individual(M, C1, rdfs:'Datatype', G),
   debug(rdfs_read, '[RDFS 13] ~w SUBCLASS ~w', [C1,C2]).
@@ -458,18 +470,22 @@ rdfs_subclass_axiom(m(t,_,_), C1, C2):-
   rdf_global_id( rdf:'Property', C2).
 
 rdfs_subproperty(M, P1, P2, G):-
+  rdfs_subproperty(r(t,t), M, P1, P2, G).
+
+rdfs_subproperty(_R, M, P1, P2, G):-
   rdf_db_or_axiom(M, P1, rdfs:subPropertyOf, P2, G).
 % RDFS 5
-rdfs_subproperty(M, P1, P2, G):- M=m(t,_,_),
+rdfs_subproperty(r(RC,_RP), M, P1, P2, G):- M=m(t,_,_),
   rdf_db_or_axiom(M, P1, rdfs:subPropertyOf, P3, G),
-  rdfs_subproperty(M, P3, P2, G),
+  \+ rdf_same(P1, P3),
+  rdfs_subproperty(r(RC,f), M, P3, P2, G),
   debug(rdfs_read, '[RDFS 5] ~w SUBPROP ~w', [P1,P2]).
 % RDFS 6
-rdfs_subproperty(M, P, P, G):- M=m(t,_,_),
+rdfs_subproperty(r(_RC,t), M, P, P, G):- M=m(t,_,_),
   rdfs_property(M, P, G),
   debug(rdfs_read, '[RDFS 6] ~w SUBPROP ~w', [P,P]).
 % RDFS 12
-rdfs_subproperty(M, P1, P2, G):- M=m(t,_,_),
+rdfs_subproperty(_R, M, P1, P2, G):- M=m(t,_,_),
   rdf_global_id(rdfs:member, P2),
   rdfs_individual(M, P1, rdfs:'ContainerMembershipProperty', G),
   debug(rdfs_read, '[RDFS 12] ~w SUBPROP ~w', [P1,P2]).

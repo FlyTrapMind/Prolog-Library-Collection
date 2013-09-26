@@ -59,7 +59,6 @@ Web predicates for RDF graphs.
 %! ) is det.
 
 rdf_explain_web(S, P, O, SVG):-
-gtrace,
   with_output_to(atom(TripleName), rdf_triple_name([], S, P, O)),
   tms_export_argument_web(TripleName, SVG).
 
@@ -70,7 +69,7 @@ gtrace,
 
 rdf_graphs_web(Markup):-
   findall(
-    [Graph, Triples],
+    [Graph,Triples],
     rdf_statistics(triples_by_graph(Graph, Triples)),
     List
   ),
@@ -109,7 +108,7 @@ rdf_load_web(Graph, Markup):-
 rdf_mat_web(G, Regime, [DOM1,DOM2]):-
   % Run amterialization.
   materialize(G, Regime),
-gtrace,
+
   % Collect all recently deduced triples.
   setoff(
     [S2,P2,O2,G],
@@ -117,7 +116,7 @@ gtrace,
       rdf_mat:recent_triple(S1, P1, O1, G),
       maplist(rdf_term_name([]), [S1,P1,O1], [S2,P2,O2])
     ),
-    L
+    L1
   ),
   
   % Display the triples in an HTML table.
@@ -127,15 +126,14 @@ gtrace,
       header(true),
       indexed(true)
     ],
-    [['Subject','Predicate','Object','Graph']|L],
+    [['Subject','Predicate','Object','Graph']|L1],
     DOM1
   ),
   
-gtrace,
   % Collect the legend for the blank nodes that occur in
   % at least one of the recently deduced triples.
   setoff(
-    [B,R2],
+    [B,R2,G],
     (
       rdf_mat:recent_triple(S, _P, O, G),
       (B = S ; B = O),
@@ -143,7 +141,7 @@ gtrace,
       b2r(G, B, R1),
       rdf_term_name([], R1, R2)
     ),
-    Bs
+    L2
   ),
   
   % Display the blank node mapping in an HTML table.
@@ -153,7 +151,7 @@ gtrace,
       header(true),
       indexed(true)
     ],
-    [['Blank node','Mapped to']|Bs],
+    [['Blank node','Mapped to','Graph']|L2],
     DOM2
   ).
 
