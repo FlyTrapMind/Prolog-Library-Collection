@@ -78,7 +78,7 @@ xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber):-
 xml_stream0(Stream, _Tags, _Goal, StoreGoal, _StoreNumber):-
   at_end_of_stream(Stream), !,
   call(StoreGoal).
-% Starts an entry
+% Processes an entry.
 xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
   (
     peek_atom(Stream, StartTag)
@@ -108,13 +108,13 @@ xml_stream0(Stream, StartTag-EndTag, Goal, _StoreGoal, _StoreNumber):-
     
     flag(processed_items, X, X + 1)
   ;
+    % Skips a line. Notify user.
     read_line_to_codes(Stream, Codes),
     line_count(Stream, Line),
     atom_codes(Atom, Codes),
     debug(xml_stream, 'Skipping line ~w: ~w', [Line,Atom])
   ),
   fail.
-% Skips a line. Notify user.
 xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber):-
   xml_stream0(Stream, Tags, Goal, StoreGoal, StoreNumber).
 

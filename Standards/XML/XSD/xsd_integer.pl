@@ -66,16 +66,20 @@ Derived datatypes:
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08-2013/09
 */
 
 :- use_module(xsd(xsd_decimal)).
 
 
 
-integerCanonicalMap(Integer, LEX):-
-  decimalCanonicalMap(Integer, LEX).
+%! integerCanonicalMap(+Integer:integer, -LEX:list(code)) is semidet.
 
-integerLexicalMap(LEX, Integer):-
-  decimalLexicalMap(LEX, Integer).
+integerCanonicalMap(I, LEX):-
+  decimalCanonicalMap(I, LEX).
+
+%! integerLexicalMap(+LEX:list(code), -Integer:integer) is nondet.
+
+integerLexicalMap(LEX, I):-
+  phrase(noDecimalPtNumeral(_Sign, I), LEX).
 

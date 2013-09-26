@@ -109,17 +109,25 @@ create_triple(S, P, _, Content, G):-
 create_triples([], _Ps, _Trans, _S, _G, []):- !.
 % The XML properties are all processed.
 create_triples(DOM, [], _Trans, _S, _G, DOM):- !.
-% XML element with no content.
+% Process an XML element.
 create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
-  select(element(XML_P, _, []), DOM1, DOM2),
-  update_property_filter(Ps1, XML_P, Ps2), !,
-  create_triples(DOM2, Ps2, Trans, S, G, RestDOM).
-% XML element with content.
-create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
-  select(element(XML_P, _, [Content]), DOM1, DOM2),
-  update_property_filter(Ps1, XML_P, Ps2), !,
-  call(Trans, XML_P, RDF_P, RDF_O_Type),
-  create_triple(S, RDF_P, RDF_O_Type, Content, G),
+  select(element(XML_P, _, Content1), DOM1, DOM2),
+  (
+    % The property is allowed according to the filter. Process.
+    update_property_filter(Ps1, XML_P, Ps2),
+    (
+      % XML element with no content.
+      Content1 == [], !
+    ;
+      % XML element with content.
+      Content1 = [Content2],
+      call(Trans, XML_P, RDF_P, RDF_O_Type),
+      create_triple(S, RDF_P, RDF_O_Type, Content2, G)
+    ), !
+  ;
+    % The property was not allowed according to the filter. Proceed.
+    Ps2 = Ps1
+  ),
   create_triples(DOM2, Ps2, Trans, S, G, RestDOM).
 
 update_property_filter(Ps1, _XML_P, _Ps2):-
