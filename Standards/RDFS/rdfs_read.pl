@@ -69,19 +69,41 @@ rdfs_individual_of(rdfs:Class, rdfs:Class)
 
 ## Loops
 
-The X-in-X loop:
+If the RDF(S) specifications are straightforwardly implemented,
+a few loops occur in deduction. We enumerate these loops.
+
+### RDFS10-RDFS9 loop
+
+Example:
 ~~~
-<X,rdfs:subClassOf,rdfs:Datatype>
- [RDFS 10]
-  <rdfs:Datatype,rdf:type,rdfs:Class>
-   [RDFS 9]
-    <rdfs:Datatype,rdfs:subClassOf,rdfs:Class>
-    <rdfs:Datatype,rdf:type,rdfs:Datatype>
-     [RDFS 9]
-      <Y,rdfs:subClassOf,rdfs:Datatype>
-      <rdfs:Datatype,rdf:type,Y>
-      ...
+[RDFS 10] <rdfs:Dataype, rdf:type, rdfs:Datatype> if
+          <rdfs:Dataype, rdf:type, rdfs:Class>
+[RDFS 9]  <rdfs:Dataype, rdf:type, rdfs:Class> if
+          <X, rdfs:subClassOf, rdfs:Class>
+          <rdfs:Datatype, rdf:type, X>
+[AXIOM]   [X/rdfs:Datatype]
 ~~~
+
+This is solved by constraining RDFS 9 to non-reflexive
+applications of the subclass relation.
+
+## RDFS9-RDFS11-RDFS10 loop
+
+Example:
+~~~
+[RDFS 9]  <rdfs:Datatype, rdf:type, rdfs:Class> if
+          <X, rdfs:subClassOf, rdfs:Class>
+          <rdfs:Datatype, rdf:type, X>
+[RDFS 11] <X, rdfs:subClassOf, rdfs:Class> if
+          <Y, rdfs:subClassOf, rdfs:Class>
+          <X, rdfs:subClassOf, Y>
+[AXIOM]   [Y/rdfs:Datatype]
+[RDFS 10] [X/rdfs:Datatype] if
+          <rdfs:Datatype, rdf:type, rdfs:Class>
+~~~
+
+This is solved by constraining RDFS 11 to non-reflexive
+application of the subclass relation.
 
 @author Wouter Beek
 @version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
@@ -198,14 +220,6 @@ rdfs_domain_axiom(m(t,_,_), P, C):-
   ),
   rdf_global_id(rdf:'Statement', C).
 
-% The X-in-X loop.
-rdfs_individual(m(t,f,f), C, C, _G):-
-  nonvar(C), !,
-  (
-    rdf_global_id(rdfs:'Class', C), !
-  ;
-    rdf_global_id(rdfs:'Resource', C)
-  ).
 rdfs_individual(M, I, C, G):-
   rdf_db_or_axiom(M, I, rdf:type, C, G).
 % RDF 1
@@ -215,27 +229,27 @@ rdfs_individual(M, I, C, G):-
   debug(rdfs_read, '[RDF 1] ~w IN ~w', [I,C]).
 % RDF 2
 % @tbd Blank nodes are needed here.
-%rdfs_individual(M, I, C, G):-
-%  rdf_db_or_axiom(M, _, _, I, G),
-%  rdf_global_id(rdf:'XMLLiteral', C),
-%  debug(rdfs_read, '[RDF 2] ~w IN ~w', [I,C]).
+rdfs_individual(M, I, C, G):-
+  rdf_db_or_axiom(M, _, _, I, G),
+  rdf_global_id(rdf:'XMLLiteral', C),
+  debug(rdfs_read, '[RDF 2] ~w IN ~w', [I,C]).
 % RDFS 1
 % @tbd Blank nodes are needed here.
-%rdfs_individual(M, I, C, G):- M=m(t,_,_),
-%  rdf_db_or_axiom(M, _, _, I, G),
-%  rdf_is_literal(I),
-%  rdf_global_id(rdfs:'Literal', C),
-%  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
+rdfs_individual(M, I, C, G):- M=m(t,_,_),
+  rdf_db_or_axiom(M, _, _, I, G),
+  rdf_is_literal(I),
+  rdf_global_id(rdfs:'Literal', C),
+  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
 % RDFS 2
-%rdfs_individual(M, I, C, G):- M=m(t,_,_),
-%  rdf_db_or_axiom(M, I, P, _, G),
-%  rdfs_domain(M, P, C, G),
-%  debug(rdfs_read, '[RDFS 2] ~w IN ~w', [I,C]).
+rdfs_individual(M, I, C, G):- M=m(t,_,_),
+  rdf_db_or_axiom(M, I, P, _, G),
+  rdfs_domain(M, P, C, G),
+  debug(rdfs_read, '[RDFS 2] ~w IN ~w', [I,C]).
 % RDFS 3
-%rdfs_individual(M, I, C, G):- M=m(t,_,_),
-%  rdf_db_or_axiom(M, _, P, I, G),
-%  rdfs_range(M, P, C, G),
-%  debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
+rdfs_individual(M, I, C, G):- M=m(t,_,_),
+  rdf_db_or_axiom(M, _, P, I, G),
+  rdfs_range(M, P, C, G),
+  debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
 % RDFS 4a
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdf_global_id(rdfs:'Resource', C),
@@ -249,7 +263,7 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
   debug(rdfs_read, '[RDFS 4b] ~w IN ~w', [I,C]).
 % RDFS 9
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdfs_subclass(M, C0, C, G),
+  rdfs_subclass(r(f,_), M, C0, C, G),
   C0 \== C,
   rdfs_individual(M, I, C0, G),
   debug(rdfs_read, '[RDFS 9] ~w IN ~w', [I,C]).
@@ -332,65 +346,68 @@ rdfs_range_axiom(m(t,_,_), P, C):-
   rdf_global_id(rdfs:'Resource', C).
 
 rdfs_subclass(M, C1, C2, G):-
+  rdfs_subclass(r(t,t), M, C1, C2, G).
+
+rdfs_subclass(_R, M, C1, C2, G):-
   rdf_db_or_axiom(M, C1, rdfs:subClassOf, C2, G).
 % RDFS 8
-rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,_,_),
   % Putting the RDFS resource instantiation first rules out
   % the RDFS 8&9 loop.
   rdf_global_id(rdfs:'Resource', C2),
   rdfs_class(M, C1, G),
   debug(rdfs_read, '[RDFS 8] ~w SUBCLASS ~w', [C1,C2]).
 % RDFS 10
-rdfs_subclass(M, C, C, G):- M=m(t,_,_),
+rdfs_subclass(r(t,_RP), M, C, C, G):- M=m(t,_,_),
   rdfs_class(M, C, G),
   debug(rdfs_read, '[RDFS 10] ~w SUBCLASS ~w', [C,C]).
 % RDFS 11
-rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
+rdfs_subclass(r(_RC,RP), M, C1, C2, G):- M=m(t,_,_),
   (
     nonvar(C1)
   ->
     rdf_db_or_axiom(M, C1, rdfs:subClassOf, C3, G),
     C1 \== C3,
-    rdfs_subclass(M, C3, C2, G)
+    rdfs_subclass(r(f,RP), M, C3, C2, G)
   ;
     rdf_db_or_axiom(M, C3, rdfs:subClassOf, C2, G),
     C3 \== C2,
-    rdfs_subclass(M, C1, C3, G)
+    rdfs_subclass(r(f,RP), M, C1, C3, G)
   ),
   debug(rdfs_read, '[RDFS 11] ~w SUBCLASS ~w', [C1,C2]).
 % RDFS 13
-rdfs_subclass(M, C1, C2, G):- M=m(t,_,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,_,_),
   % Putting the RDFS literal instantiation first
   % prevents RDFS 9&13.
   rdf_global_id(rdfs:'Literal', C2),
   rdfs_individual(M, C1, rdfs:'Datatype', G),
   debug(rdfs_read, '[RDFS 13] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 5
-rdfs_subclass(M, C1, C2, G):- M=m(t,t,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
   rdf_global_id(rdfs:'Resource', C1),
   rdfs_subproperty(M, rdf:type, P, G),
   rdfs_domain(M, P, C2, G),
   debug(rdfs_read, '[EXT 5] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 6
-rdfs_subclass(M, C1, C2, G):- M=m(t,t,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
   rdf_global_id(rdfs:'Class', C1),
   rdfs_subproperty(M, rdfs:subClassOf, P, G),
   rdfs_domain(M, P, C2, G),
   debug(rdfs_read, '[EXT 6] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 7
-rdfs_subclass(M, C1, C2, G):- M=m(t,t,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
   rdf_global_id(rdfs:'Property', C1),
   rdfs_subproperty(M, rdfs:subPropertyOf, P, G),
   rdfs_domain(M, P, C2, G),
   debug(rdfs_read, '[EXT 7] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 8
-rdfs_subclass(M, C1, C2, G):- M=m(t,t,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
   rdf_global_id(rdfs:'Class', C1),
   rdfs_subproperty(M, rdfs:subClassOf, P, G),
   rdfs_range(M, P, C2, G),
   debug(rdfs_read, '[EXT 8] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 9
-rdfs_subclass(M, C1, C2, G):- M=m(t,t,_),
+rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
   rdf_global_id(rdfs:'Property', C1),
   rdfs_subproperty(M, rdfs:subPropertyOf, P, G),
   rdfs_range(M, P, C2, G),
