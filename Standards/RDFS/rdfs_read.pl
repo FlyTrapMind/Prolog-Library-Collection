@@ -106,14 +106,15 @@ This is solved by constraining RDFS 11 to non-reflexive
 application of the subclass relation.
 
 @author Wouter Beek
+@tbd How to materialize the membership properties (an infinite lot of them)?
 @version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
 */
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -229,26 +230,40 @@ rdfs_individual(M, I, C, G):-
   debug(rdfs_read, '[RDF 1] ~w IN ~w', [I,C]).
 % RDF 2
 % @tbd Blank nodes are needed here.
-rdfs_individual(M, I, C, G):-
-  rdf_db_or_axiom(M, _, _, I, G),
-  rdf_global_id(rdf:'XMLLiteral', C),
-  debug(rdfs_read, '[RDF 2] ~w IN ~w', [I,C]).
+%rdfs_individual(M, I, C, G):-
+%  rdf_db_or_axiom(M, _, _, I, G),
+%  rdf_global_id(rdf:'XMLLiteral', C),
+%  debug(rdfs_read, '[RDF 2] ~w IN ~w', [I,C]).
 % RDFS 1
 % @tbd Blank nodes are needed here.
-rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_db_or_axiom(M, _, _, I, G),
-  rdf_is_literal(I),
-  rdf_global_id(rdfs:'Literal', C),
-  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
+%rdfs_individual(M, I, C, G):- M=m(t,_,_),
+%  rdf_db_or_axiom(M, _, _, I, G),
+%  rdf_is_literal(I),
+%  rdf_global_id(rdfs:'Literal', C),
+%  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
 % RDFS 2
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_db_or_axiom(M, I, P, _, G),
-  rdfs_domain(M, P, C, G),
+  (
+    nonvar(C)
+  ->
+    rdfs_domain(M, P, C, G),
+    rdf_db_or_axiom(M, I, P, _, G)
+  ;
+    rdf_db_or_axiom(M, I, P, _, G),
+    rdfs_domain(M, P, C, G)
+  ),
   debug(rdfs_read, '[RDFS 2] ~w IN ~w', [I,C]).
 % RDFS 3
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_db_or_axiom(M, _, P, I, G),
-  rdfs_range(M, P, C, G),
+  (
+    nonvar(C)
+  ->
+    rdfs_range(M, P, C, G),
+    rdf_db_or_axiom(M, _, P, I, G)
+  ;
+    rdf_db_or_axiom(M, _, P, I, G),
+    rdfs_range(M, P, C, G)
+  ),
   debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
 % RDFS 4a
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
@@ -274,16 +289,28 @@ rdfs_individual(M, Lex, Datatype, G):- M=m(t,_,t),
   rdfs_individual(M, Datatype, rdfs:'Datatype', G),
   debug(rdfs_read, '[RDFD 1] ~w IN ~w', [Lex,Datatype]).
 
-% RDF axioms: property
+% RDF axioms: list.
+rdfs_individual_axiom(_, I, C):-
+  rdf_global_id(rdf:nil,    I),
+  rdf_global_id(rdf:'List', C).
+% RDF axioms: property.
 rdfs_individual_axiom(_, I, C):-
   ( rdf_global_id(rdf:first,     I)
-  ; rdf_global_id(rdf:nil,       I)
   ; rdf_global_id(rdf:object,    I)
   ; rdf_global_id(rdf:predicate, I)
   ; rdf_global_id(rdf:rest,      I)
   ; rdf_global_id(rdf:subject,   I)
   ; rdf_global_id(rdf:type,      I)
   ; rdf_global_id(rdf:value,     I)
+  ; nonvar(I),
+    rdf_container_membership_property(I)
+  ;
+    var(I),
+    % The `var` case would introduce an infinite number of axioms,
+    % so we restrict it.
+    between(1, 3, N),
+    format(atom(Name), '_~w', [N]),
+    rdf_global_id(rdf:Name, I)
   ),
   rdf_global_id(rdf:'Property', C).
 
@@ -332,15 +359,12 @@ rdfs_range_axiom(m(t,_,_), P, C):-
   ; rdf_global_id( rdf:subject,     P)
   ; rdf_global_id( rdf:value,       P)
   ; nonvar(P),
-    rdf_global_id(rdf:Name, P),
-    sub_atom(Name, 1, _, 0, After),
-    atom_number(After, N),
-    integer(N)
+    rdf_container_membership_property(P)
   ; var(P),
     % The `var` case would introduce an infinite number of axioms,
     % so we restrict it.
-    between(1, 3, I),
-    format(atom(Name), '_~w', [I]),
+    between(1, 3, N),
+    format(atom(Name), '_~w', [N]),
     rdf_global_id(rdf:Name, P)
   ),
   rdf_global_id(rdfs:'Resource', C).

@@ -125,7 +125,7 @@ materialize(G, Regime, TMS):-
 
   % Only accept new stuff.
   \+ rdf(S, P, O, G),
-gtrace,
+
   % Add to TMS.
   maplist(rdf_triple_name([]), [rdf(S,P,O)|Prems], [C_Label|P_Labels]),
   doyle_add_argument(TMS, P_Labels, Rule, C_Label, J),

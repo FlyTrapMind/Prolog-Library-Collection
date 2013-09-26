@@ -59,6 +59,7 @@ Web predicates for RDF graphs.
 %! ) is det.
 
 rdf_explain_web(S, P, O, SVG):-
+gtrace,
   with_output_to(atom(TripleName), rdf_triple_name([], S, P, O)),
   tms_export_argument_web(TripleName, SVG).
 

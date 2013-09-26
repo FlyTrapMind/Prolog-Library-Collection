@@ -3,12 +3,12 @@
   [
     average/2, % +Numbers:list(number)
                % -Average:number
+    betwixt/3, % +Min:integer
+               % ?Max:or([integer,oneof([inf])])
+               % ?Integer:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
                             % -BinomialCoefficient:integer
-    euclidean_distance/3, % +Coordinate1:coordinate
-                          % +Coordinate2:coordinate
-                          % -EuclideanDistance:float
     circumfence/2, % +Radius:float
                    % -Circumfence:float
     combinations/3, % +NumberOfObjects:integer
@@ -19,6 +19,9 @@
                       % +CycleLength:integer
                       % -NumList:list(integer)
     div/3,
+    euclidean_distance/3, % +Coordinate1:coordinate
+                          % +Coordinate2:coordinate
+                          % -EuclideanDistance:float
     even/1, % +Integer:integer
     factorial/2, % +N:integer
                  % -F:integer
@@ -68,7 +71,7 @@
 Extra arithmetic functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/08
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09
 */
 
 :- use_module(library(apply)).
@@ -84,29 +87,36 @@ average(Numbers, Average):-
   length(Numbers, NumberOfNumbers),
   Average is Sum / NumberOfNumbers.
 
+%! betwixt(
+%!   +Min:integer,
+%!   +Max:or([integer,oneof([inf])]),
+%!   ?Integer:integer
+%! ) is nondet.
+
+betwixt(Min, Max1, I):-
+  default(Max1, inf, Max2),
+  betwixt_(Min, Max2, I).
+
+betwixt_(Min, _Max, Min).
+betwixt_(Min, Max, Val2):-
+  betwixt_(Min, Max, Val1),
+  Val2 is Val1 + 1,
+  (
+    smaller_than_or_equal_to(Val2, Max)
+  ->
+    true
+  ;
+    % If the antecedent consition is not met, then we remove
+    % all the choice points and fail.
+    !, fail
+  ).
+
 binomial_coefficient(M, N, BC):-
   factorial(M, F_M),
   factorial(N, F_N),
   MminN is M - N,
   factorial(MminN, F_MminN),
   BC is F_M / (F_N * F_MminN).
-
-%! euclidean_distance(
-%!   +Coordinate1:coordinate,
-%!   +Coordinate2:coordinate,
-%!   -EuclideanDistance:float
-%! ) is det.
-% Returns the Euclidean distance between two coordinates.
-
-euclidean_distance(
-  coordinate(Dimension, Args1),
-  coordinate(Dimension, Args2),
-  EuclideanDistance
-):-
-  maplist(minus, Args1, Args2, X1s),
-  maplist(square, X1s, X2s),
-  sum_list(X2s, X2),
-  EuclideanDistance is sqrt(X2).
 
 %! circumfence(+Radius:float, -Circumfence:float) is det.
 % Returns the circumfence of a circle with the given radius.
@@ -155,6 +165,23 @@ div(X, Y, Z):-
   rational_div(X, Y, Z).
 div(X, Y, Z):-
   float_div(X, Y, Z).
+
+%! euclidean_distance(
+%!   +Coordinate1:coordinate,
+%!   +Coordinate2:coordinate,
+%!   -EuclideanDistance:float
+%! ) is det.
+% Returns the Euclidean distance between two coordinates.
+
+euclidean_distance(
+  coordinate(Dimension, Args1),
+  coordinate(Dimension, Args2),
+  EuclideanDistance
+):-
+  maplist(minus, Args1, Args2, X1s),
+  maplist(square, X1s, X2s),
+  sum_list(X2s, X2),
+  EuclideanDistance is sqrt(X2).
 
 %! even(+Number:number) is semidet.
 % Succeeds if the integer is even.
@@ -359,7 +386,7 @@ pred(Integer, Predecessor):-
 
 %! rbetween(?Min:integer, +Max:integer, ?Value:integer) is semidet.
 % If `Min` and `Max` are given, `Value` is instantiated with `Max` and
-% whith predecessor integers upon backtracking, until `Value` is `Min`.
+% with predecessor integers upon backtracking, until `Value` is `Min`.
 %
 % If only `Max` is given there is no lowest value for `Value`.
 
@@ -373,6 +400,10 @@ rbetween(_Min, Value, _Max, Value).
 rbetween(Min, Between, Max, Value):-
   NewBetween is Between - 1,
   rbetween(Min, NewBetween, Max, Value).
+
+smaller_than_or_equal_to(_, inf):- !.
+smaller_than_or_equal_to(X, Y):-
+  X =< Y.
 
 %! square(+X:float, -Square:float) is det.
 % Returns the square of the given number.
