@@ -34,6 +34,7 @@ Call a DCG rule multiple times while aggregating the arguments.
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(option)).
 
 % DCG_MULTI
@@ -250,7 +251,7 @@ is_meta(separator).
 % i.e., is either an integer or the atom `inf`.
 
 is_repetition_value(V):-
-  integer(V), !.
+  nonneg(V), !.
 is_repetition_value(V):-
   V == inf.
 
@@ -276,6 +277,11 @@ is_repetition_value(V):-
 
 repetition(Rep, Min2, Max2):-
   (
+    Rep == 0
+  ->
+    Min2 = 0,
+    Max2 = 0
+  ;
     % A single value.
     is_repetition_value(Rep)
   ->
