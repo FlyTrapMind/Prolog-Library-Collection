@@ -56,6 +56,9 @@ Converts XML DOMs to RDF graphs.
 %! ) is det.
 
 create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
+  % Create the resource name.
+  rdf_global_id(Ns:Name1, C),
+  downcase_atom(Name1, Name2),
   findall(
     Value,
     (
@@ -64,12 +67,12 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
     ),
     Values
   ),
-  atomic_list_concat(Values, '_', Name),
-
-  rdf_global_id(Ns:_, C),
-  rdf_global_id(Ns:Name, S),
+  atomic_list_concat(Values, '_', Name3),
+  atomic_list_concat([Name2,Name3], '/', Name4),
+  rdf_global_id(Ns:Name4, S),
+  
   rdf_assert_individual(S, C, G),
-
+  
   create_triples(DOM1, XML_PrimaryPs, Trans, S, G, DOM2).
 
 %! create_triple(
