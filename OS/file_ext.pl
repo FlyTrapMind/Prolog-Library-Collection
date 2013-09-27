@@ -1,6 +1,9 @@
 :- module(
   file_ext,
   [
+    absolute_file_name2/3, % +Spec:compound
+                           % -File:atom
+                           % +Options:list(nvpair)
     base_or_file_to_file/3, % +BaseOrFile:atom
                             % ?FileType:atom
                             % -File:atom
@@ -88,6 +91,20 @@ We use the following abbreviations in this module:
 :- debug(file_ext).
 
 
+
+%! absolute_file_name2(
+%!   +Spec:compound,
+%!   -File:atom,
+%!   +Options:list(nvpair)
+%! ) is semidet.
+% @see Like absolute_file_name/3 but fails on existence exceptions.
+
+absolute_file_name2(Spec, F, O1):-
+  catch(
+    absolute_file_name(Spec, F, O1),
+    error(existence_error(_,_), _),
+    fail
+  ).
 
 %! base_or_file_to_file(
 %!   +BaseOrFile:atom,

@@ -117,8 +117,8 @@
     eight//1,
     enquiry//0,
     enquiry//1,
-    end_of_line//0,
-    end_of_line//1,
+    ascii_end_of_line//0,
+    ascii_end_of_line//1,
     end_of_medium//0,
     end_of_medium//1,
     end_of_text//0,
@@ -678,18 +678,18 @@ eight(56) --> [56].
 enquiry --> [5].
 enquiry(5) --> [5].
 
-end_of_line --> carriage_return.
-end_of_line --> end_of_medium.
-end_of_line --> end_of_text.
-end_of_line --> end_of_transmission.
-end_of_line --> end_of_transmission_block.
-end_of_line --> line_feed.
-end_of_line(C) --> carriage_return(C).
-end_of_line(C) --> end_of_medium(C).
-end_of_line(C) --> end_of_text(C).
-end_of_line(C) --> end_of_transmission(C).
-end_of_line(C) --> end_of_transmission_block(C).
-end_of_line(C) --> line_feed(C).
+ascii_end_of_line --> carriage_return.
+ascii_end_of_line --> end_of_medium.
+ascii_end_of_line --> end_of_text.
+ascii_end_of_line --> end_of_transmission.
+ascii_end_of_line --> end_of_transmission_block.
+ascii_end_of_line --> line_feed.
+ascii_end_of_line(C) --> carriage_return(C).
+ascii_end_of_line(C) --> end_of_medium(C).
+ascii_end_of_line(C) --> end_of_text(C).
+ascii_end_of_line(C) --> end_of_transmission(C).
+ascii_end_of_line(C) --> end_of_transmission_block(C).
+ascii_end_of_line(C) --> line_feed(C).
 
 end_of_medium --> [25].
 end_of_medium(25) --> [25].
@@ -1291,11 +1291,11 @@ white(C) -->
   [C],
   {code_type(C, white)}.
 
-ascii_white --> end_of_line.
+ascii_white --> ascii_end_of_line.
 ascii_white --> form_feed.
 ascii_white --> space.
 ascii_white --> ascii_tab.
-ascii_white(C) --> end_of_line(C).
+ascii_white(C) --> ascii_end_of_line(C).
 ascii_white(C) --> form_feed(C).
 ascii_white(C) --> space(C).
 ascii_white(C) --> ascii_tab(C).

@@ -17,6 +17,7 @@
     codes//1, % +Codes:list(code)
     collection//2, % +Options:list(nvpair)
                    % +Elements:list
+    end_of_line//0,
     graphic//1, % -Graphic:list(code)
     horizontal_line//0,
     horizontal_line//1, % +Length:integer
@@ -302,6 +303,13 @@ collection_(O1, [H|T]) -->
   ),
 
   collection_(O1, T).
+
+end_of_line -->
+  carriage_return, line_feed, !.
+end_of_line -->
+  line_feed, !.
+end_of_line -->
+  carriage_return.
 
 graphic([H|T]) -->
   u_graphic(H),
