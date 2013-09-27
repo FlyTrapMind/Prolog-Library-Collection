@@ -279,7 +279,7 @@ repetition(Rep, Min2, Max2):-
     % A single value.
     is_repetition_value(Rep)
   ->
-    Min2 = Rep,
+    Min2 = 1,
     Max2 = Rep
   ;
     Rep = Min1-Max1,

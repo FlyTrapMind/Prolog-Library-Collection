@@ -19,6 +19,8 @@
     rdf_collection/3, % ?Collection:uri
                       % -Contents:list(uri)
                       % ?Graph:atom
+    rdf_container_membership_property/1, % ?Predicate:uri
+
 % SEQUENCE
     rdf_seq/2, % ?Seq:uri
                % ?Graph:atom
@@ -34,11 +36,13 @@ Support for RDF containers (sequence, bag, and alternatives).
 
 @author Wouter Beek
 @tbd Add predicates for building containers.
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/08
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
 */
 
+:- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(math(math_ext)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
@@ -139,15 +143,19 @@ rdf_collection_(Collection, Contents, G):-
   ).
 
 %! rdf_container_membership_property(+Predicate:uri) is semidet.
+%! rdf_container_membership_property(-Predicate:uri) is nondet.
 % Succeeds if =Predicate= is a container membership property.
 
 rdf_container_membership_property(P):-
-  nonvar(P),
+  nonvar(P), !,
   rdf_global_id(rdf:Name, P),
-  atom_concat('_', Number, Name),
-  atom_number(Number, I),
-  integer(I),
-  I > 0.
+  atom_concat('_', Atom, Name),
+  atom_number(Atom, Number),
+  nonneg(Number).
+rdf_container_membership_property(P):-
+  betwixt(1, inf, Integer),
+  format(atom(Name), '_~w', [Integer]),
+  rdf_global_id(rdf:Name, P).
 
 
 

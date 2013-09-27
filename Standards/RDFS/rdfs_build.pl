@@ -14,7 +14,10 @@
     rdfs_remove_class/2, % +Class:iri
                          % +Graph:atom
 
-% COMMENTS
+% COMMENT
+    rdfs_assert_comment/3, % +Resource:or([blank,iri,literal])
+                           % +Comment:atom
+                           % +Graph:atom
     rdfs_assert_comment/4, % +Resource:or([blank,iri,literal])
                            % +Comment:atom
                            % ?LanguageTag:atom
@@ -96,6 +99,7 @@ using the following triples:
 */
 
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_bnode_map)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
@@ -109,6 +113,9 @@ using the following triples:
 :- rdf_meta(rdfs_assert_property_class(r,+)).
 :- rdf_meta(rdfs_assert_subclass(r,r,+)).
 :- rdf_meta(rdfs_remove_class(r,+)).
+% COMMENT
+:- rdf_meta(rdfs_assert_comment(r,+,+)).
+:- rdf_meta(rdfs_assert_comment(r,+,+,+)).
 % DOMAIN & RANGE
 :- rdf_meta(rdfs_assert_domain(r,r,+)).
 :- rdf_meta(rdfs_assert_domain_range(r,r,+)).
@@ -153,18 +160,27 @@ rdfs_remove_class(C, G):-
 %! rdfs_assert_comment(
 %!   +Resource:or([blank,iri,literal]),
 %!   +Comment:atom,
-%!   ?LanguageTag:atom,
 %!   +Graph:atom
 %! ) is det.
 
-rdfs_assert_comment(R, Comment, LangTag, G):-
+rdfs_assert_comment(R, Comment, G):-
+  rdfs_assert_comment(R, _LangTag, Comment, G).
+
+%! rdfs_assert_comment(
+%!   +Resource:or([blank,iri,literal]),
+%!   ?LanguageTag:atom,
+%!   +Comment:atom,
+%!   +Graph:atom
+%! ) is det.
+
+rdfs_assert_comment(R, LangTag, Comment, G):-
   rdf_is_literal(R), !,
-  
-  rdfs_assert_comment(R, Comment, LangTag, G).
-rdfs_assert_comment(R, Comment, LangTag, G):-
+  r2b(G, R, B),
+  rdfs_assert_comment(B, Comment, LangTag, G).
+rdfs_assert_comment(R, LangTag, Comment, G):-
   var(LangTag), !,
   rdf_assert_literal(R, rdfs:comment, Comment, G).
-rdfs_assert_comment(R, Comment, LangTag, G):-
+rdfs_assert_comment(R, LangTag, Comment, G):-
   rdf_assert_literal(R, rdfs:comment, Comment, LangTag, G).
 
 

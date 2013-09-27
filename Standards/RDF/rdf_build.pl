@@ -18,7 +18,7 @@
                           % +Graph:atom
     rdf_assert_literal/5, % +Subject:oneof([bnode,uri])
                           % +Predicate:uri
-                          % +Language:atom
+                          % +LanguageTag:atom
                           % +Literal:atom
                           % +Graph:atom
     rdf_assert_xml_literal/4, % +Subject:oneof([bnode,uri])
@@ -166,14 +166,14 @@ rdf_assert_datatype(S, P, DatatypeName, Value, G):-
 % @param Graph The atomic name of an RDF graph.
 % @see rdf_assert_literal/5 also specifies the language.
 
-rdf_assert_literal(S, P, Literal, G):-
+rdf_assert_literal(S, P, Lit, G):-
   % Make sure that the literal is atomic.
-  rdf_assert(S, P, literal(Literal), G).
+  rdf_assert(S, P, literal(Lit), G).
 
 %! rdf_assert_literal(
 %!   +Subject:oneof([bnode,uri]),
 %!   +Predicate:uri,
-%!   +Language:atom,
+%!   +LanguageTag:atom,
 %!   +Literal:atom,
 %!   +Graph:atom
 %! ) is det.
@@ -181,13 +181,15 @@ rdf_assert_literal(S, P, Literal, G):-
 %
 % @param Subject A resource.
 % @param Predicate A resource.
-% @param Language The atomic name of a language.
+% @param LanguageTag An atomic language tag.
 % @param Literal An atom.
 % @param Graph The atomic name of an RDF graph.
 
-rdf_assert_literal(S, P, Language, Literal, G):-
-  % Make sure that the literal is atomic.
-  rdf_assert(S, P, literal(lang(Language, Literal)), G).
+rdf_assert_literal(S, P, LangTag, Lit, G):-
+  nonvar(LangTag), !,
+  rdf_assert(S, P, literal(lang(LangTag, Lit)), G).
+rdf_assert_literal(S, P, _LangTag, Lit, G):-
+  rdf_assert_literal(S, P, Lit, G).
 
 %! rdf_assert_xml_literal(
 %!   +Subject:oneof([bnode,uri]),
