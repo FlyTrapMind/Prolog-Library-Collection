@@ -5,8 +5,10 @@
              % ?Date:compound
     day//2, % ?Lang:atom
             % ?Day:integer
-    month//2 % ?Lang:atom
-             % ?Month:integer
+    month//2, % ?Lang:atom
+              % ?Month:integer
+    year//2 % ?Lang:atom
+            % ?Year:integer
   ]
 ).
 
