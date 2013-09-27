@@ -25,6 +25,7 @@ Converts XML DOMs to RDF graphs.
 @version 2013/06, 2013/09
 */
 
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -35,13 +36,10 @@ Converts XML DOMs to RDF graphs.
 
 :- meta_predicate(create_resource(+,+,3,+,+,-,-)).
 :- meta_predicate(create_triples(+,+,3,+,+,-)).
-:- meta_predicate(rdf_property_trans(+,3,+,+,+)).
-:- meta_predicate(rdf_subject_trans(+,+,3,+,+)).
+:- meta_predicate(get_dom_value(+,3,+,-)).
 
 :- rdf_meta(create_resource(+,+,:,r,+,-,-)).
 :- rdf_meta(create_triples(+,+,:,r,+,-)).
-:- rdf_meta(rdf_property_trans(+,:,r,+,+)).
-:- rdf_meta(rdf_subject_trans(+,+,:,r,+)).
 
 :- debug(xml_to_rdf).
 
@@ -57,28 +55,22 @@ Converts XML DOMs to RDF graphs.
 %!   -XML_RemainingDOM:list
 %! ) is det.
 
-% The resource already exists.
-create_resource(DOM, PrimaryPs, Trans, _C, G, S, DOM):-
-  rdf_subject_trans(DOM, PrimaryPs, Trans, S, G), !,
-  debug(
-    xml_to_rdf,
-    'The resource for the following XML DOM already exists: ~w',
-    [DOM]
-  ).
-% The resource does not yet exist and it created.
-create_resource(DOM1, PrimaryPs, Trans, C, G, S, DOM2):-
-  rdf_global_id(Ns:CName1, C),
-  flag(CName1, Id, Id + 1),
+create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
+  findall(
+    Value,
+    (
+      member(XML_PrimaryP, XML_PrimaryPs),
+      get_dom_value(DOM1, Trans, XML_PrimaryP, Value)
+    ),
+    Values
+  ),
+  atomic_list_concat(Values, '_', Name),
 
-  % The convention is that only RDF terms denoting RDFS classes
-  % start with an uppercase letter.
-  downcase_atom(CName1, CName2),
-
-  atomic_list_concat([CName2,Id], '_', SName),
-  rdf_global_id(Ns:SName, S),
+  rdf_global_id(Ns:_, C),
+  rdf_global_id(Ns:Name, S),
   rdf_assert_individual(S, C, G),
 
-  create_triples(DOM1, PrimaryPs, Trans, S, G, DOM2).
+  create_triples(DOM1, XML_PrimaryPs, Trans, S, G, DOM2).
 
 %! create_triple(
 %!   +RDF_Subject:or([bnode,iri]),
@@ -124,15 +116,67 @@ create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
     call(Trans, XML_P, RDF_P, RDF_O_Type),
     create_triple(S, RDF_P, RDF_O_Type, Content2, G)
   ),
+  
   create_triples(DOM2, Ps2, Trans, S, G, RestDOM).
 % Neither the DOM nor the propery filter is empty.
 % This means that some properties in the filter are optional.
 create_triples(DOM, _Ps, _Trans, _S, _G, DOM).
 
+%! get_dom_value(
+%!   +DOM:list,
+%!   :XML2RDF_Translation,
+%!   +XML_Property:atom,
+%!   -Value
+%! ) is det.
+
+get_dom_value(DOM, Trans, XML_P, Value):-
+  memberchk(element(XML_P, _, [Content]), DOM),
+  call(Trans, XML_P, _RDF_P, O_Type),
+  (
+    O_Type == literal
+  ->
+    Value = Content
+  ;
+    xsd_datatype(O_Type, XSD_Datatype)
+  ->
+    xsd_canonicalMap(XSD_Datatype, Content, Value0),
+    atom_codes(Value, Value0)
+  ;
+    Value = Content
+  ).
+
 update_property_filter(Ps1, _XML_P, _Ps2):-
   var(Ps1), !.
 update_property_filter(Ps1, XML_P, Ps2):-
   selectchk(XML_P, Ps1, Ps2).
+
+
+
+/*
+In the past, I first used to check whether a resource already existed.
+This meant that XML2RDF conversion would slow down over time
+(increasingly longer query times for resource existence in the growing
+RDF graph).
+
+Nevertheless, some of these methods are quite nice.
+They translate XML elements to RDF properties and use the object type
+for converting XML content to RDF objects.
+
+:- meta_predicate(rdf_property_trans(+,3,+,+,+)).
+:- meta_predicate(rdf_subject_trans(+,+,3,+,+)).
+
+:- rdf_meta(rdf_property_trans(+,:,r,+,+)).
+:- rdf_meta(rdf_subject_trans(+,+,:,r,+)).
+
+% The resource already exists.
+create_resource(DOM, PrimaryPs, Trans, _C, G, S, DOM):-
+  rdf_subject_trans(DOM, PrimaryPs, Trans, S, G), !,
+  debug(
+    xml_to_rdf,
+    'The resource for the following XML DOM already exists: ~w',
+    [DOM]
+  ).
+% The resource does not yet exist and is created.
 
 %! rdf_object_trans(
 %!   ?RDF_Subject:or([bnode,iri]),
@@ -176,13 +220,14 @@ rdf_property_trans(DOM, Trans, S, XML_P, G):-
 %!   ?RDF_Subject:or([bnode,iri]),
 %!   +RDF_Graph:atom
 %! ) is nondet.
-
 % Returns a resource that has the given XML properties set to
 % the object values that occur in the XML DOM.
+
 rdf_subject_trans(DOM, [P|Ps], Trans, S, G):-
   rdf_property_trans(DOM, Trans, S, P, G),
   forall(
     member(P_, Ps),
     rdf_property_trans(DOM, Trans, S, P_, G)
   ).
+*/
 
