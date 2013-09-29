@@ -861,4 +861,3 @@ xsd_lexicalMap_(xsd:time, LEX, Time):- !,
 xsd_lexicalMap_(Datatype, _LEX, _Value):- !,
   debug(xsd, 'There is no lexical mapping for datatype ~w.', [Datatype]),
   fail.
-

@@ -19,9 +19,9 @@
   ]
 ).
 
-/** <module> XSD_DECIMAL
+/** <module> XSD decimal
 
-*Decimal* represents a subset of the real numbers, which can be represented
+*=decimal=* represents a subset of the real numbers, which can be represented
 by decimal numerals.
 
 #### Prolog compound term
@@ -320,9 +320,9 @@ decimalLexicalMap2(LEX, D):-
 decimalLexicalRep1(D) -->
   {var(D)}, !,
   (sign(H1) -> {L1 = [H1|T1]} ; {L1 = T1}),
-  dcg_multi(decimal_digit, 1-_, T1, []),
+  dcg_multi1(decimal_digit, 1-_, T1),
   (  dot(H2),
-     dcg_multi(decimal_digit, _, T2, [])
+     dcg_multi1(decimal_digit, T2)
   -> {L2 = [H2|T2]}
   ;  {L2 = []}
   ),
@@ -338,10 +338,10 @@ decimalLexicalRep1(D, H, T):-
 decimalLexicalRep2(T0, decimal(I,N)) -->
   {var(I), var(N)}, !,
   (sign(T1, Sign) ; {Sign = 1}),
-  dcg_multi(decimal_digit, 1-_, I1s, []),
+  dcg_multi1(decimal_digit, 1-_, I1s),
   (
     dot, {T3 = '.'},
-    dcg_multi(decimal_digit, _, I2s, [])
+    dcg_multi1(decimal_digit, I2s)
   ;
     {I2s  = []}
   ),
@@ -362,10 +362,10 @@ decimalLexicalRep2(T0, decimal(I,N)) -->
     append(I1s, I2s, Is)
   },
   (sign(T1, Sign) ; {Sign = 1}),
-  dcg_multi(decimal_digit, 1-_, I1s, []),
+  dcg_multi1(decimal_digit, 1-_, I1s),
   (
     dot,
-    dcg_multi(decimal_digit, _, I2s, [])
+    dcg_multi1(decimal_digit, I2s)
   ->
     {T3 = '.'}
   ;

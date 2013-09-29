@@ -73,6 +73,12 @@ The gYearMonth datatype has the following values for its fundamental facets:
 %!   +GregorianYearMonth:compound,
 %!   -LEX:list(code)
 %! ) is det.
+% A compound term that represents a Gregorian year-month has
+% the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values for year, month, and time zone are used.
 
 gYearMonthCanonicalMap(GYM, LEX):-
   phrase(gYearMonthCanonicalMap(GYM), LEX).
@@ -94,6 +100,12 @@ gYearMonthCanonicalMap(dateTime(Y,M,_D,_H,_MM,_S,TZ)) -->
 %!   +LEX:list(code),
 %!   -GregorianYearMonth:compound
 %! ) is nondet.
+% A compound term that represents a Gregorian year-month has
+% the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values for year, month, and time zone are used.
 
 gYearMonthLexicalMap(LEX, GYM):-
   phrase(gYearMonthLexicalRep(GYM), LEX).

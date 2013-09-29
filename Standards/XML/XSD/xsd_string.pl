@@ -10,7 +10,7 @@
 
 /** <module> SXD_STRING
 
-The *|=string= datatype|* represents character strings in XML.
+The *=string=* datatype represents character strings in XML.
 
 #### Value space
 

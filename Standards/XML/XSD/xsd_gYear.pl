@@ -3,14 +3,17 @@
   [
     gYearCanonicalMap/2, % +GregorianYear:compound
                          % -LEX:list(code)
-    gYearLexicalMap/2 % +LEX:list(code)
-                      % -GregorianYear:compound
+    gYearLexicalMap/2, % +LEX:list(code)
+                       % -GregorianYear:compound
+% CONVERSIONS
+    integer_to_gYear_dateTime/2 % +Integer
+                                % -DateTime:compound
   ]
 ).
 
-/** <module> XSD_G_YEAR
+/** <module> XSD Gregorian year
 
-gYear represents Gregorian calendar years.
+*=gYear=* represents Gregorian calendar years.
 
 Because month/year combinations in one calendar only rarely correspond to
 month/year combinations in other calendars, values of this type are not,
@@ -65,9 +68,18 @@ The gYear datatype has the following values for its fundamental facets:
 
 
 
+integer_to_gYear_dateTime(Y, dateTime(Y,_M,_D,_H,_MM,_S,_TZ)).
+
+
+
 % CANONICAL MAPPING %
 
 %! gYearCanonicalMap(+GregorianYear:compound, -LEX:list(code)) is det.
+% A compound term that represents a Gregorian year has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values year and time zone are used.
 
 gYearCanonicalMap(GY, LEX):-
   phrase(gYearCanonicalMap(GY), LEX).
@@ -80,15 +92,17 @@ gYearCanonicalMap(GY, LEX):-
 gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,TZ)) --> !,
   yearCanonicalFragmentMap(Y),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
-% Alternative input format for ease of input.
-gYearCanonicalMap(Y) -->
-  gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,_TZ)).
 
 
 
 % LEXICAL MAPPING %
 
 %! gYearLexicalMap(+LEX:list(code), -GregorianYear:compound) is nondet.
+% A compound term that represents a Gregorian year has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values year and time zone are used.
 
 gYearLexicalMap(LEX, GY):-
   phrase(gYearLexicalRep(GY), LEX).
@@ -108,4 +122,3 @@ gYearLexicalRep(GY) -->
   yearFrag(Y),
   ("" ; timezoneFrag(TZ)), !,
   {newDateTime(Y, _M, _D, _H, _MM, _S, TZ, GY)}.
-

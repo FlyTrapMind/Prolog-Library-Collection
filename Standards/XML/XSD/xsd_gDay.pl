@@ -8,9 +8,9 @@
   ]
 ).
 
-/** <module> XSD_G_DAY
+/** <module> XSD Gregorian day
 
-gDay represents whole days within an arbitrary month -- days that recur at
+*=gDay=* represents whole days within an arbitrary month -- days that recur at
 the same point in each (Gregorian) month. This datatype is used to represent
 a specific day of the month. To indicate, for example, that an employee gets
 a paycheck on the 15th of each month. Days beyond 28 cannot occur
@@ -91,6 +91,11 @@ The gDay datatype has the following values for its fundamental facets:
 % CANONICAL MAPPING %
 
 %! gDayCanonicalMap(+GregorianDay:compound, -LEX:list(code)) is det.
+% A compound term that represents a Gregorian day has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values day and time zone are used.
 
 gDayCanonicalMap(GD, LEX):-
   phrase(gDayCanonicalMap(GD), LEX).
@@ -110,6 +115,11 @@ gDayCanonicalMap(dateTime(_Y,_M,D,_H,_MM,_S,TZ)) -->
 % LEXICAL MAPPING %
 
 %! gDayLexicalMap(+LEX:list(code), -GregorianDay:compound) is nondet.
+% A compound term that represents a Gregorian day has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values day and time zone are used.
 
 gDayLexicalMap(LEX, GD):-
   phrase(gDayLexicalRep(GD), LEX).
@@ -130,4 +140,3 @@ gDayLexicalRep(DT) -->
   dayFrag(D),
   ("" ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, _M, D, _H, _MM, _S, TZ, DT)}.
-

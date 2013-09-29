@@ -108,7 +108,7 @@ character(C) -->
 
 comment(Comment) -->
   'WSP',
-  dcg_multi(character, 0-69, Comment, [convert(codes_atom)]).
+  dcg_multi1(character, 0-69, Comment, [convert(codes_atom)]).
 
 %! continuation//
 %
@@ -138,7 +138,7 @@ continuation -->
 encodingSig(Encoding) -->
   "%%encoding",
   'field-sep',
-  dcg_multi(encodingSig_, _N, Encoding, [convert(codes_atom)]),
+  dcg_multi1(encodingSig_, _N, Encoding, [convert(codes_atom)]),
   'CRLF'.
 encodingSig_(C) --> 'ALPHA'(C).
 encodingSig_(C) --> 'DIGIT'(_D, C).
@@ -161,7 +161,7 @@ encodingSig_(C) --> underscore(C).
   ).
 'ESCAPE'(DecimalNumber) -->
   "&#x",
-  dcg_multi('HEXDIG', 2-6, DecimalNumber, [convert(digits_to_decimal)]).
+  dcg_multi1('HEXDIG', 2-6, DecimalNumber, [convert(digits_to_decimal)]).
 
 %! field(?Field:nvpair)//
 %
@@ -203,10 +203,10 @@ field(Name=Body) -->
 % @see Information on grapheme clusters, UAX29.
 
 'field-body'(Body) -->
-  dcg_multi('field-body_', _, Body, [convert(atomic_list_concat)]).
+  dcg_multi1('field-body_', _Rep, Body, [convert(atomic_list_concat)]).
 'field-body_'(Body) -->
   continuation,
-  dcg_multi(character, 1-_, Body, [convert(codes_atom)]).
+  dcg_multi1(character, 1-_, Body, [convert(codes_atom)]).
 
 %! 'field-name'(-Tree:compound, ?Name:atom)//
 % The field-name is an identifer. Field-names consist of a sequence of
@@ -234,7 +234,7 @@ field(Name=Body) -->
 % We therefore introduce the extra DCG rule 'field-name-character'//1.
 
 'field-name'(Name) -->
-  dcg_multi('field-name-character', 1-_, Name, [convert(codes_atom)]).
+  dcg_multi1('field-name-character', 1-_, Name, [convert(codes_atom)]).
 
 'field-name-character'(C) -->
   character(C),
@@ -273,7 +273,7 @@ field(Name=Body) -->
   % since the production of the separator can process
   % the empty string as well.
   separator(_Comments),
-  dcg_multi(record, _N, Records, []).
+  dcg_multi1(record, Records).
 
 %! record(?Fields:list(nvpair))//
 % ~~~{.abnf}
@@ -281,7 +281,7 @@ field(Name=Body) -->
 % ~~~
 
 record(Fields) -->
-  dcg_multi(field, 1-_, Fields, []),
+  dcg_multi1(field, 1-_, Fields),
   separator(_Comments).
 
 %! separator(?Comments:list(atom))//
@@ -292,7 +292,7 @@ record(Fields) -->
 
 separator(Comments) -->
   ('blank-line' ; ""),
-  dcg_multi(separator_, _N, Comments, [convert(exclude(var))]).
+  dcg_multi1(separator_, _N, Comments, [convert(exclude(var))]).
 separator_(Comment) -->
   "%%",
   (comment(Comment) ; ""),

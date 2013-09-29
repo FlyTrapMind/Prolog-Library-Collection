@@ -217,7 +217,7 @@ ci_code(CI_Code) -->
 % ~~~
 
 ci_string(Codes) -->
-  dcg_multi(ci_code, _, Codes, []), !.
+  dcg_multi1(ci_code, Codes), !.
 
 code(C) -->
   [C].
@@ -414,7 +414,7 @@ proof_(O1, Proof) -->
   newline,
 
   % Print premises / subproofs.
-  dcg_multi(proof(O2), _, Premises, []).
+  dcg_multi1(proof(O2), Premises).
 
 proposition(O1, Proposition) -->
   {

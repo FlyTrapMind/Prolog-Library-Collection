@@ -231,21 +231,10 @@ rdf_load2(File, O1):-
 rdf_new_graph(G, G):-
   \+ rdf_graph(G), !.
 % An RDF graph with the same name already exists, so the name is altered.
-rdf_new_graph(Graph1, Graph3):-
-  var(Graph3),
-  split_atom_exclusive('_', Graph1, Splits),
-  reverse(Splits, [LastSplit | RSplits]),
-  (
-    atom_number(LastSplit, OldNumber)
-  ->
-    NewNumber is OldNumber + 1,
-    atom_number(NewLastSplit, NewNumber),
-    reverse([NewLastSplit | RSplits], NewSplits)
-  ;
-    reverse(['1', LastSplit | RSplits], NewSplits)
-  ),
-  atomic_list_concat(NewSplits, '_', Graph2),
-  rdf_new_graph(Graph2, Graph3).
+rdf_new_graph(G1, G3):-
+  var(G3),
+  new_atom(G1, G2),
+  rdf_new_graph(G2, G3).
 
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.

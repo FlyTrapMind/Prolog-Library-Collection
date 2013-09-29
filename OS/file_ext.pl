@@ -36,6 +36,7 @@
                              % -ToFile:atom
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
+    is_absolute_file_name2/1, % ?File:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
     new_file/2, % +File1:atom
@@ -80,6 +81,7 @@ We use the following abbreviations in this module:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(atom_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
@@ -255,6 +257,16 @@ hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
 
+%! is_absolute_file_name2(+File:atom) is semidet.
+% Wrapper around is_absolute_file_name/1 that fails for variable arguments.
+%
+% @see is_absolute_file_name/1
+
+is_absolute_file_name2(F):-
+  var(F), !, fail.
+is_absolute_file_name2(F):-
+  is_absolute_file_name(F).
+
 %! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.
 % RE and To must be in the same directory.
 % How arbitrary this restriction is!
@@ -276,28 +288,16 @@ merge_into_one_file0(Out, FromFile):-
     close(In)
   ).
 
-%! new_file(+File1:atom, -File2:atom) is det.
+%! new_file(+OldFile:atom, -NewFile:atom) is det.
 % If a file with the same name exists in the same directory, then
 % then distinguishing integer is appended to the file name.
 
-new_file(File, File):-
-  \+ exists_file(File), !.
-new_file(File, NewFile):-
-  file_name_extension(Base, Extension, File),
-  dcg_phrase(dcg_separated_list(underscore, Codess), Base),
-  reverse(Codess, [LastCodes | RestCodess]),
-  (
-    number_codes(OldNumber, LastCodes)
-  ->
-    NewNumber is OldNumber + 1,
-    number_codes(NewLastCodes, NewNumber),
-    reverse([NewLastCodes | RestCodess], NewCodess)
-  ;
-    reverse(["1", LastCodes | RestCodess], NewCodess)
-  ),
-  maplist(atom_codes, NewAtoms, NewCodess),
-  atomic_list_concat(NewAtoms, '_', NewBase),
-  file_name_extension(NewBase, Extension, NewFile).
+new_file(F, F):-
+  \+ exists_file(F), !.
+new_file(F1, F2):-
+  file_name_extension(Base1, Ext, F1),
+  new_atom(Base1, Base2),
+  file_name_extension(Base2, Ext, F2).
 
 safe_copy_file(From, To):-
   access_file(From, read),

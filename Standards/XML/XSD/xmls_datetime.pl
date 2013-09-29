@@ -120,6 +120,7 @@ time zone specificiation.
 
 @author Wouter Beek
 @see http://www.w3.org/TR/xmlschema-2/#isoformats
+@tbd Integrate this with the newer XSD modules that follow XSD 1.1.
 @version 2013/08
 */
 

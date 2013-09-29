@@ -54,9 +54,14 @@
                              % +Graph:graph
 
 % PROPERTY HIERARCHY
-    rdfs_assert_subproperty/3 % +Property:uri
-                              % +SuperProperty:uri
-                              % +Graph:graph
+    rdfs_assert_subproperty/3, % +Property:uri
+                               % +SuperProperty:uri
+                               % +Graph:graph
+
+% UTILITY PROPERTIES
+    rdfs_assert_seeAlso/3 % +Subject:or([bnode,iri])
+                          % +Website:url
+                          % +Graph:atom
   ]
 ).
 
@@ -127,6 +132,8 @@ using the following triples:
 :- rdf_meta(rdfs_retractall_label(r,+,+,+)).
 % PROPERTY HIERARCHY
 :- rdf_meta(rdfs_assert_subproperty(r,r,+)).
+% UTILITY PROPERTIES
+:- rdf_meta(rdfs_assert_seeAlso(r,+,+)).
 
 
 
@@ -275,3 +282,9 @@ rdfs_assert_subproperty(Property, SuperProperty, G):-
   %rdf_assert(Property, rdf:type, rdf:'Property', G),
   rdf_assert(Property, rdfs:subPropertyOf, SuperProperty, G).
 
+
+
+% UTILITY PROPERTIES
+
+rdfs_assert_seeAlso(S, Web, G):-
+  rdf_assert(S, rdfs:seeAlso, Web, G).

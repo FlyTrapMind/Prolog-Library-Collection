@@ -1,8 +1,12 @@
 :- module(
   dcg_year,
   [
-    year//2 % ?Lang:atom
-            % ?Year:oneof([integer,pair(integer)])
+    year//2, % ?Lang:atom
+             % ?Year:oneof([integer,pair(integer)])
+    year_interval//2, % ?Lang:atom
+                      % ?YearInterval:pair(integer))
+    year_point//2 % ?Lang:atom
+                  % ?YearPoint:integer
   ]
 ).
 
@@ -60,9 +64,6 @@ are physically possible (given the birth and death years of James Joyce).
 [5] James Joyce's Ulyssus was published before 1925.
 ~~~
 
-(Whether the fuzzyness in cases as [5] is due to semantics or pragmatics
-is immaterial to me, since both should be formalized proper.)
-
 @author Wouter Beek
 @tbd Intervals indicated by prepositions are not handled at all
      (the preposition is simply skipped). See the note above.
@@ -84,16 +85,17 @@ year(Lang, Year) -->
   opening_bracket,
   year(Lang, Year),
   closing_bracket.
-% 2. A single year.
-year(Lang, Year) -->
-  year_point(Lang, Year).
-% 3. Two years, indicating a start year and an end year.
+% 2. Two years, indicating a start year and an end year.
 year(Lang, Interval) -->
   year_interval(Lang, Interval).
-% 4. An interval indicated by a preposition.
+% 3. A single year.
 year(Lang, Year) -->
-  pre(Lang), blank,
-  year(Lang, Year).
+  year_point(Lang, Year).
+% 4. An interval indicated by a preposition.
+%    The meaning of the preposition cannot be taken into account.
+%year(Lang, Year) -->
+%  pre(Lang), blank,
+%  year(Lang, Year).
 
 %! year_interval(?Lang:atom, ?Interval:pair(integer))//
 % A year interval, i.e. an interval delimited by a first and a last year.
@@ -102,36 +104,56 @@ year(Lang, Year) -->
 % For example =|1917-19??|= means =|1917-1999|=,
 % whereas =|19??-1917|= means =|1900-1917|=.
 
+% A year interval designated by a start year and an end year.
 year_interval(Lang, Year1-Year2) -->
   year_point(Lang, Year1),
   year_separator,
   year_point(Lang, Year2).
+% A year interval designated by a semi-year expression indicating
+% uncertainty and an end year.
+% The lowest year in the year interval designated by the
+% semi-year expression is taken as the begin year.
 year_interval(Lang, Year11-Year2) -->
   year_uncertainty(Year11-_Year12),
   year_separator,
   year_point(Lang, Year2).
+% A year interval designated by a start year and a semi-year expression
+% indicating uncertainty.
+% The highest year in the year interval designated by the
+% semi-year expression is taken as the end year.
 year_interval(Lang, Year1-Year22) -->
   year_point(Lang, Year1),
   year_separator,
   year_uncertainty(_Year21-Year22).
+% Module DCG_CENTURY parses expressions denoting centuries
+% and centuries denote a year interval with a duration of 100 years.
 year_interval(Lang, Interval) -->
   century_interval(Lang, Interval).
+% A year interval designated by a single semi-year expression indicating
+% uncertainty.
+% Example =199?= designates the interval 1991-1999.
 year_interval(_Lang, Interval) -->
   year_uncertainty(Interval).
-% Example: 'tussen 1608 en 1618' means '1608-1618'.
+% Example =|tussen 1608 en 1618|= denotes the same year interval
+% as =|1608-1618|=.
 year_interval(Lang, Year1-Year2) -->
   year_interval_preposition(Lang), blank,
   year_point(Lang, Year1), blanks,
   conj(Lang), blank,
   year_point(Lang, Year2).
-% Example: 'tussen 1530/1545' means '1530-1545'.
+% Example =|tussen 1530/1545|= denotes the same year interval
+% as =|1530-1545|=.
 year_interval(Lang, Interval) -->
   year_interval_preposition(Lang), blanks,
   year_interval(Lang, Interval).
-year_interval(Lang, Year1-Year2) -->
-  year_point(Lang, Year1), blank,
-  disj(Lang), blank,
-  year_point(Lang, Year2).
+% This is a controversial one.
+% If an interval is designated by an expression of the form =|Y1 OR Y2|=
+% and Y1 and Y2 are not direct successors, then we take the interval from
+% =Y1= until =Y2=.
+%year_interval(Lang, Year1-Year2) -->
+%  year_point(Lang, Year1),
+%  blank, disj(Lang), blank,
+%  year_point(Lang, Year2).
 
 year_interval_preposition(en) --> "between".
 year_interval_preposition(nl) --> "tussen".
@@ -139,23 +161,22 @@ year_interval_preposition(nl) --> "tussen".
 year_point(_Lang, Year) -->
   integer(Year).
 % Uncertainty w.r.t. the end of an interval.
-% Open interval interpreted as a single year.
-year_point(Lang, Year) -->
-  integer(Year),
-  year_separator,
-  uncertainty(Lang).
-year_point(Lang, Year) -->
-  uncertainty(Lang),
-  blanks,
-  year_point(Lang, Year).
+% Open intervals are interpreted as a single year.
+%year_point(Lang, Year) -->
+%  integer(Year),
+%  year_separator,
+%  uncertainty(Lang).
+% Uncertainty w.r.t. the end of an interval.
+% Open intervals are interpreted as a single year.
+%year_point(Lang, Year) -->
+%  uncertainty(Lang),
+%  blanks,
+%  year_point(Lang, Year).
 year_point(_Lang, Year) -->
   integer(Year),
   year_separator.
 
-year_separator -->
-  blank,
-  year_separator,
-  blank.
+year_separator --> blank, year_separator, blank.
 year_separator --> equals_sign.
 year_separator --> forward_slash.
 year_separator --> hyphen_minus.
@@ -164,11 +185,7 @@ year_separator --> hyphen_minus.
 year_uncertainty(Year1-Year2) -->
   digits(Ds),
   {Ds \== []},
-  (
-    dcg_multi(question_mark, N)
-  ;
-    dcg_multi(question_mark, N)
-  ),
+  dcg_multi(uncertainty_sign, _Rep, [], N),
   {
     number_codes(X, Ds),
     Multiplier is 10**N,
@@ -177,6 +194,9 @@ year_uncertainty(Year1-Year2) -->
     Z is Y * Multiplier,
     Year2 is Z - 1
   }.
+
+uncertainty_sign --> "X".
+uncertainty_sign --> "?".
 
 convert_epoch(Year, 'AD', Year):- !.
 convert_epoch(UnsignedYear, 'BC', SignedYear):-

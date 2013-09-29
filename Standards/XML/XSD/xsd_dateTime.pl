@@ -44,7 +44,7 @@
   ]
 ).
 
-/** <module> XSD_DATE_TIME
+/** <module> XSD dateTime
 
 *=dateTime=* represents instants of time, optionally marked with
 a particular time zone offset.
@@ -266,6 +266,10 @@ the original two values are incomparable.
 % CANONICAL MAPPING %
 
 %! dateTimeCanonicalMap(+DateTime:compound, -LEX:list(code)) is det.
+% The compound term has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
 
 dateTimeCanonicalMap(DateTime, LEX):-
   once(phrase(dateTimeCanonicalMap(DateTime), LEX)).
@@ -273,20 +277,11 @@ dateTimeCanonicalMap(DateTime, LEX):-
 %! dateTimeCanonicalMap(+DateTime:compound)//
 % Maps a dateTime value to a dateTimeLexicalRep//.
 %
-% @param DateTime A compound term.
+% @param DateTime A compound term of the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
 
-% The SWI-Prolog float representation for date-time values.
-dateTimeCanonicalMap(Float) -->
-  {float(Float)}, !,
-  {stamp_date_time(Float, Compound, local)},
-  dateTimeCanonicalMap(Compound).
-% The SWI-Prolog compound term for date-time representations.
-% Notice that the timezone (`TZ`) is an atom (e.g. `CEST`) and `Offset`
-% is an integer representing the offset relative to UTC in seconds.
-% XSD defines the timezone as the offset relative to UTC in minutes.
-dateTimeCanonicalMap(date(Y,M,D,H,MM,S,Offset,_TZ,_DST)) --> !,
-  {TZ is Offset / 60},
-  dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)).
 dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)) -->
   yearCanonicalFragmentMap(Y),
   hyphen,
@@ -421,6 +416,10 @@ yearCanonicalFragmentMap(Y) -->
 % LEXICAL MAPPING %
 
 %! dateTimeLexicalMap(+LEX:list(code), -DateTime:compound) is det.
+% The compound term has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
 
 dateTimeLexicalMap(LEX, DateTime):-
   once(phrase(dateTimeLexicalRep(DateTime), LEX)).
@@ -583,7 +582,7 @@ secondFrag(S) -->
   decimal_digit(C2),
   (
     dot(C3),
-    dcg_multi(decimal_digit, 1-_, _Digits, CT, []),
+    dcg_multi2(decimal_digit, 1-_, _Digits, CT),
     {phrase(unsignedDecimalPtNumeral(S), [C1,C2,C3|CT])}
   ;
     {phrase(unsignedNoDecimalPtNumeral(S), [C1,C2])}
@@ -646,10 +645,10 @@ yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
     nonzero_decimal_digit(Code, _),
-    dcg_multi(decimal_digit, 3-_, Codes, _Digits1, [])
+    dcg_multi2(decimal_digit, 3-_, Codes, _Digits1)
   ;
     zero(Code),
-    dcg_multi(decimal_digit, 3, Codes, _Digits2, [])
+    dcg_multi2(decimal_digit, 3, Codes, _Digits2)
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),
@@ -969,4 +968,3 @@ timeOnTimeline(dt(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
 var_or_value(Arg, _Val, _Var):-
   var(Arg), !.
 var_or_value(_Arg, Val, Val).
-

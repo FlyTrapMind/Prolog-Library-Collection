@@ -8,7 +8,7 @@
   ]
 ).
 
-/** <module> XSD_G_MONTH_DAY
+/** <module> XSD Gregorian month-day
 
 gMonthDay represents whole calendar days that recur at the same point
 in each calendar year, or that occur in some arbitrary calendar year.
@@ -98,6 +98,12 @@ The gMonthDay datatype has the following values for its fundamental facets:
 % CANONICAL MAPPING %
 
 %! gMonthDayCanonicalMap(+GregorianMonthDay:compound, -LEX:list(code)) is det.
+% A compound term that represents a Gregorian month-day has
+% the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values month, day and time zone are used.
 
 gMonthDayCanonicalMap(GY, LEX):-
   phrase(gMonthDayCanonicalMap(GY), LEX).
@@ -122,6 +128,12 @@ gMonthDayCanonicalMap(dateTime(_Y,M,D,_H,_MM,_S,TZ)) -->
 %!   +LEX:list(code),
 %!   -GregorianMonthDay:compound
 %! ) is nondet.
+% A compound term that represents a Gregorian month-day has
+% the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where only the values month, day and time zone are used.
 
 gMonthDayLexicalMap(LEX, GY):-
   phrase(gMonthDayLexicalRep(GY), LEX).
@@ -146,4 +158,3 @@ gMonthDayLexicalRep(GMD) -->
   {dayInMonth(M, D)},
   ("" ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, M, D, _H, _MM, _S, TZ, GMD)}.
-

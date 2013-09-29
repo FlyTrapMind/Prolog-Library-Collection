@@ -17,6 +17,10 @@
                             % +FromValue
                             % +ToDatatypeName:atom
                             % +Graph:atom
+    rdf_literal_to_datatype/4, % +Subject:oneof([bnode,uri])
+                               % +Predicate:uri
+                               % +DatatypeName:atom
+                               % +Graph:atom
 % LITERALS %
     rdf_literal_to_uri/4, % ?Subject:oneof([bnode,uri])
                           % ?Predicate:uri
@@ -160,7 +164,7 @@ rdf_expand_namespace0(S1, P1, 1, G):-
 %!   +FromValue,
 %!   +ToDatatypeName:atom,
 %!   +Graph:atom
-%! )//
+%! ) is det.
 
 rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
   forall(
@@ -173,6 +177,37 @@ rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
       rdf_retractall_datatype(S, P, FromDatatypeName, G)
     )
   ).
+
+%! rdf_literal_to_datatype(S, P, D_Name, G):-
+
+rdf_literal_to_datatype(S, P, D_Name, G):-
+  findall(
+    [S,P,Lit,G],
+    rdf_literal(S, P, Lit, G),
+    Tuples
+  ),
+  format(atom(OperationName), 'LITERAL-TO-DATATYPE(~w)', [D_Name]),
+  user_interaction(
+    OperationName,
+    rdf_literal_to_datatype0(D_Name),
+    ['Subject','Predicate','Literal','Graph'],
+    Tuples
+  ).
+:- rdf_meta(rdf_literal_to_datatype0(+,r,r,+,+)).
+rdf_literal_to_datatype0(D_Name, S, P, Lit, G):-
+  xsd_datatype(D_Name, D),
+  % If the literal belongs to the lexical space of the datatype,
+  % then it is mapped onto its value and then back to the canonical
+  % lexical for that value.
+  % Otherwise, we try to parse the literal as a value in the value space
+  % of the datatype.
+  (
+    xsd_lexicalCanonicalMap(D, Lit, LEX), !
+  ;
+    xsd_canonicalMap(D, Lit, LEX)
+  ),
+  rdf_assert_datatype(S, P, D, LEX2, G),
+  rdf_retractall_literal(S, P, Literal, G).
 
 
 
@@ -302,4 +337,3 @@ rdf_remove_datatype(S, P, Datatype, Value, G):-
   ).
 rdf_retractall_datatype0(S, P, Datatype, _Value, G):-
   rdf_retractall_datatype(S, P, Datatype, G).
-

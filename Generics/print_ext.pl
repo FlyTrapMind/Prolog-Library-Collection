@@ -244,7 +244,7 @@ print_proof(O1, Proof) -->
   newline,
 
   % Print premises / subproofs.
-  dcg_multi(print_proof(O2), _, Premises, []).
+  dcg_multi1(print_proof(O2), Premises).
 
 print_proposition(O1, Proposition) -->
   {option(transformation(Predicate), O1, identity)},

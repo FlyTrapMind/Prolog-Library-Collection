@@ -12,6 +12,10 @@
                    % -File:atom
     posix_date/1, % -Date:atom
     posix_time/1, % -Time:atom
+    posix_timestamp_to_xsd_dateTime/2, % +POSIX_TimeStemp:float
+                                       % -XSD_DT:compound
+    prolog_date_to_xsd_dateTime/2, % +SWI_Prolog_Date:compound
+                                   % -XSD_DateTime:compound
     seconds/3 % ?Hours:integer
               % ?Minutes:integer
               % ?Second:integer
@@ -51,7 +55,7 @@ current_date(Date):-
 current_date_time(DateTime):-
   current_date(Date),
   current_time(Time),
-  atomic_list_concat([Date, Time], ':', DateTime).
+  atomic_list_concat([Date,Time], ':', DateTime).
 
 %! current_time(-Time:atom) is det.
 % Returns an atomic representation of the current time.
@@ -73,10 +77,10 @@ date_directories(Dir, DateDir):-
   get_time(TimeStamp),
   format_time(atom(Day), '%d', TimeStamp),
   format_time(atom(Month), '%m', TimeStamp),
-  RelativeSubDirs1 =.. [Month, Day],
+  RelativeSubDirs1 =.. [Month,Day],
   format_time(atom(Year), '%Y', TimeStamp),
-  RelativeSubDirs2 =.. [Year, RelativeSubDirs1],
-  RelativeDirs =.. [Dir, RelativeSubDirs2],
+  RelativeSubDirs2 =.. [Year,RelativeSubDirs1],
+  RelativeDirs =.. [Dir,RelativeSubDirs2],
   create_nested_directory(RelativeDirs, DateDir).
 
 %! date_time(-DateTime:term) is det.
@@ -144,6 +148,49 @@ posix_date(Date):-
 posix_time(Time):-
   get_time(TimeStamp),
   format_time(atom(Time), '%T', TimeStamp).
+
+%! posix_timestamp_to_xsd_dateTime(
+%!   +POSIX_TimeStemp:float,
+%!   -XSD_DT:compound
+%! ) is det.
+% Converts a POSIX timestamp to an XSD dateTime compound term.
+%
+% @param POSIX_TimeStamp A floating point number expressing the time
+%        in seconds since the Epoch at 1970-1-1.
+% @param XSD_DateTime A compound term representing a data-time value,
+%        as defined by XML schema 1.1 Part 2: Datatypes.
+%
+% @see http://en.wikipedia.org/wiki/Unix_time
+% @see http://www.w3.org/TR/xmlschema11-2/#dt-dt-7PropMod
+
+posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT):-
+  stamp_date_time(POSIX_TS, SWIPL_D, local),
+  prolog_date_to_xsd_dateTime(SWIPL_D, XSD_DT).
+
+%! prolog_date_to_xsd_dateTime(
+%!   +SWI_Prolog_Date:compound,
+%!   -XSD_DateTime:compound
+%! ) is det.
+% In the SWI-Prolog representation the timezone is an atom (e.g. `CEST`)
+% and the offset is an integer representing the offset relative to UTC
+% in _seconds_.
+%
+% In the XSD representation the timezone is the offset relative to UTC
+% in _minutes_.
+%
+% @param SWI_Prolog_Date A compound term representing a date-time value.
+%        date-time representations.
+% @param XSD_DateTime A compound term representing a data-time value,
+%        as defined by XML schema 1.1 Part 2: Datatypes.
+%
+% @see http://www.swi-prolog.org/pldoc/man?section=timedate
+% @see http://www.w3.org/TR/xmlschema11-2/#dt-dt-7PropMod
+
+prolog_date_to_xsd_dateTime(
+  date(Y,M,D,H,MM,S,Offset,_TZ,_DST),
+  dateTime(Y,M,D,H,MM,S,TZ)
+):-
+  TZ is Offset / 60.
 
 %! seconds(?Hours:integer, ?Minutes:integer, ?Seconds:integer) is det.
 % Converts hours and minutes into seconds and vice versa.

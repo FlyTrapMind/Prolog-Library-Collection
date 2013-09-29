@@ -10,8 +10,9 @@
 
 /** <module> XSD_YEAR_MONTH_DURATION
 
-*=yearMonthDuration=* is a datatype derived from =duration= by restricting its
-lexical representations to instances of yearMonthDurationLexicalRep//.
+*=yearMonthDuration=* is a datatype that is derived from =duration=
+by restricting its lexical representations to instances of
+yearMonthDurationLexicalRep//.
 
 ### Value spae
 
@@ -128,4 +129,3 @@ yearMonthDurationLexicalRep(duration(M2,0)) -->
   "P",
   duYearMonthFrag(M1),
   {M2 is copysign(M1, Sign)}.
-

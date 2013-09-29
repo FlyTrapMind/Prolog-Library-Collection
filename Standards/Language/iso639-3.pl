@@ -1,6 +1,7 @@
 :- module(
   'iso639-3',
   [
+    'assert_iso639-3_schema'/1, % +Graph:atom
     'iso639-3'//1 % ?URI:atom
   ]
 ).
@@ -15,6 +16,8 @@ The ISO 639-3 standard for language codes with Lexvo Semantic Web URIs.
 */
 
 :- use_module(library(semweb/rdf_db)). % For rdf_meta/1.
+:- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace('iso639-3', 'http://lexvo.org/id/iso639-3/').
@@ -22,6 +25,18 @@ The ISO 639-3 standard for language codes with Lexvo Semantic Web URIs.
 :- rdf_meta('iso639-3'(r,?,?)).
 
 
+
+'assert_iso639-3_schema'(G):-
+  rdfs_assert_class('iso639-3':'Language', G),
+  rdfs_assert_label('iso639-3':'Language', en, 'ISO 639-3 language', G),
+  rdfs_assert_seeAlso('iso639-3':'Language', 'http://www.sil.org/iso639-3/', G),
+  forall(
+    'iso639-3'(Lang1, _, _),
+    (
+      rdf_global_id(Lang1, Lang2),
+      rdf_assert_individual(Lang2, 'iso639-3':'Language', G)
+    )
+  ).
 
 'iso639-3'('iso639-3':aaa) --> "aaa".
 'iso639-3'('iso639-3':aab) --> "aab".

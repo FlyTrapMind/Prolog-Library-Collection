@@ -524,4 +524,3 @@ assign_nv(ABS, X, C, E2, NV2):-
 
 floating_point_precision(single, 24, -149,  104).
 floating_point_precision(double, 53, -1074, 971).
-
