@@ -34,9 +34,11 @@ Web front-end for generic graph visualizations.
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(exception_handling)).
+:- use_module(graph_theory(circular_graph_representation)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(graph_export_svg)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(graph_theory(spring_embedding)).
 :- use_module(graph_theory(vertex_coordinate)).
 :- use_module(library(semweb/rdf_db)).
@@ -51,7 +53,7 @@ Web front-end for generic graph visualizations.
 circle_graph_web(Graph, html/dev_server/[GraphElement | TableMarkup]):-
   export_graph(
     [edge_labels(all)],
-    circular_vertice_coordinate,
+    circular_vertex_coordinate,
     Graph,
     GraphElement
   ),

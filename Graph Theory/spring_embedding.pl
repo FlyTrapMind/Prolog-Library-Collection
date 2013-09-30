@@ -62,8 +62,11 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 @version 2012/10, 2013/01, 2013/07
 */
 
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(graph_theory(graph_traversal)).
+:- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(math(math_ext)).
 :- use_module(library(settings)).
 

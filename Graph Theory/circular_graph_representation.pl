@@ -1,7 +1,7 @@
 :- module(
   circular_graph_representation,
   [
-    circular_vertice_coordinate/4 % +Options
+    circular_vertex_coordinate/4 % +Options
                                   % +Vs:list
                                   % +V
                                   % -VCoord:coord
@@ -19,6 +19,7 @@ Circular graph representation.
 :- use_module(generics(list_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
+:- use_module(standards(markup)).
 
 :- setting(
   default_border_size,
@@ -35,7 +36,7 @@ Circular graph representation.
 
 
 
-%! circular_vertice_coordinate(+Options, +Vs:list, +V, -Coord:coord) is det.
+%! circular_vertex_coordinate(+Options, +Vs:list, +V, -Coord:coord) is det.
 % Returns the coordinate of the given vertex, so that all vertices in a
 % graph are plotted on a circle.
 %
@@ -48,7 +49,7 @@ Circular graph representation.
 %      `coord(Dimension:integer, Coordinates:list)`,
 %      where `Dimension` is the length of `Coordinates`.
 
-circular_vertice_coordinate(Options, Vs, V, coordinate(2,[X_cm,Y_cm])):-
+circular_vertex_coordinate(Options, Vs, V, coordinate(2,[X_cm,Y_cm])):-
   % Surface
   setting(default_surface, DefaultSurface),
   option(surface(size(2, [Width, Height])), Options, DefaultSurface),
