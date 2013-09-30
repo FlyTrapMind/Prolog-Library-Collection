@@ -178,7 +178,12 @@ rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
     )
   ).
 
-%! rdf_literal_to_datatype(S, P, D_Name, G):-
+%! rdf_literal_to_datatype(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +DatatypeName:atom,
+%!   +Graph:atom
+%! ) is det.
 
 rdf_literal_to_datatype(S, P, D_Name, G):-
   findall(
@@ -206,8 +211,8 @@ rdf_literal_to_datatype0(D_Name, S, P, Lit, G):-
   ;
     xsd_canonicalMap(D, Lit, LEX)
   ),
-  rdf_assert_datatype(S, P, D, LEX2, G),
-  rdf_retractall_literal(S, P, Literal, G).
+  rdf_assert_datatype(S, P, D, LEX, G),
+  rdf_retractall_literal(S, P, Lit, G).
 
 
 
