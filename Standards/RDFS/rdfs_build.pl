@@ -244,11 +244,13 @@ rdfs_assert_label(Subject, Label, G):-
 % @param Language The atomic name of a language.
 % @param Label An atomic description of a resource.
 % @param Graph The atomic name of an RDF graph.
+%
+% @tbd Why are explicit conversions necessary here?
 
-rdfs_assert_label(Subject, Language, Label, G):-
-  % @ tbd Why is this necessary?
+rdfs_assert_label(S1, Lang, Label, G):-
+  rdf_global_id(S1, S2),
   rdf_global_id(rdfs:label, P),
-  rdf_assert_literal(Subject, P, Language, Label, G).
+  rdf_assert_literal(S2, P, Lang, Label, G).
 
 rdfs_replace_label(S, Label, G):-
   rdfs_retractall_label(S, _OldLabel, G),
