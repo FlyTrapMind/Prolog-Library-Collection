@@ -19,8 +19,8 @@
                            % +Comment:atom
                            % +Graph:atom
     rdfs_assert_comment/4, % +Resource:or([blank,iri,literal])
-                           % +Comment:atom
                            % ?LanguageTag:atom
+                           % +Comment:atom
                            % +Graph:atom
 
 % DOMAIN & RANGE

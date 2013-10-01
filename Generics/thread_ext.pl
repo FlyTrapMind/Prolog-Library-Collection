@@ -56,7 +56,15 @@ Allows one to monitor running threads that register.
 
 
 
-%! forall_thread(:Antecedent, :Consequent, +DebugTopic:atom, +DebugMessage:atom) is det.
+%! forall_thread(
+%!   :Antecedent,
+%!   :Consequent,
+%!   +DebugTopic:atom,
+%!   +DebugMessage:atom
+%! ) is det.
+% Runs for instatiation of `Antecedent` a threaded instatiation `Consequent`.
+% The threads are joined afterwards.
+% The status is send to the debug stream if `Topic` is switched on.
 
 forall_thread(Antecedent, Consequent, Topic, Msg):-
   findall(

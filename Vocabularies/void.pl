@@ -39,7 +39,6 @@ VoiD covers four areas of metadata:
 
 @author WouterBeek
 @compat http://www.w3.org/TR/void/
-@tbd Use forall_thread/2 for the threaded parts.
 @version 2013/03-2013/05, 2013/09
 */
 
