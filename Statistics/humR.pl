@@ -1,8 +1,7 @@
 :- module(
   humR,
   [
-    r_comp_web/4, % +Predicate1:iri
-                  % +Predicate2:iri
+    r_comp_web/3, % +Predicates:list(iri)
                   % ?NumberOfColumns:positive_integer
                   % -DOM:list
     r_web/3 % +Predicate:iri
@@ -22,6 +21,7 @@ R-statistics generation for humanities data.
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(print_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
@@ -29,41 +29,55 @@ R-statistics generation for humanities data.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(svg(svg_file)).
 :- use_module(xsd(xsd)).
 
-:- meta_predicate(counts_as_member_of_(2,+,+)).
-
-:- rdf_meta(r_comp_web(r,r,?,-)).
+:- rdf_meta(r_comp_web(t,?,-)).
 :- rdf_meta(r_web(r,?,-)).
 
 :- debug(humR).
 
 
 
-r_comp_web(P11, P21, N1, SVG):-
-  NumberOfCompares = 2,
-  rdf_global_id(P11, P12),
-  rdf_global_id(P21, P22),
-  
+r_comp_web(Ps1, N1, SVG):-
+  length(Ps1, NumberOfCompares),
+  NumberOfCompares >= 2,
+  rdf_global_ids(Ps1, Ps2),
   default(N1, 15, N2),
   
   % For comparisons, we require the domains and ranges to be the same.
-  once(rdf_has(SomeS1, P12, SomeO1)),
-  once(rdf_has(SomeS2, P12, SomeO2)),
+  Ps2 = [P1|Ps2_],
+  once(rdf_has(SomeS1, P1, SomeO1)),
   resource_class(SomeS1, S_Class),
-  resource_class(SomeS2, S_Class),
   resource_class(SomeO1, O_Class),
-  resource_class(SomeO2, O_Class),
+  forall(
+    member(P_, Ps2_),
+    (
+      once(rdf_has(SomeS2, P_, SomeO2)),
+      resource_class(SomeS2, S_Class),
+      resource_class(SomeO2, O_Class)
+    )
+  ),
   
   % Axis labels.
   axis_label(SomeO1, X_Axis),
   axis_label(SomeS1, Y_Axis),
   
   % Collect the unique object terms shared by the given properties.
-  setoff(O, (rdf_has(_S1, P12, O), once(rdf_has(_S2, P22, O))), Os1),
+  setoff(
+    O,
+    (
+      rdf_has(_S1, P1, O),
+      forall(
+        member(P_, Ps2_),
+        once(rdf_has(_S2, P, O))
+      )
+    ),
+    Os1
+  ),
   
   % Totally ordered domains need to be discretzed before being represented
   % using bars.
@@ -77,21 +91,27 @@ r_comp_web(P11, P21, N1, SVG):-
   
   % Contruct the two collections of bars by counting the number of
   % subjects for the given discretized object value scale.
-  construct_bars(P12, Os2, Bars1),
-  construct_bars(P22, Os2, Bars2),
+  findall(
+    Bars_,
+    (
+      member(P, Ps2),
+      construct_bars(P, Os2, Bars_)
+    ),
+    Bars
+  ),
   
   % Labels for the discretized intervals on the X axis.
   maplist(interval_label, Os2, Os3),
   
   % Caption for the figure.
-  maplist(rdf_term_name([]), [P12,P22], [P1_Label,P2_Label]),
-  format(atom(Main), '~w vs ~w', [P1_Label,P2_Label]),
+  maplist(rdf_term_name([]), Ps2, PsLabels),
+  with_output_to(atom(Main), print_set([], PsLabels)),
   
   % Do it!
   absolute_file_name(test, File, [access(write),extensions([svg])]),
   <- svg(+File),
   <- barplot(
-    [Bars1,Bars2],
+    Bars,
     % Columns are not stacked on top of each other,
     % but are placed beside each other.
     beside='TRUE',
@@ -115,7 +135,7 @@ r_comp_web(P11, P21, N1, SVG):-
     +topleft,
     bg=+white,
     fill=rainbow(NumberOfCompares),
-    legend=[P1_Label,P2_Label]
+    legend=PsLabels
   ),
   <- dev..off(.),
   file_to_svg(File, SVG).
