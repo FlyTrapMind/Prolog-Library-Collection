@@ -185,7 +185,7 @@ year_separator --> hyphen_minus.
 year_uncertainty(Year1-Year2) -->
   digits(Ds),
   {Ds \== []},
-  dcg_multi(uncertainty_sign, _Rep, [], N),
+  dcg_multi(uncertainty_sign, 1-_, [], N),
   {
     number_codes(X, Ds),
     Multiplier is 10**N,

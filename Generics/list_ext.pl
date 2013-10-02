@@ -433,9 +433,11 @@ shorter(Order, List1, List2):-
 
 split_list_by_number_of_sublists(List, NumberOfSublists, Sublists):-
   length(List, Length),
+  Length > NumberOfSublists, !,
   succ(ReducedNumberOfSublists, NumberOfSublists),
   SizeOfSublists is Length div ReducedNumberOfSublists,
   split_list_by_size(List, SizeOfSublists, Sublists).
+split_list_by_number_of_sublists(L, _N, L).
 
 %! split_list_by_size(
 %!   +List:list,
@@ -451,8 +453,7 @@ split_list_by_size([], _SizeOfSublists, []):- !.
 % prefix that is one of the sublist results.
 split_list_by_size(List, SizeOfSublists, [Sublist | Sublists]):-
   length(Sublist, SizeOfSublists),
-  append(Sublist, NewList, List),
-  !,
+  append(Sublist, NewList, List), !,
   split_list_by_size(NewList, SizeOfSublists, Sublists).
 % The last sublist is not exactly of the requested size. Give back
 % what remains.

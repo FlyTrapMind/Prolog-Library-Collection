@@ -14,9 +14,17 @@
     xsd_lexicalCanonicalMap/3, % +Datatype:uri
                                % +Literal:atom
                                % -CanonicalLiteral:atom
-    xsd_lexicalMap/3 % +Datatype:uri
-                     % +Literal:atom
-                     % ?Value
+    xsd_lexicalMap/3, % +Datatype:uri
+                      % +Literal:atom
+                      % ?Value
+    xsd_order/2 % +Datatype:iri
+                % :LEQ
+  ]
+).
+:- reexport(
+  xsd(xsd_dateTime),
+  [
+    dateTime_leq/2
   ]
 ).
 
@@ -679,11 +687,12 @@ the constraints imposed can sometimes result in a value space for which the orde
 @tbd Read section E.3.3 on adding durations to dateTime.
 @tbd Read section G on REs.
 @tbd Read section H on implementation-defined datatypes.
-@version 2013/08-2013/09
+@version 2013/08-2013/10
 */
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % RDF-meta assertions.
+:- use_module(rdf(rdf_read)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd_boolean)).
 :- use_module(xsd(xsd_date)).
@@ -710,6 +719,9 @@ the constraints imposed can sometimes result in a value space for which the orde
 :- rdf_meta(xsd_lexicalCanonicalMap(r,+,-)).
 :- rdf_meta(xsd_lexicalMap(r,+,-)).
 :- rdf_meta(xsd_lexicalMap_(r,+,-)).
+%:- rdf_meta(xsd_order(r,:)).
+
+%:- meta_predicate(xsd_order(+,2)).
 
 :- debug(xsd).
 
@@ -861,3 +873,24 @@ xsd_lexicalMap_(xsd:time, LEX, Time):- !,
 xsd_lexicalMap_(Datatype, _LEX, _Value):- !,
   debug(xsd, 'There is no lexical mapping for datatype ~w.', [Datatype]),
   fail.
+
+%! xsd_order(+Datatype:iri, :LEQ) is det.
+
+xsd_order(D1, dateTime_leq):-
+  rdf_global_id(D1, D2),
+  rdf_memberchk(
+    D2,
+    [
+      xsd:date,
+      xsd:dateTime,
+      xsd:gDay,
+      xsd:gMonth,
+      xsd:gMonthDay,
+      xsd:gYear,
+      xsd:gYearMonth
+    ]
+  ), !.
+xsd_order(D1, =<):-
+  rdf_global_id(D1, D2),
+  rdf_memberchk(D2, [xsd:decimal,xsd:double,xsd:float,xsd:integer]).
+

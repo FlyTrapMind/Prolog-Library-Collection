@@ -24,6 +24,7 @@
   % Write lists of ASCII numbers as strings to the terminal.
 :- use_module(library(portray_text)).
 :- portray_text(true).
+:- set_portray_text(ellipsis, 100).
 
 % Enforce more stringent style checking.
 :- style_check(+string).
@@ -90,6 +91,7 @@ load_modules_for_pldoc:-
         skos,
         sparql,
         standards,
+        stat,
         svg,
         tests,
         tms,
