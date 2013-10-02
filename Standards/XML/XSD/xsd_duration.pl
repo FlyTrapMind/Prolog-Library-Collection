@@ -309,7 +309,7 @@ duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
 
 % LEXICAL MAPPING %
 
-%! durationLexicalMap(LEX:list(code), Duration:compound):-
+%! durationLexicalMap(LEX:list(code), Duration:compound)
 % Compound terms that represent durations have the following form:
 % ~~~
 % duration(Months:nonneg, Seconds:float)
