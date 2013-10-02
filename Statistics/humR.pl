@@ -135,8 +135,7 @@ r_web(P11, N1, SVG):-
 
   % Collect the unique object terms and extract their values.
   setoff(O, rdf_has(_, P12, O), Os1),
-  %%%%terms_to_values(Os1, O_Type, Os2),
-  gtrace,
+  
   % Totally ordered domains need to be discretzed before being represented
   % using bars.
   (
@@ -149,10 +148,10 @@ r_web(P11, N1, SVG):-
 
   % Contruct the bars by counting the number of subjects for
   % the given discretized object value scale.
-  construct_bars(P12, O_Type, Os3, Bars),
+  construct_bars(P12, Os3, Bars),
   
   % Labels for the discretized intervals on the X axis.
-  maplist(interval_label(O_Type), Os3, Os4),
+  maplist(interval_label, Os3, Os4),
 
   % Caption for the figure.
   with_output_to(codes(Main), rdf_term_name([], P12)),
@@ -204,7 +203,6 @@ axis_label(R, Label):-
 
 %! construct_bars(
 %!   +Predicate:iri,
-%!   +Type:or([oneof([term]),iri]),
 %!   +Values:or([list(ordset),ordset]),
 %!   -Bars:list(nonneg)
 %! ) is det.
@@ -215,48 +213,19 @@ axis_label(R, Label):-
 % In the latter case a count occurs if the found object term is in the
 % object term set.
 
-construct_bars(P, _Type, O_Sets, Bars):-
+construct_bars(P, Os, Bars):-
   findall(
     NumberOfS,
     (
-      member(O_Set, O_Sets),
+      member(O, Os),
       aggregate_all(
         count,
-        (
-          rdf_has(_, P, O_Term), memberchk(O_Term, O_Set)
-          %%%%term_to_value(O_Term, O_Value),
-          %%%%counts_as_member_of(Type, O_Value, O_ValueOrValues)
-        ),
+        (rdf_has(_, P, O0), memberchk(O0, O)),
         NumberOfS
       )
     ),
     Bars
   ).
-
-%! counts_as_member_of(
-%!   +Type:or([oneof([term]),iri]),
-%!   +Value,
-%!   +ValueOrValues
-%! ) is semidet.
-% Succeeds if the former value counts as an occurrence of the latter value.
-% The latter argument is either a single value or a (discretized) range
-% of values.
-
-counts_as_member_of(term, O1, O2):-
-  counts_as_member_of_(@=<, O1, O2).
-counts_as_member_of(Type, O1, O2):-
-  xsd_order(Type, LEQ),
-  counts_as_member_of_(LEQ, O1, O2).
-
-counts_as_member_of_(LEQ, O, Os):-
-  is_list(Os), !,
-  first(Os, O1),
-  call(LEQ, O1, O),
-  last(Os, O2),
-  call(LEQ, O, O2).
-counts_as_member_of_(LEQ, O1, O2):-
-  call(LEQ, O1, O2),
-  call(LEQ, O2, O1).
 
 %! determine_range(
 %!   +Min:integer,
@@ -283,29 +252,25 @@ determine_range(Min, Max, Begin, End, Step):-
 discretize(Set, N, Disc):-
   split_list_by_number_of_sublists(Set, N, Disc).
 
-%! interval_label(
-%!   +Type:or([oneof([term]),iri]),
-%!   +ValueOrValues,
-%!   -Label:atom
-%! ) is det.
+%! interval_label(+ValueOrValues, -Label:atom) is det.
 % Returns a descriptive label for the given set of values.
 %
 % Single values are considered to be intervals of length 1.
 % In these cases the label of this single value is given.
 
-interval_label(Type, Set, Label):-
+interval_label(Set, Label):-
   is_list(Set),
   length(Set, Length),
   Length > 1, !,
   first(Set, A1),
   last(Set, Z1),
-  maplist(value_to_label(Type), [A1,Z1], [A2,Z2]),
+  maplist(rdf_term_name([]), [A1,Z1], [A2,Z2]).
   format(atom(Label), '~w..~w', [A2,Z2]).
-interval_label(Type, [SingleValue], Label):- !,
-  interval_label(Type, SingleValue, Label).
-interval_label(_Type, [], ''):- !.
-interval_label(Type, SingleValue, Label):-
-  value_to_label(Type, SingleValue, Label).
+interval_label([SingleValue], Label):- !,
+  interval_label(SingleValue, Label).
+interval_label([], ''):- !.
+interval_label(T, N):-
+  rdf_term_name([], T, N).
 
 %! is_total_order(+Resource:iri) is semidet.
 % Succeeds if resources _|such as|_ the given resource are totally ordered.
@@ -331,53 +296,4 @@ resource_class(R, C):-
   rdf(R, rdf:type, C), !.
 resource_class(R, C):-
   rdfs_individual(m(t,f,f), R, C, _).
-
-%! term_to_value(
-%!   +RDF_Term:or([bnode,iri,literal]),
-%!   -Value:or([atom,boolean,compound,float,integer,iri])
-%! ) is det.
-
-% For typed literals we need the values they denote to work with
-% their total order.
-term_to_value(T, V):-
-  rdf_is_typed_literal(T), !,
-  T = literal(type(D, LEX)),
-  xsd_lexicalMap(D, LEX, V).
-% For blank nodes, iris, and plain literals we use the Prolog order on terms.
-term_to_value(T, T).
-
-%! terms_to_values(
-%!   +Terms:ordset,
-%!   -Type:or([oneof([term]),iri]),
-%!   -Values:ordset
-%! ) is det.
-
-terms_to_values(Ts, Type, Vs2):-
-  % We assuem that all terms have the same ordering relation and
-  % the same type.
-  first(Ts, SomeT),
-
-  % Determine the type of the term.
-  % This is either the datatype of a typed literal or `term`.
-  (
-    rdf_is_typed_literal(SomeT)
-  ->
-    SomeT = literal(type(Type, _LEX))
-  ;
-    Type = term
-  ),
-
-  % Translate terms to values.
-  maplist(term_to_value, Ts, Vs1),
-
-  % We need to sort again, because differen terms may denote the same value.
-  sort(Vs1, Vs2).
-
-%! value_to_label(-Type:or([oneof([term]),iri]), +Value, -Label:atom) is det.
-
-value_to_label(term, V, L):- !,
-  rdf_term_name([], V, L).
-value_to_label(D, V, Label):-
-  xsd_canonicalMap(D, V, LEX),
-  atom_codes(Label, LEX).
 
