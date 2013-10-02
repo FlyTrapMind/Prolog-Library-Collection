@@ -43,44 +43,53 @@ R-statistics generation for humanities data.
 
 
 
-r_comp_web(P11, P21, _N1, SVG):-
+r_comp_web(P11, P21, N1, SVG):-
+  NumberOfCompares = 2,
   rdf_global_id(P11, P12),
   rdf_global_id(P21, P22),
+  
+  default(N1, 15, N2),
+  
+  % For comparisons, we require the domains and ranges to be the same.
   once(rdf_has(SomeS1, P12, SomeO1)),
   once(rdf_has(SomeS2, P12, SomeO2)),
   resource_class(SomeS1, S_Class),
   resource_class(SomeS2, S_Class),
   resource_class(SomeO1, O_Class),
   resource_class(SomeO2, O_Class),
-  with_output_to(atom(Y_Axis), rdf_term_name([], S_Class)),
-  with_output_to(atom(X_Axis), rdf_term_name([], O_Class)),
-  setoff(
-    O,
-    (rdf_has(_S1, P12, O), once(rdf_has(_S2, P22, O))),
-    Os1
+  
+  % Axis labels.
+  axis_label(SomeO1, X_Axis),
+  axis_label(SomeS1, Y_Axis),
+  
+  % Collect the unique object terms shared by the given properties.
+  setoff(O, (rdf_has(_S1, P12, O), once(rdf_has(_S2, P22, O))), Os1),
+  
+  % Totally ordered domains need to be discretzed before being represented
+  % using bars.
+  (
+    is_total_order(SomeO1)
+  ->
+    discretize(Os1, N2, Os2)
+  ;
+    Os2 = Os1
   ),
-  findall(
-    NumberOfS1,
-    (
-      member(O, Os1),
-      aggregate_all(count, rdf_has(_, P12, O), NumberOfS1)
-    ),
-    Bars1
-  ),
-  findall(
-    NumberOfS2,
-    (
-      member(O, Os1),
-      aggregate_all(count, rdf_has(_, P22, O), NumberOfS2)
-    ),
-    Bars2
-  ),
-  maplist(rdf_term_name([]), Os1, Os2),
+  
+  % Contruct the two collections of bars by counting the number of
+  % subjects for the given discretized object value scale.
+  construct_bars(P12, Os2, Bars1),
+  construct_bars(P22, Os2, Bars2),
+  
+  % Labels for the discretized intervals on the X axis.
+  maplist(interval_label, Os2, Os3),
+  
+  % Caption for the figure.
+  maplist(rdf_term_name([]), [P12,P22], [P1_Label,P2_Label]),
+  format(atom(Main), '~w vs ~w', [P1_Label,P2_Label]),
+  
+  % Do it!
   absolute_file_name(test, File, [access(write),extensions([svg])]),
   <- svg(+File),
-  with_output_to(atom(Legend1), rdf_term_name([], P12)),
-  with_output_to(atom(Legend2), rdf_term_name([], P22)),
-  format(atom(Main), '~w vs ~w', [Legend1,Legend2]),
   <- barplot(
     [Bars1,Bars2],
     % Columns are not stacked on top of each other,
@@ -89,7 +98,7 @@ r_comp_web(P11, P21, _N1, SVG):-
     % Scaling of the font size of x-axis labels.
     cex..names=0.8,
     % Colors help distinguish between the compared properties.
-    col=[blue,red],
+    col=rainbow(NumberOfCompares),
     % Labels perpendicular to axis.
     las=2,
     % Logarithmic scale.
@@ -97,20 +106,16 @@ r_comp_web(P11, P21, _N1, SVG):-
     % Caption.
     main=+Main,
     % Text labels for x-axis.
-    names..arg=Os2,
+    names..arg=Os3,
     ylab=+Y_Axis
   ),
   % Label for x-axis needs special positioning.
   <- title(xlab=+X_Axis, line=5),
   <- legend(
-    % Legend position.
     +topleft,
-    % Background color.
     bg=+white,
-    % Text for the legend
-    legend=[Legend1,Legend2],
-    % Legend color map.
-    fill=[blue,red]
+    fill=rainbow(NumberOfCompares),
+    legend=[P1_Label,P2_Label]
   ),
   <- dev..off(.),
   file_to_svg(File, SVG).
@@ -133,32 +138,32 @@ r_web(P11, N1, SVG):-
   axis_label(SomeO, X_Axis),
   axis_label(SomeS, Y_Axis),
 
-  % Collect the unique object terms and extract their values.
+  % Collect the unique object terms.
   setoff(O, rdf_has(_, P12, O), Os1),
-  
+
   % Totally ordered domains need to be discretzed before being represented
   % using bars.
   (
     is_total_order(SomeO)
   ->
-    discretize(Os1, N2, Os3)
+    discretize(Os1, N2, Os2)
   ;
-    Os3 = Os1
+    Os2 = Os1
   ),
 
   % Contruct the bars by counting the number of subjects for
   % the given discretized object value scale.
-  construct_bars(P12, Os3, Bars),
-  
+  construct_bars(P12, Os2, Bars),
+
   % Labels for the discretized intervals on the X axis.
-  maplist(interval_label, Os3, Os4),
+  maplist(interval_label, Os2, Os3),
 
   % Caption for the figure.
   with_output_to(codes(Main), rdf_term_name([], P12)),
-  
+
   % Colors.
   length(Bars, NumberOfBars),
-  
+
   % Do it!
   absolute_file_name(test, File, [access(write),extensions([svg])]),
   <- svg(+File),
@@ -177,15 +182,16 @@ r_web(P11, N1, SVG):-
     % Caption text.
     main=+Main,
     % Text labels for x-axis.
-    names..arg=Os4,
+    names..arg=Os3,
     ylab=+Y_Axis
   ),
   % Label for x-axis needs special positioning.
   <- title(xlab=+X_Axis, line=5),
   <- legend(
     +topleft,
+    bg=+white,
     fill=rainbow(NumberOfBars),
-    legend=Os4
+    legend=Os3
   ),
   <- dev..off(.),
   file_to_svg(File, SVG).
@@ -220,12 +226,17 @@ construct_bars(P, Os, Bars):-
       member(O, Os),
       aggregate_all(
         count,
-        (rdf_has(_, P, O0), memberchk(O0, O)),
+        (rdf_has(_, P, O0), belongs_to(O0, O)),
         NumberOfS
       )
     ),
     Bars
   ).
+
+belongs_to(O0, O):-
+  is_list(O), !,
+  memberchk(O0, O).
+belongs_to(O, O):- !.
 
 %! determine_range(
 %!   +Min:integer,
@@ -264,7 +275,7 @@ interval_label(Set, Label):-
   Length > 1, !,
   first(Set, A1),
   last(Set, Z1),
-  maplist(rdf_term_name([]), [A1,Z1], [A2,Z2]).
+  maplist(rdf_term_name([]), [A1,Z1], [A2,Z2]),
   format(atom(Label), '~w..~w', [A2,Z2]).
 interval_label([SingleValue], Label):- !,
   interval_label(SingleValue, Label).
