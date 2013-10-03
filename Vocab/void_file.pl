@@ -34,24 +34,20 @@ VoiD covers four areas of metadata:
 @version 2013/03-2013/05, 2013/09
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(rdf(rdf_statistics)).
+:- use_module(vocab(void_stat)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
 %! dataset(
 %!   ?VoID_Graph:atom,
-%!   ?DatasetName:atom,
+%!   ?Dataset:iri,
 %!   ?DatasetFile:atom,
 %!   ?DatasetGraph:atom
 %! ) is nondet.
@@ -142,7 +138,7 @@ void_load_library(VoID_File, VoID_G1, VoID_G2):-
     void,
     Msg
   ),
-  
+
   % The VoID graph itself is updated.
   void_update_library(VoID_G2),
 
@@ -167,12 +163,12 @@ void_save_library(VoID_G, VoID_File):-
 void_update_library(VoID_Graph):-
   forall_thread(
     (
-      dataset(VoID_Graph, Dataset, DatasetPath, DatasetGraph),
+      dataset(VoID_Graph, Dataset, _DatasetPath, DatasetGraph),
       format(atom(Msg), 'Updating dataset ~w', [Dataset])
     ),
     (
-      void_assert_modified(Dataset, DatasetPath, VoID_Graph),
-      void_assert_statistics(Dataset, DatasetGraph, VoID_Graph)
+      void_assert_modified(VoID_Graph, Dataset),
+      void_assert_statistics(VoID_Graph, Dataset, DatasetGraph)
     ),
     void,
     Msg
