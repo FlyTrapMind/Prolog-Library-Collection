@@ -26,11 +26,13 @@
                           % ?Predicate:uri
                           % +Namespace:atom
                           % ?Graph:atom
-    rdf_split_literal/4, % ?Subject:oneof([bnode,uri])
+    rdf_split_literal/5, % +Options:list(nvpair)
+                         % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
                          % ?Graph:atom
                          % +Split:atom
-    rdf_strip_literal/4, % +Strips:list(char)
+    rdf_strip_literal/5, % +Options:list(nvpair)
+                         % +Strips:list(char)
                          % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
                          % ?Graph:atom
@@ -70,9 +72,9 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 % DATATYPES %
 :- rdf_meta(rdf_convert_datatype(r,r,+,+,+,+)).
 % LITERALS %
-:- rdf_meta(rdf_literal_to_uri(r,r,+,r)).
-:- rdf_meta(rdf_split_literal(r,r,?,+)).
-:- rdf_meta(rdf_strip_literal(+,r,r,?)).
+:- rdf_meta(rdf_literal_to_uri(r,r,+,?)).
+:- rdf_meta(rdf_split_literal(+,r,r,?,+)).
+:- rdf_meta(rdf_strip_literal(+,+,r,r,?)).
 % REMOVAL %
 :- rdf_meta(rdf_remove(r,r,r,?)).
 :- rdf_meta(rdf_remove_datatype(r,r,r,?,?)).
@@ -142,6 +144,7 @@ rdf_expand_namespace(S1, P1, O1, G):-
     Tuples
   ),
   user_interaction(
+    [],
     'EXPAND-NAMESPACE',
     rdf_expand_namespace0,
     ['Subject','Predicate','Object','Graph'],
@@ -193,6 +196,7 @@ rdf_literal_to_datatype(S, P, D_Name, G):-
   ),
   format(atom(OperationName), 'LITERAL-TO-DATATYPE(~w)', [D_Name]),
   user_interaction(
+    [],
     OperationName,
     rdf_literal_to_datatype0(D_Name),
     ['Subject','Predicate','Literal','Graph'],
@@ -218,53 +222,63 @@ rdf_literal_to_datatype0(D_Name, S, P, Lit, G):-
 
 % LITERALS %
 
-rdf_literal_to_uri(S, P, Namespace, G):-
-  xml_current_namespace(Namespace, _),
+%! rdf_literal_to_uri(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Namespace:atom,
+%!   +Graph:atom
+%! ) is det.
+
+rdf_literal_to_uri(S, P, Ns, G):-
+  xml_current_namespace(Ns, _),
   findall(
-    [S,P,Literal,G],
-    rdf_literal(S, P, Literal, G),
+    [S,P,Lit,G],
+    rdf_literal(S, P, Lit, G),
     Tuples
   ),
-  format(atom(OperationName), 'LITERAL-TO-URI(~w)', [Namespace]),
+  format(atom(OperationName), 'LITERAL-TO-URI(~w)', [Ns]),
   user_interaction(
+    [],
     OperationName,
-    rdf_literal_to_uri0(Namespace),
+    rdf_literal_to_uri0(Ns),
     ['Subject','Predicate','Literal','Graph'],
     Tuples
   ).
 :- rdf_meta(rdf_literal_to_uri(+,r,r,+,+)).
-rdf_literal_to_uri0(Namespace, S, P, Literal, G):-
-  rdf_global_id(Namespace:Literal, O),
+rdf_literal_to_uri0(Ns, S, P, Lit, G):-
+  rdf_global_id(Ns:Lit, O),
   rdf_assert(S, P, O, G),
-  rdf_retractall_literal(S, P, Literal, G).
+  rdf_retractall_literal(S, P, Lit, G).
 
-rdf_split_literal(S, P, G, Split):-
+rdf_split_literal(O1, S, P, G, Split):-
   findall(
-    [S, P, Literal, G],
+    [S,P,Lit,G],
     (
-      rdf_literal(S, P, Literal, G),
-      split_atom_exclusive(Split, Literal, Splits),
+      rdf_literal(S, P, Lit, G),
+      split_atom_exclusive(Split, Lit, Splits),
       length(Splits, Length),
       Length > 1
     ),
     Tuples
   ),
   user_interaction(
+    O1,
     'SPLIT-RDF-DATATYPE-STRING',
     rdf_split_string0(Split),
-    ['Subject', 'Predicate', 'Literal', 'Graph'],
+    ['Subject','Predicate','Literal','Graph'],
     Tuples
   ).
 :- rdf_meta(rdf_split_string0(+,r,r,+,+)).
-rdf_split_string0(Split, S, P, OldLiteral, G):-
-  split_atom_exclusive(Split, OldLiteral, NewLiterals),
+rdf_split_string0(Split, S, P, OldLit, G):-
+  split_atom_exclusive(Split, OldLit, NewLits),
   forall(
-    member(NewLiteral, NewLiterals),
-    rdf_assert_literal(S, P, NewLiteral, G)
+    member(NewLit, NewLits),
+    rdf_assert_literal(S, P, NewLit, G)
   ),
-  rdf_retractall_literal(S, P, OldLiteral, G).
+  rdf_retractall_literal(S, P, OldLit, G).
 
 %! rdf_strip_literal(
+%!   +Options:list(nvpair),
 %!   +Strips:list(char),
 %!   ?Subject:oneof([bnode,uri]),
 %!   ?Predicate:uri,
@@ -272,7 +286,7 @@ rdf_split_string0(Split, S, P, OldLiteral, G):-
 %! ) is det.
 % Strip RDF string datatypes.
 
-rdf_strip_literal(Strips, S, P, G):-
+rdf_strip_literal(O1, Strips, S, P, G):-
   findall(
     [S,P,Literal1,G],
     (
@@ -283,6 +297,7 @@ rdf_strip_literal(Strips, S, P, G):-
     Tuples
   ),
   user_interaction(
+    O1,
     'STRIP-RDF-DATATYPE-STRING',
     rdf_strip_literal0(Strips),
     ['Subject','Predicate','Literal','Graph'],
@@ -313,6 +328,7 @@ rdf_remove(S, P, O, G):-
     Tuples
   ),
   user_interaction(
+    [],
     'REMOVE-RDF-TRIPLE',
     rdf_retractall,
     ['Subject','Predicate','Object','Graph'],
@@ -335,6 +351,7 @@ rdf_remove_datatype(S, P, Datatype, Value, G):-
     Tuples
   ),
   user_interaction(
+    [],
     'REMOVE-RDF-DATATYPE-TRIPLE',
     rdf_retractall_datatype0,
     ['Subject','Predicate','Datatype','Value','Graph'],
