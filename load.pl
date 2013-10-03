@@ -57,8 +57,8 @@ load_pgc:-
     assert(user:file_search_path(uri,          standards('URI'))),
     assert(user:file_search_path(xml,          standards('XML'))),
       assert(user:file_search_path(xsd,          xml('XSD'))),
-  assert(user:file_search_path(stat,         pgc('Statistics'))),
-  assert(user:file_search_path(vocabularies, pgc('Vocabularies'))),
+  assert(user:file_search_path(stat,         pgc('Stats'))),
+  assert(user:file_search_path(vocab,        pgc('Vocab'))),
     assert(user:file_search_path(skos,         vocabularies('SKOS'))),
   
   % Check whether the PGC runs on the current SWI-Prolog version.

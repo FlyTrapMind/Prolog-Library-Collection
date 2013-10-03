@@ -649,6 +649,8 @@ sort_with_duplicates(>, H1, H2, [H2, H1]).
 %        is executed after user-confirmation.
 
 user_interaction(O1, Action, Goal, Headers, Tuples):-
+  % Reset the counter.
+  flag(user_interaction, _OldCounter, 0),
   length(Tuples, NumberOfTuples),
   user_interaction(O1, Action, Goal, 1, NumberOfTuples, Headers, Tuples).
 
@@ -705,9 +707,19 @@ user_interaction(O1, Action, Goal, Index, Length, Headers, Tuples):-
       between(Index, Length, Jndex),
       (
         nth1(Jndex, Tuples, Juple),
-        apply(Goal, Juple)
-        %%%%format(user_output, '[~w/~w]\n', [Jndex, Length]),
-        %%%%flush_output(user_output)
+        apply(Goal, Juple),
+        
+        % DEB
+        flag(user_interaction, Counter, Counter + 1),
+        (
+          Counter mod 10000 =:= 0
+        ->
+          Percentage is Counter / Length * 100,
+          format(user_output, '\t~w% competed\n', [Percentage]),
+          flush_output(user_output)
+        ;
+          true
+        )
       )
     )
   ;

@@ -1,14 +1,6 @@
 :- module(
-  void,
+  void_file,
   [
-    rdf_link/5, % ?Subject:oneof([bnode,uri])
-                % ?Predicate:uri
-                % ?Object:oneof([bnode,literal,uri])
-                % ?FromGraph:atom
-                % ?ToGraph:atom
-    rdf_linkset/3, % ?Triples:list(rdf_triples)
-                   % ?FromGraph:atom
-                   % ?ToGraph:atom
     void_load_library/3, % +VoID_File:atom
                          % ?VoID_GraphPreference:atom
                          % -VoID_Graph:atom
@@ -17,7 +9,7 @@
   ]
 ).
 
-/** <module> VoID
+/** <module> VoID file handling
 
 Support for the Vocabulary of Interlinked Datasets (VoID).
 
@@ -57,6 +49,19 @@ VoiD covers four areas of metadata:
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
+%! dataset(
+%!   ?VoID_Graph:atom,
+%!   ?DatasetName:atom,
+%!   ?DatasetFile:atom,
+%!   ?DatasetGraph:atom
+%! ) is nondet.
+% These assertions make it easy to read/write from/to the description of
+% a dataset in the VoID graph based on information that is in the dataset
+% graph.
+%
+% Keeping the file names makes it easy to store the VoID graph to
+% a package that includes all the relevant files.
+
 :- dynamic(dataset/4).
 
 :- debug(void).
@@ -68,114 +73,6 @@ load_dataset(Dataset):-
   absolute_file_name(data(FileName), File, [access(read)]),
   rdf_global_id(_Namespace:LocalName, Dataset),
   rdf_load(File, [graph(LocalName)]).
-
-%! rdf_link(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?Object:oneof([bnode,literal,uri]),
-%!   ?FromGraph:atom,
-%!   ?ToGraph:atom
-%! ) is nondet.
-% An RDF link is an RDF triple whose subject and object are described in
-% different datasets.
-
-rdf_link(Subject, Predicate, Object, FromGraph, ToGraph):-
-  rdf(Subject, Predicate1, Object1, FromGraph),
-  \+ ((
-    Predicate1 == Predicate,
-    Object1 == Object
-  )),
-  rdf(Object, Predicate2, Object2, ToGraph),
-  \+ ((
-    Predicate2 == Predicate,
-    Object2 == Object
-  )),
-  FromGraph \== ToGraph.
-
-%! rdf_linkset(+Triples:list(compound), ?FromGraph:atom, ?ToGraph:atom) is semidet.
-%! rdf_linkset(-Triples:list(compound), +FromGraph:atom, +ToGraph:atom) is det
-% An RDF linkset is a collection of RDF links between the same two datasets.
-
-rdf_linkset(Triples, FromGraph, ToGraph):-
-  nonvar(Triples), !,
-  forall(
-    member(row(Subject, Predicate, Object), Triples),
-    rdf_link(Subject, Predicate, Object, FromGraph, ToGraph)
-  ).
-rdf_linkset(Triples, FromGraph, ToGraph):-
-  findall(
-    row(Subject, Predicate, Object),
-    rdf_link(Subject, Predicate, Object, FromGraph, ToGraph),
-    Triples
-  ).
-
-%! void_assert_modified(
-%!   +Dataset:atom,
-%!   +DatasetPath:atom,
-%!   +VoID_Graph:atom
-%! ) is det.
-% Asserts a new modification date.
-
-void_assert_modified(Dataset, DatasetPath, VoID_Graph):-
-  time_file(DatasetPath, LastModified),
-  rdf_overwrite_datatype(
-    Dataset,
-    dc:modified,
-    dateTime,
-    LastModified,
-    VoID_Graph
-  ).
-
-void_assert_statistics(Dataset, DatasetGraph, VoID_Graph):-
-  % void:classes
-  count_classes(DatasetGraph, NumberOfClasses),
-  rdf_overwrite_datatype(
-    Dataset,
-    void:classes,
-    integer,
-    NumberOfClasses,
-    VoID_Graph
-  ),
-
-  % void:distinctObjects
-  count_objects(_, _, DatasetGraph, NumberOfObjects),
-  rdf_overwrite_datatype(
-    Dataset,
-    void:distinctObjects,
-    integer,
-    NumberOfObjects,
-    VoID_Graph
-  ),
-
-  % void:distinctSubjects
-  count_subjects(_, _, DatasetGraph, NumberOfSubjects),
-  rdf_overwrite_datatype(
-    Dataset,
-    void:distinctSubjects,
-    integer,
-    NumberOfSubjects,
-    VoID_Graph
-  ),
-
-  % void:properties
-  count_properties(_, _, DatasetGraph, NumberOfProperties),
-  rdf_overwrite_datatype(
-    Dataset,
-    void:properties,
-    integer,
-    NumberOfProperties,
-    VoID_Graph
-  ),
-
-  % void:triples
-  rdf_statistics(triples_by_graph(DatasetGraph, NumberOfTriples)),
-  rdf_overwrite_datatype(
-    Dataset,
-    void:triples,
-    integer,
-    NumberOfTriples,
-    VoID_Graph
-  ).
 
 %! void_load_library(
 %!   +VoID_File:atom,
