@@ -64,7 +64,9 @@ init_data_directory:-
 script_begin:-
   date_time(Start),
   debug(script_ext, 'Script started at ~w.', [Start]),
-  script_clean.
+  script_clean,
+  create_nested_directory(data('Output'), OutputDir),
+  db_assert_novel(user:file_search_path(output, OutputDir)).
 
 %! script_clean is det.
 % This is run after results have been saved to the `Output` directory.
@@ -78,9 +80,15 @@ script_clean:-
 
 script_end:-
   find_last_stage(FromDir),
-  create_nested_directory(data('Output'), ToDir),
+  absolute_file_name(
+    output('.'),
+    ToDir,
+    [access(write),file_type(directory)]
+  ),
   safe_copy_directory(FromDir, ToDir),
-  script_clean.
+  script_clean,
+  date_time(End),
+  debug(stcn, 'Script ended at: ~w.\n', [End]).
 
 %! script_stage(+Stage:nonneg, :Goal) is det.
 
