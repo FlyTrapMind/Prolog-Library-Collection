@@ -22,9 +22,10 @@
 Converts XML DOMs to RDF graphs.
 
 @author Wouter Beek
-@version 2013/06, 2013/09
+@version 2013/06, 2013/09-2013/10
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -69,7 +70,8 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   ),
   atomic_list_concat(Values, '_', Name3),
   atomic_list_concat([Name2,Name3], '/', Name4),
-  rdf_global_id(Ns:Name4, S),
+  spaces_to_underscores(Name4, Name5),
+  rdf_global_id(Ns:Name5, S),
   
   rdf_assert_individual(S, C, G),
   
