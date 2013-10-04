@@ -170,9 +170,9 @@ dcg_multi1(DCG, Rep, L2, O1, C) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_var(DCG, Min, Max, L1, O2),
+  {length(L1, C), in_between(Min, Max, C)},
   % Apply conversion: atom_to_codes/2.
-  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}, !,
-  {length(L1, C)}.
+  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}, !.
 
 
 
