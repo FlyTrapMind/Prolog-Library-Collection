@@ -38,9 +38,9 @@ Handles user input and sequences in which user input is needed continuously
 :- use_module(os(dir_ext)).
 
 :- meta_predicate(user_input(+,3,+)).
-:- meta_predicate(user_interaction(+,+,1,+,+)).
-:- meta_predicate(user_interaction(+,+,1,+,+,+,+)).
-:- meta_predicate(user_interaction(+,+,+,1,+,+,+,+)).
+:- meta_predicate(user_interaction(+,+,:,+,+)).
+:- meta_predicate(user_interaction(+,+,:,+,+,+,+)).
+:- meta_predicate(user_interaction(+,+,+,:,+,+,+,+)).
 
 :- debug(user_input).
 

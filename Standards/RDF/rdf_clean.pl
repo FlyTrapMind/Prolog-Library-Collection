@@ -60,6 +60,7 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(generics(user_input)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_lit)).

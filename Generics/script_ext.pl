@@ -19,6 +19,7 @@ Extensions for running automated scripts in stages.
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
@@ -66,7 +67,7 @@ script_begin:-
   debug(script_ext, 'Script started at ~w.', [Start]),
   script_clean,
   create_nested_directory(data('Output'), OutputDir),
-  db_assert_novel(user:file_search_path(output, OutputDir)).
+  db_add_novel(user:file_search_path(output, OutputDir)).
 
 %! script_clean is det.
 % This is run after results have been saved to the `Output` directory.
