@@ -1,6 +1,7 @@
 :- module(
   script_stage,
   [
+    script_begin/0,
     script_end/0,
     script_stage/2 % +Script:nonneg
                    % :Goal
@@ -21,6 +22,7 @@ We presuppose that the =data= directory has been set and is writeable.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
 
 :- meta_predicate(script_stage(+,2)).
 
@@ -37,13 +39,13 @@ find_last_stage(LastStageDir):-
 %! find_stage_directories(-StageDirectories:list(atom)) is det.
 
 find_stage_directories(StageDirs):-
-  find_stage_directories(StageDirs, 0).
+  find_stage_directories(StageDirs, 1).
 
 %! find_stage_directories(-StageDirectories:list(atom), +Stage:nonneg) is det.
 
 find_stage_directories([H|T], Stage):-
   atomic_list_concat([stage,Stage], '_', StageName),
-  absolute_file_name(
+  absolute_file_name2(
     data(StageName),
     H,
     [access(write),file_type(directory)]
@@ -60,6 +62,9 @@ init_data_directory:-
 init_data_directory:-
   create_project_subdirectory('Data', DataDir),
   db_add_novel(user:file_search_path(data, DataDir)).
+
+script_begin:-
+  script_clean.
 
 %! script_clean is det.
 % This is run after results have been saved to the `Output` directory.

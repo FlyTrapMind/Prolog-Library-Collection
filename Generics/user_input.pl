@@ -62,14 +62,11 @@ legal_directory(Dir) -->
   {subdirectories_to_directory(L, Dir)}.
 
 legal_file(File) -->
-  dcg_multi1(ascii_alpha_numeric, 1-_, BaseCodes),
-  ".",
-  dcg_multi1(ascii_alpha_numeric, 1-_, ExtCodes),
-  {
-    atom_codes(Base, BaseCodes),
-    atom_codes(Ext, ExtCodes),
-    file_name_extension(Base, Ext, File)
-  }.
+  dcg_multi1(legal_file_char, 1-_, Codes),
+  {atom_codes(File, Codes)}.
+
+legal_file_char(C) --> ascii_alpha_numeric(C).
+legal_file_char(C) --> dot(C).
 
 %! legal_filepath(-Filepath:atom)// is semidet.
 
