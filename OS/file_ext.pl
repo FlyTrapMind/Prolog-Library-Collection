@@ -79,13 +79,10 @@ We use the following abbreviations in this module:
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).

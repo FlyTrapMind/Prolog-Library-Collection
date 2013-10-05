@@ -3,8 +3,12 @@
   [
     script_begin/0,
     script_end/0,
-    script_stage/2 % +Script:nonneg
+    script_stage/2, % +Stage:nonneg
+                    % :Goal
+    script_stage/4 % +Stage:nonneg
                    % :Goal
+                   % ?FromFileName:atom
+                   % ?ToFileName:atom
   ]
 ).
 
@@ -24,6 +28,7 @@ Extensions for running automated scripts in stages.
 :- use_module(os(file_ext)).
 
 :- meta_predicate(script_stage(+,:)).
+:- meta_predicate(script_stage(+,:,+,+)).
 
 :- debug(script_ext).
 
@@ -99,6 +104,68 @@ script_stage(Stage, Goal):-
   NextStage is Stage + 1,
   stage_directory(NextStage, ToDir),
   call(Goal, FromDir, ToDir),
+  debug(script_ext, 'Stage ~w is done.', [Stage]).
+
+%! script_stage(
+%!   +Stage:nonneg,
+%!   :Goal,
+%!   ?FromFileName:atom,
+%!   ?ToFileName:atom
+%! ) is det.
+% `Goal` receives the from and to files as arguments.
+
+% This stage was already performed in the past, since the to file is
+% already in the next stage directory.
+script_stage(Stage, _Goal, _FromFileName, ToFileName):-
+  nonvar(ToFileName),
+  NextStage is Stage + 1,
+  stage_directory(NextStage, ToDir),
+  absolute_file_name2(
+    ToFileName,
+    _ToFile,
+    [access(read),relative_to(ToDir)]
+  ), !.
+% This stage has not been perfomed yet.
+script_stage(Stage, Goal, FromFileName, ToFileName):-
+  % From the previous stage.
+  stage_directory(Stage, FromDir),
+  (
+    var(FromFileName)
+  ->
+    % Read from the previous stage directory.
+    access_file(FromDir, read),
+    FromArg = FromDir
+  ;
+    % Read the from file located in the previous stage directory.
+    absolute_file_name2(
+      FromFileName,
+      FromArg,
+      [access(read),relative_to(FromDir)]
+    )
+  ),
+  
+  % To the next stage.
+  NextStage is Stage + 1,
+  stage_directory(NextStage, ToDir),
+  (
+    var(ToFileName)
+  ->
+    % Write to the next stage directory.
+    access_file(ToDir, write),
+    ToArg = ToDir
+  ;
+    % Write to the to file located in the next stage directory.
+    absolute_file_name2(
+      ToFileName,
+      ToArg,
+      [access(write),relative_to(ToDir)]
+    )
+  ),
+  
+  % Execute goal on the from and to arguments (either files or directories).
+  call(Goal, FromArg, ToArg),
+  
+  % DEB
   debug(script_ext, 'Stage ~w is done.', [Stage]).
 
 %! stage_directory(+Stage:nonneg, -StageDirectory:atom) is det.

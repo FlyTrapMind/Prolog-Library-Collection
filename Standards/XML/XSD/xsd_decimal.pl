@@ -106,9 +106,10 @@ The decimal datatype has the following values for its fundamental facets:
 
 @author Wouter Beek
 @tbd Have a look at the bidirectional implementation.
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2013/10
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(math(math_ext)).
 :- use_module(math(rational_ext)).
