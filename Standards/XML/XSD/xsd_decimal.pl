@@ -145,12 +145,9 @@ decimalCanonicalMap(F1) -->
 %! decimalPtCanonicalMap(+Decimal:rational)//
 
 decimalPtCanonicalMap(F) -->
-  {F < 0}, !,
-  "-",
-  {G is copysign(F, 1)},
+  (minus_sign, {Sign = -1} ; {Sign = 1}),
+  {G is copysign(F, Sign)},
   unsignedDecimalPtCanonicalMap(G).
-decimalPtCanonicalMap(F) -->
-  unsignedDecimalPtCanonicalMap(F).
 
 %! fractionDigitsCanonicalFragmentMap(?Fraction:rational)//
 

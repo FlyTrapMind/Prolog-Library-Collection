@@ -70,7 +70,7 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   atomic_list_concat(Values2, '_', Name3),
   atomic_list_concat([Name2,Name3], '/', Name4),
   rdf_global_id(Ns:Name4, S),
-
+  
   rdf_assert_individual(S, C, G),
 
   create_triples(DOM1, XML_PrimaryPs, Trans, S, G, DOM2).

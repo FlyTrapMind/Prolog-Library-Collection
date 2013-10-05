@@ -113,8 +113,7 @@ atom_to_term(Atom, Term):-
 % @param NewAtom An atom.
 
 atom_replace(Atom, Replacements, NewAtom):-
-  is_list(Replacements),
-  !,
+  is_list(Replacements), !,
   atom_codes(Atom, Codes),
   maplist(atom_codes_, Replacements, CodesReplacements),
   list_replace(Codes, CodesReplacements, NewCodes),
