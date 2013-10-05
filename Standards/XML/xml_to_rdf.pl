@@ -57,9 +57,7 @@ Converts XML DOMs to RDF graphs.
 %! ) is det.
 
 create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
-  % Create the resource name.
   rdf_global_id(Ns:Name1, C),
-  downcase_atom(Name1, Name2),
   findall(
     Value,
     (
@@ -68,13 +66,13 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
     ),
     Values1
   ),
-  maplist(strip_atom(' '), [Name2|Values1], [Name3|Values2]),
-  atomic_list_concat(Values2, '_', Name4),
-  atomic_list_concat([Name3,Name4], '/', Name5),
-  rdf_global_id(Ns:Name5, S),
+  maplist(strip_atom(' '), [Name1|Values1], [Name2|Values2]),
+  atomic_list_concat(Values2, '_', Name3),
+  atomic_list_concat([Name2,Name3], '/', Name4),
+  rdf_global_id(Ns:Name4, S),
   
   rdf_assert_individual(S, C, G),
-  
+
   create_triples(DOM1, XML_PrimaryPs, Trans, S, G, DOM2).
 
 %! create_triple(
@@ -111,7 +109,7 @@ create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
   % Process only properties that are allowed according to the filter.
   select(element(XML_P, _, Content1), DOM1, DOM2),
   update_property_filter(Ps1, XML_P, Ps2), !,
-  
+
   (
     % XML element with no content.
     Content1 == [], !
@@ -121,7 +119,7 @@ create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
     call(Trans, XML_P, RDF_P, RDF_O_Type),
     create_triple(S, RDF_P, RDF_O_Type, Content2, G)
   ),
-  
+
   create_triples(DOM2, Ps2, Trans, S, G, RestDOM).
 % Neither the DOM nor the propery filter is empty.
 % This means that some properties in the filter are optional.
