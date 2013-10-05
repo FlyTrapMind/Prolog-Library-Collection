@@ -23,7 +23,7 @@ Extensions for running automated scripts in stages.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
-:- meta_predicate(script_stage(+,2)).
+:- meta_predicate(script_stage(+,:)).
 
 :- debug(script_ext).
 
@@ -65,6 +65,7 @@ init_data_directory:-
 script_begin:-
   date_time(Start),
   debug(script_ext, 'Script started at ~w.', [Start]),
+  init_data_directory,
   script_clean,
   create_nested_directory(data('Output'), OutputDir),
   db_add_novel(user:file_search_path(output, OutputDir)).
@@ -94,7 +95,6 @@ script_end:-
 %! script_stage(+Stage:nonneg, :Goal) is det.
 
 script_stage(Stage, Goal):-
-  init_data_directory,
   stage_directory(Stage, FromDir),
   NextStage is Stage + 1,
   stage_directory(NextStage, ToDir),

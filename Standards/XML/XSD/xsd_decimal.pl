@@ -147,7 +147,7 @@ decimalCanonicalMap(F1) -->
 decimalPtCanonicalMap(F) -->
   {F < 0}, !,
   "-",
-  {G is copysign(F, -1)},
+  {G is copysign(F, 1)},
   unsignedDecimalPtCanonicalMap(G).
 decimalPtCanonicalMap(F) -->
   unsignedDecimalPtCanonicalMap(F).
