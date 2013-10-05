@@ -146,7 +146,14 @@ decimalCanonicalMap(F1) -->
 %! decimalPtCanonicalMap(+Decimal:rational)//
 
 decimalPtCanonicalMap(F) -->
-  (minus_sign, {Sign = -1} ; {Sign = 1}),
+  (
+    {F < 0}
+  ->
+    minus_sign,
+    {Sign = -1}
+  ;
+    {Sign = 1}
+  ),
   {G is copysign(F, Sign)},
   unsignedDecimalPtCanonicalMap(G).
 
