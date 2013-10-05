@@ -1,11 +1,10 @@
 :- module(
   void_file,
   [
-    void_load_library/3, % +VoID_File:atom
-                         % ?VoID_GraphPreference:atom
-                         % -VoID_Graph:atom
-    void_save_library/2 % +VoID_Graph:atom
-                        % ?VoID_File:atom
+    void_load_library/2, % +File:atom
+                         % +Graph:atom
+    void_save_library/2 % +Graph:atom
+                        % ?File:atom
   ]
 ).
 
@@ -31,7 +30,7 @@ VoiD covers four areas of metadata:
 
 @author WouterBeek
 @compat http://www.w3.org/TR/void/
-@version 2013/03-2013/05, 2013/09
+@version 2013/03-2013/05, 2013/09-2013/10
 */
 
 :- use_module(generics(thread_ext)).
@@ -60,117 +59,111 @@ VoiD covers four areas of metadata:
 
 :- dynamic(dataset/4).
 
-:- debug(void).
+:- debug(void_file).
 
 
 
-load_dataset(Dataset):-
-  once(rdf(Dataset, void:dataDump, FileName)),
-  absolute_file_name(data(FileName), File, [access(read)]),
-  rdf_global_id(_Namespace:LocalName, Dataset),
-  rdf_load(File, [graph(LocalName)]).
+%! void_init is det.
+% Loads the VoID vocabulary.
 
-%! void_load_library(
-%!   +VoID_File:atom,
-%!   +VoID_GraphPref:atom,
-%!   -VoID_Graph:atom
-%! ) is det.
+void_init:-
+  rdf_new_graph(void_schema, G),
+  absolute_file_name(vocab('VoID'), F, [access(read),file_type(turtle)]),
+  rdf_load2(F, [file_type(turtle),graph(G)]).
+
+%! void_load_dataset(+Graph:atom, +Dataset:iri) is det.
+% @param Graph The atomic name of the RDF graph that contains the VoID
+%        description that describes the given dataset.
+% @param Dataset An IRI denoting a dataset.
+
+void_load_dataset(G, DS):-
+  % Every dataset must have a set datadump property.
+  once(rdf(DS, void:dataDump, DD)),
+
+  % @tbd Extend this to other cases: absolute files, generic relative files,
+  %      Web locations.
+  absolute_file_name(data(DD), DS_F, [access(read)]),
+
+  % The RDF graph name into which the sataset is loaded is derived from
+  % its IRI.
+  rdf_global_id(_Ns:DS_G, DS),
+
+  rdf_load2(DS_F, [graph(DS_G)]),
+
+  % Update the internally stored relations between VoID graphs and
+  % dataset graphs.
+  assert(dataset(G, DS, DS_F, DS_G)).
+
+%! void_load_library(+File:atom, +Graph:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
 % Also calculates VoID statistics for all datasets and asserts those to
 % the VoID file.
 %
-% @param VoID_File The atomic name of an absolute file path of a VoID file.
-% @param VoID_GraphPref The preferred atomic name of the VoID graph.
-% @param VoID_Graph The actual atomic name of the VoID graph.
+% @param File The atomic name of an absolute file path of a VoID file.
+% @param Graph The atomic name of the VoID graph.
 
-void_load_library(VoID_File, VoID_G1, VoID_G2):-
-  % Type checks,
-  nonvar(VoID_File),
-  exists_file(VoID_File),
-  access_file(VoID_File, read), !,
+% The RDF graph already exists.
+void_load_library(_F, G):-
+  rdf_graph(G), !,
+  debug(
+    void_file,
+    'Cannot load VoID file since RDF graph ~w already exists.',
+    [G]
+  ).
+void_load_library(F, G):-
+  % Make sure the VoID file exists and is readable.
+  access_file(F, read),
+  nonvar(G),
 
   % Clear the internal database.
-  retractall(dataset(_, _, _, _)),
+  retractall(dataset(G, _, _, _)),
 
-  % Make sure the graph name does not already exist,
-  % and is close to the preferred grah name (when given).
-  (
-    var(VoID_G1)
-  ->
-    file_to_graph_name(VoID_File, VoID_G2)
-  ;
-    rdf_new_graph(VoID_G1, VoID_G2)
-  ),
+  % Make sure the VoID vocabulary is loaded.
+  void_init,
 
-  % Load the VoID file in a new graph (see above).
-  rdf_load2(VoID_File, [graph(VoID_G2)]),
-  debug(void, 'VoID file ~w loaded into graph ~w.', [VoID_File,VoID_G2]),
-
-  % Load the VoID vocabulary into the same graph.
-  rdf_new_graph(void_schema, VoID_SchemaG),
-  absolute_file_name(
-    vocabularies('VoID'),
-    VoID_SchemaFile,
-    [access(read),file_type(turtle)]
-  ),
-  rdf_load2(VoID_SchemaFile, [file_type(turtle),graph(VoID_SchemaG)]),
-
-  % We assume that the datasets that are mentioned in the VoID file
-  % are reachable from that VoID file's directory.
-  file_directory_name(VoID_File, VoID_Dir),
+  % Load the VoID file into an RDF graph with the given name.
+  rdf_load2(F, [graph(G)]),
+  debug(void_file, 'VoID file ~w loaded into graph ~w.', [F,G]),
 
   % All datasets are loaded in multiple threads.
   forall_thread(
     (
-      % This includes VoID linksets, accordiung to the VoID vocabulary.
-      rdfs_individual_of(Dataset, void:'Dataset'),
-      rdf(Dataset, void:dataDump, DatasetRelFile, VoID_G2),
-      % Possibly relative file paths are made absolute.
-      directory_file_path(VoID_Dir, DatasetRelFile, DatasetAbsFile),
-      % The graph name is derived from the file name.
-      file_to_graph_name(DatasetAbsFile, DatasetG),
-      format(atom(Msg), 'Loading graph ~w', [DatasetG])
+      % This includes VoID linksets, according to the VoID vocabulary.
+      rdfs_individual_of(DS, void:'Dataset'),
+      format(atom(Msg), 'Loading dataset ~w', [DS])
     ),
-    (
-      rdf_load2(DatasetAbsFile, [graph(DatasetG)]),
-      assert(dataset(VoID_G2, Dataset, DatasetAbsFile, DatasetG))
-    ),
-    void,
-    Msg
-  ),
-
-  % The VoID graph itself is updated.
-  void_update_library(VoID_G2),
-
-  % The updated VoID graph is stored to the same file
-  % that it was loaded from.
-  rdf_save2(VoID_File, [graph(VoID_G2)]).
-
-%! void_save_library(+VoID_Graph:atom, ?VoID_File:atom) is det.
-
-void_save_library(VoID_G, VoID_File):-
-  forall_thread(
-    (
-      dataset(VoID_G, _Dataset, DatasetPath, DatasetG),
-      format(atom(Msg), 'Saving graph ~w', [DatasetG])
-    ),
-    rdf_save2(DatasetPath, [format(turtle),graph(DatasetG)]),
-    void,
-    Msg
-  ),
-  rdf_save2(VoID_File, [format(turtle),graph(VoID_G)]).
-
-void_update_library(VoID_Graph):-
-  forall_thread(
-    (
-      dataset(VoID_Graph, Dataset, _DatasetPath, DatasetGraph),
-      format(atom(Msg), 'Updating dataset ~w', [Dataset])
-    ),
-    (
-      void_assert_modified(VoID_Graph, Dataset),
-      void_assert_statistics(VoID_Graph, Dataset, DatasetGraph)
-    ),
-    void,
+    void_load_dataset(G, DS),
+    void_file,
     Msg
   ).
 
+%! void_save_library(+Graph:atom, ?File:atom) is det.
+% @tbd Add meta-data updates.
+
+void_save_library(G, F):-
+  % First save all datasets that are described in the given VoID graph.
+  forall_thread(
+    (
+      dataset(G, _DS, DS_F, DS_G),
+      format(atom(Msg), 'Saving graph ~w', [DS_G])
+    ),
+    rdf_save2(DS_F, [format(turtle),graph(DS_G)]),
+    void_file,
+    Msg
+  ),
+  % Then save the VoID graph itself.
+  rdf_save2(F, [format(turtle),graph(G)]).
+
+void_update_library(G):-
+  forall_thread(
+    (
+      dataset(G, DS, _DS_F, DS_G),
+      format(atom(Msg), 'Updating dataset ~w', [DS])
+    ),
+    (
+      void_assert_modified(G, DS),
+      void_assert_statistics(G, DS, DS_G)
+    ),
+    void_file,
+    Msg
+  ).
