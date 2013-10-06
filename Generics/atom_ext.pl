@@ -218,9 +218,21 @@ progress_bar(Current, End, ProgressBar):-
   progress_bar0(Current, End, ProgressBar).
 
 progress_bar0(Current1, End, ProgressBar):-
-  Percentage is round(Current1 / End * 100),
+  (
+     End =:= 0
+  ->
+     Percentage = 100.0
+  ;
+     Percentage is round(Current1 / End * 100)
+  ),
   format_integer(Percentage, 3, Percentage1),
-  Progress is round(Current1 / (End / 10)),
+  (
+     End =:= 0
+  ->
+    Progress = 10
+  ;
+    Progress is round(Current1 / (End / 10))
+  ),
   atom_number(EndAtom, End),
   atom_length(EndAtom, EndLength),
   format_integer(Current1, EndLength, Current2),

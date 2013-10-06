@@ -71,18 +71,25 @@ void_init:-
   absolute_file_name(vocab('VoID'), F, [access(read),file_type(turtle)]),
   rdf_load2(F, [file_type(turtle),graph(G)]).
 
-%! void_load_dataset(+Graph:atom, +Dataset:iri) is det.
-% @param Graph The atomic name of the RDF graph that contains the VoID
-%        description that describes the given dataset.
+%! void_load_dataset(
+%!   +DescriptionFile:atom,
+%!   +DescriptionGraph:atom,
+%!   +Dataset:iri
+%! ) is det.
+% @param DescriptionFile The atomic name of the file that contains the
+%        dataset description.
+% @param DescriptionGraph The atomic name of the RDF graph that contains
+%        the description.
 % @param Dataset An IRI denoting a dataset.
 
-void_load_dataset(G, DS):-
+void_load_dataset(DD_F, DD_G, DS):-
   % Every dataset must have a set datadump property.
-  once(rdf(DS, void:dataDump, DD)),
+  once(rdf(DS, void:dataDump, Dump)),
 
   % @tbd Extend this to other cases: absolute files, generic relative files,
   %      Web locations.
-  absolute_file_name(data(DD), DS_F, [access(read)]),
+  directory_file_path(DD_Dir, _, DD_F),
+  absolute_file_name(Dump, DS_F, [access(read),relative_to(DD_Dir)]),
 
   % The RDF graph name into which the sataset is loaded is derived from
   % its IRI.
@@ -92,7 +99,7 @@ void_load_dataset(G, DS):-
 
   % Update the internally stored relations between VoID graphs and
   % dataset graphs.
-  assert(dataset(G, DS, DS_F, DS_G)).
+  assert(dataset(DD_G, DS, DS_F, DS_G)).
 
 %! void_load_library(+File:atom, +Graph:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
@@ -132,7 +139,7 @@ void_load_library(F, G):-
       rdfs_individual_of(DS, void:'Dataset'),
       format(atom(Msg), 'Loading dataset ~w', [DS])
     ),
-    void_load_dataset(G, DS),
+    void_load_dataset(F, G, DS),
     void_file,
     Msg
   ).

@@ -804,6 +804,7 @@ xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue):-
 
 xsd_datatype(boolean, xsd:boolean).
 xsd_datatype(date, xsd:date).
+xsd_datatype(dateTime, xsd:dateTime).
 xsd_datatype(decimal, xsd:decimal).
 xsd_datatype(double, xsd:double).
 xsd_datatype(duration, xsd:duration).

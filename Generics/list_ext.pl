@@ -222,7 +222,7 @@ length_cut(L, Cut, L1, L2):-
 % @param Replacements A list of replacements of the form =|term-term|=.
 % @param NewList The list in which all replacants have been replaced.
 
-list_replace([], _Replacements, []).
+list_replace([], _Replacements, []):- !.
 list_replace(List, Replacements, NewList):-
   member(Replacant-Replacer, Replacements),
   append(Replacant, Rest, List), !,
@@ -232,9 +232,9 @@ list_replace(List, Replacements, NewList):-
   ->
     append(Replacer, NewRest, NewList)
   ;
-    NewList = [Replacer | NewRest]
+    NewList = [Replacer|NewRest]
   ).
-list_replace([H | T], Replacements, [H | NewT]):-
+list_replace([H|T], Replacements, [H|NewT]):-
   list_replace(T, Replacements, NewT).
 
 list_separator_concat([], _Separator, []):- !.

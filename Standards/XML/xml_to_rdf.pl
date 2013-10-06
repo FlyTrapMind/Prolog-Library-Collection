@@ -64,11 +64,11 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
       member(XML_PrimaryP, XML_PrimaryPs),
       get_dom_value(DOM1, Trans, XML_PrimaryP, Value)
     ),
-    Values1
+    Values
   ),
-  maplist(strip_atom(' '), [Name1|Values1], [Name2|Values2]),
-  atomic_list_concat(Values2, '_', Name3),
-  atomic_list_concat([Name2,Name3], '/', Name4),
+  atomic_list_concat(Values, '_', Name2),
+  atomic_list_concat([Name1,Name2], '/', Name3),
+  spaces_to_underscores(Name3, Name4),
   rdf_global_id(Ns:Name4, S),
   
   rdf_assert_individual(S, C, G),

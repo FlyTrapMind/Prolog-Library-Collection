@@ -39,6 +39,9 @@
     is_absolute_file_name2/1, % ?File:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
+    merge_into_one_file/3, % +Id:pair(atom,nonneg)
+                           % +FromDir:atom
+                           % +ToFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
     safe_copy_file/2, % +From:atom
@@ -270,20 +273,28 @@ is_absolute_file_name2(F):-
 
 merge_into_one_file(FromDir, ToFile):-
   directory_files(FromDir, text, FromFiles),
+  length(FromFiles, Length),
+  script_ext:script_stage(
+    [potential(Length),to_file(ToFile)],
+    merge_into_one_file,
+    0,
+    merge_into_one_file
+  ).
+
+merge_into_one_file(PS, FromDir, ToFile):-
+  directory_files(FromDir, text, FromFiles),
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
-    maplist(merge_into_one_file0(Out), FromFiles),
+    maplist(merge_into_one_file0(PS, Out), FromFiles),
     close(Out)
-  ),
-  % DEB: Mention which files were merged.
-  with_output_to(atom(Files), print_list([], FromFiles)),
-  debug(file_ext, 'Files ~w were merged into ~w.', [Files,ToFile]).
-merge_into_one_file0(Out, FromFile):-
+  ).
+merge_into_one_file0(PS, Out, FromFile):-
   setup_call_cleanup(
     open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
-  ).
+  ),
+  script_ext:script_stage_tick(PS).
 
 %! new_file(+OldFile:atom, -NewFile:atom) is det.
 % If a file with the same name exists in the same directory, then
