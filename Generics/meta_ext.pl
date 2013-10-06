@@ -125,7 +125,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 :- meta_predicate(run_in_working_directory(0,+)).
-:- meta_predicate(run_on_sublists(+,1)).
 :- meta_predicate(setoff(+,0,-)).
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(switch(+,:,+)).
