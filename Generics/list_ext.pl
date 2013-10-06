@@ -1,27 +1,24 @@
 :- module(
   list_ext,
   [
-    after/3, % ?X
-             % ?Y
+    after/3, % ?Element2
+             % ?Element1
              % ?List:list
     append_intersperse/3, % +List:list
                           % +Separator
                           % -NewList:list
-    before/3, % ?X
-              % ?Y
+    before/3, % ?Element1
+              % ?Element2
               % ?List:list
-    combination/2, % +Lists:list(list(term))
-                   % -Combination:list(term)
-    combination/3, % +List:list(term)
-                   % +Length:integer
-                   % -Combination:list(term)
-    element_cut/4, % +L:list,
-                   % +Element,
-                   % -L1:list,
-                   % -L2:list
-    first/2, % +L:list,
+    combination/2, % +Lists:list(list)
+                   % -Combination:list
+    element_cut/4, % +List:list
+                   % +Element
+                   % -List1:list
+                   % -List2:list
+    first/2, % +List:list,
              % ?First
-    first/3, % +L:list,
+    first/3, % +List:list,
              % +N:integer
              % -Firsts:list
     icompare/3, % ?InvertedOrder
@@ -32,7 +29,7 @@
                   % -L1:list
                   % -L2:list
     list_replace/3, % +List:list
-                    % +Replacements:list(term-term)
+                    % +Replacements:list(pair)
                     % -NewList:list
     list_separator_concat/3, % +Lists:list(list)
                              % +Separator:list
@@ -41,15 +38,15 @@
                              % -Pairs:ordset(ordset)
     member/3, % ?Element1
               % ?Element2
-              % ?List
+              % ?List:list
     member_default/3, % +Member
                       % +List:list
                       % +Default
-    nth_minus_0/3, % +I:integer
-                   % +L:list
+    nth_minus_0/3, % +Index:integer
+                   % +List:list
                    % -Element:term
-    nth_minus_1/3, % +I:integer
-                   % +L:list
+    nth_minus_1/3, % +Index:integer
+                   % +List:list
                    % -Element:term
     nth0chk/3, % ?Index:integer
                % ?List:List
@@ -57,10 +54,10 @@
     nth1chk/3, % ?Index:integer
                % ?List:List
                % ?Element
-    pair/3, % ?Pair
+    pair/3, % ?Pair:pair
             % ?Former
             % ?Latter
-    pairs/3, % ?Pairs:list
+    pairs/3, % ?Pairs:list(pair)
              % ?Formers:list
              % ?Latters:list
     pairs_to_members/2, % +Pairs:list(pair)
@@ -77,10 +74,10 @@
                       % +Repeats:integer
                       % -List:list(object)
     shorter/3, % +Comparator:pred
-               % +List1:list(object)
-               % +List2:list(object)
+               % +List1:list
+               % +List2:list
     split_list_by_number_of_sublists/3, % +List:list
-                                        % +NumberOfSublists:integer
+                                        % +NumberOfSublists:nonneg
                                         % -Sublists:list(list)
     split_list_by_size/3, % +List:list
                           % +SizeOfSublists:integer
@@ -139,22 +136,28 @@ append_intersperse([H|T1], S, [H,S|T2]):-
 before(X, Y, List):-
   nextto(X, Y, List).
 
-%! combination(+Lists:list(list(term)), -Combination:list(term)) is nondet.
+%! combination(+Lists:list(list), -Combination:list) is nondet.
 % Returns a combination of items from the given lists.
+%
+% ## Example
+%
+% ~~~
+% ?- combination([[1,2,3],[4,5]], C).
+% C = [1, 4] ;
+% C = [1, 5] ;
+% C = [2, 4] ;
+% C = [2, 5] ;
+% C = [3, 4] ;
+% C = [3, 5].
+% ~~~
 %
 % @param Lists A list of lists of terms.
 % @param Combination A list of terms.
 
 combination([], []).
-combination([List | Lists], [H | T]):-
-  member(H, List),
-  combination(Lists, T).
-
-combination(_List, 0, []):- !.
-combination(List, Length, [H | T]):-
-  member(H, List),
-  succ(Length, NewLength),
-  combination(List, NewLength, T).
+combination([ListH|ListT], [H|T]):-
+  member(H, ListH),
+  combination(ListT, T).
 
 %! element_cut(+L:list, +Element:atom, -L1:list, -L2:list) is det.
 % Cuts the given list at the given element, returning the two cut lists.
@@ -222,8 +225,7 @@ length_cut(L, Cut, L1, L2):-
 list_replace([], _Replacements, []).
 list_replace(List, Replacements, NewList):-
   member(Replacant-Replacer, Replacements),
-  append(Replacant, Rest, List),
-  !,
+  append(Replacant, Rest, List), !,
   list_replace(Rest, Replacements, NewRest),
   (
     is_list(Replacer)
@@ -251,15 +253,14 @@ list_separator_concat([List | Lists], Separator, NewList):-
 list_to_ordered_pairs([], []):- !.
 % The pairs need to be internally ordered, but the order in which the
 % pairs occur is immaterial.
-list_to_ordered_pairs([H | T], S):-
+list_to_ordered_pairs([H|T], S):-
   list_to_orderd_pairs_(H, T, S1),
   list_to_ordered_pairs(T, S2),
   append(S1, S2, S).
 
-list_to_orderd_pairs_(_H, [], []):-
-  !.
-list_to_orderd_pairs_(H, [T | TT], [Pair | S]):-
-  list_to_ord_set([H, T], Pair),
+list_to_orderd_pairs_(_H, [], []):- !.
+list_to_orderd_pairs_(H, [T|TT], [Pair|S]):-
+  list_to_ord_set([H,T], Pair),
   list_to_orderd_pairs_(H, TT, S).
 
 %! member(X, Y, L) is nondet.
@@ -431,13 +432,19 @@ shorter(Order, List1, List2):-
   length(List2, Length2),
   compare(Order, Length2, Length1).
 
+%! split_list_by_number_of_sublists(
+%!   +List:list,
+%!   +NumberOfSublists:nonneg,
+%!   -Sublists:list(list)
+%! ) is det.
+
 split_list_by_number_of_sublists(List, NumberOfSublists, Sublists):-
   length(List, Length),
   Length > NumberOfSublists, !,
   succ(ReducedNumberOfSublists, NumberOfSublists),
   SizeOfSublists is Length div ReducedNumberOfSublists,
   split_list_by_size(List, SizeOfSublists, Sublists).
-split_list_by_number_of_sublists(L, _N, L).
+split_list_by_number_of_sublists(List, _NumberOfSublists, List).
 
 %! split_list_by_size(
 %!   +List:list,

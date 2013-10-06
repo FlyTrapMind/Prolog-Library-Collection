@@ -40,7 +40,7 @@ describe_sameas(Remote, Resource, Rows):-
   setoff(
     Rows0,
     (
-      member(row(IdenticalResource), [Resource|IdenticalResources]),
+      member(row(IdenticalResource), [row(Resource)|IdenticalResources]),
       describe_resource(Remote, IdenticalResource, Rows0)
     ),
     Rowss
@@ -48,7 +48,7 @@ describe_sameas(Remote, Resource, Rows):-
   ord_union(Rowss, Rows).
 
 query_sameas(Remote, Resource, IdenticalResources):-
-  format(atom(Where), '  <~w> owl:sameAs* ?x .', [Resource]),
+  format(atom(Where), '  <~w> owl:sameAs ?x .', [Resource]),
   formulate_sparql(
     [owl],
     'SELECT DISTINCT ?x',

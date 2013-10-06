@@ -87,4 +87,3 @@ uri_query(URI, Name, Value):-
   uri_data(search, Components, QueryString),
   uri_query_components(QueryString, QueryPairs),
   member(Name=Value, QueryPairs).
-

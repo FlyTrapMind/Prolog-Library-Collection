@@ -183,7 +183,7 @@ thread_overview(Atoms):-
       member(ThreadAlias/Current/End, Triples),
       progress_bar(Current, End, ProgressBar),
       thread_status(ThreadAlias, Status),
-      format(atom(Atom), '~w ~w {~w}', [ThreadAlias, ProgressBar, Status])
+      format(atom(Atom), '~w ~w {~w}', [ThreadAlias,ProgressBar,Status])
     ),
     Atoms
   ).
