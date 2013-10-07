@@ -68,7 +68,7 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   
   atom_codes(Name3, Codes1),
   % Escape space, grave accent. 
-  list_replace(Codes1, [32-[37,50,48],96-[37,54,48]], Codes2),
+  list_replace(Codes1, [[32]-[37,50,48],[96]-[37,54,48]], Codes2),
   atom_codes(Name4, Codes2),
 
   rdf_global_id(Ns:Name4, S),
