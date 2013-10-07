@@ -48,6 +48,7 @@ Allows one to monitor running threads that register.
 :- meta_predicate(forall_thread(0,0,+,+)).
 :- meta_predicate(intermittent_goal(:,+)).
 :- meta_predicate(intermittent_thread(:,+,-,+)).
+:- meta_predicate(run_on_sublists(+,1)).
 
 :- dynamic(end_flag/2).
 :- dynamic(workload/4).
@@ -56,7 +57,15 @@ Allows one to monitor running threads that register.
 
 
 
-%! forall_thread(:Antecedent, :Consequent, +DebugTopic:atom, +DebugMessage:atom) is det.
+%! forall_thread(
+%!   :Antecedent,
+%!   :Consequent,
+%!   +DebugTopic:atom,
+%!   +DebugMessage:atom
+%! ) is det.
+% Runs for instatiation of `Antecedent` a threaded instatiation `Consequent`.
+% The threads are joined afterwards.
+% The status is send to the debug stream if `Topic` is switched on.
 
 forall_thread(Antecedent, Consequent, Topic, Msg):-
   findall(
@@ -175,7 +184,7 @@ thread_overview(Atoms):-
       member(ThreadAlias/Current/End, Triples),
       progress_bar(Current, End, ProgressBar),
       thread_status(ThreadAlias, Status),
-      format(atom(Atom), '~w ~w {~w}', [ThreadAlias, ProgressBar, Status])
+      format(atom(Atom), '~w ~w {~w}', [ThreadAlias,ProgressBar,Status])
     ),
     Atoms
   ).

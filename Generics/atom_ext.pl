@@ -21,6 +21,8 @@
                       % -Atom:atom
     last_char/2, % +Atom:atom
                  % ?Last:char
+    new_atom/2, % +Old:atom
+                % -New:atom
     progress_bar/3, % +Current:number
                     % +End:number
                     % -ProgressBar:atom
@@ -75,7 +77,7 @@ We assume atoms to be encoded using ASCII (or an ASCII-compatible) encoding
 scheme.
 
 @author Wouter Beek
-@version 2011/08-2013/05, 2013/07
+@version 2011/08-2013/05, 2013/07, 2013/09
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -183,6 +185,24 @@ last_char(Atom, Char):-
   atom_chars(Atom, Chars),
   last(Chars, Char).
 
+%! new_atom(+Old:atom, -New:atom) is det.
+% Returns a new atom, based on the given atom by either incrementing its
+% integer index or by adding such an index.
+
+new_atom(A1, A2):-
+  split_atom_exclusive('_', A1, Splits),
+  reverse(Splits, [LastSplit|RestSplits]),
+  (
+    atom_number(LastSplit, OldNumber)
+  ->
+    NewNumber is OldNumber + 1,
+    atom_number(NewLastSplit, NewNumber),
+    reverse([NewLastSplit|RestSplits], NewSplits)
+  ;
+    reverse(['1',LastSplit|RestSplits], NewSplits)
+  ),
+  atomic_list_concat(NewSplits, '_', A2).
+
 %! progress_bar(+Current:integer, End:integer, ProgressBar:atom) is det.
 % Returns an atomic progress bar that displays the current value onto
 % the scale that runs from one to the given end value.
@@ -191,17 +211,28 @@ last_char(Atom, Char):-
 % @param End An integer, representing the last value to be processed.
 % @param ProgressBar The atomic representation of a progress bar.
 
-progress_bar(End, End, ProgressBar2):-
-  !,
+progress_bar(End, End, ProgressBar2):- !,
   progress_bar0(End, End, ProgressBar1),
   format(atom(ProgressBar2), '~w [done]', [ProgressBar1]).
 progress_bar(Current, End, ProgressBar):-
   progress_bar0(Current, End, ProgressBar).
 
 progress_bar0(Current1, End, ProgressBar):-
-  Percentage is round(Current1 / End * 100),
+  (
+     End =:= 0
+  ->
+     Percentage = 100.0
+  ;
+     Percentage is round(Current1 / End * 100)
+  ),
   format_integer(Percentage, 3, Percentage1),
-  Progress is round(Current1 / (End / 10)),
+  (
+     End =:= 0
+  ->
+    Progress = 10
+  ;
+    Progress is round(Current1 / (End / 10))
+  ),
   atom_number(EndAtom, End),
   atom_length(EndAtom, EndLength),
   format_integer(Current1, EndLength, Current2),
@@ -218,8 +249,7 @@ progress_bar0(Current1, End, ProgressBar):-
 % Ensures that the atom will have a dot character at the end.
 
 punctuate(Atom, Atom):-
-  last_char(Atom, '.'),
-  !.
+  last_char(Atom, '.'), !.
 punctuate(Old, New):-
   atomic_concat(Old, '.', New).
 
@@ -231,10 +261,8 @@ punctuate(Old, New):-
 % @param Repeats A integer, the number of repeats of the subatom.
 % @param Atom An atom, the result of repeating the given atom.
 
-repeating_atom(_SubAtom, 0, ''):-
-  !.
-repeating_atom(SubAtom, 1, SubAtom):-
-  !.
+repeating_atom(_SubAtom, 0, ''):- !.
+repeating_atom(SubAtom, 1, SubAtom):- !.
 repeating_atom(SubAtom, Repeats, Atom):-
   Repeats > 1,
   NewRepeats is Repeats - 1,
@@ -278,8 +306,7 @@ split_atom_exclusive(SplitList, Atom, [Split1 | Splits]):-
   sub_atom(Atom, 0, Before, _After, Split1),
   atom_length(Atom, Total),
   Rest is Total - After,
-  sub_atom(Atom, Rest, After, 0, NewAtom),
-  !,
+  sub_atom(Atom, Rest, After, 0, NewAtom), !,
   split_atom_exclusive(SplitList, NewAtom, Splits).
 split_atom_exclusive(_SplitList, Atom, [Atom]).
 
@@ -299,8 +326,7 @@ split_atom_exclusive(_SplitList, Atom, [Atom]).
 %      results.
 
 split_atom_inclusive(Split, Atom, Splits):-
-  atom(Split),
-  !,
+  atom(Split), !,
   split_atom_inclusive([Split], Atom, Splits).
 split_atom_inclusive(SplitList, Atom, [Split1 | Splits]):-
   member(SplitMember, SplitList),
@@ -311,8 +337,7 @@ split_atom_inclusive(SplitList, Atom, [Split1 | Splits]):-
   atom_length(Atom, Total),
   Rest is Total - After,
   sub_atom(Atom, Rest, After, 0, NewAtom),
-  split_atom_inclusive(SplitList, NewAtom, Splits),
-  !.
+  split_atom_inclusive(SplitList, NewAtom, Splits), !.
 split_atom_inclusive(_SplitList, Atom, [Atom]).
 
 split_atom_length(Atom, Length, Splits):-
@@ -335,8 +360,7 @@ split_atom_length(Atom, Length, Splits):-
 
 split_length(Codes, Length, [Codes]):-
   length(Codes, CodesLength),
-  CodesLength < Length,
-  !.
+  CodesLength < Length, !.
 split_length(Codes, Length, [SubCodes | Results]):-
   length(SubCodes, Length),
   append(SubCodes, Rest, Codes),
@@ -346,45 +370,37 @@ split_length(Codes, Length, [SubCodes | Results]):-
 % Strips the given atom's front and back for the given character.
 
 strip_atom(RemovableChar, Unstripped, Stripped):-
-  atom(RemovableChar),
-  !,
+  atom(RemovableChar), !,
   strip_atom([RemovableChar], Unstripped, Stripped).
 strip_atom(RemovableChars, Unstripped, Stripped):-
   is_list(RemovableChars),
-  atom(Unstripped),
-  !,
+  atom(Unstripped), !,
   atom_chars(Unstripped, UnstrippedChars),
   strip_atom(RemovableChars, UnstrippedChars, StrippedChars),
   atom_chars(Stripped, StrippedChars).
 strip_atom(RemovableChars, UnstrippedChars1, StrippedChars):-
   is_list(RemovableChars),
-  is_list(UnstrippedChars1),
-  !,
+  is_list(UnstrippedChars1), !,
   strip_begin(RemovableChars, UnstrippedChars1, UnstrippedChars2),
   strip_end(RemovableChars, UnstrippedChars2, StrippedChars).
 
 strip_begin(RemovableChar, Unstripped, Stripped):-
-  atom(RemovableChar),
-  !,
+  atom(RemovableChar), !,
   strip_begin([RemovableChar], Unstripped, Stripped).
 strip_begin(RemovableChars, Unstripped, Stripped):-
   is_list(RemovableChars),
-  atom(Unstripped),
-  !,
+  atom(Unstripped), !,
   atom_chars(Unstripped, UnstrippedChars),
   strip_begin(RemovableChars, UnstrippedChars, StrippedChars),
   atom_chars(Stripped, StrippedChars).
-strip_begin(_RemovableChars, [], []):-
-  !.
+strip_begin(_RemovableChars, [], []):- !.
 strip_begin(RemovableChars, [Strip | UnstrippedChars], StrippedChars):-
-  member(Strip, RemovableChars),
-  !,
+  member(Strip, RemovableChars), !,
   strip_begin(RemovableChars, UnstrippedChars, StrippedChars).
 strip_begin(_Strips, Chars, Chars).
 
 strip_end(RemovableChars, Unstripped, Stripped):-
-  atom(Unstripped),
-  !,
+  atom(Unstripped), !,
   atom_chars(Unstripped, UnstrippedChars),
   strip_end(RemovableChars, UnstrippedChars, StrippedChars),
   atom_chars(Stripped, StrippedChars).
@@ -445,4 +461,3 @@ underscores_to_spaces(Old, New):-
 
 wrap_atom(Options, Content, NewContent):-
   dcg_phrase(dcg_wrap(Options), Content, NewContent).
-

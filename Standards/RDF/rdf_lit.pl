@@ -24,6 +24,9 @@
                              % ?PreferredLiteral:atom
     rdf_simple_literal/2, % ?Graph:atom
                           % ?SimpleLiteral:compound
+    rdf_typed_literal/3, % ?TypedLiteral:compound
+                         % ?Datatype:iri
+                         % ?Value
     rdf_typed_literal/4 % ?Graph:atom
                         % ?TypedLiteral:compound
                         % ?Datatype:iri
@@ -45,6 +48,7 @@ Support for RDF literals.
 :- rdf_meta(rdf_literal(r,r,?,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?)).
 :- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
+:- rdf_meta(rdf_typed_literal(o,r,?)).
 :- rdf_meta(rdf_typed_literal(?,o,r,?)).
 
 
@@ -185,19 +189,23 @@ rdf_simple_literal(G, Lit):-
   atomic(Lex).
 
 %! rdf_typed_literal(
+%!   ?TypedLiteral:compound,
+%!   ?Datatype:iri,
+%!   ?Lexical:atom
+%! ) is det.
+
+rdf_typed_literal(Lit, D, LEX):-
+  Lit = literal(type(D, LEX)).
+
+%! rdf_typed_literal(
 %!   ?Graph:atom,
 %!   ?TypedLiteral:compound,
 %!   ?Datatype:iri,
 %!   ?Lexical:atom
 %! ) is nondet.
 
-rdf_typed_literal(G, Lit, Datatype, Lex):-
-  nonvar(Datatype), nonvar(Lit), !,
-  Lit = literal(type(Datatype,Lex)),
-  rdf(_, _, Lit, G).
-rdf_typed_literal(G, Lit1, Datatype, Lex):-
-  nonvar(Lit1), !,
-  rdf_global_object(Lit1, Lit2),
-  Lit2 = literal(type(Datatype,Lex)),
+rdf_typed_literal(G, Lit1, D, LEX):-
+  (nonvar(Lit1) -> rdf_global_object(Lit1, Lit2) ; Lit2 = Lit1),
+  rdf_typed_literal(Lit2, D, LEX),
   rdf(_, _, Lit2, G).
 

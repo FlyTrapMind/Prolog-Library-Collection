@@ -158,6 +158,6 @@ prolog:message(version(Version)) -->
 % Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.
 
 prolog_version(Version) -->
-  dcg_multi(decimal_number, 3, [Major,Minor,Patch], [separator(comma)]),
+  dcg_multi1(decimal_number, 3, [Major,Minor,Patch], [separator(comma)]),
   {major_minor_patch_to_integer(Major, Minor, Patch, Version)}.
 

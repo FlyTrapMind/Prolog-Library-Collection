@@ -3,8 +3,10 @@
     append_directories/3, % +Dir1:atom
                           % +Dir2:atom
                           % -Dir3:atom
-    create_personal_subdirectory/2, % +Subdirectory:list(atom)
+    create_personal_subdirectory/2, % +NestedDirectories:compound
                                     % -AbsoluteDirectory:atom
+    create_project_subdirectory/2, % +NestedDirectories:compound
+                                   % -AbsoluteDirectory:atom
     create_directory/1, % +Directory:atom
     create_nested_directory/1, % +NestedDirectories:compound
     create_nested_directory/2, % +NestedDirectories:compound
@@ -91,7 +93,10 @@ create_directory(CurrentDir, [NextSubDir|SubDirs]):-
 create_nested_directory(NestedDir):-
   create_nested_directory(NestedDir, _Absolute).
 
-%! create_nested_directory(+NestedDir:compound, -Absolute:atom) is det.
+%! create_nested_directory(
+%!   +NestedDirectory:compound,
+%!   -AbsoluteDirectory:atom
+%! ) is det.
 % Returns a nested file path.
 %
 % @param NestedDir A compound term of linearly nested atoms
@@ -114,7 +119,11 @@ create_nested_directory(NestedDir, Absolute):-
   % Then we add the inner directories recursively.
   create_nested_directory(NestedInner, AbsoluteOuter, Absolute).
 
-%! create_nested_directory(+NestedDir:term, +OldDir:atom, -NewDir:atom) is det.
+%! create_nested_directory(
+%!   +NestedDirectory:compound,
+%!   +OldAbsoluteDirectory:atom,
+%!   -NewAbsoluteDirectory:atom
+%! ) is det.
 % Adds the nested directories term to the given atomic directory,
 % returning another atomic directory.
 
@@ -149,7 +158,10 @@ create_personal_directory:-
   create_nested_directory(home(Hidden), _Dir),
   db_add_novel(user:file_search_path(personal, home(Hidden))).
 
-%! create_personal_subdirectory(+SubDir:atom, -Absolute:atom) is det.
+%! create_personal_subdirectory(
+%!   +NestedDirectories:compound,
+%!   -AbsoluteDirectory:atom
+%! ) is det.
 % Asserts a project-specific directory that is a direct subdirectory of the
 % current user's home.
 %
@@ -158,9 +170,17 @@ create_personal_directory:-
 %
 % This requires that the project name has been set using project_name/1.
 
-create_personal_subdirectory(SubDir, Absolute):-
+create_personal_subdirectory(Nested, Abs):-
   create_personal_directory,
-  create_nested_directory(personal(SubDir), Absolute).
+  create_nested_directory(personal(Nested), Abs).
+
+%! create_project_subdirectory(
+%!   +NestedDirectories:compound,
+%!   -AbsoluteDirectory:atom
+%! ) is det.
+
+create_project_subdirectory(Nested, Abs):-
+  create_nested_directory(project(Nested), Abs).
 
 %! directory_files(
 %!   +Directory:atom,

@@ -17,6 +17,7 @@
     codes//1, % +Codes:list(code)
     collection//2, % +Options:list(nvpair)
                    % +Elements:list
+    end_of_line//0,
     graphic//1, % -Graphic:list(code)
     horizontal_line//0,
     horizontal_line//1, % +Length:integer
@@ -216,7 +217,7 @@ ci_code(CI_Code) -->
 % ~~~
 
 ci_string(Codes) -->
-  dcg_multi(ci_code, _, Codes, []), !.
+  dcg_multi1(ci_code, Codes), !.
 
 code(C) -->
   [C].
@@ -302,6 +303,13 @@ collection_(O1, [H|T]) -->
   ),
 
   collection_(O1, T).
+
+end_of_line -->
+  carriage_return, line_feed, !.
+end_of_line -->
+  line_feed, !.
+end_of_line -->
+  carriage_return.
 
 graphic([H|T]) -->
   u_graphic(H),
@@ -406,7 +414,7 @@ proof_(O1, Proof) -->
   newline,
 
   % Print premises / subproofs.
-  dcg_multi(proof(O2), _, Premises, []).
+  dcg_multi1(proof(O2), Premises).
 
 proposition(O1, Proposition) -->
   {

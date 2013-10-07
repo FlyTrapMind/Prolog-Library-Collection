@@ -1,6 +1,9 @@
 :- module(
   file_ext,
   [
+    absolute_file_name2/3, % +Spec:compound
+                           % -File:atom
+                           % +Options:list(nvpair)
     base_or_file_to_file/3, % +BaseOrFile:atom
                             % ?FileType:atom
                             % -File:atom
@@ -33,7 +36,11 @@
                              % -ToFile:atom
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
+    is_absolute_file_name2/1, % ?File:atom
     merge_into_one_file/2, % +FromDir:atom
+                           % +ToFile:atom
+    merge_into_one_file/3, % +Id:pair(atom,nonneg)
+                           % +FromDir:atom
                            % +ToFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
@@ -75,12 +82,10 @@ We use the following abbreviations in this module:
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(generics(atom_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).
@@ -88,6 +93,20 @@ We use the following abbreviations in this module:
 :- debug(file_ext).
 
 
+
+%! absolute_file_name2(
+%!   +Spec:compound,
+%!   -File:atom,
+%!   +Options:list(nvpair)
+%! ) is semidet.
+% @see Like absolute_file_name/3 but fails on existence exceptions.
+
+absolute_file_name2(Spec, F, O1):-
+  catch(
+    absolute_file_name(Spec, F, O1),
+    error(existence_error(_,_), _),
+    fail
+  ).
 
 %! base_or_file_to_file(
 %!   +BaseOrFile:atom,
@@ -238,49 +257,55 @@ hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
 
+%! is_absolute_file_name2(+File:atom) is semidet.
+% Wrapper around is_absolute_file_name/1 that fails for variable arguments.
+%
+% @see is_absolute_file_name/1
+
+is_absolute_file_name2(F):-
+  var(F), !, fail.
+is_absolute_file_name2(F):-
+  is_absolute_file_name(F).
+
 %! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.
 % RE and To must be in the same directory.
 % How arbitrary this restriction is!
 
 merge_into_one_file(FromDir, ToFile):-
   directory_files(FromDir, text, FromFiles),
+  length(FromFiles, Length),
+  script_ext:script_stage(
+    [potential(Length),to_file(ToFile)],
+    merge_into_one_file,
+    0,
+    merge_into_one_file
+  ).
+
+merge_into_one_file(PS, FromDir, ToFile):-
+  directory_files(FromDir, text, FromFiles),
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
-    maplist(merge_into_one_file0(Out), FromFiles),
+    maplist(merge_into_one_file0(PS, Out), FromFiles),
     close(Out)
-  ),
-  % DEB: Mention which files were merged.
-  with_output_to(atom(Files), print_list([], FromFiles)),
-  debug(file_ext, 'Files ~w were merged into ~w.', [Files,ToFile]).
-merge_into_one_file0(Out, FromFile):-
+  ).
+merge_into_one_file0(PS, Out, FromFile):-
   setup_call_cleanup(
     open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
-  ).
+  ),
+  script_ext:script_stage_tick(PS).
 
-%! new_file(+File1:atom, -File2:atom) is det.
+%! new_file(+OldFile:atom, -NewFile:atom) is det.
 % If a file with the same name exists in the same directory, then
 % then distinguishing integer is appended to the file name.
 
-new_file(File, File):-
-  \+ exists_file(File), !.
-new_file(File, NewFile):-
-  file_name_extension(Base, Extension, File),
-  dcg_phrase(dcg_separated_list(underscore, Codess), Base),
-  reverse(Codess, [LastCodes | RestCodess]),
-  (
-    number_codes(OldNumber, LastCodes)
-  ->
-    NewNumber is OldNumber + 1,
-    number_codes(NewLastCodes, NewNumber),
-    reverse([NewLastCodes | RestCodess], NewCodess)
-  ;
-    reverse(["1", LastCodes | RestCodess], NewCodess)
-  ),
-  maplist(atom_codes, NewAtoms, NewCodess),
-  atomic_list_concat(NewAtoms, '_', NewBase),
-  file_name_extension(NewBase, Extension, NewFile).
+new_file(F, F):-
+  \+ exists_file(F), !.
+new_file(F1, F2):-
+  file_name_extension(Base1, Ext, F1),
+  new_atom(Base1, Base2),
+  file_name_extension(Base2, Ext, F2).
 
 safe_copy_file(From, To):-
   access_file(From, read),

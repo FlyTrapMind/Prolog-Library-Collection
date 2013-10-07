@@ -566,27 +566,27 @@ regular([zh,xiang]).
 %      with arguments.
 
 rfc5646_extended_language_subtag(T0, L) -->
-  dcg_multi(ascii_letter, 3, X1, [out(atom)]),
+  dcg_multi1(ascii_letter, 3, X1, [out(atom)]),
   {rfc5646_class(X1, 'Subtag')},
   (
     "", {L = [X1]}
   ;
     hyphen_minus, {H1 = '-'},
-    dcg_multi(ascii_letter, 3, X2, [convert(atom_codes)]),
+    dcg_multi1(ascii_letter, 3, X2, [convert(atom_codes)]),
     {rfc5646_class(X2, 'Subtag')},
     (
       "",
       {L = [X1,X2]}
     ;
       hyphen_minus, {H2 = '-'},
-      dcg_multi(ascii_letter, 3, X3, [convert(atom_codes)]),
+      dcg_multi1(ascii_letter, 3, X3, [convert(atom_codes)]),
       {rfc5646_class(X3, 'Subtag')},
       (
         "",
         {L = [X1,X2,X3]}
       ;
         hyphen_minus, {H3 = '-'},
-        dcg_multi(ascii_letter, 3, X4, [convert(atom_codes)]),
+        dcg_multi1(ascii_letter, 3, X4, [convert(atom_codes)]),
         {rfc5646_class(X4, 'Subtag')},
         {L = [X1,X2,X3,X4]}
       )
@@ -658,12 +658,12 @@ rfc5646_extension(extension(T1, T2), [Singleton|ExtensionComponents]) -->
 
 rfc5646_extension_components(extension_components('-',H,T1), [H|T]) -->
   hyphen_minus,
-  dcg_multi(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
+  dcg_multi1(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
   {rfc5646_class(H, 'Extension')},
   rfc5646_extension_components(T1, T).
 rfc5646_extension_components(extension_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
+  dcg_multi1(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
   {rfc5646_class(H, 'Extension')}.
 
 %! rfc5646_extensions(-Tree:compound, ?Extensions:list(list(atomic)))//
@@ -739,7 +739,7 @@ rfc5646_extensions(extensions('-',T1), [H]) -->
 % deprecated in favor of a more modern subtag or sequence of subtags.
 
 rfc5646_grandfathered_language_tag(T0, Tag) -->
-  dcg_multi(word, _, L1, [separator(hyphen)]),
+  dcg_multi1(word, _Rep, L1, [separator(hyphen)]),
   {
     atomic_list_concat(L1, '-', Tag),
     rfc5646_class(Tag, 'Grandfathered'),

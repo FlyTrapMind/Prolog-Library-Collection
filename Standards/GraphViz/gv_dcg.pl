@@ -70,7 +70,7 @@ gv_attribute_list(G_Attrs, Attrs1) -->
     merge_options(Attrs1, G_Attrs, AllAttrs),
     include(gv_attribute_value(AllAttrs), Attrs1, Attrs2)
   },
-  dcg_multi(gv_attribute, _, Attrs2, [separator(comma)]),
+  dcg_multi1(gv_attribute, _Rep, Attrs2, [separator(comma)]),
   closing_square_bracket.
 
 gv_category(edge) --> e,d,g,e.
@@ -224,11 +224,11 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   ({(G_Attrs5 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
 
   % The list of GraphViz nodes.
-  dcg_multi(gv_node_statement(NewI, G_Attrs5), _, NewV_Terms, []),
+  dcg_multi1(gv_node_statement(NewI, G_Attrs5), NewV_Terms),
   ({NewV_Terms == []} -> "" ; newline),
 
   % The ranked GraphViz nodes (displayed at the same height).
-  dcg_multi(gv_ranked_node_collection(NewI, G_Attrs5), _, Ranked_V_Terms, []),
+  dcg_multi1(gv_ranked_node_collection(NewI, G_Attrs5), Ranked_V_Terms),
   ({Ranked_V_Terms == []} -> "" ; newline),
 
   {
@@ -245,10 +245,10 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   },
 
   % The rank edges.
-  dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, Rank_Edges, []),
+  dcg_multi1(gv_edge_statement(NewI, G_Attrs5), Rank_Edges),
 
   % The non-rank edges.
-  dcg_multi(gv_edge_statement(NewI, G_Attrs5), _, NewE_Terms, []),
+  dcg_multi1(gv_edge_statement(NewI, G_Attrs5), NewE_Terms),
 
   % Note that we do not include a newline here.
 
@@ -460,12 +460,7 @@ gv_ranked_node_collection(I, G_Attrs, rank(Rank_V_Term,Content_V_Terms)) -->
   {NewI is I + 1},
   indent(NewI), gv_attribute(rank=same), semi_colon, newline,
 
-  dcg_multi(
-    gv_node_statement(NewI, G_Attrs),
-    _,
-    [Rank_V_Term|Content_V_Terms],
-    []
-  ),
+  dcg_multi1(gv_node_statement(NewI, G_Attrs), [Rank_V_Term|Content_V_Terms]),
 
   % Close the subgraph.
   indent(I), "}", newline.

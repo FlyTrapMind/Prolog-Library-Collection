@@ -132,6 +132,15 @@ The following built-in datatypes are derived from duration:
 
 % CANONICAL MAPPING %
 
+%! durationCanonicalMap(+Duration:compound, -LEX:list(code)) is det.
+% Compound terms that represent durations have the following form:
+% ~~~
+% duration(Months:nonneg, Seconds:float)
+% ~~~
+
+durationCanonicalMap(Duration, LEX):-
+  phrase(durationCanonicalMap(Duration), LEX).
+
 %! duDayCanonicalFragmentMap(+NumberOfDays:nonneg)//
 % Maps a nonnegative integer, presumably the day normalized value from the
 % seconds of a duration value, to a duDayFrag//, a fragment of a duration
@@ -204,14 +213,14 @@ duMinuteCanonicalFragmentMap(M) -->
   unsignedNoDecimalPtCanonicalMap(M),
   "M".
 
-%! durationCanonicalMap(+Duration:compound, -LEX:list(code)) is det.
-
-durationCanonicalMap(Duration, LEX):-
-  phrase(durationCanonicalMap(Duration), LEX).
-
 %! durationCanonicalMap(+Duration:compound)//
 % Maps a duration's property values to durationLexicalRep// fragments and
 % combines the fragments into a complete durationLexicalRep//.
+%
+% Compound terms that represent durations have the following form:
+% ~~~
+% duration(Months:nonneg, Seconds:float)
+% ~~~
 %
 % @param Duration A complete duration value.
 
@@ -299,6 +308,12 @@ duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
 
 
 % LEXICAL MAPPING %
+
+%! durationLexicalMap(LEX:list(code), Duration:compound)
+% Compound terms that represent durations have the following form:
+% ~~~
+% duration(Months:nonneg, Seconds:float)
+% ~~~
 
 durationLexicalMap(LEX, D):-
   phrase(durationLexicalRep(D), LEX).

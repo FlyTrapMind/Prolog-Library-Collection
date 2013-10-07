@@ -47,7 +47,7 @@
 
 % PEEK
     dcg_peek//1, % :DCG_Body:dcg
-    dcg_peek_length//2, % ?Length:integer
+    dcg_peek_length//2, % +Length:integer
                         % ?Codes:list(code)
 
 % PHRASE EXTENSION
@@ -133,7 +133,6 @@ a modular way.
 % PEEK
 :- meta_predicate(dcg_peek(//,?,?)).
 :- meta_predicate(dcg_peek_length(?,?,?,?)).
-:- meta_predicate(dcg_peek_length(+,?,?,?,?)).
 % PHRASE EXTENSIONS
 :- meta_predicate(dcg_phrase(//,?)).
 :- meta_predicate(dcg_phrase(//,+,-)).
@@ -369,24 +368,10 @@ parse_tree(P, SubT1, T):-
 dcg_peek(DCG_Body), DCG_Body -->
   DCG_Body.
 
-%! dcg_peek_length(?Length:integer, ?Peek:list(code))// is nondet.
+%! dcg_peek_length(+Length:integer, ?Peek:list(code))// is nondet.
 
-% In order to prevent the generative call of DCG rule to result in an
-% infinite loop over increasingly bigger lengths in length/2, we
-% explicitly instigate an upper bound for length.
-% This upper bound is the length of the code list that is parsed.
-dcg_peek_length(Length, Peek, In, Out):-
-  length(In, MaxLength),
-  dcg_peek_length(MaxLength, Length, Peek, In, Out).
-dcg_peek_length(MaxLength, Length, Peek), Peek -->
-  {
-    % Effectuate the upper bound to length.
-    % In the generative call this is the predicate that backtracks, causing
-    % the peek list to grow until it reaches the maximum allowed size.
-    between(0, MaxLength, Length),
-    % The length is always instantiated at this point.
-    length(Peek, Length)
-  },
+dcg_peek_length(Length, Peek), Peek -->
+  {length(Peek, Length)},
   Peek.
 
 

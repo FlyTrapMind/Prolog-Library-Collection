@@ -8,9 +8,9 @@
   ]
 ).
 
-/** <module> XSD_TIME
+/** <module> XSD date
 
-Date represents top-open intervals of exactly one day in length on
+*=date=* represents top-open intervals of exactly one day in length on
 the timelines of dateTime, beginning on the beginning moment of each day,
 up to but not including the beginning moment of the next day).
 For non-timezoned values, the top-open intervals disjointly cover
@@ -69,6 +69,13 @@ The date datatype has the following values for its fundamental facets:
 
 % CANONICAL MAPPING %
 
+%! dateCanonicalMap(+Date:compound, -LEX:list(code)) is det.
+% A compound term that represents a data has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where the values for year, month, day, and time zone are given.
+
 dateCanonicalMap(Date, LEX):-
   phrase(dateCanonicalMap(Date), LEX).
 
@@ -93,6 +100,13 @@ dateCanonicalMap(dateTime(Y,M,D,_H,_MM,_S,TZ)) -->
 
 % LEXICAL MAPPING %
 
+%! dateLexicalMap(+LEX:list(code), -Date:compound) is det.
+% A compound term that represents a data has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% Where the values for year, month, day, and time zone are given.
+
 dateLexicalMap(LEX, Date):-
   phrase(dateLexicalRep(Date), LEX).
 
@@ -112,4 +126,3 @@ dateLexicalRep(DT) -->
   {dayInMonth(Y, M, D)},
   ("" ; timezoneFrag(TZ)),
   {newDateTime(Y,M,D,_H,_MM,_S,TZ,DT)}.
-

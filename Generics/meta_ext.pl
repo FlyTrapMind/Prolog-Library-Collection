@@ -87,15 +87,9 @@
                                 % +WorkingDirectory:atom
 
 % SORTING
-    predsort_with_duplicates/3, % :Goal:atom
-                                % +List:list
-                                % -SortedList:list
-
-% USER INTERACTION
-    user_interaction/4 % +Action:atom
-                       % :Goal
-                       % +Headers:list(atom)
-                       % +Tuples:list(list)
+    predsort_with_duplicates/3 % :Goal:atom
+                               % +List:list
+                               % -SortedList:list
   ]
 ).
 
@@ -104,10 +98,11 @@
 Extensions to the SWI-Prolog meta predicates.
 
 @author Wouter Beek
-@version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09
+@version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10
 */
 
 :- use_module(generics(list_ext)).
+:- use_module(library(option)).
 
 :- meta_predicate(boolean(0,-)).
 :- meta_predicate(call_nth(0,-)).
@@ -130,13 +125,11 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 :- meta_predicate(run_in_working_directory(0,+)).
-:- meta_predicate(run_on_sublists(+,1)).
 :- meta_predicate(setoff(+,0,-)).
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(switch(+,:,+)).
 :- meta_predicate(unless(0,0)).
 :- meta_predicate(update_datastructure(3,+,+,-)).
-:- meta_predicate(user_interaction(+,:,+,+)).
 :- meta_predicate(xor(0,0)).
 
 :- dynamic(memo_/1).
@@ -615,95 +608,4 @@ predsort_with_duplicates(Predicate, Length, L1, L3, SortedList):-
 sort_with_duplicates(<, H1, H2, [H1, H2]).
 sort_with_duplicates(=, H1, H2, [H1, H2]).
 sort_with_duplicates(>, H1, H2, [H2, H1]).
-
-
-
-% USER INTERACTION %
-
-%! user_interaction(
-%!   +Action:atom,
-%!   :Goal,
-%!   +Headers:list(atom),
-%!   +Tuples:list(term)
-%! ) is det.
-% The generic predicate for executing arbitray Prolog goals for arbitrary
-% sequences of Prolog terms under user-interaction.
-%
-% One of the use cases is cleaning a database, where a list of =Tuples=
-% has been identified for removal by =Goal=, but a user is required to
-% assent to each removal action.
-%
-% Receiving input from the user does not work in threads!
-%
-% @param Action An atomic description of the action that is performed by
-%             the goal.
-% @param Goal An arbitrary Prolog goal that takes the number of elements
-%           in each tuple as the number of arguments.
-% @param Headers A list of atoms describing the entries in each tuple.
-%              The number of headers and the number of elements in each
-%              tuple are assumed to be the same.
-% @param Tuples A list of tuples. These are the element lists for which goal
-%             is executed after user-confirmation.
-
-user_interaction(Action, Goal, Headers, Tuples):-
-  length(Tuples, NumberOfTuples),
-  user_interaction(Action, Goal, 1, NumberOfTuples, Headers, Tuples).
-
-user_interaction(Action, _Goal, _Index, _Length, _Headers, []):-
-  format(user_output, '\n-----\nDONE! <~w>\n-----\n', [Action]), !.
-user_interaction(Action, Goal, Index, Length, Headers, Tuples):-
-  % Display a question.
-  nth1(Index, Tuples, Tuple),
-  findall(
-    HeaderedElement,
-    (
-      nth0(J, Headers, Header),
-      nth0(J, Tuple, Element),
-      format(atom(HeaderedElement), '~w: <~w>', [Header, Element])
-    ),
-    HeaderedElements
-  ),
-  atomic_list_concat(HeaderedElements, '\n\t', TupleAtom),
-  format(
-    user_output,
-    '[~w/~w] ~w\n\t~w\n(y/n/q)\n?: ',
-    [Index, Length, Action, TupleAtom]
-  ),
-
-  % Receive answer.
-  % This does not work in a thread!
-  get_single_char(UserCode),
-  char_code(UserAtom, UserCode),
-
-  % Act on answer.
-  (
-    UserAtom == q
-  ->
-    true
-  ;
-    UserAtom == y
-  ->
-    apply(Goal, Tuple),
-    NewIndex is Index + 1,
-    user_interaction(Action, Goal, NewIndex, Length, Headers, Tuples)
-  ;
-    UserAtom == n
-  ->
-    NewIndex is Index + 1,
-    user_interaction(Action, Goal, NewIndex, Length, Headers, Tuples)
-  ;
-    UserAtom == 'A'
-  ->
-    forall(
-      between(Index, Length, Jndex),
-      (
-        nth1(Jndex, Tuples, Juple),
-        apply(Goal, Juple),
-        format(user_output, '[~w/~w]\n', [Jndex, Length]),
-        flush_output(user_output)
-      )
-    )
-  ;
-    user_interaction(Action, Goal, Index, Length, Headers, Tuples)
-  ).
 

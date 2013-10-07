@@ -76,7 +76,7 @@ rdf_add_i_l(G, TypedLiteral1, M, Resource):-
   % Type checks.
   % We assume that the resource is added in advance.
   rdf_graph(G),
-  rdf_typed_literal(G, TypedLiteral1, _Datatype, _Lex),
+  rdf_typed_literal(G, TypedLiteral1, _D, _LEX),
   model(M),
   resource(M, Resource), !,
   rdf_global_object(TypedLiteral1, TypedLiteral2),

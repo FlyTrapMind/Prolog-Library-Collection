@@ -85,7 +85,7 @@ HTML attribute parsing, used in HTML table generation.
 % @param File The atomic base name of the HTML file that is served.
 
 reply_html_file(Style, File):-
-  absolute_file_name(stcn_html(File), HTML, [access(read), file_type(html)]),
+  absolute_file_name(stcn_html(File), HTML, [access(read),file_type(html)]),
   load_html_file(HTML, DOM),
   contains_term(element(body, _, Body), DOM),
   reply_html_page(Style, [], Body).

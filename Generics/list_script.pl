@@ -62,7 +62,7 @@ list_script(Goal, Todo, Done):-
   % The TODO file must exist.
   access_file(Todo, read),
   file_to_items(Todo, TodoItems),
-  
+
   % The DONE file may or may not exist.
   (
     access_file(Done, read)
@@ -73,7 +73,7 @@ list_script(Goal, Todo, Done):-
     DoneItems = [],
     Mode = write
   ),
-  
+
   setup_call_cleanup(
     % The mode is either =append= (if the file already exists)
     % or =write= (if the file does not yet exist).
@@ -89,7 +89,8 @@ list_script(Goal, TodoItems, DoneItems, DoneStream):-
   member(Item, TodoItems),
   \+ member(Item, DoneItems),
   call(Goal, Item),
-  format(DoneStream, '~w\n', [Item]),
+  format(DoneStream, '~w', [Item]),
+  nl(DoneStream),
   flush_output(DoneStream),
   % Enumerate by failure.
   fail.

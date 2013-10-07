@@ -16,10 +16,13 @@
                         % ?Object:or([bnode,iri,literal])
                         % +Graph:atom
                         % -Count:nonneg
-    count_subjects/4 % ?Predicate:iri
-                     % ?Object:or([bnode,iri,literal])
-                     % +Graph:atom
-                     % -Count:nonneg
+    count_subjects/4, % ?Predicate:iri
+                      % ?Object:or([bnode,iri,literal])
+                      % +Graph:atom
+                      % -Count:nonneg
+    rdf_property_table/3 % +Property:iri
+                         % +Graph:atom
+                         % -Table:list(list)
   ]
 ).
 
@@ -34,10 +37,12 @@ Statistics for RDF data.
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_term)).
 :- use_module(rdfs(rdfs_read)).
 
@@ -45,6 +50,7 @@ Statistics for RDF data.
 :- rdf_meta(count_objects(r,r,+,-)).
 :- rdf_meta(count_properties(r,r,+,-)).
 :- rdf_meta(count_subjects(r,r,+,-)).
+:- rdf_meta(rdf_property_table(r,+,-)).
 
 
 
@@ -157,4 +163,15 @@ count_properties(S, O, G, Count):-
 count_subjects(P, O, G, Count):-
   setoff(S, rdf(S, P, O, G), Ss),
   length(Ss, Count).
+
+rdf_property_table(P, G, T):-
+  setoff(O, rdf2(_, P, O, G), Os),
+  findall(
+    [O,NumberOfO],
+    (
+      member(O, Os),
+      aggregate_all(count, rdf2(_, P, O, G), NumberOfO)
+    ),
+    T
+  ).
 

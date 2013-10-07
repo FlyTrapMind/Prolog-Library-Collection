@@ -57,7 +57,6 @@ pred(Converted2, AlsoConverted2, NotConvertedLabel):-
 
 :- use_module(generics(db_ext)).
 :- use_module(library(lists)).
-:- use_module(library(semweb/rdf_db)).
 
 :- dynamic(rdf_meta_expand_db/1).
 
@@ -92,8 +91,8 @@ rdf_meta_expand_all([e|ArgTypes], [Arg|Args], [Arg|NewArgs], Expansions):-
   nonvar(Arg), !,
   rdf_meta_expand_all(ArgTypes, Args, NewArgs, Expansions).
 rdf_meta_expand_all(
-  [e|ArgTypes], 
-  [Arg|Args], 
+  [e|ArgTypes],
+  [Arg|Args],
   [NewArg|NewArgs],
   [rdf_global_id(NewArg,Arg)|Expansions]
 ):-
@@ -108,26 +107,26 @@ system:term_expansion(TermIn, TermOut):-
     TermIn =.. [:-,Head,Body],
     % ... separate `Functor` from `Args`.
     Head =.. [Functor|Args],
-    
+
     % Create a list of unbounded variables that has the same length.
     same_length(Args, ArgTypes),
-    
+
     % Create a query term that can be used
     % to match `TermIn` on the list of
     % predicates set to auto-expand.
     MatchTerm =.. [Functor|ArgTypes],
-    
+
     % Match query to auto-expand fact base.
     % Notice the module prefix.
     rdf_meta_expand_db(_Mod:MatchTerm),
-    
-    % Create lists of renamed arguments and 
+
+    % Create lists of renamed arguments and
     % expansions to the body.
     rdf_meta_expand_all(ArgTypes, Args, NewArgs, Expansions),
-    
+
     % Expand the original `Body` with `Expansions`.
     expand_body(Expansions, Body, ExpandedBody),
-    
+
     % Create the (altered) `TermOut`.
     NewHead =.. [Functor|NewArgs],
     TermOut =.. [:-,NewHead,ExpandedBody], !

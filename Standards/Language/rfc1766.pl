@@ -184,9 +184,9 @@ tag(Tag) -->
     atom_length(Tag, Length),
     between(1, 8, Length)
   }, !,
-  dcg_multi(ascii_letter, _, Tag, [convert(atom_codes)]).
+  dcg_multi1(ascii_letter, _Rep, Tag, [convert(atom_codes)]).
 tag(Tag) -->
-  dcg_multi(ascii_letter, _, Codes, []),
+  dcg_multi1(ascii_letter, Codes),
   {
     length(Codes, Length),
     between(1, 8, Length),

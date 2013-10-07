@@ -1,6 +1,7 @@
 :- module(
   'iso639-5',
   [
+    'assert_iso639-5_schema'/1, % +Graph:atom
     'iso639-5'//2 % ?Name:atom
                   % ?URI:atom
   ]
@@ -14,10 +15,12 @@ The codes are mapped to Lexvo Semantic Web URIs.
 
 @author Wouter Beek
 @see http://www.loc.gov/standards/iso639-5/
-@version 2013/01, 2013/06-2013/07
+@version 2013/01, 2013/06-2013/07, 2013/09
 */
 
-:- use_module(library(semweb/rdf_db)). % For rdf_meta/1 directive.
+:- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace('iso639-5', 'http://lexvo.org/id/iso639-5/').
@@ -25,6 +28,21 @@ The codes are mapped to Lexvo Semantic Web URIs.
 :- rdf_meta('iso639-5'(?,r,?,?)).
 
 
+
+'assert_iso639-5_schema'(G):-
+  rdfs_assert_class('iso639-5':'LanguageFamily', G),
+  rdfs_assert_label('iso639-5':'LanguageFamily', en,
+    'ISO 639-5 language family', G),
+  rdfs_assert_seeAlso('iso639-5':'LanguageFamily',
+    'http://www.loc.gov/standards/iso639-5/', G),
+  forall(
+    'iso639-5'(Name, Lang1, _, _),
+    (
+      rdf_global_id(Lang1, Lang2),
+      rdf_assert_individual(Lang2, 'iso639-5':'LanguageFamily', G),
+      rdfs_assert_label(Lang2, en, Name, G)
+    )
+  ).
 
 'iso639-5'('Afro-Asiatic', 'iso639-5':afa) --> "afa".
 'iso639-5'('Algonquian', 'iso639-5':alg) --> "alg".

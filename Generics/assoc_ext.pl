@@ -1,6 +1,9 @@
 :- module(
   assoc_ext,
   [
+    init_assoc/3, % +Keys:list
+                  % +IntialValue
+                  % -Assoc:assoc
     get_assoc_ord_member/3, % +Key
                             % +Assoc:assoc
                             % ?Value
@@ -21,7 +24,7 @@
 An association list with multiple values per key, using ordered sets.
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/07-2013/09
+@version 2013/04-2013/05, 2013/07-2013/10
 */
 
 :- use_module(generics(print_ext)).
@@ -35,6 +38,17 @@ An association list with multiple values per key, using ordered sets.
 :- nodebug(assoc_ext).
 
 
+
+%! init_assoc(+Keys:list, +IntialValue, -Assoc:assoc) is det.
+
+init_assoc(Keys, IntialValue, A):-
+  empty_assoc(A0),
+  init_assoc(Keys, A0, IV, A).
+
+init_assoc([], A, _IV, A):- !.
+init_assoc([H|T], A1, IV, A3):-
+  put_assoc(H, A1, IV, A2),
+  init_assoc(T, A2, IV, A3).
 
 %! get_assoc_ord_member(+Key, +Assoc:assoc, ?Value) is nondet.
 

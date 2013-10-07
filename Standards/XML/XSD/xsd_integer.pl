@@ -82,4 +82,3 @@ integerCanonicalMap(I, LEX):-
 
 integerLexicalMap(LEX, I):-
   phrase(noDecimalPtNumeral(_Sign, I), LEX).
-

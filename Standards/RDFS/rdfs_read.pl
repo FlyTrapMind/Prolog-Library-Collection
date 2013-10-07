@@ -274,6 +274,7 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
   debug(rdfs_read, '[RDFS 9] ~w IN ~w', [I,C]).
 % RDFD 1
 rdfs_individual(M, Lex, Datatype, G):- M=m(t,_,t),
+gtrace,
   rdf_db_or_axiom(M, _, _, TypedLit, G),
   rdf_typed_literal(G, TypedLit, Datatype, Lex),
   rdfs_individual(M, Datatype, rdfs:'Datatype', G),

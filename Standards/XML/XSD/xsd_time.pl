@@ -106,6 +106,11 @@ The time datatype has the following values for its fundamental facets:
 % CANONICAL MAPPING %
 
 %! timeCanonicalMap(+Time:compound, -LEX:list(code)) is det.
+% The compound term has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% The values for year, month, and day are neglected for XSD time.
 
 timeCanonicalMap(T, LEX):-
   phrase(timeCanonicalMap(T), LEX).
@@ -113,7 +118,7 @@ timeCanonicalMap(T, LEX):-
 %! timeCanonicalMap(+Time:compound)//
 % Maps a time value to a timeLexicalRep//.
 %
-% @param Time A complete time value.
+% @param Time A compound term that represents a time value.
 
 timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
   hourCanonicalFragmentMap(H),
@@ -128,6 +133,11 @@ timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
 % LEXICAL MAPPING %
 
 %! timeLexicalMap(+LEX:list(code), -Time:compound) is nondet.
+% The compound term has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
+% The values for year, month, and day are neglected for XSD time.
 
 timeLexicalMap(LEX, T):-
   phrase(timeLexicalRep(T), LEX).

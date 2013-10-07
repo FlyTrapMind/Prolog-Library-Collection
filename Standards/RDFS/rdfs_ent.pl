@@ -261,4 +261,3 @@ axiom(rdfs, UriRef, rdfs:range, rdfs:'Resource'):-
   between(1, 3, Integer),
   format(atom(Local), '_~w', [Integer]),
   rdf_global_id(rdf:Local, UriRef).
-

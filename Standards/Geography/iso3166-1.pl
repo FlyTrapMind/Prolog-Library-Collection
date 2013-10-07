@@ -1,9 +1,9 @@
 :- module(
   'iso3166-1',
   [
-    'iso3166-1'/3 % ?Code:atom
-                  % ?Name:atom
-                  % ?Resource:uri
+    'assert_iso3166-1_schema'/1, % 
+    'iso3166-1'//2 % ?Name:atom
+                   % ?Country:iri
   ]
 ).
 
@@ -16,6 +16,8 @@ Suopport for the ISO 3166-1 country code standard.
 */
 
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
+:- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace('iso3166-1', 'http://lexvo.org/id/iso3166/').
@@ -24,253 +26,264 @@ Suopport for the ISO 3166-1 country code standard.
 
 
 
-'iso3166-1'(ad, 'Andorra', 'iso3166-1':'AD').
-'iso3166-1'(ae, 'United arab emirates', 'iso3166-1':'AE').
-'iso3166-1'(af, 'Afghanistan', 'iso3166-1':'AF').
-'iso3166-1'(ag, 'Antigua and barbuda', 'iso3166-1':'AG').
-'iso3166-1'(ai, 'Anguilla', 'iso3166-1':'AI').
-'iso3166-1'(al, 'Albania', 'iso3166-1':'AL').
-'iso3166-1'(am, 'Armenia', 'iso3166-1':'AM').
-'iso3166-1'(ao, 'Angola', 'iso3166-1':'AO').
-'iso3166-1'(aq, 'Antarctica', 'iso3166-1':'AQ').
-'iso3166-1'(ar, 'Argentina', 'iso3166-1':'AR').
-'iso3166-1'(as, 'American samoa', 'iso3166-1':'AS').
-'iso3166-1'(at, 'Austria', 'iso3166-1':'AT').
-'iso3166-1'(au, 'Australia', 'iso3166-1':'AU').
-'iso3166-1'(aw, 'Aruba', 'iso3166-1':'AW').
-'iso3166-1'(ax, 'Åland islands', 'iso3166-1':'AX').
-'iso3166-1'(az, 'Azerbaijan', 'iso3166-1':'AZ').
-'iso3166-1'(ba, 'Bosnia and herzegovina', 'iso3166-1':'BA').
-'iso3166-1'(bb, 'Barbados', 'iso3166-1':'BB').
-'iso3166-1'(bd, 'Bangladesh', 'iso3166-1':'BD').
-'iso3166-1'(be, 'Belgium', 'iso3166-1':'BE').
-'iso3166-1'(bf, 'Burkina faso', 'iso3166-1':'BF').
-'iso3166-1'(bg, 'Bulgaria', 'iso3166-1':'BG').
-'iso3166-1'(bh, 'Bahrain', 'iso3166-1':'BH').
-'iso3166-1'(bi, 'Burundi', 'iso3166-1':'BI').
-'iso3166-1'(bj, 'Benin', 'iso3166-1':'BJ').
-'iso3166-1'(bl, 'Saint barthélemy', 'iso3166-1':'BL').
-'iso3166-1'(bm, 'Bermuda', 'iso3166-1':'BM').
-'iso3166-1'(bn, 'Brunei darussalam', 'iso3166-1':'BN').
-'iso3166-1'(bo, 'Bolivia, plurinational state of', 'iso3166-1':'BO').
-'iso3166-1'(bq, 'Bonaire, sint eustatius and saba', 'iso3166-1':'BQ').
-'iso3166-1'(br, 'Brazil', 'iso3166-1':'BR').
-'iso3166-1'(bs, 'Bahamas', 'iso3166-1':'BS').
-'iso3166-1'(bt, 'Bhutan', 'iso3166-1':'BT').
-'iso3166-1'(bv, 'Bouvet island', 'iso3166-1':'BV').
-'iso3166-1'(bw, 'Botswana', 'iso3166-1':'BW').
-'iso3166-1'(by, 'Belarus', 'iso3166-1':'BY').
-'iso3166-1'(bz, 'Belize', 'iso3166-1':'BZ').
-'iso3166-1'(ca, 'Canada', 'iso3166-1':'CA').
-'iso3166-1'(cc, 'Cocos (keeling) islands', 'iso3166-1':'CC').
-'iso3166-1'(cd, 'Congo, the democratic republic of the', 'iso3166-1':'CD').
-'iso3166-1'(cf, 'Central african republic', 'iso3166-1':'CF').
-'iso3166-1'(cg, 'Congo', 'iso3166-1':'CG').
-'iso3166-1'(ch, 'Switzerland', 'iso3166-1':'CH').
-'iso3166-1'(ci, 'Côte d\'ivoire', 'iso3166-1':'CI').
-'iso3166-1'(ck, 'Cook islands', 'iso3166-1':'CK').
-'iso3166-1'(cl, 'Chile', 'iso3166-1':'CL').
-'iso3166-1'(cm, 'Cameroon', 'iso3166-1':'CM').
-'iso3166-1'(cn, 'China', 'iso3166-1':'CN').
-'iso3166-1'(co, 'Colombia', 'iso3166-1':'CO').
-'iso3166-1'(cr, 'Costa rica', 'iso3166-1':'CR').
-'iso3166-1'(cu, 'Cuba', 'iso3166-1':'CU').
-'iso3166-1'(cv, 'Cape verde', 'iso3166-1':'CV').
-'iso3166-1'(cw, 'Curaçao', 'iso3166-1':'CW').
-'iso3166-1'(cx, 'Christmas island', 'iso3166-1':'CX').
-'iso3166-1'(cy, 'Cyprus', 'iso3166-1':'CY').
-'iso3166-1'(cz, 'Czech republic', 'iso3166-1':'CZ').
-'iso3166-1'(de, 'Germany', 'iso3166-1':'DE').
-'iso3166-1'(dj, 'Djibouti', 'iso3166-1':'DJ').
-'iso3166-1'(dk, 'Denmark', 'iso3166-1':'DK').
-'iso3166-1'(dm, 'Dominica', 'iso3166-1':'DM').
-'iso3166-1'(do, 'Dominican republic', 'iso3166-1':'DO').
-'iso3166-1'(dz, 'Algeria', 'iso3166-1':'DZ').
-'iso3166-1'(ec, 'Ecuador', 'iso3166-1':'EC').
-'iso3166-1'(ee, 'Estonia', 'iso3166-1':'EE').
-'iso3166-1'(eg, 'Egypt', 'iso3166-1':'EG').
-'iso3166-1'(eh, 'Western sahara', 'iso3166-1':'EH').
-'iso3166-1'(er, 'Eritrea', 'iso3166-1':'ER').
-'iso3166-1'(es, 'Spain', 'iso3166-1':'ES').
-'iso3166-1'(et, 'Ethiopia', 'iso3166-1':'ET').
-'iso3166-1'(fi, 'Finland', 'iso3166-1':'FI').
-'iso3166-1'(fj, 'Fiji', 'iso3166-1':'FJ').
-'iso3166-1'(fk, 'Falkland islands (malvinas)', 'iso3166-1':'FK').
-'iso3166-1'(fm, 'Micronesia, federated states of', 'iso3166-1':'FM').
-'iso3166-1'(fo, 'Faroe islands', 'iso3166-1':'FO').
-'iso3166-1'(fr, 'France', 'iso3166-1':'FR').
-'iso3166-1'(ga, 'Gabon', 'iso3166-1':'GA').
-'iso3166-1'(gb, 'United kingdom', 'iso3166-1':'GB').
-'iso3166-1'(gd, 'Grenada', 'iso3166-1':'GD').
-'iso3166-1'(ge, 'Georgia', 'iso3166-1':'GE').
-'iso3166-1'(gf, 'French guiana', 'iso3166-1':'GF').
-'iso3166-1'(gg, 'Guernsey', 'iso3166-1':'GG').
-'iso3166-1'(gh, 'Ghana', 'iso3166-1':'GH').
-'iso3166-1'(gi, 'Gibraltar', 'iso3166-1':'GI').
-'iso3166-1'(gl, 'Greenland', 'iso3166-1':'GL').
-'iso3166-1'(gm, 'Gambia', 'iso3166-1':'GM').
-'iso3166-1'(gn, 'Guinea', 'iso3166-1':'GN').
-'iso3166-1'(gp, 'Guadeloupe', 'iso3166-1':'GP').
-'iso3166-1'(gq, 'Equatorial guinea', 'iso3166-1':'GQ').
-'iso3166-1'(gr, 'Greece', 'iso3166-1':'GR').
-'iso3166-1'(gs, 'South georgia and the south sandwich islands', 'iso3166-1':'GS').
-'iso3166-1'(gt, 'Guatemala', 'iso3166-1':'GT').
-'iso3166-1'(gu, 'Guam', 'iso3166-1':'GU').
-'iso3166-1'(gw, 'Guinea-bissau', 'iso3166-1':'GW').
-'iso3166-1'(gy, 'Guyana', 'iso3166-1':'GY').
-'iso3166-1'(hk, 'Hong kong', 'iso3166-1':'HK').
-'iso3166-1'(hm, 'Heard island and mcdonald islands', 'iso3166-1':'HM').
-'iso3166-1'(hn, 'Honduras', 'iso3166-1':'HN').
-'iso3166-1'(hr, 'Croatia', 'iso3166-1':'HR').
-'iso3166-1'(ht, 'Haiti', 'iso3166-1':'HT').
-'iso3166-1'(hu, 'Hungary', 'iso3166-1':'HU').
-'iso3166-1'(id, 'Indonesia', 'iso3166-1':'ID').
-'iso3166-1'(ie, 'Ireland', 'iso3166-1':'IE').
-'iso3166-1'(il, 'Israel', 'iso3166-1':'IL').
-'iso3166-1'(im, 'Isle of man', 'iso3166-1':'IM').
-'iso3166-1'(in, 'India', 'iso3166-1':'IN').
-'iso3166-1'(io, 'British indian ocean territory', 'iso3166-1':'IO').
-'iso3166-1'(iq, 'Iraq', 'iso3166-1':'IQ').
-'iso3166-1'(ir, 'Iran, islamic republic of', 'iso3166-1':'IR').
-'iso3166-1'(is, 'Iceland', 'iso3166-1':'IS').
-'iso3166-1'(it, 'Italy', 'iso3166-1':'IT').
-'iso3166-1'(je, 'Jersey', 'iso3166-1':'JE').
-'iso3166-1'(jm, 'Jamaica', 'iso3166-1':'JM').
-'iso3166-1'(jo, 'Jordan', 'iso3166-1':'JO').
-'iso3166-1'(jp, 'Japan', 'iso3166-1':'JP').
-'iso3166-1'(ke, 'Kenya', 'iso3166-1':'KE').
-'iso3166-1'(kg, 'Kyrgyzstan', 'iso3166-1':'KG').
-'iso3166-1'(kh, 'Cambodia', 'iso3166-1':'KH').
-'iso3166-1'(ki, 'Kiribati', 'iso3166-1':'KI').
-'iso3166-1'(km, 'Comoros', 'iso3166-1':'KM').
-'iso3166-1'(kn, 'Saint kitts and nevis', 'iso3166-1':'KN').
-'iso3166-1'(kp, 'Korea, democratic people\'s republic of', 'iso3166-1':'KP').
-'iso3166-1'(kr, 'Korea, republic of', 'iso3166-1':'KR').
-'iso3166-1'(kw, 'Kuwait', 'iso3166-1':'KW').
-'iso3166-1'(ky, 'Cayman islands', 'iso3166-1':'KY').
-'iso3166-1'(kz, 'Kazakhstan', 'iso3166-1':'KZ').
-'iso3166-1'(la, 'Lao people\'s democratic republic', 'iso3166-1':'LA').
-'iso3166-1'(lb, 'Lebanon', 'iso3166-1':'LB').
-'iso3166-1'(lc, 'Saint lucia', 'iso3166-1':'LC').
-'iso3166-1'(li, 'Liechtenstein', 'iso3166-1':'LI').
-'iso3166-1'(lk, 'Sri lanka', 'iso3166-1':'LK').
-'iso3166-1'(lr, 'Liberia', 'iso3166-1':'LR').
-'iso3166-1'(ls, 'Lesotho', 'iso3166-1':'LS').
-'iso3166-1'(lt, 'Lithuania', 'iso3166-1':'LT').
-'iso3166-1'(lu, 'Luxembourg', 'iso3166-1':'LU').
-'iso3166-1'(lv, 'Latvia', 'iso3166-1':'LV').
-'iso3166-1'(ly, 'Libya', 'iso3166-1':'LY').
-'iso3166-1'(ma, 'Morocco', 'iso3166-1':'MA').
-'iso3166-1'(mc, 'Monaco', 'iso3166-1':'MC').
-'iso3166-1'(md, 'Moldova, republic of', 'iso3166-1':'MD').
-'iso3166-1'(me, 'Montenegro', 'iso3166-1':'ME').
-'iso3166-1'(mf, 'Saint martin (french part)', 'iso3166-1':'MF').
-'iso3166-1'(mg, 'Madagascar', 'iso3166-1':'MG').
-'iso3166-1'(mh, 'Marshall islands', 'iso3166-1':'MH').
-'iso3166-1'(mk, 'Macedonia, the former yugoslav republic of', 'iso3166-1':'MK').
-'iso3166-1'(ml, 'Mali', 'iso3166-1':'ML').
-'iso3166-1'(mm, 'Myanmar', 'iso3166-1':'MM').
-'iso3166-1'(mn, 'Mongolia', 'iso3166-1':'MN').
-'iso3166-1'(mo, 'Macao', 'iso3166-1':'MO').
-'iso3166-1'(mp, 'Northern mariana islands', 'iso3166-1':'MP').
-'iso3166-1'(mq, 'Martinique', 'iso3166-1':'MQ').
-'iso3166-1'(mr, 'Mauritania', 'iso3166-1':'MR').
-'iso3166-1'(ms, 'Montserrat', 'iso3166-1':'MS').
-'iso3166-1'(mt, 'Malta', 'iso3166-1':'MT').
-'iso3166-1'(mu, 'Mauritius', 'iso3166-1':'MU').
-'iso3166-1'(mv, 'Maldives', 'iso3166-1':'MV').
-'iso3166-1'(mw, 'Malawi', 'iso3166-1':'MW').
-'iso3166-1'(mx, 'Mexico', 'iso3166-1':'MX').
-'iso3166-1'(my, 'Malaysia', 'iso3166-1':'MY').
-'iso3166-1'(mz, 'Mozambique', 'iso3166-1':'MZ').
-'iso3166-1'(na, 'Namibia', 'iso3166-1':'NA').
-'iso3166-1'(nc, 'New caledonia', 'iso3166-1':'NC').
-'iso3166-1'(ne, 'Niger', 'iso3166-1':'NE').
-'iso3166-1'(nf, 'Norfolk island', 'iso3166-1':'NF').
-'iso3166-1'(ng, 'Nigeria', 'iso3166-1':'NG').
-'iso3166-1'(ni, 'Nicaragua', 'iso3166-1':'NI').
-'iso3166-1'(nl, 'Netherlands', 'iso3166-1':'NL').
-'iso3166-1'(no, 'Norway', 'iso3166-1':'NO').
-'iso3166-1'(np, 'Nepal', 'iso3166-1':'NP').
-'iso3166-1'(nr, 'Nauru', 'iso3166-1':'NR').
-'iso3166-1'(nu, 'Niue', 'iso3166-1':'NU').
-'iso3166-1'(nz, 'New zealand', 'iso3166-1':'NZ').
-'iso3166-1'(om, 'Oman', 'iso3166-1':'OM').
-'iso3166-1'(pa, 'Panama', 'iso3166-1':'PA').
-'iso3166-1'(pe, 'Peru', 'iso3166-1':'PE').
-'iso3166-1'(pf, 'French polynesia', 'iso3166-1':'PF').
-'iso3166-1'(pg, 'Papua new guinea', 'iso3166-1':'PG').
-'iso3166-1'(ph, 'Philippines', 'iso3166-1':'PH').
-'iso3166-1'(pk, 'Pakistan', 'iso3166-1':'PK').
-'iso3166-1'(pl, 'Poland', 'iso3166-1':'PL').
-'iso3166-1'(pm, 'Saint pierre and miquelon', 'iso3166-1':'PM').
-'iso3166-1'(pn, 'Pitcairn', 'iso3166-1':'PN').
-'iso3166-1'(pr, 'Puerto rico', 'iso3166-1':'PR').
-'iso3166-1'(ps, 'Palestinian territory, occupied', 'iso3166-1':'PS').
-'iso3166-1'(pt, 'Portugal', 'iso3166-1':'PT').
-'iso3166-1'(pw, 'Palau', 'iso3166-1':'PW').
-'iso3166-1'(py, 'Paraguay', 'iso3166-1':'PY').
-'iso3166-1'(qa, 'Qatar', 'iso3166-1':'QA').
-'iso3166-1'(re, 'Réunion', 'iso3166-1':'RE').
-'iso3166-1'(ro, 'Romania', 'iso3166-1':'RO').
-'iso3166-1'(rs, 'Serbia', 'iso3166-1':'RS').
-'iso3166-1'(ru, 'Russian federation', 'iso3166-1':'RU').
-'iso3166-1'(rw, 'Rwanda', 'iso3166-1':'RW').
-'iso3166-1'(sa, 'Saudi arabia', 'iso3166-1':'SA').
-'iso3166-1'(sb, 'Solomon islands', 'iso3166-1':'SB').
-'iso3166-1'(sc, 'Seychelles', 'iso3166-1':'SC').
-'iso3166-1'(sd, 'Sudan', 'iso3166-1':'SD').
-'iso3166-1'(se, 'Sweden', 'iso3166-1':'SE').
-'iso3166-1'(sg, 'Singapore', 'iso3166-1':'SG').
-'iso3166-1'(sh, 'Saint helena, ascension and tristan da cunha', 'iso3166-1':'SH').
-'iso3166-1'(si, 'Slovenia', 'iso3166-1':'SI').
-'iso3166-1'(sj, 'Svalbard and jan mayen', 'iso3166-1':'SJ').
-'iso3166-1'(sk, 'Slovakia', 'iso3166-1':'SK').
-'iso3166-1'(sl, 'Sierra leone', 'iso3166-1':'SL').
-'iso3166-1'(sm, 'San marino', 'iso3166-1':'SM').
-'iso3166-1'(sn, 'Senegal', 'iso3166-1':'SN').
-'iso3166-1'(so, 'Somalia', 'iso3166-1':'SO').
-'iso3166-1'(sr, 'Suriname', 'iso3166-1':'SR').
-'iso3166-1'(ss, 'South sudan', 'iso3166-1':'SS').
-'iso3166-1'(st, 'Sao tome and principe', 'iso3166-1':'ST').
-'iso3166-1'(sv, 'El salvador', 'iso3166-1':'SV').
-'iso3166-1'(sx, 'Sint maarten (dutch part)', 'iso3166-1':'SX').
-'iso3166-1'(sy, 'Syrian arab republic', 'iso3166-1':'SY').
-'iso3166-1'(sz, 'Swaziland', 'iso3166-1':'SZ').
-'iso3166-1'(tc, 'Turks and caicos islands', 'iso3166-1':'TC').
-'iso3166-1'(td, 'Chad', 'iso3166-1':'TD').
-'iso3166-1'(tf, 'French southern territories', 'iso3166-1':'TF').
-'iso3166-1'(tg, 'Togo', 'iso3166-1':'TG').
-'iso3166-1'(th, 'Thailand', 'iso3166-1':'TH').
-'iso3166-1'(tj, 'Tajikistan', 'iso3166-1':'TJ').
-'iso3166-1'(tk, 'Tokelau', 'iso3166-1':'TK').
-'iso3166-1'(tl, 'Timor-leste', 'iso3166-1':'TL').
-'iso3166-1'(tm, 'Turkmenistan', 'iso3166-1':'TM').
-'iso3166-1'(tn, 'Tunisia', 'iso3166-1':'TN').
-'iso3166-1'(to, 'Tonga', 'iso3166-1':'TO').
-'iso3166-1'(tr, 'Turkey', 'iso3166-1':'TR').
-'iso3166-1'(tt, 'Trinidad and tobago', 'iso3166-1':'TT').
-'iso3166-1'(tv, 'Tuvalu', 'iso3166-1':'TV').
-'iso3166-1'(tw, 'Taiwan, province of china', 'iso3166-1':'TW').
-'iso3166-1'(tz, 'Tanzania, united republic of', 'iso3166-1':'TZ').
-'iso3166-1'(ua, 'Ukraine', 'iso3166-1':'UA').
-'iso3166-1'(ug, 'Uganda', 'iso3166-1':'UG').
-'iso3166-1'(um, 'United states minor outlying islands', 'iso3166-1':'UM').
-'iso3166-1'(us, 'United states', 'iso3166-1':'US').
-'iso3166-1'(uy, 'Uruguay', 'iso3166-1':'UY').
-'iso3166-1'(uz, 'Uzbekistan', 'iso3166-1':'UZ').
-'iso3166-1'(va, 'Holy see (vatican city state)', 'iso3166-1':'VA').
-'iso3166-1'(vc, 'Saint vincent and the grenadines', 'iso3166-1':'VC').
-'iso3166-1'(ve, 'Venezuela, bolivarian republic of', 'iso3166-1':'VE').
-'iso3166-1'(vg, 'Virgin islands, british', 'iso3166-1':'VG').
-'iso3166-1'(vi, 'Virgin islands, u.s.', 'iso3166-1':'VI').
-'iso3166-1'(vn, 'Viet nam', 'iso3166-1':'VN').
-'iso3166-1'(vu, 'Vanuatu', 'iso3166-1':'VU').
-'iso3166-1'(wf, 'Wallis and futuna', 'iso3166-1':'WF').
-'iso3166-1'(ws, 'Samoa', 'iso3166-1':'WS').
-'iso3166-1'(ye, 'Yemen', 'iso3166-1':'YE').
-'iso3166-1'(yt, 'Mayotte', 'iso3166-1':'YT').
-'iso3166-1'(za, 'South africa', 'iso3166-1':'ZA').
-'iso3166-1'(zm, 'Zambia', 'iso3166-1':'ZM').
-'iso3166-1'(zw, 'Zimbabwe', 'iso3166-1':'ZW').
+'assert_iso3166-1_schema'(G):-
+  rdfs_assert_class('iso3166-1':'Country', G),
+  rdfs_assert_label('iso3166-1':'Country', en, 'ISO 3166-1 country', G),
+  forall(
+    'iso3166-1'(Name, Country1, _, _),
+    (
+      rdf_global_id(Country1, Country2),
+      rdf_assert_individual(Country2, 'iso3166-1':'Country', G),
+      rdfs_assert_label(Country2, en, Name, G)
+    )
+  ).
 
+'iso3166-1'('Andorra', 'iso3166-1':'AD') --> "ad".
+'iso3166-1'('United arab emirates', 'iso3166-1':'AE') --> "ae".
+'iso3166-1'('Afghanistan', 'iso3166-1':'AF') --> "af".
+'iso3166-1'('Antigua and barbuda', 'iso3166-1':'AG') --> "ag".
+'iso3166-1'('Anguilla', 'iso3166-1':'AI') --> "ai".
+'iso3166-1'('Albania', 'iso3166-1':'AL') --> "al".
+'iso3166-1'('Armenia', 'iso3166-1':'AM') --> "am".
+'iso3166-1'('Angola', 'iso3166-1':'AO') --> "ao".
+'iso3166-1'('Antarctica', 'iso3166-1':'AQ') --> "aq".
+'iso3166-1'('Argentina', 'iso3166-1':'AR') --> "ar".
+'iso3166-1'('American samoa', 'iso3166-1':'AS') --> "as".
+'iso3166-1'('Austria', 'iso3166-1':'AT') --> "at".
+'iso3166-1'('Australia', 'iso3166-1':'AU') --> "au".
+'iso3166-1'('Aruba', 'iso3166-1':'AW') --> "aw".
+'iso3166-1'('Åland islands', 'iso3166-1':'AX') --> "ax".
+'iso3166-1'('Azerbaijan', 'iso3166-1':'AZ') --> "az".
+'iso3166-1'('Bosnia and herzegovina', 'iso3166-1':'BA') --> "ba".
+'iso3166-1'('Barbados', 'iso3166-1':'BB') --> "bb".
+'iso3166-1'('Bangladesh', 'iso3166-1':'BD') --> "bd".
+'iso3166-1'('Belgium', 'iso3166-1':'BE') --> "be".
+'iso3166-1'('Burkina faso', 'iso3166-1':'BF') --> "bf".
+'iso3166-1'('Bulgaria', 'iso3166-1':'BG') --> "bg".
+'iso3166-1'('Bahrain', 'iso3166-1':'BH') --> "bh".
+'iso3166-1'('Burundi', 'iso3166-1':'BI') --> "bi".
+'iso3166-1'('Benin', 'iso3166-1':'BJ') --> "bj".
+'iso3166-1'('Saint barthélemy', 'iso3166-1':'BL') --> "bl".
+'iso3166-1'('Bermuda', 'iso3166-1':'BM') --> "bm".
+'iso3166-1'('Brunei darussalam', 'iso3166-1':'BN') --> "bn".
+'iso3166-1'('Bolivia, plurinational state of', 'iso3166-1':'BO') --> "bo".
+'iso3166-1'('Bonaire, sint eustatius and saba', 'iso3166-1':'BQ') --> "bq".
+'iso3166-1'('Brazil', 'iso3166-1':'BR') --> "br".
+'iso3166-1'('Bahamas', 'iso3166-1':'BS') --> "bs".
+'iso3166-1'('Bhutan', 'iso3166-1':'BT') --> "bt".
+'iso3166-1'('Bouvet island', 'iso3166-1':'BV') --> "bv".
+'iso3166-1'('Botswana', 'iso3166-1':'BW') --> "bw".
+'iso3166-1'('Belarus', 'iso3166-1':'BY') --> "by".
+'iso3166-1'('Belize', 'iso3166-1':'BZ') --> "bz".
+'iso3166-1'('Canada', 'iso3166-1':'CA') --> "ca".
+'iso3166-1'('Cocos (keeling) islands', 'iso3166-1':'CC') --> "cc".
+'iso3166-1'('Congo, the democratic republic of the', 'iso3166-1':'CD') --> "cd".
+'iso3166-1'('Central african republic', 'iso3166-1':'CF') --> "cf".
+'iso3166-1'('Congo', 'iso3166-1':'CG') --> "cg".
+'iso3166-1'('Switzerland', 'iso3166-1':'CH') --> "ch".
+'iso3166-1'('Côte d\'ivoire', 'iso3166-1':'CI') --> "ci".
+'iso3166-1'('Cook islands', 'iso3166-1':'CK') --> "ck".
+'iso3166-1'('Chile', 'iso3166-1':'CL') --> "cl".
+'iso3166-1'('Cameroon', 'iso3166-1':'CM') --> "cm".
+'iso3166-1'('China', 'iso3166-1':'CN') --> "cn".
+'iso3166-1'('Colombia', 'iso3166-1':'CO') --> "co".
+'iso3166-1'('Costa rica', 'iso3166-1':'CR') --> "cr".
+'iso3166-1'('Cuba', 'iso3166-1':'CU') --> "cu".
+'iso3166-1'('Cape verde', 'iso3166-1':'CV') --> "cv".
+'iso3166-1'('Curaçao', 'iso3166-1':'CW') --> "cw".
+'iso3166-1'('Christmas island', 'iso3166-1':'CX') --> "cx".
+'iso3166-1'('Cyprus', 'iso3166-1':'CY') --> "cy".
+'iso3166-1'('Czech republic', 'iso3166-1':'CZ') --> "cz".
+'iso3166-1'('Germany', 'iso3166-1':'DE') --> "de".
+'iso3166-1'('Djibouti', 'iso3166-1':'DJ') --> "dj".
+'iso3166-1'('Denmark', 'iso3166-1':'DK') --> "dk".
+'iso3166-1'('Dominica', 'iso3166-1':'DM') --> "dm".
+'iso3166-1'('Dominican republic', 'iso3166-1':'DO') --> "do".
+'iso3166-1'('Algeria', 'iso3166-1':'DZ') --> "dz".
+'iso3166-1'('Ecuador', 'iso3166-1':'EC') --> "ec".
+'iso3166-1'('Estonia', 'iso3166-1':'EE') --> "ee".
+'iso3166-1'('Egypt', 'iso3166-1':'EG') --> "eg".
+'iso3166-1'('Western sahara', 'iso3166-1':'EH') --> "eh".
+'iso3166-1'('Eritrea', 'iso3166-1':'ER') --> "er".
+'iso3166-1'('Spain', 'iso3166-1':'ES') --> "es".
+'iso3166-1'('Ethiopia', 'iso3166-1':'ET') --> "et".
+'iso3166-1'('Finland', 'iso3166-1':'FI') --> "fi".
+'iso3166-1'('Fiji', 'iso3166-1':'FJ') --> "fj".
+'iso3166-1'('Falkland islands (malvinas)', 'iso3166-1':'FK') --> "fk".
+'iso3166-1'('Micronesia, federated states of', 'iso3166-1':'FM') --> "fm".
+'iso3166-1'('Faroe islands', 'iso3166-1':'FO') --> "fo".
+'iso3166-1'('France', 'iso3166-1':'FR') --> "fr".
+'iso3166-1'('Gabon', 'iso3166-1':'GA') --> "ga".
+'iso3166-1'('United kingdom', 'iso3166-1':'GB') --> "gb".
+'iso3166-1'('Grenada', 'iso3166-1':'GD') --> "gd".
+'iso3166-1'('Georgia', 'iso3166-1':'GE') --> "ge".
+'iso3166-1'('French guiana', 'iso3166-1':'GF') --> "gf".
+'iso3166-1'('Guernsey', 'iso3166-1':'GG') --> "gg".
+'iso3166-1'('Ghana', 'iso3166-1':'GH') --> "gh".
+'iso3166-1'('Gibraltar', 'iso3166-1':'GI') --> "gi".
+'iso3166-1'('Greenland', 'iso3166-1':'GL') --> "gl".
+'iso3166-1'('Gambia', 'iso3166-1':'GM') --> "gm".
+'iso3166-1'('Guinea', 'iso3166-1':'GN') --> "gn".
+'iso3166-1'('Guadeloupe', 'iso3166-1':'GP') --> "gp".
+'iso3166-1'('Equatorial guinea', 'iso3166-1':'GQ') --> "gq".
+'iso3166-1'('Greece', 'iso3166-1':'GR') --> "gr".
+'iso3166-1'('South georgia and the south sandwich islands', 'iso3166-1':'GS') --> "gs".
+'iso3166-1'('Guatemala', 'iso3166-1':'GT') --> "gt".
+'iso3166-1'('Guam', 'iso3166-1':'GU') --> "gu".
+'iso3166-1'('Guinea-bissau', 'iso3166-1':'GW') --> "gw".
+'iso3166-1'('Guyana', 'iso3166-1':'GY') --> "gy".
+'iso3166-1'('Hong kong', 'iso3166-1':'HK') --> "hk".
+'iso3166-1'('Heard island and mcdonald islands', 'iso3166-1':'HM') --> "hm".
+'iso3166-1'('Honduras', 'iso3166-1':'HN') --> "hn".
+'iso3166-1'('Croatia', 'iso3166-1':'HR') --> "hr".
+'iso3166-1'('Haiti', 'iso3166-1':'HT') --> "ht".
+'iso3166-1'('Hungary', 'iso3166-1':'HU') --> "hu".
+'iso3166-1'('Indonesia', 'iso3166-1':'ID') --> "id".
+'iso3166-1'('Ireland', 'iso3166-1':'IE') --> "ie".
+'iso3166-1'('Israel', 'iso3166-1':'IL') --> "il".
+'iso3166-1'('Isle of man', 'iso3166-1':'IM') --> "im".
+'iso3166-1'('India', 'iso3166-1':'IN') --> "in".
+'iso3166-1'('British indian ocean territory', 'iso3166-1':'IO') --> "io".
+'iso3166-1'('Iraq', 'iso3166-1':'IQ') --> "iq".
+'iso3166-1'('Iran, islamic republic of', 'iso3166-1':'IR') --> "ir".
+'iso3166-1'('Iceland', 'iso3166-1':'IS') --> "is".
+'iso3166-1'('Italy', 'iso3166-1':'IT') --> "it".
+'iso3166-1'('Jersey', 'iso3166-1':'JE') --> "je".
+'iso3166-1'('Jamaica', 'iso3166-1':'JM') --> "jm".
+'iso3166-1'('Jordan', 'iso3166-1':'JO') --> "jo".
+'iso3166-1'('Japan', 'iso3166-1':'JP') --> "jp".
+'iso3166-1'('Kenya', 'iso3166-1':'KE') --> "ke".
+'iso3166-1'('Kyrgyzstan', 'iso3166-1':'KG') --> "kg".
+'iso3166-1'('Cambodia', 'iso3166-1':'KH') --> "kh".
+'iso3166-1'('Kiribati', 'iso3166-1':'KI') --> "ki".
+'iso3166-1'('Comoros', 'iso3166-1':'KM') --> "km".
+'iso3166-1'('Saint kitts and nevis', 'iso3166-1':'KN') --> "kn".
+'iso3166-1'('Korea, democratic people\'s republic of', 'iso3166-1':'KP') --> "kp".
+'iso3166-1'('Korea, republic of', 'iso3166-1':'KR') --> "kr".
+'iso3166-1'('Kuwait', 'iso3166-1':'KW') --> "kw".
+'iso3166-1'('Cayman islands', 'iso3166-1':'KY') --> "ky".
+'iso3166-1'('Kazakhstan', 'iso3166-1':'KZ') --> "kz".
+'iso3166-1'('Lao people\'s democratic republic', 'iso3166-1':'LA') --> "la".
+'iso3166-1'('Lebanon', 'iso3166-1':'LB') --> "lb".
+'iso3166-1'('Saint lucia', 'iso3166-1':'LC') --> "lc".
+'iso3166-1'('Liechtenstein', 'iso3166-1':'LI') --> "li".
+'iso3166-1'('Sri lanka', 'iso3166-1':'LK') --> "lk".
+'iso3166-1'('Liberia', 'iso3166-1':'LR') --> "lr".
+'iso3166-1'('Lesotho', 'iso3166-1':'LS') --> "ls".
+'iso3166-1'('Lithuania', 'iso3166-1':'LT') --> "lt".
+'iso3166-1'('Luxembourg', 'iso3166-1':'LU') --> "lu".
+'iso3166-1'('Latvia', 'iso3166-1':'LV') --> "lv".
+'iso3166-1'('Libya', 'iso3166-1':'LY') --> "ly".
+'iso3166-1'('Morocco', 'iso3166-1':'MA') --> "ma".
+'iso3166-1'('Monaco', 'iso3166-1':'MC') --> "mc".
+'iso3166-1'('Moldova, republic of', 'iso3166-1':'MD') --> "md".
+'iso3166-1'('Montenegro', 'iso3166-1':'ME') --> "me".
+'iso3166-1'('Saint martin (french part)', 'iso3166-1':'MF') --> "mf".
+'iso3166-1'('Madagascar', 'iso3166-1':'MG') --> "mg".
+'iso3166-1'('Marshall islands', 'iso3166-1':'MH') --> "mh".
+'iso3166-1'('Macedonia, the former yugoslav republic of', 'iso3166-1':'MK') --> "mk".
+'iso3166-1'('Mali', 'iso3166-1':'ML') --> "ml".
+'iso3166-1'('Myanmar', 'iso3166-1':'MM') --> "mm".
+'iso3166-1'('Mongolia', 'iso3166-1':'MN') --> "mn".
+'iso3166-1'('Macao', 'iso3166-1':'MO') --> "mo".
+'iso3166-1'('Northern mariana islands', 'iso3166-1':'MP') --> "mp".
+'iso3166-1'('Martinique', 'iso3166-1':'MQ') --> "mq".
+'iso3166-1'('Mauritania', 'iso3166-1':'MR') --> "mr".
+'iso3166-1'('Montserrat', 'iso3166-1':'MS') --> "ms".
+'iso3166-1'('Malta', 'iso3166-1':'MT') --> "mt".
+'iso3166-1'('Mauritius', 'iso3166-1':'MU') --> "mu".
+'iso3166-1'('Maldives', 'iso3166-1':'MV') --> "mv".
+'iso3166-1'('Malawi', 'iso3166-1':'MW') --> "mw".
+'iso3166-1'('Mexico', 'iso3166-1':'MX') --> "mx".
+'iso3166-1'('Malaysia', 'iso3166-1':'MY') --> "my".
+'iso3166-1'('Mozambique', 'iso3166-1':'MZ') --> "mz".
+'iso3166-1'('Namibia', 'iso3166-1':'NA') --> "na".
+'iso3166-1'('New caledonia', 'iso3166-1':'NC') --> "nc".
+'iso3166-1'('Niger', 'iso3166-1':'NE') --> "ne".
+'iso3166-1'('Norfolk island', 'iso3166-1':'NF') --> "nf".
+'iso3166-1'('Nigeria', 'iso3166-1':'NG') --> "ng".
+'iso3166-1'('Nicaragua', 'iso3166-1':'NI') --> "ni".
+'iso3166-1'('Netherlands', 'iso3166-1':'NL') --> "nl".
+'iso3166-1'('Norway', 'iso3166-1':'NO') --> "no".
+'iso3166-1'('Nepal', 'iso3166-1':'NP') --> "np".
+'iso3166-1'('Nauru', 'iso3166-1':'NR') --> "nr".
+'iso3166-1'('Niue', 'iso3166-1':'NU') --> "nu".
+'iso3166-1'('New zealand', 'iso3166-1':'NZ') --> "nz".
+'iso3166-1'('Oman', 'iso3166-1':'OM') --> "om".
+'iso3166-1'('Panama', 'iso3166-1':'PA') --> "pa".
+'iso3166-1'('Peru', 'iso3166-1':'PE') --> "pe".
+'iso3166-1'('French polynesia', 'iso3166-1':'PF') --> "pf".
+'iso3166-1'('Papua new guinea', 'iso3166-1':'PG') --> "pg".
+'iso3166-1'('Philippines', 'iso3166-1':'PH') --> "ph".
+'iso3166-1'('Pakistan', 'iso3166-1':'PK') --> "pk".
+'iso3166-1'('Poland', 'iso3166-1':'PL') --> "pl".
+'iso3166-1'('Saint pierre and miquelon', 'iso3166-1':'PM') --> "pm".
+'iso3166-1'('Pitcairn', 'iso3166-1':'PN') --> "pn".
+'iso3166-1'('Puerto rico', 'iso3166-1':'PR') --> "pr".
+'iso3166-1'('Palestinian territory, occupied', 'iso3166-1':'PS') --> "ps".
+'iso3166-1'('Portugal', 'iso3166-1':'PT') --> "pt".
+'iso3166-1'('Palau', 'iso3166-1':'PW') --> "pw".
+'iso3166-1'('Paraguay', 'iso3166-1':'PY') --> "py".
+'iso3166-1'('Qatar', 'iso3166-1':'QA') --> "qa".
+'iso3166-1'('Réunion', 'iso3166-1':'RE') --> "re".
+'iso3166-1'('Romania', 'iso3166-1':'RO') --> "ro".
+'iso3166-1'('Serbia', 'iso3166-1':'RS') --> "rs".
+'iso3166-1'('Russian federation', 'iso3166-1':'RU') --> "ru".
+'iso3166-1'('Rwanda', 'iso3166-1':'RW') --> "rw".
+'iso3166-1'('Saudi arabia', 'iso3166-1':'SA') --> "sa".
+'iso3166-1'('Solomon islands', 'iso3166-1':'SB') --> "sb".
+'iso3166-1'('Seychelles', 'iso3166-1':'SC') --> "sc".
+'iso3166-1'('Sudan', 'iso3166-1':'SD') --> "sd".
+'iso3166-1'('Sweden', 'iso3166-1':'SE') --> "se".
+'iso3166-1'('Singapore', 'iso3166-1':'SG') --> "sg".
+'iso3166-1'('Saint helena, ascension and tristan da cunha', 'iso3166-1':'SH') --> "sh".
+'iso3166-1'('Slovenia', 'iso3166-1':'SI') --> "si".
+'iso3166-1'('Svalbard and jan mayen', 'iso3166-1':'SJ') --> "sj".
+'iso3166-1'('Slovakia', 'iso3166-1':'SK') --> "sk".
+'iso3166-1'('Sierra leone', 'iso3166-1':'SL') --> "sl".
+'iso3166-1'('San marino', 'iso3166-1':'SM') --> "sm".
+'iso3166-1'('Senegal', 'iso3166-1':'SN') --> "sn".
+'iso3166-1'('Somalia', 'iso3166-1':'SO') --> "so".
+'iso3166-1'('Suriname', 'iso3166-1':'SR') --> "sr".
+'iso3166-1'('South sudan', 'iso3166-1':'SS') --> "ss".
+'iso3166-1'('Sao tome and principe', 'iso3166-1':'ST') --> "st".
+'iso3166-1'('El salvador', 'iso3166-1':'SV') --> "sv".
+'iso3166-1'('Sint maarten (dutch part)', 'iso3166-1':'SX') --> "sx".
+'iso3166-1'('Syrian arab republic', 'iso3166-1':'SY') --> "sy".
+'iso3166-1'('Swaziland', 'iso3166-1':'SZ') --> "sz".
+'iso3166-1'('Turks and caicos islands', 'iso3166-1':'TC') --> "tc".
+'iso3166-1'('Chad', 'iso3166-1':'TD') --> "td".
+'iso3166-1'('French southern territories', 'iso3166-1':'TF') --> "tf".
+'iso3166-1'('Togo', 'iso3166-1':'TG') --> "tg".
+'iso3166-1'('Thailand', 'iso3166-1':'TH') --> "th".
+'iso3166-1'('Tajikistan', 'iso3166-1':'TJ') --> "tj".
+'iso3166-1'('Tokelau', 'iso3166-1':'TK') --> "tk".
+'iso3166-1'('Timor-leste', 'iso3166-1':'TL') --> "tl".
+'iso3166-1'('Turkmenistan', 'iso3166-1':'TM') --> "tm".
+'iso3166-1'('Tunisia', 'iso3166-1':'TN') --> "tn".
+'iso3166-1'('Tonga', 'iso3166-1':'TO') --> "to".
+'iso3166-1'('Turkey', 'iso3166-1':'TR') --> "tr".
+'iso3166-1'('Trinidad and tobago', 'iso3166-1':'TT') --> "tt".
+'iso3166-1'('Tuvalu', 'iso3166-1':'TV') --> "tv".
+'iso3166-1'('Taiwan, province of china', 'iso3166-1':'TW') --> "tw".
+'iso3166-1'('Tanzania, united republic of', 'iso3166-1':'TZ') --> "tz".
+'iso3166-1'('Ukraine', 'iso3166-1':'UA') --> "ua".
+'iso3166-1'('Uganda', 'iso3166-1':'UG') --> "ug".
+'iso3166-1'('United states minor outlying islands', 'iso3166-1':'UM') --> "um".
+'iso3166-1'('United states', 'iso3166-1':'US') --> "us".
+'iso3166-1'('Uruguay', 'iso3166-1':'UY') --> "uy".
+'iso3166-1'('Uzbekistan', 'iso3166-1':'UZ') --> "uz".
+'iso3166-1'('Holy see (vatican city state)', 'iso3166-1':'VA') --> "va".
+'iso3166-1'('Saint vincent and the grenadines', 'iso3166-1':'VC') --> "vc".
+'iso3166-1'('Venezuela, bolivarian republic of', 'iso3166-1':'VE') --> "ve".
+'iso3166-1'('Virgin islands, british', 'iso3166-1':'VG') --> "vg".
+'iso3166-1'('Virgin islands, u.s.', 'iso3166-1':'VI') --> "vi".
+'iso3166-1'('Viet nam', 'iso3166-1':'VN') --> "vn".
+'iso3166-1'('Vanuatu', 'iso3166-1':'VU') --> "vu".
+'iso3166-1'('Wallis and futuna', 'iso3166-1':'WF') --> "wf".
+'iso3166-1'('Samoa', 'iso3166-1':'WS') --> "ws".
+'iso3166-1'('Yemen', 'iso3166-1':'YE') --> "ye".
+'iso3166-1'('Mayotte', 'iso3166-1':'YT') --> "yt".
+'iso3166-1'('South africa', 'iso3166-1':'ZA') --> "za".
+'iso3166-1'('Zambia', 'iso3166-1':'ZM') --> "zm".
+'iso3166-1'('Zimbabwe', 'iso3166-1':'ZW') --> "zw".

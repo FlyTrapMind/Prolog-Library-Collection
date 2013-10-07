@@ -5,6 +5,8 @@
                             % -LEX:list(code)
     dateTimeLexicalMap/2, % +LEX:list(code)
                           % -DateTime:compound
+    dateTime_leq/2, % +DataTime1:compound
+                    % +DataTime2:compound
 % COMPONENTS
     dayCanonicalFragmentMap//1, % +Day:between(1,31)
     dayFrag//1, % -Day:between(1,31)
@@ -44,7 +46,7 @@
   ]
 ).
 
-/** <module> XSD_DATE_TIME
+/** <module> XSD dateTime
 
 *=dateTime=* represents instants of time, optionally marked with
 a particular time zone offset.
@@ -250,7 +252,7 @@ the original two values are incomparable.
 @see USNO Historical List includes the times when the difference between
      TAI and UTC has changed tai_utc.txt.
 @tbd Document what TAI and UT1 are.
-@version 2013/08-2013/09
+@version 2013/08-2013/10
 */
 
 :- use_module(datetime(iso8601)).
@@ -263,9 +265,21 @@ the original two values are incomparable.
 
 
 
+%! dateTime_leq(+DateTtime1:compound, +DateTime2:compound) is semidet.
+% Ordering realtion on the dateTime value space.
+
+dateTime_leq(DT1, DT2):-
+  timeOnTimeline(DT1, S1),
+  timeOnTimeline(DT2, S2),
+  S1 =< S2.
+
 % CANONICAL MAPPING %
 
 %! dateTimeCanonicalMap(+DateTime:compound, -LEX:list(code)) is det.
+% The compound term has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
 
 dateTimeCanonicalMap(DateTime, LEX):-
   once(phrase(dateTimeCanonicalMap(DateTime), LEX)).
@@ -273,20 +287,11 @@ dateTimeCanonicalMap(DateTime, LEX):-
 %! dateTimeCanonicalMap(+DateTime:compound)//
 % Maps a dateTime value to a dateTimeLexicalRep//.
 %
-% @param DateTime A compound term.
+% @param DateTime A compound term of the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
 
-% The SWI-Prolog float representation for date-time values.
-dateTimeCanonicalMap(Float) -->
-  {float(Float)}, !,
-  {stamp_date_time(Float, Compound, local)},
-  dateTimeCanonicalMap(Compound).
-% The SWI-Prolog compound term for date-time representations.
-% Notice that the timezone (`TZ`) is an atom (e.g. `CEST`) and `Offset`
-% is an integer representing the offset relative to UTC in seconds.
-% XSD defines the timezone as the offset relative to UTC in minutes.
-dateTimeCanonicalMap(date(Y,M,D,H,MM,S,Offset,_TZ,_DST)) --> !,
-  {TZ is Offset / 60},
-  dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)).
 dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)) -->
   yearCanonicalFragmentMap(Y),
   hyphen,
@@ -421,6 +426,10 @@ yearCanonicalFragmentMap(Y) -->
 % LEXICAL MAPPING %
 
 %! dateTimeLexicalMap(+LEX:list(code), -DateTime:compound) is det.
+% The compound term has the following form:
+% ~~~
+% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
+% ~~~
 
 dateTimeLexicalMap(LEX, DateTime):-
   once(phrase(dateTimeLexicalRep(DateTime), LEX)).
@@ -538,17 +547,11 @@ hourFrag(H) -->
 % ~~~
 
 minuteFrag(M) -->
-  (
-    binary_digit(C1)
-  ;
-    two(C1)
-  ;
-    three(C1)
-  ;
-    four(C1)
-  ;
-    five(C1)
-  ),
+  ( binary_digit(C1)
+  ; two(C1)
+  ; three(C1)
+  ; four(C1)
+  ; five(C1)),
   decimal_digit(_, C2),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
 
@@ -583,7 +586,7 @@ secondFrag(S) -->
   decimal_digit(C2),
   (
     dot(C3),
-    dcg_multi(decimal_digit, 1-_, _Digits, CT, []),
+    dcg_multi2(decimal_digit, 1-_, _Digits, CT),
     {phrase(unsignedDecimalPtNumeral(S), [C1,C2,C3|CT])}
   ;
     {phrase(unsignedNoDecimalPtNumeral(S), [C1,C2])}
@@ -646,10 +649,10 @@ yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
     nonzero_decimal_digit(Code, _),
-    dcg_multi(decimal_digit, 3-_, Codes, _Digits1, [])
+    dcg_multi2(decimal_digit, 3-_, Codes, _Digits1)
   ;
     zero(Code),
-    dcg_multi(decimal_digit, 3, Codes, _Digits2, [])
+    dcg_multi2(decimal_digit, 3, Codes, _Digits2)
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),
@@ -701,16 +704,25 @@ dayInMonth(Y, M, D):-
 % When m is 2 and y is not evenly divisible by 4,
 % or is evenly divisible by 100 but not by 400, or is absent.
 daysInMonth(Y, 2, 28):-
-  (var(Y) ; \+ iso8601_leap_year(Y)), !.
+  var(Y), !.
+daysInMonth(Y, 2, 28):-
+  Y rem 4 =\= 0, !.
+daysInMonth(Y, 2, 28):-
+  Y rem 100 =:= 0,
+  Y rem 400 =\= 0, !.
 % When m is 2 and y is evenly divisible by 400,
 % or is evenly divisible by 4 but not by 100,
 daysInMonth(Y, 2, 29):-
-  iso8601_leap_year(Y), !.
+  Y rem 400 =:= 0, !.
+daysInMonth(Y, 2, 29):-
+  Y rem 4 =:= 0,
+  Y rem 100 =\= 0, !.
 % When m is 4, 6, 9, or 11.
 daysInMonth(_Y, M, 30):-
   memberchk(M, [4,6,9,11]), !.
 % Otherwise, i.e. m is 1, 3, 5, 7, 8, 10, or 12.
-daysInMonth(_Y, _M, 31).
+daysInMonth(_Y, M, 31):-
+  memberchk(M, [1,3,5,7,8,10,12]), !.
 
 %! newDateTime(
 %!   ?Year:integer,
@@ -919,23 +931,35 @@ normalizeSecond(Y1, M1, D1, H1, MM1, S1, Y2, M2, D2, H2, MM2, S2):-
 % @param DateTime A date/timeSevenPropertyModel value.
 % @param Seconds A decimal number.
 
-timeOnTimeline(dt(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
+timeOnTimeline(dateTime(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
   % yr be 1971 when dt's year is absent, and dt's year − 1 otherwise.
-  (var(Y1) -> Y2 = 1971 ; Y2 is Y1 - 1),
+  (  var(Y1)
+  -> Y2 = 1971
+  ;  Y2 is Y1 - 1),
+
   % mo be 12 or dt's month, similarly.
   default(M1, 12, M2),
+
   % da be daysInMonth(yr+1, mo) − 1  or (dt's day) − 1, similarly.
   Y3 is Y2 + 1,
-  (var(D1) -> daysInMonth(Y3, M2, D2_), D2 is D2_ - 1 ; D2 is D1 - 1),
+  (  var(D1)
+  -> daysInMonth(Y3, M2, D2_),
+     D2 is D2_ - 1
+  ;  D2 is D1 - 1),
+
   % hr be 0 or dt's hour, similarly.
   default(H1, 0, H2),
+
   % mi be 0 or dt's minute, similarly.
   default(MM1, 0, MM2),
+
   % se be 0 or dt's second, similarly.
   default(S1, 0.0, S2),
 
   % Subtract timezoneOffset from mi when timezoneOffset is not absent.
-  (var(UTC) -> MM3 = MM2 ; MM3 is MM2 - UTC),
+  (  var(UTC)
+  -> MM3 = MM2
+  ;  MM3 is MM2 - UTC),
 
   % Add 86400 × Summ < mo ·daysInMonth·(yr + 1, m) to ToTl.
   aggregate_all(
