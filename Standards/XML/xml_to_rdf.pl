@@ -22,16 +22,14 @@
 Converts XML DOMs to RDF graphs.
 
 @author Wouter Beek
-@version 2013/06, 2013/09
+@version 2013/06, 2013/09-2013/10
 */
 
-:- use_module(library(apply)).
+:- use_module(generics(list_ext)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_lit)).
-:- use_module(rdf(rdf_read)).
 :- use_module(xsd(xsd)).
 
 :- meta_predicate(create_resource(+,+,3,+,+,-,-)).
@@ -69,10 +67,16 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   ),
   atomic_list_concat(Values, '_', Name3),
   atomic_list_concat([Name2,Name3], '/', Name4),
-  rdf_global_id(Ns:Name4, S),
   
+  atom_codes(Name4, Codes1),
+  % Escape space, grave accent. 
+  list_replace(Codes1, [32-[37,50,48],96-[37,54,48]], Codes2),
+  atom_codes(Name5, Codes2),
+
+  rdf_global_id(Ns:Name5, S),
+
   rdf_assert_individual(S, C, G),
-  
+
   create_triples(DOM1, XML_PrimaryPs, Trans, S, G, DOM2).
 
 %! create_triple(
@@ -83,12 +87,16 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
 %!   +RDF_Graph:atom
 %! ) is det.
 
+% Simple literal.
 create_triple(S, P, literal, Content, G):- !,
   rdf_assert_literal(S, P, Content, G).
+% Typed literal.
 create_triple(S, P, DName, Content, G):-
   xsd_datatype(DName, _), !,
   rdf_assert_datatype(S, P, DName, Content, G).
+% IRI.
 create_triple(S, P, _, Content, G):-
+  % Spaces are not allowed in IRIs.
   rdf_assert(S, P, Content, G).
 
 %! create_triples(
@@ -109,7 +117,7 @@ create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
   % Process only properties that are allowed according to the filter.
   select(element(XML_P, _, Content1), DOM1, DOM2),
   update_property_filter(Ps1, XML_P, Ps2), !,
-  
+
   (
     % XML element with no content.
     Content1 == [], !
@@ -119,7 +127,7 @@ create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
     call(Trans, XML_P, RDF_P, RDF_O_Type),
     create_triple(S, RDF_P, RDF_O_Type, Content2, G)
   ),
-  
+
   create_triples(DOM2, Ps2, Trans, S, G, RestDOM).
 % Neither the DOM nor the propery filter is empty.
 % This means that some properties in the filter are optional.

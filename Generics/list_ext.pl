@@ -219,21 +219,23 @@ length_cut(L, Cut, L1, L2):-
 % @param Replacements A list of replacements of the form =|term-term|=.
 % @param NewList The list in which all replacants have been replaced.
 
-list_replace([], _Replacements, []).
-list_replace(List, Replacements, NewList):-
-  member(Replacant-Replacer, Replacements),
-  append(Replacant, Rest, List),
-  !,
-  list_replace(Rest, Replacements, NewRest),
+% Done!
+list_replace([], _Maps, []):- !.
+% Match one of the replicants.
+list_replace(L1, Maps, L2):-
+  member(From-To, Maps),
+  append(From, Rest1, L1), !,
+  list_replace(Rest1, Maps, Rest2),
   (
-    is_list(Replacer)
+    is_list(To)
   ->
-    append(Replacer, NewRest, NewList)
+    append(To, Rest2, L2)
   ;
-    NewList = [Replacer | NewRest]
+    L2 = [To|Rest2]
   ).
-list_replace([H | T], Replacements, [H | NewT]):-
-  list_replace(T, Replacements, NewT).
+% A non-matching element.
+list_replace([H|T1], Maps, [H|T2]):-
+  list_replace(T1, Maps, T2).
 
 list_separator_concat([], _Separator, []):- !.
 list_separator_concat([List], _Separator, [List]):- !.
