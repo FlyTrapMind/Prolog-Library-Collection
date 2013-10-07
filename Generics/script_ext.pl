@@ -152,6 +152,7 @@ script_end(_O1, Process):-
 % The following options are supported:
 %   * =|actual(ActualNumberOfApplications:nonneg)|=
 %   * =|from_file(FromFile:atom)|+
+%   * =|in_place(+ToArgIsFromArg:boolean)|=
 %   * =|potential(PotentialNumberOfApplications:nonneg)|=
 %   * =|to_file(ToFile:atom)|+
 
@@ -190,6 +191,10 @@ script_stage(O1, Process, Stage, Goal):-
   NextStage is Stage + 1,
   stage_directory(NextStage, ToDir),
   (
+    option(in_place(true), O1, false)
+  ->
+    ToArg = FromArg
+  ;
     option(to_file(ToFileName), O1)
   ->
     % Write to the to file located in the next stage directory.
