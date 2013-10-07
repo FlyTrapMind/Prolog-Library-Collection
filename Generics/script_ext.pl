@@ -84,9 +84,8 @@ script(O1, Process, Mod:Stages):-
   ->
     debug(script_ext, '~w script was skipped.', [Process])
   ;
-    script_begin(O1, Process),
     forall(
-      nth0(I, Stages, stage(O2,Process,Goal)),
+      nth0(I, Stages, stage(O2,Goal)),
       script_stage(O2, Process, I, Mod:Goal)
     ),
     script_end(O1, Process)
@@ -219,10 +218,13 @@ script_stage_begin(O1, Process, Stage):-
   % The number of potential applications.
   option(potential(P), O1, 0),
   format(atom(FlagP), '~w_~w_p', [Process,Stage]),
-  flag(FlagP, _, P).
+  flag(FlagP, _, P),
+  
+  debug(script_ext, 'Starting ~w stage ~w.', [Process,Stage]).
 
 script_stage_end(_O1, Process, Stage):-
-  script_stage_eval(Process, Stage).
+  script_stage_eval(Process, Stage),
+  debug(script_ext, 'Ending ~w stage ~w.', [Process,Stage]).
 
 script_stage_eval(Process, Stage):-
   script_stage_progress(Process, Stage, A, P),
@@ -272,3 +274,4 @@ stage_directory(Stage, StageDir):-
   atomic_list_concat([stage,Stage], '_', StageName),
   create_nested_directory(data(StageName), StageDir),
   db_add_novel(user:file_search_path(Stage, StageDir)).
+

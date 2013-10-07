@@ -63,22 +63,15 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
     ),
     Values
   ),
-<<<<<<< HEAD
-  atomic_list_concat(Values, '_', Name3),
-  atomic_list_concat([Name2,Name3], '/', Name4),
-=======
   atomic_list_concat(Values, '_', Name2),
   atomic_list_concat([Name1,Name2], '/', Name3),
-  spaces_to_underscores(Name3, Name4),
-  rdf_global_id(Ns:Name4, S),
->>>>>>> f841b17d63260140fe418d1892976cc9fef5521e
   
-  atom_codes(Name4, Codes1),
+  atom_codes(Name3, Codes1),
   % Escape space, grave accent. 
   list_replace(Codes1, [32-[37,50,48],96-[37,54,48]], Codes2),
-  atom_codes(Name5, Codes2),
+  atom_codes(Name4, Codes2),
 
-  rdf_global_id(Ns:Name5, S),
+  rdf_global_id(Ns:Name4, S),
 
   rdf_assert_individual(S, C, G),
 
