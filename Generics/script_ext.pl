@@ -30,7 +30,9 @@ Extensions for running automated scripts in stages.
 :- use_module(os(file_ext)).
 
 :- meta_predicate(script(+,+,:)).
-:- meta_predicate(script_stage(+,+,+,3)).
+:- meta_predicate(script_stage(+,+,+,+,3)).
+:- meta_predicate(script_stage(+,+,+,+,+,+3)).
+:- meta_predicate(script_stages(+,+,:)).
 
 :- debug(script_ext).
 
@@ -67,16 +69,13 @@ find_stage_directories([H|T], Stage):-
   find_stage_directories(T, NextStage).
 find_stage_directories([], _Stage):- !.
 
-%! init_data_directory is det.
-% Makes sure there exists a `Data` subdirectory of the current project.
+%! script(
+%!   +Options:list(nvpair),
+%!   +Process:atom,
+%!   +Stages:list(compound)
+%! ) is det.
 
-init_data_directory:-
-  file_search_path(data, _DataDir), !.
-init_data_directory:-
-  create_project_subdirectory('Data', DataDir),
-  db_add_novel(user:file_search_path(data, DataDir)).
-
-script(O1, Process, Mod:Stages):-
+script(O1, Process, Stages):-
   script_begin(O1, Process),
   (
     option(to_file(ToFileName), O1),
@@ -84,19 +83,37 @@ script(O1, Process, Mod:Stages):-
   ->
     debug(script_ext, '~w script was skipped.', [Process])
   ;
-    forall(
-      nth0(I, Stages, stage(O2,Goal)),
-      script_stage(O2, Process, I, Mod:Goal)
-    ),
-    script_end(O1, Process)
-  ).
+    script_stages(Process, 0, Stages)
+  ),
+  script_end(O1, Process).
+
+%! script_begin(+Options:list(nvpair), +Process:atom) is det.
 
 script_begin(_O1, Process):-
+  % Timestamp.
   date_time(Start),
   debug(script_ext, '~w script started at ~w.', [Process,Start]),
-  init_data_directory,
-  create_nested_directory(data('Output'), OutputDir),
-  db_add_novel(user:file_search_path(output, OutputDir)).
+  % Data directory.
+  (
+    file_search_path(data, _DataDir), !
+  ;
+    create_project_subdirectory('Data', DataDir),
+    db_add_novel(user:file_search_path(data, DataDir))
+  ),
+  % Input directory.
+  (
+    file_search_path(input, _InputDir), !
+  ;
+    create_nested_directory(data('Input'), StageDir),
+    db_add_novel(user:file_search_path(input, StageDir))
+  ),
+  % Output directory.
+  (
+    file_search_path(output, _OutputDir), !
+  ;
+    create_nested_directory(data('Output'), OutputDir),
+    db_add_novel(user:file_search_path(output, OutputDir))
+  ).
 
 %! script_clean is det.
 % This is run after results have been saved to the `Output` directory.
@@ -105,7 +122,7 @@ script_clean:-
   find_stage_directories(StageDirs),
   maplist(safe_delete_directory_contents, StageDirs).
 
-%! script_end(+Process:atom) is det.
+%! script_end(+Options:list(nvpair), +Process:atom) is det.
 % End the script, saving the results to the `Output` directory.
 
 script_end(_O1, Process):-
@@ -144,7 +161,8 @@ script_end(_O1, Process):-
 %! script_stage(
 %!   +Options:list(nvpair),
 %!   +Process:atom,
-%!   +Stage:nonneg,
+%!   +FromStage:nonneg,
+%!   +ToStage:nonneg,
 %!   :Goal
 %! ) is det.
 % `Goal` receives the from and to files as arguments.
@@ -152,16 +170,21 @@ script_end(_O1, Process):-
 % The following options are supported:
 %   * =|actual(ActualNumberOfApplications:nonneg)|=
 %   * =|from_file(FromFile:atom)|+
-%   * =|in_place(+ToArgIsFromArg:boolean)|=
 %   * =|potential(PotentialNumberOfApplications:nonneg)|=
 %   * =|to_file(ToFile:atom)|+
+%   * =|to_output(+StoreInOutputDirectory:boolean)|=
+%     Stores the result straight into the output directory.
 
 % This stage was already performed in the past, since the to file is
 % already in the next stage directory.
-script_stage(O1, Process, Stage, _Goal):-
+script_stage(O1, Process, Stage1, Stage2, Goal):-
+  script_stage_from_directory(O1, Stage1, FromDir),
+  script_stage_to_directory(O1, Stage1, Stage2, ToDir),
+  script_stage(O1, Process, Stage1, FromDir, ToDir, Goal).
+
+% The result file already exists. Skip this stage.
+script_stage(O1, Process, Stage, _FromDir, ToDir, _Goal):-
   option(to_file(ToFileName), O1),
-  NextStage is Stage + 1,
-  stage_directory(NextStage, ToDir),
   absolute_file_name2(
     ToFileName,
     _ToFile,
@@ -169,9 +192,8 @@ script_stage(O1, Process, Stage, _Goal):-
   ), !,
   debug(script_ext, '~w stage ~w was skipped.', [Process,Stage]).
 % This stage has not been perfomed yet.
-script_stage(O1, Process, Stage, Goal):-
-  % From the previous stage.
-  stage_directory(Stage, FromDir),
+script_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
+  % From directory/file.
   (
     option(from_file(FromFileName), O1)
   ->
@@ -187,14 +209,8 @@ script_stage(O1, Process, Stage, Goal):-
     FromArg = FromDir
   ),
 
-  % To the next stage.
-  NextStage is Stage + 1,
-  stage_directory(NextStage, ToDir),
+  % To directory/file.
   (
-    option(in_place(true), O1, false)
-  ->
-    ToArg = FromArg
-  ;
     option(to_file(ToFileName), O1)
   ->
     % Write to the to file located in the next stage directory.
@@ -224,8 +240,42 @@ script_stage_begin(O1, Process, Stage):-
   option(potential(P), O1, 0),
   format(atom(FlagP), '~w_~w_p', [Process,Stage]),
   flag(FlagP, _, P),
-  
+
   debug(script_ext, 'Starting ~w stage ~w.', [Process,Stage]).
+
+%! script_stage_from_directory(
+%!   +Options:list(nvpair),
+%!   +Stage:nonneg,
+%!   -Directory:atom
+%! ) is det.
+% Creates a directory in `Data` for the given stage number
+% and adds it to the file search path.
+
+% Input directory. This is where stage 0 starts off.
+script_stage_from_directory(_O1, 0, Dir):- !,
+  absolute_file_name(input('.'), Dir, [access(write),file_type(directory)]).
+% For stages `N >= 1` we use stuff from directories called `stage_N`.
+script_stage_from_directory(_O1, Stage, Dir):-
+  atomic_list_concat([stage,Stage], '_', StageName),
+  create_nested_directory(data(StageName), Dir),
+  db_add_novel(user:file_search_path(Stage, Dir)).
+
+%! script_stage_to_directory(
+%!   +Options:list(nvpair),
+%!   +FromStage:nonneg,
+%!   -ToStage:nonneg,
+%!   -Directory:atom
+%! ) is det.
+% Creates a directory in `Data` for the given stage number
+% and adds it to the file search path.
+
+% Output directory.
+script_stage_to_directory(O1, Stage, Stage, Dir):-
+  option(to_output(true), O1, false), !,
+  absolute_file_name(output('.'), Dir, [access(write),file_type(directory)]).
+script_stage_to_directory(O1, Stage1, Stage2, Dir):-
+  Stage2 is Stage1 + 1,
+  script_stage_from_directory(O1, Stage2, Dir).
 
 script_stage_end(_O1, Process, Stage):-
   script_stage_eval(Process, Stage),
@@ -266,17 +316,14 @@ script_stage_tick(Process-Stage):-
   format(atom(Flag), '~w_~w_a', [Process,Stage]),
   flag(Flag, X, X + 1).
 
-%! stage_directory(+Stage:nonneg, -StageDirectory:atom) is det.
-% Creates a directory in `Data` for the given stage number
-% and adds it to the file search path.
+%! script_stages(
+%!   +Options:list(nvpair),
+%!   +Stage:nonneg,
+%!   +Stages:list(compound)
+%! ) is det.
 
-% In stage 0 we use stuff form the `Input` directory.
-stage_directory(0, StageDir):- !,
-  create_nested_directory(data('Input'), StageDir),
-  db_add_novel(user:file_search_path(data_input, StageDir)).
-% For stages `N >= 1` we use stuff from directories called `stage_N`.
-stage_directory(Stage, StageDir):-
-  atomic_list_concat([stage,Stage], '_', StageName),
-  create_nested_directory(data(StageName), StageDir),
-  db_add_novel(user:file_search_path(Stage, StageDir)).
+script_stages(_Process, _Stage, _Mod:[]):- !.
+script_stages(Process, Stage1, Mod:[stage(O1,H)|T]):- !,
+  script_stage(O1, Process, Stage1, Stage2, Mod:H),
+  script_stages(Process, Stage2, Mod:T).
 
