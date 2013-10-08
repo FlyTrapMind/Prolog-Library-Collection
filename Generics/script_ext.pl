@@ -74,6 +74,13 @@ find_stage_directories([], _Stage):- !.
 %!   +Process:atom,
 %!   +Stages:list(compound)
 %! ) is det.
+% The following options are supported:
+%   * =|actual(ActualNumberOfApplications:nonneg)|=
+%   * =|from_file(FromFile:atom)|+
+%   * =|potential(PotentialNumberOfApplications:nonneg)|=
+%   * =|to_file(ToFile:atom)|+
+%   * =|to_output(+StoreInOutputDirectory:boolean)|=
+%     Stores the result straight into the output directory.
 
 script(O1, Process, Stages):-
   script_begin(O1, Process),
