@@ -198,7 +198,7 @@ user_interaction('A', _O1, _Act, G, I1, L, _Hs, Ts):- !,
         Count mod 10000 =:= 0
       ->
         Perc is Count / L * 100,
-        debug(user_input, '\t~w% competed\n', [Perc])
+        debug(user_input, '  ~2f% completed\n', [Perc])
       ;
         true
       )
