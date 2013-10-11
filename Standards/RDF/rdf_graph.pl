@@ -136,12 +136,9 @@ rdf_graph_instance([S1-P-O1|T1], L2, Map, SolMap):-
 % When merging RDF graphs we have to make sure that their blank nodes are
 % standardized apart.
 
-rdf_graph_merge(FilesOrGraphs, MergedG):-
-  is_list(FilesOrGraphs),
-  % Be liberal with respect to the input.
-  files_or_rdf_graphs(FilesOrGraphs, Gs),
-
+rdf_graph_merge(Gs, MergedG):-
   % Type checking.
+  is_list(Gs),
   maplist(rdf_graph, Gs),
   atom(MergedG), !,
 

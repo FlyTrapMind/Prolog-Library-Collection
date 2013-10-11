@@ -1,12 +1,8 @@
 :- module(
   rdf_serial,
   [
-    file_or_rdf_graph/2, % +File:atom
-                         % -Graph:atom
     file_to_graph_name/2, % +File:atom
                           % -Graph:atom
-    files_or_rdf_graphs/2, % +Files:list(atom)
-                           % -Graphs:list(atom)
     rdf_convert/3, % +FromFile:atom
                    % +ToFormat:atom
                    % +ToFile:atom
@@ -74,31 +70,15 @@ reflect the serialization format:
 
 
 
-%! file_or_rdf_graph(+File:atom, -Graph:atom) is det.
-% This can be used to allow either a file or a graph.
-
-file_or_rdf_graph(G, G):-
-  rdf_graph(G), !.
-file_or_rdf_graph(File, G):-
-  is_absolute_file_name(File),
-  access_file(File, read), !,
-  % This is the same method used by rdf_load2/2,
-  % when no graph option is given.
-  file_to_graph_name(File, G),
-  rdf_load2(File, [graph(G)]).
-
 %! file_to_graph_name(+File:atom, -Graph:atom) is det.
+% Returns an atomic name for the graph that could be encoded in the given
+% file, by basing the graph name on the file name.
+% This ensures that the graph name does not already exist.
 
 file_to_graph_name(File, G2):-
   file_name(File, _Dir, G1, _Ext),
   % Make sure the graph does not already exist.
   rdf_new_graph(G1, G2).
-
-%! files_or_rdf_graphs(+Files:list(atom), -Graphs:list(atom)) is det.
-% This can be used to allow a (possibly mixed) list of files and graphs.
-
-files_or_rdf_graphs(Files, Gs):-
-  maplist(file_or_rdf_graph, Files, Gs).
 
 %! rdf_convert(
 %!   +FromFile:atom,
