@@ -1,5 +1,5 @@
 :- module(
-  rdf_statistics,
+  rdf_stat,
   [
     count_classes/2, % +Graph:atom
                      % -Count:nonneg

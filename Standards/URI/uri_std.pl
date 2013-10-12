@@ -127,6 +127,7 @@ resource.txt
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rfc, 'http://www.ietf.org/rfc/').
+:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
 %:- initialization(init_uri_std).
 
@@ -145,7 +146,7 @@ init_rfc1630(G):-
   rdf_global_id(rfc:'1630', This),
   rdfs_assert_class(rfc:'Standard', G),
   rdf_assert_individual(This, rfc:'Standard', G),
-  rdf_assert_datatype(This, rfc:year, gYear, 1994, G),
+  rdf_assert_datatype(This, rfc:year, xsd:gYear, 1994, G),
   rdf_assert_literal(
     This,
     rfc:title,
@@ -167,7 +168,7 @@ init_rfc1630(G):-
 init_rfc1736(G):-
   rdf_global_id(rfc:'1736', This),
   rdf_assert_individual(This, rfc:'Standard', G),
-  rdf_assert_datatype(This, rfc:year, gYear, 1995, G),
+  rdf_assert_datatype(This, rfc:year, xsd:gYear, 1995, G),
   rdf_assert_literal(
     This,
     rfc:title,
@@ -181,7 +182,7 @@ init_rfc1736(G):-
 init_rfc1737(G):-
   rdf_global_id(rfc:'1737', This),
   rdf_assert_individual(This, rfc:'Standard', G),
-  rdf_assert_datatype(This, rfc:year, gYear, 1994, G),
+  rdf_assert_datatype(This, rfc:year, xsd:gYear, 1994, G),
   rdf_assert_literal(
     This,
     rfc:title,
@@ -196,7 +197,7 @@ init_rfc1737(G):-
 init_rfc1738(Graph):-
   rdf_global_id(rfc:'1738', This),
   rdf_assert_individual(This, rfc:'Standard', Graph),
-  rdf_assert_datatype(This, rfc:year, gYear, 1994, Graph),
+  rdf_assert_datatype(This, rfc:year, xsd:gYear, 1994, Graph),
   rdf_assert_literal(
     This,
     rfc:title,
@@ -219,7 +220,7 @@ init_rfc1738(Graph):-
 init_rfc1808(G):-
   rdf_global_id(rfc:'1808', This),
   rdf_assert_individual(This, rfc:'Standard', G),
-  rdf_assert_datatype(This, rfc:year, gYear, 1995, G),
+  rdf_assert_datatype(This, rfc:year, xsd:gYear, 1995, G),
   rdf_assert_literal(
     This,
     rfc:title,
@@ -236,7 +237,7 @@ init_rfc1808(G):-
 init_rfc2396(G):-
   rdf_global_id(rfc:'2396', This),
   rdf_assert_individual(This, rfc:'Standard', G),
-  rdf_assert_datatype(This, rfc:year, gYear, 1998, G),
+  rdf_assert_datatype(This, rfc:year, xsd:gYear, 1998, G),
   rdf_assert_literal(
     This,
     rfc:title,

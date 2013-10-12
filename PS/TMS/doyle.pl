@@ -151,6 +151,7 @@ Only SL-justifications can be well-founded justifications.
 
 :- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
+:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
 :- dynamic(cp_consequence/2).
 
@@ -662,7 +663,7 @@ set_support_status(TMS, Node, SupportStatus):-
   rdf_assert_datatype(
     Node,
     doyle:has_support_status,
-    string,
+    xsd:string,
     SupportStatus,
     TMS:1
   ).

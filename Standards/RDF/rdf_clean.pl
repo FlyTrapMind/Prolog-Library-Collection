@@ -63,7 +63,7 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(generics(user_input)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
 :- use_module(xsd(xsd)).
 :- use_module(xml(xml_namespace)).
@@ -164,9 +164,9 @@ rdf_expand_namespace0(S1, P1, 1, G):-
 %! rdf_convert_datatype(
 %!   +Subject:oneof([bnode,uri]),
 %!   +Predicate:uri,
-%!   +FromDatatypeName:atom,
+%!   +FromDatatypeName:iri,
 %!   +FromValue,
-%!   +ToDatatypeName:atom,
+%!   +ToDatatypeName:iri,
 %!   +Graph:atom
 %! ) is det.
 
@@ -185,27 +185,26 @@ rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
 %! rdf_literal_to_datatype(
 %!   +Subject:or([bnode,iri]),
 %!   +Predicate:iri,
-%!   +DatatypeName:atom,
+%!   +Datatype:iri,
 %!   +Graph:atom
 %! ) is det.
 
-rdf_literal_to_datatype(S, P, D_Name, G):-
+rdf_literal_to_datatype(S, P, D, G):-
   findall(
     [S,P,Lit,G],
     rdf_literal(S, P, Lit, G),
     Tuples
   ),
-  format(atom(OperationName), 'LITERAL-TO-DATATYPE(~w)', [D_Name]),
+  format(atom(OperationName), 'LITERAL-TO-DATATYPE(~w)', [D]),
   user_interaction(
     [],
     OperationName,
-    rdf_literal_to_datatype0(D_Name),
+    rdf_literal_to_datatype0(D),
     ['Subject','Predicate','Literal','Graph'],
     Tuples
   ).
-:- rdf_meta(rdf_literal_to_datatype0(+,r,r,+,+)).
-rdf_literal_to_datatype0(D_Name, S, P, Lit, G):-
-  xsd_datatype(D_Name, D),
+:- rdf_meta(rdf_literal_to_datatype0(r,r,r,+,+)).
+rdf_literal_to_datatype0(D, S, P, Lit, G):-
   % If the literal belongs to the lexical space of the datatype,
   % then it is mapped onto its value and then back to the canonical
   % lexical for that value.

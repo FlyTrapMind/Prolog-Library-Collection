@@ -137,7 +137,7 @@ void_load_library(F, G):-
     (
       % This includes VoID linksets, according to the VoID vocabulary.
       rdfs_individual_of(DS, void:'Dataset'),
-      format(atom(Msg), 'Loading dataset ~w', [DS])
+      format(atom(Msg), 'Loading dataset ~w.', [DS])
     ),
     void_load_dataset(F, G, DS),
     void_file,
@@ -152,7 +152,7 @@ void_save_library(G, F):-
   forall_thread(
     (
       dataset(G, _DS, DS_F, DS_G),
-      format(atom(Msg), 'Saving graph ~w', [DS_G])
+      format(atom(Msg), 'Saving graph ~w.', [DS_G])
     ),
     rdf_save2(DS_F, [format(turtle),graph(DS_G)]),
     void_file,

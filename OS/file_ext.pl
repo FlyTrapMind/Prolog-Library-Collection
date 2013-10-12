@@ -378,7 +378,7 @@ split_into_smaller_files(BigFile, SmallDir, Prefix):-
   % (We cannot split on the number of lines since the file is one big line.)
   process_create(
     path(split),
-    ['--bytes=1m', '-d', '--suffix-length=4', BigFile, Prefix],
+    ['--bytes=1m','-d','--suffix-length=4',BigFile,Prefix],
     [cwd(SmallDir)]
   ),
   debug(

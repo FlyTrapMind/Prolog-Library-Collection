@@ -109,7 +109,7 @@ Mismatch types:
 :- use_module(library(uri)).
 :- use_module(math(statistics)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).

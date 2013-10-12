@@ -82,7 +82,7 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).

@@ -89,9 +89,8 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
 create_triple(S, P, literal, Content, G):- !,
   rdf_assert_literal(S, P, Content, G).
 % Typed literal.
-create_triple(S, P, DName, Content, G):-
-  xsd_datatype(DName, _), !,
-  rdf_assert_datatype(S, P, DName, Content, G).
+create_triple(S, P, D, Content, G):-
+  rdf_assert_datatype(S, P, D, Content, G).
 % IRI.
 create_triple(S, P, _, Content, G):-
   % Spaces are not allowed in IRIs.
