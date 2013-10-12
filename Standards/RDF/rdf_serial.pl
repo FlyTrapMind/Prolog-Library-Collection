@@ -291,7 +291,7 @@ rdf_save2(File, O1):-
   file_name_extension(_Base, Ext, File),
   rdf_serialization(Ext, Format, _URI),
   merge_options([format(Format)], O1, O2),
-  rdf_save(File, O2).
+  rdf_save2(File, O2).
 % Format and graph are both given.
 rdf_save2(File, O1):-
   access_file(File, write),
