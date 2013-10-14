@@ -20,6 +20,7 @@ Asserts statistics for VoID descriptions.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(debug)).
+:- use_module(library(regex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(datetime_ext)).
@@ -83,7 +84,14 @@ void_assert_statistics(DD_G, DS, DS_G):-
   (
     rdf_literal(DS, void:uriRegexPattern, RE, DD_G)
   ->
-    setoff(S, (rdf(S, _, _, DS_G), regex(S, RE)), Ss),
+    setoff(
+      S,
+      (
+        rdf(S, _, _, DS_G),
+        S=~RE)
+      ),
+      Ss
+    ),
     length(Ss, NE),
     rdf_overwrite_datatype(DS, void:entities, xsd:integer, NE, DD_G)
   ;

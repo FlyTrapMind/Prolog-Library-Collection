@@ -52,5 +52,12 @@ git fetch generics
 git merge generics/master
 ~~~
 
+## Dependencies
+
+The following SWI-Prolog Packs are needed in some of the PGC modules:
+  * `real`
+  * `regex`
+
 @author Wouter Beek
-@version alpha1
+@version alpha
+
