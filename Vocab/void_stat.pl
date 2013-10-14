@@ -51,7 +51,7 @@ void_assert_statistics(DD_G):-
     (
       % This includes VoID linksets, according to the VoID vocabulary.
       rdfs_individual_of(DS, void:'Dataset'),
-      void_file:dataset(DD_G, DS, _DS_F, DS_G)
+      void_file:dataset(DD_G, DS, _DS_F, DS_G),
       format(atom(Msg), 'Asserting statistics for ~w.', [DS])
     ),
     

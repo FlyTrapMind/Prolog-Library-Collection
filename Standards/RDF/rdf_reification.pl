@@ -57,7 +57,7 @@ Reification for RDF. Both reading and writing.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdfs(rdfs_label)).
+:- use_module(rdfs(rdfs_label_read)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').

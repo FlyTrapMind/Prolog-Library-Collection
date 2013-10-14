@@ -5,21 +5,10 @@
             % ?Predicate:iri
             % ?Object:or([bnode,iri,label])
             % ?Graph:graph
-    rdf_datatype/2, % ?Graph:graph
-                    % ?Datatype:uri
-    rdf_datatype/5, % ?Subject:oneof([bnode,uri])
-                    % ?Predicate:uri
-                    % ?Datatype:oneof([atom,uri])
-                    % ?Value:atomic
-                    % ?Graph:graph
     rdf_find/4, % +Subject:or([bnode,iri]),
                 % +Predicate:iri,
                 % +Object:or([bnode,iri,literal]),
                 % +Graph:atom
-    rdf_has_datatype/4, % ?Subject:oneof([bnode,uri])
-                        % ?Predicate:uri
-                        % ?DatatypeName:atom
-                        % ?Value
     rdf_member/2, % ?Member:uri
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
@@ -50,9 +39,6 @@ literals.
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
 :- rdf_meta(rdf2(r,r,o,?)).
-:- rdf_meta(rdf_datatype(?,r)).
-:- rdf_meta(rdf_datatype(r,r,?,?,?)).
-:- rdf_meta(rdf_has_datatype(r,r,?,?)).
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
 :- rdf_meta(rdf_property(+,r)).
@@ -86,32 +72,6 @@ rdf_both_bnode(X, Y):-
   rdf_is_bnode(Y).
 rdf_both_bnode(_, _).
 
-rdf_datatype(G, Datatype):-
-  rdf(_S, _P, literal(type(Datatype, _LitVal)), G).
-
-%! rdf_datatype(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?DatatypeName:atom,
-%!   ?Value,
-%!   ?Graph:atom
-%! ) is nondet.
-% @tbd Implement the inverse lexical map to fascilitate search (besides read and write).
-
-rdf_datatype(Subject, Predicate, DatatypeName, Value, Graph):-
-  xsd_datatype(DatatypeName, Datatype),
-  % Ideally, we would like to interpret all literals, not just the canonical ones.
-  % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
-  % Interpreting literals could be useful for search, i.e. does a specific value
-  % from the value space of the given datatype occur in the currently loaded RDF graph?
-  % For this one needs the inverse of the lexical map.
-  % In the absence of this inverse lexical map, we have to look for a lexical map
-  % of a datatype literal that matches value (this is not so bad as it seems,
-  % if subject, predicate, datatype, and graph are specified).
-  rdf(Subject, Predicate, literal(type(Datatype, LEX)), Graph),
-  % This may be nondet!
-  xsd_lexicalMap(Datatype, LEX, Value).
-
 %! rdf_find(
 %!   +Subject:or([bnode,iri]),
 %!   +Predicate:iri,
@@ -129,28 +89,6 @@ rdf_find(S, P, O, G):-
   maplist(rdf_bnode_to_var, [S,P,O], [SS,PP,OO]),
   rdf(SS, PP, OO, G),
   maplist(rdf_both_bnode, [S,P,O], [SS,PP,OO]).
-
-%! rdf_has_datatype(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?DatatypeName:atom,
-%!   ?Value,
-%!   ?Graph:atom
-%! ) is nondet.
-
-rdf_has_datatype(Subject, Predicate, DatatypeName, Value):-
-  xsd_datatype(DatatypeName, Datatype),
-  (
-    nonvar(Value)
-  ->
-    % Interpret all literals, not just the canonical ones.
-    xsd_lexicalMap(Datatype, LEX, Value),
-    rdf_has(Subject, Predicate, literal(type(Datatype, LEX)))
-  ;
-    rdf_has(Subject, Predicate, literal(type(Datatype, LEX))),
-    % This may be nondet!
-    xsd_lexicalMap(Datatype, LEX, Value)
-  ).
 
 rdf_member(Member, List):-
   member(Member0, List),

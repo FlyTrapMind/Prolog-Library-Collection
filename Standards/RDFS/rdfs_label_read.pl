@@ -1,5 +1,5 @@
 :- module(
-  rdfs_label,
+  rdfs_label_read,
   [
     rdfs_label2/3, % +Options:list(nvpair)
                    % ?RDF_Term:or([bnode,iri])
@@ -28,7 +28,7 @@ Predicates for RDFS labels.
 :- use_module(library(semweb/rdf_db)). % rdf-meta.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_list)).
-:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
 :- use_module(xml(xml_namespace)).
 

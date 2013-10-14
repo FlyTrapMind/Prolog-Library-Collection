@@ -40,7 +40,7 @@ Generate names for RDF terms and triples.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
-:- use_module(rdfs(rdfs_label)).
+:- use_module(rdfs(rdfs_label_read)).
 :- use_module(xsd(xsd)).
 
 :- rdf_meta(dcg_rdf_term_name(r,?,?)).

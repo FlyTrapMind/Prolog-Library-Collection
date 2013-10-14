@@ -6,6 +6,17 @@
                            % +Datatype:iri
                            % +Value
                            % +Graph:atom
+    rdf_datatype/2, % ?Graph:atom
+                    % ?Datatype:iri
+    rdf_datatype/5, % ?Subject:oneof([bnode,iri])
+                    % ?Predicate:iri
+                    % ?Datatype:iri
+                    % ?Value
+                    % ?Graph:atom
+    rdf_has_datatype/4, % ?Subject:oneof([bnode,iri])
+                        % ?Predicate:iri
+                        % ?Datatype:iri
+                        % ?Value
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,iri])
                               % +Predicate:iri
                               % +Datatype:iri
@@ -28,12 +39,15 @@ Support for RDF typed literals.
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_name)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
-:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
-
 :- rdf_meta(rdf_assert_datatype(r,r,r,+,+)).
+:- rdf_meta(rdf_datatype(?,r)).
+:- rdf_meta(rdf_datatype(r,r,r,?,?)).
+:- rdf_meta(rdf_has_datatype(r,r,r,?)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
 
@@ -66,10 +80,58 @@ rdf_assert_datatype(S, P, D, Val, G):-
   atom_codes(LEX2, LEX1),
   rdf_assert(S, P, literal(type(D,LEX2)), G).
 
+%! rdf_datatype(?Graph:atom, ?Datatype:iri) is nondet.
+
+rdf_datatype(G, D):-
+  rdf(_S, _P, literal(type(D, _LEX)), G).
+
+%! rdf_datatype(
+%!   ?Subject:oneof([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Datatype:iri,
+%!   ?Value,
+%!   ?Graph:atom
+%! ) is nondet.
+% @tbd Implement the inverse lexical map to fascilitate search (besides read and write).
+
+rdf_datatype(S, P, D, Value, G):-
+  % Ideally, we would like to interpret all literals, not just the canonical ones.
+  % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
+  % Interpreting literals could be useful for search, i.e. does a specific value
+  % from the value space of the given datatype occur in the currently loaded RDF graph?
+  % For this one needs the inverse of the lexical map.
+  % In the absence of this inverse lexical map, we have to look for a lexical map
+  % of a datatype literal that matches value (this is not so bad as it seems,
+  % if subject, predicate, datatype, and graph are specified).
+  rdf(S, P, literal(type(D, LEX)), G),
+  % This may be nondet!
+  xsd_lexicalMap(D, LEX, Value).
+
+%! rdf_has_datatype(
+%!   ?Subject:oneof([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Datatype:iri,
+%!   ?Value,
+%!   ?Graph:atom
+%! ) is nondet.
+
+rdf_has_datatype(S, P, D, Value):-
+  (
+    nonvar(Value)
+  ->
+    % Interpret all literals, not just the canonical ones.
+    xsd_lexicalMap(D, LEX, Value),
+    rdf_has(S, P, literal(type(D, LEX)))
+  ;
+    rdf_has(S, P, literal(type(D, LEX))),
+    % This may be nondet!
+    xsd_lexicalMap(D, LEX, Value)
+  ).
+
 %! rdf_overwrite_datatype(
-%!   +Subject:oneof([bnode,uri]),
-%!   +Predicate:uri,
-%!   +DatatypeName:atom,
+%!   +Subject:oneof([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Datatype:iri,
 %!   +NewValue,
 %!   +Graph:atom
 %! ) is det.
@@ -112,3 +174,4 @@ rdf_overwrite_datatype(S, P, D, NewVal, G):-
 
 rdf_retractall_datatype(S, P, D, G):-
   rdf_retractall(S, P, literal(type(D,_LEX)), G).
+

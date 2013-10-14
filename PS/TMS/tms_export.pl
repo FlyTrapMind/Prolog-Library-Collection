@@ -39,7 +39,7 @@ Exports TMS belief states,
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdfs(rdfs_label)).
+:- use_module(rdfs(rdfs_label_read)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
