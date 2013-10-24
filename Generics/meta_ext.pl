@@ -271,6 +271,14 @@ nonvar_det(Goal):-
 % GENERIC CALLS %
 
 %! generic(:GenericPredicate, :Context, +Arguments:list)
+% This uses the naming convention that similar predicates share
+% the same prefix.
+%
+% @param GenericPredicate The predicate prefix,
+%        denoting the generic part of the operation.
+% @param Context The predicate suffix,
+%        denoting the specific part of the operation.
+% @param Arguments An argitrary number of arguments.
 
 generic(P1, Context, Args):-
   % Make sure the calling module prefix is discarded.

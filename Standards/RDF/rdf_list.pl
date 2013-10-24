@@ -63,6 +63,7 @@ Support for RDF lists.
 :- rdf_meta(rdf_list_occurs_before(r,r)).
 :- rdf_meta(rdf_list_previous(r,r)).
 :- rdf_meta(rdf_list_member(r,r)).
+:- rdf_meta(rdf_list_name(+,r)).
 
 
 
@@ -257,6 +258,16 @@ rdf_list_name(O1, RDF_List):-
   % trouble when it comes accross `[b,c]`
   % (which fails the check for RDF list).
   rdf_list([recursive(false)], RDF_List, RDF_Terms),
+  
   maplist(rdf_term_name(O1), RDF_Terms, Names),
-  print_list(O1, Names).
+  
+  % Since the atom '[]' denotes the empty list in Prolog,
+  % we add a space in between to make it stand out as a name.
+  (
+    Names == []
+  ->
+    write('[ ]')
+  ;
+    print_list(O1, Names)
+  ).
 

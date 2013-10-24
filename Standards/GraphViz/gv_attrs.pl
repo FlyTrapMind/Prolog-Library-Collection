@@ -14,7 +14,7 @@ Attributes, their allowed values, and their default values for GraphViz.
 @author Wouter Beek
 @see http://www.graphviz.org/doc/info/attrs.html
 @tbd Add context check (i.e., node, graph, edges, etc.).
-@version 2011-2013/07, 2013/09
+@version 2011-2013/07, 2013/09-2013/10
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -296,4 +296,7 @@ style(node, rounded).
 style(node, solid).
 style(node, striped).
 style(node, wedged).
+
+gv_attr(_Attrs, 'URL', is_uri, [node], ''):-
+  gtrace.
 

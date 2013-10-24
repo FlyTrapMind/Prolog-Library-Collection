@@ -184,6 +184,9 @@ typecheck(between(Var, Max), Value):-
     integer(Value)
   ),
   Max >= Value.
+% URI
+typecheck(is_uri, Value):- !,
+  is_uri(Value).
 typecheck(Type, Value):-
   must_be(Type, Value), !.
 % DCG defined types.
@@ -202,3 +205,4 @@ is_uri(Resource):-
   nonvar(Scheme),
   nonvar(Authority),
   nonvar(Path).
+

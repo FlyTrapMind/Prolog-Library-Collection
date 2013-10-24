@@ -143,9 +143,11 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_build)).
+:- use_module(rdfs(rdfs_label_build)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
@@ -158,7 +160,6 @@ Only SL-justifications can be well-founded justifications.
 :- rdf_meta(doyle_add_argument(+,+,+,r,r)).
 :- rdf_meta(doyle_add_justification(+,+,+,+,r,r)).
 :- rdf_meta(doyle_add_node(+,+,r)).
-
 
 
 

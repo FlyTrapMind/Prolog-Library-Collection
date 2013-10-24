@@ -1,87 +1,49 @@
 :- module(
   tms_export,
   [
-% EXPORTING TO GRAPH INTERCHANGE FORMAT
-    tms_export_argument/2, % +Node:iri
-                           % -GraphInterchangeFormat:compound
-    tms_export_argument_web/2, % +NodeLabel:atom
-                               % -SVG:list
     tms_export_graph/2, % +TMS:atom
                         % -GraphInterchangeFormat:compound
-    tms_export_justifications/3, % +TMS:atom
-                                 % +Justifications:list(iri)
-                                 % -GraphInterchangeFormat:compound
-% PRINTING TO CONSOLE
-    tms_print_argument/3, % +Options:list(nvpair)
-                          % +TMS:atom
-                          % +Node:iri
-    tms_print_justification/3 % +Options:list(nvpair)
-                              % +TMS:atom
-                              % +Justification:iri
+    tms_export_node/3 % +Options:list(nvpair)
+                      % +Node:iri
+                      % -GraphInterchangeFormat:compound
   ]
 ).
 
-/** <module> TMS Export
+/** <module> TMS export
 
 Exports TMS belief states,
 
 @author Wouter Beek
-@tbd Update Doyle export to the new GV modules.
-@version 2013/05, 2013/09
+@version 2013/05, 2013/09-2013/10
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(generics(option_ext)).
-:- use_module(generics(print_ext)).
-:- use_module(gv(gv_file)).
 :- use_module(library(apply)).
-:- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdfs(rdfs_label_read)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
-:- xml_register_namespace(tms,   'http://www.wouterbeek.com/tms.owl#'  ).
+:- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
-:- rdf_meta(tms_export_argument(r,-)).
 :- rdf_meta(tms_export_edges(+,+,r,r,+,-)).
-:- rdf_meta(tms_print_argument(+,+,r)).
-:- rdf_meta(tms_print_justification(+,+,r)).
+:- rdf_meta(tms_export_node(+,r,-)).
 
 
 
-% EXPORTING TO GRAPH INTERCHANGE FORMAT %
-
-%! tms_export_argument(+Node:iri, -GIF:compound) is det.
-
-tms_export_argument(N, GIF):-
-  % Retrieve the TMS in which the node appears.
-  tms_node(TMS, N),
-  % The argument for the node consists of a list of justifications.
-  tms_argument(N, Js),
-  % Export the justifications that constitute the argument.
-  tms_export_justifications(TMS, Js, GIF).
-
-tms_export_argument_web(NodeLabel, SVG):-
-  tms_create_node_iri(NodeLabel, Node),
-  tms_export_argument(Node, GIF),
-  graph_to_svg_dom([], GIF, dot, SVG).
-
-%! tms_export(+TMS:atom) is det.
+%! tms_export_graph(+TMS:atom, -GIF:compound) is det.
 % Exports the TMS using GraphViz.
 
 tms_export_graph(TMS, GIF):-
-  is_registered_tms(TMS),
+  tms(TMS),
   setoff(N, tms_node(TMS, N), Ns),
   setoff(J, tms_justification(TMS, J), Js),
   tms_export_graph(TMS, Ns, Js, GIF).
 
 tms_export_graph(TMS, Ns, Js, graph(Vs,Es4,G_Attrs)):-
-  maplist(tms_export_node(TMS), Ns, N_Vs),
-  maplist(tms_export_justification(TMS), Js, J_Vs),
+  maplist(tms_export_node_(TMS), Ns, N_Vs),
+  maplist(tms_export_justification_(TMS), Js, J_Vs),
   ord_union(N_Vs, J_Vs, Vs),
   ord_empty(Es1),
   foldl(tms_export_cons_edges(TMS), Js, Es1, Es2),
@@ -95,7 +57,16 @@ tms_export_graph(TMS, Ns, Js, graph(Vs,Es4,G_Attrs)):-
     overlap(false)
   ].
 
-tms_export_justifications(TMS, Js, GIF):-
+%! tms_export_node(+Options:list(nvpair), +Node:iri, -GIF:compound) is det.
+% The following options are supported:
+%   * =|recursive(boolean)|=
+%     Whether the justifications graph is traversed recursively or not.
+
+tms_export_node(O1, N, GIF):-
+  % The argument for the node consists of a list of justifications.
+  tms_justifications(O1, N, Js),
+
+  % Collect the nodes that are involved in the justifications.
   setoff(
     N,
     (
@@ -108,60 +79,16 @@ tms_export_justifications(TMS, Js, GIF):-
     ),
     Ns
   ),
+
+  % Retrieve the TMS in which the node appears.
+  tms_node(TMS, N),
+
+  % The nodes (vertices) and justifications (edges) form a graph.
   tms_export_graph(TMS, Ns, Js, GIF).
 
 
 
-% PRINTING TO CONSOLE %
-
-%! tms_print_argument(
-%!   +Options:list(nvpair),
-%!   +TMS:atom,
-%!   +Conclusion:iri
-%! ) is det.
-
-tms_print_argument(O1, TMS, C):-
-  default_option(O1, indent, 0, O2),
-  tms_print_argument_(O2, TMS, C).
-
-tms_print_argument_(O, TMS, C):-
-  tms_node(TMS, C),
-  rdf(J, tms:has_consequent, C, TMS), !,
-  tms_print_justification(O, TMS, J).
-tms_print_argument_(O, _TMS, C):-
-  option(indent(I), O, 0),
-  indent(I),
-  write('[rdf] '),
-  tms_print_node(O, C),
-  nl.
-
-%! tms_print_justification(
-%!   +Options:list(nvpair),
-%!   +TMS:atom,
-%!   +Justification:iri
-%! ) is det.
-
-tms_print_justification(O1, TMS, J):-
-  tms_justification(TMS, As, R, C, J),
-  option(indent(I), O1, 0),
-  indent(I),
-  write('['), write(R), write(']'),
-  write(' '),
-  tms_print_node(O1, C),
-  nl,
-  update_option(O1, indent, succ, _I, O2),
-  maplist(tms_print_argument(O2, TMS), As).
-
-%! tms_print_node(+Options:list(nvpair), +Node:iri) is det.
-
-tms_print_node(O, N):-
-  option(lang(Lang), O, en),
-  rdfs_preferred_label(N, Lang, _PreferredLang, L),
-  write(L).
-
-
-
-% EDGES %
+% SUPPORT PREDICATES: EDGES %
 
 %! tms_export_edges(
 %!   +TMS:atom,
@@ -205,27 +132,30 @@ tms_export_out_edges(TMS, J, Es1, Es2):-
 
 
 
-% VERTICES %
+% SUPPORT PREDICATES: VERTICES %
 
-%! tms_export_justification(
+%! tms_export_justification_(
 %!   +TMS:atom,
 %!   +Justification:iri,
 %!   -VertexTerm:compound
 %! ) is det.
 
-tms_export_justification(_TMS, J, vertex(J_Id,J,V_Attrs)):-
+tms_export_justification_(_TMS, J, vertex(J_Id,J,V_Attrs)):-
   rdf_global_id(_:J_Id, J),
   rdfs_label(J, L),
   V_Attrs = [color(blue),label(L),shape(rectangle),style(solid)].
 
-tms_export_node(TMS, N, vertex(N_Id,N,V_Attrs)):-
+%! tms_export_node(+TMS:atom, +Node:iri, -VertexTerm:compound) is det.
+
+tms_export_node_(TMS, N, vertex(N_Id,N,V_Attrs)):-
   rdf_global_id(_:N_Id, N),
   rdfs_label(N, L),
   tms_export_node_color(TMS, N, C),
-  V_Attrs = [color(C),label(L),shape(ellipse),style(solid)].
+  V_Attrs = [color(C),label(L),shape(ellipse),style(solid),'URL'('http://www.wouterbeek.com')].
 
 %! tms_export_node_color(+TMS:atom, +Node:iri, -Color:atom) is det.
 % Returns the color indicating the support status of the node.
+
 tms_export_node_color(TMS, N, green):-
   is_in_node(TMS, N), !.
 tms_export_node_color(TMS, N, red):-

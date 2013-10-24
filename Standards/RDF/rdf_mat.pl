@@ -18,9 +18,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
 @version 2013/09
 */
 
-:- use_module(tms(doyle)).
-:- use_module(tms(tms)).
-:- use_module(tms(tms_export)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
@@ -44,6 +41,10 @@ Takes axioms, rules, and the RDF index and performs materializations.
     rule/7 as rdfs_rule
   ]
 ).
+:- use_module(tms(doyle)).
+:- use_module(tms(tms)).
+:- use_module(tms(tms_export)).
+:- use_module(tms(tms_print)).
 
 :- dynamic(recent_triple/4).
 
@@ -84,14 +85,14 @@ explanation(Regime, Rule, Explanation):-
 materialize(G, Regimes):-
   % The default graph is called `user`.
   % This is also the default graph that rdf/3 write to.
-  (nonvar(G) ; G = user),
+  (nonvar(G), ! ; G = user),
 
   % Make sure there is a registered TMS that can be used.
   % Otherwise, we have to create a TMS for this purpose.
   % We choose a TMS according to Doyle's orginal specification (classic!).
   atom_concat(tms_, G, TMS),
   (
-    is_registered_tms(TMS), !
+    tms(TMS), !
   ;
     register_tms(doyle, TMS),
     doyle_reset(TMS),
