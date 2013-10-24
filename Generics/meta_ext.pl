@@ -581,7 +581,7 @@ predsort_with_duplicates(Predicate, UnsortedList, SortedList):-
 predsort_with_duplicates(
   Predicate,
   2,
-  [H1, H2 | TailUnsortedList],
+  [H1,H2|TailUnsortedList],
   TailUnsortedList,
   SortedList
 ):- !,
@@ -592,7 +592,7 @@ predsort_with_duplicates(
 predsort_with_duplicates(
   _Predicate,
   1,
-  [H | UnsortedList],
+  [H|UnsortedList],
   UnsortedList,
   [H]
 ):- !.
@@ -613,7 +613,7 @@ predsort_with_duplicates(Predicate, Length, L1, L3, SortedList):-
 %! sort_with_duplicates(+Delta, +Element1, +Element2, -SortedList:list)
 % Returns the sorted list of the two given elements according to Delta.
 
-sort_with_duplicates(<, H1, H2, [H1, H2]).
-sort_with_duplicates(=, H1, H2, [H1, H2]).
-sort_with_duplicates(>, H1, H2, [H2, H1]).
+sort_with_duplicates(<, H1, H2, [H1,H2]).
+sort_with_duplicates(=, H1, H2, [H1,H2]).
+sort_with_duplicates(>, H1, H2, [H2,H1]).
 
