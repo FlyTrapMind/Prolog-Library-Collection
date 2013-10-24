@@ -58,6 +58,14 @@ The following SWI-Prolog Packs are needed in some of the PGC modules:
   * `real`
   * `regex`
 
+## TODO
+
+Open problems & planned changes:
+  * SVG from `connected_hives_web` produces wrong HTTP header
+    upon display in debug server.
+
+--
+
 @author Wouter Beek
 @version alpha
 

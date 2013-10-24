@@ -24,17 +24,14 @@ Predicates for reading from RDF, customized for specific datatypes and
 literals.
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07-2013/09
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07-2013/10
 */
 
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_term)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
-:- use_module(xsd(xsd)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
@@ -45,9 +42,18 @@ literals.
 
 
 
-rdf2(S, P, O, G):-
-  var(G), !,
-  rdf(S, P, O).
+%! rdf2(
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:or([bnode,iri,literal]),
+%!   ?Graph:atom
+%! ) is nondet.
+% Minor variantions of rdf/[3,4].
+
+rdf2(S, P, O, G2):-
+  var(G2), !,
+  rdf(S, P, O, G1),
+  rdf_graph:rdf_graph(G1, G2).
 rdf2(S, P, O, G):-
   rdf(S, P, O, G).
 

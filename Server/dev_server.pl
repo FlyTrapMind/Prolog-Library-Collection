@@ -246,7 +246,7 @@ user:body(dev_server, _Body) -->
     )
   ).
 
-user:head(dev_server, Head) -->
+user:head(dev_server, _Head) -->
   {project_name(Project)},
-  html(head(title(Project), Head)).
+  html(head(title(Project))).
 

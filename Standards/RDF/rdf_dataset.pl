@@ -2,7 +2,7 @@
   rdf_dataset,
   [
     rdf_create_dataset/3, % +DefaultGraph:atom
-                          % +NamedGraphs
+                          % +NamedGraphs:list(pair(atom))
                           % -Dataset:compound
     rdf_dataset/2, % ?DefaultGraph:atom
                    % ?NamedGraphs:list(kvpair)
@@ -19,7 +19,7 @@
 /** <module> HIVES
 
 @author Wouter Beek
-@version 2013/09
+@version 2013/09-2013/10
 */
 
 :- use_module(generics(db_ext)).
@@ -30,6 +30,12 @@
 :- dynamic(rdf_dataset/2).
 
 
+
+%! rdf_create_dataset(
+%!   +DefaultGraph:atom,
+%!   +NamedGraphs:list(pair(atom)),
+%!   -Dataset:compound
+%! ) is det.
 
 rdf_create_dataset(DG, NGs, rdf_dataset(DG,NGs)):-
   pairs_keys_values(NGs, Ks, Vs),

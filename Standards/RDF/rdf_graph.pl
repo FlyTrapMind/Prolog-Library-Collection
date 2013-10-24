@@ -1,6 +1,8 @@
 :- module(
   rdf_graph,
   [
+    rdf_graph/2, % +ComplexGraph:compound
+                 % -SimpleGraph:atom
     rdf_graph_copy/2, % +From:atom
                       % +To:atom
     rdf_graph_equivalence/2, % +Graph1:atom
@@ -32,7 +34,7 @@
   ]
 ).
 
-/** <module> RDF_GRAPH
+/** <module> RDF graph
 
 Predicates that apply to entire RDF graphs.
 
@@ -40,7 +42,7 @@ Predicates that apply to entire RDF graphs.
 @see Graph theory support for RDF is found in module rdf_graph_theory.pl.
 @see For conversions from/to serialization formats, see module rdf_serial.pl.
 @tbd How to do backward chaining in query/[3,4]?
-@version 2012/01-2013/05, 2013/07-2013/08
+@version 2012/01-2013/05, 2013/07-2013/08, 2013/10
 */
 
 :- use_module(generics(list_ext)).
@@ -77,6 +79,11 @@ rdf_bnode_replace(X, Map, Y):-
   memberchk(X-Y, Map), !.
 % A blank node that is not in the mapping, replace with a Prolog variable.
 rdf_bnode_replace(_X, _Map, _Var).
+
+%! rdf_graph(+ComplexGraph:or([atom,compound]), -SimpleGraph:atom) is det.
+
+rdf_graph(G2:_RowNumber, G2):- !.
+rdf_graph(G, G).
 
 %! rdf_graph_copy(+From:atom, +To:atom) is det.
 % Copying a graph is the same as merging a single graph
