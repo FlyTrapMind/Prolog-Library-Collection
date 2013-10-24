@@ -187,7 +187,7 @@ stylesheet_pi(CSS_FileSpecification, PI):-
 
 stylesheet_pi(Type, CSS_FileSpecification, pi(PI)):-
   http_absolute_location(CSS_FileSpecification, CSS_File, []),
-  format(atom(PI), 'xml-stylesheet type="~w" href="~w"', [Type, CSS_File]).
+  format(atom(PI), 'xml-stylesheet type="~w" href="~w"', [Type,CSS_File]).
 
 %! uri_to_xml(+URI:uri, -XML:dom) is det.
 % Returns the HTML Document Object Model (DOM)

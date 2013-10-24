@@ -31,8 +31,11 @@
                           % -Justification:iri
     tms_leaf_node/2, % ?TMS:atom
                      % ?LeafNode:iri
-    tms_node/2 % +TMS:atom
-               % -Node:iri
+    tms_node/2, % +TMS:atom
+                % -Node:iri
+    tms_node_to_url/3 % +Node:iri
+                      % ?BaseURL:url
+                      % -NodeURL:url
   ]
 ).
 
@@ -48,6 +51,7 @@ The generic predicates for Truth-Maintenance Systems.
 :- use_module(generics(meta_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(library(uri)).
 :- use_module(rdf(rdf_search)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
@@ -174,4 +178,12 @@ tms_leaf_node(TMS, N):-
 tms_node(TMS, Node):-
   rdfs_individual_of(Node, tms:'Node'),
   once(rdf(Node, _, _, TMS:_)).
+
+%! tms_node_to_iri(+Node:iri, ?BaseURL:url, -NodeURL:url) is det.
+
+tms_node_to_url(N, BaseURL, N):-
+  var(BaseURL), !.
+tms_node_to_url(N, BaseURL, N_URL):-
+  rdf_global_id(_NS:LocalN, N),
+  uri_normalized(LocalN, BaseURL, N_URL).
 

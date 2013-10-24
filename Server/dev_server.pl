@@ -1,6 +1,7 @@
 :- module(
   dev_server,
   [
+    push/1, % +DOM:list
     push/2, % +Type:oneof([console_output,status_pane])
             % +DOM:list
     push/4, % +Type:oneof([console_output,status_pane])
@@ -22,7 +23,7 @@ current logging stream.
 
 @author Wouter Beek
 @see http://semanticweb.cs.vu.nl/prasem/
-@version 2012/05, 2012/09-2012/12, 2013/02-2013/09
+@version 2012/05, 2012/09-2012/12, 2013/02-2013/10
 */
 
 :- use_module(generics(db_ext)).
@@ -106,31 +107,31 @@ current logging stream.
 
 % START DEV SERVER %
 
-%! start_dev_server is det.
-% Starts the development server either on an existing server,
-% or on the default development server port.
+start_dev_server:-
+  start_dev_server(_Port).
+
+%! start_dev_server(?Port:nonneg) is det.
+% Starts the development server on the given port.
 
 % A server is already running.
 % Notice that its port need not be the default port.
-start_dev_server:-
+start_dev_server(Port):-
   http_server_property(Port, start_time(_Time)), !,
   debug(
     dev_server,
     'The server at port ~w is used as the debug server.',
     [Port]
   ).
-% No server is running yet, so start a server at the default port.
-start_dev_server:-
-  setting(default_port, Port),
-  start_dev_server(Port).
-
-%! start_dev_server(+Port:nonneg) is det.
-% Starts the development server on the given port.
-
-start_dev_server(Port):-
-  % Make sure Wallace is shut down whenever Prolog shuts down.
-  assert(user:at_halt(http_stop_server(Port, []))),
-  http_server(http_dispatch, [port(Port)]).
+% No server is running yet, so start a server.
+start_dev_server(Port1):-
+  % Either use the given port or the default port.
+  setting(default_port, DefaultPort),
+  default(Port1, DefaultPort, Port2),
+  
+  % Make sure the development server is shut down whenever Prolog shuts down.
+  assert(user:at_halt(http_stop_server(Port2, []))),
+  
+  http_server(http_dispatch, [port(Port2)]).
 
 
 
@@ -160,8 +161,8 @@ dev_server(Request):-
   (
     Command \== no_command
   ->
-    web_console(Command, DTD_Name, StyleName, DOM),
-    push(console_output, DTD_Name, StyleName, DOM)
+    web_console(Command, Markup),
+    push(console_output, Markup)
   ;
     Query \== no_input
   ->
@@ -181,7 +182,7 @@ history(_Request):-
   % Fixate the DTD and Style used.
   history(status_pane, _DateTime, DTD_Name, StyleName, _DOM), !,
   findall(
-    [element(h1, [], [DateTime]) | DOM],
+    [element(h1,[],[DateTime])|DOM],
     history(status_pane, DateTime, DTD_Name, StyleName, DOM),
     DOMs
   ),
@@ -190,13 +191,26 @@ history(_Request):-
   serve_xml(
     DTD_Name,
     StyleName,
-    [element(html, [], [element(body, [], DOM)])]
+    [element(html,[],[element(body,[],DOM)])]
   ).
 history(_Request):-
-  reply_html_page([], [p('The history is empty.')]).
+  reply_html_page([],[p('The history is empty.')]).
 
-push(Type, DOM):-
-  push(Type, html, dev_server, DOM).
+markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
+markup_mold(StyleName/DOM, html, StyleName, DOM):- !.
+markup_mold(DOM, html, dev_server, DOM):- !.
+
+%! push(+Markup:list) is det.
+% @see Wrapper around push/2 that pushes markup to the console output.
+
+push(Markup):-
+  push(console_output, Markup).
+
+%! push(+Type:oneof([console_output,status_pane]), +Markup:list) is det.
+
+push(Type, Markup):-
+  markup_mold(Markup, DTD_Name, StyleName, DOM),
+  push(Type, DTD_Name, StyleName, DOM).
 
 push(Type, DTD_Name, StyleName, DOM):-
   % Assert the content for AJAX retrieval.

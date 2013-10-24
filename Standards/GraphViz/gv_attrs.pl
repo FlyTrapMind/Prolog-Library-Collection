@@ -297,6 +297,5 @@ style(node, solid).
 style(node, striped).
 style(node, wedged).
 
-gv_attr(_Attrs, 'URL', is_uri, [node], ''):-
-  gtrace.
+gv_attr(_Attrs, 'URL', is_uri, [node], '').
 
