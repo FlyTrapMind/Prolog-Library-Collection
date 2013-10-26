@@ -73,10 +73,10 @@ find_stage_directories(StageDirs):-
 
 find_stage_directories([H|T], Stage):-
   atomic_list_concat([stage,Stage], '_', StageName),
-  absolute_file_name2(
+  absolute_file_name(
     data(StageName),
     H,
-    [access(write),file_type(directory)]
+    [access(write),file_errors(fail),file_type(directory)]
   ),
   NextStage is Stage + 1,
   find_stage_directories(T, NextStage).
@@ -112,10 +112,15 @@ script(O1, Process, Stages):-
   % is already available.
   (
     option(to(ToDir, ToFileName, ToFileType), O1),
-    absolute_file_name2(
+    absolute_file_name(
       ToFileName,
       _ToFile,
-      [access(read),file_type(ToFileType),relative_to(ToDir)]
+      [
+        access(read),
+        file_errors(fail),
+        file_type(ToFileType),
+        relative_to(ToDir)
+      ]
     )
   ->
     debug(script_ext, '~w script was skipped.', [Process])
@@ -221,10 +226,10 @@ script_stage(O1, Process, Stage1, Stage2, Goal):-
 % The result file already exists. Skip this stage.
 script_stage(O1, Process, Stage, _FromDir, ToDir, _Goal):-
   option(to(_ToDir,ToFileName,ToFileType), O1),
-  absolute_file_name2(
+  absolute_file_name(
     ToFileName,
     _ToFile,
-    [access(read),file_type(ToFileType),relative_to(ToDir)]
+    [access(read),file_errors(fail),file_type(ToFileType),relative_to(ToDir)]
   ), !,
   debug(script_ext, '~w stage ~w was skipped.', [Process,Stage]).
 % This stage has not been perfomed yet.
@@ -236,10 +241,15 @@ script_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
     nonvar(FromFileType)
   ->
     % Read the from file located in the previous stage directory.
-    absolute_file_name2(
+    absolute_file_name(
       FromFileName,
       FromArg,
-      [access(read),file_type(FromFileType),relative_to(FromDir)]
+      [
+        access(read),
+        file_errors(fail),
+        file_type(FromFileType),
+        relative_to(FromDir)
+      ]
     )
   ;
     % Read from the previous stage directory.
@@ -254,10 +264,15 @@ script_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
     nonvar(ToFileType)
   ->
     % Write to the to file located in the next stage directory.
-    absolute_file_name2(
+    absolute_file_name(
       ToFileName,
       ToArg,
-      [access(write),file_type(ToFileType),relative_to(ToDir)]
+      [
+        access(write),
+        file_errors(fail),
+        file_type(ToFileType),
+        relative_to(ToDir)
+      ]
     )
   ;
     % Write to the next stage directory.
@@ -305,7 +320,11 @@ script_stage_from_directory(O1, _Stage, Dir):-
   option(from(FromDir1,_FromFileName,_FromFileType), O1),
   nonvar(FromDir1),
   FromDir2 =.. [FromDir1,'.'],
-  absolute_file_name2(FromDir2, Dir, [access(read),file_type(directory)]), !.
+  absolute_file_name(
+    FromDir2,
+    Dir,
+    [access(read),file_errors(fail),file_type(directory)]
+  ), !.
 % Before the first stage directory we start in `0` aka `Input`.
 script_stage_from_directory(_O1, 0, Dir):- !,
   absolute_file_name(input('.'), Dir, [access(read),file_type(directory)]).
@@ -329,7 +348,11 @@ script_stage_to_directory(O1, Stage, Stage, Dir):-
   option(to(FromDir1,_FromFileName,_FromFileType), O1),
   nonvar(FromDir1), !,
   FromDir2 =.. [FromDir1,'.'],
-  absolute_file_name2(FromDir2, Dir, [access(write),file_type(directory)]).
+  absolute_file_name(
+    FromDir2,
+    Dir,
+    [access(write),file_errors(fail),file_type(directory)]
+  ).
 % Stage directories.
 script_stage_to_directory(_O1, Stage1, Stage2, Dir):-
   Stage2 is Stage1 + 1,
