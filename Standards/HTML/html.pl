@@ -10,11 +10,6 @@
     uri_to_html/2, % +URI:uri
                    % -HTML:list
 
-% GENERATING
-    html_image/3, % +Description:atom
-                  % +File:atom
-                  % -DIV:element
-
 % PARSING
     html_attribute/2, % +Attributes:list(nvpair)
                       % +Attribute:nvpair
@@ -59,16 +54,6 @@ HTML attribute parsing, used in HTML table generation.
 % Assert the HTML file types.
 :- db_add_novel(user:prolog_file_type(htm, html)).
 :- db_add_novel(user:prolog_file_type(html, html)).
-
-% Register the supported image file types.
-% These are shared with module RDF_DATATYPE.
-:- dynamic(user:image_file_type/1).
-:- multifile(user:image_file_type/1).
-:- db_add_novel(user:prolog_file_type(jpeg, jpeg)).
-:- db_add_novel(user:prolog_file_type(jpg, jpeg)).
-:- db_add_novel(user:image_file_type(jpg)).
-:- db_add_novel(user:prolog_file_type(png, png)).
-:- db_add_novel(user:image_file_type(png)).
 
 :- meta_predicate(process_exception(+,0)).
 
@@ -217,39 +202,6 @@ uri_to_html(URI, DOM):-
     stream_to_html(Stream, DOM),
     close(Stream)
   ).
-
-
-
-% GENERATING %
-
-%! html_image(+Description:atom, +File:atom, -DIV:element) is det.
-% Constructs an IMG element.
-%
-% @param Description An atomic description of the image.
-% @param File The atomic name of the image file.
-% @param DIV The HTML image element.
-
-html_image(Description, File, DIV):-
-  % Make sure the file has a supported image file type.
-  file_name_type(_Base, Type, File),
-  user:image_file_type(Type),
-  http_absolute_location(img(File), RelativeURI, []),
-
-  % The DIV containing the image description.
-  Description_DIV = element(div, [class=image_description], [Description]),
-
-  % The image itself, using the description as alternative text.
-  ImageElement =
-    element(
-      img,
-      [alt=Description, class=image_thumbnail, src=RelativeURI],
-      []
-    ),
-  % Make the image clickable, linking to the image file.
-  LinkElement =
-    element(a, [href=RelativeURI, target='_blank'], [ImageElement]),
-  % Construe the DIV containing the image, the link, and the description.
-  DIV = element(div, [class=image], [LinkElement, Description_DIV]).
 
 
 

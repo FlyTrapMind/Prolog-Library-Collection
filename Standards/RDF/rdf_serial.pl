@@ -62,9 +62,10 @@ reflect the serialization format:
 :- use_module(os(file_ext)).
 :- use_module(xml(xml_dom)).
 
-:- db_add_novel(user:prolog_file_type(nt,  ntriples)).
-:- db_add_novel(user:prolog_file_type(rdf, rdf     )).
-:- db_add_novel(user:prolog_file_type(ttl, turtle  )).
+:- db_add_novel(user:prolog_file_type(nt,   ntriples)).
+:- db_add_novel(user:prolog_file_type(rdf,  rdf     )).
+:- db_add_novel(user:prolog_file_type(rdfs, rdfs    )).
+:- db_add_novel(user:prolog_file_type(ttl,  turtle  )).
 
 :- nodebug(rdf_serial).
 

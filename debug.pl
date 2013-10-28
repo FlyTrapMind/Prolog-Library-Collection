@@ -1,5 +1,8 @@
 % Debug script for PGC.
 
+% Do not write module loads to the standard output stream.
+:- set_prolog_flag(verbose_load, silent).
+
 % On Windows 8 I have had the pleasure of swipl defaulting to the
 % =text= encoding. This did _not_ process special characters correctly.
 :- set_prolog_flag(encoding, utf8).
@@ -7,13 +10,20 @@
 % Print code strings with their code table replacements.
 :- use_module(library(portray_text)).
 
-% Do not write module loads to the standard output stream.
-:- set_prolog_flag(verbose_load, silent).
+% We only load this in debug mode,
+% since this may give information to hackers.
+:- use_module(library(http/http_error)).
+
+% Load the documention server.
+:- use_module(library(doc_http)).
+:- doc_server(4000).
 
 % Before doing much else, we start the documentation server that
 % generates Web sites based on the plDoc commenting in the swipl code files.
 :- use_module(library(http/http_path)).
-:- assert(http:location(pldoc, root(help), [priority(10)])).
+% IMPORTANT: If you remove the priority option, then this gives errors
+%            due to conflicting HTTP location declarations.
+:- assert(http:location(pldoc, root(help), [priority(1)])).
 
 % This library allows for exploiting the color and attribute facilities
 % of most modern terminals using ANSI escape sequences.

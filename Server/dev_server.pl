@@ -77,7 +77,7 @@ current logging stream.
 :- http_handler(js(.), serve_files_in_directory(js), [prefix]).
 
 % HTTP handlers for the Wallace server.
-:- http_handler(dev_server(.), dev_server, [prefix, priority(-10)]).
+:- http_handler(dev_server(.), dev_server, [prefix,priority(-10)]).
 :- http_handler(dev_server(console_output), console_output, []).
 :- http_handler(dev_server(history), history, []).
 :- http_handler(dev_server(status_pane), status_pane, []).
