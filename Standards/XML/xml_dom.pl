@@ -44,7 +44,6 @@ Predicates that operate on / generate XML DOM.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(html(html)). % This is required for the HTML DTD file path.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
@@ -59,6 +58,7 @@ Predicates that operate on / generate XML DOM.
 
 :- xml_register_namespace(iso, 'http://www.iso.org/').
 :- xml_register_namespace(std, 'http://www.example.org/standards/').
+:- xml_register_namespace(svg, 'http://www.w3.org/2000/svg').
 :- xml_register_namespace(w3c, 'http://www.w3.org/').
 
 :- db_add_novel(user:prolog_file_type(css, css)).
@@ -276,14 +276,14 @@ xml_inject_dom_with_attribute(
   AttributeValuePair,
   [element(Type, Attributes2, Contents2) | DOM2]
 ):-
-  if_then_else(
-    member(class=Class, Attributes1),
-    (
-      xml_current_namespace(svg, SVG_Namespace),
-      member(element(SVG_Namespace:title, [], [Name]), Contents1),
-      format(atom(Function), 'clickme(\'~w\')', [Name]),
-      Attributes2 = [onclick=Function | Attributes1]
-    ),
+  (
+    member(class=Class, Attributes1)
+  ->
+    xml_current_namespace(svg, SVG_Namespace),
+    member(element(SVG_Namespace:title, [], [Name]), Contents1),
+    format(atom(Function), 'clickme(\'~w\')', [Name]),
+    Attributes2 = [onclick=Function | Attributes1]
+  ;
     Attributes2 = Attributes1
   ),
   xml_inject_dom_with_attribute(Contents1, Class, AttributeValuePair, Contents2),

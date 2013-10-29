@@ -161,7 +161,7 @@ dcg_multi1(DCG, Rep, L1, O1, C) -->
   {nonvar(L1)}, !,
   {meta_options(is_meta, O1, O2)},
   % Apply conversion: atom_to_codes/2.
-  {(atomic(L1), option(convert(Pred), O1) -> call(Pred, L1, L2) ; L2 = L1)},
+  {(atomic(L1), option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, C, L2, O2),
   {in_between(Min, Max, C)}, !.

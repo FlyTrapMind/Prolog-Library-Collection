@@ -102,7 +102,6 @@ Extensions to the SWI-Prolog meta predicates.
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(library(option)).
 
 :- meta_predicate(boolean(0,-)).
 :- meta_predicate(call_nth(0,-)).

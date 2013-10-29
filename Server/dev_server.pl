@@ -119,8 +119,11 @@ start_dev_server(Port1):-
   % Either use the given port or the default port.
   setting(default_port, DefaultPort),
   default(Port1, DefaultPort, Port2),
-  start_server(Port2).
+  start_server(Port2, dev_server_dispatch).
 
+% This makes it easy to debug the catching of HTTP handlers.
+dev_server_dispatch(Request):-
+  http_dispatch(Request).
 
 
 % WEB FRONTEND %

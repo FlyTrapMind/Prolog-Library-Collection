@@ -771,20 +771,41 @@ xsd_canonicalMap_(Datatype, _Value, _LEX):- !,
   debug(xsd, 'There is not canonical map for datatype ~w.', [Datatype]),
   fail.
 
+%! xsd_canonize_graph(+Graph:atom) is det.
+% Make sure all typed literals in the graph with the given name
+% have a lexical value that is a canonical value for its datatype.
+%
+% @param Graph The atomic name of an RDF graph.
+
 xsd_canonize_graph(G):-
   forall(
     (
+      % For every RDF triple that contains a typed literal ...
       rdf(S, P, literal(type(Datatype,Lexical)), G),
+      
+      % Check whether the datatypes that occur in the graph
+      % are all covered by this module.
+      (
+        xsd_datatype(DatatypeName, Datatype), !
+      ;
+        debug(xsd, 'Unrecognized datatype: ~w.', [Datatype]),
+        DatatypeName = unknown
+      ),
+      
+      % Convert from lexical to value,
+      % and then from value to canonical lexical.
       xsd_lexicalCanonicalMap(Datatype, Lexical, CanonicalLexical),
-      Lexical \== CanonicalLexical
+      
+      % Only changes need to be written.
+      \+ atom_codes(Lexical, CanonicalLexical)
     ),
     (
       rdf_retractall(S, P, literal(type(Datatype,Lexical))),
       rdf_assert(S, P, literal(type(Datatype,CanonicalLexical))),
       debug(
         xsd,
-        'Canonized ~w literal ~w -> ~w',
-        [Datatype,Lexical,CanonicalLexical]
+        'Canonized datatype ~w: "~w" -> "~w"',
+        [DatatypeName,Lexical,CanonicalLexical]
       )
     )
   ).

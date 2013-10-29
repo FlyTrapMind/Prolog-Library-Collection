@@ -41,7 +41,7 @@ An association list with multiple values per key, using ordered sets.
 
 %! init_assoc(+Keys:list, +IntialValue, -Assoc:assoc) is det.
 
-init_assoc(Keys, IntialValue, A):-
+init_assoc(Keys, IV, A):-
   empty_assoc(A0),
   init_assoc(Keys, A0, IV, A).
 
@@ -73,13 +73,15 @@ ord_member(Value, Ordset):-
 %!   +Value,
 %!   -NewAssoc:assoc
 %! ) is det.
+% Allows multiple values for the same key,
+% and stores those values in an ordered set.
 
 % An ordered set already exists as the value of the given key.
 put_assoc_ord_member(Key, Assoc1, Value, Assoc2):-
   get_assoc(Key, Assoc1, Set1), !,
   ord_add_element(Set1, Value, Set2),
   put_assoc(Key, Assoc1, Set2, Assoc2),
-  
+
   % DEB
   length(Set2, NewSetLength),
   debug(
