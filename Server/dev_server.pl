@@ -40,6 +40,7 @@ current logging stream.
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(os(datetime_ext)).
+:- use_module(server(server_ext)).
 :- use_module(server(web_console)).
 :- use_module(server(web_message)). % Module registration.
 :- use_module(sparql(sparql_web)).
@@ -77,7 +78,7 @@ current logging stream.
 :- http_handler(js(.), serve_files_in_directory(js), [prefix]).
 
 % HTTP handlers for the Wallace server.
-:- http_handler(dev_server(.), dev_server, [prefix,priority(-10)]).
+:- http_handler(dev_server(.), dev_server, [prefix, priority(-10)]).
 :- http_handler(dev_server(console_output), console_output, []).
 :- http_handler(dev_server(history), history, []).
 :- http_handler(dev_server(status_pane), status_pane, []).
@@ -113,25 +114,12 @@ start_dev_server:-
 %! start_dev_server(?Port:nonneg) is det.
 % Starts the development server on the given port.
 
-% A server is already running.
 % Notice that its port need not be the default port.
-start_dev_server(Port):-
-  http_server_property(Port, start_time(_Time)), !,
-  debug(
-    dev_server,
-    'The server at port ~w is used as the debug server.',
-    [Port]
-  ).
-% No server is running yet, so start a server.
 start_dev_server(Port1):-
   % Either use the given port or the default port.
   setting(default_port, DefaultPort),
   default(Port1, DefaultPort, Port2),
-  
-  % Make sure the development server is shut down whenever Prolog shuts down.
-  assert(user:at_halt(http_stop_server(Port2, []))),
-  
-  http_server(http_dispatch, [port(Port2)]).
+  start_server(Port2).
 
 
 

@@ -14,16 +14,10 @@
 % since this may give information to hackers.
 :- use_module(library(http/http_error)).
 
-% Load the documention server.
-:- use_module(library(doc_http)).
-:- doc_server(4000).
-
 % Before doing much else, we start the documentation server that
 % generates Web sites based on the plDoc commenting in the swipl code files.
-:- use_module(library(http/http_path)).
-% IMPORTANT: If you remove the priority option, then this gives errors
-%            due to conflicting HTTP location declarations.
-:- assert(http:location(pldoc, root(help), [priority(1)])).
+:- use_module(library(doc_http)).
+:- doc_server(4000).
 
 % This library allows for exploiting the color and attribute facilities
 % of most modern terminals using ANSI escape sequences.
