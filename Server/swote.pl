@@ -59,6 +59,9 @@ swote_web(DOM):-
     FormContent
   ).
 
+:- multifile(user:head//2).
+:- multifile(user:body//2).
+
 user:body(swote, Body) -->
   html(body([h1('SWOTE') | Body])).
 

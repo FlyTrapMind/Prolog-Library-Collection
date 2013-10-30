@@ -1,6 +1,7 @@
 :- module(
   html_table,
   [
+    empty_row//0,
     html_table/3 % +O1:list(nvpair)
                  % +List:list(list(term))
                  % -Markup:element
@@ -12,13 +13,17 @@
 Support for generating HTML tables based on Prolog lists.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/09
+@version 2012/09-2013/06, 2013/09-2013/10
 */
 
 :- use_module(library(apply)).
+:- use_module(library(http/html_write)).
 :- use_module(library(option)).
 
 
+
+empty_row -->
+  html(tr(td([]))).
 
 %! html_table(
 %!   +O1:list(nvpair),
