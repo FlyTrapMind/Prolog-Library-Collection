@@ -378,13 +378,21 @@ dcg_peek_length(Length, Peek), Peek -->
 
 % PHRASE EXTENSION
 
-dcg_phrase(DCG_Body, InAtom):-
-  var(InAtom), !,
-  phrase(DCG_Body, InCodes),
-  atom_codes(InAtom, InCodes).
-dcg_phrase(DCG_Body, InAtom):-
-  atom_codes(InAtom, InCodes),
-  phrase(DCG_Body, InCodes).
+dcg_phrase(DCG_Body, Atom):-
+  var(Atom), !,
+  phrase(DCG_Body, [H|T]),
+  (
+    number(H)
+  ->
+    atom_codes(Atom, [H|T])
+  ;
+    atom(H)
+  ->
+    atomic_list_concat([H|T], Atom)
+  ).
+dcg_phrase(DCG_Body, Atom):-
+  atom_codes(Atom, Codes),
+  phrase(DCG_Body, Codes).
 
 dcg_phrase(DCG_Body, InAtom, OutAtom):-
   atom(InAtom),
