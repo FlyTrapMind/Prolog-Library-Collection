@@ -8,8 +8,7 @@
             % +DTD_Name:atom
             % +StyleName:atom
             % +DOM:list
-    start_dev_server/0,
-    start_dev_server/1 % +Port:nonneg
+    start_dev_server/0
   ]
 ).
 
@@ -65,33 +64,37 @@ current logging stream.
 
 :- dynamic(history/5).
 
+% /dev_server
 :- db_add_novel(http:location(dev_server, root(dev_server), [])).
 
-% Serve CSS files.
+% /css
 :- db_add_novel(http:location(css, root(css), [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(css(.), serve_files_in_directory(css), [prefix]).
+:- http_handler(css(.), serve_files_in_directory(css(.)), [prefix]).
+:- html_resource(css('dev_server.css'), []).
+:- html_resource(css('console_output.css'), [requires(css('dev_server.css'))]).
+:- html_resource(css('status_pane.css'), [requires(css('dev_server.css'))]).
 
-% Serve JavaScript files.
+% /js
 :- db_add_novel(http:location(js, root(js), [])).
 :- db_add_novel(user:file_search_path(js, server(js))).
-:- http_handler(js(.), serve_files_in_directory(js), [prefix]).
+:- http_handler(js(.), serve_files_in_directory(js(.)), [prefix]).
+:- html_resource(js('dev_server.js'), []).
+:- html_resource(js('console_output.js'), [requires(js('dev_server.js'))]).
+:- html_resource(js('status_pane.js'), [requires(js('dev_server.js'))]).
 
 % HTTP handlers for the Wallace server.
-:- http_handler(dev_server(.), dev_server, [prefix, priority(-10)]).
+:- http_handler(dev_server(.), dev_server, [prefix]).
 :- http_handler(dev_server(console_output), console_output, []).
 :- http_handler(dev_server(history), history, []).
 :- http_handler(dev_server(status_pane), status_pane, []).
 
-% HTML resources and their dependencies.
-:- html_resource(css('console_output.css'), [requires(css('dev_server.css'))]).
-:- html_resource(css('status_pane.css'), [requires(css('dev_server.css'))]).
-:- html_resource(css('dev_server.css'), []).
-:- html_resource(js('console_output.js'), [requires(js('dev_server.js'))]).
-:- html_resource(js('status_pane.js'), [requires(js('dev_server.js'))]).
-
 % plDoc documentation.
 :- http_handler(dev_server(doc), documentation, [prefix,priority(0)]).
+
+%! dev_server_port(?Port:positive_integer) is semidet.
+
+:- dynamic(dev_server_port/1).
 
 % By registering these modules, their Web predicates become accessible
 % from the Web console.
@@ -100,7 +103,12 @@ current logging stream.
 :- multifile(user:body//2).
 :- multifile(user:head//2).
 
-:- setting(default_port, nonneg, 5000, 'The default port for the development server.').
+:- setting(
+  default_dev_server_port,
+  nonneg,
+  5000,
+  'The default port for the development server.'
+).
 
 :- debug(dev_server).
 
@@ -109,21 +117,18 @@ current logging stream.
 % START DEV SERVER %
 
 start_dev_server:-
-  start_dev_server(_Port).
-
-%! start_dev_server(?Port:nonneg) is det.
-% Starts the development server on the given port.
-
-% Notice that its port need not be the default port.
-start_dev_server(Port1):-
-  % Either use the given port or the default port.
-  setting(default_port, DefaultPort),
-  default(Port1, DefaultPort, Port2),
-  start_server(Port2, dev_server_dispatch).
+  (
+    db_read(app_server:app_server_port(Port)), !
+  ;
+    setting(default_dev_server_port, Port)
+  ),
+  start_server(Port, dev_server_dispatch),
+  db_replace_novel(dev_server_port(Port), [e]).
 
 % This makes it easy to debug the catching of HTTP handlers.
 dev_server_dispatch(Request):-
   http_dispatch(Request).
+
 
 
 % WEB FRONTEND %

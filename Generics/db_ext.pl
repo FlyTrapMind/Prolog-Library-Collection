@@ -13,6 +13,7 @@
                        % +Head:term
                        % +Body:or([list(term),term])
     db_add_novel/1, % +New
+    db_read/1, % :Goal
     db_replace/2, % +New
                   % +Pattern:list(oneof([e,r]))
     db_replace/2, % +Old
@@ -43,6 +44,7 @@ Example: =|rdf_namespace_color(rdf, red)|= should replace
 
 :- meta_predicate(db_add(:)).
 :- meta_predicate(db_add_novel(:)).
+:- meta_predicate(db_read(:)).
 :- meta_predicate(db_replace(:,:)).
 :- meta_predicate(db_replace_novel(:,:)).
 
@@ -85,9 +87,12 @@ db_add_dcg_rule(Mod, Head, Body1):-
 % Asserts the given fact only if it does not already exist.
 
 db_add_novel(New):-
-  call(New), !.
+  db_read(New), !.
 db_add_novel(New):-
   assert(New).
+
+db_read(Goal):-
+  catch(Goal, error(existence_error(_,_),_), fail).
 
 %! db_replace(:Old, +Pattern:list(oneof([e,r]))) is det.
 %! db_replace(:Old, :New) is det.
@@ -107,14 +112,19 @@ db_replace(_Old, New):-
 
 %! db_replace_novel(:Old, +Pattern:list(oneof([e,r]))) is det.
 %! db_replace_novel(:Old, :New) is det.
+% In the pattern:
+%   * =e= stands for arguments that should be the same
+%     as in the given (new) fact.
+%   * =r= stands for arguments that should be different
+%     in a fact in order to count as an old fact.
 
 db_replace_novel(New, _Mod:Pattern):-
   is_list(Pattern), !,
   new_to_old(New, Pattern, Old),
   db_replace_novel(Old, New).
 db_replace_novel(Old, New):-
-  call(New),
-  \+ call(Old), !.
+  db_read(New),
+  \+ db_read(Old), !.
 db_replace_novel(Old, New):-
   db_replace(Old, New).
 
@@ -132,7 +142,7 @@ match_argument(_, _, _):- !.
 
 new_to_old(New, Pattern, Module:Old):-
   strip_module(New, Module, Plain),
-  Plain =.. [Predicate | NewArguments],
+  Plain =.. [Predicate|NewArguments],
   maplist(match_argument, NewArguments, Pattern, OldArguments),
-  Old =.. [Predicate | OldArguments].
+  Old =.. [Predicate|OldArguments].
 
