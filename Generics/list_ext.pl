@@ -73,6 +73,22 @@
     repeating_list/3, % +Term:term
                       % +Repeats:integer
                       % -List:list(object)
+    replace_nth/6, % +StartIndex:index
+                   % ?Index:index
+                   % +OldList:list
+                   % ?OldElement
+                   % +NewElement
+                   % -NewList:list
+    replace_nth0/5, % ?Index:nonneg
+                    % +OldList:list
+                    % ?OldElement
+                    % +NewElement
+                    % -NewList:list
+    replace_nth1/5, % ?Index:positive_integer
+                    % +OldList:list
+                    % ?OldElement
+                    % +NewElement
+                    % -NewList:list
     shorter/3, % +Comparator:pred
                % +List1:list
                % +List2:list
@@ -409,7 +425,7 @@ repeating_list(Object, Repeats, List):-
 % Returns the object and how often it occurs in the repeating list.
 
 repeating_list1(_Object, 0, []).
-repeating_list1(Object, Repeats, [Object | T]):-
+repeating_list1(Object, Repeats, [Object|T]):-
   forall(
     member(X, T),
     X = Object
@@ -419,9 +435,92 @@ repeating_list1(Object, Repeats, [Object | T]):-
 %! repeating_list2(+Object, +Repeats:integer, -List:list) is det.
 
 repeating_list2(_Object, 0, []):- !.
-repeating_list2(Object, Repeats, [Object | List]):-
+repeating_list2(Object, Repeats, [Object|List]):-
   succ(NewRepeats, Repeats),
   repeating_list2(Object, NewRepeats, List).
+
+%! replace_nth(
+%!   +StartIndex:integer,
+%!   ?Index:integer,
+%!   +OldList:list,
+%!   ?OldElement,
+%!   +NewElement,
+%!   -NewList:list
+%! ) is det.
+% Performs rather advanced in-list replacements.
+%
+% ## Examples
+%
+% Consecutive applications:
+% ~~~
+% ?- L1 = [[1,2,3],[4,5,6],[7,8,9]], replace_nth0(1, L1, E1, E2, L2), replace_nth0(2, E1, 6, a, E2).
+% L1 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+% E1 = [4, 5, 6],
+% E2 = [4, 5, a],
+% L2 = [[1, 2, 3], [4, 5, a], [7, 8, 9]].
+% ~~~
+%
+% Alternative indexes:
+% ~~~
+% ?- list_ext:replace_nth1(I, [a,b,a], a, x, L2).
+% I = 1,
+% L2 = [x, b, a] ;
+% I = 3,
+% L2 = [a, b, x] ;
+% false.
+% ~~~
+%
+% @author Jan Wielemaker
+% @author Richard O'Keefe
+% @author Stefan Ljungstrand
+% @author Wouter Beek
+% @see The original implementation by Jan and Richard
+%      used to start at index 1:
+%      http://www.swi-prolog.org/pldoc/doc/home/vnc/prolog/lib/swipl/library/record.pl?show=src
+% @see Stefan added the new and old element arguments on 2013/11/02
+%      when we were discussing this on the ##prolog channel.
+
+% If the index is given, then the predicate is (semi-)deterministic.
+replace_nth(I1, I, L1, E1, E2, L2):-
+  nonvar(I), !,
+  I >= I1,
+  replace_nth_(I1, I, L1, E1, E2, L2), !.
+% If the index is not given, then there may be multiple answers.
+replace_nth(I1, I, L1, E1, E2, L2):-
+  replace_nth_(I1, I, L1, E1, E2, L2).
+
+replace_nth_(I, I, [E1|T], E1, E2, [E2|T]).
+replace_nth_(I1, I, [H|T1], E1, E2, [H|T2]):-
+  I2 is I1 + 1,
+  replace_nth_(I2, I, T1, E1, E2, T2).
+
+%! replace_nth0(
+%!   +Index:integer,
+%!   +OldList:list,
+%!   +OldElement,
+%!   +NewElement,
+%!   -NewList:list
+%! ) is det.
+% Performs rather advanced in-list replacements, counting from index 0.
+%
+% @see Wrapper around replace_nth/6.
+
+replace_nth0(I, L1, E1, E2, L2):-
+  replace_nth(0, I, L1, E1, E2, L2).
+
+%! replace_nth1(
+%!   +Index:integer,
+%!   +OldList:list,
+%!   +OldElement,
+%!   +NewElement,
+%!   -NewList:list
+%! ) is det.
+% Performs rather advanced in-list replacements, counting from index 1.
+%
+% @see Wrapper around replace_nth/6.
+
+replace_nth1(I, L1, E1, E2, L2):-
+  replace_nth(1, I, L1, E1, E2, L2).
 
 %! shorter(+Order:pred/2, +List:list(term), +List2:list(term)) is semidet.
 % Succeeds if =List1= has relation =Order= to =List2=.
