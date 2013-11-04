@@ -20,6 +20,11 @@ Logging is required once Wallace is started, because module
 =|web_message|= causes debug messages to be appended to the
 current logging stream.
 
+Web home page of the development server.
+Displays a form for entering Web predicates and displays the results
+of their execution.
+Also includes a status bar with updates/messages.
+
 @author Wouter Beek
 @see http://semanticweb.cs.vu.nl/prasem/
 @version 2012/05, 2012/09-2012/12, 2013/02-2013/10
@@ -27,7 +32,6 @@ current logging stream.
 
 :- use_module(generics(db_ext)).
 :- use_module(http(http)).
-:- use_module(library(debug)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -96,10 +100,6 @@ current logging stream.
 
 :- dynamic(dev_server_port/1).
 
-% By registering these modules, their Web predicates become accessible
-% from the Web console.
-:- register_module(web_message).
-
 :- multifile(user:body//2).
 :- multifile(user:head//2).
 
@@ -110,7 +110,7 @@ current logging stream.
   'The default port for the development server.'
 ).
 
-:- debug(dev_server).
+:- initialization(start_dev_server).
 
 
 
@@ -167,7 +167,7 @@ dev_server(Request):-
   ;
     true
   ),
-  reply_html_page(dev_server, [], []).
+  reply_html_page(dev_style, [], []).
 
 documentation(Request):-
   doc_browser,
@@ -229,7 +229,7 @@ status_pane -->
     div(id(status_pane), [])
   ]).
 
-user:body(dev_server, _Body) -->
+user:body(dev_style, _Body) -->
   html(
     body(
       onload('loadConsoleOutputFunctions(); loadStatusPaneFunctions();'),
@@ -242,7 +242,7 @@ user:body(dev_server, _Body) -->
     )
   ).
 
-user:head(dev_server, _Head) -->
+user:head(dev_style, _Head) -->
   {project_name(Project)},
   html(head(title(Project))).
 

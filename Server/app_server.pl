@@ -29,6 +29,8 @@
   'The default port at which the application server is started.'
 ).
 
+:- initialization(start_app_server).
+
 
 
 % Start the application server using the default port (in settings).

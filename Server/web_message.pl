@@ -11,17 +11,23 @@
 Acts on messages printed by print_message/2.
 
 @author Wouter Beek
-@version 2013/02, 2013/04-2013/05, 2013/08-2013/09
+@version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11
 */
 
 :- use_module(html(html_table)).
+:- use_module(library(http/html_write)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(os(ansi_ext)).
 :- use_module(server(dev_server)).
 :- use_module(server(error_web)).
+:- use_module(server(web_console)).
 
 :- dynamic(current_log_row/1).
+
+:- register_module(web_message, 'Messages').
+
+:- http_handler(root(web_message_), web_message, [priority(1)]).
 
 
 
@@ -50,7 +56,7 @@ prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
   format(user, '~w', [Exception]). %DEB
 prolog:debug_print_hook(Type, Format, Args):-
   format(atom(Msg), Format, Args),
-  
+
   % Write to the status pane in the Web front-end.
   push(
     status_pane,
@@ -58,11 +64,11 @@ prolog:debug_print_hook(Type, Format, Args):-
     dev_server,
     [element(p,[],['[',Type,']',' ',Msg])]
   ),
-  
+
   % Write to the terminal.
   ansi_format(user_output, [bold,fg(green)], '[~w] ', [Type]),
   ansi_formatnl(user_output, [fg(green)], '~w', [Msg]),
-  
+
   % Write to the log stream/file.
   append_to_log(Type, Format, Args).
 
@@ -77,4 +83,7 @@ web_message(open_uri(_URI)):-
       request_header('Content-Type'='application/x-www-form-urlencoded')
     ]
   ).
+
+web_message_(_Request):-
+  reply_html_page(app_style, title('Messages'), []).
 

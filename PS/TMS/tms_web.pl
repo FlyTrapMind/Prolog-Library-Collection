@@ -32,7 +32,7 @@
 
 :- initialization(start_dev_server).
 
-:- register_module(tms_web).
+:- register_module(tms_web, 'TMS').
 
 http:location(tms_nav, dev_server(tms_nav), []).
 :- http_handler(tms_nav(.), tms_nav, [prefix]).

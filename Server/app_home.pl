@@ -22,19 +22,20 @@ The home page for the SWAPP Website.
 % /css
 :- db_add_novel(http:location(css, root(css), [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(css(.), serve_files_in_directory(css(.)), [prefix]).
+:- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 :- html_resource(css('app.css'), []).
 
 % /img
 :- db_add_novel(http:location(img, root(img), [])).
-:- http_handler(img(.), serve_files_in_directory(server(img)), [prefix]).
+:- db_add_novel(user:file_search_path(img, server(img))).
+:- http_handler(img(.), serve_files_in_directory(img), [prefix]).
 
 :- multifile(user:head//2).
 :- multifile(user:body//2).
 
 
 
-user:body(default_style, Content) -->
+user:body(app_style, Content) -->
   html(
     body(
       div(id=page,
@@ -60,11 +61,11 @@ footer -->
   html(
     div(id=footer, [
       hr([]),
-      p('© Copyright 2009 Torbjörn Lager and Jan Wielemaker')
+      p('Developed between 2012/05 and 2013/11 by Wouter Beek.')
     ])
   ).
 
-user:head(default_style, Head) -->
+user:head(app_style, Head) -->
   html(
     head([
       \html_requires(css('app.css')),
@@ -86,15 +87,16 @@ header -->
   html(div(id=header,[\logo,\login])).
 
 home(_Request):-
-  reply_html_page(app_style, [title('APP')], \home).
+  project_name(Name),
+  reply_html_page(app_style, [title(Name)], \home).
 
 home -->
   html(
     div(id='content-main', [
-      h2('Welcome to the Logic Programmable Web!'),
+      h2('Welcome to SWAPP!'),
       p(id=intro, br([])),
       p([style='margin:5px 0 10px 0;font-weight:bold;font-size:14px;'], [
-        'Targeting ',
+        'Targetting ',
         a(
           href='http://en.wikipedia.org/wiki/Ajax_(programming)',
           'Ajax'
@@ -183,23 +185,11 @@ login -->
   ).
 
 logo -->
-  {http_absolute_location(img('logo.png'), RelativeURI, [])},
-  html(div(id=logo, img([alt='SWAPP',src=RelativeURI],[]))).
+  {http_absolute_location(img('logo.jpg'), RelativeURI, [])},
+  html(div(id=logo, img([alt=logo,src=RelativeURI],[]))).
 
 nav -->
-  html_list(
-    [id=nav,ordered(false)],
-    [],
-    [
-      a(href=home, 'Home'),
-      a(href=about, 'About'),
-      a(href=documentation, 'Documentation'),
-      a(href=demo, 'Demo'),
-      a(href=download, 'Download'),
-      a(href=development, 'Development'),
-      a(href=support, 'Support')
-    ]
-  ).
+  html_module_list([id=nav,ordered(false)]).
 
 subnav_admin -->
   html(

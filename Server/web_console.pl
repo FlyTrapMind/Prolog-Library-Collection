@@ -8,9 +8,11 @@
     help_web/1, % -Markup:list
     input_ui/1, % -Markup:list
     %messages_web/1, % -Markup:list
-    register_module/1, % +Module:atom
-    registered_module/1, % ?Module:atom
-    registered_modules/1, % -Modules:list(atom)
+    register_module/2, % +InternalName:atom
+                       % +ExternalName:atom
+    registered_module/2, % ?InternalName:atom
+                         % ?ExternalName:atom
+    registered_modules/1, % -Pairs:list(pair(atom,atom))
     registered_modules_web/1, % -Markup:list
     web_console/2 % +Command:atom
                   % -Markup:list
@@ -19,10 +21,10 @@
 
 /** <module> Web console
 
-The Web-based console for PraSem.
+The Web-based console for the debug server's Web page.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/06
+@version 2012/10, 2013/02-2013/06, 2013/11
 */
 
 :- use_module(generics(db_ext)).
@@ -33,22 +35,26 @@ The Web-based console for PraSem.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
+:- use_module(library(pairs)).
 :- use_module(server(error_web)).
 
 :- dynamic history/2.
 
-%! registered_module(?Module:atom) is nondet.
+% ! registered_module(?InternalName:atom, ?ExternalName:atom) is nondet.
 % Modules that are currently registered with the web console.
 % Only web modules can be sensibly registered, since the web console
-% looks for =|_web|=-predicates exclusively.
-% Web modules must be registered before their web methods can be accessed
-% from the web console.
+% looks for =|_web|=-predicates exclusively. Web modules must be
+% registered before their web methods can be accessed from the web
+% console.
 %
-% @param Module The atomic name of a Prolog module.
+% @param InternalName The atomic name of a Prolog module.
+%        intended for internal use.
+% @param ExternalName The atomic name of a Prolog module for
+%        intended for human consumption.
 
-:- dynamic registered_module/1.
+:- dynamic registered_module/2.
 
-% Serve CSS files.
+% /css
 :- db_add_novel(http:location(css, root(css), [])).
 :- assert(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
@@ -107,8 +113,8 @@ console_input -->
 % of this module will no longer be accessible from the web console.
 
 deregister_module(Module):-
-  registered_module(Module), !,
-  retract(registered_module(Module)).
+  registered_module(Module, _Name1), !,
+  retractall(registered_module(Module, _Name2)).
 % Fails silently.
 deregister_module(_Module).
 
@@ -126,7 +132,7 @@ help_web([element(ul, [], ModuleItems)]):-
       element(p, [],
         [element(b, [], [Module]), ':', element(ol, [], PredicateItems)])]),
     (
-      registered_module(Module),
+      registered_module(_InternalName, Module),
       module_property(Module, exports(WebPredicates)),
       setoff(
         element(li, [], [Label]),
@@ -195,34 +201,38 @@ maximum_number_of_messages(100).
   ),
   append(DisplayedDOMs, Markup).*/
 
-%! register_module(+Module:atom) is det.
+%! register_module(+Module:atom, +Name:atom) is det.
 % Registers the given module for the web console.
 % If the module is a web module, i.e. contains =|_web|=-predicates,
 % then these can now be accessed from the web console.
 %
-% @param Module The atomic name of a module.
+% @param Module The atomic name of a module that is used internally.
+% @param Name A human-readable name for the module.
+%        This is displayed in the Web application.
 
 % The module is already registered, do nothing.
-register_module(Module):-
-  registered_module(Module), !.
+register_module(Module, _Name1):-
+  registered_module(Module, _Name2), !.
 % Register the module.
-register_module(Module):-
+register_module(Module, Name):-
   % The module must already be loaded.
   current_module(Module),
-  assert(registered_module(Module)).
+  assert(registered_module(Module, Name)).
 
-registered_module(web_console).
+registered_module(web_console, 'Console').
 
-%! registered_modules(-Modules:list(atom)) is det.
+%! registered_modules(-Pairs:list(pair(atom,atom))) is det.
 % Returns all modules that are currently registered with the web console.
 %
-% @param Modules A list of atomic names of modules.
+% @param Pairs A list of pairs of atomic modules name.
+%	 The first is the internal name, the second is the external
+%	 name.
 
-registered_modules(Modules):-
+registered_modules(Pairs):-
   findall(
-    Module,
-    registered_module(Module),
-    Modules
+    Module-Name,
+    registered_module(Module, Name),
+    Pairs
   ).
 
 registered_modules_web(
@@ -238,7 +248,8 @@ registered_modules_web(
     )
   ]
 ):-
-  registered_modules(Modules),
+  registered_modules(Pairs),
+  pairs_values(Pairs, Modules),
   findall(
     element(tr, [], [element(td, [], [Module])]),
     member(Module, Modules),
@@ -296,7 +307,7 @@ web_console_(Command, Markup):-
   functor(Compound, Predicate1, Arity),
   WebArity is Arity + 1,
   (
-    registered_module(Module),
+    registered_module(Module, _ExternalName),
     current_predicate(Module:Predicate2/WebArity)
   ->
     get_time(Time),
