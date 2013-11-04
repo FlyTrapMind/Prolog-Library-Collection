@@ -165,6 +165,7 @@ p.btn img {
 
 
 /* Nav */
+
 #nav {
   background: #135 url("/img/bg-nav.jpg") repeat-x 0 0;
   border-bottom: 2px solid #135;
@@ -272,60 +273,6 @@ p#intro {
 
 
 
-/* Featured homes */
-
-ul.featured {
-  border-top: 1px solid #cf6;
-  float: left;
-  margin: 1em 0 5px;
-  padding: 0;
-  width: 100%;
-}
-
-ul.featured li {
-  background: url("img/bg-featured.gif") repeat 0 0;
-  float: left;
-  width: 100%;
-  margin: 5px 0 0;
-  padding: 8px 0;
-  line-height: 1.4em;
-}
-
-.homephoto {
-  float: left;
-  width: 225px;
-  padding: 0 8px;
-}
-
-.homephoto img {
-  display: block;
-}
-
-.propname, .desc, .price, .detailslink {
-  margin: 0 0 0 81px;
-}
-
-.propname {
-  display: block;
-  color: #000;
-}
-
-.price {
-  font-weight: bold;
-}
-
-.price em {
-  font-style: normal;
-  color: #344;
-}
-
-.detailslink a {
-  background: url("/img/arrow.gif") no-repeat 100% 60%;
-  padding-right: 6px;
-}
-
-
-
 /* Footer */
 
 #footer {
@@ -386,33 +333,4 @@ ul.featured li {
   color: #677;
   padding: 0 10px;
 }
-
-
-
-/* Variations (default is SMX) */
-
-.mxs #content {background-position: right top;}
-.mxs #content-group {float: left;}
-.mxs #content-sub {float: right;}
-
-.xms #content {background-position: right top;}
-.xms #content-group {float: left;}
-.xms #content-sub {float: right;}
-.xms #content-main {float: right;}
-.xms #content-extra {float: left;}
-
-.ms #content {background-position: right top;}
-.ms #content-group {float: left;}
-.ms #content-main {width: 745px; margin-bottom: 15px;}
-.ms #content-sub {float: right;}
-.ms #content-extra {width: 745px; display: none;}
-
-.sm #content-main {width: 745px; margin-bottom: 15px;}
-.sm #content-extra {width: 745px; display: none;}
-
-.m #content {background-image: none;}
-.m #content-group {width: 950px;}
-.m #content-main {width: 950px;}
-.m #content-sub {width: 950px; display: none;}
-.m #content-extra {width: 950px; display: none;}
 

@@ -27,6 +27,7 @@ The home page for the SWAPP Website.
 :- db_add_novel(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 :- html_resource(css('app.css'), []).
+:- html_resource('http://yui.yahooapis.com/pure/0.3.0/pure-min.css', []).
 
 % /img
 :- db_add_novel(http:location(img, root(img), [])).
@@ -72,6 +73,7 @@ user:head(app_style, Head) -->
   html(
     head([
       \html_requires(css('app.css')),
+      \html_requires('http://yui.yahooapis.com/pure/0.3.0/pure-min.css'),
       style(
         type='text/css',
         'li.lst {\c

@@ -41,6 +41,7 @@ Web predicates for RDF graphs.
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf(rdf_term)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
@@ -217,5 +218,64 @@ rdf_save_web(Graph, Markup):-
   Markup = [element(p,[],['Graph ',Graph,' could not be saved.'])].
 
 rdf_web(_Request):-
-  reply_html_page(app_style, title('RDF Web'), []).
+  reply_html_page(app_style, title('RDF Web'), \rdf_web).
+
+rdf_web -->
+  {
+    G = test,
+    absolute_file_name(
+      data('PicartaTopics'),
+      File,
+      [access(read),file_type(turtle)]
+    ),
+    rdf_load2(File, [format(turtle),graph(G)]),
+    setoff(
+      option(value=SLabel,SLabel),
+      (
+        rdf_subject(G, STerm),
+        with_output_to(atom(SLabel), rdf_term_name(STerm))
+      ),
+      SItems
+    ),
+    setoff(
+      option(value=PLabel,PLabel),
+      (
+        rdf_predicate(G, PTerm),
+        with_output_to(atom(PLabel), rdf_term_name(PTerm))
+      ),
+      PItems
+    ),
+    setoff(
+      option(value=OLabel,OLabel),
+      (
+        rdf_object(G, OTerm),
+        with_output_to(atom(OLabel), rdf_term_name(OTerm))
+      ),
+      OItems
+    )
+  },
+  html(
+    form(id=explain_rdf_triple,[
+      fieldset(id=rdf_triple_input, [
+        legend([], 'Enter an RDF Triple'),
+        fieldset(id=rdf_subject, [
+          label([id=rdf_subject_label,for=rdf_subject], 'Subject:'),
+          input([id=rdf_subject_input,list=rdf_subjects]),
+          datalist(id=rdf_subjects, SItems)
+        ]),
+        fieldset(id=rdf_predicate, [
+          label([id=rdf_predicate_label,for=rdf_predicate_input],
+            'Predicate:'
+          ),
+          input([id=rdf_predicate_input,list=rdf_predicates]),
+          datalist(id=rdf_predicates, PItems)
+        ]),
+        fieldset(id=rdf_object, [
+          label([id=rdf_object_label,for=rdf_object_input], 'Object:'),
+          input([id=rdf_object_input,list=rdf_objects]),
+          datalist(id=rdf_objects, OItems)
+        ])
+      ])
+    ])
+  ).
 
