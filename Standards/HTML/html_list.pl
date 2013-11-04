@@ -6,7 +6,8 @@
     html_list//3, % +ListOptions:list(nvpair)
                   % +ListItemOptions:list(nvpair)
                   % +Items:list(list(dsl))
-    html_module_list//1 % +ListOptions:list(nvpair)
+    html_module_list//2 % +ListOptions:list(nvpair)
+                        % +ListItemOptions:list(nvpair)
   ]
 ).
 
@@ -100,7 +101,10 @@ html_list(L_O1, ListItems) -->
     html(ol(L_O2, ListItems))
   ).
 
-%! html_module_list(+ListOptions:list(nvpair))// is det.
+%! html_module_list(
+%!   +ListOptions:list(nvpair),
+%!   +ListItemOptions:list(nvpair)
+%! )// is det.
 % Generates an HTML list of the currently registered Web modules.
 %
 % The following options are supported:
@@ -109,12 +113,14 @@ html_list(L_O1, ListItems) -->
 %
 % @param ListOptions A list of name-value pairs,
 %        representing options of the HTML list element.
+% @param ListItemOptions A list of name-value pairs,
+%        representing options of the HTML list items.
 
-html_module_list(L_O1) -->
+html_module_list(L_O1, LI_O1) -->
   {
     web_modules(Pairs),
     findall(
-      li(a(href=Link,ExternalName)),
+      li(LI_O1,a([class='pure-button',href=Link],ExternalName)),
       (
         member(ExternalName-InternalName, Pairs),
         http_absolute_location(root(InternalName), Link, [])
@@ -123,5 +129,8 @@ html_module_list(L_O1) -->
     ),
     http_absolute_location(root(home), HomeLink, [])
   },
-  html_list(L_O1, [li(a(href=HomeLink,'Home'))|ListItems]).
+  html_list(
+    L_O1,
+    [li(LI_O1,a([class='pure-button',href=HomeLink],'Home'))|ListItems]
+  ).
 
