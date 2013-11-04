@@ -21,7 +21,7 @@ Support for generating HTML lists.
 :- use_module(library(http/http_path)).
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
-:- use_module(server(web_console)).
+:- use_module(server(web_modules)).
 
 
 
@@ -114,11 +114,12 @@ html_module_list(L_O1) -->
     findall(
       li(a(href=Link,ExternalName)),
       (
-        registered_module(InternalName, ExternalName),
+        web_module(ExternalName, InternalName),
         http_absolute_location(root(InternalName), Link, [])
       ),
       ListItems
-    )
+    ),
+    http_absolute_location(root(home), HomeLink, [])
   },
-  html_list(L_O1, ListItems).
+  html_list(L_O1, [li(a(href=HomeLink,'Home'))|ListItems]).
 

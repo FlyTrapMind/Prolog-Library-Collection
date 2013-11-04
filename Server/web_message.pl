@@ -16,18 +16,20 @@ Acts on messages printed by print_message/2.
 
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(os(ansi_ext)).
 :- use_module(server(dev_server)).
 :- use_module(server(error_web)).
 :- use_module(server(web_console)).
+:- use_module(server(web_modules)).
 
 :- dynamic(current_log_row/1).
 
-:- register_module(web_message, 'Messages').
+:- http_handler(root(web_message), web_message, [priority(1)]).
 
-:- http_handler(root(web_message_), web_message, [priority(1)]).
+:- initialization(web_module_add('Messages', web_message)).
 
 
 
@@ -72,7 +74,7 @@ prolog:debug_print_hook(Type, Format, Args):-
   % Write to the log stream/file.
   append_to_log(Type, Format, Args).
 
-web_message(open_uri(_URI)):-
+web_message(open_uri(_URI)):- !,
   format(user, 'YES!', []),
   http_absolute_location(dev_server(.), URI, []),
   http_open(
@@ -83,7 +85,6 @@ web_message(open_uri(_URI)):-
       request_header('Content-Type'='application/x-www-form-urlencoded')
     ]
   ).
-
-web_message_(_Request):-
+web_message(_Request):-
   reply_html_page(app_style, title('Messages'), []).
 

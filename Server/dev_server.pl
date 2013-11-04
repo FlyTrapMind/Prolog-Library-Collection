@@ -74,7 +74,7 @@ Also includes a status bar with updates/messages.
 % /css
 :- db_add_novel(http:location(css, root(css), [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(css(.), serve_files_in_directory(css(.)), [prefix]).
+:- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 :- html_resource(css('dev_server.css'), []).
 :- html_resource(css('console_output.css'), [requires(css('dev_server.css'))]).
 :- html_resource(css('status_pane.css'), [requires(css('dev_server.css'))]).
@@ -82,7 +82,7 @@ Also includes a status bar with updates/messages.
 % /js
 :- db_add_novel(http:location(js, root(js), [])).
 :- db_add_novel(user:file_search_path(js, server(js))).
-:- http_handler(js(.), serve_files_in_directory(js(.)), [prefix]).
+:- http_handler(js(.), serve_files_in_directory(js), [prefix]).
 :- html_resource(js('dev_server.js'), []).
 :- html_resource(js('console_output.js'), [requires(js('dev_server.js'))]).
 :- html_resource(js('status_pane.js'), [requires(js('dev_server.js'))]).

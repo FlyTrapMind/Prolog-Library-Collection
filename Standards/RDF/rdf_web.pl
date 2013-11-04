@@ -43,11 +43,11 @@ Web predicates for RDF graphs.
 :- use_module(tms(tms_export)).
 :- use_module(xml(xml_namespace)).
 
-:- register_module(rdf_web, 'RDF').
-
 % This allows a user to type `rdf:type` in the Web console and
 % have it translated to a full URI.
 :- rdf_meta_expand(rdf_web:rdf_explain_web(e,e,e,i)).
+
+:- initialization(web_module_add('RDF', rdf_web)).
 
 
 

@@ -58,7 +58,7 @@ user(User):-
 %! user_add(+Name:atom, +Properties:list) is det.
 % Adds a new user with the given properties.
 
-user_add(Name, Options) :-
+user_add(Name, Options):-
   with_mutex(user_db, assert_user(Name, Options)).
 
 %! user_delete(+Name:atom) is det.

@@ -30,12 +30,12 @@
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
-:- initialization(start_dev_server).
-
-:- register_module(tms_web, 'TMS').
-
 http:location(tms_nav, dev_server(tms_nav), []).
 :- http_handler(tms_nav(.), tms_nav, [prefix]).
+
+:- initialization(start_dev_server).
+
+:- initialization(web_module_add('TMS', tms_web)).
 
 
 
