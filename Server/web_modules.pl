@@ -1,10 +1,12 @@
 :- module(
   web_modules,
   [
-    web_module/2, % ?ExternalName:atom
+    web_module/3, % ?ExternalName:atom
                   % ?InternalName:atom
-    web_module_add/2, % +ExternalName:atom
+                  % ?PathName:atom
+    web_module_add/3, % +ExternalName:atom
                       % +InternalName:atom
+                      % +PathName:atom
     web_module_delete/1, % +InternalName:atom
     web_modules/1 % -Pairs:list(pair(atom,atom))
   ]
@@ -24,9 +26,15 @@ Registration infrastructure for Web modules.
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
-%! web_module_db(?ExternalName:atom, ?InternalName:atom) is nondet.
+%! web_module_db(
+%!   ?ExternalName:atom,
+%!   ?InternalName:atom,
+%!   ?PathName:atom
+%! ) is nondet.
 
-:- persistent(web_module_db(external_name:atom,internal_name:atom)).
+:- persistent(
+  web_module_db(external_name:atom,internal_name:atom,path_name:atom)
+).
 
 :- initialization((
   absolute_file_name(
@@ -39,10 +47,11 @@ Registration infrastructure for Web modules.
 
 
 
-web_module_attach(File):-
-  db_attach(File, []).
-
-% ! web_module(?ExternalName:atom, ?InternalName:atom) is nondet.
+%! web_module(
+%!   ?ExternalName:atom,
+%!   ?InternalName:atom,
+%!   ?PathName:atom
+%! ) is nondet.
 % Modules that are currently registered with the web console.
 % Only web modules can be sensibly registered, since the web console
 % looks for =|_web|=-predicates exclusively. Web modules must be
@@ -53,32 +62,50 @@ web_module_attach(File):-
 %        intended for human consumption.
 % @param InternalName The atomic name of a Prolog module.
 %        intended for internal use.
+% @param PathName The atomic name of the URL subpath that
+%        generates a Web page for this Web module.
 
-web_module(ExternalName, InternalName):-
-  with_mutex(web_modules, web_module_db(ExternalName, InternalName)).
+web_module(ExternalName, InternalName, PathName):-
+  with_mutex(
+    web_modules,
+    web_module_db(ExternalName, InternalName, PathName)
+  ).
 
-%! web_module_add(+ExternalName:atom, +InternalName:atom) is det.
+%! web_module_add(
+%!   +ExternalName:atom,
+%!   +InternalName:atom,
+%!   +PathName:atom
+%! ) is det.
 % Registers the given module for the web console.
 % If the module is a web module, i.e. contains =|_web|=-predicates,
 % then these can now be accessed from the web console.
 %
-% @param Module The atomic name of a module that is used internally.
-% @param Name A human-readable name for the module.
-%        This is displayed in the Web application.
+% @param ExternalName The atomic name of a Prolog module for
+%        intended for human consumption.
+% @param InternalName The atomic name of a Prolog module.
+%        intended for internal use.
+% @param PathName The atomic name of the URL subpath that
+%        generates a Web page for this Web module.
 
 % The module is already registered, do nothing.
-web_module_add(_ExternalName1, InternalName):-
-  with_mutex(web_modules, web_module_db(_ExternalName2, InternalName)), !.
+web_module_add(_ExternalName1, InternalName, _PathName1):-
+  with_mutex(
+    web_modules,
+    web_module_db(_ExternalName2, InternalName, _PathName2)
+  ), !.
 % Register the module.
-web_module_add(ExternalName, InternalName):-
+web_module_add(ExternalName, InternalName, PathName):-
   % The module must already be loaded.
   with_mutex(
     web_modules,
     (
       current_module(InternalName),
-      assert_web_module_db(ExternalName, InternalName)
+      assert_web_module_db(ExternalName, InternalName, PathName)
     )
   ).
+
+web_module_attach(File):-
+  db_attach(File, []).
 
 %! web_module_delete(+InternalName:atom) is det.
 % Deregisters the given module. This means that the =|_web|=-predicates
@@ -88,8 +115,8 @@ web_module_delete(InternalName):-
   with_mutex(
     web_modules,
     (
-      web_module_db(_ExternalName1, InternalName), !,
-      retractall_web_module_db(_ExternalName2, InternalName)
+      web_module_db(_ExternalName1, InternalName, _PathName1), !,
+      retractall_web_module_db(_ExternalName2, InternalName, _PathName2)
     )
   ).
 web_module_delete(InternalName):-
@@ -103,10 +130,13 @@ web_module_delete(InternalName):-
 %	 name.
 
 web_modules(Pairs2):-
-  findall(
-    ExternalName-InternalName,
-    web_module(ExternalName, InternalName),
-    Pairs1
+  with_mutex(
+    web_modules,
+    findall(
+      ExternalName-PathName,
+      web_module_db(ExternalName, _InternalName, PathName),
+      Pairs1
+    )
   ),
   keysort(Pairs1, Pairs2).
 

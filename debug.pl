@@ -55,6 +55,10 @@
 
 :- [load].
 
+:- use_module(server(web_modules)).
+:- use_module(server(pldoc_web)).
+:- use_module(server(web_console)).
+
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 

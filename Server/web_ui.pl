@@ -1,5 +1,5 @@
 :- module(
-  swapp_ui,
+  web_ui,
   [
     category//1, % +Category:atom
     clear_button//1, % +Fields:list(atom)
@@ -48,9 +48,6 @@ Generics for SWAPP Web UI.
 %:- html_resource(js('jsonbrowser.js'), []).
 %:- html_resource(js('utils.js'), []).
 %:- html_resource(js('yahoo-min.js'), []).
-
-:- multifile(user:head//2).
-:- multifile(user:body//2).
 
 
 

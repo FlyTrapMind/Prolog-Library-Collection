@@ -50,7 +50,7 @@ Web front-end for generic graph visualizations.
 
 %! circle_graph_web(+Graph:graph, -Markup:list) is det.
 
-circle_graph_web(Graph, html/dev_server/[GraphElement | TableMarkup]):-
+circle_graph_web(Graph, html/app_style/[GraphElement | TableMarkup]):-
   export_graph(
     [edge_labels(all)],
     circular_vertex_coordinate,
@@ -65,7 +65,7 @@ circle_graph_web(Graph, html/dev_server/[GraphElement | TableMarkup]):-
 % @param Graph
 % @param Markup
 
-graph_web(G, svg11/dev_server/SVG):-
+graph_web(G, svg11/app_style/SVG):-
   export_graph_svg(G, SVG).
 
 %! harary_web(+K:integer, +N:integer, -Markup:list) is det.
@@ -128,7 +128,7 @@ spring_embedding_web(Graph, Iterations, Markup):-
 
 %! table_graph_web(+Graph:graph, -Markup:triple) is det.
 
-table_graph_web(Graph, html/dev_server/[TableElement]):-
+table_graph_web(Graph, html/app_style/[TableElement]):-
   export_graph(
     [
       colorscheme(none),

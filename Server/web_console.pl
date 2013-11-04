@@ -1,21 +1,20 @@
 :- module(
   web_console,
   [
-    clear_web/1, % -Markup:list
-    console_input//0, % -Markup:list
-    documentation_web/1, % -Markup:list
-    help_web/1, % -Markup:list
     input_ui/1, % -Markup:list
-    %messages_web/1, % -Markup:list
-    web_console/2, % +Command:atom
-                   % -Markup:list
-    web_modules_web/1 % -Markup:list
+    push/1, % +DOM:list
+    push/2, % +Type:oneof([console_output,status_pane])
+            % +DOM:list
+    push/4 % +Type:oneof([console_output,status_pane])
+           % +DTD_Name:atom
+           % +StyleName:atom
+           % +DOM:list
   ]
 ).
 
 /** <module> Web console
 
-The Web-based console for the debug server's Web page.
+A simple Web console interface.
 
 @author Wouter Beek
 @version 2012/10, 2013/02-2013/06, 2013/11
@@ -24,43 +23,83 @@ The Web-based console for the debug server's Web page.
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(http(http)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(lists)).
+:- use_module(library(settings)).
+:- use_module(os(datetime_ext)).
+:- use_module(server(app_ui)).
 :- use_module(server(error_web)).
+:- use_module(server(web_commands)).
 :- use_module(server(web_modules)).
-
-:- dynamic(history/2).
+:- use_module(sparql(sparql_web)).
 
 % /css
 :- db_add_novel(http:location(css, root(css), [])).
-:- assert(user:file_search_path(css, server(css))).
+:- db_add_novel(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
-:- html_resource(css('console_input.css'), [requires(css('dev_server.css'))]).
+:- html_resource(css('web_console.css'), []).
+:- html_resource(css('console_output.css'), [requires(css('web_console.css'))]).
+:- html_resource(css('status_pane.css'), [requires(css('web_console.css'))]).
 
-:- http_handler(root(web_console), web_console, [priority(1)]).
+% /js
+:- db_add_novel(http:location(js, root(js), [])).
+:- db_add_novel(user:file_search_path(js, server(js))).
+:- http_handler(js(.), serve_files_in_directory(js), [prefix]).
+:- html_resource(js('web_console.js'), []).
+:- html_resource(js('console_output.js'), [requires(js('web_console.js'))]).
+:- html_resource(js('status_pane.js'), [requires(js('web_console.js'))]).
 
-:- initialization(web_module_add('Console', web_console)).
+% HTTP handlers for the Wallace server.
+:- http_handler(root(console), web_console, [priority(1)]).
+:- http_handler(root(console_output), console_output, []).
+:- http_handler(root(status_pane), status_pane, []).
+
+%! content_queue(
+%!   ?Type:oneof([console_output,status_pane]),
+%!   ?DTD_Name:atom,
+%!   ?StyleName:atom,
+%!   ?DOM:list
+%! ) is nondet.
+% This is used to push content for the Web front-end.
+
+:- dynamic(content_queue/4).
+
+%! history_command(+Time:float, +Command:atom) is nondet.
+
+:- dynamic(history_command/2).
+
+%! history_push(
+%!   ?Type:oneof([console_output,status_pane]),
+%!   ?DateTime,
+%!   ?DTD_Name:atom,
+%!   ?StyleName:atom,
+%!   ?DOM:list
+%! ) is nondet.
+
+:- dynamic(history_push/5).
+
+:- setting(
+  history_length,
+  nonneg,
+  5,
+  'The number of previously issued Web commands that are shown in the UI.'
+).
+
+:- initialization(web_module_add('Console', web_console, console)).
 
 
-
-%! clear_web(-Markup:list) is det.
-% Clears the output region of the PraSem Web interface.
-
-clear_web([]).
 
 %! command_input// is det.
 % The input field for the Web console.
 
 command_input -->
-  html(
-    input(
-      [maxlength=200, name=web_command, size=62, type=text, value='']
-    )
-  ).
+  html(input([maxlength=200,name=web_command,size=62,type=text,value=''])).
 
 %! console_input// is det.
 % Returns the markup for the web-based console.
@@ -72,13 +111,13 @@ console_input -->
   {
     findall(
       Command,
-      history(_Time, Command),
+      history_command(_Time, Command),
       Commands
     ),
-    history_length(HistoryLength),
+    setting(history_length, HistoryLength),
     first(Commands, HistoryLength, History_),
     atomic_list_concat(History_, '\n', History),
-    http_absolute_location(dev_server(.), URL, [])
+    http_absolute_location(root(web_console), URL, [])
   },
   html([
     div(id(console_input), [
@@ -96,35 +135,23 @@ console_input -->
     ])
   ]).
 
-%! documentation_web(-Markup:list) is det.
-% Opens a client browser for the documentation server (plDoc).
+console_output -->
+  html([
+    div(id(console_output), []),
+    \html_requires(css('console_output.css')),
+    \html_requires(js('console_output.js'))
+  ]).
 
-documentation_web([element(p,[],['Documentation was opened.'])]):-
-  doc_browser.
 
-fail_web([element(h1,[],['False'])]).
+console_output(_Request):-
+  retract(content_queue(console_output, DTD_Name, Style_Name, DOM)), !,
+  serve_xml(DTD_Name, Style_Name, DOM).
+console_output(Request):-
+  serve_nothing(Request).
 
-help_web([element(ul,[],ModuleItems)]):-
-  setoff(
-    element(li,[],[
-      element(p,[],
-        [element(b,[],[ExternalName]), ':', element(ol,[],PredicateItems)])]),
-    (
-      web_module(InternalName, ExternalName),
-      module_property(InternalName, exports(WebPredicates)),
-      setoff(
-        element(li,[],[Label]),
-        (
-          member(WebPredicate/WebArity, WebPredicates),
-          atom_concat(Predicate, '_web', WebPredicate),
-          DisplayArity is WebArity - 1,
-          format(atom(Label), '~w/~w', [Predicate,DisplayArity])
-        ),
-        PredicateItems
-      )
-    ),
-    ModuleItems
-  ).
+user:head(dev_style, _Head) -->
+  {project_name(Project)},
+  html(head(title(Project))).
 
 history(History, HistoryLength) -->
   html(
@@ -133,8 +160,6 @@ history(History, HistoryLength) -->
       History
     )
   ).
-
-history_length(5).
 
 %! input_ui(-Markup:list) is det.
 % HTML markup for an input form.
@@ -152,98 +177,40 @@ input_ui([
       [name=submit, type=submit, value='Submit'],
       ['Submit'])])]
 ):-
-  http_absolute_location(dev_server(.), URI, []).
+  http_absolute_location(root(web_console), URI, []).
 
-maximum_number_of_messages(100).
+markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
+markup_mold(StyleName/DOM, html, StyleName, DOM):- !.
+markup_mold(DOM, html, app_style, DOM):- !.
 
-/*messages_web(Markup):-
-  maximum_number_of_messages(MaximumNumberOfMessages),
-  findall(
-    [element(h1,[],[DateTime])|DOM],
-    history(status_pane, DateTime, _DTD_Name, _StyleName, DOM),
-    DOMs
-  ),
-  reverse(DOMs, RDOMs),
-  length(RDOMs, NumberOfMessages),
-  (
-    NumberOfMessages == 0
-  ->
-    DisplayedDOMs = [[element(p,[],['There are no messages.'])]]
-  ;
-    NumberOfMessages =< MaximumNumberOfMessages
-  ->
-    DisplayedDOMs = RDOMs
-  ;
-    length(DisplayedDOMs, MaximumNumberOfMessages),
-    append(DisplayedDOMs, _, RDOMs)
-  ),
-  append(DisplayedDOMs, Markup).*/
-
-%! request_web(+Request:list, -Markup:list) is det.
-% Returns a table markup element representing the header of
-% the given request.
-%
-% @param Request A compound term representing an HTTP header.
-% @param Markup A compound term encoding an (X)HTML table.
-
-request_web(
-  Request,
-  [
-    element(
-      table,
-      [border=1, summary='This table shows an HTTP header.'],
-      [
-        element(caption, [], ['An HTTP header'])
-      |
-        Rows
-      ]
-    )
-  ]
-):-
-  findall(
-    element(tr, [], [element(td, [], [AName]), element(td, [], [AValue])]),
-    (
-      member(NameValuePair, Request),
-      NameValuePair =.. [Name, Value],
-      maplist(term_to_atom, [Name, Value], [AName, AValue])
-    ),
-    Rows
-  ).
-
-submit_button -->
-  html(button([name=submit, type=submit, value='Submit'], 'Submit')).
-
-web_console(_Request):-
-  reply_html_page(app_style, title('Console'), []).
-
-%! web_console(+Command:atom, -Markup:list) is det.
+%! process_web_command(+Command:atom, -Markup:list) is det.
 % This returns either the markup that results from the execution of =Command=,
 % or it returns the markup for an error messahe that occured.
 
-web_console(Command, Markup):-
+process_web_command(Command, Markup):-
   % Catch errors and display their error messages in the Web browser.
-  catch_web(web_console_(Command), Markup).
+  catch_web(process_web_command_(Command), Markup).
 
 % Lets see if we can figure out the predicate
 % indicated by the command issued via the Web console interface.
-web_console_(Command, Markup):-
+process_web_command_(Command, Markup):-
   atom_to_term(Command, Compound, _Bindings),
   Compound =.. [Predicate1|Arguments1],
   atom_concat(Predicate1, '_web', Predicate2),
   functor(Compound, Predicate1, Arity),
   WebArity is Arity + 1,
   (
-    web_module(Module, _ExternalName),
-    current_predicate(Module:Predicate2/WebArity)
+    web_module(_ExternalName, InternalName, _PathName),
+    current_predicate(InternalName:Predicate2/WebArity)
   ->
     get_time(Time),
     % Assert to the beginning, so running a findall will automatically
     % retrieve the commands in the order in which they were given.
-    asserta(history(Time, Command)),
+    asserta(history_command(Time, Command)),
     append(Arguments1, [Markup], Arguments2),
     Call =.. [Predicate2|Arguments2],
     (
-      call(Module:Call)
+      call(InternalName:Call)
     ->
       true
     ;
@@ -254,26 +221,83 @@ web_console_(Command, Markup):-
       error(
         existence_error(predicate, Predicate1),
         context(
-          web_console:web_console/4,
+          web_console:process_web_command/2,
           'Unrecognized predicate entered in Web console.'
         )
       )
     )
   ).
 
+%! push(+Markup:list) is det.
+% @see Wrapper around push/2 that pushes markup to the console output.
 
-web_modules_web([
-  element(
-    table,
-    [border=1,summary='The currently registered modules.'],
-    [element(caption,[],['The currently registered modules.'])|Rows]
-  )
-]):-
-  web_modules(Pairs),
-  pairs_values(Pairs, Modules),
-  findall(
-    element(tr,[],[element(td, [], [Module])]),
-    member(Module, Modules),
-    Rows
+push(Markup):-
+  push(console_output, Markup).
+
+%! push(+Type:oneof([console_output,status_pane]), +Markup:list) is det.
+
+push(Type, Markup):-
+  markup_mold(Markup, DTD_Name, StyleName, DOM),
+  push(Type, DTD_Name, StyleName, DOM).
+
+%! push(
+%!   +Type:oneof([console_output,status_pane]),
+%!   +DTD_Name:atom,
+%!   +StyleName:atom,
+%!   +Markup:list
+%! ) is det.
+
+push(Type, DTD_Name, StyleName, DOM):-
+  % Assert the content for AJAX retrieval.
+  assertz(content_queue(Type, DTD_Name, StyleName, DOM)),
+
+  % Also store the content in the history.
+  current_date_time(DateTime),
+  assertz(history_push(Type, DateTime, DTD_Name, StyleName, DOM)).
+
+status_pane(_Request):-
+  retract(content_queue(status_pane, DTD_Name, Style_Name, DOM)), !,
+  serve_xml(DTD_Name, Style_Name, DOM).
+status_pane(Request):-
+  serve_nothing(Request).
+
+status_pane -->
+  html([
+    \html_requires(css('status_pane.css')),
+    \html_requires(js('status_pane.js')),
+    div(id(status_pane), [])
+  ]).
+
+submit_button -->
+  html(button([name=submit, type=submit, value='Submit'], 'Submit')).
+
+web_console(Request):-
+  http_parameters(Request, [
+    web_command(Command, [default(no_command)]),
+    web_input(Query, [default(no_input)])
+  ]),
+  (
+    Command \== no_command
+  ->
+    process_web_command(Command, Markup),
+    push(console_output, Markup)
+  ;
+    Query \== no_input
+  ->
+    sparql_output_web(Query, DOM),
+    push(console_output, html, app_style, DOM)
+  ;
+    true
+  ),
+  reply_html_page(app_style, title('Console'), \web_console).
+
+web_console -->
+  html(
+    body(onload('loadConsoleOutputFunctions(); loadStatusPaneFunctions();'), [
+      \html_requires(css('web_console.css')),
+      \console_input,
+      \console_output,
+      \status_pane
+    ])
   ).
 

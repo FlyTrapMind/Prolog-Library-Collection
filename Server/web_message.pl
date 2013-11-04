@@ -20,16 +20,15 @@ Acts on messages printed by print_message/2.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(os(ansi_ext)).
-:- use_module(server(dev_server)).
 :- use_module(server(error_web)).
 :- use_module(server(web_console)).
 :- use_module(server(web_modules)).
 
 :- dynamic(current_log_row/1).
 
-:- http_handler(root(web_message), web_message, [priority(1)]).
+:- http_handler(root(msg), web_message, [priority(1)]).
 
-:- initialization(web_module_add('Messages', web_message)).
+:- initialization(web_module_add('Messages', web_message, msg)).
 
 
 
@@ -52,7 +51,7 @@ log_web([HTML_Table]):-
 
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   error_web(Exception, Markup),
-  push(status_pane, html, dev_server, Markup), !.
+  push(status_pane, html, app_style, Markup), !.
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
   gtrace, %DEB
   format(user, '~w', [Exception]). %DEB
@@ -63,7 +62,7 @@ prolog:debug_print_hook(Type, Format, Args):-
   push(
     status_pane,
     html,
-    dev_server,
+    app_style,
     [element(p,[],['[',Type,']',' ',Msg])]
   ),
 
@@ -76,7 +75,7 @@ prolog:debug_print_hook(Type, Format, Args):-
 
 web_message(open_uri(_URI)):- !,
   format(user, 'YES!', []),
-  http_absolute_location(dev_server(.), URI, []),
+  http_absolute_location(root(.), URI, []),
   http_open(
     URI,
     _Stream,

@@ -43,11 +43,6 @@
   font-family: monospace;
 }
 
-body {
-  background-color: white;
-  color: black;
-}
-
 dl:hover {
   background-color: black;
   color: white;
@@ -77,9 +72,6 @@ li:hover {
 
 p {
   display: block;
-}
-
-p {
   font-family: serif;
 }
 
@@ -88,17 +80,25 @@ p:hover {
   color: white;
 }
 
+
+
+/* Preformatted */
+
 pre:hover {
   background-color: black;
   color: white;
 }
 
-table {
-  min-width:600px;
-}
+
+
+/* Table */
 
 caption {
   font-weight: bold;
+}
+
+table {
+  min-width:600px;
 }
 
 td:hover {
@@ -107,6 +107,8 @@ td:hover {
 }
 
 
+
+/* Images */
 
 *.image_description {
   font-weight: normal;

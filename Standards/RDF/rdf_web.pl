@@ -27,11 +27,13 @@
 Web predicates for RDF graphs.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/09
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
+:- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_bnode_map)).
 :- use_module(rdf(rdf_mat)).
@@ -39,15 +41,17 @@ Web predicates for RDF graphs.
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(server(web_console)).
-:- use_module(tms(tms_export)).
+:- use_module(server(app_ui)).
+:- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
 
 % This allows a user to type `rdf:type` in the Web console and
 % have it translated to a full URI.
 :- rdf_meta_expand(rdf_web:rdf_explain_web(e,e,e,i)).
 
-:- initialization(web_module_add('RDF', rdf_web)).
+:- http_handler(root(rdf), rdf_web, []).
+
+:- initialization(web_module_add('RDF', rdf_web, rdf)).
 
 
 
@@ -118,7 +122,7 @@ rdf_mat_web(G, Regime, [DOM1,DOM2]):-
     ),
     L1
   ),
-  
+
   % Display the triples in an HTML table.
   html_table(
     [
@@ -129,7 +133,7 @@ rdf_mat_web(G, Regime, [DOM1,DOM2]):-
     [['Subject','Predicate','Object','Graph']|L1],
     DOM1
   ),
-  
+
   % Collect the legend for the blank nodes that occur in
   % at least one of the recently deduced triples.
   setoff(
@@ -143,7 +147,7 @@ rdf_mat_web(G, Regime, [DOM1,DOM2]):-
     ),
     L2
   ),
-  
+
   % Display the blank node mapping in an HTML table.
   html_table(
     [
@@ -211,4 +215,7 @@ rdf_save_web(Graph, Markup):-
       ])].
 rdf_save_web(Graph, Markup):-
   Markup = [element(p,[],['Graph ',Graph,' could not be saved.'])].
+
+rdf_web(_Request):-
+  reply_html_page(app_style, title('RDF Web'), []).
 

@@ -32,7 +32,7 @@ doyle_test0:-
   doyle_init(TMS),
   doyle_add_node(TMS, '1', N1),
   doyle_add_justification(TMS, [], [], 'J1', N1, _J1),
-  http_absolute_uri(dev_server(.), BaseURL),
+  http_absolute_uri(root(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
   graph_to_gv_file([], GIF, dot, pdf, PDF_File),
   open_pdf(PDF_File).
@@ -55,7 +55,7 @@ doyle_test1:-
   doyle_add_justification(TMS, [C],    [],  'J5', D, _),
   doyle_add_justification(TMS, [],     [],  'J6', E, _),
   doyle_add_justification(TMS, [C, E], [],  'J7', F, _),
-  http_absolute_uri(dev_server(.), BaseURL),
+  http_absolute_uri(root(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
   graph_to_gv_file([], GIF, dot, pdf, PDF_File),
   open_pdf(PDF_File).
@@ -78,7 +78,7 @@ doyle_test2:-
   doyle_add_justification(TMS, [N3],    [],   'J5', N4, _J4b),
   doyle_add_justification(TMS, [],      [],   'J6', N5, _J5 ),
   doyle_add_justification(TMS, [N3,N5], [],   'J7', N6, _J6 ),
-  http_absolute_uri(dev_server(.), BaseURL),
+  http_absolute_uri(root(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
   graph_to_gv_file([], GIF, dot, pdf, PDF_File),
   open_pdf(PDF_File).

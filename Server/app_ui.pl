@@ -1,11 +1,13 @@
-:- module(app_home, []).
+:- module(app_ui, []).
 
 /** <module> SWAPP WWW home
 
 The home page for the SWAPP Website.
 
+@author Torbjörn Lager
+@author Jan Wielemaker
 @author Wouter Beek
-@version 2013/10-2013
+@version 2012/05, 2012/09-2012/12, 2013/02-2013/11
 */
 
 :- use_module(generics(db_ext)).
@@ -15,6 +17,7 @@ The home page for the SWAPP Website.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
+:- use_module(server(app_server)).
 
 :- http_handler(root(.), home, [priority(10)]).
 :- http_handler(root(home), http_redirect(see_other, root(.)), []).
@@ -87,89 +90,7 @@ header -->
   html(div(id=header,[\logo,\login])).
 
 home(_Request):-
-  project_name(Name),
-  reply_html_page(app_style, [title(Name)], \home).
-
-home -->
-  html(
-    div(id='content-main', [
-      h2('Welcome to SWAPP!'),
-      p(id=intro, br([])),
-      p([style='margin:5px 0 10px 0;font-weight:bold;font-size:14px;'], [
-        'Targetting ',
-        a(
-          href='http://en.wikipedia.org/wiki/Ajax_(programming)',
-          'Ajax'
-        ),
-        ' and ',
-        a(
-          href='http://en.wikipedia.org/wiki/Comet_(programming)',
-          'Comet'
-        ),
-        ' developers wishing to build intelligent knowledge-based',
-        ' applications as well as ',
-        a(
-          href='http://en.wikipedia.org/wiki/Prolog',
-          'Prolog'
-        ),
-        ' program',&(shy),'mers and ',
-        a(
-          href='http://www.w3.org/2001/sw/',
-          'Semantic Web'
-        ),
-        ' developers wanting to equip applications with highly',
-        ' interactive Web-based user interfaces, SWAPP attempts to',
-        ' provide a ',
-        a(
-          href='http://en.wikipedia.org/wiki/Representational_State_Transfer',
-          'RESTful'
-        ),
-        ' API to (in principle) all aspects of the ',
-        a(
-          href='http://www.swi-prolog.org/',
-          'SWI-Prolog programming system'
-        ),
-        ' including its mature and efficient ',
-        a(
-          href='http://www.swi-prolog.org/pldoc/package/semweb.html',
-          'Semantic Web libraries'
-        ),
-        '.'
-      ]),
-      h2('SWAPP features'),
-      p(id=intro, [br([])]),
-      \html_list(
-        [ordered(false)],
-        [class=big],
-        [
-          ['Fast in-memory RDF triple store, scalable to approx. 25',
-           ' million triples on 32-bit and virtually unlimited on 64-bit',
-           ' hardware.'],
-          ['Persistent storage using journal files.'],
-          ['A RESTful web API for querying and managing data.'],
-          ['Querying of RDF graphs through Prolog queries.'],
-          ['Efficient a-tuple-at-a-time generation of query results.'],
-          ['Query results as Prolog variable bindings encoded in JSON.'],
-          ['Rule-based inferencing well-integrated with application code.'],
-          ['Rule-based ad-hoc inferencing in the context of querying.'],
-          ['Simulated server-push of events for purposes such as',
-           ' monitoring.'],
-          ['Convenient API Explorers aiding in development and testing.'],
-          ['Compatible with any JavaScript library such as YUI, jQuery or',
-           ' Dojo']
-        ]
-      ),
-      p([
-        'For more information, see the ',
-        a(href='about.html',about),
-        ' page and then the ',
-        a(href='documentation.html',documentation),
-        ' page. Or skip ahead to the ',
-        a(href='demo.html',demos),
-        '.'
-      ])
-    ])
-  ).
+  reply_html_page(app_style, [], []).
 
 login -->
   html(

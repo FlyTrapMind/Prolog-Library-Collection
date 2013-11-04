@@ -2,6 +2,17 @@
 
 /** <module> App server
 
+Using this module automatically starts the server.
+
+Logging is required once Wallace is started, because module
+=|web_message|= causes debug messages to be appended to the
+current logging stream.
+
+Web home page of the development server.
+Displays a form for entering Web predicates and displays the results
+of their execution.
+Also includes a status bar with updates/messages.
+
 @author Wouter Beek
 @version 2013/11
 */
@@ -10,7 +21,6 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(settings)).
 :- use_module(library(thread_pool)).
-:- use_module(server(app_home)).
 :- use_module(server(login_api)).
 :- use_module(server(server_ext)).
 :- use_module(server(statistics_api)).
@@ -35,11 +45,7 @@
 
 % Start the application server using the default port (in settings).
 start_app_server:-
-  (
-    db_read(dev_server:dev_server_port(Port)), !
-  ;
-    setting(default_app_server_port, Port)
-  ),
+  setting(default_app_server_port, Port),
   start_app_server(Port).
 
 %! start_app_server(?Port) is det.

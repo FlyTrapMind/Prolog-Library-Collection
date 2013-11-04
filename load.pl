@@ -65,8 +65,22 @@ load_pgc:-
   use_module(os(swipl_ext)),
   check_prolog_version,
   
+  use_module(generics(db_ext)),
+  db_add_novel(user:prolog_file_type(db, database)),
+  use_module(os(file_ext)),
+  
+  absolute_file_name(
+    project(web_modules),
+    File,
+    [access(write),file_type(database)]
+  ),
+  safe_delete_file(File),
+  
   % Start logging.
   use_module(generics(logging)),
-  start_log.
+  start_log,
+  
+  use_module(rdf(rdf_web)),
+  use_module(tms(tms_web)).
 :- load_pgc.
 
