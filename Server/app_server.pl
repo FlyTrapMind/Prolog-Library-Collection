@@ -14,6 +14,7 @@ of their execution.
 Also includes a status bar with updates/messages.
 
 @author Wouter Beek
+@see http://semanticweb.cs.vu.nl/prasem/
 @version 2013/11
 */
 

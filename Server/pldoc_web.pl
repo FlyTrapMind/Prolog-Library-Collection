@@ -5,7 +5,6 @@
 Handle requests to view plDoc via a Web interface.
 
 @author Wouter Beek
-@see http://semanticweb.cs.vu.nl/prasem/
 @version 2013/10
 */
 

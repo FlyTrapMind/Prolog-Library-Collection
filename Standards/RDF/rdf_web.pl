@@ -222,13 +222,7 @@ rdf_web(_Request):-
 
 rdf_web -->
   {
-    G = test,
-    absolute_file_name(
-      data('PicartaTopics'),
-      File,
-      [access(read),file_type(turtle)]
-    ),
-    rdf_load2(File, [format(turtle),graph(G)]),
+    once(rdf_graph(G)), !,
     setoff(
       option(value=SLabel,SLabel),
       (
@@ -254,11 +248,13 @@ rdf_web -->
       OItems
     )
   },
-  rdf_web_form1(SItems, PItems, OItems).
+  rdf_web_form(SItems, PItems, OItems).
+rdf_web -->
+  rdf_load_web_.
 
-rdf_web_form1(SItems, PItems, OItems) -->
+rdf_web_form(SItems, PItems, OItems) -->
   html(
-    form([class='pure-form',id=explain_rdf_triple],[
+    form([class='pure-form',id=explain_rdf_triple], [
       fieldset(class='pure-group', [
         input([
           class='pure-input-1-2',
@@ -295,25 +291,14 @@ rdf_web_form1(SItems, PItems, OItems) -->
     ])
   ).
 
-rdf_web_form2(SItems, PItems, OItems) -->
+rdf_load_web_ -->
   html(
-    form([class=['pure-form','pure-form-aligned'],id=explain_rdf_triple],[
-      fieldset([
-        legend([], 'Enter an RDF Triple'),
-        div(class='pure-control-group', [
-          label([id=rdf_subject_label,for=rdf_subject], 'Subject:'),
-          input([id=rdf_subject_input,list=rdf_subjects]),
-          datalist(id=rdf_subjects, SItems)
-        ]),
-        div(class='pure-control-group', [
-          label([id=rdf_predicate_label,for=rdf_predicate_input], 'Predicate:'),
-          input([id=rdf_predicate_input,list=rdf_predicates]),
-          datalist(id=rdf_predicates, PItems)
-        ]),
-        div(class='pure-control-group', [
-          label([id=rdf_object_label,for=rdf_object_input], 'Object:'),
-          input([id=rdf_object_input,list=rdf_objects]),
-          datalist(id=rdf_objects, OItems)
+    form([class='pure-form',id='rdf-load'], [
+      fieldset(class='pure-group', [
+        input([
+          class='pure-input-1-2',
+          id='rdf-file',
+          type=file
         ])
       ])
     ])
