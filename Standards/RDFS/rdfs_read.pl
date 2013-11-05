@@ -166,7 +166,7 @@ rdfs(S, P, O, G):-
 % This circumvents RDFS 9&10 loops.
 rdfs_class(m(t,_,_), C, _):-
   nonvar(C),
-  rdf_global_id(rdfs:'Class', C), !.
+  rdf_equal(rdfs:'Class', C), !.
 rdfs_class(M, C, G):-
   nonvar(C), !,
   rdfs_individual(M, C, rdfs:'Class', G), !.
@@ -188,59 +188,59 @@ rdfs_domain(M, P, C, G):- M=m(t,t,_),
 
 % RDFS axioms: class
 rdfs_domain_axiom(m(t,_,_), P, C):-
-  rdf_global_id(rdfs:subClassOf, P),
-  rdf_global_id(rdfs:'Class', C).
+  rdf_equal(rdfs:subClassOf, P),
+  rdf_equal(rdfs:'Class', C).
 % RDFS axioms: list
 rdfs_domain_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id(rdf:first, P)
-  ; rdf_global_id(rdf:rest,  P)
+  ( rdf_equal(rdf:first, P)
+  ; rdf_equal(rdf:rest,  P)
   ),
-  rdf_global_id(rdf:'List', C).
+  rdf_equal(rdf:'List', C).
 % RDFS axioms: property
 rdfs_domain_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id(rdfs:domain,        P)
-  ; rdf_global_id(rdfs:range,         P)
-  ; rdf_global_id(rdfs:subPropertyOf, P)
+  ( rdf_equal(rdfs:domain,        P)
+  ; rdf_equal(rdfs:range,         P)
+  ; rdf_equal(rdfs:subPropertyOf, P)
   ),
-  rdf_global_id(rdf:'Property', C).
+  rdf_equal(rdf:'Property', C).
 % RDFS axioms: resource
 rdfs_domain_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id(rdfs:comment,     P)
-  ; rdf_global_id(rdfs:isDefinedBy, P)
-  ; rdf_global_id(rdfs:label,       P)
-  ; rdf_global_id(rdfs:member,      P)
-  ; rdf_global_id(rdfs:seeAlso,     P)
-  ; rdf_global_id( rdf:type,        P)
-  ; rdf_global_id(rdfs:value,       P)
+  ( rdf_equal(rdfs:comment,     P)
+  ; rdf_equal(rdfs:isDefinedBy, P)
+  ; rdf_equal(rdfs:label,       P)
+  ; rdf_equal(rdfs:member,      P)
+  ; rdf_equal(rdfs:seeAlso,     P)
+  ; rdf_equal( rdf:type,        P)
+  ; rdf_equal(rdfs:value,       P)
   ),
-  rdf_global_id(rdfs:'Resource', C).
+  rdf_equal(rdfs:'Resource', C).
 % RDFS axioms: statement
 rdfs_domain_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id(rdf:subject,   P)
-  ; rdf_global_id(rdf:object,    P)
-  ; rdf_global_id(rdf:predicate, P)
+  ( rdf_equal(rdf:subject,   P)
+  ; rdf_equal(rdf:object,    P)
+  ; rdf_equal(rdf:predicate, P)
   ),
-  rdf_global_id(rdf:'Statement', C).
+  rdf_equal(rdf:'Statement', C).
 
 rdfs_individual(M, I, C, G):-
   rdf_db_or_axiom(M, I, rdf:type, C, G).
 % RDF 1
 rdfs_individual(M, I, C, G):-
-  rdf_global_id(rdf:'Property', C),
+  rdf_equal(rdf:'Property', C),
   rdf_db_or_axiom(M, _, I, _, G),
   debug(rdfs_read, '[RDF 1] ~w IN ~w', [I,C]).
 % RDF 2
 % @tbd Blank nodes are needed here.
 %rdfs_individual(M, I, C, G):-
 %  rdf_db_or_axiom(M, _, _, I, G),
-%  rdf_global_id(rdf:'XMLLiteral', C),
+%  rdf_equal(rdf:'XMLLiteral', C),
 %  debug(rdfs_read, '[RDF 2] ~w IN ~w', [I,C]).
 % RDFS 1
 % @tbd Blank nodes are needed here.
 %rdfs_individual(M, I, C, G):- M=m(t,_,_),
 %  rdf_db_or_axiom(M, _, _, I, G),
 %  rdf_is_literal(I),
-%  rdf_global_id(rdfs:'Literal', C),
+%  rdf_equal(rdfs:'Literal', C),
 %  debug(rdfs_read, '[RDFS 1] ~w IN ~w', [I,C]).
 % RDFS 2
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
@@ -256,12 +256,12 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
   debug(rdfs_read, '[RDFS 3] ~w IN ~w', [I,C]).
 % RDFS 4a
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_global_id(rdfs:'Resource', C),
+  rdf_equal(rdfs:'Resource', C),
   rdf_db_or_axiom(M, I, _, _, G),
   debug(rdfs_read, '[RDFS 4a] ~w IN ~w', [I,C]).
 % RDFS 4b
 rdfs_individual(M, I, C, G):- M=m(t,_,_),
-  rdf_global_id(rdfs:'Resource', C),
+  rdf_equal(rdfs:'Resource', C),
   rdf_db_or_axiom(M, _, _, I, G),
   % Literals are resources, but this is not deduced by this rule (see RDFS 1).
   \+ rdf_is_literal(I),
@@ -282,17 +282,17 @@ gtrace,
 
 % RDF axioms: list.
 rdfs_individual_axiom(_, I, C):-
-  rdf_global_id(rdf:nil,    I),
-  rdf_global_id(rdf:'List', C).
+  rdf_equal(rdf:nil, I),
+  rdf_equal(rdf:'List', C).
 % RDF axioms: property.
 rdfs_individual_axiom(_, I, C):-
-  ( rdf_global_id(rdf:first,     I)
-  ; rdf_global_id(rdf:object,    I)
-  ; rdf_global_id(rdf:predicate, I)
-  ; rdf_global_id(rdf:rest,      I)
-  ; rdf_global_id(rdf:subject,   I)
-  ; rdf_global_id(rdf:type,      I)
-  ; rdf_global_id(rdf:value,     I)
+  ( rdf_equal(rdf:first,     I)
+  ; rdf_equal(rdf:object,    I)
+  ; rdf_equal(rdf:predicate, I)
+  ; rdf_equal(rdf:rest,      I)
+  ; rdf_equal(rdf:subject,   I)
+  ; rdf_equal(rdf:type,      I)
+  ; rdf_equal(rdf:value,     I)
   ; nonvar(I),
     rdf_container_membership_property(I)
   ;
@@ -303,7 +303,7 @@ rdfs_individual_axiom(_, I, C):-
     format(atom(Name), '_~w', [N]),
     rdf_global_id(rdf:Name, I)
   ),
-  rdf_global_id(rdf:'Property', C).
+  rdf_equal(rdf:'Property', C).
 
 rdfs_property(M, P, G):-
   rdfs_individual(M, P, rdf:'Property', G).
@@ -323,32 +323,32 @@ rdfs_range(M, P, C, G):- M=m(t,t,_),
 
 % RDFS axioms: class
 rdfs_range_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id(rdfs:domain,     P)
-  ; rdf_global_id(rdfs:subClassOf, P)
-  ; rdf_global_id( rdf:type,       P)
-  ; rdf_global_id(rdfs:range,      P)
+  ( rdf_equal(rdfs:domain,     P)
+  ; rdf_equal(rdfs:subClassOf, P)
+  ; rdf_equal( rdf:type,       P)
+  ; rdf_equal(rdfs:range,      P)
   ),
-  rdf_global_id(rdfs:'Class', C).
+  rdf_equal(rdfs:'Class', C).
 % RDFS axioms: list.
 rdfs_range_axiom(m(t,_,_), P, C):-
-  rdf_global_id(rdf:rest, P),
-  rdf_global_id(rdf:'List', C).
+  rdf_equal(rdf:rest, P),
+  rdf_equal(rdf:'List', C).
 % RDFS axioms: literal.
 rdfs_range_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id(rdfs:comment, P)
-  ; rdf_global_id(rdfs:label,   P)
+  ( rdf_equal(rdfs:comment, P)
+  ; rdf_equal(rdfs:label,   P)
   ),
-  rdf_global_id(rdfs:'Literal', C).
+  rdf_equal(rdfs:'Literal', C).
 % RDFS axioms: resource.
 rdfs_range_axiom(m(t,_,_), P, C):-
-  ( rdf_global_id( rdf:first,       P)
-  ; rdf_global_id(rdfs:isDefinedBy, P)
-  ; rdf_global_id(rdfs:member,      P)
-  ; rdf_global_id( rdf:object,      P)
-  ; rdf_global_id( rdf:predicate,   P)
-  ; rdf_global_id(rdfs:seeAlso,     P)
-  ; rdf_global_id( rdf:subject,     P)
-  ; rdf_global_id( rdf:value,       P)
+  ( rdf_equal( rdf:first,       P)
+  ; rdf_equal(rdfs:isDefinedBy, P)
+  ; rdf_equal(rdfs:member,      P)
+  ; rdf_equal( rdf:object,      P)
+  ; rdf_equal( rdf:predicate,   P)
+  ; rdf_equal(rdfs:seeAlso,     P)
+  ; rdf_equal( rdf:subject,     P)
+  ; rdf_equal( rdf:value,       P)
   ; nonvar(P),
     rdf_container_membership_property(P)
   ; var(P),
@@ -358,7 +358,7 @@ rdfs_range_axiom(m(t,_,_), P, C):-
     format(atom(Name), '_~w', [N]),
     rdf_global_id(rdf:Name, P)
   ),
-  rdf_global_id(rdfs:'Resource', C).
+  rdf_equal(rdfs:'Resource', C).
 
 %! rdf_same(
 %!   +Resource1:or([bnode,iri,literal]),
@@ -391,7 +391,7 @@ rdfs_subclass(_R, M, C1, C2, G):-
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,_,_),
   % Resource instantiation comes first, otherwise there may be an
   % RDFS8-RDFS9 loop.
-  rdf_global_id(rdfs:'Resource', C2),
+  rdf_equal(rdfs:'Resource', C2),
   rdfs_class(M, C1, G),
   debug(rdfs_read, '[RDFS 8] ~w SUBCLASS ~w', [C1,C2]).
 % RDFS 10
@@ -416,59 +416,59 @@ rdfs_subclass(r(_RC,RP), M, C1, C2, G):- M=m(t,_,_),
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,_,_),
   % Resource instantiation comes first, otherwise there may be an
   % RDFS13-RDFS9 loop.
-  rdf_global_id(rdfs:'Literal', C2),
+  rdf_equal(rdfs:'Literal', C2),
   rdfs_individual(M, C1, rdfs:'Datatype', G),
   debug(rdfs_read, '[RDFS 13] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 5
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
-  rdf_global_id(rdfs:'Resource', C1),
+  rdf_equal(rdfs:'Resource', C1),
   rdfs_subproperty(M, rdf:type, P, G),
   rdfs_domain(M, P, C2, G),
   debug(rdfs_read, '[EXT 5] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 6
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
-  rdf_global_id(rdfs:'Class', C1),
+  rdf_equal(rdfs:'Class', C1),
   rdfs_subproperty(M, rdfs:subClassOf, P, G),
   rdfs_domain(M, P, C2, G),
   debug(rdfs_read, '[EXT 6] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 7
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
-  rdf_global_id(rdfs:'Property', C1),
+  rdf_equal(rdfs:'Property', C1),
   rdfs_subproperty(M, rdfs:subPropertyOf, P, G),
   rdfs_domain(M, P, C2, G),
   debug(rdfs_read, '[EXT 7] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 8
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
-  rdf_global_id(rdfs:'Class', C1),
+  rdf_equal(rdfs:'Class', C1),
   rdfs_subproperty(M, rdfs:subClassOf, P, G),
   rdfs_range(M, P, C2, G),
   debug(rdfs_read, '[EXT 8] ~w SUBCLASS ~w', [C1,C2]).
 % EXT 9
 rdfs_subclass(_R, M, C1, C2, G):- M=m(t,t,_),
-  rdf_global_id(rdfs:'Property', C1),
+  rdf_equal(rdfs:'Property', C1),
   rdfs_subproperty(M, rdfs:subPropertyOf, P, G),
   rdfs_range(M, P, C2, G),
   debug(rdfs_read, '[EXT 9] ~w SUBCLASS ~w', [C1,C2]).
 
 % RDFS axioms: class
 rdfs_subclass_axiom(m(t,_,_), C1, C2):-
-  rdf_global_id(rdfs:'Datatype', C1),
-  rdf_global_id(rdfs:'Class',    C2).
+  rdf_equal(rdfs:'Datatype', C1),
+  rdf_equal(rdfs:'Class',    C2).
 % RDFS axioms: container
 rdfs_subclass_axiom(m(t,_,_), C1, C2):-
-  ( rdf_global_id(rdf:'Alt', C1)
-  ; rdf_global_id(rdf:'Bag', C1)
-  ; rdf_global_id(rdf:'Seq', C1)
+  ( rdf_equal(rdf:'Alt', C1)
+  ; rdf_equal(rdf:'Bag', C1)
+  ; rdf_equal(rdf:'Seq', C1)
   ),
-  rdf_global_id(rdfs:'Container', C2).
+  rdf_equal(rdfs:'Container', C2).
 % RDFS axioms: literal
 rdfs_subclass_axiom(m(t,_,_), C1, C2):-
-  rdf_global_id( rdf:'XMLLiteral', C1),
-  rdf_global_id(rdfs:'Literal',    C2).
+  rdf_equal( rdf:'XMLLiteral', C1),
+  rdf_equal(rdfs:'Literal',    C2).
 % RDFS axioms: property
 rdfs_subclass_axiom(m(t,_,_), C1, C2):-
-  rdf_global_id(rdfs:'ContainerMembershipProperty', C1),
-  rdf_global_id( rdf:'Property', C2).
+  rdf_equal(rdfs:'ContainerMembershipProperty', C1),
+  rdf_equal( rdf:'Property', C2).
 
 rdfs_subproperty(M, P1, P2, G):-
   rdfs_subproperty(r(t,t), M, P1, P2, G).
@@ -487,12 +487,12 @@ rdfs_subproperty(r(_RC,t), M, P, P, G):- M=m(t,_,_),
   debug(rdfs_read, '[RDFS 6] ~w SUBPROP ~w', [P,P]).
 % RDFS 12
 rdfs_subproperty(_R, M, P1, P2, G):- M=m(t,_,_),
-  rdf_global_id(rdfs:member, P2),
+  rdf_equal(rdfs:member, P2),
   rdfs_individual(M, P1, rdfs:'ContainerMembershipProperty', G),
   debug(rdfs_read, '[RDFS 12] ~w SUBPROP ~w', [P1,P2]).
 
 % RDFS axioms: see also
 rdfs_subproperty_axiom(m(t,_,_), P1, P2):-
-  rdf_global_id(rdfs:isDefinedBy, P1),
-  rdf_global_id(rdfs:seeAlso,     P2).
+  rdf_equal(rdfs:isDefinedBy, P1),
+  rdf_equal(rdfs:seeAlso,     P2).
 

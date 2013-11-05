@@ -40,7 +40,7 @@ Support for printing (aspects of) a TMS.
 %! ) is det.
 
 tms_print_justification(O1, TMS, J):-
-  tms_justification(TMS, As, R, C, J),
+  once(tms_justification(TMS, As, R, C, J)),
   default_option(O1, indent, 0, I, O2),
   indent(I),
   write('['), write(R), write(']'),
@@ -48,7 +48,7 @@ tms_print_justification(O1, TMS, J):-
   tms_print_node(O2, C),
   nl,
   update_option(O2, indent, succ, _I, O3),
-  maplist(tms_print_justification(O3, TMS), As).
+  maplist(tms_print_node(O3), As).
 
 %! tms_print_node(+Options:list(nvpair), +Node:iri) is det.
 

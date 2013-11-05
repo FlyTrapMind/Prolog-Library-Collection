@@ -15,7 +15,7 @@
 % DEBUG
     dcg_debug/2, % +Topic:atom
                  % :DCG_Rule
-    gtrace//0,
+    dcg_trace//0,
 
 % LIST
     dcg_separated_list//2, % :Separator:dcg
@@ -247,7 +247,7 @@ dcg_debug_topic(Topic) -->
   atom(Topic),
   "]".
 
-gtrace -->
+dcg_trace -->
   {gtrace}.
 
 

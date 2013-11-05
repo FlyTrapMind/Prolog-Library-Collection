@@ -120,6 +120,9 @@ materialize(G, Regimes):-
 %        the entailment regimes that are used for materialization.
 % @param TMS The atomic name of a Truth Maintenance System.
 
+materialize(G, Regime, TMS):-
+  \+ is_list(Regime), !,
+  materialize(G, [Regime], TMS).
 materialize(G, Regimes, TMS):-
   % A deduction of depth one.
   rule(RuleRegime, Rule, Prems, S, P, O, G),
