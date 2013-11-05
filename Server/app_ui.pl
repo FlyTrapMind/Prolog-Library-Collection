@@ -26,11 +26,8 @@ The home page for the SWAPP Website.
 :- db_add_novel(http:location(css, root(css), [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
-:- html_resource('http://yui.yahooapis.com/pure/0.3.0/base-min.css', []).
 :- html_resource('http://yui.yahooapis.com/pure/0.3.0/pure-min.css', []).
-:- html_resource('http://yui.yahooapis.com/pure/0.3.0/grids-min.css', []).
-:- html_resource('http://purecss.io/combo/1.6.5?/css/layouts/blog.css', []).
-%:- html_resource('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css', []).
+:- html_resource('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css', []).
 
 % /img
 :- db_add_novel(http:location(img, root(img), [])).
@@ -47,19 +44,21 @@ user:body(app_style, Content) -->
   html(
     body(
       div([class='pure-g-r',id=layout],[
-        \sidebar,
-        \content(Content)
+        \menu,
+        \main(Content)
       ])
     )
   ).
 
 content(Content) -->
-  html(div([class='pure-u-1',id=main], [div(class=content, Content),\footer])).
+  % Centering content:
+  % `style='margin-left:auto;margin-right:auto;width:50em;`
+  html(div(class=content, Content)).
 
 footer -->
   html(
     footer(class=footer,
-      div(class='pure-menu pure-menu-horizontal pure-menu-open',
+      div(class=['pure-menu','pure-menu-horizontal','pure-menu-open'],
         ul(
           li('Developed between 2012/05 and 2013/11 by Wouter Beek.')
         )
@@ -70,12 +69,8 @@ footer -->
 user:head(app_style, Head) -->
   html(
     head([
-      \html_requires('http://yui.yahooapis.com/pure/0.3.0/base-min.css'),
       \html_requires('http://yui.yahooapis.com/pure/0.3.0/pure-min.css'),
-      \html_requires('http://yui.yahooapis.com/pure/0.3.0/grids-min.css'),
-%      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css'),
-      \html_requires('http://purecss.io/combo/1.6.5?/css/layouts/blog.css'),
-      \html_requires('http://yui.yahooapis.com/3.13.0/build/yui/yui-min.js')
+      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css')
     |
       Head
     ])
@@ -95,22 +90,15 @@ login -->
     )
   ).
 
-nav -->
-  html(
-    nav(class=nav,
-      \html_module_list([class='nav-list',ordered(false)], [class='nav-item'])
-    )
-  ).
+main(Content) -->
+  html(div([class='pure-u-1',id=main], \content(Content))).
 
-sidebar -->
+menu -->
   html(
-    div(class='sidebar pure-u',
-      header(class=header, [
-        hgroup([
-          h1(class='brand-title', 'PraSem'),
-          h2(class='brand-tagline', 'Pragmatic Semanitcs for the Web of Data')
-        ]),
-        \nav
+    div([class='pure-u',id=menu],
+      div(class=['pure-menu','pure-menu-horizontal','pure-menu-open'], [
+        a([class='pure-menu-heading',href='/'], 'PraSem'),
+        \html_module_list([ordered(false)], [])
       ])
     )
   ).

@@ -117,10 +117,10 @@ console_input -->
     setting(history_length, HistoryLength),
     first(Commands, HistoryLength, History_),
     atomic_list_concat(History_, '\n', History),
-    http_absolute_location(root(web_console), URL, [])
+    http_absolute_location(root(console), URL, [])
   },
   html([
-    div(id(console_input), [
+    div(id=console_input, [
       form([
         action=URL,
         enctype='application/x-www-form-urlencoded',
@@ -137,7 +137,7 @@ console_input -->
 
 console_output -->
   html([
-    div(id(console_output), []),
+    div(id=console_output, []),
     \html_requires(css('console_output.css')),
     \html_requires(js('console_output.js'))
   ]).
@@ -156,7 +156,7 @@ user:head(dev_style, _Head) -->
 history(History, HistoryLength) -->
   html(
     textarea(
-      [cols=80,name=history,onclick='clickme(\'aap\')',rows=HistoryLength],
+      [cols=60,name=history,onclick='clickme(\'aap\')',rows=HistoryLength],
       History
     )
   ).
@@ -177,7 +177,7 @@ input_ui([
       [name=submit, type=submit, value='Submit'],
       ['Submit'])])]
 ):-
-  http_absolute_location(root(web_console), URI, []).
+  http_absolute_location(root(console), URI, []).
 
 markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
 markup_mold(StyleName/DOM, html, StyleName, DOM):- !.
@@ -265,7 +265,7 @@ status_pane -->
   html([
     \html_requires(css('status_pane.css')),
     \html_requires(js('status_pane.js')),
-    div(id(status_pane), [])
+    div(id=status_pane, [])
   ]).
 
 submit_button -->

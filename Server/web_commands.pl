@@ -27,6 +27,8 @@ that can be issued via the Web interface.
 :- use_module(library(pairs)).
 :- use_module(server(web_modules)).
 
+:- web_module_add('Web commands', web_commands, command).
+
 
 
 %! clear_web(-Markup:list) is det.
@@ -46,9 +48,9 @@ help_web([element(ul,[],ModuleItems)]):-
   setoff(
     element(li,[],[
       element(p,[],
-        [element(b,[],[ExternalName]), ':', element(ol,[],PredicateItems)])]),
+        [element(b,[],[ExternalName]),':'|T])]),
     (
-      web_module(InternalName, ExternalName, _PathName),
+      web_module(ExternalName, InternalName, _PathName),
       module_property(InternalName, exports(WebPredicates)),
       setoff(
         element(li,[],[Label]),
@@ -59,6 +61,13 @@ help_web([element(ul,[],ModuleItems)]):-
           format(atom(Label), '~w/~w', [Predicate,DisplayArity])
         ),
         PredicateItems
+      ),
+      (
+        PredicateItems == []
+      ->
+        T = []
+      ;
+        T = [element(ol,[],PredicateItems)]
       )
     ),
     ModuleItems
@@ -102,8 +111,8 @@ web_modules_web([
     [element(caption,[],['The currently registered modules.'])|Rows]
   )
 ]):-
-  web_modules(Pairs),
-  pairs_values(Pairs, Modules),
+  web_modules(Tuples),
+  nth0(0, Tuples, Modules),
   findall(
     element(tr,[],[element(td, [], [Module])]),
     member(Module, Modules),

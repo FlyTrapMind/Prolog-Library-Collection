@@ -254,23 +254,63 @@ rdf_web -->
       OItems
     )
   },
+  rdf_web_form1(SItems, PItems, OItems).
+
+rdf_web_form1(SItems, PItems, OItems) -->
   html(
-    form(id=explain_rdf_triple,[
-      fieldset(id=rdf_triple_input, [
+    form([class='pure-form',id=explain_rdf_triple],[
+      fieldset(class='pure-group', [
+        input([
+          class='pure-input-1-2',
+          id=rdf_subject_input,
+          list=rdf_subjects,
+          placeholder='Subject term',
+          type=text
+        ]),
+        datalist(id=rdf_subjects, SItems),
+        input([
+          class='pure-input-1-2',
+          id=rdf_predicate_input,
+          list=rdf_predicates,
+          placeholder='Predicate term',
+          type=text
+        ]),
+        datalist(id=rdf_predicates, PItems),
+        input([
+          class='pure-input-1-2',
+          id=rdf_object_input,
+          list=rdf_objects,
+          placeholder='Object term',
+          type=text
+        ]),
+        datalist(id=rdf_objects, OItems),
+        button(
+          [
+            class=['pure-button','pure-input-1-2','pure-button-primary'],
+            type=submit
+          ],
+          'Sign in'
+        )
+      ])
+    ])
+  ).
+
+rdf_web_form2(SItems, PItems, OItems) -->
+  html(
+    form([class=['pure-form','pure-form-aligned'],id=explain_rdf_triple],[
+      fieldset([
         legend([], 'Enter an RDF Triple'),
-        fieldset(id=rdf_subject, [
+        div(class='pure-control-group', [
           label([id=rdf_subject_label,for=rdf_subject], 'Subject:'),
           input([id=rdf_subject_input,list=rdf_subjects]),
           datalist(id=rdf_subjects, SItems)
         ]),
-        fieldset(id=rdf_predicate, [
-          label([id=rdf_predicate_label,for=rdf_predicate_input],
-            'Predicate:'
-          ),
+        div(class='pure-control-group', [
+          label([id=rdf_predicate_label,for=rdf_predicate_input], 'Predicate:'),
           input([id=rdf_predicate_input,list=rdf_predicates]),
           datalist(id=rdf_predicates, PItems)
         ]),
-        fieldset(id=rdf_object, [
+        div(class='pure-control-group', [
           label([id=rdf_object_label,for=rdf_object_input], 'Object:'),
           input([id=rdf_object_input,list=rdf_objects]),
           datalist(id=rdf_objects, OItems)

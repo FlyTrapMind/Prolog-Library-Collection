@@ -43,11 +43,6 @@
   font-family: monospace;
 }
 
-dl:hover {
-  background-color: black;
-  color: white;
-}
-
 h1 {
   display: block;
   font-size: 175%;
@@ -55,38 +50,9 @@ h1 {
   text-align: center;
 }
 
-h1:hover {
-  background-color: black;
-  color: white;
-}
-
-h2:hover {
-  background-color: black;
-  color: white;
-}
-
-li:hover {
-  background-color: black;
-  color: white;
-}
-
 p {
   display: block;
   font-family: serif;
-}
-
-p:hover {
-  background-color: black;
-  color: white;
-}
-
-
-
-/* Preformatted */
-
-pre:hover {
-  background-color: black;
-  color: white;
 }
 
 

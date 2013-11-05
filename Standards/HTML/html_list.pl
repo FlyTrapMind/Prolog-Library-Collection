@@ -118,12 +118,12 @@ html_list(L_O1, ListItems) -->
 
 html_module_list(L_O1, LI_O1) -->
   {
-    web_modules(Pairs),
+    web_modules(Tuples),
     findall(
-      li(LI_O1,a([class='pure-button',href=Link],ExternalName)),
+      li(LI_O1,a(href=Link,ExternalName)),
       (
-        member(ExternalName-InternalName, Pairs),
-        http_absolute_location(root(InternalName), Link, [])
+        member([ExternalName,_InternalName,PathName], Tuples),
+        http_absolute_location(root(PathName), Link, [])
       ),
       ListItems
     ),
@@ -131,6 +131,6 @@ html_module_list(L_O1, LI_O1) -->
   },
   html_list(
     L_O1,
-    [li(LI_O1,a([class='pure-button',href=HomeLink],'Home'))|ListItems]
+    [li(LI_O1,a(href=HomeLink,'Home'))|ListItems]
   ).
 

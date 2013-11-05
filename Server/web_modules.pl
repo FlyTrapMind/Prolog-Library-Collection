@@ -8,7 +8,7 @@
                       % +InternalName:atom
                       % +PathName:atom
     web_module_delete/1, % +InternalName:atom
-    web_modules/1 % -Pairs:list(pair(atom,atom))
+    web_modules/1 % -Turples:ordset(list(atom))
   ]
 ).
 
@@ -21,7 +21,9 @@ Registration infrastructure for Web modules.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(library(error)).
+:- use_module(library(lists)).
 :- use_module(library(persistency)). % Persistency declaration.
 
 :- db_add_novel(user:prolog_file_type(db, database)).
@@ -65,11 +67,17 @@ Registration infrastructure for Web modules.
 % @param PathName The atomic name of the URL subpath that
 %        generates a Web page for this Web module.
 
+% Semidet case.
 web_module(ExternalName, InternalName, PathName):-
+  maplist(nonvar, [ExternalName,InternalName,PathName]), !,
   with_mutex(
     web_modules,
     web_module_db(ExternalName, InternalName, PathName)
   ).
+% Nondet case.
+web_module(ExternalName, InternalName, PathName):-
+  web_modules(Tuples),
+  member([ExternalName,InternalName,PathName], Tuples).
 
 %! web_module_add(
 %!   +ExternalName:atom,
@@ -122,21 +130,20 @@ web_module_delete(InternalName):-
 web_module_delete(InternalName):-
   existence_error(web_module, InternalName).
 
-%! web_modules(-Pairs:list(pair(atom,atom))) is det.
+%! web_modules(-Turples:ordset(list(atom))) is det.
 % Returns all modules that are currently registered with the web console.
 %
 % @param Pairs A list of pairs of atomic modules name.
 %	 The first is the internal name, the second is the external
 %	 name.
 
-web_modules(Pairs2):-
+web_modules(Tuples):-
   with_mutex(
     web_modules,
-    findall(
-      ExternalName-PathName,
-      web_module_db(ExternalName, _InternalName, PathName),
-      Pairs1
+    setoff(
+      [ExternalName,InternalName,PathName],
+      web_module_db(ExternalName, InternalName, PathName),
+      Tuples
     )
-  ),
-  keysort(Pairs1, Pairs2).
+  ).
 
