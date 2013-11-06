@@ -19,8 +19,8 @@ The home page for the SWAPP Website.
 :- use_module(library(http/http_server_files)).
 :- use_module(server(app_server)).
 
-:- http_handler(root(.), http_redirect(see_other, root(menu_close)), []).
-:- http_handler(root(home), http_redirect(see_other, root(menu_close)), []).
+:- http_handler(root(.), http_redirect(see_other, root(bk)), []).
+:- http_handler(root(home), http_redirect(see_other, root(bk)), []).
 :- http_handler(root(menu_close), menu_close, []).
 :- http_handler(root(menu_open), menu_open, []).
 
