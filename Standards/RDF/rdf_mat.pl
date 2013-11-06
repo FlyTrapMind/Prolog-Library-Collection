@@ -18,6 +18,7 @@ Takes axioms, rules, and the RDF index and performs materializations.
 @version 2013/09-2013/10
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(apply)).

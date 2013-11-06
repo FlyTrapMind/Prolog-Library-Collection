@@ -114,7 +114,7 @@ latex_clean(File):-
 
 latex_clean_directory(Directory):-
   exists_directory(Directory), !,
-  safe_delete_directory_contents(Directory, latex_out).
+  safe_delete_directory_contents([file_types([latex_out])], Directory).
 
 %! latex_code_convert(+File:atom) is det.
 % @see Wrapper for latex_code_convert/2
@@ -268,7 +268,11 @@ latex_convert_file(FromFile, ToDir):-
 
 latex_convert_directory(From):-
   access_file(From, read),
-  directory_files(From, latex_in, Entries),
+  directory_files(
+    [file_types([latex_in]),include_directories(false),recursive(true)],
+    From,
+    Entries
+  ),
   maplist(latex_convert_file, Entries).
 
 print_error([]):- !.

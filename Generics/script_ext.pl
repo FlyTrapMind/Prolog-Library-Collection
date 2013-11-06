@@ -87,7 +87,7 @@ find_stage_directories([], _Stage):- !.
 
 script_clean:-
   find_stage_directories(StageDirs),
-  maplist(safe_delete_directory_contents, StageDirs).
+  maplist(safe_delete_directory_contents([]), StageDirs).
 
 
 

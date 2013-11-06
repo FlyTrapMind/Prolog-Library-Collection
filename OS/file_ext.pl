@@ -1,6 +1,10 @@
 :- module(
   file_ext,
   [
+    absolute_file_name_number/4, % +Spec
+                                 % +Options:list(nvpair)
+                                 % +Number:integer
+                                 % -Absolute:atom
     base_or_file_to_file/3, % +BaseOrFile:atom
                             % ?FileType:atom
                             % -File:atom
@@ -22,9 +26,6 @@
                  % +Ext:atom
     file_name_type/3, % ?Base:atom
                       % ?Type:atom
-                      % +Name:atom
-    file_name_type/3, % +Base:atom
-                      % +Type:atom
                       % ?Name:atom
     file_type_alternative/2, % +FromFile:atom
                              % ?ToFile:atom
@@ -76,7 +77,7 @@ We use the following abbreviations in this module:
     RegularExpression
 
 @author Wouter Beek
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2013/10
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2013/11
 */
 
 :- use_module(generics(atom_ext)).
@@ -84,6 +85,7 @@ We use the following abbreviations in this module:
 :- use_module(generics(script_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
+:- use_module(library(lists)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).
@@ -91,6 +93,22 @@ We use the following abbreviations in this module:
 :- debug(file_ext).
 
 
+
+%! absolute_file_name_number(
+%!   +Spec,
+%!   +Options:list(nvpair),
+%!   +Number:integer,
+%!   -Absolute:atom
+%! ) is det.
+% This comes in handy for numbered files, e.g. '/home/some_user/test_7.txt'.
+%
+% The order of the arguments differs from absolute_file_name/3
+% to be compliant with =library(apply)=.
+
+absolute_file_name_number(Spec, Options, Number, Absolute):-
+  atom_number(Atomic, Number),
+  spec_atomic_concat(Spec, Atomic, NumberSpec),
+  absolute_file_name(NumberSpec, Absolute, Options).
 
 %! base_or_file_to_file(
 %!   +BaseOrFile:atom,
@@ -170,17 +188,11 @@ file_extension_alternative(FromFile, ToExtension, ToFile):-
   file_name_extension(Base, ToExtension, ToFile).
 
 %! file_name(
-%!   +Path:atom,
+%!   ?Path:atom,
 %!   ?Directory:atom,
 %!   ?Base:atom,
 %!   ?Extension:atom
 %! ) is semidet.
-%! file_name(
-%!   -Path:atom,
-%!   +Directory:atom,
-%!   +Base:atom,
-%!   +Extension:atom
-%! ) is det.
 % The splitting of a file into its directory, local name and type parts.
 
 file_name(Path, Directory, Base, Extension):-
@@ -192,8 +204,7 @@ file_name(Path, Directory, Base, Extension):-
   directory_file_path(Directory, File, Path),
   file_name_extension(Base, Extension, File).
 
-%! file_name_type(?Name:atom, ?Type:atom, +Path:atom) is semidet.
-%! file_name_type(+Name:atom, +Type:atom, ?Path:atom) is semidet.
+%! file_name_type(?Name:atom, ?Type:atom, ?Path:atom) is semidet.
 % Decomposes a file name into its base name and its file type.
 %
 % @param Name The atomic name of a file, without a directory and without
@@ -256,7 +267,11 @@ is_absolute_file_name2(F):-
 % How arbitrary this restriction is!
 
 merge_into_one_file(FromDir, ToFile):-
-  directory_files(FromDir, text, FromFiles),
+  directory_files(
+    [file_types([text]),include_directories(false),recursive(true)],
+    FromDir,
+    FromFiles
+  ),
   length(FromFiles, Length),
   script_ext:script(
     [potential(Length),to_file(ToFile)],
@@ -265,7 +280,11 @@ merge_into_one_file(FromDir, ToFile):-
   ).
 
 merge_into_one_file(PS, FromDir, ToFile):-
-  directory_files(FromDir, text, FromFiles),
+  directory_files(
+    [file_types([text]),include_directories(false),recursive(true)],
+    FromDir,
+    FromFiles
+  ),
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
     maplist(merge_into_one_file0(PS, Out), FromFiles),

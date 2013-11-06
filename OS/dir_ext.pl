@@ -11,11 +11,9 @@
     create_nested_directory/1, % +NestedDirectories:compound
     create_nested_directory/2, % +NestedDirectories:compound
                                % -Absolute:atom
-    directory_files2/2, % +Directory:atom
-                        % -Absolutes:list(atom)
-    directory_files/3, % +Directory:atom
-                       % +FileType:atom
-                       % -Entries:list(atom)
+    directory_files/3, % +Options:list(nvpair)
+                       % +Directory:atom
+                       % -Absolutes:list(atom)
     directory_to_subdirectories/2, % +Directory:atom
                                    % -Subdirectories:list(atom)
     experiment_directory/1, % -Directory:atom
@@ -24,9 +22,8 @@
     safe_copy_experiment_data/2, % +FromDirectory:atom
                                  % -ToDirectory:atom
     safe_delete_directory/1, % +Directory:atom
-    safe_delete_directory_contents/1, % +Directory:atom
-    safe_delete_directory_contents/2, % +Directory:atom
-                                      % +FileTypes:or([atom,list(atom)])
+    safe_delete_directory_contents/2, % +Options:list(nvpair)
+                                      % +Directory:atom
     subdirectories_to_directory/2, % +Subdirectories:list(atom)
                                    % -Directory:atom
     trashcan/1 % -Directory:atom
@@ -49,7 +46,6 @@ Extensions for handling directories.
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(os(file_ext)).
-:- use_module(os(filepath_ext)).
 
 :- debug(dir_ext).
 
@@ -183,39 +179,74 @@ create_project_subdirectory(Nested, Abs):-
   create_nested_directory(project(Nested), Abs).
 
 %! directory_files(
+%!   +Options:list(nvpair),
 %!   +Directory:atom,
-%!   +FileType:atom,
-%!   -Entries:list(atom)
+%!   -AbsoluteFiles:list(atom)
 %! ) is det.
+% Variant of directory_files/2 that returns absolute file names
+% instead of relative ones and excludes non-file entries.
+%
+% The following options are supported:
+%   * =|file_types(+FileTypes:list(atom))|=
+%     A list of atomic file types that are used as a filter.
+%     Default: no file type filter.
+%   * =|include_directories(+Include:boolean)|=
+%     Whether (sub)directories are included or not.
+%     Default `false`.
+%   * =|recursive(+Recursive:boolean)|=
+%     Whether subdirectories are searched recursively.
+%     Default `true`.
+%
+% @param Options A list of name-value pairs.
+% @param Directory The atomic name of a directory.
+% @param AbsoluteFiles a list of atomic names of absolute file names.
+%
+% @see directory_files/2
 
-directory_files(Directory, FileType, Absolutes2):-
-  directory_files2(Directory, Absolutes1),
-  setoff(
-    Absolute,
-    (
-      member(Absolute, Absolutes1),
-      member(FileType0, [FileType, directory]),
-      file_name_type(_Base, FileType0, Absolute)
-    ),
-    Absolutes2
+% Done!
+directory_files(_O1, [], []):- !.
+% Non-file entry.
+directory_files(O1, ['.'|T], Sol):- !,
+  directory_files(O1, T, Sol).
+% Non-file entry.
+directory_files(O1, ['..'|T], Sol):- !,
+  directory_files(O1, T, Sol).
+% Directories.
+directory_files(O1, [Dir|T1], Sol2):-
+  file_name_type(_Base1, directory, Dir), !,
+  
+  % From directory to files.
+  directory_files(Dir, NewFs1),
+  
+  % Make the file names absolute.
+  maplist(directory_file_path(Dir), NewFs1, NewFs2),
+  
+  % Add to stack.
+  append(T1, NewFs2, T2),
+  
+  % Recurse.
+  directory_files(O1, T2, Sol1),
+  
+  % Whether directories are included or not.
+  (
+    option(include_directories(false), O1, false)
+  ->
+    Sol2 = Sol1
+  ;
+    Sol2 = [Dir|Sol1]
   ).
-
-%! directory_files2(+Directory:atom, -Absolutes:list(atom)) is det.
-% @see Variant of directory_files/2 that returns absolute file names
-%      instead of relative ones.
-
-directory_files2(Directory, Absolutes):-
-  directory_files(Directory, Files1),
-  selectchk('.', Files1, Files2),
-  selectchk('..', Files2, Files3),
-  findall(
-    Absolute,
-    (
-      member(File, Files3),
-      directory_file_path(Directory, File, Absolute)
-    ),
-    Absolutes
-  ).
+% Files with matching file type.
+directory_files(O1, [F|T1], [F|Sol]):-
+  file_name_type(_Base, FT, F),
+  
+  % File type filter.
+  option(file_types(FTs), O1, [_]),
+  memberchk(FT, FTs), !,
+  
+  directory_files(O1, T1, Sol).
+% Files with non-matching file type.
+directory_files(O1, [_|T], Sol):-
+  directory_files(O1, T, Sol).
 
 experiment_directory(Dir):-
   experiment_directory_init,
@@ -269,69 +300,36 @@ safe_delete_directory(FromDir):-
   delete_directory_and_contents(FromDir),
   debug(dir_ext, 'Directory ~w was safe-deleted.', [FromDir]).
 
-%! safe_delete_directory_contents(+Directory:atom) is det.
-% @see Wrapper around safe_delete_directory_contents/2.
-
-safe_delete_directory_contents(Dir):-
-  safe_delete_directory_contents(Dir, _NoFileType),
-  debug(dir_ext, 'The contents of directory ~w were safe-deleted.', [Dir]).
-
 %! safe_delete_directory_contents(
+%!   +Options:list(nvpair),
 %!   +Directory:atom,
-%!   +FileType:or([atom,list(atom)])
 %! ) is det.
 % Deletes all file in the given directory that are of the given file type.
 %
-% @param Dir The atomic absolute name of a directory.
-% @param FileType The atomic name of a file type registered via
-%        prolog_file_type/2, or a list of such file types.
+% The following options are supported:
+%   * =|file_types(+FileTypes:list(atom))|=
+%     A list of atomic file types that are used as a filter.
+%     Default: no file type filter.
+%   * =|include_directories(+Include:boolean)|=
+%     Whether (sub)directories are included or not.
+%     Default `false`.
+%   * =|recursive(+Recursive:boolean)|=
+%     Whether subdirectories are searched recursively.
+%     Default `true`.
+%
+% @param Options A list of name-value pairs.
+% @param Directory The atomic name of a directory.
 %
 % @throws existence_error In case a file type is not registered.
 
-% Remove all files that are of the given file type from the given directory.
-% Allow multiple file types to be given.
-safe_delete_directory_contents(Dir, FileTypes):-
-  is_list(FileTypes), !,
-  maplist(safe_delete_directory_contents(Dir), FileTypes).
-safe_delete_directory_contents(Dir, FileType):-
-  % Allow the file type to be either set or not (i.e., delete all files).
-  (
-    var(FileType)
-  ->
-    RE_Format = '.*\\*'
-  ;
-    % Make sure that the given file type is registered.
-    once(prolog_file_type(_Ext, FileType)),
-    RE_Format = '.*\\.~w'
-  ),
-
+safe_delete_directory_contents(O1, Dir):-
   % Recurse over the given file type, since it may be associated with
   % multiple extensions.
-  findall(
-    File,
-    (
-      prolog_file_type(Ext, FileType),
-      format(atom(RE), RE_Format, [Ext]),
-      path_walk_tree(Dir, RE, Files0),
-      member(File, Files0)
-    ),
-    Files
-  ),
-
+  directory_files(O1, Dir, Fs),
+  
   % Delete all files.
   % This may throw permission exceptions.
-  maplist(safe_delete_file, Files).
-% Throw an exception if the given file type is nonvar and unregistered.
-safe_delete_directory_contents(_Dir, FileType):-
-  throw(
-    error(
-      existence_error(unknown_file_type, FileType),
-      context(
-        'safe_delete_directory_contents/2',
-        'The given file type is not registered.'
-      )
-    )
-  ).
+  maplist(safe_delete_file, Fs).
 
 subdirectories_to_directory(Subdirs, Dir2):-
   atomic_list_concat(Subdirs, '/', Dir1),

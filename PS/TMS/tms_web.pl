@@ -12,7 +12,7 @@
 /** <module> TMS web
 
 @author Wouter Beek
-@version 2013/10
+@version 2013/10-2013/11
 */
 
 :- use_module(generics(meta_ext)).
@@ -21,6 +21,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(server(web_console)).
 :- use_module(server(web_modules)).
 :- use_module(tms(tms)).
 :- use_module(tms(tms_export)).

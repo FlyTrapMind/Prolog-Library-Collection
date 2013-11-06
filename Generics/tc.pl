@@ -1,8 +1,4 @@
-:- module(
-  tc,
-  [
-  ]
-).
+:- module(tc, []).
 
 /** <module> Text Categorization
 
@@ -13,7 +9,9 @@
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(os(filepath_ext)).
+:- use_module(library(debug)).
+:- use_module(library(lists)).
+:- use_module(os(file_ext)).
 
 :- dynamic(doc/1).
 :- dynamic(word0/3).
@@ -47,8 +45,7 @@ gtrace, %TODO
   Weight is Temp0 / sqrt(Temp1^2).
 
 doc_to_vec(Doc, Vec):-
-  doc(Doc),
-  !,
+  doc(Doc), !,
   setoff(
     Word-Occur,
     (
@@ -65,13 +62,12 @@ doc_to_vec(Doc, Vec):-
   ).
 
 document_frequency(Term, DF):-
-  word0(Term, _Sum, Docs),
-  !,
+  word0(Term, _Sum, Docs), !,
   length(Docs, DF).
 
 load_examples:-
   absolute_file_name(data('Newsgroups'), Dir),
-  path_walk_tree(Dir, '.+', Files),
+  directory_files([include_directories(false),recursive(true)], Dir, Files),
   debug(tc, 'About to load ~w files.', [Files]),
   forall(
     member(File, Files),
@@ -83,8 +79,7 @@ load_examples:-
   ).
 
 load_examples(Stream):-
-  at_end_of_stream(Stream),
-  !.
+  at_end_of_stream(Stream), !.
 load_examples(Stream):-
   read_line_to_codes(Stream, Line),
   split_codes(Line, [" "], ListOfCodes),
@@ -110,11 +105,10 @@ print_vec(Stream, Vec):-
   maplist(print_vec0(Stream), Vec).
 
 print_vec0(Stream, Word-Occur):-
-  format(Stream, '\t~w\t~w\n', [Word, Occur]).
+  format(Stream, '\t~w\t~w\n', [Word,Occur]).
 
 store_word(Doc, Word):-
-  retract(word0(Word, Sum, Docs)),
-  !,
+  retract(word0(Word, Sum, Docs)), !,
   succ(Sum, NewSum),
   (
     selectchk(Doc-Occur, Docs, Docs0)
@@ -130,8 +124,7 @@ store_word(Doc, Word):-
 
 term_in_doc(Term, Doc, Occur):-
   word0(Term, _Sum, Docs),
-  memberchk(Doc-Occur, Docs),
-  !.
+  memberchk(Doc-Occur, Docs), !.
 term_in_doc(_Term, _Doc, 0).
 
 test:-
@@ -153,7 +146,6 @@ tfidf(Term, Doc, TFIDF):-
   document_frequency(Term, DF),
   count(doc(_), Docs),
   Temp is Docs / DF,
-  
   term_in_doc(Term, Doc, Occur),
   TFIDF is Occur * log10(Temp).
 

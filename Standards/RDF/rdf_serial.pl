@@ -172,7 +172,11 @@ rdf_load2(Files, O1):-
 % Load all files from a given directory.
 rdf_load2(Dir, O1):-
   exists_directory(Dir), !,
-  directory_files(Dir, rdf, Files),
+  directory_files(
+    [file_types([rdf]),include_directories(false),recursive(true)],
+    Dir,
+    Files
+  ),
   rdf_load2(Files, O1).
 % The format and graph are set.
 rdf_load2(File, O1):-
