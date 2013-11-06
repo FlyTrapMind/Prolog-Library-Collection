@@ -46,7 +46,12 @@ Also includes a status bar with updates/messages.
 
 % Start the application server using the default port (in settings).
 start_app_server:-
-  setting(default_app_server_port, Port),
+  (
+    getenv('PORT_WWW', PortAtom),
+    atom_number(PortAtom, Port), !
+  ;
+    setting(default_app_server_port, Port)
+  ),
   start_app_server(Port).
 
 %! start_app_server(?Port) is det.
