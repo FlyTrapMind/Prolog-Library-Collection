@@ -22,9 +22,7 @@ Also includes a status bar with updates/messages.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(settings)).
 :- use_module(library(thread_pool)).
-:- use_module(server(login_api)).
 :- use_module(server(server_ext)).
-:- use_module(server(statistics_api)).
 
 %! app_server_port(?Port:positive_integer) is semidet.
 
