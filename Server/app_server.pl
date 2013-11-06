@@ -24,10 +24,6 @@ Also includes a status bar with updates/messages.
 :- use_module(library(thread_pool)).
 :- use_module(server(server_ext)).
 
-%! app_server_port(?Port:positive_integer) is semidet.
-
-:- dynamic(app_server_port/1).
-
 :- db_add_novel(user:prolog_file_type(db, database)).
 
 % Define the default application server port.
@@ -41,15 +37,14 @@ Also includes a status bar with updates/messages.
 :- initialization(start_app_server).
 
 
-
+% Start the application server when running on dotcloud.
+start_app_server:-
+  getenv('PORT_WWW', PortAtom), !,
+  atom_number(PortAtom, Port),
+  start_server(Port, http_dispatch).
 % Start the application server using the default port (in settings).
 start_app_server:-
-  (
-    getenv('PORT_WWW', PortAtom),
-    atom_number(PortAtom, Port), !
-  ;
-    setting(default_app_server_port, Port)
-  ),
+  setting(default_app_server_port, Port),
   start_app_server(Port).
 
 %! start_app_server(?Port) is det.
@@ -68,8 +63,7 @@ start_app_server(Port):-
     true
   ),
   thread_pool_create(cheapthreads, 90, []),
-  start_server(Port, app_server_dispatch),
-  db_replace_novel(app_server_port(Port), [e]).
+  start_server(Port, app_server_dispatch).
 
 app_server_dispatch(Request):-
   http_dispatch(Request).

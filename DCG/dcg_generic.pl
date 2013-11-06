@@ -15,7 +15,6 @@
 % DEBUG
     dcg_debug/2, % +Topic:atom
                  % :DCG_Rule
-    dcg_trace//0,
 
 % LIST
     dcg_separated_list//2, % :Separator:dcg
@@ -90,7 +89,7 @@ a modular way.
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
-@version 2013/05-2013/09
+@version 2013/05-2013/09, 2013/11
 */
 
 :- use_module(dcg(dcg_content)).
@@ -246,9 +245,6 @@ dcg_debug_topic(Topic) -->
   "[",
   atom(Topic),
   "]".
-
-dcg_trace -->
-  {gtrace}.
 
 
 

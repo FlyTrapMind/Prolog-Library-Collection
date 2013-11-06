@@ -29,7 +29,6 @@ clean:-
   reset_memo.
 
 cosine_normalization(Term, Doc, Weight):-
-gtrace, %TODO
   memo(tfidf(Term, Doc, TFIDF)),
   doc_to_vec(Doc, Vec),
   findall(

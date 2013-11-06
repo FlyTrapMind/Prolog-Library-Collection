@@ -635,7 +635,6 @@ premise(J):-
 %! repercussions(+Node:iri, -Repercussions:ordset(node)) is det.
 
 repercussions(Node, Repercussions):-
-gtrace,
   transitive_closure(affected_consequences, Node, Repercussions).
 
 %! doyle_reset(+TMS:atom) is det.

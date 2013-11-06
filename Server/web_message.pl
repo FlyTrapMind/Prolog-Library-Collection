@@ -53,7 +53,6 @@ prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   error_web(Exception, Markup),
   push(status_pane, html, app_style, Markup), !.
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
-  gtrace, %DEB
   format(user, '~w', [Exception]). %DEB
 prolog:debug_print_hook(Type, Format, Args):-
   format(atom(Msg), Format, Args),
