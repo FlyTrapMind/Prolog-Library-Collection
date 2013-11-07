@@ -104,7 +104,7 @@ menu -->
   {
     DIV_Attrs1 = [class='pure-u',id=menu],
     (
-      menu(false)
+      true%menu(false)
     ->
       DIV_Attrs2 = DIV_Attrs1
     ;
@@ -114,7 +114,7 @@ menu -->
   html(
     div(DIV_Attrs2,
       div(class=['pure-menu','pure-menu-open'], [
-        a([class='pure-menu-heading',href='/menu_close'], 'PraSem'),
+        a([class='pure-menu-heading',href='/how'], 'DataHives'),%menu_close
         \html_module_list([ordered(false)], [])
       ])
     )

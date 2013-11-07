@@ -27,7 +27,7 @@ that can be issued via the Web interface.
 :- use_module(library(pairs)).
 :- use_module(server(web_modules)).
 
-:- web_module_add('Web commands', web_commands, command).
+%%%%:- web_module_add('Web commands', web_commands, command).
 
 
 

@@ -24,7 +24,7 @@ Handle requests to view plDoc via a Web interface.
 
 :- http_handler(root(pldoc), pldoc, []).
 
-:- initialization(web_module_add('plDoc', pldoc_web, pldoc)).
+%%%%:- initialization(web_module_add('plDoc', pldoc_web, pldoc)).
 
 
 
