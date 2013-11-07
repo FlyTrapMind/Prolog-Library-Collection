@@ -19,8 +19,8 @@ The home page for the SWAPP Website.
 :- use_module(library(http/http_server_files)).
 :- use_module(server(app_server)).
 
-:- http_handler(root(.), home, []).
-:- http_handler(root(home), http_redirect(see_other, root(.)), []).
+:- http_handler(root(.), http_redirect(see_other, root(bk)), []).
+:- http_handler(root(home), http_redirect(see_other, root(bk)), []).
 :- http_handler(root(menu_close), menu_close, []).
 :- http_handler(root(menu_open), menu_open, []).
 
@@ -104,7 +104,7 @@ menu -->
   {
     DIV_Attrs1 = [class='pure-u',id=menu],
     (
-      menu(false)
+      true%menu(false)
     ->
       DIV_Attrs2 = DIV_Attrs1
     ;
@@ -114,7 +114,7 @@ menu -->
   html(
     div(DIV_Attrs2,
       div(class=['pure-menu','pure-menu-open'], [
-        a([class='pure-menu-heading',href='/menu_close'], 'PraSem'),
+        a([class='pure-menu-heading',href='/how'], 'DataHives'),%menu_close
         \html_module_list([ordered(false)], [])
       ])
     )
