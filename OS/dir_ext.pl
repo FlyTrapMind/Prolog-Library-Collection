@@ -302,7 +302,7 @@ safe_delete_directory(FromDir):-
 
 %! safe_delete_directory_contents(
 %!   +Options:list(nvpair),
-%!   +Directory:atom
+%!   +Directory:atom,
 %! ) is det.
 % Deletes all file in the given directory that are of the given file type.
 %

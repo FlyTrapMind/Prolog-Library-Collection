@@ -52,7 +52,7 @@ Web predicates for RDF graphs.
 
 :- http_handler(root(rdf), rdf_web, []).
 
-:- initialization(web_module_add('RDF', rdf_web, rdf)).
+%%%%:- initialization(web_module_add('RDF', rdf_web, rdf)).
 
 
 

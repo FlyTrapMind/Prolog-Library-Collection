@@ -31,7 +31,7 @@
 
 :- http_handler(root(tms_nav), tms_nav, [prefix]).
 
-:- initialization(web_module_add('TMS', tms_web, tms)).
+%%%%:- initialization(web_module_add('TMS', tms_web, tms)).
 
 
 
