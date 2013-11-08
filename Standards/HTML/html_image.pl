@@ -74,12 +74,14 @@ html_image(IMG_O1, File) -->
 
 html_image(DIV_O1, Description, IMG_O1, File) -->
   % If no alternative text has been set, then we use the description text.
-  {default_option(IMG_O1, alt, Description, _Alt, IMG_O2)},
-
+  {
+    default_option(IMG_O1, alt, Description, _Alt, IMG_O2),
+    merge_options(DIV_O1, [class(image)], DIV_O2)
+  },
   html(
     % Construe the DIV containing the image, the link, and the description.
     div(
-      DIV_O1,
+      DIV_O2,
       [
         \html_image(IMG_O2, File),
         % The DIV containing the image description.
