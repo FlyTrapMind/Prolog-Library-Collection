@@ -74,6 +74,7 @@ load_modules_for_pldoc:-
     member(
       DirectoryName,
       [
+        atms,
         datasets,
         datetime,
         dcg,
@@ -105,6 +106,8 @@ load_modules_for_pldoc:-
         tms,
         ugraph,
         vocabularies,
+        void,
+        web,
         xml,
         xsd
       ]

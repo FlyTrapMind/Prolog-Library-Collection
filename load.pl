@@ -40,6 +40,8 @@ load_pgc:-
   assert(user:file_search_path(os,           pgc('OS'))),
   assert(user:file_search_path(ps,           pgc('PS'))),
     assert(user:file_search_path(tms,          ps('TMS'))),
+      assert(user:file_search_path(atms,         ps('ATMS'))),
+      assert(user:file_search_path(atms,         ps('Doyle'))),
   assert(user:file_search_path(server,       pgc('Server'))),
   assert(user:file_search_path(standards,    pgc('Standards'))),
     assert(user:file_search_path(datetime,     standards('DateTime'))),
@@ -60,6 +62,9 @@ load_pgc:-
   assert(user:file_search_path(stat,         pgc('Stats'))),
   assert(user:file_search_path(vocab,        pgc('Vocab'))),
     assert(user:file_search_path(skos,         vocabularies('SKOS'))),
+    assert(user:file_search_path(void,         vocabularies('VoID'))),
+  assert(user:file_search_path(web,          pgc('Web'))),
+    assert(user:file_search_path(crawler,      vocabularies('Crawler'))),
   
   % Check whether the PGC runs on the current SWI-Prolog version.
   use_module(os(swipl_ext)),
