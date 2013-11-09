@@ -55,13 +55,13 @@
 
 :- [load].
 
+% Load PGC documentation and debug tools.
 :- use_module(server(web_modules)).
 :- use_module(server(pldoc_web)).
 :- use_module(server(web_console)).
 
-:- use_module(library(apply)).
-:- use_module(library(lists)).
-
+%:- use_module(library(apply)).
+%:- use_module(library(lists)).
 %:- initialization(load_modules_for_pldoc, after_load).
 
 %! load_modules_for_pldoc is det.

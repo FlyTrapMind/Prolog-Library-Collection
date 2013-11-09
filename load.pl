@@ -18,7 +18,9 @@ load_pgc:-
   ;
     assert(user:file_search_path(pgc, ThisDirectory))
   )),
-  % If there is not outer project, then PGC is the project.
+  
+  % If there is no outer project, then PGC is the project.
+  % (For debug purposes only.)
   once((
     current_predicate(project_name/1)
   ;
@@ -30,9 +32,9 @@ load_pgc:-
   assert(user:file_search_path(dcg,          pgc('DCG'))),
   assert(user:file_search_path(generics,     pgc('Generics'))),
   assert(user:file_search_path(graph_theory, pgc('Graph Theory'))),
-    assert(user:file_search_path(dgraph,     graph_theory('DGRAPH'))),
-    assert(user:file_search_path(rdf_graph,  graph_theory('RDF Graph'))),
-    assert(user:file_search_path(ugraph,     graph_theory('UGRAPH'))),
+    assert(user:file_search_path(dgraph,       graph_theory('DGRAPH'))),
+    assert(user:file_search_path(rdf_graph,    graph_theory('RDF Graph'))),
+    assert(user:file_search_path(ugraph,       graph_theory('UGRAPH'))),
   assert(user:file_search_path(ilp,          pgc('ILP'))),
   assert(user:file_search_path(logic,        pgc('Logic'))),
     assert(user:file_search_path(rdf_mt,       logic('RDF MT'))),
@@ -40,8 +42,8 @@ load_pgc:-
   assert(user:file_search_path(os,           pgc('OS'))),
   assert(user:file_search_path(ps,           pgc('PS'))),
     assert(user:file_search_path(tms,          ps('TMS'))),
-      assert(user:file_search_path(atms,         ps('ATMS'))),
-      assert(user:file_search_path(doyle,        ps('Doyle'))),
+      assert(user:file_search_path(atms,         tms('ATMS'))),
+      assert(user:file_search_path(doyle,        tms('Doyle'))),
   assert(user:file_search_path(server,       pgc('Server'))),
   assert(user:file_search_path(standards,    pgc('Standards'))),
     assert(user:file_search_path(datetime,     standards('DateTime'))),
@@ -61,31 +63,27 @@ load_pgc:-
       assert(user:file_search_path(xsd,          xml('XSD'))),
   assert(user:file_search_path(stat,         pgc('Stats'))),
   assert(user:file_search_path(vocab,        pgc('Vocab'))),
-    assert(user:file_search_path(skos,         vocabularies('SKOS'))),
-    assert(user:file_search_path(void,         vocabularies('VoID'))),
+    assert(user:file_search_path(skos,         vocab('SKOS'))),
+    assert(user:file_search_path(void,         vocab('VoID'))),
   assert(user:file_search_path(web,          pgc('Web'))),
-    assert(user:file_search_path(crawler,      vocabularies('Crawler'))),
+    assert(user:file_search_path(crawler,      web('Crawler'))),
   
-  % Check whether the PGC runs on the current SWI-Prolog version.
+  % Check SWI-Prolog version.
   use_module(os(swipl_ext)),
   check_prolog_version,
   
+  % Initialize Web module registration.
   use_module(generics(db_ext)),
   db_add_novel(user:prolog_file_type(db, database)),
-  use_module(os(file_ext)),
-  
   absolute_file_name(
     project(web_modules),
     File,
     [access(write),file_type(database)]
   ),
+  use_module(os(file_ext)),
   safe_delete_file(File),
   
   % Start logging.
   use_module(generics(logging)),
-  start_log,
-  
-  use_module(rdf(rdf_web)),
-  use_module(tms(tms_web)).
-:- load_pgc.
+  start_log.
 
