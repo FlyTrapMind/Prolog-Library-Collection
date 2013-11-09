@@ -10,6 +10,8 @@
                   % +Atom:atom
                   % -SubAtom:atom
                   % -Rest:atom
+    atom_to_c_name/2, % +Atom:atom
+                      % -CName:atom
     decapitalize/2, % +Old:atom
                     % -New:atom
     escape_underscores/2, % +Old:atom
@@ -77,9 +79,10 @@ We assume atoms to be encoded using ASCII (or an ASCII-compatible) encoding
 scheme.
 
 @author Wouter Beek
-@version 2011/08-2013/05, 2013/07, 2013/09
+@version 2011/08-2013/05, 2013/07, 2013/09, 2013/11
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_wrap)).
 :- use_module(generics(list_ext)).
@@ -120,6 +123,29 @@ atom_replace(Atom, Replacements, NewAtom):-
   atom_codes(NewAtom, NewCodes).
 atom_replace(Atom, Replacement, NewAtom):-
   atom_replace(Atom, [Replacement], NewAtom).
+
+atom_to_c_name(A, CName):-
+  dcg_phrase(atom_to_c_name_, A, CName).
+
+atom_to_c_name_ -->
+  dcg_end, !.
+atom_to_c_name_, [C] -->
+  (
+    ascii_letter_lowercase(C), !
+  ;
+    decimal_digit(C), !
+  ),
+  atom_to_c_name_.
+atom_to_c_name_, [C2] -->
+  ascii_letter_uppercase(C1), !,
+  {to_lower(C1, C2)},
+  atom_to_c_name_.
+atom_to_c_name_, underscore -->
+  space, !,
+  atom_to_c_name_.
+atom_to_c_name_, underscore -->
+  [_],
+  atom_to_c_name_.
 
 %! atom_until(
 %!   +Split:oneof([atom,list(atom)]),

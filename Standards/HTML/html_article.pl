@@ -1,11 +1,12 @@
 :- module(
-  article,
+  html_article,
   [
     general_information//2, % :Title
                             % +Authors:list(iri)
     paragraph//1, % :Content
-    section//2 % :Title
-               % :Content
+    section//2, % +Title:atom
+                % :Content
+    toc//1 % -TOC:dom
   ]
 ).
 
@@ -17,6 +18,7 @@ Predicates for generating a Web article.
 @version 2013/11
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_lit_read)).
@@ -26,11 +28,13 @@ Predicates for generating a Web article.
 
 :- html_meta(general_information(html,+,?,?)).
 :- html_meta(paragraph(html,?,?)).
-:- html_meta(section(html,html,?,?)).
+:- html_meta(section(+,html,?,?)).
 
 :- rdf_meta(author(r,?,?)).
 :- rdf_meta(authors(t,?,?)).
 :- rdf_meta(general_information(+,t,?,?)).
+
+:- dynamic(section/2).
 
 
 
@@ -60,8 +64,22 @@ paragraph(Content) -->
   html(p(class=paragraph, Content)).
 
 section(Title, Content) -->
-  html([h1(class=section_title, Title), Content]).
+  {
+    atom_to_c_name(Title, SectionID),
+    assert(section(SectionID, Title))
+  },
+  html([h1([class=section_title,id=SectionID], Title), Content]).
 
 title(Title) -->
   html(h1(class=article_title, Title)).
+
+toc([h2('Table of Contents'),ol(class=toc,Refs)]) -->
+  {findall(
+    li(a(href=Id2,Title)),
+    (
+      retract(section(Id1, Title)),
+      atomic_concat('#', Id1, Id2)
+    ),
+    Refs
+  )}.
 
