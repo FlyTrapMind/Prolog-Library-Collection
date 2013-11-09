@@ -41,7 +41,7 @@ load_pgc:-
   assert(user:file_search_path(ps,           pgc('PS'))),
     assert(user:file_search_path(tms,          ps('TMS'))),
       assert(user:file_search_path(atms,         ps('ATMS'))),
-      assert(user:file_search_path(atms,         ps('Doyle'))),
+      assert(user:file_search_path(doyle,        ps('Doyle'))),
   assert(user:file_search_path(server,       pgc('Server'))),
   assert(user:file_search_path(standards,    pgc('Standards'))),
     assert(user:file_search_path(datetime,     standards('DateTime'))),

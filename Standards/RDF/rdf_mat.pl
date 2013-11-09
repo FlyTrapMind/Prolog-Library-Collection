@@ -18,6 +18,7 @@ Takes axioms, rules, and the RDF index and performs materializations.
 @version 2013/09-2013/10
 */
 
+:- use_module(doyle(doyle)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(thread_ext)).
@@ -43,7 +44,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
     rule/7 as rdfs_rule
   ]
 ).
-:- use_module(tms(doyle)).
 :- use_module(tms(tms)).
 :- use_module(tms(tms_export)).
 :- use_module(tms(tms_print)).
