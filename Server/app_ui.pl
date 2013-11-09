@@ -19,10 +19,7 @@ The home page for the SWAPP Website.
 :- use_module(library(http/http_server_files)).
 :- use_module(server(app_server)).
 
-:- http_handler(root(.), http_redirect(see_other, root(bk)), []).
-:- http_handler(root(home), http_redirect(see_other, root(bk)), []).
-:- http_handler(root(menu_close), menu_close, []).
-:- http_handler(root(menu_open), menu_open, []).
+:- http_handler(root(.), home, []).
 
 % /css
 :- db_add_novel(http:location(css, root(css), [])).
@@ -36,10 +33,6 @@ The home page for the SWAPP Website.
 :- db_add_novel(user:file_search_path(img, server(img))).
 :- http_handler(img(.), serve_files_in_directory(img), [prefix]).
 :- html_resource('http://yui.yahooapis.com/3.13.0/build/yui/yui-min.js', []).
-
-%! menu(?Vissible:boolean) is semidet.
-
-:- dynamic(menu/1).
 
 :- multifile(user:head//2).
 :- multifile(user:body//2).
@@ -101,33 +94,15 @@ main(Content) -->
   html(div([class='pure-u-1',id=main], \content(Content))).
 
 menu -->
-  {
-    DIV_Attrs1 = [class='pure-u',id=menu],
-    (
-      true%menu(false)
-    ->
-      DIV_Attrs2 = DIV_Attrs1
-    ;
-      DIV_Attrs2 = [style='left:0;'|DIV_Attrs1]
-    )
-  },
   html(
-    div(DIV_Attrs2,
+    div([class='pure-u',id=menu],
       div(class=['pure-menu','pure-menu-open'], [
-        a([class='pure-menu-heading',href='/how'], 'DataHives'),%menu_close
+        a([class='pure-menu-heading',href='/'], 'PraSem'),
         \html_module_list([ordered(false)], [])
       ])
     )
   ),
   {db_replace_novel(menu(true), [r])}.
-
-menu_close(Request):-
-  db_replace_novel(menu(true), [r]),
-  home(Request).
-
-menu_open(Request):-
-  db_replace_novel(menu(false), [r]),
-  home(Request).
 
 menulink -->
   html(

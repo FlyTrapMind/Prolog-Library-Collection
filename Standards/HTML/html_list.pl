@@ -126,11 +126,7 @@ html_module_list(L_O1, LI_O1) -->
         http_absolute_location(root(PathName), Link, [])
       ),
       ListItems
-    ),
-    http_absolute_location(root(home), HomeLink, [])
+    )
   },
-  html_list(
-    L_O1,
-    [li(LI_O1,a(href=HomeLink,'Home'))|ListItems]
-  ).
+  html_list(L_O1, ListItems).
 

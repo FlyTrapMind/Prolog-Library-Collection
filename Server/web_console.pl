@@ -91,7 +91,7 @@ A simple Web console interface.
   'The number of previously issued Web commands that are shown in the UI.'
 ).
 
-%%%%:- initialization(web_module_add('Console', web_console, console)).
+:- initialization(web_module_add('Console', web_console, console)).
 
 
 

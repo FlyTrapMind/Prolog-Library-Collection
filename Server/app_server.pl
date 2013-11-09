@@ -34,7 +34,7 @@ Also includes a status bar with updates/messages.
   'The default port at which the application server is started.'
 ).
 
-%:- initialization(start_app_server).
+:- initialization(start_app_server).
 
 
 % Start the application server when running on dotcloud.
@@ -62,7 +62,7 @@ start_app_server(Port):-
   ;
     true
   ),
-  thread_pool_create(cheapthreads, 90, []),
+  %thread_pool_create(cheapthreads, 90, []),
   start_server(Port, app_server_dispatch).
 
 app_server_dispatch(Request):-

@@ -89,7 +89,8 @@ start_server(Port, _ServerGoal):-
   http_server_property(Port, start_time(StartTime)), !,
   debug(
     server_ext,
-    'The server at port ~w is used as the debug server (strart time ~w).',
+    'The server at port ~w is used as the application server \c
+     (start time ~w).',
     [Port,StartTime]
   ).
 % No server is running yet, so start a server.
