@@ -3,6 +3,8 @@
 
 :- set_prolog_flag(encoding, utf8).
 
+:- initialization(load_pgc).
+
 % The load file for the Prolog Generics Collection.
 % This assumes that the search path =project= is already defined
 % by the parent project (PGC is a library).
