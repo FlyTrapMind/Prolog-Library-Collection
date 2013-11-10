@@ -6,8 +6,10 @@
     http_parameters2/3, % +Request:list
                         % ?Params:list
                         % :Options:list
-    http_read_json2/2 % +Request:list
-                      % -JSON:compound
+    http_read_json2/2, % +Request:list
+                       % -JSON:compound
+    json_rows/2 % +JSON:list
+                % -Rows:list
   ]
 ).
 :- reexport(
@@ -23,7 +25,7 @@
 /** <module> JSON_EXT
 
 @author Wouter Beek
-@version 2013/07
+@version 2013/07, 2013/11
 */
 
 :- use_module(library(error)).
@@ -74,4 +76,21 @@ http_read_json2(Request, JSON):-
   ;
     domain_error(mimetype, Type)
   ).
+
+json_header_row([json(L1)|_], L2):-
+  maplist(json_name, L1, L2).
+
+json_name(N=_, N).
+
+json_row(json(L1), L2):-
+  maplist(json_value, L1, L2).
+
+%! json_rows(+JSON:list, -Rows:list) is det.
+% Converts a list of JSON objects to (HTML) table rows.
+
+json_rows(JSON, [HeaderRow|DataRows]):-
+  json_header_row(JSON, HeaderRow),
+  maplist(json_row, JSON, DataRows).
+
+json_value(_=V, V).
 

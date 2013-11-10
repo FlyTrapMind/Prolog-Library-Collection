@@ -177,8 +177,7 @@ wnt_query(1, wdb, wnt).
 wnt_query(2, wdb, 'WNT').
 
 wnt_stream(Search, Stream):-
-  is_list(Search),
-  !,
+  is_list(Search), !,
   wnt_protocol(Protocol),
   wnt_host(Host),
   wnt_port(Port),

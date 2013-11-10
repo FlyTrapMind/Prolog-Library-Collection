@@ -4,6 +4,8 @@
     download_to_file/2, % +URL:url
                         % ?File:atom
     is_image_url/1, % +URL:url
+    uri_path/2, % +PathComponents:list(term)
+                % -Path:atom
     uri_to_file_name/2, % +URI:uri
                         % -File:atom
     uri_query/3 % +URI:uri
@@ -67,6 +69,17 @@ is_image_url(URL):-
   directory_file_path(_Dir, File, Path),
   file_name_extension(_Base, Ext, File),
   memberchk(Ext, [jpg,png,svg]).
+
+uri_path(T1, Path):-
+  uri_terms(T1, T2),
+  atomic_list_concat([''|T2], '/', Path).
+
+uri_terms([], []).
+uri_terms([H|T1], T2):-
+  var(H), !,
+  uri_terms(T1, T2).
+uri_terms([H|T1], [H|T2]):-
+  uri_terms(T1, T2).
 
 %! uri_to_file_name(+URI:uri, -FileName:atom) is det.
 % Returns a file name based on the given URI.

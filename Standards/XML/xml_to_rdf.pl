@@ -30,6 +30,8 @@ Converts XML DOMs to RDF graphs.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_lit_build)).
 :- use_module(xsd(xsd)).
 
 :- meta_predicate(create_resource(+,+,3,+,+,-,-)).
