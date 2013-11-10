@@ -99,7 +99,7 @@ A simple Web console interface.
 % The input field for the Web console.
 
 command_input -->
-  html(input([maxlength=200,name=web_command,size=62,type=text,value=''])).
+  html(input([maxlength=55,name=web_command,size=55,type=text,value=''])).
 
 %! console_input// is det.
 % Returns the markup for the web-based console.

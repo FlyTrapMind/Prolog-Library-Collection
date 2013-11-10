@@ -1,6 +1,7 @@
 :- module(
   rfc3987_dcg,
   [
+    'IRI'//0,
     'IRI-reference'//0,
     'IRI-reference'//1 % +IRI:or([atom,list(code)])
   ]

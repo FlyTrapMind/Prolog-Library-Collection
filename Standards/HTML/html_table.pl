@@ -18,8 +18,10 @@ Support for generating HTML tables based on Prolog lists.
 @version 2012/09-2013/06, 2013/09-2013/11
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
+:- use_module(uri(rfc3987_dcg)).
 
 
 
@@ -142,6 +144,10 @@ table_cell(CellType, Content1, element(CellType,[],[Content2])):-
     Content1 = element(_,_,_)
   ->
     Content2 = Content1
+  ;
+    dcg_phrase('IRI', Content1)
+  ->
+    Content2 = element(a,[href=Content1],[Content1])
   ;
     % If we use term_to_atom/2 for atom terms, extra single quotes are added
     % in front and at the end of the atom. Therefore, we first check whether

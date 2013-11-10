@@ -115,7 +115,8 @@ act(O1, Action, Query, In, Out2):-
 act_web(O1, Action, Query, In, [DOM]):-
   act(O1, Action, Query, In, Out1),
   json_rows(Out1, Out2),
-  html_table([], Out2, DOM).
+  format(atom(Caption), 'The outcome of CKAN action ~w.', [Action]),
+  html_table([caption(Caption),header(true),indexed(true)], Out2, DOM).
 
 %! group_list(
 %!   +Options:list(nvpair),
