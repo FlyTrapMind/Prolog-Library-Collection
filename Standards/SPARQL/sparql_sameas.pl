@@ -50,10 +50,11 @@ describe_sameas(Remote, Resource, Rows):-
 query_sameas(Remote, Resource, IdenticalResources):-
   format(atom(Where), '  <~w> owl:sameAs ?x .', [Resource]),
   formulate_sparql(
+    _Graph,
     [owl],
-    'SELECT DISTINCT ?x',
+    select([distinct(true)],[x]),
     [Where],
-    0,
+    _Extra,
     Query
   ),
   enqueue_sparql(Remote, Query, _VarNames, IdenticalResources).

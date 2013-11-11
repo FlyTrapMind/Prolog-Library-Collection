@@ -99,10 +99,18 @@ script_clean:-
 %!   +Stages:list(compound)
 %! ) is det.
 % The following options are supported:
-%   * =|actual(ActualNumberOfApplications:nonneg)|=
-%   * =|from(FromDirectory:or([oneof([input]),positive_integer]),FromFile:atom,FromFileType:atom)|=
-%   * =|potential(PotentialNumberOfApplications:nonneg)|=
-%   * =|to(ToDirectory:or([oneof([output]),positive_integer]),ToFile:atom,ToFileType:atom)|=
+%   * =|actual(+ActualNumberOfApplications:nonneg)|=
+%     This is used to display progress bars.
+%   * =|from(?FromDirectory:or([oneof([input]),positive_integer]),?FromFile:atom,?FromFileType:atom)|=
+%     Identifies the input for a script stage.
+%   * =|potential(+PotentialNumberOfApplications:nonneg)|=
+%     This is used to display progress bars.
+%   * =|to(?ToDirectory:or([oneof([output]),positive_integer]),?ToFile:atom,?ToFileType:atom)|=
+%     Identifies the output from a script stage.
+%
+% @param Options A list of name-value pairs.
+% @param Process The atomic name of the overall script.
+% @param Stages A list of compound terms identifying script stages.
 
 script(O1, Process, Stages):-
   % Beginning the script.
