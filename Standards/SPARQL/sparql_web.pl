@@ -21,6 +21,7 @@ Web front-end for SPARQL queries.
 @version 2012/12, 2013/03-2013/04
 */
 
+:- use_module(html(html_form)).
 :- use_module(html(html_table)).
 :- use_module(server(web_console)).
 :- use_module(sparql(sparql_ext)).

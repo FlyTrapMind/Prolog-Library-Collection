@@ -43,19 +43,27 @@ empty_row -->
 %      Whether or not the first sublist should be
 %      displayed as the table header row.
 %      Default is `true`.
-%   3. =|indexed(+Indexed:boolean)|=
+%   3. =|highlighted_rows(+Indexes:list(nonneg)|=
+%      The indexes of the rows that will be highlighted.
+%      Default: `[]`.
+%   4. =|indexed(+Indexed:boolean)|=
 %      Whether or not each row should begin with a row index.
 %      Default is `false`.
 
 html_table(O1, L1) -->
-  html_table_caption(O1),
-  html_table_header(O1, L1, L2),
   {flag(table_row, _, 0)},
-  html_table_rows(O1, td, L2).
+  html(
+    table(class=['pure-table','pure-table-bordered'], [
+      \html_table_caption(O1),
+      \html_table_header(O1, L1, L2),
+      tbody(\html_table_rows(O1, td, L2))
+    ])
+  ).
 
 html_table_caption(O1) -->
-  {option(caption(Caption), O1)},
-  html(caption, Caption).
+  {option(caption(Caption), O1)}, !,
+  html(caption(Caption)).
+html_table_caption(_O1) --> !.
 
 html_table_cell(td, H) --> !,
   html(td(H)).
@@ -63,8 +71,10 @@ html_table_cell(th, H) --> !,
   html(th(H)).
 
 html_table_cells(CellType, [H|T]) -->
-  html_table_cell(CellType, H),
-  html_table_cells(CellType, T).
+  html([
+    \html_table_cell(CellType, H),
+    \html_table_cells(CellType, T)
+  ]).
 html_table_cells(_CellType, []) --> [].
 
 html_table_header(O1, [H1|T], T) -->
@@ -78,19 +88,34 @@ html_table_header(O1, [H1|T], T) -->
       H2 = H1
     )
   },
-  html_table_row(O1, th, H2).
+  html(thead(\html_table_row(O1, th, H2))).
 html_table_header(_O1, T, T) --> [].
 
-html_table_row(O1, CellType, L) -->
+html_table_index_cell(O1, CellType, RowN) -->
+  {option(indexed(true), O1)}, !,
+  html(\html_table_cell(CellType, RowN)).
+html_table_index_cell(_O1, _CellType, _RowN) --> !.
+
+html_table_row(_O1, th, L) --> !,
+  html(tr(\html_table_cells(th, L))).
+html_table_row(O1, td, L) -->
   {
-    option(indexed(true), O1),
-    CellType == td, !,
-    flag(table_row, RowN, RowN + 1)
+    flag(table_row, RowN, RowN + 1),
+    option(highlighted_rows(Indexes), O1, []),
+    (
+      memberchk(RowN, Indexes)
+    ->
+      O2 = [class='pure-table-odd']
+    ;
+      O2 = []
+    )
   },
-  html_table_cell(CellType, RowN),
-  html_table_cells(CellType, L).
-html_table_row(_O1, CellType, L) -->
-  html_table_cells(CellType, L).
+  html(
+    tr(O2, [
+      \html_table_index_cell(O1, td, RowN),
+      \html_table_cells(td, L)
+    ])
+  ).
 
 html_table_rows(O1, CellType, [H|T]) -->
   html_table_row(O1, CellType, H),

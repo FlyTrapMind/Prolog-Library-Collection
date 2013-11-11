@@ -86,6 +86,5 @@ google_authenticate(O1, Out):-
     URL,
     uri_components(Scheme, Authority, Path, Search, _Fragment)
   ),
-gtrace,
   http_get(URL, Out, []).
 

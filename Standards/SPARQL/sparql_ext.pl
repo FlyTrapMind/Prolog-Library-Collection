@@ -22,6 +22,10 @@
                      % ?Port:oneof(default,integer)
                      % ?Path:atom
 
+% QUERY RESULTS
+    sparql_rows_to_lists/2, % +SPARQL_Rows:list(compound)
+                            % -Lists:list(list)
+
 % QUERYING
     describe_resource/3, % +Remote:atom
                          % +Resource:uri
@@ -77,6 +81,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
 :- use_module(library(semweb/sparql_client)).
+:- use_module(rdf(rdf_name)).
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(describe_resource(+,r,-)).
@@ -207,7 +212,7 @@ formulate_vars(VarNames, Vars):-
 
 formulate_where(Stmts, WhereStmt):-
   atomic_list_concat(Stmts, '\n  ', Stmts1),
-  format(atom(WhereStmt), 'WHERE {\n~w\n}', [Stmts1]).
+  format(atom(WhereStmt), 'WHERE {\n  ~w\n}', [Stmts1]).
 
 
 
@@ -236,6 +241,15 @@ register_sparql_remote(Remote, Server, Port, Path):-
 register_sparql_remote(Remote, Server, Port, Path):-
   assert(sparql_remote(Remote, Server, Port, Path)).
 :- register_sparql_remote(localhost, localhost, 5000, '/sparql/').
+
+
+
+% QUERY RESULTS %
+
+sparql_rows_to_lists([], []):- !.
+sparql_rows_to_lists([H1|T1], [H2|T2]):-
+  H1 =.. [row|H2],
+  sparql_rows_to_lists(T1, T2).
 
 
 
