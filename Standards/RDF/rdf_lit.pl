@@ -8,8 +8,11 @@
                             % +Literal2:literal
     rdf_plain_literal/2, % ?Graph:atom
                          % ?PlainLiteral:compound
-    rdf_simple_literal/2, % ?Graph:atom
+    rdf_simple_literal/2, % ?SimpleLiteral:compound
+                          % ?Lexical:atom
+    rdf_simple_literal/3, % ?Graph:atom
                           % ?SimpleLiteral:compound
+                          % ?Lexical:atom
     rdf_typed_literal/3, % ?TypedLiteral:compound
                          % ?Datatype:iri
                          % ?Value
@@ -25,7 +28,7 @@
 Support for RDF literals.
 
 @author Wouter Beek
-@version 2013/09-2013/10
+@version 2013/09-2013/11
 */
 
 :- use_module(library(semweb/rdf_db)).
@@ -95,16 +98,26 @@ rdf_plain_literal(G, Lit):-
 rdf_plain_literal(G, Lit):-
   rdf_simple_literal(G, Lit).
 
-%! rdf_simple_literal(?Graph:atom, ?SimpleLiteral:atom) is nondet.
+%! rdf_simple_literal(+SimpleLiteral:compound, +Lexical:atom) is semidet.
+%! rdf_simple_literal(+SimpleLiteral:compound, -Lexical:atom) is det.
+%! rdf_simple_literal(-SimpleLiteral:compound, +Lexical:atom) is det.
 
-rdf_simple_literal(G, Lit):-
+rdf_simple_literal(literal(LEX), LEX).
+
+%! rdf_simple_literal(
+%!   ?Graph:atom,
+%!   ?SimpleLiteral:atom,
+%!   ?Lexical:atom
+%! ) is nondet.
+
+rdf_simple_literal(G, Lit, LEX):-
   % rdf/[3,4] throws an exception for numeric input.
   \+ number(Lit),
   rdf(_, _, Lit, G),
-  Lit = literal(Lex),
+  Lit = literal(LEX),
   % Exclude cases in which `Lex` is a compound term,
   % i.e., either `lang(Lang,Lexical)` or `type(Type,Lexical)`.
-  atomic(Lex).
+  atomic(LEX).
 
 %! rdf_typed_literal(
 %!   ?TypedLiteral:compound,
