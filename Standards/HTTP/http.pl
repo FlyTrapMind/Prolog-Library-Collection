@@ -1,6 +1,9 @@
 :- module(
   http,
   [
+    http_open_wrapper/3, % +URI:uri
+                         % -Stream:stream
+                         % +Options:list(nvpair)
     http_parameters_fail/2, % +Request
                             % ?Parameters:list
     serve_nothing/1, % +Request
@@ -18,14 +21,50 @@
 Predicates for sending out HTTP requests.
 
 @author Wouter Beek
-@version 2012/10, 2013/02
+@version 2012/10, 2013/02, 2013/11
 */
 
+:- use_module(library(debug)).
 :- use_module(library(http/http_header)).
+:- use_module(library(http/http_open)).
 :- use_module(library(http/http_parameters)).
 :- use_module(xml(xml_dom)).
 
+:- meta_predicate(http_process_exception(+,0)).
 
+:- debug(http).
+
+
+
+%! http_open_wrapper(+URI:uri, -Stream:stream, +Options:list(nvpair)) is det.
+% Retries the given URI a specific number of times.
+% This helps when working with unreliable connections.
+
+http_open_wrapper(URI, Stream, Options):-
+  http_open_wrapper(URI, Stream, Options, 0).
+
+% The maximum number of HTTP attempts has been made.
+http_open_wrapper(URI, _Stream, _Options, 5):- !,
+  debug(
+    http,
+    'The maximum number of HTTP attempts was reached for <~w>.',
+    [URI]
+  ).
+http_open_wrapper(URI, Stream, Options, Attempts):-
+  catch(
+    (
+      http_open(URI, Stream, Options),
+      set_stream(Stream, encoding(utf8))
+    ),
+    Exception,
+    (
+      NewAttempts is Attempts + 1,
+      http_process_exception(
+        Exception,
+       http_open_wrapper(URI, Stream, Options, NewAttempts)
+      )
+    )
+  ).
 
 %! http_parameters_fail(Request, Parameters) is semidet.
 % Like http_parameters/2, but fails when a given parameter is not found
@@ -39,6 +78,28 @@ http_parameters_fail(Request, Parameters):-
     error(existence_error(_Type, _Term), _Context),
     fail
   ).
+
+% Retry after a while upon existence error.
+% Thrown by http_open/3
+http_process_exception(error(existence_error(url, URI), Context), Goal):- !,
+  debug(http, 'Resource <~w> does not seem to exist.', [URI]),
+  debug(http, '[~w]', [Context]),
+  sleep(10),
+  call(Goal).
+% Retry upon socket error.
+% Thrown by http_open/3.
+http_process_exception(error(socket_error('Try Again'), _Context), Goal):- !,
+  debug(http, '[SOCKET ERROR] Try again!', []),
+  call(Goal).
+% Retry upon I/O error.
+%http_process_exception(
+%  error(io_error(read, _Stream), context(_Predicate, Reason)),
+%  Goal
+%):- !,
+%  debug(http, '[IO-EXCEPTION] ~w', [Reason]),
+%  call(Goal).
+http_process_exception(Exception, _Goal):-
+  debug(http, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
 
 serve_nothing(Request):-
   memberchk(pool(client(_, _ , _In, Out)), Request),

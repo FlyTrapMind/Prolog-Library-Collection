@@ -34,13 +34,13 @@ info@geodan.nl
 
 test:-
   formulate_sparql(
+    _Graph,
     [bags],
-    'SELECT DISTINCT *',
+    select([distinct(true)],[]),
     ['?s vocab:pand_status ?o'],
-    10,
+    limit([],10),
     Query
   ),
   enqueue_sparql(bag, Query, _VarNames, Resources),
   print_list(user, Resources).
-
 

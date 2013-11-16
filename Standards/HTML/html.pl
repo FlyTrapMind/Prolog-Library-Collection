@@ -36,11 +36,12 @@ HTML atom conversion, using HTML characters.
 HTML attribute parsing, used in HTML table generation.
 
 @author Wouter Beek
-@version 2012/09-2013/06
+@version 2012/09-2013/06, 2013/11
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(http(http)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
@@ -55,7 +56,7 @@ HTML attribute parsing, used in HTML table generation.
 :- db_add_novel(user:prolog_file_type(htm, html)).
 :- db_add_novel(user:prolog_file_type(html, html)).
 
-:- meta_predicate(process_exception(+,0)).
+:- meta_predicate(html_process_exception(+,0)).
 
 :- debug(html).
 
@@ -87,56 +88,17 @@ file_to_html(File, HTML):-
   open(File, read, Stream, [encoding(utf8),type(test)]),
   stream_to_html(Stream, HTML).
 
-http_open_wrapper(URI, Stream, Options):-
-  http_open_wrapper(URI, Stream, Options, 0).
-
-% The maximum number of HTTP attempts.
-http_open_wrapper(URI, _Stream, _Options, 5):- !,
-  debug(
-    html,
-    'The maximum number of HTTP attempts was reached for <~w>.',
-    [URI]
-  ).
-http_open_wrapper(URI, Stream, Options, Attempts):-
-  catch(
-    http_open(URI, Stream, Options),
-    Exception,
-    (
-      NewAttempts is Attempts + 1,
-      process_exception(
-        Exception,
-       http_open_wrapper(URI, Stream, Options, NewAttempts)
-      )
-    )
-  ).
-
 %! process_exception(+Exception, :Goal) is det.
 % Processes an exception thrown by load_structure/3
 
 % Retry after a while upon exceeding a limit.
-process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- !,
+% Thrown by load_structure/3.
+html_process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- !,
   debug(html, 'Encountered ~w error(s) while parsing HTML.', [Max]),
   debug(html, 'Context:\t~w', [Context]),
   sleep(10),
   call(Goal).
-% Retry after a while upon existence error.
-process_exception(error(existence_error(url, URI), Context), Goal):- !,
-  debug(html, 'Resource <~w> does not seem to exist.', [URI]),
-  debug(html, '[~w]', [Context]),
-  sleep(10),
-  call(Goal).
-% Retry upon socket error.
-process_exception(error(socket_error('Try Again'), _Context), Goal):- !,
-  debug(html, '[SOCKET ERROR] Try again!', []),
-  call(Goal).
-% Retry upon I/O error.
-process_exception(
-  error(io_error(read, _Stream), context(_Predicate, Reason)),
-  Goal
-):- !,
-  debug(html, '[IO-EXCEPTION] ~w', [Reason]),
-  call(Goal).
-process_exception(Exception, _Goal):-
+html_process_exception(Exception, _Goal):-
   debug(html, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
 
 % stream_to_html(+Stream:stream, -HTML:dom) is det.
@@ -173,7 +135,10 @@ stream_to_html(Stream, DOM, Attempts):-
     Exception,
     (
       NewAttempts is Attempts + 1,
-      process_exception(Exception, stream_to_html(Stream, DOM, NewAttempts))
+      html_process_exception(
+        Exception,
+        stream_to_html(Stream, DOM, NewAttempts)
+      )
     )
   ).
 
@@ -187,18 +152,7 @@ stream_to_html(Stream, DOM, Attempts):-
 
 uri_to_html(URI, DOM):-
   setup_call_cleanup(
-    % First perform this setup once/1.
-    (
-      catch(
-        http_open_wrapper(URI, Stream, []),
-        Exception,
-        process_exception(Exception, http_open(URI, Stream, []))
-      ),
-      % @tbd Can this not be given as an option to http_open/3?
-      % I expect that otpions are passed to open/4, but the documentation
-      % does not mention this.
-      set_stream(Stream, encoding(utf8))
-    ),
+    http_open_wrapper(URI, Stream, []),
     stream_to_html(Stream, DOM),
     close(Stream)
   ).

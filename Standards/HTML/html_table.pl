@@ -2,9 +2,11 @@
   html_table,
   [
     empty_row//0,
-    html_table/3 % +O1:list(nvpair)
-                 % +List:list(list(term))
-                 % -Markup:element
+    html_table/3, % +O1:list(nvpair)
+                  % +Rows:list(list)
+                  % -Markup:list
+    html_table//2 % +O1:list(nvpair)
+                  % +Rows:list(list)
   ]
 ).
 
@@ -13,37 +15,133 @@
 Support for generating HTML tables based on Prolog lists.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/09-2013/10
+@version 2012/09-2013/06, 2013/09-2013/11
 */
 
-:- use_module(library(apply)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
+:- use_module(uri(rfc3987_dcg)).
 
 
 
 empty_row -->
   html(tr(td([]))).
 
-%! html_table(
-%!   +O1:list(nvpair),
-%!   +Rows:list(list(term)),
-%!   -Markup
-%! ) is det.
+
+
+% DCG %
+
+%! html_table(+Options:list(nvpair), +Rows:list(list))// is det.
+% Generates the HTML markup for a table.
+%
+% The following options are supported:
+%   1. =|caption(atom)|=
+%      The table caption, if any.
+%      Default is no caption.
+%   2. =|header(boolean)|=
+%      Whether or not the first sublist should be
+%      displayed as the table header row.
+%      Default is `true`.
+%   3. =|highlighted_rows(+Indexes:list(nonneg)|=
+%      The indexes of the rows that will be highlighted.
+%      Default: `[]`.
+%   4. =|indexed(+Indexed:boolean)|=
+%      Whether or not each row should begin with a row index.
+%      Default is `false`.
+
+html_table(O1, L1) -->
+  {flag(table_row, _, 0)},
+  html(
+    table(class=['pure-table','pure-table-bordered'], [
+      \html_table_caption(O1),
+      \html_table_header(O1, L1, L2),
+      tbody(\html_table_rows(O1, td, L2))
+    ])
+  ).
+
+html_table_caption(O1) -->
+  {option(caption(Caption), O1)}, !,
+  html(caption(Caption)).
+html_table_caption(_O1) --> !.
+
+html_table_cell(td, H) --> !,
+  html(td(H)).
+html_table_cell(th, H) --> !,
+  html(th(H)).
+
+html_table_cells(CellType, [H|T]) -->
+  html([
+    \html_table_cell(CellType, H),
+    \html_table_cells(CellType, T)
+  ]).
+html_table_cells(_CellType, []) --> [].
+
+html_table_header(O1, [H1|T], T) -->
+  {
+    option(header(true), O1), !,
+    (
+      option(indexed(true), O1)
+    ->
+      H2 = ['#'|H1]
+    ;
+      H2 = H1
+    )
+  },
+  html(thead(\html_table_row(O1, th, H2))).
+html_table_header(_O1, T, T) --> [].
+
+html_table_index_cell(O1, CellType, RowN) -->
+  {option(indexed(true), O1)}, !,
+  html(\html_table_cell(CellType, RowN)).
+html_table_index_cell(_O1, _CellType, _RowN) --> !.
+
+html_table_row(_O1, th, L) --> !,
+  html(tr(\html_table_cells(th, L))).
+html_table_row(O1, td, L) -->
+  {
+    flag(table_row, RowN, RowN + 1),
+    option(highlighted_rows(Indexes), O1, []),
+    (
+      memberchk(RowN, Indexes)
+    ->
+      O2 = [class='pure-table-odd']
+    ;
+      O2 = []
+    )
+  },
+  html(
+    tr(O2, [
+      \html_table_index_cell(O1, td, RowN),
+      \html_table_cells(td, L)
+    ])
+  ).
+
+html_table_rows(O1, CellType, [H|T]) -->
+  html_table_row(O1, CellType, H),
+  html_table_rows(O1, CellType, T).
+html_table_rows(_O1, _CellType, []) --> [].
+
+
+
+% COMPOUND %
+
+%! html_table(+O1:list(nvpair), +Rows:list(list), -Markup) is det.
 % Returns the HTML markup for a table.
 %
-% @apram O1 A list of name-value pairs. The following options are
-%        supported:
-%        1. =|caption(atom)|=
-%           The table caption, if any.
-%           Default is no caption.
-%        2. =|header(boolean)|=
-%           Whether or not the first sublist should be
-%           displayed as the table header row.
-%           Default is `true`.
-%        3. =|indexed(+Indexed:boolean)|=
-%           Whether or not each row should begin with a row index.
-%           Default is `false`.
+% The following options are supported:
+%   1. =|caption(atom)|=
+%      The table caption, if any.
+%      Default is no caption.
+%   2. =|header(boolean)|=
+%      Whether or not the first sublist should be
+%      displayed as the table header row.
+%      Default is `true`.
+%   3. =|indexed(+Indexed:boolean)|=
+%      Whether or not each row should begin with a row index.
+%      Default is `false`.
+%
+% @param O1 A list of name-value pairs.
 % @param Rows A 2D table of terms.
 % @param Markup An HTML table element.
 
@@ -71,6 +169,10 @@ table_cell(CellType, Content1, element(CellType,[],[Content2])):-
     Content1 = element(_,_,_)
   ->
     Content2 = Content1
+  ;
+    dcg_phrase('IRI', Content1)
+  ->
+    Content2 = element(a,[href=Content1],[Content1])
   ;
     % If we use term_to_atom/2 for atom terms, extra single quotes are added
     % in front and at the end of the atom. Therefore, we first check whether

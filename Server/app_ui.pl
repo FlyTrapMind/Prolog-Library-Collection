@@ -15,9 +15,8 @@ The home page for the SWAPP Website.
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
-:- use_module(server(app_server)).
+:- use_module(server(app_server)). % Make sure this is on a server.
 
 :- http_handler(root(.), home, []).
 
@@ -101,8 +100,7 @@ menu -->
         \html_module_list([ordered(false)], [])
       ])
     )
-  ),
-  {db_replace_novel(menu(true), [r])}.
+  ).
 
 menulink -->
   html(

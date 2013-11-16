@@ -109,10 +109,11 @@ dbpedia_find_concept(Name, ConceptName):-
   format(atom(Where2), 'FILTER regex(?label, "~w", "i")', [Name]),
   Where = [Where1,Where2],
   formulate_sparql(
+    _Graph,
     [],
-    'SELECT DISTINCT ?concept',
+    select([distinct(true)],[concept]),
     Where,
-    10,
+    limit([],10),
     Query
   ),
   enqueue_sparql(dbpedia, Query, _VarNames, Resources),
@@ -146,10 +147,11 @@ find_dbpedia_agent(Name, Birth, Death, DBpediaAuthor):-
     [Name, Birth, Death]
   ),
   formulate_sparql(
+    _Graph,
     [dbp,foaf],
-    'SELECT DISTINCT ?writer',
+    select([distinct(true)],[writer]),
     Where,
-    10,
+    limit([],10),
     Query
   ),
   enqueue_sparql(dbpedia, Query, _VarNames, Resources),

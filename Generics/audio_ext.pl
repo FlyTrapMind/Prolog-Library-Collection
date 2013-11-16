@@ -64,8 +64,7 @@ Bad to the bone but fine as wine
 % @tbd Currently only works for English.
 
 atom_to_mp3(Line, MP3):-
-  var(MP3),
-  !,
+  var(MP3), !,
   atom_to_mp3(Line, audio(.), MP3).
 atom_to_mp3(Line, MP3):-
   open(MP3, write, Write, [type(binary)]),
@@ -79,7 +78,6 @@ atom_to_mp3(Line, Directory, MP3):-
   %%%%sha_hash(Line, Hash, [algorithm(sha1), encoding(utf8)]),
   %%%%hash_atom(Hash, AtomicHash),
   uri_normalized(Line, FileName),
-
   create_file(Directory, FileName, mp3, MP3),
   atom_to_mp3(Line, MP3).
 
@@ -98,8 +96,7 @@ google_tts(Language, Query, URI):-
 % Returns the URI for the request to Google for returning the speech
 % variant of =Query=.
 
-google_tts(_Encoding, _Language, '', _URI):-
-  !,
+google_tts(_Encoding, _Language, '', _URI):- !,
   fail.
 google_tts(Encoding, Language, Query, URI):-
 %%%!  % Replace spaces with '%20'-s.

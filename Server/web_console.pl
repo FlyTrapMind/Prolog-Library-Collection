@@ -1,7 +1,6 @@
 :- module(
   web_console,
   [
-    input_ui/1, % -Markup:list
     push/1, % +DOM:list
     push/2, % +Type:oneof([console_output,status_pane])
             % +DOM:list
@@ -23,6 +22,7 @@ A simple Web console interface.
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(html(html_form)).
 :- use_module(http(http)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/html_head)).
@@ -99,7 +99,7 @@ A simple Web console interface.
 % The input field for the Web console.
 
 command_input -->
-  html(input([maxlength=200,name=web_command,size=62,type=text,value=''])).
+  html(input([maxlength=55,name=web_command,size=55,type=text,value=''])).
 
 %! console_input// is det.
 % Returns the markup for the web-based console.
@@ -119,21 +119,20 @@ console_input -->
     atomic_list_concat(History_, '\n', History),
     http_absolute_location(root(console), URL, [])
   },
-  html([
-    div(id=console_input, [
-      form([
-        action=URL,
-        enctype='application/x-www-form-urlencoded',
-        method=post
-      ], [
-        \history(History, HistoryLength),
-        br([]),
-        \command_input,
-        \submit_button,
-        \html_requires(css('console_input.css'))
-      ])
-    ])
-  ]).
+  html(
+    div(id=console_input,
+      \submission_form(
+        URL,
+        [
+          \history(History, HistoryLength),
+          br([]),
+          \command_input,
+          \submit_button,
+          \html_requires(css('console_input.css'))
+        ]
+      )
+    )
+  ).
 
 console_output -->
   html([
@@ -141,7 +140,6 @@ console_output -->
     \html_requires(css('console_output.css')),
     \html_requires(js('console_output.js'))
   ]).
-
 
 console_output(_Request):-
   retract(content_queue(console_output, DTD_Name, Style_Name, DOM)), !,
@@ -160,24 +158,6 @@ history(History, HistoryLength) -->
       History
     )
   ).
-
-%! input_ui(-Markup:list) is det.
-% HTML markup for an input form.
-
-input_ui([
-  element(form, [
-    action=URI,
-    enctype='application/x-www-form-urlencoded',
-    method=post
-  ], [
-    element(textarea,
-      [cols=100, name=web_input, rows=40, type=text, value=''],
-      ['']),
-    element(button,
-      [name=submit, type=submit, value='Submit'],
-      ['Submit'])])]
-):-
-  http_absolute_location(root(console), URI, []).
 
 markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
 markup_mold(StyleName/DOM, html, StyleName, DOM):- !.
@@ -267,9 +247,6 @@ status_pane -->
     \html_requires(js('status_pane.js')),
     div(id=status_pane, [])
   ]).
-
-submit_button -->
-  html(button([name=submit, type=submit, value='Submit'], 'Submit')).
 
 web_console(Request):-
   http_parameters(Request, [
