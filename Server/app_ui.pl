@@ -109,7 +109,7 @@ menulink -->
     a(
       [
         class='pure-menu-link',
-        href='menu_open',
+        href='/',
         id=menuLink,
         style='position:fixed;left:0;display:block;'
       ],
