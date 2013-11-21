@@ -29,7 +29,8 @@
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
-:- http_handler(root(tms_nav), tms_nav, [prefix]).
+:- db_add_novel(http:location(tms_nav, root(tms_nav), [])).
+:- http_handler(tms_nav(.), tms_nav, [prefix]).
 
 :- initialization(web_module_add('TMS', tms_web, tms)).
 
@@ -53,7 +54,7 @@ tms_node_web(NLabel, SVG):-
 tms_node_web_(N, SVG):-
   http_absolute_uri(tms_nav(.), BaseURL),
   tms_export_node([base_url(BaseURL),recursive(false)], N, GIF),
-  graph_to_svg_dom([], GIF, dot, SVG).
+  graph_to_svg_dom([method(dot)], GIF, SVG).
 
 %! tms_web(-DOM:list) is det.
 % Returns a DOM description of the currently loaded TMS-es.
@@ -85,5 +86,5 @@ tms_web([HTML_Table]):-
 tms_web(TMS, SVG):-
   http_absolute_uri(tms_nav(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
-  graph_to_svg_dom([], GIF, sfdp, SVG).
+  graph_to_svg_dom([method(sfdp)], GIF, SVG).
 

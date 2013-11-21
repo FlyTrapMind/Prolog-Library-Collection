@@ -640,8 +640,12 @@ http_message(http_message(T)) -->
   response(T, _Version, _Status, _MessageHeaders, _MessaageBody).
 
 http_to_gv(Tree):-
-  absolute_file_name(project(temp), File, [access(write), file_type(jpeg)]),
-  tree_to_gv_file([name('HTTP message')], Tree, dot, jpeg, File).
+  absolute_file_name(project(temp), File, [access(write),file_type(jpeg)]),
+  tree_to_gv_file(
+    [method(dot),name('HTTP message'),to_file_type(jpeg)],
+    Tree,
+    File
+  ).
 
 %! http_url(
 %!   -Tree:compound,

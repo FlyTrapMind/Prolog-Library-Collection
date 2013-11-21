@@ -1,23 +1,14 @@
 :- module(
   gv_file,
   [
-    convert_gv/4, % +FromFile:atom
-                  % +Method:oneof([dot,sfdp])
-                  % +ToFileType:oneof([jpeg,pdf,svg,xdot])
-                  % ?ToFile:atom
-    graph_to_gv_file/5, % +Options:list(nvpair)
+    graph_to_gv_file/3, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
-                        % +Method:onef([dot,sfdp])
-                        % +ToFileType:oneof([jpeg,pdf,svg,xdot])
                         % ?ToFile:atom
-    graph_to_svg_dom/4, % +Options:list(nvpair)
+    graph_to_svg_dom/3, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
-                        % +Method:onef([dot,sfdp])
                         % -SVG:list
-    tree_to_gv_file/5 % +Options:list(nvpair)
+    tree_to_gv_file/3 % +Options:list(nvpair)
                       % +Tree:compound
-                      % +Method:onef([dot,sfdp])
-                      % +ToFileType:oneof([jpeg,pdf,svg,xdot])
                       % ?ToFile:atom
   ]
 ).
@@ -31,13 +22,14 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2011-2013/09
+@version 2011-2013/09, 2013/11
 */
 
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
 :- use_module(gv(gv_dcg)).
+:- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
 :- use_module(os(shell_ext)).
@@ -58,48 +50,98 @@ and GraphViz output files or SVG DOM structures.
 
 
 
-graph_to_gv_file(_Options, GIF, Method, ToFileType, ToFile):-
+%! graph_to_gv_file(
+%!   +Options:list(nvpair),
+%!   +GIF:compound,
+%!   -ToFile:atom
+%! ) is det.
+% Returns a file containing a GraphViz visualization of the given graph.
+%
+% The following options are supported:
+%   * =|method(+Method:oneof([dot,sfdp])|=
+%     The algorithm used by GraphViz for positioning the tree nodes.
+%     Either =dot= (default) or =sfdp=.
+%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
+%     The file type of the generated GraphViz file.
+%
+% @param Options A list of name-value pairs.
+% @param GIF A compound term representing a graph.
+% @param ToFile The atomic name of a file.
+
+graph_to_gv_file(O1, GIF, ToFile):-
   once(phrase(gv_graph(GIF), Codes)),
-  to_gv_file(Codes, Method, ToFileType, ToFile).
+  to_gv_file(O1, Codes, ToFile).
 
 %! graph_to_svg_dom(
 %!   +Options:list(nvpair),
 %!   +GraphInterchangeFormat:compound,
-%!   +Method:onef([dot,sfdp]),
 %!   -SVG:list
 %! ) is det.
+% The following options are supported:
+%   * =|method(+Method:oneof([dot,sfdp])|=
+%     The algorithm used by GraphViz for positioning the tree nodes.
+%     Either =dot= (default) or =sfdp=.
 
-graph_to_svg_dom(Options, GIF, Method, SVG):-
-  graph_to_gv_file(Options, GIF, Method, svg, ToFile),
+graph_to_svg_dom(O1, GIF, SVG):-
+  % Make sure the file type of the output file is SVG.
+  merge_options([to_file_type(svg)], O1, O2),
+  graph_to_gv_file(O2, GIF, ToFile),
   file_to_svg(ToFile, SVG),
   safe_delete_file(ToFile).
 
-tree_to_gv_file(O, Tree, Method, ToFileType, ToFile):-
-  once(phrase(gv_tree(O, Tree), Codes)),
-  to_gv_file(Codes, Method, ToFileType, ToFile).
+%! tree_to_gv_file(
+%!   +Options:list(nvpair),
+%!   +Tree:compound,
+%!   +Method:onef([dot,sfdp]),
+%!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
+%!   ?ToFile:atom
+%! ) is det.
+% Stores the given tree term into a GraphViz file.
+%
+% The following options are supported:
+%   * =|method(+Method:oneof([dot,sfdp])|=
+%     The algorithm used by GraphViz for positioning the tree nodes.
+%     Either =dot= (default) or =sfdp=.
+%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
+%     The file type of the generated GraphViz file.
+%
+% @param Options A list of name-value pairs.
+% @param Tree A compound term representing a tree.
+% @param ToFile The atomic name of the generated file.
+
+tree_to_gv_file(O1, Tree, ToFile):-
+  once(phrase(gv_tree(O1, Tree), Codes)),
+  to_gv_file(O1, Codes, ToFile).
 
 
 
 % SUPPORT PREDICATES %
 
-%! convert_gv(
-%!   +FromFile:atom,
-%!   +Method:oneof([dot,sfdp]),
-%!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
-%!   ?ToFile:atom
-%! ) is det.
+%! convert_gv(+Options:list(nvpair), +FromFile:atom, ?ToFile:atom) is det.
 % Converts a GraphViz DOT file to an image file, using a specific
 % visualization method.
 %
+% The following options are supported:
+%   * =|method(+Method:oneof([dot,sfdp])|=
+%     The algorithm used by GraphViz for positioning the tree nodes.
+%     Either =dot= (default) or =sfdp=.
+%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
+%     The file type of the generated GraphViz file.
+%
+% @param Options
 % @param FromFile
-% @param Method
-% @param ToFileType
 % @param ToFile
 
-convert_gv(FromFile, Method, ToFileType, ToFile):-
-  % Type checks.
+convert_gv(O1, FromFile, ToFile):-
+  % The input file must be readable.
   access_file(FromFile, read),
+
+  % The method option.
+  option(method(Method), O1, dot),
   must_be(oneof([dot,sfdp]), Method),
+
+  % The file type option.
+  option(to_file_type(ToFileType), O1, pdf),
   prolog_file_type(ToExtension, ToFileType),
   prolog_file_type(ToExtension, graphviz_output), !,
 
@@ -138,14 +180,15 @@ convert_gv(FromFile, Method, ToFileType, ToFile):-
     )
   ).
 
-%! to_gv_file(
-%!   +Codes:list(code),
-%!   +Method:onef([dot,sfdp]),
-%!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
-%!   ?ToFile:atom
-%! ) is det.
+%! to_gv_file(+Options:list(nvpair), +Codes:list(code), ?ToFile:atom) is det.
+% The following options are supported:
+%   * =|method(+Method:oneof([dot,sfdp])|=
+%     The algorithm used by GraphViz for positioning the tree nodes.
+%     Either =dot= (default) or =sfdp=.
+%   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
+%     The file type of the generated GraphViz file.
 
-to_gv_file(Codes, Method, ToFileType, ToFile):-
+to_gv_file(O1, Codes, ToFile):-
   absolute_file_name(
     project(tmp),
     FromFile,
@@ -156,6 +199,6 @@ to_gv_file(Codes, Method, ToFileType, ToFile):-
     put_codes(Out, Codes),
     close(Out)
   ),
-  convert_gv(FromFile, Method, ToFileType, ToFile),
+  convert_gv(O1, FromFile, ToFile),
   safe_delete_file(FromFile).
 

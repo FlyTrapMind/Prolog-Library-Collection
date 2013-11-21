@@ -63,11 +63,11 @@ rdf_voc(GIF):-
 rdf_voc_pdf(File):-
   (nonvar(File) -> access_file(File, write); true),
   rdf_voc(GIF),
-  graph_to_gv_file([], GIF, sfdp, pdf, File).
+  graph_to_gv_file([method(sfdp),to_file_type(pdf)], GIF, File).
 
 rdf_voc_web(SVG):-
   rdf_voc(GIF),
-  graph_to_svg_dom([], GIF, sfdp, SVG).
+  graph_to_svg_dom([method(sfdp)], GIF, SVG).
 
 
 
@@ -97,11 +97,11 @@ rdfs_voc(GIF):-
 rdfs_voc_pdf(File):-
   (nonvar(File) -> access_file(File, write); true),
   rdfs_voc(GIF),
-  graph_to_gv_file([], GIF, sfdp, pdf, File).
+  graph_to_gv_file([method(sfdp),to_file_type(pdf)], GIF, File).
 
 rdfs_voc_web(SVG):-
   rdfs_voc(GIF),
-  graph_to_svg_dom([], GIF, sfdp, SVG).
+  graph_to_svg_dom([method(sfdp)], GIF, SVG).
 
 
 

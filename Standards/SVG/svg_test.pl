@@ -35,7 +35,7 @@ test(svg_document, []):-
   ),
   atom_codes(Atom, Codes),
   formatnl(Atom),
-  tree_to_gv_file([], Tree, dot, pdf, File),
+  tree_to_gv_file([method(dot),to_file_type(pdf)], Tree, File),
   formatnl(File).
 
 :- end_tests(svg_dom).
@@ -53,7 +53,7 @@ test(svg_rectangle, []):-
   ),
   atom_codes(Atom, Codes),
   formatnl(Atom),
-  tree_to_gv_file([], Tree, dot, pdf, File),
+  tree_to_gv_file([method(dot),to_file_type(pdf)], Tree, File),
   formatnl(File).
 
 :- end_tests(svg_elements).
