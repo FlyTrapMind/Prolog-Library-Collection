@@ -91,7 +91,7 @@ A simple Web console interface.
   'The number of previously issued Web commands that are shown in the UI.'
 ).
 
-:- initialization(web_module_add('Console', web_console, console)).
+:- initialization(web_module_add('Web Console', web_console, console)).
 
 
 
@@ -266,7 +266,7 @@ web_console(Request):-
   ;
     true
   ),
-  reply_html_page(app_style, title('Console'), \web_console).
+  reply_html_page(app_style, title('Web Console'), \web_console).
 
 web_console -->
   html(

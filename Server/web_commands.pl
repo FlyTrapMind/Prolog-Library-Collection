@@ -23,11 +23,15 @@ that can be issued via the Web interface.
 :- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(doc_http)).
+:- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(server(web_modules)).
 
 :- web_module_add('Web commands', web_commands, command).
+
+:- http_handler(root(command), command, []).
 
 
 
@@ -35,6 +39,16 @@ that can be issued via the Web interface.
 % Clears the output region of the PraSem Web interface.
 
 clear_web([]).
+
+command(_Request):-
+  reply_html_page(
+    app_style,
+    title('Web commands'),
+    [
+      p('Web commands can only be accessed via the Web console (for now).'),
+      p('We are working on direct JSON access.')
+    ]
+  ).
 
 %! documentation_web(-Markup:list) is det.
 % Opens a client browser for the documentation server (plDoc).
