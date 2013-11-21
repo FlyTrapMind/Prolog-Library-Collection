@@ -152,12 +152,7 @@ user:head(dev_style, _Head) -->
   html(head(title(Project))).
 
 history(History, HistoryLength) -->
-  html(
-    textarea(
-      [cols=60,name=history,onclick='clickme(\'aap\')',rows=HistoryLength],
-      History
-    )
-  ).
+  html(textarea([cols=60,name=history,rows=HistoryLength], History)).
 
 markup_mold(DTD_Name/StyleName/DOM, DTD_Name, StyleName, DOM):- !.
 markup_mold(StyleName/DOM, html, StyleName, DOM):- !.

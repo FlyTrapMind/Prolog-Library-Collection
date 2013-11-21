@@ -10,11 +10,18 @@
                       % +DefaultValue
                       % -StoredValue
                       % -NewOptions:list(nvpair)
-    option_deprecated/2, % +AnyOption
-                         % -NondepOption
     option_ext/3, % ?Option
                   % +Options:list
                   % +Default
+    option_format/2, % +OptionAnyFormat:compound
+                     % -OptionStandardFormat:compound
+    option_format/3, % +OptionAnyFormat:compound
+                     % -Name:atom
+                     % -Value
+    option_member/2, % +Option:compound
+                     % +Options:list(compound)
+    option_memberchk/2, % +Option:compound
+                        % +Options:list(compound)
     replace_option/5, % +OldOptions:list(nvpair)
                       % +Name:atom
                       % +NewValue
@@ -85,21 +92,6 @@ default_option(OldOptions, Name, DefaultValue, DefaultValue, NewOptions):-
   Option =.. [Name,DefaultValue],
   merge_options([Option], OldOptions, NewOptions).
 
-%! option_deprecated(+AnyOption, -NondepOption) is det.
-% Ensures that an option uses the non-depracated format:
-% ~~~
-% Name(Value)
-% ~~~
-%
-% Also allows the deprecated format as input:
-% ~~~
-% Name=Value
-% ~~~
-
-option_deprecated(Name=Value, Name=Value):- !.
-option_deprecated(Option, Name=Value):-
-  Option =.. [Name, Value].
-
 option_ext(Option, Options, Default):-
   functor(Option, Name, Arity),
   functor(MatchOption, Name, Arity),
@@ -124,6 +116,33 @@ option_ext(Option, Options, Default):-
     arg(1, Option, Default)
   ).
 
+%! option_format(+AnyOption, -NondepOption) is det.
+% Ensures that an option uses the non-depracated format:
+% ~~~
+% Name(Value)
+% ~~~
+%
+% Also allows the deprecated format as input:
+% ~~~
+% Name=Value
+% ~~~
+
+option_format(Name=Value, Name=Value):- !.
+option_format(Option, Name=Value):-
+  Option =.. [Name,Value].
+
+option_format(Name=Value, Name, Value):- !.
+option_format(Option, Name, Value):-
+  Option =.. [Name,Value].
+
+option_member(Option1, Options):-
+  option_format(Option1, Option2),
+  member(Option2, Options).
+
+option_memberchk(Option1, Options):-
+  option_format(Option1, Option2),
+  memberchk(Option2, Options).
+
 %! replace_option(
 %!   +OldOptions:list(nvpair),
 %!   +Name:atom,
@@ -139,8 +158,8 @@ replace_option(OldOptions, Name, NewValue, OldValue, NewOptions):-
   merge_options([NewOption], TempOptions, NewOptions).
 
 subtract_option(Old1, Del1, New):-
-  maplist(option_deprecated, Old1, Old2),
-  maplist(option_deprecated, Del1, Del2),
+  maplist(option_format, Old1, Old2),
+  maplist(option_format, Del1, Del2),
   subtract(Old2, Del2, New).
 
 update_option(OldOptions, Name, Predicate, NewOptions):-

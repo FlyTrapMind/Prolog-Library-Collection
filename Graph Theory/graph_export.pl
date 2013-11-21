@@ -131,7 +131,7 @@ shared_attribute([T1|Ts], N=V):-
   T1 =.. L1,
   last(L1, Attrs1),
   member(Attr1, Attrs1),
-  option_deprecated(Attr1, N=V),
+  option_format(Attr1, N=V),
   % The colorscheme cannot be part of this, apparently.
   N \== colorscheme,
   forall(
@@ -140,7 +140,7 @@ shared_attribute([T1|Ts], N=V):-
       T2 =.. L2,
       last(L2, Attrs2),
       member(Attr2, Attrs2),
-      option_deprecated(Attr2, N=V)
+      option_format(Attr2, N=V)
     )
   ).
 

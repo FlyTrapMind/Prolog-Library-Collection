@@ -67,15 +67,16 @@ http_parms2(Request, Params, DeclGoal, Data2) :-
 %! http_read_json2(+Request:list(nvpair), -JSON:compound) is det.
 % @see Like http_read_json/2, but is not restricted to the HTTP POST method.
 
-http_read_json2(Request, JSON):-
+http_read_json2(Request, JSON2):-
   memberchk(content_type(Type), Request),
   (
     http_json:is_json_type(Type)
   ->
-    http_read_data(Request, JSON, [])
+    http_read_data(Request, JSON1, [])
   ;
     domain_error(mimetype, Type)
-  ).
+  ),
+  JSON1 = json(JSON2).
 
 json_header_row([json(L1)|_], L2):-
   maplist(json_name, L1, L2).
