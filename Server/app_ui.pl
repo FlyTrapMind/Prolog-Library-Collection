@@ -52,7 +52,7 @@ user:body(app_style, Content) -->
 content(Content) -->
   % Centering content:
   % `style='margin-left:auto;margin-right:auto;width:50em;`
-  html(div(class=content, Content)).
+  html(div([class=content,id=content], Content)).
 
 footer -->
   html(
