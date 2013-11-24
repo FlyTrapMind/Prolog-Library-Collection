@@ -4,6 +4,8 @@
     user_input/3, % +Message:atom
                   % :LegalAnswer:dcg
                   % -Answer:atom
+    user_input_directory/2, % +RelativeFile:atom
+                            % -AbsoluteFile:atom
     user_input_file/3, % +Message:atom
                        % +Directory:atom
                        % -Filepath:atom
@@ -23,7 +25,7 @@ Handles user input and sequences in which user input is needed continuously
 (called "user interaction").
 
 @author Wouter Beek
-@version 2013/10
+@version 2013/10-2013/11
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -113,6 +115,22 @@ user_input(Msg, Legal, Answer):-
     once(phrase(dcg_call(Legal, Answer), Codes)), !
   ;
     user_input(Msg, Legal, Answer)
+  ).
+
+%! user_input_directory(+RelativeFile:atom, -AbsoluteFile:atom) is det.
+% This assumes that the file base name and type are known,
+% but the encloding directory is not.
+%
+% @param RelativeFile
+% @param AbsoluteFile
+
+user_input_directory(RelativeFile, AbsoluteFile):-
+  format(atom(Msg), 'Enter the directory holding file ~w.', [RelativeFile]),
+  user_input(Msg, legal_directory, Dir),
+  absolute_file_name(
+    RelativeFile,
+    AbsoluteFile,
+    [access(read),file_errors(fail),relative_to(Dir)]
   ).
 
 %! user_input_file(+Message:atom, +Directory:atom, -Filepath:atom) is det.
@@ -213,3 +231,4 @@ user_interaction(y, O1, Act, G, I1, L, Hs, Ts):- !,
   apply(G, T),
   I2 is I1 + 1,
   user_interaction(O1, Act, G, I2, L, Hs, Ts).
+
