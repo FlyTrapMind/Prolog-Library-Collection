@@ -81,6 +81,7 @@ We use the following abbreviations in this module:
 */
 
 :- use_module(generics(atom_ext)).
+:- use_module(generics(db_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(script_ext)).
 :- use_module(library(debug)).

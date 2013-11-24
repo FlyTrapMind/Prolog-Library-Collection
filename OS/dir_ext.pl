@@ -111,7 +111,7 @@ create_nested_directory(NestedDir, Absolute):-
   create_directory(Absolute).
 create_nested_directory(NestedDir, Absolute):-
   % First we construct the atomic name of the outer directory.
-  NestedDir =.. [NestedOuter, NestedInner],
+  NestedDir =.. [NestedOuter,NestedInner],
   create_nested_directory(NestedOuter, AbsoluteOuter),
   % Then we add the inner directories recursively.
   create_nested_directory(NestedInner, AbsoluteOuter, Absolute).
