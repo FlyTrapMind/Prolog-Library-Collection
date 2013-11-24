@@ -65,6 +65,7 @@ SWI-Prolog defines the following HTTP handlers:
 ).
 
 :- meta_predicate(start_server(+,:)).
+:- meta_predicate(start_server_on_next_port(+,+,:)).
 
 :- multifile(prolog:message//1).
 
@@ -105,10 +106,20 @@ start_server(Port, ServerGoal0):-
   % Allow a custom goal for server dispatching.
   default(ServerGoal0, http_dispatch, ServerGoal),
 
-  http_server(ServerGoal, [port(Port),workers(NumberOfWorkers)]),
+  start_server_on_next_port(Port, NumberOfWorkers, ServerGoal),
 
   % INFO
   print_message(informational, server_ext(started(Port))).
+
+start_server_on_next_port(Port, NumberOfWorkers, ServerGoal):-
+  catch(
+    http_server(ServerGoal, [port(Port),workers(NumberOfWorkers)]),
+    error(socket_error(_Msg), _),
+    (
+      NextPort is Port + 1,
+      start_server_on_next_port(NextPort, NumberOfWorkers, ServerGoal)
+    )
+  ).
 
 prolog:message(server_ext(started(Port))) -->
   {setting(http:prefix, Prefix)},
