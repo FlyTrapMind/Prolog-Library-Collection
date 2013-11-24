@@ -22,7 +22,7 @@
 Converts XML DOMs to RDF graphs.
 
 @author Wouter Beek
-@version 2013/06, 2013/09-2013/10
+@version 2013/06, 2013/09-2013/11
 */
 
 :- use_module(generics(list_ext)).
@@ -91,8 +91,9 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
 create_triple(S, P, literal, Content, G):- !,
   rdf_assert_literal(S, P, Content, G).
 % Typed literal.
-create_triple(S, P, D, Content, G):-
-  rdf_assert_datatype(S, P, D, Content, G).
+create_triple(S, P, D1, Content, G):-
+  xsd_datatype(D1, D2), !,
+  rdf_assert_datatype(S, P, D2, Content, G).
 % IRI.
 create_triple(S, P, _, Content, G):-
   % Spaces are not allowed in IRIs.

@@ -18,6 +18,7 @@ Predicates for handling LaTeX files.
 
 @author Wouter Beek
 @version 2013/06, 2013/08
+@tbd Update using new methods in DIR_EXT and FILE_EXT, e.g. directory_files/3.
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -139,7 +140,7 @@ latex_code_convert(Local, Directory):-
     absolute_file_name(
       Local,
       PrologFile,
-      [file_type(prolog), relative_to(Directory)]
+      [file_type(prolog),relative_to(Directory)]
     )
   ),
   !,
@@ -269,7 +270,12 @@ latex_convert_file(FromFile, ToDir):-
 latex_convert_directory(From):-
   access_file(From, read),
   directory_files(
-    [file_types([latex_in]),include_directories(false),recursive(true)],
+    [
+      file_types([latex_in]),
+      include_directories(false),
+      order(lexicographic),
+      recursive(true)
+    ],
     From,
     Entries
   ),

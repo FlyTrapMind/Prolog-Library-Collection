@@ -83,20 +83,30 @@ xml_stream0(Stream, StartTag-EndTag, Goal, StoreGoal, StoreNumber):-
   (
     peek_atom(Stream, StartTag)
   ->
+    % Read the next content between the given start and end tags
+    % (including those tags).
     setup_call_cleanup(
       tmp_file_stream(utf8, File, Out),
       xml_stream1(Stream, StartTag-EndTag, Out),
       close(Out)
     ),
-    % Turn the situatiun around: from writing to reading.
+
+    % Turn the situation around: from writing to reading.
     setup_call_cleanup(
       open(File, read, In, [encoding(utf8),type(test)]),
       (
         load_structure(
           In,
           DOM,
-          [dialect(xml),shorttag(false),space(remove)]
+          [
+            case_sensitive_attributes(true),
+            dialect(xml),
+            max_errors(1),
+            shorttag(false),
+            space(remove)
+          ]
         ),
+        % Execute the custom goal on the DOM of a single tag-delimited entry.
         call(Goal, DOM)
       ),
       (

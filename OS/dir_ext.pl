@@ -36,7 +36,7 @@ Extensions for handling directories.
 
 @author Wouter Beek
 @tbd Add safe_delete_directory/1.
-@version 2013/06-2013/07, 2013/09
+@version 2013/06-2013/07, 2013/09, 2013/11
 */
 
 :- use_module(generics(atom_ext)).
@@ -45,6 +45,7 @@ Extensions for handling directories.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
+:- use_module(library(ordsets)).
 :- use_module(os(file_ext)).
 
 :- debug(dir_ext).
@@ -193,6 +194,10 @@ create_project_subdirectory(Nested, Abs):-
 %   * =|include_directories(+Include:boolean)|=
 %     Whether (sub)directories are included or not.
 %     Default `false`.
+%   * =|order(+Order:oneof([lexicographic,none]))|=
+%     The order in which the files are returned.
+%     Lexicographic order uses ordsets.
+%     Default `none`.
 %   * =|recursive(+Recursive:boolean)|=
 %     Whether subdirectories are searched recursively.
 %     Default `true`.
@@ -223,12 +228,13 @@ directory_files(O1, [Dir|T1], Sol2):-
   file_name_type(_Base1, directory, Dir), !,
 
   % From directory to files.
+  % Note that the list of files is *not* ordered!
   directory_files(Dir, NewFs1),
 
   % Make the file names absolute.
   maplist(directory_file_path(Dir), NewFs1, NewFs2),
 
-  % Add to stack.
+  % Add the new file names to the processed stack.
   append(T1, NewFs2, T2),
 
   % Recurse.
@@ -243,14 +249,23 @@ directory_files(O1, [Dir|T1], Sol2):-
     Sol2 = [Dir|Sol1]
   ).
 % Files with matching file type.
-directory_files(O1, [F|T1], [F|Sol]):-
+directory_files(O1, [F|T1], Sol2):-
   file_name_type(_Base, FT, F),
 
   % File type filter.
   option(file_types(FTs), O1, [_]),
   memberchk(FT, FTs), !,
 
-  directory_files(O1, T1, Sol).
+  directory_files(O1, T1, Sol1),
+  
+  option(order(Order), O1, none),
+  (
+    Order == lexicographic
+  ->
+    ord_add_element(Sol1, F, Sol2)
+  ;
+    Sol1 = [F|Sol2]
+  ).
 % Files with non-matching file type.
 directory_files(O1, [_|T], Sol):-
   directory_files(O1, T, Sol).

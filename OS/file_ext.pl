@@ -268,7 +268,15 @@ is_absolute_file_name2(F):-
 
 merge_into_one_file(FromDir, ToFile):-
   directory_files(
-    [file_types([text]),include_directories(false),recursive(true)],
+    [
+      file_types([text]),
+      include_directories(false),
+      % It may for instance be reasonable to assume that
+      % files with names ending in numbers are merged in the order
+      % that is indicated by those numbers.
+      order(lexicographic),
+      recursive(true)
+    ],
     FromDir,
     FromFiles
   ),
@@ -281,7 +289,15 @@ merge_into_one_file(FromDir, ToFile):-
 
 merge_into_one_file(PS, FromDir, ToFile):-
   directory_files(
-    [file_types([text]),include_directories(false),recursive(true)],
+    [
+      file_types([text]),
+      include_directories(false),
+      % It may for instance be reasonable to assume that
+      % files with names ending in numbers are merged in the order
+      % that is indicated by those numbers.
+      order(lexicographic),
+      recursive(true)
+    ],
     FromDir,
     FromFiles
   ),

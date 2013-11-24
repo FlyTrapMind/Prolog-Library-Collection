@@ -767,8 +767,12 @@ xsd_canonicalMap_(xsd:string, String, LEX):- !,
   stringCanonicalMap(String, LEX).
 xsd_canonicalMap_(xsd:time, Time, LEX):- !,
   timeCanonicalMap(Time, LEX).
-xsd_canonicalMap_(Datatype, _Value, _LEX):- !,
-  debug(xsd, 'There is not canonical map for datatype ~w.', [Datatype]),
+xsd_canonicalMap_(Datatype, Value, _LEX):- !,
+  debug(
+    xsd,
+    'There is no canonical map for value ~w of datatype ~w.',
+    [Value,Datatype]
+  ),
   fail.
 
 %! xsd_canonize_graph(+Graph:atom) is det.

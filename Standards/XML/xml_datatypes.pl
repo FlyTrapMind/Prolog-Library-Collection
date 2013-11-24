@@ -200,7 +200,7 @@ xml_name_start_char(C) --> {between(65536, 983039, C)}.
 %! xml_namespaced_name(:DCG_Namespace, :DCG_Name)//
 
 xml_namespaced_name(DCG_Namespace, DCG_Name) -->
-  {phrase(DCG_Namespace, "")},
+  {phrase(DCG_Namespace, [])},
   DCG_Name.
 xml_namespaced_name(DCG_Namespace, DCG_Name) -->
   DCG_Namespace,

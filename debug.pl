@@ -31,8 +31,12 @@
 :- set_portray_text(ellipsis, 100).
 
 % Enforce more stringent style checking.
-:- style_check(+string).
+:- style_check(+atom).
 :- style_check(+charset).
+:- style_check(+discontiguous).
+:- style_check(+no_effect).
+:- style_check(+singleton).
+%:- style_check(+var_branches).
 
 % Set the swipl terminal state via PCE.
 % When swipl is started from within a terminal this does not change

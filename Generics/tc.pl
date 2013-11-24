@@ -66,7 +66,11 @@ document_frequency(Term, DF):-
 
 load_examples:-
   absolute_file_name(data('Newsgroups'), Dir),
-  directory_files([include_directories(false),recursive(true)], Dir, Files),
+  directory_files(
+    [include_directories(false),order(lexicographic),recursive(true)],
+    Dir,
+    Files
+  ),
   debug(tc, 'About to load ~w files.', [Files]),
   forall(
     member(File, Files),
