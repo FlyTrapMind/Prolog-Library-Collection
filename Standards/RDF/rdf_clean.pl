@@ -286,7 +286,7 @@ rdf_split_string0(Split, S, P, OldLit, G):-
 %!   ?Predicate:uri,
 %!   ?Graph:atom
 %! ) is det.
-% Strip RDF string datatypes.
+% Strip RDF literals.
 
 rdf_strip_literal(O1, Strips, S, P, G):-
   findall(

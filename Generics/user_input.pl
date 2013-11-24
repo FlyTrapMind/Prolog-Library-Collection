@@ -146,7 +146,7 @@ user_input_filepath(Msg, Filepath):-
 
 %! user_interaction(
 %!   +Options:list(nvpair),
-%!   +Action:atom,
+%!   +ActionDescription:atom,
 %!   :Goal,
 %!   +Headers:list(atom),
 %!   +Tuples:list(term)
@@ -160,9 +160,12 @@ user_input_filepath(Msg, Filepath):-
 %
 % Receiving input from the user does not work in threads!
 %
+% The following options are supported:
+%   * =|answer(+Answer:oneof(['A',n,q,y]]))|=
+%
 % @param Options A list of name-value pairs.
-% @param Action An atomic description of the action that is performed by
-%        the goal.
+% @param ActionDescription An atomic description of the action
+%        that is performed by the goal.
 % @param Goal An arbitrary Prolog goal that takes the number of elements
 %        in each tuple as the number of arguments.
 % @param Headers A list of atoms describing the entries in each tuple.
@@ -176,6 +179,18 @@ user_interaction(O1, Act, G, Hs, Ts):-
   flag(user_interaction, _OldCounter, 0),
   length(Ts, NumberOfTs),
   user_interaction(O1, Act, G, 1, NumberOfTs, Hs, Ts).
+
+%! user_interaction(
+%!   +Options:list(nvpair),
+%!   +ActionDescription:atom,
+%!   :Goal,
+%!   +IndexOfTuple:positive_integer,
+%!   +NumberOfTuples:positive_integer,
+%!   +Headers:list(atom),
+%!   +Tuples:list(term)
+%! ) is det.
+% The following options are supported:
+%   * =|answer(+Answer:oneof(['A',n,q,y]]))|=
 
 user_interaction(_O1, Act, _G, _I, _L, _Hs, []):-
   format(user_output, '\n-----\nDONE! <~w>\n-----\n', [Act]), !.
@@ -202,6 +217,17 @@ user_interaction(O1, Act, G, I, L, Hs, Ts):-
 
   % Execute the goal based on the user input.
   user_interaction(Answer, O1, Act, G, I, L, Hs, Ts).
+
+%! user_interaction(
+%!   +Answer:oneof(['A',n,q,y]),
+%!   +Options:list(nvpair),
+%!   +ActionDescription:atom,
+%!   :Goal,
+%!   +IndexOfTuple:positive_integer,
+%!   +NumberOfTuples:positive_integer,
+%!   +Headers:list(atom),
+%!   +Tuples:list(term)
+%! ) is det.
 
 user_interaction('A', _O1, _Act, G, I1, L, _Hs, Ts):- !,
   forall(
