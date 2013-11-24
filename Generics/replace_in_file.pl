@@ -79,3 +79,4 @@ replace_in_file(_Out, _DCG_From, _DCG_To) --> [].
 
 trim_spaces(F1, F2):-
   replace_in_file(F1, dcg_multi(space, 1-_), space, F2).
+

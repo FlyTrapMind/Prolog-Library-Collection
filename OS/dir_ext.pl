@@ -203,30 +203,37 @@ create_project_subdirectory(Nested, Abs):-
 %
 % @see directory_files/2
 
+directory_files(O1, X, Sol):-
+  \+ is_list(X), !,
+  directory_files(O1, [X], Sol).
 % Done!
 directory_files(_O1, [], []):- !.
 % Non-file entry.
-directory_files(O1, ['.'|T], Sol):- !,
+directory_files(O1, [Dir|T], Sol):-
+  directory_to_subdirectories(Dir, SubDirs),
+  last(SubDirs, '.'), !,
   directory_files(O1, T, Sol).
 % Non-file entry.
-directory_files(O1, ['..'|T], Sol):- !,
+directory_files(O1, [Dir|T], Sol):-
+  directory_to_subdirectories(Dir, SubDirs),
+  last(SubDirs, '..'), !,
   directory_files(O1, T, Sol).
 % Directories.
 directory_files(O1, [Dir|T1], Sol2):-
   file_name_type(_Base1, directory, Dir), !,
-  
+
   % From directory to files.
   directory_files(Dir, NewFs1),
-  
+
   % Make the file names absolute.
   maplist(directory_file_path(Dir), NewFs1, NewFs2),
-  
+
   % Add to stack.
   append(T1, NewFs2, T2),
-  
+
   % Recurse.
   directory_files(O1, T2, Sol1),
-  
+
   % Whether directories are included or not.
   (
     option(include_directories(false), O1, false)
@@ -238,11 +245,11 @@ directory_files(O1, [Dir|T1], Sol2):-
 % Files with matching file type.
 directory_files(O1, [F|T1], [F|Sol]):-
   file_name_type(_Base, FT, F),
-  
+
   % File type filter.
   option(file_types(FTs), O1, [_]),
   memberchk(FT, FTs), !,
-  
+
   directory_files(O1, T1, Sol).
 % Files with non-matching file type.
 directory_files(O1, [_|T], Sol):-
@@ -326,7 +333,7 @@ safe_delete_directory_contents(O1, Dir):-
   % Recurse over the given file type, since it may be associated with
   % multiple extensions.
   directory_files(O1, Dir, Fs),
-  
+
   % Delete all files.
   % This may throw permission exceptions.
   maplist(safe_delete_file, Fs).

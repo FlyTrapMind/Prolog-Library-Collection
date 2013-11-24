@@ -37,6 +37,7 @@ Extensions for running automated scripts in stages.
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
+:- use_module(os(io_ext)).
 
 :- meta_predicate(script(+,+,:)).
 :- meta_predicate(script_stage(+,+,+,+,3)).
@@ -112,6 +113,9 @@ script_clean:-
 % @param Options A list of name-value pairs.
 % @param Process The atomic name of the overall script.
 % @param Stages A list of compound terms identifying script stages.
+%
+% @tbd If the `to/3` option is not set, then it is not clear whether a
+%      stage has been processed or not.
 
 script(O1, Process, Stages):-
   % Beginning the script.
@@ -222,10 +226,10 @@ script_end(_O1, Process):-
 % `Goal` receives the from and to files as arguments.
 %
 % The following options are supported:
-%   * =|actual(ActualNumberOfApplications:nonneg)|=
-%   * =|from(FromDirectory:oneof([input]),positive_integer,FromFile:atom,FromFileType:atom)|=
-%   * =|potential(PotentialNumberOfApplications:nonneg)|=
-%   * =|to(ToDirectory:oneof([output]),positive_integer,ToFile:atom,ToFileType:atom)|=
+%   * =|actual(+ActualNumberOfApplications:nonneg)|=
+%   * =|from(+FromDirectory:or([oneof([input]),positive_integer]),+FromFile:atom,+FromFileType:atom)|=
+%   * =|potential(+PotentialNumberOfApplications:nonneg)|=
+%   * =|to(+ToDirectory:or([oneof([output]),positive_integer]),+ToFile:atom,+ToFileType:atom)|=
 
 script_stage(O1, Process, Stage1, Stage2, Goal):-
   script_stage_from_directory(O1, Stage1, FromDir),
@@ -239,6 +243,13 @@ script_stage(O1, Process, Stage, _FromDir, ToDir, _Goal):-
     ToFileName,
     _ToFile,
     [access(read),file_errors(fail),file_type(ToFileType),relative_to(ToDir)]
+  ), !,
+  debug(script_ext, '~w stage ~w was skipped.', [Process,Stage]).
+script_stage(_O1, Process, Stage, _FromDir, ToDir, _Goal):-
+  absolute_file_name(
+    'FINISHED',
+    _ToFile,
+    [access(read),file_errors(fail),relative_to(ToDir)]
   ), !,
   debug(script_ext, '~w stage ~w was skipped.', [Process,Stage]).
 % This stage has not been perfomed yet.
@@ -257,7 +268,7 @@ script_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
   call(Goal, Process-Stage, FromArg, ToArg),
 
   % Ending of a script stage.
-  script_stage_end(O1, Process, Stage).
+  script_stage_end(O1, Process, Stage, ToDir).
 
 script_stage_begin(O1, Process, Stage):-
   % The number of actual applications.
@@ -272,8 +283,14 @@ script_stage_begin(O1, Process, Stage):-
 
   debug(script_ext, 'Starting ~w stage ~w.', [Process,Stage]).
 
-script_stage_end(_O1, Process, Stage):-
+script_stage_end(_O1, Process, Stage, ToDir):-
   script_stage_eval(Process, Stage),
+  absolute_file_name(
+    'FINISHED',
+    ToFile,
+    [access(write),file_errors(fail),relative_to(ToDir)]
+  ),
+  atom_to_file('', ToFile),
   debug(script_ext, 'Ending ~w stage ~w.', [Process,Stage]).
 
 %! script_stage_from_arg(
@@ -301,10 +318,25 @@ script_stage_from_arg(O1, Stage, FromDir, FromArg):-
       ]
     ), !
   ;
-    % For the input stage we allow the user to provide a file.
+    % For the input stage we allow the file to be absent.
+    % The user is asked to provide a file location.
     Stage == 0,
     file_name_type(FromFileName, FromFileType, RelativeFile),
-    user_input_directory(RelativeFile, FromArg)
+    user_input_directory(RelativeFile, AbsoluteFile),
+
+    % Now that we have the location of the input file,
+    % we copy it into project folder `Data/Input`.
+    absolute_file_name(
+      FromFileName,
+      FromArg,
+      [
+        access(write),
+        file_errors(fail),
+        file_type(FromFileType),
+        relative_to(FromDir)
+      ]
+    ),
+    safe_copy_file(AbsoluteFile, FromArg)
   ).
 % Read from the previous stage directory.
 script_stage_from_arg(_O1, _Stage, FromDir, FromDir):-
