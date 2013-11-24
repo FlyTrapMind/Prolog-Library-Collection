@@ -14,7 +14,7 @@
 Asserts statistics for VoID descriptions.
 
 @author Wouter Beek
-@version 2013/03-2013/05, 2013/09-2013/10
+@version 2013/03-2013/05, 2013/09-2013/11
 */
 
 :- use_module(generics(meta_ext)).
@@ -26,6 +26,7 @@ Asserts statistics for VoID descriptions.
 :- use_module(os(datetime_ext)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(xml(xml_namespace)).
 
@@ -64,10 +65,26 @@ void_assert_statistics(DD_G):-
 %! void_assert_statistics(
 %!   +VoID_Graph:atom,
 %!   +Dataset:iri,
-%!   +DatasetGraph:atom
+%!   +DatasetGraphOrFile:atom
 %! ) is det.
 
+% The dataset is stored in a file; load it into memory.
+void_assert_statistics(DD_G, DS, DS_F),
+  is_absolute_file_name(DS_F), !,
+  % Load the dataset file in and out of memory.
+  setup_call_cleanup(
+    (
+      % Make sure the graph name is not in use yet.
+      file_to_graph_name(DS_F, DS_G),
+      rdf_load2(DS_F, [format(turtle),graph(DS_G)])
+    ),
+    void_assert_statistics(DD_G, DS, DS_G),
+    rdf_unload_graph(DS_G)
+  ).
+% The dataset is loaded in memory.
 void_assert_statistics(DD_G, DS, DS_G):-
+  rdf_graph(DS_G), !,
+  
   % void:classes
   count_classes(DS_G, NC),
   rdf_overwrite_datatype(DS, void:classes, xsd:integer, NC, DD_G),

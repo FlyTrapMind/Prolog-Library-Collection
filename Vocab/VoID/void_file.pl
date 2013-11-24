@@ -174,3 +174,4 @@ void_update_library(G):-
     void_file,
     Msg
   ).
+
