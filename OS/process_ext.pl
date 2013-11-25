@@ -27,9 +27,10 @@ Support for process-specific directories.
 
 
 
-process_absolute_file_name(Process, Spec1, Absolute, Options):-
+process_absolute_file_name(Process, Spec1, Absolute, O1):-
   process_alias(Process, Spec1, Spec2),
-  absolute_file_name(Spec2, Absolute, Options).
+  merge_options([file_errors(fail)], O1, O2),
+  absolute_file_name(Spec2, Absolute, O2).
 
 process_alias(Process, Spec1, Spec2):-
   Spec1 =.. [H1|T],
@@ -42,6 +43,13 @@ process_alias(Process, Spec1, Spec2):-
 %!   -AbsoluteDirectory:atom
 %! ) is det.
 
+process_create_nested_directory(Process, Spec, Dir):-
+  process_absolute_file_name(
+    Process,
+    Spec,
+    Dir,
+    [access(write),file_type(directory)]
+  ), !.
 process_create_nested_directory(Process, Spec1, Dir):-
   process_alias(Process, Spec1, Spec2),
   create_nested_directory(Spec2, Dir).
@@ -54,8 +62,9 @@ process_file_search_path(Process, Spec1, Path):-
   process_alias(Process, Spec1, Spec2),
   (
     % Retrieve a file search path relative to a process.
-    var(Path),
-    file_search_path(Spec2, Path), !
+    var(Path)
+  ->
+    file_search_path(Spec2, Path)
   ;
     % Assert a file search path relative to a process.
     db_add_novel(user:file_search_path(Spec2, Path))

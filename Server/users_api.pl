@@ -55,7 +55,7 @@ dispatch_method(delete, Request) :-
   http_parameters(Request, [user(Name,[])]),
   catch(
     (
-      user_delete(Name),
+      user_remove(Name),
       remove_passwd('passwords', Name)
     ),
     E,

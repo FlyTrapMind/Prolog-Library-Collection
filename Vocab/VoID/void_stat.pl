@@ -28,6 +28,7 @@ Asserts statistics for VoID descriptions.
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_stat)).
+:- use_module(void(void_db)).
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(void_assert_modified(+,r)).
@@ -53,10 +54,10 @@ void_assert_statistics(DD_G):-
     (
       % This includes VoID linksets, according to the VoID vocabulary.
       rdfs_individual_of(DS, void:'Dataset'),
-      void_file:dataset(DD_G, DS, _DS_F, DS_G),
+      void_dataset(DD_G, DS, _DS_F, DS_G),
       format(atom(Msg), 'Asserting statistics for ~w.', [DS])
     ),
-    
+
     void_assert_statistics(DD_G, DS, DS_G),
     void_stat,
     Msg
@@ -69,7 +70,7 @@ void_assert_statistics(DD_G):-
 %! ) is det.
 
 % The dataset is stored in a file; load it into memory.
-void_assert_statistics(DD_G, DS, DS_F),
+void_assert_statistics(DD_G, DS, DS_F):-
   is_absolute_file_name(DS_F), !,
   % Load the dataset file in and out of memory.
   setup_call_cleanup(
@@ -84,7 +85,7 @@ void_assert_statistics(DD_G, DS, DS_F),
 % The dataset is loaded in memory.
 void_assert_statistics(DD_G, DS, DS_G):-
   rdf_graph(DS_G), !,
-  
+
   % void:classes
   count_classes(DS_G, NC),
   rdf_overwrite_datatype(DS, void:classes, xsd:integer, NC, DD_G),
@@ -96,7 +97,7 @@ void_assert_statistics(DD_G, DS, DS_G):-
   % void:distinctSubjects
   count_subjects(_, _, DS_G, NS),
   rdf_overwrite_datatype(DS, void:distinctSubjects, xsd:integer, NS, DD_G),
-  
+
   % void:entities
   (
     rdf_literal(DS, void:uriRegexPattern, RE, DD_G)
@@ -105,7 +106,7 @@ void_assert_statistics(DD_G, DS, DS_G):-
       S,
       (
         rdf(S, _, _, DS_G),
-        S=~RE)
+        S=~RE
       ),
       Ss
     ),
@@ -114,7 +115,7 @@ void_assert_statistics(DD_G, DS, DS_G):-
   ;
     true
   ),
-  
+
   % void:properties
   count_properties(_, _, DS_G, NP),
   rdf_overwrite_datatype(DS, void:properties, xsd:integer, NP, DD_G),

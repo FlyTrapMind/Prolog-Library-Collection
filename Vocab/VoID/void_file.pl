@@ -30,7 +30,7 @@ VoiD covers four areas of metadata:
 
 @author WouterBeek
 @compat http://www.w3.org/TR/void/
-@version 2013/03-2013/05, 2013/09-2013/10
+@version 2013/03-2013/05, 2013/09-2013/11
 */
 
 :- use_module(generics(thread_ext)).
@@ -39,25 +39,11 @@ VoiD covers four areas of metadata:
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(vocab(void_stat)).
+:- use_module(void(void_db)).
+:- use_module(void(void_stat)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
-
-%! dataset(
-%!   ?VoID_Graph:atom,
-%!   ?Dataset:iri,
-%!   ?DatasetFile:atom,
-%!   ?DatasetGraph:atom
-%! ) is nondet.
-% These assertions make it easy to read/write from/to the description of
-% a dataset in the VoID graph based on information that is in the dataset
-% graph.
-%
-% Keeping the file names makes it easy to store the VoID graph to
-% a package that includes all the relevant files.
-
-:- dynamic(dataset/4).
 
 :- debug(void_file).
 
@@ -99,7 +85,7 @@ void_load_dataset(DD_F, DD_G, DS):-
 
   % Update the internally stored relations between VoID graphs and
   % dataset graphs.
-  assert(dataset(DD_G, DS, DS_F, DS_G)).
+  void_dataset_add(DD_G, DS, DS_F, DS_G).
 
 %! void_load_library(+File:atom, +Graph:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
@@ -123,7 +109,7 @@ void_load_library(F, G):-
   nonvar(G),
 
   % Clear the internal database.
-  retractall(dataset(G, _, _, _)),
+  void_dataset_remove(G),
 
   % Make sure the VoID vocabulary is loaded.
   void_init,
@@ -151,7 +137,7 @@ void_save_library(G, F):-
   % First save all datasets that are described in the given VoID graph.
   forall_thread(
     (
-      dataset(G, _DS, DS_F, DS_G),
+      void_dataset(G, _DS, DS_F, DS_G),
       format(atom(Msg), 'Saving graph ~w.', [DS_G])
     ),
     rdf_save2(DS_F, [format(turtle),graph(DS_G)]),
@@ -164,7 +150,7 @@ void_save_library(G, F):-
 void_update_library(G):-
   forall_thread(
     (
-      dataset(G, DS, _DS_F, DS_G),
+      void_dataset(G, DS, _DS_F, DS_G),
       format(atom(Msg), 'Updating dataset ~w', [DS])
     ),
     (

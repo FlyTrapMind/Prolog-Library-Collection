@@ -7,9 +7,9 @@
             % ?Properties:list
     user_add/2, % +Name:atom
                 % +Properties:list
-    user_delete/1, % +Name:atom
-    user_property/2 % ?Name:atom
-                    % ?Property:compound
+    user_property/2, % ?Name:atom
+                     % ?Property:compound
+    user_remove/1 % +Name:atom
   ]
 ).
 
@@ -61,20 +61,6 @@ user(User):-
 user_add(Name, Options):-
   with_mutex(user_db, assert_user(Name, Options)).
 
-%! user_delete(+Name:atom) is det.
-% Delete named user from user-database.
-
-user_delete(Name):-
-  with_mutex(
-    user_db,
-    (
-      user(Name, _Properties1), !,
-      retractall_user(Name, _Properties2)
-    )
-  ).
-user_delete(Name):-
-  existence_error(user, Name).
-
 %! user_property(?User:atom, ?Property:compound) is nondet.
 %! user_property(+User:atom, +Property:compound) is semidet.
 % Users and their properties.
@@ -91,4 +77,18 @@ user_property_(User, Property):-
   member(Property, Properties).
 user_property_(User, Property):-
   login_db:user_property(User, Property).
+
+%! user_remove(+Name:atom) is det.
+% Delete named user from user-database.
+
+user_remove(Name):-
+  with_mutex(
+    user_db,
+    (
+      user(Name, _Properties1), !,
+      retractall_user(Name, _Properties2)
+    )
+  ).
+user_remove(Name):-
+  existence_error(user, Name).
 

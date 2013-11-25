@@ -247,15 +247,7 @@ script_stage(O1, Process, Stage1, Stage2, Goal):-
   script_stage_to_directory(O1, Process, Stage1, Stage2, ToDir),
   script_stage(O1, Process, Stage1, FromDir, ToDir, Goal).
 
-% The result file already exists. Skip this stage.
-script_stage(O1, Process, Stage, _FromDir, ToDir, _Goal):-
-  option(to(_ToDir,ToFileName,ToFileType), O1),
-  absolute_file_name(
-    ToFileName,
-    _ToFile,
-    [access(read),file_errors(fail),file_type(ToFileType),relative_to(ToDir)]
-  ), !,
-  debug(script_ext, '~w stage ~w was skipped.', [Process,Stage]).
+% This stage was alreay completed previously. Skip this stage.
 script_stage(_O1, Process, Stage, _FromDir, ToDir, _Goal):-
   absolute_file_name(
     'FINISHED',
@@ -374,6 +366,7 @@ script_stage_from_directory(O1, _Process, _Stage, Dir):-
   ), !.
 % Before the first stage directory we start in `0` aka `Input`.
 script_stage_from_directory(_O1, Process, 0, Dir):- !,
+  process_create_nested_directory(Process, input('.'), Dir),
   process_absolute_file_name(
     Process,
     input('.'),
@@ -382,9 +375,9 @@ script_stage_from_directory(_O1, Process, 0, Dir):- !,
   ).
 % For stages `N >= 1` we use stuff from directories called `stage_N`.
 script_stage_from_directory(_O1, Process, Stage, Dir):-
-  atomic_list_concat([Process,stage,Stage], '_', StageName),
-  create_nested_directory(data(StageName), Dir),
-  db_add_novel(user:file_search_path(Stage, Dir)).
+  atomic_list_concat([stage,Stage], '_', StageName),
+  process_create_nested_directory(Process, data(StageName), Dir),
+  process_file_search_path(Process, StageName, Dir).
 
 script_stage_to_arg(O1, ToDir, ToArg):-
   option(to(_ToDir,ToFileName,ToFileType), O1),
@@ -430,7 +423,7 @@ script_stage_to_directory(_O1, Process, Stage1, Stage2, Dir):-
   Stage2 is Stage1 + 1,
   atomic_list_concat([stage,Stage2], '_', StageName),
   process_create_nested_directory(Process, data(StageName), Dir),
-  process_file_search_path(Process, Stage2, Dir).
+  process_file_search_path(Process, StageName, Dir).
 
 %! script_stages(
 %!   +Process:atom,
