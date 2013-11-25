@@ -282,10 +282,12 @@ merge_into_one_file(FromDir, ToFile):-
     FromFiles
   ),
   length(FromFiles, Length),
-  script_ext:script(
-    [potential(Length),to_file(ToFile)],
+  file_name(ToFile, ToDir, ToBase, _ToExtension),
+  file_name_type(ToBase, ToType, ToFile),
+  ap(
+    [potential(Length),to(ToDir,ToBase,ToType)],
     merge_into_one_file,
-    [stage([],merge_into_one_file)]
+    [ap_stage([],merge_into_one_file)]
   ).
 
 merge_into_one_file(PS, FromDir, ToFile):-
@@ -313,7 +315,7 @@ merge_into_one_file0(PS, Out, FromFile):-
     copy_stream_data(In, Out),
     close(In)
   ),
-  script_ext:script_stage_tick(PS).
+  ap_stage_tick(PS).
 
 %! new_file(+OldFile:atom, -NewFile:atom) is det.
 % If a file with the same name exists in the same directory, then

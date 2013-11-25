@@ -5,8 +5,6 @@
                           % -Dir3:atom
     create_personal_subdirectory/2, % +NestedDirectories:compound
                                     % -AbsoluteDirectory:atom
-    create_project_subdirectory/2, % +NestedDirectories:compound
-                                   % -AbsoluteDirectory:atom
     create_directory/1, % +Directory:atom
     create_nested_directory/1, % +NestedDirectories:compound
     create_nested_directory/2, % +NestedDirectories:compound
@@ -170,14 +168,6 @@ create_personal_directory:-
 create_personal_subdirectory(Nested, Abs):-
   create_personal_directory,
   create_nested_directory(personal(Nested), Abs).
-
-%! create_project_subdirectory(
-%!   +NestedDirectories:compound,
-%!   -AbsoluteDirectory:atom
-%! ) is det.
-
-create_project_subdirectory(Nested, Abs):-
-  create_nested_directory(project(Nested), Abs).
 
 %! directory_files(
 %!   +Options:list(nvpair),

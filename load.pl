@@ -30,6 +30,7 @@ load_pgc:-
   )),
 
   % Assert the various search paths.
+  assert(user:file_search_path(ap,           pgc('AutoProc'))),
   assert(user:file_search_path(datasets,     pgc('Datasets'))),
   assert(user:file_search_path(dcg,          pgc('DCG'))),
   assert(user:file_search_path(generics,     pgc('Generics'))),
