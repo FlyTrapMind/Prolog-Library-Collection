@@ -37,9 +37,6 @@
     is_absolute_file_name2/1, % ?File:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
-    merge_into_one_file/3, % +Id:pair(atom,nonneg)
-                           % +FromDir:atom
-                           % +ToFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
     safe_copy_file/2, % +From:atom
@@ -77,13 +74,15 @@ We use the following abbreviations in this module:
     RegularExpression
 
 @author Wouter Beek
+@tbd Remove the dependency on module AP.
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2013/11
 */
 
+:- use_module(ap(ap)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(print_ext)).
-:- use_module(generics(script_ext)).
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
@@ -281,41 +280,18 @@ merge_into_one_file(FromDir, ToFile):-
     FromDir,
     FromFiles
   ),
-  length(FromFiles, Length),
-  file_name(ToFile, ToDir, ToBase, _ToExtension),
-  file_name_type(ToBase, ToType, ToFile),
-  ap(
-    [potential(Length),to(ToDir,ToBase,ToType)],
-    merge_into_one_file,
-    [ap_stage([],merge_into_one_file)]
-  ).
-
-merge_into_one_file(PS, FromDir, ToFile):-
-  directory_files(
-    [
-      file_types([text]),
-      include_directories(false),
-      % It may for instance be reasonable to assume that
-      % files with names ending in numbers are merged in the order
-      % that is indicated by those numbers.
-      order(lexicographic),
-      recursive(true)
-    ],
-    FromDir,
-    FromFiles
-  ),
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
-    maplist(merge_into_one_file0(PS, Out), FromFiles),
+    maplist(merge_into_one_file_(Out), FromFiles),
     close(Out)
   ).
-merge_into_one_file0(PS, Out, FromFile):-
+
+merge_into_one_file_(Out, FromFile):-
   setup_call_cleanup(
     open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
-  ),
-  ap_stage_tick(PS).
+  ).
 
 %! new_file(+OldFile:atom, -NewFile:atom) is det.
 % If a file with the same name exists in the same directory, then

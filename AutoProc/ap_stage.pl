@@ -1,8 +1,9 @@
 :- module(
   ap_stage,
   [
-    ap_stages/2, % +Options:list(nvpair)
-                 % +Stages:list(compound)
+    ap_stages/3 % +Options:list(nvpair)
+                % +StageNumber:nonneg
+                % +Stages:list(compound)
   ]
 ).
 
@@ -17,6 +18,10 @@ Runs stages in an automated process.
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stat)).
 :- use_module(generics(user_input)).
+:- use_module(os(io_ext)).
+
+:- meta_predicate(ap_stage(+,+,+,:)).
+:- meta_predicate(ap_stage(+,+,+,+,:)).
 
 
 
@@ -40,15 +45,15 @@ ap_stage(O1, Stage1, Stage2, Goal):-
   ap_stage(O1, Stage1, FromDir, ToDir, Goal).
 
 % This stage was alreay completed previously. Skip this stage.
-ap_stage(O1, Stage, _FromDir, ToDir, _Goal):-
+ap_stage(O1, _Stage, _FromDir, ToDir, _Goal):-
   absolute_file_name(
     'FINISHED',
     _ToFile,
     [access(read),file_errors(fail),relative_to(ToDir)]
   ), !,
-  ap_debug(O1, 'Skipped. Finished file found.').
+  ap_debug(O1, 'Skipped. Finished file found.', []).
 % This stage has not been perfomed yet.
-ap_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
+ap_stage(O1, Stage, FromDir, ToDir, Goal):-
   % From directory or file.
   ap_stage_from_arg(O1, Stage, FromDir, FromArg),
 
@@ -60,7 +65,8 @@ ap_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
 
   % Execute goal on the 'from' and 'to' arguments
   % (either files or directories).
-  call(Goal, Process-Stage, FromArg, ToArg),
+  ap_stage_alias(O1, Stage, StageAlias),
+  call(Goal, StageAlias, FromArg, ToArg),
 
   % Ending of a script stage.
   ap_stage_end(O1, Stage, ToDir).
@@ -68,13 +74,13 @@ ap_stage(O1, Process, Stage, FromDir, ToDir, Goal):-
 ap_stage_begin(O1, Stage):-
   % Initialize the number of actual and potential applications.
   ap_stage_init(O1, Stage),
-  
+
   ap_debug(O1, 'Start stage ~w.', [Stage]).
 
 ap_stage_end(O1, Stage, ToDir):-
   % Send a progress bar to the debug chanel.
   ap_stage_done(O1, Stage),
-  
+
   % Add an empty file that indicates this stage completed successfully
   absolute_file_name(
     'FINISHED',
@@ -82,7 +88,7 @@ ap_stage_end(O1, Stage, ToDir):-
     [access(write),file_errors(fail),relative_to(ToDir)]
   ),
   atom_to_file('', ToFile),
-  
+
   ap_debug(O1, '[Stage:~w] Ended successfully.', [Stage]).
 
 %! ap_stage_from_arg(
@@ -170,7 +176,7 @@ ap_stage_to_arg(O1, ToDir, ToArg):-
   option(to(_ToDir,ToFileName,ToFileType), O1),
   nonvar(ToFileName),
   nonvar(ToFileType), !,
-  
+
   % Write to the to file located in the next stage directory.
   absolute_file_name(
     ToFileName,

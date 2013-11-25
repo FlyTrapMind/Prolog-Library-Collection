@@ -228,6 +228,7 @@ user_interaction(O1, Act, G, I, L, Hs, Ts):-
 %!   +Headers:list(atom),
 %!   +Tuples:list(term)
 %! ) is det.
+% @tbd Reimplement percentage done in timed thread.
 
 user_interaction('A', _O1, _Act, G, I1, L, _Hs, Ts):- !,
   forall(

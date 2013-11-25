@@ -1,8 +1,8 @@
 :- module(
   ap,
   [
-    ap/2, % +Options:list(nvpair)
-          % +Stages:list(compound)
+    ap/2 % +Options:list(nvpair)
+         % +Stages:list(compound)
   ]
 ).
 
@@ -14,7 +14,11 @@ Support for running automated processing.
 @version 2013/06, 2013/10-2013/11
 */
 
+:- use_module(ap(ap_dir)).
+:- use_module(ap(ap_stage)).
+:- use_module(ap(ap_stat)).
 :- use_module(library(option)).
+:- use_module(os(dir_ext)).
 
 
 
@@ -58,18 +62,16 @@ ap(O1, Stages):-
 %     Default: =project=.
 
 ap_begin(O1):-
-  ap_debug(O1, 'Started.'),
+  ap_debug(O1, 'Started.', []),
 
-  option(project(Project), O1, project),
-  option(process(Process), O1, process),
-  atomic_list_concat([Project,Process], '_', ProcessAlias),
-  
+  ap_process_alias(O1, ProcessAlias),
+
   % Make sure the process directory is there.
   (
-    file_search_path(ProcessAlias, _ProcessDir), !
+    ap_process_directory(O1, _ProcessDir), !
   ;
     ProcessSpec =.. [Project,Process],
-    create_nested_directory(ProcessSpec, ProcessDir),
+    create_process_directory(ProcessSpec, ProcessDir),
     db_add_novel(user:file_search_path(ProcessAlias, ProcessDir))
   ),
 
@@ -107,7 +109,7 @@ ap_begin(O1):-
 
 ap_end(O1):-
   % Retrieve the last two stage directories, if present.
-  ap_find_last_stage_directories(O1, LastDirs),
+  ap_last_stage_directories(O1, LastDirs),
   (
     LastDirs = [], !
   ;
@@ -132,11 +134,11 @@ ap_end(O1):-
     safe_delete_directory(RemDir)
   ),
 
-  ap_debug(O1, 'Ended successfully.').
+  ap_debug(O1, 'Ended successfully.', []).
 
 % Option `to/2` is used to skip the entire script in case its output
 % is already available.
-ap_run(O1, Stages):-
+ap_run(O1, _Stages):-
   option(to(ToFileName,ToFileType), O1),
   ap_output_directory(O1, OutputDir),
   absolute_file_name(
@@ -152,6 +154,7 @@ ap_run(O1, Stages):-
   ap_debug(
     O1,
     'Process skipped. Results are already in output directory.',
+    []
   ).
 ap_run(O1, Stages):-
   ap_stages(O1, 0, Stages).

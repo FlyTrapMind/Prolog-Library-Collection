@@ -229,6 +229,6 @@ rule(Regime, Rule, Premises, S, P, O, G):-
 
 start_materializer(G, Regimes, N1):-
   default(N1, 30, N2),
-  intermittent_thread(materialize(G, Regimes), N2, _Id, []),
+  intermittent_thread(materialize(G, Regimes), true, N2, _Id, []),
   debug(mat, 'A materializer was started on graph ~w.', [G]).
 

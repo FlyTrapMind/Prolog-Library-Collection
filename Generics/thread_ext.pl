@@ -8,10 +8,11 @@
     print_thread/1, % +Alias:atom
     print_threads/0,
 % RUN ON SUBLISTS INFRASTRUCTURE
-    intermittent_thread/4, % :Goal
+    intermittent_thread/5, % :Goal
+                           % :EndGoal
                            % +Interval:positive_integer
                            % -Id
-                           % +Options
+                           % +Options:list(nvpair)
     run_on_sublists/2, % +List:list
                        % :Goal
     thread_alias/1, % ?ThreadAlias:atom
@@ -46,8 +47,8 @@ Allows one to monitor running threads that register.
 :- use_module(library(lists)).
 
 :- meta_predicate(forall_thread(0,0,+,+)).
-:- meta_predicate(intermittent_goal(:,+)).
-:- meta_predicate(intermittent_thread(:,+,-,+)).
+:- meta_predicate(intermittent_goal(:,:,+)).
+:- meta_predicate(intermittent_thread(:,:,+,-,+)).
 :- meta_predicate(run_on_sublists(+,1)).
 
 :- dynamic(end_flag/2).
@@ -117,13 +118,39 @@ print_threads:-
 
 % RUN ON SUBLIST INFRASTRUCTURE %
 
-intermittent_goal(G, I):-
+%! intermittent_goal(:Goal, :EndGoal, +Interval:positive_integer) is det.
+% Performs the given goal interspersed with time intervals
+% of the given duration.
+%
+% If the end goal succeeds the thread succeeds
+% (i.e., intermittent goal execution stops).
+
+intermittent_goal(_G, EndG, _I):-
+  call(EndG), !.
+intermittent_goal(G, EndG, I):-
   call(G),
   sleep(I),
-  intermittent_goal(G, I).
+  intermittent_goal(G, EndG, I).
 
-intermittent_thread(G, I, Id, O):-
-  thread_create(intermittent_goal(G, I), Id, O).
+%! intermittent_thread(
+%!   :Goal,
+%!   :EndGoal,
+%!   +Interval:positive_integer,
+%!   -Id,
+%!   +Options:list(nvpair)
+%! ) is det.
+% ...
+%
+% @param Goal The goal that is repeated.
+% @param EndGoal The goal that stops `Goal` from being repeated,
+%        as soon as it succeeds once.
+% @param Interval A positive integer representing the number of seconds
+%        in between consecutive goal executions.
+% @param Id
+% @param Options A list of name-value pairs.
+
+intermittent_thread(G, EndG, I, Id, O):-
+  thread_create(intermittent_goal(G, EndG, I), Id, O).
 
 %! run_on_sublists(+List, :Goal) is det.
 % Run the given goal in different threads,
