@@ -1,6 +1,7 @@
 :- module(
   rdfs_voc,
   [
+    load_rdfs_vocabulary/1, % +Graph:atom
     rdf_voc_pdf/1, % ?File:atom
     rdf_voc_web/1, % -SVG:dom
     rdfs_voc_pdf/1, % ?File:atom
@@ -13,13 +14,14 @@
 Exports the vocabulary for RDFS.
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2013/11
 */
 
 :- use_module(gv(gv_file)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_mat)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).
 
@@ -27,10 +29,21 @@ Exports the vocabulary for RDFS.
 
 
 
-% RDF VOCABULARY %
+%! load_rdfs_vocabulary(+Graph:atom) is det.
+% Loads the RDFS vocabulary into an RDF graph.
+
+load_rdfs_vocabulary(G):-
+  absolute_file_name(rdfs(rdfs), F, [access(read),file_type(rdf)]),
+  rdf_load2(F, [graph(G)]).
+
+load_rdfs_vocabulary_(G2):-
+  G1 = rdfs_voc,
+  load_rdfs_vocabulary(G1),
+  materialize(G1, rdfs),
+  rdf_graph_merge([G1], G2).
 
 rdf_voc(GIF):-
-  load_in_graph(G),
+  load_rdfs_vocabulary_(G),
 
   % Customization.
   rdf_retractall(_, rdfs:isDefinedBy, _, G),
@@ -74,7 +87,7 @@ rdf_voc_web(SVG):-
 % RDFS VOCABULARY %
 
 rdfs_voc(GIF):-
-  load_in_graph(G),
+  load_rdfs_vocabulary_(G),
 
   % Customization.
   rdf_retractall(_, rdfs:isDefinedBy, _, G),
@@ -102,24 +115,4 @@ rdfs_voc_pdf(File):-
 rdfs_voc_web(SVG):-
   rdfs_voc(GIF),
   graph_to_svg_dom([method(sfdp)], GIF, SVG).
-
-
-
-% SUPPORT PREDICATES %
-
-%! load_in_graph(-Graph:atom) is det.
-
-load_in_graph(G2):-
-  % Load the W3C file specifying the vocabulary for RDFS.
-  rdf_new_graph(rdfs_schema, G1),
-  absolute_file_name(rdfs(rdfs), File, [access(read),file_type(rdf)]),
-  rdf_load2(File, [graph(G1)]),
-
-  % We want to hide some aspects from the displayed version:
-  % Every concept has an =|rdfs:isDefinedBy|= relation to
-  % either =|:rdf|= or =|:rdfs|=.
-  % We indicate this distinction using colors instead.
-  rdf_new_graph(rdfs_schema, G2),
-  % @tbd Modules?!
-  rdf_graph:rdf_graph_copy(G1, G2).
 

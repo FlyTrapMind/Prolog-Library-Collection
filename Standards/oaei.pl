@@ -141,7 +141,7 @@ oaei_alignment_pair(G, From, To):-
   rdf(BNode, align:entity2, To, G),
   once((
     rdf_literal(BNode, align:relation, '=', G),
-    rdf_datatype(BNode, align:measure, float, 1.0, G)
+    rdf_datatype(BNode, align:measure, xsd:float, 1.0, G)
   ;
     debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
   )).

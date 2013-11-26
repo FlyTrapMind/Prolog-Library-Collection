@@ -74,7 +74,7 @@ void_load_dataset(DD_F, DD_G, DS):-
 
   % @tbd Extend this to other cases: absolute files, generic relative files,
   %      Web locations.
-  directory_file_path(DD_Dir, _, DD_F),
+  file_directory_name(DD_F, DD_Dir),
   absolute_file_name(Dump, DS_F, [access(read),relative_to(DD_Dir)]),
 
   % The RDF graph name into which the sataset is loaded is derived from

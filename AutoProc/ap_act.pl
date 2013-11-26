@@ -21,9 +21,7 @@ Actions that can be used from within an automated process.
 @version 2013/10-2013/11
 */
 
-:- use_module(ap(ap)).
 :- use_module(ap(ap_stat)).
-:- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(archive)).
 :- use_module(os(dir_ext)).
@@ -35,7 +33,7 @@ ap_copy_file(_PS, FromFile, ToFile):-
   safe_copy_file(FromFile, ToFile).
 
 ap_extract_archive(_PS, FromFile, ToFile):-
-  directory_file_path(ToDir, _, ToFile),
+  file_to_directory(ToFile, ToDir),
   archive_extract(FromFile, ToDir, []).
 
 ap_merge_into_one_file(PS, FromDir, ToFile):-

@@ -14,11 +14,10 @@
                        % -Absolutes:list(atom)
     directory_to_subdirectories/2, % +Directory:atom
                                    % -Subdirectories:list(atom)
-    experiment_directory/1, % -Directory:atom
+    file_to_directory/2, % +File:atom
+                         % -Directory:atom
     safe_copy_directory/2, % +FromDirectory:atom
                            % +ToDirectory:atom
-    safe_copy_experiment_data/2, % +FromDirectory:atom
-                                 % -ToDirectory:atom
     safe_delete_directory/1, % +Directory:atom
     safe_delete_directory_contents/2, % +Options:list(nvpair)
                                       % +Directory:atom
@@ -260,39 +259,15 @@ directory_files(O1, [F|T1], Sol2):-
 directory_files(O1, [_|T], Sol):-
   directory_files(O1, T, Sol).
 
-experiment_directory(Dir):-
-  experiment_directory_init,
-  absolute_file_name(
-    personal('Experiment'),
-    Dir,
-    [access(write),file_type(directory)]
-  ).
-
-experiment_directory_init:-
-  file_search_path(experiment, _Dir), !.
-experiment_directory_init:-
-  create_personal_subdirectory('Experiment', Absolute),
-  db_add_novel(user:file_search_path(experiment, Absolute)).
+file_to_directory(Dir, Dir):-
+  exists_directory(Dir), !.
+file_to_directory(File, Dir):-
+  file_directory_name(File, Dir).
 
 safe_copy_directory(FromDir, ToDir):-
   safe_delete_directory(ToDir),
   copy_directory(FromDir, ToDir),
   debug(dir_ext, 'Directory ~w was safe-copied to ~w.', [FromDir,ToDir]).
-
-safe_copy_experiment_data(FromDir, ToDir):-
-  % Make sure this is a directory name.
-  exists_directory(FromDir),
-
-  % Assemble a new directory name based on the two given directory names.
-  experiment_directory(ExperimentDir),
-  append_directories(ExperimentDir, FromDir, ToDir),
-
-  % Recreate the copied directory in the context of
-  % the experiment directory.
-  create_directory(ToDir),
-
-  % Now do the actual copying.
-  safe_copy_directory(FromDir, ToDir).
 
 %! directory_to_subdirectories(
 %!   +Directory:atom,

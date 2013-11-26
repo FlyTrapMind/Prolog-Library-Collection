@@ -49,7 +49,7 @@ Predicates for handling LaTeX files.
 
 bibtex_convert_file(File):-
   file_name_type(Base, tex, File),
-  directory_file_path(Dir, _, File),
+  file_directory_name(File, Dir),
   process_wrapper(bibtex, [Base], [cwd(Dir)]).
 
 %! file_to_latex_title(+PrologFile:atom, -Title:atom) is det.
@@ -255,7 +255,7 @@ latex_convert_file(File):-
   exists_directory(File), !,
   latex_convert_directory(File).
 latex_convert_file(FromFile):-
-  directory_file_path(ToDir, _, FromFile),
+  file_directory_name(FromFile, ToDir),
   latex_convert_file(FromFile, ToDir).
 
 latex_convert_file(FromFile, ToDir):-
