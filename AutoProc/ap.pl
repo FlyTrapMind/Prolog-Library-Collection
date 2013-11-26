@@ -27,10 +27,6 @@ Support for running automated processing.
 
 %! ap(+Options:list(nvpair), +Stages:list(compound)) is det.
 % The following options are supported:
-%   * =|actual(+ActualNumberOfApplications:nonneg)|=
-%     This is used to display progress bars.
-%   * =|potential(+PotentialNumberOfApplications:nonneg)|=
-%     This is used to display progress bars.
 %   * =|process(+Process:atom)|=
 %     The atomic name of the process.
 %     This is used for constructing the process directory structure.

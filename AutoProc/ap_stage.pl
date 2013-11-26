@@ -36,9 +36,16 @@ Runs stages in an automated process.
 %
 % The following options are supported:
 %   * =|actual(+ActualNumberOfApplications:nonneg)|=
-%   * =|from(+FromDirectory:or([oneof([input]),positive_integer]),+FromFile:atom,+FromFileType:atom)|=
+%     This is used to display progress bars.
 %   * =|potential(+PotentialNumberOfApplications:nonneg)|=
-%   * =|to(+ToDirectory:or([oneof([output]),positive_integer]),+ToFile:atom,+ToFileType:atom)|=
+%     This is used to display progress bars.
+%   * =|stat_lag(+Interval:positive_interval)|=
+%     The lag between statistics updates in seconds.
+%     Default: =10=.
+%   * =|to(?ToFile:atom,?ToFileType:atom)|=
+%     Identifies the output from a script stage.
+%     The directory is not included since this is fixed to
+%     the process' output directory.
 
 ap_stage(O1, Stage1, Stage2, Goal):-
   ap_stage_from_directory(O1, Stage1, FromDir),

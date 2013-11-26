@@ -238,12 +238,12 @@ new_atom(A1, A2):-
 % @param ProgressBar The atomic representation of a progress bar.
 
 progress_bar(End, End, ProgressBar2):- !,
-  progress_bar0(End, End, ProgressBar1),
+  progress_bar_(End, End, ProgressBar1),
   format(atom(ProgressBar2), '~w [done]', [ProgressBar1]).
 progress_bar(Current, End, ProgressBar):-
-  progress_bar0(Current, End, ProgressBar).
+  progress_bar_(Current, End, ProgressBar).
 
-progress_bar0(Current1, End, ProgressBar):-
+progress_bar_(Current1, End, ProgressBar):-
   (
      End =:= 0
   ->

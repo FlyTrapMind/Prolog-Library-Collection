@@ -5,7 +5,7 @@
                 % +Message:atom
                 % +Arguments:list
     ap_process_eval/1, % +Options:list(nvpair)
-    ap_stage_tick/1, % +ProcessStageAlias:atom
+    ap_stage_tick/1, % +StageAlias:atom
     ap_stage_done/2, % +Options:list(nvpair)
                           % +StageNumber:nonneg)
     ap_stage_eval/2, % +Options:list(nvpair)
@@ -98,10 +98,11 @@ ap_stage_init(O1, StageNumber):-
   ap_stage_init_actual(O1, StageNumber),
   ap_stage_init_potential(O1, StageNumber),
   ap_dir(O1, StageNumber, StageAlias),
+  option(stat_lag(Interval), O1, 10),
   intermittent_thread(
     ap_stage_eval(O1, StageNumber),
     ap_stage_done(O1, StageNumber),
-    10,
+    Interval,
     _Id,
     [alias(StageAlias)]
   ).
@@ -120,24 +121,19 @@ ap_stage_init_potential(O1, StageNumber):-
 
 % FLAG NAMES %
 
-ap_flag_actual(O1, StageNumber, FlagA):-
-  ap_flag_prefix(O1, StageNumber, Prefix),
-  atomic_list_concat([Prefix,a], '_', FlagA).
+ap_flag_actual(O1, Stage, Flag):-
+  ap_stage_alias(O1, Stage, StageAlias),
+  atomic_list_concat([StageAlias,a], '_', Flag).
 
-ap_flag_potential(O1, StageNumber, FlagP):-
-  ap_flag_prefix(O1, StageNumber, Prefix),
-  atomic_list_concat([Prefix,p], '_', FlagP).
-
-ap_flag_prefix(O1, StageNumber, Prefix):-
-  option(project(Project), O1, project),
-  option(process(Process), O1, process),
-  ap_stage_name(StageNumber, StageName),
-  atomic_list_concat([Project,Process,StageName], '_', Prefix).
+ap_flag_potential(O1, Stage, Flag):-
+  ap_stage_alias(O1, Stage, StageAlias),
+  atomic_list_concat([StageAlias,p], '_', Flag).
 
 
 
 % FLAG UPDATES %
 
-ap_stage_tick(FlagA):-
-  flag(FlagA, X, X + 1).
+ap_stage_tick(StageAlias):-
+  atomic_list_concat([StageAlias,a], '_', Flag),
+  flag(Flag, X, X + 1).
 
