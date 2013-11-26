@@ -3,25 +3,15 @@
   [
     file_to_graph_name/2, % +File:atom
                           % -Graph:atom
-    rdf_convert/3, % +FromFile:atom
-                   % +ToFormat:atom
-                   % +ToFile:atom
-    rdf_graph_source_file/2, % ?Graph:atom
-                             % ?File:atom
+    rdf_graph_source_file/2, % +Graph:atom
+                             % -File:atom
     rdf_guess_data_format/2, % +Stream:stream
                              % ?Format:atom
-    rdf_new_graph/2, % +Graph1:atom
-                     % -Graph2:atom
-    rdf_serialization/3, % ?Extension:oneof([nt,triples,ttl,rdf])
-                         % ?Format:oneof([ntriples,tripels,turtle,rdf_xml])
-                         % ?URI:uri
-
-% RDF LOAD
     rdf_load2/1, % +File:atom
     rdf_load2/2, % +File:atom
                  % +Options:list(nvpair)
-
-% RDF SAVE
+    rdf_new_graph/2, % +Graph1:atom
+                     % -Graph2:atom
     rdf_save2/0,
     rdf_save2/1, % +Graph:atom
     rdf_save2/2 % ?File:atom
@@ -44,7 +34,7 @@ reflect the serialization format:
 
 @author Wouter Beek
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-         2013/08-2013/09
+         2013/08-2013/09, 2013/11
 */
 
 :- use_module(generics(atom_ext)).
@@ -81,34 +71,17 @@ file_to_graph_name(File, G2):-
   % Make sure the graph does not already exist.
   rdf_new_graph(G1, G2).
 
-%! rdf_convert(
-%!   +FromFile:atom,
-%!   +ToFormat:oneof([ntriples,triples,turtle,xml]),
-%!   +ToFile:atom
-%! ) is det.
-% Converts a given file in one format to a new file in a different format.
-% The original file is not removed.
-
-rdf_convert(FromFile, ToFormat, ToFile):-
-  TempG = rdf_convert,
-  rdf_unload_graph(TempG),
-  setup_call_cleanup(
-    rdf_load2(FromFile, [graph(TempG)]),
-    rdf_save2(ToFile, [format(ToFormat), graph(TempG)]),
-    rdf_unload_graph(TempG)
-  ).
-
-%! rdf_graph_source_file(?Graph:atom, ?File:atom) is nondet.
+%! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
 % Returns the name of the file from which the graph with the given name
 % was loaded.
 
-rdf_graph_source_file(G, File2):-
+rdf_graph_source_file(G, F2):-
   rdf_graph_property(G, source(Source)),
   uri_components(
     Source,
-    uri_components(file, _Authority, File1, _Search, _Fragments)
+    uri_components(file, _Authority, F1, _Search, _Fragments)
   ),
-  sub_atom(File1, 1, _Length, 0, File2).
+  sub_atom(F1, 1, _Length, 0, F2).
 
 %! rdf_guess_data_format(
 %!   +In:or(atom,stream),
@@ -241,14 +214,10 @@ rdf_save2:-
 % @see Wrapper for rdf_save2/2.
 
 rdf_save2(G):-
-  absolute_file_name(
-    project(G),
-    File,
-    [access(write),file_type(turtle)]
-  ),
-  rdf_save2(File, [format(turtle),graph(G)]).
+  rdf_graph_source_file(G, F),
+  rdf_save2(F, [format(turtle),graph(G)]).
 
-%! rdf_save2(-File, +Options:list) is det.
+%! rdf_save2(?File, +Options:list) is det.
 % If the file name is not given, then a file name is construed.
 % There are two variants here:
 %   1. The graph was loaded from a file. Use the same file

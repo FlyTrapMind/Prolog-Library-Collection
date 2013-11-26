@@ -13,6 +13,9 @@
                    % +Name:atom
                    % +Type:atom
                    % -File:atom
+    file_directory_alternative/3, % +FromFile:atom
+                                  % +ToDirectory:atom
+                                  % -ToFile:atom
     file_extension_alternative/3, % +FromFile:atom
                                   % +ToExtension:atom
                                   % -ToFile:atom
@@ -186,6 +189,9 @@ create_file(NestedDir, Base, Type, File):-
 file_extension_alternative(FromFile, ToExtension, ToFile):-
   file_name_extension(Base, _FromExtension, FromFile),
   file_name_extension(Base, ToExtension, ToFile).
+
+file_directory_alternative(FromFile, ToDir, ToFile):-
+  directory_file_path(ToDir, FromFile, ToFile).
 
 %! file_name(
 %!   ?Path:atom,

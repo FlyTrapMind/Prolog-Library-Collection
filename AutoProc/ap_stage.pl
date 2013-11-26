@@ -35,6 +35,9 @@ Runs stages in an automated process.
 % `Goal` receives the from and to files as arguments.
 %
 % The following options are supported:
+%   * =|args(+Arguments:list)|=
+%     Additional, goal-specific arguments.
+%     Default: the empty list.
 %   * =|actual(+ActualNumberOfApplications:nonneg)|=
 %     This is used to display progress bars.
 %   * =|potential(+PotentialNumberOfApplications:nonneg)|=
@@ -74,7 +77,8 @@ ap_stage(O1, Stage, FromDir, ToDir, Goal):-
   % Execute goal on the 'from' and 'to' arguments
   % (either files or directories).
   ap_stage_alias(O1, Stage, StageAlias),
-  call(Goal, StageAlias, FromArg, ToArg),
+  option(args(Args), O1, []),
+  apply(Goal, [StageAlias,FromArg,ToArg|Args]),
 
   % Ending of a script stage.
   ap_stage_end(O1, Stage, ToDir).
