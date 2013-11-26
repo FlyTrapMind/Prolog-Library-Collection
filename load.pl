@@ -3,6 +3,8 @@
 
 :- set_prolog_flag(encoding, utf8).
 
+:- use_module(library(prolog_pack)).
+
 :- initialization(load_pgc).
 
 % The load file for the Prolog Generics Collection.
@@ -85,6 +87,14 @@ load_pgc:-
   ),
   use_module(os(file_ext)),
   safe_delete_file(File),
+  
+  % Install packages.
+  % This requires used interaction on the first load.
+  catch(
+    use_module(library(regex)),
+    _,
+    pack_install(regex)
+  ),
   
   % Start logging.
   use_module(generics(logging)),

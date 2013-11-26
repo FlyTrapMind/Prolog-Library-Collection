@@ -22,6 +22,7 @@ Runs stages in an automated process.
 
 :- meta_predicate(ap_stage(+,+,+,:)).
 :- meta_predicate(ap_stage(+,+,+,+,:)).
+:- meta_predicate(ap_stages(+,+,:)).
 
 
 
@@ -75,7 +76,7 @@ ap_stage_begin(O1, Stage):-
   % Initialize the number of actual and potential applications.
   ap_stage_init(O1, Stage),
 
-  ap_debug(O1, 'Start stage ~w.', [Stage]).
+  ap_debug(O1, '[Stage:~w] Started.', [Stage]).
 
 ap_stage_end(O1, Stage, ToDir):-
   % Send a progress bar to the debug chanel.
@@ -103,7 +104,6 @@ ap_stage_from_arg(O1, Stage, FromDir, FromArg):-
   option(from(_FromDir,FromFileName,FromFileType), O1),
   nonvar(FromFileName),
   nonvar(FromFileType), !,
-
   (
     absolute_file_name(
       FromFileName,
@@ -152,19 +152,14 @@ ap_stage_from_arg(_O1, _Stage, FromDir, FromDir):-
 ap_stage_from_directory(O1, _Stage, FromDir):-
   option(from(FromDirName,_FromFileName,_FromFileType), O1),
   nonvar(FromDirName),
-  ap_directory(O1, FromDirName, FromDirAlias),
-  FromDirSpec =.. [FromDirAlias,'.'],
-  absolute_file_name(
-    FromDirSpec,
-    FromDir,
-    [access(read),file_errors(fail),file_type(directory)]
-  ), !.
+  ap_dir(O1, FromDirName, FromDir), !.
 % Before the first stage directory we start in `0` aka `Input`.
 ap_stage_from_directory(O1, 0, InputDir):- !,
-  ap_input_directory(O1, InputDir).
+  ap_dir(O1, input, InputDir).
 % For stages `N >= 1` we use stuff from directories called `stage_N`.
 ap_stage_from_directory(O1, StageNumber, StageDir):-
-  ap_create_stage_directory(O1, StageNumber, StageDir).
+  ap_stage_name(StageNumber, StageName),
+  ap_dir(O1, StageName, StageDir).
 
 %! ap_stage_to_arg(
 %!   +Options:list(nvpair),
@@ -215,7 +210,8 @@ ap_stage_to_directory(O1, Stage, Stage, Dir):-
 % Stage directories.
 ap_stage_to_directory(O1, Stage1, Stage2, StageDir):-
   Stage2 is Stage1 + 1,
-  ap_create_stage_directory(O1, Stage2, StageDir).
+  ap_stage_name(Stage2, StageName),
+  ap_dir(O1, StageName, StageDir).
 
 %! ap_stages(
 %!   +Option:list(nvpair),
@@ -224,7 +220,10 @@ ap_stage_to_directory(O1, Stage1, Stage2, StageDir):-
 %! ) is det.
 
 ap_stages(_O1, _Stage, _Mod:[]):- !.
-ap_stages(O1, Stage1, Mod:[ap_stage(O1,H)|T]):- !,
-  ap_stage(O1, Stage1, Stage2, Mod:H),
+ap_stages(O1, Stage1, Mod:[ap_stage(O2,H)|T]):- !,
+  option(project(Project), O1, project),
+  option(process(Process), O1, process),
+  merge_options([project(Project),process(Process)], O2, O3),
+  ap_stage(O3, Stage1, Stage2, Mod:H),
   ap_stages(O1, Stage2, Mod:T).
 

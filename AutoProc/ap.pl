@@ -20,6 +20,9 @@ Support for running automated processing.
 :- use_module(library(option)).
 :- use_module(os(dir_ext)).
 
+:- meta_predicate(ap(+,:)).
+:- meta_predicate(ap_run(+,:)).
+
 
 
 %! ap(+Options:list(nvpair), +Stages:list(compound)) is det.
@@ -64,36 +67,14 @@ ap(O1, Stages):-
 ap_begin(O1):-
   ap_debug(O1, 'Started.', []),
 
-  ap_process_alias(O1, ProcessAlias),
-
   % Make sure the process directory is there.
-  (
-    ap_process_directory(O1, _ProcessDir), !
-  ;
-    ProcessSpec =.. [Project,Process],
-    create_process_directory(ProcessSpec, ProcessDir),
-    db_add_novel(user:file_search_path(ProcessAlias, ProcessDir))
-  ),
+  ap_dir(O1, '.', _ProcessDir),
 
   % Make sure the input directory is there.
-  atomic_list_concat([ProcessAlias,input], '_', InputAlias),
-  (
-    file_search_path(InputAlias, _InputDir), !
-  ;
-    InputSpec =.. [ProcessAlias,'Input'],
-    create_nested_directory(InputSpec, InputDir),
-    db_add_novel(user:file_search_path(InputAlias, InputDir))
-  ),
+  ap_dir(O1, input, _InputDir),
 
   % Make sure the output directory is there.
-  atomic_list_concat([ProcessAlias,output], '_', OutputAlias),
-  (
-    file_search_path(OutputAlias, _OutputDir), !
-  ;
-    OutputSpec =.. [ProcessAlias,'Output'],
-    create_nested_directory(OutputSpec, OutputDir),
-    db_add_novel(user:file_search_path(OutputAlias, OutputDir))
-  ).
+  ap_dir(O1, output, _OutputDir).
 
 %! ap_end(+Options:list(nvpair)) is det.
 % End the script, saving the results to the output directory.
@@ -123,8 +104,8 @@ ap_end(O1):-
   (
     var(CopyDir), !
   ;
-    ap_output_directory(O1, ToDir),
-    safe_copy_directory(CopyDir, ToDir)
+    ap_dir(O1, output, OutputDir),
+    safe_copy_directory(CopyDir, OutputDir)
   ),
 
   % The last stage directory is superfluous; remove it.
@@ -140,7 +121,7 @@ ap_end(O1):-
 % is already available.
 ap_run(O1, _Stages):-
   option(to(ToFileName,ToFileType), O1),
-  ap_output_directory(O1, OutputDir),
+  ap_dir(O1, output, OutputDir),
   absolute_file_name(
     ToFileName,
     _ToFile,

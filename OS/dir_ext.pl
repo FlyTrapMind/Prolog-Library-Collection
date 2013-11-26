@@ -99,20 +99,20 @@ create_nested_directory(NestedDir):-
 %      is the name of the file.
 % @param Absolute The absolute path of the nested directory specification.
 
-create_nested_directory(Absolute, Absolute):-
-  atomic(Absolute), is_absolute_file_name(Absolute), !,
-  create_directory(Absolute).
-create_nested_directory(NestedDir, Absolute):-
-  atom(NestedDir), !,
-  Spec =.. [NestedDir, '.'],
-  absolute_file_name(Spec, Absolute),
-  create_directory(Absolute).
-create_nested_directory(NestedDir, Absolute):-
+create_nested_directory(AbsoluteDir, AbsoluteDir):-
+  atomic(AbsoluteDir), is_absolute_file_name(AbsoluteDir), !,
+  create_directory(AbsoluteDir).
+create_nested_directory(Alias, AbsoluteDir):-
+  atom(Alias), !,
+  Spec =.. [Alias,'.'],
+  absolute_file_name(Spec, AbsoluteDir),
+  create_directory(AbsoluteDir).
+create_nested_directory(NestedDir, AbsoluteDir):-
   % First we construct the atomic name of the outer directory.
-  NestedDir =.. [NestedOuter,NestedInner],
-  create_nested_directory(NestedOuter, AbsoluteOuter),
+  NestedDir =.. [NestedOuterDir,NestedInnerDir],
+  create_nested_directory(NestedOuterDir, AbsoluteOuterDir),
   % Then we add the inner directories recursively.
-  create_nested_directory(NestedInner, AbsoluteOuter, Absolute).
+  create_nested_directory(NestedInnerDir, AbsoluteOuterDir, AbsoluteDir).
 
 %! create_nested_directory(
 %!   +NestedDirectory:compound,
@@ -125,16 +125,16 @@ create_nested_directory(NestedDir, Absolute):-
 create_nested_directory(SubDir, OldDir, NewDir):-
   atom(SubDir), !,
   % Note that adding the option =|file_type(directory)|= makes this clause
-  % throw an exception, because this option assumed that the directory
+  % throw an exception, because this option assumes that the directory
   % exists.
-  atomic_list_concat([OldDir, '/', SubDir], NewDir),
+  atomic_list_concat([OldDir,'/',SubDir], NewDir),
   create_directory(NewDir).
 create_nested_directory(NestedDir, OldDir, NewDir):-
-  NestedDir =.. [OuterDir, InnerNestedDir],
+  NestedDir =.. [OuterDir,InnerNestedDir],
   % Note that adding the option =|file_type(directory)|= makes this clause
   % throw an exception, because this option assumes that the directory
   % exists.
-  atomic_list_concat([OldDir, '/', OuterDir], TempDir),
+  atomic_list_concat([OldDir,'/',OuterDir], TempDir),
   create_directory(TempDir),
   create_nested_directory(InnerNestedDir, TempDir, NewDir).
 
@@ -247,7 +247,7 @@ directory_files(O1, [F|T1], Sol2):-
   memberchk(FT, FTs), !,
 
   directory_files(O1, T1, Sol1),
-  
+
   option(order(Order), O1, none),
   (
     Order == lexicographic

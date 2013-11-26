@@ -10,8 +10,8 @@
                       % +DefaultValue
                       % -StoredValue
                       % -NewOptions:list(nvpair)
-    option_ext/3, % ?Option
-                  % +Options:list
+    option_ext/3, % ?Option:compound
+                  % +Options:list(nvpair)
                   % +Default
     option_format/2, % +OptionAnyFormat:compound
                      % -OptionStandardFormat:compound

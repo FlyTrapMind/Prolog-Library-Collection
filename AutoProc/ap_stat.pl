@@ -97,7 +97,7 @@ ap_stage_eval(O1, StageNumber, A, P):-
 ap_stage_init(O1, StageNumber):-
   ap_stage_init_actual(O1, StageNumber),
   ap_stage_init_potential(O1, StageNumber),
-  ap_stage_directory(O1, StageNumber, StageAlias),
+  ap_dir(O1, StageNumber, StageAlias),
   intermittent_thread(
     ap_stage_eval(O1, StageNumber),
     ap_stage_done(O1, StageNumber),

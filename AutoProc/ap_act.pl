@@ -29,9 +29,6 @@ Actions that can be used from within an automated process.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
-:- db_add_novel(user:prolog_file_type('tar.gz', archive)).
-:- db_add_novel(user:prolog_file_type(txt,      text   )).
-
 
 
 ap_copy_file(_PS, FromFile, ToFile):-
