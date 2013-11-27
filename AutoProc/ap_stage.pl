@@ -38,10 +38,6 @@ Runs stages in an automated process.
 %   * =|args(+Arguments:list)|=
 %     Additional, goal-specific arguments.
 %     Default: the empty list.
-%   * =|actual(+ActualNumberOfApplications:nonneg)|=
-%     This is used to display progress bars.
-%   * =|potential(+PotentialNumberOfApplications:nonneg)|=
-%     This is used to display progress bars.
 %   * =|stat_lag(+Interval:positive_interval)|=
 %     The lag between statistics updates in seconds.
 %     Default: =10=.
@@ -84,14 +80,12 @@ ap_stage(O1, Stage, FromDir, ToDir, Goal):-
   ap_stage_end(O1, Stage, ToDir).
 
 ap_stage_begin(O1, Stage):-
-  % Initialize the number of actual and potential applications.
-  ap_stage_init(O1, Stage),
-
   ap_debug(O1, '[Stage:~w] Started.', [Stage]).
 
 ap_stage_end(O1, Stage, ToDir):-
   % Send a progress bar to the debug chanel.
-  ap_stage_done(O1, Stage),
+  ap_stage_alias(O1, Stage, StageAlias),
+  ap_stage_done(StageAlias),
 
   % Add an empty file that indicates this stage completed successfully
   absolute_file_name(

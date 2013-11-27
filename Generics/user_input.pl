@@ -185,7 +185,7 @@ user_interaction(O1, Act, G, Hs, Ts):-
   (
     option(stat_flag(StageAlias), O1)
   ->
-    ap_stage_set_potential(StageAlias, NumberOfTs)
+    ap_stage_init(StageAlias, NumberOfTs)
   ;
     true
   ),

@@ -29,14 +29,14 @@ Actions that can be used from within an automated process.
 
 
 
-ap_copy_file(_PS, FromFile, ToFile):-
+ap_copy_file(_StageAlias, FromFile, ToFile):-
   safe_copy_file(FromFile, ToFile).
 
-ap_extract_archive(_PS, FromFile, ToFile):-
+ap_extract_archive(_StageAlias, FromFile, ToFile):-
   file_to_directory(ToFile, ToDir),
   archive_extract(FromFile, ToDir, []).
 
-ap_merge_into_one_file(PS, FromDir, ToFile):-
+ap_merge_into_one_file(StageAlias, FromDir, ToFile):-
   directory_files(
     [
       file_types([text]),
@@ -50,16 +50,23 @@ ap_merge_into_one_file(PS, FromDir, ToFile):-
     FromDir,
     FromFiles
   ),
+  
+  % Stats
+  length(FromFiles, NumberOfFromFiles),
+  ap_stage_init(StageAlias, NumberOfFromFiles),
+  
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
-    maplist(ap_merge_into_one_file_(PS, Out), FromFiles),
+    maplist(ap_merge_into_one_file_(StageAlias, Out), FromFiles),
     close(Out)
   ).
-ap_merge_into_one_file_(PS, Out, FromFile):-
+ap_merge_into_one_file_(StageAlias, Out, FromFile):-
   setup_call_cleanup(
     open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
   ),
-  ap_stage_tick(PS).
+  
+  % Stats
+  ap_stage_tick(StageAlias).
 
