@@ -180,7 +180,8 @@ xml_dom_to_stream(O1, DOM, OutputStream):-
       merge_options([dtd(DTD)], O1, O2)
     ),
     xml_write(OutputStream, DOM, O2),
-    free_dtd(DTD)
+    true
+    %%%%free_dtd(DTD)
   ).
 
 %! xml_file_to_dom(+File:atom, -XML:dom) is det.

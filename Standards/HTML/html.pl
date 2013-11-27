@@ -142,7 +142,8 @@ stream_to_html(Stream, DOM, Attempts):-
         )
       )
     ),
-    free_dtd(DTD)
+    true
+    %%%%free_dtd(DTD)
   ).
 
 %! uri_to_html(+URI:resource, -HTML:list) is det.

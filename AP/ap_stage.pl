@@ -78,12 +78,13 @@ ap_stage(O1, Stage, FromDir, ToDir, Goal):-
   (
     option(between(Low,High), O1)
   ->
-    Potential is  High - Low,
+    Potential is  High - Low + 1,
     ap_stage_init(StageAlias, Potential),
     forall(
       between(Low, High, N),
       apply(Goal, [StageAlias,FromArg,ToArg,N|Args])
-    )
+    ),
+    trace
   ;
     apply(Goal, [StageAlias,FromArg,ToArg|Args])
   ),
