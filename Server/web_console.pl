@@ -142,8 +142,8 @@ console_output -->
   ]).
 
 console_output(_Request):-
-  retract(content_queue(console_output, DTD_Name, Style_Name, DOM)), !,
-  serve_xml(DTD_Name, Style_Name, DOM).
+  retract(content_queue(console_output, Doctype, StyleName, DOM)), !,
+  xml_serve_dom([dtd(Doctype),style(StyleName)], DOM).
 console_output(Request):-
   serve_nothing(Request).
 
@@ -231,8 +231,8 @@ push(Type, DTD_Name, StyleName, DOM):-
   assertz(history_push(Type, DateTime, DTD_Name, StyleName, DOM)).
 
 status_pane(_Request):-
-  retract(content_queue(status_pane, DTD_Name, Style_Name, DOM)), !,
-  serve_xml(DTD_Name, Style_Name, DOM).
+  retract(content_queue(status_pane, Doctype, StyleName, DOM)), !,
+  xml_serve_dom([dtd(Doctype),style(StyleName)], DOM).
 status_pane(Request):-
   serve_nothing(Request).
 

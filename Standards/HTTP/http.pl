@@ -4,15 +4,12 @@
     http_open_wrapper/3, % +URI:uri
                          % -Stream:stream
                          % +Options:list(nvpair)
-    http_parameters_fail/2, % +Request
+    http_parameters_fail/2, % +Request:list
                             % ?Parameters:list
-    serve_nothing/1, % +Request
-    serve_xml/1, % +XML
-    serve_xml/2, % +DTD_Name:atom
-                 % +DOM:dom
-    serve_xml/3 % +DTD_Name:atom
-                % +Style_Name:atom
-                % +DOM:dom
+    serve_nothing/1, % +Request:list
+    xml_serve_atom/1, % +XML:atom
+    xml_serve_dom/2 % +Options:list(nvpair)
+                    % +DOM:list
   ]
 ).
 
@@ -105,18 +102,29 @@ serve_nothing(Request):-
   memberchk(pool(client(_, _ , _In, Out)), Request),
   http_reply_header(Out, status(no_content), []).
 
-serve_xml(XML):-
+%! xml_serve_atom(+XML:atom) is det.
+% Serves the given XML-formatted atom.
+
+xml_serve_atom(XML):-
   % The User Agent needs to know the content type and encoding.
   % If the UTF-8 encoding is not given here explicitly,
   % Prolog throws an IO exception on `format(XML)`.
   format('Content-type: application/xml; charset=utf-8~n~n'),
   format(XML).
 
-serve_xml(DTD_Name, DOM):-
-  dom_to_xml(DTD_Name, DOM, XML),
-  serve_xml(XML).
+%! xml_serve_dom(+Options:list(nvpair), +DOM:list) is det.
+% Serves the given XML DOM.
+%
+% The following options are supported:
+%   * =|dtd(+Doctype:atom)|=
+%     The atomic name of the DTD that should be used for the XML DOM.
+%     The DTD is first searched for in the cache of DTD objects.
+%     If the given doctype has no associated DTD in the cache,
+%     it searches for a file using the file search path =dtd=.
+%   * =|style(+StyleName:atom)|=
+%     The atomic name of a style file on the =css= search path.
 
-serve_xml(DTD_Name, Style_Name, DOM):- !,
-  dom_to_xml(DTD_Name, Style_Name, DOM, XML),
-  serve_xml(XML).
+xml_serve_dom(O1, DOM):-
+  xml_dom_to_atom(O1, DOM, XML),
+  xml_serve_atom(XML).
 

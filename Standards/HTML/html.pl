@@ -118,28 +118,31 @@ stream_to_html(_Stream, _DOM, 5):- !,
     []
   ).
 stream_to_html(Stream, DOM, Attempts):-
-  dtd(html, DTD),
-  catch(
-    load_structure(
-      stream(Stream),
-      DOM,
-      [
-        dtd(DTD),
-        dialect(xmlns),
-        max_errors(-1),
-        shorttag(true),
-        space(remove),
-        syntax_errors(quiet)
-      ]
-    ),
-    Exception,
-    (
-      NewAttempts is Attempts + 1,
-      html_process_exception(
-        Exception,
-        stream_to_html(Stream, DOM, NewAttempts)
+  setup_call_cleanup(
+    dtd(html, DTD),
+    catch(
+      load_structure(
+        stream(Stream),
+        DOM,
+        [
+          dtd(DTD),
+          dialect(xmlns),
+          max_errors(-1),
+          shorttag(true),
+          space(remove),
+          syntax_errors(quiet)
+        ]
+      ),
+      Exception,
+      (
+        NewAttempts is Attempts + 1,
+        html_process_exception(
+          Exception,
+          stream_to_html(Stream, DOM, NewAttempts)
+        )
       )
-    )
+    ),
+    free_dtd(DTD)
   ).
 
 %! uri_to_html(+URI:resource, -HTML:list) is det.

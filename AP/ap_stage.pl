@@ -74,8 +74,20 @@ ap_stage(O1, Stage, FromDir, ToDir, Goal):-
   % (either files or directories).
   ap_stage_alias(O1, Stage, StageAlias),
   option(args(Args), O1, []),
-  apply(Goal, [StageAlias,FromArg,ToArg|Args]),
 
+  (
+    option(between(Low,High), O1)
+  ->
+    Potential is  High - Low,
+    ap_stage_init(StageAlias, Potential),
+    forall(
+      between(Low, High, N),
+      apply(Goal, [StageAlias,FromArg,ToArg,N|Args])
+    )
+  ;
+    apply(Goal, [StageAlias,FromArg,ToArg|Args])
+  ),
+  
   % Ending of a script stage.
   ap_stage_end(O1, Stage, ToDir).
 

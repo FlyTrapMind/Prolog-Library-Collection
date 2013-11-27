@@ -114,7 +114,10 @@ parse_html(File, DOM):-
         ]
       )
     ),
-    close(Stream, [force(true)])
+    (
+      close(Stream, [force(true)]),
+      free_dtd(DTD)
+    )
   ).
 
 

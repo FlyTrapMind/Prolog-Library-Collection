@@ -23,9 +23,6 @@
 
 % DTD file location.
 :- db_add_novel(user:file_search_path(dtd, svg(.))).
-% GZipped SVG file extension.
-:- db_add_novel(user:prolog_file_type(svgz, gzip)).
-:- db_add_novel(user:prolog_file_type(svgz, svg)).
 
 % A special SVG file extension is used on Macintosh HFS file systems.
 :- if(is_apple).
@@ -36,6 +33,10 @@
 :- db_add_novel(user:prolog_file_type(svg, svg)).
 :- endif.
 
+% GZipped SVG file extension.
+% @tbd How to use these?
+%%%%:- db_add_novel(user:prolog_file_type(svgz, gzip)).
+%%%%:- db_add_novel(user:prolog_file_type(svgz, svg)).
 
 
 file_to_svg(File, SVG):-

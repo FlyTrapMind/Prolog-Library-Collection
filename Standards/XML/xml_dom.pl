@@ -1,37 +1,22 @@
 :- module(
   xml_dom,
   [
-    dom_to_xml/3, % +DTD_File:atom
-                  % +DOM
-                  % -XML:atom
-    dom_to_xml/4, % +DTD_File:atom
-                  % +StyleName:atom
-                  % +DOM
-                  % -XML:atom
-    dom_to_xml_file/3, % +DTD_Name:atom,
-                       % +DOM:list
-                       % +Out:oneof([atom,stream])
-    dom_to_xml_file/4, % +DTD_Name:atom,
-                       % +DOM:list
-                       % +Out:oneof([atom,stream])
-                       % +Options:list(nvpair)
-    file_to_xml/2, % +File:atom
-                   % -XML:dom
-    stream_to_xml/2, % +Stream:stream
-                     % -XML:dom
-    stylesheet_pi/2, % +CSS_FileSpecification
-                     % -PI:atom
-    stylesheet_pi/3, % +Type:oneof(['text/css'])
-                     % +CSS_FileSpecification
-                     % -PI:atom
-    uri_to_xml/2, % +URI:uri
-                  % -XML:dom
     xml_doctype/2, % +Stream:stream
                    % -DocType
-    xml_inject_dom_with_attribute/4 % +OldDOM:dom
-                                    % +Class:atom
-                                    % AttributeValuePairs:list(nvpair)
-                                    % -NewDOM:dom
+    xml_dom_to_atom/3, % +Options:list(nvpair)
+                       % +XML_DOM:list
+                       % -XML:atom
+    xml_dom_to_file/3, % +Options:list(nvpair)
+                       % +XML_DOM:list
+                       % +File:atom
+    xml_file_to_dom/2, % +File:atom
+                       % -XML:dom
+    xml_inject_dom_with_attribute/4, % +OldDOM:dom
+                                     % +Class:atom
+                                     % AttributeValuePairs:list(nvpair)
+                                     % -NewDOM:dom
+    xml_url_to_dom/2 % +URI:uri
+                     % -XML_DOM:list
   ]
 ).
 
@@ -40,7 +25,7 @@
 Predicates that operate on / generate XML DOM.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09
+@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11
 */
 
 :- use_module(generics(db_ext)).
@@ -49,6 +34,7 @@ Predicates that operate on / generate XML DOM.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
+:- use_module(library(option)).
 :- use_module(library(sgml)).
 :- use_module(library(sgml_write)).
 :- use_module(os(file_ext)).
@@ -65,122 +51,19 @@ Predicates that operate on / generate XML DOM.
 :- db_add_novel(user:prolog_file_type(dtd, dtd)).
 :- db_add_novel(user:prolog_file_type(xml, xml)).
 
-% Serve CSS files.
+% /css
 :- db_add_novel(http:location(css, root(css),  [])).
 :- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(
-  css(.),
-  serve_files_in_directory(css),
-  [prefix, priority(10)]
-).
+:- http_handler(css(.), serve_files_in_directory(css), [prefix,priority(10)]).
 
 
 
-%! dom_to_xml(+DTD_Name:atom, +DOM:list, -XML:atom) is det.
-% @see dom_to_xml/4
+on_begin(Tag, Attributes, _Parser):-
+  memberchk(xmlns:_=_, Attributes),
+  throw(tag(Tag)).
 
-dom_to_xml(DTD_Name, DOM, XML):-
-  tmp_file_stream(utf8, TemporaryFile, Out),
-  % Set the header to false, since this XML content will be inserted inside
-  % a Web page.
-  % We do add the stylesheet parsing instruction, since this is allowed by
-  % Firefox.
-  dom_to_xml_file(DTD_Name, DOM, Out, [header(false)]),
-  setup_call_cleanup(
-    open(TemporaryFile, read, In, [encoding(utf8),type(text)]),
-    stream_to_atom(In, XML),
-    (
-      close(In),
-      % Do not safe-delete temporary files.
-      delete_file(TemporaryFile)
-    )
-  ).
-
-%! dom_to_xml(+DTD_Name:atom, +Style_Name:atom, +DOM:list, -XML:atom) is det.
-% Translates DOM to XML, applying DTD checks and Style decoration.
-%
-% @param DTD_Name The atomic name of a DTD file. File locations that
-%   contain DTD files must be asserted using
-%   =|file_search_path/3|=.
-
-dom_to_xml(DTD_Name, Style_Name, DOM, XML):-
-  file_name_type(Style_Name, css, Style),
-  stylesheet_pi(css(Style), PI),
-  dom_to_xml(DTD_Name, [PI | DOM], XML).
-
-%! dom_to_xml_file(
-%!   +DTD_Name:atom,
-%!   +DOM:list,
-%!   +Out:oneof([atom,stream])
-%! ) is det.
-
-dom_to_xml_file(DTD_Name, DOM, Out):-
-  dom_to_xml_file(DTD_Name, DOM, Out, []).
-
-%! dom_to_xml_file(
-%!   +DTD_Name:atom,
-%!   +DOM:list,
-%!   +Out:oneof([atom,stream]),
-%!   +Options:list(nvpair)
-%! ) is det.
-
-dom_to_xml_file(DTD_Name, DOM, Out, Options1):-
-  is_stream(Out), !,
-  new_dtd(DTD_Name, DTD),
-  % Retrieve the first DTD file with the given name.
-  dtd_file(DTD_Name, DTD_File),
-  load_dtd(DTD, DTD_File),
-  merge_options([dtd(DTD)], Options1, Options2),
-  xml_write(Out, DOM, Options2),
-  close(Out),
-  free_dtd(DTD).
-dom_to_xml_file(DTD_Name, DOM, File, Options):-
-  open(File, write, Out, [encoding(utf8),type(test)]),
-  dom_to_xml_file(DTD_Name, DOM, Out, Options).
-
-%! dtd_file(+Name:atom, -File:atom) is det.
-% Returns the first DTD file with the given name or throws an
-% existence error.
-%
-% @param Name The atomic name of a DTD file.
-% @param File The atomic name of the path of a DTD file.
-
-dtd_file(Name, File):-
-  % By setting option =solutions= to value =all= we backtrack over
-  % the various file search paths that are defined for =dtd=.
-  once(
-    absolute_file_name(
-      dtd(Name),
-      File,
-      [access(read), file_type(dtd), solutions(all)]
-    )
-  ).
-
-%! file_to_xml(+File:atom, -XML:dom) is det.
-% Reads the XML from the given file and return the DOM.
-
-file_to_xml(File, XML):-
-  setup_call_cleanup(
-    open(File, read, Stream, [encoding(utf8),type(test)]),
-    stream_to_xml(Stream, XML),
-    close(Stream)
-  ).
-
-%! stream_to_xml(+Stream:stream, -XML:dom) is det.
-% Reads the XML DOM from the given stream.
-
-stream_to_xml(Stream, XML):-
-  load_structure(
-    stream(Stream),
-    XML,
-    [
-      dialect(xml),
-      max_errors(-1),
-      shorttag(false),
-      space(remove),
-      syntax_errors(quiet)
-    ]
-  ).
+on_cdata(_CDATA, _Parser):-
+  throw(error(cdata)).
 
 stylesheet_pi(CSS_FileSpecification, PI):-
   stylesheet_pi('text/css', CSS_FileSpecification, PI).
@@ -188,20 +71,6 @@ stylesheet_pi(CSS_FileSpecification, PI):-
 stylesheet_pi(Type, CSS_FileSpecification, pi(PI)):-
   http_absolute_location(CSS_FileSpecification, CSS_File, []),
   format(atom(PI), 'xml-stylesheet type="~w" href="~w"', [Type,CSS_File]).
-
-%! uri_to_xml(+URI:uri, -XML:dom) is det.
-% Returns the HTML Document Object Model (DOM)
-% for the website with the given URI.
-
-uri_to_xml(URI, XML):-
-  setup_call_cleanup(
-    % First perform this setup once/1.
-    http_open(URI, Stream, [timeout(60)]),
-    % The try to make this goal succeed.
-    stream_to_xml(Stream, XML),
-    % If goal succeeds, then perform this cleanup.
-    close(Stream)
-  ).
 
 %! xml_doctype(+Stream, -DocType) is semidet.
 % Parse a _repositional_ stream and get the  name of the first XML
@@ -237,12 +106,92 @@ xml_doctype(Stream, DocType):-
   nonvar(Exception),
   Exception = tag(DocType).
 
-on_begin(Tag, Attributes, _Parser):-
-  memberchk(xmlns:_=_, Attributes),
-  throw(tag(Tag)).
+%! xml_dom_to_atom(+Options:list(nvpair), +DOM:list, -XML:atom) is det.
+% The following options are supported:
+%   * =|dtd(+Doctype:atom)|=
+%     The atomic name of the DTD that should be used for the XML DOM.
+%     The DTD is first searched for in the cache of DTD objects.
+%     If the given doctype has no associated DTD in the cache,
+%     it searches for a file using the file search path =dtd=.
+%   * =|style(+StyleName:atom)|=
+%     The atomic name of a style file on the =css= search path.
 
-on_cdata(_CDATA, _Parser):-
-  throw(error(cdata)).
+xml_dom_to_atom(O1, DOM1, XML):-
+  % Add style to XML DOM.
+  (
+    option(style(StyleName), O1)
+  ->
+    file_name_type(StyleName, css, StyleFile),
+    stylesheet_pi(css(StyleFile), PI),
+    DOM2 = [PI|DOM1]
+  ;
+    DOM2 = DOM1
+  ),
+  
+  % XML DOM to stream.
+  setup_call_cleanup(
+    tmp_file_stream(utf8, TmpFile, Out),
+    % Set the header to false, since this XML content will be inserted inside
+    % a Web page.
+    % We do add the stylesheet parsing instruction, since this is allowed by
+    % Firefox.
+    xml_dom_to_stream([header(false)|O1], DOM2, Out),
+    close(Out)
+  ),
+  
+  % Stream to atom.
+  setup_call_cleanup(
+    open(TmpFile, read, In, [encoding(utf8),type(text)]),
+    stream_to_atom(In, XML),
+    (
+      close(In),
+      % Do not safe-delete temporary files.
+      delete_file(TmpFile)
+    )
+  ).
+
+%! xml_dom_to_file(+Options:list(nvpair), +DOM:list, +File:atom) is det.
+
+xml_dom_to_file(O1, DOM, File):-
+  setup_call_cleanup(
+    open(File, write, OutputStream, [encoding(utf8),type(test)]),
+    xml_dom_to_stream(O1, DOM, OutputStream),
+    close(OutputStream)
+  ).
+
+%! xml_dom_to_stream(
+%!   +Options:list(nvpair),
+%!   +XML_DOM:list,
+%!   +OutputStream:stream
+%! ) is det.
+% The following options are supported:
+%   * =|dtd(+Doctype:atom)|=
+%     The atomic name of the DTD that should be used for the XML DOM.
+%     The DTD is first searched for in the cache of DTD objects.
+%     If the given doctype has no associated DTD in the cache,
+%     it searches for a file using the file search path =dtd=.
+%     Default: =html=
+
+xml_dom_to_stream(O1, DOM, OutputStream):-
+  setup_call_cleanup(
+    (
+      option(dtd(Doctype), O1, html),
+      dtd(Doctype, DTD),
+      merge_options([dtd(DTD)], O1, O2)
+    ),
+    xml_write(OutputStream, DOM, O2),
+    free_dtd(DTD)
+  ).
+
+%! xml_file_to_dom(+File:atom, -XML:dom) is det.
+% Reads the XML from the given file and return the DOM.
+
+xml_file_to_dom(File, XML):-
+  setup_call_cleanup(
+    open(File, read, Stream, [encoding(utf8),type(test)]),
+    xml_stream_to_dom(Stream, XML),
+    close(Stream)
+  ).
 
 %! xml_inject_dom_with_attribute(
 %!   +OldDOM:dom,
@@ -288,4 +237,34 @@ xml_inject_dom_with_attribute(
   ),
   xml_inject_dom_with_attribute(Contents1, Class, AttributeValuePair, Contents2),
   xml_inject_dom_with_attribute(DOM1, Class, AttributeValuePair, DOM2).
+
+%! xml_stream_to_dom(+Stream:stream, -XML:dom) is det.
+% Reads the XML DOM from the given stream.
+
+xml_stream_to_dom(Stream, XML):-
+  load_structure(
+    stream(Stream),
+    XML,
+    [
+      dialect(xml),
+      max_errors(-1),
+      shorttag(false),
+      space(remove),
+      syntax_errors(quiet)
+    ]
+  ).
+
+%! xml_url_to_dom(+URI:uri, -XML:dom) is det.
+% Returns the HTML Document Object Model (DOM)
+% for the website with the given URI.
+
+xml_url_to_dom(URI, XML):-
+  setup_call_cleanup(
+    % First perform this setup once/1.
+    http_open(URI, Stream, [timeout(60)]),
+    % The try to make this goal succeed.
+    xml_stream_to_dom(Stream, XML),
+    % If goal succeeds, then perform this cleanup.
+    close(Stream)
+  ).
 
