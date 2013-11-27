@@ -38,6 +38,7 @@ VoiD covers four areas of metadata:
 :- use_module(library(filesex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(void(void_db)).
 :- use_module(void(void_stat)).

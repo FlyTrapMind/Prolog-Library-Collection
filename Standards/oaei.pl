@@ -110,6 +110,7 @@ Mismatch types:
 :- use_module(math(statistics)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).

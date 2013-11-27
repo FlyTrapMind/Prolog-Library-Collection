@@ -1,17 +1,21 @@
 :- module(
   ap_stat,
   [
+% AP INTERNALS USE THESE:
     ap_debug/3, % +Options:list(nvpair)
                 % +Message:atom
                 % +Arguments:list
     ap_process_eval/1, % +Options:list(nvpair)
-    ap_stage_tick/1, % +StageAlias:atom
     ap_stage_done/2, % +Options:list(nvpair)
-                          % +StageNumber:nonneg)
+                     % +StageNumber:nonneg)
     ap_stage_eval/2, % +Options:list(nvpair)
-                          % +StageNumber:nonneg)
-    ap_stage_init/2 % +Options:list(nvpair)
-                         % +StageNumber:nonneg
+                     % +StageNumber:nonneg)
+    ap_stage_init/2, % +Options:list(nvpair)
+                     % +StageNumber:nonneg
+% AP GOALS USES THESE:
+    ap_stage_tick/1, % +StageAlias:atom
+    ap_stage_set_potential/2 % +StageAlias:atom
+                             % +Potential:nonneg
   ]
 ).
 
@@ -133,7 +137,11 @@ ap_flag_potential(O1, Stage, Flag):-
 
 % FLAG UPDATES %
 
+ap_stage_set_potential(StageAlias, Potential):-
+  atomic_list_concat([StageAlias,p], '_', Flag),
+  flag(Flag, _, Potential).
+
 ap_stage_tick(StageAlias):-
   atomic_list_concat([StageAlias,a], '_', Flag),
-  flag(Flag, X, X + 1).
+  flag(Flag, Actual, Actual + 1).
 

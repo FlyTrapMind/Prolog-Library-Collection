@@ -28,6 +28,7 @@ Handles user input and sequences in which user input is needed continuously
 @version 2013/10-2013/11
 */
 
+:- use_module(ap(ap_stat)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
@@ -162,6 +163,9 @@ user_input_filepath(Msg, Filepath):-
 %
 % The following options are supported:
 %   * =|answer(+Answer:oneof(['A',n,q,y]]))|=
+%   * =|stat_flag(+StatisticsFlag:atom)|=
+%     The name of the Prolog flag that is used for statistics tracking.
+%     Ticking this flag keeps track of the executed goal's progress.
 %
 % @param Options A list of name-value pairs.
 % @param ActionDescription An atomic description of the action
@@ -175,9 +179,17 @@ user_input_filepath(Msg, Filepath):-
 %        is executed after user-confirmation.
 
 user_interaction(O1, Act, G, Hs, Ts):-
-  % Reset the counter.
-  flag(user_interaction, _OldCounter, 0),
   length(Ts, NumberOfTs),
+  
+  % DEB
+  (
+    option(stat_flag(StageAlias), O1)
+  ->
+    ap_stage_set_potential(StageAlias, NumberOfTs)
+  ;
+    true
+  ),
+  
   user_interaction(O1, Act, G, 1, NumberOfTs, Hs, Ts).
 
 %! user_interaction(
@@ -230,7 +242,7 @@ user_interaction(O1, Act, G, I, L, Hs, Ts):-
 %! ) is det.
 % @tbd Reimplement percentage done in timed thread.
 
-user_interaction('A', _O1, _Act, G, I1, L, _Hs, Ts):- !,
+user_interaction('A', O1, _Act, G, I1, L, _Hs, Ts):- !,
   forall(
     between(I1, L, J),
     (
@@ -238,12 +250,10 @@ user_interaction('A', _O1, _Act, G, I1, L, _Hs, Ts):- !,
       apply(G, Juple),
 
       % DEB
-      flag(user_interaction, Count, Count + 1),
       (
-        Count mod 10000 =:= 0
+        option(stat_flag(StageAlias), O1)
       ->
-        Perc is Count / L * 100,
-        debug(user_input, '  ~2f% completed\n', [Perc])
+        ap_stage_tick(StageAlias)
       ;
         true
       )

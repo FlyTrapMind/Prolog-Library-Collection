@@ -1,12 +1,15 @@
 :- module(
   rdf_ap,
   [
+    rdf_call_cleanup/3, % +Options:list(nvpair)
+                        % :Goal
+                        % +Graphs:list(atom)
     rdf_convert/3, % +FromFile:atom
                    % +ToFormat:atom
                    % +ToFile:atom
     rdf_setup_call_cleanup/3 % +Options:list(nvpair)
                              % :Goal
-                             % +FileOrFiles:or([atom,list(atom)])
+                             % +Files:list(atom)
   ]
 ).
 
@@ -22,11 +25,22 @@ Automated processing of RDF data.
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 
+:- meta_predicate(rdf_call_cleanup(+,1,+)).
 :- meta_predicate(rdf_setup_call_cleanup(+,1,+)).
 
 
+
+% ! rdf_call_cleanup(+Options:list(nvpair), :Goal, +Graphs:list(atom)) is det.
+
+rdf_call_cleanup(_O1, Goal, Graphs):-
+  setup_call_cleanup(
+    rdf_graph_merge(Graphs, Graph),
+    call(Goal, Graph),
+    rdf_unload_graph(Graph)
+  ).
 
 %! rdf_convert(
 %!   +FromFile:atom,
@@ -44,30 +58,26 @@ rdf_convert(FromFile, ToFormat, ToFile):-
     [FromFile]
   ).
 
-%! rdf_load2s(+FileOrFiles:or([atom,list(atom)]), +Graph:atom) is det.
+%! rdf_load2s(+Files:list(atom), ?Graph:atom) is det.
 
-rdf_load2s(Fs, G):-
-  is_list(Fs), !,
-  rdf_load2s_(Fs, TmpGs),
-  rdf_graph_merge(TmpGs, G),
-  maplist(rdf_unload_graph, TmpGs).
-rdf_load2s(F, G):-
+rdf_load2s(Fs, G1):-
+  rdf_new_graph(G1, G2),
+  maplist(rdf_load2s_, Fs, TmpGs),
+  call_cleanup(
+    rdf_graph_merge(TmpGs, G2),
+    maplist(rdf_unload_graph, TmpGs)
+  ).
+
+%! rdf_load2s_(+File:atom, -Graph:atom) is det.
+
+rdf_load2s_(F, G):-
+  rdf_new_graph(_NoPreference, G),
   rdf_load2(F, [graph(G)]).
-
-rdf_load2s_(Files, Graphs):-
-  rdf_load2s_(Files, 1, Graphs).
-
-rdf_load2s_([], _N, []).
-rdf_load2s_([File|Files], N1, [Graph|Graphs]):-
-  atomic_list_concat([temp,N1], '_', Graph),
-  rdf_load2(File, [graph(Graph)]),
-  N2 is N1 + 1,
-  rdf_load2s_(Files, N2, Graphs).
 
 %! rdf_setup_call_cleanup(
 %!   +Options:list(nvpair),
 %!   :Goal,
-%!   +FileOrFiles:or([atom,list(atom)])
+%!   +Files:list(atom)
 %! ) is det.
 % RDF-based variant of setup_call_cleanup/3.
 %
@@ -75,20 +85,23 @@ rdf_load2s_([File|Files], N1, [Graph|Graphs]):-
 %   * =|format(+Format:oneof([ntriples,rdf_xml,triples,turtle])|=
 %     The RDF serialization that is used to store the results.
 %     Default: =turtle=.
+%     This is only used if option =to= is set as well.
 %   * =|to(+ToFile:atom)|=
 %     The file in which the resultant RDF graph is stored.
+%     Default: unset.
 
-rdf_setup_call_cleanup(O1, Goal, FileOrFiles):-
-  % Determine the graph name.
-  file_to_graph_name(File, DefaultGraph),
-  option(graph(Graph), O1, DefaultGraph),
-  option(format(Format), O1, turtle),
-  
+rdf_setup_call_cleanup(O1, Goal, Files):-
   setup_call_cleanup(
-    rdf_load2s(FileOrFiles, Graph),
+    (
+      rdf_new_graph(_NoPreference, Graph),
+      rdf_load2s(Files, Graph)
+    ),
     call(Goal, Graph),
     (
-      rdf_save2(File, [format(Format),graph(Graph)]),
+      (  option(to(ToFile), O1)
+      -> option(format(Format), O1, turtle),
+         rdf_save2(ToFile, [format(Format),graph(Graph)])
+      ;  true),
       rdf_unload_graph(Graph)
     )
   ).

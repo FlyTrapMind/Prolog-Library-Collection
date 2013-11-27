@@ -13,7 +13,7 @@
     rdf_graph_proper_instance/3, % +Graph1:atom
                                  % +Graph2:atom
                                  % -BNodeMap:list(pair(bnode,or([iri,literal])))
-    rdf_graph_merge/2, % +In:list(atom)
+    rdf_graph_merge/2, % +MergingGraphs:list(atom)
                        % +MergedGraph:atom
     rdf_graph_to_triples/2, % +Graph:atom
                             % -Triples:list(compound)
@@ -53,6 +53,7 @@ Predicates that apply to entire RDF graphs.
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_term)).
 
 :- rdf_meta(rdf_triple(r,r,r,?)).
@@ -133,19 +134,18 @@ rdf_graph_instance([S1-P-O1|T1], L2, Map, SolMap):-
   append([Map,MapExtension1,MapExtension2], NewMap),
   rdf_graph_instance(T1, L2, NewMap, SolMap).
 
-%! rdf_graph_merge(+In:list(atom), +MergedGraph:atom) is det.
+%! rdf_graph_merge(+MergingGraphs:list(atom), +MergedGraph:atom) is det.
+%! rdf_graph_merge(+MergingGraphs:list(atom), -MergedGraph:atom) is det.
 % Merges RDF graphs.
-% The input is is a (possibly mixed) list of RDF graph names and
-% names of files that store an RDF graph.
-%
 % When merging RDF graphs we have to make sure that their blank nodes are
 % standardized apart.
 
-rdf_graph_merge(Gs, MergedG):-
+rdf_graph_merge(Gs, MergedG1):-
   % Type checking.
   is_list(Gs),
   maplist(rdf_graph, Gs),
-  atom(MergedG), !,
+  % Generate a name for the merged graph, if needed.
+  rdf_new_graph(MergedG1, MergedG2),
 
   % Collect the shared blank nodes.
   findall(
@@ -171,7 +171,7 @@ rdf_graph_merge(Gs, MergedG):-
         member(G, Gs),
         rdf(S, P, O, G)
       ),
-      rdf_assert(S, P, O, MergedG)
+      rdf_assert(S, P, O, MergedG2)
     )
   ;
     forall(
@@ -185,7 +185,7 @@ rdf_graph_merge(Gs, MergedG):-
           rdf(S, P, O, G),
           rdf(NewS, P, NewO)
         ),
-        rdf_assert(NewS, P, NewO, MergedG)
+        rdf_assert(NewS, P, NewO, MergedG2)
       )
     )
   ).

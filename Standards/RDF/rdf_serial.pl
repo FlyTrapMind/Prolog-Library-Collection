@@ -1,8 +1,6 @@
 :- module(
   rdf_serial,
   [
-    file_to_graph_name/2, % +File:atom
-                          % -Graph:atom
     rdf_graph_source_file/2, % +Graph:atom
                              % -File:atom
     rdf_guess_data_format/2, % +Stream:stream
@@ -10,8 +8,6 @@
     rdf_load2/1, % +File:atom
     rdf_load2/2, % +File:atom
                  % +Options:list(nvpair)
-    rdf_new_graph/2, % +Graph1:atom
-                     % -Graph2:atom
     rdf_save2/0,
     rdf_save2/1, % +Graph:atom
     rdf_save2/2 % ?File:atom
@@ -50,6 +46,7 @@ reflect the serialization format:
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(xml(xml_dom)).
 
 :- db_add_novel(user:prolog_file_type(nt,   ntriples)).
@@ -60,16 +57,6 @@ reflect the serialization format:
 :- nodebug(rdf_serial).
 
 
-
-%! file_to_graph_name(+File:atom, -Graph:atom) is det.
-% Returns an atomic name for the graph that could be encoded in the given
-% file, by basing the graph name on the file name.
-% This ensures that the graph name does not already exist.
-
-file_to_graph_name(File, G2):-
-  file_name(File, _Dir, G1, _Ext),
-  % Make sure the graph does not already exist.
-  rdf_new_graph(G1, G2).
 
 %! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
 % Returns the name of the file from which the graph with the given name
@@ -177,22 +164,6 @@ rdf_load2(File, O1):-
   rdf_guess_data_format(File, Format),
   merge_options([format(Format)], O1, O2),
   rdf_load2(File, O2).
-
-%! rdf_new_graph(+Graph1:atom, -Graph2:atom) is det.
-% Returns a graph name that is close to the given graph name,
-% and which it is guaranteed to not already exist.
-%
-% @param Graph1 The atomic name of the graph the user wants to use.
-% @param Graph2 An atomic name that is close to the name the user gave.
-
-% No RDF graph with the given name exists, so it is safe to use.
-rdf_new_graph(G, G):-
-  \+ rdf_graph(G), !.
-% An RDF graph with the same name already exists, so the name is altered.
-rdf_new_graph(G1, G3):-
-  var(G3),
-  new_atom(G1, G2),
-  rdf_new_graph(G2, G3).
 
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.
