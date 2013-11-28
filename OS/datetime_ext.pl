@@ -8,17 +8,19 @@
                         % -DateDir:atom
     date_time/1, % -DateTime:term
     hash_date/1, % -Hash:atom
+    iso8601_dateTime/1, % -DateTime:atom
     latest_file/2, % +Files:list(atom)
                    % -File:atom
     posix_date/1, % -Date:atom
     posix_time/1, % -Time:atom
-    posix_timestamp_to_xsd_dateTime/2, % +POSIX_TimeStemp:float
-                                       % -XSD_DT:compound
+    posix_timestamp_to_xsd_dateTime/2, % +POSIX_TimeStamp:float
+                                       % -XSD_DateTime:compound
     prolog_date_to_xsd_dateTime/2, % +SWI_Prolog_Date:compound
                                    % -XSD_DateTime:compound
-    seconds/3 % ?Hours:integer
-              % ?Minutes:integer
-              % ?Second:integer
+    seconds/3, % ?Hours:integer
+               % ?Minutes:integer
+               % ?Second:integer
+    xsd_dateTime/1 % -XSD_DateTime:atom
   ]
 ).
 
@@ -27,12 +29,13 @@
 Extensions for date and time.
 
 @author Wouter Beek
-@version 2013/06-2013/07
+@version 2013/06-2013/07, 2013/11
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/http_header)).
 :- use_module(os(dir_ext)).
+:- use_module(xsd(xsd_dateTime)).
 
 
 
@@ -100,6 +103,12 @@ date_time(DateTime):-
 hash_date(Hash):-
   get_time(TimeStamp),
   variant_sha1(TimeStamp, Hash).
+
+%! iso8601_dateTime(-ISO8601_DateTime) is det.
+
+iso8601_dateTime(DT):-
+  get_time(TimeStamp),
+  format_time(atom(DT), '%FT%T%z', TimeStamp).
 
 %! latest_file(+Files:list(atom), -Latest:atom) is det.
 % Returns the most recently created or altered file from within a list of
@@ -207,3 +216,15 @@ seconds(Hours, Minutes, Seconds):-
   default(Hours, 0, SetHours),
   default(Minutes, 0, SetMinutes),
   Seconds is (SetMinutes + (SetHours * 60)) * 60.
+
+%! xsd_dateTime(-DateTime) is det.
+% Similar to get_time/1, but returns the date and time in
+% the canonical lexical format of the =dateTime= datatype
+% from XML Schema 2: Datatypes W3C standard.
+
+xsd_dateTime(DT):-
+  get_time(POSIX_TS),
+  posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT),
+  dateTimeCanonicalMap(XSD_DT, DT_Codes),
+  atom_codes(DT, DT_Codes).
+

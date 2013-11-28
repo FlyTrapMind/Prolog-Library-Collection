@@ -131,7 +131,7 @@ Mismatch types:
 :- db_add_novel(user:file_search_path(ontology2, alignment2(ontology))).
 :- db_add_novel(user:file_search_path(reference2, alignment2(reference))).
 
-:- debug(oaei).
+:- nodebug(oaei).
 
 
 

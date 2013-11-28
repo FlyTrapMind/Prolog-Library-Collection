@@ -24,7 +24,7 @@ Support for naming graphs.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(file_ext)).
 
-:- debug(rdf_graph_name).
+:- nodebug(rdf_graph_name).
 
 
 

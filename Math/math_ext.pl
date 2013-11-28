@@ -4,7 +4,7 @@
     average/2, % +Numbers:list(number)
                % -Average:number
     betwixt/3, % +Min:integer
-               % ?Max:or([integer,oneof([inf])])
+               % +Max:or([integer,oneof([inf])])
                % ?Integer:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
@@ -94,23 +94,10 @@ average(Numbers, Average):-
 %!   ?Integer:integer
 %! ) is nondet.
 
-betwixt(Min, Max1, I):-
-  default(Max1, inf, Max2),
-  betwixt_(Min, Max2, I).
-
-betwixt_(Min, _Max, Min).
-betwixt_(Min, Max, Val2):-
-  betwixt_(Min, Max, Val1),
-  Val2 is Val1 + 1,
-  (
-    smaller_than_or_equal_to(Val2, Max)
-  ->
-    true
-  ;
-    % If the antecedent consition is not met, then we remove
-    % all the choice points and fail.
-    !, fail
-  ).
+betwixt(Min, inf, I):-
+  Min =< I, !.
+betwixt(Min, Max, I):-
+  between(Min, Max, I).
 
 binomial_coefficient(M, N, BC):-
   factorial(M, F_M),
