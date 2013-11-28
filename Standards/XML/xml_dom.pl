@@ -119,7 +119,7 @@ xml_doctype(Stream, DocType):-
 xml_dom_to_atom(O1, DOM1, XML):-
   % Add style to XML DOM.
   (
-    option(style(StyleName), O1)
+    select_option(style(StyleName), O1, O2)
   ->
     file_name_type(StyleName, css, StyleFile),
     stylesheet_pi(css(StyleFile), PI),
@@ -135,7 +135,7 @@ xml_dom_to_atom(O1, DOM1, XML):-
     % a Web page.
     % We do add the stylesheet parsing instruction, since this is allowed by
     % Firefox.
-    xml_dom_to_stream([header(false)|O1], DOM2, Out),
+    xml_dom_to_stream([header(false)|O2], DOM2, Out),
     close(Out)
   ),
   
@@ -173,15 +173,10 @@ xml_dom_to_file(O1, DOM, File):-
 %     Default: =html=
 
 xml_dom_to_stream(O1, DOM, OutputStream):-
-  setup_call_cleanup(
-    (
-      option(dtd(Doctype), O1, html),
-      dtd(Doctype, DTD),
-      merge_options([dtd(DTD)], O1, O2)
-    ),
-    xml_write(OutputStream, DOM, O2),
-    free_dtd(DTD)
-  ).
+  option(dtd(Doctype), O1, html),
+  dtd(Doctype, DTD),
+  merge_options([dtd(DTD)], O1, O2),
+  xml_write(OutputStream, DOM, O2).
 
 %! xml_file_to_dom(+File:atom, -XML:dom) is det.
 % Reads the XML from the given file and return the DOM.

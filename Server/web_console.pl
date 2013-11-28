@@ -185,9 +185,7 @@ process_web_command_(Command, Markup):-
     append(Arguments1, [Markup], Arguments2),
     Call =.. [Predicate2|Arguments2],
     (
-      call(InternalName:Call)
-    ->
-      true
+      call(InternalName:Call), !
     ;
       fail_web(Markup)
     )

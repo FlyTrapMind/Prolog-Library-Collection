@@ -15,10 +15,12 @@ Acts on messages printed by print_message/2.
 */
 
 :- use_module(html(html_table)).
+:- use_module(library(csv)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
+:- use_module(library(settings)).
 :- use_module(os(ansi_ext)).
 :- use_module(server(error_web)).
 :- use_module(server(web_console)).
@@ -30,6 +32,13 @@ Acts on messages printed by print_message/2.
 
 :- initialization(web_module_add('Messages', web_message, msg)).
 
+:- setting(
+  max_log_length,
+  nonneg,
+  500,
+  'The maximum number of log items to show.'
+).
+
 
 
 log_web(Markup):-
@@ -37,14 +46,21 @@ log_web(Markup):-
   Markup = [element(h1,[],['Logging is currently switched off.'])].
 log_web([HTML_Table]):-
   current_log_file(File),
-  csv_read_file(File, Rows, [arity(3),functor(row)]),
+  setting(max_log_length, MaxNumberOfRows),
   findall(
     [DateTime,Category,Message],
-    member(row(DateTime,Category,Message), Rows),
+    (
+      csv_read_file_row(
+        File,
+        row(DateTime,Category,Message),
+        [arity(3),functor(row),line(RowNumber)]
+      ),
+      RowNumber =< MaxNumberOfRows
+    ),
     TRs
   ),
   html_table(
-    [header(true)],
+    [caption('Log messages'),header(true)],
     [['DateTime','Category','Message']|TRs],
     HTML_Table
   ).
@@ -84,5 +100,9 @@ web_message(open_uri(_URI)):- !,
     ]
   ).
 web_message(_Request):-
-  reply_html_page(app_style, title('Messages'), []).
+  reply_html_page(app_style, title('Messages'), \web_message_body).
+
+web_message_body -->
+  {log_web(Markup)},
+  html(Markup).
 
