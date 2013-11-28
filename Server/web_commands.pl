@@ -26,7 +26,6 @@ that can be issued via the Web interface.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
-:- use_module(library(pairs)).
 :- use_module(server(web_modules)).
 
 :- web_module_add('Web commands', web_commands, command).

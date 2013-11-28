@@ -89,7 +89,7 @@ ap_stage_init(StageAlias, Potential):-
   intermittent_thread(
     ap_stage_eval(StageAlias),
     ap_stage_done(StageAlias),
-    100,
+    10000,
     _Id,
     [alias(StageAlias)]
   ).

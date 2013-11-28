@@ -19,7 +19,7 @@ Text-to-speech predicates.
 :- use_module(os(os_ext)).
 :- use_module(os(run_ext)).
 
-:- db_add_novel(module_uses_program(cowspeak, espeak)).
+:- db_add_novel(user:module_uses_program(tts_ext, espeak)).
 
 :- debug(tts_ext).
 
