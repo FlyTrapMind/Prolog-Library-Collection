@@ -106,3 +106,4 @@ touch_windows(File):-
   %%%%format(atom(Command), 'type nul >>~w & copy ~w +,,', [File, File]),
   %%%%process_create(path(cmd), [Command], []).
 :- endif.
+

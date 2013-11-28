@@ -59,12 +59,12 @@
   ]
 ).
 
-/** <module> DCG_CONTENT
+/** <module> DCG Content
 
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09
+@version 2013/07-2013/09, 2013/11
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -77,6 +77,7 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(math(radix)).
+:- use_module(os(shell_ext)).
 
 :- meta_predicate(collection(:,+,?,?)).
 :- meta_predicate(list(:,+,?,?)).
@@ -317,8 +318,7 @@ graphic([H|T]) -->
 graphic([]) --> [].
 
 horizontal_line -->
-  % Use the `termcap` library.
-  {tty_get_capability(co, number, ScreenWidth)},
+  {terminal_screen_width(ScreenWidth)},
   horizontal_line(ScreenWidth).
 
 horizontal_line(L) -->
