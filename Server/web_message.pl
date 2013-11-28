@@ -14,6 +14,7 @@ Acts on messages printed by print_message/2.
 @version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11
 */
 
+:- use_module(generics(logging)).
 :- use_module(html(html_table)).
 :- use_module(library(csv)).
 :- use_module(library(http/html_write)).

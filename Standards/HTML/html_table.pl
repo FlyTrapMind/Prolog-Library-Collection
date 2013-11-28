@@ -19,7 +19,9 @@ Support for generating HTML tables based on Prolog lists.
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(library(apply)).
 :- use_module(library(http/html_write)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(uri(rfc3987_dcg)).
 
