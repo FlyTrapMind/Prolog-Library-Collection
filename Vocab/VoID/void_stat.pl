@@ -81,7 +81,7 @@ void_assert_statistics(DD_G, DS, DS_F):-
       rdf_load2(DS_F, [format(turtle),graph(DS_G)])
     ),
     void_assert_statistics(DD_G, DS, DS_G),
-    rdf_unload_graph(DS_G)
+    rdf_clean_graph(DS_G)
   ).
 % The dataset is loaded in memory.
 void_assert_statistics(DD_G, DS, DS_G):-

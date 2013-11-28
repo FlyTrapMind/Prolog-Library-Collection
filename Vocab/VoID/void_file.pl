@@ -54,7 +54,7 @@ VoiD covers four areas of metadata:
 % Loads the VoID vocabulary.
 
 void_init:-
-  rdf_new_graph(void_schema, G),
+  rdf_new_graph(void_schema, G, 'VoID vocabulary'),
   absolute_file_name(vocab('VoID'), F, [access(read),file_type(turtle)]),
   rdf_load2(F, [file_type(turtle),graph(G)]).
 
