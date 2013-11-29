@@ -2,6 +2,8 @@
   web_message,
   [
     log_web/1, % -Markup:list
+    log_web/2, % +Category:atom
+               % -Markup:list
     web_message/1 % +Term
   ]
 ).
@@ -14,11 +16,15 @@ Acts on messages printed by print_message/2.
 @version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11
 */
 
+:- use_module(generics(logging)).
 :- use_module(html(html_table)).
+:- use_module(library(csv)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
+:- use_module(library(settings)).
+:- use_module(math(math_ext)).
 :- use_module(os(ansi_ext)).
 :- use_module(server(error_web)).
 :- use_module(server(web_console)).
@@ -30,21 +36,44 @@ Acts on messages printed by print_message/2.
 
 :- initialization(web_module_add('Messages', web_message, msg)).
 
+:- setting(
+  max_log_length,
+  nonneg,
+  500,
+  'The maximum number of log items to show.'
+).
+
 
 
 log_web(Markup):-
+  log_web(_Category, Markup).
+
+log_web(_Category, Markup):-
   \+ current_log_file(_File), !,
   Markup = [element(h1,[],['Logging is currently switched off.'])].
-log_web([HTML_Table]):-
+log_web(Category, [HTML_Table]):-
   current_log_file(File),
-  csv_read_file(File, Rows, [arity(3),functor(row)]),
+  (
+    var(Category)
+  ->
+    MaxNumberOfRows = inf
+  ;
+    setting(max_log_length, MaxNumberOfRows)
+  ),
   findall(
     [DateTime,Category,Message],
-    member(row(DateTime,Category,Message), Rows),
+    (
+      csv_read_file_row(
+        File,
+        row(DateTime,Category,Message),
+        [arity(3),functor(row),line(RowNumber)]
+      ),
+      betwixt(1, MaxNumberOfRows, RowNumber)
+    ),
     TRs
   ),
   html_table(
-    [header(true)],
+    [caption('Log messages'),header(true)],
     [['DateTime','Category','Message']|TRs],
     HTML_Table
   ).
@@ -84,5 +113,9 @@ web_message(open_uri(_URI)):- !,
     ]
   ).
 web_message(_Request):-
-  reply_html_page(app_style, title('Messages'), []).
+  reply_html_page(app_style, title('Messages'), \web_message_body).
+
+web_message_body -->
+  {log_web(Markup)},
+  html(Markup).
 

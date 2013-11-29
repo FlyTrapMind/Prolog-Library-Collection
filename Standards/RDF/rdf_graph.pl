@@ -145,7 +145,7 @@ rdf_graph_merge(Gs, MergedG1):-
   is_list(Gs),
   maplist(rdf_graph, Gs),
   % Generate a name for the merged graph, if needed.
-  rdf_new_graph(MergedG1, MergedG2),
+  rdf_new_graph(MergedG1, MergedG2, 'Merge into this graph'),
 
   % Collect the shared blank nodes.
   findall(

@@ -394,3 +394,4 @@ repetition(Rep, Min2, Max2):-
     is_repetition_value(Max2)
   ),
   greater_than_or_equal_to(Max2, Min2).
+

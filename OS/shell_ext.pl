@@ -1,19 +1,21 @@
 :- module(
   shell_ext,
   [
-    shell_status/1 % +Status:integer
+    shell_status/1, % +Status:integer
+    terminal_screen_width/1 % -ScreenWidth:nonneg
   ]
 ).
 
-/** <module> SHELL_EXT
+/** <module> Shell extensions
 
-Communication with the shell.
+Communication with the shell and terminal properties.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06, 2013/11
 */
 
 :- use_module(library(process)).
+:- use_module(os(os_ext)).
 
 
 
@@ -47,6 +49,19 @@ shell_status(127, 'Command not found.', 'Command could not be found.').
 shell_status(128, 'Invalid argument to the exit command.',
   'The exit command takes only integer args in the range 0-255.').
 shell_status(130,	'Script terminated by Control-C	', '').
+
+%! terminal_screen_width(-ScreenWidth:nonneg) is det.
+
+% Use the `termcap` library.
+terminal_screen_width(ScreenWidth):-
+  os_dependent_call(terminal_screen_width(ScreenWidth)).
+:- if(is_unix).
+terminal_screen_width_unix(ScreenWidth):-
+  tty_get_capability(co, number, ScreenWidth).
+:- endif.
+:- if(is_windows).
+terminal_screen_width_windows(80).
+:- endif.
 
 %! windows_shell_command(+Command) is det.
 % @tbd Test this.

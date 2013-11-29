@@ -4,10 +4,6 @@
 
 Using this module automatically starts the server.
 
-Logging is required once Wallace is started, because module
-=|web_message|= causes debug messages to be appended to the
-current logging stream.
-
 Web home page of the development server.
 Displays a form for entering Web predicates and displays the results
 of their execution.

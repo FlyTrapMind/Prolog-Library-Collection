@@ -127,3 +127,5 @@ load_modules_for_pldoc:-
     )
   ).
 
+:- use_module(server(web_message)).
+

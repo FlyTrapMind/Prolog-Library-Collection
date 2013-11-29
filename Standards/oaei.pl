@@ -131,7 +131,7 @@ Mismatch types:
 :- db_add_novel(user:file_search_path(ontology2, alignment2(ontology))).
 :- db_add_novel(user:file_search_path(reference2, alignment2(reference))).
 
-:- debug(oaei).
+:- nodebug(oaei).
 
 
 
@@ -171,7 +171,7 @@ oaei_file_to_alignments(F, A_Pairs):-
     (
       file_name(F, _Dir, G1, _Ext),
       % Make sure the graph name is unique.
-      rdf_new_graph(G1, G2),
+      rdf_new_graph(G1, G2, 'Tmp graph (call-cleanup)'),
       rdf_load2(F, [graph(G2)])
     ),
     oaei_file_to_alignments_(G2, A_Pairs),

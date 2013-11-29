@@ -39,7 +39,7 @@ rdf_call_cleanup(_O1, Goal, Graphs):-
   setup_call_cleanup(
     rdf_graph_merge(Graphs, Graph),
     call(Goal, Graph),
-    rdf_unload_graph(Graph)
+    rdf_clean_graph(Graph)
   ).
 
 %! rdf_convert(
@@ -60,18 +60,17 @@ rdf_convert(FromFile, ToFormat, ToFile):-
 
 %! rdf_load2s(+Files:list(atom), ?Graph:atom) is det.
 
-rdf_load2s(Fs, G1):-
-  rdf_new_graph(G1, G2),
+rdf_load2s(Fs, G):-
   maplist(rdf_load2s_, Fs, TmpGs),
   call_cleanup(
-    rdf_graph_merge(TmpGs, G2),
-    maplist(rdf_unload_graph, TmpGs)
+    rdf_graph_merge(TmpGs, G),
+    maplist(rdf_clean_graph, TmpGs)
   ).
 
 %! rdf_load2s_(+File:atom, -Graph:atom) is det.
 
 rdf_load2s_(F, G):-
-  rdf_new_graph(_NoPreference, G),
+  rdf_new_graph(_NoPreference, G, 'Merge from this graph'),
   rdf_load2(F, [graph(G)]).
 
 %! rdf_setup_call_cleanup(
@@ -92,17 +91,14 @@ rdf_load2s_(F, G):-
 
 rdf_setup_call_cleanup(O1, Goal, Files):-
   setup_call_cleanup(
-    (
-      rdf_new_graph(_NoPreference, Graph),
-      rdf_load2s(Files, Graph)
-    ),
+    rdf_load2s(Files, Graph),
     call(Goal, Graph),
     (
       (  option(to(ToFile), O1)
       -> option(format(Format), O1, turtle),
          rdf_save2(ToFile, [format(Format),graph(Graph)])
       ;  true),
-      rdf_unload_graph(Graph)
+      rdf_clean_graph(Graph)
     )
   ).
 

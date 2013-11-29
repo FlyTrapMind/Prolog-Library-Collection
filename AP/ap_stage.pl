@@ -17,6 +17,7 @@ Runs stages in an automated process.
 
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stat)).
+:- use_module(generics(logging)).
 :- use_module(generics(user_input)).
 :- use_module(os(io_ext)).
 
@@ -82,11 +83,10 @@ ap_stage(O1, Stage, FromDir, ToDir, Goal):-
     ap_stage_init(StageAlias, Potential),
     forall(
       between(Low, High, N),
-      apply(Goal, [StageAlias,FromArg,ToArg,N|Args])
-    ),
-    trace
+      execute_goal(Goal, [StageAlias,FromArg,ToArg,N|Args])
+    )
   ;
-    apply(Goal, [StageAlias,FromArg,ToArg|Args])
+    execute_goal(Goal, [StageAlias,FromArg,ToArg|Args])
   ),
   
   % Ending of a script stage.
@@ -244,4 +244,11 @@ ap_stages(O1, Stage1, Mod:[ap_stage(O2,H)|T]):- !,
   merge_options([project(Project),process(Process)], O2, O3),
   ap_stage(O3, Stage1, Stage2, Mod:H),
   ap_stages(O1, Stage2, Mod:T).
+
+execute_goal(Goal, Args):-
+  get_time(Begin),
+  apply(Goal, Args),
+  get_time(End),
+  Delta is End - Begin,
+  append_to_log(ap, 'Duration:~w ; Goal:~w ; Args:~w', [Delta,Goal,Args]).
 

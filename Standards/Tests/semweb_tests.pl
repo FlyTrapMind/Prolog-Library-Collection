@@ -143,7 +143,7 @@ run_test(Test):-
   ),
   format(
     user_output,
-    '<<<~w - ~w - ~w>>>\n',
+    '<~w - ~w - ~w>\n',
     [LocalName, TestDirectory, TestFragment]
   ),
 

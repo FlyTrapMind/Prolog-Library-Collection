@@ -39,7 +39,7 @@ logging started.
 
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/07, 2013/09
+@version 2012/05-2012/07, 2013/03-2013/07, 2013/09, 2013/11
 */
 
 :- use_module(generics(db_ext)).
@@ -87,14 +87,14 @@ append_to_log(Format, Arguments):-
 
 append_to_log(Category, Format, Arguments):-
   format(atom(Message), Format, Arguments),
-  append_to_log0(Category, Message).
+  append_to_log_(Category, Message).
 
-append_to_log0(Category, Message):-
+append_to_log_(Category, Message):-
   \+ current_log_stream(_Stream), !,
   print_message(warning, cannot_log(Category, Message)).
-append_to_log0(Category, Message):-
+append_to_log_(Category, Message):-
   current_log_stream(Stream), !,
-  date_time(DateTime),
+  iso8601_dateTime(DateTime),
   csv_write_stream(
     Stream,
     [row(DateTime, Category, Message)],

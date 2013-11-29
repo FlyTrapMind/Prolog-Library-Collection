@@ -49,7 +49,25 @@ Handles user input and sequences in which user input is needed continuously
 
 
 
+%! legal_directory(-Dir:atom)// is semidet.
+% Parses legal directory names,
+% where both Unix and Windows formats are supported.
+%
+% ## Example
+%
+% Unix directory input:
+% ~~~
+% /home/wbeek/Dropbox/IOTW
+% ~~~
+%
+% Windows directory input:
+% ~~~
+% C:\Users\Quirinus\Dropbox\IOTW
+% ~~~
+
+% Relative directory with respect to the home directory.
 legal_directory(Dir) -->
+  % Unix home.
   "~/",
   legal_filepath_segments(L2),
   {
@@ -60,7 +78,13 @@ legal_directory(Dir) -->
   }.
 % Absolute directory.
 legal_directory(Dir) -->
-  "/",
+  (
+    % Unix root.
+    "/"
+  ;
+    % Windows root.
+    "C:\\"
+  ),
   legal_filepath_segments(L),
   {subdirectories_to_directory(L, Dir)}.
 
@@ -85,7 +109,13 @@ legal_filepath_segment(Segment) -->
 
 legal_filepath_segments([H|T]) -->
   legal_filepath_segment(H),
-  "/",
+  (
+    % Unix
+    "/"
+  ;
+    % Windows
+    "\\"
+  ),
   legal_filepath_segments(T).
 legal_filepath_segments([H]) -->
   legal_filepath_segment(H).
@@ -180,7 +210,7 @@ user_input_filepath(Msg, Filepath):-
 
 user_interaction(O1, Act, G, Hs, Ts):-
   length(Ts, NumberOfTs),
-  
+
   % DEB
   (
     option(stat_flag(StageAlias), O1)
@@ -189,7 +219,7 @@ user_interaction(O1, Act, G, Hs, Ts):-
   ;
     true
   ),
-  
+
   user_interaction(O1, Act, G, 1, NumberOfTs, Hs, Ts).
 
 %! user_interaction(
