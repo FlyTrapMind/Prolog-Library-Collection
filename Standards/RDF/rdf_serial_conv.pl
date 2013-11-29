@@ -1,6 +1,9 @@
 :- module(
   rdf_serial_conv,
   [
+    rdf_convert_directory/3, % +FromDirectory:atom
+                             % +ToFormat:oneof([ntriples,triples,turtle,xml])
+                             % +ToDirectory:atom
     rdf_convert_directory/4, % +FromDirectory:atom
                              % +FromFormat:list(oneof([ntriples,triples,turtle,xml]))
                              % +ToFormat:oneof([ntriples,triples,turtle,xml])
@@ -27,6 +30,12 @@ Easily converts between different RDF serializations.
 :- use_module(rdf(rdf_serial)).
 
 
+
+rdf_convert_directory(FromDir, ToFormat, ToDir):-
+  % Notice that we even include the 'to' format,
+  % since for instance different versions of the same library
+  % may export the same format differently.
+  rdf_convert_directory(FromDir, [ntriples,triples,turtle,xml], ToFormat, ToDir).
 
 %! rdf_convert_directory(
 %!   +FromDirectory:atom,
