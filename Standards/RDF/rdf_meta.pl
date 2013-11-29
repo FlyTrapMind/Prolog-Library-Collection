@@ -1,12 +1,9 @@
 :- module(
-  rdf_ap,
+  rdf_meta,
   [
     rdf_call_cleanup/3, % +Options:list(nvpair)
                         % :Goal
                         % +Graphs:list(atom)
-    rdf_convert/3, % +FromFile:atom
-                   % +ToFormat:atom
-                   % +ToFile:atom
     rdf_setup_call_cleanup/3 % +Options:list(nvpair)
                              % :Goal
                              % +Files:list(atom)
@@ -40,22 +37,6 @@ rdf_call_cleanup(_O1, Goal, Graphs):-
     rdf_graph_merge(Graphs, Graph),
     call(Goal, Graph),
     rdf_clean_graph(Graph)
-  ).
-
-%! rdf_convert(
-%!   +FromFile:atom,
-%!   +ToFormat:oneof([ntriples,triples,turtle,xml]),
-%!   +ToFile:atom
-%! ) is det.
-% Converts a given file in one format to a new file in a different format.
-% The original file is not removed.
-
-rdf_convert(FromFile, ToFormat, ToFile):-
-  rdf_setup_call_cleanup(
-    [format(ToFormat),to(ToFile)],
-    % Idle wheel.
-    rdf_graph,
-    [FromFile]
   ).
 
 %! rdf_load2s(+Files:list(atom), ?Graph:atom) is det.

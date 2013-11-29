@@ -13,6 +13,7 @@
                    % +Name:atom
                    % +Type:atom
                    % -File:atom
+    create_file_directory/1, % +File:atom
     file_directory_alternative/3, % +FromFile:atom
                                   % +ToDirectory:atom
                                   % -ToFile:atom
@@ -185,6 +186,13 @@ create_file(NestedDir, Base, Type, File):-
   directory_file_path(Directory, Local, File),
 
   create_file(File).
+
+%! create_file_directory(+File:atom) is det.
+% Ensures that the directory structure for the given file exists.
+
+create_file_directory(File):-
+  file_to_directory(File, Dir),
+  create_directory(Dir).
 
 file_extension_alternative(FromFile, ToExtension, ToFile):-
   file_name_extension(Base, _FromExtension, FromFile),

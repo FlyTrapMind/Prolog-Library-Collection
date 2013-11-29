@@ -10,8 +10,12 @@
                  % +Options:list(nvpair)
     rdf_save2/0,
     rdf_save2/1, % +Graph:atom
-    rdf_save2/2 % ?File:atom
-                % +Options:list(nvpair)
+    rdf_save2/2, % ?File:atom
+                 % +Options:list(nvpair)
+    rdf_serialization/4 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
+                        % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
+                        % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
+                        % ?URL:atom
   ]
 ).
 
@@ -49,10 +53,20 @@ reflect the serialization format:
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(xml(xml_dom)).
 
-:- db_add_novel(user:prolog_file_type(nt,   ntriples)).
-:- db_add_novel(user:prolog_file_type(rdf,  rdf     )).
-:- db_add_novel(user:prolog_file_type(rdfs, rdfs    )).
-:- db_add_novel(user:prolog_file_type(ttl,  turtle  )).
+:- db_add_novel(user:prolog_file_type(nt,      ntriples)).
+:- db_add_novel(user:prolog_file_type(nt,      rdf     )).
+:- db_add_novel(user:prolog_file_type(owl,     rdf_xml )).
+:- db_add_novel(user:prolog_file_type(owl,     rdf     )).
+:- db_add_novel(user:prolog_file_type(rdf,     rdf_xml )).
+:- db_add_novel(user:prolog_file_type(rdf,     rdf     )).
+:- db_add_novel(user:prolog_file_type(rdfs,    rdf_xml )).
+:- db_add_novel(user:prolog_file_type(rdfs,    rdf     )).
+:- db_add_novel(user:prolog_file_type(triples, triples)).
+:- db_add_novel(user:prolog_file_type(triples, rdf     )).
+:- db_add_novel(user:prolog_file_type(ttl,     turtle  )).
+:- db_add_novel(user:prolog_file_type(ttl,     rdf     )).
+:- db_add_novel(user:prolog_file_type(xml,     rdf_xml )).
+:- db_add_novel(user:prolog_file_type(xml,     rdf     )).
 
 :- nodebug(rdf_serial).
 
@@ -79,9 +93,9 @@ rdf_graph_source_file(G, F2):-
 % element before concluding that the file is RDF/XML. Otherwise it
 % assumes that the document is Turtle.
 %
-% @author Based on a predicate written by Jan Wielemaker.
-% @author Extended to work with files and
-%         registered file extensions by Wouter Beek.
+% @author Jan Wielemaker, predicate taken from ClioPatria codebase.
+% @author Wouter Beek, extended to work with files
+%         and registered file extensions.
 
 rdf_guess_data_format(Stream, xml):-
   is_stream(Stream),
@@ -96,7 +110,7 @@ rdf_guess_data_format(File, xml):-
 rdf_guess_data_format(File, Format):-
   exists_file(File),
   file_name_extension(_Base, Ext, File),
-  rdf_serialization(Ext, Format, _URI), !.
+  rdf_serialization(Ext, _FileType, Format, _URL), !.
 rdf_guess_data_format(_, turtle).
 
 %! rdf_load2(+File:atom) is det.
@@ -116,7 +130,7 @@ rdf_load2(Spec):-
 % Load RDF from a file, a list of files, or a directory.
 %
 % The following options are supported:
-%   * format(+Format:oneof([ntriples,triples,turtle,xml]))
+%   * format(+Format:oneof([ntriples,turtle,xml]))
 %   * graph(+Graph:atom)
 %
 % @param Spec Either a file, a list of files, or a directory.
@@ -202,7 +216,7 @@ rdf_save2(G):-
 %              and possibly format/1.
 %! rdf_save2(+File:atom, +Options:list) is det.
 % The following options are supported:
-%   * =|format(+Format:oneof([rdf_xml,turtle])|=
+%   * =|format(+Format:oneof([ntriples,rdf_xml,turtle])|=
 %     The serialization format in which the graph is exported.
 %   * =|graph(+Graph:atom)|=
 %     The name of the graph that is exported.
@@ -234,7 +248,7 @@ rdf_save2(File, O1):-
   rdf_graph(G),
   \+ option(format(_Format), O1), !,
   file_name_extension(_Base, Ext, File),
-  rdf_serialization(Ext, Format, _URI),
+  rdf_serialization(Ext, _FileType, Format, _URL),
   merge_options([format(Format)], O1, O2),
   rdf_save2(File, O2).
 % Format and graph are both given.
@@ -243,18 +257,30 @@ rdf_save2(File, O1):-
   option(graph(G), O1),
   rdf_graph(G),
   option(format(Format), O1),
-  once(rdf_serialization(_Ext, Format, _URI)), !,
+  % Check whether this is a legal format.
+  once(rdf_serialization(_, _FileType, Format, _)), !,
   (
-    rdf_graph_property(G, modified(true))
+    % We do not need to save the graph if
+    % (1) the contents of the graph did not change, and
+    % (2) the serialization format of the graph did not change.
+    
+    % Make sure the contents of the graph were not changed.
+    rdf_graph_property(G, modified(false)),
+    
+    % Make sure the serialization format under which the graph was saved
+    % did not change.
+    rdf_graph_source_file(G, FromFile),
+    file_name_type(_, FromFileType, FromFile),
+    rdf_serialization(_, FromFileType, Format, _)
   ->
+    debug(rdf_serial, 'No need to save graph ~w; no updates.', [G])
+  ;
     rdf_save2(File, O1, Format),
     debug(
       rdf_serial,
       'Graph ~w was saved in ~w serialization to file ~w.',
       [G,Format,File]
     )
-  ;
-    debug(rdf_serial, 'No need to save graph ~w; no updates.', [G])
   ).
 
 %! rdf_save2(
@@ -301,13 +327,22 @@ rdf_save2(File, O1, turtle):- !,
   rdf_save_turtle(File, O3).
 
 %! rdf_serialization(
-%!   ?Extension:oneof([nt,rdf,triples,ttl]),
-%!   ?Serialization:oneof([ntriples,rdf_xml,triples,turtle]),
-%!   ?URI:uri
+%!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
+%!   ?DefaultFileType:oneof([ntriples,rdf_xml,turtle]),
+%!   ?Format:oneof([ntriples,rdf_xml,triples,turtle]),
+%!   ?URL:atom
 %! ) is nondet.
+%
+% @param DefaultExtension The default extension of the RDF serialization.
+%        RDF serializations may have multiple non-default extensions,
+%        e.g. =owl= and =xml= for RDF/XML.
+% @param DefaultFileType The default file type of the RDF serialization.
+%        Every file type has the non-default file type =rdf=.
+% @param Format The format name that is used by the Semweb library.
+% @param URL The URL at which the serialization is described, if any.
 
-rdf_serialization(nt, ntriples, 'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf, rdf_xml, 'http://www.w3.org/ns/formats/RDF_XML').
-rdf_serialization(triples, triples, '').
-rdf_serialization(ttl, turtle, 'http://www.w3.org/ns/formats/Turtle').
+rdf_serialization(nt,      ntriples, ntriples, 'http://www.w3.org/ns/formats/N-Triples').
+rdf_serialization(rdf,     rdf_xml,  xml,      'http://www.w3.org/ns/formats/RDF_XML'  ).
+rdf_serialization(triples, triples,  triples,  ''                                      ).
+rdf_serialization(ttl,     turtle,   turtle,   'http://www.w3.org/ns/formats/Turtle'   ).
 
