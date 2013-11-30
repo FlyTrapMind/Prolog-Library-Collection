@@ -1,6 +1,7 @@
 :- module(
   http,
   [
+    http_dateTime/1, % -DateTime:term
     http_open_wrapper/3, % +URI:uri
                          % -Stream:stream
                          % +Options:list(nvpair)
@@ -32,6 +33,15 @@ Predicates for sending out HTTP requests.
 :- debug(http).
 
 
+
+%! http_dateTime(-DateTime:atom) is det.
+% Returns a term describing the current date and time.
+%
+% @compat RFC 112
+
+http_dateTime(DateTime):-
+  get_time(TimeStamp),
+  http_timestamp(TimeStamp, DateTime).
 
 %! http_open_wrapper(+URI:uri, -Stream:stream, +Options:list(nvpair)) is det.
 % Retries the given URI a specific number of times.

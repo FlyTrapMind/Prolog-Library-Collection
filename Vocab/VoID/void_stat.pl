@@ -23,7 +23,6 @@ Asserts statistics for VoID descriptions.
 :- use_module(library(regex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(os(datetime_ext)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_lit_read)).
@@ -31,6 +30,7 @@ Asserts statistics for VoID descriptions.
 :- use_module(rdf(rdf_stat)).
 :- use_module(void(void_db)).
 :- use_module(xml(xml_namespace)).
+:- use_module(xsd(xsd_dateTime)).
 
 :- rdf_meta(void_assert_modified(+,r)).
 :- rdf_meta(void_assert_statistics(+,r,+)).

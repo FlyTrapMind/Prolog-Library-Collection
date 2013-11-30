@@ -35,7 +35,7 @@ Statistics for tracking the progress of automated processes.
 %! ap_debug(+Options:list(nvpair), +Format, :Arguments) is det.
 
 ap_debug(O1, Msg1, Args):-
-  date_time(Time),
+  iso8601_dateTime(Time),
   option(project(Project), O1, project),
   option(process(Process), O1, process),
   format(atom(Msg2), Msg1, Args),

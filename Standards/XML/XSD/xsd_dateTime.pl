@@ -1,6 +1,10 @@
 :- module(
   xsd_dateTime,
   [
+    posix_timestamp_to_xsd_dateTime/2, % +POSIX_TimeStamp:float
+                                       % -XSD_DateTime:compound
+    xsd_dateTime/1, % -XSD_DateTime:atom
+% DCG
     dateTimeCanonicalMap/2, % +DateTime:compound
                             % -LEX:list(code)
     dateTimeLexicalMap/2, % +LEX:list(code)
@@ -264,6 +268,60 @@ the original two values are incomparable.
 :- use_module(xsd(xsd_decimal)).
 
 
+
+%! posix_timestamp_to_xsd_dateTime(
+%!   +POSIX_TimeStemp:float,
+%!   -XSD_DT:compound
+%! ) is det.
+% Converts a POSIX timestamp to an XSD dateTime compound term.
+%
+% @param POSIX_TimeStamp A floating point number expressing the time
+%        in seconds since the Epoch at 1970-1-1.
+% @param XSD_DateTime A compound term representing a data-time value,
+%        as defined by XML schema 1.1 Part 2: Datatypes.
+%
+% @see http://en.wikipedia.org/wiki/Unix_time
+% @see http://www.w3.org/TR/xmlschema11-2/#dt-dt-7PropMod
+
+posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT):-
+  stamp_date_time(POSIX_TS, SWIPL_D, local),
+  prolog_date_to_xsd_dateTime(SWIPL_D, XSD_DT).
+
+%! prolog_date_to_xsd_dateTime(
+%!   +SWI_Prolog_Date:compound,
+%!   -XSD_DateTime:compound
+%! ) is det.
+% In the SWI-Prolog representation the timezone is an atom (e.g. `CEST`)
+% and the offset is an integer representing the offset relative to UTC
+% in _seconds_.
+%
+% In the XSD representation the timezone is the offset relative to UTC
+% in _minutes_.
+%
+% @param SWI_Prolog_Date A compound term representing a date-time value.
+%        date-time representations.
+% @param XSD_DateTime A compound term representing a data-time value,
+%        as defined by XML schema 1.1 Part 2: Datatypes.
+%
+% @see http://www.swi-prolog.org/pldoc/man?section=timedate
+% @see http://www.w3.org/TR/xmlschema11-2/#dt-dt-7PropMod
+
+prolog_date_to_xsd_dateTime(
+  date(Y,M,D,H,MM,S,Offset,_TZ,_DST),
+  dateTime(Y,M,D,H,MM,S,TZ)
+):-
+  TZ is Offset / 60.
+
+%! xsd_dateTime(-DateTime) is det.
+% Similar to get_time/1, but returns the date and time in
+% the canonical lexical format of the =dateTime= datatype
+% from XML Schema 2: Datatypes W3C standard.
+
+xsd_dateTime(DT):-
+  get_time(POSIX_TS),
+  posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT),
+  dateTimeCanonicalMap(XSD_DT, DT_Codes),
+  atom_codes(DT, DT_Codes).
 
 %! dateTime_leq(+DateTtime1:compound, +DateTime2:compound) is semidet.
 % Ordering realtion on the dateTime value space.

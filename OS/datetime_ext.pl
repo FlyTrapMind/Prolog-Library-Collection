@@ -6,21 +6,15 @@
     current_time/1, % ?Time:atom
     date_directories/2, % +Dir:atom
                         % -DateDir:atom
-    date_time/1, % -DateTime:term
     hash_date/1, % -Hash:atom
     iso8601_dateTime/1, % -DateTime:atom
     latest_file/2, % +Files:list(atom)
                    % -File:atom
     posix_date/1, % -Date:atom
     posix_time/1, % -Time:atom
-    posix_timestamp_to_xsd_dateTime/2, % +POSIX_TimeStamp:float
-                                       % -XSD_DateTime:compound
-    prolog_date_to_xsd_dateTime/2, % +SWI_Prolog_Date:compound
-                                   % -XSD_DateTime:compound
-    seconds/3, % ?Hours:integer
-               % ?Minutes:integer
-               % ?Second:integer
-    xsd_dateTime/1 % -XSD_DateTime:atom
+    seconds/3 % ?Hours:integer
+              % ?Minutes:integer
+              % ?Second:integer
   ]
 ).
 
@@ -33,9 +27,7 @@ Extensions for date and time.
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(library(http/http_header)).
 :- use_module(os(dir_ext)).
-:- use_module(xsd(xsd_dateTime)).
 
 
 
@@ -85,15 +77,6 @@ date_directories(Dir, DateDir):-
   RelativeSubDirs2 =.. [Year,RelativeSubDirs1],
   RelativeDirs =.. [Dir,RelativeSubDirs2],
   create_nested_directory(RelativeDirs, DateDir).
-
-%! date_time(-DateTime:term) is det.
-% Returns a term describing the current date and time.
-%
-% @compat RFC 112
-
-date_time(DateTime):-
-  get_time(TimeStamp),
-  http_timestamp(TimeStamp, DateTime).
 
 %! hash_date(-Hash:atom) is det.
 % Returns the hash of the current timestamp.
@@ -158,49 +141,6 @@ posix_time(Time):-
   get_time(TimeStamp),
   format_time(atom(Time), '%T', TimeStamp).
 
-%! posix_timestamp_to_xsd_dateTime(
-%!   +POSIX_TimeStemp:float,
-%!   -XSD_DT:compound
-%! ) is det.
-% Converts a POSIX timestamp to an XSD dateTime compound term.
-%
-% @param POSIX_TimeStamp A floating point number expressing the time
-%        in seconds since the Epoch at 1970-1-1.
-% @param XSD_DateTime A compound term representing a data-time value,
-%        as defined by XML schema 1.1 Part 2: Datatypes.
-%
-% @see http://en.wikipedia.org/wiki/Unix_time
-% @see http://www.w3.org/TR/xmlschema11-2/#dt-dt-7PropMod
-
-posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT):-
-  stamp_date_time(POSIX_TS, SWIPL_D, local),
-  prolog_date_to_xsd_dateTime(SWIPL_D, XSD_DT).
-
-%! prolog_date_to_xsd_dateTime(
-%!   +SWI_Prolog_Date:compound,
-%!   -XSD_DateTime:compound
-%! ) is det.
-% In the SWI-Prolog representation the timezone is an atom (e.g. `CEST`)
-% and the offset is an integer representing the offset relative to UTC
-% in _seconds_.
-%
-% In the XSD representation the timezone is the offset relative to UTC
-% in _minutes_.
-%
-% @param SWI_Prolog_Date A compound term representing a date-time value.
-%        date-time representations.
-% @param XSD_DateTime A compound term representing a data-time value,
-%        as defined by XML schema 1.1 Part 2: Datatypes.
-%
-% @see http://www.swi-prolog.org/pldoc/man?section=timedate
-% @see http://www.w3.org/TR/xmlschema11-2/#dt-dt-7PropMod
-
-prolog_date_to_xsd_dateTime(
-  date(Y,M,D,H,MM,S,Offset,_TZ,_DST),
-  dateTime(Y,M,D,H,MM,S,TZ)
-):-
-  TZ is Offset / 60.
-
 %! seconds(?Hours:integer, ?Minutes:integer, ?Seconds:integer) is det.
 % Converts hours and minutes into seconds and vice versa.
 %
@@ -216,15 +156,3 @@ seconds(Hours, Minutes, Seconds):-
   default(Hours, 0, SetHours),
   default(Minutes, 0, SetMinutes),
   Seconds is (SetMinutes + (SetHours * 60)) * 60.
-
-%! xsd_dateTime(-DateTime) is det.
-% Similar to get_time/1, but returns the date and time in
-% the canonical lexical format of the =dateTime= datatype
-% from XML Schema 2: Datatypes W3C standard.
-
-xsd_dateTime(DT):-
-  get_time(POSIX_TS),
-  posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT),
-  dateTimeCanonicalMap(XSD_DT, DT_Codes),
-  atom_codes(DT, DT_Codes).
-

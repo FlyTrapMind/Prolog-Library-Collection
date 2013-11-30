@@ -8,6 +8,10 @@
     open_dot/1, % +File:file
     open_in_webbrowser/1, % +URI:atom
     open_pdf/1, % +File:file
+    run_jar/2, % +JAR_File:atom
+               % +CommandlineArguments:list(atom
+    run_program/2, % +Program:atom
+                   % +Arguments:list(atom)
     run_script/1 % +Script:atom
   ]
 ).
@@ -18,7 +22,7 @@ Predicates for running external programs.
 
 @author Wouter Beek
 @tbd Add Windows support.
-@version 2013/06-2013/07
+@version 2013/06-2013/07, 2013/11
 */
 
 :- use_module(generics(db_ext)).
@@ -26,6 +30,7 @@ Predicates for running external programs.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(process)).
 :- use_module(library(www_browser)).
 :- use_module(os(ansi_ext)).
@@ -47,13 +52,18 @@ Predicates for running external programs.
 :- initialization(db_add_novel(at_halt(kill_processes))).
 
 % DOT
-:- db_add_novel(user:prolog_file_type(dot,  dot)).
+:- db_add_novel(user:prolog_file_type(dot, dot)).
 :- db_add_novel(user:prolog_file_type(xdot, dot)).
 :- db_add_novel(user:file_type_program(dot, dotty)).
 :- db_add_novel(user:file_type_program(dot, dotx)).
 
+% JAR
+:- db_add_novel(user:prolog_file_type(jar, jar)).
+
 % PDF
-:- db_add_novel(user:prolog_file_type(pdf,  pdf)).
+:- db_add_novel(user:prolog_file_type(pdf, pdf)).
+
+:- debug(run_ext).
 
 
 
@@ -217,6 +227,13 @@ open_pdf(BaseOrFile):-
 :- if(is_windows).
 :- db_add_novel(user:file_type_program(pdf, 'AcroRd32')).
 :- endif.
+
+%! run_jar(+JAR_File:atom, CommandlineArguments:list(atom)) is det.
+
+run_jar(JAR_File, Args):-
+  process_create(path(java), ['-jar',file(JAR_File)|Args], [process(PID)]),
+  process_wait(PID, exit(ShellStatus)),
+  debug(run_ext, 'Shell status of JAR run: ~w.', [ShellStatus]).
 
 run_program(Program, Args):-
   thread_create(

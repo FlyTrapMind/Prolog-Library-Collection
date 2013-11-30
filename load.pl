@@ -93,10 +93,10 @@ load_pgc:-
   catch(
     use_module(library(regex)),
     _,
-    pack_install(regex)
+    ignore(pack_install(regex))
   ),
   
   % Start logging.
   use_module(generics(logging)),
-  start_log.
-
+  % @tbd Strange module problem again...
+  logging:start_log.

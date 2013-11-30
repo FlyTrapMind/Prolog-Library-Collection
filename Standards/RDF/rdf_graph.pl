@@ -140,12 +140,16 @@ rdf_graph_instance([S1-P-O1|T1], L2, Map, SolMap):-
 % When merging RDF graphs we have to make sure that their blank nodes are
 % standardized apart.
 
-rdf_graph_merge(Gs, MergedG1):-
+rdf_graph_merge(Gs, MergedG):-
   % Type checking.
   is_list(Gs),
   maplist(rdf_graph, Gs),
-  % Generate a name for the merged graph, if needed.
-  rdf_new_graph(MergedG1, MergedG2, 'Merge into this graph'),
+  (
+    nonvar(MergedG), !
+  ;
+    % Generate a name for the merged graph, if needed.
+    rdf_new_graph(_MergedG, MergedG, 'Merge into this graph')
+  ),
 
   % Collect the shared blank nodes.
   findall(
@@ -171,7 +175,7 @@ rdf_graph_merge(Gs, MergedG1):-
         member(G, Gs),
         rdf(S, P, O, G)
       ),
-      rdf_assert(S, P, O, MergedG2)
+      rdf_assert(S, P, O, MergedG)
     )
   ;
     forall(
@@ -185,7 +189,7 @@ rdf_graph_merge(Gs, MergedG1):-
           rdf(S, P, O, G),
           rdf(NewS, P, NewO)
         ),
-        rdf_assert(NewS, P, NewO, MergedG2)
+        rdf_assert(NewS, P, NewO, MergedG)
       )
     )
   ).
