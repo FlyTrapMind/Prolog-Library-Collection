@@ -8,6 +8,8 @@
     rdf_load2/1, % +File:atom
     rdf_load2/2, % +File:atom
                  % +Options:list(nvpair)
+    rdf_loads/2, % +Files:list(atom)
+                 % +Graph:atom
     rdf_save2/0,
     rdf_save2/1, % +Graph:atom
     rdf_save2/2, % ?File:atom
@@ -33,6 +35,7 @@ reflect the serialization format:
   4. =rdf= for RDF/XML. Format name =xml=.
 
 @author Wouter Beek
+@tbd Writing in the N-triples format is not supported.
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
          2013/08-2013/09, 2013/11
 */
@@ -157,8 +160,8 @@ rdf_load2(File, O1):-
   access_file(File, read),
   option(format(Format), O1), nonvar(Format),
   option(graph(G), O1), nonvar(G), !,
-  % Combine the given with the standard options.
-  merge_options([register_namespaces(true),silent(true)], O1, O2),
+  % XML namespace prefixes must be added explicitly.
+  merge_options([register_namespaces(false)], O1, O2),
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, O2),
   % Send a debug message notifying that the RDF file was successfully loaded.
@@ -178,6 +181,26 @@ rdf_load2(File, O1):-
   rdf_guess_data_format(File, Format),
   merge_options([format(Format)], O1, O2),
   rdf_load2(File, O2).
+
+%! rdf_loads(+Files:list(atom), +Graph:atom) is det.
+
+rdf_loads(Fs, G):-
+  maplist(rdf_loads_(G), Fs).
+
+%! rdf_loads_(+Graph:atom, +File:atom) is det.
+
+rdf_loads_(G, F):-
+  setup_call_cleanup(
+    (
+      rdf_new_graph(temp, TmpG, 'Load multiple files into one graph.'),
+      rdf_load2(F, [graph(TmpG)])
+    ),
+    forall(
+      rdf(S, P, O, TmpG),
+      rdf_assert(S, P, O, G)
+    ),
+    rdf_unload_graph(TmpG)
+  ).
 
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.
@@ -256,7 +279,7 @@ rdf_save2(File, O1):-
   access_file(File, write),
   option(graph(G), O1),
   rdf_graph(G),
-  option(format(Format), O1),
+  select_option(format(Format), O1, O2),
   % Check whether this is a legal format.
   once(rdf_serialization(_, _FileType, Format, _)), !,
   (
@@ -275,7 +298,7 @@ rdf_save2(File, O1):-
   ->
     debug(rdf_serial, 'No need to save graph ~w; no updates.', [G])
   ;
-    rdf_save2(File, O1, Format),
+    rdf_save2(File, O2, Format),
     debug(
       rdf_serial,
       'Graph ~w was saved in ~w serialization to file ~w.',
@@ -283,48 +306,34 @@ rdf_save2(File, O1):-
     )
   ).
 
-%! rdf_save2(
-%!   +File:atom,
-%!   +Options:list,
-%!   +Format:oneof([ntriple,triples,turtle,xml])
-%! ) is det.
-
-% Save to N-Triples.
-rdf_save2(File, O1, ntriples):- !,
-  merge_options(
-    [
-      align_prefixes(true),
-      indent(2),
-      only_known_prefixes(true),
-      tab_distance(0)
-    ],
-    O1,
-    O2
-  ),
-  rdf_save_turtle(File, O2).
+% Save to RDF/XML
 rdf_save2(File, O1, rdf_xml):- !,
-  select_option(format(rdf_xml), O1, O2),
-  rdf_save(File, O2).
+  rdf_save(File, O1).
 % Save to Triples (binary storage format).
 rdf_save2(File, O1, triples):- !,
   option(graph(G), O1),
   rdf_save_db(File, G).
 % Save to Turtle.
 rdf_save2(File, O1, turtle):- !,
-  % Remove the format option.
-  select_option(format(turtle), O1, O2),
   merge_options(
     [
       align_prefixes(true),
       encoding(utf8),
       indent(2),
+      % Use all and only the namespace prefixes that have been created
+      % by the user, i.e. rdf_current_namespace/2, but also suggest new ones.
+      % @tbd Ask JW whether this is correct.
       only_known_prefixes(true),
-      tab_distance(0)
+      tab_distance(0)%,
+      % Use all the namespace prefixes that have been created by the user,
+      % i.e. rdf_current_namespace/2, but also suggest new ones.
+      % @tbd Ask JW whether this is correct.
+      %%%%user_prefixes(true)
     ],
-    O2,
-    O3
+    O1,
+    O2
   ),
-  rdf_save_turtle(File, O3).
+  rdf_save_turtle(File, O2).
 
 %! rdf_serialization(
 %!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),

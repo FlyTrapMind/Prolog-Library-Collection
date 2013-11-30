@@ -61,6 +61,11 @@ rdf_new_graph(G1, G2, Purpose):-
     [G1,G2,Purpose]
   ).
 
+rdf_new_graph(_, G):- !,
+  % @tbd Until JS fixes the rdf_create_graph/1 bug, we will use this hack.
+  flag(rdf_graph_names, Id, Id + 1),
+  atomic_list_concat([temp,Id], '_', G).
+
 % No user preference.
 rdf_new_graph(G1, G2):-
   var(G1), !,

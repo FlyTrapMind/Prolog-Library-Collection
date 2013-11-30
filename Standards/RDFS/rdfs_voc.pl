@@ -30,7 +30,10 @@ Exports the vocabulary for RDFS.
 
 
 %! load_rdfs_vocabulary(+Graph:atom) is det.
-% Loads the RDFS vocabulary into an RDF graph.
+% Pre-load the RDF(S) vocabulary.
+% This means that materialization has to make less deductions
+% (tested on 163 less), and there are some labels and comments
+% that deduction would not produce.
 
 load_rdfs_vocabulary(G):-
   absolute_file_name(rdfs(rdfs), F, [access(read),file_type(rdf)]),

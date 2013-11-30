@@ -17,6 +17,8 @@
                        % +MergedGraph:atom
     rdf_graph_to_triples/2, % +Graph:atom
                             % -Triples:list(compound)
+    rdf_graphs_to_graph/2, % +FromGraphs:list(atom)
+                           % +ToGraph:atom
     rdf_ground/1, % +Graph:atom
     rdf_ground/1, % +Triple:compound
     rdf_same_graph/2, % +Graph1:atom
@@ -42,7 +44,7 @@ Predicates that apply to entire RDF graphs.
 @see Graph theory support for RDF is found in module rdf_graph_theory.pl.
 @see For conversions from/to serialization formats, see module rdf_serial.pl.
 @tbd How to do backward chaining in query/[3,4]?
-@version 2012/01-2013/05, 2013/07-2013/08, 2013/10
+@version 2012/01-2013/05, 2013/07-2013/08, 2013/11
 */
 
 :- use_module(generics(list_ext)).
@@ -170,13 +172,7 @@ rdf_graph_merge(Gs, MergedG):-
   (
     SharedBNodes == []
   ->
-    forall(
-      (
-        member(G, Gs),
-        rdf(S, P, O, G)
-      ),
-      rdf_assert(S, P, O, MergedG)
-    )
+    rdf_graphs_to_graph(Gs, MergedG)
   ;
     forall(
       (
@@ -225,6 +221,15 @@ rdf_graph_proper_instance(G, H, Map):-
 rdf_graph_to_triples(G, Ts):-
   rdf_graph(G), !,
   findall(rdf(S,P,O), rdf(S, P, O, G), Ts).
+
+rdf_graphs_to_graph(G1s, G2):-
+  forall(
+    (
+      member(G1, G1s),
+      rdf(S, P, O, G1)
+    ),
+    rdf_assert(S, P, O, G2)
+  ).
 
 %! rdf_ground(+Graph:graph) is semidet.
 % Succeeds if the given graph is ground, i.e., contains no blank node.
