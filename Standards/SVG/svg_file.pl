@@ -12,7 +12,7 @@
 
 @author Wouter Beek
 @see SVG 1.1 (Second Edition) http://www.w3.org/TR/2011/REC-SVG11-20110816/
-@version 2012/10, 2013/01-2013/09
+@version 2012/10, 2013/01-2013/09, 2013/11
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -40,16 +40,19 @@
 
 
 file_to_svg(File, SVG):-
-  open(File, read, Stream, [encoding(utf8),type(test)]),
-  stream_to_svg(Stream, SVG).
+  setup_call_cleanup(
+    open(File, read, In, [encoding(utf8),type(test)]),
+    stream_to_svg(In, SVG),
+    close(In)
+  ).
 
-stream_to_svg(Stream, SVG):-
+stream_to_svg(In, SVG):-
   load_structure(
-    stream(Stream),
+    stream(In),
     SVG,
     [
       dialect(xmlns),
-      max_errors(-1),
+      max_errors(1),
       shorttag(false),
       space(default),
       syntax_errors(quiet)

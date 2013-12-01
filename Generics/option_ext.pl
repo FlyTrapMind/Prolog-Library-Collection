@@ -10,6 +10,10 @@
                       % +DefaultValue
                       % -StoredValue
                       % -NewOptions:list(nvpair)
+    option_add/4, % +FromOptions:list(nvpair)
+                  % +Name:atom
+                  % +Value:atom
+                  % +ToOptions:list(nvpair)
     option_ext/3, % ?Option:compound
                   % +Options:list(nvpair)
                   % +Default
@@ -52,7 +56,7 @@ first argument position in the given option term (probably under the
 assumption that the option term will always be unary).
 
 @author Wouter Beek
-@version 2013/01, 2013/07-2013/08
+@version 2013/01, 2013/07-2013/08, 2013/11
 */
 
 :- use_module(library(apply)).
@@ -91,6 +95,17 @@ default_option(Options, Name, _DefaultValue, StoredValue, Options):-
 default_option(OldOptions, Name, DefaultValue, DefaultValue, NewOptions):-
   Option =.. [Name,DefaultValue],
   merge_options([Option], OldOptions, NewOptions).
+
+%! option_add(
+%!   +FromOptions:list(nvpair),
+%!   +Name:atom,
+%!   +Value:atom,
+%!   +ToOptions:list(nvpair)
+%! ) is det.
+
+option_add(O1, N, V, O2):-
+  option_format(N=V, O),
+  merge_options([O], O1, O2).
 
 option_ext(Option, Options, Default):-
   functor(Option, Name, Arity),

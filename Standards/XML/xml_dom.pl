@@ -125,9 +125,10 @@ xml_dom_to_atom(O1, DOM1, XML):-
     stylesheet_pi(css(StyleFile), PI),
     DOM2 = [PI|DOM1]
   ;
-    DOM2 = DOM1
+    DOM2 = DOM1,
+    O2 = O1
   ),
-  
+
   % XML DOM to stream.
   setup_call_cleanup(
     tmp_file_stream(utf8, TmpFile, Out),
@@ -138,7 +139,7 @@ xml_dom_to_atom(O1, DOM1, XML):-
     xml_dom_to_stream([header(false)|O2], DOM2, Out),
     close(Out)
   ),
-  
+
   % Stream to atom.
   setup_call_cleanup(
     open(TmpFile, read, In, [encoding(utf8),type(text)]),

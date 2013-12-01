@@ -140,12 +140,15 @@ legal_user_interaction(Char) -->
 %! user_input(+Message:atom, :LegalAnswer:dcg, -Answer:atom) is det.
 
 user_input(Msg, Legal, Answer):-
+  repeat,
   format(user_output, '~w\n', [Msg]),
   read_line_to_codes(user_input, Codes),
   (
-    once(phrase(dcg_call(Legal, Answer), Codes)), !
+    once(phrase(dcg_call(Legal, Answer), Codes))
+  ->
+    !
   ;
-    user_input(Msg, Legal, Answer)
+    fail
   ).
 
 %! user_input_directory(+RelativeFile:atom, -AbsoluteFile:atom) is det.
@@ -156,19 +159,33 @@ user_input(Msg, Legal, Answer):-
 % @param AbsoluteFile
 
 user_input_directory(RelativeFile, AbsoluteFile):-
+  repeat,
   format(atom(Msg), 'Enter the directory holding file ~w.', [RelativeFile]),
   user_input(Msg, legal_directory, Dir),
-  absolute_file_name(
-    RelativeFile,
-    AbsoluteFile,
-    [access(read),file_errors(fail),relative_to(Dir)]
+  (
+    absolute_file_name(
+      RelativeFile,
+      AbsoluteFile,
+      [access(read),file_errors(fail),relative_to(Dir)]
+    )
+  ->
+    !
+  ;
+    fail
   ).
 
 %! user_input_file(+Message:atom, +Directory:atom, -Filepath:atom) is det.
 
 user_input_file(Msg, Dir, Path):-
+  repeat,
   user_input(Msg, legal_file, File),
-  directory_file_path(Dir, File, Path).
+  (
+    directory_file_path(Dir, File, Path)
+  ->
+    !
+  ;
+    fail
+  ).
 
 %! user_input_filepath(+Message:atom, -Filepath:atom)
 

@@ -8,18 +8,23 @@
                 % -Path:atom
     uri_to_file_name/2, % +URI:uri
                         % -File:atom
-    uri_query/3 % +URI:uri
-                % +Name:atom
-                % -Value:atom
+    uri_query_add/4, % +FromURI:uri
+                     % +Name:atom
+                     % +Value:atom
+                     % +ToURI:atom
+    uri_query_read/3 % +URI:uri
+                     % +Name:atom
+                     % -Value:atom
   ]
 ).
 
 /** <module> URI extensions
 
 @author Wouter Beek
-@version 2013/05, 2013/09
+@version 2013/05, 2013/09, 2013/11
 */
 
+:- use_module(generics(option_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(http/http_open)).
@@ -92,10 +97,27 @@ uri_to_file_name(URI, FileName):-
   file_base_name(Path, RelativeFileName),
   absolute_file_name(data(RelativeFileName), FileName).
 
-%! uri_query(+URI:uri, +Name:atom, -Value:atom) is semidet.
+%! uri_query_add(+FromURI:uri, +Name:atom, +Value:atom, -ToURI:atom) is det.
+% Inserts the given name-value pair as a query component into the given URI.
+
+uri_query_add(URI1, Name, Value, URI2):-
+  uri_components(
+    URI1,
+    uri_components(Scheme, Authority, Path, Search1_, Fragment)
+  ),
+  (var(Search1_) -> Search1 = '' ; Search1 = Search1_),
+  uri_query_components(Search1, SearchPairs1),
+  option_add(SearchPairs1, Name, Value, SearchPairs2),
+  uri_query_components(Search2, SearchPairs2),
+  uri_components(
+    URI2,
+    uri_components(Scheme, Authority, Path, Search2, Fragment)
+  ).
+
+%! uri_query_read(+URI:uri, +Name:atom, -Value:atom) is semidet.
 % Returns the value for the query item with the given name, if present.
 
-uri_query(URI, Name, Value):-
+uri_query_read(URI, Name, Value):-
   uri_components(URI, Components),
   uri_data(search, Components, QueryString),
   uri_query_components(QueryString, QueryPairs),
