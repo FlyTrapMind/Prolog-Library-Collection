@@ -3,8 +3,10 @@
   [
     oaei_check_alignment/2, % +ReferenceAlignments:list(pair(iri))
                             % +RawAlignments:list(pair(iri))
-    oaei_file_to_alignments/2 % +File:atom
-                              % -AlignmentPairs:list(pair(iri))
+    oaei_file_to_alignments/2, % +File:atom
+                               % -AlignmentPairs:list(pair(iri))
+    tsv_file_to_alignments/2 % +File:atom
+                             % -AlignmentPairs:list(pair(iri))
   ]
 ).
 
@@ -95,12 +97,13 @@ Mismatch types:
     * Data semantic transformation
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/08-2013/09
+@version 2013/04-2013/05, 2013/08-2013/09, 2013/12
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(aggregate)).
+:- use_module(library(csv)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
@@ -116,16 +119,11 @@ Mismatch types:
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).
 
-% Register the namespaces.
-:- xml_register_namespace(
-  align,
-  'http://knowledgeweb.semanticweb.org/heterogeneity/alignment#'
-).
+:- xml_register_namespace(align, 'http://knowledgeweb.semanticweb.org/heterogeneity/alignment#').
 
-% Assert the used file types.
 :- db_add_novel(user:prolog_file_type(owl, owl)).
+:- db_add_novel(user:prolog_file_type(tsv, tsv)).
 
-% Assert the file search paths.
 :- db_add_novel(user:file_search_path(alignment2, data(alignment2))).
 :- db_add_novel(user:file_search_path(mapping2, alignment2(alignment))).
 :- db_add_novel(user:file_search_path(ontology2, alignment2(ontology))).
@@ -191,6 +189,15 @@ oaei_file_to_alignments_(G, A_Pairs):-
     oaei,
     'Graph ~w contains ~w alignment pairs.',
     [G,L1]
+  ).
+
+tsv_file_to_alignments(F, A_Pairs):-
+  % US-ASCII code 32 denotes the horizontal tab.
+  csv_read_file(F, Rows, [arity(2),separator(9)]),
+  findall(
+    X-Y,
+    member(row(X,Y), Rows),
+    A_Pairs
   ).
 
 

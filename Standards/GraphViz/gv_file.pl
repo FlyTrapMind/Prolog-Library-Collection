@@ -22,13 +22,14 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2011-2013/09, 2013/11
+@version 2011-2013/09, 2013/11-2013/12
 */
 
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(exception_handling)).
 :- use_module(gv(gv_dcg)).
+:- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
@@ -50,6 +51,8 @@ and GraphViz output files or SVG DOM structures.
 :- db_add_novel(user:prolog_file_type(svg,  svg            )).
 :- db_add_novel(user:prolog_file_type(xdot, graphviz_output)).
 :- db_add_novel(user:prolog_file_type(xdot, xdot           )).
+
+:- debug(gv_file).
 
 
 
@@ -155,7 +158,7 @@ convert_gv(O1, FromFile, ToFile):-
     absolute_file_name(
       personal(export),
       ToFile,
-      [access(write), file_type(ToFileType)]
+      [access(write),file_type(ToFileType)]
     )
   ;
     is_absolute_file_name(ToFile),
@@ -170,17 +173,14 @@ convert_gv(O1, FromFile, ToFile):-
   format(atom(OutputType), '-T~w', [ToExtension]),
   process_create(
     path(Method),
-    [OutputType, FromFile, '-o', ToFile],
+    [OutputType,FromFile,'-o',ToFile],
     [process(PID)]
   ),
   process_wait(PID, exit(ShellStatus)),
   rethrow(
     shell_status(ShellStatus),
-    error(shell_error(FormalMessage), context(_Predicate, ContextMessage)),
-    error(
-      shell_error(FormalMessage),
-      context(graphviz:dot/3, ContextMessage)
-    )
+    error(shell_error(FormalMessage),context(_Predicate,ContextMessage)),
+    error(shell_error(FormalMessage),context(graphviz:dot/3,ContextMessage))
   ).
 
 %! to_gv_file(+Options:list(nvpair), +Codes:list(code), ?ToFile:atom) is det.
@@ -203,5 +203,15 @@ to_gv_file(O1, Codes, ToFile):-
     close(Out)
   ),
   convert_gv(O1, FromFile, ToFile),
+
+  % DEB: Store DOT file.
+  (
+    debug(gv_file), !,
+    file_type_alternative(ToFile, graphviz, DOT_File),
+    safe_copy_file(FromFile, DOT_File)
+  ;
+    true
+  ),
+
   safe_delete_file(FromFile).
 
