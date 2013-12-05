@@ -150,7 +150,7 @@ rdf_graph_merge(Gs, MergedG):-
     nonvar(MergedG), !
   ;
     % Generate a name for the merged graph, if needed.
-    rdf_new_graph(_MergedG, MergedG, 'Merge into this graph')
+    rdf_new_graph(_MergedG, MergedG)
   ),
 
   % Collect the shared blank nodes.

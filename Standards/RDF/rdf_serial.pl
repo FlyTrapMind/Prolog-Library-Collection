@@ -97,8 +97,7 @@ rdf_graph_source_file(G, F2):-
 % assumes that the document is Turtle.
 %
 % @author Jan Wielemaker, predicate taken from ClioPatria codebase.
-% @author Wouter Beek, extended to work with files
-%         and registered file extensions.
+% @tbd Is it really so difficult to distinguish between N-triples and Turtle?
 
 rdf_guess_data_format(Stream, xml):-
   is_stream(Stream),
@@ -110,10 +109,10 @@ rdf_guess_data_format(File, xml):-
     xml_doctype(Stream, _),
     close(Stream)
   ), !.
-rdf_guess_data_format(File, Format):-
-  exists_file(File),
-  file_name_extension(_Base, Ext, File),
-  rdf_serialization(Ext, _FileType, Format, _URL), !.
+%rdf_guess_data_format(File, Format):-
+%  exists_file(File),
+%  file_name_extension(_Base, Ext, File),
+%  rdf_serialization(Ext, _FileType, Format, _URL), !.
 rdf_guess_data_format(_, turtle).
 
 %! rdf_load2(+File:atom) is det.
@@ -192,7 +191,7 @@ rdf_loads(Fs, G):-
 rdf_loads_(G, F):-
   setup_call_cleanup(
     (
-      rdf_new_graph(temp, TmpG, 'Load multiple files into one graph.'),
+      rdf_new_graph(temp, TmpG),
       rdf_load2(F, [graph(TmpG)])
     ),
     forall(

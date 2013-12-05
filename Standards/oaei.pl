@@ -5,8 +5,11 @@
                             % +RawAlignments:list(pair(iri))
     oaei_file_to_alignments/2, % +File:atom
                                % -AlignmentPairs:list(pair(iri))
-    tsv_file_to_alignments/2 % +File:atom
-                             % -AlignmentPairs:list(pair(iri))
+    tsv_convert_directory/2, % +FromDirectory:atom
+                             % -ToDirectory:atom
+    tsv_convert_directory/3 % +FromDirectory:atom
+                            % +ToFormat:oneof([ntriples,triples,turtle,xml])
+                            % -ToDirectory:atom
   ]
 ).
 
@@ -102,7 +105,7 @@ Mismatch types:
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(library(aggregate)).
+:- use_module(library(apply)).
 :- use_module(library(csv)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -111,11 +114,13 @@ Mismatch types:
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(uri)).
 :- use_module(math(statistics)).
+:- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
+:- use_module(rdf(rdf_lit_build)).
 :- use_module(rdf(rdf_lit_read)).
-:- use_module(rdf(rdf_read)).
+:- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).
 
@@ -132,6 +137,18 @@ Mismatch types:
 :- nodebug(oaei).
 
 
+
+alignments_to_oaei_file(As, F):-
+  rdf_new_graph(_, G),
+  maplist(alignment_to_oaei_graph(G), As),
+  rdf_save2(F, [format(turtle),graph(G)]).
+
+alignment_to_oaei_graph(G, X-Y):-
+  rdf_bnode(BNode),
+  rdf_assert(BNode, align:entity1, X, G),
+  rdf_assert(BNode, align:entity2, Y, G),
+  rdf_assert_literal(BNode, align:relation, '=', G),
+  rdf_assert_datatype(BNode, align:measure, xsd:float, 1.0, G).
 
 %! oaei_alignment_pair(?Graph:atom, ?From:uri, ?To:uri) is nondet.
 
@@ -169,7 +186,7 @@ oaei_file_to_alignments(F, A_Pairs):-
     (
       file_name(F, _Dir, G1, _Ext),
       % Make sure the graph name is unique.
-      rdf_new_graph(G1, G2, 'Tmp graph (call-cleanup)'),
+      rdf_new_graph(G1, G2),
       rdf_load2(F, [graph(G2)])
     ),
     oaei_file_to_alignments_(G2, A_Pairs),
@@ -191,6 +208,22 @@ oaei_file_to_alignments_(G, A_Pairs):-
     [G,L1]
   ).
 
+tsv_convert_directory(FromDir, ToDir):-
+  tsv_convert_directory(FromDir, turtle, ToDir).
+
+tsv_convert_directory(FromDir, ToFormat, ToDir):-
+  rdf_process_directory_files(
+    FromDir,
+    [table_separated_values],
+    ToDir,
+    ToFormat,
+    tsv_file_to_oaei_file
+  ).
+
+%! tsv_file_to_alignments(+File:atom, -AlignmentPairs:list(pair(iri))) is det.
+% Opens a tab separated values file and extracts the alignments it contains
+% as pairs.
+
 tsv_file_to_alignments(F, A_Pairs):-
   % US-ASCII code 32 denotes the horizontal tab.
   csv_read_file(F, Rows, [arity(2),separator(9)]),
@@ -199,6 +232,10 @@ tsv_file_to_alignments(F, A_Pairs):-
     member(row(X,Y), Rows),
     A_Pairs
   ).
+
+tsv_file_to_oaei_file(FromFile, ToFile):-
+  tsv_file_to_alignments(FromFile, Alignments),
+  alignments_to_oaei_file(Alignments, ToFile).
 
 
 
@@ -233,4 +270,3 @@ oaei_ontology(G, File):-
   ),
   file_base_name(Path, Base),
   absolute_file_name(ontology2(Base), File, [access(read)]).
-

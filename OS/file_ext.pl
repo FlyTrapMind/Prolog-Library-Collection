@@ -79,9 +79,10 @@ We use the following abbreviations in this module:
 
 @author Wouter Beek
 @tbd Remove the dependency on module AP.
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2013/11
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2013/12
 */
 
+:- use_module(ap(ap_stat)).
 :- use_module(generics(atom_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
@@ -290,6 +291,11 @@ merge_into_one_file(FromDir, ToFile):-
     FromDir,
     FromFiles
   ),
+  
+  % STATS
+  length(FromFiles, NumberOfFromFiles),
+  ap_stage_init(NumberOfFromFiles),
+  
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
     maplist(merge_into_one_file_(Out), FromFiles),
@@ -301,7 +307,11 @@ merge_into_one_file_(Out, FromFile):-
     open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
-  ).
+  ),
+  
+  % STATS
+  ap_stage_tick.
+
 
 %! new_file(+OldFile:atom, -NewFile:atom) is det.
 % If a file with the same name exists in the same directory, then

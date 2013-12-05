@@ -12,7 +12,7 @@
 Runs stages in an automated process.
 
 @author Wouter Beek
-@version 2013/10-2013/11
+@version 2013/10-2013/12
 */
 
 :- use_module(ap(ap_dir)).
@@ -71,22 +71,24 @@ ap_stage(O1, Stage, FromDir, ToDir, Goal):-
   % Beginning of a script stage.
   ap_stage_begin(O1, Stage),
 
-  % Execute goal on the 'from' and 'to' arguments
-  % (either files or directories).
-  ap_stage_alias(O1, Stage, StageAlias),
+  % Allow this thread to refer to the stage alias later,
+  % in order to keep track of the stage's progress.
+  ap_store_stage_alias(O1, Stage),
+  
+  % Make sure the arguments option is present.
   option(args(Args), O1, []),
 
   (
     option(between(Low,High), O1)
   ->
     Potential is  High - Low + 1,
-    ap_stage_init(StageAlias, Potential),
+    ap_stage_init(Potential),
     forall(
       between(Low, High, N),
-      execute_goal(Goal, [StageAlias,FromArg,ToArg,N|Args])
+      execute_goal(Goal, [FromArg,ToArg,N|Args])
     )
   ;
-    execute_goal(Goal, [StageAlias,FromArg,ToArg|Args])
+    execute_goal(Goal, [FromArg,ToArg|Args])
   ),
   
   % Ending of a script stage.
@@ -97,8 +99,7 @@ ap_stage_begin(O1, Stage):-
 
 ap_stage_end(O1, Stage, ToDir):-
   % Send a progress bar to the debug chanel.
-  ap_stage_alias(O1, Stage, StageAlias),
-  ap_stage_done(StageAlias),
+  ap_stage_done,
 
   % Add an empty file that indicates this stage completed successfully
   absolute_file_name(

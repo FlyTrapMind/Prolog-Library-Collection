@@ -9,8 +9,8 @@
                              % +ToFormat:oneof([ntriples,triples,turtle,xml])
                              % +ToDirectory:atom
     rdf_convert_file/3 % +FromFile:atom
-                       % +ToFormat:atom
                        % +ToFile:atom
+                       % +ToFormat:oneof([ntriples,triples,turtle,xml])
   ]
 ).
 
@@ -19,7 +19,7 @@
 Easily converts between different RDF serializations.
 
 @author Wouter Beek
-@version 2013/11
+@version 2013/11-2013/12
 */
 
 :- use_module(library(filesex)).
@@ -45,49 +45,23 @@ rdf_convert_directory(FromDir, ToFormat, ToDir):-
 %! ) is det.
 
 rdf_convert_directory(FromDir, FromFormats, ToFormat, ToDir):-
-  findall(
-    FromFileType,
-    (
-      member(FromFormat, FromFormats),
-      rdf_serialization(_, FromFileType, FromFormat, _)
-    ),
-    FromFileTypes
-  ),
-  directory_files(
-    [
-      file_types(FromFileTypes),
-      include_directories(false),
-      order(lexicographic),
-      recursive(true)
-    ],
+  rdf_process_directory_files(
     FromDir,
-    FromFiles
-  ),
-  % Look up the default file type for the new serialization format.
-  rdf_serialization(_, ToFileType, ToFormat, _),
-  forall(
-    member(FromFile, FromFiles),
-    (
-      relative_file_name(FromFile, FromDir, FromRelativeFile),
-      % Change the extension of the new file
-      % to reflect the new serialization format.
-      file_type_alternative(FromRelativeFile, ToFileType, ToRelativeFile),
-      directory_file_path(ToDir, ToRelativeFile, ToFile),
-      % The directory structure may not yet exist.
-      create_file_directory(ToFile),
-      rdf_convert_file(FromFile, ToFormat, ToFile)
-    )
+    FromFormats,
+    ToDir,
+    ToFormat,
+    rdf_convert_file
   ).
 
 %! rdf_convert_file(
 %!   +FromFile:atom,
-%!   +ToFormat:oneof([ntriples,triples,turtle,xml]),
-%!   +ToFile:atom
+%!   +ToFile:atom,
+%!   +ToFormat:oneof([ntriples,triples,turtle,xml])
 %! ) is det.
 % Converts a given file in one format to a new file in a different format.
 % The original file is not removed.
 
-rdf_convert_file(FromFile, ToFormat, ToFile):-
+rdf_convert_file(FromFile, ToFile, ToFormat):-
   rdf_setup_call_cleanup(
     [format(ToFormat),to(ToFile)],
     % Idle wheel, i.e. a predicate which we know succeeds

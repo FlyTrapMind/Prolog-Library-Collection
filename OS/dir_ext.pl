@@ -16,6 +16,17 @@
                                    % -Subdirectories:list(atom)
     file_to_directory/2, % +File:atom
                          % -Directory:atom
+    process_directory_files/5, % +FromDirectory:atom
+                               % +FromFileTypes:list(atom)
+                               % +ToDirectory:atom
+                               % +ToFileType:atom
+                               % :Goal
+    process_directory_files/6, % +FromDirectory:atom
+                               % +FromFileTypes:list(atom)
+                               % +ToDirectory:atom
+                               % +ToFileType:atom
+                               % :Goal
+                               % +Args:list
     safe_copy_directory/2, % +FromDirectory:atom
                            % +ToDirectory:atom
     safe_delete_directory/1, % +Directory:atom
@@ -33,13 +44,14 @@ Extensions for handling directories.
 
 @author Wouter Beek
 @tbd Add safe_delete_directory/1.
-@version 2013/06-2013/07, 2013/09, 2013/11
+@version 2013/06-2013/07, 2013/09, 2013/11-2013/12
 */
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(os(file_ext)).
@@ -278,6 +290,53 @@ directory_to_subdirectories(Dir, Subdirs):-
   split_atom_exclusive(['/'], Dir, [_|Subdirs]).
 directory_to_subdirectories(Dir, Subdirs):-
   split_atom_exclusive(['/'], Dir, Subdirs).
+
+process_directory_files(FromDir, FromFileTypes, ToDir, ToFileType, Goal):-
+  process_directory_files(
+    FromDir,
+    FromFileTypes,
+    ToDir,
+    ToFileType,
+    Goal,
+    []
+  ).
+
+process_directory_files(
+  FromDir,
+  FromFileTypes,
+  ToDir,
+  ToFileType,
+  Goal,
+  Args
+):-
+  directory_files(
+    [
+      file_types(FromFileTypes),
+      include_directories(false),
+      order(lexicographic),
+      recursive(true)
+    ],
+    FromDir,
+    FromFiles
+  ),
+  maplist(
+    process_directory_file(FromDir, ToDir, ToFileType, Goal, Args),
+    FromFiles
+  ).
+
+process_directory_file(FromDir, ToDir, ToFileType, Goal, Args, FromFile):-
+  relative_file_name(FromFile, FromDir, FromRelativeFile),
+  
+  % Change the extension of the new file
+  % to reflect the new serialization format.
+  file_type_alternative(FromRelativeFile, ToFileType, ToRelativeFile),
+  
+  directory_file_path(ToDir, ToRelativeFile, ToFile),
+  
+  % The directory structure may not yet exist.
+  create_file_directory(ToFile),
+  
+  apply(Goal, [FromFile,ToFile|Args]).
 
 safe_delete_directory(FromDir):-
   trashcan(Trashcan),

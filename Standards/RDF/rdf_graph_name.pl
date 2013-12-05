@@ -3,10 +3,8 @@
   [
     file_to_graph_name/2, % +File:atom
                           % -Graph:atom
-    rdf_clean_graph/1, % +Graph:atom
-    rdf_new_graph/3 % +Graph1:atom
+    rdf_new_graph/2 % +Graph1:atom
                     % -Graph2:atom
-                    % +Purpose:atom
   ]
 ).
 
@@ -16,15 +14,12 @@ Support for naming graphs.
 
 @author Wouter Beek
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-         2013/08-2013/09, 2013/11
+         2013/08-2013/09, 2013/11-2013/12
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(file_ext)).
-
-:- nodebug(rdf_graph_name).
 
 
 
@@ -36,13 +31,9 @@ Support for naming graphs.
 file_to_graph_name(F, G):-
   file_name(F, _Dir, SuggestedG, _Ext),
   % Make sure the graph does not already exist.
-  rdf_new_graph(SuggestedG, G, 'Graph name based on file name').
+  rdf_new_graph(SuggestedG, G).
 
-rdf_clean_graph(G):-
-  debug(rdf_graph_name, '[RDF Graph] Unloading ~w.', [G]),
-  rdf_unload_graph(G).
-
-%! rdf_new_graph(+GraphSuggestion:atom, -NewGraph:atom, +Purpose:atom) is det.
+%! rdf_new_graph(+GraphSuggestion:atom, -NewGraph:atom) is det.
 % Returns a graph name that is close to the given graph name,
 % and which it is guaranteed to not already exist.
 %
@@ -51,15 +42,6 @@ rdf_clean_graph(G):-
 % @param NewGraph The atomic name of an RDF graph that is ensured
 %        to be new, staying quite close to the name the user suggested,
 %        if any.
-% @param Purpose The purpose of the graph.
-
-rdf_new_graph(G1, G2, Purpose):-
-  rdf_new_graph(G1, G2),
-  debug(
-    rdf_graph_name,
-    '[RDF Graph] Ask:~w Get:~w Purpose:~w.',
-    [G1,G2,Purpose]
-  ).
 
 rdf_new_graph(_, G):- !,
   % @tbd Until JS fixes the rdf_create_graph/1 bug, we will use this hack.

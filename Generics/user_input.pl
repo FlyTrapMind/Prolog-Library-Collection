@@ -210,9 +210,6 @@ user_input_filepath(Msg, Filepath):-
 %
 % The following options are supported:
 %   * =|answer(+Answer:oneof(['A',n,q,y]]))|=
-%   * =|stat_flag(+StatisticsFlag:atom)|=
-%     The name of the Prolog flag that is used for statistics tracking.
-%     Ticking this flag keeps track of the executed goal's progress.
 %
 % @param Options A list of name-value pairs.
 % @param ActionDescription An atomic description of the action
@@ -228,14 +225,8 @@ user_input_filepath(Msg, Filepath):-
 user_interaction(O1, Act, G, Hs, Ts):-
   length(Ts, NumberOfTs),
 
-  % DEB
-  (
-    option(stat_flag(StageAlias), O1)
-  ->
-    ap_stage_init(StageAlias, NumberOfTs)
-  ;
-    true
-  ),
+  % STATS
+  ap_stage_init(NumberOfTs),
 
   user_interaction(O1, Act, G, 1, NumberOfTs, Hs, Ts).
 
@@ -289,21 +280,15 @@ user_interaction(O1, Act, G, I, L, Hs, Ts):-
 %! ) is det.
 % @tbd Reimplement percentage done in timed thread.
 
-user_interaction('A', O1, _Act, G, I1, L, _Hs, Ts):- !,
+user_interaction('A', _O1, _Act, G, I1, L, _Hs, Ts):- !,
   forall(
     between(I1, L, J),
     (
       nth1(J, Ts, Juple),
       apply(G, Juple),
 
-      % DEB
-      (
-        option(stat_flag(StageAlias), O1)
-      ->
-        ap_stage_tick(StageAlias)
-      ;
-        true
-      )
+      % STATS
+      ap_stage_tick
     )
   ).
 user_interaction(n, O1, Act, G, I1, L, Hs, Ts):- !,
