@@ -71,7 +71,7 @@
 Extra arithmetic functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2013/12
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09
 */
 
 :- use_module(generics(meta_ext)).
