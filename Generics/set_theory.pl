@@ -18,6 +18,9 @@
                   % +Sets:ordset(ordset(object))
     next_subset/2, % +Set:list(boolean)
                    % -NextSet:list(boolean)
+    random_subset/3, % +Set:ordset
+                     % +LengthOrPercentage:or([nonneg,between(0.0,1.0)])
+                     % -Subset:ordset
     subsets/2, % +Universe:list(object)
                % -Subsets:list(list(boolean))
     transitive_closure/3 % +Predicate:atom
@@ -31,12 +34,12 @@
 Extra set functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@ tbd Test the predicates in this module.
-@version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05
+@version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05, 2013/12
 */
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(ordsets)).
 
 :- meta_predicate delete_sets(+,+,2,-,-).
@@ -158,6 +161,27 @@ is_minimal(Set, Sets):-
 next_subset([0 | T], [1 | T]).
 next_subset([1 | T1], [0 | T2]):-
   next_subset(T1, T2).
+
+random_subset(S1, Percentage, S2):-
+  is_between(0.0, 1.0, Percentage), !,
+  length(S1, M),
+  N is ceil(M * Percentage),
+  random_subset(S1, M, N, S2).
+random_subset(S1, N, S2):-
+  nonneg(N), !,
+  length(S1, M),
+  random_subset(S1, M, N, S2).
+
+random_subset(S1, M, N, S2):-
+  random_subset(S1, M, N, [], S2).
+
+random_subset(_S1, _M, 0, Sol, Sol):- !.
+random_subset(S1, M1, N1, OldS2, Sol):-
+  list_ext:random_select(S1, M1, X, S2),
+  N2 is N1 - 1,
+  M2 is M1 - 1,
+  ord_add_element(OldS2, X, NewS2),
+  random_subset(S2, M2, N2, NewS2, Sol).
 
 %! subsets(+Set:ordset, -Subsets:list(list(bit))) is det.
 % Returns all subsets of the given set as a list of binary lists.

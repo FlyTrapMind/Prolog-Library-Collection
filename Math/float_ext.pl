@@ -16,7 +16,7 @@
   ]
 ).
 
-/** <module> FLOAT_EXT
+/** <module> Floating-point number extensions
 
 Support predicates for floating point values.
 

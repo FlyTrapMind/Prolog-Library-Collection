@@ -28,6 +28,9 @@ Extensions for SWI-Prolog library `ordsets`.
 %! ) is det.
 % Returns the number of equivalence pairs that are encoded in
 % the given collection of equivalence sets.
+%
+% We do not count reflexive cases.
+% We do count symmetric cases.
 
 equivalence_sets_to_number_of_equivalence_pairs(EqSets, NumberOfEqPairs):-
   aggregate_all(
@@ -35,7 +38,7 @@ equivalence_sets_to_number_of_equivalence_pairs(EqSets, NumberOfEqPairs):-
     (
       member(EqSet, EqSets),
       length(EqSet, NumberOfMembers),
-      NumberOfEqPairs__ is NumberOfMembers ^ 2
+      NumberOfEqPairs__ is NumberOfMembers * (NumberOfMembers - 1)
     ),
     NumberOfEqPairs
   ).

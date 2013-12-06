@@ -6,6 +6,9 @@
     chars/1, % @Term
     code/1, % @Term
     codes/1, % @Term
+    is_between/3, % ?Low:number
+                  % ?High:number
+                  % +Value:number
     list/2, % +Type
             % @Term
     list_or_partial_list/1, % @Term
@@ -90,6 +93,19 @@ codes(Terrm):-
 cons(Term, SubTerm1, SubTerm2):-
   functor(Term, ., 2),
   Term =.. [.,SubTerm1,SubTerm2].
+
+is_between(Low, High, Value):-
+  var(Low),
+  maplist(number, [High,Value]), !,
+  Value =< High.
+is_between(Low, High, Value):-
+  var(High),
+  maplist(number, [Low,Value]), !,
+  Low =< Value.
+is_between(Low, High, Value):-
+  maplist(number, [High,Low,Value]), !,
+  Low =< Value,
+  Value =< High.
 
 %! list(@Term) is semidet.
 % A compound term with the binary cons functor `.` (dot)

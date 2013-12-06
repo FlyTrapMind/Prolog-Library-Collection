@@ -64,6 +64,12 @@
                         % -Members:list
     random_member/2, % +List:list
                      % -Member
+    random_select/3, % +List:list
+                     % -Member
+                     % -Rest:list
+    random_sublist/3, % +List:list
+                      % +LengthOrPercentage:or([nonneg,between(0.0,1.0)])
+                      % -Sublist:list
     remove_first/2, % +List:list,
                     % -NewList:list
     remove_firsts/2, % +List:list
@@ -119,10 +125,11 @@ Extra list functions for use in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09
+         2013/07, 2013/09, 2013/12
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(lists)).
 :- use_module(math(random_ext)).
 
@@ -368,6 +375,38 @@ random_member(List, Member):-
   length(List, Length),
   random_betwixt(Length, Random),
   nth0(Random, List, Member).
+
+%! random_select(+List:list, -Member, -List:list) is det.
+% Randomly selects a member from the given list,
+% returning the remaining list as well.
+
+random_select(L1, X, L2):-
+  length(L1, M),
+  random_select(L1, M, X, L2).
+
+random_select(L1, M, X, L2):-
+  random_betwixt(M, Rnd),
+  nth0(Rnd, L1, X, L2).
+
+random_sublist(L1, Percentage, L2):-
+  is_between(0.0, 1.0, Percentage), !,
+  length(L1, M),
+  N is ceil(M * Percentage),
+  random_sublist(L1, M, N, L2).
+random_sublist(L1, N, L2):-
+  nonneg(N), !,
+  length(L1, M),
+  random_sublist(L1, M, N, L2).
+
+random_sublist(L1, M, N, L2):-
+  random_sublist(L1, M, N, [], L2).
+
+random_sublist(_L1, _M, 0, Sol, Sol):- !.
+random_sublist(L1, M1, N1, T, Sol):-
+  random_select(L1, M1, H, L2),
+  N2 is N1 - 1,
+  M2 is M1 - 1,
+  random_sublist(L2, M2, N2, [H|T], Sol).
 
 %! remove_first(+List, -ListWithoutFirst)
 % Returns a list that is like the given list, but without the first element.
