@@ -3,6 +3,8 @@
   [
     equivalence_sets_to_number_of_equivalence_pairs/2, % +EquivalenceSets:list(ordset)
                                                        % +NumberOfEquivalencePairs:nonneg
+    ord_sets_to_pairs/2, % +Sets:list(ordset)
+                         % -Pairs:ordset(pair)
     pairs_to_ord_sets/2 % +Pairs:list(pair(iri))
                         % -Sets:list(ordset(iri))
   ]
@@ -13,9 +15,10 @@
 Extensions for SWI-Prolog library `ordsets`.
 
 @author Wouter Beek
-@version 2013/09-2013/10
+@version 2013/09-2013/10, 2013/12
 */
 
+:- use_module(generics(list_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
@@ -42,6 +45,22 @@ equivalence_sets_to_number_of_equivalence_pairs(EqSets, NumberOfEqPairs):-
     ),
     NumberOfEqPairs
   ).
+
+ord_sets_to_pairs(Sets, Pairs):-
+  ord_sets_to_pairs(Sets, [], Pairs).
+
+ord_sets_to_pairs([], Sol, Sol).
+ord_sets_to_pairs([H|T], L1, Sol):-
+  findall(
+    X-Y,
+    (
+      member(X, Y, H),
+      X \== Y
+    ),
+    L2
+  ),
+  ord_union(L1, L2, L3),
+  ord_sets_to_pairs(T, L3, Sol).
 
 %! pairs_to_ord_set(
 %!   +OldPairs:list(pair),
