@@ -60,7 +60,6 @@ theoretic operations of RDF data must be redefined.
 :- use_module(rdf(rdf_lit)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').

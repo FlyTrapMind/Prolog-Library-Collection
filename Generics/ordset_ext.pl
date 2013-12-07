@@ -1,8 +1,6 @@
 :- module(
   ordset_ext,
   [
-    equivalence_sets_to_number_of_equivalence_pairs/2, % +EquivalenceSets:list(ordset)
-                                                       % +NumberOfEquivalencePairs:nonneg
     ord_sets_to_pairs/2, % +Sets:list(ordset)
                          % -Pairs:ordset(pair)
     pairs_to_ord_sets/2 % +Pairs:list(pair(iri))
@@ -22,29 +20,9 @@ Extensions for SWI-Prolog library `ordsets`.
 :- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
+:- use_module(library(plunit)).
 
 
-
-%! equivalence_sets_to_number_of_equivalence_pairs(
-%!   +EquivalenceSets:list(ordset),
-%!   +NumberOfEquivalencePairs:nonneg
-%! ) is det.
-% Returns the number of equivalence pairs that are encoded in
-% the given collection of equivalence sets.
-%
-% We do not count reflexive cases.
-% We do count symmetric cases.
-
-equivalence_sets_to_number_of_equivalence_pairs(EqSets, NumberOfEqPairs):-
-  aggregate_all(
-    sum(NumberOfEqPairs__),
-    (
-      member(EqSet, EqSets),
-      length(EqSet, NumberOfMembers),
-      NumberOfEqPairs__ is NumberOfMembers * (NumberOfMembers - 1)
-    ),
-    NumberOfEqPairs
-  ).
 
 ord_sets_to_pairs(Sets, Pairs):-
   ord_sets_to_pairs(Sets, [], Pairs).
@@ -55,6 +33,7 @@ ord_sets_to_pairs([H|T], L1, Sol):-
     X-Y,
     (
       member(X, Y, H),
+      % No reflexive cases.
       X \== Y
     ),
     L2
@@ -62,55 +41,7 @@ ord_sets_to_pairs([H|T], L1, Sol):-
   ord_union(L1, L2, L3),
   ord_sets_to_pairs(T, L3, Sol).
 
-%! pairs_to_ord_set(
-%!   +OldPairs:list(pair),
-%!   -Set:ordset,
-%!   -NewPairs:list(pair)
-%! ) is det.
-% Returns the equivalence closure of the first of the given pairs
-% w.r.t. all the other pairs.
-% The pairs that do not occur in the closure are returned.
 
-pairs_to_ord_set([X-Y|Pairs1], Set2, Pairs2):-
-  % We took the first alignment pair.
-  % Turn the pair into a sorted list.
-  list_to_ord_set([X,Y], Set1),
-
-  % Add the members from all the other alignment pairs
-  % that reach into this alignment set.
-  pairs_to_ord_set(Set1, Pairs1, Set2, Pairs2).
-
-%! pairs_to_ord_set(
-%!   +OldSet:ordset,
-%!   +OldPairs:list(pair),
-%!   -OldSet:ordset,
-%!   -OldPairs:list(pair)
-%! ) is det.
-
-pairs_to_ord_set(Set1, Pairs1, Set3, Pairs3):-
-  % The next alignments we add must relate to a resource
-  % that is already in the alignment set.
-  memberchk(X, Set1),
-
-  % Look up a related resource in the alginment pairs.
-  % The pair can be found in either direction.
-  (
-    selectchk(X-Y, Pairs1, Pairs2)
-  ;
-    selectchk(Y-X, Pairs1, Pairs2)
-  ),
-  % We can safely add a cut here, since we will come back for any
-  % `Y-X` option that appears after a `X-Y` option.
-  !,
-
-  % The added resource must not already appear in the alignment set.
-  % Maybe some alignments contain double occurrences of the same pair.
-  % The alignment set stays the same in those cases.
-  ord_add_element(Set1, Y, Set2),
-
-  % Recurse.
-  pairs_to_ord_set(Set2, Pairs2, Set3, Pairs3).
-pairs_to_ord_set(Set, Pairs, Set, Pairs).
 
 %! pairs_to_ord_sets(
 %!   +Pairs:list(pair(iri)),
@@ -122,7 +53,7 @@ pairs_to_ord_set(Set, Pairs, Set, Pairs).
 % <a,c>
 % <d,e>
 % ~~~
-% are converted to the following set:
+% result in the following set:
 % ~~~
 % {{a,b,c},{d,e}}
 % ~~~
@@ -130,9 +61,59 @@ pairs_to_ord_set(Set, Pairs, Set, Pairs).
 pairs_to_ord_sets(Pairs, Sets):-
   pairs_to_ord_sets(Pairs, [], Sets).
 
-pairs_to_ord_sets([], Sets, Sets):- !.
-pairs_to_ord_sets(Pairs1, Sets1, Sets3):-
-  pairs_to_ord_set(Pairs1, Set, Pairs2),
-  ord_add_element(Sets1, Set, Sets2),
-  pairs_to_ord_sets(Pairs2, Sets2, Sets3).
+pairs_to_ord_sets([], Sol, Sol).
+% Connect two sets.
+pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
+  member(OldSet1, Sets1),
+  member(X, OldSet1),
+  member(OldSet2, Sets1),
+  OldSet1 \== OldSet2,
+  member(Y, OldSet2), !,
+  ord_union(OldSet1, OldSet2, NewSet),
+  ord_del_element(Sets1, OldSet1, Sets2),
+  ord_del_element(Sets2, OldSet2, Sets3),
+  ord_add_element(Sets3, NewSet, Sets4),
+  pairs_to_ord_sets(T, Sets4, Sol).
+% Add to an existing set.
+pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
+  member(OldSet, Sets1),
+  (
+    member(X, OldSet)
+  ->
+    ord_add_element(OldSet, Y, NewSet)
+  ;
+    member(Y, OldSet)
+  ->
+    ord_add_element(OldSet, X, NewSet)
+  ), !,
+  ord_del_element(Sets1, OldSet, Sets2),
+  ord_add_element(Sets2, NewSet, Sets3),
+  pairs_to_ord_sets(T, Sets3, Sol).
+% New set.
+pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
+  list_to_ord_set([X,Y], NewSet),
+  ord_add_element(Sets1, NewSet, Sets2),
+  pairs_to_ord_sets(T, Sets2, Sol).
 
+:- begin_tests(ordset_ext).
+
+% Base case.
+pairs_to_ord_sets_example([], []).
+% No multisets.
+pairs_to_ord_sets_example([a-b,a-b], [[a,b]]).
+% Reflexive case.
+pairs_to_ord_sets_example([a-a], [[a]]).
+% Symmetric case.
+pairs_to_ord_sets_example([a-b,b-a], [[a,b]]).
+% Separate sets.
+pairs_to_ord_sets_example([a-b,c-d], [[a,b],[c,d]]).
+% Merging sets.
+pairs_to_ord_sets_example([a-b,c-d,d-b], [[a,b,c,d]]).
+
+test(
+  pairs_to_ord_sets,
+  [forall(pairs_to_ord_sets_example(Pairs,Sets)),true]
+):-
+  pairs_to_ord_sets(Pairs, Sets).
+
+:- end_tests(ordset_ext).

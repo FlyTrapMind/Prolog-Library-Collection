@@ -3,7 +3,7 @@
   [
     rdf_global_ids/2, % +L1:list
                       % -L2:list(iri)
-    
+
 % RDF NAMESPACE CONVERSION
     rdf_convert_namespace/3, % +Graph:atom
                              % +FromNamespace:atom
@@ -39,12 +39,9 @@ Namespace support for RDF(S).
 @version 2013/03-2013/05
 */
 
-:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(lists)).
-:- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 

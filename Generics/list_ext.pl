@@ -131,6 +131,7 @@ Extra list functions for use in SWI-Prolog.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(math(random_ext)).
 
 
