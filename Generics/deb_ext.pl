@@ -1,6 +1,8 @@
 :- module(
   deb_ext,
   [
+    if_debug/2, % +Flag:atom
+                % :Goal
     test/2, % +Goal:term
             % +Stream
     test/3 % +Goal:term
@@ -22,14 +24,19 @@ http://www.swi-prolog.org/ChangeLog?branch=stable&from=5.10.4&to=6.4.0
 ~~~
 
 @author Wouter Beek
-@tbd Test this module.
-@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10
+@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12
 */
 
+:- meta_predicate(if_debug(+,:)).
 :- meta_predicate(test(0,+)).
 :- meta_predicate(test(0,+,+)).
 
 
+
+if_debug(Flag, _Goal):-
+  debugging(Flag, false), !.
+if_debug(_Flag, Goal):-
+  call(Goal).
 
 %! test(:Goal, +Stream) is det.
 % Runs the given goal as a test.
