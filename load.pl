@@ -90,12 +90,11 @@ load_pgc:-
   
   % Install packages.
   % This requires used interaction on the first load.
-  % @tbd SWI-Prolog server is down...
-  %catch(
-  %  use_module(library(regex)),
-  %  _,
-  %  ignore(pack_install(regex))
-  %),
+  catch(
+    use_module(library(regex)),
+    _,
+    ignore(pack_install(regex))
+  ),
   
   % Start logging.
   use_module(generics(logging)),
