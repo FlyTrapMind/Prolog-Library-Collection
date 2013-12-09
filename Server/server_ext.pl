@@ -12,7 +12,7 @@
 
 Extensions for SWI-Prolog servers.
 
-## Default HTTP handlers
+# HTTP locations
 
 SWI-Prolog defines the following HTTP locations:
 
@@ -25,6 +25,8 @@ SWI-Prolog defines the following HTTP locations:
 | =pldoc_pkg=      | =|pldoc(package)|=   |
 | =pldoc_resource= | =|/debug/help/res/|= |
 | =root=           | =|/|=                |
+
+# HTTP handlers
 
 SWI-Prolog defines the following HTTP handlers:
 
@@ -73,7 +75,17 @@ SWI-Prolog defines the following HTTP handlers:
 
 
 
+%! server_port(Port:between(1000,9999)) is semidet.
+% Type checking for server ports.
+
+server_port(Port):-
+  between(1000, 9999, Port).
+
+%! server_rebase(+Prefix:atom) is det.
 % Rebase the entire Web application.
+%
+% @see http://www.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/http.html%27%29
+
 server_rebase(Prefix):-
   set_setting(http:prefix, Prefix).
 
@@ -85,7 +97,7 @@ start_server(Port):-
 
 %! start_server(+Port:between(1000,9999), :ServerGoal) is det.
 
-% A server is already running.
+% A server is already running at the given port.
 start_server(Port, _ServerGoal):-
   http_server_property(Port, start_time(StartTime)), !,
   debug(
@@ -111,7 +123,17 @@ start_server(Port, ServerGoal0):-
   % INFO
   print_message(informational, server_ext(started(Port))).
 
+%! start_server_on_next_port(
+%!   +Port:between(1000,9999),
+%!   +NumberOfWorkers:positive_integer,
+%!   :ServerGoal
+%! ) is det.
+% Keeps incresing the given port number until a free port number is found;
+% then starts a new server at that port.
+
+% Increment port numbers until a free one is found.
 start_server_on_next_port(Port, NumberOfWorkers, ServerGoal):-
+  server_port(Port), !,
   catch(
     http_server(ServerGoal, [port(Port),workers(NumberOfWorkers)]),
     error(socket_error(_Msg), _),
@@ -120,6 +142,10 @@ start_server_on_next_port(Port, NumberOfWorkers, ServerGoal):-
       start_server_on_next_port(NextPort, NumberOfWorkers, ServerGoal)
     )
   ).
+% At the end of the port numeber list we start over
+% by trying out the lowest port number.
+start_server_on_next_port(_Port, NumberOfWorkers, ServerGoal):-
+  start_server_on_next_port(1000, NumberOfWorkers, ServerGoal).
 
 prolog:message(server_ext(started(Port))) -->
   {setting(http:prefix, Prefix)},

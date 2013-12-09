@@ -10,9 +10,9 @@
   ]
 ).
 
-/** <module> SWAPP Web UI
+/** <module> Web UI
 
-Generics for SWAPP Web UI.
+Generic Web UI components.
 
 @author Torbjörn Lager
 @author Jan Wielemaker
@@ -30,24 +30,20 @@ Generics for SWAPP Web UI.
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/js_write)).
 
-% /css
-:- http_handler(root(css), serve_files_in_directory(server(css)), [prefix]).
+% CSS files can be loaded from the `/css` path.
+:- db_add_novel(http:location(css, root(css), [])).
+:- db_add_novel(user:file_search_path(css, server(css))).
+:- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 
-% /img
-:- http_handler(root(img), serve_files_in_directory(server(img)), [prefix]).
+% Image files can be loaded from the `/img` path.
+:- db_add_novel(http:location(img, root(img), [])).
+:- db_add_novel(user:file_search_path(img, server(img))).
+:- http_handler(img(.), serve_files_in_directory(img), [prefix]).
 
-% /js
-:- http_handler(root(js), serve_files_in_directory(server(js)), [prefix]).
-
-%:- html_resource(css('blueish.css'), []).
-%:- html_resource(css('framelike.css'), []).
-%:- html_resource(css('user_interface.css'), []).
-%:- html_resource(js('event-min.js'), []).
-%:- html_resource(js('connection_core-min.js'), []).
-%:- html_resource(js('json-min.js'), []).
-%:- html_resource(js('jsonbrowser.js'), []).
-%:- html_resource(js('utils.js'), []).
-%:- html_resource(js('yahoo-min.js'), []).
+% JavaScript files can be loaded from the `/js` path.
+:- db_add_novel(http:location(js, root(js), [])).
+:- db_add_novel(user:file_search_path(js, server(js))).
+:- http_handler(js(.), serve_files_in_directory(js), [prefix]).
 
 
 

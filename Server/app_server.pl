@@ -11,7 +11,7 @@ Also includes a status bar with updates/messages.
 
 @author Wouter Beek
 @see http://semanticweb.cs.vu.nl/prasem/
-@version 2013/11
+@version 2013/11-2013/12
 */
 
 :- use_module(generics(db_ext)).
@@ -33,17 +33,25 @@ Also includes a status bar with updates/messages.
 :- initialization(start_app_server).
 
 
+
+%! start_app_server is det.
+% Starts an application server.
+
 % Start the application server when running on dotcloud.
+%
+% dotCloud defines the `PORT_WWW` environment variable.
+% @see http://docs.dotcloud.com/services/custom/
 start_app_server:-
   getenv('PORT_WWW', PortAtom), !,
   atom_number(PortAtom, Port),
   start_server(Port, http_dispatch).
-% Start the application server using the default port (in settings).
+% Start the application server using the default port
+% taken from settings.
 start_app_server:-
   setting(default_app_server_port, Port),
   start_app_server(Port).
 
-%! start_app_server(?Port) is det.
+%! start_app_server(?Port:between(1000,9999)) is det.
 % Start the application server on the given port.
 
 start_app_server(Port):-
@@ -60,6 +68,10 @@ start_app_server(Port):-
   ),
   %thread_pool_create(cheapthreads, 90, []),
   start_server(Port, app_server_dispatch).
+
+%! app_server_dispatch(+Request:list) is det.
+% A wrapper predicate whose sole purpose is to be a handle for
+% insert a trace statement.
 
 app_server_dispatch(Request):-
   http_dispatch(Request).

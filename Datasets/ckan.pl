@@ -26,19 +26,25 @@
 Querying the CKAN API.
 
 @author Wouter Beek
-@version 2013/11
+@version 2013/11-2013/12
 */
 
 :- use_module(generics(uri_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(apply)).
+:- use_module(library(http/html_write)).
 :- use_module(library(http/http_client)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(option)).
 :- use_module(library(uri)).
 :- use_module(server(web_modules)).
 :- use_module(standards(json_ext)).
 
+:- http_handler(root(ckan), ckan, []).
+
 :- initialization(web_module_add('CKAN', ckan, ckan)).
+
+
 
 %! act(
 %!   +Options:list(nvpair),
@@ -49,9 +55,9 @@ Querying the CKAN API.
 %! ) is det.
 % The following options are supported:
 %   * =|api_key(+Key:atom)|=
-%     A atomic API key.
+%     An atomic API key.
 %   * =|api_version(+Version:positive_integer)|=
-%     Default is uninstantiated (use server-side default).
+%     Default: uninstantiated, using the server-side default.
 %   * =|authority(+Authority:atom)|=
 %     Default: =|datahub.io|=
 %   * =|scheme(+Scheme:oneof([http,https]))|=
@@ -117,6 +123,9 @@ act_web(O1, Action, Query, In, [DOM]):-
   json_rows(Out1, Out2),
   format(atom(Caption), 'The outcome of CKAN action ~w.', [Action]),
   html_table([caption(Caption),header(true),indexed(true)], Out2, DOM).
+
+ckan(_Request):-
+  reply_html_page(app_style, [], []).
 
 %! group_list(
 %!   +Options:list(nvpair),

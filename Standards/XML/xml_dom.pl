@@ -20,11 +20,12 @@
   ]
 ).
 
-/** <module> XML_DOM
+/** <module> XML DOM
 
 Predicates that operate on / generate XML DOM.
 
 @author Wouter Beek
+@tbd HTTP-serve DTD files.
 @version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11
 */
 

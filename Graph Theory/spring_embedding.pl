@@ -20,7 +20,7 @@
 
 Spring embedding for undirected graphs.
 
-A graph G can be visualized in 1 through $\cardinality{V(G)}$ dimensions.
+A graph G can be visualized in 1 through $\card{V(G)}$ dimensions.
 
 # Algorithm
 

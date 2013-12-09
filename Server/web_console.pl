@@ -29,7 +29,6 @@ A simple Web console interface.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_path)).
-:- use_module(library(http/http_server_files)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(os(datetime_ext)).
@@ -40,17 +39,11 @@ A simple Web console interface.
 :- use_module(sparql(sparql_web)).
 
 % /css
-:- db_add_novel(http:location(css, root(css), [])).
-:- db_add_novel(user:file_search_path(css, server(css))).
-:- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 :- html_resource(css('web_console.css'), []).
 :- html_resource(css('console_output.css'), [requires(css('web_console.css'))]).
 :- html_resource(css('status_pane.css'), [requires(css('web_console.css'))]).
 
 % /js
-:- db_add_novel(http:location(js, root(js), [])).
-:- db_add_novel(user:file_search_path(js, server(js))).
-:- http_handler(js(.), serve_files_in_directory(js), [prefix]).
 :- html_resource(js('web_console.js'), []).
 :- html_resource(js('console_output.js'), [requires(js('web_console.js'))]).
 :- html_resource(js('status_pane.js'), [requires(js('web_console.js'))]).

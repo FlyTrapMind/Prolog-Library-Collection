@@ -13,9 +13,13 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/js_write)).
-:- use_module(server(server_ui)).
+:- use_module(server(app_ui)).
+:- use_module(server(web_ui)).
 
 :- http_handler(root(login), login_ui, []).
+
+:- html_resource('http://yui.yahooapis.com/pure/0.3.0/pure-min.css', []).
+:- html_resource('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css', []).
 
 
 

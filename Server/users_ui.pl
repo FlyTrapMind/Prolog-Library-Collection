@@ -11,7 +11,8 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/js_write)).
-:- use_module(server(server_ui)).
+:- use_module(server(app_ui)).
+:- use_module(server(web_ui)).
 
 :- http_handler(root(admin), admin_ui, []).
 :- http_handler(root(users), http_redirect(moved, root(admin)), [prefix]).
