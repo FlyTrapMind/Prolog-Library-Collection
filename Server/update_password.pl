@@ -1,12 +1,10 @@
 :- module(
   update_password,
   [
-    add_password/3, % +File
-                    % +User
-                    % +Password
+    add_password/2, % +User:atom
+                    % +Password:atom
     passwords_file/1, % -File:atom
-    remove_password/2 % +File
-                      % +User
+    remove_password/1 % +User:atom
   ]
 ).
 
@@ -32,20 +30,26 @@ Predicates that update the passwords file.
 
 
 
+add_password(User, Password):-
+  passwords_file(File),
+  add_password(File, User, Password).
+
 add_password(File, User, Password):-
-  absolute_file_name(File, Path, [access(write)]),
+  access_file(File, write),
   retractall(authenticate:password(User, _OldPath, _OldPasswd)),
   crypt(Password, EncryptedPasswd),
-  assert(authenticate:password(User, Path, EncryptedPasswd)),
-  open(File, write, Stream, [lock(write)]),
-  forall(
-    authenticate:password(User0, _Path, EPasswd0),
-    format(Stream, '~p:~@\n', [User0, format(EPasswd0)])
-  ),
-  close(Stream).
+  assert(authenticate:password(User, File, EncryptedPasswd)),
+  setup_call_cleanup(
+    open(File, write, Stream, [lock(write)]),
+    forall(
+      authenticate:password(User0, _Path, EPasswd0),
+      format(Stream, '~p:~@\n', [User0, format(EPasswd0)])
+    ),
+    close(Stream)
+  ).
 
 init_passwords:-
-  passwrods_file(_File), !.
+  passwords_file(_File), !.
 init_passwords:-
   absolute_file_name(
     project(passwords),
@@ -54,22 +58,29 @@ init_passwords:-
   ),
   touch(File).
 
-%! passwords_file(File) is det.
+%! passwords_file(File) is semidet.
 % Returns the passwords file.
 
 passwords_file(File):-
   absolute_file_name(
     project(passwords),
     File,
-    [access(read),file_errors(error),file_type(database)]
+    [access(read),file_errors(fail),file_type(database)]
   ).
 
+remove_password(User):-
+  passwords_file(File),
+  remove_password(File, User).
+
 remove_password(File, User):-
+  access_file(File, write),
   retractall(authenticate:password(User, _OldPath, _OldPasswd)),
-  open(File, write, Stream, [lock(write)]),
-  forall(
-    authenticate:password(User0, _Path, EPasswd0),
-    format(Stream, '~p:~@\n', [User0, format(EPasswd0)])
-  ),
-  close(Stream).
+  setup_call_cleanup(
+    open(File, write, Stream, [lock(write)]),
+    forall(
+      authenticate:password(User0, _Path, EPasswd0),
+      format(Stream, '~p:~@\n', [User0, format(EPasswd0)])
+    ),
+    close(Stream)
+  ).
 

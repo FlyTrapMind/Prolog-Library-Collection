@@ -9,12 +9,12 @@
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(lib(update_passwd)).
 :- use_module(library(http/http_client)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_parameters)).
 :- use_module(server(dispatch)).
+:- use_module(server(update_password)).
 :- use_module(server(user_db)).
 :- use_module(server(users_ui)).
 
@@ -27,8 +27,12 @@
 
 
 %! dispatch_method(+Method:oneof([delete,post]), +Request:list) is det.
+% The following HTTP parameters are defined for `POST`:
+%   * =|user(+Name:atom)|=
+%   * =|password(+Password:atom)|=
 
 dispatch_method(post, Request):-
+gtrace,
   http_parameters(Request, [user(Name,[]),password(Password,[])]),
   http_read_data(Request, OptionsAtom, [to(atom)]),
   catch(
@@ -43,8 +47,7 @@ dispatch_method(post, Request):-
       \+ user(Name)
     ->
       user_add(Name, Options),
-      passwords_file(File),
-      add_password(File, Name, Password),
+      add_password(Name, Password),
       reply_json(json([ok= @true]), [width(0)])
     ;
       reply_json(json([error='Existing user']), [width(0)])
@@ -57,7 +60,7 @@ dispatch_method(delete, Request) :-
   catch(
     (
       user_remove(Name),
-      remove_password('passwords', Name)
+      remove_password(Name)
     ),
     E,
     true

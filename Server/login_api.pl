@@ -25,6 +25,7 @@
 
 dispatch_login(Request):-
   http_method(Request, Method),
+gtrace,
   dispatch_method(login_api, Method, Request).
 
 %! dispatch_method(+Method, +Request)
