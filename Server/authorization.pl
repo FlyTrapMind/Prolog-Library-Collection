@@ -13,7 +13,7 @@
 @author Wouter Beek
 @see This code was originally taken from SWAPP:
      http://www.swi-prolog.org/git/contrib/SWAPP.git
-@version 2009, 2013/10-2013/11
+@version 2009, 2013/10-2013/12
 */
 
 :- use_module(library(http/http_authenticate)).
@@ -49,7 +49,12 @@
 
 authorized(Method, Request):-
   memberchk(path(Path), Request),
-  absolute_file_name(project(passwords), File, [access(read)]),
+gtrace,
+  absolute_file_name(
+    project(passwords),
+    File,
+    [access(read),file_type(database)]
+  ),
   (
     http_authenticate(basic(File), Request, [User|_Fields]), !
   ;

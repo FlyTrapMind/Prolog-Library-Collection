@@ -16,6 +16,11 @@
 Dispatching non-login methods goes through this module,
 which checks whether the user has authorization.
 
+@tbd What is `http_method`?
+~~~{.pl}
+http_parameters(Request, [http_method(Method,[default(Method_)])]).
+~~~
+
 @author Torbjörn Lager
 @author Jan Wielemaker
 @author Wouter Beek
@@ -69,9 +74,7 @@ dispatch_method(Module, Method, _Request):-
 % Returns the HTTP method used in the given request.
 
 http_method(Request, Method):-
-  memberchk(method(Method_), Request),
-  % TODO What is `http_method`?
-  http_parameters(Request, [http_method(Method,[default(Method_)])]).
+  memberchk(method(Method), Request).
 
 %! return_error(+Error:compound) is det.
 % Repies with the given error in JSON format.

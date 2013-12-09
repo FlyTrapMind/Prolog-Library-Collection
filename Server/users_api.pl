@@ -5,7 +5,7 @@
 @author Torbjörn Lager
 @author Jan Wielemaker
 @author Wouter Beek
-@version 2009, 2013/10-2013/11
+@version 2009, 2013/10-2013/12
 */
 
 :- use_module(generics(db_ext)).
@@ -43,7 +43,8 @@ dispatch_method(post, Request):-
       \+ user(Name)
     ->
       user_add(Name, Options),
-      add_passwd('passwords', Name, Password),
+      passwords_file(File),
+      add_password(File, Name, Password),
       reply_json(json([ok= @true]), [width(0)])
     ;
       reply_json(json([error='Existing user']), [width(0)])
@@ -56,7 +57,7 @@ dispatch_method(delete, Request) :-
   catch(
     (
       user_remove(Name),
-      remove_passwd('passwords', Name)
+      remove_password('passwords', Name)
     ),
     E,
     true
