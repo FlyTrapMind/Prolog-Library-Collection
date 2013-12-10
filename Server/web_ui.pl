@@ -2,10 +2,7 @@
   web_ui,
   [
     category//1, % +Category:atom
-    clear_button//1, % +Fields:list(atom)
-    http_button//3 % +Name:atom
-                   % +Method:oneof(['DELETE','GET','POST'])
-                   % +Event:atom
+    clear_button//1 % +Fields:list(atom)
   ]
 ).
 
@@ -61,24 +58,6 @@ clear_button(Fields) -->
       style='float:right;',
       type=button,
       value='Clear'
-    ])
-  ).
-
-%! http_button(
-%!   +Name:atom,
-%!   +Method:oneof(['DELETE','GET','POST']),
-%!   +Event:atom
-%! )// is det.
-
-http_button(Name, Method, Event) -->
-  html(
-    input([
-      class='pure-button',
-      id=Name,
-      name=Name,
-      onclick=Event,
-      type=button,
-      value=Method
     ])
   ).
 

@@ -136,7 +136,7 @@ users -->
     fieldset(class='pure-group', [
       legend('Users'),
       div(class='pure-control-group', [
-        \http_button(delete, 'POST', 'postUser();'),
+        button([class='pure-button',onclick='postUser()'], 'POST'),
         label(code('/users?user=')),
         input([
           class='',
@@ -170,7 +170,7 @@ users -->
         )
       ]),
       div(class='pure-control-group', [
-        \http_button(get, 'DELETE', 'deleteUser();'),
+        button([class='pure-button',onclick='deleteUser()'], 'DELETE'),
         label(code('/users?user=')),
         input([
           class='pure-button',
@@ -184,7 +184,7 @@ users -->
         \clear_button(['user-delete-user'])
       ]),
       div(class='pure-control-group', [
-        \http_button(get, 'GET', 'getUsers();'),
+        button([class='pure-button',onclick='getUsers()'], 'GET'),
         label(code('/users?user=')),
         input([
           id='user-get-user',
@@ -205,7 +205,7 @@ settings -->
       legend('Settings'),
       % POST
       div(class='pure-control-group', [
-        \http_button(delete, 'POST', 'postSetting();'),
+        button([class='pure-button',onclick='postSetting()'], 'POST'),
         label(code('/settings?module=')),
         input([
           id='setting-post-module',
@@ -239,7 +239,7 @@ settings -->
         ])
       ]),
       div(class='pure-control-group', [
-        \http_button(get, 'GET', 'getSettings();'),
+        button([class='pure-button',onclick='getSetting()'], 'GET'),
         label(code('/settings?module=')),
         input([
           id='setting-get-module',
@@ -268,7 +268,7 @@ statistics -->
     fieldset(class='pure-group', [
       legend('Statistics'),
       div(class='pure-control-group', [
-        \http_button(get, 'GET', 'getStatistics();'),
+        button([class='pure-button',onclick='getStatistics()'], 'GET'),
         label(code('/statistics'))
       ])
     ])
@@ -287,16 +287,16 @@ users_ui_head -->
         user = document.getElementById("user-post-user").value;
         password = document.getElementById("user-post-password").value;
         content = document.getElementById("user-post-content").value;
-        YUI().use('io', function (Y) {
+        YUI().use('io-base', function (Y) {
           var cfg = {
             data: content,
             method: "post",
             on: {
-              success: function(o) {
+              success: function (o) {
                 var response, html;
                 try {
                   response = Y.JSON.parse(o.responseText);
-                } catch(e) {
+                } catch (e) {
                   alert("JSON parse failed.");
                   return;
                 }

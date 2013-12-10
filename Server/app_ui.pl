@@ -26,7 +26,6 @@ width: 50em;
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
-:- use_module(library(http/js_write)).
 :- use_module(server(app_server)). % Make sure there is an application server.
 :- use_module(server(web_login)).
 :- use_module(server(web_ui)). % Make sure the Web paths are defined.
@@ -74,12 +73,8 @@ user:head(app_style, Head) -->
   html(
     head([
       \html_requires(css('pure-min-0.3.0.css')),
-      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css'),
-      \js_script({|javascript(_)||
-      |})
-    |
-      Head
-    ])
+      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css')
+    |Head])
   ).
 
 home(_Request):-
