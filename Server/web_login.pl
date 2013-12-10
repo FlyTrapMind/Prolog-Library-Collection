@@ -16,6 +16,7 @@
 :- use_module(server(passwords)).
 :- use_module(server(server_ext)).
 :- use_module(server(user_db)).
+:- use_module(server(web_login_ui)).
 
 :- http_handler(root(login), dispatch_login, []).
 
@@ -42,4 +43,6 @@ dispatch_method(post, Request):-
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
   reply_json(json([ok= @true,msg=User]), [width(0)]).
+dispatch_method(get, Request):-
+  http_redirect(see_other, root(login_ui), Request).
 

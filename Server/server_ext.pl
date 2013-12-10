@@ -1,6 +1,7 @@
 :- module(
   server_ext,
   [
+    dispatch/1, % +Request:list
     http_method/2, % +Request:list
                    % -Method:oneof([delete,get,post])
     server_rebase/1, % +Prefix:atom

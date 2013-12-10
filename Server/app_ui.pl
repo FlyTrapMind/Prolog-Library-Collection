@@ -87,7 +87,7 @@ home(_Request):-
 
 login -->
   html(
-    \submission_form([action='/',id=login],
+    \submission_form('/',
       fieldset(class='pure-group', [
         input([
           class=text,

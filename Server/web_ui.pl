@@ -3,10 +3,9 @@
   [
     category//1, % +Category:atom
     clear_button//1, % +Fields:list(atom)
-    http_button//3, % +Name:atom
-                    % +Method:oneof(['DELETE','GET','POST'])
-                    % +Event:atom
-    location//1 % +Location:atom
+    http_button//3 % +Name:atom
+                   % +Method:oneof(['DELETE','GET','POST'])
+                   % +Event:atom
   ]
 ).
 
@@ -57,7 +56,7 @@ clear_button(Fields) -->
   {dcg_phrase(js_call(clearFields(Fields)), OnClickEvent)},
   html(
     input([
-      class=button,
+      class='pure-button',
       onclick=OnClickEvent,
       style='float:right;',
       type=button,
@@ -74,22 +73,13 @@ clear_button(Fields) -->
 http_button(Name, Method, Event) -->
   html(
     input([
-      class=button,
+      class='pure-button',
       id=Name,
       name=Name,
       onclick=Event,
       type=button,
       value=Method
     ])
-  ).
-
-location(Location) -->
-  html(
-    tr(
-      td([align=center,valign=bottom],
-        span(style='font-family:monospace;font-size:20px;', Location)
-      )
-    )
   ).
 
 menu -->
@@ -122,22 +112,5 @@ menu -->
         )
       ])
     )
-  ).
-
-user:head(framelike_style, Head) -->
-  html(
-    head([
-      title('APP - Admin API Explorer'),
-      %\html_requires(css('blueish.css')),
-      %\html_requires(css('framelike.css')),
-      %\html_requires(css('user_interface.css')),
-      %\html_requires(js('event-min.js')),
-      %\html_requires(js('connection_core-min.js')),
-      %\html_requires(js('json-min.js')),
-      %\html_requires(js('jsonbrowser.js')),
-      %\html_requires(js('utils.js')),
-      %\html_requires(js('yahoo-min.js')),
-      Head
-    ])
   ).
 

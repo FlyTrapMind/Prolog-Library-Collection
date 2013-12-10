@@ -48,7 +48,6 @@
 %! authorized(+Method:oneof([delete,get,post]), +Request:list) is semidet.
 
 authorized(Method, Request):-
-gtrace,
   memberchk(path(Path), Request),
   password_file(File),
   (
