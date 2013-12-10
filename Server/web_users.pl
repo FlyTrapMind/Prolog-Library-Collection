@@ -1,6 +1,8 @@
-:- module(users_api, []).
+:- module(web_users, []).
 
-/** <module> Users API
+/** <module> Web users
+
+User management for Web applications.
 
 @author Torbjörn Lager
 @author Jan Wielemaker
@@ -13,10 +15,10 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_parameters)).
-:- use_module(server(dispatch)).
-:- use_module(server(update_password)).
+:- use_module(server(passwords)).
+:- use_module(server(server_ext)).
 :- use_module(server(user_db)).
-:- use_module(server(users_ui)).
+:- use_module(server(web_users)).
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
@@ -103,3 +105,4 @@ list_users(User, List) :-
     ),
     List
   ).
+

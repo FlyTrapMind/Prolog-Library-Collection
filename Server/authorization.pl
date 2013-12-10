@@ -18,7 +18,7 @@
 
 :- use_module(library(http/http_authenticate)).
 :- use_module(library(lists)).
-:- use_module(server(login_db)).
+:- use_module(server(passwords)).
 :- use_module(server(user_db)).
 
 %! allow(
@@ -50,11 +50,7 @@
 authorized(Method, Request):-
 gtrace,
   memberchk(path(Path), Request),
-  absolute_file_name(
-    project(passwords),
-    File,
-    [access(read),file_type(database)]
-  ),
+  password_file(File),
   (
     http_authenticate(basic(File), Request, [User|_Fields]), !
   ;

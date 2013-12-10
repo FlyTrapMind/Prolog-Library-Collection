@@ -1,13 +1,13 @@
-:- module(settings_api, []).
+:- module(web_settings, []).
 
-/** <module> Settings API
+/** <module> Web-interface to settings
 
 Sets and retrieves settings using JSON.
 
 @author Torbjörn Lager
 @author Jan Wielemaker
 @author Wouter Beek
-@version 2009, 2013/10
+@version 2009, 2013/10, 2013/12
 */
 
 :- use_module(generics(db_ext)).
@@ -16,7 +16,7 @@ Sets and retrieves settings using JSON.
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_parameters)).
 :- use_module(library(settings)).
-:- use_module(server(dispatch)).
+:- use_module(server(server_ext)).
 
 :- http_handler(root(settings), dispatch, []).
 

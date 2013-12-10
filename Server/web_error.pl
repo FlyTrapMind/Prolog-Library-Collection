@@ -1,11 +1,11 @@
 :- module(
-  error_web,
+  web_error,
   [
     catch_web/2, % :Goal
                  % -Markup:dom
-    error_web/2, % +Error:error
+    web_error/2, % +Error:error
                  % -Markup:dom
-    error_web/3 % +Format:atom
+    web_error/3 % +Format:atom
                 % +Arguments:list(term)
                 % -Markup:dom
   ]
@@ -36,7 +36,7 @@ catch_web(Goal, Markup):-
   catch(
     call(Goal, Markup),
     Catcher,
-    error_web(Catcher, Markup)
+    web_error(Catcher, Markup)
   ).
 
 %! error_context_web(+Context:compound, -Markup:list) is det.
@@ -193,7 +193,7 @@ error_formal_web(
 error_formal_web(Formal, [element(p, [], [FormalAtom])]):-
   term_to_atom(Formal, FormalAtom).
 
-%! error_web(+Error:error, -Markup:list) is det.
+%! web_error(+Error:error, -Markup:list) is det.
 % Returns the markup for the given error or exception.
 % An error or exception consists of a formal description and a context
 % description. Both are rendered into markup.
@@ -201,7 +201,7 @@ error_formal_web(Formal, [element(p, [], [FormalAtom])]):-
 % @param Error An error or exception of the form =error(Formal, Context)=.
 % @param Markup A list of XML elements.
 
-error_web(error(Formal, Context), Markup):-
+web_error(error(Formal, Context), Markup):-
   error_formal_web(Formal, FormalMarkup),
   error_context_web(Context, ContextMarkup),
   append(
@@ -210,14 +210,14 @@ error_web(error(Formal, Context), Markup):-
     Markup
   ).
 
-%! error_web(+Format, +Arguments:list, -Markup:list) is det.
+%! web_error(+Format, +Arguments:list, -Markup:list) is det.
 % This supports markup generation for simple 'error' statements.
-% The use of error_web/2, with a proper error or exception compound term,
+% The use of web_error/2, with a proper error or exception compound term,
 % if prefered.
 %
-% @see error_web/2
+% @see web_error/2
 
-error_web(
+web_error(
   Format,
   Arguments,
   [element(h1, [], ['Error']), element(p, [], [ErrorMessage])]

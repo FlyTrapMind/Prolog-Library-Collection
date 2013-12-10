@@ -28,6 +28,7 @@ width: 50em;
 :- use_module(library(http/http_path)).
 :- use_module(library(http/js_write)).
 :- use_module(server(app_server)). % Make sure there is an application server.
+:- use_module(server(web_login)).
 :- use_module(server(web_ui)). % Make sure the Web paths are defined.
 
 :- http_handler(root(.), home, []).
@@ -86,11 +87,23 @@ home(_Request):-
 
 login -->
   html(
-    form([id=login,action='/'],
-      div([
-        input([id=username,size='10',type=text]),
-        input([id=password,size='10',type=password]),
-        input([alt='Login',class=btn,src='img/login.gif',type=image])
+    \submission_form([action='/',id=login],
+      fieldset(class='pure-group', [
+        input([
+          class=text,
+          id=username,
+          required=required,
+          size=10,
+          type=text
+        ], []),
+        input([
+          class=text,
+          id=password,
+          required=required,
+          size=10,
+          type=password
+        ], []),
+        \submit_button
       ])
     )
   ).
@@ -106,26 +119,7 @@ menu -->
     div([class='pure-u',id=menu],
       div(class=['pure-menu','pure-menu-open'], [
         a([class='pure-menu-heading',href='/'], 'PraSem'),
-        \html_module_list([ordered(false)], []),
-        \submission_form('/test',
-          fieldset(class='pure-group', [
-            input([
-              class=text,
-              id=username,
-              required=required,
-              size=10,
-              type=text
-            ], []),
-            input([
-              class=text,
-              id=password,
-              required=required,
-              size=10,
-              type=password
-            ], []),
-            \submit_button
-          ])
-        )
+        \html_module_list([ordered(false)], [])
       ])
     )
   ).

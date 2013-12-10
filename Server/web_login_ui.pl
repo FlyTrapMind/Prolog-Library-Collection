@@ -1,6 +1,6 @@
-:- module(login_ui, []).
+:- module(web_login_ui, []).
 
-/** <module> Login UI
+/** <module> Web login
 
 @author Torbjörn Lager
 @author Jan Wielemaker
@@ -16,7 +16,7 @@
 :- use_module(server(app_ui)).
 :- use_module(server(web_ui)).
 
-:- http_handler(root(login), login_ui, []).
+:- http_handler(root(login_ui), login_ui, []).
 
 :- html_resource(js('yui-min-3.14.0.js')).
 

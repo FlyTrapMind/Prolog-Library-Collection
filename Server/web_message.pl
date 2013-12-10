@@ -26,8 +26,8 @@ Acts on messages printed by print_message/2.
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
 :- use_module(os(ansi_ext)).
-:- use_module(server(error_web)).
 :- use_module(server(web_console)).
+:- use_module(server(web_error)).
 :- use_module(server(web_modules)).
 
 :- dynamic(current_log_row/1).
@@ -79,7 +79,7 @@ log_web(Category, [HTML_Table]):-
   ).
 
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
-  error_web(Exception, Markup),
+  web_error(Exception, Markup),
   push(status_pane, html, app_style, Markup), !.
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
   format(user, '~w', [Exception]). %DEB

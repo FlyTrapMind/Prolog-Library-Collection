@@ -1,11 +1,13 @@
-:- module(users_ui, []).
+:- module(web_users_admin, []).
 
-/** <module> Users UI
+/** <module> Web users admin
+
+Web-interface for administration of users.
 
 @author Torbjörn Lager
 @author Jan Wielemaker
 @author Wouter Beek
-@version 2009, 2013/10-2013/11
+@version 2009, 2013/10-2013/12
 */
 
 :- use_module(library(http/html_write)).
@@ -14,16 +16,16 @@
 :- use_module(server(app_ui)).
 :- use_module(server(web_ui)).
 
-:- http_handler(root(admin), admin_ui, []).
+:- http_handler(root(admin/users), users_admin, []).
 
 
 
-admin_ui(_Request):-
-  reply_html_page(framelike_style, \admin_js, \admin_ui).
+users_admin(_Request):-
+  reply_html_page(framelike_style, \users_admin_head, \users_admin_body).
 
 % UI %
 
-admin_ui -->
+users_admin_body -->
   location('/admin/*'),
   users,
   settings,
@@ -345,7 +347,7 @@ statistics_get -->
 statistics_get_label -->
   html(code('/admin/statistics')).
 
-admin_js -->
+users_admin_head -->
   html(
     \js_script({|javascript(_)||
       function postUser() {

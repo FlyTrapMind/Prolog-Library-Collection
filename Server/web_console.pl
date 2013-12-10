@@ -16,7 +16,7 @@
 A simple Web console interface.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/06, 2013/11
+@version 2012/10, 2013/02-2013/06, 2013/11-2013/12
 */
 
 :- use_module(generics(db_ext)).
@@ -33,8 +33,8 @@ A simple Web console interface.
 :- use_module(library(settings)).
 :- use_module(os(datetime_ext)).
 :- use_module(server(app_ui)).
-:- use_module(server(error_web)).
 :- use_module(server(web_commands)).
+:- use_module(server(web_error)).
 :- use_module(server(web_modules)).
 
 % /css

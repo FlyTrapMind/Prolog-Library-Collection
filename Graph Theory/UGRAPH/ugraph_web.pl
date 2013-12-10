@@ -48,7 +48,7 @@ See [rdf_graph.pl].
 :- use_module(graph_theory(graph_generic)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
-:- use_module(server(error_web)).
+:- use_module(server(web_error)).
 :- use_module(standards(standards)).
 :- use_module(svg(svg_generic)).
 
@@ -129,8 +129,7 @@ bipartite_web(UGraph, [SVG_Root, element(p, [], [AtomicG])]):-
 
   append([EdgeLines, S1Circles, S2Circles], Shapes),
   root_element(svg, SVG_Head, [Line1, Line2 | Shapes], SVG_Root),
-  term_to_atom(UGraph, AtomicG),
-  !.
+  term_to_atom(UGraph, AtomicG), !.
 bipartite_web(UGraph, Markup):-
-  error_web('Graph ~w is not bipartite.', [UGraph], Markup).
+  web_error('Graph ~w is not bipartite.', [UGraph], Markup).
 
