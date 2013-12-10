@@ -15,7 +15,6 @@
 :- use_module(server(web_ui)).
 
 :- http_handler(root(admin), admin_ui, []).
-:- http_handler(root(users), http_redirect(moved, root(admin)), [prefix]).
 
 
 

@@ -1,7 +1,6 @@
 :- module(
   user_db,
   [
-    set_user_database/1, % +File:atom
     user/1, % ?User:atom
     user/2, % ?Name:atom
             % ?Properties:list
@@ -24,16 +23,21 @@ The user administration is based on the following:
 @author Jan Wielemaker
 @author Torbjörn Lager
 @author Wouter Beek
-@version 2013/10-2013/11
+@version 2013/10-2013/12
 */
 
+:- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(persistency)).
-:- use_module(server(login_db)).
+:- use_module(os(os_ext)).
+
+:- db_add_novel(user:prolog_file_type(db, database)).
 
 %! user(?User:atom, ?Properties:list:compound) is nondet.
 
 :- persistent(user(user:atom,properties:list(compound))).
+
+:- initialization(init_users).
 
 
 
@@ -42,11 +46,17 @@ The user administration is based on the following:
 current_user(User, Properties):-
   with_mutex(user_db, user(User, Properties)).
 
-%! set_user_database(+File:atom) is det.
-% Load user information from the given file.
-% Changes are fully synchronous.
-
-set_user_database(File):-
+init_users:-
+  (
+    users_file(File), !
+  ;
+    absolute_file_name(
+      project(users),
+      File,
+      [access(write),file_type(database)]
+    ),
+    touch(File)
+  ),
   db_attach(File, [sync(close)]).
 
 %! user(?User:atom) is nondet.
@@ -92,3 +102,9 @@ user_remove(Name):-
 user_remove(Name):-
   existence_error(user, Name).
 
+users_file(File):-
+  absolute_file_name(
+    project(users),
+    File,
+    [access(read),file_errors(fail),file_type(database)]
+  ).

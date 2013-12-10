@@ -18,13 +18,16 @@
 Web front-end for SPARQL queries.
 
 @author Wouter Beek
-@version 2012/12, 2013/03-2013/04
+@version 2012/12, 2013/03-2013/04, 2013/12
 */
 
 :- use_module(html(html_form)).
 :- use_module(html(html_table)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(server(web_console)).
 :- use_module(sparql(sparql_ext)).
+
+:- http_handler(root(sparql), sparql, []).
 
 :- dynamic(default_remote0/1).
 
@@ -66,20 +69,25 @@ set_default_remote(NewRemote):-
   ),
   assert(default_remote0(NewRemote)).
 
+% @tbd
 sparql_input_web(Markup):-
   input_ui(Markup).
 
+% @tbd
 sparql_input_web(Remote, Markup):-
   set_default_remote(Remote),
   input_ui(Markup).
 
-sparql_output_web(Query, Markup):-
+% @tbd
+sparql(Request):-
+  Request -> Query
   default_remote(Remote),
   sparql_output_web(Remote, Query, Markup).
 
 %! sparql_output_web(+Remote:atom, +Query:atom, -Markup:list) is det.
 % Returns markup for the given SPARQL query.
 
+% @tbd
 sparql_output_web(Remote, Query, Markup):-
   statistics(cputime, CPU_Before),
   query_sparql(Remote, Query, VarNames, Results),

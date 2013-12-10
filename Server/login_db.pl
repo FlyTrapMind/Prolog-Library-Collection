@@ -44,16 +44,6 @@ logged_in(User):-
   http_session_id(Session),
   user_property(User, session(Session)).
 
-% Connection information for a user.
-user_property(User, connection(LoginTime,Idle)):-
-  current_logged_in(Session, User, LoginTime),
-  http_current_session(Session, idle(Idle)).
-% Session identification for a user.
-user_property(User, session(Session)):-
-  current_logged_in(Session, User, _Time),
-  % A session can have at most one user.
-  (nonvar(Session) -> ! ; true).
-
 %! login(+User:atom) is det.
 % Accept the given user as logged into the current session.
 
@@ -76,3 +66,12 @@ logout(User):-
   with_mutex(login_db, retractall_logged_in(_Session, User, _LoginTime)),
   debug(login_db, 'Logout user ~w.', [User]).
 
+% Connection information for a user.
+user_property(User, connection(LoginTime,Idle)):-
+  current_logged_in(Session, User, LoginTime),
+  http_current_session(Session, idle(Idle)).
+% Session identification for a user.
+user_property(User, session(Session)):-
+  current_logged_in(Session, User, _Time),
+  % A session can have at most one user.
+  (nonvar(Session) -> ! ; true).

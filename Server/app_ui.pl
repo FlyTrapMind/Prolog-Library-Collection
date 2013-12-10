@@ -20,15 +20,18 @@ width: 50em;
 @version 2013/11-2013/12
 */
 
+:- use_module(html(html_form)).
 :- use_module(html(html_list)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
+:- use_module(library(http/js_write)).
 :- use_module(server(app_server)). % Make sure there is an application server.
 :- use_module(server(web_ui)). % Make sure the Web paths are defined.
 
 :- http_handler(root(.), home, []).
+:- http_handler(root(test), test, []).
 
 :- html_resource(css('pure-min-0.3.0.css'), []).
 :- html_resource(
@@ -70,7 +73,9 @@ user:head(app_style, Head) -->
   html(
     head([
       \html_requires(css('pure-min-0.3.0.css')),
-      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css')
+      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css'),
+      \js_script({|javascript(_)||
+      |})
     |
       Head
     ])
@@ -93,23 +98,32 @@ login -->
 main(Content) -->
   html(div([class='pure-u-1',id=main], \content(Content))).
 
+test(Request):-
+  write(Request).
+
 menu -->
-  {http_absolute_location(img('login.gif'), RelativeURI, [])},
   html(
     div([class='pure-u',id=menu],
       div(class=['pure-menu','pure-menu-open'], [
         a([class='pure-menu-heading',href='/'], 'PraSem'),
         \html_module_list([ordered(false)], []),
-        form([action='/login',class='pure-form',id=login,method=post],
+        \submission_form('/test',
           fieldset(class='pure-group', [
-            input([class=text,id=username,size=10,type=text], []),
-            input([class=text,id=password,size=10,type=password], []),
-            button([
-              alt='Login',
-              class=['pure-button','pure-button-primary'],
-              src=RelativeURI,
-              type=image
-            ], [])
+            input([
+              class=text,
+              id=username,
+              required=required,
+              size=10,
+              type=text
+            ], []),
+            input([
+              class=text,
+              id=password,
+              required=required,
+              size=10,
+              type=password
+            ], []),
+            \submit_button
           ])
         )
       ])

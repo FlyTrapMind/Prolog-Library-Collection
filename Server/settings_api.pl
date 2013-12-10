@@ -18,8 +18,7 @@ Sets and retrieves settings using JSON.
 :- use_module(library(settings)).
 :- use_module(server(dispatch)).
 
-:- db_add_novel(http:location(admin, root(admin), [])).
-:- http_handler(admin(settings), dispatch, []).
+:- http_handler(root(settings), dispatch, []).
 
 
 

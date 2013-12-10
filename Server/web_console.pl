@@ -36,7 +36,6 @@ A simple Web console interface.
 :- use_module(server(error_web)).
 :- use_module(server(web_commands)).
 :- use_module(server(web_modules)).
-:- use_module(sparql(sparql_web)).
 
 % /css
 :- html_resource(css('web_console.css'), []).
@@ -235,26 +234,21 @@ status_pane -->
   ]).
 
 web_console(Request):-
-  http_parameters(Request, [
-    web_command(Command, [default(no_command)]),
-    web_input(Query, [default(no_input)])
-  ]),
-  (
-    Command \== no_command
-  ->
-    process_web_command(Command, Markup),
-    push(console_output, Markup)
-  ;
-    Query \== no_input
-  ->
-    sparql_output_web(Query, DOM),
-    push(console_output, html, app_style, DOM)
-  ;
+  catch(
+    (
+      http_parameters(Request, [web_command(Command, [])]), !,
+      process_web_command(Command, Markup),
+      push(console_output, Markup)
+    ),
+    error(existence_error(form_data,web_command),_),
     true
   ),
-  reply_html_page(app_style, title('Web Console'), \web_console).
+  reply_html_page(app_style, \web_console_head, \web_console_body).
 
-web_console -->
+web_console_head -->
+  html(title('Web Console')).
+
+web_console_body -->
   html(
     body(onload('loadConsoleOutputFunctions(); loadStatusPaneFunctions();'), [
       \html_requires(css('web_console.css')),

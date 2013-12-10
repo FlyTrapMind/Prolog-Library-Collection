@@ -25,11 +25,10 @@
 
 dispatch_login(Request):-
   http_method(Request, Method),
-gtrace,
   dispatch_method(login_api, Method, Request).
 
 %! dispatch_method(+Method, +Request)
-%	Handling of POST and DELETE on =|/admin/login|=.
+%	Handling of `POST` and `DELETE` on `/login`.
 
 % A `DELETE` request on `/login` logs the user out.
 dispatch_method(delete, _Request):-
@@ -41,4 +40,9 @@ dispatch_method(post, Request):-
   http_authenticate(basic(passwords), Request, [User|_Fields]),
   login(User),
   reply_json(json([ok= @true,msg=User]), [width(0)]).
-
+% `GET'
+dispatch_method(get, Request):-
+gtrace,
+  http_authenticate(basic(passwords), Request, [User|_Fields]),
+  login(User),
+  reply_json(json([ok= @true,msg=User]), [width(0)]).

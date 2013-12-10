@@ -20,9 +20,7 @@
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
-:- initialization(load_user_database).
-
-:- http_handler(root(users_api), dispatch, []).
+:- http_handler(root(users), dispatch, []).
 
 
 
@@ -32,7 +30,6 @@
 %   * =|password(+Password:atom)|=
 
 dispatch_method(post, Request):-
-gtrace,
   http_parameters(Request, [user(Name,[]),password(Password,[])]),
   http_read_data(Request, OptionsAtom, [to(atom)]),
   catch(
@@ -106,12 +103,3 @@ list_users(User, List) :-
     ),
     List
   ).
-
-load_user_database:-
-  absolute_file_name(
-    project(user),
-    File,
-    [access(write),file_type(database)]
-  ),
-  set_user_database(File).
-

@@ -18,46 +18,48 @@
 
 :- http_handler(root(login), login_ui, []).
 
-:- html_resource('http://yui.yahooapis.com/pure/0.3.0/pure-min.css', []).
-:- html_resource('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css', []).
+:- html_resource(js('yui-min-3.14.0.js')).
 
 
 
 login_ui(_Request):-
-  reply_html_page(app_style, \login_js, \login_ui).
+  reply_html_page(app_style, \login_head, \login_body).
 
-login_js -->
+login_head -->
   html(
+    \html_requires(js('yui-min-3.14.0.js')),
     \js_script({|javascript(_)||
-      function login() {
-        switchPageIfNeeded();
-        var username = document.getElementById("login-post-auth-username").value;
-        var password = document.getElementById("login-post-password").value;
-        paste('Click on a JSON property to display a path here...', 'gray');
-        YAHOO.util.Connect.initHeader('Authorization','Basic ' + encode64(username + ":" + password));
-        YAHOO.util.Connect.asyncRequest("POST", "/login", {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        },"");
-      }
-      function logout() {
-        switchPageIfNeeded();
-        paste('Click on a JSON property to display a path here...', 'gray');
-        YAHOO.util.Connect.asyncRequest("DELETE", "/login", {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        },"");
-      }
+      YUI().use('node', 'event', function (Y) {
+        function login() {
+          switchPageIfNeeded();
+          var username = document.getElementById("login-post-auth-username").value;
+          var password = document.getElementById("login-post-password").value;
+          paste('Click on a JSON property to display a path here...', 'gray');
+          YAHOO.util.Connect.initHeader('Authorization','Basic ' + encode64(username + ":" + password));
+          YAHOO.util.Connect.asyncRequest("POST", "/login", {
+            success: function(o) {
+              var response = YAHOO.lang.JSON.parse(o.responseText);
+              var html = display(response, "response");
+              parent.display.document.getElementById("data").innerHTML = html;
+            }
+          },"");
+        }
+        function logout() {
+          switchPageIfNeeded();
+          paste('Click on a JSON property to display a path here...', 'gray');
+          YAHOO.util.Connect.asyncRequest("DELETE", "/login", {
+            success: function(o) {
+              var response = YAHOO.lang.JSON.parse(o.responseText);
+              var html = display(response, "response");
+              parent.display.document.getElementById("data").innerHTML = html;
+            }
+          },"");
+        }
+      });
     |})
   ).
 
-login_ui -->
+login_body -->
   location('/login'),
   login,
   presentation.

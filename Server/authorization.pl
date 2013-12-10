@@ -48,8 +48,8 @@
 %! authorized(+Method:oneof([delete,get,post]), +Request:list) is semidet.
 
 authorized(Method, Request):-
-  memberchk(path(Path), Request),
 gtrace,
+  memberchk(path(Path), Request),
   absolute_file_name(
     project(passwords),
     File,
@@ -85,12 +85,12 @@ gtrace,
     throw(http_reply(authorise(basic, 'secure')))
   ).
 
-allow(admin, _, post,   '/admin/settings',   _).
-allow(_,     _, get,    '/admin/settings',   _).
-allow(admin, _, get,    '/admin/statistics', _).
-allow(admin, _, post,   '/admin/users',      _).
-allow(admin, _, delete, '/admin/users',      _).
-allow(_,     _, get,    '/admin/users',      _).
+allow(admin, _, post,   '/settings',   _).
+allow(_,     _, get,    '/settings',   _).
+allow(admin, _, get,    '/statistics', _).
+allow(admin, _, post,   '/users',      _).
+allow(admin, _, delete, '/users',      _).
+allow(_,     _, get,    '/users',      _).
 allow(_,     _, _,      '/rdf/db',           _).
 allow(_,     _, _,      '/session/db',       _).
 allow(_,     _, _,      '/session/eq',       _).
