@@ -25,8 +25,6 @@
 :- http_handler(root(login), dispatch_login, []).
 :- http_handler(root(login_ui), login_ui, []).
 
-:- html_resource(js('login.js'), [requires([js('generics.js')])]).
-
 
 
 %! dispatch_login(+Request:list)
@@ -57,7 +55,28 @@ login_ui(_Request):-
   reply_html_page(app_style, \login_ui_head, \login_ui_body).
 
 login_ui_head -->
-  html(\html_requires(js('login.js'))).
+  html([
+    \html_requires(js('generics.js')),
+    \js_script({|javascript(_)||
+      function login() {
+        "use strict";
+        postJSON_auth(
+          "/login",
+          "",
+          successJSON,
+          window.btoa(
+            $("#login-post-auth-username").val() +
+            ":" +
+            $("#login-post-password").val()
+          )
+        );
+      }
+      function logout() {
+        "use strict";
+        deleteJSON("/login", "", successJSON);
+      }
+    |})
+  ]).
 
 login_ui_body -->
   html([
