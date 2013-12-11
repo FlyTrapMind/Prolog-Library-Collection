@@ -26,12 +26,20 @@
 :- http_handler(root(login_ui), login_ui, []).
 
 :- if(user:debug_project).
-:- html_resource(js('yui-debug-3.14.0.js'), []).
-:- html_resource(js('login.js'), [requires([js('yui-debug-3.14.0.js')])]).
+  :- html_resource(js('jquery-debug-2.0.3.js'), []).
+  :- html_resource(
+    js('generics.js'),
+    [requires([js('jquery-debug-2.0.3.js')])]
+  ).
 :- else.
-:- html_resource(js('yui-min-3.14.0.js'), []).
-:- html_resource(js('login.js'), [requires([js('yui-min-3.14.0.js')])]).
+  :- html_resource(js('jquery-min-2.0.3.js'), []).
+  :- html_resource(
+    js('generics.js'),
+    [requires([js('jquery-min-2.0.3.js')])]
+  ).
 :- endif.
+
+:- html_resource(js('login.js'), [requires([js('generics.js')])]).
 
 
 
@@ -39,7 +47,6 @@
 % The dispatch method for logging in does not itself use authentication.
 
 dispatch_login(Request):-
-gtrace,
   http_method(Request, Method),
   dispatch_method(Method, Request).
 
@@ -118,6 +125,7 @@ login_ui_body -->
           ])
         ])
       ])
-    ])
+    ]),
+    div(id=data, [])
   ]).
 
