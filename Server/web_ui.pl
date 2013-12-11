@@ -10,6 +10,8 @@
 
 Generic Web UI components.
 
+This module also defines the dependencies for the JavaScript generics.
+
 @author Torbjörn Lager
 @author Jan Wielemaker
 @author Wouter Beek
@@ -40,6 +42,22 @@ Generic Web UI components.
 :- db_add_novel(http:location(js, root(js), [])).
 :- db_add_novel(user:file_search_path(js, server(js))).
 :- http_handler(js(.), serve_files_in_directory(js), [prefix]).
+
+:- html_resource(js('json2html.js'), []).
+:- html_resource(js('jquery.json2html.js'), [requires([js('json2html.js')])]).
+:- if(user:debug_project).
+  :- html_resource(js('jquery-debug-2.0.3.js'), []).
+  :- html_resource(
+    js('generics.js'),
+    [requires([js('jquery-debug-2.0.3.js'),js('jquery.json2html.js')])]
+  ).
+:- else.
+  :- html_resource(js('jquery-min-2.0.3.js'), []).
+  :- html_resource(
+    js('generics.js'),
+    [requires([js('jquery-min-2.0.3.js'),js('jquery.json2html.js')])]
+  ).
+:- endif.
 
 
 

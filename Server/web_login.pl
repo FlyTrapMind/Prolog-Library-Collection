@@ -20,24 +20,10 @@
 :- use_module(server(passwords)).
 :- use_module(server(server_ext)).
 :- use_module(server(user_db)).
-:- use_module(server(web_ui)).
+:- use_module(server(web_ui)). % For JavaScript generics.
 
 :- http_handler(root(login), dispatch_login, []).
 :- http_handler(root(login_ui), login_ui, []).
-
-:- if(user:debug_project).
-  :- html_resource(js('jquery-debug-2.0.3.js'), []).
-  :- html_resource(
-    js('generics.js'),
-    [requires([js('jquery-debug-2.0.3.js')])]
-  ).
-:- else.
-  :- html_resource(js('jquery-min-2.0.3.js'), []).
-  :- html_resource(
-    js('generics.js'),
-    [requires([js('jquery-min-2.0.3.js')])]
-  ).
-:- endif.
 
 :- html_resource(js('login.js'), [requires([js('generics.js')])]).
 
@@ -76,11 +62,11 @@ login_ui_head -->
 login_ui_body -->
   html([
     h1('Login'),
-    form([], [
+    form([onsubmit='return false;'], [
       fieldset(class='pure-group', [
         legend('Login'),
         div(class='pure-control-group', [
-          button([class='pure-button',onclick='login()'], 'POST'),
+          button([class='pure-button',onclick='login();'], 'POST'),
           code('/login'),
           \clear_button(['login-post-auth-username','login-post-password'])
         ]),
@@ -126,6 +112,6 @@ login_ui_body -->
         ])
       ])
     ]),
-    div(id=data, [])
+    div(id=success, [])
   ]).
 
