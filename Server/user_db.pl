@@ -34,10 +34,12 @@ The user administration is based on the following:
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(user_input)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_session)).
 :- use_module(library(persistency)). % Declarations
 :- use_module(os(os_ext)).
+:- use_module(server(passwords)).
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
@@ -74,7 +76,10 @@ init_user_db:-
   ),
   touch(File),
   db_attach(File, [sync(close)]),
-  user_add(admin, [roles([admin])]).
+  % First time deployment.
+  user_add(admin, [roles([admin])]),
+  user_input_password('Enter the password for admin.', Password),
+  add_password(admin, Password).
 
 %! logged_in(-User:atom) is det.
 % Succeeds if the given user name denotes the currently logged in user.

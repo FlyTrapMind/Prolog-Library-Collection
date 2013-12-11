@@ -119,9 +119,6 @@ login_ui_body -->
           select([class=menu,name=presentation],
             option([selected,value='HTML'],'HTML')
           ),
-          &(nbsp),
-          &(nbsp),
-          &(nbsp),
           label([class='pure-checkbox',for=jsonTrunc], [
             input([id=jsonTrunc,name=jsonTrunc,type=checkbox]),
             'Truncate long strings '

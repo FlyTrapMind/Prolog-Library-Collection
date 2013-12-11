@@ -11,6 +11,8 @@
                        % -Filepath:atom
     user_input_filepath/2, % +Message:atom
                            % -Answer:atom
+    user_input_password/2, % +Message:atom
+                           % -Answer:atom
     user_interaction/5 % +Options:list(nvpair)
                        % +Action:atom
                        % :Goal
@@ -25,7 +27,7 @@ Handles user input and sequences in which user input is needed continuously
 (called "user interaction").
 
 @author Wouter Beek
-@version 2013/10-2013/11
+@version 2013/10-2013/12
 */
 
 :- use_module(ap(ap_stat)).
@@ -128,6 +130,9 @@ legal_filepath_char(C) --> minus_sign(C).
 legal_filepath_char(C) --> plus_sign(C).
 legal_filepath_char(C) --> underscore(C).
 
+legal_password(Codes) -->
+  dcg_multi1(ascii_graphic, 7-_, Codes).
+
 %! legal_user_interaction(-LegalUserInput:char)// is semidet.
 
 legal_user_interaction(Char) -->
@@ -191,6 +196,14 @@ user_input_file(Msg, Dir, Path):-
 
 user_input_filepath(Msg, Filepath):-
   user_input(Msg, legal_filepath, Filepath).
+
+user_input_password(Msg1, Password):-
+  atomic_list_concat(
+    [Msg1,'The password must consist of 7 or more ASCII graphic characters.'],
+    '\n',
+    Msg2
+  ),
+  user_input(Msg2, legal_password, Password).
 
 %! user_interaction(
 %!   +Options:list(nvpair),
