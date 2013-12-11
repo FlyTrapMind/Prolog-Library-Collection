@@ -41,13 +41,13 @@ dispatch_login(Request):-
 dispatch_method(delete, _Request):-
   logged_in(User),
   logout(User),
-  reply_json(json([ok= @true,msg=User]), [width(0)]).
+  reply_json(json([ok= @true,message=User]), [width(0)]).
 % A `POST` request on `/login` logs the user in.
 dispatch_method(post, Request):-
   password_file(File),
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
-  reply_json(json([ok= @true,msg=User]), [width(0)]).
+  reply_json(json([ok= @true,message=User]), [width(0)]).
 dispatch_method(get, Request):-
   http_redirect(see_other, root(login_ui), Request).
 
@@ -58,12 +58,11 @@ login_ui_head -->
   html([
     \html_requires(js('generics.js')),
     \js_script({|javascript(_)||
+      "use strict";
       function login() {
-        "use strict";
         postJSON_auth(
           "/login",
           "",
-          successJSON,
           window.btoa(
             $("#login-post-auth-username").val() +
             ":" +
@@ -72,8 +71,7 @@ login_ui_head -->
         );
       }
       function logout() {
-        "use strict";
-        deleteJSON("/login", "", successJSON);
+        deleteJSON("/login");
       }
     |})
   ]).
@@ -131,6 +129,6 @@ login_ui_body -->
         ])
       ])
     ]),
-    div(id=success, [])
+    div(id=response, [])
   ]).
 

@@ -2,52 +2,86 @@
 // I do not know why this is the case.
 // @see http://peterstuifzand.nl/2008/09/05/jquery-and-postjson.html
 
-function deleteJSON(url, data, callback) {
+// Notice that the response to an `$.ajax` request is already
+// a JavaScript object.
+// We do not need to explicitly parse the response text as JSON.
+
+
+
+function deleteJSON(url) {
   $.ajax (
     url,
     {
-      contentType: "application/json; charset=utf-8",
-      data: JSON.stringify(data),
       dataType: "json",
-      error: function(e) {console.log("exception: " + e.statusText);},
-      success: callback,
+      error: errorJSON,
+      success: successJSON,
       type: "delete"
     }
   );
 }
 
-function postJSON(url, data, callback) {
-  postJSON(url, data, callback, {});
+function errorJSON(response) {
+  var error = response[error];
+  var message = response[message];
+  var html = "<h3>" + error + "</h3><p>" + message + "</p>";
+  $("#response").append(html);
 }
 
-function postJSON(url, data, callback, headers) {
+function getJSON(url) {
+  getJSON(url, {});
+}
+
+function getJSON(url, headers) {
+  $.ajax (
+    url,
+    {
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      error: errorJSON,
+      headers: headers,
+      success: successJSON,
+      type: "get"
+    }
+  );
+}
+
+function postJSON(url, data) {
+  postJSON(url, data, {});
+}
+
+function postJSON(url, data, headers) {
   $.ajax (
     url,
     {
       contentType: "application/json; charset=utf-8",
       data: JSON.stringify(data),
       dataType: "json",
-      error: function(e) {console.log("exception: " + e.statusText);},
+      error: errorJSON,
       headers: headers,
-      success: callback,
+      success: successJSON,
       type: "post"
     }
-  ).done(function() {
-      console.log("done");
-  });
+  );
 }
 
-function postJSON_auth(url, data, callback, auth) {
-  postJSON(url, data, callback, {Authorization: "Basic " + auth});
+function postJSON_auth(url, data, auth) {
+  postJSON(url, data, {Authorization: "Basic " + auth});
 }
-
-// Notice that the response to an `$.ajax` request is already
-// a JavaScript object.
-// We do not need to explicitly parse the response text as JSON.
 
 function successJSON(response) {
-  var transform = {'tag':'p','html':'Message: ${msg}'};
-  var html = json2html.transform(response, transform);
-  $("#success").append(html);
+  "use strict";
+  var html;
+  if (response.hasOwnProperty("message")) {
+    html =
+        json2html.transform(
+          response,
+          {"tag": "p", "html": "Message: ${message}"}
+        );
+  } else if (response.hasOwnProperty("error")) {
+    html = "<h3>Error</h3><p>" + response.error + "</p>";
+  } else {
+    html = "<h3>Unknown success response</h3><p>" + response + "</p>";
+  }
+  $("#response").append(html);
 }
 

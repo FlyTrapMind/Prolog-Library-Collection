@@ -64,17 +64,17 @@ current_logged_in(Session, User, Time):-
   with_mutex(user_db, logged_in(Session, User, Time)).
 
 init_user_db:-
-  (
-    user_db_file(File), !
-  ;
-    absolute_file_name(
-      project(users),
-      File,
-      [access(write),file_type(database)]
-    ),
-    touch(File)
-  ),
+  user_db_file(File), !,
   db_attach(File, [sync(close)]).
+init_user_db:-
+  absolute_file_name(
+    project(users),
+    File,
+    [access(write),file_type(database)]
+  ),
+  touch(File),
+  db_attach(File, [sync(close)]),
+  user_add(admin, [roles([admin])]).
 
 %! logged_in(-User:atom) is det.
 % Succeeds if the given user name denotes the currently logged in user.

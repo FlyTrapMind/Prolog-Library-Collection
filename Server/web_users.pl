@@ -19,6 +19,7 @@ User management for Web applications.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/js_write)).
 :- use_module(server(app_ui)).
 :- use_module(server(passwords)).
 :- use_module(server(server_ext)).
@@ -31,14 +32,6 @@ User management for Web applications.
 :- http_handler(root(users), dispatch, []).
 :- http_handler(root(users_ui), users_ui, []).
 
-:- if(user:debug_project).
-:- html_resource(js('yui-debug-3.14.0.js'), []).
-:- html_resource(js('users.js'), [requires([js('yui-debug-3.14.0.js')])]).
-:- else.
-:- html_resource(js('yui-min-3.14.0.js'), []).
-:- html_resource(js('users.js'), [requires([js('yui-min-3.14.0.js')])]).
-:- endif.
-
 
 
 %! dispatch_method(+Method:oneof([delete,post]), +Request:list) is det.
@@ -47,7 +40,6 @@ User management for Web applications.
 %   * =|password(+Password:atom)|=
 
 dispatch_method(post, Request):-
-gtrace,
   http_parameters(Request, [user(Name,[]),password(Password,[])]),
   http_read_data(Request, OptionsAtom, [to(atom)]),
   catch(
@@ -130,12 +122,12 @@ users_ui(_Request):-
 users_ui_body -->
   html([
     h1('User administration'),
-    form([], [
+    form([onsubmit='return false;'], [
       \users,
       \settings,
       \statistics
     ]),
-    div(id=data, [])
+    div(id=response, [])
   ]).
 
 users -->
@@ -180,7 +172,6 @@ users -->
         button([class='pure-button',onclick='deleteUser()'], 'DELETE'),
         label(code('/users?user=')),
         input([
-          class='pure-button',
           id='user-delete-user',
           name=user2,
           size='10',
@@ -282,5 +273,45 @@ statistics -->
   ).
 
 users_ui_head -->
-  html(\html_requires(js('users.js'))).
+  html([
+    \html_requires(js('generics.js')),
+    \js_script({|javascript(_)||
+      "use strict";
+      function postUser() {
+        postJSON(
+          "/users?user="
+              + $("#user-post-user").val()
+              + "&password="
+              + $("#user-post-password").val(),
+          $("#user-post-content").val()
+        );
+      }
+      function deleteUser() {
+        deleteJSON("/users?user=" + $("#user-delete-user").val());
+      }
+      function getUsers() {
+        getJSON("/users?user=" + $("#user-get-user").val());
+      }
+      function postSetting() {
+        postJSON(
+          "/settings?module="
+              + $("#setting-post-module").val()
+              + "&setting="
+              + $("#setting-post-setting").val(),
+          $("setting-post-content").val()
+        );
+      }
+      function getSettings() {
+        getJSON(
+          "/settings?module="
+              + $("#setting-get-module").val()
+              + "&setting="
+              + $("setting-get-setting").val()
+        );
+      }
+      function getStatistics() {
+        getJSON("/statistics");
+      }
+    |})
+  ]).
 
