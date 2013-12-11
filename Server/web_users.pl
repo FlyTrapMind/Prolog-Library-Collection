@@ -19,7 +19,6 @@ User management for Web applications.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_parameters)).
-:- use_module(library(http/js_write)).
 :- use_module(server(app_ui)).
 :- use_module(server(passwords)).
 :- use_module(server(server_ext)).
@@ -31,6 +30,14 @@ User management for Web applications.
 
 :- http_handler(root(users), dispatch, []).
 :- http_handler(root(users_ui), users_ui, []).
+
+:- if(user:debug_project).
+:- html_resource(js('yui-debug-3.14.0.js'), []).
+:- html_resource(js('users.js'), [requires([js('yui-debug-3.14.0.js')])]).
+:- else.
+:- html_resource(js('yui-min-3.14.0.js'), []).
+:- html_resource(js('users.js'), [requires([js('yui-min-3.14.0.js')])]).
+:- endif.
 
 
 
@@ -275,91 +282,5 @@ statistics -->
   ).
 
 users_ui_head -->
-  html([
-    \html_requires(js('yui-min-3.14.0.js')),
-    \js_script({|javascript(_)||
-      function postUser() {
-        // Use stricts mode
-        // (ECMAScript 5 exclusion for ECMASCript 3 deprecated features).
-        "use strict";
-        // Make function-scoped hoisting explicit.
-        var user, password, content;
-        user = document.getElementById("user-post-user").value;
-        password = document.getElementById("user-post-password").value;
-        content = document.getElementById("user-post-content").value;
-        YUI().use('io-base', function (Y) {
-          var cfg = {
-            data: content,
-            method: "post",
-            on: {
-              success: function (o) {
-                var response, html;
-                try {
-                  response = Y.JSON.parse(o.responseText);
-                } catch (e) {
-                  alert("JSON parse failed.");
-                  return;
-                }
-                var html = display(response, "response");
-                parent.display.document.getElementById("data").innerHTML = html;
-              }
-            }
-          };
-          Y.io("/users?user=" + user + "&password=" + password, cfg);
-        });
-      }
-      function deleteUser() {
-        var user = document.getElementById("user-delete-user").value;
-        YAHOO.util.Connect.asyncRequest("DELETE", "/users?user=" + user, {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        }, "");
-      }
-      function getUsers() {
-        var user = document.getElementById("user-get-user").value;
-        YAHOO.util.Connect.asyncRequest("GET", "/users?user=" + user, {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        });
-      }
-      function postSetting() {
-        var module = document.getElementById("setting-post-module").value;
-        var setting = document.getElementById("setting-post-setting").value;
-        var content = document.getElementById("setting-post-content").value;
-        YAHOO.util.Connect.asyncRequest("POST", "/settings?module=" + module + "&setting=" + setting, {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        }, content);
-      }
-      function getSettings() {
-        var module = document.getElementById("setting-get-module").value;
-        var setting = document.getElementById("setting-get-setting").value;
-        YAHOO.util.Connect.asyncRequest("GET", "/settings?module=" + module + "&setting=" + setting, {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        });
-      }
-      function getStatistics() {
-        YAHOO.util.Connect.asyncRequest("GET", "/statistics", {
-          success: function(o) {
-            var response = YAHOO.lang.JSON.parse(o.responseText);
-            var html = display(response, "response");
-            parent.display.document.getElementById("data").innerHTML = html;
-          }
-        });
-      }
-    |})
-  ]).
+  html(\html_requires(js('users.js'))).
 

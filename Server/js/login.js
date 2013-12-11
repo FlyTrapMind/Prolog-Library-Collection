@@ -3,12 +3,7 @@ function login() {
   var authorization, cfg, password, username;
   username = document.getElementById("login-post-auth-username").value;
   password = document.getElementById("login-post-password").value;
-  YUI({
-    //Last Gallery Build of this module
-    gallery: 'gallery-2010.06.16-19-51'
-  }).use('gallery-y64', function(Y) {
-    authorization = Y.Y64.encode(username + ":" + password);
-  });
+  authorization = window.btoa(username + ":" + password);
   YUI.use('io-base', 'json-parse', function (Y) {
     cfg = {
       headers: {
@@ -56,3 +51,4 @@ function logout() {
     Y.io("/login", cfg);
   });
 }
+

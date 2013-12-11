@@ -25,8 +25,13 @@
 :- http_handler(root(login), dispatch_login, []).
 :- http_handler(root(login_ui), login_ui, []).
 
+:- if(user:debug_project).
+:- html_resource(js('yui-debug-3.14.0.js'), []).
+:- html_resource(js('login.js'), [requires([js('yui-debug-3.14.0.js')])]).
+:- else.
 :- html_resource(js('yui-min-3.14.0.js'), []).
 :- html_resource(js('login.js'), [requires([js('yui-min-3.14.0.js')])]).
+:- endif.
 
 
 
@@ -107,9 +112,12 @@ login_ui_body -->
           &(nbsp),
           &(nbsp),
           &(nbsp),
-          'Truncate long strings ',
-          input([id=jsonTrunc,name=jsonTrunc,type=checkbox])
+          label([class='pure-checkbox',for=jsonTrunc], [
+            input([id=jsonTrunc,name=jsonTrunc,type=checkbox]),
+            'Truncate long strings '
+          ])
         ])
       ])
     ])
   ]).
+
