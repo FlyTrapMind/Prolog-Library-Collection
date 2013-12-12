@@ -62,8 +62,10 @@ Call a DCG rule multiple times while aggregating the arguments.
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(apply)).
 :- use_module(library(option)).
 
 :- meta_predicate(dcg_multi(2,?,?)).
@@ -89,13 +91,13 @@ Call a DCG rule multiple times while aggregating the arguments.
 % DCG_MULTI %
 
 %! dcg_multi(:DCG)//
-% @see dcg_multi//5
+% @see dcg_multi//4
 
 dcg_multi(DCG) -->
   dcg_multi(DCG, _Rep).
 
 %! dcg_multi(:DCG, ?Repetitions:or([nonneg,pair(nonneg,or([nonneg,inf]))]))//
-% @see dcg_multi//5
+% @see dcg_multi//4
 
 dcg_multi(DCG, Rep) -->
   dcg_multi(DCG, Rep, []).
@@ -109,7 +111,7 @@ dcg_multi(DCG, Rep, O1) -->
 %!   +Options:list(nvpair),
 %!   -Count:nonneg
 %! )//
-% @see Like dcg_multi//5 but with no arguments.
+% @see Like dcg_multi2//6 but with no arguments.
 
 dcg_multi(DCG, Rep, O1, C) -->
   {meta_options(is_meta, O1, O2)},
@@ -165,8 +167,7 @@ dcg_multi1(DCG, Rep, L1, O1) -->
 dcg_multi1(DCG, Rep, L1, O1, C) -->
   {nonvar(L1)}, !,
   {meta_options(is_meta, O1, O2)},
-  % Apply conversion: atom_to_codes/2.
-  {(atomic(L1), option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
+  {to_codes(L1, L2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, C, L2, O2),
   {in_between(Min, Max, C)}, !.
@@ -176,8 +177,8 @@ dcg_multi1(DCG, Rep, L2, O1, C) -->
   {repetition(Rep, Min, Max)},
   dcg_multi_var(DCG, Min, Max, L1, O2),
   {length(L1, C), in_between(Min, Max, C)},
-  % Apply conversion: atom_to_codes/2.
-  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}, !.
+  % Apply conversion: e.g., codes_to_atom/2.
+  {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}.
 
 
 
@@ -228,21 +229,20 @@ dcg_multi2(DCG_Rule, Rep, L1, L2, O1) -->
 %   * =|separator(:SeparatorDCG)|=
 
 dcg_multi2(DCG, Rep, L1, M1, O1, C) -->
-  {nonvar(L1), nonvar(M1)}, !,
+  {maplist(nonvar, [L1,M1])}, !,
   {meta_options(is_meta, O1, O2)},
-  % Apply conversion: atom_to_codes/2.
-  {(atomic(L1), option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
-  {(atomic(M1), option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)},
+  {maplist(to_codes, [L1,M1], [L2,M2])},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, C, L2, M2, O2),
   {in_between(Min, Max, C)}, !.
 dcg_multi2(DCG, Rep, L2, M2, O1, C) -->
+  {maplist(var, [L2,M2])}, !,
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_var(DCG, Min, Max, L1, M1, O2),
-  % Apply conversion: atom_to_codes/2.
+  % Apply conversion: e.g., codes_to_atom/2.
   {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
-  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)}, !,
+  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)},
   {length(L1, C)}.
 
 
@@ -250,60 +250,54 @@ dcg_multi2(DCG, Rep, L2, M2, O1, C) -->
 % DCG NONVAR ARGUMENTS %
 
 % One argument.
+dcg_multi_nonvar(_DCG, _Max, C, C, [], _O1) -->
+  [].
 dcg_multi_nonvar(DCG, Max, C1, C3, [H1|T1], O1) -->
   dcg_call(DCG, H1),
   % Process the separator, if any.
-  ({option(separator(Separator), O1)} -> Separator ; ""),
+  ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C3, T1, O1).
-dcg_multi_nonvar(DCG, Max, C1, C2, [H1], _O1) -->
-  dcg_call(DCG, H1),
-  {succ(C1, C2), greater_than_or_equal_to(Max, C2)}.
-dcg_multi_nonvar(_DCG, _Max, C, C, [], _O1) -->
-  [].
 
 % Two arguments.
+dcg_multi_nonvar(_DCG, _Max, C, C, [], [], _O1) -->
+  [].
 dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
   dcg_call(DCG, H1, H2),
   % Process the separator, if any.
-  ({option(separator(Separator), O1)} -> Separator ; ""),
+  ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
   % Check that counter does not exeed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C, T1, T2, O1).
-dcg_multi_nonvar(DCG, Max, C1, C2, [H1], [H2], _O1) -->
-  dcg_call(DCG, H1, H2),
-  {succ(C1, C2), greater_than_or_equal_to(Max, C2)}.
-dcg_multi_nonvar(_DCG, _Max, C, C, [], [], _O1) -->
-  [].
 
 
 
 % DCG VAR ARGUMENTS %
 
 % One argument.
+dcg_multi_var(_DCG, _Min, inf, [], _O1) -->
+  [].
+dcg_multi_var(DCG, Min, Min, [H1], _O1) --> !,
+  dcg_call(DCG, H1).
 dcg_multi_var(DCG, Min, Max1, [H1|T1], O1) -->
   dcg_call(DCG, H1),
   % Process the separator, if any.
   ({option(separator(Separator), O1), T1 \= []} -> Separator ; ""),
   {count_down(Max1, Max2)},
   dcg_multi_var(DCG, Min, Max2, T1, O1).
-dcg_multi_var(DCG, Min, Min, [H1], _O1) --> !,
-  dcg_call(DCG, H1).
-dcg_multi_var(_DCG, _Min, inf, [], _O1) -->
-  [].
 
 % Two arguments
+dcg_multi_var(_DCG, _Min, inf, [], [], _O1) -->
+  [].
+dcg_multi_var(DCG, Min, Min, [H1], [H2], _O1) --> !,
+  dcg_call(DCG, H1, H2).
 dcg_multi_var(DCG, Min, Max1, [H1|T1], [H2|T2], O1) -->
   dcg_call(DCG, H1, H2),
   % Process the separator, if any.
   ({option(separator(Separator), O1), T1 \= []} -> Separator ; ""),
   {count_down(Max1, Max2)},
   dcg_multi_var(DCG, Min, Max2, T1, T2, O1).
-dcg_multi_var(DCG, Min, Min, [H1], [H2], _O1) --> !,
-  dcg_call(DCG, H1, H2).
-dcg_multi_var(_DCG, _Min, inf, [], [], _O1) -->
-  [].
 
 
 

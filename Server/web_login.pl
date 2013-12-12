@@ -50,7 +50,6 @@ dispatch_method(post, Request):-
   password_db_file_unix(File),
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
-gtrace,
   dcg_with_output_to(
     response(_Tree, version(1,1), status(200, _Reason), [], [])
   ).

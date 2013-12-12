@@ -12,6 +12,8 @@
     'LOALPHA'//0,
     'LOALPHA'//1, % ?Code:code
     'LWS'//0,
+    'TEXT'//0,
+    'TEXT'//1, % ?Codes:list(code)
     'UPALPHA'//0,
     'UPALPHA'//1 % ?Code:code
   ]
@@ -23,6 +25,7 @@
     'CR'//1, % ?Code:code
     'CRLF'//0,
     'CRLF'//1, % ?Code:code
+    'CRLF'//2, % ?Code:code
     'CTL'//0,
     'CTL'//1,
     'DIGIT'//0,
@@ -69,6 +72,8 @@ HT      = <US-ASCII HT, horizontal-tab (9)>
 LOALPHA = <any US-ASCII lowercase letter "a".."z">
 LWS     = [CRLF] 1*(SP|HT)
 UPALPHA = <any US-ASCII uppercase letter "A".."Z">
+TEXT    = <any OCTET except CTLs, but including LWS>
+
 ~~~
 
 # Differences with RFC 4234 (ABNF)
@@ -182,6 +187,21 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 'LWS' -->
   dcg_multi('CRLF', 0-1),
   dcg_multi(('SP' ; 'HT'), 1-_).
+
+%! 'TEXT'//
+% @see 'TEXT'//1
+
+'TEXT' -->
+  'TEXT'(_C).
+
+%! 'TEXT'(?Code:code)//
+% ~~~{.abnf}
+% TEXT = <any OCTET except CTLs, but including LWS>
+% ~~~
+
+'TEXT'(C) -->
+  'OCTET'(C),
+  {\+ code_type(C, cntrl)}.
 
 %! 'UPALPHA'//
 % @see 'UPALPHA'//1

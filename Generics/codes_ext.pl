@@ -9,6 +9,8 @@
                       % +From:list(code)
                       % +To:list(code)
                       % -New:list(code)
+    codes_to_atom/2, % +Codes:list(code)
+                     % -Atom:atom
     put_codes/1, % +Codes:list(code)
     put_codes/2, % +Stream:stream
                  % +Codes:list(code)
@@ -18,7 +20,7 @@
     strip_codes/3, % +Strip:list(code)
                    % +In:list(code)
                    % -Out:list(code)
-    to_codes/2 % +AtomOrCodes
+    to_codes/2 % +In:or([atom,list(code),number])
                % -Codes:list(code)
   ]
 ).
@@ -28,7 +30,7 @@
 Predicates for handling codes.
 
 @author Wouter Beek
-@version 2013/05-2013/07
+@version 2013/05-2013/07, 2013/12
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -46,6 +48,13 @@ codes_replace2(Old, From, To, New):-
   append(To, NewRest, New).
 codes_replace2([H|T], From, To, [H|NewT]):-
   codes_replace2(T, From, To, NewT).
+
+%! codes_to_atom(+Codes:list(code), -Atom:atom) is det.
+% This may come in handly when the argument order is fixed,
+% and codes appears before atom.
+
+codes_to_atom(Codes, Atom):-
+  atom_codes(Atom, Codes).
 
 put_codes(Codes):-
   maplist(put_code, Codes).
@@ -72,5 +81,9 @@ strip_codes(Strip, [H | In], [H | Out]):-
 to_codes(Atom, Codes):-
   atom(Atom), !,
   atom_codes(Atom, Codes).
-to_codes(Codes, Codes).
+to_codes(Number, Codes):-
+  number(Number), !,
+  number_codes(Number, Codes).
+to_codes(Codes, Codes):-
+  is_list(Codes).
 

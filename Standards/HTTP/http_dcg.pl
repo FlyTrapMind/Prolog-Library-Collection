@@ -122,11 +122,11 @@ In BNFs there are (at least) two ways for writing an optional component.
 We give a simple example of the first variant in [1] and a simple example of
 the second variant in [2].
 
-~~~{.bnf}
+~~~{.abnf}
 [1] a = b [c]
 ~~~
 
-~~~{.bnf}
+~~~{.abnf}
 [2] a = b *c
 ~~~
 
@@ -138,7 +138,7 @@ for `a` always includes a parse tree for `c` (possibly with void content).
 Sometimes a mix of the two variants occurs. Example [3] comes from
 the HTTP 1.1 standard.
 
-~~~{.bnf}
+~~~{.abnf}
 [3] message-header = field-name ":" [ field-value ]
     field-value = *( field-content | LWS )
 ~~~
@@ -163,11 +163,12 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(gv(gv_file)).
+:- use_module(http(http_basic)).
+:- use_module(http(rfc2616_abnf)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
-:- use_module(standards(rfc4234_abnf)).
 :- use_module(uri(rfc2396_dcg)).
 
 :- meta_predicate(chunk(-,?,//,?,?,?)).
@@ -252,7 +253,7 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
 % information necessary for the recipient to verify that it has
 % received the full message.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % Chunked-Body = *chunk last-chunk trailer CRLF
 % chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
 % ~~~
@@ -282,7 +283,7 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
   {parse_tree('chunked-body', [T1,T2,T3,T4], T0)}.
 
 %! 'chunk-data'(-Tree:compound, ?ChunkSize:integer, :ChunkData:list(code))//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % chunk-data = chunk-size(OCTET)
 % ~~~
 
@@ -291,7 +292,7 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
   ChunkData.
 
 %! 'chunk-extension'(-Tree:compound, ?ChunkExtension:list)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % chunk-extension= *( ";" chunk-ext-name [ "=" chunk-ext-val ] )
 % chunk-ext-name = token
 % chunk-ext-val = token | quoted-string
@@ -318,7 +319,7 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
   'chunk-extension'(T).
 
 %! 'chunk-size'(-Tree:compound, ?ChunkSize:integer)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % chunk-size = 1*HEX
 % ~~~
 %
@@ -344,7 +345,7 @@ chunks([]) --> [].
 % their field value definition.
 % In all other fields, parentheses are considered part of the field value.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % comment = "(" *( ctext | quoted-pair | comment ) ")"
 % ~~~
 
@@ -384,7 +385,7 @@ comment_(L) -->
 % and without loss of information. Frequently, the entity is stored in
 % coded form, transmitted directly, and only decoded by the recipient.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % content-coding = token
 % ~~~
 %
@@ -402,7 +403,7 @@ content_codings(content_codings(T), ContentEncoding) -->
   token(T, ContentEncoding).
 
 %! ctext(?CText:code)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % ctext = <any TEXT excluding "(" and ")">
 % ~~~
 
@@ -415,7 +416,7 @@ ctext(C) -->
 % integer number of seconds, represented in decimal, after the time
 % that the message was received.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % delta-seconds = 1*DIGIT
 % ~~~
 
@@ -434,7 +435,7 @@ encoded_entity_body(
 % The entity-body (if any) sent with an HTTP request or response is in
 % a format and encoding defined by the entity-header fields.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % entity-body = *OCTET
 % ~~~
 %
@@ -450,7 +451,7 @@ entity_body(entity_body(EntityBody), EntityBody) -->
   dcg_all(EntityBody).
 
 %! 'entity-header'(-Tree:compound, ?EntityHeader:pair)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % entity-header = Allow
 %               | Content-Encoding
 %               | Content-Language
@@ -508,7 +509,7 @@ extension_code(extension_code(Status)) -->
   {\+ 'Status-Code'(Status, _Name)}.
 
 %! extension_header(-Tree:compound, ?ExtensionHeader:pair)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % extension-header = message-header
 % ~~~
 
@@ -516,12 +517,12 @@ extension_header(extension_header(T1), Header) -->
   message_header(T1, Header).
 
 %! 'extension-method'(-Tree:compound, ?ExtensionMethod:atom)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % extension-method = token
 % ~~~
 
-'extension-method'('extension-method'(ExtensionMethod), ExtensionMethod) -->
-  token(ExtensionMethod).
+'extension-method'('extension-method'(T0), ExtensionMethod) -->
+  token(T0, ExtensionMethod).
 
 %! field_content(-Tree:compound, ?FieldContent:list(atom))//
 % The field_content//2 does not include any leading or trailing
@@ -534,7 +535,7 @@ extension_header(extension_header(T1), Header) -->
 % MAY be replaced with a single space//0, before interpreting
 % the field value or forwarding the message downstream.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % field-content  = <the OCTETs making up the field-value
 %                   and consisting of either *TEXT or combinations
 %                   of token, separators, and quoted-string>
@@ -561,14 +562,14 @@ field_content_(field_content(T), [H]) -->
   (token(T, H) ; 'quoted-string'(T, H)).
 
 %! field_name(-Tree:compound, FieldName:atom)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % field-name = token
 % ~~~
 
 field_name(field_name(T), FieldName) --> token(T, FieldName).
 
 %! field_value(-Tree:compound, ?FieldValue:atom)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % field-value = *( field-content | LWS )
 % ~~~
 %
@@ -610,7 +611,7 @@ general_header --> via.
 general_header --> warning.
 */
 %! generic_message(-Tree:compound, ?Headers:list(pair), ?Body:list(code))//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % generic-message = start-line
 %                   *(message-header CRLF)
 %                   CRLF
@@ -625,7 +626,7 @@ generic_message(T, MessageHeaders, MessageBody) -->
   {parse_tree(generic_message, [T1,T2,T3,T4], T)}.
 
 %! http_message(-Tree:compound)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % HTTP-message = Request | Response ; HTTP/1.1 messages
 % ~~~
 
@@ -649,7 +650,7 @@ http_to_gv(Tree):-
 %!   ?Path:list(list(atom)),
 %!   ?Query:atom
 %! )//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
 % ~~~
 %
@@ -686,7 +687,7 @@ http_url(T, Host, Port, Path, Query) -->
 % The version of an HTTP message is indicated by an HTTP-Version field
 % in the first line of the message.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
 
@@ -704,7 +705,7 @@ http_url(T, Host, Port, Path, Query) -->
 %! 'last-chunk'(-Tree:compound, ?LastChunkExtension:list)//
 % The last chunk in a 'chunked-body'//3.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % last-chunk = 1*("0") [ chunk-extension ] CRLF
 % ~~~
 %
@@ -759,7 +760,7 @@ linear_white_space_([H|T]) -->
 % be significant to the processing of a media-type, depending on its
 % definition within the media type registry.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % media-type = type "/" subtype *( ";" parameter )
 % ~~~
 %
@@ -781,7 +782,7 @@ media_type(media_type(T1,'/',T2,T3), Type, SubType, Parameters) -->
 % entity, and thus MAY be added or removed by any application along the
 % request/response chain.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % message-body = entity-body
 %              | <entity-body encoded as per Transfer-Encoding>
 % ~~~
@@ -874,7 +875,7 @@ media_type(media_type(T1,'/',T2,T3), Type, SubType, Parameters) -->
   encoded_entity_body(T0, MessageBody).
 
 %! message_header(-Tree:compound, ?NVPair)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % message-header = field-name ":" [ field-value ]
 % ~~~
 
@@ -930,7 +931,7 @@ message_headers(message_headers(T1,T2,T3), [H|T]) -->
 %    * `501 (Not Implemented)`
 %      The method is unrecognized or not implemented by the origin server.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % Method = "OPTIONS" | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "TRACE"
 %        | "CONNECT" | extension-method
 % ~~~
@@ -989,7 +990,7 @@ parameters([H]) -->
 % convention, the products are listed in order of their significance
 % for identifying the application.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % product = token ["/" product-version]
 % ~~~
 %
@@ -1015,14 +1016,14 @@ product(product(name(T1)), Name, Version) -->
   token(T1, Name).
 
 %! 'product-version'(-Tree:compound, ?Version:atom)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % product-version = token
 % ~~~
 
 'product-version'('product-version'(T), Version) --> token(T, Version).
 
 %! qdtext(?Code:code)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % qdtext = <any TEXT except <">>
 % ~~~
 
@@ -1034,7 +1035,7 @@ qdtext(C) -->
 %! 'quoted-pair'(?Codes:list(code))//
 % The backslash//1 character (`“\”`) MAY be used as a single-character
 % quoting mechanism only within 'quoted-string'//1 and comment//1 constructs.
-% ~~~{.bnf}
+% ~~~{.abnf}
 % quoted-pair = "\" CHAR
 % ~~~
 
@@ -1046,7 +1047,7 @@ qdtext(C) -->
 % A string of text is parsed as a single word if it is quoted using
 % double_quote//1 marks.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % quoted-string = ( <"> *(qdtext | quoted-pair ) <"> )
 % ~~~
 
@@ -1081,7 +1082,7 @@ quoted_string_([H1,H2|T]) -->
 % decimal point. User configuration of these values SHOULD also be
 % limited in this fashion.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % qvalue = ( "0" [ "." 0*3DIGIT ] ) | ( "1" [ "." 0*3("0") ] )
 % ~~~
 %
@@ -1143,7 +1144,7 @@ reason_phrase_([]) --> [].
 %! )//
 % An HTTP request.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % Request = Request-Line
 %           *(( general-header | request-header | entity-header ) CRLF)
 %           CRLF
@@ -1176,7 +1177,7 @@ request(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
 % be request-header fields. Unrecognized header fields are treated as
 % entity-header fields.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % request-header = Accept
 %                | Accept-Charset
 %                | Accept-Encoding
@@ -1226,7 +1227,7 @@ request_header --> user_agent.
 %! )//
 % The first line of an HTTP request.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % Request-Line = Method SP Request-URI SP HTTP-Version CRLF
 % ~~~
 
@@ -1252,7 +1253,7 @@ request_header --> user_agent.
 %! )//
 % Identifies the resource upon which to apply the request.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % Request-URI = "*" | absoluteURI | abs_path | authority
 % ~~~
 %
@@ -1331,7 +1332,7 @@ request_header --> user_agent.
 % After receiving and interpreting a request message, a server responds
 % with an HTTP response message.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % Response = Status-Line
 %            *(( general-header | response-header | entity-header ) CRLF)
 %            CRLF
@@ -1346,7 +1347,7 @@ request_header --> user_agent.
   {parse_tree(response, [T1,T2,T3,T4], T0)}.
 
 %! 'response-header'//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % response-header = Accept-Ranges
 %                 | Age
 %                 | ETag
@@ -1375,35 +1376,9 @@ request_header --> user_agent.
 'response-header' --> vary.
 'response-header' --> www_authenticate.
 */
-%! separator//
-
-separator -->
-  separator(_C).
-
-%! separator(?Code:code)//
-% ~~~{.bnf}
-% separators = "(" | ")" | "<" | ">" | "@"
-%              | "," | ";" | ":" | "\" | <">
-%              | "/" | "[" | "]" | "?" | "="
-%              | "{" | "}" | SP | HT
-% ~~~
-
-separator(C) --> at_sign(C). % 64
-separator(C) --> bracket(C). % 40,41,91,93,123,125
-separator(C) --> colon(C). % 58
-separator(C) --> comma(C). %44
-separator(C) --> double_quote(C). %34
-separator(C) --> equals_sign(C). % 61
-separator(C) --> greater_than_sign(C). % 62
-separator(C) --> horizontal_tab(C). % 9
-separator(C) --> question_mark(C). % 63
-separator(C) --> semi_colon(C). % 59
-separator(C) --> slash(C). % 47, 92
-separator(C) --> less_than_sign(C). % 60
-separator(C) --> space(C). % 32
 
 %! start_line(-Tree:compound)//
-% ~~~{.bnf}
+% ~~~{.abnf}
 % start-line = Request-Line | Status-Line
 % ~~~
 
@@ -1527,33 +1502,27 @@ start_line(start_line(T0)) --> 'Status-Line'(T0, _Version, _Status).
 %! subtype(-Tree:compound, ?SubType:atom)//
 % Media subtype.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % subtype = token
 % ~~~
 
-subtype(subtype(SubType), SubType) -->
-  token(SubType).
+subtype(subtype(T0), SubType) -->
+  token(T0, SubType).
 
-%! 'TEXT'(?Code:code)//
+%! texts(-Tree:compound, ?Text:atom)//
 % The 'TEXT'//1 rule is only used for descriptive field contents and values
 % that are not intended to be interpreted by the message parser.
 % Words of `*TEXT` MAY contain characters from character sets other than
-% ISO-8859-1 [22] only when encoded according to the rules of RFC 2047 [14].
+% ISO-8859-1 only when encoded according to the rules of RFC 2047.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % TEXT = <any OCTET except CTLs, but including LWS>
 % ~~~
 %
-% A 'CRLF'//2 is allowed in the definition of 'TEXT'//1 only as part of
-% a header field continuation.
-% It is expected that the folding linear_white_space//1 will be replaced
-% with a single space//1 before interpretation of the 'TEXT'//1 value.
-
-'TEXT'(C) -->
-  [C],
-  {\+ code_type(C, cntrl)}.
-
-%! texts(-Tree:compound, ?Text:atom)//
+% A 'CRLF'//2 is allowed in the definition of 'TEXT'// only as part of
+%   a header field continuation.
+% It is expected that the folding 'LWS'// will be replaced
+%   with a single 'SP'// before interpretation of the 'TEXT'// value.
 
 texts(texts(Text), Text) -->
   {nonvar(Text)}, !,
@@ -1568,42 +1537,10 @@ texts([H|T]) -->
 texts([H]) -->
   'TEXT'(H).
 
-%! token(-Tree:compound, ?Token:atom)//
-% Many HTTP/1.1 header field values consist of words separated by
-% linear_white_space//1 or special//1 characters.
-% These special//1 characters MUST be in a 'quoted-string'//1
-% to be used within a parameter value (as defined in section 3.6).
-%
-% ~~~{.bnf}
-% token = 1*<any CHAR except CTLs or separators>
-% ~~~
-
-token(token(Token), Token) -->
-  {nonvar(Token)}, !,
-  {atom_codes(Token, Codes)},
-  token(Codes).
-token(token(Token), Token) -->
-  token(Codes),
-  {atom_codes(Token, Codes)}.
-token([H|T]) -->
-  token_(H),
-  token(T).
-token([C]) -->
-  token_(C).
-token_(C) -->
-  [C],
-  {
-    \+ code_type(C, cntrl),
-    \+ memberchk(
-      C,
-      [9,32,34,40,41,44,47,58,59,60,61,62,63,64,91,92,93,123,125]
-    )
-  }.
-
 %! trailer(-Tree:compound, ?EntityHeaders:list)//
 % The trailer of a 'chunked-body'//3.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % trailer = *(entity-header CRLF)
 % ~~~
 
@@ -1622,13 +1559,13 @@ trailer(trailer(T1,T2,T3), [H|T]) -->
 % This differs from a content coding in that the transfer-coding is a
 % property of the message, not of the original entity.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % transfer-coding = "chunked" | transfer-extension
 % ~~~
 %
 % Parameters are in the form of attribute/value pairs.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % parameter = attribute "=" value
 % attribute = token
 % value = token | quoted-string
@@ -1643,7 +1580,7 @@ trailer(trailer(T1,T2,T3), [H|T]) -->
 
 %! 'transfer-extension'(-Tree:compound, ?Token:atom, ?Parameters:list)//
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % transfer-extension = token *( ";" parameter )
 % ~~~
 
@@ -1654,12 +1591,12 @@ trailer(trailer(T1,T2,T3), [H|T]) -->
 %! type(-Tree:compound, ?Type:atom)//
 % Media type.
 %
-% ~~~{.bnf}
+% ~~~{.abnf}
 % type = token
 % ~~~
 
-type(type(Type), Type) -->
-  token(Type).
+type(type(T0), Type) -->
+  token(T0, Type).
 
 %! value(-Tree:compound, ?Value:atom)//
 

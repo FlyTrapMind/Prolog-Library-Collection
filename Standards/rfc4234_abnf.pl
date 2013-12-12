@@ -741,6 +741,7 @@ rulename(RuleName) -->
   ascii_graphic.
 
 %! 'VCHAR'(?Code:code)//
+% Visible characters.
 %
 % ~~~{.abnf}
 % VCHAR = %x21-7E   ; visible (printing) characters
