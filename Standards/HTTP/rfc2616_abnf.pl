@@ -13,7 +13,7 @@
     'LOALPHA'//1, % ?Code:code
     'LWS'//0,
     'TEXT'//0,
-    'TEXT'//1, % ?Codes:list(code)
+    'TEXT'//1, % ?Code:code
     'UPALPHA'//0,
     'UPALPHA'//1 % ?Code:code
   ]

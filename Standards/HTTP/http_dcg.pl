@@ -338,45 +338,6 @@ chunks([chunk(ChunkSize,ChunkData,ChunkExtension)|T]) -->
   chunks(T).
 chunks([]) --> [].
 
-%! comment(-Tree:compound, ?Comment:atom)//
-% Comments can be included in some HTTP header fields by surrounding
-% the comment text with parentheses (singular parenthesis//1).
-% Comments are only allowed in fields containing `“comment”` as part of
-% their field value definition.
-% In all other fields, parentheses are considered part of the field value.
-%
-% ~~~{.abnf}
-% comment = "(" *( ctext | quoted-pair | comment ) ")"
-% ~~~
-
-comment(comment(Comment), Comment) -->
-  {nonvar(Comment)}, !,
-  {atom_codes(Comment, Codes)},
-  comment(Codes).
-comment(comment(Comment), Comment) -->
-  comment(Codes),
-  {atom_codes(Comment, Codes)}.
-comment(Codes) -->
-  opening_round_bracket,
-  comment_(Codes),
-  closing_round_bracket.
-comment_([]) --> [].
-comment_([H|T]) -->
-  ctext(H),
-  comment_(T).
-comment_([H1,H2|T]) -->
-  'quoted-pair'([H1,H2]),
-  comment_(T).
-% Comments can contain other comments.
-% Since ctext//1 and 'quoted-pair'//1 are on codes level, we need to process
-% these nested comments on codes level as well. This means that we cannot
-% include them in the parse tree!
-comment_(L) -->
-  opening_round_bracket(H),
-  comment_(T),
-  closing_round_bracket(X),
-  {append([H|T], [X], L)}.
-
 %! content_codings(-Tree:compound, ?ContentEncoding:atom)//
 % Content coding values indicate an encoding transformation that has
 % been or can be applied to an entity. Content codings are primarily
@@ -401,15 +362,6 @@ comment_(L) -->
 
 content_codings(content_codings(T), ContentEncoding) -->
   token(T, ContentEncoding).
-
-%! ctext(?CText:code)//
-% ~~~{.abnf}
-% ctext = <any TEXT excluding "(" and ")">
-% ~~~
-
-ctext(C) -->
-  'TEXT'(C),
-  {\+ memberchk(C, [40,41])}.
 
 %! delta_seconds(-Tree:compound, ?Seconds:integer)//
 % Some HTTP header fields allow a time value to be specified as an
@@ -1021,55 +973,6 @@ product(product(name(T1)), Name, Version) -->
 % ~~~
 
 'product-version'('product-version'(T), Version) --> token(T, Version).
-
-%! qdtext(?Code:code)//
-% ~~~{.abnf}
-% qdtext = <any TEXT except <">>
-% ~~~
-
-qdtext(C) -->
-  'TEXT'(C),
-  % Exclude double quote.
-  {\+ C == 34}.
-
-%! 'quoted-pair'(?Codes:list(code))//
-% The backslash//1 character (`“\”`) MAY be used as a single-character
-% quoting mechanism only within 'quoted-string'//1 and comment//1 constructs.
-% ~~~{.abnf}
-% quoted-pair = "\" CHAR
-% ~~~
-
-'quoted-pair'([Backslash,Char]) -->
-  backslash(Backslash),
-  [Char].
-
-%! 'quoted-string'(-Tree:compound, ?QuotedString:atom)//
-% A string of text is parsed as a single word if it is quoted using
-% double_quote//1 marks.
-%
-% ~~~{.abnf}
-% quoted-string = ( <"> *(qdtext | quoted-pair ) <"> )
-% ~~~
-
-'quoted-string'('quoted-string'(QuotedString), QuotedString) -->
-  {nonvar(QuotedString)}, !,
-  {atom_codes(QuotedString, Codes)},
-  'quoted-string'(Codes).
-'quoted-string'('quoted-string'(QuotedString), QuotedString) -->
-  'quoted-string'(Codes),
-  {atom_codes(QuotedString, Codes)}.
-'quoted-string'(L) -->
-  double_quote(H),
-  quoted_string_(T),
-  double_quote(X),
-  {append([H|T], [X], L)}.
-quoted_string_([]) --> [].
-quoted_string_([H|T]) -->
-  qdtext(H),
-  quoted_string_(T).
-quoted_string_([H1,H2|T]) -->
-  'quoted-pair'([H1,H2]),
-  quoted_string_(T).
 
 %! qvalue(-Tree:compound, QValue:float)//
 % HTTP content negotiation uses short floating point numbers to indicate

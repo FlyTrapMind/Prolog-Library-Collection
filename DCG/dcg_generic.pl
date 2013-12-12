@@ -23,6 +23,9 @@
 % META-DCG RULES
     ';'//2, % :DCG_Body1
             % :DCG_Body2
+    ';'//3, % :DCG_Body1
+            % :DCG_Body2
+            % :DCG_Body3
     dcg_apply//2, % :DCG_Body
                   % +Arguments:list
     dcg_call//1,
@@ -123,7 +126,8 @@ a modular way.
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
 % META-DCG RULES
-:- meta_predicate(';'(//,//,?,?)).
+:- meta_predicate(';'(2,2,?,?)).
+:- meta_predicate(';'(2,2,2,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_call(2,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
@@ -293,6 +297,13 @@ dcg_separated_list_var(_Sep, [H]) -->
   dcg_call(A, C, D).
 ';'(_A, B, C, D):-
   dcg_call(B, C, D).
+
+';'(A, _B, _C, D, E):-
+  dcg_call(A, D, E).
+';'(_A, B, _C, D, E):-
+  dcg_call(B, D, E).
+';'(_A, _B, C, D, E):-
+  dcg_call(C, D, E).
 
 dcg_apply(DCG_Body, Args1, X, Y):-
   append(Args1, [X,Y], Args2),
