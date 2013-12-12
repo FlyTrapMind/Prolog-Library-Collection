@@ -18,7 +18,8 @@
 
 :- use_module(library(http/http_authenticate)).
 :- use_module(library(lists)).
-:- use_module(server(passwords)).
+:- use_module(server(login_db)).
+:- use_module(server(password_db)).
 :- use_module(server(user_db)).
 
 %! allow(
@@ -49,23 +50,23 @@
 
 authorized(Method, Request):-
   memberchk(path(Path), Request),
-  password_file(File),
+  password_db_file_unix(File),
   (
-    http_authenticate(basic(File), Request, [User|_Fields]), !
+    http_authenticate(basic(File), Request, [UserName|_Fields]), !
   ;
-    logged_in(User), !
+    logged_in(UserName), !
   ;
-    User = anonymous
+    UserName = anonymous
   ),
   (
-    user(User, UserProperties),
+    user(UserName, UserProperties),
     memberchk(roles(Roles), UserProperties),
     member(Role, Roles),
     (
-      allow(Role, User, Method, Path, Request)
+      allow(Role, UserName, Method, Path, Request)
     ->
       (
-        deny(Role, User, Method, Path, Request)
+        deny(Role, UserName, Method, Path, Request)
       ->
         throw(http_reply(authorise(basic, 'secure')))
       ;

@@ -17,8 +17,9 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/js_write)).
 :- use_module(server(app_ui)).
-:- use_module(server(passwords)).
+:- use_module(server(password_db)).
 :- use_module(server(server_ext)).
+:- use_module(server(login_db)).
 :- use_module(server(user_db)).
 :- use_module(server(web_ui)). % For JavaScript generics.
 
@@ -39,12 +40,12 @@ dispatch_login(Request):-
 
 % A `DELETE` request on `/login` logs the user out.
 dispatch_method(delete, _Request):-
-  logged_in(User),
-  logout(User),
-  reply_json(json([ok= @true,message=User]), [width(0)]).
+  logged_in(UserName),
+  logout(UserName),
+  reply_json(json([ok= @true,message=UserName]), [width(0)]).
 % A `POST` request on `/login` logs the user in.
 dispatch_method(post, Request):-
-  password_file(File),
+  password_db_file_unix(File),
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
   reply_json(json([ok= @true,message=User]), [width(0)]).

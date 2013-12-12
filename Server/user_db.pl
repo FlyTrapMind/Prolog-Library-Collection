@@ -1,17 +1,14 @@
 :- module(
   user_db,
   [
-    login/1, % +User:atom
-    logout/1, % +User:atom
-    logged_in/1, % -User:atom
-    user/1, % ?User:atom
-    user/2, % ?Name:atom
-            % ?Properties:list
-    user_add/2, % +Name:atom
+    add_user/2, % +UserName:atom
                 % +Properties:list
-    user_property/2, % ?Name:atom
+    user/1, % ?UserName:atom
+    user/2, % ?UserName:atom
+            % ?Properties:list
+    user_property/2, % ?UserName:atom
                      % ?Property:compound
-    user_remove/1 % +Name:atom
+    remove_user/1 % +UserName:atom
   ]
 ).
 
@@ -24,50 +21,45 @@ The user administration is based on the following:
   * Persistent facts logged_in/3 and user/2.
   * Session management.
 
-@author Jan Wielemaker
-@author Torbjörn Lager
 @author Wouter Beek
-@see This code was originally taken from SWAPP:
-     http://www.swi-prolog.org/git/contrib/SWAPP.git
-@version 2009, 2013/10-2013/12
+@version 2013/10-2013/12
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(user_input)).
 :- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(http/http_session)).
+:- use_module(library(lists)).
 :- use_module(library(persistency)). % Declarations
 :- use_module(os(os_ext)).
-:- use_module(server(passwords)).
+:- use_module(server(login_db)).
+:- use_module(server(password_db)).
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
-%! logged_in(?Session:atom, ?User:atom, ?Time:float) is nondet.
-:- persistent(logged_in(session:atom,user:atom,time:float)).
-
-%! user(?User:atom, ?Properties:list:compound) is nondet.
+%! user(?UserName:atom, ?Properties:list:compound) is nondet.
 :- persistent(user(user:atom,properties:list(compound))).
 
 :- initialization(init_user_db).
 
-:- debug(user_db).
 
 
+%! add_user(+UserName:atom, +Properties:list) is det.
+% Adds a new user with the given properties.
 
-%! current_user(?User:atom, ?Properties:list:compound) is nondet.
+add_user(UserName, Properties):-
+  with_mutex(user_db, assert_user(UserName, Properties)).
 
-current_user(User, Properties):-
-  with_mutex(user_db, user(User, Properties)).
+%! current_user(?UserName:atom, ?Properties:list:compound) is nondet.
 
-%! current_logged_in(?Session:atom, ?User:atom, ?Time:float) is nondet.
-
-current_logged_in(Session, User, Time):-
-  with_mutex(user_db, logged_in(Session, User, Time)).
+current_user(UserName, Properties):-
+  with_mutex(user_db, user(UserName, Properties)).
 
 init_user_db:-
   user_db_file(File), !,
-  db_attach(File, [sync(close)]).
+  db_attach(File, []).
 init_user_db:-
   absolute_file_name(
     project(users),
@@ -75,63 +67,35 @@ init_user_db:-
     [access(write),file_type(database)]
   ),
   touch(File),
-  db_attach(File, [sync(close)]),
+  db_attach(File, []),
+  
   % First time deployment.
-  user_add(admin, [roles([admin])]),
-  user_input_password('Enter the password for admin.', Password),
-  add_password(admin, Password).
+  add_user(admin, [roles([admin])]),
+  user_input_password('Enter the password for admin.', UnencryptedPassword),
+  add_password(admin, UnencryptedPassword).
 
-%! logged_in(-User:atom) is det.
-% Succeeds if the given user name denotes the currently logged in user.
+%! remove_user(+UserName:atom) is det.
+% Delete named user from user-database.
 
-logged_in(User):-
-  % Identify the current session.
-  http_session_id(Session),
-  user_property(User, session(Session)).
-
-%! login(+User:atom) is det.
-% Accept the given user as logged into the current session.
-
-login(User) :-
-  get_time(LoginTime),
-  http_session_id(Session),
+remove_user(UserName):-
   with_mutex(
     user_db,
     (
-      retractall_logged_in(Session, _User, _LoginTime),
-      assert_logged_in(Session, User, LoginTime)
+      once(user(UserName, _Properties1)),
+      retractall_user(UserName, _Properties2)
     )
-  ),
-  debug(user_db, 'Login user ~w on session ~w.', [User,Session]).
+  ).
+remove_user(UserName):-
+  existence_error(user, UserName).
 
-%! logout(+User:atom) is det.
-% Logout the given user.
-
-logout(User):-
-  with_mutex(user_db, retractall_logged_in(_Session, User, _LoginTime)),
-  debug(user_db, 'Logout user ~w.', [User]).
-
-%! user(?User:atom) is nondet.
+%! user(?UserName:atom) is nondet.
 % Registered users.
 
-user(User):-
-  current_user(User, _Properties).
+user(UserName):-
+  current_user(UserName, _Properties).
 
-%! user_add(+Name:atom, +Properties:list) is det.
-% Adds a new user with the given properties.
-
-user_add(Name, Options):-
-  with_mutex(user_db, assert_user(Name, Options)).
-
-user_db_file(File):-
-  absolute_file_name(
-    project(users),
-    File,
-    [access(read),file_errors(fail),file_type(database)]
-  ).
-
-%! user_property(?User:atom, ?Property:compound) is nondet.
-%! user_property(+User:atom, +Property:compound) is semidet.
+%! user_property(?UserName:atom, ?Property:compound) is nondet.
+%! user_property(+UserName:atom, +Property:compound) is semidet.
 % Users and their properties.
 %
 % In addition to properties explicitly stored with users, we define:
@@ -139,35 +103,32 @@ user_db_file(File):-
 %   * =|session(SessionID)|=
 
 % Connection information for a user.
-user_property(User, connection(LoginTime,Idle)):- !,
-  current_logged_in(Session, User, LoginTime),
+user_property(UserName, connection(LoginTime,Idle)):- !,
+  logged_in(Session, UserName, LoginTime),
   http_current_session(Session, idle(Idle)).
 % Session identification for a user.
-user_property(User, session(Session)):- !,
-  current_logged_in(Session, User, _Time),
+user_property(UserName, session(Session)):- !,
+  logged_in(Session, UserName, _LoginTime),
   % A session can have at most one user.
   (nonvar(Session) -> ! ; true).
 % Explicitly stored properties.
-user_property(User, Property):-
-  nonvar_det(user_property_(User, Property)).
+user_property(UserName, Property):-
+  nonvar_det(user_property_(UserName, Property)).
 
-user_property_(User, Property):-
-  current_user(User, Properties),
+user_property_(UserName, Property):-
+  current_user(UserName, Properties),
   member(Property, Properties).
-user_property_(User, Property):-
-  user_property(User, Property).
+user_property_(UserName, Property):-
+  user_property(UserName, Property).
 
-%! user_remove(+Name:atom) is det.
-% Delete named user from user-database.
+%! user_db_file(-File:atom) is semidet.
+% Returns the file that stores the database of users.
+% Fails in case the file does not exist.
 
-user_remove(Name):-
-  with_mutex(
-    user_db,
-    (
-      user(Name, _Properties1), !,
-      retractall_user(Name, _Properties2)
-    )
+user_db_file(File):-
+  absolute_file_name(
+    project(users),
+    File,
+    [access(read),file_errors(fail),file_type(database)]
   ).
-user_remove(Name):-
-  existence_error(user, Name).
 

@@ -61,7 +61,7 @@ SWI-Prolog defines the following HTTP handlers:
 | =|pldoc_pkg(.)|=        | |
 
 @author Wouter Beek
-@version 2013/10-2013/11
+@version 2013/10-2013/12
 */
 
 :- use_module(generics(meta_ext)).
@@ -69,6 +69,7 @@ SWI-Prolog defines the following HTTP handlers:
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_parameters)).
+:- use_module(library(http/http_session)). % Session support.
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(settings)).
 :- use_module(server(authorization)).

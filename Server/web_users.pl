@@ -21,7 +21,7 @@ User management for Web applications.
 :- use_module(library(http/http_parameters)).
 :- use_module(library(http/js_write)).
 :- use_module(server(app_ui)).
-:- use_module(server(passwords)).
+:- use_module(server(password_db)).
 :- use_module(server(server_ext)).
 :- use_module(server(user_db)).
 :- use_module(server(web_ui)).
@@ -55,7 +55,7 @@ dispatch_method(post, Request):-
     ->
       % Make sure that the roles are being set.
       memberchk(roles(_Roles), Options),
-      user_add(Name, Options),
+      add_user(Name, Options),
       add_password(Name, Password),
       reply_json(json([ok= @true]), [width(0)])
     ;
@@ -68,7 +68,7 @@ dispatch_method(delete, Request) :-
   http_parameters(Request, [user(Name,[])]),
   catch(
     (
-      user_remove(Name),
+      remove_user(Name),
       remove_password(Name)
     ),
     E,

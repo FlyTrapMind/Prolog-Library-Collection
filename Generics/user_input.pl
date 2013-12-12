@@ -12,7 +12,7 @@
     user_input_filepath/2, % +Message:atom
                            % -Answer:atom
     user_input_password/2, % +Message:atom
-                           % -Answer:atom
+                           % -UnencryptedPassword:list(code)
     user_interaction/5 % +Options:list(nvpair)
                        % +Action:atom
                        % :Goal
@@ -197,13 +197,18 @@ user_input_file(Msg, Dir, Path):-
 user_input_filepath(Msg, Filepath):-
   user_input(Msg, legal_filepath, Filepath).
 
-user_input_password(Msg1, Password):-
+%! user_input_password(+Message:atom, -UnencryptedPassword:list(code)) is det.
+
+user_input_password(Message1, UnencryptedPassword):-
   atomic_list_concat(
-    [Msg1,'The password must consist of 7 or more ASCII graphic characters.'],
+    [
+      Message1,
+      'The password must consist of 7 or more ASCII graphic characters.'
+    ],
     '\n',
-    Msg2
+    Message2
   ),
-  user_input(Msg2, legal_password, Password).
+  user_input(Message2, legal_password, UnencryptedPassword).
 
 %! user_interaction(
 %!   +Options:list(nvpair),
