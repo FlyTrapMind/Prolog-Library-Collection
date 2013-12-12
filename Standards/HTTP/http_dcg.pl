@@ -1500,7 +1500,7 @@ status_code(status_code(Status), Status, Reason1) -->
   decimal_digit(_, D1),
   decimal_digit(_, D2),
   decimal_digit(_, D3),
-  % Use the default reason for the given status.
+  % Use the default reason for the given status code.
   {(var(Reason1) -> Reason1 = Reason2 ; true)}.
 status_code(status_code(Status), Status, _Reason1) -->
   decimal_digit(_, D1),

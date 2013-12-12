@@ -20,13 +20,25 @@
 :- use_module(library(error)).
 :- use_module(library(http/http_session)).
 :- use_module(library(persistency)). % Declarations
+:- use_module(os(file_ext)).
 
 %! logged_in_(?Session:atom, ?UserName:atom, ?LoginTime:float) is nondet.
 :- persistent(logged_in_(session:atom,user_name:atom,login_time:float)).
 
+:- initialization(init_login_db).
+
 :- debug(login_db).
 
 
+
+init_login_db:-
+  absolute_file_name(
+    project(login),
+    File,
+    [access(write),file_type(database)]
+  ),
+  create_file(File),
+  db_attach(File, []).
 
 %! logged_in(?Session:atom, ?UserName:atom, ?LoginTime:float) is nondet.
 
@@ -38,7 +50,7 @@ logged_in(Session, UserName, LoginTime):-
 
 logged_in(UserName):-
   % Identify the current session.
-  http_session_id(Session),
+  http_in_session(Session),
   logged_in(Session, UserName, _LoginTime).
 
 %! login(+UserName:atom) is det.

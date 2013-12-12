@@ -44,7 +44,7 @@ http_dateTime(DateTime):-
   http_timestamp(TimeStamp, DateTime).
 
 %! http_open_wrapper(+URI:uri, -Stream:stream, +Options:list(nvpair)) is det.
-% Retries the given URI a specific number of times.
+% Retries the given URI a specific number of times (currently `5`).
 % This helps when working with unreliable connections.
 
 http_open_wrapper(URI, Stream, Options):-

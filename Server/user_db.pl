@@ -58,21 +58,19 @@ current_user(UserName, Properties):-
   with_mutex(user_db, user(UserName, Properties)).
 
 init_user_db:-
-  user_db_file(File), !,
-  db_attach(File, []).
-init_user_db:-
-  absolute_file_name(
-    project(users),
-    File,
-    [access(write),file_type(database)]
-  ),
-  touch(File),
-  db_attach(File, []),
-  
-  % First time deployment.
-  add_user(admin, [roles([admin])]),
-  user_input_password('Enter the password for admin.', UnencryptedPassword),
-  add_password(admin, UnencryptedPassword).
+  user_db_file(File),
+  (
+    exists_file(File)
+  ->
+    db_attach(File, [])
+  ;
+    touch(File),
+    db_attach(File, []),
+    % First time deployment.
+    add_user(admin, [roles([admin])]),
+    user_input_password('Enter the password for admin.', UnencryptedPassword),
+    add_password(admin, UnencryptedPassword)
+  ).
 
 %! remove_user(+UserName:atom) is det.
 % Delete named user from user-database.
@@ -93,6 +91,17 @@ remove_user(UserName):-
 
 user(UserName):-
   current_user(UserName, _Properties).
+
+%! user_db_file(-File:atom) is semidet.
+% Returns the file that stores the database of users.
+% Fails in case the file does not exist.
+
+user_db_file(File):-
+  absolute_file_name(
+    project(user),
+    File,
+    [access(write),file_type(database)]
+  ).
 
 %! user_property(?UserName:atom, ?Property:compound) is nondet.
 %! user_property(+UserName:atom, +Property:compound) is semidet.
@@ -120,15 +129,4 @@ user_property_(UserName, Property):-
   member(Property, Properties).
 user_property_(UserName, Property):-
   user_property(UserName, Property).
-
-%! user_db_file(-File:atom) is semidet.
-% Returns the file that stores the database of users.
-% Fails in case the file does not exist.
-
-user_db_file(File):-
-  absolute_file_name(
-    project(users),
-    File,
-    [access(read),file_errors(fail),file_type(database)]
-  ).
 

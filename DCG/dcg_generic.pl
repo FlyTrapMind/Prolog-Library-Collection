@@ -55,6 +55,7 @@
     dcg_phrase/3, % :DCG_Body:dcg
                   % +In:atom
                   % -Out:atom
+    dcg_with_output_to/1, % +Out
     dcg_with_output_to/2, % +Out
                           % :DCG_Body
 
@@ -89,7 +90,7 @@ a modular way.
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
-@version 2013/05-2013/09, 2013/11
+@version 2013/05-2013/09, 2013/11-2013/12
 */
 
 :- use_module(dcg(dcg_content)).
@@ -138,6 +139,7 @@ a modular way.
 % REPLACE
 :- meta_predicate(dcg_replace(//,//,?,?)).
 % STREAM
+:- meta_predicate(dcg_with_output_to(//)).
 :- meta_predicate(dcg_with_output_to(+,//)).
 
 
@@ -419,7 +421,10 @@ dcg_replace(From, To), [X] -->
 
 % STREAM %
 
+dcg_with_output_to(DCG_Body):-
+  dcg_with_output_to(current_output, DCG_Body).
+
 dcg_with_output_to(Out, DCG_Body):-
-  phrase(DCG_Body, Codes),
+  once(phrase(DCG_Body, Codes)),
   put_codes(Out, Codes).
 

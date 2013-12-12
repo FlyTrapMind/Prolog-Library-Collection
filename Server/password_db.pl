@@ -40,15 +40,8 @@ add_password(UserName, UnencryptedPassword):-
   ).
 
 init_password_db:-
-  password_db_file(File), !,
-  db_attach(File, []).
-init_password_db:-
-  absolute_file_name(
-    project(password),
-    File,
-    [access(write),file_type(database)]
-  ),
-  touch(File),
+  password_db_file(File),
+  create_file(File),
   db_attach(File, []).
 
 password_db_file(File):-

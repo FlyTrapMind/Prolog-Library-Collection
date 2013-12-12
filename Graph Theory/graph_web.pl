@@ -33,7 +33,6 @@ Web front-end for generic graph visualizations.
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(generics(exception_handling)).
 :- use_module(graph_theory(circular_graph_representation)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(graph_export_svg)).

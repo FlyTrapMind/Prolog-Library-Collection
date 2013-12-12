@@ -1,23 +1,47 @@
 :- module(
-  exception_handling,
+  error_ext,
   [
+    idle_error/1, % +Reason
     rethrow/3 % :Goal
               % +Catcher
               % +Exception
   ]
 ).
+:- reexport(
+  library(error),
+  [
+    domain_error/2, % +Domain
+                    % +Term
+    existence_error/2, % +Type
+                       % +Term
+    instantiation_error/1,	% +Term
+    permission_error/3, % +Action
+                        % +Type
+                        % +Term
+    representation_error/1,	% +Reason
+    syntax_error/1, % +Culprit
+    type_error/2 % +Type
+                 % +Term
+  ]
+).
 
-/** <module> Exception handling
+/** <module> Error extensions
 
 Exception handling predicates.
 
 @author Wouter Beek
-@version 2013/01
+@version 2013/01, 2013/12
 */
 
 :- meta_predicate rethrow(0,+,+).
 
 
+
+idle_error(Format-Args):- !,
+  format(atom(Reason), Format, Args),
+  idle_error(Reason).
+idle_error(Reason):-
+  throw(error(idle_error(Reason), _)).
 
 %! retrhow(:Goal, +Catcher, +Exception) is det.
 % Catches an exception that is thrown lower in the stack, and reappropriates
@@ -36,3 +60,4 @@ Exception handling predicates.
 
 rethrow(Goal, Catcher, Exception):-
   catch(Goal, Catcher, throw(Exception)).
+

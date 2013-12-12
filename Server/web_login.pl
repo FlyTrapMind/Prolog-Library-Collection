@@ -10,6 +10,8 @@
 @version 2009, 2013/10-2013/12
 */
 
+:- use_module(dcg(dcg_generic)).
+:- use_module(http(http_dcg)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_authenticate)).
@@ -48,7 +50,9 @@ dispatch_method(post, Request):-
   password_db_file_unix(File),
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
-  reply_json(json([ok= @true,message=User]), [width(0)]).
+gtrace,
+  dcg_with_output_to(response(_, version(1,1), status(200, _Reason), [], [])).
+  %reply_json(json([ok= @true,message=User]), [width(0)]).
 dispatch_method(get, Request):-
   http_redirect(see_other, root(login_ui), Request).
 

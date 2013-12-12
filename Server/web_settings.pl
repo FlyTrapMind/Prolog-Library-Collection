@@ -11,6 +11,7 @@ Sets and retrieves settings using JSON.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(error)).
 :- use_module(library(http/http_client)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).

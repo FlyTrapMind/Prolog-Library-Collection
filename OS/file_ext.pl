@@ -84,6 +84,7 @@ We use the following abbreviations in this module:
 
 :- use_module(ap(ap_stat)).
 :- use_module(generics(atom_ext)).
+:- use_module(generics(error_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
@@ -144,8 +145,13 @@ base_or_file_to_file(BaseOrFile, FileType, File):-
   !.
 
 create_file(File):-
+  exists_file(File), !,
+  debug(file_ext, 'File ~w already exists.', [File]).
+create_file(File):-
   is_absolute_file_name(File), !,
   touch(File).
+create_file(File):-
+  type_error(absolute_file_name, File).
 
 %! create_file(+NestedDir:term, +Name:atom, +Type:atom, -File:atom) is det.
 % Creates a file with the given name, inside the given directory, and that

@@ -70,6 +70,7 @@ Type checks defined by this module:
 */
 
 :- use_module(library(apply)).
+:- use_module(library(error)).
 
 :- meta_predicate(list(1,+)).
 

@@ -50,6 +50,7 @@ function postJSON(url, data) {
 }
 
 function postJSON(url, data, headers) {
+  headers["Accept"] = "text/html; q=1.0";
   $.ajax (
     url,
     {
