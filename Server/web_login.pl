@@ -51,7 +51,9 @@ dispatch_method(post, Request):-
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
 gtrace,
-  dcg_with_output_to(response(_, version(1,1), status(200, _Reason), [], [])).
+  dcg_with_output_to(
+    response(_Tree, version(1,1), status(200, _Reason), [], [])
+  ).
   %reply_json(json([ok= @true,message=User]), [width(0)]).
 dispatch_method(get, Request):-
   http_redirect(see_other, root(login_ui), Request).

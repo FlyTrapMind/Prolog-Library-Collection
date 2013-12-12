@@ -58,7 +58,7 @@
 Call a DCG rule multiple times while aggregating the arguments.
 
 @author Wouter Beek
-@version 2013/08-2013/09
+@version 2013/08-2013/09, 2013/12
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -115,7 +115,12 @@ dcg_multi(DCG, Rep, O1, C) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_no_arguments(DCG, Max, 0, C, O2),
-  {in_between(Min, Max, C)}, !.
+  {in_between(Min, Max, C)}.
+  % There used to be a cut here, but this is not correct.
+  % For example, the following has two solutions:
+  % ~~~{.pl}
+  % phrase(dcg_multi((a_lowercase ; b_lowercase), 1-1), X).
+  % ~~~
 
 
 
@@ -305,18 +310,15 @@ dcg_multi_var(_DCG, _Min, inf, [], [], _O1) -->
 % DCG NO ARGUMENTS %
 
 % Zero arguments: no distinction between `var` and `nonvar`.
+dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) -->
+  [].
 dcg_multi_no_arguments(DCG, Max, C1, C3, O1) -->
   dcg_call(DCG),
   % Process the separator, if any.
-  ({option(separator(Separator), O1)} -> Separator ; ""),
-  % Check that counter does not exeed maximum.
+  ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
+  % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_no_arguments(DCG, Max, C2, C3, O1).
-dcg_multi_no_arguments(DCG, Max, C1, C2, _O1) -->
-  dcg_call(DCG),
-  {succ(C1, C2), greater_than_or_equal_to(Max, C2)}.
-dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) -->
-  [].
 
 
 

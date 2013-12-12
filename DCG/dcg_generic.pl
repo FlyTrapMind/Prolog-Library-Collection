@@ -21,6 +21,8 @@
                            % ?Codess:list(list(codes))
 
 % META-DCG RULES
+    ';'//2, % :DCG_Body1
+            % :DCG_Body2
     dcg_apply//2, % :DCG_Body
                   % +Arguments:list
     dcg_call//1,
@@ -121,6 +123,7 @@ a modular way.
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
 % META-DCG RULES
+:- meta_predicate(';'(//,//,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_call(2,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
@@ -285,6 +288,11 @@ dcg_separated_list_var(_Sep, [H]) -->
 
 
 % META-DCG RULES %
+
+';'(A, _B, C, D):-
+  dcg_call(A, C, D).
+';'(_A, B, C, D):-
+  dcg_call(B, C, D).
 
 dcg_apply(DCG_Body, Args1, X, Y):-
   append(Args1, [X,Y], Args2),

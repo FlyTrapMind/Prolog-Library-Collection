@@ -51,10 +51,9 @@
 
 :- use_module(dcg(dcg_ascii)). % Used in meta-options.
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(math(radix)).
-:- use_module(standards(abnf)).
+:- use_module(standards(rfc4234_abnf)).
 
 
 

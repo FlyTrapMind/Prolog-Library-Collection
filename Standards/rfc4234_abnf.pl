@@ -1,5 +1,5 @@
 :- module(
-  abnf,
+  rfc4234_abnf,
   [
     'ALPHA'//0,
     'ALPHA'//1,
@@ -13,6 +13,8 @@
     'CR'//1,
     'CRLF'//0,
     'CRLF'//1, % ?Codes:list(code)
+    'CRLF'//2, % ?Tree:compound
+               % ?Codes:list(code)
     'CTL'//0,
     'CTL'//1,
     'DIGIT'//0,
@@ -46,6 +48,8 @@
 
 Support for Augmented Backus-Naur Format (ABNF).
 
+# RFC 4234 (ABNF)
+
 ## ABNF & BNF
 
 Differences between ABNF and standard BNF:
@@ -57,15 +61,20 @@ Differences between ABNF and standard BNF:
   * Repetition
   * Value ranges
 
+## Concepts
+
+* *Character*
+  A non-negative integer.
+
 ## Rule names
 
 Rule names are case insensitive.
 
-Angle brackets around rule names may be used around a rule name whenever their
-presence facilitates in discerning the use of a rule name.
-This is typically restricted to rule name references in free-form prose, or
-to distinguish partial rules that combine into a string not separated by
-white space (see repetition).
+Angle brackets may be used around rule names
+  if this facilitates in discerning the use of a rule name.
+This is typically restricted to rule name references in free-form prose,
+  or to distinguish partial rules that combine into a string
+  that is not separated by white space (see *repetition*).
 
 ## Rule form
 
@@ -74,17 +83,24 @@ name = elements crlf
 ~~~
 
 For visual ease, rule definitions are left aligned.
-When a rule requires multiple lines, the continuation lines are indented.
-The left alignment and indentation are relative to the first lines of the
-ABNF rules and need not match the left margin of the document.
+When a rule requires multiple lines,
+  the continuation lines are indented.
+The left alignment and indentation are relative to
+  the first lines of the ABNF rules
+  and need not match the left margin of the document.
 
 # Terminal values
 
-Rules resolve into a string of terminal values, sometimes called characters.
+Rules resolve into a string of terminal values,
+  sometimes called characters.
 A character is a non-negative integer.
 A specific mapping (encoding) of values into a character can be specified.
 
 ### Single terminal value
+
+~~~
+percent base integer
+~~~
 
 Bases:
   * =b=
@@ -102,8 +118,8 @@ CR = %x0D
 
 ### Multiple terminal values
 
-A concatenated string of such values is specified compactly, using a period
-to separate the characters.
+A concatenated string of such values is specified compactly,
+  using a period to separate the characters.
 
 Example:
 ~~~{.abnf}
@@ -111,20 +127,25 @@ CRLF = %d13.10
 ~~~
 
 Alternatively, a literal string that consists of US-ASCII characters only,
-can be given directly. Such strings are case insensitive.
+  can be given directly.
+Such strings are case insensitive.
 
 Example:
 ~~~{.abnf}
 command = "command string"
 ~~~
 
+@see Module DCG_CONTENT supports case-insensitive string parsing
+     with ci_string//1.
+
 ### External encodings
 
-External representations of terminal value characters will vary according to
-constraints in the storage or transmission environment.
+External representations of terminal value characters will vary
+  according to constraints in the storage or transmission environment.
 
-By separating external encoding from the syntax, it is intended that
-alternate encoding environments can be used for the same syntax.
+By separating external encoding from the syntax,
+  it is intended that alternate encoding environments can be used
+  for the same syntax.
 
 ## Operations
 
@@ -162,15 +183,15 @@ ruleset =/ alt4 / alt5
 ### Value range alternatives
 
 A range of alternative numeric values can be specified compactly,
-using a dash to indicate the range of alternative values.
+  using a dash to indicate the range of alternative values.
 
 Example:
 ~~~{.abnf}
 DIGIT = %x30-39
 ~~~
 
-Concatenated numeric values and numeric value ranges cannot be specified in
-the same string.
+Concatenated numeric values and numeric value ranges
+  cannot be specified in the same string.
 
 Example:
 ~~~{.abnf}
@@ -180,10 +201,10 @@ char-line = %x0D.0A %x20-7E %x0D.0A
 ### Sequence Group
 
 Elements enclosed in parentheses are treated as a single element,
-whose contents are strictly ordered.
+  whose contents are strictly ordered.
 
-The sequence group notation is also used within free text to set off
-an element sequence from the prose.
+The sequence group notation is also used within free text
+  to set off an element sequence from the prose.
 
 ### Variable Repetition:
 
@@ -297,7 +318,7 @@ prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
 @see Based on the obsoleted RFC 4234 standard,
      http://tools.ietf.org/html/rfc4234
 @see Current version, http://tools.ietf.org/html/rfc5234
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2013/12
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -462,9 +483,12 @@ rulename(RuleName) -->
 */
 
 
+
 %! 'ALPHA'//
 % @see 'ALPHA'//1
 
+'ALPHA' -->
+  ascii_letter.
 'ALPHA' -->
   ascii_letter.
 
@@ -477,6 +501,8 @@ rulename(RuleName) -->
 % ALPHA = %x41-5A / %x61-7A   ; A-Z / a-z
 % ~~~
 
+'ALPHA'(C) -->
+  ascii_letter(C).
 'ALPHA'(C) -->
   ascii_letter(C).
 
@@ -550,6 +576,9 @@ rulename(RuleName) -->
   'CR'(C1),
   'LF'(C2).
 
+'CRLF'(crlf, Codes) -->
+  'CRLF'(Codes).
+
 %! 'CTL'//
 % @see 'CTL'//1
 
@@ -572,11 +601,14 @@ rulename(RuleName) -->
 'DIGIT' -->
   decimal_digit.
 
+%! 'DIGIT'(?Code:code)//
+% @see 'DIGIT'//2
+
 'DIGIT'(C) -->
   decimal_digit(C).
 
-%! 'DIGIT'(?Code:code, ?DecimalDigit:integer)//
-% Decimal digits.
+%! 'DIGIT'(?Code:code, ?DecimalDigit:between(0,9))//
+% Decimal digit.
 %
 % ~~~{.abnf}
 % DIGIT = %x30-39   ; 0-9
@@ -626,6 +658,7 @@ rulename(RuleName) -->
   horizontal_tab.
 
 %! 'HTAB'(?Code:code)//
+% Horizontal tab.
 %
 % ~~~{.abnf}
 % HTAB = %x09   ; horizontal tab
@@ -723,6 +756,7 @@ rulename(RuleName) -->
   'WSP'(_C).
 
 %! 'WSP'(?Code:code)//
+% Whitesapace, defined as sequences of space and horizontal tab.
 %
 % ~~~{.abnf}
 % WSP = SP / HTAB   ; white space
