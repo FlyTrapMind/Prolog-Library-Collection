@@ -166,8 +166,8 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(gv(gv_file)).
+:- use_module(http(http_abnf)).
 :- use_module(http(http_basic)).
-:- use_module(http(rfc2616_abnf)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
@@ -501,7 +501,7 @@ extension_header(extension_header(T1), Header) -->
 % We also assume that a separator cannot occur at the beginning or at the end
 % of field content.
 %
-% Note that the specification allows field_content//2 to be `*TEXT*.
+% Note that the specification allows field_content//2 to be `*TEXT*`.
 % An infinite number of empty TEXTs occur at every spot
 % in every field_value/2.
 % We solve this by using `+TEXT` instead.
@@ -598,43 +598,61 @@ http_to_gv(Tree):-
     File
   ).
 
-%! http_url(
+%! http_URL(
 %!   -Tree:compound,
 %!   ?Host:list(atomic),
 %!   ?Port:integer,
 %!   ?Path:list(list(atom)),
 %!   ?Query:atom
 %! )//
+% The "http" scheme is used to locate network resources via the HTTP protocol.
+%
 % ~~~{.abnf}
 % http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
 % ~~~
 %
+% The use of IP addresses in URLs SHOULD be avoided whenever possible
+% (see RFC 1900).
+%
 % @param Tree A parse tree.
 % @param Host
 % @param Port An integer representing a port.
-%      Defaults to the value for setting `default_port`.
+%        If the port is empty or not given, port 80 is assumed.
 % @param Path
 % @param Query
+%
+% @tbd If the =abs_path= is not present in the URL,
+%      it MUST be given as "/" when used as a Request-URI for a resource.
 
-http_url(T, Host, Port, Path, Query) -->
+http_url(T0, Host, Port, Path, Query) -->
+  % Schema prefix.
   "http://",
+  
+  % Host.
   rfc2396_host(T1, Host),
+  
+  % Optional port.
   (
     "", {var(Port), setting(default_port, Port)}
   ;
     ":'", rfc2396_port(T2, Port)
   ),
+  
+  Optional absolute path + query.
   (
     "", {var(Path), var(Query)}
   ;
+    % Absolute path.
     rfc2396_absolute_path(T3, Path),
+    
+    % Optional query.
     (
       "", {var(Query)}
     ;
       "?", rfc2396_query(T4, Query)
     )
   ),
-  {parse_tree(http_url, [T1,T2,T3,T4], T)}.
+  {parse_tree(http_url, [T1,T2,T3,T4], T0)}.
 
 %! 'HTTP-Version'(-Tree:compound, ?Major:integer, ?Minor:integer) is det.
 % HTTP uses a `<major>.<minor>` numbering scheme to indicate versions
@@ -646,15 +664,10 @@ http_url(T, Host, Port, Path, Query) -->
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
 
-'HTTP-Version'(
-  'HTTP-Version'('HTTP','/',major(Major),'.',minor(Minor)),
-  Major,
-  Minor
-) -->
-  "HTTP",
-  forward_slash,
+'HTTP-Version'('HTTP-Version'(major(Major),minor(Minor)), Major, Minor) -->
+  "HTTP/",
   decimal_number(Major),
-  dot,
+  ".",
   decimal_number(Minor).
 
 %! 'last-chunk'(-Tree:compound, ?LastChunkExtension:list)//

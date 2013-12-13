@@ -2,11 +2,9 @@
   http_basic,
   [
     comment//2, % -Tree:compound
-                % ?Comment:SOMETHING
+                % ?Codes:list(code)
     'quoted-string'//2, % -Tree:compound
                         % ?Codes:list(code)
-    separator//0,
-    separator//1, % ?Code:code
     token//2 % -Tree:compound
              % ?Token:atom
   ]
@@ -28,11 +26,11 @@ Some basic DCG rules that are too specific to be reused outside of
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
-:- use_module(http(rfc2616_abnf)).
+:- use_module(http(http_abnf)).
 
 
 
-%! comment(-Tree:compound, ?Comment:atom)//
+%! comment(-Tree:compound, ?Codes:list(code))//
 % Comments can be included in some HTTP header fields by surrounding
 % the comment text with parentheses (singular parenthesis//1).
 % Comments are only allowed in fields containing `“comment”` as part of
@@ -43,15 +41,16 @@ Some basic DCG rules that are too specific to be reused outside of
 % comment = "(" *( ctext | quoted-pair | comment ) ")"
 % ~~~
 
-comment(T0, Comment) -->
-  bracketed(dcg_multi2(comment_, _-_, Ts, Comment)),
-  {parse_tree(comment, Ts, T0)}.
-comment_(ctext(C), C) -->
-  ctext(C).
-comment_('quoted-pair'(C), C) -->
-  'quoted-pair'(C).
-comment_(T0, Comment) -->
-  comment(T0, Comment).
+comment(comment(Comment), Codes) -->
+  bracketed(dcg_multi1(comment_, _-_, CodeLists)),
+  {flatten(CodeLists, Codes)},
+  {atom_codes(Comment, Codes)}.
+comment_([Code]) -->
+  ctext(Code).
+comment_([Code]) -->
+  'quoted-pair'(Code).
+comment_(Codes) -->
+  comment(_, Codes).
 
 %! ctext(?Code:code)//
 % Maybe this stands for 'comment text'.
@@ -102,12 +101,6 @@ qdtext(Code) -->
   qdtext(C).
 'quoted-string_'('quoted-pair'(C), C) -->
   'quoted-pair'(C).
-
-%! separator//
-% @see separator//1
-
-separator -->
-  separator(_C).
 
 %! separator(?Code:code)//
 % ~~~{.abnf}

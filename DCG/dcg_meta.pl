@@ -87,3 +87,15 @@ dcg_call(DCG_Body, A1, A2, A3, X, Y):-
 
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
+
+dcg_calls(_Mod:[], _Separator) --> [].
+dcg_calls(Mod:DCG_Rules, Separator) -->
+  {DCG_Rules = [H|T]},
+  dcg_call(Mod:H),
+  (
+    {T == []}, !
+  ;
+    dcg_call(Separator)
+  ),
+  dcg_calls(Mod:T, Separator).
+

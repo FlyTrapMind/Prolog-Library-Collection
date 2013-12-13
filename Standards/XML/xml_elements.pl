@@ -25,6 +25,7 @@ DCG rules for XML entities.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 

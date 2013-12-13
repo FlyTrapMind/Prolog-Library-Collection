@@ -1,5 +1,5 @@
 :- module(
-  rfc2616_abnf,
+  http_abnf,
   [
     '"'//0,
     '"'//1, % ?Code:code
