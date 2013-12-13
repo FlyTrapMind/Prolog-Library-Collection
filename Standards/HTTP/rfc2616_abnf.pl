@@ -90,6 +90,7 @@ TEXT    = <any OCTET except CTLs, but including LWS>
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 
 

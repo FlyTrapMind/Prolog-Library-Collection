@@ -2,386 +2,402 @@
   dcg_ascii,
   [
     a//0,
-    a//1,
+    a//1, % ?Code:code
     a_lowercase//0,
-    a_lowercase//1,
+    a_lowercase//1, % ?Code:code
     a_uppercase//0,
-    a_uppercase//1,
+    a_uppercase//1, % ?Code:code
     acknowledgement//0,
-    acknowledgement//1,
+    acknowledgement//1, % ?Code:code
     ascii_alpha_numeric//0,
-    ascii_alpha_numeric//1,
+    ascii_alpha_numeric//1, % ?Code:code
     ampersand//0,
-    ampersand//1,
+    ampersand//1, % ?Code:code
     ampersat//0,
+    ampersat//1, % ?Code:code
     apetail//0,
-    apetail//1,
-    ampersat//1,
+    apetail//1, % ?Code:code
     apostrophe//0,
-    apostrophe//1,
+    apostrophe//1, % ?Code:code
     ascii//0,
-    ascii//1,
+    ascii//1, % ?Code:code
     asterisk//0,
-    asterisk//1,
+    asterisk//1, % ?Code:code
     at_sign//0,
-    at_sign//1,
+    at_sign//1, % ?Code:code
     at_symbol//0,
-    at_symbol//1,
+    at_symbol//1, % ?Code:code
     b//0,
-    b//1,
+    b//1, % ?Code:code
     b_lowercase//0,
-    b_lowercase//1,
+    b_lowercase//1, % ?Code:code
     b_uppercase//0,
-    b_uppercase//1,
+    b_uppercase//1, % ?Code:code
     backslash//0,
-    backslash//1,
+    backslash//1, % ?Code:code
     backspace//0,
-    backspace//1,
+    backspace//1, % ?Code:code
     bell//0,
-    bell//1,
+    bell//1, % ?Code:code
     binary_digit//0,
-    binary_digit//1,
+    binary_digit//1, % ?Code:code
     bracket//0,
-    bracket//1,
+    bracket//1, % ?Code:code
     c//0,
-    c//1,
+    c//1, % ?Code:code
     c_lowercase//0,
-    c_lowercase//1,
+    c_lowercase//1, % ?Code:code
     c_uppercase//0,
-    c_uppercase//1,
+    c_uppercase//1, % ?Code:code
     cancel//0,
-    cancel//1,
+    cancel//1, % ?Code:code
     caret//0,
-    caret//1,
+    caret//1, % ?Code:code
     carriage_return//0,
-    carriage_return//1,
+    carriage_return//1, % ?Code:code
     circle_bracket//0,
-    circle_bracket//1,
+    circle_bracket//1, % ?Code:code
     closing_bracket//0,
-    closing_bracket//1,
+    closing_bracket//1, % ?Code:code
+    closing_bracket//2, % ?Code:code
+                        % ?Type:oneof([curly,round,square])
     closing_curly_bracket//0,
-    closing_curly_bracket//1,
+    closing_curly_bracket//1, % ?Code:code
+    closing_curly_bracket//2, % ?Code:code
+                              % ?Type:oneof([curly,round,square])
     closing_round_bracket//0,
-    closing_round_bracket//1,
+    closing_round_bracket//1, % ?Code:code
+    closing_round_bracket//2, % ?Code:code
+                              % ?Type:oneof([curly,round,square])
     closing_square_bracket//0,
-    closing_square_bracket//1,
+    closing_square_bracket//1, % ?Code:code
+    closing_square_bracket//2, % ?Code:code
+                               % ?Type:oneof([curly,round,square])
     colon//0,
-    colon//1,
+    colon//1, % ?Code:code
     comma//0,
-    comma//1,
+    comma//1, % ?Code:code
     commercial_at//0,
-    commercial_at//1,
+    commercial_at//1, % ?Code:code
     control//0,
-    control//1,
+    control//1, % ?Code:code
     copyright//0,
-    copyright//1,
+    copyright//1, % ?Code:code
     crosshatch//0,
-    crosshatch//1,
+    crosshatch//1, % ?Code:code
     curly_bracket//0,
-    curly_bracket//1,
+    curly_bracket//1, % ?Code:code
     d//0,
-    d//1,
+    d//1, % ?Code:code
     d_lowercase//0,
-    d_lowercase//1,
+    d_lowercase//1, % ?Code:code
     d_uppercase//0,
-    d_uppercase//1,
+    d_uppercase//1, % ?Code:code
     data_link_escape//0,
-    data_link_escape//1,
+    data_link_escape//1, % ?Code:code
     decimal_digit//0,
-    decimal_digit//1,
+    decimal_digit//1, % ?Code:code
     dcg_delete//0,
-    dcg_delete//1,
+    dcg_delete//1, % ?Code:code
     device_control//0,
-    device_control//1,
+    device_control//1, % ?Code:code
     device_control_1//0,
-    device_control_1//1,
+    device_control_1//1, % ?Code:code
     device_control_2//0,
-    device_control_2//1,
+    device_control_2//1, % ?Code:code
     device_control_3//0,
-    device_control_3//1,
+    device_control_3//1, % ?Code:code
     device_control_4//0,
-    device_control_4//1,
+    device_control_4//1, % ?Code:code
     dollar_sign//0,
-    dollar_sign//1,
+    dollar_sign//1, % ?Code:code
     dot//0,
-    dot//1,
+    dot//1, % ?Code:code
     double_quote//0,
-    double_quote//1,
+    double_quote//1, % ?Code:code
     e//0,
-    e//1,
+    e//1, % ?Code:code
     e_lowercase//0,
-    e_lowercase//1,
+    e_lowercase//1, % ?Code:code
     e_uppercase//0,
-    e_uppercase//1,
+    e_uppercase//1, % ?Code:code
     eight//0,
-    eight//1,
+    eight//1, % ?Code:code
     enquiry//0,
-    enquiry//1,
+    enquiry//1, % ?Code:code
     ascii_end_of_line//0,
-    ascii_end_of_line//1,
+    ascii_end_of_line//1, % ?Code:code
     end_of_medium//0,
-    end_of_medium//1,
+    end_of_medium//1, % ?Code:code
     end_of_text//0,
-    end_of_text//1,
+    end_of_text//1, % ?Code:code
     end_of_transmission//0,
-    end_of_transmission//1,
+    end_of_transmission//1, % ?Code:code
     end_of_transmission_block//0,
-    end_of_transmission_block//1,
+    end_of_transmission_block//1, % ?Code:code
     equals_sign//0,
-    equals_sign//1,
+    equals_sign//1, % ?Code:code
     escape//0,
-    escape//1,
+    escape//1, % ?Code:code
     exclamation_mark//0,
-    exclamation_mark//1,
+    exclamation_mark//1, % ?Code:code
     f//0,
-    f//1,
+    f//1, % ?Code:code
     f_lowercase//0,
-    f_lowercase//1,
+    f_lowercase//1, % ?Code:code
     f_uppercase//0,
-    f_uppercase//1,
+    f_uppercase//1, % ?Code:code
     file_separator//0,
-    file_separator//1,
+    file_separator//1, % ?Code:code
     five//0,
-    five//1,
+    five//1, % ?Code:code
     form_feed//0,
-    form_feed//1,
+    form_feed//1, % ?Code:code
     forward_slash//0,
-    forward_slash//1,
+    forward_slash//1, % ?Code:code
     four//0,
-    four//1,
+    four//1, % ?Code:code
     g//0,
-    g//1,
+    g//1, % ?Code:code
     g_lowercase//0,
-    g_lowercase//1,
+    g_lowercase//1, % ?Code:code
     g_uppercase//0,
-    g_uppercase//1,
+    g_uppercase//1, % ?Code:code
     ascii_graphic//0,
-    ascii_graphic//1,
+    ascii_graphic//1, % ?Code:code
     grave_accent//0,
-    grave_accent//1,
+    grave_accent//1, % ?Code:code
     greater_than_sign//0,
-    greater_than_sign//1,
+    greater_than_sign//1, % ?Code:code
     group_separator//0,
-    group_separator//1,
+    group_separator//1, % ?Code:code
     h//0,
-    h//1,
+    h//1, % ?Code:code
     h_lowercase//0,
-    h_lowercase//1,
+    h_lowercase//1, % ?Code:code
     h_uppercase//0,
-    h_uppercase//1,
+    h_uppercase//1, % ?Code:code
     hexadecimal_digit//0,
-    hexadecimal_digit//1,
+    hexadecimal_digit//1, % ?Code:code
     horizontal_tab//0,
-    horizontal_tab//1,
+    horizontal_tab//1, % ?Code:code
     hyphen//0,
-    hyphen//1,
+    hyphen//1, % ?Code:code
     hyphen_minus//0,
-    hyphen_minus//1,
+    hyphen_minus//1, % ?Code:code
     i//0,
-    i//1,
+    i//1, % ?Code:code
     i_lowercase//0,
-    i_lowercase//1,
+    i_lowercase//1, % ?Code:code
     i_uppercase//0,
-    i_uppercase//1,
+    i_uppercase//1, % ?Code:code
     j//0,
-    j//1,
+    j//1, % ?Code:code
     j_lowercase//0,
-    j_lowercase//1,
+    j_lowercase//1, % ?Code:code
     j_uppercase//0,
-    j_uppercase//1,
+    j_uppercase//1, % ?Code:code
     k//0,
-    k//1,
+    k//1, % ?Code:code
     k_lowercase//0,
-    k_lowercase//1,
+    k_lowercase//1, % ?Code:code
     k_uppercase//0,
-    k_uppercase//1,
+    k_uppercase//1, % ?Code:code
     l//0,
-    l//1,
+    l//1, % ?Code:code
     l_lowercase//0,
-    l_lowercase//1,
+    l_lowercase//1, % ?Code:code
     l_uppercase//0,
-    l_uppercase//1,
+    l_uppercase//1, % ?Code:code
     less_than_sign//0,
-    less_than_sign//1,
+    less_than_sign//1, % ?Code:code
     ascii_letter//0,
-    ascii_letter//1,
+    ascii_letter//1, % ?Code:code
     ascii_letter_lowercase//0,
-    ascii_letter_lowercase//1,
+    ascii_letter_lowercase//1, % ?Code:code
     ascii_letter_uppercase//0,
-    ascii_letter_uppercase//1,
+    ascii_letter_uppercase//1, % ?Code:code
     line_feed//0,
-    line_feed//1,
+    line_feed//1, % ?Code:code
     m//0,
-    m//1,
+    m//1, % ?Code:code
     m_lowercase//0,
-    m_lowercase//1,
+    m_lowercase//1, % ?Code:code
     m_uppercase//0,
-    m_uppercase//1,
+    m_uppercase//1, % ?Code:code
     minus_sign//0,
-    minus_sign//1,
+    minus_sign//1, % ?Code:code
     n//0,
-    n//1,
+    n//1, % ?Code:code
     n_lowercase//0,
-    n_lowercase//1,
+    n_lowercase//1, % ?Code:code
     n_uppercase//0,
-    n_uppercase//1,
+    n_uppercase//1, % ?Code:code
     negative_acknowledgement//0,
-    negative_acknowledgement//1,
+    negative_acknowledgement//1, % ?Code:code
     nine//0,
-    nine//1,
+    nine//1, % ?Code:code
     null//0,
-    null//1,
+    null//1, % ?Code:code
     number_sign//0,
-    number_sign//1,
+    number_sign//1, % ?Code:code
     o//0,
-    o//1,
+    o//1, % ?Code:code
     o_lowercase//0,
-    o_lowercase//1,
+    o_lowercase//1, % ?Code:code
     o_uppercase//0,
-    o_uppercase//1,
+    o_uppercase//1, % ?Code:code
     octal_digit//0,
-    octal_digit//1,
+    octal_digit//1, % ?Code:code
     one//0,
-    one//1,
+    one//1, % ?Code:code
     opening_bracket//0,
-    opening_bracket//1,
+    opening_bracket//1, % ?Code:code
+    opening_bracket//2, % ?Code:code
+                        % ?Type:oneof([curly,round,square])
     opening_curly_bracket//0,
-    opening_curly_bracket//1,
+    opening_curly_bracket//1, % ?Code:code
+    opening_curly_bracket//2, % ?Code:code
+                              % ?Type:oneof([curly,round,square])
     opening_round_bracket//0,
-    opening_round_bracket//1,
+    opening_round_bracket//1, % ?Code:code
+    opening_round_bracket//2, % ?Code:code
+                              % ?Type:oneof([curly,round,square])
     opening_square_bracket//0,
-    opening_square_bracket//1,
+    opening_square_bracket//1, % ?Code:code
+    opening_square_bracket//2, % ?Code:code
+                               % ?Type:oneof([curly,round,square])
     p//0,
-    p//1,
+    p//1, % ?Code:code
     p_lowercase//0,
-    p_lowercase//1,
+    p_lowercase//1, % ?Code:code
     p_uppercase//0,
-    p_uppercase//1,
+    p_uppercase//1, % ?Code:code
     parenthesis//0,
-    parenthesis//1,
+    parenthesis//1, % ?Code:code
     percent_sign//0,
-    percent_sign//1,
+    percent_sign//1, % ?Code:code
     plus_sign//0,
-    plus_sign//1,
+    plus_sign//1, % ?Code:code
     positive_acknowledgement//0,
-    positive_acknowledgement//1,
+    positive_acknowledgement//1, % ?Code:code
     ascii_print//0,
-    ascii_print//1,
+    ascii_print//1, % ?Code:code
     ascii_punctuation//0,
-    ascii_punctuation//1,
+    ascii_punctuation//1, % ?Code:code
     q//0,
-    q//1,
+    q//1, % ?Code:code
     q_lowercase//0,
-    q_lowercase//1,
+    q_lowercase//1, % ?Code:code
     q_uppercase//0,
-    q_uppercase//1,
+    q_uppercase//1, % ?Code:code
     question_mark//0,
-    question_mark//1,
+    question_mark//1, % ?Code:code
     r//0,
-    r//1,
+    r//1, % ?Code:code
     r_lowercase//0,
-    r_lowercase//1,
+    r_lowercase//1, % ?Code:code
     r_uppercase//0,
-    r_uppercase//1,
+    r_uppercase//1, % ?Code:code
     record_separator//0,
-    record_separator//1,
+    record_separator//1, % ?Code:code
     round_bracket//0,
-    round_bracket//1,
+    round_bracket//1, % ?Code:code
     s//0,
-    s//1,
+    s//1, % ?Code:code
     s_lowercase//0,
-    s_lowercase//1,
+    s_lowercase//1, % ?Code:code
     s_uppercase//0,
-    s_uppercase//1,
+    s_uppercase//1, % ?Code:code
     semi_colon//0,
-    semi_colon//1,
+    semi_colon//1, % ?Code:code
     seven//0,
-    seven//1,
+    seven//1, % ?Code:code
     shift//0,
-    shift//1,
+    shift//1, % ?Code:code
     shift_in//0,
-    shift_in//1,
+    shift_in//1, % ?Code:code
     shift_out//0,
-    shift_out//1,
+    shift_out//1, % ?Code:code
     single_quote//0,
-    single_quote//1,
+    single_quote//1, % ?Code:code
     six//0,
-    six//1,
+    six//1, % ?Code:code
     slash//0,
-    slash//1,
+    slash//1, % ?Code:code
     soft_bracket//0,
-    soft_bracket//1,
+    soft_bracket//1, % ?Code:code
     space//0,
-    space//1,
+    space//1, % ?Code:code
     square_bracket//0,
-    square_bracket//1,
+    square_bracket//1, % ?Code:code
     start_of_heading//0,
-    start_of_heading//1,
+    start_of_heading//1, % ?Code:code
     start_of_text//0,
-    start_of_text//1,
+    start_of_text//1, % ?Code:code
     substitute//0,
-    substitute//1,
+    substitute//1, % ?Code:code
     synchronous_idle//0,
-    synchronous_idle//1,
+    synchronous_idle//1, % ?Code:code
     t//0,
-    t//1,
+    t//1, % ?Code:code
     t_lowercase//0,
-    t_lowercase//1,
+    t_lowercase//1, % ?Code:code
     t_uppercase//0,
-    t_uppercase//1,
+    t_uppercase//1, % ?Code:code
     ascii_tab//0,
-    ascii_tab//1,
+    ascii_tab//1, % ?Code:code
     three//0,
-    three//1,
+    three//1, % ?Code:code
     tilde//0,
-    tilde//1,
+    tilde//1, % ?Code:code
     two//0,
-    two//1,
+    two//1, % ?Code:code
     u//0,
-    u//1,
+    u//1, % ?Code:code
     u_lowercase//0,
-    u_lowercase//1,
+    u_lowercase//1, % ?Code:code
     u_uppercase//0,
-    u_uppercase//1,
+    u_uppercase//1, % ?Code:code
     underscore//0,
-    underscore//1,
+    underscore//1, % ?Code:code
     unit_separator//0,
-    unit_separator//1,
+    unit_separator//1, % ?Code:code
     v//0,
-    v//1,
+    v//1, % ?Code:code
     v_lowercase//0,
-    v_lowercase//1,
+    v_lowercase//1, % ?Code:code
     v_uppercase//0,
-    v_uppercase//1,
+    v_uppercase//1, % ?Code:code
     vertical_bar//0,
-    vertical_bar//1,
+    vertical_bar//1, % ?Code:code
     vertical_tab//0,
-    vertical_tab//1,
+    vertical_tab//1, % ?Code:code
     w//0,
-    w//1,
+    w//1, % ?Code:code
     w_lowercase//0,
-    w_lowercase//1,
+    w_lowercase//1, % ?Code:code
     w_uppercase//0,
-    w_uppercase//1,
-    white//1,
+    w_uppercase//1, % ?Code:code
+    white//1, % ?Code:code
     x//0,
-    x//1,
+    x//1, % ?Code:code
     x_lowercase//0,
-    x_lowercase//1,
+    x_lowercase//1, % ?Code:code
     x_uppercase//0,
-    x_uppercase//1,
+    x_uppercase//1, % ?Code:code
     y//0,
-    y//1,
+    y//1, % ?Code:code
     y_lowercase//0,
-    y_lowercase//1,
+    y_lowercase//1, % ?Code:code
     y_uppercase//0,
-    y_uppercase//1,
+    y_uppercase//1, % ?Code:code
     z//0,
-    z//1,
+    z//1, % ?Code:code
     z_lowercase//0,
-    z_lowercase//1,
+    z_lowercase//1, % ?Code:code
     z_uppercase//0,
-    z_uppercase//1,
+    z_uppercase//1, % ?Code:code
     zero//0,
     zero//1
   ]
@@ -407,7 +423,7 @@ conflict with builtins or with predicates from other modules:
 @author Wouter Beek
 @compat http://www.ascii-code.com/
 @tbd Compare the implementation to the ANSI X3.4-1986 standard.
-@version 2013/01-2013/02, 2013/05-2013/07
+@version 2013/01-2013/02, 2013/05-2013/07, 2013/12
 */
 
 
@@ -490,6 +506,8 @@ bracket --> closing_bracket.
 bracket --> opening_bracket.
 bracket(C) --> closing_bracket(C).
 bracket(C) --> opening_bracket(C).
+bracket(C, Type) --> closing_bracket(C, Type).
+bracket(C, Type) --> opening_bracket(C, Type).
 
 c --> c_lowercase.
 c --> c_uppercase.
@@ -522,14 +540,21 @@ closing_bracket(C) --> closing_curly_bracket(C).
 closing_bracket(C) --> closing_round_bracket(C).
 closing_bracket(C) --> closing_square_bracket(C).
 
+closing_bracket(C, Type) --> closing_curly_bracket(C, Type).
+closing_bracket(C, Type) --> closing_round_bracket(C, Type).
+closing_bracket(C, Type) --> closing_square_bracket(C, Type).
+
 closing_curly_bracket --> [125].
 closing_curly_bracket(125) --> [125].
+closing_curly_bracket(125, curly) --> [125].
 
 closing_round_bracket --> [41].
 closing_round_bracket(41) --> [41].
+closing_round_bracket(41, round) --> [41].
 
 closing_square_bracket --> [93].
 closing_square_bracket(93) --> [93].
+closing_square_bracket(93, square) --> [93].
 
 colon --> [58].
 colon(58) --> [58].
@@ -1031,15 +1056,21 @@ opening_bracket --> opening_square_bracket.
 opening_bracket(C) --> opening_curly_bracket(C).
 opening_bracket(C) --> opening_round_bracket(C).
 opening_bracket(C) --> opening_square_bracket(C).
+opening_bracket(C, Type) --> opening_curly_bracket(C, Type).
+opening_bracket(C, Type) --> opening_round_bracket(C, Type).
+opening_bracket(C, Type) --> opening_square_bracket(C, Type).
 
 opening_curly_bracket --> [123].
 opening_curly_bracket(123) --> [123].
+opening_curly_bracket(123, curly) --> [123].
 
 opening_round_bracket --> [40].
 opening_round_bracket(40) --> [40].
+opening_round_bracket(40, round) --> [40].
 
 opening_square_bracket --> [91].
 opening_square_bracket(91) --> [91].
+opening_square_bracket(91, square) --> [91].
 
 p --> p_lowercase.
 p --> p_uppercase.

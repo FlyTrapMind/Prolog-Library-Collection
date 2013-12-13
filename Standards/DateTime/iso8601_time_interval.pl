@@ -367,6 +367,7 @@ Using a non-complete time interval representation (see above).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(parse_tree)).
 
 
 

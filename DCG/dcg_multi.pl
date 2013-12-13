@@ -1,6 +1,7 @@
 :- module(
   dcg_multi,
   [
+% NO ARGUMENTS
     dcg_multi//1, % :DCG_Body
     dcg_multi//2, % :DCG_Body
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
@@ -11,7 +12,7 @@
                   % ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])])
                   % :Options:list(nvpair)
                   % -Count:nonneg
-% SINGLE ARGUMENT
+% ONE ARGUMENT
     dcg_multi1//2, % :DCG_Body
                    % ?Arguments1:list
     dcg_multi1//3, % :DCG_Body
@@ -62,6 +63,7 @@ Call a DCG rule multiple times while aggregating the arguments.
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
@@ -256,7 +258,7 @@ dcg_multi_nonvar(DCG, Max, C1, C3, [H1|T1], O1) -->
   dcg_call(DCG, H1),
   % Process the separator, if any.
   ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
-  % Check that counter does not exeed maximum.
+  % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C3, T1, O1).
 
@@ -267,7 +269,7 @@ dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
   dcg_call(DCG, H1, H2),
   % Process the separator, if any.
   ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
-  % Check that counter does not exeed maximum.
+  % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C, T1, T2, O1).
 
@@ -307,7 +309,7 @@ dcg_multi_var(DCG, Min, Max1, [H1|T1], [H2|T2], O1) -->
 dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) -->
   [].
 dcg_multi_no_arguments(DCG, Max, C1, C3, O1) -->
-  dcg_call(DCG),
+  phrase(DCG),
   % Process the separator, if any.
   ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
   % Check that counter does not exceed maximum.

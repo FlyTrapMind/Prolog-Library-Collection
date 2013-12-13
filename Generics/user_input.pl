@@ -34,6 +34,7 @@ Handles user input and sequences in which user input is needed continuously
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).

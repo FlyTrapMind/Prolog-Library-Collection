@@ -51,7 +51,7 @@ Reification for RDF. Both reading and writing.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_collection)).
 :- use_module(generics(print_ext)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).

@@ -249,6 +249,7 @@ Function =|strftime()|= and utility =date=.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(dcg(parse_tree)).
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
 

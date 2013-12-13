@@ -33,7 +33,7 @@ Predicates for handling codes.
 @version 2013/05-2013/07, 2013/12
 */
 
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 

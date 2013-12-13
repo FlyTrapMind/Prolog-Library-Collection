@@ -117,7 +117,7 @@ html_element(ElementName, Attrs, Content) -->
   ">",
 
   % Content.
-  dcg_call(Content),
+  phrase(Content),
 
   % Closing tab.
   "</",

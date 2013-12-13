@@ -304,6 +304,7 @@ reduced accuracy and/or with decimal fraction.
 :- use_module(datetime(iso8601_generic)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(parse_tree)).
 :- use_module(math(math_ext)).
 
 

@@ -74,6 +74,7 @@ Raster images have their original sample resampled to the output device.
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(parse_tree)).
 :- use_module(svg(svg_generic)).
 :- use_module(svg(svg_elements)).
 :- use_module(xml(xml_elements)).

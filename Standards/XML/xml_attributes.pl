@@ -82,11 +82,11 @@ xml_attribute_(DCG_Namespace, DCG_Name, DCG_Value) -->
 xml_attribute_list([], _DCG_Value, [], _DCG_Separator) --> [].
 xml_attribute_list([Tree], DCG_Value1, [A1], _DCG_Separator) -->
   {DCG_Value1 =.. [P], DCG_Value2 =.. [P, Tree, A1]},
-  dcg_call(DCG_Value2).
+  phrase(DCG_Value2).
 xml_attribute_list([Tree|Trees], DCG_Value1, [A1|A1s], DCG_Separator) -->
   {DCG_Value1 =.. [P], DCG_Value2 =.. [P, Tree, A1]},
-  dcg_call(DCG_Value2),
-  dcg_call(DCG_Separator),
+  phrase(DCG_Value2),
+  phrase(DCG_Separator),
   xml_attribute_list(Trees, DCG_Value1, A1s, DCG_Separator).
 
 %! xml_id(-Tree:compound, :DCG_Namespace, ?Name:atom)//

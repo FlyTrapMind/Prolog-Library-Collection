@@ -325,7 +325,7 @@ prose-val      =  "<" *(%x20-3D / %x3F-7E) ">"
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-
+:- use_module(dcg(dcg_meta)).
 
 /*
 alternation -->

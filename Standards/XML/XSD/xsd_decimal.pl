@@ -297,8 +297,7 @@ unsignedNoDecimalPtNumeral(0, 0) --> [].
 /*
 % BIDIRECTIONAL IMPLEMENTATIONS %
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(parse_tree)).
 :- use_module(library(lists)).
 :- use_module(math(radix)).
 

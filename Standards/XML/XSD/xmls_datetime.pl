@@ -126,6 +126,7 @@ time zone specificiation.
 
 :- use_module(datetime(iso8601_time_interval)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(parse_tree)).
 :- use_module(library(plunit)).
 
 

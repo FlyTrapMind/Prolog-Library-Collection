@@ -35,7 +35,9 @@ middle_holder(H) -->
   dcg_until([output_format(atom)], (blank, separator), H),
   blank, separator, blank.
 
-last_holder(H) --> dcg_all_atom(H).
+last_holder(H1) -->
+  dcg_all(H2),
+  {atom_codes(H1, H2)}.
 
 separator --> "/".
 separator --> "&".

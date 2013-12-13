@@ -55,7 +55,7 @@ rule -->
   name(Name),
   blanks, equals_sign, blanks,
   elements(Name),
-  crlf.
+  'CRLF'.
 
 %! single_terminal_value(-Code:positive_integer)//
 % Reads a character code from the input stream.

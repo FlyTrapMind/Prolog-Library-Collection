@@ -56,6 +56,7 @@ DCGs for cardinal numbers.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(math(math_ext)).
 

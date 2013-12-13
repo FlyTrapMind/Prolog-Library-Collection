@@ -22,6 +22,7 @@ Make arbitrary consecutive replacements in text files.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_replace)).
 :- use_module(generics(codes_ext)).
 :- use_module(library(debug)).
 :- use_module(os(file_ext)).

@@ -24,8 +24,10 @@ Some basic DCG rules that are too specific to be reused outside of
 
 :- use_module(generics(codes_ext)). % Used in dcg_multi1//4.
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_abnf)).
 
 
@@ -41,10 +43,15 @@ Some basic DCG rules that are too specific to be reused outside of
 % comment = "(" *( ctext | quoted-pair | comment ) ")"
 % ~~~
 
-comment(comment(SOMETHING), SOMETHING) -->
-  "(",
-  dcg_multi1((ctext ; 'quoted-pair' ; comment), _-_, SOMETHING),
-  ")".
+comment(T0, Comment) -->
+  bracketed(dcg_multi2(comment_, _-_, Ts, Comment)),
+  {parse_tree(comment, Ts, T0)}.
+comment_(ctext(C), C) -->
+  ctext(C).
+comment_('quoted-pair'(C), C) -->
+  'quoted-pair'(C).
+comment_(T0, Comment) -->
+  comment(T0, Comment).
 
 %! ctext(?Code:code)//
 % Maybe this stands for 'comment text'.
@@ -88,9 +95,13 @@ qdtext(Code) -->
 
 'quoted-string'('quoted-string'(Atom), Codes) -->
   '"',
-  dcg_multi(';'(qdtext, 'quoted-pair')),
+  dcg_multi2('quoted-string_', _Ts, Codes),
   '"',
   {atom_codes(Atom, Codes)}.
+'quoted-string_'('quoted-string'(C), C) -->
+  qdtext(C).
+'quoted-string_'('quoted-pair'(C), C) -->
+  'quoted-pair'(C).
 
 %! separator//
 % @see separator//1
