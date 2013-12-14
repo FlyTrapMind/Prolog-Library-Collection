@@ -1,6 +1,13 @@
 :- module(
   http_date,
   [
+    'delta-seconds'//1, % ?Seconds:nonneg
+    'HTTP-date'//6 % ?Year
+                   % ?Month
+                   % ?Day
+                   % ?Hour
+                   % ?Minute
+                   % ?Seconds
   ]
 ).
 
@@ -109,6 +116,15 @@ date3(M, D) -->
     'SP',
     'DIGIT'(_, D)
   ).
+
+%! 'delta-seconds'(?Seconds:nonneg)//
+% Some HTTP header fields allow a time value to be specified as an
+% integer number of seconds, represented in decimal, after the time
+% that the message was received.
+
+'delta-seconds'(S) -->
+  dcg_multi('DIGIT', 1-_, Ss),
+  {digits_to_decimal(Ss, S)}.
 
 %! 'HTTP-date'(Y, M, D, H, MM, S)//
 % ~~~{.abnf}

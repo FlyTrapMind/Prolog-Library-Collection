@@ -5,6 +5,7 @@
                 % ?Codes:list(code)
     'quoted-string'//2, % -Tree:compound
                         % ?Codes:list(code)
+    separator//1, % ?Code:code
     token//2 % -Tree:compound
              % ?Token:atom
   ]
@@ -29,6 +30,16 @@ Some basic DCG rules that are too specific to be reused outside of
 :- use_module(http(http_abnf)).
 
 
+
+%! charset(-Tree:compound, ?Charset:atom)//
+% HTTP character sets are identified by case-insensitive tokens.
+%
+% ~~~{.abnf}
+% charset = token
+% ~~~
+
+charset(T0, X) -->
+  token(T0, X).
 
 %! comment(-Tree:compound, ?Codes:list(code))//
 % Comments can be included in some HTTP header fields by surrounding

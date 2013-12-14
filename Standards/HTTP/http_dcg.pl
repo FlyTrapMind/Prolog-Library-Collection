@@ -511,7 +511,7 @@ field_content(field_content(T1,T2), [H|T]) -->
   (token(T1, H) ; 'quoted-string'(T1, H)),
   field_content_(T2, T).
 field_content_(field_content(T1,T2), [H|T]) -->
-  (token(T1, H) ; separator ; 'quoted-string'(T1, H)),
+  (token(T1, H) ; separator(_) ; 'quoted-string'(T1, H)),
   field_content_(field_content(T2), T).
 field_content_(field_content(T), [H]) -->
   (token(T, H) ; 'quoted-string'(T, H)).
@@ -580,14 +580,14 @@ generic_message(T, MessageHeaders, MessageBody) -->
   ('message-body'(T4, MessageBody) ; "", {MessageBody = []}),
   {parse_tree(generic_message, [T1,T2,T3,T4], T)}.
 
-%! http_message(-Tree:compound)//
+%! 'HTTP-message'(-Tree:compound)//
 % ~~~{.abnf}
 % HTTP-message = Request | Response ; HTTP/1.1 messages
 % ~~~
 
-http_message(http_message(T)) -->
-  request(T, _Method, _URI, _Version, _MessageHeaders, _MessageBody).
-http_message(http_message(T)) -->
+'HTTP-message'('HTTP-message'(T)) -->
+  'Request'(T, _Method, _URI, _Version, _MessageHeaders, _MessageBody).
+'HTTP-message'('HTTP-message'(T)) -->
   'Response'(T, _Version, _Status, _MessageHeaders, _MessaageBody).
 
 http_to_gv(Tree):-
@@ -627,24 +627,24 @@ http_to_gv(Tree):-
 http_url(T0, Host, Port, Path, Query) -->
   % Schema prefix.
   "http://",
-  
+
   % Host.
   rfc2396_host(T1, Host),
-  
+
   % Optional port.
   (
     "", {var(Port), setting(default_port, Port)}
   ;
     ":'", rfc2396_port(T2, Port)
   ),
-  
-  Optional absolute path + query.
+
+  % Optional absolute path + query.
   (
     "", {var(Path), var(Query)}
   ;
     % Absolute path.
     rfc2396_absolute_path(T3, Path),
-    
+
     % Optional query.
     (
       "", {var(Query)}
@@ -1053,7 +1053,7 @@ reason_phrase_([H|T]) -->
   reason_phrase_(T).
 reason_phrase_([]) --> [].
 
-%! request(
+%! 'Request'(
 %!   -Tree:compound,
 %!   ?Method:atom,
 %!   ?URI:compound,
@@ -1077,18 +1077,18 @@ reason_phrase_([]) --> [].
 %   2. message_headers//2 includes a `Host` header field.
 %   3. Respond with `400 (Bad Request)`.
 %
-% @tbd Implement specific support for `general_header`, `request_header`,
-%      and `'entity-header'`,
+% @tbd Implement specific support for 'general-header'//, 'request-header'//,
+%      and 'entity-header'//.
 % @tbd Implement requested resource determination.
 
-request(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
+'Request'(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
   'Request-Line'(T1, Method, URI, Version),
   ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
   'CRLF'(T3, _),
   ('message-body'(T4, MessageBody) ; ""),
   {parse_tree(request, [T1,T2,T3,T4], T0)}.
 
-%! request_header//
+%! 'request-header'//
 % Request-header field names can be extended reliably only in
 % combination with a change in the protocol version. However, new or
 % experimental header fields MAY be given the semantics of request-
@@ -1118,25 +1118,25 @@ request(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
 %                | User-Agent
 % ~~~
 /*
-request_header --> accept.
-request_header --> accept_charset.
-request_header --> accept_encoding.
-request_header --> accept_language.
-request_header --> authorization.
-request_header --> expect.
-request_header --> from.
-request_header --> host.
-request_header --> if_match.
-request_header --> if_modified_since.
-request_header --> if_none_match.
-request_header --> if_range.
-request_header --> if_unmodified_since.
-request_header --> max_forwards.
-request_header --> proxy_authorization.
-request_header --> range.
-request_header --> referer.
-request_header --> te.
-request_header --> user_agent.
+'request-header' --> accept.
+'request-header' --> accept_charset.
+'request-header' --> accept_encoding.
+'request-header' --> accept_language.
+'request-header' --> authorization.
+'request-header' --> expect.
+'request-header' --> from.
+'request-header' --> host.
+'request-header' --> if_match.
+'request-header' --> if_modified_since.
+'request-header' --> if_none_match.
+'request-header' --> if_range.
+'request-header' --> if_unmodified_since.
+'request-header' --> max_forwards.
+'request-header' --> proxy_authorization.
+'request-header' --> range.
+'request-header' --> referer.
+'request-header' --> te.
+'request-header' --> user_agent.
 */
 %! 'Request-Line'(
 %!   -Tree:compound,
