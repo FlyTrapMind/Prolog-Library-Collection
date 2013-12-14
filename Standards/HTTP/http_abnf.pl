@@ -3,6 +3,8 @@
   [
     '"'//0,
     '"'//1, % ?Code:code
+    abnf_list//2, % :ElementDCG
+                  % -List:list
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
     'CHAR'//0,
@@ -78,9 +80,15 @@ TEXT    = <any OCTET except CTLs, but including LWS>
 
 # Differences with RFC 4234 (ABNF)
 
+In RFC 2616 but not in RFC 4234:
+  * =|#rule|=
+  * 'TEXT'
+
+Same or similar rule in RFC 4234, but slightly different in RFC 2616:
   * 'ALPHA' is split in 'UPALPHA' and 'LOALPHA'
   * 'CHAR' includes the NULL character.
   * Horizontal tab is called 'HT' instead of 'HTAB'.
+  * Linear white space is called 'LWS' instead of 'LWSP'.
 
 --
 
@@ -92,6 +100,8 @@ TEXT    = <any OCTET except CTLs, but including LWS>
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
+
+:- meta_predicate(abnf_list(3,-)).
 
 
 
@@ -110,6 +120,70 @@ TEXT    = <any OCTET except CTLs, but including LWS>
 
 '"'(C) -->
   double_quote(C).
+
+%! abnf_list(:ElementDCG, ?Repetitions:pair, -List:list)//
+% Implements the ABNF =|#rule|=, as defined in RFC 2616 (HTTP 1.1).
+%
+% A construct =|#|= is defined, similar to =|*|=,
+%   for defining lists of elements.
+% The full form is =|<n>#<m>element|= indicating
+%   at least _n_ and at most _m_ elements,
+%   each separated by one or more commas
+%   and OPTIONAL linear white space ('LWS'//).
+%
+% # Motivation & example
+%
+% This makes the usual form of lists very easy;
+% a rule such as
+% ~~~{.abnf}
+% ( *LWS element *( *LWS "," *LWS element ))
+% ~~~
+% can be shown as
+% ~~~{.abnf}
+% 1#element
+% ~~~
+%
+% # Null elements
+%
+% Wherever this construct is used, null elements are allowed,
+%   but do not contribute to the count of elements present.
+% That is, =|(element), , (element) |= is permitted,
+%   but counts as only two elements.
+% Therefore, where at least one element is required,
+%   at least one non-null element MUST be present.
+%
+% # Default values
+%
+% Default values are 0 and infinity so that =|#element|= allows any number,
+%   including zero; =|1#element|= requires at least one;
+%   and =|1#2element|= allows one or two.
+%
+% # Differences from RFC 4234 (ABNF)
+%
+% This grammatical construct is not defined in RFC 4234 (ABNF).
+
+abnf_list(ElementDCG, Rep, L) -->
+  {nonvar(L)}, !,
+  {dcg_multi:repetition(Rep, Min, Max)},
+  abnf_list_nonvar(ElementDCG, Max, 0, C, L),
+  {in_between(Min, Max, C)}, !.
+abnf_list(ElementDCG, Rep, L) -->
+  {var(L)}, !,
+  {dcg_multi:repetition(Rep, Min, Max)},
+  abnf_list_var(ElementDCG, Min, Max, L),
+  {length(L, C)},
+  {in_between(Min, Max, C)}.
+
+abnf_list_nonvar(ElementDCG, [H|T]) -->
+  dcg_multi('LWS'),
+  dcg_multi(comma_LWS),
+  phrase(ElementDCG, H),
+  abnf_list_(ElementDCG, T).
+abnf_list_(_ElementDCG, []) --> [].
+
+comma_LSW -->
+  ",",
+  dcg_multi('LWS').
 
 %! 'ALPHA'//
 % @see 'ALPHA'//1
