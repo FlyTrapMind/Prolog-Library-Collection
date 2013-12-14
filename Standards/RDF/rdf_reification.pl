@@ -47,11 +47,12 @@ Reification for RDF. Both reading and writing.
 
 @author Wouter Beek
 @tbd Assess this module after reading the semantics standard for reification.
-@version 2013/02, 2013/07, 2013/09
+@version 2013/02, 2013/07, 2013/09-2013/10
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_collection)).
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(print_ext)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
