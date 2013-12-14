@@ -27,11 +27,8 @@ function errorJSON(response) {
   $("#response").append(html);
 }
 
-function getJSON(url) {
-  getJSON(url, {});
-}
-
 function getJSON(url, headers) {
+  if( headers == undefined ) headers = {}
   $.ajax (
     url,
     {
@@ -45,11 +42,8 @@ function getJSON(url, headers) {
   );
 }
 
-function postJSON(url, data) {
-  postJSON(url, data, {});
-}
-
 function postJSON(url, data, headers) {
+  if( headers == undefined ) headers = {}
   headers["Accept"] = "text/html; q=1.0";
   $.ajax (
     url,
