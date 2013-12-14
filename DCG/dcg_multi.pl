@@ -62,6 +62,7 @@ Call a DCG rule multiple times while aggregating the arguments.
 @version 2013/08-2013/09, 2013/12
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(codes_ext)).
@@ -255,9 +256,9 @@ dcg_multi2(DCG, Rep, L2, M2, O1, C) -->
 dcg_multi_nonvar(_DCG, _Max, C, C, [], _O1) -->
   [].
 dcg_multi_nonvar(DCG, Max, C1, C3, [H1|T1], O1) -->
-  dcg_call(DCG, H1),
   % Process the separator, if any.
-  ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
+  dcg_multi_separator(C1, O1),
+  dcg_call(DCG, H1),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C3, T1, O1).
@@ -266,9 +267,9 @@ dcg_multi_nonvar(DCG, Max, C1, C3, [H1|T1], O1) -->
 dcg_multi_nonvar(_DCG, _Max, C, C, [], [], _O1) -->
   [].
 dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
-  dcg_call(DCG, H1, H2),
   % Process the separator, if any.
-  ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
+  dcg_multi_separator(C1, O1),
+  dcg_call(DCG, H1, H2),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C, T1, T2, O1).
@@ -309,9 +310,9 @@ dcg_multi_var(DCG, Min, Max1, [H1|T1], [H2|T2], O1) -->
 dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) -->
   [].
 dcg_multi_no_arguments(DCG, Max, C1, C3, O1) -->
-  phrase(DCG),
   % Process the separator, if any.
-  ({C1 =\= 0, option(separator(Separator), O1)} -> Separator ; ""),
+  dcg_multi_separator(C1, O1),
+  phrase(DCG),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_no_arguments(DCG, Max, C2, C3, O1).
@@ -329,6 +330,20 @@ codes_number(Codes, Number):-
 count_down(inf, inf):- !.
 count_down(N1, N2):-
   succ(N2, N1).
+
+%! dcg_multi_separator(+Counter:nonneg, +Options:list(nvpair))// is det.
+% Processes the separator, if any.
+
+% Before the first element we do nothing (regardless of options).
+dcg_multi_separator(C, _O1) -->
+  {C == 0}, !.
+% For all but the first element we see whether options define a separator.
+dcg_multi_separator(_C, O1) -->
+  {option(separator(Separator), O1)}, !,
+  Separator.
+% Otherwise, do nothing.
+dcg_multi_separator(_C, _O1) -->
+  void.
 
 greater_than_or_equal_to(inf, _):- !.
 greater_than_or_equal_to(_, inf):- !, fail.
