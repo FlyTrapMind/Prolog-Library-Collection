@@ -3,6 +3,9 @@
   [
     add_user/2, % +UserName:atom
                 % +Properties:list
+    add_user_property/3, % +UserName:atom
+                         % +PropertyName:atom
+                         % +PropertyValue
     user/1, % ?UserName:atom
     user/2, % ?UserName:atom
             % ?Properties:list
@@ -27,6 +30,7 @@ The user administration is based on the following:
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(option_ext)).
 :- use_module(generics(user_input)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
@@ -49,8 +53,26 @@ The user administration is based on the following:
 %! add_user(+UserName:atom, +Properties:list) is det.
 % Adds a new user with the given properties.
 
-add_user(UserName, Properties):-
-  with_mutex(user_db, assert_user(UserName, Properties)).
+add_user(UserName, Properties1):-
+  sort(Properties1, Properties2),
+  with_mutex(user_db, assert_user(UserName, Properties2)).
+
+%! add_user_property(
+%!   +UserName:atom,
+%!   +PropertyName:atom,
+%!   +PropertyValue
+%! ) is det.
+
+add_user_property(User, Name, Value):-
+  with_mutex(
+    user_db,
+    (
+      user(User, O1),
+      option_add(O1, Name, Value, O2),
+      retractall_user(User, _O0),
+      assert_user(User, O2)
+    )
+  ).
 
 %! current_user(?UserName:atom, ?Properties:list:compound) is nondet.
 

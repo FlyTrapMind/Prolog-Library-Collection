@@ -23,12 +23,15 @@ which represents an estimate of the user's preference for
 the languages specified by that range.
 The quality value defaults to "q=1".
 
-For example,
+## Example
+
 ~~~{.http}
 Accept-Language: da, en-gb;q=0.8, en;q=0.7
 ~~~
 would mean: "I prefer Danish, but will accept British English
 and other types of English."
+
+## Prefix matching
 
 A language-range matches a language-tag if it exactly equals the tag,
 or if it exactly equals a prefix of the tag such that
@@ -44,27 +47,33 @@ tag, then this user will also understand all languages with tags
 for which this tag is a prefix. The prefix rule simply allows the
 use of prefix tags if this is the case.
 
+## Quality factors
+
 The language quality factor assigned to
-a language-tag by the Accept-Language field is
-the quality value of the longest language-range in the field
-that matches the language-tag.
+  a language-tag by the Accept-Language field is
+  the quality value of the longest language-range in the field
+  that matches the language-tag.
 If no language-range in the field matches the tag,
-the language quality factor assigned is 0.
+  the language quality factor assigned is 0.
 If no Accept-Language header is present in the request,
-the server SHOULD assume that all languages are equally acceptable.
+  the server SHOULD assume that all languages are equally acceptable.
 If an Accept-Language header is present,
-then all languages which are assigned a quality factor greater than 0
-are acceptable.
+  then all languages which are assigned a quality factor greater than 0
+  are acceptable.
+
+## Privacy concerns
 
 It might be contrary to the privacy expectations of the user
-to send an Accept-Language header with the complete linguistic preferences
-of the user in every request.
+  to send an Accept-Language header with the complete linguistic preferences
+  of the user in every request.
+
+## Application support for user-setting
 
 As intelligibility is highly dependent on the individual user,
-it is recommended that client applications make
-the choice of linguistic preference available to the user.
+  it is recommended that client applications make
+  the choice of linguistic preference available to the user.
 If the choice is not made available,
-then the Accept-Language header field MUST NOT be given in the request.
+  then the Accept-Language header field MUST NOT be given in the request.
 
 Note: When making the choice of linguistic preference available to
 the user, we remind implementors of  the fact that users are not
