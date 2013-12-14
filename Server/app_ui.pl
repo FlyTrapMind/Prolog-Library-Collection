@@ -26,6 +26,7 @@ width: 50em;
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
+:- use_module(library(http/js_write)).
 :- use_module(server(app_server)). % Make sure there is an application server.
 :- use_module(server(web_login)).
 :- use_module(server(web_ui)). % Make sure the Web paths are defined.
@@ -46,13 +47,44 @@ width: 50em;
 
 user:body(app_style, Content) -->
   html(
-    body(
+    body([
       div([class='pure-g-r',id=layout],[
         \menulink,
         \menu,
         \main(Content)
-      ])
-    )
+      ]),
+      % Script taken from =|http://purecss.io/js/ui.js|=.
+      \js_script({|javascript(_)||
+        (function (window, document) {
+          var layout   = document.getElementById('layout'),
+            menu   = document.getElementById('menu'),
+            menuLink = document.getElementById('menuLink');
+          function toggleClass(element, className) {
+            var classes = element.className.split(/\s+/),
+              length = classes.length,
+              i = 0;
+            for(; i < length; i++) {
+              if (classes[i] === className) {
+              classes.splice(i, 1);
+              break;
+              }
+            }
+            // The className is not found
+            if (length === classes.length) {
+              classes.push(className);
+            }
+            element.className = classes.join(' ');
+          }
+          menuLink.onclick = function (e) {
+            var active = 'active';
+            e.preventDefault();
+            toggleClass(layout, active);
+            toggleClass(menu, active);
+            toggleClass(menuLink, active);
+          };
+        }(this, this.document));
+      |})
+    ])
   ).
 
 content(Content) -->
