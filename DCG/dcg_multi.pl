@@ -120,12 +120,10 @@ dcg_multi(DCG, Rep, O1, C) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_no_arguments(DCG, Max, 0, C, O2),
-  {in_between(Min, Max, C)}.
-  % There used to be a cut here, but this is not correct.
-  % For example, the following has two solutions:
-  % ~~~{.pl}
-  % phrase(dcg_multi((a_lowercase ; b_lowercase), 1-1), X).
-  % ~~~
+  {in_between(Min, Max, C)},
+  % If the counter is at the maximum number of repetitions,
+  % then we need a cut here.
+  ({Max =:= C} -> ! ; "").
 
 
 

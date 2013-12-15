@@ -3,8 +3,10 @@
   [
     '"'//0,
     '"'//1, % ?Code:code
-    abnf_list//2, % :ElementDCG
+    abnf_list//4, % :ElementDCG
+                  % ?Repetitions:pair
                   % -List:list
+                  % -Count:nonneg
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
     'CHAR'//0,
@@ -101,8 +103,6 @@ Same or similar rule in RFC 4234, but slightly different in RFC 2616:
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 
-:- meta_predicate(abnf_list(3,-)).
-
 
 
 %! '"'//
@@ -121,7 +121,7 @@ Same or similar rule in RFC 4234, but slightly different in RFC 2616:
 '"'(C) -->
   double_quote(C).
 
-%! abnf_list(:ElementDCG, ?Repetitions:pair, -List:list)//
+%! abnf_list(:ElementDCG, ?Repetitions:pair, -List:list, -Count:nonneg)//
 % Implements the ABNF =|#rule|=, as defined in RFC 2616 (HTTP 1.1).
 %
 % A construct =|#|= is defined, similar to =|*|=,
@@ -162,28 +162,20 @@ Same or similar rule in RFC 4234, but slightly different in RFC 2616:
 %
 % This grammatical construct is not defined in RFC 4234 (ABNF).
 
-abnf_list(ElementDCG, Rep, L) -->
-  {nonvar(L)}, !,
-  {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_nonvar(ElementDCG, Max, 0, C, L),
-  {in_between(Min, Max, C)}, !.
-abnf_list(ElementDCG, Rep, L) -->
-  {var(L)}, !,
-  {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_var(ElementDCG, Min, Max, L),
-  {length(L, C)},
-  {in_between(Min, Max, C)}.
+:- meta_predicate(abnf_list(3,?,-,-,?,?)).
+abnf_list(DCG, Rep, L, C) -->
+  dcg_multi1('LWS_and_element'(DCG), Rep, L, [separator('LWS_and_comma')], C).
 
-abnf_list_nonvar(ElementDCG, [H|T]) -->
+:- meta_predicate('LWS_and_element'(3,-,?,?)).
+'LWS_and_element'(DCG, X) -->
   dcg_multi('LWS'),
-  dcg_multi(comma_LWS),
-  phrase(ElementDCG, H),
-  abnf_list_(ElementDCG, T).
-abnf_list_(_ElementDCG, []) --> [].
+  dcg_call(DCG, X).
 
-comma_LSW -->
-  ",",
-  dcg_multi('LWS').
+%! 'LWS_and_comma'//
+
+'LWS_and comma' -->
+  dcg_multi('LWS'),
+  ",".
 
 %! 'ALPHA'//
 % @see 'ALPHA'//1
