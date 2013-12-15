@@ -6,8 +6,10 @@
                              % +Graph:atom
     rdf_assert_property/2, % +Property:iri
                            % +Graph:atom
-    rdf_remove_property/2 % +Graph:atom
-                          % +Property:iri
+    rdf_remove_property/2, % +Graph:atom
+                           % +Property:iri
+    rdf_remove_resource/2 % +Graph:atom
+                          % +Resource:iri
   ]
 ).
 
@@ -17,7 +19,7 @@ Simple asserion and retraction predicates for RDF.
 Triples with literals are treated in dedicated modules.
 
 @author Wouter Beek
-@version 2013/10
+@version 2013/10, 2013/12
 */
 
 :- use_module(library(semweb/rdf_db)).
@@ -29,6 +31,7 @@ Triples with literals are treated in dedicated modules.
 :- rdf_meta(rdf_assert_individual(r,r,+)).
 :- rdf_meta(rdf_assert_property(r,+)).
 :- rdf_meta(rdf_remove_property(+,r)).
+:- rdf_meta(rdf_remove_resource(+,r)).
 
 
 
@@ -47,7 +50,9 @@ rdf_assert_property(Property, G):-
 
 rdf_remove_property(G, P):-
   rdf_property(G, P), !,
-  rdf_retractall(P, _, _, G),
-  rdf_retractall(_, P, _, G),
-  rdf_retractall(_, _, P, G).
+  rdf_remove_resource(G, P).
 
+rdf_remove_resource(G, R):-
+  rdf_retractall(R, _, _, G),
+  rdf_retractall(_, R, _, G),
+  rdf_retractall(_, _, R, G).
