@@ -21,10 +21,11 @@
 /** <module> URI extensions
 
 @author Wouter Beek
-@version 2013/05, 2013/09, 2013/11
+@version 2013/05, 2013/09, 2013/11-2013/12
 */
 
 :- use_module(generics(option_ext)).
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(http/http_open)).
@@ -75,16 +76,24 @@ is_image_url(URL):-
   file_name_extension(_Base, Ext, File),
   memberchk(Ext, [jpg,png,svg]).
 
-uri_path(T1, Path):-
-  uri_terms(T1, T2),
-  atomic_list_concat([''|T2], '/', Path).
+%! uri_path(+URI_PathComponents:list(term), -URI_Path:atom) is det.
+% Constructs absolute URI paths out of their constituent components.
+%
+% # Variable path components
+%
+% Path components are allowed to be variables.
+%
+% A sample usage of this is a variable `API_Version` which may or may not
+% be instantiated with the version number of an online API.
+% Many Web services automatically resolve paths like [1] to paths like [2].
+% ~~~
+% [1]   /api/something
+% [2]   /api/default-version/something
+% ~~~
 
-uri_terms([], []).
-uri_terms([H|T1], T2):-
-  var(H), !,
-  uri_terms(T1, T2).
-uri_terms([H|T1], [H|T2]):-
-  uri_terms(T1, T2).
+uri_path(T1, Path):-
+  exclude(var, T1, T2),
+  atomic_list_concat([''|T2], '/', Path).
 
 %! uri_to_file_name(+URI:uri, -FileName:atom) is det.
 % Returns a file name based on the given URI.

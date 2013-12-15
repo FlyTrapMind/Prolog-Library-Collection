@@ -11,6 +11,9 @@
             % ?Properties:list
     user_property/2, % ?UserName:atom
                      % ?Property:compound
+    user_property/3, % ?UserName:atom
+                     % ?PropertyName:atom
+                     % ?PropertyValue
     remove_user/1 % +UserName:atom
   ]
 ).
@@ -152,3 +155,6 @@ user_property_(UserName, Property):-
 user_property_(UserName, Property):-
   user_property(UserName, Property).
 
+user_property(UserName, PropertyName, PropertyValue):-
+  Property =.. [PropertyName,PropertyValue],
+  user_property(UserName, Property).
