@@ -1,7 +1,6 @@
 :- module(
   sparql_web,
   [
-    set_default_remote/1, % +Remote:atom
     sparql_input_web/1, % -Markup:list
     sparql_input_web/2, % +Remote:atom
                         % -Markup:list
@@ -35,53 +34,17 @@ Web front-end for SPARQL queries.
 
 
 
-default_remote(Remote):-
-  default_remote0(Remote), !.
-default_remote(localhost).
-
-% The default remote musy be registered at the SPARQL backend.
-set_default_remote(Remote):-
-  \+ sparql_remote(Remote, _Server, _Port, _Path),
-  !,
-  debug(
-    sparql_web,
-    'Cannot set SPARQL default remote ~w, since it has not been configured.',
-    [Remote]
-  ),
-  existence_error(remote, Remote).
-% The default remote stays the same.
-set_default_remote(Remote):-
-  default_remote0(Remote),
-  !.
-% The default remote is changed.
-set_default_remote(NewRemote):-
-  (
-    default_remote0(OldRemote)
-  ->
-    retract(default_remote0(OldRemote)),
-    debug(
-      sparql_web,
-      'Reset SPARQL remote default from ~w to ~w.',
-      [OldRemote, NewRemote]
-    )
-  ;
-    debug(sparql_web, 'Set SPARQL remote default to ~w.', [NewRemote])
-  ),
-  assert(default_remote0(NewRemote)).
-
 % @tbd
 sparql_input_web(Markup):-
   input_ui(Markup).
 
 % @tbd
-sparql_input_web(Remote, Markup):-
-  set_default_remote(Remote),
+sparql_input_web(_Remote, Markup):-
   input_ui(Markup).
 
 % @tbd
-sparql(Request):-
+sparql(Request, Remote):-
   Request -> Query
-  default_remote(Remote),
   sparql_output_web(Remote, Query, Markup).
 
 %! sparql_output_web(+Remote:atom, +Query:atom, -Markup:list) is det.
@@ -93,38 +56,30 @@ sparql_output_web(Remote, Query, Markup):-
   query_sparql(Remote, Query, VarNames, Results),
   statistics(cputime, CPU_After),
   CPU is CPU_After - CPU_Before,
-  write_table(Results, [cputime(CPU), variables(VarNames)], Markup).
+  write_table(Results, [cputime(CPU),variables(VarNames)], Markup).
 
 %! write_statistics(+Options:list(nvpairs), -Markup:dom) is det.
 % Returns the markup element representing the statistics of a SPARQL query.
 
-write_statistics(Options, element(p, [], [Message])):-
-  option(count(Count), Options),
-  option(cputime(CPU), Options),
+write_statistics(O1, element(p,[],[Message])):-
+  option(count(Count), O1),
+  option(cputime(CPU), O1),
   format(
     atom(Message),
-    'Query completed in ~3f seconds ~D rows.',
-    [CPU, Count]
+    'Query completed in ~3f seconds, returning ~D rows.',
+    [CPU,Count]
   ).
 
-%! write_table(+Rows:list, +Options:list(nvpair), -Markup:dom) is det.
-% Returns the markup table for the given rows returned as the reply for a
-% SPARQL query.
+%! write_table(+Lists:list(list), +Options:list(nvpair), -Markup:dom) is det.
+% Returns the markup table for the given SPARQL results.
 
-write_table(Rows, Options, [Statistics, Table]):-
-  is_list(Rows), !,
-  length(Rows, Count),
-  write_statistics([count(Count) | Options], Statistics),
-  findall(
-    Row0,
-    (
-      member(Row, Rows),
-      Row =.. [row | Row0]
-    ),
-    Rows0
-  ),
-  option(variables(VarNames), Options),
-  html_table([header(true)], [VarNames | Rows0], Table).
-write_table(Row, Options, Markup):-
-  write_table([Row], Options, Markup).
+write_table(Lists, Options, [Statistics,Table]):-
+  is_list(Lists), !,
+  length(Lists, Count),
+  add_option(O1, count, Count, O2),
+  write_statistics(O2, Stats),
+  option(variables(VarNames), O2),
+  html_table([header(true)], [VarNames|Lists], Table).
+write_table(Row, O1, Markup):-
+  write_table([Row], O1, Markup).
 

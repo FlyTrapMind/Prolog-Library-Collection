@@ -13,24 +13,27 @@
 /** <module> SPARQL resource identity closure
 
 @author Wouter Beek
-@version 2013/09
+@tbd Integrate with [sparql_ext]; identoty closure as option.
+@version 2013/09, 2013/12
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(generics(ordset_ext)).
+:- use_module(generics(pair_ext)).
+:- use_module(generics(row_ext)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
+:- use_module(sparql(sparql_build)).
+:- use_module(sparql(sparql_db)).
 :- use_module(sparql(sparql_ext)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
+:- sparql_add_prefix(owl).
 
 :- rdf_meta(query_sameas(+,r,-)).
 :- rdf_meta(describe_sameas(+,r,-)).
-
-:- register_sparql_prefix(owl).
 
 :- debug(sparql_sameas).
 

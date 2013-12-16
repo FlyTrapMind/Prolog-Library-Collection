@@ -55,7 +55,11 @@ The user administration is based on the following:
 %! add_user(+UserName:atom, +Properties:list) is det.
 % Adds a new user with the given properties.
 
+add_user(UserName, _Properties1):-
+  current_user(UserName, _Properties2), !,
+  permission_error('Add user', 'User name', UserName).
 add_user(UserName, Properties1):-
+  % Make sure the properties are sorted.
   sort(Properties1, Properties2),
   with_mutex(user_db, assert_user(UserName, Properties2)).
 
@@ -103,12 +107,12 @@ remove_user(UserName):-
   with_mutex(
     user_db,
     (
-      once(user(UserName, _Properties1)),
-      retractall_user(UserName, _Properties2)
+      once(user(UserName, Properties)),
+      retractall_user(UserName, Properties)
     )
   ).
 remove_user(UserName):-
-  existence_error(user, UserName).
+  existence_error('User name', UserName).
 
 %! user(?UserName:atom) is nondet.
 % Registered users.

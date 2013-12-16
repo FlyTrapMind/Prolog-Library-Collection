@@ -13,20 +13,21 @@ http://lod.geodan.nl/BAG/sparql?query=SELECT+DISTINCT+*+WHERE+{%0D%0A++%3Fs+%3Fp
 info@geodan.nl
 
 @author Wouter Beek
-@version 2013/04
+@version 2013/04, 2013/12
 */
 
-:- use_module(generic(print), [list/2 as print_list]).
-:- use_module(rdf(rdf_namespace)).
+:- use_module(generic(print)).
+:- use_module(sparql(sparql_build)).
+:- use_module(sparql(sparql_db)).
 :- use_module(sparql(sparql_ext)).
+:- use_module(xml(xml_namespace)).
 
-:- rdf_register_namespace(bag).
-:- rdf_register_namespace(bags).
+:- xml_register_namespace(bag).
+:- sparql_add_prefix(bag).
+:- sparql_add_remote(bag, 'lod.geodan.nl', '/BAG/sparql').
 
-:- register_sparql_prefix(bag).
-:- register_sparql_prefix(bags).
-
-:- register_sparql_remote(bag, 'lod.geodan.nl', '/BAG/sparql').
+:- xml_register_namespace(bags).
+:- sparql_add_prefix(bags).
 
 :- debug(bag).
 
@@ -42,5 +43,5 @@ test:-
     Query
   ),
   enqueue_sparql(bag, Query, _VarNames, Resources),
-  print_list(user, Resources).
+  with_output_to(current_user, print_list([], Resources)).
 
