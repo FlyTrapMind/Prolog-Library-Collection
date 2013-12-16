@@ -3,8 +3,10 @@
   [
     ord_sets_to_pairs/2, % +Sets:list(ordset)
                          % -Pairs:ordset(pair)
-    pairs_to_ord_sets/2 % +Pairs:list(pair(iri))
-                        % -Sets:list(ordset(iri))
+    pairs_to_ord_sets/2, % +Pairs:list(pair(iri))
+                         % -Sets:list(ordset(iri))
+    rows_to_ord_set/2 % +Rows:list(compound)
+                      % -Set:ordset
   ]
 ).
 
@@ -95,6 +97,19 @@ pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
   ord_add_element(Sets1, NewSet, Sets2),
   pairs_to_ord_sets(T, Sets2, Sol).
 
+%! rows_to_ord_set(+Rows:list(compound), -Set:ordset) is det.
+% Returns a set of elements that appear in one-column rows.
+
+rows_to_ord_set(Rs, S):-
+  rows_to_ord_set(Rs, [], S).
+
+rows_to_ord_set([], S, S):- !.
+rows_to_ord_set([row(H)|T], S1, S):-
+  ord_add_element(S1, H, S2),
+  rows_to_ord_set(T, S2, S).
+
+
+
 :- begin_tests(ordset_ext).
 
 % Base case.
@@ -117,3 +132,4 @@ test(
   pairs_to_ord_sets(Pairs, Sets).
 
 :- end_tests(ordset_ext).
+

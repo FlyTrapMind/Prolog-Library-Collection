@@ -116,7 +116,7 @@ uri_query_add(URI1, Name, Value, URI2):-
   ),
   (var(Search1_) -> Search1 = '' ; Search1 = Search1_),
   uri_query_components(Search1, SearchPairs1),
-  option_add(SearchPairs1, Name, Value, SearchPairs2),
+  add_option(SearchPairs1, Name, Value, SearchPairs2),
   uri_query_components(Search2, SearchPairs2),
   uri_components(
     URI2,

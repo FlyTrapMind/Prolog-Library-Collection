@@ -35,7 +35,6 @@ The user administration is based on the following:
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(user_input)).
-:- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(http/http_session)).
 :- use_module(library(lists)).
@@ -71,7 +70,7 @@ add_user_property(User, Name, Value):-
     user_db,
     (
       user(User, O1),
-      option_add(O1, Name, Value, O2),
+      add_option(O1, Name, Value, O2),
       retractall_user(User, _O0),
       assert_user(User, O2)
     )

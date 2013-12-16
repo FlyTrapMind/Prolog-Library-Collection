@@ -54,14 +54,6 @@
     nth1chk/3, % ?Index:integer
                % ?List:List
                % ?Element
-    pair/3, % ?Pair:pair
-            % ?Former
-            % ?Latter
-    pairs/3, % ?Pairs:list(pair)
-             % ?Formers:list
-             % ?Latters:list
-    pairs_to_members/2, % +Pairs:list(pair)
-                        % -Members:list
     random_member/2, % +List:list
                      % -Member
     random_select/3, % +List:list
@@ -338,33 +330,6 @@ nth0chk(Index, List, Element):-
 
 nth1chk(Index, List, Element):-
   once(nth1(Index, List, Element)).
-
-%! pair(-Pair, +Former, +Latter) is det.
-%! pair(+Pair, -Former, -Latter) is det.
-% Supporting various pair formats.
-
-pair(X1/X2, X1, X2):- !.
-pair(X1-X2, X1, X2):- !.
-pair([X1,X2], X1, X2):- !.
-
-%! pairs(+Pairs:list, -Formers:list, -Latters:list) is det.
-%! pairs(-Pairs:list, +Formers:list, +Latters:list) is det.
-
-pairs([], [], []):- !.
-pairs([Pair|Pairs], [X1|T1], [X2|T2]):-
-  pair(Pair, X1, X2),
-  pairs(Pairs, T1, T2).
-
-pairs_to_members(Pairs, Xs):-
-  setoff(
-    X,
-    ((
-      member(X-_, Pairs)
-    ;
-      member(_-X, Pairs)
-    )),
-    Xs
-  ).
 
 %! random_member(+List:list, -Member) is det.
 % Returns a randomly chosen member from the given list.

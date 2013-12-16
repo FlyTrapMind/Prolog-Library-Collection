@@ -5,8 +5,6 @@
     http_open_wrapper/3, % +URI:uri
                          % -Stream:stream
                          % +Options:list(nvpair)
-    http_parameters_fail/2, % +Request:list
-                            % ?Parameters:list
     serve_nothing/1, % +Request:list
     xml_serve_atom/1, % +XML:atom
     xml_serve_dom/2 % +Options:list(nvpair)
@@ -71,19 +69,6 @@ http_open_wrapper(URI, Stream, Options, Attempts):-
        http_open_wrapper(URI, Stream, Options, NewAttempts)
       )
     )
-  ).
-
-%! http_parameters_fail(Request, Parameters) is semidet.
-% Like http_parameters/2, but fails when a given parameter is not found
-% in the request.
-%
-% @see http_parameters/2
-
-http_parameters_fail(Request, Parameters):-
-  catch(
-    http_parameters(Request, Parameters),
-    error(existence_error(_Type, _Term), _Context),
-    fail
   ).
 
 % Retry after a while upon existence error.

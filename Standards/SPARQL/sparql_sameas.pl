@@ -17,6 +17,7 @@
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(generics(ordset_ext)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
@@ -35,8 +36,11 @@
 
 
 
+%! describe_sameas(+Remote:atom, +Resource:uri, -Rows:list(compound)) is det.
+
 describe_sameas(Remote, Resource, Rows):-
   query_sameas(Remote, Resource, IdenticalResources),
+  maplist(describe_resource(Remote), IdenticalResources, Rows),
   setoff(
     Rows0,
     (
@@ -47,7 +51,18 @@ describe_sameas(Remote, Resource, Rows):-
   ),
   ord_union(Rowss, Rows).
 
-query_sameas(Remote, Resource, IdenticalResources):-
+%! query_sameas(
+%!   +Remote:atom,
+%!   +Resource:uri,
+%!   -IdenticalResources:ordset
+%! ) is det.
+% 
+%
+% @param Remote The atomic name of a registered SPARQL remote.
+% @param Resource The URI of a resource.
+% @param IdenticalResources An ordered set of identical resources.
+
+query_sameas(Remote, Resource, IResources2):-
   format(atom(Where), '  <~w> owl:sameAs ?x .', [Resource]),
   formulate_sparql(
     _Graph,
@@ -57,5 +72,6 @@ query_sameas(Remote, Resource, IdenticalResources):-
     _Extra,
     Query
   ),
-  enqueue_sparql(Remote, Query, _VarNames, IdenticalResources).
+  enqueue_sparql(Remote, Query, _VarNames, IResources1),
+  rows_to_ord_set(IResources1, IResources2).
 

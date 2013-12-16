@@ -62,6 +62,7 @@ The procedure for determining the color of a vertex:
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(pair_ext)).
 :- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).

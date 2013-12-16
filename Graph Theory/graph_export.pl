@@ -39,6 +39,7 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 ~~~
 
 @author Wouter Beek
+@tbd Too many uses of `=..` in this module. Consider using [option_ext].
 @version 2012/12-2013/04, 2013/07
 */
 
@@ -123,7 +124,7 @@ export_vertex(O1, N_P, V, G_Term):-
 remove_attribute(Attrs, T, NewT):-
   T =.. L,
   append(L1, [T_Attrs], L),
-  subtract_option(T_Attrs, Attrs, NewT_Attrs),
+  subtract(T_Attrs, Attrs, NewT_Attrs),
   append(L1, [NewT_Attrs], NewL),
   NewT =.. NewL.
 
@@ -131,7 +132,7 @@ shared_attribute([T1|Ts], N=V):-
   T1 =.. L1,
   last(L1, Attrs1),
   member(Attr1, Attrs1),
-  option_format(Attr1, N=V),
+  Attr1 =.. [N,V],
   % The colorscheme cannot be part of this, apparently.
   N \== colorscheme,
   forall(
@@ -140,7 +141,7 @@ shared_attribute([T1|Ts], N=V):-
       T2 =.. L2,
       last(L2, Attrs2),
       member(Attr2, Attrs2),
-      option_format(Attr2, N=V)
+      Attr2 =.. [N,V]
     )
   ).
 
