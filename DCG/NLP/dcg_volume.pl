@@ -15,7 +15,7 @@ DCGs for volume information (for publications).
 */
 
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_year)).
+:- use_module(nlp(dcg_year)).
 
 
 

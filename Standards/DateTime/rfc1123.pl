@@ -45,14 +45,14 @@ The standard for datatime that is used by HTTP 1.1.
 % @param Month An atom. See rfc1123_month//2.
 % @param Year An integer between 0 and 9999.
 
-rfc1123_date(date(day(Day),T1,year(Year)), Day, Month, Year) -->
-  {maplist(nonvar, [Day,Month,Year])}, !,
+rfc1123_date(date(day(DD),T1,year(YYYY)), DD, Month, YYYY) -->
+  {maplist(nonvar, [DD,Month,YYYY])}, !,
   {
-    digits_to_decimal([D1,D2], Day),
-    digits_to_decimal([D3,D4,D5,D6], Year)
+    decimal_to_digits(DD, [D1,D2]),
+    decimal_to_digits(YYYY, [Y1,Y2,Y3,Y4])
   },
-  rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6).
-rfc1123_date(date(day(Day),T1,year(Year)), Day, Month, Year) -->
+  rfc1123_date(D1, D2, T1, Month, Y1, Y2, Y3, Y4).
+rfc1123_date(date(day(DD),T1,year(YYYY)), DD, Month, YYYY) -->
   rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6),
   {
     digits_to_decimal([D1,D2], Day),

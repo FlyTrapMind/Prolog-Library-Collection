@@ -40,7 +40,7 @@ month        = "Jan" | "Feb" | "Mar" | "Apr"
 */
 
 :- use_module(dcg(dcg_multi)).
-:- use_module(http(http_abnf)).
+:- use_module(http(rfc2616_basic)).
 :- use_module(math(radix)).
 
 

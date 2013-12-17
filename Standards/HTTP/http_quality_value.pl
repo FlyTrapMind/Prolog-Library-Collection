@@ -44,7 +44,7 @@ qvalue = ( "0" [ "." 0*3DIGIT ] ) | ( "1" [ "." 0*3("0") ] )
 */
 
 :- use_module(dcg(dcg_multi)).
-:- use_module(http(http_abnf)).
+:- use_module(http(rfc2616_basic)).
 :- use_module(math(radix)).
 
 

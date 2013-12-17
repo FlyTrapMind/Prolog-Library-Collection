@@ -35,7 +35,7 @@ Predicates for sending out HTTP requests.
 %! http_dateTime(-DateTime:atom) is det.
 % Returns a term describing the current date and time.
 %
-% @compat RFC 112
+% @compat RFC 1123
 
 http_dateTime(DateTime):-
   get_time(TimeStamp),

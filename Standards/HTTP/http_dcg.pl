@@ -161,23 +161,18 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_control)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(gv(gv_file)).
-:- use_module(http(http_abnf)).
-:- use_module(http(http_basic)).
-:- use_module(library(lists)).
-:- use_module(library(settings)).
+:- use_module(http(rfc2616_basic)).
+:- use_module(http(http_version)).
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
 :- use_module(uri(rfc2396_dcg)).
 
 :- meta_predicate(chunk(-,?,//,?,?,?)).
 :- meta_predicate('chunk-data'(-,?,//,?,?)).
-
-:- setting(default_port, integer, 80, 'The default TCP port.').
 
 
 
@@ -597,78 +592,6 @@ http_to_gv(Tree):-
     Tree,
     File
   ).
-
-%! http_URL(
-%!   -Tree:compound,
-%!   ?Host:list(atomic),
-%!   ?Port:integer,
-%!   ?Path:list(list(atom)),
-%!   ?Query:atom
-%! )//
-% The "http" scheme is used to locate network resources via the HTTP protocol.
-%
-% ~~~{.abnf}
-% http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
-% ~~~
-%
-% The use of IP addresses in URLs SHOULD be avoided whenever possible
-% (see RFC 1900).
-%
-% @param Tree A parse tree.
-% @param Host
-% @param Port An integer representing a port.
-%        If the port is empty or not given, port 80 is assumed.
-% @param Path
-% @param Query
-%
-% @tbd If the =abs_path= is not present in the URL,
-%      it MUST be given as "/" when used as a Request-URI for a resource.
-
-http_url(T0, Host, Port, Path, Query) -->
-  % Schema prefix.
-  "http://",
-
-  % Host.
-  rfc2396_host(T1, Host),
-
-  % Optional port.
-  (
-    "", {var(Port), setting(default_port, Port)}
-  ;
-    ":'", rfc2396_port(T2, Port)
-  ),
-
-  % Optional absolute path + query.
-  (
-    "", {var(Path), var(Query)}
-  ;
-    % Absolute path.
-    rfc2396_absolute_path(T3, Path),
-
-    % Optional query.
-    (
-      "", {var(Query)}
-    ;
-      "?", rfc2396_query(T4, Query)
-    )
-  ),
-  {parse_tree(http_url, [T1,T2,T3,T4], T0)}.
-
-%! 'HTTP-Version'(-Tree:compound, ?Major:integer, ?Minor:integer) is det.
-% HTTP uses a `<major>.<minor>` numbering scheme to indicate versions
-% of the protocol.
-% The version of an HTTP message is indicated by an HTTP-Version field
-% in the first line of the message.
-%
-% ~~~{.abnf}
-% HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
-% ~~~
-
-'HTTP-Version'('HTTP-Version'(major(Major),minor(Minor)), Major, Minor) -->
-  "HTTP/",
-  decimal_number(Major),
-  ".",
-  decimal_number(Minor).
 
 %! 'last-chunk'(-Tree:compound, ?LastChunkExtension:list)//
 % The last chunk in a 'chunked-body'//3.

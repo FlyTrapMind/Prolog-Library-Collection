@@ -27,7 +27,7 @@ Some basic DCG rules that are too specific to be reused outside of
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
-:- use_module(http(http_abnf)).
+:- use_module(http(rfc2616_basic)).
 
 
 
