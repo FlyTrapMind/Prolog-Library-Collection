@@ -1136,17 +1136,17 @@ reason_phrase_([]) --> [].
 % Host: www.w3.org
 % ~~~
 %
-% The rfc2396_absolute_path//2 cannot be empty. If none is present it MUST be
+% The abs_path//2 cannot be empty. If none is present it MUST be
 % given as `/` (i.e., the server root).
 
 'Request-URI'('Request-URI'('*'), _Scheme, _Authority, _Path, _Query) -->
   "*".
 'Request-URI'('Request-URI'(T1), Scheme, Authority, Path, Query) -->
-  rfc2396_absolute_uri(T1, Scheme, Authority, Path, Query).
+  absoluteURI(T1, Scheme, Authority, Path, Query).
 'Request-URI'('Request-URI'(T1), _Scheme, _Authority, Path, _Query) -->
-  rfc2396_absolute_path(T1, Path).
+  abs_path(T1, Path).
 'Request-URI'('Request-URI'(T1), _Scheme, Authority, _Path, _Query) -->
-  rfc2396_authority(T1, Authority).
+  authority(T1, Authority).
 
 %! 'Response'(
 %!   -Tree:compound,

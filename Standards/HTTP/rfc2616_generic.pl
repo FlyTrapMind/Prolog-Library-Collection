@@ -41,27 +41,32 @@ Some basic DCG rules that are too specific to be reused outside of
 charset(T0, X) -->
   token(T0, X).
 
+
+
 %! comment(-Tree:compound, ?Codes:list(code))//
 % Comments can be included in some HTTP header fields by surrounding
-% the comment text with parentheses (singular parenthesis//1).
-% Comments are only allowed in fields containing `“comment”` as part of
-% their field value definition.
+%  the comment text with parentheses.
+% Comments are only allowed in fields containing `"comment"` as part of
+%  their field value definition.
 % In all other fields, parentheses are considered part of the field value.
 %
 % ~~~{.abnf}
 % comment = "(" *( ctext | quoted-pair | comment ) ")"
 % ~~~
+%
+% @see RFC 2616
 
-comment(comment(Comment), Codes) -->
-  bracketed(dcg_multi1(comment_, _-_, CodeLists)),
-  {flatten(CodeLists, Codes)},
-  {atom_codes(Comment, Codes)}.
-comment_([Code]) -->
-  ctext(Code).
-comment_([Code]) -->
-  'quoted-pair'(Code).
-comment_(Codes) -->
-  comment(_, Codes).
+comment(comment(Comm), Cs) -->
+  bracketed(dcg_multi1('ctext_or_quoted-pair_or_comment', _-_, Css)),
+  {flatten(Css, Cs)},
+  {atom_codes(Comm, Cs)}.
+
+'ctext_or_quoted-pair_or_comment'([C]) -->
+  ctext(C).
+'ctext_or_quoted-pair_or_comment'([C]) -->
+  'quoted-pair'(C).
+'ctext_or_quoted-pair_or_comment'(Cs) -->
+  comment(_, Cs).
 
 
 
@@ -71,11 +76,16 @@ comment_(Codes) -->
 % ~~~{.abnf}
 % ctext = <any TEXT excluding "(" and ")">
 % ~~~
+%
+% Notice that the round brackets are used to indicate
+%  the begin and end of an HTTP comment.
+%
+% @see RFC 2616
 
-ctext(Code) -->
-  'TEXT'(Code),
-  {Code \= 40},
-  {Code \= 41}.
+ctext(C) -->
+  'TEXT'(C),
+  {C \= 40},
+  {C \= 41}.
 
 
 
@@ -91,11 +101,14 @@ qdtext(C) -->
 
 
 %! 'quoted-pair'(?Code:code)//
-% The backslash//1 character (=|\|=) MAY be used as a single-character
-% quoting mechanism only within 'quoted-string'// and comment// constructs.
+% The backslash character MAY be used as a single-character quoting mechanism
+%  only within `quoted-string` and `comment` constructs.
+%
 % ~~~{.abnf}
 % quoted-pair = "\" CHAR
 % ~~~
+%
+% @see RFC 2616
 
 'quoted-pair'(C) -->
   "\\",
@@ -103,7 +116,7 @@ qdtext(C) -->
 
 
 
-%! 'quoted-string'(-Tree:compound, ?Codes:list(code))//
+%! 'quoted-string'(-Tree:compound, ?String:atom)//
 % A string of text is parsed as a single word if it is quoted using
 %  double-quote marks.
 %
@@ -111,13 +124,11 @@ qdtext(C) -->
 % quoted-string = ( <"> *(qdtext | quoted-pair ) <"> )
 % ~~~
 %
-% @RFC 2616
+% @see RFC 2616
 
-'quoted-string'('quoted-string'(Atom), Atom) -->
-  '"',
-  dcg_multi1('qdtex_or_quoted', Codes),
-  '"',
-  {atom_codes(Atom, Codes)}.
+'quoted-string'('quoted-string'(String), String) -->
+  quoted(dcg_multi1('qdtex_or_quoted-pair', Cs)),
+  {atom_codes(String, Cs)}.
 
 'qdtex_or_quoted-pair'(C) -->
   qdtext(C).
@@ -127,39 +138,43 @@ qdtext(C) -->
 
 
 %! separator//
+% Many HTTP/1.1 header field values consist of words separated by `LWS`
+%  or special characters.
+% These special characters MUST be in a `quoted-string`
+%  to be used within a parameter value.
+%
 % ~~~{.abnf}
 % separators = "(" | ")" | "<" | ">" | "@"
 %            | "," | ";" | ":" | "\" | <">
 %            | "/" | "[" | "]" | "?" | "="
 %            | "{" | "}" | SP | HT
 % ~~~
+%
+% @see RFC 2616
 
 separator --> bracket. % 40,41,91,93,123,125
-separator --> greater_than_sign. % 62
-separator --> less_than_sign. % 60
-separator --> at_sign. % 64
-separator --> comma. %44
-separator --> semi_colon. % 59
-separator --> colon. % 58
-separator --> backslash. % 92
+separator --> ">". % 62
+separator --> "<". % 60
+separator --> "@". % 64
+separator --> ",". %44
+separator --> ";". % 59
+separator --> ":". % 58
+separator --> "\\". % 92
 separator --> '"'. %34
-separator --> slash. % 47, 92
-separator --> question_mark. % 63
-separator --> equals_sign. % 61
+separator --> "/". % 47, 92
+separator --> "?". % 63
+separator --> "=". % 61
 separator --> 'SP'. % 32
 separator --> 'HT'. % 9
 
 
 
 %! token(-Tree:compound, ?Token:atom)//
-% Many HTTP/1.1 header field values consist of words separated by
-% 'LWS'// or special characters.
-% These special characters MUST be in a 'quoted-string'//
-% to be used within a parameter value (as defined in section 3.6).
-%
-% ~~~{.bnf}
+% ~~~{.abnf}
 % token = 1*<any CHAR except CTLs or separators>
 % ~~~
+%
+% @see RFC 2616
 
 token(token(Token), Token) -->
   dcg_multi1(token_, 1-_, Token, [convert(codes_to_atom)]).

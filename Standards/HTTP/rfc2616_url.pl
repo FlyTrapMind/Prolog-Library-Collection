@@ -91,6 +91,16 @@ The following three URIs are equivalent:
 @version 2013/07, 2013/12
 */
 
+:- use_module(
+  uri(rfc2396_dcg),
+  [
+    abs_path//2,
+    host//2,
+    port//2,
+    query//2
+  ]
+).
+
 
 
 %! http_URL(
@@ -151,13 +161,13 @@ http_url(T0, Host, Port, Path, Query) -->
   "http://",
 
   % Host.
-  rfc2396_host(T1, Host),
+  host(T1, Host),
 
   % Optional port.
   (
     "", {var(Port), Port = 80}
   ;
-    ":'", rfc2396_port(T2, Port)
+    ":'", port(T2, Port)
   ),
 
   % Optional absolute path and query.
@@ -165,13 +175,13 @@ http_url(T0, Host, Port, Path, Query) -->
     "", {var(Path), var(Query)}
   ;
     % Absolute path.
-    rfc2396_absolute_path(T3, Path),
+    abs_path(T3, Path),
 
     % Optional query.
     (
       "", {var(Query)}
     ;
-      "?", rfc2396_query(T4, Query)
+      "?", query(T4, Query)
     )
   ),
   {parse_tree(http_url, [T1,T2,T3,T4], T0)}.
