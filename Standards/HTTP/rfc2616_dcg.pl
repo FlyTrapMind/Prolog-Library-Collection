@@ -191,35 +191,6 @@ attribute(attribute(T), Attribute) -->
 
 bytes_unit(bytes_unit(bytes), bytes) --> "bytes".
 
-%! charset(-Tree:compound, ?Charset:atom)//
-% A **character set** is a method used with one or more tables
-% to convert a sequence of octets into a sequence of characters.
-%
-% Unconditional conversion in the other direction is not required,
-% in that not all characters may be available in a given character set
-% and a character set may provide more than one sequence of octets
-% to represent a particular character.
-%
-% The definition associated with a MIME character set name MUST
-% fully specify the mapping to be performed from octets to characters.
-% In particular, use of external profiling information to determine
-% the exact mapping is not permitted.
-%
-% Note: This use of the term 'character set' is more commonly referred to
-% as a 'character encoding'. However, since HTTP and MIME share
-% the same registry, it is important that the terminology also be shared.
-%
-% HTTP character sets are identified by case-insensitive tokens. The
-% complete set of tokens is defined by the IANA Character Set registry.
-%
-% @tbd Process tokens in a case-insensitive way.
-% @tbd Compliance with MIME types.
-% @tbd Compliance with IANA Character Set registry.
-% @tbd Implementors should be aware of IETF character set requirements.
-
-charset(charset(T), Charset) -->
-  token(T, Charset).
-
 %! chunk(
 %!   -Tree:compound,
 %!   ?ChunkSize:integer,
@@ -336,43 +307,6 @@ chunks([chunk(ChunkSize,ChunkData,ChunkExtension)|T]) -->
   chunk(_T1, ChunkSize, ChunkData, ChunkExtension),
   chunks(T).
 chunks([]) --> [].
-
-%! content_codings(-Tree:compound, ?ContentEncoding:atom)//
-% Content coding values indicate an encoding transformation that has
-% been or can be applied to an entity. Content codings are primarily
-% used to allow a document to be compressed or otherwise usefully
-% transformed without losing the identity of its underlying media type
-% and without loss of information. Frequently, the entity is stored in
-% coded form, transmitted directly, and only decoded by the recipient.
-%
-% ~~~{.abnf}
-% content-coding = token
-% ~~~
-%
-% All content-coding values are case-insensitive and registered by IANA.
-%
-% Although the value describes the content-coding, what is more important
-% is that it indicates what decoding mechanism will be required to remove
-% the encoding.
-%
-% @tbd Add support for the initial content encodings
-%      (i.e., `compress`, `deflate`, `identity`, `gzip`).
-% @tbd Check whether IANA has registered additional content encodings.
-
-content_codings(content_codings(T), ContentEncoding) -->
-  token(T, ContentEncoding).
-
-%! delta_seconds(-Tree:compound, ?Seconds:integer)//
-% Some HTTP header fields allow a time value to be specified as an
-% integer number of seconds, represented in decimal, after the time
-% that the message was received.
-%
-% ~~~{.abnf}
-% delta-seconds = 1*DIGIT
-% ~~~
-
-delta_seconds(delta_seconds(Seconds), Seconds) -->
-  decimal_number(Seconds).
 
 %! encoded_entity_body(-Tree:compound, EncodedEntityBody:list(code))//
 
@@ -617,14 +551,6 @@ http_to_gv(Tree):-
     {T0 = 'last-chunk'(T1)}
   ),
   'CRLF'.
-
-% Process less white space first, i.e., non-greedy, to accomodate
-% a sparse use of white space in generation.
-linear_white_space_([H]) -->
-  (space(H) ; horizontal_tab(H)).
-linear_white_space_([H|T]) -->
-  (space(H) ; horizontal_tab(H)),
-  linear_white_space_(T).
 
 %! media_type(-Tree:compound, ?Type:atom, ?Subtype:atom, ?Parameters:list)//
 % The type//2, subtype//2, and parameter//2 attribute names are case-

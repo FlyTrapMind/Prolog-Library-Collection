@@ -34,9 +34,74 @@ Some basic DCG rules that are too specific to be reused outside of
 %! charset(-Tree:compound, ?Charset:atom)//
 % HTTP character sets are identified by case-insensitive tokens.
 %
+% # Syntax
+%
+% HTTP character sets are identified by case-insensitive tokens.
+%
 % ~~~{.abnf}
 % charset = token
 % ~~~
+%
+% # Semantics
+%
+% The term **character set** is used to refer to a method used with
+%  one or more tables to convert a sequence of octets into a sequence of
+%  characters.
+%
+% Note that unconditional conversion in the other direction is not required,
+%  in that not all characters may be available in a given character set and
+%  a character set may provide more than one sequence of octets
+%  to represent a particular character.
+%
+% # Pragmatics
+%
+% This definition is intended to allow various kinds of character encoding,
+%  from simple single-table mappings such as US-ASCII to
+%  complex table switching methods such as those that use ISO-2022's
+%  techniques.
+% However, the definition associated with a MIME character set name
+%  MUST fully specify the mapping to be performed from octets to characters.
+% In particular, use of external profiling information to determine
+%  the exact mapping is not permitted.
+%
+% ## IANA
+%
+% The complete set of tokens is defined by the IANA Character Set registry.
+%
+% Although HTTP allows an arbitrary token to be used as a charset value,
+%  any token that has a predefined value within the IANA Character Set
+%  registry MUST represent the character set defined by that registry.
+% Applications SHOULD limit their use of character sets to those defined
+%  by the IANA registry.
+%
+% @see IANA Character Set registry
+%
+% ## Compatibility
+%
+% Some HTTP/1.0 software has interpreted a Content-Type header without
+%  charset parameter incorrectly to mean "recipient should guess."
+% Senders wishing to defeat this behavior MAY include a charset parameter
+%  even when the charset is ISO-8859-1 and SHOULD do so when it is known
+%  that it will not confuse the recipient.
+%
+% Unfortunately, some older HTTP/1.0 clients did not deal properly with
+%  an explicit charset parameter. HTTP/1.1 recipients MUST respect the
+%  charset label provided by the sender; and those user agents that have
+%  a provision to "guess" a charset MUST use the charset from the
+%  content-type field if they support that charset, rather than the
+%  recipient's preference, when initially displaying a document.
+%
+% # Terminology
+%
+% Note: This use of the term "character set" is more commonly referred to
+%  as a "character encoding."
+% However, since HTTP and MIME share the same registry,
+%  it is important that the terminology also be shared.
+%
+% --
+%
+% @see Implementors should be aware of IETF character set requirements.
+% @see RFC 2616
 
 charset(T0, X) -->
   token(T0, X).
