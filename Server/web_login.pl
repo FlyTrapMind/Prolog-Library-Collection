@@ -12,7 +12,7 @@
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_stream)).
-:- use_module(http(http_dcg)).
+:- use_module(http(rfc2616_dcg)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_authenticate)).

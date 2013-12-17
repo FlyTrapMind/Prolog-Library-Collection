@@ -1,5 +1,5 @@
 :- module(
-  http_version,
+  rfc2616_version,
   [
     'HTTP-Version'//3 % -Tree:compound
                       % ?Major:positive_integer

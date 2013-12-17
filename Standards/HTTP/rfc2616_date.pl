@@ -1,5 +1,5 @@
 :- module(
-  http_date,
+  rfc2616_date,
   [
     'delta-seconds'//1, % ?Seconds:nonneg
     'HTTP-date'//6 % ?Year

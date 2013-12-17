@@ -67,6 +67,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_multi)).
 
 
@@ -309,8 +310,12 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 'LWS' -->
   dcg_multi('CRLF', 0-1),
-  dcg_multi(('SP' ; 'HT'), 1-_).
+  dcg_multi('SP_or_HT', 1-_).
 
+'SP_or_HT' -->
+  'SP'.
+'SP_or_HT' -->
+  'HT'.
 
 
 %! 'OCTET'//

@@ -1,5 +1,5 @@
 :- module(
-  http_quality_value,
+  rfc2616_quality_value,
   [
     qvalue//1 % -QualityValue:between(0.0,1.0)
   ]

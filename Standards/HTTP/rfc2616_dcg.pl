@@ -1,5 +1,5 @@
 :- module(
-  http_dcg,
+  rfc2616_dcg,
   [
     http_to_gv/1, % +Tree:compound
     'Request'//6, % -Tree:compound
@@ -166,7 +166,8 @@ constructed. (Decision procedure versus structural analysis.)
 :- use_module(dcg(parse_tree)).
 :- use_module(gv(gv_file)).
 :- use_module(http(rfc2616_basic)).
-:- use_module(http(http_version)).
+:- use_module(http(rfc2616_generic)).
+:- use_module(http(rfc2616_version)).
 :- use_module(math(math_ext)).
 :- use_module(math(radix)).
 :- use_module(uri(rfc2396_dcg)).
@@ -233,10 +234,10 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
   ;
     'chunk-extension'(T2, ChunkExtension)
   ),
-  'CRLF'(T3, _),
-  'chunk-data'(T4, ChunkSize, ChunkData),
-  'CRLF'(T5, _),
-  {parse_tree(chunk, [T1,T2,T3,T4,T5], T0)}.
+  'CRLF',
+  'chunk-data'(T3, ChunkSize, ChunkData),
+  'CRLF',
+  {parse_tree(chunk, [T1,T2,T3], T0)}.
 
 %! 'chunked-body'(-
 %!   Tree:compound,
@@ -277,8 +278,8 @@ chunk(T0, ChunkSize, ChunkData, ChunkExtension) -->
   'last-chunk'(T2, LastChunkExtension),
   % The trailer of the chunk body.
   ("" ; trailer(T3, EntityHeaders)),
-  'CRLF'(T4, _),
-  {parse_tree('chunked-body', [T1,T2,T3,T4], T0)}.
+  'CRLF',
+  {parse_tree('chunked-body', [T1,T2,T3], T0)}.
 
 %! 'chunk-data'(-Tree:compound, ?ChunkSize:integer, :ChunkData:list(code))//
 % ~~~{.abnf}
@@ -476,12 +477,12 @@ extension_header(extension_header(T1), Header) -->
 
 %! field_content(-Tree:compound, ?FieldContent:list(atom))//
 % The field_content//2 does not include any leading or trailing
-% linear_white_space//1: linear white space occurring before the first
+% `LWS` occurring before the first
 % non-whitespace character of the field_value//2 or after the last
 % non-whitespace character of the field_value//2.
-% Such leading or trailing linear_white_space//1 MAY be
+% Such leading or trailing `LWS` MAY be
 % removed without changing the semantics of the field value.
-% Any linear_white_space//1 that occurs between field_content//2
+% Any `LWS` that occurs between field_content//2
 % MAY be replaced with a single space//0, before interpreting
 % the field value or forwarding the message downstream.
 %
@@ -506,7 +507,7 @@ field_content(field_content(T1,T2), [H|T]) -->
   (token(T1, H) ; 'quoted-string'(T1, H)),
   field_content_(T2, T).
 field_content_(field_content(T1,T2), [H|T]) -->
-  (token(T1, H) ; separator(_) ; 'quoted-string'(T1, H)),
+  (token(T1, H) ; separator ; 'quoted-string'(T1, H)),
   field_content_(field_content(T2), T).
 field_content_(field_content(T), [H]) -->
   (token(T, H) ; 'quoted-string'(T, H)).
@@ -523,14 +524,14 @@ field_name(field_name(T), FieldName) --> token(T, FieldName).
 % field-value = *( field-content | LWS )
 % ~~~
 %
-% Note that linear_white_space// may be part of field_content//2.
+% Note that `LWS` may be part of field_content//2.
 % This is a mistake in the specification.
-% We solve this by prioritizing the rules with LWS over those with FC.
+% We solve this by prioritizing the rules with `LWS` over those with `FC`.
 
 field_value(field_value(T), L) -->
   field_value_(T, L).
 field_value_(TL, L) -->
-  linear_white_space,
+  'LWS',
   field_value_(TL, L).
 field_value_([TH|TT], [H|T]) -->
   field_content(TH, H),
@@ -571,9 +572,9 @@ general_header --> warning.
 generic_message(T, MessageHeaders, MessageBody) -->
   start_line(T1),
   ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
-  'CRLF'(T3, _),
-  ('message-body'(T4, MessageBody) ; "", {MessageBody = []}),
-  {parse_tree(generic_message, [T1,T2,T3,T4], T)}.
+  'CRLF',
+  ('message-body'(T3, MessageBody) ; "", {MessageBody = []}),
+  {parse_tree(generic_message, [T1,T2,T3], T)}.
 
 %! 'HTTP-message'(-Tree:compound)//
 % ~~~{.abnf}
@@ -610,29 +611,12 @@ http_to_gv(Tree):-
   (
     "",
     {var(ChunkExtension)},
-    {T0 = 'last-chunk'(T2)}
+    {T0 = 'last-chunk'([])}
   ;
     'chunk-extension'(T1, ChunkExtension),
-    {T0 = 'last-chunk'(T1,T2)}
+    {T0 = 'last-chunk'(T1)}
   ),
-  'CRLF'(T2, _).
-
-%! linear_white_space//
-
-linear_white_space -->
-  linear_white_space(_Codes).
-
-%! linear_white_space(?Codes:list(code))//
-% HTTP/1.1 header field values can be folded onto multiple lines if the
-% continuation line begins with space//1 or horizontal_tab//1.
-% All linear white space, including folding, has the same semantics as
-% space//1.
-% A recipient MAY replace any linear_white_space//1 with a single space//1
-% before interpreting the field value or forwarding the message downstream.
-
-linear_white_space(L) -->
-  ("", {L = T} ; 'CRLF'([H1,H2], _), {L = [H1,H2|T]}),
-  linear_white_space_(T).
+  'CRLF'.
 
 % Process less white space first, i.e., non-greedy, to accomodate
 % a sparse use of white space in generation.
@@ -645,7 +629,7 @@ linear_white_space_([H|T]) -->
 %! media_type(-Tree:compound, ?Type:atom, ?Subtype:atom, ?Parameters:list)//
 % The type//2, subtype//2, and parameter//2 attribute names are case-
 % insensitive. Parameter values might or might not be case-sensitive,
-% depending on the semantics of the parameter name. linear_white_space//1
+% depending on the semantics of the parameter name. `LWS`
 % MUST NOT be used between the type and subtype, nor between an
 % attribute and its value. The presence or absence of a parameter might
 % be significant to the processing of a media-type, depending on its
@@ -797,13 +781,13 @@ message_header(message_header(T1), Name-Value) -->
 % interpretation of the combined field value, and thus a proxy MUST NOT
 % change the order of these field values when a message is forwarded.
 
-message_headers(message_headers(T1,T2), [H]) -->
+message_headers(message_headers(T1), [H]) -->
   message_header(T1, H),
-  'CRLF'(T2, _).
-message_headers(message_headers(T1,T2,T3), [H|T]) -->
+  'CRLF'.
+message_headers(message_headers(T1,T2), [H|T]) -->
   message_header(T1, H),
-  'CRLF'(T2, _),
-  message_headers(T3, T).
+  'CRLF',
+  message_headers(T2, T).
 
 %! 'Method'(-Tree:compound, ?Method:atom)//
 % The method is case-sensitive.
@@ -1007,9 +991,9 @@ reason_phrase_([]) --> [].
 'Request'(T0, Method, URI, Version, MessageHeaders, MessageBody) -->
   'Request-Line'(T1, Method, URI, Version),
   ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
-  'CRLF'(T3, _),
-  ('message-body'(T4, MessageBody) ; ""),
-  {parse_tree(request, [T1,T2,T3,T4], T0)}.
+  'CRLF',
+  ('message-body'(T3, MessageBody) ; ""),
+  {parse_tree(request, [T1,T2,T3], T0)}.
 
 %! 'request-header'//
 % Request-header field names can be extended reliably only in
@@ -1074,17 +1058,17 @@ reason_phrase_([]) --> [].
 % ~~~
 
 'Request-Line'(
-  'Request-Line'(T1,T2,T3,T4,T5,T6),
+  'Request-Line'(T1,T2,T3),
   Method,
   uri(Scheme, Authority, Path, Query),
   version(Major, Minor)
 ) -->
   'Method'(T1, Method),
-  space, {T2 = sp},
-  'Request-URI'(T3, Scheme, Authority, Path, Query),
-  space, {T4 = sp},
-  'HTTP-Version'(T5, Major, Minor),
-  'CRLF'(T6, _).
+  'SP',
+  'Request-URI'(T2, Scheme, Authority, Path, Query),
+  'SP',
+  'HTTP-Version'(T3, Major, Minor),
+  'CRLF'.
 
 %! 'Request-URI'(
 %!   -Tree:compound,
@@ -1184,9 +1168,9 @@ reason_phrase_([]) --> [].
 'Response'(T0, Version, Status, MessageHeaders, MessageBody) -->
   'Status-Line'(T1, Version, Status),
   ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
-  'CRLF'(T3, _),
-  ('message-body'(T4, MessageBody) ; "", {MessageBody = []}),
-  {parse_tree(response, [T1,T2,T3,T4], T0)}.
+  'CRLF',
+  ('message-body'(T3, MessageBody) ; "", {MessageBody = []}),
+  {parse_tree(response, [T1,T2,T3], T0)}.
 
 %! 'response-header'//
 % ~~~{.abnf}
@@ -1330,16 +1314,16 @@ start_line(start_line(T0)) --> 'Status-Line'(T0, _Version, _Status).
 % The first line of a response// message.
 
 'Status-Line'(
-  'Status-Line'(T1,T2,T3,T4,T5,T6),
+  'Status-Line'(T1,T2,T3),
   version(Major, Minor),
   status(Status, Reason)
 ) -->
   'HTTP-Version'(T1, Major, Minor),
-  space, {T2 = sp},
-  'Status-Code'(T3, Status, Reason),
-  space, {T4 = sp},
-  'Reason-Phrase'(T5, Reason),
-  'CRLF'(T6, _).
+  'SP',
+  'Status-Code'(T2, Status, Reason),
+  'SP',
+  'Reason-Phrase'(T3, Reason),
+  'CRLF'.
 
 %! subtype(-Tree:compound, ?SubType:atom)//
 % Media subtype.
@@ -1361,9 +1345,9 @@ subtype(subtype(T0), SubType) -->
 % TEXT = <any OCTET except CTLs, but including LWS>
 % ~~~
 %
-% A 'CRLF'//2 is allowed in the definition of 'TEXT'// only as part of
+% A `CRLF` is allowed in the definition of 'TEXT'// only as part of
 %   a header field continuation.
-% It is expected that the folding 'LWS'// will be replaced
+% It is expected that the folding `LWS` will be replaced
 %   with a single 'SP'// before interpretation of the 'TEXT'// value.
 
 texts(texts(Text), Text) -->
@@ -1386,13 +1370,13 @@ texts([H]) -->
 % trailer = *(entity-header CRLF)
 % ~~~
 
-trailer(trailer(T1,T2), [H]) -->
+trailer(trailer(T1), [H]) -->
   'entity-header'(T1, H),
-  'CRLF'(T2, _).
-trailer(trailer(T1,T2,T3), [H|T]) -->
+  'CRLF'.
+trailer(trailer(T1,T2), [H|T]) -->
   'entity-header'(T1, H),
-  'CRLF'(T2, _),
-  trailer(T3, T).
+  'CRLF',
+  trailer(T2, T).
 
 %! 'transfer-coding'(-Tree:compound, ?Token:atom, ?Parameters:list)//
 % Transfer-coding values are used to indicate an encoding

@@ -1,5 +1,5 @@
 :- module(
-  http_accept_language,
+  rfc2616_accept_language,
   [
     'Accept-Language'//
   ]
@@ -93,7 +93,7 @@ best matching behavior.
 
 :- use_module(dcg(dcg_multi)).
 :- use_module(http(rfc2616_basic)).
-:- use_module(http(http_quality_value)).
+:- use_module(http(rfc2616_quality_value)).
 
 
 

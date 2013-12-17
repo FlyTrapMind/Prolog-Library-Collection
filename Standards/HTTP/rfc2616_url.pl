@@ -1,5 +1,5 @@
 :- module(
-  http_url,
+  rfc2616_url,
   [
     http_URL//5 % -Tree:compound
                 % ?Host:list(atomic)

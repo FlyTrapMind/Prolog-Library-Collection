@@ -1,11 +1,11 @@
 :- module(
-  http_basic,
+  rfc2616_generic,
   [
     comment//2, % -Tree:compound
                 % ?Codes:list(code)
     'quoted-string'//2, % -Tree:compound
                         % ?Codes:list(code)
-    separator//1, % ?Code:code
+    separator//0,
     token//2 % -Tree:compound
              % ?Token:atom
   ]
@@ -63,6 +63,8 @@ comment_([Code]) -->
 comment_(Codes) -->
   comment(_, Codes).
 
+
+
 %! ctext(?Code:code)//
 % Maybe this stands for 'comment text'.
 %
@@ -75,14 +77,18 @@ ctext(Code) -->
   {Code \= 40},
   {Code \= 41}.
 
+
+
 %! qdtext(?Code:code)//
 % ~~~{.abnf}
 % qdtext = <any TEXT except <">>
 % ~~~
 
-qdtext(Code) -->
-  'TEXT'(Code),
-  {Code \= 34}.
+qdtext(C) -->
+  'TEXT'(C),
+  {C \= 34}.
+
+
 
 %! 'quoted-pair'(?Code:code)//
 % The backslash//1 character (=|\|=) MAY be used as a single-character
@@ -95,25 +101,32 @@ qdtext(Code) -->
   "\\",
   'CHAR'(C).
 
+
+
 %! 'quoted-string'(-Tree:compound, ?Codes:list(code))//
 % A string of text is parsed as a single word if it is quoted using
-% double_quote//1 marks.
+%  double-quote marks.
 %
 % ~~~{.abnf}
 % quoted-string = ( <"> *(qdtext | quoted-pair ) <"> )
 % ~~~
+%
+% @RFC 2616
 
-'quoted-string'('quoted-string'(Atom), Codes) -->
+'quoted-string'('quoted-string'(Atom), Atom) -->
   '"',
-  dcg_multi2('quoted-string_', _Ts, Codes),
+  dcg_multi1('qdtex_or_quoted', Codes),
   '"',
   {atom_codes(Atom, Codes)}.
-'quoted-string_'('quoted-string'(C), C) -->
+
+'qdtex_or_quoted-pair'(C) -->
   qdtext(C).
-'quoted-string_'('quoted-pair'(C), C) -->
+'qdtex_or_quoted'(C) -->
   'quoted-pair'(C).
 
-%! separator(?Code:code)//
+
+
+%! separator//
 % ~~~{.abnf}
 % separators = "(" | ")" | "<" | ">" | "@"
 %            | "," | ";" | ":" | "\" | <">
@@ -121,20 +134,22 @@ qdtext(Code) -->
 %            | "{" | "}" | SP | HT
 % ~~~
 
-separator(C) --> bracket(C). % 40,41,91,93,123,125
-separator(C) --> greater_than_sign(C). % 62
-separator(C) --> less_than_sign(C). % 60
-separator(C) --> at_sign(C). % 64
-separator(C) --> comma(C). %44
-separator(C) --> semi_colon(C). % 59
-separator(C) --> colon(C). % 58
-separator(C) --> backslash(C). % 92
-separator(C) --> '"'(C). %34
-separator(C) --> slash(C). % 47, 92
-separator(C) --> question_mark(C). % 63
-separator(C) --> equals_sign(C). % 61
-separator(C) --> 'SP'(C). % 32
-separator(C) --> 'HT'(C). % 9
+separator --> bracket. % 40,41,91,93,123,125
+separator --> greater_than_sign. % 62
+separator --> less_than_sign. % 60
+separator --> at_sign. % 64
+separator --> comma. %44
+separator --> semi_colon. % 59
+separator --> colon. % 58
+separator --> backslash. % 92
+separator --> '"'. %34
+separator --> slash. % 47, 92
+separator --> question_mark. % 63
+separator --> equals_sign. % 61
+separator --> 'SP'. % 32
+separator --> 'HT'. % 9
+
+
 
 %! token(-Tree:compound, ?Token:atom)//
 % Many HTTP/1.1 header field values consist of words separated by
@@ -151,5 +166,5 @@ token(token(Token), Token) -->
 
 token_(C) -->
   'CHAR'(C),
-  {\+ 'CTL'(C, _, _), \+ separator(C, _, _)}.
+  {\+ phrase('CTL', [C]), \+ phrase(separator, [C])}.
 
