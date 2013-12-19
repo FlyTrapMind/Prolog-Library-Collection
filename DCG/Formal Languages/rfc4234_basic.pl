@@ -51,8 +51,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'ALPHA'//
-%! 'ALPHA'(?Code:code)//
+%! 'ALPHA'// .
+%! 'ALPHA'(?Code:code)// .
 % The ASCII letters, i.e. =|A-Z / a-z|=.
 %
 % Hexadecimal character range: =|%x41-5A|= through =|%x61-7A|=.
@@ -75,8 +75,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'BIT'//
-%! 'BIT'(?Integer:between(0,1))//
+%! 'BIT'// .
+%! 'BIT'(?Integer:between(0,1))// .
 % A binary digit, i.e. `0` or `1`.
 %
 % ~~~{.abnf}
@@ -93,8 +93,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'CHAR'//
-%! 'CHAR'(?Code:code)//
+%! 'CHAR'// .
+%! 'CHAR'(?Code:code)// .
 % Any 7-bit US-ASCII character, excluding the NULL character.
 %
 % ~~~{.abnf}
@@ -114,8 +114,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'DQUOTE'//
-%! 'DQUOTE'(?Code:code)//
+%! 'DQUOTE'// .
+%! 'DQUOTE'(?Code:code)// .
 %
 % ~~~{.abnf}
 % DQUOTE = %x22   ; " (Double Quote)
@@ -126,8 +126,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'HEXDIG'//
-%! 'HEXDIG'(?Integer:between(0,15))//
+%! 'HEXDIG'// .
+%! 'HEXDIG'(?Integer:between(0,15))// .
 % Hexadecimal digits.
 %
 % ~~~{.abnf}
@@ -141,7 +141,7 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'HTAB'//
+%! 'HTAB'// .
 % Horizontal tab.
 %
 % ~~~{.abnf}
@@ -150,7 +150,7 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'LWSP'//
+%! 'LWSP'// .
 % Linear white space.
 %
 % ~~~{.abnf}
@@ -171,8 +171,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'VCHAR'//
-%! 'VCHAR'(?Code:code)//
+%! 'VCHAR'// .
+%! 'VCHAR'(?Code:code)// .
 % Visible characters.
 %
 % ~~~{.abnf}
@@ -189,7 +189,7 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 
-%! 'WSP'//
+%! 'WSP'// .
 % Whitesapace, defined as sequences of space and horizontal tab.
 %
 % ~~~{.abnf}

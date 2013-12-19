@@ -58,6 +58,8 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 
 :- rdf_meta(describe_resource(+,r,-)).
 
+% @tbd Only in debug mode.
+% @tbd How do we know this is the port?
 :- sparql_add_remote(localhost, localhost, 5000, '/sparql/').
 
 :- debug(sparql_ext).

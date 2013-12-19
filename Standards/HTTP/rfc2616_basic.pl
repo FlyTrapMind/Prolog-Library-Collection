@@ -72,7 +72,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! '"'//
+%! '"'// .
 % US-ASCII double-quote mark.
 %
 % ~~~{.abnf}
@@ -86,8 +86,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'ALPHA'//
-%! 'ALPHA'(?Code:code)//
+%! 'ALPHA'// .
+%! 'ALPHA'(?Code:code)// .
 % Alphabetic character.
 %
 % ~~~{.abnf}
@@ -108,8 +108,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'CHAR'//
-%! 'CHAR'(?Code:code)//
+%! 'CHAR'// .
+%! 'CHAR'(?Code:code)// .
 % US-ASCII character (including NULL).
 %
 % ~~~{.abnf}
@@ -126,7 +126,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'CR'//
+%! 'CR'// .
 % The carriage return.
 %
 % ~~~{.abnf}
@@ -140,7 +140,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'CRLF'//
+%! 'CRLF'// .
 % Internet standard newline.
 %
 % ~~~{.abnf}
@@ -175,8 +175,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'CTL'//
-%! 'CTL'(?Code:code)//
+%! 'CTL'// .
+%! 'CTL'(?Code:code)// .
 % Control character.
 %
 % ~~~{.abnf}
@@ -193,8 +193,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'DIGIT'//
-%! 'DIGIT'(?Integer:between(0,9))//
+%! 'DIGIT'// .
+%! 'DIGIT'(?Integer:between(0,9))// .
 % Decimal digit.
 %
 % ~~~{.abnf}
@@ -212,8 +212,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'HEX'//
-%! 'HEX'(?Integer:between(0.15))//
+%! 'HEX'// .
+%! 'HEX'(?Integer:between(0.15))// .
 % Hexadecimal digit.
 %
 % # RFC 2616
@@ -235,7 +235,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'HT'//
+%! 'HT'// .
 % The horizontal tab.
 %
 % ~~~{.abnf}
@@ -249,7 +249,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'LF'//
+%! 'LF'// .
 % The linefeed.
 %
 % ~~~{.abnf}
@@ -263,8 +263,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'LOALPHA'//
-%! 'LOALPHA'(?Code:code)//
+%! 'LOALPHA'// .
+%! 'LOALPHA'(?Code:code)// .
 % US-ASCII lowercase letter.
 %
 % ~~~{.abnf}
@@ -281,7 +281,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'LWS'//
+%! 'LWS'// .
 % Linear white space.
 %
 % # RFC 2616
@@ -318,8 +318,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   'HT'.
 
 
-%! 'OCTET'//
-%! 'OCTET'(?Code:code)//
+%! 'OCTET'// .
+%! 'OCTET'(?Code:code)// .
 % An octect, i.e. 8 bits of data.
 %
 % ~~~{.abnf}
@@ -337,7 +337,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'SP'//
+%! 'SP'// .
 % The space.
 %
 % ~~~{.abnf}
@@ -351,8 +351,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'TEXT'//
-%! 'TEXT'(?Code:code)//
+%! 'TEXT'// .
+%! 'TEXT'(?Code:code)// .
 %
 % # RFC 2616
 %
@@ -383,8 +383,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 
-%! 'UPALPHA'//
-%! 'UPALPHA'(?Code:code)//
+%! 'UPALPHA'// .
+%! 'UPALPHA'(?Code:code)// .
 % US-ASCII uppercase letter.
 %
 % ~~~{.abnf}

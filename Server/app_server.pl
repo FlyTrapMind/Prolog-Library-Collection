@@ -22,13 +22,31 @@ Also includes a status bar with updates/messages.
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
-% Define the default application server port.
+% Define the default application server port in agreement with ClioPatria.
+
 :- setting(
-  default_app_server_port,
-  positive_integer,
-  5000,
-  'The default port at which the application server is started.'
+  http:port,
+  nonneg,
+  env('PORT',3020),
+  'Port the http server listens to'
 ).
+
+% If you login, the system will redirect  you to its public address. I.e.,
+% if you connected to  http://localhost:3020/  it   will  redirect  you to
+% http://my.domain.org:3020/. This can be undesirable  on e.g., a notebook
+% that is not always connected to the   internet and/or may change address
+% and/or may be behind a firewall. You   can disable redirection using the
+% settings below. These settings may also be   necessary  if the server is
+% behind a proxy.
+%
+% @author Jan Wielemaker
+% @see ClioPatria
+% @version 2013/12
+
+:- if(user:debug_project).
+  :- set_setting_default(http:public_host, localhost).
+  :- set_setting_default(http:public_port, setting(http:port)).
+:- endif.
 
 :- initialization(start_app_server).
 
@@ -48,7 +66,7 @@ start_app_server:-
 % Start the application server using the default port
 % taken from settings.
 start_app_server:-
-  setting(default_app_server_port, Port),
+  setting(http:port, Port),
   start_app_server(Port).
 
 %! start_app_server(?Port:between(1000,9999)) is det.
