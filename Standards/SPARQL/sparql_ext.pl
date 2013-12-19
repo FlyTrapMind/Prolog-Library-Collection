@@ -51,6 +51,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 
 :- use_module(generics(row_ext)).
 :- use_module(library(debug)).
+:- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
 :- use_module(library(semweb/sparql_client)).
 :- use_module(sparql(sparql_build)).
@@ -125,20 +126,17 @@ enqueue_sparql(Remote, Query, VarNames, Results):-
 
 query_sparql(Remote, Query, VarNames, Results):-
   once(sparql_current_remote(Remote, Host, Port, Path)),
+  O1 = [host(Host),path(Path),variable_names(VarNames)],
   (
     Port == default
   ->
-    PortOption = []
+    O2 = O1
   ;
-    PortOption = [port(Port)]
+    merge_options([port(Port)], O1, O2)
   ),
   findall(
     Result,
-    sparql_query(
-      Query,
-      Result,
-      [host(Host), path(Path), variable_names(VarNames) | PortOption]
-    ),
+    sparql_query(Query, Result, O2),
     Results
   ).
 
