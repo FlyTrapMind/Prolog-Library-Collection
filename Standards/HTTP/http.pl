@@ -23,7 +23,6 @@ Predicates for sending out HTTP requests.
 :- use_module(library(debug)).
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_open)).
-:- use_module(library(http/http_parameters)).
 :- use_module(xml(xml_dom)).
 
 :- meta_predicate(http_process_exception(+,0)).

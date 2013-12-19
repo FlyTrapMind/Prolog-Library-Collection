@@ -18,11 +18,6 @@ Extensions for SWI-Prolog servers.
 Dispatching non-login methods goes through this module,
 which checks whether the user has authorization.
 
-@tbd What is `http_method`?
-~~~{.pl}
-http_parameters(Request, [http_method(Method,[default(Method_)])]).
-~~~
-
 # HTTP locations
 
 SWI-Prolog defines the following HTTP locations:
@@ -68,7 +63,6 @@ SWI-Prolog defines the following HTTP handlers:
 :- use_module(library(debug)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
-:- use_module(library(http/http_parameters)).
 :- use_module(library(http/http_session)). % Session support.
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(settings)).

@@ -27,16 +27,16 @@ Also includes a status bar with updates/messages.
 :- setting(
   http:port,
   nonneg,
-  env('PORT',3020),
+  env('PORT',5000),
   'Port the http server listens to'
 ).
 
 % If you login, the system will redirect  you to its public address. I.e.,
-% if you connected to  http://localhost:3020/  it   will  redirect  you to
-% http://my.domain.org:3020/. This can be undesirable  on e.g., a notebook
-% that is not always connected to the   internet and/or may change address
-% and/or may be behind a firewall. You   can disable redirection using the
-% settings below. These settings may also be   necessary  if the server is
+% if you connected to `http://localhost:5000/` it will redirect you to
+% `http://my.domain.org:500/`. This can be undesirable on e.g., a notebook
+% that is not always connected to the internet and/or may change address
+% and/or may be behind a firewall. You can disable redirection using the
+% settings below. These settings may also be necessary  if the server is
 % behind a proxy.
 %
 % @author Jan Wielemaker

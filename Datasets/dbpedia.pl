@@ -51,7 +51,6 @@ WHERE
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -85,6 +84,9 @@ WHERE
 
 :- xml_register_namespace('powder-s', 'http://www.w3.org/2007/05/powder-s#').
 :- sparql_add_prefix('powder-s').
+
+:- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
+:- sparql_add_prefix(rdfs).
 
 :- xml_register_namespace(umbel, 'http://umbel.org/umbel/rc/').
 :- sparql_add_prefix(umbel).
@@ -120,7 +122,7 @@ dbpedia_find_concept(Name, ConceptName):-
   Where = [Where1,Where2],
   formulate_sparql(
     _Graph,
-    [],
+    [rdfs],
     select([distinct(true)],[concept]),
     Where,
     limit([],10),
