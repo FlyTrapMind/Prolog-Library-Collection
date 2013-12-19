@@ -14,11 +14,8 @@
 % DEEP PREDICATES
     abs_path//2, % -Tree:compound
                  % ?Path:list(list(atom))
-    absoluteURI//5, % -Tree:compound
-                             % ?Scheme:atom
-                             % ?Authority:compound
-                             % ?Path:list(list(atom))
-                             % ?Query:atom
+    absoluteURI//2, % -Tree:compound
+                    % ?URI:compound
     authority//2, % -Tree:compound
                           % ?Authority:compound
     domain_label//2, % -Tree:compound
@@ -245,13 +242,7 @@ abs_path(absolute_path('/',T1), [PathSegment]) -->
   forward_slash,
   path_segment(T1, PathSegment).
 
-%! absoluteURI(
-%!   -Tree:compound,
-%!   ?Scheme:atom,
-%!   ?Authority:compound,
-%!   ?Path:list(list(atom)),
-%!   ?Query:atom
-%! )//
+%! absoluteURI(-ParseTree:compound, ?URI:compound)//
 % An absolute URI contains the name of the scheme being used (`<scheme>`)
 % followed by a colon//1 and then a string (the `<scheme-specific-part>`)
 % whose interpretation depends on the scheme.
@@ -284,29 +275,22 @@ abs_path(absolute_path('/',T1), [PathSegment]) -->
 % absoluteURI = scheme ":" ( hier_part | opaque_part )
 % ~~~
 %
-% @param Scheme An atom.
-% @param Authority Either an atom or a compound term of the form
-%      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @param Path A list of lists of atoms.
-% @param Query An atom.
+% --
+%
+% @param ParseTree
+% @param URI A compound term uri/4 with the following arguments:
+%   1. `Scheme:atom`
+%   2. `Authority:or([atom,compound])`
+%      Either an atom or a compound term of the form
+%      `authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)`.
+%   3. `Path:list(list(atom))`
+%   4. `Query:atom`
 
-absoluteURI(
-  absolute_uri(T1,':',T2),
-  Scheme,
-  Authority,
-  Path,
-  Query
-) -->
+absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query)) -->
   scheme(T1, Scheme),
   colon,
   hierarchical_part(T2, Authority, Path, Query).
-absoluteURI(
-  absolute_uri(T1,':',T2),
-  Scheme,
-  Authority,
-  Path,
-  Query
-) -->
+absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query)) -->
   {maplist(var, [Authority,Query])},
   scheme(T1, Scheme),
   colon,
@@ -946,7 +930,7 @@ rfc2396_uri_reference(T) -->
 % @param Fragment An atom.
 
 rfc2396_uri_reference(T0, Scheme, Authority, Path, Query, Fragment) -->
-  absoluteURI(T1, Scheme, Authority, Path, Query),
+  absoluteURI(T1, uri(Scheme,Authority,Path,Query)),
   ("" ; number_sign, {T2 = '#'}, fragment(T3, Fragment)),
   {parse_tree(uri_reference, [T1,T2,T3], T0)}.
 /*

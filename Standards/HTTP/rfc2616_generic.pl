@@ -1,12 +1,14 @@
 :- module(
   rfc2616_generic,
   [
-    comment//2, % -Tree:compound
+    comment//2, % -ParseTree:compound
                 % ?Codes:list(code)
-    'quoted-string'//2, % -Tree:compound
+    parameter//2, % -ParseTree:compound
+                  % ?Parameter:pair(atom,atom)
+    'quoted-string'//2, % -ParseTree:compound
                         % ?Codes:list(code)
     separator//0,
-    token//2 % -Tree:compound
+    token//2 % -ParseTree:compound
              % ?Token:atom
   ]
 ).
@@ -18,6 +20,10 @@ Some basic DCG rules that are too specific to be reused outside of
   the main DCGs.
 
 @author Wouter Beek
+@see RFC 2616
+@see Redundant `LWS`
+@see Case sensitivity
+@see Backwards compatibility
 @version 2013/12
 */
 
@@ -31,7 +37,17 @@ Some basic DCG rules that are too specific to be reused outside of
 
 
 
-%! charset(-Tree:compound, ?Charset:atom)//
+%! attribute(-ParseTree:compound, ?Attribute:atom)//
+% ~~~{.abnf}
+% attribute = token
+% ~~~
+
+attribute(attribute(T0), Attribute) -->
+  token(T0, Attribute).
+
+
+
+%! charset(-ParseTree:compound, ?Charset:atom)//
 % HTTP character sets are identified by case-insensitive tokens.
 %
 % # Syntax
@@ -101,14 +117,13 @@ Some basic DCG rules that are too specific to be reused outside of
 % --
 %
 % @see Implementors should be aware of IETF character set requirements.
-% @see RFC 2616
 
 charset(T0, X) -->
   token(T0, X).
 
 
 
-%! comment(-Tree:compound, ?Codes:list(code))//
+%! comment(-ParseTree:compound, ?Codes:list(code))//
 % Comments can be included in some HTTP header fields by surrounding
 %  the comment text with parentheses.
 % Comments are only allowed in fields containing `"comment"` as part of
@@ -118,8 +133,6 @@ charset(T0, X) -->
 % ~~~{.abnf}
 % comment = "(" *( ctext | quoted-pair | comment ) ")"
 % ~~~
-%
-% @see RFC 2616
 
 comment(comment(Comm), Cs) -->
   bracketed(dcg_multi1('ctext_or_quoted-pair_or_comment', _-_, Css)),
@@ -149,8 +162,21 @@ comment(comment(Comm), Cs) -->
 
 ctext(C) -->
   'TEXT'(C),
-  {C \= 40},
-  {C \= 41}.
+  {C \= 40}, % "("
+  {C \= 41}. % ")"
+
+
+
+%! parameter(-ParseTree:compound, ?AttributeValuePair:kvpair(atom,atom))//
+% Parameters are in the form of attribute/value pairs.
+% ~~~{.abnf}
+% parameter = attribute "=" value
+% ~~~
+
+parameter(paramter(T1,T2), Attribute-Value) -->
+  attribute(T1, Attribute),
+  "=",
+  value(T2, Val).
 
 
 
@@ -181,7 +207,7 @@ qdtext(C) -->
 
 
 
-%! 'quoted-string'(-Tree:compound, ?String:atom)//
+%! 'quoted-string'(-ParseTree:compound, ?String:atom)//
 % A string of text is parsed as a single word if it is quoted using
 %  double-quote marks.
 %
@@ -234,7 +260,7 @@ separator --> 'HT'. % 9
 
 
 
-%! token(-Tree:compound, ?Token:atom)//
+%! token(-ParseTree:compound, ?Token:atom)//
 % ~~~{.abnf}
 % token = 1*<any CHAR except CTLs or separators>
 % ~~~
@@ -247,4 +273,16 @@ token(token(Token), Token) -->
 token_(C) -->
   'CHAR'(C),
   {\+ phrase('CTL', [C]), \+ phrase(separator, [C])}.
+
+
+
+%! value(-ParseTree:compound, ?Value:atom)//
+% ~~~{.abnf}
+% value     = token | quoted-string
+% ~~~
+
+value(value(T0), Value) -->
+  token(T0, Value).
+value(value(T0), Value) -->
+  'quoted-string'(T0, Value).
 

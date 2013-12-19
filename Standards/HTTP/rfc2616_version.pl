@@ -1,9 +1,8 @@
 :- module(
   rfc2616_version,
   [
-    'HTTP-Version'//3 % -Tree:compound
-                      % ?Major:positive_integer
-                      % ?Minor:nonneg
+    'HTTP-Version'//2 % -Tree:compound
+                      % ?Version:compound
   ]
 ).
 
@@ -101,11 +100,7 @@ Note: Converting between versions of HTTP may involve modification of
 
 
 
-%! 'HTTP-Version'(
-%!   -Tree:compound,
-%!   ?Major:positive_integer,
-%!   ?Minor:nonneg
-%! ) is det.
+%! 'HTTP-Version'(-ParseTree:compound, ?Version:compound)//
 % HTTP uses a `<major>.<minor>` numbering scheme to indicate versions
 % of the protocol.
 % The version of an HTTP message is indicated by an HTTP-Version field
@@ -115,7 +110,10 @@ Note: Converting between versions of HTTP may involve modification of
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
 
-'HTTP-Version'('HTTP-Version'(major(Major),minor(Minor)), Major, Minor) -->
+'HTTP-Version'(
+  'HTTP-Version'(major(Major),minor(Minor)),
+  version(Major,Minor)
+) -->
   "HTTP/",
   decimal_number(Major),
   ".",
