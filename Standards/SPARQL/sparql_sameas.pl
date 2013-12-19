@@ -1,9 +1,6 @@
 :- module(
   sparql_sameas,
   [
-    describe_sameas/3, % +Remote:atom
-                       % +Resource:iri
-                       % -Rows:list(compound)
     query_sameas/3 % +Remote:atom
                    % +Resource:iri
                    % -IdenticalResources:list(iri)
@@ -33,26 +30,10 @@
 :- sparql_add_prefix(owl).
 
 :- rdf_meta(query_sameas(+,r,-)).
-:- rdf_meta(describe_sameas(+,r,-)).
 
 :- debug(sparql_sameas).
 
 
-
-%! describe_sameas(+Remote:atom, +Resource:uri, -Rows:list(compound)) is det.
-
-describe_sameas(Remote, Resource, Rows):-
-  query_sameas(Remote, Resource, IdenticalResources),
-  maplist(describe_resource(Remote), IdenticalResources, Rows),
-  setoff(
-    Rows0,
-    (
-      member(row(IdenticalResource), [row(Resource)|IdenticalResources]),
-      describe_resource(Remote, IdenticalResource, Rows0)
-    ),
-    Rowss
-  ),
-  ord_union(Rowss, Rows).
 
 %! query_sameas(
 %!   +Remote:atom,

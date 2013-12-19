@@ -1,16 +1,15 @@
 :- module(
   dbpedia,
   [
-    assert_identity_resource/2, % +Resource:uri
-                                % +Graph:atom
-    assert_resource/2, % +Graph:atom
-                       % +Resource:uri
-    dbpedia_find_concept/2, % +Name:atom
-                            % -ConceptName:uri
-    find_dbpedia_agent/4 % +Name:atom
-                         % +Birth:integer
-                         % +Death:integer
-                         % -DBpediaAgent:uri
+    dbpedia_assert_resource/3, % +Options:list(nvpair)
+                               % +Graph:atom
+                               % +Resource:uri
+    dbpedia_find_agent/4, % +Name:atom
+                          % +Birth:integer
+                          % +Death:integer
+                          % -DBpediaAgent:uri
+    dbpedia_find_concept/2 % +ConceptName:atom
+                           % -Concept:uri
   ]
 ).
 
@@ -51,6 +50,7 @@ WHERE
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -94,57 +94,49 @@ WHERE
 :- xml_register_namespace(yago, 'http://yago-knowledge.org/resource/').
 :- sparql_add_prefix(yago).
 
-:- rdf_meta(assert_resource(+,r)).
-:- rdf_meta(find_dbpedia_agent(+,+,+,r)).
+:- rdf_meta(dbpedia_assert_resource(+,r)).
+:- rdf_meta(dbpedia_find_agent(+,+,+,r)).
 
 :- debug(dbpedia).
 
 
 
-assert_identity_resource(IRI, G):-
-  owl_identity_set(IRI, I_Set),
-  maplist(assert_resource(G), I_Set).
+%! dbpedia_assert_resource(
+%!   +Options:list(nvpair),
+%!   +Graph:atom,
+%!   +Resource:iri
+%! ) is det.
+% The following options are supported:
+%   * `closed_under_identity(IdentityClosure:boolean)`
 
-assert_resource(G, IRI):-
-  rdf_is_iri(IRI),
-  rdf_graph(G), !,
-  describe_sameas(dbpedia, IRI, PO_Rows),
+dbpedia_assert_resource(O1, G, IRI):-
+  option(closed_under_identity(true), O1, true), !,
+  query_sameas(dbpedia, IRI, I_Set),
+  '_dbpedia_assert_resource'(G, I_Set).
+dbpedia_assert_resource(_O1, G, IRI):-
+  '_dbpedia_assert_resource'(G, [IRI]).
+
+% @tbd Transitive identity closure.
+'_dbpedia_assert_resource'(G, Ss):-
   forall(
-    member(row(P, O), PO_Rows),
-    rdf_assert(IRI, P, O, G)
+    member(S, Ss),
+    (
+      describe_resource(dbpedia, S, PO_Pairs),
+      forall(
+        member([P,O], PO_Pairs),
+        rdf_assert(S, P, O, G)
+      )
+    )
   ).
 
-%! dbpedia_find_concept(+Name:atom, -ConceptName:uri) is det.
-
-dbpedia_find_concept(Name, ConceptName):-
-  Where1 = '?concept rdfs:label ?label .',
-  format(atom(Where2), 'FILTER regex(?label, "~w", "i")', [Name]),
-  Where = [Where1,Where2],
-  formulate_sparql(
-    _Graph,
-    [rdfs],
-    select([distinct(true)],[concept]),
-    Where,
-    limit([],10),
-    Query
-  ),
-  enqueue_sparql(dbpedia, Query, _VarNames, Resources),
-  (
-    Resources = []
-  ->
-    debug(dbpedia, 'Could not find a resource for \'~w\'.', [Name])
-  ;
-    first(Resources, row(ConceptName))
-  ).
-
-%! find_person(
+%! dbpedia_find_agent(
 %!   +FullName:atom,
 %!   +Birth:integer,
 %!   +Death:integer,
 %!   -DBpediaAuthor:uri
 %! ) is semidet.
 
-find_dbpedia_agent(Name, Birth, Death, DBpediaAuthor):-
+dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
   format(
     atom(Where),
     [
@@ -173,5 +165,43 @@ find_dbpedia_agent(Name, Birth, Death, DBpediaAuthor):-
     debug(dbpedia, 'Could not find a resource for \'~w\'.', [Name])
   ;
     first(Resources, row(DBpediaAuthor))
+  ).
+
+%! dbpedia_find_concept(+ConceptName:atom, -Concept:iri) is det.
+% Returns the DBpedia concept that best fits the given search term.
+%
+% If the search term is itself a concept, then this is returned.
+% Otherwise, DBpedia is searched for a concept that is labeled with
+%  the search term.
+%
+% @param ConceptName An atom.
+% @param Concept An IRI.
+
+dbpedia_find_concept(Concept, Concept):-
+  is_uri(Concept),
+  % @tbd This can be done more efficiently but just looking for
+  % the first triple.
+  describe_resource(dbpedia, Concept, ConceptDescription),
+  ConceptDescription \== [], !.
+dbpedia_find_concept(ConceptName, Concept):-
+  Where1 = '?concept rdfs:label ?label .',
+  format(atom(Where2), 'FILTER regex(?label, "~w", "i")', [ConceptName]),
+  Where = [Where1,Where2],
+  formulate_sparql(
+    _Graph,
+    [rdfs],
+    select([distinct(true)],[concept]),
+    Where,
+    limit([],10),
+    Query
+  ),
+  enqueue_sparql(dbpedia, Query, _VarNames, Resources),
+  (
+    Resources = []
+  ->
+    debug(dbpedia, 'Could not find a resource for \'~w\'.', [ConceptName]),
+    fail
+  ;
+    first(Resources, row(Concept))
   ).
 

@@ -45,6 +45,15 @@ Predicates for RDFS labels.
 %!   ?RDF_Term:or([bnode,iri]),
 %!   ?Label:atom
 %! ) is nondet.
+% Reads an RDFS label, and adds support for:
+%   * Natural language preferences
+%   * RDF lists
+%
+% The following options are supported:
+%   * `lang(?LanguageTag:atom)`
+%     The preferred natural language.
+%
+% @tbd Support prioritized language tab lists (as in HTTP Accept-Languages).
 
 rdfs_label2(O1, RDF_Term, RDFS_Label):-
   rdf_is_list(RDF_Term), !,
