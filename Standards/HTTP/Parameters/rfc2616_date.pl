@@ -1,19 +1,39 @@
 :- module(
   rfc2616_date,
   [
-    'delta-seconds'//1, % ?Seconds:nonneg
-    'HTTP-date'//6 % ?Year:between(0,9999)
-                   % ?Month:between(1,12)
-                   % ?Day:between(0,99)
-                   % ?Hour:between(0,99)
-                   % ?Minute:between(0,99)
-                   % ?Seconds:between(0,99)
+    'delta-seconds'//2, % -ParseTree:compound
+                        % ?Seconds:nonneg
+    'HTTP-date'//2 % -ParseTree:compound
+                   % ?Date:compound
   ]
 ).
 
 /** <module> RFC 2616 date-time
 
 Date-time values for RFC 2616 (HTTP 1.1).
+
+# Compounds
+
+## Date
+
+~~~{.pl}
+date(
+  Year:between(0,9999),
+  Month:between(1,12),
+  Day:between(0,99),
+  Time:compound
+)
+~~~
+
+## Time
+
+~~~{.pl}
+time(
+  ?Hour:between(0,99),
+  ?Minute:between(0,99),
+  ?Second:between(0,99)
+)
+~~~
 
 # RFC 2616
 
@@ -108,7 +128,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 
 
 
-%! 'asctime-date'(Y, M, D, H, MM, S)//
+%! 'asctime-date'(-ParseTree:compound, ?Date:compound)//
 % Date-time for ANSI C.
 %
 % ~~~{.abnf}
@@ -119,18 +139,24 @@ Note: HTTP requirements for the date/time stamp format apply only
 % @see RFC 2616
 
 % @tbd Conversion between `D1` and `D2`.
-'asctime-date'(Y, M, D, H, MM, S) -->
-  wkday(D1),
+'asctime-date'('asctime-date'(T1,T2,T3,Year), date(Year,Month,Day,Time)) -->
+  wkday(T1, Day),
   'SP',
-  date3(M, D2),
+  date3(T2, Moth, Day),
   'SP',
-  time(H, MM, S),
+  time(T3, Time),
   'SP',
-  dcg_multi('DIGIT', 4-4).
+  dcg_multi1('DIGIT', 4-4, [Y1,Y2,Y3,Y4]),
+  {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
 
-%! date1(?Year:between(0,9999), ?Month:between(1,12), ?Day:between(0,99))//
+%! date1(
+%!   -ParseTree:compound,
+%!   ?Year:between(0,9999),
+%!   ?Month:between(1,12),
+%!   ?Day:between(0,99)
+%! )//
 % Date for RFC 1123.
 %
 % ~~~{.abnf}
@@ -140,23 +166,28 @@ Note: HTTP requirements for the date/time stamp format apply only
 % @see RFC 1123
 % @see RFC 2616
 
-date1(Y, M, D) -->
+date1(date1(Day,T1,Year), Year, Month, Day) -->
   % Day
   dcg_multi2('DIGIT', 2-2, [D1,D2]),
-  {digits_to_decimal([D1,D2], D)},
+  {digits_to_decimal([D1,D2], Day)},
   'SP',
   
   % Month
-  month(M),
+  month(T1, Month),
   'SP',
   
   % Year
   dcg_multi2('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
-  {digits_to_decimal([Y1,Y2,Y3,Y4], Y)}.
+  {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
 
-%! date2(?Year:between(0,99), ?Month:between(1,12), ?Day:between(0,99))//
+%! date2(
+%!   -ParseTree:compound,
+%!   ?Year:between(0,99),
+%!   ?Month:between(1,12),
+%!   ?Day:between(0,99)
+%! )//
 % Date for RFC 850.
 %
 % ~~~{.abnf}
@@ -166,23 +197,23 @@ date1(Y, M, D) -->
 % @see RFC 850
 % @see RFC 2616
 
-date2(Y, M, D) -->
+date2(date2(Year,T1,Day), Year, Month, Day) -->
   % Day
   dcg_multi1('DIGIT', 2-2, [Y1,Y2]),
-  {digits_to_decimal([Y1,Y2], Y)},
+  {digits_to_decimal([Y1,Y2], Year)},
   "-",
   
   % Month
-  month(M),
+  month(T1, Month),
   "-",
   
   % Year
   dcg_multi1('DIGIT', 2-2, [D1,D2]),
-  {digits_to_decimal([D1,D2], D)}.
+  {digits_to_decimal([D1,D2], Day)}.
 
 
 
-%! date3(?Month:between(1,12), ?Day:between(0,99))//
+%! date3(-ParseTree:compound, ?Month:between(1,12), ?Day:between(0,99))//
 % Date for ANSI C.
 %
 % ~~~{.abnf}
@@ -192,23 +223,23 @@ date2(Y, M, D) -->
 % @see ANSI C
 % @see RFC 2616
 
-date3(M, D) -->
+date3(date3(T1,Day), Month, Day) -->
   % Month
-  month(M),
+  month(T1, Month),
   'SP',
   
   % Day
   (
     dcg_multi1('DIGIT', 2-2, [D1,D2]),
-    {digits_to_decimal([D1,D2], D)}
+    {digits_to_decimal([D1,D2], Day)}
   ;
     'SP',
-    'DIGIT'(D)
+    'DIGIT'(Day)
   ).
 
 
 
-%! 'delta-seconds'(?Seconds:nonneg)//
+%! 'delta-seconds'(-ParseTree:compound, ?Seconds:nonneg)//
 % Some HTTP header fields allow a time value to be specified as an
 %  integer number of seconds, represented in decimal,
 %  after the time that the message was received.
@@ -219,38 +250,37 @@ date3(M, D) -->
 %
 % @see RFC 2616
 
-'delta-seconds'(S) -->
+'delta-seconds'('delta-seconds'(Seconds), Seconds) -->
   dcg_multi1('DIGIT', 1-_, Ss),
-  {digits_to_decimal(Ss, S)}.
+  {digits_to_decimal(Ss, Seconds)}.
 
 
 
-%! 'HTTP-date'(
-%!   ?Year:between(0,9999),
-%!   ?Month:between(1,12),
-%!   ?Day:between(0,99),
-%!   ?Hour:between(0,99),
-%!   ?Minute:between(0,99),
-%!   ?Second:between(0,99)
-%! )//
+%! 'HTTP-date'(-ParseTree:compound, ?Date:compound)//
 % Date-time for HTTP.
 %
 % ~~~{.abnf}
 % HTTP-date  = rfc1123-date | rfc850-date | asctime-date
 % ~~~
 %
+% @param ParseTree
+% @param Date
+%
 % @see ANSI C
 % @see RFC 850
 % @see RFC 1123
 % @see RFC 2616
 
-'HTTP-date'(Y, M, D, H, MM, S) --> 'rfc1123-date'(Y, M, D, H, MM, S).
-'HTTP-date'(Y, M, D, H, MM, S) --> 'rfc850-date'(Y, M, D, H, MM, S).
-'HTTP-date'(Y, M, D, H, MM, S) --> 'asctime-date'(Y, M, D, H, MM, S).
+'HTTP-date'('HTTP-date'(T1), Date) -->
+  'rfc1123-date'(T1, Date).
+'HTTP-date'('HTTP-date'(T1), Date) -->
+  'rfc850-date'(T1, Date).
+'HTTP-date'('HTTP-date'(T1), Date) -->
+  'asctime-date'(T1, Date).
 
 
 
-%! month(?Month:between(1,12))//
+%! month(-ParseTree:compound, ?Month:between(1,12))//
 % Month names used in HTTP dates.
 %
 % ~~~{.abnf}
@@ -260,29 +290,34 @@ date3(M, D) -->
 %
 % @see RFC 2616
 
-month(1) --> "Jan".
-month(2) --> "Feb".
-month(3) --> "Mar".
-month(4) --> "Apr".
-month(5) --> "May".
-month(6) --> "Jun".
-month(7) --> "Jul".
-month(8) --> "Aug".
-month(9) --> "Sep".
-month(10) --> "Oct".
-month(11) --> "Nov".
-month(12) --> "Dec".
+month(month('Jan'), 1) -->
+  "Jan".
+month(month('Feb'), 2) -->
+  "Feb".
+month(month('Mar'), 3) -->
+  "Mar".
+month(month('Apr'), 4) -->
+  "Apr".
+month(month('May'), 5) -->
+  "May".
+month(month('Jun'), 6) -->
+  "Jun".
+month(month('Jul'), 7) -->
+  "Jul".
+month(month('Aug'), 8) -->
+  "Aug".
+month(month('Sep'), 9) -->
+  "Sep".
+month(month('Oct'), 10) -->
+  "Oct".
+month(month('Nov'), 11) -->
+  "Nov".
+month(month('Dec'), 12) -->
+  "Dec".
 
 
 
-%! 'rfc1123-date'(
-%!   ?Year:between(0,9999),
-%!   ?Month:between(1,12),
-%!   ?Day:between(0,99),
-%!   ?Hour:between(0,99),
-%!   ?Minute:between(0,99),
-%!   ?Second:between(0,99)
-%! )//
+%! 'rfc1123-date'(-ParseTree:compound, ?Date:compound)//
 % Date-time for RFC 1123.
 %
 % ~~~{.abnf}
@@ -292,26 +327,19 @@ month(12) --> "Dec".
 % @see RFC 1123
 % @see RFC 2616
 
-'rfc1123-date'(Y, Mo, D, H, Mi, S) -->
-  wkday(D),
+'rfc1123-date'('rfc1123-date'(T1,T2,T3,'GMT'), date(Year,Month,Day,Time)) -->
+  wkday(T1, Day),
   ",",
   'SP',
-  date1(Y, Mo, D),
+  date1(T2, Year, Month, Day),
   'SP',
-  time(H, Mi, S),
+  time(T3, Time),
   'SP',
   "GMT".
 
 
 
-%! 'rfc850-date'(
-%!   ?Year:between(0,99),
-%!   ?Month:between(1,12),
-%!   ?Day:between(0,99),
-%!   ?Hour:between(0,99),
-%!   ?Minute:between(0,99),
-%!   ?Second:between(0,99)
-%! )//
+%! 'rfc850-date'(-ParseTree:compound, ?Date:compound)//
 % Date-time for RFC 850.
 %
 % ~~~{.abnf}
@@ -321,19 +349,19 @@ month(12) --> "Dec".
 % @see RFC 850
 % @see RFC 2616
 
-'rfc850-date'(Y, Mo, D, H, Mi, S) -->
-  weekday(D),
+'rfc850-date'('rfc850-date'(T1,T2,T3,'GMT'), date(Year,Month,Day,Time)) -->
+  weekday(T1, Day),
   ",",
   'SP',
-  date2(Y, Mo, D),
+  date2(T2, Year, Month, Day),
   'SP',
-  time(H, Mi, S),
+  time(T3, Time),
   'SP',
   "GMT".
 
 
 
-%! time(?Hour:between(0,99), ?Minute:between(0,99), ?Second:between(0,99))//
+%! time(-ParseTree:compound, ?Time:compound)//
 % Time for HTTP (for ANSI C, RFC 850, and RFC 1123).
 %
 % ~~~{.abnf}
@@ -342,19 +370,22 @@ month(12) --> "Dec".
 %
 % @see RFC 2616
 
-time(H, M, S) -->
+time(time(Hour,Minute,Second), time(Hour,Minute,Second)) -->
+  % Hour
   dcg_multi1('DIGIT', 2-2, [H1,H2]),
-  {digits_to_decimal([H1,H2], H)},
+  {digits_to_decimal([H1,H2], Hour)},
   ":",
+  % Minute
   dcg_multi1('DIGIT', 2-2, [M1,M2]),
-  {digits_to_decimal([M1,M2], M)},
+  {digits_to_decimal([M1,M2], Minute)},
   ":",
+  % Second
   dcg_multi1('DIGIT', 2-2, [S1,S2]),
-  {digits_to_decimal([S1,S2], S)}.
+  {digits_to_decimal([S1,S2], Second)}.
 
 
 
-%! weekday(?Day:between(1,7))//
+%! weekday(-ParseTree:compound, ?Day:between(1,7))//
 % Full weekday names.
 %
 % ~~~{.abnf}
@@ -364,17 +395,24 @@ time(H, M, S) -->
 %
 % @RFC 2616
 
-weekday(1) --> "Monday".
-weekday(2) --> "Tuesday".
-weekday(3) --> "Wednesday".
-weekday(4) --> "Thursday".
-weekday(5) --> "Friday".
-weekday(6) --> "Saturday".
-weekday(7) --> "Sunday".
+weekday(weekday('Monday'), 1) -->
+  "Monday".
+weekday(weekday('Tuesday'), 2) -->
+  "Tuesday".
+weekday(weekday('Wednesday'), 3) -->
+  "Wednesday".
+weekday(weekday('Thursday'), 4) -->
+  "Thursday".
+weekday(weekday('Friday'), 5) -->
+  "Friday".
+weekday(weekday('Saturday'), 6) -->
+  "Saturday".
+weekday(weekday('Sunday'), 7) -->
+  "Sunday".
 
 
 
-%! wkday(?Day:between(1,7))//
+%! wkday(-ParseTree:compound, ?Day:between(1,7))//
 % Abbreviated weekday names.
 %
 % ~~~{.abnf}
@@ -383,11 +421,18 @@ weekday(7) --> "Sunday".
 %
 % @see RFC 2616
 
-wkday(1) --> "Mon".
-wkday(2) --> "Tue".
-wkday(3) --> "Wed".
-wkday(4) --> "Thu".
-wkday(5) --> "Fri".
-wkday(6) --> "Sat".
-wkday(7) --> "Sun".
+wkday(wkday('Mon'), 1) -->
+  "Mon".
+wkday(wkday('Tue'), 2) -->
+  "Tue".
+wkday(wkday('Wed'), 3) -->
+  "Wed".
+wkday(wkday('Thu'), 4) -->
+  "Thu".
+wkday(wkday('Fri'), 5) -->
+  "Fri".
+wkday(wkday('Sat'), 6) -->
+  "Sat".
+wkday(wkday('Sun'), 7) -->
+  "Sun".
 
