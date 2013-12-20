@@ -123,7 +123,7 @@ dcg_multi(DCG, Rep, O1, C) -->
   {in_between(Min, Max, C)},
   % If the counter is at the maximum number of repetitions,
   % then we need a cut here.
-  ({Max =:= C} -> ! ; "").
+  ({Max \== inf, Max =:= C} -> ! ; "").
 
 
 
@@ -223,7 +223,7 @@ dcg_multi2(DCG_Rule, Rep, L1, L2, O1) -->
 %!   -Count:nonneg
 %! )//
 % Executes the given DCG rule for the given number of repetitions,
-% and applied to the given two argument lists.
+%  and applied to the given two argument lists.
 %
 % The following options are supported:
 %   * =|convert(:ConversionPredicate)|=

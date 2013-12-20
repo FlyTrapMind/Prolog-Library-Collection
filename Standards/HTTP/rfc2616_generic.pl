@@ -176,7 +176,7 @@ ctext(C) -->
 parameter(paramter(T1,T2), Attribute-Value) -->
   attribute(T1, Attribute),
   "=",
-  value(T2, Val).
+  value(T2, Value).
 
 
 

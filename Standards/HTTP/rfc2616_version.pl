@@ -109,6 +109,10 @@ Note: Converting between versions of HTTP may involve modification of
 % ~~~{.abnf}
 % HTTP-Version = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 % ~~~
+%
+% @param ParseTree
+% @param Version A compound term of the form
+%        `version(Major:nonneg,Minor:nonneg)`
 
 'HTTP-Version'(
   'HTTP-Version'(major(Major),minor(Minor)),

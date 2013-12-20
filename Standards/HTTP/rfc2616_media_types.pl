@@ -17,7 +17,7 @@
 
 
 
-%! 'media-type'(-ParseTree:compound)//
+%! 'media-type'(-ParseTree:compound, ?MediaType:compound)//
 % HTTP uses Internet Media Types in the `Content-Type` and `Accept` header
 %  fields in order to provide open and extensible data typing and
 %  type negotiation.
@@ -139,11 +139,15 @@
 %  carrying form data suitable for processing via the `POST` request method
 %  (RFC 1867).
 %
+% @param ParseTree
+% @param MediaType A compound term of the form
+%        `media_type(Type:atom,Subtyp:atom,Params:list(pair(atom,atom)))`
+%
 % @see RFC 1590
 % @see RFC 1867
 % @see RFC 2046
 
-'media-type'(T0, Type, Subtype, Params) -->
+'media-type'(T0, media_type(Type,Subtype,Params)) -->
   type(T1, Type),
   "/",
   subtype(T2, Subtype),

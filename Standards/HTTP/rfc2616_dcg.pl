@@ -1,7 +1,6 @@
 :- module(
   rfc2616_dcg,
   [
-    http_to_gv/1, % +Tree:compound
     'Request'//6, % -Tree:compound
                   % ?Method:atom
                   % ?URI:compound
@@ -197,30 +196,6 @@ reason_phrase_([H|T]) -->
   reason_phrase_(T).
 reason_phrase_([]) --> [].
 
-%! 'Response'(
-%!   -Tree:compound,
-%!   ?Version:compound,
-%!   ?Status:compound,
-%!   ?MessageHeaders:list(pair),
-%!   ?MessageBody:list(code)
-%! )//
-% After receiving and interpreting a request message, a server responds
-% with an HTTP response message.
-%
-% ~~~{.abnf}
-% Response = Status-Line
-%            *(( general-header | response-header | entity-header ) CRLF)
-%            CRLF
-%            [ message-body ]
-% ~~~
-
-'Response'(T0, Version, Status, MessageHeaders, MessageBody) -->
-  'Status-Line'(T1, Version, Status),
-  ("", {MessageHeaders = []} ; message_headers(T2, MessageHeaders)),
-  'CRLF',
-  ('message-body'(T3, MessageBody) ; "", {MessageBody = []}),
-  {parse_tree(response, [T1,T2,T3], T0)}.
-
 %! 'response-header'//
 % ~~~{.abnf}
 % response-header = Accept-Ranges
@@ -251,118 +226,4 @@ reason_phrase_([]) --> [].
 'response-header' --> vary.
 'response-header' --> www_authenticate.
 */
-
-%! 'Status-Code'(?Status:integer, ?Reason:atom) is nondet.
-% The first digit of the 'Status-Code'/2 defines the class of response.
-% The last two digits do not have any categorization role.
-%
-% There are 5 values for the first digit:
-%   * `1xx`
-%     Informational - Request received, continuing process.
-%   * `2xx`
-%     Success - The action was successfully received, understood,
-%     and accepted.
-%   * `3xx`
-%     Redirection - Further action must be taken in order to complete
-%     the request.
-%   * `4xx`
-%     Client Error - The request contains bad syntax or cannot be fulfilled.
-%   * `5xx`
-%     Server Error - The server failed to fulfill an apparently valid request.
-%
-% The individual values of the numeric status codes defined for
-% HTTP/1.1, and an example set of corresponding Reason-Phrase's, are
-% presented below. The reason phrases listed here are only
-% recommendations -- they MAY be replaced by local equivalents without
-% affecting the protocol.
-
-'Status-Code'(100, 'Continue').
-'Status-Code'(101, 'Switching Protocols').
-'Status-Code'(200, 'OK').
-'Status-Code'(201, 'Created').
-'Status-Code'(202, 'Accepted').
-'Status-Code'(203, 'Non-Authoritative Information').
-'Status-Code'(204, 'No Content').
-'Status-Code'(205, 'Reset Content').
-'Status-Code'(206, 'Partial Content').
-'Status-Code'(300, 'Multiple Choices').
-'Status-Code'(301, 'Moved Permanently').
-'Status-Code'(302, 'Found').
-'Status-Code'(303, 'See Other').
-'Status-Code'(304, 'Not Modified').
-'Status-Code'(305, 'Use Proxy').
-'Status-Code'(307, 'Temporary Redirect').
-'Status-Code'(400, 'Bad Request').
-'Status-Code'(401, 'Unauthorized').
-'Status-Code'(402, 'Payment Required').
-'Status-Code'(403, 'Forbidden').
-'Status-Code'(404, 'Not Found').
-'Status-Code'(405, 'Method Not Allowed').
-'Status-Code'(406, 'Not Acceptable').
-'Status-Code'(407, 'Proxy Authentication Required').
-'Status-Code'(408, 'Request Timeout').
-'Status-Code'(409, 'Conflict').
-'Status-Code'(410, 'Gone').
-'Status-Code'(411, 'Length Required').
-'Status-Code'(412, 'Precondition Failed').
-'Status-Code'(413, 'Request Entity Too Large').
-'Status-Code'(414, 'Request URI Too Large').
-'Status-Code'(415, 'Unsupported Media Type').
-'Status-Code'(416, 'Requested Range not Satisfiable').
-'Status-Code'(417, 'Expectation Failed').
-'Status-Code'(500, 'Internal Server Error').
-'Status-Code'(501, 'Not Implemented').
-'Status-Code'(502, 'Bad Gateway').
-'Status-Code'(503, 'Service Unavailable').
-'Status-Code'(504, 'Gateway Timeout').
-'Status-Code'(505, 'HTTP Version not supported').
-
-%! 'Status-Code'(-Tree:compound, ?Status:integer, ?Reason:atom)//
-% A 3-digit integer result code of the attempt to understand and satisfy
-% the request.
-%
-% HTTP status codes are extensible. HTTP applications are not required
-% to understand the meaning of all registered status codes, though such
-% understanding is obviously desirable. However, applications MUST
-% understand the class of any status code, as indicated by the first
-% digit, and treat any unrecognized response as being equivalent to the
-% `x00` status code of that class, with the exception that an
-% unrecognized response MUST NOT be cached.
-
-'Status-Code'('Status-Code'(Status), Status, Reason1) -->
-  {nonvar(Status)}, !,
-  {
-    'Status-Code'(Status, Reason2),
-    decimal_to_digits(Status, [D1,D2,D3])
-  },
-  decimal_digit(_, D1),
-  decimal_digit(_, D2),
-  decimal_digit(_, D3),
-  % Use the default reason for the given status code.
-  {(var(Reason1) -> Reason1 = Reason2 ; true)}.
-'Status-Code'('Status-Code'(Status), Status, _Reason1) -->
-  decimal_digit(_, D1),
-  decimal_digit(_, D2),
-  decimal_digit(_, D3),
-  {
-    digits_to_decimal([D1,D2,D3], Status),
-    'Status-Code'(Status, _Reason2)
-  }.
-'Status-Code'('Status-Code'(Status), Status, _Reason) -->
-  extension_code(Status).
-
-%! 'Status-Line'(-Tree:compound, ?Version:compound, ?Status:compound)//
-% The first line of a response// message.
-
-'Status-Line'(
-  'Status-Line'(T1,T2,T3),
-  version(Major, Minor),
-  status(Status, Reason)
-) -->
-  'HTTP-Version'(T1, Major, Minor),
-  'SP',
-  'Status-Code'(T2, Status, Reason),
-  'SP',
-  'Reason-Phrase'(T3, Reason),
-  'CRLF'.
 
