@@ -2,7 +2,7 @@
   rfc2616_accept_ranges,
   [
     'Accept-Ranges'//2 % -ParseTree:compound
-                       % ?RangeUnits:list(atom)
+                       % ?AcceptRanges:compound
   ]
 ).
 
@@ -10,18 +10,28 @@
 
 DCG for accept ranges header in RFC 2616.
 
+# Datatypes
+
+## AcceptRanges
+
+~~~{.pl}
+'Accept-Ranges'(
+  RangeUnits:list(atom)
+)
+~~~
+
 @author Wouter Beek
 @see RFC 2616
 @version 2013/12
 */
 
 :- use_module(dcg(parse_tree)).
-:- use_module(dcg(rfc2616_abnf)).
-:- use_module(http(rfc2616_range_unit)).
+:- use_module(flp(rfc2616_abnf)).
+:- use_module(http_parameters(rfc2616_range_unit)).
 
 
 
-%! 'Accept-Ranges'(-ParseTree:compound, ?RangeUnits:list(atom))//
+%! 'Accept-Ranges'(-ParseTree:compound, ?AcceptRanges:compound)//
 % The `Accept-Ranges` response-header field allows the server to indicate
 %  its acceptance of range requests for a resource.
 %
@@ -47,7 +57,7 @@ DCG for accept ranges header in RFC 2616.
 % ~~~
 % to advise the client not to attempt a range request.
 
-'Accept-Ranges'('Accept-Ranges'(T1), RangeUnits) -->
+'Accept-Ranges'('Accept-Ranges'(T1), 'Accept-Ranges'(RangeUnits)) -->
   "Accept-Ranges:",
   'acceptable-ranges'(T1, RangeUnits).
 

@@ -17,11 +17,17 @@ DCG for RFC 2616 response.
 @version 2013/12
 */
 
+:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
-:- use_module(http(rfc2616_abnf)).
+:- use_module(flp(rfc2616_abnf)).
+:- use_module(http(rfc2616)).
 :- use_module(http(rfc2616_basic)).
-:- use_module(http(rfc2616_range_unit)).
+:- use_module(http(rfc2616_generic_message)).
 :- use_module(http(rfc2616_status_line)).
+:- use_module(http_headers(rfc2616_entity_header)).
+:- use_module(http_headers(rfc2616_general_header)).
+:- use_module(http_headers(rfc2616_response_header)).
+:- use_module(http_parameters(rfc2616_range_unit)).
 
 
 

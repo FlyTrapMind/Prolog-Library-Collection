@@ -5,11 +5,9 @@
                 % ?Codes:list(code)
     parameter//2, % -ParseTree:compound
                   % ?Parameter:pair(atom,atom)
-    'quoted-string'//2, % -ParseTree:compound
-                        % ?Codes:list(code)
+    'quoted-string'//1, % ?Codes:list(code)
     separator//0,
-    token//2 % -ParseTree:compound
-             % ?Token:atom
+    token//1 % ?Token:atom
   ]
 ).
 
@@ -42,8 +40,8 @@ Some basic DCG rules that are too specific to be reused outside of
 % attribute = token
 % ~~~
 
-attribute(attribute(T0), Attribute) -->
-  token(T0, Attribute).
+attribute(attribute(Attribute), Attribute) -->
+  token(Attribute).
 
 
 
@@ -118,8 +116,8 @@ attribute(attribute(T0), Attribute) -->
 %
 % @see Implementors should be aware of IETF character set requirements.
 
-charset(T0, X) -->
-  token(T0, X).
+charset(charset(Charset), Charset) -->
+  token(Charset).
 
 
 
@@ -207,7 +205,7 @@ qdtext(C) -->
 
 
 
-%! 'quoted-string'(-ParseTree:compound, ?String:atom)//
+%! 'quoted-string'(?QuotedString:atom)//
 % A string of text is parsed as a single word if it is quoted using
 %  double-quote marks.
 %
@@ -217,9 +215,9 @@ qdtext(C) -->
 %
 % @see RFC 2616
 
-'quoted-string'('quoted-string'(String), String) -->
+'quoted-string'(QuotedString) -->
   quoted(dcg_multi1('qdtex_or_quoted-pair', Cs)),
-  {atom_codes(String, Cs)}.
+  {atom_codes(QuotedString, Cs)}.
 
 'qdtex_or_quoted-pair'(C) -->
   qdtext(C).
@@ -260,14 +258,14 @@ separator --> 'HT'. % 9
 
 
 
-%! token(-ParseTree:compound, ?Token:atom)//
+%! token(?Token:atom)//
 % ~~~{.abnf}
 % token = 1*<any CHAR except CTLs or separators>
 % ~~~
 %
 % @see RFC 2616
 
-token(token(Token), Token) -->
+token(Token) -->
   dcg_multi1(token_, 1-_, Token, [convert(codes_to_atom)]).
 
 token_(C) -->
@@ -281,8 +279,8 @@ token_(C) -->
 % value     = token | quoted-string
 % ~~~
 
-value(value(T0), Value) -->
-  token(T0, Value).
-value(value(T0), Value) -->
-  'quoted-string'(T0, Value).
+value(value(Value), Value) -->
+  token(Value).
+value(value(Value), Value) -->
+  'quoted-string'(Value).
 

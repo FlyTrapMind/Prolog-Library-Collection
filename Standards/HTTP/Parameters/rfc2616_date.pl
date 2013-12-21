@@ -142,7 +142,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 'asctime-date'('asctime-date'(T1,T2,T3,Year), date(Year,Month,Day,Time)) -->
   wkday(T1, Day),
   'SP',
-  date3(T2, Moth, Day),
+  date3(T2, Month, Day),
   'SP',
   time(T3, Time),
   'SP',
@@ -168,7 +168,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 
 date1(date1(Day,T1,Year), Year, Month, Day) -->
   % Day
-  dcg_multi2('DIGIT', 2-2, [D1,D2]),
+  dcg_multi1('DIGIT', 2-2, [D1,D2]),
   {digits_to_decimal([D1,D2], Day)},
   'SP',
   
@@ -177,7 +177,7 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
   'SP',
   
   % Year
-  dcg_multi2('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
+  dcg_multi1('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
   {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 

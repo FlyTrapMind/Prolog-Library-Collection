@@ -15,11 +15,11 @@ DCG for response headers in RFC 2616.
 @version 2013/12
 */
 
-:- use_module(http_header(rfc2616_accept_ranges)).
-:- use_module(http_header(rfc2616_age)).
-:- use_module(http_header(rfc2616_etag)).
-:- use_module(http_header(rfc2616_location)).
-:- use_module(http_header(rfc2616_proxy_authenticate)).
+:- use_module(http_headers(rfc2616_accept_ranges)).
+:- use_module(http_headers(rfc2616_age)).
+:- use_module(http_headers(rfc2616_etag)).
+:- use_module(http_headers(rfc2616_location)).
+:- use_module(http_headers(rfc2616_proxy_authenticate)).
 
 
 
@@ -58,14 +58,15 @@ DCG for response headers in RFC 2616.
 %  response-header fields if all parties in the communication
 %  recognize them to be response-header fields.
 
-'response-header'('response-header'(T1), 'Accept-Ranges'(RangeUnits)) -->
-  'Accept-Ranges'(T1, RangeUnits).
-'response-header'('response-header'(T1), 'Age'(Seconds)) -->
-  'Age'(T1, Seconds).
-'response-header'('response-header'(T1), 'ETag'(Weak, Tag)) -->
-  'ETag'(T1, Weak, Tag).
+'response-header'('response-header'(T1), AcceptRanges) -->
+  'Accept-Ranges'(T1, AcceptRanges).
+'response-header'('response-header'(T1), Age) -->
+  'Age'(T1, Age).
+'response-header'('response-header'(T1), ETag) -->
+  'ETag'(T1, ETag).
 'response-header'('response-header'(T1), 'Location'(Location)) -->
   'Location'(T1, Location).
+/*
 'response-header'('response-header'(T1), Challenges) -->
   'Proxy-Authenticate'(T1, Challenges).
 'response-header' -->
@@ -76,4 +77,5 @@ DCG for response headers in RFC 2616.
   'Vary'.
 'response-header' -->
   'WWW-Authenticate'.
+*/
 

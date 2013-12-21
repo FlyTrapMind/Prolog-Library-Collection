@@ -1,6 +1,8 @@
 :- module(
   rfc2616_media_types,
   [
+    'media-type'//2 % -ParseTree:compound
+                    % ?MediaType:compound
   ]
 ).
 
@@ -17,7 +19,7 @@
 
 
 
-%! 'media-type'(-ParseTree:compound, ?MediaType:compound)//
+%! 'media-type'(-ParseTree:compound, ?MediaType:compound)// .
 % HTTP uses Internet Media Types in the `Content-Type` and `Accept` header
 %  fields in order to provide open and extensible data typing and
 %  type negotiation.
@@ -158,8 +160,9 @@
   parameter(T1, Param).
 
 
-%! subtype(-ParseTree:compound, Subtype:atom)//
-%! type(-ParseTree:compound, Type:atom)//
+
+%! subtype(-ParseTree:compound, Subtype:atom)// .
+%! type(-ParseTree:compound, Type:atom)// .
 %
 % # Syntax
 %
@@ -172,8 +175,8 @@
 %
 % `LWS` MUST NOT be used between the type and subtype.
 
-type(type(T1), Type) -->
-  token(T1, Type).
-subtype(subtype(T1), Subtype) -->
-  token(T1, Subtype).
+type(type(Type), Type) -->
+  token(Type).
+subtype(subtype(Subtype), Subtype) -->
+  token(Subtype).
 

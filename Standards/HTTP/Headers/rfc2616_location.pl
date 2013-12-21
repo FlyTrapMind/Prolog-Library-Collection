@@ -10,6 +10,37 @@
 
 DCG for the `Location` response header in RFC 2616.
 
+# Datatypes
+
+## Location
+
+~~~{.pl}
+'Location'(
+  URI:compound
+)
+~~~
+
+## URI
+
+~~~{.pl}
+uri(
+  Scheme:atom,
+  Authority:or(atom,compound]),
+  Path:list(list(atom)),
+  Query:atom
+)
+~~~
+
+## Authority
+
+~~~{.pl}
+authority(
+  User:atom,
+  Host:or([list(atom),list(integer)]),
+  Port:integer
+)
+~~~
+
 @author Wouter Beek
 @see RFC 2616
 @version 2013/12
@@ -60,7 +91,7 @@ DCG for the `Location` response header in RFC 2616.
 %
 % @tbd RFC 2616 section 13.10 for cache requirements of some methods.
 
-'Location'('Location'(T1), Location) -->
+'Location'('Location'(T1), 'Location'(Location)) -->
   "Location:",
   absoluteURI(T1, Location).
 

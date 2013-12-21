@@ -18,20 +18,20 @@ DCG for HTTP methods.
 
 
 
-%~ 'extension-method'(-ParseTree:compound, ?Method:atom)//
+%~ 'extension-method'(-ParseTree:compound, ?Method:atom)// .
 % ~~~{.abnf}
 % extension-method = token
 % ~~~
 
-'extension-method'('extension-method'(T1), Method) -->
-  token(T1, Method).
+'extension-method'('extension-method'(Method), Method) -->
+  token(Method).
 
 
 
 %! 'Method'(
 %!   ?Method:oneof([connect,delete,get,head,options,post,put,send,trace])
-%! )//
-%! 'Method'(-ParseTree:compound, ?Method:compound)//
+%! )// .
+%! 'Method'(-ParseTree:compound, ?Method:compound)// .
 % The HTTP method.
 %
 % # Syntax

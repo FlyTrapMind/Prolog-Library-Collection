@@ -115,7 +115,7 @@ Content coding is a property of the original entity.
     true
   ),
   
-  token(T0, Token),
+  token(ContentToken),
   
   % PARSING
   % There could be non-canonical content-coding values.
@@ -123,10 +123,10 @@ Content coding is a property of the original entity.
   (
     {var(ContentCoding)}
   ->
-    'content-coding_value'(CanonicalValue, Tokens),
-    memberchk(Token, Tokens).
+    'content-coding_value'(CanonicalValue, ContentTokens),
+    memberchk(ContentToken, ContentTokens).
   ;
-    true
+    ConnectionToken = ContentToken
   ).
 
 'content-coding_value'(compress, [compress,'x-compress']).

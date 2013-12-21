@@ -1,15 +1,25 @@
 :- module(
   rfc2616_etag,
   [
-    'ETag'//3 % -ParseTree:compound
-              % ?Weak:boolean
-              % ?Tag:atom
+    'ETag'//2 % -ParseTree:compound
+              % ?ETag:compound
   ]
 ).
 
 /** <module> RFC 2616 ETag
 
 DCG for the `ETag` response header of RFC 2616.
+
+# Datatypes
+
+## ETag
+
+~~~{.pl}
+ETag(
+  Weak:boolean,
+  Tag:atom
+)
+~~~
 
 @author Wouter Beek
 @see RFC 2616
@@ -20,7 +30,7 @@ DCG for the `ETag` response header of RFC 2616.
 
 
 
-%! 'ETag'(-ParseTree:compound, ?Weak:boolean, ?Tag:atom)//
+%! 'ETag'(-ParseTree:compound, ?ETag:compound)//
 % The `ETag` response-header field provides the current value of
 %  the entity tag for the requested variant.
 %
@@ -39,7 +49,7 @@ DCG for the `ETag` response header of RFC 2616.
 % ETag: ""
 % ~~~
 
-'ETag'('ETag'(T1), Weak-Tag) -->
+'ETag'('ETag'(T1), 'ETag'(Weak, Tag)) -->
   "ETag:",
   'entity-tag'(T1, Weak, Tag).
 

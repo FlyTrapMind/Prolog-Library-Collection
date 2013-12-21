@@ -2,8 +2,7 @@
   rfc2616_product_token,
   [
     product//2 % -ParseTree:compound
-               % ?Name:atom
-               % ?Version:atom
+               % ?Product:compound
   ]
 ).
 
@@ -11,15 +10,28 @@
 
 DCG for RFC 2616 product tokens.
 
+# Datatypes
+
+## Product
+
+~~~{.pl}
+product(
+  Name:atom,
+  Version:atom
+)
+~~~
+
 @author Wouter Beek
+@see RFC 2616
 @version 2013/12
 */
 
+:- use_module(dcg(parse_tree)).
 :- use_module(rfc2616_generic)).
 
 
 
-%! product(-ParseTree:compound, ?Name:atom, ?Version:atom)//
+%! product(-ParseTree:compound, ?Product:compound)//
 % Product tokens are used to allow communicating applications to identify
 %  themselves by software name and version.
 %
@@ -50,14 +62,15 @@ DCG for RFC 2616 product tokens.
 % Server: Apache/0.8.4
 % ~~~
 
-product(T0, Name, Version) -->
-  token(T1, Name),
+product(T0, product(Name,Version)) -->
+  token(Name),
   (
     "/",
-    'product-version'(T2, Version)
+    'product-version'(T1, Version)
   ;
     ""
-  ).
+  ),
+  {parse_tree(product, [Name,T1], T0)}.
 
 
 
@@ -77,6 +90,6 @@ product(T0, Name, Version) -->
 %  (i.e., successive versions of the same product SHOULD only differ in
 %  the product-version portion of the product value).
 
-'product-version'('product-version'(T1), Version) -->
-  token(T1, Version).
+'product-version'('product-version'(Version), Version) -->
+  token(Version).
 

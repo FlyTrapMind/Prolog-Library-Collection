@@ -2,7 +2,7 @@
   rfc2616_proxy_authenticate,
   [
     'Proxy-Authenticate'//2 % -ParseTree:compound
-                            % ?Challenges:list
+                            % ?ProxyAuthenticate:compound
   ]
 ).
 
@@ -10,16 +10,27 @@
 
 DCG for the `Proxy-Authenticate` response header in RFC 2616.
 
+# Datatypes
+
+## ProxyAuthenticate
+
+~~~{.pl}
+'Proxy-Authenticate'(
+  Challenges:list
+)
+~~~
+
 @author Wouter Beek
 @see RFC 2616
 @version 2013/12
 */
 
+:- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
 
 
 
-%! 'Proxy-Authenticate'(-ParseTree:compound, ?Challenges:list)//
+%! 'Proxy-Authenticate'(-ParseTree:compound, ?ProxyAuthenticate:compound)//
 % # Syntax
 %
 % ~~~{.abnf}
@@ -48,7 +59,8 @@ DCG for the `Proxy-Authenticate` response header in RFC 2616.
 %
 % @tbd Implement RFC 2617.
 
-'Proxy-Authenticate'('Proxy-Authenticate'(T1), Challenges) -->
+'Proxy-Authenticate'(T0, 'Proxy-Authenticate'(Challenges)) -->
   "Proxy-Authenticate:",
-  abnf_list2(challenge, 1-_, Ts, Challenges).
+  abnf_list2(challenge, 1-_, Ts, Challenges),
+  {parse_tree('Proxy-Authenticate', Ts, T0)}.
 

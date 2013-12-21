@@ -1,7 +1,8 @@
 :- module(
   rfc2616_quality_value,
   [
-    qvalue//1 % -QualityValue:between(0.0,1.0)
+    qvalue//2 % -ParseTree:compound
+              % ?QualityValue:between(0.0,1.0)
   ]
 ).
 
@@ -21,7 +22,7 @@ DCG for RFC 2616 quality values.
 
 
 
-%! qvalue(-QualityValue:between(0.0,1.0))//
+%! qvalue(-ParseTree:compound, ?QualityValue:between(0.0,1.0))//
 % HTTP quality values, used in `Accept` and `Accept-Language`.
 %
 % # Syntax
@@ -48,7 +49,7 @@ DCG for RFC 2616 quality values.
 %
 % ## `0.0`
 %
-% If a parameter has a quality value of 0,
+% If a parameter has a quality value of `0`,
 %  then content with this parameter is `not acceptable' for the client.
 %
 % # Nomenclature
@@ -56,7 +57,7 @@ DCG for RFC 2616 quality values.
 % *|Quality values|* is a misnomer, since these values merely represent
 %  relative degradation in desired quality.
 
-qvalue(D) -->
+qvalue(qvalue(D), D) -->
   "0",
   (
     ".",
@@ -65,7 +66,7 @@ qvalue(D) -->
   ;
     ""
   ).
-qvalue(1.0) -->
+qvalue(qvalue(1.0), 1.0) -->
   "1",
   (
     ".",

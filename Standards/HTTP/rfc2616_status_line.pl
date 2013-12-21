@@ -15,13 +15,15 @@ DCG for RFC 2616 status lines.
 @version 2013/12
 */
 
+:- use_module(dcg(dcg_multi)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_version)).
+:- use_module(math(radix)).
 
 
 
 
-%! 'extension-code'(-ParseTree:compound, ?Status:between(100,999))//
+%! 'extension-code'(-ParseTree:compound, ?Status:between(100,999))// .
 % HTTP status codes are extensible.
 %
 % # Syntax
@@ -65,14 +67,21 @@ DCG for RFC 2616 status lines.
 % Reason-Phrase = *<TEXT, excluding CR, LF>
 % ~~~
 
-'Reason-Phrase'('Reason-Phrase'(T1), Reason) -->
+'Reason-Phrase'('Reason-Phrase'(Reason), Reason) -->
+  dcg_multi1('_Reason-Phrase', _-_, Cs),
+  {atom_codes(Reason, Cs)}.
+'_Reason-Phrase'(C) -->
   'TEXT'(C),
   {\+ phrase('CR', [C]), \+ phrase('LF', [C])}.
 
 
 
-%! 'Status-Code'(-Tree:compound, ?Status:between(100,505), ?Reason:atom)//
-%! 'Status-Code'(-ParseTree:compound, ?Status:between(0,999), ?Reason:atom)//
+%! 'Status-Code'(-Tree:compound, ?Status:between(100,505), ?Reason:atom)// .
+%! 'Status-Code'(
+%!   -ParseTree:compound,
+%!   ?Status:between(100,999),
+%!   ?Reason:atom
+%! )// .
 % # Syntax
 %
 % The `Status-Code` element is a 3-digit integer result code of the attempt
@@ -156,7 +165,8 @@ DCG for RFC 2616 status lines.
 % The individual values of the numeric status codes defined for HTTP/1.1,
 %  and an example set of corresponding Reason-Phrase's, are presented below.
 % The reason phrases listed here are only recommendations
-%  -- they MAY be replaced by local equivalents without affecting the protocol.
+%  -- they MAY be replaced by local equivalents without affecting
+%  the protocol.
 
 'Status-Code'(100, 'Continue') -->
   "100".
@@ -248,7 +258,7 @@ DCG for RFC 2616 status lines.
 
 
 
-%! 'Status-Line'(-ParseTree:compound, ?Version:compound, ?Status:compound)//
+%! 'Status-Line'(-ParseTree:compound, ?Version:compound, ?Status:compound)// .
 % # Syntax
 %
 % The first line of a `Response` message is the `Status-Line`,

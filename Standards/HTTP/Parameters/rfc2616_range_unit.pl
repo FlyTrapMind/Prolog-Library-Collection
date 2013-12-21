@@ -22,7 +22,7 @@
 % bytes-unit = "bytes"
 % ~~~
 
-'bytes-unit' -->
+'bytes-unit'('bytes-unit'(bytes), bytes) -->
   "bytes".
 
 
@@ -32,8 +32,8 @@
 % other-range-unit = token
 % ~~~
 
-'other-range-unit'('other-range-unit'(T1), RangeUnit) -->
-  token(T1, RangeUnit).
+'other-range-unit'('other-range-unit'(RangeUnit), RangeUnit) -->
+  token(RangeUnit).
 
 
 

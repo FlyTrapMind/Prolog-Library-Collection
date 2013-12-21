@@ -29,6 +29,7 @@ All HTTP/1.1 applications MUST be able to receive and decode the
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic)).
+:- use_module(http_headers(rfc2616_entity_header)).
 :- use_module(math(radix)).
 
 
@@ -85,8 +86,8 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % chunk-ext-name = token
 % ~~~
 
-'chunk-ext-name'('chunk-ext-name'(T0), ChunkExtensionName) -->
-  token(T0, ChunkExtensionName).
+'chunk-ext-name'('chunk-ext-name'(ChunkExtensionName), ChunkExtensionName) -->
+  token(ChunkExtensionName).
 
 
 
@@ -97,10 +98,10 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % chunk-ext-val = token | quoted-string
 % ~~~
 
-'chunk-ext-val'('chunk-ext-val'(T0), ChunkExtensionValue) -->
-  token(T0, ChunkExtensionValue).
-'chunk-ext-val'('chunk-ext-val'(T0), ChunkExtensionValue) -->
-  'quoted-string'(T0, ChunkExtensionValue).
+'chunk-ext-val'('chunk-ext-val'(ChunkExtensionValue), ChunkExtensionValue) -->
+  token(ChunkExtensionValue).
+'chunk-ext-val'('chunk-ext-val'(ChunkExtensionValue), ChunkExtensionValue) -->
+  'quoted-string'(ChunkExtensionValue).
 
 
 
@@ -336,10 +337,11 @@ trailer(T0, EntityHeaders) -->
 % transfer-extension = token *( ";" parameter )
 % ~~~
 
-'transfer-extension'('transfer-extension'([T0|Ts]), Token, Params) -->
-  token(T0, Token),
-  dcg_multi2('_;_and_parameter', _-_, Ts, Params).
-'_;_and_parameter'(T0, Param) -->
+'transfer-extension'(T0, Token, Parameters) -->
+  token(Token),
+  dcg_multi2('_;_and_parameter', _-_, Ts, Parameters),
+  {parse_tree('transfer-extension', [Token|Ts], T0)}.
+'_;_and_parameter'(T0, Parameter) -->
   ";",
-  parameter(T0, Param).
+  parameter(T0, Parameter).
 

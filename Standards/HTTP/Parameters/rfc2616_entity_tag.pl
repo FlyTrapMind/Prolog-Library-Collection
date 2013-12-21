@@ -1,9 +1,9 @@
 :- module(
   rfc2616_entity_tag,
   [
-    'entity-tag'/3 % -ParseTree:compound
-                   % ?Weak:boolean
-                   % ?Tag:atom
+    'entity-tag'//3 % -ParseTree:compound
+                    % ?Weak:boolean
+                    % ?Tag:atom
   ]
 ).
 
@@ -17,6 +17,7 @@ DCG for RFC 2616 entity tags.
 */
 
 :- use_module(http(rfc2616_basic)).
+:- use_module(http(rfc2616_generic)).
 
 
 
@@ -54,7 +55,7 @@ DCG for RFC 2616 entity tags.
     weak(T1, Weak)
   ;
     "",
-    Weak = false
+    {Weak = false}
   ),
   'opaque-tag'(T2, Tag).
 
@@ -65,8 +66,8 @@ DCG for RFC 2616 entity tags.
 % opaque-tag = quoted-string
 % ~~~
 
-'opaque-tag'('opaque-tag'(T1), Tag) -->
-  'quoted-string'(T1, Tag).
+'opaque-tag'('opaque-tag'(Tag), Tag) -->
+  'quoted-string'(Tag).
 
 
 

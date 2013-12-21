@@ -2,7 +2,7 @@
   rfc2616_age,
   [
     'Age'//2 % -ParseTree:compound
-             % ?Seconds:nonneg
+             % ?Age:compound
   ]
 ).
 
@@ -10,14 +10,26 @@
 
 DCG for the `Age` header of RFC 2616.
 
+# Datatypes
+
+## Age
+
+~~~{.pl}
+'Age'(
+  Seconds:nonneg
+)
+~~~
+
 @author Wouter Beek
 @see RFC 2616
 @version 2013/12
 */
 
+:- use_module(http_parameters(rfc2616_date)).
 
 
-%! 'Age'(-ParseTree:compound, ?Seconds:nonneg)//
+
+%! 'Age'(-ParseTree:compound, ?Age:compound)//
 % # Syntax
 %
 % ~~~{.abnf}
@@ -34,9 +46,11 @@ DCG for the `Age` header of RFC 2616.
 %
 % @see `Age` values are calculated as specified in section 13.2.3.
 
-'Age'('Age'(T1), Seconds) -->
+'Age'('Age'(T1), 'Age'(Seconds)) -->
   "Age:",
   'age-value'(T1, Seconds).
+
+
 
 %! 'age-value'(-ParseTree:compound, ?Age:nonneg)//
 % # Syntax

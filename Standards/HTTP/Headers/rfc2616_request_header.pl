@@ -1,7 +1,8 @@
 :- module(
   rfc2616_request_header,
   [
-    'Request-header'//1 % -ParseTree:compound
+    'Request-header'//2 % -ParseTree:compound
+                        % ?RequestHeader
   ]
 ).
 
@@ -12,9 +13,12 @@
 @version 2013/12
 */
 
+:- use_module(http_headers(rfc2616_accept)).
+:- use_module(http_headers(rfc2616_accept_charset)).
 
 
-%! 'Request-header'(-ParseTree:compound)//
+
+%! 'Request-header'(-ParseTree:compound, ?RequestHeader)//
 % # Syntax
 %
 % ~~~{.abnf}
@@ -58,23 +62,27 @@
 %  to be request-header fields.
 % Unrecognized header fields are treated as entity-header fields.
 
-'Request-header' --> 'Accept'.
-'Request-header' --> 'Accept-Charset'.
-'Request-header' --> 'Accept-Encoding'.
-'Request-header' --> 'Accept-Language'.
-'Request-header' --> 'Authorization'.
-'Request-header' --> 'Expect'.
-'Request-header' --> 'From'.
-'Request-header' --> 'Host'.
-'Request-header' --> 'If-Match'.
-'Request-header' --> 'If-Modified-Since'.
-'Request-header' --> 'If-None-Match'.
-'Request-header' --> 'If_range'.
-'Request-header' --> 'If-Unmodified-Since'.
-'Request-header' --> 'Max-Forwards'.
-'Request-header' --> 'Proxy-Authorization'.
-'Request-header' --> 'Range'.
-'Request-header' --> 'Referer'.
-'Request-header' --> 'TE'.
-'Request-header' --> 'User-Agent'.
+'Request-header'('Request-header'(T1), Statements) -->
+  'Accept'(T1, Statements).
+'Request-header'('Request-header'(T1), Statements) -->
+  'Accept-Charset'(T1, Statements).
+/*
+'Request-header'('Request-header'(T1)) --> 'Accept-Encoding'.
+'Request-header'('Request-header'(T1)) --> 'Accept-Language'.
+'Request-header'('Request-header'(T1)) --> 'Authorization'.
+'Request-header'('Request-header'(T1)) --> 'Expect'.
+'Request-header'('Request-header'(T1)) --> 'From'.
+'Request-header'('Request-header'(T1)) --> 'Host'.
+'Request-header'('Request-header'(T1)) --> 'If-Match'.
+'Request-header'('Request-header'(T1)) --> 'If-Modified-Since'.
+'Request-header'('Request-header'(T1)) --> 'If-None-Match'.
+'Request-header'('Request-header'(T1)) --> 'If_range'.
+'Request-header'('Request-header'(T1)) --> 'If-Unmodified-Since'.
+'Request-header'('Request-header'(T1)) --> 'Max-Forwards'.
+'Request-header'('Request-header'(T1)) --> 'Proxy-Authorization'.
+'Request-header'('Request-header'(T1)) --> 'Range'.
+'Request-header'('Request-header'(T1)) --> 'Referer'.
+'Request-header'('Request-header'(T1)) --> 'TE'.
+'Request-header'('Request-header'(T1)) --> 'User-Agent'.
+*/
 

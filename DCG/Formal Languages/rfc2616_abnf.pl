@@ -36,6 +36,17 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 :- use_module(http(rfc2616_basic)).
 :- use_module(library(apply)).
 
+:- meta_predicate rfc2616_abnf:abnf_list1(3,?,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list1(3,?,?,-,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list2(4,?,?,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list2(4,?,?,?,-,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_nonvar(3,+,+,-,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_nonvar(4,+,+,-,?,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var(3,+,+,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var(4,+,+,?,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var_(3,+,+,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var_(4,+,+,?,?,?,?).
+
 
 
 %! abnf_list1(
