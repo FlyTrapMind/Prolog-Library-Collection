@@ -1,6 +1,8 @@
 :- module(
   rfc2616_generic,
   [
+    charset//2, % -ParseTree:compound
+                % ?Charset:atom
     comment//2, % -ParseTree:compound
                 % ?Codes:list(code)
     parameter//2, % -ParseTree:compound

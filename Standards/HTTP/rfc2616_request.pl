@@ -20,6 +20,7 @@
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
+:- use_module(http(rfc2616_generic_message)).
 :- use_module(http(rfc2616_method)).
 :- use_module(http(rfc2616_version)).
 :- use_module(http_headers(rfc2616_entity_header)).
@@ -65,7 +66,7 @@
     'message-body'(T3, Body)
   ;
     "",
-    Body = []
+    {Body = []}
   ),
   {parse_tree(request, [T1,headers(T2s),T3], T0)}.
 '_Request'(T1, Header) -->

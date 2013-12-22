@@ -86,8 +86,8 @@ Call a DCG rule multiple times while aggregating the arguments.
 :- meta_predicate(dcg_multi_no_arguments(2,+,+,-,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(3,+,+,-,+,+,?,?)).
 :- meta_predicate(dcg_multi_nonvar(4,+,+,-,+,+,+,?,?)).
-:- meta_predicate(dcg_multi_var(3,+,+,-,+,?,?)).
-:- meta_predicate(dcg_multi_var(4,+,+,-,-,+,?,?)).
+:- meta_predicate(dcg_multi_var(3,+,+,+,-,-,+,?,?)).
+:- meta_predicate(dcg_multi_var(4,+,+,+,-,-,-,+,?,?)).
 
 
 
@@ -120,10 +120,7 @@ dcg_multi(DCG, Rep, O1, C) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_no_arguments(DCG, Max, 0, C, O2),
-  {in_between(Min, Max, C)},
-  % If the counter is at the maximum number of repetitions,
-  % then we need a cut here.
-  ({Max \== inf, Max =:= C} -> ! ; "").
+  {in_between(Min, Max, C)}.
 
 
 
@@ -176,8 +173,7 @@ dcg_multi1(DCG, Rep, L2, O1, C) -->
   {var(L2)}, !,
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_var(DCG, Min, Max, L1, O2),
-  {length(L1, C), in_between(Min, Max, C)},
+  dcg_multi_var(DCG, Min, Max, 0, C, L1, O2),
   % Apply conversion: e.g., codes_to_atom/2.
   {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)}.
 
@@ -240,11 +236,10 @@ dcg_multi2(DCG, Rep, L2, M2, O1, C) -->
   {maplist(var, [L2,M2])}, !,
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
-  dcg_multi_var(DCG, Min, Max, L1, M1, O2),
+  dcg_multi_var(DCG, Min, Max, 0, C, L1, M1, O2),
   % Apply conversion: e.g., codes_to_atom/2.
   {(option(convert(Pred), O2) -> call(Pred, L1, L2) ; L2 = L1)},
-  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)},
-  {length(L1, C)}.
+  {(option(convert(Pred), O2) -> call(Pred, M1, M2) ; M2 = M1)}.
 
 
 
@@ -277,28 +272,34 @@ dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
 % DCG VAR ARGUMENTS %
 
 % One argument.
-dcg_multi_var(_DCG, _Min, inf, [], _O1) -->
-  [].
-dcg_multi_var(DCG, Min, Min, [H1], _O1) --> !,
-  dcg_call(DCG, H1).
-dcg_multi_var(DCG, Min, Max1, [H1|T1], O1) -->
+dcg_multi_var(DCG, Min, Max, C1, C3, [H1|T1], O1) -->
   dcg_call(DCG, H1),
   % Process the separator, if any.
-  ({option(separator(Separator), O1), T1 \= []} -> Separator ; ""),
-  {count_down(Max1, Max2)},
-  dcg_multi_var(DCG, Min, Max2, T1, O1).
+  ({option(separator(Separator), O1)} -> Separator ; ""),
+  {C2 is C1 + 1},
+  {in_between(Min, Max, C2)},
+  dcg_multi_var(DCG, Min, Max, C2, C3, T1, O1).
+dcg_multi_var(DCG, Min, Max, C1, C2, [H1], _O1) --> !,
+  dcg_call(DCG, H1),
+  {C2 is C1 + 1},
+  {in_between(Min, Max, C2)}.
+dcg_multi_var(_DCG, Min, Max, C, C, [], _O1) -->
+  {in_between(Min, Max, C)}.
 
 % Two arguments
-dcg_multi_var(_DCG, _Min, inf, [], [], _O1) -->
-  [].
-dcg_multi_var(DCG, Min, Min, [H1], [H2], _O1) --> !,
-  dcg_call(DCG, H1, H2).
-dcg_multi_var(DCG, Min, Max1, [H1|T1], [H2|T2], O1) -->
+dcg_multi_var(DCG, Min, Max, C1, C3, [H1|T1], [H2|T2], O1) -->
   dcg_call(DCG, H1, H2),
   % Process the separator, if any.
-  ({option(separator(Separator), O1), T1 \= []} -> Separator ; ""),
-  {count_down(Max1, Max2)},
-  dcg_multi_var(DCG, Min, Max2, T1, T2, O1).
+  ({option(separator(Separator), O1)} -> Separator ; ""),
+  {C2 is C1 + 1},
+  {in_between(Min, Max, C2)},
+  dcg_multi_var(DCG, Min, Max, C2, C3, T1, T2, O1).
+dcg_multi_var(DCG, Min, Max, C1, C2, [H1], [H2], _O1) --> !,
+  dcg_call(DCG, H1, H2),
+  {C2 is C1 + 1},
+  {in_between(Min, Max, C2)}.
+dcg_multi_var(_DCG, Min, Max, C, C, [], [], _O1) -->
+  {in_between(Min, Max, C)}.
 
 
 

@@ -31,4 +31,7 @@ test(dcg_multi, [forall(dcg_multi_example(DCG, Rep, Atoms)),true]):-
   ),
   As == Atoms.
 
+%dcg_multi_example('ALPHA', 1-8).
+
 :- end_tests(dcg_multi).
+

@@ -42,10 +42,10 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 :- meta_predicate rfc2616_abnf:abnf_list2(4,?,?,?,-,?,?).
 :- meta_predicate rfc2616_abnf:abnf_list_nonvar(3,+,+,-,?,?,?).
 :- meta_predicate rfc2616_abnf:abnf_list_nonvar(4,+,+,-,?,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var(3,+,+,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var(4,+,+,?,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var_(3,+,+,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var_(4,+,+,?,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var(3,+,+,+,-,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var(4,+,+,+,-,?,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var_(3,+,+,+,-,?,?,?).
+:- meta_predicate rfc2616_abnf:abnf_list_var_(4,+,+,+,-,?,?,?,?).
 
 
 
@@ -111,8 +111,7 @@ abnf_list1(DCG, Rep, L, C) -->
 abnf_list1(DCG, Rep, L, C) -->
   {var(L)}, !,
   {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_var(DCG, Min, Max, L),
-  {length(L, C), dcg_multi:in_between(Min, Max, C)}.
+  abnf_list_var(DCG, Min, Max, 0, C, L).
 
 abnf_list2(DCG, Rep, L1, L2) -->
   abnf_list2(DCG, Rep, L1, L2, _C).
@@ -125,8 +124,7 @@ abnf_list2(DCG, Rep, L1, L2, C) -->
 abnf_list2(DCG, Rep, L1, L2, C) -->
   {maplist(var, [L1,L2])}, !,
   {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_var(DCG, Min, Max, L1, L2),
-  {length(L1, C), dcg_multi:in_between(Min, Max, C)}.
+  abnf_list_var(DCG, Min, Max, 0, C, L1, L2).
 
 % One argument.
 abnf_list_nonvar(_DCG, _Max, C, C, []) -->
@@ -162,52 +160,62 @@ abnf_list_separator(_C) -->
 
 % One agument.
 
-abnf_list_var(DCG, Min, Max, L) -->
+abnf_list_var(DCG, Min, Max, C1, C2, L) -->
   dcg_multi('LWS'),
-  abnf_list_var_(DCG, Min, Max, L).
+  abnf_list_var_(DCG, Min, Max, C1, C2, L).
 
-abnf_list_var_(_DCG, _Min, inf, []) -->
-  [].
+abnf_list_var_(_DCG, Min, Max, C, C, []) -->
+  {dcg_multi:in_between(Min, Max, C)}.
 % Last non-null element.
-abnf_list_var_(DCG, Min, Min, [H]) -->
-  dcg_call(DCG, H).
+abnf_list_var_(DCG, Min, Max, C1, C2, [H]) -->
+  dcg_call(DCG, H),
+  {C2 is C1 + 1},
+  {dcg_multi:in_between(Min, Max, C2)}.
 % Last null element.
-abnf_list_var_(_DCG, Min, Min, []) -->
-  abnf_list_separator.
+abnf_list_var_(_DCG, Min, Max, C, C, []) -->
+  abnf_list_separator,
+  {dcg_multi:in_between(Min, Max, C)}.
 % Non-last non-null element.
-abnf_list_var_(DCG, Min, Max1, [H|T]) -->
+abnf_list_var_(DCG, Min, Max, C1, C3, [H|T]) -->
   dcg_call(DCG, H),
   abnf_list_separator,
-  {dcg_multi:count_down(Max1, Max2)},
-  abnf_list_var_(DCG, Min, Max2, T).
+  {C2 is C1 + 1},
+  {dcg_multi:in_between(Min, Max, C2)},
+  abnf_list_var_(DCG, Min, Max, C2, C3, T).
 % Null element.
-abnf_list_var_(DCG, Min, Max, L) -->
+abnf_list_var_(DCG, Min, Max, C1, C2, L) -->
   abnf_list_separator,
-  abnf_list_var_(DCG, Min, Max, L).
+  {dcg_multi:in_between(Min, Max, C1)},
+  abnf_list_var_(DCG, Min, Max, C1, C2, L).
 
 
 % Two arguments.
 
-abnf_list_var(DCG, Min, Max, L1, L2) -->
+abnf_list_var(DCG, Min, Max, C1, C2, L1, L2) -->
   dcg_multi('LWS'),
-  abnf_list_var_(DCG, Min, Max, L1, L2).
+  abnf_list_var_(DCG, Min, Max, C1, C2, L1, L2).
 
-abnf_list_var_(_DCG, _Min, inf, [], []) -->
-  [].
+abnf_list_var_(_DCG, Min, Max, C, C, [], []) -->
+  {dcg_multi:in_between(Min, Max, C)}.
 % Last non-null element.
-abnf_list_var_(DCG, Min, Min, [H1], [H2]) -->
-  dcg_call(DCG, H1, H2).
+abnf_list_var_(DCG, Min, Max, C1, C2, [H1], [H2]) -->
+  dcg_call(DCG, H1, H2),
+  {C2 is C1 + 1},
+  {dcg_multi:in_between(Min, Max, C2)}.
 % Last null element.
-abnf_list_var_(_DCG, Min, Min, [], []) -->
-  abnf_list_separator.
+abnf_list_var_(_DCG, Min, Max, C, C, [], []) -->
+  abnf_list_separator,
+  {dcg_multi:in_between(Min, Max, C)}.
 % Non-last non-null element.
-abnf_list_var_(DCG, Min, Max1, [H1|T1], [H2|T2]) -->
+abnf_list_var_(DCG, Min, Max, C1, C3, [H1|T1], [H2|T2]) -->
   dcg_call(DCG, H1, H2),
   abnf_list_separator,
-  {dcg_multi:count_down(Max1, Max2)},
-  abnf_list_var_(DCG, Min, Max2, T1, T2).
+  {C2 is C1 + 1},
+  {dcg_multi:in_between(Min, Max, C2)},
+  abnf_list_var_(DCG, Min, Max, C2, C3, T1, T2).
 % Null element.
-abnf_list_var_(DCG, Min, Max, L1, L2) -->
+abnf_list_var_(DCG, Min, Max, C1, C2, L1, L2) -->
   abnf_list_separator,
-  abnf_list_var_(DCG, Min, Max, L1, L2).
+  {dcg_multi:in_between(Min, Max, C1)},
+  abnf_list_var_(DCG, Min, Max, C1, C2, L1, L2).
 

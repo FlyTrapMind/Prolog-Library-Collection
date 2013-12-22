@@ -17,7 +17,7 @@ DCG for `Accept-Charset` request header of RFC 2616.
 
 :- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
-:- use_module(http_parameters(rfc2616_charset)).
+:- use_module(http(rfc2616_generic)).
 :- use_module(http_parameters(rfc2616_quality_value)).
 
 
@@ -88,22 +88,22 @@ DCG for `Accept-Charset` request header of RFC 2616.
 
 'Accept-Charset'(T0, Statements) -->
   "Accept-Charset:",
-  abnf_list('_Accept-Charset', 1-_, Ts, Statements),
+  abnf_list2('_Accept-Charset', 1-_, Ts, Statements),
   {parse_tree('Accept-Charset', Ts, T0)}.
 '_Accept-Charset'(T0, Charset-QualityValue) -->
   (
     charset(T1, Charset)
   ;
     "*",
-    T1 = '*',
-    Charset = '*'
+    {T1 = '*'},
+    {Charset = '*'}
   ),
   (
     ";q=",
     qvalue(T2, QualityValue)
   ;
     "",
-    QualityValue = 1.0
+    {QualityValue = 1.0}
   ),
   {parse_tree('Accept-Charset_stmt', [T1,T2], T0)}.
 

@@ -168,12 +168,106 @@ DCG for RFC 2616 status lines.
 %  -- they MAY be replaced by local equivalents without affecting
 %  the protocol.
 
+% The purpose of the `100` (Continue) status is to allow a client
+%  that is sending a request message with a request body to determine
+%  if the origin server is willing to accept the request
+%  (based on the request headers) before the client sends the request body.
+% In some cases, it might either be inappropriate or highly inefficient
+%  for the client to send the body if the server will reject the message
+%  without looking at the body.
+%
+% Requirements for HTTP/1.1 clients:
+%   - If a client will wait for a `100` (Continue) response before sending
+%     the request body, it MUST send an `Expect` request-header field
+%     with the `100-continue` expectation.
+%   - A client MUST NOT send an `Expect` request-header field
+%     with the `100-continue` expectation if it does not intend to send
+%     a request body.
+%
+% ## Backward compatibility
+%
+% Because of the presence of older implementations,
+%  the protocol allows ambiguous situations in which a client may send
+%  `Expect: 100-continue` without receiving either
+%  a `417` (Expectation Failed) status or a `100` (Continue) status.
+% Therefore, when a client sends this header field to an origin server
+%  (possibly via a proxy) from which it has never seen
+%  a `100` (Continue) status, the client SHOULD NOT wait for
+%  an indefinite period before sending the request body.
+/*
+Requirements for HTTP/1.1 origin servers:
+      - Upon receiving a request which includes an Expect request-header
+        field with the "100-continue" expectation, an origin server MUST
+        either respond with 100 (Continue) status and continue to read
+        from the input stream, or respond with a final status code. The
+        origin server MUST NOT wait for the request body before sending
+        the 100 (Continue) response. If it responds with a final status
+        code, it MAY close the transport connection or it MAY continue
+        to read and discard the rest of the request.  It MUST NOT
+        perform the requested method if it returns a final status code.
+      - An origin server SHOULD NOT send a 100 (Continue) response if
+        the request message does not include an Expect request-header
+        field with the "100-continue" expectation, and MUST NOT send a
+        100 (Continue) response if such a request comes from an HTTP/1.0
+        (or earlier) client. There is an exception to this rule: for
+        compatibility with RFC 2068, a server MAY send a 100 (Continue)
+        status in response to an HTTP/1.1 PUT or POST request that does
+        not include an Expect request-header field with the "100-
+        continue" expectation. This exception, the purpose of which is
+        to minimize any client processing delays associated with an
+        undeclared wait for 100 (Continue) status, applies only to
+        HTTP/1.1 requests, and not to requests with any other HTTP-
+        version value.
+      - An origin server MAY omit a 100 (Continue) response if it has
+        already received some or all of the request body for the
+        corresponding request.
+      - An origin server that sends a 100 (Continue) response MUST
+        ultimately send a final status code, once the request body is
+        received and processed, unless it terminates the transport
+        connection prematurely.
+      - If an origin server receives a request that does not include an
+        Expect request-header field with the "100-continue" expectation,
+        the request includes a request body, and the server responds
+        with a final status code before reading the entire request body
+        from the transport connection, then the server SHOULD NOT close
+        the transport connection until it has read the entire request,
+        or until the client closes the connection. Otherwise, the client
+        might not reliably receive the response message. However, this
+        requirement is not be construed as preventing a server from
+        defending itself against denial-of-service attacks, or from
+        badly broken client implementations.
+
+   Requirements for HTTP/1.1 proxies:
+      - If a proxy receives a request that includes an Expect request-
+        header field with the "100-continue" expectation, and the proxy
+        either knows that the next-hop server complies with HTTP/1.1 or
+        higher, or does not know the HTTP version of the next-hop
+        server, it MUST forward the request, including the Expect header
+        field.
+      - If the proxy knows that the version of the next-hop server is
+        HTTP/1.0 or lower, it MUST NOT forward the request, and it MUST
+        respond with a 417 (Expectation Failed) status.
+      - Proxies SHOULD maintain a cache recording the HTTP version
+        numbers received from recently-referenced next-hop servers.
+      - A proxy MUST NOT forward a 100 (Continue) response if the
+        request message was received from an HTTP/1.0 (or earlier)
+        client and did not include an Expect request-header field with
+        the "100-continue" expectation. This requirement overrides the
+        general rule for forwarding of 1xx responses (see section 10.1).
+*/
+
 'Status-Code'(100, 'Continue') -->
   "100".
 'Status-Code'(101, 'Switching Protocols') -->
   "101".
+
+% A `200` response SHOULD include any header fields that indicate
+%  optional features implemented by the server
+%  and applicable to that resource (e.g., `Allow`),
+%  possibly including extensions not defined by this specification.
 'Status-Code'(200, 'OK') -->
   "200".
+
 'Status-Code'(201, 'Created') -->
   "201".
 'Status-Code'(202, 'Accepted') -->

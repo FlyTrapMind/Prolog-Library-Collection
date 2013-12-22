@@ -1,9 +1,11 @@
 :- module(
   rfc2616_generic_message,
   [
-    'generic-message'//2 % -ParseTree:compound
-                         % ?MessageHeaders:list
-                         % ?MessageBody:list(octet)
+    'generic-message'//3, % -ParseTree:compound
+                          % ?MessageHeaders:list
+                          % ?MessageBody:list(octet)
+    'message-body'//2 % -ParseTree:compound
+                      % ?MessageBody:list(octet)
   ]
 ).
 
@@ -20,8 +22,11 @@ DCG for generic messages (comprising request and response messages)
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
+:- use_module(http(rfc2616_entity)).
 :- use_module(http(rfc2616_request)).
 :- use_module(http(rfc2616_response)).
+:- use_module(http(rfc2616_status_line)).
+:- use_module(http_headers(rfc2616_message_header)).
 
 
 
@@ -63,7 +68,7 @@ DCG for generic messages (comprising request and response messages)
 
 
 
-%! 'message-body'(-ParseTree:compound, ?Body)//
+%! 'message-body'(-ParseTree:compound, ?MessageBody:list(octet))//
 % The message-body (if any) of an HTTP message is used to carry
 %  the entity-body associated with the request or response.
 %
@@ -202,7 +207,7 @@ DCG for generic messages (comprising request and response messages)
 %  with an extra `CRLF`.
 
 'start-line'('start-line'(T1)) -->
-  'Request-Line'(T1, _Method, _URI, _Version).
+  rfc2616_request:'Request-Line'(T1, _Method, _RequestURI, _Version).
 'start-line'('start-line'(T1)) -->
-  'Status-Line'(T1, _Version, _Status, _Headers, _Body).
+  'Status-Line'(T1, _Version, _Status).
 

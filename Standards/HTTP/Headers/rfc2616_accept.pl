@@ -42,12 +42,13 @@ media_range(
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
-:- use_module(http_parameters(rfc2616_media_types)).
+:- use_module(http(rfc2616_generic)).
+:- use_module(http_parameters(rfc2616_media_type)).
 :- use_module(http_parameters(rfc2616_quality_value)).
 
 
 
-%! 'Accept(-ParseTree:compound, ?Accepts:compound)// .
+%! 'Accept'(-ParseTree:compound, ?Accepts:compound)// .
 % # Syntax
 %
 % ~~~{.abnf}
@@ -127,17 +128,17 @@ media_range(
 %  with other rendering agents, this default set ought to be
 %  configurable by the user.
 
-'Accept'(T0, Accepts:list(compound)) -->
+'Accept'('Accept'(Ts), Accepts:list(compound)) -->
   "Accept:",
-  abnf_list2('_Accept', Ts, Accepts).
+  abnf_list2('_Accept', _-_, Ts, Accepts).
 '_Accept'(T0, accept(MediaRange,QualityValue, AcceptExtensions)) -->
   'media-range'(T1, MediaRange),
   (
     'accept-params'(T2, QualityValue, AcceptExtensions)
   ;
     "",
-    QualityValue = 1.0,
-    AcceptExtensions = []
+    {QualityValue = 1.0},
+    {AcceptExtensions = []}
   ),
   {parse_tree('Accept', [T1,T2], T0)}.
 
@@ -161,12 +162,12 @@ media_range(
     ;
       'quoted-string'(Value)
     ),
-    T0 = 'accept-extension'(Name,Value),
-    AcceptExtension = Name-Value
+    {T0 = 'accept-extension'(Name,Value)},
+    {AcceptExtension = Name-Value}
   ;
     "",
-    T0 = 'accept-extension'(Name),
-    AcceptExtension = Name-Name
+    {T0 = 'accept-extension'(Name)},
+    {AcceptExtension = Name-Name}
   ).
 
 
@@ -210,7 +211,7 @@ media_range(
 'accept-params'(T0, QualityValue, AcceptExtensions) -->
   ";q=",
   qvalue(T1, QualityValue),
-  dcg_multi('accept-extension', T2s, AcceptExtensions),
+  dcg_multi2('accept-extension', _-_, T2s, AcceptExtensions),
   {parse_tree('accept-params', [T1|T2s], T0)}.
 
 
@@ -259,17 +260,17 @@ media_range(
   dcg_multi2('_;_and_parameter', _-_, Ts, Parameters),
   {parse_tree('media-range', Ts, T0)}.
 'media-range'(T0, media_range(Type,'*',Parameters)) -->
-  type(T1, Type),
+  rfc2616_media_type:type(T1, Type),
   "/*",
   dcg_multi2('_;_and_parameter', _-_, Ts, Parameters),
   {parse_tree('media-range', [T1|Ts], T0)}.
 'media-range'(T0, media_range(Type,Subtype,Parameters)) -->
-  type(T1, Type),
+  rfc2616_media_type:type(T1, Type),
   "/",
-  subtype(T2, Subtype),
+  rfc2616_media_type:subtype(T2, Subtype),
   dcg_multi2('_;_and_parameter', _-_, Ts, Parameters),
   {parse_tree('media-range', [T1,T2|Ts], T0)}.
-'_;_and_parameter'(T1, Paremeter) -->
+'_;_and_parameter'(T1, Parameter) -->
   ";",
   parameter(T1, Parameter).
 

@@ -57,12 +57,13 @@ DCG for RFC 2616 quality values.
 % *|Quality values|* is a misnomer, since these values merely represent
 %  relative degradation in desired quality.
 
-qvalue(qvalue(D), D) -->
+qvalue(qvalue(D2), D2) -->
   "0",
   (
     ".",
-    dcg_multi('DIGIT', 0-3, Ds),
-    {digits_to_decimal(Ds, D)}
+    dcg_multi1('DIGIT', 0-3, Ds),
+    {digits_to_decimal(Ds, D1)},
+    {D2 is D1 / 10}
   ;
     ""
   ).

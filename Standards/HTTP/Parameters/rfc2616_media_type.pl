@@ -1,5 +1,5 @@
 :- module(
-  rfc2616_media_types,
+  rfc2616_media_type,
   [
     'media-type'//2 % -ParseTree:compound
                     % ?MediaType:compound
