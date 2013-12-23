@@ -131,3 +131,4 @@ uri_query_read(URI, Name, Value):-
   uri_data(search, Components, QueryString),
   uri_query_components(QueryString, QueryPairs),
   member(Name=Value, QueryPairs).
+

@@ -15,7 +15,7 @@
 Support for generating HTML tables based on Prolog lists.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/09-2013/11
+@version 2012/09-2013/06, 2013/09-2013/12
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -53,12 +53,15 @@ empty_row -->
 %      Default is `false`.
 
 html_table(O1, L1) -->
-  {flag(table_row, _, 0)},
+  {
+    meta_options(is_meta, O1, O2),
+    flag(table_row, _, 0)
+  },
   html(
     table(class=['pure-table','pure-table-bordered'], [
-      \html_table_caption(O1),
-      \html_table_header(O1, L1, L2),
-      tbody(\html_table_rows(O1, td, L2))
+      \html_table_caption(O2),
+      \html_table_header(O2, L1, L2),
+      tbody(\html_table_rows(O2, td, L2))
     ])
   ).
 
@@ -163,29 +166,36 @@ table_caption(O1, [element(caption,[],[Caption])]):-
   option(caption(Caption), O1), !.
 table_caption(_Options, []).
 
-%! table_cell(+CellType:oneof([td,th]), +Content:term, -Cell:compound) is det.
+%! table_cell(
+%!   +Options:list(nvpair),
+%!   +CellType:oneof([td,th]),
+%!   +Content:term,
+%!   -Cell:compound
+%! ) is det.
 
-table_cell(CellType, Content1, element(CellType,[],[Content2])):-
-  (
-    % The table may contain markup.
-    Content1 = element(_,_,_)
-  ->
-    Content2 = Content1
-  ;
-    dcg_phrase('IRI', Content1)
-  ->
-    Content2 = element(a,[href=Content1],[Content1])
-  ;
-    % If we use term_to_atom/2 for atom terms, extra single quotes are added
-    % in front and at the end of the atom. Therefore, we first check whether
-    % the term is an atom.
-    atom(Content1)
-  ->
-    Content2 = Content1
-  ;
-    % No other options are left, just make sure it does not break.
-    term_to_atom(Content1, Content2)
-  ).
+table_cell(O1, CellType, Content1, element(CellType,[],[Content2])):-
+  option(cell_value(Pred), O1, cell_value_default),
+  call(Pred, Content1, Content2).
+
+% The table may contain markup.
+cell_value_default(Content1, Content2):-
+  Content1 = element(_,_,_), !,
+  Content2 = Content1.
+% Pairs of an IRI and a label.
+cell_value_default(IRI-Label, element(a,[href=IRI],[Label])):- !.
+% IRIs.
+cell_value_default(Content1, element(a,[href=Content1],[Content1])):-
+  dcg_phrase('IRI', Content1), !.
+% If we use term_to_atom/2 for atomic terms, extra single quotes are added
+% in front and at the end of the atom. Therefore, we first check whether
+% the term is an atom.
+cell_value_default(Content, Content):-
+  atom(Content), !.
+% No other options are left, just make sure it does not break.
+cell_value_default(Content1, Content2):-
+  term_to_atom(Content1, Content2).
+
+is_meta(cell_value).
 
 %! table_header(
 %!   +O1:list(nvpair),
@@ -222,7 +232,7 @@ table_header(_Options, Rows, [], Rows).
 
 table_row(O1, CellType, Elements, element(tr, [], Cells2)):-
   % Create the markup cells for the given elements/contents.
-  maplist(table_cell(CellType), Elements, Cells1),
+  maplist(table_cell(O1, CellType), Elements, Cells1),
 
   % Create the markup cell for the row index, if option `indexed` is `true`.
   (
@@ -230,7 +240,7 @@ table_row(O1, CellType, Elements, element(tr, [], Cells2)):-
     CellType == td
   ->
     flag(table_row, RowNumber, RowNumber + 1),
-    table_cell(CellType, RowNumber, IndexCell),
+    table_cell(O1, CellType, RowNumber, IndexCell),
     Cells2 = [IndexCell|Cells1]
   ;
     Cells2 = Cells1

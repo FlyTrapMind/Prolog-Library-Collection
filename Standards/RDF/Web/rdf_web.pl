@@ -41,12 +41,12 @@ Web predicates for RDF graphs.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_bnode_map)).
-:- use_module(rdf(rdf_mat)).
 :- use_module(rdf(rdf_meta_auto_expand)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf(rdf_term)).
+:- use_module(rdf_reasoning(rdf_mat)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).

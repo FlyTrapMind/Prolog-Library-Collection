@@ -64,6 +64,7 @@ load_pgc:-
     assert(user:file_search_path(lang,            standards('Language'))),
     assert(user:file_search_path(owl,             standards('OWL'))),
     assert(user:file_search_path(rdf,             standards('RDF'))),
+      assert(user:file_search_path(rdf_reasoning,   rdf('Reasoning'))),
       assert(user:file_search_path(rdf_web,         rdf('Web'))),
     assert(user:file_search_path(rdfs,            standards('RDFS'))),
     assert(user:file_search_path(sparql,          standards('SPARQL'))),

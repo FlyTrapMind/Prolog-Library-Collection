@@ -12,12 +12,14 @@
 /** <module> TMS web
 
 @author Wouter Beek
-@version 2013/10-2013/11
+@version 2013/10-2013/12
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(generics(uri_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(html(html_table)).
+:- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
@@ -25,25 +27,47 @@
 :- use_module(server(web_modules)).
 :- use_module(tms(tms)).
 :- use_module(tms(tms_export)).
+:- use_module(xml(xml_dom)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
 :- db_add_novel(http:location(tms_nav, root(tms_nav), [])).
-:- http_handler(tms_nav(.), tms_nav, [prefix]).
+:- http_handler(root(tms_nav), tms_nav, [prefix]).
 
 :- initialization(web_module_add('TMS', tms_web, tms)).
 
 
 
 %! tms_nav(+Request:list) is det.
-% TMS graph navigation callback.
+% TMS graph navigation Web pages.
 
+% A graph representation of the given TMS node.
 tms_nav(Request):-
-  memberchk(path_info(NLocal), Request),
+  memberchk(search(Search), Request),
+  memberchk(node=NLocal, Search), !,
   rdf_global_id(doyle:NLocal, N),
-  tms_node_web_(N, SVG),
-  push(SVG).
+  tms_node_web_(N, SVG_DOM),
+  xml_dom_to_atom([], SVG_DOM, SVG_Atom),
+  reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
+% A graph representation of the given TMS.
+tms_nav(Request):-
+  memberchk(search(Search), Request),
+  memberchk(tms=TMS, Search), !,
+  tms_web(TMS, SVG_DOM),
+  xml_dom_to_atom([], SVG_DOM, SVG_Atom),
+  reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
+% A table of all TMS-es.
+tms_nav(_Request):-
+  tms_web(HTML_DOM),
+  xml_dom_to_atom([], HTML_DOM, HTML_Atom),
+  reply_html_page(app_style, \tms_head, \tms_body(HTML_Atom)).
+
+tms_body(HTML_Atom) -->
+  html(\[HTML_Atom]).
+
+tms_head -->
+  html(title('TMS')).
 
 %! tms_node_web(+NodeLabel:atom, -SVG:list) is det.
 
@@ -61,9 +85,11 @@ tms_node_web_(N, SVG):-
 
 tms_web([HTML_Table]):-
   findall(
-    [TMS,Type,NumberOfJs,NumberOfNs],
+    [TMS_URL-TMS,Type,NumberOfJs,NumberOfNs],
     (
       tms(Type, TMS),
+      http_absolute_uri(tms_nav(.), BaseURL),
+      uri_query_add(BaseURL, tms, TMS, TMS_URL),
       setoff(J, tms_justification(TMS, J), Js),
       length(Js, NumberOfJs),
       setoff(N, tms_node(TMS, N), Ns),

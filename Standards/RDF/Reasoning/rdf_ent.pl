@@ -99,6 +99,8 @@ rule(rdf, lg, [rdf(S,P,Lit)], S, P, B, G):-
   r2b(G, O, B).
 */
 
+
+
 % [rdf1] Predicate terms are instances of =|rdf:'Property'|=.
 explanation(
   rdf,

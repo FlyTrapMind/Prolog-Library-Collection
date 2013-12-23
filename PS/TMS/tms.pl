@@ -49,6 +49,7 @@ The generic predicates for Truth-Maintenance Systems.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(uri_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(uri)).
@@ -185,5 +186,5 @@ tms_node_to_url(N, BaseURL, N):-
   var(BaseURL), !.
 tms_node_to_url(N, BaseURL, N_URL):-
   rdf_global_id(_NS:LocalN, N),
-  uri_normalized(LocalN, BaseURL, N_URL).
+  uri_query_add(BaseURL, node, LocalN, N_URL).
 

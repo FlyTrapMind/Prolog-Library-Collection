@@ -26,8 +26,9 @@ Takes axioms, rules, and the RDF index and performs materializations.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_name)).
 :- use_module(
-  rdf(rdf_ent),
+  rdf_reasoning(rdf_ent),
   [
     axiom/4 as rdf_axiom,
     explanation/3 as rdf_explanation,
@@ -35,7 +36,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
     rule/7 as rdf_rule
   ]
 ).
-:- use_module(rdf(rdf_name)).
 :- use_module(
   rdfs(rdfs_ent),
   [
