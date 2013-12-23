@@ -47,7 +47,7 @@ Reification for RDF. Both reading and writing.
 
 @author Wouter Beek
 @tbd Assess this module after reading the semantics standard for reification.
-@version 2013/02, 2013/07, 2013/09-2013/10
+@version 2013/02, 2013/07, 2013/09-2013/10, 2013/12
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -190,7 +190,16 @@ rdf_assert_predicate(Stmt, Predicate, Graph):-
 rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
   rdf_statement(Subject, Predicate, Object, Graph, Stmt), !.
 rdf_assert_statement(Subject, Predicate, Object, Graph, Stmt):-
-  rdf_bnode(Stmt),
+  % Make sure the statement parameter is instantiated.
+  % Use a new blank node if this is not yet the case.
+  (
+    var(Stmt)
+  ->
+    rdf_bnode(Stmt)
+  ;
+    true
+  ),
+  
   rdf_assert_individual(Stmt, rdf:'Statement', Graph),
   rdf_assert_subject(Stmt, Subject, Graph),
   rdf_assert_predicate(Stmt, Predicate, Graph),

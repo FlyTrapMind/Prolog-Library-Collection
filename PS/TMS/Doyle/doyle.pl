@@ -133,7 +133,7 @@ Well-founded justifications form a non-circular argument for their node.
 Only SL-justifications can be well-founded justifications.
 
 @author Wouter Beek
-@version 2012/06, 2013/05, 2013/09
+@version 2012/06, 2013/05, 2013/09, 2013/12
 */
 
 :- use_module(generics(meta_ext)).
@@ -146,6 +146,7 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdf(rdf_reification)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_build)).
 :- use_module(tms(tms)).
@@ -389,11 +390,25 @@ add_justification(TMS, Node, J):-
 %! doyle_add_node(+TMS:atom, +Label:atom, -Node:iri) is det.
 % Adds a node.
 
+doyle_add_node(TMS, rdf(S,P,O), N):- !,
+  % Create an atomic label.
+  rdf_triple_name([], rdf(S,P,O), Label),
+  
+  % Use the atomic label to determine the node URL.
+  tms_create_node_iri(Label, N),
+  
+  % Create the TMS node as a reified statement.
+  rdf_assert_statement(S, P, O, TMS, N),
+  
+  % @tbd Should we unify `tms:Node` and `rdf:Statement`?
+  rdf_assert_individual(N, tms:'Node', TMS:1),
+  
+  % Assert the RDFS label.
+  rdfs_assert_label(N, Label, TMS:1),
+  
+  % Set the default TMS node status.
+  set_support_status(TMS, N, out).
 doyle_add_node(TMS, Label, N):-
-  % Type checking.
-  atom(Label),
-  var(N),
-
   tms_create_node_iri(Label, N),
   (
     tms_node(TMS, N)

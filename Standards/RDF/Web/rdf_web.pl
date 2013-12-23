@@ -117,7 +117,10 @@ rdf_load_web(Graph, Markup):-
 
 rdf_mat_web(G, Regime, [DOM1,DOM2]):-
   % Run amterialization.
-  materialize(Regime, G),
+  materialize(
+    [entailment_regimes([Regime]),multiple_justifications(false)],
+    G
+  ),
 
   % Collect all recently deduced triples.
   setoff(

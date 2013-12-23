@@ -21,6 +21,10 @@
                                     % -Justification:iri
     tms_justification/2, % +TMS:atom
                          % -Justification:iri
+    tms_justification/4, % +TMS:atom
+                         % +Premises:list(compound)
+                         % +Rule:atom
+                         % +Consequent:compound
     tms_justification/5, % ?TMS:atom
                          % ?Antecedents:list(iri)
                          % ?Rule:atom
@@ -44,15 +48,18 @@
 The generic predicates for Truth-Maintenance Systems.
 
 @author Wouter Beek
-@version 2013/05, 2013/09-2013/10
+@version 2013/05, 2013/09-2013/10, 2013/12
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
+:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(uri)).
+:- use_module(rdf(rdf_reification)).
 :- use_module(rdf(rdf_search)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
@@ -111,6 +118,19 @@ tms_init(TMS):-
 tms_justification(TMS, J):-
   rdfs_individual_of(J, tms:'Justification'),
   rdf(J, _, _, TMS:_).
+
+tms_justification(TMS, Premises, Rule, rdf(S,P,O)):-
+  rdf_statement(S, P, O, TMS, Consequent),
+  tms_justification(TMS, Antecedents, Rule, Consequent, _Justification),
+  matching(rdf_statement(TMS), Premises, Antecedents).
+:- meta_predicate(matching(2,+,+)).
+matching(_Pred, [], []).
+matching(Pred, [H1|T], L1):-
+  call(Pred, H1, H2),
+  ord_del_element(L1, H2, L2),
+  matching(Pred, T, L2).
+rdf_statement(G, rdf(S,P,O), Stmt):-
+  rdf_statement(S, P, O, G, Stmt).
 
 %! tms_justification(
 %!   ?TMS:atom,
