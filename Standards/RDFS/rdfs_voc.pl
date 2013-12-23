@@ -42,7 +42,7 @@ load_rdfs_vocabulary(G):-
 load_rdfs_vocabulary_(G2):-
   G1 = rdfs_voc,
   load_rdfs_vocabulary(G1),
-  materialize(G1, rdfs),
+  materialize(rdfs, G1),
   rdf_graph_merge([G1], G2).
 
 rdf_voc(GIF):-

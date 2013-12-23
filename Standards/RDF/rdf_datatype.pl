@@ -88,13 +88,14 @@ rdf_datatype(G, D):-
 %! rdf_datatype(
 %!   ?Subject:oneof([bnode,iri]),
 %!   ?Predicate:iri,
-%!   ?Datatype:iri,
+%!   ?Datatype:or([atom,iri]),
 %!   ?Value,
 %!   ?Graph:atom
 %! ) is nondet.
 % @tbd Implement the inverse lexical map to fascilitate search (besides read and write).
 
 rdf_datatype(S, P, D, Value, G):-
+  once(xsd_datatype(_, D)),
   % Ideally, we would like to interpret all literals, not just the canonical ones.
   % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
   % Interpreting literals could be useful for search, i.e. does a specific value
@@ -106,6 +107,10 @@ rdf_datatype(S, P, D, Value, G):-
   rdf(S, P, literal(type(D, LEX)), G),
   % This may be nondet!
   xsd_lexicalMap(D, LEX, Value).
+% Provide minimal support for non-IRI datatype names.
+rdf_datatype(S, P, D1, Value, G):-
+  once(xsd_datatype(D1, D2)),
+  rdf_datatype(S, P, D2, Value, G).
 
 %! rdf_has_datatype(
 %!   ?Subject:oneof([bnode,iri]),
@@ -147,11 +152,11 @@ rdf_overwrite_datatype(S, P, D, NewVal, G):-
     Tuples
   ),
   Tuples = [[S,P,D,OldVal,G]], !,
-  
+
   % Remove the old value and assert the new value.
   rdf_retractall_datatype(S, P, D, G),
   rdf_assert_datatype(S, P, D, NewVal, G),
-  
+
   % DEB
   rdf_typed_literal(OldO, D, OldVal),
   with_output_to(atom(T1), rdf_triple_name(S,P,OldO,G)),

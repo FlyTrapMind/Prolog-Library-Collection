@@ -75,7 +75,7 @@ rdf_explain_web(S, P, O, SVG):-
 %! rdf_graphs_web(-Markup:list) is det.
 % Returns the markup for an enumeration of the currently loaded graphs.
 %
-% @param Markup A list of HTML markup elements.
+% @param Markup An HTML table.
 
 rdf_graphs_web(Markup):-
   findall(
@@ -86,14 +86,14 @@ rdf_graphs_web(Markup):-
   (
     List == []
   ->
-    Markup = [element(p, [], ['There are no loaded RDF graphs.'])]
+    Markup = [element(p,[],['There are no loaded RDF graphs.'])]
   ;
     html_table(
-      [header(true)],
+      [caption('The currently loaded graphs:'),header(true),indexed(true)],
       [['Graph','Number of triples'] | List],
       Table
     ),
-    Markup = [element(p, [], ['The currently loaded graphs:']), Table]
+    Markup = [Table]
   ).
 
 %! rdf_load_web(+Graph:atom, -Markup:list) is det.
@@ -117,7 +117,7 @@ rdf_load_web(Graph, Markup):-
 
 rdf_mat_web(G, Regime, [DOM1,DOM2]):-
   % Run amterialization.
-  materialize(G, Regime),
+  materialize(Regime, G),
 
   % Collect all recently deduced triples.
   setoff(
@@ -171,6 +171,7 @@ rdf_mat_web(G, Regime, [DOM1,DOM2]):-
 % @param Markup A list of HTML markup elements.
 
 rdf_namespaces_web(Markup):-
+gtrace,
   xml_current_namespaces(Namespaces),
   rdf_namespaces_web0(Namespaces, Table),
   Markup = [element(p, [], ['The currently loaded namespaces:']), Table].

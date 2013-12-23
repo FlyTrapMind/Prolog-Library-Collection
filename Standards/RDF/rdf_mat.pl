@@ -1,11 +1,11 @@
 :- module(
   rdf_mat,
   [
-    materialize/2, % +Graph:atom
-                   % +Regimes:ordset(atom)
+    materialize/2, % +Regimes:list(atom)
+                   % +Graph:atom
     regime/1, % ?Regime:atom
-    start_materializer/3 % +Graph:atom
-                         % +Regimes:ordset(atom)
+    start_materializer/3 % +Regimes:list(atom)
+                         % +Graph:atom
                          % +Interval:positive_integer
   ]
 ).
@@ -15,10 +15,11 @@
 Takes axioms, rules, and the RDF index and performs materializations.
 
 @author Wouter Beek
-@version 2013/09-2013/10
+@version 2013/09-2013/10, 2013/12
 */
 
 :- use_module(doyle(doyle)).
+:- use_module(generics(deb_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(generics(thread_ext)).
@@ -71,7 +72,7 @@ explanation(Regime, Rule, Explanation):-
 explanation(Regime, Rule, Explanation):-
   rdfs_explanation(Regime, Rule, Explanation).
 
-%! materialize(?Graph:atom, +Regimes:ordset(atom)) is det.
+%! materialize(+Regimes:ordset(atom), ?Graph:atom) is det.
 % Performs all depth-one deductions for either the given RDF graph
 % or no RDF graph.
 %
@@ -79,15 +80,15 @@ explanation(Regime, Rule, Explanation):-
 % are considered for materialization.
 % The same graph is used for storing the results.
 %
-% @param Graph Either the atomic name of a graph
-%        or uninstantiated (not restricted to a particular graph).
 % @param Regimes An ordered set of atomic names denoting
 %        the entailment regimes that are used by materialization.
+% @param Graph Either the atomic name of a graph
+%        or uninstantiated (not restricted to a particular graph).
 
 % No materialization whatsoever.
-materialize(_G, [none]):- !.
+materialize([none], _G):- !.
 % Some form of materialization.
-materialize(G, Regimes):-
+materialize(Regimes, G):-
   % The default graph is called `user`.
   % This is also the default graph that rdf/3 write to.
   (nonvar(G), ! ; G = user),
@@ -105,33 +106,33 @@ materialize(G, Regimes):-
   ),
 
   % DEB
-  (  debug(rdf_mat)
-  -> retractall(recent_triple(_,_,_,_))
-  ;  true),
+  if_debug(rdf_mat, retractall(recent_triple(_,_,_,_))),
 
   % Let's go!
-  materialize(G, Regimes, TMS).
+  materialize(Regimes, TMS, G).
 
-%! materialize(+Graph:atom, +Regimes:ordset(atom), +TMS:atom) is det.
+%! materialize(+Regimes:list(atom), +TMS:atom, +Graph:atom) is det.
 % The inner loop of materialization.
 % This performs all depth-1 reasoning steps (i.e., breadth-first).
 %
-% @param Graph The atomic name of a graph.
+% # Regime specification
+%
+% We cannot always assume that a 'lower' regime is applicable,
+%  when a 'higher' regime is requested.
+% For instance with `[rdf,rdfs]` we do **not** intend to use `se`.
+%
 % @param Regimes An ordered set of atomic names denoting
 %        the entailment regimes that are used for materialization.
 % @param TMS The atomic name of a Truth Maintenance System.
+% @param Graph The atomic name of a graph.
 
-materialize(G, Regime, TMS):-
+materialize(Regime, TMS, G):-
   \+ is_list(Regime), !,
-  materialize(G, [Regime], TMS).
-materialize(G, Regimes, TMS):-
+  materialize([Regime], TMS, G).
+materialize(Regimes, TMS, G):-
   % A deduction of depth one.
+  member(RuleRegime, Regimes),
   rule(RuleRegime, Rule, Prems, S, P, O, G),
-
-  % A rule applies if one of its regimes is in the set of regimes
-  % that we materialize for.
-  member(Regime, Regimes),
-  once(regime(RuleRegime, Regime)),
 
   % Only accept new stuff.
   \+ rdf(S, P, O, G),
@@ -141,29 +142,35 @@ materialize(G, Regimes, TMS):-
   doyle_add_argument(TMS, P_Labels, Rule, C_Label, J),
 
   % DEB
-  (  debug(rdf_mat)
-  -> flag(deductions, Id, Id + 1),
-     format(user_output, '~w: ', [Id]),
-     with_output_to(
-       user_output,
-       tms_print_justification([indent(0),lang(en)], TMS, J)
-     ),
-     assert(recent_triple(S, P, O, G))
-  ;  true),
+  if_debug(
+    rdf_mat,
+    (
+      flag(deductions, Id, Id + 1),
+      format(user_output, '~w: ', [Id]),
+      with_output_to(
+        user_output,
+        tms_print_justification([indent(0),lang(en)], TMS, J)
+      ),
+      assert(recent_triple(S, P, O, G))
+    )
+  ),
 
   % Store the result.
   rdf_assert(S, P, O, G), !,
 
   % Look for more results...
-  materialize(G, Regimes, TMS).
+  materialize(Regimes, TMS, G).
 % Done!
-materialize(_G, Regimes, _TMS):-
+materialize(Regimes, _TMS, _G):-
   % DEB
   with_output_to(atom(RegimesAtom), print_list([], Regimes)),
-  (  debug(rdf_mat)
-  -> flag(deductions, N, 0),
-     debug(rdf_axiom, 'Added ~w deductions (regimes: ~w).', [N,RegimesAtom])
-  ;  true).
+  if_debug(
+    rdf_mat,
+    (
+      flag(deductions, N, 0),
+      debug(rdf_mat, 'Added ~w deductions (regimes: ~w).', [N,RegimesAtom])
+    )
+  ).
 
 %! regime(?Regime:atom) is nondet.
 
@@ -213,22 +220,22 @@ rule(Regime, Rule, Premises, S, P, O, G):-
   rdfs_rule(Regime, Rule, Premises, S, P, O, G).
 
 %! start_materializer(
-%!   +Graph:atom,
 %!   +Regimes:ordset(atom),
-%!   +Interval:positive_integer
+%!   +Interval:positive_integer,
+%!   +Graph:atom
 %! ) is det.
 % Performs a depth-one materialization step every N seconds.
 %
-% @param Graph The atomic name of a graph
-%        or uninstantiated (not restricted to a particular graph).
 % @param Regimes An ordered set of atomic names of an entailment regimes.
 % @param Interval The number of seconds between consecutive
 %        materialization attempts.
+% @param Graph The atomic name of a graph
+%        or uninstantiated (not restricted to a particular graph).
 %
 % @see Performs materialization steps using materialize/1.
 
-start_materializer(G, Regimes, N1):-
+start_materializer(Regimes, N1, G):-
   default(N1, 30, N2),
-  intermittent_thread(materialize(G, Regimes), true, N2, _Id, []),
-  debug(mat, 'A materializer was started on graph ~w.', [G]).
+  intermittent_thread(materialize(Regimes, G), true, N2, _Id, []),
+  debug(rdf_mat, 'A materializer was started on graph ~w.', [G]).
 
