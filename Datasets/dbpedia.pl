@@ -1,15 +1,18 @@
 :- module(
   dbpedia,
   [
-    dbpedia_assert_resource/3, % +Options:list(nvpair)
-                               % +Graph:atom
-                               % +Resource:uri
+    dbpedia_assert/3, % +Options:list(nvpair)
+                      % +Resource:iri
+                      % +Graph:atom
+    dbpedia_describe/3, % +Options:list(nvpair)
+                        % +Resource:iri
+                        % -PO_Pairs:list(list(or([bnode,iri,literal])))
     dbpedia_find_agent/4, % +Name:atom
                           % +Birth:integer
                           % +Death:integer
-                          % -DBpediaAgent:uri
-    dbpedia_find_concept/2 % +ConceptName:atom
-                           % -Concept:uri
+                          % -DBpediaAgent:iri
+    dbpedia_find/2 % +SearchTerm:atom
+                   % -Resource:iri
   ]
 ).
 
@@ -60,7 +63,6 @@ WHERE
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
 :- use_module(sparql(sparql_ext)).
-:- use_module(sparql(sparql_sameas)).
 :- use_module(xml(xml_namespace)).
 
 :- db_add_novel(user:prolog_file_type(ttl, turtle)).
@@ -94,40 +96,22 @@ WHERE
 :- xml_register_namespace(yago, 'http://yago-knowledge.org/resource/').
 :- sparql_add_prefix(yago).
 
-:- rdf_meta(dbpedia_assert_resource(+,r)).
+:- rdf_meta(dbpedia_assert(+,r)).
 :- rdf_meta(dbpedia_find_agent(+,+,+,r)).
 
 :- debug(dbpedia).
 
 
 
-%! dbpedia_assert_resource(
-%!   +Options:list(nvpair),
-%!   +Graph:atom,
-%!   +Resource:iri
-%! ) is det.
-% The following options are supported:
-%   * `closed_under_identity(IdentityClosure:boolean)`
+dbpedia_assert(O1, Resource, G):-
+  'SPARQL_assert'(O1, dbpedia, Resource, G).
 
-dbpedia_assert_resource(O1, G, IRI):-
-  option(closed_under_identity(true), O1, true), !,
-  query_sameas(dbpedia, IRI, I_Set),
-  '_dbpedia_assert_resource'(G, I_Set).
-dbpedia_assert_resource(_O1, G, IRI):-
-  '_dbpedia_assert_resource'(G, [IRI]).
 
-% @tbd Transitive identity closure.
-'_dbpedia_assert_resource'(G, Ss):-
-  forall(
-    member(S, Ss),
-    (
-      describe_resource(dbpedia, S, PO_Pairs),
-      forall(
-        member([P,O], PO_Pairs),
-        rdf_assert(S, P, O, G)
-      )
-    )
-  ).
+
+dbpedia_describe(O1, Resource, PO_Pairs):-
+  'SPARQL_describe'(O1, dbpedia, Resource, PO_Pairs).
+
+
 
 %! dbpedia_find_agent(
 %!   +FullName:atom,
@@ -158,7 +142,7 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
     limit([],10),
     Query
   ),
-  enqueue_sparql(dbpedia, Query, _VarNames, Resources),
+  'SPARQL_enqueue'(dbpedia, Query, _VarNames, Resources),
   (
     Resources = []
   ->
@@ -167,41 +151,18 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
     first(Resources, row(DBpediaAuthor))
   ).
 
-%! dbpedia_find_concept(+ConceptName:atom, -Concept:iri) is det.
+
+
+%! dbpedia_find(+SearchTerm:atom, -Resource:iri) is det.
 % Returns the DBpedia concept that best fits the given search term.
 %
-% If the search term is itself a concept, then this is returned.
-% Otherwise, DBpedia is searched for a concept that is labeled with
-%  the search term.
+% If the search term is itself a resource, then this is returned.
+% Otherwise, DBpedia is searched for a resource that is labeled with
+%  the given search term.
 %
-% @param ConceptName An atom.
-% @param Concept An IRI.
+% @param SearchTerm
+% @param Resource
 
-dbpedia_find_concept(Concept, Concept):-
-  is_uri(Concept),
-  % @tbd This can be done more efficiently but just looking for
-  % the first triple.
-  describe_resource(dbpedia, Concept, ConceptDescription),
-  ConceptDescription \== [], !.
-dbpedia_find_concept(ConceptName, Concept):-
-  Where1 = '?concept rdfs:label ?label .',
-  format(atom(Where2), 'FILTER regex(?label, "~w", "i")', [ConceptName]),
-  Where = [Where1,Where2],
-  formulate_sparql(
-    _Graph,
-    [rdfs],
-    select([distinct(true)],[concept]),
-    Where,
-    limit([],10),
-    Query
-  ),
-  enqueue_sparql(dbpedia, Query, _VarNames, Resources),
-  (
-    Resources = []
-  ->
-    debug(dbpedia, 'Could not find a resource for \'~w\'.', [ConceptName]),
-    fail
-  ;
-    first(Resources, row(Concept))
-  ).
+dbpedia_find(SearchTerm, Resource):-
+  'SPARQL_find'(dbpedia, SearchTerm, Resource).
 

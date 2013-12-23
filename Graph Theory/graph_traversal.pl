@@ -38,10 +38,10 @@
   ]
 ).
 
-/** <module> GRAPH_TRAVERSAL
+/** <module> Graph traversal
 
 @author Wouter Beek
-@version 2013/01-2013/04, 2013/07, 2013/09
+@version 2013/01-2013/04, 2013/07, 2013/09, 2013/12
 */
 
 :- use_module(generics(list_ext)).
@@ -50,7 +50,7 @@
 :- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
-:- use_module(library(semweb/rdf_db)). % rdf_meta/1
+:- use_module(library(semweb/rdf_db)). % RDF meta predicate declarations.
 
 :- meta_predicate(traverse(+,+,2,3,+,+,-)).
 :- meta_predicate(traverse(+,+,2,3,+,+,-,-,-,-)).
@@ -74,12 +74,12 @@ is_meta(deb_vertex_name).
 
 %! traverse(
 %!   +Options:list(nvpair),
-%!   +Graph:graph,
+%!   +Graph:atom,
 %!   :E_P,
 %!   :N_P,
 %!   +FirstV:vertex,
 %!   +LastV:vertex,
-%!   -Distance:uinteger
+%!   -Distance:nonneg
 %! ) is nondet.
 % @see Wrapper around traverse/10.
 
@@ -88,12 +88,12 @@ traverse(O, G, E_P, N_P, First, Last, Distance):-
 
 %! traverse(
 %!   +Options:list(nvpair),
-%!   +Graph:graph,
+%!   +Graph:atom,
 %!   :E_P,
 %!   :N_P,
 %!   +First:vertex,
 %!   +Last:vertex,
-%!   -Distance:integer
+%!   -Distance:nonneg
 %!   -Vertices:ordset(vertex),
 %!   -Edges:ordset(edge),
 %!   -History:list

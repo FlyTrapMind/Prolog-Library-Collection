@@ -1,8 +1,10 @@
 :- module(
   rfc2616_accept_language,
   [
-    'Accept-Language'//2 % -ParseTree:compound
-                         % ?QualityValueLanguageTagPairs:list(pair(between(0.0,1.0),list(atom)))
+    'Accept-Language'//2, % -ParseTree:compound
+                          % ?QualityValueLanguageTagPairs:list(pair(between(0.0,1.0),list(atom)))
+    'parse_Accept-Language'/2 % +Request:list
+                              % -LanguagesTO:list(atom)
   ]
 ).
 
@@ -17,11 +19,14 @@ DCG for the `Accept-Language` request header in RFC 2616.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http_parameters(rfc2616_quality_value)).
+:- use_module(library(lists)).
+:- use_module(library(pairs)).
 
 
 
@@ -92,9 +97,16 @@ DCG for the `Accept-Language` request header in RFC 2616.
 % A user agent might suggest in such a case to add `en` to get
 %  the best matching behavior.
 
-'Accept-Language'('Accept-Language'(Ts), QualityValueLanguageTagPairs) -->
+'Accept-Language'('Accept-Language'(Ts), TO5) -->
   "Accept-Language:",
-  abnf_list2('_Accept-Language', 1-_, Ts, QualityValueLanguageTagPairs).
+  abnf_list2('_Accept-Language', 1-_, Ts, TO1),
+  dcg_end,
+  {
+    keysort(TO1, TO2),
+    reverse(TO2, TO3),
+    pairs_values(TO3, TO4),
+    maplist('_atomic_list_concat'('-'), TO4, TO5)
+  }.
 '_Accept-Language'(T0, QualityValue-LanguageTag) -->
   'language-range'(T1, LanguageTag),
   (
@@ -105,6 +117,8 @@ DCG for the `Accept-Language` request header in RFC 2616.
     {QualityValue = 1.0}
   ),
   {parse_tree('Accept-Language', [T1,T2], T0)}.
+'_atomic_list_concat'(Separator, Atoms, Atom):-
+  atomic_list_concat(Atoms, Separator, Atom).
 
 
 
@@ -147,4 +161,12 @@ DCG for the `Accept-Language` request header in RFC 2616.
 '_language-range'(LanguageSubtag) -->
   dcg_multi1('ALPHA', 1-8, Codes),
   {atom_codes(LanguageSubtag, Codes)}.
+
+
+
+'parse_Accept-Language'(Request, TO):-
+  memberchk(accept_language(AcceptLanguage), Request),
+  atomic_list_concat(['Accept-Language',AcceptLanguage], ':', Atom),
+  atom_codes(Atom, Codes),
+  phrase('Accept-Language'(_ParseTree, TO), Codes).
 

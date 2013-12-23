@@ -15,10 +15,12 @@
                    % +Regime:atom
                    % -DOM:list
     rdf_namespaces_web/1, % -DOM:list
-    rdf_namespaces_web/2 % +Graph:atom
-                         % -DOM:list
-    %rdf_save_web/2 % +Graph:atom
-    %               % -DOM:list
+    rdf_namespaces_web/2, % +Graph:atom
+                          % -DOM:list
+    %rdf_save_web/2, % +Graph:atom
+    %                % -DOM:list
+    rdf_web_argument/2 % +In:atom
+                       % -Out:iri
   ]
 ).
 
@@ -27,11 +29,14 @@
 Web predicates for RDF graphs.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11-2013/12
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(html(html_table)).
+:- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
@@ -85,7 +90,7 @@ rdf_graphs_web(Markup):-
   ;
     html_table(
       [header(true)],
-      [['Graph', 'Number of triples'] | List],
+      [['Graph','Number of triples'] | List],
       Table
     ),
     Markup = [element(p, [], ['The currently loaded graphs:']), Table]
@@ -303,4 +308,15 @@ rdf_load_web_ -->
       ])
     ])
   ).
+
+rdf_web_argument(R, R):-
+  is_uri(R), !.
+rdf_web_argument(R1, R2):-
+  R1 = _:_, !,
+  rdf_global_id(R1, R2).
+rdf_web_argument(R1, R4):-
+  split_atom_exclusive(':', R1, [R2,R3]), !,
+  rdf_web_argument(R2:R3, R4).
+rdf_web_argument(R, R):-
+  type_error(resource, R).
 

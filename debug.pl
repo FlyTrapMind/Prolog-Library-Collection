@@ -38,6 +38,10 @@
 :- style_check(+singleton).
 %:- style_check(+var_branches).
 
+% Access the RDF library predicates from the top-level.
+:- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
+
 % Set the swipl terminal state via PCE.
 % When swipl is started from within a terminal this does not change
 % anything, so this setting applies e.g. to contexts where PraSem
@@ -63,7 +67,8 @@
 :- use_module(server(web_modules)).
 :- use_module(server(pldoc_web)).
 :- use_module(server(web_console)).
-:- use_module(rdf(rdf_web)).
+:- use_module(rdf_web(rdf_describe_web)).
+:- use_module(rdf_web(rdf_web)).
 :- use_module(tms(tms_web)).
 
 %:- use_module(library(apply)).

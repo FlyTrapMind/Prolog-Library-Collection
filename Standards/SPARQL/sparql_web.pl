@@ -53,7 +53,7 @@ sparql(Request, Remote):-
 % @tbd
 sparql_output_web(Remote, Query, Markup):-
   statistics(cputime, CPU_Before),
-  query_sparql(Remote, Query, VarNames, Results),
+  'SPARQL_query'(Remote, Query, VarNames, Results),
   statistics(cputime, CPU_After),
   CPU is CPU_After - CPU_Before,
   write_table(Results, [cputime(CPU),variables(VarNames)], Markup).

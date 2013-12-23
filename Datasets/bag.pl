@@ -42,6 +42,6 @@ test:-
     limit([],10),
     Query
   ),
-  enqueue_sparql(bag, Query, _VarNames, Resources),
+  'SPARQL_enqueue'(bag, Query, _VarNames, Resources),
   with_output_to(current_user, print_list([], Resources)).
 
