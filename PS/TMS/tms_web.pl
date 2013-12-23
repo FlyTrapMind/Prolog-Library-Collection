@@ -32,18 +32,18 @@
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
-:- db_add_novel(http:location(tms_nav, root(tms_nav), [])).
-:- http_handler(root(tms_nav), tms_nav, [prefix]).
+:- db_add_novel(http:location(tms, root(tms), [])).
+:- http_handler(root(tms), tms, [prefix]).
 
 :- initialization(web_module_add('TMS', tms_web, tms)).
 
 
 
-%! tms_nav(+Request:list) is det.
+%! tms(+Request:list) is det.
 % TMS graph navigation Web pages.
 
 % A graph representation of the given TMS node.
-tms_nav(Request):-
+tms(Request):-
   memberchk(search(Search), Request),
   memberchk(node=NLocal, Search), !,
   rdf_global_id(doyle:NLocal, N),
@@ -51,14 +51,14 @@ tms_nav(Request):-
   xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
 % A graph representation of the given TMS.
-tms_nav(Request):-
+tms(Request):-
   memberchk(search(Search), Request),
   memberchk(tms=TMS, Search), !,
   tms_web(TMS, SVG_DOM),
   xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
 % A table of all TMS-es.
-tms_nav(_Request):-
+tms(_Request):-
   tms_web(HTML_DOM),
   xml_dom_to_atom([], HTML_DOM, HTML_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(HTML_Atom)).
@@ -76,7 +76,7 @@ tms_node_web(NLabel, SVG):-
   tms_node_web_(N, SVG).
 
 tms_node_web_(N, SVG):-
-  http_absolute_uri(tms_nav(.), BaseURL),
+  http_absolute_uri(tms(.), BaseURL),
   tms_export_node([base_url(BaseURL),recursive(false)], N, GIF),
   graph_to_svg_dom([method(dot)], GIF, SVG).
 
@@ -88,7 +88,7 @@ tms_web([HTML_Table]):-
     [TMS_URL-TMS,Type,NumberOfJs,NumberOfNs],
     (
       tms(Type, TMS),
-      http_absolute_uri(tms_nav(.), BaseURL),
+      http_absolute_uri(tms(.), BaseURL),
       uri_query_add(BaseURL, tms, TMS, TMS_URL),
       setoff(J, tms_justification(TMS, J), Js),
       length(Js, NumberOfJs),
@@ -110,7 +110,7 @@ tms_web([HTML_Table]):-
 %! tms_web(+TMS:atom, -SVG:list) is det.
 
 tms_web(TMS, SVG):-
-  http_absolute_uri(tms_nav(.), BaseURL),
+  http_absolute_uri(tms(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
   graph_to_svg_dom([method(sfdp)], GIF, SVG).
 
