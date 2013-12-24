@@ -8,8 +8,6 @@
     explanation/3, % ?Regime:atom
                    % ?Rule:atom
                    % ?Explanation:atom
-    regime/2, % ?SubsumedRegime:atom
-              % ?SubsumingRegime:atom
     rule/7 % ?Regime:atom
            % ?Rule:atom
            % ?Premises:list(compound)
@@ -51,11 +49,6 @@ Axioms and rules for RDF materialization, as defined by Hayes2004.
 :- discontiguous(explanation/3).
 :- rdf_meta(explanation(?,?,?)).
 
-%! regime(?SubsumedRegime:atom, ?SubsumingRegime:atom) is nondet.
-
-:- discontiguous(regime/2).
-:- rdf_meta(regime(?,?)).
-
 %! rule(
 %!   ?Regime:atom,
 %!   ?Rule:atom,
@@ -84,8 +77,6 @@ rule(se, se2, [rdf(S,P,O)], B, P, O, G):-
   % THIS RESTRICTS THE STANDARD.
   \+ rdf_is_bnode(S),
   r2b(G, S, B).
-
-regime(se, rdf).
 
 /*
 % [lg] Literal generalization is a special case of [se1],

@@ -8,8 +8,6 @@
     explanation/3, % ?Regime:atom
                    % ?Rule:atom
                    % ?Explanation:atom
-    regime/2, % ?SubsumedRegime:atom
-              % ?SubsumingRegime:atom
     rule/7 % ?Regime:atom
            % ?Rule:atom
            % ?Premises:list(compound)
@@ -53,12 +51,6 @@
 :- multifile(explanation/3).
 :- rdf_meta(explanation(?,?,?)).
 
-%! regime(?SubsumedRegime:atom, ?SubsumingRegime:atom) is nondet.
-
-:- discontiguous(regime/2).
-:- multifile(regime/2).
-:- rdf_meta(regime(?,?)).
-
 %! rule(
 %!   ?Regime:atom,
 %!   ?Rule:atom,
@@ -74,8 +66,6 @@
 :- rdf_meta(rule(?,?,t,r,r,r,?)).
 
 
-
-regime(rdf, rdfs).
 
 % [gl] Literal instantiation rule
 %      This ensures that every triple that contains a literal and

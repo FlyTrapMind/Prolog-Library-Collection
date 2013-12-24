@@ -3,7 +3,6 @@
   [
     materialize/2, % +Options:list(nvpair)
                    % +Graph:atom
-    regime/1, % ?Regime:atom
     start_materializer/3 % +Options:list(nvpair)
                          % +Interval:positive_integer
                          % +Graph:atom
@@ -32,7 +31,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
   [
     axiom/4 as rdf_axiom,
     explanation/3 as rdf_explanation,
-    regime/2 as rdf_regime,
     rule/7 as rdf_rule
   ]
 ).
@@ -41,7 +39,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
   [
     axiom/4 as rdfs_axiom,
     explanation/3 as rdfs_explanation,
-    regime/2 as rdfs_regime,
     rule/7 as rdfs_rule
   ]
 ).
@@ -185,35 +182,6 @@ materialize(O1, _TMS, _G):-
       debug(rdf_mat, 'Added ~w deductions (regimes: ~w).', [N,ER_Atom])
     )
   ).
-
-%! regime(?Regime:atom) is nondet.
-
-regime(X):-
-  regime(X, _).
-regime(X):-
-  regime(_, X),
-  \+ regime(X, _).
-
-%! regime(?SubsumedRegime:atom, ?SubsumingRegime:atom) is nondet.
-
-regime(none, _).
-regime(X, X):-
-  nonvar(X).
-regime(X, Y):-
-  rdf_regime(X, Y).
-regime(X, Y):-
-  rdfs_regime(X, Y).
-regime(X, Y):-
-   nonvar(Y),
-   regime(X, Z),
-   X \== Z,
-   Z \== Y,
-   regime(Z, Y).
-
-% RDF subsumes simple entailment.
-regime(se, rdf).
-% RDFS subsumes RDF.
-regime(rdf, rdfs).
 
 %! rule(
 %!   ?Regime:atom,
