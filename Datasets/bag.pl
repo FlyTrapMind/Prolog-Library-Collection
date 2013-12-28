@@ -16,7 +16,7 @@ info@geodan.nl
 @version 2013/04, 2013/12
 */
 
-:- use_module(generic(print)).
+:- use_module(generics(print)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
 :- use_module(sparql(sparql_ext)).

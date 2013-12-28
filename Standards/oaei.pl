@@ -116,6 +116,7 @@ Mismatch types:
 :- use_module(math(statistics)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
+:- use_module(programming(prolog_mode)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_lit_build)).

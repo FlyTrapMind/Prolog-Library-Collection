@@ -16,7 +16,7 @@ This module is known to work with GraphViz version 2.28.0.
 
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_db)).
-:- use_module(generic(file_ext)).
+:- use_module(generics(file_ext)).
 
 
 

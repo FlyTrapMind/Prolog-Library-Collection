@@ -17,7 +17,7 @@ Parser for HTML Web sites.
 @version 2012/09, 2013/01-2013/02, 2013/11
 */
 
-:- use_module(generic(atom_ext)).
+:- use_module(generics(atom_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(http/http_open)).

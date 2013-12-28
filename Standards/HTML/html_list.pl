@@ -1,8 +1,8 @@
 :- module(
   html_list,
   [
-    html_link_list//2, % +ListOptions:list(nvpair)
-                       % +Parent:atom
+    html_handler_list//2, % +ListOptions:list(nvpair)
+                          % +ParentPath:atom
     html_list//3, % +ListOptions:list(nvpair)
                   % +ListItemOptions:list(nvpair)
                   % +Items:list(list(dsl))
@@ -27,11 +27,11 @@ Support for generating HTML lists.
 
 
 
-%! html_link_list(+ListOptions:list(nvpair), +Parent:atom)// is det.
+%! html_handler_list(+ListOptions:list(nvpair), +ParentPath:atom)// is det.
 % Generates an HTML list for all URL paths that have an HTTP handler
-% and that reside under the given parent path.
+%  and that reside under the given parent path.
 
-html_link_list(L_O1, Parent) -->
+html_handler_list(L_O1, Parent) -->
   {
     findall(
       li(a(href=Link3,Name)),

@@ -45,6 +45,7 @@ Allows one to monitor running threads that register.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
+:- use_module(programming(prolog_control)).
 
 :- meta_predicate(forall_thread(0,0,+,+)).
 :- meta_predicate(intermittent_goal(:,:,+)).

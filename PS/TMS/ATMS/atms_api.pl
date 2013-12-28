@@ -143,7 +143,7 @@ The API for ATMSs.
 :- use_module(atms(atms_db)).
 :- use_module(atms(atms_env)).
 :- use_module(ccm(ccm_api)).
-:- use_module(generic(meta_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(qr(qr_api)).

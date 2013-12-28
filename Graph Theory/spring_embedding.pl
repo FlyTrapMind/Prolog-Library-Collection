@@ -63,7 +63,7 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
+:- use_module(programming(prolog_mode)).
 :- use_module(graph_theory(graph_generic)).
 :- use_module(graph_theory(graph_traversal)).
 :- use_module(graph_theory(random_vertex_coordinates)).
@@ -251,7 +251,7 @@ spring_embedding(
   initial_spring_embedding(G, V_P, VCoords),
   flag(spring_embedding_iterations, _, 1),
   % Subsequent function application.
-  multi(
+  call_multi(
     next_spring_embedding(G, Attractors, Repulsors),
     Iteration,
     VCoords,

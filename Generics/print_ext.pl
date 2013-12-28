@@ -53,6 +53,8 @@ proof(Conclusion, Premises)
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(os(shell_ext)).
+:- use_module(programming(prolog_mode)).
+:- use_module(programming(prolog_control)).
 
 :- meta_predicate(print_collection(:,+)).
 :- meta_predicate(print_list(:,+)).
@@ -170,7 +172,7 @@ print_hr:-
     % Alternatively, use a default screen width.
     setting(screen_width, ScreenWidth)
   ),
-  multi(write('-'), ScreenWidth).
+  call_multi(write('-'), ScreenWidth).
 
 %! print_list(+Options:list(nvpair), +List:list) is det.
 % Prints the elements of the given list to the given output stream or handle.

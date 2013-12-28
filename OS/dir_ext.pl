@@ -27,6 +27,8 @@
                                % +ToFileType:atom
                                % :Goal
                                % +Args:list
+    run_in_working_directory/2, % :Call
+                                % +WorkingDirectory:atom
     safe_copy_directory/2, % +FromDirectory:atom
                            % +ToDirectory:atom
     safe_delete_directory/1, % +Directory:atom
@@ -55,6 +57,8 @@ Extensions for handling directories.
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(os(file_ext)).
+
+:- meta_predicate(run_in_working_directory(0,+)).
 
 :- debug(dir_ext).
 
@@ -337,6 +341,13 @@ process_directory_file(FromDir, ToDir, ToFileType, Goal, Args, FromFile):-
   create_file_directory(ToFile),
   
   apply(Goal, [FromFile,ToFile|Args]).
+
+%! run_in_working_directory(:Goal, +WorkingDirectory:atom) is det.
+
+run_in_working_directory(Goal, WD1):-
+  working_directory(WD1, WD2),
+  call(Goal),
+  working_directory(WD2, WD1).
 
 safe_delete_directory(FromDir):-
   trashcan(Trashcan),

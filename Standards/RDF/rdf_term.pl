@@ -10,7 +10,7 @@
     rdf_is_predicate/1,
     rdf_is_subject/1,
     rdf_name/2, % ?Graph:atom
-                % +RDF_Name:oneof([literal,uri])
+                % ?RDF_Name:oneof([literal,uri])
     rdf_node/2, % ?Graph:atom
                 % ?Node:or([bnode,uri,literal])
     rdf_object/2, % ?Graph:atom
@@ -123,6 +123,7 @@ See also the URI equivalence issue of the Technical Architecture Group [TAG].
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(programming(prolog_mode)).
 
 :- rdf_meta(rdf_bnode(?,r)).
 :- rdf_meta(rdf_is_object(r)).
@@ -179,32 +180,49 @@ rdf_is_subject(Subject):-
 rdf_is_subject(Subject):-
   rdf_is_iri(Subject).
 
-%! rdf_name(?G:atom, ?RDF_Name:oneof([literal,uri])) is nondet.
-% Succeeds if the given object is an RDF name.
+
+%! rdf_name(+Graph:atom, +RDF_Name:oneof([literal,iri])) is semidet.
+%! rdf_name(+Graph:atom, -RDF_Name:oneof([literal,iri])) is nondet.
+%! rdf_name(-Graph:atom, +RDF_Name:oneof([literal,iri])) is nondet.
+%! rdf_name(-Graph:atom, -RDF_Name:oneof([literal,iri])) is nondet.
+% According to RDF Semantics, IRIs and literals are names.
 %
-% An RDF name is either an RDF URI reference or an RDF literal.
+% # Instatiations
+%
+% | ++ | semidet | Does this RDF graph contain this RDF name?              |
+% | +- | nondet  | Enumerate the RDF names in this RDF graph.\c
+%                  An RDF graph may have zero or more RDF names.           |
+% | -+ | nondet  | Enumerate the RDF graphs in which this RDF name occurs. |
+%                  An RDF name may occur nowhere.                          |
+% | -- | nondet  | Enumerate pars of RDF graphs and RDF names.             |
+%
+% @param Graph The atomic name of an RDF graph.
+% @param RDF_Name Either an IRI or an RDF literal.
 %
 % @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
-% @tbd Update the definition for IRIs.
 
-rdf_name(G, RDF_Name):-
-  nonvar_det(rdf_name_(G, RDF_Name)).
-rdf_name_(G, RDF_Name):-
-  rdf_subject(G, RDF_Name),
-  \+ rdf_is_bnode(RDF_Name).
-rdf_name_(G, RDF_Name):-
-  rdf_predicate(G, RDF_Name).
-rdf_name_(G, RDF_Name):-
-  rdf_object(G, Object),
-  \+ rdf_is_bnode(Object),
+rdf_name(G, N):-
+  enforce_mode(
+    '_rdf_name'(G, N),
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
+'_rdf_name'(G, S):-
+  rdf_subject(G, S),
+  \+ rdf_is_bnode(S).
+'_rdf_name'(G, P):-
+  rdf_predicate(G, P).
+'_rdf_name'(G, O2):-
+  rdf_object(G, O1),
+  \+ rdf_is_bnode(O1),
   (
-    Object = literal(type(Datatype, _LexicalValue))
+    O1 = literal(type(Datatype, _LexicalValue))
   ->
     % Specifically include datatypes that are strictly speaking not RDF terms.
-    (RDF_Name = Object ; RDF_Name = Datatype)
+    (O2 = O1 ; O2 = Datatype)
   ;
-    RDF_Name = Object
+    O2 = O1
   ).
+
 
 rdf_node(Graph, Node):-
   rdf_subject(Graph, Node).

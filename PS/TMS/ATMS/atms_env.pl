@@ -43,17 +43,19 @@ Contains all environment methods, used by both the ATMS (environments)
 and the GDE (component assumptions).
 
 @author Wouter Beek
-@version Dec 2011 - Aug 2012
+@version 2011/12-2012/08, 2013/12
 */
 
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_build)).
 :- use_module(ccm(ccm_unpack)).
 :- use_module(diagnosis(diagnosis)).
-:- use_module(generic(list_ext)).
-:- use_module(generic(meta_ext)).
-:- use_module(generic(set_theory)).
+:- use_module(generics(list_ext)).
+:- use_module(generics(meta_ext)).
+:- use_module(generics(set_theory)).
 :- use_module(ile(agent)).
+:- use_module(library(apply)).
+:- use_module(library(lists)).
 
 
 
@@ -86,39 +88,31 @@ compare_environments1(Assumptions, Assumptions, s21):-
   ord_subset(Assumptions, Assumptions).
 
 %% delete_superenvironments(
-%%   +Environments:list(environment),
-%%   +CompareEnvironments:list(environment),
-%%   -ResultEnvironments:list(environment),
-%%   -RestEnvironments:list(environment)
+%%   +Original:list(environment),
+%%   +Compare:list(environment),
+%%   -Result:list(environment),
+%%   -Rest:list(environment)
 %% ) is det.
-% Deletes from =Environments= all environments whose assumptions are a
-% superset of the assumptions of some environment in =CompareEnvironments=.
+% Deletes from `Original` all environments whose assumptions are a
+%  superset of the assumptions of some environment in `Compare`.
 %
-%   * For every environment =E= in =Environments= do:
-%     * If =E= is a superenvironment of some environment in
-%       =CompareEnvironments=, then add =E= to =RestEnvironments=.
-%     * If =E= is a superenvironment of some environment in
-%       =CompareEnvironments=, then =E= is a _|minimal environment|_ and
-%       it is added to =ResultEnvironments=.
+%   * For every environment `E` in `Original` do:
+%     * If `E` is a superenvironment of some environment in
+%        `Compare`, then add `E` to `Rest`.
+%     * If `E` is a superenvironment of some environment in
+%        `Compare`, then `E` is a **minimal environment**
+%        and it is added to `Result`.
 %
 % @param Environments:list(environment) A set of URIs of environments.
 % @param CompareSets:list(environment) A set of URIs of environments.
 % @param ResultEnvironments A set of URIs of environments.
 % @param RestEnvironments A set of URIs of environments.
 
-delete_superenvironments(
-  Environments,
-  CompareEnvironments,
-  ResultEnvironments,
-  RestEnvironments
-):-
-  delete_sets(
-    Environments,
-    CompareEnvironments,
-    subenvironment,
-    ResultEnvironments,
-    RestEnvironments
-  ).
+delete_superenvironments(Original, Compare, Result, Rest):-
+  exclude('_delete_superenvironments'(Compare), Original, Result, Rest),
+'_delete_superenvironments'(Compare, Subenvironment),
+  member(Superenvironment, Compare),
+  superset(Superenvironment, Subenvironment).
 
 %% environment_hierarchical_unpack(
 %%   +Diagnosis:diagnosis,

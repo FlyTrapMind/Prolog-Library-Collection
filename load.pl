@@ -48,6 +48,7 @@ load_pgc:-
     assert(user:file_search_path(rdf_mt,          logic('RDF MT'))),
   assert(user:file_search_path(math,            pgc('Math'))),
   assert(user:file_search_path(os,              pgc('OS'))),
+  assert(user:file_search_path(programming,     pgc('Programming'))),
   assert(user:file_search_path(ps,              pgc('PS'))),
     assert(user:file_search_path(tms,             ps('TMS'))),
       assert(user:file_search_path(atms,            tms('ATMS'))),
@@ -96,7 +97,7 @@ load_pgc:-
   safe_delete_file(File),
   
   % Install packages.
-  % This requires used interaction on the first load.
+  % This requires user interaction on the first load.
   catch(
     use_module(library(regex)),
     _,

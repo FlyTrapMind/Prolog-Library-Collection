@@ -70,6 +70,7 @@ Call a DCG rule multiple times while aggregating the arguments.
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(programming(prolog_mode)).
 
 :- meta_predicate(dcg_multi(2,?,?)).
 :- meta_predicate(dcg_multi(2,?,?,?)).

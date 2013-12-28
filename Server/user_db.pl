@@ -40,6 +40,7 @@ The user administration is based on the following:
 :- use_module(library(lists)).
 :- use_module(library(persistency)). % Declarations
 :- use_module(os(os_ext)).
+:- use_module(programming(prolog_mode)).
 :- use_module(server(login_db)).
 :- use_module(server(password_db)).
 

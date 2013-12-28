@@ -3,26 +3,21 @@
   [
     cardinality/2, % +Set:oneof([list,ordset])
                    % -Cardinality:integer
-    delete_sets/5, % +Sets:ordset(ordset(object))
-                   % +CompareSets:ordset(ordset(object))
-                   % +Comparator:atom
-                   % -ResultSets:ordset(ordset(object))
-                   % -RestSets:ordset(ordset(object))
-    delete_supersets/4, % +Sets:ordset(ordset(object))
-                        % +CompareSets:ordset(ordset(object))
-                        % -ResultSets:ordset(ordset(object))
-                        % -RestSets:ordset(ordset(object))
+    delete_supersets/4, % +Original:ordset(ordset)
+                        % +Compare:ordset(ordset)
+                        % -Result:ordset(ordset)
+                        % -Rest:ordset(ordset)
     equinumerous/2, % +Set1:oneof([list,ordset])
                     % +Set2:oneof([list,ordset])
     is_minimal/2, % +Set:ordset(object)
                   % +Sets:ordset(ordset(object))
-    next_subset/2, % +Set:list(boolean)
-                   % -NextSet:list(boolean)
     random_subset/3, % +Set:ordset
                      % +LengthOrPercentage:or([nonneg,between(0.0,1.0)])
                      % -Subset:ordset
     subsets/2, % +Universe:list(object)
                % -Subsets:list(list(boolean))
+    superset/2, % +Super:ordset
+                % +Sub:ordset
     transitive_closure/3 % +Predicate:atom
                          % +Input:object
                          % -Outputs:ordset(object)
@@ -40,10 +35,11 @@ Extra set functions for use in SWI-Prolog.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(lists)).
 :- use_module(library(ordsets)).
+:- use_module(programming(prolog_mode)).
 
-:- meta_predicate delete_sets(+,+,2,-,-).
-:- meta_predicate transitive_closure(2,+,-).
+:- meta_predicate(transitive_closure(2,+,-)).
 
 
 
@@ -61,68 +57,28 @@ cardinality(List, Cardinality):-
   list_to_ord_set(List, Set),
   cardinality(Set, Cardinality).
 
-%! delete_sets(
-%!   +Sets:set(set(object)),
-%!   +CompareSets:set(set(object)),
-%!   +Comparator:atom,
-%!   -ResultSets:set(set(object)),
-%!   -RestSets:set(set(object))
-%! ) is det.
-% Deletes from =Sets= all sets that fail to compare to some member of
-% =CompareSets=.
-% The comparison is performed by the binary semideterministic predicate
-% =Comparator=.
-%
-% @param Sets A set of sets.
-% @param CompareSets A set of sets.
-% @param Comparator The atomic name of a binary semideterministic
-%        predicate.
-% @param ResultSets A set of sets.
-% @param RestSets A set of sets.
-% @see An example of this, using comparator subset/2, can be found
-%      in delete_supersets/4.
-
-% The empty set has no supersets that need to be removed.
-delete_sets([], _CompareSets, _Comparator, [], []):- !.
-delete_sets(
-  [Set | Sets],
-  CompareSets,
-  Comparator,
-  ResultSets,
-  [Set | RestSets]
-):-
-  member(CompareSet, CompareSets),
-  % If the comparison succeeds, then =Set= is exclused from the results
-  % (and included in the rest).
-  call(Comparator, CompareSet, Set), !,
-  delete_sets(Sets, CompareSets, Comparator, ResultSets, RestSets).
-delete_sets(
-  [Set | Sets],
-  CompareSets,
-  Comparator,
-  [Set | ResultSets],
-  RestSets
-):-
-  % If the comparison does not succeed, then =Set= is included in the
-  % results (and excluded from the rest).
-  delete_sets(Sets, CompareSets, Comparator, ResultSets, RestSets).
 
 %! delete_supersets(
-%!   +Sets:set(set(object)),
-%!   +CompareSets:set(set(object)),
-%!   -ResultSets:set(set(object)),
-%!   -RestSets:set(set(object))
+%!   +Original:ordset(ordset),
+%!   +Compare:ordset(ordset),
+%!   -Result:ordset(ordset),
+%!   -Rest:ordset(ordset)
 %! ) is det.
-% Deletes from =Sets= all sets that are a superset of some member of
-% =CompareEnvironments=.
+% Slits the `Original` sets into those that are and those that are not
+%  a superset of some member of `Compare`.
 %
-% @param Sets A set of sets.
-% @param CompareSets A set of sets.
-% @param ResultSets A set of sets.
-% @param RestSets A set of sets.
+% @param Original The original sets.
+% @param Compare The sets we compare with.
+% @param Result The original sets that are supersets of some set in `Compare`.
+% @param Rest The original sets that are not in `Result`.
 
-delete_supersets(Sets, CompareSets, ResultSets, RestSets):-
-  delete_sets(Sets, CompareSets, subset, ResultSets, RestSets).
+delete_supersets(Original, Compare, Result, Rest):-
+  exclude('_delete_supersets'(Compare), Original, Result),
+  ord_subtract(Original, Result, Rest).
+'_delete_supersets'(Compare, Set):-
+  member(Superset, Compare),
+  superset(Superset, Set), !.
+
 
 %! equinumerous(
 %!   +Set1:oneof([list,ordset]),
@@ -139,28 +95,21 @@ equinumerous(Set1, Set2):-
   cardinality(Set1, Cardinality),
   cardinality(Set2, Cardinality).
 
-%! is_minimal(+Set:ordset, +Sets:ordset(ordset)) is semidet.
-% Succeeds if =Set= is a minimal set with respect to =Sets=.
+
+%! is_minimal(+Minimal:ordset, +Compare:ordset(ordset)) is semidet.
+% Succeeds for minimal sets.
 %
-% @param Set A set of unique objects.
+% A minimal set has no subset.
+%
+% @param Set A minimal set?
 % @param Sets A set of sets.
 
-is_minimal(Set, Sets):-
+is_minimal(Minimal, Compare):-
   \+((
-    member(CompareSet, Sets),
-    subset(CompareSet, Set)
+    member(Subset, Compare),
+    subset(Subset, Minimal)
   )).
 
-%! next_subset(+Set:list(bit), -NextSet:list(bit)) is det.
-% Returns the next subset. Subsets are represented as lists of bits.
-% Positions in the list correspond to potential elements in the set.
-%
-% @param Set A list of bits.
-% @param NextSet A list of bits.
-
-next_subset([0 | T], [1 | T]).
-next_subset([1 | T1], [0 | T2]):-
-  next_subset(T1, T2).
 
 random_subset(S1, Percentage, S2):-
   is_between(0.0, 1.0, Percentage), !,
@@ -183,6 +132,7 @@ random_subset(S1, M1, N1, OldS2, Sol):-
   ord_add_element(OldS2, X, NewS2),
   random_subset(S2, M2, N2, NewS2, Sol).
 
+
 %! subsets(+Set:ordset, -Subsets:list(list(bit))) is det.
 % Returns all subsets of the given set as a list of binary lists.
 %
@@ -191,8 +141,60 @@ random_subset(S1, M1, N1, OldS2, Sol):-
 
 subsets(Set, Subsets):-
   cardinality(Set, Cardinality),
-  repeating_list(0, Cardinality, Input),
-  complete(next_subset, Input, Subsets).
+  repeating_list(0, Cardinality, BinarySet),
+  call_complete(next_subset, BinarySet, BinarySubsets),
+  maplist(binary_overlay(Set), BinarySubsets, Subsets).
+
+%! binary_overlay(+Original:list, +Overlay:list, -Result:list) is det.
+%! binary_overlay(+Original:list, -Overlay:list, +Result:list) is det.
+%! binary_overlay(+Original:list, ?Overlay:list, ?Result:list) is nondet.
+% The result is the sublist of the original list,
+%  where the overlay decides on which elements are kept (`1`)
+%  and which are not (`0`).
+
+binary_overlay(Original, Overlay, Result):-
+  enforce_mode(
+    '_binary_overlay'(Original, Overlay, Result),
+    [[+,+,+]-semidet,[+,+,-]-det,[+,-,+]-det]
+  ).
+'_binary_overlay'([], [], []).
+'_binary_overlay'([H|T1], [1|Overlay], [H|T2]):-
+  '_binary_overlay'(T1, Overlay, T2).
+'_binary_overlay'([_|T1], [0|Overlay], T2):-
+  '_binary_overlay'(T1, Overlay, T2).
+
+
+%! next_subset(+Subset:list(bit), -NextSubset:list(bit)) is det.
+% Returns the next subset.
+%
+% Subsets are represented as lists of bits.
+%
+% Positions in the list correspond to potential elements in the set.
+% For example
+% ~~~{.pl}
+% [1,0,0,1,1,0]
+% ~~~
+% may denote the set
+% ~~~{.txt}
+% {a,d,e}
+% ~~~
+%
+% @param Subset A list of bits.
+% @param NextSubset A list of bits.
+
+next_subset([0|T], [1|T]).
+next_subset([1|T1], [0|T2]):-
+  next_subset(T1, T2).
+
+
+%! superset(+Super:ordset, +Sub:ordset) is semidet.
+% Mainly used with `library(apply)`.
+%
+% @see Inverse parameter order of ord_subset/2.
+
+superset(Super, Sub):-
+  ord_subset(Sub, Super).
+
 
 %! transitive_closure(
 %!   +Predicate:atom,

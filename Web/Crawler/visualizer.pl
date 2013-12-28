@@ -15,8 +15,8 @@ Visualizer predicates.
 @version 2012/09
 */
 
-:- use_module(generic(file_ext)).
-:- use_module(generic(meta_ext)).
+:- use_module(generics(file_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(server(link_collection)).
 
 

@@ -2,6 +2,8 @@
   error_ext,
   [
     idle_error/1, % +Reason
+    mode_error/2, % +Mode:oneof([det,nondet,semidet])
+                  % +Goal:term
     rethrow/3 % :Goal
               % +Catcher
               % +Exception
@@ -42,6 +44,16 @@ idle_error(Format-Args):- !,
   idle_error(Reason).
 idle_error(Reason):-
   throw(error(idle_error(Reason), _)).
+
+
+%! mode_error(+Mode:oneof([det,nondet,semidet]), +Goal:term) is det.
+% Throws a mode error.
+% This happens when a goal does not have the required mode.
+
+mode_error(Mode, Goal):-
+  format(atom(Reason), 'Goal ~k does not have mode ~a.', [Goal,Mode]),
+  throw(error(mode_error(Reason), _)).
+
 
 %! retrhow(:Goal, +Catcher, +Exception) is det.
 % Catches an exception that is thrown lower in the stack, and reappropriates

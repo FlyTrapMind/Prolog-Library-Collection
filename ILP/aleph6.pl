@@ -70,6 +70,7 @@ please contact Ashwin Srinivasan first.
 :- use_module(library(settings)).
 :- use_module(library(time)).
 :- use_module(os(file_ext)).
+:- use_module(programming(prolog_control)).
 
 % This must come before this predicate is defined dynamic.
 :- redefine_system_predicate(false).
