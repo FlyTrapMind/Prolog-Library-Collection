@@ -151,12 +151,12 @@ user_property(UserName, session(Session)):- !,
   (nonvar(Session) -> ! ; true).
 % Explicitly stored properties.
 user_property(UserName, Property):-
-  nonvar_det(user_property_(UserName, Property)).
+  enforce_mode('_user_property'(UserName, Property), [['+','+']-semidet]).
 
-user_property_(UserName, Property):-
+'_user_property'(UserName, Property):-
   current_user(UserName, Properties),
   member(Property, Properties).
-user_property_(UserName, Property):-
+'_user_property'(UserName, Property):-
   user_property(UserName, Property).
 
 user_property(UserName, PropertyName, PropertyValue):-

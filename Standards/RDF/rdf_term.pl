@@ -230,9 +230,10 @@ rdf_node(Graph, Node):-
   rdf_object(Graph, Node).
 
 rdf_object(G, O):-
-  nonvar_det(rdf_object0(G, O)).
-rdf_object0(G, O):-
-  rdf(_, _, O, G).
+  enforce_mode(
+    rdf(_S, _P, O, G),
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
 
 rdf_po_pairs(Resource, PO_Pairs):-
   is_uri(Resource), !,
@@ -243,9 +244,10 @@ rdf_po_pairs(Resource, PO_Pairs):-
   ).
 
 rdf_predicate(G, P):-
-  nonvar_det(rdf_predicate0(G, P)).
-rdf_predicate0(G, P):-
-  rdf(_, P, _, G).
+  enforce_mode(
+    rdf(_S, P, _O, G),
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
 
 rdf_predicates(Graph, Predicates):-
   setoff(
@@ -304,9 +306,10 @@ rdf_shared_p_triples(
   ord_subtract(Y_PO_Pairs, Shared_P_Triples, Y_Exclusive_P_Pairs).
 
 rdf_subject(G, S):-
-  nonvar_det(rdf_subject_(G, S)).
-rdf_subject_(G, S):-
-  rdf(S, _P, _O, G).
+  enforce_mode(
+    rdf(S, _P, _O, G),
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
 
 %! rdf_term(?Graph:graph, ?Term:uri) is nondet.
 % Pairs of graphs and terms that occur in that graph.

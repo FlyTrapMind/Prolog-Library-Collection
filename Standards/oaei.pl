@@ -243,8 +243,8 @@ tsv_file_to_oaei_file(FromFile, ToFile):-
 % TMP %
 
 oaei_graph(G):-
-  nonvar_det(oaei_graph0(G)).
-oaei_graph0(G):-
+  enforce_mode('_oaei_graph'(G), [['+']-semidet,['-']-nondet]).
+'_oaei_graph'(G):-
   rdf_graph(G),
   once((
     rdfs_individual_of(Alignment, align:'Alignment'),

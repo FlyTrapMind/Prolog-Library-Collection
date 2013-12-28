@@ -68,9 +68,9 @@
                      % -NewList:list
     remove_last/2, % +List:list
                    % -NewList:list
-    repeating_list/3, % +Term:term
-                      % +Repeats:integer
-                      % -List:list(object)
+    repeating_list/3, % ?Term:term
+                      % ?Repeats:nonneg
+                      % ?List:list
     replace_nth/6, % +StartIndex:index
                    % ?Index:index
                    % +OldList:list
@@ -120,6 +120,7 @@ Extra list functions for use in SWI-Prolog.
          2013/07, 2013/09, 2013/12
 */
 
+:- use_module(generics(error_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(lists)).
@@ -412,37 +413,35 @@ remove_last([Element], []):-
 remove_last([Element | Rest], [Element | NewRest]):-
   remove_last(Rest, NewRest).
 
+
 %! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
+%! repeating_list(?Term:term, ?Repeats:integer, +List:list(term)) is det.
 % Returns the list of the given number of repeats of the given term.
 %
 % @param Term
 % @param Repeats
 % @param List
 
-repeating_list(Object, Repeats, List):-
-  nonvar(List), !,
-  repeating_list1(Object, Repeats, List).
-repeating_list(Object, Repeats, List):-
-  nonvar(Repeats), !,
-  repeating_list2(Object, Repeats, List).
-
-%! repeating_list1(-Object, -Repeats:integer, +List:list) is nondet.
-% Returns the object and how often it occurs in the repeating list.
-
-repeating_list1(_Object, 0, []).
-repeating_list1(Object, Repeats, [Object|T]):-
+repeating_list(_, 0, []):- !.
+% The term and number of repetitions are known given the list.
+repeating_list(H, Reps, L):-
+  nonvar(L), !,
+  L = [H|T],
   forall(
     member(X, T),
-    X = Object
+    % ==/2, since `[a,X]` does not contain 2 repetitions of `a`.
+    X == H
   ),
-  length([Object | T], Repeats).
+  length([H|T], Reps).
+% Repetitions is given, then we generate the list.
+repeating_list(H, Reps1, [H|T]):-
+  nonneg(Reps1), !,
+  Reps2 is Reps1 - 1,
+  repeating_list(H, Reps2, T).
+% Repetitions is not `nonneg`.
+repeating_list(_, Reps, _):-
+  domain_error(nonneg, Reps).
 
-%! repeating_list2(+Object, +Repeats:integer, -List:list) is det.
-
-repeating_list2(_Object, 0, []):- !.
-repeating_list2(Object, Repeats, [Object|List]):-
-  succ(NewRepeats, Repeats),
-  repeating_list2(Object, NewRepeats, List).
 
 %! replace_nth(
 %!   +StartIndex:integer,

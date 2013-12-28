@@ -84,7 +84,7 @@ list_predicates(_Stream, _Preds, _Spec).
 % Ignore variables.
 listing(_Stream, V):-
   var(V), !,
-  throw(error(instantiation_error, _Context)).
+  instantiation_error(V).
 listing(_Stream, []):- !.
 listing(Stream, [X | Rest]):- !,
   listing(Stream, X),

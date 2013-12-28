@@ -210,17 +210,6 @@ modules(Modules):-
 
 
 
-%! list_compound(?List:list(term), ?Compound:compound_term) is nondet.
-% Converts between lists and compound terms of the form =x_1/.../x_n=.
-%
-% @param List A list of terms.
-% @param Compound A compound term of the form =x_1/.../x_n=.
-
-list_compound([X], X):- !.
-list_compound([H | T], H/CompoundT):-
-  list_compound(T, CompoundT).
-
-
 %! update_datastructure(
 %!   :Call,
 %!   +OldDatastructure,

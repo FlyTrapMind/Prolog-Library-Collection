@@ -23,9 +23,8 @@
     call_nth/2, % :Goal
                 % +N:nonneg
     call_semidet/1, % :Goal
-    enforce_mode/2, % :Goal
-                    % +Declaration:list(pair(list(oneof(['+','-','?'])),oneof([det,multi,nondet,semidet])))
-    nonvar_det/1 % :Goal
+    enforce_mode/2 % :Goal
+                   % +Declaration:list(pair(list(oneof(['+','-','?'])),oneof([det,multi,nondet,semidet])))
   ]
 ).
 
@@ -39,6 +38,7 @@ Automated checks for Prolog mode enforcement.
 */
 
 :- use_module(generics(error_ext)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 
 :- meta_predicate(call_complete(2,+,-)).
@@ -56,11 +56,11 @@ Automated checks for Prolog mode enforcement.
 
 
 args_instantiation([], []).
-args_instantiation([H|T1], ['+'|T2]):-
-  nonvar(H), !,
+args_instantiation([H|T1], ['+'|T2]):- !,
+  nonvar(H),
   args_instantiation(T1, T2).
-args_instantiation([H|T1], ['-'|T2]):-
-  var(H), !,
+args_instantiation([H|T1], ['-'|T2]):- !,
+  var(H),
   args_instantiation(T1, T2).
 args_instantiation([_|T1], [_|T2]):-
   args_instantiation(T1, T2).
@@ -89,20 +89,11 @@ call_complete(_Goal, Input, [Input]).
 % @param Goal A goal.
 % @param Count An integer.
 
-call_count(Goal, Count):-
-  (
-    Goal = _Module:Goal_
-  ;
-    Goal_ = Goal
-  ), !,
-  Goal_ =.. [_Predicate | Arguments],
-  list_compound(Arguments, CompoundArgument),
-  setoff(
-    CompoundArgument,
-    Goal,
-    CompoundArguments
-  ),
-  length(CompoundArguments, Count).
+call_count(Goal1, Count):-
+  strip_module(Goal1, _Module, Goal2),
+  Goal2 =.. [_Pred|Args],
+  setoff(Args, Goal1, Argss),
+  length(Argss, Count).
 
 
 call_det(Goal):-
@@ -193,12 +184,4 @@ call_multi(Goal, Count, Input, Output, [Intermediate | History]):-
   call(Goal, Input, Intermediate),
   NewCount is Count - 1,
   call_multi(Goal, NewCount, Intermediate, Output, History).
-
-
-nonvar_det(Goal1):-
-  strip_module(Goal1, _Module, Goal2),
-  Goal2 =.. [_Pred|Args],
-  length(Args, Length),
-  repeating_list('+', Length, Instantiation),
-  enforce_mode(Goal1, [Instantiation-det]).
 
