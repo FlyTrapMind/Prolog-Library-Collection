@@ -103,8 +103,10 @@ rfc1766_language_header(language_header('Content-Language',':',T), LanguageTags)
 % ~~~
 
 rfc1766_language_tag(language_tag(T1,T2), LanguageTag) -->
-  {nonvar(LanguageTag)}, !,
-  {split_atom_exclusive(['-'], LanguageTag, [PrimaryTag|SubTags])},
+  {
+    nonvar(LanguageTag), !,
+    atomic_list_concat([PrimaryTag|SubTags], '-', LanguageTag)
+  },
   primary_tag(T1, PrimaryTag),
   subtags(T2, SubTags).
 rfc1766_language_tag(language_tag(T1,T2), LanguageTag) -->

@@ -319,7 +319,7 @@ rdf_web_argument(R1, R2):-
   R1 = _:_, !,
   rdf_global_id(R1, R2).
 rdf_web_argument(R1, R4):-
-  split_atom_exclusive(':', R1, [R2,R3]), !,
+  atomic_list_concat([R2,R3], ':', R1), !, % split
   rdf_web_argument(R2:R3, R4).
 rdf_web_argument(R, R):-
   type_error(resource, R).

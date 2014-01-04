@@ -21,5 +21,9 @@ Extensions to the support for archived files.
 
 
 
+%! archive_extract(+FromFile:atom, +ToDir:atom) is det.
+% @see Wrapper around archive_extract/3.
+
 archive_extract(FromFile, ToDir):-
   archive_extract(FromFile, ToDir, []).
+

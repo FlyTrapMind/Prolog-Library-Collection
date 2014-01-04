@@ -101,7 +101,7 @@ uri_path(T1, Path):-
 uri_to_file_name(URI, FileName):-
   uri_components(
     URI,
-    uri_components(_Scheme, _Auhtority, Path, _Search, _Fragment)
+    uri_components(_Scheme, _Authority, Path, _Search, _Fragment)
   ),
   file_base_name(Path, RelativeFileName),
   absolute_file_name(data(RelativeFileName), FileName).

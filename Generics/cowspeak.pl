@@ -148,8 +148,10 @@ cowspeak_(O1, Atoms):-
     CodeLine3,
     (
       member(Atom, Atoms),
+      
       % Single atoms may contain newlines.
-      split_atom_exclusive('\n', Atom, Lines1),
+      atomic_list_concat(Lines1, '\n', Atom), % split
+      
       % Now were are taling about individual lines proper.
       member(Line1, Lines1),
       % Some lines may exceed the maximum allowed width.

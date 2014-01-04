@@ -114,7 +114,7 @@ rdf_expand_namespace(URI, URI):-
   is_uri(URI), !.
 % An atom that can be converted to a URI.
 rdf_expand_namespace(Atom, URI):-
-  split_atom_exclusive(':', Atom, [Namespace, LocalName]),
+  atomic_list_concat([Namespace,LocalName], ':', Atom),
   rdf_global_id(Namespace:LocalName, URI).
 
 %! rdf_expand_namespace(
@@ -257,8 +257,8 @@ rdf_split_literal(O1, S, P, G, Split):-
     [S,P,Lit,G],
     (
       rdf_literal(S, P, Lit, G),
-      split_atom_exclusive(Split, Lit, Splits),
-      length(Splits, Length),
+      atomic_list_concat(Sublits, Split, Lit), % split
+      length(Sublits, Length),
       Length > 1
     ),
     Tuples
@@ -272,7 +272,7 @@ rdf_split_literal(O1, S, P, G, Split):-
   ).
 :- rdf_meta(rdf_split_string0(+,r,r,+,+)).
 rdf_split_string0(Split, S, P, OldLit, G):-
-  split_atom_exclusive(Split, OldLit, NewLits),
+  atomic_list_concat(NewLits, Split, OldLit), % split
   forall(
     member(NewLit, NewLits),
     rdf_assert_literal(S, P, NewLit, G)

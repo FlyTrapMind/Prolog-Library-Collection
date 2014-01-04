@@ -4,18 +4,17 @@
     dcg_end//0,
     dcg_separated_list//2, % :Separator:dcg
                            % ?Codess:list(list(codes))
-    dcg_phrase/2, % :DCG_Body:dcg
-                  % ?In:atom
-    dcg_phrase/3 % :DCG_Body:dcg
-                 % +In:atom
-                 % -Out:atom
+    dcg_phrase/2, % :DCG
+                  % ?AtomicOrCodes:or([atom,list(code),number])
+    dcg_phrase/3 % :DCG
+                 % ?AtomicOrCodes1:or([atom,list(code),number])
+                 % ?AtomicOrCodes2:or([atom,list(code),number])
   ]
 ).
 
-/** <module>
+/** <module> DCG generics.
 
-Generic DCG clauses. DCGs allow the definition of a complex grammar in
-a modular way.
+Generic support for DCG rules.
 
 ## Concepts
 
@@ -25,16 +24,17 @@ a modular way.
     (i.e., strings of characters).
 
 @author Wouter Beek
-@version 2013/05-2013/09, 2013/11-2013/12
+@version 2013/05-2013/09, 2013/11-2014/01
 */
 
 :- use_module(dcg(dcg_control)).
+:- use_module(library(apply)).
 
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
 :- meta_predicate(dcg_phrase(//,?)).
-:- meta_predicate(dcg_phrase(//,+,-)).
+:- meta_predicate(dcg_phrase(//,?,?)).
 
 
 
@@ -70,24 +70,30 @@ dcg_separated_list_var(Sep, [H|T]) -->
 dcg_separated_list_var(_Sep, [H]) -->
   dcg_all(H), !.
 
-dcg_phrase(DCG_Body, Atom):-
-  var(Atom), !,
-  phrase(DCG_Body, [H|T]),
-  (
-    number(H)
-  ->
-    atom_codes(Atom, [H|T])
-  ;
-    atom(H)
-  ->
-    atomic_list_concat([H|T], Atom)
-  ).
-dcg_phrase(DCG_Body, Atom):-
-  atom_codes(Atom, Codes),
-  phrase(DCG_Body, Codes).
 
-dcg_phrase(DCG_Body, InAtom, OutAtom):-
-  atom(InAtom),
-  atom_codes(InAtom, InCodes),
-  phrase(DCG_Body, InCodes, OutCodes),
-  atom_codes(OutAtom, OutCodes).
+%! dcg_phrase(:DCG, ?AtomicOrCodes:or([atom,list(code),number]))// is nondet.
+%! dcg_phrase(
+%!   :DCG,
+%!   ?AtomicOrCodes1:or([atom,list(code),number]),
+%!   ?AtomicOrCodes2:or([atom,list(code),number])
+%! )// is nondet.
+
+dcg_phrase(DCG, AtomicOrCodes):-
+  dcg_phrase(DCG, AtomicOrCodes, []).
+dcg_phrase(DCG, Atomic1, Atomic2):-
+  atomic(Atomic1), !,
+  atom_codes(Atomic1, Codes1),
+  dcg_phrase(DCG, Codes1, Codes2),
+  atom_codes(Atomic2, Codes2).
+dcg_phrase(DCG, Atomic1, Atomic2):-
+  atomic(Atomic2), !,
+  atom_codes(Atomic2, Codes2),
+  dcg_phrase(DCG, Codes1, Codes2),
+  atom_codes(Atomic1, Codes1).
+dcg_phrase(DCG, Atomic1, Atomic2):-
+  maplist(var, [Atomic1,Atomic2]), !,
+  dcg_phrase(DCG, Codes1, Codes2),
+  maplist(atom_codes, [Atomic1,Atomic2], [Codes1,Codes2]).
+dcg_phrase(DCG, Codes1, Codes2):-
+  phrase(DCG, Codes1, Codes2).
+

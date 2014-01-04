@@ -3,220 +3,156 @@
   [
     atom_to_term/2, % +Atom:atom
                     % -Term:term
-    atom_replace/3, % +Atom:atom
-                    % +Replacements:list(char-char)
-                    % -NewAtom:atom
-    atom_until/4, % +Split:oneof([atom,list(atom)])
-                  % +Atom:atom
-                  % -SubAtom:atom
-                  % -Rest:atom
-    atom_to_c_name/2, % +Atom:atom
-                      % -CName:atom
-    decapitalize/2, % +Old:atom
-                    % -New:atom
-    escape_underscores/2, % +Old:atom
-                          % -New:atom
-    first_char/2, % +Atom:atom
-                  % ?First:char
     format_integer/3, % +Integer:integer
                       % +Length:integer
                       % -Atom:atom
-    last_char/2, % +Atom:atom
-                 % ?Last:char
     new_atom/2, % +Old:atom
                 % -New:atom
     progress_bar/3, % +Current:number
                     % +End:number
                     % -ProgressBar:atom
-    punctuate/2, % +Old:atom
-                 % -New:atom
     repeating_atom/3, % +SubAtom:atom
                       % +Repeats:integer
                       % -Atom:atom
-    slashes_to_underscores/2, % +Atom:atom
-                              % -UnderscoreAtom:atom
-    spaces_to_underscores/2, % +Atom:atom
-                             % -UnderscoreAtom:atom
-    split_atom_exclusive/3, % +Split:oneof([atom,list(atom)])
-                            % +Atom:atom
-                            % -Splits:list(atom)
-    split_atom_inclusive/3, % +Split:oneof([atom,list(atom)])
-                            % +Atom:atom
-                            % -Splits:list(atom)
+    atom_splits/3, % +Splits:list(atom)
+                   % +Atom:atom
+                   % -Subatoms:list(atom)
     split_atom_length/3, % +Atom:atom
                          % +Length:integer
-                         % -Splits:list(atom)
-    split_length/3, % +Codes:list(integer)
-                    % +Length:integer
-                    % -Results:list(list(integer))
-    strip_atom/3, % +RemovableChars:oneof([char,list(char)])
-                  % +Unstripped:oneof([atom,list(char)])
-                  % -Stripped:oneof([atom,list(char)])
-    strip_begin/3, % +RemovableChars:oneof([char,list(char)])
-                   % +Unstripped:oneof([atom,list(char)])
-                   % -Stripped:oneof([atom,list(char)])
-    strip_end/3, % +RemovableChars:oneof([char,list(char)])
-                 % +Unstripped:oneof([atom,list(char)])
-                 % -Stripped:oneof([atom,list(char)])
-    titlecase/2, % +Atom:atom
-                 % -TitlecaseAtom:atom
-    truncate/3, % +Atom:atom
-                % +MaximumLength:integer
-                % -Truncated:atom
-    underscores_to_spaces/2, % +Atom:atom
-                             % -SpacesAtom:atom
-    wrap_atom/3 % +Options
-                % +Content:atom
-                % +NewContent:atom
+                         % -Subatoms:list(atom)
+    strip_atom/3, % +Strips:list(atom)
+                  % +In:atom
+                  % -Out:atom
+    strip_atom_begin/3, % +Strips:list(atom)
+                        % +In:atom
+                        % -Out:atom
+    strip_atom_end/3, % +Strips:list(atom)
+                      % +In:atom
+                      % -Out:atom
+    truncate/3 % +Atom:atom
+               % +MaximumLength:integer
+               % -Truncated:atom
   ]
 ).
 
-/** <module> Atom extensions for SWI-Prolog
+/** <module> Atom extensions
 
-Extra predicates that manipulate atoms for use in SWI-Prolog.
+Predicates for manipulating atoms.
 
-We assume atoms to be encoded using ASCII (or an ASCII-compatible) encoding
-scheme.
+We assume that atoms are encoded using ASCII (or an ASCII-compatible)
+ encoding scheme.
+
+# Replace
+
+In-atom replacements can best be made using DCGs.
+This requires the atom to be translated to/from a list of numeric codes.
+For example, escaping spaces and grave accent (e.g. in URIs):
+
+~~~{.pl}
+% Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT -> `%60`).
+dcg_phrase(dcg_replace([[32]-[37,50,48],[96]-[37,54,48]]), AtomIn, AtomOut),
+~~~
+
+# Split
+
+`atomic_list_concat(-,+,+)` performs atom splitting
+ according to a single given separator.
+
+For using multiple splits at once, use atom_splits/3.
+
+For splitting by a set length, use atom_split_length/3.
+
+# Strip
+
+Stripping atoms of an arbitrary number of subatoms can be done using
+ strip_atom/3, strip_atom_begin/3, and strip_atom_end/3.
+
+# Titlecase
+
+Titlecase atoms can be created using upcase_atom/2.
+
+--
 
 @author Wouter Beek
-@version 2011/08-2013/05, 2013/07, 2013/09, 2013/11
+@version 2011/08-2013/05, 2013/07, 2013/09, 2013/11, 2014/01
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_wrap)).
-:- use_module(generics(list_ext)).
+:- use_module(library(lists)).
 
 
 
-atom_codes_(Atom1-Atom2, Codes1-Codes2):-
-  atom_codes(Atom1, Codes1),
-  atom_codes(Atom2, Codes2).
+%! atom_splits(+Splits:list(atom), +Atom:atom, -Subatoms:list(atom)) is det.
+% Returns the given atom split up in two, according to the given split.
+% The first split does not include the split atom, making this method
+% exclusive.
+%
+% @param Splits Atoms where the main atom with be split.
+%        Notice that the order in which the splits appear is significant.
+% @param Atom The original, unsplit atom.
+% @param Subatoms The results of splitting.
+
+atom_splits(Splits, Atom1, [H|T]):-
+  member(Split, Splits),
+  atom_concat(H, Temp, Atom1),
+  atom_concat(Split, Atom2, Temp),
+  atom_splits(Splits, Atom2, T).
+atom_splits(_, Subatom, [Subatom]).
+
 
 %! atom_to_term(+Atom:atom, -Term:term) is det.
 % Returns the term described by the atom.
 %
 % @param Atom An atom.
 % @param Term A term.
-% @see Dumbed down version of atom_to_term/3.
+% @see Wrapper around atom_to_term/3, omitting the bindings.
 
 atom_to_term(Atom, Term):-
   atom_to_term(Atom, Term, _Bindings).
 
-%! atom_replace(
-%!   +Atom:atom,
-%!   +Replacement:list(pair(atom)),
-%!   -NewAtom:atom
-%! ) is det.
-% Returns a new atom that is like the given atom, but with the given
-% character replacement.
-%
-% @param Atom An atom.
-% @param Replacements A list of elements of the form =|char-char|=.
-% @param NewAtom An atom.
 
-atom_replace(Atom, Replacements, NewAtom):-
-  is_list(Replacements), !,
-  atom_codes(Atom, Codes),
-  maplist(atom_codes_, Replacements, CodesReplacements),
-  list_replace(Codes, CodesReplacements, NewCodes),
-  atom_codes(NewAtom, NewCodes).
-atom_replace(Atom, Replacement, NewAtom):-
-  atom_replace(Atom, [Replacement], NewAtom).
+%! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
+% Returns the first split.
+% For the first result this is behaviorally equivalent to:
+% ~~~{.pl}
+% atomic_list_concat(Subatoms, Split, Atom),
+% Subatoms = [FirstSubatom|_]
+% ~~
 
-atom_to_c_name(A, CName):-
-  dcg_phrase(atom_to_c_name_, A, CName).
+first_split(Atom, Split, FirstSubatom):-
+  atom_concat(Subatom, _, Atom),
+  atom_concat(FirstSubatom, Split, Subatom).
 
-atom_to_c_name_ -->
-  dcg_end, !.
-atom_to_c_name_, [C] -->
-  (
-    ascii_letter_lowercase(C), !
-  ;
-    decimal_digit(C), !
-  ),
-  atom_to_c_name_.
-atom_to_c_name_, [C2] -->
-  ascii_letter_uppercase(C1), !,
-  {to_lower(C1, C2)},
-  atom_to_c_name_.
-atom_to_c_name_, underscore -->
-  space, !,
-  atom_to_c_name_.
-atom_to_c_name_, underscore -->
-  [_],
-  atom_to_c_name_.
-
-%! atom_until(
-%!   +Split:oneof([atom,list(atom)]),
-%!   +Atom:atom,
-%!   -H:atom,
-%!   -Rest:atom
-%! ) is det.
-% Returns the subatom up to the first occurrence of some split.
-
-atom_until(Split, Atom, H, Rest):-
-  split_atom_exclusive(Split, Atom, [H | _T]),
-  atom_concat(H, Rest, Atom).
-
-%! decapitalize(+Old:atom, -New:atom) is det.
-% Ensure that the first letter of the atom is lower case.
-% This can be used to concatenate natural language sentences.
-
-decapitalize(Old, New):-
-  atom_chars(Old, [Char | Chars]),
-  char_type(Char, to_lower(Lower)),
-  atom_chars(New, [Lower | Chars]).
-
-%! escape_underscores(+Old:atom, -New:atom) is det.
-% Use backslash-encoding for underscores.
-
-escape_underscores(Atom, NewAtom):-
-  atom_replace(Atom, '_'-'\\_', NewAtom).
-
-%! first_char(+Atom:atom, ?First:char) is semidet.
-% The first character in the given atom.
-
-first_char(Atom, Char):-
-  atom_chars(Atom, [Char | _Chars]).
 
 %! format_integer(+Integer:integer, +Length:integer, -Atom:atom) is det.
-% Returns a formatted representation of the given integer that is
-% the given number of characters long.
+% Returns a formatted representation of the given integer
+%  that is exactly the given number of characters long.
 %
-% If the length of the formatted integer exceeds the given length, then
-% the integer is simply converted to an atom.
+% Fails in case the length of the formatted integer exceeds the given length.
 %
-% @param Integer An integer, the value that is to be formatted.
-% @param Length An integer, indicating the character lenght of the
-%        formatted integer atom.
-% @param Atom An atom, the formatted version of the integer value.
+% @param Integer The integer value that is to be formatted.
+% @param Length The exact character length of the formatted integer atom.
+% @param Atom The formatted version of the integer value.
+%
+% @tbd See whether this can be done using format/2 tab stops,
+%      http://www.swi-prolog.org/pldoc/doc_for?object=format/2.
 
-format_integer(Integer, Length, Atom):-
-  atom_length(Integer, IntegerLength),
-  format_integer_(Integer, IntegerLength, Length, Atom).
-
-format_integer_(Integer, IntegerLength, Length, Atom):-
-  Length < IntegerLength, !,
-  atom_number(Atom, Integer).
-format_integer_(Integer, IntegerLength, Length, Atom):-
-  ZeroLength is Length - IntegerLength,
+format_integer(I, L, Out):-
+  atom_length(I, IL),
+  ZeroLength is L - IL,
   repeating_atom('0', ZeroLength, Zeros),
-  atomic_concat(Zeros, Integer, Atom).
+  atomic_concat(Zeros, I, Out).
 
-%! last_char(+Atom:atom, ?Last:char) is semidet.
-% The first character in the given atom.
-
-last_char(Atom, Char):-
-  atom_chars(Atom, Chars),
-  last(Chars, Char).
 
 %! new_atom(+Old:atom, -New:atom) is det.
-% Returns a new atom, based on the given atom by either incrementing its
-% integer index or by adding such an index.
+% Returns a new atom, based on the given atom
+%  either by incrementing its index,
+%  or by adding such an index.
+%
+% This predicate comes in handy when creating unique identifiers
+%  based on a given base name, e.g. for threads, RDF graphs, files, etc.
 
 new_atom(A1, A2):-
-  split_atom_exclusive('_', A1, Splits),
+  atomic_list_concat(Splits, '_', A1), % split
   reverse(Splits, [LastSplit|RestSplits]),
   (
     atom_number(LastSplit, OldNumber)
@@ -229,9 +165,10 @@ new_atom(A1, A2):-
   ),
   atomic_list_concat(NewSplits, '_', A2).
 
+
 %! progress_bar(+Current:integer, End:integer, ProgressBar:atom) is det.
-% Returns an atomic progress bar that displays the current value onto
-% the scale that runs from one to the given end value.
+% Returns an atomic progress bar that displays the current value
+%  onto a scale that runs from `1` to the given end value.
 %
 % @param Current An integer, representing the current processed value.
 % @param End An integer, representing the last value to be processed.
@@ -271,17 +208,10 @@ progress_bar_(Current1, End, ProgressBar):-
     [Percentage1, Bar, NonBar, Current2, End]
   ).
 
-%! punctuate(+Old:atom, -New:atom) is det.
-% Ensures that the atom will have a dot character at the end.
-
-punctuate(Atom, Atom):-
-  last_char(Atom, '.'), !.
-punctuate(Old, New):-
-  atomic_concat(Old, '.', New).
 
 %! repeating_atom(+SubAtom:atom, +Repeats:integer, -Atom:atom) is det.
-% Returns the atom that is the repetition of the given subatom the given
-% number of times.
+% Returns the atom that is the repetition of the given subatom
+%  for the given number of times.
 %
 % @param SubAtom An atom, the element that gets repeated.
 % @param Repeats A integer, the number of repeats of the subatom.
@@ -295,195 +225,74 @@ repeating_atom(SubAtom, Repeats, Atom):-
   repeating_atom(SubAtom, NewRepeats, Atom1),
   atomic_concat(Atom1, SubAtom, Atom).
 
-slashes_to_underscores(Atom, NewAtom):-
-  atom_replace(Atom, '/'-'_', NewAtom).
 
-%! spaces_to_underscores(+Old:atom, -New:atom) is det.
-% Returns the atom that is like the give atom, but with all spaces replaced
-% by underscores.
-%
-% @param Old Any atom.
-% @param New An atom with spaces replaced by underscores.
-
-spaces_to_underscores(Atom, NewAtom):-
-  atom_replace(Atom, ' '-'_', NewAtom).
-
-%! split_atom_exclusive(
-%!   +Split:oneof([atom,list(atom)]),
+%! split_atom_length(
 %!   +Atom:atom,
-%!   -Splits:list(atom)
-%! ) is det.
-% Returns the given atom split up in two, according to the given split.
-% The first split does not include the split atom, making this method
-% exclusive.
+%!   +Length:nonneg,
+%!   -Subatoms:list(atom)
+%! ) is nondet.
+% Splits atoms by length.
+% The last subatom is allowed to have a shorter length.
 %
-% @param Split The occurrence atoms where the splittable atom will be split.
-% @param Atom The original, unsplit atom.
-% @param Splits The results of splitting.
+% If `Length` is zero this predicate does not terminate.
+% This is the correct behavior, since there is an infinite number of
+%  empty subatoms in each atom.
 %
-% @see split_atom_inclusive/3 includes the split atom in the split results.
+% @throws domain_error When `Length` is less than zero.
 
-split_atom_exclusive(Split, Atom, Splits):-
-  atom(Split), !,
-  split_atom_exclusive([Split], Atom, Splits).
-split_atom_exclusive(SplitList, Atom, [Split1 | Splits]):-
-  member(SplitMember, SplitList),
-  sub_atom(Atom, Before, _Length, After, SplitMember),
-  sub_atom(Atom, 0, Before, _After, Split1),
-  atom_length(Atom, Total),
-  Rest is Total - After,
-  sub_atom(Atom, Rest, After, 0, NewAtom), !,
-  split_atom_exclusive(SplitList, NewAtom, Splits).
-split_atom_exclusive(_SplitList, Atom, [Atom]).
+split_atom_length('', _, []):- !.
+split_atom_length(A1, L, [H|T]):-
+  sub_atom(A1, 0, L, _, H), !,
+  atom_concat(H, A2, A1),
+  split_atom_length(A2, L, T).
+split_atom_length(A, _, [A]).
 
-%! split_atom_inclusive(
-%!   +Split:oneof([atom,list(atom)]),
-%!   +Atom:atom,
-%!   -Splits:list(atom)
-%! ) is det.
-% Returns the given atom split up in two, according to the given split.
-% Earlier splits includes the split atom, making this method inclusive.
-%
-% @param Split The occurrence in atom where atom will be split.
-% @param Atom The original, unsplit atom.
-% @param Splits The results of splitting.
-%
-% @see split_atom_exclusive/3 does not include the split atom in the split
-%      results.
 
-split_atom_inclusive(Split, Atom, Splits):-
-  atom(Split), !,
-  split_atom_inclusive([Split], Atom, Splits).
-split_atom_inclusive(SplitList, Atom, [Split1 | Splits]):-
-  member(SplitMember, SplitList),
-  atom_length(SplitMember, SplitLength),
-  sub_atom(Atom, Before, _Length, After, SplitMember),
-  Split1Length is SplitLength + Before,
-  sub_atom(Atom, 0, Split1Length, _After, Split1),
-  atom_length(Atom, Total),
-  Rest is Total - After,
-  sub_atom(Atom, Rest, After, 0, NewAtom),
-  split_atom_inclusive(SplitList, NewAtom, Splits), !.
-split_atom_inclusive(_SplitList, Atom, [Atom]).
-
-split_atom_length(Atom, Length, Splits):-
-  atom_codes(Atom, Codes),
-  split_length(Codes, Length, CodeSplits),
-  findall(
-    Split,
-    (
-      member(CodeSplit, CodeSplits),
-      atom_codes(Split, CodeSplit)
-    ),
-    Splits
-  ).
-
-%! split_length(
-%!   +Codes:list(integer),
-%!   +Length:integer,
-%!   -Splits:list(list(integer))
-%! ) is det.
-
-split_length(Codes, Length, [Codes]):-
-  length(Codes, CodesLength),
-  CodesLength < Length, !.
-split_length(Codes, Length, [SubCodes | Results]):-
-  length(SubCodes, Length),
-  append(SubCodes, Rest, Codes),
-  split_length(Rest, Length, Results).
-
-%! strip_atom(+RemovableChar:char, +Unstripped:atom, -Stripped:atom) is det.
+%! strip_atom(+Strips:list(atom), +Unstripped:atom, -Out:atom) is det.
 % Strips the given atom's front and back for the given character.
+%! strip_atom_begin(+Strips:list(atom), +In:atom, -Out:atom) is det.
+% Strips the given atom's front for the given stripable atoms.
+%! strip_atom_end(+Strips:list(atom), +In:atom, -Out:atom) is det.
+% Strips the given atom's back for the given stripable atoms.
 
-strip_atom(RemovableChar, Unstripped, Stripped):-
-  atom(RemovableChar), !,
-  strip_atom([RemovableChar], Unstripped, Stripped).
-strip_atom(RemovableChars, Unstripped, Stripped):-
-  is_list(RemovableChars),
-  atom(Unstripped), !,
-  atom_chars(Unstripped, UnstrippedChars),
-  strip_atom(RemovableChars, UnstrippedChars, StrippedChars),
-  atom_chars(Stripped, StrippedChars).
-strip_atom(RemovableChars, UnstrippedChars1, StrippedChars):-
-  is_list(RemovableChars),
-  is_list(UnstrippedChars1), !,
-  strip_begin(RemovableChars, UnstrippedChars1, UnstrippedChars2),
-  strip_end(RemovableChars, UnstrippedChars2, StrippedChars).
+strip_atom(Strips, A1, A3):-
+  strip_atom_begin(Strips, A1, A2),
+  strip_atom_end(Strips, A2, A3).
+strip_atom_begin(Strips, A1, A3):-
+  member(Strip, Strips),
+  atom_concat(Strip, A2, A1),
+  strip_atom_begin(Strips, A2, A3).
+strip_atom_begin(_, A, A).
+strip_atom_end(Strips, A1, A3):-
+  member(Strip, Strips),
+  atom_concat(A2, Strip, A1),
+  strip_atom_end(Strips, A2, A3).
+strip_atom_end(_, A, A).
 
-strip_begin(RemovableChar, Unstripped, Stripped):-
-  atom(RemovableChar), !,
-  strip_begin([RemovableChar], Unstripped, Stripped).
-strip_begin(RemovableChars, Unstripped, Stripped):-
-  is_list(RemovableChars),
-  atom(Unstripped), !,
-  atom_chars(Unstripped, UnstrippedChars),
-  strip_begin(RemovableChars, UnstrippedChars, StrippedChars),
-  atom_chars(Stripped, StrippedChars).
-strip_begin(_RemovableChars, [], []):- !.
-strip_begin(RemovableChars, [Strip | UnstrippedChars], StrippedChars):-
-  member(Strip, RemovableChars), !,
-  strip_begin(RemovableChars, UnstrippedChars, StrippedChars).
-strip_begin(_Strips, Chars, Chars).
 
-strip_end(RemovableChars, Unstripped, Stripped):-
-  atom(Unstripped), !,
-  atom_chars(Unstripped, UnstrippedChars),
-  strip_end(RemovableChars, UnstrippedChars, StrippedChars),
-  atom_chars(Stripped, StrippedChars).
-strip_end(RemovableChars, UnstrippedChars, StrippedChars):-
-  once(reverse(UnstrippedChars, ReverseUnstrippedChars)),
-  strip_begin(RemovableChars, ReverseUnstrippedChars, ReverseStrippedChars),
-  once(reverse(StrippedChars, ReverseStrippedChars)).
-
-%! titlecase(+Old:atom, -New:atom) is det.
-% Returns an atom that is like the given atom, except for the first character
-% which must be either no letter or a capitalized letter.
-%
-% @param Old Any atom.
-% @param New A new atom that starts with a capital letter or with
-%        no letter at all.
-
-titlecase(Atom, TitlecaseAtom):-
-  downcase_atom(Atom, Atom0),
-  atom_chars(Atom0, [Char | Chars]),
-  char_type(UpperChar, to_upper(Char)),
-  atom_chars(TitlecaseAtom, [UpperChar | Chars]).
-
-%! truncate(+Atom:atom, +MaxLen:integer, -Truncated:atom) is det.
+%! truncate(+Atom:atom, +MaxLength:integer, -Truncated:atom) is det.
 % Returns the truncated version of the given atom.
-% If =Atom='s length exceeds the given maximum length, then its truncated
-% name will include '...' to indicate that is has been truncated.
+% Truncated atoms end in `...` to indicate its truncated nature.
+% The maximum length indicates the exact maximum.
+% Truncation will always result in an atom which has at most `MaxLength`.
 %
-% @param Atom An atom.
-% @param MaxLen An integer.
-% @param Truncated An atom.
-%
-% @author Jan Wielemaker, taken from Cliopatria.
-% @author Wouter Beek, some alterations.
+% @param Atom The original atom.
+% @param MaxLength The maximum allowed length of an atom.
+%        This must be at least 5.
+% @param Truncated The truncated atom.
 
-truncate(Atom, MaxLen, Truncated):-
-  atom_length(Atom, AtomLen),
-  truncate(Atom, AtomLen, MaxLen, Truncated).
+% The maximum allowed length is too short to be used with truncation.
+truncate(A, Max, A):-
+  Max =< 5, !.
+% The atom does not have to be truncated, it is not that long.
+truncate(A, Max, A):-
+  atom_length(A, AL),
+  AL =< Max, !.
+% The atom exceeds the maximum length, it is truncated.
+% For this purpose the displayed length of the atom is
+%  the maximum length minus 4 (but never less than 3).
+truncate(A1, Max, A3):-
+  TruncatedL is Max - 4,
+  sub_atom(A1, 0, TruncatedL, _, A2),
+  atom_concat(A2, ' ...', A3).
 
-truncate(Atom, AtomLen, MaxLen, Atom):-
-  AtomLen =< MaxLen, !.
-truncate(Atom, _AtomLen, MaxLen, Truncated):-
-  TruncatedLen is max(3, MaxLen - 4),
-  sub_atom(Atom, 0, TruncatedLen, _, Truncated1),
-  atom_concat(Truncated1, ' ...', Truncated).
-
-%! underscores_to_spaces(+Old:atom, -New:atom) is det.
-% Retruns an atom that is like the given atom, but with any underscore
-% characters replaced by spaces.
-%
-% @param Old An atom.
-% @param New An atom with underscores replaced by spaces.
-
-underscores_to_spaces(Old, New):-
-  atom_replace(Old, '_'-' ', New).
-
-%! wrap(+Options, +Length:integer, +Content:atom, -NewContent:atom) is det.
-% Support for wrapping atoms using module [dcg_wrap].
-
-wrap_atom(Options, Content, NewContent):-
-  dcg_phrase(dcg_wrap(Options), Content, NewContent).

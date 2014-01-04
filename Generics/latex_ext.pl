@@ -12,22 +12,22 @@
   ]
 ).
 
-/** <module> LATEX_EXT
+/** <module> LaTeX extensions
 
 Predicates for handling LaTeX files.
 
 @author Wouter Beek
-@version 2013/06, 2013/08
+@version 2013/06, 2013/08, 2014/01
 @tbd Update using new methods in DIR_EXT and FILE_EXT, e.g. directory_files/3.
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
-:- use_module(generics(atom_ext)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
-:- use_module(library(filesex)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
@@ -66,11 +66,14 @@ bibtex_convert_file(File):-
 
 file_to_latex_title(PrologFile, Title):-
   module_property(Module, file(PrologFile)),
+
   % Beware for plunit submodules!
-  \+ module_property(Module, class(test)),
-  !,
+  \+ module_property(Module, class(test)), !,
+
   % Underscores must be escaped in LaTeX.
-  escape_underscores(Module, Title).
+  dcg_phrase(dcg_replace(["_"-"\\_"]), Module, Title).
+
+
 file_to_latex_title(PrologFile, Local):-
   file_name(PrologFile, _Directory, Local, _Extension).
 
@@ -324,10 +327,9 @@ process_wrapper(ProcessName, ProcessArguments, ProcessOptions1):-
     format(user_output, '~w', [Exception])
   ).
 
-write_latex_codes(Stream, Codes):-
-  atom_codes(Atom1, Codes),
-  escape_underscores(Atom1, Atom2),
-  write(Stream, Atom2).
+write_latex_codes(Stream, Codes1):-
+  phrase(dcg_replace(["_"-"\\_"]), Codes1, Codes2),
+  put_codes(Stream, Codes2).
 
 write_latex_codes_nl(Stream, Codes):-
   write_latex_codes(Stream, Codes),

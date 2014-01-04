@@ -44,9 +44,11 @@ Bad to the bone but fine as wine
 @author Wouter Beek
 @tbd Catch Unicode characters.
 @tbd Do not fail on empty line.
-@version 2012/10
+@version 2012/10, 2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
@@ -102,8 +104,8 @@ google_tts(Encoding, Language, Query, URI):-
 %%%!  % Replace spaces with '%20'-s.
 %%%!  % But Google translate uses plusses.
 %%%!  uri_normalized(Query, NormalizedQuery),
-  % Replace spaces with '+'-es.
-  atom_replace(Query, ' '-'+', NormalizedQuery),
+  % Replace SPACEs with PLUSes.
+  dcg_phrase(dcg_replace([[32]-[43]]), Query, NormalizedQuery),
 
   % Create the search components for the URI.
 %%%!  % The swipl builtin uri_query_components/3 turns spaces and
@@ -151,7 +153,7 @@ load:-
 microsoft_translate(From, To, Query, URI):-
   microsoft_app_id(AppID),
   % Replace spaces with '+'-es.
-  atom_replace(Query, ' '-'+', NormalizedQuery),
+  dcg_phrase(dcg_replace([[32]-[43]]), Query, NormalizedQuery),
   format(
     atom(Search),
     'oncomplete=doneCallback&appId=~w&from=~w&to=~w&text=~w',

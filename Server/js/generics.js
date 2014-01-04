@@ -37,7 +37,7 @@ function getJSON(url, headers) {
       error: errorJSON,
       headers: headers,
       success: successJSON,
-      type: "get"
+      type: "GET"
     }
   );
 }
@@ -54,7 +54,7 @@ function postJSON(url, data, headers) {
       error: errorJSON,
       headers: headers,
       success: successJSON,
-      type: "post"
+      type: "POST"
     }
   );
 }

@@ -14,7 +14,7 @@
 Parser for HTML Web sites.
 
 @author Wouter Beek
-@version 2012/09, 2013/01-2013/02, 2013/11
+@version 2012/09, 2013/01-2013/02, 2013/11, 2014/01
 */
 
 :- use_module(generics(atom_ext)).
@@ -27,7 +27,7 @@ Parser for HTML Web sites.
 
 
 is_anchor(Link):-
-  first_char(Link, '#').
+  sub_atom(Link, 0, 1, _, '#').
 
 is_javascript(Link):-
   atom_concat('javascript:', _, Link).
@@ -36,9 +36,9 @@ is_mail(Link):-
   atom_concat('mailto:', _, Link).
 
 is_partial_link(Link):-
-  first_char(Link, '/').
+  sub_atom(Link, 0, 1, _, '/').
 is_partial_link(Link):-
-  first_char(Link, '?').
+  sub_atom(Link, 0, 1, _, '?').
 
 parse_attribute(LinkAttributes):-
   member(href=Remote, LinkAttributes), !,

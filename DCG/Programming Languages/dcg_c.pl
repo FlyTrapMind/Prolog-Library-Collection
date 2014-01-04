@@ -1,37 +1,64 @@
 :- module(
   dcg_c,
   [
-    c_convert//0
+    c_convert//0,
+    c_name//0
   ]
 ).
 
-/** <module> DCG_C
+/** <module> DCG C
 
-Conversions to make strings compatible with C syntax.
+DCG rules for the C programming language.
 
 @author Wouter Beek
-@version 2013/02, 2013/06
+@version 2013/02, 2013/06, 2014/01
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
 
 
 
-% Replace the bell character with '\b'.
-c_convert, bell -->
-  "\b", !,
-  c_convert.
-% Replace the line feed character with '\n'.
-c_convert, line_feed -->
-  "\n", !,
-  c_convert.
-% Replace the horizontal tab character with '\t'.
-c_convert, horizontal_tab -->
-  "\t", !,
-  c_convert.
-% Other characters do not need to be replaced.
-c_convert, [X] -->
-  [X], !,
-  c_convert.
-c_convert --> [].
+%! c_convert// is det.
+% Replace the bell character for `\b`.
+% Replace the line feed character for `\n`.
+% Replace the horizontal tab character for `\t`.
+%
+% # Example
+%
+% ~~~{.pl}
+% ?- use_module(generics(codes_ext)).
+% ?- phrase(c_convert, `aaa\bbbb\nccc\tddd`, X), put_codes(current_output, X).
+% aaabbb
+% ccc	ddd
+% ~~~
+
+c_convert -->
+  dcg_replace(["\b"-bell,"\n"-line_feed,"\t"-horizontal_tab]).
+
+
+%! c_name// is nondet.
+% # Example
+%
+% ~~~{.pl}
+% ?- once(phrase(c_name, `appe- lenSappP$`, CName)).
+% CName = "appe__lensappp_" .
+% ~~~
+
+c_name -->
+  dcg_end.
+c_name, [C] -->
+  ascii_letter_lowercase(C),
+  c_name.
+c_name, [C] -->
+  decimal_digit(C),
+  c_name.
+c_name, [C2] -->
+  ascii_letter_uppercase(C1),
+  {to_lower(C1, C2)},
+  c_name.
+c_name, "_" -->
+  [_],
+  c_name.
 

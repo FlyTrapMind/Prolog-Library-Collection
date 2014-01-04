@@ -98,7 +98,8 @@ dom_sense(DOM, sense(SenseNumber, Definition, Quotes)):-
   % Sense number
   xpath(DIV_Sense, //span(@class=sensenumber), SPAN_SenseNumber),
   xpath(SPAN_SenseNumber, /self(text), SenseNumber0),
-  split_atom_exclusive(SenseNumber0, '.', [SenseNumber | _]),
+  
+  first_split(SenseNumber0, '.', SenseNumber),
 
   % Definition
   xpath(DIV_Sense, //span(@class=def), SPAN_Definition),

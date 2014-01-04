@@ -15,12 +15,14 @@
 Predicates for generating a Web article.
 
 @author Wouter Beek
-@version 2013/11
+@version 2013/11, 2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(plp(dcg_c)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(xml(xml_namespace)).
 
@@ -65,7 +67,7 @@ paragraph(Content) -->
 
 section(Title, Content) -->
   {
-    atom_to_c_name(Title, SectionID),
+    once(dcg_phrase(c_name, Title, SectionID)),
     assert(section(SectionID, Title))
   },
   html([h1([class=section_title,id=SectionID], Title), Content]).

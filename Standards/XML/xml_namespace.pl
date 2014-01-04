@@ -109,7 +109,7 @@ xml_register_namespace(Namespace):-
   Spec =.. [Namespace, '.'],
   expand_url_path(Spec, URI1),
   (
-    last_char(URI1, '/')
+    sub_atom(URI1, _, 1, 0, '/')
   ;
     atomic_concat(URI1, '/', URI2)
   ),

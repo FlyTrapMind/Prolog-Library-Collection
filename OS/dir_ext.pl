@@ -291,9 +291,9 @@ safe_copy_directory(FromDir, ToDir):-
 
 directory_to_subdirectories(Dir, Subdirs):-
   is_absolute_file_name(Dir), !,
-  split_atom_exclusive(['/'], Dir, [_|Subdirs]).
+  atomic_list_concat([_|Subdirs], '/', Dir). % split
 directory_to_subdirectories(Dir, Subdirs):-
-  split_atom_exclusive(['/'], Dir, Subdirs).
+  atomic_list_concat(Subdirs, '/', Dir). % split
 
 process_directory_files(FromDir, FromFileTypes, ToDir, ToFileType, Goal):-
   process_directory_files(

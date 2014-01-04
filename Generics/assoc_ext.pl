@@ -54,17 +54,17 @@ init_assoc([H|T], A1, IV, A3):-
 
 get_assoc_ord_member(Key, Assoc, Value):-
   get_assoc(Key, Assoc, Set),
-  ord_member(Value, Set).
+  '_old_member'(Value, Set).
 
-%! ord_member(+Member, +Set:ordset) is semidet.
-%! ord_member(-Member, +Set:ordset) is nondet.
+%! '_old_member'(+Member, +Set:ordset) is semidet.
+%! '_old_member'(-Member, +Set:ordset) is nondet.
 % @see Wrapper around ord_memberchk/2 (when instantiation is =|(+,+)|=)
 %      and member/2 (when instantiation is =|(-,+)|=).
 
-ord_member(Value, Ordset):-
+'_old_member'(Value, Ordset):-
   nonvar(Value), !,
   ord_memberchk(Value, Ordset).
-ord_member(Value, Ordset):-
+'_old_member'(Value, Ordset):-
   member(Value, Ordset).
 
 %! put_assoc_ord_member(

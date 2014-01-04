@@ -22,10 +22,11 @@
 Converts XML DOMs to RDF graphs.
 
 @author Wouter Beek
-@version 2013/06, 2013/09-2013/11
+@version 2013/06, 2013/09-2013/11, 2014/01
 */
 
-:- use_module(generics(list_ext)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -68,10 +69,8 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   atomic_list_concat(Values, '_', Name2),
   atomic_list_concat([Name1,Name2], '/', Name3),
   
-  atom_codes(Name3, Codes1),
-  % Escape space, grave accent. 
-  list_replace(Codes1, [[32]-[37,50,48],[96]-[37,54,48]], Codes2),
-  atom_codes(Name4, Codes2),
+  % Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT -> `%60`).
+  dcg_phrase(dcg_replace([[32]-[37,50,48],[96]-[37,54,48]]), Name3, Names4),
 
   rdf_global_id(Ns:Name4, S),
 
