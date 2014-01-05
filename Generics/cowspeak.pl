@@ -323,11 +323,11 @@ mode(tired, [eyes("--")]).
 mode(wired, [eyes("OO")]).
 mode(youth, [eyes("..")]).
 
-process_modes(O1, O2):-
+process_modes(O1, O3):-
   option(mode(Mode), O1),
-  mode(Mode, ModeO), !,
-  merge_options(ModeO, O1, O2).
-process_modes(O, O).
+  mode(Mode, O2), !,
+  merge_options(O2, O1, O3).
+process_modes(O1, O1).
 
 
 

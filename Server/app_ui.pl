@@ -8,7 +8,7 @@ This provides a simple menu with the loaded Web modules.
 
 # Centering content
 
-Sometimes I want to center content (no just text).
+Sometimes I want to center content (not just text).
 
 ~~~{.css}
 margin-left: auto;
@@ -17,7 +17,7 @@ width: 50em;
 ~~~
 
 @author Wouter Beek
-@version 2013/11-2013/12
+@version 2013/11-2014/01
 */
 
 :- use_module(html(html_form)).
@@ -35,10 +35,7 @@ width: 50em;
 :- http_handler(root(test), test, []).
 
 :- html_resource(css('pure-min-0.3.0.css'), []).
-:- html_resource(
-  'http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css',
-  []
-).
+:- html_resource(css('app_ui.css'), [requires([css('pure-min-0.3.0.css')])]).
 
 :- multifile(user:head//2).
 :- multifile(user:body//2).
@@ -48,16 +45,16 @@ width: 50em;
 user:body(app_style, Content) -->
   html(
     body([
-      div([class='pure-g-r',id=layout],[
+      div([class='pure-g-r',id=layout], [
         \menulink,
         \menu,
         \main(Content)
       ]),
-      % Script taken from =|http://purecss.io/js/ui.js|=.
+      % Animates the menu.
       \js_script({|javascript(_)||
         (function (window, document) {
-          var layout   = document.getElementById('layout'),
-            menu   = document.getElementById('menu'),
+          var layout = document.getElementById('layout'),
+            menu = document.getElementById('menu'),
             menuLink = document.getElementById('menuLink');
           function toggleClass(element, className) {
             var classes = element.className.split(/\s+/),
@@ -94,20 +91,13 @@ footer -->
   html(
     footer(class=footer,
       div(class=['pure-menu','pure-menu-horizontal','pure-menu-open'],
-        ul(
-          li('Developed between 2012/05 and 2013/11 by Wouter Beek.')
-        )
+        ul(li('Developed between 2012/05 and 2014/01 by Wouter Beek.'))
       )
     )
   ).
 
 user:head(app_style, Head) -->
-  html(
-    head([
-      \html_requires(css('pure-min-0.3.0.css')),
-      \html_requires('http://purecss.io/combo/1.6.5?/css/main.css&/css/menus.css&/css/rainbow/baby-blue.css')
-    |Head])
-  ).
+  html(head([\html_requires(css('app_ui.css'))|Head])).
 
 home(_Request):-
   reply_html_page(app_style, [], []).
@@ -152,15 +142,5 @@ menu -->
   ).
 
 menulink -->
-  html(
-    a(
-      [
-        class='pure-menu-link',
-        href='/',
-        id=menuLink,
-        style='position:fixed;left:0;display:block;'
-      ],
-      span([])
-    )
-  ).
+  html(a([class='menu-link',href='#menu',id=menuLink], span([]))).
 

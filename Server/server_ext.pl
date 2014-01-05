@@ -66,6 +66,7 @@ SWI-Prolog defines the following HTTP handlers:
 :- use_module(library(http/http_session)). % Session support.
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(settings)).
+:- use_module(server(web_error)).
 :- use_module(server(authorization)).
 
 :- meta_predicate(dispatch(:)).
@@ -107,7 +108,7 @@ dispatch_method(Module, Method, Request):-
   catch(
     Module:dispatch_method(Method, Request),
     Error,
-    return_error(Error)
+    reply_error(Error)
   ), !.
 % The dispatcher for the given method is undefined.
 dispatch_method(Module, Method, _Request):-
@@ -119,13 +120,6 @@ dispatch_method(Module, Method, _Request):-
   ),
   reply_json(json([error=PlainError,message=Msg]), [width(0)]).
 
-%! extract_error(+Error:compound, -PlainError:compound) is det.
-% Make sure the error terms are of the same form,
-% removing the outer functor 'error` when present.
-
-extract_error(error(Type,_), Error):- !,
-  functor(Type, Error, _).
-extract_error(Error, Error).
 
 %! http_method(+Request:list, -Method:oneof([delete,get,post])) is det.
 % Returns the HTTP method used in the given request.
@@ -133,20 +127,13 @@ extract_error(Error, Error).
 http_method(Request, Method):-
   memberchk(method(Method), Request).
 
-%! return_error(+Error:compound) is det.
-% Repies with the given error in JSON format.
-
-return_error(Error):-
-  % Do not include the outer `error` functor in JSON communication.
-  extract_error(Error, PlainError),
-  message_to_string(Error, Msg),
-  reply_json(json([error=PlainError,message=Msg]), [width(0)]).
 
 %! server_port(Port:between(1000,9999)) is semidet.
 % Type checking for server ports.
 
 server_port(Port):-
   between(1000, 9999, Port).
+
 
 %! server_rebase(+Prefix:atom) is det.
 % Rebase the entire Web application.
@@ -156,14 +143,12 @@ server_port(Port):-
 server_rebase(Prefix):-
   set_setting(http:prefix, Prefix).
 
+
 %! start_server(+Port:between(1000,9999)) is det.
-% @see Wrapper around start_server/2.
+%! start_server(+Port:between(1000,9999), :ServerGoal) is det.
 
 start_server(Port):-
   start_server(Port, _ServerGoal).
-
-%! start_server(+Port:between(1000,9999), :ServerGoal) is det.
-
 % A server is already running at the given port.
 start_server(Port, _ServerGoal):-
   http_server_property(Port, start_time(StartTime)), !,
@@ -189,6 +174,10 @@ start_server(Port, ServerGoal0):-
 
   % INFO
   print_message(informational, server_ext(started(Port))).
+prolog:message(server_ext(started(Port))) -->
+  {setting(http:prefix, Prefix)},
+  ['You can access the server at http://localhost:~w/~w'-[Port,Prefix]].
+
 
 %! start_server_on_next_port(
 %!   +Port:between(1000,9999),
@@ -213,8 +202,4 @@ start_server_on_next_port(Port, NumberOfWorkers, ServerGoal):-
 % by trying out the lowest port number.
 start_server_on_next_port(_Port, NumberOfWorkers, ServerGoal):-
   start_server_on_next_port(1000, NumberOfWorkers, ServerGoal).
-
-prolog:message(server_ext(started(Port))) -->
-  {setting(http:prefix, Prefix)},
-  ['You can access the server at http://localhost:~w/~w'-[Port,Prefix]].
 

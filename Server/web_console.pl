@@ -15,6 +15,10 @@
 
 A simple Web console interface.
 
+Displays a form for entering Web predicates and displays the results
+ of their execution.
+Also includes a status bar with updates/messages.
+
 @author Wouter Beek
 @version 2012/10, 2013/02-2013/06, 2013/11-2013/12
 */

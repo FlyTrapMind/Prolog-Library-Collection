@@ -25,16 +25,17 @@
   ]
 ).
 
-/** <module> DB_EXT
-
-Database extensions.
+/** <module> Database extensions
 
 Replacement predicates should specify which parameters
-should be replaced and which should stay the same.
+ are to be replaced and which are to stay the same.
 
-Example: =|rdf_namespace_color(rdf, red)|= should replace
-=|rdf_namespace_color(rdf, blue)|=, but not
-=|rdf_namespace_color(rdfs, blue)|=.
+For example [1] should replace [2] but not [3].
+~~~{.pl}
+[1]   rdf_namespace_color(rdf, red)
+[2]   rdf_namespace_color(rdf, blue)
+[3]   rdf_namespace_color(rdfs, blue)
+~~~
 
 @author Wouter Beek
 @version 2013/04-2013/05, 2013/08
@@ -61,14 +62,11 @@ db_add(New):-
   assert(New).
 
 %! db_add_clause(+Head:term, Body:or([list(term),term])) is det.
-% @see db_add_clause/3
-
-db_add_clause(Head, Body):-
-  db_add_clause(user, Head, Body).
-
 %! db_add_clause(+Module:atom, +Head:term, Body:or([list(term),term])) is det.
 % Simplifies the assertion of clauses.
 
+db_add_clause(Head, Body):-
+  db_add_clause(user, Head, Body).
 db_add_clause(Mod, Head, Body1):-
   (is_list(Body1) -> construct_body(Body1, Body2) ; Body2 = Body1),
   Clause =.. [':-',Head,Body2],

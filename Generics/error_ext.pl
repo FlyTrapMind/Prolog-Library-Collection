@@ -1,6 +1,8 @@
 :- module(
   error_ext,
   [
+    extract_error/2, % +Error:compound
+                     % -PlainError:compound
     idle_error/1, % +Reason
     mode_error/2, % +Mode:oneof([det,nondet,semidet])
                   % +Goal:term
@@ -38,6 +40,14 @@ Exception handling predicates.
 :- meta_predicate rethrow(0,+,+).
 
 
+
+%! extract_error(+Error:compound, -PlainError:compound) is det.
+% Make sure the error terms are of the same form,
+% removing the outer functor 'error` when present.
+
+extract_error(error(Type,_), Error):- !,
+  functor(Type, Error, _).
+extract_error(Error, Error).
 
 idle_error(Format-Args):- !,
   format(atom(Reason), Format, Args),

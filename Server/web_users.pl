@@ -119,7 +119,7 @@ list_users(User, List) :-
 users_ui(_Request):-
   reply_html_page(app_style, \users_ui_head, \users_ui_body).
 
-users_ui_body -->
+users_ui_body -->{gtrace},
   html([
     h1('User administration'),
     form([onsubmit='return false;'], [

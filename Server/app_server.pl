@@ -1,13 +1,10 @@
 :- module(app_server, [start_app_server/0]).
 
-/** <module> App server
+/** <module> Application server
 
 Using this module automatically starts the server.
 
-Web home page of the development server.
-Displays a form for entering Web predicates and displays the results
-of their execution.
-Also includes a status bar with updates/messages.
+This produces the home page for the development server.
 
 @author Wouter Beek
 @see http://semanticweb.cs.vu.nl/prasem/
@@ -17,7 +14,6 @@ Also includes a status bar with updates/messages.
 :- use_module(generics(db_ext)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(settings)).
-:- use_module(library(thread_pool)).
 :- use_module(server(server_ext)).
 
 :- db_add_novel(user:prolog_file_type(db, database)).
@@ -56,7 +52,7 @@ Also includes a status bar with updates/messages.
 % Starts an application server.
 
 % Start the application server when running on dotcloud.
-%
+
 % dotCloud defines the `PORT_WWW` environment variable.
 % @see http://docs.dotcloud.com/services/custom/
 start_app_server:-
@@ -64,7 +60,7 @@ start_app_server:-
   atom_number(PortAtom, Port),
   start_server(Port, http_dispatch).
 % Start the application server using the default port
-% taken from settings.
+%  taken from settings.
 start_app_server:-
   setting(http:port, Port),
   start_app_server(Port).
@@ -89,7 +85,7 @@ start_app_server(Port):-
 
 %! app_server_dispatch(+Request:list) is det.
 % A wrapper predicate whose sole purpose is to be a handle for
-% insert a trace statement.
+%  trace statements.
 
 app_server_dispatch(Request):-
   http_dispatch(Request).

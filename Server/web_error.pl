@@ -3,7 +3,8 @@
   [
     catch_web/2, % :Goal
                  % -Markup:dom
-    web_error/2, % +Error:error
+    reply_error/1, % +Error:compound
+    web_error/2, % +Error:compound
                  % -Markup:dom
     web_error/3 % +Format:atom
                 % +Arguments:list(term)
@@ -25,8 +26,12 @@ error(
 ~~~
 
 @author Wouter Beek
-@version 2012/12, 2013/02
+@version 2012/12, 2013/02, 2014/01
 */
+
+:- use_module(generics(error_ext)).
+:- use_module(library(apply)).
+:- use_module(library(http/http_json)).
 
 :- meta_predicate(catch_web(1,-)).
 
@@ -42,34 +47,35 @@ catch_web(Goal, Markup):-
 %! error_context_web(+Context:compound, -Markup:list) is det.
 % Returns markup for the given error context.
 
-error_context_web(Context, [element(p, [], ['No context provided.'])]):-
-  var(Context),
-  !.
-error_context_web(context(Predicates, ContextMessage), Markup):-
-  is_list(Predicates),
-  !,
-  maplist(predicate_to_atom, Predicates, PredicateAtoms),
-  atomic_list_concat(PredicateAtoms, ' -> ', PredicateAtom),
-  error_context_web(PredicateAtom, ContextMessage, Markup).
-error_context_web(context(Predicate, ContextMessage), Markup):-
-  !,
+% There is no error context.
+error_context_web(Context, [element(p,[],['No context provided.'])]):-
+  var(Context), !.
+% The error context contains multiple predicates.
+error_context_web(context(Predicates,ContextMessage), Markup):-
+  is_list(Predicates), !,
+  maplist(term_to_atom, Predicates, PredicateAtoms),
+  atomic_list_concat(PredicateAtoms, ' -> ', PredicatesAtom),
+  error_context_web(PredicatesAtom, ContextMessage, Markup).
+% The error context contains a single predicate.
+error_context_web(context(Predicate,ContextMessage), Markup):- !,
   error_context_web(context([Predicate], ContextMessage), Markup).
-error_context_web(Context, [element(p, [], [AtomicContext])]):-
+% Unanticipated.
+error_context_web(Context, [element(p,[],[AtomicContext])]):-
   term_to_atom(Context, AtomicContext).
 
 error_context_web(
   PredicateName,
   ContextMessage,
   [
-    element(p, [], [
+    element(p,[],[
       'The predicate that raised the error is: ',
-      element(span, [class=term], [PredicateName]),
-      '.']
-    ),
-    element(p, [], [
+      element(span,[class=term],[PredicateName]),
+      '.'
+    ]),
+    element(p,[],[
       'The additional description of the error is: ',
-      element(span, [class=emphasis], [ContextMessage])]
-    )
+      element(span,[class=emphasis],[ContextMessage])
+    ])
   ]).
 
 %! error_formal_web(+Formal:compound, -Markup:list) is det.
@@ -79,14 +85,14 @@ error_context_web(
 error_formal_web(
   domain_error(Type, Term),
   [
-    element(b, [], ['Domain error']),
-    element(p, [], [
+    element(b,[],['Domain error']),
+    element(p,[],[
       'The term ',
-      element(span, [class=term], [Term]),
+      element(span,[class=term],[Term]),
       ' is of the proper type (i.e, ',
-      element(span, [class=type], [Type]),
-      ' but its value is outside of the supported values.']
-    )
+      element(span,[class=type],[Type]),
+      ' but its value is outside of the supported values.'
+    ])
   ]
 ):-
   !.
@@ -94,15 +100,15 @@ error_formal_web(
 error_formal_web(
   existence_error(Type, Term),
   [
-    element(b, [], ['Existence error']),
-    element(p, [], [
+    element(b,[],['Existence error']),
+    element(p,[],[
       'Term ',
-      element(span, [class=term], [Term]),
+      element(span,[class=term],[Term]),
       ' is of the proper type (i.e., ',
-      element(span, [class=type], [Type]),
+      element(span,[class=type],[Type]),
       ' and correct domain, but there is no existing (external) resource \c
-       that is represented by it.']
-    )
+       that is represented by it.'
+    ])
   ]
 ):-
   !.
@@ -110,87 +116,81 @@ error_formal_web(
 error_formal_web(
   instantiation_error(_Term),
   [
-    element(b, [], ['Instantiation error']),
-    element(p, [], [
+    element(b,[],['Instantiation error']),
+    element(p,[],[
       'An argument is under-instantiated. I.e. it  is not acceptable as it \c
        is, but if some variables are  bound to appropriate values it would \c
-       be acceptable.']
-    )
+       be acceptable.'
+    ])
   ]
-):-
-  !.
+):- !.
 % Permission error.
 error_formal_web(
   permission_error(Action, Type, Term),
   [
-    element(b, [], ['Permission error']),
-    element(p, [], [
+    element(b,[],['Permission error']),
+    element(p,[],[
       'It is not allowed to perform action ',
-      element(span, [class=action], [Action]),
+      element(span,[class=action],[Action]),
       ' on the object ',
-      element(span, [class=term], [Term]),
+      element(span,[class=term],[Term]),
       ' that is of type ',
-      element(span, [class=type], [Type]),
-      '.']
-    )
+      element(span,[class=type],[Type]),
+      '.'
+    ])
   ]
-):-
-  !.
+):- !.
 % Representation error.
 error_formal_web(
   representation_error(Reason),
   [
-    element(b, [], ['Representation error']),
-    element(p, [], [
+    element(b,[],['Representation error']),
+    element(p,[],[
       'A limitation of the current Prolog implementation is breached: ',
-      element(span, [class=emphasis], Reason),
-      '.']
-    )
+      element(span,[class=emphasis],Reason),
+      '.'
+    ])
   ]
-):-
-  !.
+):- !.
 % Shell error.
 error_formal_web(
   shell_error(Culprit),
   [
-    element(b, [], ['Syntax error']),
-    element(p, [], [
+    element(b,[],['Syntax error']),
+    element(p,[],[
       'The shell encountered an error: ',
-      element(span, [class=emphasis], [Culprit]),
-      '.']
-    )
+      element(span,[class=emphasis],[Culprit]),
+      '.'
+    ])
   ]
-):-
-  !.
+):- !.
 % Syntax error.
 error_formal_web(
   syntax_error(Culprit),
   [
-    element(b, [], ['Syntax error']),
-    element(p, [], [
+    element(b,[],['Syntax error']),
+    element(p,[],[
       'A text has invalid syntax: ',
-      element(span, [class=syntax], [Culprit]),
-      '.']
-    )
+      element(span,[class=syntax],[Culprit]),
+      '.'
+    ])
   ]
-):-
-  !.
+):- !.
 % Type error.
 error_formal_web(
   type_error(Type, Term),
   [
-    element(b, [], ['Type error.']),
-    element(p, [], [
+    element(b,[],['Type error.']),
+    element(p,[],[
       'Term ',
-      element(span, [class=term], [Term]),
+      element(span,[class=term],[Term]),
       ' is not of type ',
-      element(span, [class=type], [Type]),
-      '.']
-    )
+      element(span,[class=type],[Type]),
+      '.'
+    ])
   ]
-):-
-  !.
-error_formal_web(Formal, [element(p, [], [FormalAtom])]):-
+):- !.
+error_formal_web(Formal, [element(p,[],[FormalAtom])]):-
   term_to_atom(Formal, FormalAtom).
 
 %! web_error(+Error:error, -Markup:list) is det.
@@ -205,8 +205,8 @@ web_error(error(Formal, Context), Markup):-
   error_formal_web(Formal, FormalMarkup),
   error_context_web(Context, ContextMarkup),
   append(
-    [[element(h1, [], ['Error']), element(h2, [], ['Formal']) | FormalMarkup],
-     [element(h2, [], ['Context']) | ContextMarkup]],
+    [element(h1,[],['Error']),element(h2,[],['Formal'])|FormalMarkup],
+    [element(h2,[],['Context'])|ContextMarkup],
     Markup
   ).
 
@@ -220,15 +220,17 @@ web_error(error(Formal, Context), Markup):-
 web_error(
   Format,
   Arguments,
-  [element(h1, [], ['Error']), element(p, [], [ErrorMessage])]
+  [element(h1,[],['Error']),element(p,[],[ErrorMessage])]
 ):-
   format(atom(ErrorMessage), Format, Arguments).
 
-predicate_to_atom(Module:Predicate/Arity, Atom):-
-  !,
-  format(atom(Atom), '~w:~w/~w', [Module, Predicate, Arity]).
-predicate_to_atom(Predicate/Arity, Atom):-
-  !,
-  format(atom(Atom), '~w/~w', [Predicate, Arity]).
-predicate_to_atom(Predicate, Predicate).
+
+%! reply_error(+Error:compound) is det.
+% Repies with the given error in JSON format.
+
+reply_error(Error):-
+  % Do not include the outer `error` functor in JSON communication.
+  extract_error(Error, PlainError),
+  message_to_string(Error, Msg),
+  reply_json(json([error=PlainError,message=Msg]), [width(0)]).
 
