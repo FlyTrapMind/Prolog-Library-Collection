@@ -58,8 +58,11 @@
 
 Call a DCG rule multiple times while aggregating the arguments.
 
+When `Repetitions` is a postitive integer `N`,
+ then this is interpreted as **exactly** `N` occurrences.
+
 @author Wouter Beek
-@version 2013/08-2013/09, 2013/12
+@version 2013/08-2013/09, 2013/12-2014/01
 */
 
 :- use_module(dcg(dcg_content)).
@@ -94,29 +97,22 @@ Call a DCG rule multiple times while aggregating the arguments.
 
 % DCG_MULTI %
 
-%! dcg_multi(:DCG)//
-% @see dcg_multi//4
-
-dcg_multi(DCG) -->
-  dcg_multi(DCG, _Rep).
-
-%! dcg_multi(:DCG, ?Repetitions:or([nonneg,pair(nonneg,or([nonneg,inf]))]))//
-% @see dcg_multi//4
-
-dcg_multi(DCG, Rep) -->
-  dcg_multi(DCG, Rep, []).
-
-dcg_multi(DCG, Rep, O1) -->
-  dcg_multi(DCG, Rep, O1, _C).
-
+%! dcg_multi(:DCG)// .
+%! dcg_multi(:DCG, ?Repetitions:or([nonneg,pair(nonneg,or([nonneg,inf]))]))// .
 %! dcg_multi(
 %!   :DCG_Rule,
 %!   ?Repetition:or([nonneg,pair([nonneg,or([nonneg,inf])])]),
 %!   +Options:list(nvpair),
 %!   -Count:nonneg
-%! )//
+%! )// .
 % @see Like dcg_multi2//6 but with no arguments.
 
+dcg_multi(DCG) -->
+  dcg_multi(DCG, _Rep).
+dcg_multi(DCG, Rep) -->
+  dcg_multi(DCG, Rep, []).
+dcg_multi(DCG, Rep, O1) -->
+  dcg_multi(DCG, Rep, O1, _C).
 dcg_multi(DCG, Rep, O1, C) -->
   {meta_options(is_meta, O1, O2)},
   {repetition(Rep, Min, Max)},
@@ -307,8 +303,7 @@ dcg_multi_var(_DCG, Min, Max, C, C, [], [], _O1) -->
 % DCG NO ARGUMENTS %
 
 % Zero arguments: no distinction between `var` and `nonvar`.
-dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) -->
-  [].
+dcg_multi_no_arguments(_DCG, _Max, C, C, _O1) --> [].
 dcg_multi_no_arguments(DCG, Max, C1, C3, O1) -->
   % Process the separator, if any.
   dcg_multi_separator(C1, O1),
@@ -397,7 +392,7 @@ repetition(Rep, Min2, Max2):-
     % A single value.
     is_repetition_value(Rep)
   ->
-    Min2 = 1,
+    Min2 = Rep,
     Max2 = Rep
   ;
     Rep = Min1-Max1,

@@ -7,32 +7,31 @@
   ]
 ).
 
-/** <module> DCG_WRAP
+/** <module> DCG wrap lines
 
-DCG rules for wrapping text.
+DCG rules for wrapping lines of text.
 
 There are various uses of wrapping text:
-  1. Wrap text with newlines and padd with spaces.
-     This is used for the speech bubble in cowspeak.
+  1. Wrapping text with newlines and padding them with spaces.
+     This is e.g. used for the speech bubble in cowspeak.
      The newline suffices for terminal output.
      The padding with spaces is needed in order to have
-     the `|` appear at the right horizontal position
-     in order to form the right hand side of the speech bubble.
-  2. Wrap text into separate lists without padding.
-     This is useful if a following predicates needs to perform
-     arbitrary operations on the splitted lines of text.
+     the `|` appear at the right horizontal position,
+      forming the right hand side of the speech bubble.
+  2. Wrapping text into separate lists without padding.
+     This is useful if another predicate needs to perform
+      arbitrary operations on the splitted lines of text.
      Since the display device may not be a terminal,
-     the padded spaces may not be necessary.
-  3. Wrap text with linebreak tags, i.e. =|<br/>|=.
-     HTML does not display newlines.
+      the padding with spaces may not be necessary.
+  3. Wrap text with HTML linebreak tags, i.e. =|<br/>|=,
+      since HTML does not display newlines.
 
-All these uses taken care of by this module,
-by supporting the following options:
+The following options are supported:
   1. =|padding(+Padding:boolean)|=
-     Whether padding using spaces occurs at the right hand side
-     of each line.
+     Whether padding occurs at the right hand side of each line.
+     Spaces are used for this.
   2. =|separator(:DCG_Body)|=
-     The separation between the wrapped lines.
+     The separator that is generated between the wrapped lines.
   3. =|wrap_margin(+WrapMargin:integer)|=
      The maxmim width of a line of characters.
      This is the length at which line wrapping occurs.
@@ -40,14 +39,15 @@ by supporting the following options:
      Whether word wrapping or line wrapping is used.
 
 @author Wouter Beek
-@version 2013/07, 2013/09
+@version 2013/07, 2013/09, 2014/01
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_control)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_os)).
+:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_os)). % Used for newline (meta-DCG argument).
 :- use_module(dcg(dcg_peek)).
 :- use_module(generics(list_ext)).
 :- use_module(library(lists)).
@@ -67,15 +67,17 @@ by supporting the following options:
 % Meta-argument (DCG rule) `separator`.
 :- meta_predicate(dcg_word_wrap(+,//,+,+,?,?)).
 
+is_meta(separator).
+
 
 
 %! dcg_wrap(+Options)//
 % The following options are supported:
 %   1. =|padding(+Padding:boolean)|=
-%      Whether padding using spaces occurs at the right hand side
-%      of each line.
+%      Whether padding occurs at the right hand side of each line.
+%      Spaces are used for this.
 %   2. =|separator(:DCG_Body)|=
-%      The separation between the wrapped lines.
+%      The separator that is generated between the wrapped lines.
 %   3. =|wrap_margin(+WrapMargin:integer)|=
 %      The maxmim width of a line of characters.
 %      This is the length at which line wrapping occurs.
@@ -99,18 +101,21 @@ dcg_wrap(O1) -->
     dcg_all
   ).
 
+
 %! dcg_line_wrap(+Options)//
-% Return the parsed codes list with newlines using line wrap.
+% Emits the parsed codes list with interspersed separators using line wrap.
 %
 % Line wrapping ends a line after the given number of characters
-% has been parsed, or once there are no more characters left.
+%  has been parsed, or once there are no more characters left.
 %
 % The following options are supported:
 %   1. =|padding(+Padding:boolean)|=
-%      Whether padding using spaces occurs at the right hand side
-%      of the last line (default `false`).
+%      Whether padding occurs at the right hand side of the last line
+%      Spaces are used for padding.
+%      Default: `false`.
 %   2. =|separator(:DCG_Body)|=
-%      The separation between the wrapped lines (default `newline`).
+%      The separator that is emitted between the wrapped lines
+%      Default: `newline`.
 %   3. =|wrap_margin(+WrapMargin:integer)|=
 %      The maxmim width of a line of characters (default `80`).
 %      This is the length at which line wrapping occurs.
@@ -127,22 +132,23 @@ dcg_line_wrap(O1) -->
   },
   dcg_line_wrap(Padding, Separator, WrapMargin, WrapMargin).
 
+% The last character was consumed and no space padding occurs (option).
+dcg_line_wrap(false, _Separator, _Remaining, _WrapMargin) --> !, dcg_end.
+% The last character was consumed add space padding occurs (option).
+dcg_line_wrap(true, _Separator, Remaining, _WrapMargin),
+    dcg_multi(" ", Remaining-Remaining) --> !, dcg_end.
 % The number of characters for one line have been parsed,
-% so it is time for a separator.
-% Also, reset the character counter and start parsing the next line.
+%  so it is time for a separator.
+% Also, reset the character count and start parsing the next line.
 dcg_line_wrap(Padding, Separator, 0, WrapMargin), Separator --> !,
   dcg_line_wrap(Padding, Separator, WrapMargin, WrapMargin).
-% In the middle of parsing a line: process the next character; up the counter.
-dcg_line_wrap(Padding, Separator, Remaining, WrapMargin), [Code] -->
+% In the midst of parsing a line.
+% Process the next character and decrease the counter.
+dcg_line_wrap(Padding, Separator, Remaining1, WrapMargin), [Code] -->
   [Code],
-  {NewRemaining is Remaining - 1}, !,
-  dcg_line_wrap(Padding, Separator, NewRemaining, WrapMargin).
-% The last character was consumed, no space padding.
-dcg_line_wrap(false, _Separator, _Remaining, _WrapMargin) --> !, [].
-% The last character was consumed, add space padding.
-dcg_line_wrap(true, _Separator, Remaining, _WrapMargin), codes(Spaces) --> !,
-  % `32` is the US-ASCII character code for space.
-  {repeating_list(32, Remaining, Spaces)}.
+  {Remaining2 is Remaining1 - 1}, !,
+  dcg_line_wrap(Padding, Separator, Remaining2, WrapMargin).
+
 
 %! dcg_word_wrap(+Options)//
 % Returns the parsed codes list with newlines using word wrap.
@@ -160,8 +166,8 @@ dcg_line_wrap(true, _Separator, Remaining, _WrapMargin), codes(Spaces) --> !,
 %      This is the length at which line wrapping occurs.
 %
 % @param Options A list of name-value pairs.
-% @tbd Use a dictionary and a language tag in order to wrap at
-%      word boundaries.
+% @tbd Use a natural language dictionary and a language tag
+%      in order to wrap at word boundaries.
 
 dcg_word_wrap(O1) -->
   {
@@ -175,18 +181,17 @@ dcg_word_wrap(O1) -->
   % Prevent backtracking on codes/1 that appears in the head!
   !.
 
-% No more characters: do not add space padding.
-dcg_word_wrap(false, _Separator, _Remaining, _WrapMargin) -->
-  dcg_end, !.
-% No more characters: add space padding.
-dcg_word_wrap(true, _Separator, Remaining, _WrapMargin), codes(Spaces) -->
-  dcg_end, !,
-  {repeating_list(32, Remaining, Spaces)}.
+% No more characters and do not add space padding (option).
+dcg_word_wrap(false, _Separator, _Remaining, _WrapMargin) --> dcg_end, !.
+% No more characters and add space padding (option).
+dcg_word_wrap(true, _Separator, Remaining, _WrapMargin),
+    dcg_multi(" ", Remaining-Remaining) --> dcg_end, !.
 % Process another character. Notice that there are several options here.
 dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
-    codes(Word2), Postfix -->
+    codes(Word2),
+    Postfix -->
   % The behavior of word wrapping depends on properties of
-  % the upcoming word in the parsed string.
+  %  the upcoming word in the parsed string.
   % We therefore peek at this upcoming string.
   dcg_peek(graphic(Word1)),
   {length(Word1, WordLength)},
@@ -260,9 +265,7 @@ dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
 
   % No regrets.
   % Actually, this does not prevent Prolog from backtracking on codes/1
-  % in the head!
+  % in the head! See the calling wrapper for determinism enforcement.
   !,
   dcg_word_wrap(Padding, Separator, NewRemaining, WrapMargin).
-
-is_meta(separator).
 
