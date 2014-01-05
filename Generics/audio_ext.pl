@@ -1,11 +1,8 @@
 :- module(
   audio_ext,
   [
-    atom_to_mp3/2, % +Line:atom
-                   % ?File:atom
-    atom_to_mp3/3 % +Line:atom
-                  % +Directory:atom
-                  % -File:atom
+    lines_to_mp3/2 % +Lines:list(atom)
+                   % +File:atom
   ]
 ).
 
@@ -15,31 +12,8 @@
 
 Currently, the limited but free TTS feature of Google translate is used.
 
-In the furture services like Google translate and Microfost translate may be
-added.
-
-# Sample text
-
-The following sample text can be used to test predicates in this module.
-
-Like a wandering route and a hasty diary
-I lost my mind and sold my soul
-That's something only an idiot would do
-But if I told you all the dirty things he's always whispering in my ear in bed
-I can't think of any better motivation than
-Staring at his naked body stretched out while he sleeps
-He once consumed every crevice of my living life
-I craved the beast in him that night
-My heart pounding and my blood rushing
-His muscles flexed, sweat pouring out, power unleashed
-I could feel his gaze burn into my flesh
-He and I made it our duty to screw as often as possible
-A dive, pursuing the rhythm with increased concentration
-Before turning away with an unnoticed sigh—
-My soul was feeble when his back was turned
-And my bowels moved for him a sigh
-As a sieve of the night in a low dive
-Bad to the bone but fine as wine
+In the furture services like Google translate
+ and Microfost translate may be added.
 
 @author Wouter Beek
 @tbd Catch Unicode characters.
@@ -50,72 +24,63 @@ Bad to the bone but fine as wine
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
+:- use_module(generics(db_ext)).
+:- use_module(library(apply)).
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
 :- use_module(os(file_ext)).
 
+:- db_add_novel(user:file_search_path(audio, project(audio))).
+:- db_add_novel(user:prolog_file_type(mp3, mp3)).
 
 
-%! atom_to_mp3(+Line:atom, +MP3:atom) is det.
-%! atom_to_mp3(+Line:atom, -MP3:atom) is det.
+
+%! lines_to_mp3(+Lines:list(atom), +File:atom) is det.
 % Creates an MP3 file with the given line's text in spoken form.
-% If no file name is given, then one is generated using =Line='s MD5 hash.
+% If no file name is given, one is generated using `Line`'s MD5 hash.
+%
+% The lines must be sufficiently small (exact upper limit?).
+%
+% The lines must not contain non-ASCII characters (?).
 %
 % @param Line An atom, preferable a natural language expression.
-% @param MP3 The atomic name of an MP3 file.
-% @tbd Currently only works for English.
+% @param File The atomic name of an MP3 file.
 
-atom_to_mp3(Line, MP3):-
-  var(MP3), !,
-  atom_to_mp3(Line, audio(.), MP3).
-atom_to_mp3(Line, MP3):-
-  open(MP3, write, Write, [type(binary)]),
+lines_to_mp3(Lines, File):-
+  setup_call_cleanup(
+    open(File, write, Stream, [type(binary)]),
+    maplist(line_to_mp3(Stream), Lines),
+    close(Stream)
+  ).
+line_to_mp3(Stream, Line):-
   google_tts(Line, URI),
-  %%%%microsoft_translate(Line, URI),
   http_open(URI, Temp, []),
-  copy_stream_data(Temp, Write),
-  close(Write).
+  copy_stream_data(Temp, Stream).
 
-atom_to_mp3(Line, Directory, MP3):-
-  %%%%sha_hash(Line, Hash, [algorithm(sha1), encoding(utf8)]),
-  %%%%hash_atom(Hash, AtomicHash),
-  uri_normalized(Line, FileName),
-  create_file(Directory, FileName, mp3, MP3),
-  atom_to_mp3(Line, MP3).
-
-google_tts(Query, URI):-
-  google_tts(en, Query, URI).
-
-google_tts(Language, Query, URI):-
-  google_tts('UTF-8', Language, Query, URI).
+google_tts(Line, URI):-
+  google_tts('UTF-8', en, Line, URI).
 
 %! google_tts(
 %!   +Encoding:atom,
 %!   +Language:atom,
-%!   +Query:atom,
+%!   +Line:atom,
 %!   -URI:atom
 %! ) is det.
-% Returns the URI for the request to Google for returning the speech
-% variant of =Query=.
+% Returns the URI for the request to Google for returning
+%  the verbalization of `Line`.
 
-google_tts(_Encoding, _Language, '', _URI):- !,
-  fail.
-google_tts(Encoding, Language, Query, URI):-
-%%%!  % Replace spaces with '%20'-s.
-%%%!  % But Google translate uses plusses.
-%%%!  uri_normalized(Query, NormalizedQuery),
+google_tts(Enc, Lang, Line1, URI):-
+%  % Google translate uses plusses.
+%  uri_normalized(Line, NormalizedQuery),
+  
   % Replace SPACEs with PLUSes.
-  dcg_phrase(dcg_replace([[32]-[43]]), Query, NormalizedQuery),
+  dcg_phrase(dcg_replace([[32]-[43]]), Line1, Line2),
 
-  % Create the search components for the URI.
-%%%!  % The swipl builtin uri_query_components/3 turns spaces and
-%%%!  % plusses into their symbolic equivalents.
-%%%!  uri_query_components(Search, [ie=Encoding, tl=Language, q=NormalizedQuery]),
-  format(
-    atom(Search),
-    'ie=~w&tl=~w&q=~w',
-    [Encoding, Language, NormalizedQuery]
-  ),
+%  % The swipl builtin uri_query_components/3 turns spaces and
+%  % plusses into their symbolic equivalents.
+%  uri_query_components(Search, [ie=Encoding, tl=Language, q=NormalizedQuery]),
+  
+  format(atom(Search), 'ie=~w&tl=~w&q=~w', [Enc,Lang,Line2]),
 
   % Create the URI.
   uri_components(
@@ -123,52 +88,57 @@ google_tts(Encoding, Language, Query, URI):-
     uri_components(http, 'translate.google.com', '/translate_tts', Search, '')
   ).
 
-/*
-google_api_key('AIzaSyAw_5wsbe_42MlkmrBskRJmifozh9iGIY4').
 
-google_translate(Text, URI):-
-  google_translate(en, de, Text, URI).
 
-google_translate(From, To, Text, URI):-
-  google_api_key(API_Key),
-  google_translate_scheme(Scheme),
-  google_translate_authority(Authority),
-  google_translate_path(Path),
-  uri_query_components(Search, [key=API_Key, q=Text, source=From, target=To]),
-  uri_components(URI, uri_components(Scheme, Authority, Path, Search, '')).
+% TEST %
 
-% https://www.googleapis.com/language/translate/v2?key=AIzaSyAw_5wsbe_42MlkmrBskRJmifozh9iGIY4&q=hello&source=en&target=ar
+test('One art', 'The art of losing isn\'t hard to master;').
+test('One art', 'so many things seem filled with the intent').
+test('One art', 'to be lost that their loss is no disaster.').
 
-google_translate_scheme(https).
+test('One art', 'Lose something every day. Accept the fluster').
+test('One art', 'of lost door keys, the hour badly spent.').
+test('One art', 'The art of losing isn\'t hard to master.').
 
-google_translate_authority('www.googleapis.com').
+test('One art', 'Then practice losing farther, losing faster:').
+test('One art', 'places, and names, and where it was you meant').
+test('One art', 'to travel. None of these will bring disaster.').
 
-google_translate_path('/language/translate/v2').
+test('One art', 'I lost my mother\'s watch. And look! my last, or').
+test('One art', 'next-to-last, of three loved houses went.').
+test('One art', 'The art of losing isn\'t hard to master.').
 
-load:-
-  assert(user:file_search_path(audio, data(audio))),
-  absolute_file_name(data(audio), AudioDirectory),
-  create_directory(AudioDirectory).
+test('One art', 'I lost two cities, lovely ones. And, vaster,').
+test('One art', 'some realms I owned, two rivers, a continent.').
+test('One art', 'I miss them, but it wasn\'t a disaster.').
 
-microsoft_translate(From, To, Query, URI):-
-  microsoft_app_id(AppID),
-  % Replace spaces with '+'-es.
-  dcg_phrase(dcg_replace([[32]-[43]]), Query, NormalizedQuery),
-  format(
-    atom(Search),
-    'oncomplete=doneCallback&appId=~w&from=~w&to=~w&text=~w',
-    [AppID, From, To, NormalizedQuery]
-  ),
-  uri_components(
-    URI,
-    uri_components(
-      http,
-      'api.microsofttranslator.com',
-      '/V2/Ajax.svc/Translate',
-      Search,
-      ''
-    )
-  ).
+test('One art', 'Even losing you (the joking voice, a gesture').
+test('One art', 'I love) I shan\'t have lied.  It\'s evident').
+test('One art', 'the art of losing\'s not too hard to master').
+test('One art', 'though it may look like (Write it!) like disaster.').
 
-microsoft_app_id('0vTrcQBoNnyZ0wd3Zw3ZAPy6hDLS2O+VPfjzGlvAjqw=').
-*/
+test('Biden', 'I have two shotguns at my home.').
+test('Biden', 'They\'re locked in a safe.').
+test('Biden', 'There\'s a metal gun case.').
+test('Biden', 'We live in an area that\'s wooded, somewhat secluded.').
+test('Biden', 'Somewhat secluded.').
+test('Biden', 'And I\'ve said Jill, if there\'s ever a problem, just walk out').
+test('Biden', 'on the balcony and fire two blasts outside the house.').
+test('Biden', 'Buy a shotgun, buy a shotgun...').
+test('Biden', 'Buy a shotgun, buy a shotgun...').
+test('Biden', 'We don\'t need a machine gun, we don\'t need 30 rounds').
+test('Biden', 'buy a shotgun, buy a double-barreled shotgun.').
+
+test:-
+  % Collect the lines to verbalize.
+  Poem = 'One art',
+  %Poem = 'Biden',
+  findall(Line, test(Poem, Line), Lines),
+  
+  % Create a test file.
+  new_atom(test, Base),
+  create_file(audio(.), Base, mp3, MP3),
+  
+  % Do it.
+  lines_to_mp3(Lines, MP3).
+
