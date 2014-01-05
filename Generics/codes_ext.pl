@@ -1,36 +1,52 @@
 :- module(
   codes_ext,
   [
-    codes_replace1/4, % +Old:list(code)
-                      % +From:list(code)
-                      % +To:list(code)
-                      % -New:list(code)
-    codes_replace2/4, % +Old:list(code)
-                      % +From:list(code)
-                      % +To:list(code)
-                      % -New:list(code)
     codes_to_atom/2, % +Codes:list(code)
                      % -Atom:atom
     put_codes/1, % +Codes:list(code)
     put_codes/2, % +Stream:stream
                  % +Codes:list(code)
-    split_codes/3, % +Codes:list(code)
-                   % +Split:list(code)
-                   % -Results:list(list(code))
-    strip_codes/3, % +Strip:list(code)
+    strip_codes/3, % +Strip:list(list(code))
                    % +In:list(code)
                    % -Out:list(code)
+    strip_codes_begin/3, % +Strip:list(list(code))
+                         % +In:list(code)
+                         % -Out:list(code)
+    strip_codes_end/3, % +Strip:list(list(code))
+                       % +In:list(code)
+                       % -Out:list(code)
     to_codes/2 % +In:or([atom,list(code),number])
                % -Codes:list(code)
   ]
 ).
 
-/** <module> CODES_EXT
+/** <module> Codes extensions
 
 Predicates for handling codes.
 
+# Replace
+
+Replacements in list of codes can be made using:
+~~~{.pl}
+phrase(dcg_replace([From-To|Pairs]), In, Out)
+~~~
+
+# Split
+
+Lists of codes can be splitted using:
+~~~{.pl}
+phrase(dcg_separated_list(:SeparatorDCG,-Sublists:list(list(code))), Codes)
+~~~
+
+# Strip
+
+Stripping codes lists is simply done using append,
+ see strip_codes/3, strip_codes_begin/3, and strip_codes_end/3.
+
+--
+
 @author Wouter Beek
-@version 2013/05-2013/07, 2013/12
+@version 2013/05-2013/07, 2013/12-2014/01
 */
 
 :- use_module(dcg(dcg_replace)).
@@ -39,44 +55,51 @@ Predicates for handling codes.
 
 
 
-codes_replace1(Old, From, To, New):-
-  phrase(dcg_replace(From, To), Old, New).
-codes_replace2([], _From, _To, []):- !.
-codes_replace2(Old, From, To, New):-
-  append(From, OldRest, Old), !,
-  codes_replace2(OldRest, From, To, NewRest),
-  append(To, NewRest, New).
-codes_replace2([H|T], From, To, [H|NewT]):-
-  codes_replace2(T, From, To, NewT).
-
 %! codes_to_atom(+Codes:list(code), -Atom:atom) is det.
-% This may come in handly when the argument order is fixed,
-% and codes appears before atom.
+% This is solely used in contexts where the argument order is fixed,
+%  and the codes parameter just happends to occur before the atom parameter.
 
 codes_to_atom(Codes, Atom):-
   atom_codes(Atom, Codes).
 
+
+%! put_codes(+Codes:list(code)) is det.
+%! put_codes(+Out:stream, +Codes:list(code)) is det.
+% @see Wrapper around put_code/1 that works on lists of codes
+%      and that can write to an arbitrary stream.
+
 put_codes(Codes):-
   maplist(put_code, Codes).
-
 put_codes(Out, Codes):-
   with_output_to(Out, maplist(put_code, Codes)).
 
-split_codes(Codes, Split, Results):-
-  \+ is_list(Split), !,
-  split_codes(Codes, [Split], Results).
-split_codes(Codes, Split, [Result | Results]):-
-  append(Result, Temp, Codes),
-  append(Split, NewCodes, Temp), !,
-  split_codes(NewCodes, Split, Results).
-split_codes(Result, _Split, [Result]).
 
-strip_codes(_Strip, [], []):- !.
-strip_codes(Strip, [H | In], Out):-
-  memberchk(H, Strip), !,
-  strip_codes(Strip, In, Out).
-strip_codes(Strip, [H | In], [H | Out]):-
-  strip_codes(Strip, In, Out).
+%! strip_codes(+Strips:list(list(code)), +In:list(code), -Out:list(code)) is det.
+%! strip_codes_begin(+Strips:list(list(code)), +In:list(code), -Out:list(code)) is det.
+%! strip_codes_end(+Strips:list(list(code)), +In:list(code), -Out:list(code)) is det.
+% Strips the given atom's front and/or back for the given character.
+%
+% Notice that the order in which the strip atoms occur is significant.
+%
+% @tbd Do this with DCG rules instead of lists in `Strips`.
+
+strip_codes(Strips, C1, C3):-
+  strip_codes_begin(Strips, C1, C2),
+  strip_codes_end(Strips, C2, C3).
+strip_codes_begin(Strips, C1, C3):-
+  member(Strip, Strips),
+  append(Strip, C2, C1),
+  strip_codes_begin(Strips, C2, C3).
+strip_codes_begin(_, C, C).
+strip_codes_end(Strips, C1, C3):-
+  member(Strip, Strips),
+  append(C2, Strip, C1),
+  strip_codes_end(Strips, C2, C3).
+strip_codes_end(_, C, C).
+
+
+%! to_codes(+In:or([atom,list(code),number]), -Out:list(code)) is det.
+% Make sure atomic terms are converted to codes lists.
 
 to_codes(Atom, Codes):-
   atom(Atom), !,

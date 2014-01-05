@@ -85,7 +85,7 @@ load_examples(Stream):-
   at_end_of_stream(Stream), !.
 load_examples(Stream):-
   read_line_to_codes(Stream, Line),
-  split_codes(Line, [" "], ListOfCodes),
+  phrase(dcg_separated_list(" ", ListOfCodes), Line),
   flag(ex, Examples, Examples + 1),
   format(atom(Doc), 'd~w', [Examples]),
   assert(doc(Doc)),

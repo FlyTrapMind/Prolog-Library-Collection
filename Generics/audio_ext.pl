@@ -10,7 +10,7 @@
 
 # TTS conversion
 
-Currently, the limited but free TTS feature of Google translate is used.
+The limited but free TTS feature of Google translate is used.
 
 In the furture services like Google translate
  and Microfost translate may be added.

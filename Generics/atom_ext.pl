@@ -248,12 +248,16 @@ split_atom_length(A1, L, [H|T]):-
 split_atom_length(A, _, [A]).
 
 
-%! strip_atom(+Strips:list(atom), +Unstripped:atom, -Out:atom) is det.
-% Strips the given atom's front and back for the given character.
+%! strip_atom(+Strips:list(atom), +In:atom, -Out:atom) is det.
 %! strip_atom_begin(+Strips:list(atom), +In:atom, -Out:atom) is det.
-% Strips the given atom's front for the given stripable atoms.
 %! strip_atom_end(+Strips:list(atom), +In:atom, -Out:atom) is det.
-% Strips the given atom's back for the given stripable atoms.
+% Strips the given atom's front and/or back for the given character.
+%
+% Notice that the order in which the strip atoms occur is significant.
+%
+% @param Strips A list of strip atoms.
+% @param In The unstrippped atom
+% @param Out The stripped atom.
 
 strip_atom(Strips, A1, A3):-
   strip_atom_begin(Strips, A1, A2),
