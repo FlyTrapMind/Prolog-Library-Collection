@@ -28,7 +28,7 @@
 Predicates that extend the swipl builtin I/O predicates operating on streams.
 
 @author Wouter Beek
-@version 2013/01, 2013/06, 2013/08
+@version 2013/01, 2013/06, 2013/08, 2014/01
 */
 
 :- use_module(generics(codes_ext)).
@@ -43,10 +43,18 @@ Predicates that extend the swipl builtin I/O predicates operating on streams.
 % @param File An atomic file name.
 
 atom_to_file(Atom, File):-
-  access_file(File, write),!,
+  access_file(File, write),
   setup_call_cleanup(
     open(File, write, Stream, [encoding(utf8),type(test)]),
     format(Stream, '~w', [Atom]),
+    close(Stream)
+  ).
+
+codes_to_file(Codes, File):-
+  access_file(File, write),
+  setup_call_cleanup(
+    open(File, write, Stream, [encoding(utf8),type(test)]),
+    put_codes(Stream, Codes),
     close(Stream)
   ).
 
