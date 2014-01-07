@@ -86,8 +86,8 @@ call_complete(_Goal, Input, [Input]).
 %! call_count(:Goal, -Count:integer) is det.
 % Returns the number of calls that can be made of the given goal.
 %
-% @param Goal A goal.
-% @param Count An integer.
+% @arg Goal A goal.
+% @arg Count An integer.
 
 call_count(Goal1, Count):-
   strip_module(Goal1, _Module, Goal2),
@@ -114,8 +114,8 @@ call_mode(_Mode, Goal):-
 % This does not exclude the case in which the goal
 %  could have been executed more than `N` times.
 %
-% @param Goal A nondeterministic goal.
-% @param N A nonnegative integer.
+% @arg Goal A nondeterministic goal.
+% @arg N A nonnegative integer.
 %
 % @author Ulrich Neumerkel
 
@@ -170,11 +170,11 @@ call_multi(Goal, Count):-
 % Applies a predicate multiple times on the given input and its
 % subsequent outputs, i.e. repeated function application.
 %
-% @param Goal
-% @param Count The integer counter, indicating the number of times the
+% @arg Goal
+% @arg Count The integer counter, indicating the number of times the
 %        predicate is applied repeaterly.
-% @param Input A term.
-% @param Output A term.
+% @arg Input A term.
+% @arg Output A term.
 
 call_multi(Goal, Count, Input, Output):-
   call_multi(Goal, Count, Input, Output, _History).

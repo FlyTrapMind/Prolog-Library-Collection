@@ -81,7 +81,7 @@ date_directories(Dir, DateDir):-
 %! hash_date(-Hash:atom) is det.
 % Returns the hash of the current timestamp.
 %
-% @param Hash An atomic hash.
+% @arg Hash An atomic hash.
 
 hash_date(Hash):-
   get_time(TimeStamp),
@@ -97,8 +97,8 @@ iso8601_dateTime(DT):-
 % Returns the most recently created or altered file from within a list of
 % files.
 %
-% @param Files A list of atomic absolute file names.
-% @param Latest An atomic absolute file name.
+% @arg Files A list of atomic absolute file names.
+% @arg Latest An atomic absolute file name.
 
 latest_file([First | Files], Latest):-
   time_file(First, FirstTime),
@@ -122,7 +122,7 @@ latest_file([File | Files], TopTime/TopFile, Latest):-
 % Returns the current date in POSIX format.
 %
 % @compat POSIX strfdate()
-% @param Date A compound term of the form =Year/Month/Day=,
+% @arg Date A compound term of the form =Year/Month/Day=,
 %        where =Year= consists of 4, =Month= consists of 2,
 %        and =Day= consists of 2 digits.
 
@@ -134,7 +134,7 @@ posix_date(Date):-
 % Returns the current time in POSIX format.
 %
 % @compat POSIX strftime()
-% @param Time The atomic default textual representation of a time in PraSem,
+% @arg Time The atomic default textual representation of a time in PraSem,
 %        i.e. =Hour:Minute:Second=.
 
 posix_time(Time):-
@@ -144,9 +144,9 @@ posix_time(Time):-
 %! seconds(?Hours:integer, ?Minutes:integer, ?Seconds:integer) is det.
 % Converts hours and minutes into seconds and vice versa.
 %
-% @param Hours An integer
-% @param Minutes An integer
-% @param Seconds An integer
+% @arg Hours An integer
+% @arg Minutes An integer
+% @arg Seconds An integer
 
 seconds(Hours, Minutes, Seconds):-
   nonvar(Seconds), !,

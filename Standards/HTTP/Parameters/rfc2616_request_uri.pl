@@ -156,8 +156,8 @@ Recipients of an HTTP/1.0 request that lacks a `Host` header field
 %
 % --
 %
-% @param ParseTree
-% @param URI A compound term uri/4 containing the following arguments:
+% @arg ParseTree
+% @arg URI A compound term uri/4 containing the following arguments:
 %   1. `Scheme:atom`
 %   2. `Authority:compound`
 %   3. `Path:list(list(atom))`

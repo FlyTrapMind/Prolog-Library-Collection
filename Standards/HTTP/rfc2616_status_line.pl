@@ -365,10 +365,10 @@ Requirements for HTTP/1.1 origin servers:
 % Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
 % ~~~
 %
-% @param ParseTree
-% @param Version A compound term of the form
+% @arg ParseTree
+% @arg Version A compound term of the form
 %        `version(Major:nonneg,Minor:nonneg)`
-% @param Status A compound term of the form
+% @arg Status A compound term of the form
 %        `status(StatusCode:between(100,500),ReasonPhrase:atom)`
 
 'Status-Line'('Status-Line'(T1,T2,T3), Version, status(Status, Reason)) -->

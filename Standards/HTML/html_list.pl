@@ -59,11 +59,11 @@ html_handler_list(L_O1, Parent) -->
 %   * =|ordered(Ordered:boolean)|=
 %     Whether an order =ol= or unordered =ul= HTML list is used.
 %
-% @param ListOptions A list of name-value pairs,
+% @arg ListOptions A list of name-value pairs,
 %        representing options of the HTML list element.
-% @param ListItemOptions A list of name-value pairs,
+% @arg ListItemOptions A list of name-value pairs,
 %        representing options of the HTML list items.
-% @param ListItems A list of compound terms that are DCG rules
+% @arg ListItems A list of compound terms that are DCG rules
 %        in the HTML DSL, used for generating individual list items.
 
 html_list(L_O1, LI_O1, Items) -->
@@ -84,9 +84,9 @@ html_list(L_O1, LI_O1, Items) -->
 %   * =|ordered(Ordered:boolean)|=
 %     Whether an order =ol= or unordered =ul= HTML list is used.
 %
-% @param ListOptions A list of name-value pairs,
+% @arg ListOptions A list of name-value pairs,
 %        representing options of the HTML list element.
-% @param ListItems A list of compound terms that are DCG rules
+% @arg ListItems A list of compound terms that are DCG rules
 %        in the HTML DSL, used for generating individual list items.
 
 html_list(L_O1, ListItems) -->
@@ -111,9 +111,9 @@ html_list(L_O1, ListItems) -->
 %   * =|ordered(Ordered:boolean)|=
 %     Whether an order =ol= or unordered =ul= HTML list is used.
 %
-% @param ListOptions A list of name-value pairs,
+% @arg ListOptions A list of name-value pairs,
 %        representing options of the HTML list element.
-% @param ListItemOptions A list of name-value pairs,
+% @arg ListItemOptions A list of name-value pairs,
 %        representing options of the HTML list items.
 
 html_module_list(L_O1, LI_O1) -->

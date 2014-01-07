@@ -49,11 +49,11 @@
 % Returns the rdf triple that has the given index in the arbitrary sequence
 % in which SWI-Prolog returns its triples.
 %
-% @param Graph The atomic name of a graph.
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Object A resource.
-% @param Index A compound term of the form =Graph:Line= with =Graph= the
+% @arg Graph The atomic name of a graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg Object A resource.
+% @arg Index A compound term of the form =Graph:Line= with =Graph= the
 %        atomic name of an RDF graph and =Line= an integer.
 
 rdf_index(G, S, P, O, I):-
@@ -89,10 +89,10 @@ rdf_random_term(G, Requirement, T2):-
 %! ) is det.
 % Returns a random triple from the given graph.
 %
-% @param Graph The atomic name of a graph.
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Object A resource.
+% @arg Graph The atomic name of a graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg Object A resource.
 
 rdf_random_triple(G, S, P, O):-
   rdf_graph_property(G, triples(NumberOfTriples)),

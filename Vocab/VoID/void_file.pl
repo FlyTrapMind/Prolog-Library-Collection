@@ -63,11 +63,11 @@ void_init:-
 %!   +DescriptionGraph:atom,
 %!   +Dataset:iri
 %! ) is det.
-% @param DescriptionFile The atomic name of the file that contains the
+% @arg DescriptionFile The atomic name of the file that contains the
 %        dataset description.
-% @param DescriptionGraph The atomic name of the RDF graph that contains
+% @arg DescriptionGraph The atomic name of the RDF graph that contains
 %        the description.
-% @param Dataset An IRI denoting a dataset.
+% @arg Dataset An IRI denoting a dataset.
 
 void_load_dataset(DD_F, DD_G, DS):-
   % Every dataset must have a set datadump property.
@@ -93,8 +93,8 @@ void_load_dataset(DD_F, DD_G, DS):-
 % Also calculates VoID statistics for all datasets and asserts those to
 % the VoID file.
 %
-% @param File The atomic name of an absolute file path of a VoID file.
-% @param Graph The atomic name of the VoID graph.
+% @arg File The atomic name of an absolute file path of a VoID file.
+% @arg Graph The atomic name of the VoID graph.
 
 % The RDF graph already exists.
 void_load_library(_F, G):-

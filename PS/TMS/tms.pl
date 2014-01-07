@@ -141,14 +141,14 @@ rdf_statement(G, rdf(S,P,O), Stmt):-
 %! ) is nondet.
 % TMS justifications.
 %
-% @param TMS The atomic name of a TMS.
-% @param Antecedents A list of TMS nodes that are antecedents to this
+% @arg TMS The atomic name of a TMS.
+% @arg Antecedents A list of TMS nodes that are antecedents to this
 %        justification.
-% @param Rule The atomic name of the rule that was applied in this
+% @arg Rule The atomic name of the rule that was applied in this
 %        justification.
-% @param Consequence A TMS node that is the consequent of this
+% @arg Consequence A TMS node that is the consequent of this
 %        justification.
-% @param Justification A TMS justification.
+% @arg Justification A TMS justification.
 
 tms_justification(TMS, As, R, C, J):-
   tms_justification(TMS, J),
@@ -193,8 +193,8 @@ tms_leaf_node(TMS, N):-
 %! tms_node(+TMS:atom, -Node:iri) is nondet.
 % Enumerates the nodes in the TMS with the given name.
 %
-% @param TMS The atomic name of a TMS.
-% @param Node An IRI denoting a TMS node.
+% @arg TMS The atomic name of a TMS.
+% @arg Node An IRI denoting a TMS node.
 
 tms_node(TMS, Node):-
   rdfs_individual_of(Node, tms:'Node'),

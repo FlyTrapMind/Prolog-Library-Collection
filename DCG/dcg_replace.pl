@@ -28,7 +28,7 @@ DCG rules for replacing content.
 %! dcg_replace(+Replacements:list)// is det.
 % Generic DCG rule-based replacements.
 %
-% @param Replacements A list of pairs of DCG rules.
+% @arg Replacements A list of pairs of DCG rules.
 %        Whenever the former rule is read, the latter rule is written.
 %        Notice that the order of the replacement pairs does matter.
 

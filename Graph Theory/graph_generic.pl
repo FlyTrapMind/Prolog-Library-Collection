@@ -197,7 +197,7 @@ degree_sequence(G, V_P, DegreeSequence):-
 % Returns all vertices and edges that are found within the given depth
 % distance from the given vertex.
 %
-% @param Options A list of name-value pairs, consisting of the following:
+% @arg Options A list of name-value pairs, consisting of the following:
 %      1. `directed(boolean)`
 %         Whether only outgoing or also incoming arcs are included
 %         in the export.

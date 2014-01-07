@@ -161,8 +161,8 @@ user_input(Msg, Legal, Answer):-
 % This assumes that the file base name and type are known,
 % but the encloding directory is not.
 %
-% @param RelativeFile
-% @param AbsoluteFile
+% @arg RelativeFile
+% @arg AbsoluteFile
 
 user_input_directory(RelativeFile, AbsoluteFile):-
   repeat,
@@ -230,15 +230,15 @@ user_input_password(Message1, UnencryptedPassword):-
 % The following options are supported:
 %   * =|answer(+Answer:oneof(['A',n,q,y]]))|=
 %
-% @param Options A list of name-value pairs.
-% @param ActionDescription An atomic description of the action
+% @arg Options A list of name-value pairs.
+% @arg ActionDescription An atomic description of the action
 %        that is performed by the goal.
-% @param Goal An arbitrary Prolog goal that takes the number of elements
+% @arg Goal An arbitrary Prolog goal that takes the number of elements
 %        in each tuple as the number of arguments.
-% @param Headers A list of atoms describing the entries in each tuple.
+% @arg Headers A list of atoms describing the entries in each tuple.
 %        The number of headers and the number of elements in each
 %        tuple are assumed to be the same.
-% @param Tuples A list of tuples. These are the element lists for which goal
+% @arg Tuples A list of tuples. These are the element lists for which goal
 %        is executed after user-confirmation.
 
 user_interaction(O1, Act, G, Hs, Ts):-

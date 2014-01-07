@@ -78,13 +78,13 @@ mt_i(G, M, A):-
 % Since the meaning of (a collection of) triples is a truth value,
 % the meaning no longer needs to be a parameter (as in mt_i/4).
 %
-% @param In Either the atomic name of an RDF graph,
+% @arg In Either the atomic name of an RDF graph,
 %           a list of triple compound terms,
 %           or a single triple compound term (i.e. rdf/3).
-% @param Model The atomic name of a semantic model.
-% @param AssignmentsIn A list of pairs, representing a functional map
+% @arg Model The atomic name of a semantic model.
+% @arg AssignmentsIn A list of pairs, representing a functional map
 %                      from blank nodes to resources.
-% @param AssignmentsOut A list of pairs, representing a functional map
+% @arg AssignmentsOut A list of pairs, representing a functional map
 %                       from blank nodes to resources.
 
 % Satisfaction for an RDF graph.

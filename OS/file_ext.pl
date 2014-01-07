@@ -124,11 +124,11 @@ absolute_file_name_number(Spec, Options, Number, Absolute):-
 % the same file type and the calling predicate only looks at the file type
 % level.
 %
-% @param BaseOrFile Either a full file name or the base name of a file.
+% @arg BaseOrFile Either a full file name or the base name of a file.
 %      In the former case we check for a supported file extension.
 %      In the latter case we add a supported file extension.
-% @param FileType The atomic name of a registered file type.
-% @param File An absolute file name.
+% @arg FileType The atomic name of a registered file type.
+% @arg File An absolute file name.
 
 base_or_file_to_file(BaseOrFile, FileType, File):-
   (
@@ -159,13 +159,13 @@ create_file(File):-
 %
 % File types are resolved using prolog_file_type/2.
 %
-% @param NestedDir The atomic name of a directory or a compound term that
+% @arg NestedDir The atomic name of a directory or a compound term that
 %      can be resolved by subsequent applications of
 %      absolute_file_name/[2,3], e.g. =|aaa(bbb(ccc))|=.
-% @param Base The atomic base name of a file.
-% @param Type The atomic name of a file type, as registered with
+% @arg Base The atomic base name of a file.
+% @arg Type The atomic name of a file type, as registered with
 %      prolog_file_type/2, e.g. =|mp3|=.
-% @param File The atomic absolute name of a file.
+% @arg File The atomic absolute name of a file.
 
 create_file(NestedDir, Base, Type, File):-
   % Resolve the directory in case the compound term notation employed
@@ -224,11 +224,11 @@ file_name(Path, Directory, Base, Extension):-
 %! file_name_type(?Name:atom, ?Type:atom, ?Path:atom) is semidet.
 % Decomposes a file name into its base name and its file type.
 %
-% @param Name The atomic name of a file, without a directory and without
+% @arg Name The atomic name of a file, without a directory and without
 %           an extension.
-% @param Type An atomic file type. These are registered with
+% @arg Type An atomic file type. These are registered with
 %           prolog_file_type/2.
-% @param Path The full name of a file.
+% @arg Path The full name of a file.
 
 file_name_type(Path, directory, Path):-
   exists_directory(Path), !.
@@ -254,9 +254,9 @@ file_type_alternative(File1, File2):-
 %! ) is det.
 % Returns an alternative of the given file with the given file type.
 %
-% @param FromFile The atomic name of a file.
-% @param ToFileType The atomic name of a file type.
-% @param ToFile The atomic name of a file.
+% @arg FromFile The atomic name of a file.
+% @arg ToFileType The atomic name of a file type.
+% @arg ToFile The atomic name of a file.
 
 file_type_alternative(FromFile, ToFileType, ToFile):-
   file_name_type(Base, _FromFileType, FromFile),

@@ -93,7 +93,7 @@ gv_compass_pt --> "w".
 % The operator that is used depends on whether the graph is directed or
 % undirected.
 %
-% @param Directionality Either `forward` (directed, using operator `->`) or
+% @arg Directionality Either `forward` (directed, using operator `->`) or
 %        `none` (undirected, using operator `--`).
 
 gv_edge_operator(forward) --> arrow(2).
@@ -116,10 +116,10 @@ gv_edge_rhs(G_Attrs, To_Id) -->
 %! )// is det.
 % A GraphViz statement describing an edge.
 %
-% @param Indent The indentation level at which the edge statement is written.
-% @param GraphAttributes The attributes of the graph. Some of these attributes
+% @arg Indent The indentation level at which the edge statement is written.
+% @arg GraphAttributes The attributes of the graph. Some of these attributes
 %      may be used in the edge statement (e.g., the colorscheme).
-% @param EdgeTerm A compound term in the GIFormat, representing an edge.
+% @arg EdgeTerm A compound term in the GIFormat, representing an edge.
 %
 % @see Module [graph_export.pl] for the GIFormat.
 % @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1 here.
@@ -139,11 +139,11 @@ gv_edge_statement(I, G_Attrs, edge(From_Id, To_Id, E_Attrs)) -->
 %! )//
 % A GraphViz statement describing generic attributes for a category of items.
 %
-% @param Category The category of items for to the attributes apply.
+% @arg Category The category of items for to the attributes apply.
 %      Possible values: * `edge`, `graph`, `node`.
-% @param Indent An integer.
-% @param GraphAttributes A list of name-value pairs.
-% @param CategoryAttributes A list of name-value pairs.
+% @arg Indent An integer.
+% @arg GraphAttributes A list of name-value pairs.
+% @arg CategoryAttributes A list of name-value pairs.
 %
 % ~~~
 % attr_stmt = (graph / node / edge) attr_list
@@ -258,7 +258,7 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 %! gv_graph_type(+Directionality:oneof([digraph,graph]))// is det.
 % The type of graph that is represented.
 %
-% @param Directionality Either `digraph` or `graph`.
+% @arg Directionality Either `digraph` or `graph`.
 
 gv_graph_type(digraph) --> d,i,g,r,a,p,h.
 gv_graph_type(graph) --> g,r,a,p,h.

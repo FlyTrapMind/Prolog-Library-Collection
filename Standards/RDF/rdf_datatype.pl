@@ -68,11 +68,11 @@ Support for RDF typed literals.
 % for this. The asserted values are the atomic equivalent of the
 % *|canonical lexical representations|* as defined by that standard.
 %
-% @param Subject An RDF subject term.
-% @param Predicate An RDF predicate term.
-% @param Datatype An IRI identifying a datatype.
-% @param Value
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject An RDF subject term.
+% @arg Predicate An RDF predicate term.
+% @arg Datatype An IRI identifying a datatype.
+% @arg Value
+% @arg Graph The atomic name of an RDF graph.
 
 rdf_assert_datatype(S, P, D, Val, G):-
   % We only emit canonical representations for XSD values.
@@ -172,10 +172,10 @@ rdf_overwrite_datatype(S, P, D, NewVal, G):-
 %! ) is det.
 % Retracts all matching RDF triples that assert a datatypes value.
 %
-% @param Subject An RDF subject term.
-% @param Predicate An RDF predicate term.
-% @param Datatype An IRI identifying a datatype.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject An RDF subject term.
+% @arg Predicate An RDF predicate term.
+% @arg Datatype An IRI identifying a datatype.
+% @arg Graph The atomic name of an RDF graph.
 
 rdf_retractall_datatype(S, P, D, G):-
   rdf_retractall(S, P, literal(type(D,_LEX)), G).

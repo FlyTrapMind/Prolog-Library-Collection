@@ -100,8 +100,8 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 %! ) is det.
 % Returns random coordinates for the vertices in the given ugraph.
 %
-% @param Graph A graph.
-% @param RandomVertexCoords A list of vertex coordinates in the
+% @arg Graph A graph.
+% @arg RandomVertexCoords A list of vertex coordinates in the
 %      dimension set by the given size specifier.
 
 initial_spring_embedding(G, V_P, RandomVertexCoords):-
@@ -230,19 +230,19 @@ next_spring_embedding(
 % Returns the spring embedding of the given graph over the given number of
 % iterations. The intermediary results are returned as history.
 %
-% @param Graph A graph.
-% @param V_P
-% @param Attractors A list of atomic names of predicates that are used to
+% @arg Graph A graph.
+% @arg V_P
+% @arg Attractors A list of atomic names of predicates that are used to
 %        calculate the attraction forces between vertices.
-% @param Repulsors A list of atomic names of predicates that are used to
+% @arg Repulsors A list of atomic names of predicates that are used to
 %        calculate the repulsion forces between vertices.
-% @param Iteration An integer, representing the number of subsequent function
+% @arg Iteration An integer, representing the number of subsequent function
 %        application.
-% @param FinalVerticeCoordinates A list of coordinates for the vertives
+% @arg FinalVerticeCoordinates A list of coordinates for the vertives
 %        of the graph.
 %        For one spring embedding, every coordinate is represented in the
 %        same dimension. This dimension is set by the given size.
-% @param History A list of ???, representing the intermediary results of
+% @arg History A list of ???, representing the intermediary results of
 %        spring embedding.
 
 spring_embedding(
@@ -314,13 +314,13 @@ degree_force_dimension(
 %! ) is det.
 % Returns the attraction between vertices V and W in the given dimension.
 %
-% @param Graph
-% @param E_P
-% @param N_P
-% @param Dimension An integer representing a dimension.
-% @param V A vertex.
-% @param W A vertex.
-% @param DimensionForce A floating point value, representing the
+% @arg Graph
+% @arg E_P
+% @arg N_P
+% @arg Dimension An integer representing a dimension.
+% @arg V A vertex.
+% @arg W A vertex.
+% @arg DimensionForce A floating point value, representing the
 %        attraction between vertices V and W in the given dimension.
 
 distance_force_dimension(

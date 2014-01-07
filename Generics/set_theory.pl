@@ -46,8 +46,8 @@ Extra set functions for use in SWI-Prolog.
 %! cardinality(+Set:oneof([list,ordset]), -Cardinality:integer) is det.
 % Returns the cardinality of the given set.
 %
-% @param Set An ordered set or a list.
-% @param Cardinality An integer representing the number of elements in the set.
+% @arg Set An ordered set or a list.
+% @arg Cardinality An integer representing the number of elements in the set.
 
 cardinality(Set, Cardinality):-
   is_ordset(Set), !,
@@ -67,10 +67,10 @@ cardinality(List, Cardinality):-
 % Slits the `Original` sets into those that are and those that are not
 %  a superset of some member of `Compare`.
 %
-% @param Original The original sets.
-% @param Compare The sets we compare with.
-% @param Result The original sets that are supersets of some set in `Compare`.
-% @param Rest The original sets that are not in `Result`.
+% @arg Original The original sets.
+% @arg Compare The sets we compare with.
+% @arg Result The original sets that are supersets of some set in `Compare`.
+% @arg Rest The original sets that are not in `Result`.
 
 delete_supersets(Original, Compare, Result, Rest):-
   exclude('_delete_supersets'(Compare), Original, Result),
@@ -87,8 +87,8 @@ delete_supersets(Original, Compare, Result, Rest):-
 % Succeeds if the given sets are equinumerous, i.e.,
 % if they have the same cardinality.
 %
-% @param Set1 An ordered set or a list.
-% @param Set2 An ordered set or a list.
+% @arg Set1 An ordered set or a list.
+% @arg Set2 An ordered set or a list.
 
 % @see cardinality/2 takes care of the list-to-set conversion.
 equinumerous(Set1, Set2):-
@@ -101,8 +101,8 @@ equinumerous(Set1, Set2):-
 %
 % A minimal set has no subset.
 %
-% @param Set A minimal set?
-% @param Sets A set of sets.
+% @arg Set A minimal set?
+% @arg Sets A set of sets.
 
 is_minimal(Minimal, Compare):-
   \+((
@@ -136,8 +136,8 @@ random_subset(S1, M1, N1, OldS2, Sol):-
 %! subsets(+Set:ordset, -Subsets:list(list(bit))) is det.
 % Returns all subsets of the given set as a list of binary lists.
 %
-% @param Set An ordered set.
-% @param Subsets A list of bitlists representing subsets of =Set=.
+% @arg Set An ordered set.
+% @arg Subsets A list of bitlists representing subsets of =Set=.
 
 subsets(Set, Subsets):-
   cardinality(Set, Cardinality),
@@ -179,8 +179,8 @@ binary_overlay(Original, Overlay, Result):-
 % {a,d,e}
 % ~~~
 %
-% @param Subset A list of bits.
-% @param NextSubset A list of bits.
+% @arg Subset A list of bits.
+% @arg NextSubset A list of bits.
 
 next_subset([0|T], [1|T]).
 next_subset([1|T1], [0|T2]):-
@@ -203,9 +203,9 @@ superset(Super, Sub):-
 %! ) is det.
 % Returns the transitive closure of =Predicate= applied to =Input=.
 %
-% @param Predicate The atomic name of a predicate.
-% @param Input Either a term or a list of terms.
-% @param Outputs A list of terms. This is the transitive closure.
+% @arg Predicate The atomic name of a predicate.
+% @arg Input Either a term or a list of terms.
+% @arg Outputs A list of terms. This is the transitive closure.
 
 transitive_closure(Predicate, Input, Outputs):-
   \+(is_list(Input)), !,

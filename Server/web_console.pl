@@ -101,7 +101,7 @@ command_input -->
 % Returns the markup for the web-based console.
 % This can be inserted in (X)HTML web pages.
 %
-% @param Markup A list of compound terms representing (X)HTML markup.
+% @arg Markup A list of compound terms representing (X)HTML markup.
 
 console_input -->
   {

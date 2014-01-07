@@ -146,17 +146,17 @@ traverse(O, G, E_P, N_P, First, Last, Distance):-
 %      The predicate should have the arguments
 %      =|(+Vertex,-VertexName:atom)|=.
 %
-% @param Options A list of name-value pairs.
-% @param Graph
-% @param E_P Maps a graph to its edges.
-% @param N_P Maps a vertex to its neighbor vertices.
-% @param First The first vertex in the path.
-% @param Last The last vertex in the path.
-% @param Distance An integer representing a distance between the first and
+% @arg Options A list of name-value pairs.
+% @arg Graph
+% @arg E_P Maps a graph to its edges.
+% @arg N_P Maps a vertex to its neighbor vertices.
+% @arg First The first vertex in the path.
+% @arg Last The last vertex in the path.
+% @arg Distance An integer representing a distance between the first and
 %      the last vertex, counted as the number of traversed edges.
-% @param Vertices A list of vertices.
-% @param Edges A list of edges.
-% @param History
+% @arg Vertices A list of vertices.
+% @arg Edges A list of edges.
+% @arg History
 
 traverse(O1, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
   % First we make sure we have the right options set,
@@ -287,19 +287,19 @@ travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
 %! ) is det.
 % Returns the minimum distance between the given subject and predicate terms.
 %
-% @param Options A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 %      See travel/7 for the list of supported options.
-% @param Graph
-% @param E_P
-% @param N_P
-% @param First A vertex, the first in the travel.
-% @param Last A respource, the last in the travel.
-% @param MinimumDistance An integer representing the minimum distance
+% @arg Graph
+% @arg E_P
+% @arg N_P
+% @arg First A vertex, the first in the travel.
+% @arg Last A respource, the last in the travel.
+% @arg MinimumDistance An integer representing the minimum distance
 %      between the first and last vertex. The kind of distances is set
 %      in =Options=.
-% @param Vertices An ordered set of vertices.
-% @param Edges An ordered set of Edges.
-% @param History A list representing a minimum travel between the first and
+% @arg Vertices An ordered set of vertices.
+% @arg Edges An ordered set of Edges.
+% @arg History A list representing a minimum travel between the first and
 %      last resources.
 
 travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, Vs, Es, History):-

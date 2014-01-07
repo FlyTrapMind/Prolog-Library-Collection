@@ -170,7 +170,7 @@ svg_color(yellowgreen, rgb(154, 205, 50)).
 %! svg_colors(-Colors:list(atom)) is det.
 % Returns the list with supported color names.
 %
-% @param Colors A list with atomic color names.
+% @arg Colors A list with atomic color names.
 
 svg_colors(Colors):-
   findall(Color, svg_color(Color, _RGB), Colors).

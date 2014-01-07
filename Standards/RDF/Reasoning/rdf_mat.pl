@@ -77,9 +77,9 @@ explanation(Regime, Rule, Explanation):-
 % are considered for materialization.
 % The same graph is used for storing the results.
 %
-% @param Regimes An ordered set of atomic names denoting
+% @arg Regimes An ordered set of atomic names denoting
 %        the entailment regimes that are used by materialization.
-% @param Graph Either the atomic name of a graph
+% @arg Graph Either the atomic name of a graph
 %        or uninstantiated (not restricted to a particular graph).
 
 % No materialization whatsoever.
@@ -127,10 +127,10 @@ materialize(O1, G):-
 %   * `multiple_justifications(?MultipleJustifications:boolean)`
 %     Keep adding new justifications for old nodes.
 %
-% @param Regimes An ordered set of atomic names denoting
+% @arg Regimes An ordered set of atomic names denoting
 %        the entailment regimes that are used for materialization.
-% @param TMS The atomic name of a Truth Maintenance System.
-% @param Graph The atomic name of a graph.
+% @arg TMS The atomic name of a Truth Maintenance System.
+% @arg Graph The atomic name of a graph.
 
 materialize(O1, TMS, G):-
   % A deduction of depth one.
@@ -208,10 +208,10 @@ rule(Regime, Rule, Premises, S, P, O, G):-
 %! ) is det.
 % Performs a depth-one materialization step every N seconds.
 %
-% @param Options A list of name-value pairs.
-% @param Interval The number of seconds between consecutive
+% @arg Options A list of name-value pairs.
+% @arg Interval The number of seconds between consecutive
 %        materialization attempts.
-% @param Graph The atomic name of a graph
+% @arg Graph The atomic name of a graph
 %        or uninstantiated (not restricted to a particular graph).
 %
 % @see Performs materialization steps using materialize/1.

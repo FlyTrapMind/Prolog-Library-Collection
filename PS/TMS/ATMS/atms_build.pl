@@ -52,7 +52,7 @@ ATMS build methods.
 %% add_atms(-ATMS:atms) is det.
 % Creates and returns a new ATMS.
 %
-% @param ATMS An ATMS.
+% @arg ATMS An ATMS.
 
 add_atms(ATMS):-
   flag(atms_id, ID, ID + 1),
@@ -179,11 +179,11 @@ add_premise(ATMS, Node):-
 % If the node is created, then it is neither an assumption nor a
 % contradiction.
 %
-% @param ATMS The URI of the ATMS in which the node is found, or to
+% @arg ATMS The URI of the ATMS in which the node is found, or to
 %        which the node is added.
-% @param Datum Either a node or the atom =falsum=, indicating
+% @arg Datum Either a node or the atom =falsum=, indicating
 %        a contradiction node, or an atom (used for debugging purposes).
-% @param Node The URI of a node.
+% @arg Node The URI of a node.
 
 find_or_add_node(ATMS, Datum, Node):-
   node(ATMS, Datum, Node),

@@ -141,8 +141,8 @@
 %  carrying form data suitable for processing via the `POST` request method
 %  (RFC 1867).
 %
-% @param ParseTree
-% @param MediaType A compound term of the form
+% @arg ParseTree
+% @arg MediaType A compound term of the form
 %        `media_type(Type:atom,Subtyp:atom,Params:list(pair(atom,atom)))`
 %
 % @see RFC 1590

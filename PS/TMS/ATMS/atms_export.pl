@@ -23,8 +23,8 @@ This module is known to work with GraphViz version 2.28.0.
 %% node_color(+Node:node, -Color:atom) is det.
 % Returns the color of the given node.
 %
-% @param Node Either a point or a component.
-% @param Color The atomic name of a color.
+% @arg Node Either a point or a component.
+% @arg Color The atomic name of a color.
 
 node_color(Node, green):-
   is_in_node(Node),

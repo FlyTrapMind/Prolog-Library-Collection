@@ -175,8 +175,8 @@ dgraph_vertex_induced_subgraph(dgraph(InG, OutG), VSubG, dgraph(SubInG, SubOutG)
 %! dgraph_vertices(+Graph:dgraph, -Vertices:ordset(vertex)) is det.
 % Returns the vertices that occur in the given digraph.
 %
-% @param Graph A directed graph.
-% @param Vertices An ordered set of vertices.
+% @arg Graph A directed graph.
+% @arg Vertices An ordered set of vertices.
 
 dgraph_vertices(dgraph(InG, OutG), Vs):-
   ugraph_vertices(InG, InVs),
@@ -219,11 +219,11 @@ directed_cycle(V, G, DirCycle):-
 % *Definition*: A directed cycle is a directed closed trail where all vertices
 %               are unique (as in a directed path) but with V_0 = V_n.
 %
-% @param V A vertex.
-% @param G A directed graph.
-% @param Vs A list of vertices.
-% @param Es A list of edges.
-% @param DirCycle A list that consists of interchanging vertices and edges.
+% @arg V A vertex.
+% @arg G A directed graph.
+% @arg Vs A list of vertices.
+% @arg Es A list of edges.
+% @arg DirCycle A list that consists of interchanging vertices and edges.
 
 directed_cycle(V, G, [V | Vs], [V-W | Es], [V, V-W | DirCycle]):-
   dgraph_neighbor(V, G, W),

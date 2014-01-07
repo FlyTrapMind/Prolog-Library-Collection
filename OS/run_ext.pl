@@ -177,7 +177,7 @@ open(File):-
 %! open_dot(+BaseOrFile:atom) is det.
 % Opens the given DOT file.
 %
-% @param BaseOrFile The atomic name of a DOT file.
+% @arg BaseOrFile The atomic name of a DOT file.
 
 open_dot(BaseOrFile):-
   base_or_file_to_file(BaseOrFile, dot, File),
@@ -255,7 +255,7 @@ run_program(Program, Args):-
 %! run_script(+Script:atom) is det.
 % Runs the given script.
 %
-% @param Script The atomic name of script file.
+% @arg Script The atomic name of script file.
 
 run_script(Script):-
   os_dependent_call(run_script(Script)).

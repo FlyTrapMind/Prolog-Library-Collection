@@ -199,9 +199,9 @@ rdfs_assert_range(P, C, G):-
 %! ) is det.
 % Creates a new property that is a subproperty of the given parent property.
 %
-% @param Property An RDF property.
-% @param SuperProperty An RDF property.
-% @param Graph The atomic name of an RDF graph.
+% @arg Property An RDF property.
+% @arg SuperProperty An RDF property.
+% @arg Graph The atomic name of an RDF graph.
 
 rdfs_assert_subproperty(Property, SuperProperty, G):-
   % Materialization

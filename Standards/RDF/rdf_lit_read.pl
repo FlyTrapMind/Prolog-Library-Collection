@@ -59,11 +59,11 @@ rdf_literal(S, P, Lit, G):-
 %! ) is nondet.
 % The RDF triple for a literal valued property, encoded in a certain language.
 %
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Language The atomic name of a language.
-% @param Literal An atom.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg Language The atomic name of a language.
+% @arg Literal An atom.
+% @arg Graph The atomic name of an RDF graph.
 
 rdf_literal(S, P, LangTag, Lit, G):-
   rdf(S, P, literal(lang(LangTag, Lit)), G).

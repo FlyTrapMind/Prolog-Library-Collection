@@ -96,7 +96,7 @@ xml_current_namespace(Namespace, URI):-
 %! xml_current_namespaces(-Namespaces:ordset(atom)) is det.
 % Returns all current namespace aliases.
 %
-% @param Namespaces A list of atomic alias names.
+% @arg Namespaces A list of atomic alias names.
 
 xml_current_namespaces(Namespaces):-
   setoff(

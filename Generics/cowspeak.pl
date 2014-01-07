@@ -108,8 +108,8 @@ cow_atom(Term, Atom):-
 %     Whether `line` wrapping or =word= wrapping (default)
 %     is applied, or neither of those (=none=, e.g. for ASCII art).
 %
-% @param Options A list of name-value pairs.
-% @param Contents Either a term or a list of terms.
+% @arg Options A list of name-value pairs.
+% @arg Contents Either a term or a list of terms.
 %        Processes terms of the form =|Format-ListOfArguments|= specially.
 %
 % @tbd Split lines by words (in whitespace). Add this to module ATOM_EXT.

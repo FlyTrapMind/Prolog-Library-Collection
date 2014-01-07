@@ -39,7 +39,7 @@ This produces the home page for the development server.
 % @see ClioPatria
 % @version 2013/12
 
-:- if(user:debug_project).
+:- if(predicate_property(user:debug_project, visible)).
   :- set_setting_default(http:public_host, localhost).
   :- set_setting_default(http:public_port, setting(http:port)).
 :- endif.

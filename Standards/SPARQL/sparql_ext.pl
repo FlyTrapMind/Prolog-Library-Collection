@@ -221,9 +221,9 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % Otherwise, the remote is searched for a resource that is labeled with
 %  the given search term.
 %
-% @param Remote
-% @param SearchTerm
-% @param Resource
+% @arg Remote
+% @arg SearchTerm
+% @arg Resource
 
 'SPARQL_find'(Remote, Resource, Resource):-
   is_uri(Resource),
@@ -286,9 +286,9 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 %!   +Resource:uri,
 %!   -IdenticalResources:ordset
 %! ) is det.
-% @param Remote The atomic name of a registered SPARQL remote.
-% @param Resource The URI of a resource.
-% @param IdenticalResources An ordered set of identical resources.
+% @arg Remote The atomic name of a registered SPARQL remote.
+% @arg Resource The URI of a resource.
+% @arg IdenticalResources An ordered set of identical resources.
 
 'SPARQL_query_sameAs'(Remote, Resource, Resources2):-
   graph_closure([Resource], '_SPARQL_query_sameAs'(Remote), Resources1),

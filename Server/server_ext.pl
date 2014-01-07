@@ -95,23 +95,24 @@ SWI-Prolog defines the following HTTP handlers:
 
 dispatch(Module:Request):-
   http_method(Request, Method),
-  authorized(Method, Request),
-  dispatch_method(Module, Method, Request).
+  authorized(Method, Request, User),
+  dispatch_method(Module, Method, Request, User).
 
 %! dispatch_method(
 %!   +Module:atom,
 %!   +Method:oneof([delete,get,send]),
-%!   +Request:list
+%!   +Request:list,
+%!   +User:atom
 %! ) is det.
 
-dispatch_method(Module, Method, Request):-
+dispatch_method(Module, Method, Request, User):-
   catch(
-    Module:dispatch_method(Method, Request),
+    Module:dispatch_method(Method, Request, User),
     Error,
     reply_error(Error)
   ), !.
 % The dispatcher for the given method is undefined.
-dispatch_method(Module, Method, _Request):-
+dispatch_method(Module, Method, _Request, _User):-
   PlainError = 'Undefined HTTP method.',
   format(
     atom(Msg),

@@ -39,8 +39,8 @@ Support for running automated processing.
 %     The directory is not included since this is fixed to
 %     the process' output directory.
 %
-% @param Options A list of name-value pairs.
-% @param Stages A list of compound terms identifying script stages.
+% @arg Options A list of name-value pairs.
+% @arg Stages A list of compound terms identifying script stages.
 %
 % @tbd If the `to/3` option is not set, then it is not clear whether a
 %      stage has been processed or not.

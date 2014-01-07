@@ -275,9 +275,9 @@ the original two values are incomparable.
 %! ) is det.
 % Converts a POSIX timestamp to an XSD dateTime compound term.
 %
-% @param POSIX_TimeStamp A floating point number expressing the time
+% @arg POSIX_TimeStamp A floating point number expressing the time
 %        in seconds since the Epoch at 1970-1-1.
-% @param XSD_DateTime A compound term representing a data-time value,
+% @arg XSD_DateTime A compound term representing a data-time value,
 %        as defined by XML schema 1.1 Part 2: Datatypes.
 %
 % @see http://en.wikipedia.org/wiki/Unix_time
@@ -298,9 +298,9 @@ posix_timestamp_to_xsd_dateTime(POSIX_TS, XSD_DT):-
 % In the XSD representation the timezone is the offset relative to UTC
 % in _minutes_.
 %
-% @param SWI_Prolog_Date A compound term representing a date-time value.
+% @arg SWI_Prolog_Date A compound term representing a date-time value.
 %        date-time representations.
-% @param XSD_DateTime A compound term representing a data-time value,
+% @arg XSD_DateTime A compound term representing a data-time value,
 %        as defined by XML schema 1.1 Part 2: Datatypes.
 %
 % @see http://www.swi-prolog.org/pldoc/man?section=timedate
@@ -345,7 +345,7 @@ dateTimeCanonicalMap(DateTime, LEX):-
 %! dateTimeCanonicalMap(+DateTime:compound)//
 % Maps a dateTime value to a dateTimeLexicalRep//.
 %
-% @param DateTime A compound term of the following form:
+% @arg DateTime A compound term of the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
@@ -369,7 +369,7 @@ dateTimeCanonicalMap(dateTime(Y,M,D,H,MM,S,TZ)) -->
 % date/timeSevenPropertyModel value, onto a dayFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Day An integer between 1 and 31 inclusive (may be limited further
+% @arg Day An integer between 1 and 31 inclusive (may be limited further
 %        depending on associated year and month).
 
 dayCanonicalFragmentMap(D) -->
@@ -379,7 +379,7 @@ dayCanonicalFragmentMap(D) -->
 % Maps an integer between =|-10000|= and =10000= onto an always-four-digit
 % numeral.
 %
-% @param Integer An integer whose absolute value is less than =10000=.
+% @arg Integer An integer whose absolute value is less than =10000=.
 
 fourDigitCanonicalFragmentMap(I1) -->
   ({I1 < 0} -> minus_sign ; ""),
@@ -394,7 +394,7 @@ fourDigitCanonicalFragmentMap(I1) -->
 % date/timeSevenPropertyModel value, onto a hourFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Hour An integer between 0 and 23 inclusive.
+% @arg Hour An integer between 0 and 23 inclusive.
 
 hourCanonicalFragmentMap(H) -->
   unsTwoDigitCanonicalFragmentMap(H).
@@ -404,7 +404,7 @@ hourCanonicalFragmentMap(H) -->
 % date/timeSevenPropertyModel value, onto a minuteFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Minute An integer between 0 and 59 inclusive.
+% @arg Minute An integer between 0 and 59 inclusive.
 
 minuteCanonicalFragmentMap(M) -->
   unsTwoDigitCanonicalFragmentMap(M).
@@ -414,7 +414,7 @@ minuteCanonicalFragmentMap(M) -->
 % date/timeSevenPropertyModel value, onto a monthFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Month An integer between 1 and 12 inclusive.
+% @arg Month An integer between 1 and 12 inclusive.
 
 monthCanonicalFragmentMap(M) -->
   unsTwoDigitCanonicalFragmentMap(M).
@@ -424,7 +424,7 @@ monthCanonicalFragmentMap(M) -->
 % date/timeSevenPropertyModel value, onto a secondFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Second A nonnegative decimal number less than 70.
+% @arg Second A nonnegative decimal number less than 70.
 
 secondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
@@ -441,7 +441,7 @@ secondCanonicalFragmentMap(S) -->
 % date/timeSevenPropertyModel value, onto a timezoneFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Timezone An integer between =|−840|= and =840= inclusive.
+% @arg Timezone An integer between =|−840|= and =840= inclusive.
 
 timezoneCanonicalFragmentMap(0) -->
   "Z".
@@ -471,7 +471,7 @@ unsTwoDigitCanonicalFragmentMap(I) -->
 % date/timeSevenPropertyModel value, onto a yearFrag//,
 % part of a date/timeSevenPropertyModel's lexical representation.
 %
-% @param Year An integer.
+% @arg Year An integer.
 
 yearCanonicalFragmentMap(Y) -->
   {abs(Y) > 9999}, !,
@@ -530,7 +530,7 @@ dateTimeLexicalMap(LEX, DateTime):-
 % XSD 1.0 did not make this distinction, but used the term 'timezone' for
 % the time zone offset.
 %
-% @param DateTime A compound term.
+% @arg DateTime A compound term.
 % @see W3C Working with Time Zones (WG Note)
 %      http://www.w3.org/TR/2011/NOTE-timezone-20110705/
 
@@ -701,7 +701,7 @@ timezoneFrag(TZ) -->
 % yearFrag ::= '-'? (([1-9] digit digit digit+)) | ('0' digit digit digit))
 % ~~~
 %
-% @param Year An integer.
+% @arg Year An integer.
 
 yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
@@ -755,9 +755,9 @@ dayInMonth(Y, M, D):-
 % Returns the number of the last day of the month for any combination
 % of year and month.
 %
-% @param Year An optional integer.
-% @param Month An integer between 1 and 12.
-% @param DaysInMonth An integer between 28 and 31 inclusive.
+% @arg Year An optional integer.
+% @arg Month An integer between 1 and 12.
+% @arg DaysInMonth An integer between 28 and 31 inclusive.
 
 % When m is 2 and y is not evenly divisible by 4,
 % or is evenly divisible by 100 but not by 400, or is absent.
@@ -796,14 +796,14 @@ daysInMonth(_Y, M, 31):-
 % as specified in the arguments. If an argument is omitted, the
 % corresponding property is set to absent.
 %
-% @param Year An optional integer.
-% @param Month An optional integer between 1 and 12 inclusive.
-% @param Day An optional integer between 1 and 31 inclusive.
-% @param Hour An optional integer between 0 and 24 inclusive.
-% @param Minute An optional integer between 0 and 59 inclusive.
-% @param Second An optional decimal number greater than or equal to
+% @arg Year An optional integer.
+% @arg Month An optional integer between 1 and 12 inclusive.
+% @arg Day An optional integer between 1 and 31 inclusive.
+% @arg Hour An optional integer between 0 and 24 inclusive.
+% @arg Minute An optional integer between 0 and 59 inclusive.
+% @arg Second An optional decimal number greater than or equal to
 %        0 and less than 60.
-% @param Timezone An optional integer between −840 and 840 inclusive.
+% @arg Timezone An optional integer between −840 and 840 inclusive.
 %
 % ~~~
 % dt be an instance of the date/timeSevenPropertyModel
@@ -942,10 +942,10 @@ normalizeMinute(Y1, M1, D1, H1, MM1, Y2, M2, D2, H2, MM2):-
 % Set mo to (mo − 1) mod 12 + 1.
 % ~~~
 %
-% @param Year An integer.
-% @param Month An integer.
-% @param NormalizedYear An integer.
-% @param NormalizedMonth An integer.
+% @arg Year An integer.
+% @arg Month An integer.
+% @arg NormalizedYear An integer.
+% @arg NormalizedMonth An integer.
 
 normalizeMonth(Y1, M1, Y2, M2):-
   % Add (mo − 1) div 12 to yr.
@@ -986,8 +986,8 @@ normalizeSecond(Y1, M1, D1, H1, MM1, S1, Y2, M2, D2, H2, MM2, S2):-
 % Maps a date/timeSevenPropertyModel value to the decimal number representing
 % its position on the "time line".
 %
-% @param DateTime A date/timeSevenPropertyModel value.
-% @param Seconds A decimal number.
+% @arg DateTime A date/timeSevenPropertyModel value.
+% @arg Seconds A decimal number.
 
 timeOnTimeline(dateTime(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
   % yr be 1971 when dt's year is absent, and dt's year − 1 otherwise.

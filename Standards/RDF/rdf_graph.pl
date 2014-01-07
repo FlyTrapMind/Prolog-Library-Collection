@@ -214,8 +214,8 @@ rdf_graph_proper_instance(G, H, Map):-
 %! rdf_graph_to_triples(+Graph:atom, -Triples:list(rdf_triple)) is det.
 % Returns an unsorted list containing all the triples in a graph.
 %
-% @param In The atomic name of a loaded RDF graph, or a URI.
-% @param Triples A list of triple compound term.
+% @arg In The atomic name of a loaded RDF graph, or a URI.
+% @arg Triples A list of triple compound term.
 
 rdf_graph_to_triples(G, Ts):-
   rdf_graph(G), !,

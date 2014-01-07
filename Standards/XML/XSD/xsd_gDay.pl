@@ -103,7 +103,7 @@ gDayCanonicalMap(GD, LEX):-
 %! gDayCanonicalMap(+GregorianDay:compound)//
 % Maps a gDay value to a gDayLexicalRep//.
 %
-% @param GregorianDay A complete gDay value.
+% @arg GregorianDay A complete gDay value.
 
 gDayCanonicalMap(dateTime(_Y,_M,D,_H,_MM,_S,TZ)) -->
   dcg_multi(hyphen, 3),

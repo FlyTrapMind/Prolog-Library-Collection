@@ -42,9 +42,9 @@ random_betwixt(UpperLimit, Random):-
 % Returns a random floating point number between the given lower and
 % upper limits, inclusive.
 %
-% @param LowerLimit A number.
-% @param UpperLimit A number.
-% @param Random In case the lower and upper limits are integers, the
+% @arg LowerLimit A number.
+% @arg UpperLimit A number.
+% @arg Random In case the lower and upper limits are integers, the
 %	 return value is an integer as well. Otherwise it is a floating
 %	 point number.
 % @tbd Because we take the floor for the random value between two integers,
@@ -71,10 +71,10 @@ random_betwixt_(LowerLimit, UpperLimit, Random):-
 % Returns a random coordinate of the indicates dimension, i.e.,
 % the dimension argument of the given size compound term.
 %
-% @param Size A compound term specifying the dimension of the generated
+% @arg Size A compound term specifying the dimension of the generated
 %        coordinate, as well as the ceiling limit values for each dimension.
 %        The floor limit value for every dimension is 0.0.
-% @param Coordinate A coordinate that has the same dimension as the given
+% @arg Coordinate A coordinate that has the same dimension as the given
 %        size. Its second argument is a list of lists of floating point
 %        values.
 

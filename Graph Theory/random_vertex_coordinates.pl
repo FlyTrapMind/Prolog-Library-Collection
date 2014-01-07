@@ -43,11 +43,11 @@ Genrates random coordinates for vertices in a graph.
 %!   -VertexCoordinate:vcoord
 %! ) is det.
 %
-% @param Options A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 %      1. `surface(Size:size)`
-% @param Vertices
-% @param Vertex
-% @param VertexCoordinate Vertex coordinate.
+% @arg Vertices
+% @arg Vertex
+% @arg VertexCoordinate Vertex coordinate.
 
 random_vertex_coordinate(O, _Vs, _V, VCoord):-
   setting(default_surface, DefaultSurface),

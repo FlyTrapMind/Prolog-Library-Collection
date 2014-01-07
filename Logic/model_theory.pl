@@ -211,9 +211,9 @@ satisfy(A, G, neg):-
 %! i(+G:ordset(assignment), ?X:atom, -V:atom) is det.
 % The interpretation function.
 %
-% @param G The assignment function.
-% @param X The constant or variable that is interpreted.
-% @param V The interpretation of X.
+% @arg G The assignment function.
+% @arg X The constant or variable that is interpreted.
+% @arg V The interpretation of X.
 
 % X is a variable. The assignment function is used to establish the
 % interpretation of X.

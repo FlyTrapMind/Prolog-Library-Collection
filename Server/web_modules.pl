@@ -60,11 +60,11 @@ Registration infrastructure for Web modules.
 % registered before their web methods can be accessed from the web
 % console.
 %
-% @param ExternalName The atomic name of a Prolog module for
+% @arg ExternalName The atomic name of a Prolog module for
 %        intended for human consumption.
-% @param InternalName The atomic name of a Prolog module.
+% @arg InternalName The atomic name of a Prolog module.
 %        intended for internal use.
-% @param PathName The atomic name of the URL subpath that
+% @arg PathName The atomic name of the URL subpath that
 %        generates a Web page for this Web module.
 
 % Semidet case.
@@ -88,11 +88,11 @@ web_module(ExternalName, InternalName, PathName):-
 % If the module is a web module, i.e. contains =|_web|=-predicates,
 % then these can now be accessed from the web console.
 %
-% @param ExternalName The atomic name of a Prolog module for
+% @arg ExternalName The atomic name of a Prolog module for
 %        intended for human consumption.
-% @param InternalName The atomic name of a Prolog module.
+% @arg InternalName The atomic name of a Prolog module.
 %        intended for internal use.
-% @param PathName The atomic name of the URL subpath that
+% @arg PathName The atomic name of the URL subpath that
 %        generates a Web page for this Web module.
 
 % The module is already registered, do nothing.
@@ -133,7 +133,7 @@ web_module_delete(InternalName):-
 %! web_modules(-Turples:ordset(list(atom))) is det.
 % Returns all modules that are currently registered with the web console.
 %
-% @param Pairs A list of pairs of atomic modules name.
+% @arg Pairs A list of pairs of atomic modules name.
 %	 The first is the internal name, the second is the external
 %	 name.
 

@@ -263,8 +263,8 @@ date3(date3(T1,Day), Month, Day) -->
 % HTTP-date  = rfc1123-date | rfc850-date | asctime-date
 % ~~~
 %
-% @param ParseTree
-% @param Date
+% @arg ParseTree
+% @arg Date
 %
 % @see ANSI C
 % @see RFC 850

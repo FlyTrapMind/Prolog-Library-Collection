@@ -51,8 +51,8 @@ Values for the funcamental facets:
 % Returns `true` when `Boolean` is true, and
 % returns `false` otherwise (i.e., when `Boolean` is false).
 %
-% @param Boolean A boolean value.
-% @param LEX A literal matching booleanRep//1.
+% @arg Boolean A boolean value.
+% @arg LEX A literal matching booleanRep//1.
 
 booleanCanonicalMap(Boolean, LEX):-
   phrase(booleanRep(Boolean), LEX).
@@ -63,8 +63,8 @@ booleanCanonicalMap(Boolean, LEX):-
 % Returns true when =LEX= is `true` or `1` , and
 % returns false otherwise (i.e., when `LEX` is `false` or `0`).
 %
-% @param LEX A literal matching booleanRep//1.
-% @param Boolean A boolean value.
+% @arg LEX A literal matching booleanRep//1.
+% @arg Boolean A boolean value.
 
 booleanLexicalMap(LEX, Boolean):-
   phrase(booleanRep(Boolean), LEX).

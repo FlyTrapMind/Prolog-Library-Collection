@@ -136,7 +136,7 @@ svg_fragment(T0, SVG_DCGs) -->
 % </svg:svg>
 % ~~~
 %
-% @param DCG_Namespace An XML namespace prefix that is not `svg`.
+% @arg DCG_Namespace An XML namespace prefix that is not `svg`.
 
 svg_fragment(T0, DCG_Namespace, SVG_DCGs) -->
   % Directly go to XML entity (not via SVG entity).

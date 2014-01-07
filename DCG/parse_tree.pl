@@ -25,11 +25,11 @@ Predicate for manipulating parse trees.
 %
 % The variables come from unused optional rules in the DCG body.
 %
-% @param TreeName The atomic name of the grammar rule for which
+% @arg TreeName The atomic name of the grammar rule for which
 %      the tree is constructed.
-% @param SubTrees A list of compound terms (direct subtrees)
+% @arg SubTrees A list of compound terms (direct subtrees)
 %      and variables (excluded from the created tree).
-% @param Tree A compound term representing a parse tree.
+% @arg Tree A compound term representing a parse tree.
 
 parse_tree(P, SubT1, T):-
   include(nonvar, SubT1, SubT2),

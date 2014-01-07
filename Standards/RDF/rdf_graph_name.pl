@@ -37,9 +37,9 @@ file_to_graph_name(F, G):-
 % Returns a graph name that is close to the given graph name,
 % and which it is guaranteed to not already exist.
 %
-% @param GraphSuggestion The atomic name of the graph the user wants to use,
+% @arg GraphSuggestion The atomic name of the graph the user wants to use,
 %        or uninstantiated.
-% @param NewGraph The atomic name of an RDF graph that is ensured
+% @arg NewGraph The atomic name of an RDF graph that is ensured
 %        to be new, staying quite close to the name the user suggested,
 %        if any.
 

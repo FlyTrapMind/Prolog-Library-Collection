@@ -38,9 +38,9 @@ Triples with literals are treated in dedicated modules.
 %! rdf_assert_individual(+Individual:uri, +Class:uri, +Graph:graph) is det.
 % Asserts an individual/class relationship.
 %
-% @param Individual An instance resource.
-% @param Class A class resource.
-% @param Graph The atomic name of an RDF graph.
+% @arg Individual An instance resource.
+% @arg Class A class resource.
+% @arg Graph The atomic name of an RDF graph.
 
 rdf_assert_individual(I, C, G):-
   rdf_assert(I, rdf:type, C, G).

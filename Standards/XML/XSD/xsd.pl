@@ -779,7 +779,7 @@ xsd_canonicalMap_(Datatype, Value, _LEX):- !,
 % Make sure all typed literals in the graph with the given name
 % have a lexical value that is a canonical value for its datatype.
 %
-% @param Graph The atomic name of an RDF graph.
+% @arg Graph The atomic name of an RDF graph.
 
 xsd_canonize_graph(G):-
   forall(

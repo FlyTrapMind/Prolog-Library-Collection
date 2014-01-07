@@ -43,7 +43,7 @@
 % Returns the shortest paths in graph Graph from vertex `From` to vertex `To`,
 % passing vertex `Pass`.
 %
-% @param Pass This one is optional. "Wir haben ein Abstich gemacht."
+% @arg Pass This one is optional. "Wir haben ein Abstich gemacht."
 
 shortest_paths1(G, E_P, N_P, From, To, Pass, ShortestPaths):-
   setoff(

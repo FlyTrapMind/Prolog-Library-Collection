@@ -153,8 +153,8 @@ between =−1074= and =971=, inclusive.
 %! doubleCanonicalMap(+Double:or([float,atom]), -LEX:list(code))//
 % Maps a float to its canonical representation, a floatRep//.
 %
-% @param Float A float value.
-% @param LEX A literal matching floatRep//.
+% @arg Float A float value.
+% @arg LEX A literal matching floatRep//.
 
 doubleCanonicalMap(Float, LEX):-
   once(phrase(floatCanonicalMap(double, Float), LEX)).
@@ -162,10 +162,10 @@ doubleCanonicalMap(Float, LEX):-
 %! floatApprox(+C:nonneg, +E:integer, +J:nonneg, -D:decimal) is nondet.
 % Maps a decimal number =|C * 10 ** E|= to successive approximations.
 %
-% @param C A nonnegative integer.
-% @param E An integer.
-% @param J A nonnegative integer.
-% @param D A decimal number.
+% @arg C A nonnegative integer.
+% @arg E An integer.
+% @arg J A nonnegative integer.
+% @arg D A decimal number.
 
 floatApprox(C, E, J, D):-
   round(C, J, Round),
@@ -174,8 +174,8 @@ floatApprox(C, E, J, D):-
 %! floatCanonicalMap(+Float:float, -LEX:list(code)) is det.
 % Maps a float to its canonical representation, a floatRep//.
 %
-% @param Float A float value.
-% @param LEX A literal matching floatRep//.
+% @arg Float A float value.
+% @arg LEX A literal matching floatRep//.
 
 floatCanonicalMap(Float, LEX):-
   once(phrase(floatCanonicalMap(single, Float), LEX)).
@@ -186,7 +186,7 @@ floatCanonicalMap(Float, LEX):-
 %! )//
 % Maps a float to its canonical representation, a floatRep//.
 %
-% @param Float A float value.
+% @arg Float A float value.
 
 floatCanonicalMap(_Precision, F) -->
   specialRepCanonicalMap(F), !.
@@ -234,9 +234,9 @@ largest_l(_Precision, TooBigL, _C, _E, Round, Approx, Approx):-
 %! round(+N:decimal, +K:nonneg, -D:decimal) is det.
 % Maps a decimal number to that value rounded by some power of =10=.
 %
-% @param N A decimal number.
-% @param K A nonnegative integer.
-% @param D A decimal number.
+% @arg N A decimal number.
+% @arg K A nonnegative integer.
+% @arg D A decimal number.
 
 round(N, K, D):-
   X is (N / 10 ** K) + 0.5,
@@ -270,7 +270,7 @@ smallest_c(C, ABS, SolE, SolC):-
 % Maps the special values used with some numerical datatypes to their
 % canonical representations.
 %
-% @param SpecialValue One of =positiveInfinity=, =negativeInfinity=,
+% @arg SpecialValue One of =positiveInfinity=, =negativeInfinity=,
 %        and =notANumber=.
 
 specialRepCanonicalMap(negativeInfinity) -->
@@ -315,7 +315,7 @@ doubleLexicalMap(LEX, Double):-
 % (\+|-)?([0-9]+(\.[0-9]*)?|\.[0-9]+)([Ee](\+|-)?[0-9]+)? |(\+|-)?INF|NaN
 % ~~~
 %
-% @param Either a double precision floating point value or one of
+% @arg Either a double precision floating point value or one of
 %        =negativeZero=, =positiveZero=, =negativeInfinity=,
 %        =positiveInfinity=.
 
@@ -425,15 +425,15 @@ unsignedScientificNotationNumeral(N) -->
 %! ) is det.
 % Rounds a non-zero decimal number to the nearest floating-point value.
 %
-% @param NV An initially non-zero decimal number
+% @arg NV An initially non-zero decimal number
 %        (may be set to zero during calculations).
-% @param CWidth A positive integer.
+% @arg CWidth A positive integer.
 %        The precision of the float.
-% @param EMin An integer.
+% @arg EMin An integer.
 %        The minimum exponent of the float.
-% @param EMax An integer greater than =EMin=.
+% @arg EMax An integer greater than =EMin=.
 %        The maximum exponent of the float.
-% @param Round Either a decimal number or a special value
+% @arg Round Either a decimal number or a special value
 %        (=positiveInfinity= or =negativeInfinity=).
 
 floatingPointRound(NV1, CWidth, EMin, EMax, Round):-

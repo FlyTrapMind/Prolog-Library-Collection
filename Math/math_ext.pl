@@ -201,9 +201,9 @@ fibonacci(N, F):-
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
 %
-% @param Base An integer.
-% @param X An integer.
-% @param Y A double.
+% @arg Base An integer.
+% @arg X An integer.
+% @arg Y A double.
 
 log(Base, X, Y):-
   Numerator is log(X),
@@ -237,8 +237,8 @@ mod(X, Y, Z):-
 %! multiply_list(+List:list(number), -Multiplication:number) is det.
 % Multiplies the numbers in the given list.
 %
-% @param List A list of numbers.
-% @param Multiplication A number.
+% @arg List A list of numbers.
+% @arg Multiplication A number.
 % @see Extends the builin list manipulators sum_list/2, max_list/2
 %      and min_list/2.
 
@@ -272,11 +272,11 @@ number_length(M, L):-
 % Returns the length of the given number 'before the dot'.
 % The number is in decimal notation.
 %
-% @param An integer representing a decimal number.
-% @param Radix An integer representing the radix used.
+% @arg An integer representing a decimal number.
+% @arg Radix An integer representing the radix used.
 %      Common values are `2` (binary), `8` (octal),
 %      `10` (decimal), and `16` (hexadecimal).
-% @param Length An integer representing the number of digits in
+% @arg Length An integer representing the number of digits in
 %      the given number.
 
 number_length(N1, Radix, L1):-
@@ -331,11 +331,11 @@ permutations(NumberOfObjects, NumberOfPermutations):-
 %               (i.e., tokens), for $0 \leq i \leq m$ and that are (exactly)
 %               of length _|r|_ is $\frac{n!}{\mult_{i = 1}^m(n_i!)(n - r)!}$.
 %
-% @param NumbersOfObject A list of numbers, each indicating the number of
+% @arg NumbersOfObject A list of numbers, each indicating the number of
 %        objects in a certain group.
-% @param PermutationLength The (exact) number of objects that occur
+% @arg PermutationLength The (exact) number of objects that occur
 %        in a permutation.
-% @param NumberOfPermutations The number of permutations that can be created.
+% @arg NumberOfPermutations The number of permutations that can be created.
 
 permutations(NumbersOfObjects, PermutationLength, NumberOfPermutations):-
   is_list(NumbersOfObjects), !,
@@ -364,8 +364,8 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
 %
 % This is used by meta-predicates that require uniform instantiation patterns.
 %
-% @param Integer An integer.
-% @param Predecessor An integer.
+% @arg Integer An integer.
+% @arg Predecessor An integer.
 % @see This extends the builin succ/2.
 
 pred(Integer, Predecessor):-

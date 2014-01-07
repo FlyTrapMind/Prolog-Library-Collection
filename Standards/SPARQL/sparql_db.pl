@@ -55,7 +55,7 @@ init_sparql_db:-
 % Adds the given SPARQL prefix,
 % based on an existing XML prefix with the same name.
 %
-% @param Prefix The atomic name of an existing XML prefix.
+% @arg Prefix The atomic name of an existing XML prefix.
 
 sparql_add_prefix(Prefix):-
   xml_current_namespace(Prefix, URI), !,

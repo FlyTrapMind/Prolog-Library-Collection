@@ -92,9 +92,9 @@ reset_memo:-
 % Returns either the given value or the default value in case there is no
 % value given.
 %
-% @param Value A term or a variable.
-% @param Default A term.
-% @param SetValue A term.
+% @arg Value A term or a variable.
+% @arg Default A term.
+% @arg SetValue A term.
 
 default(Value, Default, Default):-
   var(Value), !.
@@ -108,11 +108,11 @@ default(Value, _Default, Value).
 % This uses the naming convention that similar predicates share
 % the same prefix.
 %
-% @param GenericPredicate The predicate prefix,
+% @arg GenericPredicate The predicate prefix,
 %        denoting the generic part of the operation.
-% @param Context The predicate suffix,
+% @arg Context The predicate suffix,
 %        denoting the specific part of the operation.
-% @param Arguments An argitrary number of arguments.
+% @arg Arguments An argitrary number of arguments.
 
 generic(P1, Context, Args):-
   % Make sure the calling module prefix is discarded.
@@ -132,9 +132,9 @@ generic(P1, Context, Args):-
 %! setoff(+Format, :Goal, -Set:ordset) is det.
 % The sorted version of forall/2.
 %
-% @param Format A compound term.
-% @param Goal A predicate name.
-% @param Set An ordered set.
+% @arg Format A compound term.
+% @arg Goal A predicate name.
+% @arg Set An ordered set.
 % @see forall/2
 
 setoff(Format, Goal, Set):-
@@ -184,9 +184,9 @@ maplist_pairs(Goal, List1, List2):-
 %! mapset(:Goal, +List:list(term), -Set:ordset(term)) is det.
 % The sorted version of maplist/3.
 %
-% @param Goal A goal.
-% @param List A list of terms.
-% @param Set An ordered set of terms.
+% @arg Goal A goal.
+% @arg List A list of terms.
+% @arg Set An ordered set of terms.
 
 mapset(Goal, List, Set):-
   maplist(Goal, List, NewList),
@@ -199,7 +199,7 @@ mapset(Goal, List, Set):-
 %! modules(-Modules:list(atom)) is det.
 % Returns a list of the names of all the loaded modules.
 %
-% @param Modules A list of atomic module names.
+% @arg Modules A list of atomic module names.
 
 modules(Modules):-
   findall(

@@ -36,18 +36,15 @@
 
 dispatch_login(Request):-
   http_method(Request, Method),
-  dispatch_method(Method, Request).
-
-%! dispatch_method(+Method, +Request)
-%	Handling of `POST` and `DELETE` on `/login`.
+  dispatch_method(Method, Request, _).
 
 % A `DELETE` request on `/login` logs the user out.
-dispatch_method(delete, _Request):-
+dispatch_method(delete, _Request, _):-
   logged_in(UserName),
   logout(UserName),
   reply_json(json([ok= @true,message=UserName]), [width(0)]).
 % A `POST` request on `/login` logs the user in.
-dispatch_method(post, Request):-
+dispatch_method(post, Request, _):-
   password_db_file_unix(File),
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
@@ -55,10 +52,11 @@ dispatch_method(post, Request):-
     'Response'(_ParseTree, version(1,1), status(200, _Reason), [], [])
   ).
   %reply_json(json([ok= @true,message=User]), [width(0)]).
-dispatch_method(get, Request):-
+dispatch_method(get, Request, _):-
   http_redirect(see_other, root(login_ui), Request).
 
 login_ui(_Request):-
+gtrace,
   reply_html_page(app_style, \login_ui_head, \login_ui_body).
 
 login_ui_head -->

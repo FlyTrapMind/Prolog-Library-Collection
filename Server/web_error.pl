@@ -198,8 +198,8 @@ error_formal_web(Formal, [element(p,[],[FormalAtom])]):-
 % An error or exception consists of a formal description and a context
 % description. Both are rendered into markup.
 %
-% @param Error An error or exception of the form =error(Formal, Context)=.
-% @param Markup A list of XML elements.
+% @arg Error An error or exception of the form =error(Formal, Context)=.
+% @arg Markup A list of XML elements.
 
 web_error(error(Formal, Context), Markup):-
   error_formal_web(Formal, FormalMarkup),

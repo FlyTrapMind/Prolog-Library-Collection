@@ -72,10 +72,10 @@ dcg_until(DCG_End, Value) -->
 %     Whether the results should be returned in codes (`codes`, default)
 %     or as an atom (`atom`).
 %
-% @param Options A list of name-value pairs.
-% @param DCG_End Not an arbitrary DCG body, since disjunction
+% @arg Options A list of name-value pairs.
+% @arg DCG_End Not an arbitrary DCG body, since disjunction
 %      does not play out well.
-% @param Value Either an atom or a list of codes (see options).
+% @arg Value Either an atom or a list of codes (see options).
 
 dcg_until(O1, DCG_End, Out) -->
   {var(Out)}, !,

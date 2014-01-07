@@ -10,6 +10,8 @@
 
 Generates Web pages that describe a resource.
 
+:- use_module(rdf_web(rdf_describe_web)).
+
 @author Wouter Beek
 @tbd Add blank node map.
 @tbd Add namespace legend.

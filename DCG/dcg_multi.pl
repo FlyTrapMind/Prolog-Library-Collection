@@ -274,7 +274,7 @@ dcg_multi_var(DCG, Min, Max, C1, C3, [H1|T1], O1) -->
   % Process the separator, if any.
   ({option(separator(Separator), O1)} -> Separator ; ""),
   {C2 is C1 + 1},
-  {in_between(Min, Max, C2)},
+  %{in_between(Min, Max, C2)},
   dcg_multi_var(DCG, Min, Max, C2, C3, T1, O1).
 dcg_multi_var(DCG, Min, Max, C1, C2, [H1], _O1) --> !,
   dcg_call(DCG, H1),
@@ -289,7 +289,7 @@ dcg_multi_var(DCG, Min, Max, C1, C3, [H1|T1], [H2|T2], O1) -->
   % Process the separator, if any.
   ({option(separator(Separator), O1)} -> Separator ; ""),
   {C2 is C1 + 1},
-  {in_between(Min, Max, C2)},
+  %{in_between(Min, Max, C2)},
   dcg_multi_var(DCG, Min, Max, C2, C3, T1, T2, O1).
 dcg_multi_var(DCG, Min, Max, C1, C2, [H1], [H2], _O1) --> !,
   dcg_call(DCG, H1, H2),

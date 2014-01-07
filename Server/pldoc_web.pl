@@ -37,7 +37,7 @@ Handle requests to view plDoc via a Web interface.
 % @tbd Open tab in the current browser.
 
 pldoc(_Request):-
-  user:debug_project, !,
+  predicate_property(user:debug_project, visible), !,
   doc_browser,
   reply_html_page(app_style, [], []).
 pldoc(Request):-

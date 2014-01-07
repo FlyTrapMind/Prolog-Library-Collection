@@ -82,7 +82,7 @@ dateCanonicalMap(Date, LEX):-
 %! dateCanonicalMap(+Date:compound)//
 % Maps a date value to a dateLexicalRep//.
 %
-% @param Date A complete date value.
+% @arg Date A complete date value.
 
 dateCanonicalMap(Atom) -->
   {atom(Atom)}, !,

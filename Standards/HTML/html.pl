@@ -62,10 +62,10 @@ HTML attribute parsing, used in HTML table generation.
 %! reply_html_file(+Style:atom, +File:atom) is det.
 % Serve the given HTML file using the given styling.
 %
-% @param Style The atomic name of the HTML style of the page served.
+% @arg Style The atomic name of the HTML style of the page served.
 %        This style has to be defined using the multifile
 %        preficates user:body//2 and user:head//2.
-% @param File The atomic base name of the HTML file that is served.
+% @arg File The atomic base name of the HTML file that is served.
 
 reply_html_file(Style, File):-
   absolute_file_name(stcn_html(File), HTML, [access(read),file_type(html)]),
@@ -143,8 +143,8 @@ stream_to_html(Stream, DOM, Attempts):-
 % Returns the HTML Document Object Model (DOM)
 % for the website with the given URI.
 %
-% @param URI
-% @param HTML
+% @arg URI
+% @arg HTML
 % @throws existence_error(url, Id)
 
 uri_to_html(URI, DOM):-

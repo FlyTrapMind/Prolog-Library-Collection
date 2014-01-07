@@ -76,9 +76,9 @@ mode_error(Mode, Goal):-
 % conversion to *jpeg* that causes the exception, reusing a generic exception
 % for convesions.
 %
-% @param Goal
-% @param Catcher
-% @param Exception
+% @arg Goal
+% @arg Catcher
+% @arg Exception
 
 rethrow(Goal, Catcher, Exception):-
   catch(Goal, Catcher, throw(Exception)).

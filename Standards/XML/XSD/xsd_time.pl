@@ -118,7 +118,7 @@ timeCanonicalMap(T, LEX):-
 %! timeCanonicalMap(+Time:compound)//
 % Maps a time value to a timeLexicalRep//.
 %
-% @param Time A compound term that represents a time value.
+% @arg Time A compound term that represents a time value.
 
 timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
   hourCanonicalFragmentMap(H),

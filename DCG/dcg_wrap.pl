@@ -120,7 +120,7 @@ dcg_wrap(O1) -->
 %      The maxmim width of a line of characters (default `80`).
 %      This is the length at which line wrapping occurs.
 %
-% @param Options A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 
 dcg_line_wrap(O1) -->
   {
@@ -165,7 +165,7 @@ dcg_line_wrap(Padding, Separator, Remaining1, WrapMargin), [Code] -->
 %      The wrap margin of a line of characters (default `80`).
 %      This is the length at which line wrapping occurs.
 %
-% @param Options A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 % @tbd Use a natural language dictionary and a language tag
 %      in order to wrap at word boundaries.
 

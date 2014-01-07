@@ -87,8 +87,8 @@ rdf_alt(Alt, Contents, G):-
 %! rdf_bag(-Bag:uri, +Graph:atom) is nondet.
 % Returns bags in the given graph.
 %
-% @param Bag An RDF bag resource.
-% @param Graph The atomic name of a graph.
+% @arg Bag An RDF bag resource.
+% @arg Graph The atomic name of a graph.
 
 rdf_bag(Bag, G):-
   rdfs_individual_of(Bag, rdf:'Bag'),
@@ -97,9 +97,9 @@ rdf_bag(Bag, G):-
 %! rdf_bag(+Bag:uri, -Contents:list(uri), +Graph:atom) is nondet.
 % Returns bags and their contents in the given graph.
 %
-% @param Bag An RDF bag.
-% @param Contents A list of resources.
-% @param Graph The atomic name of a graph.
+% @arg Bag An RDF bag.
+% @arg Contents A list of resources.
+% @arg Graph The atomic name of a graph.
 
 rdf_bag(Bag, Contents, G):-
   rdf_bag(Bag, G),

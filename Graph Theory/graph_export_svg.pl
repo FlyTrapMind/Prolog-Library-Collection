@@ -46,9 +46,9 @@ Predicates for exporting an intermediate graph structure to SVG.
 %! export_edge_svg(+Vs:list(vertex), +E_Term:compound, -E_DOM:element) is det.
 % Returns the SVG element for the given edge term.
 %
-% @param Vs A list of vertices.
-% @param E A compound term of the form `edge(FromV_Id, ToV_Id, Attrs)`.
-% @param E_DOM An SVG element.
+% @arg Vs A list of vertices.
+% @arg E A compound term of the form `edge(FromV_Id, ToV_Id, Attrs)`.
+% @arg E_DOM An SVG element.
 
 export_edge_svg(Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs1), E_DOM):-
   % Ids.
@@ -77,9 +77,9 @@ export_edge_svg(Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs1), E_DOM):-
 %! export_graph_svg(+G_Term:compound, -G_DOM:dom) is det.
 % Writes a GraphViz structure to an output stream.
 %
-% @param G_Term An intermediate graph representation:
+% @arg G_Term An intermediate graph representation:
 %      `graph(V_Terms, E_Terms, G_Attrs)`.
-% @param G_DOM SVG DOM representation of the graph.
+% @arg G_DOM SVG DOM representation of the graph.
 %
 % @tbd Add support for ranks.
 % @tbd Use graph name.

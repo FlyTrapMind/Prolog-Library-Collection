@@ -70,9 +70,9 @@ and GraphViz output files or SVG DOM structures.
 %   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
 %     The file type of the generated GraphViz file.
 %
-% @param Options A list of name-value pairs.
-% @param GIF A compound term representing a graph.
-% @param ToFile The atomic name of a file.
+% @arg Options A list of name-value pairs.
+% @arg GIF A compound term representing a graph.
+% @arg ToFile The atomic name of a file.
 
 graph_to_gv_file(O1, GIF, ToFile):-
   once(phrase(gv_graph(GIF), Codes)),
@@ -111,9 +111,9 @@ graph_to_svg_dom(O1, GIF, SVG):-
 %   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
 %     The file type of the generated GraphViz file.
 %
-% @param Options A list of name-value pairs.
-% @param Tree A compound term representing a tree.
-% @param ToFile The atomic name of the generated file.
+% @arg Options A list of name-value pairs.
+% @arg Tree A compound term representing a tree.
+% @arg ToFile The atomic name of the generated file.
 
 tree_to_gv_file(O1, Tree, ToFile):-
   once(phrase(gv_tree(O1, Tree), Codes)),
@@ -134,9 +134,9 @@ tree_to_gv_file(O1, Tree, ToFile):-
 %   * =|to_file_type(+FileType:oneof([jpeg,pdf,svg,xdot])|=
 %     The file type of the generated GraphViz file.
 %
-% @param Options
-% @param FromFile
-% @param ToFile
+% @arg Options
+% @arg FromFile
+% @arg ToFile
 
 convert_gv(O1, FromFile, ToFile):-
   % The input file must be readable.

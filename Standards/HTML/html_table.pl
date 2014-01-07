@@ -146,9 +146,9 @@ html_table_rows(_O1, _CellType, []) --> [].
 %      Whether or not each row should begin with a row index.
 %      Default is `false`.
 %
-% @param O1 A list of name-value pairs.
-% @param Rows A 2D table of terms.
-% @param Markup An HTML table element.
+% @arg O1 A list of name-value pairs.
+% @arg Rows A 2D table of terms.
+% @arg Markup An HTML table element.
 
 html_table(O1, Rows1, element(table, [border=1], TableContents)):-
   % Generate the table caption, if required.

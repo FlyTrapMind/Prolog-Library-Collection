@@ -28,7 +28,7 @@ Predicates that support the construction of SPARQL queries.
 %! formulate_extra(+Extra:compound, -Statement:atom) is det.
 % Formulates either a "limit" or an "order by" statement.
 %
-% @param Extra A compound term.
+% @arg Extra A compound term.
 %        Either =|limit(+Options:list(nvpair),+Limit:positive_integer)|=
 %        or =|sort_by(+Options:list(nvpair),+VarNames:list(atom))|=.
 
@@ -47,9 +47,9 @@ formulate_extra(order_by, O1, VarNames, OrderByStmt):-
 %! formulate_graph(+Option:nvpair, -Statement:atom) is det.
 % Formulates a statement specifying a default graph.
 %
-% @param Option A name-value pair of the form
+% @arg Option A name-value pair of the form
 %        =|default_graph(+DefaultGraph:url)|=.
-% @param Statement
+% @arg Statement
 
 formulate_graph(default_graph(G), GStmt):-
   format(atom(GStmt), '# Default graph (located at ~w)', [G]).
@@ -57,8 +57,8 @@ formulate_graph(default_graph(G), GStmt):-
 %! formulate_limit(+Limit:nonneg, -Statement:atom) is det.
 % Formulates a SPARQL limit statement.
 %
-% @param Limit The maximum number of returned search results.
-% @param Statement
+% @arg Limit The maximum number of returned search results.
+% @arg Statement
 
 formulate_limit(Limit, LimitStmt):-
   nonneg(Limit),
@@ -68,9 +68,9 @@ formulate_limit(Limit, LimitStmt):-
 % Formulates a SPARQL mode statement.
 % Currently only the "select" mode is supported.
 %
-% @param Mode A compound term. The functor is a mode,
+% @arg Mode A compound term. The functor is a mode,
 %        the argument is a list of SPARQL variable names (for `SELECT`).
-% @param Statement
+% @arg Statement
 
 formulate_mode(Mode, ModeStmt):-
   Mode =.. [ModeF,O1,VarNames],
@@ -90,9 +90,9 @@ formulate_mode(select, O1, VarNames, SelectStmt):- !,
 %! formulate_prefix(+Prefix:atom, PrefixStatement:atom) is det.
 % Formulates a SPARQL prefix statement.
 %
-% @param Prefix The atomic name of a prefix that is registered
+% @arg Prefix The atomic name of a prefix that is registered
 %        in [sparql_db].
-% @param Statement
+% @arg Statement
 %
 % @throws existence_error in case the given SPARQL prefix is not registered.
 
@@ -119,15 +119,15 @@ formulate_prefixes(Prefixes, PrefixStmts2):-
 % The following modes are supported:
 %    * `select`
 %
-% @param Graph A compound term of the form =|default_graph(+Graph:url)|=.
-% @param Prefixes A list of atomic prefix names, registered as prefix/4.
-% @param Mode A compound term. The functor is a mode,
+% @arg Graph A compound term of the form =|default_graph(+Graph:url)|=.
+% @arg Prefixes A list of atomic prefix names, registered as prefix/4.
+% @arg Mode A compound term. The functor is a mode,
 %        the argument is a list of SPARQL variable names (for `SELECT`).
-% @param Where An atomic WHERE-statement.
-% @param Extra A compound term.
+% @arg Where An atomic WHERE-statement.
+% @arg Extra A compound term.
 %        Either =|limit(+Options:list(nvpair),+Limit:positive_integer)|=
 %        or =|sort_by(+Options:list(nvpair),+VarNames:list(atom))|=.
-% @param Query An atomic SPARQL query.
+% @arg Query An atomic SPARQL query.
 
 formulate_sparql(G, Prefixes, Mode, Where, Extra, Query):-
   (

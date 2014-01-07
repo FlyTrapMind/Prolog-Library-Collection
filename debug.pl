@@ -1,3 +1,4 @@
+/*
 % Debug script for PGC.
 
 % Do not write module loads to the standard output stream.
@@ -60,6 +61,7 @@
 %      at some point.
 %:- use_module(library(swi_ide)).
 %:- prolog_ide(debug_monitor).
+*/
 
 :- [load].
 
@@ -67,8 +69,7 @@
 :- use_module(server(web_modules)).
 :- use_module(server(pldoc_web)).
 :- use_module(server(web_console)).
-:- use_module(rdf_web(rdf_describe_web)).
-:- use_module(rdf_web(rdf_web)).
+%:- use_module(rdf_web(rdf_web)).
 :- use_module(tms(tms_web)).
 
 %:- use_module(library(apply)).

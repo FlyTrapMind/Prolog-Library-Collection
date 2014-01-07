@@ -43,8 +43,8 @@ In the furture services like Google translate
 %
 % The lines must not contain non-ASCII characters (?).
 %
-% @param Line An atom, preferable a natural language expression.
-% @param File The atomic name of an MP3 file.
+% @arg Line An atom, preferable a natural language expression.
+% @arg File The atomic name of an MP3 file.
 
 lines_to_mp3(Lines, File):-
   setup_call_cleanup(

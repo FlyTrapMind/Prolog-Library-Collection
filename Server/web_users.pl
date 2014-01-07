@@ -32,14 +32,14 @@ User management for Web applications.
 :- http_handler(root(users), dispatch, []).
 :- http_handler(root(users_ui), users_ui, []).
 
+:- multifile(profile:allow/5).
+prolog:allow(admin, _, delete, '/users', _).
+prolog:allow(_,     _, get,    '/users', _).
+prolog:allow(admin, _, post,   '/users', _).
 
 
-%! dispatch_method(+Method:oneof([delete,post]), +Request:list) is det.
-% The following HTTP parameters are defined for `POST`:
-%   * =|user(+Name:atom)|=
-%   * =|password(+Password:atom)|=
 
-dispatch_method(post, Request):-
+dispatch_method(post, Request, _):-
   http_parameters(Request, [user(Name,[]),password(Password,[])]),
   http_read_data(Request, OptionsAtom, [to(atom)]),
   catch(
@@ -64,7 +64,7 @@ dispatch_method(post, Request):-
   ;
     reply_json(json([error='Malformed option list']), [width(0)])
   ).
-dispatch_method(delete, Request) :-
+dispatch_method(delete, Request, _) :-
   http_parameters(Request, [user(Name,[])]),
   catch(
     (
@@ -83,7 +83,7 @@ dispatch_method(delete, Request) :-
     reply_json(json([error=Msg]), [width(0)])
   ).
 % Returns the contents of the user file in JSON.
-dispatch_method(get, Request):-
+dispatch_method(get, Request, _):-
   http_parameters(Request, [user(User,[default('_')])]),
   (
     User == '_'
@@ -119,7 +119,7 @@ list_users(User, List) :-
 users_ui(_Request):-
   reply_html_page(app_style, \users_ui_head, \users_ui_body).
 
-users_ui_body -->{gtrace},
+users_ui_body -->
   html([
     h1('User administration'),
     form([onsubmit='return false;'], [

@@ -65,12 +65,12 @@ html_image(IMG_O1, File) -->
 %! ) is det.
 % Constructs an IMG element.
 %
-% @param DIV_Options A list of name-value pairs that apply to
+% @arg DIV_Options A list of name-value pairs that apply to
 %        the =div= element.
-% @param Description An atomic description of the image.
-% @param IMG_Options A list of name-value pairs that apply to
+% @arg Description An atomic description of the image.
+% @arg IMG_Options A list of name-value pairs that apply to
 %        the image element.
-% @param File The atomic name of the image file.
+% @arg File The atomic name of the image file.
 
 html_image(DIV_O1, Description, IMG_O1, File) -->
   % If no alternative text has been set, then we use the description text.

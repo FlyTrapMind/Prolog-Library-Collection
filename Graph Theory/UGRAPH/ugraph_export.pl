@@ -142,10 +142,10 @@ export_ugraph(O, G, G_Term):-
 %      The 2D surface on which the graph is drawn.
 %      The default surface is `10.0` cubic.
 %
-% @param Options A list of nane-value pairs.
-% @param CoordFunc A function that maps vertices to coordinates.
-% @param Graph An undirected graph.
-% @param GraphTerm A compound term in the intermediate graph format.
+% @arg Options A list of nane-value pairs.
+% @arg CoordFunc A function that maps vertices to coordinates.
+% @arg Graph An undirected graph.
+% @arg GraphTerm A compound term in the intermediate graph format.
 
 export_ugraph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   % Vertices.
@@ -205,7 +205,7 @@ export_ugraph_edge(O, Vs, FromV-ToV, edge(FromV_Id, ToV_Id, E_Attrs)):-
   ].
 
 %! ugraph_edge_arrow_head(+E:edge, -ArrowType:atom) is det.
-% @param ArrowType One of the following values:
+% @arg ArrowType One of the following values:
 %      * `box`
 %      * `crow`
 %      * `diamond`
@@ -264,7 +264,7 @@ ugraph_edge_name(FromV_Name, ToV_Name) -->
   ToV_NameCodes.
 
 %! ugraph_edge_style(+E:edge, -Style:atom) is det.
-% @param Style One of the following values:
+% @arg Style One of the following values:
 %      * `bold`
 %      * `dashed`
 %      * `dotted`
@@ -322,8 +322,8 @@ ugraph_vertex_name(V, V_Name):-
   term_to_atom(V, V_Name).
 
 %! ugraph_vertex_shape(+Vertex:vertex, -Shape:atom) is det.
-% @param Vertex
-% @param Shape The following values are supported:
+% @arg Vertex
+% @arg Shape The following values are supported:
 %      `box`
 %      `polygon`
 %      `ellipse`

@@ -91,9 +91,9 @@ rdf_term_name(RDF_Term):-
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 %
-% @param Options A list of name-value pairs.
-% @param RDF_Term An RDF term.
-% @param Name The atomic name of an RDF term.
+% @arg Options A list of name-value pairs.
+% @arg RDF_Term An RDF term.
+% @arg Name The atomic name of an RDF term.
 
 % An RDF list.
 rdf_term_name(O1, RDF_Term):-

@@ -86,10 +86,10 @@ Titlecase atoms can be created using upcase_atom/2.
 % The first split does not include the split atom, making this method
 % exclusive.
 %
-% @param Splits Atoms where the main atom with be split.
+% @arg Splits Atoms where the main atom with be split.
 %        Notice that the order in which the splits appear is significant.
-% @param Atom The original, unsplit atom.
-% @param Subatoms The results of splitting.
+% @arg Atom The original, unsplit atom.
+% @arg Subatoms The results of splitting.
 
 atom_splits(Splits, Atom1, [H|T]):-
   member(Split, Splits),
@@ -102,8 +102,8 @@ atom_splits(_, Subatom, [Subatom]).
 %! atom_to_term(+Atom:atom, -Term:term) is det.
 % Returns the term described by the atom.
 %
-% @param Atom An atom.
-% @param Term A term.
+% @arg Atom An atom.
+% @arg Term A term.
 % @see Wrapper around atom_to_term/3, omitting the bindings.
 
 atom_to_term(Atom, Term):-
@@ -129,9 +129,9 @@ first_split(Atom, Split, FirstSubatom):-
 %
 % Fails in case the length of the formatted integer exceeds the given length.
 %
-% @param Integer The integer value that is to be formatted.
-% @param Length The exact character length of the formatted integer atom.
-% @param Atom The formatted version of the integer value.
+% @arg Integer The integer value that is to be formatted.
+% @arg Length The exact character length of the formatted integer atom.
+% @arg Atom The formatted version of the integer value.
 %
 % @tbd See whether this can be done using format/2 tab stops,
 %      http://www.swi-prolog.org/pldoc/doc_for?object=format/2.
@@ -170,9 +170,9 @@ new_atom(A1, A2):-
 % Returns an atomic progress bar that displays the current value
 %  onto a scale that runs from `1` to the given end value.
 %
-% @param Current An integer, representing the current processed value.
-% @param End An integer, representing the last value to be processed.
-% @param ProgressBar The atomic representation of a progress bar.
+% @arg Current An integer, representing the current processed value.
+% @arg End An integer, representing the last value to be processed.
+% @arg ProgressBar The atomic representation of a progress bar.
 
 progress_bar(End, End, ProgressBar2):- !,
   progress_bar_(End, End, ProgressBar1),
@@ -213,9 +213,9 @@ progress_bar_(Current1, End, ProgressBar):-
 % Returns the atom that is the repetition of the given subatom
 %  for the given number of times.
 %
-% @param SubAtom An atom, the element that gets repeated.
-% @param Repeats A integer, the number of repeats of the subatom.
-% @param Atom An atom, the result of repeating the given atom.
+% @arg SubAtom An atom, the element that gets repeated.
+% @arg Repeats A integer, the number of repeats of the subatom.
+% @arg Atom An atom, the result of repeating the given atom.
 
 repeating_atom(_SubAtom, 0, ''):- !.
 repeating_atom(SubAtom, 1, SubAtom):- !.
@@ -255,9 +255,9 @@ split_atom_length(A, _, [A]).
 %
 % Notice that the order in which the strip atoms occur is significant.
 %
-% @param Strips A list of strip atoms.
-% @param In The unstrippped atom
-% @param Out The stripped atom.
+% @arg Strips A list of strip atoms.
+% @arg In The unstrippped atom
+% @arg Out The stripped atom.
 
 strip_atom(Strips, A1, A3):-
   strip_atom_begin(Strips, A1, A2),
@@ -280,10 +280,10 @@ strip_atom_end(_, A, A).
 % The maximum length indicates the exact maximum.
 % Truncation will always result in an atom which has at most `MaxLength`.
 %
-% @param Atom The original atom.
-% @param MaxLength The maximum allowed length of an atom.
+% @arg Atom The original atom.
+% @arg MaxLength The maximum allowed length of an atom.
 %        This must be at least 5.
-% @param Truncated The truncated atom.
+% @arg Truncated The truncated atom.
 
 % The maximum allowed length is too short to be used with truncation.
 truncate(A, Max, A):-

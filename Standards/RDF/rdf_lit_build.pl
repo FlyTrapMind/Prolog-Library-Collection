@@ -50,10 +50,10 @@ a dedicated module.
 %! ) is det.
 % Asserts a literal value for a resource.
 %
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Literal An atom.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg Literal An atom.
+% @arg Graph The atomic name of an RDF graph.
 % @see rdf_assert_literal/5 also specifies the language.
 
 rdf_assert_literal(S, P, Lit, G):-
@@ -68,11 +68,11 @@ rdf_assert_literal(S, P, Lit, G):-
 %! ) is det.
 % Asserts a language-tagged literal value for a resource.
 %
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param LanguageTag An atomic language tag.
-% @param Literal An atom.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg LanguageTag An atomic language tag.
+% @arg Literal An atom.
+% @arg Graph The atomic name of an RDF graph.
 
 rdf_assert_literal(S, P, Lang, Lit, G):-
   nonvar(Lang), !,
@@ -88,10 +88,10 @@ rdf_assert_literal(S, P, _Lang, Lit, G):-
 %! ) is det.
 % Retracts all matching RDF triples that assert a literal property.
 %
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param Literal An atom.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg Literal An atom.
+% @arg Graph The atomic name of an RDF graph.
 % @see rdf_retractall_literal/5 only retracts triples with literals of
 %      a specific name.
 
@@ -108,11 +108,11 @@ rdf_retractall_literal(S, P, Literal, G):-
 % Retracts all matching RDF triples that assert a literal property
 % in a specific language.
 %
-% @param Subject A resource.
-% @param Predicate A resource.
-% @param LanguageTag The atomic name of a language tag.
-% @param Literal An atom.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject A resource.
+% @arg Predicate A resource.
+% @arg LanguageTag The atomic name of a language tag.
+% @arg Literal An atom.
+% @arg Graph The atomic name of an RDF graph.
 
 rdf_retractall_literal(S, P, Lang, Lit, G):-
   rdf_retractall(S, P, literal(lang(Lang, Lit)), G).

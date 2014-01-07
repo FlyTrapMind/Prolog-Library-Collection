@@ -277,8 +277,8 @@ abs_path(absolute_path('/',T1), [PathSegment]) -->
 %
 % --
 %
-% @param ParseTree
-% @param URI A compound term uri/4 with the following arguments:
+% @arg ParseTree
+% @arg URI A compound term uri/4 with the following arguments:
 %   1. `Scheme:atom`
 %   2. `Authority:or([atom,compound])`
 %      Either an atom or a compound term of the form
@@ -307,8 +307,8 @@ absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query)) -->
 % authority = server | registry_based_naming_authority
 % ~~~
 %
-% @param Tree A parse tree.
-% @param Authority Either an atom or a compound term of the form
+% @arg Tree A parse tree.
+% @arg Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
 authority(authority(T), Authority) -->
@@ -403,8 +403,8 @@ escaped_character(N) -->
 % intended for retrieval and the result of that retrieval is a document
 % for which the identified fragment is consistently defined.
 %
-% @param Tree A compound term.
-% @param Fragment An atom.
+% @arg Tree A compound term.
+% @arg Fragment An atom.
 
 fragment(fragment(Fragment), Fragment) -->
   {nonvar(Fragment)}, !,
@@ -430,11 +430,11 @@ fragment_([H|T]) -->
 % hier_part = ( net_path | abs_path ) [ "?" query ]
 % ~~~
 %
-% @param Tree A compound term.
-% @param Authority Either an atom or a compound term of the form
+% @arg Tree A compound term.
+% @arg Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @param Path A list of lists of atoms.
-% @param Query An atom.
+% @arg Path A list of lists of atoms.
+% @arg Query An atom.
 
 hierarchical_part(T0, Authority, Path, Query) -->
   (
@@ -461,8 +461,8 @@ hierarchical_part(T0, Authority, Path, Query) -->
 %
 % @tbd Literal IPv6 addresses are not supported.
 %
-% @param Tree A compound term.
-% @param Host Either a list of atoms or a list of integers.
+% @arg Tree A compound term.
+% @arg Host Either a list of atoms or a list of integers.
 
 host(host(T), Host) --> host_name(T, Host).
 host(host(T), Host) --> ipv4_address(T, Host).
@@ -490,8 +490,8 @@ host_name(T0, DomainLabels) -->
 % IPv4address = 1*digit "." 1*digit "." 1*digit "." 1*digit
 % ~~~
 %
-% @param Tree A parse tree.
-% @param Address A list of four integers.
+% @arg Tree A parse tree.
+% @arg Address A list of four integers.
 %
 % @tbd A suitable representation for including a literal IPv6
 %      address as the host part of a URL is desired, but has not yet been
@@ -524,10 +524,10 @@ mark(C) --> round_bracket(C).
 % net_path = "//" authority [ abs_path ]
 % ~~~
 %
-% @param Tree A parse tree.
-% @param Authority Either an atom or a compound term of the form
+% @arg Tree A parse tree.
+% @arg Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @param Path A list of lists of atoms.
+% @arg Path A list of lists of atoms.
 
 network_path(T0, Authority, Path) -->
   forward_slash, {T1 = '/'}, forward_slash, {T2 = '/'},
@@ -600,8 +600,8 @@ parameter_character(C) --> escaped_character(C).
 %
 % Note that path//1 is not used in any production.
 %
-% @param Tree A compound term.
-% @param Path A list of lists of atoms.
+% @arg Tree A compound term.
+% @arg Path A list of lists of atoms.
 
 path(path([]), []) --> [].
 path(path(T1), Path) --> abs_path(T1, Path).
@@ -652,8 +652,8 @@ port(port(Port), Port) --> decimal_number(Port).
 % Within a query component, the characters `;`, `/`, `?`, `:`, `@`,
 % `&`, `=`, `+`, `,`, and `$` are reserved.
 %
-% @param Tree A compound term.
-% @param Query An atom.
+% @arg Tree A compound term.
+% @arg Query An atom.
 
 query(query(Query), Query) -->
   {nonvar(Query)}, !,
@@ -802,8 +802,8 @@ scheme_characters([]) --> [].
 % A non-default port number may optionally be supplied, in decimal,
 % separated from the host//1 by a colon//0.
 %
-% @param Tree A parse tree.
-% @param Authority A compound term of the form
+% @arg Tree A parse tree.
+% @arg Authority A compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
 
 server(T0, authority(User,Host,Port)) -->
@@ -922,12 +922,12 @@ rfc2396_uri_reference(T) -->
 % URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
 % ~~~
 %
-% @param Scheme An atom.
-% @param Authority Either an atom or a compound term of the form
+% @arg Scheme An atom.
+% @arg Authority Either an atom or a compound term of the form
 %      =|authority(User:atom,Host:or([list(atom),list(integer)]),Port:integer)|=.
-% @param Path A list of lists of atoms.
-% @param Query An atom.
-% @param Fragment An atom.
+% @arg Path A list of lists of atoms.
+% @arg Query An atom.
+% @arg Fragment An atom.
 
 rfc2396_uri_reference(T0, Scheme, Authority, Path, Query, Fragment) -->
   absoluteURI(T1, uri(Scheme,Authority,Path,Query)),

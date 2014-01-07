@@ -99,11 +99,11 @@ decimal_number(N) -->
 %! )//
 % Processes digits of arbitrary radix and returns the decimal equivalent.
 %
-% @param DCGBody processes a single digit if the given radix.
-% @param Radix An integer representing the radix used.
+% @arg DCGBody processes a single digit if the given radix.
+% @arg Radix An integer representing the radix used.
 %      Common values are `2` (binary), `8` (octal),
 %      `10` (decimal), and `16` (hexadecimal).
-% @param An integer representing the processed number, converted to
+% @arg An integer representing the processed number, converted to
 %      the decimal number system.
 
 digits_to_decimal_number(_Digit, Radix, M, H, T):-

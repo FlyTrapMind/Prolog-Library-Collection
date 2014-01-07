@@ -65,11 +65,11 @@ digits_to_decimal(DecimalDigits, DecimalNumber):-
 % Process the decimal digits from left to right, using the radix to multiply
 % the result at each step; returning the decimal number.
 %
-% @param DecimalDigits A list of decimal digits.
+% @arg DecimalDigits A list of decimal digits.
 %      Conversion from -- for instance -- hexadecimal digits has
 %      already occured before this predicate is invoked.
-% @param Radix An integer indicating the radix of the decimal digits.
-% @param DecimalNumber An integer that is the given decimal digits
+% @arg Radix An integer indicating the radix of the decimal digits.
+% @arg DecimalNumber An integer that is the given decimal digits
 %      under the given radix.
 
 digits_to_decimal(Ds, Radix, D):-

@@ -135,8 +135,8 @@ rdf_load2(Spec):-
 %   * format(+Format:oneof([ntriples,turtle,xml]))
 %   * graph(+Graph:atom)
 %
-% @param Spec Either a file, a list of files, or a directory.
-% @param Options A list of name-value pairs.
+% @arg Spec Either a file, a list of files, or a directory.
+% @arg Options A list of name-value pairs.
 
 % Loads multiple files and/or directories.
 rdf_load2(Files, O1):-
@@ -233,8 +233,8 @@ rdf_save2(G):-
 %      If the format is specified as well, then this is used to determine
 %      the file extension.
 %
-% @param File A variable.
-% @param Options A list of options, containing at least =graph/1=
+% @arg File A variable.
+% @arg Options A list of options, containing at least =graph/1=
 %              and possibly format/1.
 %! rdf_save2(+File:atom, +Options:list) is det.
 % The following options are supported:
@@ -243,8 +243,8 @@ rdf_save2(G):-
 %   * =|graph(+Graph:atom)|=
 %     The name of the graph that is exported.
 %
-% @param File An atomic absolute file name.
-% @param Options A list of name-value pairs.
+% @arg File An atomic absolute file name.
+% @arg Options A list of name-value pairs.
 
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
@@ -341,13 +341,13 @@ rdf_save2(File, O1, turtle):- !,
 %!   ?URL:atom
 %! ) is nondet.
 %
-% @param DefaultExtension The default extension of the RDF serialization.
+% @arg DefaultExtension The default extension of the RDF serialization.
 %        RDF serializations may have multiple non-default extensions,
 %        e.g. =owl= and =xml= for RDF/XML.
-% @param DefaultFileType The default file type of the RDF serialization.
+% @arg DefaultFileType The default file type of the RDF serialization.
 %        Every file type has the non-default file type =rdf=.
-% @param Format The format name that is used by the Semweb library.
-% @param URL The URL at which the serialization is described, if any.
+% @arg Format The format name that is used by the Semweb library.
+% @arg URL The URL at which the serialization is described, if any.
 
 rdf_serialization(nt,      ntriples, ntriples, 'http://www.w3.org/ns/formats/N-Triples').
 rdf_serialization(rdf,     rdf_xml,  xml,      'http://www.w3.org/ns/formats/RDF_XML'  ).

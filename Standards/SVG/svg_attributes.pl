@@ -295,13 +295,13 @@ svg_height(height(T1), DCG_Namespace, Number, Unit) -->
 %
 % [[svg_preserve_aspect_ratio.png]]
 %
-% @param Tree A compound term representing a parse tree.
-% @param Defer A boolean representing whether the preserve aspect radio
+% @arg Tree A compound term representing a parse tree.
+% @arg Defer A boolean representing whether the preserve aspect radio
 %      attribute of the referenced content should be used instead
 %      (in case this is present).
-% @param Align A compound term of the following form:
+% @arg Align A compound term of the following form:
 %      =|align(x(?X:oneof([min,mid,max,none])),y(?Y:oneof([min,mid,max,none])))|=
-% @param MeetOrSlide Either uninstantiated, `meet`, or `slice`.
+% @arg MeetOrSlide Either uninstantiated, `meet`, or `slice`.
 %
 % @see This attribute uses parameters svg_defer//2, svg_align//3,
 %      and svg_meet_or_slice//2.
@@ -451,7 +451,7 @@ svg_system_language(T0, DCG_Namespace, LanguageTags) -->
 % In SVG 1.0, this attribute was fixed to the value `1.0`.
 % For SVG 1.1, the attribute should have the value `1.1`.
 %
-% @param Version A compound term of the form
+% @arg Version A compound term of the form
 %      =|version(major(?Major:integer),minor(?Minor:integer))|=.
 
 svg_version(

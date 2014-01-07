@@ -160,8 +160,8 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
 % Otherwise, DBpedia is searched for a resource that is labeled with
 %  the given search term.
 %
-% @param SearchTerm
-% @param Resource
+% @arg SearchTerm
+% @arg Resource
 
 dbpedia_find(SearchTerm, Resource):-
   'SPARQL_find'(dbpedia, SearchTerm, Resource).

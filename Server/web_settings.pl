@@ -21,10 +21,14 @@ Sets and retrieves settings using JSON.
 
 :- http_handler(root(settings), dispatch, []).
 
+:- multifile(prolog:allow/5).
+prolog:allow(_,     _, get,  '/settings', _).
+prolog:allow(admin, _, post, '/settings', _).
+
 
 
 % POST
-dispatch_method(post, Request):-
+dispatch_method(post, Request, _):-
   http_parameters(Request, [module(Module,[]),setting(Setting,[])]),
   % Do not interpret the data according to the MIME type,
   % but store it directly to an atom.
@@ -57,7 +61,7 @@ dispatch_method(post, Request):-
     )
   ).
 % GET
-dispatch_method(get, Request):-
+dispatch_method(get, Request, _):-
   http_parameters(
     Request,
     [module(Module,[default(_)]),setting(Setting,[default(_)])]

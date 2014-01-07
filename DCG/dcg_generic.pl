@@ -81,15 +81,25 @@ dcg_separated_list_var(_Sep, [H]) -->
 dcg_phrase(DCG, AtomicOrCodes):-
   dcg_phrase(DCG, AtomicOrCodes, []).
 dcg_phrase(DCG, Atomic1, Atomic2):-
-  atomic(Atomic1), !,
+  atom(Atomic1), !,
   atom_codes(Atomic1, Codes1),
   dcg_phrase(DCG, Codes1, Codes2),
   atom_codes(Atomic2, Codes2).
 dcg_phrase(DCG, Atomic1, Atomic2):-
-  atomic(Atomic2), !,
+  atom(Atomic2), !,
   atom_codes(Atomic2, Codes2),
   dcg_phrase(DCG, Codes1, Codes2),
   atom_codes(Atomic1, Codes1).
+dcg_phrase(DCG, Atomic1, Atomic2):-
+  number(Atomic1), !,
+  number_codes(Atomic1, Codes1),
+  dcg_phrase(DCG, Codes1, Codes2),
+  number_codes(Atomic2, Codes2).
+dcg_phrase(DCG, Atomic1, Atomic2):-
+  number(Atomic2), !,
+  number_codes(Atomic2, Codes2),
+  dcg_phrase(DCG, Codes1, Codes2),
+  number_codes(Atomic1, Codes1).
 dcg_phrase(DCG, Atomic1, Atomic2):-
   maplist(var, [Atomic1,Atomic2]), !,
   dcg_phrase(DCG, Codes1, Codes2),

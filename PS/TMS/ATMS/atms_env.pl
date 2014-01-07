@@ -67,9 +67,9 @@ and the GDE (component assumptions).
 % Returns the comparison label for the comparison of the two
 % given environments.
 %
-% @param Environment1 An environment.
-% @param Environment2 An environment.
-% @param Comparison The atomic comparison label. Either 'eq', 's12',
+% @arg Environment1 An environment.
+% @arg Environment2 An environment.
+% @arg Comparison The atomic comparison label. Either 'eq', 's12',
 %        or 's21'.
 
 compare_environments(Environment, Environment, eq):-
@@ -103,10 +103,10 @@ compare_environments1(Assumptions, Assumptions, s21):-
 %        `Compare`, then `E` is a **minimal environment**
 %        and it is added to `Result`.
 %
-% @param Environments:list(environment) A set of URIs of environments.
-% @param CompareSets:list(environment) A set of URIs of environments.
-% @param ResultEnvironments A set of URIs of environments.
-% @param RestEnvironments A set of URIs of environments.
+% @arg Environments:list(environment) A set of URIs of environments.
+% @arg CompareSets:list(environment) A set of URIs of environments.
+% @arg ResultEnvironments A set of URIs of environments.
+% @arg RestEnvironments A set of URIs of environments.
 
 delete_superenvironments(Original, Compare, Result, Rest):-
   exclude('_delete_superenvironments'(Compare), Original, Result, Rest),
@@ -123,10 +123,10 @@ delete_superenvironments(Original, Compare, Result, Rest):-
 % Returns the unpacked environment.
 % Only singleton environments are unpacked.
 %
-% @param Diagnosis A diagnosis.
-% @param Environment An environment.
-% @param UnpackedEnvironment An environment.
-% @param RemovedEnvironment The environment of nodes that have been
+% @arg Diagnosis A diagnosis.
+% @arg Environment An environment.
+% @arg UnpackedEnvironment An environment.
+% @arg RemovedEnvironment The environment of nodes that have been
 %        removed in the process.
 
 environment_hierarchical_unpack(
@@ -155,9 +155,9 @@ environment_hierarchical_unpack(
 %% ) is det.
 % Returns the result of updating =Environment= with =Assumption=.
 %
-% @param Assumption The URI of a node.
-% @param Environment The URI of an environment.
-% @param NewEnvironment The URI of an environment.
+% @arg Assumption The URI of a node.
+% @arg Environment The URI of an environment.
+% @arg NewEnvironment The URI of an environment.
 
 extend_environment(Assumption, Environment, NewEnvironment):-
   environment_assumptions(Environment, Assumptions),
@@ -177,9 +177,9 @@ intersection_environments(Environments, IntersectionEnvironments):-
 %% ) is det.
 % Returns the intersection of the given environments.
 %
-% @param ATMS An ATMS.
-% @param Environments An ordered set of environments.
-% @param IntersectionEnvironment An environment.
+% @arg ATMS An ATMS.
+% @arg Environments An ordered set of environments.
+% @arg IntersectionEnvironment An environment.
 
 intersection_environments(_ATMS, [Environment], Environment):-
   !.
@@ -199,8 +199,8 @@ is_not_minimal_environment(Environment, CompareEnvironments):-
 %% member_environment(+Assumption:node, +Environment:environment) is semidet.
 % Succeeds if =Assumption= is an assumption if =Environment=.
 %
-% @param Assumption The URI of a node.
-% @param Environment The URI of an environment.
+% @arg Assumption The URI of a node.
+% @arg Environment The URI of an environment.
 
 member_environment(Assumption, Environment):-
   environment_assumptions(Environment, Assumptions),
@@ -237,9 +237,9 @@ minimize_environments_([H | T1], [H | T2]):-
 % assumptions set and translating that to an existing or a new
 % environment.
 %
-% @param Diagnosis A diagnosis.
-% @param OldEnvironment An environment.
-% @param NextEnvironment An environment.
+% @arg Diagnosis A diagnosis.
+% @arg OldEnvironment An environment.
+% @arg NextEnvironment An environment.
 
 next_environment_small_to_big(Diagnosis, Environment, NextEnvironment):-
   environment_assumptions(Environment, Assumptions),
@@ -276,9 +276,9 @@ next_environment_small_to_big(Diagnosis, Environment, NextEnvironment):-
 % Environments are ordered sets of assumptions. We use ordered sets
 % for computational efficiency.
 %
-% @param Diagnosis A diagnosis.
-% @param Assumptions An ordered set of components.
-% @param NewAssumptions An ordered set of components.
+% @arg Diagnosis A diagnosis.
+% @arg Assumptions An ordered set of components.
+% @arg NewAssumptions An ordered set of components.
 
 % The old environment is all scoped components. Then there is no next
 % environment, so fail.
@@ -302,10 +302,10 @@ next_environment(Diagnosis, Assumptions, NewAssumptions):-
 %   3. The old environment is some environment in between
 %      the first and the last environment.
 %
-% @param ATMS An ATMS.
-% @param Assumptions An ordered set of components.
-% @param ConsideredComponents An ordered set of components.
-% @param NewAssumptions An ordered set of components.
+% @arg ATMS An ATMS.
+% @arg Assumptions An ordered set of components.
+% @arg ConsideredComponents An ordered set of components.
+% @arg NewAssumptions An ordered set of components.
 
 % FIRST: The old environment is the empty environment. We begin with the
 % environment that is the singleton set of the first relevant component.
@@ -525,7 +525,7 @@ shorter_environments(Order, Environment1, Environment2):-
 % Succeeds if the given environment is a singleton environment.
 % A singleton environment is an environment with exactly one assumption.
 %
-% @param Environment An environment.
+% @arg Environment An environment.
 
 singleton_environment(Environment):-
   environment_cardinality(Environment, 1).
@@ -548,8 +548,8 @@ singleton_environment(Environment):-
 %      a subset of the latter's assumptions. This case can be recognized by
 %      only looking at the counts of both environments.
 %
-% @param Environment1 An environment.
-% @param Environment2 An environment.
+% @arg Environment1 An environment.
+% @arg Environment2 An environment.
 
 subenvironment(Environment1, Environment2):-
   environment_assumptions(Environment1, Assumptions1),
@@ -563,9 +563,9 @@ subenvironment(Environment1, Environment2):-
 %% ) is det.
 % Returns the union environment of =Environment1= and =Environment2=.
 %
-% @param Environment1 The URI of an environment.
-% @param Environment2 The URI of an environment.
-% @param UnionEnvironment The URI of an environment.
+% @arg Environment1 The URI of an environment.
+% @arg Environment2 The URI of an environment.
+% @arg UnionEnvironment The URI of an environment.
 
 union_environments(Environment1, Environment2, UnionEnvironment):-
   % By inspecting the number of assumptions for both environments, we

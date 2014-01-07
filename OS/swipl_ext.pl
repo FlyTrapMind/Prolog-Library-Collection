@@ -37,7 +37,7 @@ check_prolog_version:-
 % (to be used for non-PGC project requirements that exceed
 % the PGC requirement).
 %
-% @param MinimumVersion:
+% @arg MinimumVersion:
 
 check_prolog_version(MinimumVersion):-
   % Type check.

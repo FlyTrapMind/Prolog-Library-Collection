@@ -149,12 +149,12 @@ The following three URIs are equivalent:
 % The use of IP addresses in URLs SHOULD be avoided whenever possible
 % (see RFC 1900).
 
-% @param Tree A parse tree.
-% @param Host
-% @param Port An integer representing a port.
+% @arg Tree A parse tree.
+% @arg Host
+% @arg Port An integer representing a port.
 %        If the port is empty or not given, port 80 is assumed.
-% @param Path
-% @param Query
+% @arg Path
+% @arg Query
 
 http_url(T0, Host, Port, Path, Query) -->
   % Schema prefix.

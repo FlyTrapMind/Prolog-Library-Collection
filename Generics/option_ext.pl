@@ -60,16 +60,23 @@ assumption that the option term will always be unary).
 %! add_option(
 %!   +FromOptions:list(nvpair),
 %!   +Name:atom,
-%!   +Value:atom,
+%!   ?Value:atom,
 %!   +ToOptions:list(nvpair)
 %! ) is det.
 % Adds an option with the given name and value (i.e. `Name(Value)`),
-%   and ensures that old options are overwritten and
-%   that the resultant options list is sorted.
+%  and ensures that old options are overwritten and
+%  that the resultant options list is sorted.
+%
+% @arg Options1
+% @arg Name
+% @arg Value If `Value` is not instantiated, `Options1 = Options2`.
+% @arg Options2
 
-add_option(Os1, N, V, Os2):-
+add_option(O1, _, X, O1):-
+  var(X), !.
+add_option(O1, N, V, O2):-
   O =.. [N,V],
-  merge_options([O], Os1, Os2).
+  merge_options([O], O1, O2).
 
 %! default_option(
 %!   +Os1:list(nvpair),

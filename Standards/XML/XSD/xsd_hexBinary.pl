@@ -74,7 +74,7 @@ hexBinaryCanonicalMap(BinaryDigits, LEX):-
 % The sequence of literals formed by applying hexOctetCanonical//
 % to each octet in =BinaryDigits=, in order, and concatenating the results.
 %
-% @param HexBinary A hexBinary value, i.e. a list of 4 binary digits.
+% @arg HexBinary A hexBinary value, i.e. a list of 4 binary digits.
 
 hexBinaryCanonicalMap([]) --> [].
 hexBinaryCanonicalMap([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
@@ -85,7 +85,7 @@ hexBinaryCanonicalMap([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
 % Maps a four-bit sequence to a hexadecimal digit (a literal matching the
 % hexDigit// production).
 %
-% @param BinaryDigits A sequence of four binary digits.
+% @arg BinaryDigits A sequence of four binary digits.
 
 hexDigitCanonical(BinaryDigits) -->
   {digits_to_decimal(BinaryDigits, 2, Weight)},
@@ -94,7 +94,7 @@ hexDigitCanonical(BinaryDigits) -->
 %! hexOctetCanonical(+BinaryOctet:list(between(0,1)))//
 % Maps a binary octet to a literal matching the hexOctet// production.
 %
-% @param BinaryOctet A binary octet, i.e. a list of 8 binary digigts.
+% @arg BinaryOctet A binary octet, i.e. a list of 8 binary digigts.
 
 hexOctetCanonical([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]) -->
   hexDigitCanonical([BD1,BD2,BD3,BD4]),
@@ -124,7 +124,7 @@ hexBinaryLexicalMap(LEX, HOs):-
 % ([0-9a-fA-F]{2})*
 % ~~~
 %
-% @param HexadecimalBinary A sequence of binary octets in the form of a
+% @arg HexadecimalBinary A sequence of binary octets in the form of a
 %        hexBinary value.
 
 hexBinary([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
@@ -139,7 +139,7 @@ hexBinary([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
 % hexDigit ::= [0-9a-fA-F]
 % ~~~
 %
-% @param HexadecimalDigit An integer between 0 and 15 inclusive.
+% @arg HexadecimalDigit An integer between 0 and 15 inclusive.
 
 hexDigit([BD1,BD2,BD3,BD4]) -->
   hexadecimal_digit(_, Weight),
@@ -153,7 +153,7 @@ hexDigit([BD1,BD2,BD3,BD4]) -->
 % hexOctet ::= hexDigit hexDigit
 % ~~~
 %
-% @param A single binary octet, i.e. a list of 8 binary digits.
+% @arg A single binary octet, i.e. a list of 8 binary digits.
 
 hexOctet([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]) -->
   hexDigit([BD1,BD2,BD3,BD4]),

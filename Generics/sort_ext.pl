@@ -26,12 +26,12 @@ Extensions for sorting lists.
 %! predmerge_with_duplicates(+Predicate, +List1, +List2, -Solution)
 % Merges the given lists based on the given sort predicate.
 % @precondition It is assumed that both lists are themselves sorted.
-% @param Predicate The sort predicate. It should be tertiary, of the form
+% @arg Predicate The sort predicate. It should be tertiary, of the form
 % <{ <, =, > }, Element1, Element2>.
 %
-% @param List1 An ordered list.
-% @param List2 An ordered list.
-% @param Solution An ordered list.
+% @arg List1 An ordered list.
+% @arg List2 An ordered list.
+% @arg Solution An ordered list.
 
 predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):- !.
 predmerge_with_duplicates(_Predicate, MergeResult, [], MergeResult):- !.
@@ -68,9 +68,9 @@ predmerge_with_duplicates(<, Predicate, H1, H2, T1, T2, [H1 | Result]):-
 % Variation of the standard predicate predsort/3 that does keeps any
 % duplicates (instead of removing them).
 %
-% @param Predicate An atomic predicate name of a tertiary predicate.
-% @param UnsortedList ...
-% @param SortedList ...
+% @arg Predicate An atomic predicate name of a tertiary predicate.
+% @arg UnsortedList ...
+% @arg SortedList ...
 % @see Slight alteration of predsort/3.
 
 predsort_with_duplicates(Predicate, UnsortedList, SortedList):-
@@ -95,11 +95,11 @@ predsort_with_duplicates(Predicate, UnsortedList, SortedList):-
 % The =SortedListHalf= is sorted in this predicate. The
 % =UnsortedListHalf= will be sorted in the next iteration.
 %
-% @param Predicate The atomic name of a binary semideterministic predicate.
-% @param Length An integer.
-% @param SortedListHalf A list of terms that are already sorted.
-% @param UnsortedListHalf A list of terms that are not yet sorted.
-% @param SortedList An ordered set of terms.
+% @arg Predicate The atomic name of a binary semideterministic predicate.
+% @arg Length An integer.
+% @arg SortedListHalf A list of terms that are already sorted.
+% @arg UnsortedListHalf A list of terms that are not yet sorted.
+% @arg SortedList An ordered set of terms.
 
 % There are 2 more unsorted terms.
 predsort_with_duplicates(

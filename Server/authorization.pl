@@ -1,8 +1,9 @@
 :- module(
   authorization,
   [
-    authorized/2 % +Method:oneof([delete,get,post])
+    authorized/3 % +Method:oneof([delete,get,post])
                  % +Request:list
+                 % -User:atom
   ]
 ).
 
@@ -46,27 +47,31 @@
 
 
 
-%! authorized(+Method:oneof([delete,get,post]), +Request:list) is semidet.
+%! authorized(
+%!   +Method:oneof([delete,get,post]),
+%!   +Request:list,
+%!   -User:atom
+%! ) is semidet.
 
-authorized(Method, Request):-
+authorized(Method, Request, User):-
   memberchk(path(Path), Request),
   password_db_file_unix(File),
   (
-    http_authenticate(basic(File), Request, [UserName|_Fields]), !
+    http_authenticate(basic(File), Request, [User|_Fields]), !
   ;
-    logged_in(UserName), !
+    logged_in(User), !
   ;
-    UserName = anonymous
+    User = anonymous
   ),
   (
-    user(UserName, UserProperties),
-    memberchk(roles(Roles), UserProperties),
+    user(User, Properties),
+    memberchk(roles(Roles), Properties),
     member(Role, Roles),
     (
-      allow(Role, UserName, Method, Path, Request)
+      prolog:allow(Role, User, Method, Path, Request)
     ->
       (
-        deny(Role, UserName, Method, Path, Request)
+        deny(Role, User, Method, Path, Request)
       ->
         throw(http_reply(authorise(basic, 'secure')))
       ;
@@ -81,15 +86,11 @@ authorized(Method, Request):-
     throw(http_reply(authorise(basic, 'secure')))
   ).
 
-allow(admin, _, post,   '/settings',   _).
-allow(_,     _, get,    '/settings',   _).
-allow(admin, _, get,    '/statistics', _).
-allow(admin, _, post,   '/users',      _).
-allow(admin, _, delete, '/users',      _).
-allow(_,     _, get,    '/users',      _).
-allow(_,     _, _,      '/rdf/db',           _).
-allow(_,     _, _,      '/session/db',       _).
-allow(_,     _, _,      '/session/eq',       _).
+:- multifile(prolog:allow/5).
+prolog:allow(_,     _, _,      '/rdf/db',           _).
+prolog:allow(_,     _, _,      '/session/db',       _).
+prolog:allow(_,     _, _,      '/session/eq',       _).
+prolog:allow(admin, _, get,    '/statistics', _).
 
 % Deny if user is using a Safari browser
 % deny(_, _, _, _, Request) :-

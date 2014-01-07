@@ -142,13 +142,13 @@ intermittent_goal(G, EndG, I):-
 %! ) is det.
 % ...
 %
-% @param Goal The goal that is repeated.
-% @param EndGoal The goal that stops `Goal` from being repeated,
+% @arg Goal The goal that is repeated.
+% @arg EndGoal The goal that stops `Goal` from being repeated,
 %        as soon as it succeeds once.
-% @param Interval A positive integer representing the number of seconds
+% @arg Interval A positive integer representing the number of seconds
 %        in between consecutive goal executions.
-% @param Id
-% @param Options A list of name-value pairs.
+% @arg Id
+% @arg Options A list of name-value pairs.
 
 intermittent_thread(G, EndG, I, Id, O):-
   thread_create(intermittent_goal(G, EndG, I), Id, O).

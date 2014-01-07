@@ -157,7 +157,7 @@ The API for ATMSs.
 %% atms(?ATMS:atms) is nondet.
 % Automated Truth Maintenance Systems.
 %
-% @param ATMS An ATMS.
+% @arg ATMS An ATMS.
 
 atms(ATMS):-
   rdfs_individual_of(ATMS, atms:atms).
@@ -166,8 +166,8 @@ atms(ATMS):-
 % Returns the =|ATMS|= with the given =|Title|= or fails if no such ATMS
 % exists.
 %
-% @param Label An atomic ATMS title.
-% @param ATMS An ATMS.
+% @arg Label An atomic ATMS title.
+% @arg ATMS An ATMS.
 
 atms(Label, ATMS):-
   atms(ATMS),
@@ -191,8 +191,8 @@ atms_assumption_(ATMS, Assumption):-
 % contradictions in an ATMS than the contradiction node.
 % An ATMS has exactly one contradiction node.
 %
-% @param ATMS An ATMS.
-% @param ContradictionNode The contradiction node for a certain ATMS.
+% @arg ATMS An ATMS.
+% @arg ContradictionNode The contradiction node for a certain ATMS.
 
 atms_contradiction(ATMS, Contradiction):-
   var(ATMS),
@@ -210,8 +210,8 @@ atms_contradiction_node_(ATMS, Contradiction):-
 %% atms_contradictory(?ATMS:atms, ?Contradiction:node) is nondet.
 % Pairs of an ATMS and one of its contradiction nodes.
 %
-% @param ATMS An ATMS.
-% @param Contradiction A node that is contradictory.
+% @arg ATMS An ATMS.
+% @arg Contradiction A node that is contradictory.
 
 atms_contradictory(ATMS, Contradiction):-
   rdf(ATMS, atms:has_contradiction, Contradiction, ccm).
@@ -230,8 +230,8 @@ atms_id_(ATMS, ID):-
 %% atms_label(?ATMS:atms, ?Label:atom) is nondet.
 % Pairs of ATMSs and their labels.
 %
-% @param ATMS An ATMS.
-% @param Label An atomic label.
+% @arg ATMS An ATMS.
+% @arg Label An atomic label.
 
 atms_label(ATMS, Label):-
   rdfs_label(ATMS, Label).
@@ -240,8 +240,8 @@ atms_label(ATMS, Label):-
 % Pairs of an ATMS and one of its premises.
 % A premise is a node with the empty node as label.
 %
-% @param ATMS An ATMS.
-% @param Premise A node with empty assumptions.
+% @arg ATMS An ATMS.
+% @arg Premise A node with empty assumptions.
 
 atms_premise(ATMS, Premise):-
   empty_environment(ATMS, EmptyEnvironment),
@@ -257,8 +257,8 @@ atms_to_assumptions(ATMS, Assumptions):-
 %% atms_to_dot_name(+ATMS:atms, -ATMSDOTName:atom) is det.
 % Returns the identifier of the ATMS.
 %
-% @param ATMS An ATMS.
-% @param ATMSDOTName The atomic identifier of the given =ATMS=.
+% @arg ATMS An ATMS.
+% @arg ATMSDOTName The atomic identifier of the given =ATMS=.
 
 atms_to_dot_name(ATMS, ATMSDOTName):-
   atms_id(ATMS, ATMSID),
@@ -270,8 +270,8 @@ atms_to_dot_name(ATMS, ATMSDOTName):-
 %% ) is det.
 % Returns the environments of the given ATMS.
 %
-% @param ATMS An ATMS.
-% @param Environments An ordered set of environments.
+% @arg ATMS An ATMS.
+% @arg Environments An ordered set of environments.
 
 atms_to_environments(ATMS, Environments):-
   setoff(
@@ -286,8 +286,8 @@ atms_to_environments(ATMS, Environments):-
 %% ) is det.
 % Returns the justifications of the given ATMS.
 %
-% @param ATMS An ATMS.
-% @param Justifications An ordered set of justifications.
+% @arg ATMS An ATMS.
+% @arg Justifications An ordered set of justifications.
 
 atms_to_justifications(ATMS, Justifications):-
   setoff(
@@ -299,8 +299,8 @@ atms_to_justifications(ATMS, Justifications):-
 %% atms_to_nodes(+ATMS:atms, -Nodes:ord_set(node)) is det.
 % Returns the nodes of the given ATMS.
 %
-% @param ATMS An ATMS.
-% @param Nodes An ordered set of nodes.
+% @arg ATMS An ATMS.
+% @arg Nodes An ordered set of nodes.
 
 atms_to_nodes(ATMS, Nodes):-
   setoff(
@@ -312,8 +312,8 @@ atms_to_nodes(ATMS, Nodes):-
 %% atms_to_nogoods(+ATMS:atms, -Nogoods:ord_set(environment)) is det.
 % Returns the nogood environments for the given ATMS.
 %
-% @param ATMS An ATMS.
-% @param Nogoods An ordered set of environments.
+% @arg ATMS An ATMS.
+% @arg Nogoods An ordered set of environments.
 
 atms_to_nogoods(ATMS, Nogoods):-
   setoff(
@@ -326,8 +326,8 @@ atms_to_nogoods(ATMS, Nogoods):-
 % Returns the premised nodes in the ATMS.
 % A premise is a node with the empty node as label.
 %
-% @param ATMS An ATMS.
-% @param Premises An ordered set of nodes.
+% @arg ATMS An ATMS.
+% @arg Premises An ordered set of nodes.
 
 atms_to_premises(ATMS, Premises):-
   setoff(
@@ -346,8 +346,8 @@ empty_environment(EmptyEnvironment):-
 %% empty_environment(?ATMS:atms, ?EmptyEnvironment:environment) is nondet.
 % Pairs of an ATMS and its empty environment.
 %
-% @param ATMS An ATMS.
-% @param EmptyEnvironment An empty environment.
+% @arg ATMS An ATMS.
+% @arg EmptyEnvironment An empty environment.
 
 empty_environment(ATMS, EmptyEnvironment):-
   var(ATMS),
@@ -365,7 +365,7 @@ atms_empty_environment_(ATMS, EmptyEnvironment):-
 %% environment(?Environment:environment) is nondet.
 % Environments, i.e. component assumptions.
 %
-% @param Environment An environment.
+% @arg Environment An environment.
 
 environment(Environment):-
   rdfs_individual_of(Environment, environment:environment).
@@ -389,9 +389,9 @@ environment_(ATMS, Environment):-
 %% ) is semidet.
 % Finds an environment based on the given ATMS and the given assumption nodes.
 %
-% @param ATMS An ATMS
-% @param Assumptions An ordered set of assumption nodes.
-% @param Environment An environment.
+% @arg ATMS An ATMS
+% @arg Assumptions An ordered set of assumption nodes.
+% @arg Environment An environment.
 
 environment(ATMS, [], EmptyEnvironment):-
   empty_environment(ATMS, EmptyEnvironment),
@@ -409,8 +409,8 @@ environment(ATMS, Assumptions, Environment):-
 %% ) is nondet.
 % Pairs of environments and their assumptions.
 %
-% @param Environment An environment
-% @param Assumptions An ordered set of assumption nodes.
+% @arg Environment An environment
+% @arg Assumptions An ordered set of assumption nodes.
 
 environment_assumptions(Environment, Assumptions):-
   var(Environment),
@@ -432,8 +432,8 @@ environment_cardinality(Environment, Cardinality):-
 %% environment_id(?Environment:environment, ?EnvironmentID:number) is nondet.
 % Pairs of environments and their identifiers.
 %
-% @param Environment An environment.
-% @param EnvironmentID The numeric identifier of an environment.
+% @arg Environment An environment.
+% @arg EnvironmentID The numeric identifier of an environment.
 
 environment_id(Environment, EnvironmentID):-
   nonvar(Environment),
@@ -452,8 +452,8 @@ environment_id_(Environment, EnvironmentID):-
 %% ) is nondet.
 % Pairs of environments and their labels.
 %
-% @param Environment An environment.
-% @param Environment The atomic name of an environment.
+% @arg Environment An environment.
+% @arg Environment The atomic name of an environment.
 
 environment_label(Environment, EnvironmentLabel):-
   nonvar(Environment),
@@ -476,8 +476,8 @@ environment_node(Environment, Node):-
 % Returns the name for the given environment, for use in GraphViz
 % DOT exports.
 %
-% @param Environment An environment.
-% @param EnvironmentDOTName The atomic GraphViz name of an environment.
+% @arg Environment An environment.
+% @arg EnvironmentDOTName The atomic GraphViz name of an environment.
 
 environment_to_dot_name(Environment, EnvironmentDOTName):-
   environment_id(Environment, EnvironmentID),
@@ -487,8 +487,8 @@ environment_to_dot_name(Environment, EnvironmentDOTName):-
 %% environment_to_dui_label(+Environment:environment, -DUILabel:atom) is det.
 % Returns the DUI label of the given environment.
 %
-% @param Environment An environment.
-% @param DUILabel The atomic label of an environment, for use in
+% @arg Environment An environment.
+% @arg DUILabel The atomic label of an environment, for use in
 %        a diagnosis UI context.
 
 environment_to_dui_label(Environment, DUILabel):-
@@ -512,7 +512,7 @@ environment_to_nodes(Environment, Nodes):-
 %% environments(-Environments:ord_set(environment)) is det.
 % Returns all environments.
 %
-% @param Environments An ordered set of environments.
+% @arg Environments An ordered set of environments.
 
 environments(Environments):-
   setoff(
@@ -524,7 +524,7 @@ environments(Environments):-
 %% zero_environment(ZeroEnvironment:environment) is nondet.
 % Zero environments, i.e., environments that support no nodes.
 %
-% @param ZeroEnvironment An environment.
+% @arg ZeroEnvironment An environment.
 
 zero_environment(ZeroEnvironment):-
   \+(environment_node(ZeroEnvironment, _SupportedNode)).
@@ -539,8 +539,8 @@ justification(Justification):-
 %% justification(?ATMS:atms, ?Justification:justification) is nondet.
 % Pairs of an ATMS and one of its justifications.
 %
-% @param ATMS An ATMS.
-% @param Justification A justification.
+% @arg ATMS An ATMS.
+% @arg Justification A justification.
 
 justification(ATMS, Justification):-
   rdf(ATMS, atms:has_justification, Justification, ccm).
@@ -617,7 +617,7 @@ is_in_antecedent([Node | Nodes]):-
 %% is_in_node(+Node:node) is semidet.
 % Succeeds if the given node is in.
 %
-% @param Node A node.
+% @arg Node A node.
 
 is_in_node(Node):-
   \+(is_out_node(Node)).
@@ -625,8 +625,8 @@ is_in_node(Node):-
 %% is_in_node(+Node:node, +Environment:environment) is semidet.
 % Succeeds if the given node is in.
 %
-% @param Node A node.
-% @param Environment An environment.
+% @arg Node A node.
+% @arg Environment An environment.
 
 is_in_node(Node, Environment):-
   node_to_label(Node, Label),
@@ -639,7 +639,7 @@ is_in_node(Node, Environment):-
 %% is_out_node(+Node:node) is semidet.
 % Succeeds if the given node is out.
 %
-% @param Node A node.
+% @arg Node A node.
 
 is_out_node(Node):-
   node_to_label(Node, []).
@@ -647,8 +647,8 @@ is_out_node(Node):-
 %% is_out_node(+Node:node, +Environment:environment) is semidet.
 % Succeeds if the given node is out.
 %
-% @param Node A node.
-% @param Environment An environment.
+% @arg Node A node.
+% @arg Environment An environment.
 
 is_out_node(Node, Environment):-
   \+(is_in_node(Node, Environment)).
@@ -656,7 +656,7 @@ is_out_node(Node, Environment):-
 %% is_premise(?Node:node) is semidet.
 % Succeeds if the given node is a premise.
 %
-% @param Node A node.
+% @arg Node A node.
 
 is_premise(Node):-
   node(ATMS, Node),
@@ -681,8 +681,8 @@ node(Node):-
 %% node(?ATMS:atms, ?Node:node) is nondet.
 % Pairs of ATMS's and one of their nodes.
 %
-% @param ATMS An ATMS.
-% @param Node A node.
+% @arg ATMS An ATMS.
+% @arg Node A node.
 
 % A node has exactly one ATMS.
 node(ATMS, Node):-
@@ -700,9 +700,9 @@ node_(ATMS, Node):-
 % Returns the node in ATMS with contents datum.
 % Fails if there is no such node.
 %
-% @param ATMS An ATMS.
-% @param Datum Either a node or an atom.
-% @param Node The URI of a node.
+% @arg ATMS An ATMS.
+% @arg Datum Either a node or an atom.
+% @arg Node The URI of a node.
 
 node(ATMS, Datum, Node):-
   nonvar(Node),
@@ -724,8 +724,8 @@ node(ATMS, Datum, Node):-
 %% node_consequence(?Node:node, ?Consequence:justification) is nondet.
 % Pairs of a node and one of the justiifcations for which it is an antecedent.
 %
-% @param Node A node.
-% @param Consequence A justification.
+% @arg Node A node.
+% @arg Consequence A justification.
 
 node_consequence(Node, Consequence):-
   rdf(Node, node:has_consequence, Consequence, ccm).
@@ -811,8 +811,8 @@ node_to_ccm_label_(Datum, Datum).
 %% ) is det.
 % Returns all justifications for with the given node is an antecedent.
 %
-% @param Node A node.
-% @param Consequences An ordered set of justifications.
+% @arg Node A node.
+% @arg Consequences An ordered set of justifications.
 
 node_to_consequences(Node, Consequences):-
   setoff(

@@ -76,7 +76,7 @@ append_directories(Dir1, Dir2, Dir3):-
 %! create_directory(+Dir:atom) is det.
 % Creates a directory with the given name.
 %
-% @param Dir The atomic name of a directory.
+% @arg Dir The atomic name of a directory.
 
 % The directory already exists, so do nothing.
 create_directory(Dir):-
@@ -108,10 +108,10 @@ create_nested_directory(NestedDir):-
 %! ) is det.
 % Returns a nested file path.
 %
-% @param NestedDir A compound term of linearly nested atoms
+% @arg NestedDir A compound term of linearly nested atoms
 %      representing the subsequent subdirectories. The final atom
 %      is the name of the file.
-% @param Absolute The absolute path of the nested directory specification.
+% @arg Absolute The absolute path of the nested directory specification.
 
 create_nested_directory(AbsoluteDir, AbsoluteDir):-
   atomic(AbsoluteDir), is_absolute_file_name(AbsoluteDir), !,
@@ -206,9 +206,9 @@ create_personal_subdirectory(Nested, Abs):-
 %     Whether subdirectories are searched recursively.
 %     Default `true`.
 %
-% @param Options A list of name-value pairs.
-% @param Directory The atomic name of a directory.
-% @param AbsoluteFiles a list of atomic names of absolute file names.
+% @arg Options A list of name-value pairs.
+% @arg Directory The atomic name of a directory.
+% @arg AbsoluteFiles a list of atomic names of absolute file names.
 %
 % @see directory_files/2
 
@@ -373,8 +373,8 @@ safe_delete_directory(FromDir):-
 %     Whether subdirectories are searched recursively.
 %     Default `true`.
 %
-% @param Options A list of name-value pairs.
-% @param Directory The atomic name of a directory.
+% @arg Options A list of name-value pairs.
+% @arg Directory The atomic name of a directory.
 %
 % @throws existence_error In case a file type is not registered.
 

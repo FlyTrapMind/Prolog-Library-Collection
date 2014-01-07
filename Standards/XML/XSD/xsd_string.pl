@@ -77,8 +77,8 @@ Values for the fundamental facets:
 %
 % The function is the identity function on the domain.
 %
-% @param String An XML string value; a Prolog atom.
-% @param StringRep The canonical XML string serialization. A list of codes.
+% @arg String An XML string value; a Prolog atom.
+% @arg StringRep The canonical XML string serialization. A list of codes.
 
 stringCanonicalMap(String, LEX):-
   phrase(stringRep(String), LEX).
@@ -88,8 +88,8 @@ stringCanonicalMap(String, LEX):-
 %
 % The function is the identity function on the domain.
 %
-% @param Literal A literal matching stringRep//1.
-% @param String An XML string value; a Prolog atom.
+% @arg Literal A literal matching stringRep//1.
+% @arg String An XML string value; a Prolog atom.
 
 stringLexicalMap(LEX, String):-
   once(phrase(stringRep(String), LEX)).

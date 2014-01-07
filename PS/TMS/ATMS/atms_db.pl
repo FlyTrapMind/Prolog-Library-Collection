@@ -99,9 +99,9 @@ De Kleer 1993 book 'Building Problem Solvers'.
 %% ) is det.
 % Add an environment with category assumptions to the ATMS.
 %
-% @param ATMS An ATMS.
-% @param Environment An environment.
-% @param Category An integer.
+% @arg ATMS An ATMS.
+% @arg Environment An environment.
+% @arg Category An integer.
 
 atms_add_environment(ATMS, Environment, Category):-
   format(atom(Relation), 'has_environment_~w', [Category]),
@@ -119,8 +119,8 @@ atms_add_environment(ATMS, Environment, Category):-
 %% atms_add_nogood(+ATMS:atms, +Nogood:environment) is det.
 % Add =Nogood= to =ATMS=.
 %
-% @param ATMS An ATMS.
-% @param Nogood The URI of an environment.
+% @arg ATMS An ATMS.
+% @arg Nogood The URI of an environment.
 
 atms_add_nogood(ATMS, Nogood):-
   rdf_assert(ATMS, atms:has_nogood, Nogood, ccm).
@@ -213,9 +213,9 @@ atms_replace_node(ATMS, RemoveNode, AddNodes):-
 %% ) is det.
 % Creates a new environment.
 %
-% @param ATMS An ATMS.
-% @param Assumptions An ordered set of nodes.
-% @param Environment An environment.
+% @arg ATMS An ATMS.
+% @arg Assumptions An ordered set of nodes.
+% @arg Environment An environment.
 
 add_environment(ATMS, Assumptions, Environment):-
   % Create the resource.
@@ -344,10 +344,10 @@ replace_consequence(Justification, RemoveConsequence, AddConsequences):-
 % Creates a node with contents =Datum= for the =ATMS=.
 % The node is neither an assumption nor a contradiction.
 %
-% @param ATMS An ATMS.
-% @param Datum Either a node or the atom =falsum=, indicating
+% @arg ATMS An ATMS.
+% @arg Datum Either a node or the atom =falsum=, indicating
 %        a contradiction node.
-% @param Node The URI of a node.
+% @arg Node The URI of a node.
 % @see add_node/5 for creating nodes that are either assumptions or
 %      contradictions.
 
@@ -364,14 +364,14 @@ add_node(ATMS, Datum, Node):-
 % Creates a node with contents =Datum= for the =ATMS=.
 % The node is either an assumption, a contradiction, or neither.
 %
-% @param ATMS An ATMS.
-% @param Datum Either a node or the atom =falsum=, indicating
+% @arg ATMS An ATMS.
+% @arg Datum Either a node or the atom =falsum=, indicating
 %        a contradiction node.
-% @param IsAssumption Either =true= or =false=, indicating whether the
+% @arg IsAssumption Either =true= or =false=, indicating whether the
 %        node is an assumption or not.
-% @param IsContradiction Either =true= or =false=, indicating whether the
+% @arg IsContradiction Either =true= or =false=, indicating whether the
 %        node is a contradiction or not.
-% @param Node The URI of a node.
+% @arg Node The URI of a node.
 
 add_node(ATMS, Datum, IsAssumption, IsContradiction, Node):-
   atms_id(ATMS, ATMSID),

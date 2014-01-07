@@ -44,7 +44,7 @@ are a strict superset of the assumptions in any of the other members of
 %% propagate(+Justification:justification) is det.
 % Propagates changes through the network, starting at Justification.
 %
-% @param Justification The URI of a justification. This is typically a newly
+% @arg Justification The URI of a justification. This is typically a newly
 %        added justification. There can be repercussions for the rest of the
 %        network, which are being calculated.
 
@@ -67,11 +67,11 @@ propagate(Justification):-
 % introducing =Justification=. This means that only the incremental changes
 % caused by introducing the new justification need be propagated.
 %
-% @param ATMS An ATMS.
-% @param Justification The URI of a justification.
-% @param Antecedent The URI of a node.
+% @arg ATMS An ATMS.
+% @arg Justification The URI of a justification.
+% @arg Antecedent The URI of a node.
 %        The node whose label is undated with =AddedEnvironments=.
-% @param AddedEnvironments A set of URIs of environments.
+% @arg AddedEnvironments A set of URIs of environments.
 %        The environments that have been newly added to the label of
 %        =Antecedent=.
 
@@ -101,9 +101,9 @@ propagate(ATMS, Justification, Antecedent, AddedEnvironments):-
 %% update(+ATMS:atms, +Label:list(environment), +N:node) is det.
 % Adds the new potential label environments L to node N.
 %
-% @param ATMS An ATMS.
-% @param Label A list of new potential environments.
-% @param N A node.
+% @arg ATMS An ATMS.
+% @arg Label A list of new potential environments.
+% @arg N A node.
 
 % (12.2.1) Detect nogoods.
 %          If =Node= is a contradiction, then create a nogood for every
@@ -241,11 +241,11 @@ update(ATMS, PotentialLabelEnvironments, Node):-
 % =NewEnvironments= to the label of =Node= for a justification with
 % =Antecedents=.
 %
-% @param ATMS An ATMS.
-% @param Node The URI of a node.
-% @param NewEnvironments A list of environments.
-% @param Antecedents A list of nodes that are the antecedents of a justification.
-% @param NewLabel A list of URIs of environments.
+% @arg ATMS An ATMS.
+% @arg Node The URI of a node.
+% @arg NewEnvironments A list of environments.
+% @arg Antecedents A list of nodes that are the antecedents of a justification.
+% @arg NewLabel A list of URIs of environments.
 
 % (12.3.1) Iterate over =Antecedents=. Repeat the following
 %          steps for each =Antecedent= that is not =Node=, then return.
@@ -282,9 +282,9 @@ weave(ATMS, Node, NewEnvironments, [Antecedent | Antecedents], NewLabel):-
 % Returns the pairwise union environments of =Environments1= and
 % =Environments2=.
 %
-% @param Environments1 A list of URIs of environments.
-% @param Environments1 A list of URIs of environments.
-% @param PairwiseUnionEnvironments A list of URIs of environments.
+% @arg Environments1 A list of URIs of environments.
+% @arg Environments1 A list of URIs of environments.
+% @arg PairwiseUnionEnvironments A list of URIs of environments.
 
 i_prime(NewEnvironments, Label, UnionEnvironments):-
   findall(
@@ -305,8 +305,8 @@ i_prime(NewEnvironments, Label, UnionEnvironments):-
 % Propagate the nogood status to all superenvironments that are currenly
 % registered with =ATMS=.
 %
-% @param ATMS An ATMS.
-% @param Environment An environment.
+% @arg ATMS An ATMS.
+% @arg Environment An environment.
 
 create_nogood(ATMS, Environment):-
   % (12.4.1) Mark =Environment= as nogood.
@@ -339,7 +339,7 @@ create_nogood1(ATMS, [_Environment1 | Environments], Environment):-
 % We know which nodes in ATMS have Environment in their label,
 % since these nodes are all stored in Environment's node field.
 %
-% @param Environment An environment.
+% @arg Environment An environment.
 
 remove_environment_from_labels(Environment):-
   environment_to_nodes(Environment, Nodes),

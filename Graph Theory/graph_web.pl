@@ -61,8 +61,8 @@ circle_graph_web(Graph, html/app_style/[GraphElement | TableMarkup]):-
 %! graph_web(+Graph:graph, -Markup:list) is det.
 % Writes the graph with the given name to a file in GraphViz DOT format.
 %
-% @param Graph
-% @param Markup
+% @arg Graph
+% @arg Markup
 
 graph_web(G, svg11/app_style/SVG):-
   export_graph_svg(G, SVG).
@@ -79,8 +79,8 @@ harary_web(K, N, Markup):-
 % Graphs that are loaded via this front-end should be located in the user's
 % =data= subdirectory.
 %
-% @param Graph
-% @param Markup
+% @arg Graph
+% @arg Markup
 
 random_graph_web(G, [GraphElement,TableElement]):-
   random_vertex_coordinate([], G, rdf_vertices, VCoords),
@@ -100,11 +100,11 @@ spring_embedding_web(Graph, Markup):-
 %! ) is det.
 % Returns the markup for the spring embedding of the given graph.
 %
-% @param Graph
-% @param Iterations An integer, representing the number of iterations
+% @arg Graph
+% @arg Iterations An integer, representing the number of iterations
 %        of spring embedding, i.e., the number of subsequent function
 %        applications.
-% @param Markup A list of markup elements.
+% @arg Markup A list of markup elements.
 
 spring_embedding_web(Graph, Iterations, Markup):-
   default_spring_embedding(
@@ -143,9 +143,9 @@ table_graph_web(Graph, html/app_style/[TableElement]):-
 %! vertex_web(+Graph:atom, +Vertex:vertex, -Markup:dom) is det.
 % Creates a DOM representation for the given vertex in the given graph.
 %
-% @param Graph The atomic name of an RDF graph.
-% @param Vertex
-% @param Markup
+% @arg Graph The atomic name of an RDF graph.
+% @arg Vertex
+% @arg Markup
 
 vertex_web(G, V1, SVG):-
   term_to_atom(V1, V2),

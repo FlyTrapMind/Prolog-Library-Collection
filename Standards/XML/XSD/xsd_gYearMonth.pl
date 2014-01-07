@@ -86,7 +86,7 @@ gYearMonthCanonicalMap(GYM, LEX):-
 %! gYearMonthCanonicalMap(+GregorianYearMonth:compound)//
 % Maps a gYearMonth value to a gYearMonthLexicalRep//.
 %
-% @param GregorianYearMonth A complete gYearMonth value.
+% @arg GregorianYearMonth A complete gYearMonth value.
 
 gYearMonthCanonicalMap(dateTime(Y,M,_D,_H,_MM,_S,TZ)) -->
   yearCanonicalFragmentMap(Y), hyphen, monthCanonicalFragmentMap(M),

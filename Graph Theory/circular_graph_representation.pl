@@ -40,12 +40,12 @@ Circular graph representation.
 % Returns the coordinate of the given vertex, so that all vertices in a
 % graph are plotted on a circle.
 %
-% @param Options Supported values:
+% @arg Options Supported values:
 %      * `border(+Border:size)`
 %      * `surface(+Surface:size)`
-% @param Vertices A list of vertices.
-% @param Vertex A vertex.
-% @param Coord A compound term of the form
+% @arg Vertices A list of vertices.
+% @arg Vertex A vertex.
+% @arg Coord A compound term of the form
 %      `coord(Dimension:integer, Coordinates:list)`,
 %      where `Dimension` is the length of `Coordinates`.
 

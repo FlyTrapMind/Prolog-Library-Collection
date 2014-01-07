@@ -29,8 +29,8 @@ Predicates for loading Prolog files in the Quick Load Format (QLF).
 % This method checks whether the Prolog file needs to be recompiled,
 % or whether a previously compiled QLF file can be used instead.
 %
-% @param PL_File The atomic name of a Prolog file.
-% @param QLF_File The atomic name of a QLF file.
+% @arg PL_File The atomic name of a Prolog file.
+% @arg QLF_File The atomic name of a QLF file.
 
 compiled_file(PL_File, QLF_File):-
   file_name_type(Base, prolog, PL_File),

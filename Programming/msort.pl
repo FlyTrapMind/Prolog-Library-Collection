@@ -129,7 +129,7 @@ merge_0([X|Xs], Ys, L, C):-
   merge_1(Ys, Xs, L, C, X).
 
 % merge_1(Ys, Xs, L, C, X) -- list 1 has been taken apart
-% @param X The first from Xs.
+% @arg X The first from Xs.
 
 merge_1([],   Xs, [X|Xs], _, X).
 merge_1([Y|Ys], Xs,   L,  C, X):-

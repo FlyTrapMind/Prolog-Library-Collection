@@ -41,9 +41,9 @@
 %! ) is det.
 % Assert the subject's label description.
 %
-% @param Subject An RDF subject term.
-% @param Label An atomic description of a resource.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject An RDF subject term.
+% @arg Label An atomic description of a resource.
+% @arg Graph The atomic name of an RDF graph.
 % @see rdfs_assert_label/4 also specifies the label.
 
 rdfs_assert_label(S, Label, G):-
@@ -59,10 +59,10 @@ rdfs_assert_label(S, Label, G):-
 %! ) is det.
 % Assert the subject's label description in the given label.
 %
-% @param Subject An RDF subject term.
-% @param Language The atomic name of a language.
-% @param Label An atomic description of a resource.
-% @param Graph The atomic name of an RDF graph.
+% @arg Subject An RDF subject term.
+% @arg Language The atomic name of a language.
+% @arg Label An atomic description of a resource.
+% @arg Graph The atomic name of an RDF graph.
 %
 % @tbd Why are explicit conversions necessary here?
 

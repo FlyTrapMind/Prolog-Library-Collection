@@ -85,7 +85,7 @@ gMonthCanonicalMap(GD, LEX):-
 %! gMonthCanonicalMap(+GregorianMonth:compound)//
 % Maps a gMonth value to a gMonthLexicalRep//.
 %
-% @param GregorianMonth A complete gMonth value.
+% @arg GregorianMonth A complete gMonth value.
 
 gMonthCanonicalMap(dateTime(_Y,M,_D,_H,_MM,_S,TZ)) -->
   dcg_multi(hyphen, 2),

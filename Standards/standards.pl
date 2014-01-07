@@ -104,8 +104,8 @@ charset('utf-8').
 % only if the given version is the default version of the language.
 % What is the default version of a language is made up by ourselves.
 %
-% @param Language The atomic name of a language standard.
-% @param DefaultVersion A version term.
+% @arg Language The atomic name of a language standard.
+% @arg DefaultVersion A version term.
 
 default_version(Language, DefaultVersion):-
   language(Language, DefaultVersion, _MIME, _FDI, _DTD_Link, true).
@@ -123,9 +123,9 @@ prolog_charset('utf-8', utf8).
 % language.
 % The default version is set by language/3.
 %
-% @param Language The atomic name of a spacification language.
-% @param Head A list of compound terms.
-% @param Body A list of compound terms.
+% @arg Language The atomic name of a spacification language.
+% @arg Head A list of compound terms.
+% @arg Body A list of compound terms.
 
 reply_page(Language, Head, Body):-
   default_version(Language, Version),
@@ -139,10 +139,10 @@ reply_page(Language, Head, Body):-
 %! ) is det.
 % Serves a Web page to the current output stream.
 %
-% @param Language The language that the Web page is formatted in.
-% @param Version The version of the language specification.
-% @param Head A list of compound terms.
-% @param Body A list of compound terms.
+% @arg Language The language that the Web page is formatted in.
+% @arg Version The version of the language specification.
+% @arg Head A list of compound terms.
+% @arg Body A list of compound terms.
 
 reply_page(Language, Version, Head, Body):-
   % The encoding of the standard =|http-handler|= stream is =ascii=.
@@ -184,7 +184,7 @@ root_element(Language, Head, Body, Root):-
 %! set_stream(+Attribute:compound) is det.
 % Changes a property of the current stream.
 %
-% @param Attribute One of the compound terms defined for set_stream/2.
+% @arg Attribute One of the compound terms defined for set_stream/2.
 % @see set_stream/2
 
 set_stream(Attribute):-
@@ -196,10 +196,10 @@ set_stream(Attribute):-
 % of the Web standard used.
 % This allows options to be specified for both at once.
 %
-% @param Language The language that the Web page is formatted in.
-% @param Version The version of the language specification.
-% @param Term A compound term representing the contents of the Web page.
-% @param Options The list of options that is described at xml_write/3.
+% @arg Language The language that the Web page is formatted in.
+% @arg Version The version of the language specification.
+% @arg Term A compound term representing the contents of the Web page.
+% @arg Options The list of options that is described at xml_write/3.
 
 sgml_or_xml_write(Language, Version, Term, Options):-
   is_xml_based(Language, Version),

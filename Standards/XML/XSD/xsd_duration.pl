@@ -146,7 +146,7 @@ durationCanonicalMap(Duration, LEX):-
 % seconds of a duration value, to a duDayFrag//, a fragment of a duration
 % lexical representation.
 %
-% @param NumberOfDays A nonnegative integer.
+% @arg NumberOfDays A nonnegative integer.
 
 duDayCanonicalFragmentMap(NumberOfDays) -->
   {NumberOfDays =:= 0}, !.
@@ -159,7 +159,7 @@ duDayCanonicalFragmentMap(NumberOfDays) -->
 % the seconds of a duration value, to a duDayTimeFrag//,
 % a fragment of a duration lexical representation.
 %
-% @param Seconds A nonnegative decimal number.
+% @arg Seconds A nonnegative decimal number.
 
 duDayTimeCanonicalFragmentMap(NumberOfSeconds) -->
   {NumberOfSeconds =:= 0}, !,
@@ -205,7 +205,7 @@ duHourCanonicalFragmentMap(H) -->
 % the ·seconds· of a duration value, to a duMinuteFrag//, a fragment of
 % a duration lexical representation.
 %
-% @param NumberOfMinutes A nonnegative integer.
+% @arg NumberOfMinutes A nonnegative integer.
 
 duMinuteCanonicalFragmentMap(M) -->
   {M =:= 0}, !.
@@ -222,7 +222,7 @@ duMinuteCanonicalFragmentMap(M) -->
 % duration(Months:nonneg, Seconds:float)
 % ~~~
 %
-% @param Duration A complete duration value.
+% @arg Duration A complete duration value.
 
 durationCanonicalMap(duration(M1,S1)) -->
   {M1 > 0, S1 > 0}, !,
@@ -249,7 +249,7 @@ durationCanonicalMap(duration(M1,S1)) -->
 % from the seconds of a duration value, to a duSecondFrag//, a fragment of
 % a duration lexical representation.
 %
-% @param NumberOfSeconds A nonnegative decimal number.
+% @arg NumberOfSeconds A nonnegative decimal number.
 
 duSecondCanonicalFragmentMap(S) -->
   {S =:= 0}, !.
@@ -270,9 +270,9 @@ duSecondCanonicalFragmentMap(S) -->
 % normalized values from a duration's seconds, to a duTimeFrag//, a fragment
 % of a duration lexical representation.
 %
-% @param NumberOfHours A nonnegative integer.
-% @param NumberOfMinutes A nonnegative integer.
-% @param NumberOfSeconds A nonnegative decimal number.
+% @arg NumberOfHours A nonnegative integer.
+% @arg NumberOfMinutes A nonnegative integer.
+% @arg NumberOfSeconds A nonnegative decimal number.
 
 duTimeCanonicalFragmentMap(H, M, S) -->
   {H =:= 0, M =:= 0, S =:= 0}, !.
@@ -287,7 +287,7 @@ duTimeCanonicalFragmentMap(H, M, S) -->
 % of a duration value, to a duYearMonthFrag//, a fragment of a duration
 % lexical representation.
 %
-% @param NumberOfMonths A nonnegative integer.
+% @arg NumberOfMonths A nonnegative integer.
 
 duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
   {NumberOfYears is NumberOfMonths1 div 12},
@@ -351,7 +351,7 @@ durationLexicalMap(LEX, D):-
 % )
 % ~~~
 %
-% @param Duration A compound term of the form
+% @arg Duration A compound term of the form
 %        =|duration(Months:integer,Seconds:float)|=.
 
 durationLexicalRep(duration(M,S)) -->

@@ -36,10 +36,10 @@ See also: [http://www.w3.org/wiki/Languages_as_RDF_Resources]
 %! find_country(+Options:list(nvpair), +Query:atom, -Country:uri) is nondet.
 % Finds and returns the language URI that is closest to the given query.
 %
-% @param Options A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 %        1. =language(Code:atom)= a language code.
-% @param Query
-% @param Country
+% @arg Query
+% @arg Country
 
 find_country(Options, Query, Country):-
   load,
@@ -48,10 +48,10 @@ find_country(Options, Query, Country):-
 %! find_language(+Options:list(nvpair), +Query:atom, -Language:uri) is nondet.
 % Finds and returns the language URI that is closest to the given query.
 %
-% @param Options A list of name-value pairs.
+% @arg Options A list of name-value pairs.
 %        1. =language(Code:atom)= a language code.
-% @param Query
-% @param Language
+% @arg Query
+% @arg Language
 
 find_language(Options, Query, Language):-
   load,

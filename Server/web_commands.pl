@@ -90,8 +90,8 @@ help_web([element(ul,[],ModuleItems)]):-
 % Returns a table markup element representing the header of
 % the given request.
 %
-% @param Request A compound term representing an HTTP header.
-% @param Markup A compound term encoding an (X)HTML table.
+% @arg Request A compound term representing an HTTP header.
+% @arg Markup A compound term encoding an (X)HTML table.
 
 request_web(
   Request,

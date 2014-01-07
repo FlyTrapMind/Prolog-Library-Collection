@@ -196,8 +196,8 @@ rdf_is_subject(Subject):-
 %                  An RDF name may occur nowhere.                          |
 % | -- | nondet  | Enumerate pars of RDF graphs and RDF names.             |
 %
-% @param Graph The atomic name of an RDF graph.
-% @param RDF_Name Either an IRI or an RDF literal.
+% @arg Graph The atomic name of an RDF graph.
+% @arg RDF_Name Either an IRI or an RDF literal.
 %
 % @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
 
@@ -316,8 +316,8 @@ rdf_subject(G, S):-
 % A term is either a subject, predicate or object term
 % in an RDF triple.
 %
-% @param Graph The atomic name of a graph.
-% @param Term A resource.
+% @arg Graph The atomic name of a graph.
+% @arg Term A resource.
 
 rdf_term(Graph, Term):-
   rdf_node(Graph, Term).

@@ -39,8 +39,8 @@ brewer_colorschemes(Colorschemes):-
 %! brewer_colors(?Colorscheme:atom, ?Colors:list(atom)) is nondet.
 % Color scheme lookup.
 %
-% @param ColorschemeName The atomic name of a Brewer color scheme.
-% @param ColorNames A list of atomic color names.
+% @arg ColorschemeName The atomic name of a Brewer color scheme.
+% @arg ColorNames A list of atomic color names.
 
 brewer_colors(Colorscheme, Colors):-
   setoff(

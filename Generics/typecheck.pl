@@ -169,8 +169,8 @@ text(Term):-
 %! typecheck(+Type:compound, +Value) is semidet.
 % Succeeds if the given value is of the given type.
 %
-% @param Type A compound term representing a type.
-% @param Value
+% @arg Type A compound term representing a type.
+% @arg Value
 
 typecheck(or(Types), Value):-
   member(Type, Types),

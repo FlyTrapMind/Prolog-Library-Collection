@@ -46,10 +46,10 @@ Persistent store for VoID datasets.
 % Keeping the file names makes it easy to store the VoID graph to
 % a package that includes all the relevant files.
 %
-% @param DatasetDescriptionGraph The atomic name of a dataset description.
-% @param Dataset The IRI denoting an RDF dataset.
-% @param DatasetFile The atomic name of a file dump of an RDF dataset.
-% @param DatasetGraph The atomic name of an RDF dataset.
+% @arg DatasetDescriptionGraph The atomic name of a dataset description.
+% @arg Dataset The IRI denoting an RDF dataset.
+% @arg DatasetFile The atomic name of a file dump of an RDF dataset.
+% @arg DatasetGraph The atomic name of an RDF dataset.
 %
 % @tbd What is an RDF graph and what is an RDF dataset?
 
@@ -64,10 +64,10 @@ void_dataset(DD_G, DS, DS_F, DS_G):-
 %! ) is nondet.
 % Adds a VoID dataset to the VoID database.
 %
-% @param DatasetDescriptionGraph The atomic name of a dataset description.
-% @param Dataset The IRI denoting an RDF dataset.
-% @param DatasetFile The atomic name of a file dump of an RDF dataset.
-% @param DatasetGraph The atomic name of an RDF dataset.
+% @arg DatasetDescriptionGraph The atomic name of a dataset description.
+% @arg Dataset The IRI denoting an RDF dataset.
+% @arg DatasetFile The atomic name of a file dump of an RDF dataset.
+% @arg DatasetGraph The atomic name of an RDF dataset.
 %
 % @tbd What is an RDF graph and what is an RDF dataset?
 

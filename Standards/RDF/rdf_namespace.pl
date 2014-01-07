@@ -122,8 +122,8 @@ rdf_convert_namespace(FromNamespace, From, ToNamespace, To):-
 %! rdf_current_namespaces(+Graph:atom, -Namespaces:ordset(atom)) is det.
 % Returns the namespaces that occur in the given graph.
 %
-% @param Graph The atomic name of a graph.
-% @param Namespaces An ordered set of atomic names of namespaces.
+% @arg Graph The atomic name of a graph.
+% @arg Namespaces An ordered set of atomic names of namespaces.
 
 rdf_current_namespaces(Graph, Namespaces):-
   setoff(Namespace, rdf_current_namespace(Graph, Namespace), Namespaces).
