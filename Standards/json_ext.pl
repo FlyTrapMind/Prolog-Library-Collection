@@ -62,6 +62,7 @@ json_value(_=V, V).
 
 
 % JSON TO RDF %
+% @tbd Phase this out in favor of json_to_prolog+prolog_to_rdf.
 
 % JSON list.
 json_to_rdf(Graph, Module, List):-
