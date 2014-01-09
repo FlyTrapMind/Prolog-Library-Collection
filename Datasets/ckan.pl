@@ -9,7 +9,7 @@
                   % +AllFields:boolean
                   % +Field:oneof([name,packages])
                   % +Groups:list(atom)
-                  % +Order:atom,
+                  % +Order:atom
                   % -Groups:list(atom)
     group_list_authz/4, % +Options:list(nvpair)
                         % +AmMember:boolean
@@ -72,8 +72,11 @@ Querying the CKAN API.
 :- use_module(generics(option_ext)).
 :- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
-:- use_module(library(http/http_client)).
+:- use_module(library(debug)).
+:- use_module(library(http/http_open)).
+:- use_module(library(http/json)).
 :- use_module(library(http/json_convert)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(uri)).
 :- use_module(server(api_keys)).
@@ -115,6 +118,8 @@ Querying the CKAN API.
   timestamp:atom
 ).
 
+:- debug(ckan).
+
 
 
 %! current_package_list_with_resources(
@@ -133,9 +138,26 @@ Querying the CKAN API.
 %      from.
 % @arg PackagesAndResources
 
+current_package_list_with_resources(O1, Limit1, Offset1, PackagesAndResources):-
+  select_option(paginated(true), O1, O2), !,
+  default(Limit1, 10, Limit2),
+  default(Offset1, 0, Offset2),
+  paginated_current_package_list_with_resources(
+    O2,
+    Limit2,
+    Offset2,
+    PackagesAndResources
+  ).
 current_package_list_with_resources(O1, Limit, Offset, PackagesAndResources):-
   process_limit_offset(Limit, Offset, P1),
   ckan(O1, current_package_list_with_resources, P1, PackagesAndResources).
+
+paginated_current_package_list_with_resources(O1, Limit, Offset1, L3):-
+  current_package_list_with_resources(O1, Limit, Offset1, L1), !,
+  Offset2 is Offset1 + Limit,
+  paginated_current_package_list_with_resources(O1, Limit, Offset2, L2),
+  append(L1, L2, L3).
+paginated_current_package_list_with_resources(_, _, _, []).
 
 
 %! group_list(
@@ -373,17 +395,17 @@ package_revision_list(O1, Package, Revisions):-
 %
 % @arg Options
 % @arg Dataset Dataset dictionary of the dataset (optional).
+% @arg Featured Whether or not to restrict the results
+%      to only featured related items (optional, default: `false`)
 % @arg IdOrName Id or name of the dataset (optional).
 % @arg TypeFilter The type of related item to show
 %      (optional, default: None, showing all items).
 % @arg Sort The order to sort the related items in.
 %      Possible values are `view_count_asc`, `view_count_desc`,
 %      `created_asc` or `created_desc` (optional).
-% @arg Featured Whether or not to restrict the results
-%      to only featured related items (optional, default: `false`)
 % @arg Related A list of dictionaries
 
-related_list(O1, Dataset, IdOrName, TypeFilter, Sort, Featured1, Related):-
+related_list(O1, Dataset, Featured1, IdOrName, TypeFilter, Sort, Related):-
   default(Featured1, false, Featured2),
   json_boolean(Featured2, Featured3),
 
@@ -476,6 +498,11 @@ site_read(O1):-
   help:atom,
   success:boolean
 ).
+:- json_object reply(
+  help:atom,
+  result,
+  success:boolean
+).
 :- json_object error(
   '__type':atom,
   message:atom
@@ -483,43 +510,50 @@ site_read(O1):-
 
 ckan(O1, Action, Parameters, Result):-
   % URL
-  option(scheme(Scheme), O1, http),
-  option(authority(Authority), O1, 'datahub.io'),
-  option(api_version(API_Version), O1, _VAR),
-  uri_path([api,API_Version,action,Action], Path),
+  option(scheme(Scheme), O1),
+  option(authority(Authority), O1),
+  option(api_version(Version), O1, 3),
+  uri_path([api,Version,action,Action], Path),
   uri_components(URL, uri_components(Scheme, Authority, Path, _, _)),
 
   % API key
-  current_api_key('datahub.io', ckan, Default_API_Key),
-  option(api_key(API_Key), O1, Default_API_Key),
-
-  % HTTP POST
-  HTTP_Options = [
-    request_header('Authorization'=API_Key),
-    request_header('Content-Type'='application/json')
-  ],
-  JSON_In = json(Parameters),
-  http_post(URL, json(JSON_In), json(JSON_Out), HTTP_Options),
-
-  % Process result.
-  memberchk(success=Success, JSON_Out),
   (
-    Success == @(true)
+    option(api_key(Key), O1)
   ->
-    memberchk(result=Result, JSON_Out)
+    HTTP_O1 = [authorization(Key)]
+    %HTTP_O1 = [request_header('Authorization'=Key)]
   ;
-    Success == @(false)
-  ->
-    ckan_error(JSON_Out)
+    HTTP_O1 = []
+  ),
+
+  JSON_In = json(Parameters),
+  merge_options(
+    [
+      method(post),
+      post(json(JSON_In)),
+      request_header('Content-Type'='application/json'),
+      status_code(Status)
+    ],
+    HTTP_O1,
+    HTTP_O2
+  ),
+  setup_call_cleanup(
+    http_open(URL, Out, HTTP_O2),
+    process_http(Status, Out, Result),
+    close(Out)
   ).
 
+process_http(200, Out, Result):- !,
+  json_read(Out, JSON_Out),
+  json_to_prolog(JSON_Out, Reply),
+  process_ckan(Reply, Result).
+process_http(Status, _, _):-
+  debug(ckan, 'HTTP status code ~w', [Status]).
 
-ckan_error(JSON):-
-  memberchk(help=Help, JSON),
-  memberchk(error=Error, JSON),
-  memberchk(message=Message, Error),
-  memberchk('__type'=Type, Error),
+process_ckan(reply(error(Type,Message),Help,false), _):- !,
   throw(error(Type, context(Help, Message))).
+process_ckan(reply(Help,Result,true), Result):-
+  debug(ckan, 'Successful reply:\n~w', [Help]).
 
 
 %! process_field_order_sort(
