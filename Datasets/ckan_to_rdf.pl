@@ -27,6 +27,13 @@ ckan_to_rdf(O1, Graph):-
   % DEB
   flag(aap, _, 0),
   
+  package_list(O1, L),
+  forall(
+    member(X, L),
+    package_show(X, P),
+      
+  
+  /*
   % Make sure the CKAN site is online.
   site_read(O1), !,
   
@@ -81,6 +88,7 @@ ckan_to_rdf(O1, Graph):-
   % Licenses.
   license_list(O1, Licenses),
   json_to_rdf(Graph, ckan, Licenses),
+  */
   
   true.
 
