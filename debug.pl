@@ -1,4 +1,3 @@
-/*
 % Debug script for PGC.
 
 % Do not write module loads to the standard output stream.
@@ -61,7 +60,6 @@
 %      at some point.
 %:- use_module(library(swi_ide)).
 %:- prolog_ide(debug_monitor).
-*/
 
 :- [load].
 

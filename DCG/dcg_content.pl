@@ -13,6 +13,7 @@
     bracketed//1, % :DCG
     bracketed//2, % +Type:oneof([curly,round,square])
                   % :DCG
+    capitalize//0,
     ci_code//1, % ?Code:code
     ci_string//1, % ?String:string
     code//1, % ?Code:code
@@ -153,6 +154,12 @@ bracketed(DCG) -->
 
 bracketed(Type, DCG) -->
   dcg_between(opening_bracket(_, Type), DCG, closing_bracket(_, Type)).
+
+capitalize, [Upper] -->
+  [Lower],
+  {code_type(Upper, to_upper(Lower))},
+  dcg_copy.
+capitalize --> dcg_end.
 
 %! ci_code(?Code:code)//
 % Generates the case-insensitive variants of the given code.

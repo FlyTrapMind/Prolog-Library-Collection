@@ -1,6 +1,7 @@
 :- module(
   dcg_generic,
   [
+    dcg_copy//0,
     dcg_end//0,
     dcg_separated_list//2, % :Separator:dcg
                            % ?Codess:list(list(codes))
@@ -37,6 +38,11 @@ Generic support for DCG rules.
 :- meta_predicate(dcg_phrase(//,?,?)).
 
 
+
+dcg_copy, [X] -->
+  [X],
+  dcg_copy.
+dcg_copy --> dcg_end.
 
 dcg_end([], []).
 

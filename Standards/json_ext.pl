@@ -1,47 +1,47 @@
 :- module(
   json_ext,
   [
-    http_read_json2/2, % +Request:list
-                       % -JSON:compound
-    json_rows/2 % +JSON:list
-                % -Rows:list
-  ]
-).
-:- reexport(
-  library(http/http_json),
-  [
-    http_read_json/2,
-    http_read_json/3,
-    reply_json/1,
-    reply_json/2
+    json_boolean/2, % ?Prolog:boolean
+                    % ?JSON:oneof([@(false),@(true)])
+    json_rows/2, % +JSON:list
+                 % -Rows:list
+    json_to_rdf/3 % +Graph:atom
+                  % +Module:atom
+                  % +Term:compound
   ]
 ).
 
 /** <module> JSON_EXT
 
 @author Wouter Beek
-@version 2013/07, 2013/11
+@version 2013/07, 2013/11, 2014/01
 */
 
-:- use_module(library(error)).
-:- use_module(library(http/http_client)).
-:- use_module(library(option)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(generics(typecheck)).
+:- use_module(library(apply)).
+:- use_module(library(http/json_convert)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_lit_build)).
+:- use_module(rdfs(rdfs_build)).
+:- use_module(xml(xml_namespace)).
+:- use_module(xsd(xsd)).
+
+:- meta_predicate(json_to_rdf(+,0)).
 
 
 
-%! http_read_json2(+Request:list(nvpair), -JSON:compound) is det.
-% @see Like http_read_json/2, but is not restricted to the HTTP POST method.
+% JSON BOOLEAN %
 
-http_read_json2(Request, JSON2):-
-  memberchk(content_type(Type), Request),
-  (
-    http_json:is_json_type(Type)
-  ->
-    http_read_data(Request, JSON1, [])
-  ;
-    domain_error(mimetype, Type)
-  ),
-  JSON1 = json(JSON2).
+json_boolean(false, @(false)).
+json_boolean(true, @(true)).
+
+
+
+% JSON TABLE %
 
 json_header_row([json(L1)|_], L2):-
   maplist(json_name, L1, L2).
@@ -59,4 +59,84 @@ json_rows(JSON, [HeaderRow|DataRows]):-
   maplist(json_row, JSON, DataRows).
 
 json_value(_=V, V).
+
+
+% JSON TO RDF %
+
+% JSON list.
+json_to_rdf(Graph, Module, List):-
+  is_list(List), !,
+  maplist(json_to_rdf(Graph, Module), List).
+% JSON object.
+json_to_rdf(Graph, Module, Term):-
+  % DEB
+  flag(aap, Id, Id + 1),
+  format(current_output, '~d\n', [Id]),
+  (Id = 999 -> gtrace ; true),
+  
+  % Namespace.
+  (
+    xml_current_namespace(Module, _), !
+  ;
+    atomic_list_concat(['http://www.wouterbeek.com',Module,''], '/', URL),
+    xml_register_namespace(Module, URL)
+  ),
+  
+  % Class.
+  Term =.. [Name|_],
+  once(dcg_phrase(capitalize, Name, ClassName)),
+  rdf_global_id(Module:ClassName, Class),
+  rdfs_assert_class(Class, Graph),
+  
+  % Individual.
+  rdf_bnode(Individual),
+  rdf_assert_individual(Individual, Class, Graph),
+  
+  % Propositions.
+  json_convert:current_json_object(Term, Module, Fields),
+  maplist(json_pair_to_rdf(Graph, Module, Individual), Fields).
+
+json_pair_to_rdf(
+  Graph,
+  Module,
+  Individual,
+  f(PredicateName, Type, _Default, Value)
+):-
+  rdf_global_id(Module:PredicateName, Predicate),
+  json_pair_to_rdf(Type, Individual, Predicate, Value, Graph).
+
+
+%! json_pair_to_rdf(
+%!   +DatatypeName:atom,
+%!   +Individual:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Value:or([bnode,iri,literal]),
+%!   +Graph:atom
+%! ) is det.
+% @tbd Add list and object values.
+% @tbd Prolog types and XSD types do not overlap,
+%      e.g. the date and time datatypes.
+
+% JSON null.
+json_pair_to_rdf(_, _, _, @(null), _):- !.
+% JSON empty string.
+json_pair_to_rdf(_, _, _, '', _):- !.
+% JSON non-empty string.
+json_pair_to_rdf(atom, Individual, Predicate, Value, Graph):- !,
+  rdf_assert_literal(Individual, Predicate, Value, Graph).
+% Datatypes: boolean, float, integer.
+json_pair_to_rdf(DatatypeName, Individual, Predicate, Value, Graph):-
+  xsd_datatype(DatatypeName, Datatype), !,
+  rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
+% Intended for: `atom` or `@(null)`.
+json_pair_to_rdf(any, Individual, Predicate, Value, Graph):-
+  atom(Value), !,
+  rdf_assert_literal(Individual, Predicate, Value, Graph).
+% Others.
+json_pair_to_rdf(DatatypeName, Individual, Predicate, Value, Graph):-
+  format(
+    current_output,
+    'Datatype: ~w\nIndividual: ~w\nPredicate: ~w\nValue: ~w\nGraph: ~w\n',
+    [DatatypeName,Individual,Predicate,Value,Graph]
+  ).
 
