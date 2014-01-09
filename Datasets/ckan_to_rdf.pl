@@ -46,7 +46,6 @@ ckan_to_rdf(O1, Graph):-
   
   % Organizations.
   organization_list(O1, true, _, _, _, Organizations),
-gtrace,
   json_to_rdf(Graph, ckan, Organizations),
   
   % Packages.
@@ -58,6 +57,15 @@ gtrace,
     (
       rdf_global_id(ckan:Package1, Package2),
       rdf_assert_individual(Package2, PackageClass, Graph)
+    )
+  ),
+  
+  % Package related.
+  forall(
+    member(Package, Packages),
+    (
+      related_list(O1, _, _, Package, _, _, Related),
+      json_to_rdf(Graph, ckan, Related)
     )
   ),
   
