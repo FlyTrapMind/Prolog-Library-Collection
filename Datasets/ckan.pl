@@ -61,6 +61,18 @@
 
 Querying the CKAN API.
 
+The following options are API-wide supported:
+  * =|deprecated(Deprecated:boolean)|=
+    Use the deprecated API.
+  * =|paginated(Paginated:boolean)|=
+    Use pagination in order to retrieve all results.
+
+The following depretations are supported:
+  * For: current_package_list_with_resources/4
+    Use parameter name `page` i.o. `offset`.
+
+--
+
 @author Wouter Beek
 @see http://docs.ckan.org/en/latest/api.html
 @tbd The CKAN API uses `True` and `False` for boolean values.
@@ -149,11 +161,12 @@ current_package_list_with_resources(O1, Limit1, Offset1, PackagesAndResources):-
     PackagesAndResources
   ).
 current_package_list_with_resources(O1, Limit, Offset, PackagesAndResources):-
-  process_limit_offset(Limit, Offset, P1),
+  process_limit_offset(O1, Limit, Offset, P1),
   ckan(O1, current_package_list_with_resources, P1, PackagesAndResources).
 
 paginated_current_package_list_with_resources(O1, Limit, Offset1, L3):-
   current_package_list_with_resources(O1, Limit, Offset1, L1), !,
+  debug(ckan, 'Offset: ~d\n~w\n\n\n', [Offset1,L1]),
   Offset2 is Offset1 + Limit,
   paginated_current_package_list_with_resources(O1, Limit, Offset2, L2),
   append(L1, L2, L3).
@@ -360,7 +373,7 @@ organization_list_for_user(O1, Permission1, Organizations):-
 %      The list is sorted most-recently-modified first.
 
 package_list(O1, Limit, Offset, Packages):-
-  process_limit_offset(Limit, Offset, P2),
+  process_limit_offset(O1, Limit, Offset, P2),
   ckan(O1, package_list, P2, Packages).
 
 
@@ -568,16 +581,27 @@ process_field_order_sort(Field1, Order1, Sort):-
   atomic_list_concat([Field2,Order2], ' ', Sort).
 
 %! process_limit_offset(
+%!   +Options:list(nvpair),
 %!   ?Limit:integer,
 %!   ?Offset:integer,
 %!   -Parameters:list(nvpair)
 %! ) is det.
 % The `offset` option is meaningless if there is no `limit` option.
 
-process_limit_offset(Limit, Offset, []):-
+process_limit_offset(_, Limit, Offset, []):-
   nonvar(Offset),
   var(Limit), !.
-process_limit_offset(Limit, Offset, P2):-
+process_limit_offset(O1, Limit, Offset, P2):-
+  % Parameter `limit`.
   add_option([], limit, Limit, P1),
-  add_option(P1, offset, Offset, P2).
+  
+  % Parameter `offset`.
+  (
+    option(deprecated(true), O1, false)
+  ->
+    ParameterName = page
+  ;
+    ParameterName = offset
+  ),
+  add_option(P1, ParameterName, Offset, P2).
 

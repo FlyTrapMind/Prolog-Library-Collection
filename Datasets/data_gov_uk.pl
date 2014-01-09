@@ -20,11 +20,6 @@
 
 
 %! ckan(+Options:list(nvpair), +Predicate:atom, +Arguments:list) is det.
-% The following options are supported:
-%   * =|deprecated(Deprecated:boolean)|=
-%     Use the deprecated API.
-%   * =|paginated(Paginated:boolean)|=
-%     Use pagination in order to retrieve all results.
 
 ckan(O1, Predicate, Arguments):-
   Auth = 'data.gov.uk',
