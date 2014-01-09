@@ -2,8 +2,8 @@
   ckan,
   [
     current_package_list_with_resources/4, % +Options:list(nvpair)
-                                           % +Limit:integer
-                                           % +Offset:integer
+                                           % +Limit:positive_integer
+                                           % +Offset:positive_integer
                                            % -Resources:list
     group_list/6, % +Options:list(nvpair)
                   % +AllFields:boolean
@@ -41,6 +41,9 @@
     package_revision_list/3, % +Options:list(nvpair)
                              % +Package:atom
                              % -Revisions:list(compound)
+    package_show/3, % +Options:list(nvpair)
+                    % +IdOrName:atom
+                    % -Package:compound
     related_list/7, % +Options:list(nvpair)
                     % ?Dataset:compound
                     % ?Featured:boolean
@@ -67,9 +70,11 @@ The following options are API-wide supported:
   * =|paginated(Paginated:boolean)|=
     Use pagination in order to retrieve all results.
 
-The following depretations are supported:
+The following depretations (v.2.0.3) are supported:
   * For: current_package_list_with_resources/4
     Use parameter name `page` i.o. `offset`.
+  * For: license_list/2
+    Use licence_list/2 instead.
 
 --
 
@@ -94,6 +99,24 @@ The following depretations are supported:
 :- use_module(server(api_keys)).
 :- use_module(standards(json_ext)).
 
+% `Predicate:atom-Type:atom-Optional:boolean`
+rdf_legend(
+  license,
+  [
+    domain_content-boolean-false,
+    domain_data-boolean-false,
+    domain_software:boolean-false,
+    family:atom:false,
+    id:atom:true,
+    is_okd_compliant:boolean:false,
+    is_generic:boolean:flase,
+    is_osi_compliant:boolean:false,
+    maintainer:atom:false,
+    status:atom:true,
+    title:atom:true,
+    url:atom:false
+  ]
+).
 :- json_object license(
   domain_content, % boolean
   domain_data, % boolean
@@ -122,12 +145,58 @@ The following depretations are supported:
   title:atom,
   type:atom
 ).
+:- json_object package(
+  author, % `atom` or `@(null)`
+  author_email, % `atom` or `@(null)`
+  id:atom,
+  license_id, % `atom` or `@(null)`
+  license_title, % `atom` or `@(null)`
+  maintainer, % `atom` or `@(null)`
+  maintainer_email, % `atom` or `@(null)`
+  num_tags:integer,
+  private:boolean,
+  metadata_created:atom,
+  metadata_modified:atom,
+  relationships_as_object:list,
+  resources:list(resource/22),
+  state:atom,
+  type:atom,
+  version % `atom` or `@(null)`
+).
+:- json_object resource(
+  cache_last_updated,
+  cache_url,
+  created:atom,
+  description:atom,
+  format:atom,
+  hash:atom,
+  id:atom,
+  last_modified,
+  mimetype,
+  mimetype_inner, % `atom` or `@(null)`
+  name, % `atom` or `@(null)`
+  position:integer,
+  resource_group_id:atom,
+  resource_type, % `atom` or `@(null)`
+  revision_id:atom,
+  revision_timestamp:atom,
+  size,
+  state:atom,
+  tracking_summary:tracking_summary/2,
+  url:atom,
+  webstore_last_updated, % `atom` or `@(null)`
+  webstore_url % `atom` or `@(null)`
+).
 :- json_object revision(
   approved_timestamp, % `atom` or `@(null)`
   author, % `atom` or `@(null)`
   id:atom,
   message, % `atom` or `@(null)`
   timestamp:atom
+).
+:- json_object tracking_summary(
+  total:integer,
+  recent:integer
 ).
 
 :- debug(ckan).
@@ -136,8 +205,8 @@ The following depretations are supported:
 
 %! current_package_list_with_resources(
 %!   +Options:list(nvpair),
-%!   +Limit:integer,
-%!   +Offset:integer,
+%!   +Limit:positive_integer,
+%!   +Offset:positive_integer,
 %!   -Packages:list(atom)
 %! ) is det.
 % Return a list of the site's datasets (packages) and their resources.
@@ -153,7 +222,7 @@ The following depretations are supported:
 current_package_list_with_resources(O1, Limit1, Offset1, PackagesAndResources):-
   select_option(paginated(true), O1, O2), !,
   default(Limit1, 10, Limit2),
-  default(Offset1, 0, Offset2),
+  default(Offset1, 1, Offset2),
   paginated_current_package_list_with_resources(
     O2,
     Limit2,
@@ -257,7 +326,15 @@ group_revision_list(O1, NameOrId, Revisions):-
 % @arg Licenses List of dictionaries.
 
 license_list(O1, Licenses):-
-  ckan(O1, license_list, [], JSON),
+  (
+    option(deprecated(true), O1)
+  ->
+    FunctionName = licence_list
+  ;
+    FunctionName = license_list
+  ),
+  
+  ckan(O1, FunctionName, [], JSON),
   json_to_prolog(JSON, Licenses).
 
 
@@ -391,6 +468,17 @@ package_list(O1, Limit, Offset, Packages):-
 package_revision_list(O1, Package, Revisions):-
   ckan(O1, package_revision_list, [id(Package)], JSON),
   json_to_prolog(JSON, Revisions).
+
+
+%! package_show(
+%!   +Options:list(nvpair),
+%!   +IdOrName:atom,
+%!   -Package:compound
+%! ) is det.
+
+package_show(O1, IdOrName, Package):-
+  ckan(O1, package_show, [id(IdOrName)], JSON),
+  json_to_prolog(JSON, Package).
 
 
 %! related_list(
