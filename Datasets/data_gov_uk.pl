@@ -1,8 +1,7 @@
 :- module(
   data_gov_uk,
   [
-    ckan/3 % +Options:list(nvpair)
-           % +Predicate:atom
+    ckan/2 % +Predicate:atom
            % +Arguments:list
   ]
 ).
@@ -19,13 +18,12 @@
 
 
 
-%! ckan(+Options:list(nvpair), +Predicate:atom, +Arguments:list) is det.
+%! ckan(+Predicate:atom, +Arguments:list) is det.
 
-ckan(O1, Predicate, Arguments):-
+ckan(Predicate, Arguments):-
   Auth = 'data.gov.uk',
   Scheme = http,
-  O2 = [authority(Auth),scheme(Scheme)],
-  merge_options(O1, O2, O3),
-  Call =.. [Predicate,O3|Arguments],
+  O1 = [authority(Auth),deprecated(true),paginated(true),scheme(Scheme)],
+  Call =.. [Predicate,O1|Arguments],
   call(Call).
 
