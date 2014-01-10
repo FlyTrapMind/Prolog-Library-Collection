@@ -312,8 +312,6 @@ legend(
   ]
 ).
 
-:- debug(ckan).
-
 
 
 %! current_package_list_with_resources(

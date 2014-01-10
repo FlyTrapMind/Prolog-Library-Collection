@@ -33,6 +33,8 @@ Methods for serving Web pages according to Web specifications.
 @version 2012/10
 */
 
+:- use_module(library(debug)).
+
 :- discontiguous(charset/1).
 :- discontiguous(is_sgml_based/2).
 :- discontiguous(is_xml_based/2).

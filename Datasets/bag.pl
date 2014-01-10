@@ -29,8 +29,6 @@ info@geodan.nl
 :- xml_register_namespace(bags).
 :- sparql_add_prefix(bags).
 
-:- debug(bag).
-
 
 
 test:-

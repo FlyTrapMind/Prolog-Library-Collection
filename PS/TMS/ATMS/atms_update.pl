@@ -29,13 +29,14 @@ are a strict superset of the assumptions in any of the other members of
 =label(N)=.
 
 @author Wouter Beek
-@version Nov - Dec 2011
+@version 2011/11-2011/12
 */
 
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_db)).
 :- use_module(atms(atms_env)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(debug)).
 
 
 

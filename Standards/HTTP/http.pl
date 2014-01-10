@@ -27,8 +27,6 @@ Predicates for sending out HTTP requests.
 
 :- meta_predicate(http_process_exception(+,0)).
 
-:- debug(http).
-
 
 
 %! http_dateTime(-DateTime:atom) is det.

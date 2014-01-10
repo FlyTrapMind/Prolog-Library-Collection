@@ -45,8 +45,6 @@ Classical Problem Solving.
 :- meta_predicate(print_answer(2,3,+)).
 :- meta_predicate(print_answer_(3,+)).
 
-:- debug(cps).
-
 
 
 %! bsolve(

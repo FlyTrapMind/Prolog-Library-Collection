@@ -29,7 +29,6 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(generics(db_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(gv(gv_dcg)).
-:- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
@@ -51,8 +50,6 @@ and GraphViz output files or SVG DOM structures.
 :- db_add_novel(user:prolog_file_type(svg,  svg            )).
 :- db_add_novel(user:prolog_file_type(xdot, graphviz_output)).
 :- db_add_novel(user:prolog_file_type(xdot, xdot           )).
-
-:- debug(gv_file).
 
 
 
@@ -206,7 +203,6 @@ to_gv_file(O1, Codes, ToFile):-
 
   % DEB: Store DOT file.
   (
-    debug(gv_file), !,
     file_type_alternative(ToFile, graphviz, DOT_File),
     safe_copy_file(FromFile, DOT_File)
   ;

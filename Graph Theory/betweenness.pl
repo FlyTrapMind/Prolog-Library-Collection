@@ -25,7 +25,6 @@ Predicates that calculate betweenness metrics.
 
 :- use_module(generics(list_ext)).
 :- use_module(graph_theory(shortest_path)).
-:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
@@ -36,8 +35,6 @@ Predicates that calculate betweenness metrics.
 
 :- rdf_meta(betweenness1(+,:,:,:,-)).
 :- rdf_meta(betweenness1(+,:,:,:,r,-)).
-
-:- debug(betweenness).
 
 
 

@@ -127,8 +127,6 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % @tbd How do we know this is the port?
 :- sparql_add_remote(localhost, localhost, 5000, '/sparql/').
 
-:- debug('SPARQL_ext').
-
 
 
 %! 'SPARQL_assert'(

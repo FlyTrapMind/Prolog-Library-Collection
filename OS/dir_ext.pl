@@ -60,8 +60,6 @@ Extensions for handling directories.
 
 :- meta_predicate(run_in_working_directory(0,+)).
 
-:- debug(dir_ext).
-
 
 
 %! append_directories(+Dir1:atom, +Dir2:atom, -Dir3:atom) is det.

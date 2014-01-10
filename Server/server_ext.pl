@@ -83,8 +83,6 @@ SWI-Prolog defines the following HTTP handlers:
 
 :- multifile(prolog:message//1).
 
-:- debug(server_ext).
-
 
 
 %! dispatch(:Request:list)

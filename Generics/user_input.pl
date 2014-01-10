@@ -36,7 +36,6 @@ Handles user input and sequences in which user input is needed continuously
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
@@ -47,8 +46,6 @@ Handles user input and sequences in which user input is needed continuously
 :- meta_predicate(user_interaction(+,+,:,+,+)).
 :- meta_predicate(user_interaction(+,+,:,+,+,+,+)).
 :- meta_predicate(user_interaction(+,+,+,:,+,+,+,+)).
-
-:- debug(user_input).
 
 
 

@@ -30,8 +30,6 @@ Web front-end for SPARQL queries.
 
 :- dynamic(default_remote0/1).
 
-:- debug(sparql_web).
-
 
 
 % @tbd

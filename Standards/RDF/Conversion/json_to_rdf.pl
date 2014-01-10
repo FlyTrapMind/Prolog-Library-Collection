@@ -31,8 +31,6 @@ Automated JSON to RDF conversion.
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
-:- debug(json_to_rdf).
-
 
 
 arg_spec_match(Args, ArgSpecs, Length):-

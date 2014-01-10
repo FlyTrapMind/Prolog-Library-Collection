@@ -28,6 +28,7 @@ Persistency store for SPARQL-related information.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(persistency)).
 :- use_module(os(file_ext)).

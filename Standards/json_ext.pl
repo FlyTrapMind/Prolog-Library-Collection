@@ -23,8 +23,6 @@
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
 
-:- debug(json_ext).
-
 
 
 % JSON BOOLEAN %

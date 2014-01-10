@@ -99,8 +99,6 @@ WHERE
 :- rdf_meta(dbpedia_assert(+,r)).
 :- rdf_meta(dbpedia_find_agent(+,+,+,r)).
 
-:- debug(dbpedia).
-
 
 
 dbpedia_assert(O1, Resource, G):-

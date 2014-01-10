@@ -55,8 +55,6 @@ Allows one to monitor running threads that register.
 :- dynamic(end_flag/2).
 :- dynamic(workload/4).
 
-:- debug(thread_ext).
-
 
 
 %! forall_thread(

@@ -51,8 +51,6 @@ Support for RDF typed literals.
 :- rdf_meta(rdf_overwrite_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
 
-:- debug(rdf_datatype).
-
 
 
 %! rdf_assert_datatype(

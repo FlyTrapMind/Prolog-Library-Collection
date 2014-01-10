@@ -68,8 +68,6 @@
 % Meta-option.
 is_meta(deb_vertex_name).
 
-:- debug(graph_travel).
-
 
 
 %! traverse(

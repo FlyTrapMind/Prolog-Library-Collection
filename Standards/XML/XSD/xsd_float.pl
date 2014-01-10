@@ -144,8 +144,6 @@ between =−1074= and =971=, inclusive.
 :- use_module(math(math_ext)).
 :- use_module(xsd(xsd_decimal)).
 
-:- debug(xsd_float).
-
 
 
 % CANONICAL MAPPING %

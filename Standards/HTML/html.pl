@@ -55,8 +55,6 @@ HTML attribute parsing, used in HTML table generation.
 
 :- meta_predicate(html_process_exception(+,0)).
 
-:- debug(html).
-
 
 
 %! reply_html_file(+Style:atom, +File:atom) is det.

@@ -16,8 +16,6 @@
 :- dynamic(doc/1).
 :- dynamic(word0/3).
 
-:- debug(tc).
-
 
 
 clean:-

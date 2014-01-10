@@ -42,8 +42,6 @@ Converts XML DOMs to RDF graphs.
 :- rdf_meta(create_resource(+,+,:,r,+,-,-)).
 :- rdf_meta(create_triples(+,+,:,r,+,-)).
 
-:- debug(xml_to_rdf).
-
 
 
 %! create_resource(

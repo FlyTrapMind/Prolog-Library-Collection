@@ -24,8 +24,6 @@ Operating System interactions.
 
 :- meta_predicate(os_dependent_call(:)).
 
-:- debug(os_ext).
-
 
 
 %! is_apple is semidet.

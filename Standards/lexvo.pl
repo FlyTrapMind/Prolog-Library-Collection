@@ -23,13 +23,12 @@ See also: [http://www.w3.org/wiki/Languages_as_RDF_Resources]
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_serial)).
 
 :- rdf_register_prefix(lexvo, 'http://lexvo.org/id/').
-
-:- debug(lexvo).
 
 
 

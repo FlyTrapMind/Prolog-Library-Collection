@@ -46,8 +46,6 @@ VoiD covers four areas of metadata:
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
-:- debug(void_file).
-
 
 
 %! void_init is det.

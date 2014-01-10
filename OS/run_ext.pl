@@ -63,8 +63,6 @@ Predicates for running external programs.
 % PDF
 :- db_add_novel(user:prolog_file_type(pdf, pdf)).
 
-:- debug(run_ext).
-
 
 
 %! exists_program(+Program:atom) is semidet.

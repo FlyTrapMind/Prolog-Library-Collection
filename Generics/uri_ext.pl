@@ -26,13 +26,10 @@
 
 :- use_module(generics(option_ext)).
 :- use_module(library(apply)).
-:- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
-
-:- debug(uri_ext).
 
 
 

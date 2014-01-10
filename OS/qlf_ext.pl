@@ -17,8 +17,6 @@ Predicates for loading Prolog files in the Quick Load Format (QLF).
 :- use_module(library(debug)).
 :- use_module(os(file_ext)).
 
-:- debug(qlf_ext).
-
 
 
 %! compiled_file(PL_File, QLF_File) is det.

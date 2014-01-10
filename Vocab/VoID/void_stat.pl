@@ -19,7 +19,6 @@ Asserts statistics for VoID descriptions.
 
 :- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
-:- use_module(library(debug)).
 :- use_module(library(regex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -37,8 +36,6 @@ Asserts statistics for VoID descriptions.
 
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
-
-:- debug(void_stat).
 
 
 

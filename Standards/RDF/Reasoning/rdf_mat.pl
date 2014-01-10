@@ -48,8 +48,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
 
 :- dynamic(recent_triple/4).
 
-:- debug(rdf_mat).
-
 
 
 %! axiom(

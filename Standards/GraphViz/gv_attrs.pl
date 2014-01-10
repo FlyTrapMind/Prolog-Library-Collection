@@ -20,7 +20,6 @@ Attributes, their allowed values, and their default values for GraphViz.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(typecheck)).
-:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(svg(svg_colors)).
@@ -28,8 +27,6 @@ Attributes, their allowed values, and their default values for GraphViz.
 :- use_module(standards(x11_colors)).
 
 :- discontiguous(gv_attr/5).
-
-:- debug(gv_attrs).
 
 
 

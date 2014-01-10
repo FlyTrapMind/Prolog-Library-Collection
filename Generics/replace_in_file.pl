@@ -30,8 +30,6 @@ Make arbitrary consecutive replacements in text files.
 :- meta_predicate(replace_in_file(+,//,//,-)).
 :- meta_predicate(replace_in_file(+,//,//,?,?)).
 
-:- debug(replace_in_file).
-
 
 
 %! replace_in_file(+OldFile:atom, :DCG_From, :DCG_To, ?NewFile:atom) is det.

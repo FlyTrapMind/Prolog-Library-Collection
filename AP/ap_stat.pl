@@ -30,8 +30,6 @@ Statistics for tracking the progress of automated processes.
 
 :- dynamic(stage_alias/2).
 
-:- debug(ap_stat).
-
 
 
 % DEBUG %

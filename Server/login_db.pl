@@ -27,8 +27,6 @@
 
 :- initialization(init_login_db).
 
-:- debug(login_db).
-
 
 
 init_login_db:-

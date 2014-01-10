@@ -723,8 +723,6 @@ the constraints imposed can sometimes result in a value space for which the orde
 
 %:- meta_predicate(xsd_order(+,2)).
 
-:- debug(xsd).
-
 
 
 %! xsd_canonicalMap(+Datatype:uri, +Value, -LexicalValue:list(code)) is det.

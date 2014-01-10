@@ -36,6 +36,7 @@ is ignored by this methods.
 
 :- use_module(generics(db_ext)).
 :- use_module(library(debug)).
+:- use_module(library(settings)).
 :- use_module(os(io_ext)).
 
 :- meta_predicate(xml_stream(+,+,1)).
@@ -43,8 +44,6 @@ is ignored by this methods.
 :- meta_predicate(xml_stream0(+,+,1,0,+)).
 
 :- db_add_novel(user:prolog_file_type(tmp, temporary)).
-
-:- debug(xml_stream).
 
 :- setting(
   store_number,
