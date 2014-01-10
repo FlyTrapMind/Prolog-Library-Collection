@@ -67,6 +67,7 @@ Querying the CKAN API.
 The following options are API-wide supported:
   * =|deprecated(Deprecated:boolean)|=
     Use the deprecated API.
+  * =|output(Format:oneof([prolog,rdf])|=
   * =|paginated(Paginated:boolean)|=
     Use pagination in order to retrieve all results.
 
@@ -92,111 +93,223 @@ The following depretations (v.2.0.3) are supported:
 :- use_module(library(debug)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/json)).
-:- use_module(library(http/json_convert)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(uri)).
+:- use_module(rdf_conv(json_to_rdf)).
 :- use_module(server(api_keys)).
 :- use_module(standards(json_ext)).
 
 % `Predicate:atom-Type:atom-Optional:boolean`
-rdf_legend(
-  license,
+legend(
+  extra,
   [
-    domain_content-boolean-false,
-    domain_data-boolean-false,
-    domain_software:boolean-false,
-    family:atom:false,
-    id:atom:true,
-    is_okd_compliant:boolean:false,
-    is_generic:boolean:flase,
-    is_osi_compliant:boolean:false,
-    maintainer:atom:false,
-    status:atom:true,
-    title:atom:true,
-    url:atom:false
+    id-atom-false,
+    key-atom-false,
+    package_id-atom-false,
+    revision_id-atom-false,
+    revision_timestamp-atom-false,
+    state-atom-false,
+    value-atom-false
   ]
 ).
-:- json_object license(
-  domain_content, % boolean
-  domain_data, % boolean
-  domain_software, % boolean
-  family, % can be null
-  id:atom,
-  is_okd_compliant, % boolean
-  is_generic, % boolean
-  is_osi_compliant, % boolean
-  maintainer, % can be null
-  status:atom,
-  title:atom,
-  url % can be null
+legend(
+  error,
+  [
+    '__type'-atom-false,
+    message-atom-false
+  ]
 ).
-:- json_object organization(
-  approval_status:atom,
-  description, % `atom` or `@(null)`
-  display_name:atom,
-  id:atom,
-  image_url, % `atom` or `@(null)`
-  is_organization:boolean,
-  name:atom,
-  packages:integer,
-  revision_id:atom,
-  state:atom,
-  title:atom,
-  type:atom
+legend(
+  license,
+  [
+    domain_content-boolean-true,
+    domain_data-boolean-true,
+    domain_software-boolean-true,
+    family-atom-true,
+    id-atom-false,
+    is_okd_compliant-boolean-true,
+    is_generic-boolean-true,
+    is_osi_compliant-boolean-true,
+    maintainer-atom-true,
+    status-atom-false,
+    title-atom-false,
+    url-atom-true
+  ]
 ).
-:- json_object package(
-  author, % `atom` or `@(null)`
-  author_email, % `atom` or `@(null)`
-  id:atom,
-  license_id, % `atom` or `@(null)`
-  license_title, % `atom` or `@(null)`
-  maintainer, % `atom` or `@(null)`
-  maintainer_email, % `atom` or `@(null)`
-  num_tags:integer,
-  private:boolean,
-  metadata_created:atom,
-  metadata_modified:atom,
-  relationships_as_object:list,
-  resources:list(resource/22),
-  state:atom,
-  type:atom,
-  version % `atom` or `@(null)`
+legend(
+  organization,
+  [
+    approval_status-atom-false,
+    created-atom-false,
+    description-atom-true,
+    display_name-atom-false,
+    id-atom-false,
+    image_url-atom-true,
+    is_organization-boolean-false,
+    name-atom-false,
+    packages-integer-false,
+    revision_id-atom-false,
+    revision_timestamp-atom-false,
+    state-atom-false,
+    title-atom-false,
+    type-atom-false
+  ]
 ).
-:- json_object resource(
-  cache_last_updated,
-  cache_url,
-  created:atom,
-  description:atom,
-  format:atom,
-  hash:atom,
-  id:atom,
-  last_modified,
-  mimetype,
-  mimetype_inner, % `atom` or `@(null)`
-  name, % `atom` or `@(null)`
-  position:integer,
-  resource_group_id:atom,
-  resource_type, % `atom` or `@(null)`
-  revision_id:atom,
-  revision_timestamp:atom,
-  size,
-  state:atom,
-  tracking_summary:tracking_summary/2,
-  url:atom,
-  webstore_last_updated, % `atom` or `@(null)`
-  webstore_url % `atom` or `@(null)`
+legend(
+  package,
+  [
+    additional_resources-list(resource/35)-true,
+    author-atom-true,
+    author_email-atom-true,
+    'core-dataset'-boolean-true,
+    'contact-email'-atom-true,
+    'contact-name'-atom-true,
+    'contact-phone'-atom-true,
+    data_dict-skip-true,
+    date_released-atom-true,
+    date_update_future-atom-true,
+    date_updated-atom-true,
+    extras-list(extra/7)-false,
+    'foi-email'-atom-true,
+    'foi-name'-atom-true,
+    'foi-phone'-atom-true,
+    'foi-web'-atom-true,
+    geographic_coverage-list(atom)-true,
+    geographic_granularity-atom-true,
+    'geographic_granularity-other'-atom-true,
+    groups-list(atom)-false,
+    id-atom-false,
+    individual_resources-list(resource/35)-true,
+    isopen-boolean-false,
+    last_major_modification-atom-true,
+    license_id-atom-true,
+    license_title-atom-true,
+    license_url-atom-true,
+    maintainer-atom-true,
+    maintainer_email-atom-true,
+    mandate-atom-true,
+    metadata_created-atom-false,
+    metadata_modified-atom-false,
+    name-atom-false,
+    national_statistic-atom-true,
+    notes-atom-true,
+    num_resources-integer-false,
+    num_tags-integer-false,
+    organization-organization/12-true,
+    owner_org-atom-false,
+    precision-atom-true,
+    private-boolean-false,
+    'publish-date'-atom-true,
+    'publish-restricted'-boolean-true,
+    published_via-atom-true,
+    relationships_as_object-list(atom)-false,
+    relationships_as_subject-list(atom)-false,
+    'release-notes'-atom-true,
+    resources-list(resource/35)-false,
+    revision_id-atom-false,
+    revision_timestamp-atom-false,
+    state-atom-false,
+    tags-list(tag/6)-false,
+    taxonomy_url-atom-true,
+    'temporal_coverage-from'-atom-true,
+    'temporal_coverage-to'-atom-true,
+    temporal_granularity-atom-true,
+    'temporal_granularity-other'-atom-true,
+    'theme-primary'-atom-true,
+    'theme-secondary'-atom-true,
+    timeseries_resources-list(resource/35)-true,
+    title-atom-false,
+    tracking_summary-tracking_summary/2-false,
+    type-atom-false,
+    unpublished-boolean-true,
+    update_frequency-atom-true,
+    'update_frequency-other'-atom-true,
+    url-atom-true,
+    version-atom-true
+  ]
 ).
-:- json_object revision(
-  approved_timestamp, % `atom` or `@(null)`
-  author, % `atom` or `@(null)`
-  id:atom,
-  message, % `atom` or `@(null)`
-  timestamp:atom
+legend(
+  reply,
+  [
+    error-error/2-true,
+    help-atom-false,
+    result-or([_/_,list(_/_),list(atom)])-true,
+    success-boolean-false
+  ]
 ).
-:- json_object tracking_summary(
-  total:integer,
-  recent:integer
+legend(
+  resource,
+  [
+    cache_filepath-atom-true,
+    cache_last_updated-atom-true,
+    cache_url-atom-true,
+    ckan_recommended_wms_preview-boolean-true,
+    content_length-atom-true,
+    content_type-atom-true,
+    created-atom-false,
+    datastore_active-boolean-true,
+    date-atom-true,
+    description-atom-false,
+    format-atom-false,
+    hash-atom-false,
+    'hub-id'-atom-true,
+    id-atom-false,
+    last_modified-atom-true,
+    mimetype-atom-true,
+    mimetype_inner-atom-true,
+    name-atom-true,
+    openness_score-integer-true,
+    openness_score_failure_count-integer-true,
+    openness_score_reason-atom-true,
+    position-integer-false,
+    'publish-date'-atom-true,
+    resource_group_id-atom-false,
+    resource_locator_function-atom-true,
+    resource_locator_protocol-atom-true,
+    resource_type-atom-true,
+    revision_id-atom-false,
+    revision_timestamp-atom-false,
+    scraped-atom-true,
+    scraper_source-atom-true,
+    scraper_url-atom-true,
+    size-integer-true,
+    state-atom-false,
+    tracking_summary-tracking_summary/2-false,
+    url-atom-false,
+    verified-boolean-true,
+    verified_date-atom-true,
+    webstore_last_updated-atom-true,
+    webstore_url-atom-true
+  ]
+).
+legend(
+  revision,
+  [
+    approved_timestamp-atom-true,
+    author-atom-true,
+    id-atom-false,
+    message-atom-true,
+    timestamp-atom-false
+  ]
+).
+legend(
+  tag,
+  [
+    display_name-atom-false,
+    id-atom-false,
+    name-atom-false,
+    revision_timestamp-atom-false,
+    state-atom-false,
+    vocabulary_id-atom-true
+  ]
+).
+legend(
+  tracking_summary,
+  [
+    total-integer-false,
+    recent-integer-false
+  ]
 ).
 
 :- debug(ckan).
@@ -333,9 +446,8 @@ license_list(O1, Licenses):-
   ;
     FunctionName = license_list
   ),
-  
-  ckan(O1, FunctionName, [], JSON),
-  json_to_prolog(JSON, Licenses).
+
+  ckan(O1, FunctionName, [], Licenses).
 
 
 %! member_list(
@@ -405,8 +517,7 @@ organization_list(
     OrganizationsFilter,
     P1
   ),
-  ckan(O1, organization_list, P1, JSON),
-  json_to_prolog(JSON, Organizations).
+  ckan(O1, organization_list, P1, Organizations).
 
 
 %! organization_list_for_user(
@@ -466,8 +577,7 @@ package_list(O1, Limit, Offset, Packages):-
 % @arg Revisions A list of revision terms.
 
 package_revision_list(O1, Package, Revisions):-
-  ckan(O1, package_revision_list, [id(Package)], JSON),
-  json_to_prolog(JSON, Revisions).
+  ckan(O1, package_revision_list, [id(Package)], Revisions).
 
 
 %! package_show(
@@ -477,8 +587,7 @@ package_revision_list(O1, Package, Revisions):-
 %! ) is det.
 
 package_show(O1, IdOrName, Package):-
-  ckan(O1, package_show, [id(IdOrName)], JSON),
-  json_to_prolog(JSON, Package).
+  ckan(O1, package_show, [id(IdOrName)], Package).
 
 
 %! related_list(
@@ -551,8 +660,7 @@ revision_list(O1, Revisions):-
 % Suceeds if the CKAN site is readable?
 
 site_read(O1):-
-  ckan(O1, site_read, [], JSON),
-  JSON == @(true).
+  ckan(O1, site_read, [], true).
 
 
 
@@ -574,40 +682,10 @@ site_read(O1):-
 %   * =|scheme(+Scheme:oneof([http,https]))|=
 %     Default: =http=.
 %
-% The following actions are supported:
-%   * =dashboard_activity_list=
-%     Returns a list of activities from the user dashboard (API key required).
-%   * =package_create=
-%     Create a new dataset (API key required).
-%   * =package_list=
-%     Returns a list of the CKAN datasets.
-%   * =package_search=
-%     Search for CKAN datasets by name.
-%     Requires the search option `q` to be set to the search term.
-%     Optionally set the maximum number of returned search requests
-%     with search option `rows` (with a positive integer value).
-%   * =site_read=
-%     Whether the CKAN site gives the user read access?
-%
 % @arg Options A list of name-value pairs.
 % @arg Action The atomic name of a CKAN action.
 % @arg Parameters A list of name-value pairs.
 % @arg JSON A JSON-term.
-
-:- json_object reply(
-  error:error/2,
-  help:atom,
-  success:boolean
-).
-:- json_object reply(
-  help:atom,
-  result,
-  success:boolean
-).
-:- json_object error(
-  '__type':atom,
-  message:atom
-).
 
 ckan(O1, Action, Parameters, Result):-
   % URL
@@ -638,23 +716,32 @@ ckan(O1, Action, Parameters, Result):-
     HTTP_O1,
     HTTP_O2
   ),
+  option(output(Format), O1, rdf),
   setup_call_cleanup(
     http_open(URL, Out, HTTP_O2),
-    process_http(Status, Out, Result),
+    process_http(Status, Out, Format, Result),
     close(Out)
   ).
 
-process_http(200, Out, Result):- !,
-  json_read(Out, JSON_Out),
-  json_to_prolog(JSON_Out, Reply),
-  process_ckan(Reply, Result).
-process_http(Status, _, _):-
+process_http(200, Out, Format, Return):- !,
+  json_read(Out, json(Reply)),
+  memberchk(help=Help, Reply),
+  (
+    memberchk(error=Error, Reply)
+  ->
+    memberchk('__type'=Type, Error),
+    memberchk(message=Message, Error),
+    throw(error(Type, context(Help, Message)))
+  ;
+    memberchk(result=Result, Reply),
+    % To: Prolog
+    json_to_prolog(ckan, Result, Return),
+    % To: RDF
+    (Format == rdf -> json_to_rdf(ckan, ckan, Result, _)),
+    debug(ckan, 'Successful reply:\n~w', [Help])
+  ).
+process_http(Status, _, _, _):-
   debug(ckan, 'HTTP status code ~w', [Status]).
-
-process_ckan(reply(error(Type,Message),Help,false), _):- !,
-  throw(error(Type, context(Help, Message))).
-process_ckan(reply(Help,Result,true), Result):-
-  debug(ckan, 'Successful reply:\n~w', [Help]).
 
 
 %! process_field_order_sort(
@@ -682,7 +769,7 @@ process_limit_offset(_, Limit, Offset, []):-
 process_limit_offset(O1, Limit, Offset, P2):-
   % Parameter `limit`.
   add_option([], limit, Limit, P1),
-  
+
   % Parameter `offset`.
   (
     option(deprecated(true), O1, false)

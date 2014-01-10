@@ -1,9 +1,10 @@
 :- module(
   prolog_to_rdf,
   [
-    prolog_to_rdf/3 % +Graph:atom
+    prolog_to_rdf/4 % +Graph:atom
                     % +Module:atom
                     % +Term:term
+                    % -Individual:iri
   ]
 ).
 
@@ -28,12 +29,12 @@ Automated conversion from Prolog terms to RDF triples.
 
 
 
-prolog_to_rdf(Graph, Module, Term):-
+prolog_to_rdf(Graph, Module, Term, Individual):-
   % DEB
   flag(aap, Id, Id + 1),
   format(current_output, '~d\n', [Id]),
   (Id = 999 -> gtrace ; true),
-  
+
   % Namespace.
   (
     xml_current_namespace(Module, _), !
@@ -41,53 +42,56 @@ prolog_to_rdf(Graph, Module, Term):-
     atomic_list_concat(['http://www.wouterbeek.com',Module,''], '/', URL),
     xml_register_namespace(Module, URL)
   ),
-  
+
   % Class.
   Term =.. [Functor|Args],
   once(dcg_phrase(capitalize, Functor, ClassName)),
   rdf_global_id(Module:ClassName, Class),
   rdfs_assert_class(Class, Graph),
-  
+
   % Individual.
   rdf_bnode(Individual),
   rdf_assert_individual(Individual, Class, Graph),
-  
-  % Propositions.
-  Module:rdf_legend(Functor, ArgRequirements),
-  maplist(prolog_to_rdf(Graph, Module, Individual), Args, ArgRequirements).
 
-prolog_to_rdf(Graph, Module, Individual, Value, PredicateName-Type-Optional):-
+  % Propositions.
+  Module:legend(Functor, ArgRequirements),
+  maplist(prolog_to_rdf(Graph, Module, Individual), ArgRequirements, Args).
+
+prolog_to_rdf(
+  Graph,
+  Module,
+  Individual1,
+  PredicateName-Type-Optional,
+  Value
+):-
   rdf_global_id(Module:PredicateName, Predicate),
   (
-    xsd_datatype(Type, Datatype),
-    to(Type, Value, Value_)
+    Type =.. [list,InnerType]
   ->
-    rdf_assert_datatype(Individual, Predicate, Datatype, Value_, Graph)
+    is_list(Value),
+    maplist(
+      prolog_to_rdf(
+        Graph,
+        Module,
+        Individual1,
+        PredicateName-InnerType-Optional
+      ),
+      Value
+    )
   ;
-    call(Type, Individual, Predicate, Value, Graph)
+    Type = _/_
   ->
-    true
+    prolog_to_rdf(Graph, Module, Value, Individual2),
+    rdf_assert(Individual1, Predicate, Individual2, Graph)
+  ;
+    xsd_datatype(Type, Datatype)
+  ->
+    rdf_assert_datatype(Individual1, Predicate, Datatype, Value, Graph)
+  ;
+    Type = atom
+  ->
+    rdf_assert_literal(Individual1, Predicate, Value, Graph)
   ;
     Optional = true
   ).
-
-to(Type, Value1, Value2):-
-  atomic_list_concat([to,Type], '_', Predicate),
-  call(Predicate, Value1, Value2).
-
-% Prolog native.
-to_boolean(true, true).
-to_boolean(false, false).
-% Prolog DSL for JSON.
-to_boolean(@(true), true).
-to_boolean(@(false), false).
-% Integer boolean.
-to_boolean(1, true).
-to_boolean(0, false).
-% CKAN boolean.
-to_boolean('True', true).
-to_boolean('False', false).
-
-atom(S, P, O, G):-
-  rdf_assert_literal(S, P, O, G).
 

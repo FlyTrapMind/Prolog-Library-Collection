@@ -5,9 +5,9 @@
                     % ?JSON:oneof([@(false),@(true)])
     json_rows/2, % +JSON:list
                  % -Rows:list
-    json_to_rdf/3 % +Graph:atom
-                  % +Module:atom
-                  % +Term:compound
+    json_to_prolog/3 % +Module:atom
+                     % +JSON:compond
+                     % -Term:compound
   ]
 ).
 
@@ -17,20 +17,13 @@
 @version 2013/07, 2013/11, 2014/01
 */
 
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
-:- use_module(library(http/json_convert)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_build)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(xml(xml_namespace)).
-:- use_module(xsd(xsd)).
+:- use_module(library(debug)).
+:- use_module(library(ordsets)).
+:- use_module(library(pairs)).
 
-:- meta_predicate(json_to_rdf(+,0)).
+:- debug(json_ext).
 
 
 
@@ -61,83 +54,126 @@ json_rows(JSON, [HeaderRow|DataRows]):-
 json_value(_=V, V).
 
 
-% JSON TO RDF %
-% @tbd Phase this out in favor of json_to_prolog+prolog_to_rdf.
 
-% JSON list.
-json_to_rdf(Graph, Module, List):-
-  is_list(List), !,
-  maplist(json_to_rdf(Graph, Module), List).
-% JSON object.
-json_to_rdf(Graph, Module, Term):-
-  % DEB
-  flag(aap, Id, Id + 1),
-  format(current_output, '~d\n', [Id]),
-  (Id = 999 -> gtrace ; true),
-  
-  % Namespace.
-  (
-    xml_current_namespace(Module, _), !
-  ;
-    atomic_list_concat(['http://www.wouterbeek.com',Module,''], '/', URL),
-    xml_register_namespace(Module, URL)
-  ),
-  
-  % Class.
-  Term =.. [Name|_],
-  once(dcg_phrase(capitalize, Name, ClassName)),
-  rdf_global_id(Module:ClassName, Class),
-  rdfs_assert_class(Class, Graph),
-  
-  % Individual.
-  rdf_bnode(Individual),
-  rdf_assert_individual(Individual, Class, Graph),
-  
-  % Propositions.
-  json_convert:current_json_object(Term, Module, Fields),
-  maplist(json_pair_to_rdf(Graph, Module, Individual), Fields).
+% JSON TO PROLOG %
 
-json_pair_to_rdf(
-  Graph,
-  Module,
-  Individual,
-  f(PredicateName, Type, _Default, Value)
-):-
-  rdf_global_id(Module:PredicateName, Predicate),
-  json_pair_to_rdf(Type, Individual, Predicate, Value, Graph).
+arg_spec_match(Args, ArgSpecs, Length):-
+  maplist(arg_to_name, Args, Names1),
+  maplist(arg_spec_to_name, ArgSpecs, Names2),
+  ord_intersection(Names1, Names2, Shared),
+  length(Shared, Length).
+arg_to_name(Name=_, Name).
+arg_spec_to_name(Name-_-_, Name).
 
-
-%! json_pair_to_rdf(
-%!   +DatatypeName:atom,
-%!   +Individual:or([bnode,iri]),
-%!   +Predicate:iri,
-%!   +Value:or([bnode,iri,literal]),
-%!   +Graph:atom
-%! ) is det.
-% @tbd Add list and object values.
-% @tbd Prolog types and XSD types do not overlap,
-%      e.g. the date and time datatypes.
-
-% JSON null.
-json_pair_to_rdf(_, _, _, @(null), _):- !.
-% JSON empty string.
-json_pair_to_rdf(_, _, _, '', _):- !.
-% JSON non-empty string.
-json_pair_to_rdf(atom, Individual, Predicate, Value, Graph):- !,
-  rdf_assert_literal(Individual, Predicate, Value, Graph).
-% Datatypes: boolean, float, integer.
-json_pair_to_rdf(DatatypeName, Individual, Predicate, Value, Graph):-
-  xsd_datatype(DatatypeName, Datatype), !,
-  rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
-% Intended for: `atom` or `@(null)`.
-json_pair_to_rdf(any, Individual, Predicate, Value, Graph):-
-  atom(Value), !,
-  rdf_assert_literal(Individual, Predicate, Value, Graph).
-% Others.
-json_pair_to_rdf(DatatypeName, Individual, Predicate, Value, Graph):-
-  format(
-    current_output,
-    'Datatype: ~w\nIndividual: ~w\nPredicate: ~w\nValue: ~w\nGraph: ~w\n',
-    [DatatypeName,Individual,Predicate,Value,Graph]
+json_to_prolog(_, JSON, Term):-
+  JSON = @(Term), !.
+json_to_prolog(_, Term, Term):-
+  atom(Term), !.
+json_to_prolog(_, Term, Term):-
+  integer(Term), !.
+json_to_prolog(Module, JSONs, Terms):-
+  is_list(JSONs), !,
+  findall(
+    Term,
+    (
+      member(JSON, JSONs),
+      json_to_prolog(Module, JSON, Term)
+    ),
+    Terms
   ).
+json_to_prolog(Module, JSON, Term):-
+  json_object_to_prolog(Module, JSON, Term).
 
+json_object_to_prolog(Module, json(Args0), Term):-
+  sort(Args0, Args),
+  findall(
+    Length-Legend,
+    (
+      Module:legend(Legend, ArgSpecs),
+      arg_spec_match(Args, ArgSpecs, Length)
+    ),
+    Pairs1
+  ),
+  keysort(Pairs1, Pairs2),
+  pairs_values(Pairs2, Values),
+  debug(json_ext, 'Legend order found: ~w.', [Values]),
+  last(Values, Legend),
+  json_object_to_prolog(Module, Legend, json(Args), Term).
+
+json_object_to_prolog(Module, Legend, json(Args1), Term):-
+  Module:legend(Legend, Specs),
+  maplist(json_pair_to_prolog(Module, Legend, Specs), Args1, Args2),
+  Term =.. [Legend|Args2].
+
+%! json_pair_to_prolog(
+%!   +Module:atom,
+%!   +Legend:atom,
+%!   +ArgumentSpecification:compound,
+%!   +JSON:pair(atom,term),
+%!   -Prolog:pair(atom,term)
+%! ) is det.
+
+json_pair_to_prolog(_, _, Specs, Name=Null, _VAR):-
+  Null = @(null), !,
+  memberchk(Name-_-true, Specs).
+json_pair_to_prolog(Module, _, Specs, Name=Value1, Value2):-
+  memberchk(Name-Type-_, Specs),
+  json_value_to_prolog(Module, Type, Value1, Value2), !.
+% DEB
+json_pair_to_prolog(Graph, Legend, Type, Pair, Value):-
+  gtrace,
+  debug(json_ext, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]),
+  json_pair_to_prolog(Graph, Legend, Type, Pair, Value).
+
+json_value_to_prolog(_, skip, _, _VAR):- !.
+json_value_to_prolog(Module, Legend/_, Value1, Value2):-
+  Value1 = json(_), !,
+  (
+    var(Legend)
+  ->
+    json_object_to_prolog(Module, Value1, Value2)
+  ;
+    json_object_to_prolog(Module, Legend, Value1, Value2)
+  ).
+json_value_to_prolog(Module, or(Types), Value1, Value2):-
+  member(Type, Types),
+  json_value_to_prolog(Module, Type, Value1, Value2), !.
+json_value_to_prolog(_, atom, Value, Value):-
+   atom(Value), !.
+json_value_to_prolog(_, boolean, Value1, Value2):-
+  to_boolean(Value1, Value2), !.
+json_value_to_prolog(_, integer, Value1, Value2):-
+  to_integer(Value1, Value2), !.
+json_value_to_prolog(Module, list(Type), Value1, Value2):-
+  is_list(Value1),
+  maplist(json_value_to_prolog(Module, Type), Value1, Value2).
+% @tbd
+% json_value_to_prolog(_, Type1, Value, Value):-
+%  Type1 =.. [Functor|Args1],
+%  append(Args1, [_], Args2),
+%  Type2 =.. [Functor|Args2],
+%  (
+%    predicate_property(Type2, imported_from(typecheck))
+%  ;
+%    predicate_property(Type2, iso)
+%  ), !,
+%  call(Type1, Value).
+
+% Prolog native.
+to_boolean(true, true).
+to_boolean(false, false).
+% Prolog DSL for JSON.
+to_boolean(@(true), true).
+to_boolean(@(false), false).
+% Integer boolean.
+to_boolean(1, true).
+to_boolean(0, false).
+% CKAN boolean.
+to_boolean('True', true).
+to_boolean('False', false).
+
+to_integer(Value, Value):-
+  integer(Value), !.
+to_integer(Value1, Value2):-
+  atom_number(Value1, Value3),
+  to_integer(Value3, Value2).

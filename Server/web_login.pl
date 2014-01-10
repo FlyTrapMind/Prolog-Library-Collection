@@ -56,7 +56,6 @@ dispatch_method(get, Request, _):-
   http_redirect(see_other, root(login_ui), Request).
 
 login_ui(_Request):-
-gtrace,
   reply_html_page(app_style, \login_ui_head, \login_ui_body).
 
 login_ui_head -->

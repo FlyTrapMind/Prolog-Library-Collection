@@ -174,7 +174,6 @@ rdf_mat_web(G, Regime, [DOM1,DOM2]):-
 % @arg Markup A list of HTML markup elements.
 
 rdf_namespaces_web(Markup):-
-gtrace,
   xml_current_namespaces(Namespaces),
   rdf_namespaces_web0(Namespaces, Table),
   Markup = [element(p, [], ['The currently loaded namespaces:']), Table].

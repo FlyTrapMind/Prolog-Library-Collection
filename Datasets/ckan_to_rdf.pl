@@ -1,8 +1,7 @@
 :- module(
   ckan_to_rdf,
   [
-    ckan_to_rdf/2 % +Options:list(nvpair)
-                  % +Graph:atom
+    ckan_to_rdf/1 % +Options:list(nvpair)
   ]
 ).
 
@@ -15,28 +14,40 @@ Automated CKAN to RDF conversion.
 */
 
 :- use_module(datasets(ckan)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(prolog_to_rdf)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(json_ext)).
 
 
 
-ckan_to_rdf(O1, Graph):-
+ckan_to_rdf(O1):-
+  merge_options([output(rdf)], O1, O2),
+  
   % DEB
   flag(aap, _, 0),
   
-  package_list(O1, L),
-  forall(
-    member(X, L),
-    package_show(X, P),
-      
-  
-  /*
   % Make sure the CKAN site is online.
   site_read(O1), !,
   
+  % Licenses.
+  license_list(O2, _),
+  
+  % Packages.
+  package_list(O2, _, _, PackageNames),
+  forall(
+    member(PackageName, PackageNames),
+    package_show(O2, PackageName, _)
+  ),
+  
+  true.
+
+
+
+/*
   % Groups.
   group_list(O1, true, _, _, _, Groups1),
   json_to_rdf(Graph, ckan, Groups1),
@@ -87,8 +98,6 @@ ckan_to_rdf(O1, Graph):-
   
   % Licenses.
   license_list(O1, Licenses),
-  json_to_rdf(Graph, ckan, Licenses),
-  */
-  
-  true.
+  json_to_rdf(Graph, ckan, Licenses).
+*/
 
