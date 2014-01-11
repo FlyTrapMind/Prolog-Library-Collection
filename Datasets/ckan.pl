@@ -5,19 +5,30 @@
                                            % +Limit:positive_integer
                                            % +Offset:positive_integer
                                            % -Resources:list
+    format_autocomplete/4, % +Options:list(nvpair)
+                           % +Limit:integer
+                           % +Q:atom
+                           % -Formats:list(atom)
     group_list/6, % +Options:list(nvpair)
                   % +AllFields:boolean
                   % +Field:oneof([name,packages])
-                  % +Groups:list(atom)
+                  % +GroupNames:list(atom)
                   % +Order:atom
-                  % -Groups:list(atom)
+                  % -Groups:or([list(atom),list(compound)])
     group_list_authz/4, % +Options:list(nvpair)
                         % +AmMember:boolean
                         % +AvailableOnly:boolean
                         % -Groups:list(compound)
+    group_package_show/4, % +Options:list(nvpair)
+                          % +IdOrName:atom
+                          % +Limit:integer
+                          % -Packages:list(compound)
     group_revision_list/3, % +Options:list(nvpair),
                            % +NameOrId:atom,
                            % -Revisions:list(compound)
+    group_show/3, % +Options:list(nvpair)
+                  % +IdOrName:atom
+                  % -Group:compound
     license_list/2, % +Options:list(nvpair)
                     % -Licenses:list(compound)
     member_list/5, % +Options:list(nvpair)
@@ -34,10 +45,22 @@
     organization_list_for_user/3, % +Options:list(nvpair),
                                   % +Permission:atom,
                                   % -Organizations:list(compound)
+    organization_show/3, % +Options:list(nvpair)
+                         % +IdOrName:atom
+                         % -Organization:compound
+    package_autocomplete/4, % +Options:list(nvpair)
+                            % +Limit:integer
+                            % +Q:atom
+                            % -Packages:list(compound)
     package_list/4, % +Options:list(nvpair)
                     % +Limit:integer
                     % +Offset:integer
                     % -Packages:list(atom)
+    package_relationships_list/5, % +Options:list(nvpair)
+                                  % +Id:atom
+                                  % +Id2:atom
+                                  % +Rel:atom
+                                  % -Relationships:list(compound)
     package_revision_list/3, % +Options:list(nvpair)
                              % +Package:atom
                              % -Revisions:list(compound)
@@ -54,9 +77,38 @@
     related_show/3, % +Options:list(nvpair)
                     % +Id:atom
                     % -Out:compound
+    resource_show/3, % +Options:list(nvpair)
+                     % +Id:atom
+                     % -Resource:compound
+    resource_status_show/3, % +Options:list(nvpair)
+                            % +Id:atom
+                            % -Statuses:list(list)
     revision_list/2, % +Options:list(nvpair)
                      % -Revisions:list(atom)
-    site_read/1 % +Options:list(nvpair)
+    revision_show/3, % +Options:list(nvpair)
+                     % +Id:atom
+                     % -Revision:compound
+    site_read/1, % +Options:list(nvpair)
+    tag_list/5, % +Options:list(nvpair)
+                % +AllFields:boolean
+                % +Query:atom
+                % +VocabularyId:atom
+                % -Tags:or([list(atom),list(compound)])
+    tag_show/3, % +Options:list(nvpair)
+                % +IdOrName:atom
+                % -Tag:compound
+    user_autocomplete/4, % +Options:list(nvpair)
+                         % +Limit:integer
+                         % +Q:atom
+                         % -Users:list(compound)
+    user_list/4, % +Options:list(nvpair)
+                 % +OrderBy:atom
+                 % +Q:atom
+                 % -Users:list(compound)
+    user_show/4 % +Options:list(nvpair),
+                % +IdOrName:atom,
+                % +UserObject:compound,
+                % -User:compound
   ]
 ).
 
@@ -97,13 +149,38 @@ The following depretations (v.2.0.3) are supported:
 :- use_module(library(option)).
 :- use_module(library(uri)).
 :- use_module(rdf_conv(json_to_rdf)).
-:- use_module(server(api_keys)).
 :- use_module(standards(json_ext)).
 
 % `Predicate:atom-Type:atom-Optional:boolean`
 legend(
-  extra,
+  '__extras',
+  _,
   [
+    group_id-atom-false,
+    revision_id-atom-false
+  ]
+).
+legend(
+  '_group',
+  _,
+  [
+    capacity-atom-false,
+    name-atom-false
+  ]
+).
+legend(
+  error,
+  _,
+  [
+    '__type'-atom-false,
+    message-atom-false
+  ]
+).
+legend(
+  extra,
+  _,
+  [
+    '__extras'-'__extras'/_-false,
     id-atom-false,
     key-atom-false,
     package_id-atom-false,
@@ -114,14 +191,36 @@ legend(
   ]
 ).
 legend(
-  error,
+  group,
+  id,
   [
-    '__type'-atom-false,
-    message-atom-false
+    abbreviation-atom-true,
+    approval_status-atom-true,
+    category-atom-true,
+    'contact-email'-atom-true,
+    'contact-name'-atom-true,
+    'contact-phone'-atom-true,
+    description-atom-true,
+    extras-list(extra/_)-false,
+    'foi-email'-atom-true,
+    'foi-name'-atom-true,
+    'foi-phone'-atom-true,
+    'foi-web'-atom-true,
+    groups-list('_group'/_)-true,
+    id-atom-false,
+    image_url-atom-true,
+    is_organization-boolean-true,
+    name-atom-true,
+    packages-list(package/_)-false,
+    tags-list(tag/_)-false,
+    title-atom-true,
+    type-atom-true,
+    users-list(user/_)-false
   ]
 ).
 legend(
   license,
+  id,
   [
     domain_content-boolean-true,
     domain_data-boolean-true,
@@ -139,6 +238,7 @@ legend(
 ).
 legend(
   organization,
+  id,
   [
     approval_status-atom-false,
     created-atom-false,
@@ -158,8 +258,9 @@ legend(
 ).
 legend(
   package,
+  id,
   [
-    additional_resources-list(resource/35)-true,
+    additional_resources-list(resource/_)-true,
     author-atom-true,
     author_email-atom-true,
     'core-dataset'-boolean-true,
@@ -170,7 +271,7 @@ legend(
     date_released-atom-true,
     date_update_future-atom-true,
     date_updated-atom-true,
-    extras-list(extra/7)-false,
+    extras-list(extra/_)-false,
     'foi-email'-atom-true,
     'foi-name'-atom-true,
     'foi-phone'-atom-true,
@@ -180,7 +281,7 @@ legend(
     'geographic_granularity-other'-atom-true,
     groups-list(atom)-false,
     id-atom-false,
-    individual_resources-list(resource/35)-true,
+    individual_resources-list(resource/_)-true,
     isopen-boolean-false,
     last_major_modification-atom-true,
     license_id-atom-true,
@@ -196,7 +297,7 @@ legend(
     notes-atom-true,
     num_resources-integer-false,
     num_tags-integer-false,
-    organization-organization/12-true,
+    organization-organization/_-true,
     owner_org-atom-false,
     precision-atom-true,
     private-boolean-false,
@@ -206,11 +307,11 @@ legend(
     relationships_as_object-list(atom)-false,
     relationships_as_subject-list(atom)-false,
     'release-notes'-atom-true,
-    resources-list(resource/35)-false,
+    resources-list(resource/_)-false,
     revision_id-atom-false,
     revision_timestamp-atom-false,
     state-atom-false,
-    tags-list(tag/6)-false,
+    tags-list(tag/_)-false,
     taxonomy_url-atom-true,
     'temporal_coverage-from'-atom-true,
     'temporal_coverage-to'-atom-true,
@@ -218,9 +319,9 @@ legend(
     'temporal_granularity-other'-atom-true,
     'theme-primary'-atom-true,
     'theme-secondary'-atom-true,
-    timeseries_resources-list(resource/35)-true,
+    timeseries_resources-list(resource/_)-true,
     title-atom-false,
-    tracking_summary-tracking_summary/2-false,
+    tracking_summary-tracking_summary/_-false,
     type-atom-false,
     unpublished-boolean-true,
     update_frequency-atom-true,
@@ -231,8 +332,9 @@ legend(
 ).
 legend(
   reply,
+  _,
   [
-    error-error/2-true,
+    error-error/_-true,
     help-atom-false,
     result-or([_/_,list(_/_),list(atom)])-true,
     success-boolean-false
@@ -240,6 +342,7 @@ legend(
 ).
 legend(
   resource,
+  id,
   [
     cache_filepath-atom-true,
     cache_last_updated-atom-true,
@@ -247,7 +350,7 @@ legend(
     ckan_recommended_wms_preview-boolean-true,
     content_length-atom-true,
     content_type-atom-true,
-    created-atom-false,
+    created-atom-true,
     datastore_active-boolean-true,
     date-atom-true,
     description-atom-false,
@@ -275,7 +378,7 @@ legend(
     scraper_url-atom-true,
     size-integer-true,
     state-atom-false,
-    tracking_summary-tracking_summary/2-false,
+    tracking_summary-tracking_summary/_-false,
     url-atom-false,
     verified-boolean-true,
     verified_date-atom-true,
@@ -285,6 +388,7 @@ legend(
 ).
 legend(
   revision,
+  id,
   [
     approved_timestamp-atom-true,
     author-atom-true,
@@ -295,10 +399,12 @@ legend(
 ).
 legend(
   tag,
+  id,
   [
     display_name-atom-false,
     id-atom-false,
     name-atom-false,
+    packages-list(package/_)-false,
     revision_timestamp-atom-false,
     state-atom-false,
     vocabulary_id-atom-true
@@ -306,9 +412,18 @@ legend(
 ).
 legend(
   tracking_summary,
+  _,
   [
     total-integer-false,
     recent-integer-false
+  ]
+).
+legend(
+  user,
+  name,
+  [
+    capacity-atom-false,
+    name-atom-false
   ]
 ).
 
@@ -353,11 +468,30 @@ paginated_current_package_list_with_resources(O1, Limit, Offset1, L3):-
 paginated_current_package_list_with_resources(_, _, _, []).
 
 
+%! format_autocomplete(
+%!   +Options:list(nvpair),
+%!   +Limit:integer,
+%!   +Q:atom,
+%!   -Formats:list(compound)
+%! ) is det.
+% Returns a list of resource formats whose names contain a string.
+%
+% @arg Options
+% @arg Q The string to search for.
+% @arg Limit The maximum number of resource formats to return
+%      Default: 5.
+% @arg Formats A list of format strings.
+
+format_autocomplete(O1, Limit1, Q, Formats):-
+  default(Limit1, 5, Limit2),
+  ckan(O1, format_autocomplete, [limit=Limit2,q=Q], Formats).
+
+
 %! group_list(
 %!   +Options:list(nvpair),
 %!   +AllFields:boolean,
 %!   +Field:oneof([name,packages]),
-%!   +Groups:list(atom),
+%!   +GroupNames:list(atom),
 %!   +Order:atom,
 %!   -Groups:list(atom)
 %! ) is det.
@@ -370,18 +504,18 @@ paginated_current_package_list_with_resources(_, _, _, []).
 % @arg Field Sorting of the search results based on this field.
 %      The allowed fields are `name` and `packages`.
 %      Default: `name`.
-% @arg Groups A list of names of the groups to return, if given
+% @arg GroupNames A list of names of the groups to return, if given
 %      only groups whose names are in this list will be returned.
 %      Optional.
 % @arg Order The sort-order used.
 %      Default: `asc`
 % @arg Groups A list of the atomic names of the site's groups.
 
-group_list(O1, AllFields1, Field, Groups, Order, Groups):-
+group_list(O1, AllFields1, Field, GroupNames, Order, Groups):-
   default(AllFields1, false, AllFields2),
   json_boolean(AllFields2, AllFields3),
   process_field_order_sort(Field, Order, Sort),
-  add_option([all_fields=AllFields3,sort=Sort], groups, Groups, P1),
+  add_option([all_fields=AllFields3,sort=Sort], groups, GroupNames, P1),
   ckan(O1, group_list, P1, Groups).
 
 
@@ -415,6 +549,24 @@ group_list_authz(O1, AmMember1, AvailableOnly1, Groups):-
   ).
 
 
+%! group_package_show(
+%!   +Options:list(nvpair)
+%!   +IdOrName:atom
+%!   +Limit:integer
+%!   -Packages:list(compound)
+%! ) is det.
+% Returns the datasets (packages) of a group.
+%
+% @arg Options
+% @arg IdOrName The id or name of the group.
+% @arg Limit The maximum number of datasets to return (optional).
+% @arg Packages A list of packages.
+
+group_package_show(O1, IdOrName, Limit, Packages):-
+  add_option([id=IdOrName], limit, Limit, P1),
+  ckan(O1, group_package_show, P1, Packages).
+
+
 %! group_revision_list(
 %!   +Options:list(nvpair),
 %!   +NameOrId:atom,
@@ -428,6 +580,17 @@ group_list_authz(O1, AmMember1, AvailableOnly1, Groups):-
 
 group_revision_list(O1, NameOrId, Revisions):-
   ckan(O1, group_revision_list, [id=NameOrId], Revisions).
+
+
+%! group_show(+Options:list(nvpair), +IdOrName:atom, -Group:compound) is det.
+% Returns the details of a group.
+%
+% @arg Options
+% @arg IdOrName The id or name of the group.
+% @arg Group A group.
+
+group_show(O1, Id, Group):-
+  ckan(O1, group_show, [id=Id], Group).
 
 
 %! license_list(+Options:list(nvpair), -Licenses:list(compound)) is det.
@@ -541,6 +704,43 @@ organization_list_for_user(O1, Permission1, Organizations):-
   ).
 
 
+%! organization_show(
+%!   +Options:list(nvpair),
+%!   +IdOrName:atom,
+%!   -Organization:compound
+%! ) is det.
+% Returns the details of an organization.
+%
+% @arg Options
+% @arg IdOrName The id or name of the organization.
+% @arg Organization An organization.
+
+organization_show(O1, IdOrName, Organization):-
+  ckan(O1, organization_show, [id=IdOrName], Organization).
+
+
+%! package_autocomplete(
+%!   +Options:list(nvpair),
+%!   +Limit:integer,
+%!   +Q:atom,
+%!   -Packages:list(compound)
+%! ) is det.
+% Returns a list of datasets (packages) that match a string.
+%
+% Datasets with names or titles that contain the query string
+%  will be returned.
+%
+% @arg Options
+% @arg Limit The maximum number of resource formats to return
+%      Default: 10.
+% @arg Q The string to search for.
+% @arg Package A list of packages.
+
+package_autocomplete(O1, Limit1, Q, Packages):-
+  default(Limit1, 10, Limit2),
+  ckan(O1, package_autocomplete, [limit=Limit2,q=Q], Packages).
+
+
 %! package_list(
 %!   +Options:list(nvpair),
 %!   +Limit:integer,
@@ -561,6 +761,30 @@ organization_list_for_user(O1, Permission1, Organizations):-
 package_list(O1, Limit, Offset, Packages):-
   process_limit_offset(O1, Limit, Offset, P2),
   ckan(O1, package_list, P2, Packages).
+
+
+%! package_relationships_list(
+%!   +Options:list(nvpair),
+%!   +Id:atom,
+%!   +Id2:atom,
+%!   +Rel:atom,
+%!   -Relationships:list(compound)
+%! ) is det.
+% Returns a dataset (package)'s relationships.
+%
+% @arg Options
+% @arg Id The id or name of the first package.
+% @arg Id2 The id or name of the second package.
+% @arg Rel Relationship as string,
+%      see package_relationship_create/4 (optional).
+%      [Is this a filter by relation type?]
+% @arg Relationships A list of relationships.
+%
+% @see package_relationship_create/4 for the relationship types.
+
+package_relationships_list(O1, Id, Id2, Rel, Relationships):-
+  add_option([id=Id,id2=Id2], rel, Rel, P1),
+  ckan(O1, package_relationships_list, P1, Relationships).
 
 
 %! package_revision_list(
@@ -599,7 +823,7 @@ package_show(O1, IdOrName, Package):-
 %! ) is det.
 % Return a dataset's related items.
 %
-% Either the `IdOrName` or the `Dataset` parameter must be given.
+% Either the `IdOrName` or the `Dataset` parameter must be instantiated.
 %
 % @arg Options
 % @arg Dataset Dataset dictionary of the dataset (optional).
@@ -617,7 +841,7 @@ related_list(O1, Dataset, Featured1, IdOrName, TypeFilter, Sort, Related):-
   default(Featured1, false, Featured2),
   json_boolean(Featured2, Featured3),
 
-  % Either `dataset` or `id`.
+  % Either `dataset` or `id` must be instantiated.
   \+ maplist(nonvar, [Dataset,IdOrName]),
   \+ maplist(var, [Dataset,IdOrName]),
 
@@ -644,6 +868,33 @@ related_show(O1, Id, Out):-
   ckan(O1, related_show, [id(Id)], Out).
 
 
+%! resource_show(+Options:list(nvpair), +Id:atom, -Resource:compound) is det.
+% Returns the metadata of a resource.
+%
+% @arg Options
+% @arg Id The id of the resource.
+% @arg Resource A resource.
+
+resource_show(O1, Id, Resource):-
+  ckan(O1, resource_show, [id=Id], Resource).
+
+
+%! resource_status_show(
+%!   +Options:list(nvpair),
+%!   +Id:atom,
+%!   -Statuses:list(list)
+%! ) is det.
+% Returns the statuses of a resource's tasks.
+%
+% @arg Options
+% @arg Id The id of the resource.
+% @arg Statuses A list of
+%      =|<status,date_done,traceback,task_status>|=-dictionaries.
+
+resource_status_show(O1, Id, Statuses):-
+  ckan(O1, resource_status_show, [id=Id], Statuses).
+
+
 %! revision_list(+Options:list(nvpair), -Revisions:list(atom)) is det.
 % Return a list of the IDs of the site’s revisions.
 %
@@ -654,12 +905,131 @@ revision_list(O1, Revisions):-
   ckan(O1, revision_list, [], Revisions).
 
 
+%! revision_show(+Options:list(nvpair), +Id:atom, -Revision:compound) is det.
+% Returns the details of a revision.
+%
+% @arg Options
+% @arg Id The id of the revision.
+% @arg Revision A revision.
+
+revision_show(O1, Id, Revision):-
+  ckan(O1, revision_show, [id=Id], Revision).
+
+
 %! site_read(+Options:list(nvpair)) is semidet.
 % Suceeds if the CKAN site is readable?
 
 site_read(O1):-
   ckan(O1, site_read, [], true).
 
+
+%! tag_list(
+%!   +Options:list(nvpair),
+%!   +AllFields:boolean,
+%!   +Query:atom,
+%!   +VocabularyId:atom,
+%!   -Tags:or([list(atom),list(compound)])
+%! ) is det.
+% Returns a list of the site's tags.
+%
+% By default only free tags (tags that don't belong to a vocabulary)
+%  are returned.
+% If the `VocabularyId` argument is given then only tags belonging to
+%  that vocabulary will be returned.
+%
+% @arg Options
+% @arg AllFields Return full tag dictionaries instead of just names
+%      (optional, default: `false`).
+% @arg Query A tag name query to search for, if given only tags whose
+%      names contain this string will be returned.
+% @arg VocabularyId The id or name of a vocabulary, if give only tags
+%      that belong to this vocabulary will be returned.
+% @arg Tags A list of tags.
+
+tag_list(O1, AllFields1, Query, VocabularyId, Tags):-
+  default(AllFields1, false, AllFields2),
+  json_boolean(AllFields2, AllFields3),
+  add_option([all_fields=AllFields3], query, Query, P1),
+  add_option(P1, vocabulary_id, VocabularyId, P2),
+  ckan(O1, tag_list, P2, Tags).
+
+
+%! tag_show(+Options:list(nvpair), +IdOrName:atom, -Tag:compound) is det.
+% Returns the details of a tag and all its datasets.
+%
+% @arg Options
+% @arg IdOrName The name or id of the tag.
+% @arg Tag The details of the tag, including a list of
+%      all the tag's datasets and their details
+
+tag_show(O1, IdOrName, Tag):-
+  ckan(O1, tag_show, [id=IdOrName], Tag).
+
+
+%! user_autocomplete(
+%!   +Options:list(nvpair),
+%!   +Limit:integer,
+%!   +Q:atom,
+%!   -Users:list(compound)
+%! ) is det.
+% Returns a list of user names that contain a string.
+%
+% @arg Options
+% @arg Q The string to search for.
+% @arg Limit The maximum number of user names to return.
+%      Default: 20.
+% @arg Users A list of user dictionaries each with keys
+%      `name`, `fullname`, and `id`.
+
+user_autocomplete(O1, Limit1, Q, Users):-
+  default(Limit1, 20, Limit2),
+  ckan(O1, user_autocomplete, [limit=Limit2,q=Q], Users).
+
+
+%! user_list(
+%!   +Options:list(nvpair),
+%!   +OrderBy:atom,
+%!   +Q:atom,
+%!   -Users:list(compound)
+%! ) is det.
+% Returns a list of the site's user accounts.
+%
+% @arg Options
+% @arg OrderBy Which field to sort the list by.
+%      Default: `name`.
+% @arg Q Restrict the users returned to those whose names contain
+%      a[=this?] string (optional).
+% @arg Users A list of users.
+
+user_list(O1, OrderBy1, Q, Users):-
+  default(OrderBy1, name, OrderBy2),
+  add_option([order_by=OrderBy2], q, Q, P1),
+  ckan(O1, user_list, P1, Users).
+
+%! user_show(
+%!   +Options:list(nvpair),
+%!   +IdOrName:atom,
+%!   +UserObject:compound,
+%!   -User:compound
+%! ) is det.
+% Returns a user account.
+%
+% Either `IdOrName` or `UserObject` must be instantiated.
+%
+% @arg Options
+% @arg IdOrName The id or name of the user (optional).
+% @arg UserObject The user dictionary of the user (optional).
+% @arg User A user.
+
+user_show(O1, IdOrName, UserObject, User):-
+  % Either `IdOrName` or `UserObject` must be instantiated.
+  \+ maplist(nonvar, [IdOrName,UserObject]),
+  \+ maplist(var, [IdOrName,UserObject]),
+
+  add_option([], id, IdOrName, P1),
+  add_option(P1, user_obj, UserObject, P2),
+
+  ckan(O1, user_show, P2, User).
 
 
 % HELPER PREDICATES %
@@ -732,10 +1102,13 @@ process_http(200, Out, Format, Return):- !,
     throw(error(Type, context(Help, Message)))
   ;
     memberchk(result=Result, Reply),
+
     % To: Prolog
     json_to_prolog(ckan, Result, Return),
+
     % To: RDF
     (Format == rdf -> json_to_rdf(ckan, ckan, Result, _)),
+
     debug(ckan, 'Successful reply:\n~w', [Help])
   ).
 process_http(Status, _, _, _):-

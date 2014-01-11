@@ -9,6 +9,8 @@
 
 /** <module> Access to data.gov.uk
 
+6.615.117 triples
+
 @author Wouter Beek
 @see http://data.gov.uk
 @version 2014/01

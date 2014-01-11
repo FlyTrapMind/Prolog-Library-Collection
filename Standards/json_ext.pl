@@ -87,7 +87,7 @@ json_object_to_prolog(Module, json(Args0), Term):-
   findall(
     Length-Legend,
     (
-      Module:legend(Legend, ArgSpecs),
+      Module:legend(Legend, _, ArgSpecs),
       arg_spec_match(Args, ArgSpecs, Length)
     ),
     Pairs1
@@ -99,7 +99,7 @@ json_object_to_prolog(Module, json(Args0), Term):-
   json_object_to_prolog(Module, Legend, json(Args), Term).
 
 json_object_to_prolog(Module, Legend, json(Args1), Term):-
-  Module:legend(Legend, Specs),
+  Module:legend(Legend, _, Specs),
   maplist(json_pair_to_prolog(Module, Legend, Specs), Args1, Args2),
   Term =.. [Legend|Args2].
 

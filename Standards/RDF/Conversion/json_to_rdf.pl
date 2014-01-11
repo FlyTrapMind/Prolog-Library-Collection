@@ -53,11 +53,12 @@ json_to_rdf(Graph, Module, JSONs, Individuals):-
   ).
 json_to_rdf(Graph, Module, JSON, Individual):-
   JSON = json(_), !,
+  
   % Namespace.
   (
     xml_current_namespace(Module, _), !
   ;
-    atomic_list_concat(['http://www.wouterbeek.com',Module,''], '/', URL),
+    atomic_list_concat(['http://www.wouterbeek.com/',Module,'#'], '', URL),
     xml_register_namespace(Module, URL)
   ),
 
@@ -71,7 +72,7 @@ json_object_to_rdf(Graph, Module, json(Args0), Individual):-
   findall(
     Length-Legend,
     (
-      Module:legend(Legend, ArgSpecs),
+      Module:legend(Legend, _, ArgSpecs),
       arg_spec_match(Args, ArgSpecs, Length)
     ),
     Pairs1
@@ -84,17 +85,26 @@ json_object_to_rdf(Graph, Module, json(Args0), Individual):-
   json_object_to_rdf(Graph, Module, Legend, json(Args), Individual).
 
 json_object_to_rdf(Graph, Module, Legend, json(Args1), Individual):-
+  Module:legend(Legend, PrimaryKey, Specs),
+  
   % The most popular legend is the class.
   once(dcg_phrase(capitalize, Legend, ClassName)),
   rdf_global_id(Module:ClassName, Class),
   rdfs_assert_class(Class, Graph),
 
   % Individual.
-  rdf_bnode(Individual),
+  (
+    var(PrimaryKey)
+  ->
+    rdf_bnode(Individual)
+  ;
+    memberchk(PrimaryKey=Id, Args1),
+    atomic_list_concat([ClassName,Id], '/', IndividualName),
+    rdf_global_id(ckan:IndividualName, Individual)
+  ),
   rdf_assert_individual(Individual, Class, Graph),
-
+  
   % Propositions.
-  Module:legend(Legend, Specs),
   maplist(json_pair_to_rdf(Graph, Module, Legend, Individual, Specs), Args1).
 
 %! json_pair_to_rdf(
@@ -119,7 +129,10 @@ json_pair_to_rdf(_, _, Legend, Type, _, Pair):-
   gtrace,
   debug(json_to_rdf, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]).
 
+% Type `skip`.
 json_value_to_rdf(_, _, _, _, skip, _):- !.
+% The empty atom.
+json_value_to_rdf(_, _, _, _, _, ''):- !.
 json_value_to_rdf(Graph, Module, Individual1, Predicate, Legend/_, Value):-
   Value = json(_), !,
   (

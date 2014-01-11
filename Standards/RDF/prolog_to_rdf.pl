@@ -30,11 +30,6 @@ Automated conversion from Prolog terms to RDF triples.
 
 
 prolog_to_rdf(Graph, Module, Term, Individual):-
-  % DEB
-  flag(aap, Id, Id + 1),
-  format(current_output, '~d\n', [Id]),
-  (Id = 999 -> gtrace ; true),
-
   % Namespace.
   (
     xml_current_namespace(Module, _), !
@@ -54,7 +49,7 @@ prolog_to_rdf(Graph, Module, Term, Individual):-
   rdf_assert_individual(Individual, Class, Graph),
 
   % Propositions.
-  Module:legend(Functor, ArgRequirements),
+  Module:legend(Functor, _, ArgRequirements),
   maplist(prolog_to_rdf(Graph, Module, Individual), ArgRequirements, Args).
 
 prolog_to_rdf(

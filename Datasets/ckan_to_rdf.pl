@@ -25,79 +25,53 @@ Automated CKAN to RDF conversion.
 
 
 ckan_to_rdf(O1):-
-  merge_options([output(rdf)], O1, O2),
+  format(current_output, 'Begin CKAN-2-RDF conversion.\n', []),
   
-  % DEB
-  flag(aap, _, 0),
+  merge_options([output(rdf)], O1, O2),
   
   % Make sure the CKAN site is online.
   site_read(O1), !,
   
+  % Groups
+  group_list(O2, _, _, _, _, GroupNames),
+  forall(
+    member(GroupName, GroupNames),
+    (
+      group_show(O2, GroupName, _),
+      group_package_show(O2, GroupName, _, _)
+    )
+  ),
+  
   % Licenses.
   license_list(O2, _),
   
-  % Packages.
-  package_list(O2, _, _, PackageNames),
-  forall(
-    member(PackageName, PackageNames),
-    package_show(O2, PackageName, _)
-  ),
-  
-  true.
-
-
-
-/*
-  % Groups.
-  group_list(O1, true, _, _, _, Groups1),
-  json_to_rdf(Graph, ckan, Groups1),
-  
-  % Group members.
-  group_list(O1, false, _, _, _, Groups2),
-  forall(
-    member(Group, Groups2),
-    (
-      member_list(O1, _, Group, _, Triples),
-      write(Triples)
-    )
-  ),
-  
   % Organizations.
-  organization_list(O1, true, _, _, _, Organizations),
-  json_to_rdf(Graph, ckan, Organizations),
+  organization_list(O2, _, _, _, _, Organizations),
+  forall(
+    member(Organization, Organizations),
+    organization_show(O2, Organization, _)
+  ),
   
   % Packages.
-  package_list([], _, _, Packages),
-  rdf_global_id(ckan:'Package', PackageClass),
-  rdfs_assert_class(PackageClass, Graph),
-  forall(
-    member(Package1, Packages),
-    (
-      rdf_global_id(ckan:Package1, Package2),
-      rdf_assert_individual(Package2, PackageClass, Graph)
-    )
-  ),
-  
-  % Package related.
+  package_list(O2, _, _, Packages),
   forall(
     member(Package, Packages),
-    (
-      related_list(O1, _, _, Package, _, _, Related),
-      json_to_rdf(Graph, ckan, Related)
-    )
+    package_show(O2, Package, _)
   ),
   
-  % Package revisions.
+  % Tags.
+  tag_list(O2, _, _, _, Tags),
   forall(
-    member(Package, Packages),
-    (
-      package_revision_list(O1, Package, Revisions),
-      json_to_rdf(Graph, ckan, Revisions)
-    )
+    member(Tag, Tags),
+    tag_show(O2, Tag, _)
   ),
   
-  % Licenses.
-  license_list(O1, Licenses),
-  json_to_rdf(Graph, ckan, Licenses).
-*/
+  % Users.
+  user_list(O2, _, _, Users),
+  forall(
+    member(User, Users),
+    user_show(O2, _, User, _)
+  ),
+  
+  format(current_output, 'End CKAN-2-RDF conversion.\n', []).
 
