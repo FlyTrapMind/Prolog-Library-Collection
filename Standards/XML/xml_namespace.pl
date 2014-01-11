@@ -64,7 +64,7 @@ URI references can contain characters that are not allowed in names.
 @author Wouter Beek
 @compat Namespaces in XML 1.0 (Third Edition)
 @see http://www.w3.org/TR/xml-names/
-@version 2013/05, 2013/07
+@version 2013/05, 2013/07, 2014/01
 */
 
 :- use_module(generics(atom_ext)).
@@ -132,7 +132,7 @@ xml_register_namespace(Namespace):-
 
 % Reserved XML namespaces cannot be registered.
 % @see http://www.w3.org/TR/xml-names/#xmlReserved
-xml_register_namespace(Namespace, _URI):-
+xml_register_namespace(Namespace, _):-
   (
     memberchk(Namespace, [xml,xmlns])
   ;
@@ -148,25 +148,28 @@ xml_register_namespace(Namespace, _URI):-
       )
     )
   ).
-% The XML namespace is already registered, so do nothing.
-xml_register_namespace(Namespace, URI):-
-  is_uri(URI),
-  rdf_current_prefix(Namespace, URI), !.
-% The XML namespace has already been registered to a different URI reference.
 xml_register_namespace(Namespace, URI1):-
-  is_uri(URI1),
-  rdf_current_prefix(Namespace, URI2),
-  URI1 \== URI2, !,
-  throw(
-    error(
-      existence_error(xml_namespace_already_exists, Namespace),
-      context(
-        'xml_register_namespace/2',
-        'The given namespace has already been registered to a different URI'
+  must_be(iri, URI1),
+  (
+    % The XML namespace is already registered, so do nothing.
+    rdf_current_prefix(Namespace, URI1)
+  ->
+    true
+  ;
+    % The XML namespace has already been registered to a different URI reference.
+    rdf_current_prefix(Namespace, URI2),
+    URI1 \== URI2
+  ->
+    throw(
+      error(
+        existence_error(xml_namespace_already_exists, Namespace),
+        context(
+          'xml_register_namespace/2',
+          'The given namespace has already been registered to a different URI'
+        )
       )
     )
+  ;
+    rdf_register_prefix(Namespace, URI1, [])
   ).
-xml_register_namespace(Namespace, URI):-
-  is_uri(URI), !,
-  rdf_register_prefix(Namespace, URI, []).
 

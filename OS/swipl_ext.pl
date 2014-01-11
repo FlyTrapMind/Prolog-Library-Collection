@@ -41,7 +41,7 @@ check_prolog_version:-
 
 check_prolog_version(MinimumVersion):-
   % Type check.
-  nonneg(MinimumVersion), !,
+  must_be(nonneg, MinimumVersion), !,
 
   % Retrieve the current version as a single integer.
   current_prolog_flag(version, CurrentVersion1),

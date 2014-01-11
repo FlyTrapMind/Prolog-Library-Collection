@@ -41,6 +41,7 @@ Predicates that operate on / generate XML DOM.
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 :- use_module(standards(sgml_parse)).
+:- use_module(uri(rfc3987_dcg)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(iso, 'http://www.iso.org/').

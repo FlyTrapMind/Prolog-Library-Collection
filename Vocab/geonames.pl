@@ -40,7 +40,7 @@ parse_attribute(AttributeNames, Attribute):-
   Attribute =.. [Name, Value],
   memberchk(Name, AttributeNames),
   attribute(Name, Type),
-  typecheck(Type, Value).
+  must_be(Type, Value).
 
 parse_attributes(AttributeNames, Attributes):-
   maplist(parse_attribute(AttributeNames), Attributes).

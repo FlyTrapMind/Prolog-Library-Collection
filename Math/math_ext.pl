@@ -3,9 +3,6 @@
   [
     average/2, % +Numbers:list(number)
                % -Average:number
-    betwixt/3, % +Min:integer
-               % +Max:or([integer,oneof([inf])])
-               % ?Integer:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
                             % -BinomialCoefficient:integer
@@ -86,17 +83,6 @@ average(Numbers, Average):-
   sum_list(Numbers, Sum),
   length(Numbers, NumberOfNumbers),
   Average is Sum / NumberOfNumbers.
-
-%! betwixt(
-%!   +Min:integer,
-%!   +Max:or([integer,oneof([inf])]),
-%!   ?Integer:integer
-%! ) is nondet.
-
-betwixt(Min, inf, I):-
-  Min =< I, !.
-betwixt(Min, Max, I):-
-  between(Min, Max, I).
 
 binomial_coefficient(M, N, BC):-
   factorial(M, F_M),

@@ -68,7 +68,7 @@ log_web(Category, [HTML_Table]):-
         row(DateTime,Category,Message),
         [arity(3),functor(row),line(RowNumber)]
       ),
-      betwixt(1, MaxNumberOfRows, RowNumber)
+      between(1, MaxNumberOfRows, RowNumber)
     ),
     TRs
   ),

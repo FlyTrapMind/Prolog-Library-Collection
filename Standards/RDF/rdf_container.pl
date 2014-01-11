@@ -147,13 +147,13 @@ rdf_collection_(Collection, Contents, G):-
 % Succeeds if =Predicate= is a container membership property.
 
 rdf_container_membership_property(P):-
-  nonvar(P), !,
+  must_be(nonvar, P), !,
   rdf_global_id(rdf:Name, P),
   atom_concat('_', Atom, Name),
   atom_number(Atom, Number),
-  nonneg(Number).
+  must_be(nonneg, Number).
 rdf_container_membership_property(P):-
-  betwixt(1, inf, Integer),
+  between(1, inf, Integer),
   format(atom(Name), '_~w', [Integer]),
   rdf_global_id(rdf:Name, P).
 

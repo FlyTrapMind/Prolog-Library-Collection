@@ -188,5 +188,5 @@ parse_attributes_html(Context, Attributes, ParsedAttributes):-
 html_typecheck(pixels, Value):-
   html_typecheck(integer, Value), !.
 html_typecheck(Type, Value):-
-  typecheck(Type, Value).
+  must_be(Type, Value).
 

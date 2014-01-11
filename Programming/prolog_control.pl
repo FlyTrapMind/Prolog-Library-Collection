@@ -1,8 +1,6 @@
 :- module(
   prolog_control,
   [
-    boolean/2, % :Goal
-               % -Boolean:oneof([false,true])
     if_else/2, % :If
                % :Else
     if_then/2, % :If
@@ -30,7 +28,6 @@ Control structures for Prolog.
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12
 */
 
-:- meta_predicate(boolean(0,-)).
 :- meta_predicate(if_else(0,0)).
 :- meta_predicate(if_then(0,0)).
 :- meta_predicate(if_then_else(0,0,0)).
@@ -39,10 +36,6 @@ Control structures for Prolog.
 :- meta_predicate(xor(0,0)).
 
 
-
-boolean(Goal, true):-
-  call(Goal), !.
-boolean(_Goal, false).
 
 %! if_else(:If, :Else) is det.
 % Procedural control structure.

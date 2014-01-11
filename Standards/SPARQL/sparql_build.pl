@@ -61,7 +61,7 @@ formulate_graph(default_graph(G), GStmt):-
 % @arg Statement
 
 formulate_limit(Limit, LimitStmt):-
-  nonneg(Limit),
+  must_be(nonneg, Limit),
   format(atom(LimitStmt), 'LIMIT ~w', [Limit]).
 
 %! formulate_mode(+Mode:oneof([select]), -Statement:atom) is det.

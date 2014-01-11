@@ -112,12 +112,12 @@ is_minimal(Minimal, Compare):-
 
 
 random_subset(S1, Percentage, S2):-
-  is_between(0.0, 1.0, Percentage), !,
+  must_be(between(0.0, 1.0), Percentage), !,
   length(S1, M),
   N is ceil(M * Percentage),
   random_subset(S1, M, N, S2).
 random_subset(S1, N, S2):-
-  nonneg(N), !,
+  must_be(nonneg, N), !,
   length(S1, M),
   random_subset(S1, M, N, S2).
 

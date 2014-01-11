@@ -84,8 +84,12 @@ dcg_separated_list_var(_Sep, [H]) -->
 %!   ?AtomicOrCodes2:or([atom,list(code),number])
 %! )// is nondet.
 
-dcg_phrase(DCG, AtomicOrCodes):-
-  dcg_phrase(DCG, AtomicOrCodes, []).
+dcg_phrase(DCG, Atom):-
+  atom(Atom), !,
+  dcg_phrase(DCG, Atom, '').
+dcg_phrase(DCG, Codes):-
+  dcg_phrase(DCG, Codes, []).
+
 dcg_phrase(DCG, Atomic1, Atomic2):-
   atom(Atomic1), !,
   atom_codes(Atomic1, Codes1),

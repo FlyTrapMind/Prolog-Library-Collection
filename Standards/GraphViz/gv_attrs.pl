@@ -14,7 +14,7 @@ Attributes, their allowed values, and their default values for GraphViz.
 @author Wouter Beek
 @see http://www.graphviz.org/doc/info/attrs.html
 @tbd Add context check (i.e., node, graph, edges, etc.).
-@version 2011-2013/07, 2013/09-2013/10
+@version 2011-2013/07, 2013/09-2013/10, 2014/01
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -65,15 +65,16 @@ gv_parse_attributes(Attrs):-
 %! gv_typecheck(+Type:compound, +Value) is semidet.
 % Succeeds if the given value can be validated as being of the given type.
 
-gv_typecheck(or(AlternativeTypes), Value):-
-  member(Type, AlternativeTypes),
-  gv_typecheck(Type, Value), !.
 gv_typecheck(polygon_based_shape, Value):-
-  findall(Shape, shape(polygon, Shape), Shapes),
-  typecheck(oneof(Shapes), Value).
+  findall(
+    Shape,
+    shape(polygon, Shape),
+    Shapes
+  ),
+  must_be(oneof(Shapes), Value).
 % Module [typecheck.pl] contains additional type checking predicates.
 gv_typecheck(Type, Value):-
-  typecheck(Type, Value).
+  must_be(Type, Value).
 
 
 
@@ -294,5 +295,5 @@ style(node, solid).
 style(node, striped).
 style(node, wedged).
 
-gv_attr(_Attrs, 'URL', is_uri, [node], '').
+gv_attr(_Attrs, 'URL', uri, [node], '').
 

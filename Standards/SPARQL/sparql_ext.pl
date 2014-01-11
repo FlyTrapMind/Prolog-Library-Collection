@@ -98,11 +98,10 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 @author Wouter Beek
 @see SPARQL 1.1 Recommendation 2013/03
      http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2013/12
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(row_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_closure)).
 :- use_module(library(apply)).
@@ -112,11 +111,12 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
+:- use_module(sparql(row_ext)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
 :- use_module(xml(xml_namespace)).
 
-% owl
+% OWL
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
 :- sparql_add_prefix(owl).
 
@@ -224,7 +224,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % @arg Resource
 
 'SPARQL_find'(Remote, Resource, Resource):-
-  is_uri(Resource),
+  must_be(iri, Resource),
   % @tbd This can be done more efficiently by just looking for
   %      the first triple.
   'SPARQL_describe'([closed_under_identity(false)], Remote, Resource, PO_Pairs),

@@ -49,6 +49,10 @@ extract_error(error(Type,_), Error):- !,
   functor(Type, Error, _).
 extract_error(Error, Error).
 
+
+%! idle_error(+Reason:or([atom,pair(atom,list)])) is det.
+% Throws an idle error.
+
 idle_error(Format-Args):- !,
   format(atom(Reason), Format, Args),
   idle_error(Reason).

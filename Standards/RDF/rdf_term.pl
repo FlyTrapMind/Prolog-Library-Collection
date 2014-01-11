@@ -115,7 +115,7 @@ See also the URI equivalence issue of the Technical Architecture Group [TAG].
 
 @author Wouter Beek
 @see KlyneCarroll2004 http://www.w3.org/TR/rdf-concepts/#dfn-URI-reference
-@version 2012/01-2013/05, 2013/07-2013/08
+@version 2012/01-2013/05, 2013/07-2013/08, 2014/01
 */
 
 :- use_module(generics(meta_ext)).
@@ -236,7 +236,7 @@ rdf_object(G, O):-
   ).
 
 rdf_po_pairs(Resource, PO_Pairs):-
-  is_uri(Resource), !,
+  must_be(iri, Resource), !,
   setoff(
     [P,O],
     rdf(Resource, P, O, _Graph),

@@ -356,12 +356,12 @@ random_select(L1, M, X, L2):-
   nth0(Rnd, L1, X, L2).
 
 random_sublist(L1, Percentage, L2):-
-  is_between(0.0, 1.0, Percentage), !,
+  must_be(between(0.0, 1.0), Percentage), !,
   length(L1, M),
   N is ceil(M * Percentage),
   random_sublist(L1, M, N, L2).
 random_sublist(L1, N, L2):-
-  nonneg(N), !,
+  must_be(nonneg, N), !,
   length(L1, M),
   random_sublist(L1, M, N, L2).
 
@@ -435,7 +435,7 @@ repeating_list(H, Reps, L):-
   length([H|T], Reps).
 % Repetitions is given, then we generate the list.
 repeating_list(H, Reps1, [H|T]):-
-  nonneg(Reps1), !,
+  must_be(nonneg, Reps1), !,
   Reps2 is Reps1 - 1,
   repeating_list(H, Reps2, T).
 % Repetitions is not `nonneg`.

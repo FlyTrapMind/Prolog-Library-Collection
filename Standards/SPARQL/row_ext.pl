@@ -11,7 +11,7 @@
 /** <module> Row extensions
 
 Support for row compound terms, i.e. terms of the following form:
-~~~
+~~~{.pl}
 row(Arg1, ..., ArgN)
 ~~~
 
@@ -46,3 +46,4 @@ rows_to_ord_set([], S, S):- !.
 rows_to_ord_set([row(H)|T], S1, S):-
   ord_add_element(S1, H, S2),
   rows_to_ord_set(T, S2, S).
+

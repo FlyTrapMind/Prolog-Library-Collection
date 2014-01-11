@@ -54,7 +54,7 @@
 Predicates that allow RDF graphs to be cleaned in a controlled way.
 
 @author Wouter Beek
-@version 2013/03-2013/04, 2013/06, 2013/08-2013/09
+@version 2013/03-2013/04, 2013/06, 2013/08-2013/09, 2014/01
 */
 
 :- use_module(generics(atom_ext)).
@@ -111,7 +111,7 @@ rdf_expand_namespace(literal(type(Atom, Value)), literal(type(URI, Value))):-
 rdf_expand_namespace(literal(Literal), literal(Literal)):- !.
 % Already a URI.
 rdf_expand_namespace(URI, URI):-
-  is_uri(URI), !.
+  must_be(iri, URI), !.
 % An atom that can be converted to a URI.
 rdf_expand_namespace(Atom, URI):-
   atomic_list_concat([Namespace,LocalName], ':', Atom),

@@ -358,7 +358,7 @@ is_meta(separator).
 % i.e., is either an integer or the atom `inf`.
 
 is_repetition_value(V):-
-  nonneg(V), !.
+  must_be(nonneg, V), !.
 is_repetition_value(V):-
   V == inf.
 
