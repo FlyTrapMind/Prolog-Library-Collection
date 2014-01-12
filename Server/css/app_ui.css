@@ -1,13 +1,8 @@
-body {
-  color: #777;
-}
-
 body,
 .pure-g [class *= "pure-u"],
 .pure-g-r [class *= "pure-u"] {
   font-family: "proxima-nova", sans-serif;
 }
-
 
 /* Add transition to containers so they can push in and out */
 #layout,
@@ -25,7 +20,6 @@ body,
  * Element Styles
  * --------------------------
 */
-
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
@@ -53,6 +47,7 @@ dt {
 dd {
   margin: 0 0 10px 0;
 }
+
 
 /* --------------------------
  * Layout Styles

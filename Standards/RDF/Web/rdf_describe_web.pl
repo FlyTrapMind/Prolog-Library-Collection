@@ -1,8 +1,12 @@
 :- module(
   rdf_describe_web,
   [
-    rdf_describe_web/2 % +Resource:atom
-                       % -DOM:list
+    rdf_describe_web/2, % +Resource:atom
+                        % -DOM:list
+    rdf_table/4 % +Subject:or([bnode,iri])
+                % +Predicate:iri
+                % +Object:or([bnode,iri,literal])
+                % +Graph:atom
   ]
 ).
 
@@ -17,7 +21,7 @@ Generates Web pages that describe a resource.
 @tbd Add namespace legend.
 @tbd Add local/remote distinction.
 @tbd Include images.
-@version 2013/12
+@version 2013/12-2014/01
 */
 
 :- use_module(generics(meta_ext)).
@@ -27,13 +31,20 @@ Generates Web pages that describe a resource.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(www_browser)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_web)).
 :- use_module(server(web_modules)).
 
+:- rdf_meta(rdf_table(r,r,r,+)).
+
 :- initialization(web_module_add('RDF DESCRIBE', rdf_describe_web, rdf_desc)).
 
 :- http_handler(root(rdf_desc), rdf_describe, []).
+
+%! rdf_table(?Time:positive_integer, ?Quadruples:list(list)) is nondet.
+
+:- dynamic(rdf_table/2).
 
 
 
@@ -45,9 +56,36 @@ Generates Web pages that describe a resource.
 
 rdf_describe(Request):-
   memberchk(search(Search), Request),
-  memberchk(resource=R1, Search),
+  memberchk(resource=R1, Search), !,
   rdf_web_argument(R1, R2),
   reply_html_page(app_style, \rdf_describe_head(R1), \rdf_describe_body(R2)).
+rdf_describe(_Request):-
+  findall(
+    Time-Quadruples,
+    rdf_table(Time, Quadruples),
+    Pairs1
+  ),
+  keysort(Pairs1, Pairs2),
+  reverse(Pairs2, Pairs3),
+  rdf_describe_(Pairs3).
+rdf_describe_([]):- !,
+  reply_html_page(app_style, title('No RDF to tablify'), 'No results.').
+rdf_describe_([Time1-Quadruples|_]):-
+  format_time(atom(Time2), '%FT%T%:z', Time1),
+  format(atom(Caption), 'RDF Table at ~w', [Time2]),
+  reply_html_page(
+    app_style,
+    title(['RDF Table - ',Time2]),
+    \html_table(
+      [
+        caption(Caption),
+        cell_dcg(dcg_rdf_term_name),
+        header(true),
+        indexed(true)
+      ],
+      [['Subject','Predicate','Object','Graph']|Quadruples]
+    )
+  ).
 
 rdf_describe_body(R) -->
   {
@@ -89,4 +127,14 @@ rdf_describe_web(S1, DOM):-
     [['Predicate','Object']|PO_Pairs],
     DOM
   ).
+
+rdf_table(S, P, O, G):-
+  setoff(
+    [S,P,O,G],
+    rdf(S, P, O, G),
+    Quadruples
+  ),
+  get_time(Time),
+  assert(rdf_table(Time, Quadruples)),
+  www_open_url('http://localhost:5000/rdf_desc').
 

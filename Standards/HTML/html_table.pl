@@ -5,7 +5,7 @@
     html_table/3, % +O1:list(nvpair)
                   % +Rows:list(list)
                   % -Markup:list
-    html_table//2 % +O1:list(nvpair)
+    html_table//2 % :O1:list(nvpair)
                   % +Rows:list(list)
   ]
 ).
@@ -15,7 +15,7 @@
 Support for generating HTML tables based on Prolog lists.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/09-2013/12
+@version 2012/09-2013/06, 2013/09-2014/01
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -24,6 +24,11 @@ Support for generating HTML tables based on Prolog lists.
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(uri(rfc3987_dcg)).
+
+is_meta(cell_dcg).
+is_meta(cell_value).
+
+:- meta_predicate(html_table(:,+,?,?)).
 
 
 
@@ -41,14 +46,16 @@ empty_row -->
 %   1. =|caption(atom)|=
 %      The table caption, if any.
 %      Default is no caption.
-%   2. =|header(boolean)|=
+%   2. =|cell_dcg(DCG)|=
+%      DCG rule that generates cell values (only for non-index data cells).
+%   3. =|header(boolean)|=
 %      Whether or not the first sublist should be
 %      displayed as the table header row.
 %      Default is `true`.
-%   3. =|highlighted_rows(+Indexes:list(nonneg)|=
+%   4. =|highlighted_rows(+Indexes:list(nonneg)|=
 %      The indexes of the rows that will be highlighted.
 %      Default: `[]`.
-%   4. =|indexed(+Indexed:boolean)|=
+%   5. =|indexed(+Indexed:boolean)|=
 %      Whether or not each row should begin with a row index.
 %      Default is `false`.
 
@@ -70,17 +77,26 @@ html_table_caption(O1) -->
   html(caption(Caption)).
 html_table_caption(_O1) --> !.
 
-html_table_cell(td, H) --> !,
+html_table_cell(O1, td, H1) -->
+  {
+    option(cell_dcg(DCG1), O1), !,
+    strip_module(DCG1, Module, DCG2),
+    Call =.. [DCG2,H1],
+    phrase(Module:Call, H2),
+    atom_codes(H3, H2)
+  },
+  html(td(H3)).
+html_table_cell(_, td, H) --> !,
   html(td(H)).
-html_table_cell(th, H) --> !,
+html_table_cell(_, th, H) --> !,
   html(th(H)).
 
-html_table_cells(CellType, [H|T]) -->
+html_table_cells(O1, CellType, [H|T]) -->
   html([
-    \html_table_cell(CellType, H),
-    \html_table_cells(CellType, T)
+    \html_table_cell(O1, CellType, H),
+    \html_table_cells(O1, CellType, T)
   ]).
-html_table_cells(_CellType, []) --> [].
+html_table_cells(_O1, _CellType, []) --> [].
 
 html_table_header(O1, [H1|T], T) -->
   {
@@ -98,11 +114,11 @@ html_table_header(_O1, T, T) --> [].
 
 html_table_index_cell(O1, CellType, RowN) -->
   {option(indexed(true), O1)}, !,
-  html(\html_table_cell(CellType, RowN)).
+  html(\html_table_cell([], CellType, RowN)).
 html_table_index_cell(_O1, _CellType, _RowN) --> !.
 
 html_table_row(_O1, th, L) --> !,
-  html(tr(\html_table_cells(th, L))).
+  html(tr(\html_table_cells([], th, L))).
 html_table_row(O1, td, L) -->
   {
     flag(table_row, RowN, RowN + 1),
@@ -118,7 +134,7 @@ html_table_row(O1, td, L) -->
   html(
     tr(O2, [
       \html_table_index_cell(O1, td, RowN),
-      \html_table_cells(td, L)
+      \html_table_cells(O1, td, L)
     ])
   ).
 
@@ -196,8 +212,6 @@ cell_value_default(Content, Content):-
 % No other options are left, just make sure it does not break.
 cell_value_default(Content1, Content2):-
   term_to_atom(Content1, Content2).
-
-is_meta(cell_value).
 
 %! table_header(
 %!   +O1:list(nvpair),
