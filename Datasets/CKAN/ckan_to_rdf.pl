@@ -13,11 +13,9 @@ Automated CKAN to RDF conversion.
 @version 2014/01
 */
 
-:- use_module(datasets(ckan)).
+:- use_module(ckan(ckan)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
-
-:- debug(ckan).
 
 
 
@@ -43,21 +41,24 @@ ckan_to_rdf(O1):-
   license_list(O2, _),
 
   % Organizations.
-  organization_list(O2, _, _, _, _, Organizations),
-  length(Organizations, LO),
-  forall(
-    nth1(I, Organizations, Organization),
-    (
-      debug(ckan, 'Organizations ~d/~d', [I,LO]),
-      organization_show(O2, Organization, _)
-    )
-  ),
+  %organization_list(O2, _, _, _, _, Organizations),
+  %length(Organizations, LO),
+  %forall(
+  %  nth1(I, Organizations, Organization),
+  %  (
+  %    debug(ckan, 'Organizations ~d/~d', [I,LO]),
+  %    organization_show(O2, Organization, _)
+  %  )
+  %),
 
   % Packages.
   package_list(O2, _, _, Packages),
   length(Packages, LP),
   forall(
-    nth1(I, Packages, Package),
+    (
+      nth1(I, Packages, Package),
+      between(900, inf, I)
+    ),
     (
       debug(ckan, 'Packages ~d/~d', [I,LP]),
       package_show(O2, Package, _)

@@ -157,7 +157,11 @@ legend(
   _,
   [
     group_id-atom-false,
-    revision_id-atom-false
+    object_package_id-atom-false,
+    package_id-atom-false,
+    revision_id-atom-false,
+    revision_timestamp-atom-false,
+    subject_package_id-atom-false
   ]
 ).
 legend(
@@ -184,10 +188,12 @@ legend(
     id-atom-false,
     group_id-atom-true,
     key-atom-false,
+    object_package_id-atom-false,
     package_id-atom-false,
     revision_id-atom-false,
     revision_timestamp-atom-false,
     state-atom-false,
+    subject_package_id-atom-false,
     value-atom-false
   ]
 ).
@@ -313,8 +319,8 @@ legend(
     'publish-date'-atom-true,
     'publish-restricted'-boolean-true,
     published_via-atom-true,
-    relationships_as_object-list(atom)-false,
-    relationships_as_subject-list(atom)-false,
+    relationships_as_object-list(relationship/_)-false,
+    relationships_as_subject-list(relationship/_)-false,
     'release-notes'-atom-true,
     resources-list(resource/_)-false,
     revision_id-atom-false,
@@ -350,9 +356,21 @@ legend(
   ]
 ).
 legend(
+  relationship,
+  id,
+  [
+    '__extras'-'__extras'/_-false,
+    comment-atom-true,
+    extras-list(extra/_)-false,
+    id-atom-false,
+    type-atom-false
+  ]
+).
+legend(
   resource,
   id,
   [
+    'Author'-atom-false,
     cache_filepath-atom-true,
     cache_last_updated-atom-true,
     cache_url-atom-true,
@@ -365,6 +383,7 @@ legend(
     date-atom-true,
     description-atom-false,
     format-atom-false,
+    'HGNC'-atom-false,
     hash-atom-false,
     'hub-id'-atom-true,
     id-atom-false,
@@ -375,6 +394,7 @@ legend(
     openness_score-integer-true,
     openness_score_failure_count-integer-true,
     openness_score_reason-atom-true,
+    openspending_hint-atom-false,
     owner-atom-true,
     position-integer-false,
     'publish-date'-atom-true,
@@ -388,9 +408,11 @@ legend(
     scraper_source-atom-true,
     scraper_url-atom-true,
     size-integer-true,
+    sparql_graph_name-atom-false,
     state-atom-false,
     tracking_summary-tracking_summary/_-false,
     url-atom-false,
+    url_error-atom-false,
     verified-boolean-true,
     verified_date-atom-true,
     webstore_last_updated-atom-true,

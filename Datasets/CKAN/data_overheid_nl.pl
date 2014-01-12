@@ -14,7 +14,7 @@
 */
 
 
-:- use_module(datasets(ckan)).
+:- use_module(ckan(ckan)).
 :- use_module(server(api_keys)).
 
 

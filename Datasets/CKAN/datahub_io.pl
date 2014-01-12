@@ -13,8 +13,8 @@
 @version 2014/01
 */
 
-:- use_module(datasets(ckan)). % Meta-calls.
-:- use_module(datasets(ckan_to_rdf)).
+:- use_module(ckan(ckan)). % Meta-calls.
+:- use_module(ckan(ckan_to_rdf)).
 :- use_module(server(api_keys)).
 
 
