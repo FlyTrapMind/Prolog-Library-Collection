@@ -22,7 +22,8 @@
     'CTL'//0,
     'CTL'//1, % ?Code:code
     'DIGIT'//0,
-    'DIGIT'//1, % ?Integer:between(0,9)
+    'DIGIT'//2, % ?Code:code
+                % ?Integer:between(0,9)
     'HEX'//0 as 'HEXDIG',
     'HEX'//1 as 'HEXDIG', % ?Integer:between(0,15)
     'HT'//0 as 'HTAB',
@@ -45,9 +46,6 @@ DCGs for the basic rules defined in RFC 4234,
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
 
 
 
@@ -68,8 +66,6 @@ DCGs for the basic rules defined in RFC 4234,
 'ALPHA' -->
   'ALPHA'(_).
 
-'ALPHA'(C) -->
-  ascii_letter(C).
 'ALPHA'(C) -->
   ascii_letter(C).
 

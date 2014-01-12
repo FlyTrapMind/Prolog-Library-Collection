@@ -33,5 +33,5 @@ Predicate for manipulating parse trees.
 
 parse_tree(P, SubT1, T):-
   include(nonvar, SubT1, SubT2),
-  T =.. [P | SubT2].
+  T =.. [P|SubT2].
 

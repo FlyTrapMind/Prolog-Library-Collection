@@ -68,7 +68,6 @@ void_init:-
 % @arg Dataset An IRI denoting a dataset.
 
 void_load_dataset(DD_F, DD_G, DS):-
-gtrace,
   % Every dataset must have a set datadump property.
   once(rdf(DS, void:dataDump, Dump)),
 
@@ -84,13 +83,13 @@ gtrace,
   rdf_load2(DS_F, [graph(DS_G)]),
 
   % Update the internally stored relations between VoID graphs and
-  % dataset graphs.
+  %  dataset graphs.
   void_dataset_add(DD_G, DS, DS_F, DS_G).
 
 %! void_load_library(+File:atom, +Graph:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
-% Also calculates VoID statistics for all datasets and asserts those to
-% the VoID file.
+% Also calculates VoID statistics for all datasets and asserts those
+%  to the VoID file.
 %
 % @arg File The atomic name of an absolute file path of a VoID file.
 % @arg Graph The atomic name of the VoID graph.

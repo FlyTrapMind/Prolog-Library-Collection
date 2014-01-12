@@ -146,7 +146,7 @@ Note: HTTP requirements for the date/time stamp format apply only
   'SP',
   time(T3, Time),
   'SP',
-  dcg_multi1('DIGIT', 4-4, [Y1,Y2,Y3,Y4]),
+  dcg_multi2('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
   {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
@@ -168,7 +168,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 
 date1(date1(Day,T1,Year), Year, Month, Day) -->
   % Day
-  dcg_multi1('DIGIT', 2-2, [D1,D2]),
+  dcg_multi2('DIGIT', 2-2, _, [D1,D2]),
   {digits_to_decimal([D1,D2], Day)},
   'SP',
   
@@ -177,7 +177,7 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
   'SP',
   
   % Year
-  dcg_multi1('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
+  dcg_multi2('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
   {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
@@ -199,7 +199,7 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
 
 date2(date2(Year,T1,Day), Year, Month, Day) -->
   % Day
-  dcg_multi1('DIGIT', 2-2, [Y1,Y2]),
+  dcg_multi2('DIGIT', 2-2, _, [Y1,Y2]),
   {digits_to_decimal([Y1,Y2], Year)},
   "-",
   
@@ -208,7 +208,7 @@ date2(date2(Year,T1,Day), Year, Month, Day) -->
   "-",
   
   % Year
-  dcg_multi1('DIGIT', 2-2, [D1,D2]),
+  dcg_multi2('DIGIT', 2-2, _, [D1,D2]),
   {digits_to_decimal([D1,D2], Day)}.
 
 
@@ -230,11 +230,11 @@ date3(date3(T1,Day), Month, Day) -->
   
   % Day
   (
-    dcg_multi1('DIGIT', 2-2, [D1,D2]),
+    dcg_multi2('DIGIT', 2-2, _, [D1,D2]),
     {digits_to_decimal([D1,D2], Day)}
   ;
     'SP',
-    'DIGIT'(Day)
+    'DIGIT'(_, Day)
   ).
 
 
@@ -251,7 +251,7 @@ date3(date3(T1,Day), Month, Day) -->
 % @see RFC 2616
 
 'delta-seconds'('delta-seconds'(Seconds), Seconds) -->
-  dcg_multi1('DIGIT', 1-_, Ss),
+  dcg_multi2('DIGIT', 1-_, _, Ss),
   {digits_to_decimal(Ss, Seconds)}.
 
 
@@ -372,15 +372,15 @@ month(month('Dec'), 12) -->
 
 time(time(Hour,Minute,Second), time(Hour,Minute,Second)) -->
   % Hour
-  dcg_multi1('DIGIT', 2-2, [H1,H2]),
+  dcg_multi2('DIGIT', 2-2, _, [H1,H2]),
   {digits_to_decimal([H1,H2], Hour)},
   ":",
   % Minute
-  dcg_multi1('DIGIT', 2-2, [M1,M2]),
+  dcg_multi2('DIGIT', 2-2, _, [M1,M2]),
   {digits_to_decimal([M1,M2], Minute)},
   ":",
   % Second
-  dcg_multi1('DIGIT', 2-2, [S1,S2]),
+  dcg_multi2('DIGIT', 2-2, _, [S1,S2]),
   {digits_to_decimal([S1,S2], Second)}.
 
 

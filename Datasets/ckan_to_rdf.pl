@@ -17,8 +17,8 @@ Automated CKAN to RDF conversion.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(prolog_to_rdf)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf_conv(prolog_to_rdf)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(json_ext)).
 

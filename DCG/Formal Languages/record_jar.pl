@@ -141,7 +141,7 @@ encodingSig(Encoding) -->
   dcg_multi1(encodingSig_, _N, Encoding, [convert(codes_atom)]),
   'CRLF'.
 encodingSig_(C) --> 'ALPHA'(C).
-encodingSig_(C) --> 'DIGIT'(_D, C).
+encodingSig_(C) --> 'DIGIT'(C, _).
 encodingSig_(C) --> hyphen(C).
 encodingSig_(C) --> underscore(C).
 

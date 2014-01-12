@@ -153,7 +153,11 @@ bracketed(DCG) -->
 %! bracketed(Type:oneof([curly,round,square]), :DCG)//
 
 bracketed(Type, DCG) -->
-  dcg_between(opening_bracket(_, Type), DCG, closing_bracket(_, Type)).
+  dcg_between(
+    opening_bracket(_, Type),
+    DCG,
+    closing_bracket(_, Type)
+  ).
 
 capitalize, [Upper] -->
   [Lower],

@@ -11,7 +11,8 @@
     'CTL'//0,
     'CTL'//1,
     'DIGIT'//0,
-    'DIGIT'//1, % ?Integer:between(0,9)
+    'DIGIT'//2, % ?Code:code
+                % ?Integer:between(0,9)
     'HEX'//0,
     'HEX'//1, % ?HexadecimalDigit:between(0,15)
     'HT'//0,
@@ -194,7 +195,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 %! 'DIGIT'// .
-%! 'DIGIT'(?Integer:between(0,9))// .
+%! 'DIGIT'(?Code:code, ?Integer:between(0,9))// .
 % Decimal digit.
 %
 % ~~~{.abnf}
@@ -204,10 +205,10 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2616
 
 'DIGIT' -->
-  'DIGIT'(_).
+  'DIGIT'(_, _).
 
-'DIGIT'(D) -->
-  decimal_digit(_, D).
+'DIGIT'(C, D) -->
+  decimal_digit(C, D).
 
 
 

@@ -57,7 +57,7 @@ DCG for RFC 2616 status lines.
 %  the unusual status.
 
 'extension-code'('extension-code'(Status), Status) -->
-  dcg_multi1('DIGIT', 3, Ds),
+  dcg_multi2('DIGIT', 3, _, Ds),
   {digits_to_decimal(Ds, Status)}.
 
 

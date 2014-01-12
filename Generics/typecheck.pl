@@ -71,6 +71,8 @@ error:has_type(list(Type), Term):-
   must_be(list, Term),
   maplist(must_be(Type), Term).
 % iri/0
-error:has_type(iri, Term):-
-  once(dcg_phrase('IRI', Term)).
+error:has_type(iri, _Term):-
+  % @tbd
+  %%%%once(dcg_phrase('IRI'(_), Term)),
+  true.
 

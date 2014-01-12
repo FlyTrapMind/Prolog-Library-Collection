@@ -61,7 +61,7 @@ qvalue(qvalue(D2), D2) -->
   "0",
   (
     ".",
-    dcg_multi1('DIGIT', 0-3, Ds),
+    dcg_multi2('DIGIT', 0-3, _, Ds),
     {digits_to_decimal(Ds, D1)},
     {D2 is D1 / 10}
   ;

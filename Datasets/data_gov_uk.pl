@@ -9,8 +9,6 @@
 
 /** <module> Access to data.gov.uk
 
-6.615.117 triples
-
 @author Wouter Beek
 @see http://data.gov.uk
 @version 2014/01
@@ -18,7 +16,6 @@
 
 :- use_module(datasets(ckan)). % Meta-calls.
 :- use_module(datasets(ckan_to_rdf)).
-:- use_module(library(option)).
 
 
 

@@ -12,16 +12,29 @@
 @version 2014/01
 */
 
-:- use_module(datasets(ckan)).
+:- use_module(datasets(ckan)). % Meta-calls.
+:- use_module(datasets(ckan_to_rdf)).
 :- use_module(server(api_keys)).
 
 
 
 ckan(Predicate, Arguments):-
-  Auth = 'datahub.io',
-  current_api_key('datahub.io', ckan, Key),
-  Scheme = http,
-  O1 = [api_key(Key),api_version(_),authority(Auth),scheme(Scheme)],
+  options(O1),
   Call =.. [Predicate,O1|Arguments],
   call(Call).
+
+ckan_to_rdf:-
+  options(O1),
+  ckan_to_rdf(O1).
+
+options([
+  api_key(Key),
+  authority(Auth),
+  deprecated(true),
+  paginated(true),
+  scheme(Scheme)
+]):-
+  Auth = 'datahub.io',
+  current_api_key('datahub.io', ckan, Key),
+  Scheme = http.
 
