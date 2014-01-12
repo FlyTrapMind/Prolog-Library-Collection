@@ -182,6 +182,7 @@ legend(
   [
     '__extras'-'__extras'/_-false,
     id-atom-false,
+    group_id-atom-true,
     key-atom-false,
     package_id-atom-false,
     revision_id-atom-false,
@@ -244,16 +245,22 @@ legend(
     created-atom-false,
     description-atom-true,
     display_name-atom-false,
+    extras-list(extra/_)-true,
+    groups-list(group/_)-true,
     id-atom-false,
     image_url-atom-true,
     is_organization-boolean-false,
     name-atom-false,
-    packages-integer-false,
+    num_followers-integer-true,
+    package_count-integer-true,
+    packages-list(package/_)-false,
     revision_id-atom-false,
     revision_timestamp-atom-false,
     state-atom-false,
+    tags-list(tag/_)-false,
     title-atom-false,
-    type-atom-false
+    type-atom-false,
+    users-list(user/_)-false
   ]
 ).
 legend(
@@ -263,6 +270,7 @@ legend(
     additional_resources-list(resource/_)-true,
     author-atom-true,
     author_email-atom-true,
+    capacity-atom-true,
     'core-dataset'-boolean-true,
     'contact-email'-atom-true,
     'contact-name'-atom-true,
@@ -298,7 +306,7 @@ legend(
     num_resources-integer-false,
     num_tags-integer-false,
     organization-organization/_-true,
-    owner_org-atom-false,
+    owner_org-atom-true,
     %owner_org-iri(organization)-false,
     precision-atom-true,
     private-boolean-false,
@@ -321,7 +329,7 @@ legend(
     'theme-primary'-atom-true,
     'theme-secondary'-atom-true,
     timeseries_resources-list(resource/_)-true,
-    title-atom-false,
+    title-atom-true,
     tracking_summary-tracking_summary/_-false,
     type-atom-false,
     unpublished-boolean-true,
@@ -425,8 +433,20 @@ legend(
   user,
   name,
   [
+    about-atom-true,
+    activity_streams_email_notifications-boolean-false,
     capacity-atom-false,
-    name-atom-false
+    created-atom-false,
+    display_name-atom-false,
+    id-atom-false,
+    email_hash-atom-false,
+    fullname-atom-true,
+    name-atom-false,
+    number_administered_packages-integer-false,
+    number_of_administered_packages-integer-false,
+    number_of_edits-integer-false,
+    openid-atom-true,
+    sysadmin-boolean-false
   ]
 ).
 
