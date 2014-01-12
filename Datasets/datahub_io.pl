@@ -1,8 +1,9 @@
 :- module(
   datahub_io,
   [
-    ckan/2 % +Predicate:atom
-           % +Arguments:list
+    ckan/2, % +Predicate:atom
+            % +Arguments:list
+    ckan_to_rdf/0
   ]
 ).
 

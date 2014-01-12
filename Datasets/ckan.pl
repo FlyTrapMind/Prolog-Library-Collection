@@ -299,6 +299,7 @@ legend(
     num_tags-integer-false,
     organization-organization/_-true,
     owner_org-atom-false,
+    %owner_org-iri(organization)-false,
     precision-atom-true,
     private-boolean-false,
     'publish-date'-atom-true,
@@ -347,6 +348,7 @@ legend(
     cache_filepath-atom-true,
     cache_last_updated-atom-true,
     cache_url-atom-true,
+    cache_url_updated-atom-true,
     ckan_recommended_wms_preview-boolean-true,
     content_length-atom-true,
     content_type-atom-true,
@@ -365,6 +367,7 @@ legend(
     openness_score-integer-true,
     openness_score_failure_count-integer-true,
     openness_score_reason-atom-true,
+    owner-atom-true,
     position-integer-false,
     'publish-date'-atom-true,
     resource_group_id-atom-false,
@@ -1067,8 +1070,7 @@ ckan(O1, Action, Parameters, Result):-
   (
     option(api_key(Key), O1)
   ->
-    HTTP_O1 = [authorization(Key)]
-    %HTTP_O1 = [request_header('Authorization'=Key)]
+    HTTP_O1 = [request_header('Authorization'=Key)]
   ;
     HTTP_O1 = []
   ),
