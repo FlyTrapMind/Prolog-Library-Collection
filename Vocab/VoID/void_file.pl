@@ -53,7 +53,7 @@ VoiD covers four areas of metadata:
 
 void_init:-
   rdf_new_graph(void_schema, G),
-  absolute_file_name(vocab('VoID'), F, [access(read),file_type(turtle)]),
+  absolute_file_name(void('VoID'), F, [access(read),file_type(turtle)]),
   rdf_load2(F, [file_type(turtle),graph(G)]).
 
 %! void_load_dataset(
@@ -68,6 +68,7 @@ void_init:-
 % @arg Dataset An IRI denoting a dataset.
 
 void_load_dataset(DD_F, DD_G, DS):-
+gtrace,
   % Every dataset must have a set datadump property.
   once(rdf(DS, void:dataDump, Dump)),
 
@@ -108,7 +109,7 @@ void_load_library(F, G):-
   nonvar(G),
 
   % Clear the internal database.
-  void_dataset_remove(G),
+  catch(void_dataset_remove(G), _, true),
 
   % Make sure the VoID vocabulary is loaded.
   void_init,

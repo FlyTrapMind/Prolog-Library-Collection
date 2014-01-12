@@ -185,7 +185,7 @@ cell_value_default(Content1, Content2):-
 cell_value_default(IRI-Label, element(a,[href=IRI],[Label])):- !.
 % IRIs.
 cell_value_default(Content1, element(a,[href=Content1],[Content1])):-
-  dcg_phrase('IRI', Content1), !.
+  once(dcg_phrase('IRI', Content1)), !.
 % If we use term_to_atom/2 for atomic terms, extra single quotes are added
 % in front and at the end of the atom. Therefore, we first check whether
 % the term is an atom.

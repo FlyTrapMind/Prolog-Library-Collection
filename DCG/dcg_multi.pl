@@ -66,14 +66,12 @@ When `Repetitions` is a postitive integer `N`,
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
-:- use_module(programming(prolog_mode)).
 
 :- meta_predicate(dcg_multi(2,?,?)).
 :- meta_predicate(dcg_multi(2,?,?,?)).
@@ -358,7 +356,7 @@ is_meta(separator).
 % i.e., is either an integer or the atom `inf`.
 
 is_repetition_value(V):-
-  must_be(nonneg, V), !.
+  is_of_type(nonneg, V), !.
 is_repetition_value(V):-
   V == inf.
 

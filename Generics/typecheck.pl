@@ -1,5 +1,7 @@
 :- module(typecheck, []).
 :- reexport(library(error), [
+  is_of_type/2, % +Type
+		% @Term
   must_be/2 % +Type
             % @Term
 ]).
@@ -70,5 +72,5 @@ error:has_type(list(Type), Term):-
   maplist(must_be(Type), Term).
 % iri/0
 error:has_type(iri, Term):-
-  dcg_phrase('IRI', Term).
+  once(dcg_phrase('IRI', Term)).
 
