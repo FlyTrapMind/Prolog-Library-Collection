@@ -73,7 +73,7 @@ rdf_describe(_Request):-
   reverse(Pairs2, Pairs3),
   rdf_describe_(Pairs3).
 rdf_describe_([]):- !,
-  reply_html_page(app_style, title('No RDF to tablify'), 'No results.').
+  reply_html_page(app_style, title('No RDF to tablify'), \show_categories).
 rdf_describe_([Time1-Quadruples|_]):-
   format_time(atom(Time2), '%FT%T%:z', Time1),
   format(atom(Caption), 'RDF Table at ~w', [Time2]),
@@ -104,21 +104,25 @@ rdf_describe_body(R) -->
     format(atom(Caption), 'Triples describing resource ~w.', [R])
   },
   html([
-    \show_categories([ckan:'Organization']),
     \html_table(
       [caption(Caption),header(true),indexed(true)],
       [['Predicate','Object']|PO_Pairs]
-    )
+    ),
+    \show_categories
   ]).
 
-show_categories(Categories) -->
+show_categories -->
+  show_categories([ckan:'Organization',ckan:'Package',ckan:'User']).
+
+show_categories([]) --> [].
+show_categories([Category1|Categories]) -->
   {
-    rdf_member(Category, Categories),
-    with_output_to(atom(CategoryName), rdf_term_name(Category)),
+    rdf_global_id(Category1, Category2),
+    with_output_to(atom(CategoryName), rdf_term_name(Category2)),
     format(atom(Caption), 'Instances of ~w.', [CategoryName]),
     setoff(
       [Instance],
-      rdfs_individual_of(Instance, Category),
+      rdfs_individual_of(Instance, Category2),
       Instances
     )
   },
@@ -132,7 +136,8 @@ show_categories(Categories) -->
       ],
       [['Instance']|Instances]
     )
-  ).
+  ),
+  show_categories(Categories).
 
 rdf_linked_term(Resource) -->
   {

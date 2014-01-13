@@ -1,7 +1,7 @@
 :- module(typecheck, []).
 :- reexport(library(error), [
   is_of_type/2, % +Type
-		% @Term
+                % @Term
   must_be/2 % +Type
             % @Term
 ]).
@@ -75,7 +75,7 @@ error:has_type(list(Type), Term):-
 error:has_type(iri, Term):-
   uri_components(
     Term,
-    uri_component(Scheme,Authority,Path,_Search,_Fragment)
+    uri_components(Scheme,Authority,Path,_Search,_Fragment)
   ),
   maplist(nonvar, [Scheme,Authority,Path]).
   % @tbd

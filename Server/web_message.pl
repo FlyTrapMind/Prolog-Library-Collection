@@ -81,8 +81,8 @@ log_web(Category, [HTML_Table]):-
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
   web_error(Exception, Markup),
   push(status_pane, html, app_style, Markup), !.
-prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
-  format(user, '~w', [Exception]). %DEB
+%prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
+%  format(user, '~w', [Exception]). %DEB
 prolog:debug_print_hook(Type, Format, Args):-
   format(atom(Msg), Format, Args),
 
@@ -95,8 +95,8 @@ prolog:debug_print_hook(Type, Format, Args):-
   ),
 
   % Write to the terminal.
-  ansi_format(user_output, [bold,fg(green)], '[~w] ', [Type]),
-  ansi_formatnl(user_output, [fg(green)], '~w', [Msg]),
+  %ansi_format(user_output, [bold,fg(green)], '[~w] ', [Type]),
+  %ansi_formatnl(user_output, [fg(green)], '~w', [Msg]),
 
   % Write to the log stream/file.
   append_to_log(Type, Format, Args).
