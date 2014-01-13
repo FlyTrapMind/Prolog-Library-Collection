@@ -13,10 +13,11 @@
 Acts on messages printed by print_message/2.
 
 @author Wouter Beek
-@version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11
+@version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11, 2014/01
 */
 
 :- use_module(generics(logging)).
+:- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(csv)).
 :- use_module(library(http/html_write)).
@@ -39,7 +40,7 @@ Acts on messages printed by print_message/2.
 :- setting(
   max_log_length,
   nonneg,
-  500,
+  100,
   'The maximum number of log items to show.'
 ).
 
@@ -48,33 +49,29 @@ Acts on messages printed by print_message/2.
 log_web(Markup):-
   log_web(_Category, Markup).
 
-log_web(_Category, Markup):-
+log_web(_, Markup):-
   \+ current_log_file(_File), !,
   Markup = [element(h1,[],['Logging is currently switched off.'])].
-log_web(Category, [HTML_Table]):-
+log_web(Max, [HTML_Table]):-
   current_log_file(File),
-  (
-    var(Category)
-  ->
-    MaxNumberOfRows = inf
-  ;
-    setting(max_log_length, MaxNumberOfRows)
-  ),
-  findall(
+  (nonvar(Max), ! ; setting(max_log_length, Max)),
+  setoff(
     [DateTime,Category,Message],
     (
       csv_read_file_row(
         File,
         row(DateTime,Category,Message),
-        [arity(3),functor(row),line(RowNumber)]
-      ),
-      between(1, MaxNumberOfRows, RowNumber)
+        [arity(3),functor(row)]
+      )
     ),
-    TRs
+    TRs1
   ),
+  reverse(TRs1, TRs2),
+  length(Top1, Max),
+  (append(Top1, _, TRs2) -> Top2 = Top1 ; Top2 = TRs2),
   html_table(
-    [caption('Log messages'),header(true)],
-    [['DateTime','Category','Message']|TRs],
+    [caption('Log messages'),header(true),indexed(true)],
+    [['DateTime','Category','Message']|Top2],
     HTML_Table
   ).
 

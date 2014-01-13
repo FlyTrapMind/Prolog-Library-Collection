@@ -150,6 +150,9 @@ The following depretations (v.2.0.3) are supported:
 :- use_module(library(uri)).
 :- use_module(rdf_conv(json_to_rdf)).
 :- use_module(standards(json_ext)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
 
 % `Predicate:atom-Type:atom-Optional:boolean`
 legend(
@@ -388,10 +391,13 @@ legend(
     'hub-id'-atom-true,
     id-atom-false,
     last_modified-atom-true,
+    'links:dbpedia'-integer-false,
     maintainer-atom-false,
     mimetype-atom-true,
     mimetype_inner-atom-true,
     name-atom-true,
+    namespace-atom-false,
+    notes-atom-false,
     openness_score-integer-true,
     openness_score_failure_count-integer-true,
     openness_score_reason-atom-true,
@@ -412,6 +418,7 @@ legend(
     sparql_graph_name-atom-false,
     state-atom-false,
     tracking_summary-tracking_summary/_-false,
+    triples-integer-false,
     url-atom-false,
     url_error-atom-false,
     verified-boolean-true,

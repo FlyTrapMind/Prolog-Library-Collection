@@ -112,7 +112,13 @@ rdf_describe_body(R) -->
   ]).
 
 show_categories -->
-  show_categories([ckan:'Organization',ckan:'Package',ckan:'User']).
+  show_categories([
+    ckan:'Organization',
+    ckan:'Package',
+    ckan:'Resource',
+    ckan:'Tag',
+    ckan:'User'
+  ]).
 
 show_categories([]) --> [].
 show_categories([Category1|Categories]) -->
