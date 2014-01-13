@@ -101,7 +101,8 @@ rdf_describe_body(R) -->
       ),
       PO_Pairs
     ),
-    format(atom(Caption), 'Triples describing resource ~w.', [R])
+    with_output_to(atom(RName), rdf_term_name(R)),
+    format(atom(Caption), 'Triples describing resource ~w.', [RName])
   },
   html([
     \html_table(
