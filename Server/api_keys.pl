@@ -23,19 +23,19 @@ Stores API keys per user.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_path)).
-:- use_module(library(http/json_convert)).
+%:- use_module(library(http/json_convert)).
 :- use_module(library(persistency)).
 :- use_module(server(app_ui)).
 :- use_module(server(login_db)).
 :- use_module(server(password_db)).
 :- use_module(server(server_ext)).
 
-:- json_object api_key(
-  user:atom,
-  organization:atom,
-  service:atom,
-  key:atom
-) + [type=api_key].
+%:- json_object api_key(
+%  user:atom,
+%  organization:atom,
+%  service:atom,
+%  key:atom
+%) + [type=api_key].
 
 :- http_handler(root(keys), dispatch, []).
 
@@ -66,8 +66,10 @@ api_keys -->
   ).
 
 current_api_key(Organization, Service, Key):-
-  logged_in(_, User, _),
+  logged_in(_, User, _), !,
   api_key(User, Organization, Service, Key).
+% @tbd Fix login at some point.
+current_api_key('datahub.io', ckan, '78cecbc1-f84e-47dc-8625-1bff7ac0eca0').
 
 /*
   http_absolute_uri(root(keys), URL),

@@ -52,6 +52,7 @@ Predicates used for parsing and checking value-type conformance.
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(uri)).
 :- use_module(uri(rfc3987_dcg)).
 
 
@@ -65,14 +66,18 @@ error:has_type(code, Term):-
 % or/1
 error:has_type(or(Types), Term):-
   member(Type, Types),
-  has_type(Type, Term), !.
+  error:has_type(Type, Term), !.
 % list/1
 error:has_type(list(Type), Term):-
   must_be(list, Term),
   maplist(must_be(Type), Term).
 % iri/0
-error:has_type(iri, _Term):-
+error:has_type(iri, Term):-
+  uri_components(
+    Term,
+    uri_component(Scheme,Authority,Path,_Search,_Fragment)
+  ),
+  maplist(nonvar, [Scheme,Authority,Path]).
   % @tbd
   %%%%once(dcg_phrase('IRI'(_), Term)),
-  true.
 

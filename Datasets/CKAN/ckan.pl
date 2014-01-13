@@ -388,6 +388,7 @@ legend(
     'hub-id'-atom-true,
     id-atom-false,
     last_modified-atom-true,
+    maintainer-atom-false,
     mimetype-atom-true,
     mimetype_inner-atom-true,
     name-atom-true,

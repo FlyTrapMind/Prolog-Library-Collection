@@ -77,15 +77,13 @@ html_table_caption(O1) -->
   html(caption(Caption)).
 html_table_caption(_O1) --> !.
 
-html_table_cell(O1, td, H1) -->
+html_table_cell(O1, td, H) -->
   {
     option(cell_dcg(DCG1), O1), !,
     strip_module(DCG1, Module, DCG2),
-    Call =.. [DCG2,H1],
-    phrase(Module:Call, H2),
-    atom_codes(H3, H2)
+    DCG3 =.. [DCG2,H]
   },
-  html(td(H3)).
+  html(td(\(Module:DCG3))).
 html_table_cell(_, td, H) --> !,
   html(td(H)).
 html_table_cell(_, th, H) --> !,

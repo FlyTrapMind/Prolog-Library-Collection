@@ -6,19 +6,16 @@
                        % +Object:or([bnode,iri,literal])
                        % -SVG:list
     rdf_graphs_web/1, % -DOM:list
-    %rdf_load_web/2, % +Graph:atom
-    %                % -DOM:list
-    %rdf_load_web/3, % +Graph:atom
-    %                % +Format:oneof([turtle,xml])
-    %                % -DOM:list
+    rdf_load_web/2, % +Graph:atom
+                    % -DOM:list
     rdf_mat_web/3, % +Graph:atom
                    % +Regime:atom
                    % -DOM:list
     rdf_namespaces_web/1, % -DOM:list
     rdf_namespaces_web/2, % +Graph:atom
                           % -DOM:list
-    %rdf_save_web/2, % +Graph:atom
-    %                % -DOM:list
+    rdf_save_web/2, % +Graph:atom
+                    % -DOM:list
     rdf_web_argument/2 % +In:atom
                        % -Out:iri
   ]
@@ -32,7 +29,6 @@ Web predicates for RDF graphs.
 @version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11-2014/01
 */
 
-:- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(html(html_table)).
@@ -313,7 +309,8 @@ rdf_load_web_ -->
   ).
 
 rdf_web_argument(R, R):-
-  must_be(iri, R), !.
+  \+ compound(R),
+  is_of_type(iri, R), !.
 rdf_web_argument(R1, R2):-
   R1 = _:_, !,
   rdf_global_id(R1, R2).

@@ -97,7 +97,6 @@ init_user_db:-
     db_attach(File, []),
     % First time deployment.
     add_user(admin, [roles([admin])]),
-gtrace,
     user_input_password('Enter the password for admin.', UnencryptedPassword),
     add_password(admin, UnencryptedPassword)
   ).

@@ -25,14 +25,18 @@ Generates Web pages that describe a resource.
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(generics(uri_ext)).
 :- use_module(html(html_table)).
 :- use_module(http_headers(rfc2616_accept_language)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(library(www_browser)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_read)).
 :- use_module(rdf_web(rdf_web)).
 :- use_module(server(web_modules)).
 
@@ -96,14 +100,48 @@ rdf_describe_body(R) -->
         maplist(rdf_term_name([]), [P1,O1], [P2,O2])
       ),
       PO_Pairs
+    ),
+    format(atom(Caption), 'Triples describing resource ~w.', [R])
+  },
+  html([
+    \show_categories([ckan:'Organization']),
+    \html_table(
+      [caption(Caption),header(true),indexed(true)],
+      [['Predicate','Object']|PO_Pairs]
+    )
+  ]).
+
+show_categories(Categories) -->
+  {
+    rdf_member(Category, Categories),
+    with_output_to(atom(CategoryName), rdf_term_name(Category)),
+    format(atom(Caption), 'Instances of ~w.', [CategoryName]),
+    setoff(
+      [Instance],
+      rdfs_individual_of(Instance, Category),
+      Instances
     )
   },
   html(
     \html_table(
-      [header(true),indexed(true)],
-      [['Predicate','Object']|PO_Pairs]
+      [
+        caption(Caption),
+        cell_dcg(rdf_linked_term),
+        header(true),
+        indexed(true)
+      ],
+      [['Instance']|Instances]
     )
   ).
+
+rdf_linked_term(Resource) -->
+  {
+    phrase(dcg_rdf_term_name(Resource), Codes),
+    atom_codes(Name, Codes),
+    http_absolute_location(root(rdf_desc), Location1, []),
+    uri_query_add(Location1, resource, Name, Location2)
+  },
+  html(a(href=Location2, Name)).
 
 rdf_describe_head(R) -->
   html(title(['Description of resource denoted by ', R])).
