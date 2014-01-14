@@ -17,6 +17,7 @@ Generated RDF HTML tables.
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_dcg)).
@@ -55,7 +56,9 @@ overview([H1|T]) -->
     rdf_global_id(H1, H2),
     with_output_to(atom(Name), rdf_term_name(H2)),
     format(atom(Caption), 'Instances of ~w.', [Name]),
-    setoff([Instance], rdfs_individual_of(Instance, H2), Instances)
+    setoff([Instance], rdfs_individual_of(Instance, H2), Instances),
+    length(Top1, 50),
+    (append(Top1, _, Instances) -> Top2 = Top1 ; Top2 = Instances)
   },
   html(
     \html_table(
@@ -65,7 +68,7 @@ overview([H1|T]) -->
         header(true),
         indexed(true)
       ],
-      [['Instance']|Instances]
+      [['Instance']|Top2]
     )
   ),
   overview(T).
