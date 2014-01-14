@@ -5,7 +5,8 @@
                        % +Predicate:iri
                        % +Object:or([bnode,iri,literal])
                        % -SVG:list
-    rdf_graphs_web/1, % -DOM:list
+    rdf_graphs_web/1, % -DOM:liste
+    rdf_linked_term//1, % +Term
     rdf_load_web/2, % +Graph:atom
                     % -DOM:list
     rdf_mat_web/3, % +Graph:atom
@@ -16,6 +17,8 @@
                           % -DOM:list
     rdf_save_web/2, % +Graph:atom
                     % -DOM:list
+    rdf_table_//2, % +Caption:atom
+                   % +Data:list(list)
     rdf_web_argument/2 % +In:atom
                        % -Out:iri
   ]
@@ -31,10 +34,12 @@ Web predicates for RDF graphs.
 
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(generics(uri_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_bnode_map)).
 :- use_module(rdf(rdf_meta_auto_expand)).
@@ -319,4 +324,31 @@ rdf_web_argument(R1, R4):-
   rdf_web_argument(R2:R3, R4).
 rdf_web_argument(R, R):-
   type_error(resource, R).
+
+%! rdf_table_(+Caption:atom, +Data:list(list))// .
+% @param Data `P-O-G` or `S-P-O-G`.
+
+rdf_table_(_, []) --> !, [].
+rdf_table_(Caption, [H|T]) -->
+  {
+    O1 = [cell_dcg(rdf_linked_term),header(true),indexed(true)],
+    (
+      var(Caption), !
+    ;
+      merge_options([caption(Caption)], O1, O2)
+    ),
+    length(H, Length),
+    length(H0, Length),
+    append(_, H0, ['Subject','Predicate','Object','Graph'])
+  },
+  html(\html_table(O2, [H0,H|T])).
+
+
+rdf_linked_term(Term) -->
+  {
+    with_output_to(atom(Name), rdf_term_name(Term)),
+    http_absolute_location(root(rdf_tabular), Location1, []),
+    uri_query_add(Location1, term, Name, Location2)
+  },
+  html(a(href=Location2, Name)).
 

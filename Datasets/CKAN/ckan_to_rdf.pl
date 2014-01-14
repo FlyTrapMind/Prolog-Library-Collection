@@ -57,7 +57,7 @@ ckan_to_rdf(O1):-
   forall(
     (
       nth1(I, Packages, Package),
-      between(1900, inf, I)
+      between(3800, inf, I)
     ),
     (
       debug(ckan, 'Packages ~d/~d', [I,LP]),
