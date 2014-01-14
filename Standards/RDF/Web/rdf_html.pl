@@ -29,14 +29,21 @@ rdf_html_term(Type) -->
   rdf_literal(Type).
 rdf_html_term(Type) -->
   rdf_iri(Type).
+rdf_html_term(PL_Term) -->
+  html(span(class='prolog-term', PL_Term)).
 
 
 
 % BLANK NODE %
 
-rdf_blank_node(BNode1) -->
-  {atom(BNode1), atom_concat('__', BNode2, BNode1)},
-  html(div(class='blank-node', ['__',BNode2])).
+rdf_blank_node(BNode) -->
+  {
+    atom(BNode),
+    atom_prefix(BNode, '__'), !,
+    http_absolute_location(root(rdf_tabular), Location1, []),
+    uri_query_add(Location1, term, BNode, Location2)
+  },
+  html(div(class='blank-node', a(href=Location2, BNode))).
 
 
 
