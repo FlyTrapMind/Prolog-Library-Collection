@@ -61,7 +61,7 @@ add_atms(ATMS):-
   rdf_assert(ATMS, rdf:type, atms:atms, ccm),
   format(atom(Label), 'ATMS ~w', [ID]),
   rdfs_assert_label(ATMS, Label, ccm),
-  rdf_assert_datatype(ATMS, atms:has_id, integer, ID, ccm),
+  rdf_assert_datatype(ATMS, atms:has_id, xsd:integer, ID, ccm),
 
   % Empty environment.
   add_environment(ATMS, [], EmptyEnvironment),

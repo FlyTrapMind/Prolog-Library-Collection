@@ -225,7 +225,7 @@ atms_id(ATMS, ID):-
   atms_id_(ATMS, ID).
 
 atms_id_(ATMS, ID):-
-  rdf_datatype(ATMS, atms:has_id, integer, ID, ccm).
+  rdf_datatype(ATMS, atms:has_id, xsd:integer, ID, ccm).
 
 %% atms_label(?ATMS:atms, ?Label:atom) is nondet.
 % Pairs of ATMSs and their labels.
@@ -444,7 +444,8 @@ environment_id(Environment, EnvironmentID):-
   environment_id_(Environment, EnvironmentID).
 
 environment_id_(Environment, EnvironmentID):-
-  rdf_datatype(Environment, environment:has_id, integer, EnvironmentID, ccm).
+  rdf_datatype(Environment, environment:has_id, xsd:integer,
+    EnvironmentID, ccm).
 
 %% environment_label(
 %%   ?Environment:environment,
@@ -565,7 +566,7 @@ justification_id(Justification, JustificationID):-
   justification_id_(Justification, JustificationID).
 
 justification_id_(Justification, JustificationID):-
-  rdf_datatype(Justification, justification:has_id, integer, JustificationID, ccm).
+  rdf_datatype(Justification, justification:has_id, xsd:integer, JustificationID, ccm).
 
 justification_informant(Justification, Informant):-
   rdf_literal(Justification, justification:has_informant, Informant, ccm).
@@ -596,10 +597,10 @@ justifications(Justifications):-
 % NODES %
 
 is_assumption(Node):-
-  rdf_datatype(Node, node:is_assumption, boolean, true, ccm).
+  rdf_datatype(Node, node:is_assumption, xsd:boolean, true, ccm).
 
 is_contradiction(Node):-
-  rdf_datatype(Node, node:is_contradiction, boolean, true, ccm).
+  rdf_datatype(Node, node:is_contradiction, xsd:boolean, true, ccm).
 
 is_consistent_with(Node, Environment):-
   node(ATMS, Node),

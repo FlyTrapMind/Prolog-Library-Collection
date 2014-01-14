@@ -675,14 +675,8 @@ set_support_status(TMS, Node, SupportStatus):-
   is_node(Node),
   memberchk(SupportStatus, [in,nil,out]),
 
-  rdf_retractall_datatype(Node, doyle:has_support_status, string, TMS),
-  rdf_assert_datatype(
-    Node,
-    doyle:has_support_status,
-    xsd:string,
-    SupportStatus,
-    TMS:1
-  ).
+  rdf_retractall_literal(Node, doyle:has_support_status, TMS),
+  rdf_assert_literal(Node, doyle:has_support_status, SupportStatus, TMS:1).
 
 %! set_supporting_justification(
 %!   +TMS:atom,
@@ -755,7 +749,7 @@ sl_justification(SL_Justification):-
 
 support_status(Node, SupportStatus):-
   is_node(Node),
-  rdf_datatype(Node, doyle:has_support_status, string, SupportStatus, _TMS).
+  rdf_literal(Node, doyle:has_support_status, SupportStatus, _).
 
 %! supporting_nodes(+Node:iri, -SupportingNodes:ordset(node)) is det.
 

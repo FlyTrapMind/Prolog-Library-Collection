@@ -236,7 +236,7 @@ add_environment(ATMS, Assumptions, Environment):-
   rdf_assert(Environment, rdf:type, environment:environment, ccm),
 
   % Assert the identifier.
-  rdf_assert_datatype(Environment, environment:has_id, integer, ID, ccm),
+  rdf_assert_datatype(Environment, environment:has_id, xsd:integer, ID, ccm),
 
   % Assert the label.
   length(Assumptions, Length),
@@ -256,7 +256,7 @@ environment_add_node(Environment, Node):-
   rdf_assert(Environment, environment:has_node, Node, ccm).
 
 environment_change_nogood(Environment, NogoodStatus):-
-  rdf_assert_datatype(Environment, environment:is_nogood, boolean, NogoodStatus, ccm).
+  rdf_assert_datatype(Environment, environment:is_nogood, xsd:boolean, NogoodStatus, ccm).
 
 environment_remove_node(Environment, Node):-
   rdf_retractall(Environment, environment:has_node, Node, ccm).
@@ -312,7 +312,7 @@ add_justification(Informant, Consequence, Antecedents, Justification):-
   atom_number(AtomicID, ID),
   rdf_global_id(justification:AtomicID, Justification),
   rdf_assert(Justification, rdf:type, justification:justification, ccm),
-  rdf_assert_datatype(Justification, justification:has_id, integer, ID, ccm),
+  rdf_assert_datatype(Justification, justification:has_id, xsd:integer, ID, ccm),
   rdfs_assert_label(Justification, AtomicID, ccm),
   rdf_assert(ATMS, atms:has_justification, Justification, ccm),
   rdf_assert_literal(Justification, justification:has_informant, Informant, ccm),
@@ -402,10 +402,10 @@ add_node(ATMS, Datum, IsAssumption, IsContradiction, Node):-
     fail
   ),
 
-  rdf_assert_datatype(Node, node:has_id, integer, ID, ccm),
+  rdf_assert_datatype(Node, node:has_id, xsd:integer, ID, ccm),
   rdf_assert(Node, node:has_datum, Datum, ccm),
-  rdf_assert_datatype(Node, node:is_assumption, boolean, IsAssumption, ccm),
-  rdf_assert_datatype(Node, node:is_contradiction, boolean, IsContradiction, ccm),
+  rdf_assert_datatype(Node, node:is_assumption, xsd:boolean, IsAssumption, ccm),
+  rdf_assert_datatype(Node, node:is_contradiction, xsd:boolean, IsContradiction, ccm),
   rdf_assert(ATMS, atms:has_node, Node, ccm),
 
   % If the node is contradictory.
@@ -432,7 +432,7 @@ assume_node(Node):-
 assume_node(Node):-
   node(ATMS, Node),
   rdf_retractall(Node, node:is_assumption, _OldIsAssumption, ccm),
-  rdf_assert_datatype(Node, node:is_assumption, boolean, true, ccm),
+  rdf_assert_datatype(Node, node:is_assumption, xsd:boolean, true, ccm),
   %rdf_assert(ATMS, atms:has_assumption, Node, ccm),
   find_or_add_environment(ATMS, [Node], Environment),
   update(ATMS, [Environment], Node).
@@ -443,7 +443,7 @@ make_contradiction(Node):-
 make_contradiction(Node):-
   node(ATMS, Node),
   rdf_retractall(Node, node:is_contradiction, _OldIsContradiction, ccm),
-  rdf_assert_datatype(Node, node:is_contradiction, boolean, true, ccm),
+  rdf_assert_datatype(Node, node:is_contradiction, xsd:boolean, true, ccm),
   rdf_assert(ATMS, atms:has_contradiction, Node, ccm),
   node_to_label(Node, Label),
   forall(
