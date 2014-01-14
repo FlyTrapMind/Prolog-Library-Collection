@@ -63,7 +63,18 @@ ckan_to_rdf(O1):-
       package_show(O2, Package, _)
     )
   ),
-
+  
+  % Revisions.
+  revision_list(O2, Revisions),
+  length(Revisions, LR),
+  forall(
+    nth1(I, Revisions, Revision),
+    (
+      debug(ckan, 'Revisions ~d/~d', [I,LR]),
+      revision_show(O2, Revision, _)
+    )
+  ),
+  
   % Tags.
   tag_list(O2, _, _, _, Tags),
   length(Tags, LT),
