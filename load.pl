@@ -3,6 +3,7 @@
 
 :- set_prolog_flag(encoding, utf8).
 
+:- use_module(library(apply)).
 :- use_module(library(prolog_pack)).
 
 :- initialization(load_pgc).
@@ -100,13 +101,17 @@ load_pgc:-
   
   % Install packages.
   % This requires user interaction on the first load.
-  catch(
-    use_module(library(regex)),
-    _,
-    ignore(pack_install(regex))
-  ),
+  maplist(load_pack, [regex,smtp]),
   
   % Start logging.
   use_module(generics(logging)),
   % @tbd Strange module problem again...
   logging:start_log.
+
+load_pack(Pack):-
+  catch(
+    use_module(library(Pack)),
+    _,
+    ignore(pack_install(Pack))
+  ).
+

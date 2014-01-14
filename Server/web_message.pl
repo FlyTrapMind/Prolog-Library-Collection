@@ -27,6 +27,7 @@ Acts on messages printed by print_message/2.
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
 :- use_module(os(ansi_ext)).
+:- use_module(server(email)).
 :- use_module(server(web_console)).
 :- use_module(server(web_error)).
 :- use_module(server(web_modules)).
@@ -36,6 +37,9 @@ Acts on messages printed by print_message/2.
 :- http_handler(root(msg), web_message, [priority(1)]).
 
 :- initialization(web_module_add('Messages', web_message, msg)).
+
+% Enable notification service via email.
+:- debug(email).
 
 :- setting(
   max_log_length,
@@ -96,7 +100,14 @@ prolog:debug_print_hook(Type, Format, Args):-
   %ansi_formatnl(user_output, [fg(green)], '~w', [Msg]),
 
   % Write to the log stream/file.
-  append_to_log(Type, Format, Args).
+  append_to_log(Type, Format, Args),
+  
+  email(Type, Format, Args).
+
+email(email, Format, Args):- !,
+  format(codes(Body), Format, Args),
+  send_email('me@wouterbeek.com', 'Message from script', Body).
+email(_, _, _).
 
 web_message(open_uri(_URI)):- !,
   format(user, 'YES!', []),
