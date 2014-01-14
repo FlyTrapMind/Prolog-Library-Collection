@@ -129,6 +129,11 @@ The following depretations (v.2.0.3) are supported:
   * For: license_list/2
     Use licence_list/2 instead.
 
+The following API call are not supported:
+  * Solr querying with `package_search`, `resource_search`, `tag_search`.
+  * `tag_autocomplete`
+  
+
 --
 
 @author Wouter Beek
@@ -163,7 +168,7 @@ legend(
     object_package_id-atom-false,
     package_id-atom-false,
     revision_id-atom-false,
-    revision_timestamp-atom-false,
+    revision_timestamp-dateTime-false,
     subject_package_id-atom-false
   ]
 ).
@@ -194,7 +199,7 @@ legend(
     object_package_id-atom-false,
     package_id-atom-false,
     revision_id-revision/_-false,
-    revision_timestamp-atom-false,
+    revision_timestamp-dateTime-false,
     state-atom-false,
     subject_package_id-atom-false,
     value-atom-true
@@ -264,7 +269,7 @@ legend(
     package_count-integer-true,
     packages-list(package/_)-false,
     revision_id-revision/_-false,
-    revision_timestamp-atom-false,
+    revision_timestamp-dateTime-false,
     state-atom-false,
     tags-list(tag/_)-false,
     title-atom-false,
@@ -398,7 +403,7 @@ legend(
     id-atom-false,
     'JumpStartGeorgia'-atom-false,
     lang-atom-false,
-    last_modified-atom-true,
+    last_modified-dateTime-true,
     license-atom-false,
     'links:dbpedia'-integer-false,
     'links:dnb-gemeinsame-normdatei'-atom-false,
@@ -433,7 +438,7 @@ legend(
     scraper_source-atom-true,
     scraper_url-atom-true,
     sender-atom-false,
-    size-atom-true,
+    size-integer-true,
     sparql_graph_name-atom-false,
     'Sparqlendpoint'-atom-false,
     'SpirosAlexiou'-atom-false,
@@ -511,7 +516,7 @@ legend(
 %!   +Options:list(nvpair),
 %!   +Limit:positive_integer,
 %!   +Offset:positive_integer,
-%!   -Packages:list(atom)
+%!   -Packages:list(compound)
 %! ) is det.
 % Return a list of the site's datasets (packages) and their resources.
 %
@@ -521,9 +526,9 @@ legend(
 %      will be returned at a time.
 % @arg Offset If `limit` is given, the offset to start returning packages
 %      from.
-% @arg PackagesAndResources
+% @arg Packages
 
-current_package_list_with_resources(O1, Limit1, Offset1, PackagesAndResources):-
+current_package_list_with_resources(O1, Limit1, Offset1, Packages):-
   select_option(paginated(true), O1, O2), !,
   default(Limit1, 10, Limit2),
   default(Offset1, 1, Offset2),
@@ -531,11 +536,11 @@ current_package_list_with_resources(O1, Limit1, Offset1, PackagesAndResources):-
     O2,
     Limit2,
     Offset2,
-    PackagesAndResources
+    Packages
   ).
-current_package_list_with_resources(O1, Limit, Offset, PackagesAndResources):-
+current_package_list_with_resources(O1, Limit, Offset, Packages):-
   process_limit_offset(O1, Limit, Offset, P1),
-  ckan(O1, current_package_list_with_resources, P1, PackagesAndResources).
+  ckan(O1, current_package_list_with_resources, P1, Packages).
 
 paginated_current_package_list_with_resources(O1, Limit, Offset1, L3):-
   current_package_list_with_resources(O1, Limit, Offset1, L1), !,
