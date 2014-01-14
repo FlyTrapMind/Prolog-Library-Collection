@@ -7,25 +7,22 @@
   ]
 ).
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(generics(uri_ext)).
 :- use_module(html(html_table)).
-:- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
-:- use_module(rdf(rdf_dcg)).
-:- use_module(uri(rfc3987_dcg)).
 :- use_module(xml(xml_namespace)).
 
 
 
 % TERM %
 
+% @tbd HACK
+rdf_html_term(Graph) -->
+  {atom(Graph), rdf_graph(Graph)}, !,
+  html(span(class='rdf-graph', Graph)).
 rdf_html_term(Type) -->
   rdf_blank_node(Type).
 rdf_html_term(Type) -->
@@ -76,19 +73,19 @@ rdf_typed_literal(literal(type(Datatype,Value))) -->
 % IRI %
 
 rdf_iri(IRI1) -->
-  {
-    rdf_global_id(IRI2, IRI1),
-    http_absolute_location(root(rdf_tabular), Location1, []),
-    uri_query_add(Location1, term, IRI1, Location2)
-  },
+  {rdf_global_id(IRI2, IRI1)},
   (
     {IRI2 = Prefix:Postfix}
   ->
-    {(
-      xml_current_namespace(Prefix, _), !
-    ;
-      existence_error('XML namespace',Prefix)
-    )},
+    {
+      (
+        xml_current_namespace(Prefix, _), !
+      ;
+        existence_error('XML namespace',Prefix)
+      ),
+      http_absolute_location(root(rdf_tabular), Location1, []),
+      uri_query_add(Location1, term, IRI1, Location2)
+    },
     html(
       span(class='iri',
         a(href=Location2, [
@@ -99,8 +96,8 @@ rdf_iri(IRI1) -->
       )
     )
   ;
-    {atom(IRI2)},
-    html(span(class='iri', a(href=Location2, IRI2)))
+    {IRI1 = IRI2, atom(IRI1)},
+    html(span(class='iri', a(href=IRI1, IRI1)))
   ).
 
 
