@@ -100,7 +100,8 @@ rdf_datatype(S, P, D, Value, G):-
   xsd_canonicalMap(D, Value, LEX),
   rdf(S, P, literal(type(D,LEX)), G).
 rdf_datatype(S, P, D, Value, G):-
-  rdf(S, P, literal(type(D,LEX)), G),
+  rdf(S, P, literal(type(D,Lit)), G),
+  atom_codes(Lit, LEX),
   xsd_lexicalMap(D, LEX, Value).
 /*
   % Ideally, we would like to interpret all literals, not just the canonical ones.
