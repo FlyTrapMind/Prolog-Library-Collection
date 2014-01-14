@@ -28,12 +28,14 @@ ckan_to_rdf(O1):-
   site_read(O1), !,
 
   % Groups
-  group_list(O2, _, _, _, _, GroupNames),
+  group_list(O2, _, _, _, _, Groups),
+  length(Groups, LG),
   forall(
-    member(GroupName, GroupNames),
+    nth1(I, Groups, Group),
     (
-      group_show(O2, GroupName, _),
-      group_package_show(O2, GroupName, _, _)
+      debug(ckan, 'Groups ~w/~w', [I,LG]),
+      group_show(O2, Group, _),
+      group_package_show(O2, Group, _, _)
     )
   ),
 
@@ -41,24 +43,21 @@ ckan_to_rdf(O1):-
   license_list(O2, _),
 
   % Organizations.
-  %organization_list(O2, _, _, _, _, Organizations),
-  %length(Organizations, LO),
-  %forall(
-  %  nth1(I, Organizations, Organization),
-  %  (
-  %    debug(ckan, 'Organizations ~d/~d', [I,LO]),
-  %    organization_show(O2, Organization, _)
-  %  )
-  %),
+  organization_list(O2, _, _, _, _, Organizations),
+  length(Organizations, LO),
+  forall(
+    nth1(I, Organizations, Organization),
+    (
+      debug(ckan, 'Organizations ~d/~d', [I,LO]),
+      organization_show(O2, Organization, _)
+    )
+  ),
 
   % Packages.
   package_list(O2, _, _, Packages),
   length(Packages, LP),
   forall(
-    (
-      nth1(I, Packages, Package),
-      between(7700, inf, I)
-    ),
+    nth1(I, Packages, Package),
     (
       debug(ckan, 'Packages ~d/~d', [I,LP]),
       package_show(O2, Package, _)
@@ -67,16 +66,24 @@ ckan_to_rdf(O1):-
 
   % Tags.
   tag_list(O2, _, _, _, Tags),
+  length(Tags, LT),
   forall(
-    member(Tag, Tags),
-    tag_show(O2, Tag, _)
+    nth1(I, Tags, Tag),
+    (
+      debug(ckan, 'Tags ~d/~d', [I,LT]),
+      tag_show(O2, Tag, _)
+    )
   ),
 
   % Users.
   user_list(O2, _, _, Users),
+  length(Users, LU),
   forall(
-    member(User, Users),
-    user_show(O2, _, User, _)
+    nth1(I, Users, User),
+    (
+      debug(ckan, 'Users ~d/~d', [I,LU]),
+      user_show(O2, _, User, _)
+    )
   ),
 
   format(current_output, 'End CKAN-2-RDF conversion.\n', []).
