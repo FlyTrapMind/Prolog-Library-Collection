@@ -127,7 +127,11 @@ json_pair_to_rdf(_, _, _, _, Specs, Name=Null):-
 json_pair_to_rdf(Graph, Module, _, Individual, Specs, Name=Value):-
   memberchk(Name-Type-_, Specs),
   rdf_global_id(Module:Name, Predicate),
-  json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value), !.
+  catch(
+    json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value),
+    Exception,
+    debug(email, '[json2rdf] Exception: ~w', [Exception])
+  ), !.
 % DEB
 json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair):-
   gtrace,
@@ -163,9 +167,21 @@ json_value_to_rdf(Graph, _, Individual, Predicate, atom, Value):-
   atom(Value), !,
   rdf_assert_literal(Individual, Predicate, Value, Graph).
 % URL.
-json_value_to_rdf(Graph, _, Individual, Predicate, url, Value):-
-  must_be(iri, Value), !,
-  rdf_assert(Individual, Predicate, Value, Graph).
+json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):-
+  (
+    is_of_type(iri, Value1)
+  ->
+    Value2 = Value1
+  ;
+    atomic_concat('http://', Value1, Value2),
+    is_of_type(iri, Value2)
+  ->
+    true
+  ;
+    format(atom(Msg), 'Value ~w is not a URL.', [Value1]),
+    syntax_error(Msg)
+  ),
+  rdf_assert(Individual, Predicate, Value2, Graph).
 % List.
 json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):-
   is_list(Value), !,

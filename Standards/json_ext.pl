@@ -120,7 +120,11 @@ json_pair_to_prolog(_, _, Specs, Name='', _VAR):- !,
   memberchk(Name-_-true, Specs).
 json_pair_to_prolog(Module, _, Specs, Name=Value1, Value2):-
   memberchk(Name-Type-_, Specs),
-  json_value_to_prolog(Module, Type, Value1, Value2), !.
+  catch(
+    json_value_to_prolog(Module, Type, Value1, Value2),
+    Exception,
+    debug(email, '[pl2rdf] Exception: ~w', [Exception])
+  ), !.
 % DEB
 json_pair_to_prolog(Graph, Legend, Type, Pair, Value):-
   gtrace,
@@ -144,11 +148,23 @@ json_value_to_prolog(Module, or(Types), Value1, Value2):-
   member(Type, Types),
   json_value_to_prolog(Module, Type, Value1, Value2), !.
 json_value_to_prolog(_, atom, Value, Value):-
-   atom(Value), !.
+  atom(Value), !.
 json_value_to_prolog(_, boolean, Value1, Value2):-
   to_boolean(Value1, Value2), !.
-json_value_to_prolog(_, url, Value, Value):- !,
-  must_be(iri, Value).
+json_value_to_prolog(_, url, Value1, Value2):- !,
+  (
+    is_of_type(iri, Value1)
+  ->
+    Value2 = Value1
+  ;
+    atomic_concat('http://', Value1, Value2),
+    is_of_type(iri, Value2)
+  ->
+    true
+  ;
+    format(atom(Msg), 'Value ~w is not a URL.', [Value1]),
+    syntax_error(Msg)
+  ).
 json_value_to_prolog(_, integer, Value1, Value2):-
   to_integer(Value1, Value2), !.
 json_value_to_prolog(_, dateTime, Value1, Value2):- !,
@@ -156,17 +172,6 @@ json_value_to_prolog(_, dateTime, Value1, Value2):- !,
 json_value_to_prolog(Module, list(Type), Value1, Value2):-
   is_list(Value1),
   maplist(json_value_to_prolog(Module, Type), Value1, Value2).
-% @tbd
-% json_value_to_prolog(_, Type1, Value, Value):-
-%  Type1 =.. [Functor|Args1],
-%  append(Args1, [_], Args2),
-%  Type2 =.. [Functor|Args2],
-%  (
-%    predicate_property(Type2, imported_from(typecheck))
-%  ;
-%    predicate_property(Type2, iso)
-%  ), !,
-%  call(Type1, Value).
 
 % Prolog native.
 to_boolean(true, true).
