@@ -58,6 +58,7 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 */
 
 :- use_module(generics(atom_ext)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(user_input)).
@@ -166,21 +167,20 @@ rdf_expand_namespace0(S1, P1, 1, G):-
 %! rdf_convert_datatype(
 %!   +Subject:oneof([bnode,uri]),
 %!   +Predicate:uri,
-%!   +FromDatatypeName:iri,
-%!   +FromValue,
-%!   +ToDatatypeName:iri,
+%!   +FromDatatype:iri,
+%!   +Literal:atom,
+%!   +ToDatatype:iri,
 %!   +Graph:atom
 %! ) is det.
 
-rdf_convert_datatype(S, P, FromDatatypeName, FromValue, ToDatatypeName, G):-
+rdf_convert_datatype(S, P, FromDatatype, Literal, ToDatatype, G):-
   forall(
-    rdf_datatype(S, P, FromDatatypeName, FromValue, G),
+    rdf_datatype(S, P, FromDatatype, FromValue, G),
     (
-      xsd_datatype(FromDatatypeName, FromDatatype),
-      xsd_datatype(ToDatatypeName, ToDatatype),
-      xsd_convert_datatype(FromDatatype, FromValue, ToDatatype, ToValue),
-      rdf_assert_datatype(S, P, ToDatatype, ToValue, G),
-      rdf_retractall_datatype(S, P, FromDatatypeName, G)
+      to_codes(Literal, LEX1),
+      xsd_lexicalMap(FromDatatype, LEX1, Value),
+      rdf_assert_datatype(S, P, ToDatatype, Value, G),
+      rdf_retractall_datatype(S, P, FromDatatype, G)
     )
   ).
 
@@ -208,16 +208,12 @@ rdf_literal_to_datatype(S, P, D, G):-
 :- rdf_meta(rdf_literal_to_datatype0(r,r,r,+,+)).
 rdf_literal_to_datatype0(D, S, P, Lit, G):-
   % If the literal belongs to the lexical space of the datatype,
-  % then it is mapped onto its value and then back to the canonical
-  % lexical for that value.
-  % Otherwise, we try to parse the literal as a value in the value space
-  % of the datatype.
-  (
-    xsd_lexicalCanonicalMap(D, Lit, LEX), !
-  ;
-    xsd_canonicalMap(D, Lit, LEX)
-  ),
-  rdf_assert_datatype(S, P, D, LEX, G),
+  %  then it is mapped onto its value and then back to the canonical
+  %  lexical for that value.
+  to_codes(Lit, LEX1),
+  xsd_lexicalCanonicalMap(D, LEX1, LEX2),
+  atom_codes(LEX3, LEX2),
+  rdf_assert_datatype(S, P, D, LEX3, G),
   rdf_retractall_literal(S, P, Lit, G).
 
 

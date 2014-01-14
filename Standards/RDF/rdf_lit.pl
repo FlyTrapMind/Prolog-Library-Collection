@@ -28,9 +28,11 @@
 Support for RDF literals.
 
 @author Wouter Beek
-@version 2013/09-2013/11
+@version 2013/09-2013/11, 2014/01
 */
 
+:- use_module(generics(codes_ext)).
+:- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(xsd(xsd)).
 
@@ -72,14 +74,13 @@ rdf_literal_equality(
   Lang1 == Lang2,
   Lit1 == Lit2.
 rdf_literal_equality(
-  literal(type(Type1,LEX1)),
-  literal(type(Type2,LEX2))
+  literal(type(Type1,Value1)),
+  literal(type(Type2,Value2))
 ):- !,
   Type1 == Type2,
-  xsd_lexicalMap(Type1, LEX1, Value1),
-  xsd_canonicalMap(Type1, Value1, CAN1),
-  xsd_lexicalMap(Type2, LEX2, Value2),
-  xsd_canonicalMap(Type2, Value2, CAN2),
+  maplist(to_codes, [Value1,Value2], [LEX1,LEX2]),
+  xsd_lexicalCanonicalMap(Type1, LEX1, CAN1),
+  xsd_lexicalCanonicalMap(Type2, LEX2, CAN2),
   CAN1 == CAN2.
 rdf_literal_equality(literal(Lit1), literal(Lit2)):- !,
   Lit1 == Lit2.

@@ -13,10 +13,6 @@
                     % ?Datatype:iri
                     % ?Value
                     % ?Graph:atom
-    rdf_has_datatype/4, % ?Subject:oneof([bnode,iri])
-                        % ?Predicate:iri
-                        % ?Datatype:iri
-                        % ?Value
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,iri])
                               % +Predicate:iri
                               % +Datatype:iri
@@ -34,9 +30,10 @@
 Support for RDF typed literals.
 
 @author Wouter Beek
-@version 2013/10
+@version 2013/10, 2014/01
 */
 
+:- use_module(generics(codes_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_lit)).
@@ -47,7 +44,6 @@ Support for RDF typed literals.
 :- rdf_meta(rdf_assert_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_datatype(?,r)).
 :- rdf_meta(rdf_datatype(r,r,r,?,?)).
-:- rdf_meta(rdf_has_datatype(r,r,r,?)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
 
@@ -66,22 +62,29 @@ Support for RDF typed literals.
 % for this. The asserted values are the atomic equivalent of the
 % *|canonical lexical representations|* as defined by that standard.
 %
+% We only emit canonical representations for XSD values.
+%
 % @arg Subject An RDF subject term.
 % @arg Predicate An RDF predicate term.
 % @arg Datatype An IRI identifying a datatype.
 % @arg Value
 % @arg Graph The atomic name of an RDF graph.
 
-rdf_assert_datatype(S, P, D, Val, G):-
-  % We only emit canonical representations for XSD values.
-  xsd_canonicalMap(D, Val, LEX1),
+/*
+% The value is an atom that can be parsed as a datatype value.
+rdf_assert_datatype(S, P, D, Value1, G):-
+  rdf_assert(S, P, literal(type(D,LEX3)), G).
+*/
+% The value is a real Prolog value.
+rdf_assert_datatype(S, P, D, Value, G):-
+  xsd_canonicalMap(D, Value, LEX1),
   atom_codes(LEX2, LEX1),
   rdf_assert(S, P, literal(type(D,LEX2)), G).
 
 %! rdf_datatype(?Graph:atom, ?Datatype:iri) is nondet.
 
 rdf_datatype(G, D):-
-  rdf(_S, _P, literal(type(D, _LEX)), G).
+  rdf(_S, _P, literal(type(D, _)), G).
 
 %! rdf_datatype(
 %!   ?Subject:oneof([bnode,iri]),
@@ -93,7 +96,13 @@ rdf_datatype(G, D):-
 % @tbd Implement the inverse lexical map to fascilitate search (besides read and write).
 
 rdf_datatype(S, P, D, Value, G):-
-  once(xsd_datatype(_, D)),
+  nonvar(Value), !,
+  xsd_canonicalMap(D, Value, LEX),
+  rdf(S, P, literal(type(D,LEX)), G).
+rdf_datatype(S, P, D, Value, G):-
+  rdf(S, P, literal(type(D,LEX)), G),
+  xsd_lexicalMap(D, LEX, Value).
+/*
   % Ideally, we would like to interpret all literals, not just the canonical ones.
   % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
   % Interpreting literals could be useful for search, i.e. does a specific value
@@ -105,31 +114,7 @@ rdf_datatype(S, P, D, Value, G):-
   rdf(S, P, literal(type(D, LEX)), G),
   % This may be nondet!
   xsd_lexicalMap(D, LEX, Value).
-% Provide minimal support for non-IRI datatype names.
-rdf_datatype(S, P, D1, Value, G):-
-  once(xsd_datatype(D1, D2)),
-  rdf_datatype(S, P, D2, Value, G).
-
-%! rdf_has_datatype(
-%!   ?Subject:oneof([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?Datatype:iri,
-%!   ?Value,
-%!   ?Graph:atom
-%! ) is nondet.
-
-rdf_has_datatype(S, P, D, Value):-
-  (
-    nonvar(Value)
-  ->
-    % Interpret all literals, not just the canonical ones.
-    xsd_lexicalMap(D, LEX, Value),
-    rdf_has(S, P, literal(type(D, LEX)))
-  ;
-    rdf_has(S, P, literal(type(D, LEX))),
-    % This may be nondet!
-    xsd_lexicalMap(D, LEX, Value)
-  ).
+*/
 
 %! rdf_overwrite_datatype(
 %!   +Subject:oneof([bnode,iri]),

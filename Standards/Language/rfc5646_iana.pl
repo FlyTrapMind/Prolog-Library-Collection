@@ -123,14 +123,16 @@ rfc5646_rdf_record_(G, I, [Name=Value|T]):-
 
 % Added
 rfc5646_rdf_nvpair(G, I, 'Added', Literal):- !,
-  xsd_lexicalMap(xsd:date, Literal, V),
+  to_codes(Literal, LEX),
+  xsd_lexicalMap(xsd:date, LEX, V),
   rdf_assert_datatype(I, rfc5646:added, xsd:date, V, G).
 % Comment
 rfc5646_rdf_nvpair(G, I, 'Comments', V):- !,
   rdf_assert_literal(I, rfc5646:comments, en, V, G).
 % Deprecated
 rfc5646_rdf_nvpair(G, I, 'Deprecated', Literal):- !,
-  xsd_lexicalMap(xsd:date, Literal, V),
+  to_codes(Literal, LEX),
+  xsd_lexicalMap(xsd:date, LEX, V),
   rdf_assert_datatype(I, rfc5646:deprecated, xsd:date, V, G).
 % Description
 rfc5646_rdf_nvpair(G, I, 'Description', V):- !,

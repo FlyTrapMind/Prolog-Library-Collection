@@ -34,6 +34,7 @@ Generate names for RDF terms and triples.
 */
 
 :- use_module(dcg(dcg_content)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
@@ -100,21 +101,22 @@ rdf_term_name(O1, RDF_Term):-
   rdf_is_list(RDF_Term), !,
   rdf_list_name(O1, RDF_Term).
 % A literal with a datatype.
-rdf_term_name(O1, literal(type(Datatype,LEX))):- !,
+rdf_term_name(O1, literal(type(Datatype,Literal))):- !,
   % The datatype name.
   rdf_term_name(O1, Datatype, DatatypeName),
   % The datatyped value.
   (
     % The datatype is recognized, so the datatyped value can be displayed
     % as a SWI-Prolog native.
-    xsd_datatype(DatatypeName, Datatype)
+    xsd_datatype(_, Datatype)
   ->
-    xsd_lexicalMap(Datatype, LEX, ValueName)
+    to_codes(Literal, LEX),
+    xsd_lexicalMap(Datatype, LEX, Value)
   ;
-    ValueName = LEX
+    Value = Literal
   ),
   % The combined name.
-  format('"~w"^^~w', [ValueName,DatatypeName]).
+  format('"~w"^^~w', [Value,DatatypeName]).
 % A plain literal with a language tag.
 rdf_term_name(_O1, literal(lang(Language,Literal))):- !,
   format('"~w"@~w', [Literal,Language]).

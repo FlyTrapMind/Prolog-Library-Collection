@@ -147,8 +147,8 @@ get_dom_value(DOM, Trans, XML_P, Value):-
   ;
     xsd_datatype(O_Type, XSD_Datatype)
   ->
-    xsd_canonicalMap(XSD_Datatype, Content, Value0),
-    atom_codes(Value, Value0)
+    to_codes(Content, LEX),
+    xsd_canonicalMap(XSD_Datatype, LEX, Value)
   ;
     Value = Content
   ).
