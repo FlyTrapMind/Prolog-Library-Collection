@@ -559,7 +559,7 @@ dayFrag(D) -->
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 dayFrag(D) -->
   (one(C1) ; two(C1)),
-  decimal_digit(_, C2),
+  decimal_digit(C2, _),
   {phrase(unsignedNoDecimalPtNumeral(D), [C1,C2])}.
 dayFrag(D) -->
   three(C1),
@@ -610,7 +610,7 @@ minuteFrag(M) -->
   ; three(C1)
   ; four(C1)
   ; five(C1)),
-  decimal_digit(_, C2),
+  decimal_digit(C2),
   {phrase(unsignedNoDecimalPtNumeral(M), [C1,C2])}.
 
 %! monthFrag(-Month:between(1,12))//
@@ -644,7 +644,7 @@ secondFrag(S) -->
   decimal_digit(C2),
   (
     dot(C3),
-    dcg_multi2(decimal_digit, 1-_, _Digits, CT),
+    dcg_multi1(decimal_digit, 1-_, CT),
     {phrase(unsignedDecimalPtNumeral(S), [C1,C2,C3|CT])}
   ;
     {phrase(unsignedNoDecimalPtNumeral(S), [C1,C2])}
@@ -707,10 +707,10 @@ yearFrag(Y) -->
   (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
     nonzero_decimal_digit(Code, _),
-    dcg_multi2(decimal_digit, 3-_, Codes, _Digits1)
+    dcg_multi1(decimal_digit, 3-_, Codes)
   ;
     zero(Code),
-    dcg_multi2(decimal_digit, 3, Codes, _Digits2)
+    dcg_multi1(decimal_digit, 3, Codes)
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),

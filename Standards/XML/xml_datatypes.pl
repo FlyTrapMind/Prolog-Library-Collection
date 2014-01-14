@@ -144,7 +144,7 @@ xml_name_([H]) -->
 xml_name_char(C) --> xml_name_start_char(C).
 xml_name_char(C) --> hyphen_minus(C).
 xml_name_char(C) --> dot(C).
-xml_name_char(C) --> decimal_digit(C, _).
+xml_name_char(C) --> decimal_digit(C).
 % #xB7
 xml_name_char(C) --> middle_dot(C).
 % #x0300-#x036F

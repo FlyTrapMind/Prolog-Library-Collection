@@ -1136,7 +1136,7 @@ rfc5646_standard_language_tag(
 % written using the spelling reform beginning in the year 1996 C.E.
 
 rfc5646_variant(variant(Variant), Variant) -->
-  decimal_digit(H, _),
+  decimal_digit(H),
   dcg_multi(ascii_alpha_numeric, 3, T),
   {
     atom_codes(Variant, [H|T]),

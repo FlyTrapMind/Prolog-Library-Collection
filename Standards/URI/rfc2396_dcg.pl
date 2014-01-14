@@ -749,9 +749,9 @@ reserved_character(C) --> comma(C).
 % remainder of the URI string.
 %
 % Scheme names consist of a sequence of characters beginning with an
-% ascii_letter_lowercase//1 and followed by any combination of
-% ascii_letter_lowercase//1,
-% decimal_digit//2, plus_sign//1, dot//1, or hyphen_minus//1.
+% ascii_letter_lowercase// and followed by any combination of
+% ascii_letter_lowercase//,
+% decimal_digit//, plus_sign//, dot//, or hyphen_minus//.
 % For resiliency, programs interpreting URI should treat upper case letters
 % as equivalent to lower case in scheme names (e.g., allow `HTTP` as
 % well as `http`).
