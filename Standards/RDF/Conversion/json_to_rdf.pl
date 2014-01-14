@@ -18,6 +18,8 @@ Automated JSON to RDF conversion.
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(codes_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -53,7 +55,7 @@ json_to_rdf(Graph, Module, JSONs, Individuals):-
   ).
 json_to_rdf(Graph, Module, JSON, Individual):-
   JSON = json(_), !,
-  
+
   % Namespace.
   (
     xml_current_namespace(Module, _), !
@@ -84,26 +86,28 @@ json_object_to_rdf(Graph, Module, json(Args0), Individual):-
 
   json_object_to_rdf(Graph, Module, Legend, json(Args), Individual).
 
-json_object_to_rdf(Graph, Module, Legend, json(Args1), Individual):-
-  Module:legend(Legend, PrimaryKey, Specs),
-  
-  % The most popular legend is the class.
+create_resource(Graph, Module, Legend, Id, Individual):-
   once(dcg_phrase(capitalize, Legend, ClassName)),
   rdf_global_id(Module:ClassName, Class),
   rdfs_assert_class(Class, Graph),
-
-  % Individual.
   (
-    var(PrimaryKey)
+    var(Id)
   ->
     rdf_bnode(Individual)
   ;
-    memberchk(PrimaryKey=Id, Args1),
     atomic_list_concat([ClassName,Id], '/', IndividualName),
     rdf_global_id(ckan:IndividualName, Individual)
   ),
-  rdf_assert_individual(Individual, Class, Graph),
-  
+  rdf_assert_individual(Individual, Class, Graph).
+
+json_object_to_rdf(Graph, Module, Legend, json(Args1), Individual):-
+  Module:legend(Legend, PrimaryKey, Specs),
+
+  (nonvar(PrimaryKey) -> memberchk(PrimaryKey=Id, Args1) ; true),
+
+  % Class and individual.
+  create_resource(Graph, Module, Legend, Id, Individual),
+
   % Propositions.
   maplist(json_pair_to_rdf(Graph, Module, Legend, Individual, Specs), Args1).
 
@@ -125,14 +129,17 @@ json_pair_to_rdf(Graph, Module, _, Individual, Specs, Name=Value):-
   rdf_global_id(Module:Name, Predicate),
   json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value), !.
 % DEB
-json_pair_to_rdf(_, _, Legend, Type, _, Pair):-
+json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair):-
   gtrace,
-  debug(json_to_rdf, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]).
+  debug(json_to_rdf, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]),
+  json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair).
 
 % Type `skip`.
 json_value_to_rdf(_, _, _, _, skip, _):- !.
 % The empty atom.
 json_value_to_rdf(_, _, _, _, _, ''):- !.
+% A JSON object occurs that should be asserted
+%  according to the given legend.
 json_value_to_rdf(Graph, Module, Individual1, Predicate, Legend/_, Value):-
   Value = json(_), !,
   (
@@ -143,31 +150,37 @@ json_value_to_rdf(Graph, Module, Individual1, Predicate, Legend/_, Value):-
     json_object_to_rdf(Graph, Module, Legend, Value, Individual2)
   ),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
+% An atom occurs that is the identifier of an object described by `Legend`.
+json_value_to_rdf(Graph, Module, Individual1, Predicate, Legend/_, Value):- !,
+  create_resource(Graph, Module, Legend, Value, Individual2),
+  rdf_assert(Individual1, Predicate, Individual2, Graph).
 json_value_to_rdf(Graph, Module, Individual, Predicate, or(Types), Value):-
   % Notice the choicepoint...
   member(Type, Types),
   json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value), !.
+% Atom.
 json_value_to_rdf(Graph, _, Individual, Predicate, atom, Value):-
   atom(Value), !,
   rdf_assert_literal(Individual, Predicate, Value, Graph).
-json_value_to_rdf(Graph, _, Individual, Predicate, Type, Value):-
-  xsd_datatype(Type, Datatype), !,
-  rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
+% URL.
+json_value_to_rdf(Graph, _, Individual, Predicate, url, Value):-
+  must_be(iri, Value), !,
+  rdf_assert(Individual, Predicate, Value, Graph).
+% List.
 json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):-
   is_list(Value), !,
   maplist(
     json_value_to_rdf(Graph, Module, Individual, Predicate, Type),
     Value
   ).
-% @tbd
-%json_value_to_prolog(Graph, _, Individual, Predicate, Type1, Value):-
-%  Type1 =.. [Functor|Args1],
-%  append(Args1, [_], Args2),
-%  Type2 =.. [Functor|Args2],
-%  (
-%    predicate_property(Type2, imported_from(typecheck))
-%  ;
-%    predicate_property(Type2, iso)
-%  ), !,
-%  call(Type1, Value).
+% The value is already in XSD format: recognize that this is the case.
+json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value1):-
+  atom(Value1),
+  to_codes(Value1, LEX1),
+  xsd_datatype(Type, Datatype),
+  xsd_lexicalMap(Datatype, LEX1, Value2), !,
+  json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value2).
+json_value_to_rdf(Graph, _, Individual, Predicate, Type, Value):-
+  xsd_datatype(Type, Datatype), !,
+  rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
 

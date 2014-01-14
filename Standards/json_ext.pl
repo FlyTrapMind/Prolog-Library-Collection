@@ -111,8 +111,12 @@ json_object_to_prolog(Module, Legend, json(Args1), Term):-
 %!   -Prolog:pair(atom,term)
 %! ) is det.
 
+% JSON null value.
 json_pair_to_prolog(_, _, Specs, Name=Null, _VAR):-
   Null = @(null), !,
+  memberchk(Name-_-true, Specs).
+% Empty string.
+json_pair_to_prolog(_, _, Specs, Name='', _VAR):- !,
   memberchk(Name-_-true, Specs).
 json_pair_to_prolog(Module, _, Specs, Name=Value1, Value2):-
   memberchk(Name-Type-_, Specs),
@@ -133,6 +137,9 @@ json_value_to_prolog(Module, Legend/_, Value1, Value2):-
   ;
     json_object_to_prolog(Module, Legend, Value1, Value2)
   ).
+% Internal links. These are only handled in the conversion to RDF.
+json_value_to_prolog(Module, _/_, Value1, Value2):- !,
+  json_value_to_prolog(Module, atom, Value1, Value2).
 json_value_to_prolog(Module, or(Types), Value1, Value2):-
   member(Type, Types),
   json_value_to_prolog(Module, Type, Value1, Value2), !.
@@ -140,8 +147,12 @@ json_value_to_prolog(_, atom, Value, Value):-
    atom(Value), !.
 json_value_to_prolog(_, boolean, Value1, Value2):-
   to_boolean(Value1, Value2), !.
+json_value_to_prolog(_, url, Value, Value):- !,
+  must_be(iri, Value).
 json_value_to_prolog(_, integer, Value1, Value2):-
   to_integer(Value1, Value2), !.
+json_value_to_prolog(_, dateTime, Value1, Value2):- !,
+  parse_time(Value1, iso_8601, Value2).
 json_value_to_prolog(Module, list(Type), Value1, Value2):-
   is_list(Value1),
   maplist(json_value_to_prolog(Module, Type), Value1, Value2).
