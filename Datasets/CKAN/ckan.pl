@@ -218,7 +218,7 @@ legend(
     'foi-web'-atom-true,
     groups-list('_group'/_)-true,
     id-atom-false,
-    image_url-atom-true,
+    image_url-url-true,
     is_organization-boolean-true,
     name-atom-true,
     packages-list(package/_)-false,
@@ -243,7 +243,7 @@ legend(
     maintainer-atom-true,
     status-atom-false,
     title-atom-false,
-    url-atom-true
+    url-url-true
   ]
 ).
 legend(
@@ -344,7 +344,7 @@ legend(
     unpublished-boolean-true,
     update_frequency-atom-true,
     'update_frequency-other'-atom-true,
-    url-atom-true,
+    url-url-true,
     version-atom-true
   ]
 ).
@@ -389,13 +389,15 @@ legend(
     datastore_active-boolean-true,
     date-atom-true,
     description-atom-false,
-    format-atom-false,
+    format-atom-true,
     'GranularidadeEspacial'-atom-false,
-    hash-atom-false,
+    hash-atom-true,
     'HGNC'-atom-false,
     'HotCasino'-atom-false,
+    'http://xmlns.com/foaf/0.1/primaryTopic'-atom-false,
     'hub-id'-atom-true,
     id-atom-false,
+    'JumpStartGeorgia'-atom-false,
     lang-atom-false,
     last_modified-atom-true,
     'links:dbpedia'-integer-false,
@@ -425,8 +427,8 @@ legend(
     resource_locator_function-atom-true,
     resource_locator_protocol-atom-true,
     resource_type-atom-true,
-    revision_id-atom-false,
-    revision_timestamp-atom-false,
+    revision_id-revision/_-false,
+    revision_timestamp-dateTime-false,
     scraped-atom-true,
     scraper_source-atom-true,
     scraper_url-atom-true,
@@ -440,12 +442,12 @@ legend(
     tracking_summary-tracking_summary/_-false,
     triples-integer-false,
     type-atom-false,
-    url-atom-false,
+    url-url-false,
     url_error-atom-false,
     verified-boolean-true,
     verified_date-atom-true,
     webstore_last_updated-atom-true,
-    webstore_url-atom-true
+    webstore_url-url-true
   ]
 ).
 legend(
