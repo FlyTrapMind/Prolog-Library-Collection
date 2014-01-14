@@ -64,7 +64,6 @@
 % ~~~
 
 'IRI'(T0) -->
-{gtrace},
   scheme(T1),
   ":",
   'ihier-part'(T2),

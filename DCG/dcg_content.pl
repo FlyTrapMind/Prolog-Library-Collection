@@ -24,7 +24,6 @@
     horizontal_line//1, % +Length:integer
     indent//1, % +Indent:integer
     quoted//1, % :DCG
-    void//0,
     word//1, % ?Word:atom
     word//2 % -Tree:compound
             % ?Word:atom
@@ -55,7 +54,6 @@ DCG rules for parsing/generating often-occuring content.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
@@ -256,9 +254,6 @@ indent(I) -->
 
 quoted(DCG) -->
   dcg_between(double_quote, DCG).
-
-void -->
-  [].
 
 %! word(?Word:atom)// is semidet.
 % Returns the first word that occurs in the codes list.

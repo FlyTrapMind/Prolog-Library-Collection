@@ -9,6 +9,30 @@
 
 /** <module> Access Datahub
 
+# Question on syntax and semantics of object properties
+
+Hi Datahubbers,
+
+First of all, thanks for this great Web service!
+
+Datahub/CKAN uses several types objects (e.g. organizations, packages, resources). I have problems understanding the properties these resources have.
+
+Syntax:
+1) Is there documentation available that describes the various properties an object can have?
+2) Is these documentation available that identifies which properties are required and which are optional? (E.g. `id` may be required, `webstore_url` may be optional.
+3) Are there restrictions for the values a property may have? Several properties have values that are strings which seem to encode dates in some ISO/RFC format. Knowing the format would be helpful. Several properties have strings that represent integers. Does this mean that the value can be a non-integer as well (mayne the string "NaN")?
+
+Semantics:
+4) Is there a (semantic) distinction between a property that has the value `@null` and a property that is absent?
+5) There seem to be spurious properties in the Datahub, e.g. resource X has the `SpirosAlexiou` property. Doing a Web search on that string brings up the Datahub user page of a person named Spiros Alexiou (URL: http://datahub.io/nl/user/salexiou).
+
+I have more examples of spurious proprties. If an overview of these is considered helpful I can make it available.
+
+Cheers!,
+Wouter.
+
+--
+
 @author Wouter Beek
 @version 2014/01
 */

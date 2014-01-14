@@ -1,8 +1,4 @@
-:- module(
-  rdf_tabular,
-  [
-  ]
-).
+:- module(rdf_tabular, []).
 
 /** <module> RDF tabular
 
@@ -16,14 +12,16 @@ Generated RDF HTML tables.
 @version 2013/12-2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_dcg)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdf_web(rdf_web)).
+:- use_module(rdf_web(rdf_html)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
@@ -34,12 +32,10 @@ Generated RDF HTML tables.
 
 
 rdf_tabular(Request):-
-gtrace,
   memberchk(search(Search), Request),
-  memberchk(term=Term1, Search), !,
-  rdf_web_argument(Term1, Term2),
-  format(atom(Caption), 'Description of resource denoted by ~w.', [Term1]),
-  reply_html_page(app_style, title(Caption), \rdf_tabular(Caption, Term2)).
+  memberchk(term=Term, Search), !,
+  format(atom(Caption), 'Description of resource denoted by ~w.', [Term]),
+  reply_html_page(app_style, title(Caption), \rdf_tabular(Caption, Term)).
 rdf_tabular(_):-
   reply_html_page(app_style, title('Overview of resources.'), \overview).
 
@@ -65,7 +61,7 @@ overview([H1|T]) -->
     \html_table(
       [
         caption(Caption),
-        cell_dcg(rdf_linked_term),
+        cell_dcg(rdf_html_term),
         header(true),
         indexed(true)
       ],
@@ -75,7 +71,11 @@ overview([H1|T]) -->
   overview(T).
 
 
-rdf_tabular(Caption, S) -->
-  {setoff([P,O,G], rdf(S, P, O, G), L)},
-  rdf_table_(Caption, L).
+rdf_tabular(Caption, Term) -->
+  {
+    dcg_phrase(rdf_term(S1), Term),
+    rdf_global_id(S1, S2),
+    setoff([P,O,G], rdf(S2, P, O, G), L)
+  },
+  rdf_html_table(Caption, L).
 

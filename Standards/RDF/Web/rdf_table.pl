@@ -24,7 +24,7 @@ Allows RDF tables to be created in the terminal
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(www_browser)).
-:- use_module(rdf_web(rdf_web)).
+:- use_module(rdf_web(rdf_html)).
 
 :- rdf_meta(rdf_table(r,r,r,+)).
 
@@ -42,7 +42,7 @@ rdf_table(_):-
   reverse(Pairs2, [Time1-L|_]),
   format_time(atom(Time2), '%FT%T%:z', Time1),
   format(atom(Caption), 'RDF Table at ~w', [Time2]),
-  reply_html_page(app_style, title(Caption), \rdf_table_(Caption, L)).
+  reply_html_page(app_style, title(Caption), \rdf_html_table(Caption, L)).
 
 rdf_table(S, P, O, G):-
   setoff([S,P,O,G], rdf(S, P, O, G), L),

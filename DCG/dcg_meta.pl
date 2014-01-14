@@ -8,11 +8,6 @@
             % :DCG_Body3
     dcg_apply//2, % :DCG_Body
                   % +Arguments:list
-    dcg_between//2, % :Between
-                    % :DCG
-    dcg_between//3, % :Begin
-                    % :DCG
-                    % :End
     dcg_call//1,
     dcg_call//2,
     dcg_call//3,
@@ -36,14 +31,14 @@ Meta-DCG rules.
 :- meta_predicate(';'(2,2,?,?)).
 :- meta_predicate(';'(2,2,2,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
-:- meta_predicate(dcg_between(//,//,?,?)).
-:- meta_predicate(dcg_between(//,//,//,?,?)).
 :- meta_predicate(dcg_call(2,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
 :- meta_predicate(dcg_call(4,?,?,?,?)).
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_calls(+,//,?,?)).
+
+
 
 ';'(A, _B, C, D):-
   dcg_call(A, C, D).
@@ -60,14 +55,6 @@ Meta-DCG rules.
 dcg_apply(DCG_Body, Args1, X, Y):-
   append(Args1, [X,Y], Args2),
   apply(DCG_Body, Args2).
-
-dcg_between(Between, DCG) -->
-  dcg_between(Between, DCG, Between).
-
-dcg_between(Begin, DCG, End) -->
-  phrase(Begin),
-  phrase(DCG),
-  phrase(End).
 
 %! dcg_call(:DCG)//
 % Included for consistency with dcg_call//[1,2,3,4].

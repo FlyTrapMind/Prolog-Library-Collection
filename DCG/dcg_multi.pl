@@ -335,7 +335,7 @@ dcg_multi_separator(_C, O1) -->
   Separator.
 % Otherwise, do nothing.
 dcg_multi_separator(_C, _O1) -->
-  void.
+  [].
 
 greater_than_or_equal_to(inf, _):- !.
 greater_than_or_equal_to(_, inf):- !, fail.

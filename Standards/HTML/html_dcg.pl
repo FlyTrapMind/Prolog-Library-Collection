@@ -39,9 +39,7 @@ DCG rules for HTML expressions.
 html_attribute -->
   word(_),
   "=",
-  double_quote,
-  html_string,
-  double_quote.
+  dcg_between(double_quote, html_string).
 
 %! html_attribute(+Name:atom, +Value:atom)//
 % Used for *generating* GraphViz HTML-like labels.
@@ -49,9 +47,7 @@ html_attribute -->
 html_attribute(N, V) -->
   atom(N),
   "=",
-  double_quote,
-  atom(V),
-  double_quote.
+  dcg_between(double_quote, atom(V)).
 
 html_attributes --> [].
 html_attributes -->
@@ -178,7 +174,7 @@ html_style([NVPair|NVPairs]) -->
   {var(NVPair)}, !,
   html_style_word(Name1),
   colon,
-  (space ; void),
+  (space ; ""),
   html_style_word(Value1),
   semi_colon,
   {
@@ -196,7 +192,7 @@ html_style([NVPair|NVPairs]) -->
   },
   html_style_word(Name2),
   colon,
-  (space ; void),
+  (space ; ""),
   html_style_word(Value2),
   semi_colon,
   html_style(NVPairs).

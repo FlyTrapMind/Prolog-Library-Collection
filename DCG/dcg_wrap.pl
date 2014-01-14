@@ -44,7 +44,6 @@ The following options are supported:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_control)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)). % Used for newline (meta-DCG argument).
