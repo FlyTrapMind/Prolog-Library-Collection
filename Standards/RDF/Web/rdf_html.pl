@@ -13,6 +13,7 @@
 :- use_module(library(lists)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
+:- use_module(rdf(rdf_image)).
 :- use_module(xml(xml_namespace)).
 
 
@@ -20,15 +21,20 @@
 % TERM %
 
 % @tbd HACK
+% Graph.
 rdf_html_term(Graph) -->
   {atom(Graph), rdf_graph(Graph)}, !,
   html(span(class='rdf-graph', Graph)).
+% Blank node.
 rdf_html_term(Type) -->
   rdf_blank_node(Type).
+% Literal.
 rdf_html_term(Type) -->
   rdf_literal(Type).
+% IRI.
 rdf_html_term(Type) -->
   rdf_iri(Type).
+% Prolog term.
 rdf_html_term(PL_Term) -->
   html(span(class='prolog-term', PL_Term)).
 
@@ -79,9 +85,16 @@ rdf_typed_literal(literal(type(Datatype,Value))) -->
 
 % IRI %
 
+% E-mail.
 rdf_iri(IRI1) -->
   {uri_components(IRI1, uri_components(mailto, _, IRI2, _, _))}, !,
   html(span(class='e-mail', a(href=IRI1, IRI2))).
+% Image.
+rdf_iri(IRI) -->
+  {is_image_url(IRI)}, !,
+  {rdf_image(IRI, File)},
+  html(span(class='image', a(href=IRI, img(src=IRI, [])))).
+% IRI.
 rdf_iri(IRI1) -->
   {rdf_global_id(IRI2, IRI1)},
   (
