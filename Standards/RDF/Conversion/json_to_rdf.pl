@@ -20,6 +20,7 @@ Automated JSON to RDF conversion.
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -28,6 +29,7 @@ Automated JSON to RDF conversion.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_lit_build)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
@@ -181,7 +183,14 @@ json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):- !,
     format(atom(Msg), 'Value ~w is not a URL.', [Value1]),
     syntax_error(Msg)
   ),
-  rdf_assert(Individual, Predicate, Value2, Graph).
+  % Image URL.
+  (
+    is_image_url(Value2)
+  ->
+    rdf_assert_image(Individual, Predicate, Value2, Graph)
+  ;
+    rdf_assert(Individual, Predicate, Value2, Graph)
+  ).
 % Email.
 json_value_to_rdf(Graph, Module, Individual, Predicate, email, Value1):- !,
   (
