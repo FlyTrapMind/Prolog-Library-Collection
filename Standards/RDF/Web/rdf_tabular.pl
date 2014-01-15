@@ -88,7 +88,7 @@ rdf_tabular(Term) -->
 % Datatype (in typed literal).
 rdf_tabular_pl(D) -->
   {
-    rdf_datatype(_, D), !,gtrace,
+    rdf_datatype(_, D), !,
     setoff([Value], rdf_datatype(_, _, D, Value, _), Values),
     format(atom(Caption), 'Ordered value list for datatype ~w.', [D])
   },

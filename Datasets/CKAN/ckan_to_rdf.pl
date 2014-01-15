@@ -26,7 +26,7 @@ ckan_to_rdf(O1):-
 
   % Make sure the CKAN site is online.
   site_read(O1), !,
-
+  
   % Groups
   group_list(O2, _, _, _, _, Groups),
   length(Groups, LG),

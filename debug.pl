@@ -61,9 +61,6 @@
 %:- use_module(library(swi_ide)).
 %:- prolog_ide(debug_monitor).
 
-% Debug topics.
-:- debug(ap_stat).
-
 :- [load].
 
 % Load PGC documentation and debug tools.
