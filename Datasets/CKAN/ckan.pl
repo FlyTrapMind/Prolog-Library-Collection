@@ -119,7 +119,8 @@ Querying the CKAN API.
 The following options are API-wide supported:
   * =|deprecated(Deprecated:boolean)|=
     Use the deprecated API.
-  * =|output(Format:oneof([prolog,rdf])|=
+  * =|graph(Graph:atom)|=
+    When present, assert the JSON data in an RDF graph with the given name.
   * =|paginated(Paginated:boolean)|=
     Use pagination in order to retrieve all results.
 
@@ -1168,10 +1169,10 @@ ckan(O1, Action, Parameters, Result):-
     HTTP_O1,
     HTTP_O2
   ),
-  option(output(Format), O1, rdf),
-  http_goal(URL, HTTP_O2, process_http(Format, Result)).
+  option(graph(Graph), O1, _VAR),
+  http_goal(URL, HTTP_O2, process_http(Graph, Result)).
 
-process_http(Format, Return, Stream):-
+process_http(Graph, Return, Stream):-
   json_read(Stream, json(Reply)),
   memberchk(help=Help, Reply),
   (
@@ -1187,7 +1188,7 @@ process_http(Format, Return, Stream):-
     json_to_prolog(ckan, Result, Return),
 
     % To: RDF
-    (Format == rdf -> json_to_rdf(ckan, ckan, Result, _)),
+    (var(Graph), ! ; json_to_rdf(Graph, ckan, Result, _)),
 
     debug(ckan, 'Successful reply:\n~w', [Help])
   ).
