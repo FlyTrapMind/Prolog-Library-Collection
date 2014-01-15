@@ -11,6 +11,8 @@
     combinations/3, % +NumberOfObjects:integer
                     % +CombinationLength:integer
                     % -NumberOfCombinations:integer
+    count_down/2, % ?From:or([integer,oneof([inf])])
+                  % ?To:or([integer,oneof([inf])])
     cyclic_numlist/4, % +Min:integer
                       % +Max:integer
                       % +CycleLength:integer
@@ -113,6 +115,22 @@ combinations(NumberOfObjects, CombinationLength, NumberOfCombinations):-
   permutations(NumberOfObjects, CombinationLength, NumberOfPermutations),
   factorial(CombinationLength, F),
   NumberOfCombinations is NumberOfPermutations / F.
+
+
+%! count_down(
+%!   +From:or([integer,oneof([inf])]),
+%!   -To:or([integer,oneof([inf])])
+%! ) is det.
+%! count_down(
+%!   -From:or([integer,oneof([inf])]),
+%!   +To:or([integer,oneof([inf])])
+%! ) is det.
+% Decrements an integer, allowing the value `inf` as well.
+
+count_down(inf, inf):- !.
+count_down(N1, N2):-
+  succ(N2, N1).
+
 
 %! cyclic_numlist(
 %!   +Min:integer,

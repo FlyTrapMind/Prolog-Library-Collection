@@ -319,10 +319,6 @@ codes_atom(Codes, Atom):-
 codes_number(Codes, Number):-
   number_codes(Number, Codes).
 
-count_down(inf, inf):- !.
-count_down(N1, N2):-
-  succ(N2, N1).
-
 %! dcg_multi_separator(+Counter:nonneg, +Options:list(nvpair))// is det.
 % Processes the separator, if any.
 
