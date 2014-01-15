@@ -182,7 +182,7 @@ run_test0(Test, 'PASS'):-
   ;
     rdf(Test, test:inputDocument, URI)
   ),
-  download_to_file(URI, File),
+  _download_to_file(URI, File),
 
   % Throw an exception or fail, please.
   catch(
@@ -198,7 +198,7 @@ run_test0(Test, 'SKIPPED'):-
 /*
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
-  download_to_file(Premise_URI, Premise_File),
+  _download_to_file(Premise_URI, Premise_File),
   %%%%rdf_load2(Premise_File, in, [base_uri(Premise_URI)]),
   rdf_load2(Premise_File, premise),
 */
@@ -208,7 +208,7 @@ run_test0(Test, 'PASS'):-
 
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
-  download_to_file(Premise_URI, Premise_File),
+  _download_to_file(Premise_URI, Premise_File),
   rdf_load2(Premise_File, [base_uri(Premise_URI), graph(premise)]),
 
   % Run materialization.
@@ -224,7 +224,7 @@ run_test0(Test, 'PASS'):-
     % The premise graph must be inconsistent.
     rdfs_inconsistent(premise)
   ;
-    download_to_file(Conclusion_URI, Conclusion_File),
+    _download_to_file(Conclusion_URI, Conclusion_File),
     rdf_load2(Conclusion_File, [base_uri(Conclusion_URI), graph(conclusion)]),
     % The materialized premise graph must be equivalent to the
     % conclusion graph.
@@ -236,13 +236,13 @@ run_test0(Test, 'PASS'):-
 
   % The input graph.
   rdf(Test, test:inputDocument, Input_URI),
-  download_to_file(Input_URI, Input_File),
+  _download_to_file(Input_URI, Input_File),
   %%%%rdf_load2(Input_File, in, [base_uri(Input_URI)]),
   rdf_load2(Input_File, in),
 
   % The output graph.
   rdf(Test, test:outputDocument, Output_URI),
-  download_to_file(Output_URI, Output_File),
+  _download_to_file(Output_URI, Output_File),
   %%%%rdf_load2(Output_File, out, [base_uri(Output_URI)]),
   rdf_load2(Output_File, out),
 
@@ -251,12 +251,12 @@ run_test0(Test, 'PASS'):-
   !.
 run_test0(_Test, 'FAIL').
 
-%! download_to_file(+URI:uri, -File:atom) is det.
+%! _download_to_file(+URI:uri, -File:atom) is det.
 % Returns the atomic name of the locally stored file that the given URI
 % refers to.
 % This assumes that the test files are stored locally.
 
-download_to_file(URI, File):-
+_download_to_file(URI, File):-
   uri_to_subdirectory_file_fragment(URI, Directory, FileName, _Fragment),
   absolute_file_name(
     tests(Directory),
