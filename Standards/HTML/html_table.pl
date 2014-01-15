@@ -18,12 +18,11 @@ Support for generating HTML tables based on Prolog lists.
 @version 2012/09-2013/06, 2013/09-2014/01
 */
 
-:- use_module(dcg(dcg_generic)).
+:- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
-:- use_module(uri(rfc3987_dcg)).
 
 is_meta(cell_dcg).
 is_meta(cell_value).
@@ -198,10 +197,8 @@ cell_value_default(Content1, Content2):-
 % Pairs of an IRI and a label.
 cell_value_default(IRI-Label, element(a,[href=IRI],[Label])):- !.
 % IRIs.
-cell_value_default(Content1, element(a,[href=Content1],[Content1])):-
-  % @tbd
-  %%%%once(dcg_phrase('IRI'(_), Content1)),
-  !.
+cell_value_default(Content, element(a,[href=Content],[Content])):-
+  is_of_type(iri, Content), !.
 % If we use term_to_atom/2 for atomic terms, extra single quotes are added
 % in front and at the end of the atom. Therefore, we first check whether
 % the term is an atom.
