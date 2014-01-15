@@ -136,16 +136,17 @@ create_nested_directory(NestedDir, AbsoluteDir):-
 
 create_nested_directory(SubDir, OldDir, NewDir):-
   atom(SubDir), !,
-  % Note that adding the option =|file_type(directory)|= makes this clause
-  % throw an exception, because this option assumes that the directory
-  % exists.
   atomic_list_concat([OldDir,'/',SubDir], NewDir),
   create_directory(NewDir).
+create_nested_directory([], NewDir, NewDir):- !.
 create_nested_directory(NestedDir, OldDir, NewDir):-
-  NestedDir =.. [OuterDir,InnerNestedDir],
-  % Note that adding the option =|file_type(directory)|= makes this clause
-  % throw an exception, because this option assumes that the directory
-  % exists.
+  (
+    is_list(NestedDir)
+  ->
+    NestedDir = [OuterDir|InnerNestedDir]
+  ;
+    NestedDir =.. [OuterDir,InnerNestedDir]
+  ),
   atomic_list_concat([OldDir,'/',OuterDir], TempDir),
   create_directory(TempDir),
   create_nested_directory(InnerNestedDir, TempDir, NewDir).
@@ -328,16 +329,16 @@ process_directory_files(
 
 process_directory_file(FromDir, ToDir, ToFileType, Goal, Args, FromFile):-
   relative_file_name(FromFile, FromDir, FromRelativeFile),
-  
+
   % Change the extension of the new file
   % to reflect the new serialization format.
   file_type_alternative(FromRelativeFile, ToFileType, ToRelativeFile),
-  
+
   directory_file_path(ToDir, ToRelativeFile, ToFile),
-  
+
   % The directory structure may not yet exist.
   create_file_directory(ToFile),
-  
+
   apply(Goal, [FromFile,ToFile|Args]).
 
 %! run_in_working_directory(:Goal, +WorkingDirectory:atom) is det.
