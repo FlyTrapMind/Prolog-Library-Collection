@@ -7,7 +7,7 @@
 % FETCHING
     file_to_html/2, % +File:atom
                     % -HTML:list
-    uri_to_html/2, % +URI:uri
+    url_to_html/2, % +URL:atom
                    % -HTML:list
 
 % PARSING
@@ -79,9 +79,9 @@ reply_html_file(Style, File):-
 % Retrieves the HTML DOM from the file described with the given
 % absolute file name.
 
-file_to_html(File, HTML):-
+file_to_html(File, HTML_DOM):-
   open(File, read, Stream, [encoding(utf8),type(test)]),
-  stream_to_html(Stream, HTML).
+  html_from_stream(HTML_DOM, Stream).
 
 %! process_exception(+Exception, :Goal) is det.
 % Processes an exception thrown by load_structure/3
@@ -96,30 +96,30 @@ html_process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- 
 html_process_exception(Exception, _Goal):-
   debug(html, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
 
-% stream_to_html(+Stream:stream, -HTML:dom) is det.
+% html_from_stream(-HTML:dom, +Stream:stream) is det.
 % Retrieves the HTML DOM from the given stream.
 %
 % @throws Limit exceeded exception due to >50 errors.
 %         =|error(limit_exceeded(max_errors, Max), _)|=
 
-stream_to_html(Stream, DOM):-
-  stream_to_html(Stream, DOM, 0).
+html_from_stream(HTML_DOM, Stream):-
+  html_from_stream(HTML_DOM, 0, Stream).
 
-stream_to_html(_Stream, _DOM, 5):- !,
+html_from_stream(_, 5, _):- !,
   debug(
     html,
     'The maximum number of attempts was reached for load_structure/3 \c
-     in stream_to_html/3.',
+     in html_from_stream/3.',
     []
   ).
-stream_to_html(Stream, DOM, Attempts):-
-  dtd(html, DTD),
+html_from_stream(HTML_DOM, Attempts, Stream):-
+  dtd(html, HTML_DTD),
   catch(
     load_structure(
       stream(Stream),
-      DOM,
+      HTML_DOM,
       [
-        dtd(DTD),
+        dtd(HTML_DTD),
         dialect(xmlns),
         max_errors(-1),
         shorttag(true),
@@ -132,25 +132,21 @@ stream_to_html(Stream, DOM, Attempts):-
       NewAttempts is Attempts + 1,
       html_process_exception(
         Exception,
-        stream_to_html(Stream, DOM, NewAttempts)
+        html_from_stream(HTML_DOM, NewAttempts, Stream)
       )
     )
   ).
 
-%! uri_to_html(+URI:resource, -HTML:list) is det.
+%! url_to_html(+URL:atom, -HTML_DOM:list) is det.
 % Returns the HTML Document Object Model (DOM)
 % for the website with the given URI.
 %
 % @arg URI
-% @arg HTML
+% @arg HTML_DOM
 % @throws existence_error(url, Id)
 
-uri_to_html(URI, DOM):-
-  setup_call_cleanup(
-    http_open_wrapper(URI, Stream, []),
-    stream_to_html(Stream, DOM),
-    close(Stream)
-  ).
+url_to_html(URL, HTML_DOM):-
+  http_goal(URL, [], html_from_stream(HTML_DOM)).
 
 
 

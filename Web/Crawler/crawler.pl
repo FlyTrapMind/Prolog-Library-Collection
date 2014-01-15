@@ -28,7 +28,7 @@ Crawler for HTML sites.
 crawl:-
   unvisited(URI),
   store_new_uri(URI),
-  catch(uri_to_html(URI, HTML), Error, print_message(warning, Error)),
+  url_to_html(URI, HTML),
   parse_dom(HTML),
   retract(unvisited(URI)),
   assert(visited(URI)),

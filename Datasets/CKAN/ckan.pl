@@ -146,6 +146,7 @@ The following API call are not supported:
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(uri_ext)).
+:- use_module(http(http)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_open)).
@@ -212,12 +213,12 @@ legend(
     abbreviation-atom-true,
     approval_status-atom-true,
     category-atom-true,
-    'contact-email'-atom-true,
+    'contact-email'-email-true,
     'contact-name'-atom-true,
     'contact-phone'-atom-true,
     description-atom-true,
     extras-list(extra/_)-false,
-    'foi-email'-atom-true,
+    'foi-email'-email-true,
     'foi-name'-atom-true,
     'foi-phone'-atom-true,
     'foi-web'-atom-true,
@@ -262,7 +263,7 @@ legend(
     extras-list(extra/_)-true,
     groups-list(group/_)-true,
     id-atom-false,
-    image_url-atom-true,
+    image_url-url-true,
     is_organization-boolean-false,
     name-atom-false,
     num_followers-integer-true,
@@ -283,10 +284,10 @@ legend(
   [
     additional_resources-list(resource/_)-true,
     author-atom-true,
-    author_email-atom-true,
+    author_email-email-true,
     capacity-atom-true,
     'core-dataset'-boolean-true,
-    'contact-email'-atom-true,
+    'contact-email'-email-true,
     'contact-name'-atom-true,
     'contact-phone'-atom-true,
     data_dict-skip-true,
@@ -294,7 +295,7 @@ legend(
     date_update_future-atom-true,
     date_updated-atom-true,
     extras-list(extra/_)-false,
-    'foi-email'-atom-true,
+    'foi-email'-email-true,
     'foi-name'-atom-true,
     'foi-phone'-atom-true,
     'foi-web'-atom-true,
@@ -310,7 +311,7 @@ legend(
     license_title-atom-true,
     license_url-atom-true,
     maintainer-atom-true,
-    maintainer_email-atom-true,
+    maintainer_email-email-true,
     mandate-atom-true,
     metadata_created-atom-false,
     metadata_modified-atom-false,
@@ -438,7 +439,7 @@ legend(
     scraper_source-atom-true,
     scraper_url-atom-true,
     sender-atom-false,
-    size-integer-true,
+    size-atom-true,
     sparql_graph_name-atom-false,
     'Sparqlendpoint'-atom-false,
     'SpirosAlexiou'-atom-false,
@@ -476,7 +477,7 @@ legend(
     id-atom-false,
     name-atom-false,
     packages-list(package/_)-false,
-    revision_timestamp-atom-false,
+    revision_timestamp-dateTime-false,
     state-atom-false,
     vocabulary_id-atom-true
   ]
@@ -1161,20 +1162,17 @@ ckan(O1, Action, Parameters, Result):-
       method(post),
       post(json(JSON_In)),
       request_header('Content-Type'='application/json'),
-      status_code(Status)
+      % One minute.
+      timeout(60)
     ],
     HTTP_O1,
     HTTP_O2
   ),
   option(output(Format), O1, rdf),
-  setup_call_cleanup(
-    http_open(URL, Out, HTTP_O2),
-    process_http(Status, Out, Format, Result),
-    close(Out)
-  ).
+  http_goal(URL, HTTP_O2, process_http(Format, Result), 10).
 
-process_http(200, Out, Format, Return):- !,
-  json_read(Out, json(Reply)),
+process_http(Format, Return, Stream):-
+  json_read(Stream, json(Reply)),
   memberchk(help=Help, Reply),
   (
     memberchk(error=Error, Reply)
@@ -1193,8 +1191,6 @@ process_http(200, Out, Format, Return):- !,
 
     debug(ckan, 'Successful reply:\n~w', [Help])
   ).
-process_http(Status, _, _, _):-
-  debug(ckan, 'HTTP status code ~w', [Status]).
 
 
 %! process_field_order_sort(
