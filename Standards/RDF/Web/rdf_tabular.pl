@@ -22,6 +22,7 @@ Generated RDF HTML tables.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_dcg)).
+:- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html)).
 :- use_module(server(app_ui)).
