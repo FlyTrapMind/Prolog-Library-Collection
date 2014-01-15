@@ -41,6 +41,7 @@ Predicates used for parsing and checking value-type conformance.
 | string               |                  |
 | symbol               |                  |
 | text                 |                  |
+| uri                  | Yes              |
 | iri                  | Yes              |
 | var                  |                  |
 
@@ -75,6 +76,9 @@ error:has_type(or(Types), Term):-
 error:has_type(list(Type), Term):-
   must_be(list, Term),
   maplist(must_be(Type), Term).
+% uri/0
+error:has_type(uri, Term):-
+  error:has_type(iri, Term).
 % iri/0
 error:has_type(iri, Term):-
   uri_components(
