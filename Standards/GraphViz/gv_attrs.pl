@@ -161,12 +161,13 @@ gv_attr(_Attrs, colorscheme, oneof(Colorschemes), [edge,graph,node], x11):-
 
 % Note that the default value is dependent on the directionality feature.
 gv_attr(Attrs, dir, oneof(DirTypes), [edge], DefaultValue):-
+  option(directionality(Directionality), Attrs, directed),
   (
-    option(directionality(directed), Attrs)
+    Directionality == directed
   ->
     DefaultValue = forward
   ;
-    option(directionality(undirected), Attrs)
+    Directionality == undirected
   ->
     DefaultValue = none
   ),
@@ -179,7 +180,7 @@ dir_type(none).
 
 % @tbd The value type should be `between(1.0,_)` (open interval), but this is
 %      not currently supported by must_be/2.
-gv_attr(_Attrs, fontsize, between(1.0,_OpenInterval), [graph], 14.0).
+gv_attr(_Attrs, fontsize, between(1,inf), [graph], 14).
 
 gv_attr(_Attrs, image, atom, [node], '').
 

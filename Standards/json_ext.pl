@@ -127,7 +127,7 @@ json_pair_to_prolog(Module, _, Specs, Name=Value1, Value2):-
   ), !.
 % DEB
 json_pair_to_prolog(Graph, Legend, Type, Pair, Value):-
-  gtrace,
+  gtrace, %DEB
   debug(json_ext, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]),
   json_pair_to_prolog(Graph, Legend, Type, Pair, Value).
 

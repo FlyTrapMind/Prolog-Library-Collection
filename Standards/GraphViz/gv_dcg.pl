@@ -105,7 +105,7 @@ gv_edge_operator(none) --> "--".
 % @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
 
 gv_edge_rhs(G_Attrs, To_Id) -->
-  {option(directedness(Dir), G_Attrs, none)},
+  {option(dir(Dir), G_Attrs, none)},
   gv_edge_operator(Dir), space,
   gv_node_id(To_Id).
 
@@ -193,8 +193,8 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
     shared_attributes(V_Terms, V_Attrs, NewV_Terms),
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
     default_option(G_Attrs1, strict, false, Strict, G_Attrs2),
-    default_option(G_Attrs2, directedness, none, Dir, G_Attrs3),
-    default_option(G_Attrs3, name, noname, G_Name, G_Attrs4),
+    default_option(G_Attrs2, dir, none, Dir, G_Attrs3),
+    select_option(name(G_Name), G_Attrs3, G_Attrs4, noname),
     default_option(G_Attrs4, overlap, false, G_Attrs5),
     I = 0
   },

@@ -136,7 +136,7 @@ json_pair_to_rdf(Graph, Module, _, Individual, Specs, Name=Value):-
   ), !.
 % DEB
 json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair):-
-  gtrace,
+  gtrace, %DEB
   debug(json_to_rdf, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]),
   json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair).
 

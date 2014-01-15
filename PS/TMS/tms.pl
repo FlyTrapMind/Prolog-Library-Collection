@@ -51,14 +51,12 @@ The generic predicates for Truth-Maintenance Systems.
 @version 2013/05, 2013/09-2013/10, 2013/12
 */
 
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(library(uri)).
 :- use_module(rdf(rdf_reification)).
 :- use_module(rdf(rdf_search)).
 :- use_module(rdfs(rdfs_build)).

@@ -33,7 +33,7 @@
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
 :- db_add_novel(http:location(tms, root(tms), [])).
-:- http_handler(root(tms), tms, [prefix]).
+:- http_handler(root(tms), tmss, [prefix]).
 
 :- initialization(web_module_add('TMS', tms_web, tms)).
 
@@ -43,7 +43,7 @@
 % TMS graph navigation Web pages.
 
 % A graph representation of the given TMS node.
-tms(Request):-
+tmss(Request):-
   memberchk(search(Search), Request),
   memberchk(node=NLocal, Search), !,
   rdf_global_id(doyle:NLocal, N),
@@ -51,14 +51,14 @@ tms(Request):-
   xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
 % A graph representation of the given TMS.
-tms(Request):-
+tmss(Request):-
   memberchk(search(Search), Request),
   memberchk(tms=TMS, Search), !,
   tms_web(TMS, SVG_DOM),
   xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
 % A table of all TMS-es.
-tms(_Request):-
+tmss(_Request):-
   tms_web(HTML_DOM),
   xml_dom_to_atom([], HTML_DOM, HTML_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(HTML_Atom)).

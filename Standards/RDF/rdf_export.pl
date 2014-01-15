@@ -210,7 +210,8 @@ export_rdf_graph(O, G, GIF):-
 export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % First edges, them vertices.
   rdf_edges(O, G, Es),
-  pairs_to_members(Es, Vs),
+  % @tbd
+  pair_ext:pairs_to_members(Es, Vs),
 
   maplist(rdf_edge_term(O, G, Vs), Es, E_Terms),
   maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
@@ -218,7 +219,7 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % Graph
   rdf_graph_name(G, G_Name),
   option(colorscheme(Colorscheme), O, x11),
-  G_Attrs = [colorscheme(Colorscheme),directedness(forward),label(G_Name)].
+  G_Attrs = [colorscheme(Colorscheme),dir(forward),label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
 % Returns a name for the given graph.

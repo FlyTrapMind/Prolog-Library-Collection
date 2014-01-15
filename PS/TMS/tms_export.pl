@@ -64,7 +64,7 @@ tms_export_graph(O1, TMS, Ns, Js, graph(Vs,Es4,G_Attrs)):-
   foldl(tms_export_out_edges(TMS), Js, Es3, Es4),
   G_Attrs = [
     charset('UTF-8'),
-    directedness(forward),
+    dir(forward),
     fontsize(11),
     label(TMS),
     overlap(false)

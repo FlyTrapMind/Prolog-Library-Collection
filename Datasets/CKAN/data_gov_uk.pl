@@ -27,7 +27,6 @@ data_gov_uk_ckan(Predicate, Arguments):-
 data_gov_uk_ckan_to_rdf(O1):-
   options(O2),
   merge_options(O1, O2, O3),
-gtrace,
   ckan_to_rdf(O3).
 
 options([

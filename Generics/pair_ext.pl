@@ -19,7 +19,6 @@ Support predicates for working with pairs.
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
