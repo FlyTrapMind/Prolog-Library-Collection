@@ -75,10 +75,16 @@ explanation(Regime, Rule, Explanation):-
 % are considered for materialization.
 % The same graph is used for storing the results.
 %
+% The following options are supported:
+%   * =|entailment_regimes(Regimes:list(oneof([none,rdf,rdfs])))|=
+%     Default: `[rdf,rdfs]`
+%   * =|multiple_justifications(Multiple:boolean)|=
+%     Whether a single proposition can have more than one justification.
+%
 % @arg Regimes An ordered set of atomic names denoting
-%        the entailment regimes that are used by materialization.
+%      the entailment regimes that are used by materialization.
 % @arg Graph Either the atomic name of a graph
-%        or uninstantiated (not restricted to a particular graph).
+%      or uninstantiated (not restricted to a particular graph).
 
 % No materialization whatsoever.
 materialize(O1, _G):-
