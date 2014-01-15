@@ -92,7 +92,6 @@ rdf_iri(IRI1) -->
 % Image.
 rdf_iri(IRI) -->
   {is_image_url(IRI)}, !,
-  {rdf_image(IRI, File)},
   html(span(class='image', a(href=IRI, img(src=IRI, [])))).
 % IRI.
 rdf_iri(IRI1) -->

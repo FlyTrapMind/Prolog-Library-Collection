@@ -49,7 +49,6 @@ Extensions for handling directories.
 @version 2013/06-2013/07, 2013/09, 2013/11-2013/12
 */
 
-:- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
