@@ -1,8 +1,8 @@
 :- module(
   data_overheid_nl,
   [
-    ckan/2 % +Predicate:atom
-           % +Arguments:list
+    data_overheid_nl_ckan/2 % +Predicate:atom
+                            % +Arguments:list
   ]
 ).
 
