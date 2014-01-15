@@ -36,7 +36,6 @@ Predicates for sending out HTTP requests.
 :- meta_predicate(http_goal(+,+,1)).
 :- meta_predicate(http_goal(+,+,1,+)).
 :- meta_predicate(http_open_catcher(+,+,+,1,+)).
-:- meta_predicate(http_open_exception(+,0)).
 :- meta_predicate(http_open_process(+,+,1)).
 
 
@@ -67,7 +66,7 @@ http_dateTime(DateTime):-
 % The arguments of `Goal` are appended with the argument `Stream`.
 
 http_goal(URL, Options, Goal):-
-  http_goal(URL, Options, Goal, inf).
+  http_goal(URL, Options, Goal, 10).
 
 http_goal(URL, _, Goal, 0):- !,
   debug(
@@ -98,32 +97,48 @@ http_open_catcher(Catcher, URL, Options, Goal, Attempts1):-
     [Catcher,Goal,URL]
   ),
   count_down(Attempts1, Attempts2),
-  http_open_exception(Catcher),
-  http_goal(URL, Options, Goal, Attempts2).
+  http_open_exception(Catcher, Retry),
+  (
+    Retry == true
+  ->
+    http_goal(URL, Options, Goal, Attempts2)
+  ;
+    true
+  ).
 
-%! http_open_exception(+Exception:compound) is det.
+%! http_open_exception(+Exception:compound, -Retry:boolean) is det.
 % Handle exceptions thrown by http_open/3.
 
 % Retry after a while upon existence error.
-http_open_exception(error(existence_error(url, URL),Context)):- !,
+http_open_exception(error(existence_error(url, URL),Context), true):- !,
   debug(http, 'URL ~w does not exist.', [URL]),
   debug(http, '[~w]', [Context]),
   sleep(10).
 % Retry upon I/O error.
 http_open_exception(
-  error(io_error(read,_Stream),context(_Predicate,Reason))
+  error(io_error(read,_Stream),context(_Predicate,Reason)),
+  true
 ):- !,
   debug(http, '[IO-EXCEPTION] ~w', [Reason]).
 % Retry upon socket error.
 % Thrown by http_open/3.
-http_open_exception(error(socket_error('Try Again'),_Context)):- !,
+http_open_exception(error(socket_error('Try Again'),_Context), true):- !,
   debug(http, '[SOCKET ERROR] Try again!', []),
   sleep(1).
-http_open_exception(exception(error(http_status(Status),_Context))):- !,
+http_open_exception(
+  exception(error(http_status(Status),_Context)),
+  Retry
+):- !,
   'Status-Code'(Status, Reason),
   debug(http, '[HTTP STATUS CODE] ~d ~a', [Status,Reason]),
-  sleep(60).
-http_open_exception(Exception):-
+  (
+    Status == 403
+  ->
+    Retry = false
+  ;
+    sleep(60)
+  ).
+http_open_exception(Exception, false):-
   gtrace, %DEB
   debug(http, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
 
