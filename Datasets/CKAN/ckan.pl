@@ -1169,7 +1169,7 @@ ckan(O1, Action, Parameters, Result):-
     HTTP_O2
   ),
   option(output(Format), O1, rdf),
-  http_goal(URL, HTTP_O2, process_http(Format, Result), 10).
+  http_goal(URL, HTTP_O2, process_http(Format, Result)).
 
 process_http(Format, Return, Stream):-
   json_read(Stream, json(Reply)),

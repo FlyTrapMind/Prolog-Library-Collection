@@ -67,7 +67,7 @@ http_dateTime(DateTime):-
 % The arguments of `Goal` are appended with the argument `Stream`.
 
 http_goal(URL, Options, Goal):-
-  http_goal(URL, Options, Goal, 5).
+  http_goal(URL, Options, Goal, inf).
 
 http_goal(URL, _, Goal, 0):- !,
   debug(
