@@ -35,6 +35,7 @@ The user administration is based on the following:
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(user_input)).
+:- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/http_session)).
 :- use_module(library(lists)).
@@ -151,7 +152,10 @@ user_property(UserName, session(Session)):- !,
   (nonvar(Session) -> ! ; true).
 % Explicitly stored properties.
 user_property(UserName, Property):-
-  enforce_mode('_user_property'(UserName, Property), [['+','+']-semidet]).
+  maplist(nonvar, [UserName,Property]), !,
+  '_user_property'(UserName, Property), !.
+user_property(UserName, Property):-
+  '_user_property'(UserName, Property).
 
 '_user_property'(UserName, Property):-
   current_user(UserName, Properties),
