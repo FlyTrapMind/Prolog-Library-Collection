@@ -123,7 +123,7 @@ json_pair_to_prolog(Module, _, Specs, Name=Value1, Value2):-
   catch(
     json_value_to_prolog(Module, Type, Value1, Value2),
     Exception,
-    debug(email, '[pl2rdf] Exception: ~w', [Exception])
+    debug(ckan, '[pl2rdf] Exception: ~w', [Exception])
   ), !.
 % DEB
 json_pair_to_prolog(Graph, Legend, Type, Pair, Value):-
@@ -151,6 +151,7 @@ json_value_to_prolog(_, atom, Value, Value):-
   atom(Value), !.
 json_value_to_prolog(_, boolean, Value1, Value2):-
   to_boolean(Value1, Value2), !.
+% URL.
 json_value_to_prolog(_, url, Value1, Value2):- !,
   (
     is_of_type(iri, Value1)
@@ -164,6 +165,18 @@ json_value_to_prolog(_, url, Value1, Value2):- !,
   ;
     format(atom(Msg), 'Value ~w is not a URL.', [Value1]),
     syntax_error(Msg)
+  ).
+% Email.
+json_value_to_prolog(Module, email, Value1, Value2):- !,
+  (
+    is_of_type(email, Value1)
+  ->
+    atomic_list_concat([mailto,Value1], ':', Value2)
+  ;
+    format(atom(Msg), 'Value ~w is not an e-mail address.', [Value1]),
+    syntax_error(Msg),
+    % For links to a contact form.
+    json_value_to_prolog(Module, url, Value1, Value2)
   ).
 json_value_to_prolog(_, integer, Value1, Value2):-
   to_integer(Value1, Value2), !.

@@ -130,7 +130,7 @@ json_pair_to_rdf(Graph, Module, _, Individual, Specs, Name=Value):-
   catch(
     json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value),
     Exception,
-    debug(email, '[json2rdf] Exception: ~w', [Exception])
+    debug(ckan, '[json2rdf] Exception: ~w', [Exception])
   ), !.
 % DEB
 json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair):-
@@ -167,7 +167,7 @@ json_value_to_rdf(Graph, _, Individual, Predicate, atom, Value):-
   atom(Value), !,
   rdf_assert_literal(Individual, Predicate, Value, Graph).
 % URL.
-json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):-
+json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):- !,
   (
     is_of_type(iri, Value1)
   ->
@@ -182,9 +182,22 @@ json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):-
     syntax_error(Msg)
   ),
   rdf_assert(Individual, Predicate, Value2, Graph).
+% Email.
+json_value_to_rdf(Graph, Module, Individual, Predicate, email, Value1):- !,
+  (
+    is_of_type(email, Value1)
+  ->
+    atomic_list_concat([mailto,Value1], ':', Value2)
+  ;
+    format(atom(Msg), 'Value ~w is not an e-mail address.', [Value1]),
+    syntax_error(Msg),
+    % For links to a contact form.
+    json_value_to_rdf(Graph, Module, Individual, Predicate, url, Value1)
+  ),
+  rdf_assert(Individual, Predicate, Value2, Graph).
 % List.
-json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):-
-  is_list(Value), !,
+json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):- !,
+  is_list(Value),
   maplist(
     json_value_to_rdf(Graph, Module, Individual, Predicate, Type),
     Value
