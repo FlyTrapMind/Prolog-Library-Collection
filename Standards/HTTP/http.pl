@@ -25,11 +25,12 @@ Predicates for sending out HTTP requests.
 */
 
 :- use_module(generics(atom_ext)).
-:- use_module(math(math_ext)).
+:- use_module(http(rfc2616_status_line)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_open)).
 :- use_module(library(option)).
+:- use_module(math(math_ext)).
 :- use_module(xml(xml_dom)).
 
 :- meta_predicate(http_goal(+,+,1)).
@@ -100,22 +101,28 @@ http_open_catcher(Catcher, URL, Options, Goal, Attempts1):-
   http_open_exception(Catcher),
   http_goal(URL, Options, Goal, Attempts2).
 
+%! http_open_exception(+Exception:compound) is det.
+% Handle exceptions thrown by http_open/3.
+
 % Retry after a while upon existence error.
-% Thrown by http_open/3
 http_open_exception(error(existence_error(url, URL),Context)):- !,
   debug(http, 'URL ~w does not exist.', [URL]),
   debug(http, '[~w]', [Context]),
   sleep(10).
-% Retry upon socket error.
-% Thrown by http_open/3.
-http_open_exception(error(socket_error('Try Again'),_Context)):- !,
-  debug(http, '[SOCKET ERROR] Try again!', []),
-  sleep(1).
 % Retry upon I/O error.
 http_open_exception(
   error(io_error(read,_Stream),context(_Predicate,Reason))
 ):- !,
   debug(http, '[IO-EXCEPTION] ~w', [Reason]).
+% Retry upon socket error.
+% Thrown by http_open/3.
+http_open_exception(error(socket_error('Try Again'),_Context)):- !,
+  debug(http, '[SOCKET ERROR] Try again!', []),
+  sleep(1).
+http_open_exception(exception(error(http_status(Status),_Context))):- !,
+  'Status-Code'(Status, Reason),
+  debug(http, '[HTTP STATUS CODE] ~d ~a', [Status,Reason]),
+  sleep(60).
 http_open_exception(Exception):-
   gtrace, %DEB
   debug(http, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).

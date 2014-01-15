@@ -1,6 +1,8 @@
 :- module(
   rfc2616_status_line,
   [
+    'Status-Code'/2, % ?Status:between(100,999)
+                     % ?Description:atom
     'Status-Line'//3 % -ParseTree:compound
                      % ?Version:compound
                      % ?Status:compound
@@ -75,6 +77,10 @@ DCG for RFC 2616 status lines.
   {\+ phrase('CR', [C]), \+ phrase('LF', [C])}.
 
 
+%! 'Status-Code'(?Status:between(100,505), ?Reason:atom) is nondet.
+
+'Status-Code'(Status, Reason):-
+  'Status-Code'(Status, Reason, _, _).
 
 %! 'Status-Code'(-Tree:compound, ?Status:between(100,505), ?Reason:atom)// .
 %! 'Status-Code'(
