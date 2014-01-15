@@ -24,6 +24,7 @@ Predicates for sending out HTTP requests.
 @version 2012/10, 2013/02, 2013/11, 2014/01
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(math(math_ext)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_header)).
@@ -43,6 +44,7 @@ Predicates for sending out HTTP requests.
 % Returns a term describing the current date and time.
 %
 % @compat RFC 1123
+
 
 http_dateTime(DateTime):-
   get_time(TimeStamp),
@@ -85,9 +87,10 @@ http_goal(URL, O1, Goal, Attempts):-
   ).
 
 http_open_catcher(exit, URL, _, Goal, _):- !,
-  debug(http, 'Successfully performed goal ~w on URL ~w.', [Goal,URL]).
+  term_to_atom(Goal, Atom1),
+  truncate(Atom1, 120, Atom2),
+  debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
 http_open_catcher(Catcher, URL, Options, Goal, Attempts1):-
-  gtrace,
   debug(
     http,
     'Encountered exception ~w while executing goal ~w on URL ~w.',
@@ -123,7 +126,6 @@ http_open_process(Status, Stream, Goal):-
   call(Goal, Stream).
 % Non-success codes.
 http_open_process(Status, _, _):-
-  gtrace,
   debug(http, '[HTTP STATUS CODE] ~d', [Status]),
   sleep(10),
   % The catcher has to make a new attempt (if there are any attempts left).
