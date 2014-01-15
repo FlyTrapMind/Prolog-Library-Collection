@@ -145,6 +145,8 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(programming(prolog_control)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_lit_build)).
+:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_reification)).
@@ -196,8 +198,8 @@ doyle_add_justification(TMS, InNs, OutNs, Label, Consequence, J):-
     true
   ;
     % @tbd For now we only support SL-justifications.
-    rdf_assert_individual(J, doyle:'SL-Justification', TMS:1),
-    rdfs_assert_label(J, Label, TMS:1),
+    rdf_assert_individual(J, doyle:'SL-Justification', TMS),
+    rdfs_assert_label(J, Label, TMS),
 
     % Add the new justification to the node's justification-set.
     add_justification(TMS, Consequence, J),
@@ -208,14 +210,14 @@ doyle_add_justification(TMS, InNs, OutNs, Label, Consequence, J):-
       member(In, InNs),
       (
         add_consequence(TMS, In, Consequence),
-        rdf_assert(J, tms:has_in, In, TMS:1)
+        rdf_assert(J, tms:has_in, In, TMS)
       )
     ),
     forall(
       member(Out, OutNs),
       (
         add_consequence(TMS, Out, Consequence),
-        rdf_assert(J, tms:has_out, Out, TMS:1)
+        rdf_assert(J, tms:has_out, Out, TMS)
       )
     ),
 
@@ -372,7 +374,7 @@ evaluating_justification_set(TMS, Node):-
 
 add_consequence(TMS, Node, Consequence):-
   maplist(nonvar, [TMS, Node, Consequence]),
-  rdf_assert(Node, doyle:has_consequence, Consequence, TMS:1).
+  rdf_assert(Node, doyle:has_consequence, Consequence, TMS).
 
 %! add_justification(
 %!   +TMS:atom,
@@ -386,7 +388,7 @@ add_justification(TMS, Node, J):-
   is_node(Node),
   is_justification(J),
 
-  rdf_assert(J, tms:has_consequent, Node, TMS:1).
+  rdf_assert(J, tms:has_consequent, Node, TMS).
 
 %! doyle_add_node(+TMS:atom, +Label:atom, -Node:iri) is det.
 % Adds a node.
@@ -402,10 +404,10 @@ doyle_add_node(TMS, rdf(S,P,O), N):- !,
   rdf_assert_statement(S, P, O, TMS, N),
   
   % @tbd Should we unify `tms:Node` and `rdf:Statement`?
-  rdf_assert_individual(N, tms:'Node', TMS:1),
+  rdf_assert_individual(N, tms:'Node', TMS),
   
   % Assert the RDFS label.
-  rdfs_assert_label(N, Label, TMS:1),
+  rdfs_assert_label(N, Label, TMS),
   
   % Set the default TMS node status.
   set_support_status(TMS, N, out).
@@ -416,8 +418,8 @@ doyle_add_node(TMS, Label, N):-
   ->
     true
   ;
-    rdf_assert_individual(N, tms:'Node', TMS:1),
-    rdfs_assert_label(N, Label, TMS:1),
+    rdf_assert_individual(N, tms:'Node', TMS),
+    rdfs_assert_label(N, Label, TMS),
     % The initial support status.
     set_support_status(TMS, N, out)
   ).
@@ -429,7 +431,7 @@ add_supporting_node(TMS, Node, SupportingNode):-
   rdf_graph(TMS),
   maplist(is_node, [Node,SupportingNode]),
 
-  rdf_assert(Node, doyle:has_supporting_node, SupportingNode, TMS:1).
+  rdf_assert(Node, doyle:has_supporting_node, SupportingNode, TMS).
 
 %! affected_consequences(+Node:iri, -AffectedConsequences:ordset(iri)) is det.
 % For a node, those consequences of the node which contain the node in
@@ -548,8 +550,8 @@ has_support_status(Node, SupportStatus):-
 
 doyle_init(TMS):-
   tms:tms_init(TMS),
-  rdfs_assert_subclass(doyle:'SL-Justification', tms:'Justification', TMS:1),
-  rdfs_assert_subclass(doyle:'CP-Justification', tms:'Justification', TMS:1).
+  rdfs_assert_subclass(doyle:'SL-Justification', tms:'Justification', TMS),
+  rdfs_assert_subclass(doyle:'CP-Justification', tms:'Justification', TMS).
 
 %! is_cp_justification(+X) is semidet.
 
@@ -674,9 +676,8 @@ set_support_status(TMS, Node, SupportStatus):-
   rdf_graph(TMS),
   is_node(Node),
   memberchk(SupportStatus, [in,nil,out]),
-
-  rdf_retractall_literal(Node, doyle:has_support_status, TMS),
-  rdf_assert_literal(Node, doyle:has_support_status, SupportStatus, TMS:1).
+  rdf_retractall_literal(Node, doyle:has_support_status, _, TMS),
+  rdf_assert_literal(Node, doyle:has_support_status, SupportStatus, TMS).
 
 %! set_supporting_justification(
 %!   +TMS:atom,
@@ -695,7 +696,7 @@ set_supporting_justification(TMS, Node, SupportingJustification):-
     Node,
     doyle:supporting_justification,
     SupportingJustification,
-    TMS:1
+    TMS
   ).
 
 %! set_supporting_nodes(
