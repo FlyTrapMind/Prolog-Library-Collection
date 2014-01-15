@@ -39,6 +39,7 @@
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
     is_absolute_file_name2/1, % ?File:atom
+    is_image_file/1, % +File:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
     new_file/2, % +File1:atom
@@ -269,6 +270,15 @@ hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
 
+
+image_extension(bmp).
+image_extension(gif).
+image_extension(jpg).
+image_extension(jpeg).
+image_extension(png).
+image_extension(svg).
+
+
 %! is_absolute_file_name2(+File:atom) is semidet.
 % Wrapper around is_absolute_file_name/1 that fails for variable arguments.
 %
@@ -278,6 +288,14 @@ is_absolute_file_name2(F):-
   var(F), !, fail.
 is_absolute_file_name2(F):-
   is_absolute_file_name(F).
+
+
+%! is_image_file(+File:atom) is semidet.
+
+is_image_file(File):-
+  file_name_extension(_, Extension, File),
+  image_extension(Extension).
+
 
 %! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.
 % RE and To must be in the same directory.
