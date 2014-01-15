@@ -29,6 +29,7 @@ Predicates for sending out HTTP requests.
 :- use_module(library(debug)).
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_open)).
+:- use_module(library(http/http_ssl_plugin)).
 :- use_module(library(option)).
 :- use_module(math(math_ext)).
 :- use_module(xml(xml_dom)).
@@ -75,7 +76,7 @@ http_goal(URL, _, Goal, 0):- !,
     [Goal,URL]
   ).
 http_goal(URL, O1, Goal, Attempts):-
-  merge_options([status_code(Status)], O1, O2),
+  merge_options([cert_verify_hook(cert_verify),status_code(Status)], O1, O2),
   setup_call_catcher_cleanup(
     http_open(URL, Stream, O2),
     http_open_process(Status, Stream, Goal),
@@ -85,6 +86,10 @@ http_goal(URL, O1, Goal, Attempts):-
       http_open_catcher(Catcher, URL, O2, Goal, Attempts)
     )
   ).
+
+cert_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, _Error) :-
+  debug(user_error, 'Accepting certificate', []).
+
 
 http_open_catcher(exit, URL, _, Goal, _):- !,
   term_to_atom(Goal, Atom1),
