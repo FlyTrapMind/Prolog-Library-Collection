@@ -80,6 +80,9 @@ rdf_typed_literal(literal(type(Datatype,Value))) -->
 % IRI %
 
 rdf_iri(IRI1) -->
+  {uri_components(IRI1, uri_components(mailto, _, IRI2, _, _))}, !,
+  html(span(class='e-mail', a(href=IRI1, IRI2))).
+rdf_iri(IRI1) -->
   {rdf_global_id(IRI2, IRI1)},
   (
     {IRI2 = Prefix:Postfix}

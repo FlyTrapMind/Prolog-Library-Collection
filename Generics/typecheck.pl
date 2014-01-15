@@ -22,6 +22,7 @@ Predicates used for parsing and checking value-type conformance.
 | codes                |                  |
 | compound             |                  |
 | constant             |                  |
+| email                |                  |
 | encoding             |                  |
 | float                |                  |
 | ground               |                  |
@@ -63,6 +64,9 @@ error:has_type(char, Term):-
 % code/0
 error:has_type(code, Term):-
   once(code_type(Term, _)).
+% email/0
+error:has_type(email, Term):-
+  dcg_phrase(email, Term).
 % or/1
 error:has_type(or(Types), Term):-
   member(Type, Types),
@@ -80,4 +84,10 @@ error:has_type(iri, Term):-
   maplist(nonvar, [Scheme,Authority,Path]).
   % @tbd
   %%%%once(dcg_phrase('IRI'(_), Term)),
+
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
+email -->
+  dcg_until([end_mode(inclusive),output_format(codes)], at_sign, _),
+  dcg_all.
 
