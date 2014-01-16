@@ -5,9 +5,13 @@
                     % ?JSON:oneof([@(false),@(true)])
     json_rows/2, % +JSON:list
                  % -Rows:list
-    json_to_prolog/3 % +Module:atom
-                     % +JSON:compond
-                     % -Term:compound
+    json_to_prolog/3, % +Module:atom
+                      % +JSON:compond
+                      % -Term:compound
+    'JSON_Response'/4 % +Request:list
+                      % +Status:between(100,999)
+                      % +Header:list(compound)
+                      % +JSON_Arguments:list(nvpair)
   ]
 ).
 
@@ -17,11 +21,16 @@
 @version 2013/07, 2013/11, 2014/01
 */
 
+:- use_module(generics(codes_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(http(rfc2616_response)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(http/json)).
+:- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
+:- use_module(os(io_ext)).
 
 
 
@@ -204,3 +213,26 @@ to_integer(Value, Value):-
 to_integer(Value1, Value2):-
   atom_number(Value1, Value3),
   to_integer(Value3, Value2).
+
+
+
+'JSON_Response'(Request, Status, Headers1, JSON_Arguments):-
+  memberchk(pool(client(_,_,_,Out)), Request),
+  merge_options(
+    Headers1,
+    ['Content-Type'(media_type(application,json,[]))],
+    Headers2
+  ),
+  setup_call_cleanup(
+    tmp_file_stream(text, File, Stream),
+    json_write(Stream, json(JSON_Arguments), []),
+    close(Stream)
+  ),
+  file_to_codes(File, MessageBody),
+  phrase(
+    'Response'(_, version(1,1), status(Status,_), Headers2, MessageBody),
+    Codes
+  ),
+  put_codes(user_output, Codes), flush_output(user_output), %DEB
+  put_codes(Out, Codes).
+
