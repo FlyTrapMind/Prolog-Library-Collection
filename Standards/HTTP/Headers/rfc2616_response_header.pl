@@ -64,7 +64,7 @@ DCG for response headers in RFC 2616.
   'Age'(T1, Age).
 'response-header'('response-header'(T1), ETag) -->
   'ETag'(T1, ETag).
-'response-header'('response-header'(T1), 'Location'(Location)) -->
+'response-header'('response-header'(T1), Location) -->
   'Location'(T1, Location).
 /*
 'response-header'('response-header'(T1), Challenges) -->

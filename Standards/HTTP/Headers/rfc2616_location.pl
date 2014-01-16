@@ -46,6 +46,7 @@ authority(
 @version 2013/12
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(uri(rfc2396_dcg)).
 
 
@@ -91,7 +92,9 @@ authority(
 %
 % @tbd RFC 2616 section 13.10 for cache requirements of some methods.
 
-'Location'('Location'(T1), 'Location'(Location)) -->
+'Location'('Location'(Location), 'Location'(Location)) -->
   "Location:",
-  absoluteURI(T1, Location).
+  % @tbd
+  %absoluteURI(T1, Location).
+  atom(Location).
 

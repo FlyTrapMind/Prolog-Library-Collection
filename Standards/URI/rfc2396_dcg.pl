@@ -286,15 +286,18 @@ abs_path(absolute_path('/',T1), [PathSegment]) -->
 %   3. `Path:list(list(atom))`
 %   4. `Query:atom`
 
-absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query)) -->
+absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query,_)) -->
   scheme(T1, Scheme),
   colon,
   hierarchical_part(T2, Authority, Path, Query).
-absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query)) -->
+absoluteURI(absolute_uri(T1,':',T2), uri(Scheme,Authority,Path,Query,_)) -->
   {maplist(var, [Authority,Query])},
   scheme(T1, Scheme),
   colon,
   opaque_part(T2, Path).
+absoluteURI(ParseTree, URI) -->
+  {uri_components(URI, uri_components(Scheme,Authority,Path,Query,Fragment))},
+  absoluteURI(ParseTree, uri(Scheme,Authority,Path,Query,Fragment)).
 
 %! authority(-Tree:compound, ?Authority:or([atom,compound]))//
 % Many URI schemes include a top hierarchical element for a naming
@@ -442,8 +445,8 @@ hierarchical_part(T0, Authority, Path, Query) -->
   ;
     abs_path(T1, Path), {var(Authority)}
   ),
-  ("", {var(Query)} ; question_mark, {T2 = '?'}, query(T3, Query)),
-  {parse_tree(hierarchical_part, [T1,T2,T3], T0)}.
+  ("", {var(Query)} ; question_mark, query(T2, Query)),
+  {parse_tree(hierarchical_part, [T1,T2], T0)}.
 
 %! host(-Tree:compound, ?Host:list(atomic))//
 % The host is a domain name of a network host, or its IPv4 address as a
@@ -530,10 +533,10 @@ mark(C) --> round_bracket(C).
 % @arg Path A list of lists of atoms.
 
 network_path(T0, Authority, Path) -->
-  forward_slash, {T1 = '/'}, forward_slash, {T2 = '/'},
-  authority(T3, Authority),
-  ("", {var(Path)} ; abs_path(T4, Path)),
-  {parse_tree(network_path, [T1,T2,T3,T4], T0)}.
+  forward_slash, forward_slash,
+  authority(T1, Authority),
+  ("", {var(Path)} ; abs_path(T2, Path)),
+  {parse_tree(network_path, [T1,T2], T0)}.
 
 %! opaque_part(-Tree:compound, ?OpaquePart:atom)//
 % URIs that do not make use of the forward_slash//1 for separating

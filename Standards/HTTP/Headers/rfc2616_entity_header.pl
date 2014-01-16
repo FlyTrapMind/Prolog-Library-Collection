@@ -15,6 +15,7 @@ DCG for entity header in RFC 2616.
 @version 2013/12
 */
 
+:- use_module(http_headers(rfc2616_content_type)).
 :- use_module(http_headers(rfc2616_message_header)).
 
 
@@ -61,8 +62,10 @@ DCG for entity header in RFC 2616.
   'Content-MD5'(T1, ContentMD5).
 'entity-header'('entity-header'(T1), ContentRange) -->
   'Content-Range'(T1, ContentRange).
+*/
 'entity-header'('entity-header'(T1), ContentType) -->
   'Content-Type'(T1, ContentType).
+/*
 'entity-header'('entity-header'(T1), Expires) -->
   'Expires'(T1, Expires).
 'entity-header'('entity-header'(T1), LastModified) -->

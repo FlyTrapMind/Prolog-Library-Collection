@@ -50,7 +50,7 @@ DCG for RFC 2616 response.
 
 'Response'(T0, Version, Status, Headers, Body) -->
   'Status-Line'(T1, Version, Status),
-  dcg_multi2('_Response', T2s, Headers),
+  headers(T2s, Headers),
   'CRLF',
   (
     'message-body'(T3, Body)
@@ -59,13 +59,18 @@ DCG for RFC 2616 response.
     {Body = []}
   ),
   {parse_tree(response, [T1,headers(T2s),T3], T0)}.
-'_Response'(T1, H) -->
+
+headers([], []) --> [].
+headers([T1|Ts], [H|T]) -->
   'general-header'(T1, H),
-  'CRLF'.
-'_Response'(T1, H) -->
+  'CRLF',
+  headers(Ts, T).
+headers([T1|Ts], [H|T]) -->
   'response-header'(T1, H),
-  'CRLF'.
-'_Response'(T1, H) -->
+  'CRLF',
+  headers(Ts, T).
+headers([T1|Ts], [H|T]) -->
   'entity-header'(T1, H),
-  'CRLF'.
+  'CRLF',
+  headers(Ts, T).
 

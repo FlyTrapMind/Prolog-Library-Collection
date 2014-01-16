@@ -29,7 +29,7 @@ The entity-length of a message is the length of the message-body
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_content)).
 :- use_module(http(rfc2616_basic)).
 
 
@@ -77,5 +77,5 @@ The entity-length of a message is the length of the message-body
 % @tbd Feature between `Content-Type` header and `entity-body`.
 
 'entity-body'('entity-body'(EntityBody), EntityBody) -->
-  dcg_multi('OCTET', _-_, EntityBody).
+  codes(EntityBody).
 

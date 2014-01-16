@@ -70,8 +70,8 @@ DCG for RFC 2616 status lines.
 % ~~~
 
 'Reason-Phrase'('Reason-Phrase'(Reason), Reason) -->
-  dcg_multi1('_Reason-Phrase', _-_, Cs),
-  {atom_codes(Reason, Cs)}.
+  {atom_codes(Reason, Cs)},
+  dcg_multi1('_Reason-Phrase', _-_, Cs).
 '_Reason-Phrase'(C) -->
   'TEXT'(C),
   {\+ phrase('CR', [C]), \+ phrase('LF', [C])}.

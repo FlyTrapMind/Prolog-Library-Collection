@@ -153,13 +153,14 @@
   type(T1, Type),
   "/",
   subtype(T2, Subtype),
-  dcg_multi2('_;_and_parameter', _-_, Ts, Params),
+  parameters(Ts, Params),
   {parse_tree('media-type', [T1,T2|Ts], T0)}.
-'_;_and_parameter'(T1, Param) -->
+
+parameters([], []) --> [].
+parameters([T1|Ts], [H|T]) -->
   ";",
-  parameter(T1, Param).
-
-
+  parameter(T1, H),
+  parameters(Ts, T).
 
 %! subtype(-ParseTree:compound, Subtype:atom)// .
 %! type(-ParseTree:compound, Type:atom)// .
