@@ -16,6 +16,7 @@ DCG for entity header in RFC 2616.
 */
 
 :- use_module(http_headers(rfc2616_allow)).
+:- use_module(http_headers(rfc2616_content_length)).
 :- use_module(http_headers(rfc2616_content_type)).
 :- use_module(http_headers(rfc2616_message_header)).
 
@@ -55,8 +56,10 @@ DCG for entity header in RFC 2616.
   'Content-Encoding'(T1, ContentEncoding).
 'entity-header'('entity-header'(T1), ContentLanguage) -->
   'Content-Language'(T1, ContentLanguage).
+*/
 'entity-header'('entity-header'(T1), ContentLength) -->
   'Content-Length'(T1, ContentLength).
+/*
 'entity-header'('entity-header'(T1), ContentLocation) -->
   'Content-Location'(T1, ContentLocation).
 'entity-header'('entity-header'(T1), ContentMD5) -->

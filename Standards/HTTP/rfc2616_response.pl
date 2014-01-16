@@ -2,8 +2,8 @@
   rfc2616_response,
   [
     'Response'/4, % +Request:list
-                  % +Status:integer
-                  % +Headers:list(compound)
+                  % +Status:between(100,999)
+                  % +Headers:list(nvpair)
                   % +Body:list(code)
     'Response'//5 % -ParseTree:compound
                   % ?Version:compound
@@ -21,29 +21,38 @@ DCG for RFC 2616 response.
 @version 2013/12-2014/01
 */
 
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
-:- use_module(flp(rfc2616_abnf)).
 :- use_module(generics(codes_ext)).
-:- use_module(http(rfc2616)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic_message)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(http_headers(rfc2616_entity_header)).
 :- use_module(http_headers(rfc2616_general_header)).
 :- use_module(http_headers(rfc2616_response_header)).
-:- use_module(http_parameters(rfc2616_range_unit)).
+:- use_module(library(option)).
 
 
 
-'Response'(Request, Status, Headers, Body):-
+%! 'Response'(
+%!   +Request:list,
+%!   +Status:between(100,999),
+%!   +Headers:list(nvpair),
+%!   +Body:list(code)
+%! ) is det.
+
+'Response'(Request, Status, Headers1, Body):-
   memberchk(pool(client(_,_,_,Out)), Request),
+  
+  length(Body, Length),
+  merge_options(Headers1, ['Content-Length'(Status,Length)], Headers2),
+  
   phrase(
-    'Response'(_, version(1,1), status(Status,_), Headers, Body),
+    'Response'(_, version(1,1), status(Status,_), Headers2, Body),
     Codes
   ),
   put_codes(user_output, Codes), flush_output(user_output), %DEB
   put_codes(Out, Codes).
+
 
 %! 'Response'(
 %!   -ParseTree:compound,

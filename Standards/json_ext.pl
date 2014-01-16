@@ -216,7 +216,7 @@ to_integer(Value1, Value2):-
 
 
 
-'JSON_Response'(Request, Status, Headers1, JSON_Arguments):-
+'JSON_Response'(Request, Status, Headers1, D):-
   memberchk(pool(client(_,_,_,Out)), Request),
   merge_options(
     Headers1,
@@ -225,7 +225,7 @@ to_integer(Value1, Value2):-
   ),
   setup_call_cleanup(
     tmp_file_stream(text, File, Stream),
-    json_write(Stream, json(JSON_Arguments), []),
+    json_write_dict(Stream, D),
     close(Stream)
   ),
   file_to_codes(File, MessageBody),
