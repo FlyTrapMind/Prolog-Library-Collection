@@ -211,10 +211,11 @@ transitive_closure(Predicate, Input, Outputs):-
   \+(is_list(Input)), !,
   transitive_closure(Predicate, [Input], Outputs).
 transitive_closure(_Predicate, [], []).
-transitive_closure(Predicate, [Input | Inputs], Outputs):-
-  Goal =.. [Predicate, Input, Intermediaries],
-  call(Goal),
+transitive_closure(Predicate1, [Input | Inputs], Outputs):-
+  strip_module(Predicate1, Module, Predicate2),
+  Goal =.. [Predicate2, Input, Intermediaries],
+  Module:call(Goal),
   ord_union(Intermediaries, Inputs, Inputs_),
-  transitive_closure(Predicate, Inputs_, Outputs_),
+  transitive_closure(Predicate1, Inputs_, Outputs_),
   ord_union(Outputs_, Intermediaries, Outputs).
 
