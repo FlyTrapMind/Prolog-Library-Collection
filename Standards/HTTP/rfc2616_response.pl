@@ -1,10 +1,14 @@
 :- module(
   rfc2616_response,
   [
+    'Response'/4, % +Request:list
+                  % +Status:integer
+                  % +Headers:list(compound)
+                  % +Body:list(code)
     'Response'//5 % -ParseTree:compound
                   % ?Version:compound
                   % ?Status:compound
-                  % ?Headers:list(pair(atom,atom))
+                  % ?Headers:list(compound)
                   % ?Body:list(code)
   ]
 ).
@@ -14,12 +18,13 @@
 DCG for RFC 2616 response.
 
 @author Wouter Beek
-@version 2013/12
+@version 2013/12-2014/01
 */
 
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
+:- use_module(generics(codes_ext)).
 :- use_module(http(rfc2616)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic_message)).
@@ -30,6 +35,15 @@ DCG for RFC 2616 response.
 :- use_module(http_parameters(rfc2616_range_unit)).
 
 
+
+'Response'(Request, Status, Headers, Body):-
+  memberchk(pool(client(_,_,_,Out)), Request),
+  phrase(
+    'Response'(_, version(1,1), status(Status,_), Headers, Body),
+    Codes
+  ),
+  put_codes(user_output, Codes), flush_output(user_output), %DEB
+  put_codes(Out, Codes).
 
 %! 'Response'(
 %!   -ParseTree:compound,
