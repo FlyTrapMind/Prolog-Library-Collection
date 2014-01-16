@@ -5,8 +5,10 @@
                     % +File:atom
     copy_stream_line/2, % +From:stream
                         % +To:stream
-    file_to_atom/2, % +File:file
+    file_to_atom/2, % +File:atom
                     % -Atom:atom
+    file_to_codes/2, % +File:atom
+                     % -Codes:list(code)
     read_terms/3, % +Stream:stream
                   % -Terms:list(term)
                   % +Options:list(atom)
@@ -77,6 +79,13 @@ file_to_atom(File, Atom):-
   setup_call_cleanup(
     open(File, read, Stream, [encoding(utf8),type(test)]),
     stream_to_atom(Stream, Atom),
+    close(Stream)
+  ).
+
+file_to_codes(File, Codes):-
+  setup_call_cleanup(
+    open(File, read, Stream, [encoding(utf8),type(test)]),
+    read_stream_to_codes(Stream, Codes),
     close(Stream)
   ).
 
