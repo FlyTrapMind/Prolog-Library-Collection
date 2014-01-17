@@ -7,6 +7,14 @@
   ]
 ).
 
+/** <module> RDF HTML
+
+HTML generation of RDF content.
+
+@author Wouter Beek
+@version 2014/01
+*/
+
 :- use_module(generics(uri_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(error)).
@@ -56,7 +64,7 @@ rdf_blank_node(BNode) -->
 % LITERAL %
 
 rdf_language_tag(Language) -->
-  html(div(span='language-tag', atom(Language))).
+  html(span(class='language-tag', atom(Language))).
 
 rdf_literal(Type) -->
   rdf_plain_literal(Type).
@@ -65,7 +73,7 @@ rdf_literal(Type) -->
 
 rdf_plain_literal(literal(lang(Language,Value))) -->
   html(
-    div(span='plain-literal', [
+    span(class='plain-literal', [
       \rdf_simple_literal(Value),
       '@',
       \rdf_language_tag(Language)
@@ -73,10 +81,10 @@ rdf_plain_literal(literal(lang(Language,Value))) -->
   ).
 rdf_plain_literal(literal(Value)) -->
   {atom(Value)},
-  html(div(span='plain-literal', \rdf_simple_literal(Value))).
+  html(span(class='plain-literal', \rdf_simple_literal(Value))).
 
 rdf_simple_literal(Value) -->
-  html(span('simple-literal', ['"',Value,'"'])).
+  html(span(class='simple-literal', ['"',Value,'"'])).
 
 rdf_typed_literal(literal(type(Datatype,Value))) -->
   html(span(class='typed-literal', ['"',Value,'"^^',\rdf_iri(Datatype)])).
