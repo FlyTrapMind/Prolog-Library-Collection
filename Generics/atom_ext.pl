@@ -3,6 +3,9 @@
   [
     atom_to_term/2, % +Atom:atom
                     % -Term:term
+    atom_truncate/3, % +Atom:atom
+                     % +MaximumLength:integer
+                     % -TruncatedAtom:atom
     format_integer/3, % +Integer:integer
                       % +Length:integer
                       % -Atom:atom
@@ -26,12 +29,9 @@
     strip_atom_begin/3, % +Strips:list(atom)
                         % +In:atom
                         % -Out:atom
-    strip_atom_end/3, % +Strips:list(atom)
-                      % +In:atom
-                      % -Out:atom
-    truncate/3 % +Atom:atom
-               % +MaximumLength:integer
-               % -Truncated:atom
+    strip_atom_end/3 % +Strips:list(atom)
+                     % +In:atom
+                     % -Out:atom
   ]
 ).
 
@@ -108,6 +108,33 @@ atom_splits(_, Subatom, [Subatom]).
 
 atom_to_term(Atom, Term):-
   atom_to_term(Atom, Term, _Bindings).
+
+
+%! atom_truncate(+Atom:atom, +MaxLength:integer, -TruncatedAtom:atom) is det.
+% Returns the truncated version of the given atom.
+% Truncated atoms end in `...` to indicate its truncated nature.
+% The maximum length indicates the exact maximum.
+% Truncation will always result in an atom which has at most `MaxLength`.
+%
+% @arg Atom The original atom.
+% @arg MaxLength The maximum allowed length of an atom.
+%        This must be at least 5.
+% @arg TruncatedAtom The truncated atom.
+
+% The maximum allowed length is too short to be used with truncation.
+atom_truncate(A, Max, A):-
+  Max =< 5, !.
+% The atom does not have to be truncated, it is not that long.
+atom_truncate(A, Max, A):-
+  atom_length(A, AL),
+  AL =< Max, !.
+% The atom exceeds the maximum length, it is truncated.
+% For this purpose the displayed length of the atom is
+%  the maximum length minus 4 (but never less than 3).
+atom_truncate(A1, Max, A3):-
+  TruncatedL is Max - 4,
+  sub_atom(A1, 0, TruncatedL, _, A2),
+  atom_concat(A2, ' ...', A3).
 
 
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
@@ -272,31 +299,4 @@ strip_atom_end(Strips, A1, A3):-
   atom_concat(A2, Strip, A1),
   strip_atom_end(Strips, A2, A3).
 strip_atom_end(_, A, A).
-
-
-%! truncate(+Atom:atom, +MaxLength:integer, -Truncated:atom) is det.
-% Returns the truncated version of the given atom.
-% Truncated atoms end in `...` to indicate its truncated nature.
-% The maximum length indicates the exact maximum.
-% Truncation will always result in an atom which has at most `MaxLength`.
-%
-% @arg Atom The original atom.
-% @arg MaxLength The maximum allowed length of an atom.
-%        This must be at least 5.
-% @arg Truncated The truncated atom.
-
-% The maximum allowed length is too short to be used with truncation.
-truncate(A, Max, A):-
-  Max =< 5, !.
-% The atom does not have to be truncated, it is not that long.
-truncate(A, Max, A):-
-  atom_length(A, AL),
-  AL =< Max, !.
-% The atom exceeds the maximum length, it is truncated.
-% For this purpose the displayed length of the atom is
-%  the maximum length minus 4 (but never less than 3).
-truncate(A1, Max, A3):-
-  TruncatedL is Max - 4,
-  sub_atom(A1, 0, TruncatedL, _, A2),
-  atom_concat(A2, ' ...', A3).
 

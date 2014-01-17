@@ -93,7 +93,7 @@ cert_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, _Error) :-
 
 http_open_catcher(exit, URL, _, Goal, _):- !,
   term_to_atom(Goal, Atom1),
-  truncate(Atom1, 120, Atom2),
+  atom_truncate(Atom1, 120, Atom2),
   debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
 http_open_catcher(Catcher, URL, Options, Goal, Attempts1):-
   debug(
