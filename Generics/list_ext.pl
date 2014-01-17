@@ -36,6 +36,9 @@
                              % ?List:list
     list_to_ordered_pairs/2, % +L:list
                              % -Pairs:ordset(ordset)
+    list_truncate/3, % +List:list
+                     % +Max:nonneg
+                     % -TruncatedList:list
     member/3, % ?Element1
               % ?Element2
               % ?List:list
@@ -282,6 +285,27 @@ list_to_orderd_pairs_(_H, [], []):- !.
 list_to_orderd_pairs_(H, [T|TT], [Pair|S]):-
   list_to_ord_set([H,T], Pair),
   list_to_orderd_pairs_(H, TT, S).
+
+
+%! list_truncate(+List:list, +Max:nonneg, -TruncatedList:list) is det.
+% Returns the truncated version of the given list.
+% The maximum length indicates the exact maximum.
+% Truncation will always result in a list which contains
+%  at most `Max` elements.
+%
+% @arg List The original list.
+% @arg Max The maximum number of elements that is allowed in the list.
+% @arg TruncatedList The truncated list.
+
+% The list does not have to be truncated, it is not that long.
+list_truncate(L, Max, L):-
+  length(L, LL),
+  LL =< Max, !.
+% The list exceeds the maximum length, it is truncated.
+list_truncate(L1, Max, L2):-
+  length(L2, Max),
+  append(L2, _, L1).
+
 
 %! member(X, Y, L) is nondet.
 % Pairs from a list.
