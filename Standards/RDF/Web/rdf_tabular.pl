@@ -1,4 +1,11 @@
-:- module(rdf_tabular, []).
+:- module(
+  rdf_tabular,
+  [
+    overview_instances//1, % +Resources:list(iri)
+    rdf_tabular/2 % +Request:list
+                  % :Content
+  ]
+).
 
 /** <module> RDF tabular
 
@@ -13,11 +20,14 @@ Generated RDF HTML tables.
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
+:- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_datatype)).
@@ -26,15 +36,13 @@ Generated RDF HTML tables.
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html)).
 :- use_module(server(app_ui)).
-:- use_module(server(web_modules)).
 
-:- initialization(web_module_add('RDF Tabular', rdf_tabular, rdf_tabular)).
-
-:- http_handler(root(rdf_tabular), rdf_tabular, []).
+:- meta_predicate(rdf_tabular(+,//)).
+:- meta_predicate(rdf_tabular_body(//,?,?)).
 
 
 
-rdf_tabular(Request):-
+rdf_tabular(Request, _):-
   memberchk(search(Search), Request),
   memberchk(term=Term, Search), !,
   reply_html_page(
@@ -42,41 +50,69 @@ rdf_tabular(Request):-
     title(['Overview of resource ',Term]),
     \rdf_tabular(Term)
   ).
-rdf_tabular(_):-
-  reply_html_page(app_style, title('Overview of resources.'), \overview).
+rdf_tabular(_, Content):-
+  reply_html_page(
+    app_style,
+    title('Overview of resources.'),
+    \rdf_tabular_body(Content)
+  ).
+
+rdf_tabular_body(Content) -->
+  dcg_call(Content).
 
 
-overview -->
-  overview([
-    ckan:'Organization',
-    ckan:'Package',
-    ckan:'Resource',
-    ckan:'Tag',
-    ckan:'User'
-  ]).
 
-overview([]) --> [].
-overview([H1|T]) -->
+% CLASSES %
+
+overview_class(Class1) -->
   {
-    rdf_global_id(H1, H2),
-    with_output_to(atom(Name), rdf_term_name(H2)),
+    rdf_global_id(Class1, Class2),
+    with_output_to(atom(Name), rdf_term_name(Class2)),
     format(atom(Caption), 'Instances of ~w.', [Name]),
-    setoff([Instance], rdfs_individual_of(Instance, H2), Instances),
-    length(Top1, 50),
-    (append(Top1, _, Instances) -> Top2 = Top1 ; Top2 = Instances)
+    setoff([Instance], rdfs_individual_of(Instance, Class2), Instances1),
+    list_truncate(Instances1, 50, Instances2)
   },
-  html(
-    \html_table(
-      [
-        caption(Caption),
-        cell_dcg(rdf_html_term),
-        header(true),
-        indexed(true)
-      ],
-      [['Instance']|Top2]
-    )
-  ),
-  overview(T).
+  html_table(
+    [caption(Caption),cell_dcg(rdf_html_term),header(true),indexed(true)],
+    [['Instance']|Instances2]
+  ).
+
+
+
+% INSTANCES %
+
+overview_instance(Instance1) -->
+  {
+    rdf_global_id(Instance1, Instance2),
+    with_output_to(atom(Name), rdf_term_name(Instance2)),
+    format(atom(Caption), 'Instance ~w.', [Name]),
+    setoff([P,O,G], rdf(Instance2, P, O, G), L)
+  },
+  rdf_html_table(Caption, L).
+
+
+overview_instances(L1) -->
+  {
+    % Order all resources based on the number of triples describing them.
+    findall(
+      N-R,
+      (
+        member(R, L1),
+        rdf_estimate_complexity(R, _, _, N)
+      ),
+      P1
+    ),
+    keysort(P1, P2),
+    reverse(P2, P3),
+    pairs_values(P3, L2)
+  },
+  overview_instances_(L2).
+
+
+overview_instances_([]) --> [].
+overview_instances_([H|T]) -->
+  overview_instance(H),
+  overview_instances_(T).
 
 
 rdf_tabular(Term) -->
@@ -111,7 +147,7 @@ rdf_tabular_pl(P) -->
   },
   html_table(O1, [['Class']|Cs1]),
   html_table(O2, [['Class']|Cs2]),
-  
+
   % For literal ranges we also display the values that occur.
   {
     setoff([Value], value_for_p(P, Value), Values),
