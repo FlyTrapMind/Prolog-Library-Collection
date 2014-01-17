@@ -62,11 +62,11 @@ The procedure for determining the color of a vertex:
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(pair_ext)).
 :- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_datatype)).
@@ -211,7 +211,7 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % First edges, them vertices.
   rdf_edges(O, G, Es),
   % @tbd
-  pair_ext:pairs_to_members(Es, Vs),
+  edges_to_vertices(Es, Vs),
 
   maplist(rdf_edge_term(O, G, Vs), Es, E_Terms),
   maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
@@ -225,6 +225,12 @@ export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
 % Returns a name for the given graph.
 
 rdf_graph_name(G, G):- !.
+
+edges_to_vertices([], []):- !.
+edges_to_vertices([S-_-O|T], S3):-
+  edges_to_vertices(T, S1),
+  ord_add_element(S1, S, S2),
+  ord_add_element(S2, O, S3).
 
 
 
