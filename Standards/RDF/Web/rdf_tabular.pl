@@ -32,15 +32,28 @@ Generated RDF HTML tables.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_dcg)).
+:- use_module(rdf(rdf_hierarchy)).
 :- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html)).
 :- use_module(server(app_ui)).
+:- use_module(server(web_modules)).
+:- use_module(tms(tms)).
 
 :- meta_predicate(rdf_tabular(+,//)).
 :- meta_predicate(rdf_tabular_body(//,?,?)).
 
+http:location(rdf_tabular, root(rdf_tabular), []).
+:- http_handler(rdf_tabular(.), rdf_tabular_default, [priority(-1)]).
 
+:- initialization(web_module_add('RDF Tabular', rdf_tabular_default)).
+
+
+
+rdf_tabular_default(Request):-
+  findall(G, (rdf_graph(G), \+tms(G)), Gs),
+  rdf_global_id(rdfs:subClassOf, P),
+  rdf_tabular(Request, rdf_export_hierarchy(Gs, P)).
 
 rdf_tabular(Request, _):-
   memberchk(search(Search), Request),
@@ -48,21 +61,18 @@ rdf_tabular(Request, _):-
   reply_html_page(
     app_style,
     title(['Overview of resource ',Term]),
-    \rdf_tabular(Term)
+    \rdf_tabular_term(Term)
   ).
 rdf_tabular(_, Content):-
   reply_html_page(
     app_style,
     title('Overview of resources.'),
-    \rdf_tabular_body(Content)
+    \dcg_call(Content)
   ).
 
-rdf_tabular_body(Content) -->
-  dcg_call(Content).
 
 
-
-% CLASSES %
+% DESCRIBE AN RDF CLASS %
 
 overview_class(Class1) -->
   {
@@ -79,7 +89,7 @@ overview_class(Class1) -->
 
 
 
-% INSTANCES %
+% DESCRIBE AN RDF INSTANCE %
 
 overview_instance(Instance1) -->
   {
@@ -89,7 +99,6 @@ overview_instance(Instance1) -->
     setoff([P,O,G], rdf(Instance2, P, O, G), L)
   },
   rdf_html_table(Caption, L).
-
 
 overview_instances(L1) -->
   {
@@ -106,24 +115,27 @@ overview_instances(L1) -->
     reverse(P2, P3),
     pairs_values(P3, L2)
   },
-  overview_instances_(L2).
+  overview_instances1(L2).
 
-
-overview_instances_([]) --> [].
-overview_instances_([H|T]) -->
+overview_instances1([]) --> [].
+overview_instances1([H|T]) -->
   overview_instance(H),
-  overview_instances_(T).
+  overview_instances1(T).
 
 
-rdf_tabular(Term) -->
+
+% DESCRIBE AN RDF TERM %
+
+rdf_tabular_term(Term) -->
   {
     dcg_phrase(rdf_term(S1), Term),
     rdf_global_id(S1, S2)
   },
-  rdf_tabular_pl(S2).
+  rdf_tabular_term1(S2).
 
 % Datatype (in typed literal).
-rdf_tabular_pl(D) -->
+% Show all its values.
+rdf_tabular_term1(D) -->
   {
     rdf_datatype(_, D), !,
     setoff([Value], rdf_datatype(_, _, D, Value, _), Values),
@@ -134,10 +146,14 @@ rdf_tabular_pl(D) -->
     [['Value']|Values]
   ).
 % Predicate term.
-rdf_tabular_pl(P) -->
+% Show:
+%   1. all domain classes,
+%   2. all range classes,
+%   3. all values for literal ranges.
+rdf_tabular_term1(P) -->
   {
-    O0 = [cell_dcg(rdf_html_term),header(true),indexed(true)],
     rdf(_, P, _), !,
+    O0 = [cell_dcg(rdf_html_term),header(true),indexed(true)],
     format(atom(Caption1), 'Domain of property ~w.', [P]),
     merge_options([caption(Caption1)], O0, O1),
     setoff([C], (rdf(S, P, _), rdfs_individual_of(S, C)), Cs1),
@@ -150,24 +166,16 @@ rdf_tabular_pl(P) -->
 
   % For literal ranges we also display the values that occur.
   {
-    setoff([Value], value_for_p(P, Value), Values),
+    setoff([Value], value_for_p(P, Value), Values1),
     format(atom(Caption3), 'Values that occur for property ~w.', [P]),
     merge_options([caption(Caption3)], O0, O3),
-    length(Values, Length)
+    list_truncate(Values1, 100, Values2)
   },
-  (
-    % Do not display tables that are crazy big.
-    {Length > 1000}, !
-  ;
-    html_table(O3, [['Value']|Values])
-  ).
+  html_table(O3, [['Value']|Values2]).
 % Subject term.
-rdf_tabular_pl(S) -->
-  {
-    setoff([P,O,G], rdf(S, P, O, G), L),
-    format(atom(Caption), 'Description of resource denoted by ~w.', [S])
-  },
-  rdf_html_table(Caption, L).
+% Display all predicate-object pairs (per graph).
+rdf_tabular_term1(S) -->
+  overview_instance(S).
 
 value_for_p(P, Value):-
   rdf(_, P, literal(type(_,Value))).
