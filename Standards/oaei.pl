@@ -140,7 +140,7 @@ Mismatch types:
 
 
 alignments_to_oaei_file(As, F):-
-  rdf_new_graph(_, G),
+  rdf_new_graph(G),
   maplist(alignment_to_oaei_graph(G), As),
   rdf_save2(F, [format(turtle),graph(G)]).
 

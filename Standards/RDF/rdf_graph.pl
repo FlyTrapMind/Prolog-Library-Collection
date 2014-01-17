@@ -145,12 +145,9 @@ rdf_graph_merge(Gs, MergedG):-
   % Type checking.
   is_list(Gs),
   maplist(rdf_graph, Gs),
-  (
-    nonvar(MergedG), !
-  ;
-    % Generate a name for the merged graph, if needed.
-    rdf_new_graph(_MergedG, MergedG)
-  ),
+  
+  % Generate a name for the merged graph, if needed.
+  rdf_new_graph(MergedG),
 
   % Collect the shared blank nodes.
   findall(
