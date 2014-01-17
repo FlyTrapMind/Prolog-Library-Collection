@@ -28,6 +28,7 @@
 :- use_module(generics(meta_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_hierarchy)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(skos, 'http://www.w3.org/2004/02/skos/core#').
@@ -40,11 +41,8 @@ skos_broader(Broader, Narrower, Graph):-
   rdf(Broader, skos:broader, Narrower, Graph).
 
 skos_export_hierarchy(Root):-
-  rdf_global_id(skos:broader, P),
-  rdf_beam([], Root, [P], _Vs, Es),
-  export_graph([], random_vertex_coordinate, Es, G_Term),
-  export_graph_svg(G_Term, SVG),
-  write(SVG).
+  rdf_global_id(skos:broader, Predicate),
+  rdf_export_hierarchy(Root, Predicate).
 
 skos_narrower(Narrower, Broader, Graph):-
   rdf(Narrower, skos:narrower, Broader, Graph).
