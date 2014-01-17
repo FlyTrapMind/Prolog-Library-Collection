@@ -17,7 +17,7 @@ A collection of generic Web commands
 that can be issued via the Web interface.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/06, 2013/11
+@version 2012/10, 2013/02-2013/06, 2013/11, 2014/01
 */
 
 :- use_module(generics(meta_ext)).
@@ -26,11 +26,12 @@ that can be issued via the Web interface.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
+:- use_module(library(pairs)).
 :- use_module(server(web_modules)).
 
-:- web_module_add('Web commands', web_commands, command).
+:- initialization(web_module_add('Web commands', web_commands)).
 
-:- http_handler(root(command), command, []).
+:- http_handler(root(web_commands), web_commands, []).
 
 
 
@@ -39,7 +40,7 @@ that can be issued via the Web interface.
 
 clear_web([]).
 
-command(_Request):-
+web_commands(_Request):-
   reply_html_page(
     app_style,
     title('Web commands'),
@@ -63,7 +64,7 @@ help_web([element(ul,[],ModuleItems)]):-
       element(p,[],
         [element(b,[],[ExternalName]),':'|T])]),
     (
-      web_module(ExternalName, InternalName, _PathName),
+      web_module(ExternalName, InternalName),
       module_property(InternalName, exports(WebPredicates)),
       setoff(
         element(li,[],[Label]),
@@ -124,8 +125,8 @@ web_modules_web([
     [element(caption,[],['The currently registered modules.'])|Rows]
   )
 ]):-
-  web_modules(Tuples),
-  nth0(0, Tuples, Modules),
+  web_modules(Pairs),
+  pairs_keys(Pairs, Modules),
   findall(
     element(tr,[],[element(td, [], [Module])]),
     member(Module, Modules),

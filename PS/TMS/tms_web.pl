@@ -3,9 +3,9 @@
   [
     tms_node_web/2, % +NodeLabel:atom
                     % -SVG:list
-    tms_web/1, % -DOM:list
-    tms_web/2 % +TMS:atom
-              % -SVG:list
+    tms_dom/1, % -DOM:list
+    tms_dom/2 % +TMS:atom
+              % -DOM:list
   ]
 ).
 
@@ -33,9 +33,9 @@
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
 :- db_add_novel(http:location(tms, root(tms), [])).
-:- http_handler(root(tms), tmss, [prefix]).
+:- http_handler(root(tms), tms_web, [prefix]).
 
-:- initialization(web_module_add('TMS', tms_web, tms)).
+:- initialization(web_module_add('TMS', tms_web)).
 
 
 
@@ -43,7 +43,7 @@
 % TMS graph navigation Web pages.
 
 % A graph representation of the given TMS node.
-tmss(Request):-
+tms_web(Request):-
   memberchk(search(Search), Request),
   memberchk(node=NLocal, Search), !,
   rdf_global_id(doyle:NLocal, N),
@@ -51,14 +51,14 @@ tmss(Request):-
   xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
 % A graph representation of the given TMS.
-tmss(Request):-
+tms_web(Request):-
   memberchk(search(Search), Request),
   memberchk(tms=TMS, Search), !,
-  tms_web(TMS, SVG_DOM),
+  tms_dom(TMS, SVG_DOM),
   xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(SVG_Atom)).
 % A table of all TMS-es.
-tmss(_Request):-
+tms_web(_Request):-
   tms_web(HTML_DOM),
   xml_dom_to_atom([], HTML_DOM, HTML_Atom),
   reply_html_page(app_style, \tms_head, \tms_body(HTML_Atom)).
@@ -80,10 +80,10 @@ tms_node_web_(N, SVG):-
   tms_export_node([base_url(BaseURL),recursive(false)], N, GIF),
   graph_to_svg_dom([method(dot)], GIF, SVG).
 
-%! tms_web(-DOM:list) is det.
+%! tms_dom(-DOM:list) is det.
 % Returns a DOM description of the currently loaded TMS-es.
 
-tms_web([HTML_Table]):-
+tms_dom([HTML_Table]):-
   findall(
     [TMS_URL-TMS,Type,NumberOfJs,NumberOfNs],
     (
@@ -107,9 +107,9 @@ tms_web([HTML_Table]):-
     HTML_Table
   ).
 
-%! tms_web(+TMS:atom, -SVG:list) is det.
+%! tms_dom(+TMS:atom, -SVG:list) is det.
 
-tms_web(TMS, SVG):-
+tms_dom(TMS, SVG):-
   http_absolute_uri(tms(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
   graph_to_svg_dom([method(sfdp)], GIF, SVG).

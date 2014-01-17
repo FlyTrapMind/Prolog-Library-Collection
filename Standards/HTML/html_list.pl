@@ -16,11 +16,12 @@
 Support for generating HTML lists.
 
 @author Wouter Beek
-@version 2013/10-2013/11
+@version 2013/10-2013/11, 2014/01
 */
 
-:- use_module(library(http/http_path)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_path)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(server(web_modules)).
@@ -118,12 +119,12 @@ html_list(L_O1, ListItems) -->
 
 html_module_list(L_O1, LI_O1) -->
   {
-    web_modules(Tuples),
+    web_modules(Pairs),
     findall(
-      li(LI_O1,a(href=Link,ExternalName)),
+      li(LI_O1,a(href=Location,ExternalName)),
       (
-        member([ExternalName,_InternalName,PathName], Tuples),
-        http_absolute_location(root(PathName), Link, [])
+        member(ExternalName-InternalName, Pairs),
+        http_location_by_id(InternalName, Location)
       ),
       ListItems
     )

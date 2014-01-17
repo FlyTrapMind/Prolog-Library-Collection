@@ -45,9 +45,10 @@
 Graph theory support for RDF.
 
 Graph theoretic insights cannot be directly applied to RDF graphs because
-edges (as defined by RDF abstract syntax) in one triple can be nodes in
-another. This means that the definitions 'edge' and 'vertex' for graph
-theoretic operations of RDF data must be redefined.
+ edges (as defined by RDF abstract syntax) in one triple can be nodes in
+ another.
+This means that the definitions 'edge' and 'vertex' for graph theoretic
+ operations of RDF data must be redefined.
 
 @author Wouter Beek
 @version 2012/01-2013/03, 2013/08
@@ -64,7 +65,6 @@ theoretic operations of RDF data must be redefined.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
-:- rdf_meta(rdf_beam(+,r,+,-,-)).
 :- rdf_meta(rdf_edge(+,r)).
 :- rdf_meta(rdf_edge(+,+,r)).
 :- rdf_meta(rdf_edges(+,r)).
