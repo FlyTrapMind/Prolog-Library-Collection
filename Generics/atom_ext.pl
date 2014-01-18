@@ -1,6 +1,9 @@
 :- module(
   atom_ext,
   [
+    atom_splits/3, % +Splits:list(atom)
+                   % +Atom:atom
+                   % -Subatoms:list(atom)
     atom_to_term/2, % +Atom:atom
                     % -Term:term
     atom_truncate/3, % +Atom:atom
@@ -17,9 +20,6 @@
     repeating_atom/3, % +SubAtom:atom
                       % +Repeats:integer
                       % -Atom:atom
-    atom_splits/3, % +Splits:list(atom)
-                   % +Atom:atom
-                   % -Subatoms:list(atom)
     split_atom_length/3, % +Atom:atom
                          % +Length:integer
                          % -Subatoms:list(atom)

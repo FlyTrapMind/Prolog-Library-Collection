@@ -1190,7 +1190,8 @@ process_http(Graph, Return, Stream):-
     % To: RDF
     (var(Graph), ! ; json_to_rdf(Graph, ckan, Result, _)),
 
-    debug(ckan, 'Successful reply:\n~w', [Help])
+    %debug(ckan, 'Successful reply:\n~w', [Help]),
+    true
   ).
 
 

@@ -53,7 +53,6 @@ rdf_export_hierarchy(FromGs, Predicate) -->
           rdf_copy(FromG, _, Predicate, _, ToG)
         ),
         
-gtrace,
         export_rdf_graph([], ToG, GIF),
         graph_to_svg_dom([method(dot)], GIF, SVG),
         xml_dom_to_atom([], SVG, Atom)
