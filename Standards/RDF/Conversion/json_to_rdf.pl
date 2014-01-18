@@ -132,7 +132,7 @@ json_pair_to_rdf(Graph, Module, _, Individual, Specs, Name=Value):-
   catch(
     json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value),
     Exception,
-    debug(ckan, '[json2rdf] Exception: ~w', [Exception])
+    debug(json_to_rdf, '[json2rdf] Exception: ~w', [Exception])
   ), !.
 % DEB
 json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair):-
