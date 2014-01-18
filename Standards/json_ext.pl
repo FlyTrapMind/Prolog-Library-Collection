@@ -132,7 +132,7 @@ json_pair_to_prolog(Module, _, Specs, Name=Value1, Value2):-
   catch(
     json_value_to_prolog(Module, Type, Value1, Value2),
     Exception,
-    debug(ckan, '[pl2rdf] Exception: ~w', [Exception])
+    debug(json_ext, '[pl2rdf] Exception: ~w', [Exception])
   ), !.
 % DEB
 json_pair_to_prolog(Graph, Legend, Type, Pair, Value):-
