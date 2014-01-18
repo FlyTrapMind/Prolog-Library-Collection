@@ -52,14 +52,15 @@ http_dateTime(DateTime):-
   http_timestamp(TimeStamp, DateTime).
 
 
-%! http_goal(+URL:atom, +Options:list(nvpair), :Goal) is semidet.
+%! http_goal(+URL:atom, +Options:list(nvpair), :Goal) is det.
 %! http_goal(
 %!   +URL:atom,
 %!   +Options:list(nvpair),
 %!   :Goal,
 %!   +Attempts:or([integer,oneof([inf])])
-%! ) is semidet.
+%! ) is det.
 % Executes the given goal on the content found at the given URL.
+% Always succeeds.
 %
 % The number of attempts is the number of HTTP-related exceptions
 %  that can be encountered before the predicate gives up.
@@ -69,92 +70,63 @@ http_dateTime(DateTime):-
 http_goal(URL, Options, Goal):-
   http_goal(URL, Options, Goal, 10).
 
-http_goal(URL, _, Goal, 0):- !,
-  debug(
-    http,
-    'Could not execute goal ~w on URL ~w (no attempts left).',
-    [Goal,URL]
-  ).
 http_goal(URL, O1, Goal, Attempts):-
   merge_options([cert_verify_hook(cert_verify),status_code(Status)], O1, O2),
-  setup_call_catcher_cleanup(
-    http_open(URL, Stream, O2),
-    http_open_process(Status, Stream, Goal),
-    Catcher,
-    (
-      close(Stream),
-      http_open_catcher(Catcher, URL, O2, Goal, Attempts)
-    )
+  catch(
+    setup_call_cleanup(
+      http_open(URL, Stream, O2),
+      http_process(Status, Stream, Goal),
+      close(Stream)
+    ),
+    E,
+    http_catcher(E, URL, O2, Goal, Attempts)
   ).
 
 cert_verify(_SSL, _ProblemCert, _AllCerts, _FirstCert, _Error) :-
   debug(user_error, 'Accepting certificate', []).
 
-
-http_open_catcher(exit, URL, _, Goal, _):- !,
+% Succeed.
+http_catcher(exit, URL, _, Goal, _):- !,
   term_to_atom(Goal, Atom1),
   atom_truncate(Atom1, 120, Atom2),
   debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
-http_open_catcher(Catcher, URL, Options, Goal, Attempts1):-
-  debug(
-    http,
-    'Encountered exception ~w while executing goal ~w on URL ~w.',
-    [Catcher,Goal,URL]
-  ),
+% Permanently fail to HTTP open this: simply continue...
+http_catcher(E, _, _, _, 0):- !,
+  http_exception(E).
+% Incidental fail: retry.
+http_catcher(_, URL, Options, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),
-  http_open_exception(Catcher, Retry),
-  (
-    Retry == true
-  ->
-    http_goal(URL, Options, Goal, Attempts2)
-  ;
-    true
-  ).
+  http_goal(URL, Options, Goal, Attempts2).
 
-%! http_open_exception(+Exception:compound, -Retry:boolean) is det.
+%! http_exception(+Exception:compound) is det.
 % Handle exceptions thrown by http_open/3.
 
 % Retry after a while upon existence error.
-http_open_exception(error(existence_error(url, URL),Context), true):- !,
-  debug(http, 'URL ~w does not exist.', [URL]),
-  debug(http, '[~w]', [Context]),
-  sleep(10).
+http_exception(error(existence_error(url, URL),Context)):- !,
+  debug(http, 'URL ~w does not exist (context: ~w).', [URL,Context]).
+% HTTP status code.
+http_exception(error(http_status(Status),_Context)):- !,
+  'Status-Code'(Status, Reason),
+  debug(http, '[HTTP STATUS CODE] ~d ~a', [Status,Reason]).
 % Retry upon I/O error.
-http_open_exception(
-  error(io_error(read,_Stream),context(_Predicate,Reason)),
-  true
-):- !,
+http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
   debug(http, '[IO-EXCEPTION] ~w', [Reason]).
+http_exception(error(permission_error(redirect,http,URL),context(_,Reason))):- !,
+  debug(http, '[PERMISSION-ERROR] ~w (reason: ~w)', [URL,Reason]).
 % Retry upon socket error.
 % Thrown by http_open/3.
-http_open_exception(error(socket_error('Try Again'),_Context), true):- !,
-  debug(http, '[SOCKET ERROR] Try again!', []),
-  sleep(1).
-http_open_exception(
-  exception(error(http_status(Status),_Context)),
-  Retry
-):- !,
-  'Status-Code'(Status, Reason),
-  debug(http, '[HTTP STATUS CODE] ~d ~a', [Status,Reason]),
-  (
-    Status == 403
-  ->
-    Retry = false
-  ;
-    sleep(60)
-  ).
-http_open_exception(Exception, false):-
-  gtrace, %DEB
-  debug(http, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
+http_exception(error(socket_error(Reason),_)):- !,
+  debug(http, '[SOCKET-ERROR] ~w', [Reason]).
+% DEB
+http_exception(E):-
+  debug(http, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
 
 % Success codes.
-http_open_process(Status, Stream, Goal):-
+http_process(Status, Stream, Goal):-
   between(200, 299, Status), !,
   call(Goal, Stream).
 % Non-success codes.
-http_open_process(Status, _, _):-
-  debug(http, '[HTTP STATUS CODE] ~d', [Status]),
-  sleep(10),
+http_process(Status, _, _):-
   % The catcher has to make a new attempt (if there are any attempts left).
   throw(error(http_status(Status),_Context)).
 
