@@ -21,6 +21,7 @@ HTML generation of RDF content.
 :- use_module(library(lists)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_image)).
 :- use_module(xml(xml_namespace)).
 
