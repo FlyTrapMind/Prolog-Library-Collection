@@ -30,6 +30,7 @@ Predicates for sending out HTTP requests.
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(math(math_ext)).
 :- use_module(xml(xml_dom)).
@@ -90,9 +91,10 @@ http_catcher(exit, URL, _, Goal, _):- !,
   term_to_atom(Goal, Atom1),
   atom_truncate(Atom1, 120, Atom2),
   debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
-% Permanently fail to HTTP open this: simply continue...
+% Permanently fail to receive resource over HTTP.
 http_catcher(E, _, _, _, 0):- !,
-  http_exception(E).
+  http_exception(E),
+  fail.
 % Incidental fail: retry.
 http_catcher(_, URL, Options, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),
