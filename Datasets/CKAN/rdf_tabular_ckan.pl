@@ -17,6 +17,7 @@ CKAN-specific configuration of RDF Tabular.
 :- http_handler(rdf_tabular(ckan), rdf_tabular_ckan, []).
 
 
+
 rdf_tabular_ckan(Request):-
   rdf_tabular(Request, ckan_overview).
 
