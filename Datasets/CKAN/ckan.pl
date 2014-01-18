@@ -20,8 +20,8 @@
                         % +AvailableOnly:boolean
                         % -Groups:list(compound)
     group_package_show/4, % +Options:list(nvpair)
-                          % +IdOrName:atom
                           % +Limit:integer
+                          % +IdOrName:atom
                           % -Packages:list(compound)
     group_revision_list/3, % +Options:list(nvpair),
                            % +NameOrId:atom,
@@ -33,8 +33,8 @@
                     % -Licenses:list(compound)
     member_list/5, % +Options:list(nvpair)
                    % +Capacity:atom
-                   % +IdOrName:atom
                    % +ObjectType:atom
+                   % +IdOrName:atom
                    % -Triples:list(triple(atom,atom,atom))
     organization_list/6, % +Options:list(nvpair)
                          % +AllFields:boolean
@@ -106,8 +106,8 @@
                  % +Q:atom
                  % -Users:list(compound)
     user_show/4 % +Options:list(nvpair),
-                % +IdOrName:atom,
                 % +UserObject:compound,
+                % +IdOrName:atom,
                 % -User:compound
   ]
 ).
@@ -636,18 +636,18 @@ group_list_authz(O1, AmMember1, AvailableOnly1, Groups):-
 
 %! group_package_show(
 %!   +Options:list(nvpair)
-%!   +IdOrName:atom
 %!   +Limit:integer
+%!   +IdOrName:atom
 %!   -Packages:list(compound)
 %! ) is det.
 % Returns the datasets (packages) of a group.
 %
 % @arg Options
-% @arg IdOrName The id or name of the group.
 % @arg Limit The maximum number of datasets to return (optional).
+% @arg IdOrName The id or name of the group.
 % @arg Packages A list of packages.
 
-group_package_show(O1, IdOrName, Limit, Packages):-
+group_package_show(O1, Limit, IdOrName, Packages):-
   add_option([id=IdOrName], limit, Limit, P1),
   ckan(O1, group_package_show, P1, Packages).
 
@@ -699,8 +699,8 @@ license_list(O1, Licenses):-
 %! member_list(
 %!   +Options:list(nvpair),
 %!   +Capacity:atom,
-%!   +IdOrName:atom,
 %!   +ObjectType:atom,
+%!   +IdOrName:atom,
 %!   -Triples:list(triple(atom,atom,atom))
 %! ) is det.
 % Return the members of a group.
@@ -710,14 +710,14 @@ license_list(O1, Licenses):-
 % @arg Capacity Restrict the members returned to those with a given capacity,
 %      e.g. `member`, `editor`, `admin`, `public`, `private`
 %      (optional, default: `None`)
-% @arg IdOrName The id or name of the group.
 % @arg ObjectType Restrict the members returned to those of a given type,
 %      e.g. `user` or `package` (optional, default: `None`).
+% @arg IdOrName The id or name of the group.
 % @arg Triples A list of <id,type,capacity>-triples.
 %
 % @throw ckan.logic.NotFound If the group does not exist.
 
-member_list(O1, Capacity, IdOrName, ObjectType, Triples):-
+member_list(O1, Capacity, ObjectType, IdOrName, Triples):-
   P1 = [id=IdOrName],
   add_option(P1, capacity, Capacity, P2),
   add_option(P2, object_type, ObjectType, P3),
@@ -1091,10 +1091,11 @@ user_list(O1, OrderBy1, Q, Users):-
   add_option([order_by=OrderBy2], q, Q, P1),
   ckan(O1, user_list, P1, Users).
 
+
 %! user_show(
 %!   +Options:list(nvpair),
-%!   +IdOrName:atom,
 %!   +UserObject:compound,
+%!   +IdOrName:atom,
 %!   -User:compound
 %! ) is det.
 % Returns a user account.
@@ -1102,11 +1103,11 @@ user_list(O1, OrderBy1, Q, Users):-
 % Either `IdOrName` or `UserObject` must be instantiated.
 %
 % @arg Options
-% @arg IdOrName The id or name of the user (optional).
 % @arg UserObject The user dictionary of the user (optional).
+% @arg IdOrName The id or name of the user (optional).
 % @arg User A user.
 
-user_show(O1, IdOrName, UserObject, User):-
+user_show(O1, UserObject, IdOrName, User):-
   % Either `IdOrName` or `UserObject` must be instantiated.
   \+ maplist(nonvar, [IdOrName,UserObject]),
   \+ maplist(var, [IdOrName,UserObject]),
@@ -1115,6 +1116,7 @@ user_show(O1, IdOrName, UserObject, User):-
   add_option(P1, user_obj, UserObject, P2),
 
   ckan(O1, user_show, P2, User).
+
 
 
 % HELPER PREDICATES %
