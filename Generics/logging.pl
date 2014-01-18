@@ -39,9 +39,12 @@ logging started.
 
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/07, 2013/09, 2013/11
+@version 2012/05-2012/07, 2013/03-2013/07, 2013/09, 2013/11, 2014/01
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
 :- use_module(generics(db_ext)).
 :- use_module(library(ansi_term)). % Used in markup.
 :- use_module(library(http/http_client)).
@@ -86,28 +89,32 @@ append_to_log(Format, Arguments):-
 % @arg Arguments A list of terms.
 
 append_to_log(Category, Format, Arguments):-
-  format(atom(Message), Format, Arguments),
-  append_to_log_(Category, Message).
+  format(atom(Msg), Format, Arguments),
+  append_to_log_(Category, Msg).
 
-append_to_log_(Category, Message):-
+append_to_log_(Category, Msg):-
   \+ current_log_stream(_Stream), !,
-  print_message(warning, cannot_log(Category, Message)).
-append_to_log_(Category, Message):-
+  print_message(warning, cannot_log(Category, Msg)).
+append_to_log_(Category, Msg1):-
   current_log_stream(Stream), !,
   iso8601_dateTime(DateTime),
+  dcg_phrase(dcg_replace([cr_or_lf-[]]), Msg1, Msg2),
   csv_write_stream(
     Stream,
-    [row(DateTime, Category, Message)],
+    [row(DateTime, Category, Msg2)],
     [file_type(comma_separated_values)]
   ),
   flush_output(Stream).
-prolog:message(cannot_log(Kind, Message)):-
+prolog:message(cannot_log(Kind, Msg)):-
   [
     ansi([bold], '[~w] ', [Kind]),
     ansi([], 'Could not log message "', []),
-    ansi([faint], '~w', [Message]),
+    ansi([faint], '~w', [Msg]),
     ansi([], '".', [])
   ].
+
+cr_or_lf --> carriage_return.
+cr_or_lf --> line_feed.
 
 %! close_log_stream is det.
 % Closes the current log stream.
