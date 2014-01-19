@@ -211,7 +211,7 @@ progress_bar_(Current1, End, ProgressBar):-
   (
      End =:= 0
   ->
-     Percentage = 100.0
+     Percentage = 100
   ;
      Percentage is round(Current1 / End * 100)
   ),
