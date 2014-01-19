@@ -1,7 +1,8 @@
 :- module(
   rdf_tabular,
   [
-    overview_instances//1, % +Resources:list(iri)
+    overview_instances//2, % +Resources:list(iri)
+                           % +Grap:atom
     rdf_tabular/2 % +Request:list
                   % :Content
   ]
@@ -91,7 +92,7 @@ overview_class(Class1) -->
 
 % DESCRIBE AN RDF INSTANCE %
 
-overview_instance(Instance1) -->
+overview_instance(Instance1, G) -->
   {
     rdf_global_id(Instance1, Instance2),
     with_output_to(atom(Name), rdf_term_name(Instance2)),
@@ -100,10 +101,10 @@ overview_instance(Instance1) -->
   },
   rdf_html_table(Caption, L).
 
-overview_instances(L1) -->
+overview_instances(L1, G) -->
   {
     % Order all resources based on the number of triples describing them.
-    findall(
+    setoff(
       N-R,
       (
         member(R, L1),
@@ -115,12 +116,12 @@ overview_instances(L1) -->
     reverse(P2, P3),
     pairs_values(P3, L2)
   },
-  overview_instances1(L2).
+  overview_instances1(L2, G).
 
-overview_instances1([]) --> [].
-overview_instances1([H|T]) -->
-  overview_instance(H),
-  overview_instances1(T).
+overview_instances1([], _) --> [].
+overview_instances1([H|T], G) -->
+  overview_instance(H, G),
+  overview_instances1(T, G).
 
 
 
@@ -175,7 +176,7 @@ rdf_tabular_term1(P) -->
 % Subject term.
 % Display all predicate-object pairs (per graph).
 rdf_tabular_term1(S) -->
-  overview_instance(S).
+  overview_instance(S, _).
 
 value_for_p(P, Value):-
   rdf(_, P, literal(type(_,Value))).
