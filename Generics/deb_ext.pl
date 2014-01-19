@@ -1,6 +1,7 @@
 :- module(
   deb_ext,
   [
+    fail_mode/1, % +FailMode:compound
     if_debug/2, % +Flag:atom
                 % :Goal
     test/2, % +Goal:term
@@ -18,13 +19,25 @@ Extensions for debugging and running in debug mode.
 Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
-@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12
+@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/01
 */
+
+:- use_module(library(debug)).
 
 :- meta_predicate(if_debug(+,:)).
 :- meta_predicate(test(0,+)).
 :- meta_predicate(test(0,+,+)).
 
+
+
+fail_mode(debug(Category-Format-Args)):- !,
+  debug(Category, Format, Args).
+fail_mode(error(E)):- !,
+  throw(E).
+fail_mode(fail):- !,
+  fail.
+fail_mode(ignore):-
+  true.
 
 
 %! if_debug(+Flag:atom, :Goal) .
