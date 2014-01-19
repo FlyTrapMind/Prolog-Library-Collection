@@ -78,7 +78,7 @@ legend(
 ).
 legend(
   group,
-  id,
+  name,
   [
     abbreviation-atom-true,
     approval_status-atom-true,
@@ -150,7 +150,7 @@ legend(
 ).
 legend(
   package,
-  id,
+  name,
   [
     additional_resources-list(resource/_)-true,
     author-atom-true,
@@ -177,7 +177,7 @@ legend(
     individual_resources-list(resource/_)-true,
     isopen-boolean-false,
     last_major_modification-atom-true,
-    license_id-atom-true,
+    license_id-license/_-true,
     license_title-atom-true,
     license_url-atom-true,
     maintainer-atom-true,
@@ -275,7 +275,7 @@ legend(
     'JumpStartGeorgia'-atom-false,
     lang-atom-false,
     last_modified-dateTime-true,
-    license-atom-false,
+    license-atom-false, % Does this ever occur?
     'links:dbpedia'-integer-false,
     'links:dnb-gemeinsame-normdatei'-atom-false,
     'links:lemon'-integer-false,
@@ -334,8 +334,10 @@ legend(
   [
     approved_timestamp-atom-true,
     author-atom-true,
+    groups-list(group/_)-false,
     id-atom-false,
     message-atom-true,
+    packages-list(package/_)-false,
     timestamp-atom-false
   ]
 ).

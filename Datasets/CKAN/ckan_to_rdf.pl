@@ -64,10 +64,12 @@ ckan_to_rdf(O_RDF):-
   list_script(tag_show(O_RDF), 'Tags', Tags, RemainingTags),
   debug(ckan, 'Remaining tags: ~w', [RemainingTags]),
 
+/*
   % Users.
   user_list(O_PL, _, _, Users),
   list_script(user_show(O_RDF, _), 'Users', Users, RemainingUsers),
   debug(ckan, 'Remaining users: ~w', [RemainingUsers]),
+*/
 
   format(current_output, 'End CKAN-to-RDF conversion.\n', []).
 

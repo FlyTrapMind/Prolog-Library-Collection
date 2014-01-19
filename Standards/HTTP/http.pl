@@ -92,9 +92,17 @@ http_catcher(exit, URL, _, Goal, _):- !,
   atom_truncate(Atom1, 120, Atom2),
   debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
 % Permanently fail to receive resource over HTTP.
-http_catcher(E, _, _, _, 0):- !,
+http_catcher(E, URL, Options, Goal, 0):- !,
   http_exception(E),
-  fail.
+  (
+    E = error(http_status(Status),_),
+    between(500, 599, Status)
+  ->
+    sleep(300),
+    http_goal(URL, Options, Goal)
+  ;
+    fail
+  ).
 % Incidental fail: retry.
 http_catcher(_, URL, Options, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),
@@ -109,7 +117,7 @@ http_exception(error(existence_error(url, URL),Context)):- !,
 % HTTP status code.
 http_exception(error(http_status(Status),_Context)):- !,
   'Status-Code'(Status, Reason),
-  debug(http, '[HTTP STATUS CODE] ~d ~a', [Status,Reason]).
+  debug(http, '[HTTP-STATUS-CODE] ~d ~a', [Status,Reason]).
 % Retry upon I/O error.
 http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
   debug(http, '[IO-EXCEPTION] ~w', [Reason]).
