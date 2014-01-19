@@ -123,9 +123,9 @@ json_object_to_rdf(Graph, Module, Legend, json(Args1), Individual):-
 %!   -Prolog:pair(atom,term)
 %! ) is det.
 
-json_pair_to_rdf(_, _, _, _, Specs, Name=Null):-
-  Null = @(null), !,
-  memberchk(Name-_-true, Specs).
+json_pair_to_rdf(_, _, _, _, _Specs, _Name=Null):-
+  Null = @(null), !.
+  %%%%memberchk(Name-_-true, Specs).
 json_pair_to_rdf(Graph, Module, _, Individual, Specs, Name=Value):-
   memberchk(Name-Type-_, Specs),
   rdf_global_id(Module:Name, Predicate),
@@ -187,7 +187,7 @@ json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):- !,
   (
     is_image_url(Value2)
   ->
-    rdf_assert_image(Individual, Predicate, Value2, Graph)
+    rdf_assert_image([], Individual, Predicate, Value2, Graph)
   ;
     rdf_assert(Individual, Predicate, Value2, Graph)
   ).
