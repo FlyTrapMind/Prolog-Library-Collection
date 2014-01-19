@@ -37,8 +37,8 @@ Predicates for sending out HTTP requests.
 
 :- meta_predicate(http_goal(+,+,1)).
 :- meta_predicate(http_goal(+,+,1,+)).
-:- meta_predicate(http_open_catcher(+,+,+,1,+)).
-:- meta_predicate(http_open_process(+,+,1)).
+:- meta_predicate(http_catcher(+,+,+,1,+)).
+:- meta_predicate(http_process(+,+,1)).
 
 
 
