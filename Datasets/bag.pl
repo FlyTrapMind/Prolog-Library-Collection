@@ -32,12 +32,17 @@ info@geodan.nl
 
 
 test:-
-  formulate_sparql(
-    _Graph,
-    [bags],
-    select([distinct(true)],[]),
-    ['?s vocab:pand_status ?o'],
-    limit([],10),
+  phrase(
+    'SPARQL_formulate'(
+      _,
+      [bags],
+      select,
+      true,
+      [],
+      [rdf(var(s), vocab:pand_status, var(o))],
+      10,
+      _
+    ),
     Query
   ),
   'SPARQL_enqueue'(bag, Query, _VarNames, Resources),

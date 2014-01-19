@@ -166,12 +166,17 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 
 '_SPARQL_describe'(Remote, Resource, PO_Pairs):-
   format(atom(Where), '  <~w> ?p ?o .', [Resource]),
-  formulate_sparql(
-    _Graph,
-    [],
-    select([distinct(true)],[p,o]),
-    [Where],
-    _Extra,
+  phrase(
+    'SPARQL_formulate'(
+      _,
+      [],
+      select,
+      true,
+      [p,o],
+      [rdf(iri(Resource), var(P), var(o))],
+      inf,
+      _
+    ),
     Query
   ),
   'SPARQL_enqueue'(Remote, Query, _VarNames, Rows),
@@ -230,15 +235,20 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   'SPARQL_describe'([closed_under_identity(false)], Remote, Resource, PO_Pairs),
   PO_Pairs \== [], !.
 'SPARQL_find'(Remote, SearchTerm, Resource):-
-  Where1 = '?resource rdfs:label ?label .',
-  format(atom(Where2), 'FILTER regex(?label, "^~w", "i")', [SearchTerm]),
-  Where = [Where1,Where2],
-  formulate_sparql(
-    _Graph,
-    [rdfs],
-    select([distinct(true)],[resource]),
-    Where,
-    _Extra,
+  phrase(
+    'SPARQL_formulate'(
+      _,
+      [rdfs],
+      select,
+      true,
+      [resource],
+      [
+        rdf(var(resource), rdfs:label, var(label)),
+        filter(regex(var(label), at_start(SearchTerm), [case_insensitive]))
+      ],
+      inf,
+      _
+    ),
     Query
   ),
   'SPARQL_enqueue'(Remote, Query, _VarNames, Resources),
@@ -293,13 +303,17 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   ord_add_element(Resources1, Resource, Resources2).
 
 '_SPARQL_query_sameAs'(Remote, Resource, Resources2):-
-  format(atom(Where), '  <~w> owl:sameAs ?x .', [Resource]),
-  formulate_sparql(
-    _Graph,
-    [owl],
-    select([distinct(true)],[x]),
-    [Where],
-    _Extra,
+  phrase(
+    'SPARQL_formulate'(
+      _,
+      [owl],
+      select,
+      true,
+      [x],
+      [rdf(iri(Resource), owl:sameAs, var(x))],
+      inf,
+      _
+    ),
     Query
   ),
   'SPARQL_enqueue'(Remote, Query, _VarNames, Resources1),

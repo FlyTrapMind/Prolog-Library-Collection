@@ -1,166 +1,219 @@
 :- module(
   sparql_build,
   [
-    formulate_sparql/6 % +Graph:compound
-                       % +Prefixes:list(atom)
-                       % +Select:compound
-                       % +Where:atom
-                       % +Extra:compound
-                       % -SPARQL_Query:atom
+    'SPARQL_formulate'//8 % +DefaultGraph:iri
+                          % +Prefixes:list(atom)
+                          % +Mode:oneof([select])
+                          % +Distinct:boolean
+                          % +Variables:list(atom)
+                          % +BGPs:list(compound)
+                          % +Limit:or([nonneg,oneof([inf])])
+                          % +Order:pair(oneof([asc]),list(atom))
   ]
 ).
 
 /** <module> SPARQL build
 
-Predicates that support the construction of SPARQL queries.
+DCG for the construction of SPARQL queries.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2013/12
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
 */
 
-:- use_module(generics(typecheck)).
-:- use_module(library(apply)).
-:- use_module(library(option)).
-:- use_module(sparql(sparql_db)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_content)).
+:- use_module(xml(xml_namespace)).
 
 
 
-%! formulate_extra(+Extra:compound, -Statement:atom) is det.
-% Formulates either a "limit" or an "order by" statement.
-%
-% @arg Extra A compound term.
-%        Either =|limit(+Options:list(nvpair),+Limit:positive_integer)|=
-%        or =|sort_by(+Options:list(nvpair),+VarNames:list(atom))|=.
+bgp([]) --> [].
+bgp([filter(Filter)|T]) -->
+  "FILTER ",
+  filter(Filter),
+  bgp(T).
+bgp([optional(Optional)|T]) -->
+  "  OPTIONAL {\n",
+  bgp(Optional),
+  "  }\n",
+  bgp(T).
+bgp([rdf(S,P,O)|T]) -->
+  "  ",
+  term(S),
+  " ",
+  term(P),
+  " ",
+  term(O),
+  " .\n",
+  bgp(T).
 
-formulate_extra(Extra, ExtraStmt):-
-  Extra =.. [ExtraF,O1,Arg],
-  formulate_extra(ExtraF, O1, Arg, ExtraStmt).
+default_graph(DefaultGraph) -->
+  "# Default graph (located at ",
+  atom(DefaultGraph),
+  ")\n".
+default_graph(_) --> [].
 
-formulate_extra(limit, _O1, Max, LimitStmt):- !,
-  formulate_limit(Max, LimitStmt).
-formulate_extra(order_by, O1, VarNames, OrderByStmt):-
-  formulate_vars(VarNames, Vars1),
-  atomic_list_concat(Vars1, ' ', Vars2),
-  option(order(Order), O1, asc),
-  format(atom(OrderByStmt), 'ORDER BY ~w(~w)', [Order,Vars2]).
+distinct(true) -->
+  " DISTINCT".
+distinct(false) --> [].
 
-%! formulate_graph(+Option:nvpair, -Statement:atom) is det.
-% Formulates a statement specifying a default graph.
-%
-% @arg Option A name-value pair of the form
-%        =|default_graph(+DefaultGraph:url)|=.
-% @arg Statement
+filter(regex(Arg1,Arg2)) -->
+  filter(regex(Arg1,Arg2,[])).
+filter(regex(Arg1,Arg2,Flags)) -->
+  "REGEX(",
+  term(Arg1),
+  ",",
+  term(Arg2),
+  regex_flags(Flags),
+  ")".
+filter(strends(Arg1,Arg2)) -->
+  "STRENDS(",
+  term(Arg1),
+  ",",
+  term(Arg2),
+  ")".
 
-formulate_graph(default_graph(G), GStmt):-
-  format(atom(GStmt), '# Default graph (located at ~w)', [G]).
+limit(inf) --> [].
+limit(Limit) -->
+  "LIMIT ",
+  integer(Limit),
+  "\n".
+limit(_) --> [].
 
-%! formulate_limit(+Limit:nonneg, -Statement:atom) is det.
-% Formulates a SPARQL limit statement.
-%
-% @arg Limit The maximum number of returned search results.
-% @arg Statement
+mode(select) -->
+  "SELECT".
 
-formulate_limit(Limit, LimitStmt):-
-  must_be(nonneg, Limit),
-  format(atom(LimitStmt), 'LIMIT ~w', [Limit]).
+order(Criterion-Variables) -->
+  "ORDER BY ",
+  order_criterion(Criterion),
+  bracketed(variables(Variables)),
+  "\n".
+order(_) --> [].
 
-%! formulate_mode(+Mode:oneof([select]), -Statement:atom) is det.
-% Formulates a SPARQL mode statement.
-% Currently only the "select" mode is supported.
-%
-% @arg Mode A compound term. The functor is a mode,
-%        the argument is a list of SPARQL variable names (for `SELECT`).
-% @arg Statement
+order_criterion(ascending) -->
+  "ASC".
 
-formulate_mode(Mode, ModeStmt):-
-  Mode =.. [ModeF,O1,VarNames],
-  formulate_mode(ModeF, O1, VarNames, ModeStmt).
+prefix(Prefix) -->
+  {xml_current_namespace(Prefix, IRI)},
+  "PREFIX ",
+  atom(Prefix),
+  ": <",
+  atom(IRI),
+  ">\n".
 
-formulate_mode(select, O1, VarNames, SelectStmt):- !,
-  formulate_vars(VarNames, Vars),
-  (
-    option(distinct(true), O1, false)
-  ->
-    L = ['SELECT','DISTINCT'|Vars]
-  ;
-    L = ['SELECT'|Vars]
-  ),
-  atomic_list_concat(L, ' ', SelectStmt).
+prefixes([]) --> [].
+prefixes([H|T]) -->
+  prefix(H),
+  prefixes(T).
 
-%! formulate_prefix(+Prefix:atom, PrefixStatement:atom) is det.
-% Formulates a SPARQL prefix statement.
-%
-% @arg Prefix The atomic name of a prefix that is registered
-%        in [sparql_db].
-% @arg Statement
-%
-% @throws existence_error in case the given SPARQL prefix is not registered.
+regex_flags([]) --> [].
+regex_flags(Flags) -->
+  ",",
+  quoted(regex_flags1(Flags)).
 
-formulate_prefix(Prefix, PrefixStmt):-
-  sparql_current_prefix(Prefix, IRI), !,
-  format(atom(PrefixStmt), 'PREFIX ~w: <~w>', [Prefix,IRI]).
-formulate_prefix(Prefix, _PrefixStmt):-
-  existence_error('SPARQL prefix', Prefix).
+regex_flags1([]) --> [].
+regex_flags1([case_insensitive|T]) -->
+  "i",
+  regex_flags1(T).
 
-formulate_prefixes(Prefixes, PrefixStmts2):-
-  maplist(formulate_prefix, Prefixes, PrefixStmts1),
-  atomic_list_concat(PrefixStmts1, '\n\c', PrefixStmts2).
-
-%! formulate_sparql(
-%!   ?Graph:compound,
+%! 'SPARQL_formulate'(
+%!   +DefaultGraph:iri,
 %!   +Prefixes:list(atom),
-%!   +Mode:compound,
-%!   +Where:atom,
-%!   ?Extra:compound,
-%!   -Query:atom
+%!   +Mode:oneof([select]),
+%!   +Distinct:boolean,
+%!   +Variables:list(atom),
+%!   +BGP:list(compound),
+%!   +Limit:or([nonneg,oneof([inf])]),
+%!   +Order:pair(oneof([asc]),list(atom))
 %! ) is det.
-% Formulate a SPARQL query, build out of the given components.
 %
-% The following modes are supported:
-%    * `select`
+% # Example
 %
-% @arg Graph A compound term of the form =|default_graph(+Graph:url)|=.
-% @arg Prefixes A list of atomic prefix names, registered as prefix/4.
-% @arg Mode A compound term. The functor is a mode,
-%        the argument is a list of SPARQL variable names (for `SELECT`).
-% @arg Where An atomic WHERE-statement.
-% @arg Extra A compound term.
-%        Either =|limit(+Options:list(nvpair),+Limit:positive_integer)|=
-%        or =|sort_by(+Options:list(nvpair),+VarNames:list(atom))|=.
-% @arg Query An atomic SPARQL query.
+% ~~~{.pl}
+% 'SPARQL(_, [rdfs], select, true, [class], Where, inf, asc-class)
+% ~~~
+% With the corresponding SPARQL query:
+% ~~~{.sparql}
+% PREFIX rdf: <...>
+% SELECT DISTINCT ?class
+% WHERE {
+%   dbpedia:Monkey rdf:type ?x .
+%   ?x rdfs:subClassOf* ?class .
+% }
+% ORDER BY ASC(?class)
+% ~~~
+%
+% @arg DefaultGraph An IRI denoting the default graph to query from.
+% @arg Prefixes A list of registered atomic XML prefixes.
+% @arg Mode The mode of the SPARQL query.
+%      Currently only `select` is supported.
+% @arg Distinct Whether the returned results should be distinct or not.
+% @arg Variables A list of atomic variable names.
+% @arg BGP A list denoting a basic graph pattern.
+% @arg Limit Either a positive integer indicating the maximum number of
+%      retrieved results, or `inf`.
+% @arg Order A pair consisting of the ordering criterion and the variables
+%      relative to which ordering takes place.
+%      Currently the only supported ordering criterion is `asc` for
+%      ascending lexicographically.
 
-formulate_sparql(G, Prefixes, Mode, Where, Extra, Query):-
-  (
-    var(G)
-  ->
-    Stmts1 = []
-  ;
-    formulate_graph(G, GStmt),
-    Stmts1 = [GStmt]
-  ),
-  formulate_prefixes(Prefixes, PrefixStmts),
-  formulate_mode(Mode, ModeStmt),
-  formulate_where(Where, WhereStmt),
-  Stmts2 = [PrefixStmts,ModeStmt,WhereStmt],
-  (
-    var(Extra)
-  ->
-    Stmts3 = []
-  ;
-    formulate_extra(Extra, ExtraStmt),
-    Stmts3 = [ExtraStmt]
-  ),
-  append([Stmts1,Stmts2,Stmts3], Stmts),
-  atomic_list_concat(Stmts, '\n', Query).
+'SPARQL_formulate'(
+  DefaultGraph,
+  Prefixes,
+  Mode,
+  Distinct,
+  Variables,
+  BGP,
+  Limit,
+  Order
+) -->
+  default_graph(DefaultGraph),
+  prefixes(Prefixes),
+  mode(Mode),
+  distinct(Distinct),
+  " ",
+  variables(Variables),
+  "\n",
+  where(BGP),
+  limit(Limit),
+  order(Order).
 
-formulate_var(VarName, Var):-
-  format(atom(Var), '?~w', [VarName]).
+term(a) --> !,
+  "a".
+term(at_start(String)) -->
+  double_quote,
+  "^",
+  atom(String),
+  double_quote.
+term(string(String)) --> !,
+  quoted(atom(String)).
+term(var(Variable)) --> !,
+  atom(Variable).
+term(Prefix:Postfix) --> !,
+  atom(Prefix),
+  ":",
+  atom(Postfix).
+term(IRI) -->
+  atom(IRI).
 
-formulate_vars('*', '*'):- !.
-formulate_vars(VarNames, Vars):-
-  is_list(VarNames),
-  maplist(formulate_var, VarNames, Vars).
+variable(Variable) -->
+  "?",
+  atom(Variable).
 
-formulate_where(Stmts, WhereStmt):-
-  atomic_list_concat(Stmts, '\n  ', Stmts1),
-  format(atom(WhereStmt), 'WHERE {\n  ~w\n}', [Stmts1]).
+variables('*') -->
+  "*".
+variables([H|T]) -->
+  variable(H),
+  variables1(T).
+
+variables1([]) --> [].
+variables1([H|T]) -->
+  " ",
+  variable(H),
+  variables1(T).
+
+where(BGP) -->
+  "WHERE {\n",
+  bgp(BGP),
+  "}\n".
+

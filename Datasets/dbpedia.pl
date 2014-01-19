@@ -119,25 +119,25 @@ dbpedia_describe(O1, Resource, PO_Pairs):-
 %! ) is semidet.
 
 dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
-  format(
-    atom(Where),
-    [
-      '?writer rdf:type foaf:Person .',
-      '?writer rdfs:label ?label .',
-      'FILTER regex(?label, "~w", "i")',
-      '?writer dbpprop:dateOfBirth ?birth .',
-      'FILTER regex(?birth, "~w")',
-      '?writer dbpprop:dateOfDeath ?death .',
-      'FILTER regex(?death, "~w")'
-    ],
-    [Name, Birth, Death]
-  ),
-  formulate_sparql(
-    _Graph,
-    [dbp,foaf],
-    select([distinct(true)],[writer]),
-    Where,
-    limit([],10),
+  phrase(
+    'SPARQL_formulate'(
+      _,
+      [dbp,foaf],
+      select,
+      true,
+      [writer],
+      [
+        rdf(var(writer), rdf:type, foaf:Person),
+        rdf(var(writer), rdfs:label, var(label)),
+        filter(regex(var(label), string(Name), [case_insensitive])),
+        rdf(var(writer), dbpprop:dateOfBirth, var(birth)),
+        filter(regex(var(birth), string(Birth))),
+        rdf(var(writer), dbpprop:dateOfDeath, var(death)),
+        filter(regex(var(death), string(Death)))
+      ],
+      10,
+      _
+    ),
     Query
   ),
   'SPARQL_enqueue'(dbpedia, Query, _VarNames, Resources),
