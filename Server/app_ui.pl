@@ -25,7 +25,6 @@ width: 50em;
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_path)).
 :- use_module(library(http/js_write)).
 :- use_module(server(app_server)). % Make sure there is an application server.
 :- use_module(server(web_login)).
@@ -34,8 +33,13 @@ width: 50em;
 :- http_handler(root(.), home, []).
 :- http_handler(root(test), test, []).
 
-:- html_resource(css('pure-min-0.3.0.css'), []).
-:- html_resource(css('app_ui.css'), [requires([css('pure-min-0.3.0.css')])]).
+:- if(predicate_property(user:debug_project, visible)).
+  :- html_resource(css('pure-debug-0.3.0.css'), []).
+  :- html_resource(css('app_ui.css'), [requires([css('pure-debug-0.3.0.css')])]).
+:- else.
+  :- html_resource(css('pure-min-0.3.0.css'), []).
+  :- html_resource(css('app_ui.css'), [requires([css('pure-min-0.3.0.css')])]).
+:- endif.
 
 :- multifile(user:head//2).
 :- multifile(user:body//2).
