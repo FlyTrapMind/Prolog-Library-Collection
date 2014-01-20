@@ -29,9 +29,11 @@
     strip_atom_begin/3, % +Strips:list(atom)
                         % +In:atom
                         % -Out:atom
-    strip_atom_end/3 % +Strips:list(atom)
-                     % +In:atom
-                     % -Out:atom
+    strip_atom_end/3, % +Strips:list(atom)
+                      % +In:atom
+                      % -Out:atom
+    to_atom/2 % +In:or([atom,list(code),number])
+              % -Out:atom
   ]
 ).
 
@@ -299,4 +301,15 @@ strip_atom_end(Strips, A1, A3):-
   atom_concat(A2, Strip, A1),
   strip_atom_end(Strips, A2, A3).
 strip_atom_end(_, A, A).
+
+%! to_atom(+In:or([atom,list(code),number]), -Out:atom) is det.
+
+to_atom(Atom, Atom):-
+  atom(Atom), !.
+to_atom(Codes, Atom):-
+  is_list(Codes), !,
+  atom_codes(Atom, Codes).
+to_atom(Number, Atom):-
+  number(Number), !,
+  atom_number(Atom, Number).
 
