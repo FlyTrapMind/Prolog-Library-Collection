@@ -80,7 +80,7 @@ legend(
 ).
 legend(
   group,
-  name,
+  id,
   [
     abbreviation-atom-true,
     approval_status-atom-true,
@@ -152,7 +152,7 @@ legend(
 ).
 legend(
   package,
-  name,
+  id,
   [
     additional_resources-list(resource/_)-true,
     author-atom-true,
@@ -366,7 +366,7 @@ legend(
 ).
 legend(
   user,
-  name,
+  id,
   [
     about-atom-true,
     activity_streams_email_notifications-boolean-false,
