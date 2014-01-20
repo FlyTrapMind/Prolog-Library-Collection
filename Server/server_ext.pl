@@ -56,7 +56,7 @@ SWI-Prolog defines the following HTTP handlers:
 | =|pldoc_pkg(.)|=        | |
 
 @author Wouter Beek
-@version 2013/10-2013/12
+@version 2013/10-2014/01
 */
 
 :- use_module(generics(meta_ext)).
@@ -79,7 +79,7 @@ SWI-Prolog defines the following HTTP handlers:
 ).
 
 :- meta_predicate(start_server(+,:)).
-:- meta_predicate(start_server_on_next_port(+,+,:)).
+:- meta_predicate(start_server_on_next_port(+,+,:,-)).
 
 :- multifile(prolog:message//1).
 
@@ -169,10 +169,10 @@ start_server(Port, ServerGoal0):-
   % Allow a custom goal for server dispatching.
   default(ServerGoal0, http_dispatch, ServerGoal),
 
-  start_server_on_next_port(Port, NumberOfWorkers, ServerGoal),
+  start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed),
 
   % INFO
-  print_message(informational, server_ext(started(Port))).
+  print_message(informational, server_ext(started(PortUsed))).
 prolog:message(server_ext(started(Port))) -->
   {setting(http:prefix, Prefix)},
   ['You can access the server at http://localhost:~w/~w'-[Port,Prefix]].
@@ -181,24 +181,33 @@ prolog:message(server_ext(started(Port))) -->
 %! start_server_on_next_port(
 %!   +Port:between(1000,9999),
 %!   +NumberOfWorkers:positive_integer,
-%!   :ServerGoal
+%!   :ServerGoal,
+%!   -PortUsed:between(1000,9999)
 %! ) is det.
 % Keeps incresing the given port number until a free port number is found;
 % then starts a new server at that port.
 
 % Increment port numbers until a free one is found.
-start_server_on_next_port(Port, NumberOfWorkers, ServerGoal):-
+start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed):-
   server_port(Port), !,
   catch(
-    http_server(ServerGoal, [port(Port),workers(NumberOfWorkers)]),
+    (
+      http_server(ServerGoal, [port(Port),workers(NumberOfWorkers)]),
+      PortUsed = Port
+    ),
     error(socket_error(_Msg), _),
     (
       NextPort is Port + 1,
-      start_server_on_next_port(NextPort, NumberOfWorkers, ServerGoal)
+      start_server_on_next_port(
+        NextPort,
+        NumberOfWorkers,
+        ServerGoal,
+        PortUsed
+      )
     )
   ).
 % At the end of the port numeber list we start over
 % by trying out the lowest port number.
-start_server_on_next_port(_Port, NumberOfWorkers, ServerGoal):-
-  start_server_on_next_port(1000, NumberOfWorkers, ServerGoal).
+start_server_on_next_port(_Port, NumberOfWorkers, ServerGoal, PortUsed):-
+  start_server_on_next_port(1000, NumberOfWorkers, ServerGoal, PortUsed).
 
