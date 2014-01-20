@@ -72,7 +72,11 @@ http_goal(URL, Options, Goal):-
   http_goal(URL, Options, Goal, 10).
 
 http_goal(URL, O1, Goal, Attempts):-
-  merge_options([cert_verify_hook(cert_verify),status_code(Status)], O1, O2),
+  merge_options(
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(10)],
+    O1,
+    O2
+  ),
   catch(
     setup_call_cleanup(
       http_open(URL, Stream, O2),
