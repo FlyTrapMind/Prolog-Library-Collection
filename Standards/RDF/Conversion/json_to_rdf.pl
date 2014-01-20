@@ -16,8 +16,12 @@ Automated JSON to RDF conversion.
 @version 2014/01
 */
 
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
+:- use_module(generics(atom_ext)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
@@ -36,6 +40,10 @@ Automated JSON to RDF conversion.
 :- use_module(xsd(xsd)).
 
 
+
+percent_encoding(space) -->
+  percent_sign,
+  integer(20).
 
 arg_spec_match(Args, ArgSpecs, Length):-
   maplist(arg_to_name, Args, Names1),
@@ -170,40 +178,57 @@ json_value_to_rdf(Graph, _, Individual, Predicate, atom, Value):-
   rdf_assert_literal(Individual, Predicate, Value, Graph).
 % URL.
 json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):- !,
+  % Remove leading and trailing spaces.
+  strip_atom([' '], Value1, Value2),
+  
   (
-    is_of_type(iri, Value1)
-  ->
-    Value2 = Value1
-  ;
-    atomic_concat('http://', Value1, Value2),
     is_of_type(iri, Value2)
+  ->
+    Value3 = Value2
+  ;
+    atomic_concat('http://', Value2, Value3),
+    is_of_type(iri, Value3)
   ->
     true
   ;
-    format(atom(Msg), 'Value ~w is not a URL.', [Value1]),
+    format(atom(Msg), 'Value ~w is not a URL.', [Value2]),
     syntax_error(Msg)
   ),
+
+  % Make sure there are no spaces!
+  dcg_phrase(dcg_replace(space, percent_encoding(space)), Value3, Value4),
+  (
+    Value3 == Value4
+  ->
+    true
+  ;
+    debug(ckan, 'URI ~w is no IRI (contains spaces).', [Value3])
+  ),
+
   % Image URL.
   (
-    is_image_url(Value2)
+    is_image_url(Value4)
   ->
-    rdf_assert_image([], Individual, Predicate, Value2, Graph)
+    rdf_assert_image([], Individual, Predicate, Value4, Graph)
   ;
-    rdf_assert(Individual, Predicate, Value2, Graph)
+    rdf_assert(Individual, Predicate, Value4, Graph)
   ).
 % Email.
 json_value_to_rdf(Graph, Module, Individual, Predicate, email, Value1):- !,
+  % Remove leading and trailing spaces.
+  strip_atom([' '], Value1, Value2),
+  
   (
-    is_of_type(email, Value1)
+    is_of_type(email, Value2)
   ->
-    atomic_list_concat([mailto,Value1], ':', Value2)
+    atomic_list_concat([mailto,Value2], ':', Value3)
   ;
-    format(atom(Msg), 'Value ~w is not an e-mail address.', [Value1]),
+    format(atom(Msg), 'Value ~w is not an e-mail address.', [Value2]),
     syntax_error(Msg),
     % For links to a contact form.
-    json_value_to_rdf(Graph, Module, Individual, Predicate, url, Value1)
+    json_value_to_rdf(Graph, Module, Individual, Predicate, url, Value2)
   ),
-  rdf_assert(Individual, Predicate, Value2, Graph).
+  rdf_assert(Individual, Predicate, Value3, Graph).
 % List.
 json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):- !,
   is_list(Value),
