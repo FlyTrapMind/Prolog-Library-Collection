@@ -1,6 +1,7 @@
 :- module(
   rdf_tabular,
   [
+    overview_class//1, % +Class:iri
     overview_instances//2, % +Resources:list(iri)
                            % +Grap:atom
     rdf_tabular/2 % +Request:list
@@ -45,7 +46,7 @@ Generated RDF HTML tables.
 :- meta_predicate(rdf_tabular_body(//,?,?)).
 
 http:location(rdf_tabular, root(rdf_tabular), []).
-:- http_handler(rdf_tabular(.), rdf_tabular_default, [priority(-1)]).
+:- http_handler(root(rdf_tabular), rdf_tabular_default, [priority(-1)]).
 
 :- initialization(web_module_add('RDF Tabular', rdf_tabular_default)).
 
