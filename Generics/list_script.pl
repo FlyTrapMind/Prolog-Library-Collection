@@ -122,10 +122,10 @@ list_script(_, _, [], DONE_SOL, DONE_SOL, []):- !.
 list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL2, NOT_DONE_SOL):-
   length(TODO, L),
   list_script(Goal, Msg, 0-L, TODO, DONE_INIT, DONE_SOL1, [], NOT_DONE_SOL),
-  length(DONE, L1),
+  length(DONE_SOL1, L1),
   progress_bar(L1, L, Bar),
   debug(ckan_to_rdf, '[EVAL] ~w: ~w', [Msg,Bar]),
-  ord_union(DONE, DONE_SOL1, DONE_SOL2).
+  ord_union(DONE_INIT, DONE_SOL1, DONE_SOL2).
 
 % Nothing `TODO`.
 list_script(_, _Msg, L-L, [], DONE_SOL, DONE_SOL, NOT_DONE_SOL, NOT_DONE_SOL):- !.
