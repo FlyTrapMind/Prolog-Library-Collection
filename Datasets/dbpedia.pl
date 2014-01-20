@@ -122,12 +122,13 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
   phrase(
     'SPARQL_formulate'(
       _,
+      _,
       [dbp,foaf],
       select,
       true,
       [writer],
       [
-        rdf(var(writer), rdf:type, foaf:Person),
+        rdf(var(writer), rdf:type, foaf:'Person'),
         rdf(var(writer), rdfs:label, var(label)),
         filter(regex(var(label), string(Name), [case_insensitive])),
         rdf(var(writer), dbpprop:dateOfBirth, var(birth)),

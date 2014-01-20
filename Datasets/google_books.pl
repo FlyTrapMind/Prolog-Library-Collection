@@ -68,6 +68,7 @@ google_authenticate(O1, Out):-
   % requested and the likelihood of obtaining user consent.
   option(scope(Scope), O1),
 
+  % @tbd
   option(redirectURI(RedirectURI), O1, 'http://localhost:5000'),
 
   option(scheme(Scheme), O1, https),

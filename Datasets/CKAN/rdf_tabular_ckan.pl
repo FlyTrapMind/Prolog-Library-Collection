@@ -27,3 +27,4 @@ ckan_overview -->
   overview_class(ckan:'Resource'),
   overview_class(ckan:'Tag'),
   overview_class(ckan:'User').
+

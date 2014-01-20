@@ -750,7 +750,7 @@ rfc5646_grandfathered_language_tag(T0, Tag) -->
 
 %! rfc5646_language_tag//
 % ~~~{.abnf}
-% Language-Tag  = langtag / privateuse / grandfathered
+% Language-Tag = langtag / privateuse / grandfathered
 % ~~~
 
 % Normal language tags.
@@ -1036,11 +1036,11 @@ rfc5646_script(script(Script), Script) -->
 % Single alphanumerics. x// is reserved for private use.
 %
 % ~~~{.abnf}
-% singleton = DIGIT         ; 0 - 9
-%             / %x41-57     ; A - W
-%             / %x59-5A     ; Y - Z
-%             / %x61-77     ; a - w
-%             / %x79-7A     ; y - z
+% singleton = DIGIT     ; 0 - 9
+%           / %x41-57   ; A - W
+%           / %x59-5A   ; Y - Z
+%           / %x61-77   ; a - w
+%           / %x79-7A   ; y - z
 % ~~~
 %
 % @see extension//2

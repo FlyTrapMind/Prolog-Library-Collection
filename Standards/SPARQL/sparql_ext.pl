@@ -101,11 +101,13 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 @version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_closure)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(http/thread_httpd)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
@@ -123,9 +125,11 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- rdf_meta('SPARQL_describe'(+,r,-)).
 :- rdf_meta('SPARQL_query_sameAs'(+,r,-)).
 
-% @tbd Only in debug mode.
-% @tbd How do we know this is the port?
-:- sparql_add_remote(localhost, localhost, 5000, '/sparql/').
+:- if(predicate_property(user:debug_project, visible)).
+  :-
+    once(http_server_property(Port, _)),
+    sparql_add_remote(localhost, localhost, Port, '/sparql/').
+:- endif.
 
 
 
@@ -165,15 +169,15 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   '_SPARQL_describe'(Remote, Resource, PO_Pairs).
 
 '_SPARQL_describe'(Remote, Resource, PO_Pairs):-
-  format(atom(Where), '  <~w> ?p ?o .', [Resource]),
   phrase(
     'SPARQL_formulate'(
+      _,
       _,
       [],
       select,
       true,
       [p,o],
-      [rdf(iri(Resource), var(P), var(o))],
+      [rdf(iri(Resource), var(p), var(o))],
       inf,
       _
     ),
@@ -238,6 +242,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   phrase(
     'SPARQL_formulate'(
       _,
+      _,
       [rdfs],
       select,
       true,
@@ -271,7 +276,9 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 %! ) is det.
 % Simply performs a SPARQL query (no additional options, closures).
 
-'SPARQL_query'(Remote, Query, VarNames, Results):-
+'SPARQL_query'(Remote, Query1, VarNames, Results):-
+  to_atom(Query1, Query2),
+  debug(sparl_ext, '~w', [Query2]),
   once(sparql_current_remote(Remote, Host, Port, Path)),
   O1 = [host(Host),path(Path),variable_names(VarNames)],
   (
@@ -283,7 +290,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   ),
   findall(
     Result,
-    sparql_query(Query, Result, O2),
+    sparql_query(Query2, Result, O2),
     Results
   ).
 
@@ -298,13 +305,10 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % @arg Resource The URI of a resource.
 % @arg IdenticalResources An ordered set of identical resources.
 
-'SPARQL_query_sameAs'(Remote, Resource, Resources2):-
-  graph_closure([Resource], '_SPARQL_query_sameAs'(Remote), Resources1),
-  ord_add_element(Resources1, Resource, Resources2).
-
-'_SPARQL_query_sameAs'(Remote, Resource, Resources2):-
+'SPARQL_query_sameAs'(Remote, Resource, Resources3):-
   phrase(
     'SPARQL_formulate'(
+      owl,
       _,
       [owl],
       select,
@@ -317,5 +321,6 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     Query
   ),
   'SPARQL_enqueue'(Remote, Query, _VarNames, Resources1),
-  rows_to_ord_set(Resources1, Resources2).
+  rows_to_ord_set(Resources1, Resources2),
+  ord_add_element(Resources2, Resource, Resources3).
 

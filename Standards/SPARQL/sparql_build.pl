@@ -1,7 +1,8 @@
 :- module(
   sparql_build,
   [
-    'SPARQL_formulate'//8 % +DefaultGraph:iri
+    'SPARQL_formulate'//9 % +Regime:oneof([owl])
+                          % +DefaultGraph:iri
                           % +Prefixes:list(atom)
                           % +Mode:oneof([select])
                           % +Distinct:boolean
@@ -47,11 +48,20 @@ bgp([rdf(S,P,O)|T]) -->
   " .\n",
   bgp(T).
 
+default_graph(VAR) -->
+  {var(VAR)}, !,
+  [].
 default_graph(DefaultGraph) -->
   "# Default graph (located at ",
   atom(DefaultGraph),
   ")\n".
-default_graph(_) --> [].
+
+define(inference(Regime)) -->
+  "define input:inference",
+  define_inference_regime(Regime).
+
+define_inference_regime(owl) -->
+  quoted(atom('http://www.w3.org/2002/07/owl#')).
 
 distinct(true) -->
   " DISTINCT".
@@ -73,22 +83,37 @@ filter(strends(Arg1,Arg2)) -->
   term(Arg2),
   ")".
 
+inference_regime(VAR) -->
+  {var(VAR)}, !,
+  [].
+inference_regime(Regime) -->
+  define(inference(Regime)).
+
+iri(IRI) -->
+  "<",
+  atom(IRI),
+  ">".
+
+limit(VAR) -->
+  {var(VAR)}, !,
+  [].
 limit(inf) --> [].
 limit(Limit) -->
   "LIMIT ",
   integer(Limit),
   "\n".
-limit(_) --> [].
 
 mode(select) -->
   "SELECT".
 
+order(VAR) -->
+  {var(VAR)}, !,
+  [].
 order(Criterion-Variables) -->
   "ORDER BY ",
   order_criterion(Criterion),
   bracketed(variables(Variables)),
   "\n".
-order(_) --> [].
 
 order_criterion(ascending) -->
   "ASC".
@@ -97,9 +122,9 @@ prefix(Prefix) -->
   {xml_current_namespace(Prefix, IRI)},
   "PREFIX ",
   atom(Prefix),
-  ": <",
-  atom(IRI),
-  ">\n".
+  ": ",
+  iri(IRI),
+  "\n".
 
 prefixes([]) --> [].
 prefixes([H|T]) -->
@@ -117,6 +142,7 @@ regex_flags1([case_insensitive|T]) -->
   regex_flags1(T).
 
 %! 'SPARQL_formulate'(
+%!   +Regime:oneof([owl]),
 %!   +DefaultGraph:iri,
 %!   +Prefixes:list(atom),
 %!   +Mode:oneof([select]),
@@ -143,6 +169,7 @@ regex_flags1([case_insensitive|T]) -->
 % ORDER BY ASC(?class)
 % ~~~
 %
+% @arg Regime The inference regime. Currently only OWL is supported.
 % @arg DefaultGraph An IRI denoting the default graph to query from.
 % @arg Prefixes A list of registered atomic XML prefixes.
 % @arg Mode The mode of the SPARQL query.
@@ -158,6 +185,7 @@ regex_flags1([case_insensitive|T]) -->
 %      ascending lexicographically.
 
 'SPARQL_formulate'(
+  Regime,
   DefaultGraph,
   Prefixes,
   Mode,
@@ -167,6 +195,7 @@ regex_flags1([case_insensitive|T]) -->
   Limit,
   Order
 ) -->
+  inference_regime(Regime),
   default_graph(DefaultGraph),
   prefixes(Prefixes),
   mode(Mode),
@@ -178,6 +207,19 @@ regex_flags1([case_insensitive|T]) -->
   limit(Limit),
   order(Order).
 
+%! term(+Term)// is det.
+% The following terms are supported:
+%   * `a`
+%     Abbreviation for `rdf:type`.
+%   * `at_start(String)`
+%     String pattern matching the start of a string.
+%   * `iri(IRI)`
+%     Unprefixed IRI.
+%   * `var(Variable)`
+%     SPARQL variable.
+%   * `Prefix:Postfix`
+%     Prefixed IRI.
+
 term(a) --> !,
   "a".
 term(at_start(String)) -->
@@ -185,16 +227,24 @@ term(at_start(String)) -->
   "^",
   atom(String),
   double_quote.
+term(closure(Term,Closure)) -->
+  term(Term),
+  term_closure(Closure).
+term(iri(IRI)) --> !,
+  iri(IRI).
 term(string(String)) --> !,
   quoted(atom(String)).
 term(var(Variable)) --> !,
-  atom(Variable).
+  variable(Variable).
 term(Prefix:Postfix) --> !,
   atom(Prefix),
   ":",
   atom(Postfix).
-term(IRI) -->
-  atom(IRI).
+
+term_closure([reflexive,transitive]) -->
+  "*".
+term_closure([transitive]) -->
+  "+".
 
 variable(Variable) -->
   "?",

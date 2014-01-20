@@ -21,7 +21,6 @@ Automated CKAN to RDF conversion.
 
 %! ckan_to_rdf(+Options:list(nvpair)) is det.
 % @see Options are passed to the predicates in module [ckan].
-
 ckan_to_rdf(O_RDF):-
   % Conversion to RDF requires presence of graph option.
   % Conversion to PL requires absence of graph option.

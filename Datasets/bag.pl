@@ -35,6 +35,7 @@ test:-
   phrase(
     'SPARQL_formulate'(
       _,
+      _,
       [bags],
       select,
       true,

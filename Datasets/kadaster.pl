@@ -31,12 +31,18 @@ load_kadaster:-
   rdf_load2(File, [format(turtle),graph(kadaster)]).
 
 query_kadaster(Resources):-
-  'SPARQL_formulate'(
-    _Graph,
-    [],
-    select([distinct(true)],[s,p,o]),
-    ['?s ?p ?o .'],
-    limit([],10),
+  phrase(
+    'SPARQL_formulate'(
+      _,
+      _,
+      [],
+      select,
+      true,
+      [s,p,o],
+      [rdf(var(s), var(p), var(o))],
+      10,
+      _
+    ),
     Query
   ),
   'SPARQL_enqueue'(kadaster, Query, _VarNames, Resources).
@@ -45,10 +51,11 @@ query_kadaster(S, Resources):-
   phrase(
     'SPARQL_formulate'(
       _,
+      _,
       [],
       select,
       true,
-      [p,o]),
+      [p,o],
       [rdf(iri(S), var(p), var(o))],
       10,
       _
@@ -60,6 +67,7 @@ query_kadaster(S, Resources):-
 scrape_kadaster:-
   phrase(
     'SPARQL_formulate'(
+      _,
       _,
       [],
       select,
@@ -77,3 +85,4 @@ scrape_kadaster:-
     rdf_assert(S, P, O, kadaster)
   ),
   rdf_save2(kadaster, [format(turtle),graph(kadaster)]).
+

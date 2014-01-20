@@ -23,6 +23,7 @@
 sparql_classes(Individual, Classes):-
   'SPARQL_formulate'(
     _,
+    _,
     [rdfs],
     select,
     true,
