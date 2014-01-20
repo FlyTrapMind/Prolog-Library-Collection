@@ -14,6 +14,8 @@
 @see http://docs.ckan.org/en/latest/api.html
 @tbd The CKAN API uses `True` and `False` for boolean values.
 @tbd The JSON `null` value is not replaced with a given default value.
+@tbd Email addresses cannot all be parsed.
+@tbd URLs cannot all be parsed.
 @version 2013/11-2014/01
 */
 
@@ -83,18 +85,18 @@ legend(
     abbreviation-atom-true,
     approval_status-atom-true,
     category-atom-true,
-    'contact-email'-email-true,
+    'contact-email'-atom-true, % Should be `email`.
     'contact-name'-atom-true,
     'contact-phone'-atom-true,
     description-atom-true,
     extras-list(extra/_)-false,
-    'foi-email'-email-true,
+    'foi-email'-atom-true, % Should be `email`.
     'foi-name'-atom-true,
     'foi-phone'-atom-true,
     'foi-web'-atom-true,
     groups-list('_group'/_)-true,
     id-atom-false,
-    image_url-url-true,
+    image_url-atom-true, % Should be `url`.
     is_organization-boolean-true,
     name-atom-true,
     packages-list(package/_)-false,
@@ -119,7 +121,7 @@ legend(
     maintainer-atom-true,
     status-atom-false,
     title-atom-false,
-    url-url-true
+    url-atom-true  % Should be `url`.
   ]
 ).
 legend(
@@ -133,7 +135,7 @@ legend(
     extras-list(extra/_)-true,
     groups-list(group/_)-true,
     id-atom-false,
-    image_url-url-true,
+    image_url-atom-true, % Should be `url`.
     is_organization-boolean-false,
     name-atom-false,
     num_followers-integer-true,
@@ -154,10 +156,10 @@ legend(
   [
     additional_resources-list(resource/_)-true,
     author-atom-true,
-    author_email-email-true,
+    author_email-atom-true, % Should be `email`.
     capacity-atom-true,
     'core-dataset'-boolean-true,
-    'contact-email'-email-true,
+    'contact-email'-atom-true, % Should be `email`.
     'contact-name'-atom-true,
     'contact-phone'-atom-true,
     data_dict-skip-true,
@@ -165,7 +167,7 @@ legend(
     date_update_future-atom-true,
     date_updated-atom-true,
     extras-list(extra/_)-false,
-    'foi-email'-email-true,
+    'foi-email'-atom-true, % Should be `email`.
     'foi-name'-atom-true,
     'foi-phone'-atom-true,
     'foi-web'-atom-true,
@@ -181,7 +183,7 @@ legend(
     license_title-atom-true,
     license_url-atom-true,
     maintainer-atom-true,
-    maintainer_email-email-true,
+    maintainer_email-atom-true, % Should be `email`.
     mandate-atom-true,
     metadata_created-atom-false,
     metadata_modified-atom-false,
@@ -219,7 +221,7 @@ legend(
     unpublished-boolean-true,
     update_frequency-atom-true,
     'update_frequency-other'-atom-true,
-    url-url-true,
+    url-atom-true, % Should be `url`.
     version-atom-true
   ]
 ).
@@ -320,7 +322,7 @@ legend(
     translator-atom-false,
     triples-integer-false,
     type-atom-false,
-    url-url-false,
+    url-atom-false, % Should be `url`.
     url_error-atom-false,
     verified-boolean-true,
     verified_date-atom-true,
@@ -434,9 +436,7 @@ ckan_http(O1, Action, Parameters, Goal):-
     [
       method(post),
       post(json(JSON_In)),
-      request_header('Content-Type'='application/json'),
-      % One minute.
-      timeout(60)
+      request_header('Content-Type'='application/json')
     ],
     HTTP_O1,
     HTTP_O2
