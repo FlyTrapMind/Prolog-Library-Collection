@@ -18,6 +18,7 @@ Extensions to the support for archived files.
 :- use_module(library(archive)).
 
 :- db_add_novel(user:prolog_file_type('tar.gz', archive)).
+:- db_add_novel(user:prolog_file_type(zip, archive)).
 
 
 
