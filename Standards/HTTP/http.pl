@@ -4,10 +4,10 @@
     http_dateTime/1, % -DateTime:term
     http_goal/3, % +URL:atom
                  % +Options:list(nvpair)
-                 % :Goal,
+                 % :Goal
     http_goal/4, % +URL:atom
                  % +Options:list(nvpair)
-                 % :Goal,
+                 % :Goal
                  % +Attempts:or([integer,oneof([inf])])
     serve_nothing/1, % +Request:list
     xml_serve_atom/1, % +XML:atom
@@ -72,9 +72,24 @@ http_dateTime(DateTime):-
 %   * =|never_give_up(+NeverGiveUp:boolean)|=
 %     Never give up upon receiving an HTTP 5xx status code.
 %     Default: `false`.
+%   * =|nocatch(+DoNotCatchExceptions:boolean)|=
+%     When set to `true` (default `false`) exceptions are not caught
+%     and no automated retrying occurs.
 
-http_goal(URL, Options, Goal):-
-  http_goal(URL, Options, Goal, 10).
+http_goal(URL, O1, Goal):-
+  option(nocatch(true), O1, false), !,
+  merge_options(
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
+    O1,
+    O2
+  ),
+  setup_call_cleanup(
+    http_open(URL, Stream, O2),
+    http_process(Status, Stream, Goal),
+    close(Stream)
+  ).
+http_goal(URL, O1, Goal):-
+  http_goal(URL, O1, Goal, 10).
 http_goal(URL, O1, Goal, Attempts):-
   merge_options(
     [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
@@ -126,10 +141,10 @@ http_exception(error(existence_error(url, URL),Context)):- !,
 % HTTP status code.
 http_exception(error(http_status(Status),_Context)):- !,
   'Status-Code'(Status, Reason),
-  debug(http, '[HTTP-STATUS-CODE] ~d ~w', [Status,Reason]).
+  debug(http, '[HTTP-STATUS] ~d ~w', [Status,Reason]).
 % Retry upon I/O error.
 http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
-  debug(http, '[IO-EXCEPTION] ~w', [Reason]).
+  debug(http, '[IO-ERROR] ~w', [Reason]).
 http_exception(error(permission_error(redirect,http,URL),context(_,Reason))):- !,
   debug(http, '[PERMISSION-ERROR] ~w (reason: ~w)', [URL,Reason]).
 % Retry upon socket error.
