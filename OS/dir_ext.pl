@@ -255,7 +255,7 @@ directory_files(O1, [F|T1], Sol2):-
   file_name_type(_Base, FT, F),
 
   % File type filter.
-  option(file_types(FTs), O1, [_]),
+  option(file_types(FTs), O1, _),
   memberchk(FT, FTs), !,
 
   directory_files(O1, T1, Sol1),
@@ -266,7 +266,7 @@ directory_files(O1, [F|T1], Sol2):-
   ->
     ord_add_element(Sol1, F, Sol2)
   ;
-    Sol1 = [F|Sol2]
+    Sol2 = [F|Sol1]
   ).
 % Files with non-matching file type.
 directory_files(O1, [_|T], Sol):-
