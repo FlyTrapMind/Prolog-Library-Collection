@@ -47,7 +47,7 @@ download_to_file(URL, File):-
     url_to_file(URL, File)
   ),
 
-  http_goal(URL, [], file_from_stream(File)).
+  http_goal(URL, [nocatch(true)], file_from_stream(File)).
 download_to_file(URL, File):-
   url_to_file(URL, File),
   download_to_file(URL, File).
