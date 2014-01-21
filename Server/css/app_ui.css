@@ -501,3 +501,12 @@ pre .string, pre .support.value  {
   color: #3b8bba; /* skinbuilder block-mine-text-low with #1f8dd6 as primary */
 }
 
+
+
+/* ERROR MESSAGES */
+
+.error_kind {
+  color: red;
+  font-weight: bold;
+}
+
