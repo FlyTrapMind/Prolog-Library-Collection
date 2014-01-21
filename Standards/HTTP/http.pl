@@ -67,13 +67,17 @@ http_dateTime(DateTime):-
 %  that can be encountered before the predicate gives up.
 %
 % The arguments of `Goal` are appended with the argument `Stream`.
+%
+% The following options are supported:
+%   * =|never_give_up(+NeverGiveUp:boolean)|=
+%     Never give up upon receiving an HTTP 5xx status code.
+%     Default: `false`.
 
 http_goal(URL, Options, Goal):-
   http_goal(URL, Options, Goal, 10).
-
 http_goal(URL, O1, Goal, Attempts):-
   merge_options(
-    [cert_verify_hook(cert_verify),status_code(Status),timeout(10)],
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
     O1,
     O2
   ),
@@ -96,21 +100,22 @@ http_catcher(exit, URL, _, Goal, _):- !,
   atom_truncate(Atom1, 120, Atom2),
   debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
 % Permanently fail to receive resource over HTTP.
-http_catcher(E, URL, Options, Goal, 0):- !,
+http_catcher(E, URL, O1, Goal, 0):- !,
   http_exception(E),
   (
     E = error(http_status(Status),_),
-    between(500, 599, Status)
+    between(500, 599, Status),
+    option(never_give_up(true), O1, false)
   ->
-    sleep(300),
-    http_goal(URL, Options, Goal)
+    sleep(1),
+    http_goal(URL, O1, Goal)
   ;
     fail
   ).
 % Incidental fail: retry.
-http_catcher(_, URL, Options, Goal, Attempts1):-
+http_catcher(_, URL, O1, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),
-  http_goal(URL, Options, Goal, Attempts2).
+  http_goal(URL, O1, Goal, Attempts2).
 
 %! http_exception(+Exception:compound) is det.
 % Handle exceptions thrown by http_open/3.
@@ -121,7 +126,7 @@ http_exception(error(existence_error(url, URL),Context)):- !,
 % HTTP status code.
 http_exception(error(http_status(Status),_Context)):- !,
   'Status-Code'(Status, Reason),
-  debug(http, '[HTTP-STATUS-CODE] ~d ~a', [Status,Reason]).
+  debug(http, '[HTTP-STATUS-CODE] ~d ~w', [Status,Reason]).
 % Retry upon I/O error.
 http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
   debug(http, '[IO-EXCEPTION] ~w', [Reason]).
@@ -131,6 +136,9 @@ http_exception(error(permission_error(redirect,http,URL),context(_,Reason))):- !
 % Thrown by http_open/3.
 http_exception(error(socket_error(Reason),_)):- !,
   debug(http, '[SOCKET-ERROR] ~w', [Reason]).
+% `Mode` is either `read` or `write`.
+http_exception(error(timeout_error(Mode,_Stream),context(PredSignature,_))):- !,
+  debug(http, '[TIMEOUT-ERROR] While ~wing ~w.', [Mode,PredSignature]).
 % DEB
 http_exception(E):-
   debug(http, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
