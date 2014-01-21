@@ -147,8 +147,7 @@ rdf_html_table(Caption, [H|T]) -->
     ;
       merge_options([caption(Caption)], O1, O2)
     ),
-    length(H, Length),
-    length(H0, Length),
+    same_length(H, H0),
     append(_, H0, ['Subject','Predicate','Object','Graph'])
   },
   html(\html_table(O2, [H0,H|T])).
