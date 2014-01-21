@@ -95,7 +95,7 @@ xml_doctype(Stream, DocType):-
         [
           call(begin, on_begin),
           call(cdata, on_cdata),
-          max_errors(1),
+          max_errors(10),
           source(Stream),
           syntax_errors(quiet)
         ]

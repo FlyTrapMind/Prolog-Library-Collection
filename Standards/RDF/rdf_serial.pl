@@ -46,8 +46,10 @@ reflect the serialization format:
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(sgml)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
 :- use_module(library(semweb/rdf_turtle)).
@@ -120,7 +122,21 @@ rdf_guess_data_type(File, Type):-
   (
     setup_call_cleanup(
       open(File, read, Stream, [encoding(utf8)]),
-      rdf_guess_data_type(Stream, Type),
+      ((
+        rdf_guess_data_type(Stream, Type)
+      ->
+        true
+      ;
+        load_xml(Stream, _, [])
+      ->
+        debug(rdf_serial, 'XML that does not encode RDF.', []),
+        permission_error(rdf_load,'RDF-file',File)
+      ;
+        load_html(Stream, _, [])
+      ->
+        debug(rdf_serial, 'HTML', []),
+        permission_error(rdf_load,'RDF-file',File)
+      )),
       close(Stream)
     ), !
   ;
