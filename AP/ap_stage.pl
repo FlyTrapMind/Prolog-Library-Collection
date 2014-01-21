@@ -21,8 +21,8 @@ Runs stages in an automated process.
 :- use_module(generics(user_input)).
 :- use_module(os(io_ext)).
 
-:- meta_predicate(ap_stage(+,+,+,+,:,-)).
-:- meta_predicate(ap_stage(+,+,+,+,+,:,-)).
+:- meta_predicate(ap_stage(+,+,+,+,:,-,-)).
+:- meta_predicate(ap_stage2(+,+,+,+,+,:,-)).
 :- meta_predicate(ap_stages(+,:,-)).
 :- meta_predicate(ap_stages(+,+,:,-)).
 
@@ -34,6 +34,7 @@ Runs stages in an automated process.
 %!   +FromStage:nonneg,
 %!   +ToStage:nonneg,
 %!   :Goal,
+%!   -ToDirectory:atom,
 %!   -Message:atom
 %! ) is det.
 % `Goal` receives the from and to files as arguments.
@@ -55,12 +56,14 @@ Runs stages in an automated process.
 % @arg FromStage
 % @arg ToStage
 % @arg Goal
+% @arg ToDirectory The atomic name of the directory where
+%      the results are stored.
 % @arg Message An atomic message that describes how this stage went.
 
-ap_stage(O1, Alias, Stage1, Stage2, Goal, Msg):-
+ap_stage(O1, Alias, Stage1, Stage2, Goal, ToDir, Msg):-
   ap_stage_from_directory(O1, Alias, Stage1, FromDir),
   ap_stage_to_directory(O1, Alias, Stage1, Stage2, ToDir),
-  ap_stage(O1, Alias, Stage1, FromDir, ToDir, Goal, Msg).
+  ap_stage2(O1, Alias, Stage1, FromDir, ToDir, Goal, Msg).
 
 
 % This stage was alreay completed previously. Skip this stage.
@@ -94,7 +97,7 @@ ap_stage_init(O1, _, ToDir, Goal, Msg):-
 
 
 % This stage was alreay completed previously. Skip this stage.
-ap_stage(_, Alias, _, _, ToDir, _, skip):-
+ap_stage2(_, Alias, _, _, ToDir, _, skip):-
   absolute_file_name(
     'FINISHED',
     _,
@@ -102,7 +105,7 @@ ap_stage(_, Alias, _, _, ToDir, _, skip):-
   ), !,
   ap_debug(Alias, 'Skipped. Finished file found.', []).
 % This stage has not been perfomed yet.
-ap_stage(O1, Alias, Stage, FromDir, ToDir, Goal, Msg):-
+ap_stage2(O1, Alias, Stage, FromDir, ToDir, Goal, Msg):-
   % From directory or file.
   ap_stage_from_arg(O1, Stage, FromDir, FromArg),
 
@@ -130,10 +133,7 @@ ap_stage(O1, Alias, Stage, FromDir, ToDir, Goal, Msg):-
     )
   ;
     execute_goal(Goal, [FromArg,ToArg,Msg|Args])
-  ),
-
-  % Ending of a script stage.
-  ap_stage_end(Alias, Stage, ToDir).
+  ).
 
 
 ap_stage_begin(Alias, Stage):-
@@ -289,6 +289,7 @@ ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
   catch(
     (
       ap_stage_init(O1, Alias, ToDir, Mod:Goal, Msg),
+      ap_stage_end(Alias, 0, ToDir),
       ap_stages(Alias, 0, Mod:T, Msgs1),
       Msgs2 = [Msg|Msgs1]
     ),
@@ -300,7 +301,8 @@ ap_stages(_, _, _Mod:[], []):- !.
 ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
   catch(
     (
-      ap_stage(O1, Alias, Stage1, Stage2, Mod:H, Msg),
+      ap_stage(O1, Alias, Stage1, Stage2, Mod:H, ToDir, Msg),
+      ap_stage_end(Alias, Stage2, ToDir),
       ap_stages(Alias, Stage2, Mod:T, Msgs1),
       Msgs2 = [Msg|Msgs1]
     ),
