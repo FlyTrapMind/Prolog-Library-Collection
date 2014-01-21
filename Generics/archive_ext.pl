@@ -34,23 +34,12 @@ Extensions to the support for archived files.
 extract_archive(File, Dir, Msg):-
   file_name_extension(Base, Ext, File),
   prolog_file_type(Ext, archive), !,
-  catch(
-    (
-      extract_archive(Ext, File, Base, Msg1),
-      extract_archive(Base, Dir, Msg2),
-      atomic_list_concat([Msg1,Msg2], Msg)
-    ),
-    E,
-    process(E, Msg)
-  ).
+  extract_archive(Ext, File, Base, Msg1),
+  extract_archive(Base, Dir, Msg2),
+  atomic_list_concat([Msg1,Msg2], '\n', Msg).
 extract_archive(File, Dir, Msg):-
   copy_file(File, Dir),
   format(atom(Msg), 'Copied ~w', [File]).
-
-process(E, Msg):-
-  E = error(process_error(Program,exit(Code)),_),
-  format(atom(Msg), 'Program ~w exited with code ~w.', [Program,Code]),
-  debug(archive_ext, 'Program ~w exited with code ~w.', [Program,Code]).
 
 extract_archive(gz, File, _, Msg):- !,
   process_create(path(gunzip), [file(File)], []),
