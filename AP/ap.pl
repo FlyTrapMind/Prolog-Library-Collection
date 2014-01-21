@@ -76,10 +76,10 @@ ap_end(Alias):-
   ap_debug(Alias, 'Ended successfully.', []).
 
 
-%! ap_run(+Alias:atom, +Stages:list(compound), -Row:list(atom)) is det.
+%! ap_run(+Alias:atom, :Stages:list(compound), -Row:list(atom)) is det.
 
 % The output is already available.
-ap_run(Alias, Stages, Row):-
+ap_run(Alias, _:Stages, Row):-
   ap_dir(Alias, read, output, OutputDir),
   absolute_file_name(
     'FINISHED',
