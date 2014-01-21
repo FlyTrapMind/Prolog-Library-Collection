@@ -209,8 +209,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     'SPARQL_query'(Remote, Query, VarNames, Results),
     Exception,
     (
-      debug('SPARQL_ext', 'EXCEPTION', [Exception]),
-      sleep(10),
+      debug('SPARQL_ext', '[EXCEPTION] ~w', [Exception]),
       'SPARQL_enqueue'(Remote, Query, VarNames, Results)
     )
   ).

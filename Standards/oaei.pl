@@ -271,3 +271,4 @@ oaei_ontology(G, File):-
   ),
   file_base_name(Path, Base),
   absolute_file_name(ontology2(Base), File, [access(read)]).
+
