@@ -59,6 +59,7 @@ ap_dir(Alias, Mode, Subdir1, AbsoluteDir):-
       [access(Mode),file_errors(fail),file_type(directory)]
     ), !
   ;
+    Mode = write,
     % If the AP subdirectory is not found and the mode is `write`,
     % then we create it.
     create_nested_directory(Spec, AbsoluteDir)
@@ -96,8 +97,9 @@ ap_stage_directories(Alias, Dirs):-
   ap_stage_directories(Alias, 1, Dirs).
 
 ap_stage_directories(Alias, Stage1, [H|T]):-
-  ap_dir(Alias, write, Stage1, H), !,
+  ap_stage_name(Stage1, Stage1Name),
+  ap_dir(Alias, read, Stage1Name, H), !,
   Stage2 is Stage1 + 1,
-  ap_stage_directories(Alias, T, Stage2).
+  ap_stage_directories(Alias, Stage2, T).
 ap_stage_directories(_, _, []).
 
