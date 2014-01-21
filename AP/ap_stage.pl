@@ -284,29 +284,31 @@ ap_stage_to_directory(_, Alias, Stage1, Stage2, StageDir):-
 %! ap_stages(+Alias:atom, +Stage:nonneg, +Stages:list(compound)) is det.
 
 ap_stages(_, [], []).
-ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], [Msg|Msgs]):-
+ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
   ap_dir(Alias, write, input, ToDir),
   catch(
     (
       ap_stage_init(O1, Alias, ToDir, Mod:Goal, Msg),
-      ap_stages(Alias, 0, Mod:T, Msgs)
+      ap_stages(Alias, 0, Mod:T, Msgs1),
+      Msgs2 = [Msg|Msgs1]
     ),
-    error(Msg),
-    ap_catcher(Msg, T, Msgs)
+    E,
+    ap_catcher(E, T, Msgs2)
   ).
 
 ap_stages(_, _, _Mod:[], []):- !.
-ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], [Msg|Msgs]):-
+ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
   catch(
     (
       ap_stage(O1, Alias, Stage1, Stage2, Mod:H, Msg),
-      ap_stages(Alias, Stage2, Mod:T, Msgs)
+      ap_stages(Alias, Stage2, Mod:T, Msgs1),
+      Msgs2 = [Msg|Msgs1]
     ),
-    error(Msg),
-    ap_catcher(Msg, T, Msgs)
+    E,
+    ap_catcher(E, T, Msgs2)
   ).
 
-ap_catcher(Msg, L, [Msg|Msgs]):-
+ap_catcher(E, L, [E|Msgs]):-
   length(L, Length),
   repeating_list('never reached', Length, Msgs).
 
