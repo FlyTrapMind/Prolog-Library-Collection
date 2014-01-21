@@ -41,12 +41,13 @@ extract_archive(File, Dir, Msg):-
   copy_file(File, Dir),
   format(atom(Msg), 'Copied ~w', [File]).
 
-extract_archive(gz, File, _, Msg):- !,
-  process_create(path(gunzip), [file(File)], []),
-  format(atom(Msg), 'Gunzipped ~w', [File]).
-extract_archive(zip, File, Base, Msg):- !,
-  process_create(path(unzip), [file(File),'-o',file(Base)], []),
-  format(atom(Msg), 'Unzipped ~w', [File]).
+
+extract_archive(gz, File, _, gunzipped):- !,
+  process_create(path(gunzip), [file(File)], []).
+extract_archive(tgz, File, _, untarred):- !,
+  process_create(path(tar), [zxvf,file(File)], []).
+extract_archive(zip, File, Base, unzipped):- !,
+  process_create(path(unzip), [file(File),'-o',file(Base)], []).
 
 list_archive(File):-
   archive_open(File, Archive, []),
