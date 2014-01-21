@@ -108,10 +108,13 @@ load_pgc:-
   % @tbd Strange module problem again...
   logging:start_log.
 
-load_pack(Pack):-
+user:load_pack(Pack):-
   catch(
     use_module(library(Pack)),
     _,
-    ignore(pack_install(Pack))
+    (
+      pack_install(Pack),
+      use_module(library(Pack))
+    )
   ).
 

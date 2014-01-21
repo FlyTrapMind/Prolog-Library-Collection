@@ -137,3 +137,6 @@ load_modules_for_pldoc:-
 
 :- debug(sparql_ext).
 
+% Checking of format statements.
+:- load_pack(format_spec).
+
