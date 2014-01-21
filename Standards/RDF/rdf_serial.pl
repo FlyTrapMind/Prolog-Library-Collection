@@ -3,8 +3,10 @@
   [
     rdf_graph_source_file/2, % +Graph:atom
                              % -File:atom
-    rdf_guess_data_format/2, % +Stream:stream
-                             % ?Format:atom
+    rdf_guess_data_format/2, % +FileOrStream:or([atom,stream])
+                             % ?Format:oneof([ntriples,triples,turtle,xml])
+    rdf_guess_data_type/2, % +FileOrStream:or([atom,stream])
+                           % ?Type:oneof([ntriples,rdf_xml,triples,turtle])
     rdf_load2/1, % +File:atom
     rdf_load2/2, % +File:atom
                  % +Options:list(nvpair)
@@ -37,7 +39,7 @@ reflect the serialization format:
 @author Wouter Beek
 @tbd Writing in the N-triples format is not supported.
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-         2013/08-2013/09, 2013/11
+         2013/08-2013/09, 2013/11, 2014/01
 */
 
 :- use_module(generics(atom_ext)).
@@ -87,9 +89,10 @@ rdf_graph_source_file(G, F2):-
   ),
   sub_atom(F1, 1, _Length, 0, F2).
 
+
 %! rdf_guess_data_format(
-%!   +In:or(atom,stream),
-%!   ?Format:oneof([turtle,xml])
+%!   +FileOrStream:or([atom,stream]),
+%!   ?Format:oneof([ntriples,triples,turtle,xml])
 %! ) is det.
 % Guess the format of an RDF file from the actual content.
 % Currently, this seeks for a valid XML document upto the rdf:RDF
@@ -99,21 +102,31 @@ rdf_graph_source_file(G, F2):-
 % @author Jan Wielemaker, predicate taken from ClioPatria codebase.
 % @tbd Is it really so difficult to distinguish between N-triples and Turtle?
 
-rdf_guess_data_format(Stream, xml):-
-  is_stream(Stream),
-  xml_doctype(Stream, _), !.
-rdf_guess_data_format(File, xml):-
+rdf_guess_data_format(FileOrStream, Format):-
+  rdf_guess_data_type(FileOrStream, Type),
+  rdf_serialization(_, Type, Format, _).
+
+
+%! rdf_guess_data_format(
+%!   +FileOrStream:or([atom,stream]),
+%!   ?Type:oneof([ntriples,rdf_xml,triples,turtle])
+%! ) is det.
+
+rdf_guess_data_type(Stream, rdf_xml):-
+  is_stream(Stream), !,
+  xml_doctype(Stream, _).
+rdf_guess_data_type(File, Type):-
   exists_file(File),
-  setup_call_cleanup(
-    open(File, read, Stream, [encoding(utf8),type(test)]),
-    xml_doctype(Stream, _),
-    close(Stream)
-  ), !.
-%rdf_guess_data_format(File, Format):-
-%  exists_file(File),
-%  file_name_extension(_Base, Ext, File),
-%  rdf_serialization(Ext, _FileType, Format, _URL), !.
-rdf_guess_data_format(_, turtle).
+  (
+    setup_call_cleanup(
+      open(File, read, Stream, [encoding(utf8)]),
+      rdf_guess_data_type(Stream, Type),
+      close(Stream)
+    ), !
+  ;
+    file_name_type(_, Type, File)
+  ).
+
 
 %! rdf_load2(+File:atom) is det.
 %! rdf_load2(+Files:list(atom)) is det.
@@ -336,16 +349,16 @@ rdf_save2(File, O1, turtle):- !,
 
 %! rdf_serialization(
 %!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
-%!   ?DefaultFileType:oneof([ntriples,rdf_xml,turtle]),
-%!   ?Format:oneof([ntriples,rdf_xml,triples,turtle]),
+%!   ?FileType:oneof([ntriples,rdf_xml,triples,turtle]),
+%!   ?Format:oneof([ntriples,xml,triples,turtle]),
 %!   ?URL:atom
 %! ) is nondet.
 %
 % @arg DefaultExtension The default extension of the RDF serialization.
-%        RDF serializations may have multiple non-default extensions,
-%        e.g. =owl= and =xml= for RDF/XML.
+%      RDF serializations may have multiple non-default extensions,
+%      e.g. =owl= and =xml= for RDF/XML.
 % @arg DefaultFileType The default file type of the RDF serialization.
-%        Every file type has the non-default file type =rdf=.
+%      Every file type has the non-default file type =rdf=.
 % @arg Format The format name that is used by the Semweb library.
 % @arg URL The URL at which the serialization is described, if any.
 
