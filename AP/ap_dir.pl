@@ -1,15 +1,15 @@
 :- module(
   ap_dir,
   [
-    ap_clean/1, % +Options:list(nvpair)
-    ap_dir/3, % +Options:list(nvpair)
-              % +AliasSubdir:atom
+    ap_clean/1, % +Alias:atom
+    ap_dir/4, % +Alias:atom
+              % +Mode:oneof([read,write])
+              % +Subdir:atom
               % -AbsoluteDir:atom
-    ap_last_stage_directory/2, % +Options:list(nvpair)
-                                 % -LastStageDirectories:list(atom)
-    ap_stage_alias/3, % +Options:list(nvpair)
-                      % +Stage:or([nonneg,oneof([input,output])])
-                      % -StageAlias:atom
+    ap_last_stage_directory/2, % +Alias:atom
+                               % -LastStageDirectory:atom
+    ap_stage_directories/2, % +Alias:atom
+                            % -Directories:list(atom)
     ap_stage_name/2 % +Stage:nonneg
                     % -StageName:atom
   ]
@@ -20,9 +20,10 @@
 Directory management for running automated processes.
 
 @author Wouter Beek
-@version 2013/11
+@version 2013/11, 2014/01
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -31,127 +32,56 @@ Directory management for running automated processes.
 
 
 
-%! ap_clean(+Options:list(nvpair)) is det.
+%! ap_clean(+Alias:atom) is det.
 % This is run after results have been saved to the `Output` directory.
 
-ap_clean(O1):-
-  ap_stage_directories(O1, StageDirs),
+ap_clean(Alias):-
+  ap_stage_directories(Alias, StageDirs),
   maplist(safe_delete_directory_contents([]), StageDirs).
 
 
-%! ap_dir(+Options:list(nvpair), +AliasSubdir:atom, -AbsoluteDir:atom) is det.
-% Aliases and subdirs are *|exactly the same|*.
-% This makes the implementation easier.
-%
-% The following options are provided:
-%   * =|allow_create(+AllowSubdirectoryCreation:boolean)|=
-%     Whether a non-existing subdirectory is created or not.
-%     If the subdirectory does not exist and is not allowed to be created,
-%     then this predicate fails.
-%   * =|process(+Process:atom)|=
-%     The atomic name of the process.
-%     This is used for constructing the process directory structure.
-%     Default: =process=.
-%   * =|project(+Project:atom)|=
-%     The atomic name of the root of the project's file search path.
-%     Default: =project=.
+%! ap_dir(
+%!   +Alias:atom,
+%!   +Mode:oneof([read,write]),
+%!   +Subdir:atom,
+%!   -AbsoluteDir:atom
+%! ) is det.
 
-ap_dir(O1, AliasSubdir1, AbsoluteDir):-
-  ap_stage_name(AliasSubdir1, AliasSubdir2),
-  ap_process_alias(O1, ProcessAlias),
+% The root is a special case.
+% It has no subdirectory alias.
+ap_dir(Alias, Mode, Subdir1, AbsoluteDir):-
+  to_atom(Subdir1, Subdir2),
+  Spec =.. [Alias,Subdir2],
   (
-    % The root is a special case.
-    % It has no subdirectory alias.
-    AliasSubdir2 == '.'
-  ->
-    Alias = ProcessAlias
-  ;
-    % Non-root cases.
-    atomic_list_concat([ProcessAlias,AliasSubdir2], '_', Alias)
-  ),
-  (
-    file_search_path(Alias, _)
-  ->
-    Spec =.. [Alias,'.'],
     absolute_file_name(
       Spec,
       AbsoluteDir,
-      [access(read),file_errors(error),file_type(directory)]
-    )
+      [access(Mode),file_errors(fail),file_type(directory)]
+    ), !
   ;
-    % We have not found the AP directory, so it does not exist.
-    % We are now going to create this directory,
-    %  unless the option that forbids this is set.
-    option(allow_create(false), O1, true)
-  ->
-    fail
-  ;
-    (
-      % The root is a special case.
-      % It is a subdirectory of the project directory.
-      AliasSubdir2 == '.'
-    ->
-      option(project(Project), O1, project),
-      option(process(Process), O1, process),
-      Spec_ =.. [Project,ap],
-      create_nested_directory(Spec_, AP_Dir),
-      atomic_list_concat([Project,ap], '_', AP_Alias),
-      db_add_novel(user:file_search_path(AP_Alias, AP_Dir)),
-      Spec =.. [AP_Alias,Process]
-    ;
-      % Non-root cases.
-      Spec =.. [ProcessAlias,AliasSubdir2]
-    ),
-    create_nested_directory(Spec, AbsoluteDir),
-    db_add_novel(user:file_search_path(Alias, AbsoluteDir))
+    % If the AP subdirectory is not found and the mode is `write`,
+    % then we create it.
+    create_nested_directory(Spec, AbsoluteDir)
   ).
 
 
-%! ap_last_stage_directory(
-%!   +Options:list(nvpair),
-%!   -LastStageDirectories:list(atom)
-%! ) is det.
-% Returns the last two stage directories,
-% or returns less if there are less than 2 stage directories.
+%! ap_last_stage_directory(+Alias:atom, -LastStageDirectory:atom) is semidet.
+% Returns the last stage directory, if it exists.
 
-ap_last_stage_directory(O1, LastStageDir):-
-  ap_stage_directories(O1, StageDirs),
+ap_last_stage_directory(Alias, LastStageDir):-
+  ap_stage_directories(Alias, StageDirs),
   StageDirs \== [],
   last(StageDirs, LastStageDir).
-
-
-%! ap_process_alias(+Options:list(nvpair), -ProcessAlias:atom) is det.
-% Returns the alias of the process denoted by the given options.
-%
-% The requires the following options:
-%   * =|process(Process:atom)|=
-%   * =|project(Project:atom)|=
-
-ap_process_alias(O1, ProcessAlias):-
-  option(project(Project), O1, project),
-  option(process(Process), O1, process),
-  atomic_list_concat([Project,ap,Process], '_', ProcessAlias).
-
-
-%! ap_stage_alias(
-%!   +Options:list(nvpair),
-%!   +Stage:or([nonneg,oneof([input,output])]),
-%!   -StageAlias:atom
-%! ) is det.
-% Returns the alias for the indicated stage.
-
-ap_stage_alias(O1, Stage, StageAlias):-
-  ap_process_alias(O1, ProcessAlias),
-  ap_stage_name(Stage, StageName),
-  atomic_list_concat([ProcessAlias,StageName], '_', StageAlias).
 
 
 %! ap_stage_name(+StageIndicator, -StageName:atom) is det.
 % Returns the stage name that corresponds to the given indicator.
 %
-% `0` is converted to name `input`.
-% Positive integers `N` are converted to names `stage_N`.
-% Other names are unchanged.
+% @arg StageIndicator One of the following:
+%   * `0` is converted to name `input`.
+%   * Positive integers `N` are converted to names `stage_N`.
+%   * Other names are unchanged.
+% @arg StageName An atomic name.
 
 ap_stage_name(0, input):- !.
 ap_stage_name(Stage, StageName):-
@@ -160,25 +90,14 @@ ap_stage_name(Stage, StageName):-
 ap_stage_name(Stage, Stage).
 
 
-%! ap_stage_directories(
-%!   +Options:list(nvpair),
-%!   -StageDirectories:list(atom)
-%! ) is det.
-%! ap_stage_directories(
-%!   +Options:list(nvpair),
-%!   +Stage:nonneg,
-%!   -StageDirectories:list(atom)
-%! ) is det.
+%! ap_stage_directories(+Alias:atom, -StageDirectories:list(atom)) is det.
 
-ap_stage_directories(O1, StageDirs):-
-  % We only want to return the existing stage directories,
-  %  we will not add new stage directories here.
-  merge_options([allow_create(false)], O1, O2),
-  ap_stage_directories(O2, 1, StageDirs).
+ap_stage_directories(Alias, Dirs):-
+  ap_stage_directories(Alias, 1, Dirs).
 
-ap_stage_directories(O1, Stage1, [H|T]):-
-  ap_dir(O1, Stage1, H), !,
+ap_stage_directories(Alias, Stage1, [H|T]):-
+  ap_dir(Alias, write, Stage1, H), !,
   Stage2 is Stage1 + 1,
-  ap_stage_directories(O1, T, Stage2).
-ap_stage_directories(_O1, _, []).
+  ap_stage_directories(Alias, T, Stage2).
+ap_stage_directories(_, _, []).
 
