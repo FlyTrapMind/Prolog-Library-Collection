@@ -1,17 +1,10 @@
 :- module(
   'SPARQL_ext',
   [
-    'SPARQL_describe'/4, % +Options:list(nvpair)
-                         % +Remote:atom
-                         % +Resource:uri
-                         % -PO_Pairs:list(list(or([bnode,iri,literal])))
     'SPARQL_enqueue'/4, % +Remote:atom
                         % +Query:atom
                         % -VarNames:list
                         % -Results:list
-    'SPARQL_find'/3, % +Remote:atom
-                     % +SearchTerm:or([atom,iri])
-                     % -Resource:iri
     'SPARQL_query'/4, % +Remote:atom
                       % +Query:atom
                       % -VarNames:list
@@ -126,64 +119,11 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % OWL
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
 
-:- rdf_meta('SPARQL_describe'(+,r,-)).
-:- rdf_meta('SPARQL_query_sameAs'(+,r,-)).
-
 :- if(predicate_property(user:debug_project, visible)).
   :-
     once(http_server_property(Port, _)),
     'SPARQL_register_remote'(localhost, localhost, Port, '/sparql/').
 :- endif.
-
-
-
-%! 'SPARQL_describe'(
-%!   +Options:list(nvpair),
-%!   +Remote:atom,
-%!   +Resource:iri,
-%!   -Propositions:ordset(list(or([bnode,iri,literal])))
-%! ) is det.
-% Returns a depth-1 description of the given resource
-% in terms of predicate-object rows.
-%
-% @tbd Make the depth of the description a parameter.
-
-'SPARQL_describe'(O1, Remote, Resource, Propositions):-
-  option(closed_under_identity(true), O1, true), !,
-  'SPARQL_query_sameAs'(Remote, Resource, Resources),
-  maplist('_SPARQL_describe'(Remote), Resources, Propositionss),
-  ord_union(Propositionss, Propositions).
-'SPARQL_describe'(_, Remote, Resource, Propositions):-
-  '_SPARQL_describe'(Remote, Resource, Propositions).
-
-'_SPARQL_describe'(Remote, Resource, Propositions):-
-  phrase(
-    'SPARQL_formulate'(
-      _,
-      _,
-      [],
-      select,
-      true,
-      [p,o],
-      [rdf(iri(Resource), var(p), var(o))],
-      inf,
-      _
-    ),
-    Query
-  ),
-  'SPARQL_enqueue'(Remote, Query, _VarNames, Rows),
-  rows_to_propositions([Resource], Rows, Propositions),
-
-  % DEB
-  (
-    Propositions \== [], !
-  ;
-    debug(
-      'SPARQL_ext',
-      'Empty results for describing resource ~w.',
-      [Resource]
-    )
-  ).
 
 
 
@@ -204,57 +144,6 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
       debug('SPARQL_ext', '[EXCEPTION] ~w', [Exception]),
       'SPARQL_enqueue'(Remote, Query, VarNames, Results)
     )
-  ).
-
-
-
-%! 'SPARQL_find'(
-%!   +Remote:atom,
-%!   +SearchTerm:or([atom,iri]),
-%!   -Resource:iri
-%! ) is det.
-% Returns the resource that best fits the given search term.
-%
-% If the search term is itself a concept, then this is returned.
-% Otherwise, the remote is searched for a resource that is labeled with
-%  the given search term.
-%
-% @arg Remote
-% @arg SearchTerm
-% @arg Resource
-
-'SPARQL_find'(Remote, Resource, Resource):-
-  must_be(iri, Resource),
-  % @tbd This can be done more efficiently by just looking for
-  %      the first triple.
-  'SPARQL_describe'([closed_under_identity(false)], Remote, Resource, PO_Pairs),
-  PO_Pairs \== [], !.
-'SPARQL_find'(Remote, SearchTerm, Resource):-
-  phrase(
-    'SPARQL_formulate'(
-      _,
-      _,
-      [rdfs],
-      select,
-      true,
-      [resource],
-      [
-        rdf(var(resource), rdfs:label, var(label)),
-        filter(regex(var(label), at_start(SearchTerm), [case_insensitive]))
-      ],
-      inf,
-      _
-    ),
-    Query
-  ),
-  'SPARQL_enqueue'(Remote, Query, _VarNames, Resources),
-  (
-    Resources = []
-  ->
-    debug('SPARQL_ext', 'Could not find a resource for \'~w\'.', [SearchTerm]),
-    fail
-  ;
-    first(Resources, row(Resource))
   ).
 
 

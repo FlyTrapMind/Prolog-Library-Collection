@@ -3,7 +3,7 @@
   [
     'LOD_cache'/2, % +Resource:iri
                    % +Graph:atom
-    'LOD_query'/3, % +Resource:iri
+    'LOD_cache'/3, % +Resource:iri
                    % -Resources:ordset(or([bnode,iri,literal]))
                    % -Propositions:ordset(list)
     'LOD_local_query'/3 % +Resource:iri
@@ -21,7 +21,6 @@
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
-:- use_module(library(apply)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(sgml)).
@@ -33,7 +32,7 @@
 
 
 'LOD_cache'(IRI, Graph):-
-  'LOD_query'(IRI, _, Propositions),
+  'LOD_cache'(IRI, _, Propositions),
   forall(
     member([S,P,O], Propositions),
     rdf_assert(S, P, O, Graph)
@@ -41,21 +40,25 @@
 
 
 % Query a registered SPARQL endpoint.
-'LOD_query'(IRI, Resources, Propositions):-
+'LOD_cache'(IRI, Resources, Propositions):-
   'SPARQL_cache'(IRI, Resources, Propositions), !.
+
 % Download an LOD description based on the IRI prefix.
-'LOD_query'(IRI, Resources, Propositions):-
+'LOD_cache'(IRI, Resources, Propositions):-
   rdf_global_id(Prefix:_, IRI),
   'LOD_location'(Prefix, URL), !,
   'LOD_local_query'(URL, IRI, Resources, Propositions).
+
 % Flickrwrappr LOD description.
-'LOD_query'(IRI, Resources, Propositions):-
+'LOD_cache'(IRI, Resources, Propositions):-
   is_flickrwrappr_resource(IRI), !,
   flickrwrappr_query(IRI, Resources, Propositions).
+
 % Based on the entire IRI we can download a LOD description.
-'LOD_query'(IRI, Resources, Propositions):-
+'LOD_cache'(IRI, Resources, Propositions):-
   is_of_type(uri, IRI), !,
   'LOD_local_query'(IRI, IRI, Resources, Propositions).
+
 
 %! 'LOD_local_query'(+Resource, -Resources, -Propositions) is det.
 %! 'LOD_local_query'(+URL, +Resource, -Resources, -Propositions) is det.
