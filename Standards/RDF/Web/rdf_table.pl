@@ -1,6 +1,7 @@
 :- module(
   rdf_table,
   [
+    rdf_store_table/1, % +Quadruples:list(list)
     rdf_table/4 % +Subject:or([bnode,iri])
                 % +Predicate:iri
                 % +Object:or([bnode,iri,literal])
@@ -36,18 +37,25 @@ Allows RDF tables to be created in the terminal
 
 
 
-rdf_table(_):-
-  findall(Time-L, rdf_table(Time, L), Pairs1),
-  keysort(Pairs1, Pairs2),
-  reverse(Pairs2, [Time1-L|_]),
-  format_time(atom(Time2), '%FT%T%:z', Time1),
-  format(atom(Caption), 'RDF Table at ~w', [Time2]),
-  reply_html_page(app_style, title(Caption), \rdf_html_table(Caption, L)).
-
-rdf_table(S, P, O, G):-
-  setoff([S,P,O,G], rdf(S, P, O, G), L),
+rdf_store_table(Quadruples):-
   get_time(Time),
-  assert(rdf_table(Time, L)),
+  assert(rdf_table(Time, Quadruples)),
   http_absolute_uri(root(rdf_table), Link),
   www_open_url(Link).
+
+rdf_table(_):-
+  findall(Time-Quadruples, rdf_table(Time, Quadruples), Pairs1),
+  keysort(Pairs1, Pairs2),
+  reverse(Pairs2, [Time1-Quadruples|_]),
+  format_time(atom(Time2), '%FT%T%:z', Time1),
+  format(atom(Caption), 'RDF Table at ~w', [Time2]),
+  reply_html_page(
+    app_style,
+    title(Caption),
+    \rdf_html_table(Caption, Quadruples)
+  ).
+
+rdf_table(S, P, O, G):-
+  setoff([S,P,O,G], rdf(S, P, O, G), Quadruples),
+  rdf_store_table(Quadruples).
 
