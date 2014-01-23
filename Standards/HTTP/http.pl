@@ -79,7 +79,7 @@ http_dateTime(DateTime):-
 http_goal(URL, O1, Goal):-
   option(nocatch(true), O1, false), !,
   merge_options(
-    [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(10)],
     O1,
     O2
   ),
@@ -92,7 +92,7 @@ http_goal(URL, O1, Goal):-
   http_goal(URL, O1, Goal, 10).
 http_goal(URL, O1, Goal, Attempts):-
   merge_options(
-    [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(10)],
     O1,
     O2
   ),
