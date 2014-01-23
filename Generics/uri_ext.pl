@@ -8,6 +8,8 @@
                 % -Path:atom
     url_to_file/2, % +URL:atom
                    % -File:atom
+    url_to_graph_name/2, % +URL:url
+                         % -Graph:atom
     uri_query_add/4, % +FromURI:uri
                      % +Name:atom
                      % +Value:atom
@@ -24,6 +26,7 @@
 @version 2013/05, 2013/09, 2013/11-2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(option_ext)).
 :- use_module(http(http)).
 :- use_module(library(apply)).
@@ -102,10 +105,42 @@ url_to_file(URI, File):-
     URI,
     uri_components(Scheme, Authority, Path, _Search, _Fragment)
   ),
-  directory_to_subdirectories(Path, PathComponents),
-  create_nested_directory(data([Scheme,Authority|PathComponents]), Dir),
-  file_base_name(Path, RelativeFile),
-  absolute_file_name(RelativeFile, File, [relative_to(Dir)]).
+  
+  % Split path into directory and file names.
+  file_directory_name(Path, PathDir),
+  file_base_name(Path, PathFile1),
+  % When the URL path is a directory,
+  %  then the relative file is the empty string.
+  % This causes problems when creating the absolute file name,
+  %  since the resulting `File` must not be a directory.
+  (
+    PathFile1 == ''
+  ->
+    PathFile2 = dummy
+  ;
+    PathFile2 = PathFile1
+  ),
+  
+  % Create the local directory.
+  directory_to_subdirectories(PathDir, PathDirComponents),
+  create_nested_directory(data([Scheme,Authority|PathDirComponents]), Dir),
+  
+  % Construct the local file name.
+  absolute_file_name(PathFile2, File, [relative_to(Dir)]).
+
+
+url_to_graph_name(URL, G):-
+  dcg_phrase(url_to_graph, URL, G).
+
+url_to_graph --> dcg_end, !.
+url_to_graph, [X] -->
+  [X],
+  {code_type(X, alnum)}, !,
+  url_to_graph.
+url_to_graph, "_" -->
+  [_],
+  url_to_graph.
+
 
 %! uri_query_add(+FromURI:uri, +Name:atom, +Value:atom, -ToURI:atom) is det.
 % Inserts the given name-value pair as a query component into the given URI.
