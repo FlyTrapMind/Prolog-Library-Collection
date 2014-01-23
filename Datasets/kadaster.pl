@@ -20,9 +20,9 @@
 :- use_module(rdf(rdf_serial)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
-:- use_module(sparql(sparql_ext)).
+:- use_module(sparql('SPARQL_ext')).
 
-:- sparql_add_remote(kadaster, 'brk.kadaster.nl', default, '/sparql').
+:- 'SPARQL_register_remote'(kadaster, 'brk.kadaster.nl', default, '/sparql').
 
 
 

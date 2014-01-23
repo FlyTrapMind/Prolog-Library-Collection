@@ -19,15 +19,13 @@ info@geodan.nl
 :- use_module(generics(print)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
-:- use_module(sparql(sparql_ext)).
+:- use_module(sparql('SPARQL_ext')).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(bag).
-:- sparql_add_prefix(bag).
-:- sparql_add_remote(bag, 'lod.geodan.nl', '/BAG/sparql').
+:- 'SPARQL_register_remote'(bag, 'lod.geodan.nl', '/BAG/sparql').
 
 :- xml_register_namespace(bags).
-:- sparql_add_prefix(bags).
 
 
 

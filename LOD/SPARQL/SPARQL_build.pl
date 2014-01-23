@@ -1,5 +1,5 @@
 :- module(
-  sparql_build,
+  'SPARQL_build',
   [
     'SPARQL_formulate'//9 % +Regime:oneof([owl])
                           % +DefaultGraph:iri
@@ -15,7 +15,7 @@
 
 /** <module> SPARQL build
 
-DCG for the construction of SPARQL queries.
+DCGs for constructing SPARQL queries.
 
 @author Wouter Beek
 @version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01

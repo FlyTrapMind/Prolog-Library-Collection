@@ -1,10 +1,6 @@
 :- module(
-  sparql_ext,
+  'SPARQL_ext',
   [
-    'SPARQL_assert'/4, % +Options:list(nvpair)
-                       % +Remote:atom
-                       % +Resource:iri
-                       % +Graph:atom
     'SPARQL_describe'/4, % +Options:list(nvpair)
                          % +Remote:atom
                          % +Resource:uri
@@ -28,16 +24,19 @@
 
 /** <module> SPARQL extensions
 
-Predicates for formulating and executing SPARQL queries.
+Predicates for executing SPARQL queries.
 
 # SPARQL 1.1 Query Language
 
-`true`, `false` are `xsd:boolean`.
+`true` and `false` are `xsd:boolean`.
 Numbers with `e` are `xsd:double`.
 Numbers with `.` are `xsd:decimal`.
 Integers are `xsd:integer`.
 
-Blank nodes are denotated by `_:LABEL`.
+`a` abbreviates `rdf:type`.
+
+Blank nodes are denotated by `_:LABEL`,
+ where `LABEL` need not reflect the label that is used in the triple store.
 
 Predicate-object lists `;`
 
@@ -55,20 +54,24 @@ FILTER EXISTS { pattern }
 ~~~
 
 ~~~{.sparql}
-PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
-PREFIX  ns:  <http://example.org/ns#>
-SELECT  ?title ?price
-WHERE   { ?x ns:price ?price .
-          FILTER (?price < 30.5)
-          ?x dc:title ?title . }
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX ns: <http://example.org/ns#>
+SELECT ?title ?price
+WHERE {
+  ?x ns:price ?price .
+  FILTER (?price < 30.5)
+  ?x dc:title ?title .
+}
 ~~~
 
 Count the number of employees in each department:
+
 ~~~{.sparql}
-select distinct ?dept (count(?emp) as ?count) where {
-  ?dept a f:dept.
-  ?emp f:Dept ?dept.
-} group by ?dept
+SELECT DISTINCT ?dept (COUNT(?emp) AS ?count)
+WHERE {
+  ?dept a f:dept .
+  ?emp f:Dept ?dept .
+} GROUP BY ?dept
 ~~~
 
 # Sample query
@@ -77,15 +80,17 @@ select distinct ?dept (count(?emp) as ?count) where {
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT *
-WHERE { ?s rdf:type rdfs:Class }
+WHERE {
+  ?s rdf:type rdfs:Class .
+}
 LIMIT 10
 ~~~
 
 # Warnings
 
 When the results from a SPARQL endpoint are in XML/RDF without
-proper end tags, the following warnings will be given by
-the XML parser:
+ proper end tags, the following warnings will be given by
+ the XML parser:
 
 ~~~{.txt}
 Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "uri"
@@ -113,14 +118,13 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
-:- use_module(sparql(row_ext)).
-:- use_module(sparql(sparql_build)).
-:- use_module(sparql(sparql_db)).
+:- use_module('SPARQL'(row_ext)).
+:- use_module('SPARQL'('SPARQL_build')).
+:- use_module('SPARQL'('SPARQL_db')).
 :- use_module(xml(xml_namespace)).
 
 % OWL
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
-:- sparql_add_prefix(owl).
 
 :- rdf_meta('SPARQL_describe'(+,r,-)).
 :- rdf_meta('SPARQL_query_sameAs'(+,r,-)).
@@ -128,24 +132,8 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- if(predicate_property(user:debug_project, visible)).
   :-
     once(http_server_property(Port, _)),
-    sparql_add_remote(localhost, localhost, Port, '/sparql/').
+    'SPARQL_register_remote'(localhost, localhost, Port, '/sparql/').
 :- endif.
-
-
-
-%! 'SPARQL_assert'(
-%!   +Options:list(nvpair),
-%!   +Remote:atom,
-%!   +Resource:iri,
-%!   +Graph:atom
-%! ) is det.
-
-'SPARQL_assert'(O1, Remote, Resource, G):-
-  'SPARQL_describe'(O1, Remote, Resource, PO_Pairs),
-  forall(
-    member([P,O], PO_Pairs),
-    rdf_assert(Resource, P, O, G)
-  ).
 
 
 
@@ -153,22 +141,22 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 %!   +Options:list(nvpair),
 %!   +Remote:atom,
 %!   +Resource:iri,
-%!   -PO_Pairs:list(list(or([bnode,iri,literal])))
+%!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 % Returns a depth-1 description of the given resource
 % in terms of predicate-object rows.
 %
 % @tbd Make the depth of the description a parameter.
 
-'SPARQL_describe'(O1, Remote, Resource, PO_Pairs):-
+'SPARQL_describe'(O1, Remote, Resource, Propositions):-
   option(closed_under_identity(true), O1, true), !,
-  'SPARQL_query_sameAs'(Remote, Resource, Resources1),
-  maplist('_SPARQL_describe'(Remote), Resources1, Resources2),
-  ord_union(Resources2, PO_Pairs).
-'SPARQL_describe'(_O1, Remote, Resource, PO_Pairs):-
-  '_SPARQL_describe'(Remote, Resource, PO_Pairs).
+  'SPARQL_query_sameAs'(Remote, Resource, Resources),
+  maplist('_SPARQL_describe'(Remote), Resources, Propositionss),
+  ord_union(Propositionss, Propositions).
+'SPARQL_describe'(_, Remote, Resource, Propositions):-
+  '_SPARQL_describe'(Remote, Resource, Propositions).
 
-'_SPARQL_describe'(Remote, Resource, PO_Pairs):-
+'_SPARQL_describe'(Remote, Resource, Propositions):-
   phrase(
     'SPARQL_formulate'(
       _,
@@ -184,13 +172,17 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     Query
   ),
   'SPARQL_enqueue'(Remote, Query, _VarNames, Rows),
-  rows_to_lists(Rows, PO_Pairs),
+  rows_to_propositions([Resource], Rows, Propositions),
 
   % DEB
   (
-    PO_Pairs \== [], !
+    Propositions \== [], !
   ;
-    debug('SPARQL_ext', 'Empty results for describing resource ~w.', [Resource])
+    debug(
+      'SPARQL_ext',
+      'Empty results for describing resource ~w.',
+      [Resource]
+    )
   ).
 
 
@@ -278,7 +270,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 'SPARQL_query'(Remote, Query1, VarNames, Results):-
   to_atom(Query1, Query2),
   debug(sparl_ext, '~w', [Query2]),
-  once(sparql_current_remote(Remote, Host, Port, Path)),
+  once('SPARQL_current_remote'(Remote, Host, Port, Path)),
   O1 = [host(Host),path(Path),variable_names(VarNames)],
   (
     Port == default
@@ -304,7 +296,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % @arg Resource The URI of a resource.
 % @arg IdenticalResources An ordered set of identical resources.
 
-'SPARQL_query_sameAs'(Remote, Resource, Resources3):-
+'SPARQL_query_sameAs'(Remote, Resource, Resources2):-
   phrase(
     'SPARQL_formulate'(
       owl,
@@ -319,7 +311,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     ),
     Query
   ),
-  'SPARQL_enqueue'(Remote, Query, _VarNames, Resources1),
-  rows_to_ord_set(Resources1, Resources2),
-  ord_add_element(Resources2, Resource, Resources3).
+  'SPARQL_enqueue'(Remote, Query, _VarNames, Rows),
+  rows_to_resources(Rows, Resources1),
+  ord_add_element(Resources1, Resource, Resources2).
 
