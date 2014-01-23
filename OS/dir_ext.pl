@@ -46,9 +46,10 @@ Extensions for handling directories.
 
 @author Wouter Beek
 @tbd Add safe_delete_directory/1.
-@version 2013/06-2013/07, 2013/09, 2013/11-2013/12
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/01
 */
 
+:- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
@@ -287,11 +288,9 @@ safe_copy_directory(FromDir, ToDir):-
 %!   -Subdirectories:list(atom)
 %! ) is det.
 
-directory_to_subdirectories(Dir, Subdirs):-
-  is_absolute_file_name(Dir), !,
-  atomic_list_concat([_|Subdirs], '/', Dir). % split
-directory_to_subdirectories(Dir, Subdirs):-
-  atomic_list_concat(Subdirs, '/', Dir). % split
+directory_to_subdirectories(Dir1, Subdirs):-
+  strip_atom(['/'], Dir1, Dir2),
+  atomic_list_concat(Subdirs, '/', Dir2). % split
 
 process_directory_files(FromDir, FromFileTypes, ToDir, ToFileType, Goal):-
   process_directory_files(
