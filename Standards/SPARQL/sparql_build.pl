@@ -57,8 +57,9 @@ default_graph(DefaultGraph) -->
   ")\n".
 
 define(inference(Regime)) -->
-  "define input:inference",
-  define_inference_regime(Regime).
+  "define input:inference ",
+  define_inference_regime(Regime),
+  "\n".
 
 define_inference_regime(owl) -->
   quoted(atom('http://www.w3.org/2002/07/owl#')).
@@ -97,7 +98,7 @@ iri(IRI) -->
 limit(VAR) -->
   {var(VAR)}, !,
   [].
-limit(inf) --> [].
+limit(inf) --> !, [].
 limit(Limit) -->
   "LIMIT ",
   integer(Limit),
