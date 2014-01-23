@@ -1,3 +1,4 @@
+:- encoding(utf8).
 :- module(
   rdf_html,
   [
@@ -118,13 +119,15 @@ rdf_iri(IRI1) -->
       uri_query_add(Location1, term, IRI1, Location2)
     },
     html(
-      span(class='iri',
+      span(class='iri', [
         a(href=Location2, [
           span(class=prefix, Prefix),
           ':',
           span(class=postfix, Postfix)
-        ])
-      )
+        ]),
+        ' ',
+        a(href=IRI1, '🔗')
+      ])
     )
   ;
     {IRI1 = IRI2, atom(IRI1)},
