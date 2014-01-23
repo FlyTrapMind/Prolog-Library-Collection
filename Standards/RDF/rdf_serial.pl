@@ -120,27 +120,20 @@ rdf_guess_data_type(Stream, rdf_xml):-
 rdf_guess_data_type(File, Type):-
   exists_file(File),
   (
-    setup_call_cleanup(
-      open(File, read, Stream, [encoding(utf8)]),
-      ((
-        rdf_guess_data_type(Stream, Type)
-      ->
-        true
-      ;
-        load_xml(Stream, _, [])
-      ->
-        debug(rdf_serial, 'XML that does not encode RDF.', []),
-        permission_error(rdf_load,'RDF-file',File)
-      ;
-        load_html(Stream, _, [])
-      ->
-        debug(rdf_serial, 'HTML', []),
-        permission_error(rdf_load,'RDF-file',File)
-      )),
-      close(Stream)
+    catch(
+      setup_call_cleanup(
+        open(File, read, Stream, [encoding(utf8)]),
+        rdf_guess_data_type(Stream, Type),
+        close(Stream)
+      ),
+      _,
+      fail
     ), !
   ;
     file_name_type(_, Type, File)
+  ;
+    % Default.
+    Type = turtle
   ).
 
 
@@ -314,10 +307,10 @@ rdf_save2(File, O1):-
     % We do not need to save the graph if
     % (1) the contents of the graph did not change, and
     % (2) the serialization format of the graph did not change.
-    
+
     % Make sure the contents of the graph were not changed.
     rdf_graph_property(G, modified(false)),
-    
+
     % Make sure the serialization format under which the graph was saved
     % did not change.
     rdf_graph_source_file(G, FromFile),
