@@ -12,13 +12,15 @@
                  % +Options:list(nvpair)
     rdf_loads/2, % +Files:list(atom)
                  % +Graph:atom
+    rdf_mime/1, % ?MIME:atom
     rdf_save2/0,
     rdf_save2/1, % +Graph:atom
     rdf_save2/2, % ?File:atom
                  % +Options:list(nvpair)
-    rdf_serialization/4 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
+    rdf_serialization/5 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
                         % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
                         % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
+                        % ?MIME:atom
                         % ?URL:atom
   ]
 ).
@@ -106,7 +108,7 @@ rdf_graph_source_file(G, F2):-
 
 rdf_guess_data_format(FileOrStream, Format):-
   rdf_guess_data_type(FileOrStream, Type),
-  rdf_serialization(_, Type, Format, _).
+  rdf_serialization(_, Type, Format, _, _).
 
 
 %! rdf_guess_data_format(
@@ -223,6 +225,9 @@ rdf_loads_(G, F):-
     rdf_unload_graph(TmpG)
   ).
 
+rdf_mime(MIME):-
+  rdf_serialization(_, _, _, MIME, _).
+
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.
 %
@@ -292,7 +297,7 @@ rdf_save2(File, O1):-
   rdf_graph(G),
   \+ option(format(_Format), O1), !,
   file_name_extension(_Base, Ext, File),
-  rdf_serialization(Ext, _FileType, Format, _URL),
+  rdf_serialization(Ext, _, Format, _, _),
   merge_options([format(Format)], O1, O2),
   rdf_save2(File, O2).
 % Format and graph are both given.
@@ -302,7 +307,7 @@ rdf_save2(File, O1):-
   rdf_graph(G),
   select_option(format(Format), O1, O2),
   % Check whether this is a legal format.
-  once(rdf_serialization(_, _FileType, Format, _)), !,
+  once(rdf_serialization(_, _, Format, _, _)), !,
   (
     % We do not need to save the graph if
     % (1) the contents of the graph did not change, and
@@ -315,7 +320,7 @@ rdf_save2(File, O1):-
     % did not change.
     rdf_graph_source_file(G, FromFile),
     file_name_type(_, FromFileType, FromFile),
-    rdf_serialization(_, FromFileType, Format, _)
+    rdf_serialization(_, FromFileType, Format, _, _)
   ->
     debug(rdf_serial, 'No need to save graph ~w; no updates.', [G])
   ;
@@ -360,6 +365,7 @@ rdf_save2(File, O1, turtle):- !,
 %!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
 %!   ?FileType:oneof([ntriples,rdf_xml,triples,turtle]),
 %!   ?Format:oneof([ntriples,xml,triples,turtle]),
+%!   ?MIME:atom,
 %!   ?URL:atom
 %! ) is nondet.
 %
@@ -369,10 +375,11 @@ rdf_save2(File, O1, turtle):- !,
 % @arg DefaultFileType The default file type of the RDF serialization.
 %      Every file type has the non-default file type =rdf=.
 % @arg Format The format name that is used by the Semweb library.
+% @arg MIME
 % @arg URL The URL at which the serialization is described, if any.
 
-rdf_serialization(nt,      ntriples, ntriples, 'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf,     rdf_xml,  xml,      'http://www.w3.org/ns/formats/RDF_XML'  ).
-rdf_serialization(triples, triples,  triples,  ''                                      ).
-rdf_serialization(ttl,     turtle,   turtle,   'http://www.w3.org/ns/formats/Turtle'   ).
+rdf_serialization(nt, ntriples, ntriples, 'text/plain', 'http://www.w3.org/ns/formats/N-Triples').
+rdf_serialization(rdf, rdf_xml, xml, 'application/rdf+xml', 'http://www.w3.org/ns/formats/RDF_XML'  ).
+rdf_serialization(ttl, turtle, turtle, 'application/x-turtle', 'http://www.w3.org/ns/formats/Turtle'   ).
+rdf_serialization(n3, n3, n3, 'text/rdf+n3', '').
 

@@ -26,6 +26,7 @@
 :- use_module(library(sgml)).
 :- use_module('LOD'(flickrwrappr)).
 :- use_module('LOD'('LOD_location')).
+:- use_module(os(file_mime)).
 :- use_module(rdf(rdf_serial)).
 :- use_module('SPARQL'('SPARQL_cache')).
 
@@ -39,6 +40,11 @@
   ).
 
 
+% Flickrwrappr LOD description.
+'LOD_cache'(IRI, Resources, Propositions):-
+  is_flickrwrappr_resource(IRI), !,
+  flickrwrappr_query(IRI, Resources, Propositions).
+
 % Query a registered SPARQL endpoint.
 'LOD_cache'(IRI, Resources, Propositions):-
   'SPARQL_cache'(IRI, Resources, Propositions), !.
@@ -48,11 +54,6 @@
   rdf_global_id(Prefix:_, IRI),
   'LOD_location'(Prefix, URL), !,
   'LOD_local_query'(URL, IRI, Resources, Propositions).
-
-% Flickrwrappr LOD description.
-'LOD_cache'(IRI, Resources, Propositions):-
-  is_flickrwrappr_resource(IRI), !,
-  flickrwrappr_query(IRI, Resources, Propositions).
 
 % Based on the entire IRI we can download a LOD description.
 'LOD_cache'(IRI, Resources, Propositions):-
@@ -70,14 +71,16 @@
   catch(download_to_file(URL, File), _, fail),
   'LOD_local_query_on_file'(File, URL, Resource, Resources, Propositions).
 
-% There is no joy in this: no RDF.
-'LOD_local_query_on_file'(File, _, _, [], []):-
-  load_html(File, _, []), !,
-  delete_file(File).
 % Potential RDF! Let's try to load it in a graph.
 'LOD_local_query_on_file'(File, URL, Resource, Resources, Propositions):-
+  file_mime(File, MIME),
+  rdf_mime(MIME), !,
   url_to_graph_name(URL, Graph),
   'LOD_local_query_on_graph'(File, Graph, Resource, Resources, Propositions).
+% There is no joy in this: no RDF.
+'LOD_local_query_on_file'(File, _, _, [], []):-
+  delete_file(File).
+
 
 % The graph is already loaded.
 'LOD_local_query_on_graph'(_, Graph, Resource, Resources, Propositions):-

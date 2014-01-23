@@ -97,7 +97,7 @@ rdf_process_directory_files(FromDir, Froms, ToDir, To, Goal, Args1):-
   ).
 
 rdf_serialization_or_file_type(Format, FileType):-
-  rdf_serialization(_, FileType, Format, _), !.
+  rdf_serialization(_, FileType, Format, _, _), !.
 rdf_serialization_or_file_type(FileType, FileType).
 
 %! rdf_setup_call_cleanup(

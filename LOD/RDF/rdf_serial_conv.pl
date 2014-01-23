@@ -32,7 +32,7 @@ rdf_convert_directory(FromDir, ToDir, ToFormat):-
   % Collect the RDF serialization formats.
   findall(
     FromFormat,
-    rdf_serialization(_Extension, _FileType, FromFormat, _URL),
+    rdf_serialization(_, _, FromFormat, _, _),
     FromFormats
   ),
 
