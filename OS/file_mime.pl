@@ -11,7 +11,7 @@
 Returns the MIME of a given file.
 
 @author Wouter Beek
-@version 2012/10, 2014/01
+@version 2014/01
 */
 
 :- use_module(dcg(dcg_ascii)).

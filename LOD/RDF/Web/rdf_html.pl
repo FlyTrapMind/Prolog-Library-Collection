@@ -126,7 +126,7 @@ rdf_iri(IRI1) -->
           span(class=postfix, Postfix)
         ]),
         ' ',
-        a(href=IRI1, '🔗')
+        a(href=IRI1, '🐭')
       ])
     )
   ;
