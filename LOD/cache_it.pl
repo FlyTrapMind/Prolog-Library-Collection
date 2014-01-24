@@ -1,10 +1,11 @@
 :- module(
   cache_it,
   [
-    cache_it/3, % :Predicate
+    cache_it/3, % +Graph:atom
+                % :Predicate
                 % +Resource:iri
-                % +Graph:atom
-    cache_it/4 % :Predicate
+    cache_it/5 % +Graph:atom
+               % :Predicate
                % +Resource:iri
                % -Resources:ordset(iri)
                % -Propositions:ordset(list(or([bnode,iri,literal])))
@@ -32,22 +33,22 @@ Possible instantiations for `Predicate` are SPARQL_cache/4 and LOD_cache/4.
 :- use_module(rdf_web(rdf_table)).
 :- use_module('SPARQL'('SPARQL_db')).
 
-:- meta_predicate(cache_it(3,+,+)).
-:- meta_predicate(cache_it(3,+,-,-)).
-:- meta_predicate(cache_it(3,+,+,-,+,-)).
+:- meta_predicate(cache_it(+,3,+)).
+:- meta_predicate(cache_it(+,3,+,-,-)).
+:- meta_predicate(cache_it(+,3,+,+,-,+,-)).
 
 :- debug(cache_it).
 
 
 
 %! cache_it(
+%!   +Graph:atom,
 %!   :Predicate,
-%!   +Resource:or([bnode,iri,literal]),
-%!   +Graph:atom
+%!   +Resource:or([bnode,iri,literal])
 %! ) is det.
 
-cache_it(Pred, Resource, Graph):-
-  cache_it(Pred, Resource, _, Propositions),
+cache_it(Graph, Pred, Resource):-
+  cache_it(Graph, Pred, Resource, _, Propositions),
   maplist(assert_proposition(Graph), Propositions).
 
 assert_proposition(Graph, [S,P,O]):-
@@ -55,15 +56,16 @@ assert_proposition(Graph, [S,P,O]):-
 
 
 %! cache_it(
+%!   +Graph:atom,
 %!   :Predicate,
 %!   +Resource:or([bnode,iri,literal]),
 %!   -Resources:ordset(or([bnode,iri,literal])),
 %!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 
-cache_it(_, [], [], []):- !.
-cache_it(Pred, [H|T], Resources, Propositions):- !,
-  cache_it(Pred, [H|T], [H], Resources, [], Propositions),
+cache_it(_, _, [], [], []):- !.
+cache_it(G, Pred, [H|T], Resources, Propositions):- !,
+  cache_it(G, Pred, [H|T], [H], Resources, [], Propositions),
   % DEB
   findall(
     [S,P,O,none],
@@ -71,11 +73,12 @@ cache_it(Pred, [H|T], Resources, Propositions):- !,
     Quadruples
   ),
   rdf_store_table(Quadruples).
-cache_it(Pred, Resource, Resources, Propositions):-
-  cache_it(Pred, [Resource], Resources, Propositions).
+cache_it(G, Pred, Resource, Resources, Propositions):-
+  cache_it(G, Pred, [Resource], Resources, Propositions).
 
 
 %! cache_it(
+%!   +Graph:atom,
 %!   :Predicate,
 %!   +QueryTargets:list(or([bnode,iri,literal])),
 %!   +ResourceHistory:ordset(or([bnode,iri,literal])),
@@ -85,14 +88,14 @@ cache_it(Pred, Resource, Resources, Propositions):-
 %! ) is det.
 
 % Base case.
-cache_it(_, [], VSol, VSol, PropsSol, PropsSol):- !.
+cache_it(_, _, [], VSol, VSol, PropsSol, PropsSol):- !.
 % Recursive case.
-cache_it(Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
+cache_it(G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   message('Resource ~w', [H1]),
   call(Pred, H1, Neighbors, NeighborProps), !,
 
   % Filter on propositions that are included in results.
-  exclude(old_proposition, NeighborProps, NewProps),
+  exclude(old_proposition(G), NeighborProps, NewProps),
   length(NewProps, NumberOfNewProps),
   message('~d propositions added', [NumberOfNewProps]),
 
@@ -109,12 +112,12 @@ cache_it(Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   ord_union(Props1, NewProps, Props2),
 
   % Recurse.
-  cache_it(Pred, T2, Vs2, VSol, Props2, PropsSol).
+  cache_it(G, Pred, T2, Vs2, VSol, Props2, PropsSol).
 % The show must go on!
-cache_it(Pred, [H|T], Vs, VSol, Props, PropsSol):-
+cache_it(G, Pred, [H|T], Vs, VSol, Props, PropsSol):-
   message('~w failed', [H]),
 gtrace,
-  cache_it(Pred, T, Vs, VSol, Props, PropsSol).
+  cache_it(G, Pred, T, Vs, VSol, Props, PropsSol).
 
 message(Format, Args):-
   debug(cache_it, Format, Args),
@@ -130,9 +133,9 @@ old_neighbor(_, NewProps, Element):-
     NewProps
   ), !.
 
-old_proposition([S,P,O]):-
-  rdf(S, P, O), !.
-old_proposition([S,P,O]):-
+old_proposition(G, [S,P,O]):-
+  rdf(S, P, O, G), !.
+old_proposition(G, [S,P,O]):-
   rdf_predicate_property(P, symmetric(true)),
-  rdf(O, P, S), !.
+  rdf(O, P, S, G), !.
 
