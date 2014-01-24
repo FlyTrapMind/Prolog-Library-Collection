@@ -1,15 +1,19 @@
 :- module(
   'SPARQL_db',
   [
-    'SPARQL_register_remote'/4, % +Remote:atom
+    'SPARQL_register_remote'/4, % +SPARQL_Remote:atom
                                 % +Server:atom
                                 % +Port:or([oneof([default]),nonneg])
                                 % +Path:atom
-    'SPARQL_current_remote'/4, % ?Remote:atom
+    'SPARQL_current_remote'/4, % ?SPARQL_Remote:atom
                                % ?Server:atom
                                % ?Port:or([oneof([default]),nonneg])
                                % ?Path:atom
-    'SPARQL_remove_remote'/1 % +Remote:atom
+    'SPARQL_remove_remote'/1, % +SPARQL_Remote:atom
+    'SPARQL_current_remote_domain'/2, % ?SPARQL_Remote:atom
+                                      % ?Domain:atom
+    'SPARQL_register_remote_domain'/2 % +SPARQL_Remote:atom
+                                      % +Domain:atom
   ]
 ).
 
@@ -30,7 +34,7 @@ Persistency store for SPARQL-related information.
 :- use_module(os(file_ext)).
 :- use_module(xml(xml_namespace)).
 
-%! 'SPARQL_remote'(
+%! sparql_remote(
 %!   ?Remote:atom,
 %!   ?Server:atom,
 %!   ?Port:atomic,
@@ -38,6 +42,7 @@ Persistency store for SPARQL-related information.
 %! ) is nondet.
 
 :- persistent(sparql_remote(remote:atom,server:atom,port:atomic,path:atom)).
+:- persistent(sparql_remote_domain(sparql_remote:atom,domain:atom)).
 
 :-
   absolute_file_name(project('SPARQL.db'), File, [access(write)]),
@@ -47,8 +52,8 @@ Persistency store for SPARQL-related information.
 
 % SPARQL remote
 
-'SPARQL_register_remote'(Remote, Server, Port, Path):-
-  'SPARQL_current_remote'(Remote, Server, Port, Path), !,
+'SPARQL_register_remote'(Remote, Domain, Port, Path):-
+  'SPARQL_current_remote'(Remote, Domain, Port, Path), !,
   debug('SPARQL_db', 'SPARQL remote ~w is already set. No changes.', [Remote]).
 'SPARQL_register_remote'(Remote, _Server1, _Port1, _Path1):-
   'SPARQL_current_remote'(Remote, _Server2, _Port2, _Path2), !,
@@ -57,24 +62,33 @@ Persistency store for SPARQL-related information.
     'SPARQL remote ~w is already set DIFFERENTLY. First remove.',
     [Remote]
   ).
-'SPARQL_register_remote'(Remote, Server, Port, Path):-
-  with_mutex('SPARQL_db', assert_sparql_remote(Remote, Server, Port, Path)).
+'SPARQL_register_remote'(Remote, Domain, Port, Path):-
+  with_mutex('SPARQL_db', assert_sparql_remote(Remote, Domain, Port, Path)).
 
 
-'SPARQL_current_remote'(Remote, Server, Port, Path):-
-  with_mutex('SPARQL_db', sparql_remote(Remote, Server, Port, Path)).
+'SPARQL_current_remote'(Remote, Domain, Port, Path):-
+  with_mutex('SPARQL_db', sparql_remote(Remote, Domain, Port, Path)).
 
 
 'SPARQL_remove_remote'(Remote):-
   with_mutex(
     'SPARQL_db',
     (
-      once(sparql_remote(Remote, Server, Port, Path)), !,
-      retractall_sparql_remote(Remote, Server, Port, Path)
+      once(sparql_remote(Remote, Domain, Port, Path)), !,
+      retractall_sparql_remote(Remote, Domain, Port, Path)
     )
   ).
 'SPARQL_remove_remote'(Remote):-
   existence_error('SPARQL remote', Remote).
+
+'SPARQL_current_remote_domain'(SPARQL_Remote, Domain):-
+  'SPARQL_current_remote'(SPARQL_Remote, Domain, _, _).
+'SPARQL_current_remote_domain'(SPARQL_Remote, Domain):-
+  with_mutex('SPARQL_db', sparql_remote_domain(SPARQL_Remote, Domain)).
+
+'SPARQL_register_remote_domain'(SPARQL_Remote, Domain):-
+  'SPARQL_current_remote'(SPARQL_Remote, _, _, _),
+  with_mutex('SPARQL_db', assert_sparql_remote_domain(SPARQL_Remote, Domain)).
 
 
 
@@ -97,34 +111,65 @@ Persistency store for SPARQL-related information.
 
 % DBpedia ontology
 :- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
+:- xml_register_namespace('dbpedia-owl', 'http://dbpedia.org/ontology/').
 
 % DBpedia property
 :- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
+:- xml_register_namespace(dbpprop, 'http://dbpedia.org/property/').
 
 % DBpedia resource
 :- xml_register_namespace(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia localizations
-:- 'SPARQL_register_remote'('af.dbpedia', 'af.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'bg.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'br.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'bs.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'ca.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'af.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ar.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'arc.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'arz.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'av.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ay.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'be.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'bjn.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'bn.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'bo.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ca.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'cdo.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ce.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'chr.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'chy.dbpedia.org').
 :- 'SPARQL_register_remote'('cs.dbpedia', 'cs.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'ia.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'cy.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'da.dbpedia.org').
+:- 'SPARQL_register_remote'('el.dbpedia', 'el.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'eo.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'fa.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'fi.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ga.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'gd.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'gl.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'gn.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'gu.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ha.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'hak.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'he.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'hi.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ht.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'hu.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'hy.dbpedia.org').
+
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ia.dbpedia.org').
 :- 'SPARQL_register_remote'('id.dbpedia', 'id.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'io.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'is.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'io.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'is.dbpedia.org').
 :- 'SPARQL_register_remote'('it.dbpedia', 'it.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote'('ja.dbpedia', 'ja.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'my.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'nn.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'no.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'nv.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'oc.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'my.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'nn.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'no.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'nv.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'oc.dbpedia.org').
 :- 'SPARQL_register_remote'('pl.dbpedia', 'pl.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote'('pt.dbpedia', 'pt.dbpedia.org', default, '/sparql').
-:- 'SPARQL_register_remote'(dbpedia, 'ro.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ro.dbpedia.org').
 :- 'SPARQL_register_remote'('ru.dbpedia', 'ru.dbpedia.org', default, '/sparql').
 
 % Dublin Core elements
