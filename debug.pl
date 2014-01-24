@@ -25,10 +25,11 @@
 % codes.
 :- use_module(library(ansi_term)).
 
-  % Write lists of ASCII numbers as strings to the terminal.
+% Write lists of ASCII numbers as strings to the terminal.
 :- use_module(library(portray_text)).
 :- portray_text(true).
-:- set_portray_text(ellipsis, 100).
+:- set_portray_text(ellipsis, 1000).
+:- set_portray_text(min_length, 2).
 
 % Enforce more stringent style checking.
 :- style_check(+atom).
@@ -60,6 +61,8 @@
 %      at some point.
 %:- use_module(library(swi_ide)).
 %:- prolog_ide(debug_monitor).
+:- use_module(library(debug)).
+:- debug(high).
 
 :- [load].
 

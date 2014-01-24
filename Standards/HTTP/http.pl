@@ -2,6 +2,7 @@
   http,
   [
     http_dateTime/1, % -DateTime:term
+    http_exception/1, % +Exception:compound
     http_goal/3, % +URL:atom
                  % +Options:list(nvpair)
                  % :Goal
@@ -46,7 +47,6 @@ Predicates for sending out HTTP requests.
 % Returns a term describing the current date and time.
 %
 % @compat RFC 1123
-
 
 http_dateTime(DateTime):-
   get_time(TimeStamp),
@@ -137,26 +137,26 @@ http_catcher(_, URL, O1, Goal, Attempts1):-
 
 % Retry after a while upon existence error.
 http_exception(error(existence_error(url, URL),Context)):- !,
-  debug(http, 'URL ~w does not exist (context: ~w).', [URL,Context]).
+  debug(high, 'URL ~w does not exist (context: ~w).', [URL,Context]).
 % HTTP status code.
 http_exception(error(http_status(Status),_Context)):- !,
   'Status-Code'(Status, Reason),
-  debug(http, '[HTTP-STATUS] ~d ~w', [Status,Reason]).
+  debug(high, '[HTTP-STATUS] ~d ~w', [Status,Reason]).
 % Retry upon I/O error.
 http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
-  debug(http, '[IO-ERROR] ~w', [Reason]).
+  debug(high, '[IO-ERROR] ~w', [Reason]).
 http_exception(error(permission_error(redirect,http,URL),context(_,Reason))):- !,
-  debug(http, '[PERMISSION-ERROR] ~w (reason: ~w)', [URL,Reason]).
+  debug(high, '[PERMISSION-ERROR] ~w (reason: ~w)', [URL,Reason]).
 % Retry upon socket error.
 % Thrown by http_open/3.
 http_exception(error(socket_error(Reason),_)):- !,
-  debug(http, '[SOCKET-ERROR] ~w', [Reason]).
+  debug(high, '[SOCKET-ERROR] ~w', [Reason]).
 % `Mode` is either `read` or `write`.
 http_exception(error(timeout_error(Mode,_Stream),context(PredSignature,_))):- !,
-  debug(http, '[TIMEOUT-ERROR] While ~wing ~w.', [Mode,PredSignature]).
+  debug(high, '[TIMEOUT-ERROR] While ~wing ~w.', [Mode,PredSignature]).
 % DEB
 http_exception(E):-
-  debug(http, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
+  debug(high, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
 
 % Success codes.
 http_process(Status, Stream, Goal):-
