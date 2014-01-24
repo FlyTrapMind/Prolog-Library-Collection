@@ -169,13 +169,13 @@ capitalize --> dcg_end.
 ci_code(Code) -->
   {nonvar(Code)}, !,
   (
-    {code_type(Lower, lower(Upper))}
+    {code_type(Code, lower(Upper))}
   ->
-    ([Lower] ; [Upper])
+    ([Code] ; [Upper])
   ;
-    {code_type(Upper, upper(Lower))}
+    {code_type(Code, upper(Lower))}
   ->
-    ([Upper] ; [Lower])
+    ([Code] ; [Lower])
   ;
     [Code]
   ).
@@ -214,8 +214,10 @@ ci_code(CI_Code) -->
 % false.
 % ~~~
 
-ci_string(Codes) -->
-  dcg_multi1(ci_code, Codes), !.
+ci_string([]) --> [].
+ci_string([H|T]) -->
+  ci_code(H),
+  ci_string(T).
 
 code(C) -->
   [C].
