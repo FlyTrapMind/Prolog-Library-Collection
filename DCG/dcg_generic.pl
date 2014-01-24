@@ -10,6 +10,7 @@
                     % :DCG
                     % :End
     dcg_copy//0,
+    dcg_done//0,
     dcg_end//0,
     dcg_separated_list//2, % :Separator:dcg
                            % ?Codess:list(list(codes))
@@ -97,6 +98,8 @@ dcg_copy, [X] -->
   [X],
   dcg_copy.
 dcg_copy --> dcg_end.
+
+dcg_done(_, _).
 
 dcg_end([], []).
 
