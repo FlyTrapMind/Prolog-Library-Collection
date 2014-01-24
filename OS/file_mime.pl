@@ -14,40 +14,36 @@ Returns the MIME of a given file.
 @version 2014/01
 */
 
-:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(library(pure_input)).
 :- use_module(os(io_ext)).
 
 
 
 file_mime(File, Mime):-
   file_to_atom(File, Atom),
+gtrace,
   atom_codes(Atom, Codes),
   phrase(file_mime(Mime), Codes), !.
 file_mime(File, Mime):-
   gtrace,
   file_mime(File, Mime).
-/*
-file_mime(File, Mime):-
-  phrase_from_file(file_mime(Mime), File).
-*/
 
 
 file_mime('application/x-turtle') -->
-  `@prefix`, !,
-  dcg_all.
+  ci_string(`@prefix`), !,
+  dcg_done.
 file_mime('text/html') -->
-  `<!DOCTYPE HTML`, !,
-  dcg_all.
+  `<!`, ci_string(`DOCTYPE`), blanks,
+  ci_string(`HTML`), !,
+  dcg_done.
 file_mime(Mime) -->
   blanks,
   (xml_declaration(_) ; ""), blanks,
   (xml_comment ; ""), blanks,
   xml_something(Mime),
-  dcg_all.
+  dcg_done.
 
 xml_comment -->
   `<!--`,
@@ -62,26 +58,29 @@ test -->
 %  the XML content encoding. This is optional but recommended.
 
 xml_declaration(Version) -->
-  `<?xml`, whites,
+  `<?`, ci_string(`XML`), whites,
   (xml_version(Version), whites ; ""),
   (xml_encoding, whites ; ""),
   `?>`, blanks_to_nl.
 
 xml_doctype('application/rdf+xml') -->
-  `<!DOCTYPE rdf:RDF`, !,
-  dcg_all.
+  `<!`, ci_string(`DOCTYPE`), blanks, `rdf:RDF`, !,
+  dcg_done.
 
 xml_encoding -->
   `encoding=`,
-  quoted("UTF-8").
+  quoted(utf8).
+
+utf8 -->
+  ci_string(`UTF`), `-8`.
 
 xml_something('application/rdf+xml') -->
   `<rdf:RDF`, !,
-  dcg_all.
+  dcg_done.
 xml_something(MIME) -->
   xml_doctype(MIME).
 xml_something('text/xml') -->
-  dcg_all.
+  dcg_done.
 
 xml_version(Version) -->
   `version=`,
