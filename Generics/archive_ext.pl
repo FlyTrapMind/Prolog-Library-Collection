@@ -36,10 +36,9 @@ extract_archive(File, Dir, Msg):-
   prolog_file_type(Ext, archive), !,
   extract_archive(Ext, File, Base, Msg1),
   extract_archive(Base, Dir, Msg2),
-  atomic_list_concat([Msg1,Msg2], '\n', Msg).
-extract_archive(File, Dir, Msg):-
-  copy_file(File, Dir),
-  format(atom(Msg), 'Copied ~w', [File]).
+  atomic_list_concat([Msg1,Msg2], ' and ', Msg).
+extract_archive(File, Dir, copied):-
+  copy_file(File, Dir).
 
 
 extract_archive(gz, File, _, gunzipped):- !,
