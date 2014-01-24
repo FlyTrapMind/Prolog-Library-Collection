@@ -120,7 +120,7 @@ rdf_setup_call_cleanup(O1, Goal, FromFiles):-
   setup_call_cleanup(
     (
       rdf_new_graph(temp, TmpGraph),
-      rdf_loads(FromFiles, TmpGraph)
+      rdf_load_into_one_graph(FromFiles, TmpGraph)
     ),
     call(Goal, TmpGraph),
     (

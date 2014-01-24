@@ -510,3 +510,7 @@ pre .string, pre .support.value  {
   font-weight: bold;
 }
 
+.mime {
+  font-family: monospace;
+}
+
