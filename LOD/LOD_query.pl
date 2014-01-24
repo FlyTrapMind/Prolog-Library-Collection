@@ -1,14 +1,15 @@
 :- module(
   'LOD_query',
   [
-    'LOD_cache'/2, % +Resource:iri
+    'LOD_cache'/2, % +Resource:or([bnode,iri,literal])
                    % +Graph:atom
-    'LOD_cache'/3, % +Resource:iri
+    'LOD_cache'/3, % +Resource:or([bnode,iri,literal])
                    % -Resources:ordset(or([bnode,iri,literal]))
-                   % -Propositions:ordset(list)
-    'LOD_local_query'/3 % +Resource:iri
+                   % -Propositions:ordset(list(or([bnode,iri,literal])))
+    'LOD_local_query'/4 % +URL:url
+                        % +Resource:or([bnode,iri,literal])
                         % -Resources:ordset(or([bnode,iri,literal]))
-                        % -Propositions:ordset(list)
+                        % -Propositions:ordset(list(or([bnode,iri,literal])))
   ]
 ).
 
@@ -41,9 +42,9 @@
 
 
 % Flickrwrappr LOD description.
-'LOD_cache'(IRI, Resources, Propositions):-
-  is_flickrwrappr_resource(IRI), !,
-  flickrwrappr_query(IRI, Resources, Propositions).
+% We extract these later, see module [flickrwrappr].
+'LOD_cache'(URL, [], []):-
+  is_flickrwrappr_url(URL), !.
 
 % Query a registered SPARQL endpoint.
 'LOD_cache'(IRI, Resources, Propositions):-
@@ -61,11 +62,12 @@
   'LOD_local_query'(IRI, IRI, Resources, Propositions).
 
 
-%! 'LOD_local_query'(+Resource, -Resources, -Propositions) is det.
-%! 'LOD_local_query'(+URL, +Resource, -Resources, -Propositions) is det.
-
-'LOD_local_query'(IRI, Resources, Propositions):-
-  'LOD_local_query'(IRI, IRI, Resources, Propositions).
+%! 'LOD_local_query'(
+%!   +URL:url,
+%!   +Resource:or([bnode,iri,literal]),
+%!   -Resources:ordset(or([bnode,iri,literal])),
+%!   -Propositions:ordset(list(or([bnode,iri,literal])))
+%! ) is det.
 
 'LOD_local_query'(URL, Resource, Resources, Propositions):-
   catch(download_to_file(URL, File), _, fail),
@@ -76,19 +78,33 @@
   file_mime(File, MIME),
   rdf_mime(MIME), !,
   url_to_graph_name(URL, Graph),
-  'LOD_local_query_on_graph'(File, Graph, Resource, Resources, Propositions).
+  'LOD_local_query_on_graph'(
+    File,
+    MIME,
+    Graph,
+    Resource,
+    Resources,
+    Propositions
+  ).
 % There is no joy in this: no RDF.
 'LOD_local_query_on_file'(File, _, _, [], []):-
   delete_file(File).
 
 
 % The graph is already loaded.
-'LOD_local_query_on_graph'(_, Graph, Resource, Resources, Propositions):-
+'LOD_local_query_on_graph'(_, _, Graph, Resource, Resources, Propositions):-
   rdf_graph(Graph), !,
   'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions).
 % The graph first needs to be loaded.
-'LOD_local_query_on_graph'(File, Graph, Resource, Resources, Propositions):-
-  rdf_load2(File, [graph(Graph)]),
+'LOD_local_query_on_graph'(
+  File,
+  MIME,
+  Graph,
+  Resource,
+  Resources,
+  Propositions
+):-
+  rdf_load2(File, [graph(Graph),mime(MIME)]),
   'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions).
 
 'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions):-

@@ -15,7 +15,7 @@
 
 Generic predicate for caching RDF results.
 
-Possible instantiations for `Predicate` are SPARQL_cache/3 and LOD_cache/3.
+Possible instantiations for `Predicate` are SPARQL_cache/4 and LOD_cache/4.
 
 @author Wouter Beek
 @version 2014/01
@@ -58,7 +58,7 @@ assert_proposition(Graph, [S,P,O]):-
 %!   :Predicate,
 %!   +Resource:or([bnode,iri,literal]),
 %!   -Resources:ordset(or([bnode,iri,literal])),
-%!   -Propositions:ordset(list)
+%!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 
 cache_it(_, [], [], []):- !.
@@ -74,6 +74,15 @@ cache_it(Pred, [H|T], Resources, Propositions):- !,
 cache_it(Pred, Resource, Resources, Propositions):-
   cache_it(Pred, [Resource], Resources, Propositions).
 
+
+%! cache_it(
+%!   :Predicate,
+%!   +QueryTargets:list(or([bnode,iri,literal])),
+%!   +ResourceHistory:ordset(or([bnode,iri,literal])),
+%!   -Resources:ordset(or([bnode,iri,literal])),
+%!   +PropositionHistory:ordset(list(or([bnode,iri,literal]))),
+%!   -Propositions:ordset(list(or([bnode,iri,literal])))
+%! ) is det.
 
 % Base case.
 cache_it(_, [], VSol, VSol, PropsSol, PropsSol):- !.
@@ -104,6 +113,7 @@ cache_it(Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
 % The show must go on!
 cache_it(Pred, [H|T], Vs, VSol, Props, PropsSol):-
   message('~w failed', [H]),
+gtrace,
   cache_it(Pred, T, Vs, VSol, Props, PropsSol).
 
 message(Format, Args):-
