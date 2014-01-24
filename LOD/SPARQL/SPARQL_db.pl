@@ -125,6 +125,7 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ar.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'arc.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'arz.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'as.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'av.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ay.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'be.dbpedia.org').
@@ -223,6 +224,7 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'wo.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'xal.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'yi.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'yo.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'yoh.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'zh.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'zh_min_nan.dbpedia.org').
