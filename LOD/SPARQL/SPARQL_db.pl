@@ -131,6 +131,8 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'bjn.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'bn.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'bo.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'br.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'bs.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ca.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'cdo.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ce.dbpedia.org').
@@ -141,6 +143,7 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'da.dbpedia.org').
 :- 'SPARQL_register_remote'('el.dbpedia', 'el.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'eo.dbpedia.org').
+:- 'SPARQL_register_remote'('es.dbpedia', 'es.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'fa.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'fi.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ga.dbpedia.org').
@@ -155,22 +158,75 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ht.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'hu.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'hy.dbpedia.org').
-
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ia.dbpedia.org').
 :- 'SPARQL_register_remote'('id.dbpedia', 'id.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'io.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'is.dbpedia.org').
 :- 'SPARQL_register_remote'('it.dbpedia', 'it.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote'('ja.dbpedia', 'ja.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'jv.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'kk.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'kl.dbpedia.org').
+:- 'SPARQL_register_remote'('ko.dbpedia', 'ko.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'la.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'lbe.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'lez.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'li.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'lt.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'lv.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'mhr.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'mk.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ml.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'mr.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'mrj.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ms.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'my.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'na.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'nah.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ne.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'new.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'nn.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'no.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'nrm.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'nv.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'oc.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'pnb.dbpedia.org').
 :- 'SPARQL_register_remote'('pl.dbpedia', 'pl.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote'('pt.dbpedia', 'pt.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'qu.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ro.dbpedia.org').
 :- 'SPARQL_register_remote'('ru.dbpedia', 'ru.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'rw.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sco.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'se.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'simple.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sl.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sn.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sq.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sr.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'srn.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'su.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sv.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'sw.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ta.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'te.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'tg.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'th.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'tl.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'tum.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'udm.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'ug.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'uk.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'vi.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'wa.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'war.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'wo.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'xal.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'yi.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'yoh.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'zh.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'zh_min_nan.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'zh_yue.dbpedia.org').
 
 % Dublin Core elements
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').
