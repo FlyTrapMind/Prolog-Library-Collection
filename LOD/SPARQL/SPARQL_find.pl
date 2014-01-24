@@ -62,7 +62,7 @@ Find a single resource based on a search term.
     ),
     Query
   ),
-  'SPARQL_enqueue'(Remote, Query, _VarNames, Resources),
+  'SPARQL_query'(Remote, Query, _VarNames, Resources),
   (
     Resources = []
   ->

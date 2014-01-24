@@ -113,7 +113,7 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
     ),
     Query
   ),
-  'SPARQL_enqueue'(dbpedia, Query, _VarNames, Resources),
+  'SPARQL_query'(dbpedia, Query, _VarNames, Resources),
   (
     Resources = []
   ->

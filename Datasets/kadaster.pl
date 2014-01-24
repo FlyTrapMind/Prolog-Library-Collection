@@ -45,7 +45,7 @@ query_kadaster(Resources):-
     ),
     Query
   ),
-  'SPARQL_enqueue'(kadaster, Query, _VarNames, Resources).
+  'SPARQL_query'(kadaster, Query, _VarNames, Resources).
 
 query_kadaster(S, Resources):-
   phrase(
@@ -62,7 +62,7 @@ query_kadaster(S, Resources):-
     ),
     Query
   ),
-  'SPARQL_enqueue'(kadaster, Query, _VarNames, Resources).
+  'SPARQL_query'(kadaster, Query, _VarNames, Resources).
 
 scrape_kadaster:-
   phrase(
@@ -79,7 +79,7 @@ scrape_kadaster:-
     ),
     Query
   ),
-  'SPARQL_enqueue'(kadaster, Query, _VarNames, Resources),
+  'SPARQL_query'(kadaster, Query, _VarNames, Resources),
   forall(
     member(row(S,P,O), Resources),
     rdf_assert(S, P, O, kadaster)

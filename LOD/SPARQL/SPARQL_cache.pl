@@ -42,9 +42,9 @@ assert_proposition(Graph, [S,P,O]):-
 
 
 %! 'SPARQL_cache'(
-%!   +Resource:iri,
-%!   -Resources:ordset(iri),
-%!   -Propositions:ordset(list)
+%!   +Resource:or([bnode,iri,literal]),
+%!   -Resources:ordset(or([bnode,iri,literal])),
+%!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 % Returns the depth-one resources and propositions for the given resource.
 %
@@ -75,7 +75,7 @@ assert_proposition(Graph, [S,P,O]):-
 % IRI with registered SPARQL endpoint.
 'SPARQL_cache'(Resource, Resources, Propositions):-
   uri_components(Resource, uri_components(_, Domain, _, _, _)),
-  'SPARQL_current_remote'(Remote, Domain, _, _), !,
+  'SPARQL_current_remote_domain'(Remote, Domain), !,
   phrase(
     'SPARQL_formulate'(
       _,
@@ -90,7 +90,7 @@ assert_proposition(Graph, [S,P,O]):-
     ),
     Query
   ),
-  'SPARQL_enqueue'(Remote, Query, _VarNames, Rows),
+  'SPARQL_query'(Remote, Query, _VarNames, Rows),
 
   % Conversion
   rows_to_propositions([Resource], Rows, Propositions),
