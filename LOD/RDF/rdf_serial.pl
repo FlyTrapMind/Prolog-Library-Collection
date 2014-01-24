@@ -3,10 +3,6 @@
   [
     rdf_graph_source_file/2, % +Graph:atom
                              % -File:atom
-    rdf_guess_data_format/2, % +FileOrStream:or([atom,stream])
-                             % ?Format:oneof([ntriples,triples,turtle,xml])
-    rdf_guess_data_type/2, % +FileOrStream:or([atom,stream])
-                           % ?Type:oneof([ntriples,rdf_xml,triples,turtle])
     rdf_load2/1, % +File:atom
     rdf_load2/2, % +File:atom
                  % +Options:list(nvpair)
@@ -94,51 +90,6 @@ rdf_graph_source_file(G, F2):-
   sub_atom(F1, 1, _Length, 0, F2).
 
 
-%! rdf_guess_data_format(
-%!   +FileOrStream:or([atom,stream]),
-%!   ?Format:oneof([ntriples,triples,turtle,xml])
-%! ) is det.
-% Guess the format of an RDF file from the actual content.
-% Currently, this seeks for a valid XML document upto the rdf:RDF
-% element before concluding that the file is RDF/XML. Otherwise it
-% assumes that the document is Turtle.
-%
-% @author Jan Wielemaker, predicate taken from ClioPatria codebase.
-% @tbd Is it really so difficult to distinguish between N-triples and Turtle?
-
-rdf_guess_data_format(FileOrStream, Format):-
-  rdf_guess_data_type(FileOrStream, Type),
-  rdf_serialization(_, Type, Format, _, _).
-
-
-%! rdf_guess_data_format(
-%!   +FileOrStream:or([atom,stream]),
-%!   ?Type:oneof([ntriples,rdf_xml,triples,turtle])
-%! ) is det.
-
-rdf_guess_data_type(Stream, rdf_xml):-
-  is_stream(Stream), !,
-  xml_doctype(Stream, _).
-rdf_guess_data_type(File, Type):-
-  exists_file(File),
-  (
-    catch(
-      setup_call_cleanup(
-        open(File, read, Stream, [encoding(utf8)]),
-        rdf_guess_data_type(Stream, Type),
-        close(Stream)
-      ),
-      _,
-      fail
-    ), !
-  ;
-    file_name_type(_, Type, File)
-  ;
-    % Default.
-    Type = turtle
-  ).
-
-
 %! rdf_load2(+File:atom) is det.
 %! rdf_load2(+Files:list(atom)) is det.
 % Load the graph that is stored in the given file.
@@ -156,8 +107,9 @@ rdf_load2(Spec):-
 % Load RDF from a file, a list of files, or a directory.
 %
 % The following options are supported:
-%   * format(+Format:oneof([ntriples,turtle,xml]))
-%   * graph(+Graph:atom)
+%   * =|format(+Format:oneof([ntriples,turtle,xml]))|=
+%   * =|graph(+Graph:atom)|=
+%   * =|mime(+MIME:oneof(['application/rdf+xml','application/x-turtle','text/plain','text/rdf+n3']))|=
 %
 % @arg Spec Either a file, a list of files, or a directory.
 % @arg Options A list of name-value pairs.
@@ -178,32 +130,42 @@ rdf_load2(Dir, O1):-
     Files
   ),
   rdf_load2(Files, O1).
-% The format and graph are set.
+% Load a single file.
 rdf_load2(File, O1):-
   access_file(File, read),
-  option(format(Format), O1), nonvar(Format),
-  option(graph(G), O1), nonvar(G), !,
+  % Retrieve the graph name.
+  ensure_graph(File, O1, O2),
+  
+  % Retrieve the RDF format.
+  ensure_format(File, O2, O3),
+  
   % XML namespace prefixes must be added explicitly.
-  merge_options([register_namespaces(false)], O1, O2),
+  merge_options([register_namespaces(false)], O3, O4),
+  
   % The real job is performed by a predicate from the semweb library.
-  rdf_load(File, O2),
+  rdf_load(File, O4),
+  
   % Send a debug message notifying that the RDF file was successfully loaded.
-  debug(rdf_serial, 'Graph ~w was loaded from file ~w.', [G,File]).
-% The graph is missing, extrapolate it from the file.
-rdf_load2(File, O1):-
-  access_file(File, read),
-  \+ (option(graph(G), O1), nonvar(G)), !,
-  file_to_graph_name(File, G),
-  merge_options([graph(G)], O1, O2),
-  rdf_load2(File, O2).
-% The format is missing, extrapolate it from the file.
-rdf_load2(File, O1):-
-  access_file(File, read),
-  % Returns the format in case it was a variable.
-  \+ (option(format(Format), O1), nonvar(Format)), !,
+  debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
+
+ensure_format(_, O1, O1):-
+  option(format(Format), O1),
+  nonvar(Format), !.
+ensure_format(_, O1, O3):-
+  select_option(mime(MIME), O1, O2), !,
+  rdf_serialization(_, _, Format, MIME, _),
+  merge_options([format(Format)], O2, O3).
+ensure_format(File, O1, O2):-
   rdf_guess_data_format(File, Format),
-  merge_options([format(Format)], O1, O2),
-  rdf_load2(File, O2).
+  merge_options([format(Format)], O1, O2).
+
+ensure_graph(_, O1, O1):-
+  option(graph(Graph), O1),
+  nonvar(Graph), !.
+ensure_graph(File, O1, O2):-
+  file_to_graph_name(File, Graph),
+  merge_options([graph(Graph)], O1, O2).
+
 
 %! rdf_loads(+Files:list(atom), +Graph:atom) is det.
 
