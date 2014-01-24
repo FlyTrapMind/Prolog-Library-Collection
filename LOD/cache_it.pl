@@ -35,7 +35,7 @@ Possible instantiations for `Predicate` are SPARQL_cache/4 and LOD_cache/4.
 
 :- meta_predicate(cache_it(+,3,+)).
 :- meta_predicate(cache_it(+,3,+,-,-)).
-:- meta_predicate(cache_it(+,3,+,+,-,+,-)).
+:- meta_predicate(cache_it(+,+,3,+,+,-,+,-)).
 
 :- debug(cache_it).
 
@@ -65,7 +65,7 @@ assert_proposition(Graph, [S,P,O]):-
 
 cache_it(_, _, [], [], []):- !.
 cache_it(G, Pred, [H|T], Resources, Propositions):- !,
-  cache_it(G, Pred, [H|T], [H], Resources, [], Propositions),
+  cache_it('depth-first', G, Pred, [H|T], [H], Resources, [], Propositions),
   % DEB
   findall(
     [S,P,O,none],
@@ -78,6 +78,7 @@ cache_it(G, Pred, Resource, Resources, Propositions):-
 
 
 %! cache_it(
+%!   +Mode:oneof(['breadth-first','depth-first']),
 %!   +Graph:atom,
 %!   :Predicate,
 %!   +QueryTargets:list(or([bnode,iri,literal])),
@@ -88,36 +89,55 @@ cache_it(G, Pred, Resource, Resources, Propositions):-
 %! ) is det.
 
 % Base case.
-cache_it(_, _, [], VSol, VSol, PropsSol, PropsSol):- !.
+cache_it(_, _, _, [], VSol, VSol, PropsSol, PropsSol):- !.
 % Recursive case.
-cache_it(G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
+cache_it(Mode, G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   message('Resource ~w', [H1]),
   call(Pred, H1, Neighbors, NeighborProps), !,
 
   % Filter on propositions that are included in results.
   exclude(old_proposition(G), NeighborProps, NewProps),
-  length(NewProps, NumberOfNewProps),
-  message('~d propositions added', [NumberOfNewProps]),
 
   % Filter on resources that have to be visited.
   exclude(old_neighbor(Vs1, NewProps), Neighbors, NewNeighbors),
-  length(NewNeighbors, NumberOfNewNeighbors),
-  message('~d resources added', [NumberOfNewNeighbors]),
 
-  % Update resources that have to be visiterd.
-  append(T1, NewNeighbors, T2),
-
-  % Update results.
+  % Update results: resources.
   ord_union(Vs1, NewNeighbors, Vs2),
+  maplist(length, [NewNeighbors,Vs2], [NumberOfNewNeighbors,NumberOfVs2]),
+  message(
+    '~d resources added (~d in total)',
+    [NumberOfNewNeighbors,NumberOfVs2]
+  ),
+  
+  % Update results: propositions.
   ord_union(Props1, NewProps, Props2),
-
+  maplist(length, [NewProps,Props2], [NumberOfNewProps,NumberOfProps2]),
+  message(
+    '~d propositions added (~d in total)',
+    [NumberOfNewProps,NumberOfProps2]
+  ),
+  
+  % Update resources that have to be visited.
+  % Support breadth-first and depth-first modes.
+  (
+    Mode == 'breadth-first'
+  ->
+    append(T1, NewNeighbors, T2)
+  ;
+    Mode == 'depth-first'
+  ->
+    append(NewNeighbors, T1, T2)
+  ),
+  length(T2, NumberOfT2),
+  message('~d remaining', [NumberOfT2]),
+  
   % Recurse.
-  cache_it(G, Pred, T2, Vs2, VSol, Props2, PropsSol).
+  cache_it(Mode, G, Pred, T2, Vs2, VSol, Props2, PropsSol).
 % The show must go on!
-cache_it(G, Pred, [H|T], Vs, VSol, Props, PropsSol):-
+cache_it(Mode, G, Pred, [H|T], Vs, VSol, Props, PropsSol):-
   message('~w failed', [H]),
 gtrace,
-  cache_it(G, Pred, T, Vs, VSol, Props, PropsSol).
+  cache_it(Mode, G, Pred, T, Vs, VSol, Props, PropsSol).
 
 message(Format, Args):-
   debug(cache_it, Format, Args),
