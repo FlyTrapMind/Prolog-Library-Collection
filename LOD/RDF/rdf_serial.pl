@@ -55,6 +55,7 @@ reflect the serialization format:
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
+:- use_module(os(file_mime)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(xml(xml_dom)).
 
@@ -156,7 +157,8 @@ ensure_format(_, O1, O3):-
   rdf_serialization(_, _, Format, MIME, _),
   merge_options([format(Format)], O2, O3).
 ensure_format(File, O1, O2):-
-  rdf_guess_data_format(File, Format),
+  file_mime(File, MIME),
+  rdf_serialization(_, _, Format, MIME, _),
   merge_options([format(Format)], O1, O2).
 
 ensure_graph(_, O1, O1):-
