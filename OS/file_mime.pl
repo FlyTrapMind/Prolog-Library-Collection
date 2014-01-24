@@ -17,18 +17,20 @@ Returns the MIME of a given file.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(os(io_ext)).
+:- use_module(library(pure_input)).
+%:- use_module(os(io_ext)).
 
 
 
-file_mime(File, Mime):-
-  file_to_atom(File, Atom),
-gtrace,
-  atom_codes(Atom, Codes),
-  phrase(file_mime(Mime), Codes), !.
-file_mime(File, Mime):-
+%file_mime(File, Mime):-
+%  file_to_atom(File, Atom),
+%  atom_codes(Atom, Codes),
+%  phrase(file_mime(Mime), Codes), !.
+file_mime(File, MIME):-
+  phrase_from_file(file_mime(MIME), File), !.
+file_mime(File, MIME):-
   gtrace,
-  file_mime(File, Mime).
+  file_mime(File, MIME).
 
 
 file_mime('application/x-turtle') -->
