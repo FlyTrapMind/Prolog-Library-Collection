@@ -43,6 +43,8 @@ Runs stages in an automated process.
 %   * =|args(+Arguments:list)|=
 %     Additional, goal-specific arguments.
 %     Default: the empty list.
+%   * =|finished(+Finished:boolean)|=
+%     Whether or not a `FINISHED` file is create after stage completion.
 %   * =|stat_lag(+Interval:positive_interval)|=
 %     The lag between statistics updates in seconds.
 %     Default: =10=.
@@ -140,17 +142,23 @@ ap_stage_begin(Alias, Stage):-
   ap_debug(Alias, '[Stage:~w] Started.', [Stage]).
 
 
-ap_stage_end(Alias, Stage, ToDir):-
+ap_stage_end(O1, Alias, Stage, ToDir):-
   % Send a progress bar to the debug chanel.
   ap_stage_done(Alias, Stage),
 
   % Add an empty file that indicates this stage completed successfully
-  absolute_file_name(
-    'FINISHED',
-    ToFile,
-    [access(write),file_errors(fail),relative_to(ToDir)]
+  (
+    option(finished(true), O1, false)
+  ->
+    absolute_file_name(
+      'FINISHED',
+      ToFile,
+      [access(write),file_errors(fail),relative_to(ToDir)]
+    ),
+    atom_to_file('', ToFile)
+  ;
+    true
   ),
-  atom_to_file('', ToFile),
 
   ap_debug(Alias, '[Stage:~w] Ended successfully.', [Stage]).
 
@@ -289,7 +297,7 @@ ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
   catch(
     (
       ap_stage_init(O1, Alias, ToDir, Mod:Goal, Msg),
-      ap_stage_end(Alias, 0, ToDir),
+      ap_stage_end(O1, Alias, 0, ToDir),
       ap_stages(Alias, 0, Mod:T, Msgs1),
       Msgs2 = [Msg|Msgs1]
     ),
@@ -302,7 +310,7 @@ ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
   catch(
     (
       ap_stage(O1, Alias, Stage1, Stage2, Mod:H, ToDir, Msg),
-      ap_stage_end(Alias, Stage2, ToDir),
+      ap_stage_end(O1, Alias, Stage2, ToDir),
       ap_stages(Alias, Stage2, Mod:T, Msgs1),
       Msgs2 = [Msg|Msgs1]
     ),
