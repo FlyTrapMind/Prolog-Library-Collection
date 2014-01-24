@@ -267,9 +267,13 @@ file_name_type(Name, Type, Path):-
 file_name_type(Path, directory, Path):-
   nonvar(Path), exists_directory(Path), !.
 file_name_type(Name, Type, Path):-
-  nonvar(Path), !,
+  nonvar(Path),
   file_name_extension(Name, Ext, Path),
+  Ext \== '', !,
   user:prolog_file_type(Ext, Type).
+% For files with no extension and thus no type.
+file_name_type(Path, none, Path):-
+  exists_file(Path), !.
 
 file_type_alternative(File1, File2):-
   file_name_extension(Base, _Extension1, File1),
