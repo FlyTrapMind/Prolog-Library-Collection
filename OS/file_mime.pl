@@ -19,46 +19,71 @@ Returns the MIME of a given file.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(pure_input)).
+:- use_module(os(io_ext)).
+
 
 
 file_mime(File, Mime):-
+  file_to_atom(File, Atom),
+  atom_codes(Atom, Codes),
+  phrase(file_mime(Mime), Codes), !.
+file_mime(File, Mime):-
+  gtrace,
+  file_mime(File, Mime).
+/*
+file_mime(File, Mime):-
   phrase_from_file(file_mime(Mime), File).
+*/
 
 
-
+file_mime('application/x-turtle') -->
+  `@prefix`, !,
+  dcg_all.
 file_mime('text/html') -->
-  "<!DOCTYPE HTML ", !,
+  `<!DOCTYPE HTML`, !,
   dcg_all.
 file_mime(Mime) -->
-  "<?xml ",
-  (xml_version(_), " " ; ""),
-  (xml_encoding ; ""),
-  "?>",
-  blanks_to_nl, line_feed,
-  (xml_comment ; ""),
-  xml_doctype(Mime),
+  blanks,
+  (xml_declaration(_) ; ""), blanks,
+  (xml_comment ; ""), blanks,
+  xml_something(Mime),
   dcg_all.
 
 xml_comment -->
-  "<!--",
-  dcg_until([end_mode(inclusive)], "-->", _),
-  blanks_to_nl, line_feed.
+  `<!--`,
+  dcg_until([end_mode(inclusive)], test, _),
+  blanks_to_nl.
+test -->
+  `-->`.
 
-xml_doctype(Mime) -->
-  "<!DOCTYPE ",
-  xml_doctype_value(Mime).
+%! xml_declaration(?Version:float)// .
+% The XML specification also permits an XML declaration at
+%  the top of the document with the XML version and possibly
+%  the XML content encoding. This is optional but recommended.
 
-xml_doctype_value('application/rdf+xml') -->
-  "rdf:RDF", !,
-  dcg_all.
-xml_doctype_value('text/xml') -->
+xml_declaration(Version) -->
+  `<?xml`, whites,
+  (xml_version(Version), whites ; ""),
+  (xml_encoding, whites ; ""),
+  `?>`, blanks_to_nl.
+
+xml_doctype('application/rdf+xml') -->
+  `<!DOCTYPE rdf:RDF`, !,
   dcg_all.
 
 xml_encoding -->
-  "encoding=",
+  `encoding=`,
   quoted("UTF-8").
 
+xml_something('application/rdf+xml') -->
+  `<rdf:RDF`, !,
+  dcg_all.
+xml_something(MIME) -->
+  xml_doctype(MIME).
+xml_something('text/xml') -->
+  dcg_all.
+
 xml_version(Version) -->
-  "version=",
+  `version=`,
   quoted(float(Version)).
 
