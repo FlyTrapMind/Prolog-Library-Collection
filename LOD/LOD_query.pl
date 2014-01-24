@@ -53,7 +53,11 @@
 % Download an LOD description based on the IRI prefix.
 'LOD_cache'(IRI, Resources, Propositions):-
   rdf_global_id(Prefix:_, IRI),
-  'LOD_location'(Prefix, URL), !,
+  (
+    'LOD_location'(Prefix, URL), !
+  ;
+    URL = IRI
+  ),
   'LOD_local_query'(URL, IRI, Resources, Propositions).
 
 % Based on the entire IRI we can download a LOD description.
