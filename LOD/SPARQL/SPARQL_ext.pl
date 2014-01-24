@@ -1,8 +1,9 @@
 :- module(
   'SPARQL_ext',
   [
-    'SPARQL_enqueue'/4, % +Remote:atom
+    'SPARQL_enqueue'/5, % +Remote:atom
                         % +Query:atom
+                        % +Attempts:or([oneof([inf]),positive_integer])
                         % -VarNames:list
                         % -Results:list
     'SPARQL_query'/4, % +Remote:atom
@@ -103,6 +104,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(generics(list_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_closure)).
+:- use_module(http(http)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/thread_httpd)).
@@ -111,6 +113,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
+:- use_module(math(math_ext)).
 :- use_module('SPARQL'(row_ext)).
 :- use_module('SPARQL'('SPARQL_build')).
 :- use_module('SPARQL'('SPARQL_db')).
@@ -130,22 +133,24 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 %! 'SPARQL_enqueue'(
 %!   +Remote:atom,
 %!   +Query:atom,
+%!   +Retries:or([oneof([inf]),positive_integer]),
 %!   -VarNames:list,
 %!   -Results:list
 %! ) is det.
 % @error =|existence_error(url,URL)|= with context
 %        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
 
-'SPARQL_enqueue'(Remote, Query, VarNames, Results):-
+'SPARQL_enqueue'(_, _, 0, [], []):- !.
+'SPARQL_enqueue'(Remote, Query, Attempts1, VarNames, Results):-
   catch(
-    'SPARQL_query'(Remote, Query, VarNames, Results),
-    Exception,
+    'SPARQL_query_no_catch'(Remote, Query, VarNames, Results),
+    E,
     (
-      debug('SPARQL_ext', '[EXCEPTION] ~w', [Exception]),
-      'SPARQL_enqueue'(Remote, Query, VarNames, Results)
+      http_exception(E),
+      count_down(Attempts1, Attempts2),
+      'SPARQL_enqueue'(Remote, Query, Attempts2, VarNames, Results)
     )
   ).
-
 
 
 %! 'SPARQL_query'(
@@ -157,10 +162,17 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % Simply performs a SPARQL query (no additional options, closures).
 
 'SPARQL_query'(Remote, Query1, VarNames, Results):-
+  catch(
+    'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results),
+    E,
+    http_exception(E)
+  ).
+
+'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results):-
   to_atom(Query1, Query2),
-  debug(sparl_ext, '~w', [Query2]),
+  debug('SPARQL_ext', '~w', [Query2]),
   once('SPARQL_current_remote'(Remote, Host, Port, Path)),
-  O1 = [host(Host),path(Path),variable_names(VarNames)],
+  O1 = [host(Host),timeout(1),path(Path),variable_names(VarNames)],
   (
     Port == default
   ->
@@ -173,7 +185,6 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     sparql_query(Query2, Result, O2),
     Results
   ).
-
 
 
 %! 'SPARQL_query_sameAs'(
@@ -200,7 +211,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     ),
     Query
   ),
-  'SPARQL_enqueue'(Remote, Query, _VarNames, Rows),
+  'SPARQL_query'(Remote, Query, _, Rows),
   rows_to_resources(Rows, Resources1),
   ord_add_element(Resources1, Resource, Resources2).
 
