@@ -6,8 +6,8 @@
     rdf_load2/1, % +File:atom
     rdf_load2/2, % +File:atom
                  % +Options:list(nvpair)
-    rdf_loads/2, % +Files:list(atom)
-                 % +Graph:atom
+    rdf_load_into_one_graph/2, % +Files:list(atom)
+                               % +Graph:atom
     rdf_mime/1, % ?MIME:atom
     rdf_save2/0,
     rdf_save2/1, % +Graph:atom
@@ -56,6 +56,7 @@ reflect the serialization format:
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(xml(xml_dom)).
 
@@ -158,8 +159,13 @@ ensure_format(_, O1, O3):-
   merge_options([format(Format)], O2, O3).
 ensure_format(File, O1, O2):-
   file_mime(File, MIME),
-  rdf_serialization(_, _, Format, MIME, _),
-  merge_options([format(Format)], O1, O2).
+  (
+    rdf_serialization(_, _, Format, MIME, _)
+  ->
+    merge_options([format(Format)], O1, O2)
+  ;
+    throw(error(mime_error(File,'RDF',MIME),_))
+  ).
 
 ensure_graph(_, O1, O1):-
   option(graph(Graph), O1),
@@ -169,28 +175,25 @@ ensure_graph(File, O1, O2):-
   merge_options([graph(Graph)], O1, O2).
 
 
-%! rdf_loads(+Files:list(atom), +Graph:atom) is det.
+%! rdf_load_into_one_graph(+Files:list(atom), +Graph:atom) is det.
 
-rdf_loads(Fs, G):-
-  maplist(rdf_loads_(G), Fs).
+rdf_load_into_one_graph(Fs, G):-
+  maplist(rdf_load_into_one_graph_(G), Fs).
 
-%! rdf_loads_(+Graph:atom, +File:atom) is det.
-
-rdf_loads_(G, F):-
+rdf_load_into_one_graph_(G, F):-
   setup_call_cleanup(
+    rdf_new_graph(temp, TmpG),
     (
-      rdf_new_graph(temp, TmpG),
-      rdf_load2(F, [graph(TmpG)])
-    ),
-    forall(
-      rdf(S, P, O, TmpG),
-      rdf_assert(S, P, O, G)
+      rdf_load2(F, [graph(TmpG)]),
+      rdf_copy(TmpG, _, _, _, G)
     ),
     rdf_unload_graph(TmpG)
   ).
 
+
 rdf_mime(MIME):-
   rdf_serialization(_, _, _, MIME, _).
+
 
 %! rdf_save2 is det.
 % Saves all currently loaded graphs.
