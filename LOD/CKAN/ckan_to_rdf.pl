@@ -53,10 +53,13 @@ ckan_to_rdf(O_RDF):-
   list_script(package_show(O_RDF), 'Packages', Packages, RemainingPackages),
   debug(ckan, 'Remaining packages: ~w', [RemainingPackages]),
 
+/*
   % Revisions.
+  % @tbd The request for revisions crashes the site.
   revision_list(O_PL, Revisions),
   list_script(revision_show(O_RDF), 'Revisions', Revisions, RemainingRevisions),
   debug(ckan, 'Remaining revisions: ~w', [RemainingRevisions]),
+*/
 
   % Tags.
   tag_list(O_PL, _, _, _, Tags),
@@ -65,6 +68,7 @@ ckan_to_rdf(O_RDF):-
 
 /*
   % Users.
+  % @tbd Why does this now work?
   user_list(O_PL, _, _, Users),
   list_script(user_show(O_RDF, _), 'Users', Users, RemainingUsers),
   debug(ckan, 'Remaining users: ~w', [RemainingUsers]),
