@@ -192,7 +192,6 @@ rfc1123_weekday(weekday(sunday), sunday) --> "Sun".
 
 :- begin_tests(rfc1123).
 
-:- use_module(generics(print_ext)).
 :- use_module(library(apply)).
 
 rfc1123_atom('Sun, 06 Nov 1994 08:49:37 GMT').

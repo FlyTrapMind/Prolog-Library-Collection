@@ -42,7 +42,6 @@ Support for RDF lists.
 */
 
 :- use_module(dcg(dcg_collection)).
-:- use_module(generics(print_ext)).
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_bnode_map)).

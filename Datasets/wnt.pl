@@ -28,13 +28,14 @@ http://gtb.inl.nl/iWDB/search?
   &lemmodern=cabaalmaker
 
 @author Wouter Beek
-@version 2013/02
+@version 2013/02, 2014/01
 */
 
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(datasets(picarta)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(parse_ext)).
-:- use_module(generics(print_ext)).
 :- use_module(library(http/http_open)).
 :- use_module(library(sgml)).
 :- use_module(library(xpath)).
@@ -52,7 +53,7 @@ entry(Term):-
     dom_sense(DOM, Sense),
     Senses0
   ),
-  print_list(atom(Senses), Senses0),
+  dcg_with_output_to(atom(Senses), list(pl_term, Senses0)),
   format(
     user,
     'Lemma: ~w\nModern lemma: ~w\nWord type: ~w\nPrevious: ~w\nNext: ~w\nSenses:\n~w\n',

@@ -1,24 +1,25 @@
-:- module(
-  rdf_graph_test,
-  []
-).
+:- module(rdf_graph_test, []).
 
 /** <module> RDF graph test
 
 Unit testing for RDF graph support.
 
 @author Wouter Beek
-@version 2013/10
+@version 2013/10, 2014/01
 */
 
 :- use_module(library(plunit)).
 
 :- begin_tests(rdf_graph).
 
-:- use_module(generics(print_ext)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_term)).
+
+
 
 test(rdf_graph_instance, []):-
   maplist(rdf_unload_graph, [test_graph,test_graph_instance]),
@@ -31,11 +32,13 @@ test(rdf_graph_instance, []):-
     Map,
     (
       rdf_graph_instance(test_graph_instance, test_graph, Map),
-      print_list([], Map),
-      nl(user_output)
+      dcg_with_output_to(user_output, dummy)
     ),
     _Maps
   ).
+dummy -->
+  list(pl_term, Map),
+  nl.
 
 :- end_tests(rdf_graph).
 

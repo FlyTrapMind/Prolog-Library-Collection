@@ -32,7 +32,6 @@
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
-:- use_module(generics(print_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).

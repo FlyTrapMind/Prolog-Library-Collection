@@ -23,7 +23,7 @@ Debug support for DCGs.
 
 
 
-dcg_debug(Topic, _DCG_Body):-
+dcg_debug(Topic, _):-
   debugging(Topic, false), !.
 dcg_debug(Topic, DCG):-
   DebugStream = user_error,

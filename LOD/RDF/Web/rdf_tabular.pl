@@ -104,7 +104,7 @@ overview_instance(Instance1, G) -->
       [P,O,G],
       rdf(Instance2, P, O, G),
       L
-    )
+    ),gtrace
   },
   rdf_html_table(overview_instance_caption(Instance2), L).
 
@@ -169,7 +169,7 @@ rdf_tabular_term1(P) -->
     setoff([C], (rdf(_, P, O), rdfs_individual_of(O, C)), Cs2)
   },
   rdf_html_table(
-    (`'Domain of property `, rdf_term_name(P), `.`),
+    (`Domain of property `, rdf_term_name(P), `.`),
     [['Class']|Cs1]
   ),
   rdf_html_table(

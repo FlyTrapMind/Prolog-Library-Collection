@@ -7,15 +7,10 @@
     get_assoc_ord_member/3, % +Key
                             % +Assoc:assoc
                             % ?Value
-    put_assoc_ord_member/4, % +Key
-                            % +OldAssoc:assoc
-                            % +Value
-                            % -NewAssoc:assoc
-% DEBUG
-    print_assoc/1, % +Assoc:assoc
-    print_assoc/3 % +Indent:nonneg
-                  % :KeyTransform
-                  % +Assoc:assoc
+    put_assoc_ord_member/4 % +Key
+                           % +OldAssoc:assoc
+                           % +Value
+                           % -NewAssoc:assoc
   ]
 ).
 
@@ -27,15 +22,10 @@ An association list with multiple values per key, using ordered sets.
 @version 2013/04-2013/05, 2013/07-2013/10
 */
 
-:- use_module(generics(print_ext)).
 :- use_module(library(assoc)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
-
-:- meta_predicate(print_assoc(+,2,+)).
-
-:- nodebug(assoc_ext).
 
 
 
@@ -95,9 +85,11 @@ put_assoc_ord_member(Key, Assoc1, Value, Assoc2):-
   put_assoc(Key, Assoc1, Set, Assoc2),
   debug(assoc_ext, 'Added <~w,~w> to NEW assoc.', [Key,Value]).
 
+/* @tbd
 print_assoc(Assoc):-
   print_assoc(0, term_to_atom, Assoc).
 
+:- meta_predicate(print_assoc(+,2,+)).
 print_assoc(KeyIndent, KeyTransform, Assoc):-
   is_assoc(Assoc),
   assoc_to_keys(Assoc, Keys),
@@ -118,4 +110,4 @@ print_assoc(KeyIndent, KeyTransform, Assoc):-
       )
     )
   ).
-
+*/

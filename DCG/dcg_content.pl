@@ -25,6 +25,8 @@
     indent//1, % +Indent:nonneg
     indent//2, % +Indent:nonneg
                % :DCG
+    nl//0,
+    pl_term//1, % +PrologTerm
     quoted//1, % :DCG
     transition//2, % :From
                    % :To
@@ -151,6 +153,7 @@ between_hex(LowHex, HighHex, Code) -->
 %! bracketed(:DCG)// .
 %! bracketed(+Mode:oneof([curly,round,square]), :DCG)// .
 
+:- meta_predicate(bracketed(//,?,?)).
 bracketed(DCG) -->
   bracketed(round, DCG).
 
@@ -292,6 +295,19 @@ indent(I) -->
 indent(I, DCG) -->
   indent(I),
   dcg_call(DCG).
+
+
+%! nl// is det.
+
+nl -->
+  line_feed.
+
+
+%! pl_term(+PrologTerm)// is det.
+
+pl_term(PrologTerm) -->
+  {with_output_to(codes(Codes), write_canonical(PrologTerm))},
+  Codes.
 
 
 %! quoted(:DCG)// .

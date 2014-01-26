@@ -31,12 +31,6 @@ Meta-DCG rules.
 :- meta_predicate(';'(2,2,?,?)).
 :- meta_predicate(';'(2,2,2,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
-:- meta_predicate(dcg_call(2,?,?)).
-:- meta_predicate(dcg_call(3,?,?,?)).
-:- meta_predicate(dcg_call(4,?,?,?,?)).
-:- meta_predicate(dcg_call(5,?,?,?,?,?)).
-:- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
-:- meta_predicate(dcg_calls(+,//,?,?)).
 
 
 
@@ -60,21 +54,27 @@ dcg_apply(DCG_Body, Args1, X, Y):-
 % Included for consistency with dcg_call//[1,2,3,4].
 % @see Same effect as phrase/3.
 
+:- meta_predicate(dcg_call(2,?,?)).
 dcg_call(DCG_Body, X, Y):-
   call(DCG_Body, X, Y).
 
+:- meta_predicate(dcg_call(3,?,?,?)).
 dcg_call(DCG_Body, A1, X, Y):-
   call(DCG_Body, A1, X, Y).
 
+:- meta_predicate(dcg_call(4,?,?,?,?)).
 dcg_call(DCG_Body, A1, A2, X, Y):-
   call(DCG_Body, A1, A2, X, Y).
 
+:- meta_predicate(dcg_call(5,?,?,?,?,?)).
 dcg_call(DCG_Body, A1, A2, A3, X, Y):-
   call(DCG_Body, A1, A2, A3, X, Y).
 
+:- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 dcg_call(DCG_Body, A1, A2, A3, A4, X, Y):-
   call(DCG_Body, A1, A2, A3, A4, X, Y).
 
+:- meta_predicate(dcg_calls(+,//,?,?)).
 dcg_calls(_Mod:[], _Separator) --> [].
 dcg_calls(Mod:DCG_Rules, Separator) -->
   {DCG_Rules = [H|T]},

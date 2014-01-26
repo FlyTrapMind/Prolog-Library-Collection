@@ -15,13 +15,15 @@
 Takes axioms, rules, and the RDF index and performs materializations.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12
+@version 2013/09-2013/10, 2013/12-2014/01
 */
 
+:- use_module(dcg(dcg_collection)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(doyle(doyle)).
 :- use_module(generics(deb_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(print_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
@@ -161,7 +163,7 @@ materialize(O1, TMS, G):-
     (
       flag(deductions, Id, Id + 1),
       format(user_output, '~w: ', [Id]),
-      with_output_to(
+      dcg_with_output_to(
         user_output,
         tms_print_justification([indent(0),lang(en)], TMS, J)
       ),
@@ -179,7 +181,7 @@ materialize(O1, TMS, G):-
 materialize(O1, _TMS, _G):-
   % DEB
   option(entailment_regimes(ERs), O1, [rdf,rdfs]),
-  with_output_to(atom(ER_Atom), print_list([], ERs)),
+  dcg_with_output_to(atom(ER_Atom), list(pl_term, ERs)),
   if_debug(
     rdf_mat,
     (

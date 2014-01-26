@@ -19,10 +19,12 @@
 Predicates for RDFS labels.
 
 @author Wouter Beek
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09, 2014/01
 */
 
-:- use_module(generics(print_ext)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_collection)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)). % rdf-meta.
@@ -59,7 +61,7 @@ rdfs_label2(O1, RDF_Term, RDFS_Label):-
   rdf_is_list(RDF_Term), !,
   rdf_list([recursive(false)], RDF_Term, RDF_Terms),
   maplist(rdfs_label2(O1), RDF_Terms, RDFS_Labels),
-  with_output_to(atom(RDFS_Label), print_list(O1, RDFS_Labels)).
+  dcg_with_output_to(atom(RDFS_Label), list(pl_term, RDFS_Labels)).
 rdfs_label2(O1, RDF_Term, RDFS_Label):-
   option(lang(Lang), O1, en),
   rdfs_preferred_label(RDF_Term, Lang, _UsedLang, RDFS_Label).

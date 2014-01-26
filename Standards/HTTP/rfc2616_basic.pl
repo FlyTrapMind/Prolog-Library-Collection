@@ -246,7 +246,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2616
 
 'HT' -->
-  horizontal_tab(_).
+  horizontal_tab.
 
 
 
@@ -260,7 +260,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @RFC 2616
 
 'LF' -->
-  line_feed(_).
+  line_feed.
 
 
 

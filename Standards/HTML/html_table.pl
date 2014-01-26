@@ -22,7 +22,9 @@ Cell contents are represented by Prolog ground terms that are elements
 @version 2012/09-2013/06, 2013/09-2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
+:- use_module(html(html_pl_term)).
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
 
@@ -56,7 +58,7 @@ Cell contents are represented by Prolog ground terms that are elements
 
 :- meta_predicate(html_table(:,//,+,?,?)).
 html_table(O1, Caption, Rows) -->
-  html_table(O1, Caption, pl_term, Rows).
+  html_table(O1, Caption, html_pl_term, Rows).
 
 :- meta_predicate(html_table(:,//,3,+,?,?)).
 is_meta(highlighted_row).
@@ -80,10 +82,6 @@ html_table(O1, Caption, Cell, Rows) -->
 fail(_):-
   fail.
 
-pl_term(PL_Term) -->
-  {term_to_atom(PL_Term, Atom)},
-  html(Atom).
-
 
 
 % CAPTION %
@@ -95,12 +93,13 @@ pl_term(PL_Term) -->
 % @arg Caption A DCG rule generating the content of the caption element,
 %      or uninstantiated, in which case no caption is generated at all.
 
-:- meta_predicate(table_caption(//,?,?)).
+:- meta_predicate(html_table_caption(//,?,?)).
 html_table_caption(VAR) -->
   {var(VAR)}, !,
   [].
-html_table_caption(Caption) -->
-  html(caption(Caption)).
+html_table_caption(Caption1) -->
+  {dcg_with_output_to(atom(Caption2), Caption1)},
+  html(caption(Caption2)).
 
 
 

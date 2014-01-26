@@ -92,7 +92,7 @@ rdf_triple_name(S, P, O) -->
 :- rdf_meta(rdf_triple_name(r,r,r,+,?,?)).
 rdf_triple_name(S, P, O, G) -->
   tuple(ascii, rdf_term_name, [S,P,O,G]).
-  
+
 
 
 % BLANK NODE %
@@ -150,7 +150,7 @@ rdf_iri(O1, RDF_Term) -->
     {option(uri_desc(with_preferred_label), O1)}
   ->
     rdf_iri([uri_desc(uri_only)], RDF_Term),
-    line_feed
+    nl
   ;
     {option(uri_desc(only_preferred_label), O1)}
   ), !,
@@ -177,7 +177,7 @@ rdf_iri(O1, RDF_Term) -->
   ->
     Elements = Literals2
   )},
-  
+
   {
     % Labels are treated specially: only the preferred label is included.
     option(language(Lang), O1, en),
@@ -197,8 +197,8 @@ rdf_iri(O1, RDF_Term) -->
     ),
     append(Literals1, [PreferredLabel], Literals2)
   },
-  
-  collection(``, ``, list_to_ord_set, line_feed, rdf_term_name, Elements).
+
+  collection(``, ``, list_to_ord_set, nl, rdf_term_name, Elements).
 % Only the URI is used. XML namespace prefixes are used when present.
 % This appears last, since it is the default or fallback option.
 % When option `uri_desc` is set to `uri_only` we end up here as well.
@@ -207,13 +207,13 @@ rdf_iri(O1, RDF_Term) -->
 % registered XML namespace prefix for this IRI.
 % We take the XML namespace prefix that results in the shortest output form.
 % The IRI has at least one XML namespace prefix.
-rdf_iri(IRI) -->
+rdf_iri(_, IRI) -->
   % We take the prefix that stands for the longest IRI substring.
   {rdf_resource_to_namespace(IRI, Prefix, LocalName)}, !,
   atom(Prefix),
   `:`,
   atom(LocalName).
 % An IRI without an XML namespace prefix.
-rdf_iri(IRI) -->
+rdf_iri(_, IRI) -->
   atom(IRI).
 
