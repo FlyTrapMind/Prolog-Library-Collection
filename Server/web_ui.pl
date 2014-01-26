@@ -2,7 +2,8 @@
   web_ui,
   [
     category//1, % +Category:atom
-    clear_button//1 % +Fields:list(atom)
+    clear_button//1, % +Fields:list(atom)
+    dom_as_atom//1 % +DOM:atom
   ]
 ).
 
@@ -78,6 +79,9 @@ clear_button(Fields) -->
       value='Clear'
     ])
   ).
+
+dom_as_atom(DOM_Atom) -->
+  html(\[DOM_Atom]).
 
 menu -->
   {http_absolute_location(img('api_explorer.png'), RelativeURI, [])},

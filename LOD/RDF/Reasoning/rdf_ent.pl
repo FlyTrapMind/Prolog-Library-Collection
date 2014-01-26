@@ -62,7 +62,12 @@ Axioms and rules for RDF materialization, as defined by Hayes2004.
 :- discontiguous(rule/7).
 :- rdf_meta(rule(?,?,?,r,r,r,?)).
 
+:- discontiguous(user:regime/1).
+:- multifile(user:regime/1).
 
+
+
+user:regime(se).
 
 % [se1] Existential quantification w.r.t. the object term.
 rule(se, se1, [rdf(S,P,O)], S, P, B, G):-
@@ -91,6 +96,7 @@ rule(rdf, lg, [rdf(S,P,Lit)], S, P, B, G):-
 */
 
 
+user:regime(rdf).
 
 % [rdf1] Predicate terms are instances of =|rdf:'Property'|=.
 explanation(

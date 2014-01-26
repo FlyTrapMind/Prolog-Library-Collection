@@ -26,9 +26,11 @@
                    % +Default
     dcg_until//2, % :End:dcg
                   % ?Value
-    dcg_until//3 % +Options:list(nvpair)
-                 % :End:dcg
-                 % ?Value
+    dcg_until//3, % +Options:list(nvpair)
+                  % :End:dcg
+                  % ?Value
+    dcg_with_output_to/2 % +Output:compound
+                         % :DCG
   ]
 ).
 
@@ -47,23 +49,17 @@ Generic support for DCG rules.
 @version 2013/05-2013/09, 2013/11-2014/01
 */
 
+:- use_module(generics(codes_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
-:- meta_predicate(dcg_between(//,//,?,?)).
-:- meta_predicate(dcg_between(//,//,//,?,?)).
-:- meta_predicate(dcg_phrase(//,?)).
-:- meta_predicate(dcg_phrase(//,?,?)).
-:- meta_predicate(dcg_separated_list(//,?,?,?)).
-:- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
-:- meta_predicate(dcg_separated_list_var(//,-,?,?)).
-:- meta_predicate(dcg_switch(+,+,2,?,?)).
-:- meta_predicate(dcg_until(//,?,?,?)).
-:- meta_predicate(dcg_until(+,//,?,?,?)).
-:- meta_predicate(dcg_until_(+,//,?,?,?)).
 
 
+%! dcg_all// is det.
+%! dcg_all(+Options:list(nvpair), -Result:or([atom,list(code)]))// is det.
+% The following options are available:
+%   * =|output_format(+Format:oneof([atom,codes]))|=
 
 dcg_all -->
   dcg_all([], _).
@@ -85,9 +81,14 @@ dcg_all_([]) -->
   [].
 
 
+%! dcg_between(:Between, :DCG)// .
+%! dcg_between(:Begin, :DCG, :End)// .
+
+:- meta_predicate(dcg_between(//,//,?,?)).
 dcg_between(Between, DCG) -->
   dcg_between(Between, DCG, Between).
 
+:- meta_predicate(dcg_between(//,//,//,?,?)).
 dcg_between(Begin, DCG, End) -->
   phrase(Begin),
   phrase(DCG),
@@ -99,39 +100,11 @@ dcg_copy, [X] -->
   dcg_copy.
 dcg_copy --> dcg_end.
 
+
 dcg_done(_, _).
 
+
 dcg_end([], []).
-
-%! dcg_separated_list(
-%!   +Separator:dcg_rule,
-%!   ?CodeLists:list(list(code))
-%! )// is det.
-% @tbd This does not work for the following string:
-% ~~~
-% "error(permission_error(delete,file,\'c:/users/quirinus/.webqr/export.svg\'),context(system:delete_file/1,\'Permission denied\'))"
-% ~~~
-
-dcg_separated_list(Sep, L) -->
-  {nonvar(L)}, !,
-  dcg_separated_list_nonvar(Sep, L).
-dcg_separated_list(Sep, L) -->
-  {var(L)}, !,
-  dcg_separated_list_var(Sep, L).
-
-dcg_separated_list_nonvar(_Sep, [H]) --> !,
-  H.
-dcg_separated_list_nonvar(Sep, [H|T]) -->
-  H,
-  Sep,
-  dcg_separated_list_nonvar(Sep, T).
-
-dcg_separated_list_var(Sep, [H|T]) -->
-  dcg_until([end_mode(exclusive),output_format(codes)], Sep, H),
-  Sep, !,
-  dcg_separated_list_var(Sep, T).
-dcg_separated_list_var(_Sep, [H]) -->
-  dcg_all([], H), !.
 
 
 %! dcg_phrase(:DCG, ?AtomicOrCodes:or([atom,list(code),number]))// is nondet.
@@ -141,12 +114,14 @@ dcg_separated_list_var(_Sep, [H]) -->
 %!   ?AtomicOrCodes2:or([atom,list(code),number])
 %! )// is nondet.
 
+:- meta_predicate(dcg_phrase(//,?)).
 dcg_phrase(DCG, Atom):-
   atom(Atom), !,
   dcg_phrase(DCG, Atom, '').
 dcg_phrase(DCG, Codes):-
   dcg_phrase(DCG, Codes, []).
 
+:- meta_predicate(dcg_phrase(//,?,?)).
 dcg_phrase(DCG, Atomic1, Atomic2):-
   atom(Atomic1), !,
   atom_codes(Atomic1, Codes1),
@@ -174,6 +149,41 @@ dcg_phrase(DCG, Atomic1, Atomic2):-
 dcg_phrase(DCG, Codes1, Codes2):-
   phrase(DCG, Codes1, Codes2).
 
+
+%! dcg_separated_list(
+%!   +Separator:dcg_rule,
+%!   ?CodeLists:list(list(code))
+%! )// is det.
+% @tbd This does not work for the following string:
+% ~~~
+% "error(permission_error(delete,file,\'c:/users/quirinus/.webqr/export.svg\'),context(system:delete_file/1,\'Permission denied\'))"
+% ~~~
+
+:- meta_predicate(dcg_separated_list(//,?,?,?)).
+dcg_separated_list(Sep, L) -->
+  {nonvar(L)}, !,
+  dcg_separated_list_nonvar(Sep, L).
+dcg_separated_list(Sep, L) -->
+  {var(L)}, !,
+  dcg_separated_list_var(Sep, L).
+
+:- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
+dcg_separated_list_nonvar(_Sep, [H]) --> !,
+  H.
+dcg_separated_list_nonvar(Sep, [H|T]) -->
+  H,
+  Sep,
+  dcg_separated_list_nonvar(Sep, T).
+
+:- meta_predicate(dcg_separated_list_var(//,-,?,?)).
+dcg_separated_list_var(Sep, [H|T]) -->
+  dcg_until([end_mode(exclusive),output_format(codes)], Sep, H),
+  Sep, !,
+  dcg_separated_list_var(Sep, T).
+dcg_separated_list_var(_Sep, [H]) -->
+  dcg_all([], H), !.
+
+
 %! dcg_switch(+Value, +Maps:list)// is det.
 
 dcg_switch(Value, Maps) -->
@@ -181,6 +191,7 @@ dcg_switch(Value, Maps) -->
 
 %! dcg_switch(+Value, +Map:list, +Default)// is det.
 
+:- meta_predicate(dcg_switch(+,+,2,?,?)).
 dcg_switch(Value, Map, _Default) -->
   {member(Value-Goal, Map)}, !,
   % Make sure the variables in the goal are bound outside the switch call.
@@ -188,6 +199,7 @@ dcg_switch(Value, Map, _Default) -->
 dcg_switch(_Value, _Map, Default) -->
   % Make sure the variables in the goal are bound outside the switch call.
   phrase(Default).
+
 
 %! dcg_until(:DCG_End, ?Value)// is det.
 %! dcg_until(+Options:list(nvpair), :DCG_End, ?Value)// is det.
@@ -206,9 +218,11 @@ dcg_switch(_Value, _Map, Default) -->
 %      does not play out well.
 % @arg Value Either an atom or a list of codes (see options).
 
+:- meta_predicate(dcg_until(//,?,?,?)).
 dcg_until(DCG_End, Value) -->
   dcg_until([], DCG_End, Value).
 
+:- meta_predicate(dcg_until(+,//,?,?,?)).
 dcg_until(O1, DCG_End, Out) -->
   {var(Out)}, !,
   dcg_until_(O1, DCG_End, Codes),
@@ -236,6 +250,7 @@ dcg_until(O1, DCG_End, In) -->
   },
   dcg_until_(O1, DCG_End, Codes).
 
+:- meta_predicate(dcg_until_(+,//,?,?,?)).
 dcg_until_(O1, DCG_End, EndCodes), InclusiveExclusive -->
   DCG_End, !,
   {
@@ -256,4 +271,12 @@ dcg_until_(O1, DCG_End, [H|T]) -->
   dcg_until_(O1, DCG_End, T).
 
 void --> [].
+
+
+%! dcg_with_output_to(+Output:compound, :DCG) is det.
+
+:- meta_predicate(dcg_with_output_to(+,//)).
+dcg_with_output_to(Out, DCG):-
+  phrase(DCG, Codes),
+  with_output_to(Out, put_codes(Codes)).
 

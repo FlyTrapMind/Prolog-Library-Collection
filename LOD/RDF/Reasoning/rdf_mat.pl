@@ -3,6 +3,7 @@
   [
     materialize/2, % +Options:list(nvpair)
                    % +Graph:atom
+    regime/1, % ?Regime:oneof([none,rdf,rdfs,se])
     start_materializer/3 % +Options:list(nvpair)
                          % +Interval:positive_integer
                          % +Graph:atom

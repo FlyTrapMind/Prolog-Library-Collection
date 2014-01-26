@@ -15,8 +15,8 @@ Debug support for DCGs.
 */
 
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_os)).
-:- use_module(dcg(dcg_stream)).
 :- use_module(library(debug)).
 
 :- meta_predicate(dcg_debug(+,//)).

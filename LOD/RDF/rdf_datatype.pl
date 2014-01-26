@@ -33,6 +33,7 @@ Support for RDF typed literals.
 @version 2013/10, 2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(codes_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
@@ -143,9 +144,9 @@ rdf_overwrite_datatype(S, P, D, NewVal, G):-
 
   % DEB
   rdf_typed_literal(OldO, D, OldVal),
-  with_output_to(atom(T1), rdf_triple_name(S,P,OldO,G)),
+  dcg_with_output_to(atom(T1), rdf_triple_name(S, P, OldO, G)),
   rdf_typed_literal(NewO, D, NewVal),
-  with_output_to(atom(T2), rdf_triple_name(S,P,NewO,G)),
+  dcg_with_output_to(atom(T2), rdf_triple_name(S, P, NewO, G)),
   debug(rdf_datatype, 'Updated triple: ~w --> ~w', [T1,T2]).
 
 %! rdf_retractall_datatype(

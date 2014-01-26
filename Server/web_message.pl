@@ -1,9 +1,6 @@
 :- module(
   web_message,
   [
-    log_web/1, % -Markup:list
-    log_web/2, % +Category:atom
-               % -Markup:list
     web_message/1 % +Term
   ]
 ).
@@ -50,33 +47,46 @@ Acts on messages printed by print_message/2.
 
 
 
-log_web(Markup):-
-  log_web(_Category, Markup).
+web_message(_Request):-
+  reply_html_page(app_style, title('Logs'), \log_web).
 
-log_web(_, Markup):-
-  \+ current_log_file(_File), !,
-  Markup = [element(h1,[],['Logging is currently switched off.'])].
-log_web(Max, [HTML_Table]):-
-  current_log_file(File),
-  (nonvar(Max), ! ; setting(max_log_length, Max)),
-  setoff(
-    [DateTime,Category,Message],
-    (
-      csv_read_file_row(
-        File,
-        row(DateTime,Category,Message),
-        [arity(3),functor(row)]
-      )
+log_web -->
+  {setting(max_log_length, Max)},
+  log_web(Max).
+
+log_web(_) -->
+  {\+ current_log_file(_File)}, !,
+  html(p('Logging is currently switched off.')).
+log_web(Max) -->
+  {
+    current_log_file(File),
+    setoff(
+      [DateTime,Category,Message],
+      (
+        csv_read_file_row(
+          File,
+          row(DateTime,Category,Message),
+          [arity(3),functor(row)]
+        )
+      ),
+      TRs1
     ),
-    TRs1
-  ),
-  reverse(TRs1, TRs2),
-  length(Top1, Max),
-  (append(Top1, _, TRs2) -> Top2 = Top1 ; Top2 = TRs2),
-  html_table(
-    [caption('Log messages'),header(true),indexed(true)],
-    [['DateTime','Category','Message']|Top2],
-    HTML_Table
+    reverse(TRs1, TRs2),
+    length(Top1, Max),
+    (
+      append(Top1, _, TRs2)
+    ->
+      Top2 = Top1
+    ;
+      Top2 = TRs2
+    )
+  },
+  html(
+    \html_table(
+      [header(true),indexed(true)],
+      `Log messages`,
+      [['DateTime','Category','Message']|Top2]
+    )
   ).
 
 prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
@@ -108,22 +118,3 @@ email(email, Format, Args):- !,
   format(codes(Body), Format, Args),
   send_email('me@wouterbeek.com', 'Message from script', Body).
 email(_, _, _).
-
-web_message(open_uri(_URI)):- !,
-  format(user, 'YES!', []),
-  http_absolute_location(root(.), URI, []),
-  http_open(
-    URI,
-    _Stream,
-    [
-      request_header(msg=test),
-      request_header('Content-Type'='application/x-www-form-urlencoded')
-    ]
-  ).
-web_message(_Request):-
-  reply_html_page(app_style, title('Messages'), \web_message_body).
-
-web_message_body -->
-  {log_web(Markup)},
-  html(Markup).
-

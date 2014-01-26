@@ -7,7 +7,7 @@
                        % +Graph:atom
     rdf_list/2, % +RDF_List:uri
                 % -List:list
-    rdf_list/3, % +O:list(nvpair)
+    rdf_list/3, % +Options:list(nvpair)
                 % +RDF_List:uri
                 % -List:list
     rdf_list_first/2, % +List:uri
@@ -27,8 +27,8 @@
     rdf_list_member/2, % ?Element
                        % ?RDF_List:uri
 % DEBUG
-    rdf_list_name/2 % +Options:list(nvpair)
-                    % +RDF_List:iri
+    rdf_list_name//2 % +Options:list(nvpair)
+                     % +RDF_List:or([bnode,iri])
   ]
 ).
 
@@ -37,15 +37,17 @@
 Support for RDF lists.
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/09
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/09,
+         2014/01
 */
 
+:- use_module(dcg(dcg_collection)).
 :- use_module(generics(print_ext)).
 :- use_module(library(apply)).
-:- use_module(rdf(rdf_bnode_map)).
-:- use_module(rdf(rdf_name)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_bnode_map)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
@@ -63,7 +65,7 @@ Support for RDF lists.
 :- rdf_meta(rdf_list_occurs_before(r,r)).
 :- rdf_meta(rdf_list_previous(r,r)).
 :- rdf_meta(rdf_list_member(r,r)).
-:- rdf_meta(rdf_list_name(+,r)).
+:- rdf_meta(rdf_list_name(+,r,?,?)).
 
 
 
@@ -134,32 +136,34 @@ add_blank_list_individual(Blank, G):-
 rdf_list(RDF_List, List):-
   rdf_list([], RDF_List, List).
 
-%! rdf_list(+O:list(nvpair), +RDFList:uri, -List:list) is det
+%! rdf_list(+Options:list(nvpair), +RDFList:uri, -List:list) is det
 % Returns the list that starts at the given node.
 %
 % @arg Options The following options are supported:
-%      1. =|recursive(+RecursivelyApplied:boolean)|=
-%         The default value is `true`.
 % @arg StartNode The URI of a node that starts the RDF list.
 % @arg List A prolog list.
 %
 % @author Wouter Beek
 % @author Sander Latour
+%
+% The following options are supported:
+%   * =|recursive(+RecursivelyApplied:boolean)|=
+%     The default value is `true`.
 
-rdf_list(_O, RDFList, []):-
+rdf_list(_, RDFList, []):-
   rdf_global_id(rdf:nil, RDFList), !.
-rdf_list(O, RDFList, [H1 | T]):-
+rdf_list(O1, RDFList, [H1 | T]):-
   rdf_has(RDFList, rdf:first, H),
   (
-    option(recursive(true), O, true),
+    option(recursive(true), O1, true),
     rdf_is_list(H)
   ->
-    rdf_list(O, H, H1)
+    rdf_list(O1, H, H1)
   ;
     H1 = H
   ),
   rdf_has(RDFList, rdf:rest, RDFTail), !,
-  rdf_list(O, RDFTail, T).
+  rdf_list(O1, RDFTail, T).
 
 %! rdf_list_first(?List:uri, ?First:uri) is nondet.
 % Pairs of lists and their first element.
@@ -251,23 +255,13 @@ rdf_list_member_(Element, TempElement1):-
 
 % DEBUG %
 
-rdf_list_name(O1, RDF_List):-
+rdf_list_name(O1, RDF_List) -->
   % Recursively retrieve the contents of the RDF list.
   % This has to be done non-recursively, since the nested
-  % Prolog list `[a,[b,c]]` would bring rdf_term_name/3 into
+  % Prolog list `[a,[b,c]]` would bring rdf_term_name//1 into
   % trouble when it comes accross `[b,c]`
   % (which fails the check for RDF list).
-  rdf_list([recursive(false)], RDF_List, RDF_Terms),
+  {rdf_list([recursive(false)], RDF_List, RDF_Terms)},
   
-  maplist(rdf_term_name(O1), RDF_Terms, Names),
-  
-  % Since the atom '[]' denotes the empty list in Prolog,
-  % we add a space in between to make it stand out as a name.
-  (
-    Names == []
-  ->
-    write('[ ]')
-  ;
-    print_list(O1, Names)
-  ).
+  list(rdf_term_name(O1), RDF_Terms).
 

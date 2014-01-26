@@ -18,9 +18,11 @@ Semantic model printing.
 Sytax-to-semantics map printing.
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/01
 */
 
+:- use_module(dcg(dcg_collection)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(print_ext)).
 :- use_module(library(lists)).
 :- use_module(rdf(rdf_graph)).
@@ -36,7 +38,7 @@ rdf_mt_print_graph(G):-
   rdf_graph:rdf_graph_to_triples(G, Ts),
   forall(
     member(T, Ts),
-    (tab, rdf_triple_name([], T), nl)
+    (tab, dcg_with_output_to(current_output, rdf_triple_name(T)), nl)
   ).
 
 
@@ -151,10 +153,7 @@ rdf_mt_print_i_ext(M):-
     ),
     (
       format('\t~w -> ', [Property]),
-      print_collection(
-        [begin('{'),end('}'),separator(','),write_method(print_pair)],
-        ResourcePairs
-      ),
+      dcg_with_output_to(current_output, set(pair, ResourcePairs)),
       nl
     )
   ).

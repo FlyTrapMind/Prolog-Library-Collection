@@ -45,12 +45,12 @@ DCGs for SVG datatypes.
 
 % SVG DATATYPES %
 
-svg_color(color(T1), Color) -->
+svg_color(color(Color), Color) -->
   {nonvar(Color)}, !,
   {svg_color(Color, _RGB)},
-  word(T1, Color).
-svg_color(color(T1), Color) -->
-  word(T1, Color),
+  word(Color).
+svg_color(color(Color), Color) -->
+  word(Color),
   {svg_color(Color, _RGB)}.
 
 %! svg_coordinate(-Tree:compound, ?Number:float, ?Unit:atom)//

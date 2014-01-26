@@ -67,7 +67,7 @@ rdf_random_neighbor(G, V, RndN):-
   nth1(I, Ns, RndN).
 
 rdf_random_term(G, T):-
-  rdf_random_term(G, rdf_term(G), T).
+  rdf_random_term(G, rdf_term_name(G), T).
 
 rdf_random_term(G, Requirement, T2):-
   rdf_random_triple(S, P, O, G),

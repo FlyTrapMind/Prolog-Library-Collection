@@ -1,11 +1,11 @@
 :- module(
   dcg_content,
   [
-    arrow//1, % +Length:integer
+    arrow//1, % +Length:nonneg
     arrow//2, % +Options:list(nvpair)
-              % +Length:integer
-    between//3, % +Low:positive_integer
-                % +High:positive_integer
+              % +Length:nonneg
+    between//3, % +Low:nonneg
+                % +High:nonneg
                 % -Code:code
     between_hex//3, % +LowHex:atom
                     % +HighHex:atom
@@ -19,14 +19,16 @@
     code//1, % ?Code:code
     codes//1, % +Codes:list(code)
     end_of_line//0,
-    graphic//1, % -Graphic:list(code)
+    graphic//1, % ?Codes:list(code)
     horizontal_line//0,
-    horizontal_line//1, % +Length:integer
-    indent//1, % +Indent:integer
+    horizontal_line//1, % +Length:nonneg
+    indent//1, % +Indent:nonneg
+    indent//2, % +Indent:nonneg
+               % :DCG
     quoted//1, % :DCG
-    word//1, % ?Word:atom
-    word//2 % -Tree:compound
-            % ?Word:atom
+    transition//2, % :From
+                   % :To
+    word//1 % ?Word:atom
   ]
 ).
 :- reexport(
@@ -50,7 +52,7 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2013/12
+@version 2013/07-2013/09, 2013/11-2014/01
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -63,10 +65,6 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(math(radix)).
 :- use_module(os(shell_ext)).
 
-:- meta_predicate(bracketed(//,?,?)).
-:- meta_predicate(bracketed(?,//,?,?)).
-:- meta_predicate(quoted(//,?,?)).
-
 % The number of spaces that go into one indent.
 :- setting(
   indent_size,
@@ -77,14 +75,12 @@ DCG rules for parsing/generating often-occuring content.
 
 
 
-arrow(L) -->
-  arrow([], L).
-
-%! arrow(+Options:list(nvpair), +Length:integer)//
+%! arrow(+Length:nonneg)// .
+%! arrow(+Options:list(nvpair), +Length:nonneg)// .
 % A simple ASCII arrow.
 %
 % The following options are supported:
-%   1. `head(+HeadType:oneof([both,left,right]))`%
+%   * =|head(+HeadType:oneof([both,left,right]))|=
 %
 % Example:
 % ~~~{.txt}
@@ -94,15 +90,18 @@ arrow(L) -->
 % @arg Options A list of name-value pairs.
 % @arg Length A non-negative integer.
 
-arrow(O, L1) -->
+arrow(L) -->
+  arrow([], L).
+
+arrow(O1, L1) -->
   % Set the default arrow head.
-  {option(head(Head), O, right)},
+  {option(head(Head), O1, right)},
 
   % The left arrow head.
   (
     {arrow_left_head(Head)}
   ->
-    less_than_sign,
+    `<`,
     {L2 is L1 - 1}
   ;
     {L2 = L1}
@@ -112,20 +111,20 @@ arrow(O, L1) -->
   (
     {arrow_right_head(Head)}
   ->
-    {NumberOfDashes is L2 - 1}
+    {L3 is L2 - 1}
   ;
-    {NumberOfDashes = L2}
+    {L3 = L2}
   ),
-  {NumberOfDashes >= 0},
-  dcg_multi(hyphen, NumberOfDashes),
+  {L3 >= 0},
+  dcg_multi(`-`, L3),
 
   % The right arrow head.
   (
     {arrow_right_head(Head)}
   ->
-    greater_than_sign
+    `>`
   ;
-    ""
+    ``
   ).
 
 arrow_left_head(both).
@@ -133,37 +132,48 @@ arrow_left_head(left).
 arrow_right_head(both).
 arrow_right_head(right).
 
+
+%! between(+Low:nonneg, +High:nonneg, -Code:code)// .
+
 between(Low, High, Code) -->
   [Code],
   {between(Low, High, Code)}.
+
+
+%! between_hex(+LowHex:atom, +HighHex:atom, -Code:code)// .
 
 between_hex(LowHex, HighHex, Code) -->
   {number_to_decimal(LowHex, 16, Low)},
   {number_to_decimal(HighHex, 16, High)},
   between(Low, High, Code).
 
-%! bracketed(:DCG)
-% @see bracketed//2
+
+%! bracketed(:DCG)// .
+%! bracketed(+Mode:oneof([curly,round,square]), :DCG)// .
 
 bracketed(DCG) -->
   bracketed(round, DCG).
 
-%! bracketed(Type:oneof([curly,round,square]), :DCG)//
-
-bracketed(Type, DCG) -->
+:- meta_predicate(bracketed(+,//,?,?)).
+bracketed(Mode, DCG) -->
   dcg_between(
-    opening_bracket(_, Type),
+    opening_bracket(_, Mode),
     DCG,
-    closing_bracket(_, Type)
+    closing_bracket(_, Mode)
   ).
+
+
+%! capitalize// .
 
 capitalize, [Upper] -->
   [Lower],
   {code_type(Upper, to_upper(Lower))},
   dcg_copy.
-capitalize --> dcg_end.
+capitalize -->
+  dcg_end.
 
-%! ci_code(?Code:code)//
+
+%! ci_code(?Code:code)// .
 % Generates the case-insensitive variants of the given code.
 
 ci_code(Code) -->
@@ -189,7 +199,8 @@ ci_code(CI_Code) -->
     CI_Code = Code
   )}, !.
 
-%! ci_string(?String:list(code))//
+
+%! ci_string(?String:list(code))// .
 % Generates the case-insensitive variants of the given string.
 %
 % Example:
@@ -219,8 +230,14 @@ ci_string([H|T]) -->
   ci_code(H),
   ci_string(T).
 
+
+%! code(+Code:code)// .
+
 code(C) -->
   [C].
+
+
+%! codes(+Codes:list(code))// .
 
 codes([]) -->
   [].
@@ -228,24 +245,38 @@ codes([H|T]) -->
   [H],
   codes(T).
 
+
+%! end_of_line// .
+
 end_of_line -->
-  carriage_return, line_feed, !.
+  carriage_return,
+  line_feed, !.
 end_of_line -->
   line_feed, !.
 end_of_line -->
   carriage_return.
+
+
+%! graphic(?Codes:list(code))// .
 
 graphic([H|T]) -->
   u_graphic(H),
   graphic(T).
 graphic([]) --> [].
 
+
+%! horizontal_line// .
+%! horizontal_line(+Lenght:nonneg)// .
+
 horizontal_line -->
   {terminal_screen_width(ScreenWidth)},
   horizontal_line(ScreenWidth).
 
-horizontal_line(L) -->
-  dcg_multi(hyphen, L).
+horizontal_line(Length) -->
+  dcg_multi(hyphen, Length).
+
+
+%! indent(+Indent:nonneg)// .
 
 indent(I) -->
   {
@@ -254,10 +285,32 @@ indent(I) -->
   },
   dcg_multi(space, NumberOfSpaces).
 
+
+%! indent(+Indent:nonneg, :DCG)// is det.
+
+:- meta_predicate(indent(+,//,?,?)).
+indent(I, DCG) -->
+  indent(I),
+  dcg_call(DCG).
+
+
+%! quoted(:DCG)// .
+
+:- meta_predicate(quoted(//,?,?)).
 quoted(DCG) -->
   dcg_between(double_quote, DCG).
 
-%! word(?Word:atom)// is semidet.
+
+%! transition(:From, :To)// is det.
+
+:- meta_predicate(transition(//,//,?,?)).
+transition(From, To) -->
+  dcg_call(From),
+  dcg_between(space, arrow(2)),
+  dcg_call(To).
+
+
+%! word(?Word:atom)// .
 % Returns the first word that occurs in the codes list.
 %
 % A word is defined as any sequence af alphanumeric characters
@@ -268,18 +321,14 @@ quoted(DCG) -->
 word(Word) -->
   {nonvar(Word)}, !,
   {atom_codes(Word, Codes)},
-  word_(Codes).
+  word_codes(Codes).
 word(Word) -->
-  word_(Codes),
+  word_codes(Codes),
   {atom_codes(Word, Codes)}.
 
-%! word(-Tree:compound, ?Word:atom)//
-
-word(word(Word), Word) -->
-  word(Word).
-
-word_([H|T]) -->
+word_codes([H|T]) -->
   u_letter(H),
-  word_(T).
-word_([]) --> [].
+  word_codes(T).
+word_codes([]) -->
+  [].
 

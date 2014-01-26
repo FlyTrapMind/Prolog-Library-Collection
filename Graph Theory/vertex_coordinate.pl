@@ -109,7 +109,7 @@ vertice_coordinates_table(VertexCoords, MarkupElement):-
   ),
   html_table(
     [header(true)],
-    [['Vertex' | DimensionNames] | Rows],
+    [['Vertex'|DimensionNames]|Rows],
     MarkupElement
   ).
 
@@ -120,7 +120,7 @@ vertice_coordinates_table(VertexCoords, MarkupElement):-
 %! ) is det.
 % Returns the markup for the given graph and vertex coordinates.
 
-vertice_coordinates_web(Graph, VertexCoords, MarkupElement):-
+vertice_coordinates_web(Graph, VertexCoords, SVG_DOM):-
   export_graph(
     [
       out(svg),
@@ -128,7 +128,7 @@ vertice_coordinates_web(Graph, VertexCoords, MarkupElement):-
       vertice_coordinates(VertexCoords)
     ],
     Graph,
-    MarkupElement
+    SVG_DOM
   ).
 
 lookup_vertice_coordinates(Options, Vertex, Coordinate):-

@@ -65,7 +65,12 @@
 :- multifile(rule/7).
 :- rdf_meta(rule(?,?,t,r,r,r,?)).
 
+:- discontiguous(user:regime/1).
+:- multifile(user:regime/1).
 
+
+
+user:regime(rdfs).
 
 % [gl] Literal instantiation rule
 %      This ensures that every triple that contains a literal and

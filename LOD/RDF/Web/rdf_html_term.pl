@@ -1,9 +1,6 @@
-:- encoding(utf8).
 :- module(
-  rdf_html,
+  rdf_html_term,
   [
-    rdf_html_table//2, % +Caption:atom
-                       % +Data:list(list)
     rdf_html_term//1 % +PL_Term
   ]
 ).
@@ -16,14 +13,12 @@ HTML generation of RDF content.
 @version 2014/01
 */
 
+:- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
-:- use_module(html(html_table)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_image)).
 :- use_module(xml(xml_namespace)).
 
 
@@ -33,17 +28,22 @@ HTML generation of RDF content.
 % @tbd HACK
 % Graph.
 rdf_html_term(Graph) -->
-  {atom(Graph), rdf_graph(Graph)}, !,
+  {
+    atom(Graph),
+    rdf_graph(Graph)
+  }, !,
   html(span(class='rdf-graph', Graph)).
 % Blank node.
-rdf_html_term(Type) -->
-  rdf_blank_node(Type).
+rdf_html_term(RDF_Term) -->
+  {rdf_is_bnode(RDF_Term)}, !,
+  rdf_blank_node(RDF_Term).
 % Literal.
-rdf_html_term(Type) -->
-  rdf_literal(Type).
+rdf_html_term(RDF_Term) -->
+  {rdf_is_literal(RDF_Term)}, !,
+  rdf_literal(RDF_Term).
 % IRI.
-rdf_html_term(Type) -->
-  rdf_iri(Type).
+rdf_html_term(RDF_Term) -->
+  rdf_iri(RDF_Term).
 % Prolog term.
 rdf_html_term(PL_Term) -->
   html(span(class='prolog-term', PL_Term)).
@@ -97,7 +97,10 @@ rdf_typed_literal(literal(type(Datatype,Value))) -->
 
 % E-mail.
 rdf_iri(IRI1) -->
-  {uri_components(IRI1, uri_components(mailto, _, IRI2, _, _))}, !,
+  {
+    uri_components(IRI1, uri_components(Scheme, _, IRI2, _, _)),
+    Scheme == mailto
+  }, !,
   html(span(class='e-mail', a(href=IRI1, IRI2))).
 % Image.
 rdf_iri(IRI) -->
@@ -126,32 +129,16 @@ rdf_iri(IRI1) -->
           span(class=postfix, Postfix)
         ]),
         ' ',
-        a(href=IRI1, '🐭')
+        a(href=IRI1, 'X')
       ])
     )
   ;
-    {IRI1 = IRI2, atom(IRI1)},
+    {is_of_type(iri, IRI1)}
+  ->
     html(span(class='iri', a(href=IRI1, IRI1)))
   ).
 
 
 
 % TABLE %
-
-%! rdf_html_table(+Caption:atom, +Data:list(list))// .
-% @param Data `P-O-G` or `S-P-O-G`.
-
-rdf_html_table(_, []) --> !, [].
-rdf_html_table(Caption, [H|T]) -->
-  {
-    O1 = [cell_dcg(rdf_html_term),header(true),indexed(true)],
-    (
-      var(Caption), !
-    ;
-      merge_options([caption(Caption)], O1, O2)
-    ),
-    same_length(H, H0),
-    append(_, H0, ['Subject','Predicate','Object','Graph'])
-  },
-  html(\html_table(O2, [H0,H|T])).
 

@@ -133,9 +133,10 @@ Well-founded justifications form a non-circular argument for their node.
 Only SL-justifications can be well-founded justifications.
 
 @author Wouter Beek
-@version 2012/06, 2013/05, 2013/09, 2013/12
+@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(set_theory)).
 :- use_module(library(apply)).
@@ -395,7 +396,7 @@ add_justification(TMS, Node, J):-
 
 doyle_add_node(TMS, rdf(S,P,O), N):- !,
   % Create an atomic label.
-  rdf_triple_name([], rdf(S,P,O), Label),
+  dcg_with_output_to(atom(Label), rdf_triple_name(S, P, O)),
   
   % Use the atomic label to determine the node URL.
   tms_create_node_iri(Label, N),

@@ -1,41 +1,41 @@
-:- module(
-  doyle_web,
-  [
-    doyle_web/2 % +TMS:atom
-                % -Markup:dom
-  ]
-).
+:- module(doyle_web, []).
 
-/** <module> DOYLE WEB
+/** <module> Doyle web
 
-Web predicates for Doyle's TMS.
+Web-interface to Doyle's TMS.
 
 @author Wouter Beek
-@version 2013/05
+@version 2013/05, 2014/01
 */
 
 :- use_module(doyle(doyle)).
+:- use_module(generics(db_ext)).
 :- use_module(html(html_table)).
+:- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(tms(tms)).
 
+:- db_add_novel(http:location(tms, root(tms), [])).
+:- http_handler(tms(doyle), doyle_web, []).
 
 
-doyle_web(TMS, Markup):-
-  findall(
-    tr([
-      td(Node),
-      td(SupportStatus),
-      %td(SupportingJustifications),
-      td(SupportingNodes),
-      td(Antecedents),
-      td(Foundations),
-      %td(Ancestors),
-      td(Consequences),
-      td(AffectedConsequences),
-      td(BelievedConsequences),
-      td(Repercussions),
-      td(BelievedRepercussions)
-    ]),
+
+doyle_web(TMS) -->
+  {findall(
+    [
+      Node,
+      SupportStatus,
+      %SupportingJustifications,
+      SupportingNodes,
+      Antecedents,
+      Foundations,
+      %Ancestors,
+      Consequences,
+      AffectedConsequences,
+      BelievedConsequences,
+      Repercussions,
+      BelievedRepercussions
+    ],
     (
       node(TMS, Node),
       doyle:support_status(Node, SupportStatus),
@@ -51,27 +51,31 @@ doyle_web(TMS, Markup):-
       doyle:believed_repercussions(Node, BelievedRepercussions)
     ),
     Rows
-  ),
-  html_table(
-    [header(true)],
-    [
+  )},
+  reply_html_page(
+    app_style,
+    title('Doyle'),
+    \html_table(
+      [header(true)],
+      `Doyle's TMS overview`,
       [
-        'Node',
-        'Support status',
-        %'Supporting justification',
-        'Supporting nodes',
-        'Antecedents',
-        'Foundations',
-        %'Ancestors',
-        'Consequences',
-        'Affected consequences',
-        'Believed consequences',
-        'Repercussions',
-        'Believed repercussions'
-      ]
-    |
-      Rows
-    ],
-    Markup
+        [
+          'Node',
+          'Support status',
+          %'Supporting justification',
+          'Supporting nodes',
+          'Antecedents',
+          'Foundations',
+          %'Ancestors',
+          'Consequences',
+          'Affected consequences',
+          'Believed consequences',
+          'Repercussions',
+          'Believed repercussions'
+        ]
+      |
+        Rows
+      ],
+    )
   ).
 

@@ -11,7 +11,6 @@
 */
 
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_stream)).
 :- use_module(http(rfc2616_response)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
@@ -49,6 +48,7 @@ dispatch_method(post, Request, _):-
   http_authenticate(basic(File), Request, [User|_Fields]),
   login(User),
   dcg_with_output_to(
+    current_output,
     'Response'(_ParseTree, version(1,1), status(200, _Reason), [], [])
   ).
   %reply_json(json([ok= @true,message=User]), [width(0)]).

@@ -21,11 +21,11 @@ Generated RDF HTML tables.
 @version 2013/12-2014/01
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
@@ -33,11 +33,10 @@ Generated RDF HTML tables.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_dcg)).
 :- use_module(rdf(rdf_hierarchy)).
 :- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdf_web(rdf_html)).
+:- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 :- use_module(tms(tms)).
@@ -79,16 +78,21 @@ rdf_tabular(_, Content):-
 overview_class(Class1) -->
   {
     rdf_global_id(Class1, Class2),
-    with_output_to(atom(Name), rdf_term_name(Class2)),
-    format(atom(Caption), 'Instances of ~w.', [Name]),
-    setoff([Instance], rdfs_individual_of(Instance, Class2), Instances1),
+    setoff(
+      [Instance],
+      rdfs_individual_of(Instance, Class2),
+      Instances1
+    ),
     list_truncate(Instances1, 50, Instances2)
   },
-  html_table(
-    [caption(Caption),cell_dcg(rdf_html_term),header(true),indexed(true)],
+  rdf_html_table(
+    overview_class_caption(Class2),
     [['Instance']|Instances2]
   ).
 
+overview_class_caption(Class) -->
+  `Instances of `,
+  rdf_term_name(Class).
 
 
 % DESCRIBE AN RDF INSTANCE %
@@ -96,11 +100,18 @@ overview_class(Class1) -->
 overview_instance(Instance1, G) -->
   {
     rdf_global_id(Instance1, Instance2),
-    with_output_to(atom(Name), rdf_term_name(Instance2)),
-    format(atom(Caption), 'Instance ~w.', [Name]),
-    setoff([P,O,G], rdf(Instance2, P, O, G), L)
+    setoff(
+      [P,O,G],
+      rdf(Instance2, P, O, G),
+      L
+    )
   },
-  rdf_html_table(Caption, L).
+  rdf_html_table(overview_instance_caption(Instance2), L).
+
+overview_instance_caption(Instance) -->
+  `Overview of instance `,
+  rdf_term_name(Instance),
+  `.`.
 
 overview_instances(L1, G) -->
   {
@@ -130,7 +141,7 @@ overview_instances1([H|T], G) -->
 
 rdf_tabular_term(Term) -->
   {
-    dcg_phrase(rdf_term(S1), Term),
+    dcg_phrase(rdf_term_name(S1), Term),
     rdf_global_id(S1, S2)
   },
   rdf_tabular_term1(S2).
@@ -140,11 +151,10 @@ rdf_tabular_term(Term) -->
 rdf_tabular_term1(D) -->
   {
     rdf_datatype(_, D), !,
-    setoff([Value], rdf_datatype(_, _, D, Value, _), Values),
-    format(atom(Caption), 'Ordered value list for datatype ~w.', [D])
+    setoff([Value], rdf_datatype(_, _, D, Value, _), Values)
   },
-  html_table(
-    [caption(Caption),cell_dcg(rdf_html_term),header(true),indexed(true)],
+  rdf_html_table(
+    (`Ordered value list for datatype `, atom(D), `.`),
     [['Value']|Values]
   ).
 % Predicate term.
@@ -155,25 +165,27 @@ rdf_tabular_term1(D) -->
 rdf_tabular_term1(P) -->
   {
     rdf(_, P, _), !,
-    O0 = [cell_dcg(rdf_html_term),header(true),indexed(true)],
-    format(atom(Caption1), 'Domain of property ~w.', [P]),
-    merge_options([caption(Caption1)], O0, O1),
     setoff([C], (rdf(S, P, _), rdfs_individual_of(S, C)), Cs1),
-    format(atom(Caption2), 'Range of property ~w.', [P]),
-    merge_options([caption(Caption2)], O0, O2),
     setoff([C], (rdf(_, P, O), rdfs_individual_of(O, C)), Cs2)
   },
-  html_table(O1, [['Class']|Cs1]),
-  html_table(O2, [['Class']|Cs2]),
+  rdf_html_table(
+    (`'Domain of property `, rdf_term_name(P), `.`),
+    [['Class']|Cs1]
+  ),
+  rdf_html_table(
+    (`Range of property `, rdf_term_name(P), `.`),
+    [['Class']|Cs2]
+  ),
 
   % For literal ranges we also display the values that occur.
   {
     setoff([Value], value_for_p(P, Value), Values1),
-    format(atom(Caption3), 'Values that occur for property ~w.', [P]),
-    merge_options([caption(Caption3)], O0, O3),
     list_truncate(Values1, 100, Values2)
   },
-  html_table(O3, [['Value']|Values2]).
+  rdf_html_table(
+    (`Values that occur for property `, rdf_term_name(P), `.`),
+    [['Value']|Values2]
+  ).
 % Subject term.
 % Display all predicate-object pairs (per graph).
 rdf_tabular_term1(S) -->

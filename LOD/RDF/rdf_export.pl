@@ -57,9 +57,10 @@ The procedure for determining the color of a vertex:
 ...
 
 @author Wouter Beek
-@version 2013/01-2013/03, 2013/07-2013/09
+@version 2013/01-2013/03, 2013/07-2013/09, 2014/01
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(graph_theory(random_vertex_coordinates)).
@@ -178,8 +179,8 @@ rdf_vertex_color_by_namespace(G, Colorscheme, V, V_Color):-
 %! ) is det.
 % @see export_rdf_graph/4
 
-export_rdf_graph(O, G, GIF):-
-  export_rdf_graph(O, random_vertex_coordinate, G, GIF).
+export_rdf_graph(O1, G, GIF):-
+  export_rdf_graph(O1, random_vertex_coordinate, G, GIF).
 
 %! export_rdf_graph(
 %!   +Options:list(nvpair),
@@ -207,18 +208,18 @@ export_rdf_graph(O, G, GIF):-
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
 
-export_rdf_graph(O, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
+export_rdf_graph(O1, CoordFunc, G, graph(V_Terms,E_Terms,G_Attrs)):-
   % First edges, them vertices.
-  rdf_edges(O, G, Es),
+  rdf_edges(O1, G, Es),
   % @tbd
   edges_to_vertices(Es, Vs),
 
-  maplist(rdf_edge_term(O, G, Vs), Es, E_Terms),
-  maplist(rdf_vertex_term(O, G, Vs, CoordFunc), Vs, V_Terms),
+  maplist(rdf_edge_term(O1, G, Vs), Es, E_Terms),
+  maplist(rdf_vertex_term(O1, G, Vs, CoordFunc), Vs, V_Terms),
 
   % Graph
   rdf_graph_name(G, G_Name),
-  option(colorscheme(Colorscheme), O, x11),
+  option(colorscheme(Colorscheme), O1, x11),
   G_Attrs = [colorscheme(Colorscheme),dir(forward),label(G_Name)].
 
 %! rdf_graph_name(+Graph:rdf_graph, -GraphName:atom) is det.
@@ -248,16 +249,16 @@ rdf_edge_arrow_head(_FromV-P-_ToV, none):-
   rdf_memberchk(P, [rdfs:label]), !.
 rdf_edge_arrow_head(_E, normal).
 
-rdf_edge_color(O, _G, _E, black):-
-  option(colorscheme(none), O, none), !.
+rdf_edge_color(O1, _G, _E, black):-
+  option(colorscheme(none), O1, none), !.
 % The edge color is based on the predicate term.
-rdf_edge_color(O, G, _FromV-P-_ToV, E_Color):-
-  rdf_vertex_color(O, G, P, E_Color).
+rdf_edge_color(O1, G, _FromV-P-_ToV, E_Color):-
+  rdf_vertex_color(O1, G, P, E_Color).
 % If the edge color is not specified, then see whether its vertices
 % agree on their color.
-rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
-  rdf_vertex_color(O, G, FromV, FromV_Color),
-  rdf_vertex_color(O, G, ToV, ToV_Color),
+rdf_edge_color(O1, G, FromV-_P-ToV, E_Color):-
+  rdf_vertex_color(O1, G, FromV, FromV_Color),
+  rdf_vertex_color(O1, G, ToV, ToV_Color),
   FromV_Color = ToV_Color, !,
   E_Color = FromV_Color.
 
@@ -277,26 +278,26 @@ rdf_edge_color(O, G, FromV-_P-ToV, E_Color):-
 %      The atomic language tag of the language that is preferred for
 %      use in the RDF term's name.
 %      The default value is `en`.
-%      (Passed to rdf_term_name/3.)
+%      (Passed to rdf_term_name//2.)
 %   3. `uri_desc(+DescriptionMode:oneof([uri_only,with_literals,with_preferred_label]))`
 %      Whether or not literals are included in the name of the RDF term.
 %      The default value is `uri_only`.
-%      (Passed to rdf_term_name/3.)
+%      (Passed to rdf_term_name//2.)
 
 % Make use of explicit replacements.
-rdf_edge_name(O, _FromV-P-_ToV, [label(E_Name)]):-
-  option(edge_labels(replace), O, replace), !,
+rdf_edge_name(O1, _FromV-P-_ToV, [label(E_Name)]):-
+  option(edge_labels(replace), O1, replace), !,
   (
     rdf_edge_name(P, Replacement)
   ->
     E_Name = Replacement
   ;
-    rdf_term_name(O, P, E_Name)
+    dcg_with_output_to(atom(E_Name), rdf_term_name(O1, P))
   ).
-rdf_edge_name(O, _FromV-P-_ToV, [label(E_Name)]):-
-  option(edge_labels(all), O, replace), !,
+rdf_edge_name(O1, _FromV-P-_ToV, [label(E_Name)]):-
+  option(edge_labels(all), O1, replace), !,
   % The edge name is the name of the predicate term.
-  rdf_term_name(O, P, E_Name).
+  dcg_with_output_to(atom(E_Name), rdf_term_name(O1, P)).
 rdf_edge_name(_O, _E, []).
 
 %! rdf_edge_name(+Edge:uri, -Replacement:atom) is det.
@@ -319,7 +320,7 @@ rdf_edge_style(E, E_Style):-
   rdf_edge_style_(E, E_Style), !.
 rdf_edge_style(_E, solid).
 
-rdf_edge_term(O, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
+rdf_edge_term(O1, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
   % Ids.
   (E = FromV-_P-ToV, ! ; E = FromV-ToV),
   nth0chk(FromV_Id, Vs, FromV),
@@ -329,17 +330,17 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
   rdf_edge_arrow_head(E, E_ArrowHead),
 
   % Color.
-  rdf_edge_color(O, G, E, E_Color),
+  rdf_edge_color(O1, G, E, E_Color),
 
   % Label.
-  rdf_edge_name(O, E, E_NameLIST),
+  rdf_edge_name(O1, E, E_NameLIST),
 
   % Style.
   rdf_edge_style(E, E_Style),
 
   % The colorscheme cannot be set on the graph or shared edge, apparently.
   (
-    option(colorscheme(Colorscheme), O)
+    option(colorscheme(Colorscheme), O1)
   ->
     ColorschemeAttrs = [colorscheme(Colorscheme)]
   ;
@@ -373,8 +374,8 @@ rdf_edge_term(O, G, Vs, E, edge(FromV_Id,ToV_Id,E_Attrs)):-
 % @arg Vertex A vertex.
 % @arg Color A color name.
 
-rdf_vertex_color(O, _G, _V, black):-
-  option(colorscheme(none), O), !.
+rdf_vertex_color(O1, _G, _V, black):-
+  option(colorscheme(none), O1), !.
 % Literals.
 rdf_vertex_color(_O, _G, literal(_Value), blue):- !.
 rdf_vertex_color(_O, _G, literal(lang(_Lang, _Value)), blue):- !.
@@ -388,8 +389,8 @@ rdf_vertex_color(_O, G, V, V_Color):-
   ),
   rdf_class_color(G, Class, V_Color), !.
 % Resource colored based on its namespace.
-rdf_vertex_color(O, G, V, V_Color):-
-  option(colorscheme(Colorscheme), O, svg),
+rdf_vertex_color(O1, G, V, V_Color):-
+  option(colorscheme(Colorscheme), O1, svg),
   (
     % URI resources with registered namespace/prefix.
     rdf_global_id(_:_, V),
@@ -459,14 +460,14 @@ rdf_vertex_shape(RDF_Term, circle):-
 % Catch-all.
 rdf_vertex_shape(_RDF_Term, ellipse).
 
-rdf_vertex_term(O, G, Vs, V, GIF):-
-  rdf_vertex_term(O, G, Vs, random_vertex_coordinate, V, GIF).
+rdf_vertex_term(O1, G, Vs, V, GIF):-
+  rdf_vertex_term(O1, G, Vs, random_vertex_coordinate, V, GIF).
 
-rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id,V,V_Attrs3)):-
+rdf_vertex_term(O1, G, Vs, CoordFunc, V, vertex(V_Id,V,V_Attrs3)):-
   nth0chk(V_Id, Vs, V),
-  rdf_term_name(O, V, V_Name),
-  rdf_vertex_color(O, G, V, V_Color),
-  call(CoordFunc, O, Vs, V, V_Coord),
+  dcg_with_output_to(atom(V_Name), rdf_term_name(O1, V)),
+  rdf_vertex_color(O1, G, V, V_Color),
+  call(CoordFunc, O1, Vs, V, V_Coord),
   rdf_vertex_peripheries(V, V_Peripheries),
   rdf_vertex_shape(V, V_Shape),
   V_Attrs1 = [
@@ -485,7 +486,7 @@ rdf_vertex_term(O, G, Vs, CoordFunc, V, vertex(V_Id,V,V_Attrs3)):-
   ),
   % The colorscheme cannot be set on the graph or shared edge, apparently.
   (
-    option(colorscheme(Colorscheme), O)
+    option(colorscheme(Colorscheme), O1)
   ->
     merge_options([colorscheme(Colorscheme)], V_Attrs2, V_Attrs3)
   ;

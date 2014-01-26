@@ -8,9 +8,6 @@
     rdf_graphs_web/1, % -DOM:liste
     rdf_load_web/2, % +Graph:atom
                     % -DOM:list
-    rdf_mat_web/3, % +Graph:atom
-                   % +Regime:atom
-                   % -DOM:list
     rdf_namespaces_web/1, % -DOM:list
     rdf_namespaces_web/2, % +Graph:atom
                           % -DOM:list
@@ -37,7 +34,6 @@ Web predicates for RDF graphs.
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_bnode_map)).
-:- use_module(rdf(rdf_dcg)).
 :- use_module(rdf(rdf_meta_auto_expand)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
@@ -66,7 +62,7 @@ Web predicates for RDF graphs.
 %! ) is det.
 
 rdf_explain_web(S, P, O, SVG):-
-  with_output_to(atom(TripleName), rdf_triple_name([], S, P, O)),
+  with_output_to(atom(TripleName), rdf_triple_name(S, P, O)),
   tms_export_argument_web(TripleName, SVG).
 
 %! rdf_graphs_web(-Markup:list) is det.
@@ -109,61 +105,6 @@ rdf_load_web(Graph, Markup):-
 rdf_load_web(Graph, Markup):-
   Markup = [element(p, [], ['An RDF graph named ', Graph,
     ' could not be found in the personal data directory.'])].
-
-%! rdf_mat_web(+Graph:atom, +Regime:atom, -DOM:list) is det.
-
-rdf_mat_web(G, Regime, [DOM1,DOM2]):-
-  % Run amterialization.
-  materialize(
-    [entailment_regimes([Regime]),multiple_justifications(false)],
-    G
-  ),
-
-  % Collect all recently deduced triples.
-  setoff(
-    [S2,P2,O2,G],
-    (
-      rdf_mat:recent_triple(S1, P1, O1, G),
-      maplist(rdf_term_name([]), [S1,P1,O1], [S2,P2,O2])
-    ),
-    L1
-  ),
-
-  % Display the triples in an HTML table.
-  html_table(
-    [
-      caption('The triples that were added in the last materialization run.'),
-      header(true),
-      indexed(true)
-    ],
-    [['Subject','Predicate','Object','Graph']|L1],
-    DOM1
-  ),
-
-  % Collect the legend for the blank nodes that occur in
-  % at least one of the recently deduced triples.
-  setoff(
-    [B,R2,G],
-    (
-      rdf_mat:recent_triple(S, _P, O, G),
-      (B = S ; B = O),
-      rdf_is_bnode(B),
-      b2r(G, B, R1),
-      rdf_term_name([], R1, R2)
-    ),
-    L2
-  ),
-
-  % Display the blank node mapping in an HTML table.
-  html_table(
-    [
-      caption('The blank node mapping that is used in the above results'),
-      header(true),
-      indexed(true)
-    ],
-    [['Blank node','Mapped to','Graph']|L2],
-    DOM2
-  ).
 
 %! rdf_namespaces_web(-Markup:list) is det.
 % Returns a list of the currently defined namespaces in HTML markup format.
@@ -232,7 +173,7 @@ rdf_web -->
       option(value=SLabel,SLabel),
       (
         rdf_subject(G, STerm),
-        with_output_to(atom(SLabel), rdf_term_name(STerm))
+        dcg_with_output_to(atom(SLabel), rdf_term_name(STerm))
       ),
       SItems
     ),
@@ -240,7 +181,7 @@ rdf_web -->
       option(value=PLabel,PLabel),
       (
         rdf_predicate(G, PTerm),
-        with_output_to(atom(PLabel), rdf_term_name(PTerm))
+        dcg_with_output_to(atom(PLabel), rdf_term_name(PTerm))
       ),
       PItems
     ),
@@ -248,7 +189,7 @@ rdf_web -->
       option(value=OLabel,OLabel),
       (
         rdf_object(G, OTerm),
-        with_output_to(atom(OLabel), rdf_term_name(OTerm))
+        dcg_with_output_to(atom(OLabel), rdf_term_name(OTerm))
       ),
       OItems
     )
