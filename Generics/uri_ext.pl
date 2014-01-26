@@ -28,6 +28,7 @@
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(option_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(http(http)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -67,6 +68,7 @@ file_from_stream(File, HTTP_Stream):-
 % Succeeds if the given URL locates an image file.
 
 is_image_url(URL):-
+  is_of_type(iri, URL),
   uri_components(
     URL,
     uri_components(_Scheme, _Authority, Path, _Search, _Fragment)

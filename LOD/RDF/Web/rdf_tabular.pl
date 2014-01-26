@@ -36,6 +36,7 @@ Generated RDF HTML tables.
 :- use_module(rdf(rdf_hierarchy)).
 :- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_parse)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
@@ -87,7 +88,8 @@ overview_class(Class1) -->
   },
   rdf_html_table(
     overview_class_caption(Class2),
-    [['Instance']|Instances2]
+    ['Instance'],
+    Instances2
   ).
 
 overview_class_caption(Class) -->
@@ -104,7 +106,7 @@ overview_instance(Instance1, G) -->
       [P,O,G],
       rdf(Instance2, P, O, G),
       L
-    ),gtrace
+    )
   },
   rdf_html_table(overview_instance_caption(Instance2), L).
 
@@ -141,7 +143,7 @@ overview_instances1([H|T], G) -->
 
 rdf_tabular_term(Term) -->
   {
-    dcg_phrase(rdf_term_name(S1), Term),
+    once(dcg_phrase(rdf_parse_term(S1), Term)),
     rdf_global_id(S1, S2)
   },
   rdf_tabular_term1(S2).
@@ -155,7 +157,8 @@ rdf_tabular_term1(D) -->
   },
   rdf_html_table(
     (`Ordered value list for datatype `, atom(D), `.`),
-    [['Value']|Values]
+    ['Value'],
+    Values
   ).
 % Predicate term.
 % Show:
@@ -170,11 +173,13 @@ rdf_tabular_term1(P) -->
   },
   rdf_html_table(
     (`Domain of property `, rdf_term_name(P), `.`),
-    [['Class']|Cs1]
+    ['Class'],
+    Cs1
   ),
   rdf_html_table(
     (`Range of property `, rdf_term_name(P), `.`),
-    [['Class']|Cs2]
+    ['Class'],
+    Cs2
   ),
 
   % For literal ranges we also display the values that occur.
@@ -184,7 +189,8 @@ rdf_tabular_term1(P) -->
   },
   rdf_html_table(
     (`Values that occur for property `, rdf_term_name(P), `.`),
-    [['Value']|Values2]
+    ['Value'],
+    Values2
   ).
 % Subject term.
 % Display all predicate-object pairs (per graph).

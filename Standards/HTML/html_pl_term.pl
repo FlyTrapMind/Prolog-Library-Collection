@@ -15,6 +15,9 @@
 
 
 
+html_pl_term(Atom) -->
+  {atomic(Atom)}, !,
+  html(Atom).
 html_pl_term(PL_Term) -->
   {term_to_atom(PL_Term, Atom)},
   html(Atom).

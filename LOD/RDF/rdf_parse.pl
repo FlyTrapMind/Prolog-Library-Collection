@@ -14,11 +14,9 @@ Parses RDF terms.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(library(apply)).
-:- use_module(library(error)).
-:- use_module(uri(rfc3987_dcg)).
+:- use_module(dcg(dcg_multi)).
+:- use_module(xml(xml_namespace)).
 
 
 
@@ -45,6 +43,11 @@ rdf_parse_bnode(BNode) -->
 
 % LITERAL %
 
+rdf_parse_literal(Literal) -->
+  rdf_parse_plain_literal(Literal).
+rdf_parse_literal(Literal) -->
+  rdf_parse_typed_literal(Literal).
+
 rdf_parse_language_tag(Language) -->
   dcg_all([output_format(atom)], Language).
 
@@ -60,7 +63,7 @@ rdf_parse_simple_literal(Value) -->
     double_quote,
     dcg_until([end_mode(exclusive),output_format(atom)], double_quote, Value)
   ).
- 
+
 rdf_parse_typed_literal(literal(type(Datatype,Value))) -->
   dcg_between(
     double_quote,

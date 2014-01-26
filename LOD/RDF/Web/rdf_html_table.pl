@@ -1,7 +1,10 @@
 :- module(
   rdf_html_table,
   [
-    rdf_html_table//2 % :Caption
+    rdf_html_table//2, % :Caption
+                       % +Rows:list(list(ground))
+    rdf_html_table//3 % :Caption
+                      % +HeaderRow:list(ground)
                       % +Rows:list(list(ground))
   ]
 ).
@@ -21,22 +24,34 @@ Generates HTML tables with RDF content.
 
 
 
-%! rdf_html_table(:Caption, +Data:list(list(ground)))// is det.
-% @arg Data `[P,O,G]` or `[S,P,O,G]`.
+%! rdf_html_table(:Caption, +Rows:list(list(ground)))// is det.
+%! rdf_html_table(
+%!   :Caption,
+%!   +HeaderRow:list(ground),
+%!   +Rows:list(list(ground))
+%! )// is det.
+% If `Rows` are of the form `[P,O,G]` or `[S,P,O,G]`,
+%  the header row is set automatically.
+% Otherwise the header row has to be given explicitly.
 
 :- meta_predicate(rdf_html_table(//,+,?,?)).
 rdf_html_table(Caption, [H|T]) --> !,
   {
-    same_length(H, H0),
-    append(_, H0, ['Subject','Predicate','Object','Graph'])
+    same_length(H, HeaderRow),
+    append(_, HeaderRow, ['Subject','Predicate','Object','Graph'])
   },
+  rdf_html_table(Caption, HeaderRow, [H|T]).
+
+:- meta_predicate(rdf_html_table(//,+,+,?,?)).
+% Do not fail for empty data lists.
+rdf_html_table(_, _, []) --> !, [].
+rdf_html_table(Caption, HeaderRow, Rows) -->
   html(
     \html_table(
       [header(true),indexed(true)],
       Caption,
       rdf_html_term,
-      [H0,H|T]
+      [HeaderRow|Rows]
     )
   ).
-% Do not fail for empty data lists.
-rdf_html_table(_, []) --> !, [].
+ 
