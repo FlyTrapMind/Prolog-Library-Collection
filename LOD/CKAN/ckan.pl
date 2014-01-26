@@ -243,6 +243,11 @@ legend(
     comment-atom-true,
     extras-list(extra/_)-false,
     id-atom-false,
+    object_package_id-atom-false,
+    revision_id-atom-false,
+    revision_timestamp-dateTime-false,
+    state-atom-false,
+    subject_package_id-atom-false,
     type-atom-false
   ]
 ).

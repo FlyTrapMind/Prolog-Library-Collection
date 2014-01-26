@@ -29,10 +29,6 @@ Support for reading triples that contain simple and plain literals.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 
-:- rdf_meta(rdf_literal(r,r,?,?)).
-:- rdf_meta(rdf_literal(r,r,?,?,?)).
-:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
-
 
 
 %! rdf_literal(
@@ -45,10 +41,12 @@ Support for reading triples that contain simple and plain literals.
 %
 % @see rdf_literal/5.
 
+:- rdf_meta(rdf_literal(r,r,?,?)).
 rdf_literal(S, P, Lit, G):-
   rdf(S, P, literal(Lit), G).
 rdf_literal(S, P, Lit, G):-
   rdf_literal(S, P, _Lang, Lit, G).
+
 
 %! rdf_literal(
 %!   ?Subject:oneof([bnode,uri]),
@@ -65,8 +63,10 @@ rdf_literal(S, P, Lit, G):-
 % @arg Literal An atom.
 % @arg Graph The atomic name of an RDF graph.
 
+:- rdf_meta(rdf_literal(r,r,?,?,?)).
 rdf_literal(S, P, LangTag, Lit, G):-
   rdf(S, P, literal(lang(LangTag, Lit)), G).
+
 
 %! rdf_preferred_literal(
 %!   ?Subject:or([bnode,iri]),
@@ -80,6 +80,7 @@ rdf_literal(S, P, LangTag, Lit, G):-
 %
 % @tbd Make sure the language subtags are standards compliant.
 
+:- rdf_meta(rdf_preferred_literal(r,r,+,-,?)).
 rdf_preferred_literal(S, P, LangTags, PreferredLangTag, PreferredLit):-
   % Accept lists of language tags as well as and single language tags.
   (

@@ -548,12 +548,12 @@ flatten_atom(Depth,Depth1,Lit,Negated,Mode,Last,Last1):-
 % if at final i-layer, then literals with o/p args that do not contain at least
 %   one output var from head are discarded
 flatten_lits(Lit,CheckOArgs,Depth,Negated,Mode,Last,_):-
-  functor(Lit,Name,Arity),
+  compound_name_arity(Lit,Name,Arity),
   asserta('$aleph_local'(flatten_lits,Last)),
   Depth1 is Depth - 1,
-  functor(OldFAtom,Name,Arity),
+  compound_name_arity(OldFAtom,Name,Arity),
   flatten_lit(Lit,Mode,OldFAtom,_,_),
-  functor(FAtom,Name,Arity),
+  compound_name_arity(FAtom,Name,Arity),
   apply_equivs(Depth1,Arity,OldFAtom,FAtom),
   retract('$aleph_local'(flatten_lits,OldLast)),
   (CheckOArgs = true ->
@@ -578,7 +578,7 @@ flatten_lits(_,_,_,_,_,_,Last1):-
 %   variable numbers arising from variable splits are disallowed
 %  returns Input and Output variable numbers
 flatten_lit(Lit,mode(Mode,In,Out,Const),FAtom,IVars,OVars):-
-  functor(Mode,_,Arity),
+  compound_name_arity(Mode,_,Arity),
   once(copy_modeterms(Mode,FAtom,Arity)),
   flatten_vars(In,Lit,FAtom,IVars),
   flatten_vars(Out,Lit,FAtom,OVars),
@@ -672,8 +672,8 @@ rename(Pos,Equivs,Subst0,Old,New):-
 % performs variable splitting if splitvars is set to true
 add_new_lit(Depth,FAtom,Mode,OldLast,Negated,NewLast):-
   arg(1,Mode,M),
-  functor(FAtom,Name,Arity),
-  functor(SplitAtom,Name,Arity),
+  compound_name_arity(FAtom,Name,Arity),
+  compound_name_arity(SplitAtom,Name,Arity),
   once(copy_modeterms(M,SplitAtom,Arity)),
   arg(2,Mode,In), arg(3,Mode,Out), arg(4,Mode,Const),
         split_vars(Depth,FAtom,In,Out,Const,SplitAtom,IVars,OVars,Equivs),
@@ -961,10 +961,10 @@ rm_symmetric(_,0).
 
 is_symmetric(not(Pred),not(Name),Arity):-
   !,
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   '$aleph_global'(symmetric,symmetric(Name/Arity)).
 is_symmetric(Pred,Name,Arity):-
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   '$aleph_global'(symmetric,symmetric(Name/Arity)).
 
 symmetric_match([],[]).
@@ -980,7 +980,7 @@ rm_commutative(_,_):-
   '$aleph_global'(commutative,commutative(Name/Arity)),
   p1_message('checking commutative literals'),
   p_message(Name/Arity),
-  functor(Pred,Name,Arity), functor(Pred1,Name,Arity),
+  compound_name_arity(Pred,Name,Arity), compound_name_arity(Pred1,Name,Arity),
   '$aleph_sat_litinfo'(Lit1,_,Pred,[I1|T1],O1,_),
         % check for marked literals
   % (SWI-Prolog specific: suggested by Vasili Vrubleuski)
@@ -1081,13 +1081,13 @@ gen_layer(Name/Arity, Depth):-
     Name/Arity = (not)/1
   ->
     '$aleph_global'(modeb, modeb(NSucc, not(Mode))),
-    functor(Mode, Name1, Arity1),
-    functor(Lit1, Name1, Arity1),
+    compound_name_arity(Mode, Name1, Arity1),
+    compound_name_arity(Lit1, Name1, Arity1),
     once(copy_modeterms(Mode, Lit1, Arity1)),
     Lit = not(Lit1)
   ;
-    functor(Mode, Name, Arity),
-    functor(Lit, Name, Arity),
+    compound_name_arity(Mode, Name, Arity),
+    compound_name_arity(Lit, Name, Arity),
     '$aleph_global'(modeb,modeb(NSucc,Mode)),
     once(copy_modeterms(Mode, Lit, Arity))
   ),
@@ -1195,8 +1195,8 @@ split_vars(Depth,FAtom,I,O,C,SplitAtom,IVars,OVars,Equivs):-
   get_var_equivs(Depth,IVarList,OVarList,IVars,OVars0,Equivs0),
   (Equivs0 = [] ->
     OVars = OVars0, SplitAtom = FAtom, Equivs = Equivs0;
-    functor(FAtom,Name,Arity),
-    functor(SplitAtom,Name,Arity),
+    compound_name_arity(FAtom,Name,Arity),
+    compound_name_arity(SplitAtom,Name,Arity),
     copy_args(FAtom,SplitAtom,I),
     copy_args(FAtom,SplitAtom,C),
     rename_ovars(O,Depth,FAtom,SplitAtom,Equivs0,Equivs),
@@ -1315,9 +1315,9 @@ integrate_term(Depth,Term/Type):-
 %       by finding a matching mode declaration if Mode is given
 %       otherwise first mode that matches is used
 split_args(Lit,Mode,Input,Output,Constants):-
-        functor(Lit,Psym,Arity),
+        compound_name_arity(Lit,Psym,Arity),
   find_mode(mode,Psym/Arity,Mode),
-        functor(Template,Psym,Arity),
+        compound_name_arity(Template,Psym,Arity),
   copy_modeterms(Mode,Template,Arity),
   Template = Lit,
   tp(Mode,TPList),
@@ -1341,7 +1341,7 @@ split_tp([_|TP],Input,Output,Constants):-
 % tp(+Literal,-TPList)
 %  return terms and places in Literal
 tp(Literal,TPList):-
-  functor(Literal,_,Arity),
+  compound_name_arity(Literal,_,Arity),
   tp_list(Literal,Arity,[],[],TPList).
 
 tp_list(_,0,_,L,L):- !.
@@ -1355,14 +1355,14 @@ tp_list(Term,Pos,PlaceList,TpSoFar,TpList):-
 unwrap_term(Term,_,L,L):-
   var(Term), !.
 unwrap_term(Term,Place,TpSoFar,TpList):-
-  functor(Term,_,Arity),
+  compound_name_arity(Term,_,Arity),
   tp_list(Term,Arity,Place,TpSoFar,TpList).
 
 get_determs(PSym/Arity,L):-
   findall(Pred,'$aleph_global'(determination,determination(PSym/Arity,Pred)),L).
 
 get_modes(PSym/Arity,L):-
-  functor(Lit,PSym,Arity),
+  compound_name_arity(Lit,PSym,Arity),
   findall(Lit,'$aleph_global'(mode,mode(_,Lit)),L).
 
 
@@ -1469,7 +1469,7 @@ next_node(NodeRef):-
   once('$aleph_search'(nextnode,NodeRef)), !.
 
 get_search_settings(S):-
-  functor(S,set,47),
+  compound_name_arity(S,set,47),
   aleph5_setting(nodes,MaxNodes), arg(1,S,MaxNodes),
   aleph5_setting(explore,Explore), arg(2,S,Explore),
   aleph5_setting(refineop,RefineOp), arg(3,S,RefineOp),
@@ -1759,7 +1759,7 @@ get_sibpncover(Lazy,NodeNum,Desc,Pos,Neg,Sib,PC,NC):-
   '$aleph_search_node'(NodeNum,Sib,_,_,Pos1,Neg1,_,_),
   '$aleph_sat_litinfo'(Sib,_,Atom,_,_,_),
   \+(memberchk(Sib,Desc)),
-  functor(Atom,Name,Arity),
+  compound_name_arity(Atom,Name,Arity),
   (
     memberchk(Name/Arity,Lazy)
   ->
@@ -2108,7 +2108,7 @@ refinement_ok(_,_).
 % literal to be added redundant
 split_ok(false,_,_):- !.
 split_ok(_,Clause,Lit):-
-  functor(Lit,Name,_),
+  compound_name_arity(Lit,Name,_),
   Name \= '=',
   copy_term(Clause/Lit,Clause1/Lit1),
   lit_redun(Lit1,Clause1), !,
@@ -2131,7 +2131,7 @@ lit_redun(Lit,L):-
   Lit == L.
 
 execute_equality(Lit):-
-  functor(Lit,'=',2), !,
+  compound_name_arity(Lit,'=',2), !,
   Lit.
 execute_equality(_).
 
@@ -2173,11 +2173,11 @@ newvars_ok(N,Head,Body):-
 
 get_psyms((L,B),[N/A|Syms]):-
   !,
-  functor(L,N,A),
+  compound_name_arity(L,N,A),
   get_psyms(B,Syms).
 get_psyms(true,[]):- !.
 get_psyms(L,[N/A]):-
-  functor(L,N,A).
+  compound_name_arity(L,N,A).
 
 lang_ok1([],_).
 lang_ok1([Pred|Preds],N):-
@@ -2289,8 +2289,8 @@ match_body_modes(CLit):-
 
 match_mode(_,true):- !.
 match_mode(Loc,CLit):-
-  functor(CLit,Name,Arity),
-        functor(Mode,Name,Arity),
+  compound_name_arity(CLit,Name,Arity),
+        compound_name_arity(Mode,Name,Arity),
   (Loc=head ->
     '$aleph_global'(modeh,modeh(_,Mode));
     '$aleph_global'(modeb,modeb(_,Mode))),
@@ -2344,8 +2344,8 @@ get_aleph_lits(Lit,PLit):-
   get_aleph_lit(Lit,PLit).
 
 get_aleph_lit(Lit,PLit):-
-  functor(Lit,Name,Arity),
-  functor(PLit,Name,Arity),
+  compound_name_arity(Lit,Name,Arity),
+  compound_name_arity(PLit,Name,Arity),
   get_aleph_lit(Lit,PLit,Arity).
 
 get_aleph_lit(_,_,0):- !.
@@ -3220,7 +3220,7 @@ clear_cache:-
 check_cache(Entry,Type,I):-
   Entry \= false,
         '$aleph_search_cache'(Entry), !,
-        functor(Entry,_,Arity),
+        compound_name_arity(Entry,_,Arity),
         (Type = pos -> Arg is Arity - 1; Arg is Arity),
         arg(Arg,Entry,I),
   nonvar(I).
@@ -3228,19 +3228,19 @@ check_cache(Entry,Type,I):-
 add_cache(false,_,_):- !.
 add_cache(Entry,Type,I):-
         (retract('$aleph_search_cache'(Entry))-> true ; true),
-        functor(Entry,_,Arity),
+        compound_name_arity(Entry,_,Arity),
         (Type = pos -> Arg is Arity - 1; Arg is Arity),
         (arg(Arg,Entry,I)-> asserta('$aleph_search_cache'(Entry));
                         true), !.
 
 update_cache(Entry,Type,I):-
         Entry \= false,
-        functor(Entry,Name,Arity),
+        compound_name_arity(Entry,Name,Arity),
         (Type = pos -> Arg is Arity - 1; Arg is Arity),
         arg(Arg,Entry,OldI),
         OldI = _/_,
         retract('$aleph_search_cache'(Entry)),
-        functor(NewEntry,Name,Arity),
+        compound_name_arity(NewEntry,Name,Arity),
         Arg0 is Arg - 1,
         copy_args(Entry,NewEntry,1,Arg0),
         arg(Arg,NewEntry,I),
@@ -3255,7 +3255,7 @@ add_prune_cache(Entry):-
   (
     setting(caching, true)
   ->
-    functor(Entry,_,Arity),
+    compound_name_arity(Entry,_,Arity),
     A1 is Arity - 2,
     arg(A1,Entry,Clause),
     asserta('$aleph_search_prunecache'(Clause))
@@ -3273,31 +3273,31 @@ get_cache_entry(_,_,false).
 % upto 3-argument indexing using predicate names in a clause
 aleph_hash_term([L0,L1,L2,L3,L4|T],Entry):-
         !,
-        functor(L1,P1,_), functor(L2,P2,_),
-        functor(L3,P3,_), functor(L4,P4,_),
-        functor(Entry,P4,6),
+        compound_name_arity(L1,P1,_), compound_name_arity(L2,P2,_),
+        compound_name_arity(L3,P3,_), compound_name_arity(L4,P4,_),
+        compound_name_arity(Entry,P4,6),
         arg(1,Entry,P2), arg(2,Entry,P3),
         arg(3,Entry,P1), arg(4,Entry,[L0,L1,L2,L3,L4|T]).
 aleph_hash_term([L0,L1,L2,L3],Entry):-
         !,
-        functor(L1,P1,_), functor(L2,P2,_),
-        functor(L3,P3,_),
-        functor(Entry,P3,5),
+        compound_name_arity(L1,P1,_), compound_name_arity(L2,P2,_),
+        compound_name_arity(L3,P3,_),
+        compound_name_arity(Entry,P3,5),
         arg(1,Entry,P2), arg(2,Entry,P1),
         arg(3,Entry,[L0,L1,L2,L3]).
 aleph_hash_term([L0,L1,L2],Entry):-
         !,
-        functor(L1,P1,_), functor(L2,P2,_),
-        functor(Entry,P2,4),
+        compound_name_arity(L1,P1,_), compound_name_arity(L2,P2,_),
+        compound_name_arity(Entry,P2,4),
         arg(1,Entry,P1), arg(2,Entry,[L0,L1,L2]).
 aleph_hash_term([L0,L1],Entry):-
         !,
-        functor(L1,P1,_),
-        functor(Entry,P1,3),
+        compound_name_arity(L1,P1,_),
+        compound_name_arity(Entry,P1,3),
         arg(1,Entry,[L0,L1]).
 aleph_hash_term([L0],Entry):-
-        functor(L0,P0,_),
-        functor(Entry,P0,3),
+        compound_name_arity(L0,P0,_),
+        compound_name_arity(Entry,P0,3),
         arg(1,Entry,[L0]).
 
 
@@ -3527,7 +3527,7 @@ add_model(Evalfn,Clause,PredictArg,Examples,_,_,_):-
   tparg(PredictArg,Head,Var),
   asserta('$aleph_local'(tree_model,false,0,Best)),
   '$aleph_global'(model,model(Name/Arity)),
-  functor(Model,Name,Arity),
+  compound_name_arity(Model,Name,Arity),
   auto_extend(Clause,Model,C),
   leaf_predicts(Arity,Model,Var),
   lazy_evaluate_refinement([],C,[Name/Arity],Examples,[],[],C1),
@@ -3543,7 +3543,7 @@ add_model(_,_,_,_,Clause,Total,Error):-
 
 
 find_model_error(Evalfn,Examples,(Head:-Body),[PredictArg],T,E):-
-  functor(Head,_,Arity),
+  compound_name_arity(Head,_,Arity),
   findall(Actual-Pred,
       (member(Interval,Examples),
       aleph_member3(N,Interval),
@@ -3727,7 +3727,7 @@ ask_best_split(Splits,Gain,Left,Right):-
 
 tree_refine_ok(model,Clause):-
         '$aleph_global'(model,model(Name/Arity)),
-  functor(Model,Name,Arity),
+  compound_name_arity(Model,Name,Arity),
   in(Clause,Model), !,
   fail.
 tree_refine_ok(_,_).
@@ -3887,7 +3887,7 @@ gcws:-
 gcws(Clause,PCover,NCover,Clause1):-
   gen_absym(AbName),
   split_clause(Clause,Head,Body),
-  functor(Head,_,Arity),
+  compound_name_arity(Head,_,Arity),
   add_determinations(AbName/Arity,true),
   add_modes(AbName/Arity),
   gen_ab_examples(AbName/Arity,PCover,NCover),
@@ -4131,7 +4131,7 @@ sat(Type,Num):-
   asserta('$aleph_sat'(hovars,HeadOVars)),
   get_vars(Atom,Input,HeadIVars),
   asserta('$aleph_sat'(hivars,HeadIVars)),
-  functor(Example,Name,Arity),
+  compound_name_arity(Example,Name,Arity),
   get_determs(Name/Arity,L),
   ('$aleph_global'(determination,determination(Name/Arity,'='/2))->
     asserta('$aleph_sat'(eq,true));
@@ -5373,8 +5373,8 @@ gen_features:-
   F >= FMin,
   split_clause(Clause,Head,Body),
   Body \= true,
-  functor(Head,Name,Arity),
-  functor(Template,Name,Arity),
+  compound_name_arity(Head,Name,Arity),
+  compound_name_arity(Template,Name,Arity),
   copy_iargs(Arity,Head,Template,PredictArg),
   get_feature_class(PredictArg,Head,Body,Class),
   gen_feature((Template:-Body),Label,Class),
@@ -5392,8 +5392,8 @@ gen_features:-
     F >= FMin,
     split_clause(Clause,Head,Body),
     Body \= true,
-    functor(Head,Name,Arity),
-    functor(Template,Name,Arity),
+    compound_name_arity(Head,Name,Arity),
+    compound_name_arity(Template,Name,Arity),
     copy_iargs(Arity,Head,Template,PredictArg),
     get_feature_class(PredictArg,Head,Body,Class),
     gen_feature((Template:-Body),Label,Class),
@@ -5693,7 +5693,7 @@ abgen(Fact,Max,AbGen):-
 
 gen_abduced_atoms([],[]).
 gen_abduced_atoms([AbAtom|AbAtoms],[AbGen|AbGens]):-
-  functor(AbAtom,Name,Arity),
+  compound_name_arity(AbAtom,Name,Arity),
   add_determinations(Name/Arity,true),
   sat(AbAtom),
   reduce,
@@ -5769,7 +5769,7 @@ conj_status(true,true,true):- !.
 conj_status(_,_,false).
 
 skippable(Pred):-
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   '$aleph_global'(abducible,abducible(Name/Arity)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -5814,13 +5814,13 @@ lazy_evaluate([LitNum|LitNums],LazyPreds,Path,PosCover,NegCover,Lits):-
   (integer(LitNum) ->
     BottomExists = true,
     '$aleph_sat_litinfo'(LitNum,Depth,Atom,I,O,D),
-    functor(Atom,Name,Arity),
+    compound_name_arity(Atom,Name,Arity),
     memberchk(Name/Arity,LazyPreds), !,
     get_pclause([LitNum|Path],[],(Lit:-(Goals)),_,_,_);
     BottomExists = false,
     Atom = LitNum,
     Depth = 0,
-    functor(Atom,Name,Arity),
+    compound_name_arity(Atom,Name,Arity),
     memberchk(Name/Arity,LazyPreds), !,
     split_args(LitNum,_,I,O,C),
     D = [],
@@ -5830,7 +5830,7 @@ lazy_evaluate([LitNum|LitNums],LazyPreds,Path,PosCover,NegCover,Lits):-
   ('$aleph_global'(positive_only,positive_only(Name/Arity))->
     true;
     lazy_prove_negs(Lit,Clause,NegCover)),
-  functor(LazyLiteral,Name,Arity),
+  compound_name_arity(LazyLiteral,Name,Arity),
   collect_args(I,LazyLiteral),
   collect_args(O,LazyLiteral),
   lazy_evaluate1(BottomExists,Atom,Depth,I,O,C,D,LazyLiteral,NewLits),
@@ -5865,9 +5865,9 @@ collect_args([Argno/_|Args],Literal):-
 % currently do not check if user's definition of lazily evaluated
 % literal corresponds to recall number in the modes
 lazy_evaluate1(false,Atom,_,I,O,C,_,Lit,NewLits):-
-  functor(Atom,Name,Arity),
+  compound_name_arity(Atom,Name,Arity),
   p1_message('lazy evaluation'), p_message(Name),
-  functor(NewLit,Name,Arity),
+  compound_name_arity(NewLit,Name,Arity),
   findall(NewLit,(Lit,copy_args(Lit,NewLit,C)),NewLits),
   copy_io_args(NewLits,Atom,I,O).
 
@@ -5877,7 +5877,7 @@ lazy_evaluate1(true,Atom,Depth,I,O,_,D,Lit,NewLits):-
   findall(LitNum,(retract('$aleph_local'(lazy_evaluated,LitNum))),NewLits).
 
 call_library_pred(OldLit,Depth,Lit,I,O,D):-
-  functor(OldLit,Name,Arity),
+  compound_name_arity(OldLit,Name,Arity),
   '$aleph_global'(lazy_recall,lazy_recall(Name/Arity,Recall)),
   asserta('$aleph_local'(callno,1)),
   p1_message('lazy evaluation'), p_message(Name),
@@ -5892,8 +5892,8 @@ call_library_pred(OldLit,Depth,Lit,I,O,D):-
   retract('$aleph_local'(callno,NextCall)).
 
 evaluate(OldLit,_,Lit,I,O,D):-
-  functor(OldLit,Name,Arity),
-  functor(NewLit,Name,Arity),
+  compound_name_arity(OldLit,Name,Arity),
+  compound_name_arity(NewLit,Name,Arity),
   Lit,
   copy_args(OldLit,NewLit,I),
   copy_args(OldLit,NewLit,O),
@@ -5931,9 +5931,9 @@ copy_consts(Old,New,Arg):-
 %  copy term structure from Old to New
 %  by finding an appropriate mode declaration
 copy_modeterm(Lit1,Lit2):-
-  functor(Lit1,Name,Arity),
+  compound_name_arity(Lit1,Name,Arity),
   find_mode(mode,Name/Arity,Mode),
-  functor(Lit2,Name,Arity),
+  compound_name_arity(Lit2,Name,Arity),
   copy_modeterms(Mode,Lit2,Arity),
   \+((\+ (Lit1 = Lit2))).
 
@@ -5941,15 +5941,15 @@ copy_modeterm(Lit1,Lit2):-
 % find a mode for Name/Arity of type modetype
 find_mode(mode,Name/Arity,Mode):-
   !,
-  functor(Mode,Name,Arity),
+  compound_name_arity(Mode,Name,Arity),
   '$aleph_global'(mode,mode(_,Mode)).
 find_mode(modeh,Name/Arity,Mode):-
   !,
-  functor(Mode,Name,Arity),
+  compound_name_arity(Mode,Name,Arity),
   '$aleph_global'(modeh,modeh(_,Mode)).
 find_mode(modeb,Name/Arity,Mode):-
   !,
-  functor(Mode,Name,Arity),
+  compound_name_arity(Mode,Name,Arity),
   '$aleph_global'(modeb,modeb(_,Mode)).
 
 %! copy_modeterms(+Mode, +Lit, +Arity)
@@ -5974,7 +5974,7 @@ copy_modeterms(Mode, Lit, Arg):-
   arg(Arg, Mode, Term),
   nonvar(Term),
   % Take the prefix of the simple modetype.
-  functor(Term, Name, Arity),
+  compound_name_arity(Term, Name, Arity),
   \+(
     (
       Name = '+'
@@ -5985,7 +5985,7 @@ copy_modeterms(Mode, Lit, Arg):-
     )
   ),
   !,
-  functor(NewTerm,Name,Arity),
+  compound_name_arity(NewTerm,Name,Arity),
   arg(Arg,Lit,NewTerm),
   copy_modeterms(Term,NewTerm,Arity),
   Arg0 is Arg - 1,
@@ -6031,12 +6031,12 @@ condition_target:-
   setting(condition, true),
   add_generator,
   '$aleph_global'(modeh,modeh(_,Pred)),
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   p_message('conditioning'),
   make_sname(Name,SName),
-  functor(SPred,SName,Arity),
+  compound_name_arity(SPred,SName,Arity),
   SPred =.. [_|Args],
-  functor(Fact,Name,Arity),
+  compound_name_arity(Fact,Name,Arity),
   example(_,_,Fact),
   Fact =.. [_|Args],
   condition(SPred),
@@ -6047,9 +6047,9 @@ condition_target:-
 
 add_generator:-
   '$aleph_global'(modeh,modeh(_,Pred)),
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   make_sname(Name,SName),
-  functor(SPred,SName,Arity),
+  compound_name_arity(SPred,SName,Arity),
   (clause(SPred,_)->
     true;
     add_generator(Name/Arity),
@@ -6059,7 +6059,7 @@ add_generator.
 
 add_generator(Name/Arity):-
   make_sname(Name,SName),
-  functor(SPred,SName,Arity),
+  compound_name_arity(SPred,SName,Arity),
   find_mode(modeh,Name/Arity,Mode),
   once(copy_modeterms(Mode,SPred,Arity)),
   split_args(Mode,Mode,Input,Output,Constants),
@@ -6077,7 +6077,7 @@ make_sname(Name,SName):-
 
 range_restrict([],_,R,R).
 range_restrict([Pos/Type|T],Pred,R0,R):-
-  functor(TCheck,Type,1),
+  compound_name_arity(TCheck,Type,1),
   tparg(Pos,Pred,X),
   arg(1,TCheck,X),
   range_restrict(T,Pred,[TCheck|R0],R).
@@ -6089,7 +6089,7 @@ condition(_).
 
 sample(_,0,[]):- !.
 sample(Name/Arity,N,S):-
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   retractall('$aleph_local'(slp_samplenum,_)),
   retractall('$aleph_local'(slp_sample,_)),
   asserta('$aleph_local'(slp_samplenum,1)),
@@ -6102,20 +6102,20 @@ sample(Name/Arity,N,S):-
   N2 > N,
   !,
   retract('$aleph_local'(slp_samplenum,N2)),
-  functor(Fact,Name,Arity),
+  compound_name_arity(Fact,Name,Arity),
   findall(Fact,(retract('$aleph_local'(slp_sample,Fact))),S).
 
 gsample(Name/Arity,_):-
         make_sname(Name,SName),
-        functor(SPred,SName,Arity),
+        compound_name_arity(SPred,SName,Arity),
         clause(SPred,Body),
         ground((SPred:-Body)), !,
         update_gsample(Name/Arity,_).
 gsample(_,0):- !.
 gsample(Name/Arity,N):-
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   make_sname(Name,SName),
-  functor(SPred,SName,Arity),
+  compound_name_arity(SPred,SName,Arity),
   Pred =.. [_|Args],
   retractall('$aleph_local'(slp_samplenum,_)),
   asserta('$aleph_local'(slp_samplenum,0)),
@@ -6135,9 +6135,9 @@ gsample(Name/Arity,N):-
   asserta('$aleph_global'(atoms_left,atoms_left(rand,[1-N]))).
 
 update_gsample(Name/Arity,_):-
-        functor(Pred,Name,Arity),
+        compound_name_arity(Pred,Name,Arity),
         make_sname(Name,SName),
-        functor(SPred,SName,Arity),
+        compound_name_arity(SPred,SName,Arity),
         retractall('$aleph_global'(gsample,gsample(_))),
   retractall('$aleph_local'(slp_samplenum,_)),
         asserta('$aleph_local'(slp_samplenum,0)),
@@ -6189,8 +6189,8 @@ slprove(stochastic,Goal):-
   rselect_clause(X,Normalised,(Goal:-Body)),
   slprove(stochastic,Body).
 slprove(condition,Goal):-
-  functor(Goal,Name,Arity),
-  functor(Head,Name,Arity),
+  compound_name_arity(Goal,Name,Arity),
+  compound_name_arity(Head,Name,Arity),
   clause(Head,Body),
   \+(\+((Head=Goal,slprove(condition,Body)))),
   inc_count((Head:-Body)).
@@ -6489,7 +6489,7 @@ process_modes:-
   '$aleph_global'(determination,determination(Name/Arity,_)),
   find_mode(modeh,Name/Arity,Mode),
   split_args(Mode,Mode,I,O,_),
-  functor(Lit,Name,Arity),
+  compound_name_arity(Lit,Name,Arity),
   copy_modeterms(Mode,Lit,Arity),
   add_ivars(Lit,I),
   add_ovars(Lit,O),
@@ -6500,7 +6500,7 @@ process_modes.
 process_determs:-
   once(aleph_abolish('$aleph_determination'/2)),
   '$aleph_global'(determination,determination(Name/Arity,Name1/Arity1)),
-  functor(Pred,Name1,Arity1),
+  compound_name_arity(Pred,Name1,Arity1),
   find_mode(modeb,Name1/Arity1,Mode),
   copy_modeterms(Mode,Pred,Arity1),
   Determ = '$aleph_determination'(Name/Arity,Pred),
@@ -6509,9 +6509,9 @@ process_determs:-
 process_determs.
 
 process_mode(Mode):-
-  functor(Mode,Name,Arity),
+  compound_name_arity(Mode,Name,Arity),
   split_args(Mode,Mode,I,O,C),
-  functor(Lit,Name,Arity),
+  compound_name_arity(Lit,Name,Arity),
   copy_modeterms(Mode,Lit,Arity),
   add_ioc_links(Lit,I,O,C),
   add_ovars(Lit,O),
@@ -6624,7 +6624,7 @@ inconsistent_vartypes([_|VarTypes],VTSoFar):-
   inconsistent_vartypes(VarTypes,VTSoFar).
 
 aleph_get_hlit(Name/Arity,Head):-
-  functor(Head,Name,Arity),
+  compound_name_arity(Head,Name,Arity),
   find_mode(modeh,Name/Arity,Mode),
   once(split_args(Mode,Mode,_,_,C)),
   copy_modeterms(Mode,Head,Arity),
@@ -6632,7 +6632,7 @@ aleph_get_hlit(Name/Arity,Head):-
   Equalities.
 
 aleph_get_lit(Lit,[H|Lits]):-
-  functor(H,Name,Arity),
+  compound_name_arity(H,Name,Arity),
   aleph_get_lit(Lit,Name/Arity),
   '$aleph_link_vars'(Lit,[H|Lits]),
   \+(memberchk_eq(Lit,[H|Lits])).
@@ -6654,12 +6654,12 @@ aleph_mode_linked([Lit|Lits],LitsSoFar):-
 
 auto_refine(false,Head):-
   example_saturated(Example),
-  functor(Example,Name,Arity),
+  compound_name_arity(Example,Name,Arity),
         aleph_get_hlit(Name/Arity,Head),
   Head \== false.
 auto_refine(false,Head):-
         '$aleph_global'(modeh,modeh(_,Pred)),
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
         aleph_get_hlit(Name/Arity,Head),
   Head \== false.
 auto_refine((H:-B),(H1:-B1)):-
@@ -6790,7 +6790,7 @@ search_modes.
 
 number_types([],Last,[],Last).
 number_types([N/A|T],L0,[Pred|T1],L1):-
-  functor(Pred,N,A),
+  compound_name_arity(Pred,N,A),
   L is L0 + A,
   number_types(A,L,Pred),
   number_types(T,L,T1,L1).
@@ -6804,8 +6804,8 @@ number_types(A,N,Pred):-
 
 get_type_elements([]).
 get_type_elements([Pred|Preds]):-
-  functor(Pred,Name,Arity),
-  functor(Template,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
+  compound_name_arity(Template,Name,Arity),
   interval_to_list(1-Arity,AL),
   get_type_elements(example(_,_,Template),Template,Pred,AL),
   get_type_elements(Template,Template,Pred,AL),
@@ -8025,8 +8025,8 @@ get_flatatom(not(Atom),TVSoFar,not(FAtom),TV1):-
         !,
         get_flatatom(Atom,TVSoFar,FAtom,TV1).
 get_flatatom(Atom,TVSoFar,FAtom,TV1):-
-        functor(Atom,Name,Arity),
-        functor(FAtom,Name,Arity),
+        compound_name_arity(Atom,Name,Arity),
+        compound_name_arity(FAtom,Name,Arity),
         flatten_args(Arity,Atom,FAtom,TVSoFar,TV1).
 
 get_pclause([LitNum],TVSoFar,Clause,TV,Length,LastDepth):-
@@ -8042,13 +8042,13 @@ get_pclause1([LitNum],TVSoFar,TV1,Lit,Length,LastDepth):-
         !,
         '$aleph_sat_litinfo'(LitNum,LastDepth,Atom,_,_,_),
         get_flatatom(Atom,TVSoFar,Lit,TV1),
-        functor(Lit,Name,_),
+        compound_name_arity(Lit,Name,_),
         (Name = '='-> Length = 0; Length = 1).
 get_pclause1([LitNum|LitNums],TVSoFar,TV2,(Lit,Lits1),Length,LastDepth):-
         '$aleph_sat_litinfo'(LitNum,_,Atom,_,_,_),
         get_flatatom(Atom,TVSoFar,Lit,TV1),
         get_pclause1(LitNums,TV1,TV2,Lits1,Length1,LastDepth),
-        functor(Lit,Name,_),
+        compound_name_arity(Lit,Name,_),
         (Name = '='-> Length = Length1; Length is Length1 + 1).
 
 get_pclause([LitNum],Key,TVSoFar,Clause,TV,Length,LastDepth):-
@@ -8064,13 +8064,13 @@ get_pclause1([LitNum],Key,TVSoFar,TV1,Lit,Length,LastDepth):-
         !,
         '$aleph_sat_litinfo'(LitNum,Key,LastDepth,Atom,_,_,_),
         get_flatatom(Atom,TVSoFar,Lit,TV1),
-        functor(Lit,Name,_),
+        compound_name_arity(Lit,Name,_),
         (Name = '='-> Length = 0; Length = 1).
 get_pclause1([LitNum|LitNums],Key,TVSoFar,TV2,(Lit,Lits1),Length,LastDepth):-
         '$aleph_sat_litinfo'(LitNum,Key,_,Atom,_,_,_),
         get_flatatom(Atom,TVSoFar,Lit,TV1),
         get_pclause1(LitNums,Key,TV1,TV2,Lits1,Length1,LastDepth),
-        functor(Lit,Name,_),
+        compound_name_arity(Lit,Name,_),
         (Name = '='-> Length = Length1; Length is Length1 + 1).
 
 
@@ -8085,8 +8085,8 @@ flatten_args(Arg,Atom,FAtom,TV,TV1):-
                         update(TV,Term/Var,TV0),
                         arg(Arg,FAtom,Var),
                         flatten_args(Arg1,Atom,FAtom,TV0,TV1);
-                        (functor(Term,Name,Arity),
-                         functor(FTerm,Name,Arity),
+                        (compound_name_arity(Term,Name,Arity),
+                         compound_name_arity(FTerm,Name,Arity),
                          arg(Arg,FAtom,FTerm),
                          flatten_args(Arity,Term,FTerm,TV,TV0),
                          flatten_args(Arg1,Atom,FAtom,TV0,TV1)
@@ -8407,7 +8407,7 @@ occurs_in(Vars,(_,Lits)):-
   !,
   occurs_in(Vars,Lits).
 occurs_in(Vars,Lit):-
-  functor(Lit,_,Arity),
+  compound_name_arity(Lit,_,Arity),
   occurs1(Vars,Lit,1,Arity).
 
 occurs1(Vars,Lit,Argno,MaxArgs):-
@@ -8426,7 +8426,7 @@ declare_dynamic(Name/Arity):-
   dynamic Name/Arity.
 
 aleph_abolish(Name/Arity):-
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   (predicate_property(Pred,dynamic) ->
     retractall(Pred);
     abolish(Name/Arity)).
@@ -8663,7 +8663,7 @@ cost_cover_required:-
 
 set_lazy_recalls:-
   '$aleph_global'(lazy_evaluate,lazy_evaluate(Name/Arity)),
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   % asserta('$aleph_global'(lazy_recall,lazy_recall(Name/Arity,1))),
   asserta('$aleph_global'(lazy_recall,lazy_recall(Name/Arity,0))),
   '$aleph_global'(mode,mode(Recall,Pred)),
@@ -8688,7 +8688,7 @@ set_lazy_on_contradiction(_,_).
 % only needed when learning recursive theories or
 % proof_strategy is not restricted_sld.
 record_testclause(Name/Arity):-
-        functor(Head,Name,Arity),
+        compound_name_arity(Head,Name,Arity),
         Clause = (Head:-
                         '$aleph_search'(pclause,pclause(Head,Body)),
                         Body, !),
@@ -8696,7 +8696,7 @@ record_testclause(Name/Arity):-
 
 % The "pclause" trick for abducible predicates
 record_abclause(Name/Arity):-
-        functor(Head,Name,Arity),
+        compound_name_arity(Head,Name,Arity),
         Clause = (Head:-
                         '$aleph_search'(abduced,pclause(Head,Body)),
                         Body, !),
@@ -8705,7 +8705,7 @@ record_abclause(Name/Arity):-
 % clause for incorporating recursive calls into bottom clause
 % this is done by allowing calls to the positive examples
 record_recursive_sat_call(Name/Arity):-
-        functor(Head,Name,Arity),
+        compound_name_arity(Head,Name,Arity),
   Clause = (Head:-
       setting(stage, saturation),
       '$aleph_sat'(example,example(Num,Type)),
@@ -8732,7 +8732,7 @@ record_nskolemized(Type,N1,Head,Body):-
 
 record_skolemized(Type,N1,SkolemVars,Head,Body):-
   assertz(example(N1,Type,Head)),
-        functor(Head,Name,Arity),
+        compound_name_arity(Head,Name,Arity),
         update_backpreds(Name/Arity),
   add_backs(Body),
   add_skolem_types(SkolemVars,Head,Body).
@@ -8740,7 +8740,7 @@ record_skolemized(Type,N1,SkolemVars,Head,Body):-
 add_backs([]).
 add_backs([Lit|Lits]):-
   asserta('$aleph_global'(back,back(Lit))),
-  functor(Lit,Name,Arity),
+  compound_name_arity(Lit,Name,Arity),
   declare_dynamic(Name/Arity),
   assertz(Lit),
   add_backs(Lits).
@@ -8752,7 +8752,7 @@ add_skolem_types(_,Head,Body):-
 
 add_skolem_types([]).
 add_skolem_types([Lit|Lits]):-
-  functor(Lit,PSym,Arity),
+  compound_name_arity(Lit,PSym,Arity),
   get_modes(PSym/Arity,L),
   add_skolem_types1(L,Lit),
   add_skolem_types(Lits).
@@ -9818,18 +9818,18 @@ mode(Recall,Pred):-
 modes(N/A,Mode):-
         Mode = modeh(_,Pred),
         '$aleph_global'(modeh,Mode),
-        functor(Pred,N,A).
+        compound_name_arity(Pred,N,A).
 modes(N/A,Mode):-
         Mode = modeb(_,Pred),
         '$aleph_global'(modeb,Mode),
-        functor(Pred,N,A).
+        compound_name_arity(Pred,N,A).
 
 modeh(Recall,Pred):-
   ('$aleph_global'(mode,mode(Recall,Pred)) -> true;
     aleph5_restore_setting(autorefine),
     assertz('$aleph_global'(modeh,modeh(Recall,Pred))),
     assertz('$aleph_global'(mode,mode(Recall,Pred))),
-          functor(Pred,Name,Arity),
+          compound_name_arity(Pred,Name,Arity),
           update_backpreds(Name/Arity)).
 
 modeb(Recall,Pred):-
@@ -10054,7 +10054,7 @@ show(Stream, constraints):-
 show(Stream, constraints):-
   show(Stream, false/0).
 show(Stream, Name/Arity):-
-  functor(Pred,Name,Arity),
+  compound_name_arity(Pred,Name,Arity),
   current_predicate(Name,Pred),
   nl(Stream),
   p1_message(Stream, definition),

@@ -66,5 +66,5 @@ The data structures for RDFS model theory.
 % Literal values are resources.
 lv(G, M, Lit):-
   resource(M, Lit),
-  rdf_plain_literal(G, Lit).
+  rdf_plain_literal(G, Lit, _).
 

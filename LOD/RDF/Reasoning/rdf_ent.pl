@@ -29,7 +29,7 @@ Axioms and rules for RDF materialization, as defined by Hayes2004.
 */
 
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_bnode_map)).
+:- use_module(rdf_reasoning(rdf_bnode_map)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').

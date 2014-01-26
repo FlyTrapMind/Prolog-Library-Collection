@@ -6,13 +6,16 @@
     rdf_is_typed_literal/1, % ?TypedLiteral:compound
     rdf_literal_equality/2, % +Literal1:literal
                             % +Literal2:literal
-    rdf_plain_literal/2, % ?Graph:atom
+    rdf_plain_literal/2, % ?PlainLiteral:compound
+                         % ?Value:atom
+    rdf_plain_literal/3, % ?Graph:atom
                          % ?PlainLiteral:compound
+                         % ?Value:atom
     rdf_simple_literal/2, % ?SimpleLiteral:compound
-                          % ?Lexical:atom
+                          % ?Value:atom
     rdf_simple_literal/3, % ?Graph:atom
                           % ?SimpleLiteral:compound
-                          % ?Lexical:atom
+                          % ?Value:atom
     rdf_typed_literal/3, % ?TypedLiteral:compound
                          % ?Datatype:iri
                          % ?Value
@@ -36,9 +39,6 @@ Support for RDF literals.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(xsd(xsd)).
 
-:- rdf_meta(rdf_typed_literal(o,r,?)).
-:- rdf_meta(rdf_typed_literal(?,o,r,?)).
-
 
 
 %! rdf_is_plain_literal(+X) is semidet.
@@ -52,6 +52,7 @@ rdf_is_plain_literal(literal(lang(_,_))).
 rdf_is_simple_literal(literal(_)).
 
 rdf_is_typed_literal(literal(type(_,_))).
+
 
 %! rdf_literal_equality(+Literal1:literal, +Literal2:literal) is semidet.
 % Succeeds if the given literals are equivalent.
@@ -67,12 +68,14 @@ rdf_is_typed_literal(literal(type(_,_))).
 % @see Resource Description Framework (RDF): Concepts and Abstract Syntax
 %      http://www.w3.org/TR/2004/REC-rdf-concepts-20040210/
 
+% Plain literals with the same language tag and value string.
 rdf_literal_equality(
   literal(lang(Lang1,Lit1)),
   literal(lang(Lang2,Lit2))
 ):- !,
   Lang1 == Lang2,
   Lit1 == Lit2.
+% Typed literals with equivalent values in the datatype's value space.
 rdf_literal_equality(
   literal(type(Type1,Value1)),
   literal(type(Type2,Value2))
@@ -82,53 +85,63 @@ rdf_literal_equality(
   xsd_lexicalCanonicalMap(Type1, LEX1, CAN1),
   xsd_lexicalCanonicalMap(Type2, LEX2, CAN2),
   CAN1 == CAN2.
+% Simple literals that are the same.
 rdf_literal_equality(literal(Lit1), literal(Lit2)):- !,
   Lit1 == Lit2.
 
-%! rdf_plain_literal(?Graph:atom, ?PlainLiteral:compound) is nondet.
 
-rdf_plain_literal(G, Lit):-
-  % rdf/[3,4] throws an exception for numeric input.
-  \+ number(Lit),
-  rdf(_, _, Lit, G),
-  Lit = literal(lang(Lang,_)),
+%! rdf_plain_literal(?PlainLiteral:compound, ?Value:atom) is nondet.
+%! rdf_plain_literal(
+%!   ?Graph:atom,
+%!   ?PlainLiteral:compound,
+%!   ?Value:atom
+%! ) is nondet.
+
+rdf_plain_literal(Literal, Value):-
+  % Enumerates without duplicates.
+  rdf_current_literal(Literal),
+  
   % It is apparently a feature of rdf/[3,4] to match
-  % =|literal(lang(Language,Literal))|= against =|literal(Literal)|=,
-  % so we need to check for the language tag being instantiated.
-  nonvar(Lang).
-rdf_plain_literal(G, Lit):-
-  rdf_simple_literal(G, Lit).
+  % =|literal(lang(LangTag,Literal))|= against =|literal(Literal)|=,
+  % so we do not need a special clause for simple literals.
+  Literal = literal(lang(_,Value)).
 
-%! rdf_simple_literal(+SimpleLiteral:compound, +Lexical:atom) is semidet.
-%! rdf_simple_literal(+SimpleLiteral:compound, -Lexical:atom) is det.
-%! rdf_simple_literal(-SimpleLiteral:compound, +Lexical:atom) is det.
+rdf_plain_literal(Graph, Literal, Value):-
+  rdf_plain_literal(Literal, Value),
+  
+  % Relate to a graph.
+  rdf(_, _, Literal, Graph).
 
-rdf_simple_literal(literal(LEX), LEX).
 
+%! rdf_simple_literal(?SimpleLiteral:atom, ?Value:atom) is nondet.
 %! rdf_simple_literal(
 %!   ?Graph:atom,
 %!   ?SimpleLiteral:atom,
-%!   ?Lexical:atom
+%!   ?Value:atom
 %! ) is nondet.
 
-rdf_simple_literal(G, Lit, LEX):-
-  % rdf/[3,4] throws an exception for numeric input.
-  \+ number(Lit),
-  rdf(_, _, Lit, G),
-  Lit = literal(LEX),
+rdf_simple_literal(Literal, Value):-
+  % Enumerates without duplicates.
+  rdf_current_literal(Literal),
+  
+  Literal = literal(Value),
+  
   % Exclude cases in which `Lex` is a compound term,
-  % i.e., either `lang(Lang,Lexical)` or `type(Type,Lexical)`.
-  atomic(LEX).
+  % i.e., either `lang(LangTag,Value)` or `type(Type,Lexical)`.
+  atomic(Value).
+
+rdf_simple_literal(Graph, Literal, Value):-
+  rdf_simple_literal(Literal, Value),
+  
+  % Relate to a graph.
+  rdf(_, _, Literal, Graph).
+
 
 %! rdf_typed_literal(
 %!   ?TypedLiteral:compound,
 %!   ?Datatype:iri,
 %!   ?Lexical:atom
 %! ) is det.
-
-rdf_typed_literal(Lit, D, LEX):-
-  Lit = literal(type(D, LEX)).
-
 %! rdf_typed_literal(
 %!   ?Graph:atom,
 %!   ?TypedLiteral:compound,
@@ -136,8 +149,19 @@ rdf_typed_literal(Lit, D, LEX):-
 %!   ?Lexical:atom
 %! ) is nondet.
 
+:- rdf_meta(rdf_typed_literal(o,r,?)).
+rdf_typed_literal(Lit, D, LEX):-
+  Lit = literal(type(D, LEX)).
+
+:- rdf_meta(rdf_typed_literal(?,o,r,?)).
 rdf_typed_literal(G, Lit1, D, LEX):-
-  (nonvar(Lit1) -> rdf_global_object(Lit1, Lit2) ; Lit2 = Lit1),
+  (
+    nonvar(Lit1)
+  ->
+    rdf_global_object(Lit1, Lit2)
+  ;
+    Lit2 = Lit1
+  ),
   rdf_typed_literal(Lit2, D, LEX),
   rdf(_, _, Lit2, G).
 

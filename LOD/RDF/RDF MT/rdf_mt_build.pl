@@ -127,9 +127,9 @@ rdf_add_plain_literals(G, M):-
   rdf_graph(G),
   model(M), !,
   forall(
-    rdf_plain_literal(G, Lit),
+    rdf_plain_literal(G, Lit, _),
     % $LV \subseteq IR$ can be determined using syntax
-    % (i.e. rdf_plain_literal/2).
+    % (i.e. rdf_plain_literal/3).
     rdf_add_resource(M, Lit)
   ).
 

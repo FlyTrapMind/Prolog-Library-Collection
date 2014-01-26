@@ -168,7 +168,7 @@ process_web_command_(Command, Markup):-
   atom_to_term(Command, Compound, _Bindings),
   Compound =.. [Predicate1|Arguments1],
   atom_concat(Predicate1, '_web', Predicate2),
-  functor(Compound, Predicate1, Arity),
+  compound_name_arity(Compound, Predicate1, Arity),
   WebArity is Arity + 1,
   (
     web_module(_, InternalName),

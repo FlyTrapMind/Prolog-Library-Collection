@@ -46,7 +46,7 @@ Exception handling predicates.
 % removing the outer functor 'error` when present.
 
 extract_error(error(Type,_), Error):- !,
-  functor(Type, Error, _).
+  compound_name_arity(Type, Error, _).
 extract_error(Error, Error).
 
 
