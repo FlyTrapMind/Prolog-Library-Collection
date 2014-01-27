@@ -126,9 +126,9 @@ html_table_cells(_, _, []) --> [].
 % Generated an the content for an HTML cell (both header and data).
 
 :- meta_predicate(html_table_cell(+,3,+,?,?)).
-html_table_cell(data, Cell, Element) --> !,
+html_table_cell(data, Cell, Element) -->
   html(td(\dcg_call(Cell, Element))).
-html_table_cell(header, Cell, Element) --> !,
+html_table_cell(header, Cell, Element) -->
   html(th(\dcg_call(Cell, Element))).
 
 

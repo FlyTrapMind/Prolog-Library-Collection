@@ -291,16 +291,19 @@ split_atom_length(A, _, [A]).
 strip_atom(Strips, A1, A3):-
   strip_atom_begin(Strips, A1, A2),
   strip_atom_end(Strips, A2, A3).
+
 strip_atom_begin(Strips, A1, A3):-
   member(Strip, Strips),
-  atom_concat(Strip, A2, A1),
+  atom_concat(Strip, A2, A1), !,
   strip_atom_begin(Strips, A2, A3).
 strip_atom_begin(_, A, A).
+
 strip_atom_end(Strips, A1, A3):-
   member(Strip, Strips),
-  atom_concat(A2, Strip, A1),
+  atom_concat(A2, Strip, A1), !,
   strip_atom_end(Strips, A2, A3).
 strip_atom_end(_, A, A).
+
 
 %! to_atom(+In:or([atom,list(code),number]), -Out:atom) is det.
 

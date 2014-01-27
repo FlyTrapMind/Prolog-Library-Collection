@@ -5,11 +5,14 @@
                             % +RawAlignments:list(pair(iri))
     oaei_file_to_alignments/2, % +File:atom
                                % -AlignmentPairs:list(pair(iri))
-    tsv_convert_directory/2, % +FromDirectory:atom
-                             % -ToDirectory:atom
+    tsv_convert_directory/4, % +FromDirectory:atom
+                             % +ToDirectory:atom
+                             % ?ToMIME:atom
+                             % -ToFiles:list(atom)
+% AP
     tsv_convert_directory/3 % +FromDirectory:atom
-                            % +ToFormat:oneof([ntriples,triples,turtle,xml])
-                            % -ToDirectory:atom
+                            % +ToDirectory:atom
+                            % -AP_Status:compound
   ]
 ).
 
@@ -100,7 +103,7 @@ Mismatch types:
     * Data semantic transformation
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/08-2013/09, 2013/12
+@version 2013/04-2013/05, 2013/08-2013/09, 2013/12-2014/01
 */
 
 :- use_module(generics(db_ext)).
@@ -121,7 +124,6 @@ Mismatch types:
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_lit_build)).
 :- use_module(rdf(rdf_lit_read)).
-:- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).
 
@@ -207,16 +209,21 @@ oaei_file_to_alignments_(G, A_Pairs):-
     [G,L1]
   ).
 
-tsv_convert_directory(FromDir, ToDir):-
-  tsv_convert_directory(FromDir, turtle, ToDir).
+tsv_convert_directory(FromDir, ToDir, ap(status(succeed),files(ToFiles))):-
+  tsv_convert_directory(FromDir, ToDir, _, ToFiles).
 
-tsv_convert_directory(FromDir, ToFormat, ToDir):-
-  rdf_process_directory_files(
-    FromDir,
-    [table_separated_values],
-    ToDir,
-    ToFormat,
-    tsv_file_to_oaei_file
+tsv_convert_directory(FromDir, ToDir, ToMIME, ToFiles):-
+  default(ToMIME1, 'application/x-turtle', ToMIME2),
+  directory_files([file_types([tsv])], FromDir, FromFiles),
+  findall(
+    ToFile,
+    (
+      member(FromFile, FromFiles),
+      once(rdf_serialization(ToExt, _, _, ToMIME2, _)),
+      file_alternative(FromFile, ToDir, _, ToExt, ToFile),
+      tsv_file_to_oaei_file(FromFile, ToFile)
+    ),
+    ToFiles
   ).
 
 %! tsv_file_to_alignments(+File:atom, -AlignmentPairs:list(pair(iri))) is det.

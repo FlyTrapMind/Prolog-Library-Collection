@@ -505,12 +505,24 @@ pre .string, pre .support.value  {
 
 /* ERROR MESSAGES */
 
-.error_kind {
-  color: red;
+.action{
   font-weight: bold;
 }
 
-.mime {
+.ap_error, .ap_fail, .ap_skip {
+  background-color: LightCoral;
+}
+
+.ap_succeed {
+  background-color: LightGreen;
+}
+
+.error_kind {
+  color: Maroon;
+  font-weight: bold;
+}
+
+.exit-status, .file, .mime, .program {
   font-family: monospace;
 }
 

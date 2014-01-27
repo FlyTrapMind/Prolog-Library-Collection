@@ -117,8 +117,14 @@ error_formal(permission_error(Action,Type,Term)) --> !,
 error_formal(process_error(Program,exit(Status))) --> !,
   html(
     div(class=process_error, [
-      \error_program(Program),
-      \error_status(Status)
+      div([
+        'Program: ',
+        \program(Program)
+      ]),
+      div([
+        'Status: ',
+        \exit_status(Status)
+      ])
     ])
   ).
 error_formal(representation_error(Reason)) --> !,
@@ -181,14 +187,8 @@ error_predicate(Module, Functor, Arity) -->
     ])
   ).
 
-error_program(Program) -->
-  html(div(class=program, ['Program: ',Program])).
-
 error_reason(Reason) -->
   html(span(class=reason, Reason)).
-
-error_status(Status) -->
-  html(div(class=exit_status, ['Status: ',Status])).
 
 %error_stream(Stream) -->
 %  {stream_property(Stream, alias(Alias))}, !,
@@ -207,6 +207,12 @@ error_term(Term) -->
 error_type(Type) -->
   html(span(class=error_type, Type)).
 
+exit_status(Status) -->
+  html(span(class='exit-status', Status)).
+
 mime(MIME) -->
   html(span(class=mime, MIME)).
+
+program(Program) -->
+  html(span(class=program, Program)).
 

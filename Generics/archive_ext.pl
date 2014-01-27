@@ -4,7 +4,7 @@
     extract_archive/3, % +FromFile:atom
                        % +ToDirectory:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
-    extract_archives/3 % +FromDir:atom
+    extract_archives/3 % +FromDirectory:atom
                        % +ToDirectory:atom
                        % -AP_Status:compound
   ]
@@ -58,7 +58,6 @@ extract_archive(tgz, File, _, untarred):- !,
   process_create(path(tar), [zxvf,file(File)], []).
 extract_archive(zip, File, Base, unzipped):- !,
   process_create(path(unzip), [file(File),'-o',file(Base)], []).
-
 
 %! extact_archives(
 %!   +FromDirectory:atom,

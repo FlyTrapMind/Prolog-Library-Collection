@@ -301,8 +301,8 @@ ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
       ap_stages(Alias, 0, Mod:T, Msgs1),
       Msgs2 = [Msg|Msgs1]
     ),
-    E,
-    ap_catcher(E, T, Msgs2)
+    Error,
+    ap_catcher(Error, T, Msgs2)
   ).
 
 :- meta_predicate(ap_stages(+,+,:,-)).
@@ -315,11 +315,11 @@ ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
       ap_stages(Alias, Stage2, Mod:T, Msgs1),
       Msgs2 = [Msg|Msgs1]
     ),
-    E,
-    ap_catcher(E, T, Msgs2)
+    Error,
+    ap_catcher(Error, T, Msgs2)
   ).
 
-ap_catcher(E, L, [E|Msgs]):-
+ap_catcher(Error, L, [ap(status(error),Error)|Msgs]):-
   length(L, Length),
   repeating_list(ap(status(skip),'never reached'), Length, Msgs).
 
