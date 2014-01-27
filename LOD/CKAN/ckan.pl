@@ -83,26 +83,34 @@ legend(
   id,
   [
     abbreviation-atom-true,
-    approval_status-atom-true,
+    approval_status-atom-false,
+    capacity-atom-false,
     category-atom-true,
     'contact-email'-atom-true, % Should be `email`.
     'contact-name'-atom-true,
     'contact-phone'-atom-true,
+    created-dateTime-false,
     description-atom-true,
-    extras-list(extra/_)-false,
+    display_name-atom-false,
+    extras-list(extra/_)-true,
     'foi-email'-atom-true, % Should be `email`.
     'foi-name'-atom-true,
     'foi-phone'-atom-true,
     'foi-web'-atom-true,
-    groups-list('_group'/_)-true,
+    groups-list(group/_)-true,
     id-atom-false,
     image_url-atom-true, % Should be `url`.
-    is_organization-boolean-true,
-    name-atom-true,
+    is_organization-boolean-false,
+    name-atom-false,
+    num_followers-integer-true,
+    package_count-integer-true,
     packages-list(package/_)-false,
+    revision_id-revision/_-false,
+    revision_timestamp-dateTime-false,
+    state-atom-false,
     tags-list(tag/_)-false,
-    title-atom-true,
-    type-atom-true,
+    title-atom-false,
+    type-atom-false,
     users-list(user/_)-false
   ]
 ).
@@ -122,32 +130,6 @@ legend(
     status-atom-false,
     title-atom-false,
     url-atom-true  % Should be `url`.
-  ]
-).
-legend(
-  organization,
-  id,
-  [
-    approval_status-atom-false,
-    created-dateTime-false,
-    description-atom-true,
-    display_name-atom-false,
-    extras-list(extra/_)-true,
-    groups-list(group/_)-true,
-    id-atom-false,
-    image_url-atom-true, % Should be `url`.
-    is_organization-boolean-false,
-    name-atom-false,
-    num_followers-integer-true,
-    package_count-integer-true,
-    packages-list(package/_)-false,
-    revision_id-revision/_-false,
-    revision_timestamp-dateTime-false,
-    state-atom-false,
-    tags-list(tag/_)-false,
-    title-atom-false,
-    type-atom-false,
-    users-list(user/_)-false
   ]
 ).
 legend(
@@ -174,7 +156,7 @@ legend(
     geographic_coverage-list(atom)-true,
     geographic_granularity-atom-true,
     'geographic_granularity-other'-atom-true,
-    groups-list(atom)-false,
+    groups-list(group)-false,
     id-atom-false,
     individual_resources-list(resource/_)-true,
     isopen-boolean-false,
@@ -192,8 +174,8 @@ legend(
     notes-atom-true,
     num_resources-integer-false,
     num_tags-integer-false,
-    organization-organization/_-true,
-    owner_org-organization/_-true,
+    organization-group/_-true,
+    owner_org-group/_-true,
     precision-atom-true,
     private-boolean-false,
     'publish-date'-atom-true,
@@ -300,7 +282,7 @@ legend(
     openness_score_reason-atom-true,
     openspending_hint-atom-true,
     owner-atom-true,
-    owner_org-organization/_-false,
+    owner_org-group/_-false,
     'Periodicidade'-atom-false,
     position-integer-false,
     'publish-date'-atom-true,
@@ -431,7 +413,7 @@ ckan_http(O1, Action, Parameters, Goal):-
   (
     option(api_key(Key), O1)
   ->
-    HTTP_O1 = [request_header('Authorization'=Key)]
+    HTTP_O1 = [never_give_up(true),request_header('Authorization'=Key)]
   ;
     HTTP_O1 = []
   ),
