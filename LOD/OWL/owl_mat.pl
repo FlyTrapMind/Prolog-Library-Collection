@@ -26,3 +26,4 @@ owl_materialize(FromDir, ToDir):-
     [access(read),file_type(jar)]
   ),
   run_jar(JAR_File, [file(FromDir),file(ToDir)]).
+

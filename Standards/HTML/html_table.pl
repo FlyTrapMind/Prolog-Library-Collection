@@ -226,3 +226,4 @@ html_table_header_row(Cell, HeaderRow) -->
 html_table_index_cell(true, Cell, Index) -->
   html(\html_table_cell(data, Cell, Index)).
 html_table_index_cell(false, _, _) --> [].
+

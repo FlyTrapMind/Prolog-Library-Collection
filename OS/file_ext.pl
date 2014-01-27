@@ -14,12 +14,11 @@
                    % +Type:atom
                    % -File:atom
     create_file_directory/1, % +File:atom
-    file_directory_alternative/3, % +FromFile:atom
-                                  % +ToDirectory:atom
-                                  % -ToFile:atom
-    file_extension_alternative/3, % +FromFile:atom
-                                  % +ToExtension:atom
-                                  % -ToFile:atom
+    file_alternative/5, % +FromFile:atom
+                        % ?Directory:atom
+                        % ?Name:atom
+                        % ?Extension:atom
+                        % -ToFile:atom
     file_name/4, % +File:atom
                  % ?Dir:atom
                  % ?Name:atom
@@ -208,12 +207,25 @@ create_file_directory(File):-
   file_to_directory(File, Dir),
   create_directory(Dir).
 
-file_extension_alternative(FromFile, ToExtension, ToFile):-
-  file_name_extension(Base, _FromExtension, FromFile),
-  file_name_extension(Base, ToExtension, ToFile).
+%! file_alternative(
+%!   +FromFile:atom,
+%!   ?ToDirectory:atom,
+%!   ?ToName:atom,
+%!   ?ToExtension:atom,
+%!   -ToFile:atom
+%! ) is det.
+% Creates similar file names, allowing a different
+% directory, base name, and/or extension to be specified.
 
-file_directory_alternative(FromFile, ToDir, ToFile):-
-  directory_file_path(ToDir, FromFile, ToFile).
+file_alternative(FromFile, ToDir1, ToName1, ToExt1, ToFile):-
+  file_name(FromFile, FromDir, FromName, FromExt),
+  maplist(
+    default,
+    [ToDir1,ToName1,ToExt1],
+    [FromDir,FromName,FromExt],
+    [ToDir2,ToName2,ToExt2]
+  ),
+  file_name(ToFile, ToDir2, ToName2, ToExt2).
 
 %! file_name(
 %!   ?Path:atom,
