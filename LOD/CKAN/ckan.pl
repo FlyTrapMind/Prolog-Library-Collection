@@ -156,7 +156,7 @@ legend(
     geographic_coverage-list(atom)-true,
     geographic_granularity-atom-true,
     'geographic_granularity-other'-atom-true,
-    groups-list(group)-false,
+    groups-list(group/_)-false,
     id-atom-false,
     individual_resources-list(resource/_)-true,
     isopen-boolean-false,
