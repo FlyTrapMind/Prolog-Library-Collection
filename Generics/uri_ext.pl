@@ -1,6 +1,9 @@
 :- module(
   uri_ext,
   [
+    download_to_directory/3, % +URL:atom
+                             % +ToDirectory:atom
+                             % -AP_Status:compound
     download_to_file/2, % +URL:atom
                         % ?File:atom
     is_image_url/1, % +URL:url
@@ -38,6 +41,18 @@
 
 
 
+download_to_directory(URL, ToDir, ap(status(succeed),download(File3))):-
+  url_to_file(URL, File1),
+  directory_file_path(_, File2, File1),
+  file_name_extensions(Base, Extensions, File2),
+  create_file(ToDir, Base, Extensions, File3),
+  download_to_file(URL, File3),
+  size_file(File3, Size),
+  % Expressed in megabytes.
+  TooBig is 1024 * 1024 * 100,
+  (Size > TooBig -> permission_error(open,'BIG-file',File3) ; true).
+
+
 download_to_file(URL, File):-
   nonvar(File),
 
@@ -55,6 +70,7 @@ download_to_file(URL, File):-
 download_to_file(URL, File):-
   url_to_file(URL, File),
   download_to_file(URL, File).
+
 
 file_from_stream(File, HTTP_Stream):-
   setup_call_cleanup(

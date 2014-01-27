@@ -95,8 +95,6 @@ We use the following abbreviations in this module:
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).
 
-:- nodebug(file_ext).
-
 
 
 %! absolute_file_name_number(

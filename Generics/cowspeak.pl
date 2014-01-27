@@ -40,8 +40,6 @@ Based on `cowsay` by Tony Monroe,
 :- use_module(library(settings)).
 :- use_module(os(tts_ext)).
 
-:- nodebug(cowspeak).
-
 % The automated finding of meta-predicates seems to be over-eager.
 :- meta_predicate(dcg_speech_bubble_line(+,+,?,?)).
 

@@ -1,8 +1,11 @@
 :- module(
   file_mime,
   [
-    file_mime/2 % +File:atom
-                % -Mime:atom
+    file_mime/2, % +File:atom
+                 % -Mime:atom
+    mime_dir/3 % +FromDirectory:atom
+               % +ToDirectory:atom
+               % -AP_Status:compound
   ]
 ).
 
@@ -17,20 +20,47 @@ Returns the MIME of a given file.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(library(filesex)).
+:- use_module(library(lists)).
 :- use_module(library(pure_input)).
-%:- use_module(os(io_ext)).
+:- use_module(os(dir_ext)).
 
 
 
-%file_mime(File, Mime):-
-%  file_to_atom(File, Atom),
-%  atom_codes(Atom, Codes),
-%  phrase(file_mime(Mime), Codes), !.
+/*DEB
+:- use_module(os(io_ext)).
+file_mime(File, Mime):-
+  file_to_atom(File, Atom),
+  atom_codes(Atom, Codes),
+  phrase(file_mime(Mime), Codes), !.
+*/
 file_mime(File, MIME):-
   phrase_from_file(file_mime(MIME), File), !.
 file_mime(File, MIME):-
-  gtrace,
+  gtrace, %DEB
   file_mime(File, MIME).
+
+
+%! mime_dir(
+%!   +FromDirectory:atom,
+%!   +ToDirectory:atom,
+%!   -AP_Status:compound
+%! ) is det.
+
+mime_dir(FromDir, ToDir, ap(status(succeed),mime(OfFiles))):-
+  directory_files([], FromDir, FromFiles),
+  findall(
+    of_file(FromFile,nvpair('MIME',MIME)),
+    (
+      member(FromFile, FromFiles),
+      file_mime(FromFile, MIME)
+    ),
+    OfFiles
+  ),
+  forall(
+    member(FromFile, FromFiles),
+    copy_file(FromFile, ToDir)
+  ).
 
 
 file_mime('application/x-turtle') -->

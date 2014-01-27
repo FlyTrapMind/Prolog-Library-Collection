@@ -136,8 +136,6 @@ application of the subclass relation.
 :- rdf_meta(rdfs_subclass_axiom(+,r,r)).
 :- rdf_meta(rdfs_subproperty(+,r,r,?)).
 
-:- nodebug(rdfs_read).
-
 
 
 rdf_db_or_axiom(M, P, rdfs:domain, C, _):-

@@ -1,6 +1,12 @@
 :- module(
   rdf_serial,
   [
+    rdf_convert_directory/3, % +FromDirectory:atom
+                             % +ToDirectory:atom
+                             % ?ToFormat:oneof([ntriples,rdf_xml,triples,turtle])
+    rdf_convert_file/3, % +FromFile:atom
+                        % ?ToFile:atom
+                        % ?ToFormat:oneof([ntriples,rdf_xml,triples,turtle])
     rdf_graph_source_file/2, % +Graph:atom
                              % -File:atom
     rdf_load2/1, % +File:atom
@@ -25,14 +31,7 @@
 
 Helper predicates for loading/saving RDF graphs.
 
-Since it is arduous to establish the serialization format based on
-the contents of a file, we assume that the file extensions reliably
-reflect the serialization format:
-  1. =nt= for N-Triples. Format name =ntriples=.
-  2. =triples= for the binary storage format provided by SWI-Prolog.
-     Format name =triples=.
-  3. =ttl= for Turtle. Format name =turtle=.
-  4. =rdf= for RDF/XML. Format name =xml=.
+Also easily converts between different RDF serializations.
 
 @author Wouter Beek
 @tbd Writing in the N-triples format is not supported.
@@ -42,6 +41,7 @@ reflect the serialization format:
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
@@ -58,6 +58,8 @@ reflect the serialization format:
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_graph_name)).
+:- use_module(rdf(rdf_meta)).
+:- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_dom)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
@@ -75,8 +77,79 @@ reflect the serialization format:
 :- db_add_novel(user:prolog_file_type(xml,     rdf_xml )).
 :- db_add_novel(user:prolog_file_type(xml,     rdf     )).
 
-:- nodebug(rdf_serial).
 
+
+%! rdf_convert_directory(
+%!   +FromDirectory:atom,
+%!   +ToDirectory:atom,
+%!   +ToFormat:oneof([ntriples,rdf_xml,triples,turtle])
+%! ) is det.
+
+rdf_convert_directory(FromDir, ToDir, ToFormat1):-
+  % Collect the RDF serialization formats.
+  %
+  % Notice that we even include the 'to' format,
+  % since for instance different versions of the same library
+  % may export the same format differently.
+  findall(
+    FromFileType,
+    rdf_serialization(_, FromFileType, _, _, _),
+    FromFileTypes
+  ),
+  
+  % By default we convert to turtle.
+  default(ToFormat1, turtle, ToFormat2),
+  once(rdf_serialization(_, ToFileType, ToFormat2, _, _)),
+  
+  directory_files(
+    [file_types(FromFileTypes),include_directories(false),recursive(true)],
+    FromDir,
+    FromFiles
+  ),
+  
+  forall(
+    member(FromFile, FromFiles),
+    (
+      file_alternative(FromFile, ToDir, _, ToFileType, ToFile),
+      rdf_convert_file(FromFile, ToFormat2, ToFile)
+    )
+  ).
+
+
+%! rdf_convert_file(
+%!   +FromFile:atom,
+%!   ?ToFormat:oneof([ntriples,triples,turtle,xml]),
+%!   ?ToFile:atom
+%! ) is det.
+% Converts a given file in one format to a new file in a different format.
+% The original file is not removed.
+%
+% @arg FromFile The atomic name of a file.
+% @arg ToFormat The RDF file format converted to.
+%      Possible values: `ntriples`, `triples`, `turtle` (default), `xml`.
+% @arg ToFile If the output file is not given,
+%      then it is based on the input file.
+
+rdf_convert_file(FromFile, ToFormat1, ToFile):-
+  default(ToFormat1, turtle, ToFormat2),
+  
+  % If the output file is not given,
+  % then it is based on the input file.
+  (
+    is_absolute_file_name(ToFile), !
+  ;
+    once(rdf_serialization(_, ToFileType, ToFormat2, _, _)),
+    file_type_alternative(FromFile, ToFileType, ToFile)
+  ),
+  
+  rdf_setup_call_cleanup(
+    % Idle wheel, i.e. a predicate which we know succeeds
+    % for every graph argument.
+    rdf_graph,
+    [FromFile],
+    ToFormat2,
+    ToFile
+  ).
 
 
 %! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
@@ -95,14 +168,9 @@ rdf_graph_source_file(G, F2):-
 %! rdf_load2(+File:atom) is det.
 %! rdf_load2(+Files:list(atom)) is det.
 % Load the graph that is stored in the given file.
-% Then format is derived from the file itself or from the file extension.
+% The format is derived from the file itself or from the file extension.
 % The graph name is the base of the file name.
 %
-% @see Wrapper to rdf_load/2.
-
-rdf_load2(Spec):-
-  rdf_load2(Spec, []).
-
 %! rdf_load2(+File:atom, +Options:list) is det.
 %! rdf_load2(+Files:list(atom), +Options:list) is det.
 %! rdf_load2(+Directory:atom, +Options:list) is det.
@@ -115,6 +183,9 @@ rdf_load2(Spec):-
 %
 % @arg Spec Either a file, a list of files, or a directory.
 % @arg Options A list of name-value pairs.
+
+rdf_load2(Spec):-
+  rdf_load2(Spec, []).
 
 % Loads multiple files and/or directories.
 rdf_load2(Files, O1):-
@@ -211,12 +282,6 @@ rdf_save2:-
 %
 % Exports are saved in the project directory.
 % The Turtle serialization format is used.
-%
-% @see Wrapper for rdf_save2/2.
-
-rdf_save2(G):-
-  rdf_graph_source_file(G, F),
-  rdf_save2(F, [format(turtle),graph(G)]).
 
 %! rdf_save2(?File, +Options:list) is det.
 % If the file name is not given, then a file name is construed.
@@ -239,6 +304,10 @@ rdf_save2(G):-
 %
 % @arg File An atomic absolute file name.
 % @arg Options A list of name-value pairs.
+
+rdf_save2(G):-
+  rdf_graph_source_file(G, F),
+  rdf_save2(F, [format(turtle),graph(G)]).
 
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
@@ -327,6 +396,7 @@ rdf_save2(File, O1, turtle):- !,
     O2
   ),
   rdf_save_turtle(File, O2).
+
 
 %! rdf_serialization(
 %!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
