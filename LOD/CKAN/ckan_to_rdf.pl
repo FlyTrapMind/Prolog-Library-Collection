@@ -61,10 +61,12 @@ ckan_to_rdf(O_RDF):-
   debug(ckan, 'Remaining revisions: ~w', [RemainingRevisions]),
 */
 
+/*
   % Tags.
   tag_list(O_PL, _, _, _, Tags),
   list_script(tag_show(O_RDF), 'Tags', Tags, RemainingTags),
   debug(ckan, 'Remaining tags: ~w', [RemainingTags]),
+*/
 
 /*
   % Users.

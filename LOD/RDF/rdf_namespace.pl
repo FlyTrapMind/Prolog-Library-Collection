@@ -1,30 +1,14 @@
 :- module(
   rdf_namespace,
   [
-    rdf_global_ids/2, % +L1:list
-                      % -L2:list(iri)
-
-% RDF NAMESPACE CONVERSION
-    rdf_convert_namespace/3, % +Graph:atom
-                             % +FromNamespace:atom
+    rdf_convert_namespace/6, % +FromNamespace:atom
                              % +ToNamespace:atom
-    rdf_convert_namespace/4, % +FromNamespace:atom
-                             % +From:oneof([bnode,literal,uri])
-                             % +ToNamespace:atom
-                             % -To:oneof([bnode,literal,uri])
-
-% RDF NAMESPACE REGISTRATION
-    rdf_current_namespace/2, % +Graph:graph
-                             % -Namespace:atom
-    rdf_current_namespaces/2, % +Graph:graph
-                              % -Namespaces:ordset(atom)
-    rdf_register_namespace/2, % +Graph:atom
-                              % +Prefix:atom
-    rdf_register_namespace/3, % +Graph:atom
-                              % +Prefix:atom
-                              % +URI:uri
-
-% RDF NAMESPACE EXTRACTION
+                             % ?Subject:or([bnode,iri])
+                             % ?Predicate:iri
+                             % ?Object:or([bnode,literal,iri])
+                             % ?Graph:atom
+    rdf_namespaces/2, % +Graph:atom
+                      % -XML_Namespaces:ordset(atom)
     rdf_resource_to_namespace/3 % +Resource:uri
                                 % -Namespace:atom
                                 % -Name:atom
@@ -33,128 +17,70 @@
 
 /** <module> RDF namespaces
 
-Namespace support for RDF(S).
+Namespace support for RDF(S), building on namespace prefix support for XML.
 
 @author Wouter Beek
-@version 2013/03-2013/05
+@version 2013/03-2013/05, 2014/01
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
-:- rdf_meta(rdf_resource_to_namespace(r,-,-)).
 
-:- dynamic(rdf_current_namespace/2).
-
-
-
-rdf_global_ids(L1, L2):-
-  findall(Y, (member(X, L1), rdf_global_id(X, Y)), L2).
-
-% RDF NAMESPACE CONVERSION %
-
-%! rdf_convert_namespace(
-%!   +Graph:atom,
-%!   +FromNamespace:atom,
-%!   +ToNamespace:atom
-%! ) is det.
-% Converts all resources in the given graph that have the given namespace
-% to similar resources that have another namespace.
-% The converted to namespace must be a current RDF prefix.
-
-rdf_convert_namespace(Graph, FromNamespace, ToNamespace):-
-  flag(number_of_resource_conversions, _OldId1, 0),
-  flag(number_of_triple_conversions,   _OldId2, 0),
-  forall(
-    rdf(FromS, FromP, FromO, Graph),
-    (
-      rdf_convert_namespace(FromNamespace, FromS, ToNamespace, ToS),
-      rdf_convert_namespace(FromNamespace, FromP, ToNamespace, ToP),
-      rdf_convert_namespace(FromNamespace, FromO, ToNamespace, ToO),
-      flag(number_of_triple_conversions, ID, ID + 1),
-      rdf_retractall(FromS, FromP, FromO, Graph),
-      rdf_assert(ToS, ToP, ToO, Graph)
-    )
-  ),
-  flag(number_of_triple_conversions, ID1, ID1 + 1),
-  (ID1 == 1 -> Word1 = triple ; Word1 = triples),
-  format(user, '~w ~w were converted.\n', [ID1, Word1]),
-  flag(number_of_resource_conversions, ID2, ID2 + 1),
-  (ID2 == 1 -> Word2 = resource ; Word2 = resources),
-  format(user, '~w ~w were converted.\n', [ID2, Word2]).
 
 %! rdf_convert_namespace(
 %!   +FromNamespace:atom,
-%!   +From:oneof([bnode,literal,uri]),
+%!   +FromResource:or([bnode,iri,literal]),
 %!   +ToNamespace:atom,
-%!   -To:oneof([bnode,literal,uri])
+%!   +ToResource:or([bnode,iri,literal])
 %! ) is det.
-% Converts a resource to the given namespace.
-% The namespace must be a current RDF prefix.
-% Blank nodes and literals are copied as is (they do not have a namespace).
 
-rdf_convert_namespace(_FromNamespace, BNode, _ToNamespace, BNode):-
-  rdf_is_bnode(BNode),
-  !.
-rdf_convert_namespace(_FromNamespace, Literal, _ToNamespace, Literal):-
-  rdf_is_literal(Literal),
-  !.
-rdf_convert_namespace(FromNamespace, From, ToNamespace, To):-
-  rdf_is_resource(From),
-  !,
-  (
-    rdf_global_id(FromNamespace:LocalName, From)
-  ->
-    rdf_current_prefix(ToNamespace, _URI),
-    rdf_global_id(ToNamespace:LocalName, To),
-    flag(number_of_resource_conversions, ID, ID + 1)
-  ;
-    To = From
+rdf_convert_namespace(_, _, BNode, BNode):-
+  rdf_is_bnode(BNode), !.
+rdf_convert_namespace(_, _, Literal, Literal):-
+  rdf_is_literal(Literal), !.
+rdf_convert_namespace(FromNS, ToNS, FromIRI, ToIRI):-
+  rdf_global_id(FromNS:LocalName, FromIRI),
+  rdf_global_id(ToNS:LocalName, ToIRI).
+
+%! rdf_convert_namespace(
+%!   +FromNamespace:atom,
+%!   +ToNamespace:atom,
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:or([bnode,literal,iri]),
+%!   ?Graph:atom
+%! ) is det.
+% Converts all resources that occur in the given patterns
+% with the given namespace to similar resources that have another namespace.
+%
+% The namespaces must be registered with module [xml_namespace].
+
+:- rdf_meta(rdf_convert_namespace(+,+,r,r,r,?)).
+rdf_convert_namespace(FromNS, ToNS, S, P, O, G):-
+  forall(
+    rdf_retractall(S1, P1, O1, G),
+    (
+      maplist(rdf_convert_namespace(FromNS, ToNs), [S1,P1,O1], [S2,P2,O2]),
+      rdf_assert(S2, P2, O2, G)
+    )
   ).
 
 
+rdf_namespaces(Graph, XML_Namespaces):-
+  setoff(
+    XML_Namespace,
+    (
+      rdf_term(Graph, Term),
+      rdf_global_id(XML_Namespace:_, Term)
+    ),
+    XML_Namespaces
+  ).
 
-% RDF NAMESPACE REGISTRATION %
-
-%! rdf_current_namespaces(+Graph:atom, -Namespaces:ordset(atom)) is det.
-% Returns the namespaces that occur in the given graph.
-%
-% @arg Graph The atomic name of a graph.
-% @arg Namespaces An ordered set of atomic names of namespaces.
-
-rdf_current_namespaces(Graph, Namespaces):-
-  setoff(Namespace, rdf_current_namespace(Graph, Namespace), Namespaces).
-
-rdf_register_namespace(Graph, Prefix):-
-  % The given prefix must be registered as an XML namespace.
-  xml_current_namespace(Prefix, _URI),
-  assert(rdf_current_namespace(Graph, Prefix)).
-
-rdf_register_namespace(Graph, Prefix, URI):-
-  xml_register_namespace(Prefix, URI),
-  assert(rdf_current_namespace(Graph, Prefix)).
-
-
-
-% RDF NAMESPACE EXTRACTION %
-
-rdf_lookup_namespace(Graph, Namespace, URI):-
-  % A namespace occurs for a resource.
-  rdf_term(Graph, Term),
-  \+ rdf_is_bnode(Term),
-  (
-    rdf_is_resource(Term)
-  ->
-    Resource = Term
-  ;
-    Term = literal(type(Resource, _Value))
-  ),
-  rdf_resource_to_namespace(Resource, Namespace, _Name),
-  % Only registered prefixes/namespaces are returned.
-  rdf_current_prefix(Namespace, URI).
 
 %! rdf_resource_to_namespace(
 %!   +Resource:uri,
@@ -162,21 +88,15 @@ rdf_lookup_namespace(Graph, Namespace, URI):-
 %!   -Name:atom
 %! ) is det.
 
-rdf_resource_to_namespace(Resource, Namespace, Name):-
+rdf_resource_to_namespace(Resource, LongestNamespace, ShortestLocalName):-
   findall(
-    Namespace-Name,
-    rdf_global_id(Namespace:Name, Resource),
+    LocalNameLength-Namespace,
+    (
+      rdf_global_id(Namespace:LocalName, Resource)
+      atom_length(LocalName, LocalNameLength),
+    ),
     Pairs
   ),
-  (
-    Pairs == [Namespace-Name]
-  ;
-    member(Namespace-Name, Pairs),
-    atom_length(Name, NameLength),
-    \+ ((
-      member(_OtherNamespace-OtherName, Pairs),
-      atom_length(OtherName, OtherNameLength),
-      OtherNameLength < NameLength
-    ))
-  ), !.
+  keysort(Pairs, [_-LongestNamespace|_]),
+  rdf_global_id(LongestNamespace:ShortestLocalName, Resource).
 

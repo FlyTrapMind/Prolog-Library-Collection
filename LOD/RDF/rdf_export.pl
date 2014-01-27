@@ -111,7 +111,7 @@ rdf_colorize_namespaces(G, _Colorscheme):-
   \+ rdf_graph(G), !,
   existence_error(atom, G).
 rdf_colorize_namespaces(G, svg):- !,
-  rdf_current_namespaces(G, Namespaces),
+  rdf_namespaces(G, Namespaces),
   length(Namespaces, NumberOfNamespaces),
   NumberOfNamespaces > 0,
   svg_colors(Colors),
