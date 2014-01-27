@@ -21,11 +21,6 @@ Runs stages in an automated process.
 :- use_module(generics(user_input)).
 :- use_module(os(io_ext)).
 
-:- meta_predicate(ap_stage(+,+,+,+,:,-,-)).
-:- meta_predicate(ap_stage2(+,+,+,+,+,:,-)).
-:- meta_predicate(ap_stages(+,:,-)).
-:- meta_predicate(ap_stages(+,+,:,-)).
-
 
 
 %! ap_stage(
@@ -62,6 +57,7 @@ Runs stages in an automated process.
 %      the results are stored.
 % @arg Message An atomic message that describes how this stage went.
 
+:- meta_predicate(ap_stage(+,+,+,+,:,-,-)).
 ap_stage(O1, Alias, Stage1, Stage2, Goal, ToDir, Msg):-
   ap_stage_from_directory(O1, Alias, Stage1, FromDir),
   ap_stage_to_directory(O1, Alias, Stage1, Stage2, ToDir),
@@ -69,7 +65,7 @@ ap_stage(O1, Alias, Stage1, Stage2, Goal, ToDir, Msg):-
 
 
 % This stage was alreay completed previously. Skip this stage.
-ap_stage_init(_, Alias, ToDir, _, skip):-
+ap_stage_init(_, Alias, ToDir, _, ap(status(skip),'FINISHED')):-
   absolute_file_name(
     'FINISHED',
     _,
@@ -95,11 +91,13 @@ ap_stage_init(O1, _, ToDir, Goal, Msg):-
     )
   ;
     execute_goal(Goal, [ToArg,Msg|Args])
-  ).
+  ), !.
+ap_stage_init(_, _, _, _, ap(status(fail),unknown)).
 
 
+:- meta_predicate(ap_stage2(+,+,+,+,+,:,-)).
 % This stage was alreay completed previously. Skip this stage.
-ap_stage2(_, Alias, _, _, ToDir, _, skip):-
+ap_stage2(_, Alias, _, _, ToDir, _, ap(status(skip),'FINISHED')):-
   absolute_file_name(
     'FINISHED',
     _,
@@ -135,7 +133,8 @@ ap_stage2(O1, Alias, Stage, FromDir, ToDir, Goal, Msg):-
     )
   ;
     execute_goal(Goal, [FromArg,ToArg,Msg|Args])
-  ).
+  ), !.
+ap_stage2(_, _, _, _, _, _, ap(status(fail), unknown)).
 
 
 ap_stage_begin(Alias, Stage):-
@@ -291,6 +290,7 @@ ap_stage_to_directory(_, Alias, Stage1, Stage2, StageDir):-
 
 %! ap_stages(+Alias:atom, +Stage:nonneg, +Stages:list(compound)) is det.
 
+:- meta_predicate(ap_stages(+,:,-)).
 ap_stages(_, [], []).
 ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
   ap_dir(Alias, write, input, ToDir),
@@ -305,6 +305,7 @@ ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
     ap_catcher(E, T, Msgs2)
   ).
 
+:- meta_predicate(ap_stages(+,+,:,-)).
 ap_stages(_, _, _Mod:[], []):- !.
 ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
   catch(
@@ -320,7 +321,7 @@ ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
 
 ap_catcher(E, L, [E|Msgs]):-
   length(L, Length),
-  repeating_list('never reached', Length, Msgs).
+  repeating_list(ap(status(skip),'never reached'), Length, Msgs).
 
 execute_goal(Goal, Args):-
   get_time(Begin),

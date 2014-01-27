@@ -452,3 +452,4 @@ ckan_stream_to_result(Stream, Result):-
   ;
     memberchk(result=Result, Reply)
   ).
+

@@ -22,7 +22,7 @@ rdf_tabular_ckan(Request):-
   rdf_tabular(Request, ckan_overview).
 
 ckan_overview -->
-  overview_class(ckan:'Organization'),
+  overview_class(ckan:'Group'),
   overview_class(ckan:'Package'),
   overview_class(ckan:'Resource'),
   overview_class(ckan:'Tag'),

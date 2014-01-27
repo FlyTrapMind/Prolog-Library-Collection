@@ -21,9 +21,6 @@ Support for running automated processing.
 :- use_module(generics(list_ext)).
 :- use_module(os(dir_ext)).
 
-:- meta_predicate(ap(+,:,-)).
-:- meta_predicate(ap_run(+,:,-)).
-
 
 
 %! ap(+Alias:atom, +Stages:list(compound), -Row:list(atom)) is det.
@@ -36,8 +33,12 @@ Support for running automated processing.
 % @arg Alias An atomic alias, denoting the encompassing AP directory,
 %      which must exist prior to calling this predicate.
 % @arg Stages A list of compound terms identifying script stages.
-% @arg Row A list of atoms that describe how each stage went.
+% @arg Row A list of compound term that describe how each stage went.
+%      These compound terms have the form =|ap(status(Status),Message)|=,
+%      where `Status` is `oneof([fail,skip,succeed])` and
+%      `Message` is generated using pl_term//1.
 
+:- meta_predicate(ap(+,:,-)).
 ap(Alias, Stages, Row):-
   ap_begin(Alias),
   ap_run(Alias, Stages, Row),
@@ -78,6 +79,7 @@ ap_end(Alias):-
 
 %! ap_run(+Alias:atom, :Stages:list(compound), -Row:list(atom)) is det.
 
+:- meta_predicate(ap_run(+,:,-)).
 % The output is already available.
 ap_run(Alias, _:Stages, Row):-
   ap_dir(Alias, read, output, OutputDir),
