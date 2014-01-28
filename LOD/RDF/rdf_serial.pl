@@ -111,13 +111,15 @@ directory_to_rdf_files(Dir, Pairs):-
   ).
 
 
-rdf_convert_directory(
-  FromDir,
-  ToDir,
-  ap(status(succeed),rdf_conversion(ToFiles))
-):-
-gtrace,
-  rdf_convert_directory(FromDir, ToDir, 'application/x-turtle', ToFiles).
+rdf_convert_directory(FromDir, ToDir, AP_Status):-
+  rdf_convert_directory(FromDir, ToDir, 'application/x-turtle', ToFiles),
+  (
+    ToFiles == []
+  ->
+    existence_error('RDF file', 'No RDF files')
+  ;
+    AP_Status = ap(status(succeed),rdf_conversion(ToFiles))
+  ).
 
 
 %! rdf_convert_directory(
@@ -129,10 +131,10 @@ gtrace,
 
 rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
   directory_to_rdf_files(FromDir, FromPairs),
-  
+
   default(ToMIME1, 'application/x-turtle', ToMIME2),
   once(rdf_serialization(ToExt, _, _, ToMIME2, _)),
-  
+
   findall(
     ToFile,
     (
@@ -153,7 +155,7 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
 
 rdf_convert_file(FromMIME, FromFile, ToMIME1, ToFile):-
   default(ToMIME1, 'application/x-turtle', ToMIME2),
-  
+
   % If the output file is not given,
   % then it is based on the input file.
   (
@@ -164,7 +166,7 @@ rdf_convert_file(FromMIME, FromFile, ToMIME1, ToFile):-
   ),
   
   setup_call_cleanup(
-    rdf_new_graph(Graph),
+    rdf_new_graph(temp, Graph),
     (
       rdf_load2(FromFile, [graph(Graph),mime(FromMIME)]),
       rdf_save2(ToFile, [graph(Graph),mime(ToMIME1)])
@@ -229,16 +231,16 @@ rdf_load2(File, O1):-
   access_file(File, read),
   % Retrieve the graph name.
   ensure_graph(File, O1, O2),
-  
+
   % Retrieve the RDF format.
   ensure_format(File, O2, O3),
-  
+
   % XML namespace prefixes must be added explicitly.
   merge_options([register_namespaces(false)], O3, O4),
-  
+
   % The real job is performed by a predicate from the semweb library.
   rdf_load(File, O4),
-  
+
   % Send a debug message notifying that the RDF file was successfully loaded.
   debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
 
@@ -349,19 +351,19 @@ rdf_save2(File, O1):-
 % Make up the format.
 rdf_save2(File, O1):-
   access_file(File, write),
-  
+
   % Derive the serialization format.
   ensure_format(File, O1, O2),
   % Make sure the serialization format is known.
   option(format(Format), O2),
   once(rdf_serialization(_, _, Format, _, _)),
-  
+
   % Derive the graph name.
   ensure_graph(File, O2, O3),
   % Make sure the graph exists.
   option(graph(Graph), O3),
   rdf_graph(Graph),
-  
+
   (
     % We do not need to save the graph if
     % (1) the contents of the graph did not change, and
@@ -370,11 +372,9 @@ rdf_save2(File, O1):-
     % Make sure the contents of the graph were not changed.
     rdf_graph_property(Graph, modified(false)),
     %
-    % Make sure the serialization format under which the graph was saved
-    % did not change.
+    % Make sure the file is the same.
     rdf_graph_source_file(Graph, FromFile),
-    file_name_type(_, FromFileType, FromFile),
-    rdf_serialization(_, FromFileType, Format, _, _)
+    FromFile == File
   ->
     debug(rdf_serial, 'No need to save graph ~w; no updates.', [Graph])
   ;
