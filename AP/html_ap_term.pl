@@ -51,8 +51,8 @@ html_ap_message(extract_archive(OnFiles)) --> !,
     ])
   ).
 
-% Property of files.
-html_ap_message(property(OfFiles)) --> !,
+% Properties of files.
+html_ap_message(properties(OfFiles)) --> !,
   html(
     div(class=property, [
       div(class=action, property),
@@ -82,10 +82,10 @@ mime(MIME) -->
   html_mime(MIME).
 
 
-of_file(of_file(_,nvpair(Property,Value))) -->
+of_file(of_file(_,NVPairs)) -->
   html(
     div(class=of_file,
-      \html_nvpair(Property,Value)
+      \html_nvpairs(NVPairs)
     )
   ).
 

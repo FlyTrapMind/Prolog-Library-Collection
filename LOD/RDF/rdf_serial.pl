@@ -70,6 +70,7 @@ since most datasets are published in a non-standard way.
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_graph_name)).
+:- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_dom)).
 
@@ -153,26 +154,8 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
 %!   ?ToFile:atom
 %! ) is det.
 
-rdf_convert_file(FromMIME, FromFile, ToMIME1, ToFile):-
-  default(ToMIME1, 'application/x-turtle', ToMIME2),
-
-  % If the output file is not given,
-  % then it is based on the input file.
-  (
-    is_absolute_file_name(ToFile), !
-  ;
-    once(rdf_serialization(ToExt, _, _, ToMIME2, _)),
-    file_alternative(FromFile, _, _, ToExt, ToFile)
-  ),
-  
-  setup_call_cleanup(
-    rdf_new_graph(temp, Graph),
-    (
-      rdf_load2(FromFile, [graph(Graph),mime(FromMIME)]),
-      rdf_save2(ToFile, [graph(Graph),mime(ToMIME1)])
-    ),
-    rdf_unload_graph(Graph)
-  ).
+rdf_convert_file(FromMIME, FromFile, ToMIME, ToFile):-
+  rdf_setup_call_cleanup(FromMIME, FromFile, rdf_graph, ToMIME, ToFile).
 
 
 %! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
@@ -435,6 +418,7 @@ rdf_save2(File, O1, turtle):- !,
 
 rdf_serialization(nt, ntriples, ntriples, 'text/plain', 'http://www.w3.org/ns/formats/N-Triples').
 rdf_serialization(rdf, rdf_xml, xml, 'application/rdf+xml', 'http://www.w3.org/ns/formats/RDF_XML'  ).
+rdf_serialization(trig, trig, trig, 'application/x-trig', 'http://wifo5-03.informatik.uni-mannheim.de/bizer/trig/').
 rdf_serialization(ttl, turtle, turtle, 'application/x-turtle', 'http://www.w3.org/ns/formats/Turtle'   ).
 rdf_serialization(n3, n3, n3, 'text/rdf+n3', '').
 

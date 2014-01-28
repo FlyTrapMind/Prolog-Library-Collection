@@ -6,8 +6,7 @@
     html_file//1, % +File:atom
     html_files//1, % +Files:list(atom)
     html_mime//1, % +MIME:atom
-    html_nvpair//2 % +Name:atom
-                   % :Value
+    html_nvpairs//1 % +NVPairs:list(nvpair)
   ]
 ).
 
@@ -236,18 +235,32 @@ html_functor_and_arity(Functor, Arity) -->
 
 html_mime(MIME) -->
   html(span(class=mime, MIME)).
+mime(MIME) -->
+  html_mime(MIME).
 
 
 html_module(Module) -->
   html(span(class=module, Module)).
 
 
+html_nvpair(nvpair(Property,Value)) -->
+  html_nvpair(Property, Value).
+
+:- use_module(dcg(dcg_cardinal)).
 :- meta_predicate(html_nvpair(//,//,?,?)).
-html_nvpair(Property,Value) -->
+html_nvpair(Property, Value) -->
   html([
     span(class=property, Property),
     '=',
     span(class=value, \dcg_call(Value))
+  ]).
+
+html_nvpairs([]) --> [].
+html_nvpairs([H|T]) -->
+  html([
+    \html_nvpair(H),
+    br([]),
+    \html_nvpairs(T)
   ]).
 
 
