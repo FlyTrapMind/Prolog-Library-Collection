@@ -53,6 +53,7 @@ http:location(rdf_tabular, root(rdf_tabular), []).
 
 
 rdf_tabular_default(Request):-
+gtrace,
   findall(G, (rdf_graph(G), \+tms(G)), Gs),
   rdf_global_id(rdfs:subClassOf, P),
   rdf_tabular(Request, rdf_export_hierarchy(Gs, P)).

@@ -33,7 +33,7 @@ Predicates for handling LaTeX files.
 :- use_module(library(readutil)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(os(shell_ext)).
+:- use_module(os(run_ext)).
 :- use_module(programming(prolog_control)).
 
 :- db_add_novel(user:prolog_file_type(aux, aux      )).
@@ -320,11 +320,7 @@ process_wrapper(ProcessName, ProcessArguments, ProcessOptions1):-
   ),
   print_error(ErrorCodes),
   print_output(OutCodes, Status),
-  catch(
-    shell_status(Status),
-    Exception,
-    format(user_output, '~w', [Exception])
-  ).
+  exit_code_handler(ProcessName, Status).
 
 write_latex_codes(Stream, Codes1):-
   phrase(dcg_replace(["_"-"\\_"]), Codes1, Codes2),

@@ -522,7 +522,7 @@ pre .string, pre .support.value  {
   font-weight: bold;
 }
 
-.exit-status, .file, .mime, .program {
+.exit_status_code, .file, .max_errors, .mime, .program {
   font-family: monospace;
 }
 

@@ -1,7 +1,9 @@
 :- module(
   run_ext,
   [
-    exists_program/1, % +ProgramName:atom
+    exists_program/1, % +Program:atom
+    exit_code_handler/2, % +Program:atom
+                         % +Code:or([compound,nonneg])
     list_external_programs/0,
     list_external_programs/1, % +FileType:atom
     open/1, % +File:atom
@@ -22,7 +24,7 @@ Predicates for running external programs.
 
 @author Wouter Beek
 @tbd Add Windows support.
-@version 2013/06-2013/07, 2013/11
+@version 2013/06-2013/07, 2013/11, 2014/01
 */
 
 :- use_module(generics(db_ext)).
@@ -76,6 +78,27 @@ exists_program(Program):-
   ),
   process_kill(PID).
 
+
+%! exit_code_handler(+Program:atom, +Status:or([compound,nonneg])) is det.
+% Handling of exit codes given by programs that are run from the shell.
+%
+% @arg Program
+% @arg Status Either an integer status code,
+%      or an integer status code wrapped in functor `exit`.
+%
+% @throws shell_error Throws a shell error when a shell process exits with
+%         a non-zero code.
+
+% Unwrap code.
+exit_code_handler(Program, exit(StatusCode)):- !,
+  exit_code_handler(Program, StatusCode).
+% Success code.
+exit_code_handler(_, 0):- !.
+% Error/exception code.
+exit_code_handler(Program, StatusCode):-
+  process_error(Program, StatusCode).
+
+
 %! find_program_by_file_type(+FileType:atom, -Program:atom) is nondet.
 % Succeeds if there is at least one existing program that is registered to
 % the given file type.
@@ -84,11 +107,18 @@ find_program_by_file_type(FileType, Program):-
   file_type_program(FileType, Program),
   exists_program(Program).
 
+
+%! kill_processes is det.
+% Kills all running processes by PID.
+%
+% This is run at halt.
+
 kill_processes:-
   forall(
     current_process(PID),
     process_kill(PID)
   ).
+
 
 %! list_external_programs is det.
 % Writes a list of external programs that are registered
@@ -105,6 +135,7 @@ list_external_programs:-
   ),
   maplist(list_external_programs, Modules).
 
+
 %! list_external_programs(+FileTypeOrModule:atom) is det.
 % Writes a list of external programs that are registered
 % with the given file type or module to the console.
@@ -114,11 +145,19 @@ list_external_programs:-
 % of the external programs is available.
 
 list_external_programs(FileType):-
-  findall(Program, file_type_program(FileType, Program), Programs),
+  findall(
+    Program,
+    file_type_program(FileType, Program),
+    Programs
+  ),
   Programs \== [], !,
   list_external_programs_(Programs, FileType, 'File type').
 list_external_programs(Module):-
-  findall(Program, module_uses_program(Module, Program), Programs),
+  findall(
+    Program,
+    module_uses_program(Module, Program),
+    Programs
+  ),
   list_external_programs_(Programs, Module, 'Module').
 
 list_external_programs_(Programs, Content, String):-
@@ -141,6 +180,7 @@ list_external_programs_(Programs, Content, String):-
       '.'
     ]
   ).
+
 
 %! write_program_suport(+Program:atom) is semidet.
 % Succeeds if the program with the given name exists on PATH.
@@ -168,9 +208,19 @@ write_program_support(Program):-
     ]
   ), !, fail.
 
+
+%! open(+File:atom) is semidet.
+% Opens the given file according to the clause that is written
+% for handling the file's extension / file type.
+%
+% The following file types are supported:
+%   * `dot`
+%   * `pdf`
+
 open(File):-
-  file_name_type(_Base, FileType, File),
+  file_name_type(_, FileType, File),
   generic(open, FileType, [File]).
+
 
 %! open_dot(+BaseOrFile:atom) is det.
 % Opens the given DOT file.
@@ -181,6 +231,7 @@ open_dot(BaseOrFile):-
   base_or_file_to_file(BaseOrFile, dot, File),
   once(find_program_by_file_type(dot, Program)),
   run_program(Program, [File]).
+
 
 %! open_in_webbrowser(+URI:uri) is det.
 % Opens the given URI in the default webbrowser.
@@ -195,6 +246,7 @@ open_in_webbrowser(URI):-
     print_message(informational, open_uri(URI))
   ).
 
+
 :- if(current_module(web_message)).
 prolog:message(Message) -->
   {web_message:web_message(Message)}.
@@ -205,6 +257,7 @@ prolog:message(open_uri(URI)) -->
     ansi([bg(yellow)], '~w', [URI]),
     ansi([], ' in Web browser.', [])
   ].
+
 
 %! open_pdf(+BaseOrFile:atom) is det.
 % Opens the given PDF file.
@@ -226,12 +279,18 @@ open_pdf(BaseOrFile):-
 :- db_add_novel(user:file_type_program(pdf, 'AcroRd32')).
 :- endif.
 
+
 %! run_jar(+JAR_File:atom, CommandlineArguments:list(atom)) is det.
 
 run_jar(JAR_File, Args):-
   process_create(path(java), ['-jar',file(JAR_File)|Args], [process(PID)]),
   process_wait(PID, exit(ShellStatus)),
-  debug(run_ext, 'Shell status of JAR run: ~w.', [ShellStatus]).
+  
+  % Process shell status.
+  file_base_name(JAR_File, JAR_Name),
+  format(atom(Program), 'Java/JAR ~a', [JAR_Name]),
+  exit_code_handler(Program, ShellStatus).
+
 
 run_program(Program, Args):-
   thread_create(
@@ -239,16 +298,12 @@ run_program(Program, Args):-
       process_create(path(Program), Args, [process(PID)]),
       db_add(current_process(PID)),
       process_wait(PID, exit(ShellStatus)),
-      format(atom(Message), 'Program \'~w\' threw an exception.', [Program]),
-      rethrow(
-        shell_status(ShellStatus),
-        error(shell_error(FormalMessage), _Context),
-        error(shell_error(FormalMessage), context(_Predicate, Message))
-      )
+      exit_code_handler(Program, ShellStatus)
     ),
     _,
     [detached(true)]
   ).
+
 
 %! run_script(+Script:atom) is det.
 % Runs the given script.

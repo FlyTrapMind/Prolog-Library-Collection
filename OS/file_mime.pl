@@ -47,10 +47,10 @@ file_mime(File, MIME):-
 %!   -AP_Status:compound
 %! ) is det.
 
-mime_dir(FromDir, ToDir, ap(status(succeed),mime(OfFiles))):-
+mime_dir(FromDir, ToDir, ap(status(succeed),property(OfFiles))):-
   directory_files([], FromDir, FromFiles),
   findall(
-    of_file(FromFile,nvpair('MIME',MIME)),
+    of_file(FromFile,nvpair('MIME',mime(MIME))),
     (
       member(FromFile, FromFiles),
       file_mime(FromFile, MIME)

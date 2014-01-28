@@ -111,7 +111,12 @@ directory_to_rdf_files(Dir, Pairs):-
   ).
 
 
-rdf_convert_directory(FromDir, ToDir, ap(status(succeed),files(ToFiles))):-
+rdf_convert_directory(
+  FromDir,
+  ToDir,
+  ap(status(succeed),rdf_conversion(ToFiles))
+):-
+gtrace,
   rdf_convert_directory(FromDir, ToDir, 'application/x-turtle', ToFiles).
 
 

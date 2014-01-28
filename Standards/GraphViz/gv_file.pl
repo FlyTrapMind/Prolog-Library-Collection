@@ -22,7 +22,7 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2011-2013/09, 2013/11-2013/12
+@version 2011-2013/09, 2013/11-2014/01
 */
 
 :- use_module(generics(codes_ext)).
@@ -33,7 +33,6 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
 :- use_module(os(run_ext)).
-:- use_module(os(shell_ext)).
 :- use_module(svg(svg_file)).
 
 :- db_add_novel(user:module_uses_program(gv_file, dot)).
@@ -174,11 +173,7 @@ convert_gv(O1, FromFile, ToFile):-
     [process(PID)]
   ),
   process_wait(PID, exit(ShellStatus)),
-  rethrow(
-    shell_status(ShellStatus),
-    error(shell_error(FormalMessage),context(_Predicate,ContextMessage)),
-    error(shell_error(FormalMessage),context(graphviz:dot/3,ContextMessage))
-  ).
+  exit_code_handler('GraphViz', ShellStatus).
 
 %! to_gv_file(+Options:list(nvpair), +Codes:list(code), ?ToFile:atom) is det.
 % The following options are supported:
