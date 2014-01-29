@@ -82,12 +82,15 @@ mime(MIME) -->
   html_mime(MIME).
 
 
-of_file(of_file(_,NVPairs)) -->
+of_file(of_file(NVPairs)) -->
   html(
     div(class=of_file,
       \html_nvpairs(NVPairs)
     )
   ).
+
+of_file(of_file(_,NVPairs)) -->
+  of_file(of_file(NVPairs)).
 
 
 of_files([]) --> !, [].

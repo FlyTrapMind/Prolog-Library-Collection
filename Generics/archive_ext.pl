@@ -53,7 +53,7 @@ extract_archive(File, Dir, []):-
 %! ) is semidet.
 
 extract_archive(gz, File, _, gunzipped):- !,
-  process_create(path(gunzip), [file(File)], []).
+  process_create(path(gunzip), ['-f',file(File)], []).
 extract_archive(tgz, File, _, untarred):- !,
   process_create(path(tar), [zxvf,file(File)], []).
 extract_archive(zip, File, Base, unzipped):- !,
