@@ -40,15 +40,15 @@ rdf_randomize_iris(Graph):-
   ),
   maplist(randomize_triple(Graph, Dict), Triples).
 
-random_number -->
-  {random_between(0, 9, X)},
-  integer(X).
+random_character -->
+  {random_between(97, 122, X)},
+  [X].
 
 randomize_iri(IRI1, IRI2):-
-  uri_components(IRI1, uri_components(Scheme, Authority, _, _, _)),
-  dcg_with_output_to(atom(Path1), dcg_multi(random_number, 10)),
+  uri_components(IRI1, uri_components(_, _, _, _, _)),
+  dcg_with_output_to(atom(Path1), dcg_multi(random_character, 15)),
   atomic_concat('/', Path1, Path2),
-  uri_components(IRI2, uri_components(Scheme, Authority, Path2, _, _)).
+  uri_components(IRI2, uri_components(http, 'vu.nl', Path2, _, _)).
 
 randomize_triple(Graph, Dict, S1-P1-O1):-
   rdf_retractall(S1, P1, O1, Graph),
