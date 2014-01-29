@@ -52,7 +52,7 @@ random_betwixt(UpperLimit, Random):-
 %      the other values, i.e. =|[LowerLimit, UpperLimit)|=.
 
 random_betwixt(LowerLimit, UpperLimit, Random):-
-  integer(LowerLimit), integer(UpperLimit), !,
+  maplist(integer, [LowerLimit,UpperLimit]), !,
   random_betwixt_(LowerLimit, UpperLimit, Random0),
   Random is floor(Random0).
 random_betwixt(LowerLimit, _UpperLimit, _Random):-

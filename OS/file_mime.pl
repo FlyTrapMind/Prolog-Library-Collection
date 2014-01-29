@@ -2,7 +2,7 @@
   file_mime,
   [
     file_mime/2, % +File:atom
-                 % -Mime:atom
+                 % -MIME:atom
     mime_dir/3 % +FromDirectory:atom
                % +ToDirectory:atom
                % -AP_Status:compound
