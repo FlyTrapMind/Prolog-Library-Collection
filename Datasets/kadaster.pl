@@ -28,7 +28,7 @@
 
 load_kadaster:-
   absolute_file_name(kadaster, File, [access(read)]),
-  rdf_load2(File, [format(turtle),graph(kadaster)]).
+  rdf_load([format(turtle)], kadaster, File).
 
 query_kadaster(Resources):-
   phrase(
@@ -84,5 +84,5 @@ scrape_kadaster:-
     member(row(S,P,O), Resources),
     rdf_assert(S, P, O, kadaster)
   ),
-  rdf_save2(kadaster, [format(turtle),graph(kadaster)]).
+  rdf_save([format(turtle)], kadaster, kadaster).
 

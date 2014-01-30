@@ -99,7 +99,7 @@ rdf_graphs_web(Markup):-
 
 % Prefer turtle.
 rdf_load_web(Graph, Markup):-
-  rdf_load2(File, Graph), !,
+  rdf_load([], Graph, File), !,
   Markup =
     [element(p, [], ['Graph ', Graph, ' was loaded from file ', File, '.'])].
 rdf_load_web(Graph, Markup):-
@@ -149,7 +149,7 @@ rdf_namespaces_web0(Namespaces, Table):-
 % Saves the RDF graph with the given name from the Web interface.
 
 rdf_save_web(Graph, Markup):-
-  rdf_save2(File, [format(Format), graph(Graph)]), !,
+  rdf_save([format(Format)], Graph, File), !,
   Markup =
       [element(p,[],[
         'Graph ',

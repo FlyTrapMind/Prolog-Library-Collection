@@ -108,7 +108,7 @@
   Resources,
   Propositions
 ):-
-  rdf_load2(File, [graph(Graph),mime(MIME)]),
+  rdf_load([mime(MIME)], Graph, File),
   'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions).
 
 'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions):-

@@ -100,13 +100,13 @@ load_manifest:-
     TestSchema,
     [access(read), file_type(rdf)]
   ),
-  rdf_load2(TestSchema, test_schema),
+  rdf_load([], test_schema, TestSchema),
   absolute_file_name(
     tests('Manifest'),
     TestFile,
     [access(read), file_type(rdf)]
   ),
-  rdf_load2(TestFile, test).
+  rdf_load([], test, TestFile).
 
 run_semweb_tests:-
   load_manifest,
@@ -186,7 +186,7 @@ run_test0(Test, 'PASS'):-
 
   % Throw an exception or fail, please.
   catch(
-    \+ (rdf_load2(File, doc)),
+    \+ rdf_load([], doc, File),
     _Exception,
     true
   ),
@@ -199,8 +199,8 @@ run_test0(Test, 'SKIPPED'):-
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
   _download_to_file(Premise_URI, Premise_File),
-  %%%%rdf_load2(Premise_File, in, [base_uri(Premise_URI)]),
-  rdf_load2(Premise_File, premise),
+  %%%%rdf_load([base_uri(Premise_URI)], in, Premise_File),
+  rdf_load([], premise, Premise_File),
 */
 % A test with an input and an output document.
 run_test0(Test, 'PASS'):-
@@ -209,7 +209,7 @@ run_test0(Test, 'PASS'):-
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
   _download_to_file(Premise_URI, Premise_File),
-  rdf_load2(Premise_File, [base_uri(Premise_URI), graph(premise)]),
+  rdf_load([base_uri(Premise_URI)], premise, Premise_File),
 
   % Run materialization.
   rdf_materialize(premise),
@@ -225,7 +225,7 @@ run_test0(Test, 'PASS'):-
     rdfs_inconsistent(premise)
   ;
     _download_to_file(Conclusion_URI, Conclusion_File),
-    rdf_load2(Conclusion_File, [base_uri(Conclusion_URI), graph(conclusion)]),
+    rdf_load([base_uri(Conclusion_URI)], conclusion, Conclusion_File),
     % The materialized premise graph must be equivalent to the
     % conclusion graph.
     rdf_graph_equivalence(premise, conclusion)
@@ -237,14 +237,14 @@ run_test0(Test, 'PASS'):-
   % The input graph.
   rdf(Test, test:inputDocument, Input_URI),
   _download_to_file(Input_URI, Input_File),
-  %%%%rdf_load2(Input_File, in, [base_uri(Input_URI)]),
-  rdf_load2(Input_File, in),
+  %%%%rdf_load([base_uri(Input_URI)], in, Input_File),
+  rdf_load([], in, Input_File),
 
   % The output graph.
   rdf(Test, test:outputDocument, Output_URI),
   _download_to_file(Output_URI, Output_File),
-  %%%%rdf_load2(Output_File, out, [base_uri(Output_URI)]),
-  rdf_load2(Output_File, out),
+  %%%%rdf_load([base_uri(Output_URI)], out, Output_File),
+  rdf_load([], out, Output_File),
 
   % The graphs must be equivalent.
   rdf_graph_equivalence(in, out),

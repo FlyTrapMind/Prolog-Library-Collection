@@ -13,16 +13,13 @@
                         % ?ToFile:atom
     rdf_graph_source_file/2, % +Graph:atom
                              % -File:atom
-    rdf_load2/1, % +File:atom
-    rdf_load2/2, % +File:atom
-                 % +Options:list(nvpair)
-    rdf_load_into_one_graph/2, % +Files:list(atom)
-                               % +Graph:atom
+    rdf_load/3, % +Options:list(nvpair)
+                % ?Graph:atom
+                % +File:atom
     rdf_mime/1, % ?MIME:atom
-    rdf_save2/0,
-    rdf_save2/1, % +Graph:atom
-    rdf_save2/2, % ?File:atom
-                 % +Options:list(nvpair)
+    rdf_save/3, % +Options:list(nvpair)
+                % +Graph:atom
+                % ?File:atom
     rdf_serialization/5, % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
                          % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
                          % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
@@ -155,7 +152,13 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
 %! ) is det.
 
 rdf_convert_file(FromMIME, FromFile, ToMIME, ToFile):-
-  rdf_setup_call_cleanup(FromMIME, FromFile, rdf_graph, ToMIME, ToFile).
+  rdf_setup_call_cleanup(
+    [mime(FromMIME)],
+    FromFile,
+    rdf_graph,
+    ToMIME,
+    ToFile
+  ).
 
 
 %! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
@@ -171,131 +174,83 @@ rdf_graph_source_file(G, F2):-
   sub_atom(F1, 1, _Length, 0, F2).
 
 
-%! rdf_load2(+File:atom) is det.
-%! rdf_load2(+Files:list(atom)) is det.
-% Load the graph that is stored in the given file.
-% The format is derived from the file itself or from the file extension.
-% The graph name is the base of the file name.
-%
-%! rdf_load2(+File:atom, +Options:list) is det.
-%! rdf_load2(+Files:list(atom), +Options:list) is det.
-%! rdf_load2(+Directory:atom, +Options:list) is det.
+%! rdf_load(
+%!   +Option:list(nvpair),
+%!   ?Graph:atom,
+%!   +Input:or([atom,list(atom)])
+%! ) is det.
 % Load RDF from a file, a list of files, or a directory.
 %
 % The following options are supported:
 %   * =|format(+Format:oneof([ntriples,turtle,xml]))|=
-%   * =|graph(+Graph:atom)|=
 %   * =|mime(+MIME:oneof(['application/rdf+xml','application/x-turtle','text/plain','text/rdf+n3']))|=
 %
-% @arg Spec Either a file, a list of files, or a directory.
 % @arg Options A list of name-value pairs.
-
-rdf_load2(Spec):-
-  rdf_load2(Spec, []).
+% @arg Graph The atomic name of an RDF graph.
+% @arg Input Either a file, a list of files, or a directory.
 
 % Loads multiple files and/or directories.
-rdf_load2(Files, O1):-
+rdf_load(O1, Graph, Files):-
   is_list(Files), !,
-  forall(
-    member(File, Files),
-    rdf_load2(File, O1)
-  ).
+  maplist(rdf_load(O1, Graph), Files).
 % Load all files from a given directory.
-rdf_load2(Dir, O1):-
+rdf_load(O1, Graph, Dir):-
   exists_directory(Dir), !,
   directory_files(
     [file_types([rdf]),include_directories(false),recursive(true)],
     Dir,
     Files
   ),
-  rdf_load2(Files, O1).
+  rdf_load(O1, Graph, Files).
 % Load a single file.
-rdf_load2(File, O1):-
+rdf_load(O1, Graph, File):-
   access_file(File, read),
+  
   % Retrieve the graph name.
-  ensure_graph(File, O1, O2),
+  ensure_graph(File, Graph),
 
   % Retrieve the RDF format.
-  ensure_format(File, O2, O3),
+  ensure_format(O1, File, Format),
 
   % XML namespace prefixes must be added explicitly.
-  merge_options([register_namespaces(false)], O3, O4),
+  merge_options(
+    [format(Format),graph(Graph),register_namespaces(false)],
+    O1,
+    O2
+  ),
 
   % The real job is performed by a predicate from the semweb library.
-  rdf_load(File, O4),
+  rdf_load(File, O2),
 
   % Send a debug message notifying that the RDF file was successfully loaded.
   debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
 
-%! ensure_format(
-%!   +File:atom,
-%!   +FromOptions:list(nvpair),
-%!   -ToOptions:list(nvpair)
-%! ) is det.
+%! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
 
-ensure_format(_, O1, O1):-
-  option(format(Format), O1),
-  nonvar(Format), !.
-ensure_format(_, O1, O3):-
-  select_option(mime(MIME), O1, O2), !,
-  rdf_serialization(_, _, Format, MIME, _),
-  merge_options([format(Format)], O2, O3).
-ensure_format(File, O1, O2):-
+ensure_format(O1, _, Format):-
+  option(format(Format), O1), !.
+ensure_format(O1, _, Format):-
+  option(mime(MIME), O1),
+  rdf_serialization(_, _, Format, MIME, _), !.
+ensure_format(_, File, Format):-
   file_mime(File, MIME),
   (
-    rdf_serialization(_, _, Format, MIME, _)
-  ->
-    merge_options([format(Format)], O1, O2)
+    rdf_serialization(_, _, Format, MIME, _), !
   ;
     throw(error(mime_error(File,'RDF',MIME),_))
   ).
 
-ensure_graph(_, O1, O1):-
-  option(graph(Graph), O1),
+ensure_graph(_, Graph):-
   nonvar(Graph), !.
-ensure_graph(File, O1, O2):-
-  file_to_graph_name(File, Graph),
-  merge_options([graph(Graph)], O1, O2).
-
-
-%! rdf_load_into_one_graph(+Files:list(atom), +Graph:atom) is det.
-
-rdf_load_into_one_graph(Fs, G):-
-  maplist(rdf_load_into_one_graph_(G), Fs).
-
-rdf_load_into_one_graph_(G, F):-
-  setup_call_cleanup(
-    rdf_new_graph(temp, TmpG),
-    (
-      rdf_load2(F, [graph(TmpG)]),
-      rdf_copy(TmpG, _, _, _, G)
-    ),
-    rdf_unload_graph(TmpG)
-  ).
+ensure_graph(File, Graph):-
+  file_to_graph_name(File, Graph).
 
 
 rdf_mime(MIME):-
   rdf_serialization(_, _, _, MIME, _).
 
 
-%! rdf_save2 is det.
-% Saves all currently loaded graphs.
-%
-% @see Wrapper for rdf_save2/1.
-
-rdf_save2:-
-  forall(
-    rdf_graph(G),
-    rdf_save2(G)
-  ).
-
-%! rdf_save2(+Graph:atom) is det.
-% Saves the graph with the given name.
-%
-% Exports are saved in the project directory.
-% The Turtle serialization format is used.
-
-%! rdf_save2(?File, +Options:list) is det.
+%! rdf_save(+Options:list, +Graph:atom, ?File:atom) is det.
 % If the file name is not given, then a file name is construed.
 % There are two variants here:
 %   1. The graph was loaded from a file. Use the same file
@@ -304,49 +259,29 @@ rdf_save2:-
 %      If the format is specified as well, then this is used to determine
 %      the file extension.
 %
-% @arg File A variable.
-% @arg Options A list of options, containing at least =graph/1=
-%              and possibly format/1.
-%! rdf_save2(+File:atom, +Options:list) is det.
 % The following options are supported:
 %   * =|format(+Format:oneof([ntriples,rdf_xml,turtle])|=
 %     The serialization format in which the graph is exported.
-%   * =|graph(+Graph:atom)|=
-%     The name of the graph that is exported.
 %   * =|mime(+MIME:oneof(['application/rdf+xml','application/x-turtle','text/plain','text/rdf+n3']))|=
 %
-% @arg File An atomic absolute file name.
 % @arg Options A list of name-value pairs.
-
-rdf_save2(G):-
-  rdf_graph_source_file(G, F),
-  rdf_save2(F, [format(turtle),graph(G)]).
+% @arg File An atomic absolute file name.
 
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
-rdf_save2(File, O1):-
+rdf_save(O1, Graph, File):-
   var(File),
-  option(graph(G), O1),
-  rdf_graph_source_file(G, File),
+  rdf_graph_source_file(Graph, File),
   access_file(File, write), !,
   % Recurse once, to extract the serialization format.
-  rdf_save2(File, O1).
+  rdf_save(O1, Graph, File).
 % Make up the format.
-rdf_save2(File, O1):-
+rdf_save(O1, Graph, File):-
   access_file(File, write),
-
+  
   % Derive the serialization format.
-  ensure_format(File, O1, O2),
-  % Make sure the serialization format is known.
-  option(format(Format), O2),
-  once(rdf_serialization(_, _, Format, _, _)),
-
-  % Derive the graph name.
-  ensure_graph(File, O2, O3),
-  % Make sure the graph exists.
-  option(graph(Graph), O3),
-  rdf_graph(Graph),
-
+  ensure_format(O1, File, Format),
+  
   (
     % We do not need to save the graph if
     % (1) the contents of the graph did not change, and
@@ -361,7 +296,7 @@ rdf_save2(File, O1):-
   ->
     debug(rdf_serial, 'No need to save graph ~w; no updates.', [Graph])
   ;
-    rdf_save2(File, O3, Format),
+    rdf_save(O1, Format, Graph, File),
     debug(
       rdf_serial,
       'Graph ~w was saved in ~w serialization to file ~w.',
@@ -370,18 +305,19 @@ rdf_save2(File, O1):-
   ).
 
 % Save to RDF/XML
-rdf_save2(File, O1, rdf_xml):- !,
-  rdf_save(File, O1).
+rdf_save(O1, rdf_xml, Graph, File):- !,
+  merge_options([graph(Graph)], O1, O2),
+  rdf_save(File, O2).
 % Save to Triples (binary storage format).
-rdf_save2(File, O1, triples):- !,
-  option(graph(Graph), O1),
+rdf_save(_, triples, Graph, File):- !,
   rdf_save_db(File, Graph).
 % Save to Turtle.
-rdf_save2(File, O1, turtle):- !,
+rdf_save(O1, turtle, Graph, File):- !,
   merge_options(
     [
       align_prefixes(true),
       encoding(utf8),
+      graph(Graph),
       indent(2),
       % Use all and only the namespace prefixes that have been created
       % by the user, i.e. rdf_current_namespace/2, but also suggest new ones.

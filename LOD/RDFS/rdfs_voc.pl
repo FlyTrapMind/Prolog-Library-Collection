@@ -35,9 +35,9 @@ Exports the vocabulary for RDFS.
 % (tested on 163 less), and there are some labels and comments
 % that deduction would not produce.
 
-load_rdfs_vocabulary(G):-
-  absolute_file_name(rdfs(rdfs), F, [access(read),file_type(rdf)]),
-  rdf_load2(F, [graph(G)]).
+load_rdfs_vocabulary(Graph):-
+  absolute_file_name(rdfs(rdfs), File, [access(read),file_type(rdf)]),
+  rdf_load([], Graph, File).
 
 load_rdfs_vocabulary_(G2):-
   G1 = rdfs_voc,

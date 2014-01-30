@@ -75,7 +75,7 @@ void_assert_statistics(DD_G, DS, DS_F):-
     (
       % Make sure the graph name is not in use yet.
       file_to_graph_name(DS_F, DS_G),
-      rdf_load2(DS_F, [format(turtle),graph(DS_G)])
+      rdf_load([format(turtle)], DS_G, DS_F)
     ),
     void_assert_statistics(DD_G, DS, DS_G),
     rdf_unload_graph(DS_G)

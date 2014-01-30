@@ -1,15 +1,10 @@
 :- module(
   rdf_meta,
   [
-    rdf_setup_call_cleanup/2, % +FromFile:atom,
-                              % :Goal,
-    rdf_setup_call_cleanup/3, % +FromFile:atom,
-                              % :Goal,
-                              % ?ToFile:atom
-    rdf_setup_call_cleanup/5 % +FromMIME:atom,
-                             % +FromFile:atom,
-                             % :Goal,
-                             % ?ToMIME:atom,
+    rdf_setup_call_cleanup/5 % +LoadOptions:list(nvpair)
+                             % +FromFile:atom
+                             % :Goal
+                             % +SaveOptions:list(nvpair)
                              % ?ToFile:atom
   ]
 ).
@@ -31,45 +26,44 @@ Meta-callings on an RDF graph.
 
 
 
-%! rdf_setup_call_cleanup(+File:atom, :Goal) is det.
-%! rdf_setup_call_cleanup(+FromFile:atom, :Goal, ?ToFile:atom) is det.
 %! rdf_setup_call_cleanup(
-%!   +FromMIME:atom,
+%!   +LoadOptions:list(nvpair),
 %!   +FromFile:atom,
 %!   :Goal,
-%!   ?ToMIME:atom,
+%!   +SaveOptions:list(nvpair),
 %!   ?ToFile:atom
 %! ) is det.
 % @arg Goal Take one argument, which is the atomic name of an RDF graph.
 
-:- meta_predicate(rdf_setup_call_cleanup(+,1)).
-rdf_setup_call_cleanup(File, Goal):-
-  rdf_setup_call_cleanup(File, Goal, File).
-
-:- meta_predicate(rdf_setup_call_cleanup(+,1,?)).
-rdf_setup_call_cleanup(FromFile, Goal, ToFile):-
-  file_mime(FromFile, MIME),
-  rdf_setup_call_cleanup(MIME, FromFile, Goal, MIME, ToFile).
-
-:- meta_predicate(rdf_setup_call_cleanup(+,+,1,?,?)).
-rdf_setup_call_cleanup(FromMIME, FromFile, Goal, ToMIME1, ToFile):-
-  default(ToMIME1, 'application/x-turtle', ToMIME2),
-
+:- meta_predicate(rdf_setup_call_cleanup(+,+,1,+,?)).
+rdf_setup_call_cleanup(O1_Load, From, Goal, O1_Save, ToFile):-
   % If the output file is not given,
   % then it is based on the input file.
   (
     nonvar(ToFile), is_absolute_file_name(ToFile), !
   ;
-    once(rdf_serialization(ToExt, _, _, ToMIME2, _)),
-    file_alternative(FromFile, _, _, ToExt, ToFile)
+    rdf_serial:ensure_format(O1_Save, ToFile, ToFormat),
+    once(rdf_serialization(ToExt, _, ToFormat, _, _)),
+    (
+      exists_directory(From)
+    ->
+      file_name(ToFile, From, output, ttl)
+    ;
+      From = [FromFile|_]
+    ->
+      file_alternative(FromFile, _, _, ToExt, ToFile)
+    ;
+      FromFile = From,
+      file_alternative(FromFile, _, _, ToExt, ToFile)
+    )
   ),
   
   setup_call_cleanup(
     rdf_new_graph(temp, Graph),
     setup_call_cleanup(
-      rdf_load2(FromFile, [graph(Graph),mime(FromMIME)]),
+      rdf_load(O1_Load, Graph, From),
       call(Goal, Graph),
-      rdf_save2(ToFile, [graph(Graph),mime(ToMIME2)])
+      rdf_save(O1_Save, Graph, ToFile)
     ),
     rdf_unload_graph(Graph)
   ).

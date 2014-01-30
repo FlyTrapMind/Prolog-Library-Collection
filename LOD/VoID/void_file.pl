@@ -52,9 +52,9 @@ VoiD covers four areas of metadata:
 % Loads the VoID vocabulary.
 
 void_init:-
-  rdf_new_graph(void_schema, G),
-  absolute_file_name(void('VoID'), F, [access(read),file_type(turtle)]),
-  rdf_load2(F, [file_type(turtle),graph(G)]).
+  rdf_new_graph(void_schema, Graph),
+  absolute_file_name(void('VoID'), File, [access(read),file_type(turtle)]),
+  rdf_load([file_type(turtle)], Graph, File).
 
 %! void_load_dataset(
 %!   +DescriptionFile:atom,
@@ -80,7 +80,7 @@ void_load_dataset(DD_F, DD_G, DS):-
   % its IRI.
   rdf_global_id(_Ns:DS_G, DS),
 
-  rdf_load2(DS_F, [graph(DS_G)]),
+  rdf_load([], DS_G, DS_F),
 
   % Update the internally stored relations between VoID graphs and
   %  dataset graphs.
@@ -114,7 +114,7 @@ void_load_library(F, G):-
   void_init,
 
   % Load the VoID file into an RDF graph with the given name.
-  rdf_load2(F, [graph(G)]),
+  rdf_load([], G, F),
   debug(void_file, 'VoID file ~w loaded into graph ~w.', [F,G]),
 
   % All datasets are loaded in multiple threads.
@@ -139,12 +139,12 @@ void_save_library(G, F):-
       void_dataset(G, _DS, DS_F, DS_G),
       format(atom(Msg), 'Saving graph ~w.', [DS_G])
     ),
-    rdf_save2(DS_F, [format(turtle),graph(DS_G)]),
+    rdf_save([format(turtle)], DS_G, DS_F),
     void_file,
     Msg
   ),
   % Then save the VoID graph itself.
-  rdf_save2(F, [format(turtle),graph(G)]).
+  rdf_save([format(turtle)], G, F).
 
 void_update_library(G):-
   forall_thread(

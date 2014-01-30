@@ -139,10 +139,10 @@ Mismatch types:
 
 
 
-alignments_to_oaei_file(As, F):-
-  rdf_new_graph(G),
-  maplist(alignment_to_oaei_graph(G), As),
-  rdf_save2(F, [format(turtle),graph(G)]).
+alignments_to_oaei_file(As, File):-
+  rdf_new_graph(Graph),
+  maplist(alignment_to_oaei_graph(Graph), As),
+  rdf_save([format(turtle)], Graph, File).
 
 alignment_to_oaei_graph(G, X-Y):-
   rdf_bnode(BNode),
@@ -188,7 +188,7 @@ oaei_file_to_alignments(F, A_Pairs):-
       file_name(F, _Dir, G1, _Ext),
       % Make sure the graph name is unique.
       rdf_new_graph(G1, G2),
-      rdf_load2(F, [graph(G2)])
+      rdf_load([], G2, F)
     ),
     oaei_file_to_alignments_(G2, A_Pairs),
     rdf_unload_graph(G2)

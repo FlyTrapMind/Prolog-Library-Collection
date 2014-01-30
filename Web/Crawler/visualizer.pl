@@ -68,7 +68,7 @@ visualize_dot:-
 visualize_svg:-
   user:file_search_path(debug, Directory),
   create_file(Directory, temp, rdf, RDF_File),
-  rdf_save2(prasem, xml, RDF_File),
+  rdf_save([format(rdf_xml)], prasem, RDF_File),
   file_to_atom(RDF_File, RDF),
   rdf_to_svg(RDF, SVG),
   create_file(Directory, temp, scalable_vector_graphics, SVG_File),
