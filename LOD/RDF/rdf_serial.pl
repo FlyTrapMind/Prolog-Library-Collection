@@ -156,7 +156,7 @@ rdf_convert_file(FromMIME, FromFile, ToMIME, ToFile):-
     [mime(FromMIME)],
     FromFile,
     rdf_graph,
-    ToMIME,
+    [mime(ToMIME)],
     ToFile
   ).
 
@@ -205,7 +205,7 @@ rdf_load(O1, Graph, Dir):-
 % Load a single file.
 rdf_load(O1, Graph, File):-
   access_file(File, read),
-  
+
   % Retrieve the graph name.
   ensure_graph(File, Graph),
 
@@ -278,10 +278,10 @@ rdf_save(O1, Graph, File):-
 % Make up the format.
 rdf_save(O1, Graph, File):-
   access_file(File, write),
-  
+
   % Derive the serialization format.
   ensure_format(O1, File, Format),
-  
+
   (
     % We do not need to save the graph if
     % (1) the contents of the graph did not change, and

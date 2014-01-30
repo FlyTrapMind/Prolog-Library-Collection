@@ -29,26 +29,6 @@ html_arity(Arity) -->
   html(span(class=arity, Arity)).
 
 
-%! html_atomic(+Atomic:atomic)// .
-% Writes an atomic term.
-%
-% @tbd Add support for blobs.
-% @tbd Add support for strings.
-
-% Float.
-html_atomic(Float) -->
-  {float(Float)}, !,
- float(Float).
-% Integer.
-html_atomic(Integer) -->
-  {integer(Integer)}, !,
-  integer(Integer).
-% Atom.
-html_atomic(Atom) -->
-  {atom(Atom)}, !,
-  atom(Atom).
-
-
 html_error_action(Action) -->
   html(div(class=action, Action)).
 
@@ -335,5 +315,5 @@ html_program(Program) -->
 html_value(mime(MIME)) --> !,
   html_mime(MIME).
 html_value(Value) -->
-  html_atomic(Value).
+  html_pl_term(Value).
 

@@ -294,7 +294,7 @@ directory_files(O1, Directory, Files4):-
   (
     option(recursive(true), O1)
   ->
-    replace_option(O1, include_self, false, _, O2),
+    select_option(include_self(_), O1, O2, _),
     maplist(directory_files(O2), NewDirectories, NewFiless),
     append([NewFiles2|NewFiless], Files1)
   ;
