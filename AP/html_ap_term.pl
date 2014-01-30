@@ -60,6 +60,10 @@ html_ap_message(properties(OfFiles)) --> !,
     ])
   ).
 
+% Randomize IRIs.
+html_ap_message(randomize_iris) --> !,
+  html(div(class=randomize_iris, 'Aap')).
+
 % RDF conversion.
 html_ap_message(rdf_conversion(Files)) --> !,
   html(
