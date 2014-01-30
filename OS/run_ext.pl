@@ -218,7 +218,7 @@ write_program_support(Program):-
 %   * `pdf`
 
 open(File):-
-  file_name_type(_, FileType, File),
+  file_type(FileType, File),
   generic(open, FileType, [File]).
 
 

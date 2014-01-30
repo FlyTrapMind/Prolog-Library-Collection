@@ -43,7 +43,7 @@ Support for the HTML image tag.
 html_image(IMG_O1, File) -->
   {
     % Make sure the file has a supported image file type.
-    file_name_type(_Base, Type, File),
+    file_type(Type, File),
     user:image_file_type(Type),
     http_absolute_location(img(File), RelativeURI, [])
   },

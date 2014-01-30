@@ -119,7 +119,16 @@ latex_clean(File):-
 
 latex_clean_directory(Directory):-
   exists_directory(Directory), !,
-  safe_delete_directory_contents([file_types([latex_out])], Directory).
+  directory_files(
+    [
+      file_types([latex_out]),
+      include_directories(false),
+      include_self(false),
+      recursive(true)
+    ],
+    Files
+  ),
+  maplist(safe_delete_file, Files)
 
 %! latex_code_convert(+File:atom) is det.
 % @see Wrapper for latex_code_convert/2

@@ -37,7 +37,7 @@ Directory management for running automated processes.
 
 ap_clean(Alias):-
   ap_stage_directories(Alias, StageDirs),
-  maplist(safe_delete_directory_contents([]), StageDirs).
+  maplist(delete_directory([include_self(true),safe(true)]), StageDirs).
 
 
 %! ap_dir(

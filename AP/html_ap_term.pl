@@ -89,7 +89,7 @@ of_file(of_file(NVPairs)) -->
     )
   ).
 
-of_file(of_file(_,NVPairs)) -->
+of_file(of_file(_File,NVPairs)) -->
   of_file(of_file(NVPairs)).
 
 

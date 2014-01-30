@@ -16,6 +16,8 @@
 @version 2014/01
 */
 
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(error_ext)).
 :- use_module(http(rfc2616_status_line)).
@@ -25,6 +27,26 @@
 
 html_arity(Arity) -->
   html(span(class=arity, Arity)).
+
+
+%! html_atomic(+Atomic:atomic)// .
+% Writes an atomic term.
+%
+% @tbd Add support for blobs.
+% @tbd Add support for strings.
+
+% Float.
+html_atomic(Float) -->
+  {float(Float)}, !,
+ float(Float).
+% Integer.
+html_atomic(Integer) -->
+  {integer(Integer)}, !,
+  integer(Integer).
+% Atom.
+html_atomic(Atom) -->
+  {atom(Atom)}, !,
+  atom(Atom).
 
 
 html_error_action(Action) -->
@@ -235,8 +257,6 @@ html_functor_and_arity(Functor, Arity) -->
 
 html_mime(MIME) -->
   html(span(class=mime, MIME)).
-mime(MIME) -->
-  html_mime(MIME).
 
 
 html_module(Module) -->
@@ -246,13 +266,11 @@ html_module(Module) -->
 html_nvpair(nvpair(Property,Value)) -->
   html_nvpair(Property, Value).
 
-:- use_module(dcg(dcg_cardinal)).
-:- meta_predicate(html_nvpair(//,//,?,?)).
 html_nvpair(Property, Value) -->
   html([
-    span(class=property, Property),
+    span(class=property, \html_pl_term(Property)),
     '=',
-    span(class=value, \dcg_call(Value))
+    span(class=value, \html_value(Value))
   ]).
 
 html_nvpairs([]) --> [].
@@ -312,4 +330,10 @@ html_program(Program) -->
       span(class=program, Program)
     ])
   ).
+
+
+html_value(mime(MIME)) --> !,
+  html_mime(MIME).
+html_value(Value) -->
+  html_atomic(Value).
 

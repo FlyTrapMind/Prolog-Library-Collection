@@ -69,7 +69,7 @@ ap_end(Alias):-
     ap_last_stage_directory(Alias, LastStageDir)
   ->
     ap_dir(Alias, write, output, OutputDir),
-    safe_copy_directory(LastStageDir, OutputDir)
+    copy_directory([safe(true)], LastStageDir, OutputDir)
   ;
     true
   ),

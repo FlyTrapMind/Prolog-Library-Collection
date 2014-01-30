@@ -33,6 +33,8 @@
     file_name_type/3, % ?Base:atom
                       % ?Type:atom
                       % ?Name:atom
+    file_type/2, % ?FileType:atom
+                 % ?File:atom
     file_type_alternative/2, % +FromFile:atom
                              % ?ToFile:atom
     file_type_alternative/3, % +FromFile:atom
@@ -133,7 +135,7 @@ absolute_file_name_number(Spec, Options, Number, Absolute):-
 
 base_or_file_to_file(BaseOrFile, FileType, File):-
   (
-    file_name_type(_Base, FileType, BaseOrFile)
+    file_type(FileType, BaseOrFile)
   ->
     File = BaseOrFile
   ;
@@ -269,21 +271,32 @@ file_name_extensions(File, L, L, File).
 % @arg Path The full name of a file.
 
 file_name_type(Path, directory, Path):-
+  nonvar(Path),
   exists_directory(Path), !.
+% (+,+,-)
 file_name_type(Name, Type, Path):-
   nonvar(Name), nonvar(Type), !,
   prolog_file_type(Ext, Type),
   file_name_extension(Name, Ext, Path).
-file_name_type(Path, directory, Path):-
-  nonvar(Path), exists_directory(Path), !.
+% For files with no extension and thus no type.
+file_name_type(Path, none, Path):-
+  \+ file_name_extension(_, _, Path),
+  exists_file(Path), !.
+% (?,?,+)
 file_name_type(Name, Type, Path):-
   nonvar(Path),
   file_name_extension(Name, Ext, Path),
-  Ext \== '', !,
+  Ext \== '',
   user:prolog_file_type(Ext, Type).
-% For files with no extension and thus no type.
-file_name_type(Path, none, Path):-
-  exists_file(Path), !.
+file_name_type(_, Type, _):-
+  % Type is uninstantiated,
+  % make sure it stays that way.
+  var(Type).
+
+
+file_type(FileType, File):-
+  file_name_type(_, FileType, File).
+
 
 file_type_alternative(File1, File2):-
   file_name_extension(Base, _Extension1, File1),

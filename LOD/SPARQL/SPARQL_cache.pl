@@ -69,7 +69,7 @@ assert_proposition(Graph, [S,P,O]):-
     Resource2,
     uri_components(Scheme,Domain,Path,_NoFragment,_NoSearch)
   ),
-  file_name_type(_, Type, Resource2),
+  file_type(Type, Resource2),
   memberchk(Type, [html,image,pdf]), !.
 
 % IRI with registered SPARQL endpoint.
