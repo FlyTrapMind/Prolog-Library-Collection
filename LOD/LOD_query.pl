@@ -6,7 +6,8 @@
     'LOD_cache'/3, % +Resource:or([bnode,iri,literal])
                    % -Resources:ordset(or([bnode,iri,literal]))
                    % -Propositions:ordset(list(or([bnode,iri,literal])))
-    'LOD_local_query'/4 % +URL:url
+    'LOD_local_query'/5 % +Options:list(nvpair)
+                        % +URL:url
                         % +Resource:or([bnode,iri,literal])
                         % -Resources:ordset(or([bnode,iri,literal]))
                         % -Propositions:ordset(list(or([bnode,iri,literal])))
@@ -50,7 +51,7 @@
 'LOD_cache'(IRI, Resources, Propositions):-
   'SPARQL_cache'(IRI, Resources, Propositions), !.
 
-% Download an LOD description based on the IRI prefix.
+% Download a LOD description based on the IRI prefix.
 'LOD_cache'(IRI, Resources, Propositions):-
   rdf_global_id(Prefix:_, IRI),
   (
@@ -58,23 +59,31 @@
   ;
     URL = IRI
   ),
-  'LOD_local_query'(URL, IRI, Resources, Propositions).
+  'LOD_headers'(IRI, O1),
+  'LOD_local_query'(O1, URL, IRI, Resources, Propositions).
 
 % Based on the entire IRI we can download a LOD description.
 'LOD_cache'(IRI, Resources, Propositions):-
   is_of_type(uri, IRI), !,
-  'LOD_local_query'(IRI, IRI, Resources, Propositions).
+  findall(
+    request_header(N=V),
+    'LOD_header'(Prefix, N, V),
+    O1
+  ),
+  'LOD_local_query'(O1, IRI, IRI, Resources, Propositions).
 
 
 %! 'LOD_local_query'(
+%!   +Options:list(nvpair),
 %!   +URL:url,
 %!   +Resource:or([bnode,iri,literal]),
 %!   -Resources:ordset(or([bnode,iri,literal])),
 %!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
+% The options are passed to download_to_file/3 -> http_goal -> http_open/3.
 
-'LOD_local_query'(URL, Resource, Resources, Propositions):-
-  catch(download_to_file(URL, File), _, fail),
+'LOD_local_query'(O1, URL, Resource, Resources, Propositions):-
+  catch(download_to_file(O1, URL, File), _, fail),
   'LOD_local_query_on_file'(File, URL, Resource, Resources, Propositions).
 
 % Potential RDF! Let's try to load it in a graph.

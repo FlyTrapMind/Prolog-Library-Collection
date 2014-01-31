@@ -98,6 +98,11 @@ Persistency store for SPARQL-related information.
 
 % DBpedia
 :- 'SPARQL_register_remote'(dbpedia, 'dbpedia.org', default, '/sparql').
+:- 'LOD_register_location'(
+    dbpedia,
+    'http://dbpedia.org/resource/',
+    [request_header('Accept'='application/rdf+xml')]
+  ).
 
 % DBpedia ontology
 :- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
@@ -268,7 +273,7 @@ Persistency store for SPARQL-related information.
 
 % Dublin Core terms
 :- xml_register_namespace(dcterms, 'http://purl.org/dc/terms/').
-:- 'LOD_register_location'(dcterms, 'http://dublincore.org/2012/06/14/dcterms.rdf').
+:- 'LOD_register_location'(dcterms, 'http://dublincore.org/2012/06/14/dcterms.rdf', []).
 
 % Dublin core ?
 :- xml_register_namespace(eor, 'http://dublincore.org/2000/03/13/eor#').

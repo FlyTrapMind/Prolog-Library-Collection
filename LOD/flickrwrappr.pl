@@ -78,7 +78,7 @@ flickrwrappr_cache(Graph, Resources, Propositions):-
 
 flickrwrappr_cache_url(URL1-IRI, Resources, Propositions):-
   uri_query_add(URL1, format, rdf, URL2),
-  'LOD_local_query'(URL2, IRI, Resources, Propositions).
+  'LOD_local_query'([], URL2, IRI, Resources, Propositions).
 
 assert_proposition(Graph, [S,P,O]):-
   rdf_assert(S, P, O, Graph).

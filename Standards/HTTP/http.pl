@@ -75,6 +75,7 @@ http_dateTime(DateTime):-
 %   * =|nocatch(+DoNotCatchExceptions:boolean)|=
 %     When set to `true` (default `false`) exceptions are not caught
 %     and no automated retrying occurs.
+% Other options are given to http_open/3.
 
 http_goal(URL, O1, Goal):-
   option(nocatch(true), O1, false), !,

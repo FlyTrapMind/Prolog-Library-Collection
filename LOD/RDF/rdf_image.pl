@@ -69,7 +69,7 @@ rdf_image(O1, URL, File):-
   (
     access_file(File, exist), !
   ;
-    download_to_file(URL, File), !
+    download_to_file(O1, URL, File), !
   ;
     option(
       fail_mode(FM),

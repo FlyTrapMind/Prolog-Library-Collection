@@ -4,7 +4,8 @@
     download_to_directory/3, % +URL:atom
                              % +ToDirectory:atom
                              % -AP_Status:compound
-    download_to_file/2, % +URL:atom
+    download_to_file/3, % +Options:list(nvpair)
+                        % +URL:atom
                         % ?File:atom
     is_image_url/1, % +URL:url
     uri_path/2, % +PathComponents:list(term)
@@ -46,14 +47,14 @@ download_to_directory(URL, ToDir, ap(status(succeed),download(File3))):-
   directory_file_path(_, File2, File1),
   file_name_extensions(Base, Extensions, File2),
   create_file(ToDir, Base, Extensions, File3),
-  download_to_file(URL, File3),
+  download_to_file([], URL, File3),
   size_file(File3, Size),
   % Expressed in megabytes.
   TooBig is 1024 * 1024 * 100,
   (Size > TooBig -> permission_error(open,'BIG-file',File3) ; true).
 
 
-download_to_file(URL, File):-
+download_to_file(O1, URL, File):-
   nonvar(File),
 
   % Check the URL.
@@ -65,11 +66,12 @@ download_to_file(URL, File):-
   ;
     url_to_file(URL, File)
   ),
-
-  http_goal(URL, [nocatch(true)], file_from_stream(File)).
-download_to_file(URL, File):-
+  
+  merge_options([nocatch(true)], O1, O2),
+  http_goal(URL, O2, file_from_stream(File)).
+download_to_file(O1, URL, File):-
   url_to_file(URL, File),
-  download_to_file(URL, File).
+  download_to_file(O1, URL, File).
 
 
 file_from_stream(File, HTTP_Stream):-

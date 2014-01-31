@@ -35,7 +35,8 @@ Generates HTML tables with RDF content.
 % Otherwise the header row has to be given explicitly.
 
 :- meta_predicate(rdf_html_table(//,+,?,?)).
-rdf_html_table(Caption, [H|T]) --> !,
+rdf_html_table(_, []) --> !, [].
+rdf_html_table(Caption, [H|T]) -->
   {
     same_length(H, HeaderRow),
     append(_, HeaderRow, ['Subject','Predicate','Object','Graph'])
@@ -54,4 +55,4 @@ rdf_html_table(Caption, HeaderRow, Rows) -->
       [HeaderRow|Rows]
     )
   ).
- 
+

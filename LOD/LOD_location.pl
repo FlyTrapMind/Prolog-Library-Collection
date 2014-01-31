@@ -1,6 +1,14 @@
 :- module(
   'LOD_location',
   [
+% HEADER
+    'LOD_header'/3, % +Prefix:atom
+                    % ?Name:atom
+                    % ?Value:atom
+    'LOD_register_header'/3, % +Prefix:atom
+                             % +Name:atom
+                             % +Value:atom
+% LOCATION
     'LOD_location'/2, % +Prefix:atom
                       % -Location:atom
     'LOD_register_location'/2 % +Prefix:atom
@@ -19,8 +27,18 @@ Support for Web locations that store LOD descriptions.
 :- use_module(generics(db_ext)).
 :- use_module(xml(xml_namespace)).
 
-:- dynamic(load_location/2).
+:- dynamic(lod_header/3).
+:- dynamic(lod_location/3).
 
+
+
+% 'LOD_header'(+Prefix:atom, ?Name:atom, ?Value:atom) is nondet.
+
+'LOD_header'(Prefix, Name, Value):-
+  lod_header(Prefix, Name, Value).
+
+'LOD_register_header'(Prefix, Name, Value):-
+  db_add_novel(lod_header(Prefix, Name, Value)).
 
 
 % 'LOD_location'(+Prefix:atom, -Location:iri) is det.

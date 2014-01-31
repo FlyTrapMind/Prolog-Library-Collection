@@ -38,12 +38,32 @@ Find a single resource based on a search term.
 % @arg SearchTerm
 % @arg Resource
 
-'SPARQL_find'(_, Resource, Resource):-
-  must_be(iri, Resource),
+'SPARQL_find'(Remote, Resource, Resource):-
+  must_be(iri, Resource), !,
   % @tbd This can be done more efficiently by just looking for
   %      the first triple.
-  'SPARQL_cache'(Resource, _, Propositions),
-  Propositions \== [], !.
+  phrase(
+      'SPARQL_formulate'(
+	  _,
+	  _,
+	  [],
+	  select,
+	  true,
+	  [p,o],
+	  [rdf(iri(Resource), var(p), var(o))],
+	  1,
+	  _
+      ),
+      Query
+  ),
+  'SPARQL_query'(Remote, Query, _VarNames, Results),
+  (
+    Results == []
+  ->
+		  debug('SPARQL_find', 'No results for resource ~w.', [Resource])
+		    ;
+		    true
+		).
 'SPARQL_find'(Remote, SearchTerm, Resource):-
   phrase(
     'SPARQL_formulate'(
