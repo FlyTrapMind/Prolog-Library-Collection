@@ -20,6 +20,7 @@ Returns the MIME of a given file.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(pure_input)).
@@ -34,6 +35,10 @@ file_mime(File, Mime):-
   atom_codes(Atom, Codes),
   phrase(file_mime(Mime), Codes), !.
 */
+file_mime(File, _):-
+  \+ access_file(File, read), !,
+  debug(file_mime, 'Cannot read from file ~w.', [File]),
+  fail.
 file_mime(File, MIME):-
   phrase_from_file(file_mime(MIME), File), !.
 file_mime(File, MIME):-

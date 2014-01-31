@@ -225,6 +225,7 @@ rdf_load(O1, Graph, File):-
   % Send a debug message notifying that the RDF file was successfully loaded.
   debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
 
+
 %! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
 
 ensure_format(O1, _, Format):-
@@ -233,12 +234,15 @@ ensure_format(O1, _, Format):-
   option(mime(MIME), O1),
   rdf_serialization(_, _, Format, MIME, _), !.
 ensure_format(_, File, Format):-
-  file_mime(File, MIME),
+  file_mime(File, MIME), !,
   (
     rdf_serialization(_, _, Format, MIME, _), !
   ;
     throw(error(mime_error(File,'RDF',MIME),_))
   ).
+ensure_format(_, _, turtle):-
+  debug(rdf_serial, 'We cannot establish the serialization format.', []).
+
 
 ensure_graph(_, Graph):-
   nonvar(Graph), !.

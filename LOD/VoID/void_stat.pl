@@ -3,9 +3,15 @@
   [
     void_assert_modified/2, % +VoID_Graph:atom
                             % +Dataset:iri
-    void_assert_statistics/3 % +VoID_Graph:atom
-                             % +Dataset:iri
-                             % +DatasetGraph:atom
+    void_assert_statistics/3, % +VoID_Graph:atom
+                              % +Dataset:iri
+                              % +DatasetGraph:atom
+% AP
+    void_statistics/5 % +FromDirectory:atom
+                      % +ToDirectory:atom
+                      % -AP_Status:compound
+                      % +Resource:iri
+                      % +Graph:atom
   ]
 ).
 
@@ -121,4 +127,54 @@ void_assert_statistics(DD_G, DS, DS_G):-
   % void:triples
   rdf_statistics(triples_by_graph(DS_G, NT)),
   rdf_overwrite_datatype(DS, void:triples, xsd:integer, NT, DD_G).
+
+
+
+% AP %
+
+:- use_module(os(dir_ext)).
+:- use_module(rdf(rdf_meta)).
+
+void_statistics(
+  FromDir,
+  ToDir,
+  ap(status(succeed),properties(OfFiles)),
+  Resource,
+  WriteGraph
+):-
+  directory_files([file_types([turtle])], FromDir, FromFiles),
+  findall(
+    of_file(ToFile,NVPairs),
+    (
+      member(FromFile, FromFiles),
+      file_alternative(FromFile, ToDir, _, _, ToFile),
+      rdf_setup_call_cleanup(
+        [mime('application/x-turtle')],
+        FromFile,
+        void_statistics(NVPairs, Resource, WriteGraph),
+        [mime('application/x-turtle')],
+        ToFile
+      )
+    ),
+    OfFiles
+  ).
+
+void_statistics(NVPairs, Resource, WriteGraph, ReadGraph):-
+  NVPairs = [
+    nvpair(classes,NC),
+    nvpair(subjects,NS),
+    nvpair(properties,NP),
+    nvpair(objects,NO),
+    nvpair(triples,NT)
+  ],
+  count_classes(ReadGraph, NC),
+  rdf_assert_datatype(Resource, void:classes, xsd:integer, NC, WriteGraph),
+  count_objects(_, _, ReadGraph, NO),
+  rdf_assert_datatype(Resource, void:distinctObjects, xsd:integer, NO, WriteGraph),
+  count_subjects(_, _, ReadGraph, NS),
+  rdf_assert_datatype(Resource, void:distinctSubject, xsd:integer, NS, WriteGraph),
+  count_properties(_, _, ReadGraph, NP),
+  rdf_assert_datatype(Resource, void:properties, xsd:integer, NP, WriteGraph),
+  rdf_statistics(triples_by_graph(ReadGraph, NT)),
+  rdf_assert_datatype(Resource, void:triples, xsd:integer, NT, WriteGraph).
 

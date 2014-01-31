@@ -329,8 +329,11 @@ directory_files(O1, Directory, Files4):-
     Files4 = Files3
   ).
 
+has_file_type(FileTypes, _):-
+  var(FileTypes), !.
 has_file_type(FileTypes, File):-
   file_type(FileType, File),
+  nonvar(FileType),
   memberchk(FileType, FileTypes).
 
 nonfile_entry('.').

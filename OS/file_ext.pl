@@ -8,6 +8,11 @@
     base_or_file_to_file/3, % +BaseOrFile:atom
                             % ?FileType:atom
                             % -File:atom
+    copy_file/5, % ?ToDirectory:atom
+                 % ?ToName:atom
+                 % ?ToExtension:atom
+                 % +FromFile:atom
+                 % -ToFile:atom
     create_file/1, % +File:atom
     create_file/4, % +NestedDir:term
                    % +Name:atom
@@ -19,6 +24,8 @@
                         % ?Name:atom
                         % ?Extension:atom
                         % -ToFile:atom
+    file_lines/2, % +File:atom
+                  % -Lines:nonneg
     file_name/4, % +File:atom
                  % ?Dir:atom
                  % ?Name:atom
@@ -84,16 +91,19 @@ We use the following abbreviations in this module:
 
 @author Wouter Beek
 @tbd Remove the dependency on module AP.
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2013/12
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01
 */
 
 :- use_module(ap(ap_stat)).
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
+:- use_module(library(readutil)).
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).
 
@@ -146,6 +156,20 @@ base_or_file_to_file(BaseOrFile, FileType, File):-
   % the above may backtrack. Therefore we discard these choice-points here.
   % I.e., we only use the first file we find.
   !.
+
+
+%! copy_file(
+%!   ?ToDirectory:atom,
+%!   ?ToName:atom,
+%!   ?ToExtension:atom,
+%!   +FromFile:atom,
+%!   -ToFile:atom
+%! ) is det.
+
+copy_file(ToDir, ToName, ToExt, FromFile, ToFile):-
+  file_alternative(FromFile, ToDir, ToName, ToExt, ToFile),
+  copy_file(FromFile, ToFile).
+
 
 create_file(File):-
   exists_file(File), !,
@@ -227,6 +251,19 @@ file_alternative(FromFile, ToDir1, ToName1, ToExt1, ToFile):-
   ),
   file_name(ToFile, ToDir2, ToName2, ToExt2).
 
+
+%! file_lines(+File:atom, -Lines:nonneg) is det.
+
+file_lines(File, Lines):-
+  process_create(path(wc), ['-l',file(File)], [stdout(pipe(Stream))]),
+  read_stream_to_codes(Stream, Codes),
+  phrase(wc_number(Lines), Codes).
+
+wc_number(Lines) -->
+  integer(Lines),
+  dcg_done.
+
+
 %! file_name(
 %!   ?Path:atom,
 %!   ?Directory:atom,
@@ -243,6 +280,7 @@ file_name(Path, Directory, Base, Extension):-
   nonvar(Path), !,
   directory_file_path(Directory, File, Path),
   file_name_extension(Base, Extension, File).
+
 
 %! file_name_extensions(+Base:atom, +Extensions:list(atom), +File:atom) is semidet.
 %! file_name_extensions(+Base:atom, +Extensions:list(atom), -File:atom) is det.
