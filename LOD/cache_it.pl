@@ -108,7 +108,7 @@ cache_it(Mode, G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
     '~d resources added (~d in total)',
     [NumberOfNewNeighbors,NumberOfVs2]
   ),
-  
+
   % Update results: propositions.
   ord_union(Props1, NewProps, Props2),
   maplist(length, [NewProps,Props2], [NumberOfNewProps,NumberOfProps2]),
@@ -116,7 +116,7 @@ cache_it(Mode, G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
     '~d propositions added (~d in total)',
     [NumberOfNewProps,NumberOfProps2]
   ),
-  
+
   % Update resources that have to be visited.
   % Support breadth-first and depth-first modes.
   (
@@ -130,13 +130,12 @@ cache_it(Mode, G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   ),
   length(T2, NumberOfT2),
   message('~d remaining', [NumberOfT2]),
-  
+
   % Recurse.
   cache_it(Mode, G, Pred, T2, Vs2, VSol, Props2, PropsSol).
 % The show must go on!
 cache_it(Mode, G, Pred, [H|T], Vs, VSol, Props, PropsSol):-
-  message('~w failed', [H]),
-gtrace,
+  message('[FAILED] ~w', [H]),
   cache_it(Mode, G, Pred, T, Vs, VSol, Props, PropsSol).
 
 message(Format, Args):-

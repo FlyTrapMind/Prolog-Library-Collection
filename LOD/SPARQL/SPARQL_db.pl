@@ -98,11 +98,8 @@ Persistency store for SPARQL-related information.
 
 % DBpedia
 :- 'SPARQL_register_remote'(dbpedia, 'dbpedia.org', default, '/sparql').
-:- 'LOD_register_location'(
-    dbpedia,
-    'http://dbpedia.org/resource/',
-    [request_header('Accept'='application/rdf+xml')]
-  ).
+:- 'LOD_register_header'(dbpedia, 'Accept', 'application/rdf+xml').
+:- 'LOD_register_location'(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia ontology
 :- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
@@ -270,10 +267,11 @@ Persistency store for SPARQL-related information.
 
 % Dublin Core elements
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').
+:- 'LOD_register_location'(dc, 'http://dublincore.org/2012/06/14/dcelements.rdf').
 
 % Dublin Core terms
 :- xml_register_namespace(dcterms, 'http://purl.org/dc/terms/').
-:- 'LOD_register_location'(dcterms, 'http://dublincore.org/2012/06/14/dcterms.rdf', []).
+:- 'LOD_register_location'(dcterms, 'http://dublincore.org/2012/06/14/dcterms.rdf').
 
 % Dublin core ?
 :- xml_register_namespace(eor, 'http://dublincore.org/2000/03/13/eor#').
@@ -299,6 +297,10 @@ Persistency store for SPARQL-related information.
 :- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
 :- rdf_set_predicate(rdfs:subClassOf, transitive(true)).
 :- rdf_set_predicate(rdfs:subPropertyOf, transitive(true)).
+
+% Schema
+:- xml_register_namespace(schema, 'http://schema.org/').
+:- 'LOD_register_location'(schema, 'http://schema.rdfs.org/all.ttl').
 
 % SERQL
 :- xml_register_namespace(serql, 'http://www.openrdf.org/schema/serql#').

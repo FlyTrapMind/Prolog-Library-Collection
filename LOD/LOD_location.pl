@@ -28,7 +28,7 @@ Support for Web locations that store LOD descriptions.
 :- use_module(xml(xml_namespace)).
 
 :- dynamic(lod_header/3).
-:- dynamic(lod_location/3).
+:- dynamic(lod_location/2).
 
 
 
