@@ -1,8 +1,11 @@
 :- module(
   rdf_meta,
   [
+    rdf_setup_call_cleanup/3, % +LoadOptions:list(nvpair)
+                              % +From:or([atom,list(atom)])
+                              % :Goal
     rdf_setup_call_cleanup/5 % +LoadOptions:list(nvpair)
-                             % +FromFile:atom
+                             % +From:or([atom,list(atom)])
                              % :Goal
                              % +SaveOptions:list(nvpair)
                              % ?ToFile:atom
@@ -24,6 +27,32 @@ Meta-callings on an RDF graph.
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 
+
+
+%! rdf_setup_call_cleanup(
+%!   +LoadOptions:list(nvpair),
+%!   +FromFile:atom,
+%!   :Goal
+%! ) is det.
+% @arg Goal Take one argument, which is the atomic name of an RDF graph.
+
+:- meta_predicate(rdf_setup_call_cleanup(+,+,1)).
+% Load RDF files, process goal, keep graph.
+rdf_setup_call_cleanup(O1_Load, From, Goal):-
+  option(graph(Graph), O1_Load),
+  nonvar(Graph), !,
+  rdf_load(O1_Load, Graph, From),
+  call(Goal, Graph).
+% Load RDF files, process goal, no output.
+rdf_setup_call_cleanup(O1_Load, From, Goal):-
+  setup_call_cleanup(
+    rdf_new_graph(temp, Graph),
+    (
+      rdf_load(O1_Load, Graph, From),
+      call(Goal, Graph)
+    ),
+    rdf_unload_graph(Graph)
+  ).
 
 
 %! rdf_setup_call_cleanup(
