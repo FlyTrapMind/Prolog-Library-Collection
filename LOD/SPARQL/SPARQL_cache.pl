@@ -14,7 +14,7 @@
 Locally caches triples that are relevant for specific resources.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(library(apply)).
@@ -92,11 +92,10 @@ assert_proposition(Graph, [S,P,O]):-
   ord_union(Propositions, Resources).
 
 
-% Skip IRI based on domain name.
 skip_iri(_, Domain, _):-
   atomic_list_concat(DomainComponents, '.', Domain),
   member(DomainComponent, DomainComponents),
-  member(DomainComponent, [wikipedia]), !.
+  member(DomainComponent, [wikidata,wikipedia]), !.
 
 % Skip IRI based on file extension.
 skip_iri(Scheme, Domain, Path):-

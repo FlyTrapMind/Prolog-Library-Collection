@@ -1,14 +1,15 @@
 :- module(
   cache_it,
   [
-    cache_it/3, % +Graph:atom
-                % :Predicate
+    cache_it1/4, % +Graph:atom
+                 % :Goal
+                 % +PredicatesFilter:ordset(iri)
+                 % +Resource:iri
+    cache_it2/5 % +Graph:atom
+                % :Goal
                 % +Resource:iri
-    cache_it/5 % +Graph:atom
-               % :Predicate
-               % +Resource:iri
-               % -Resources:ordset(iri)
-               % -Propositions:ordset(list(or([bnode,iri,literal])))
+                % -Resources:ordset(iri)
+                % -Propositions:ordset(list(or([bnode,iri,literal])))
   ]
 ).
 
@@ -16,56 +17,164 @@
 
 Generic predicate for caching RDF results.
 
-Possible instantiations for `Predicate` are SPARQL_cache/4 and LOD_cache/4.
+Possible instantiations for `Goal` are SPARQL_cache/4 and LOD_cache/4.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
-:- use_module(generics(typecheck)).
+:- use_module(dcg(dcg_collection)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(uri)).
-:- use_module(os(file_ext)).
+:- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_read)).
 :- use_module(rdf_web(rdf_table)).
 :- use_module('SPARQL'('SPARQL_db')).
-
-:- meta_predicate(cache_it(+,3,+)).
-:- meta_predicate(cache_it(+,3,+,-,-)).
-:- meta_predicate(cache_it(+,+,3,+,+,-,+,-)).
 
 :- debug(cache_it).
 
 
 
-%! cache_it(
-%!   +Graph:atom,
-%!   :Predicate,
-%!   +Resource:or([bnode,iri,literal])
-%! ) is det.
-
-cache_it(Graph, Pred, Resource):-
-  cache_it(Graph, Pred, Resource, _, Propositions),
-  maplist(assert_proposition(Graph), Propositions).
-
 assert_proposition(Graph, [S,P,O]):-
   rdf_assert(S, P, O, Graph).
 
+default_predicate_filter([
+  rdf:type,
+  rdfs:subClassOf,
+  rdfs:subPropertyOf,
+  skos:broader,
+  skos:related,
+  skos:sameAs
+]).
 
-%! cache_it(
+%! cache_it1(
 %!   +Graph:atom,
-%!   :Predicate,
+%!   :Goal,
+%!   +PredicatesFilter:ordset(iri),
+%!   +Resource:or([bnode,iri,literal])
+%! ) is det.
+
+:- meta_predicate(cache_it1(+,3,+,+)).
+cache_it1(Graph, Goal, PredicatesFilter, [H|T]):- !,
+  absolute_file_name(prasem('lod.log'), File, [access(write)]),
+  open(File, write, _, [alias(lod_log)]),
+  findall(
+    X-[X],
+    member(X, [H|T]),
+    Pairs
+  ),
+  (nonvar(PredicatesFilter), ! ; default_predicate_filter(PredicatesFilter)),
+  cache_it1('depth-first', Graph, Goal, PredicatesFilter, Pairs).
+cache_it1(Graph, Goal, PredicatesFilter, Resource):-
+  cache_it1(Graph, Goal, PredicatesFilter, [Resource]).
+
+
+:- meta_predicate(cache_it1(+,+,3,+,+)).
+cache_it1(_, _, _, _, []):- !.
+cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
+  length(HistX, Depth),
+  format(lod_log, '~d\t', [Depth]),
+  dcg_with_output_to(lod_log, list(rdf_term_name, HistX)),
+  nl(lod_log),
+
+  call(Goal, X, _, NeighborProps), !,
+
+  % Filter on propositions that are included in results.
+  exclude(old_proposition(Graph), NeighborProps, NewProps),
+
+  % Update results: propositions.
+  maplist(assert_proposition(Graph), NewProps),
+
+  % Only predicate terms and object terms that occur
+  % with predicate terms in the filter are visited later.
+  propositions_to_resources(NewProps, PredicatesFilter, Ns1),
+
+  % Exclude resources that are already fully asserted.
+  exclude(old_resource(Graph), Ns1, Ns2),
+
+  % We want to track paths for debugging purposes
+  % (i.e. showing the path depth).
+  maplist(resource_to_pair(HistX), Ns2, NewPairs),
+
+  % Update resources that have to be visited.
+  % Support breadth-first and depth-first modes.
+  (
+    Mode == 'breadth-first'
+  ->
+    append(T1, NewPairs, T2)
+  ;
+    Mode == 'depth-first'
+  ->
+    append(NewPairs, T1, T2)
+  ),
+  length(T2, NumberOfT2),
+  length(Ns2, NumberOfNewResources),
+  length(NewProps, NumberOfNewProps),
+  dcg_with_output_to(atom(Name), rdf_term_name(X)),
+  message(
+    '~d remain (depth ~d) (new res ~d props ~d) (resource ~w)',
+    [NumberOfT2,Depth,NumberOfNewResources,NumberOfNewProps,Name]
+  ),
+
+  % Recurse.
+  cache_it1(Mode, Graph, Goal, PredicatesFilter, T2).
+% The show must go on!
+cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-_|T]):-
+  message('[FAILED] ~w', [X]),
+  cache_it1(Mode, Graph, Goal, PredicatesFilter, T).
+
+resource_to_pair(T, H, H-[H|T]).
+
+propositions_to_resources(L1, PredicatesFilter, L2):-
+  propositions_to_resources(L1, PredicatesFilter, [], L2).
+
+propositions_to_resources([], _, Sol, Sol).
+propositions_to_resources([[_,P,O]|T], PredicatesFilter, L1, Sol):-
+  ord_add_element(L1, P, L2),
+  (
+    rdf_memberchk(P, PredicatesFilter)
+  ->
+    ord_add_element(L2, O, L3)
+  ;
+    L3 = L2
+  ),
+  propositions_to_resources(T, PredicatesFilter, L3, Sol).
+
+unwanted_neighbor(Graph, Resource):-
+  rdf(Resource, _, _, Graph), !.
+unwanted_neighbor(_, Resource):-
+  \+ rdf_is_bnode(Resource),
+  \+ rdf_is_literal(Resource),
+  uri_components(Resource, uri_components(_, Domain, _, _, _)),
+  atomic_list_concat([_,dbpedia|_], '.', Domain).
+
+
+
+%! cache_it2(
+%!   +Graph:atom,
+%!   :Goal,
 %!   +Resource:or([bnode,iri,literal]),
 %!   -Resources:ordset(or([bnode,iri,literal])),
 %!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 
-cache_it(_, _, [], [], []):- !.
-cache_it(G, Pred, [H|T], Resources, Propositions):- !,
-  cache_it('depth-first', G, Pred, [H|T], [H], Resources, [], Propositions),
+:- meta_predicate(cache_it2(+,3,+,-,-)).
+cache_it2(_, _, [], [], []):- !.
+cache_it2(Graph, Goal, [H|T], Resources, Propositions):- !,
+  cache_it2(
+    'breadth-first',
+    Graph,
+    Goal,
+    [H|T],
+    [H],
+    Resources,
+    [],
+    Propositions
+  ),
   % DEB
   findall(
     [S,P,O,none],
@@ -73,14 +182,14 @@ cache_it(G, Pred, [H|T], Resources, Propositions):- !,
     Quadruples
   ),
   rdf_store_table(Quadruples).
-cache_it(G, Pred, Resource, Resources, Propositions):-
-  cache_it(G, Pred, [Resource], Resources, Propositions).
+cache_it2(Graph, Goal, Resource, Resources, Propositions):-
+  cache_it2(Graph, Goal, [Resource], Resources, Propositions).
 
 
-%! cache_it(
+%! cache_it2(
 %!   +Mode:oneof(['breadth-first','depth-first']),
 %!   +Graph:atom,
-%!   :Predicate,
+%!   :Goal,
 %!   +QueryTargets:list(or([bnode,iri,literal])),
 %!   +ResourceHistory:ordset(or([bnode,iri,literal])),
 %!   -Resources:ordset(or([bnode,iri,literal])),
@@ -88,15 +197,16 @@ cache_it(G, Pred, Resource, Resources, Propositions):-
 %!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 
+:- meta_predicate(cache_it2(+,+,3,+,+,-,+,-)).
 % Base case.
-cache_it(_, _, _, [], VSol, VSol, PropsSol, PropsSol):- !.
+cache_it2(_, _, _, [], VSol, VSol, PropsSol, PropsSol):- !.
 % Recursive case.
-cache_it(Mode, G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
+cache_it2(Mode, Graph, Goal, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   message('Resource ~w', [H1]),
-  call(Pred, H1, Neighbors, NeighborProps), !,
+  call(Goal, H1, Neighbors, NeighborProps), !,
 
   % Filter on propositions that are included in results.
-  exclude(old_proposition(G), NeighborProps, NewProps),
+  exclude(old_proposition(Graph), NeighborProps, NewProps),
 
   % Filter on resources that have to be visited.
   exclude(old_neighbor(Vs1, NewProps), Neighbors, NewNeighbors),
@@ -132,11 +242,12 @@ cache_it(Mode, G, Pred, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   message('~d remaining', [NumberOfT2]),
 
   % Recurse.
-  cache_it(Mode, G, Pred, T2, Vs2, VSol, Props2, PropsSol).
+  cache_it2(Mode, Graph, Goal, T2, Vs2, VSol, Props2, PropsSol).
 % The show must go on!
-cache_it(Mode, G, Pred, [H|T], Vs, VSol, Props, PropsSol):-
+cache_it2(Mode, Graph, Goal, [H|T], Vs, VSol, Props, PropsSol):-
   message('[FAILED] ~w', [H]),
-  cache_it(Mode, G, Pred, T, Vs, VSol, Props, PropsSol).
+  cache_it2(Mode, Graph, Goal, T, Vs, VSol, Props, PropsSol).
+
 
 message(Format, Args):-
   debug(cache_it, Format, Args),
@@ -157,4 +268,7 @@ old_proposition(G, [S,P,O]):-
 old_proposition(G, [S,P,O]):-
   rdf_predicate_property(P, symmetric(true)),
   rdf(O, P, S, G), !.
+
+old_resource(Graph, Resource):-
+  rdf(Resource, _, _, Graph).
 

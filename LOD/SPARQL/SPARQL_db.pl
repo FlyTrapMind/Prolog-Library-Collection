@@ -12,8 +12,10 @@
     'SPARQL_remove_remote'/1, % +SPARQL_Remote:atom
     'SPARQL_current_remote_domain'/2, % ?SPARQL_Remote:atom
                                       % ?Domain:atom
-    'SPARQL_register_remote_domain'/2 % +SPARQL_Remote:atom
-                                      % +Domain:atom
+    'SPARQL_register_remote_domain'/2, % +SPARQL_Remote:atom
+                                       % +Domain:atom
+    sparql_remote_domain/2 % +SPARQL_Remote:atom
+                           % +Domain:atom
   ]
 ).
 
@@ -102,11 +104,11 @@ Persistency store for SPARQL-related information.
 :- 'LOD_register_location'(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia ontology
-:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
+%:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
 :- xml_register_namespace('dbpedia-owl', 'http://dbpedia.org/ontology/').
 
 % DBpedia property
-:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
+%:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
 :- xml_register_namespace(dbpprop, 'http://dbpedia.org/property/').
 
 % DBpedia resource
@@ -130,6 +132,7 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ba.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'bar.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'bat_smg.dbpedia.org').
+:- 'SPARQL_register_remote_domain'(dbpedia, 'bcl.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'bcl_smg.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'be.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'be-x-old.dbpedia.org').
@@ -184,7 +187,11 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote_domain'(dbpedia, 'hu.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'hy.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ia.dbpedia.org').
+
+:- xml_register_namespace('id-dbpprop', 'http://id.dbpedia.org/property/').
+:- xml_register_namespace('id-dbpedia', 'http://id.dbpedia.org/resource/').
 :- 'SPARQL_register_remote'('id.dbpedia', 'id.dbpedia.org', default, '/sparql').
+
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ig.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'io.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'is.dbpedia.org').

@@ -18,7 +18,7 @@
 /** <module> LOD query
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(generics(meta_ext)).
@@ -56,7 +56,6 @@
 % Download a LOD description based on the IRI prefix.
 'LOD_cache'(IRI, Resources, Propositions):-
   rdf_global_id(Prefix:_, IRI),
-gtrace,
   (
     'LOD_location'(Prefix, URL), !
   ;

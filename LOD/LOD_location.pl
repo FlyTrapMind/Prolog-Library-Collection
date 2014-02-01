@@ -21,7 +21,7 @@
 Support for Web locations that store LOD descriptions.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(generics(db_ext)).
