@@ -63,7 +63,7 @@ rdf_table(_Request):-
   reply_html_page(
     app_style,
     title(\rdf_table_caption(Timestamp)),
-    \rdf_html_table(rdf_table_caption(Timestamp), Quadruples)
+    \rdf_html_table(_NoGraph, rdf_table_caption(Timestamp), Quadruples)
   ).
   
 rdf_table_caption(Timestamp) -->

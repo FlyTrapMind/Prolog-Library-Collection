@@ -1,9 +1,11 @@
 :- module(
   rdf_html_table,
   [
-    rdf_html_table//2, % :Caption
+    rdf_html_table//3, % ?Graph:atom
+                       % :Caption
                        % +Rows:list(list(ground))
-    rdf_html_table//3 % :Caption
+    rdf_html_table//4 % ?Graph:atom
+                      % :Caption
                       % +HeaderRow:list(ground)
                       % +Rows:list(list(ground))
   ]
@@ -14,7 +16,7 @@
 Generates HTML tables with RDF content.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(html(html_table)).
@@ -24,8 +26,9 @@ Generates HTML tables with RDF content.
 
 
 
-%! rdf_html_table(:Caption, +Rows:list(list(ground)))// is det.
+%! rdf_html_table(?Graph:atom, :Caption, +Rows:list(list(ground)))// is det.
 %! rdf_html_table(
+%!   +Graph:atom,
 %!   :Caption,
 %!   +HeaderRow:list(ground),
 %!   +Rows:list(list(ground))
@@ -34,24 +37,24 @@ Generates HTML tables with RDF content.
 %  the header row is set automatically.
 % Otherwise the header row has to be given explicitly.
 
-:- meta_predicate(rdf_html_table(//,+,?,?)).
-rdf_html_table(_, []) --> !, [].
-rdf_html_table(Caption, [H|T]) -->
+:- meta_predicate(rdf_html_table(?,//,+,?,?)).
+rdf_html_table(_, _, []) --> !, [].
+rdf_html_table(Graph, Caption, [H|T]) -->
   {
     same_length(H, HeaderRow),
     append(_, HeaderRow, ['Subject','Predicate','Object','Graph'])
   },
-  rdf_html_table(Caption, HeaderRow, [H|T]).
+  rdf_html_table(Graph, Caption, HeaderRow, [H|T]).
 
-:- meta_predicate(rdf_html_table(//,+,+,?,?)).
+:- meta_predicate(rdf_html_table(?,//,+,+,?,?)).
 % Do not fail for empty data lists.
-rdf_html_table(_, _, []) --> !, [].
-rdf_html_table(Caption, HeaderRow, Rows) -->
+rdf_html_table(_, _, _, []) --> !, [].
+rdf_html_table(Graph, Caption, HeaderRow, Rows) -->
   html(
     \html_table(
       [header(true),indexed(true)],
       Caption,
-      rdf_html_term,
+      rdf_html_term(Graph),
       [HeaderRow|Rows]
     )
   ).
