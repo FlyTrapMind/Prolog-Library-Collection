@@ -6,8 +6,9 @@
     'LOD_cache'/3, % +Resource:or([bnode,iri,literal])
                    % -Resources:ordset(or([bnode,iri,literal]))
                    % -Propositions:ordset(list(or([bnode,iri,literal])))
-    'LOD_local_query'/5 % +Options:list(nvpair)
+    'LOD_local_query'/6 % +Options:list(nvpair)
                         % +URL:url
+                        % ?Graph:atom
                         % +Resource:or([bnode,iri,literal])
                         % -Resources:ordset(or([bnode,iri,literal]))
                         % -Propositions:ordset(list(or([bnode,iri,literal])))
@@ -29,6 +30,7 @@
 :- use_module('LOD'(flickrwrappr)).
 :- use_module('LOD'('LOD_location')).
 :- use_module(os(file_mime)).
+:- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
 :- use_module('SPARQL'('SPARQL_cache')).
 
@@ -54,43 +56,49 @@
 % Download a LOD description based on the IRI prefix.
 'LOD_cache'(IRI, Resources, Propositions):-
   rdf_global_id(Prefix:_, IRI),
+gtrace,
   (
     'LOD_location'(Prefix, URL), !
   ;
     URL = IRI
   ),
-  'LOD_headers'(IRI, O1),
-  'LOD_local_query'(O1, URL, IRI, Resources, Propositions).
+  'LOD_local_query'([], URL, Prefix, IRI, Resources, Propositions).
 
 % Based on the entire IRI we can download a LOD description.
+% Sometimes we need special HTTP request headers in order to receive
+% machine-readable content upon dereferencing.
 'LOD_cache'(IRI, Resources, Propositions):-
   is_of_type(uri, IRI), !,
+  rdf_global_id(Prefix:_, IRI),
   findall(
     request_header(N=V),
     'LOD_header'(Prefix, N, V),
     O1
   ),
-  'LOD_local_query'(O1, IRI, IRI, Resources, Propositions).
+  'LOD_local_query'(O1, IRI, _NoGraph, IRI, Resources, Propositions).
 
 
 %! 'LOD_local_query'(
 %!   +Options:list(nvpair),
 %!   +URL:url,
+%!   +Graph:atom,
 %!   +Resource:or([bnode,iri,literal]),
 %!   -Resources:ordset(or([bnode,iri,literal])),
 %!   -Propositions:ordset(list(or([bnode,iri,literal])))
 %! ) is det.
 % The options are passed to download_to_file/3 -> http_goal -> http_open/3.
 
-'LOD_local_query'(O1, URL, Resource, Resources, Propositions):-
+'LOD_local_query'(_, _, Graph, Resource, Resources, Propositions):-
+  rdf_graph(Graph), !,
+  'LOD_local_query_on_loaded_graph'(Resource, Resources, Propositions, Graph).
+'LOD_local_query'(O1, URL, Graph, Resource, Resources, Propositions):-
   catch(download_to_file(O1, URL, File), _, fail),
-  'LOD_local_query_on_file'(File, URL, Resource, Resources, Propositions).
+  'LOD_local_query_on_file'(File, Graph, Resource, Resources, Propositions).
 
 % Potential RDF! Let's try to load it in a graph.
-'LOD_local_query_on_file'(File, URL, Resource, Resources, Propositions):-
+'LOD_local_query_on_file'(File, Graph, Resource, Resources, Propositions):-
   file_mime(File, MIME),
   rdf_mime(MIME), !,
-  url_to_graph_name(URL, Graph),
   'LOD_local_query_on_graph'(
     File,
     MIME,
@@ -101,13 +109,10 @@
   ).
 % There is no joy in this: no RDF.
 'LOD_local_query_on_file'(File, _, _, [], []):-
+  debug(cache_it, 'No RDF in file ~w.', [File]),
   delete_file(File).
 
 
-% The graph is already loaded.
-'LOD_local_query_on_graph'(_, _, Graph, Resource, Resources, Propositions):-
-  rdf_graph(Graph), !,
-  'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions).
 % The graph first needs to be loaded.
 'LOD_local_query_on_graph'(
   File,
@@ -117,10 +122,15 @@
   Resources,
   Propositions
 ):-
-  rdf_load([mime(MIME)], Graph, File),
-  'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions).
+  % If graph is nonvar, it is kept.
+  % If graph is var, it is erased.
+  rdf_setup_call_cleanup(
+    [graph(Graph),mime(MIME)],
+    File,
+    'LOD_local_query_on_loaded_graph'(Resource, Resources, Propositions)
+  ).
 
-'LOD_local_query_on_loaded_graph'(Graph, Resource, Resources, Propositions):-
+'LOD_local_query_on_loaded_graph'(Resource, Resources, Propositions, Graph):-
   setoff(
     [Resource,P,O],
     rdf(Resource, P, O, Graph),
