@@ -59,18 +59,13 @@ assert_proposition(Graph, [S,P,O]):-
 'SPARQL_cache'(Resource, [], []):-
   rdf_is_literal(Resource), !.
 
-% Skip IRI by file extension.
-'SPARQL_cache'(Resource1, [], []):-
+% Skip IRI based on parsing (part of) the IRI itself.
+'SPARQL_cache'(Resource, [], []):-
   uri_components(
-    Resource1,
+    Resource,
     uri_components(Scheme,Domain,Path,_Fragment,_Search)
   ),
-  uri_components(
-    Resource2,
-    uri_components(Scheme,Domain,Path,_NoFragment,_NoSearch)
-  ),
-  file_type(Type, Resource2),
-  memberchk(Type, [html,image,pdf]), !.
+  skip_iri(Scheme, Domain, Path).
 
 % IRI with registered SPARQL endpoint.
 'SPARQL_cache'(Resource, Resources, Propositions):-
@@ -95,4 +90,21 @@ assert_proposition(Graph, [S,P,O]):-
   % Conversion
   rows_to_propositions([Resource], Rows, Propositions),
   ord_union(Propositions, Resources).
+
+
+% Skip IRI based on domain name.
+skip_iri(_, Domain, _):-
+  atomic_list_concat(DomainComponents, '.', Domain),
+  member(DomainComponent, DomainComponents),
+  member(DomainComponent, [wikipedia]), !.
+
+% Skip IRI based on file extension.
+skip_iri(Scheme, Domain, Path):-
+  uri_components(
+    ResourceWithoutFragmentOrSearch,
+    uri_components(Scheme,Domain,Path,_NoFragment,_NoSearch)
+  ),
+  file_type(Type, ResourceWithoutFragmentOrSearch),
+  nonvar(Type),
+  member(Type, [html,image,pdf]), !.
 
