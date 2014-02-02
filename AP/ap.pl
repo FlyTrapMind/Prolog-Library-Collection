@@ -66,10 +66,17 @@ ap_begin(O1, Alias):-
   % Process the reset option.
   option(reset(Reset), O1, false),
   (
-    Reset == false, !
-  ;
-    absolute_file_name(Alias, Dir, [access(read),file_type(directory)]),
+    Reset == true,
+    file_search_path(Alias, Spec),
+    absolute_file_name(
+      Spec,
+      Dir,
+      [access(read),file_errors(fail),file_type(directory)]
+    )
+  ->
     delete_directory([include_self(false),safe(false)], Dir)
+  ;
+    true
   ),
   
   % Make sure the input directory is there.

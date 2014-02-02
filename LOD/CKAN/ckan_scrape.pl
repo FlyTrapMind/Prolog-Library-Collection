@@ -17,14 +17,8 @@ Automated script that scraped CKAN.
 :- use_module(ckan(datahub_io)). % Meta-call.
 :- use_module(ckan(rdf_tabular_ckan)). % Load Web interface.
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(library(apply)).
-:- use_module(library(pairs)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(semuri(semuri_ap)).
 
 :- initialization(init_ckan_scrape).
 init_ckan_scrape:-
@@ -52,10 +46,10 @@ ckan_scrape(Site):-
 ckan_scrape(Site):-
   create_nested_directory(ckan_data(Site)),
   db_add_novel(user:file_search_path(Site, ckan_data(Site))),
-  
+
   atomic_list_concat([Site,ckan_to_rdf], '_', Pred),
   call(Pred, [graph(Site)]),
-  
+
   % Store the results of scraping.
   absolute_file_name(
     ckan_data(Site),

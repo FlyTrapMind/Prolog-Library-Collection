@@ -1,6 +1,7 @@
 :- module(
   ckan_ap,
   [
+    ckan_ap/0,
     ckan_ap/1 % +AP_Stages:list(compound)
   ]
 ).
@@ -24,6 +25,9 @@ Automated processes for CKAN data.
 :- use_module(rdf(rdf_lit_read)).
 
 
+
+ckan_ap:-
+  ckan_ap([]).
 
 ckan_ap(AP_Stages):-
   ckan_scrape(Site),
