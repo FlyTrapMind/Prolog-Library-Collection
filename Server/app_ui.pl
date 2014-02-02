@@ -17,7 +17,7 @@ width: 50em;
 ~~~
 
 @author Wouter Beek
-@version 2013/11-2014/01
+@version 2013/11-2014/02
 */
 
 :- use_module(html(html_form)).
@@ -31,7 +31,6 @@ width: 50em;
 :- use_module(server(web_ui)). % Make sure the Web paths are defined.
 
 :- http_handler(root(.), home, []).
-:- http_handler(root(test), test, []).
 
 :- if(predicate_property(user:debug_project, visible)).
   :- html_resource(css('pure-debug-0.3.0.css'), []).
@@ -129,11 +128,9 @@ login -->
     )
   ).
 
+:- meta_predicate(main(//,?,?)).
 main(Content) -->
   html(div([class='pure-u-1',id=main], \content(Content))).
-
-test(Request):-
-  write(Request).
 
 menu -->
   html(
