@@ -43,6 +43,7 @@ assert_proposition(Graph, [S,P,O]):-
   rdf_assert(S, P, O, Graph).
 
 default_predicate_filter([
+  dcterms:subject,
   rdf:type,
   rdfs:subClassOf,
   rdfs:subPropertyOf,
