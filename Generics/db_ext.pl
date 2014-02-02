@@ -108,7 +108,7 @@ db_replace(Old, New):-
 db_replace(_Old, New):-
   assert(New).
 
-%! db_replace_novel(:Old, +Pattern:list(oneof([e,r]))) is det.
+%! db_replace_novel(:New, +Pattern:list(oneof([e,r]))) is det.
 %! db_replace_novel(:Old, :New) is det.
 % In the pattern:
 %   * =e= stands for arguments that should be the same

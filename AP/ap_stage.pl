@@ -12,7 +12,7 @@
 Runs stages in an automated process.
 
 @author Wouter Beek
-@version 2013/10-2014/01
+@version 2013/10-2014/02
 */
 
 :- use_module(ap(ap_dir)).
@@ -288,7 +288,11 @@ ap_stage_to_directory(_, Alias, Stage1, Stage2, StageDir):-
   ap_dir(Alias, write, StageName, StageDir).
 
 
-%! ap_stages(+Alias:atom, +Stage:nonneg, +Stages:list(compound)) is det.
+%! ap_stages(
+%!   +Alias:atom,
+%!   +Stage:nonneg,
+%!   +Stages:list(compound)
+%! ) is det.
 
 :- meta_predicate(ap_stages(+,:,-)).
 ap_stages(_, [], []).
@@ -323,10 +327,15 @@ ap_catcher(Error, L, [ap(status(error),Error)|Msgs]):-
   length(L, Length),
   repeating_list(ap(status(skip),'never reached'), Length, Msgs).
 
+:- meta_predicate(execute_goal(:,+)).
 execute_goal(Goal, Args):-
-  get_time(Begin),
-  apply(Goal, Args),
-  get_time(End),
-  Delta is End - Begin,
-  debug(ap, 'Duration:~w ; Goal:~w ; Args:~w', [Delta,Goal,Args]).
+  setup_call_cleanup(
+    get_time(Begin),
+    apply(Goal, Args),
+    (
+      get_time(End),
+      Delta is End - Begin,
+      debug(ap, 'Duration:~w ; Goal:~w ; Args:~w', [Delta,Goal,Args])
+    )
+  ).
 

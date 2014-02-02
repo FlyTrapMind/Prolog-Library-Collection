@@ -100,6 +100,7 @@ load_modules_for_pldoc:-
         http,
         %ilp, % Many undefined predicates...
         lang,
+        lod,
         logic,
         math,
         os,
