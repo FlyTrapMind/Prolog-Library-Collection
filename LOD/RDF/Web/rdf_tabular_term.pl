@@ -18,13 +18,17 @@ Generates HTML tables for overviews of RDF terms.
 
 :- use_module(dcg(dcg_content)). % Used in rdf_html_table//4 caption.
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_parse)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
+:- use_module(rdf_web(rdf_tabular_predicate)).
 
 
 
@@ -54,48 +58,12 @@ rdf_tabular_term1(Graph, D) -->
 %   2. all range classes,
 %   3. all values for literal ranges.
 rdf_tabular_term1(Graph, P) -->
-  {
-    rdf(_, P, _, Graph), !,
-    setoff([C], (rdf(S, P, _, Graph), rdfs_individual_of(S, C)), Cs1),
-    setoff([C], (rdf(_, P, O, Graph), rdfs_individual_of(O, C)), Cs2)
-  },
-  rdf_html_table(
-    Graph,
-    (`Domain of property `, rdf_term_name(P), `.`),
-    ['Class'],
-    Cs1
-  ),
-  rdf_html_table(
-    Graph,
-    (`Range of property `, rdf_term_name(P), `.`),
-    ['Class'],
-    Cs2
-  ),
-
-  % For literal ranges we also display the values that occur.
-  {
-    setoff([Value], value_for_p(P, Value), Values1),
-    list_truncate(Values1, 100, Values2)
-  },
-  rdf_html_table(
-    Graph,
-    (`Values that occur for property `, rdf_term_name(P), `.`),
-    ['Value'],
-    Values2
-  ).
+  {rdf(_, P, _, Graph)}, !,
+  rdf_tabular_predicate(Graph, P).
 % Subject term.
 % Display all predicate-object pairs (per graph).
 rdf_tabular_term1(Graph, S) -->
   rdf_tabular_triples(S, _, _, Graph).
-
-value_for_p(P, Value):-
-  rdf(_, P, literal(type(_,Value))).
-value_for_p(P, Value):-
-  rdf(_, P, literal(lang(_,Value))).
-value_for_p(P, Value):-
-  rdf(_, P, literal(Value)),
-  \+ compound(Value).
-
 
 
 rdf_tabular_terms(Graph, RDF_Terms) -->

@@ -1,8 +1,8 @@
 :- module(
   rdf_tabular_class,
   [
-    rdf_tabular_class//2, % ?Graph:atom
-                             % +Class:iri
+    rdf_tabular_class//2 % ?Graph:atom
+                         % +Class:iri
   ]
 ).
 
@@ -20,6 +20,7 @@ Generates HTML tables for overviews of RDFS classes.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html_table)).
 
 

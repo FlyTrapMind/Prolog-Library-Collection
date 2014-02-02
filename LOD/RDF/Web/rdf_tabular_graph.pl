@@ -14,8 +14,8 @@ Generates HTML tables for overviews of RDF graphs.
 @version 2014/01-2014/02
 */
 
+:- use_module(dcg(dcg_content)). % Used in HTML table caption.
 :- use_module(generics(meta_ext)).
-:- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_web(rdf_html_table)).
@@ -26,9 +26,17 @@ Generates HTML tables for overviews of RDF graphs.
 rdf_tabular_graph(Graph) -->
   {
     setoff(
-      NumberOfTriples-S,
+      S,
       (
         rdf(S, _, _, Graph),
+        \+ rdf_is_bnode(S)
+      ),
+      Ss
+    ),
+    setoff(
+      NumberOfTriples-S,
+      (
+        member(S, Ss),
         rdf_estimate_complexity(S, _, _, NumberOfTriples)
       ),
       Pairs1
