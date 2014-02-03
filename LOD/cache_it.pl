@@ -93,13 +93,15 @@ cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
   % Only predicate terms and object terms that occur
   % with predicate terms in the filter are visited later.
   propositions_to_resources(NewProps, PredicatesFilter, Ns1),
-
+  
   % Exclude resources that are already fully asserted.
   exclude(old_resource(Graph), Ns1, Ns2),
 
+  exclude(unwanted_neighbor(Graph), Ns2, Ns3),
+  
   % We want to track paths for debugging purposes
   % (i.e. showing the path depth).
-  maplist(resource_to_pair(HistX), Ns2, NewPairs),
+  maplist(resource_to_pair(HistX), Ns3, NewPairs),
 
   % Update resources that have to be visited.
   % Support breadth-first and depth-first modes.
@@ -113,7 +115,7 @@ cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
     append(NewPairs, T1, T2)
   ),
   length(T2, NumberOfT2),
-  length(Ns2, NumberOfNewResources),
+  length(Ns3, NumberOfNewResources),
   length(NewProps, NumberOfNewProps),
   dcg_with_output_to(atom(Name), rdf_term_name(X)),
   message(

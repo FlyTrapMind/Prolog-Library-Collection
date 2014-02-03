@@ -34,6 +34,10 @@
                          % +Class:uri
                          % +Graph:atom
 
+% IS DEFINED BY
+    rdfs_assert_isDefinedBy/2, % +Resource:iri
+                               % +Graph:atom
+
 % PROPERTY HIERARCHY
     rdfs_assert_subproperty/3, % +Property:uri
                                % +SuperProperty:uri
@@ -187,6 +191,15 @@ rdfs_assert_domain_range(P, C, G):-
 
 rdfs_assert_range(P, C, G):-
   rdf_assert(P, rdfs:range, C, G).
+
+
+
+% IS DEFINED BY
+
+:- rdf_meta(rdfs_assert_isDefinedBy(r,+)).
+rdfs_assert_isDefinedBy(R, G):-
+  rdf_global_id(NS:_, R),
+  rdf_assert(R, rdfs:isDefinedBy, NS, G).
 
 
 
