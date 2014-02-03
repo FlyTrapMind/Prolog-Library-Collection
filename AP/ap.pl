@@ -4,7 +4,7 @@
     ap/4 % +Options:list(nvpair)
          % +Alias:atom
          % +Stages:list(compound)
-         % -Row:list:atom
+         % -AP_Stats:list(compound)
   ]
 ).
 
@@ -34,7 +34,7 @@ Support for running automated processing.
 %!   +Options:list(nvpair),
 %!   +Alias:atom,
 %!   +Stages:list(compound),
-%!   -Row:list(atom)
+%!   -AP_Stats:list(compound)
 %! ) is det.
 % The following options are supported:
 %   * =|graph(+Graph:atom)|=
@@ -46,15 +46,15 @@ Support for running automated processing.
 % @arg Alias An atomic alias, denoting the encompassing AP directory,
 %      which must exist prior to calling this predicate.
 % @arg Stages A list of compound terms identifying script stages.
-% @arg Row A list of compound term that describe how each stage went.
+% @arg AP_Stats A list of compound terms that describe how each stage went.
 %      These compound terms have the form =|ap(status(Status),Message)|=,
 %      where `Status` is `oneof([fail,skip,succeed])` and
 %      `Message` is generated using pl_term//1.
 
 :- meta_predicate(ap(+,+,:,-)).
-ap(O1, Alias, Stages, Row):-
+ap(O1, Alias, Stages, AP_Stats):-
   ap_begin(O1, Alias),
-  ap_run(Alias, Stages, Row),
+  ap_run(Alias, Stages, AP_Stats),
   ap_end(Alias).
 
 
@@ -109,12 +109,12 @@ ap_end(Alias):-
 %! ap_run(
 %!   +Alias:atom,
 %!   :Stages:list(compound),
-%!   -Row:list(atom)
+%!   -AP_Stats:list(compound)
 %! ) is det.
 
 :- meta_predicate(ap_run(+,:,-)).
 % The output is already available.
-ap_run(Alias, _:Stages, Row):-
+ap_run(Alias, _:Stages, AP_Stats):-
   ap_dir(Alias, read, output, OutputDir),
   absolute_file_name(
     'FINISHED',
@@ -122,12 +122,12 @@ ap_run(Alias, _:Stages, Row):-
     [access(read),file_errors(fail),relative_to(OutputDir)]
   ), !,
   length(Stages, Length),
-  repeating_list(skip, Length, Row),
+  repeating_list(skip, Length, AP_Stats),
   ap_debug(
     Alias,
     'Process skipped. Results are already in output directory.',
     []
   ).
-ap_run(Alias, Stages, Row):-
-  ap_stages(Alias, Stages, Row).
+ap_run(Alias, Stages, AP_Stats):-
+  ap_stages(Alias, Stages, AP_Stats).
 

@@ -1,8 +1,10 @@
 :- module(
   ckan_ap,
   [
-    ckan_ap/0,
-    ckan_ap/1 % +AP_Stages:list(compound)
+    ckan_ap/1, % -AP_Table:list(list(compound))
+    ckan_ap/3 % +AP_Header:list(atom)
+              % +AP_Stages:list(compound)
+              % -AP_Table:list(list(compound))
   ]
 ).
 
@@ -15,6 +17,7 @@ Automated processes for CKAN data.
 */
 
 :- use_module(ap(ap)).
+:- use_module(ap(ap_table)).
 :- use_module(ckan(ckan_scrape)).
 :- use_module(generics(archive_ext)).
 :- use_module(generics(meta_ext)). % Used in AP stage.
@@ -27,17 +30,62 @@ Automated processes for CKAN data.
 :- use_module(os(file_mime)). % Used in AP stage.
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_serial)). % Used in AP stage.
+:- use_module(void(void_stat)).
 
 
 
-ckan_ap:-
-  ckan_ap([]).
+ckan_ap_header([
+  'Res',
+  'Pack',
+  'Org',
+  'Users',
+  'Tags',
+  'Download',
+  'Arch',
+  'MIME',
+  'Triples',
+  'VoID'
+]).
 
-ckan_ap(AP_Stages):-
+
+%! ckan_ap(-AP_Table:list(list(compound))) is det.
+% Run the default stages of the CKAN AP process.
+
+ckan_ap(AP_Table):-
+  ckan_ap([], [], AP_Table).
+
+%! ckan_ap(
+%!   +AP_Header:list(atom),
+%!   +AP_Stages:list(compound),
+%!   -AP_Table:list(list(compound))
+%! ) is det.
+% Add extra stages to the CKAN AP process.
+
+ckan_ap(Header2, AP_Stages, AP_Table):-
+  % CKAN headers.
+  ckan_ap_header(Header1),
+  append(Header1, Header2, Header3),
+  ap_register_header(ckan, Header3),
+  
+  % Scrape a CKAN site.
   ckan_scrape(Site),
-  ckan_ap(Site, AP_Stages).
+  
+  % Run AP processes for CKAN site.
+  thread_create(ckan_ap_site(Site, AP_Stages, AP_Table), _, []).
 
-ckan_ap(Site, AP_Stages):-
+
+%! ckan_ap_site(
+%!   +Site:atom,
+%!   +AP_Stages:list(compound),
+%!   -AP_Table:list(list(compound))
+%! ) is det.
+% @arg Site The atomic name of a CKAN site.
+% @arg AP_Stages A list of compound terms that describe AP stages.
+% @arg AP_Table A list of lists of compound terms.
+%      This can be seen as a table of AP results,
+%      where each row is the AP result of a single CKAN resource.
+
+ckan_ap_site(Site, AP_Stages, AP_Table):-
   % Collect datasets.
   % Note that sorting by size makes no sense,
   % since the semantics of the values of `ckan:size` is unknown.
@@ -55,9 +103,21 @@ ckan_ap(Site, AP_Stages):-
     ),
     Resources
   ),
-  maplist(ckan_ap(Site, AP_Stages), Resources).
+  maplist(ckan_ap_site(Site, AP_Stages), Resources, AP_Table).
 
-ckan_ap(Site1, AP_Stages1, Resource):-
+%! ckan_ap_site(
+%!   +Site:atom,
+%!   +AP_Stages:list(compound),
+%!   +Resource:iri,
+%!   -AP_Row:list(compound)
+%! ) is det.
+% @arg Site The atomic name of a CKAN site.
+% @arg AP_Stages A list of compound terms that describe AP stages.
+% @arg Resource An IRI denoting a CKAN resource.
+% @arg AP_Row A list of compound terms describing the status message
+%      of the given AP stages that were run for the given CKAN resource.
+
+ckan_ap_site(Site1, AP_Stages1, Resource, AP_Row):-
   once(rdf_literal(Resource, ckan:url, URL, Site1)),
   once(rdf_literal(Resource, ckan:id, ResourceId, Site1)),
   once(rdf_literal(Resource, ckan:format, ResourceFormat, Site1)),
@@ -107,7 +167,7 @@ ckan_ap(Site1, AP_Stages1, Resource):-
   create_nested_directory(ckan_data(Spec)),
   db_add_novel(user:file_search_path(Name, Spec)),
   
-  atomic_list_concat([Site1,semuri], '_', Site2),
+  atomic_list_concat([Site1,ckan], '_', Site2),
   maplist(add_arguments([Resource,Site2]), AP_Stages1, AP_Stages2),
   ap(
     [graph(Site2),reset(true)],
@@ -116,11 +176,15 @@ ckan_ap(Site1, AP_Stages1, Resource):-
       ap_stage([], download_to_directory(URL)),
       ap_stage([], extract_archives),
       ap_stage([], mime_dir),
-      ap_stage([], rdf_convert_directory)
+      ap_stage([], rdf_convert_directory),
+      ap_stage([], void_statistics)
     | AP_Stages2],
-    Rows
+    AP_Row_Tail
   ),
-  assert(semuri:row([X1,X2,OrganizationName,UserName,TagName|Rows])).
+  
+  % Return the results as rows in a table.
+  AP_Row = [X1,X2,OrganizationName,UserName,TagName|AP_Row_Tail],
+  ap_register_row(ckan, AP_Row).
 
 add_arguments(_, [], []).
 add_arguments(Args1, [ap_stage(O1,Pred)|T1], [ap_stage(O3,Pred)|T2]):-

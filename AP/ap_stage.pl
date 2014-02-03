@@ -3,7 +3,7 @@
   [
     ap_stages/3 % +Alias:atom
                 % +Stages:list(compound)
-                % -Row:list(atom)
+                % -AP_Row:list(compound)
   ]
 ).
 
@@ -17,6 +17,7 @@ Runs stages in an automated process.
 
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stat)).
+:- use_module(ap(ap_table)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(user_input)).
 :- use_module(os(io_ext)).
@@ -290,37 +291,51 @@ ap_stage_to_directory(_, Alias, Stage1, Stage2, StageDir):-
 
 %! ap_stages(
 %!   +Alias:atom,
-%!   +Stage:nonneg,
-%!   +Stages:list(compound)
+%!   +Stages:list(compound),
+%!   -AP_Row:list(compound)
 %! ) is det.
 
 :- meta_predicate(ap_stages(+,:,-)).
 ap_stages(_, [], []).
-ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], Msgs2):-
+ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], AP_Row):-
   ap_dir(Alias, write, input, ToDir),
   catch(
     (
-      ap_stage_init(O1, Alias, ToDir, Mod:Goal, Msg),
+      ap_stage_init(O1, Alias, ToDir, Mod:Goal, AP_Status),
       ap_stage_end(O1, Alias, 0, ToDir),
-      ap_stages(Alias, 0, Mod:T, Msgs1),
-      Msgs2 = [Msg|Msgs1]
+      ap_stages(Alias, 0, Mod:T, AP_Row_Tail),
+      AP_Row = [AP_Status|AP_Row_Tail]
     ),
     Error,
-    ap_catcher(Error, T, Msgs2)
-  ).
+    ap_catcher(Error, T, AP_Row)
+  ),
+  
+  % Sometimes we want to look at the AP results before the entire process
+  %  finishes.
+  % We cannot use the AP table in these cases.
+  % We therefore assert each individual row.
+  % Module [ap_table] can display these tables as HTML.
+  ap_register_row(Alias, AP_Row).
+
+%! ap_stages(
+%!   +Alias:atom,
+%!   +Stage:nonneg,
+%!   +Stages:list(compound),
+%!   -AP_Row:list(compound)
+%! ) is det.
 
 :- meta_predicate(ap_stages(+,+,:,-)).
 ap_stages(_, _, _Mod:[], []):- !.
-ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], Msgs2):-
+ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], AP_Row):-
   catch(
     (
-      ap_stage(O1, Alias, Stage1, Stage2, Mod:H, ToDir, Msg),
+      ap_stage(O1, Alias, Stage1, Stage2, Mod:H, ToDir, AP_Status),
       ap_stage_end(O1, Alias, Stage2, ToDir),
-      ap_stages(Alias, Stage2, Mod:T, Msgs1),
-      Msgs2 = [Msg|Msgs1]
+      ap_stages(Alias, Stage2, Mod:T, AP_Row_Tail),
+      AP_Row = [AP_Status|AP_Row_Tail]
     ),
     Error,
-    ap_catcher(Error, T, Msgs2)
+    ap_catcher(Error, T, AP_Row)
   ).
 
 ap_catcher(Error, L, [ap(status(error),Error)|Msgs]):-

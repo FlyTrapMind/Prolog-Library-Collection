@@ -49,7 +49,7 @@ default_predicate_filter([
   rdfs:subPropertyOf,
   skos:broader,
   skos:related,
-  skos:sameAs
+  owl:sameAs
 ]).
 
 %! cache_it1(
