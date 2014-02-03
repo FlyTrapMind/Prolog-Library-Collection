@@ -16,13 +16,17 @@ Automated processes for CKAN data.
 
 :- use_module(ap(ap)).
 :- use_module(ckan(ckan_scrape)).
-:- use_module(generics(meta_ext)).
+:- use_module(generics(archive_ext)).
+:- use_module(generics(meta_ext)). % Used in AP stage.
+:- use_module(generics(uri_ext)). % Used in AP stage.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
+:- use_module(os(file_mime)). % Used in AP stage.
 :- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf(rdf_serial)). % Used in AP stage.
 
 
 

@@ -42,11 +42,11 @@ ckan_scrape(Site):-
     File,
     [access(read),file_errors(fail),file_type(turtle)]
   ), !,
-  rdf_load([format(turtle)], Site, File).
+  rdf_load([format(turtle)], Site, File),
+  ckan_scrape_directory(Site).
 ckan_scrape(Site):-
-  create_nested_directory(ckan_data(Site)),
-  db_add_novel(user:file_search_path(Site, ckan_data(Site))),
-
+  ckan_scrape_directory(Site),
+  
   atomic_list_concat([Site,ckan_to_rdf], '_', Pred),
   call(Pred, [graph(Site)]),
 
@@ -57,4 +57,8 @@ ckan_scrape(Site):-
     [access(write),file_type(turtle)]
   ),
   rdf_save([format(turtle)], Site, File).
+
+ckan_scrape_directory(Site):-
+  create_nested_directory(ckan_data(Site)),
+  db_add_novel(user:file_search_path(Site, ckan_data(Site))).
 
