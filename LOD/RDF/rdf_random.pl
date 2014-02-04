@@ -19,17 +19,17 @@
 /** <module> RDF_RANDOM
 
 @author Wouter Beek
-@version 2013/09
+@version 2013/09, 2014/02
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(math(random_ext)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_parse)).
 :- use_module(rdf(rdf_term)).
 :- use_module(rdf_graph(rdf_graph_theory)).
-
-:- meta_predicate(rdf_random_term(+,1,-)).
 
 :- rdf_meta(rdf_index(r,r,r,?,?)).
 :- rdf_meta(rdf_random_neighbor(+,r,r)).
@@ -67,14 +67,15 @@ rdf_random_neighbor(G, V, RndN):-
   nth1(I, Ns, RndN).
 
 rdf_random_term(G, T):-
-  rdf_random_term(G, rdf_term_name(G), T).
+  rdf_random_term(G, rdf_parse_term(_), T).
 
+:- meta_predicate(rdf_random_term(+,//,-)).
 rdf_random_term(G, Requirement, T2):-
   rdf_random_triple(S, P, O, G),
   random_betwixt(2, J),
   nth0(J, [S,P,O], T1),
   (
-    call(Requirement, T1)
+    dcg_phrase(Requirement, T1)
   ->
     T2 = T1
   ;
