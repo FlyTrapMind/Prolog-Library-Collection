@@ -39,7 +39,7 @@ Find a single resource based on a search term.
 % @arg Resource
 
 'SPARQL_find'(Remote, Resource, Resource):-
-  must_be(iri, Resource), !,
+  is_of_type(iri, Resource), !,
   % @tbd This can be done more efficiently by just looking for
   %      the first triple.
   phrase(

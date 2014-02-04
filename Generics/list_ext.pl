@@ -57,8 +57,8 @@
     nth1chk/3, % ?Index:integer
                % ?List:List
                % ?Element
-    random_member/2, % +List:list
-                     % -Member
+    random_member/2, % -Member
+                     % +List:list
     random_select/3, % +List:list
                      % -Member
                      % -Rest:list
@@ -356,13 +356,13 @@ nth0chk(Index, List, Element):-
 nth1chk(Index, List, Element):-
   once(nth1(Index, List, Element)).
 
-%! random_member(+List:list, -Member) is det.
+%! random_member(-Member, +List:list) is det.
 % Returns a randomly chosen member from the given list.
 %
-% @arg List
 % @arg Member
+% @arg List
 
-random_member(List, Member):-
+random_member(Member, List):-
   length(List, Length),
   random_betwixt(Length, Random),
   nth0(Random, List, Member).

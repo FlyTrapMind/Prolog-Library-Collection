@@ -7,7 +7,7 @@
                           % +Mode:oneof([select])
                           % +Distinct:boolean
                           % +Variables:list(atom)
-                          % +BGPs:list(compound)
+                          % +BGPs:or([compound,list(compound)])
                           % +Limit:or([nonneg,oneof([inf])])
                           % +Order:pair(oneof([asc]),list(atom))
   ]
@@ -149,7 +149,7 @@ regex_flags1([case_insensitive|T]) -->
 %!   +Mode:oneof([select]),
 %!   +Distinct:boolean,
 %!   +Variables:list(atom),
-%!   +BGP:list(compound),
+%!   +BGP:or([compound,list(compound)]),
 %!   +Limit:or([nonneg,oneof([inf])]),
 %!   +Order:pair(oneof([asc]),list(atom))
 %! ) is det.
@@ -264,7 +264,15 @@ variables1([H|T]) -->
   variables1(T).
 
 where(BGP) -->
-  "WHERE {\n",
+  "WHERE ",
+  where_inner(BGP).
+
+where_inner(union([])) -->
+where_inner(union([H|T])) -->
+  "{"
+  where_inner
+where_inner(BGP) -->
+  "{\n",
   bgp(BGP),
   "}\n".
 
