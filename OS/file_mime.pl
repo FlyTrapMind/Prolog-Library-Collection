@@ -14,7 +14,7 @@
 Returns the MIME of a given file.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_cardinal)).
@@ -41,9 +41,9 @@ file_mime(File, _):-
   fail.
 file_mime(File, MIME):-
   phrase_from_file(file_mime(MIME), File), !.
-file_mime(File, MIME):-
-  gtrace, %DEB
-  file_mime(File, MIME).
+file_mime(File, _):-
+  debug(file_mime, 'Failed to identify MIME type of file ~w.', [File]),
+  fail.
 
 
 %! mime_dir(
@@ -116,8 +116,6 @@ xml_something('application/rdf+xml') -->
   dcg_done.
 xml_something(MIME) -->
   xml_doctype(MIME).
-xml_something('text/xml') -->
-  dcg_done.
 
 xml_version(Version) -->
   `version=`,

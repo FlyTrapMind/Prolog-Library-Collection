@@ -8,7 +8,7 @@
     mime_type_file_extension/2, % ?MIME:atom
                                 % ?DefaultExtension:atom
 % BUILD
-    register_mime_type/3 % +Type:atom
+    mime_register_type/3 % +Type:atom
                          % +Subtype:atom
                          % +DefaultExtension:atom
   ]
@@ -96,17 +96,17 @@ mime_type_file_extension(MIME, DefaultExtension):-
   atomic_list_concat([Type,Subtype], '/', MIME).
 
 
-%! register_mime_type(
+%! mime_register_type(
 %!   +Type:atom,
 %!   +Subtype:atom,
 %!   +DefaultExtension:atom
 %! ) is det.
 
 % Already registered.
-register_mime_type(Type, Subtype, _):-
+mime_register_type(Type, Subtype, _):-
   mime_type(Type, Subtype), !.
 % New registration.
-register_mime_type(Type, Subtype, DefaultExtension):-
+mime_register_type(Type, Subtype, DefaultExtension):-
   Graph = mime_ext,
 
   % Assert type.

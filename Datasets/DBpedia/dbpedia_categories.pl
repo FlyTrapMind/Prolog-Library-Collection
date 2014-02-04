@@ -26,6 +26,8 @@ DBpedia publishes the following three kind of files about categories:
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_serial)).
 
+:- initialization(dbpedia_load_categories).
+
 
 
 %! dbpedia_load_categories is det.
