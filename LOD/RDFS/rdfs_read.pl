@@ -107,7 +107,7 @@ application of the subclass relation.
 
 @author Wouter Beek
 @tbd How to materialize the membership properties (an infinite lot of them)?
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09, 2014/02
 */
 
 :- use_module(library(debug)).
@@ -175,13 +175,20 @@ rdfs_domain(M, P, C, G):-
   rdf_db_or_axiom(M, P, rdfs:domain, C, G).
 % EXT 1
 rdfs_domain(M, P, C, G):- M=m(t,t,_),
-  rdfs_domain(M, P, C0, G),
+  rdf_db_or_axiom(M, P, rdfs:domain, C0, G),
   rdfs_subclass(M, C0, C, G),
   debug(rdfs_read, '[EXT 1] ~w DOMAIN ~w', [P,C]).
 % EXT 3
 rdfs_domain(M, P, C, G):- M=m(t,t,_),
-  rdfs_subproperty(M, P, P0, G),
-  rdfs_domain(M, P0, C, G),
+  (
+    nonvar(P)
+  ->
+    rdfs_subproperty(M, P, P0, G),
+    rdfs_domain(M, P0, C, G)
+  ;
+    rdfs_domain(M, P0, C, G),
+    rdfs_subproperty(M, P, P0, G)
+  ),
   debug(rdfs_read, '[EXT 3] ~w DOMAIN ~w', [P,C]).
 
 % RDFS axioms: class
