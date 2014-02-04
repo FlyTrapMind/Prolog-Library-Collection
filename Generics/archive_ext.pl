@@ -4,6 +4,7 @@
     extract_archive/3, % +FromFile:atom
                        % +ToDirectory:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
+% AP
     extract_archives/3 % +FromDirectory:atom
                        % +ToDirectory:atom
                        % -AP_Status:compound
@@ -19,11 +20,11 @@ Extensions to the support for archived files.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
 
+:- db_add_novel(user:prolog_file_type(bz2, archive)).
 :- db_add_novel(user:prolog_file_type(gz, archive)).
 :- db_add_novel(user:prolog_file_type(tar, archive)).
 :- db_add_novel(user:prolog_file_type(zip, archive)).
@@ -46,12 +47,14 @@ extract_archive(File, Dir, []):-
 
 
 %! extract_archive(
-%!   +Extension:oneof([gz,tgz,zip]),
+%!   +Extension:oneof([bz2,gz,tgz,zip]),
 %!   +FromFile:atom,
 %!   +ToName:atom,
 %!   -Conversion:oneof([gunzipped,untarred,unzipped])
 %! ) is semidet.
 
+extract_archive(bz2, File, _, gunzipped):- !,
+  process_create(path(bzip2), [file(File)], []).
 extract_archive(gz, File, _, gunzipped):- !,
   process_create(path(gunzip), ['-f',file(File)], []).
 extract_archive(tgz, File, _, untarred):- !,

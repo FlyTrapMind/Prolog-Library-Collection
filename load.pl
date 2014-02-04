@@ -35,6 +35,7 @@ load_pgc:-
   % Assert the various search paths.
   assert(user:file_search_path(ap,              pgc('AP'))),
   assert(user:file_search_path(datasets,        pgc('Datasets'))),
+    assert(user:file_search_path(dbpedia,         datasets('DBpedia'))),
   assert(user:file_search_path(dcg,             pgc('DCG'))),
     assert(user:file_search_path(flp,             dcg('Formal Languages'))),
     assert(user:file_search_path(plp,             dcg('Programming Languages'))),

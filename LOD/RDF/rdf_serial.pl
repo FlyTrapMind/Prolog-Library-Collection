@@ -145,15 +145,22 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
 
 
 %! rdf_convert_file(
-%!   +FromMIME:atom,
+%!   ?FromMIME:atom,
 %!   +FromFile:atom,
-%!   ?ToMIME:atom,
+%!   +SaveOptions:atom,
 %!   ?ToFile:atom
 %! ) is det.
 
 rdf_convert_file(FromMIME, FromFile, ToMIME, ToFile):-
+  (
+    var(FromMIME)
+  ->
+    LoadOptions = []
+  ;
+    LoadOptions = [mime(FromMIME)]
+  ),
   rdf_setup_call_cleanup(
-    [mime(FromMIME)],
+    LoadOptions,
     FromFile,
     rdf_graph,
     [mime(ToMIME)],
