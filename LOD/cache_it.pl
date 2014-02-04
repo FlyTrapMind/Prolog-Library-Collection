@@ -86,7 +86,7 @@ cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
   nl(lod_log),
 
   call(Goal, X, _, NeighborProps), !,
-
+  
   % Filter on propositions that are included in results.
   exclude(old_proposition(Graph), NeighborProps, NewProps),
 

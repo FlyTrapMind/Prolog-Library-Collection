@@ -1,6 +1,8 @@
 :- module(
   dbpedia_eq,
   [
+    dbpedia_eq/2, % +Resource:iri
+                  % -EntityOrQuantity:iri
     dbpedia_eq/3 % +Resource:iri
                  % -EntityConfidence:between(0.0,1.0)
                  % -QuantityConfidence:between(0.0,1.0)
@@ -20,13 +22,25 @@ It would therefore be neat to have a predicate that tells us
 @version 2014/02
 */
 
-:- use_module(dbpedia(dbpedia_categories)).
+:- use_module(dbpedia(dbpedia_categories)). % Ensures DBpedia categories are loaded.
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module('LOD'(cache_it)).
 :- use_module('LOD'('LOD_query')).
 :- use_module(math(math_ext)).
 
+
+
+:- rdf_meta(dbpedia_eq(r,-)).
+dbpedia_eq(Resource, EntityOrQuantity):-
+  dbpedia_eq(Resource, EConf, QConf),
+  (
+    EConf > QConf
+  ->
+    rdf_global_id(qsim:'Entity', EntityOrQuantity)
+  ;
+    rdf_global_id(qsim:'Quantity', EntityOrQuantity)
+  ).
 
 
 :- rdf_meta(dbpedia_eq(r,-,-)).

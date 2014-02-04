@@ -6,6 +6,8 @@
            % ?Predicate:iri
            % ?Object:or([bnode,iri,label])
            % ?Graph:atom
+    rdf_equiv/2, % ?Resource1:or([bnode,iri,literal])
+                 % ?Resource2:or([bnode,iri,literal])
     rdf_find/4, % +Subject:or([bnode,iri]),
                 % +Predicate:iri,
                 % +Object:or([bnode,iri,literal]),
@@ -96,6 +98,13 @@ rdf_both_bnode(X, Y):-
   rdf_is_bnode(X), !,
   rdf_is_bnode(Y).
 rdf_both_bnode(_, _).
+
+
+rdf_equiv(X, Y):-
+  rdf_equal(X, Y).
+rdf_equiv(X, Y):-
+  rdf_has(X, owl:sameAs, Y).
+
 
 %! rdf_find(
 %!   +Subject:or([bnode,iri]),
