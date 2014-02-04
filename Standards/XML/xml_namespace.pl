@@ -1,6 +1,7 @@
 :- module(
   xml_namespace,
   [
+    xml_current_namespace/1, % ?Prefix:atom
     xml_current_namespace/2, % ?Prefix:atom
                              % ?URI:uri
     xml_current_namespaces/1, % -Namespaces:ordset(atom)
@@ -64,14 +65,17 @@ URI references can contain characters that are not allowed in names.
 @author Wouter Beek
 @compat Namespaces in XML 1.0 (Third Edition)
 @see http://www.w3.org/TR/xml-names/
-@version 2013/05, 2013/07, 2014/01
+@version 2013/05, 2013/07, 2014/01-2014/02
 */
 
 :- use_module(generics(atom_ext)).
+:- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(www_browser)).
+
+:- db_add_novel(user:prolog_file_type(xml, 'text/xml')).
 
 % The prefix =xml= is by definition bound to the namespace name
 % =http://www.w3.org/XML/1998/namespace=. It MAY, but need not, be declared,
@@ -89,6 +93,9 @@ URI references can contain characters that are not allowed in names.
 
 
 % XML NAMESPACE REGISTRATION %
+
+xml_current_namespace(Namespace):-
+  xml_current_namespace(Namespace, _).
 
 xml_current_namespace(Namespace, URI):-
   rdf_current_prefix(Namespace, URI).

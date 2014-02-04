@@ -54,8 +54,12 @@ download_to_directory(URL, ToDir, ap(status(succeed),download(File3))):-
   (Size > TooBig -> permission_error(open,'BIG-file',File3) ; true).
 
 
+%! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.
+% Options are passed to http_goal/3, http_open/3.
+
 download_to_file(O1, URL, File):-
   nonvar(File),
+  access_file(File, write),
 
   % Check the URL.
   uri_is_global(URL),

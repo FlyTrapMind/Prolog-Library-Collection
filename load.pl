@@ -31,7 +31,9 @@ load_pgc:-
   ;
     assert(user:project_name('PGC'))
   )),
-
+  
+  assert(user:prolog_file_type(txt, 'text/plain')),
+  
   % Assert the various search paths.
   assert(user:file_search_path(ap,              pgc('AP'))),
   assert(user:file_search_path(datasets,        pgc('Datasets'))),

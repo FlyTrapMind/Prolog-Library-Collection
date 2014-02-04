@@ -16,17 +16,22 @@
 Extensions to the support for archived files.
 
 @author Wouter Beek
-@version 2013/12-2014/01
+@version 2013/12-2014/02
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
+:- use_module(os(mime_type)).
 
+:- mime_register_type(application, 'x-bzip2', bz2).
 :- db_add_novel(user:prolog_file_type(bz2, archive)).
+:- mime_register_type(application, 'x-gzip', gz).
 :- db_add_novel(user:prolog_file_type(gz, archive)).
+:- mime_register_type(application, 'x-tar', tar).
 :- db_add_novel(user:prolog_file_type(tar, archive)).
+:- mime_register_type(application, 'zip', zip).
 :- db_add_novel(user:prolog_file_type(zip, archive)).
 
 
@@ -61,6 +66,7 @@ extract_archive(tgz, File, _, untarred):- !,
   process_create(path(tar), [zxvf,file(File)], []).
 extract_archive(zip, File, Base, unzipped):- !,
   process_create(path(unzip), [file(File),'-o',file(Base)], []).
+
 
 %! extact_archives(
 %!   +FromDirectory:atom,

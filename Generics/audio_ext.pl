@@ -18,7 +18,7 @@ In the furture services like Google translate
 @author Wouter Beek
 @tbd Catch Unicode characters.
 @tbd Do not fail on empty line.
-@version 2012/10, 2014/01
+@version 2012/10, 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -29,9 +29,10 @@ In the furture services like Google translate
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
 :- use_module(os(file_ext)).
+:- use_module(os(mime_type)).
 
 :- db_add_novel(user:file_search_path(audio, project(audio))).
-:- db_add_novel(user:prolog_file_type(mp3, mp3)).
+:- mime_register_type(audio, mpeg, mp3).
 
 
 
