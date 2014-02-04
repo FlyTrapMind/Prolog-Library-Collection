@@ -40,6 +40,9 @@ Possible instantiations for `Goal` are SPARQL_cache/4 and LOD_cache/4.
 
 
 assert_proposition(Graph, [S,P,O]):-
+  var(Graph), !,
+  rdf_assert(S, P, O).
+assert_proposition(Graph, [S,P,O]):-
   rdf_assert(S, P, O, Graph).
 
 default_predicate_filter([
@@ -148,7 +151,7 @@ propositions_to_resources([[_,P,O]|T], PredicatesFilter, L1, Sol):-
   propositions_to_resources(T, PredicatesFilter, L3, Sol).
 
 unwanted_neighbor(Graph, Resource):-
-  rdf(Resource, _, _, Graph), !.
+  rdf([graph_mode(no_inst)], Resource, _, _, Graph), !.
 unwanted_neighbor(_, Resource):-
   \+ rdf_is_bnode(Resource),
   \+ rdf_is_literal(Resource),
@@ -266,12 +269,12 @@ old_neighbor(_, NewProps, Element):-
     NewProps
   ), !.
 
-old_proposition(G, [S,P,O]):-
-  rdf(S, P, O, G), !.
-old_proposition(G, [S,P,O]):-
+old_proposition(Graph, [S,P,O]):-
+  rdf([graph_mode(no_inst)], S, P, O, Graph), !.
+old_proposition(Graph, [S,P,O]):-
   rdf_predicate_property(P, symmetric(true)),
-  rdf(O, P, S, G), !.
+  rdf([graph_mode(no_inst)], O, P, S, Graph), !.
 
 old_resource(Graph, Resource):-
-  rdf(Resource, _, _, Graph).
+  rdf([graph_mode(no_inst)], Resource, _, _, Graph).
 

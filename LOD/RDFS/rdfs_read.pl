@@ -154,7 +154,7 @@ rdf_db_or_axiom(M, C1, rdfs:subClassOf, C2, _):-
   rdfs_subclass_axiom(M, C1, C2),
   debug(rdfs_read, '[AX] ~w SUBCLASS ~w', [C1,C2]).
 rdf_db_or_axiom(_, S, P, O, G):-
-  rdf2(S, P, O, G),
+  rdf([graph_mode(no_index)], S, P, O, G),
   debug(rdfs_read, '[DB] ~w ~w ~w', [S,P,O]).
 
 rdfs(S, P, O, G):-

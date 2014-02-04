@@ -165,12 +165,20 @@ count_subjects(P, O, G, Count):-
   length(Ss, Count).
 
 rdf_property_table(P, G, T):-
-  setoff(O, rdf2(_, P, O, G), Os),
+  setoff(
+    O,
+    rdf([graph_mode(no_index)], _, P, O, G),
+    Os
+  ),
   findall(
     [O,NumberOfO],
     (
       member(O, Os),
-      aggregate_all(count, rdf2(_, P, O, G), NumberOfO)
+      aggregate_all(
+        count,
+        rdf([graph_mode(no_index)], _, P, O, G),
+        NumberOfO
+      )
     ),
     T
   ).

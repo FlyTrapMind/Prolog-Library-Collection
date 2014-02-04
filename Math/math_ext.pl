@@ -81,6 +81,7 @@ Extra arithmetic functions for use in SWI-Prolog.
 
 
 
+average([], 0.0):- !.
 average(Numbers, Average):-
   sum_list(Numbers, Sum),
   length(Numbers, NumberOfNumbers),

@@ -1,10 +1,11 @@
 :- module(
   rdf_read,
   [
-    rdf2/4, % ?Subject:or([bnode,iri])
-            % ?Predicate:iri
-            % ?Object:or([bnode,iri,label])
-            % ?Graph:graph
+    rdf/5, % +Options:list(nvpair)
+           % ?Subject:or([bnode,iri])
+           % ?Predicate:iri
+           % ?Object:or([bnode,iri,label])
+           % ?Graph:atom
     rdf_find/4, % +Subject:or([bnode,iri]),
                 % +Predicate:iri,
                 % +Object:or([bnode,iri,literal]),
@@ -25,6 +26,7 @@ literals.
 
 @author Wouter Beek
 @version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/04, 2013/07-2013/10
+         2014/01
 */
 
 :- use_module(library(apply)).
@@ -35,27 +37,44 @@ literals.
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
-:- rdf_meta(rdf2(r,r,o,?)).
 :- rdf_meta(rdf_member(r,+)).
 :- rdf_meta(rdf_memberchk(r,+)).
 :- rdf_meta(rdf_property(+,r)).
 
 
 
-%! rdf2(
+%! rdf(
+%!   +Options:list(nvpair),
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
 %!   ?Object:or([bnode,iri,literal]),
 %!   ?Graph:atom
 %! ) is nondet.
-% Minor variantions of rdf/[3,4].
+% The following options are supported:
+%   * =|graph(+Graph:oneof([normal,no_index,no_inst)|=
+%     Whether the index that sometimes appears alongside the graph name
+%     should be returned (`normal`) or not (`no_index`).
+%     `no_inst` means that variable graphs are not instantiated,
+%     but use rdf/3 instead.
 
-rdf2(S, P, O, G2):-
-  var(G2), !,
-  rdf(S, P, O, G1),
-  rdf_graph:rdf_graph(G1, G2).
-rdf2(S, P, O, G):-
-  rdf(S, P, O, G).
+:- rdf_meta(rdf2(+,r,r,o,?)).
+rdf(O1, S, P, O, Graph):-
+  var(Graph),
+  option(graph_mode(Mode), O1, normal),
+  (
+    Mode == no_index
+  ->
+    rdf(S, P, O, Graph0),
+    rdf_graph:rdf_graph(Graph0, Graph)
+  ;
+    Mode == no_inst
+  ->
+    rdf(S, P, O)
+  ;
+    rdf(S, P, O, Graph)
+  ).
+rdf(_, S, P, O, Graph):-
+  rdf(S, P, O, Graph).
 
 %! rdf_bnode_to_var(
 %!   +RDF_Term:or([bnode,iri,literal]),

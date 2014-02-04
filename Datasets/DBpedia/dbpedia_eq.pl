@@ -20,8 +20,30 @@ It would therefore be neat to have a predicate that tells us
 @version 2014/02
 */
 
+:- use_module(dbpedia(dbpedia_categories)).
+:- use_module(library(pairs)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module('LOD'(cache_it)).
+:- use_module('LOD'('LOD_query')).
+:- use_module(math(math_ext)).
 
-dbpedia_eq(Resource, 
-  
 
+
+:- rdf_meta(dbpedia_eq(r,-,-)).
+dbpedia_eq(Resource, EConf, QConf):-
+  cache_it1(_, 'LOD_cache', _, Resource),
+  findall(
+    EConf-QConf,
+    (
+      rdf(Resource, dcterms:subject, Subject),
+      rdf_reachable(Subject, skos:broader, dbpedia:'Category:Objects', 25, EDist),
+      rdf_reachable(Subject, skos:broader, dbpedia:'Category:Quantity', 25, QDist),
+      QConf is EDist / (EDist + QDist),
+      EConf is QDist / (EDist + QDist)
+    ),
+    Pairs
+  ),
+  pairs_keys_values(Pairs, EConfs, QConfs),
+  average(EConfs, EConf),
+  average(QConfs, QConf).
 
