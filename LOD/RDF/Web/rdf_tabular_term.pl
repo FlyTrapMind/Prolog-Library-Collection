@@ -16,16 +16,13 @@ Generates HTML tables for overviews of RDF terms.
 @version 2014/01-2014/02
 */
 
-:- use_module(dcg(dcg_content)). % Used in rdf_html_table//4 caption.
+:- use_module(dcg(dcg_content)). % Meta-argument.
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_name)).
-:- use_module(rdf(rdf_parse)).
+:- use_module(rdf(rdf_parse)). % Meta-argument.
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
 :- use_module(rdf_web(rdf_tabular_predicate)).
@@ -34,6 +31,8 @@ Generates HTML tables for overviews of RDF terms.
 
 rdf_tabular_term(Graph, Term) -->
   {
+    % This allows atomic renditions prefix-abbreviated IRIs as input,
+    % e.g. =|dbpedia:Monkey|=.
     once(dcg_phrase(rdf_parse_term(S1), Term)),
     rdf_global_id(S1, S2)
   },

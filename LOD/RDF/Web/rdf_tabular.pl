@@ -20,6 +20,7 @@ Generated RDF HTML tables.
 @version 2013/12-2014/02
 */
 
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -71,15 +72,26 @@ rdf_tabular(_Request):-
   ).
 
 
+%! rdf_tabular_triples(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Object:or([bnode,iri,literal]),
+%!   ?Graph:atom
+%! )// is det.
+
 rdf_tabular_triples(S, P, O, Graph) -->
-  {setoff(
-    [S,P,O],
-    rdf(S, P, O, Graph),
-    Rows
-  )},
+  {
+    setoff(
+      [S,P,O,Graph],
+      rdf(S, P, O, Graph),
+      Rows1
+    ),
+    % Restrict the number of rows in the table arbitrarily.
+    list_truncate(Rows1, 1000, Rows2)
+  },
   rdf_html_table(
-    Graph,
+    _NoGraph,
     `RDF triples`,
-    Rows
+    Rows2
   ).
 

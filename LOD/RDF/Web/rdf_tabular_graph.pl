@@ -15,6 +15,7 @@ Generates HTML tables for overviews of RDF graphs.
 */
 
 :- use_module(dcg(dcg_content)). % Used in HTML table caption.
+:- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -23,8 +24,12 @@ Generates HTML tables for overviews of RDF graphs.
 
 
 
+%! rdf_tabular_graph(+Graph:atom)// is det.
+% Generates an HTML table describing the contents of the given graph.
+
 rdf_tabular_graph(Graph) -->
   {
+    % Collect the subject terms in the graph.
     setoff(
       S,
       (
@@ -33,6 +38,9 @@ rdf_tabular_graph(Graph) -->
       ),
       Ss
     ),
+    
+    % Order the subjects by the number of triples that describe them
+    % (using estimates).
     setoff(
       NumberOfTriples-S,
       (
@@ -43,12 +51,19 @@ rdf_tabular_graph(Graph) -->
     ),
     keysort(Pairs1, Pairs2),
     reverse(Pairs2, Pairs3),
+    
+    % Restrict the number of rows in the table to the *n* top-dogs.
+    list_truncate(Pairs3, 1000, Pairs4),
+    
+    % Construct the table rows.
     findall(
       [S,NumberOfTriples],
-      member(NumberOfTriples-S, Pairs3),
+      member(NumberOfTriples-S, Pairs4),
       Rows
     )
   },
+  
+  % Generate the HTML table using a special writer for the RDF terms.
   rdf_html_table(
     Graph,
     (`Subject terms in graph `, atom(Graph)),
