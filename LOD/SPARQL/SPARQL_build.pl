@@ -18,7 +18,7 @@
 DCGs for constructing SPARQL queries.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -177,13 +177,17 @@ regex_flags1([case_insensitive|T]) -->
 %      Currently only `select` is supported.
 % @arg Distinct Whether the returned results should be distinct or not.
 % @arg Variables A list of atomic variable names.
-% @arg BGP A list denoting a basic graph pattern.
+% @arg BGP A list denoting a basic graph pattern or a compound term
+%      of the form =|union(BGPs)|= where `BGPs` is a list
+%      of basic graph patterns.
 % @arg Limit Either a positive integer indicating the maximum number of
 %      retrieved results, or `inf`.
 % @arg Order A pair consisting of the ordering criterion and the variables
 %      relative to which ordering takes place.
 %      Currently the only supported ordering criterion is `asc` for
 %      ascending lexicographically.
+%
+% @tbd Update examples in predicate documentation.
 
 'SPARQL_formulate'(
   Regime,
@@ -247,6 +251,16 @@ term_closure([reflexive,transitive]) -->
 term_closure([transitive]) -->
   "+".
 
+
+union([]) --> [].
+union([H]) -->
+  bgp(H).
+union([H|T]) -->
+  bgp(H),
+  `} UNION {`,
+  union(T).
+
+
 variable(Variable) -->
   "?",
   atom(Variable).
@@ -263,16 +277,13 @@ variables1([H|T]) -->
   variable(H),
   variables1(T).
 
-where(BGP) -->
-  "WHERE ",
-  where_inner(BGP).
 
-where_inner(union([])) -->
-where_inner(union([H|T])) -->
-  "{"
-  where_inner
+where(Content) -->
+  `WHERE `,
+  bracketed(curly, where_inner(Content)).
+
+where_inner(union(L)) --> !,
+  union(L).
 where_inner(BGP) -->
-  "{\n",
-  bgp(BGP),
-  "}\n".
+  bgp(BGP).
 

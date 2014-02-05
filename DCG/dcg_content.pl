@@ -1,7 +1,6 @@
 :- module(
   dcg_content,
   [
-    arrow//1, % +Length:nonneg
     arrow//2, % +Options:list(nvpair)
               % +Length:nonneg
     between//3, % +Low:nonneg
@@ -77,7 +76,6 @@ DCG rules for parsing/generating often-occuring content.
 
 
 
-%! arrow(+Length:nonneg)// .
 %! arrow(+Options:list(nvpair), +Length:nonneg)// .
 % A simple ASCII arrow.
 %
@@ -91,9 +89,6 @@ DCG rules for parsing/generating often-occuring content.
 %
 % @arg Options A list of name-value pairs.
 % @arg Length A non-negative integer.
-
-arrow(L) -->
-  arrow([], L).
 
 arrow(O1, L1) -->
   % Set the default arrow head.
@@ -163,7 +158,9 @@ bracketed(Mode, DCG) -->
     opening_bracket(_, Mode),
     DCG,
     closing_bracket(_, Mode)
-  ).
+  ),
+  % Remove choicepoints for brackets of other types in [dcg_ascii].
+  !.
 
 
 %! capitalize// .
@@ -322,7 +319,7 @@ quoted(DCG) -->
 :- meta_predicate(transition(//,//,?,?)).
 transition(From, To) -->
   dcg_call(From),
-  dcg_between(space, arrow(2)),
+  dcg_between(space, arrow([head(right)], 2)),
   dcg_call(To).
 
 

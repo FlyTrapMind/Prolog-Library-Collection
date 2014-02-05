@@ -44,10 +44,7 @@ Predicates that operate on / generate XML DOM.
 :- use_module(uri(rfc3987_dcg)).
 :- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(iso, 'http://www.iso.org/').
-:- xml_register_namespace(std, 'http://www.example.org/standards/').
 :- xml_register_namespace(svg, 'http://www.w3.org/2000/svg').
-:- xml_register_namespace(w3c, 'http://www.w3.org/').
 
 :- db_add_novel(user:prolog_file_type(css, css)).
 :- db_add_novel(user:prolog_file_type(dtd, dtd)).

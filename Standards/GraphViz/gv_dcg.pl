@@ -96,7 +96,7 @@ gv_compass_pt --> "w".
 % @arg Directionality Either `forward` (directed, using operator `->`) or
 %        `none` (undirected, using operator `--`).
 
-gv_edge_operator(forward) --> arrow(2).
+gv_edge_operator(forward) --> arrow([head(right)], 2).
 gv_edge_operator(none) --> "--".
 
 %! gv_edge_rhs(+GraphAttributes:list(nvpair), +ToId:gv_node_id)//

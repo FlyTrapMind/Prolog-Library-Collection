@@ -166,8 +166,10 @@ Persistency store for SPARQL-related information.
 :- 'SPARQL_register_remote'('el.dbpedia', 'el.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'eo.dbpedia.org').
 :- 'SPARQL_register_remote'('es.dbpedia', 'es.dbpedia.org', default, '/sparql').
+:- 'SPARQL_register_remote'('eu.dbpedia', 'eu.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'fa.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'fi.dbpedia.org').
+:- 'SPARQL_register_remote'('fr.dbpedia', 'fr.dbpedia.org', default, '/sparql').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'frp.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'fy.dbpedia.org').
 :- 'SPARQL_register_remote_domain'(dbpedia, 'ga.dbpedia.org').
