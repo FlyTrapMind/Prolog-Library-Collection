@@ -3,7 +3,8 @@
   [
     category//1, % +Category:atom
     clear_button//1, % +Fields:list(atom)
-    dom_as_atom//1 % +DOM:atom
+    dom_as_atom//1, % +DOM:atom
+    external_link//1 % +IRI:iri
   ]
 ).
 
@@ -18,7 +19,7 @@ This module also defines the dependencies for the JavaScript generics.
 @author Wouter Beek
 @see This code was originally taken from SWAPP:
      http://www.swi-prolog.org/git/contrib/SWAPP.git
-@version 2009, 2013/10-2013/11
+@version 2009, 2013/10-2013/11, 2014/02
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -82,6 +83,10 @@ clear_button(Fields) -->
 
 dom_as_atom(DOM_Atom) -->
   html(\[DOM_Atom]).
+
+external_link(IRI) -->
+  {http_absolute_location(img('url.gif'), LinkImage, [])},
+  html(a(href=IRI, img(src=LinkImage))).
 
 menu -->
   {http_absolute_location(img('api_explorer.png'), RelativeURI, [])},

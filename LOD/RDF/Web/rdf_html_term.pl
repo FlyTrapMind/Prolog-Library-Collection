@@ -22,6 +22,7 @@ HTML generation of RDF content.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(server(web_ui)).
 :- use_module(xml(xml_namespace)).
 
 
@@ -149,8 +150,7 @@ rdf_iri(Graph, IRI1) -->
         Location3 = Location2
       ;
         uri_query_add(Location2, graph, Graph, Location3)
-      ),
-      http_absolute_location(img('url.gif'), LinkImage, [])
+      )
     },
     html(
       span(class='iri', [
@@ -160,7 +160,7 @@ rdf_iri(Graph, IRI1) -->
           span(class=postfix, Postfix)
         ]),
         ' ',
-        a(href=IRI1, img(src=LinkImage))
+        \external_link(IRI1)
       ])
     )
   ;
@@ -168,8 +168,4 @@ rdf_iri(Graph, IRI1) -->
   ->
     html(span(class='iri', a(href=IRI1, IRI1)))
   ).
-
-
-
-% TABLE %
 
