@@ -149,7 +149,8 @@ rdf_iri(Graph, IRI1) -->
         Location3 = Location2
       ;
         uri_query_add(Location2, graph, Graph, Location3)
-      )
+      ),
+      http_absolute_location(img('url.gif'), LinkImage, [])
     },
     html(
       span(class='iri', [
@@ -159,7 +160,7 @@ rdf_iri(Graph, IRI1) -->
           span(class=postfix, Postfix)
         ]),
         ' ',
-        a(href=IRI1, 'X')
+        a(href=IRI1, img(src=LinkImage))
       ])
     )
   ;
