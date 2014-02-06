@@ -207,6 +207,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
       [x],
       [rdf(iri(Resource), owl:sameAs, var(x))],
       inf,
+      _,
       _
     ),
     Query

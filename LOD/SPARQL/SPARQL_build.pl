@@ -1,15 +1,21 @@
 :- module(
   'SPARQL_build',
   [
-    'SPARQL_formulate'//9 % +Regime:oneof([owl])
-                          % +DefaultGraph:iri
-                          % +Prefixes:list(atom)
-                          % +Mode:oneof([select])
-                          % +Distinct:boolean
-                          % +Variables:list(atom)
-                          % +BGPs:or([compound,list(compound)])
-                          % +Limit:or([nonneg,oneof([inf])])
-                          % +Order:pair(oneof([asc]),list(atom))
+    'SPARQL_count'//5, % +Regime:oneof([owl])
+                       % +DefaultGraph:iri
+                       % +Prefixes:list(atom)
+                       % +Variable:atom
+                       % +BGPs:or([compound,list(compound)])
+    'SPARQL_formulate'//10 % ?Regime:oneof([owl])
+                           % ?DefaultGraph:iri
+                           % +Prefixes:list(atom)
+                           % +Mode:oneof([select])
+                           % +Distinct:boolean
+                           % +Variables:list(atom)
+                           % +BGPs:or([compound,list(compound)])
+                           % ?Limit:or([nonneg,oneof([inf])])
+                           % ?Offset:nonneg
+                           % ?Order:pair(oneof([asc]),list(atom))
   ]
 ).
 
@@ -107,6 +113,14 @@ limit(Limit) -->
 mode(select) -->
   "SELECT".
 
+offset(VAR) -->
+  {var(VAR)}, !,
+  [].
+offset(Offset) -->
+  "OFFSET ",
+  integer(Offset),
+  "\n".
+
 order(VAR) -->
   {var(VAR)}, !,
   [].
@@ -142,6 +156,25 @@ regex_flags1([case_insensitive|T]) -->
   "i",
   regex_flags1(T).
 
+
+%! 'SPARQL_count'(
+%!   +Regime:oneof([owl]),
+%!   +DefaultGraph:iri,
+%!   +Prefixes:list(atom),
+%!   +Variable:atom,
+%!   +BGPs:or([compound,list(compound)])
+%! )// is det.
+
+'SPARQL_count'(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
+  inference_regime(Regime),
+  default_graph(DefaultGraph),
+  prefixes(Prefixes),
+  `SELECT COUNT`,
+  bracketed(variable(Variable)),
+  "\n",
+  where(BGPs).
+
+
 %! 'SPARQL_formulate'(
 %!   +Regime:oneof([owl]),
 %!   +DefaultGraph:iri,
@@ -151,8 +184,9 @@ regex_flags1([case_insensitive|T]) -->
 %!   +Variables:list(atom),
 %!   +BGP:or([compound,list(compound)]),
 %!   +Limit:or([nonneg,oneof([inf])]),
+%!   +Offset:nonneg,
 %!   +Order:pair(oneof([asc]),list(atom))
-%! ) is det.
+%! )// is det.
 %
 % # Example
 %
@@ -182,6 +216,7 @@ regex_flags1([case_insensitive|T]) -->
 %      of basic graph patterns.
 % @arg Limit Either a positive integer indicating the maximum number of
 %      retrieved results, or `inf`.
+% @arg Offset
 % @arg Order A pair consisting of the ordering criterion and the variables
 %      relative to which ordering takes place.
 %      Currently the only supported ordering criterion is `asc` for
@@ -196,8 +231,9 @@ regex_flags1([case_insensitive|T]) -->
   Mode,
   Distinct,
   Variables,
-  BGP,
+  BGPs,
   Limit,
+  Offset,
   Order
 ) -->
   inference_regime(Regime),
@@ -208,9 +244,11 @@ regex_flags1([case_insensitive|T]) -->
   " ",
   variables(Variables),
   "\n",
-  where(BGP),
+  where(BGPs),
   limit(Limit),
+  offset(Offset),
   order(Order).
+
 
 %! term(+Term)// is det.
 % The following terms are supported:

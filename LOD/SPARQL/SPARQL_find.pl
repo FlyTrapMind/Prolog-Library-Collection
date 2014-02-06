@@ -52,6 +52,7 @@ Find a single resource based on a search term.
 	  [p,o],
 	  [rdf(iri(Resource), var(p), var(o))],
 	  1,
+    _,
 	  _
       ),
       Query
@@ -78,6 +79,7 @@ Find a single resource based on a search term.
         filter(regex(var(label), at_start(SearchTerm), [case_insensitive]))
       ],
       inf,
+      _,
       _
     ),
     Query

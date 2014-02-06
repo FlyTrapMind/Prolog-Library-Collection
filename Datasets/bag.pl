@@ -41,6 +41,7 @@ test:-
       [],
       [rdf(var(s), vocab:pand_status, var(o))],
       10,
+      _,
       _
     ),
     Query

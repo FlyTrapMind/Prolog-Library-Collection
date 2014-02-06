@@ -109,6 +109,7 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
         filter(regex(var(death), string(Death)))
       ],
       10,
+      _,
       _
     ),
     Query

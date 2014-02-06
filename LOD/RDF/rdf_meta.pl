@@ -17,7 +17,7 @@
 Meta-callings on an RDF graph.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(generics(meta_ext)).
@@ -34,23 +34,19 @@ Meta-callings on an RDF graph.
 %!   +FromFile:atom,
 %!   :Goal
 %! ) is det.
+% Do not save graph to file.
+%
 % @arg Goal Take one argument, which is the atomic name of an RDF graph.
 
 :- meta_predicate(rdf_setup_call_cleanup(+,+,1)).
-% Load RDF files, process goal, keep graph.
-rdf_setup_call_cleanup(O1_Load, From, Goal):-
-  option(graph(Graph), O1_Load),
-  nonvar(Graph), !,
-  rdf_load(O1_Load, Graph, From),
-  call(Goal, Graph).
 % Load RDF files, process goal, no output.
 rdf_setup_call_cleanup(O1_Load, From, Goal):-
   setup_call_cleanup(
-    rdf_new_graph(temp, Graph),
     (
-      rdf_load(O1_Load, Graph, From),
-      call(Goal, Graph)
+      rdf_new_graph(temp, Graph),
+      rdf_load(O1_Load, Graph, From)
     ),
+    call(Goal, Graph),
     rdf_unload_graph(Graph)
   ).
 
@@ -62,6 +58,8 @@ rdf_setup_call_cleanup(O1_Load, From, Goal):-
 %!   +SaveOptions:list(nvpair),
 %!   ?ToFile:atom
 %! ) is det.
+% Save graph to file.
+%
 % @arg Goal Take one argument, which is the atomic name of an RDF graph.
 
 :- meta_predicate(rdf_setup_call_cleanup(+,+,1,+,?)).
@@ -88,12 +86,14 @@ rdf_setup_call_cleanup(O1_Load, From, Goal, O1_Save, ToFile):-
   ),
   
   setup_call_cleanup(
-    rdf_new_graph(temp, Graph),
-    setup_call_cleanup(
-      rdf_load(O1_Load, Graph, From),
-      call(Goal, Graph),
-      rdf_save(O1_Save, Graph, ToFile)
+    (
+      rdf_new_graph(temp, Graph),
+      rdf_load(O1_Load, Graph, From)
     ),
-    rdf_unload_graph(Graph)
+    call(Goal, Graph),
+    (
+      rdf_save(O1_Save, Graph, ToFile),
+      rdf_unload_graph(Graph)
+    )
   ).
 

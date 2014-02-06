@@ -81,6 +81,7 @@ assert_proposition(Graph, [S,P,O]):-
       [p,o],
       [rdf(iri(Resource), var(p), var(o))],
       inf,
+      _,
       _
     ),
     Query

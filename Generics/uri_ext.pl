@@ -58,24 +58,28 @@ download_to_directory(URL, ToDir, ap(status(succeed),download(File3))):-
 % Options are passed to http_goal/3, http_open/3.
 
 download_to_file(O1, URL, File):-
-  nonvar(File),
-  access_file(File, write),
+  (
+    nonvar(File),
+    is_absolute_file_name(File)
+  ->
+    download_to_file0(O1, URL, File)
+  ;
+    url_to_file(URL, File),
+    download_to_file0(O1, URL, File)
+  ).
 
+download_to_file0(O1, URL, File1):-
   % Check the URL.
   uri_is_global(URL),
-
-  % Either the file name is given or it is deduced from the URL.
-  (
-    is_absolute_file_name(File), !
-  ;
-    url_to_file(URL, File)
-  ),
+  
+  thread_self(Id),
+  atomic_list_concat([tmp,Id], '_', Name2),
+  file_alternative(File1, _, Name2, _, File2),
   
   merge_options([nocatch(true)], O1, O2),
-  http_goal(URL, O2, file_from_stream(File)).
-download_to_file(O1, URL, File):-
-  url_to_file(URL, File),
-  download_to_file(O1, URL, File).
+  http_goal(URL, O2, file_from_stream(File2)),
+  
+  rename_file(File2, File1).
 
 
 file_from_stream(File, HTTP_Stream):-

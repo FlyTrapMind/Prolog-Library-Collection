@@ -41,6 +41,7 @@ query_kadaster(Resources):-
       [s,p,o],
       [rdf(var(s), var(p), var(o))],
       10,
+      _,
       _
     ),
     Query
@@ -58,6 +59,7 @@ query_kadaster(S, Resources):-
       [p,o],
       [rdf(iri(S), var(p), var(o))],
       10,
+      _,
       _
     ),
     Query
@@ -75,6 +77,7 @@ scrape_kadaster:-
       [s,p,o],
       [rdf(var(s), var(p), var(o))],
       inf,
+      _,
       _
     ),
     Query

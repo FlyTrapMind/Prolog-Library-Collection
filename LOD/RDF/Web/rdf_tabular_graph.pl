@@ -63,7 +63,6 @@ rdf_tabular_graph(Graph) -->
     )
   },
   
-  % Generate the HTML table using a special writer for the RDF terms.
   rdf_html_table(
     Graph,
     (`Subject terms in graph `, atom(Graph)),
@@ -84,7 +83,9 @@ rdf_tabular_graphs -->
       Pairs1
     ),
     keysort(Pairs1, Pairs2),
-    reverse(Pairs2, Pairs3),
+    pairs_keys(Pairs2, Keys),
+    sum_list(Keys, Triples),
+    reverse([Triples-'All'|Pairs2], Pairs3),
     findall(
       [Graph,NumberOfTriples],
       member(NumberOfTriples-Graph, Pairs3),
