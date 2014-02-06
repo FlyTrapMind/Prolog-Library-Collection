@@ -32,7 +32,10 @@ thread_overview -->
   {
     setoff(
       Alias,
-      thread_property(_, alias(Alias)),
+      (
+        thread_property(Id, status(running)),
+        thread_property(Id, alias(Alias))
+      ),
       Aliases
     ),
     findall(
