@@ -44,14 +44,17 @@ Cell contents are represented by Prolog ground terms that are elements
 % Generates the HTML markup for a table.
 %
 % The following options are supported:
-%   1. =|header(boolean)|=
+%   1. =|header_column(boolean)|=
+%      Uses `th` tags for cells in the first column.
+%      Default: `false`.
+%   2. =|header_row(boolean)|=
 %      Whether or not the first row should be
 %      displayed as the table header row.
 %      Default is `false`.
-%   2. =|highlighted_row(:HighlightedRow)|=
+%   3. =|highlighted_row(:HighlightedRow)|=
 %      A semidet predicate term that is missing its last parameter.
 %      Default: `false` for no row highlighted.
-%   3. =|indexed(+Indexed:boolean)|=
+%   4. =|indexed(+Indexed:boolean)|=
 %      Whether or not each row should begin with a row index.
 %      Counts starts at 0. The header row, if included, is not counted.
 %      Default is `false`.
@@ -66,16 +69,23 @@ html_table(O1, Caption, Cell, Rows) -->
   {
     flag(table_row, _, 0),
     meta_options(is_meta, O1, O2),
-    option(header(HasHeader), O2, false),
+    option(header_column(HasHeaderColumn), O2, false),
+    option(header_row(HasHeaderRow), O2, false),
     option(highlighted_row(HighlightedRow), O2, fail),
     option(indexed(IsIndexed), O2, false)
   },
   html(
     table(class=['pure-table','pure-table-bordered'], [
       \html_table_caption(Caption),
-      \html_table_header(HasHeader, IsIndexed, Cell, Rows, DataRows),
+      \html_table_header(HasHeaderRow, IsIndexed, Cell, Rows, DataRows),
       tbody(
-        \html_table_data_rows(IsIndexed, HighlightedRow, Cell, DataRows)
+        \html_table_data_rows(
+          HasHeaderColumn,
+          IsIndexed,
+          HighlightedRow,
+          Cell,
+          DataRows
+        )
       )
     ])
   ).
@@ -136,29 +146,37 @@ html_table_cell(header, Cell, Element) -->
 % DATA %
 
 %! html_table_data_rows(
+%!   +HasHeaderColumn:boolean,
 %!   +IsIndexed:boolean,
 %!   :Highlighted,
 %!   :Cell,
 %!   +DataRows
 %! )// is det.
 
-:- meta_predicate(html_table_data_rows(+,1,3,+,?,?)).
-html_table_data_rows(IsIndexed, Highlighted, Cell, [H|T]) -->
-  html_table_data_row(IsIndexed, Highlighted, Cell, H),
-  html_table_data_rows(IsIndexed, Highlighted, Cell, T).
-html_table_data_rows(_, _, _, []) -->
+:- meta_predicate(html_table_data_rows(+,+,1,3,+,?,?)).
+html_table_data_rows(HasHeaderColumn, IsIndexed, Highlighted, Cell, [H|T]) -->
+  html_table_data_row(HasHeaderColumn, IsIndexed, Highlighted, Cell, H),
+  html_table_data_rows(HasHeaderColumn, IsIndexed, Highlighted, Cell, T).
+html_table_data_rows(_, _, _, _, []) -->
   [].
 
 
 %! html_table_data_row(
+%!   +HasHeaderColumn:boolean,
 %!   +IsIndexed:boolean,
 %!   :Highlighted,
 %!   :Cell,
 %!   +DataRows:list(list(ground))
 %! )// is det.
 
-:- meta_predicate(html_table_data_row(+,1,3,+,?,?)).
-html_table_data_row(IsIndexed, Highlighted, Cell, DataRow) -->
+:- meta_predicate(html_table_data_row(+,+,1,3,+,?,?)).
+html_table_data_row(
+  HasHeaderColumn,
+  IsIndexed,
+  Highlighted,
+  Cell,
+  DataRow
+) -->
   % Set whether the row is highlighted or not.
   {
     flag(table_row, RowNumber, RowNumber + 1),
@@ -170,12 +188,25 @@ html_table_data_row(IsIndexed, Highlighted, Cell, DataRow) -->
       O1 = []
     )
   },
-
-  html(
-    tr(O1, [
-      \html_table_index_cell(IsIndexed, Cell, RowNumber),
-      \html_table_cells(data, Cell, DataRow)
-    ])
+  
+  ({
+    HasHeaderColumn == true,
+    IsIndexed == false,
+    DataRow = [HeaderCell|DataRow0]
+  }->
+    html(
+      tr(O1, [
+        \html_table_cell(header, Cell, HeaderCell),
+        \html_table_cells(data, Cell, DataRow0)
+      ])
+    )
+  ;
+    html(
+      tr(O1, [
+        \html_table_index_cell(HasHeaderColumn, IsIndexed, Cell, RowNumber),
+        \html_table_cells(data, Cell, DataRow)
+      ])
+    )
   ).
 
 
@@ -183,7 +214,7 @@ html_table_data_row(IsIndexed, Highlighted, Cell, DataRow) -->
 % HEADER %
 
 %! html_table_header(
-%!   +HasHeader:boolean,
+%!   +HasHeaderRow:boolean,
 %!   +IsIndexed:boolean,
 %!   :Cell,
 %!   +Rows:list(list(ground)),
@@ -220,10 +251,22 @@ html_table_header_row(Cell, HeaderRow) -->
 
 % INDEX %
 
-%! html_table_index_cell(+IsIndexed:boolean, :Cell, +Index:ground)// is det.
+%! html_table_index_cell(
+%!   +HasHeaderColumn:boolean,
+%!   +IsIndexed:boolean,
+%!   :Cell,
+%!   +Index:ground
+%! )// is det.
 
-:- meta_predicate(html_table_index_cell(+,3,+,?,?)).
-html_table_index_cell(true, Cell, Index) -->
-  html(\html_table_cell(data, Cell, Index)).
-html_table_index_cell(false, _, _) --> [].
+:- meta_predicate(html_table_index_cell(+,+,3,+,?,?)).
+html_table_index_cell(HasHeaderColumn, true, Cell, Index) -->
+  {(
+    HasHeaderColumn == true
+  ->
+    Type = header
+  ;
+    Type = data
+  )},
+  html(\html_table_cell(Type, Cell, Index)).
+html_table_index_cell(_, false, _, _) --> [].
 

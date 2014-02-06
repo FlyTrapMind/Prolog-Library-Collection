@@ -83,27 +83,26 @@ log_web(Max) -->
   },
   html(
     \html_table(
-      [header(true),indexed(true)],
+      [header_row(true),indexed(true)],
       `Log messages`,
       [['DateTime','Category','Message']|Top2]
     )
   ).
 
-prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
-  web_error(Exception, Markup),
-  push(status_pane, html, app_style, Markup), !.
+%prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
+%  web_error(Exception, Markup),
+%  push(status_pane, html, app_style, Markup), !.
 %prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
 %  format(user, '~w', [Exception]). %DEB
 prolog:debug_print_hook(Type, Format, Args):-
-  format(atom(Msg), Format, Args),
-
   % Write to the status pane in the Web front-end.
-  push(
-    status_pane,
-    html,
-    app_style,
-    [element(p,[],['[',Type,']',' ',Msg])]
-  ),
+  %format(atom(Msg), Format, Args),
+  %push(
+  %  status_pane,
+  %  html,
+  %  app_style,
+  %  [element(p,[],['[',Type,']',' ',Msg])]
+  %),
 
   % Write to the terminal.
   %ansi_format(user_output, [bold,fg(green)], '[~w] ', [Type]),
@@ -118,3 +117,4 @@ email(email, Format, Args):- !,
   format(codes(Body), Format, Args),
   send_email('me@wouterbeek.com', 'Message from script', Body).
 email(_, _, _).
+

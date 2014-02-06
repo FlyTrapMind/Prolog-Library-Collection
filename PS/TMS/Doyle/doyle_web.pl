@@ -56,7 +56,7 @@ doyle_web(TMS) -->
     app_style,
     title('Doyle'),
     \html_table(
-      [header(true)],
+      [header_row(true)],
       `Doyle's TMS overview`,
       [
         [

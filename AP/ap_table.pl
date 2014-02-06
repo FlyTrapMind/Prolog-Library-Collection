@@ -56,7 +56,7 @@ ap_table(Request):-
     app_style,
     title('AP results'),
     \html_table(
-      [header(true),indexed(true)],
+      [header_row(true),indexed(true)],
       (`Results of automated process `, atom(Alias)),
       html_ap_term,
       [Header|Rows]
@@ -73,7 +73,7 @@ ap_table(_Request):-
     app_style,
     title('AP results'),
     \html_table(
-      [header(true),indexed(true)],
+      [header_row(true),indexed(true)],
       `Overview of automated processes.`,
       html_ap_term,
       [['Alias']|Aliases]

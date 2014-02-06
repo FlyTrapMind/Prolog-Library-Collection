@@ -52,7 +52,7 @@ rdf_html_table(_, _, _, []) --> !, [].
 rdf_html_table(Graph, Caption, HeaderRow, Rows) -->
   html(
     \html_table(
-      [header(true),indexed(true)],
+      [header_row(true),indexed(true)],
       Caption,
       rdf_html_term(Graph),
       [HeaderRow|Rows]

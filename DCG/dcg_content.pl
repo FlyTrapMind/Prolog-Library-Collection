@@ -113,7 +113,7 @@ arrow(O1, L1) -->
     {L3 = L2}
   ),
   {L3 >= 0},
-  dcg_multi(`-`, L3),
+  dcg_multi(`-`, L3), !,
 
   % The right arrow head.
   (

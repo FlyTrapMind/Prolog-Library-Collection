@@ -108,7 +108,7 @@ vertice_coordinates_table(VertexCoords, MarkupElement):-
     Rows
   ),
   html_table(
-    [header(true)],
+    [header_row(true)],
     [['Vertex'|DimensionNames]|Rows],
     MarkupElement
   ).

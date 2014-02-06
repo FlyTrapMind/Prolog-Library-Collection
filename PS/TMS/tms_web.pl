@@ -89,7 +89,7 @@ tms_web(_Request):-
     app_style,
     title('Overerview of TMSs'),
     \html_table(
-      [header(true),indexed(true)],
+      [header_row(true),indexed(true)],
       `The currently loaded Truth Maintenance Systems.`,
       [['TMS','Type','#Justifications','#Nodes']|Rows]
     )

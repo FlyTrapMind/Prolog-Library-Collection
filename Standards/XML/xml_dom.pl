@@ -135,7 +135,7 @@ xml_dom_to_atom(O1, DOM1, XML):-
     % a Web page.
     % We do add the stylesheet parsing instruction, since this is allowed by
     % Firefox.
-    xml_dom_to_stream([header(false)|O2], DOM2, Out),
+    xml_dom_to_stream([header_row(false)|O2], DOM2, Out),
     close(Out)
   ),
 

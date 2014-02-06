@@ -5,12 +5,8 @@
                        % +Predicate:iri
                        % +Object:or([bnode,iri,literal])
                        % -SVG:list
-    rdf_graphs_web/1, % -DOM:liste
     rdf_load_web/2, % +Graph:atom
                     % -DOM:list
-    rdf_namespaces_web/1, % -DOM:list
-    rdf_namespaces_web/2, % +Graph:atom
-                          % -DOM:list
     rdf_save_web/2 % +Graph:atom
                    % -DOM:list
   ]
@@ -65,30 +61,6 @@ rdf_explain_web(S, P, O, SVG):-
   with_output_to(atom(TripleName), rdf_triple_name(S, P, O)),
   tms_export_argument_web(TripleName, SVG).
 
-%! rdf_graphs_web(-Markup:list) is det.
-% Returns the markup for an enumeration of the currently loaded graphs.
-%
-% @arg Markup An HTML table.
-
-rdf_graphs_web(Markup):-
-  findall(
-    [Graph,Triples],
-    rdf_statistics(triples_by_graph(Graph, Triples)),
-    List
-  ),
-  (
-    List == []
-  ->
-    Markup = [element(p,[],['There are no loaded RDF graphs.'])]
-  ;
-    html_table(
-      [caption('The currently loaded graphs:'),header(true),indexed(true)],
-      [['Graph','Number of triples'] | List],
-      Table
-    ),
-    Markup = [Table]
-  ).
-
 %! rdf_load_web(+Graph:atom, -Markup:list) is det.
 % Loads the graph with the given name into memory.
 % Graphs that are loaded via this front-end should be located in the user's
@@ -105,45 +77,6 @@ rdf_load_web(Graph, Markup):-
 rdf_load_web(Graph, Markup):-
   Markup = [element(p, [], ['An RDF graph named ', Graph,
     ' could not be found in the personal data directory.'])].
-
-%! rdf_namespaces_web(-Markup:list) is det.
-% Returns a list of the currently defined namespaces in HTML markup format.
-%
-% @arg Markup A list of HTML markup elements.
-
-rdf_namespaces_web(Markup):-
-  xml_current_namespaces(Namespaces),
-  rdf_namespaces_web0(Namespaces, Table),
-  Markup = [element(p, [], ['The currently loaded namespaces:']), Table].
-
-%! rdf_namespaces_web(+Graph:atom, -Markup:list) is det.
-% Returns a list of the namespaces that occur in a specific graph,
-% in HTML markup format.
-%
-% @arg Graph The atomic name of a graph.
-% @arg Markup A list of HTML markup elements.
-
-rdf_namespaces_web(Graph, Markup):-
-  rdf_current_namespaces(Graph, Namespaces),
-  rdf_namespaces_web0(Namespaces, Table),
-  Markup = [element(p, [], ['The namespaces in graph ', Graph, '.']), Table].
-
-%! rdf_namespaces_web0(+Namespaces:list(atom), -Table:dom) is det.
-% Returns the markup for an enumeration of the given namespaces.
-%
-% @arg Namespaces A list of atomic names of namespaces.
-% @arg Markup A list of HTML markup elements.
-
-rdf_namespaces_web0(Namespaces, Table):-
-  findall(
-    [Prefix,URI],
-    (
-      member(Prefix, Namespaces),
-      rdf_current_prefix(Prefix, URI)
-    ),
-    L
-  ),
-  html_table([header(true)], [['Prefix','URI']|L], Table).
 
 %! rdf_save_web(+Graph:atom, -DOM:list) is det.
 % Saves the RDF graph with the given name from the Web interface.
