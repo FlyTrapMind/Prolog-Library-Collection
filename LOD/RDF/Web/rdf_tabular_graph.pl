@@ -85,10 +85,10 @@ rdf_tabular_graphs -->
     keysort(Pairs1, Pairs2),
     pairs_keys(Pairs2, Keys),
     sum_list(Keys, Triples),
-    reverse([Triples-'All'|Pairs2], Pairs3),
+    reverse(Pairs2, Pairs3),
     findall(
       [Graph,NumberOfTriples],
-      member(NumberOfTriples-Graph, Pairs3),
+      member(NumberOfTriples-Graph, [Triples-'All'|Pairs3]),
       Rows
     )
   },
