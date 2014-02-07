@@ -22,7 +22,6 @@
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
-:- use_module(semuri(semuri_ap)). % Make script predicates top-level accessible.
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
@@ -43,6 +42,7 @@ ap_register_row(Alias, Row):-
 
 % Show the results for the given AP alias.
 ap_table(Request):-
+gtrace,
   memberchk(search(Search), Request),
   memberchk(alias=Alias, Search), !,
   

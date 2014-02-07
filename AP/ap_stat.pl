@@ -1,15 +1,10 @@
 :- module(
   ap_stat,
   [
-    ap_debug/3, % +Options:list(nvpair)
-                % +Message:atom
-                % +Arguments:list
     ap_stage_done/2, % +Alias:atom
                      % +Stage:nonneg
     ap_stage_init/1, % +Potential:nonneg
-    ap_stage_tick/0,
-    ap_store_stage_alias/2 % +Alias:atom
-                           % +Stage:or([nonneg,oneof([input,output])])
+    ap_stage_tick/0
   ]
 ).
 
@@ -29,17 +24,6 @@ Statistics for tracking the progress of automated processes.
 :- use_module(os(datetime_ext)).
 
 :- dynamic(stage_alias/3).
-
-
-
-% DEBUG %
-
-%! ap_debug(+Alias:atom, +Format, :Arguments) is det.
-
-ap_debug(Alias, Msg1, Args):-
-  iso8601_dateTime(Time),
-  format(atom(Msg2), Msg1, Args),
-  debug(ap, '[Time:~w][Alias:~w] ~w', [Time,Alias,Msg2]).
 
 
 
@@ -68,7 +52,7 @@ ap_stage_eval(Alias):-
       (
         ap_stage_eval(Alias, Stage, A, P),
         progress_bar(A, P, Bar),
-        ap_debug(_O1, '[Alias:~w,Stage:~w] ~w', [Alias,Stage,Bar])
+        debug(ap, '[Alias:~w,Stage:~w] ~w', [Alias,Stage,Bar])
       )
     )
   ).
@@ -113,10 +97,6 @@ ap_stage_init(Potential):-
   ).
 ap_stage_init(_Potential):-
   debug(ap_stat, 'Unable to initialize stage.', []).
-
-ap_store_stage_alias(Stage, Alias):-
-  thread_self(ThisThread),
-  db_replace_novel(stage_alias(ThisThread, Alias, Stage), [r,r,r]).
 
 
 

@@ -2,14 +2,26 @@
   ap_stage,
   [
     ap_stages/3 % +Alias:atom
-                % +Stages:list(compound)
-                % -AP_Row:list(compound)
+                % +AP:iri
+                % :AP_Stages:list(compound)
   ]
 ).
 
 /** <module> Auto-process stages
 
 Runs stages in an automated process.
+
+# Options for AP stages
+
+The following options can be added to AP stages:
+  * =|args(+PostfixedArguments:list)|=
+  * =|between(+Low:integer, +High:integer)|=
+  * =|finished(+Finished:boolean)|=
+  * =|from(+Directory:atom,+Base:atom,+FileType:atom)|=
+  * =|name(+Name:atom)|=
+    The name of the stage.
+    This is e.g. used as the column label in tabular overviews of APs.
+  * =|to(+Base:atom,+FileType:atom)|=
 
 @author Wouter Beek
 @version 2013/10-2014/02
@@ -20,18 +32,26 @@ Runs stages in an automated process.
 :- use_module(ap(ap_table)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(user_input)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(os(io_ext)).
+:- use_module(rdf(rdf_container)).
+:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_label_build)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
 
 
 
 %! ap_stage(
 %!   +Options:list(nvpair),
 %!   +Alias:atom,
+%!   +AP:iri,
 %!   +FromStage:nonneg,
 %!   +ToStage:nonneg,
 %!   :Goal,
-%!   -ToDirectory:atom,
-%!   -Message:atom
+%!   -ToDirectory:atom
 %! ) is det.
 % `Goal` receives the from and to files as arguments.
 %
@@ -48,77 +68,35 @@ Runs stages in an automated process.
 %     Identifies the output from a script stage.
 %     The directory is not included since this is fixed to
 %     the process' output directory.
-%
-% @arg Options
-% @arg Alias Alias of the process+stage.
-% @arg FromStage
-% @arg ToStage
-% @arg Goal
-% @arg ToDirectory The atomic name of the directory where
-%      the results are stored.
-% @arg Message An atomic message that describes how this stage went.
+% `ToDirectory` is the atomic name of the directory where
+%  the results are stored.
 
-:- meta_predicate(ap_stage(+,+,+,+,:,-,-)).
-ap_stage(O1, Alias, Stage1, Stage2, Goal, ToDir, Msg):-
+:- meta_predicate(ap_stage(+,+,+,+,+,:,-)).
+ap_stage(O1, Alias, AP, Stage1, Stage2, Goal, ToDir):-
   ap_stage_from_directory(O1, Alias, Stage1, FromDir),
   ap_stage_to_directory(O1, Alias, Stage1, Stage2, ToDir),
-  ap_stage2(O1, Alias, Stage1, FromDir, ToDir, Goal, Msg).
+  ap_stage2(O1, Alias, AP, Stage1, FromDir, ToDir, Goal).
 
 
+:- meta_predicate(ap_stage2(+,+,+,+,+,+,:)).
 % This stage was alreay completed previously. Skip this stage.
-ap_stage_init(_, Alias, ToDir, _, ap(status(skip),'FINISHED')):-
+ap_stage2(_, _, _, _, _, ToDir, _):-
   absolute_file_name(
     'FINISHED',
     _,
     [access(read),file_errors(fail),relative_to(ToDir)]
   ), !,
-  ap_debug(Alias, 'Skipped. Finished file found.', []).
+  debug(ap, 'Skipped. Finished file found.', []).
 % This stage has not been perfomed yet.
-ap_stage_init(O1, _, ToDir, Goal, Msg):-
-  % To directory or file.
-  ap_stage_to_arg(O1, ToDir, ToArg),
-
-  % Make sure the arguments option is present.
-  option(args(Args), O1, []),
-
-  (
-    option(between(Low,High), O1)
-  ->
-    Potential is  High - Low + 1,
-    ap_stage_init(Potential),
-    forall(
-      between(Low, High, N),
-      execute_goal(Goal, [ToArg,Msg,N|Args])
-    )
-  ;
-    execute_goal(Goal, [ToArg,Msg|Args])
-  ), !.
-ap_stage_init(_, _, _, _, ap(status(fail),unknown)).
-
-
-:- meta_predicate(ap_stage2(+,+,+,+,+,:,-)).
-% This stage was alreay completed previously. Skip this stage.
-ap_stage2(_, Alias, _, _, ToDir, _, ap(status(skip),'FINISHED')):-
-  absolute_file_name(
-    'FINISHED',
-    _,
-    [access(read),file_errors(fail),relative_to(ToDir)]
-  ), !,
-  ap_debug(Alias, 'Skipped. Finished file found.', []).
-% This stage has not been perfomed yet.
-ap_stage2(O1, Alias, Stage, FromDir, ToDir, Goal, Msg):-
+ap_stage2(O1, Alias, AP, StageNum, FromDir, ToDir, Goal):-
   % From directory or file.
-  ap_stage_from_arg(O1, Stage, FromDir, FromArg),
+  ap_stage_from_arg(O1, StageNum, FromDir, FromArg),
 
   % To directory or file.
   ap_stage_to_arg(O1, ToDir, ToArg),
 
   % Beginning of a script stage.
-  ap_stage_begin(Alias, Stage),
-
-  % Allow this thread to refer to the stage alias later,
-  % in order to keep track of the stage's progress.
-  ap_store_stage_alias(Alias, Stage),
+  ap_stage_begin(Alias, AP, StageNum, AP_Stage),
 
   % Make sure the arguments option is present.
   option(args(Args), O1, []),
@@ -130,16 +108,22 @@ ap_stage2(O1, Alias, Stage, FromDir, ToDir, Goal, Msg):-
     ap_stage_init(Potential),
     forall(
       between(Low, High, N),
-      execute_goal(Goal, [FromArg,ToArg,Msg,N|Args])
+      execute_goal(Goal, [FromArg,ToArg,AP_Stage,N|Args])
     )
   ;
-    execute_goal(Goal, [FromArg,ToArg,Msg|Args])
+    execute_goal(Goal, [FromArg,ToArg,AP_Stage|Args])
   ), !.
-ap_stage2(_, _, _, _, _, _, ap(status(fail), unknown)).
+ap_stage2(_, _, _, _, _, _, _).
 
 
-ap_stage_begin(Alias, Stage):-
-  ap_debug(Alias, '[Stage:~w] Started.', [Stage]).
+ap_stage_begin(Alias, AP, Stage, AP_Stage):-
+  Graph = ap,
+  atomic_list_concat(['AP-Stage',Alias], '/', LocalName),
+  rdf_global_id(ap:LocalName, AP_Stage),
+  rdf_assert_individual(AP_Stage, ap:'AP-Stage', Graph),
+  rdf_assert_collection_member(AP, AP_Stage, Graph),
+  rdfs_assert_label(AP_Stage, Alias, Graph),
+  rdf_assert_datatype(AP_Stage, ap:stage, xsd:integer, Stage, Graph).
 
 
 ap_stage_end(O1, Alias, Stage, ToDir):-
@@ -160,7 +144,7 @@ ap_stage_end(O1, Alias, Stage, ToDir):-
     true
   ),
 
-  ap_debug(Alias, '[Stage:~w] Ended successfully.', [Stage]).
+  debug(ap, '[Stage:~w] Ended successfully.', [Stage]).
 
 
 %! ap_stage_from_arg(
@@ -289,58 +273,41 @@ ap_stage_to_directory(_, Alias, Stage1, Stage2, StageDir):-
   ap_dir(Alias, write, StageName, StageDir).
 
 
-%! ap_stages(
-%!   +Alias:atom,
-%!   +Stages:list(compound),
-%!   -AP_Row:list(compound)
-%! ) is det.
+%! ap_stages(+Alias:atom, +AP:iri, :AP_Stages:list(compound)) is det.
 
-:- meta_predicate(ap_stages(+,:,-)).
+:- meta_predicate(ap_stages(+,+,:)).
 ap_stages(_, [], []).
-ap_stages(Alias, Mod:[ap_stage(O1,Goal)|T], AP_Row):-
+ap_stages(Alias, AP, Mod:[ap_stage(O1,Goal)|T]):-
   ap_dir(Alias, write, input, ToDir),
   catch(
     (
-      ap_stage_init(O1, Alias, ToDir, Mod:Goal, AP_Status),
+      ap_stage2(O1, Alias, AP, input, input, ToDir, Mod:Goal),
       ap_stage_end(O1, Alias, 0, ToDir),
-      ap_stages(Alias, 0, Mod:T, AP_Row_Tail),
-      AP_Row = [AP_Status|AP_Row_Tail]
+      ap_stages(Alias, AP, 0, Mod:T)
     ),
     Error,
-    ap_catcher(Error, T, AP_Row)
-  ),
-  
-  % Sometimes we want to look at the AP results before the entire process
-  %  finishes.
-  % We cannot use the AP table in these cases.
-  % We therefore assert each individual row.
-  % Module [ap_table] can display these tables as HTML.
-  ap_register_row(Alias, AP_Row).
+    debug(ap, '~w', [Error])
+  ).
 
 %! ap_stages(
 %!   +Alias:atom,
-%!   +Stage:nonneg,
-%!   +Stages:list(compound),
-%!   -AP_Row:list(compound)
+%!   +AP:iri,
+%!   +AP_Stage:nonneg,
+%!   :AP_Stages:list(compound)
 %! ) is det.
 
-:- meta_predicate(ap_stages(+,+,:,-)).
-ap_stages(_, _, _Mod:[], []):- !.
-ap_stages(Alias, Stage1, Mod:[ap_stage(O1,H)|T], AP_Row):-
+:- meta_predicate(ap_stages(+,+,+,:)).
+ap_stages(_, _, _, _Mod:[]):- !.
+ap_stages(Alias, AP, StageNum1, Mod:[ap_stage(O1,H)|T]):-
   catch(
     (
-      ap_stage(O1, Alias, Stage1, Stage2, Mod:H, ToDir, AP_Status),
-      ap_stage_end(O1, Alias, Stage2, ToDir),
-      ap_stages(Alias, Stage2, Mod:T, AP_Row_Tail),
-      AP_Row = [AP_Status|AP_Row_Tail]
+      ap_stage(O1, Alias, AP, StageNum1, StageNum2, Mod:H, ToDir),
+      ap_stage_end(O1, Alias, StageNum2, ToDir),
+      ap_stages(Alias, StageNum2, Mod:T)
     ),
     Error,
-    ap_catcher(Error, T, AP_Row)
+    debug(ap, '~w', [Error])
   ).
-
-ap_catcher(Error, L, [ap(status(error),Error)|Msgs]):-
-  length(L, Length),
-  repeating_list(ap(status(skip),'never reached'), Length, Msgs).
 
 :- meta_predicate(execute_goal(:,+)).
 execute_goal(Goal, Args):-

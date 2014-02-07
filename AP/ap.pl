@@ -1,10 +1,9 @@
 :- module(
   ap,
   [
-    ap/4 % +Options:list(nvpair)
+    ap/3 % +Options:list(nvpair)
          % +Alias:atom
-         % +Stages:list(compound)
-         % -AP_Stats:list(compound)
+         % +AP_Stages:list(compound)
   ]
 ).
 
@@ -26,43 +25,63 @@ Support for running automated processing.
 :- use_module(ap(ap_stage)).
 :- use_module(ap(ap_stat)).
 :- use_module(generics(list_ext)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
+:- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_container)).
+:- use_module(rdfs(rdfs_build)).
+:- use_module(rdfs(rdfs_label_build)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
+
+:- initialization(assert_ap_schema(ap)).
 
 
 
-%! ap(
-%!   +Options:list(nvpair),
-%!   +Alias:atom,
-%!   +Stages:list(compound),
-%!   -AP_Stats:list(compound)
-%! ) is det.
+assert_ap_schema(Graph):-
+  rdfs_assert_subclass(ap:'AP-Collection', rdf:'Bag', Graph),
+  rdfs_assert_label(
+    ap:'AP-Collection',
+    'Collection of automated processes',
+    Graph
+  ),
+
+  rdfs_assert_subclass(ap:'AP', rdf:'Seq', Graph),
+  rdfs_assert_label(ap:'AP', 'Automated process', Graph),
+
+  rdfs_assert_class(ap:'AP-Stage', Graph),
+  rdfs_assert_label(ap:'AP-Stage', 'Automated process stage', Graph).
+
+
+%! ap(+Options:list(nvpair), +Alias:atom, +AP_Stages:list(compound)) is det.
+% `Alias` is an existing path alias with prolog_file_path/2.
+%
 % The following options are supported:
-%   * =|graph(+Graph:atom)|=
 %   * =|reset(+Reset:boolean)|=
 %     When true, removes the results of any prior executions of stages.
 %     Default: `false`.
-%
-% @arg Options
-% @arg Alias An atomic alias, denoting the encompassing AP directory,
-%      which must exist prior to calling this predicate.
-% @arg Stages A list of compound terms identifying script stages.
-% @arg AP_Stats A list of compound terms that describe how each stage went.
-%      These compound terms have the form =|ap(status(Status),Message)|=,
-%      where `Status` is `oneof([fail,skip,succeed])` and
-%      `Message` is generated using pl_term//1.
 
-:- meta_predicate(ap(+,+,:,-)).
-ap(O1, Alias, Stages, AP_Stats):-
+:- meta_predicate(ap(+,+,:)).
+ap(O1, Alias, AP_Stages):-
+  Graph = ap,
+
+  rdf_global_id(ap:Alias, AP),
+  rdf_assert_individual(AP, ap:'AP', Graph),
+
+  atomic_list_concat(['AP_Collection',Alias], '/', LocalName),
+  rdf_global_id(ap:LocalName, AP_Collection),
+  rdf_assert_individual(AP_Collection, ap:'AP-Collection', Graph),
+  rdf_assert_collection_member(AP_Collection, AP, Graph),
+
   ap_begin(O1, Alias),
-  ap_run(Alias, Stages, AP_Stats),
+  ap_run(Alias, AP, AP_Stages),
   ap_end(Alias).
 
 
 %! ap_begin(+Options:list(nvpair), +Alias:atom) is det.
 
 ap_begin(O1, Alias):-
-  ap_debug(Alias, 'Started.', []),
-  
   % Process the reset option.
   option(reset(Reset), O1, false),
   (
@@ -78,7 +97,7 @@ ap_begin(O1, Alias):-
   ;
     true
   ),
-  
+
   % Make sure the input directory is there.
   Spec1 =.. [Alias,input],
   create_nested_directory(Spec1),
@@ -101,33 +120,20 @@ ap_end(Alias):-
     copy_directory([safe(true)], LastStageDir, OutputDir)
   ;
     true
-  ),
-
-  ap_debug(Alias, 'Ended successfully.', []).
+  ).
 
 
-%! ap_run(
-%!   +Alias:atom,
-%!   :Stages:list(compound),
-%!   -AP_Stats:list(compound)
-%! ) is det.
+%! ap_run(+Alias:atom, +AP:iri, :AP_Stages:list(compound)) is det.
 
-:- meta_predicate(ap_run(+,:,-)).
+:- meta_predicate(ap_run(+,+,:)).
 % The output is already available.
-ap_run(Alias, _:Stages, AP_Stats):-
+ap_run(Alias, _, _):-
   ap_dir(Alias, read, output, OutputDir),
   absolute_file_name(
     'FINISHED',
     _ToFile,
     [access(read),file_errors(fail),relative_to(OutputDir)]
-  ), !,
-  length(Stages, Length),
-  repeating_list(skip, Length, AP_Stats),
-  ap_debug(
-    Alias,
-    'Process skipped. Results are already in output directory.',
-    []
-  ).
-ap_run(Alias, Stages, AP_Stats):-
-  ap_stages(Alias, Stages, AP_Stats).
+  ), !.
+ap_run(Alias, AP, AP_Stages):-
+  ap_stages(Alias, AP, AP_Stages).
 

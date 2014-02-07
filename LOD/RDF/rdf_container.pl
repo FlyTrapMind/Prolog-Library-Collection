@@ -14,6 +14,9 @@
                % -Contents:list(uri)
                % ?Graph:atom
 % COLLECTION
+    rdf_assert_collection_member/3, % +Collection:iri
+                                    % +Member:iri
+                                    % +Graph:atom
     rdf_collection/2, % ?Collection:uri
                       % ?Graph:atom
     rdf_collection/3, % ?Collection:uri
@@ -36,7 +39,7 @@ Support for RDF containers (sequence, bag, and alternatives).
 
 @author Wouter Beek
 @tbd Add predicates for building containers.
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09, 2014/02
 */
 
 :- use_module(generics(typecheck)).
@@ -87,6 +90,8 @@ rdf_alt(Alt, Contents, G):-
 %! rdf_bag(-Bag:uri, +Graph:atom) is nondet.
 % Returns bags in the given graph.
 %
+% Unordered & duplicated allowed.
+%
 % @arg Bag An RDF bag resource.
 % @arg Graph The atomic name of a graph.
 
@@ -108,6 +113,15 @@ rdf_bag(Bag, Contents, G):-
 
 
 % COLLECTION %
+
+:- rdf_meta(rdf_assert_collection_member(r,r,+)).
+rdf_assert_collection_member(Collection, Member, Graph):-
+  rdf_collection(Collection, Contents, Graph),
+  length(Contents, Length),
+  Index is Length + 1,
+  atomic_list_concat(['',Index], '_', LocalName),
+  rdf_global_id(rdf:LocalName, MembershipRelation),
+  rdf_assert(Collection, MembershipRelation, Member, Graph).
 
 rdf_collection(Collection, G):-
   rdf_alt(Collection, G), !.
@@ -160,6 +174,9 @@ rdf_container_membership_property(P):-
 
 
 % SEQUENCE %
+
+%! rdf_seq(?Sequence:or([bnode,iri]), ?Graph:atom) is nondet.
+% Ordered.
 
 rdf_seq(Seq, G):-
   rdfs_individual_of(Seq, rdf:'Seq'),
