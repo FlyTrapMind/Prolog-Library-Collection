@@ -177,8 +177,7 @@ rdf_convert_datatype(S, P, FromDatatype, Literal, ToDatatype, G):-
   forall(
     rdf_datatype(S, P, FromDatatype, FromValue, G),
     (
-      to_codes(Literal, LEX1),
-      xsd_lexicalMap(FromDatatype, LEX1, Value),
+      rdf_datatype(FromDatatype, Literal, Value),
       rdf_assert_datatype(S, P, ToDatatype, Value, G),
       rdf_retractall_datatype(S, P, FromDatatype, G)
     )

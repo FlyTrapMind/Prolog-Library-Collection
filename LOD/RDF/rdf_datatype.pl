@@ -8,6 +8,9 @@
                            % +Graph:atom
     rdf_datatype/2, % ?Graph:atom
                     % ?Datatype:iri
+    rdf_datatype/3, % +Datatype:iri
+                    % +LEX:atom
+                    % -Value
     rdf_datatype/5, % ?Subject:oneof([bnode,iri])
                     % ?Predicate:iri
                     % ?Datatype:iri
@@ -30,7 +33,7 @@
 Support for RDF typed literals.
 
 @author Wouter Beek
-@version 2013/10, 2014/01
+@version 2013/10, 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -44,6 +47,7 @@ Support for RDF typed literals.
 
 :- rdf_meta(rdf_assert_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_datatype(?,r)).
+:- rdf_meta(rdf_datatype(r,+,-)).
 :- rdf_meta(rdf_datatype(r,r,r,?,?)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
@@ -82,10 +86,21 @@ rdf_assert_datatype(S, P, D, Value, G):-
   atom_codes(LEX2, LEX1),
   rdf_assert(S, P, literal(type(D,LEX2)), G).
 
+
 %! rdf_datatype(?Graph:atom, ?Datatype:iri) is nondet.
 
 rdf_datatype(G, D):-
   rdf(_S, _P, literal(type(D, _)), G).
+
+
+%! rdf_datatype(+Datatype:iri, +Literal:atom, -Value) is det.
+% Converts atomic typed literals to their corresponsing value,
+%  according to the given datatype.
+
+rdf_datatype(D, Lit, Value):-
+  atom_codes(Lit, LEX),
+  xsd_lexicalMap(D, LEX, Value).
+
 
 %! rdf_datatype(
 %!   ?Subject:oneof([bnode,iri]),
@@ -102,8 +117,7 @@ rdf_datatype(S, P, D, Value, G):-
   rdf(S, P, literal(type(D,LEX)), G).
 rdf_datatype(S, P, D, Value, G):-
   rdf(S, P, literal(type(D,Lit)), G),
-  atom_codes(Lit, LEX),
-  xsd_lexicalMap(D, LEX, Value).
+  rdf_datatype(D, Lit, Value).
 /*
   % Ideally, we would like to interpret all literals, not just the canonical ones.
   % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.

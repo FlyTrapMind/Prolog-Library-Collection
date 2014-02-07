@@ -27,6 +27,7 @@ Generates names for RDF terms and triples.
 :- use_module(dcg(dcg_collection)).
 :- use_module(generics(codes_ext)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
 :- use_module(rdfs(rdfs_label_read)).
@@ -130,8 +131,7 @@ rdf_typed_literal(literal(type(Datatype,Literal))) -->
     % the lexically mapped value.
     xsd_datatype(_, Datatype)
   ->
-    to_codes(Literal, LEX),
-    xsd_lexicalMap(Datatype, LEX, Value)
+    rdf_datatype(Datatype, Literal, Value)
   ;
     Value = Literal
   )},

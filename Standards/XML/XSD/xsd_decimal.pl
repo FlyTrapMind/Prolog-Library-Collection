@@ -257,7 +257,7 @@ fracFrag(_, 0.0) --> !, [].
 % ~~~
 
 noDecimalPtNumeral(Sign, N) -->
-  (sign(Sign) ; {Sign = 1}),
+  (sign(Sign), ! ; {Sign = 1}),
   unsignedNoDecimalPtNumeral(N1),
   {N is copysign(N1, Sign)}.
 
@@ -284,7 +284,7 @@ unsignedNoDecimalPtNumeral(N) -->
   unsignedNoDecimalPtNumeral(_, N).
 
 unsignedNoDecimalPtNumeral(NewToEnd, NewN) -->
-  decimal_digit(_, D),
+  decimal_digit(_, D), !,
   unsignedNoDecimalPtNumeral(ToEnd, N),
   {
     NewN is N + D * 10 ** ToEnd,

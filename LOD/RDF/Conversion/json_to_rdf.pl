@@ -237,12 +237,11 @@ json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):- !,
     Value
   ).
 % The value is already in XSD format: recognize that this is the case.
-json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value1):-
-  atom(Value1),
-  to_codes(Value1, LEX1),
+json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Literal):-
+  atom(Literal),
   xsd_datatype(Type, Datatype),
-  xsd_lexicalMap(Datatype, LEX1, Value2), !,
-  json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value2).
+  rdf_datatype(Datatype, Literal, Value), !,
+  json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value).
 json_value_to_rdf(Graph, _, Individual, Predicate, Type, Value):-
   xsd_datatype(Type, Datatype), !,
   rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
