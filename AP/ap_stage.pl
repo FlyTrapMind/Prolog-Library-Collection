@@ -1,8 +1,7 @@
 :- module(
   ap_stage,
   [
-    ap_stages/3 % +Alias:atom
-                % +AP:iri
+    ap_stages/2 % +AP:iri
                 % :AP_Stages:list(compound)
   ]
 ).
@@ -16,7 +15,6 @@ Runs stages in an automated process.
 The following options can be added to AP stages:
   * =|args(+PostfixedArguments:list)|=
   * =|between(+Low:integer, +High:integer)|=
-  * =|finished(+Finished:boolean)|=
   * =|from(+Directory:atom,+Base:atom,+FileType:atom)|=
   * =|name(+Name:atom)|=
     The name of the stage.
@@ -24,6 +22,8 @@ The following options can be added to AP stages:
   * =|to(+Base:atom,+FileType:atom)|=
 
 @author Wouter Beek
+@tbd Add support for option =|finished(+Finished:boolean)|=,
+     allowing previously finished stages to be skipped.
 @version 2013/10-2014/02
 */
 
@@ -33,6 +33,7 @@ The following options can be added to AP stages:
 :- use_module(generics(list_ext)).
 :- use_module(generics(user_input)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(os(io_ext)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
@@ -44,23 +45,42 @@ The following options can be added to AP stages:
 
 
 
-%! ap_stage(
-%!   +Options:list(nvpair),
-%!   +Alias:atom,
-%!   +AP:iri,
-%!   +FromStage:nonneg,
-%!   +ToStage:nonneg,
-%!   :Goal,
-%!   -ToDirectory:atom
-%! ) is det.
+%! ap_stages(+AP:iri, :AP_Stages:list(compound)) is det.
+
+:- meta_predicate(ap_stages(+,:)).
+ap_stages(AP, AP_Stages):-
+  ap_initial_stage(AP, AP_Stage),
+  ap_stages0(AP_Stage, AP_Stages).
+
+
+
+:- meta_predicate(ap_stages0(+,:)).
+ap_stages0(_, []).
+ap_stages0(AP_Stage1, Mod:[ap_stage(O1,Goal)|T]):-
+  catch(
+    (
+      ap_stage(O1, AP_Stage1, Mod:Goal),
+      ap_stage_end(AP_Stage1)
+    ),
+    Error,
+    ap_catcher(AP_Stage1, Error)
+  ),
+  ap_next_stage(AP_Stage1, AP_Stage2),
+  ap_stages0(AP_Stage2, Mod:T).
+
+ap_catcher(AP_Stage, Error):-
+  debug(ap, '~w', [Error]),
+  rdf_assert_datatype(AP_Stage, ap:success, xsd:string, fail, ap).
+
+
+
+%! ap_stage(+Options:list(nvpair), +AP_Stage:iri, :Goal) is det.
 % `Goal` receives the from and to files as arguments.
 %
 % The following options are supported:
 %   * =|args(+Arguments:list)|=
 %     Additional, goal-specific arguments.
 %     Default: the empty list.
-%   * =|finished(+Finished:boolean)|=
-%     Whether or not a `FINISHED` file is create after stage completion.
 %   * =|stat_lag(+Interval:positive_interval)|=
 %     The lag between statistics updates in seconds.
 %     Default: =10=.
@@ -71,32 +91,29 @@ The following options can be added to AP stages:
 % `ToDirectory` is the atomic name of the directory where
 %  the results are stored.
 
-:- meta_predicate(ap_stage(+,+,+,+,+,:,-)).
-ap_stage(O1, Alias, AP, Stage1, Stage2, Goal, ToDir):-
-  ap_stage_from_directory(O1, Alias, Stage1, FromDir),
-  ap_stage_to_directory(O1, Alias, Stage1, Stage2, ToDir),
-  ap_stage2(O1, Alias, AP, Stage1, FromDir, ToDir, Goal).
+:- meta_predicate(ap_stage(+,+,:)).
+ap_stage(O1, AP_Stage, Goal):-
+  is_initial_stage(AP_Stage), !,
+  rdf_collection_member(AP_Stage, AP, ap),
+  ap_dir(AP, write, input, ToDir),
+  ap_stage_dirs(O1, AP_Stage, _NoFromDir, ToDir, Goal).
+ap_stage(O1, AP_Stage, Goal):-
+  ap_stage_from_directory(O1, AP_Stage, FromDir),
+  ap_stage_to_directory(O1, AP_Stage, ToDir),
+  ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal).
+
+is_initial_stage(AP_Stage):-
+  rdf_datatype(AP_Stage, ap:stage, xsd:integer, -1, ap).
 
 
-:- meta_predicate(ap_stage2(+,+,+,+,+,+,:)).
-% This stage was alreay completed previously. Skip this stage.
-ap_stage2(_, _, _, _, _, ToDir, _):-
-  absolute_file_name(
-    'FINISHED',
-    _,
-    [access(read),file_errors(fail),relative_to(ToDir)]
-  ), !,
-  debug(ap, 'Skipped. Finished file found.', []).
+:- meta_predicate(ap_stage_dirs(+,+,+,+,:)).
 % This stage has not been perfomed yet.
-ap_stage2(O1, Alias, AP, StageNum, FromDir, ToDir, Goal):-
+ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal):-
   % From directory or file.
-  ap_stage_from_arg(O1, StageNum, FromDir, FromArg),
+  ap_stage_from_arg(O1, AP_Stage, FromDir, FromArg),
 
   % To directory or file.
   ap_stage_to_arg(O1, ToDir, ToArg),
-
-  % Beginning of a script stage.
-  ap_stage_begin(Alias, AP, StageNum, AP_Stage),
 
   % Make sure the arguments option is present.
   option(args(Args), O1, []),
@@ -104,8 +121,6 @@ ap_stage2(O1, Alias, AP, StageNum, FromDir, ToDir, Goal):-
   (
     option(between(Low,High), O1)
   ->
-    Potential is  High - Low + 1,
-    ap_stage_init(Potential),
     forall(
       between(Low, High, N),
       execute_goal(Goal, [FromArg,ToArg,AP_Stage,N|Args])
@@ -113,43 +128,17 @@ ap_stage2(O1, Alias, AP, StageNum, FromDir, ToDir, Goal):-
   ;
     execute_goal(Goal, [FromArg,ToArg,AP_Stage|Args])
   ), !.
-ap_stage2(_, _, _, _, _, _, _).
+ap_stage_dirs(_, _, _, _, _).
 
-
-ap_stage_begin(Alias, AP, Stage, AP_Stage):-
-  Graph = ap,
-  atomic_list_concat(['AP-Stage',Alias], '/', LocalName),
-  rdf_global_id(ap:LocalName, AP_Stage),
-  rdf_assert_individual(AP_Stage, ap:'AP-Stage', Graph),
-  rdf_assert_collection_member(AP, AP_Stage, Graph),
-  rdfs_assert_label(AP_Stage, Alias, Graph),
-  rdf_assert_datatype(AP_Stage, ap:stage, xsd:integer, Stage, Graph).
-
-
-ap_stage_end(O1, Alias, Stage, ToDir):-
-  % Send a progress bar to the debug chanel.
-  ap_stage_done(Alias, Stage),
-
-  % Add an empty file that indicates this stage completed successfully
-  (
-    option(finished(true), O1, false)
-  ->
-    absolute_file_name(
-      'FINISHED',
-      ToFile,
-      [access(write),file_errors(fail),relative_to(ToDir)]
-    ),
-    atom_to_file('', ToFile)
-  ;
-    true
-  ),
-
-  debug(ap, '[Stage:~w] Ended successfully.', [Stage]).
+ap_stage_end(AP_Stage):-
+  once(rdfs_label(AP_Stage, Label)),
+  debug(ap, '~w ended successfully.', [Label]),
+  rdf_assert_datatype(AP_Stage, ap:success, xsd:string, succeed, ap).
 
 
 %! ap_stage_from_arg(
 %!   +Options:list(nvpair),
-%!   +Stage:nonneg,
+%!   +AP_Stage:iri,
 %!   +FromDir:atom,
 %!   -FromArg:atom
 %! ) is det.
@@ -169,6 +158,11 @@ ap_stage_from_arg(O1, _, FromDir, FromArg):-
       relative_to(FromDir)
     ]
   ).
+% Initialization of the input stage.
+% No "from" directory.
+ap_stage_from_arg(_, AP_Stage, _NoFromDir, _NoFromArg):-
+  rdf_datatype(AP_Stage, ap:stage, xsd:integer, -1, ap), !.
+/*
 % For the input stage we allow the file to be absent.
 % The user may be asked to provide a file location.
 ap_stage_from_arg(O1, 0, FromDir, FromDir):-
@@ -191,6 +185,7 @@ ap_stage_from_arg(O1, 0, FromDir, FromDir):-
     ]
   ),
   safe_copy_file(AbsoluteFile, FromArg).
+*/
 % Read from the previous stage directory.
 ap_stage_from_arg(_, _, FromDir, FromDir):-
   access_file(FromDir, read).
@@ -198,25 +193,20 @@ ap_stage_from_arg(_, _, FromDir, FromDir):-
 
 %! ap_stage_from_directory(
 %!   +Options:list(nvpair),
-%!   +Alias:atom,
-%!   +Stage:nonneg,
+%!   +AP_Stage:iri,
 %!   -FromDirectory:atom
 %! ) is det.
 % Creates a directory in `Data` for the given stage number
 % and adds it to the file search path.
 
 % Use the directory that is specified as an option, if it exists.
-ap_stage_from_directory(O1, Alias, _, FromDir):-
+ap_stage_from_directory(O1, AP_Stage, FromDir):-
   option(from(FromDirName,_,_), O1),
   nonvar(FromDirName), !,
-  ap_dir(Alias, write, FromDirName, FromDir).
-% Before the first stage directory we start in `0` aka `Input`.
-ap_stage_from_directory(_, Alias, 0, InputDir):- !,
-  ap_dir(Alias, write, input, InputDir).
-% For stages `N >= 1` we use stuff from directories called `stage_N`.
-ap_stage_from_directory(_, Alias, Stage, StageDir):-
-  ap_stage_name(Stage, StageName),
-  ap_dir(Alias, write, StageName, StageDir).
+  rdf_collection_member(AP_Stage, AP, ap),
+  ap_dir(AP, write, FromDirName, FromDir).
+ap_stage_from_directory(_, AP_Stage, StageDir):-
+  ap_stage_dir(AP_Stage, write, StageDir).
 
 
 %! ap_stage_to_arg(
@@ -248,66 +238,30 @@ ap_stage_to_arg(_, ToDir, ToDir):-
 
 %! ap_stage_to_directory(
 %!   +Options:list(nvpair),
-%!   +Alias:atom,
-%!   +FromStage:nonneg,
-%!   -ToStage:nonneg,
-%!   -Directory:atom
+%!   +AP_Stage:iri,
+%!   -ToDirectory:atom
 %! ) is det.
 % Creates a directory in `Data` for the given stage number
 % and adds it to the file search path.
 
 % Specific directory specified as option.
-ap_stage_to_directory(O1, _, Stage, Stage, Dir):-
-  option(to(FromDir1,_,_), O1),
-  nonvar(FromDir1), !,
-  FromDir2 =.. [FromDir1,'.'],
+ap_stage_to_directory(O1, _, ToDir3):-
+  option(to(ToDir1,_,_), O1),
+  nonvar(ToDir1), !,
+  ToDir2 =.. [ToDir1,'.'],
   absolute_file_name(
-    FromDir2,
-    Dir,
+    ToDir2,
+    ToDir3,
     [access(write),file_errors(fail),file_type(directory)]
   ).
-% Stage directories.
-ap_stage_to_directory(_, Alias, Stage1, Stage2, StageDir):-
-  Stage2 is Stage1 + 1,
-  ap_stage_name(Stage2, StageName),
-  ap_dir(Alias, write, StageName, StageDir).
+% The directory for the next stage.
+ap_stage_to_directory(_, AP_Stage, ToDir):-
+  rdf_datatype(AP_Stage, ap:stage, xsd:integer, StageNum1, ap),
+  StageNum2 is StageNum1 + 1,
+  ap_stage_name(StageNum2, StageName),
+  rdf_collection_member(AP_Stage, AP, ap),
+  ap_dir(AP, write, StageName, ToDir).
 
-
-%! ap_stages(+Alias:atom, +AP:iri, :AP_Stages:list(compound)) is det.
-
-:- meta_predicate(ap_stages(+,+,:)).
-ap_stages(_, [], []).
-ap_stages(Alias, AP, Mod:[ap_stage(O1,Goal)|T]):-
-  ap_dir(Alias, write, input, ToDir),
-  catch(
-    (
-      ap_stage2(O1, Alias, AP, input, input, ToDir, Mod:Goal),
-      ap_stage_end(O1, Alias, 0, ToDir),
-      ap_stages(Alias, AP, 0, Mod:T)
-    ),
-    Error,
-    debug(ap, '~w', [Error])
-  ).
-
-%! ap_stages(
-%!   +Alias:atom,
-%!   +AP:iri,
-%!   +AP_Stage:nonneg,
-%!   :AP_Stages:list(compound)
-%! ) is det.
-
-:- meta_predicate(ap_stages(+,+,+,:)).
-ap_stages(_, _, _, _Mod:[]):- !.
-ap_stages(Alias, AP, StageNum1, Mod:[ap_stage(O1,H)|T]):-
-  catch(
-    (
-      ap_stage(O1, Alias, AP, StageNum1, StageNum2, Mod:H, ToDir),
-      ap_stage_end(O1, Alias, StageNum2, ToDir),
-      ap_stages(Alias, StageNum2, Mod:T)
-    ),
-    Error,
-    debug(ap, '~w', [Error])
-  ).
 
 :- meta_predicate(execute_goal(:,+)).
 execute_goal(Goal, Args):-
@@ -320,4 +274,24 @@ execute_goal(Goal, Args):-
       debug(ap, 'Duration:~w ; Goal:~w ; Args:~w', [Delta,Goal,Args])
     )
   ).
+
+
+ap_initial_stage(AP, AP_Stage):-
+  ap_create_stage(AP, -1, AP_Stage).
+
+ap_create_stage(AP, StageNum, AP_Stage):-
+  flag(ap_stage, Id, Id + 1),
+  atomic_list_concat(['AP-Stage',Id], '/', LocalName),
+  rdf_global_id(ap:LocalName, AP_Stage),
+  rdf_assert_individual(AP_Stage, ap:'AP-Stage', ap),
+  rdf_assert_collection_member(AP, AP_Stage, ap),
+  format(atom(Label), 'Automated stage ~d', [StageNum]),
+  rdfs_assert_label(AP_Stage, Label, ap),
+  rdf_assert_datatype(AP_Stage, ap:stage, xsd:integer, StageNum, ap).
+
+ap_next_stage(AP_Stage1, AP_Stage2):-
+  rdf_datatype(AP_Stage1, ap:stage, xsd:integer, StageNum1, ap),
+  rdf_collection_member(AP_Stage1, AP, ap),
+  StageNum2 is StageNum1 + 1,
+  ap_create_stage(AP, StageNum2, AP_Stage2).
 

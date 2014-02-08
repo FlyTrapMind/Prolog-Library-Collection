@@ -38,6 +38,7 @@ Support for RDF typed literals.
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(codes_ext)).
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_lit)).
@@ -109,23 +110,31 @@ rdf_datatype(D, Lit, Value):-
 %!   ?Value,
 %!   ?Graph:atom
 %! ) is nondet.
-% @tbd Implement the inverse lexical map to fascilitate search (besides read and write).
+% @tbd Implement the inverse lexical map to fascilitate search
+%      (besides read and write).
 
 rdf_datatype(S, P, D, Value, G):-
-  nonvar(Value), !,
-  xsd_canonicalMap(D, Value, LEX),
-  rdf(S, P, literal(type(D,LEX)), G).
+  maplist(nonvar, [D,Value]), !,
+  xsd_canonicalMap(D, Value, LEX1),
+  atom_codes(LEX2, LEX1),
+  rdf(S, P, literal(type(D,LEX2)), G).
 rdf_datatype(S, P, D, Value, G):-
   rdf(S, P, literal(type(D,Lit)), G),
   rdf_datatype(D, Lit, Value).
 /*
-  % Ideally, we would like to interpret all literals, not just the canonical ones.
-  % Unfortunately the instantiation pattern for xsd_lexicalMap/3 does not allow this.
-  % Interpreting literals could be useful for search, i.e. does a specific value
-  % from the value space of the given datatype occur in the currently loaded RDF graph?
+  % Ideally, we would like to interpret all literals,
+  % not just the canonical ones.
+  % Unfortunately the instantiation pattern for xsd_lexicalMap/3
+  % does not allow this.
+  % Interpreting literals could be useful for search,
+  %  i.e. does a specific value
+  % from the value space of the given datatype occur
+  % in the currently loaded RDF graph?
   % For this one needs the inverse of the lexical map.
-  % In the absence of this inverse lexical map, we have to look for a lexical map
-  % of a datatype literal that matches value (this is not so bad as it seems,
+  % In the absence of this inverse lexical map,
+  %  we have to look for a lexical map
+  % of a datatype literal that matches value
+  % (this is not so bad as it seems,
   % if subject, predicate, datatype, and graph are specified).
   rdf(S, P, literal(type(D, LEX)), G),
   % This may be nondet!

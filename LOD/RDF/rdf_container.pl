@@ -22,6 +22,9 @@
     rdf_collection/3, % ?Collection:uri
                       % -Contents:list(uri)
                       % ?Graph:atom
+    rdf_collection_member/3, % ?Member:or([bnode,iri])
+                             % ?Collection:or([bnode,iri])
+                             % ?Graph
     rdf_container_membership_property/1, % ?Predicate:uri
 
 % SEQUENCE
@@ -43,6 +46,7 @@ Support for RDF containers (sequence, bag, and alternatives).
 */
 
 :- use_module(generics(typecheck)).
+:- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(math(math_ext)).
@@ -155,6 +159,21 @@ rdf_collection_(Collection, Contents, G):-
     ),
     Contents
   ).
+
+%! rdf_collection_member(
+%!   ?Member:or([bnode,iri]),
+%!   ?Collection:or([bnode,iri]),
+%!   ?Graph
+%! ) is nondet.
+
+:- rdf_meta(rdf_collection_member(r,r,?)).
+rdf_collection_member(Member, Collection, Graph):-
+  maplist(var, [Member,Collection]), !,
+  rdf_container_membership_property(P),
+  rdf(Collection, P, Member, Graph).
+rdf_collection_member(Member, Collection, Graph):-
+  rdf(Collection, P, Member, Graph),
+  rdf_container_membership_property(P).
 
 %! rdf_container_membership_property(+Predicate:uri) is semidet.
 %! rdf_container_membership_property(-Predicate:uri) is nondet.

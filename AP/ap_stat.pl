@@ -1,8 +1,6 @@
 :- module(
   ap_stat,
   [
-    ap_stage_done/2, % +Alias:atom
-                     % +Stage:nonneg
     ap_stage_init/1, % +Potential:nonneg
     ap_stage_tick/0
   ]
@@ -27,20 +25,10 @@ Statistics for tracking the progress of automated processes.
 
 
 
-% EVALUATION %
-
-%! ap_stage_done(+Alias:atom, +Stage:nonneg) is semidet.
-% Succeeds if the given stage completed successfully.
-
-ap_stage_done(Alias, Stage):-
-  ap_stage_eval(Alias, Stage, X, X), !.
-ap_stage_done(_, _):-
-  debug(ap_stat, 'No stage to conclude.', []).
-
 %! ap_stage_eval is det.
 
-ap_stage_eval(Alias):-
-  ap_stage_directories(Alias, StageDirs),
+ap_stage_eval(AP):-
+  ap_dirs(AP, StageDirs),
   (
     StageDirs == []
   ->

@@ -25,6 +25,8 @@ Automated processes for CKAN data.
 :- use_module(library(option)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_mime)). % Used in AP stage.
+:- use_module(rdf(rdf_container)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
 :- use_module(rdf(rdf_serial)). % Used in AP stage.
@@ -82,7 +84,6 @@ ckan_ap_site(Site, Extra_AP_Stages):-
 % @arg Resource An IRI denoting a CKAN resource.
 
 ckan_ap_site(Site1, Extra_AP_Stages1, Resource):-
-gtrace,
   dcg_with_output_to(atom(Name), rdf_term_name(Resource)),
   Spec =.. [Site1,Name],
   create_nested_directory(ckan_data(Spec)),
@@ -93,18 +94,27 @@ gtrace,
     Extra_AP_Stages1,
     Extra_AP_Stages2
   ),
-
+  
+  ap_resource(_, AP),
+  rdf_assert_datatype(AP, ap:alias, xsd:string, Name, ap),
+  rdf_assert(AP, ap:resource, Resource, ap),
   ap(
     [graph(Site2),reset(true)],
-    Name,
+    AP,
     [
-      ap_stage([name('Download')], download_to_directory),
+      ap_stage([name('Download')], ckan_download_to_directory),
       ap_stage([name('Arch')], extract_archives),
       ap_stage([name('MIME')], mime_dir),
       ap_stage([name('toTurtle')], rdf_convert_directory),
       ap_stage([name('VoID')], void_statistics)
     | Extra_AP_Stages2]
   ).
+
+ckan_download_to_directory(_, ToDir, AP_Stage):-
+  rdf_collection_member(AP_Stage, AP, _),
+  rdf(AP, ap:resource, Resource),
+  rdf_literal(Resource, ckan:url, URL, _),
+  download_to_directory(URL, ToDir, _).
 
 add_arguments(_, [], []).
 add_arguments(Args1, [ap_stage(O1,Pred)|T1], [ap_stage(O3,Pred)|T2]):-

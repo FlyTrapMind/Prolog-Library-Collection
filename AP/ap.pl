@@ -1,9 +1,11 @@
 :- module(
   ap,
   [
-    ap/3 % +Options:list(nvpair)
-         % +Alias:atom
-         % +AP_Stages:list(compound)
+    ap/3, % +Options:list(nvpair)
+          % +AP:iri
+          % +AP_Stages:list(compound)
+    ap_resource/2 % ?AP_Collection:iri
+                  % -AP:iri
   ]
 ).
 
@@ -16,6 +18,8 @@ Support for running automated processing.
     Identifies the output from a script stage.
     The directory is not included since this is fixed to
     the process' output directory.
+@tbd Add support for option =|finished(+Finished:boolean)|=,
+     allowing previously finished processes to be skipped.
 
 @author Wouter Beek
 @version 2013/06, 2013/10-2013/11, 2014/01-2014/02
@@ -29,6 +33,7 @@ Support for running automated processing.
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_container)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_build)).
 :- use_module(xml(xml_namespace)).
@@ -54,7 +59,25 @@ assert_ap_schema(Graph):-
   rdfs_assert_label(ap:'AP-Stage', 'Automated process stage', Graph).
 
 
-%! ap(+Options:list(nvpair), +Alias:atom, +AP_Stages:list(compound)) is det.
+ap_resource(AP_Collection1, AP):-
+  var(AP_Collection1), !,
+  Graph = ap,
+  flag(ap_collection, Id2, Id2 + 1),
+  atomic_list_concat(['AP_Collection',Id2], '/', LocalName2),
+  rdf_global_id(ap:LocalName2, AP_Collection2),
+  rdf_assert_individual(AP_Collection2, ap:'AP-Collection', Graph),
+  ap_resource(AP_Collection2, AP).
+ap_resource(AP_Collection, AP):-
+  Graph = ap,
+  flag(ap, Id1, Id1 + 1),
+  atomic_list_concat(['AP',Id1], LocalName1),
+  rdf_global_id(ap:LocalName1, AP),
+  rdf_assert_individual(AP, ap:'AP', Graph),
+  rdf_assert_collection_member(AP_Collection, AP, Graph).
+
+
+
+%! ap(+Options:list(nvpair), +AP:iri, +AP_Stages:list(compound)) is det.
 % `Alias` is an existing path alias with prolog_file_path/2.
 %
 % The following options are supported:
@@ -63,25 +86,17 @@ assert_ap_schema(Graph):-
 %     Default: `false`.
 
 :- meta_predicate(ap(+,+,:)).
-ap(O1, Alias, AP_Stages):-
-  Graph = ap,
-
-  rdf_global_id(ap:Alias, AP),
-  rdf_assert_individual(AP, ap:'AP', Graph),
-
-  atomic_list_concat(['AP_Collection',Alias], '/', LocalName),
-  rdf_global_id(ap:LocalName, AP_Collection),
-  rdf_assert_individual(AP_Collection, ap:'AP-Collection', Graph),
-  rdf_assert_collection_member(AP_Collection, AP, Graph),
-
-  ap_begin(O1, Alias),
-  ap_run(Alias, AP, AP_Stages),
-  ap_end(Alias).
+ap(O1, AP, AP_Stages):-
+  ap_begin(O1, AP),
+  ap_stages(AP, AP_Stages),
+  ap_end(AP).
 
 
-%! ap_begin(+Options:list(nvpair), +Alias:atom) is det.
+%! ap_begin(+Options:list(nvpair), +AP:iri) is det.
 
-ap_begin(O1, Alias):-
+ap_begin(O1, AP):-
+  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+
   % Process the reset option.
   option(reset(Reset), O1, false),
   (
@@ -107,33 +122,18 @@ ap_begin(O1, Alias):-
   create_nested_directory(Spec2).
 
 
-%! ap_end(+Alias:atom) is det.
+%! ap_end(+AP:iri) is det.
 % End the script, saving the results to the output directory.
 
-ap_end(Alias):-
+ap_end(AP):-
   % The last stage directory contains the output of the script.
   % Copy these contents to the output directory.
   (
-    ap_last_stage_directory(Alias, LastStageDir)
+    ap_last_stage_dir(AP, LastStageDir)
   ->
-    ap_dir(Alias, write, output, OutputDir),
+    ap_dir(AP, write, output, OutputDir),
     copy_directory([safe(true)], LastStageDir, OutputDir)
   ;
     true
   ).
-
-
-%! ap_run(+Alias:atom, +AP:iri, :AP_Stages:list(compound)) is det.
-
-:- meta_predicate(ap_run(+,+,:)).
-% The output is already available.
-ap_run(Alias, _, _):-
-  ap_dir(Alias, read, output, OutputDir),
-  absolute_file_name(
-    'FINISHED',
-    _ToFile,
-    [access(read),file_errors(fail),relative_to(OutputDir)]
-  ), !.
-ap_run(Alias, AP, AP_Stages):-
-  ap_stages(Alias, AP, AP_Stages).
 

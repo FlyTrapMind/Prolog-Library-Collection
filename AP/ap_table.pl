@@ -42,7 +42,6 @@ ap_register_row(Alias, Row):-
 
 % Show the results for the given AP alias.
 ap_table(Request):-
-gtrace,
   memberchk(search(Search), Request),
   memberchk(alias=Alias, Search), !,
   
