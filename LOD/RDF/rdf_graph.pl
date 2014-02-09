@@ -21,6 +21,8 @@
                            % +ToGraph:atom
     rdf_ground/1, % +Graph:atom
     rdf_ground/1, % +Triple:compound
+    rdf_is_graph/2, % +Graph:atom
+                    % -NormalizedGraph:atom
     rdf_same_graph/2, % +Graph1:atom
                       % +Graph2:atom
     rdf_schema/4, % +Graph:atom
@@ -145,7 +147,7 @@ rdf_graph_merge(Gs, MergedG):-
   % Type checking.
   is_list(Gs),
   maplist(rdf_graph, Gs),
-  
+
   % Generate a name for the merged graph, if needed.
   rdf_new_graph(MergedG),
 
@@ -244,9 +246,16 @@ rdf_ground(G):-
     rdf_ground(rdf(S,P,O))
   ).
 
-rdf_same_graph(G1, G2):-
-  (G1 = G ; G1 = G:_),
-  (G2 = G ; G2 = G:_).
+rdf_is_graph(Graph:_, Graph):-
+  atom(Graph),
+  rdf_graph(Graph), !.
+rdf_is_graph(Graph, Graph):-
+  atom(Graph),
+  rdf_graph(Graph).
+
+rdf_same_graph(Graph1, Graph2):-
+  rdf_is_graph(Graph1, Graph),
+  rdf_is_graph(Graph2, Graph).
 
 rdf_schema(G, RDFS_Classes, RDF_Properties, Triples):-
   setoff(C, rdfs_individual_of(C, rdfs:'Class'), RDFS_Classes),

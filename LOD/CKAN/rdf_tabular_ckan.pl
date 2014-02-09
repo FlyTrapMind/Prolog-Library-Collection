@@ -23,15 +23,15 @@ rdf_tabular_ckan(_Request):-
   reply_html_page(
     app_style,
     title('CKAN class-based overview'),
-    ckan_overview
+    \ckan_overview
   ).
 
 ckan_overview -->
   html([
-    rdf_tabular_class(_, ckan:'Group'),
-    rdf_tabular_class(_, ckan:'Package'),
-    rdf_tabular_class(_, ckan:'Resource'),
-    rdf_tabular_class(_, ckan:'Tag'),
-    rdf_tabular_class(_, ckan:'User')
+    \rdf_tabular_class(_, ckan:'Group'),
+    \rdf_tabular_class(_, ckan:'Package'),
+    \rdf_tabular_class(_, ckan:'Resource'),
+    \rdf_tabular_class(_, ckan:'Tag'),
+    \rdf_tabular_class(_, ckan:'User')
   ]).
 

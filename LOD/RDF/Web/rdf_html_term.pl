@@ -22,6 +22,7 @@ HTML generation of RDF content.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_graph)).
 :- use_module(server(web_ui)).
 :- use_module(xml(xml_namespace)).
 
@@ -33,12 +34,9 @@ rdf_html_term(RDF_Term) -->
   rdf_html_term(_, RDF_Term).
 
 % Graph.
-rdf_html_term(_, Graph) -->
-  {
-    atom(Graph),
-    rdf_graph(Graph)
-  }, !,
-  rdf_graph(Graph).
+rdf_html_term(_, Graph1) -->
+  {rdf_is_graph(Graph1, Graph2)}, !,
+  rdf_graph(Graph2).
 % Blank node.
 rdf_html_term(_, RDF_Term) -->
   {rdf_is_bnode(RDF_Term)}, !,

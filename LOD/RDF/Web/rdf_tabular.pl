@@ -42,7 +42,7 @@ http:location(rdf_tabular, root(rdf_tabular), []).
 rdf_tabular(Request):-
   memberchk(search(Search), Request),
   memberchk(term=Term, Search), !,
-
+  
   % The graph is optional (in which case it is left uninstantiated).
   ignore(memberchk(graph=Graph, Search)),
 
