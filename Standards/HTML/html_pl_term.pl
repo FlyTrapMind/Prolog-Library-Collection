@@ -243,7 +243,7 @@ html_module(Module) -->
   html(span(class=module, Module)).
 
 
-html_nvpair(nvpair(Property,Value)) -->
+html_nvpair(Property-Value) -->
   html_nvpair(Property, Value).
 
 html_nvpair(Property, Value) -->

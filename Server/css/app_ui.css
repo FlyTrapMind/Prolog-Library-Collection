@@ -509,11 +509,15 @@ pre .string, pre .support.value  {
   font-weight: bold;
 }
 
-.ap_error, .ap_fail, .ap_skip {
+.error, .fail {
   background-color: LightCoral;
 }
 
-.ap_succeed {
+.never_reached, .skip {
+  background-color: Orange;
+}
+
+.succeed {
   background-color: LightGreen;
 }
 

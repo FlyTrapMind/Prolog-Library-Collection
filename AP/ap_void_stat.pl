@@ -46,19 +46,19 @@ void_statistics(FromDir, ToDir, AP_Stage):-
 
 void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
   NVPairs = [
-    nvpair(classes,NC),
-    nvpair(subjects,NS),
-    nvpair(properties,NP),
-    nvpair(objects,NO),
-    nvpair(triples,NT)
+    classes-NC,
+    subjects-NS,
+    properties-NP,
+    objects-NO,
+    triples-NT
   ],
-  
+
   count_classes(ReadGraph, NC),
   count_objects(_, _, ReadGraph, NO),
   count_subjects(_, _, ReadGraph, NS),
   count_properties(_, _, ReadGraph, NP),
   rdf_statistics(triples_by_graph(ReadGraph, NT)),
-  
+
   (
     ap_resource(AP_Stage, Resource, WriteGraph)
   ->

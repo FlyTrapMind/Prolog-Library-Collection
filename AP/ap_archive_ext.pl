@@ -36,10 +36,7 @@ extract_archives(FromDir, ToDir, AP_Stage):-
     member(FromFile, FromFiles),
     (
       extract_archive(FromFile, ToDir, Conversions),
-      maplist(to_nvpair, Conversions, NVPairs),
-      add_operation_on_file(AP_Stage, FromFile, Operation, NVPairs)
+      add_operation_on_file(AP_Stage, FromFile, Operation, Conversions)
     )
   ).
-
-to_nvpair(Conversion, unarchived-Conversion).
 

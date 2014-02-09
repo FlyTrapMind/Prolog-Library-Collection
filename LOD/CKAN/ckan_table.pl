@@ -6,40 +6,38 @@
 @version 2014/02
 */
 
+:- use_module(ap(ap_table)).
 :- use_module(generics(meta_ext)).
-:- use_module(html(html_table)).
-:- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_lit_read)).
+:- use_module(server(web_modules)).
+
+http:location(ckan, root(ckan), []).
+:- http_handler(ckan(table), ckan_table, []).
+
+:- initialization(web_module_add('CKAN Table', ckan_table)).
 
 
 
 ckan_table(_Request):-
-  findall(
-    [],
-    rdf(AP, 
+  ap_table(ckan_header, ckan_row).
 
-  once(rdf_literal(Resource, ckan:url, URL, Site1)),
-  once(rdf_literal(Resource, ckan:id, ResourceId, Site1)),
-  once(rdf_literal(Resource, ckan:format, ResourceFormat, Site1)),
-  (
-    once(rdf_literal(Resource, ckan:resource_type, ResourceType, Site1))
-  ->
-    atomic_list_concat([ResourceId,ResourceFormat,ResourceType,URL], '\n', X1)
-  ;
-    atomic_list_concat([ResourceId,ResourceFormat,URL], '\n', X1)
-  ),
-  debug(semuri, 'Starting:\n~w', [X1]),
+ckan_header(Header, ['Name','Title','Organization','Users','Tags'|Header]).
 
-  once(rdf(Package, ckan:resources, Resource, Site1)),
-  once(rdf_literal(Package, ckan:name, PackageName, Site1)),
-  once(rdf_literal(Package, ckan:title, PackageTitle, Site1)),
-  atomic_list_concat([PackageName,PackageTitle], '\n', X2),
+ckan_row([H|T], [Name,Title,Organization,Users,Tags,H|T]):-
+  rdf_collection_member(H, AP, ap),
+  rdf(AP, ap:resource, Resource, ap),
+  once(rdf(Package, ckan:resources, Resource, _)),
+  once(rdf_literal(Package, ckan:name, Name, _)),
+  once(rdf_literal(Package, ckan:title, Title, _)),
 
-  once(rdf(Package, ckan:organization, Organization, Site1)),
-  once(rdf_literal(Organization, ckan:display_name, OrganizationName, Site1)),
+  % Organization.
+  once(rdf(Package, ckan:organization, X, _)),
+  once(rdf_literal(X, ckan:display_name, Organization, _)),
 
+  % Users.
   setoff(
     UserName,
     (
@@ -48,8 +46,9 @@ ckan_table(_Request):-
     ),
     UserNames
   ),
-  atomic_list_concat(UserNames, '\n', UserName),
+  atomic_list_concat(UserNames, '\n', Users),
 
+  % Tags.
   setoff(
     TagName,
     (
@@ -58,19 +57,5 @@ ckan_table(_Request):-
     ),
     TagNames
   ),
-  atomic_list_concat(TagNames, '\n', TagName),
-  
-
-
-
-  
-  reply_html_page(
-    app_style,
-    title('CKAN table'),
-    \html_table(
-      [header_column(false),header_row(true),indexed(true)],
-      'Results of the CKAN AP',
-      Rows
-    )
-  ).
+  atomic_list_concat(TagNames, '\n', Tags).
 

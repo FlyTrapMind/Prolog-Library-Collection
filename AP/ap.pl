@@ -94,9 +94,9 @@ ap_end(AP):-
   % The last stage directory contains the output of the script.
   % Copy these contents to the output directory.
   (
-    ap_last_stage_dir(AP, LastStageDir)
+    ap_last_stage_directory(AP, LastStageDir)
   ->
-    ap_dir(AP, write, output, OutputDir),
+    ap_directory(AP, write, output, OutputDir),
     copy_directory([safe(true)], LastStageDir, OutputDir)
   ;
     true

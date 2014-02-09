@@ -28,7 +28,7 @@ Statistics for tracking the progress of automated processes.
 %! ap_stage_eval is det.
 
 ap_stage_eval(AP):-
-  ap_dirs(AP, StageDirs),
+  ap_directories(AP, StageDirs),
   (
     StageDirs == []
   ->

@@ -20,15 +20,11 @@
     rdf_save/3, % +Options:list(nvpair)
                 % +Graph:atom
                 % ?File:atom
-    rdf_serialization/5, % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
-                         % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
-                         % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
-                         % ?MIME:atom
-                         % ?URL:atom
-% AP
-    rdf_convert_directory/3 % +FromDirectory:atom
-                            % +ToDirectory:atom
-                            % -AP_Status:compound
+    rdf_serialization/5 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
+                        % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
+                        % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
+                        % ?MIME:atom
+                        % ?URL:atom
   ]
 ).
 
@@ -106,17 +102,6 @@ directory_to_rdf_files(Dir, Pairs):-
       rdf_mime(MIME)
     ),
     Pairs
-  ).
-
-
-rdf_convert_directory(FromDir, ToDir, AP_Status):-
-  rdf_convert_directory(FromDir, ToDir, 'application/x-turtle', ToFiles),
-  (
-    ToFiles == []
-  ->
-    existence_error('RDF file', 'No RDF files')
-  ;
-    AP_Status = ap(status(succeed),rdf_conversion(ToFiles))
   ).
 
 

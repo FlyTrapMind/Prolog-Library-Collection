@@ -56,22 +56,42 @@ ap_stages(AP, AP_Stages):-
 
 
 :- meta_predicate(ap_stages0(+,:)).
-ap_stages0(_, []).
+ap_stages0(_, []):- !.
 ap_stages0(AP_Stage1, Mod:[ap_stage(O1,Goal)|T]):-
   catch(
     (
+      ap_stage_begin(O1, AP_Stage1),
       ap_stage(O1, AP_Stage1, Mod:Goal),
-      ap_stage_end(AP_Stage1)
+      ap_stage_end(AP_Stage1),
+      (T == [], ! ; create_next_stage(AP_Stage1, AP_Stage2)),
+      ap_stages0(AP_Stage2, Mod:T)
     ),
     Error,
-    ap_catcher(AP_Stage1, Error)
-  ),
-  create_next_stage(AP_Stage1, AP_Stage2),
-  ap_stages0(AP_Stage2, Mod:T).
+    ap_catcher(AP_Stage1, Error, T)
+  ).
 
-ap_catcher(AP_Stage, Error):-
-  rdf_assert_datatype(AP_Stage, ap:success, xsd:string, fail, ap),
-  rdf_assert_datatype(AP_Stage, ap:message, xsd:string, Error, ap).
+ap_stage_begin(O1, AP_Stage):-
+  option(name(Name), O1),
+  rdf_assert_datatype(AP_Stage, ap:name, xsd:string, Name, ap).
+
+ap_catcher(AP_Stage, Error, AP_Stages):-
+  rdf_assert_individual(AP_Stage, ap:'Error', ap),
+  rdf_assert_datatype(AP_Stage, ap:status, xsd:string, error, ap),
+  error_message(Error, Msg),
+  rdf_assert_datatype(AP_Stage, ap:message, xsd:string, Msg, ap),
+  never_reached(AP_Stage, AP_Stages).
+
+never_reached(_, []):- !.
+never_reached(AP_Stage1, [ap_stage(O1,_)|T]):-
+  create_next_stage(AP_Stage1, AP_Stage2),
+  rdf_assert_individual(AP_Stage2, ap:'NeverReached', ap),
+  ap_stage_begin(O1, AP_Stage2),
+  rdf_assert_datatype(AP_Stage2, ap:status, xsd:string, never_reached, ap),
+  never_reached(AP_Stage2, T).
+
+error_message(error(Formal,_Context), Msg):-
+  Formal =.. [process_error,File,exit(Status)], !,
+  format(atom(Msg), 'Process error ~d for file ~w.', [Status,File]).
 
 
 %! ap_stage(+Options:list(nvpair), +AP_Stage:iri, :Goal) is det.
@@ -95,7 +115,7 @@ ap_catcher(AP_Stage, Error):-
 ap_stage(O1, AP_Stage, Goal):-
   is_initial_stage(AP_Stage), !,
   rdf_collection_member(AP_Stage, AP, ap),
-  ap_dir(AP, write, input, ToDir),
+  ap_directory(AP, write, input, ToDir),
   ap_stage_dirs(O1, AP_Stage, _NoFromDir, ToDir, Goal).
 ap_stage(O1, AP_Stage, Goal):-
   ap_stage_from_directory(O1, AP_Stage, FromDir),
@@ -204,9 +224,9 @@ ap_stage_from_directory(O1, AP_Stage, FromDir):-
   option(from(FromDirName,_,_), O1),
   nonvar(FromDirName), !,
   rdf_collection_member(AP_Stage, AP, ap),
-  ap_dir(AP, write, FromDirName, FromDir).
+  ap_directory(AP, write, FromDirName, FromDir).
 ap_stage_from_directory(_, AP_Stage, StageDir):-
-  ap_stage_dir(AP_Stage, write, StageDir).
+  ap_stage_directory(AP_Stage, write, StageDir).
 
 
 %! ap_stage_to_arg(
@@ -258,9 +278,9 @@ ap_stage_to_directory(O1, _, ToDir3):-
 ap_stage_to_directory(_, AP_Stage, ToDir):-
   rdf_datatype(AP_Stage, ap:stage, xsd:integer, StageNum1, ap),
   StageNum2 is StageNum1 + 1,
-  ap_stage_name(StageNum2, StageName),
+  ap_stage_directory_name(StageNum2, StageName),
   rdf_collection_member(AP_Stage, AP, ap),
-  ap_dir(AP, write, StageName, ToDir).
+  ap_directory(AP, write, StageName, ToDir).
 
 
 :- meta_predicate(execute_goal(:,+)).

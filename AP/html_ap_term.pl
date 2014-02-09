@@ -36,38 +36,6 @@ html_ap_term(ap_alias(Alias)) --> !,
 html_ap_term(PL_Term) -->
   html_pl_term(PL_Term).
 
-
-% Downloaded.
-html_ap_message(download(File)) --> !,
-  html(
-    div(class=download, [
-      div(class=action ,'downloaded'),
-      \html_file(File)
-    ])
-  ).
-
-% Error thrown.
-html_ap_message(error(Formal,Context)) --> !,
-  html_pl_term(error(Formal,Context)).
-
-% Archive extracted.
-html_ap_message(extract_archive(OnFiles)) --> !,
-  html(
-    div(class=extract_archive, [
-      div(class=action, 'extracted archive'),
-      \on_files(OnFiles)
-    ])
-  ).
-
-% Properties of files.
-html_ap_message(properties(OfFiles)) --> !,
-  html(
-    div(class=property, [
-      div(class=action, property),
-      \of_files(OfFiles)
-    ])
-  ).
-
 % Randomize IRIs.
 html_ap_message(randomize_iris) --> !,
   html(div(class=randomize_iris, 'Aap')).
@@ -89,46 +57,6 @@ html_ap_message(Message) -->
     )
   ).
 
-
 mime(MIME) -->
   html_mime(MIME).
-
-
-of_file(of_file(NVPairs)) -->
-  html(
-    div(class=of_file,
-      \html_nvpairs(NVPairs)
-    )
-  ).
-
-of_file(of_file(_File,NVPairs)) -->
-  of_file(of_file(NVPairs)).
-
-
-of_files([]) --> !, [].
-of_files([H|T]) -->
-  of_file(H),
-  of_files(T).
-
-
-on_file(on_file(File,Operation)) -->
-  html(
-    div(class=on_file, [
-      \operation(Operation),
-      '@',
-      \html_file(File)
-    ])
-  ).
-
-
-on_files([]) --> !, [].
-on_files([H|T]) -->
-  html([
-    \on_file(H),
-    \on_files(T)
-  ]).
-
-
-operation(Operation) -->
-  html(span(class=operation, Operation)).
 

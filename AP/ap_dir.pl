@@ -2,19 +2,19 @@
   ap_dir,
   [
     ap_clean/1, % +AP:iri
-    ap_dir/4, % +AP:iri
-              % +Mode:oneof([read,write])
-              % +Subdir:atom
-              % -AbsoluteDir:atom
-    ap_dirs/2, % +AP:iri
-               % -Directories:list(atom)
-    ap_last_stage_dir/2, % +AP:iri
-                         % -LastStageDirectory:atom
-    ap_stage_dir/3, % +AP_Stage:iri
+    ap_directory/4, % +AP:iri
                     % +Mode:oneof([read,write])
+                    % +Subdir:atom
                     % -AbsoluteDir:atom
-    ap_stage_name/2 % +StageNumber:nonneg
-                    % -StageName:atom
+    ap_directories/2, % +AP:iri
+                      % -Directories:list(atom)
+    ap_last_stage_directory/2, % +AP:iri
+                               % -LastStageDirectory:atom
+    ap_stage_directory/3, % +AP_Stage:iri
+                          % +Mode:oneof([read,write])
+                          % -AbsoluteDir:atom
+    ap_stage_directory_name/2 % +StageNumber:nonneg
+                              % -StageName:atom
   ]
 ).
 
@@ -44,18 +44,18 @@ Directory management for running automated processes.
 % This is run after results have been saved to the `Output` directory.
 
 ap_clean(AP):-
-  ap_dirs(AP, StageDirs),
+  ap_directories(AP, StageDirs),
   maplist(delete_directory([include_self(true),safe(true)]), StageDirs).
 
 
-%! ap_dir(
+%! ap_directory(
 %!   +AP:iri,
 %!   +Mode:oneof([read,write]),
 %!   +Subdir:atom,
 %!   -AbsoluteDir:atom
 %! ) is det.
 
-ap_dir(AP, Mode, Subdir1, AbsoluteDir):-
+ap_directory(AP, Mode, Subdir1, AbsoluteDir):-
   rdfs_individual_of(AP, ap:'AP'), !,
   rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
 
@@ -75,37 +75,37 @@ ap_dir(AP, Mode, Subdir1, AbsoluteDir):-
   ).
 
 
-%! ap_dirs(+AP:iri, -StageDirectories:list(atom)) is det.
+%! ap_directories(+AP:iri, -StageDirectories:list(atom)) is det.
 
-ap_dirs(AP, Dirs):-
-  ap_dirs(AP, 1, Dirs).
+ap_directories(AP, Dirs):-
+  ap_directories(AP, 1, Dirs).
 
-ap_dirs(AP, Stage1, [H|T]):-
-  ap_stage_name(Stage1, Stage1Name),
-  ap_dir(AP, read, Stage1Name, H), !,
+ap_directories(AP, Stage1, [H|T]):-
+  ap_stage_directory_name(Stage1, Stage1Name),
+  ap_directory(AP, read, Stage1Name, H), !,
   Stage2 is Stage1 + 1,
-  ap_dirs(AP, Stage2, T).
-ap_dirs(_, _, []).
+  ap_directories(AP, Stage2, T).
+ap_directories(_, _, []).
 
 
-%! ap_last_stage_dir(+AP:iri, -LastStageDirectory:atom) is semidet.
+%! ap_last_stage_directory(+AP:iri, -LastStageDirectory:atom) is semidet.
 % Returns the last stage directory, if it exists.
 
-ap_last_stage_dir(AP, LastStageDir):-
-  ap_dirs(AP, StageDirs),
+ap_last_stage_directory(AP, LastStageDir):-
+  ap_directories(AP, StageDirs),
   StageDirs \== [],
   last(StageDirs, LastStageDir).
 
 
-ap_stage_dir(AP_Stage, Mode, AbsoluteDir):-
+ap_stage_directory(AP_Stage, Mode, AbsoluteDir):-
   rdfs_individual_of(AP_Stage, ap:'AP-Stage'), !,
   rdf_collection_member(AP_Stage, AP, ap),
   rdf_datatype(AP_Stage, ap:stage, xsd:integer, StageNum, ap),
-  ap_stage_name(StageNum, StageName),
-  ap_dir(AP, Mode, StageName, AbsoluteDir).
+  ap_stage_directory_name(StageNum, StageName),
+  ap_directory(AP, Mode, StageName, AbsoluteDir).
 
 
-%! ap_stage_name(+StageNumber:integer, -StageName:atom) is det.
+%! ap_stage_directory_name(+StageNumber:integer, -StageName:atom) is det.
 % Returns the stage name that corresponds to the given indicator.
 %
 % @arg StageIndicator One of the following:
@@ -114,9 +114,9 @@ ap_stage_dir(AP_Stage, Mode, AbsoluteDir):-
 %   * Other names are unchanged.
 % @arg StageName An atomic name.
 
-ap_stage_name(0, input):- !.
-ap_stage_name(StageNum, StageName):-
+ap_stage_directory_name(0, input):- !.
+ap_stage_directory_name(StageNum, StageName):-
   must_be(positive_integer, StageNum), !,
   format(atom(StageName), 'stage~w', [StageNum]).
-ap_stage_name(StageName, StageName).
+ap_stage_directory_name(StageName, StageName).
 

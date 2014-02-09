@@ -1,10 +1,8 @@
 :- module(
   ap_table,
   [
-    ap_register_header/2, % +Alias:atom
-                          % +Header:list(atom)
-    ap_register_row/2 % +Alias:atom
-                      % +Row:list(compound)
+    ap_table/2 % :AugmentHeader
+               % :AugmentRow
   ]
 ).
 
@@ -14,68 +12,125 @@
 @version 2014/01-2014/02
 */
 
+:- use_module(ap(ap_db)).
 :- use_module(ap(html_ap_term)). % Used in meta-argument of html_table//4.
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(uri_ext)).
 :- use_module(html(html_table)).
 :- use_module(html(html_pl_term)).
+:- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
+:- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_container)).
+:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_name)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
-:- http_handler(root(ap_table), ap_table, []).
+http:location(ap, root(ap), []).
+:- http_handler(ap(table), ap_table, []).
 
 :- web_module_add('AP table', ap_table).
 
-:- dynamic(header/2).
-:- dynamic(row/2).
 
 
-
-ap_register_header(Alias, Header):-
-  assert(header(Alias, Header)).
-
-ap_register_row(Alias, Row):-
-  assert(row(Alias, Row)).
-
-% Show the results for the given AP alias.
-ap_table(Request):-
-  memberchk(search(Search), Request),
-  memberchk(alias=Alias, Search), !,
-  
-  once(header(Alias, Header)),
-  findall(
-    Row,
-    row(Alias, Row),
-    Rows
-  ),
-  reply_html_page(
-    app_style,
-    title('AP results'),
-    \html_table(
-      [header_row(true),indexed(true)],
-      (`Results of automated process `, atom(Alias)),
-      html_ap_term,
-      [Header|Rows]
-    )
-  ).
-% Show all AP aliases.
 ap_table(_Request):-
-  findall(
-    [ap_alias(Alias)],
-    row(Alias, _),
-    Aliases
+  ap_table(=, =).
+
+:- meta_predicate(ap_table(2,2)).
+ap_table(HeaderAugmentation, RowAugmentation):-
+  (
+    once(rdfs_individual_of(AP_Collection, ap:'AP-Collection')),
+    rdf_collection(AP_Collection, APs, ap)
+  ->
+    maplist(ap_row, APs, Rows)
+  ;
+    Rows = []
   ),
   reply_html_page(
     app_style,
-    title('AP results'),
+    title(['Automated Processes - Collection ',\rdf_term_name(AP_Collection)]),
+    \ap_table(HeaderAugmentation, RowAugmentation, Rows)
+  ).
+
+ap_table(_, _, []) --> !, [].
+ap_table(HeaderAugmentation, RowAugmentation, [Row1|T]) -->
+  {
+    ap_table_header(Row1, Header1),
+    call(HeaderAugmentation, Header1, Header2),
+    call(RowAugmentation, Row1, Row2)
+  },
+  html(
     \html_table(
       [header_row(true),indexed(true)],
-      `Overview of automated processes.`,
-      html_ap_term,
-      [['Alias']|Aliases]
+      `Automated processes`,
+      ap_stage_cell,
+      [Header2,Row2|T]
     )
   ).
+
+ap_row(AP, AP_Stages):-
+  rdf_collection(AP, AP_Stages, ap).
+
+ap_table_header(Row, Header):-
+  maplist(ap_stage_name, Row, Header).
+
+ap_stage_cell(AP_Stage) -->
+  {
+    atom(AP_Stage),
+    rdfs_individual_of(AP_Stage, ap:'AP-Stage'), !,
+    rdf_datatype(AP_Stage, ap:status, xsd:string, Class, ap)
+  },
+  html(div(class=Class, \ap_message(AP_Stage))).
+ap_stage_cell(Term) -->
+  html_pl_term(Term).
+
+
+ap_message(AP_Stage) -->
+  {rdfs_individual_of(AP_Stage, ap:'NeverReached')}, !,
+  html('Never reached').
+ap_message(AP_Stage) -->
+  {
+    rdfs_individual_of(AP_Stage, ap:'Error'), !,
+    rdf_datatype(AP_Stage, ap:message, xsd:string, Msg, ap)
+  },
+  html(span([], Msg)).
+ap_message(AP_Stage) -->
+  {
+    rdfs_individual_of(AP_Stage, ap:'FileOperation'), !,
+    rdf_datatype(AP_Stage, ap:file, xsd:string, File, ap),
+    rdf_datatype(AP_Stage, ap:operation, xsd:string, Operation, ap)
+  },
+  html([\operation(Operation),'@',\html_file(File)]).
+ap_message(AP_Stage) -->
+  {
+    rdfs_individual_of(AP_Stage, ap:'FileProperties'), !,
+    findall(
+      Name-Value,
+      (
+        rdf(AP_Stage, ap:has_property, NVPair, ap),
+        rdf_datatype(NVPair, ap:name, xsd:string, Name, ap),
+        rdf_datatype(NVPair, ap:value, xsd:string, Value, ap)
+      ),
+      NVPairs
+    )
+  },
+  html(\html_nvpairs(NVPairs)).
+ap_message(AP_Stage) -->
+  {
+    forall(
+      rdf(AP_Stage, P, O),
+      (
+        dcg_with_output_to(user_output, rdf_triple_name(AP_Stage, P, O)),
+        nl(user_output),
+        flush_output(user_output)
+      )
+    )
+  }.
+
+operation(Operation) -->
+  html(span(class=operation, Operation)).
 

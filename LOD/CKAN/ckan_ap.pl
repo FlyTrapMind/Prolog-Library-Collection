@@ -18,6 +18,7 @@ Automated processes for CKAN data.
 :- use_module(ap(ap_archive_ext)).
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_file_mime)).
+:- use_module(ap(ap_rdf_serial)).
 :- use_module(ap(ap_void_stat)).
 :- use_module(ckan(ckan_scrape)).
 :- use_module(dcg(dcg_generic)).
@@ -34,6 +35,7 @@ Automated processes for CKAN data.
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
 :- use_module(rdf(rdf_serial)). % Used in AP stage.
+:- use_module(rdfs(rdfs_label_build)).
 
 
 
@@ -76,35 +78,33 @@ ckan_ap_site(Site, Extra_AP_Stages):-
     ),
     Resources
   ),
-  maplist(ckan_ap_site(Site, Extra_AP_Stages), Resources).
+  create_ap_collection(AP_Collection),
+  rdfs_assert_label(AP_Collection, Site, ap),
+  maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources).
 
 %! ckan_ap_site(
-%!   +Site:atom,
+%!   +AP_Collection:iri,
 %!   +Extra_AP_Stages:list(compound),
 %!   +Resource:iri
 %! ) is det.
-% @arg Site The atomic name of a CKAN site.
+% @arg AP_Collection The atomic name of a CKAN site as its `rdfs:label`.
 % @arg AP_Stages A list of compound terms that describe AP stages.
 % @arg Resource An IRI denoting a CKAN resource.
 
-ckan_ap_site(Site1, Extra_AP_Stages1, Resource):-
-  dcg_with_output_to(atom(Name), rdf_term_name(Resource)),
-  Spec =.. [Site1,Name],
+ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
+  rdfs_label(AP_Collection, Site),
+  rdf_literal(Resource, ckan:name, Name, _),
+  Spec =.. [Site,Name],
   create_nested_directory(ckan_data(Spec)),
-  db_add_novel(user:file_search_path(Name, Spec)),
-  atomic_list_concat([Site1,ckan], '_', Site2),
-  maplist(
-    add_arguments([Resource,Site2]),
-    Extra_AP_Stages1,
-    Extra_AP_Stages2
-  ),
+  Alias = Name,
+  db_add_novel(user:file_search_path(Alias, Spec)),
 
-  create_ap(_, AP),
-  rdf_assert_datatype(AP, ap:alias, xsd:string, Name, ap),
+  create_ap(AP_Collection, AP),
   rdf_assert(AP, ap:resource, Resource, ap),
-  rdf_assert_datatype(AP, ap:graph, xsd:string, Site1, ap),
+  rdf_assert_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  rdf_assert_datatype(AP, ap:graph, xsd:string, Site, ap),
   ap(
-    [graph(Site2),reset(true)],
+    [reset(true)],
     AP,
     [
       ap_stage([name('Download')], ckan_download_to_directory),
@@ -112,14 +112,22 @@ ckan_ap_site(Site1, Extra_AP_Stages1, Resource):-
       ap_stage([name('MIME')], mime_dir),
       ap_stage([name('toTurtle')], rdf_convert_directory),
       ap_stage([name('VoID')], void_statistics)
-    | Extra_AP_Stages2]
+    | Extra_AP_Stages]
   ).
 
 ckan_download_to_directory(_, ToDir, AP_Stage):-
-  rdf_collection_member(AP_Stage, AP, _),
-  rdf(AP, ap:resource, Resource),
+  ap_resource(AP_Stage, Resource, _),
   rdf_literal(Resource, ckan:url, URL, _),
-  download_to_directory(URL, ToDir, _).
+  download_to_directory(URL, ToDir, _),
+  directory_files(
+    [include_directories(false),include_self(false)],
+    ToDir,
+    ToFiles
+  ),
+  forall(
+    member(File, ToFiles),
+    add_operation_on_file(AP_Stage, File, downloaded, [])
+  ).
 
 add_arguments(_, [], []).
 add_arguments(Args1, [ap_stage(O1,Pred)|T1], [ap_stage(O3,Pred)|T2]):-

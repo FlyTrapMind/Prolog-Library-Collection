@@ -1,19 +1,25 @@
 :- module(
   ap_db,
   [
+% ADD
     add_operation_on_file/4, % +AP_Stage:iri
                              % +File:atom
                              % +Operation:atom
-                             % +NVPairs:list(pair)
+                             % +Modifiers:list
     add_properties_of_file/3, % +AP_Stage:iri
                               % +File:atom
                               % +NVPairs:list(pair)
     add_succeed/1, % +AP_Stage:iri
+% READ
     ap_resource/3, % +AP_Stage:iri
                    % ?Resource:iri
                    % ?Graph:atom
-    create_ap/2, % ?AP_Collection:iri
+    ap_stage_name/2, % ?AP_Stage:iri
+                     % ?Name:atom
+% CREATE
+    create_ap/2, % +AP_Collection:iri
                  % -AP:iri
+    create_ap_collection/1, % -AP_Collection:iri
     create_initial_stage/2, % +AP:iri
                             % -Intitial_AP_Stage:iri
     create_next_stage/2, % +AP_Stage1:iri
@@ -65,13 +71,13 @@ add_nvpair(Name-Value, BNode):-
   rdf_assert_datatype(BNode, ap:name, xsd:string, Name, ap),
   rdf_assert_datatype(BNode, ap:value, xsd:string, Value, ap).
 
-add_operation_on_file(AP_Stage, File, Operation, NVPairs):-
+add_operation_on_file(AP_Stage, File, Operation, Modifiers):-
   rdf_assert_individual(AP_Stage, ap:'FileOperation', ap),
   rdf_assert_datatype(AP_Stage, ap:file, xsd:string, File, ap),
   rdf_assert_datatype(AP_Stage, ap:operation, xsd:string, Operation, ap),
-  maplist(add_nvpair, NVPairs, BNodes),
+  maplist(add_nvpair, Modifiers, BNodes),
   rdf_assert_list(BNodes, RDF_List, ap),
-  rdf_assert(AP_Stage, ap:operations, RDF_List, ap).
+  rdf_assert(AP_Stage, ap:modifiers, RDF_List, ap).
 
 add_properties_of_file(AP_Stage, File, NVPairs):-
   rdf_assert_individual(AP_Stage, ap:'FileProperties', ap),
@@ -90,13 +96,15 @@ ap_resource(AP_Stage, Resource, Graph):-
   rdf(AP, ap:resource, Resource, ap),
   rdf_datatype(AP, ap:graph, xsd:string, Graph, ap).
 
-create_ap(AP_Collection, AP):-
-  var(AP_Collection), !,
-  create_resource('AP-Collection', AP_Collection),
-  create_ap(AP_Collection, AP).
+ap_stage_name(AP_Stage, Name):-
+  rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap).
+
 create_ap(AP_Collection, AP):-
   create_resource('AP', AP),
   rdf_assert_collection_member(AP_Collection, AP, ap).
+
+create_ap_collection(AP_Collection):-
+  create_resource('AP-Collection', AP_Collection).
 
 create_initial_stage(AP, AP_Stage):-
   create_stage(AP, -1, AP_Stage).
