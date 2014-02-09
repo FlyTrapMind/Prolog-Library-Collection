@@ -94,9 +94,13 @@ ap_message(AP_Stage) -->
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Error'), !,
-    rdf_datatype(AP_Stage, ap:message, xsd:string, Msg, ap)
+    rdf_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
+    read_term_from_atom(Atom, Error, [])
   },
-  html(span([], Msg)).
+  html(\html_pl_term(Error)).
+ap_message(AP_Stage) -->
+  {rdfs_individual_of(AP_Stage, ap:'Skip')}, !,
+  html('Skip').
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'FileOperation'), !,

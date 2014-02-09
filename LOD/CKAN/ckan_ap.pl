@@ -92,8 +92,12 @@ ckan_ap_site(Site, Extra_AP_Stages):-
 % @arg Resource An IRI denoting a CKAN resource.
 
 ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
-  rdfs_label(AP_Collection, Site),
-  rdf_literal(Resource, ckan:name, Name, _),
+  once(rdfs_label(AP_Collection, Site)),
+  (
+    once(rdf_literal(Resource, ckan:name, Name, _)), !
+  ;
+    once(rdf_literal(Resource, ckan:id, Name, _))
+  ),
   Spec =.. [Site,Name],
   create_nested_directory(ckan_data(Spec)),
   Alias = Name,

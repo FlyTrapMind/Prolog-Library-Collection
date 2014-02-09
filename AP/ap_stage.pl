@@ -56,7 +56,7 @@ ap_stages(AP, AP_Stages):-
 
 
 :- meta_predicate(ap_stages0(+,:)).
-ap_stages0(_, []):- !.
+ap_stages0(_, _:[]):- !.
 ap_stages0(AP_Stage1, Mod:[ap_stage(O1,Goal)|T]):-
   catch(
     (
@@ -77,8 +77,8 @@ ap_stage_begin(O1, AP_Stage):-
 ap_catcher(AP_Stage, Error, AP_Stages):-
   rdf_assert_individual(AP_Stage, ap:'Error', ap),
   rdf_assert_datatype(AP_Stage, ap:status, xsd:string, error, ap),
-  error_message(Error, Msg),
-  rdf_assert_datatype(AP_Stage, ap:message, xsd:string, Msg, ap),
+  with_output_to(atom(Atom), write_canonical(Error)),
+  rdf_assert_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
   never_reached(AP_Stage, AP_Stages).
 
 never_reached(_, []):- !.
@@ -88,10 +88,6 @@ never_reached(AP_Stage1, [ap_stage(O1,_)|T]):-
   ap_stage_begin(O1, AP_Stage2),
   rdf_assert_datatype(AP_Stage2, ap:status, xsd:string, never_reached, ap),
   never_reached(AP_Stage2, T).
-
-error_message(error(Formal,_Context), Msg):-
-  Formal =.. [process_error,File,exit(Status)], !,
-  format(atom(Msg), 'Process error ~d for file ~w.', [Status,File]).
 
 
 %! ap_stage(+Options:list(nvpair), +AP_Stage:iri, :Goal) is det.

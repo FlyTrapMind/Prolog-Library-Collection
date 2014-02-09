@@ -20,6 +20,8 @@ Archive extraction process for the AP architecture.
 :- use_module(os(dir_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_datatype)).
 
 
 
@@ -32,11 +34,18 @@ Archive extraction process for the AP architecture.
 extract_archives(FromDir, ToDir, AP_Stage):-
   Operation = 'archive extraction',
   directory_files([recursive(false)], FromDir, FromFiles),
-  forall(
-    member(FromFile, FromFiles),
-    (
-      extract_archive(FromFile, ToDir, Conversions),
-      add_operation_on_file(AP_Stage, FromFile, Operation, Conversions)
+  (
+    FromFiles == []
+  ->
+    rdf_assert_individual(AP_Stage, ap:'Skip', ap),
+    rdf_assert_datatype(AP_Stage, ap:status, xsd:string, skip, ap)
+  ;
+    forall(
+      member(FromFile, FromFiles),
+      (
+        extract_archive(FromFile, ToDir, Conversions),
+        add_operation_on_file(AP_Stage, FromFile, Operation, Conversions)
+      )
     )
   ).
 
