@@ -1,11 +1,8 @@
 :- module(
   file_mime,
   [
-    file_mime/2, % +File:atom
-                 % -MIME:atom
-    mime_dir/3 % +FromDirectory:atom
-               % +ToDirectory:atom
-               % -AP_Status:compound
+    file_mime/2 % +File:atom
+                % -MIME:atom
   ]
 ).
 
@@ -44,28 +41,6 @@ file_mime(File, MIME):-
 file_mime(File, _):-
   debug(file_mime, 'Failed to identify MIME type of file ~w.', [File]),
   fail.
-
-
-%! mime_dir(
-%!   +FromDirectory:atom,
-%!   +ToDirectory:atom,
-%!   -AP_Status:compound
-%! ) is det.
-
-mime_dir(FromDir, ToDir, ap(status(succeed),properties(OfFiles))):-
-  directory_files([], FromDir, FromFiles),
-  findall(
-    of_file(FromFile,[nvpair('MIME',mime(MIME))]),
-    (
-      member(FromFile, FromFiles),
-      file_mime(FromFile, MIME)
-    ),
-    OfFiles
-  ),
-  forall(
-    member(FromFile, FromFiles),
-    copy_file(FromFile, ToDir)
-  ).
 
 
 file_mime('application/x-turtle') -->

@@ -1,13 +1,9 @@
 :- module(
   archive_ext,
   [
-    extract_archive/3, % +FromFile:atom
-                       % +ToDirectory:atom
-                       % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
-% AP
-    extract_archives/3 % +FromDirectory:atom
-                       % +ToDirectory:atom
-                       % -AP_Status:compound
+    extract_archive/3 % +FromFile:atom
+                      % +ToDirectory:atom
+                      % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
   ]
 ).
 
@@ -20,6 +16,7 @@ Extensions to the support for archived files.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
@@ -66,26 +63,4 @@ extract_archive(tgz, File, _, untarred):- !,
   process_create(path(tar), [zxvf,file(File)], []).
 extract_archive(zip, File, Base, unzipped):- !,
   process_create(path(unzip), [file(File),'-o',file(Base)], []).
-
-
-%! extact_archives(
-%!   +FromDirectory:atom,
-%!   +ToDirectory:atom,
-%!   -AP_Status:compound
-%! ) is det.
-
-extract_archives(
-  FromDir,
-  ToDir,
-  ap(status(succeed),extract_archive(OnFiles))
-):-
-  directory_files([recursive(false)], FromDir, FromFiles),
-  findall(
-    on_file(FromFile,conversions(Conversions)),
-    (
-      member(FromFile, FromFiles),
-      extract_archive(FromFile, ToDir, Conversions)
-    ),
-    OnFiles
-  ).
 

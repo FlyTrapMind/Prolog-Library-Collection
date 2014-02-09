@@ -62,6 +62,8 @@ WHERE
 % XML and SPARQL namespace prefixes that often occur in DBpedia.
 :- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
 
+:- xml_register_namespace(dt, 'http://dbpedia.org/datatype/').
+
 :- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
 
 :- xml_register_namespace(dbpedia, 'http://dbpedia.org/resource/').

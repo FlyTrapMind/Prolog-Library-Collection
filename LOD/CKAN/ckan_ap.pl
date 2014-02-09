@@ -15,6 +15,10 @@ Automated processes for CKAN data.
 */
 
 :- use_module(ap(ap)).
+:- use_module(ap(ap_archive_ext)).
+:- use_module(ap(ap_db)).
+:- use_module(ap(ap_file_mime)).
+:- use_module(ap(ap_void_stat)).
 :- use_module(ckan(ckan_scrape)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(archive_ext)). % Used in AP stage.
@@ -94,10 +98,11 @@ ckan_ap_site(Site1, Extra_AP_Stages1, Resource):-
     Extra_AP_Stages1,
     Extra_AP_Stages2
   ),
-  
-  ap_resource(_, AP),
+
+  create_ap(_, AP),
   rdf_assert_datatype(AP, ap:alias, xsd:string, Name, ap),
   rdf_assert(AP, ap:resource, Resource, ap),
+  rdf_assert_datatype(AP, ap:graph, xsd:string, Site1, ap),
   ap(
     [graph(Site2),reset(true)],
     AP,

@@ -81,8 +81,8 @@ rdf_gc_graph:-
   rdf_gc_triples_by_graph(Triples).
 
 rdf_gc_triples_by_graph(Triples):-
-  % 10,000,000
-  Triples =< 10000000, !.
+  % 5,000,000
+  Triples =< 5000000, !.
 rdf_gc_triples_by_graph(_):-
   findall(
     Time-Graph,

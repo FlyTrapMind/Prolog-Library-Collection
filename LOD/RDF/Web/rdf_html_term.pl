@@ -134,7 +134,11 @@ rdf_iri(_, IRI) -->
 rdf_iri(Graph, IRI1) -->
   {rdf_global_id(IRI2, IRI1)},
   (
-    {IRI2 = Prefix:Postfix}
+    {(
+      IRI2 = Prefix:Postfix, !
+    ;
+      atomic_list_concat([Prefix,Postfix], ':', IRI2)
+    )}
   ->
     {
       (

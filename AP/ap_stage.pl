@@ -27,6 +27,7 @@ The following options can be added to AP stages:
 @version 2013/10-2014/02
 */
 
+:- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stat)).
 :- use_module(ap(ap_table)).
@@ -49,7 +50,7 @@ The following options can be added to AP stages:
 
 :- meta_predicate(ap_stages(+,:)).
 ap_stages(AP, AP_Stages):-
-  ap_initial_stage(AP, AP_Stage),
+  create_initial_stage(AP, AP_Stage),
   ap_stages0(AP_Stage, AP_Stages).
 
 
@@ -65,13 +66,12 @@ ap_stages0(AP_Stage1, Mod:[ap_stage(O1,Goal)|T]):-
     Error,
     ap_catcher(AP_Stage1, Error)
   ),
-  ap_next_stage(AP_Stage1, AP_Stage2),
+  create_next_stage(AP_Stage1, AP_Stage2),
   ap_stages0(AP_Stage2, Mod:T).
 
 ap_catcher(AP_Stage, Error):-
-  debug(ap, '~w', [Error]),
-  rdf_assert_datatype(AP_Stage, ap:success, xsd:string, fail, ap).
-
+  rdf_assert_datatype(AP_Stage, ap:success, xsd:string, fail, ap),
+  rdf_assert_datatype(AP_Stage, ap:message, xsd:string, Error, ap).
 
 
 %! ap_stage(+Options:list(nvpair), +AP_Stage:iri, :Goal) is det.
@@ -133,7 +133,7 @@ ap_stage_dirs(_, _, _, _, _).
 ap_stage_end(AP_Stage):-
   once(rdfs_label(AP_Stage, Label)),
   debug(ap, '~w ended successfully.', [Label]),
-  rdf_assert_datatype(AP_Stage, ap:success, xsd:string, succeed, ap).
+  add_succeed(AP_Stage).
 
 
 %! ap_stage_from_arg(
@@ -274,24 +274,4 @@ execute_goal(Goal, Args):-
       debug(ap, 'Duration:~w ; Goal:~w ; Args:~w', [Delta,Goal,Args])
     )
   ).
-
-
-ap_initial_stage(AP, AP_Stage):-
-  ap_create_stage(AP, -1, AP_Stage).
-
-ap_create_stage(AP, StageNum, AP_Stage):-
-  flag(ap_stage, Id, Id + 1),
-  atomic_list_concat(['AP-Stage',Id], '/', LocalName),
-  rdf_global_id(ap:LocalName, AP_Stage),
-  rdf_assert_individual(AP_Stage, ap:'AP-Stage', ap),
-  rdf_assert_collection_member(AP, AP_Stage, ap),
-  format(atom(Label), 'Automated stage ~d', [StageNum]),
-  rdfs_assert_label(AP_Stage, Label, ap),
-  rdf_assert_datatype(AP_Stage, ap:stage, xsd:integer, StageNum, ap).
-
-ap_next_stage(AP_Stage1, AP_Stage2):-
-  rdf_datatype(AP_Stage1, ap:stage, xsd:integer, StageNum1, ap),
-  rdf_collection_member(AP_Stage1, AP, ap),
-  StageNum2 is StageNum1 + 1,
-  ap_create_stage(AP, StageNum2, AP_Stage2).
 

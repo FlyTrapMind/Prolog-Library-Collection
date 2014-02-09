@@ -1,11 +1,9 @@
 :- module(
   ap,
   [
-    ap/3, % +Options:list(nvpair)
-          % +AP:iri
-          % +AP_Stages:list(compound)
-    ap_resource/2 % ?AP_Collection:iri
-                  % -AP:iri
+    ap/3 % +Options:list(nvpair)
+         % ?AP:iri
+         % +AP_Stages:list(compound)
   ]
 ).
 
@@ -25,6 +23,7 @@ Support for running automated processing.
 @version 2013/06, 2013/10-2013/11, 2014/01-2014/02
 */
 
+:- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stage)).
 :- use_module(ap(ap_stat)).
@@ -36,44 +35,6 @@ Support for running automated processing.
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_build)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
-
-:- initialization(assert_ap_schema(ap)).
-
-
-
-assert_ap_schema(Graph):-
-  rdfs_assert_subclass(ap:'AP-Collection', rdf:'Bag', Graph),
-  rdfs_assert_label(
-    ap:'AP-Collection',
-    'Collection of automated processes',
-    Graph
-  ),
-
-  rdfs_assert_subclass(ap:'AP', rdf:'Seq', Graph),
-  rdfs_assert_label(ap:'AP', 'Automated process', Graph),
-
-  rdfs_assert_class(ap:'AP-Stage', Graph),
-  rdfs_assert_label(ap:'AP-Stage', 'Automated process stage', Graph).
-
-
-ap_resource(AP_Collection1, AP):-
-  var(AP_Collection1), !,
-  Graph = ap,
-  flag(ap_collection, Id2, Id2 + 1),
-  atomic_list_concat(['AP_Collection',Id2], '/', LocalName2),
-  rdf_global_id(ap:LocalName2, AP_Collection2),
-  rdf_assert_individual(AP_Collection2, ap:'AP-Collection', Graph),
-  ap_resource(AP_Collection2, AP).
-ap_resource(AP_Collection, AP):-
-  Graph = ap,
-  flag(ap, Id1, Id1 + 1),
-  atomic_list_concat(['AP',Id1], LocalName1),
-  rdf_global_id(ap:LocalName1, AP),
-  rdf_assert_individual(AP, ap:'AP', Graph),
-  rdf_assert_collection_member(AP_Collection, AP, Graph).
 
 
 
@@ -85,7 +46,11 @@ ap_resource(AP_Collection, AP):-
 %     When true, removes the results of any prior executions of stages.
 %     Default: `false`.
 
-:- meta_predicate(ap(+,+,:)).
+:- meta_predicate(ap(+,?,:)).
+ap(O1, AP, AP_Stages):-
+  var(AP), !,
+  create_ap(_, AP),
+  ap(O1, AP, AP_Stages).
 ap(O1, AP, AP_Stages):-
   ap_begin(O1, AP),
   ap_stages(AP, AP_Stages),
