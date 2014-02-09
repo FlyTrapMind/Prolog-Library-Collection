@@ -13,7 +13,6 @@
 */
 
 :- use_module(ap(ap_db)).
-:- use_module(ap(html_ap_term)). % Used in meta-argument of html_table//4.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(uri_ext)).
@@ -57,18 +56,18 @@ ap_table(HeaderAugmentation, RowAugmentation):-
   ).
 
 ap_table(_, _, []) --> !, [].
-ap_table(HeaderAugmentation, RowAugmentation, [Row1|T]) -->
+ap_table(HeaderAugmentation, RowAugmentation, [H|T]) -->
   {
-    ap_table_header(Row1, Header1),
+    ap_table_header(H, Header1),
     call(HeaderAugmentation, Header1, Header2),
-    call(RowAugmentation, Row1, Row2)
+    maplist(RowAugmentation, [H|T], Rows)
   },
   html(
     \html_table(
       [header_row(true),indexed(true)],
       `Automated processes`,
       ap_stage_cell,
-      [Header2,Row2|T]
+      [Header2|Rows]
     )
   ).
 

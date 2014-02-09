@@ -41,8 +41,8 @@ ckan_row([H|T], [Name,Title,Organization,Users,Tags,H|T]):-
   setoff(
     UserName,
     (
-      rdf(Organization, ckan:users, User, Site1),
-      rdf_literal(User, ckan:fullname, UserName, Site1)
+      rdf(X, ckan:users, User, _),
+      rdf_literal(User, ckan:fullname, UserName, _)
     ),
     UserNames
   ),
@@ -52,10 +52,15 @@ ckan_row([H|T], [Name,Title,Organization,Users,Tags,H|T]):-
   setoff(
     TagName,
     (
-      rdf(Package, ckan:tags, Tag, Site1),
-      rdf_literal(Tag, ckan:name, TagName, Site1)
+      rdf(Package, ckan:tags, Tag, _),
+      rdf_literal(Tag, ckan:name, TagName, _)
     ),
     TagNames
   ),
   atomic_list_concat(TagNames, '\n', Tags).
+
+
+
+
+
 
