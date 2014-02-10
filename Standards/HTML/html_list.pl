@@ -61,11 +61,11 @@ html_handler_list(L_O1, Parent) -->
 %     Whether an order =ol= or unordered =ul= HTML list is used.
 %
 % @arg ListOptions A list of name-value pairs,
-%        representing options of the HTML list element.
+%      representing options of the HTML list element.
 % @arg ListItemOptions A list of name-value pairs,
-%        representing options of the HTML list items.
+%      representing options of the HTML list items.
 % @arg ListItems A list of compound terms that are DCG rules
-%        in the HTML DSL, used for generating individual list items.
+%      in the HTML DSL, used for generating individual list items.
 
 html_list(L_O1, LI_O1, Items) -->
   {
@@ -77,6 +77,7 @@ html_list(L_O1, LI_O1, Items) -->
   },
   html_list(L_O1, ListItems).
 
+
 %! html_list(+ListOptions:list(nvpair), +ListItems:list(compound))// is det.
 % Generates an HTML list containing the given list items.
 % This is an internal predicate that is used by other in order to share code.
@@ -86,9 +87,9 @@ html_list(L_O1, LI_O1, Items) -->
 %     Whether an order =ol= or unordered =ul= HTML list is used.
 %
 % @arg ListOptions A list of name-value pairs,
-%        representing options of the HTML list element.
+%      representing options of the HTML list element.
 % @arg ListItems A list of compound terms that are DCG rules
-%        in the HTML DSL, used for generating individual list items.
+%      in the HTML DSL, used for generating individual list items.
 
 html_list(L_O1, ListItems) -->
   {select_option(ordered(Ordered), L_O1, L_O2, false)},
@@ -101,6 +102,7 @@ html_list(L_O1, ListItems) -->
   ->
     html(ol(L_O2, ListItems))
   ).
+
 
 %! html_module_list(
 %!   +ListOptions:list(nvpair),

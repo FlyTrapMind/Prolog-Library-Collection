@@ -31,10 +31,5 @@ rdf_convert_directory(FromDir, ToDir, AP_Stage):-
   ).
 
 rdf_convert_directory_assertion(AP_Stage, File):-
-  add_operation_on_file(
-    AP_Stage,
-    File,
-    'RDF conversion',
-    ['MIME'-'application/x-turtle']
-  ).
+  add_operation_on_file(AP_Stage, File, 'RDF conversion', []).
 

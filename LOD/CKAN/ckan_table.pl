@@ -59,8 +59,3 @@ ckan_row([H|T], [Name,Title,Organization,Users,Tags,H|T]):-
   ),
   atomic_list_concat(TagNames, '\n', Tags).
 
-
-
-
-
-

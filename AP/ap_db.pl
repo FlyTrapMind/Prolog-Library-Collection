@@ -75,9 +75,10 @@ add_operation_on_file(AP_Stage, File, Operation, Modifiers):-
   rdf_assert_individual(AP_Stage, ap:'FileOperation', ap),
   rdf_assert_datatype(AP_Stage, ap:file, xsd:string, File, ap),
   rdf_assert_datatype(AP_Stage, ap:operation, xsd:string, Operation, ap),
-  maplist(add_nvpair, Modifiers, BNodes),
-  rdf_assert_list(BNodes, RDF_List, ap),
-  rdf_assert(AP_Stage, ap:modifiers, RDF_List, ap).
+  forall(
+    member(Modifier, Modifiers),
+    rdf_assert_datatype(AP_Stage, ap:has_modifier, xsd:string, Modifier, ap)
+  ).
 
 add_properties_of_file(AP_Stage, File, NVPairs):-
   rdf_assert_individual(AP_Stage, ap:'FileProperties', ap),

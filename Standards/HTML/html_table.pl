@@ -188,7 +188,7 @@ html_table_data_row(
       O1 = []
     )
   },
-  
+
   ({
     HasHeaderColumn == true,
     IsIndexed == false,
@@ -237,7 +237,7 @@ html_table_header(true, IsIndexed, Cell, [HeaderRow1|DataRows], DataRows) --> !,
   )},
   html(thead(\html_table_header_row(Cell, HeaderRow2))).
 % In case the header option is not set, simply return the given rows.
-html_table_header(false, _, DataRows, DataRows) --> [].
+html_table_header(false, _, _, DataRows, DataRows) --> [].
 
 
 %! html_table_header_row(:Cell, +HeaderRow:list(ground))// is det.

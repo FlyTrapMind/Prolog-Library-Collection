@@ -11,19 +11,89 @@
 Statistics for tracking the progress of automated processes.
 
 @author Wouter Beek
-@version 2013/10-2014/01
+@version 2013/10-2014/02
 */
 
 :- use_module(ap(ap_dir)).
 :- use_module(generics(atom_ext)).
-:- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
+:- use_module(html(html_table)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
-:- use_module(os(datetime_ext)).
+:- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(pairs)).
+:- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_datatype)).
+:- use_module(server(web_modules)).
+
+http:location(ap, root(ap), []).
+:- http_handler(ap(stat), ap_stat, []).
+
+:- initialization(web_module_add('AP Stat', ap_stat)).
+
+
+
+ap_stat(_Request):-
+  aggregate_all(
+    count,
+    rdfs_individual_of(_, ap:'AP'),
+    N
+  ),
+  setoff(
+    I-Column,
+    (
+      rdfs_individual_of(AP_Stage, ap:'AP-Stage'),
+      rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
+      rdf(AP, P, AP_Stage, ap),
+      rdfs_individual_of(AP, ap:'AP'),
+      rdf_global_id(rdf:LocalName, P),
+      atom_concat('_', Atom, LocalName),
+      atom_number(Atom, I)
+    ),
+    Pairs1
+  ),
+  keysort(Pairs1, Pairs2),
+  pairs_values(Pairs2, Columns),
+  findall(
+    [Column,Succeed,Fail],
+    (
+      member(Column, Columns),
+      aggregate_all(
+        count,
+        (
+          rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
+          rdf_datatype(AP_Stage, ap:status, xsd:string, succeed, ap)
+        ),
+        Succeed0
+      ),
+      Succeed is Succeed0 / N,
+      aggregate_all(
+        count,
+        (
+          rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
+          rdf_datatype(AP_Stage, ap:status, xsd:string, error, ap)
+        ),
+        Fail0
+      ),
+      Fail is Fail0 / N
+    ),
+    Rows
+  ),
+  reply_html_page(
+    app_style,
+    title('Automated Processes - Statistics'),
+    \html_table(
+      [header_row(true)],
+      `AP statistics`,
+      [['Process','Succeed','Fail']|Rows]
+    )
+  ).
+
+
 
 :- dynamic(stage_alias/3).
-
-
 
 %! ap_stage_eval is det.
 

@@ -16,6 +16,7 @@
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(uri_ext)).
+:- use_module(html(html_list)).
 :- use_module(html(html_table)).
 :- use_module(html(html_pl_term)).
 :- use_module(library(apply)).
@@ -25,6 +26,7 @@
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_name)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
@@ -95,7 +97,11 @@ ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Error'), !,
     rdf_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
-    read_term_from_atom(Atom, Error, [])
+    catch(
+      read_term_from_atom(Atom, Error, []),
+      _,
+      Error = 'Could not read error'
+    )
   },
   html(\html_pl_term(Error)).
 ap_message(AP_Stage) -->
@@ -107,7 +113,18 @@ ap_message(AP_Stage) -->
     rdf_datatype(AP_Stage, ap:file, xsd:string, File, ap),
     rdf_datatype(AP_Stage, ap:operation, xsd:string, Operation, ap)
   },
-  html([\operation(Operation),'@',\html_file(File)]).
+  ({
+    findall(
+      Modifier,
+      rdf_datatype(AP_Stage, ap:has_modifier, xsd:string, Modifier, ap),
+      Modifiers
+    ),
+    Modifiers \== []
+  }->
+    html(\html_list([], [], Modifiers))
+  ;
+    html([\operation(Operation),'@',\html_file(File)])
+  ).
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'FileProperties'), !,
