@@ -3,6 +3,9 @@
   [
     datahub_io_ckan/2, % +Predicate:atom
                        % +Arguments:list
+    datahub_io_ckan/3, % +Options:list(nvpair)
+                       % +Predicate:atom
+                       % +Arguments:list
     datahub_io_ckan_to_rdf/1 % +Options:list(nvpair)
   ]
 ).
@@ -38,10 +41,17 @@ Wouter.
 */
 
 :- use_module(ckan(ckan)). % Meta-calls.
+:- use_module(ckan(ckan_api)).
 :- use_module(ckan(ckan_to_rdf)).
 :- use_module(server(api_keys)).
 
 
+
+datahub_io_ckan(Predicate, O1, Arguments):-
+  options(O2),
+  merge_options(O1, O2, O3),
+  Call =.. [Predicate,O3|Arguments],
+  call(Call).
 
 datahub_io_ckan(Predicate, Arguments):-
   options(O1),
