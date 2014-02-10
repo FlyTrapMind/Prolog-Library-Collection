@@ -13,11 +13,14 @@
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(server(web_modules)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
 
 http:location(ckan, root(ckan), []).
 :- http_handler(ckan(table), ckan_table, []).
 
-:- initialization(web_module_add('CKAN Table', ckan_table)).
+:- web_module_add('CKAN Table', ckan_table).
 
 
 

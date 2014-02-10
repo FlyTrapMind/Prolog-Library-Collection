@@ -110,7 +110,7 @@ prolog:debug_print_hook(Type, Format, Args):-
 
   % Write to the log stream/file.
   append_to_log(Type, Format, Args),
-  
+
   email(Type, Format, Args).
 
 email(email, Format, Args):- !,

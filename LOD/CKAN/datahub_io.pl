@@ -1,8 +1,6 @@
 :- module(
   datahub_io,
   [
-    datahub_io_ckan/2, % +Predicate:atom
-                       % +Arguments:list
     datahub_io_ckan/3, % +Options:list(nvpair)
                        % +Predicate:atom
                        % +Arguments:list
@@ -47,15 +45,10 @@ Wouter.
 
 
 
-datahub_io_ckan(Predicate, O1, Arguments):-
+datahub_io_ckan(O1, Predicate, Arguments):-
   options(O2),
-  merge_options(O1, O2, O3),
+  merge_options(O2, O1, O3),
   Call =.. [Predicate,O3|Arguments],
-  call(Call).
-
-datahub_io_ckan(Predicate, Arguments):-
-  options(O1),
-  Call =.. [Predicate,O1|Arguments],
   call(Call).
 
 datahub_io_ckan_to_rdf(O1):-
