@@ -61,8 +61,9 @@ ap(O1, AP, AP_Stages):-
 
 ap_begin(O1, AP):-
   rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
-
+  
   % Process the reset option.
+  % If `true` then any previous results are removed.
   option(reset(Reset), O1, false),
   (
     Reset == true,
@@ -73,7 +74,7 @@ ap_begin(O1, AP):-
       [access(read),file_errors(fail),file_type(directory)]
     )
   ->
-    delete_directory([include_self(false),safe(false)], Dir)
+    delete_directory([include_self(true),safe(false)], Dir)
   ;
     true
   ),

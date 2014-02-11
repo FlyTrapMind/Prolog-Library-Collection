@@ -165,7 +165,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   catch(
     'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results),
     E,
-    http_exception(E)
+    (http_exception(E), Results = [])
   ).
 
 'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results):-

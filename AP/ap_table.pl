@@ -124,7 +124,7 @@ ap_message(AP_Stage) -->
     catch(
       read_term_from_atom(Atom, Error, []),
       _,
-      Error = 'Could not read error'
+      (gtrace, write(Atom), Error = 'Could not read error')
     )
   },
   html(\html_pl_term(Error)).

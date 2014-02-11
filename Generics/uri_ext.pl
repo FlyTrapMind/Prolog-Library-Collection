@@ -10,8 +10,8 @@
     is_image_url/1, % +URL:url
     uri_path/2, % +PathComponents:list(term)
                 % -Path:atom
-    url_to_file/2, % +URL:atom
-                   % -File:atom
+    url_to_file_name/2, % +URL:atom
+                        % -File:atom
     url_to_graph_name/2, % +URL:url
                          % -Graph:atom
     uri_query_add/4, % +FromURI:uri
@@ -43,7 +43,7 @@
 
 
 download_to_directory(URL, ToDir, ap(status(succeed),download(File3))):-
-  url_to_file(URL, File1),
+  url_to_file_name(URL, File1),
   directory_file_path(_, File2, File1),
   file_name_extensions(Base, Extensions, File2),
   create_file(ToDir, Base, Extensions, File3),
@@ -64,7 +64,7 @@ download_to_file(O1, URL, File):-
   ->
     download_to_file0(O1, URL, File)
   ;
-    url_to_file(URL, File),
+    url_to_file_name(URL, File),
     download_to_file0(O1, URL, File)
   ).
 
@@ -121,14 +121,14 @@ uri_path(T1, Path):-
   exclude(var, T1, T2),
   atomic_list_concat([''|T2], '/', Path).
 
-%! url_to_file(+URL:atom, -File:atom) is det.
+%! url_to_file_name(+URL:atom, -File:atom) is det.
 % Returns a file name based on the given URI.
 %
 % @param URL The universal location of a file.
 % @param File The atomic name of a file based on the given URL,
 %         relative to the given root.
 
-url_to_file(URI, File):-
+url_to_file_name(URI, File):-
   uri_components(
     URI,
     uri_components(Scheme, Authority, Path, _Search, _Fragment)
