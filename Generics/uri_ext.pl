@@ -10,6 +10,8 @@
     is_image_url/1, % +URL:url
     uri_path/2, % +PathComponents:list(term)
                 % -Path:atom
+    url_to_directory_name/2, % +URL:iri
+                             % -Directory:atom
     url_to_file_name/2, % +URL:atom
                         % -File:atom
     url_to_graph_name/2, % +URL:url
@@ -42,16 +44,18 @@
 
 
 
-download_to_directory(URL, ToDir, ap(status(succeed),download(File3))):-
-  url_to_file_name(URL, File1),
-  directory_file_path(_, File2, File1),
-  file_name_extensions(Base, Extensions, File2),
-  create_file(ToDir, Base, Extensions, File3),
-  download_to_file([], URL, File3),
-  size_file(File3, Size),
-  % Expressed in megabytes.
-  TooBig is 1024 * 1024 * 100,
-  (Size > TooBig -> permission_error(open,'BIG-file',File3) ; true).
+download_to_directory(URL, Dir, ap(status(succeed),download(File))):-
+  uri_components(URL, uri_components(_,_,Path,_,_)),
+  atomic_list_concat(Components1, '/', Path),
+  reverse(Components1, Components2),
+  first_nonempty_atom(Components2, FileName),
+  absolute_file_name(FileName, File, [access(write),relative_to(Dir)]),
+  download_to_file([], URL, File).
+
+first_nonempty_atom([], dummy):- !.
+first_nonempty_atom([''|T], Atom):- !,
+  first_nonempty_atom(T, Atom).
+first_nonempty_atom([H|_], H).
 
 
 %! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.
@@ -122,6 +126,15 @@ uri_path(T1, Path):-
   atomic_list_concat([''|T2], '/', Path).
 
 
+url_to_directory_name(URI, Dir):-
+  uri_components(
+    URI,
+    uri_components(Scheme, Authority, Path, _Search, _Fragment)
+  ),
+  atomic_list_concat(Subdirs, '/', Path),
+  create_nested_directory(data([Scheme,Authority|Subdirs]), Dir).
+
+
 %! url_to_file_name(+URL:atom, -File:atom) is det.
 % Returns a file name based on the given URI.
 %
@@ -155,7 +168,7 @@ url_to_file_name(URI, File):-
   create_nested_directory(data([Scheme,Authority|PathDirComponents]), Dir),
 
   % Construct the local file name.
-  absolute_file_name(PathFile2, File, [relative_to(Dir)]).
+  absolute_file_name(PathFile2, File, [access(write),relative_to(Dir)]).
 
 
 url_to_graph_name(URL, G):-

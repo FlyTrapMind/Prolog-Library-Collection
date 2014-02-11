@@ -26,15 +26,8 @@ Support for running automated processing.
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stage)).
-:- use_module(ap(ap_stat)).
-:- use_module(generics(list_ext)).
-:- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_build)).
 
 
 
@@ -42,11 +35,12 @@ Support for running automated processing.
 % `Alias` is an existing path alias with prolog_file_path/2.
 %
 % The following options are supported:
+%   * =|leave_trail(LeaveTrail:boolean)|=
+%     Default `true`.
 %   * =|reset(+Reset:boolean)|=
 %     When true, removes the results of any prior executions of stages.
 %     Default: `false`.
 
-:- meta_predicate(ap(+,?,:)).
 ap(O1, AP, AP_Stages):-
   var(AP), !,
   create_ap(_, AP),
@@ -54,14 +48,14 @@ ap(O1, AP, AP_Stages):-
 ap(O1, AP, AP_Stages):-
   ap_begin(O1, AP),
   ap_stages(AP, AP_Stages),
-  ap_end(AP).
+  ap_end(O1, AP).
 
 
 %! ap_begin(+Options:list(nvpair), +AP:iri) is det.
 
 ap_begin(O1, AP):-
   rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
-  
+
   % Process the reset option.
   % If `true` then any previous results are removed.
   option(reset(Reset), O1, false),
@@ -88,10 +82,10 @@ ap_begin(O1, AP):-
   create_nested_directory(Spec2).
 
 
-%! ap_end(+AP:iri) is det.
+%! ap_end(+Options:list(nvpair), +AP:iri) is det.
 % End the script, saving the results to the output directory.
 
-ap_end(AP):-
+ap_end(O1, AP):-
   % The last stage directory contains the output of the script.
   % Copy these contents to the output directory.
   (
@@ -101,5 +95,13 @@ ap_end(AP):-
     copy_directory([safe(true)], LastStageDir, OutputDir)
   ;
     true
+  ),
+
+  (
+    option(leave_trail(true), O1, true)
+  ->
+    true
+  ;
+    ap_clean(AP)
   ).
 

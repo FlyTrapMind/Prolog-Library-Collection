@@ -22,19 +22,16 @@ Automated processes for CKAN data.
 :- use_module(ap(ap_void_stat)).
 :- use_module(ckan(ckan_scrape)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(archive_ext)). % Used in AP stage.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)). % Used in AP stage.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(os(dir_ext)).
-:- use_module(os(file_mime)). % Used in AP stage.
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
-:- use_module(rdf(rdf_serial)). % Used in AP stage.
 :- use_module(rdfs(rdfs_label_build)).
 
 
@@ -103,7 +100,7 @@ ckan_ap_site(Site, Extra_AP_Stages):-
 ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   once(rdfs_label(AP_Collection, Site)),
   once(rdf_literal(Resource, ckan:url, URL, _)),
-  url_to_file_name(URL, Dir),
+  url_to_directory_name(URL, Dir),
   Alias = URL,
   db_add_novel(user:file_search_path(Alias, Dir)),
 
@@ -115,11 +112,11 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
     [reset(true)],
     AP,
     [
-      ap_stage([name('Download')], ckan_download_to_directory),
-      ap_stage([name('Arch')], extract_archives),
-      ap_stage([name('MIME')], mime_dir),
-      ap_stage([name('toTurtle')], rdf_convert_directory),
-      ap_stage([name('VoID')], void_statistics)
+      ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
+      ckan_ap:ap_stage([name('Arch')], extract_archives),
+      ckan_ap:ap_stage([name('MIME')], mime_dir),
+      ckan_ap:ap_stage([name('toTurtle')], rdf_convert_directory),
+      ckan_ap:ap_stage([name('VoID')], void_statistics)
     | Extra_AP_Stages]
   ).
 

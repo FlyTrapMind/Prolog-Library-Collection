@@ -176,7 +176,8 @@ floatApprox(C, E, J, D):-
 % @arg LEX A literal matching floatRep//.
 
 floatCanonicalMap(Float, LEX):-
-  once(phrase(floatCanonicalMap(single, Float), LEX)).
+  once(phrase(float(Float), LEX)).
+  % @tbd once(phrase(floatCanonicalMap(single, Float), LEX)).
 
 %! floatCanonicalMap(
 %!   +Precision:oneof([double,single]),
