@@ -71,14 +71,14 @@ download_to_file(O1, URL, File):-
 download_to_file0(O1, URL, File1):-
   % Check the URL.
   uri_is_global(URL),
-  
+
   thread_self(Id),
   atomic_list_concat([tmp,Id], '_', Name2),
   file_alternative(File1, _, Name2, _, File2),
-  
+
   merge_options([nocatch(true)], O1, O2),
   http_goal(URL, O2, file_from_stream(File2)),
-  
+
   rename_file(File2, File1).
 
 
@@ -121,6 +121,7 @@ uri_path(T1, Path):-
   exclude(var, T1, T2),
   atomic_list_concat([''|T2], '/', Path).
 
+
 %! url_to_file_name(+URL:atom, -File:atom) is det.
 % Returns a file name based on the given URI.
 %
@@ -133,7 +134,7 @@ url_to_file_name(URI, File):-
     URI,
     uri_components(Scheme, Authority, Path, _Search, _Fragment)
   ),
-  
+
   % Split path into directory and file names.
   file_directory_name(Path, PathDir),
   file_base_name(Path, PathFile1),
@@ -148,11 +149,11 @@ url_to_file_name(URI, File):-
   ;
     PathFile2 = PathFile1
   ),
-  
+
   % Create the local directory.
   directory_to_subdirectories(PathDir, PathDirComponents),
   create_nested_directory(data([Scheme,Authority|PathDirComponents]), Dir),
-  
+
   % Construct the local file name.
   absolute_file_name(PathFile2, File, [relative_to(Dir)]).
 
