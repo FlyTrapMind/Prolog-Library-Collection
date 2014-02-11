@@ -118,9 +118,6 @@ ap_stage(O1, AP_Stage, Goal):-
   ap_stage_from_directory(O1, AP_Stage, FromDir),
   ap_stage_to_directory(O1, AP_Stage, ToDir),
   ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal).
-ap_stage(_, AP_Stage, Goal):-
-  gtrace,
-  debug(ap, 'AP stage ~w with goal ~w failed.', [AP_Stage,Goal]).
 
 is_initial_stage(AP_Stage):-
   rdf_datatype(AP_Stage, ap:stage, xsd:integer, -1, ap).
