@@ -24,9 +24,12 @@ Support for IANA-registered MIME types.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(uri_ext)).
+:- use_module(html(html)).
 :- use_module(library(apply)).
 :- use_module(library(csv)).
+:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_read)).
@@ -107,8 +110,9 @@ mime_register_type(Type, Subtype, _):-
   mime_type(Type, Subtype), !.
 % New registration.
 mime_register_type(Type, Subtype, DefaultExtension):-
-  Graph = mime_ext,
+  mime_register_type(Type, Subtype, DefaultExtension, mime_ext).
 
+mime_register_type(Type, Subtype, DefaultExtension, Graph):-
   % Assert type.
   rdf_global_id(mime:Type, Class),
   rdfs_assert_subclass(Class, mime:'Registration', Graph),
@@ -134,7 +138,7 @@ mime_register_type(Type, Subtype, DefaultExtension):-
     DefaultExtension,
     Graph
   ),
-  
+
   atomic_list_concat([Type,Subtype], '/', MIME),
   db_add_novel(user:prolog_file_type(DefaultExtension, MIME)).
 
@@ -148,25 +152,42 @@ assert_mime_schema_ext(Graph):-
 
 init_mime:-
   absolute_file_name(
-    data(mime_iana),
+    data(mime),
     File,
     [access(read),extensions([ttl]),file_errors(fail)]
   ), !,
   rdf_load([mime('text/turtle')], mime, File).
 init_mime:-
-  assert_mime(mime_iana),
+  assert_mime_iana(mime),
+  assert_mime_extensions(mime),
 
-  absolute_file_name(data('mime_iana.ttl'), File, [access(write)]),
-  rdf_save([mime('text/turtle')], mime_iana, File),
+  absolute_file_name(data('mime.ttl'), File, [access(write)]),
+  rdf_save([mime('text/turtle')], mime, File),
 
   init_mime.
 
 
-assert_mime(Graph):-
+assert_mime_iana(Graph):-
   assert_mime_schema(Graph),
   maplist(
     assert_mime_category(Graph),
     [application,audio,image,message,model,multipart,text,video]
+  ).
+
+
+assert_mime_extensions(Graph):-
+  url_to_html('http://www.webmaster-toolkit.com/mime-types.shtml', DOM),
+  forall(
+    (
+      member(Class, [tablerowdark,tablerowlight]),
+      xpath(DOM, //tr(@class=Class), TR),
+      xpath(TR, td(1,content), [DefaultExtension]),
+      xpath(TR, td(2,content), [MIME])
+    ),
+    (
+      atomic_list_concat([Type,Subtype], '/', MIME),
+      mime_register_type(Type, Subtype, DefaultExtension, Graph)
+    )
   ).
 
 
@@ -240,7 +261,7 @@ assert_mime_row1(
       Description,
       Graph
     )
-  ).
+  ), !.
 assert_mime_row1(Graph, Registration, row(Name,Template,Reference)):-
   (
     Template == '', !

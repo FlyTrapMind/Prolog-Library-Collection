@@ -50,11 +50,18 @@ file_mime('text/html') -->
   `<!`, ci_string(`DOCTYPE`), blanks,
   ci_string(`HTML`), !,
   dcg_done.
-file_mime(Mime) -->
+file_mime(MIME) -->
   blanks,
   (xml_declaration(_) ; ""), blanks,
   (xml_comment ; ""), blanks,
-  xml_something(Mime),
+  
+  (
+    `<rdf:RDF`
+  ->
+    {MIME = 'application/rdf+xml'}
+  ;
+    xml_doctype(MIME)
+  ),
   dcg_done.
 
 xml_comment -->
@@ -85,12 +92,6 @@ xml_encoding -->
 
 utf8 -->
   ci_string(`UTF`), `-8`.
-
-xml_something('application/rdf+xml') -->
-  `<rdf:RDF`, !,
-  dcg_done.
-xml_something(MIME) -->
-  xml_doctype(MIME).
 
 xml_version(Version) -->
   `version=`,
