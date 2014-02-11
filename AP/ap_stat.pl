@@ -36,16 +36,25 @@ http:location(ap, root(ap), []).
 
 
 ap_stat(_Request):-
+  % The number of automated processes.
+  % Used for calculating average values.
   aggregate_all(
     count,
     rdfs_individual_of(_, ap:'AP'),
     N
   ),
+  
+  % Collect the columns in the AP table, i.e. the AP stages.
+  % Each has a distinguished index that we use for sorting.
+  % The index is maintained in the statistics table
+  %  we are about to generate.
   setoff(
     I-Column,
     (
       rdfs_individual_of(AP_Stage, ap:'AP-Stage'),
       rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
+      
+      % It takes a while before we have the index...
       rdf(AP, P, AP_Stage, ap),
       rdfs_individual_of(AP, ap:'AP'),
       rdf_global_id(rdf:LocalName, P),
@@ -56,10 +65,14 @@ ap_stat(_Request):-
   ),
   keysort(Pairs1, Pairs2),
   pairs_values(Pairs2, Columns),
+  
+  % Now we create the rows of the table.
   findall(
     [Column,Succeed,Fail],
     (
+      % For each column or AP stage type...
       member(Column, Columns),
+      % ... we count the number of successful AP stages in this column.
       aggregate_all(
         count,
         (
@@ -69,6 +82,8 @@ ap_stat(_Request):-
         Succeed0
       ),
       Succeed is Succeed0 / N,
+      
+      % ... and we count the number of unsuccessful AP stages in this column.
       aggregate_all(
         count,
         (
@@ -81,6 +96,8 @@ ap_stat(_Request):-
     ),
     Rows
   ),
+  
+  % Generate the HTML table based on the collected rows.
   reply_html_page(
     app_style,
     title('Automated Processes - Statistics'),
@@ -102,7 +119,7 @@ ap_stage_eval(AP):-
   (
     StageDirs == []
   ->
-    debug(ap_stat, 'No stage to evaluate.', [])
+    debug(ap, 'No stage to evaluate.', [])
   ;
     length(StageDirs, Length),
     forall(
@@ -154,7 +171,7 @@ ap_stage_init(Potential):-
     []
   ).
 ap_stage_init(_Potential):-
-  debug(ap_stat, 'Unable to initialize stage.', []).
+  debug(ap, 'Unable to initialize stage.', []).
 
 
 
@@ -165,7 +182,7 @@ ap_stage_tick:-
   atomic_list_concat([Alias,Stage,a], '_', Flag),
   flag(Flag, Actual, Actual + 1).
 ap_stage_tick:-
-  debug(ap_stat, 'Unable to tick stage.', []).
+  debug(ap, 'Unable to tick stage.', []).
 
 
 

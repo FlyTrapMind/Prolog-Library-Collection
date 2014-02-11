@@ -41,9 +41,24 @@ http:location(ap, root(ap), []).
 ap_table(_Request):-
   ap_table(=, =).
 
+%! ap_table(:HeaderAugmentation, :RowAugmentation) is det.
+% Generates the HTML table that gives an overview of the results of
+%  running automated processes.
+%
+% By default this creates a column for each AP stage.
+% Sometimes we want to put in extra columns that do not correspond to
+%  AP stages, e.g. displaying the name of a dataset
+%  or some other meta-information.
+%
+% @arg HeaderAugmentation Binary predicate that adds cells to the header.
+% @arg RowAugmentation Binary predicate that adds cells to each row.
+
 :- meta_predicate(ap_table(2,2)).
 ap_table(HeaderAugmentation, RowAugmentation):-
   (
+    % We assume there is one AP collection we want to show,
+    %  and we assume this is the first AP collection
+    %  we happen to come accross.
     once(rdfs_individual_of(AP_Collection, ap:'AP-Collection')),
     rdf_collection(AP_Collection, APs, ap)
   ->
@@ -53,13 +68,22 @@ ap_table(HeaderAugmentation, RowAugmentation):-
   ),
   reply_html_page(
     app_style,
-    title(['Automated Processes - Collection ',\rdf_term_name(AP_Collection)]),
+    title([
+      'Automated Processes - Collection ',
+      \rdf_term_name(AP_Collection)
+    ]),
     \ap_table(HeaderAugmentation, RowAugmentation, Rows)
   ).
 
+
+%! ap_table(:HeaderAugmentation, :RowAugmentation, +Rows:list(list)) is det.
+% HTML DSL DCG generating the AP table.
+
+:- meta_predicate(ap_table(2,2,+,?,?)).
 ap_table(_, _, []) --> !, [].
 ap_table(HeaderAugmentation, RowAugmentation, [H|T]) -->
   {
+    % The header is based on the first data row.
     ap_table_header(H, Header1),
     call(HeaderAugmentation, Header1, Header2),
     maplist(RowAugmentation, [H|T], Rows)

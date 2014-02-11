@@ -298,7 +298,7 @@ rdfs_individual_axiom(_, I, C):-
   ; rdf_equal(rdf:type,      I)
   ; rdf_equal(rdf:value,     I)
   ; nonvar(I),
-    rdf_container_membership_property(I)
+    rdf_container_membership_property(I, _)
   ;
     var(I),
     % The `var` case would introduce an infinite number of axioms,
@@ -354,7 +354,7 @@ rdfs_range_axiom(m(t,_,_), P, C):-
   ; rdf_equal( rdf:subject,     P)
   ; rdf_equal( rdf:value,       P)
   ; nonvar(P),
-    rdf_container_membership_property(P)
+    rdf_container_membership_property(P, _)
   ; var(P),
     % The `var` case would introduce an infinite number of axioms,
     % so we restrict it.

@@ -133,12 +133,6 @@ ckan_download_to_directory(_, ToDir, AP_Stage):-
     add_operation_on_file(AP_Stage, File, downloaded, [])
   ).
 
-add_arguments(_, [], []).
-add_arguments(Args1, [ap_stage(O1,Pred)|T1], [ap_stage(O3,Pred)|T2]):-
-  select_option(args(Args2), O1, O2, []),
-  append(Args1, Args2, Args3),
-  merge_options([args(Args3)], O2, O3),
-  add_arguments(Args1, T1, T2).
 
 rdf_format('RDF').
 rdf_format('XML').
@@ -171,6 +165,7 @@ rdf_format('rdf/turtle').
 rdf_format('rdf/xml, html, json').
 rdf_format('text/n3').
 rdf_format('text/turtle').
+
 
 rdf_mimetype('application/rdf+n3').
 rdf_mimetype('application/rdf+xml').
