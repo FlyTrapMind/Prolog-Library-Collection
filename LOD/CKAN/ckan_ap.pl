@@ -18,6 +18,7 @@ Automated processes for CKAN data.
 :- use_module(ap(ap_archive_ext)).
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_file_mime)).
+:- use_module(ap(ap_file_size)).
 :- use_module(ap(ap_rdf_serial)).
 :- use_module(ap(ap_void_stat)).
 :- use_module(ckan(ckan_scrape)).
@@ -115,8 +116,9 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
       ckan_ap:ap_stage([name('MIME')], mime_dir),
-      ckan_ap:ap_stage([name('toTurtle')], rdf_convert_directory),
-      ckan_ap:ap_stage([name('VoID')], void_statistics)
+      ckan_ap:ap_stage([name('FileSize')], file_size)%,
+      %ckan_ap:ap_stage([name('toTurtle')], rdf_convert_directory),
+      %ckan_ap:ap_stage([name('VoID')], void_statistics)
     | Extra_AP_Stages]
   ).
 
