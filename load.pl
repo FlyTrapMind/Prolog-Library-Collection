@@ -109,7 +109,12 @@ load_pgc:-
   % Start logging.
   use_module(generics(logging)),
   % @tbd Strange module problem again...
-  logging:start_log.
+  logging:start_log,
+  
+  % Add data subdirectory.
+gtrace,
+  absolute_file_name(pgc('Data'), DataDir, [access(write)]),
+  make_directory(DataDir).
 
 user:load_pack(Pack):-
   catch(

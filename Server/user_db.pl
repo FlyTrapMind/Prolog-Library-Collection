@@ -50,7 +50,22 @@ The user administration is based on the following:
 %! user(?UserName:atom, ?Properties:list:compound) is nondet.
 :- persistent(user(user:atom,properties:list(compound))).
 
-:- initialization(init_user_db).
+%:- initialization(init_user_db).
+
+init_user_db:-
+  user_db_file(File),
+  (
+    exists_file(File)
+  ->
+    db_attach(File, [])
+  ;
+    touch(File),
+    db_attach(File, []),
+    % First time deployment.
+    add_user(admin, [roles([admin])]),
+    user_input_password('Enter the password for admin.', UnencryptedPassword),
+    add_password(admin, UnencryptedPassword)
+  ).
 
 
 
@@ -64,6 +79,7 @@ add_user(UserName, Properties1):-
   % Make sure the properties are sorted.
   sort(Properties1, Properties2),
   with_mutex(user_db, assert_user(UserName, Properties2)).
+
 
 %! add_user_property(
 %!   +UserName:atom,
@@ -82,25 +98,12 @@ add_user_property(User, Name, Value):-
     )
   ).
 
+
 %! current_user(?UserName:atom, ?Properties:list:compound) is nondet.
 
 current_user(UserName, Properties):-
   with_mutex(user_db, user(UserName, Properties)).
 
-init_user_db:-
-  user_db_file(File),
-  (
-    exists_file(File)
-  ->
-    db_attach(File, [])
-  ;
-    touch(File),
-    db_attach(File, []),
-    % First time deployment.
-    add_user(admin, [roles([admin])]),
-    user_input_password('Enter the password for admin.', UnencryptedPassword),
-    add_password(admin, UnencryptedPassword)
-  ).
 
 %! remove_user(+UserName:atom) is det.
 % Delete named user from user-database.
@@ -116,11 +119,13 @@ remove_user(UserName):-
 remove_user(UserName):-
   existence_error('User name', UserName).
 
+
 %! user(?UserName:atom) is nondet.
 % Registered users.
 
 user(UserName):-
   current_user(UserName, _Properties).
+
 
 %! user_db_file(-File:atom) is semidet.
 % Returns the file that stores the database of users.
@@ -132,6 +137,7 @@ user_db_file(File):-
     File,
     [access(write),file_type(database)]
   ).
+
 
 %! user_property(?UserName:atom, ?Property:compound) is nondet.
 %! user_property(+UserName:atom, +Property:compound) is semidet.
@@ -166,3 +172,4 @@ user_property(UserName, Property):-
 user_property(UserName, PropertyName, PropertyValue):-
   Property =.. [PropertyName,PropertyValue],
   user_property(UserName, Property).
+

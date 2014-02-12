@@ -35,12 +35,13 @@ Wouter.
 --
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(ckan(ckan)). % Meta-calls.
 :- use_module(ckan(ckan_api)).
 :- use_module(ckan(ckan_to_rdf)).
+:- use_module(generics(user_input)).
 :- use_module(server(api_keys)).
 
 
@@ -64,6 +65,6 @@ options([
   scheme(Scheme)
 ]):-
   Auth = 'datahub.io',
-  current_api_key('datahub.io', ckan, Key),
+  user_input_password('Enter the API key for datahub.io.', Key),
   Scheme = http.
 

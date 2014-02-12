@@ -139,6 +139,3 @@ load_modules_for_pldoc:-
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf_web(rdf_tabular)).
 
-% Checking of format statements.
-:- load_pack(format_spec).
-

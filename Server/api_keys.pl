@@ -69,8 +69,6 @@ api_keys -->
 current_api_key(Organization, Service, Key):-
   logged_in(_, User, _), !,
   api_key(User, Organization, Service, Key).
-% @tbd Fix login at some point.
-current_api_key('datahub.io', ckan, '78cecbc1-f84e-47dc-8625-1bff7ac0eca0').
 
 /*
   http_absolute_uri(root(keys), URL),
