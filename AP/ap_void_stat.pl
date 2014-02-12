@@ -32,17 +32,16 @@ void_statistics(FromDir, ToDir, AP_Stage):-
   forall(
     member(FromFile, FromFiles),
     (
-      file_alternative(FromFile, ToDir, _, _, ToFile),
       rdf_setup_call_cleanup(
         [mime('application/x-turtle')],
         FromFile,
-        void_statistics_on_graph(AP_Stage, NVPairs),
-        [mime('application/x-turtle')],
-        ToFile
+        void_statistics_on_graph(AP_Stage, NVPairs)
       ),
       add_properties_of_file(AP_Stage, FromFile, NVPairs)
     )
-  ).
+  ),
+  link_directory_contents(FromDir, ToDir).
+
 
 void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
   NVPairs = [

@@ -39,13 +39,14 @@ Extensions to the support for archived files.
 %!   -Conversions:list(oneof([gunzipped,untarred,unzipped]))
 %! ) is det.
 
-extract_archive(File, Dir, [Conversion|Conversions]):-
-  file_name_extension(Base, Ext, File),
+extract_archive(FromFile, ToDir, [Conversion|Conversions]):-
+  file_name_extension(Base, Ext, FromFile),
   prolog_file_type(Ext, archive), !,
-  extract_archive(Ext, File, Base, Conversion),
-  extract_archive(Base, Dir, Conversions).
-extract_archive(File, Dir, []):-
-  copy_file(File, Dir).
+  extract_archive(Ext, FromFile, Base, Conversion),
+  extract_archive(Base, ToDir, Conversions).
+extract_archive(FromFile, ToDir, []):-
+  file_alternative(FromFile, ToDir, _, _, ToFile),
+  link_file(FromFile, ToFile, symbolic).
 
 
 %! extract_archive(

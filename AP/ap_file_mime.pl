@@ -40,8 +40,5 @@ mime_dir(FromDir, ToDir, AP_Stage):-
       syntax_error('Unrecognized MIME')
     ))
   ),
-  forall(
-    member(FromFile, FromFiles),
-    copy_file(FromFile, ToDir)
-  ).
+  link_directory_contents(FromDir, ToDir).
 
