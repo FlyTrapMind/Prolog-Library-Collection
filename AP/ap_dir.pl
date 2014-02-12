@@ -29,6 +29,7 @@ Directory management for running automated processes.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
+:- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).
@@ -45,7 +46,7 @@ Directory management for running automated processes.
 
 ap_clean(AP):-
   ap_directories(AP, StageDirs),
-  maplist(delete_directory([include_self(true),safe(true)]), StageDirs).
+  maplist(delete_directory_and_contents, StageDirs).
 
 
 %! ap_directory(

@@ -92,7 +92,7 @@ ap_end(O1, AP):-
     ap_last_stage_directory(AP, LastStageDir)
   ->
     ap_directory(AP, write, output, OutputDir),
-    copy_directory([safe(true)], LastStageDir, OutputDir)
+    link_directory_contents(LastStageDir, OutputDir)
   ;
     true
   ),
