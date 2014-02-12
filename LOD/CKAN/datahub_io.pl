@@ -41,6 +41,7 @@ Wouter.
 :- use_module(ckan(ckan)). % Meta-calls.
 :- use_module(ckan(ckan_api)).
 :- use_module(ckan(ckan_to_rdf)).
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(user_input)).
 :- use_module(server(api_keys)).
 
@@ -65,6 +66,6 @@ options([
   scheme(Scheme)
 ]):-
   Auth = 'datahub.io',
-  user_input_password('Enter the API key for datahub.io.', Key),
+  user_input('Enter the API key for datahub.io.', codes, Key),
   Scheme = http.
 

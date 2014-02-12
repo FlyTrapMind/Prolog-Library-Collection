@@ -71,13 +71,6 @@ SWI-Prolog defines the following HTTP handlers:
 
 :- meta_predicate(dispatch(:)).
 
-:- setting(
-  http:prefix,
-  atom,
-  '/',
-  'The prefix for all HTTP paths in this projet.'
-).
-
 :- meta_predicate(start_server(+,:)).
 :- meta_predicate(start_server_on_next_port(+,+,:,-)).
 
