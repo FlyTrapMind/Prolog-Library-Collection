@@ -53,7 +53,7 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/01
+@version 2013/07-2013/09, 2013/11-2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -61,6 +61,7 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_unicode)).
+:- use_module(generics(error_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(math(radix)).
@@ -303,7 +304,7 @@ nl -->
 %! pl_term(+PrologTerm)// is det.
 
 pl_term(PrologTerm) -->
-  {with_output_to(codes(Codes), write_canonical(PrologTerm))},
+  {with_output_to(codes(Codes), write_canonical_catch(PrologTerm))},
   Codes.
 
 

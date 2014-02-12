@@ -29,6 +29,7 @@ The following options can be added to AP stages:
 
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
+:- use_module(generics(error_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_container)).
@@ -45,8 +46,6 @@ The following options can be added to AP stages:
 ap_stages(AP, AP_Stages):-
   create_initial_stage(AP, AP_Stage),
   ap_stages0(AP_Stage, AP_Stages).
-
-
 
 ap_stages0(_, []):- !.
 ap_stages0(AP_Stage1, [Mod:ap_stage(O1,Goal)|T]):-
@@ -69,7 +68,7 @@ ap_stage_begin(O1, AP_Stage):-
 ap_catcher(AP_Stage, Error, AP_Stages):-
   rdf_assert_individual(AP_Stage, ap:'Error', ap),
   rdf_assert_datatype(AP_Stage, ap:status, xsd:string, error, ap),
-  with_output_to(atom(Atom), write_canonical(Error)),
+  with_output_to(atom(Atom), write_canonical_catch(Error)),
   rdf_assert_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
   never_reached(AP_Stage, AP_Stages).
 

@@ -8,6 +8,7 @@
     rethrow/3, % :Goal
                % +Catcher
                % +Exception
+    write_canonical_catch/1, % @Term
 % NEW ERRORS
     idle_error/1, % +Reason
     mode_error/2, % +Mode:oneof([det,nondet,semidet])
@@ -39,8 +40,10 @@
 Exception handling predicates.
 
 @author Wouter Beek
-@version 2013/01, 2013/12-2014/01
+@version 2013/01, 2013/12-2014/02
 */
+
+:- use_module(library(debug)).
 
 
 
@@ -83,6 +86,29 @@ extract_error(Error, Error).
 :- meta_predicate rethrow(0,+,+).
 rethrow(Goal, Catcher, Exception):-
   catch(Goal, Catcher, throw(Exception)).
+
+
+%! write_canonical_catch(@Term) is det.
+% Alteration of write_canonical/[1,2] that lives up to the promise that
+%  "terms written with this predicate can always be read back".
+
+write_canonical_catch(Term):-
+  write_term(Term, [blobs(portray),quoted(true)]).
+
+% Cyclic terms.
+portray(Term):-
+  cyclic_term(Term), !,
+  write(cyclic_term).
+% Terms denoting stream handles / blobs.
+portray(Term):-
+  blob(Term, stream), !,
+  write(stream).
+% Terms denoting non-stream blobs.
+portray(Term):-
+  blob(Term, Type),
+  Type \== text, !,
+  gtrace, %DEB
+  debug(error_ext, 'Unknown blob type ~w.', [Term]).
 
 
 

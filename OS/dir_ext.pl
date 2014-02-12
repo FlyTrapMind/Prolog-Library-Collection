@@ -21,6 +21,8 @@
                                    % -Subdirectories:list(atom)
     file_to_directory/2, % +File:atom
                          % -Directory:atom
+    link_directory_contents/2, % +FromDir:atom
+                               % +ToDir:atom
     process_directory_files/5, % +FromDirectory:atom
                                % +FromFileTypes:list(atom)
                                % +ToDirectory:atom
@@ -45,7 +47,7 @@
 Extensions for handling directories.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09, 2013/11-2014/01
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/02
 */
 
 :- use_module(generics(atom_ext)).
@@ -354,6 +356,21 @@ file_to_directory(File, Dir):-
 directory_to_subdirectories(Dir1, Subdirs):-
   strip_atom(['/'], Dir1, Dir2),
   atomic_list_concat(Subdirs, '/', Dir2). % split
+
+
+%! link_directory_contents(+FromDir:atom, +ToDir:atom) is det.
+% Creates symbolic link in `ToDir` for all the files in `FromDir`.
+
+link_directory_contents(FromDir, ToDir):-
+  directory_files([], FromDir, FromFiles),
+  maplist(link_file(ToDir), FromFiles).
+
+% Create a single symbolic link for the given file.
+% The symbolic link has the same base nane and extension as the file
+%  linked to.
+link_file(ToDir, FromFile):-
+  file_alternative(FromFile, ToDir, _, _, ToFile),
+  link_file(FromFile, ToFile, symbolic).
 
 
 process_directory_files(FromDir, FromFileTypes, ToDir, ToFileType, Goal):-
