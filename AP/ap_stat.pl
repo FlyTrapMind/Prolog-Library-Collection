@@ -115,7 +115,7 @@ ap_stat(_Request):-
 %! ap_stage_eval is det.
 
 ap_stage_eval(AP):-
-  ap_directories(AP, StageDirs),
+  ap_stage_directories(AP, StageDirs),
   (
     StageDirs == []
   ->

@@ -19,13 +19,14 @@
 Generates names for RDF terms and triples.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2014/01
+@version 2013/07-2013/09, 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_collection)).
 :- use_module(generics(codes_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
@@ -68,9 +69,10 @@ rdf_term_name(RDF_Term) -->
   rdf_term_name([], RDF_Term).
 
 % RDF list.
-rdf_term_name(O1, RDF_List) -->
-  {rdf_is_list(RDF_List)}, !,
-  rdf_list_name(O1, RDF_List).
+% @tbd Fix this.
+%rdf_term_name(O1, RDF_List) -->
+%  {rdf_is_list(RDF_List)}, !,
+%  rdf_list_name(O1, RDF_List).
 % Blank node.
 rdf_term_name(_, BNode) -->
   {rdf_is_bnode(BNode)}, !,
@@ -80,8 +82,17 @@ rdf_term_name(_, Literal) -->
   {rdf_is_literal(Literal)}, !,
   rdf_literal(Literal).
 % IRI.
-rdf_term_name(O1, IRI) -->
-  rdf_iri(O1, IRI).
+rdf_term_name(O1, IRI1) -->
+  {(
+    rdf_global_id(IRI2, IRI1), IRI2 = _:_
+  ;
+    is_of_type(iri, IRI1)
+  )}, !,
+  rdf_iri(O1, IRI1).
+% Prolog term.
+rdf_term_name(_, PL_Term) -->
+  {with_output_to(codes(Codes), write_term(PL_Term, []))},
+  codes(Codes).
 
 
 

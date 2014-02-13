@@ -277,6 +277,6 @@ void --> [].
 
 :- meta_predicate(dcg_with_output_to(+,//)).
 dcg_with_output_to(Out, DCG):-
-  phrase(DCG, Codes),
+  once(phrase(DCG, Codes)),
   with_output_to(Out, put_codes(Codes)).
 

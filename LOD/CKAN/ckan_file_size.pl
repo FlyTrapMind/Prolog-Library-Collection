@@ -1,4 +1,9 @@
-:- module(ckan_file_size, []).
+:- module(
+  ckan_file_size,
+  [
+    ckan_file_size/0
+  ]
+).
 
 /** <module> CKAN file size
 
@@ -8,11 +13,15 @@ Web-based overview of CKAN datasets sorted by size.
 @version 2014/02
 */
 
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
@@ -27,6 +36,37 @@ http:location(ckan, root(ckan), []).
 
 
 ckan_file_size(_Request):-
+  ckan_file_size_rows(Rows),
+  reply_html_page(
+    app_style,
+    title('CKAN - Datasets sorted by file size'),
+    \rdf_html_table(
+      _NoGraph,
+      `Datasets sorted by file size`,
+      ['File size in Gb','Dataset'],
+      Rows
+    )
+  ).
+
+
+%! ckan_file_size is det.
+% Prints the file sizes for the inspected datasets to the terminal.
+% This can be used in case there is no Web browser.
+
+ckan_file_size:-
+  ckan_file_size_rows(Rows),
+  dcg_with_output_to(
+    user_output,
+    dcg_table(
+      [header_row(true)],
+      atom('Datasets sorted by file size'),
+      rdf_term_name,
+      [['File size in Gb','Dataset']|Rows]
+    )
+  ).
+
+
+ckan_file_size_rows(Rows):-
   findall(
     FileSize-Resource,
     rdf_datatype(Resource, ap:file_size, xsd:integer, FileSize, _),
@@ -45,15 +85,5 @@ ckan_file_size(_Request):-
       FileSizeGb is FileSize / 1024 / 1024 / 1024
     ),
     Rows
-  ),
-  reply_html_page(
-    app_style,
-    title('CKAN - Datasets sorted by file size'),
-    \rdf_html_table(
-      _NoGraph,
-      `Datasets sorted by file size`,
-      ['File size in Gb','Dataset'],
-      Rows
-    )
   ).
 

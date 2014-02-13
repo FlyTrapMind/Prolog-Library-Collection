@@ -2,11 +2,13 @@
   ap_dir,
   [
     ap_clean/1, % +AP:iri
+    ap_directory/2, % +AP:iri
+                    % -Directory:atom
     ap_directory/4, % +AP:iri
                     % +Mode:oneof([read,write])
                     % +Subdir:atom
                     % -AbsoluteDir:atom
-    ap_directories/2, % +AP:iri
+    ap_stage_directories/2, % +AP:iri
                       % -Directories:list(atom)
     ap_last_stage_directory/2, % +AP:iri
                                % -LastStageDirectory:atom
@@ -31,6 +33,7 @@ Directory management for running automated processes.
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
+:- use_module(library(process)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_container)).
@@ -45,8 +48,22 @@ Directory management for running automated processes.
 % This is run after results have been saved to the `Output` directory.
 
 ap_clean(AP):-
-  ap_directories(AP, StageDirs),
-  maplist(delete_directory_and_contents, StageDirs).
+  ap_directory(AP, Dir),
+  process_create(path(rm), ['-r',file(Dir)], []).
+
+
+%! ap_directory(+AP:iri, -Directory:atom) is det.
+% Retrieves the main directory of the given automated process.
+
+ap_directory(AP, Dir):-
+  once(rdfs_individual_of(AP, ap:'AP')),
+  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  file_search_path(Alias, Spec),
+  absolute_file_name(
+    Spec,
+    Dir,
+    [access(read),file_errors(fail),file_type(directory)]
+  ).
 
 
 %! ap_directory(
@@ -55,9 +72,10 @@ ap_clean(AP):-
 %!   +Subdir:atom,
 %!   -AbsoluteDir:atom
 %! ) is det.
+% Find subdirectories of the given automated process.
 
 ap_directory(AP, Mode, Subdir1, AbsoluteDir):-
-  rdfs_individual_of(AP, ap:'AP'), !,
+  once(rdfs_individual_of(AP, ap:'AP')),
   rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
 
   to_atom(Subdir1, Subdir2),
@@ -76,24 +94,24 @@ ap_directory(AP, Mode, Subdir1, AbsoluteDir):-
   ).
 
 
-%! ap_directories(+AP:iri, -StageDirectories:list(atom)) is det.
+%! ap_stage_directories(+AP:iri, -StageDirectories:list(atom)) is det.
 
-ap_directories(AP, Dirs):-
-  ap_directories(AP, 1, Dirs).
+ap_stage_directories(AP, Dirs):-
+  ap_stage_directories(AP, 1, Dirs).
 
-ap_directories(AP, Stage1, [H|T]):-
+ap_stage_directories(AP, Stage1, [H|T]):-
   ap_stage_directory_name(Stage1, Stage1Name),
   ap_directory(AP, read, Stage1Name, H), !,
   Stage2 is Stage1 + 1,
-  ap_directories(AP, Stage2, T).
-ap_directories(_, _, []).
+  ap_stage_directories(AP, Stage2, T).
+ap_stage_directories(_, _, []).
 
 
 %! ap_last_stage_directory(+AP:iri, -LastStageDirectory:atom) is semidet.
 % Returns the last stage directory, if it exists.
 
 ap_last_stage_directory(AP, LastStageDir):-
-  ap_directories(AP, StageDirs),
+  ap_stage_directories(AP, StageDirs),
   StageDirs \== [],
   last(StageDirs, LastStageDir).
 

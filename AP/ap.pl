@@ -26,6 +26,7 @@ Support for running automated processing.
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stage)).
+:- use_module(library(process)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_datatype)).
 
@@ -61,14 +62,10 @@ ap_begin(O1, AP):-
   option(reset(Reset), O1, false),
   (
     Reset == true,
-    file_search_path(Alias, Spec),
-    absolute_file_name(
-      Spec,
-      Dir,
-      [access(read),file_errors(fail),file_type(directory)]
-    )
+    ap_directory(AP, Dir)
   ->
-    delete_directory([include_self(true),safe(false)], Dir)
+    process_create(path(rm), ['-r',file(Dir)], [])
+    %delete_directory([include_self(true),safe(false)], Dir)
   ;
     true
   ),
