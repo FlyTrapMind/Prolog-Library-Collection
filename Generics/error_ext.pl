@@ -94,17 +94,30 @@ rethrow(Goal, Catcher, Exception):-
 
 write_canonical_catch(Term):-
   write_term(Term, [blobs(portray),quoted(true)]).
+write_canonical_catch(Term):-
+  write_term(Term, [blobs(portray),quoted(true)]).
+
+trace_term(Term):-
+  (
+    Term = error(io_error(_,_),_)
+  ;
+    Term = error(timeout_error(_,_),_)
+  ), !,
+  gtrace.
 
 % Cyclic terms.
 portray(Term):-
+  trace_term(Term),
   cyclic_term(Term), !,
   write(cyclic_term).
 % Terms denoting stream handles / blobs.
 portray(Term):-
+  trace_term(Term),
   blob(Term, stream), !,
   write(stream).
 % Terms denoting non-stream blobs.
 portray(Term):-
+  trace_term(Term),
   blob(Term, Type),
   Type \== text, !,
   gtrace, %DEB

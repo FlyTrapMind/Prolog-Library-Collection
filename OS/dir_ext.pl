@@ -260,16 +260,17 @@ delete_directory(O1, File):-
 %     Default: no file type filter.
 %   * =|include_directories(+IncludeDirectories:boolean)|=
 %     Whether (sub)directories are included or not.
-%     Default `false`.
+%     Default: `false`.
 %   * =|include_self(+IncludeSelf:boolean)|=
 %     Whether or not the enclosing directory is included.
+%     Default: `false`.
 %   * =|order(+Order:oneof([lexicographic,none]))|=
 %     The order in which the files are returned.
 %     Lexicographic order uses ordsets.
-%     Default `none`.
+%     Default: `none`.
 %   * =|recursive(+Recursive:boolean)|=
 %     Whether subdirectories are searched recursively.
-%     Default `true`.
+%     Default: `true`.
 %
 % @arg Options A list of name-value pairs.
 % @arg Directory The atomic name of a directory.
@@ -285,9 +286,6 @@ directory_files(O1, Directory, Files4):-
   % Make the file names absolute.
   maplist(directory_file_path(Directory), New2, New3),
 
-  % "Seperate the English from the Dutch
-  %  Apartheid"
-  % -- Billy Woods
   partition(exists_directory, New3, NewDirectories, NewFiles1),
   option(file_types(FileTypes), O1, _VAR),
   include(has_file_type(FileTypes), NewFiles1, NewFiles2),
@@ -314,7 +312,7 @@ directory_files(O1, Directory, Files4):-
 
   % Include the parent directory.
   (
-    option(include_self(true), O1)
+    option(include_self(true), O1, false)
   ->
     Files3 = [Directory|Files2]
   ;

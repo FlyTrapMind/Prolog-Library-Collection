@@ -62,17 +62,17 @@ ap_table(HeaderAugmentation, RowAugmentation):-
     once(rdfs_individual_of(AP_Collection, ap:'AP-Collection')),
     rdf_collection(AP_Collection, APs, ap)
   ->
-    maplist(ap_row, APs, Rows)
+    maplist(ap_row, APs, Rows),
+    reply_html_page(
+      app_style,
+      title([
+        'Automated Processes - Collection ',
+        \rdf_term_name(AP_Collection)
+      ]),
+      \ap_table(HeaderAugmentation, RowAugmentation, Rows)
+    )
   ;
-    Rows = []
-  ),
-  reply_html_page(
-    app_style,
-    title([
-      'Automated Processes - Collection ',
-      \rdf_term_name(AP_Collection)
-    ]),
-    \ap_table(HeaderAugmentation, RowAugmentation, Rows)
+    reply_html_page(app_style, title('Automated Processes'), [])
   ).
 
 
@@ -121,7 +121,9 @@ ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Error'), !,
     rdf_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
-    read_term_from_atom(Atom, Error, [])
+    catch(read_term_from_atom(Atom, Error, []), _, gtrace),
+    format(user_output, '~w\n', [Atom]),
+    format(user_output, '~w\n', [Error])
   },
   html(\html_pl_term(Error)).
 ap_message(AP_Stage) -->
@@ -159,6 +161,12 @@ ap_message(AP_Stage) -->
     )
   },
   html(\html_nvpairs(NVPairs)).
+ap_message(AP_Stage) -->
+  {
+    rdfs_individual_of(AP_Stage, ap:'Filter'), !,
+    rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap)
+  },
+  html(Name).
 ap_message(AP_Stage) -->
   {
     forall(

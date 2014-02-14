@@ -53,7 +53,7 @@ literals.
 %!   ?Graph:atom
 %! ) is nondet.
 % The following options are supported:
-%   * =|graph(+Graph:oneof([normal,no_index,no_inst)|=
+%   * =|graph_mode(+Graph:oneof([normal,no_index,no_inst)|=
 %     Whether the index that sometimes appears alongside the graph name
 %     should be returned (`normal`) or not (`no_index`).
 %     `no_inst` means that variable graphs are not instantiated,

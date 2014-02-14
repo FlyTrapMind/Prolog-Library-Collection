@@ -23,8 +23,10 @@ Generates HTML tables for overviews of RDF terms.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_parse)). % Meta-argument.
+:- use_module(rdf(rdf_read)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
+:- use_module(rdf_web(rdf_tabular_class)).
 :- use_module(rdf_web(rdf_tabular_predicate)).
 
 
@@ -38,6 +40,10 @@ rdf_tabular_term(Graph, Term) -->
   },
   rdf_tabular_term1(Graph, S2).
 
+% RDFS class
+rdf_tabular_term1(Graph, Class) -->
+  {rdfs_individual_of(Class, rdfs:'Class')}, !,
+  rdf_tabular_class(Graph, Class).
 % Datatype (in typed literal).
 % Show all its values.
 rdf_tabular_term1(Graph, D) -->
@@ -57,7 +63,7 @@ rdf_tabular_term1(Graph, D) -->
 %   2. all range classes,
 %   3. all values for literal ranges.
 rdf_tabular_term1(Graph, P) -->
-  {rdf(_, P, _, Graph)}, !,
+  {rdf([graph_mode(no_index)], _, P, _, Graph)}, !,
   rdf_tabular_predicate(Graph, P).
 % Subject term.
 % Display all predicate-object pairs (per graph).

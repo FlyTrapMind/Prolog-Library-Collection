@@ -26,6 +26,7 @@ Generates names for RDF terms and triples.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_collection)).
 :- use_module(generics(codes_ext)).
+:- use_module(generics(error_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
@@ -91,7 +92,7 @@ rdf_term_name(O1, IRI1) -->
   rdf_iri(O1, IRI1).
 % Prolog term.
 rdf_term_name(_, PL_Term) -->
-  {with_output_to(codes(Codes), write_term(PL_Term, []))},
+  {with_output_to(codes(Codes), write_canonical_catch(PL_Term))},
   codes(Codes).
 
 
