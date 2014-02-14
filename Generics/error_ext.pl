@@ -93,36 +93,24 @@ rethrow(Goal, Catcher, Exception):-
 %  "terms written with this predicate can always be read back".
 
 write_canonical_catch(Term):-
-  write_term(Term, [blobs(portray),quoted(true)]).
-write_canonical_catch(Term):-
-  write_term(Term, [blobs(portray),quoted(true)]).
+  replace_blobs(Term, AtomBlobs),
+  write_term(AtomBlobs, [quoted(true)]).
 
-trace_term(Term):-
-  (
-    Term = error(io_error(_,_),_)
-  ;
-    Term = error(timeout_error(_,_),_)
-  ), !,
-  gtrace.
+%%	replace_blobs(Term0, Term) is det.
+%
+%	Copy Term0 to Term, replacing non-text   blobs. This is required
+%	for error messages that may hold   streams  and other handles to
+%	non-readable objects.
 
-% Cyclic terms.
-portray(Term):-
-  trace_term(Term),
-  cyclic_term(Term), !,
-  write(cyclic_term).
-% Terms denoting stream handles / blobs.
-portray(Term):-
-  trace_term(Term),
-  blob(Term, stream), !,
-  write(stream).
-% Terms denoting non-stream blobs.
-portray(Term):-
-  trace_term(Term),
-  blob(Term, Type),
-  Type \== text, !,
-  gtrace, %DEB
-  debug(error_ext, 'Unknown blob type ~w.', [Term]).
-
+replace_blobs(Blob, Atom) :-
+    blob(Blob, Type), Type \== text, !,
+    format(atom(Atom), '~p', [Blob]).
+replace_blobs(Term0, Term) :-
+    compound(Term0), !,
+    compound_name_arguments(Term0, Name, Args0),
+    maplist(replace_blobs, Args0, Args),
+    compound_name_arguments(Term, Name, Args).
+replace_blobs(Term, Term).
 
 
 % NEW ERRORS %
