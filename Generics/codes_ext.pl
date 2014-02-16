@@ -41,7 +41,7 @@ Predicates for handling codes.
 
 Replacements in list of codes can be made using:
 ~~~{.pl}
-phrase(dcg_replace([From-To|Pairs]), In, Out)
+phrase(dcg_maplist(dcg_replace, [FromDCG|FromDCGs], [ToDCG|ToDCGs]), In, Out)
 ~~~
 
 # Split
@@ -62,7 +62,6 @@ Stripping codes lists is simply done using append,
 @version 2013/05-2013/07, 2013/12-2014/02
 */
 
-:- use_module(dcg(dcg_replace)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 

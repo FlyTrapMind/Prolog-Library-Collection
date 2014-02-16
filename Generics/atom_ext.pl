@@ -52,7 +52,7 @@ For example, escaping spaces and grave accent (e.g. in URIs):
 
 ~~~{.pl}
 % Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT -> `%60`).
-dcg_phrase(dcg_replace([[32]-[37,50,48],[96]-[37,54,48]]), AtomIn, AtomOut),
+dcg_phrase(dcg_maplist(dcg_phrase, [[32],[96]], [[37,50,48],[37,54,48]]), AtomIn, AtomOut)
 ~~~
 
 # Split

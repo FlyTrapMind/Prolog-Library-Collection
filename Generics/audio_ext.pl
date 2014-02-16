@@ -75,7 +75,7 @@ google_tts(Enc, Lang, Line1, URI):-
 %  uri_normalized(Line, NormalizedQuery),
   
   % Replace SPACEs with PLUSes.
-  dcg_phrase(dcg_replace([[32]-[43]]), Line1, Line2),
+  dcg_phrase(dcg_replace([32], [43]), Line1, Line2),
 
 %  % The swipl builtin uri_query_components/3 turns spaces and
 %  % plusses into their symbolic equivalents.

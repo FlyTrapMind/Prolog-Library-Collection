@@ -71,7 +71,7 @@ file_to_latex_title(PrologFile, Title):-
   \+ module_property(Module, class(test)), !,
 
   % Underscores must be escaped in LaTeX.
-  dcg_phrase(dcg_replace(["_"-"\\_"]), Module, Title).
+  dcg_phrase(dcg_replace(`_`, `\\_`), Module, Title).
 
 
 file_to_latex_title(PrologFile, Local):-
@@ -332,7 +332,7 @@ process_wrapper(ProcessName, ProcessArguments, ProcessOptions1):-
   exit_code_handler(ProcessName, Status).
 
 write_latex_codes(Stream, Codes1):-
-  phrase(dcg_replace(["_"-"\\_"]), Codes1, Codes2),
+  phrase(dcg_replace(`_`, `\\_`), Codes1, Codes2),
   put_codes(Stream, Codes2).
 
 write_latex_codes_nl(Stream, Codes):-
