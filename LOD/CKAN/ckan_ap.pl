@@ -119,7 +119,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   ).
 
 ckan_download_to_directory(_, ToDir, AP_Stage):-
-  ap_resource(AP_Stage, Resource, _),
+  ap_stage_resource(AP_Stage, Resource, _),
   rdf_literal(Resource, ckan:url, URL, _),
   download_to_directory(URL, ToDir, _),
   directory_files(

@@ -161,20 +161,15 @@ materialize(O1, TMS, G):-
   if_debug(
     rdf_mat,
     (
-      flag(deductions, Id, Id + 1),
-      format(user_output, '~w: ', [Id]),
-      dcg_with_output_to(
-        user_output,
-        tms_print_justification([indent(0),lang(en)], TMS, J)
-      ),
       assert(recent_triple(S, P, O, G)),
-      nl(user_output)
+      dcg_with_output_to(atom(Msg), materialize_message(TMS, J)),
+      debug(rdf_mat, '~a', [Msg])
     )
   ),
-
+  
   % Store the result.
   rdf_assert(S, P, O, G), !,
-
+  
   % Look for more results...
   materialize(O1, TMS, G).
 % Done!
@@ -189,6 +184,14 @@ materialize(O1, _TMS, _G):-
       debug(rdf_mat, 'Added ~w deductions (regimes: ~w).', [N,ER_Atom])
     )
   ).
+
+materialize_message(TMS, J) -->
+  {flag(deductions, Id, Id + 1)},
+  integer(Id),
+  `: `,
+  tms_print_justification([indent(0),lang(en)], TMS, J),
+  nl.
+
 
 %! rule(
 %!   ?Regime:atom,

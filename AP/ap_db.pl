@@ -2,6 +2,7 @@
   ap_db,
   [
 % ADD
+    add_done/1, % +AP:iri
     add_operation_on_file/4, % +AP_Stage:iri
                              % +File:atom
                              % +Operation:atom
@@ -11,11 +12,14 @@
                               % +NVPairs:list(pair)
     add_succeed/1, % +AP_Stage:iri
 % READ
-    ap_resource/3, % +AP_Stage:iri
+    ap_resource/3, % +AP:iri
                    % ?Resource:iri
                    % ?Graph:atom
     ap_stage_name/2, % ?AP_Stage:iri
                      % ?Name:atom
+    ap_stage_resource/3, % +AP_Stage:iri
+                         % ?Resource:iri
+                         % ?Graph:atom
 % CREATE
     create_ap/2, % +AP_Collection:iri
                  % -AP:iri
@@ -50,8 +54,6 @@
 
 :- initialization(assert_schema).
 
-
-
 assert_schema:-
   rdfs_assert_subclass(ap:'AP-Collection', rdf:'Bag', ap),
   rdfs_assert_label(
@@ -66,10 +68,22 @@ assert_schema:-
   rdfs_assert_class(ap:'AP-Stage', ap),
   rdfs_assert_label(ap:'AP-Stage', 'Automated process stage', ap).
 
+
+
 add_nvpair(Name-Value, BNode):-
   rdf_bnode(BNode),
   rdf_assert_datatype(BNode, ap:name, xsd:string, Name, ap),
   rdf_assert_datatype(BNode, ap:value, xsd:string, Value, ap).
+
+
+%! add_done(+AP:iri) is det.
+% States that the given automated process was run in its entirety and
+%  all its results (including failures and exceptions)
+%  were stored succesfully.
+
+add_done(AP):-
+  rdf_assert_datatype(AP, ap:done, xsd:boolean, true, ap).
+
 
 add_operation_on_file(AP_Stage, File, Operation, Modifiers):-
   rdf_assert_individual(AP_Stage, ap:'FileOperation', ap),
@@ -80,6 +94,7 @@ add_operation_on_file(AP_Stage, File, Operation, Modifiers):-
     rdf_assert_datatype(AP_Stage, ap:has_modifier, xsd:string, Modifier, ap)
   ).
 
+
 add_properties_of_file(AP_Stage, File, NVPairs):-
   rdf_assert_individual(AP_Stage, ap:'FileProperties', ap),
   rdf_assert_datatype(AP_Stage, ap:file, xsd:string, File, ap),
@@ -89,26 +104,41 @@ add_properties_of_file(AP_Stage, File, NVPairs):-
     rdf_assert(AP_Stage, ap:has_property, BNode, ap)
   ).
 
+
+%! add_succeed(+AP_Stage:iri) is det.
+% States that the given automated process stage was completed succesfully,
+%  i.e. without failing or throwing an exception.
+
 add_succeed(AP_Stage):-
   rdf_assert_datatype(AP_Stage, ap:status, xsd:string, succeed, ap).
 
-ap_resource(AP_Stage, Resource, Graph):-
-  rdf_collection_member(AP_Stage, AP, ap),
+
+ap_resource(AP, Resource, Graph):-
   rdf(AP, ap:resource, Resource, ap),
   rdf_datatype(AP, ap:graph, xsd:string, Graph, ap).
 
+
+ap_stage_resource(AP_Stage, Resource, Graph):-
+  rdf_collection_member(AP_Stage, AP, ap),
+  ap_resource(AP, Resource, Graph).
+
+
 ap_stage_name(AP_Stage, Name):-
   rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap).
+
 
 create_ap(AP_Collection, AP):-
   create_resource('AP', AP),
   rdf_assert_collection_member(AP_Collection, AP, ap).
 
+
 create_ap_collection(AP_Collection):-
   create_resource('AP-Collection', AP_Collection).
 
+
 create_initial_stage(AP, AP_Stage):-
   create_stage(AP, -1, AP_Stage).
+
 
 create_stage(AP, StageNum, AP_Stage):-
   create_resource('AP-Stage', AP_Stage),
@@ -117,11 +147,13 @@ create_stage(AP, StageNum, AP_Stage):-
   rdfs_assert_label(AP_Stage, Label, ap),
   rdf_assert_datatype(AP_Stage, ap:stage, xsd:integer, StageNum, ap).
 
+
 create_next_stage(AP_Stage1, AP_Stage2):-
   rdf_datatype(AP_Stage1, ap:stage, xsd:integer, StageNum1, ap),
   rdf_collection_member(AP_Stage1, AP, ap),
   StageNum2 is StageNum1 + 1,
   create_stage(AP, StageNum2, AP_Stage2).
+
 
 create_resource(BaseName, Resource):-
   rdf_create_next_resource(ap, BaseName, Resource, ap).

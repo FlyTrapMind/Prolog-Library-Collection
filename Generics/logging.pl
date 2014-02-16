@@ -47,6 +47,7 @@ logging started.
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(db_ext)).
 :- use_module(library(ansi_term)). % Used in markup.
+:- use_module(library(debug)).
 :- use_module(library(http/http_client)).
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
@@ -201,7 +202,7 @@ send_current_log_file:-
     _Error,
     fail
   ),
-  format(user_output, 'HTTP reply upon sending the log file:\n~w\n', [Reply]).
+  debug(logging, 'HTTP reply upon sending the log file:\n~w', [Reply]).
 prolog:message(no_current_log_file):-
   [ansi([], 'There is no current log file.', [])].
 

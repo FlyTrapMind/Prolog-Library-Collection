@@ -33,7 +33,7 @@ file_size(FromDir, ToDir, AP_Stage):-
     (
       size_file(File, Size),
       add_properties_of_file(AP_Stage, File, [file_size-Size]),
-      ap_resource(AP_Stage, Resource, Graph),
+      ap_stage_resource(AP_Stage, Resource, Graph),
       rdf_assert_datatype(Resource, ap:file_size, xsd:integer, Size, Graph)
     )
   ),

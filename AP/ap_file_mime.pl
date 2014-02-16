@@ -34,7 +34,7 @@ mime_dir(FromDir, ToDir, AP_Stage):-
       file_mime(FromFile, MIME)
     ->
       add_properties_of_file(AP_Stage, FromFile, ['MIME'-MIME]),
-      ap_resource(AP_Stage, Resource, Graph),
+      ap_stage_resource(AP_Stage, Resource, Graph),
       rdf_assert_datatype(Resource, ap:mime, xsd:string, MIME, Graph)
     ;
       syntax_error('Unrecognized MIME')

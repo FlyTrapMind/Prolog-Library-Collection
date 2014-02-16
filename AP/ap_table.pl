@@ -121,9 +121,7 @@ ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Error'), !,
     rdf_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
-    catch(read_term_from_atom(Atom, Error, []), _, gtrace),
-    format(user_output, '~w\n', [Atom]),
-    format(user_output, '~w\n', [Error])
+    read_term_from_atom(Atom, Error, [])
   },
   html(\html_pl_term(Error)).
 ap_message(AP_Stage) -->

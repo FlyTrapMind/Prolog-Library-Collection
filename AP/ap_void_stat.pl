@@ -59,7 +59,7 @@ void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
   rdf_statistics(triples_by_graph(ReadGraph, NT)),
 
   (
-    ap_resource(AP_Stage, Resource, WriteGraph)
+    ap_stage_resource(AP_Stage, Resource, WriteGraph)
   ->
     rdf_assert_datatype(Resource, void:classes, xsd:integer, NC, WriteGraph),
     rdf_assert_datatype(Resource, void:distinctObjects, xsd:integer, NO, WriteGraph),
