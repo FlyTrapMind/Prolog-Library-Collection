@@ -276,6 +276,15 @@ html_pl_term(error(Formal,Context)) --> !,
       \html_error_context(Context)
     ])
   ).
+% Integer atomic terms.
+html_pl_term(Term) -->
+  {
+    atom(Term),
+    atom_number(Term, Integer),
+    integer(Integer), !,
+    format(atom(FormattedInteger), '~:d', [Integer])
+  },
+  html(FormattedInteger).
 % Atomic term.
 html_pl_term(Atom) -->
   {atomic(Atom)}, !,

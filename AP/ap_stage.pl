@@ -130,10 +130,10 @@ ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal):-
   ->
     forall(
       between(Low, High, N),
-      execute_goal(Goal, [FromArg,ToArg,AP_Stage,N|Args])
+      execute_goal(AP_Stage, Goal, [FromArg,ToArg,AP_Stage,N|Args])
     )
   ;
-    execute_goal(Goal, [FromArg,ToArg,AP_Stage|Args])
+    execute_goal(AP_Stage, Goal, [FromArg,ToArg,AP_Stage|Args])
   ), !.
 ap_stage_dirs(_, _, _, _, _).
 
@@ -270,15 +270,15 @@ ap_stage_to_directory(_, AP_Stage, ToDir):-
   ap_directory(AP, write, StageName, ToDir).
 
 
-:- meta_predicate(execute_goal(:,+)).
-execute_goal(Goal, Args):-
+:- meta_predicate(execute_goal(+,:,+)).
+execute_goal(AP_Stage, Goal, Args):-
   setup_call_cleanup(
     get_time(Begin),
     apply(Goal, Args),
     (
       get_time(End),
       Delta is End - Begin,
-      debug(ap, 'Duration:~w ; Goal:~w ; Args:~w', [Delta,Goal,Args])
+      rdf_assert_datatype(AP_Stage, ap:duration, xsd:duration, Delta, ap)
     )
   ).
 

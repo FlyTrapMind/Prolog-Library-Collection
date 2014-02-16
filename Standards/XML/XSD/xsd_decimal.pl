@@ -161,7 +161,7 @@ fractionDigitsCanonicalFragmentMap(F) -->
     div(G, 1, H),
     mod(G, 1, NewF)
   },
-  decimal_digit(_, H),
+  decimal_digit(_, H), !,
   fractionDigitsCanonicalFragmentMap(NewF).
 
 %! noDecimalPtCanonicalMap(+Integer:integer)//

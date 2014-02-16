@@ -138,8 +138,11 @@ The following built-in datatypes are derived from duration:
 % duration(Months:nonneg, Seconds:float)
 % ~~~
 
-durationCanonicalMap(Duration, LEX):-
-  phrase(durationCanonicalMap(Duration), LEX).
+durationCanonicalMap(duration(M,S), LEX):- !,
+  phrase(durationCanonicalMap(duration(M,S)), LEX).
+durationCanonicalMap(S, LEX):-
+  number(S), !,
+  durationCanonicalMap(duration(0,S), LEX).
 
 %! duDayCanonicalFragmentMap(+NumberOfDays:nonneg)//
 % Maps a nonnegative integer, presumably the day normalized value from the
@@ -225,24 +228,38 @@ duMinuteCanonicalFragmentMap(M) -->
 % @arg Duration A complete duration value.
 
 durationCanonicalMap(duration(M1,S1)) -->
-  {M1 > 0, S1 > 0}, !,
-  "P",
-  {M2 is abs(M1)},
-  duYearMonthCanonicalFragmentMap(M2),
-  {S2 is abs(S1)},
-  duDayTimeCanonicalFragmentMap(S2).
-durationCanonicalMap(duration(M1,S1)) -->
-  {M1 =\= 0, S1 =:= 0}, !,
-  minus_sign,
-  "P",
-  {M2 is abs(M1)},
-  duYearMonthCanonicalFragmentMap(M2).
-durationCanonicalMap(duration(M1,S1)) -->
-  {M1 =:= 0}, !,
-  minus_sign,
-  "P",
-  {S2 is abs(S1)},
-  duDayTimeCanonicalFragmentMap(S2).
+  % Emit sign.
+  (
+    {(M1 < 0 ; S1 < 0.0)}
+  ->
+    `-`
+  ;
+    ``
+  ),
+
+  % Emit duration value symbol.
+  `P`,
+
+  % Emit duration absolute value.
+  (
+    {M1 =\= 0, S1 =\= 0.0}
+  ->
+    {M2 is abs(M1)},
+    duYearMonthCanonicalFragmentMap(M2),
+    {S2 is abs(S1)},
+    duDayTimeCanonicalFragmentMap(S2)
+  ;
+    {M1 =\= 0, S1 =:= 0.0}
+  ->
+    {M2 is abs(M1)},
+    duYearMonthCanonicalFragmentMap(M2)
+  ;
+    {M1 =:= 0}
+  ->
+    {S2 is abs(S1)},
+    duDayTimeCanonicalFragmentMap(S2)
+   ).
+
 
 %! duSecondCanonicalFragmentMap(+NumberOfSeconds:float)//
 % Maps a nonnegative decimal number, presumably the second normalized value
@@ -252,7 +269,7 @@ durationCanonicalMap(duration(M1,S1)) -->
 % @arg NumberOfSeconds A nonnegative decimal number.
 
 duSecondCanonicalFragmentMap(S) -->
-  {S =:= 0}, !.
+  {S =:= 0.0}, !.
 duSecondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsignedNoDecimalPtCanonicalMap(S),
@@ -275,7 +292,7 @@ duSecondCanonicalFragmentMap(S) -->
 % @arg NumberOfSeconds A nonnegative decimal number.
 
 duTimeCanonicalFragmentMap(H, M, S) -->
-  {H =:= 0, M =:= 0, S =:= 0}, !.
+  {H =:= 0, M =:= 0, S =:= 0.0}, !.
 duTimeCanonicalFragmentMap(H, M, S) -->
   "T",
   duHourCanonicalFragmentMap(H),
