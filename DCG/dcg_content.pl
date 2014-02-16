@@ -168,7 +168,7 @@ bracketed(Mode, DCG) -->
 
 capitalize, [Upper] -->
   [Lower],
-  {code_type(Upper, to_upper(Lower))},
+  {code_type(Upper, to_upper(Lower))}, !,
   dcg_copy.
 capitalize -->
   dcg_end.

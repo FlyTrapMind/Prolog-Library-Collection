@@ -147,6 +147,7 @@ json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair):-
   debug(json_to_rdf, 'Legend: ~w\tType: ~w\tPair: ~w', [Legend,Type,Pair]),
   json_pair_to_rdf(Graph, Module, Legend, Type, Specs, Pair).
 
+
 % Type `skip`.
 json_value_to_rdf(_, _, _, _, skip, _):- !.
 % The empty atom.
@@ -238,11 +239,11 @@ json_value_to_rdf(Graph, Module, Individual, Predicate, list(Type), Value):- !,
     Value
   ).
 % The value is already in XSD format: recognize that this is the case.
-json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Literal):-
+json_value_to_rdf(Graph, _, Individual, Predicate, Type, Literal):-
   atom(Literal),
   xsd_datatype(Type, Datatype),
   rdf_datatype(Datatype, Literal, Value), !,
-  json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value).
+  rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
 json_value_to_rdf(Graph, _, Individual, Predicate, Type, Value):-
   xsd_datatype(Type, Datatype), !,
   rdf_assert_datatype(Individual, Predicate, Datatype, Value, Graph).
