@@ -108,7 +108,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   rdf_assert_datatype(AP, ap:alias, xsd:string, Alias, ap),
   rdf_assert_datatype(AP, ap:graph, xsd:string, Site, ap),
   ap(
-    [leave_trail(false),reset(true)],
+    [leave_trail(true),reset(true)],
     AP,
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
