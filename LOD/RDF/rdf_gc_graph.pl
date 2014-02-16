@@ -105,7 +105,7 @@ rdf_gc_triples_by_graph(_):-
   % Display the debug message.
   format(
     user_output,
-    '[-~d,~w] Unloaded graph ~w\n.',
+    '[-~:d triples] [~w dure] Unloaded graph ~w\n.',
     [Triples,Duration,Graph]
   ),
   flush_output(user_output),

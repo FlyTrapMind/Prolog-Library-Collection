@@ -81,7 +81,7 @@ cache_it1(Graph, Goal, PredicatesFilter, Resource):-
 cache_it1(_, _, _, _, []):- !.
 cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
   length(HistX, Depth),
-  format(lod_log, '~d\t', [Depth]),
+  format(lod_log, '~:d\t', [Depth]),
   dcg_with_output_to(lod_log, list(rdf_term_name, HistX)),
   nl(lod_log),
 
@@ -122,7 +122,7 @@ cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
   length(NewProps, NumberOfNewProps),
   dcg_with_output_to(atom(Name), rdf_term_name(X)),
   message(
-    '~d remain (depth ~d) (new res ~d props ~d) (resource ~w)',
+    '~:d remain (depth ~:d) (new res ~:d props ~:d) (resource ~w)',
     [NumberOfT2,Depth,NumberOfNewResources,NumberOfNewProps,Name]
   ),
 
@@ -221,7 +221,7 @@ cache_it2(Mode, Graph, Goal, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   ord_union(Vs1, NewNeighbors, Vs2),
   maplist(length, [NewNeighbors,Vs2], [NumberOfNewNeighbors,NumberOfVs2]),
   message(
-    '~d resources added (~d in total)',
+    '~:d resources added (~:d in total)',
     [NumberOfNewNeighbors,NumberOfVs2]
   ),
 
@@ -229,7 +229,7 @@ cache_it2(Mode, Graph, Goal, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   ord_union(Props1, NewProps, Props2),
   maplist(length, [NewProps,Props2], [NumberOfNewProps,NumberOfProps2]),
   message(
-    '~d propositions added (~d in total)',
+    '~:d propositions added (~:d in total)',
     [NumberOfNewProps,NumberOfProps2]
   ),
 
@@ -245,7 +245,7 @@ cache_it2(Mode, Graph, Goal, [H1|T1], Vs1, VSol, Props1, PropsSol):-
     append(NewNeighbors, T1, T2)
   ),
   length(T2, NumberOfT2),
-  message('~d remaining', [NumberOfT2]),
+  message('~:d remaining', [NumberOfT2]),
 
   % Recurse.
   cache_it2(Mode, Graph, Goal, T2, Vs2, VSol, Props2, PropsSol).

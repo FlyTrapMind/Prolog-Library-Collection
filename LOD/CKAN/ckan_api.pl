@@ -271,7 +271,7 @@ current_package_list_with_resources(O1, Limit, Offset, Packages):-
 
 paginated_current_package_list_with_resources(O1, Limit, Offset1, L3):-
   current_package_list_with_resources(O1, Limit, Offset1, L1), !,
-  debug(ckan, 'Offset: ~d\n~w\n\n\n', [Offset1,L1]),
+  debug(ckan, 'Offset: ~:d\n~w\n\n\n', [Offset1,L1]),
   Offset2 is Offset1 + Limit,
   paginated_current_package_list_with_resources(O1, Limit, Offset2, L2),
   append(L1, L2, L3).
