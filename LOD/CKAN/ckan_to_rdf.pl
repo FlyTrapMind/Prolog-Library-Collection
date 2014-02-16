@@ -25,15 +25,17 @@ ckan_to_rdf(O_RDF):-
   % Conversion to RDF requires presence of graph option.
   % Conversion to PL requires absence of graph option.
   select_option(graph(_), O_RDF, O_PL),
-  format(current_output, 'Begin CKAN-to-RDF conversion.\n', []),
-  
+  debug(ckan, 'Begin CKAN-to-RDF conversion.\n', []),
+
   % Make sure the CKAN site is online.
   site_read(O_PL), !,
 
+/*
   % Groups
   group_list(O_PL, _, _, _, _, Groups),
   list_script(group_show(O_RDF), 'Groups', Groups, GroupsRemaining),
   debug(ckan, 'Remaining groups: ~w', [GroupsRemaining]),
+*/
 
   % Licenses.
   license_list(O_RDF, _),

@@ -78,9 +78,13 @@ legend(
     value-atom-true
   ]
 ).
+% `name` does not seem to be a very reliable unique identifier,
+% but `data.gov.uk` contains the following:
+% =|GROUP.groups=[json([capacity= (public),name='national-health-service'])]|=
+% i.e., without `id`.
 legend(
   group,
-  id,
+  name,
   [
     abbreviation-atom-true,
     approval_status-atom-false,
@@ -99,6 +103,7 @@ legend(
     'foi-web'-atom-true,
     groups-list(group/_)-true,
     id-atom-false,
+    image_display_url-atom-true, % Should be `url`.
     image_url-atom-true, % Should be `url`.
     is_organization-boolean-false,
     name-atom-false,
@@ -144,6 +149,7 @@ legend(
     'contact-email'-atom-true, % Should be `email`.
     'contact-name'-atom-true,
     'contact-phone'-atom-true,
+    creator_user_id-atom-true,
     data_dict-skip-true,
     date_released-atom-true,
     date_update_future-atom-true,
@@ -413,7 +419,7 @@ ckan_http(O1, Action, Parameters, Goal):-
   (
     option(api_key(Key), O1)
   ->
-    HTTP_O1 = [never_give_up(true),request_header('Authorization'=Key)]
+    HTTP_O1 = [request_header('Authorization'=Key)]
   ;
     HTTP_O1 = []
   ),
@@ -422,6 +428,7 @@ ckan_http(O1, Action, Parameters, Goal):-
   merge_options(
     [
       method(post),
+      never_give_up(true),
       post(json(JSON_In)),
       request_header('Content-Type'='application/json')
     ],

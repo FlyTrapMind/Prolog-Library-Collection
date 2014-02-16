@@ -60,6 +60,7 @@ datahub_io_ckan_to_rdf(O1):-
 
 options([
   api_key(Key),
+  api_version(3),
   authority(Auth),
   deprecated(true),
   paginated(true),

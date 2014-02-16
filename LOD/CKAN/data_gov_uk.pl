@@ -30,6 +30,7 @@ data_gov_uk_ckan_to_rdf(O1):-
   ckan_to_rdf(O3).
 
 options([
+  api_version(3),
   authority(Auth),
   deprecated(true),
   paginated(true),
