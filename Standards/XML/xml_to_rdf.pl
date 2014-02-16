@@ -68,8 +68,12 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   atomic_list_concat([Name1,Name2], '/', Name3),
   
   % Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT -> `%60`).
-  dcg_phrase(dcg_replace([[32]-[37,50,48],[96]-[37,54,48]]), Name3, Names4),
-
+  dcg_phrase(
+    dcg_maplist(dcg_replace, [[32],[96]], [[37,50,48],[37,54,48]]),
+    Name3,
+    Names4
+  ),
+  
   rdf_global_id(Ns:Name4, S),
 
   rdf_assert_individual(S, C, G),

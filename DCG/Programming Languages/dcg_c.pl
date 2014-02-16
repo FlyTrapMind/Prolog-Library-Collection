@@ -11,11 +11,12 @@
 DCG rules for the C programming language.
 
 @author Wouter Beek
-@version 2013/02, 2013/06, 2014/01
+@version 2013/02, 2013/06, 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_replace)).
 
 
@@ -35,7 +36,7 @@ DCG rules for the C programming language.
 % ~~~
 
 c_convert -->
-  dcg_replace(["\b"-bell,"\n"-line_feed,"\t"-horizontal_tab]).
+  dcg_maplist(dcg_replace, [`\b`,`\n`,`\t`], [bell,line_feed,horizontal_tab]).
 
 
 %! c_name// is nondet.
