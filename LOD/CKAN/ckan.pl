@@ -320,7 +320,8 @@ legend(
     verified-boolean-true,
     verified_date-atom-true,
     webstore_last_updated-atom-true,
-    webstore_url-atom-true
+    webstore_url-atom-true,
+    wms_base_urls-atom-true
   ]
 ).
 legend(
