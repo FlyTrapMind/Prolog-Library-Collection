@@ -31,7 +31,6 @@ Predicates for sending out HTTP requests.
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
-:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(math(math_ext)).
 :- use_module(xml(xml_dom)).

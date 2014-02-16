@@ -13,16 +13,15 @@
 Automated JSON to RDF conversion.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_content)). % Meta-argument.
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_replace)).
+:- use_module(dcg(dcg_replace)). % Meta-argument.
 :- use_module(generics(atom_ext)).
-:- use_module(generics(codes_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
@@ -173,14 +172,16 @@ json_value_to_rdf(Graph, Module, Individual, Predicate, or(Types), Value):-
   member(Type, Types),
   json_value_to_rdf(Graph, Module, Individual, Predicate, Type, Value), !.
 % Atom.
-json_value_to_rdf(Graph, _, Individual, Predicate, atom, Value):-
-  atom(Value), !,
-  rdf_assert_literal(Individual, Predicate, Value, Graph).
+json_value_to_rdf(Graph, _, Individual, Predicate, atom, Value1):-
+  % E.g. ckan:size only sometimes has an integer as value. Therefore, we have
+  % to map these integers to atoms for consistency with other (atom) values.
+  to_atom(Value1, Value2), !,
+  rdf_assert_literal(Individual, Predicate, Value2, Graph).
 % URL.
 json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):- !,
   % Remove leading and trailing spaces.
   strip_atom([' '], Value1, Value2),
-  
+
   (
     is_of_type(iri, Value2)
   ->
@@ -217,7 +218,7 @@ json_value_to_rdf(Graph, _, Individual, Predicate, url, Value1):- !,
 json_value_to_rdf(Graph, Module, Individual, Predicate, email, Value1):- !,
   % Remove leading and trailing spaces.
   strip_atom([' '], Value1, Value2),
-  
+
   (
     is_of_type(email, Value2)
   ->
