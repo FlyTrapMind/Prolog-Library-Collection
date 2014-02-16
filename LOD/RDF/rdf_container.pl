@@ -42,7 +42,6 @@ Support for RDF containers (sequence, bag, and alternatives).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(math(math_ext)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
@@ -87,11 +86,18 @@ rdf_bag(Bag, Contents, G):-
 
 
 :- rdf_meta(rdf_collection(r,-,?)).
-rdf_collection(Collection, Contents, G):-
+rdf_collection(Collection, Contents, Graph):-
+  nonvar(Collection), !,
+  rdf_collection0(Collection, Contents, Graph), !.
+rdf_collection(Collection, Contents, Graph):-
+  rdf_collection0(Collection, Contents, Graph).
+
+:- rdf_meta(rdf_collection0(r,-,?)).
+rdf_collection0(Collection, Contents, G):-
   rdf_alt(Collection, Contents, G).
-rdf_collection(Collection, Contents, G):-
+rdf_collection0(Collection, Contents, G):-
   rdf_bag(Collection, Contents, G).
-rdf_collection(Collection, Contents, G):-
+rdf_collection0(Collection, Contents, G):-
   rdf_seq(Collection, Contents, G).
 
 

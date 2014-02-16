@@ -101,7 +101,7 @@ never_reached(AP_Stage1, [_:ap_stage(O1,_)|T]):-
 :- meta_predicate(ap_stage(+,+,:)).
 ap_stage(O1, AP_Stage, Goal):-
   is_initial_stage(AP_Stage), !,
-  rdf_collection_member(AP_Stage, AP, ap),
+  once(rdf_collection_member(AP_Stage, AP, ap)),
   ap_directory(AP, write, input, ToDir),
   ap_stage_dirs(O1, AP_Stage, _NoFromDir, ToDir, Goal).
 ap_stage(O1, AP_Stage, Goal):-

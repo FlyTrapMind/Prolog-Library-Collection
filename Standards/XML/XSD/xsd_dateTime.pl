@@ -11,17 +11,9 @@
                           % -DateTime:compound
     dateTime_leq/2, % +DataTime1:compound
                     % +DataTime2:compound
-% COMPONENTS
+% DCG COMPONENTS
     dayCanonicalFragmentMap//1, % +Day:between(1,31)
     dayFrag//1, % -Day:between(1,31)
-    dayInMonth/2, % +Month:between(1,12)
-                  % +DayInMonth:between(1,31)
-    dayInMonth/3, % +Year:integer
-                  % +Month:between(1,12)
-                  % +DayInMonth:between(1,31)
-    daysInMonth/3, % ?Year:integer
-                   % +Month:between(1,12)
-                   % ?DaysInMonth:between(28,31)
     endOfDayFrag//3, % -Hour:oneof([24])
                      % -Minute:oneof([0])
                      % -Second:oneof([0])
@@ -31,7 +23,22 @@
     minuteFrag//1, % -Minute:between(1-59)
     monthCanonicalFragmentMap//1, % +Month:between(1,12)
     monthFrag//1, % -Month:between(1,12)
+    secondCanonicalFragmentMap//1, % +Second:between(0.0,60.0)
+    secondFrag//1, % -Second:float
+    timezoneCanonicalFragmentMap//1, % +Timezone:between(-840,840)
+    timezoneFrag//1, % -Minutes:between(-840,840)
+    yearCanonicalFragmentMap//1, % +Year:integer
+    yearFrag//1, % -Year:integer
+% OTHERS
     newDateTime/8, % ?Year:integer
+    dayInMonth/2, % +Month:between(1,12)
+                  % +DayInMonth:between(1,31)
+    dayInMonth/3, % +Year:integer
+                  % +Month:between(1,12)
+                  % +DayInMonth:between(1,31)
+    daysInMonth/3, % ?Year:integer
+                   % +Month:between(1,12)
+                   % ?DaysInMonth:between(28,31)
                    % ?Month:between(1,12)
                    % ?Day:between(1,31)
                    % ?Hour:between(0,24)
@@ -39,14 +46,8 @@
                    % ?Second:between(0.0,60.0)
                    % ?Timezone:between(-840,840)
                    % -DateTime:compound
-    secondCanonicalFragmentMap//1, % +Second:between(0.0,60.0)
-    secondFrag//1, % -Second:float
-    timeOnTimeline/2, % +DateTime:compound
-                      % -Seconds:float
-    timezoneCanonicalFragmentMap//1, % +Timezone:between(-840,840)
-    timezoneFrag//1, % -Minutes:between(-840,840)
-    yearCanonicalFragmentMap//1, % +Year:integer
-    yearFrag//1 % -Year:integer
+    timeOnTimeline/2 % +DateTime:compound
+                     % -Seconds:float
   ]
 ).
 

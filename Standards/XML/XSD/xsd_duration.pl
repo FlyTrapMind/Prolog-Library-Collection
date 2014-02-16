@@ -6,8 +6,11 @@
     durationCanonicalMap//1, % +Duration:compound
     durationLexicalMap/2, % +LEX:list(code)
                           % -Duration:compound
-% COMPONENTS
-    duYearMonthFrag//1 % -Month:nonneg
+% DCG COMPONENTS
+    duYearMonthFrag//1, % -Month:nonneg
+% OTHERS
+    duration_to_seconds/2 % +Duration:compound
+                          % -Seconds:float
   ]
 ).
 
@@ -126,6 +129,7 @@ The following built-in datatypes are derived from duration:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(math(math_ext)).
+:- use_module(xsd(xsd_dateTime)).
 :- use_module(xsd(xsd_decimal)).
 
 
@@ -487,4 +491,13 @@ duYearMonthFrag(M2) -->
     duMonthFrag(M1)
   ),
   {M2 is 12 * Y + M1}.
+
+
+
+% OTHERS %
+
+%! duration_to_seconds(+Duration:compound, -Seconds:float) is det.
+
+duration_to_seconds(duration(Months,Seconds1), Seconds2):-
+  timeOnTimeline(dateTime(0,Months,0,0,0,Seconds1,0), Seconds2).
 

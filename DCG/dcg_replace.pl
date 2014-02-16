@@ -31,6 +31,8 @@ DCG rules for replacing content.
 % @arg Replacements A list of pairs of DCG rules.
 %        Whenever the former rule is read, the latter rule is written.
 %        Notice that the order of the replacement pairs does matter.
+%
+% This does not use tail recursion!
 
 dcg_replace(Repl1) -->
   {strip_module(Repl1, Mod, Repl2)},

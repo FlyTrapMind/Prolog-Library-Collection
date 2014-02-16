@@ -39,12 +39,10 @@ logging started.
 
 @author Wouter Beek
 @author Sander Latour
-@version 2012/05-2012/07, 2013/03-2013/07, 2013/09, 2013/11, 2014/01
+@version 2012/05-2012/07, 2013/03-2013/07, 2013/09, 2013/11, 2014/01-2014/02
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_replace)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(library(ansi_term)). % Used in markup.
 :- use_module(library(debug)).
@@ -99,7 +97,9 @@ append_to_log_(Category, Msg):-
 append_to_log_(Category, Msg1):-
   current_log_stream(Stream), !,
   iso8601_dateTime(DateTime),
-  dcg_phrase(dcg_replace([cr_or_lf-[]]), Msg1, Msg2),
+  atom_codes(Msg1, Codes1),
+  codes_remove(Codes1, [10,13], Codes2),
+  atom_codes(Msg2, Codes2),
   csv_write_stream(
     Stream,
     [row(DateTime, Category, Msg2)],
@@ -113,9 +113,6 @@ prolog:message(cannot_log(Kind, Msg)):-
     ansi([faint], '~w', [Msg]),
     ansi([], '".', [])
   ].
-
-cr_or_lf --> carriage_return.
-cr_or_lf --> line_feed.
 
 %! close_log_stream is det.
 % Closes the current log stream.

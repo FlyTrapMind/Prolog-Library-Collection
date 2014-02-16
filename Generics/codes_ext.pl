@@ -1,6 +1,19 @@
 :- module(
   codes_ext,
   [
+    code_remove/3, % +FromCodes:list(code)
+                   % +Remove:code
+                   % -ToCodes:list(code)
+    code_replace/4, % +FromCodes:list(code)
+                    % +From:code
+                    % +To:code
+                    % +ToCodes:list(code)
+    codes_remove/3, % +FromCodes:list(code)
+                    % +Remove:list(code)
+                    % -ToCodes:list(code)
+    codes_replace/3, % +FromCodes:list(code)
+                     % +Pairs:list(pair(code))
+                     % +ToCodes:list(code)
     codes_to_atom/2, % +Codes:list(code)
                      % -Atom:atom
     put_codes/1, % +Codes:list(code)
@@ -46,13 +59,64 @@ Stripping codes lists is simply done using append,
 --
 
 @author Wouter Beek
-@version 2013/05-2013/07, 2013/12-2014/01
+@version 2013/05-2013/07, 2013/12-2014/02
 */
 
 :- use_module(dcg(dcg_replace)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 
+
+
+%! code_remove(
+%!   +FromCodes:list(code),
+%!   +Remove:code,
+%!   -ToCodes:list(code)
+%! ) is det.
+% @see Wrapper around codes_remove/3.
+
+code_remove(FromCodes, Remove, ToCodes):-
+  codes_remove(FromCodes, [Remove], ToCodes).
+
+
+%! code_replace(
+%!   +FromCodes:list(code),
+%!   +From:code,
+%!   +To:code,
+%!   +ToCodes:list(code)
+%! ) is det.
+% @see Wrapper around codes_replace/3.
+
+code_replace(FromCodes, From, To, ToCodes):-
+  codes_replace(FromCodes, [From-To], ToCodes).
+
+
+%! code_remove(
+%!   +FromCodes:list(code),
+%!   +Remove:list(code),
+%!   -ToCodes:list(code)
+%! ) is det.
+
+codes_remove([], _, []):- !.
+codes_remove([H|T1], Xs, T2):-
+  member(H, Xs), !,
+  codes_remove(T1, Xs, T2).
+codes_remove([H|T1], Xs, [H|T2]):- !,
+  codes_remove(T1, Xs, T2).
+
+
+%! codes_replace(
+%!   +FromCodes:list(code),
+%!   +Pairs:list(pair(code)),
+%!   +ToCodes:list(code)
+%! ) is det.
+
+codes_replace([], _, []):- !.
+codes_replace([X|T1], Pairs, [Y|T2]):-
+  member(X-Y, Pairs), !,
+  codes_replace(T1, Pairs, T2).
+codes_replace([H|T1], Pairs, [H|T2]):-
+  codes_replace(T1, Pairs, T2).
 
 
 %! codes_to_atom(+Codes:list(code), -Atom:atom) is det.

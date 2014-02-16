@@ -26,9 +26,14 @@ Support for running automated processing.
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stage)).
+:- use_module(library(apply)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
+:- use_module(os(datetime_ext)).
+:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_serial)).
+:- use_module(xsd(xsd_duration)).
 
 
 
@@ -100,5 +105,25 @@ ap_end(O1, AP):-
     true
   ;
     ap_clean(AP)
-  ).
+  ),
+
+  rdf_collection(AP, AP_Stages, ap),
+  maplist(ap_stage_duration, AP_Stages, Monthss, Secondss),
+  maplist(sum_list, [Monthss,Secondss], [Months,Seconds]),
+  rdf_assert_datatype(
+    AP,
+    ap:duration,
+    xsd:duration,
+    duration(Months,Seconds),
+    ap
+  ),
+  
+  % Save the ap assertions until now.
+  absolute_file_name(data(ap), File, [access(write),extensions([ext])]),
+  rdf_save([format(turtle)], ap, File).
+
+ap_stage_duration(AP_Stage, Months, Seconds):-
+  rdf_datatype(AP_Stage, ap:duration, xsd:duration, Duration, ap), !,
+  Duration = duration(Months,Seconds).
+ap_stage_duration(_, 0, 0.0).
 
