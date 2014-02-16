@@ -121,7 +121,9 @@ list_script(Goal, Msg, TODO, NOT_DONE_SOL):-
 list_script(_, _, [], DONE_SOL, DONE_SOL, []):- !.
 list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL2, NOT_DONE_SOL):-
   length(TODO, L),
-  list_script(Goal, Msg, 1-L, TODO, DONE_INIT, DONE_SOL1, [], NOT_DONE_SOL),
+  % We instantiate the initial index to `0`, but this will be incremented before
+  % it is used, thus effectively counting from `1` onwards.
+  list_script(Goal, Msg, 0-L, TODO, DONE_INIT, DONE_SOL1, [], NOT_DONE_SOL),
   length(DONE_SOL1, L1),
   progress_bar(L1, L, Bar),
   debug(ckan_to_rdf, '[EVAL] ~w: ~w', [Msg,Bar]),
@@ -132,8 +134,8 @@ list_script(_, _Msg, L-L, [], DONE_SOL, DONE_SOL, NOT_DONE_SOL, NOT_DONE_SOL):- 
 % A `TODO` items that is already in `DONE`.
 list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE, NOT_DONE_SOL):-
   memberchk(X, DONE), !,
-  debug(ckan, '[DONE] ~a ~:d/~:d', [Msg,I1,L]),
   I2 is I1 + 1,
+  debug(ckan, '[DONE] ~a ~:d/~:d', [Msg,I2,L]),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE, NOT_DONE_SOL).
 % Could process a `TODO` item, pushed to `DONE`.
 list_script(Goal1, Msg, I1-L, [X|TODO], DONE1, DONE_SOL, NOT_DONE, NOT_DONE_SOL):-
@@ -142,14 +144,15 @@ list_script(Goal1, Msg, I1-L, [X|TODO], DONE1, DONE_SOL, NOT_DONE, NOT_DONE_SOL)
   append(Args1, [X], Args2),
   Goal3 =.. [Pred|Args2],
   Module:call(Goal3), !,
-  debug(ckan, '[TODO] ~a ~:d/~:d', [Msg,I1,L]),
+  % Retrieve the current index, based on the previous index.
   I2 is I1 + 1,
+  debug(ckan, '[TODO] ~a ~:d/~:d', [Msg,I2,L]),
   ord_add_element(DONE1, X, DONE2),
   list_script(Goal1, Msg, I2-L, TODO, DONE2, DONE_SOL, NOT_DONE, NOT_DONE_SOL).
 % Could not process a `TODO` item, pushed to `NOT_DONE`.
 list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE1, NOT_DONE_SOL):-
-  debug(ckan, '[NOT-DONE] ~a ~:d/~:d', [Msg,I1,L]),
   I2 is I1 + 1,
+  debug(ckan, '[NOT-DONE] ~a ~:d/~:d', [Msg,I2,L]),
   ord_add_element(NOT_DONE1, X, NOT_DONE2),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE2, NOT_DONE_SOL).
 
