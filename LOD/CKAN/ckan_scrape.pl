@@ -27,8 +27,8 @@ init_ckan_scrape:-
 
 
 
-ckan_site(datahub_io).
-%ckan_site(data_gov_uk).
+%ckan_site(datahub_io).
+ckan_site(data_gov_uk).
 
 ckan_scrape(Site):-
   var(Site), !,

@@ -10,7 +10,7 @@
 Automated CKAN to RDF conversion.
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(ckan(ckan_api)).
@@ -78,5 +78,5 @@ ckan_to_rdf(O_RDF):-
   debug(ckan, 'Remaining users: ~w', [RemainingUsers]),
 */
 
-  format(current_output, 'End CKAN-to-RDF conversion.\n', []).
+  debug(ckan, 'End CKAN-to-RDF conversion.\n', []).
 
