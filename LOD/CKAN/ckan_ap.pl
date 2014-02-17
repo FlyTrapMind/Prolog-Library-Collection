@@ -41,6 +41,7 @@ Automated processes for CKAN data.
 ckan_ap:-
   ckan_ap([]).
 
+
 %! ckan_ap(+Extra_AP_Stages:list(compound)) is det.
 % Add extra stages to the CKAN AP process.
 
@@ -87,6 +88,7 @@ ckan_ap_site(Site, Extra_AP_Stages):-
   rdfs_assert_label(AP_Collection, Site, ap),
   maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources).
 
+
 %! ckan_ap_site(
 %!   +AP_Collection:iri,
 %!   +Extra_AP_Stages:list(compound),
@@ -108,7 +110,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   rdf_assert_datatype(AP, ap:alias, xsd:string, Alias, ap),
   rdf_assert_datatype(AP, ap:graph, xsd:string, Site, ap),
   ap(
-    [leave_trail(false),reset(true)],
+    [leave_trail(true),reset(true)],
     AP,
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
@@ -117,6 +119,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
       ckan_ap:ap_stage([name('FileSize')], file_size)
     | Extra_AP_Stages]
   ).
+
 
 ckan_download_to_directory(_, ToDir, AP_Stage):-
   ap_stage_resource(AP_Stage, Resource, _),

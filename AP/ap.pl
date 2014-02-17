@@ -119,7 +119,7 @@ ap_end(O1, AP):-
   ),
   
   % Save the ap assertions until now.
-  absolute_file_name(data(ap), File, [access(write),extensions([ext])]),
+  absolute_file_name(data(ap), File, [access(write),extensions([tmp])]),
   rdf_save([format(turtle)], ap, File).
 
 ap_stage_duration(AP_Stage, Months, Seconds):-

@@ -21,6 +21,7 @@
 
 
 rdf_convert_directory(FromDir, ToDir, AP_Stage):-
+gtrace,
   rdf_convert_directory(FromDir, ToDir, 'application/x-turtle', ToFiles),
   (
     ToFiles == []
