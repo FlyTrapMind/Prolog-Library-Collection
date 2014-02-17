@@ -18,6 +18,7 @@ HTML generation of RDF content.
 
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
+:- use_module(html(html_pl_term)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
@@ -50,7 +51,7 @@ rdf_html_term(Graph, RDF_Term) -->
   rdf_iri(Graph, RDF_Term).
 % Prolog term.
 rdf_html_term(_, PL_Term) -->
-  html(span(class='prolog-term', PL_Term)).
+  html(span(class='prolog-term', \html_pl_term(PL_Term))).
 
 
 

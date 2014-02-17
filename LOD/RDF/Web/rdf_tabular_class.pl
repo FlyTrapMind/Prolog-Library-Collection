@@ -1,8 +1,9 @@
 :- module(
   rdf_tabular_class,
   [
-    rdf_tabular_class//2 % ?Graph:atom
-                         % +Class:iri
+    rdf_tabular_class//2, % ?Graph:atom
+                          % +Class:iri
+    rdf_tabular_classes//1 % +Graph:atom
   ]
 ).
 
@@ -43,5 +44,40 @@ rdf_tabular_class(Graph, Class1) -->
     (`Instances of `,rdf_term_name(Class2)),
     ['Instance'],
     Instances2
+  ).
+
+
+rdf_tabular_classes(Graph) -->
+  {
+    setoff(
+      Class,
+      rdfs_individual_of(Class, rdfs:'Class'),
+      Classes
+    ),
+    findall(
+      NumberOfIndividuals-Class,
+      (
+        member(Class, Classes),
+        aggregate_all(
+          count,
+          rdfs_individual_of(_, Class),
+          NumberOfIndividuals
+	)
+      ),
+      Pairs1
+    ),
+    keysort(Pairs1, Pairs2),
+    reverse(Pairs2, Pairs3),
+    findall(
+      [Class,NumberOfIndividuals],
+      member(NumberOfIndividuals-Class, Pairs3),
+      Rows
+    )
+  },
+  rdf_html_table(
+    Graph,
+    `Overview of classes.`,
+    ['Class','Members'],
+    Rows
   ).
 

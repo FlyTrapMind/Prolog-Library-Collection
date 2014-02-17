@@ -20,6 +20,8 @@ Generates HTML tables for overviews of RDF graphs.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_web(rdf_html_table)).
+:- use_module(rdf_web(rdf_tabular_class)).
+:- use_module(rdf_web(rdf_tabular_predicate)).
 :- use_module(tms(tms)).
 
 
@@ -28,6 +30,13 @@ Generates HTML tables for overviews of RDF graphs.
 % Generates an HTML table describing the contents of the given graph.
 
 rdf_tabular_graph(Graph) -->
+  % Enumerate all classes.
+  rdf_tabular_classes(Graph),
+  
+  % Enumerate all properties.
+  rdf_tabular_predicates(Graph).
+
+/*
   {
     % Collect the subject terms in the graph.
     setoff(
@@ -69,6 +78,7 @@ rdf_tabular_graph(Graph) -->
     ['Subject','Number of triples'],
     Rows
   ).
+*/
 
 
 rdf_tabular_graphs -->

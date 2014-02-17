@@ -4,9 +4,10 @@
     fail_mode/1, % +FailMode:compound
     if_debug/2, % +Flag:atom
                 % :Goal
-    test/2, % +Goal:term
+    test/1, % :Goal
+    test/2, % :Goal
             % +Stream
-    test/3 % +Goal:term
+    test/3 % :Goal
            % +TestDescription:atom
            % +Stream
   ]
@@ -19,7 +20,7 @@ Extensions for debugging and running in debug mode.
 Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
-@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/01
+@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02
 */
 
 :- use_module(library(debug)).
@@ -45,12 +46,14 @@ fail_mode(ignore):-
 %
 % @see library(debug)
 
+:- meta_predicate(if_debug(+,:)).
 if_debug(Flag, _Goal):-
   debugging(Flag, false), !.
 if_debug(_Flag, Goal):-
   call(Goal).
 
 
+%! test(:Goal) is det.
 %! test(:Goal, +Stream) is det.
 % Runs the given goal as a test.
 %! test(:Goal, +TestName:atom, +Stream) is det.
@@ -60,9 +63,16 @@ if_debug(_Flag, Goal):-
 % @arg TestName The name of the test.
 % @arg Stream The stream to which the test results are written.
 
+:- meta_predicate(test(:)).
+test(Goal):-
+  test(Goal, user_output).
+
+:- meta_predicate(test(:,+)).
 test(Goal, Stream):-
   term_to_atom(Goal, TestName),
   test(Goal, TestName, Stream).
+
+:- meta_predicate(test(:,+,+)).
 test(Goal, TestName, Stream):-
   get_time(BeginTime),
   catch(

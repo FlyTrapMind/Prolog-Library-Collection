@@ -58,7 +58,6 @@ ckan_ap(Extra_AP_Stages):-
 % @arg AP_Stages A list of compound terms that describe AP stages.
 
 ckan_ap_site(Site, Extra_AP_Stages):-
-gtrace,
   % Collect datasets.
   % Note that sorting by size makes no sense,
   % since the semantics of the values of `ckan:size` is unknown.
