@@ -58,15 +58,7 @@ ckan_ap(Extra_AP_Stages):-
 % @arg AP_Stages A list of compound terms that describe AP stages.
 
 ckan_ap_site(Site, Extra_AP_Stages):-
-  % Clear any data that remains from a previous AP collection
-  %  that was run on the same site.
-  %
-  % Notice that AP's reset/1 option only cleans results for a specific AP
-  %  (not a collection of APs).
-  Spec =.. [Site,'.'],
-  absolute_file_name(Spec, Dir, [access(write),file_type(directory)]),
-  delete_directory([include_self(false),safe(false)], Dir),
-
+gtrace,
   % Collect datasets.
   % Note that sorting by size makes no sense,
   % since the semantics of the values of `ckan:size` is unknown.

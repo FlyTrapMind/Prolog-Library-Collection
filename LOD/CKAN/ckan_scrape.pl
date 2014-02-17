@@ -38,27 +38,20 @@ ckan_scrape(Site):-
   rdf_graph(Site), !.
 ckan_scrape(Site):-
   absolute_file_name(
-    ckan_data(Site),
+    data(Site),
     File,
     [access(read),file_errors(fail),file_type(turtle)]
   ), !,
-  rdf_load([format(turtle)], Site, File),
-  ckan_scrape_directory(Site).
+  rdf_load([format(turtle)], Site, File).
 ckan_scrape(Site):-
-  ckan_scrape_directory(Site),
-  
   atomic_list_concat([Site,ckan_to_rdf], '_', Pred),
   call(Pred, [graph(Site)]),
 
   % Store the results of scraping.
   absolute_file_name(
-    ckan_data(Site),
+    data(Site),
     File,
     [access(write),file_type(turtle)]
   ),
   rdf_save([format(turtle)], Site, File).
-
-ckan_scrape_directory(Site):-
-  create_nested_directory(ckan_data(Site)),
-  db_add_novel(user:file_search_path(Site, ckan_data(Site))).
 
