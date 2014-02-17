@@ -43,13 +43,6 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
-% Set the swipl terminal state via PCE.
-% When swipl is started from within a terminal this does not change
-% anything, so this setting applies e.g. to contexts where PraSem
-% would be loaded by a shortcut on the Desktop.
-%:- ignore(send(@pce, show_console, iconic)).
-:- ignore(send(@pce, show_console, open)).
-
 % Run unit tests, unless compiled with optimisation turned on.
 :- use_module(library(plunit)).
 :- set_test_options([load(normal),run(manual)]).
