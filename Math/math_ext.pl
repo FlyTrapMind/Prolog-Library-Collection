@@ -18,6 +18,7 @@
                       % +CycleLength:integer
                       % -NumList:list(integer)
     div/3,
+    div_zero/3,
     euclidean_distance/3, % +Coordinate1:coordinate
                           % +Coordinate2:coordinate
                           % -EuclideanDistance:float
@@ -157,6 +158,13 @@ div(X, Y, Z):-
   rational_div(X, Y, Z).
 div(X, Y, Z):-
   float_div(X, Y, Z).
+
+div_zero(X, 0, 0):-
+  integer(X), !.
+div_zero(X, 0.0, 0.0):-
+  float(X), !.
+div_zero(X, Y, Z):-
+  div(X, Y, Z).
 
 %! euclidean_distance(
 %!   +Coordinate1:coordinate,

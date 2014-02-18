@@ -10,18 +10,20 @@
     int_parts/3, % +Integer:integer
                  % ?IntegerPart:integer
                  % ?FractionalPart:between(0.0,1.0)
-    int_plus/3 % ?X:integer
-               % ?Y:integer
-               % ?Z:integer
+    int_plus/3, % ?X:integer
+                % ?Y:integer
+                % ?Z:integer
+    to_integer/2 % +Atomic:or([atom,integer])
+                 % -Integer:integer
   ]
 ).
 
-/** <module> INT_EXT
+/** <module> Integer extensions
 
 Support predicates for integer values.
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/02
 */
 
 
@@ -29,13 +31,25 @@ Support predicates for integer values.
 int_div(X, Y, Z):-
   Z is floor(X / Y).
 
+
 int_mod(X, Y, Z):-
   Z is X mod Y.
 
+
 int_parts(I, I, 0.0).
+
 
 %! int_plus(?X:integer, ?Y:integer, ?Z:integer) is det.
 
 int_plus(X, Y, Z):-
   plus(X, Y, Z).
+
+
+%! to_integer(+Atomic:or([atom,integer]), -Integer:integer) is det.
+
+to_integer(Integer, Integer):-
+  integer(Integer), !.
+to_integer(Atom, Integer):-
+  atom_number(Atom, Number),
+  to_integer(Number, Integer).
 

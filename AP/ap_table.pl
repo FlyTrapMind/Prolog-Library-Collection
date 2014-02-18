@@ -155,10 +155,11 @@ ap_message(AP_Stage) -->
         rdf_datatype(NVPair, ap:name, xsd:string, Name, ap),
         rdf_datatype(NVPair, ap:value, xsd:string, Value, ap)
       ),
-      NVPairs
-    )
+      NVPairs1
+    ),
+    keysort(NVPairs1, NVPairs2)
   },
-  html(\html_nvpairs(NVPairs)).
+  html(\html_nvpairs(NVPairs2)).
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Filter'), !,

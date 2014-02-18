@@ -13,7 +13,7 @@
 /** <module> HTML Prolog term
 
 @author Wouter Beek
-@version 2014/01
+@version 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_cardinal)).
@@ -22,6 +22,8 @@
 :- use_module(generics(error_ext)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(library(http/html_write)).
+:- use_module(math(float_ext)).
+:- use_module(math(int_ext)).
 
 
 
@@ -43,6 +45,9 @@ html_error_context(context(Module:Name/Arity,Msg)) --> !,
       \html_error_message(Msg)
     ])
   ).
+html_error_context(Context) -->
+  {atom(Context)}, !,
+  html(div(class=context, Context)).
 
 
 html_error_formal(VAR) -->
@@ -124,6 +129,12 @@ html_error_formal(process_error(Program,exit(Status))) --> !,
 html_error_formal(representation_error(Reason)) --> !,
   html(
     div(class=representation_error,
+      \html_error_reason(Reason)
+    )
+  ).
+html_error_formal(resource_error(Reason)) --> !,
+  html(
+    div(class=resource_error,
       \html_error_reason(Reason)
     )
   ).
@@ -276,23 +287,28 @@ html_pl_term(error(Formal,Context)) --> !,
       \html_error_context(Context)
     ])
   ).
-% Integer atomic terms.
+% Integer atomic term.
 html_pl_term(Term) -->
   {
-    atom(Term),
-    atom_number(Term, Integer),
-    integer(Integer), !,
+    to_integer(Term, Integer), !,
     format(atom(FormattedInteger), '~:d', [Integer])
   },
-  html(FormattedInteger).
-% Atomic term.
+  html(span(class=integer, FormattedInteger)).
+% Floating point atomic term.
+html_pl_term(Term) -->
+  {
+    to_float(Term, Float), !,
+    format(atom(FormattedFloat), '~G', [Float])
+  },
+  html(span(class=float, FormattedFloat)).
+% Atomic term: atom, blob, or string.
 html_pl_term(Atom) -->
   {atomic(Atom)}, !,
-  html(Atom).
-% Other terms are converted to atom first.
+  html(span(class=atomic, Atom)).
+% Compound terms are converted to atom first.
 html_pl_term(PL_Term) -->
   {term_to_atom(PL_Term, Atom)},
-  html(Atom).
+  html(span(class=compound, Atom)).
 
 
 html_predicate(Functor, Arity) -->

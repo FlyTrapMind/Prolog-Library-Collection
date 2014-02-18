@@ -18,7 +18,7 @@
 /** <module> JSON_EXT
 
 @author Wouter Beek
-@version 2013/07, 2013/11, 2014/01
+@version 2013/07, 2013/11, 2014/01-2014/02
 */
 
 :- use_module(generics(codes_ext)).
@@ -30,6 +30,7 @@
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
+:- use_module(math(int_ext)).
 :- use_module(os(io_ext)).
 
 
@@ -207,13 +208,6 @@ to_boolean(0, false).
 % CKAN boolean.
 to_boolean('True', true).
 to_boolean('False', false).
-
-to_integer(Value, Value):-
-  integer(Value), !.
-to_integer(Value1, Value2):-
-  atom_number(Value1, Value3),
-  to_integer(Value3, Value2).
-
 
 
 'JSON_Response'(Request, Status, Headers1, D):-
