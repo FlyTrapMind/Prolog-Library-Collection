@@ -73,7 +73,7 @@ float_plus(X, Y, Z):-
 
 %! to_float(+Atomic:or([atom,float]), -Float:float) is det.
 
-to_flaot(Float, Float):-
+to_float(Float, Float):-
   float(Float), !.
 to_float(Atom, Float):-
   atom_number(Atom, Number),
