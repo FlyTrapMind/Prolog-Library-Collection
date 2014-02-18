@@ -34,7 +34,7 @@ ckan_row([H|T], [Name,Title,Organization,Users,Tags,H|T]):-
   rdf(AP, ap:resource, Resource, ap),
   once(rdf(Package, ckan:resources, Resource, _)),
   once(rdf_literal(Package, ckan:name, Name, _)),
-  once(rdf_literal(Package, ckan:title, Title, _)),
+  (rdf_literal(Package, ckan:title, Title, _), ! ; Title = notitle),
 
   % Organization.
   once(rdf(Package, ckan:organization, X, _)),

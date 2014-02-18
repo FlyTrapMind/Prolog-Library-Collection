@@ -34,16 +34,22 @@ File size identification and filtering for the AP architecture.
 
 file_size(FromDir, ToDir, AP_Stage):-
   directory_files([], FromDir, Files),
-  forall(
-    member(File, Files),
-    (
-      size_file(File, Size),
-      add_properties_of_file(AP_Stage, File, [file_size-Size]),
-      ap_stage_resource(AP_Stage, Resource, Graph),
-      rdf_assert_datatype(Resource, ap:file_size, xsd:integer, Size, Graph)
-    )
-  ),
-  link_directory_contents(FromDir, ToDir).
+  (
+    Files == []
+  ->
+    existence_error('File', 'No files')
+  ;
+    forall(
+      member(File, Files),
+      (
+        size_file(File, Size),
+        add_properties_of_file(AP_Stage, File, [file_size-Size]),
+        ap_stage_resource(AP_Stage, Resource, Graph),
+        rdf_assert_datatype(Resource, ap:file_size, xsd:integer, Size, Graph)
+      )
+    ),
+    link_directory_contents(FromDir, ToDir)
+  ).
 
 
 file_size_filter(FromDir, ToDir, AP_Stage, MAX_Size_MB):-

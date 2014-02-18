@@ -28,17 +28,23 @@ File MIME type identification for the AP architecture.
 
 mime_dir(FromDir, ToDir, AP_Stage):-
   directory_files([], FromDir, FromFiles),
-  forall(
-    member(FromFile, FromFiles),
-    ((
-      file_mime(FromFile, MIME)
-    ->
-      add_properties_of_file(AP_Stage, FromFile, ['MIME'-MIME]),
-      ap_stage_resource(AP_Stage, Resource, Graph),
-      rdf_assert_datatype(Resource, ap:mime, xsd:string, MIME, Graph)
-    ;
-      syntax_error('Unrecognized MIME')
-    ))
-  ),
-  link_directory_contents(FromDir, ToDir).
+  (
+    FromFiles == []
+  ->
+    existence_error('File', 'No files')
+  ;
+    forall(
+      member(FromFile, FromFiles),
+      ((
+        file_mime(FromFile, MIME)
+      ->
+        add_properties_of_file(AP_Stage, FromFile, ['MIME'-MIME]),
+        ap_stage_resource(AP_Stage, Resource, Graph),
+        rdf_assert_datatype(Resource, ap:mime, xsd:string, MIME, Graph)
+      ;
+        syntax_error('Unrecognized MIME')
+      ))
+    ),
+    link_directory_contents(FromDir, ToDir)
+  ).
 
