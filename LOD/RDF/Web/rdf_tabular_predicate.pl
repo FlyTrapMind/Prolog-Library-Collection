@@ -22,6 +22,7 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
 
@@ -98,17 +99,17 @@ rdf_tabular_predicate_literals(Graph, P) -->
 rdf_tabular_predicates(Graph) -->
   {
     setoff(
-      Property,
-      rdf(_, Property, _, Graph),
-      Properties
+      Predicate,
+      rdf_predicate(Graph, Predicate),
+      Predicates
     ),
     findall(
-      NumberOfOccurrences-Property,
+      NumberOfOccurrences-Predicate,
       (
-        member(Property, Properties),
+        member(Predicate, Predicates),
         aggregate_all(
           count,
-          rdf(_, Property, _, Graph),
+          rdf(_, Predicate, _, Graph),
           NumberOfOccurrences
         )
       ),
@@ -117,15 +118,15 @@ rdf_tabular_predicates(Graph) -->
     keysort(Pairs1, Pairs2),
     reverse(Pairs2, Pairs3),
     findall(
-      [Property,NumberOfOccurrences],
-      member(NumberOfOccurrences-Property, Pairs3),
+      [Predicate,NumberOfOccurrences],
+      member(NumberOfOccurrences-Predicate, Pairs3),
       Rows
     )
   },
   rdf_html_table(
     Graph,
     `Overview of properties.`,
-    ['Property','Occurrences'],
+    ['Predicate','Occurrences'],
     Rows
   ).
 

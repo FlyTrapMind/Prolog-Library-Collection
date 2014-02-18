@@ -14,6 +14,7 @@ Automated CKAN to RDF conversion.
 */
 
 :- use_module(ckan(ckan_api)).
+:- use_module(ckan(opendefinition_licenses)).
 :- use_module(generics(list_script)).
 :- use_module(library(debug)).
 
@@ -24,7 +25,7 @@ Automated CKAN to RDF conversion.
 ckan_to_rdf(O_RDF):-
   % Conversion to RDF requires presence of graph option.
   % Conversion to PL requires absence of graph option.
-  select_option(graph(_), O_RDF, O_PL),
+  select_option(graph(Graph), O_RDF, O_PL),
   debug(ckan, 'Begin CKAN-to-RDF conversion.\n', []),
 
   % Make sure the CKAN site is online.
@@ -39,6 +40,8 @@ ckan_to_rdf(O_RDF):-
 
   % Licenses.
   license_list(O_RDF, _),
+  % Enrich the licenses with information from OpenDefinition/OKF.
+  enrich_licenses(Graph),
 
   % Organizations.
   organization_list(O_PL, _, _, _, _, Organizations),
@@ -77,6 +80,6 @@ ckan_to_rdf(O_RDF):-
   list_script(user_show(O_RDF, _), 'Users', Users, RemainingUsers),
   debug(ckan, 'Remaining users: ~w', [RemainingUsers]),
 */
-
+  
   debug(ckan, 'End CKAN-to-RDF conversion.\n', []).
 

@@ -115,7 +115,7 @@ See also the URI equivalence issue of the Technical Architecture Group [TAG].
 
 @author Wouter Beek
 @see KlyneCarroll2004 http://www.w3.org/TR/rdf-concepts/#dfn-URI-reference
-@version 2012/01-2013/05, 2013/07-2013/08, 2014/01
+@version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/02
 */
 
 :- use_module(generics(meta_ext)).
@@ -230,10 +230,11 @@ rdf_node(Graph, Node):-
   rdf_object(Graph, Node).
 
 rdf_object(G, O):-
-  enforce_mode(
-    rdf(_S, _P, O, G),
-    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  ).
+  rdf(_, _, O, G).
+  %enforce_mode(
+  %  rdf(_S, _P, O, G),
+  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  %).
 
 rdf_po_pairs(Resource, PO_Pairs):-
   must_be(iri, Resource), !,
@@ -244,10 +245,11 @@ rdf_po_pairs(Resource, PO_Pairs):-
   ).
 
 rdf_predicate(G, P):-
-  enforce_mode(
-    rdf(_S, P, _O, G),
-    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  ).
+  rdf(_, P, _, G).
+  %enforce_mode(
+  %  rdf(_S, P, _O, G),
+  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  %).
 
 rdf_predicates(Graph, Predicates):-
   setoff(
@@ -306,10 +308,11 @@ rdf_shared_p_triples(
   ord_subtract(Y_PO_Pairs, Shared_P_Triples, Y_Exclusive_P_Pairs).
 
 rdf_subject(G, S):-
-  enforce_mode(
-    rdf(S, _P, _O, G),
-    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  ).
+  rdf(S, _, _, G).
+  %enforce_mode(
+  %  rdf(S, _P, _O, G),
+  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  %).
 
 %! rdf_term(?Graph:graph, ?Term:uri) is nondet.
 % Pairs of graphs and terms that occur in that graph.

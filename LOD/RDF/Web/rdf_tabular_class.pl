@@ -22,6 +22,7 @@ Generates HTML tables for overviews of RDFS classes.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 
 
@@ -51,7 +52,10 @@ rdf_tabular_classes(Graph) -->
   {
     setoff(
       Class,
-      rdfs_individual_of(Class, rdfs:'Class'),
+      (
+        rdfs_individual_of(Class, rdfs:'Class'),
+        rdf_term(Graph, Class)
+      ),
       Classes
     ),
     findall(
@@ -62,7 +66,7 @@ rdf_tabular_classes(Graph) -->
           count,
           rdfs_individual_of(_, Class),
           NumberOfIndividuals
-	)
+        )
       ),
       Pairs1
     ),
