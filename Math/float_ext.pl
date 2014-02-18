@@ -76,6 +76,7 @@ float_plus(X, Y, Z):-
 to_float(Float, Float):-
   float(Float), !.
 to_float(Atom, Float):-
+  atom(Atom),
   atom_number(Atom, Number),
   to_float(Number, Float).
 

@@ -50,6 +50,7 @@ int_plus(X, Y, Z):-
 to_integer(Integer, Integer):-
   integer(Integer), !.
 to_integer(Atom, Integer):-
+  atom(Atom),
   atom_number(Atom, Number),
   to_integer(Number, Integer).
 

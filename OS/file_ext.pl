@@ -51,6 +51,8 @@
                         % -HiddenFile:atom
     is_absolute_file_name2/1, % ?File:atom
     is_image_file/1, % +File:atom
+    link_file/2, % +ToDirectory:atom
+                 % +FromFile:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
     new_file/2, % +File1:atom
@@ -387,6 +389,16 @@ is_absolute_file_name2(F):-
 is_image_file(File):-
   file_name_extension(_, Extension, File),
   image_extension(Extension).
+
+
+%! link_file(+ToDir:atom, +FromFile:atom) is det.
+% Create a single symbolic link for the given file.
+% The symbolic link has the same base nane and extension as the file
+%  linked to.
+
+link_file(ToDir, FromFile):-
+  file_alternative(FromFile, ToDir, _, _, ToFile),
+  link_file(FromFile, ToFile, symbolic).
 
 
 %! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.

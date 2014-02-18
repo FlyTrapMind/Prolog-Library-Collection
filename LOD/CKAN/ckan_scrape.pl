@@ -20,15 +20,10 @@ Automated script that scraped CKAN.
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_serial)).
 
-:- initialization(init_ckan_scrape).
-init_ckan_scrape:-
-  create_nested_directory(data('CKAN')),
-  db_add_novel(user:file_search_path(ckan_data, data('CKAN'))).
-
-
-
 ckan_site(datahub_io).
 %ckan_site(data_gov_uk).
+
+
 
 ckan_scrape(Site):-
   var(Site), !,

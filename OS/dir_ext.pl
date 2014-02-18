@@ -363,13 +363,6 @@ link_directory_contents(FromDir, ToDir):-
   directory_files([], FromDir, FromFiles),
   maplist(link_file(ToDir), FromFiles).
 
-% Create a single symbolic link for the given file.
-% The symbolic link has the same base nane and extension as the file
-%  linked to.
-link_file(ToDir, FromFile):-
-  file_alternative(FromFile, ToDir, _, _, ToFile),
-  link_file(FromFile, ToFile, symbolic).
-
 
 process_directory_files(FromDir, FromFileTypes, ToDir, ToFileType, Goal):-
   process_directory_files(
