@@ -24,6 +24,7 @@ Automated processes for CKAN data.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)). % Used in AP stage.
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(os(dir_ext)).
@@ -75,6 +76,11 @@ ckan_ap_site(Site, Extra_AP_Stages):-
     ),
     Resources
   ),
+  
+  % DEB
+  length(Resources, NumberOfResources),
+  debug(ckan, 'About to process ~:d resources.', [NumberOfResources]),
+  
   create_ap_collection(AP_Collection),
   rdfs_assert_label(AP_Collection, Site, ap),
   maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources).
