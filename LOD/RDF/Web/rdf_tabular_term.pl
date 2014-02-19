@@ -19,6 +19,7 @@ Generates HTML tables for overviews of RDF terms.
 :- use_module(dcg(dcg_content)). % Meta-argument.
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
@@ -66,9 +67,14 @@ rdf_tabular_term1(Graph, P) -->
   {rdf([graph_mode(no_index)], _, P, _, Graph)}, !,
   rdf_tabular_predicate(Graph, P).
 % Subject term.
-% Display all predicate-object pairs (per graph).
-rdf_tabular_term1(Graph, S) -->
-  rdf_tabular_triples(S, _, _, Graph).
+% Display all predicate-object pairs and subject-predicate pairs (per graph).
+rdf_tabular_term1(Graph, RDF_Term) -->
+  html([
+    h1('Predicate-object pairs'),
+    \rdf_tabular_triples(RDF_Term, _, _, Graph),
+    h1('Subject-object pairs'),
+    \rdf_tabular_triples(_, _, RDF_Term, Graph)
+  ]).
 
 
 rdf_tabular_terms(Graph, RDF_Terms) -->

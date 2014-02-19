@@ -153,6 +153,7 @@ cyclic_numlist(Min, Max, CycleLength, NumList):-
   numlist(0, Max, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
 
+% @tbd
 div(X, Y, Z):-
   rational(X), rational(Y), !,
   rational_div(X, Y, Z).
@@ -164,7 +165,7 @@ div_zero(X, 0, 0):-
 div_zero(X, 0.0, 0.0):-
   float(X), !.
 div_zero(X, Y, Z):-
-  div(X, Y, Z).
+  Z is X / Y.
 
 %! euclidean_distance(
 %!   +Coordinate1:coordinate,
