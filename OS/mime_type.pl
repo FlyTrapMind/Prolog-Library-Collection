@@ -112,11 +112,15 @@ mime_register_type(Type, Subtype, _):-
 mime_register_type(Type, Subtype, DefaultExtension):-
   mime_register_type(Type, Subtype, DefaultExtension, mime_ext).
 
-mime_register_type(Type, Subtype, DefaultExtension, Graph):-
+mime_register_type(Type1, Subtype, DefaultExtension, Graph):-
+  % The table of the Website we scrape for file extensions
+  %  contains a typo: `applicaiton` i.o. `application`.
+  (Type1 == applicaiton -> Type2 = application ; Type2 = Type1),
+  
   % Assert type.
-  rdf_global_id(mime:Type, Class),
+  rdf_global_id(mime:Type2, Class),
   rdfs_assert_subclass(Class, mime:'Registration', Graph),
-  rdfs_assert_label(Class, Type, Graph),
+  rdfs_assert_label(Class, Type2, Graph),
 
   % Assert subtype.
   rdf_bnode(Registration),
@@ -139,7 +143,7 @@ mime_register_type(Type, Subtype, DefaultExtension, Graph):-
     Graph
   ),
 
-  atomic_list_concat([Type,Subtype], '/', MIME),
+  atomic_list_concat([Type2,Subtype], '/', MIME),
   db_add_novel(user:prolog_file_type(DefaultExtension, MIME)).
 
 assert_mime_schema_ext(Graph):-
