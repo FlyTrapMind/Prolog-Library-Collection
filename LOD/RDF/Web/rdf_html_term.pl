@@ -139,7 +139,7 @@ rdf_iri(Graph, IRI1) -->
       (
         xml_current_namespace(Prefix, _), !
       ;
-        existence_error('XML namespace',Prefix)
+        existence_error('XML namespace', Prefix)
       ),
       http_absolute_location(root(rdf_tabular), Location1, []),
       uri_query_add(Location1, term, IRI1, Location2),

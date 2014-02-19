@@ -27,9 +27,12 @@ http:location(ckan, root(ckan), []).
 ckan_table(_Request):-
   ap_table(ckan_header, ckan_row).
 
-ckan_header(Header, ['Name','Title','Organization','Users','Tags'|Header]).
+ckan_header(
+  Header,
+  ['Resource','Name','Title','Organization','Users','Tags'|Header]
+).
 
-ckan_row([H|T], [Name,Title,Organization,Users,Tags,H|T]):-
+ckan_row([H|T], [Resource,Name,Title,Organization,Users,Tags,H|T]):-
   rdf_collection_member(H, AP, ap),
   rdf(AP, ap:resource, Resource, ap),
   once(rdf(Package, ckan:resources, Resource, _)),

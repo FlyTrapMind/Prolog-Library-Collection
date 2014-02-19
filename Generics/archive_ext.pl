@@ -22,12 +22,26 @@ Extensions to the support for archived files.
 :- use_module(os(dir_ext)).
 :- use_module(os(mime_type)).
 
+% application/x-bzip2
+% .bz2
 :- mime_register_type(application, 'x-bzip2', bz2).
 :- db_add_novel(user:prolog_file_type(bz2, archive)).
+% application/x-gzip
+% .gz
 :- mime_register_type(application, 'x-gzip', gz).
 :- db_add_novel(user:prolog_file_type(gz, archive)).
+% application/x-rar-compressed
+% .rar
+:- mime_register_type(application, 'x-rar-compressed', rar).
+:- db_add_novel(user:prolog_file_type(rar, archive)).
+% application/x-tar
+% .tar
+% .tgz
 :- mime_register_type(application, 'x-tar', tar).
 :- db_add_novel(user:prolog_file_type(tar, archive)).
+:- db_add_novel(user:prolog_file_type(tgz, archive)).
+% application/zip
+% .zip
 :- mime_register_type(application, 'zip', zip).
 :- db_add_novel(user:prolog_file_type(zip, archive)).
 

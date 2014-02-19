@@ -28,6 +28,7 @@
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf_web(rdf_html_term)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
@@ -110,8 +111,9 @@ ap_stage_cell(AP_Stage) -->
     rdf_datatype(AP_Stage, ap:status, xsd:string, Class, ap)
   },
   html(div(class=Class, \ap_message(AP_Stage))).
+% This covers both RDF terms and Prolog terms.
 ap_stage_cell(Term) -->
-  html_pl_term(Term).
+  rdf_html_term(Term).
 
 
 ap_message(AP_Stage) -->
