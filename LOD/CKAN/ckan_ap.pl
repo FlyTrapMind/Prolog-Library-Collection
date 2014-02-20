@@ -49,7 +49,26 @@ ckan_ap:-
 ckan_ap(Extra_AP_Stages):-
   % Scrape a CKAN site.
   ckan_scrape(Site),
-
+  
+  % Load the results of resources that were already processed.
+  % Do not fail if the file is not there.
+  (
+    absolute_file_name(
+      data(ap),
+      File1,
+      [access(read),file_errors(fail),file_type(turtle)]
+    ),
+    absolute_file_name(
+      data(datahub_io),
+      File2,
+      [access(read),file_errors(fail),file_type(turtle)]
+    )
+  ->
+    maplist(rdf_load([format(turtle)]), [ap,datahub_io], [File1,File2])
+  ;
+    true
+  ),
+  
   % Run AP processes for CKAN site.
   thread_create(ckan_ap_site(Site, Extra_AP_Stages), _, []).
 
@@ -107,7 +126,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   rdf_assert_datatype(AP, ap:alias, xsd:string, Alias, ap),
   rdf_assert_datatype(AP, ap:graph, xsd:string, Site, ap),
   ap(
-    [leave_trail(true),reset(true)],
+    [leave_trail(false),reset(true)],
     AP,
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
