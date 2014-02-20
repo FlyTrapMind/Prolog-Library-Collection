@@ -58,6 +58,7 @@ ckan_ap(Extra_AP_Stages):-
       File1,
       [access(read),file_errors(fail),file_type(turtle)]
     ),
+    % @tbd Hasn't this already been loaded anyway?
     absolute_file_name(
       data(datahub_io),
       File2,

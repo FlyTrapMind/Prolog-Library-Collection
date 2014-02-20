@@ -16,10 +16,8 @@ Extensions to the support for archived files.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
-:- use_module(os(dir_ext)).
 :- use_module(os(mime_type)).
 
 % application/x-bzip2
