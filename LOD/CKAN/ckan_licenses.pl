@@ -162,19 +162,23 @@ ckan_clean_licenses(Graph):-
     rdf_assert(S, P, ckan:'License/None', Graph)
   ),
   rdf_retractall(S, P, ckan:'License/6', Graph),
+  
   forall(
     rdf(S, P, ckan:'License/65', Graph),
     rdf_assert(S, P, ckan:'License/None', Graph)
   ),
   rdf_retractall(S, P, ckan:'License/65', Graph),
+  
   forall(
     rdf(S, P, ckan:'License/CreativeCommonsAttributionCCBY25', Graph),
     rdf_assert(S, P, ckan:'License/cc-by', Graph)
   ),
   rdf_retractall(S, P, ckan:'License/CreativeCommonsAttributionCCBY25', Graph),
+  
   rdfs_assert_subclass(ckan:'NoLicense', ckan:'License', Graph),
   rdfs_assert_subclass(ckan:'OpenLicense', ckan:'License', Graph),
   rdfs_assert_subclass(ckan:'ClosedLicense', ckan:'License', Graph),
+  
   forall(
     rdfs_individual_of(License, ckan:'License'),
     (
@@ -189,6 +193,7 @@ ckan_clean_licenses(Graph):-
       rdf_assert_individual(License, ckan:'ClosedLicense', Graph)
     )
   ),
+  
   forall(
     rdfs_individual_of(Package, ckan:'Package'),
     (
