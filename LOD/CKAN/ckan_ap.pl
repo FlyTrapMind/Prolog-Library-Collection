@@ -86,6 +86,8 @@ ckan_ap_site(Site, Extra_AP_Stages):-
     Resource,
     (
       rdfs_individual_of(Resource, ckan:'Resource'),
+      % Filter resources that have already been processed previously.
+      \+ ap_resource(_, Resource, _),
       (
         rdf_literal(Resource, ckan:format, Format, Site),
         rdf_format(Format)
