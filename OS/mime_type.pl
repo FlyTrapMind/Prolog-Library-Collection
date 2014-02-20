@@ -42,6 +42,7 @@ Support for IANA-registered MIME types.
 
 
 
+
 mime_type(MIME):-
   nonvar(MIME), !,
   atomic_list_concat([Type,Subtype], '/', MIME),
@@ -157,7 +158,13 @@ init_mime:-
     File,
     [access(read),extensions([ttl]),file_errors(fail)]
   ), !,
-  rdf_load([mime('text/turtle')], mime, File).
+  rdf_load([mime('text/turtle')], mime, File),
+  mime_register_type(application, 'atom+xml',         atom),
+  mime_register_type(application, 'x-rar-compressed', rar ),
+  mime_register_type(application, 'x-bibtex',         bib ),
+  mime_register_type(application, 'n-quads',          nq  ),
+  mime_register_type(application, 'n-triples',        nt  ).
+
 init_mime:-
   assert_iana(
     mime,

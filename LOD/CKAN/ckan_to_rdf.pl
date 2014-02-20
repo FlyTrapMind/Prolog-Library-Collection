@@ -15,6 +15,7 @@ Automated CKAN to RDF conversion.
 
 :- use_module(ckan(ckan_api)).
 :- use_module(ckan(ckan_licenses)).
+:- use_module(ckan(ckan_mime)).
 :- use_module(generics(list_script)).
 :- use_module(library(debug)).
 
@@ -41,8 +42,9 @@ ckan_to_rdf(O_RDF):-
   % Licenses.
   license_list(O_RDF, _),
   % Enrich the licenses with information from OpenDefinition/OKF.
-  ckan_clean_licenses(Graph),
-
+  ckan_clean_license(Graph),
+  ckan_clean_mime(Graph),
+  
   % Organizations.
   organization_list(O_PL, _, _, _, _, Organizations),
   list_script(

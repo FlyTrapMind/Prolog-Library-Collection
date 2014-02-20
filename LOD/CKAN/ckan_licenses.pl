@@ -1,7 +1,7 @@
 :- module(
   ckan_license,
   [
-    ckan_clean_licenses/1 % +Graph:atom
+    ckan_clean_license/1 % +Graph:atom
   ]
 ).
 
@@ -154,7 +154,7 @@ ckan_license_table -->
 
 
 
-ckan_clean_licenses(Graph):-
+ckan_clean_license(Graph):-
   enrich_licenses(Graph),
   
   forall(

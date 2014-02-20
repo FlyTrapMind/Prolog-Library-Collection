@@ -154,11 +154,10 @@ html_table_cell(header, Cell, Element) -->
 %! )// is det.
 
 :- meta_predicate(html_table_data_rows(+,+,1,3,+,?,?)).
+html_table_data_rows(_, _, _, _, []) --> !, [].
 html_table_data_rows(HasHeaderColumn, IsIndexed, Highlighted, Cell, [H|T]) -->
   html_table_data_row(HasHeaderColumn, IsIndexed, Highlighted, Cell, H),
   html_table_data_rows(HasHeaderColumn, IsIndexed, Highlighted, Cell, T).
-html_table_data_rows(_, _, _, _, []) -->
-  [].
 
 
 %! html_table_data_row(
@@ -222,6 +221,9 @@ html_table_data_row(
 %! )// is det.
 
 :- meta_predicate(html_table_header(+,+,3,+,-,?,?)).
+% The options state that there should be a header row, but there is no
+% content to display.
+html_table_header(true, _, _, [], []) --> !, [].
 % Options state a header row should be included.
 % We take the first row, and return the other rows for later processing.
 % Only add a header if the corresponding option says so.
