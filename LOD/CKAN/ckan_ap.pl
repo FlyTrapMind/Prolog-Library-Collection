@@ -34,6 +34,7 @@ Automated processes for CKAN data.
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
 :- use_module(rdfs(rdfs_label_build)).
+:- use_module(uri(uri_scheme)).
 
 
 
