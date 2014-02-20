@@ -1,7 +1,9 @@
 :- module(
   ckan_mime,
   [
-    ckan_clean_mime/1 % +Graph:atom
+    ckan_clean_mime/1, % +Graph:atom
+    ckan_mime_table//0,
+    ckan_mime_table_structured_open//0
   ]
 ).
 
@@ -226,6 +228,74 @@ mime_table(Caption, Pairs) -->
     )
   ).
 
+
+ckan_mime_table_structured_open -->
+  {
+    findall(
+      NumberOfResources-[MIME,Structured,Open,Both],
+      (
+        mime(MIME, Structured, Open),
+        boolean_and(Structured, Open, Both),
+        findall(
+          Resource,
+          rdf_literal(Resource, ckan:mimetype, MIME, _),
+          Resources
+        ),
+        length(Resources, NumberOfResources)
+      ),
+      Pairs1
+    ),
+    keysort(Pairs1, Pairs2),
+    reverse(Pairs2, Pairs3),
+    findall(
+      [NumberOfResources|T],
+      member(NumberOfResources-T, Pairs3),
+      Rows
+    ),
+    findall(
+      NoMIMEResource,
+      (
+        rdfs_individual_of(NoMIMEResource, ckan:'Resource'),
+        \+ rdf_literal(NoMIMEResource, ckan:mimetype, _, _)
+      ),
+      NoMIMEResources
+    ),
+    length(NoMIMEResources, NumberOfNoMIMEResources),
+    findall(
+      N1,
+      member(N1-[_,true,_,_], Pairs3),
+      N1s
+    ),
+    sum_list(N1s, N1),
+    findall(
+      N2,
+      member(N2-[_,_,true,_], Pairs3),
+      N2s
+    ),
+    sum_list(N2s, N2),
+    findall(
+      N3,
+      member(N3-[_,_,_,true], Pairs3),
+      N3s
+    ),
+    sum_list(N3s, N3)
+  },
+  html([
+    \html_table(
+      [header_row(true),indexed(false)],
+      `MIME types and their 2- and 3-star status.`,
+      [
+        ['NumberOfResources','MIME','Structured (2-star)','Open','Both (3-star)'],
+        [NumberOfNoMIMEResources,'No MIME','false','false','false']
+      |Rows]
+    ),
+    p(['There are ',\html_pl_term(N1),' resources with a structured MIME format (2-star).']),
+    p(['There are ',\html_pl_term(N2),' resources with an open MIME format.']),
+    p(['There are ',\html_pl_term(N3),' resources with a structured and open MIME format (3-stars).'])
+  ]).
+
+boolean_and(true, true, true ):- !.
+boolean_and(_,    _,    false).
 
 ckan_clean_mime(Graph):-
   forall(

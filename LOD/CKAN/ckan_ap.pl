@@ -136,7 +136,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
-      ckan_ap:ap_stage([name('MIME')], mime_dir),
+      %ckan_ap:ap_stage([name('MIME')], mime_dir),
       ckan_ap:ap_stage([name('FileSize')], file_size)
     | Extra_AP_Stages]
   ).

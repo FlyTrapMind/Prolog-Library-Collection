@@ -47,16 +47,16 @@ file_mime('application/x-turtle') -->
   ci_string(`@prefix`), !,
   dcg_done.
 file_mime('text/html') -->
-  `<!`, ci_string(`DOCTYPE`), blanks,
+  atom('<!'), ci_string(`DOCTYPE`), blanks,
   ci_string(`HTML`), !,
   dcg_done.
 file_mime(MIME) -->
   blanks,
   (xml_declaration(_) ; ""), blanks,
   (xml_comment ; ""), blanks,
-  
+
   (
-    `<rdf:RDF`
+    atom('<rdf:RDF')
   ->
     {MIME = 'application/rdf+xml'}
   ;
@@ -65,11 +65,11 @@ file_mime(MIME) -->
   dcg_done.
 
 xml_comment -->
-  `<!--`,
+  atom('<!--'),
   dcg_until([end_mode(inclusive)], test, _),
   blanks_to_nl.
 test -->
-  `-->`.
+  atom('-->').
 
 %! xml_declaration(?Version:float)// .
 % The XML specification also permits an XML declaration at
@@ -77,23 +77,23 @@ test -->
 %  the XML content encoding. This is optional but recommended.
 
 xml_declaration(Version) -->
-  `<?`, ci_string(`XML`), whites,
+  atom('<?'), ci_string(`XML`), whites,
   (xml_version(Version), whites ; ""),
   (xml_encoding, whites ; ""),
-  `?>`, blanks_to_nl.
+  atom('?>'), blanks_to_nl.
 
 xml_doctype('application/rdf+xml') -->
-  `<!`, ci_string(`DOCTYPE`), blanks, `rdf:RDF`, !,
+  atom('<!'), ci_string(`DOCTYPE`), blanks, atom('rdf:RDF'), !,
   dcg_done.
 
 xml_encoding -->
-  `encoding=`,
+  atom('encoding='),
   quoted(utf8).
 
 utf8 -->
   ci_string(`UTF`), `-8`.
 
 xml_version(Version) -->
-  `version=`,
+  atom('version='),
   quoted(float(Version)).
 

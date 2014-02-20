@@ -21,6 +21,10 @@ File MIME type identification for the AP architecture.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_lit_read)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
 
 
 
@@ -33,18 +37,21 @@ mime_dir(FromDir, ToDir, AP_Stage):-
   ->
     existence_error('File', 'No files')
   ;
-    forall(
-      member(FromFile, FromFiles),
-      ((
-        file_mime(FromFile, MIME)
-      ->
-        add_properties_of_file(AP_Stage, FromFile, ['MIME'-MIME]),
-        ap_stage_resource(AP_Stage, Resource, Graph),
-        rdf_assert_datatype(Resource, ap:mime, xsd:string, MIME, Graph)
-      ;
-        syntax_error('Unrecognized MIME')
-      ))
-    ),
-    link_directory_contents(FromDir, ToDir)
-  ).
+    maplist(mime_file(AP_Stage), FromFiles)
+  ),
+  link_directory_contents(FromDir, ToDir).
+
+
+mime_file(AP_Stage, File):-
+  ap_stage_resource(AP_Stage, Resource, Graph),
+  rdf_literal(Resource, ckan:mimetype, MIME1, Graph),
+  (
+    file_mime(File, MIME2)
+  ->
+    (MIME1 \== MIME2 -> debug(ap, '[MIME] ~w -> ~w', [MIME1,MIME2]) ; true)
+  ;
+    MIME2 = MIME1
+  ),
+  add_properties_of_file(AP_Stage, File, ['MIME'-MIME2]),
+  rdf_assert_datatype(Resource, ap:mime, xsd:string, MIME2, Graph).
 
