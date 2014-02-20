@@ -21,9 +21,12 @@ Extensions to the support for archived files.
 :- use_module(os(mime_type)).
 
 % application/x-bzip2
-% .bz2
+% .bz,.bz2,.tbz,.tbz2
 :- mime_register_type(application, 'x-bzip2', bz2).
+:- db_add_novel(user:prolog_file_type(bz, archive)).
 :- db_add_novel(user:prolog_file_type(bz2, archive)).
+:- db_add_novel(user:prolog_file_type(tbz, archive)).
+:- db_add_novel(user:prolog_file_type(tbz2, archive)).
 % application/x-gzip
 % .gz
 :- mime_register_type(application, 'x-gzip', gz).
@@ -54,7 +57,7 @@ Extensions to the support for archived files.
 extract_archive(FromFile, ToDir, [Conversion|Conversions]):-
   file_name_extension(Base, Ext, FromFile),
   prolog_file_type(Ext, archive), !,
-  extract_archive(Ext, FromFile, Base, Conversion),
+  extract_archive(Ext, FromFile, ToDir, Conversion),
   extract_archive(Base, ToDir, Conversions).
 extract_archive(FromFile, ToDir, []):-
   file_alternative(FromFile, ToDir, _, _, ToFile),
@@ -64,7 +67,7 @@ extract_archive(FromFile, ToDir, []):-
 %! extract_archive(
 %!   +Extension:oneof([bz2,gz,tgz,zip]),
 %!   +FromFile:atom,
-%!   +ToName:atom,
+%!   +ToDirectory:atom,
 %!   -Conversion:oneof([gunzipped,untarred,unzipped])
 %! ) is semidet.
 
@@ -72,8 +75,9 @@ extract_archive(bz2, File, _, gunzipped):- !,
   process_create(path(bunzip2), ['-f',file(File)], []).
 extract_archive(gz, File, _, gunzipped):- !,
   process_create(path(gunzip), ['-f',file(File)], []).
-extract_archive(tgz, File, _, untarred):- !,
-  process_create(path(tar), [zxvf,file(File)], []).
-extract_archive(zip, File, Base, unzipped):- !,
-  process_create(path(unzip), [file(File),'-o',file(Base)], []).
+extract_archive(tgz, File, ToDir, untarred):- !,
+  atomic_list_concat(['--directory',ToDir], '=', C),
+  process_create(path(tar), [zxvf,file(File),C], []).
+extract_archive(zip, File, ToDir, unzipped):- !,
+  process_create(path(unzip), [file(File),'-fo','-d',file(ToDir)], []).
 
