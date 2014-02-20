@@ -25,6 +25,7 @@ Automated processes for CKAN data.
 :- use_module(generics(uri_ext)). % Used in AP stage.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(os(dir_ext)).
@@ -143,6 +144,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
 ckan_download_to_directory(_, ToDir, AP_Stage):-
   ap_stage_resource(AP_Stage, Resource, _),
   rdf_literal(Resource, ckan:url, URL, _),
+  check_url_validity(URL),
   download_to_directory(URL, ToDir, _),
   directory_files(
     [include_directories(false),include_self(false)],
@@ -153,6 +155,12 @@ ckan_download_to_directory(_, ToDir, AP_Stage):-
     member(File, ToFiles),
     add_operation_on_file(AP_Stage, File, downloaded, [])
   ).
+
+check_url_validity(URL):-
+  uri_components(URL, uri_components(Scheme, _, _, _, _)),
+  uri_scheme(Scheme), !.
+check_url_validity(URL):-
+  domain_error('URL', URL).
 
 
 rdf_format('RDF').
