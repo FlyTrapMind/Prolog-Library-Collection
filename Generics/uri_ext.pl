@@ -1,9 +1,6 @@
 :- module(
   uri_ext,
   [
-    download_to_directory/3, % +URL:atom
-                             % +ToDirectory:atom
-                             % -AP_Status:compound
     download_to_file/3, % +Options:list(nvpair)
                         % +URL:atom
                         % ?File:atom
@@ -42,20 +39,6 @@
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
-
-
-download_to_directory(URL, Dir, ap(status(succeed),download(File))):-
-  uri_components(URL, uri_components(_,_,Path,_,_)),
-  atomic_list_concat(Components1, '/', Path),
-  reverse(Components1, Components2),
-  first_nonempty_atom(Components2, FileName),
-  absolute_file_name(FileName, File, [access(write),relative_to(Dir)]),
-  download_to_file([], URL, File).
-
-first_nonempty_atom([], dummy):- !.
-first_nonempty_atom([''|T], Atom):- !,
-  first_nonempty_atom(T, Atom).
-first_nonempty_atom([H|_], H).
 
 
 %! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.

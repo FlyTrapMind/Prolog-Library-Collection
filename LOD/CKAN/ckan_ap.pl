@@ -16,6 +16,7 @@ Automated processes for CKAN data.
 
 :- use_module(ap(ap)).
 :- use_module(ap(ap_archive_ext)).
+:- use_module(ap(ap_download)).
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_file_mime)).
 :- use_module(ap(ap_file_size)).
@@ -136,7 +137,6 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
-      %ckan_ap:ap_stage([name('MIME')], mime_dir),
       ckan_ap:ap_stage([name('FileSize')], file_size)
     | Extra_AP_Stages]
   ).
@@ -145,23 +145,9 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
 ckan_download_to_directory(_, ToDir, AP_Stage):-
   ap_stage_resource(AP_Stage, Resource, _),
   rdf_literal(Resource, ckan:url, URL, _),
-  check_url_validity(URL),
-  download_to_directory(URL, ToDir, _),
-  directory_files(
-    [include_directories(false),include_self(false)],
-    ToDir,
-    ToFiles
-  ),
-  forall(
-    member(File, ToFiles),
-    add_operation_on_file(AP_Stage, File, downloaded, [])
-  ).
-
-check_url_validity(URL):-
-  uri_components(URL, uri_components(Scheme, _, _, _, _)),
-  uri_scheme(Scheme), !.
-check_url_validity(URL):-
-  domain_error('URL', URL).
+  rdf_literal(Resource, ckan:mimetype, MIME, _),
+  format(atom(Accept), '~w; q=0.9', [MIME]),
+  ap_download_to_directory(AP_Stage, ToDir, URL, Accept).
 
 
 rdf_format('RDF').

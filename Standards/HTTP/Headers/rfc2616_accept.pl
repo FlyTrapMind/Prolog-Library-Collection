@@ -128,7 +128,7 @@ media_range(
 %  with other rendering agents, this default set ought to be
 %  configurable by the user.
 
-'Accept'('Accept'(Ts), Accepts:list(compound)) -->
+'Accept'('Accept'(Ts), Accepts) -->
   "Accept:",
   abnf_list2('_Accept', _-_, Ts, Accepts).
 '_Accept'(T0, accept(MediaRange,QualityValue, AcceptExtensions)) -->

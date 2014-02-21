@@ -40,7 +40,6 @@ Extensions to the support for archived files.
 % .tgz
 :- mime_register_type(application, 'x-tar', tar).
 :- db_add_novel(user:prolog_file_type(tar, archive)).
-:- db_add_novel(user:prolog_file_type(tgz, archive)).
 % application/zip
 % .zip
 :- mime_register_type(application, 'zip', zip).
@@ -54,6 +53,12 @@ Extensions to the support for archived files.
 %!   -Conversions:list(oneof([gunzipped,untarred,unzipped]))
 %! ) is det.
 
+extract_archive(FromFile1, ToDir, Conversions):-
+  file_name_extension(_, tgz, FromFile1), !,
+  file_alternative(FromFile1, _, _, '.tar.gz', FromFile2),
+  link_file(FromFile1, FromFile2, symbolic),
+  extract_archive(FromFile2, ToDir, Conversions).
+:- db_add_novel(user:prolog_file_type(tgz, archive)).
 extract_archive(FromFile, ToDir, [Conversion|Conversions]):-
   file_name_extension(Base, Ext, FromFile),
   prolog_file_type(Ext, archive), !,
@@ -77,7 +82,7 @@ extract_archive(gz, File, _, gunzipped):- !,
   process_create(path(gunzip), ['-f',file(File)], []).
 extract_archive(tgz, File, ToDir, untarred):- !,
   atomic_list_concat(['--directory',ToDir], '=', C),
-  process_create(path(tar), [zxvf,file(File),C], []).
+  process_create(path(tar), [xvf,file(File),C], []).
 extract_archive(zip, File, ToDir, unzipped):- !,
   process_create(path(unzip), [file(File),'-fo','-d',file(ToDir)], []).
 

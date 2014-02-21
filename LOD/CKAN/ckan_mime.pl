@@ -123,14 +123,17 @@ text/xml
 @version 2014/02
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
 :- use_module(html(html_pl_term)).
 :- use_module(html(html_table)).
+:- use_module(http_parameters(rfc2616_media_type)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_build)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(server(web_modules)).
@@ -139,6 +142,7 @@ text/xml
 :- meta_predicate(mime_table(//,+,?,?)).
 
 :- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
+:- xml_register_namespace(http, 'http://tools.ietf.org/html/rfc2616#').
 
 http:location(ckan, root(ckan), []).
 :- http_handler(ckan(mime), ckan_mime, []).
@@ -211,8 +215,43 @@ ckan_mime_table -->
       `MIME types we could fix`,
       [['Number of resources adhering','Incorrect MIME type','Replacing MIME type']|Rows]
     ),
-    \mime_table(`MIME types we could not fix`, FalsePairs)
+    \mime_table(`MIME types we could not fix`, FalsePairs),
+    \mime_content_type
   ]).
+
+
+mime_content_type -->
+  {
+    findall(
+      Resource-MIME1-MIME2,
+      (
+        rdfs_individual_of(Resource, ckan:'Resource'),
+        rdf_literal(Resource, ckan:mimetype, MIME1, _),
+        rdf_datatype(Resource, http:'Content-Type', xsd:string, ContentType, _),
+        dcg_phrase('media-type'(_, MediaType), ContentType),
+        MediaType = media_type(Type, Subtype, _),
+        atomic_list_concat([Type,Subtype], '/', MIME2)
+      ),
+      Tuples
+    ),
+    partition(same_mime, Tuples, SameTuples, DifferentTuples),
+    length(SameTuples, L1),
+    findall(
+      [Resource,MIME1,MIME2],
+      member(Resource-MIME1-MIME2, DifferentTuples),
+      Rows
+    )
+  },
+  html([
+    p(['There are ',\html_pl_term(L1),' resources that have the same MIME type in their CKAN metadata and in their HTTP reply.']),
+    \html_table(
+      [header_row(true),indexed(false)],
+      `Resources with conflicting MIME types.`,
+      [['Resource','CKAN MIME','HTTP MIME']|Rows]
+    )
+  ]).
+
+same_mime(_-MIME-MIME).
 
 mime_table(Caption, Pairs) -->
   {findall(
