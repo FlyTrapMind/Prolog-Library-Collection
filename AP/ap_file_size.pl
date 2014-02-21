@@ -40,7 +40,10 @@ file_size(FromDir, ToDir, AP_Stage):-
     existence_error('File', 'No files')
   ;
     forall(
-      member(File, Files),
+      (
+        member(File, Files),
+        access_file(File, read)
+      ),
       (
         size_file(File, Size),
         add_properties_of_file(AP_Stage, File, [file_size-Size]),
