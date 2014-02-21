@@ -35,8 +35,15 @@ ap_download_to_directory(AP_Stage, ToDir, URL, Accept):-
   reverse(Components1, Components2),
   first_nonempty_atom(Components2, FileName),
   absolute_file_name(FileName, File, [access(write),relative_to(ToDir)]),
+  (
+    Accept == ''
+  ->
+    O1 = []
+  ;
+    O1 = [request_header('Accept'=Accept)]
+  ),
   download_to_file(
-    [header('Content-Type',ContentType),request_header('Accept'=Accept)],
+    [header('Content-Type',ContentType)|O1],
     URL,
     File
   ),

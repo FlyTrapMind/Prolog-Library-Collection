@@ -45,10 +45,12 @@
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_list)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_build)).
 :- use_module(xml(xml_namespace)).
+
+:- rdf_meta(ap_resource(r,r,?)).
+:- rdf_meta(ap_stage_resource(r,r,?)).
 
 :- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
 
@@ -119,8 +121,12 @@ ap_resource(AP, Resource, Graph):-
 
 
 ap_stage_resource(AP_Stage, Resource, Graph):-
+  nonvar(AP_Stage), !,
   rdf_collection_member(AP_Stage, AP, ap),
   ap_resource(AP, Resource, Graph).
+ap_stage_resource(AP_Stage, Resource, Graph):-
+  ap_resource(AP, Resource, Graph),
+  rdf_collection_member(AP_Stage, AP, ap).
 
 
 ap_stage_name(AP_Stage, Name):-

@@ -360,7 +360,11 @@ directory_to_subdirectories(Dir1, Subdirs):-
 % Creates symbolic link in `ToDir` for all the files in `FromDir`.
 
 link_directory_contents(FromDir, ToDir):-
-  directory_files([], FromDir, FromFiles),
+  directory_files(
+    [include_directories(false),include_self(false),recursive(true)],
+    FromDir,
+    FromFiles
+  ),
   maplist(link_file(ToDir), FromFiles).
 
 

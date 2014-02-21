@@ -10,10 +10,11 @@
 
 @author Wouter Beek
 @see RFC 2616
-@version 2013/12
+@version 2013/12, 2014/02
 */
 
-:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_generic)).
 
@@ -151,16 +152,16 @@
 
 'media-type'(T0, media_type(Type,Subtype,Params)) -->
   type(T1, Type),
-  "/",
+  forward_slash,
   subtype(T2, Subtype),
   parameters(Ts, Params),
   {parse_tree('media-type', [T1,T2|Ts], T0)}.
 
-parameters([], []) --> [].
 parameters([T1|Ts], [H|T]) -->
-  ";",
+  semi_colon, blanks,
   parameter(T1, H),
   parameters(Ts, T).
+parameters([], []) --> [].
 
 %! subtype(-ParseTree:compound, Subtype:atom)// .
 %! type(-ParseTree:compound, Type:atom)// .

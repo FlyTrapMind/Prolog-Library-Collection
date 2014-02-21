@@ -52,7 +52,7 @@ ckan_ap:-
 ckan_ap(Extra_AP_Stages):-
   % Scrape a CKAN site.
   ckan_scrape(Site),
-  
+
   % Load the results of resources that were already processed.
   % Do not fail if the file is not there.
   (
@@ -72,7 +72,7 @@ ckan_ap(Extra_AP_Stages):-
   ;
     true
   ),
-  
+
   % Run AP processes for CKAN site.
   thread_create(ckan_ap_site(Site, Extra_AP_Stages), _, []).
 
@@ -101,11 +101,11 @@ ckan_ap_site(Site, Extra_AP_Stages):-
     ),
     Resources
   ),
-  
+
   % DEB
   length(Resources, NumberOfResources),
   debug(ckan, 'About to process ~:d resources.', [NumberOfResources]),
-  
+
   create_ap_collection(AP_Collection),
   rdfs_assert_label(AP_Collection, Site, ap),
   maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources).
@@ -145,8 +145,13 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
 ckan_download_to_directory(_, ToDir, AP_Stage):-
   ap_stage_resource(AP_Stage, Resource, _),
   rdf_literal(Resource, ckan:url, URL, _),
-  rdf_literal(Resource, ckan:mimetype, MIME, _),
-  format(atom(Accept), '~w; q=0.9', [MIME]),
+  (
+    rdf_literal(Resource, ckan:mimetype, MIME, _)
+  ->
+    format(atom(Accept), '~w; q=0.9', [MIME])
+  ;
+    Accept = ''
+  ),
   ap_download_to_directory(AP_Stage, ToDir, URL, Accept).
 
 

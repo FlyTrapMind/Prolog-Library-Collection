@@ -23,7 +23,7 @@
     rdf_serialization/5 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
                         % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
                         % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
-                        % ?MIME:atom
+                        % ?MIMEs:list(atom)
                         % ?URL:atom
   ]
 ).
@@ -41,9 +41,10 @@ since most datasets are published in a non-standard way.
 @author Wouter Beek
 @tbd Writing in the N-triples format is not supported.
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-         2013/08-2013/09, 2013/11, 2014/01
+         2013/08-2013/09, 2013/11, 2014/01-2014/02
 */
 
+:- use_module(ckan(ckan_mime)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
@@ -116,8 +117,11 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
   directory_to_rdf_files(FromDir, FromPairs),
 
   default(ToMIME1, 'application/x-turtle', ToMIME2),
-  once(rdf_serialization(ToExt, _, _, ToMIME2, _)),
-
+  once((
+    rdf_serialization(ToExt, _, _, MIMEs, _),
+    memberchk(ToMIME2, MIMEs)
+  )),
+  
   findall(
     ToFile,
     (
@@ -220,18 +224,34 @@ rdf_load(O1, Graph, File):-
 
 %! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
 
+% Option: format
 ensure_format(O1, _, Format):-
   option(format(Format), O1), !.
+% Option: mime
 ensure_format(O1, _, Format):-
   option(mime(MIME), O1),
-  rdf_serialization(_, _, Format, MIME, _), !.
+  rdf_serialization(_, _, Format, MIMEs, _),
+  memberchk(MIME, MIMEs), !.
+% Option: mime + cleaning
+ensure_format(O1, File, Format):-
+  select_option(mime(MIME1), O1, O2),
+  ckan_mime:mime(MIME1, MIME2),
+  merge_options([mime(MIME2)], O2, O3),
+  ensure_format(O3, File, Format).
+% File extension
+ensure_format(_, File, Format):-
+  file_name_extension(_, Extension, File),
+  rdf_serialization(Extension, _, Format, _, _), !.
+% Parse file
 ensure_format(_, File, Format):-
   file_mime(File, MIME), !,
   (
-    rdf_serialization(_, _, Format, MIME, _), !
+    rdf_serialization(_, _, Format, MIMEs, _),
+    memberchk(MIME, MIMEs), !
   ;
     throw(error(mime_error(File,'RDF',MIME),_))
   ).
+% Oops
 ensure_format(_, _, turtle):-
   debug(rdf_serial, 'We cannot establish the serialization format.', []).
 
@@ -243,7 +263,8 @@ ensure_graph(File, Graph):-
 
 
 rdf_mime(MIME):-
-  rdf_serialization(_, _, _, MIME, _).
+  rdf_serialization(_, _, _, MIMEs, _),
+  member(MIME, MIMEs).
 
 
 %! rdf_save(+Options:list, +Graph:atom, ?File:atom) is det.
@@ -335,7 +356,7 @@ rdf_save(O1, turtle, Graph, File):- !,
 %!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
 %!   ?FileType:oneof([ntriples,rdf_xml,triples,turtle]),
 %!   ?Format:oneof([ntriples,xml,triples,turtle]),
-%!   ?MIME:atom,
+%!   ?MIME:list(atom),
 %!   ?URL:atom
 %! ) is nondet.
 %
@@ -345,12 +366,13 @@ rdf_save(O1, turtle, Graph, File):- !,
 % @arg DefaultFileType The default file type of the RDF serialization.
 %      Every file type has the non-default file type =rdf=.
 % @arg Format The format name that is used by the Semweb library.
-% @arg MIME
+% @arg MIMEs A list of MIME types.
 % @arg URL The URL at which the serialization is described, if any.
 
-rdf_serialization(nt, ntriples, ntriples, 'text/plain', 'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf, rdf_xml, xml, 'application/rdf+xml', 'http://www.w3.org/ns/formats/RDF_XML'  ).
-rdf_serialization(trig, trig, trig, 'application/x-trig', 'http://wifo5-03.informatik.uni-mannheim.de/bizer/trig/').
-rdf_serialization(ttl, turtle, turtle, 'application/x-turtle', 'http://www.w3.org/ns/formats/Turtle'   ).
-rdf_serialization(n3, n3, n3, 'text/rdf+n3', '').
+rdf_serialization(nq, nquads, nquads, ['application/n-quads'], '').
+rdf_serialization(nt, ntriples, ntriples, ['application/n-triples'], 'http://www.w3.org/ns/formats/N-Triples').
+rdf_serialization(rdf, rdf_xml, xml, ['application/rdf+xml'], 'http://www.w3.org/ns/formats/RDF_XML'  ).
+rdf_serialization(trig, trig, trig, ['application/x-trig'], 'http://wifo5-03.informatik.uni-mannheim.de/bizer/trig/').
+rdf_serialization(ttl, turtle, turtle, ['application/x-turtle','text/turtle'], 'http://www.w3.org/ns/formats/Turtle'   ).
+rdf_serialization(n3, n3, turtle, ['text/n3'], '').
 

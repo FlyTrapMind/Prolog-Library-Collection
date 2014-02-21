@@ -24,7 +24,6 @@ File size identification and filtering for the AP architecture.
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(os(dir_ext)).
-:- use_module(os(file_mime)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
 
@@ -33,7 +32,11 @@ File size identification and filtering for the AP architecture.
 %! file_size(+FromDirectory:atom, +ToDirectory:atom, +AP_Stage:iri) is det.
 
 file_size(FromDir, ToDir, AP_Stage):-
-  directory_files([], FromDir, Files),
+  directory_files(
+    [include_directories(false),include_self(false),recursive(true)],
+    FromDir,
+    Files
+  ),
   (
     Files == []
   ->

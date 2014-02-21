@@ -16,31 +16,55 @@ VoID statistics process for the AP architecture.
 */
 
 :- use_module(ap(ap_db)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(http_parameters(rfc2616_media_type)). % DCG-meta.
+:- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(void(void_stat)). % If only for the namespace.
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(http, 'http://tools.ietf.org/html/rfc2616#').
 
 
 
 void_statistics(FromDir, ToDir, AP_Stage):-
-  directory_files([file_types([turtle])], FromDir, FromFiles),
-  forall(
-    member(FromFile, FromFiles),
+  ap_stage_resource(AP_Stage, Resource, Graph),
+  rdf_datatype(Resource, http:'Content-Type', xsd:string, ContentType, Graph),
+  dcg_phrase('media-type'(_, media_type(Type,Subtype,_)), ContentType),
+  atomic_list_concat([Type,Subtype], '/', MIME2),
+  directory_files([], FromDir, FromFiles),
+  (
+    rdf_literal(Resource, ckan:mimetype, MIME1, Graph)
+  ->
+    mimes_to_list(MIME1, MIME2, MIMEs)
+  ;
+    MIMEs = [mime(MIME2)]
+  ),
+  findall(
+    File,
     (
+      member(File, FromFiles),
       rdf_setup_call_cleanup(
-        [mime('application/x-turtle')],
-        FromFile,
+        MIMEs,
+        File,
         void_statistics_on_graph(AP_Stage, NVPairs)
       ),
-      add_properties_of_file(AP_Stage, FromFile, NVPairs)
-    )
+      add_properties_of_file(AP_Stage, File, NVPairs)
+    ),
+    Files
   ),
+  (Files == [] -> existence_error('LOD', 'No LOD here') ; true),
   link_directory_contents(FromDir, ToDir).
+
+mimes_to_list(MIME1, MIME2, [mime(MIME1),mime(MIME2)]):-
+  MIME1 \== MIME2, !.
+mimes_to_list(MIME, MIME, [mime(MIME),mime(MIME)]).
 
 
 void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-

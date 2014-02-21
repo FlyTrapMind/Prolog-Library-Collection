@@ -18,7 +18,7 @@ Archive extraction process for the AP architecture.
 :- use_module(ap(ap_db)).
 :- use_module(generics(archive_ext)).
 :- use_module(os(dir_ext)).
-:- use_module(library(lists)).
+:- use_module(library(apply)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
 
@@ -32,30 +32,23 @@ Archive extraction process for the AP architecture.
 
 extract_archives(FromDir, ToDir, AP_Stage):-
   directory_files([recursive(false)], FromDir, FromFiles),
-  extract_archives_files(FromFiles, ToDir, AP_Stage).
+  include(extract_archive0(AP_Stage), FromFiles, ConvertedFiles),
+  link_directory_contents(FromDir, ToDir),
+  (
+    ConvertedFiles == []
+  ->
+    rdf_assert_individual(AP_Stage, ap:'Skip', ap),
+    rdf_assert_datatype(AP_Stage, ap:status, xsd:string, skip, ap)
+  ;
+    true
+  ).
 
-extract_archives_files([], _ToDir, AP_Stage):- !,
-  rdf_assert_individual(AP_Stage, ap:'Skip', ap),
-  rdf_assert_datatype(AP_Stage, ap:status, xsd:string, skip, ap).
-extract_archives_files(FromFiles, ToDir, AP_Stage):-
-  findall(
-    FromFile-Conversions,
-    (
-      member(FromFile, FromFiles),
-      extract_archive(FromFile, ToDir, Conversions)
-    ),
-    Pairs
-  ),
-  assert_extract_archives_files(Pairs, AP_Stage).
-
-assert_extract_archives_files(Pairs, AP_Stage):-
-  pairs_values(Pairs, Conversionss),
-  append(Conversionss, Conversions),
-  Conversions == [], !,
-  rdf_assert_individual(AP_Stage, ap:'Skip', ap).
-assert_extract_archives_files(Pairs, AP_Stage):-
-  maplist(assert_extract_archives_file(AP_Stage), Pairs).
-
-assert_extract_archives_file(AP_Stage, File-Conversions):-
-  add_operation_on_file(AP_Stage, File, 'archive extraction', Conversions).
+extract_archive0(AP_Stage, FromFile):-
+  extract_archive(FromFile, Conversions),
+  add_operation_on_file(
+    AP_Stage,
+    FromFile,
+    'archive extraction',
+    Conversions
+  ).
 
