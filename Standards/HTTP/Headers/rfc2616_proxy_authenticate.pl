@@ -64,3 +64,6 @@ DCG for the `Proxy-Authenticate` response header in RFC 2616.
   abnf_list2(challenge, 1-_, Ts, Challenges),
   {parse_tree('Proxy-Authenticate', Ts, T0)}.
 
+% @tbd
+challenge(_, _) --> `undefined`.
+
