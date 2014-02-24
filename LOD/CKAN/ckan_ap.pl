@@ -2,7 +2,8 @@
   ckan_ap,
   [
     ckan_ap/0,
-    ckan_ap/1 % +Extra_AP_Stages:list(compound)
+    ckan_ap/1, % +Extra_AP_Stages:list(compound)
+    take_lod_sample/1 % -Resources:ordset(iri)
   ]
 ).
 
@@ -85,12 +86,27 @@ ckan_ap_site(Site, Extra_AP_Stages):-
   % Collect datasets.
   % Note that sorting by size makes no sense,
   % since the semantics of the values of `ckan:size` is unknown.
+  take_lod_sample(Site, Resources1),
+  
+  % Filter resources that have already been processed previously.
+  exclude(already_processed, Resources1, Resources2),
+  
+  % DEB
+  length(Resources2, NumberOfResources),
+  debug(ckan, 'About to process ~:d resources.', [NumberOfResources]),
+
+  create_ap_collection(AP_Collection),
+  rdfs_assert_label(AP_Collection, Site, ap),
+  maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources2).
+
+
+take_lod_sample(Resources):-
+  take_lod_sample(datahub_io, Resources).
+take_lod_sample(Site, Resources):-
   setoff(
     Resource,
     (
       rdfs_individual_of(Resource, ckan:'Resource'),
-      % Filter resources that have already been processed previously.
-      \+ ap_resource(_, Resource, _),
       (
         rdf_literal(Resource, ckan:format, Format, Site),
         rdf_format(Format)
@@ -100,15 +116,10 @@ ckan_ap_site(Site, Extra_AP_Stages):-
       )
     ),
     Resources
-  ),
+  ).
 
-  % DEB
-  length(Resources, NumberOfResources),
-  debug(ckan, 'About to process ~:d resources.', [NumberOfResources]),
-
-  create_ap_collection(AP_Collection),
-  rdfs_assert_label(AP_Collection, Site, ap),
-  maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources).
+already_processed(Resource):-
+  once(ap_resource(_, Resource, _)).
 
 
 %! ckan_ap_site(

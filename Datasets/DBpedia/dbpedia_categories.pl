@@ -20,8 +20,8 @@ DBpedia publishes the following three kind of files about categories:
 @version 2014/02
 */
 
-:- use_module(generics(archive_ext)).
 :- use_module(generics(uri_ext)).
+:- use_module(os(archive_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_serial)).
