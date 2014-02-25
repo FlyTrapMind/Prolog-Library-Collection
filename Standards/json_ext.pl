@@ -3,8 +3,6 @@
   [
     json_boolean/2, % ?Prolog:boolean
                     % ?JSON:oneof([@(false),@(true)])
-    json_rows/2, % +JSON:list
-                 % -Rows:list
     json_to_prolog/3, % +Module:atom
                       % +JSON:compond
                       % -Term:compound
@@ -35,31 +33,26 @@
 
 
 
-% JSON BOOLEAN %
+%! json_boolean(
+%!   +Prolog:boolean,
+%!   +JSON_Boolean:oneof([@(false),@(true)])
+%! ) is semidet.
+%! json_boolean(
+%!   +Prolog:boolean,
+%!   -JSON_Boolean:oneof([@(false),@(true)])
+%! ) is det.
+%! json_boolean(
+%!   -Prolog:boolean,
+%!   +JSON_Boolean:oneof([@(false),@(true)])
+%! ) is det.
+%! json_boolean(
+%!   ?Prolog:boolean,
+%!   ?JSON_Boolean:oneof([@(false),@(true)])
+%! ) is nondet.
+% Conversion between Prolog and JSON boolean values.
 
 json_boolean(false, @(false)).
 json_boolean(true, @(true)).
-
-
-
-% JSON TABLE %
-
-json_header_row([json(L1)|_], L2):-
-  maplist(json_name, L1, L2).
-
-json_name(N=_, N).
-
-json_row(json(L1), L2):-
-  maplist(json_value, L1, L2).
-
-%! json_rows(+JSON:list, -Rows:list) is det.
-% Converts a list of JSON objects to (HTML) table rows.
-
-json_rows(JSON, [HeaderRow|DataRows]):-
-  json_header_row(JSON, HeaderRow),
-  maplist(json_row, JSON, DataRows).
-
-json_value(_=V, V).
 
 
 

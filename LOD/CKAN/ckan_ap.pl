@@ -2,8 +2,7 @@
   ckan_ap,
   [
     ckan_ap/0,
-    ckan_ap/1, % +Extra_AP_Stages:list(compound)
-    take_lod_sample/1 % -Resources:ordset(iri)
+    ckan_ap/1 % +Extra_AP_Stages:list(compound)
   ]
 ).
 
@@ -100,8 +99,6 @@ ckan_ap_site(Site, Extra_AP_Stages):-
   maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources2).
 
 
-take_lod_sample(Resources):-
-  take_lod_sample(datahub_io, Resources).
 take_lod_sample(Site, Resources):-
   setoff(
     Resource,
