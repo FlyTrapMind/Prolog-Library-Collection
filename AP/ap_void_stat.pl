@@ -29,13 +29,13 @@ VoID statistics process for the AP architecture.
 :- use_module(void(void_stat)). % If only for the namespace.
 :- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(http, 'http://tools.ietf.org/html/rfc2616#').
+:- xml_register_namespace(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
 
 
 
 void_statistics(FromDir, ToDir, AP_Stage):-
   ap_stage_resource(AP_Stage, Resource, Graph),
-  rdf_datatype(Resource, http:'Content-Type', xsd:string, ContentType, Graph),
+  rdf_datatype(Resource, rfc2616:'Content-Type', xsd:string, ContentType, Graph),
   dcg_phrase('media-type'(_, media_type(Type,Subtype,_)), ContentType),
   atomic_list_concat([Type,Subtype], '/', MIME2),
   directory_files([], FromDir, FromFiles),

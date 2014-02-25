@@ -24,7 +24,7 @@
 :- use_module(uri(uri_scheme)).
 :- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(http, 'http://tools.ietf.org/html/rfc2616#').
+:- xml_register_namespace(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
 
 
 
@@ -50,7 +50,7 @@ ap_download_to_directory(AP_Stage, ToDir, URL, Accept):-
   ap_stage_resource(AP_Stage, Resource, Graph),
   rdf_assert_datatype(
     Resource,
-    http:'Content-Type',
+    rfc2616:'Content-Type',
     xsd:string,
     ContentType,
     Graph

@@ -142,7 +142,7 @@ text/xml
 :- meta_predicate(mime_table(//,+,?,?)).
 
 :- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
-:- xml_register_namespace(http, 'http://tools.ietf.org/html/rfc2616#').
+:- xml_register_namespace(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
 
 http:location(ckan, root(ckan), []).
 :- http_handler(ckan(mime), ckan_mime, []).
@@ -227,7 +227,7 @@ mime_content_type -->
       (
         rdfs_individual_of(Resource, ckan:'Resource'),
         rdf_literal(Resource, ckan:mimetype, MIME1, _),
-        rdf_datatype(Resource, http:'Content-Type', xsd:string, ContentType, _),
+        rdf_datatype(Resource, rfc2616:'Content-Type', xsd:string, ContentType, _),
         dcg_phrase('media-type'(_, MediaType), ContentType),
         MediaType = media_type(Type, Subtype, _),
         atomic_list_concat([Type,Subtype], '/', MIME2)

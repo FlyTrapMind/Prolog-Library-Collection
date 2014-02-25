@@ -1,9 +1,9 @@
 :- module(
-  rdf_tabular_predicate,
+  rdf_tabular_property,
   [
-    rdf_tabular_predicate//2, % +Graph:atom
-                              % +Predicate:iri
-    rdf_tabular_predicates//1 % +Graph:atom
+    rdf_tabular_property//2, % +Graph:atom
+                             % +Property:iri
+    rdf_tabular_properties//1 % +Graph:atom
   ]
 ).
 
@@ -28,13 +28,23 @@ Generates HTML tables that descrive RDF predicate terms.
 
 
 
-%! rdf_tabular_predicate(+Graph:atom, +Predicate:iri)// is det.
+%! rdf_tabular_property(+Graph:atom, +Property:iri)// is det.
 
-rdf_tabular_predicate(Graph, P) -->
+rdf_tabular_property(Graph, P) -->
+  % The extension of the interpretation of the property consists of pairs.
+  % We enumerate the classes of individuals that occur in these pairs.
+  % We distinguish between individuals that occur in
+  % the first argument position
+  % (classes denoting the domain of the property)
+  % and the second argument position
+  % (classes denoting the range of the property).
   rdf_tabular_property_domain(Graph, P),
   rdf_tabular_property_range(Graph, P),
+  
   % For literal ranges we also display the values that occur.
   rdf_tabular_predicate_literals(Graph, P),
+  
+  % Triples that describe the property, if any.
   rdf_tabular_triples(P, _, _, Graph).
 
 
@@ -96,7 +106,7 @@ rdf_tabular_predicate_literals(Graph, P) -->
   ).
 
 
-rdf_tabular_predicates(Graph) -->
+rdf_tabular_properties(Graph) -->
   {
     setoff(
       Predicate,

@@ -28,6 +28,7 @@ Generated RDF HTML tables.
 :- use_module(rdf_web(rdf_tabular_graph)).
 :- use_module(rdf_web(rdf_tabular_term)).
 :- use_module(rdf_web(rdf_html_table)).
+:- use_module(rdf_web(rdf_html_term)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
@@ -49,7 +50,10 @@ rdf_tabular(Request):-
   reply_html_page(
     app_style,
     title(['Overview of RDF resource ',Term]),
-    \rdf_tabular_term(Graph, Term)
+    [
+      h1(['Description of RDF term ',\rdf_html_term(Term)]),
+      \rdf_tabular_term(Graph, Term)
+    ]
   ).
 
 % RDF graph.
@@ -60,7 +64,10 @@ rdf_tabular(Request):-
   reply_html_page(
     app_style,
     title(['Overview of RDF graph ',Graph]),
-    \rdf_tabular_graph(Graph)
+    [
+      h1(['Description of RDF graph ',Graph]),
+      \rdf_tabular_graph(Graph)
+    ]
   ).
 
 % Default: RDF graphs.
@@ -68,7 +75,10 @@ rdf_tabular(_Request):-
   reply_html_page(
     app_style,
     title('Overview of RDF graphs'),
-    \rdf_tabular_graphs
+    [
+      h1(['Overview of RDF graphs']),
+      \rdf_tabular_graphs
+    ]
   ).
 
 

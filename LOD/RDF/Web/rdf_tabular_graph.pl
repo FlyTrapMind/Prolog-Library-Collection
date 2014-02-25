@@ -21,65 +21,24 @@ Generates HTML tables for overviews of RDF graphs.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular_class)).
-:- use_module(rdf_web(rdf_tabular_predicate)).
+:- use_module(rdf_web(rdf_tabular_property)).
 :- use_module(tms(tms)).
 
 
 
 %! rdf_tabular_graph(+Graph:atom)// is det.
-% Generates an HTML table describing the contents of the given graph.
+% Generates an HTML table describing the contents of the given RDF graph.
 
 rdf_tabular_graph(Graph) -->
   % Enumerate all classes.
   rdf_tabular_classes(Graph),
   
   % Enumerate all properties.
-  rdf_tabular_predicates(Graph).
+  rdf_tabular_properties(Graph).
 
-/*
-  {
-    % Collect the subject terms in the graph.
-    setoff(
-      S,
-      (
-        rdf(S, _, _, Graph),
-        \+ rdf_is_bnode(S)
-      ),
-      Ss
-    ),
-    
-    % Order the subjects by the number of triples that describe them
-    % (using estimates).
-    setoff(
-      NumberOfTriples-S,
-      (
-        member(S, Ss),
-        rdf_estimate_complexity(S, _, _, NumberOfTriples)
-      ),
-      Pairs1
-    ),
-    keysort(Pairs1, Pairs2),
-    reverse(Pairs2, Pairs3),
-    
-    % Restrict the number of rows in the table to the *n* top-dogs.
-    list_truncate(Pairs3, 1000, Pairs4),
-    
-    % Construct the table rows.
-    findall(
-      [S,NumberOfTriples],
-      member(NumberOfTriples-S, Pairs4),
-      Rows
-    )
-  },
-  
-  rdf_html_table(
-    Graph,
-    (`Subject terms in graph `, atom(Graph)),
-    ['Subject','Number of triples'],
-    Rows
-  ).
-*/
 
+%! rdf_tabular_graphs// is det.
+% Generates an HTML table describing the currently loaded RDF graphs.
 
 rdf_tabular_graphs -->
   {

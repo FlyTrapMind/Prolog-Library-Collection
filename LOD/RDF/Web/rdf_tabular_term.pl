@@ -24,17 +24,16 @@ Generates HTML tables for overviews of RDF terms.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_parse)). % Meta-argument.
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
 :- use_module(rdf_web(rdf_tabular_class)).
-:- use_module(rdf_web(rdf_tabular_predicate)).
+:- use_module(rdf_web(rdf_tabular_property)).
 
 
 
 rdf_tabular_term(Graph, Term) -->
   {
-    % This allows atomic renditions prefix-abbreviated IRIs as input,
+    % This allows atomic renditions of prefix-abbreviated IRIs as input,
     % e.g. =|dbpedia:Monkey|=.
     once(dcg_phrase(rdf_parse_term(S1), Term)),
     rdf_global_id(S1, S2)
@@ -45,6 +44,14 @@ rdf_tabular_term(Graph, Term) -->
 rdf_tabular_term1(Graph, Class) -->
   {rdfs_individual_of(Class, rdfs:'Class')}, !,
   rdf_tabular_class(Graph, Class).
+% RDF property.
+% Show:
+%   1. all domain classes,
+%   2. all range classes,
+%   3. all values for literal ranges.
+rdf_tabular_term1(Graph, P) -->
+  {rdfs_property(P)}, !,
+  rdf_tabular_property(Graph, P).
 % Datatype (in typed literal).
 % Show all its values.
 rdf_tabular_term1(Graph, D) -->
@@ -58,16 +65,9 @@ rdf_tabular_term1(Graph, D) -->
     ['Value'],
     Values
   ).
-% Predicate term.
-% Show:
-%   1. all domain classes,
-%   2. all range classes,
-%   3. all values for literal ranges.
-rdf_tabular_term1(Graph, P) -->
-  {rdf([graph_mode(no_index)], _, P, _, Graph)}, !,
-  rdf_tabular_predicate(Graph, P).
 % Subject term.
-% Display all predicate-object pairs and subject-predicate pairs (per graph).
+% Display all predicate-object pairs
+% and subject-predicate pairs (on a per-graph basis).
 rdf_tabular_term1(Graph, RDF_Term) -->
   html([
     h1('Predicate-object pairs'),
@@ -75,6 +75,11 @@ rdf_tabular_term1(Graph, RDF_Term) -->
     h1('Subject-object pairs'),
     \rdf_tabular_triples(_, _, RDF_Term, Graph)
   ]).
+
+rdfs_property(P):-
+  rdf(_, P, _).
+rdfs_property(P):-
+  rdf(P, rdf:type, rdf:'Property').
 
 
 rdf_tabular_terms(Graph, RDF_Terms) -->

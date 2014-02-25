@@ -67,6 +67,7 @@ options([
   scheme(Scheme)
 ]):-
   Auth = 'datahub.io',
-  user_input('Enter the API key for datahub.io.', codes, Key),
+  %user_input('Enter the API key for datahub.io.', codes, Key),
+  Key = '78cecbc1-f84e-47dc-8625-1bff7ac0eca0',
   Scheme = http.
 
