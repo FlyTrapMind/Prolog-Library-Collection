@@ -3,8 +3,10 @@
   [
     xml_boolean//2, % -Tree:compound
                     % ?Value:boolean
-    xml_char//1, % ?Char:code
-    xml_chars//1, % ?Chars:list(code)
+    xml_char_10//1, % ?Char:code
+    xml_char_11//1, % ?Char:code
+    xml_chars_10//1, % ?Chars:list(code)
+    xml_chars_11//1, % ?Chars:list(code)
     xml_name//1, % ?Name:atom
     xml_namespaced_name//2, % :DCG_Namespace
                             % :DCG_Name
@@ -18,11 +20,12 @@
 DCG rules for XML datatypes.
 
 @author Wouter Beek
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_unicode)).
 
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
@@ -32,7 +35,7 @@ DCG rules for XML datatypes.
 xml_boolean(xml_boolean(false), false) --> "false".
 xml_boolean(xml_boolean(true),  true) --> "true".
 
-%! xml_char(?Char:code)//
+%! xml_char_10(?Char:between(9,1114111))//
 % An **XML Character** is an atomic unit of text specified by ISO/IEC 10646.
 %
 % ~~~{.bnf}
@@ -70,28 +73,64 @@ xml_boolean(xml_boolean(true),  true) --> "true".
 % [#x10FFFE-#x10FFFF]
 % ~~~
 %
+% @see XML 1.0 Fifth Edition
 % @tbd Add Unicode support and make sure the right character ranges
 %      are selected.
 
 % Horizontal tab =|#x9|=
-xml_char(X) --> horizontal_tab(X).
+xml_char_10(X) -->
+  horizontal_tab(X).
 % Line feed =|#xA|=
-xml_char(X) --> line_feed(X).
+xml_char_10(X) -->
+  line_feed(X).
 % Carriage return =|#xD|=
-xml_char(X) --> carriage_return(X).
+xml_char_10(X) -->
+  carriage_return(X).
 % Space, punctuation, numbers, letters
 % =|#x20-#xD7FF|=
-xml_char(X) --> [X], {between(20, 55295, X)}.
+xml_char_10(X) -->
+  between(20, 55295, X).
 % =|#xE000-#xFFFD|=
-xml_char(X) --> [X], {between(57344, 65533, X)}.
+xml_char_10(X) -->
+  between(57344, 65533, X).
 % =|#x10000-#x10FFFF|=
-xml_char(X) --> [X], {between(65536, 1114111, X)}.
+xml_char_10(X) -->
+  between(65536, 1114111, X).
 
-xml_chars([H|T]) -->
-  xml_char(H),
-  xml_chars(T).
-xml_chars([]) -->
-  [].
+
+%! xml_char_11(?Code:between(1,1114111))// is nondet.
+% ~~~{.bnf}
+% [2] Char ::= [#x1-#xD7FF]
+%            | [#xE000-#xFFFD]
+%            | [#x10000-#x10FFFF]
+%            /* any Unicode character, excluding the surrogate blocks,
+%               FFFE, and FFFF. */
+% ~~~
+%
+% @see XML 1.1 Second Edition
+
+% =|#x1-#xD7FF|=
+xml_char_11(X) -->
+  between(1, 55295, X).
+% =|#xE000-#xFFFD|=
+xml_char_11(X) -->
+  between(57344, 65533, X).
+% =|#x10000-#x10FFFF|=
+xml_char_11(X) -->
+  between(65536, 1114111, X).
+
+
+xml_chars_10([H|T]) -->
+  xml_char_10(H),
+  xml_chars_10(T).
+xml_chars_10([]) --> [].
+
+
+xml_chars_11([H|T]) -->
+  xml_char_11(H),
+  xml_chars_11(T).
+xml_chars_11([]) --> [].
+
 
 %! xml_name(?Name:atom)//
 % A **XML Name** is an Nmtoken with a restricted set of initial characters.
@@ -215,9 +254,11 @@ xml_namespaced_name(DCG_Namespace, DCG_Name) -->
 %                    [#x7F-#x84] |
 %                    [#x86-#x9F]
 % ~~~
+%
+% @see XML 1.1 Second Edition
 
 xml_restricted_char(C) -->
-  xml_char(C),
+  xml_char_11(C),
   % Not a start of heading, start of text, end of text, end of transmission,
   % enquiry, positive_acknowledgement, bell, backspace.
   {\+ between(1, 8, C)},

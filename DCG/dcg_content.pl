@@ -5,10 +5,10 @@
               % +Length:nonneg
     between//3, % +Low:nonneg
                 % +High:nonneg
-                % -Code:code
+                % ?Code:code
     between_hex//3, % +LowHex:atom
                     % +HighHex:atom
-                    % -Code:code
+                    % ?Code:code
     bracketed//1, % :DCG
     bracketed//2, % +Type:oneof([curly,round,square])
                   % :DCG
@@ -131,14 +131,16 @@ arrow_right_head(both).
 arrow_right_head(right).
 
 
-%! between(+Low:nonneg, +High:nonneg, -Code:code)// .
+%! between(+Low:nonneg, +High:nonneg, +Code:code)// is semidet.
+%! between(+Low:nonneg, +High:nonneg, -Code:code)// is nondet.
 
 between(Low, High, Code) -->
   [Code],
   {between(Low, High, Code)}.
 
 
-%! between_hex(+LowHex:atom, +HighHex:atom, -Code:code)// .
+%! between_hex(+LowHex:atom, +HighHex:atom, +Code:code)// is semidet.
+%! between_hex(+LowHex:atom, +HighHex:atom, -Code:code)// is nondet.
 
 between_hex(LowHex, HighHex, Code) -->
   {number_to_decimal(LowHex, 16, Low)},

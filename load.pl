@@ -3,9 +3,6 @@
 
 :- set_prolog_flag(encoding, utf8).
 
-:- use_module(library(apply)).
-:- use_module(library(prolog_pack)).
-
 :- initialization(load_pgc).
 
 % The load file for the Prolog Generics Collection.
@@ -13,6 +10,9 @@
 % by the parent project (PGC is a library).
 
 load_pgc:-
+  use_module(library(apply)),
+  use_module(library(prolog_pack)),
+
   source_file(load_pgc, ThisFile),
   file_directory_name(ThisFile, ThisDirectory),
   assert(user:file_search_path(pgc, ThisDirectory)),

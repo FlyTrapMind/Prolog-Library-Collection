@@ -199,7 +199,11 @@ json_object_to_rdf(Graph, Module, Legend, json(Args1), Individual):-
 
 json_pair_to_rdf(Graph, Module, Individual, Spec, Name=Value):-
   memberchk(Name-Type-_, Spec),
-  json_pair_to_rdf(Graph, Module, Individual, Name, Type, Value).
+  json_pair_to_rdf(Graph, Module, Individual, Name, Type, Value), !.
+% DEB
+json_pair_to_rdf(Graph, Module, Individual, Spec, Name=Value):-
+  gtrace, %DEB
+  json_pair_to_rdf(Graph, Module, Individual, Spec, Name=Value).
 
 % The value must match at least one of the given types.
 json_pair_to_rdf(Graph, Module, Individual, Name, or(Types), Value):-
@@ -216,17 +220,17 @@ json_pair_to_rdf(_, _, _, _, _, ''):- !.
 % We have a specific type that is always skipped, appropriately called `skip`.
 json_pair_to_rdf(_, _, _, _, skip, _):- !.
 % There are two ways to realize legend types / create resources:
-% JSON terms (always) and JSON strings (sometimes).
+% 1. JSON terms (always).
 json_pair_to_rdf(Graph, Module, Individual1, Name, Legend/_, Value):-
-  (
-    Value = json(_)
-  ->
-    json_object_to_rdf(Graph, Module, Legend, Value, Individual2)
-  ;
-    atom(Value)
-  ->
-    create_resource(Graph, Module, Legend, Value, Individual2)
-  ),
+  Value = json(_), !,
+  json_object_to_rdf(Graph, Module, Legend, Value, Individual2),
+  json_name_to_rdf_predicate_term(Module, Name, Predicate),
+  rdf_assert(Individual1, Predicate, Individual2, Graph).
+% There are two ways to realize legend types / create resources:
+% 2. JSON strings (sometimes).
+json_pair_to_rdf(Graph, Module, Individual1, Name, Legend/_, Value):-
+  atom(Value), !,
+  create_resource(Graph, Module, Legend, Value, Individual2),
   json_name_to_rdf_predicate_term(Module, Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % A JSON object occurs for which the legend it not yet known.
@@ -238,14 +242,7 @@ json_pair_to_rdf(Graph, Module, Individual1, Name, Type, Value):-
 % List.
 json_pair_to_rdf(Graph, Module, Individual, Name, list(Type), Values):-
   is_list(Values), !,
-  json_name_to_rdf_predicate_term(Module, Name, Predicate),
-  forall(
-    member(Value1, Values),
-    (
-      json_value_to_rdf(Type, Value1, Datatype, Value2),
-      rdf_assert_datatype(Individual, Predicate, Datatype, Value2, Graph)
-    )
-  ).
+  maplist(json_pair_to_rdf(Graph, Module, Individual, Name, Type), Values).
 % JSON string that is asserted as an XSD string.
 json_pair_to_rdf(Graph, Module, Individual, Name, Type, Value1):-
   json_name_to_rdf_predicate_term(Module, Name, Predicate),
