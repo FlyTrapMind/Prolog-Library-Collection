@@ -44,7 +44,7 @@ mime_dir(FromDir, ToDir, AP_Stage):-
 
 mime_file(AP_Stage, File):-
   ap_stage_resource(AP_Stage, Resource, Graph),
-  rdf_literal(Resource, ckan:mimetype, MIME1, Graph),
+  rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME1, Graph),
   (
     file_mime(File, MIME2)
   ->

@@ -165,7 +165,7 @@ ckan_mime_table -->
   {
     setoff(
       MIME,
-      rdf_literal(_, ckan:mimetype, MIME, _),
+      rdf_datatype(_, ckan:mimetype, xsd:string, MIME, _),
       MIMEs
     ),
     findall(
@@ -174,7 +174,7 @@ ckan_mime_table -->
         member(MIME, MIMEs),
         setoff(
           Resource,
-          rdf_literal(Resource, ckan:mimetype, MIME, _),
+          rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, _),
           Resources
         ),
         length(Resources, NumberOfResources)
@@ -185,7 +185,7 @@ ckan_mime_table -->
       ResourceWithoutMIME,
       (
         rdfs_individual_of(ResourceWithoutMIME, ckan:'Resource'),
-        \+ rdf_literal(ResourceWithoutMIME, ckan:mimetype, _, _)
+        \+ rdf_datatype(ResourceWithoutMIME, ckan:mimetype, xsd:string, _, _)
       ),
       ResourcesWithoutMIME
     ),
@@ -226,7 +226,7 @@ mime_content_type -->
       Resource-MIME1-MIME2,
       (
         rdfs_individual_of(Resource, ckan:'Resource'),
-        rdf_literal(Resource, ckan:mimetype, MIME1, _),
+        rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME1, _),
         rdf_datatype(Resource, rfc2616:'Content-Type', xsd:string, ContentType, _),
         dcg_phrase('media-type'(_, MediaType), ContentType),
         MediaType = media_type(Type, Subtype, _),
@@ -277,7 +277,7 @@ ckan_mime_table_structured_open -->
         boolean_and(Structured, Open, Both),
         findall(
           Resource,
-          rdf_literal(Resource, ckan:mimetype, MIME, _),
+          rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, _),
           Resources
         ),
         length(Resources, NumberOfResources)
@@ -295,7 +295,7 @@ ckan_mime_table_structured_open -->
       NoMIMEResource,
       (
         rdfs_individual_of(NoMIMEResource, ckan:'Resource'),
-        \+ rdf_literal(NoMIMEResource, ckan:mimetype, _, _)
+        \+ rdf_datatype(NoMIMEResource, ckan:mimetype, xsd:string, _, _)
       ),
       NoMIMEResources
     ),
@@ -339,7 +339,7 @@ boolean_and(_,    _,    false).
 ckan_clean_mime(Graph):-
   forall(
     (
-      rdf_literal(Resource, ckan:mimetype, FalseMIME, Graph),
+      rdf_datatype(Resource, ckan:mimetype, xsd:string, FalseMIME, Graph),
       mime(FalseMIME, TrueMIME),
       \+ member(TrueMIME, [false,true])
     ),

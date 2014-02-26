@@ -11,6 +11,7 @@
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_container)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
@@ -36,19 +37,23 @@ ckan_row([H|T], [Resource,Name,Title,Organization,Users,Tags,H|T]):-
   rdf_collection_member(H, AP, ap),
   rdf(AP, ap:resource, Resource, ap),
   once(rdf(Package, ckan:resources, Resource, _)),
-  once(rdf_literal(Package, ckan:name, Name, _)),
-  (rdf_literal(Package, ckan:title, Title, _), ! ; Title = notitle),
+  once(rdf_datatype(Package, ckan:name, xsd:string, Name, _)),
+  (
+    rdf_datatype(Package, ckan:title, xsd:string, Title, _), !
+  ;
+    Title = notitle
+  ),
 
   % Organization.
   once(rdf(Package, ckan:organization, X, _)),
-  once(rdf_literal(X, ckan:display_name, Organization, _)),
+  once(rdf_datatype(X, ckan:display_name, xsd:string, Organization, _)),
 
   % Users.
   setoff(
     UserName,
     (
       rdf(X, ckan:users, User, _),
-      rdf_literal(User, ckan:fullname, UserName, _)
+      rdf_datatype(User, ckan:fullname, xsd:string, UserName, _)
     ),
     UserNames
   ),
@@ -59,7 +64,7 @@ ckan_row([H|T], [Resource,Name,Title,Organization,Users,Tags,H|T]):-
     TagName,
     (
       rdf(Package, ckan:tags, Tag, _),
-      rdf_literal(Tag, ckan:name, TagName, _)
+      rdf_datatype(Tag, ckan:name, xsd:string, TagName, _)
     ),
     TagNames
   ),

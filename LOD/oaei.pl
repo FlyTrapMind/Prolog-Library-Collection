@@ -157,7 +157,7 @@ oaei_alignment_pair(G, From, To):-
   rdf(BNode, align:entity1, From, G),
   rdf(BNode, align:entity2, To, G),
   once((
-    rdf_literal(BNode, align:relation, '=', G),
+    rdf_datatype(BNode, align:relation, xsd:string, '=', G),
     rdf_datatype(BNode, align:measure, xsd:float, 1.0, G)
   ;
     debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
@@ -268,7 +268,7 @@ oaei_ontologies(G, File1, File2):-
 % Returns an ontology file used in the given alignment graph.
 
 oaei_ontology(G, File):-
-  rdf_literal(Ontology, align:location, URI, G),
+  rdf_datatype(Ontology, align:location, xsd:string, URI, G),
   rdfs_individual_of(Ontology, align:'Ontology'),
   uri_components(
     URI,

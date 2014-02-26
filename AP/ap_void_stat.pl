@@ -40,7 +40,7 @@ void_statistics(FromDir, ToDir, AP_Stage):-
   atomic_list_concat([Type,Subtype], '/', MIME2),
   directory_files([], FromDir, FromFiles),
   (
-    rdf_literal(Resource, ckan:mimetype, MIME1, Graph)
+    rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME1, Graph)
   ->
     mimes_to_list(MIME1, MIME2, MIMEs)
   ;

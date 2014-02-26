@@ -105,10 +105,10 @@ take_lod_sample(Site, Resources):-
     (
       rdfs_individual_of(Resource, ckan:'Resource'),
       (
-        rdf_literal(Resource, ckan:format, Format, Site),
+        rdf_datatype(Resource, ckan:format, xsd:string, Format, Site),
         rdf_format(Format)
       ;
-        rdf_literal(Resource, ckan:mimetype, Mimetype, Site),
+        rdf_datatype(Resource, ckan:mimetype, xsd:string, Mimetype, Site),
         rdf_mimetype(Mimetype)
       )
     ),
@@ -130,7 +130,7 @@ already_processed(Resource):-
 
 ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   once(rdfs_label(AP_Collection, Site)),
-  once(rdf_literal(Resource, ckan:url, URL, _)),
+  once(rdf_datatype(Resource, ckan:url, xsd:string, URL, _)),
   url_to_directory_name(URL, Dir),
   Alias = URL,
   db_add_novel(user:file_search_path(Alias, Dir)),
@@ -152,9 +152,9 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
 
 ckan_download_to_directory(_, ToDir, AP_Stage):-
   ap_stage_resource(AP_Stage, Resource, _),
-  rdf_literal(Resource, ckan:url, URL, _),
+  rdf_datatype(Resource, ckan:url, xsd:string, URL, _),
   (
-    rdf_literal(Resource, ckan:mimetype, MIME, _)
+    rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, _)
   ->
     format(atom(Accept), '~w; q=0.9', [MIME])
   ;

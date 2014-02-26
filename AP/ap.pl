@@ -29,11 +29,9 @@ Support for running automated processing.
 :- use_module(library(apply)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
-:- use_module(os(datetime_ext)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(xsd(xsd_duration)).
 
 
 
@@ -117,7 +115,7 @@ ap_end(O1, AP):-
     duration(Months,Seconds),
     ap
   ),
-  
+
   % Save the ap assertions until now.
   absolute_file_name(data(ap), File, [access(write),extensions([tmp])]),
   rdf_save([format(turtle)], ap, File).

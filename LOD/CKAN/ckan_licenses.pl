@@ -118,7 +118,7 @@ ckan_license_table -->
       (
         member(NumberOfResources-License, Pairs3),
         (
-          rdf_literal(License, ckan:title, LicenseName, _)
+          rdf_datatype(License, ckan:title, xsd:string, LicenseName, _)
         ->
           true
         ;
