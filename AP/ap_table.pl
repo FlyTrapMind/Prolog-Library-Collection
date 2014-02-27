@@ -93,7 +93,7 @@ ap_table(HeaderAugmentation, RowAugmentation, [H|T]) -->
   html(
     \html_table(
       [header_row(true),indexed(true)],
-      `Automated processes`,
+      atom('Automated processes'),
       ap_stage_cell,
       [Header2|Rows]
     )
@@ -166,7 +166,11 @@ ap_message(AP_Stage) -->
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Tables'), !,
-    findall(Table, rdf(AP_Stage, ap:table, Table, ap), Tables)
+    findall(
+      Table,
+      rdf(AP_Stage, ap:table, Table, ap),
+      Tables
+    )
   },
   html(\rdf_html_tables(Tables)).
 ap_message(AP_Stage) -->

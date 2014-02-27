@@ -36,22 +36,20 @@ Support for RDF typed literals.
 @version 2013/10, 2014/01-2014/02
 */
 
-:- use_module(dcg(dcg_generic)).
-:- use_module(generics(codes_ext)).
-:- use_module(library(apply)).
-:- use_module(library(debug)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_lit)).
-:- use_module(rdf(rdf_name)).
-:- use_module(xml(xml_namespace)).
-:- use_module(xsd(xsd)).
-
 :- rdf_meta(rdf_assert_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_datatype(?,r)).
 :- rdf_meta(rdf_datatype(r,+,-)).
 :- rdf_meta(rdf_datatype(r,r,r,?,?)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
+
+:- use_module(dcg(dcg_generic)).
+:- use_module(library(apply)).
+:- use_module(library(debug)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_name)). % Meta-DCG.
+:- use_module(xsd(xsd)).
 
 
 

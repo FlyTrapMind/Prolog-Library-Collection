@@ -15,6 +15,7 @@ Stores API keys per user.
 @version 2014/01
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
@@ -61,7 +62,7 @@ api_keys -->
   html(
     \html_table(
       [header_row(true),indexed(true)],
-      `API keys`,
+      atom('API keys'),
       [['User','Organization','Service','Key']|Rows]
     )
   ).

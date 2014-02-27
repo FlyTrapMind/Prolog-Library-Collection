@@ -8,6 +8,7 @@ Web-interface for truth maintenance systems.
 @version 2013/10-2014/01
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
@@ -90,7 +91,7 @@ tms_web(_Request):-
     title('Overerview of TMSs'),
     \html_table(
       [header_row(true),indexed(true)],
-      `The currently loaded Truth Maintenance Systems.`,
+      atom('The currently loaded Truth Maintenance Systems.'),
       [['TMS','Type','#Justifications','#Nodes']|Rows]
     )
   ).

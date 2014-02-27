@@ -123,6 +123,7 @@ text/xml
 @version 2014/02
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
 :- use_module(html(html_pl_term)).
@@ -212,7 +213,7 @@ ckan_mime_table -->
     \mime_table(`Correct MIME types`, TruePairs),
     \html_table(
       [header_row(true),indexed(false)],
-      `MIME types we could fix`,
+      atom('MIME types we could fix'),
       [['Number of resources adhering','Incorrect MIME type','Replacing MIME type']|Rows]
     ),
     \mime_table(`MIME types we could not fix`, FalsePairs),
@@ -246,7 +247,7 @@ mime_content_type -->
     p(['There are ',\html_pl_term(L1),' resources that have the same MIME type in their CKAN metadata and in their HTTP reply.']),
     \html_table(
       [header_row(true),indexed(false)],
-      `Resources with conflicting MIME types.`,
+      atom('Resources with conflicting MIME types.'),
       [['Resource','CKAN MIME','HTTP MIME']|Rows]
     )
   ]).
@@ -322,7 +323,7 @@ ckan_mime_table_structured_open -->
   html([
     \html_table(
       [header_row(true),indexed(false)],
-      `MIME types and their 2- and 3-star status.`,
+      atom('MIME types and their 2- and 3-star status.'),
       [
         ['NumberOfResources','MIME','Structured (2-star)','Open','Both (3-star)'],
         [NumberOfNoMIMEResources,'No MIME','false','false','false']

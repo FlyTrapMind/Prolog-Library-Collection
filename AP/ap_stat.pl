@@ -15,6 +15,7 @@ Statistics for tracking the progress of automated processes.
 */
 
 :- use_module(ap(ap_dir)).
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
@@ -103,7 +104,7 @@ ap_stat(_Request):-
     title('Automated Processes - Statistics'),
     \html_table(
       [header_row(true)],
-      `AP statistics`,
+      atom('AP statistics'),
       [['Process','Succeed','Fail']|Rows]
     )
   ).

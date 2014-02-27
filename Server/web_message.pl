@@ -13,6 +13,7 @@ Acts on messages printed by print_message/2.
 @version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11, 2014/01
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(logging)).
 :- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
@@ -84,7 +85,7 @@ log_web(Max) -->
   html(
     \html_table(
       [header_row(true),indexed(true)],
-      `Log messages`,
+      atom('Log messages'),
       [['DateTime','Category','Message']|Top2]
     )
   ).

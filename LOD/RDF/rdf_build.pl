@@ -52,7 +52,8 @@ Triples with literals are treated in dedicated modules.
 % @arg Graph The atomic name of an RDF graph.
 
 rdf_assert_individual(I, C, G):-
-  rdf_assert(I, rdf:type, C, G).
+  rdf_assert(I, rdf:type, C, G),
+  rdf_assert(C, rdf:type, rdfs:'Class', G).
 
 
 rdf_assert_property(Property, G):-

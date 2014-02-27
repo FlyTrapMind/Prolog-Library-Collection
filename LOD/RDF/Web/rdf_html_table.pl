@@ -51,17 +51,17 @@ rdf_html_table(Table) -->
   },
   rdf_html_table(_NoGraph, rdf_html_term(Caption), H, T).
 
-table1(_, [], _, []).
+table1(_, _, [], []):- !.
 table1(Table, Columns, [Row|Rows], [H|T]):-
   table2(Table, Columns, Row, H),
   table1(Table, Columns, Rows, T).
 
-table2(_, [], _, []).
+table2(_, [], _, []):- !.
 table2(Table, [Column|Columns], Row, [H|T]):-
   rdf(Table, rdf_table:cell, Cell),
   rdf_datatype(Cell, rdf_table:column, xsd:string, Column, _),
   rdf_datatype(Cell, rdf_table:row, xsd:string, Row, _),
-  rdf(Cell, rdf:value, H),
+  rdf(Cell, rdf:value, H), !,
   table2(Table, Columns, Row, T).
 
 

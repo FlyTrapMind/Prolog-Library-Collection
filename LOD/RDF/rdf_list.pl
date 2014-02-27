@@ -134,7 +134,8 @@ rdf_assert_list0(O1, [H|T], RDF_List, G):-
     option(datatype(D), O1)
   ->
     rdf_bnode(H1),
-    rdf_assert_datatype(H1, rdf:value, D, H, G)
+    rdf_global_id(rdf:value, P),
+    rdf_assert_datatype(H1, P, D, H, G)
   ;
     H1 = H
   ),
@@ -189,7 +190,8 @@ rdf_list(O1, RDFList, [H1 | T]):-
   ;
     option(datatype(D), O1)
   ->
-    rdf_datatype(H, rdf:value, D, H1, _)
+    rdf_global_id(rdf:value, P),
+    rdf_datatype(H, P, D, H1, _)
   ;
     H1 = H
   ),

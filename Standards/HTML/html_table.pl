@@ -107,9 +107,8 @@ fail(_):-
 html_table_caption(VAR) -->
   {var(VAR)}, !,
   [].
-html_table_caption(Caption1) -->
-  {dcg_with_output_to(atom(Caption2), Caption1)},
-  html(caption(Caption2)).
+html_table_caption(Caption) -->
+  html(caption(\dcg_call(Caption))).
 
 
 
