@@ -20,6 +20,7 @@
 */
 
 :- use_module(generics(codes_ext)).
+:- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(http(rfc2616_response)).
 :- use_module(library(apply)).
@@ -30,6 +31,8 @@
 :- use_module(library(pairs)).
 :- use_module(math(int_ext)).
 :- use_module(os(io_ext)).
+
+:- db_add_novel(user:prolog_file_type(json, json)).
 
 
 

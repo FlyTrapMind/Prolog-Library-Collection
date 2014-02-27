@@ -120,17 +120,17 @@ rdf_bnode(BNode) -->
 rdf_language_tag(Language) -->
   atom(Language).
 
-rdf_literal(Literal) -->
-  rdf_plain_literal(Literal).
+% Typed literals must occur before plain literals.
 rdf_literal(Literal) -->
   rdf_typed_literal(Literal).
+rdf_literal(Literal) -->
+  rdf_plain_literal(Literal).
 
+% Non-simple plain literals must occur before simple literals.
 rdf_plain_literal(literal(lang(Language,Value))) --> !,
   rdf_simple_literal(Value),
   "@",
   rdf_language_tag(Language).
-% Due to the previous clause we know for sure that the value argument
-% is not instantiated to a language compound term.
 rdf_plain_literal(literal(Value)) -->
   rdf_simple_literal(Value).
 

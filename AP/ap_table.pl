@@ -28,6 +28,7 @@
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_html_term)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
@@ -162,6 +163,12 @@ ap_message(AP_Stage) -->
     keysort(NVPairs1, NVPairs2)
   },
   html(\html_nvpairs(NVPairs2)).
+ap_message(AP_Stage) -->
+  {
+    rdfs_individual_of(AP_Stage, ap:'Tables'), !,
+    findall(Table, rdf(AP_Stage, ap:table, Table, ap), Tables)
+  },
+  html(\rdf_html_tables(Tables)).
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Filter'), !,

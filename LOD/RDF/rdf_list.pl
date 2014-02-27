@@ -5,6 +5,10 @@
     rdf_assert_list/3, % +List:list
                        % -RDF_List:uri
                        % +Graph:atom
+    rdf_assert_list/4, % +Options:list(nvpair)
+                       % +List:list
+                       % -RDF_List:uri
+                       % +Graph:atom
     rdf_list/2, % +RDF_List:uri
                 % -List:list
     rdf_list/3, % +Options:list(nvpair)
@@ -38,13 +42,14 @@ Support for RDF lists.
 
 @author Wouter Beek
 @version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/05, 2013/07-2013/09,
-         2014/01
+         2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_collection)).
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_reasoning(rdf_bnode_map)).
 :- use_module(rdfs(rdfs_read)).
@@ -54,6 +59,7 @@ Support for RDF lists.
 
 :- rdf_meta(rdf_is_list(r)).
 :- rdf_meta(rdf_assert_list(t,r,+)).
+:- rdf_meta(rdf_assert_list(+,t,r,+)).
 :- rdf_meta(rdf_list(r,-)).
 :- rdf_meta(rdf_list(+,r,-)).
 :- rdf_meta(rdf_list_first(r,r)).
@@ -89,10 +95,20 @@ rdf_is_list(RDF_List1):-
   (b2r(_, RDF_List1, RDF_List2), ! ; RDF_List2 = RDF_List1),
   rdfs_individual(m(t,f,f), RDF_List2, C, _).
 
-%! rdf_assert_list(+List:list, -RDF_List:uri, +Graph:atom) is det.
+%! rdf_assert_list(+PrologList:list, -RDF_List:uri, +Graph:atom) is det.
+%! rdf_assert_list(
+%!   +Options:list(nvpair),
+%!   +PrologList:list,
+%!   -RDF_List:uri,
+%!   +Graph:atom
+%! ) is det.
 % Asserts the given, possibly nested list into RDF.
 %
-% @arg List The, possibly nested, Prolog list.
+% The following options are supported:
+%   * =|datatype(+Datatype:iri)|=
+%
+% @arg Options A list of name-value pairs.
+% @arg PrologList The, possibly nested, Prolog list.
 % @arg RDF_List The URI of the node at which the RDF list starts.
 % @arg Graph The atomic name of a graph or unbound.
 %
@@ -102,15 +118,23 @@ rdf_is_list(RDF_List1):-
 %         nested lists.
 
 rdf_assert_list(List, RDF_List, G):-
-  add_blank_list_individual(RDF_List, G),
-  rdf_assert_list0(List, RDF_List, G).
+  rdf_assert_list([], List, RDF_List, G).
 
-rdf_assert_list0([], rdf:nil, _Graph).
-rdf_assert_list0([H|T], RDF_List, G):-
+rdf_assert_list(O1, List, RDF_List, G):-
+  add_blank_list_individual(RDF_List, G),
+  rdf_assert_list0(O1, List, RDF_List, G).
+
+rdf_assert_list0(_, [], rdf:nil, _Graph).
+rdf_assert_list0(O1, [H|T], RDF_List, G):-
   (
     is_list(H)
   ->
-    rdf_assert_list0(H, H1, G)
+    rdf_assert_list0(O1, H, H1, G)
+  ;
+    option(datatype(D), O1)
+  ->
+    rdf_bnode(H1),
+    rdf_assert_datatype(H1, rdf:value, D, H, G)
   ;
     H1 = H
   ),
@@ -121,7 +145,7 @@ rdf_assert_list0([H|T], RDF_List, G):-
     rdf_global_id(rdf:nil, TList)
   ;
     add_blank_list_individual(TList, G),
-    rdf_assert_list0(T, TList, G)
+    rdf_assert_list0(O1, T, TList, G)
   ),
   rdf_assert(RDF_List, rdf:rest, TList, G).
 
@@ -138,7 +162,11 @@ rdf_list(RDF_List, List):-
 %! rdf_list(+Options:list(nvpair), +RDFList:uri, -List:list) is det
 % Returns the list that starts at the given node.
 %
-% @arg Options The following options are supported:
+% The following options are supported:
+%   * =|datatype(+Datatype:iri)|=
+%   * =|recrsive(+Recursive:boolean)|=
+%
+% @arg Options A list of name-value pairs.
 % @arg StartNode The URI of a node that starts the RDF list.
 % @arg List A prolog list.
 %
@@ -158,6 +186,10 @@ rdf_list(O1, RDFList, [H1 | T]):-
     rdf_is_list(H)
   ->
     rdf_list(O1, H, H1)
+  ;
+    option(datatype(D), O1)
+  ->
+    rdf_datatype(H, rdf:value, D, H1, _)
   ;
     H1 = H
   ),

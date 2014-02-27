@@ -16,14 +16,12 @@ VoID statistics process for the AP architecture.
 */
 
 :- use_module(ap(ap_db)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(http_parameters(rfc2616_media_type)). % DCG-meta.
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(void(void_stat)). % If only for the namespace.
@@ -34,24 +32,13 @@ VoID statistics process for the AP architecture.
 
 
 void_statistics(FromDir, ToDir, AP_Stage):-
-  ap_stage_resource(AP_Stage, Resource, Graph),
-  rdf_datatype(Resource, rfc2616:'Content-Type', xsd:string, ContentType, Graph),
-  dcg_phrase('media-type'(_, media_type(Type,Subtype,_)), ContentType),
-  atomic_list_concat([Type,Subtype], '/', MIME2),
   directory_files([], FromDir, FromFiles),
-  (
-    rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME1, Graph)
-  ->
-    mimes_to_list(MIME1, MIME2, MIMEs)
-  ;
-    MIMEs = [mime(MIME2)]
-  ),
   findall(
     File,
     (
       member(File, FromFiles),
       rdf_setup_call_cleanup(
-        MIMEs,
+        [],
         File,
         void_statistics_on_graph(AP_Stage, NVPairs)
       ),
@@ -61,10 +48,6 @@ void_statistics(FromDir, ToDir, AP_Stage):-
   ),
   (Files == [] -> existence_error('LOD', 'No LOD here') ; true),
   link_directory_contents(FromDir, ToDir).
-
-mimes_to_list(MIME1, MIME2, [mime(MIME1),mime(MIME2)]):-
-  MIME1 \== MIME2, !.
-mimes_to_list(MIME, MIME, [mime(MIME),mime(MIME)]).
 
 
 void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-

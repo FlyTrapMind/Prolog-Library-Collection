@@ -10,6 +10,8 @@
     add_properties_of_file/3, % +AP_Stage:iri
                               % +File:atom
                               % +NVPairs:list(pair)
+    add_table/2, % +AP_Stage:iri
+                 % +Table:iri
     add_succeed/1, % +AP_Stage:iri
 % READ
     ap_resource/3, % +AP:iri
@@ -33,12 +35,13 @@
   ]
 ).
 
-/** <module> AP DB
+/** <module> Automated Processes databases
 
 @author Wouter Beek
 @version 2014/02
 */
 
+:- use_module(generics(error_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -71,11 +74,11 @@ assert_schema:-
   rdfs_assert_label(ap:'AP-Stage', 'Automated process stage', ap).
 
 
-
-add_nvpair(Name-Value, BNode):-
+add_nvpair(Name-Value1, BNode):-
   rdf_bnode(BNode),
   rdf_assert_datatype(BNode, ap:name, xsd:string, Name, ap),
-  rdf_assert_datatype(BNode, ap:value, xsd:string, Value, ap).
+  with_output_to(atom(Value2), write_canonical_catch(Value1)),
+  rdf_assert_datatype(BNode, ap:value, xsd:string, Value2, ap).
 
 
 %! add_done(+AP:iri) is det.
@@ -105,6 +108,11 @@ add_properties_of_file(AP_Stage, File, NVPairs):-
     member(BNode, BNodes),
     rdf_assert(AP_Stage, ap:has_property, BNode, ap)
   ).
+
+
+add_table(AP_Stage, Table):-
+  rdf_assert_individual(AP_Stage, ap:'Tables', ap),
+  rdf_assert(AP_Stage, ap:table, Table, ap).
 
 
 %! add_succeed(+AP_Stage:iri) is det.

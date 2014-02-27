@@ -38,7 +38,7 @@ enrich_license(JSON_Descriptions, Graph, License):-
   atomic_list_concat([_,Tmp], '/', LocalName),
   downcase_atom(Tmp, Key),
   memberchk(Key=JSON_Description, JSON_Descriptions), !,
-  json_to_rdf(temp, ckan, JSON_Description, Dummy),
+  json_to_rdf(temp, ckan, ckan, JSON_Description, Dummy),
   forall(
     rdf(Dummy, P, O, temp),
     rdf_assert(License, P, O, Graph)

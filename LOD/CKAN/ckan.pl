@@ -446,7 +446,7 @@ ckan_pl(Return, Stream):-
 % To: RDF
 ckan_rdf(Graph, Stream):-
   ckan_stream_to_result(Stream, Result),
-  json_to_rdf(Graph, ckan, Result, _).
+  json_to_rdf(Graph, ckan, ckan, Result, _).
 
 ckan_stream_to_result(Stream, Result):-
   json_read(Stream, json(Reply)),

@@ -4,20 +4,12 @@
     exists_program/1, % +Program:atom
     exit_code_handler/2, % +Program:atom
                          % +Code:or([compound,nonneg])
-    java_output_stream/1, % -Output
-    java_error_stream/1, % -Error
     list_external_programs/0,
     list_external_programs/1, % +FileType:atom
     open/1, % +File:atom
     open_dot/1, % +File:file
     open_in_webbrowser/1, % +URI:atom
     open_pdf/1, % +File:file
-    run_jar/2, % +JAR_File:atom
-               % +CommandlineArguments:list(atom
-    run_jar/4, % +JAR_File:atom
-               % +CommandlineArguments:list(atom
-               % +Output
-               % +Error
     run_program/2, % +Program:atom
                    % +Arguments:list(atom)
     run_script/1 % +Script:atom
@@ -63,9 +55,6 @@ Predicates for running external programs.
 :- db_add_novel(user:prolog_file_type(xdot, dot)).
 :- db_add_novel(user:file_type_program(dot, dotty)).
 :- db_add_novel(user:file_type_program(dot, dotx)).
-
-% JAR
-:- db_add_novel(user:prolog_file_type(jar, jar)).
 
 % PDF
 :- db_add_novel(user:prolog_file_type(pdf, pdf)).
@@ -283,52 +272,6 @@ open_pdf(BaseOrFile):-
 :- if(is_windows).
 :- db_add_novel(user:file_type_program(pdf, 'AcroRd32')).
 :- endif.
-
-
-%! run_jar(+JAR_File:atom, CommandlineArguments:list(atom)) is det.
-
-run_jar(JAR_File, Args):-
-  setup_call_cleanup(
-    (
-      java_output_stream(Output1),
-      java_error_stream(Error1)
-    ),
-    (
-      run_jar(JAR_File, Args, pipe(Output2), pipe(Error2)),
-      copy_stream_data(Output2, Output1),
-      copy_stream_data(Error2, Error1)
-    ),
-    maplist(close, [Error1,Error2,Output1,Output2])
-  ).
-
-run_jar(JAR_File, Args, Output, Error):-
-  process_create(
-    path(java),
-    ['-jar',file(JAR_File)|Args],
-    [process(PID),stdout(Output),stderr(Error)]
-  ),
-  process_wait(PID, exit(ShellStatus)),
-  
-  % Process shell status.
-  file_base_name(JAR_File, JAR_Name),
-  format(atom(Program), 'Java/JAR ~a', [JAR_Name]),
-  exit_code_handler(Program, ShellStatus).
-
-java_output_stream(Output):-
-  absolute_file_name(
-    data(java_output),
-    OutputFile,
-    [access(write),file_type(log)]
-  ),
-  open(OutputFile, append, Output, []).
-
-java_error_stream(Error):-
-  absolute_file_name(
-    data(java_error),
-    ErrorFile,
-    [access(write),file_type(log)]
-  ),
-  open(ErrorFile, append, Error, []).
 
 
 run_program(Program, Args):-
