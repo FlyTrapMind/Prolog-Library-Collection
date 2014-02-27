@@ -41,10 +41,9 @@ ckan_file_size(_Request):-
     app_style,
     title('CKAN - Datasets sorted by file size'),
     \rdf_html_table(
-      _NoGraph,
-      `Datasets sorted by file size`,
-      ['File size in Gb','Dataset'],
-      Rows
+      [],
+      atom('Datasets sorted by file size'),
+      [['File size in Gb','Dataset']|Rows]
     )
   ).
 

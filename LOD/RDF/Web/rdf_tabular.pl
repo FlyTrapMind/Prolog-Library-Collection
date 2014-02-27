@@ -20,6 +20,7 @@ Generated RDF HTML tables.
 @version 2013/12-2014/02
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/html_write)).
@@ -100,8 +101,8 @@ rdf_tabular_triples(S, P, O, Graph) -->
     list_truncate(Rows1, 1000, Rows2)
   },
   rdf_html_table(
-    _NoGraph,
-    `RDF triples`,
+    [],
+    atom('RDF triples'),
     Rows2
   ).
 

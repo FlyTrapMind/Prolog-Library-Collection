@@ -2,12 +2,8 @@
   rdf_html_table,
   [
     rdf_html_table//1, % +Table:iri
-    rdf_html_table//3, % ?Graph:atom
+    rdf_html_table//3, % +Options:list(nvpair)
                        % :Caption
-                       % +Rows:list(list(ground))
-    rdf_html_table//4, % ?Graph:atom
-                       % :Caption
-                       % +HeaderRow:list(ground)
                        % +Rows:list(list(ground))
     rdf_html_tables//1 % +Tables:list(iri)
   ]
@@ -21,8 +17,7 @@ Generates HTML tables with RDF content.
 @version 2014/01-2014/02
 */
 
-:- meta_predicate(rdf_html_table(?,//,+,?,?)).
-:- meta_predicate(rdf_html_table(?,//,+,+,?,?)).
+:- meta_predicate(rdf_html_table(+,//,+,?,?)).
 
 :- rdf_meta(rdf_html_table(r,?,?)).
 
@@ -47,9 +42,13 @@ rdf_html_table(Table) -->
     rdf_list([datatype(XSDString)], Columns1, Columns2),
     rdf(Table, rdf_table:rows, Rows1),
     rdf_list([datatype(XSDString)], Rows1, Rows2),
-    table1(Table, Columns2, Rows2, [H|T])
+    table1(Table, Columns2, Rows2, L)
   },
-  rdf_html_table(_NoGraph, rdf_html_term(Caption), H, T).
+  rdf_html_table(
+    [header_column(true),header_row(true)],
+    rdf_html_term(Caption),
+    [Columns2|L]
+  ).
 
 table1(_, _, [], []):- !.
 table1(Table, Columns, [Row|Rows], [H|T]):-
@@ -65,37 +64,17 @@ table2(Table, [Column|Columns], Row, [H|T]):-
   table2(Table, Columns, Row, T).
 
 
-%! rdf_html_table(?Graph:atom, :Caption, +Rows:list(list(ground)))// is det.
 %! rdf_html_table(
-%!   +Graph:atom,
+%!   +Options:list(nvpair),
 %!   :Caption,
-%!   +HeaderRow:list(ground),
 %!   +Rows:list(list(ground))
 %! )// is det.
-% If `Rows` are of the form `[P,O,G]` or `[S,P,O,G]`,
-%  the header row is set automatically.
-% Otherwise the header row has to be given explicitly.
-
-rdf_html_table(_, _, []) --> !, [].
-rdf_html_table(Graph, Caption, [H|T]) -->
-  {
-    same_length(H, HeaderRow),
-    append(_, HeaderRow, ['Subject','Predicate','Object','Graph'])
-  },
-  rdf_html_table(Graph, Caption, HeaderRow, [H|T]).
-
 
 % Do not fail for empty data lists.
-rdf_html_table(_, _, _, []) --> !, [].
-rdf_html_table(Graph, Caption, HeaderRow, Rows) -->
-  html(
-    \html_table(
-      [header_row(true),indexed(true)],
-      Caption,
-      rdf_html_term(Graph),
-      [HeaderRow|Rows]
-    )
-  ).
+rdf_html_table(_, _, []) --> !, [].
+rdf_html_table(O1, Caption, Rows) -->
+  {select_option(graph(Graph), O1, O2, _NoGraph)},
+  html(\html_table(O2, Caption, rdf_html_term(Graph), Rows)).
 
 
 rdf_html_tables([]) --> [].

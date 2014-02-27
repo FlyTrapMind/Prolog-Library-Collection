@@ -134,8 +134,11 @@ json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate):-
 %      This will be converted to RDF.
 % @arg Individual An IRI denoting the RDF version of the JSON term.
 
+json_to_rdf(Graph, Module, XML_Namespace, JSONs, Individuals):-
+  is_list(JSONs), !,
+  maplist(json_to_rdf(Graph, Module, XML_Namespace), JSONs, Individuals).
 json_to_rdf(Graph, Module, XML_Namespace, JSON, Individual):-
-  % Namespace.
+ % Namespace.
   (
     xml_current_namespace(XML_Namespace, _), !
   ;

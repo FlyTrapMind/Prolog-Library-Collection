@@ -61,6 +61,7 @@ After these operations all 4053 datasets have fully described
 */
 
 :- use_module(ckan(opendefinition_licenses)).
+:- use_module(dcg(dcg_content)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
@@ -145,10 +146,10 @@ ckan_license_table -->
   },
   html(
     \rdf_html_table(
-      Graph,
-      `Overview of licenses`,
-      ['Number of datasets','Name','OKD Compliant','OSI Compliant','License'],
-      Rows
+      [graph(Graph)],
+      atom('Overview of licenses'),
+      [['Number of datasets','Name','OKD Compliant','OSI Compliant','License']
+       |Rows]
     )
   ).
 

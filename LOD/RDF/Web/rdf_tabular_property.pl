@@ -15,6 +15,7 @@ Generates HTML tables that descrive RDF predicate terms.
 @version 2014/01-2014/02
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(aggregate)).
@@ -58,11 +59,14 @@ rdf_tabular_property_domain(Graph, P) -->
     Rows
   )},
   rdf_html_table(
-    Graph,
-    (`Domain of property `, rdf_term_name(P), `.`),
-    ['Class'],
-    Rows
+    [graph(Graph)],
+    caption1(P),
+    [['Class']|Rows]
   ).
+caption1(P) -->
+  atom('Domain of property '),
+  rdf_term_name(P),
+  atom('.').
 
 
 rdf_tabular_property_range(Graph, P) -->
@@ -75,11 +79,14 @@ rdf_tabular_property_range(Graph, P) -->
     Rows
   )},
   rdf_html_table(
-    Graph,
-    (`Range of property `, rdf_term_name(P), `.`),
-    ['Class'],
-    Rows
+    [graph(Graph)],
+    caption2(P),
+    [['Class']|Rows]
   ).
+caption2(P) -->
+  atom('Range of property '),
+  rdf_term_name(P),
+  atom('.').
 
 
 rdf_tabular_predicate_literals(Graph, P) -->
@@ -99,11 +106,14 @@ rdf_tabular_predicate_literals(Graph, P) -->
     list_truncate(Rows1, 100, Rows2)
   },
   rdf_html_table(
-    Graph,
-    (`Values that occur for property `, rdf_term_name(P), `.`),
-    ['Literal value'],
-    Rows2
+    [graph(Graph)],
+    caption3(P),
+    [['Literal value']|Rows2]
   ).
+caption3(P) -->
+  atom('Values that occur for property '),
+  rdf_term_name(P),
+  atom('.').
 
 
 rdf_tabular_properties(Graph) -->
@@ -134,9 +144,8 @@ rdf_tabular_properties(Graph) -->
     )
   },
   rdf_html_table(
-    Graph,
-    `Overview of properties.`,
-    ['Predicate','Occurrences'],
-    Rows
+    [graph(Graph)],
+    atom('Overview of properties.'),
+    [['Predicate','Occurrences']|Rows]
   ).
 

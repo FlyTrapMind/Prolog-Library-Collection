@@ -62,9 +62,8 @@ rdf_tabular_graphs -->
     )
   },
   rdf_html_table(
-    _NoGraph,
-    `RDF graphs (non-TMS)`,
-    ['Graph','Number of triples'],
-    Rows
+    [],
+    atom('RDF graphs (non-TMS)'),
+    [['Graph','Number of triples']|Rows]
   ).
 

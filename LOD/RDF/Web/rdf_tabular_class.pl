@@ -15,6 +15,7 @@ Generates HTML tables for overviews of RDFS classes.
 @version 2014/01-2014/02
 */
 
+:- use_module(dcg(dcg_content)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(library(http/html_write)).
@@ -41,11 +42,14 @@ rdf_tabular_class(Graph, Class1) -->
     list_truncate(Instances1, 50, Instances2)
   },
   rdf_html_table(
-    Graph,
-    (`Instances of `,rdf_term_name(Class2)),
-    ['Instance'],
-    Instances2
+    [graph(Graph)],
+    caption(Class2),
+    [['Instance']|Instances2]
   ).
+caption(Class2) -->
+  atom('Instances of '),
+  rdf_term_name(Class2),
+  atom('.').
 
 
 rdf_tabular_classes(Graph) -->
@@ -79,9 +83,8 @@ rdf_tabular_classes(Graph) -->
     )
   },
   rdf_html_table(
-    Graph,
-    `Overview of classes.`,
-    ['Class','Members'],
-    Rows
+    [graph(Graph)],
+    atom('Overview of classes.'),
+    [['Class','Members']|Rows]
   ).
 
