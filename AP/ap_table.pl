@@ -172,7 +172,7 @@ ap_message(AP_Stage) -->
       Tables
     )
   },
-  html(\rdf_html_tables(Tables)).
+  html(\rdf_html_tables([header_column(true),header_row(true)], Tables)).
 ap_message(AP_Stage) -->
   {
     rdfs_individual_of(AP_Stage, ap:'Filter'), !,

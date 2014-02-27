@@ -77,7 +77,14 @@ html_table(O1, Caption, Cell, Rows) -->
   html(
     table(class=['pure-table','pure-table-bordered'], [
       \html_table_caption(Caption),
-      \html_table_header(HasHeaderRow, IsIndexed, Cell, Rows, DataRows),
+      \html_table_header(
+        HasHeaderColumn,
+        HasHeaderRow,
+        IsIndexed,
+        Cell,
+        Rows,
+        DataRows
+      ),
       tbody(
         \html_table_data_rows(
           HasHeaderColumn,
@@ -212,6 +219,7 @@ html_table_data_row(
 % HEADER %
 
 %! html_table_header(
+%!   +HasHeaderColumn:boolean,
 %!   +HasHeaderRow:boolean,
 %!   +IsIndexed:boolean,
 %!   :Cell,
@@ -219,14 +227,21 @@ html_table_data_row(
 %!   -DataRows:list(list(ground))
 %! )// is det.
 
-:- meta_predicate(html_table_header(+,+,3,+,-,?,?)).
+:- meta_predicate(html_table_header(+,+,+,3,+,-,?,?)).
 % The options state that there should be a header row, but there is no
 % content to display.
-html_table_header(true, _, _, [], []) --> !, [].
+html_table_header(_,true, _, _, [], []) --> !, [].
 % Options state a header row should be included.
 % We take the first row, and return the other rows for later processing.
 % Only add a header if the corresponding option says so.
-html_table_header(true, IsIndexed, Cell, [HeaderRow1|DataRows], DataRows) --> !,
+html_table_header(
+  HasHeaderColumn,
+  true,
+  IsIndexed,
+  Cell,
+  [HeaderRow1|DataRows],
+  DataRows
+) --> !,
   % If the indexed option is set, then include a first header cell
   % indicating the index number column.
   {(
@@ -234,11 +249,15 @@ html_table_header(true, IsIndexed, Cell, [HeaderRow1|DataRows], DataRows) --> !,
   ->
     HeaderRow2 = ['#'|HeaderRow1]
   ;
+    HasHeaderColumn == true
+  ->
+    HeaderRow2 = ['\\'|HeaderRow1]
+  ;
     HeaderRow2 = HeaderRow1
   )},
   html(thead(\html_table_header_row(Cell, HeaderRow2))).
 % In case the header option is not set, simply return the given rows.
-html_table_header(false, _, _, DataRows, DataRows) --> [].
+html_table_header(_, false, _, _, DataRows, DataRows) --> [].
 
 
 %! html_table_header_row(:Cell, +HeaderRow:list(ground))// is det.
