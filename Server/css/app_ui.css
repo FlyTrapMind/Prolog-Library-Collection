@@ -505,7 +505,7 @@ pre .string, pre .support.value  {
 
 /* ERROR MESSAGES */
 
-.action{
+.action {
   font-weight: bold;
 }
 
@@ -519,6 +519,15 @@ pre .string, pre .support.value  {
 
 .succeed {
   background-color: LightGreen;
+}
+.succeed caption {
+  background-color: black;
+  color: #e0e0e0;
+  font-weight: bold;
+}
+.succeed th {
+  background-color: #e0e0e0;
+  border-bottom: 1px solid #cbcbcb;/*  inner column border */
 }
 
 .error_kind {
