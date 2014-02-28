@@ -89,7 +89,7 @@ blank_node_legend -->
   html(
     \rdf_html_table(
       [],
-      atom('The blank node mapping that is used in the above results.'),
+      html('The blank node mapping that is used in the above results.'),
       [['Blank node','Mapped to','Graph']|L]
     )
   ).
@@ -104,7 +104,7 @@ recent_triples -->
   html(
     \rdf_html_table(
       [],
-      atom('The triples that were added in the last materialization run.'),
+      html('The triples that were added in the last materialization run.'),
       Quadruples
     )
   ).

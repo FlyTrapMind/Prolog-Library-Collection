@@ -115,7 +115,7 @@ directory_to_rdf_files(Dir, Pairs):-
 
 rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
   directory_to_rdf_files(FromDir, FromPairs),
-
+  
   default(ToMIME1, 'application/x-turtle', ToMIME2),
   once((
     rdf_serialization(ToExt, _, _, MIMEs, _),

@@ -28,6 +28,7 @@ Support for running automated processing.
 :- use_module(ap(ap_stage)).
 :- use_module(library(apply)).
 :- use_module(library(process)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
@@ -117,7 +118,9 @@ ap_end(O1, AP):-
   ),
 
   % Save the ap assertions until now.
-  absolute_file_name(data(ap), File, [access(write),extensions([tmp])]),
+  rdf_collection_member(AP, AP_Collection, ap),
+  rdfs_label(AP_Collection, Label),
+  absolute_file_name(data(Label), File, [access(write),extensions([tmp])]),
   rdf_save([format(turtle)], ap, File).
 
 ap_stage_duration(AP_Stage, Months, Seconds):-

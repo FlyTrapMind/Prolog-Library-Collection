@@ -93,7 +93,7 @@ ap_table(HeaderAugmentation, RowAugmentation, [H|T]) -->
   html(
     \html_table(
       [header_row(true),indexed(true)],
-      atom('Automated processes'),
+      html('Automated processes'),
       ap_stage_cell,
       [Header2|Rows]
     )

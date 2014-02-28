@@ -42,7 +42,7 @@ ckan_file_size(_Request):-
     title('CKAN - Datasets sorted by file size'),
     \rdf_html_table(
       [],
-      atom('Datasets sorted by file size'),
+      html('Datasets sorted by file size'),
       [['File size in Gb','Dataset']|Rows]
     )
   ).
@@ -58,7 +58,7 @@ ckan_file_size:-
     user_output,
     dcg_table(
       [header_row(true)],
-      atom('Datasets sorted by file size'),
+      html('Datasets sorted by file size'),
       rdf_term_name,
       [['File size in Gb','Dataset']|Rows]
     )

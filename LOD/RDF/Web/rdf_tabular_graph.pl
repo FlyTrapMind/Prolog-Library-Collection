@@ -17,6 +17,7 @@ Generates HTML tables for overviews of RDF graphs.
 :- use_module(dcg(dcg_content)). % Used in HTML table caption.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_web(rdf_html_table)).
@@ -63,7 +64,7 @@ rdf_tabular_graphs -->
   },
   rdf_html_table(
     [],
-    atom('RDF graphs (non-TMS)'),
+    html('RDF graphs (non-TMS)'),
     [['Graph','Number of triples']|Rows]
   ).
 

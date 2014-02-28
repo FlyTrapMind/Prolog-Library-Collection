@@ -104,7 +104,7 @@ ap_stat(_Request):-
     title('Automated Processes - Statistics'),
     \html_table(
       [header_row(true)],
-      atom('AP statistics'),
+      html('AP statistics'),
       [['Process','Succeed','Fail']|Rows]
     )
   ).

@@ -61,7 +61,7 @@ rdf_tabular_term1(Graph, D) -->
   },
   rdf_html_table(
     [graph(Graph)],
-    caption(D),
+    html(['Ordered value list for datatype ',D,'.']),
     [['Value']|Values]
   ).
 % Subject term.
@@ -74,10 +74,6 @@ rdf_tabular_term1(Graph, RDF_Term) -->
     h1('Subject-object pairs'),
     \rdf_tabular_triples(_, _, RDF_Term, Graph)
   ]).
-caption(D) -->
-  atom('Ordered value list for datatype '),
-  atom(D),
-  atom('.').
 
 rdfs_property(P):-
   rdf(_, P, _).
@@ -104,9 +100,5 @@ rdf_tabular_terms(Graph, RDF_Terms) -->
       Rows
     )
   },
-  rdf_html_table(
-    [graph(Graph)],
-    atom('RDF terms'),
-    [['RDF term']|Rows]
-  ).
+  rdf_html_table([graph(Graph)], html('RDF terms'), [['RDF term']|Rows]).
 

@@ -85,7 +85,7 @@ log_web(Max) -->
   html(
     \html_table(
       [header_row(true),indexed(true)],
-      atom('Log messages'),
+      html('Log messages'),
       [['DateTime','Category','Message']|Top2]
     )
   ).

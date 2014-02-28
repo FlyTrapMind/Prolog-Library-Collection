@@ -14,14 +14,11 @@ Returns the MIME of a given file.
 @version 2014/01-2014/02
 */
 
-:- use_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_cardinal)). % Meta-DCG
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(debug)).
-:- use_module(library(filesex)).
-:- use_module(library(lists)).
 :- use_module(library(pure_input)).
-:- use_module(os(dir_ext)).
 
 
 

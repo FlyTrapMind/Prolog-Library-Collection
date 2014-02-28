@@ -24,6 +24,7 @@
 :- use_module(library(http/html_write)).
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
+:- use_module(rdf_web(rdf_html_term)).
 
 
 
@@ -340,5 +341,5 @@ html_program(Program) -->
 html_value(mime(MIME)) --> !,
   html_mime(MIME).
 html_value(Value) -->
-  html_pl_term(Value).
+  rdf_html_term(Value).
 

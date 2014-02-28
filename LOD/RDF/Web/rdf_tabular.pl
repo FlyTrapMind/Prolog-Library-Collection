@@ -100,9 +100,5 @@ rdf_tabular_triples(S, P, O, Graph) -->
     % Restrict the number of rows in the table arbitrarily.
     list_truncate(Rows1, 1000, Rows2)
   },
-  rdf_html_table(
-    [],
-    atom('RDF triples'),
-    Rows2
-  ).
+  rdf_html_table([], html('RDF triples'), Rows2).
 

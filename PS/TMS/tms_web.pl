@@ -91,7 +91,7 @@ tms_web(_Request):-
     title('Overerview of TMSs'),
     \html_table(
       [header_row(true),indexed(true)],
-      atom('The currently loaded Truth Maintenance Systems.'),
+      html('The currently loaded Truth Maintenance Systems.'),
       [['TMS','Type','#Justifications','#Nodes']|Rows]
     )
   ).

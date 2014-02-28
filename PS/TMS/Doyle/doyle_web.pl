@@ -57,7 +57,7 @@ doyle_web(TMS) -->
     title('Doyle'),
     \html_table(
       [header_row(true)],
-      atom('Doyle\'s TMS overview'),
+      html('Doyle\'s TMS overview'),
       [
         [
           'Node',

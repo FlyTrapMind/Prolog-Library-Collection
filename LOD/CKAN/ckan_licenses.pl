@@ -147,7 +147,7 @@ ckan_license_table -->
   html(
     \rdf_html_table(
       [graph(Graph)],
-      atom('Overview of licenses'),
+      html('Overview of licenses'),
       [['Number of datasets','Name','OKD Compliant','OSI Compliant','License']
        |Rows]
     )

@@ -62,7 +62,7 @@ api_keys -->
   html(
     \html_table(
       [header_row(true),indexed(true)],
-      atom('API keys'),
+      html('API keys'),
       [['User','Organization','Service','Key']|Rows]
     )
   ).

@@ -58,7 +58,7 @@ rdf_core_graphs -->
     )
   },
   html(
-    \rdf_html_table([], atom('The core graphs'), [['Graph','Added']|Rows])
+    \rdf_html_table([], html('The core graphs'), [['Graph','Added']|Rows])
   ).
 
 

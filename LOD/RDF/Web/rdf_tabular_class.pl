@@ -43,13 +43,9 @@ rdf_tabular_class(Graph, Class1) -->
   },
   rdf_html_table(
     [graph(Graph)],
-    caption(Class2),
+    html(['Instances of ',\rdf_term_name(Class2),'.']),
     [['Instance']|Instances2]
   ).
-caption(Class2) -->
-  atom('Instances of '),
-  rdf_term_name(Class2),
-  atom('.').
 
 
 rdf_tabular_classes(Graph) -->
@@ -84,7 +80,7 @@ rdf_tabular_classes(Graph) -->
   },
   rdf_html_table(
     [graph(Graph)],
-    atom('Overview of classes.'),
+    html('Overview of classes.'),
     [['Class','Members']|Rows]
   ).
 

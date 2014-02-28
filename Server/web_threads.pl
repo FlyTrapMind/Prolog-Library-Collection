@@ -56,7 +56,7 @@ thread_overview -->
   },
   html_table(
     [header_column(true),header_row(true)],
-    atom('Statistics for all threads.'),
+    html('Statistics for all threads.'),
     [['Statistic'|Aliases]|Rows]
   ).
 

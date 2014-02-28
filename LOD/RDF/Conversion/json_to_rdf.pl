@@ -37,6 +37,7 @@ This requires a Prolog module whose name is also registered as
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_image)).
+:- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_lit_build)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(json_ext)).
@@ -243,13 +244,20 @@ json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Type, Value):-
   json_object_to_rdf(Graph, Module, XML_Namespace, Value, Individual2),
   json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
-% List.
+% Prolog list.
 json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, list(Type), Values):-
   is_list(Values), !,
   maplist(
     json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, Type),
     Values
   ).
+% RDF list.
+json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, rdf_list(Type), Values):-
+  is_list(Values), !,
+  json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
+  rdf_global_id(xsd:Type, Datatype),
+  rdf_assert_list([datatype(Datatype)], Values, RDF_List, Graph),
+  rdf_assert(Individual, Predicate, RDF_List, Graph).
 % JSON string that is asserted as an XSD string.
 json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, Type, Value1):-
   json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
@@ -261,7 +269,7 @@ json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, Type, Value1):-
 
 % The value is already in XSD format: recognize that this is the case.
 json_value_to_rdf(Type, Value1, Datatype, Value2):-
-  atom(Value1),
+  atomic(Value1),
   xsd_datatype(Type, Datatype),
   rdf_datatype(Datatype, Value1, Value2), !.
 % The value is not yet in XSD format, but could be converted using

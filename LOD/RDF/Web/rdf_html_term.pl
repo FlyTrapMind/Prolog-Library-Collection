@@ -23,7 +23,9 @@ HTML generation of RDF content.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
+:- use_module(rdf(rdf_name)).
 :- use_module(server(web_ui)).
 :- use_module(xml(xml_namespace)).
 
@@ -38,6 +40,12 @@ rdf_html_term(RDF_Term) -->
 rdf_html_term(_, Graph1) -->
   {rdf_is_graph(Graph1, Graph2)}, !,
   rdf_graph(Graph2).
+rdf_html_term(_, RDF_Term) -->
+  {
+    rdf_is_resource(RDF_Term),
+    rdfs_individual_of(RDF_Term, rdf:'List'), gtrace
+  }, !,
+  rdf_list(RDF_Term).
 % Blank node.
 rdf_html_term(_, RDF_Term) -->
   {rdf_is_bnode(RDF_Term)}, !,
@@ -64,6 +72,11 @@ rdf_graph(Graph) -->
   },
   html(span(class='rdf-graph', a(href=Location2, Graph))).
 
+
+% RDF LIST %
+
+rdf_list(RDF_List) -->
+  html(div(class='rdf-list', \rdf_term_name(RDF_List))).
 
 
 % BLANK NODE %

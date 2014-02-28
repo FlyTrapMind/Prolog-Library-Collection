@@ -19,6 +19,7 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(aggregate)).
+:- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -60,13 +61,9 @@ rdf_tabular_property_domain(Graph, P) -->
   )},
   rdf_html_table(
     [graph(Graph)],
-    caption1(P),
+    html(['Domain of property ',\rdf_term_name(P),'.']),
     [['Class']|Rows]
   ).
-caption1(P) -->
-  atom('Domain of property '),
-  rdf_term_name(P),
-  atom('.').
 
 
 rdf_tabular_property_range(Graph, P) -->
@@ -80,13 +77,9 @@ rdf_tabular_property_range(Graph, P) -->
   )},
   rdf_html_table(
     [graph(Graph)],
-    caption2(P),
+    html(['Range of property ',\rdf_term_name(P),'.']),
     [['Class']|Rows]
   ).
-caption2(P) -->
-  atom('Range of property '),
-  rdf_term_name(P),
-  atom('.').
 
 
 rdf_tabular_predicate_literals(Graph, P) -->
@@ -107,13 +100,9 @@ rdf_tabular_predicate_literals(Graph, P) -->
   },
   rdf_html_table(
     [graph(Graph)],
-    caption3(P),
+    html(['Values that occur for property ',\rdf_term_name(P),'.']),
     [['Literal value']|Rows2]
   ).
-caption3(P) -->
-  atom('Values that occur for property '),
-  rdf_term_name(P),
-  atom('.').
 
 
 rdf_tabular_properties(Graph) -->
@@ -145,7 +134,7 @@ rdf_tabular_properties(Graph) -->
   },
   rdf_html_table(
     [graph(Graph)],
-    atom('Overview of properties.'),
+    html('Overview of properties.'),
     [['Predicate','Occurrences']|Rows]
   ).
 
