@@ -1,14 +1,16 @@
 :- module(
   xsd_float,
   [
-    doubleCanonicalMap/2, % +Double:double
+    doubleCanonicalMap/2, % +Double:or([double,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
                           % -LEX:list(code)
     doubleLexicalMap/2, % +LEX:list(code)
-                        % -Double:double
-    floatCanonicalMap/2, % +Float:float
+                        % -Double:or([double,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
+    floatCanonicalMap/2, % +Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
                          % -LEX:list(code)
-    floatLexicalMap/2 % +LEX:list(code)
-                      % -Float:float
+    floatLexicalMap/2, % +LEX:list(code)
+                       % -Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
+    floatLexicalMap2/2 % +LEX:list(code)
+                       % -Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
   ]
 ).
 
@@ -135,7 +137,7 @@ between =−1074= and =971=, inclusive.
 @see IEEE 754-2008
 @tbd Implement restrictions to the lexical map as defined in IEEE 754-2008.
 @tbd Implement the efficient rounding algorithm in Clinger1990.
-@version 2013/08
+@version 2013/08, 2014/02
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -189,10 +191,10 @@ floatCanonicalMap(Float, LEX):-
 
 floatCanonicalMap(_Precision, F) -->
   specialRepCanonicalMap(F), !.
-floatCanonicalMap(_Precision, positiveZero) -->
-  !, "0.0E0".
-floatCanonicalMap(_Precision, negativeZero) -->
-  !, "-0.0E0".
+floatCanonicalMap(_Precision, positiveZero) --> !,
+  "0.0E0".
+floatCanonicalMap(_Precision, negativeZero) --> !,
+  "-0.0E0".
 % =F= is numeric and non-zero.
 floatCanonicalMap(Precision, F) -->
   {
@@ -324,6 +326,33 @@ doubleRep(N) -->
 floatLexicalMap(LEX, Float):-
   once(phrase(floatRep(Float), LEX)).
 
+floatLexicalMap2(LEX, Float2):-
+  floatLexicalMap(LEX, Float1),
+  (
+    Float1 == negativeInfinity
+  ->
+    fail
+  ;
+    Float1 == negativeZero
+  ->
+    Float2 = 0.0
+  ;
+    Float1 == notANumber
+  ->
+    fail
+  ;
+    Float1 == positiveInfinity
+  ->
+    fail
+  ;
+    Float1 == positiveZero
+  ->
+    Float2 = 0.0
+  ;
+    Float2 = Float1
+  ).
+
+
 %! floatRep(-Float:or([float,atom]))//
 % ~~~{.ebnf}
 % floatRep ::= noDecimalPtNumeral
@@ -352,7 +381,7 @@ floatRep(Precision, N) -->
   {
     floating_point_precision(Precision, P, EMin, EMax),
     (N1 =\= 0 -> floatingPointRound(N1, P, EMin, EMax, N2) ; N2 = N1),
-    (N2 =:= 0 -> (Sign > 0 -> N = negativeZero ; N = positiveZero) ; N = N2)
+    (N2 =:= 0 -> (Sign < 0 -> N = negativeZero ; N = positiveZero) ; N = N2)
   }.
 
 %! minimalNumericalSpecialRep(

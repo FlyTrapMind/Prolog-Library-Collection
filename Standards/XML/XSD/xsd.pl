@@ -247,7 +247,7 @@ xsd_lexicalMap_(xsd:double, LEX, Double):- !,
 xsd_lexicalMap_(xsd:duration, LEX, Duration):- !,
   durationLexicalMap(LEX, Duration).
 xsd_lexicalMap_(xsd:float, LEX, Float):- !,
-  floatLexicalMap(LEX, Float).
+  floatLexicalMap2(LEX, Float).
 xsd_lexicalMap_(xsd:gDay, LEX, GregorianDay):- !,
   gDayLexicalMap(LEX, GregorianDay).
 xsd_lexicalMap_(xsd:gMonth, LEX, GregorianMonth):- !,
