@@ -96,14 +96,21 @@ directory_to_rdf_files(Dir, Pairs):-
   % Retrieve all files.
   directory_files([include_directories(false),recursive(true)], Dir, Files),
   findall(
-    MIME-RDF_File,
+    MIME-File,
     (
-      member(RDF_File, Files),
-      file_mime(RDF_File, MIME),
-      rdf_mime(MIME)
+      member(File, Files),
+      is_rdf_file(File, MIME)
     ),
     Pairs
   ).
+
+
+is_rdf_file(File, MIME):-
+  file_mime(File, MIME),
+  rdf_mime(MIME), !.
+is_rdf_file(File, MIME):-
+  file_name_extension(_, Ext, File),
+  rdf_extension(Ext, MIME).
 
 
 %! rdf_convert_directory(
@@ -115,13 +122,13 @@ directory_to_rdf_files(Dir, Pairs):-
 
 rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
   directory_to_rdf_files(FromDir, FromPairs),
-  
+
   default(ToMIME1, 'application/x-turtle', ToMIME2),
   once((
     rdf_serialization(ToExt, _, _, MIMEs, _),
     memberchk(ToMIME2, MIMEs)
   )),
-  
+
   findall(
     ToFile,
     (
@@ -155,6 +162,10 @@ rdf_convert_file(FromMIME, FromFile, ToMIME, ToFile):-
     [mime(ToMIME)],
     ToFile
   ).
+
+
+rdf_extension(Ext, MIME):-
+  rdf_serialization(Ext, _, _, [MIME|_], _).
 
 
 %! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
