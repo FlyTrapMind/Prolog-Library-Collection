@@ -248,7 +248,7 @@ tsv_file_to_oaei_file(FromFile, ToFile):-
 % TMP %
 
 oaei_graph(G):-
-  enforce_mode('_oaei_graph'(G), [['+']-semidet,['-']-nondet]).
+  enforce_mode('_oaei_graph'(G), [G], [['+']-semidet,['-']-nondet]).
 '_oaei_graph'(G):-
   rdf_graph(G),
   once((

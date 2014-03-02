@@ -5,6 +5,8 @@
                   % ?Objects:oneof([bnode,literal,uri])
     rdf_predicate/2, % ?Graph:atom
                      % ?Predicate:uri
+    rdf_subject/2, % ?Graph:atom
+                   % ?Subject:oneof([bnode,uri])
 
     rdf_bnode/2, % ?Graph:atom
                  % ?BNode:bnode
@@ -20,8 +22,6 @@
                 % ?Node:or([bnode,uri,literal])
     rdf_po_pairs/2, % +Resource:uri
                     % -PredicateObjectPairs:list(pair)
-    rdf_predicates/2, % +Graph:atom
-                      % -Predicates:ordset(uri)
     rdf_shared_po_pairs/5, % +X_PO_Pairs:ordset(list),
                            % +Y_PO_Pairs:ordset(list),
                            % -Shared_PO_Pairs:ordset(list),
@@ -32,8 +32,6 @@
                              % -SharedPredicateTuples:ordset(list)
                              % -X_P_Pairs2:ordset(list)
                              % -Y_P_Pairs2:ordset(list)
-    rdf_subject/2, % ?Graph:atom
-                   % ?Subject:oneof([bnode,uri])
     rdf_term/2, % ?Graph:atom
                 % ?RDF_Term:or([bnode,literal,uri])
     rdf_vocabulary/2 % +Graph:atom
@@ -100,16 +98,15 @@
 
 rdf_subject(G, S):-
   enforce_mode(
-    rdf(S, P, O, G),
+    rdf(S, _, _, G),
     [S,G],
     [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
   ).
 
 rdf_predicate(G, P):-
-  rdf(_, P, _, G).
   enforce_mode(
     rdf(_, P, _, G),
-    [P, G]
+    [P,G],
     [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
   ).
 
@@ -123,11 +120,6 @@ rdf_object(G, O):-
 
 
 /*
-
-## Blank node
-
-## Literal
-
 ## URI reference
 
 A URI reference within an RDF graph (an RDF URI reference) is

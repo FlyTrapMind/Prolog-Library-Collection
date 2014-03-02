@@ -48,8 +48,8 @@ dbpedia_load_categories:-
     'http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2',
     File1
   ),
-  absolute_file_name(data('.'), Dir, [access(write),file_type(directory)]),
-  extract_archive(File1, Dir, _),
+  extract_archive(File1, _),
+  directory_file_path(Dir, _, File1),
   directory_files(
     [
       file_types([turtle]),

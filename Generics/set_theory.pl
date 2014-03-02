@@ -155,6 +155,7 @@ subsets(Set, Subsets):-
 binary_overlay(Original, Overlay, Result):-
   enforce_mode(
     '_binary_overlay'(Original, Overlay, Result),
+    [Original,Overlay,Result],
     [[+,+,+]-semidet,[+,+,-]-det,[+,-,+]-det]
   ).
 '_binary_overlay'([], [], []).
