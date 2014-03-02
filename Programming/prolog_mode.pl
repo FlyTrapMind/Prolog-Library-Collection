@@ -23,7 +23,8 @@
     call_nth/2, % :Goal
                 % +N:nonneg
     call_semidet/1, % :Goal
-    enforce_mode/2 % :Goal
+    enforce_mode/3 % :Goal
+                   % +Arguments:list
                    % +Declaration:list(pair(list(oneof(['+','-','?'])),oneof([det,multi,nondet,semidet])))
   ]
 ).
@@ -33,7 +34,7 @@
 Automated checks for Prolog mode enforcement.
 
 @author Wouter Beek
-@tbd Phase out nonvar_det/1 (use enforce_mode/2 instead).
+@tbd Phase out nonvar_det/1 (use enforce_mode/3 instead).
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12
 */
 
@@ -50,7 +51,7 @@ Automated checks for Prolog mode enforcement.
 :- meta_predicate(call_multi(2,+,+,-,-)).
 :- meta_predicate(call_nth(0,-)).
 :- meta_predicate(call_semidet(0)).
-:- meta_predicate(enforce_mode(0,+)).
+:- meta_predicate(enforce_mode(0,+,+)).
 :- meta_predicate(nonvar_det(0)).
 
 
@@ -147,13 +148,11 @@ call_semidet(Goal):-
   ).
 
 
-enforce_mode(Goal1, Declaration):-
-  strip_module(Goal1, _Module, Goal2),
-  Goal2 =.. [_Pred|Args],
+enforce_mode(Goal, Args, Declaration):-
   member(Instantiation-Mode, Declaration),
   args_instantiation(Args, Instantiation), !,
-  call_mode(Mode, Goal1).
-enforce_mode(Goal, _Declaration):-
+  call_mode(Mode, Goal).
+enforce_mode(Goal, _, _):-
   call_mode(_UnknownMode, Goal).
 
 

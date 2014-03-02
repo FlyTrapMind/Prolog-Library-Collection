@@ -15,6 +15,17 @@
 
 /** <module> RDF Dataset
 
+# RDF 1.1
+
+An *|RDF dataset|* is a collection of RDF graphs.
+All but one of these graphs have an associated IRI or blank node.
+They are called *|named graphs|*,
+ and the IRI or blank node is called the *|graph name|*.
+The remaining graph does not have an associated IRI,
+ and is called the *|default graph|* of the RDF dataset.
+
+# SPARQL 1.1
+
 The RDF data model expresses information as graphs
  consisting of triples with subject, predicate and object.
 Many RDF data stores hold multiple RDF graphs

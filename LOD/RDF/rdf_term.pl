@@ -1,6 +1,11 @@
 :- module(
   rdf_term,
   [
+    rdf_object/2, % ?Graph:atom
+                  % ?Objects:oneof([bnode,literal,uri])
+    rdf_predicate/2, % ?Graph:atom
+                     % ?Predicate:uri
+
     rdf_bnode/2, % ?Graph:atom
                  % ?BNode:bnode
     rdf_iri/2, % ?Graph:atom
@@ -13,12 +18,8 @@
                 % ?RDF_Name:oneof([literal,uri])
     rdf_node/2, % ?Graph:atom
                 % ?Node:or([bnode,uri,literal])
-    rdf_object/2, % ?Graph:atom
-                  % ?Objects:oneof([bnode,literal,uri])
     rdf_po_pairs/2, % +Resource:uri
                     % -PredicateObjectPairs:list(pair)
-    rdf_predicate/2, % ?Graph:atom
-                     % ?Predicate:uri
     rdf_predicates/2, % +Graph:atom
                       % -Predicates:ordset(uri)
     rdf_shared_po_pairs/5, % +X_PO_Pairs:ordset(list),
@@ -42,10 +43,86 @@
 
 /** <module> RDF Term
 
-RDF triples consist of three terms:
-  * _Subject_, which is an RDF URI reference or a blank node
-  * _Predicate_, which is an RDF URI reference
-  * _Object_, which is an RDF URI reference, a literal or a blank node
+## Source
+
+## Vocabulary
+
+
+## Triple: Pragmatics
+
+
+
+--
+
+@author Wouter Beek
+@see KlyneCarrollMcbride2014
+     RDF 1.1 Concepts and Abstract Syntax
+     http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/
+@version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/02
+*/
+
+:- rdf_meta(rdf_object(?,r)).
+:- rdf_meta(rdf_predicate(?,r)).
+:- rdf_meta(rdf_subject(?,r)).
+
+:- use_module(library(semweb/rdf_db)).
+:- use_module(programming(prolog_mode)).
+
+
+
+%! rdf_subject(+Graph:atom, +Subject:or([bnode,iri])) is semidet.
+%! rdf_subject(+Graph:atom, -Subject:or([bnode,iri])) is nondet.
+%! rdf_subject(-Graph:atom, +Subject:or([bnode,iri])) is nondet.
+%! rdf_subject(-Graph:atom, -Subject:or([bnode,iri])) is nondet.
+%! rdf_predicate(+Graph:atom, +Predicate:iri) is semidet.
+%! rdf_predicate(+Graph:atom, -Predicate:iri) is nondet.
+%! rdf_predicate(-Graph:atom, +Predicate:iri) is nondet.
+%! rdf_predicate(-Graph:atom, -Predicate:iri) is nondet.
+%! rdf_object(+Graph:atom, +Object:or([bnode,iri,literal])) is semidet.
+%! rdf_object(+Graph:atom, -Object:or([bnode,iri,literal])) is nondet.
+%! rdf_object(-Graph:atom, +Object:or([bnode,iri,literal])) is nondet.
+%! rdf_object(-Graph:atom, -Object:or([bnode,iri,literal])) is nondet.
+% Triples consist of the following kinds of terms:
+%   * _Subject_, which is an RDF URI reference or a blank node
+%   * _Predicate_, which is an RDF URI reference
+%   * _Object_, which is an RDF URI reference, a literal or a blank node
+%
+% Terms can therefore be named by
+%  the position in which they occur in a triple.
+%
+% Whether a term is either of these three is _relative_
+%  to a given triple.
+%
+% These predicates check whether a term occurs in a graph;
+%  relate terms to graphs and vice versa,
+%  and generate the terms in a graphs
+%  and the graphs in which a term occurs.
+
+rdf_subject(G, S):-
+  enforce_mode(
+    rdf(S, P, O, G),
+    [S,G],
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
+
+rdf_predicate(G, P):-
+  rdf(_, P, _, G).
+  enforce_mode(
+    rdf(_, P, _, G),
+    [P, G]
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
+
+rdf_object(G, O):-
+  enforce_mode(
+    rdf(_, _, O, G),
+    [O,G],
+    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  ).
+
+
+
+/*
 
 ## Blank node
 
@@ -112,30 +189,19 @@ would be equivalent if derefenced, the use of %-escaped characters
 in RDF URI references is strongly discouraged.
 
 See also the URI equivalence issue of the Technical Architecture Group [TAG].
-
-@author Wouter Beek
-@see KlyneCarrollMcBride2014
-     RDF 1.1 Concepts and Abstract Syntax
-     http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/
-@version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/02
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(programming(prolog_mode)).
 
 :- rdf_meta(rdf_bnode(?,r)).
 :- rdf_meta(rdf_is_object(r)).
 :- rdf_meta(rdf_is_predicate(r)).
 :- rdf_meta(rdf_is_subject(r)).
 :- rdf_meta(rdf_name(?,r)).
-:- rdf_meta(rdf_object(?,r)).
 :- rdf_meta(rdf_po_pairs(r,-)).
-:- rdf_meta(rdf_predicate(?,r)).
-:- rdf_meta(rdf_subject(?,r)).
 
 
 
@@ -231,33 +297,12 @@ rdf_node(Graph, Node):-
 rdf_node(Graph, Node):-
   rdf_object(Graph, Node).
 
-rdf_object(G, O):-
-  rdf(_, _, O, G).
-  %enforce_mode(
-  %  rdf(_S, _P, O, G),
-  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  %).
-
 rdf_po_pairs(Resource, PO_Pairs):-
   must_be(iri, Resource), !,
   setoff(
     [P,O],
     rdf(Resource, P, O, _Graph),
     PO_Pairs
-  ).
-
-rdf_predicate(G, P):-
-  rdf(_, P, _, G).
-  %enforce_mode(
-  %  rdf(_S, P, _O, G),
-  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  %).
-
-rdf_predicates(Graph, Predicates):-
-  setoff(
-    Predicate,
-    rdf_predicate(Graph, Predicate),
-    Predicates
   ).
 
 %! rdf_shared_po_pairs(
@@ -308,13 +353,6 @@ rdf_shared_p_triples(
   ),
   ord_subtract(X_PO_Pairs, Shared_P_Triples, X_Exclusive_P_Pairs),
   ord_subtract(Y_PO_Pairs, Shared_P_Triples, Y_Exclusive_P_Pairs).
-
-rdf_subject(G, S):-
-  rdf(S, _, _, G).
-  %enforce_mode(
-  %  rdf(S, _P, _O, G),
-  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  %).
 
 %! rdf_term(?Graph:graph, ?Term:uri) is nondet.
 % Pairs of graphs and terms that occur in that graph.
