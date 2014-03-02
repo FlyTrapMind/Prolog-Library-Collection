@@ -57,18 +57,12 @@ ckan_ap(Extra_AP_Stages):-
   % Do not fail if the file is not there.
   (
     absolute_file_name(
-      data(ap),
-      File1,
-      [access(read),file_errors(fail),file_type(turtle)]
-    ),
-    % @tbd Hasn't this already been loaded anyway?
-    absolute_file_name(
-      data(datahub_io),
-      File2,
-      [access(read),file_errors(fail),file_type(turtle)]
+      data(Site),
+      TmpFile,
+      [access(read),extensions([tmp]),file_errors(fail)]
     )
   ->
-    maplist(rdf_load([format(turtle)]), [ap,datahub_io], [File1,File2])
+    rdf_load([format(turtle)], ap, TmpFile)
   ;
     true
   ),
@@ -144,7 +138,7 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
     AP,
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
-      ckan:ap_stage([args([1024]),name('SizeFilter')], file_size_filter),
+      ckan_ap:ap_stage([args([500]),name('SizeFilter')], file_size_filter),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
       ckan_ap:ap_stage([name('FileSize')], file_size)
     | Extra_AP_Stages]
