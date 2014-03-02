@@ -253,7 +253,7 @@ rdf_edge_color(O1, _G, _E, black):-
   option(colorscheme(none), O1, none), !.
 % The edge color is based on the predicate term.
 rdf_edge_color(O1, G, _FromV-P-_ToV, E_Color):-
-  rdf_vertex_color(O1, G, P, E_Color).
+  rdf_vertex_color(O1, G, P, E_Color), !.
 % If the edge color is not specified, then see whether its vertices
 % agree on their color.
 rdf_edge_color(O1, G, FromV-_P-ToV, E_Color):-

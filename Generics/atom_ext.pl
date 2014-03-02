@@ -284,8 +284,8 @@ split_atom_length(A, _, [A]).
 %
 % Notice that the order in which the strip atoms occur is significant.
 %
-% @arg Strips A list of strip atoms.
-% @arg In The unstrippped atom
+% @arg Strips A list of atoms that will be stripped.
+% @arg In The non-strippped atom
 % @arg Out The stripped atom.
 
 strip_atom(Strips, A1, A3):-

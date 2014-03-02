@@ -40,7 +40,7 @@
   ]
 ).
 
-/** <module> RDF_TERM
+/** <module> RDF Term
 
 RDF triples consist of three terms:
   * _Subject_, which is an RDF URI reference or a blank node
@@ -114,7 +114,9 @@ in RDF URI references is strongly discouraged.
 See also the URI equivalence issue of the Technical Architecture Group [TAG].
 
 @author Wouter Beek
-@see KlyneCarroll2004 http://www.w3.org/TR/rdf-concepts/#dfn-URI-reference
+@see KlyneCarrollMcBride2014
+     RDF 1.1 Concepts and Abstract Syntax
+     http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/
 @version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/02
 */
 

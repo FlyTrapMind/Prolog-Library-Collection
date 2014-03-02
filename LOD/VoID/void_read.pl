@@ -31,21 +31,23 @@ as it appears in the VoID specification.
 
 
 %! rdf_link(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?Object:oneof([bnode,literal,uri]),
-%!   ?FromGraph:atom,
-%!   ?ToGraph:atom
+%!   ?Term1:or([bnode,iri,literal]),
+%!   ?Graph1:atom,
+%!   ?Predicate:iri,
+%!   ?Term2:or([bnode,iri,literal]),
+%!   ?Graph2:atom
 %! ) is nondet.
-% An RDF link is an RDF triple whose subject and object are described in
-% different datasets.
+% An RDF link is an RDF triple whose subject and object
+%  are described in different datasets.
+%
+% @tbd Take literal2bnode map into account?
 
-rdf_link(S, P, O, FromG, ToG):-
-  rdf(S, P1, O1, FromG),
-  \+ ((P1 == P, O1 == O)),
-  rdf(O, P2, O2, ToG),
-  \+ ((P2 == P, O2 == O)),
-  FromG \== ToG.
+rdf_link(T1, G1, P, T2, G2):-
+  rdf(T1, P, T2),
+  rdf_term(G1, T1),
+  rdf_term(G2, T2),
+  G1 \== G2.
+
 
 %! rdf_linkset(+Triples:list(compound), ?FromGraph:atom, ?ToGraph:atom) is semidet.
 %! rdf_linkset(-Triples:list(compound), +FromGraph:atom, +ToGraph:atom) is det

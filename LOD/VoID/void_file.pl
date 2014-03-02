@@ -46,7 +46,7 @@ VoiD covers four areas of metadata:
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
-
+:- initialization(void_init).
 
 %! void_init is det.
 % Loads the VoID vocabulary.
@@ -56,19 +56,18 @@ void_init:-
   absolute_file_name(void('VoID'), File, [access(read),file_type(turtle)]),
   rdf_load([file_type(turtle)], Graph, File).
 
-%! void_load_dataset(
-%!   +DescriptionFile:atom,
-%!   +DescriptionGraph:atom,
-%!   +Dataset:iri
-%! ) is det.
-% @arg DescriptionFile The atomic name of the file that contains the
-%        dataset description.
-% @arg DescriptionGraph The atomic name of the RDF graph that contains
-%        the description.
+
+
+%! void_load_dataset(+File:atom, +Graph:atom, +Dataset:iri) is det.
+% @arg File The atomic name of the file that contains the
+%      dataset description.
+% @arg Graph The atomic name of the RDF graph that contains
+%      the description.
 % @arg Dataset An IRI denoting a dataset.
 
-void_load_dataset(DD_F, DD_G, DS):-
-  % Every dataset must have a set datadump property.
+void_load_dataset(File, Graph, Dataset):-
+  % Every dataset has exactly one datadump property.
+  % @tbd Is this assumption correct?
   once(rdf(DS, void:dataDump, Dump)),
 
   % @tbd Extend this to other cases: absolute files, generic relative files,
@@ -86,48 +85,35 @@ void_load_dataset(DD_F, DD_G, DS):-
   %  dataset graphs.
   void_dataset_add(DD_G, DS, DS_F, DS_G).
 
-%! void_load_library(+File:atom, +Graph:atom) is det.
+
+%! void_load_library(+File:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
-% Also calculates VoID statistics for all datasets and asserts those
-%  to the VoID file.
 %
-% @arg File The atomic name of an absolute file path of a VoID file.
-% @arg Graph The atomic name of the VoID graph.
+% Also calculates VoID statistics for all datasets and asserts those
+%  in the VoID file.
+%
+% @arg File The atomic name of the absolute file path of a VoID file.
 
 % The RDF graph already exists.
-void_load_library(_F, G):-
-  rdf_graph(G), !,
-  debug(
-    void_file,
-    'Cannot load VoID file since RDF graph ~w already exists.',
-    [G]
-  ).
-void_load_library(F, G):-
-  % Make sure the VoID file exists and is readable.
-  access_file(F, read),
-  nonvar(G),
-
-  % Clear the internal database.
-  catch(void_dataset_remove(G), _, true),
-
-  % Make sure the VoID vocabulary is loaded.
-  void_init,
-
-  % Load the VoID file into an RDF graph with the given name.
-  rdf_load([], G, F),
-  debug(void_file, 'VoID file ~w loaded into graph ~w.', [F,G]),
-
-  % All datasets are loaded in multiple threads.
+void_load_library(File):-
+  rdf_graph_property(Graph, source(File(G))), !,
+  print_message(warning, 'Cannot load VoID file. File already loaded.').
+void_load_library(File):-
+  rdf_load([], Graph, File),
+  
+  % Each dataset is loaded in a separate thread.
   forall_thread(
     (
       % This includes VoID linksets, according to the VoID vocabulary.
-      rdfs_individual_of(DS, void:'Dataset'),
-      format(atom(Msg), 'Loading dataset ~w.', [DS])
+      % @tbd Add graph argument.
+      rdfs_individual_of(Dataset, void:'Dataset'),
+      format(atom(Msg), 'Loading dataset ~w.', [Dataset])
     ),
-    void_load_dataset(F, G, DS),
+    void_load_dataset(File, Graph, Dataset),
     void_file,
     Msg
   ).
+
 
 %! void_save_library(+Graph:atom, ?File:atom) is det.
 % @tbd Add meta-data updates.
