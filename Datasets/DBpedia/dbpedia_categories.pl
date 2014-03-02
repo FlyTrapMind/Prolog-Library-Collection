@@ -35,12 +35,17 @@ DBpedia publishes the following three kind of files about categories:
 
 % Load the hierarchy.
 dbpedia_load_categories:-
+  url_to_file_name(
+    'http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2',
+    File1
+  ),
+  directory_file_path(Directory, _, File1),
   absolute_file_name(
-    data(skos_categories_en),
-    File,
-    [access(read),file_errors(fail),file_type(turtle)]
+    skos_categories_en,
+    File2,
+    [access(read),file_errors(fail),file_type(turtle),relative_to(Directory)]
   ), !,
-  rdf_load([format(turtle)], dbpedia_categories, File).
+  rdf_load([format(turtle)], dbpedia_categories, File2).
 % First download the file from DBpedia, then load the hierarchy.
 dbpedia_load_categories:-
   download_to_file(

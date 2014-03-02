@@ -18,6 +18,7 @@ Takes axioms, rules, and the RDF index and performs materializations.
 @version 2013/09-2013/10, 2013/12-2014/01
 */
 
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_collection)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).

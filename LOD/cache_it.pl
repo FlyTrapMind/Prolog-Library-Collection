@@ -254,9 +254,8 @@ cache_it2(Mode, Graph, Goal, [H|T], Vs, VSol, Props, PropsSol):-
   message('[FAILED] ~w', [H]),
   cache_it2(Mode, Graph, Goal, T, Vs, VSol, Props, PropsSol).
 
-
 message(Format, Args):-
-  debug(cache_it, Format, Args),
+  format(user_output, Format, Args),
   nl(user_output),
   flush_output(user_output).
 

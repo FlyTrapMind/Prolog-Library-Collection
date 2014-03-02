@@ -264,6 +264,7 @@ rdf_is_subject(Subject):-
 rdf_name(G, N):-
   enforce_mode(
     '_rdf_name'(G, N),
+    [G,N],
     [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
   ).
 '_rdf_name'(G, S):-
