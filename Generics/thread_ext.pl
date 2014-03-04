@@ -67,14 +67,15 @@ Allows one to monitor running threads that register.
 % The threads are joined afterwards.
 % The status is send to the debug stream if `Topic` is switched on.
 
-forall_thread(Antecedent, Consequent, Topic, Msg):-
+forall_thread(Antecedent, Consequent1, Argumentss, Topic, Msg):-
+  copy_term(Consequent1, Consequent2),
   findall(
-    ThreadId,
+    ThreadId-Arguments,
     (
       call(Antecedent),
       thread_create(
         (
-          call(Consequent),
+          call(Consequent1),
           thread_at_exit(forall_thread_end(Topic, Msg))
         ),
         ThreadId,
