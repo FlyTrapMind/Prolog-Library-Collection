@@ -62,7 +62,11 @@ This loads the code documentation server (using swipl package plDoc).
 The documentation front-end is accessed using the `documentation` command
 in the Web console.
 
-`debug.pl`
+~~~{.sh}
+[1]   swipl -s debug_standalone.pl
+~~~
+
+Note: `debug.pl` is used for loading PGC from within another project.
 
 ### User
 
@@ -94,9 +98,6 @@ Currently contains the following subdirectories:
 4. *Wordnet* The Prolog version of the _Wordnet_ lexical corpus.
 
 ### `debug`
-
-Currently the contents of the =db= RDF graph are written in RDF/XML
-serialization format at the end of each PraSem session.
 
 ### `log`
 

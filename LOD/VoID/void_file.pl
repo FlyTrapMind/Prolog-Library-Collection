@@ -34,6 +34,7 @@ VoiD covers four areas of metadata:
 */
 
 :- use_module(generics(thread_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
@@ -66,6 +67,7 @@ void_init:-
 void_graph_rdf_dataset(VoidGraph, rdf_dataset(VoidGraph, VoidDatasets)):-
   % Typecheck.
   rdf_graph(VoidGraph),
+  
   setoff(
     VoidDataset,
     rdf(VoidDataset, rdf:type, void:'Dataset', VoidGraph),
