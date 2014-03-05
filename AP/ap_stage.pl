@@ -169,30 +169,6 @@ ap_stage_from_arg(O1, _, FromDir, FromArg):-
 % No "from" directory.
 ap_stage_from_arg(_, AP_Stage, _NoFromDir, _NoFromArg):-
   rdf_datatype(AP_Stage, ap:stage, xsd:integer, -1, ap), !.
-/*
-% For the input stage we allow the file to be absent.
-% The user may be asked to provide a file location.
-ap_stage_from_arg(O1, 0, FromDir, FromDir):-
-  option(from(_FromDir,FromFileName,FromFileType), O1),
-  nonvar(FromFileName),
-  nonvar(FromFileType), !,
-  file_name_type(FromFileName, FromFileType, RelativeFile),
-  user_input_directory(RelativeFile, AbsoluteFile),
-
-  % Now that we have the location of the input file,
-  % we copy it into project folder `Data/Input`.
-  absolute_file_name(
-    FromFileName,
-    FromArg,
-    [
-      access(write),
-      file_errors(fail),
-      file_type(FromFileType),
-      relative_to(FromDir)
-    ]
-  ),
-  safe_copy_file(AbsoluteFile, FromArg).
-*/
 % Read from the previous stage directory.
 ap_stage_from_arg(_, _, FromDir, FromDir):-
   access_file(FromDir, read).

@@ -2,7 +2,9 @@
   ckan_ap,
   [
     ckan_ap/0,
-    ckan_ap/1 % +Extra_AP_Stages:list(compound)
+    ckan_ap/1, % +ExtraStages:list(compound)
+    ckan_ap/2 % +File:atom
+              % +ExtraStages:list(compound)
   ]
 ).
 
@@ -11,7 +13,7 @@
 Automated processes for CKAN data.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
 :- use_module(ap(ap)).
@@ -30,6 +32,7 @@ Automated processes for CKAN data.
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_lit_read)).
@@ -43,43 +46,55 @@ Automated processes for CKAN data.
 % Run the default stages of the CKAN AP process.
 
 ckan_ap:-
-  ckan_ap([]).
+  ckan_ap(_, []).
 
-
-%! ckan_ap(+Extra_AP_Stages:list(compound)) is det.
+%! ckan_ap(+ExtraStages:list(compound)) is det.
 % Add extra stages to the CKAN AP process.
 
-ckan_ap(Extra_AP_Stages):-
-  % Scrape a CKAN site.
-  ckan_scrape(Site),
+ckan_ap(ExtraStages):-
+  ckan_ap(_, ExtraStages).
 
+%! ckan_ap(+File:atom, +ExtraStages:list(compound)) is det.
+% Load the CKAN data from the given file.
+
+ckan_ap(File, ExtraStages):-
+  (
+    access_file(File, read)
+  ->
+    file_name(File, _, Graph, _),
+    rdf_load([], Graph, File)
+  ;
+    % Scrape a CKAN site.
+    ckan_scrape(Graph)
+  ),
+  
   % Load the results of resources that were already processed.
   % Do not fail if the file is not there.
-  (
-    absolute_file_name(
-      data(Site),
-      TmpFile,
-      [access(read),extensions([tmp]),file_errors(fail)]
-    )
-  ->
-    rdf_load([format(turtle)], ap, TmpFile)
-  ;
-    true
-  ),
-
+  %(
+  %  absolute_file_name(
+  %    data(Graph),
+  %    TmpFile,
+  %    [access(read),extensions([tmp]),file_errors(fail)]
+  %  )
+  %->
+  %  rdf_load([format(turtle)], ap, TmpFile)
+  %;
+  %  true
+  %),
+  
   % Run AP processes for CKAN site.
-  thread_create(ckan_ap_site(Site, Extra_AP_Stages), _, []).
+  thread_create(ckan_ap_site(Graph, ExtraStages), _, []).
 
 
-%! ckan_ap_site(+Site:atom, +Extra_AP_Stages:list(compound)) is det.
-% @arg Site The atomic name of a CKAN site.
+%! ckan_ap_site(+Graph:atom, +ExtraStages:list(compound)) is det.
+% @arg Graph The atomic name of a CKAN site.
 % @arg AP_Stages A list of compound terms that describe AP stages.
 
-ckan_ap_site(Site, Extra_AP_Stages):-
+ckan_ap_site(Graph, ExtraStages):-
   % Collect datasets.
   % Note that sorting by size makes no sense,
   % since the semantics of the values of `ckan:size` is unknown.
-  take_lod_sample(Site, Resources1),
+  take_lod_sample(Graph, Resources1),
   
   % Filter resources that have already been processed previously.
   exclude(already_processed, Resources1, Resources2),
@@ -89,20 +104,20 @@ ckan_ap_site(Site, Extra_AP_Stages):-
   debug(ckan, 'About to process ~:d resources.', [NumberOfResources]),
 
   create_ap_collection(AP_Collection),
-  rdfs_assert_label(AP_Collection, Site, ap),
-  maplist(ckan_ap_site(AP_Collection, Extra_AP_Stages), Resources2).
+  rdfs_assert_label(AP_Collection, Graph, ap),
+  maplist(ckan_ap_site(AP_Collection, ExtraStages), Resources2).
 
 
-take_lod_sample(Site, Resources):-
+take_lod_sample(Graph, Resources):-
   setoff(
     Resource,
     (
       rdfs_individual_of(Resource, ckan:'Resource'),
       (
-        rdf_datatype(Resource, ckan:format, xsd:string, Format, Site),
+        rdf_datatype(Resource, ckan:format, xsd:string, Format, Graph),
         rdf_format(Format)
       ;
-        rdf_datatype(Resource, ckan:mimetype, xsd:string, Mimetype, Site),
+        rdf_datatype(Resource, ckan:mimetype, xsd:string, Mimetype, Graph),
         rdf_mimetype(Mimetype)
       )
     ),
@@ -115,15 +130,15 @@ already_processed(Resource):-
 
 %! ckan_ap_site(
 %!   +AP_Collection:iri,
-%!   +Extra_AP_Stages:list(compound),
+%!   +ExtraStages:list(compound),
 %!   +Resource:iri
 %! ) is det.
 % @arg AP_Collection The atomic name of a CKAN site as its `rdfs:label`.
 % @arg AP_Stages A list of compound terms that describe AP stages.
 % @arg Resource An IRI denoting a CKAN resource.
 
-ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
-  once(rdfs_label(AP_Collection, Site)),
+ckan_ap_site(AP_Collection, ExtraStages, Resource):-
+  once(rdfs_label(AP_Collection, Graph)),
   once(rdf_datatype(Resource, ckan:url, xsd:string, URL, _)),
   url_to_directory_name(URL, Dir),
   Alias = URL,
@@ -132,16 +147,15 @@ ckan_ap_site(AP_Collection, Extra_AP_Stages, Resource):-
   create_ap(AP_Collection, AP),
   rdf_assert(AP, ap:resource, Resource, ap),
   rdf_assert_datatype(AP, ap:alias, xsd:string, Alias, ap),
-  rdf_assert_datatype(AP, ap:graph, xsd:string, Site, ap),
+  rdf_assert_datatype(AP, ap:graph, xsd:string, Graph, ap),
   ap(
-    [leave_trail(true),reset(true)],
+    [leave_trail(false),reset(true)],
     AP,
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
-      ckan_ap:ap_stage([args([500]),name('SizeFilter')], file_size_filter),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
       ckan_ap:ap_stage([name('FileSize')], file_size)
-    | Extra_AP_Stages]
+    | ExtraStages]
   ).
 
 

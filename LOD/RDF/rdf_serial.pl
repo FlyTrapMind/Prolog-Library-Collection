@@ -337,6 +337,10 @@ rdf_save(O1, rdf_xml, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
   rdf_save(File, O2).
 % Save to Triples (binary storage format).
+rdf_save(O1, ntriples, Graph, File):- !,
+  merge_options([graph(Graph)], O1, O2),
+  rdf_save_turtle(File, O2).
+% Save to Triples (binary storage format).
 rdf_save(_, triples, Graph, File):- !,
   rdf_save_db(File, Graph).
 % Save to Turtle.

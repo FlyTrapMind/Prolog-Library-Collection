@@ -12,5 +12,6 @@ run_debug_standalone:-
   source_file(run_debug_standalone, ThisFile),
   file_directory_name(ThisFile, ThisDir),
   assert(user:file_search_path(project, ThisDir)),
+  assert(user:file_search_path(data, project('Data'))),
   ensure_loaded(debug).
 

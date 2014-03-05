@@ -43,7 +43,7 @@ rdf_html_term(_, Graph1) -->
 rdf_html_term(_, RDF_Term) -->
   {
     rdf_is_resource(RDF_Term),
-    rdfs_individual_of(RDF_Term, rdf:'List'), gtrace
+    rdfs_individual_of(RDF_Term, rdf:'List')
   }, !,
   rdf_list(RDF_Term).
 % Blank node.
