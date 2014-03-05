@@ -476,7 +476,8 @@ relative_file_path(Path, RelativeTo, RelativePath):-
   uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
   directory_subdirectories(RelativeTo, RelativeToSubs1),
   length(Postfix, Uplength),
-  append(RelativeToSubs2, Postfix, RelativeToSubs1),
+  % Actively close the choicepoint on `Postfix` instantiation.
+  once(append(RelativeToSubs2, Postfix, RelativeToSubs1)),
   append(RelativeToSubs2, RelativePathSubs2, PathSubs),
   directory_subdirectories(Path, PathSubs).
 

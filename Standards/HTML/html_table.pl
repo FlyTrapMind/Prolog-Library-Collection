@@ -72,7 +72,8 @@ html_table(O1, Caption, Cell, Rows) -->
     option(header_column(HasHeaderColumn), O2, false),
     option(header_row(HasHeaderRow), O2, false),
     option(highlighted_row(HighlightedRow), O2, fail),
-    option(indexed(IsIndexed), O2, false)
+    option(indexed(IsIndexed), O2, false),
+    gtrace
   },
   html(
     table(class=['pure-table','pure-table-bordered'], [
@@ -142,8 +143,12 @@ html_table_cells(_, _, []) --> [].
 % Generated an the content for an HTML cell (both header and data).
 
 :- meta_predicate(html_table_cell(+,3,+,?,?)).
+html_table_cell(data, Cell, O1-Element) --> !,
+  html(td(O1, \dcg_call(Cell, Element))).
 html_table_cell(data, Cell, Element) -->
   html(td(\dcg_call(Cell, Element))).
+html_table_cell(header, Cell, O1-Element) --> !,
+  html(th(O1, \dcg_call(Cell, Element))).
 html_table_cell(header, Cell, Element) -->
   html(th(\dcg_call(Cell, Element))).
 

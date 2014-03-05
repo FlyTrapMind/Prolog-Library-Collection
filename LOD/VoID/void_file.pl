@@ -44,11 +44,8 @@ VoiD covers four areas of metadata:
 :- use_module(rdf(rdf_dataset)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(void(void_db)).
+:- use_module(void(void_db)). % XML namespace.
 :- use_module(void(void_stat)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
 :- initialization(void_init).
 
@@ -94,9 +91,6 @@ void_load(File, RdfDataset):-
   void_graph_rdf_dataset(VoidGraph, RdfDataset),
   RdfDataset = rdf_dataset(VoidGraph, VoidDatasets),
   
-gtrace,
-  maplist(void_load_dataset(Directory), VoidDatasets).
-/* THREADED VERSION CANNOT BE DEBUGGED.
   % Each dataset is loaded in a separate thread.
   forall_thread(
     (
@@ -107,14 +101,13 @@ gtrace,
     void_file,
     Msg
   ).
-*/
 
 
 %! void_load_dataset(+Directory:atom, +VoidDataset:iri) is det.
 
 void_load_dataset(Directory, VoidDataset):-
   % Every dataset has exactly one datadump property.
-  % @tbd Is this assumption correct?
+  % @tbd Is this assumption correct?l
   once(rdf(VoidDataset, void:dataDump, DatadumpLocation)),
   (
     is_of_type(iri, DatadumpLocation)

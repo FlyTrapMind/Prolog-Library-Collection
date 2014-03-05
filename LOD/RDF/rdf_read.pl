@@ -31,6 +31,8 @@ literals.
          2014/01
 */
 
+:- rdf_meta(rdf(+,r,r,o,?)).
+
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_graph)).
@@ -59,9 +61,8 @@ literals.
 %     `no_inst` means that variable graphs are not instantiated,
 %     but use rdf/3 instead.
 
-:- rdf_meta(rdf2(+,r,r,o,?)).
 rdf(O1, S, P, O, Graph):-
-  var(Graph),
+  var(Graph), !,
   option(graph_mode(Mode), O1, normal),
   (
     Mode == no_index

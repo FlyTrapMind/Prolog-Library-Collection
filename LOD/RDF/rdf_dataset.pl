@@ -1,14 +1,15 @@
 :- module(
   rdf_dataset,
   [
+    rdf_dataset/1, % ?RdfDataset:compound
     rdf_dataset/3, % ?DefaultGraph:atom
                    % ?NamedGraphs:list(iri)
-                   % ?Dataset:compound
-    rdf_default_graph/2, % ?Dataset:compound
+                   % ?RdfDataset:compound
+    rdf_default_graph/2, % ?RdfDataset:compound
                          % ?DefaultGraph:atom
-    rdf_graph/2, % ?Dataset:compound
+    rdf_graph/2, % ?RdfDataset:compound
                  % ?Graph:atom
-    rdf_named_graph/2 % ?Dataset:compound
+    rdf_named_graph/2 % ?RdfDataset:compound
                       % ?NamedGraph:iri
   ]
 ).
@@ -166,46 +167,70 @@ A query does not need to involve matching the default graph;
 @version 2013/09-2013/10, 2014/03
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(library(lists)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_read)).
+:- use_module(void(void_db)). % XML namespace.
 
 
 
-%! rdf_create_dataset(
+%! rdf_dataset(+RdfDataset:compound) is semidet.
+%! rdf_dataset(-RdfDataset:compound) is nondet.
+
+rdf_dataset(RdfDataset):-
+  rdf([graph_mode(no_index)], _, rdf:type, void:'Dataset', DefaultGraph),
+  setoff(
+    NamedGraph,
+    rdf(
+      [graph_mode(no_index)],
+      NamedGraph,
+      rdf:type,
+      void:'Dataset',
+      DefaultGraph
+    ),
+    NamedGraphs
+  ),
+  rdf_dataset(DefaultGraph, NamedGraphs, RdfDataset).
+
+
+%! rdf_dataset(
 %!   +DefaultGraph:atom,
 %!   +NamedGraphs:list(pair(iri,atom)),
-%!   +Dataset:compound
+%!   +RdfDataset:compound
 %! ) is semidet.
-%! rdf_create_dataset(
+%! rdf_dataset(
 %!   +DefaultGraph:atom,
 %!   +NamedGraphs:list(pair(iri,atom)),
-%!   -Dataset:compound
+%!   -RdfDataset:compound
 %! ) is det.
-%! rdf_create_dataset(
+%! rdf_dataset(
 %!   -DefaultGraph:atom,
 %!   -NamedGraphs:list(pair(iri,atom)),
-%!   +Dataset:compound
+%!   +RdfDataset:compound
 %! ) is det.
 
 rdf_dataset(DefaultGraph, NamedGraphs, rdf_dataset(DefaultGraph,NamedGraphs)).
 
 
-%! rdf_default_graph(+Dataset:compound, +DefaultGraph:atom) is semidet.
-%! rdf_default_graph(+Dataset:compound, -DefaultGraph:atom) is det.
+%! rdf_default_graph(+RdfDataset:compound, +DefaultGraph:atom) is semidet.
+%! rdf_default_graph(+RdfDataset:compound, -DefaultGraph:atom) is det.
 
 rdf_default_graph(rdf_dataset(DefaultGraph,_), DefaultGraph).
 
 
-%! rdf_graph(+Dataset:compound, +Graph:atom) is semidet.
-%! rdf_graph(+Dataset:compound, -Graph:atom) is nondet.
+%! rdf_graph(+RdfDataset:compound, +Graph:atom) is semidet.
+%! rdf_graph(+RdfDataset:compound, -Graph:atom) is nondet.
 
-rdf_graph(Dataset, DefaultGraph):-
-  rdf_default_graph(Dataset, DefaultGraph).
-rdf_graph(Dataset, NamedGraph):-
-  rdf_named_graph(Dataset, NamedGraph).
+rdf_graph(RdfDataset, DefaultGraph):-
+  rdf_default_graph(RdfDataset, DefaultGraph).
+rdf_graph(RdfDataset, NamedGraph):-
+  rdf_named_graph(RdfDataset, NamedGraph).
 
 
-%! rdf_named_graph(+Dataset:compound, +NamedGraph:atom) is semidet.
-%! rdf_named_graph(+Dataset:compound, -NamedGraph:atom) is nondet.
+%! rdf_named_graph(+RdfDataset:compound, +NamedGraph:atom) is semidet.
+%! rdf_named_graph(+RdfDataset:compound, -NamedGraph:atom) is nondet.
 
 rdf_named_graph(rdf_dataset(_,NamedGraphs), NamedGraph):-
   member(NamedGraph, NamedGraphs).
+
