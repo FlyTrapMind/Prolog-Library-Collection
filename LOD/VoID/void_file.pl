@@ -93,7 +93,10 @@ void_load(File, RdfDataset):-
   file_to_directory(File, Directory),
   void_graph_rdf_dataset(VoidGraph, RdfDataset),
   RdfDataset = rdf_dataset(VoidGraph, VoidDatasets),
-
+  
+gtrace,
+  maplist(void_load_dataset(Directory), VoidDatasets).
+/* THREADED VERSION CANNOT BE DEBUGGED.
   % Each dataset is loaded in a separate thread.
   forall_thread(
     (
@@ -104,25 +107,18 @@ void_load(File, RdfDataset):-
     void_file,
     Msg
   ).
+*/
 
 
 %! void_load_dataset(+Directory:atom, +VoidDataset:iri) is det.
 
 void_load_dataset(Directory, VoidDataset):-
-  % DEB
-  use_module(library(trace/trace)),
-  use_module(library(pce_emacs)),
-  use_module(library(gui_tracer)),
-  guitracer,
-  gtrace, %DEB
-
   % Every dataset has exactly one datadump property.
   % @tbd Is this assumption correct?
   once(rdf(VoidDataset, void:dataDump, DatadumpLocation)),
   (
     is_of_type(iri, DatadumpLocation)
   ->
-
     % Store locally.
     download_to_file([], DatadumpLocation, DatadumpFile)
   ;
@@ -130,7 +126,7 @@ void_load_dataset(Directory, VoidDataset):-
   ->
     DatadumpFile = DatadumpLocation
   ;
-    append_directories(Directory, DatadumpLocation, DatadumpFile)
+    relative_file_path(DatadumpFile, Directory, DatadumpLocation)
   ),
 
   rdf_load([], VoidDataset, DatadumpFile).

@@ -72,7 +72,7 @@ legal_directory(Dir) -->
   legal_filepath_segments(L2),
   {
     expand_file_name('~', [PrefixPath]),
-    directory_to_subdirectories(PrefixPath, L1),
+    directory_subdirectories(PrefixPath, L1),
     append(L1, L2, L),
     subdirectories_to_directory(L, Dir)
   }.

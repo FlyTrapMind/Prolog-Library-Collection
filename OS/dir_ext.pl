@@ -17,8 +17,8 @@
     directory_files/3, % +Options:list(nvpair)
                        % +Directory:atom
                        % -Absolutes:list(atom)
-    directory_to_subdirectories/2, % +Directory:atom
-                                   % -Subdirectories:list(atom)
+    directory_subdirectories/2, % ?Directory:atom
+                                % ?Subdirectories:list(atom)
     file_to_directory/2, % +File:atom
                          % -Directory:atom
     link_directory_contents/2, % +FromDir:atom
@@ -66,8 +66,8 @@ Extensions for handling directories.
 %! append_directories(+Dir1:atom, +Dir2:atom, -Dir3:atom) is det.
 
 append_directories(Dir1, Dir2, Dir3):-
-  directory_to_subdirectories(Dir1, Subdirs1),
-  directory_to_subdirectories(Dir2, Subdirs2),
+  directory_subdirectories(Dir1, Subdirs1),
+  directory_subdirectories(Dir2, Subdirs2),
   append(Subdirs1, Subdirs2, Subdirs3),
   subdirectories_to_directory(Subdirs3, Dir3),
   create_directory(Dir3).
@@ -98,7 +98,7 @@ create_directory(Dir):-
 % The directory does not already exist, so create it.
 create_directory(Dir):-
   is_absolute_file_name(Dir), !,
-  directory_to_subdirectories(Dir, SubDirs),
+  directory_subdirectories(Dir, SubDirs),
   % Recursively assert all subpaths.
   % The root node is indicated by the empty atom.
   create_directory('', SubDirs).
@@ -232,7 +232,7 @@ delete_directory(O1, Dir):-
   ).
 % Non-file entries.
 delete_directory(_, X):-
-  directory_to_subdirectories(X, SubDirs),
+  directory_subdirectories(X, SubDirs),
   last(SubDirs, Last),
   memberchk(Last, ['.','..']), !.
 % Files.
@@ -329,6 +329,32 @@ directory_files(O1, Directory, Files4):-
     Files4 = Files3
   ).
 
+
+%! directory_subdirectories(
+%!   +Directory:atom,
+%!   +Subdirectories:list(atom)
+%! ) is semidet.
+%! directory_subdirectories(
+%!   +Directory:atom,
+%!   -Subdirectories:list(atom)
+%! ) is det.
+%! directory_subdirectories(
+%!   -Directory:atom,
+%!   +Subdirectories:list(atom)
+%! ) is det.
+
+directory_subdirectories(Dir, Subdirs1):-
+  (
+    nonvar(Dir),
+    \+ is_absolute_file_name(Dir)
+  ->
+    Subdirs2 = Subdirs1
+  ;
+    Subdirs2 = [''|Subdirs1]
+  ),
+  atomic_list_concat(Subdirs2, '/', Dir).
+
+
 has_file_type(FileTypes, _):-
   var(FileTypes), !.
 has_file_type(FileTypes, File):-
@@ -344,16 +370,6 @@ file_to_directory(Dir, Dir):-
   exists_directory(Dir), !.
 file_to_directory(File, Dir):-
   file_directory_name(File, Dir).
-
-
-%! directory_to_subdirectories(
-%!   +Directory:atom,
-%!   -Subdirectories:list(atom)
-%! ) is det.
-
-directory_to_subdirectories(Dir1, Subdirs):-
-  strip_atom(['/'], Dir1, Dir2),
-  atomic_list_concat(Subdirs, '/', Dir2). % split
 
 
 %! link_directory_contents(+FromDir:atom, +ToDir:atom) is det.

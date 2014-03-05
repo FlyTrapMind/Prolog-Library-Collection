@@ -57,6 +57,9 @@
                            % +ToFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
+    relative_file_path/3, % ?Path:atom
+                          % ?RelativeTo:atom
+                          % ?RelativePath:atom
     safe_copy_file/2, % +From:atom
                       % +To:atom
     safe_delete_file/1, % +File:atom
@@ -451,6 +454,37 @@ new_file(F1, F2):-
   file_name_extension(Base1, Ext, F1),
   new_atom(Base1, Base2),
   file_name_extension(Base2, Ext, F2).
+
+
+%! relative_file_path(
+%!   +Path:atom,
+%!   +RelativeTo:atom,
+%!   -RelativePath:atom
+%! ) is det.
+%! relative_file_path(
+%!   -Path:atom,
+%!   +RelativeTo:atom,
+%!   +RelativePath:atom
+%! ) is det.
+
+relative_file_path(Path, RelativeTo, RelativePath):-
+  maplist(nonvar, [Path,RelativeTo]), !,
+  relative_file_name(Path, RelativeTo, RelativePath).
+relative_file_path(Path, RelativeTo, RelativePath):-
+  maplist(nonvar, [RelativeTo,RelativePath]), !,
+  directory_subdirectories(RelativePath, RelativePathSubs1),
+  uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
+  directory_subdirectories(RelativeTo, RelativeToSubs1),
+  length(Postfix, Uplength),
+  append(RelativeToSubs2, Postfix, RelativeToSubs1),
+  append(RelativeToSubs2, RelativePathSubs2, PathSubs),
+  directory_subdirectories(Path, PathSubs).
+
+uplength(['..'|T1], N1, T2):- !,
+  uplength(T1, N2, T2),
+  N1 is N2 + 1.
+uplength(L, 0, L).
+
 
 safe_copy_file(From, To):-
   access_file(From, read),

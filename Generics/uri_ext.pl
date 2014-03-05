@@ -147,7 +147,7 @@ url_to_file_name(URI, File):-
   ),
 
   % Create the local directory.
-  directory_to_subdirectories(PathDir, PathDirComponents),
+  directory_subdirectories(PathDir, PathDirComponents),
   create_nested_directory(data([Scheme,Authority|PathDirComponents]), Dir),
 
   % Construct the local file name.
