@@ -97,25 +97,28 @@
 %  and the graphs in which a term occurs.
 
 rdf_subject(G, S):-
-  enforce_mode(
-    rdf(S, _, _, G),
-    [S,G],
-    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  ).
+  rdf(S, _, _, G).
+  %enforce_mode(
+  %  rdf(S, _, _, G),
+  %  [S,G],
+  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  %).
 
 rdf_predicate(G, P):-
-  enforce_mode(
-    rdf(_, P, _, G),
-    [P,G],
-    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  ).
+  rdf(_, P, _, G).
+  %enforce_mode(
+  %  rdf(_, P, _, G),
+  %  [P,G],
+  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  %).
 
 rdf_object(G, O):-
-  enforce_mode(
-    rdf(_, _, O, G),
-    [O,G],
-    [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
-  ).
+  rdf(_, _, O, G).
+  %enforce_mode(
+  %  rdf(_, _, O, G),
+  %  [O,G],
+  %  [['+','+']-semidet,['+','-']-nondet,['-','+']-nondet,['-','-']-nondet]
+  %).
 
 
 

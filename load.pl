@@ -32,7 +32,9 @@ load_pgc:-
     assert(user:project_name('PGC'))
   )),
   
-  assert(user:prolog_file_type(txt, 'text/plain')),
+  assert(user:prolog_file_type(html, 'text/html')),
+  assert(user:prolog_file_type(md,   'text/markdown')),
+  assert(user:prolog_file_type(txt,  'text/plain')),
   
   % Assert the various search paths.
   assert(user:file_search_path(ap,              pgc('AP'))),

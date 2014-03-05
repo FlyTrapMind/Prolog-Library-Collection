@@ -2,8 +2,9 @@
   void_file,
   [
     void_load/2, % +File:atom
-                 % -Dataset:compound
-    void_save/2 % +Graph:atom
+                 % -RdfDataset:compound
+    void_save/3 % +Options:list(nvpair)
+                % +RdfDataset:compound
                 % ?File:atom
   ]
 ).
@@ -33,14 +34,14 @@ VoiD covers four areas of metadata:
 @version 2013/03-2013/05, 2013/09-2013/11, 2014/03
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
-:- use_module(library(debug)).
-:- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
+:- use_module(os(dir_ext)).
+:- use_module(rdf(rdf_dataset)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(void(void_db)).
@@ -67,7 +68,7 @@ void_init:-
 void_graph_rdf_dataset(VoidGraph, rdf_dataset(VoidGraph, VoidDatasets)):-
   % Typecheck.
   rdf_graph(VoidGraph),
-  
+
   setoff(
     VoidDataset,
     rdf(VoidDataset, rdf:type, void:'Dataset', VoidGraph),
@@ -89,9 +90,10 @@ void_load(File, _):-
   print_message(warning, 'Cannot load VoID file. File already loaded.').
 void_load(File, RdfDataset):-
   rdf_load([], VoidGraph, File),
-  void_graph_rdf_dataset(VoidGraph, RdfDataset)),
+  file_to_directory(File, Directory),
+  void_graph_rdf_dataset(VoidGraph, RdfDataset),
   RdfDataset = rdf_dataset(VoidGraph, VoidDatasets),
-  
+
   % Each dataset is loaded in a separate thread.
   forall_thread(
     (
@@ -107,13 +109,20 @@ void_load(File, RdfDataset):-
 %! void_load_dataset(+Directory:atom, +VoidDataset:iri) is det.
 
 void_load_dataset(Directory, VoidDataset):-
+  % DEB
+  use_module(library(trace/trace)),
+  use_module(library(pce_emacs)),
+  use_module(library(gui_tracer)),
+  guitracer,
+  gtrace,
+
   % Every dataset has exactly one datadump property.
   % @tbd Is this assumption correct?
   once(rdf(VoidDataset, void:dataDump, DatadumpLocation)),
   (
-    has_type(iri, DatadumpLocation)
+    is_of_type(iri, DatadumpLocation)
   ->
-    
+
     % Store locally.
     download_to_file([], DatadumpLocation, DatadumpFile)
   ;
@@ -121,8 +130,9 @@ void_load_dataset(Directory, VoidDataset):-
   ->
     DatadumpFile = DatadumpLocation
   ;
-    relative_file_name(DatadumpLocation, Directory, DatadumpFile)
-  
+    append_directories(Directory, DatadumpLocation, DatadumpFile)
+  ),
+
   rdf_load([], VoidDataset, DatadumpFile).
 
 
@@ -132,15 +142,16 @@ void_save(O1, RdfDataset, File):-
   % First save all datasets that are described in the given VoID graph.
   forall_thread(
     (
-      void_dataset(G, _DS, DS_F, DS_G),
-      format(atom(Msg), 'Saving graph ~w.', [DS_G])
+      rdf_named_graph(RdfDataset, VoidDataset),
+      format(atom(Msg), 'Saving VoID dataset ~w.', [VoidDataset])
     ),
-    rdf_save(O1, DS_G, DS_F),
+    rdf_save(O1, VoidDataset, File),
     void_file,
     Msg
   ),
   % Then save the VoID graph itself.
-  rdf_save([format(turtle)], G, F).
+  rdf_default_graph(RdfDataset, DefaultGraph),
+  rdf_save([format(turtle)], DefaultGraph, File).
 
 
 void_update_library(G):-

@@ -209,10 +209,3 @@ rdf_graph(Dataset, NamedGraph):-
 
 rdf_named_graph(rdf_dataset(_,NamedGraphs), NamedGraph):-
   member(NamedGraph, NamedGraphs).
-
-
-
-%! void_dataset(+DatasetName:iri, -Dataset:compound) is det.
-
-void_dataset(
-
