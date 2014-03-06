@@ -26,7 +26,7 @@ Downloads CKAN datasets to the given directory.
 ckan_download:-
   current_prolog_flag(argv, [File1]),
   argument_to_absolute_file_name(File1, File2),
-  file_to_directory(File2, Dir),
+  file_name(File2, Dir, _, _),
   ckan_download(File2, Dir).
 ckan_download:-
   current_prolog_flag(argv, [File1,Directory1]),

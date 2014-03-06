@@ -34,14 +34,8 @@ VoiD covers four areas of metadata:
 @version 2013/03-2013/05, 2013/09-2013/11, 2014/03
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
-:- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_dataset)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(void(void_db)). % XML namespace.
@@ -59,101 +53,82 @@ void_init:-
 
 
 
-%! void_graph_rdf_dataset(+VoidGraph:atom, -RdfDataset:compound) is nondet.
-% Translates between VoID graphs and the RDF datasets described by them.
-
-void_graph_rdf_dataset(VoidGraph, rdf_dataset(VoidGraph, VoidDatasets)):-
-  % Typecheck.
-  rdf_graph(VoidGraph),
-
-  setoff(
-    VoidDataset,
-    rdf(VoidDataset, rdf:type, void:'Dataset', VoidGraph),
-    VoidDatasets
-  ).
-
-
-%! void_load(+File:atom, -RdfDataset:compound) is det.
+%! void_load(+File:atom, ?VoidGraph:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
 %
 % Also calculates VoID statistics for all datasets and asserts those
 %  in the VoID file.
 %
 % @arg File The atomic name of the absolute file path of a VoID file.
+% @VoidGraph
 
 % The RDF graph already exists.
-void_load(File, _):-
-  rdf_graph_property(_, source(File)), !,
+void_load(File, VoidGraph):-
+  rdf_graph_property(VoidGraph, source(File)), !,
   print_message(warning, 'Cannot load VoID file. File already loaded.').
-void_load(File, RdfDataset):-
+void_load(File, VoidGraph):-
   rdf_load([], VoidGraph, File),
-  file_to_directory(File, Directory),
-  void_graph_rdf_dataset(VoidGraph, RdfDataset),
-  RdfDataset = rdf_dataset(VoidGraph, VoidDatasets),
-  
-  % Each dataset is loaded in a separate thread.
+
+  % NO THREADS:
+  forall(
+    void_dataset(VoidGraph, VoidDataset),
+    void_load_dataset(VoidGraph, VoidDataset)
+  ).
+/*
+  % THREADS:
   forall_thread(
     (
-      member(VoidDataset, VoidDatasets),
+      void_dataset(VoidGraph, VoidDataset),
       format(atom(Msg), 'Loading dataset ~w.', [VoidDataset])
     ),
-    void_load_dataset(Directory, VoidDataset),
+    void_load_dataset(VoidGraph, VoidDataset),
     void_file,
     Msg
   ).
+*/
 
 
-%! void_load_dataset(+Directory:atom, +VoidDataset:iri) is det.
+%! void_load_dataset(+VoidGraph:atom, +VoidDataset:iri) is det.
 
-void_load_dataset(Directory, VoidDataset):-
-  % Every dataset has exactly one datadump property.
-  % @tbd Is this assumption correct?l
-  once(rdf(VoidDataset, void:dataDump, DatadumpLocation)),
-  (
-    is_of_type(iri, DatadumpLocation)
-  ->
-    % Store locally.
-    download_to_file([], DatadumpLocation, DatadumpFile)
-  ;
-    is_absolute_file_name(DatadumpLocation)
-  ->
-    DatadumpFile = DatadumpLocation
-  ;
-    relative_file_path(DatadumpFile, Directory, DatadumpLocation)
-  ),
-
+void_load_dataset(VoidGraph, VoidDataset):-
+  void_dataset_location(VoidGraph, VoidDataset, DatadumpFile),
   rdf_load([], VoidDataset, DatadumpFile).
 
 
-%! void_save(+Options:list(nvpair), +RdfDataset:compound, ?File:atom) is det.
+%! void_save(+Options:list(nvpair), +VoidGraph:atom, ?File:atom) is det.
 
-void_save(O1, RdfDataset, File):-
-  % First save all datasets that are described in the given VoID graph.
+void_save(O1, VoidGraph, File):-
+  % Update VoID statistics.
+  void_update(VoidGraph),
+
+  % NO THREADS
+  forall(
+    void_dataset(VoidGraph, VoidDataset),
+    void_save_dataset(O1, VoidGraph, VoidDataset)
+  ),
+/*
+  % THREADS
   forall_thread(
     (
-      rdf_named_graph(RdfDataset, VoidDataset),
+      void_dataset(VoidGraph, VoidDataset),
       format(atom(Msg), 'Saving VoID dataset ~w.', [VoidDataset])
     ),
-    rdf_save(O1, VoidDataset, File),
+    void_save_dataset(O1, VoidGraph, VoidDataset),
     void_file,
     Msg
   ),
+*/
   % Then save the VoID graph itself.
-  rdf_default_graph(RdfDataset, DefaultGraph),
-  rdf_save([format(turtle)], DefaultGraph, File).
+  rdf_save(O1, VoidGraph, File).
 
 
-void_update_library(G):-
-  forall_thread(
-    (
-      void_dataset(G, DS, _DS_F, DS_G),
-      format(atom(Msg), 'Updating dataset ~w', [DS])
-    ),
-    (
-      void_assert_modified(G, DS),
-      void_assert_statistics(G, DS, DS_G)
-    ),
-    void_file,
-    Msg
-  ).
+%! void_save_dataset(
+%!   +Options:list(nvpair),
+%!   +VoidGraph:atom,
+%!   +VoidDataset:iri
+%! ) is det.
+
+void_save_dataset(O1, VoidGraph, VoidDataset):-
+  void_dataset_location(VoidGraph, VoidDataset, DatadumpFile),
+  rdf_save(O1, VoidDataset, DatadumpFile).
 

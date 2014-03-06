@@ -298,11 +298,14 @@ rdf_mime(MIME):-
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
 rdf_save(O1, Graph, File):-
-  var(File),
-  rdf_graph_source_file(Graph, File),
-  access_file(File, write), !,
-  % Recurse once, to extract the serialization format.
-  rdf_save(O1, Graph, File).
+  var(File), !,
+  (
+    rdf_graph_source_file(Graph, File)
+  ->
+    rdf_save(O1, Graph, File)
+  ;
+    instantiation_error(File)
+  ).
 % Make up the format.
 rdf_save(O1, Graph, File):-
   access_file(File, write),

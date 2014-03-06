@@ -19,8 +19,6 @@
                        % -Absolutes:list(atom)
     directory_subdirectories/2, % ?Directory:atom
                                 % ?Subdirectories:list(atom)
-    file_to_directory/2, % +File:atom
-                         % -Directory:atom
     link_directory_contents/2, % +FromDir:atom
                                % +ToDir:atom
     process_directory_files/5, % +FromDirectory:atom
@@ -364,12 +362,6 @@ has_file_type(FileTypes, File):-
 
 nonfile_entry('.').
 nonfile_entry('..').
-
-
-file_to_directory(Dir, Dir):-
-  exists_directory(Dir), !.
-file_to_directory(File, Dir):-
-  file_directory_name(File, Dir).
 
 
 %! link_directory_contents(+FromDir:atom, +ToDir:atom) is det.

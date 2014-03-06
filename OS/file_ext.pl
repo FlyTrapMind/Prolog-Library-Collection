@@ -233,7 +233,7 @@ create_file(NestedDir, Base, TypeOrExtensions, File):-
 % Ensures that the directory structure for the given file exists.
 
 create_file_directory(File):-
-  file_to_directory(File, Dir),
+  file_name(File, Dir, _, _),
   create_directory(Dir).
 
 %! file_alternative(
@@ -276,15 +276,30 @@ wc_number(Lines) -->
 %!   ?Extension:atom
 %! ) is semidet.
 % The splitting of a file into its directory, local name and type parts.
+%
+% For directories, the base and extension are the empty atom.
 
 file_name(Path, Directory, Base, Extension):-
   nonvar(Directory), nonvar(Base), nonvar(Extension), !,
   file_name_extension(Base, Extension, File),
   directory_file_path(Directory, File, Path).
-file_name(Path, Directory, Base, Extension):-
-  nonvar(Path), !,
-  directory_file_path(Directory, File, Path),
-  file_name_extension(Base, Extension, File).
+file_name(Path1, Directory, Base, Extension):-
+  nonvar(Path1), !,
+  http_path_correction(Path1, Path2),
+  (
+    exists_directory(Path2)
+  ->
+    Directory = Path2,
+    Base = '',
+    Extension = ''
+  ;
+    directory_file_path(Directory, File, Path2),
+    file_name_extension(Base, Extension, File)
+  ).
+
+http_path_correction(Path1, Path2):-
+  atom_concat('file://', Path2, Path1), !.
+http_path_correction(Path, Path).
 
 
 %! file_name_extensions(+Base:atom, +Extensions:list(atom), +File:atom) is semidet.
