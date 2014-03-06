@@ -57,13 +57,13 @@ void_init:-
 %! void_load(+VoidGraph:atom) is det.
 
 void_load(VoidGraph):-
-  /*% NO THREADS:
+  % NO THREADS:
   forall(
     void_dataset(VoidGraph, VoidDataset),
     void_load_dataset(VoidGraph, VoidDataset)
-  ).*/
+  ).
 
-  % THREADS:
+  /*% THREADS:
   forall_thread(
     (
       void_dataset(VoidGraph, VoidDataset),
@@ -72,7 +72,7 @@ void_load(VoidGraph):-
     void_load_dataset(VoidGraph, VoidDataset),
     void_file,
     Msg
-  ).
+  ).*/
 
 
 %! void_load(+File:atom, ?VoidGraph:atom) is det.
@@ -106,13 +106,13 @@ void_save(O1, VoidGraph, File):-
   % Update VoID statistics.
   void_update(VoidGraph),
 
-  /*% NO THREADS
+  % NO THREADS
   forall(
     void_dataset(VoidGraph, VoidDataset),
     void_save_dataset(O1, VoidGraph, VoidDataset)
-  ),*/
+  ),
 
-  % THREADS
+  /*% THREADS
   forall_thread(
     (
       void_dataset(VoidGraph, VoidDataset),
@@ -121,7 +121,7 @@ void_save(O1, VoidGraph, File):-
     void_save_dataset(O1, VoidGraph, VoidDataset),
     void_file,
     Msg
-  ),
+  ),*/
 
   % Then save the VoID graph itself.
   rdf_save(O1, VoidGraph, File).

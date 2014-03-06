@@ -1,8 +1,9 @@
 :- module(
   archive_ext,
   [
-    extract_archive/2 % +FromFile:atom
-                      % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
+    extract_archive/2, % +FromFile:atom
+                       % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
+    is_archive/1 % +File:atom
   ]
 ).
 
@@ -96,4 +97,11 @@ extract_archive(Extension, File, unzipped):-
   directory_file_path(Directory, _, File),
   process_create(path(unzip), [file(File),'-fo','-d',file(Directory)], []),
   delete_file(File).
+
+
+%! is_archive(+File:atom) is semidet.
+
+is_archive(File):-
+  file_name_extension(_, Ext, File),
+  prolog_file_type(Ext, archive), !.
 

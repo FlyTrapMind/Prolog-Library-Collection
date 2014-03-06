@@ -67,8 +67,6 @@ since most datasets are published in a non-standard way.
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(void(void_db)).
-:- use_module(void(void_file)).
 :- use_module(xml(xml_dom)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
@@ -217,10 +215,26 @@ rdf_load(O1, Graph, Dir):-
     Files
   ),
   rdf_load(O1, Graph, Files).
+% Extract archives.
+rdf_load(O1, Graph, File1):-
+  access_file(File1, read),
+  archive_ext:is_archive(File1), !,
+  
+  file_name(File1, Directory, _, _),
+  archive_ext:extract_archive(File1, _),
+  directory_to_rdf_files(Directory, Pairs),
+  
+  forall(
+    member(MIME-File2, Pairs),
+    (
+      merge_options([mime(MIME)], O1, O2),
+      rdf_load(O2, Graph, File2)
+    )
+  ).
 % Load a single file.
 rdf_load(O1, Graph, File):-
   access_file(File, read),
-
+  
   % Retrieve the graph name.
   ensure_graph(File, Graph),
 
@@ -245,8 +259,8 @@ rdf_load(O1, Graph, File):-
 
 rdf_load_void(O1, Graph):-
   option(void(true), O1),
-  void_dataset(Graph, _), !,
-  void_load(Graph).
+  void_db:void_dataset(Graph, _), !,
+  void_file:void_load(Graph).
 rdf_load_void(_, _).
 
 

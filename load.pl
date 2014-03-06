@@ -111,7 +111,12 @@ load_pgc:-
   % Start logging.
   use_module(generics(logging)),
   % @tbd Strange module problem again...
-  logging:start_log.
+  logging:start_log,
+  
+  use_module(os(archive_ext)),
+  use_module(void(void_db)),
+  use_module(void(void_file)).
+
 
 user:load_pack(Pack):-
   catch(
