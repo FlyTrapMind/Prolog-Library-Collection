@@ -168,11 +168,27 @@ A query does not need to involve matching the default graph;
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_read)).
 :- use_module(void(void_db)). % XML namespace.
 
+
+
+%! rdf_assert_dataset(
+%!   +DefaultGraph:atom,
+%!   +NamedGraphs:list(iri),
+%!   -RdfDataset:compound
+%! ) is det.
+
+rdf_assert_dataset(DefaultGraph, NamedGraphs, RdfDataset):-
+  maplist(rdf_assert_named_graph(DefaultGraph), NamedGraphs),
+  rdf_dataset(RdfDataset, DefaultGraph, NamedGraphs).
+
+rdf_assert_named_graph(DefaultGraph, NamedGraph):-
+  rdf_assert_individual(NamedGraph, void:'Dataset', DefaultGraph).
 
 
 %! rdf_dataset(+RdfDataset:compound) is semidet.

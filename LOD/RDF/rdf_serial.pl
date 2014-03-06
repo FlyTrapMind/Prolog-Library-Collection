@@ -48,6 +48,7 @@ since most datasets are published in a non-standard way.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
@@ -66,6 +67,8 @@ since most datasets are published in a non-standard way.
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(void(void_db)).
+:- use_module(void(void_file)).
 :- use_module(xml(xml_dom)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
@@ -191,11 +194,16 @@ rdf_graph_source_file(G, F2):-
 % The following options are supported:
 %   * =|format(+Format:oneof([ntriples,turtle,xml]))|=
 %   * =|mime(+MIME:oneof(['application/rdf+xml','application/x-turtle','text/plain','text/rdf+n3']))|=
+%   * =|void(+LoadVoid:boolean)|=
 %
 % @arg Options A list of name-value pairs.
 % @arg Graph The atomic name of an RDF graph.
 % @arg Input Either a file, a list of files, or a directory.
 
+rdf_load(O1, Graph, URL):-
+  is_of_type(iri, URL), !,
+  download_to_file([], URL, File),
+  rdf_load(O1, Graph, File).
 % Loads multiple files and/or directories.
 rdf_load(O1, Graph, Files):-
   is_list(Files), !,
@@ -230,7 +238,16 @@ rdf_load(O1, Graph, File):-
   rdf_load(File, O2),
 
   % Send a debug message notifying that the RDF file was successfully loaded.
-  debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
+  debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]),
+
+  rdf_load_void(O2, Graph).
+
+
+rdf_load_void(O1, Graph):-
+  option(void(true), O1),
+  void_dataset(Graph, _), !,
+  void_load(Graph).
+rdf_load_void(_, _).
 
 
 %! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
@@ -339,30 +356,27 @@ rdf_save(O1, Graph, File):-
 rdf_save(O1, rdf_xml, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
   rdf_save(File, O2).
-% Save to Triples (binary storage format).
+% Save to N-Triples.
 rdf_save(O1, ntriples, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
-  rdf_save_turtle(File, O2).
+  rdf_save_ntriples(File, O2).
 % Save to Triples (binary storage format).
 rdf_save(_, triples, Graph, File):- !,
   rdf_save_db(File, Graph).
 % Save to Turtle.
 rdf_save(O1, turtle, Graph, File):- !,
+  merge_options([graph(Graph)], O1, O2),
+  rdf_save_canonical_turtle(File, O2).
+
+
+rdf_save_ntriples(File, O1):-
   merge_options(
     [
-      align_prefixes(true),
+      comment(false),
       encoding(utf8),
-      graph(Graph),
-      indent(2),
-      % Use all and only the namespace prefixes that have been created
-      % by the user, i.e. rdf_current_namespace/2, but also suggest new ones.
-      % @tbd Ask JW whether this is correct.
-      only_known_prefixes(true),
-      tab_distance(0)%,
-      % Use all the namespace prefixes that have been created by the user,
-      % i.e. rdf_current_namespace/2, but also suggest new ones.
-      % @tbd Ask JW whether this is correct.
-      %%%%user_prefixes(true)
+      group(false),
+      prefixes([]),
+      subject_white_lines(0)
     ],
     O1,
     O2

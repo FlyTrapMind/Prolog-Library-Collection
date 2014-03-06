@@ -5,7 +5,7 @@
                              % +VoidDataset:iri
                              % -DatadumpFile:atom
     void_dataset/2 % +VoidGraph:atom
-                         % -VoidDataset:iri
+                   % -VoidDataset:iri
   ]
 ).
 

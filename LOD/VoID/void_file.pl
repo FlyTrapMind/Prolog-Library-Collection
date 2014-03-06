@@ -1,10 +1,11 @@
 :- module(
   void_file,
   [
+    void_load/1, % +VoidGraph:atom
     void_load/2, % +File:atom
-                 % -RdfDataset:compound
+                 % -VoidGraph:atom
     void_save/3 % +Options:list(nvpair)
-                % +RdfDataset:compound
+                % +VoidGraph:atom
                 % ?File:atom
   ]
 ).
@@ -53,6 +54,27 @@ void_init:-
 
 
 
+%! void_load(+VoidGraph:atom) is det.
+
+void_load(VoidGraph):-
+  /*% NO THREADS:
+  forall(
+    void_dataset(VoidGraph, VoidDataset),
+    void_load_dataset(VoidGraph, VoidDataset)
+  ).*/
+
+  % THREADS:
+  forall_thread(
+    (
+      void_dataset(VoidGraph, VoidDataset),
+      format(atom(Msg), 'Loading dataset ~w.', [VoidDataset])
+    ),
+    void_load_dataset(VoidGraph, VoidDataset),
+    void_file,
+    Msg
+  ).
+
+
 %! void_load(+File:atom, ?VoidGraph:atom) is det.
 % Loads a VoID file and all the datasets defined in it.
 %
@@ -68,24 +90,7 @@ void_load(File, VoidGraph):-
   print_message(warning, 'Cannot load VoID file. File already loaded.').
 void_load(File, VoidGraph):-
   rdf_load([], VoidGraph, File),
-
-  % NO THREADS:
-  forall(
-    void_dataset(VoidGraph, VoidDataset),
-    void_load_dataset(VoidGraph, VoidDataset)
-  ).
-/*
-  % THREADS:
-  forall_thread(
-    (
-      void_dataset(VoidGraph, VoidDataset),
-      format(atom(Msg), 'Loading dataset ~w.', [VoidDataset])
-    ),
-    void_load_dataset(VoidGraph, VoidDataset),
-    void_file,
-    Msg
-  ).
-*/
+  void_load(VoidGraph).
 
 
 %! void_load_dataset(+VoidGraph:atom, +VoidDataset:iri) is det.
@@ -101,12 +106,12 @@ void_save(O1, VoidGraph, File):-
   % Update VoID statistics.
   void_update(VoidGraph),
 
-  % NO THREADS
+  /*% NO THREADS
   forall(
     void_dataset(VoidGraph, VoidDataset),
     void_save_dataset(O1, VoidGraph, VoidDataset)
-  ),
-/*
+  ),*/
+
   % THREADS
   forall_thread(
     (
@@ -117,7 +122,7 @@ void_save(O1, VoidGraph, File):-
     void_file,
     Msg
   ),
-*/
+
   % Then save the VoID graph itself.
   rdf_save(O1, VoidGraph, File).
 
