@@ -11,8 +11,6 @@
                         % +FromFile:atom
                         % ?ToMIME:atom
                         % ?ToFile:atom
-    rdf_graph_source_file/2, % +Graph:atom
-                             % -File:atom
     rdf_load/3, % +Options:list(nvpair)
                 % ?Graph:atom
                 % +File:atom
@@ -169,19 +167,6 @@ rdf_extension(Ext, MIME):-
   rdf_serialization(Ext, _, _, [MIME|_], _).
 
 
-%! rdf_graph_source_file(+Graph:atom, -File:atom) is nondet.
-% Returns the name of the file from which the graph with the given name
-% was loaded.
-
-rdf_graph_source_file(G, F2):-
-  rdf_graph_property(G, source(Source)),
-  uri_components(
-    Source,
-    uri_components(file, _Authority, F1, _Search, _Fragments)
-  ),
-  sub_atom(F1, 1, _Length, 0, F2).
-
-
 %! rdf_load(
 %!   +Option:list(nvpair),
 %!   ?Graph:atom,
@@ -219,13 +204,14 @@ rdf_load(O1, Graph, Dir):-
 rdf_load(O1, Graph, File1):-
   access_file(File1, read),
   archive_ext:is_archive(File1), !,
-  
+
   file_name(File1, Directory, _, _),
   archive_ext:extract_archive(File1, _),
-  directory_to_rdf_files(Directory, Pairs),
-  
+  directory_to_rdf_files(Directory, Pairs1),
+  selectchk(_-File1, Pairs1, Pairs2),
+
   forall(
-    member(MIME-File2, Pairs),
+    member(MIME-File2, Pairs2),
     (
       merge_options([mime(MIME)], O1, O2),
       rdf_load(O2, Graph, File2)
@@ -234,7 +220,7 @@ rdf_load(O1, Graph, File1):-
 % Load a single file.
 rdf_load(O1, Graph, File):-
   access_file(File, read),
-  
+
   % Retrieve the graph name.
   ensure_graph(File, Graph),
 
@@ -328,14 +314,16 @@ rdf_mime(MIME):-
 
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
-rdf_save(O1, Graph, File):-
-  var(File), !,
+rdf_save(O1, Graph, File2):-
+  var(File2), !,
   (
-    rdf_graph_source_file(Graph, File)
+    rdf_graph_property(Graph, source(File1))
   ->
-    rdf_save(O1, Graph, File)
+    http_path_correction(File1, File2),
+    create_file(File2),
+    rdf_save(O1, Graph, File2)
   ;
-    instantiation_error(File)
+    instantiation_error(File2)
   ).
 % Make up the format.
 rdf_save(O1, Graph, File):-
@@ -353,8 +341,9 @@ rdf_save(O1, Graph, File):-
     rdf_graph_property(Graph, modified(false)),
     %
     % Make sure the file is the same.
-    rdf_graph_source_file(Graph, FromFile),
-    FromFile == File
+    rdf_graph_property(Graph, source(FromFile1)),
+    http_path_correction(FromFile1, FromFile2),
+    FromFile2 == File
   ->
     debug(rdf_serial, 'No need to save graph ~w; no updates.', [Graph])
   ;

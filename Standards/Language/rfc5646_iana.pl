@@ -77,7 +77,7 @@ rfc5646_init:-
   ), !,
   (
     % The RDF graph is already loaded.
-    rdf_graph_source_file(_Graph, File), !
+    rdf_graph_property(_, source(File)), !
   ;
     % The RDF graph is availalbe in serialized format but not loaded.
     rdf_load([], rfc5646, File)

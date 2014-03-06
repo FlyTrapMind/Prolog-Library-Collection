@@ -1,6 +1,8 @@
 :- module(
   archive_ext,
   [
+    create_archive/2, % +Files:list(atom)
+                      % +Archive:atom
     extract_archive/2, % +FromFile:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
     is_archive/1 % +File:atom
@@ -53,6 +55,11 @@ Extensions to the support for archived files.
 :- db_add_novel(user:prolog_file_type(zip, archive)).
 :- db_add_novel(user:prolog_file_type(zip, zip)).
 
+
+
+create_archive(Files, Archive):-
+  findall(file(File), member(File, Files), O1),
+  process_create(path(tar), ['-cjf',file(Archive)|O1], []).
 
 
 %! extract_archive(

@@ -1,6 +1,7 @@
 :- module(
   rdf_dataset,
   [
+    rdf_assert_dataset/1, % +RdfDataset:compound
     rdf_dataset/1, % ?RdfDataset:compound
     rdf_dataset/3, % ?DefaultGraph:atom
                    % ?NamedGraphs:list(iri)
@@ -177,15 +178,11 @@ A query does not need to involve matching the default graph;
 
 
 
-%! rdf_assert_dataset(
-%!   +DefaultGraph:atom,
-%!   +NamedGraphs:list(iri),
-%!   -RdfDataset:compound
-%! ) is det.
+%! rdf_assert_dataset(+DefaultGraph:atom) is det.
 
-rdf_assert_dataset(DefaultGraph, NamedGraphs, RdfDataset):-
-  maplist(rdf_assert_named_graph(DefaultGraph), NamedGraphs),
-  rdf_dataset(RdfDataset, DefaultGraph, NamedGraphs).
+rdf_assert_dataset(RdfDataset):-
+  rdf_dataset(RdfDataset, DefaultGraph, NamedGraphs),
+  maplist(rdf_assert_named_graph(DefaultGraph), NamedGraphs).
 
 rdf_assert_named_graph(DefaultGraph, NamedGraph):-
   rdf_assert_individual(NamedGraph, void:'Dataset', DefaultGraph).

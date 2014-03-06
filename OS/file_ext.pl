@@ -49,6 +49,8 @@
                              % -ToFile:atom
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
+    http_path_correction/2, % +HttpPath:atom
+                            % -Path:atom
     is_absolute_file_name2/1, % ?File:atom
     is_image_file/1, % +File:atom
     link_file/2, % +ToDirectory:atom
@@ -297,10 +299,6 @@ file_name(Path1, Directory, Base, Extension):-
     file_name_extension(Base, Extension, File)
   ).
 
-http_path_correction(Path1, Path2):-
-  atom_concat('file://', Path2, Path1), !.
-http_path_correction(Path, Path).
-
 
 %! file_name_extensions(+Base:atom, +Extensions:list(atom), +File:atom) is semidet.
 %! file_name_extensions(+Base:atom, +Extensions:list(atom), -File:atom) is det.
@@ -381,6 +379,11 @@ file_type_alternative(FromFile, ToFileType, ToFile):-
 hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
+
+
+http_path_correction(Path1, Path2):-
+  atom_concat('file://', Path2, Path1), !.
+http_path_correction(Path, Path).
 
 
 image_extension(bmp).
