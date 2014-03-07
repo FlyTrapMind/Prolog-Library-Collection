@@ -8,10 +8,21 @@
 
 /** <module> RDF save to N-Triples
 
-A simple predicate for emitting RDF data in N-Triples serialization format.
-Works with SWI-Prolog's Semweb library.
+A simple implementation for emitting RDF data in
+ N-Triples serialization format, reusing some of the Turtle writer.
+Intended to work with RDF data stored using SWI-Prolog's Semweb library.
+
+In N-Triples only short Turtle strings (delimited by a single double quote)
+ occur.
+Linefeeds and carriage returns are escaped.
+This means that we can guarantee that the number of triples
+ is the same as the number of lines in the generated file.
 
 @author Wouter Beek
+@author Jan Wielemaker
+@compat http://www.w3.org/TR/2014/REC-n-triples-20140225/
+@tbd We would like to serialize no duplicate triples.
+     Provide this at least as an option.
 @version 2014/03
 */
 
@@ -21,10 +32,23 @@ Works with SWI-Prolog's Semweb library.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
 
-:- thread_local(bnode_map/2).
 :- thread_local(bnode_counter/1).
+:- thread_local(bnode_map/2).
 
 
+
+%! rdf_save_ntriples(+File:atom, +Options:list) is det.
+% Writes RDF data serialization in the N-Triples format to the given file.
+%
+% The following options are supported:
+%   * =|graph(?Graph:atom)|=
+%     The atomic name of a currently loaded RDF graph,
+%      to restrict the triples that are saved,
+%      or uninstantiated, in which case
+%      all currently loaded triples are saved.
+%
+% @arg File The atomic name of a file.
+% @arg Options A list of name-value pairs.
 
 rdf_save_ntriples(File1, O1):-
   absolute_file_name(File1, File2, [access(write)]),
@@ -36,12 +60,24 @@ rdf_save_ntriples(File1, O1):-
 
 
 rdf_write_ntriples(Out, O1):-
+  % Reset the blank node store.
   retractall(bnode_counter/1),
   assert(bnode_counter(0)),
-  option(graph(Graph), O1, _VAR),
-  forall(
-    rdf(S, P, O, Graph:_),
-    rdf_write_ntriple(Out, S, P, O)
+  retractall(bnode_map/1),
+  
+  (
+    option(graph(Graph), O1)
+  ->
+    forall(
+      rdf(S, P, O, Graph:_),
+      rdf_write_ntriple(Out, S, P, O)
+    )
+  ;
+    forall(
+      % Avoid duplicate triples.
+      rdf(S, P, O),
+      rdf_write_ntriple(Out, S, P, O)
+    )
   ).
 
 
