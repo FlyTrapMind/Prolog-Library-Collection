@@ -25,7 +25,7 @@
                         % ?Extension:atom
                         % -ToFile:atom
     file_lines/2, % +File:atom
-                  % -Lines:nonneg
+                  % -NumberOfLines:nonneg
     file_name/4, % +File:atom
                  % ?Dir:atom
                  % ?Name:atom
@@ -259,15 +259,15 @@ file_alternative(FromFile, ToDir1, ToName1, ToExt1, ToFile):-
   file_name(ToFile, ToDir2, ToName2, ToExt2).
 
 
-%! file_lines(+File:atom, -Lines:nonneg) is det.
+%! file_lines(+File:atom, -NumberOfLines:nonneg) is det.
 
-file_lines(File, Lines):-
+file_lines(File, NumberOfLines):-
   process_create(path(wc), ['-l',file(File)], [stdout(pipe(Stream))]),
   read_stream_to_codes(Stream, Codes),
-  phrase(wc_number(Lines), Codes).
+  phrase(wc_number(NumberOfLines), Codes).
 
-wc_number(Lines) -->
-  integer(Lines),
+wc_number(NumberOfLines) -->
+  integer(NumberOfLines),
   dcg_done.
 
 

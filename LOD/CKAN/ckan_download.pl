@@ -8,9 +8,7 @@ Downloads CKAN datasets to the given directory.
 @version 2014/03
 */
 
-:- use_module(ap(ap_rdf_serial)).
 :- use_module(ap(ap_table)). % Debug tool.
-:- use_module(ap(ap_void_stat)).
 :- use_module(ckan(ckan_ap)).
 :- use_module(ckan(ckan_table)). % Debug tool.
 :- use_module(library(apply)).
@@ -38,14 +36,7 @@ ckan_download:-
 ckan_download(File, Dir):-
   ckan_ap(
     File,
-    [
-      ckan_download:ap_stage(
-        [name('toNTriples'),args(['application/n-triples'])],
-        ap_rdf_convert_directory
-      ),
-      ckan_download:ap_stage([name('VoID')], void_statistics),
-      ckan_download:ap_stage([name('Stash'),args([Dir])], stash_output)
-    ]
+    [ckan_download:ap_stage([name('Stash'),args([Dir])], stash_output)]
   ).
 
 

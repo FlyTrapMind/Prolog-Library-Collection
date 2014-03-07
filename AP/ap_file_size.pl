@@ -49,9 +49,21 @@ file_size(FromDir, ToDir, AP_Stage):-
       ),
       (
         size_file(File, Size),
-        add_properties_of_file(AP_Stage, File, [file_size-Size]),
+        file_lines(File, NumberOfLines),
+        add_properties_of_file(
+          AP_Stage,
+          File,
+          [file_size-Size,number_of_lines-NumberOfLines]
+        ),
         ap_stage_resource(AP_Stage, Resource, Graph),
-        rdf_assert_datatype(Resource, ap:file_size, xsd:integer, Size, Graph)
+        rdf_assert_datatype(Resource, ap:file_size, xsd:integer, Size, Graph),
+        rdf_assert_datatype(
+          Resource,
+          ap:number_of_lines,
+          xsd:integer,
+          NumberOfLines,
+          Graph
+        )
       )
     ),
     link_directory_contents(FromDir, ToDir)

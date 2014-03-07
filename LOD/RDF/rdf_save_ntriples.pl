@@ -56,15 +56,33 @@ rdf_write_term(Stream, BNodes, BNode):-
   rdf_is_bnode(BNode), !,
   nth0(I, BNodes, BNode),
   format(Stream, '_:~w', [I]).
-rdf_write_term(Stream, BNodes, literal(type(Datatype1,Value))):- !,
+rdf_write_term(Stream, BNodes, literal(type(Datatype1,Value1))):- !,
   rdf_write_term(atom(Datatype2), BNodes, Datatype1),
-  format(Stream, '"~w"^^~w', [Value,Datatype2]).
-rdf_write_term(Stream, _, literal(lang(Language,Value))):- !,
-  format(Stream, '"~w"@~w', [Value,Language]).
-rdf_write_term(Stream, _, literal(Value)):- !,
-  format(Stream, '"~w"', [Value]).
+  rdf_replace_lexical_value(Value1, Value2),
+  format(Stream, '"~w"^^~w', [Value2,Datatype2]).
+rdf_write_term(Stream, _, literal(lang(Language,Value1))):- !,
+  rdf_replace_lexical_value(Value1, Value2),
+  format(Stream, '"~w"@~w', [Value2,Language]).
+rdf_write_term(Stream, _, literal(Value1)):- !,
+  rdf_replace_lexical_value(Value1, Value2),
+  format(Stream, '"~w"', [Value2]).
 rdf_write_term(Stream, _, IRI):-
   format(Stream, "<~w>", [IRI]).
+
+
+rdf_replace_lexical_value(Value1, Value2):-
+  atom_codes(Value1, Codes1),
+  rdf_replace_lexical_value_codes(Codes1, Codes2),
+  atom_codes(Value2, Codes2).
+
+
+rdf_replace_lexical_value_codes([], []):- !.
+rdf_replace_lexical_value_codes([10|T1], [92,117,48,48,48,97|T2]):- !,
+  rdf_replace_lexical_value_codes(T1, T2).
+rdf_replace_lexical_value_codes([13|T1], [92,117,48,48,48,100|T2]):- !,
+  rdf_replace_lexical_value_codes(T1, T2).
+rdf_replace_lexical_value_codes([H|T1], [H|T2]):-
+  rdf_replace_lexical_value_codes(T1, T2).
 
 
 rdf_bnode(Graph, BNode):-

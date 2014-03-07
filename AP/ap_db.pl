@@ -12,6 +12,7 @@
                               % +NVPairs:list(pair)
     add_table/2, % +AP_Stage:iri
                  % +Table:iri
+    add_skip/1, % +AP_Stage:iri
     add_succeed/1, % +AP_Stage:iri
 % READ
     ap_resource/3, % +AP:iri
@@ -113,6 +114,13 @@ add_properties_of_file(AP_Stage, File, NVPairs):-
 add_table(AP_Stage, Table):-
   rdf_assert_individual(AP_Stage, ap:'Tables', ap),
   rdf_assert(AP_Stage, ap:table, Table, ap).
+
+
+%! add_skip(+AP_Stage:iri) is det.
+
+add_skip(AP_Stage):-
+  rdf_assert_individual(AP_Stage, ap:'Skip', ap),
+  rdf_assert_datatype(AP_Stage, ap:status, xsd:string, skip, ap).
 
 
 %! add_succeed(+AP_Stage:iri) is det.

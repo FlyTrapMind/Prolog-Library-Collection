@@ -37,14 +37,14 @@ extract_archives(FromDir, ToDir, AP_Stage):-
   (
     ConvertedFiles == []
   ->
-    rdf_assert_individual(AP_Stage, ap:'Skip', ap),
-    rdf_assert_datatype(AP_Stage, ap:status, xsd:string, skip, ap)
+    add_skip(AP_Stage)
   ;
     true
   ).
 
 extract_archive0(AP_Stage, FromFile):-
   extract_archive(FromFile, Conversions),
+  Conversions \== [],
   add_operation_on_file(
     AP_Stage,
     FromFile,

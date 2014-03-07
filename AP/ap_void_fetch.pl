@@ -19,26 +19,36 @@ For use in the AP architecture.
 :- use_module(ap(ap_db)).
 :- use_module(library(apply)).
 :- use_module(os(dir_ext)).
+:- use_module(rdf(rdf_dataset)).
 :- use_module(rdf(rdf_package)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(void(void_db)).
 
 
 
-void_fetch(FromDir, ToDir, _):-
+void_fetch(FromDir, ToDir, AP_Stage):-
   rdf_directory_files(FromDir, FromFiles),
-  maplist(void_fetch_file, FromFiles),
+  maplist(void_fetch_file(AP_Stage), FromFiles, RdfDatasets1),
+  exclude(var, RdfDatasets1, RdfDatasets2),
+  (RdfDatasets2 == [] -> add_skip(AP_Stage) ; true),
   link_directory_contents(FromDir, ToDir).
 
 
-void_fetch_file(FromFile):-
+void_fetch_file(AP_Stage, FromFile, RdfDataset):-
   rdf_load([void(true)], Graph, FromFile),
   (
-    void_dataset(Graph, _)
+    void_dataset(Graph, RdfDataset)
   ->
     atomic_concat(FromFile, '.tar', ToFile),
     void_package_build([compress(false)], Graph, ToFile),
-    delete_file(FromFile)
+    delete_file(FromFile),
+    rdf_dataset(RdfDataset, DefaultGraph, NamedGraphs),
+    add_operation_on_file(
+      AP_Stage,
+      FromFile,
+      'fetched VoID',
+      [DefaultGraph|NamedGraphs]
+    )
   ;
     true
   ).
