@@ -40,7 +40,7 @@ rdf_write_ntriples(Out, O1):-
   assert(bnode_counter(0)),
   option(graph(Graph), O1, _VAR),
   forall(
-    rdf(S, P, O, Graph),
+    rdf(S, P, O, Graph:_),
     rdf_write_ntriple(Out, S, P, O)
   ).
 

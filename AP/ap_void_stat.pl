@@ -32,7 +32,6 @@ VoID statistics process for the AP architecture.
 
 
 void_statistics(FromDir, ToDir, AP_Stage):-
-gtrace,
   directory_files([], FromDir, FromFiles),
   findall(
     File,

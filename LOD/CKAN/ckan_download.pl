@@ -50,7 +50,6 @@ argument_to_absolute_file_name(File1, File2):-
 
 
 stash_output(FromDir, _, AP_Stage, Dir):-
-gtrace,
   directory_files(
     [include_directories(false),include_self(false),recursive(true)],
     FromDir,

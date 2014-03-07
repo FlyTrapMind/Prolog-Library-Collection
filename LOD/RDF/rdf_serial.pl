@@ -190,6 +190,7 @@ rdf_extension(Ext, MIME):-
 
 rdf_merge_directory(FromDir, ToFile, SaveOptions):-
   rdf_directory_files(FromDir, FromFiles),
+  FromFiles \== [],
   rdf_setup_call_cleanup([], FromFiles, rdf_graph, SaveOptions, ToFile).
 
 

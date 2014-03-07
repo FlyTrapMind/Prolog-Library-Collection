@@ -49,14 +49,13 @@ ap_rdf_merge_directory(FromDir, ToDir, AP_Stage, MIME1):-
     ToFile,
     [access(write),file_type(Format),relative_to(ToDir)]
   ),
-  rdf_merge_directory(FromDir, ToFile, [mime(MIME2)]),
-  rdf_directory_files(FromDir, ToFiles),
   (
-    ToFiles == []
+    rdf_merge_directory(FromDir, ToFile, [mime(MIME2)])
   ->
-    existence_error('RDF file', 'No RDF files')
-  ;
+    rdf_directory_files(FromDir, ToFiles),
     maplist(ap_rdf_directory_assertion(AP_Stage), ToFiles)
+  ;
+    existence_error('RDF file', 'No RDF files')
   ).
 
 
