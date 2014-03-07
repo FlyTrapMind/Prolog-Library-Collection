@@ -11,10 +11,15 @@
                         % +FromFile:atom
                         % ?ToMIME:atom
                         % ?ToFile:atom
+    rdf_merge_directory/3, % +FromDirectory:atom
+                           % +ToFile:atom
+                           % +SaveOptions:list(nvpair)
     rdf_load/3, % +Options:list(nvpair)
                 % ?Graph:atom
                 % +File:atom
     rdf_mime/1, % ?MIME:atom
+    rdf_mime_format/2, % ?MIME:atom
+                       % ?Format:atom
     rdf_save/3, % +Options:list(nvpair)
                 % +Graph:atom
                 % ?File:atom
@@ -39,7 +44,7 @@ since most datasets are published in a non-standard way.
 @author Wouter Beek
 @tbd Writing in the N-triples format is not supported.
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-         2013/08-2013/09, 2013/11, 2014/01-2014/02
+         2013/08-2013/09, 2013/11, 2014/01-2014/03
 */
 
 :- use_module(ckan(ckan_mime)).
@@ -177,6 +182,17 @@ rdf_extension(Ext, MIME):-
   rdf_serialization(Ext, _, _, [MIME|_], _).
 
 
+%! rdf_merge_directory(
+%!   +FromDirectory:atom,
+%!   +ToFile:atom,
+%!   +SaveOptions:list(nvpair)
+%! ) is det.
+
+rdf_merge_directory(FromDir, ToFile, SaveOptions):-
+  rdf_directory_files(FromDir, FromFiles),
+  rdf_setup_call_cleanup([], FromFiles, rdf_graph, SaveOptions, ToFile).
+
+
 %! rdf_load(
 %!   +Option:list(nvpair),
 %!   ?Graph:atom,
@@ -297,6 +313,16 @@ ensure_graph(File, Graph):-
 rdf_mime(MIME):-
   rdf_serialization(_, _, _, MIMEs, _),
   member(MIME, MIMEs).
+
+
+%! rdf_mime_format(+MIME:atom, +Format:atom) is semidet.
+%! rdf_mime_format(+MIME:atom, -Format:atom) is det.
+%! rdf_mime_format(-MIME:atom, +Format:atom) is det.
+% Relates RDF media content types and RDF formats.
+
+rdf_mime_format(MIME, Format):-
+  rdf_serialization(_, _, Format, MIMEs, _),
+  memberchk(MIME, MIMEs).
 
 
 %! rdf_save(+Options:list, +Graph:atom, ?File:atom) is det.

@@ -513,8 +513,12 @@ pre .string, pre .support.value  {
   background-color: LightCoral;
 }
 
-.never_reached, .skip {
+.never_reached {
   background-color: Orange;
+}
+
+.skip {
+  background-color: Yellow;
 }
 
 .succeed {

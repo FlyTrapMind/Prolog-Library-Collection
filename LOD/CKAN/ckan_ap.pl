@@ -34,6 +34,7 @@ Automated processes for CKAN data.
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(semweb/rdf_db)). % MD5
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_container)).
@@ -143,13 +144,15 @@ already_processed(Resource):-
 ckan_ap_site(AP_Collection, ExtraStages, Resource):-
   once(rdfs_label(AP_Collection, Graph)),
   once(rdf_datatype(Resource, ckan:url, xsd:string, URL, _)),
-  url_to_directory_name(URL, Dir),
-  Alias = URL,
-  db_add_novel(user:file_search_path(Alias, Dir)),
-
+  
+  % The directory name is based on the URL.
+  rdf_atom_md5(URL, 1, Hash),
+  create_nested_directory(data(Hash), Dir),
+  db_add_novel(user:file_search_path(Hash, Dir)),
+  
   create_ap(AP_Collection, AP),
   rdf_assert(AP, ap:resource, Resource, ap),
-  rdf_assert_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  rdf_assert_datatype(AP, ap:alias, xsd:string, Hash, ap),
   rdf_assert_datatype(AP, ap:graph, xsd:string, Graph, ap),
   ap(
     [leave_trail(false),reset(true)],
@@ -160,7 +163,7 @@ ckan_ap_site(AP_Collection, ExtraStages, Resource):-
       ckan_ap:ap_stage([name('FetchVoID')], void_fetch),
       ckan_ap:ap_stage(
         [name('toNTriples'),args(['application/n-triples'])],
-        ap_rdf_convert_directory
+        ap_rdf_merge_directory
       ),
       ckan_ap:ap_stage([name('FileSize')], file_size),
       ckan_ap:ap_stage([name('VoID')], void_statistics)

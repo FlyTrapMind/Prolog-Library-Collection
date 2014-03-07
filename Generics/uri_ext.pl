@@ -26,10 +26,12 @@
 /** <module> URI extensions
 
 @author Wouter Beek
-@version 2013/05, 2013/09, 2013/11-2014/01
+@version 2013/05, 2013/09, 2013/11-2014/03
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_replace)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(http(http)).

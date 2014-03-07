@@ -19,85 +19,67 @@ Works with SWI-Prolog's Semweb library.
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/turtle)). % Private predicates.
+
+:- thread_local(bnode_map/2).
+:- thread_local(bnode_counter/1).
 
 
 
 rdf_save_ntriples(File1, O1):-
   absolute_file_name(File1, File2, [access(write)]),
   setup_call_cleanup(
-    open(File2, write, Stream),
-    rdf_write_ntriples(Stream, O1),
-    close(Stream)
+    open(File2, write, Out),
+    rdf_write_ntriples(Out, O1),
+    close(Out)
   ).
 
 
-rdf_write_ntriples(Stream, O1):-
+rdf_write_ntriples(Out, O1):-
+  retractall(bnode_counter/1),
+  assert(bnode_counter(0)),
   option(graph(Graph), O1, _VAR),
-  findall(BNode, rdf_bnode(Graph, BNode), BNodes1),
-  list_to_ord_set(BNodes1, BNodes2),
   forall(
     rdf(S, P, O, Graph),
-    rdf_write_ntriple(Stream, BNodes2, S, P, O)
+    rdf_write_ntriple(Out, S, P, O)
   ).
 
 
-rdf_write_ntriple(Stream, BNodes, S, P, O):-
-  maplist(rdf_write_term_space(Stream, BNodes), [S,P,O]),
-  put_char(Stream, '.'),
-  put_code(Stream, 10). % Newline
+rdf_write_ntriple(Out, S, P, O):-
+  rdf_write_term_space(Out, S),
+  rdf_write_term_space(Out, P),
+  rdf_write_term_space(Out, O),
+  put_char(Out, '.'),
+  put_code(Out, 10). % Newline
 
 
-rdf_write_term_space(Stream, BNodes, Term):-
-  rdf_write_term(Stream, BNodes, Term),
-  put_char(Stream, ' ').
+rdf_write_term_space(Out, Term):-
+  rdf_write_term(Out, Term),
+  put_char(Out, ' ').
 
 
-rdf_write_term(Stream, BNodes, BNode):-
+rdf_write_term(Out, BNode):-
   rdf_is_bnode(BNode), !,
-  nth0(I, BNodes, BNode),
-  format(Stream, '_:~w', [I]).
-rdf_write_term(Stream, BNodes, literal(type(Datatype1,Value1))):- !,
-  rdf_write_term(atom(Datatype2), BNodes, Datatype1),
-  rdf_replace_lexical_value(Value1, Value2),
-  format(Stream, '"~w"^^~w', [Value2,Datatype2]).
-rdf_write_term(Stream, _, literal(lang(Language,Value1))):- !,
-  rdf_replace_lexical_value(Value1, Value2),
-  format(Stream, '"~w"@~w', [Value2,Language]).
-rdf_write_term(Stream, _, literal(Value1)):- !,
-  rdf_replace_lexical_value(Value1, Value2),
-  format(Stream, '"~w"', [Value2]).
-rdf_write_term(Stream, _, IRI):-
-  format(Stream, "<~w>", [IRI]).
-
-
-rdf_replace_lexical_value(Value1, Value2):-
-  atom_codes(Value1, Codes1),
-  rdf_replace_lexical_value_codes(Codes1, Codes2),
-  atom_codes(Value2, Codes2).
-
-
-rdf_replace_lexical_value_codes([], []):- !.
-rdf_replace_lexical_value_codes([10|T1], [92,117,48,48,48,97|T2]):- !,
-  rdf_replace_lexical_value_codes(T1, T2).
-rdf_replace_lexical_value_codes([13|T1], [92,117,48,48,48,100|T2]):- !,
-  rdf_replace_lexical_value_codes(T1, T2).
-rdf_replace_lexical_value_codes([H|T1], [H|T2]):-
-  rdf_replace_lexical_value_codes(T1, T2).
-
-
-rdf_bnode(Graph, BNode):-
   (
-    rdf_subject(Graph, BNode)
+    bnode_map(BNode, Id2)
+  ->
+    true
   ;
-    rdf_object(Graph, BNode)
+    retract(bnode_counter(Id1)),
+    Id2 is Id1 + 1,
+    assert(bnode_counter(Id2)),
+    assert(bnode_map(BNode, Id2))
   ),
-  rdf_is_bnode(BNode).
-
-
-rdf_subject(Graph, Subject):-
-  rdf(Subject, _, _, Graph).
-
-
-rdf_object(Graph, Object):-
-  rdf(_, _, Object, Graph).
+  format(Out, '_:~w', [Id2]).
+rdf_write_term(Out, literal(type(Datatype,Value))):- !,
+  turtle:turtle_write_quoted_string(Out, Value),
+  write(Out, '^^'),
+  rdf_write_term(Out, Datatype).
+rdf_write_term(Out, literal(lang(Language,Value))):- !,
+  turtle:turtle_write_quoted_string(Out, Value),
+  format(Out, '@~w', [Language]).
+rdf_write_term(Out, literal(Value)):- !,
+  turtle:turtle_write_quoted_string(Out, Value).
+rdf_write_term(Out, IRI):-
+  turtle:turtle_write_uri(Out, IRI).
 
