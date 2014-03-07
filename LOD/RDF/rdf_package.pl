@@ -18,19 +18,35 @@ Packaging of RDF datasets
 @version 2014/03
 */
 
+:- use_module(library(option)).
 :- use_module(os(archive_ext)).
 :- use_module(rdf(rdf_dataset)).
 :- use_module(void(void_db)).
 
 
 
-rdf_package_build(O1, RdfDataset, Archive):-
+%! rdf_package_build(
+%!   +Options:list(nvpair),
+%!   +RdfDataset:compound,
+%!   +PackageFile:atom
+%! ) is det.
+% The options are passed to void_package_build/3.
+
+rdf_package_build(O1, RdfDataset, PackageFile):-
   rdf_assert_dataset(RdfDataset),
   rdf_default_graph(RdfDataset, VoidGraph),
-  void_package_build(O1, VoidGraph, Archive).
+  void_package_build(O1, VoidGraph, PackageFile).
 
 
-void_package_build(O1, VoidGraph, Archive):-
+%! void_package_build(
+%!   +Options:list(nvpair),
+%!   +VoidGraph:atom,
+%!   +PackageFile:atom
+%! ) is det.
+% The following options are supported:
+%   * =|compress(+UseCompression:boolean)|=
+
+void_package_build(O1, VoidGraph, PackageFile):-
   void_save(O1, VoidGraph, VoidFile),
   findall(
     VoidDatasetFile,
@@ -40,5 +56,13 @@ void_package_build(O1, VoidGraph, Archive):-
     ),
     VoidDatasetFiles
   ),
-  create_archive([VoidFile|VoidDatasetFiles], Archive).
+  
+  % Only TAR or TAR + Bzip2.
+  (
+    option(compress(true), O1)
+  ->
+    create_archive([VoidFile|VoidDatasetFiles], PackageFile)
+  ;
+    create_tarball([VoidFile|VoidDatasetFiles], PackageFile)
+  ).
 

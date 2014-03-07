@@ -3,6 +3,8 @@
   [
     create_archive/2, % +Files:list(atom)
                       % +Archive:atom
+    create_tarball/2, % +Files:list(atom)
+                      % +Tarball:atom
     extract_archive/2, % +FromFile:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
     is_archive/1 % +File:atom
@@ -14,7 +16,7 @@
 Extensions to the support for archived files.
 
 @author Wouter Beek
-@version 2013/12-2014/02
+@version 2013/12-2014/03
 */
 
 :- use_module(generics(db_ext)).
@@ -60,6 +62,11 @@ Extensions to the support for archived files.
 create_archive(Files, Archive):-
   findall(file(File), member(File, Files), O1),
   process_create(path(tar), ['-cjf',file(Archive)|O1], []).
+
+
+create_tarball(Files, Archive):-
+  findall(file(File), member(File, Files), O1),
+  process_create(path(tar), ['-cf',file(Archive)|O1], []).
 
 
 %! extract_archive(

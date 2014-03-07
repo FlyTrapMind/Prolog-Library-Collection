@@ -22,6 +22,7 @@ Automated processes for CKAN data.
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_file_mime)).
 :- use_module(ap(ap_file_size)).
+:- use_module(ap(ap_void_fetch)).
 :- use_module(ckan(ckan_scrape)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
@@ -67,7 +68,7 @@ ckan_ap(File, ExtraStages):-
     % Scrape a CKAN site.
     ckan_scrape(Graph)
   ),
-  
+
   % Load the results of resources that were already processed.
   % Do not fail if the file is not there.
   %(
@@ -81,7 +82,7 @@ ckan_ap(File, ExtraStages):-
   %;
   %  true
   %),
-  
+
   % Run AP processes for CKAN site.
   thread_create(ckan_ap_site(Graph, ExtraStages), _, []).
 
@@ -95,10 +96,10 @@ ckan_ap_site(Graph, ExtraStages):-
   % Note that sorting by size makes no sense,
   % since the semantics of the values of `ckan:size` is unknown.
   take_lod_sample(Graph, Resources1),
-  
+
   % Filter resources that have already been processed previously.
   exclude(already_processed, Resources1, Resources2),
-  
+
   % DEB
   length(Resources2, NumberOfResources),
   debug(ckan, 'About to process ~:d resources.', [NumberOfResources]),
@@ -154,6 +155,7 @@ ckan_ap_site(AP_Collection, ExtraStages, Resource):-
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
+      ckan_ap:ap_stage([name('FetchVoID')], void_fetch),
       ckan_ap:ap_stage([name('FileSize')], file_size)
     | ExtraStages]
   ).

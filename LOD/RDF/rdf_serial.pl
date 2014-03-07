@@ -1,8 +1,8 @@
 :- module(
   rdf_serial,
   [
-    directory_to_rdf_files/2, % +Directory:atom
-                              % -Pairs:list(pair(atom))
+    rdf_directory_files/2, % +Directory:atom
+                           % -Files:list(atom)
     rdf_convert_directory/4, % +FromDirectory:atom
                              % +ToDirectory:atom
                              % ?ToMIME:atom
@@ -84,32 +84,41 @@ since most datasets are published in a non-standard way.
 
 
 
-%! directory_to_rdf_files(+Directory:atom, -Pairs:list(pair(atom))) is det.
+%! is_rdf_file(+File:atom) is semidet.
+% Succeeds if the given file contains an RDF serialization.
+
+is_rdf_file(File):-
+  file_mime(File, MIME),
+  rdf_mime(MIME), !.
+is_rdf_file(File):-
+  file_name_extension(_, Ext, File),
+  rdf_extension(Ext, _).
+
+
+%! rdf_directory_files(+Directory:atom, -RdfFiles:list(atom)) is det.
+%! rdf_directory_files(
+%!   +Options:list(nvpair),
+%!   +Directory:atom,
+%!   -RdfFiles:list(atom)
+%! ) is det.
 % Returns RDF files from the given directory.
 % This is based on parsing (the top of) the contents of these files.
 %
+% @arg Options Passed to directory_files/3.
 % @arg Directory The atomic name of a directory.
-% @arg Pairs A list of pairs of an RDF MIME type and an atomic file name.
+% @arg RdfFiles A list of atomic file names of RDF files.
 
-directory_to_rdf_files(Dir, Pairs):-
-  % Retrieve all files.
-  directory_files([include_directories(false),recursive(true)], Dir, Files),
-  findall(
-    MIME-File,
-    (
-      member(File, Files),
-      is_rdf_file(File, MIME)
-    ),
-    Pairs
+rdf_directory_files(Dir, RdfFiles):-
+  rdf_directory_files(
+    [include_directories(false),include_self(false),recursive(true)],
+    Dir,
+    RdfFiles
   ).
 
-
-is_rdf_file(File, MIME):-
-  file_mime(File, MIME),
-  rdf_mime(MIME), !.
-is_rdf_file(File, MIME):-
-  file_name_extension(_, Ext, File),
-  rdf_extension(Ext, MIME).
+rdf_directory_files(O1, Dir, RdfFiles):-
+  % Retrieve all files.
+  directory_files(O1, Dir, Files),
+  include(is_rdf_file, Files, RdfFiles).
 
 
 %! rdf_convert_directory(
@@ -120,7 +129,7 @@ is_rdf_file(File, MIME):-
 %! ) is det.
 
 rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
-  directory_to_rdf_files(FromDir, FromPairs),
+  rdf_directory_files(FromDir, FromFiles),
 
   default(ToMIME1, 'application/x-turtle', ToMIME2),
   once((
@@ -131,9 +140,9 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
   findall(
     ToFile,
     (
-      member(FromMIME-FromFile, FromPairs),
+      member(FromFile, FromFiles),
       file_alternative(FromFile, ToDir, _, ToExt, ToFile),
-      rdf_convert_file(FromMIME, FromFile, ToMIME2, ToFile)
+      rdf_convert_file(_, FromFile, ToMIME2, ToFile)
     ),
     ToFiles
   ).
@@ -207,16 +216,10 @@ rdf_load(O1, Graph, File1):-
 
   file_name(File1, Directory, _, _),
   archive_ext:extract_archive(File1, _),
-  directory_to_rdf_files(Directory, Pairs1),
-  selectchk(_-File1, Pairs1, Pairs2),
+  rdf_directory_files(Directory, Files1),
+  selectchk(File1, Files1, Files2),
 
-  forall(
-    member(MIME-File2, Pairs2),
-    (
-      merge_options([mime(MIME)], O1, O2),
-      rdf_load(O2, Graph, File2)
-    )
-  ).
+  maplist(rdf_load(O1, Graph), Files2).
 % Load a single file.
 rdf_load(O1, Graph, File):-
   access_file(File, read),
@@ -370,21 +373,6 @@ rdf_save(_, triples, Graph, File):- !,
 rdf_save(O1, turtle, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
   rdf_save_canonical_turtle(File, O2).
-
-
-rdf_save_ntriples(File, O1):-
-  merge_options(
-    [
-      comment(false),
-      encoding(utf8),
-      group(false),
-      prefixes([]),
-      subject_white_lines(0)
-    ],
-    O1,
-    O2
-  ),
-  rdf_save_turtle(File, O2).
 
 
 %! rdf_serialization(

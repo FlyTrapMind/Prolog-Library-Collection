@@ -72,8 +72,7 @@ html_table(O1, Caption, Cell, Rows) -->
     option(header_column(HasHeaderColumn), O2, false),
     option(header_row(HasHeaderRow), O2, false),
     option(highlighted_row(HighlightedRow), O2, fail),
-    option(indexed(IsIndexed), O2, false),
-    gtrace
+    option(indexed(IsIndexed), O2, false)
   },
   html(
     table(class=['pure-table','pure-table-bordered'], [
