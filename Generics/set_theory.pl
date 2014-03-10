@@ -29,12 +29,13 @@
 Extra set functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05, 2013/12
+@version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05, 2013/12, 2014/03
 */
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(programming(prolog_mode)).
@@ -73,9 +74,8 @@ cardinality(List, Cardinality):-
 % @arg Rest The original sets that are not in `Result`.
 
 delete_supersets(Original, Compare, Result, Rest):-
-  exclude('_delete_supersets'(Compare), Original, Result),
-  ord_subtract(Original, Result, Rest).
-'_delete_supersets'(Compare, Set):-
+  partition(contains_superset_of(Compare), Original, Rest, Result).
+contains_superset_of(Compare, Set):-
   member(Superset, Compare),
   superset(Superset, Set), !.
 
@@ -97,7 +97,7 @@ equinumerous(Set1, Set2):-
 
 
 %! is_minimal(+Minimal:ordset, +Compare:ordset(ordset)) is semidet.
-% Succeeds for minimal sets.
+% Succeeds for minimal sets with respect to a set of sets.
 %
 % A minimal set has no subset.
 %
@@ -110,6 +110,9 @@ is_minimal(Minimal, Compare):-
     subset(Subset, Minimal)
   )).
 
+
+%! random_subset(S1, +Percentage:between(0.0,1.0), S2) .
+% @tbd What's this?
 
 random_subset(S1, Percentage, S2):-
   must_be(between(0.0, 1.0), Percentage), !,

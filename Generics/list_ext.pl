@@ -120,7 +120,7 @@ Extra list functions for use in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12
+         2013/07, 2013/09, 2013/12, 2014/03
 */
 
 :- use_module(generics(error_ext)).
@@ -128,7 +128,7 @@ Extra list functions for use in SWI-Prolog.
 :- use_module(generics(typecheck)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
-:- use_module(math(random_ext)).
+:- use_module(library(random)).
 
 
 
@@ -356,6 +356,7 @@ nth0chk(Index, List, Element):-
 nth1chk(Index, List, Element):-
   once(nth1(Index, List, Element)).
 
+
 %! random_member(-Member, +List:list) is det.
 % Returns a randomly chosen member from the given list.
 %
@@ -364,19 +365,20 @@ nth1chk(Index, List, Element):-
 
 random_member(Member, List):-
   length(List, Length),
-  random_betwixt(Length, Random),
+  random_between(1, Length, Random),
   nth0(Random, List, Member).
 
-%! random_select(+List:list, -Member, -List:list) is det.
+
+%! random_select(+List:list, -Member, -Rest:list) is det.
 % Randomly selects a member from the given list,
-% returning the remaining list as well.
+% and returns the remaining list as well.
 
 random_select(L1, X, L2):-
   length(L1, M),
   random_select(L1, M, X, L2).
 
 random_select(L1, M, X, L2):-
-  random_betwixt(M, Rnd),
+  random_between(1, M, Rnd),
   nth0(Rnd, L1, X, L2).
 
 random_sublist(L1, Percentage, L2):-

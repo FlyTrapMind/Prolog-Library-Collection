@@ -17,13 +17,13 @@
 Genrates random coordinates for vertices in a graph.
 
 @author Wouter Beek
-@version 2013/07
+@version 2013/07, 2014/03
 */
 
 :- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(library(random)).
 :- use_module(library(settings)).
-:- use_module(math(random_ext)).
 
 :- meta_predicate(random_vertex_coordinates(+,+,2,-)).
 
@@ -52,7 +52,9 @@ Genrates random coordinates for vertices in a graph.
 random_vertex_coordinate(O, _Vs, _V, VCoord):-
   setting(default_surface, DefaultSurface),
   option(surface(Surface), O, DefaultSurface),
-  random_coordinate(Surface, VCoord).
+  Surface = size(Dimension, Sizes),
+  VCoord = coordinate(Dimension, Args),
+  maplist(random_between(1), Sizes, Args).
 
 random_vertex_coordinates(O, G, V_P, VCoords):-
   call(V_P, G, Vs),

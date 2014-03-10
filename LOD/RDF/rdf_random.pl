@@ -24,8 +24,8 @@
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(library(lists)).
+:- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(math(random_ext)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_parse)).
 :- use_module(rdf(rdf_term)).
@@ -63,7 +63,7 @@ rdf_index(G, S, P, O, I):-
 rdf_random_neighbor(G, V, RndN):-
   rdf_neighbors(G, V, Ns),
   length(Ns, L),
-  random_betwixt(1, L, I),
+  random_between(1, L, I),
   nth1(I, Ns, RndN).
 
 rdf_random_term(G, T):-
@@ -72,8 +72,8 @@ rdf_random_term(G, T):-
 :- meta_predicate(rdf_random_term(+,//,-)).
 rdf_random_term(G, Requirement, T2):-
   rdf_random_triple(S, P, O, G),
-  random_betwixt(2, J),
-  nth0(J, [S,P,O], T1),
+  random_between(1, 2, J),
+  nth1(J, [S,P,O], T1),
   (
     dcg_phrase(Requirement, T1)
   ->
@@ -97,7 +97,6 @@ rdf_random_term(G, Requirement, T2):-
 
 rdf_random_triple(G, S, P, O):-
   rdf_graph_property(G, triples(NumberOfTriples)),
-  succ(UpperIndex, NumberOfTriples),
-  random_betwixt(UpperIndex, RndI),
+  random_between(1, NumberOfTriples, RndI),
   rdf_index(G, S, P, O, RndI).
 
