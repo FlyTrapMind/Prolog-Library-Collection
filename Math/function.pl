@@ -106,9 +106,9 @@ bijective(F):-
 %
 % @arg S An ordered set of pairs, representing a binary relation.
 % @arg Antecedent An executable goals that includes =S= and that contains
-%        the free variables in =Consequence=.
+%      the free variables in =Consequence=.
 % @arg Consequence A compound term with free variables. These are the
-%        instances that will be included in =NewS=.
+%      instances that will be included in =NewS=.
 % @arg NewS The set =S= under closure.
 
 closure(S, Antecedent, Consequence, NewS):-
@@ -313,3 +313,4 @@ transitive(R):-
 
 transitive_closure(S, NewS):-
   closure(S, (pair(S, X-Y), pair(S, Y-Z)), X-Z, NewS).
+

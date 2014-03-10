@@ -112,29 +112,10 @@ is_minimal(Minimal, Compare):-
   )).
 
 
-%! random_subset(S1, +Percentage:between(0.0,1.0), S2) .
-% @tbd What's this?
+%! random_subset(+Set:ordset, -Subset:ordset) is det.
 
-random_subset(S1, Percentage, S2):-
-  must_be(between(0.0, 1.0), Percentage), !,
-  length(S1, M),
-  N is ceil(M * Percentage),
-  random_subset(S1, M, N, S2).
-random_subset(S1, N, S2):-
-  must_be(nonneg, N), !,
-  length(S1, M),
-  random_subset(S1, M, N, S2).
-
-random_subset(S1, M, N, S2):-
-  random_subset(S1, M, N, [], S2).
-
-random_subset(_S1, _M, 0, Sol, Sol):- !.
-random_subset(S1, M1, N1, OldS2, Sol):-
-  random_select(X, S1, S2),
-  N2 is N1 - 1,
-  M2 is M1 - 1,
-  ord_add_element(OldS2, X, NewS2),
-  random_subset(S2, M2, N2, NewS2, Sol).
+random_subset(S1, S2):-
+  random_sublist(S1, S2).
 
 
 %! subsets(+Set:ordset, -Subsets:list(list(bit))) is det.
@@ -199,28 +180,4 @@ next_subset([1|T1], [0|T2]):-
 
 superset(Super, Sub):-
   ord_subset(Sub, Super).
-
-
-%! transitive_closure(
-%!   +Predicate:atom,
-%!   +Input:list(term),
-%!   -Outputs:list(term)
-%! ) is det.
-% Returns the transitive closure of =Predicate= applied to =Input=.
-%
-% @arg Predicate The atomic name of a predicate.
-% @arg Input Either a term or a list of terms.
-% @arg Outputs A list of terms. This is the transitive closure.
-
-transitive_closure(Predicate, Input, Outputs):-
-  \+(is_list(Input)), !,
-  transitive_closure(Predicate, [Input], Outputs).
-transitive_closure(_Predicate, [], []).
-transitive_closure(Predicate1, [Input | Inputs], Outputs):-
-  strip_module(Predicate1, Module, Predicate2),
-  Goal =.. [Predicate2, Input, Intermediaries],
-  Module:call(Goal),
-  ord_union(Intermediaries, Inputs, Inputs_),
-  transitive_closure(Predicate1, Inputs_, Outputs_),
-  ord_union(Outputs_, Intermediaries, Outputs).
 

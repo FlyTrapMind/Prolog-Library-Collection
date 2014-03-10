@@ -762,3 +762,27 @@ supporting_nodes(Node, SupportingNodes):-
     SupportingNodes
   ).
 
+
+%! transitive_closure(
+%!   +Predicate:atom,
+%!   +Input:list(term),
+%!   -Outputs:list(term)
+%! ) is det.
+% Returns the transitive closure of =Predicate= applied to =Input=,
+% where `Predicate` is a nondeterministic binary predicate
+% between elements and lists of elements.
+%
+% @arg Predicate The atomic name of a predicate.
+% @arg Input Either a term or a list of terms.
+% @arg Outputs A list of terms. This is the transitive closure.
+
+transitive_closure(Pred, Input, Outputs):-
+  \+ is_list(Input), !,
+  transitive_closure(Pred, [Input], Outputs).
+transitive_closure(_, [], []):- !.
+transitive_closure(Pred, [Input|Inputs1], Outputs1):-
+  call(Pred, Input, Intermediaries),
+  ord_union(Intermediaries, Inputs1, Inputs2),
+  transitive_closure(Pred, Inputs2, Outputs2),
+  ord_union(Outputs2, Intermediaries, Outputs1).
+
