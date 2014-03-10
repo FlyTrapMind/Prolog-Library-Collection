@@ -19,17 +19,17 @@
 Support for IANA-registered MIME types.
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(html(html)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdf_turtle)). % RDF-serialization.
 :- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_serial)).
 :- use_module(rdfs(rdfs_label_build)).
 :- use_module(rdfs(rdfs_label_read)).
 :- use_module(rdfs(rdfs_build)).
@@ -158,7 +158,7 @@ init_mime:-
     File,
     [access(read),extensions([ttl]),file_errors(fail)]
   ), !,
-  rdf_load([mime('text/turtle')], mime, File),
+  rdf_load(File, [format(turtle),graph(mime)]),
   mime_register_type(application, 'atom+xml',         atom),
   mime_register_type(application, 'x-rar-compressed', rar ),
   mime_register_type(application, 'x-bibtex',         bib ),

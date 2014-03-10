@@ -47,8 +47,6 @@ since most datasets are published in a non-standard way.
          2013/08-2013/09, 2013/11, 2014/01-2014/03
 */
 
-:- use_module(ckan(ckan_mime)).
-:- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
@@ -57,21 +55,17 @@ since most datasets are published in a non-standard way.
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
-:- use_module(library(sgml)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
+:- use_module(library(semweb/rdf_ntriples_write)).
 :- use_module(library(semweb/rdf_turtle)).
-:- use_module(library(semweb/rdf_turtle_write), except([rdf_save_ntriples/2])).
-:- use_module(library(uri)).
+:- use_module(library(semweb/rdf_turtle_write)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
-:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(rdf(rdf_save_ntriples)).
-:- use_module(xml(xml_dom)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
 :- db_add_novel(user:prolog_file_type(nt,      rdf     )).
@@ -283,10 +277,9 @@ ensure_format(O1, _, Format):-
   memberchk(MIME, MIMEs), !.
 % Option: mime + cleaning
 ensure_format(O1, File, Format):-
-  select_option(mime(MIME1), O1, O2),
-  ckan_mime:mime(MIME1, MIME2),
-  merge_options([mime(MIME2)], O2, O3),
-  ensure_format(O3, File, Format).
+  select_option(mime(MIME), O1, O2), !,
+  debug(rdf_serial, 'Unrecognized RDF MIME: ~a.', [MIME]),
+  ensure_format(O2, File, Format).
 % File extension
 ensure_format(_, File, Format):-
   file_name_extension(_, Extension, File),

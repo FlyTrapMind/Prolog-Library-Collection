@@ -357,6 +357,8 @@ mime_false(_-MIME):-
 mime_true(_-MIME):-
   mime(MIME, _, _).
 
+% Typos we cannot convert.
+
 mime('Shapefile').
 mime('api/sparql').
 mime('application').
@@ -380,6 +382,8 @@ mime('text/html, application/XML, text/plain, application/sparql-results+json, a
 mime('text/rdf').
 mime('text/rdf+json').
 mime('wsf/gml').
+
+% Typos we can convert.
 
 mime('application/ html', 'text/html').
 mime('application/application/csv', 'text/csv').
@@ -417,6 +421,7 @@ mime('text/x-csv', 'text/csv').
 mime('text/x-sql', 'application/sql').
 
 %! mime(?MIME:atom, ?Structured:boolean, ?Open:boolean) is nondet.
+% Real MIME content types.
 
 mime('application/atom+xml',           true,  true ).
 mime('application/gzip',               false, true ).

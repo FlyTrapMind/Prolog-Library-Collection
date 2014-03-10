@@ -7,6 +7,10 @@
 % =text= encoding. This did _not_ process special characters correctly.
 :- set_prolog_flag(encoding, utf8).
 
+% Forward error messages from consulting Prolog code to PceEmacs.
+% ed/1 and edit/1 call PceEmacs.
+:- use_module(library(pce_emacs)).
+
 % Print code strings with their code table replacements.
 :- use_module(library(portray_text)).
 
