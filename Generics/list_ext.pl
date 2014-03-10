@@ -57,14 +57,10 @@
     nth1chk/3, % ?Index:integer
                % ?List:List
                % ?Element
+    postfix/2, % ?Part:list
+               % ?Whole:list
     random_sublist/2, % +List:list
                       % -Sublist:list
-    remove_first/2, % +List:list,
-                    % -NewList:list
-    remove_firsts/2, % +List:list
-                     % -NewList:list
-    remove_last/2, % +List:list
-                   % -NewList:list
     repeating_list/3, % ?Term:term
                       % ?Repeats:nonneg
                       % ?List:list
@@ -108,9 +104,9 @@
   ]
 ).
 
-/** <module> LIST_EXT
+/** <module> List extensions
 
-Extra list functions for use in SWI-Prolog.
+Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
@@ -128,6 +124,9 @@ Extra list functions for use in SWI-Prolog.
 
 %! after(?X, ?Y, ?List:list) is nondet.
 % X appears after Y in the given list.
+%
+% @see The inverse of before/3.
+% @see The inverse of the transitive closure of nextto/3 in library(lists).
 
 after(X, Y, List):-
   before(Y, X, List).
@@ -144,11 +143,32 @@ append_intersperse([H], _S, [H]):- !.
 append_intersperse([H|T1], S, [H,S|T2]):-
   append_intersperse(T1, S, T2).
 
+
 %! before(?X, ?Y, ?List:list) is nondet.
 % X appears before Y in the given list.
+%
+% @see The transitive closure of nextto/3 in library(lists).
+%
+% # Example
+%
+% ~~~{.pl}
+% ?- before(X, Y, [a,b,c]).
+% X = a,
+% Y = b ;
+% X = b,
+% Y = c ;
+% X = a,
+% Y = c ;
+% false.
+% ~~~
 
-before(X, Y, List):-
-  nextto(X, Y, List).
+before(X, Y, L):-
+  nextto(X, Y, L).
+before(X, Y, L):-
+  nextto(X, Z, L),
+%format(user_output, '~w\n', [Z]),
+  before(Z, Y, L).
+
 
 %! combination(+Lists:list(list), -Combination:list) is nondet.
 % Returns a combination of items from the given lists.
@@ -173,6 +193,7 @@ combination([ListH|ListT], [H|T]):-
   member(H, ListH),
   combination(ListT, T).
 
+
 %! element_cut(+L:list, +Element:atom, -L1:list, -L2:list) is det.
 % Cuts the given list at the given element, returning the two cut lists.
 % The cut element is itself not part of any of the results.
@@ -187,6 +208,7 @@ element_cut([Element | T], Element, [], T):- !.
 element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
   element_cut(L, Element, L1, L2).
 
+
 %! first(+List:list, ?Element:term) is semidet.
 % Succeeds if the given element is the head of the given list.
 % Fails if the list has no head.
@@ -195,10 +217,12 @@ element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
 % @arg Element The head element of the list, if any.
 % @see This is the inverse of the default method last/2.
 
-first([Element | _List], Element).
+first([H|_], H).
+
 
 %! first(+L:list, +N:integer, -First:list) is det.
-% Returns the first N element from list L, if these are present.
+% Returns the first N elements from a list, if these are present.
+%
 % This never fails but returns a list of length $0 < l(F) < N$ in case
 % $l(L) < N$.
 %
@@ -208,6 +232,7 @@ first([Element | _List], Element).
 
 first(L, N, First):-
   length_cut(L, N, First, _L2).
+
 
 %! length_cut(+L:list, +Cut:integer, -L1:list, -L2:list) is det.
 % Cuts the given list in two sublists, where the former sublist
@@ -224,6 +249,7 @@ length_cut(L, Cut, L, []):-
 length_cut(L, Cut, L1, L2):-
   length(L1, Cut),
   append(L1, L2, L).
+
 
 %! list_replace(
 %!   +List:list,
@@ -275,10 +301,10 @@ list_to_ordered_pairs([H|T], S):-
   list_to_ordered_pairs(T, S2),
   append(S1, S2, S).
 
-list_to_orderd_pairs_(_H, [], []):- !.
-list_to_orderd_pairs_(H, [T|TT], [Pair|S]):-
-  list_to_ord_set([H,T], Pair),
-  list_to_orderd_pairs_(H, TT, S).
+list_to_orderd_pairs_(_, [], []):- !.
+list_to_orderd_pairs_(H1, [H2|T], [Pair|Pairs]):-
+  list_to_ord_set([H1,H2], Pair),
+  list_to_orderd_pairs_(H1, T, Pairs).
 
 
 %! list_truncate(+List:list, +Max:nonneg, -TruncatedList:list) is det.
@@ -312,9 +338,16 @@ member(X, Y, L):-
   member(X, L),
   member(Y, L).
 
-member_default(Member, List, _Default):-
+
+%! member_default(?Element, ?List:list, +Default) is nondet.
+% True is `Element` is a member of `List` or is `Default`.
+%
+% @see member/2 in library(lists).
+
+member_default(Member, List, _):-
   member(Member, List), !.
-member_default(Default, _List, Default).
+member_default(Default, _, Default).
+
 
 %! nth_minus_0(+I:integer, +L:list, -Element) is det.
 % Succeeds if the given element occurs at =|length(List) - I|= in list =L=.
@@ -328,6 +361,7 @@ nth_minus_0(I, L, Element):-
   reverse(L, RevL),
   nth0(I, RevL, Element).
 
+
 %! nth_minus_1(-I:integer, +L:list, +Element) is semidet.
 % Succeeds if the given element occurs at =|length(L) - I|= in list =L=.
 %
@@ -340,15 +374,28 @@ nth_minus_1(I, L, Element):-
   reverse(L, RevL),
   nth1(I, RevL, Element).
 
+
 %! nth0chk(?Index:integer, ?List:list, ?Element) is det.
 
 nth0chk(Index, List, Element):-
   once(nth0(Index, List, Element)).
 
+
 %! nth1chk(?Index:integer, ?List:list, ?Element) is det.
 
 nth1chk(Index, List, Element):-
   once(nth1(Index, List, Element)).
+
+
+%! postfix(?Part:list, ?Whole:list) is nondet.
+% True iff `Part` is a trailing substring of `Whole`.
+%
+% This is the same as `append(_, Part, Whole)`.
+%
+% @see prefix/2 in library(lists).
+
+postfix(Part, Whole):-
+  append(_, Part, Whole).
 
 
 %! random_sublist(+List:list, -Sublist:list) is det.
@@ -369,45 +416,6 @@ random_sublist(L1, Length1, [X|L3]):-
   random_select(X, L1, L2),
   Length2 is Length1 - 1,
   random_sublist(L2, Length2, L3).
-
-
-%! remove_first(+List, -ListWithoutFirst)
-% Returns a list that is like the given list, but without the first element.
-% Fails if there is no first element in the given list.
-%
-% @arg List Any nonempty list.
-% @arg ListWithoutFirst A new list without the first elemnent.
-% @see The inverse of remove_last/2.
-
-remove_first([_First | ListWithoutFirst], ListWithoutFirst).
-
-%! remove_firsts(+Lists, -ListsWithoutFirst)
-% Returns the given lists without the first elements.
-%
-% @arg Lists Any list of non-empty lists.
-% @arg ListsWithoutFirst ...
-% @see Uses remove_first/2.
-
-remove_firsts([], []).
-remove_firsts(
-  [List | Lists],
-  [ListWithoutFirst | ListsWithoutFirst]
-):-
-  remove_first(List, ListWithoutFirst),
-  remove_firsts(Lists, ListsWithoutFirst).
-
-%! remove_last(+List, -NewList)
-% Returns the given list with the last element removed.
-%
-% @arg List The original list.
-% @arg NewList The original list with the last element remove.
-% @see The inverse of remove_first/2.
-
-remove_last([], []).
-remove_last([Element], []):-
-  atomic(Element).
-remove_last([Element | Rest], [Element | NewRest]):-
-  remove_last(Rest, NewRest).
 
 
 %! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
