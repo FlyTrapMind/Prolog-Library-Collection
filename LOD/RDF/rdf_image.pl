@@ -40,10 +40,11 @@ When triples including images are read,
 :- use_module(rdf(rdf_build)).
 :- use_module(xml(xml_namespace)).
 
+:- rdf_meta(rdf_assert_image(+,r,r,r,+)).
+:- rdf_meta(rdf_image(r,r,r,-,?)).
+
 :- xml_register_namespace(dcmit, 'http://purl.org/dc/dcmitype/').
 
-:- rdf_meta(rdf_assert_image(r,r,r,+)).
-:- rdf_meta(rdf_image(r,r,r,-,?)).
 
 
 
@@ -56,7 +57,7 @@ rdf_assert_image(O1, S, P, O, G):-
 
 %! rdf_image(+Options:list(nvpair), +URL:atom, -File:atom) is det.
 % Image storage on the Web is often unreliable,
-%  because Web locations go in and out of existence rapidly.
+% because Web locations go in and out of existence rapidly.
 % We do not want automated procedures to fail due to unavailable images.
 % Therefore the option `fail_mode` can be used with the following values:
 %   1. `debug(Category:atom-Format:atom-Arguments:list)`

@@ -27,6 +27,7 @@ Support for IANA-registered MIME types.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_turtle)). % RDF-serialization.
+:- use_module(library(semweb/rdf_turtle_write)). % RDF-serialization.
 :- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
@@ -164,7 +165,6 @@ init_mime:-
   mime_register_type(application, 'x-bibtex',         bib ),
   mime_register_type(application, 'n-quads',          nq  ),
   mime_register_type(application, 'n-triples',        nt  ).
-
 init_mime:-
   assert_iana(
     mime,
@@ -176,13 +176,13 @@ init_mime:-
   assert_mime_extensions(mime),
 
   absolute_file_name(data('mime.ttl'), File, [access(write)]),
-  rdf_save([mime('text/turtle')], mime, File),
+  rdf_save_turtle(File, [graph(mime)]),
 
   init_mime.
 
 
 assert_mime_extensions(Graph):-
-  url_to_html('http://www.webmaster-toolkit.com/mime-types.shtml', DOM),
+  download_html('http://www.webmaster-toolkit.com/mime-types.shtml', DOM),
   forall(
     (
       member(Class, [tablerowdark,tablerowlight]),

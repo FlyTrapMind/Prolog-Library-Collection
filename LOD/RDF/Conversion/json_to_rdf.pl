@@ -258,23 +258,11 @@ json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, rdf_list(Type), Valu
   rdf_global_id(xsd:Type, Datatype),
   rdf_assert_list([datatype(Datatype)], Values, RDF_List, Graph),
   rdf_assert(Individual, Predicate, RDF_List, Graph).
-% JSON string that is asserted as an XSD string.
+% JSON string that is asserted as an XSD typed literal.
 json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, Type, Value1):-
   json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
   % Convert the JSON value to an RDF object term.
   % This is where we validate that the value is of the required type.
-  json_value_to_rdf(Type, Value1, Datatype, Value2),
+  convert_to_xsd(Type, Value1, Datatype, Value2),
   rdf_assert_datatype(Individual, Predicate, Datatype, Value2, Graph).
-
-
-% The value is already in XSD format: recognize that this is the case.
-json_value_to_rdf(Type, Value1, Datatype, Value2):-
-  atomic(Value1),
-  xsd_datatype(Type, Datatype),
-  rdf_datatype(Datatype, Value1, Value2), !.
-% The value is not yet in XSD format, but could be converted using
-% the supported mappings.
-json_value_to_rdf(Type, Value, Datatype, Value):-
-  xsd_datatype(Type, Datatype), !,
-  xsd_canonicalMap(Datatype, Value, _).
 

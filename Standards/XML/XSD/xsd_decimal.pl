@@ -5,6 +5,7 @@
                            % -LEX:list(code)
     decimalLexicalMap/2, % +LEX:list(code)
                          % -Decimal:number
+    decimalLexicalRep//1, % -Decimal:number
 % DCG COMPONENTS
     decimalPtNumeral//2, % -Sign:oneof([-1,1])
                          % -Decimal:float

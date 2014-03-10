@@ -5,6 +5,7 @@
                          % -LEX:list(code)
     gYearLexicalMap/2, % +LEX:list(code)
                        % -GregorianYear:compound
+    gYearLexicalRep//1, % -GregorianYear:compound
 % CONVERSIONS
     integer_to_gYear_dateTime/2 % +Integer
                                 % -DateTime:compound

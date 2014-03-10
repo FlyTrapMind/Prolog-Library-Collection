@@ -7,7 +7,7 @@
 % FETCHING
     file_to_html/2, % +File:atom
                     % -HTML:list
-    url_to_html/2, % +URL:atom
+    download_html/2, % +URL:atom
                    % -HTML:list
 
 % PARSING
@@ -36,15 +36,15 @@ HTML atom conversion, using HTML characters.
 HTML attribute parsing, used in HTML table generation.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/11
+@version 2012/09-2013/06, 2013/11, 2014/03
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(http(http)).
 :- use_module(library(apply)).
-:- use_module(library(debug)).
 :- use_module(library(http/html_write)).
+:- use_module(library(sgml)).
 
 % Assert DTD file locations.
 :- db_add_novel(user:file_search_path(dtd, html(.))).
@@ -52,8 +52,6 @@ HTML attribute parsing, used in HTML table generation.
 % Assert the HTML file types.
 :- db_add_novel(user:prolog_file_type(htm, html)).
 :- db_add_novel(user:prolog_file_type(html, html)).
-
-:- meta_predicate(html_process_exception(+,0)).
 
 
 
@@ -83,18 +81,6 @@ file_to_html(File, HTML_DOM):-
   open(File, read, Stream, [encoding(utf8),type(test)]),
   html_from_stream(HTML_DOM, Stream).
 
-%! process_exception(+Exception, :Goal) is det.
-% Processes an exception thrown by load_structure/3
-
-% Retry after a while upon exceeding a limit.
-% Thrown by load_structure/3.
-html_process_exception(error(limit_exceeded(max_errors, Max), Context), Goal):- !,
-  debug(html, 'Encountered ~w error(s) while parsing HTML.', [Max]),
-  debug(html, 'Context:\t~w', [Context]),
-  sleep(10),
-  call(Goal).
-html_process_exception(Exception, _Goal):-
-  debug(html, '!UNRECOGNIZED EXCEPTION! ~w', [Exception]).
 
 % html_from_stream(-HTML:dom, +Stream:stream) is det.
 % Retrieves the HTML DOM from the given stream.
@@ -103,41 +89,10 @@ html_process_exception(Exception, _Goal):-
 %         =|error(limit_exceeded(max_errors, Max), _)|=
 
 html_from_stream(HTML_DOM, Stream):-
-  html_from_stream(HTML_DOM, 0, Stream).
+  load_html(Stream, HTML_DOM, []).
 
-html_from_stream(_, 5, _):- !,
-  debug(
-    html,
-    'The maximum number of attempts was reached for load_structure/3 \c
-     in html_from_stream/3.',
-    []
-  ).
-html_from_stream(HTML_DOM, Attempts, Stream):-
-  dtd(html, HTML_DTD),
-  catch(
-    load_structure(
-      stream(Stream),
-      HTML_DOM,
-      [
-        dtd(HTML_DTD),
-        dialect(xmlns),
-        max_errors(-1),
-        shorttag(true),
-        space(remove),
-        syntax_errors(quiet)
-      ]
-    ),
-    Exception,
-    (
-      NewAttempts is Attempts + 1,
-      html_process_exception(
-        Exception,
-        html_from_stream(HTML_DOM, NewAttempts, Stream)
-      )
-    )
-  ).
 
-%! url_to_html(+URL:atom, -HTML_DOM:list) is det.
+%! download_html(+URL:atom, -HTML_DOM:list) is det.
 % Returns the HTML Document Object Model (DOM)
 % for the website with the given URI.
 %
@@ -145,7 +100,7 @@ html_from_stream(HTML_DOM, Attempts, Stream):-
 % @arg HTML_DOM
 % @throws existence_error(url, Id)
 
-url_to_html(URL, HTML_DOM):-
+download_html(URL, HTML_DOM):-
   http_goal(URL, [], html_from_stream(HTML_DOM)).
 
 

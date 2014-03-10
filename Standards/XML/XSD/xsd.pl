@@ -1,6 +1,10 @@
 :- module(
   xsd,
   [
+    convert_to_xsd/4, % +Type:atom
+                      % +Value
+                      % -Datatype:iri
+                      % -XsdValue
     xsd_canonicalMap/3, % +Datatype:iri
                         % +Value
                         % -LexicalExpression:list(code)
@@ -79,6 +83,21 @@
 :- rdf_meta(xsd_lexicalMap(r,+,-)).
 :- rdf_meta(xsd_lexicalMap_(r,+,-)).
 
+
+
+%! convert_to_xsd(+Type:atom, +Value1, -Datatype:iri, -Value2) .
+
+% The value is already in XSD format: recognize that this is the case.
+convert_to_xsd(Type, Value1, Datatype, Value3):-
+  atomic(Value1),
+  xsd_datatype(Type, Datatype),
+  atom_codes(Value1, Value2),
+  xsd_lexicalMap(Datatype, Value2, Value3), !.
+% The value is not yet in XSD format, but could be converted using
+% the supported mappings.
+convert_to_xsd(Type, Value, Datatype, Value):-
+  xsd_datatype(Type, Datatype), !,
+  xsd_canonicalMap(Datatype, Value, _).
 
 
 %! xsd_canonicalMap(
