@@ -38,6 +38,7 @@ Extra set functions for use in SWI-Prolog.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
+:- use_module(library(random)).
 :- use_module(programming(prolog_mode)).
 
 :- meta_predicate(transitive_closure(2,+,-)).
@@ -129,7 +130,7 @@ random_subset(S1, M, N, S2):-
 
 random_subset(_S1, _M, 0, Sol, Sol):- !.
 random_subset(S1, M1, N1, OldS2, Sol):-
-  list_ext:random_select(S1, M1, X, S2),
+  random_select(X, S1, S2),
   N2 is N1 - 1,
   M2 is M1 - 1,
   ord_add_element(OldS2, X, NewS2),

@@ -57,13 +57,7 @@
     nth1chk/3, % ?Index:integer
                % ?List:List
                % ?Element
-    random_member/2, % -Member
-                     % +List:list
-    random_select/3, % +List:list
-                     % -Member
-                     % -Rest:list
-    random_sublist/3, % +List:list
-                      % +LengthOrPercentage:or([nonneg,between(0.0,1.0)])
+    random_sublist/2, % +List:list
                       % -Sublist:list
     remove_first/2, % +List:list,
                     % -NewList:list
@@ -357,49 +351,25 @@ nth1chk(Index, List, Element):-
   once(nth1(Index, List, Element)).
 
 
-%! random_member(-Member, +List:list) is det.
-% Returns a randomly chosen member from the given list.
+%! random_sublist(+List:list, -Sublist:list) is det.
+% Returns a sublist of the given list that is (1) of random length
+% and that (2) contains randomly selected elements.
 %
-% @arg Member
-% @arg List
+% @tbd Shorter lists are more probable than longer lists,
+%      because these are more sublists of larger length,
+%      but each length is as probable to occur.
 
-random_member(Member, List):-
-  length(List, Length),
-  random_between(1, Length, Random),
-  nth0(Random, List, Member).
+random_sublist(L1, L2):-
+  length(L1, Length1),
+  random_between(0, Length1, Length2),
+  random_sublist(L1, Length2, L2).
 
+random_sublist(_, 0, []):- !.
+random_sublist(L1, Length1, [X|L3]):-
+  random_select(X, L1, L2),
+  Length2 is Length1 - 1,
+  random_sublist(L2, Length2, L3).
 
-%! random_select(+List:list, -Member, -Rest:list) is det.
-% Randomly selects a member from the given list,
-% and returns the remaining list as well.
-
-random_select(L1, X, L2):-
-  length(L1, M),
-  random_select(L1, M, X, L2).
-
-random_select(L1, M, X, L2):-
-  random_between(1, M, Rnd),
-  nth0(Rnd, L1, X, L2).
-
-random_sublist(L1, Percentage, L2):-
-  must_be(between(0.0, 1.0), Percentage), !,
-  length(L1, M),
-  N is ceil(M * Percentage),
-  random_sublist(L1, M, N, L2).
-random_sublist(L1, N, L2):-
-  must_be(nonneg, N), !,
-  length(L1, M),
-  random_sublist(L1, M, N, L2).
-
-random_sublist(L1, M, N, L2):-
-  random_sublist(L1, M, N, [], L2).
-
-random_sublist(_L1, _M, 0, Sol, Sol):- !.
-random_sublist(L1, M1, N1, T, Sol):-
-  random_select(L1, M1, H, L2),
-  N2 is N1 - 1,
-  M2 is M1 - 1,
-  random_sublist(L2, M2, N2, [H|T], Sol).
 
 %! remove_first(+List, -ListWithoutFirst)
 % Returns a list that is like the given list, but without the first element.

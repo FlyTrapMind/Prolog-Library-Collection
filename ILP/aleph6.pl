@@ -9100,15 +9100,6 @@ normalise_distribution([K1-X1|T],Sum,[K2-X1|T1]):-
   K2 is K1/Sum,
   normalise_distribution(T,Sum,T1).
 
-% random_select(-Num,+List1,-List2)
-%       randomly remove an element Num from List1 to give List2
-random_select(X,[X],[]):- !.
-random_select(X,L,Left):-
-        length(L,N),
-        N > 0,
-        get_random(N,I),
-        nth0(I,L,X,Left).
-
 % random_nselect(+Num,+List1,-List2)
 %       randomly remove Num elements from List1 to give List2
 random_nselect(0,_,[]):- !.
