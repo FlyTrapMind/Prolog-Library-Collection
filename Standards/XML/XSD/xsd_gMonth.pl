@@ -2,8 +2,8 @@
   xsd_gMonth,
   [
     gMonthCanonicalMap/2, % +GregorianMonth:compound
-                          % -LEX:list(code)
-    gMonthLexicalMap/2 % +LEX:list(code)
+                          % -Lexical:list(code)
+    gMonthLexicalMap/2 % +Lexical:list(code)
                        % -GregorianMonth:compound
   ]
 ).
@@ -66,21 +66,22 @@ The gMonth datatype has the following values for its fundamental facets:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 
 
 
 % CANONICAL MAPPING %
 
-%! gMonthCanonicalMap(+GregorianMonth:compound, -LEX:list(code)) is det.
+%! gMonthCanonicalMap(+GregorianMonth:compound, -Lexical:list(code)) is det.
 % A compound term that represents a Gregorian year has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % Where only the values month and time zone are used.
 
-gMonthCanonicalMap(GD, LEX):-
-  phrase(gMonthCanonicalMap(GD), LEX).
+gMonthCanonicalMap(GD, Lexical):-
+  phrase(gMonthCanonicalMap(GD), Lexical).
 
 %! gMonthCanonicalMap(+GregorianMonth:compound)//
 % Maps a gMonth value to a gMonthLexicalRep//.
@@ -96,15 +97,15 @@ gMonthCanonicalMap(dateTime(_Y,M,_D,_H,_MM,_S,TZ)) -->
 
 % LEXICAL MAPPING %
 
-%! gMonthLexicalMap(+LEX:list(code), -GregorianMonth:compound) is nondet.
+%! gMonthLexicalMap(+Lexical:list(code), -GregorianMonth:compound) is nondet.
 % A compound term that represents a Gregorian year has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % Where only the values month and time zone are used.
 
-gMonthLexicalMap(LEX, GD):-
-  phrase(gMonthLexicalRep(GD), LEX).
+gMonthLexicalMap(Lexical, GD):-
+  phrase(gMonthLexicalRep(GD), Lexical).
 
 %! gMonthLexicalRep(-GregorianMonth:compound)//
 % Maps a gMonthLexicalRep// to a gMonth value.

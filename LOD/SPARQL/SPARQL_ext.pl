@@ -102,6 +102,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(row_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_closure)).
 :- use_module(http(http)).
@@ -114,7 +115,6 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
 :- use_module(math(math_ext)).
-:- use_module('SPARQL'(row_ext)).
 :- use_module('SPARQL'('SPARQL_build')).
 :- use_module('SPARQL'('SPARQL_db')).
 :- use_module(xml(xml_namespace)).
@@ -169,7 +169,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   ).
 
 'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results):-
-  to_atom(Query1, Query2),
+  atomic_codes(Query2, Query1),
   debug('SPARQL_ext', '~w', [Query2]),
   once('SPARQL_current_remote'(Remote, Host, Port, Path)),
   O1 = [host(Host),timeout(1),path(Path),variable_names(VarNames)],

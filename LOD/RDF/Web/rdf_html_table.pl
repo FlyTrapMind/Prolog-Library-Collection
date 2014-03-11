@@ -16,23 +16,23 @@
 Generates HTML tables with RDF content.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
-
-:- meta_predicate(rdf_html_table(+,//,+,?,?)).
-
-:- rdf_meta(rdf_html_table(r,?,?)).
 
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf_web(rdf_html_term)).
 :- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(rdf_table, 'http://www.wouterbeek.com/rdf_table.owl#').
+:- meta_predicate(rdf_html_table(+,//,+,?,?)).
+:- rdf_meta(rdf_html_table(r,?,?)).
+
+:- xml_register_namespace(rdf_table, 'http://www.wouterbeek.com/rdf_table#').
 
 
 

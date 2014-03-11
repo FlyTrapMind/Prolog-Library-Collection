@@ -2,8 +2,8 @@
   xsd_gYearMonth,
   [
     gYearMonthCanonicalMap/2, % +GregorianYearMonth:compound
-                              % -LEX:list(code)
-    gYearMonthLexicalMap/2 % +LEX:list(code)
+                              % -Lexical:list(code)
+    gYearMonthLexicalMap/2 % +Lexical:list(code)
                            % -GregorianYearMonth:compound
   ]
 ).
@@ -63,7 +63,8 @@ The gYearMonth datatype has the following values for its fundamental facets:
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 
 
 
@@ -71,7 +72,7 @@ The gYearMonth datatype has the following values for its fundamental facets:
 
 %! gYearMonthCanonicalMap(
 %!   +GregorianYearMonth:compound,
-%!   -LEX:list(code)
+%!   -Lexical:list(code)
 %! ) is det.
 % A compound term that represents a Gregorian year-month has
 % the following form:
@@ -80,8 +81,8 @@ The gYearMonth datatype has the following values for its fundamental facets:
 % ~~~
 % Where only the values for year, month, and time zone are used.
 
-gYearMonthCanonicalMap(GYM, LEX):-
-  phrase(gYearMonthCanonicalMap(GYM), LEX).
+gYearMonthCanonicalMap(GYM, Lexical):-
+  phrase(gYearMonthCanonicalMap(GYM), Lexical).
 
 %! gYearMonthCanonicalMap(+GregorianYearMonth:compound)//
 % Maps a gYearMonth value to a gYearMonthLexicalRep//.
@@ -97,7 +98,7 @@ gYearMonthCanonicalMap(dateTime(Y,M,_D,_H,_MM,_S,TZ)) -->
 % LEXICAL MAPPING %
 
 %! gYearMonthLexicalMap(
-%!   +LEX:list(code),
+%!   +Lexical:list(code),
 %!   -GregorianYearMonth:compound
 %! ) is nondet.
 % A compound term that represents a Gregorian year-month has
@@ -107,8 +108,8 @@ gYearMonthCanonicalMap(dateTime(Y,M,_D,_H,_MM,_S,TZ)) -->
 % ~~~
 % Where only the values for year, month, and time zone are used.
 
-gYearMonthLexicalMap(LEX, GYM):-
-  phrase(gYearMonthLexicalRep(GYM), LEX).
+gYearMonthLexicalMap(Lexical, GYM):-
+  phrase(gYearMonthLexicalRep(GYM), Lexical).
 
 %! gYearMonthLexicalRep(-GregorianYearMonth:compound)//
 % Maps a gYearMonthLexicalRep// to a gYearMonth value.

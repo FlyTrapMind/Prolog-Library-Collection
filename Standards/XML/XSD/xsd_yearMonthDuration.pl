@@ -2,8 +2,8 @@
   xsd_yearMonthDuration,
   [
     yearMonthDurationCanonicalMap/2, % +YearMonthDuration:compound
-                                     % -LEX:list(code)
-    yearMonthDurationLexicalMap/2 % +LEX:list(code)
+                                     % -Lexical:list(code)
+    yearMonthDurationLexicalMap/2 % +Lexical:list(code)
                                   % -YearMonthDuration:compound
   ]
 ).
@@ -102,22 +102,22 @@ totally ordered, because the value of that facet is unchanged by derivation.
 
 %! yearMonthDurationCanonicalMap(
 %!   +YearMonthDuration:number,
-%!   -LEX:list(code)
+%!   -Lexical:list(code)
 %! ) is det.
 
-yearMonthDurationCanonicalMap(YMD, LEX):-
-  phrase(yearMonthDurationCanonicalMap(YMD), LEX).
+yearMonthDurationCanonicalMap(YMD, Lexical):-
+  phrase(yearMonthDurationCanonicalMap(YMD), Lexical).
 
 yearMonthDurationCanonicalMap(duration(M,0)) -->
-  durationCanonicalMap(duration(M,0)).
+  xsd_duration_canonical_map(duration(M,0)).
 
 %! yearMonthDurationLexicalMap(
-%!   +LEX:list(code)
+%!   +Lexical:list(code)
 %!   -YearMonthDuration:number
 %! ) is det.
 
-yearMonthDurationLexicalMap(LEX, YMD):-
-  phrase(yearMonthDurationLexicalRep(YMD), LEX).
+yearMonthDurationLexicalMap(Lexical, YMD):-
+  phrase(yearMonthDurationLexicalRep(YMD), Lexical).
 
 %! yearMonthDurationLexicalRep(-Duration:compound)//
 % ~~~{.ebnf}

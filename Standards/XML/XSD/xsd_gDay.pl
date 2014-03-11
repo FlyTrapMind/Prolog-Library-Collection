@@ -2,8 +2,8 @@
   xsd_gDay,
   [
     gDayCanonicalMap/2, % +GregorianDay:compound
-                        % -LEX:list(code)
-    gDayLexicalMap/2 % +LEX:list(code)
+                        % -Lexical:list(code)
+    gDayLexicalMap/2 % +Lexical:list(code)
                      % -GregorianDay:compound
   ]
 ).
@@ -84,21 +84,22 @@ The gDay datatype has the following values for its fundamental facets:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 
 
 
 % CANONICAL MAPPING %
 
-%! gDayCanonicalMap(+GregorianDay:compound, -LEX:list(code)) is det.
+%! gDayCanonicalMap(+GregorianDay:compound, -Lexical:list(code)) is det.
 % A compound term that represents a Gregorian day has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % Where only the values day and time zone are used.
 
-gDayCanonicalMap(GD, LEX):-
-  phrase(gDayCanonicalMap(GD), LEX).
+gDayCanonicalMap(GD, Lexical):-
+  phrase(gDayCanonicalMap(GD), Lexical).
 
 %! gDayCanonicalMap(+GregorianDay:compound)//
 % Maps a gDay value to a gDayLexicalRep//.
@@ -114,15 +115,15 @@ gDayCanonicalMap(dateTime(_Y,_M,D,_H,_MM,_S,TZ)) -->
 
 % LEXICAL MAPPING %
 
-%! gDayLexicalMap(+LEX:list(code), -GregorianDay:compound) is nondet.
+%! gDayLexicalMap(+Lexical:list(code), -GregorianDay:compound) is nondet.
 % A compound term that represents a Gregorian day has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % Where only the values day and time zone are used.
 
-gDayLexicalMap(LEX, GD):-
-  phrase(gDayLexicalRep(GD), LEX).
+gDayLexicalMap(Lexical, GD):-
+  phrase(gDayLexicalRep(GD), Lexical).
 
 %! gDayLexicalRep(-GregorianDay:compound)//
 % Maps a gDayLexicalRep// to a gDay value.

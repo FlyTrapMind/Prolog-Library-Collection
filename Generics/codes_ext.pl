@@ -1,6 +1,14 @@
 :- module(
   codes_ext,
   [
+    atomic_codes/2, % ?AtomicOrCodes:or([atom,list(code),number])
+                    % ?Codes:list(code)
+    atomic_codes/3, % ?Type:oneof([atom,codes,number])
+                    % ?AtomicOrCodes:or([atom,list(code),number])
+                    % ?Codes:list(code)
+    atomic_codes_goal/3, % :Goal
+                         % ?AtomicOrCodes1:or([atom,list(code),number])
+                         % ?AtomicOrCodes2:or([atom,list(code),number])
     code_remove/3, % +FromCodes:list(code)
                    % +Remove:code
                    % -ToCodes:list(code)
@@ -25,11 +33,9 @@
     strip_codes_begin/3, % +Strip:list(list(code))
                          % +In:list(code)
                          % -Out:list(code)
-    strip_codes_end/3, % +Strip:list(list(code))
-                       % +In:list(code)
-                       % -Out:list(code)
-    to_codes/2 % +In:or([atom,list(code),number])
-               % -Codes:list(code)
+    strip_codes_end/3 % +Strip:list(list(code))
+                      % +In:list(code)
+                      % -Out:list(code)
   ]
 ).
 
@@ -59,12 +65,72 @@ Stripping codes lists is simply done using append,
 --
 
 @author Wouter Beek
-@version 2013/05-2013/07, 2013/12-2014/02
+@version 2013/05-2013/07, 2013/12-2014/03
 */
 
+:- use_module(generics(codes_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 
+:- meta_predicate(atomic_codes_goal(2,?,?)).
+
+
+
+%! atomic_codes(
+%!   +Atomic:or([atom,list(code),number]),
+%!   -Codes:list(code)
+%! ) is det.
+%! atomic_codes(
+%!   -Atomic:or([atom,list(code),number]),
+%!   +Codes:list(code)
+%! ) is nondet.
+
+atomic_codes(Atomic, Codes):-
+  atomic_codes(_, Atomic, Codes).
+
+%! atomic_codes(
+%!   ?Type:oneof([atom,codes,number]),
+%!   +Atomic:or([atom,list(code),number]),
+%!   -Codes:list(code)
+%! ) is det.
+%! atomic_codes(
+%!   ?Type:oneof([atom,codes,number]),
+%!   -Atomic:or([atom,list(code),number]),
+%!   +Codes:list(code)
+%! ) is nondet.
+% Instantiation `(?,-,+)` is non-deterministic since a codelist
+% could map to an atom, a number, and a codelist.
+
+atomic_codes(atom, Atom, Codes):-
+  \+ ((
+    nonvar(Atom),
+    \+ atom(Atom)
+  )),
+  atom_codes(Atom, Codes).
+atomic_codes(number, Number, Codes):-
+  \+ ((
+    nonvar(Number),
+    \+ number(Number)
+  )),
+  catch(
+    number_codes(Number, Codes),
+    error(syntax_error(illegal_number),_Context),
+    fail
+  ).
+atomic_codes(codes, Codes, Codes):-
+  is_list(Codes).
+
+
+%! atomic_codes_goal(
+%!   :Goal,
+%!   ?AtomicOrCodes:or([atom,list(code),number]),
+%!   ?AtomicOrCodes:or([atom,list(code),number])
+%! ) .
+
+atomic_codes_goal(Goal, From1, To1):-
+  atomic_codes(Kind, From1, From2),
+  call(Goal, From2, To2),
+  atomic_codes(Kind, To2, To1).
 
 
 %! code_remove(
@@ -159,17 +225,4 @@ strip_codes_end(Strips, C1, C3):-
   append(C2, Strip, C1),
   strip_codes_end(Strips, C2, C3).
 strip_codes_end(_, C, C).
-
-
-%! to_codes(+In:or([atom,list(code),number]), -Out:list(code)) is det.
-% Make sure atomic terms are converted to codes lists.
-
-to_codes(Atom, Codes):-
-  atom(Atom), !,
-  atom_codes(Atom, Codes).
-to_codes(Number, Codes):-
-  number(Number), !,
-  number_codes(Number, Codes).
-to_codes(Codes, Codes):-
-  is_list(Codes).
 

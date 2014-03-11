@@ -5,7 +5,7 @@
   ]
 ).
 
-/** <module> XSD RDF
+/** <module> XSD RDF schema
 
 @author Wouter Beek
 @version 2013/10

@@ -160,7 +160,7 @@ dcg_multi1(DCG, Rep, L1, O1) -->
 dcg_multi1(DCG, Rep, L1, O1, C) -->
   {nonvar(L1)}, !,
   {meta_options(is_meta, O1, O2)},
-  {to_codes(L1, L2)},
+  {atomic_codes(L1, L2)},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, C, L2, O2),
   {in_between(Min, Max, C)}, !.
@@ -223,7 +223,7 @@ dcg_multi2(DCG_Rule, Rep, L1, L2, O1) -->
 dcg_multi2(DCG, Rep, L1, M1, O1, C) -->
   {maplist(nonvar, [L1,M1])}, !,
   {meta_options(is_meta, O1, O2)},
-  {maplist(to_codes, [L1,M1], [L2,M2])},
+  {maplist(atomic_codes, [L1,M1], [L2,M2])},
   {repetition(Rep, Min, Max)},
   dcg_multi_nonvar(DCG, Max, 0, C, L2, M2, O2),
   {in_between(Min, Max, C)}, !.

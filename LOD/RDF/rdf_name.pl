@@ -141,7 +141,7 @@ rdf_typed_literal(literal(type(Datatype,Literal))) -->
   {(
     % The datatype is recognized, so we can display
     % the lexically mapped value.
-    xsd_datatype(_, Datatype)
+    xsd_datatype(Datatype)
   ->
     rdf_datatype(Datatype, Literal, Value)
   ;

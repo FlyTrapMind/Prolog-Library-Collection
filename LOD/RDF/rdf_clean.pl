@@ -209,8 +209,8 @@ rdf_literal_to_datatype0(D, S, P, Lit, G):-
   % If the literal belongs to the lexical space of the datatype,
   %  then it is mapped onto its value and then back to the canonical
   %  lexical for that value.
-  to_codes(Lit, LEX1),
-  xsd_lexicalCanonicalMap(D, LEX1, LEX2),
+  once(atomic_codes(Lit, LEX1)),
+  xsd_lexical_canonical_map(D, LEX1, LEX2),
   atom_codes(LEX3, LEX2),
   rdf_assert_datatype(S, P, D, LEX3, G),
   rdf_retractall_literal(S, P, Lit, G).

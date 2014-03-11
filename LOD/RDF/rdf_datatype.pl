@@ -9,7 +9,7 @@
     rdf_datatype/2, % ?Graph:atom
                     % ?Datatype:iri
     rdf_datatype/3, % +Datatype:iri
-                    % +LEX:atom
+                    % +Lexical:atom
                     % -Value
     rdf_datatype/5, % ?Subject:oneof([bnode,iri])
                     % ?Predicate:iri
@@ -81,7 +81,7 @@ rdf_assert_datatype(S, P, D, Value1, G):-
 */
 % The value is a real Prolog value.
 rdf_assert_datatype(S, P, D, Value, G):-
-  xsd_canonicalMap(D, Value, LEX1),
+  xsd_canonical_map(D, Value, LEX1),
   atom_codes(LEX2, LEX1),
   rdf_assert(S, P, literal(type(D,LEX2)), G).
 
@@ -97,8 +97,8 @@ rdf_datatype(G, D):-
 %  according to the given datatype.
 
 rdf_datatype(D, Lit, Value):-
-  atom_codes(Lit, LEX),
-  xsd_lexicalMap(D, LEX, Value).
+  atom_codes(Lit, Lexical),
+  xsd_lexical_map(D, Lexical, Value).
 
 
 %! rdf_datatype(
@@ -113,7 +113,7 @@ rdf_datatype(D, Lit, Value):-
 
 rdf_datatype(S, P, D, Value, G):-
   maplist(nonvar, [D,Value]), !,
-  xsd_canonicalMap(D, Value, LEX1),
+  xsd_canonical_map(D, Value, LEX1),
   atom_codes(LEX2, LEX1),
   rdf(S, P, literal(type(D,LEX2)), G).
 rdf_datatype(S, P, D, Value, G):-
@@ -122,7 +122,7 @@ rdf_datatype(S, P, D, Value, G):-
 /*
   % Ideally, we would like to interpret all literals,
   % not just the canonical ones.
-  % Unfortunately the instantiation pattern for xsd_lexicalMap/3
+  % Unfortunately the instantiation pattern for xsd_lexical_map/3
   % does not allow this.
   % Interpreting literals could be useful for search,
   %  i.e. does a specific value
@@ -134,9 +134,9 @@ rdf_datatype(S, P, D, Value, G):-
   % of a datatype literal that matches value
   % (this is not so bad as it seems,
   % if subject, predicate, datatype, and graph are specified).
-  rdf(S, P, literal(type(D, LEX)), G),
+  rdf(S, P, literal(type(D, Lexical)), G),
   % This may be nondet!
-  xsd_lexicalMap(D, LEX, Value).
+  xsd_lexical_map(D, Lexical, Value).
 */
 
 %! rdf_overwrite_datatype(

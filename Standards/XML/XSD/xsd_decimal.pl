@@ -2,8 +2,8 @@
   xsd_decimal,
   [
     decimalCanonicalMap/2, % +Decimal:or([atom,integer,rational])
-                           % -LEX:list(code)
-    decimalLexicalMap/2, % +LEX:list(code)
+                           % -Lexical:list(code)
+    decimalLexicalMap/2, % +Lexical:list(code)
                          % -Decimal:number
     decimalLexicalRep//1, % -Decimal:number
 % DCG COMPONENTS
@@ -121,16 +121,16 @@ The decimal datatype has the following values for its fundamental facets:
 
 %! decimalCanonicalMap(
 %!   +Decimal:oneof([atom,integer,rational]),
-%!   -LEX:list(code)
+%!   -Lexical:list(code)
 %! ) is det.
 
-decimalCanonicalMap(N1, LEX):-
+decimalCanonicalMap(N1, Lexical):-
   atom(N1), !,
   atom_number(N1, N2),
-  decimalCanonicalMap(N2, LEX).
-decimalCanonicalMap(N, LEX):-
+  decimalCanonicalMap(N2, Lexical).
+decimalCanonicalMap(N, Lexical):-
   number(N), !,
-  phrase(decimalCanonicalMap(N), LEX).
+  phrase(decimalCanonicalMap(N), Lexical).
 
 %! decimalCanonicalMap(+Decimal:oneof([integer,rational]))//
 
@@ -205,7 +205,7 @@ unsignedNoDecimalPtCanonicalMap_(F) -->
 
 % LEXICAL MAPPING %
 
-%! decimalLexicalMap(+LEX:list(code), -Decimal:number) is nondet.
+%! decimalLexicalMap(+Lexical:list(code), -Decimal:number) is nondet.
 % This predicate cannot work for instantiation (-,+) due to the following
 % DCG rules contain arithmetic functions that are unidirectional:
 %   * fracFrag//1
@@ -214,8 +214,8 @@ unsignedNoDecimalPtCanonicalMap_(F) -->
 % @see decimalLexicalMap1/2 and decimalLexicalMap2/2 for bidirectional
 %      implementations.
 
-decimalLexicalMap(LEX, N):-
-  once(phrase(decimalLexicalRep(N), LEX)).
+decimalLexicalMap(Lexical, N):-
+  once(phrase(decimalLexicalRep(N), Lexical)).
 
 %! decimalLexicalRep(-Decimal:float)//
 % ~~~{.ebnf}
@@ -302,11 +302,11 @@ unsignedNoDecimalPtNumeral(0, 0) --> [].
 :- use_module(library(lists)).
 :- use_module(math(radix)).
 
-decimalLexicalMap1(LEX, D):-
-  phrase(decimalLexicalRep1(D), LEX).
+decimalLexicalMap1(Lexical, D):-
+  phrase(decimalLexicalRep1(D), Lexical).
 
-decimalLexicalMap2(LEX, D):-
-  phrase(decimalLexicalRep2(_Tree, D), LEX).
+decimalLexicalMap2(Lexical, D):-
+  phrase(decimalLexicalRep2(_Tree, D), Lexical).
 
 %! decimalLexicalRep1(D)//
 % Processes a decimal value that is internally represented as

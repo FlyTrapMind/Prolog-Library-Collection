@@ -1,38 +1,24 @@
 :- module(
   xsd,
   [
-    convert_to_xsd/4, % +Type:atom
-                      % +Value
-                      % -Datatype:iri
-                      % -XsdValue
-    xsd_canonicalMap/3, % +Datatype:iri
-                        % +Value
-                        % -LexicalExpression:list(code)
-    xsd_canonize_graph/1, % +Graph:atom
-    xsd_convert_datatype/4, % +FromDatatype:iri
-                            % +FromLexicalExpression:list(code)
-                            % +ToDatatype:iri
-                            % -ToLexicalExpression:list(code)
+    xsd_canonical_map/3, % +Datatype:iri
+                         % +Value
+                         % -LexicalExpression:list(code)
+    xsd_datatype/1, % ?Datatype:iri
     xsd_datatype/2, % ?Name:atom
                     % ?Datatype:iri
-    xsd_lexicalCanonicalMap/3, % +Datatype:iri
-                               % +LexicalExpression:list(code)
-                               % -CanonicalLiteral:atom
-    xsd_lexicalMap/3, % +Datatype:iri
-                      % +LexicalExpression:list(code)
-                      % ?Value
+    xsd_lexical_map/3, % +Datatype:iri
+                       % +Lexical:or([atom,list(code)])
+                       % ?Value
     xsd_order/2 % +Datatype:iri
                 % :LEQ
   ]
 ).
-:- reexport(
-  xsd(xsd_dateTime),
-  [
-    dateTime_leq/2
-  ]
-).
 
 /** <module> XML Schema 2: Datatypes
+
+Support for XML Scheme 2 datatypes,
+conforming to recommendation version 1.1.
 
 @author Wouter Beek
 @compat XML Schema 2: Datatypes (Second Edition)
@@ -49,7 +35,7 @@
 @tbd Read section E.3.3 on adding durations to dateTime.
 @tbd Read section G on REs.
 @tbd Read section H on implementation-defined datatypes.
-@version 2013/08-2013/10, 2014/01
+@version 2013/08-2013/10, 2014/01, 2014/03
 */
 
 :- use_module(generics(codes_ext)).
@@ -75,224 +61,132 @@
 
 :- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
-:- rdf_meta(xsd_canonicalMap(r,+,-)).
-:- rdf_meta(xsd_canonicalMap_(r,+,-)).
-:- rdf_meta(xsd_convert_datatype(r,+,r,-)).
+:- rdf_meta(xsd_canonical_map(r,+,-)).
+:- rdf_meta(xsd_datatype(r)).
 :- rdf_meta(xsd_datatype(+,r)).
-:- rdf_meta(xsd_lexicalCanonicalMap(r,+,-)).
-:- rdf_meta(xsd_lexicalMap(r,+,-)).
-:- rdf_meta(xsd_lexicalMap_(r,+,-)).
+:- rdf_meta(xsd_lexical_map(r,+,?)).
 
 
 
-%! convert_to_xsd(+Type:atom, +Value1, -Datatype:iri, -Value2) .
-
-% The value is already in XSD format: recognize that this is the case.
-convert_to_xsd(Type, Value1, Datatype, Value3):-
-  atomic(Value1),
-  xsd_datatype(Type, Datatype),
-  atom_codes(Value1, Value2),
-  xsd_lexicalMap(Datatype, Value2, Value3), !.
-% The value is not yet in XSD format, but could be converted using
-% the supported mappings.
-convert_to_xsd(Type, Value, Datatype, Value):-
-  xsd_datatype(Type, Datatype), !,
-  xsd_canonicalMap(Datatype, Value, _).
-
-
-%! xsd_canonicalMap(
+%! xsd_canonical_map(
 %!   +Datatype:iri,
 %!   +Value,
 %!   -LexicalExpression:list(code)
 %! ) is det.
 
-xsd_canonicalMap(Datatype, Double, LEX):-
-  rdf_global_id(xsd:double, Datatype), !,
-  number_codes(Double, LEX).
-xsd_canonicalMap(Datatype, Value, LEX):-
-  once(xsd_canonicalMap_(Datatype, Value, LEX)).
-
-xsd_canonicalMap_(xsd:boolean, Boolean, LEX):- !,
-  booleanCanonicalMap(Boolean, LEX).
-xsd_canonicalMap_(xsd:date, Date, LEX):- !,
-  dateCanonicalMap(Date, LEX).
-xsd_canonicalMap_(xsd:dateTime, DateTime, LEX):- !,
-  dateTimeCanonicalMap(DateTime, LEX).
-xsd_canonicalMap_(xsd:decimal, Decimal, LEX):- !,
-  decimalCanonicalMap(Decimal, LEX).
-xsd_canonicalMap_(xsd:double, Double, LEX):- !,
-  doubleCanonicalMap(Double, LEX).
-xsd_canonicalMap_(xsd:duration, Duration, LEX):- !,
-  durationCanonicalMap(Duration, LEX).
-xsd_canonicalMap_(xsd:float, Float, LEX):- !,
-  floatCanonicalMap(Float, LEX).
-xsd_canonicalMap_(xsd:gDay, GregorianDay, LEX):- !,
-  gDayCanonicalMap(GregorianDay, LEX).
-xsd_canonicalMap_(xsd:gMonth, GregorianMonth, LEX):- !,
-  gMonthCanonicalMap(GregorianMonth, LEX).
-xsd_canonicalMap_(xsd:gMonthDay, GregorianMonthDay, LEX):- !,
-  gMonthDayCanonicalMap(GregorianMonthDay, LEX).
-xsd_canonicalMap_(xsd:gYear, GregorianYear, LEX):- !,
-  gYearCanonicalMap(GregorianYear, LEX).
-xsd_canonicalMap_(xsd:gYearMonth, GregorianYearMonth, LEX):- !,
-  gYearMonthCanonicalMap(GregorianYearMonth, LEX).
-xsd_canonicalMap_(xsd:hexBinary, HexBinary, LEX):- !,
-  hexBinaryCanonicalMap(HexBinary, LEX).
-xsd_canonicalMap_(xsd:integer, Integer, LEX):- !,
-  integerCanonicalMap(Integer, LEX).
-xsd_canonicalMap_(xsd:string, String, LEX):- !,
-  stringCanonicalMap(String, LEX).
-xsd_canonicalMap_(xsd:time, Time, LEX):- !,
-  timeCanonicalMap(Time, LEX).
-xsd_canonicalMap_(Datatype, Value, _LEX):- !,
-  debug(
-    xsd,
-    'There is no canonical map for value ~w of datatype ~w.',
-    [Value,Datatype]
-  ),
-  fail.
+xsd_canonical_map(xsd:boolean, Boolean, Lexical):- !,
+  xsd_boolean_canonical_map(Boolean, Lexical).
+xsd_canonical_map(xsd:date, Date, Lexical):- !,
+  xsd_date_canonical_map(Date, Lexical).
+xsd_canonical_map(xsd:dateTime, DateTime, Lexical):- !,
+  xsd_dateTime_canonical_map(DateTime, Lexical).
+xsd_canonical_map(xsd:decimal, Decimal, Lexical):- !,
+  decimalCanonicalMap(Decimal, Lexical).
+xsd_canonical_map(xsd:double, Double, Lexical):- !,
+  doubleCanonicalMap(Double, Lexical).
+xsd_canonical_map(xsd:duration, Duration, Lexical):- !,
+  xsd_duration_canonical_map(Duration, Lexical).
+xsd_canonical_map(xsd:float, Float, Lexical):- !,
+  floatCanonicalMap(Float, Lexical).
+xsd_canonical_map(xsd:gDay, GregorianDay, Lexical):- !,
+  gDayCanonicalMap(GregorianDay, Lexical).
+xsd_canonical_map(xsd:gMonth, GregorianMonth, Lexical):- !,
+  gMonthCanonicalMap(GregorianMonth, Lexical).
+xsd_canonical_map(xsd:gMonthDay, GregorianMonthDay, Lexical):- !,
+  gMonthDayCanonicalMap(GregorianMonthDay, Lexical).
+xsd_canonical_map(xsd:gYear, GregorianYear, Lexical):- !,
+  gYearCanonicalMap(GregorianYear, Lexical).
+xsd_canonical_map(xsd:gYearMonth, GregorianYearMonth, Lexical):- !,
+  gYearMonthCanonicalMap(GregorianYearMonth, Lexical).
+xsd_canonical_map(xsd:hexBinary, HexBinary, Lexical):- !,
+  hexBinaryCanonicalMap(HexBinary, Lexical).
+xsd_canonical_map(xsd:integer, Integer, Lexical):- !,
+  integerCanonicalMap(Integer, Lexical).
+xsd_canonical_map(xsd:string, String, Lexical):- !,
+  stringCanonicalMap(String, Lexical).
+xsd_canonical_map(xsd:time, Time, Lexical):- !,
+  timeCanonicalMap(Time, Lexical).
 
 
-%! xsd_canonize_graph(+Graph:atom) is det.
-% Make sure all typed literals in the graph with the given name
-% have a lexical value that is a canonical value for its datatype.
-%
-% @arg Graph The atomic name of an RDF graph.
+%! xsd_datatype(+Datatype:iri) is semidet.
+%! xsd_datatype(-Datatype:iri) is nondet.
+%! xsd_datatype(+Name:atom, +Datatype:iri) is semidet.
+%! xsd_datatype(+Name:atom, -Datatype:iri) is det.
+%! xsd_datatype(-Name:atom, +Datatype:iri) is det.
+%! xsd_datatype(-Name:atom, -Datatype:iri) is nondet.
 
-xsd_canonize_graph(G):-
-  forall(
-    (
-      % For every RDF triple that contains a typed literal ...
-      rdf(S, P, literal(type(Datatype,Value)), G),
+xsd_datatype(Datatype):-
+  xsd_datatype(_, Datatype).
 
-      % Check whether the datatypes that occur in the graph
-      % are all covered by this module.
-      (
-        xsd_datatype(DatatypeName, Datatype), !
-      ;
-        debug(xsd, 'Unrecognized datatype: ~w.', [Datatype]),
-        DatatypeName = unknown
-      ),
-
-      % Convert from lexical to value,
-      % and then from value to canonical lexical.
-      to_codes(Value, LexicalExpression),
-      xsd_lexicalCanonicalMap(
-        Datatype,
-        LexicalExpression,
-        CanonicalLexicalExpression
-      ),
-
-      % Only changes need to be written.
-      \+ atom_codes(LexicalExpression, CanonicalLexicalExpression)
-    ),
-    (
-      rdf_retractall(S, P, literal(type(Datatype,LexicalExpression)), G),
-      rdf_assert(S, P, literal(type(Datatype,CanonicalLexicalExpression)), G),
-      debug(
-        xsd,
-        'Canonized datatype ~w: "~w" -> "~w"',
-        [DatatypeName,LexicalExpression,CanonicalLexicalExpression]
-      )
-    )
-  ).
-
-
-%! xsd_convert_datatype(
-%!   +FromDatatype:uri,
-%!   +FromLexicalExpression:list(code),
-%!   +ToDatatype:uri,
-%!   -ToLexicalExpression:list(code)
-%! ) is det.
-
-xsd_convert_datatype(FromDatatype, FromLEX, ToDatatype, ToLEX):-
-  xsd_lexicalMap(FromDatatype, FromLEX, Value),
-  xsd_canonicalMap(ToDatatype, Value, ToLEX).
-
-
-%! xsd_datatype(?Name:atom, ?Datatype:iri) is nondet.
-
-xsd_datatype(boolean, xsd:boolean).
-xsd_datatype(date, xsd:date).
-xsd_datatype(dateTime, xsd:dateTime).
-xsd_datatype(decimal, xsd:decimal).
-xsd_datatype(double, xsd:double).
-xsd_datatype(duration, xsd:duration).
-xsd_datatype(float, xsd:float).
-xsd_datatype(gDay, xsd:gDay).
-xsd_datatype(gMonth, xsd:gMonth).
-xsd_datatype(gMonthDay, xsd:gMonthDay).
-xsd_datatype(gYear, xsd:gYear).
+xsd_datatype(boolean,    xsd:boolean   ).
+xsd_datatype(date,       xsd:date      ).
+xsd_datatype(dateTime,   xsd:dateTime  ).
+xsd_datatype(decimal,    xsd:decimal   ).
+xsd_datatype(double,     xsd:double    ).
+xsd_datatype(duration,   xsd:duration  ).
+xsd_datatype(float,      xsd:float     ).
+xsd_datatype(gDay,       xsd:gDay      ).
+xsd_datatype(gMonth,     xsd:gMonth    ).
+xsd_datatype(gMonthDay,  xsd:gMonthDay ).
+xsd_datatype(gYear,      xsd:gYear     ).
 xsd_datatype(gYearMonth, xsd:gYearMonth).
-xsd_datatype(hexBinary, xsd:hexBinary).
-xsd_datatype(integer, xsd:integer).
-xsd_datatype(string, xsd:string).
-xsd_datatype(time, xsd:time).
+xsd_datatype(hexBinary,  xsd:hexBinary ).
+xsd_datatype(integer,    xsd:integer   ).
+xsd_datatype(string,     xsd:string    ).
+xsd_datatype(time,       xsd:time      ).
 
 
-%! xsd_lexicalCanonicalMap(
+%! xsd_lexical_map(
 %!   +Datatype:iri,
-%!   +LexicalExpression:list(code),
-%!   -CanonicalLexicalExpression:list(code)
-%! ) is det.
-% Reads an XSD 1.1 datatype value and writes it into its canonical form.
-
-xsd_lexicalCanonicalMap(Datatype, LEX, CanonicalLEX):-
-  xsd_convert_datatype(Datatype, LEX, Datatype, CanonicalLEX).
-
-
-%! xsd_lexicalMap(
+%!   +Lexical:or([atom,list(code)]),
+%!   +Value
+%! ) is semidet.
+%! xsd_lexical_map(
 %!   +Datatype:iri,
-%!   +LexicalExpression:list(code),
+%!   +Lexical:or([atom,list(code)]),
 %!   -Value
-%! ) is nondet.
-%
-% @tbd rdf_meta/1 directive does not work for the Datatype parameter!
+%! ) is det.
 
-xsd_lexicalMap(Datatype1, LEX, Value):-
-  rdf_global_id(Datatype1, Datatype2),
-  xsd_lexicalMap_(Datatype2, LEX, Value).
+xsd_lexical_map(Datatype, Lexical, Value):-
+  atomic_codes_goal(xsd_lexical_map_codes(Datatype), Lexical, Value).
 
-xsd_lexicalMap_(xsd:boolean, LEX, Boolean):- !,
-  booleanLexicalMap(LEX, Boolean).
-xsd_lexicalMap_(xsd:date, LEX, Date):- !,
-  dateLexicalMap(LEX, Date).
-xsd_lexicalMap_(xsd:dateTime, LEX, DateTime):- !,
-  dateTimeLexicalMap(LEX, DateTime).
-xsd_lexicalMap_(xsd:decimal, LEX, Decimal):- !,
-  decimalLexicalMap(LEX, Decimal).
-xsd_lexicalMap_(xsd:double, LEX, Double):- !,
-  doubleLexicalMap(LEX, Double).
-xsd_lexicalMap_(xsd:duration, LEX, Duration):- !,
-  durationLexicalMap(LEX, Duration).
-xsd_lexicalMap_(xsd:float, LEX, Float):- !,
-  floatLexicalMap2(LEX, Float).
-xsd_lexicalMap_(xsd:gDay, LEX, GregorianDay):- !,
-  gDayLexicalMap(LEX, GregorianDay).
-xsd_lexicalMap_(xsd:gMonth, LEX, GregorianMonth):- !,
-  gMonthLexicalMap(LEX, GregorianMonth).
-xsd_lexicalMap_(xsd:gMonthDay, LEX, GregorianMonthDay):- !,
-  gMonthDayLexicalMap(LEX, GregorianMonthDay).
-xsd_lexicalMap_(xsd:gYear, LEX, GregorianYear):- !,
-  gYearLexicalMap(LEX, GregorianYear).
-xsd_lexicalMap_(xsd:gYearMonth, LEX, GregorianYearMonth):- !,
-  gYearMonthLexicalMap(LEX, GregorianYearMonth).
-xsd_lexicalMap_(xsd:hexBinary, LEX, HexBinary):- !,
-  hexBinaryLexicalMap(LEX, HexBinary).
-xsd_lexicalMap_(xsd:integer, LEX, Integer):- !,
-  integerLexicalMap(LEX, Integer).
-xsd_lexicalMap_(xsd:string, LEX, String):- !,
-  stringLexicalMap(LEX, String).
-xsd_lexicalMap_(xsd:time, LEX, Time):- !,
-  timeLexicalMap(LEX, Time).
-xsd_lexicalMap_(Datatype, _LEX, _Value):-
-  debug(xsd, 'There is no lexical mapping for datatype ~w.', [Datatype]),
-  fail.
+xsd_lexical_map_codes(xsd:boolean, Lexical, Boolean):- !,
+  xsd_boolean_lexical_map(Lexical, Boolean).
+xsd_lexical_map_codes(xsd:date, Lexical, Date):- !,
+  xsd_date_lexical_map(Lexical, Date).
+xsd_lexical_map_codes(xsd:dateTime, Lexical, DateTime):- !,
+  xsd_dateTime_lexical_map(Lexical, DateTime).
+xsd_lexical_map_codes(xsd:decimal, Lexical, Decimal):- !,
+  decimalLexicalMap(Lexical, Decimal).
+xsd_lexical_map_codes(xsd:double, Lexical, Double):- !,
+  doubleLexicalMap(Lexical, Double).
+xsd_lexical_map_codes(xsd:duration, Lexical, Duration):- !,
+  xsd_duration_lexical_map(Lexical, Duration).
+xsd_lexical_map_codes(xsd:float, Lexical, Float):- !,
+  floatLexicalMap2(Lexical, Float).
+xsd_lexical_map_codes(xsd:gDay, Lexical, GregorianDay):- !,
+  gDayLexicalMap(Lexical, GregorianDay).
+xsd_lexical_map_codes(xsd:gMonth, Lexical, GregorianMonth):- !,
+  gMonthLexicalMap(Lexical, GregorianMonth).
+xsd_lexical_map_codes(xsd:gMonthDay, Lexical, GregorianMonthDay):- !,
+  gMonthDayLexicalMap(Lexical, GregorianMonthDay).
+xsd_lexical_map_codes(xsd:gYear, Lexical, GregorianYear):- !,
+  gYearLexicalMap(Lexical, GregorianYear).
+xsd_lexical_map_codes(xsd:gYearMonth, Lexical, GregorianYearMonth):- !,
+  gYearMonthLexicalMap(Lexical, GregorianYearMonth).
+xsd_lexical_map_codes(xsd:hexBinary, Lexical, HexBinary):- !,
+  hexBinaryLexicalMap(Lexical, HexBinary).
+xsd_lexical_map_codes(xsd:integer, Lexical, Integer):- !,
+  integerLexicalMap(Lexical, Integer).
+xsd_lexical_map_codes(xsd:string, Lexical, String):- !,
+  stringLexicalMap(Lexical, String).
+xsd_lexical_map_codes(xsd:time, Lexical, Time):- !,
+  timeLexicalMap(Lexical, Time).
 
 
 %! xsd_order(+Datatype:iri, :LEQ) is det.
 
-xsd_order(D1, dateTime_leq):-
+xsd_order(D1, xsd_dateTime_leq):-
   rdf_global_id(D1, D2),
   rdf_memberchk(
     D2,

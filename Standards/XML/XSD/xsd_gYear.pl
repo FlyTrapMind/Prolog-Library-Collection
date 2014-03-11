@@ -2,8 +2,8 @@
   xsd_gYear,
   [
     gYearCanonicalMap/2, % +GregorianYear:compound
-                         % -LEX:list(code)
-    gYearLexicalMap/2, % +LEX:list(code)
+                         % -Lexical:list(code)
+    gYearLexicalMap/2, % +Lexical:list(code)
                        % -GregorianYear:compound
     gYearLexicalRep//1, % -GregorianYear:compound
 % CONVERSIONS
@@ -65,7 +65,8 @@ The gYear datatype has the following values for its fundamental facets:
 @version 2013/08
 */
 
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 
 
 
@@ -75,15 +76,15 @@ integer_to_gYear_dateTime(Y, dateTime(Y,_M,_D,_H,_MM,_S,_TZ)).
 
 % CANONICAL MAPPING %
 
-%! gYearCanonicalMap(+GregorianYear:compound, -LEX:list(code)) is det.
+%! gYearCanonicalMap(+GregorianYear:compound, -Lexical:list(code)) is det.
 % A compound term that represents a Gregorian year has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % Where only the values year and time zone are used.
 
-gYearCanonicalMap(GY, LEX):-
-  phrase(gYearCanonicalMap(GY), LEX).
+gYearCanonicalMap(GY, Lexical):-
+  phrase(gYearCanonicalMap(GY), Lexical).
 
 %! gYearCanonicalMap(+GregorianYear:compound)//
 % Maps a gYear value to a gYearLexicalRep//.
@@ -98,15 +99,15 @@ gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,TZ)) --> !,
 
 % LEXICAL MAPPING %
 
-%! gYearLexicalMap(+LEX:list(code), -GregorianYear:compound) is nondet.
+%! gYearLexicalMap(+Lexical:list(code), -GregorianYear:compound) is nondet.
 % A compound term that represents a Gregorian year has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % Where only the values year and time zone are used.
 
-gYearLexicalMap(LEX, GY):-
-  phrase(gYearLexicalRep(GY), LEX).
+gYearLexicalMap(Lexical, GY):-
+  phrase(gYearLexicalRep(GY), Lexical).
 
 %! gYearLexicalRep(-GregorianYear:compound)//
 % Maps a gYearLexicalRep// to a gYear value.

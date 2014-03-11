@@ -242,7 +242,7 @@ dcg_cow_eyes(O) -->
     option(eyes(Eyes1), O, "oo"),
     % Enusre that the eyes are codes
     % (i.e., apply atom2code conversion if needed).
-    to_codes(Eyes1, Eyes2),
+    once(atomic_codes(Eyes1, Eyes2)),
     Eyes2 = [X,Y|_], !
   },
   [X,Y].
@@ -256,7 +256,7 @@ dcg_cow_tongue(O) -->
     option(tongue(Tongue1), O, "  "),
     % Enusre that the eyes are codes
     % (i.e., apply atom2code conversion if needed).
-    to_codes(Tongue1, Tongue2),
+    once(atomic_codes(Tongue1, Tongue2)),
     Tongue2 = [X,Y|_], !
   },
   [X,Y].

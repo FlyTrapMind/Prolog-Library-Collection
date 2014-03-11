@@ -12,17 +12,17 @@
   ]
 ).
 
-/** <module> DCG_DATE
+/** <module> DCG date
 
 DCG rules for parsing/generating dates.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06, 2014/03
 */
 
 
 
-date(Lang, date(Year,Month,Day)) -->
+date(Lang, date(Year,Month,Day,_,_,_)) -->
   % DCG_YEAR cannot be used for consecutive YYYYMMDD representations,
   % since we need the unwarrented asseumption that a year lies between
   % 0000 and 9999.
@@ -32,20 +32,24 @@ date(Lang, date(Year,Month,Day)) -->
   ("-" ; ""),
   day(Lang, Day).
 
-day(_Lang, Day) -->
+
+day(_, Day) -->
   [D1,D2],
   {
     number_codes(Day, [D1,D2]),
     between(1, 31, Day)
   }.
 
-month(_Lang, Month) -->
+
+month(_, Month) -->
   [D1,D2],
   {
     number_codes(Month, [D1,D2]),
     between(1, 12, Month)
   }.
 
-year(_Lang, Year) -->
+
+year(_, Year) -->
   [Y1,Y2,Y3,Y4],
   {number_codes(Year, [Y1,Y2,Y3,Y4])}.
+

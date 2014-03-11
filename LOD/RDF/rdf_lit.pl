@@ -37,7 +37,7 @@ Support for RDF literals.
 :- use_module(generics(codes_ext)).
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(xsd(xsd)).
+:- use_module(xsd(xsd_clean)).
 
 
 
@@ -81,9 +81,9 @@ rdf_literal_equality(
   literal(type(Type2,Value2))
 ):- !,
   Type1 == Type2,
-  maplist(to_codes, [Value1,Value2], [LEX1,LEX2]),
-  xsd_lexicalCanonicalMap(Type1, LEX1, CAN1),
-  xsd_lexicalCanonicalMap(Type2, LEX2, CAN2),
+  maplist(atomic_codes, [Value1,Value2], [LEX1,LEX2]),
+  xsd_lexical_canonical_map(Type1, LEX1, CAN1),
+  xsd_lexical_canonical_map(Type2, LEX2, CAN2),
   CAN1 == CAN2.
 % Simple literals that are the same.
 rdf_literal_equality(literal(Lit1), literal(Lit2)):- !,
@@ -150,11 +150,11 @@ rdf_simple_literal(Graph, Literal, Value):-
 %! ) is nondet.
 
 :- rdf_meta(rdf_typed_literal(o,r,?)).
-rdf_typed_literal(Lit, D, LEX):-
-  Lit = literal(type(D, LEX)).
+rdf_typed_literal(Lit, D, Lexical):-
+  Lit = literal(type(D, Lexical)).
 
 :- rdf_meta(rdf_typed_literal(?,o,r,?)).
-rdf_typed_literal(G, Lit1, D, LEX):-
+rdf_typed_literal(G, Lit1, D, Lexical):-
   (
     nonvar(Lit1)
   ->
@@ -162,6 +162,6 @@ rdf_typed_literal(G, Lit1, D, LEX):-
   ;
     Lit2 = Lit1
   ),
-  rdf_typed_literal(Lit2, D, LEX),
+  rdf_typed_literal(Lit2, D, Lexical),
   rdf(_, _, Lit2, G).
 

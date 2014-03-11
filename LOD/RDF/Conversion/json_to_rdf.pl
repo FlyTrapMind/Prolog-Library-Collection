@@ -263,6 +263,6 @@ json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, Type, Value1):-
   json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
   % Convert the JSON value to an RDF object term.
   % This is where we validate that the value is of the required type.
-  convert_to_xsd(Type, Value1, Datatype, Value2),
+  xsd_value(Value1, Type, Value2),
   rdf_assert_datatype(Individual, Predicate, Datatype, Value2, Graph).
 

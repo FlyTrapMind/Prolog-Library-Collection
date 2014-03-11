@@ -1,20 +1,27 @@
 :- module(
   xsd_duration,
   [
-    durationCanonicalMap/2, % +Duration:compound
-                            % -LEX:list(code)
-    durationCanonicalMap//1, % +Duration:compound
-    durationLexicalMap/2, % +LEX:list(code)
-                          % -Duration:compound
-% DCG COMPONENTS
+    xsd_duration_canonical_map/2, % +Duration:compound
+                                  % -Lexical:list(code)
+    xsd_duration_canonical_map//1, % +Duration:compound
+    xsd_duration_lexical_map/2, % +Lexical:or([atom,list(code)])
+                                % -Duration:compound
+    xsd_duration_lexical_map//1, % -Duration:compound
+% RELATIONS
+    xsd_duration_equal/2, % +Duration1:compound
+                          % +Duration2:compound
+% FUNCTIONS
+    dateTimePlusDuration/3, % +Duration:compound
+                            % +DateTime1:compound
+                            % -DateTime2:compound
+% COMPONENTS
     duYearMonthFrag//1, % -Month:nonneg
-% OTHERS
     duration_to_seconds/2 % +Duration:compound
                           % -Seconds:float
   ]
 ).
 
-/** <module> XSD_DURATION
+/** <module> XSD duration
 
 *=duration=* is a datatype that represents durations of time.
 The concept of duration being captured is drawn from those of ISO 8601,
@@ -76,7 +83,7 @@ The lexical representations of duration are more or less based on the pattern:
 PnYnMnDTnHnMnS
 ~~~
 More precisely, the lexical space is the set of character strings satisfying
-durationLexicalRep//
+xsd_duration_lexical_map//
 
 ~~~{.ebnf}
 duYearFrag ::= unsignedNoDecimalPtNumeral 'Y'
@@ -94,135 +101,40 @@ duTimeFrag ::=
 duDayTimeFrag ::= (duDayFrag duTimeFrag?) | duTimeFrag
 ~~~
 
-### Facets
-
-The duration datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-Datatypes derived by restriction from duration may also specify values for
-the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The duration datatype has the following values for its ·fundamental facets·:
-
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
-The following built-in datatypes are derived from duration:
-  * xsd_yearMonthDuration.pl
-  * xsd_dayTimeDuration.pl
-
 --
 
 @author Wouter Beek
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(math(math_ext)).
 :- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 :- use_module(xsd(xsd_decimal)).
 
 
 
 % CANONICAL MAPPING %
 
-%! durationCanonicalMap(+Duration:compound, -LEX:list(code)) is det.
+%! xsd_duration_canonical_map(+Duration:compound, -Lexical:list(code)) is det.
 % Compound terms that represent durations have the following form:
 % ~~~
 % duration(Months:nonneg, Seconds:float)
 % ~~~
 
-durationCanonicalMap(duration(M,S), LEX):- !,
-  phrase(durationCanonicalMap(duration(M,S)), LEX).
-durationCanonicalMap(S, LEX):-
+xsd_duration_canonical_map(duration(M,S), Lexical):- !,
+  phrase(xsd_duration_canonical_map(duration(M,S)), Lexical).
+xsd_duration_canonical_map(S, Lexical):-
   number(S), !,
-  durationCanonicalMap(duration(0,S), LEX).
+  xsd_duration_canonical_map(duration(0,S), Lexical).
 
-%! duDayCanonicalFragmentMap(+NumberOfDays:nonneg)//
-% Maps a nonnegative integer, presumably the day normalized value from the
-% seconds of a duration value, to a duDayFrag//, a fragment of a duration
-% lexical representation.
-%
-% @arg NumberOfDays A nonnegative integer.
 
-duDayCanonicalFragmentMap(NumberOfDays) -->
-  {NumberOfDays =:= 0}, !.
-duDayCanonicalFragmentMap(NumberOfDays) -->
-  unsignedNoDecimalPtCanonicalMap(NumberOfDays),
-  "D".
-
-%! duDayTimeCanonicalFragmentMap(+Seconds:float)
-% Maps a nonnegative decimal number, presumably the absolute value of
-% the seconds of a duration value, to a duDayTimeFrag//,
-% a fragment of a duration lexical representation.
-%
-% @arg Seconds A nonnegative decimal number.
-
-duDayTimeCanonicalFragmentMap(NumberOfSeconds) -->
-  {NumberOfSeconds =:= 0}, !,
-  "T0S".
-duDayTimeCanonicalFragmentMap(NumberOfSeconds1) -->
-  {
-    % Days.
-    div(NumberOfSeconds1, 86400, NumberOfDays),
-    % Hours.
-    % h is (ss mod 86400) div 3600.
-    mod(NumberOfSeconds1, 86400, X),
-    div(X, 3600, NumberOfHours),
-    % Minutes.
-    % m is (ss mod 3600) div 60.
-    mod(NumberOfSeconds1, 3600, Y),
-    div(Y, 60, NumberOfMinutes),
-    % Seconds.
-    % s is ss mod 60.
-    mod(NumberOfSeconds1, 60, NumberOfSeconds2)
-  },
-  duDayCanonicalFragmentMap(NumberOfDays),
-  duTimeCanonicalFragmentMap(
-    NumberOfHours,
-    NumberOfMinutes,
-    NumberOfSeconds2
-  ).
-
-%! duHourCanonicalFragmentMap(+NumberOfHours:nonneg)//
-% Maps a nonnegative integer, presumably the hour normalized value from the
-% seconds of a duration value, to a duHourFrag//, a fragment of a duration
-% lexical representation.
-%
-% NumberOfHours A nonnegative integer.
-
-duHourCanonicalFragmentMap(H) -->
-  {H =:= 0}, !.
-duHourCanonicalFragmentMap(H) -->
-  unsignedNoDecimalPtCanonicalMap(H),
-  "H".
-
-%! duMinuteCanonicalFragmentMap(+NumberOfMinutes:nonneg)//
-% Maps a nonnegative integer, presumably the minute normalized value from
-% the ·seconds· of a duration value, to a duMinuteFrag//, a fragment of
-% a duration lexical representation.
-%
-% @arg NumberOfMinutes A nonnegative integer.
-
-duMinuteCanonicalFragmentMap(M) -->
-  {M =:= 0}, !.
-duMinuteCanonicalFragmentMap(M) -->
-  unsignedNoDecimalPtCanonicalMap(M),
-  "M".
-
-%! durationCanonicalMap(+Duration:compound)//
-% Maps a duration's property values to durationLexicalRep// fragments and
-% combines the fragments into a complete durationLexicalRep//.
+%! xsd_duration_canonical_map(+Duration:compound)//
+% Maps a duration's property values to xsd_duration_lexical_map// fragments and
+% combines the fragments into a complete xsd_duration_lexical_map//.
 %
 % Compound terms that represent durations have the following form:
 % ~~~
@@ -231,7 +143,7 @@ duMinuteCanonicalFragmentMap(M) -->
 %
 % @arg Duration A complete duration value.
 
-durationCanonicalMap(duration(M1,S1)) -->
+xsd_duration_canonical_map(duration(M1,S1)) -->
   % Emit sign.
   (
     {(M1 < 0 ; S1 < 0.0)}
@@ -265,6 +177,82 @@ durationCanonicalMap(duration(M1,S1)) -->
    ).
 
 
+%! duDayCanonicalFragmentMap(+NumberOfDays:nonneg)//
+% Maps a nonnegative integer, presumably the day normalized value from the
+% seconds of a duration value, to a duDayFrag//, a fragment of a duration
+% lexical representation.
+%
+% @arg NumberOfDays A nonnegative integer.
+
+duDayCanonicalFragmentMap(NumberOfDays) -->
+  {NumberOfDays =:= 0}, !.
+duDayCanonicalFragmentMap(NumberOfDays) -->
+  unsignedNoDecimalPtCanonicalMap(NumberOfDays),
+  `D`.
+
+
+%! duDayTimeCanonicalFragmentMap(+Seconds:float)
+% Maps a nonnegative decimal number, presumably the absolute value of
+% the seconds of a duration value, to a duDayTimeFrag//,
+% a fragment of a duration lexical representation.
+%
+% @arg Seconds A nonnegative decimal number.
+
+duDayTimeCanonicalFragmentMap(NumberOfSeconds) -->
+  {NumberOfSeconds =:= 0}, !,
+  `T0S`.
+duDayTimeCanonicalFragmentMap(NumberOfSeconds1) -->
+  {
+    % Days.
+    div(NumberOfSeconds1, 86400, NumberOfDays),
+    % Hours.
+    % h is (ss mod 86400) div 3600.
+    mod(NumberOfSeconds1, 86400, X),
+    div(X, 3600, NumberOfHours),
+    % Minutes.
+    % m is (ss mod 3600) div 60.
+    mod(NumberOfSeconds1, 3600, Y),
+    div(Y, 60, NumberOfMinutes),
+    % Seconds.
+    % s is ss mod 60.
+    mod(NumberOfSeconds1, 60, NumberOfSeconds2)
+  },
+  duDayCanonicalFragmentMap(NumberOfDays),
+  duTimeCanonicalFragmentMap(
+    NumberOfHours,
+    NumberOfMinutes,
+    NumberOfSeconds2
+  ).
+
+
+%! duHourCanonicalFragmentMap(+NumberOfHours:nonneg)//
+% Maps a nonnegative integer, presumably the hour normalized value from the
+% seconds of a duration value, to a duHourFrag//, a fragment of a duration
+% lexical representation.
+%
+% NumberOfHours A nonnegative integer.
+
+duHourCanonicalFragmentMap(H) -->
+  {H =:= 0}, !.
+duHourCanonicalFragmentMap(H) -->
+  unsignedNoDecimalPtCanonicalMap(H),
+  `H`.
+
+
+%! duMinuteCanonicalFragmentMap(+NumberOfMinutes:nonneg)//
+% Maps a nonnegative integer, presumably the minute normalized value from
+% the ·seconds· of a duration value, to a duMinuteFrag//, a fragment of
+% a duration lexical representation.
+%
+% @arg NumberOfMinutes A nonnegative integer.
+
+duMinuteCanonicalFragmentMap(M) -->
+  {M =:= 0}, !.
+duMinuteCanonicalFragmentMap(M) -->
+  unsignedNoDecimalPtCanonicalMap(M),
+  `M`.
+
+
 %! duSecondCanonicalFragmentMap(+NumberOfSeconds:float)//
 % Maps a nonnegative decimal number, presumably the second normalized value
 % from the seconds of a duration value, to a duSecondFrag//, a fragment of
@@ -277,10 +265,11 @@ duSecondCanonicalFragmentMap(S) -->
 duSecondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsignedNoDecimalPtCanonicalMap(S),
-  "S".
+  `S`.
 duSecondCanonicalFragmentMap(S) -->
   unsignedDecimalPtCanonicalMap(S),
-  "S".
+  `S`.
+
 
 %! duTimeCanonicalFragmentMap(
 %!   +NumberOfHours:nonneg,
@@ -298,10 +287,11 @@ duSecondCanonicalFragmentMap(S) -->
 duTimeCanonicalFragmentMap(H, M, S) -->
   {H =:= 0, M =:= 0, S =:= 0.0}, !.
 duTimeCanonicalFragmentMap(H, M, S) -->
-  "T",
+  `T`,
   duHourCanonicalFragmentMap(H),
   duMinuteCanonicalFragmentMap(M),
   duSecondCanonicalFragmentMap(S).
+
 
 %! duYearMonthCanonicalFragmentMap(+NumberOfMonths:nonneg)//
 % Maps a nonnegative integer, presumably the absolute value of the months
@@ -316,36 +306,40 @@ duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
     {NumberOfYears =:= 0}
   ;
     unsignedNoDecimalPtCanonicalMap(NumberOfYears),
-    "Y"
+    `Y`
   ), !,
   {NumberOfMonths2 is NumberOfMonths1 mod 12},
   (
     {NumberOfMonths2 =:= 0}
   ;
     unsignedNoDecimalPtCanonicalMap(NumberOfMonths2),
-    "M"
+    `M`
   ), !.
 
 
 
 % LEXICAL MAPPING %
 
-%! durationLexicalMap(LEX:list(code), Duration:compound)
+%! xsd_duration_lexical_map(
+%!   +Lexical:or([atom,list(code)]),
+%!   -Duration:compound
+%! ) is det.
 % Compound terms that represent durations have the following form:
-% ~~~
+% ~~~{.pl}
 % duration(Months:nonneg, Seconds:float)
 % ~~~
 
-durationLexicalMap(LEX, D):-
-  phrase(durationLexicalRep(D), LEX).
+xsd_duration_lexical_map(Lexical, D):-
+  dcg_phrase(xsd_duration_lexical_map(D), Lexical).
 
-%! durationLexicalRep(-Duration:compound)//
+
+%! xsd_duration_lexical_map(-Duration:compound)//
 % ~~~{.ebnf}
-% durationLexicalRep ::=
+% xsd_duration_lexical_map ::=
 %     '-'? 'P' ((duYearMonthFrag duDayTimeFrag?) | duDayTimeFrag)
 % ~~~
 %
-% #### RE
+% ### RE
 %
 % Seperate REs:
 %   * =|-?P[0-9]+Y?([0-9]+M)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+(\.[0-9]+)?S)?)?|=
@@ -373,11 +367,11 @@ durationLexicalMap(LEX, D):-
 % ~~~
 %
 % @arg Duration A compound term of the form
-%        =|duration(Months:integer,Seconds:float)|=.
+%      =|duration(Months:integer,Seconds:float)|=.
 
-durationLexicalRep(duration(M,S)) -->
+xsd_duration_lexical_map(duration(M,S)) -->
   (minus_sign -> {Sign = -1} ; {Sign = 1}),
-  "P",
+  `P`,
   (
     duYearMonthFrag(Y),
     (duDayTimeFrag(D) ; {D = 0})
@@ -390,6 +384,7 @@ durationLexicalRep(duration(M,S)) -->
     S is copysign(D, Sign)
   }.
 
+
 %! duDayFrag(-Day:nonneg)//
 % ~~~{.ebnf}
 % duDayFrag ::= unsignedNoDecimalPtNumeral 'D'
@@ -397,7 +392,8 @@ durationLexicalRep(duration(M,S)) -->
 
 duDayFrag(D) -->
   unsignedNoDecimalPtNumeral(D),
-  "D".
+  `D`.
+
 
 %! duDayTimeFrag(-Seconds:nonneg)//
 % ~~~{.ebnf}
@@ -412,6 +408,7 @@ duDayTimeFrag(DT) -->
   ),
   {DT is 86400 * D + T}.
 
+
 %! duHourFrag(-Hour:nonneg)//
 % ~~~{.ebnf}
 % duHourFrag ::= unsignedNoDecimalPtNumeral 'H'
@@ -419,7 +416,8 @@ duDayTimeFrag(DT) -->
 
 duHourFrag(H) -->
   unsignedNoDecimalPtNumeral(H),
-  "H".
+  `H`.
+
 
 %! duMinuteFrag(-Minute:nonneg)//
 % ~~~{.ebnf}
@@ -428,7 +426,8 @@ duHourFrag(H) -->
 
 duMinuteFrag(M) -->
   unsignedNoDecimalPtNumeral(M),
-  "M".
+  `M`.
+
 
 %! duMonthFrag(-Month:nonneg)//
 % ~~~{.ebnf}
@@ -437,7 +436,8 @@ duMinuteFrag(M) -->
 
 duMonthFrag(M) -->
   unsignedNoDecimalPtNumeral(M),
-  "M".
+  `M`.
+
 
 %! duSecondFrag(-Second:or([float,nonneg]))//
 % ~~~{.ebnf}
@@ -446,7 +446,8 @@ duMonthFrag(M) -->
 
 duSecondFrag(S) -->
   (unsignedNoDecimalPtNumeral(S) ; unsignedDecimalPtNumeral(S)),
-  "S".
+  `S`.
+
 
 %! duTimeFrag(-Second:nonneg)//
 % ~~~{.ebnf}
@@ -458,7 +459,7 @@ duSecondFrag(S) -->
 % ~~~
 
 duTimeFrag(S2) -->
-  "T",
+  `T`,
   (
     (duHourFrag(H), (duMinuteFrag(M) ; ""), (duSecondFrag(S1) ; ""))
   ;
@@ -468,6 +469,7 @@ duTimeFrag(S2) -->
   ),
   {S2 is 3600 * H + 60 * M + S1}.
 
+
 %! duYearFrag(-Year:nonneg)//
 % ~~~{.ebnf}
 % duYearFrag ::= unsignedNoDecimalPtNumeral 'Y'
@@ -475,7 +477,8 @@ duTimeFrag(S2) -->
 
 duYearFrag(Y) -->
   unsignedNoDecimalPtNumeral(Y),
-  "Y".
+  `Y`.
+
 
 %! duYearMonthFrag(-Month:nonneg)//
 % ~~~{.ebnf}
@@ -494,7 +497,117 @@ duYearMonthFrag(M2) -->
 
 
 
-% OTHERS %
+% RELATIONS %
+
+%! xsd_duration_equal(+Duration1:compound, +Duration2:compound) is semidet.
+% Two duration values are equal if and only if they are identical.
+
+xsd_duration_equal(D1, D2):-
+  xsd_duration_order(=, D1, D2).
+
+
+%! xsd_duration_order(
+%!   -Order,
+%!   +Duration1:compound,
+%!   +Duration2:compound
+%! ) is det.
+% Equality of duration is defined in terms of equality of dateTime;
+% order for duration is defined in terms of the order of dateTime.
+% Specifically, the equality or order of two duration values
+% is determined by adding each duration in the pair
+% to each of the following four dateTime values:
+%   * `1696-09-01T00:00:00Z`
+%   * `1697-02-01T00:00:00Z`
+%   * `1903-03-01T00:00:00Z`
+%   * `1903-07-01T00:00:00Z`
+%
+% If two duration values are ordered the same way when added to
+% each of these four dateTime values, they will retain the same order
+% when added to any other dateTime values.
+% @tbd Where's the proof for this?
+
+xsd_duration_order(Order2, Dur1, Dur2):-
+  newDateTime(1696, 9, 1, 0, 0, 0.0, 0, DTa),
+  newDateTime(1697, 2, 1, 0, 0, 0.0, 0, DTb),
+  newDateTime(1903, 3, 1, 0, 0, 0.0, 0, DTc),
+  newDateTime(1903, 7, 1, 0, 0, 0.0, 0, DTd),
+  
+  dateTimePlusDuration(Dur1, DTa, Dur1a),
+  dateTimePlusDuration(Dur1, DTb, Dur1b),
+  dateTimePlusDuration(Dur1, DTc, Dur1c),
+  dateTimePlusDuration(Dur1, DTd, Dur1d),
+
+  dateTimePlusDuration(Dur2, DTa, Dur2a),
+  dateTimePlusDuration(Dur2, DTb, Dur2b),
+  dateTimePlusDuration(Dur2, DTc, Dur2c),
+  dateTimePlusDuration(Dur2, DTd, Dur2d),
+  
+  (
+    xsd_dateTime_compare(Order1, Dur1a, Dur2a),
+    xsd_dateTime_compare(Order1, Dur1b, Dur2b),
+    xsd_dateTime_compare(Order1, Dur1c, Dur2c),
+    xsd_dateTime_compare(Order1, Dur1d, Dur2d)
+  ->
+    Order2 = Order1
+  ;
+    Order2 = incomparable
+  ).
+
+
+
+% FUNCTIONS %
+
+%! dateTimePlusDuration(
+%!   +Duration:compound,
+%!   +DateTime1:compound,
+%!   -DateTime2:compound
+%! ) is det.
+% Adds a duration to a dateTime value, producing another dateTime value.
+%
+% ### Non-commutative
+%
+% This addition is not commutative, i.e.
+% the order of addition of durations to instants is significant.
+% See module [xsd_test].
+%
+% ### Algorithm
+%
+% Arguments:
+%   * =du=: a duration value
+%   * =dt=: a dateTime value
+% Result: a dateTime value
+%
+% Let:
+%   - =yr= be =dt='s year,
+%   - =mo= be =dt='s month,
+%   - =da= be =dt='s day,
+%   - =hr= be =dt='s hour,
+%   - =mi= be =dt='s minute, and
+%   - =se= be =dt='s second.
+%   - =tz= be =dt='s timezoneOffset.
+%
+% Steps:
+%  1. Add =du='s months to =mo=.
+%  2. =|normalizeMonth(yr, mo)|=
+%     (I.e., carry any over- or underflow, adjust month.)
+%  3. Set =da= to =|min(da, daysInMonth(yr, mo))|=.
+%     (I.e., pin the value if necessary.)
+%  4. Add =du='s seconds to =se=.
+%  5. =|normalizeSecond(yr, mo, da, hr, mi, se)|=.
+%     (I.e., carry over- or underflow of seconds up to minutes, hours, etc.)
+%  6. Return =|newDateTime·(yr, mo, da, hr, mi, se, tz)|=
+%
+% @see http://www.w3.org/TR/xmlschema11-2/#vp-dt-dateTimePlusDuration
+
+dateTimePlusDuration(duration(M1,S1), dateTime(Y2,M2,D2,H2,MM2,S2,TZ), DT):-
+  M3 is M1 + M2,
+  normalizeMonth(Y2, M3, NormY, NormM),
+  daysInMonth(NormY, NormM, Days),
+  D3 is min(D2, Days),
+  S3 is S1 + S2,
+  normalizeSecond(NormY, NormM, D3, H2, MM2, S3, Y0, M0, D0, H0, MM0, S0),
+  newDateTime(Y0, M0, D0, H0, MM0, S0, TZ, DT).
+
 
 %! duration_to_seconds(+Duration:compound, -Seconds:float) is det.
 

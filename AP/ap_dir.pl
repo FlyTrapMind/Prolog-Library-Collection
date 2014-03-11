@@ -25,10 +25,10 @@
 Directory management for running automated processes.
 
 @author Wouter Beek
-@version 2013/11, 2014/01-2014/02
+@version 2013/11, 2014/01-2014/03
 */
 
-:- use_module(generics(atom_ext)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
@@ -78,7 +78,7 @@ ap_directory(AP, Mode, Subdir1, AbsoluteDir):-
   once(rdfs_individual_of(AP, ap:'AP')),
   rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
 
-  to_atom(Subdir1, Subdir2),
+  atomic_codes(Subdir2, Subdir1),
   Spec =.. [Alias,Subdir2],
   (
     absolute_file_name(

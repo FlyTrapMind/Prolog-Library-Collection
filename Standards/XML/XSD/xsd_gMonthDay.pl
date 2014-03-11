@@ -2,8 +2,8 @@
   xsd_gMonthDay,
   [
     gMonthDayCanonicalMap/2, % +GregorianMonthDay:compound
-                             % -LEX:list(code)
-    gMonthDayLexicalMap/2 % +LEX:list(code)
+                             % -Lexical:list(code)
+    gMonthDayLexicalMap/2 % +Lexical:list(code)
                           % -GregorianMonthDay:compound
   ]
 ).
@@ -91,13 +91,14 @@ The gMonthDay datatype has the following values for its fundamental facets:
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 
 
 
 % CANONICAL MAPPING %
 
-%! gMonthDayCanonicalMap(+GregorianMonthDay:compound, -LEX:list(code)) is det.
+%! gMonthDayCanonicalMap(+GregorianMonthDay:compound, -Lexical:list(code)) is det.
 % A compound term that represents a Gregorian month-day has
 % the following form:
 % ~~~
@@ -105,8 +106,8 @@ The gMonthDay datatype has the following values for its fundamental facets:
 % ~~~
 % Where only the values month, day and time zone are used.
 
-gMonthDayCanonicalMap(GY, LEX):-
-  phrase(gMonthDayCanonicalMap(GY), LEX).
+gMonthDayCanonicalMap(GY, Lexical):-
+  phrase(gMonthDayCanonicalMap(GY), Lexical).
 
 %! gMonthDayCanonicalMap(+GregorianMonthDay:compound)//
 % Maps a gMonthDay value to a gMonthDayLexicalRep//.
@@ -125,7 +126,7 @@ gMonthDayCanonicalMap(dateTime(_Y,M,D,_H,_MM,_S,TZ)) -->
 % LEXICAL MAPPING %
 
 %! gMonthDayLexicalMap(
-%!   +LEX:list(code),
+%!   +Lexical:list(code),
 %!   -GregorianMonthDay:compound
 %! ) is nondet.
 % A compound term that represents a Gregorian month-day has
@@ -135,8 +136,8 @@ gMonthDayCanonicalMap(dateTime(_Y,M,D,_H,_MM,_S,TZ)) -->
 % ~~~
 % Where only the values month, day and time zone are used.
 
-gMonthDayLexicalMap(LEX, GY):-
-  phrase(gMonthDayLexicalRep(GY), LEX).
+gMonthDayLexicalMap(Lexical, GY):-
+  phrase(gMonthDayLexicalRep(GY), Lexical).
 
 %! gMonthDayLexicalRep(-GregorianMonthDay:compound)//
 % Maps a gMonthDayLexicalRep// to a gMonthDay value.

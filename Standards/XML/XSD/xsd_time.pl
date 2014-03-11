@@ -2,8 +2,8 @@
   xsd_time,
   [
     timeCanonicalMap/2, % +Time:compound
-                        % -LEX:list(code)
-    timeLexicalMap/2 % +LEX:list(code)
+                        % -Lexical:list(code)
+    timeLexicalMap/2 % +Lexical:list(code)
                      % -Time:compound
   ]
 ).
@@ -64,56 +64,29 @@ dateTime.
 The lexical mapping maps =|00:00:00|= and =|24:00:00|= to the same value,
 namely midnight (hour, minute, and second are zero).
 
-### Facets
-
-The time datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values;
-these facets must not be changed from the values shown:
-  * =|whiteSpace = collapse (fixed)|=
-
-The time datatype has the following constraining facets with the values shown;
-these facets may be specified in the derivation of new types,
-if the value given is at least as restrictive as the one shown:
-  * =|explicitTimezone = optional|=
-
-Datatypes derived by restriction from time may also specify values for
-the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The time datatype has the following values for its fundamental facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_generic)).
+:- use_module(xsd(xsd_dateTime_support)).
 
 
 
 % CANONICAL MAPPING %
 
-%! timeCanonicalMap(+Time:compound, -LEX:list(code)) is det.
+%! timeCanonicalMap(+Time:compound, -Lexical:list(code)) is det.
 % The compound term has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % The values for year, month, and day are neglected for XSD time.
 
-timeCanonicalMap(T, LEX):-
-  phrase(timeCanonicalMap(T), LEX).
+timeCanonicalMap(T, Lexical):-
+  phrase(timeCanonicalMap(T), Lexical).
 
 %! timeCanonicalMap(+Time:compound)//
 % Maps a time value to a timeLexicalRep//.
@@ -122,9 +95,9 @@ timeCanonicalMap(T, LEX):-
 
 timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
   hourCanonicalFragmentMap(H),
-  colon,
+  `:`,
   minuteCanonicalFragmentMap(M),
-  colon,
+  `:`,
   secondCanonicalFragmentMap(S),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
 
@@ -132,15 +105,15 @@ timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
 
 % LEXICAL MAPPING %
 
-%! timeLexicalMap(+LEX:list(code), -Time:compound) is nondet.
+%! timeLexicalMap(+Lexical:list(code), -Time:compound) is nondet.
 % The compound term has the following form:
 % ~~~
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % The values for year, month, and day are neglected for XSD time.
 
-timeLexicalMap(LEX, T):-
-  phrase(timeLexicalRep(T), LEX).
+timeLexicalMap(Lexical, T):-
+  phrase(timeLexicalRep(T), Lexical).
 
 %! timeLexicalRep(-DateTime:compound)//
 %

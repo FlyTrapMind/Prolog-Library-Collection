@@ -2,8 +2,8 @@
   xsd_integer,
   [
     integerCanonicalMap/2, % +Integer:integer
-                           % -LEX:list(code)
-    integerLexicalMap/2 % +LEX:list(code)
+                           % -Lexical:list(code)
+    integerLexicalMap/2 % +Lexical:list(code)
                         % -Integer:integer
   ]
 ).
@@ -73,12 +73,12 @@ Derived datatypes:
 
 
 
-%! integerCanonicalMap(+Integer:integer, -LEX:list(code)) is semidet.
+%! integerCanonicalMap(+Integer:integer, -Lexical:list(code)) is semidet.
 
-integerCanonicalMap(I, LEX):-
-  decimalCanonicalMap(I, LEX).
+integerCanonicalMap(I, Lexical):-
+  decimalCanonicalMap(I, Lexical).
 
-%! integerLexicalMap(+LEX:list(code), -Integer:integer) is nondet.
+%! integerLexicalMap(+Lexical:list(code), -Integer:integer) is nondet.
 
-integerLexicalMap(LEX, I):-
-  phrase(noDecimalPtNumeral(_Sign, I), LEX).
+integerLexicalMap(Lexical, I):-
+  phrase(noDecimalPtNumeral(_Sign, I), Lexical).

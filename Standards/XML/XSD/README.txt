@@ -2,64 +2,58 @@ XML Schema 2: Datatypes (Second Edition)
 
 # Choices I made while implementing this standard
 
-I see the *|value space|* of each XSD datatype as a subset of the values that
-can be defined directly in SWI-Prolog.
+The *|value space|* of each XSD datatype is a subset of 
+the values that can be expressed directly in SWI-Prolog.
 
-I see the *|lexical mapping|* as the function that reads codes from a stream
-that contains an XSD-supporting serialization format, and that creates
-the corresponding SWI-Prolog values.
+The *|lexical mapping|* is a function that reads
+codes from a stream that contains an XSD-supporting serialization format,
+and that creates the corresponding SWI-Prolog value.
 
-I see the *|canonical mapping|* as the function that takes a SWI-Prolog value
+The *|canonical mapping|* is a function that takes a SWI-Prolog value
 and returns a code list representing that value's equivalent in XML Schema
-format, ready to be given to a serailization stream.
+format, ready to be plugged into a DCG.
 
-The literals that make up the various lexical spaces are implemented by
+The *|lexical space|* of each XSD datatype is implemented by
 SWI-Prolog lists of codes.
 
 # Standards version 1.0 or 1.1
 
-When this specification is used to check the datatype validity of XML input,
-implementations may provide the heuristic of using the 1.1 datatypes if
-the input is labeled as XML 1.1, and using the 1.0 datatypes if the input
-is labeled 1.0, but this heuristic should be subject to override by users,
-to support cases where users wish to accept XML 1.1 input but validate it
-using the 1.0 datatypes, or accept XML 1.0 input and validate it using
-the 1.1 datatypes.
+In principle, the XSD version should follow the XML version that is used.
+But the user should always be able to override this choice.
 
 # Datatype
 
-A triple consisting of:
-  * *|Value space|*
-    A set of distinct values.
-    This is only abstractly defined.
-  * *|Lexical space|*
-    A set of lexical representations or literals denoting values.
-  * *Facets*
-    Characterizing properties of the value space, individual values, or the
-    lexical space.
-  * *|Functions, relations, operations|*
-    * A _|lexical mapping|_ from lexical to value space.
-    * A _|canonical mapping|_ from value to lexical space.
-    * _|Identity relation|_
-    * _|Equality relation|_
-    * _|Order relation|_
+A datatype is defined as a triple that consists of:
+  * A *|value space|* which is a set of distinct abstract values.
+  * A *|Lexical space|* which is a set of concrete lexical representations
+    or literals which denote values in the value space.
+  * A collection of *facets* which are characterizing properties
+    of the datatype's value space, individual values, or its lexical space.
+  * Together with the facets comes a collection of
+    *functions*, *relations*, and *operations*.
+    The following are always included:
+      * A many-to-one _|lexical mapping|_
+        from the lexical space to the value space.
+      * A one-to-one _|canonical mapping|_
+        from the value space to the lexical space.
+      * An _|identity relation|_.
+      * An _|equality relation|_.
+      * An _|order relation|_.
 
 # Value space
 
-The set of values for a given datatype.
+Each value in the value space of a datatype is denoted by
+at least one literal in the lexical space of the same datatype.
 
-Each value in the value space of a datatype is denoted by at least one
-literal in the lexical space of the same datatype.
-
-Value space definitions:
-  * *Intensional*
-    Axiomatic definition from fundamental notions.
-  * *Extensional*
-    Enumeration of the values.
-  * *Derived*
-    Defined by restricting an existing value space.
-  * *Combined* out of existing value spaces, according to some
-    construction procedure (e.g., list, union).
+The value space can be definition in the following ways:
+  1. *Intensional*
+     Axiomatic definition from fundamental notions.
+  2.  *Extensional*
+     Enumeration of the values.
+  3.  *Derived*
+     Defined by restricting an existing value space.
+  4. *Combined* out of existing value spaces, according to some
+     construction procedure (e.g., list, union).
 
 An *|ineffable value|* ia a value in a value space that is not mapped to
 by any literal from the corresponding lexical space.
@@ -612,7 +606,7 @@ If =m= and =n= are numbers, then =|m mod n|= is  =|m − n × (m div n)|=.
 
 ## Facets
 
-### =ordered
+### =ordered=
 
 For some datatypes, this document specifies an order relation for their
 value spaces; the =ordered= facet reflects this. It takes the values =total=,

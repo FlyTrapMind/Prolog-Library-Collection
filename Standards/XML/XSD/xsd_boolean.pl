@@ -1,95 +1,77 @@
 :- module(
   xsd_boolean,
   [
-    booleanCanonicalMap/2, % +Boolean:boolean
-                           % -LEX:list(code)
-    booleanLexicalMap/2 % ?LEX:list(code)
-                        % ?Boolean:boolean
+    xsd_boolean_canonical_map/2, % +Boolean:boolean
+                                 % -Lexical:list(code)
+    xsd_boolean_lexical_map/2, % +Lexical:or([atom,list(code)])
+                               % -Boolean:boolean
+    xsd_boolean_map//1 % ?Boolean:boolean
   ]
 ).
 
-/** <module> XSD_BOOLEAN
+/** <module> XSD boolean
+
 *Boolean* represents the values of two-valued logic.
 
-#### Value space
+### Value space
 
 The value space of two-valued logic:  $\{ \text{true}, \text{false} \}$.
 
-#### Lexical representation
+### Lexical representation
 
 ~~~{.ebnf}
-booleanRep ::= 'true' | 'false' | '1' | '0'
+xsd_boolean_map ::= 'true' | 'false' | '1' | '0'
 ~~~
-
-The lexical mapping for =boolean= is booleanLexicalMap/2.
-The canonical mapping for =boolean= is booleanCanonicalMap/2.
-
-#### Facets
-
-Constraining facets:
-  * =assertions=
-  * =pattern=
-  * =|whitespace = collapse (fixed)|=
-
-Values for the funcamental facets:
-  * =|bounded = false|=
-  * =|cardinality = finite|=
-  * =|numeric = false|=
-  * =|ordered = false|=
 
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 
 
-%! booleanCanonicalMap(+Boolean:boolean, -LEX:list(code)) is det.
-% Maps a boolean value to a booleanRep//1.
+
+%! xsd_boolean_canonical_map(+Boolean:boolean, -Lexical:list(code)) is det.
+% Maps a boolean value to a xsd_boolean_map//1.
 %
 % Returns `true` when `Boolean` is true, and
 % returns `false` otherwise (i.e., when `Boolean` is false).
 %
 % @arg Boolean A boolean value.
-% @arg LEX A literal matching booleanRep//1.
+% @arg Lexical A lexical expression that matches xsd_boolean_map//1.
 
-booleanCanonicalMap(Boolean1, LEX):-
-  to_boolean(Boolean1, Boolean2),
-  phrase(booleanRep(Boolean2), LEX).
+xsd_boolean_canonical_map(Boolean, Lexical):-
+  phrase(xsd_boolean_map(Boolean), Lexical).
 
-%! booleanLexicalMap(?LEX:list(code), ?Boolean:boolean) is det.
-% Maps a literal matching the booleanRep//1 production to a boolean value.
+
+%! xsd_boolean_lexical_map(
+%!   ?Lexical:or([atom,list(code)]),
+%!   ?Boolean:boolean
+%! ) is det.
+% Maps a literal matching the xsd_boolean_map//1 production
+% to a boolean value.
 %
-% Returns true when =LEX= is `true` or `1` , and
-% returns false otherwise (i.e., when `LEX` is `false` or `0`).
+% Returns true when =Lexical= is `true` or `1` , and
+% returns false otherwise (i.e., when `Lexical` is `false` or `0`).
 %
-% @arg LEX A literal matching booleanRep//1.
+% @arg Lexical A literal matching xsd_boolean_map//1.
 % @arg Boolean A boolean value.
 
-booleanLexicalMap(LEX, Boolean):-
-  phrase(booleanRep(Boolean), LEX).
+xsd_boolean_lexical_map(Lexical, Boolean):-
+  dcg_phrase(xsd_boolean_map(Boolean), Lexical).
 
-%! booleanRep(?Boolean:boolean)//
 
-booleanRep(true) -->
-  ("true" ; "1").
-booleanRep(false) -->
-  ("false" ; "0").
+%! xsd_boolean_map(?Boolean:boolean)//
 
-% Prolog native.
-to_boolean(true, true).
-to_boolean(false, false).
-% Prolog DSL for JSON.
-to_boolean(@(true), true).
-to_boolean(@(false), false).
-% Integer boolean.
-to_boolean(1, true).
-to_boolean(0, false).
-% CKAN boolean.
-to_boolean('True', true).
-to_boolean('False', false).
-% Electric switch.
-to_boolean(on, true).
-to_boolean(off, false).
+xsd_boolean_map(true) -->
+  `true`.
+xsd_boolean_map(true) -->
+  `1`.
+xsd_boolean_map(false) -->
+  `false`.
+xsd_boolean_map(false) -->
+  `0`.
 

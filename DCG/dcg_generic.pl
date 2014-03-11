@@ -46,13 +46,16 @@ Generic support for DCG rules.
     (i.e., strings of characters).
 
 @author Wouter Beek
-@version 2013/05-2013/09, 2013/11-2014/01
+@version 2013/05-2013/09, 2013/11-2014/01, 2014/03
 */
 
 :- use_module(generics(codes_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+
+:- meta_predicate(dcg_phrase(//,?)).
+:- meta_predicate(dcg_phrase(//,?,?)).
 
 
 
@@ -114,40 +117,14 @@ dcg_end([], []).
 %!   ?AtomicOrCodes2:or([atom,list(code),number])
 %! )// is nondet.
 
-:- meta_predicate(dcg_phrase(//,?)).
-dcg_phrase(DCG, Atom):-
-  atom(Atom), !,
-  dcg_phrase(DCG, Atom, '').
-dcg_phrase(DCG, Codes):-
-  dcg_phrase(DCG, Codes, []).
+dcg_phrase(DCG, X1):-
+  atomic_codes(X1, X2),
+  dcg_phrase(DCG, X2).
 
-:- meta_predicate(dcg_phrase(//,?,?)).
-dcg_phrase(DCG, Atomic1, Atomic2):-
-  atom(Atomic1), !,
-  atom_codes(Atomic1, Codes1),
-  dcg_phrase(DCG, Codes1, Codes2),
-  atom_codes(Atomic2, Codes2).
-dcg_phrase(DCG, Atomic1, Atomic2):-
-  atom(Atomic2), !,
-  atom_codes(Atomic2, Codes2),
-  dcg_phrase(DCG, Codes1, Codes2),
-  atom_codes(Atomic1, Codes1).
-dcg_phrase(DCG, Atomic1, Atomic2):-
-  number(Atomic1), !,
-  number_codes(Atomic1, Codes1),
-  dcg_phrase(DCG, Codes1, Codes2),
-  number_codes(Atomic2, Codes2).
-dcg_phrase(DCG, Atomic1, Atomic2):-
-  number(Atomic2), !,
-  number_codes(Atomic2, Codes2),
-  dcg_phrase(DCG, Codes1, Codes2),
-  number_codes(Atomic1, Codes1).
-dcg_phrase(DCG, Atomic1, Atomic2):-
-  maplist(var, [Atomic1,Atomic2]), !,
-  dcg_phrase(DCG, Codes1, Codes2),
-  maplist(atom_codes, [Atomic1,Atomic2], [Codes1,Codes2]).
-dcg_phrase(DCG, Codes1, Codes2):-
-  phrase(DCG, Codes1, Codes2).
+dcg_phrase(DCG, X1, Y1):-
+  atomic_codes(X1, X2),
+  phrase(DCG, X2, Y2),
+  atomic_codes(Y1, Y2).
 
 
 %! dcg_separated_list(

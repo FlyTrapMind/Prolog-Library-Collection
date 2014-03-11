@@ -3,7 +3,7 @@
   [
     stringCanonicalMap/2, % +String:atom
                           % -StringRep:list(code)
-    stringLexicalMap/2 % ?LEX:list(code)
+    stringLexicalMap/2 % ?Lexical:list(code)
                        % ?String:atom
   ]
 ).
@@ -80,10 +80,10 @@ Values for the fundamental facets:
 % @arg String An XML string value; a Prolog atom.
 % @arg StringRep The canonical XML string serialization. A list of codes.
 
-stringCanonicalMap(String, LEX):-
-  phrase(stringRep(String), LEX).
+stringCanonicalMap(String, Lexical):-
+  phrase(stringRep(String), Lexical).
 
-%! stringLexicalMap(+LEX:list(code), -String:atom) is det.
+%! stringLexicalMap(+Lexical:list(code), -String:atom) is det.
 % Maps a literal matching the stringRep//1 production to a string value.
 %
 % The function is the identity function on the domain.
@@ -91,8 +91,8 @@ stringCanonicalMap(String, LEX):-
 % @arg Literal A literal matching stringRep//1.
 % @arg String An XML string value; a Prolog atom.
 
-stringLexicalMap(LEX, String):-
-  once(phrase(stringRep(String), LEX)).
+stringLexicalMap(Lexical, String):-
+  once(phrase(stringRep(String), Lexical)).
 
 %! stringRep(?String:atom)//
 

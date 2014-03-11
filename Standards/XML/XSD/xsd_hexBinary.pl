@@ -2,8 +2,8 @@
   xsd_hexBinary,
   [
     hexBinaryCanonicalMap/2, % +HexBinary:list(between(0,1))
-                             % -LEX:list(code)
-    hexBinaryLexicalMap/2 % +LEX:list(code)
+                             % -Lexical:list(code)
+    hexBinaryLexicalMap/2 % +Lexical:list(code)
                           % -HexBinary:list(between(0,1))
   ]
 ).
@@ -62,11 +62,11 @@ The hexBinary datatype has the following values for its ·fundamental facets·:
 
 %! hexBinaryCanonicalMap(
 %!   +HexBinary:list(between(0,1)),
-%!   -LEX:list(code)
+%!   -Lexical:list(code)
 %! ) is det.
 
-hexBinaryCanonicalMap(BinaryDigits, LEX):-
-  phrase(hexBinaryCanonicalMap(BinaryDigits), LEX).
+hexBinaryCanonicalMap(BinaryDigits, Lexical):-
+  phrase(hexBinaryCanonicalMap(BinaryDigits), Lexical).
 
 %! hexBinaryCanonicalMap(+HexBinary:list(between(0,1)))//
 % Maps a hexBinary value to a literal matching the hexBinary// production.
@@ -105,12 +105,12 @@ hexOctetCanonical([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]) -->
 % LEXICAL MAPPING %
 
 %! hexBinaryLexicalMap(
-%!   +LEX:list(code),
+%!   +Lexical:list(code),
 %!   -HexBinary:list(between(0,1))
 %! ) is nondet.
 
-hexBinaryLexicalMap(LEX, HOs):-
-  phrase(hexBinary(HOs), LEX).
+hexBinaryLexicalMap(Lexical, HOs):-
+  phrase(hexBinary(HOs), Lexical).
 
 %! hexBinary(-HexBinary:list(between(0,1)))//
 % Maps a literal matching the hexBinary// production to a sequence of octets

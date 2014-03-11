@@ -25,7 +25,7 @@ Asserts statistics for VoID descriptions.
 :- use_module(rdf(rdf_stat)).
 :- use_module(void(void_db)). % XML namespace.
 :- use_module(xml(xml_namespace)).
-:- use_module(xsd(xsd_dateTime)).
+:- use_module(xsd(xsd_dateTime_ext)).
 
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').
 

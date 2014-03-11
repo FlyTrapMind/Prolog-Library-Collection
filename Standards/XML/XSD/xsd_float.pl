@@ -2,14 +2,14 @@
   xsd_float,
   [
     doubleCanonicalMap/2, % +Double:or([double,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
-                          % -LEX:list(code)
-    doubleLexicalMap/2, % +LEX:list(code)
+                          % -Lexical:list(code)
+    doubleLexicalMap/2, % +Lexical:list(code)
                         % -Double:or([double,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
     floatCanonicalMap/2, % +Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
-                         % -LEX:list(code)
-    floatLexicalMap/2, % +LEX:list(code)
+                         % -Lexical:list(code)
+    floatLexicalMap/2, % +Lexical:list(code)
                        % -Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
-    floatLexicalMap2/2 % +LEX:list(code)
+    floatLexicalMap2/2 % +Lexical:list(code)
                        % -Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
   ]
 ).
@@ -150,14 +150,14 @@ between =−1074= and =971=, inclusive.
 
 % CANONICAL MAPPING %
 
-%! doubleCanonicalMap(+Double:or([float,atom]), -LEX:list(code))//
+%! doubleCanonicalMap(+Double:or([float,atom]), -Lexical:list(code))//
 % Maps a float to its canonical representation, a floatRep//.
 %
 % @arg Float A float value.
-% @arg LEX A literal matching floatRep//.
+% @arg Lexical A literal matching floatRep//.
 
-doubleCanonicalMap(Float, LEX):-
-  once(phrase(floatCanonicalMap(double, Float), LEX)).
+doubleCanonicalMap(Float, Lexical):-
+  once(phrase(floatCanonicalMap(double, Float), Lexical)).
 
 %! floatApprox(+C:nonneg, +E:integer, +J:nonneg, -D:decimal) is nondet.
 % Maps a decimal number =|C * 10 ** E|= to successive approximations.
@@ -171,15 +171,15 @@ floatApprox(C, E, J, D):-
   round(C, J, Round),
   D is Round * 10 ** E.
 
-%! floatCanonicalMap(+Float:float, -LEX:list(code)) is det.
+%! floatCanonicalMap(+Float:float, -Lexical:list(code)) is det.
 % Maps a float to its canonical representation, a floatRep//.
 %
 % @arg Float A float value.
-% @arg LEX A literal matching floatRep//.
+% @arg Lexical A literal matching floatRep//.
 
-floatCanonicalMap(Float, LEX):-
-  once(phrase(float(Float), LEX)).
-  % @tbd once(phrase(floatCanonicalMap(single, Float), LEX)).
+floatCanonicalMap(Float, Lexical):-
+  once(phrase(float(Float), Lexical)).
+  % @tbd once(phrase(floatCanonicalMap(single, Float), Lexical)).
 
 %! floatCanonicalMap(
 %!   +Precision:oneof([double,single]),
@@ -299,10 +299,10 @@ unsignedScientificCanonicalMap(N) -->
 
 % LEXICAL MAPPING %
 
-%! doubleLexicalMap(+LEX:list(code), -Double:float) is det.
+%! doubleLexicalMap(+Lexical:list(code), -Double:float) is det.
 
-doubleLexicalMap(LEX, Double):-
-  once(phrase(doubleRep(Double), LEX)).
+doubleLexicalMap(Lexical, Double):-
+  once(phrase(doubleRep(Double), Lexical)).
 
 %! doubleRep(-Double:or([atom,double]))//
 % ~~~{.ebnf}
@@ -323,11 +323,11 @@ doubleLexicalMap(LEX, Double):-
 doubleRep(N) -->
   floatRep(N).
 
-floatLexicalMap(LEX, Float):-
-  once(phrase(floatRep(Float), LEX)).
+floatLexicalMap(Lexical, Float):-
+  once(phrase(floatRep(Float), Lexical)).
 
-floatLexicalMap2(LEX, Float2):-
-  floatLexicalMap(LEX, Float1),
+floatLexicalMap2(Lexical, Float2):-
+  floatLexicalMap(Lexical, Float1),
   (
     Float1 == negativeInfinity
   ->

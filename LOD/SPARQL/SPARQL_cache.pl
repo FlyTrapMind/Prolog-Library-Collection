@@ -17,12 +17,12 @@ Locally caches triples that are relevant for specific resources.
 @version 2014/01-2014/02
 */
 
+:- use_module(generics(row_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
-:- use_module('SPARQL'(row_ext)).
 :- use_module('SPARQL'('SPARQL_build')).
 :- use_module('SPARQL'('SPARQL_db')).
 :- use_module('SPARQL'('SPARQL_ext')).

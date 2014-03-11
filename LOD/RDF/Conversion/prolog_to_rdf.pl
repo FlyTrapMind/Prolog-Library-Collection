@@ -83,10 +83,6 @@ prolog_to_rdf(
   ->
     rdf_assert_datatype(Individual1, Predicate, Datatype, Value, Graph)
   ;
-    Type = atom
-  ->
-    rdf_assert_literal(Individual1, Predicate, Value, Graph)
-  ;
     Optional = true
   ).
 
