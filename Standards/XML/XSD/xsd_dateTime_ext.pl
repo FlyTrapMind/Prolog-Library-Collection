@@ -79,6 +79,6 @@ prolog_date_to_xsd_dateTime(
 xsd_dateTime(XsdDateTime):-
   get_time(PosixTimestamp),
   posix_timestamp_to_xsd_dateTime(PosixTimestamp, DateTime),
-  xsd_dateTime_canonical_map(DateTime, Codes),
+  phrase(xsd_dateTime_canonical_map(DateTime), Codes),
   atom_codes(XsdDateTime, Codes).
 

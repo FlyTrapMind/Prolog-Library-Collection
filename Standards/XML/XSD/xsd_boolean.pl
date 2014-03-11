@@ -51,7 +51,7 @@ xsd_boolean_canonical_map(Boolean) -->
 %
 % @arg Boolean A boolean value.
 
-xsd_boolean_lexical_map(Boolean):-
+xsd_boolean_lexical_map(Boolean) -->
   xsd_boolean_map(Boolean).
 
 

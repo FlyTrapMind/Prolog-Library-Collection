@@ -81,7 +81,7 @@ hexOctetCanonical([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]) -->
 
 % LEXICAL MAP %
 
-%! hexBinary(-HexBinary:list(between(0,1)))// is det.
+%! xsd_hexBinary_lexical_map(-HexBinary:list(between(0,1)))// is det.
 % Maps a literal matching the hexBinary// production to a sequence of octets
 % in the form of a hexBinary value.
 %
@@ -96,9 +96,10 @@ hexOctetCanonical([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]) -->
 % @arg HexadecimalBinary A sequence of binary octets in the form of a
 %        hexBinary value.
 
-hexBinary([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
+xsd_hexBinary_lexical_map([]) --> [].
+xsd_hexBinary_lexical_map([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
   hexOctet([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]),
-  hexBinary(BDs).
+  xsd_hexBinary_lexical_map(BDs).
 
 
 %! hexDigit(-HexadecimalDigit:between(0,15))//

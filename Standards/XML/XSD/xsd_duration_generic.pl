@@ -1,7 +1,7 @@
 :- module(
   xsd_duration_generic,
   [
-    duYearMonthFrag//1, % -Month:nonneg
+    duYearMonthFrag//1 % -Month:nonneg
   ]
 ).
 
@@ -14,8 +14,28 @@ Generic predicates and grammar rules that are used by the duration datatypes.
 */
 
 :- use_module(xsd(xsd_dateTime_generic)).
-:- use_module(xsd(xsd_duration_generic)).
+:- use_module(xsd(xsd_number_generic)).
 
+
+
+%! duMonthFrag(-Month:nonneg)//
+% ~~~{.ebnf}
+% duMonthFrag ::= unsignedNoDecimalPtNumeral 'M'
+% ~~~
+
+duMonthFrag(M) -->
+  unsignedNoDecimalPtNumeral(M),
+  `M`.
+
+
+%! duYearFrag(-Year:nonneg)//
+% ~~~{.ebnf}
+% duYearFrag ::= unsignedNoDecimalPtNumeral 'Y'
+% ~~~
+
+duYearFrag(Y) -->
+  unsignedNoDecimalPtNumeral(Y),
+  `Y`.
 
 
 %! duYearMonthFrag(-Month:nonneg)//

@@ -22,6 +22,10 @@ Grammar rules that are used by various XSD numeric datatypes.
 @version 2013/07-2013/08, 2013/10, 2014/03
 */
 
+:- use_module(dcg(dcg_cardinal)).
+:- use_module(math(math_ext)).
+:- use_module(math(rational_ext)).
+
 
 
 %! decimalPtNumeral(-Sign:oneof([-1,1]), -Decimal:float)//
@@ -33,6 +37,22 @@ decimalPtNumeral(Sign, N) -->
   (sign(Sign) ; {Sign = 1}),
   unsignedDecimalPtNumeral(N1),
   {N is copysign(N1, Sign)}.
+
+
+%! fracFrag(-Fraction:between(0.0,1.0))//
+% ~~~{.ebnf}
+% fracFrag ::= digit+
+% ~~~
+
+fracFrag(F) -->
+  fracFrag(0, F).
+
+fracFrag(I, NewSum) -->
+  decimal_digit(_, D),
+  {succ(I, NewI)},
+  fracFrag(NewI, Sum),
+  {NewSum is Sum + D * 10 ** (-1 * NewI)}.
+fracFrag(_, 0.0) --> !, [].
 
 
 %! fractionDigitsCanonicalFragmentMap(?Fraction:rational)//

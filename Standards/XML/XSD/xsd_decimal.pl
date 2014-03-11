@@ -77,7 +77,7 @@ of the decimal point which may be a zero.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(math(math_ext)).
 :- use_module(math(rational_ext)).
-
+:- use_module(xsd(xsd_number_generic)).
 
 
 % CANONICAL MAP %
@@ -115,22 +115,6 @@ xsd_decimal_lexical_map(N) -->
   decimalPtNumeral(_Sign, N).
 xsd_decimal_lexical_map(N) -->
   noDecimalPtNumeral(_Sign, N).
-
-
-%! fracFrag(-Fraction:between(0.0,1.0))//
-% ~~~{.ebnf}
-% fracFrag ::= digit+
-% ~~~
-
-fracFrag(F) -->
-  fracFrag(0, F).
-
-fracFrag(I, NewSum) -->
-  decimal_digit(_, D),
-  {succ(I, NewI)},
-  fracFrag(NewI, Sum),
-  {NewSum is Sum + D * 10 ** (-1 * NewI)}.
-fracFrag(_, 0.0) --> !, [].
 
 
 

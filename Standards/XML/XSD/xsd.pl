@@ -38,6 +38,7 @@ conforming to recommendation version 1.1.
 @version 2013/08-2013/10, 2014/01, 2014/03
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(codes_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % RDF-meta assertions.
@@ -163,7 +164,7 @@ xsd_lexical_map_codes(xsd:double, Lexical, Double):- !,
 xsd_lexical_map_codes(xsd:duration, Lexical, Duration):- !,
   dcg_phrase(xsd_duration_lexical_map(Duration), Lexical).
 xsd_lexical_map_codes(xsd:float, Lexical, Float):- !,
-  dcg_phrase(floatLexicalMap2(Float), Lexical).
+  dcg_phrase(xsd_float_lexical_map(Float), Lexical).
 xsd_lexical_map_codes(xsd:gDay, Lexical, GregorianDay):- !,
   dcg_phrase(xsd_gDay_canonical_map(GregorianDay), Lexical).
 xsd_lexical_map_codes(xsd:gMonth, Lexical, GregorianMonth):- !,

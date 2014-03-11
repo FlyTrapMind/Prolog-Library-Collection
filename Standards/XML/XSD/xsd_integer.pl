@@ -34,6 +34,7 @@ options from the Lexical representation. Specifically, the preceding optional
 @version 2013/08-2013/09, 2014/03
 */
 
+:- use_module(xsd(xsd_decimal)).
 :- use_module(xsd(xsd_number_generic)).
 
 

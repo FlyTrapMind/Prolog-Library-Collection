@@ -1,11 +1,7 @@
 :- module(
   xsd_dateTime,
   [
-    xsd_dateTime_canonical_map/2, % +DateTime:compound
-                                  % -Lexical:list(code)
     xsd_dateTime_canonical_map//1, % +DateTime:compound
-    xsd_dateTime_lexical_map/2, % +Lexical:or([atom,list(code)])
-                                % -DateTime:compound
     xsd_dateTime_lexical_map//1, % -DateTime:compound
     xsd_dateTime_compare/3 % -Order:oneof([incomparable,<,=,>])
                            % +DataTime1:compound
@@ -13,7 +9,7 @@
   ]
 ).
 
-/** <module> XSD dateTime
+/** <module> XSD dateTime datatype
 
 *=dateTime=* represents instants of time, optionally marked with
 a particular time zone offset.

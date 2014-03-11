@@ -76,7 +76,7 @@ namely midnight (hour, minute, and second are zero).
 % CANONICAL MAP %
 
 %! xsd_time_canonical_map(+Time:compound)// is det.
-% Maps a time value to a timeLexicalRep//.
+% Maps a time value to a xsd_time_lexical_map//.
 %
 % The compound term has the following form:
 % ~~~{.pl}
@@ -98,12 +98,12 @@ xsd_time_canonical_map(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
 
 % LEXICAL MAP %
 
-%! timeLexicalRep(-DateTime:compound)// is det.
+%! xsd_time_lexical_map(-DateTime:compound)// is det.
 %
 % ### Grammar definitions
 %
 % ~~~{.ebnf}
-% timeLexicalRep ::=
+% xsd_time_lexical_map ::=
 %     ((hourFrag ':' minuteFrag ':' secondFrag) | endOfDayFrag)
 %     timezoneFrag?
 % ~~~
@@ -113,10 +113,10 @@ xsd_time_canonical_map(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
 % (Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 %
-% The EBNF and RE do not enforce additional constraints on timeLexicalRep//,
+% The EBNF and RE do not enforce additional constraints on xsd_time_lexical_map//,
 % that are actually part of its definition.
 
-timeLexicalRep(DT) -->
+xsd_time_lexical_map(DT) -->
   (
     hourFrag(H),
     `:`,

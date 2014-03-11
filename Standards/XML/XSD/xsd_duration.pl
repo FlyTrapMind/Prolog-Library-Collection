@@ -336,7 +336,7 @@ duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
 %      =|duration(Months:integer,Seconds:float)|=.
 
 xsd_duration_lexical_map(duration(M,S)) -->
-  (minus_sign -> {Sign = -1} ; {Sign = 1}),
+  (`-` -> {Sign = -1} ; {Sign = 1}),
   `P`,
   (
     duYearMonthFrag(Y),
@@ -395,16 +395,6 @@ duMinuteFrag(M) -->
   `M`.
 
 
-%! duMonthFrag(-Month:nonneg)//
-% ~~~{.ebnf}
-% duMonthFrag ::= unsignedNoDecimalPtNumeral 'M'
-% ~~~
-
-duMonthFrag(M) -->
-  unsignedNoDecimalPtNumeral(M),
-  `M`.
-
-
 %! duSecondFrag(-Second:or([float,nonneg]))//
 % ~~~{.ebnf}
 % duSecondFrag ::= (unsignedNoDecimalPtNumeral | unsignedDecimalPtNumeral) 'S'
@@ -434,16 +424,6 @@ duTimeFrag(S2) -->
     {H = 0}, {M = 0}, duSecondFrag(S1)
   ),
   {S2 is 3600 * H + 60 * M + S1}.
-
-
-%! duYearFrag(-Year:nonneg)//
-% ~~~{.ebnf}
-% duYearFrag ::= unsignedNoDecimalPtNumeral 'Y'
-% ~~~
-
-duYearFrag(Y) -->
-  unsignedNoDecimalPtNumeral(Y),
-  `Y`.
 
 
 

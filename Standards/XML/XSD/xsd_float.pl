@@ -145,6 +145,12 @@ floatApprox(C, E, J, D):-
   D is Round * 10 ** E.
 
 
+%! xsd_float_canonical_map(+Float:float)// is det.
+
+xsd_float_canonical_map(Float) -->
+  xsd_float_canonical_map(single, Float).
+
+
 %! xsd_float_canonical_map(
 %!   +Precision:oneof([double,single]),
 %!   +Float:or([float,atom])
@@ -153,11 +159,11 @@ floatApprox(C, E, J, D):-
 %
 % @arg Float A float value.
 
-xsd_float_canonical_map(_Precision, F) -->
+xsd_float_canonical_map(_, F) -->
   specialRepCanonicalMap(F), !.
-xsd_float_canonical_map(_Precision, positiveZero) --> !,
+xsd_float_canonical_map(_, positiveZero) --> !,
   `0.0E0`.
-xsd_float_canonical_map(_Precision, negativeZero) --> !,
+xsd_float_canonical_map(_, negativeZero) --> !,
   `-0.0E0`.
 % =F= is numeric and non-zero.
 xsd_float_canonical_map(Precision, F) -->
