@@ -1,16 +1,14 @@
 :- module(
   xsd_gMonthDay,
   [
-    gMonthDayCanonicalMap/2, % +GregorianMonthDay:compound
-                             % -Lexical:list(code)
-    gMonthDayLexicalMap/2 % +Lexical:list(code)
-                          % -GregorianMonthDay:compound
+    xsd_gMonthDay_canonical_map//1, % +GregorianMonthDay:compound
+    xsd_gMonthDay_lexical_map//1 % -GregorianMonthDay:compound
   ]
 ).
 
-/** <module> XSD Gregorian month-day
+/** <module> XSD Gregorian month-day datatype
 
-gMonthDay represents whole calendar days that recur at the same point
+=*gMonthDay*= represents whole calendar days that recur at the same point
 in each calendar year, or that occur in some arbitrary calendar year.
 (Obviously, days beyond 28 cannot occur in all Februaries;
 29 is nonetheless permitted.)
@@ -56,94 +54,43 @@ since =|12-12+13:00|='s "recoverable time zone offset" was =|−11:00|=).
 The lexical representations for gMonthDay are "projections" of those of
 dateTime.
 
-### Facets
-
-The gMonthDay datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-The gMonthDay datatype has the following constraining facets with
-the values shown; these facets may be specified in the derivation of
-new types, if the value given is at least as restrictive as the one shown:
-  * =|explicitTimezone = optional|=
-
-Datatypes derived by restriction from gMonthDay may also specify values
-for the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The gMonthDay datatype has the following values for its fundamental facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! gMonthDayCanonicalMap(+GregorianMonthDay:compound, -Lexical:list(code)) is det.
-% A compound term that represents a Gregorian month-day has
-% the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values month, day and time zone are used.
-
-gMonthDayCanonicalMap(GY, Lexical):-
-  phrase(gMonthDayCanonicalMap(GY), Lexical).
-
-%! gMonthDayCanonicalMap(+GregorianMonthDay:compound)//
-% Maps a gMonthDay value to a gMonthDayLexicalRep//.
+%! xsd_gMonthDay_canonical_map(+GregorianMonthDay:compound)//
+% Maps a gMonthDay value to a xsd_gMonthDay_lexical_map//.
 %
 % @arg GregorianMonthDay A complete gMonthDay value.
 
-gMonthDayCanonicalMap(dateTime(_Y,M,D,_H,_MM,_S,TZ)) -->
-  dcg_multi(hyphen, 2),
+xsd_gMonthDay_canonical_map(dateTime(_Y,M,D,_H,_MM,_S,TZ)) -->
+  `--`,
   monthCanonicalFragmentMap(M),
-  hyphen,
+  `-`,
   dayCanonicalFragmentMap(D),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! gMonthDayLexicalMap(
-%!   +Lexical:list(code),
-%!   -GregorianMonthDay:compound
-%! ) is nondet.
-% A compound term that represents a Gregorian month-day has
-% the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values month, day and time zone are used.
-
-gMonthDayLexicalMap(Lexical, GY):-
-  phrase(gMonthDayLexicalRep(GY), Lexical).
-
-%! gMonthDayLexicalRep(-GregorianMonthDay:compound)//
-% Maps a gMonthDayLexicalRep// to a gMonthDay value.
+%! xsd_gMonthDay_lexical_map(-GregorianMonthDay:compound)//
+% Maps a xsd_gMonthDay_lexical_map// to a gMonthDay value.
 %
 % ~~~{.ebnf}
-% gMonthDayLexicalRep ::= '--' monthFrag '-' dayFrag timezoneFrag?
+% gMonthDayRep ::= '--' monthFrag '-' dayFrag timezoneFrag?
 % ~~~
 %
 % ~~~{.re}
@@ -151,11 +98,12 @@ gMonthDayLexicalMap(Lexical, GY):-
 % (Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 
-gMonthDayLexicalRep(GMD) -->
-  dcg_multi(hyphen, 2),
+xsd_gMonthDay_lexical_map(GMD) -->
+  `--`,
   monthFrag(M),
-  hyphen,
+  `-`,
   dayFrag(D),
   {dayInMonth(M, D)},
-  ("" ; timezoneFrag(TZ)), !,
+  (`` ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, M, D, _H, _MM, _S, TZ, GMD)}.
+

@@ -1,18 +1,16 @@
 :- module(
   xsd_yearMonthDuration,
   [
-    yearMonthDurationCanonicalMap/2, % +YearMonthDuration:compound
-                                     % -Lexical:list(code)
-    yearMonthDurationLexicalMap/2 % +Lexical:list(code)
-                                  % -YearMonthDuration:compound
+    xsd_yearMonthDuration_canonical_map//1, % +YearMonthDuration:compound
+    xsd_yearMonthDuration_lexical_map//1 % -YearMonthDuration:compound
   ]
 ).
 
-/** <module> XSD_YEAR_MONTH_DURATION
+/** <module> XSD year-month duration datatype
 
 *=yearMonthDuration=* is a datatype that is derived from =duration=
 by restricting its lexical representations to instances of
-yearMonthDurationLexicalRep//.
+xsd_yearMonthDuration_lexical_map//.
 
 ### Value spae
 
@@ -59,73 +57,36 @@ no canonical representation in this datatype since its canonical
 representation in duration (=PT0S=) is not in the lexical space of
 yearMonthDuration.
 
-### Facets
-
-The yearMonthDuration datatype and all datatypes derived from it by
-restriction have the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-The yearMonthDuration datatype has the following constraining facets with
-the values shown; these facets may be specified in the derivation of new
-types, if the value given is at least as restrictive as the one shown:
-  * =|pattern = [^DT]*|=
-
-Datatypes derived by restriction from yearMonthDuration may also specify
-values for the following constraining facets:
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The yearMonthDuration datatype has the following values for its fundamental
-facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
-The ordered facet has the value partial even though the datatype is in fact
-totally ordered, because the value of that facet is unchanged by derivation.
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
 :- use_module(xsd(xsd_duration)).
+:- use_module(xsd(xsd_duration_generic)).
 
 
 
-%! yearMonthDurationCanonicalMap(
-%!   +YearMonthDuration:number,
-%!   -Lexical:list(code)
-%! ) is det.
+% CANONICAL MAP %
 
-yearMonthDurationCanonicalMap(YMD, Lexical):-
-  phrase(yearMonthDurationCanonicalMap(YMD), Lexical).
+%! xsd_yearMonthDuration_canonical_map(+YearMonthDuration:number)// is det.
 
-yearMonthDurationCanonicalMap(duration(M,0)) -->
+xsd_yearMonthDuration_canonical_map(duration(M,0)) -->
   xsd_duration_canonical_map(duration(M,0)).
 
-%! yearMonthDurationLexicalMap(
-%!   +Lexical:list(code)
-%!   -YearMonthDuration:number
-%! ) is det.
 
-yearMonthDurationLexicalMap(Lexical, YMD):-
-  phrase(yearMonthDurationLexicalRep(YMD), Lexical).
 
-%! yearMonthDurationLexicalRep(-Duration:compound)//
+% LEXICAL MAP %
+
+%! xsd_yearMonthDuration_lexical_map(-Duration:compound)// is det.
 % ~~~{.ebnf}
-% yearMonthDurationLexicalRep ::= '-'? 'P' duYearMonthFrag
+% xsd_yearMonthDuration_lexical_map ::= '-'? 'P' duYearMonthFrag
 % ~~~
 
-yearMonthDurationLexicalRep(duration(M2,0)) -->
-  (minus_sign, {Sign = -1} ; {Sign = 1}),
-  "P",
+xsd_yearMonthDuration_lexical_map(duration(M2,0)) -->
+  (`-`, {Sign = -1} ; {Sign = 1}),
+  `P`,
   duYearMonthFrag(M1),
   {M2 is copysign(M1, Sign)}.
+

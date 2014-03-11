@@ -34,7 +34,7 @@ conforming to the XSD 1.1 specification.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(math(math_ext)).
-:- use_module(xsd(xsd_decimal)).
+:- use_module(xsd(xsd_number_generic)).
 
 
 

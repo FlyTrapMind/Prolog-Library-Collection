@@ -1,26 +1,12 @@
 :- module(
   xsd_decimal,
   [
-    decimalCanonicalMap/2, % +Decimal:or([atom,integer,rational])
-                           % -Lexical:list(code)
-    decimalLexicalMap/2, % +Lexical:list(code)
-                         % -Decimal:number
-    decimalLexicalRep//1, % -Decimal:number
-% DCG COMPONENTS
-    decimalPtNumeral//2, % -Sign:oneof([-1,1])
-                         % -Decimal:float
-    fractionDigitsCanonicalFragmentMap//1, % ?Fraction:rational
-    noDecimalPtCanonicalMap//1, % +Integer:integer
-    noDecimalPtNumeral//2, % -Sign:oneof([-1,1])
-                           % -Integer:integer
-    unsignedDecimalPtCanonicalMap//1, % +Decimal:rational
-    unsignedDecimalPtNumeral//1, % -Decimal:float
-    unsignedNoDecimalPtCanonicalMap//1, %+Integer:nonneg
-    unsignedNoDecimalPtNumeral//1 % -Integer:nonneg
+    xsd_decimal_canonical_map//1, % +Decimal:or([atom,integer,rational])
+    xsd_decimal_lexical_map//1 % -Decimal:number
   ]
 ).
 
-/** <module> XSD decimal
+/** <module> XSD decimal datatype
 
 *=decimal=* represents a subset of the real numbers, which can be represented
 by decimal numerals.
@@ -57,7 +43,7 @@ Examples:
   * =|210|=
 
 ~~~{.ebnf}
-decimalLexicalRep ::= decimalPtNumeral | noDecimalPtNumeral
+xsd_decimal_lexical_map ::= decimalPtNumeral | noDecimalPtNumeral
 decimalPtNumeral ::= ('+' | '-')? unsignedDecimalPtNumeral
 digit ::= [0-9]
 fracFrag ::= digit+
@@ -80,34 +66,11 @@ In all cases, leading and trailing zeroes are prohibited subject to the
 following: there must be at least one digit to the right and to the left
 of the decimal point which may be a zero.
 
-#### Facets
-
-Decimal has the following constraining facets with fixed values:
-  * =|whiteSpace = collapse|=
-
-Datatypes derived by restriction from decimal may also specify values for
-the following constraining facets:
-  * =assertions=
-  * =enumeration=
-  * =fractionDigits=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =pattern=
-  * =totalDigits=
-
-The decimal datatype has the following values for its fundamental facets:
-  * =|ordered = total|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = true|=
-
 --
 
 @author Wouter Beek
 @tbd Have a look at the bidirectional implementation.
-@version 2013/07-2013/08, 2013/10
+@version 2013/07-2013/08, 2013/10, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -117,125 +80,42 @@ The decimal datatype has the following values for its fundamental facets:
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! decimalCanonicalMap(
-%!   +Decimal:oneof([atom,integer,rational]),
-%!   -Lexical:list(code)
-%! ) is det.
+%! xsd_decimal_canonical_map(+Decimal:oneof([integer,rational]))// is det.
 
-decimalCanonicalMap(N1, Lexical):-
-  atom(N1), !,
-  atom_number(N1, N2),
-  decimalCanonicalMap(N2, Lexical).
-decimalCanonicalMap(N, Lexical):-
-  number(N), !,
-  phrase(decimalCanonicalMap(N), Lexical).
-
-%! decimalCanonicalMap(+Decimal:oneof([integer,rational]))//
-
-decimalCanonicalMap(I) -->
+xsd_decimal_canonical_map(I) -->
   {integer(I)}, !,
   noDecimalPtCanonicalMap(I).
-decimalCanonicalMap(F) -->
+xsd_decimal_canonical_map(F) -->
   {rational(F)}, !,
   decimalPtCanonicalMap(F).
-decimalCanonicalMap(F1) -->
+xsd_decimal_canonical_map(F1) -->
   {F2 is rationalize(F1)},
-  decimalCanonicalMap(F2).
+  xsd_decimal_canonical_map(F2).
+
 
 %! decimalPtCanonicalMap(+Decimal:rational)//
 
 decimalPtCanonicalMap(F) -->
-  ({F < 0} ->  minus_sign ; ""),
+  ({F < 0} ->  `-` ; ``),
   {G is copysign(F, 1)},
   unsignedDecimalPtCanonicalMap(G).
 
-%! fractionDigitsCanonicalFragmentMap(?Fraction:rational)//
-
-fractionDigitsCanonicalFragmentMap(F) -->
-  {F =:= 0}, !,
-  [].
-fractionDigitsCanonicalFragmentMap(F) -->
-  {
-    G is F * 10,
-    div(G, 1, H),
-    mod(G, 1, NewF)
-  },
-  decimal_digit(_, H), !,
-  fractionDigitsCanonicalFragmentMap(NewF).
-
-%! noDecimalPtCanonicalMap(+Integer:integer)//
-
-noDecimalPtCanonicalMap(I) -->
-  {I < 0},
-  "-",
-  {J is copysign(I, 1)},
-  unsignedNoDecimalPtCanonicalMap(J).
-noDecimalPtCanonicalMap(I) -->
-  unsignedNoDecimalPtCanonicalMap(I).
-
-%! unsignedDecimalPtCanonicalMap(+Decimal:rational)//
-
-unsignedDecimalPtCanonicalMap(F) -->
-  {rational_parts(F, F_I, F_F)},
-  unsignedNoDecimalPtCanonicalMap(F_I),
-  ".",
-  fractionDigitsCanonicalFragmentMap(F_F).
-
-%! unsignedNoDecimalPtCanonicalMap(+Integer:nonneg)//
-
-% For $0$ the emitted stirng should be "0" and not the empty string!
-% Check \ref{def:unsignedNoDecimalPtCanonicalMap} in the PraSem document.
-unsignedNoDecimalPtCanonicalMap(0) --> !, "0".
-unsignedNoDecimalPtCanonicalMap(F) -->
-  unsignedNoDecimalPtCanonicalMap_(F).
-
-% Done!
-unsignedNoDecimalPtCanonicalMap_(0) --> !, [].
-unsignedNoDecimalPtCanonicalMap_(F) -->
-  {
-    mod(F, 10, G),
-    div(F, 10 ,H)
-  },
-  unsignedNoDecimalPtCanonicalMap_(H),
-  decimal_digit(_, G).
 
 
+% LEXICAL MAP %
 
-% LEXICAL MAPPING %
-
-%! decimalLexicalMap(+Lexical:list(code), -Decimal:number) is nondet.
-% This predicate cannot work for instantiation (-,+) due to the following
-% DCG rules contain arithmetic functions that are unidirectional:
-%   * fracFrag//1
-%   * unsignedNoDecimalPtNumeral//1
-%
-% @see decimalLexicalMap1/2 and decimalLexicalMap2/2 for bidirectional
-%      implementations.
-
-decimalLexicalMap(Lexical, N):-
-  once(phrase(decimalLexicalRep(N), Lexical)).
-
-%! decimalLexicalRep(-Decimal:float)//
+%! xsd_decimal_lexical_map(-Decimal:float)// is det.
 % ~~~{.ebnf}
-% decimalLexicalRep ::= decimalPtNumeral | noDecimalPtNumeral
+% decimalRep ::= decimalPtNumeral | noDecimalPtNumeral
 % ~~~
 
-decimalLexicalRep(N) -->
+xsd_decimal_lexical_map(N) -->
   decimalPtNumeral(_Sign, N).
-decimalLexicalRep(N) -->
+xsd_decimal_lexical_map(N) -->
   noDecimalPtNumeral(_Sign, N).
 
-%! decimalPtNumeral(-Sign:oneof([-1,1]), -Decimal:float)//
-% ~~~{.ebnf}
-% decimalPtNumeral ::= ('+' | '-')? unsignedDecimalPtNumeral
-% ~~~
-
-decimalPtNumeral(Sign, N) -->
-  (sign(Sign) ; {Sign = 1}),
-  unsignedDecimalPtNumeral(N1),
-  {N is copysign(N1, Sign)}.
 
 %! fracFrag(-Fraction:between(0.0,1.0))//
 % ~~~{.ebnf}
@@ -252,52 +132,11 @@ fracFrag(I, NewSum) -->
   {NewSum is Sum + D * 10 ** (-1 * NewI)}.
 fracFrag(_, 0.0) --> !, [].
 
-%! noDecimalPtNumeral(-Sign:oneof([-1,1]), -Integer:integer)//
-% ~~~{.ebnf}
-% noDecimalPtNumeral ::= ('+' | '-')? unsignedNoDecimalPtNumeral
-% ~~~
-
-noDecimalPtNumeral(Sign, N) -->
-  (sign(Sign), ! ; {Sign = 1}),
-  unsignedNoDecimalPtNumeral(N1),
-  {N is copysign(N1, Sign)}.
-
-%! unsignedDecimalPtNumeral(-Decimal:float)//
-% ~~~{.ebnf}
-% unsignedDecimalPtNumeral ::= (unsignedNoDecimalPtNumeral '.' fracFrag?)
-%                              | ('.' fracFrag)
-% ~~~
-
-unsignedDecimalPtNumeral(N) -->
-  unsignedNoDecimalPtNumeral(I),
-  ".",
-  (fracFrag(F), {N is I + F} ; {N = I}).
-unsignedDecimalPtNumeral(F) -->
-  ".",
-  fracFrag(F).
-
-%! unsignedNoDecimalPtNumeral(-Integer:nonneg)//
-% ~~~{.ebnf}
-% unsignedNoDecimalPtNumeral ::= digit+
-% ~~~
-
-unsignedNoDecimalPtNumeral(N) -->
-  unsignedNoDecimalPtNumeral(_, N).
-
-unsignedNoDecimalPtNumeral(NewToEnd, NewN) -->
-  decimal_digit(_, D), !,
-  unsignedNoDecimalPtNumeral(ToEnd, N),
-  {
-    NewN is N + D * 10 ** ToEnd,
-    succ(ToEnd, NewToEnd)
-  }.
-unsignedNoDecimalPtNumeral(0, 0) --> [].
 
 
 
-/*
-% BIDIRECTIONAL IMPLEMENTATIONS %
 
+/* BIDIRECTIONAL IMPLEMENTATION
 :- use_module(dcg(parse_tree)).
 :- use_module(library(lists)).
 :- use_module(math(radix)).
@@ -348,7 +187,7 @@ decimalLexicalRep2(T0, decimal(I,N)) -->
     digits_to_decimal(Is, I_),
     I is copysign(I_, Sign),
     length(I2s, N),
-    parse_tree(decimalLexicalRep, [T1,I1s,T3,I2s], T0)
+    parse_tree(xsd_decimal_lexical_map, [T1,I1s,T3,I2s], T0)
   }.
 decimalLexicalRep2(T0, decimal(I,N)) -->
   {
@@ -369,6 +208,6 @@ decimalLexicalRep2(T0, decimal(I,N)) -->
   ;
     {I2s  = []}
   ),
-  {parse_tree(decimalLexicalRep, [T1,I1s,T3,I2s], T0)}.
+  {parse_tree(xsd_decimal_lexical_map, [T1,I1s,T3,I2s], T0)}.
 */
 

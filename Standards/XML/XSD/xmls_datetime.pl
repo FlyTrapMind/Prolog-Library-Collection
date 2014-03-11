@@ -155,6 +155,7 @@ duration_smaller_than(D1, D2):-
   summate_time('1903-07-01T00:00:00Z', D2, DT42),
   dateTime_smaller_than(DT41, DT42).
 
+
 %! 'fQuotient'(+A:float, +B:nonneg, -Quotient:integer) is det.
 % Definition: The greatest integer less than or equal to =A= divided by =B=.
 %

@@ -1,18 +1,12 @@
 :- module(
   xsd_gYear,
   [
-    gYearCanonicalMap/2, % +GregorianYear:compound
-                         % -Lexical:list(code)
-    gYearLexicalMap/2, % +Lexical:list(code)
-                       % -GregorianYear:compound
-    gYearLexicalRep//1, % -GregorianYear:compound
-% CONVERSIONS
-    integer_to_gYear_dateTime/2 % +Integer
-                                % -DateTime:compound
+    xsd_gYear_canonical_map//1, % +GregorianYear:compound
+    xsd_gYear_lexical_map//1 % -GregorianYear:compound
   ]
 ).
 
-/** <module> XSD Gregorian year
+/** <module> XSD Gregorian year datatype
 
 *=gYear=* represents Gregorian calendar years.
 
@@ -32,37 +26,10 @@ and second required to be absent. timezoneOffset remains optional.
 The lexical representations for gYear are "projections" of those
 of dateTime.
 
-### Facets
-
-The gYear datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-The gYear datatype has the following constraining facets with
-the values shown; these facets may be specified in the derivation of
-new types, if the value given is at least as restrictive as the one shown:
-  * =|explicitTimezone = optional|=
-
-Datatypes derived by restriction from gYear may also specify values
-for the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The gYear datatype has the following values for its fundamental facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(xsd(xsd_dateTime_generic)).
@@ -70,57 +37,34 @@ The gYear datatype has the following values for its fundamental facets:
 
 
 
-integer_to_gYear_dateTime(Y, dateTime(Y,_M,_D,_H,_MM,_S,_TZ)).
+% CANONICAL MAP %
 
-
-
-% CANONICAL MAPPING %
-
-%! gYearCanonicalMap(+GregorianYear:compound, -Lexical:list(code)) is det.
-% A compound term that represents a Gregorian year has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values year and time zone are used.
-
-gYearCanonicalMap(GY, Lexical):-
-  phrase(gYearCanonicalMap(GY), Lexical).
-
-%! gYearCanonicalMap(+GregorianYear:compound)//
-% Maps a gYear value to a gYearLexicalRep//.
+%! xsd_gYear_canonical_map(+GregorianYear:compound)// is det.
+% Maps a gYear value to a xsd_gYear_lexical_map//.
 %
 % @arg GregorianYear A complete gYear value.
 
-gYearCanonicalMap(dateTime(Y,_M,_D,_H,_MM,_S,TZ)) --> !,
+xsd_gYear_canonical_map(dateTime(Y,_,_,_,_,_,TZ)) --> !,
   yearCanonicalFragmentMap(Y),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! gYearLexicalMap(+Lexical:list(code), -GregorianYear:compound) is nondet.
-% A compound term that represents a Gregorian year has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values year and time zone are used.
-
-gYearLexicalMap(Lexical, GY):-
-  phrase(gYearLexicalRep(GY), Lexical).
-
-%! gYearLexicalRep(-GregorianYear:compound)//
-% Maps a gYearLexicalRep// to a gYear value.
+%! xsd_gYear_lexical_map(-GregorianYear:compound)//
+% Maps a xsd_gYear_lexical_map// to a gYear value.
 %
 % ~~~{.ebnf}
-% gYearLexicalRep ::= yearFrag timezoneFrag?
+% xsd_gYear_lexical_map ::= yearFrag timezoneFrag?
 % ~~~
 %
 % ~~~{.re}
 % -?([1-9][0-9]{3,}|0[0-9]{3})(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 
-gYearLexicalRep(GY) -->
+xsd_gYear_lexical_map(GY) -->
   yearFrag(Y),
-  ("" ; timezoneFrag(TZ)), !,
+  (`` ; timezoneFrag(TZ)), !,
   {newDateTime(Y, _M, _D, _H, _MM, _S, TZ, GY)}.
+

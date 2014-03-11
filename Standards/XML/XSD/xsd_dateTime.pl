@@ -205,22 +205,9 @@ the original two values are incomparable.
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! xsd_dateTime_canonical_map(
-%!   +DateTime:compound,
-%!   -Lexical:list(code)
-%! ) is det.
-% The compound term has the following form:
-% ~~~{.pl}
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-
-xsd_dateTime_canonical_map(DateTime, Lexical):-
-  phrase(xsd_dateTime_canonical_map(DateTime), Lexical).
-
-
-%! xsd_dateTime_canonical_map(+DateTime:compound)//
+%! xsd_dateTime_canonical_map(+DateTime:compound)// is det.
 % Maps a dateTime value to a xsd_dateTime_lexical_map//.
 %
 % @arg DateTime A compound term of the following form:
@@ -244,22 +231,9 @@ xsd_dateTime_canonical_map(dateTime(Y,M,D,H,MM,S,TZ)) -->
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! xsd_dateTime_lexical_map(
-%!   +Lexical:or([atom,list(code)]),
-%!   -DateTime:compound
-%! ) is det.
-% The compound term has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-
-xsd_dateTime_lexical_map(Lexical, DateTime):-
-  dcg_phrase(xsd_dateTime_lexical_map(DateTime), Lexical).
-
-
-%! xsd_dateTime_lexical_map(-DateTime:compound)//
+%! xsd_dateTime_lexical_map(-DateTime:compound)// is det.
 % Subsequent =|-|=, =T=, and =|:|=, separate the various numerals.
 %
 % ### Grammar definitions
@@ -305,7 +279,11 @@ xsd_dateTime_lexical_map(DT) -->
   yearFrag(Y), hyphen, monthFrag(M), hyphen, dayFrag(D),
   `T`,
   (
-    hourFrag(H), colon, minuteFrag(MM), colon, secondFrag(S)
+    hourFrag(H),
+    `:`,
+    minuteFrag(MM),
+    `:`,
+    secondFrag(S)
   ;
     endOfDayFrag(H, MM, D)
   ),

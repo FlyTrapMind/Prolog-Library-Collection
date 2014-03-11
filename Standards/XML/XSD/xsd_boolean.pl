@@ -1,11 +1,8 @@
 :- module(
   xsd_boolean,
   [
-    xsd_boolean_canonical_map/2, % +Boolean:boolean
-                                 % -Lexical:list(code)
-    xsd_boolean_lexical_map/2, % +Lexical:or([atom,list(code)])
-                               % -Boolean:boolean
-    xsd_boolean_map//1 % ?Boolean:boolean
+    xsd_boolean_canonical_map//1, % +Boolean:boolean
+    xsd_boolean_lexical_map//1 % -Boolean:boolean
   ]
 ).
 
@@ -30,41 +27,35 @@ xsd_boolean_map ::= 'true' | 'false' | '1' | '0'
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 
 
 
-%! xsd_boolean_canonical_map(+Boolean:boolean, -Lexical:list(code)) is det.
+%! xsd_boolean_canonical_map(+Boolean:boolean)// is det.
 % Maps a boolean value to a xsd_boolean_map//1.
 %
 % Returns `true` when `Boolean` is true, and
 % returns `false` otherwise (i.e., when `Boolean` is false).
 %
 % @arg Boolean A boolean value.
-% @arg Lexical A lexical expression that matches xsd_boolean_map//1.
 
-xsd_boolean_canonical_map(Boolean, Lexical):-
-  phrase(xsd_boolean_map(Boolean), Lexical).
+xsd_boolean_canonical_map(Boolean) -->
+  xsd_boolean_map(Boolean).
 
 
-%! xsd_boolean_lexical_map(
-%!   ?Lexical:or([atom,list(code)]),
-%!   ?Boolean:boolean
-%! ) is det.
+%! xsd_boolean_lexical_map(-Boolean:boolean)// is det.
 % Maps a literal matching the xsd_boolean_map//1 production
 % to a boolean value.
 %
 % Returns true when =Lexical= is `true` or `1` , and
 % returns false otherwise (i.e., when `Lexical` is `false` or `0`).
 %
-% @arg Lexical A literal matching xsd_boolean_map//1.
 % @arg Boolean A boolean value.
 
-xsd_boolean_lexical_map(Lexical, Boolean):-
-  dcg_phrase(xsd_boolean_map(Boolean), Lexical).
+xsd_boolean_lexical_map(Boolean):-
+  xsd_boolean_map(Boolean).
 
 
-%! xsd_boolean_map(?Boolean:boolean)//
+%! xsd_boolean_map(?Boolean:boolean)// .
 
 xsd_boolean_map(true) -->
   `true`.

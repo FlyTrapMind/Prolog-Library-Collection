@@ -1,14 +1,12 @@
 :- module(
   xsd_integer,
   [
-    integerCanonicalMap/2, % +Integer:integer
-                           % -Lexical:list(code)
-    integerLexicalMap/2 % +Lexical:list(code)
-                        % -Integer:integer
+    xsd_integer_canonical_map//1, % +Integer:integer
+    xsd_integer_lexical_map//1 % -Integer:integer
   ]
 ).
 
-/** <module> XSD_INTEGER
+/** <module> XSD integer datatype
 
 *=integer=* is derived from decimal by fixing the value of =fractionDigits=
 to be 0 and disallowing the trailing decimal point. This results in the
@@ -30,55 +28,24 @@ The canonical representation for integer is defined by prohibiting certain
 options from the Lexical representation. Specifically, the preceding optional
 "=|+|=" sign is prohibited and leading zeroes are prohibited.
 
-### Facets
-
-The integer datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|fractionDigits = 0 (fixed)|=
-  * =|whiteSpace = collapse (fixed)|=
-
-The integer datatype has the following constraining facets.
-For derived types, the value of this facet's value should at least be as
-restrictive as this value:
-  * =|pattern = [\-+]?[0-9]+|=
-
-Datatypes derived by restriction from integer may also specify values for
-the following constraining facets:
-  * =totalDigits=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-Fundamental facet values:
-  * =|ordered = total|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = true|=
-
-Derived datatypes:
-  * =nonPositiveInteger=
-  * =long=
-  * =nonNegativeInteger=
-
 --
 
 @author Wouter Beek
-@version 2013/08-2013/09
+@version 2013/08-2013/09, 2014/03
 */
 
-:- use_module(xsd(xsd_decimal)).
+:- use_module(xsd(xsd_number_generic)).
 
 
 
-%! integerCanonicalMap(+Integer:integer, -Lexical:list(code)) is semidet.
+%! xsd_integer_canonical_map(+Integer:integer)// is det.
 
-integerCanonicalMap(I, Lexical):-
-  decimalCanonicalMap(I, Lexical).
+xsd_integer_canonical_map(Integer) -->
+  xsd_decimal_canonical_map(Integer).
 
-%! integerLexicalMap(+Lexical:list(code), -Integer:integer) is nondet.
 
-integerLexicalMap(Lexical, I):-
-  phrase(noDecimalPtNumeral(_Sign, I), Lexical).
+%! xsd_integer_lexical_map(-Integer:integer)// is det.
+
+xsd_integer_lexical_map(Integer) -->
+  noDecimalPtNumeral(_, Integer).
+

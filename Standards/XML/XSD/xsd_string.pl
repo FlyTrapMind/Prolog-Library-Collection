@@ -1,14 +1,12 @@
 :- module(
   xsd_string,
   [
-    stringCanonicalMap/2, % +String:atom
-                          % -StringRep:list(code)
-    stringLexicalMap/2 % ?Lexical:list(code)
-                       % ?String:atom
+    xsd_string_canonical_map//1, % +String:atom
+    xsd_string_lexical_map//1 % -String:atom
   ]
 ).
 
-/** <module> SXD_STRING
+/** <module> XSD string datatype
 
 The *=string=* datatype represents character strings in XML.
 
@@ -43,47 +41,30 @@ production from XML 1.0 or XML 1.1.
 stringRep ::= Char*
 ~~~
 
-The lexical mapping for =string= is stringLexicalMap/2.
-The canonical mapping·for =string= is stringCanonicalMap/2.
-
-#### Factes
-
-Datatypes derived by restriction from =string= can specify the following
-constraining facets:
-  * =assertions=
-  * =enumeration=
-  * =length=, =minLength=, =maxLength=
-  * =pattern=
-  * =|whitespace = preserved|=
-
-Values for the fundamental facets:
-  * =|ordered = false|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
+The lexical mapping for =string= is xsd_string_lexical_map/2.
+The canonical mapping·for =string= is xsd_string_canonical_map/2.
 
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(xml(xml_datatypes)).
 
 
 
-%! stringCanonicalMap(+String:atom, -StringRep:list(code)) is det.
-% Maps a string value to a stringRep//1.
-%
+%! xsd_string_canonical_map(+String:atom)// is det.
 % The function is the identity function on the domain.
 %
 % @arg String An XML string value; a Prolog atom.
 % @arg StringRep The canonical XML string serialization. A list of codes.
 
-stringCanonicalMap(String, Lexical):-
-  phrase(stringRep(String), Lexical).
+xsd_string_canonical_map(String) -->
+  stringRep(String).
 
-%! stringLexicalMap(+Lexical:list(code), -String:atom) is det.
+
+%! xsd_string_lexical_map(-String:atom) is det.
 % Maps a literal matching the stringRep//1 production to a string value.
 %
 % The function is the identity function on the domain.
@@ -91,10 +72,11 @@ stringCanonicalMap(String, Lexical):-
 % @arg Literal A literal matching stringRep//1.
 % @arg String An XML string value; a Prolog atom.
 
-stringLexicalMap(Lexical, String):-
-  once(phrase(stringRep(String), Lexical)).
+xsd_string_lexical_map(String) -->
+  stringRep(String).
 
-%! stringRep(?String:atom)//
+
+%! stringRep(?String:atom)// is det.
 
 stringRep(String) -->
   {var(String)}, !,

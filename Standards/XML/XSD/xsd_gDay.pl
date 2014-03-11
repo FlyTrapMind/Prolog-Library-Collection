@@ -1,14 +1,12 @@
 :- module(
   xsd_gDay,
   [
-    gDayCanonicalMap/2, % +GregorianDay:compound
-                        % -Lexical:list(code)
-    gDayLexicalMap/2 % +Lexical:list(code)
-                     % -GregorianDay:compound
+    xsd_gDay_canonical_map//1, % +GregorianDay:compound
+    xsd_gDay_lexical_map//1 % -GregorianDay:compound
   ]
 ).
 
-/** <module> XSD Gregorian day
+/** <module> XSD Gregorian day datatype
 
 *=gDay=* represents whole days within an arbitrary month -- days that recur at
 the same point in each (Gregorian) month. This datatype is used to represent
@@ -49,37 +47,10 @@ as measured on the global timeline, but nonetheless
 
 The lexical representations for gDay are "projections" of those of dateTime.
 
-### Facets
-
-The gDay datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-The gDay datatype has the following constraining facets with
-the values shown; these facets may be specified in the derivation of
-new types, if the value given is at least as restrictive as the one shown:
-  * =|explicitTimezone = optional|=
-
-Datatypes derived by restriction from gDay may also specify values
-for the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The gDay datatype has the following values for its fundamental facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -89,44 +60,23 @@ The gDay datatype has the following values for its fundamental facets:
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! gDayCanonicalMap(+GregorianDay:compound, -Lexical:list(code)) is det.
-% A compound term that represents a Gregorian day has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values day and time zone are used.
-
-gDayCanonicalMap(GD, Lexical):-
-  phrase(gDayCanonicalMap(GD), Lexical).
-
-%! gDayCanonicalMap(+GregorianDay:compound)//
-% Maps a gDay value to a gDayLexicalRep//.
+%! xsd_gDay_canonical_map(+GregorianDay:compound)// is det.
+% Maps a gDay value to a xsd_gDay_canonical_map//.
 %
 % @arg GregorianDay A complete gDay value.
 
-gDayCanonicalMap(dateTime(_Y,_M,D,_H,_MM,_S,TZ)) -->
-  dcg_multi(hyphen, 3),
+xsd_gDay_canonical_map(dateTime(_Y,_M,D,_H,_MM,_S,TZ)) -->
+  `---`,
   dayCanonicalFragmentMap(D),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! gDayLexicalMap(+Lexical:list(code), -GregorianDay:compound) is nondet.
-% A compound term that represents a Gregorian day has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values day and time zone are used.
-
-gDayLexicalMap(Lexical, GD):-
-  phrase(gDayLexicalRep(GD), Lexical).
-
-%! gDayLexicalRep(-GregorianDay:compound)//
-% Maps a gDayLexicalRep// to a gDay value.
+%! xsd_gDay_lexical_map(-GregorianDay:compound)// is det.
 %
 % ~~~{.ebnf}
 % gDayLexicalRep ::= '---' dayFrag timezoneFrag?
@@ -136,8 +86,9 @@ gDayLexicalMap(Lexical, GD):-
 % ---(0[1-9]|[12][0-9]|3[01])(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 
-gDayLexicalRep(DT) -->
-  dcg_multi(hyphen, 3),
+xsd_gDay_lexical_map(DT) -->
+  `---`,
   dayFrag(D),
-  ("" ; timezoneFrag(TZ)), !,
+  (`` ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, _M, D, _H, _MM, _S, TZ, DT)}.
+

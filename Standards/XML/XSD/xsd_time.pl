@@ -1,14 +1,12 @@
 :- module(
   xsd_time,
   [
-    timeCanonicalMap/2, % +Time:compound
-                        % -Lexical:list(code)
-    timeLexicalMap/2 % +Lexical:list(code)
-                     % -Time:compound
+    xsd_time_canonical_map//1, % +Time:compound
+    xsd_time_lexical_map//1 % -Time:compound
   ]
 ).
 
-/** <module> XSD_TIME
+/** <module> XSD time datatype
 
 Time represents instants of time that recur at the same point in each calendar
 day, or that occur in some arbitrary calendar day.
@@ -70,30 +68,25 @@ namely midnight (hour, minute, and second are zero).
 @version 2013/08, 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! timeCanonicalMap(+Time:compound, -Lexical:list(code)) is det.
+%! xsd_time_canonical_map(+Time:compound)// is det.
+% Maps a time value to a timeLexicalRep//.
+%
 % The compound term has the following form:
-% ~~~
+% ~~~{.pl}
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
 % The values for year, month, and day are neglected for XSD time.
-
-timeCanonicalMap(T, Lexical):-
-  phrase(timeCanonicalMap(T), Lexical).
-
-%! timeCanonicalMap(+Time:compound)//
-% Maps a time value to a timeLexicalRep//.
 %
 % @arg Time A compound term that represents a time value.
 
-timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
+xsd_time_canonical_map(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
   hourCanonicalFragmentMap(H),
   `:`,
   minuteCanonicalFragmentMap(M),
@@ -103,21 +96,11 @@ timeCanonicalMap(dateTime(_Y,_M,_D,H,M,S,TZ)) -->
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! timeLexicalMap(+Lexical:list(code), -Time:compound) is nondet.
-% The compound term has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% The values for year, month, and day are neglected for XSD time.
-
-timeLexicalMap(Lexical, T):-
-  phrase(timeLexicalRep(T), Lexical).
-
-%! timeLexicalRep(-DateTime:compound)//
+%! timeLexicalRep(-DateTime:compound)// is det.
 %
-% #### Grammar definitions
+% ### Grammar definitions
 %
 % ~~~{.ebnf}
 % timeLexicalRep ::=
@@ -135,10 +118,14 @@ timeLexicalMap(Lexical, T):-
 
 timeLexicalRep(DT) -->
   (
-    hourFrag(H), colon, minuteFrag(M), colon, secondFrag(S)
+    hourFrag(H),
+    `:`,
+    minuteFrag(M),
+    `:`,
+    secondFrag(S)
   ;
     endOfDayFrag(H, M, S)
   ),
-  (timezoneFrag(TZ) ; ""),
+  (timezoneFrag(TZ) ; ``),
   {newDateTime(_Y, _M, _D, H, M, S, TZ, DT)}.
 

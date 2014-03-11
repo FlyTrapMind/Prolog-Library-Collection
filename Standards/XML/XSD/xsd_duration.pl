@@ -1,27 +1,19 @@
 :- module(
   xsd_duration,
   [
-    xsd_duration_canonical_map/2, % +Duration:compound
-                                  % -Lexical:list(code)
     xsd_duration_canonical_map//1, % +Duration:compound
-    xsd_duration_lexical_map/2, % +Lexical:or([atom,list(code)])
-                                % -Duration:compound
     xsd_duration_lexical_map//1, % -Duration:compound
 % RELATIONS
     xsd_duration_equal/2, % +Duration1:compound
                           % +Duration2:compound
 % FUNCTIONS
-    dateTimePlusDuration/3, % +Duration:compound
-                            % +DateTime1:compound
-                            % -DateTime2:compound
-% COMPONENTS
-    duYearMonthFrag//1, % -Month:nonneg
-    duration_to_seconds/2 % +Duration:compound
-                          % -Seconds:float
+    dateTimePlusDuration/3 % +Duration:compound
+                           % +DateTime1:compound
+                           % -DateTime2:compound
   ]
 ).
 
-/** <module> XSD duration
+/** <module> XSD duration datatype
 
 *=duration=* is a datatype that represents durations of time.
 The concept of duration being captured is drawn from those of ISO 8601,
@@ -107,30 +99,17 @@ duDayTimeFrag ::= (duDayFrag duTimeFrag?) | duTimeFrag
 @version 2013/07-2013/08, 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(math(math_ext)).
 :- use_module(xsd(xsd_dateTime)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
 :- use_module(xsd(xsd_decimal)).
+:- use_module(xsd(xsd_duration_generic)).
+:- use_module(xsd(xsd_number_generic)).
 
 
 
-% CANONICAL MAPPING %
-
-%! xsd_duration_canonical_map(+Duration:compound, -Lexical:list(code)) is det.
-% Compound terms that represent durations have the following form:
-% ~~~
-% duration(Months:nonneg, Seconds:float)
-% ~~~
-
-xsd_duration_canonical_map(duration(M,S), Lexical):- !,
-  phrase(xsd_duration_canonical_map(duration(M,S)), Lexical).
-xsd_duration_canonical_map(S, Lexical):-
-  number(S), !,
-  xsd_duration_canonical_map(duration(0,S), Lexical).
-
+% CANONICAL MAP %
 
 %! xsd_duration_canonical_map(+Duration:compound)//
 % Maps a duration's property values to xsd_duration_lexical_map// fragments and
@@ -318,22 +297,9 @@ duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! xsd_duration_lexical_map(
-%!   +Lexical:or([atom,list(code)]),
-%!   -Duration:compound
-%! ) is det.
-% Compound terms that represent durations have the following form:
-% ~~~{.pl}
-% duration(Months:nonneg, Seconds:float)
-% ~~~
-
-xsd_duration_lexical_map(Lexical, D):-
-  dcg_phrase(xsd_duration_lexical_map(D), Lexical).
-
-
-%! xsd_duration_lexical_map(-Duration:compound)//
+%! xsd_duration_lexical_map(-Duration:compound)// is det.
 % ~~~{.ebnf}
 % xsd_duration_lexical_map ::=
 %     '-'? 'P' ((duYearMonthFrag duDayTimeFrag?) | duDayTimeFrag)
@@ -480,22 +446,6 @@ duYearFrag(Y) -->
   `Y`.
 
 
-%! duYearMonthFrag(-Month:nonneg)//
-% ~~~{.ebnf}
-% duYearMonthFrag ::= (duYearFrag duMonthFrag?) | duMonthFrag
-% ~~~
-
-duYearMonthFrag(M2) -->
-  (
-    duYearFrag(Y),
-    (duMonthFrag(M1) ; {M1 = 0})
-  ;
-    {Y = 0},
-    duMonthFrag(M1)
-  ),
-  {M2 is 12 * Y + M1}.
-
-
 
 % RELATIONS %
 
@@ -607,10 +557,4 @@ dateTimePlusDuration(duration(M1,S1), dateTime(Y2,M2,D2,H2,MM2,S2,TZ), DT):-
   S3 is S1 + S2,
   normalizeSecond(NormY, NormM, D3, H2, MM2, S3, Y0, M0, D0, H0, MM0, S0),
   newDateTime(Y0, M0, D0, H0, MM0, S0, TZ, DT).
-
-
-%! duration_to_seconds(+Duration:compound, -Seconds:float) is det.
-
-duration_to_seconds(duration(Months,Seconds1), Seconds2):-
-  timeOnTimeline(dateTime(0,Months,0,0,0,Seconds1,0), Seconds2).
 

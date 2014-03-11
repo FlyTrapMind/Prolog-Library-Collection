@@ -1,14 +1,12 @@
 :- module(
   xsd_hexBinary,
   [
-    hexBinaryCanonicalMap/2, % +HexBinary:list(between(0,1))
-                             % -Lexical:list(code)
-    hexBinaryLexicalMap/2 % +Lexical:list(code)
-                          % -HexBinary:list(between(0,1))
+    xsd_hexBinary_canonical_map//1, % +HexBinary:list(between(0,1))
+    xsd_hexBinary_lexical_map//1 % -HexBinary:list(between(0,1))
   ]
 ).
 
-/** <module> XSD_HEX_BINARY
+/** <module> XSD hexadecimal binary datatype
 
 *=hexBinary=* represents arbitrary hex-encoded binary data.
 
@@ -32,25 +30,10 @@ The ·lexical mapping· of hexBinary is ·hexBinaryMap·.
 The ·canonical mapping· of hexBinary is given formally in ·hexBinaryCanonical·.
 3.3.15.3 Facets
 
-The hexBinary datatype and all datatypes derived from it by restriction have the following ·constraining facets· with fixed values; these facets must not be changed from the values shown:
+--
 
-    whiteSpace = collapse (fixed)
-
-Datatypes derived by restriction from hexBinary may also specify values for the following ·constraining facets·:
-
-    length
-    minLength
-    maxLength
-    pattern
-    enumeration
-    assertions
-
-The hexBinary datatype has the following values for its ·fundamental facets·:
-
-    ordered = false
-    bounded = false
-    cardinality = countably infinite
-    numeric = false
+@author Wouter Beek
+@version 2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_cardinal)).
@@ -58,17 +41,9 @@ The hexBinary datatype has the following values for its ·fundamental facets·:
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! hexBinaryCanonicalMap(
-%!   +HexBinary:list(between(0,1)),
-%!   -Lexical:list(code)
-%! ) is det.
-
-hexBinaryCanonicalMap(BinaryDigits, Lexical):-
-  phrase(hexBinaryCanonicalMap(BinaryDigits), Lexical).
-
-%! hexBinaryCanonicalMap(+HexBinary:list(between(0,1)))//
+%! xsd_hexBinary_canonical_map(+HexBinary:list(between(0,1)))// is det.
 % Maps a hexBinary value to a literal matching the hexBinary// production.
 %
 % The sequence of literals formed by applying hexOctetCanonical//
@@ -76,10 +51,11 @@ hexBinaryCanonicalMap(BinaryDigits, Lexical):-
 %
 % @arg HexBinary A hexBinary value, i.e. a list of 4 binary digits.
 
-hexBinaryCanonicalMap([]) --> [].
-hexBinaryCanonicalMap([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
+xsd_hexBinary_canonical_map([]) --> [].
+xsd_hexBinary_canonical_map([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
   hexOctetCanonical([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]),
-  hexBinaryCanonicalMap(BDs).
+  xsd_hexBinary_canonical_map(BDs).
+
 
 %! hexDigitCanonical(+BinaryDigits:list(between(0,1)))//
 % Maps a four-bit sequence to a hexadecimal digit (a literal matching the
@@ -90,6 +66,7 @@ hexBinaryCanonicalMap([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
 hexDigitCanonical(BinaryDigits) -->
   {digits_to_decimal(BinaryDigits, 2, Weight)},
   hexadecimal_digit(_, Weight).
+
 
 %! hexOctetCanonical(+BinaryOctet:list(between(0,1)))//
 % Maps a binary octet to a literal matching the hexOctet// production.
@@ -102,17 +79,9 @@ hexOctetCanonical([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]) -->
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! hexBinaryLexicalMap(
-%!   +Lexical:list(code),
-%!   -HexBinary:list(between(0,1))
-%! ) is nondet.
-
-hexBinaryLexicalMap(Lexical, HOs):-
-  phrase(hexBinary(HOs), Lexical).
-
-%! hexBinary(-HexBinary:list(between(0,1)))//
+%! hexBinary(-HexBinary:list(between(0,1)))// is det.
 % Maps a literal matching the hexBinary// production to a sequence of octets
 % in the form of a hexBinary value.
 %
@@ -131,6 +100,7 @@ hexBinary([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8|BDs]) -->
   hexOctet([BD1,BD2,BD3,BD4,BD5,BD6,BD7,BD8]),
   hexBinary(BDs).
 
+
 %! hexDigit(-HexadecimalDigit:between(0,15))//
 % Maps a hexadecimal digit (a character matching the hexDigit// production)
 % to a sequence of four binary digits.
@@ -145,6 +115,7 @@ hexDigit([BD1,BD2,BD3,BD4]) -->
   hexadecimal_digit(_, Weight),
   % Four binary digits represent one hexadecimal digit.
   {decimal_to_digits(Weight, 2, [BD1,BD2,BD3,BD4])}.
+
 
 %! hexOctet(-HexOctet:list(between(0,1)))//
 % Maps a literal matching the hexOctet// production to a single octet.

@@ -1,17 +1,15 @@
 :- module(
   xsd_gYearMonth,
   [
-    gYearMonthCanonicalMap/2, % +GregorianYearMonth:compound
-                              % -Lexical:list(code)
-    gYearMonthLexicalMap/2 % +Lexical:list(code)
-                           % -GregorianYearMonth:compound
+    xsd_gYearMonth_canonical_map//1, % +GregorianYearMonth:compound
+    xsd_gYearMonth_lexical_map//1 % -GregorianYearMonth:compound
   ]
 ).
 
-/** <module> XSD_G_YEAR_MONTH
+/** <module> XSD gYearMonth datatype
 
-gYearMonth represents specific whole Gregorian months in specific Gregorian
-years.
+=*gYearMonth*= represents specific whole Gregorian months
+in specific Gregorian years.
 
 Because month/year combinations in one calendar only rarely correspond to
 month/year combinations in other calendars, values of this type are not,
@@ -29,93 +27,39 @@ and second required to be absent. timezoneOffset remains optional.
 The lexical representations for gYearMonth are "projections" of those
 of dateTime.
 
-### Facets
-
-The gYearMonth datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-The gYearMonth datatype has the following constraining facets with
-the values shown; these facets may be specified in the derivation of
-new types, if the value given is at least as restrictive as the one shown:
-  * =|explicitTimezone = optional|=
-
-Datatypes derived by restriction from gYearMonth may also specify values
-for the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The gYearMonth datatype has the following values for its fundamental facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! gYearMonthCanonicalMap(
-%!   +GregorianYearMonth:compound,
-%!   -Lexical:list(code)
-%! ) is det.
-% A compound term that represents a Gregorian year-month has
-% the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values for year, month, and time zone are used.
-
-gYearMonthCanonicalMap(GYM, Lexical):-
-  phrase(gYearMonthCanonicalMap(GYM), Lexical).
-
-%! gYearMonthCanonicalMap(+GregorianYearMonth:compound)//
-% Maps a gYearMonth value to a gYearMonthLexicalRep//.
+%! xsd_gYearMonth_canonical_map(+GregorianYearMonth:compound)// is det.
+% Maps a gYearMonth value to a xsd_gYearMonth_lexical_map//.
 %
 % @arg GregorianYearMonth A complete gYearMonth value.
 
-gYearMonthCanonicalMap(dateTime(Y,M,_D,_H,_MM,_S,TZ)) -->
-  yearCanonicalFragmentMap(Y), hyphen, monthCanonicalFragmentMap(M),
+xsd_gYearMonth_canonical_map(dateTime(Y,M,_,_,_,_,TZ)) -->
+  yearCanonicalFragmentMap(Y),
+  `-`,
+  monthCanonicalFragmentMap(M),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! gYearMonthLexicalMap(
-%!   +Lexical:list(code),
-%!   -GregorianYearMonth:compound
-%! ) is nondet.
-% A compound term that represents a Gregorian year-month has
-% the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values for year, month, and time zone are used.
-
-gYearMonthLexicalMap(Lexical, GYM):-
-  phrase(gYearMonthLexicalRep(GYM), Lexical).
-
-%! gYearMonthLexicalRep(-GregorianYearMonth:compound)//
-% Maps a gYearMonthLexicalRep// to a gYearMonth value.
+%! xsd_gYearMonth_lexical_map(-GregorianYearMonth:compound)// is det.
+% Maps a xsd_gYearMonth_lexical_map// to a gYearMonth value.
 %
 % ~~~{.ebnf}
-% gYearMonthLexicalRep ::= yearFrag '-' monthFrag timezoneFrag?
+% xsd_gYearMonth_lexical_map ::= yearFrag '-' monthFrag timezoneFrag?
 % ~~~
 %
 % ~~~{.re}
@@ -123,8 +67,10 @@ gYearMonthLexicalMap(Lexical, GYM):-
 % (Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 
-gYearMonthLexicalRep(GYM) -->
-  yearFrag(Y), hyphen, monthFrag(M),
-  ("" ; timezoneFrag(TZ)), !,
-  {newDateTime(Y, M, _D, _H, _MM, _S, TZ, GYM)}.
+xsd_gYearMonth_lexical_map(GYM) -->
+  yearFrag(Y),
+  `-`,
+  monthFrag(M),
+  (`` ; timezoneFrag(TZ)), !,
+  {newDateTime(Y, M, _, _, _, _, TZ, GYM)}.
 

@@ -1,14 +1,12 @@
 :- module(
   xsd_gMonth,
   [
-    gMonthCanonicalMap/2, % +GregorianMonth:compound
-                          % -Lexical:list(code)
-    gMonthLexicalMap/2 % +Lexical:list(code)
-                       % -GregorianMonth:compound
+    xsd_gMonth_canonical_map//1, % +GregorianMonth:compound
+    xsd_gMonth_lexical_map//1 % -GregorianMonth:compound
   ]
 ).
 
-/** <module> XSD Gregorian month
+/** <module> XSD Gregorian month datatype
 
 *=gMonth=* represents whole (Gregorian) months within an arbitrary year—months
 that recur at the same point in each year. It might be used, for example,
@@ -31,95 +29,48 @@ and second required to be absent. timezoneOffset remains optional.
 
 The lexical representations for gMonth are "projections" of those of dateTime.
 
-### Facets
-
-The gMonth datatype and all datatypes derived from it by restriction have
-the following constraining facets with fixed values:
-  * =|whiteSpace = collapse (fixed)|=
-
-The gMonth datatype has the following constraining facets with
-the values shown; these facets may be specified in the derivation of
-new types, if the value given is at least as restrictive as the one shown:
-  * =|explicitTimezone = optional|=
-
-Datatypes derived by restriction from gMonth may also specify values
-for the following constraining facets:
-  * =pattern=
-  * =enumeration=
-  * =maxInclusive=
-  * =maxExclusive=
-  * =minInclusive=
-  * =minExclusive=
-  * =assertions=
-
-The gMonth datatype has the following values for its fundamental facets:
-  * =|ordered = partial|=
-  * =|bounded = false|=
-  * =|cardinality = countably infinite|=
-  * =|numeric = false|=
-
 --
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! gMonthCanonicalMap(+GregorianMonth:compound, -Lexical:list(code)) is det.
-% A compound term that represents a Gregorian year has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values month and time zone are used.
-
-gMonthCanonicalMap(GD, Lexical):-
-  phrase(gMonthCanonicalMap(GD), Lexical).
-
-%! gMonthCanonicalMap(+GregorianMonth:compound)//
-% Maps a gMonth value to a gMonthLexicalRep//.
+%! xsd_gMonth_canonical_map(+GregorianMonth:compound)// is det.
+% Maps a gMonth value to a xsd_gMonth_lexical_map//.
 %
-% @arg GregorianMonth A complete gMonth value.
+% @arg GregorianMonth A dateTime compound term with only month
+%      and (optionally) timezone instantiated.
 
-gMonthCanonicalMap(dateTime(_Y,M,_D,_H,_MM,_S,TZ)) -->
-  dcg_multi(hyphen, 2),
+xsd_gMonth_canonical_map(dateTime(_,M,_,_,_,_,TZ)) -->
+  `--`,
   monthCanonicalFragmentMap(M),
   ({var(TZ)} ; timezoneCanonicalFragmentMap(TZ)), !.
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! gMonthLexicalMap(+Lexical:list(code), -GregorianMonth:compound) is nondet.
-% A compound term that represents a Gregorian year has the following form:
-% ~~~
-% dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
-% ~~~
-% Where only the values month and time zone are used.
-
-gMonthLexicalMap(Lexical, GD):-
-  phrase(gMonthLexicalRep(GD), Lexical).
-
-%! gMonthLexicalRep(-GregorianMonth:compound)//
-% Maps a gMonthLexicalRep// to a gMonth value.
+%! xsd_gMonth_lexical_map(-GregorianMonth:compound)//
+% Maps a xsd_gMonth_lexical_map// to a gMonth value.
 %
 % ~~~{.ebnf}
-% gMonthLexicalRep ::= '--' monthFrag timezoneFrag?
+% xsd_gMonth_lexical_map ::= '--' monthFrag timezoneFrag?
 % ~~~
 %
 % ~~~{.re}
 % --(0[1-9]|1[0-2])(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))?
 % ~~~
 
-gMonthLexicalRep(DT) -->
-  dcg_multi(hyphen, 2),
+xsd_gMonth_lexical_map(DT) -->
+  `--`,
   monthFrag(M),
-  ("" ; timezoneFrag(TZ)), !,
+  (`` ; timezoneFrag(TZ)), !,
   {newDateTime(_Y, M, _D, _H, _MM, _S, TZ, DT)}.
+

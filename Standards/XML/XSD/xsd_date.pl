@@ -1,16 +1,12 @@
 :- module(
   xsd_date,
   [
-    xsd_date_canonical_map/2, % +Date:compound
-                              % -Lexical:list(code)
     xsd_date_canonical_map//1, % +Date:compound
-    xsd_date_lexical_map/2, % +Lexical:or([atom,list(code)])
-                            % -Date:compound
     xsd_date_lexical_map//1 % -Date:compound
   ]
 ).
 
-/** <module> XSD date
+/** <module> XSD date datatype
 
 *=date=* represents top-open intervals of exactly one day in length on
 the timelines of dateTime, beginning on the beginning moment of each day,
@@ -36,61 +32,43 @@ of dateTime.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(nlp(dcg_date)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
 
 
 
-% CANONICAL MAPPING %
+% CANONICAL MAP %
 
-%! xsd_date_canonical_map(+Date:compound, -Lexical:list(code)) is det.
+%! xsd_date_canonical_map(+Date:compound)// is det.
+% Maps a date value to a xsd_date_lexical_map//.
+%
 % A compound term that represents a data has the following form:
 % ~~~{.pl}
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
-%
 % Where the values for year, month, day, and time zone are given.
-
-xsd_date_canonical_map(Date, Lexical):-
-  phrase(xsd_date_canonical_map(Date), Lexical).
-
-
-%! xsd_date_canonical_map(+Date:compound)//
-% Maps a date value to a xsd_date_lexical_map//.
 %
 % @arg Date A compound date value.
-% @tbd Are the alternative calls to this DCG rule useful?
 
 xsd_date_canonical_map(dateTime(Y,M,D,_,_,_,TZ)) -->
   yearCanonicalFragmentMap(Y),
-  hyphen,
+  `-`,
   monthCanonicalFragmentMap(M),
-  hyphen,
+  `-`,
   dayCanonicalFragmentMap(D),
   ({var(TZ)}, ! ; timezoneCanonicalFragmentMap(TZ)).
 
 
 
-% LEXICAL MAPPING %
+% LEXICAL MAP %
 
-%! xsd_date_lexical_map(
-%!   +Lexical:or([atom,list(code)]),
-%!   -Date:compound
-%! ) is det.
+%! xsd_date_lexical_map(-DateTime:compound)// is det.
 % A compound term that represents a data has the following form:
 % ~~~{.pl}
 % dateTime(Year,Month,Day,Hour,Minute,Second,TimeZone)
 % ~~~
-%
 % Where the values for year, month, day, and time zone are given.
-
-xsd_date_lexical_map(Lexical, Date):-
-  dcg_phrase(xsd_date_lexical_map(Date), Lexical).
-
-
-%! xsd_date_lexical_map(-DateTime:compound)//
 %
 % ~~~{.ebnf}
 % xsd_date_lexical_map ::= yearFrag '-' monthFrag '-' dayFrag timezoneFrag?
@@ -102,8 +80,12 @@ xsd_date_lexical_map(Lexical, Date):-
 % ~~~
 
 xsd_date_lexical_map(DT) -->
-  yearFrag(Y), hyphen, monthFrag(M), hyphen, dayFrag(D),
+  yearFrag(Y),
+  `-`,
+  monthFrag(M),
+  `-`,
+  dayFrag(D),
   {dayInMonth(Y, M, D)},
-  ("" ; timezoneFrag(TZ)),
+  (`` ; timezoneFrag(TZ)),
   {newDateTime(Y,M,D,_H,_MM,_S,TZ,DT)}.
 
