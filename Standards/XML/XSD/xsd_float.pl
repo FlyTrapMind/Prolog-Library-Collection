@@ -277,7 +277,7 @@ unsignedScientificCanonicalMap(N) -->
 % LEXICAL MAPPING %
 
 xsd_float_lexical_map_friendly(Float2) -->
-  xsd_float_lexial_map(Float1),
+  xsd_float_lexical_map(Float1),
   {(
     Float1 == negativeInfinity
   ->

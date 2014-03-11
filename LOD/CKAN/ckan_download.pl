@@ -14,6 +14,7 @@ Downloads CKAN datasets to the given directory.
 :- use_module(ckan(ckan_table)). % Debug tool.
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
+:- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
@@ -25,28 +26,39 @@ Downloads CKAN datasets to the given directory.
 
 
 ckan_download:-
-  current_prolog_flag(argv, [File1]),
-  argument_to_absolute_file_name(File1, File2),
-  file_name(File2, Dir, _, _),
-  ckan_download(File2, Dir).
-ckan_download:-
-  current_prolog_flag(argv, [File1,Directory1]),
-  argument_to_absolute_file_name(File1, File2),
-  argument_to_absolute_file_name(Directory1, Directory2),
-  make_directory_path(Directory2),
-  ckan_download(File2, Directory2).
-
-ckan_download(File, Dir):-
+  (
+    absolute_file_name(
+      data(datahub_io),
+      File,
+      [access(read),file_errors(fail),file_type(turtle)]
+    ), !
+  ;
+    absolute_file_name(
+      data(datahub_io),
+      File,
+      [access(write),file_type(turtle)]
+    ),
+    URL = 'http://www.wouterblog.com/CKAN/datahub_io.ttl',
+    setup_call_cleanup(
+      http_open(URL, HTTP_Stream, [cert_verify_hook(cert_verify)]),
+      setup_call_cleanup(
+        open(File, write, FileStream, [type(binary)]),
+        copy_stream_data(HTTP_Stream, FileStream),
+        close(FileStream)
+      ),
+      close(HTTP_Stream)
+    )
+  ),
+  absolute_file_name(
+    data('Output'),
+    Directory,
+    [access(write),file_type(directory)]
+  ),
+  make_directory_path(Directory),
   ckan_ap(
     File,
-    [ckan_download:ap_stage([name('Stash'),args([Dir])], stash_output)]
+    [ckan_download:ap_stage([name('Stash'),args([Directory])], stash_output)]
   ).
-
-
-argument_to_absolute_file_name(File, File):-
-  is_absolute_file_name(File), !.
-argument_to_absolute_file_name(File1, File2):-
-  absolute_file_name(File1, File2, [access(write)]).
 
 
 stash_output(FromDir, _, AP_Stage, Dir):-
