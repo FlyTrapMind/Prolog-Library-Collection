@@ -4,7 +4,8 @@
     xsd_double_canonical_map//1, % +Double:or([double,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
     xsd_double_lexical_map//1, % -Double:or([double,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
     xsd_float_canonical_map//1, % +Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
-    xsd_float_lexical_map//1 % -Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
+    xsd_float_lexical_map//1, % -Float:or([float,oneof([negativeInfinity,negativeZero,notANumber,positiveInfinity,positiveZero])])
+    xsd_float_lexical_map_friendly//1 % -Float:float
   ]
 ).
 
@@ -274,6 +275,33 @@ unsignedScientificCanonicalMap(N) -->
 
 
 % LEXICAL MAPPING %
+
+xsd_float_lexical_map_friendly(Float2) -->
+  xsd_float_lexial_map(Float1),
+  {(
+    Float1 == negativeInfinity
+  ->
+    fail
+  ;
+    Float1 == negativeZero
+  ->
+    Float2 = 0.0
+  ;
+    Float1 == notANumber
+  ->
+    fail
+  ;
+    Float1 == positiveInfinity
+  ->
+    fail
+  ;
+    Float1 == positiveZero
+  ->
+    Float2 = 0.0
+  ;
+    Float2 = Float1
+  )}.
+
 
 %! xsd_double_lexical_map(+Lexical:list(code), -Double:float) is det.
 

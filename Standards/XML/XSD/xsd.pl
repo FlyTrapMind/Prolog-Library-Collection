@@ -164,7 +164,7 @@ xsd_lexical_map_codes(xsd:double, Lexical, Double):- !,
 xsd_lexical_map_codes(xsd:duration, Lexical, Duration):- !,
   dcg_phrase(xsd_duration_lexical_map(Duration), Lexical).
 xsd_lexical_map_codes(xsd:float, Lexical, Float):- !,
-  dcg_phrase(xsd_float_lexical_map(Float), Lexical).
+  dcg_phrase(xsd_float_lexical_map_friendly(Float), Lexical).
 xsd_lexical_map_codes(xsd:gDay, Lexical, GregorianDay):- !,
   dcg_phrase(xsd_gDay_canonical_map(GregorianDay), Lexical).
 xsd_lexical_map_codes(xsd:gMonth, Lexical, GregorianMonth):- !,
