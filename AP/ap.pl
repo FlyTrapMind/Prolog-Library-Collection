@@ -20,15 +20,17 @@ Support for running automated processing.
      allowing previously finished processes to be skipped.
 
 @author Wouter Beek
-@version 2013/06, 2013/10-2013/11, 2014/01-2014/02
+@version 2013/06, 2013/10-2013/11, 2014/01-2014/03
 */
 
 :- use_module(ap(ap_db)).
 :- use_module(ap(ap_dir)).
 :- use_module(ap(ap_stage)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(process)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
@@ -80,7 +82,11 @@ ap_begin(O1, AP):-
 
   % Make sure the output directory is there.
   Spec2 =.. [Alias,output],
-  create_nested_directory(Spec2).
+  create_nested_directory(Spec2),
+  
+  % DEB
+  current_date_time(DateTime),
+  debug(ap, 'Starting AP ~w at ~w.', [Alias,DateTime]).
 
 
 %! ap_end(+Options:list(nvpair), +AP:iri) is det.
@@ -121,7 +127,12 @@ ap_end(O1, AP):-
   rdf_collection_member(AP, AP_Collection, ap),
   once(rdfs_label(AP_Collection, Label)),
   absolute_file_name(data(Label), File, [access(write),extensions([tmp])]),
-  rdf_save([format(turtle)], ap, File).
+  rdf_save([format(turtle)], ap, File),
+  
+  % DEB
+  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  current_date_time(DateTime),
+  debug(ap, 'Ended AP ~w at ~w.', [Alias,DateTime]).
 
 
 ap_stage_duration(AP_Stage, Months, Seconds):-

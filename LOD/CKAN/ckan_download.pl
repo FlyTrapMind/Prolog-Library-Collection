@@ -13,6 +13,7 @@ Downloads CKAN datasets to the given directory.
 :- use_module(ckan(ckan_ap)).
 :- use_module(ckan(ckan_table)). % Debug tool.
 :- use_module(generics(uri_ext)).
+:- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -21,6 +22,8 @@ Downloads CKAN datasets to the given directory.
 :- use_module(rdf(rdf_datatype)).
 
 :- initialization(ckan_download).
+
+:- debug(ap).
 
 
 
