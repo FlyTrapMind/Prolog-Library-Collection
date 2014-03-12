@@ -286,7 +286,6 @@ rdf_load(O1, Graph, Graph):-
     ),
     Locations
   ),
-  (Locations == [] -> true ; gtrace),
   maplist(rdf_load(O1, Graph), Locations).
 
 
