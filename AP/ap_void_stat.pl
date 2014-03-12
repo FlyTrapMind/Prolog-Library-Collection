@@ -59,12 +59,16 @@ void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
     triples-NT
   ],
 
-  count_classes(ReadGraph, NC),
-  count_objects(_, _, ReadGraph, NO),
-  count_subjects(_, _, ReadGraph, NS),
-  count_properties(_, _, ReadGraph, NP),
-  rdf_statistics(triples_by_graph(ReadGraph, NT)),
-
+  thread_create(count_classes(ReadGraph, NC), Id1, []),
+  thread_create(count_objects(_, _, ReadGraph, NO), Id2, []),
+  thread_create(count_subjects(_, _, ReadGraph, NS), Id3, []),
+  thread_create(count_properties(_, _, ReadGraph, NP), Id4, []),
+  thread_create(rdf_statistics(triples_by_graph(ReadGraph, NT)), Id5),
+  forall(
+    member(Id, [Id1,Id2,Id3,Id4,Id5]),
+    thread_join(Id, true)
+  ),
+  
   (
     ap_stage_resource(AP_Stage, Resource, WriteGraph)
   ->

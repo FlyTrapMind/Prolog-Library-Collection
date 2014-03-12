@@ -4,14 +4,16 @@
     xsd_canonical_map/3, % +Datatype:iri
                          % +Value
                          % -LexicalExpression:list(code)
+    xsd_compare/4, % +Datatype:iri
+                   % -Order:oneof([incomparable,<,=,>])
+                   % +Value1
+                   % +Value2
     xsd_datatype/1, % ?Datatype:iri
     xsd_datatype/2, % ?Name:atom
                     % ?Datatype:iri
-    xsd_lexical_map/3, % +Datatype:iri
-                       % +Lexical:or([atom,list(code)])
-                       % ?Value
-    xsd_order/2 % +Datatype:iri
-                % :LEQ
+    xsd_lexical_map/3 % +Datatype:iri
+                      % +Lexical:or([atom,list(code)])
+                      % ?Value
   ]
 ).
 
@@ -182,13 +184,18 @@ xsd_lexical_map(xsd:time, Lexical, Time):- !,
   dcg_phrase(xsd_time_lexical_map(Time), Lexical).
 
 
-%! xsd_order(+Datatype:iri, :LEQ) is det.
-% @tbd
+%! xsd_compare(
+%!   +Datatype:iri,
+%!   ?Order:oneof([<,=,>]),
+%!   +Value1,
+%!   +Value2
+%! ) is semidet.
+% Fails only if the given values are incomparable.
 
-xsd_order(D1, xsd_dateTime_leq):-
-  rdf_global_id(D1, D2),
+% Date-time comparisons.
+xsd_compare(Datatype, Order, DateTime1, DateTime2):-
   rdf_memberchk(
-    D2,
+    Datatype,
     [
       xsd:date,
       xsd:dateTime,
@@ -198,8 +205,14 @@ xsd_order(D1, xsd_dateTime_leq):-
       xsd:gYear,
       xsd:gYearMonth
     ]
-  ), !.
-xsd_order(D1, =<):-
-  rdf_global_id(D1, D2),
-  rdf_memberchk(D2, [xsd:decimal,xsd:double,xsd:float,xsd:integer]).
+  ), !,
+  xsd_dateTime_compare(Order, DateTime1, DateTime2).
+% Duration comparisons.
+xsd_compare(Datatype, Order, Duration1, Duration2):-
+  rdf_memberchk(Datatype, [xsd:duration,xsd:xsd_yearMonthDuration]), !,
+  xsd_duration_order(Order, Duration1, Duration2).
+% Numeric comparators.
+xsd_compare(Datatype, Order, Value1, Value2):-
+  rdf_memberchk(Datatype, [xsd:decimal,xsd:double,xsd:float,xsd:integer]),
+  compare(Order, Value1, Value2).
 

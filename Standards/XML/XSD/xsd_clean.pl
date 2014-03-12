@@ -16,11 +16,11 @@
     xsd_lexical_canonical_map/3, % +Datatype:iri
                                  % +Lexical:list(code)
                                  % -CanonicalLexical:list(code)
-    xsd_value/3, % +Value
-                 % +Datatype:or([atom,iri])
+    xsd_value/3, % +Datatype:or([atom,iri])
+                 % +Value
                  % -XsdValue
-    xsd_value/3 % +Value
-                % -Datatype:iri
+    xsd_value/3 % -Datatype:iri
+                % +Value
                 % -XsdValue
   ]
 ).
@@ -50,11 +50,14 @@ Predicates for cleaning XML Scheme 1.1 datatypes.
 % that contains a typed literal.
 %
 % @tbd Use a predicate from module [rdf/rdf_lit_read].
+% @tbd Is is not more efficient to canonize per object term?
+%      Triples that share the same non-canonical typed literal
+%      will be updated at once.
 
 xsd_canonize_graph(Graph):-
   forall(
-    rdf(S, P, literal(type(Datatype,Lexical)), Graph),
-    xsd_canonize_triple(S, P, Datatype, Lexical, Graph)
+    rdf(Subject, Predicate, literal(type(Datatype,Lexical)), Graph),
+    xsd_canonize_triple(Subject, Predicate, Datatype, Lexical, Graph)
   ).
 
 
@@ -68,15 +71,21 @@ xsd_canonize_graph(Graph):-
 % Converts from lexical to value,
 % and then from value to canonical lexical.
 
-xsd_canonize_triple(S, P, Datatype, Lexical, Graph):-
+xsd_canonize_triple(Subject, Predicate, Datatype, Lexical, Graph):-
   xsd_datatype(Datatype),
   xsd_lexical_canonical_map(Datatype, Lexical, CanonicalLexical),
   
   % Only changes need to be written.
   Lexical \== CanonicalLexical,
   
-  rdf_retractall(S, P, literal(type(Datatype,Lexical)), Graph),
-  rdf_assert(S, P, literal(type(Datatype,CanonicalLexical)), Graph).
+  % Update the object term.
+  rdf_update(
+    Subject,
+    Predicate,
+    literal(type(Datatype,Lexical)),
+    Graph,
+    object(literal(type(Datatype,CanonicalLexical)))
+  ).
 
 
 %! xsd_convert_value(
@@ -84,13 +93,13 @@ xsd_canonize_triple(S, P, Datatype, Lexical, Graph):-
 %!   +FromLexicalExpression:atom,
 %!   +ToDatatype:uri,
 %!   -ToLexicalExpression:atom
-%! ) is det.
+%! ) is semidet.
 %! xsd_convert_value(
 %!   +FromDatatype:uri,
 %!   +FromLexicalExpression:list(code),
 %!   +ToDatatype:uri,
 %!   -ToLexicalExpression:list(code)
-%! ) is det.
+%! ) is semidet.
 
 xsd_convert_value(FromDatatype, FromLexical, ToDatatype, ToLexical):-
   atomic_codes_goal(
@@ -120,28 +129,28 @@ xsd_lexical_canonical_map(Datatype, Lexical, CanonicalLexical):-
   xsd_convert_value(Datatype, Lexical, Datatype, CanonicalLexical).
 
 
-%! xsd_value(+Value1, +Datatype:or([atom,iri]), -Value2) is det.
-%! xsd_value(+Value1, -Datatype:iri, -Value2) is nondet.
+%! xsd_value(+Datatype:or([atom,iri]), +Value1, -Value2) is det.
+%! xsd_value(-Datatype:iri,            +Value1, -Value2) is nondet.
 
 % Try out different datatypes.
-xsd_value(Lexical, Datatype, CanonicalLexical):-
+xsd_value(Datatype, Lexical, CanonicalLexical):-
   var(Datatype), !,
   % Choicepoint.
   xsd_datatype(Datatype),
-  xsd_value(Lexical, Datatype, CanonicalLexical).
+  xsd_value(Datatype, Lexical, CanonicalLexical).
 % Allow datatypes to be denoted by a shortcut name.
-xsd_value(PrologValue, Name, CanonicalLexical):-
+xsd_value(Name, PrologValue, CanonicalLexical):-
   xsd_datatype(Name, Datatype), !,
-  xsd_value(PrologValue, Datatype, CanonicalLexical).
+  xsd_value(Datatype, PrologValue, CanonicalLexical).
 % The value is not yet in XSD format, but could be converted
 % by using the supported mappings.
-xsd_value(XsdValue, Datatype, CanonicalLexical):-
-  xsd_datatype(Datatype), !,
-  xsd_canonical_map(Datatype, XsdValue, CanonicalLexical).
+xsd_value(Datatype, XsdValue, CanonicalLexical):-
+  xsd_datatype(Datatype),
+  xsd_canonical_map(Datatype, XsdValue, CanonicalLexical), !.
 % The value is already in XSD format: recognize that this is the case
 % and convert it back and forth to ensure we have the canonical lexical.
-xsd_value(Lexical, Datatype, CanonicalLexical):-
-  xsd_datatype(Datatype), !,
+xsd_value(Datatype, Lexical, CanonicalLexical):-
+  xsd_datatype(Datatype),
   xsd_lexical_map(Datatype, Lexical, XsdValue),
-  xsd_value(XsdValue, Datatype, CanonicalLexical).
+  xsd_value(Datatype, XsdValue, CanonicalLexical).
 

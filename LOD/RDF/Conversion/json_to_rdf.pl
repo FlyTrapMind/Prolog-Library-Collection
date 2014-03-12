@@ -90,19 +90,6 @@ create_resource(Graph, XML_Namespace, Legend, Id, Individual):-
   rdf_assert_individual(Individual, Class, Graph).
 
 
-%! json_name_to_rdf_predicate_term(
-%!   +XML_Namespace:atom,
-%!   +Name:atom,
-%!   -Predicate:iri
-%! ) is det.
-% Construct the RDF predicate term based on (1) the XML namespace
-% (which is identical to the Prolog module that declares the legend)
-% and (2) the JSON name.
-
-json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate):-
-  rdf_global_id(XML_Namespace:Name, Predicate).
-
-
 %! json_to_rdf(
 %!   +Graph:atom
 %!   +Module:atom
@@ -229,20 +216,20 @@ json_pair_to_rdf(_, _, _, _, _, skip, _):- !.
 json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Legend/_, Value):-
   Value = json(_), !,
   json_object_to_rdf(Graph, Module, XML_Namespace, Legend, Value, Individual2),
-  json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
+  rdf_global_id(XML_Namespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % There are two ways to realize legend types / create resources:
 % 2. JSON strings (sometimes).
 json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Legend/_, Value):-
   atom(Value), !,
   create_resource(Graph, Module, Legend, Value, Individual2),
-  json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
+  rdf_global_id(XML_Namespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % A JSON object occurs for which the legend it not yet known.
 json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Type, Value):-
   Type \= _/_, Value = json(_), !,
   json_object_to_rdf(Graph, Module, XML_Namespace, Value, Individual2),
-  json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
+  rdf_global_id(XML_Namespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % Prolog list.
 json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, list(Type), Values):-
@@ -254,15 +241,16 @@ json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, list(Type), Val
 % RDF list.
 json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, rdf_list(Type), Values):-
   is_list(Values), !,
-  json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
+  rdf_global_id(XML_Namespace:Name, Predicate),
   rdf_global_id(xsd:Type, Datatype),
   rdf_assert_list([datatype(Datatype)], Values, RDF_List, Graph),
   rdf_assert(Individual, Predicate, RDF_List, Graph).
-% JSON string that is asserted as an XSD typed literal.
-json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, Type, Value1):-
-  json_name_to_rdf_predicate_term(XML_Namespace, Name, Predicate),
+% XSD
+json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, DatatypeName, Value1):-
+  rdf_global_id(XML_Namespace:Name, Predicate),
   % Convert the JSON value to an RDF object term.
   % This is where we validate that the value is of the required type.
-  xsd_value(Value1, Type, Value2),
+  xsd_datatype(DatatypeName, Datatype),
+  xsd_value(Datatype, Value1, Value2),
   rdf_assert_datatype(Individual, Predicate, Datatype, Value2, Graph).
 
