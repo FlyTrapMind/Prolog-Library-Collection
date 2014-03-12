@@ -22,10 +22,21 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
+
+:- initialization(void_init).
+
+%! void_init is det.
+% Loads the VoID vocabulary.
+
+void_init:-
+  rdf_new_graph(void_schema, Graph),
+  absolute_file_name(void('VoID'), File, [access(read),extensions([ttl])]),
+  rdf_load(File, [format(turtle),graph(Graph)]).
 
 
 
@@ -54,5 +65,5 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
 
 void_dataset(VoidGraph, VoidDataset):-
   rdfs_individual_of(VoidDataset, void:'Dataset'),
-  rdf_term(VoidGraph, VoidDataset).
+  once(rdf_term(VoidGraph, VoidDataset)).
 

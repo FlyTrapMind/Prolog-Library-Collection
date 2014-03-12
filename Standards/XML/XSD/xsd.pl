@@ -210,7 +210,7 @@ xsd_compare(Datatype, Order, DateTime1, DateTime2):-
 % Duration comparisons.
 xsd_compare(Datatype, Order, Duration1, Duration2):-
   rdf_memberchk(Datatype, [xsd:duration,xsd:xsd_yearMonthDuration]), !,
-  xsd_duration_order(Order, Duration1, Duration2).
+  xsd_duration_compare(Order, Duration1, Duration2).
 % Numeric comparators.
 xsd_compare(Datatype, Order, Value1, Value2):-
   rdf_memberchk(Datatype, [xsd:decimal,xsd:double,xsd:float,xsd:integer]),

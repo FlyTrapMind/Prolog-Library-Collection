@@ -39,18 +39,8 @@ VoiD covers four areas of metadata:
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(void(void_db)). % XML namespace.
+:- use_module(void(void_db)).
 :- use_module(void(void_stat)).
-
-:- initialization(void_init).
-
-%! void_init is det.
-% Loads the VoID vocabulary.
-
-void_init:-
-  rdf_new_graph(void_schema, Graph),
-  absolute_file_name(void('VoID'), File, [access(read),file_type(turtle)]),
-  rdf_load([file_type(turtle)], Graph, File).
 
 
 
@@ -62,7 +52,6 @@ void_load(VoidGraph):-
     void_dataset(VoidGraph, VoidDataset),
     void_load_dataset(VoidGraph, VoidDataset)
   ).
-
   /*% THREADS:
   forall_thread(
     (

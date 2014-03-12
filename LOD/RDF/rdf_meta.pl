@@ -27,6 +27,9 @@ Meta-callings on an RDF graph.
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 
+:- meta_predicate(rdf_setup_call_cleanup(+,+,1)).
+:- meta_predicate(rdf_setup_call_cleanup(+,+,1,+,?)).
+
 
 
 %! rdf_setup_call_cleanup(
@@ -38,7 +41,6 @@ Meta-callings on an RDF graph.
 %
 % @arg Goal Take one argument, which is the atomic name of an RDF graph.
 
-:- meta_predicate(rdf_setup_call_cleanup(+,+,1)).
 % Load RDF files, process goal, no output.
 rdf_setup_call_cleanup(O1_Load, From, Goal):-
   setup_call_cleanup(
@@ -62,7 +64,6 @@ rdf_setup_call_cleanup(O1_Load, From, Goal):-
 %
 % @arg Goal Take one argument, which is the atomic name of an RDF graph.
 
-:- meta_predicate(rdf_setup_call_cleanup(+,+,1,+,?)).
 rdf_setup_call_cleanup(O1_Load, From, Goal, O1_Save, ToFile):-
   % If the output file is not given,
   % then it is based on the input file.

@@ -43,6 +43,7 @@ This requires a Prolog module whose name is also registered as
 :- use_module(standards(json_ext)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
+:- use_module(xsd(xsd_clean)).
 
 
 
