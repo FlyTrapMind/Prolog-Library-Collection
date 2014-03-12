@@ -57,42 +57,14 @@ since most datasets are published in a non-standard way.
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
-
-:- if((
-  catch(use_module(library(semweb/rdf_ntriples_write)), E, true),
-  var(E)
-)).
-  :- use_module(library(semweb/rdf_ntriples_write)).
-:- else.
-  :- use_module(rdf(rdf_ntriples_write)).
-:- endif.
-
 :- use_module(library(semweb/rdf_turtle)).
-
-:- if((
-  catch(
-    use_module(
-      library(semweb/rdf_turtle_write),
-      except([rdf_save_ntriples/2])
-    ),
-    E,
-    true
-  ),
-  var(E)
-)).
-  :- use_module(
-    library(semweb/rdf_turtle_write),
-    except([rdf_save_ntriples/2])
-  ).
-:- else.
-  :- use_module(library(semweb/rdf_turtle_write)).
-:- endif.
-
+:- use_module(library(semweb/rdf_turtle_write)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
+:- use_module(rdf(rdf_ntriples_write)).
 :- use_module(rdf(rdf_serial)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
