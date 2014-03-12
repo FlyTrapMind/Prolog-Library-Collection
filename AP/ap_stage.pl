@@ -64,7 +64,7 @@ ap_stages0(AP_Stage1, [Mod:ap_stage(O1,Goal)|T]):-
 ap_stage_begin(O1, AP_Stage):-
   option(name(Name), O1),
   rdf_assert_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
-  
+
   % DEB
   debug(ap, '  Starting AP Stage ~w.', [Name]).
 
@@ -142,9 +142,9 @@ ap_stage_dirs(_, _, _, _, _).
 
 ap_stage_end(AP_Stage):-
   add_succeed(AP_Stage),
-  
+
   % DEB
-  rdf_assert_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
+  rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
   debug(ap, '  Ended AP Stage ~w.', [Name]).
 
 

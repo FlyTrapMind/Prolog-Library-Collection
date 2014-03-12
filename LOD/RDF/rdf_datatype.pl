@@ -75,6 +75,7 @@ Support for RDF typed literals.
 % @arg Graph The atomic name of an RDF graph.
 
 rdf_assert_datatype(S, P, D, Value, G):-
+  nonvar(Value),
   xsd_canonical_map(D, Value, LexicalCodes),
   atom_codes(LexicalAtom, LexicalCodes),
   rdf_assert(S, P, literal(type(D,LexicalAtom)), G).
