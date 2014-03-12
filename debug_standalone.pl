@@ -15,7 +15,9 @@ run_debug_standalone:-
   file_directory_name(ThisFile, ThisDir),
   assert(user:file_search_path(project, ThisDir)),
   set_data_path,
-  ensure_loaded(debug).
+  ensure_loaded(debug),
+  use_module(rdfs(rdfs_back)).
+
 
 set_data_path:-
   current_prolog_flag(argv, [Directory]),
