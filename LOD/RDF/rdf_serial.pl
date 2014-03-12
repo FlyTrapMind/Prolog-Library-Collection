@@ -68,7 +68,26 @@ since most datasets are published in a non-standard way.
 :- endif.
 
 :- use_module(library(semweb/rdf_turtle)).
-:- use_module(library(semweb/rdf_turtle_write)).
+
+:- if((
+  catch(
+    use_module(
+      library(semweb/rdf_turtle_write),
+      except([rdf_save_ntriples/2])
+    ),
+    E,
+    true
+  ),
+  var(E)
+)).
+  :- use_module(
+    library(semweb/rdf_turtle_write),
+    except([rdf_save_ntriples/2])
+  ).
+:- else.
+  :- use_module(library(semweb/rdf_turtle_write)).
+:- endif.
+
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
