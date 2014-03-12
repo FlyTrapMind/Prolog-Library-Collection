@@ -57,7 +57,16 @@ since most datasets are published in a non-standard way.
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
-:- use_module(library(semweb/rdf_ntriples_write)).
+
+:- if((
+  catch(use_module(library(semweb/rdf_ntriples_write)), E, true),
+  var(E)
+)).
+  :- use_module(library(semweb/rdf_ntriples_write)).
+:- else.
+  :- use_module(rdf(rdf_ntriples_write)).
+:- endif.
+
 :- use_module(library(semweb/rdf_turtle)).
 :- use_module(library(semweb/rdf_turtle_write)).
 :- use_module(os(dir_ext)).
