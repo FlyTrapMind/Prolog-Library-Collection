@@ -119,7 +119,7 @@ dcg_end([], []).
 
 dcg_phrase(DCG, X1):-
   atomic_codes(X1, X2),
-  dcg_phrase(DCG, X2).
+  phrase(DCG, X2).
 
 dcg_phrase(DCG, X1, Y1):-
   atomic_codes(X1, X2),

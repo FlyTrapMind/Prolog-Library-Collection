@@ -6,9 +6,10 @@
 
 % FETCHING
     file_to_html/2, % +File:atom
-                    % -HTML:list
-    download_html/2, % +URL:atom
-                   % -HTML:list
+                    % -HTML:dom
+    download_html/3, % +Options:list(nvpair)
+                     % +URL:atom
+                     % -HTML:dom
 
 % PARSING
     html_attribute/2, % +Attributes:list(nvpair)
@@ -40,6 +41,7 @@ HTML attribute parsing, used in HTML table generation.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(http(http)).
 :- use_module(library(apply)).
@@ -92,16 +94,21 @@ html_from_stream(HTML_DOM, Stream):-
   load_html(Stream, HTML_DOM, []).
 
 
-%! download_html(+URL:atom, -HTML_DOM:list) is det.
+%! download_html(+Options:list(nvpoair), +Url:atom, -Html:dom) is det.
 % Returns the HTML Document Object Model (DOM)
 % for the website with the given URI.
 %
-% @arg URI
-% @arg HTML_DOM
-% @throws existence_error(url, Id)
+% The following options are supported:
+%   * =|html_dialect(+HtmlDialect:oneof([html4,html5])|=
+%   * Other options are passed to http_goal/3 and, subsequently, http_open/3.
 
-download_html(URL, HTML_DOM):-
-  http_goal(URL, [], html_from_stream(HTML_DOM)).
+download_html(O1, Url, HtmlDom):-
+  select_option(html_dialect(HtmlDialect), O1, O2, html5),
+  temporarily_set_flag(
+    html_dialect,
+    HtmlDialect,
+    http_goal(Url, O2, html_from_stream(HtmlDom))
+  ).
 
 
 

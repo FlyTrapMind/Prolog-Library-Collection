@@ -74,12 +74,10 @@ ap_directory(AP, Dir):-
 %! ) is det.
 % Find subdirectories of the given automated process.
 
-ap_directory(AP, Mode, Subdir1, AbsoluteDir):-
+ap_directory(AP, Mode, Subdir, AbsoluteDir):-
   once(rdfs_individual_of(AP, ap:'AP')),
   rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
-
-  atomic_codes(Subdir2, Subdir1),
-  Spec =.. [Alias,Subdir2],
+  Spec =.. [Alias,Subdir],
   (
     absolute_file_name(
       Spec,

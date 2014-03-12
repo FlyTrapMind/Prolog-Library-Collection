@@ -44,7 +44,7 @@
 
 
 %! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.
-% Options are passed to http_goal/3, http_open/3.
+% Options are passed to http_goal/3 and, subsequently, http_open/3.
 
 download_to_file(O1, URL, File):-
   (

@@ -182,7 +182,11 @@ init_mime:-
 
 
 assert_mime_extensions(Graph):-
-  download_html('http://www.webmaster-toolkit.com/mime-types.shtml', DOM),
+  download_html(
+    [html_dialect(html4)],
+    'http://www.webmaster-toolkit.com/mime-types.shtml',
+    DOM
+  ),
   forall(
     (
       member(Class, [tablerowdark,tablerowlight]),

@@ -81,11 +81,19 @@ binary_digit(C, 1) --> one(C).
 binary_number(N) -->
   digits_to_decimal_number(binary_digit, 2, N).
 
+
 %! decimal_digit(?Code:code, ?DecimalDigit:between(0,9))//
 
-decimal_digit(C, N) --> octal_digit(C, N).
-decimal_digit(C, 8) --> eight(C).
-decimal_digit(C, 9) --> nine(C).
+decimal_digit(C, N) -->
+  {var(C), var(N)},
+  decimal_digit_nondet(C, N).
+decimal_digit(C, N) -->
+  decimal_digit_nondet(C, N), !.
+
+decimal_digit_nondet(C, N) --> octal_digit(C, N).
+decimal_digit_nondet(C, 8) --> eight(C).
+decimal_digit_nondet(C, 9) --> nine(C).
+
 
 %! decimal_number(-DecimalNumber:integer)//
 

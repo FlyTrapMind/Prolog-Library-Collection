@@ -12,9 +12,8 @@ Downloads CKAN datasets to the given directory.
 :- use_module(ap(ap_table)). % Debug tool.
 :- use_module(ckan(ckan_ap)).
 :- use_module(ckan(ckan_table)). % Debug tool.
-:- use_module(library(apply)).
+:- use_module(generics(uri_ext)).
 :- use_module(library(filesex)).
-:- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
@@ -38,26 +37,18 @@ ckan_download:-
       File,
       [access(write),file_type(turtle)]
     ),
-    URL = 'http://www.wouterblog.com/CKAN/datahub_io.ttl',
-    setup_call_cleanup(
-      http_open(URL, HTTP_Stream, [cert_verify_hook(cert_verify)]),
-      setup_call_cleanup(
-        open(File, write, FileStream, [type(binary)]),
-        copy_stream_data(HTTP_Stream, FileStream),
-        close(FileStream)
-      ),
-      close(HTTP_Stream)
+    download_to_file(
+      [],
+      'https://dl.dropboxusercontent.com/s/brxpfdwn4n72c2z/datahub_io.ttl?dl=1&token_hash=AAEd9UWXY3SsIBAILVE-yIH7fuRq-_s8RYFgdEAePb0oSQ',
+      File
     )
   ),
-  absolute_file_name(
-    data('Output'),
-    Directory,
-    [access(write),file_type(directory)]
-  ),
-  make_directory_path(Directory),
+  absolute_file_name(data(.), DataDir, [access(read),file_type(directory)]),
+  directory_file_path(DataDir, 'Output', OutputDir),
+  make_directory_path(OutputDir),
   ckan_ap(
     File,
-    [ckan_download:ap_stage([name('Stash'),args([Directory])], stash_output)]
+    [ckan_download:ap_stage([name('Stash'),args([OutputDir])], stash_output)]
   ).
 
 

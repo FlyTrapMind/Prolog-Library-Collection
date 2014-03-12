@@ -254,7 +254,13 @@ execute_goal(AP_Stage, Goal, Args):-
     (
       get_time(End),
       Delta is End - Begin,
-      rdf_assert_datatype(AP_Stage, ap:duration, xsd:duration, Delta, ap)
+      rdf_assert_datatype(
+        AP_Stage,
+        ap:duration,
+        xsd:duration,
+        duration(0,Delta),
+        ap
+      )
     )
   ).
 

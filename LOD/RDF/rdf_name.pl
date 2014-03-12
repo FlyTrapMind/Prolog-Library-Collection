@@ -143,7 +143,7 @@ rdf_typed_literal(literal(type(Datatype,Literal))) -->
     % the lexically mapped value.
     xsd_datatype(Datatype)
   ->
-    rdf_datatype(Datatype, Literal, Value)
+    xsd_lexical_map(Datatype, Literal, Value)
   ;
     Value = Literal
   )},

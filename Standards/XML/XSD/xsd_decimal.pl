@@ -73,10 +73,6 @@ of the decimal point which may be a zero.
 @version 2013/07-2013/08, 2013/10, 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(math(math_ext)).
-:- use_module(math(rational_ext)).
 :- use_module(xsd(xsd_number_generic)).
 
 

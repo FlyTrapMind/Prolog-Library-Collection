@@ -127,6 +127,9 @@ add_skip(AP_Stage):-
 % States that the given automated process stage was completed succesfully,
 %  i.e. without failing or throwing an exception.
 
+% Skipped AP stages are not asserted as succeeding.
+add_succeed(AP_Stage):-
+  rdfs_individual_of(AP_Stage, ap:'Skip'), !.
 add_succeed(AP_Stage):-
   rdf_assert_datatype(AP_Stage, ap:status, xsd:string, succeed, ap).
 

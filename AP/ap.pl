@@ -117,14 +117,20 @@ ap_end(O1, AP):-
     ap
   ),
 
-  % Save the ap assertions until now.
+  % Save the AP assertions until now.
   rdf_collection_member(AP, AP_Collection, ap),
-  rdfs_label(AP_Collection, Label),
+  once(rdfs_label(AP_Collection, Label)),
   absolute_file_name(data(Label), File, [access(write),extensions([tmp])]),
   rdf_save([format(turtle)], ap, File).
 
+
 ap_stage_duration(AP_Stage, Months, Seconds):-
-  rdf_datatype(AP_Stage, ap:duration, xsd:duration, Duration, ap), !,
-  Duration = duration(Months,Seconds).
+  rdf_datatype(
+    AP_Stage,
+    ap:duration,
+    xsd:duration,
+    duration(Months,Seconds),
+    ap
+  ), !.
 ap_stage_duration(_, 0, 0.0).
 
