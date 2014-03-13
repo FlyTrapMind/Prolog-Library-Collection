@@ -14,7 +14,7 @@ Attributes, their allowed values, and their default values for GraphViz.
 @author Wouter Beek
 @see http://www.graphviz.org/doc/info/attrs.html
 @tbd Add context check (i.e., node, graph, edges, etc.).
-@version 2011-2013/07, 2013/09-2013/10, 2014/01
+@version 2011-2013/07, 2013/09-2013/10, 2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).

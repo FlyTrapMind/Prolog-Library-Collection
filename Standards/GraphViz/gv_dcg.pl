@@ -18,7 +18,7 @@ In GraphViz vertices are called 'nodes'.
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09
+@version 2013/07, 2013/09, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
