@@ -16,7 +16,7 @@ run_debug_standalone:-
   assert(user:file_search_path(project, ThisDir)),
   set_data_path,
   ensure_loaded(debug),
-  use_module(rdfs(rdfs_back)).
+  use_module(rdfs(rdfs_proof)).
 
 
 set_data_path:-

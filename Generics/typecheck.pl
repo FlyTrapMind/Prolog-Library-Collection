@@ -48,7 +48,7 @@ Predicates used for parsing and checking value-type conformance.
 --
 
 @author Wouter Beek
-@version 2013/01, 2013/08, 2014/01
+@version 2013/01, 2013/08, 2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -68,6 +68,12 @@ error:has_type(code, Term):-
 % email/0
 error:has_type(email, Term):-
   dcg_phrase(email, Term).
+% float_between/2, extension of between/2 for floats
+% allowing uninstiated upper and lower bounds.
+error:has_type(float_between(L,U), X):-
+  number(X),
+  (number(L) -> X >= L ; true),
+  (number(U) -> X =< L ; true).
 % or/1
 error:has_type(or(Types), Term):-
   member(Type, Types),

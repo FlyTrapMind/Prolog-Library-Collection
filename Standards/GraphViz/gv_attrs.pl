@@ -178,9 +178,7 @@ dir_type(both).
 dir_type(forward).
 dir_type(none).
 
-% @tbd The value type should be `between(1.0,_)` (open interval), but this is
-%      not currently supported by must_be/2.
-gv_attr(_Attrs, fontsize, between(1,inf), [graph], 14).
+gv_attr(_Attrs, fontsize, float_between(1.0,_), [graph], 14).
 
 gv_attr(_Attrs, image, atom, [node], '').
 
