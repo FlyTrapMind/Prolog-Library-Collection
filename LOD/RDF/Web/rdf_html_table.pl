@@ -26,7 +26,7 @@ Generates HTML tables with RDF content.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
-:- use_module(rdf_web(rdf_html_term)).
+:- use_module(rdf_web(rdf_term_html)).
 :- use_module(xml(xml_namespace)).
 
 :- meta_predicate(rdf_html_table(+,//,+,?,?)).
@@ -60,7 +60,7 @@ rdf_html_table(O1, Table) -->
       L2 = L1
     )
   },
-  rdf_html_table(O1, rdf_html_term(Caption), L2).
+  rdf_html_table(O1, rdf_term_html(Caption), L2).
 
 table1(_, _, _, [], []):- !.
 table1(Table, HasHeaderColumn, Columns, [Row|Rows], [H2|T]):-
@@ -93,7 +93,7 @@ table2(Table, [Column|Columns], Row, [H|T]):-
 rdf_html_table(_, _, []) --> !, [].
 rdf_html_table(O1, Caption, Rows) -->
   {select_option(graph(Graph), O1, O2, _NoGraph)},
-  html(\html_table(O2, Caption, rdf_html_term(Graph), Rows)).
+  html(\html_table(O2, Caption, rdf_term_html(Graph), Rows)).
 
 
 rdf_html_tables(_, []) --> !, [].

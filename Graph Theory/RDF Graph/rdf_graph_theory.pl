@@ -58,7 +58,7 @@ This means that the definitions 'edge' and 'vertex' for graph theoretic
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_lit)).
+:- use_module(rdf(rdf_literal)).
 :- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_read)).
 :- use_module(xml(xml_namespace)).

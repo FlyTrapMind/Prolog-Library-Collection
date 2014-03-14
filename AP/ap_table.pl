@@ -18,7 +18,7 @@
 :- use_module(generics(uri_ext)).
 :- use_module(html(html_list)).
 :- use_module(html(html_table)).
-:- use_module(html(html_pl_term)).
+:- use_module(html(pl_term_html)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -29,7 +29,7 @@
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html_table)).
-:- use_module(rdf_web(rdf_html_term)).
+:- use_module(rdf_web(rdf_term_html)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
@@ -114,7 +114,7 @@ ap_stage_cell(AP_Stage) -->
   html(div(class=Class, \ap_message(AP_Stage))).
 % This covers both RDF terms and Prolog terms.
 ap_stage_cell(Term) -->
-  rdf_html_term(Term).
+  rdf_term_html(Term).
 
 
 ap_message(AP_Stage) -->
@@ -126,7 +126,7 @@ ap_message(AP_Stage) -->
     rdf_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
     read_term_from_atom(Atom, Error, [])
   },
-  html(\html_pl_term(Error)).
+  html(\pl_term_html(Error)).
 ap_message(AP_Stage) -->
   {rdfs_individual_of(AP_Stage, ap:'Skip')}, !,
   html('Skip').

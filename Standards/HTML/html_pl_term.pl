@@ -1,7 +1,7 @@
 :- module(
-  html_pl_term,
+  pl_term_html,
   [
-    html_pl_term//1, % +PL_Term
+    pl_term_html//1, % +PL_Term
 % CONSTITUENTS
     html_file//1, % +File:atom
     html_files//1, % +Files:list(atom)
@@ -24,7 +24,7 @@
 :- use_module(library(http/html_write)).
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
-:- use_module(rdf_web(rdf_html_term)).
+:- use_module(rdf_web(rdf_term_html)).
 
 
 
@@ -260,7 +260,7 @@ html_nvpair(Property-Value) -->
 
 html_nvpair(Property, Value) -->
   html([
-    span(class=property, \html_pl_term(Property)),
+    span(class=property, \pl_term_html(Property)),
     '=',
     span(class=value, \html_value(Value))
   ]).
@@ -275,7 +275,7 @@ html_nvpairs([H|T]) -->
 
 
 % Error term.
-html_pl_term(error(Formal,Context)) --> !,
+pl_term_html(error(Formal,Context)) --> !,
   {Formal =.. [ErrorKind|_]},
   html(
     div(class=error, [
@@ -289,25 +289,25 @@ html_pl_term(error(Formal,Context)) --> !,
     ])
   ).
 % Integer atomic term.
-html_pl_term(Term) -->
+pl_term_html(Term) -->
   {
     to_integer(Term, Integer), !,
     format(atom(FormattedInteger), '~:d', [Integer])
   },
   html(span(class=integer, FormattedInteger)).
 % Floating point atomic term.
-html_pl_term(Term) -->
+pl_term_html(Term) -->
   {
     to_float(Term, Float), !,
     format(atom(FormattedFloat), '~G', [Float])
   },
   html(span(class=float, FormattedFloat)).
 % Atomic term: atom, blob, or string.
-html_pl_term(Atom) -->
+pl_term_html(Atom) -->
   {atomic(Atom)}, !,
   html(span(class=atomic, Atom)).
 % Compound terms are converted to atom first.
-html_pl_term(PL_Term) -->
+pl_term_html(PL_Term) -->
   {term_to_atom(PL_Term, Atom)},
   html(span(class=compound, Atom)).
 
@@ -341,5 +341,5 @@ html_program(Program) -->
 html_value(mime(MIME)) --> !,
   html_mime(MIME).
 html_value(Value) -->
-  rdf_html_term(Value).
+  rdf_term_html(Value).
 

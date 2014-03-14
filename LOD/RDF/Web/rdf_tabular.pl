@@ -29,7 +29,7 @@ Generated RDF HTML tables.
 :- use_module(rdf_web(rdf_tabular_graph)).
 :- use_module(rdf_web(rdf_tabular_term)).
 :- use_module(rdf_web(rdf_html_table)).
-:- use_module(rdf_web(rdf_html_term)).
+:- use_module(rdf_web(rdf_term_html)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_modules)).
 
@@ -52,7 +52,7 @@ rdf_tabular(Request):-
     app_style,
     title(['Overview of RDF resource ',Term]),
     [
-      h1(['Description of RDF term ',\rdf_html_term(Term)]),
+      h1(['Description of RDF term ',\rdf_term_html(Term)]),
       \rdf_tabular_term(Graph, Term)
     ]
   ).

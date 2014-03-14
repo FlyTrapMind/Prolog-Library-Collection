@@ -2,102 +2,39 @@
   rdf_term,
   [
 % SYNTACTIC TERMS
-    rdf_bnode/2, % ?Graph:atom
-                 % ?BNode:bnode
-    rdf_iri/2, % ?Graph:atom
-               % ?IRI:iri
-    rdf_is_iri/1, % +IRI:iri
-    rdf_name/2, % ?Graph:atom
-                % ?RDF_Name:oneof([literal,uri])
-    rdf_term/2, % ?Graph:atom
-                % ?RDF_Term:or([bnode,literal,uri])
-    rdf_vocabulary/2, % +Graph:atom
-                      % -Vocabulary:ordset(oneof([literal,uri]))
+    rdf_bnode/2, % ?RdfGraph:atom
+                 % ?BlankNode:bnode
+    rdf_iri/2, % ?RdfGraph:atom
+               % ?Iri:iri
+    rdf_is_iri/1, % +Iri:iri
+    rdf_name/2, % ?RdfGraph:atom
+                % ?RdfName:oneof([iri,literal])
+    rdf_term/2, % ?RdfGraph:atom
+                % ?RdfTerm:or([bnode,iriliteral])
+    rdf_vocabulary/2, % +RdfGraph:atom
+                      % -RdfVocabulary:ordset(oneof([iriliteral]))
 % POSITIONAL OCUCURRENCE
-    rdf_is_subject/1,
-    rdf_is_predicate/1,
-    rdf_is_object/1,
-    rdf_subject/2, % ?Graph:atom
-                   % ?Subject:oneof([bnode,iri])
-    rdf_predicate/2, % ?Graph:atom
-                     % ?Predicate:iri
-    rdf_object/2, % ?Graph:atom
-                  % ?Objects:oneof([bnode,literal,iri])
-    rdf_node/2 % ?Graph:atom
-               % ?Node:or([bnode,iri,literal])
+    rdf_is_subject/1, % +RdfTerm:or([bnode,iri,literal])
+    rdf_is_predicate/1, % +RdfTerm:or([bnode,iri,literal])
+    rdf_is_object/1, % +RdfTerm:or([bnode,iri,literal])
+    rdf_subject/2, % ?RdfGraph:atom
+                   % ?RdfSubjectTerm:oneof([bnode,iri])
+    rdf_predicate/2, % ?RdfGraph:atom
+                     % ?RdfPredicateTerm:iri
+    rdf_object/2, % ?RdfGraph:atom
+                  % ?RdfObjectTerm:oneof([bnode,literal,iri])
+    rdf_node/2 % ?RdfGraph:atom
+               % ?RdfNode:or([bnode,iri,literal])
   ]
 ).
 
 /** <module> RDF Term
 
-# From RDF 1.0
-
-## URI reference
-
-A URI reference within an RDF graph (an RDF URI reference) is
-a Unicode string that:
-  * does not contain any control characters (#x00-#x1F, #x7F-#x9F)
-  * and would produce a valid URI character sequence
-    (per RFC-2396, sections 2.1) representing an absolute URI with
-    optional fragment identifier when subjected to the encoding
-    described below.
-
-The encoding consists of:
-  * encoding the Unicode string as UTF-8 [RFC-2279],
-    giving a sequence of octet values.
-  * %-escaping octets that do not correspond to
-    permitted US-ASCII characters.
-
-The disallowed octets that must be %-escaped include
-all those that do not correspond to US-ASCII characters,
-and the excluded characters listed in Section 2.4 of RFC-2396,
-except for the number sign (#), percent sign (%), and
-the square bracket characters re-allowed in RFC-2732.
-
-Disallowed octets must be escaped with the URI escaping mechanism
-(that is, converted to =|%HH|=, where =HH= is the 2-digit hexadecimal
-numeral corresponding to the octet value).
-
-### Equality
-
-Two RDF URI references are equal if and only if they compare as equal,
-character by character, as Unicode strings.
-
-### Relation to "XML Schema 2: Datatypes"
-
-RDF URI references are compatible with the =anyURI= datatype
-as defined by XML Schema Part 2: Datatypes, constrained to be
-an absolute rather than a relative URI reference.
-
-### Relation to "XML Namespaces 1.1"
-
-RDF URI references are compatible with International Resource Identifiers
-as defined by XML Namespaces 1.1.
-
-### Relation to an IRI RFC standard
-
-This section anticipates an RFC on Internationalized Resource Identifiers.
-Implementations may issue warnings concerning the use of RDF URI References
-that do not conform with the IRI draft or its successors.
-
-### Relation to concrete syntaxes
-
-The restriction to absolute URI references is found in this abstract syntax.
-When there is a well-defined base URI, concrete syntaxes, such as RDF/XML,
-may permit relative URIs as a shorthand for such absolute URI references.
-
-### Warning for seemingly equal RDF URI references
-
-Because of the risk of confusion between RDF URI references that
-would be equivalent if derefenced, the use of %-escaped characters
-in RDF URI references is strongly discouraged.
-
-See also the URI equivalence issue of the Technical Architecture Group [TAG].
-
---
+Support for RDF 1.1 terms.
+Support for RDF literals is found in [rdf_literal].
 
 @author Wouter Beek
-@see KlyneCarrollMcbride2014
+@see CyganiakWoodLanthaler2014
      RDF 1.1 Concepts and Abstract Syntax
      http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/
 @version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/03
