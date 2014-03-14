@@ -54,7 +54,7 @@ random_vertex_coordinate(O, _Vs, _V, VCoord):-
   option(surface(Surface), O, DefaultSurface),
   Surface = size(Dimension, Sizes),
   VCoord = coordinate(Dimension, Args),
-  maplist(random_between(1), Sizes, Args).
+  maplist(random(1.0), Sizes, Args).
 
 random_vertex_coordinates(O, G, V_P, VCoords):-
   call(V_P, G, Vs),

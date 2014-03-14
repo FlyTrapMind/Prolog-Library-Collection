@@ -93,8 +93,10 @@ log_web(Max) -->
 %prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
 %  web_error(Exception, Markup),
 %  push(status_pane, html, app_style, Markup), !.
-%prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):- !,
-%  format(user, '~w', [Exception]). %DEB
+
+prolog:debug_print_hook(Type, Format, Args):-
+  format(atom(Atom), Format, Args),
+  format(user_output, '[~w] ~w\n', [Type,Atom]), !.
 prolog:debug_print_hook(Type, Format, Args):-
   % Write to the status pane in the Web front-end.
   %format(atom(Msg), Format, Args),

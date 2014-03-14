@@ -3,10 +3,9 @@
   [
     xsd_duration_canonical_map//1, % +Duration:compound
     xsd_duration_lexical_map//1, % -Duration:compound
-% RELATIONS
-    xsd_duration_equal/2, % +Duration1:compound
-                          % +Duration2:compound
-% FUNCTIONS
+    xsd_duration_compare/3, % ?Order:oneof([<,=,>])
+                            % +Duration1:compound
+                            % +Duration2:compound
     dateTimePlusDuration/3 % +Duration:compound
                            % +DateTime1:compound
                            % -DateTime2:compound
@@ -429,18 +428,13 @@ duTimeFrag(S2) -->
 
 % RELATIONS %
 
-%! xsd_duration_equal(+Duration1:compound, +Duration2:compound) is semidet.
-% Two duration values are equal if and only if they are identical.
-
-xsd_duration_equal(D1, D2):-
-  xsd_duration_order(=, D1, D2).
-
-
-%! xsd_duration_order(
-%!   -Order,
+%! xsd_duration_compare(
+%!   -Order:oneof([<,=,>]),
 %!   +Duration1:compound,
 %!   +Duration2:compound
-%! ) is det.
+%! ) is semidet.
+% Fails only if the given values are incomparable.
+%
 % Equality of duration is defined in terms of equality of dateTime;
 % order for duration is defined in terms of the order of dateTime.
 % Specifically, the equality or order of two duration values
@@ -456,7 +450,7 @@ xsd_duration_equal(D1, D2):-
 % when added to any other dateTime values.
 % @tbd Where's the proof for this?
 
-xsd_duration_order(Order2, Dur1, Dur2):-
+xsd_duration_compare(Order, Dur1, Dur2):-
   newDateTime(1696, 9, 1, 0, 0, 0.0, 0, DTa),
   newDateTime(1697, 2, 1, 0, 0, 0.0, 0, DTb),
   newDateTime(1903, 3, 1, 0, 0, 0.0, 0, DTc),
@@ -472,16 +466,10 @@ xsd_duration_order(Order2, Dur1, Dur2):-
   dateTimePlusDuration(Dur2, DTc, Dur2c),
   dateTimePlusDuration(Dur2, DTd, Dur2d),
   
-  (
-    xsd_dateTime_compare(Order1, Dur1a, Dur2a),
-    xsd_dateTime_compare(Order1, Dur1b, Dur2b),
-    xsd_dateTime_compare(Order1, Dur1c, Dur2c),
-    xsd_dateTime_compare(Order1, Dur1d, Dur2d)
-  ->
-    Order2 = Order1
-  ;
-    Order2 = incomparable
-  ).
+  xsd_dateTime_compare(Order, Dur1a, Dur2a),
+  xsd_dateTime_compare(Order, Dur1b, Dur2b),
+  xsd_dateTime_compare(Order, Dur1c, Dur2c),
+  xsd_dateTime_compare(Order, Dur1d, Dur2d).
 
 
 

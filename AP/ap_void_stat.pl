@@ -51,6 +51,17 @@ void_statistics(FromDir, ToDir, AP_Stage):-
 
 
 void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
+  ap_stage_resource(AP_Stage, Resource, WriteGraph),
+  thread_create(count_classes(ReadGraph, Resource, WriteGraph), Id1, []),
+  thread_create(count_objects(ReadGraph, Resource, WriteGraph), Id2, []),
+  thread_create(count_subjects(ReadGraph, Resource, WriteGraph), Id3, []),
+  thread_create(count_properties(ReadGraph, Resource, WriteGraph), Id4, []),
+  thread_create(count_triples(ReadGraph, Resource, WriteGraph), Id5, []),
+  forall(
+    member(Id, [Id1,Id2,Id3,Id4,Id5]),
+    thread_join(Id, true)
+  ),
+
   NVPairs = [
     classes-NC,
     subjects-NS,
@@ -58,22 +69,30 @@ void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
     objects-NO,
     triples-NT
   ],
+  rdf_datatype(Resource, void:classes, xsd:integer, NC, WriteGraph),
+  rdf_datatype(Resource, void:distinctObjects, xsd:integer, NS, WriteGraph),
+  rdf_datatype(Resource, void:distinctSubjects, xsd:integer, NP, WriteGraph),
+  rdf_datatype(Resource, void:properties, xsd:integer, NO, WriteGraph),
+  rdf_datatype(Resource, void:triples, xsd:integer, NT, WriteGraph).
 
-  count_classes(ReadGraph, NC),
-  count_objects(_, _, ReadGraph, NO),
-  count_subjects(_, _, ReadGraph, NS),
-  count_properties(_, _, ReadGraph, NP),
-  rdf_statistics(triples_by_graph(ReadGraph, NT)),
 
-  (
-    ap_stage_resource(AP_Stage, Resource, WriteGraph)
-  ->
-    rdf_assert_datatype(Resource, void:classes, xsd:integer, NC, WriteGraph),
-    rdf_assert_datatype(Resource, void:distinctObjects, xsd:integer, NO, WriteGraph),
-    rdf_assert_datatype(Resource, void:distinctSubject, xsd:integer, NS, WriteGraph),
-    rdf_assert_datatype(Resource, void:properties, xsd:integer, NP, WriteGraph),
-    rdf_assert_datatype(Resource, void:triples, xsd:integer, NT, WriteGraph)
-  ;
-    true
-  ).
+count_classes(ReadGraph, Resource, WriteGraph):-
+  count_classes(ReadGraph, N),
+  rdf_assert_datatype(Resource, void:classes, xsd:integer, N, WriteGraph).
+
+count_objects(ReadGraph, Resource, WriteGraph):-
+  count_objects(_, _, ReadGraph, N),
+  rdf_assert_datatype(Resource, void:distinctObjects, xsd:integer, N, WriteGraph).
+
+count_subjects(ReadGraph, Resource, WriteGraph):-
+  count_subjects(_, _, ReadGraph, N),
+  rdf_assert_datatype(Resource, void:distinctSubjects, xsd:integer, N, WriteGraph).
+
+count_properties(ReadGraph, Resource, WriteGraph):-
+  count_properties(_, _, ReadGraph, N),
+  rdf_assert_datatype(Resource, void:properties, xsd:integer, N, WriteGraph).
+
+count_triples(ReadGraph, Resource, WriteGraph):-
+  rdf_statistics(triples_by_graph(ReadGraph, N)),
+  rdf_assert_datatype(Resource, void:triples, xsd:integer, N, WriteGraph).
 

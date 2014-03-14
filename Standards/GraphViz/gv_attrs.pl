@@ -14,7 +14,7 @@ Attributes, their allowed values, and their default values for GraphViz.
 @author Wouter Beek
 @see http://www.graphviz.org/doc/info/attrs.html
 @tbd Add context check (i.e., node, graph, edges, etc.).
-@version 2011-2013/07, 2013/09-2013/10, 2014/01
+@version 2011-2013/07, 2013/09-2013/10, 2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -178,9 +178,7 @@ dir_type(both).
 dir_type(forward).
 dir_type(none).
 
-% @tbd The value type should be `between(1.0,_)` (open interval), but this is
-%      not currently supported by must_be/2.
-gv_attr(_Attrs, fontsize, between(1,inf), [graph], 14).
+gv_attr(_Attrs, fontsize, float_between(1.0,_), [graph], 14).
 
 gv_attr(_Attrs, image, atom, [node], '').
 

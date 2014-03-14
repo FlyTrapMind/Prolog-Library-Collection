@@ -12,16 +12,21 @@ Downloads CKAN datasets to the given directory.
 :- use_module(ap(ap_table)). % Debug tool.
 :- use_module(ckan(ckan_ap)).
 :- use_module(ckan(ckan_table)). % Debug tool.
-:- use_module(library(apply)).
+:- use_module(generics(uri_ext)).
+:- use_module(library(debug)).
 :- use_module(library(filesex)).
-:- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_datatype)).
+:- use_module(rdf(rdf_graph_name)).
+:- use_module(rdf(rdf_serial)).
 
 :- initialization(ckan_download).
+
+:- debug(ap).
 
 
 
@@ -38,26 +43,18 @@ ckan_download:-
       File,
       [access(write),file_type(turtle)]
     ),
-    URL = 'http://www.wouterblog.com/CKAN/datahub_io.ttl',
-    setup_call_cleanup(
-      http_open(URL, HTTP_Stream, [cert_verify_hook(cert_verify)]),
-      setup_call_cleanup(
-        open(File, write, FileStream, [type(binary)]),
-        copy_stream_data(HTTP_Stream, FileStream),
-        close(FileStream)
-      ),
-      close(HTTP_Stream)
+    download_to_file(
+      [],
+      'https://dl.dropboxusercontent.com/s/brxpfdwn4n72c2z/datahub_io.ttl?dl=1&token_hash=AAEd9UWXY3SsIBAILVE-yIH7fuRq-_s8RYFgdEAePb0oSQ',
+      File
     )
   ),
-  absolute_file_name(
-    data('Output'),
-    Directory,
-    [access(write),file_type(directory)]
-  ),
-  make_directory_path(Directory),
+  absolute_file_name(data(.), DataDir, [access(read),file_type(directory)]),
+  directory_file_path(DataDir, 'Output', OutputDir),
+  make_directory_path(OutputDir),
   ckan_ap(
     File,
-    [ckan_download:ap_stage([name('Stash'),args([Directory])], stash_output)]
+    [ckan_download:ap_stage([name('Stash'),args([OutputDir])], stash_output)]
   ).
 
 
@@ -71,15 +68,16 @@ stash_output(FromDir, _, AP_Stage, Dir):-
   rdf_datatype(Resource, ckan:url, xsd:string, URL, Graph),
   forall(
     member(FromFile, FromFiles),
-    stash_output_file(Dir, URL, FromFile)
+    stash_output_file(Dir, AP_Stage, URL, FromFile)
   ).
 
 
-stash_output_file(Dir1, URL, FromFile):-
+stash_output_file(Dir1, AP_Stage, URL, FromFile):-
   rdf_atom_md5(URL, 1, Hash),
   directory_file_path(Dir1, Hash, Dir2),
   make_directory_path(Dir2),
   drop_url_name(URL, Dir2),
+  drop_void_file(AP_Stage, Dir2),
   file_alternative(FromFile, Dir2, input, nt, ToFile),
   copy_file(FromFile, ToFile).
 
@@ -90,5 +88,22 @@ drop_url_name(URL, Dir):-
     open(File, write, Out),
     with_output_to(Out, writeln(URL)),
     close(Out)
+  ).
+
+
+drop_void_file(AP_Stage, Dir):-
+  ap_stage_resource(AP_Stage, Resource, FromGraph),
+  absolute_file_name(
+    'VoID',
+    VoidFile,
+    [access(write),file_type(ntriples),relative_to(Dir)]
+  ),
+  setup_call_cleanup(
+    rdf_new_graph(ToGraph),
+    (
+      rdf_copy(FromGraph, Resource, _, _, ToGraph),
+      rdf_save([format(ntriples)], ToGraph, VoidFile)
+    ),
+    rdf_unload_graph(ToGraph)
   ).
 

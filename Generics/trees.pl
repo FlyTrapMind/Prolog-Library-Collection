@@ -10,6 +10,8 @@
                   % +Tree:compound
     some_subpaths_to_tree/2, % +SomeSubPaths:list(list)
                              % -Tree:tree
+    tree_depth/2, % +Tree:compound
+                  % -Depth:nonneg
     tree_to_ugraph/2, % +Tree:compound
                       % -UGraph:ugraph
     tree_to_vertices_and_edges/3 % +Tree:compound,
@@ -121,6 +123,18 @@ some_subpaths_to_tree(SomeSubPaths, Tree):-
     AllSubPaths
   ),
   all_subpaths_to_tree(AllSubPaths, Tree).
+
+
+%! tree_depth(+Tree:compound, -Depth:nonneg) is det.
+
+tree_depth(Tree, Depth2):-
+  Tree =.. [_|Children],
+  Children \== [], !,
+  maplist(tree_depth, Children, Depths),
+  max_list(Depths, Depth1),
+  Depth2 is Depth1 + 1.
+tree_depth(_, 0).
+
 
 tree_to_ugraph(T, G):-
   tree_to_vertices_and_edges(T, Vs, Es),

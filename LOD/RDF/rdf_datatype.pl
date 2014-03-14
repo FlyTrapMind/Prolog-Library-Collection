@@ -8,14 +8,14 @@
                            % +Graph:atom
     rdf_datatype/2, % ?Graph:atom
                     % ?Datatype:iri
-    rdf_datatype/3, % +Datatype:iri
-                    % +Lexical:atom
-                    % -Value
     rdf_datatype/5, % ?Subject:oneof([bnode,iri])
                     % ?Predicate:iri
                     % ?Datatype:iri
                     % ?Value
                     % ?Graph:atom
+    rdf_lexical_map/3, % +Datatype:iri
+                       % +Lexical:or([atom,list(code)]
+                       % -Value
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,iri])
                               % +Predicate:iri
                               % +Datatype:iri
@@ -33,13 +33,13 @@
 Support for RDF typed literals.
 
 @author Wouter Beek
-@version 2013/10, 2014/01-2014/02
+@version 2013/10, 2014/01-2014/03
 */
 
 :- rdf_meta(rdf_assert_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_datatype(?,r)).
-:- rdf_meta(rdf_datatype(r,+,-)).
 :- rdf_meta(rdf_datatype(r,r,r,?,?)).
+:- rdf_meta(rdf_lexical_map(r,+,-)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,r,+,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
 
@@ -74,31 +74,17 @@ Support for RDF typed literals.
 % @arg Value
 % @arg Graph The atomic name of an RDF graph.
 
-/*
-% The value is an atom that can be parsed as a datatype value.
-rdf_assert_datatype(S, P, D, Value1, G):-
-  rdf_assert(S, P, literal(type(D,LEX3)), G).
-*/
-% The value is a real Prolog value.
 rdf_assert_datatype(S, P, D, Value, G):-
-  xsd_canonical_map(D, Value, LEX1),
-  atom_codes(LEX2, LEX1),
-  rdf_assert(S, P, literal(type(D,LEX2)), G).
+  nonvar(Value),
+  xsd_canonical_map(D, Value, LexicalCodes),
+  atom_codes(LexicalAtom, LexicalCodes),
+  rdf_assert(S, P, literal(type(D,LexicalAtom)), G).
 
 
 %! rdf_datatype(?Graph:atom, ?Datatype:iri) is nondet.
 
 rdf_datatype(G, D):-
   rdf(_S, _P, literal(type(D, _)), G).
-
-
-%! rdf_datatype(+Datatype:iri, +Literal:atom, -Value) is det.
-% Converts atomic typed literals to their corresponsing value,
-%  according to the given datatype.
-
-rdf_datatype(D, Lit, Value):-
-  atom_codes(Lit, Lexical),
-  xsd_lexical_map(D, Lexical, Value).
 
 
 %! rdf_datatype(
@@ -108,36 +94,29 @@ rdf_datatype(D, Lit, Value):-
 %!   ?Value,
 %!   ?Graph:atom
 %! ) is nondet.
-% @tbd Implement the inverse lexical map to fascilitate search
-%      (besides read and write).
+% @tbd Ideally, we would like to close lexical expressions
+%      under identity and equivalence in search.
 
 rdf_datatype(S, P, D, Value, G):-
-  maplist(nonvar, [D,Value]), !,
-  xsd_canonical_map(D, Value, LEX1),
-  atom_codes(LEX2, LEX1),
-  rdf(S, P, literal(type(D,LEX2)), G).
+  nonvar(D),
+  ground(Value), !,
+  % @tbd Ideally, we would like to close `LexicalCodes`
+  %      under identity or equivalence.
+  xsd_canonical_map(D, Value, LexicalCodes),
+  atom_codes(LexicalAtom, LexicalCodes),
+  rdf(S, P, literal(type(D,LexicalAtom)), G).
 rdf_datatype(S, P, D, Value, G):-
   rdf(S, P, literal(type(D,Lit)), G),
-  rdf_datatype(D, Lit, Value).
-/*
-  % Ideally, we would like to interpret all literals,
-  % not just the canonical ones.
-  % Unfortunately the instantiation pattern for xsd_lexical_map/3
-  % does not allow this.
-  % Interpreting literals could be useful for search,
-  %  i.e. does a specific value
-  % from the value space of the given datatype occur
-  % in the currently loaded RDF graph?
-  % For this one needs the inverse of the lexical map.
-  % In the absence of this inverse lexical map,
-  %  we have to look for a lexical map
-  % of a datatype literal that matches value
-  % (this is not so bad as it seems,
-  % if subject, predicate, datatype, and graph are specified).
-  rdf(S, P, literal(type(D, Lexical)), G),
-  % This may be nondet!
+  rdf_lexical_map(D, Lit, Value).
+
+
+%! rdf_lexical_map(+Datatype:iri, +Literal:atom, -Value) is det.
+% Converts atomic typed literals to their corresponsing value,
+%  according to the given datatype.
+
+rdf_lexical_map(D, Lexical, Value):-
   xsd_lexical_map(D, Lexical, Value).
-*/
+
 
 %! rdf_overwrite_datatype(
 %!   +Subject:oneof([bnode,iri]),

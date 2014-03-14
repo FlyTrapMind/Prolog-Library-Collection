@@ -4,14 +4,16 @@
     xsd_canonical_map/3, % +Datatype:iri
                          % +Value
                          % -LexicalExpression:list(code)
+    xsd_compare/4, % +Datatype:iri
+                   % -Order:oneof([incomparable,<,=,>])
+                   % +Value1
+                   % +Value2
     xsd_datatype/1, % ?Datatype:iri
     xsd_datatype/2, % ?Name:atom
                     % ?Datatype:iri
-    xsd_lexical_map/3, % +Datatype:iri
-                       % +Lexical:or([atom,list(code)])
-                       % ?Value
-    xsd_order/2 % +Datatype:iri
-                % :LEQ
+    xsd_lexical_map/3 % +Datatype:iri
+                      % +Lexical:or([atom,list(code)])
+                      % ?Value
   ]
 ).
 
@@ -148,49 +150,52 @@ xsd_datatype(time,       xsd:time      ).
 %!   -Value
 %! ) is det.
 
-xsd_lexical_map(Datatype, Lexical, Value):-
-  atomic_codes_goal(xsd_lexical_map_codes(Datatype), Lexical, Value).
-
-xsd_lexical_map_codes(xsd:boolean, Lexical, Boolean):- !,
+xsd_lexical_map(xsd:boolean, Lexical, Boolean):- !,
   dcg_phrase(xsd_boolean_lexical_map(Boolean), Lexical).
-xsd_lexical_map_codes(xsd:date, Lexical, Date):- !,
+xsd_lexical_map(xsd:date, Lexical, Date):- !,
   dcg_phrase(xsd_date_lexical_map(Date), Lexical).
-xsd_lexical_map_codes(xsd:dateTime, Lexical, DateTime):- !,
+xsd_lexical_map(xsd:dateTime, Lexical, DateTime):- !,
   dcg_phrase(xsd_dateTime_lexical_map(DateTime), Lexical).
-xsd_lexical_map_codes(xsd:decimal, Lexical, Decimal):- !,
+xsd_lexical_map(xsd:decimal, Lexical, Decimal):- !,
   dcg_phrase(xsd_decimal_lexical_map(Decimal), Lexical).
-xsd_lexical_map_codes(xsd:double, Lexical, Double):- !,
+xsd_lexical_map(xsd:double, Lexical, Double):- !,
   dcg_phrase(xsd_double_lexical_map(Double), Lexical).
-xsd_lexical_map_codes(xsd:duration, Lexical, Duration):- !,
+xsd_lexical_map(xsd:duration, Lexical, Duration):- !,
   dcg_phrase(xsd_duration_lexical_map(Duration), Lexical).
-xsd_lexical_map_codes(xsd:float, Lexical, Float):- !,
+xsd_lexical_map(xsd:float, Lexical, Float):- !,
   dcg_phrase(xsd_float_lexical_map_friendly(Float), Lexical).
-xsd_lexical_map_codes(xsd:gDay, Lexical, GregorianDay):- !,
+xsd_lexical_map(xsd:gDay, Lexical, GregorianDay):- !,
   dcg_phrase(xsd_gDay_canonical_map(GregorianDay), Lexical).
-xsd_lexical_map_codes(xsd:gMonth, Lexical, GregorianMonth):- !,
+xsd_lexical_map(xsd:gMonth, Lexical, GregorianMonth):- !,
   dcg_phrase(xsd_gMonth_lexical_map(GregorianMonth), Lexical).
-xsd_lexical_map_codes(xsd:gMonthDay, Lexical, GregorianMonthDay):- !,
+xsd_lexical_map(xsd:gMonthDay, Lexical, GregorianMonthDay):- !,
   dcg_phrase(xsd_gMonthDay_lexical_map(GregorianMonthDay), Lexical).
-xsd_lexical_map_codes(xsd:gYear, Lexical, GregorianYear):- !,
+xsd_lexical_map(xsd:gYear, Lexical, GregorianYear):- !,
   dcg_phrase(xsd_gYear_lexical_map(GregorianYear), Lexical).
-xsd_lexical_map_codes(xsd:gYearMonth, Lexical, GregorianYearMonth):- !,
+xsd_lexical_map(xsd:gYearMonth, Lexical, GregorianYearMonth):- !,
   dcg_phrase(xsd_gYearMonth_lexical_map(GregorianYearMonth), Lexical).
-xsd_lexical_map_codes(xsd:hexBinary, Lexical, HexBinary):- !,
+xsd_lexical_map(xsd:hexBinary, Lexical, HexBinary):- !,
   dcg_phrase(xsd_hexBinary_lexical_map(HexBinary), Lexical).
-xsd_lexical_map_codes(xsd:integer, Lexical, Integer):- !,
+xsd_lexical_map(xsd:integer, Lexical, Integer):- !,
   dcg_phrase(xsd_integer_lexical_map(Integer), Lexical).
-xsd_lexical_map_codes(xsd:string, Lexical, String):- !,
+xsd_lexical_map(xsd:string, Lexical, String):- !,
   dcg_phrase(xsd_string_lexical_map(String), Lexical).
-xsd_lexical_map_codes(xsd:time, Lexical, Time):- !,
+xsd_lexical_map(xsd:time, Lexical, Time):- !,
   dcg_phrase(xsd_time_lexical_map(Time), Lexical).
 
 
-%! xsd_order(+Datatype:iri, :LEQ) is det.
+%! xsd_compare(
+%!   +Datatype:iri,
+%!   ?Order:oneof([<,=,>]),
+%!   +Value1,
+%!   +Value2
+%! ) is semidet.
+% Fails only if the given values are incomparable.
 
-xsd_order(D1, xsd_dateTime_leq):-
-  rdf_global_id(D1, D2),
+% Date-time comparisons.
+xsd_compare(Datatype, Order, DateTime1, DateTime2):-
   rdf_memberchk(
-    D2,
+    Datatype,
     [
       xsd:date,
       xsd:dateTime,
@@ -200,8 +205,14 @@ xsd_order(D1, xsd_dateTime_leq):-
       xsd:gYear,
       xsd:gYearMonth
     ]
-  ), !.
-xsd_order(D1, =<):-
-  rdf_global_id(D1, D2),
-  rdf_memberchk(D2, [xsd:decimal,xsd:double,xsd:float,xsd:integer]).
+  ), !,
+  xsd_dateTime_compare(Order, DateTime1, DateTime2).
+% Duration comparisons.
+xsd_compare(Datatype, Order, Duration1, Duration2):-
+  rdf_memberchk(Datatype, [xsd:duration,xsd:xsd_yearMonthDuration]), !,
+  xsd_duration_compare(Order, Duration1, Duration2).
+% Numeric comparators.
+xsd_compare(Datatype, Order, Value1, Value2):-
+  rdf_memberchk(Datatype, [xsd:decimal,xsd:double,xsd:float,xsd:integer]),
+  compare(Order, Value1, Value2).
 

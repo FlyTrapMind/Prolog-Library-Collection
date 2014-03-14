@@ -74,7 +74,7 @@ fractionDigitsCanonicalFragmentMap(F) -->
 
 noDecimalPtCanonicalMap(I) -->
   {I < 0},
-  `-`,
+  `-`, !,
   {J is copysign(I, 1)},
   unsignedNoDecimalPtCanonicalMap(J).
 noDecimalPtCanonicalMap(I) -->
@@ -118,7 +118,7 @@ unsignedDecimalPtNumeral(F) -->
 
 %! unsignedNoDecimalPtCanonicalMap(+Integer:nonneg)//
 
-% For $0$ the emitted stirng should be "0" and not the empty string!
+% For =0= the emitted string should be `0` and not the empty string!
 % Check \ref{def:unsignedNoDecimalPtCanonicalMap} in the PraSem document.
 unsignedNoDecimalPtCanonicalMap(0) --> !, `0`.
 unsignedNoDecimalPtCanonicalMap(F) -->

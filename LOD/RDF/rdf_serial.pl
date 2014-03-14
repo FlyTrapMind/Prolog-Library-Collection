@@ -11,7 +11,8 @@
                         % +FromFile:atom
                         % ?ToMIME:atom
                         % ?ToFile:atom
-    rdf_merge_directory/3, % +FromDirectory:atom
+    rdf_merge_directory/4, % +Options:list(nvpair)
+                           % +FromDirectory:atom
                            % +ToFile:atom
                            % +SaveOptions:list(nvpair)
     rdf_load/3, % +Options:list(nvpair)
@@ -57,7 +58,6 @@ since most datasets are published in a non-standard way.
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdf_ntriples)).
-:- use_module(library(semweb/rdf_ntriples_write)).
 :- use_module(library(semweb/rdf_turtle)).
 :- use_module(library(semweb/rdf_turtle_write)).
 :- use_module(os(dir_ext)).
@@ -65,7 +65,9 @@ since most datasets are published in a non-standard way.
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
+:- use_module(rdf(rdf_ntriples_write)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(void(void_db)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
 :- db_add_novel(user:prolog_file_type(nt,      rdf     )).
@@ -177,15 +179,16 @@ rdf_extension(Ext, MIME):-
 
 
 %! rdf_merge_directory(
+%!   +Options:list(nvpair),
 %!   +FromDirectory:atom,
 %!   +ToFile:atom,
 %!   +SaveOptions:list(nvpair)
 %! ) is det.
 
-rdf_merge_directory(FromDir, ToFile, SaveOptions):-
+rdf_merge_directory(O1, FromDir, ToFile, SaveOptions):-
   rdf_directory_files(FromDir, FromFiles),
   FromFiles \== [],
-  rdf_setup_call_cleanup([], FromFiles, rdf_graph, SaveOptions, ToFile).
+  rdf_setup_call_cleanup(O1, FromFiles, rdf_graph, SaveOptions, ToFile).
 
 
 %! rdf_load(
@@ -204,13 +207,18 @@ rdf_merge_directory(FromDir, ToFile, SaveOptions):-
 % @arg Graph The atomic name of an RDF graph.
 % @arg Input Either a file, a list of files, or a directory.
 
-rdf_load(O1, Graph, URL):-
-  is_of_type(iri, URL), !,
-  download_to_file([], URL, File),
+% Download the file hosted at the given URL locally.
+rdf_load(O1, Graph, Url):-
+  is_of_type(iri, Url), !,
+  download_to_file([], Url, File),
   rdf_load(O1, Graph, File).
 % Loads multiple files and/or directories.
 rdf_load(O1, Graph, Files):-
-  is_list(Files), !,
+  is_list(Files),
+  forall(
+    member(File, Files),
+    access_file(File, read)
+  ), !,
   maplist(rdf_load(O1, Graph), Files).
 % Load all files from a given directory.
 rdf_load(O1, Graph, Dir):-
@@ -224,17 +232,16 @@ rdf_load(O1, Graph, Dir):-
 % Extract archives.
 rdf_load(O1, Graph, File1):-
   access_file(File1, read),
-  archive_ext:is_archive(File1), !,
+  is_archive(File1), !,
 
   file_name(File1, Directory, _, _),
-  archive_ext:extract_archive(File1, _),
-  rdf_directory_files(Directory, Files1),
-  selectchk(File1, Files1, Files2),
+  extract_archive(File1, _),
+  rdf_directory_files(Directory, Files),
 
-  maplist(rdf_load(O1, Graph), Files2).
+  maplist(rdf_load(O1, Graph), Files).
 % Load a single file.
 rdf_load(O1, Graph, File):-
-  access_file(File, read),
+  access_file(File, read), !,
 
   % Retrieve the graph name.
   ensure_graph(File, Graph),
@@ -255,14 +262,31 @@ rdf_load(O1, Graph, File):-
   % Send a debug message notifying that the RDF file was successfully loaded.
   debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]),
 
-  rdf_load_void(O2, Graph).
-
-
-rdf_load_void(O1, Graph):-
-  option(void(true), O1),
-  void_db:void_dataset(Graph, _), !,
-  void_file:void_load(Graph).
-rdf_load_void(_, _).
+  % Optionally load described datasets.
+  (
+    option(void(true), O1)
+  ->
+    rdf_load(O2, Graph, Graph)
+  ;
+    true
+  ).
+% Load more graphs into another graph.
+rdf_load(O1, Graph, Graphs):-
+  is_list(Graphs),
+  maplist(rdf_graph, Graphs), !,
+  maplist(rdf_load(O1, Graph), Graphs).
+% Look for described datasets that should also be added.
+rdf_load(O1, Graph, Graph):-
+  rdf_graph(Graph), !,
+  findall(
+    Location,
+    (
+      void_dataset(Graph, Dataset),
+      void_dataset_location(Graph, Dataset, Location)
+    ),
+    Locations
+  ),
+  maplist(rdf_load(O1, Graph), Locations).
 
 
 %! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
@@ -386,7 +410,7 @@ rdf_save(O1, rdf_xml, Graph, File):- !,
 % Save to N-Triples.
 rdf_save(O1, ntriples, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
-  rdf_save_ntriples(File, O2).
+  monkey(File, O2).
 % Save to Triples (binary storage format).
 rdf_save(_, triples, Graph, File):- !,
   rdf_save_db(File, Graph).

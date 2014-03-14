@@ -17,32 +17,25 @@ Automated processes for CKAN data.
 */
 
 :- use_module(ap(ap)).
-:- use_module(ap(ap_archive_ext)).
+:- use_module(ap(ap_archive_ext)). % Used in AP stage.
 :- use_module(ap(ap_download)).
 :- use_module(ap(ap_db)).
-:- use_module(ap(ap_file_mime)).
-:- use_module(ap(ap_file_size)).
-:- use_module(ap(ap_rdf_serial)).
-:- use_module(ap(ap_void_fetch)).
-:- use_module(ap(ap_void_stat)).
+:- use_module(ap(ap_file_mime)). % Used in AP stage.
+:- use_module(ap(ap_file_size)). % Used in AP stage.
+:- use_module(ap(ap_rdf_serial)). % Used in AP stage.
+:- use_module(ap(ap_void_fetch)). % Used in AP stage.
+:- use_module(ap(ap_void_stat)). % Used in AP stage.
 :- use_module(ckan(ckan_scrape)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)). % Used in AP stage.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
-:- use_module(library(error)).
-:- use_module(library(lists)).
-:- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)). % MD5
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_read)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
 :- use_module(rdfs(rdfs_label_build)).
-:- use_module(uri(uri_scheme)).
 
 
 
@@ -144,12 +137,12 @@ already_processed(Resource):-
 ckan_ap_site(AP_Collection, ExtraStages, Resource):-
   once(rdfs_label(AP_Collection, Graph)),
   once(rdf_datatype(Resource, ckan:url, xsd:string, URL, _)),
-  
+
   % The directory name is based on the URL.
   rdf_atom_md5(URL, 1, Hash),
   create_nested_directory(data(Hash), Dir),
   db_add_novel(user:file_search_path(Hash, Dir)),
-  
+
   create_ap(AP_Collection, AP),
   rdf_assert(AP, ap:resource, Resource, ap),
   rdf_assert_datatype(AP, ap:alias, xsd:string, Hash, ap),
@@ -160,7 +153,7 @@ ckan_ap_site(AP_Collection, ExtraStages, Resource):-
     [
       ckan_ap:ap_stage([name('Download')], ckan_download_to_directory),
       ckan_ap:ap_stage([name('Arch')], extract_archives),
-      ckan_ap:ap_stage([name('FetchVoID')], void_fetch),
+      %ckan_ap:ap_stage([name('FetchVoID')], void_fetch),
       ckan_ap:ap_stage(
         [name('toNTriples'),args(['application/n-triples'])],
         ap_rdf_merge_directory

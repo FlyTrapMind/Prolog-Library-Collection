@@ -24,7 +24,7 @@ The following options can be added to AP stages:
 @author Wouter Beek
 @tbd Add support for option =|finished(+Finished:boolean)|=,
      allowing previously finished stages to be skipped.
-@version 2013/10-2014/02
+@version 2013/10-2014/03
 */
 
 :- use_module(ap(ap_db)).
@@ -32,6 +32,7 @@ The following options can be added to AP stages:
 :- use_module(generics(error_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(os(datetime_ext)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_build)).
@@ -63,7 +64,11 @@ ap_stages0(AP_Stage1, [Mod:ap_stage(O1,Goal)|T]):-
 
 ap_stage_begin(O1, AP_Stage):-
   option(name(Name), O1),
-  rdf_assert_datatype(AP_Stage, ap:name, xsd:string, Name, ap).
+  rdf_assert_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
+
+  % DEB
+  current_date_time(DateTime),
+  debug(ap, '  Starting AP Stage ~w at ~w.', [Name,DateTime]).
 
 ap_catcher(AP_Stage, Error, AP_Stages):-
   rdf_assert_individual(AP_Stage, ap:'Error', ap),
@@ -138,9 +143,12 @@ ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal):-
 ap_stage_dirs(_, _, _, _, _).
 
 ap_stage_end(AP_Stage):-
-  once(rdfs_label(AP_Stage, Label)),
-  debug(ap, '~w ended successfully.', [Label]),
-  add_succeed(AP_Stage).
+  add_succeed(AP_Stage),
+
+  % DEB
+  rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
+  current_date_time(DateTime),
+  debug(ap, '  Ended AP Stage ~w at ~w.', [Name,DateTime]).
 
 
 %! ap_stage_from_arg(
@@ -254,7 +262,13 @@ execute_goal(AP_Stage, Goal, Args):-
     (
       get_time(End),
       Delta is End - Begin,
-      rdf_assert_datatype(AP_Stage, ap:duration, xsd:duration, Delta, ap)
+      rdf_assert_datatype(
+        AP_Stage,
+        ap:duration,
+        xsd:duration,
+        duration(0,Delta),
+        ap
+      )
     )
   ).
 

@@ -291,10 +291,12 @@ xsd_dateTime_lexical_map(DT) -->
 % RELATIONS %
 
 %! xsd_dateTime_compare(
-%!   -Order,
+%!   -Order:oneof([<,=,>]),
 %!   +DateTime1:compound,
 %!   +DateTime2:compound
-%! ) is det.
+%! ) is semidet.
+% Fails only if the given values are incomparable.
+%
 % The ordering relation on the dateTime value space.
 %
 % DateTime values are ordered according to their timeOnTimeline/2 values,
@@ -356,7 +358,6 @@ xsd_dateTime_compare(
   timeOnTimeline(dateTime(Y1,M1,D1,H1,MM1,S1,TZ1), ToTL1),
   timeOnTimeline(dateTime(Y2,M2,D2,H2,MM2,S2,TZ2), ToTL2),
   compare(Order, ToTL1, ToTL2).
-xsd_dateTime_compare(incomparable, _, _).
 
 minimum_timezone(-840).
 maximum_timezone(840).

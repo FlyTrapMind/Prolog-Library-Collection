@@ -101,13 +101,19 @@ atomic_codes(Atomic, Codes):-
 % Instantiation `(?,-,+)` is non-deterministic since a codelist
 % could map to an atom, a number, and a codelist.
 
-atomic_codes(atom, Atom, Codes):-
+atomic_codes(Kind, Atomic, Codes):-
+  nonvar(Atomic), !,
+  atomic_codes_nondet(Kind, Atomic, Codes), !.
+atomic_codes(Kind, Atomic, Codes):-
+  atomic_codes_nondet(Kind, Atomic, Codes).
+
+atomic_codes_nondet(atom, Atom, Codes):-
   \+ ((
     nonvar(Atom),
     \+ atom(Atom)
   )),
   atom_codes(Atom, Codes).
-atomic_codes(number, Number, Codes):-
+atomic_codes_nondet(number, Number, Codes):-
   \+ ((
     nonvar(Number),
     \+ number(Number)
@@ -117,7 +123,7 @@ atomic_codes(number, Number, Codes):-
     error(syntax_error(illegal_number),_Context),
     fail
   ).
-atomic_codes(codes, Codes, Codes):-
+atomic_codes_nondet(codes, Codes, Codes):-
   is_list(Codes).
 
 

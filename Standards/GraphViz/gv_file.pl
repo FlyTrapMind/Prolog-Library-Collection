@@ -94,8 +94,6 @@ graph_to_svg_dom(O1, GIF, SVG):-
 %! tree_to_gv_file(
 %!   +Options:list(nvpair),
 %!   +Tree:compound,
-%!   +Method:onef([dot,sfdp]),
-%!   +ToFileType:oneof([jpeg,pdf,svg,xdot]),
 %!   ?ToFile:atom
 %! ) is det.
 % Stores the given tree term into a GraphViz file.

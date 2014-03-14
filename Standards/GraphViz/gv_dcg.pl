@@ -18,7 +18,7 @@ In GraphViz vertices are called 'nodes'.
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09
+@version 2013/07, 2013/09, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -73,9 +73,9 @@ gv_attribute_list(G_Attrs, Attrs1) -->
   dcg_multi1(gv_attribute, _Rep, Attrs2, [separator(comma)]),
   closing_square_bracket.
 
-gv_category(edge) --> e,d,g,e.
-gv_category(graph) --> g,r,a,p,h.
-gv_category(node) --> n,o,d,e.
+gv_category(edge) --> atom('edge').
+gv_category(graph) --> atom('graph').
+gv_category(node) --> atom('node').
 
 gv_compass_pt --> "_".
 gv_compass_pt --> "c".
@@ -260,8 +260,8 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 %
 % @arg Directionality Either `digraph` or `graph`.
 
-gv_graph_type(digraph) --> d,i,g,r,a,p,h.
-gv_graph_type(graph) --> g,r,a,p,h.
+gv_graph_type(digraph) --> atom('digraph').
+gv_graph_type(graph) --> atom('graph').
 
 gv_html_cell --> html_element(td, _, gv_html_label).
 gv_html_cell --> html_element(td, _, html_element(img, _)).
@@ -377,12 +377,12 @@ gv_keyword(Codes):-
 % GraphViz has reserved keywords that cannot be used as identifiers.
 % GraphViz keywords are case-insensitive.
 
-gv_keyword --> d,i,g,r,a,p,h.
-gv_keyword --> e,d,g,e.
-gv_keyword --> g,r,a,p,h.
-gv_keyword --> n,o,d,e.
-gv_keyword --> s,t,r,i,c,t.
-gv_keyword --> s,u,b,g,r,a,p,h.
+gv_keyword --> atom('digraph').
+gv_keyword --> atom('edge').
+gv_keyword --> atom('graph').
+gv_keyword --> atom('node').
+gv_keyword --> atom('strict').
+gv_keyword --> atom('subgraph').
 
 %! gv_node_id(+NodeId:atom)//
 % GraphViz node identifiers can be of the following two types:
@@ -472,7 +472,7 @@ gv_ranked_node_collection(I, G_Attrs, rank(Rank_V_Term,Content_V_Terms)) -->
 
 gv_strict(false) --> [].
 gv_strict(true) -->
-  s,t,r,i,c,t, space.
+  atom('strict ').
 
 gv_tree(O1, T) -->
   {

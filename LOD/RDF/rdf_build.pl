@@ -80,11 +80,22 @@ rdf_graph(G1, S, P, O, G2):-
     rdf_assert(S, P, O, G2)
   ).
 
-rdf_copy(FromG, S, P, O, ToG):-
+
+%! rdf_copy(
+%!   +FromGraph:atom,
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:or([bnode,iri,literal]),
+%!   +ToGraph:atom
+%! ) is det.
+% Copies triples between graphs.
+
+rdf_copy(FromGraph, S, P, O, ToGraph):-
   forall(
-    rdf(S, P, O, FromG),
-    rdf_assert(S, P, O, ToG)
+    rdf(S, P, O, FromGraph),
+    rdf_assert(S, P, O, ToGraph)
   ).
+
 
 rdf_remove_property(G, P):-
   rdf_property(G, P), !,

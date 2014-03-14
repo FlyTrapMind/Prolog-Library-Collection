@@ -80,9 +80,9 @@ xsd_string_lexical_map(String) -->
 
 stringRep(String) -->
   {var(String)}, !,
-  xml_chars_11(XML_Characters),
+  xml_chars_11(XML_Characters), !,
   {atom_codes(String, XML_Characters)}.
 stringRep(String) -->
   {atom_codes(String, XML_Characters)},
-  xml_chars_11(XML_Characters).
+  xml_chars_11(XML_Characters), !.
 
