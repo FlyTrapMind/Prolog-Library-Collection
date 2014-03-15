@@ -13,9 +13,6 @@
                     % ?DatatypeIri:iri
                     % ?Value
                     % ?RdfGraph:atom
-    rdf_lexical_map/3, % +DatatypeIri:iri
-                       % +LexicalForm:atom
-                       % -Value
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,iri])
                               % +Predicate:iri
                               % +LexicalForm2
@@ -48,7 +45,6 @@ Support for RDF typed literals.
 :- rdf_meta(rdf_assert_datatype(r,r,+,r,+)).
 :- rdf_meta(rdf_datatype(r,?)).
 :- rdf_meta(rdf_datatype(r,r,?,r,?)).
-:- rdf_meta(rdf_lexical_map(r,+,-)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,+,r,+)).
 :- rdf_meta(rdf_retractall_datatype(r,r,r,?)).
 
@@ -97,24 +93,16 @@ rdf_datatype(DatatypeIri, Graph):-
 % @tbd Ideally, we would like to close lexical expressions
 %      under identity and equivalence in search.
 
-rdf_datatype(S, P, Value, DatatypeIri, G):-
-  nonvar(DatatypeIri),
+rdf_datatype(S, P, Value, Datatype, G):-
+  nonvar(Datatype),
   ground(Value), !,
   % @tbd Ideally, we would like to close the lexical form
   %      under identity or equivalence.
-  xsd_canonical_map(DatatypeIri, Value, LexicalForm),
-  rdf_literal(S, P, LexicalForm, DatatypeIri, _, G).
-rdf_datatype(S, P, Value, DatatypeIri, G):-
-  rdf_literal(S, P, LexicalForm, DatatypeIri, _, G),
-  rdf_lexical_map(DatatypeIri, LexicalForm, Value).
-
-
-%! rdf_lexical_map(+DatatypeIri:iri, +LexicalForm:atom, -Value) is det.
-% Converts atomic typed literals to their corresponsing value,
-%  according to the given datatype.
-
-rdf_lexical_map(DatatypeIri, LexicalForm, Value):-
-  xsd_lexical_map(DatatypeIri, LexicalForm, Value).
+  xsd_canonical_map(Datatype, Value, LexicalForm),
+  rdf_literal(S, P, LexicalForm, Datatype, _, G).
+rdf_datatype(S, P, Value, Datatype, G):-
+  rdf_literal(S, P, LexicalForm, Datatype, _, G),
+  rdf_literal_map(LexicalForm, Datatype, _, Value).
 
 
 %! rdf_overwrite_datatype(

@@ -5,12 +5,6 @@
                             % ?Predicate:oneof([atom,uri])
                             % ?Object:oneof([atom,bnode,literal,uri])
                             % ?Graph:atom
-    rdf_convert_datatype/6, % +Subject:oneof([bnode,uri])
-                            % +Predicate:uri
-                            % +FromDatatypeName:atom
-                            % +FromValue
-                            % +ToDatatypeName:atom
-                            % +Graph:atom
     rdf_split_literal/5, % +Options:list(nvpair)
                          % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
@@ -56,7 +50,6 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(rdf_expand_namespace(r,r,r,?)).
-:- rdf_meta(rdf_convert_datatype(r,r,+,+,+,+)).
 :- rdf_meta(rdf_split_literal(+,r,r,?,+)).
 :- rdf_meta(rdf_strip_literal(+,+,r,r,?)).
 :- rdf_meta(rdf_remove(r,r,r,?)).
@@ -124,29 +117,6 @@ rdf_expand_namespace0(S1, P1, 1, G):-
   maplist(rdf_expand_namespace, [S1,P1,O1], [S2,P2,O2]),
   rdf_retractall(S1, P1, O1, G),
   rdf_assert(S2, P2, O2, G).
-
-
-
-% DATATYPES %
-
-%! rdf_convert_datatype(
-%!   +Subject:oneof([bnode,uri]),
-%!   +Predicate:uri,
-%!   +FromDatatype:iri,
-%!   +Literal:atom,
-%!   +ToDatatype:iri,
-%!   +Graph:atom
-%! ) is det.
-
-rdf_convert_datatype(S, P, FromDatatype, Literal, ToDatatype, G):-
-  forall(
-    rdf_datatype(S, P, FromDatatype, FromValue, G),
-    (
-      rdf_datatype(FromDatatype, Literal, Value),
-      rdf_assert_datatype(S, P, Value, ToDatatype, G),
-      rdf_retractall_datatype(S, P, FromDatatype, G)
-    )
-  ).
 
 
 
