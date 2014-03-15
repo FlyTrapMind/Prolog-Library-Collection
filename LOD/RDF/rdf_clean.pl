@@ -119,9 +119,6 @@ rdf_expand_namespace0(S1, P1, 1, G):-
   rdf_assert(S2, P2, O2, G).
 
 
-
-% LITERALS %
-
 rdf_split_literal(O1, S, P, G, Split):-
   findall(
     [S,P,LexicalForm,G],
@@ -181,9 +178,6 @@ rdf_strip_literal0(Strips, S, P, OldLiteral, G):-
   rdf_assert_string(S, P, NewLiteral, G),
   rdf_retractall_string(S, P, OldLiteral, G).
 
-
-
-% REMOVAL %
 
 %! rdf_remove(
 %!   ?Subject:oneof([bnode,uri]),
