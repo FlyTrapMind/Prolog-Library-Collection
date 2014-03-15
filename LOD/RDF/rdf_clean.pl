@@ -55,7 +55,6 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(xsd(xsd)).
 :- use_module(xml(xml_namespace)).
 
-:- rdf_meta(rdf_duplicate(r,r,r,?,?)).
 :- rdf_meta(rdf_expand_namespace(r,r,r,?)).
 :- rdf_meta(rdf_convert_datatype(r,r,+,+,+,+)).
 :- rdf_meta(rdf_split_literal(+,r,r,?,+)).
@@ -64,20 +63,6 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- rdf_meta(rdf_remove_datatype(r,r,r,?,?)).
 
 
-
-%! rdf_duplicate(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?Object:oneof([bnode,literal,uri]),
-%!   ?Graph1:atom,
-%!   ?Graph2:atom
-%! ) is nondet.
-% Duplicate triples, that occur in at least two graphs.
-
-rdf_duplicate(S, P, O, G1, G2):-
-  rdf(S, P, O, G1:_),
-  rdf(S, P, O, G2:_),
-  G1 \== G2.
 
 rdf_expand_namespace(BNode, BNode):-
   rdf_is_bnode(BNode), !.
