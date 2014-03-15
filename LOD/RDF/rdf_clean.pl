@@ -1,11 +1,6 @@
 :- module(
   rdf_clean,
   [
-    rdf_duplicate/5, % ?Subject:oneof([bnode,uri])
-                     % ?Predicate:uri
-                     % ?Object:oneof([bnode,literal,uri])
-                     % ?Graph1:atom
-                     % ?Graph2:atom
     rdf_expand_namespace/4, % ?Subject:oneof([atom,bnode,uri])
                             % ?Predicate:oneof([atom,uri])
                             % ?Object:oneof([atom,bnode,literal,uri])

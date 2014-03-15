@@ -3,13 +3,13 @@
   [
     xsd_canonize_graph/1, % +Graph:atom
     xsd_convert_value/4, % +FromDatatype:iri
-                         % +FromLexicalExpression:atom
+                         % +FromLexicalForm:atom
                          % +ToDatatype:iri
-                         % -ToLexicalExpression:atom
+                         % -ToLexicalForm:atom
     xsd_convert_value/4, % +FromDatatype:iri
-                         % +FromLexicalExpression:list(code)
+                         % +FromLexicalForm:list(code)
                          % +ToDatatype:iri
-                         % -ToLexicalExpression:list(code)
+                         % -ToLexicalForm:list(code)
     xsd_lexical_canonical_map/3, % +DatatypeIri:iri
                                  % +LexicalForm:atom
                                  % -CanonicalLexicalForm:atom
@@ -87,15 +87,15 @@ xsd_canonize_triple(Subject, Predicate, DatatypeIri, LexicalForm, Graph):-
 
 %! xsd_convert_value(
 %!   +FromDatatype:uri,
-%!   +FromLexicalExpression:atom,
+%!   +FromLexicalForm:atom,
 %!   +ToDatatype:uri,
-%!   -ToLexicalExpression:atom
+%!   -ToLexicalForm:atom
 %! ) is semidet.
 %! xsd_convert_value(
 %!   +FromDatatype:uri,
-%!   +FromLexicalExpression:list(code),
+%!   +FromLexicalForm:list(code),
 %!   +ToDatatype:uri,
-%!   -ToLexicalExpression:list(code)
+%!   -ToLexicalForm:list(code)
 %! ) is semidet.
 
 xsd_convert_value(FromDatatype, FromLexical, ToDatatype, ToLexical):-

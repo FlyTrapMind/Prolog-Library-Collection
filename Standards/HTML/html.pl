@@ -1,6 +1,7 @@
 :- module(
   html,
   [
+    html_link//1, % +Link:pair(url,atom)
     reply_html_file/2, % +Style:atom
                        % +File:atom
 
@@ -56,6 +57,16 @@ HTML attribute parsing, used in HTML table generation.
 :- db_add_novel(user:prolog_file_type(html, html)).
 
 
+
+%! html_link(+Link:or([atom,pair(url,atom)]))// is det.
+% Generates an HTML link.
+% Does not fail on an atom as input, allowing some elements to not be linked.
+
+html_link(URL-Label) --> !,
+  html(a(href=URL, Label)).
+% Also allow elements with no link.
+html_link(Label) -->
+  html(Label).
 
 %! reply_html_file(+Style:atom, +File:atom) is det.
 % Serve the given HTML file using the given styling.

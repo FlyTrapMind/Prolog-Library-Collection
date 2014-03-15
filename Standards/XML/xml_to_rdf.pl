@@ -80,6 +80,7 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
 
   create_triples(DOM1, XML_PrimaryPs, Trans, S, G, DOM2).
 
+
 %! create_triple(
 %!   +RDF_Subject:or([bnode,iri]),
 %!   +RDF_Predicate:iri,
@@ -99,6 +100,7 @@ create_triple(S, P, D1, Content, G):-
 create_triple(S, P, _, Content, G):-
   % Spaces are not allowed in IRIs.
   rdf_assert(S, P, Content, G).
+
 
 %! create_triples(
 %!   +XML_DOM:list,
@@ -133,6 +135,7 @@ create_triples(DOM1, Ps1, Trans, S, G, RestDOM):-
 % Neither the DOM nor the propery filter is empty.
 % This means that some properties in the filter are optional.
 create_triples(DOM, _Ps, _Trans, _S, _G, DOM).
+
 
 %! get_dom_value(
 %!   +DOM:list,

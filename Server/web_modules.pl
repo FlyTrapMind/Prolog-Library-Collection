@@ -1,6 +1,7 @@
 :- module(
   web_modules,
   [
+    html_web_modules_list//0,
     web_module/2, % ?ExternalName:atom
                   % ?InternalName:atom
     web_module_add/2, % +ExternalName:atom
@@ -15,13 +16,16 @@
 Registration infrastructure for Web modules.
 
 @author Wouter Beek
-@version 2012/10, 2013/02-2013/06, 2013/11, 2014/01
+@version 2012/10, 2013/02-2013/06, 2013/11, 2014/01, 2014/03
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(html(html)). % Meta-DCG.
+:- use_module(html(html_list)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
+:- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(persistency)). % Persistency declaration.
@@ -41,6 +45,26 @@ Registration infrastructure for Web modules.
   web_module_attach(File)
 )).
 
+
+
+%! html_web_modules_list// is det.
+% Generates an HTML list of the currently registered Web modules.
+
+html_web_modules_list -->
+  {
+    web_modules(Pairs1),
+    findall(
+      URL-Label,
+      (
+        member(Label-InternalName, Pairs1),
+        http_location_by_id(InternalName, URL)
+      ),
+      Pairs2
+    )
+  },
+  % The HTML DSL requires us to explicitly specify the parent module
+  % for the DCG meta argument.
+  html(\html_list([ordered(false)], html:html_link, Pairs2)).
 
 
 %! web_module(?ExternalName:atom, ?InternalName:atom) is nondet.

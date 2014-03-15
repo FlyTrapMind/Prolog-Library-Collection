@@ -97,7 +97,7 @@ rdf_assert_literal(Subject, Predicate, LexicalForm, DatatypeIri, Graph):-
 % Asserts a triple with a literal object term.
 
 % Language-tagged strings.
-rdf_assert_literal(Subject, Predicate, LexicalForm, DatatypeIri, LanguageTag, Graph):- !,
+rdf_assert_literal(Subject, Predicate, LexicalForm, DatatypeIri, LanguageTag, Graph):-
   nonvar(LanguageTag), !,
   % The datatype IRI is =|rdf:langString|= iff the language tag is set.
   rdf_equal(rdf:langString, DatatypeIri),

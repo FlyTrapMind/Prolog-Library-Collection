@@ -17,7 +17,7 @@ width: 50em;
 ~~~
 
 @author Wouter Beek
-@version 2013/11-2014/02
+@version 2013/11-2014/03
 */
 
 :- use_module(html(html_form)).
@@ -28,6 +28,7 @@ width: 50em;
 :- use_module(library(http/js_write)).
 :- use_module(server(app_server)). % Make sure there is an application server.
 :- use_module(server(web_login)).
+:- use_module(server(web_modules)).
 :- use_module(server(web_ui)). % Make sure the Web paths are defined.
 
 :- http_handler(root(.), home, []).
@@ -137,7 +138,7 @@ menu -->
     div([class='pure-u',id=menu],
       div(class=['pure-menu','pure-menu-open'], [
         a([class='pure-menu-heading',href='/'], 'PraSem'),
-        \html_module_list([ordered(false)], [])
+        \html_web_modules_list
       ])
     )
   ).

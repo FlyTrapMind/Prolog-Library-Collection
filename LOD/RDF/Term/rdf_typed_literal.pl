@@ -74,12 +74,12 @@ rdf_typed_literal(TypedLiteral, Graph):-
 % The other modes compose/decompose language-tagged strings without
 % them having to exist in the store.
 
-rdf_typed_literal_datatype_iri(TypedLiteral, LexicalForm, Datatype):-
+rdf_typed_literal(TypedLiteral, LexicalForm, Datatype):-
   var(TypedLiteral),
   var(LexicalForm),
   var(Datatype), !,
   % Enumerate all typed literals.
   rdf_typed_literal(TypedLiteral),
   TypedLiteral = literal(type(Datatype,LexicalForm)).
-rdf_typed_literal_datatype_iri(literal(type(Datatype,LexicalForm)), LexicalForm, Datatype).
+rdf_typed_literal(literal(type(Datatype,LexicalForm)), LexicalForm, Datatype).
 

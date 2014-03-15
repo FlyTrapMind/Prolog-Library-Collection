@@ -58,9 +58,9 @@ This means that the definitions 'edge' and 'vertex' for graph theoretic
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf_term(rdf_language_tagged_string)).
-:- use_module(rdf_term(rdf_simple_literal)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdf_term(rdf_language_tagged_string)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -183,8 +183,8 @@ rdf_vertex_check(O, literal(type(_Datatype,_Value))):-
 %   * if the language tag is matched, under option `literals=preferred_label`.
 %   * never, under option `literals=none`.
 %   * always, under option `literals=all`
-rdf_vertex_check(O, Lit):-
-  rdf_is_literal(Lit), !,
+rdf_vertex_check(O, Literal):-
+  rdf_is_literal(Literal), !,
   option(literals(IncludeLiterals), O, all),
 
   % No literal is allowed as vertex under option `literals=none`.
@@ -198,30 +198,30 @@ rdf_vertex_check(O, Lit):-
   ->
     % We must know the subject and predicate terms
     % that occur in the same triple as the given literal.
-    rdf(S, P, Lit),
-    rdf_literal_to_value(Lit, LitValue),
+    rdf_literal(S, P, LexicalForm1, DatatypeIri, LanguageTag1, _),
 
     % Make sure the same literal with the preferred language tag does
     % not exist.
     % This excludes `literal(aap)` and `literal(aap,nl)` form
     % being both displayed.
     (
-      rdf_is_simple_literal(Lit)
+      rdf_equal(xsd:string, DatatypeIri),
+      var(LanguageTag1)
     ->
       \+ ((
-        rdf(S, P, literal(lang(Lang,LitValue))),
-        nonvar(Lang)
+        rdf_literal(S, P, LexicalForm2, DatatypeIri, LanguageTag2, _),
+	LexicalForm2 \== LexicalForm1,
+        nonvar(LanguageTag2)
       ))
     ;
-      true
+       true
     ),
 
     % Only preferred labels are allowed as vertices.
     option(language(Lang), O, en),
     % The given literal must be the preferred literal,
     % otherwise this predicate should fail.
-    rdf_preferred_language_tagged_string(Lang, S, P, LexicalForm, _, _),
-    LitValue == LexicalForm
+    rdf_preferred_language_tagged_string(Lang, S, P, LexicalForm1, _, _)
   ;
     % All literals are vertices.
     true

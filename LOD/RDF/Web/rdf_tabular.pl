@@ -64,9 +64,9 @@ rdf_tabular(Request):-
   
   reply_html_page(
     app_style,
-    title(['Overview of RDF graph ',Graph]),
+    title(['Overview of RDF graph ',\rdf_term_html(Graph)]),
     [
-      h1(['Description of RDF graph ',Graph]),
+      h1(['Description of RDF graph ',\rdf_term_html(Graph)]),
       \rdf_tabular_graph(Graph)
     ]
   ).
@@ -77,7 +77,7 @@ rdf_tabular(_Request):-
     app_style,
     title('Overview of RDF graphs'),
     [
-      h1(['Overview of RDF graphs']),
+      h1('Overview of RDF graphs'),
       \rdf_tabular_graphs
     ]
   ).

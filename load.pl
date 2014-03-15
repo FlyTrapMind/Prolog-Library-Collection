@@ -54,6 +54,7 @@ load_pgc:-
     assert(user:file_search_path(ckan,            'LOD'('CKAN'))),
     assert(user:file_search_path(owl,             'LOD'('OWL'))),
     assert(user:file_search_path(rdf,             'LOD'('RDF'))),
+      assert(user:file_search_path(rdf_clean,       rdf('Clean'))),
       assert(user:file_search_path(rdf_conv,        rdf('Conversion'))),
       assert(user:file_search_path(rdf_mt,          rdf('RDF MT'))),
       assert(user:file_search_path(rdf_reasoning,   rdf('Reasoning'))),

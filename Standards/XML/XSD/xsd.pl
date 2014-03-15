@@ -3,7 +3,7 @@
   [
     xsd_canonical_map/3, % +DatatypeIri:iri
                          % +Value
-                         % -LexicalExpression:atom
+                         % -LexicalForm:atom
     xsd_compare/4, % +DatatypeIri:iri
                    % -Order:oneof([incomparable,<,=,>])
                    % +Value1
@@ -72,7 +72,7 @@ conforming to recommendation version 1.1.
 
 
 
-%! xsd_canonical_map(+DatatypeIri:iri, +Value, -LexicalExpression:atom) is det.
+%! xsd_canonical_map(+DatatypeIri:iri, +Value, -LexicalForm:atom) is det.
 
 xsd_canonical_map(DatatypeIri, Boolean, LexicalForm):-
   xsd_canonical_map_(DatatypeIri, Boolean, Codes),

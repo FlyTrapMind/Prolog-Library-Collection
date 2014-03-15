@@ -140,16 +140,27 @@ html_table_cells(_, _, []) --> [].
 %!   +Element:ground
 %! )// is det.
 % Generated an the content for an HTML cell (both header and data).
+%
+% ### Matching arguments that are pairs
+%
+% First we try to call the `Cell` DCG on the `H` argument.
+% `H` may be a pair of the form `X-Y`.
+%
+% If generating the cell for `H` failed,
+% we interpret the first element in the pair as an options list
+% (i.e. HTML attributes) to the list item tag.
 
 :- meta_predicate(html_table_cell(+,3,+,?,?)).
-html_table_cell(data, Cell, O1-Element) --> !,
-  html(td(O1, \dcg_call(Cell, Element))).
 html_table_cell(data, Cell, Element) -->
-  html(td(\dcg_call(Cell, Element))).
-html_table_cell(header, Cell, O1-Element) --> !,
-  html(th(O1, \dcg_call(Cell, Element))).
+  html(td(\dcg_call(Cell, Element))), !.
+html_table_cell(data, Cell, O1-Element) -->
+  {is_list(O1)}, !,
+  html(td(O1, \dcg_call(Cell, Element))).
 html_table_cell(header, Cell, Element) -->
-  html(th(\dcg_call(Cell, Element))).
+  html(th(\dcg_call(Cell, Element))), !.
+html_table_cell(header, Cell, O1-Element) --> !,
+  {is_list(O1)}, !,
+  html(th(O1, \dcg_call(Cell, Element))).
 
 
 

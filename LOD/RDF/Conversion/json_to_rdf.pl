@@ -161,7 +161,13 @@ json_object_to_rdf(Graph, Module, XML_Namespace, JSON, Individual):-
 json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args1), Individual):-
   Module:legend(Legend, PrimaryKey, Spec),
 
-  (nonvar(PrimaryKey) -> memberchk(PrimaryKey=Id, Args1) ; true),
+  (
+    nonvar(PrimaryKey)
+  ->
+    memberchk(PrimaryKey=Id, Args1)
+  ;
+    true
+  ),
 
   % Class and individual.
   (

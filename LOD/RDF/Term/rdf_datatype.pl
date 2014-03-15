@@ -18,7 +18,7 @@
                        % -Value
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,iri])
                               % +Predicate:iri
-                              % +NewValue
+                              % +LexicalForm2
                               % +DatatypeIri:iri
                               % +RdfGraph:atom
     rdf_retractall_datatype/4 % ?Subject:oneof([bnode,iri])
@@ -120,7 +120,7 @@ rdf_lexical_map(DatatypeIri, LexicalForm, Value):-
 %! rdf_overwrite_datatype(
 %!   +Subject:oneof([bnode,iri]),
 %!   +Predicate:iri,
-%!   +NewValue,
+%!   +LexicalForm2,
 %!   +DatatypeIri:iri,
 %!   +RdfGraph:atom
 %! ) is det.
@@ -128,28 +128,26 @@ rdf_lexical_map(DatatypeIri, LexicalForm, Value):-
 % value is already asserted. In that case none of the other values gets
 % retracted.
 
-rdf_overwrite_datatype(S, P, NewValue, DatatypeIri, G):-
+rdf_overwrite_datatype(S, P, LexicalForm2, DatatypeIri, G):-
   % Make sure there is exactly one value that would be overwritten.
   findall(
-    [S,P,DatatypeIri,OldValue,G],
-    rdf_datatype(S, P, OldValue, DatatypeIri, G),
+    [S,P,DatatypeIri,LexicalForm1,G],
+    rdf_datatype(S, P, LexicalForm1, DatatypeIri, G),
     Tuples
   ),
-  Tuples = [[S,P,DatatypeIri,OldValue,G]], !,
+  Tuples = [[S,P,DatatypeIri,LexicalForm1,G]], !,
 
   % Remove the old value and assert the new value.
   rdf_retractall_datatype(S, P, DatatypeIri, G),
-  rdf_assert_datatype(S, P, NewValue, DatatypeIri, G),
+  rdf_assert_datatype(S, P, LexicalForm2, DatatypeIri, G),
 
   % DEB: Old object term.
-  rdf_typed_literal_datatype_iri(OldO, DatatypeIri),
-  rdf_typed_literal_lexical_form(OldO, OldValue),
-  dcg_with_output_to(atom(T1), rdf_triple_name(S, P, OldO, G)),
+  rdf_typed_literal(Literal1, LexicalForm1, DatatypeIri),
+  dcg_with_output_to(atom(T1), rdf_triple_name(S, P, Literal1, G)),
   
   % DEB: New object term.
-  rdf_typed_literal_datatype_iri(NewO, DatatypeIri),
-  rdf_typed_literal_lexical_form(NewO, NewValue),
-  dcg_with_output_to(atom(T2), rdf_triple_name(S, P, NewO, G)),
+  rdf_typed_literal(Literal2, LexicalForm2, DatatypeIri),
+  dcg_with_output_to(atom(T2), rdf_triple_name(S, P, Literal2, G)),
   
   % DEB: Show old and new object term in debug message.
   debug(rdf_datatype, 'Updated triple: ~w --> ~w', [T1,T2]).

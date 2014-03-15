@@ -16,9 +16,12 @@ HTML generation of RDF content.
 @version 2014/01-2014/03
 */
 
+:- use_module(dcg(dcg_collection)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
+:- use_module(html(html_list)).
 :- use_module(html(pl_term_html)).
+:- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
@@ -36,7 +39,11 @@ HTML generation of RDF content.
 rdf_term_html(RDF_Term) -->
   rdf_term_html(_, RDF_Term).
 
-% Graph.
+% RDF graphs.
+rdf_term_html(_, Graphs) -->
+  {maplist(rdf_graph, Graphs)}, !,
+  html(\html_list([ordered(false)], rdf_term_html, Graphs)).
+% RDF graph.
 rdf_term_html(_, Graph1) -->
   {rdf_is_graph(Graph1, Graph2)}, !,
   rdf_graph_html(Graph2).

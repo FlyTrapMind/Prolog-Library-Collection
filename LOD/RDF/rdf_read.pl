@@ -16,8 +16,12 @@
                   % ?Members:list(uri)
     rdf_memberchk/2, % ?Member:uri
                      % ?Members:list(uri)
-    rdf_property/2 % +Graph:atom
-                   % ?Property:iri
+    rdf_property/2, % +Graph:atom
+                    % ?Property:iri
+    rdfg/4 % ?Subject:or([bnode,iri]),
+           % ?Predicate:iri,
+           % ?Object:or([bnode,iri,literal]),
+           % ?RdfGraph:atom
   ]
 ).
 
@@ -125,13 +129,29 @@ rdf_find(S, P, O, G):-
   rdf(SS, PP, OO, G),
   maplist(rdf_both_bnode, [S,P,O], [SS,PP,OO]).
 
+
 rdf_member(Member, List):-
   member(Member0, List),
   rdf_global_id(Member0, Member).
 
+
 rdf_memberchk(Member, List):-
   once(rdf_member(Member, List)).
 
+
 rdf_property(G, P):-
   rdfs_individual(m(f,f,f), P, rdf:'Property', G).
+
+
+%! rdfg(
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:or([bnode,iri,literal]),
+%!   ?RdfGraph:atom
+%! ) is nondet.
+% Variant of rdf/4 which does not take the line number / index annotation
+% of the graph argument into account.
+
+rdfg(S, P, O, G):-
+  rdf([graph_mode(no_index)], S, P, O, G).
 

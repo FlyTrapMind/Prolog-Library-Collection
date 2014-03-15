@@ -278,13 +278,12 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
   rdfs_individual(M, I, C0, G),
   debug(rdfs_read, '[RDFS 9] ~w IN ~w', [I,C]).
 % RDFD 1
-rdfs_individual(M, Lex, Datatype, G):- M=m(t,_,t),
-  rdf_db_or_axiom(M, _, _, TypedLit, G),
-  rdf_typed_literal(G, TypedLit),
-  rdf_typed_literal_datatype_iri(TypedLit, Datatype),
-  rdf_typed_literal_lexical_form(TypedLit, Lex),
+rdfs_individual(M, LexicalForm, Datatype, G):- M=m(t,_,t),
+  rdf_db_or_axiom(M, _, _, TypedLiteral, G),
+  rdf_typed_literal(G, TypedLiteral),
+  rdf_typed_literal(TypedLiteral, LexicalForm, Datatype),
   rdfs_individual(M, Datatype, rdfs:'Datatype', G),
-  debug(rdfs_read, '[RDFD 1] ~w IN ~w', [Lex,Datatype]).
+  debug(rdfs_read, '[RDFD 1] ~w IN ~w', [LexicalForm,Datatype]).
 
 % RDF axioms: list.
 rdfs_individual_axiom(_, I, C):-

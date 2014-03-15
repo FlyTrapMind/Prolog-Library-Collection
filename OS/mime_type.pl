@@ -131,7 +131,6 @@ assert_mime_schema_ext(Graph):-
 
 
 init_mime:-
-gtrace,
   absolute_file_name(
     data(mime),
     File,
