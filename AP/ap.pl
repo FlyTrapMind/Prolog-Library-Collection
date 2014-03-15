@@ -33,8 +33,8 @@ Support for running automated processing.
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_string)).
 
 
 
@@ -61,7 +61,7 @@ ap(O1, AP, AP_Stages):-
 %! ap_begin(+Options:list(nvpair), +AP:iri) is det.
 
 ap_begin(O1, AP):-
-  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  rdf_string(AP, ap:alias, Alias, ap),
 
   % Process the reset option.
   % If `true` then any previous results are removed.
@@ -115,13 +115,7 @@ ap_end(O1, AP):-
   rdf_collection(AP, AP_Stages, ap),
   maplist(ap_stage_duration, AP_Stages, Monthss, Secondss),
   maplist(sum_list, [Monthss,Secondss], [Months,Seconds]),
-  rdf_assert_datatype(
-    AP,
-    ap:duration,
-    xsd:duration,
-    duration(Months,Seconds),
-    ap
-  ),
+  rdf_assert_datatype(AP, ap:duration, duration(Months,Seconds), xsd:duration, ap),
 
   % Save the AP assertions until now.
   rdf_collection_member(AP, AP_Collection, ap),
@@ -130,14 +124,14 @@ ap_end(O1, AP):-
   rdf_save([format(turtle)], ap, File),
   
   % DEB
-  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  rdf_string(AP, ap:alias, Alias, ap),
   current_date_time(DateTime),
   debug(ap, 'Ended AP ~w at ~w.', [Alias,DateTime]).
 
 
-ap_stage_duration(AP_Stage, Months, Seconds):-
+ap_stage_duration(ApStage, Months, Seconds):-
   rdf_datatype(
-    AP_Stage,
+    ApStage,
     ap:duration,
     xsd:duration,
     duration(Months,Seconds),

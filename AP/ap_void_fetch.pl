@@ -26,15 +26,15 @@ For use in the AP architecture.
 
 
 
-void_fetch(FromDir, ToDir, AP_Stage):-
+void_fetch(FromDir, ToDir, ApStage):-
   rdf_directory_files(FromDir, FromFiles),
-  maplist(void_fetch_file(AP_Stage), FromFiles, RdfDatasets1),
+  maplist(void_fetch_file(ApStage), FromFiles, RdfDatasets1),
   exclude(var, RdfDatasets1, RdfDatasets2),
-  (RdfDatasets2 == [] -> add_skip(AP_Stage) ; true),
+  (RdfDatasets2 == [] -> add_skip(ApStage) ; true),
   link_directory_contents(FromDir, ToDir).
 
 
-void_fetch_file(AP_Stage, FromFile, RdfDataset):-
+void_fetch_file(ApStage, FromFile, RdfDataset):-
   rdf_load([void(true)], Graph, FromFile),
   (
     void_dataset(Graph, RdfDataset)
@@ -44,7 +44,7 @@ void_fetch_file(AP_Stage, FromFile, RdfDataset):-
     delete_file(FromFile),
     rdf_dataset(RdfDataset, DefaultGraph, NamedGraphs),
     add_operation_on_file(
-      AP_Stage,
+      ApStage,
       FromFile,
       'fetched VoID',
       [DefaultGraph|NamedGraphs]

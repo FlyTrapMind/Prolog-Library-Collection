@@ -11,7 +11,7 @@
 /** <module> IANA CSV to RDF
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
 :- use_module(generics(uri_ext)).
@@ -19,9 +19,10 @@
 :- use_module(library(csv)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_build)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
@@ -74,36 +75,18 @@ assert_iana_row1(
   (
     Description == '', !
   ;
-    rdf_assert_datatype(
-      Registration,
-      iana:description,
-      xsd:string,
-      Description,
-      Graph
-    )
+    rdf_assert_string(Registration, iana:description, Description, Graph)
   ), !.
 assert_iana_row1(Graph, Registration, row(Name,Template,Reference)):-
   (
     Template == '', !
   ;
-    rdf_assert_datatype(
-      Registration,
-      iana:template,
-      xsd:string,
-      Template,
-      Graph
-    )
+    rdf_assert_string(Registration, iana:template, Template, Graph)
   ),
   (
     Reference == '', !
   ;
-    rdf_assert_datatype(
-      Registration,
-      iana:reference,
-      xsd:string,
-      Reference,
-      Graph
-    )
+    rdf_assert_string(Registration, iana:reference, Reference, Graph)
   ),
   rdfs_assert_label(Registration, Name, Graph).
 

@@ -24,7 +24,7 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
 

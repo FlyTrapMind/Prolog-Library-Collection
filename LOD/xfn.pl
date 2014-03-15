@@ -12,8 +12,9 @@
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(xfn, 'http://vocab.sindice.com/xfn#').
@@ -35,7 +36,7 @@ export_contacts:-
   forall(
     rdfs_individual_of(Person, xfn:person),
     (
-      rdf_datatype(Person, xfn:name, xsd:string, Name, xfn),
+      rdf_string(Person, xfn:name, Name, xfn),
       format(xfn, '  ~w\n', [Name])
     )
   ),
@@ -45,9 +46,9 @@ export_contacts:-
       (
         rdf(Person1, Relationship, Person2, xfn)
       ->
-        rdf_datatype(Person1, xfn:name, xsd:string, Name1, xfn),
+        rdf_string(Person1, xfn:name, Name1, xfn),
         rdf_global_id(xfn:RelationshipName, Relationship),
-        rdf_datatype(Person2, xfn:name, xsd:string, Name2, xfn),
+        rdf_string(Person2, xfn:name, Name2, xfn),
         format(
           xfn,
           '  ~w -> ~w [label="~w"]\n',
@@ -70,7 +71,7 @@ find_contacts(Person1, element(a, LinkAttributes, [Name])):- !,
   find_link(LinkAttributes, Person2),
   find_relationship(LinkAttributes, RelationshipsAtom),
   atomic_list_concat(RelationshipAtoms, ' ', RelationshipsAtom),
-  rdf_assert_datatype(Person2, xfn:name, xsd:string, Name, xfn),
+  rdf_assert_string(Person2, xfn:name, Name, xfn),
   forall(
     member(RelationshipAtom, RelationshipAtoms),
     (
@@ -126,7 +127,7 @@ test(xfn, [true]):-
   parse_html(AbsoluteFileName, DOM),
   format(user_output, '~w', [DOM]),
   rdf_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
-  rdf_assert_datatype('http://www.wouterbeek.com', xfn:name, xsd:string, 'Wouter Beek', xfn),
+  rdf_assert_string('http://www.wouterbeek.com', xfn:name, 'Wouter Beek', xfn),
   find_contacts('http://www.wouterbeek.com', DOM),
   export_contacts.
 

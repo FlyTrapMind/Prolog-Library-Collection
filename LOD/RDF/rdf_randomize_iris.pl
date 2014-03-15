@@ -19,7 +19,7 @@
 :- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 
 
 

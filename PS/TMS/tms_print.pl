@@ -20,7 +20,7 @@ Support for printing (aspects of) a TMS.
 :- use_module(generics(option_ext)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdfs(rdfs_label_read)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 

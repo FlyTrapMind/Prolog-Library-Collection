@@ -12,7 +12,7 @@
                       % -Directories:list(atom)
     ap_last_stage_directory/2, % +AP:iri
                                % -LastStageDirectory:atom
-    ap_stage_directory/3, % +AP_Stage:iri
+    ap_stage_directory/3, % +ApStage:iri
                           % +Mode:oneof([read,write])
                           % -AbsoluteDir:atom
     ap_stage_directory_name/2 % +StageNumber:nonneg
@@ -37,7 +37,8 @@ Directory management for running automated processes.
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
@@ -57,7 +58,7 @@ ap_clean(AP):-
 
 ap_directory(AP, Dir):-
   once(rdfs_individual_of(AP, ap:'AP')),
-  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  rdf_string(AP, ap:alias, Alias, ap),
   file_search_path(Alias, Spec),
   absolute_file_name(
     Spec,
@@ -76,7 +77,7 @@ ap_directory(AP, Dir):-
 
 ap_directory(AP, Mode, Subdir, AbsoluteDir):-
   once(rdfs_individual_of(AP, ap:'AP')),
-  rdf_datatype(AP, ap:alias, xsd:string, Alias, ap),
+  rdf_string(AP, ap:alias, Alias, ap),
   Spec =.. [Alias,Subdir],
   (
     absolute_file_name(
@@ -114,10 +115,10 @@ ap_last_stage_directory(AP, LastStageDir):-
   last(StageDirs, LastStageDir).
 
 
-ap_stage_directory(AP_Stage, Mode, AbsoluteDir):-
-  rdfs_individual_of(AP_Stage, ap:'AP-Stage'), !,
-  rdf_collection_member(AP_Stage, AP, ap),
-  rdf_datatype(AP_Stage, ap:stage, xsd:integer, StageNum, ap),
+ap_stage_directory(ApStage, Mode, AbsoluteDir):-
+  rdfs_individual_of(ApStage, ap:'AP-Stage'), !,
+  rdf_collection_member(ApStage, AP, ap),
+  rdf_datatype(ApStage, ap:stage, StageNum, xsd:integer, ap),
   ap_stage_directory_name(StageNum, StageName),
   ap_directory(AP, Mode, StageName, AbsoluteDir).
 

@@ -134,9 +134,9 @@ text/xml
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_build)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
 
@@ -166,7 +166,7 @@ ckan_mime_table -->
   {
     setoff(
       MIME,
-      rdf_datatype(_, ckan:mimetype, xsd:string, MIME, _),
+      rdf_string(_, ckan:mimetype, MIME, _),
       MIMEs
     ),
     findall(
@@ -175,7 +175,7 @@ ckan_mime_table -->
         member(MIME, MIMEs),
         setoff(
           Resource,
-          rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, _),
+          rdf_string(Resource, ckan:mimetype, MIME, _),
           Resources
         ),
         length(Resources, NumberOfResources)
@@ -186,7 +186,7 @@ ckan_mime_table -->
       ResourceWithoutMIME,
       (
         rdfs_individual_of(ResourceWithoutMIME, ckan:'Resource'),
-        \+ rdf_datatype(ResourceWithoutMIME, ckan:mimetype, xsd:string, _, _)
+        \+ rdf_string(ResourceWithoutMIME, ckan:mimetype, _, _)
       ),
       ResourcesWithoutMIME
     ),
@@ -227,8 +227,8 @@ mime_content_type -->
       Resource-MIME1-MIME2,
       (
         rdfs_individual_of(Resource, ckan:'Resource'),
-        rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME1, _),
-        rdf_datatype(Resource, rfc2616:'Content-Type', xsd:string, ContentType, _),
+        rdf_string(Resource, ckan:mimetype, MIME1, _),
+        rdf_string(Resource, rfc2616:'Content-Type', ContentType, _),
         dcg_phrase('media-type'(_, MediaType), ContentType),
         MediaType = media_type(Type, Subtype, _),
         atomic_list_concat([Type,Subtype], '/', MIME2)
@@ -278,7 +278,7 @@ ckan_mime_table_structured_open -->
         boolean_and(Structured, Open, Both),
         findall(
           Resource,
-          rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, _),
+          rdf_string(Resource, ckan:mimetype, MIME, _),
           Resources
         ),
         length(Resources, NumberOfResources)
@@ -296,7 +296,7 @@ ckan_mime_table_structured_open -->
       NoMIMEResource,
       (
         rdfs_individual_of(NoMIMEResource, ckan:'Resource'),
-        \+ rdf_datatype(NoMIMEResource, ckan:mimetype, xsd:string, _, _)
+        \+ rdf_string(NoMIMEResource, ckan:mimetype, _, _)
       ),
       NoMIMEResources
     ),
@@ -340,13 +340,13 @@ boolean_and(_,    _,    false).
 ckan_clean_mime(Graph):-
   forall(
     (
-      rdf_datatype(Resource, ckan:mimetype, xsd:string, FalseMIME, Graph),
+      rdf_string(Resource, ckan:mimetype, FalseMIME, Graph),
       mime(FalseMIME, TrueMIME),
       \+ member(TrueMIME, [false,true])
     ),
     (
-      rdf_assert_literal(Resource, ckan:mimetype, TrueMIME, Graph),
-      rdf_retractall_literal(Resource, ckan:mimetype, FalseMIME, Graph)
+      rdf_assert_string(Resource, ckan:mimetype, TrueMIME, Graph),
+      rdf_retractall_string(Resource, ckan:mimetype, FalseMIME, Graph)
     )
   ).
 

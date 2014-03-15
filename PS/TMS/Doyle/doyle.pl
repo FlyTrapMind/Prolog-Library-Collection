@@ -133,7 +133,7 @@ Well-founded justifications form a non-circular argument for their node.
 Only SL-justifications can be well-founded justifications.
 
 @author Wouter Beek
-@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01
+@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -145,14 +145,15 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(library(semweb/rdfs)).
 :- use_module(programming(prolog_control)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_build)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_reification)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_build)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
 
@@ -648,8 +649,8 @@ member_of_sl_justification_set(SL_Justification, Node):-
 
 premise(J):-
   justification(J),
-  \+ rdf(J, tms:has_in, _In),
-  \+ rdf(J, tms:has_out, _Out).
+  \+ rdf(J, tms:has_in, _),
+  \+ rdf(J, tms:has_out, _).
 
 %! repercussions(+Node:iri, -Repercussions:ordset(node)) is det.
 
@@ -664,7 +665,7 @@ doyle_reset(TMS):-
   flag(JustificationsFlag, _OldJustificationsFlag, 2),
   format(atom(NodesFlag), '~w_nodes', [TMS]),
   flag(NodesFlag, _OldNodesFlag, 2),
-  rdf_retractall(_S, _P, _O, TMS:_ID).
+  rdf_retractall(_, _, _, TMS:_).
 
 %! set_support_status(
 %!   +TMS:atom,
@@ -677,8 +678,8 @@ set_support_status(TMS, Node, SupportStatus):-
   rdf_graph(TMS),
   is_node(Node),
   memberchk(SupportStatus, [in,nil,out]),
-  rdf_retractall_literal(Node, doyle:has_support_status, _, TMS),
-  rdf_assert_literal(Node, doyle:has_support_status, SupportStatus, TMS).
+  rdf_retractall_string(Node, doyle:has_support_status, TMS),
+  rdf_assert_string(Node, doyle:has_support_status, SupportStatus, TMS).
 
 %! set_supporting_justification(
 %!   +TMS:atom,
@@ -692,13 +693,9 @@ set_supporting_justification(TMS, Node, SupportingJustification):-
   is_node(Node),
   is_justification(SupportingJustification),
 
-  rdf_retractall(Node, doyle:supporting_justification, _Justification, TMS),
-  rdf_assert(
-    Node,
-    doyle:supporting_justification,
-    SupportingJustification,
-    TMS
-  ).
+  rdf_retractall(Node, doyle:supporting_justification, _, TMS),
+  rdf_assert(Node, doyle:supporting_justification, SupportingJustification,
+      TMS).
 
 %! set_supporting_nodes(
 %!   +TMS:atom,
@@ -751,7 +748,7 @@ sl_justification(SL_Justification):-
 
 support_status(Node, SupportStatus):-
   is_node(Node),
-  rdf_literal(Node, doyle:has_support_status, SupportStatus, _).
+  rdf_string(Node, doyle:has_support_status, SupportStatus, _).
 
 %! supporting_nodes(+Node:iri, -SupportingNodes:ordset(node)) is det.
 

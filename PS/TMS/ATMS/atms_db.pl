@@ -74,7 +74,7 @@ This module implements the new ATMS which Wouter based on Forbus and
 De Kleer 1993 book 'Building Problem Solvers'.
 
 @author Wouter Beek
-@version 2011/11-2012/01, 2012/08
+@version 2011/11-2012/01, 2012/08, 2014/03
 */
 
 :- use_module(atms(atms_api)).
@@ -84,8 +84,9 @@ De Kleer 1993 book 'Building Problem Solvers'.
 :- use_module(generics(meta_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_read)).
+:- use_module(rdf_term(rdf_boolean)).
 
 :- dynamic(has_label/3).
 
@@ -233,10 +234,10 @@ add_environment(ATMS, Assumptions, Environment):-
   rdf_global_id(environment:AtomicID, Environment),
 
   % Assert the instance/definition relationship.
-  rdf_assert(Environment, rdf:type, environment:environment, ccm),
+  rdf_assert_individual(Environment, environment:environment, ccm),
 
   % Assert the identifier.
-  rdf_assert_datatype(Environment, environment:has_id, xsd:integer, ID, ccm),
+  rdf_assert_datatype(Environment, environment:has_id, ID, xsd:integer, ccm),
 
   % Assert the label.
   length(Assumptions, Length),
@@ -256,7 +257,8 @@ environment_add_node(Environment, Node):-
   rdf_assert(Environment, environment:has_node, Node, ccm).
 
 environment_change_nogood(Environment, NogoodStatus):-
-  rdf_assert_datatype(Environment, environment:is_nogood, xsd:boolean, NogoodStatus, ccm).
+  rdf_assert_datatype(Environment, environment:is_nogood, NogoodStatus,
+      xsd:boolean, ccm).
 
 environment_remove_node(Environment, Node):-
   rdf_retractall(Environment, environment:has_node, Node, ccm).
@@ -275,12 +277,10 @@ environment_replace_nodes(Environment, RemoveNodes, AddNodes):-
   maplist(environment_add_node(Environment), AddNodes).
 
 set_environment_contradictory(ATMS, Environment):-
-  nogood(ATMS, Environment),
-  !.
+  nogood(ATMS, Environment), !.
 set_environment_contradictory(ATMS, Environment):-
   nogood(ATMS, Nogood),
-  subenvironment(Nogood, Environment),
-  !,
+  subenvironment(Nogood, Environment), !,
   environment_change_nogood(Environment, true).
 % Never fail.
 set_environment_contradictory(_ATMS, _Environment).
@@ -311,11 +311,11 @@ add_justification(Informant, Consequence, Antecedents, Justification):-
   flag(JustificationsFlag, ID, ID + 1),
   atom_number(AtomicID, ID),
   rdf_global_id(justification:AtomicID, Justification),
-  rdf_assert(Justification, rdf:type, justification:justification, ccm),
-  rdf_assert_datatype(Justification, justification:has_id, xsd:integer, ID, ccm),
+  rdf_assert_individual(Justification, justification:justification, ccm),
+  rdf_assert_datatype(Justification, justification:has_id, ID, xsd:integer, ccm),
   rdfs_assert_label(Justification, AtomicID, ccm),
   rdf_assert(ATMS, atms:has_justification, Justification, ccm),
-  rdf_assert_literal(Justification, justification:has_informant, Informant, ccm),
+  rdf_assert_string(Justification, justification:has_informant, Informant, ccm),
   maplist(add_antecedent(Justification), Antecedents),
   add_consequence(Justification, Consequence),
   % Propagate changes from the root to the rest of the network.
@@ -389,12 +389,12 @@ add_node(ATMS, Datum, IsAssumption, IsContradiction, Node):-
     atom_number(AtomicID, ID),
     atomic_concat(falsum, AtomicID, NodeName),
     rdf_global_id(node:NodeName, Node),
-    rdf_assert(Node, rdf:type, node:falsum, ccm)
+    rdf_assert_individual(Node, node:falsum, ccm)
   ;
     atom(Datum)
   ->
     rdf_global_id(node:Datum, Node),
-    rdf_assert(Node, rdf:type, node:nnode, ccm),
+    rdf_assert_individual(Node, node:nnode, ccm),
     NodeName = Datum
   ;
     % This should never be the case.
@@ -402,10 +402,11 @@ add_node(ATMS, Datum, IsAssumption, IsContradiction, Node):-
     fail
   ),
 
-  rdf_assert_datatype(Node, node:has_id, xsd:integer, ID, ccm),
+  rdf_assert_datatype(Node, node:has_id, ID, xsd:integer, ccm),
   rdf_assert(Node, node:has_datum, Datum, ccm),
-  rdf_assert_datatype(Node, node:is_assumption, xsd:boolean, IsAssumption, ccm),
-  rdf_assert_datatype(Node, node:is_contradiction, xsd:boolean, IsContradiction, ccm),
+  rdf_assert_datatype(Node, node:is_assumption, IsAssumption, xsd:boolean, ccm),
+  rdf_assert_datatype(Node, node:is_contradiction, IsContradiction,
+      xsd:boolean, ccm),
   rdf_assert(ATMS, atms:has_node, Node, ccm),
 
   % If the node is contradictory.
@@ -427,23 +428,20 @@ add_node(ATMS, Datum, IsAssumption, IsContradiction, Node):-
   ).
 
 assume_node(Node):-
-  is_assumption(Node),
-  !.
+  is_assumption(Node), !.
 assume_node(Node):-
   node(ATMS, Node),
-  rdf_retractall(Node, node:is_assumption, _OldIsAssumption, ccm),
-  rdf_assert_datatype(Node, node:is_assumption, xsd:boolean, true, ccm),
-  %rdf_assert(ATMS, atms:has_assumption, Node, ccm),
+  rdf_retractall(Node, node:is_assumption, _, ccm),
+  rdf_assert_true(Node, node:is_assumption, ccm),
   find_or_add_environment(ATMS, [Node], Environment),
   update(ATMS, [Environment], Node).
 
 make_contradiction(Node):-
-  is_contradiction(Node),
-  !.
+  is_contradiction(Node), !.
 make_contradiction(Node):-
   node(ATMS, Node),
-  rdf_retractall(Node, node:is_contradiction, _OldIsContradiction, ccm),
-  rdf_assert_datatype(Node, node:is_contradiction, xsd:boolean, true, ccm),
+  rdf_retractall(Node, node:is_contradiction, _, ccm),
+  rdf_assert_true(Node, node:is_contradiction, ccm),
   rdf_assert(ATMS, atms:has_contradiction, Node, ccm),
   node_to_label(Node, Label),
   forall(
@@ -453,16 +451,15 @@ make_contradiction(Node):-
 
 node_change_label(Node, Label):-
   node_to_label(Node, Label1),
-  Label1 == Label,
-  !.
+  Label1 == Label, !.
 node_change_label(Node, Label):-
-  rdf_retractall(Node, node:has_environment, _Environment, ccm),
+  rdf_retractall(Node, node:has_environment, _, ccm),
   forall(
     member(Environment, Label),
     rdf_assert(Node, node:has_environment, Environment, ccm)
   ).
 
-nogood_nodes(ATMS, Informant, [Node | Nodes]):-
+nogood_nodes(ATMS, Informant, [Node|Nodes]):-
   % It is not assured that all nodes have already been asserted
   % as... nodes. This sometimes happens because a node (i.e. something
   % of type 'node') need not have been added as a node (i.e. ATMS part)
@@ -484,8 +481,9 @@ premise_node(Node):-
   find_or_add_justification('Premise', Node, [], _Justification).
 
 remove_node(RemoveNode):-
-  rdf_retractall(RemoveNode, node:has_datum, _Datum, ccm),
-  rdf_retractall(RemoveNode, node:has_environment, _Environment, ccm),
-  rdf_retractall(RemoveNode, node:has_id, _ID, ccm),
-  rdf_retractall(RemoveNode, node:is_assumption, _IsAssumption, ccm),
-  rdf_retractall(RemoveNode, node:is_contradiction, _IsContradiction, ccm).
+  rdf_retractall(RemoveNode, node:has_datum, _, ccm),
+  rdf_retractall(RemoveNode, node:has_environment, _, ccm),
+  rdf_retractall(RemoveNode, node:has_id, _, ccm),
+  rdf_retractall(RemoveNode, node:is_assumption, _, ccm),
+  rdf_retractall(RemoveNode, node:is_contradiction, _, ccm).
+

@@ -51,15 +51,15 @@ This means that the definitions 'edge' and 'vertex' for graph theoretic
  operations of RDF data must be redefined.
 
 @author Wouter Beek
-@version 2012/01-2013/03, 2013/08
+@version 2012/01-2013/03, 2013/08, 2014/03
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_literal)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_language_tagged_string)).
+:- use_module(rdf_term(rdf_simple_literal)).
 :- use_module(rdf(rdf_read)).
 :- use_module(xml(xml_namespace)).
 
@@ -220,8 +220,8 @@ rdf_vertex_check(O, Lit):-
     option(language(Lang), O, en),
     % The given literal must be the preferred literal,
     % otherwise this predicate should fail.
-    rdf_preferred_literal(S, P, Lang, _PreferredLang, PreferredLit),
-    LitValue == PreferredLit
+    rdf_preferred_language_tagged_string(Lang, S, P, LexicalForm, _, _),
+    LitValue == LexicalForm
   ;
     % All literals are vertices.
     true

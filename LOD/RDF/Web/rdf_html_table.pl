@@ -24,8 +24,8 @@ Generates HTML tables with RDF content.
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_web(rdf_term_html)).
 :- use_module(xml(xml_namespace)).
 
@@ -45,12 +45,11 @@ rdf_html_table(O1, Table) -->
   {
     option(header_column(HasHeaderColumn), O1),
     option(header_row(HasHeaderRow), O1),
-    rdf_datatype(Table, rdf_table:caption, xsd:string, Caption, _),
+    rdf_string(Table, rdf_table:caption, Caption, _),
     rdf(Table, rdf_table:columns, Columns1),
-    rdf_global_id(xsd:string, XSDString),
-    rdf_list([datatype(XSDString)], Columns1, Columns2),
+    rdf_list([datatype(xsd:string)], Columns1, Columns2),
     rdf(Table, rdf_table:rows, Rows1),
-    rdf_list([datatype(XSDString)], Rows1, Rows2),
+    rdf_list([datatype(xsd:string)], Rows1, Rows2),
     table1(Table, HasHeaderColumn, Columns2, Rows2, L1),
     (
       HasHeaderRow == true
@@ -77,8 +76,8 @@ table1(Table, HasHeaderColumn, Columns, [Row|Rows], [H2|T]):-
 table2(_, [], _, []):- !.
 table2(Table, [Column|Columns], Row, [H|T]):-
   rdf(Table, rdf_table:cell, Cell),
-  rdf_datatype(Cell, rdf_table:column, xsd:string, Column, _),
-  rdf_datatype(Cell, rdf_table:row, xsd:string, Row, _),
+  rdf_string(Cell, rdf_table:column, Column, _),
+  rdf_string(Cell, rdf_table:row, Row, _),
   rdf(Cell, rdf:value, H), !,
   table2(Table, Columns, Row, T).
 

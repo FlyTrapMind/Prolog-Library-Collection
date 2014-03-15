@@ -107,15 +107,15 @@ application of the subclass relation.
 
 @author Wouter Beek
 @tbd How to materialize the membership properties (an infinite lot of them)?
-@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09, 2014/02
+@version 2011/08-2012/03, 2012/09, 2012/11-2013/03, 2013/07-2013/09, 2014/02-2014/03
 */
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_literal)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf_reasoning(rdf_bnode_map)).
+:- use_module(rdf_term(rdf_typed_literal)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -280,7 +280,9 @@ rdfs_individual(M, I, C, G):- M=m(t,_,_),
 % RDFD 1
 rdfs_individual(M, Lex, Datatype, G):- M=m(t,_,t),
   rdf_db_or_axiom(M, _, _, TypedLit, G),
-  rdf_typed_literal(G, TypedLit, Datatype, Lex),
+  rdf_typed_literal(G, TypedLit),
+  rdf_typed_literal_datatype_iri(TypedLit, Datatype),
+  rdf_typed_literal_lexical_form(TypedLit, Lex),
   rdfs_individual(M, Datatype, rdfs:'Datatype', G),
   debug(rdfs_read, '[RDFD 1] ~w IN ~w', [Lex,Datatype]).
 

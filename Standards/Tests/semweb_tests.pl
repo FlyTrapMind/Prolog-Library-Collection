@@ -5,7 +5,7 @@
   ]
 ).
 
-/** <module> RDFS TEST
+/** <module> RDF(S) tests
 
 # MANIFEST HEADER
 
@@ -82,7 +82,7 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).
@@ -147,7 +147,7 @@ run_test(Test):-
 
   % If available, print the description to the screen.
   (
-    rdf_literal(Test, test:description, Description1, _Graph),
+    rdf_string(Test, test:description, Description1, _),
     strip_atom([' ','\n','\t'], Description1, Description2)
   ->
     format(user_output, 'Test description: ~w\n', [Description2])
@@ -163,9 +163,8 @@ run_test(Test):-
   ansi_format([bold, fg(Color)], 'STATUS: ~w\n\n', [Status]).
 
 run_test0(Test, Status):-
-  once(rdf_literal(Test, test:status, Status, _Graph)),
-  memberchk(Status, ['NOT_APPROVED','OBSOLETE','OBSOLETED','WITHDRAWN']),
-  !.
+  once(rdf_string(Test, test:status, Status, _)),
+  memberchk(Status, ['NOT_APPROVED','OBSOLETE','OBSOLETED','WITHDRAWN']), !.
 % A miscellaneous test with a single document.
 % These tests are required to throw an exception upon attemption to
 % load the 'RDF graph'.
@@ -192,9 +191,7 @@ run_test0(Test, 'PASS'):-
   ),
   !.
 run_test0(Test, 'SKIPPED'):-
-  rdfs_individual_of(Test, test:'NegativeEntailmentTest'),
-  !,
-  true.
+  rdfs_individual_of(Test, test:'NegativeEntailmentTest'), !.
 /*
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
@@ -247,8 +244,7 @@ run_test0(Test, 'PASS'):-
   rdf_load([], out, Output_File),
 
   % The graphs must be equivalent.
-  rdf_graph_equivalence(in, out),
-  !.
+  rdf_graph_equivalence(in, out), !.
 run_test0(_Test, 'FAIL').
 
 %! _download_to_file(+URI:uri, -File:atom) is det.

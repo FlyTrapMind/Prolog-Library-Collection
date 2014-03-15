@@ -12,7 +12,7 @@
 VoID statistics process for the AP architecture.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
 :- use_module(ap(ap_db)).
@@ -21,9 +21,9 @@ VoID statistics process for the AP architecture.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_stat)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(void(void_stat)). % If only for the namespace.
 :- use_module(xml(xml_namespace)).
 
@@ -31,7 +31,7 @@ VoID statistics process for the AP architecture.
 
 
 
-void_statistics(FromDir, ToDir, AP_Stage):-
+void_statistics(FromDir, ToDir, ApStage):-
   directory_files([], FromDir, FromFiles),
   findall(
     File,
@@ -40,9 +40,9 @@ void_statistics(FromDir, ToDir, AP_Stage):-
       rdf_setup_call_cleanup(
         [],
         File,
-        void_statistics_on_graph(AP_Stage, NVPairs)
+        void_statistics_on_graph(ApStage, NVPairs)
       ),
-      add_properties_of_file(AP_Stage, File, NVPairs)
+      add_properties_of_file(ApStage, File, NVPairs)
     ),
     Files
   ),
@@ -50,8 +50,8 @@ void_statistics(FromDir, ToDir, AP_Stage):-
   link_directory_contents(FromDir, ToDir).
 
 
-void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
-  ap_stage_resource(AP_Stage, Resource, WriteGraph),
+void_statistics_on_graph(ApStage, NVPairs, ReadGraph):-
+  ap_stage_resource(ApStage, Resource, WriteGraph),
   thread_create(count_classes(ReadGraph, Resource, WriteGraph), Id1, []),
   thread_create(count_objects(ReadGraph, Resource, WriteGraph), Id2, []),
   thread_create(count_subjects(ReadGraph, Resource, WriteGraph), Id3, []),
@@ -69,30 +69,30 @@ void_statistics_on_graph(AP_Stage, NVPairs, ReadGraph):-
     objects-NO,
     triples-NT
   ],
-  rdf_datatype(Resource, void:classes, xsd:integer, NC, WriteGraph),
-  rdf_datatype(Resource, void:distinctObjects, xsd:integer, NS, WriteGraph),
-  rdf_datatype(Resource, void:distinctSubjects, xsd:integer, NP, WriteGraph),
-  rdf_datatype(Resource, void:properties, xsd:integer, NO, WriteGraph),
-  rdf_datatype(Resource, void:triples, xsd:integer, NT, WriteGraph).
+  rdf_datatype(Resource, void:classes, NC, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:distinctObjects, NS, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:distinctSubjects, NP, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:properties, NO, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:triples, NT, xsd:integer, WriteGraph).
 
 
 count_classes(ReadGraph, Resource, WriteGraph):-
   count_classes(ReadGraph, N),
-  rdf_assert_datatype(Resource, void:classes, xsd:integer, N, WriteGraph).
+  rdf_assert_datatype(Resource, void:classes, N, xsd:integer, WriteGraph).
 
 count_objects(ReadGraph, Resource, WriteGraph):-
   count_objects(_, _, ReadGraph, N),
-  rdf_assert_datatype(Resource, void:distinctObjects, xsd:integer, N, WriteGraph).
+  rdf_assert_datatype(Resource, void:distinctObjects, N, xsd:integer, WriteGraph).
 
 count_subjects(ReadGraph, Resource, WriteGraph):-
   count_subjects(_, _, ReadGraph, N),
-  rdf_assert_datatype(Resource, void:distinctSubjects, xsd:integer, N, WriteGraph).
+  rdf_assert_datatype(Resource, void:distinctSubjects, N, xsd:integer, WriteGraph).
 
 count_properties(ReadGraph, Resource, WriteGraph):-
   count_properties(_, _, ReadGraph, N),
-  rdf_assert_datatype(Resource, void:properties, xsd:integer, N, WriteGraph).
+  rdf_assert_datatype(Resource, void:properties, N, xsd:integer, WriteGraph).
 
 count_triples(ReadGraph, Resource, WriteGraph):-
   rdf_statistics(triples_by_graph(ReadGraph, N)),
-  rdf_assert_datatype(Resource, void:triples, xsd:integer, N, WriteGraph).
+  rdf_assert_datatype(Resource, void:triples, N, xsd:integer, WriteGraph).
 

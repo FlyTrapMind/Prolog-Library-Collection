@@ -1,7 +1,7 @@
 :- module(
   ap_download,
   [
-    ap_download_to_directory/4 % +AP_Stage:iri
+    ap_download_to_directory/4 % +ApStage:iri
                                % +ToDirectory:atom
                                % +URL:url
                                % +Accept:atom
@@ -11,7 +11,7 @@
 /** <module> AP Download
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(ap(ap_db)).
@@ -20,7 +20,8 @@
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(uri(uri_scheme)).
 :- use_module(xml(xml_namespace)).
 
@@ -28,7 +29,7 @@
 
 
 
-ap_download_to_directory(AP_Stage, ToDir, URL, Accept):-
+ap_download_to_directory(ApStage, ToDir, URL, Accept):-
   check_url_validity(URL),
   uri_components(URL, uri_components(_,_,Path,_,_)),
   atomic_list_concat(Components1, '/', Path),
@@ -47,14 +48,8 @@ ap_download_to_directory(AP_Stage, ToDir, URL, Accept):-
     URL,
     File
   ),
-  ap_stage_resource(AP_Stage, Resource, Graph),
-  rdf_assert_datatype(
-    Resource,
-    rfc2616:'Content-Type',
-    xsd:string,
-    ContentType,
-    Graph
-  ),
+  ap_stage_resource(ApStage, Resource, Graph),
+  rdf_assert_string(Resource, rfc2616:'Content-Type', ContentType, Graph),
   directory_files(
     [include_directories(false),include_self(false)],
     ToDir,
@@ -62,7 +57,7 @@ ap_download_to_directory(AP_Stage, ToDir, URL, Accept):-
   ),
   forall(
     member(File, ToFiles),
-    add_operation_on_file(AP_Stage, File, downloaded, [])
+    add_operation_on_file(ApStage, File, downloaded, [])
   ).
 
 first_nonempty_atom([], dummy):- !.

@@ -15,7 +15,7 @@
 Predicates for generating a Web article.
 
 @author Wouter Beek
-@version 2013/11, 2014/01-2014/02
+@version 2013/11, 2014/01-2014/03
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -23,7 +23,8 @@ Predicates for generating a Web article.
 :- use_module(library(http/html_write)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(plp(dcg_c)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
@@ -43,8 +44,8 @@ Predicates for generating a Web article.
 author(A_) -->
   {
     rdf_global_id(A_, A),
-    rdf_datatype(A, foaf:firstName, xsd:string, FirstName, G),
-    rdf_datatype(A, foaf:lastName, xsd:string, LastName, G)
+    rdf_string(A, foaf:firstName, FirstName, G),
+    rdf_string(A, foaf:lastName, LastName, G)
   },
   html(div(class=author, ['Author: ',FirstName,' ',LastName])).
 

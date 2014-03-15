@@ -23,7 +23,7 @@ Generates HTML tables for overviews of RDFS classes.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 
 

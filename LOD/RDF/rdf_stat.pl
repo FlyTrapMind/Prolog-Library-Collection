@@ -43,7 +43,7 @@ Statistics for RDF data.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdfs(rdfs_read)).
 
 :- rdf_meta(count_individuals(r,+,-)).

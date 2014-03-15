@@ -49,7 +49,7 @@ Support for RDF lists.
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_reasoning(rdf_bnode_map)).
 :- use_module(rdfs(rdfs_read)).
@@ -59,7 +59,7 @@ Support for RDF lists.
 
 :- rdf_meta(rdf_is_list(r)).
 :- rdf_meta(rdf_assert_list(t,r,+)).
-:- rdf_meta(rdf_assert_list(+,t,r,+)).
+:- rdf_meta(rdf_assert_list(t,t,r,+)).
 :- rdf_meta(rdf_list(r,-)).
 :- rdf_meta(rdf_list(+,r,-)).
 :- rdf_meta(rdf_list_first(r,r)).
@@ -135,7 +135,7 @@ rdf_assert_list0(O1, [H|T], RDF_List, G):-
   ->
     rdf_bnode(H1),
     rdf_global_id(rdf:value, P),
-    rdf_assert_datatype(H1, P, D, H, G)
+    rdf_assert_datatype(H1, P, H, D, G)
   ;
     H1 = H
   ),

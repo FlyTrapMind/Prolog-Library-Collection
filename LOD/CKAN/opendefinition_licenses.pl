@@ -13,7 +13,7 @@ Support for the OpenDefinition licenses and their descriptions.
 
 @author Wouter Beek
 @see http://licenses.opendefinition.org/
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(ckan(ckan)). % Legen declarations.
@@ -23,8 +23,9 @@ Support for the OpenDefinition licenses and their descriptions.
 :- use_module(library(http/json)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_conv(json_to_rdf)).
 
 
@@ -45,18 +46,8 @@ enrich_license(JSON_Descriptions, Graph, License):-
   ),
   rdf_unload_graph(temp).
 enrich_license(_, Graph, License):-
-  rdf_assert_datatype(
-    License,
-    rdf:comment,
-    xsd:string,
-    'Not described by OpenDefinition.',
-    Graph
-  ),
-  debug(
-    ckan,
-    'Could not find license ~w in OpenDefinition descriptions.',
-    [License]
-  ).
+  rdf_assert_string(License, rdf:comment, 'Not described by OpenDefinition.', Graph),
+  debug(ckan, 'Could not find license ~w in OpenDefinition descriptions.', [License]).
 
 
 enrich_licenses(Graph):-

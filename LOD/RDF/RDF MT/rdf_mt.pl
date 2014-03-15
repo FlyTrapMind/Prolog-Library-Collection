@@ -34,7 +34,7 @@ The data structures for RDFS model theory.
 @version 2013/08
 */
 
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 
 
 
@@ -66,5 +66,5 @@ The data structures for RDFS model theory.
 % Literal values are resources.
 lv(G, M, Lit):-
   resource(M, Lit),
-  rdf_plain_literal(G, Lit, _).
+  rdf_plain_literal(G, Lit).
 

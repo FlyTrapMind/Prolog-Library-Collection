@@ -55,13 +55,13 @@ ATMS build methods.
 % @arg ATMS An ATMS.
 
 add_atms(ATMS):-
-  flag(atms_id, ID, ID + 1),
-  atom_number(AtomID, ID),
+  flag(atms_id, Id, Id + 1),
+  atom_number(AtomID, Id),
   rdf_global_id(atms:AtomID, ATMS),
   rdf_assert(ATMS, rdf:type, atms:atms, ccm),
-  format(atom(Label), 'ATMS ~w', [ID]),
+  format(atom(Label), 'ATMS ~w', [Id]),
   rdfs_assert_label(ATMS, Label, ccm),
-  rdf_assert_datatype(ATMS, atms:has_id, xsd:integer, ID, ccm),
+  rdf_assert_datatype(ATMS, atms:has_id, Id, xsd:integer, ccm),
 
   % Empty environment.
   add_environment(ATMS, [], EmptyEnvironment),

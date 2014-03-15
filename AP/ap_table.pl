@@ -9,7 +9,7 @@
 /** <module> AP table
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
 :- use_module(ap(ap_db)).
@@ -25,9 +25,10 @@
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_name)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_term_html)).
 :- use_module(server(app_ui)).
@@ -105,41 +106,41 @@ ap_row(AP, AP_Stages):-
 ap_table_header(Row, Header):-
   maplist(ap_stage_name, Row, Header).
 
-ap_stage_cell(AP_Stage) -->
+ap_stage_cell(ApStage) -->
   {
-    atom(AP_Stage),
-    rdfs_individual_of(AP_Stage, ap:'AP-Stage'), !,
-    rdf_datatype(AP_Stage, ap:status, xsd:string, Class, ap)
+    atom(ApStage),
+    rdfs_individual_of(ApStage, ap:'AP-Stage'), !,
+    rdf_string(ApStage, ap:status, Class, ap)
   },
-  html(div(class=Class, \ap_message(AP_Stage))).
+  html(div(class=Class, \ap_message(ApStage))).
 % This covers both RDF terms and Prolog terms.
 ap_stage_cell(Term) -->
   rdf_term_html(Term).
 
 
-ap_message(AP_Stage) -->
-  {rdfs_individual_of(AP_Stage, ap:'NeverReached')}, !,
+ap_message(ApStage) -->
+  {rdfs_individual_of(ApStage, ap:'NeverReached')}, !,
   html('Never reached').
-ap_message(AP_Stage) -->
+ap_message(ApStage) -->
   {
-    rdfs_individual_of(AP_Stage, ap:'Error'), !,
-    rdf_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
+    rdfs_individual_of(ApStage, ap:'Error'), !,
+    rdf_string(ApStage, ap:error, Atom, ap),
     read_term_from_atom(Atom, Error, [])
   },
   html(\pl_term_html(Error)).
-ap_message(AP_Stage) -->
-  {rdfs_individual_of(AP_Stage, ap:'Skip')}, !,
+ap_message(ApStage) -->
+  {rdfs_individual_of(ApStage, ap:'Skip')}, !,
   html('Skip').
-ap_message(AP_Stage) -->
+ap_message(ApStage) -->
   {
-    rdfs_individual_of(AP_Stage, ap:'FileOperation'), !,
-    rdf_datatype(AP_Stage, ap:file, xsd:string, File, ap),
-    rdf_datatype(AP_Stage, ap:operation, xsd:string, Operation, ap)
+    rdfs_individual_of(ApStage, ap:'FileOperation'), !,
+    rdf_string(ApStage, ap:file, File, ap),
+    rdf_string(ApStage, ap:operation, Operation, ap)
   },
   ({
     findall(
       Modifier,
-      rdf_datatype(AP_Stage, ap:has_modifier, xsd:string, Modifier, ap),
+      rdf_string(ApStage, ap:has_modifier, Modifier, ap),
       Modifiers
     ),
     Modifiers \== []
@@ -148,43 +149,43 @@ ap_message(AP_Stage) -->
   ;
     html([\operation(Operation),'@',\html_file(File)])
   ).
-ap_message(AP_Stage) -->
+ap_message(ApStage) -->
   {
-    rdfs_individual_of(AP_Stage, ap:'FileProperties'), !,
+    rdfs_individual_of(ApStage, ap:'FileProperties'), !,
     findall(
       Name-Value,
       (
-        rdf(AP_Stage, ap:has_property, NVPair, ap),
-        rdf_datatype(NVPair, ap:name, xsd:string, Name, ap),
-        rdf_datatype(NVPair, ap:value, xsd:string, Value, ap)
+        rdf(ApStage, ap:has_property, NVPair, ap),
+        rdf_string(NVPair, ap:name, Name, ap),
+        rdf_string(NVPair, ap:value, Value, ap)
       ),
       NVPairs1
     ),
     keysort(NVPairs1, NVPairs2)
   },
   html(\html_nvpairs(NVPairs2)).
-ap_message(AP_Stage) -->
+ap_message(ApStage) -->
   {
-    rdfs_individual_of(AP_Stage, ap:'Tables'), !,
+    rdfs_individual_of(ApStage, ap:'Tables'), !,
     findall(
       Table,
-      rdf(AP_Stage, ap:table, Table, ap),
+      rdf(ApStage, ap:table, Table, ap),
       Tables
     )
   },
   html(\rdf_html_tables([header_column(true),header_row(true)], Tables)).
-ap_message(AP_Stage) -->
+ap_message(ApStage) -->
   {
-    rdfs_individual_of(AP_Stage, ap:'Filter'), !,
-    rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap)
+    rdfs_individual_of(ApStage, ap:'Filter'), !,
+    rdf_string(ApStage, ap:name, Name, ap)
   },
   html(Name).
-ap_message(AP_Stage) -->
+ap_message(ApStage) -->
   {
     forall(
-      rdf(AP_Stage, P, O),
+      rdf(ApStage, P, O),
       (
-        dcg_with_output_to(user_output, rdf_triple_name(AP_Stage, P, O)),
+        dcg_with_output_to(user_output, rdf_triple_name(ApStage, P, O)),
         nl(user_output),
         flush_output(user_output)
       )

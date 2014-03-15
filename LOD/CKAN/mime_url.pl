@@ -13,9 +13,10 @@ Generates a CSV file with the following columns:
 
 :- use_module(library(csv)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_string)).
 
 :- initialization(mime_url).
 
@@ -44,16 +45,16 @@ mime_url_rows(Rows, Graph):-
   findall(
     row(URL,Format,MIME),
     (
-      rdf_datatype(Resource, ckan:url, xsd:string, URL, Graph),
+      rdf_string(Resource, ckan:url, URL, Graph),
       (
-        rdf_datatype(Resource, ckan:format, xsd:string, Format, Graph)
+        rdf_string(Resource, ckan:format, Format, Graph)
       ->
         true
       ;
         Format = null
       ),
       (
-        rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, Graph)
+        rdf_string(Resource, ckan:mimetype, MIME, Graph)
       ->
         true
       ;

@@ -3,24 +3,24 @@
   [
 % ADD
     add_done/1, % +AP:iri
-    add_operation_on_file/4, % +AP_Stage:iri
+    add_operation_on_file/4, % +ApStage:iri
                              % +File:atom
                              % +Operation:atom
                              % +Modifiers:list
-    add_properties_of_file/3, % +AP_Stage:iri
+    add_properties_of_file/3, % +ApStage:iri
                               % +File:atom
                               % +NVPairs:list(pair)
-    add_table/2, % +AP_Stage:iri
+    add_table/2, % +ApStage:iri
                  % +Table:iri
-    add_skip/1, % +AP_Stage:iri
-    add_succeed/1, % +AP_Stage:iri
+    add_skip/1, % +ApStage:iri
+    add_succeed/1, % +ApStage:iri
 % READ
     ap_resource/3, % +AP:iri
                    % ?Resource:iri
                    % ?Graph:atom
-    ap_stage_name/2, % ?AP_Stage:iri
+    ap_stage_name/2, % ?ApStage:iri
                      % ?Name:atom
-    ap_stage_resource/3, % +AP_Stage:iri
+    ap_stage_resource/3, % +ApStage:iri
                          % ?Resource:iri
                          % ?Graph:atom
 % CREATE
@@ -39,7 +39,7 @@
 /** <module> Automated Processes databases
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(generics(error_ext)).
@@ -48,9 +48,10 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_boolean)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_build)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(ap_resource(r,r,?)).
@@ -77,9 +78,9 @@ assert_schema:-
 
 add_nvpair(Name-Value1, BNode):-
   rdf_bnode(BNode),
-  rdf_assert_datatype(BNode, ap:name, xsd:string, Name, ap),
+  rdf_assert_string(BNode, ap:name, Name, ap),
   with_output_to(atom(Value2), write_canonical_catch(Value1)),
-  rdf_assert_datatype(BNode, ap:value, xsd:string, Value2, ap).
+  rdf_assert_string(BNode, ap:value, Value2, ap).
 
 
 %! add_done(+AP:iri) is det.
@@ -88,68 +89,68 @@ add_nvpair(Name-Value1, BNode):-
 %  were stored succesfully.
 
 add_done(AP):-
-  rdf_assert_datatype(AP, ap:done, xsd:boolean, true, ap).
+  rdf_assert_true(AP, ap:done, ap).
 
 
-add_operation_on_file(AP_Stage, File, Operation, Modifiers):-
-  rdf_assert_individual(AP_Stage, ap:'FileOperation', ap),
-  rdf_assert_datatype(AP_Stage, ap:file, xsd:string, File, ap),
-  rdf_assert_datatype(AP_Stage, ap:operation, xsd:string, Operation, ap),
+add_operation_on_file(ApStage, File, Operation, Modifiers):-
+  rdf_assert_individual(ApStage, ap:'FileOperation', ap),
+  rdf_assert_string(ApStage, ap:file, File, ap),
+  rdf_assert_string(ApStage, ap:operation, Operation, ap),
   forall(
     member(Modifier, Modifiers),
-    rdf_assert_datatype(AP_Stage, ap:has_modifier, xsd:string, Modifier, ap)
+    rdf_assert_string(ApStage, ap:has_modifier, Modifier, ap)
   ).
 
 
-add_properties_of_file(AP_Stage, File, NVPairs):-
-  rdf_assert_individual(AP_Stage, ap:'FileProperties', ap),
-  rdf_assert_datatype(AP_Stage, ap:file, xsd:string, File, ap),
+add_properties_of_file(ApStage, File, NVPairs):-
+  rdf_assert_individual(ApStage, ap:'FileProperties', ap),
+  rdf_assert_string(ApStage, ap:file, File, ap),
   maplist(add_nvpair, NVPairs, BNodes),
   forall(
     member(BNode, BNodes),
-    rdf_assert(AP_Stage, ap:has_property, BNode, ap)
+    rdf_assert(ApStage, ap:has_property, BNode, ap)
   ).
 
 
-add_table(AP_Stage, Table):-
-  rdf_assert_individual(AP_Stage, ap:'Tables', ap),
-  rdf_assert(AP_Stage, ap:table, Table, ap).
+add_table(ApStage, Table):-
+  rdf_assert_individual(ApStage, ap:'Tables', ap),
+  rdf_assert(ApStage, ap:table, Table, ap).
 
 
-%! add_skip(+AP_Stage:iri) is det.
+%! add_skip(+ApStage:iri) is det.
 
-add_skip(AP_Stage):-
-  rdf_assert_individual(AP_Stage, ap:'Skip', ap),
-  rdf_assert_datatype(AP_Stage, ap:status, xsd:string, skip, ap).
+add_skip(ApStage):-
+  rdf_assert_individual(ApStage, ap:'Skip', ap),
+  rdf_assert_string(ApStage, ap:status, skip, ap).
 
 
-%! add_succeed(+AP_Stage:iri) is det.
+%! add_succeed(+ApStage:iri) is det.
 % States that the given automated process stage was completed succesfully,
 %  i.e. without failing or throwing an exception.
 
 % Skipped AP stages are not asserted as succeeding.
-add_succeed(AP_Stage):-
-  rdfs_individual_of(AP_Stage, ap:'Skip'), !.
-add_succeed(AP_Stage):-
-  rdf_assert_datatype(AP_Stage, ap:status, xsd:string, succeed, ap).
+add_succeed(ApStage):-
+  rdfs_individual_of(ApStage, ap:'Skip'), !.
+add_succeed(ApStage):-
+  rdf_assert_string(ApStage, ap:status, succeed, ap).
 
 
 ap_resource(AP, Resource, Graph):-
   rdf(AP, ap:resource, Resource, ap),
-  rdf_datatype(AP, ap:graph, xsd:string, Graph, ap).
+  rdf_string(AP, ap:graph, Graph, ap).
 
 
-ap_stage_resource(AP_Stage, Resource, Graph):-
-  nonvar(AP_Stage), !,
-  rdf_collection_member(AP_Stage, AP, ap),
+ap_stage_resource(ApStage, Resource, Graph):-
+  nonvar(ApStage), !,
+  rdf_collection_member(ApStage, AP, ap),
   ap_resource(AP, Resource, Graph).
-ap_stage_resource(AP_Stage, Resource, Graph):-
+ap_stage_resource(ApStage, Resource, Graph):-
   ap_resource(AP, Resource, Graph),
-  rdf_collection_member(AP_Stage, AP, ap).
+  rdf_collection_member(ApStage, AP, ap).
 
 
-ap_stage_name(AP_Stage, Name):-
-  rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap).
+ap_stage_name(ApStage, Name):-
+  rdf_string(ApStage, ap:name, Name, ap).
 
 
 create_ap(AP_Collection, AP):-
@@ -161,16 +162,16 @@ create_ap_collection(AP_Collection):-
   create_resource('AP-Collection', AP_Collection).
 
 
-create_initial_stage(AP, AP_Stage):-
-  create_stage(AP, -1, AP_Stage).
+create_initial_stage(AP, ApStage):-
+  create_stage(AP, -1, ApStage).
 
 
-create_stage(AP, StageNum, AP_Stage):-
-  create_resource('AP-Stage', AP_Stage),
-  rdf_assert_collection_member(AP, AP_Stage, ap),
+create_stage(AP, StageNum, ApStage):-
+  create_resource('AP-Stage', ApStage),
+  rdf_assert_collection_member(AP, ApStage, ap),
   format(atom(Label), 'Automated stage ~d', [StageNum]),
-  rdfs_assert_label(AP_Stage, Label, ap),
-  rdf_assert_datatype(AP_Stage, ap:stage, xsd:integer, StageNum, ap).
+  rdfs_assert_label(ApStage, Label, ap),
+  rdf_assert_datatype(ApStage, ap:stage, StageNum, xsd:integer, ap).
 
 
 create_next_stage(AP_Stage1, AP_Stage2):-

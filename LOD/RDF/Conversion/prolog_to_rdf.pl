@@ -21,8 +21,8 @@ Automated conversion from Prolog terms to RDF triples.
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_build)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
@@ -81,7 +81,7 @@ prolog_to_rdf(
   ;
     xsd_datatype(Type, Datatype)
   ->
-    rdf_assert_datatype(Individual1, Predicate, Datatype, Value, Graph)
+    rdf_assert_datatype(Individual1, Predicate, Value, Datatype, Graph)
   ;
     Optional = true
   ).

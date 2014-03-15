@@ -24,12 +24,12 @@
 :- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_serial)).
 
 
 
-ap_rdf_convert_directory(FromDir, ToDir, AP_Stage, MIME1):-
+ap_rdf_convert_directory(FromDir, ToDir, ApStage, MIME1):-
   default(MIME1, 'application/x-turtle', MIME2),
   rdf_convert_directory(FromDir, ToDir, MIME2, ToFiles),
   (
@@ -37,11 +37,11 @@ ap_rdf_convert_directory(FromDir, ToDir, AP_Stage, MIME1):-
   ->
     existence_error('RDF file', 'No RDF files')
   ;
-    maplist(ap_rdf_directory_assertion(AP_Stage), ToFiles)
+    maplist(ap_rdf_directory_assertion(ApStage), ToFiles)
   ).
 
 
-ap_rdf_merge_directory(FromDir, ToDir, AP_Stage, MIME1):-
+ap_rdf_merge_directory(FromDir, ToDir, ApStage, MIME1):-
   default(MIME1, 'application/x-turtle', MIME2),
   rdf_mime_format(MIME2, Format),
   absolute_file_name(
@@ -53,12 +53,12 @@ ap_rdf_merge_directory(FromDir, ToDir, AP_Stage, MIME1):-
     rdf_merge_directory([void(true)], FromDir, ToFile, [mime(MIME2)])
   ->
     rdf_directory_files(FromDir, ToFiles),
-    maplist(ap_rdf_directory_assertion(AP_Stage), ToFiles)
+    maplist(ap_rdf_directory_assertion(ApStage), ToFiles)
   ;
     existence_error('RDF file', 'No RDF files')
   ).
 
 
-ap_rdf_directory_assertion(AP_Stage, File):-
-  add_operation_on_file(AP_Stage, File, 'RDF conversion', []).
+ap_rdf_directory_assertion(ApStage, File):-
+  add_operation_on_file(ApStage, File, 'RDF conversion', []).
 

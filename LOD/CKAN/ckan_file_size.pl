@@ -20,7 +20,7 @@ Web-based overview of CKAN datasets sorted by size.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_modules)).

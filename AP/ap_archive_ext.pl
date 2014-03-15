@@ -3,7 +3,7 @@
   [
     extract_archives/3 % +FromDirectory:atom
                        % +ToDirectory:atom
-                       % +AP_Stage:iri
+                       % +ApStage:iri
   ]
 ).
 
@@ -20,33 +20,32 @@ Archive extraction process for the AP architecture.
 :- use_module(os(dir_ext)).
 :- use_module(library(apply)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
 
 
 
 %! extact_archives(
 %!   +FromDirectory:atom,
 %!   +ToDirectory:atom,
-%!   +AP_Stage:iri
+%!   +ApStage:iri
 %! ) is det.
 
-extract_archives(FromDir, ToDir, AP_Stage):-
+extract_archives(FromDir, ToDir, ApStage):-
   directory_files([recursive(false)], FromDir, FromFiles),
-  include(extract_archive0(AP_Stage), FromFiles, ConvertedFiles),
+  include(extract_archive0(ApStage), FromFiles, ConvertedFiles),
   link_directory_contents(FromDir, ToDir),
   (
     ConvertedFiles == []
   ->
-    add_skip(AP_Stage)
+    add_skip(ApStage)
   ;
     true
   ).
 
-extract_archive0(AP_Stage, FromFile):-
+extract_archive0(ApStage, FromFile):-
   extract_archive(FromFile, Conversions),
   Conversions \== [],
   add_operation_on_file(
-    AP_Stage,
+    ApStage,
     FromFile,
     'archive extraction',
     Conversions

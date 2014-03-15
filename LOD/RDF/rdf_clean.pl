@@ -10,22 +10,12 @@
                             % ?Predicate:oneof([atom,uri])
                             % ?Object:oneof([atom,bnode,literal,uri])
                             % ?Graph:atom
-% DATATYPES %
     rdf_convert_datatype/6, % +Subject:oneof([bnode,uri])
                             % +Predicate:uri
                             % +FromDatatypeName:atom
                             % +FromValue
                             % +ToDatatypeName:atom
                             % +Graph:atom
-    rdf_literal_to_datatype/4, % +Subject:oneof([bnode,uri])
-                               % +Predicate:uri
-                               % +DatatypeName:atom
-                               % +Graph:atom
-% LITERALS %
-    rdf_literal_to_uri/4, % ?Subject:oneof([bnode,uri])
-                          % ?Predicate:uri
-                          % +Namespace:atom
-                          % ?Graph:atom
     rdf_split_literal/5, % +Options:list(nvpair)
                          % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
@@ -36,7 +26,6 @@
                          % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
                          % ?Graph:atom
-% REMOVAL %
     rdf_remove/4, % ?Subject:oneof([bnode,uri])
                   % ?Predicate:uri
                   % ?Object:oneof([bnode,literal,uri])
@@ -64,22 +53,18 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(generics(user_input)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_build)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_read)).
 :- use_module(xsd(xsd)).
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(rdf_duplicate(r,r,r,?,?)).
 :- rdf_meta(rdf_expand_namespace(r,r,r,?)).
-% DATATYPES %
 :- rdf_meta(rdf_convert_datatype(r,r,+,+,+,+)).
-% LITERALS %
-:- rdf_meta(rdf_literal_to_uri(r,r,+,?)).
 :- rdf_meta(rdf_split_literal(+,r,r,?,+)).
 :- rdf_meta(rdf_strip_literal(+,+,r,r,?)).
-% REMOVAL %
 :- rdf_meta(rdf_remove(r,r,r,?)).
 :- rdf_meta(rdf_remove_datatype(r,r,r,?,?)).
 
@@ -178,81 +163,21 @@ rdf_convert_datatype(S, P, FromDatatype, Literal, ToDatatype, G):-
     rdf_datatype(S, P, FromDatatype, FromValue, G),
     (
       rdf_datatype(FromDatatype, Literal, Value),
-      rdf_assert_datatype(S, P, ToDatatype, Value, G),
+      rdf_assert_datatype(S, P, Value, ToDatatype, G),
       rdf_retractall_datatype(S, P, FromDatatype, G)
     )
   ).
-
-%! rdf_literal_to_datatype(
-%!   +Subject:or([bnode,iri]),
-%!   +Predicate:iri,
-%!   +Datatype:iri,
-%!   +Graph:atom
-%! ) is det.
-
-rdf_literal_to_datatype(S, P, D, G):-
-  findall(
-    [S,P,Lit,G],
-    rdf_literal(S, P, Lit, G),
-    Tuples
-  ),
-  format(atom(OperationName), 'LITERAL-TO-DATATYPE(~w)', [D]),
-  user_interaction(
-    [],
-    OperationName,
-    rdf_literal_to_datatype0(D),
-    ['Subject','Predicate','Literal','Graph'],
-    Tuples
-  ).
-:- rdf_meta(rdf_literal_to_datatype0(r,r,r,+,+)).
-rdf_literal_to_datatype0(D, S, P, Lit, G):-
-  % If the literal belongs to the lexical space of the datatype,
-  %  then it is mapped onto its value and then back to the canonical
-  %  lexical for that value.
-  once(atomic_codes(Lit, LEX1)),
-  xsd_lexical_canonical_map(D, LEX1, LEX2),
-  atom_codes(LEX3, LEX2),
-  rdf_assert_datatype(S, P, D, LEX3, G),
-  rdf_retractall_literal(S, P, Lit, G).
 
 
 
 % LITERALS %
 
-%! rdf_literal_to_uri(
-%!   +Subject:or([bnode,iri]),
-%!   +Predicate:iri,
-%!   +Namespace:atom,
-%!   +Graph:atom
-%! ) is det.
-
-rdf_literal_to_uri(S, P, Ns, G):-
-  xml_current_namespace(Ns, _),
-  findall(
-    [S,P,Lit,G],
-    rdf_literal(S, P, Lit, G),
-    Tuples
-  ),
-  format(atom(OperationName), 'LITERAL-TO-URI(~w)', [Ns]),
-  user_interaction(
-    [],
-    OperationName,
-    rdf_literal_to_uri0(Ns),
-    ['Subject','Predicate','Literal','Graph'],
-    Tuples
-  ).
-:- rdf_meta(rdf_literal_to_uri(+,r,r,+,+)).
-rdf_literal_to_uri0(Ns, S, P, Lit, G):-
-  rdf_global_id(Ns:Lit, O),
-  rdf_assert(S, P, O, G),
-  rdf_retractall_literal(S, P, Lit, G).
-
 rdf_split_literal(O1, S, P, G, Split):-
   findall(
-    [S,P,Lit,G],
+    [S,P,LexicalForm,G],
     (
-      rdf_literal(S, P, Lit, G),
-      atomic_list_concat(Sublits, Split, Lit), % split
+      rdf_string(S, P, LexicalForm, G),
+      atomic_list_concat(Sublits, Split, LexicalForm), % split
       length(Sublits, Length),
       Length > 1
     ),
@@ -266,13 +191,13 @@ rdf_split_literal(O1, S, P, G, Split):-
     Tuples
   ).
 :- rdf_meta(rdf_split_string0(+,r,r,+,+)).
-rdf_split_string0(Split, S, P, OldLit, G):-
-  atomic_list_concat(NewLits, Split, OldLit), % split
+rdf_split_string0(Split, S, P, OldLexicalForm, G):-
+  atomic_list_concat(NewLexicalForms, Split, OldLexicalForm), % split
   forall(
-    member(NewLit, NewLits),
-    rdf_assert_literal(S, P, NewLit, G)
+    member(NewLexicalForm, NewLexicalForms),
+    rdf_assert_string(S, P, NewLexicalForm, G)
   ),
-  rdf_retractall_literal(S, P, OldLit, G).
+  rdf_retractall_string(S, P, OldLexicalForm, G).
 
 %! rdf_strip_literal(
 %!   +Options:list(nvpair),
@@ -285,11 +210,11 @@ rdf_split_string0(Split, S, P, OldLit, G):-
 
 rdf_strip_literal(O1, Strips, S, P, G):-
   findall(
-    [S,P,Literal1,G],
+    [S,P,LexicalForm1,G],
     (
-      rdf_literal(S, P, Literal1, G),
-      strip_atom(Strips, Literal1, Literal2),
-      Literal1 \= Literal2
+      rdf_string(S, P, LexicalForm1, G),
+      strip_atom(Strips, LexicalForm1, LexicalForm2),
+      LexicalForm1 \= LexicalForm2
     ),
     Tuples
   ),
@@ -303,8 +228,8 @@ rdf_strip_literal(O1, Strips, S, P, G):-
 :- rdf_meta(rdf_strip_literal0(+,r,r,+,+)).
 rdf_strip_literal0(Strips, S, P, OldLiteral, G):-
   strip_atom(Strips, OldLiteral, NewLiteral),
-  rdf_assert_literal(S, P, NewLiteral, G),
-  rdf_retractall_literal(S, P, OldLiteral, G).
+  rdf_assert_string(S, P, NewLiteral, G),
+  rdf_retractall_string(S, P, OldLiteral, G).
 
 
 

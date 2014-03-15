@@ -3,10 +3,10 @@
   [
     file_size/3, % +FromDirectory:atom
                  % +ToDirectory:atom
-                 % +AP_Stage:iri
+                 % +ApStage:iri
     file_size_filter/4 % +FromDirectory:atom
                        % +ToDirectory:atom
-                       % +AP_Stage:iri
+                       % +ApStage:iri
                        % +MAX_Size_MB:between(0.0,inf)
   ]
 ).
@@ -25,13 +25,13 @@ File size identification and filtering for the AP architecture.
 :- use_module(library(lists)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 
 
 
-%! file_size(+FromDirectory:atom, +ToDirectory:atom, +AP_Stage:iri) is det.
+%! file_size(+FromDirectory:atom, +ToDirectory:atom, +ApStage:iri) is det.
 
-file_size(FromDir, ToDir, AP_Stage):-
+file_size(FromDir, ToDir, ApStage):-
   directory_files(
     [include_directories(false),include_self(false),recursive(true)],
     FromDir,
@@ -51,27 +51,21 @@ file_size(FromDir, ToDir, AP_Stage):-
         size_file(File, Size),
         file_lines(File, NumberOfLines),
         add_properties_of_file(
-          AP_Stage,
+          ApStage,
           File,
           [file_size-Size,number_of_lines-NumberOfLines]
         ),
-        ap_stage_resource(AP_Stage, Resource, Graph),
-        rdf_assert_datatype(Resource, ap:file_size, xsd:integer, Size, Graph),
-        rdf_assert_datatype(
-          Resource,
-          ap:number_of_lines,
-          xsd:integer,
-          NumberOfLines,
-          Graph
-        )
+        ap_stage_resource(ApStage, Resource, Graph),
+        rdf_assert_datatype(Resource, ap:file_size, Size, xsd:integer, Graph),
+        rdf_assert_datatype(Resource, ap:number_of_lines, NumberOfLines, xsd:integer, Graph)
       )
     ),
     link_directory_contents(FromDir, ToDir)
   ).
 
 
-file_size_filter(FromDir, ToDir, AP_Stage, MAX_Size_MB):-
-  rdf_assert_individual(AP_Stage, ap:'Filter', ap),
+file_size_filter(FromDir, ToDir, ApStage, MAX_Size_MB):-
+  rdf_assert_individual(ApStage, ap:'Filter', ap),
   directory_files([], FromDir, FromFiles),
   MAX_Size is MAX_Size_MB * 1024 * 1024,
   maplist(file_size_is_smaller_than(MAX_Size), FromFiles),

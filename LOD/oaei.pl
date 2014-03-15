@@ -120,10 +120,10 @@ Mismatch types:
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(programming(prolog_mode)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_lit_build)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(xml(xml_namespace)).
 
@@ -148,8 +148,8 @@ alignment_to_oaei_graph(G, X-Y):-
   rdf_bnode(BNode),
   rdf_assert(BNode, align:entity1, X, G),
   rdf_assert(BNode, align:entity2, Y, G),
-  rdf_assert_literal(BNode, align:relation, '=', G),
-  rdf_assert_datatype(BNode, align:measure, xsd:float, 1.0, G).
+  rdf_assert_string(BNode, align:relation, '=', G),
+  rdf_assert_datatype(BNode, align:measure, 1.0, xsd:float, G).
 
 %! oaei_alignment_pair(?Graph:atom, ?From:uri, ?To:uri) is nondet.
 
@@ -157,8 +157,8 @@ oaei_alignment_pair(G, From, To):-
   rdf(BNode, align:entity1, From, G),
   rdf(BNode, align:entity2, To, G),
   once((
-    rdf_datatype(BNode, align:relation, xsd:string, '=', G),
-    rdf_datatype(BNode, align:measure, xsd:float, 1.0, G)
+    rdf_string(BNode, align:relation, '=', G),
+    rdf_datatype(BNode, align:measure, 1.0, xsd:float, G)
   ;
     debug(oaei, 'Non-standard alignment was read from graph ~w.', G)
   )).
@@ -253,7 +253,7 @@ oaei_graph(G):-
   rdf_graph(G),
   once((
     rdfs_individual_of(Alignment, align:'Alignment'),
-    rdf(Alignment, _P, _O, G)
+    rdf(Alignment, _, _, G)
   )).
 
 %! oaei_ontologies(+Graph:atom, -File1:atom, -File2:atom) is det.
@@ -268,11 +268,11 @@ oaei_ontologies(G, File1, File2):-
 % Returns an ontology file used in the given alignment graph.
 
 oaei_ontology(G, File):-
-  rdf_datatype(Ontology, align:location, xsd:string, URI, G),
+  rdf_string(Ontology, align:location, URI, G),
   rdfs_individual_of(Ontology, align:'Ontology'),
   uri_components(
     URI,
-    uri_components(_Scheme, _Authority, Path, _Search, _Fragment)
+    uri_components(_, _, Path, _, _)
   ),
   file_base_name(Path, Base),
   absolute_file_name(ontology2(Base), File, [access(read)]).

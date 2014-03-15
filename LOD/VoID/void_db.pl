@@ -23,7 +23,7 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').

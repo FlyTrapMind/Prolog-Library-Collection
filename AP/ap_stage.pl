@@ -34,8 +34,9 @@ The following options can be added to AP stages:
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(datetime_ext)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
@@ -45,8 +46,8 @@ The following options can be added to AP stages:
 %! ap_stages(+AP:iri, +AP_Stages:list(compound)) is det.
 
 ap_stages(AP, AP_Stages):-
-  create_initial_stage(AP, AP_Stage),
-  ap_stages0(AP_Stage, AP_Stages).
+  create_initial_stage(AP, ApStage),
+  ap_stages0(ApStage, AP_Stages).
 
 ap_stages0(_, []):- !.
 ap_stages0(AP_Stage1, [Mod:ap_stage(O1,Goal)|T]):-
@@ -62,31 +63,31 @@ ap_stages0(AP_Stage1, [Mod:ap_stage(O1,Goal)|T]):-
     ap_catcher(AP_Stage1, Error, T)
   ).
 
-ap_stage_begin(O1, AP_Stage):-
+ap_stage_begin(O1, ApStage):-
   option(name(Name), O1),
-  rdf_assert_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
+  rdf_assert_string(ApStage, ap:name, Name, ap),
 
   % DEB
   current_date_time(DateTime),
   debug(ap, '  Starting AP Stage ~w at ~w.', [Name,DateTime]).
 
-ap_catcher(AP_Stage, Error, AP_Stages):-
-  rdf_assert_individual(AP_Stage, ap:'Error', ap),
-  rdf_assert_datatype(AP_Stage, ap:status, xsd:string, error, ap),
+ap_catcher(ApStage, Error, AP_Stages):-
+  rdf_assert_individual(ApStage, ap:'Error', ap),
+  rdf_assert_string(ApStage, ap:status, error, ap),
   with_output_to(atom(Atom), write_canonical_catch(Error)),
-  rdf_assert_datatype(AP_Stage, ap:error, xsd:string, Atom, ap),
-  never_reached(AP_Stage, AP_Stages).
+  rdf_assert_string(ApStage, ap:error, Atom, ap),
+  never_reached(ApStage, AP_Stages).
 
 never_reached(_, []):- !.
 never_reached(AP_Stage1, [_:ap_stage(O1,_)|T]):-
   create_next_stage(AP_Stage1, AP_Stage2),
   rdf_assert_individual(AP_Stage2, ap:'NeverReached', ap),
   ap_stage_begin(O1, AP_Stage2),
-  rdf_assert_datatype(AP_Stage2, ap:status, xsd:string, never_reached, ap),
+  rdf_assert_string(AP_Stage2, ap:status, never_reached, ap),
   never_reached(AP_Stage2, T).
 
 
-%! ap_stage(+Options:list(nvpair), +AP_Stage:iri, :Goal) is det.
+%! ap_stage(+Options:list(nvpair), +ApStage:iri, :Goal) is det.
 % `Goal` receives the from and to files as arguments.
 %
 % The following options are supported:
@@ -104,25 +105,25 @@ never_reached(AP_Stage1, [_:ap_stage(O1,_)|T]):-
 %  the results are stored.
 
 :- meta_predicate(ap_stage(+,+,:)).
-ap_stage(O1, AP_Stage, Goal):-
-  is_initial_stage(AP_Stage), !,
-  once(rdf_collection_member(AP_Stage, AP, ap)),
+ap_stage(O1, ApStage, Goal):-
+  is_initial_stage(ApStage), !,
+  once(rdf_collection_member(ApStage, AP, ap)),
   ap_directory(AP, write, input, ToDir),
-  ap_stage_dirs(O1, AP_Stage, _NoFromDir, ToDir, Goal).
-ap_stage(O1, AP_Stage, Goal):-
-  ap_stage_from_directory(O1, AP_Stage, FromDir),
-  ap_stage_to_directory(O1, AP_Stage, ToDir),
-  ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal).
+  ap_stage_dirs(O1, ApStage, _NoFromDir, ToDir, Goal).
+ap_stage(O1, ApStage, Goal):-
+  ap_stage_from_directory(O1, ApStage, FromDir),
+  ap_stage_to_directory(O1, ApStage, ToDir),
+  ap_stage_dirs(O1, ApStage, FromDir, ToDir, Goal).
 
-is_initial_stage(AP_Stage):-
-  rdf_datatype(AP_Stage, ap:stage, xsd:integer, -1, ap).
+is_initial_stage(ApStage):-
+  rdf_datatype(ApStage, ap:stage, xsd:integer, -1, ap).
 
 
 :- meta_predicate(ap_stage_dirs(+,+,+,+,:)).
 % This stage has not been perfomed yet.
-ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal):-
+ap_stage_dirs(O1, ApStage, FromDir, ToDir, Goal):-
   % From directory or file.
-  ap_stage_from_arg(O1, AP_Stage, FromDir, FromArg),
+  ap_stage_from_arg(O1, ApStage, FromDir, FromArg),
 
   % To directory or file.
   ap_stage_to_arg(O1, ToDir, ToArg),
@@ -135,25 +136,25 @@ ap_stage_dirs(O1, AP_Stage, FromDir, ToDir, Goal):-
   ->
     forall(
       between(Low, High, N),
-      execute_goal(AP_Stage, Goal, [FromArg,ToArg,AP_Stage,N|Args])
+      execute_goal(ApStage, Goal, [FromArg,ToArg,ApStage,N|Args])
     )
   ;
-    execute_goal(AP_Stage, Goal, [FromArg,ToArg,AP_Stage|Args])
+    execute_goal(ApStage, Goal, [FromArg,ToArg,ApStage|Args])
   ), !.
 ap_stage_dirs(_, _, _, _, _).
 
-ap_stage_end(AP_Stage):-
-  add_succeed(AP_Stage),
+ap_stage_end(ApStage):-
+  add_succeed(ApStage),
 
   % DEB
-  rdf_datatype(AP_Stage, ap:name, xsd:string, Name, ap),
+  rdf_string(ApStage, ap:name, Name, ap),
   current_date_time(DateTime),
   debug(ap, '  Ended AP Stage ~w at ~w.', [Name,DateTime]).
 
 
 %! ap_stage_from_arg(
 %!   +Options:list(nvpair),
-%!   +AP_Stage:iri,
+%!   +ApStage:iri,
 %!   +FromDir:atom,
 %!   -FromArg:atom
 %! ) is det.
@@ -175,8 +176,8 @@ ap_stage_from_arg(O1, _, FromDir, FromArg):-
   ).
 % Initialization of the input stage.
 % No "from" directory.
-ap_stage_from_arg(_, AP_Stage, _NoFromDir, _NoFromArg):-
-  rdf_datatype(AP_Stage, ap:stage, xsd:integer, -1, ap), !.
+ap_stage_from_arg(_, ApStage, _NoFromDir, _NoFromArg):-
+  rdf_datatype(ApStage, ap:stage, xsd:integer, -1, ap), !.
 % Read from the previous stage directory.
 ap_stage_from_arg(_, _, FromDir, FromDir):-
   access_file(FromDir, read).
@@ -184,20 +185,20 @@ ap_stage_from_arg(_, _, FromDir, FromDir):-
 
 %! ap_stage_from_directory(
 %!   +Options:list(nvpair),
-%!   +AP_Stage:iri,
+%!   +ApStage:iri,
 %!   -FromDirectory:atom
 %! ) is det.
 % Creates a directory in `Data` for the given stage number
 % and adds it to the file search path.
 
 % Use the directory that is specified as an option, if it exists.
-ap_stage_from_directory(O1, AP_Stage, FromDir):-
+ap_stage_from_directory(O1, ApStage, FromDir):-
   option(from(FromDirName,_,_), O1),
   nonvar(FromDirName), !,
-  rdf_collection_member(AP_Stage, AP, ap),
+  rdf_collection_member(ApStage, AP, ap),
   ap_directory(AP, write, FromDirName, FromDir).
-ap_stage_from_directory(_, AP_Stage, StageDir):-
-  ap_stage_directory(AP_Stage, write, StageDir).
+ap_stage_from_directory(_, ApStage, StageDir):-
+  ap_stage_directory(ApStage, write, StageDir).
 
 
 %! ap_stage_to_arg(
@@ -229,7 +230,7 @@ ap_stage_to_arg(_, ToDir, ToDir):-
 
 %! ap_stage_to_directory(
 %!   +Options:list(nvpair),
-%!   +AP_Stage:iri,
+%!   +ApStage:iri,
 %!   -ToDirectory:atom
 %! ) is det.
 % Creates a directory in `Data` for the given stage number
@@ -246,29 +247,23 @@ ap_stage_to_directory(O1, _, ToDir3):-
     [access(write),file_errors(fail),file_type(directory)]
   ).
 % The directory for the next stage.
-ap_stage_to_directory(_, AP_Stage, ToDir):-
-  rdf_datatype(AP_Stage, ap:stage, xsd:integer, StageNum1, ap),
+ap_stage_to_directory(_, ApStage, ToDir):-
+  rdf_datatype(ApStage, ap:stage, xsd:integer, StageNum1, ap),
   StageNum2 is StageNum1 + 1,
   ap_stage_directory_name(StageNum2, StageName),
-  rdf_collection_member(AP_Stage, AP, ap),
+  rdf_collection_member(ApStage, AP, ap),
   ap_directory(AP, write, StageName, ToDir).
 
 
 :- meta_predicate(execute_goal(+,:,+)).
-execute_goal(AP_Stage, Goal, Args):-
+execute_goal(ApStage, Goal, Args):-
   setup_call_cleanup(
     get_time(Begin),
     apply(Goal, Args),
     (
       get_time(End),
       Delta is End - Begin,
-      rdf_assert_datatype(
-        AP_Stage,
-        ap:duration,
-        xsd:duration,
-        duration(0,Delta),
-        ap
-      )
+      rdf_assert_datatype(ApStage, ap:duration, duration(0,Delta), xsd:duration, ap)
     )
   ).
 

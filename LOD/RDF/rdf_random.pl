@@ -28,7 +28,7 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_parse)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_graph(rdf_graph_theory)).
 
 :- rdf_meta(rdf_index(r,r,r,?,?)).

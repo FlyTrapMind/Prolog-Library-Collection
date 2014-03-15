@@ -26,13 +26,15 @@ Support for IANA-registered MIME types.
 :- use_module(html(html)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(library(semweb/rdf_turtle)). % RDF-serialization.
 :- use_module(library(semweb/rdf_turtle_write)). % RDF-serialization.
 :- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdfs(rdfs_label_build)).
-:- use_module(rdfs(rdfs_label_read)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
+:- use_module(rdfs(rdfs_label_ext)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(iana_to_rdf)).
 :- use_module(xml(xml_namespace)).
@@ -40,7 +42,6 @@ Support for IANA-registered MIME types.
 :- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
 
 :- initialization(init_mime).
-
 
 
 
@@ -57,9 +58,9 @@ mime_type(Type, Subtype):-
   mime_type(Registration, Type, Subtype).
 
 mime_type(Registration, Type, Subtype):-
-  rdfs_label(Registration, _, Subtype, _),
+  rdfs_label(Registration, Subtype),
   once(rdf(Registration, rdf:type, Class)),
-  once(rdfs_label(Class, _, Type, _)).
+  once(rdfs_label(Class, Type)).
 
 
 %! mime_type_file_extension(+MIME:atom, +DefaultExtension:atom) is semidet.
@@ -79,21 +80,9 @@ mime_type_file_extension(MIME, DefaultExtension):-
   ),
   rdf(Registration, rdf:type, Class),
   rdfs_label(Class, _, Type, _),
-  rdf_datatype(
-    Registration,
-    iana:default_extension,
-    xsd:string,
-    DefaultExtension,
-    _
-  ).
+  rdf_string(Registration, iana:default_extension, DefaultExtension, _).
 mime_type_file_extension(MIME, DefaultExtension):-
-  rdf_datatype(
-    Registration,
-    iana:default_extension,
-    xsd:string,
-    DefaultExtension,
-    _
-  ),
+  rdf_string(Registration, iana:default_extension, DefaultExtension, _),
   mime_type(Registration, Type, Subtype),
   atomic_list_concat([Type,Subtype], '/', MIME).
 
@@ -124,23 +113,11 @@ mime_register_type(Type1, Subtype, DefaultExtension, Graph):-
   % Assert subtype.
   rdf_bnode(Registration),
   rdf_assert_individual(Registration, Class, Graph),
-  rdf_assert_datatype(
-    Registration,
-    iana:template,
-    xsd:string,
-    Subtype,
-    Graph
-  ),
+  rdf_assert_string(Registration, iana:template, Subtype, Graph),
   rdfs_assert_label(Registration, Subtype, Graph),
 
   assert_mime_schema_ext(Graph),
-  rdf_assert_datatype(
-    Registration,
-    iana:default_extension,
-    xsd:string,
-    DefaultExtension,
-    Graph
-  ),
+  rdf_assert_string(Registration, iana:default_extension, DefaultExtension, Graph),
 
   atomic_list_concat([Type2,Subtype], '/', MIME),
   db_add_novel(user:prolog_file_type(DefaultExtension, MIME)).
@@ -154,6 +131,7 @@ assert_mime_schema_ext(Graph):-
 
 
 init_mime:-
+gtrace,
   absolute_file_name(
     data(mime),
     File,

@@ -48,13 +48,13 @@ Build semantic models and syntax-to-semantics maps.
   * rdf_unload_map/2
 
 @author Wouter Beek
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
-:- use_module(rdf(rdf_literal)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
+:- use_module(rdf_term(rdf_typed_literal)).
 :- use_module(rdf_mt(rdf_mt)).
 
 :- rdf_meta(rdf_add_i_l(+,r,+,+)).
@@ -76,7 +76,7 @@ rdf_add_i_l(G, TypedLiteral1, M, Resource):-
   % Type checks.
   % We assume that the resource is added in advance.
   rdf_graph(G),
-  rdf_typed_literal(G, TypedLiteral1, _D, _LEX),
+  rdf_typed_literal(G, TypedLiteral1),
   model(M),
   resource(M, Resource), !,
   rdf_global_object(TypedLiteral1, TypedLiteral2),
@@ -127,9 +127,8 @@ rdf_add_plain_literals(G, M):-
   rdf_graph(G),
   model(M), !,
   forall(
-    rdf_plain_literal(G, Lit, _),
-    % $LV \subseteq IR$ can be determined using syntax
-    % (i.e. rdf_plain_literal/3).
+    rdf_plain_literal(G, Lit),
+    % $LV \subseteq IR$ can be determined using syntax.
     rdf_add_resource(M, Lit)
   ).
 

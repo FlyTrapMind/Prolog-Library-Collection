@@ -46,7 +46,7 @@ Reification for RDF. Both reading and writing.
 
 @author Wouter Beek
 @tbd Assess this module after reading the semantics standard for reification.
-@version 2013/02, 2013/07, 2013/09-2013/10, 2013/12-2014/01
+@version 2013/02, 2013/07, 2013/09-2013/10, 2013/12-2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -54,10 +54,11 @@ Reification for RDF. Both reading and writing.
 :- use_module(dcg(dcg_content)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_name)).
-:- use_module(rdf(rdf_term)).
-:- use_module(rdfs(rdfs_label_read)).
+:- use_module(rdf_term(rdf_term)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
@@ -96,9 +97,9 @@ dcg_stmt(_, natlang, Stmt) --> !,
 
     % Extract natural language labels for the terms that compose
     % the statement.
-    rdfs_label2([], S, SName),
-    rdfs_label2([], P, PName),
-    rdfs_label2([], O, OName)
+    rdfs_label(S, SName),
+    rdfs_label(P, PName),
+    rdfs_label(O, OName)
   },
   collection(``, ``, =, ` `, atom, [SName,PName,OName]).
 % Print the triple representation of the given statement.

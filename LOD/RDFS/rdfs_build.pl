@@ -85,13 +85,16 @@ using the following triples:
       for every _i_ between _1_ and _n_ (inclusive).
 
 @author Wouter Beek
-@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/02, 2013/05-2013/06
+@version 2011/08, 2012/01, 2012/03, 2012/09, 2012/11-2013/02, 2013/05-2013/06,
+         2014/03
 */
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_lit_build)).
 :- use_module(rdf_reasoning(rdf_bnode_map)).
+:- use_module(rdf_term(rdf_language_tagged_string)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 
@@ -167,9 +170,9 @@ rdfs_assert_comment(R, LangTag, Comment, G):-
   rdfs_assert_comment(B, Comment, LangTag, G).
 rdfs_assert_comment(R, LangTag, Comment, G):-
   var(LangTag), !,
-  rdf_assert_literal(R, rdfs:comment, Comment, G).
+  rdf_assert_string(R, rdfs:comment, Comment, G).
 rdfs_assert_comment(R, LangTag, Comment, G):-
-  rdf_assert_literal(R, rdfs:comment, Comment, LangTag, G).
+  rdf_assert_language_tagged_string(R, rdfs:comment, Comment, LangTag, G).
 
 
 
@@ -227,3 +230,4 @@ rdfs_assert_subproperty(Property, SuperProperty, G):-
 
 rdfs_assert_seeAlso(S, Web, G):-
   rdf_assert(S, rdfs:seeAlso, Web, G).
+

@@ -35,10 +35,10 @@ This requires a Prolog module whose name is also registered as
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_list)).
-:- use_module(rdf(rdf_lit_build)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(json_ext)).
 :- use_module(xml(xml_namespace)).
@@ -253,5 +253,5 @@ json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, DatatypeName, Value1
   % This is where we validate that the value is of the required type.
   xsd_datatype(DatatypeName, Datatype),
   xsd_value(Datatype, Value1, Value2),
-  rdf_assert_datatype(Individual, Predicate, Datatype, Value2, Graph).
+  rdf_assert_datatype(Individual, Predicate, Value2, Datatype, Graph).
 

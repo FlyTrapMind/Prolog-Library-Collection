@@ -3,7 +3,7 @@
   [
     mime_dir/3 % +FromDirectory:atom
                % +ToDirectory:atom
-               % +AP_Stage:iri
+               % +ApStage:iri
   ]
 ).
 
@@ -12,7 +12,7 @@
 File MIME type identification for the AP architecture.
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(ap(ap_db)).
@@ -20,31 +20,32 @@ File MIME type identification for the AP architecture.
 :- use_module(library(lists)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_mime)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
 
 
 
-%! mime_dir(+FromDirectory:atom, +ToDirectory:atom, +AP_Stage:iri) is det.
+%! mime_dir(+FromDirectory:atom, +ToDirectory:atom, +ApStage:iri) is det.
 
-mime_dir(FromDir, ToDir, AP_Stage):-
+mime_dir(FromDir, ToDir, ApStage):-
   directory_files([], FromDir, FromFiles),
   (
     FromFiles == []
   ->
     existence_error('File', 'No files')
   ;
-    maplist(mime_file(AP_Stage), FromFiles)
+    maplist(mime_file(ApStage), FromFiles)
   ),
   link_directory_contents(FromDir, ToDir).
 
 
-mime_file(AP_Stage, File):-
-  ap_stage_resource(AP_Stage, Resource, Graph),
-  rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME1, Graph),
+mime_file(ApStage, File):-
+  ap_stage_resource(ApStage, Resource, Graph),
+  rdf_string(Resource, ckan:mimetype, MIME1, Graph),
   (
     file_mime(File, MIME2)
   ->
@@ -52,6 +53,6 @@ mime_file(AP_Stage, File):-
   ;
     MIME2 = MIME1
   ),
-  add_properties_of_file(AP_Stage, File, ['MIME'-MIME2]),
-  rdf_assert_datatype(Resource, ap:mime, xsd:string, MIME2, Graph).
+  add_properties_of_file(ApStage, File, ['MIME'-MIME2]),
+  rdf_assert_string(Resource, ap:mime, MIME2, Graph).
 

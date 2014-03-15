@@ -1,9 +1,9 @@
 :- module(
   rdf_name,
   [
-    rdf_term_name//1, % ?RDF_Term
+    rdf_term_name//1, % ?RdfTerm
     rdf_term_name//2, % +Options:list(nvpair)
-                      % +RDF_Term
+                      % +RdfTerm
     rdf_triple_name//3, % +Subject:or([bnode,iri])
                         % +Predicate:iri
                         % +Object:or([bnode,iri,literal])
@@ -29,10 +29,10 @@ Generates names for RDF terms and triples.
 :- use_module(generics(error_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_namespace)).
-:- use_module(rdfs(rdfs_label_read)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
@@ -44,10 +44,10 @@ Generates names for RDF terms and triples.
 
 % TERM %
 
-%! rdf_term_name(+RDF_Term:oneof([bnode,iri,literal]))// is det.
+%! rdf_term_name(+RdfTerm:oneof([bnode,iri,literal]))// is det.
 %! rdf_term_name(
 %!   +Options:list(nvpair),
-%!   +RDF_Term:oneof([bnode,iri,literal])
+%!   +RdfTerm:oneof([bnode,iri,literal])
 %!)// is det.
 % Returns a display name for the given RDF term.
 %
@@ -67,10 +67,10 @@ Generates names for RDF terms and triples.
 %      The default value is `uri_only`.
 %
 % @arg Options A list of name-value pairs.
-% @arg RDF_Term An RDF term.
+% @arg RdfTerm An RDF term.
 
-rdf_term_name(RDF_Term) -->
-  rdf_term_name([], RDF_Term).
+rdf_term_name(RdfTerm) -->
+  rdf_term_name([], RdfTerm).
 
 % RDF list.
 % @tbd Fix this.
@@ -138,40 +138,40 @@ rdf_plain_literal_name(literal(Value)) -->
 rdf_simple_literal_name(Value) -->
   quoted(atom(Value)).
 
-rdf_typed_literal_name(literal(type(Datatype,Literal))) -->
+rdf_typed_literal_name(literal(type(DatatypeIri,LexicalForm))) -->
   {(
     % The datatype is recognized, so we can display
     % the lexically mapped value.
-    xsd_datatype(Datatype)
+    xsd_datatype(DatatypeIri)
   ->
-    xsd_lexical_map(Datatype, Literal, Value)
+    xsd_lexical_map(DatatypeIri, LexicalForm, Value)
   ;
-    Value = Literal
+    Value = LexicalForm
   )},
   quoted(atom(Value)),
   `^^`,
-  rdf_iri_name([], Datatype).
+  rdf_iri_name([], DatatypeIri).
 
 
 
 % IRI %
 
 % The options `only_preferred_label` and `with_preferred_label`.
-rdf_iri_name(O1, RDF_Term) -->
+rdf_iri_name(O1, RdfTerm) -->
   % Whether to include the RDF term itself or only its preferred RDFS label.
   (
     {option(uri_desc(with_preferred_label), O1)}
   ->
-    rdf_iri_name([uri_desc(uri_only)], RDF_Term),
+    rdf_iri_name([uri_desc(uri_only)], RdfTerm),
     nl
   ;
     {option(uri_desc(only_preferred_label), O1)}
   ), !,
 
   % See whether a preferred label can be found.
-  {option(language(Lang), O1, en)},
+  {option(language(LanguageTag), O1, en)},
   (
-    {rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel)}
+    {rdfs_preferred_label(LanguageTag, RdfTerm, PreferredLabel, _, _)}
   ->
     atom(PreferredLabel)
   ;
@@ -179,12 +179,12 @@ rdf_iri_name(O1, RDF_Term) -->
   ).
 % The RDF term is set to collate all literals that (directly) relate to it.
 % These are options `only_literals` and `with_literals`.
-rdf_iri_name(O1, RDF_Term) -->
+rdf_iri_name(O1, RdfTerm) -->
   % The URI, if included.
   {(
     option(uri_desc(with_literals), O1)
   ->
-    Elements = [RDF_Term|Literals2]
+    Elements = [RdfTerm|Literals2]
   ;
     option(uri_desc(only_literals), O1)
   ->
@@ -193,15 +193,15 @@ rdf_iri_name(O1, RDF_Term) -->
 
   {
     % Labels are treated specially: only the preferred label is included.
-    option(language(Lang), O1, en),
-    rdfs_preferred_label(RDF_Term, Lang, _PreferredLang, PreferredLabel),
+    option(language(LanguageTag), O1, en),
+    rdfs_preferred_label(LanguageTag, RdfTerm, PreferredLabel, _, _),
 
     % All non-label literals are included.
     findall(
       Literal,
       (
         % Any directly related literal.
-        rdf(RDF_Term, P, Literal),
+        rdf(RdfTerm, P, Literal),
         rdf_is_literal(Literal),
         % Exclude literals that are RDFS labels.
         \+ rdf_equal(rdfs:label, P)

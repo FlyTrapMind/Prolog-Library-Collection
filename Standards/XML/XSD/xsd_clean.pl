@@ -10,16 +10,13 @@
                          % +FromLexicalExpression:list(code)
                          % +ToDatatype:iri
                          % -ToLexicalExpression:list(code)
-    xsd_lexical_canonical_map/3, % +Datatype:iri
-                                 % +Lexical:atom
-                                 % -CanonicalLexical:atom
-    xsd_lexical_canonical_map/3, % +Datatype:iri
-                                 % +Lexical:list(code)
-                                 % -CanonicalLexical:list(code)
-    xsd_value/3, % +Datatype:or([atom,iri])
+    xsd_lexical_canonical_map/3, % +DatatypeIri:iri
+                                 % +LexicalForm:atom
+                                 % -CanonicalLexicalForm:atom
+    xsd_value/3, % +DatatypeIri:or([atom,iri])
                  % +Value
                  % -XsdValue
-    xsd_value/3 % -Datatype:iri
+    xsd_value/3 % -DatatypeIri:iri
                 % +Value
                 % -XsdValue
   ]
@@ -49,42 +46,42 @@ Predicates for cleaning XML Scheme 1.1 datatypes.
 % This check every RDF triple in the given graph
 % that contains a typed literal.
 %
-% @tbd Use a predicate from module [rdf/rdf_lit_read].
+% @tbd Use a predicate from module [rdf/rdf_literal].
 % @tbd Is is not more efficient to canonize per object term?
 %      Triples that share the same non-canonical typed literal
 %      will be updated at once.
 
 xsd_canonize_graph(Graph):-
   forall(
-    rdf(Subject, Predicate, literal(type(Datatype,Lexical)), Graph),
-    xsd_canonize_triple(Subject, Predicate, Datatype, Lexical, Graph)
+    rdf(Subject, Predicate, literal(type(DatatypeIri,LexicalForm)), Graph),
+    xsd_canonize_triple(Subject, Predicate, DatatypeIri, LexicalForm, Graph)
   ).
 
 
 %! xsd_canonize_triple(
 %!   +Subject:or([bnode,iri]),
 %!   +Predicate:iri,
-%!   +Datatype:iri,
-%!   +Lexical:atom,
+%!   +DatatypeIri:iri,
+%!   +LexicalForm:atom,
 %!   +Graph:atom
 %! ) is det.
 % Converts from lexical to value,
 % and then from value to canonical lexical.
 
-xsd_canonize_triple(Subject, Predicate, Datatype, Lexical, Graph):-
-  xsd_datatype(Datatype),
-  xsd_lexical_canonical_map(Datatype, Lexical, CanonicalLexical),
+xsd_canonize_triple(Subject, Predicate, DatatypeIri, LexicalForm, Graph):-
+  xsd_datatype(DatatypeIri),
+  xsd_lexical_canonical_map(DatatypeIri, LexicalForm, CanonicalLexicalForm),
   
   % Only changes need to be written.
-  Lexical \== CanonicalLexical,
+  LexicalForm \== CanonicalLexicalForm,
   
   % Update the object term.
   rdf_update(
     Subject,
     Predicate,
-    literal(type(Datatype,Lexical)),
+    literal(type(DatatypeIri,LexicalForm)),
     Graph,
-    object(literal(type(Datatype,CanonicalLexical)))
+    object(literal(type(DatatypeIri,CanonicalLexicalForm)))
   ).
 
 
@@ -113,44 +110,35 @@ xsd_convert_value_codes(FromDatatype, ToDatatype, FromLexical, ToLexical):-
   xsd_canonical_map(ToDatatype, Value, ToLexical).
 
 
-%! xsd_lexical_canonical_map(
-%!   +Datatype:iri,
-%!   +Lexical:atom,
-%!   -CanonicalLexical:atom
-%! ) is det.
-%! xsd_lexical_canonical_map(
-%!   +Datatype:iri,
-%!   +Lexical:list(code),
-%!   -CanonicalLexical:list(code)
-%! ) is det.
+%! xsd_lexical_canonical_map(+DatatypeIri:iri, +LexicalForm:atom, -CanonicalLexicalForm:atom) is det.
 % Reads a datatype lexical expression and converts it into its canonical form.
 
-xsd_lexical_canonical_map(Datatype, Lexical, CanonicalLexical):-
-  xsd_convert_value(Datatype, Lexical, Datatype, CanonicalLexical).
+xsd_lexical_canonical_map(DatatypeIri, LexicalForm, CanonicalLexicalForm):-
+  xsd_convert_value(DatatypeIri, LexicalForm, DatatypeIri, CanonicalLexicalForm).
 
 
-%! xsd_value(+Datatype:or([atom,iri]), +Value1, -Value2) is det.
-%! xsd_value(-Datatype:iri,            +Value1, -Value2) is nondet.
+%! xsd_value(+DatatypeIri:or([atom,iri]), +Value1, -Value2) is det.
+%! xsd_value(-DatatypeIri:iri,            +Value1, -Value2) is nondet.
 
 % Try out different datatypes.
-xsd_value(Datatype, Lexical, CanonicalLexical):-
-  var(Datatype), !,
+xsd_value(DatatypeIri, LexicalForm, CanonicalLexicalForm):-
+  var(DatatypeIri), !,
   % Choicepoint.
-  xsd_datatype(Datatype),
-  xsd_value(Datatype, Lexical, CanonicalLexical).
+  xsd_datatype(DatatypeIri),
+  xsd_value(DatatypeIri, LexicalForm, CanonicalLexicalForm).
 % Allow datatypes to be denoted by a shortcut name.
-xsd_value(Name, PrologValue, CanonicalLexical):-
-  xsd_datatype(Name, Datatype), !,
-  xsd_value(Datatype, PrologValue, CanonicalLexical).
+xsd_value(Name, PrologValue, CanonicalLexicalForm):-
+  xsd_datatype(Name, DatatypeIri), !,
+  xsd_value(DatatypeIri, PrologValue, CanonicalLexicalForm).
 % The value is not yet in XSD format, but could be converted
 % by using the supported mappings.
-xsd_value(Datatype, XsdValue, CanonicalLexical):-
-  xsd_datatype(Datatype),
-  xsd_canonical_map(Datatype, XsdValue, CanonicalLexical), !.
+xsd_value(DatatypeIri, XsdValue, CanonicalLexicalForm):-
+  xsd_datatype(DatatypeIri),
+  xsd_canonical_map(DatatypeIri, XsdValue, CanonicalLexicalForm), !.
 % The value is already in XSD format: recognize that this is the case
 % and convert it back and forth to ensure we have the canonical lexical.
-xsd_value(Datatype, Lexical, CanonicalLexical):-
-  xsd_datatype(Datatype),
-  xsd_lexical_map(Datatype, Lexical, XsdValue),
-  xsd_value(Datatype, XsdValue, CanonicalLexical).
+xsd_value(DatatypeIri, LexicalForm, CanonicalLexicalForm):-
+  xsd_datatype(DatatypeIri),
+  xsd_lexical_map(DatatypeIri, LexicalForm, XsdValue),
+  xsd_value(DatatypeIri, XsdValue, CanonicalLexicalForm).
 

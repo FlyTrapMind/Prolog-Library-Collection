@@ -13,7 +13,7 @@ Web-interface for RDF materialization.
 :- use_module(html(html_form)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_reasoning(rdf_mat)).
 :- use_module(rdf_web(rdf_html_table)).

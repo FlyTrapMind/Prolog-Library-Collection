@@ -20,7 +20,7 @@
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_reasoning(rdf_mat)).
 :- use_module(xml(xml_dom)).
 

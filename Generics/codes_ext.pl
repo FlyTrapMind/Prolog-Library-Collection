@@ -1,14 +1,14 @@
 :- module(
   codes_ext,
   [
-    atomic_codes/2, % ?AtomicOrCodes:or([atom,list(code),number])
+    atomic_codes/2, % ?AtomicOrCodes:or([atom,list(code),number,string])
                     % ?Codes:list(code)
-    atomic_codes/3, % ?Type:oneof([atom,codes,number])
-                    % ?AtomicOrCodes:or([atom,list(code),number])
+    atomic_codes/3, % ?Type:oneof([atom,codes,number,string])
+                    % ?AtomicOrCodes:or([atom,list(code),number,string])
                     % ?Codes:list(code)
     atomic_codes_goal/3, % :Goal
-                         % ?AtomicOrCodes1:or([atom,list(code),number])
-                         % ?AtomicOrCodes2:or([atom,list(code),number])
+                         % ?AtomicOrCodes1:or([atom,list(code),number,string])
+                         % ?AtomicOrCodes2:or([atom,list(code),number,string])
     code_remove/3, % +FromCodes:list(code)
                    % +Remove:code
                    % -ToCodes:list(code)
@@ -77,11 +77,11 @@ Stripping codes lists is simply done using append,
 
 
 %! atomic_codes(
-%!   +Atomic:or([atom,list(code),number]),
+%!   +Atomic:or([atom,list(code),number,string]),
 %!   -Codes:list(code)
 %! ) is det.
 %! atomic_codes(
-%!   -Atomic:or([atom,list(code),number]),
+%!   -Atomic:or([atom,list(code),number,string]),
 %!   +Codes:list(code)
 %! ) is nondet.
 
@@ -89,13 +89,13 @@ atomic_codes(Atomic, Codes):-
   atomic_codes(_, Atomic, Codes).
 
 %! atomic_codes(
-%!   ?Type:oneof([atom,codes,number]),
-%!   +Atomic:or([atom,list(code),number]),
+%!   ?Type:oneof([atom,codes,number,string]),
+%!   +Atomic:or([atom,list(code),number,string]),
 %!   -Codes:list(code)
 %! ) is det.
 %! atomic_codes(
-%!   ?Type:oneof([atom,codes,number]),
-%!   -Atomic:or([atom,list(code),number]),
+%!   ?Type:oneof([atom,codes,number,string]),
+%!   -Atomic:or([atom,list(code),number,string]),
 %!   +Codes:list(code)
 %! ) is nondet.
 % Instantiation `(?,-,+)` is non-deterministic since a codelist
@@ -107,12 +107,14 @@ atomic_codes(Kind, Atomic, Codes):-
 atomic_codes(Kind, Atomic, Codes):-
   atomic_codes_nondet(Kind, Atomic, Codes).
 
+% Atom.
 atomic_codes_nondet(atom, Atom, Codes):-
   \+ ((
     nonvar(Atom),
     \+ atom(Atom)
   )),
   atom_codes(Atom, Codes).
+% Number.
 atomic_codes_nondet(number, Number, Codes):-
   \+ ((
     nonvar(Number),
@@ -123,14 +125,22 @@ atomic_codes_nondet(number, Number, Codes):-
     error(syntax_error(illegal_number),_Context),
     fail
   ).
+% String.
+atomic_codes_nondet(string, String, Codes):-
+  \+ ((
+    nonvar(String),
+    \+ string(String)
+  )),
+  string_codes(String, Codes).
+% Codes.
 atomic_codes_nondet(codes, Codes, Codes):-
   is_list(Codes).
 
 
 %! atomic_codes_goal(
 %!   :Goal,
-%!   ?AtomicOrCodes:or([atom,list(code),number]),
-%!   ?AtomicOrCodes:or([atom,list(code),number])
+%!   ?AtomicOrCodes:or([atom,list(code),number,string]),
+%!   ?AtomicOrCodes:or([atom,list(code),number,string])
 %! ) .
 
 atomic_codes_goal(Goal, From1, To1):-

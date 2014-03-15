@@ -68,8 +68,8 @@ After these operations all 4053 datasets have fully described
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_read)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdf_web(rdf_html_table)).
@@ -119,7 +119,7 @@ ckan_license_table -->
       (
         member(NumberOfResources-License, Pairs3),
         (
-          rdf_datatype(License, ckan:title, xsd:string, LicenseName, _)
+          rdf_string(License, ckan:title, LicenseName, _)
         ->
           true
         ;

@@ -37,7 +37,7 @@ Predicates for reading from OWL data.
 :- use_module(generics(meta_ext)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_term)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdfs(rdfs_read)).
 :- use_module(xml(xml_namespace)).
 

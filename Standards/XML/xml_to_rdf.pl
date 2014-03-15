@@ -31,8 +31,8 @@ Converts XML DOMs to RDF graphs.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
-:- use_module(rdf(rdf_lit_build)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(xsd(xsd)).
 
 :- meta_predicate(create_resource(+,+,3,+,+,-,-)).
@@ -90,7 +90,7 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
 
 % Simple literal.
 create_triple(S, P, literal, Content, G):- !,
-  rdf_assert_literal(S, P, Content, G).
+  rdf_assert_string(S, P, Content, G).
 % Typed literal.
 create_triple(S, P, D1, Content, G):-
   xsd_datatype(D1, D2), !,
@@ -142,22 +142,21 @@ create_triples(DOM, _Ps, _Trans, _S, _G, DOM).
 %! ) is det.
 
 get_dom_value(DOM, Trans, XML_P, Value):-
-  memberchk(element(XML_P, _, [Content]), DOM),
-  call(Trans, XML_P, _RDF_P, O_Type),
+  memberchk(element(XML_P, _, [LexicalForm]), DOM),
+  call(Trans, XML_P, _, O_Type),
   (
     O_Type == literal
   ->
-    Value = Content
+    Value = LexicalForm
   ;
     xsd_datatype(O_Type, XSD_Datatype)
   ->
-    once(atomic_codes(Content, Lexical)),
-    xsd_canonical_map(XSD_Datatype, Lexical, Value)
+    xsd_canonical_map(XSD_Datatype, LexicalForm, Value)
   ;
-    Value = Content
+    Value = LexicalForm
   ).
 
-update_property_filter(Ps1, _XML_P, _Ps2):-
+update_property_filter(Ps1, _, _):-
   var(Ps1), !.
 update_property_filter(Ps1, XML_P, Ps2):-
   selectchk(XML_P, Ps1, Ps2).
@@ -201,7 +200,7 @@ create_resource(DOM, PrimaryPs, Trans, _C, G, S, DOM):-
 % Succeeds if there is a subject resource with the given predicate term
 % and an object term that is the literal value of the given XML content.
 rdf_object_trans(S, P, literal, Content, G):- !,
-  rdf_literal(S, P, Content, G).
+  rdf_string(S, P, Content, G).
 % Succeeds if there is a subject resource with the given predicate term
 % and an object term that translates to the same value as
 % the given XML content.

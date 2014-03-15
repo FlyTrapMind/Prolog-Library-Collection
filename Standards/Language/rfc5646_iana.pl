@@ -29,7 +29,7 @@ specification.
 --
 
 @author Wouter Beek
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2014/03
 */
 
 :- use_module(library(apply)).
@@ -124,17 +124,17 @@ rfc5646_rdf_record_(G, I, [Name=Value|T]):-
 % Added
 rfc5646_rdf_nvpair(G, I, 'Added', Literal):- !,
   rdf_datatype(xsd:date, Literal, Value),
-  rdf_assert_datatype(I, rfc5646:added, xsd:date, Value, G).
+  rdf_assert_datatype(I, rfc5646:added, Value, xsd:date, G).
 % Comment
 rfc5646_rdf_nvpair(G, I, 'Comments', V):- !,
-  rdf_assert_literal(I, rfc5646:comments, en, V, G).
+  rdf_assert_language_tagged_string(I, rfc5646:comments, V, en, G).
 % Deprecated
 rfc5646_rdf_nvpair(G, I, 'Deprecated', Literal):- !,
   rdf_datatype(xsd:date, Literal, Value),
-  rdf_assert_datatype(I, rfc5646:deprecated, xsd:date, Value, G).
+  rdf_assert_datatype(I, rfc5646:deprecated, Value, xsd:date, G).
 % Description
 rfc5646_rdf_nvpair(G, I, 'Description', V):- !,
-  rdf_assert_literal(I, rfc5646:description, en, V, G).
+  rdf_assert_string(I, rfc5646:description, V, en, G).
 % Macrolanguage
 rfc5646_rdf_nvpair(G, I, 'Macrolanguage', V1):- !,
   create_subtag_resource(language, V1, G, V2),
@@ -181,17 +181,17 @@ init_rfc5646_schema:-
   rfc5646_graph(G),
   rdfs_assert_class(rfc5646:'Subtag', G),
   rdfs_assert_subclass(rfc5646:'Extension', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Extension', en, extlang, G),
+  rdfs_assert_label(rfc5646:'Extension', extlang, en, G),
   rdfs_assert_subclass(rfc5646:'Grandfathered', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Grandfathered', en, grandfathered, G),
+  rdfs_assert_label(rfc5646:'Grandfathered', grandfathered, en, G),
   rdfs_assert_subclass(rfc5646:'Language', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Language', en, language, G),
+  rdfs_assert_label(rfc5646:'Language', language, en, G),
   rdfs_assert_subclass(rfc5646:'Redundant', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Redundant', en, redundant, G),
+  rdfs_assert_label(rfc5646:'Redundant', redundant, en, G),
   rdfs_assert_subclass(rfc5646:'Region', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Region', en, region, G),
+  rdfs_assert_label(rfc5646:'Region', region, en, G),
   rdfs_assert_subclass(rfc5646:'Script', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Script', en, script, G),
+  rdfs_assert_label(rfc5646:'Script', script, en, G),
   rdfs_assert_subclass(rfc5646:'Variant', rfc5646:'Subtag', G),
-  rdfs_assert_label(rfc5646:'Variant', en, variant, G).
+  rdfs_assert_label(rfc5646:'Variant', variant, en, G).
 

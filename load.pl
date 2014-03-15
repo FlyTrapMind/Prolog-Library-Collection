@@ -57,6 +57,7 @@ load_pgc:-
       assert(user:file_search_path(rdf_conv,        rdf('Conversion'))),
       assert(user:file_search_path(rdf_mt,          rdf('RDF MT'))),
       assert(user:file_search_path(rdf_reasoning,   rdf('Reasoning'))),
+      assert(user:file_search_path(rdf_term,        rdf('Term'))),
       assert(user:file_search_path(rdf_web,         rdf('Web'))),
     assert(user:file_search_path(rdfs,            'LOD'('RDFS'))),
     assert(user:file_search_path(skos,            'LOD'('SKOS'))),

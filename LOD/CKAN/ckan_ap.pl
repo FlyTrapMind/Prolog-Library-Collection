@@ -33,9 +33,9 @@ Automated processes for CKAN data.
 :- use_module(library(semweb/rdf_db)). % MD5
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
-:- use_module(rdfs(rdfs_label_build)).
+:- use_module(rdfs(rdfs_label_ext)).
 
 
 
@@ -111,10 +111,10 @@ take_lod_sample(Graph, Resources):-
     (
       rdfs_individual_of(Resource, ckan:'Resource'),
       (
-        rdf_datatype(Resource, ckan:format, xsd:string, Format, Graph),
+        rdf_string(Resource, ckan:format, Format, Graph),
         rdf_format(Format)
       ;
-        rdf_datatype(Resource, ckan:mimetype, xsd:string, Mimetype, Graph),
+        rdf_string(Resource, ckan:mimetype, Mimetype, Graph),
         rdf_mimetype(Mimetype)
       )
     ),
@@ -136,7 +136,7 @@ already_processed(Resource):-
 
 ckan_ap_site(AP_Collection, ExtraStages, Resource):-
   once(rdfs_label(AP_Collection, Graph)),
-  once(rdf_datatype(Resource, ckan:url, xsd:string, URL, _)),
+  once(rdf_string(Resource, ckan:url, URL, _)),
 
   % The directory name is based on the URL.
   rdf_atom_md5(URL, 1, Hash),
@@ -145,8 +145,8 @@ ckan_ap_site(AP_Collection, ExtraStages, Resource):-
 
   create_ap(AP_Collection, AP),
   rdf_assert(AP, ap:resource, Resource, ap),
-  rdf_assert_datatype(AP, ap:alias, xsd:string, Hash, ap),
-  rdf_assert_datatype(AP, ap:graph, xsd:string, Graph, ap),
+  rdf_assert_string(AP, ap:alias, Hash, ap),
+  rdf_assert_string(AP, ap:graph, Graph, ap),
   ap(
     [leave_trail(false),reset(true)],
     AP,
@@ -164,17 +164,17 @@ ckan_ap_site(AP_Collection, ExtraStages, Resource):-
   ).
 
 
-ckan_download_to_directory(_, ToDir, AP_Stage):-
-  ap_stage_resource(AP_Stage, Resource, _),
-  rdf_datatype(Resource, ckan:url, xsd:string, URL, _),
+ckan_download_to_directory(_, ToDir, ApStage):-
+  ap_stage_resource(ApStage, Resource, _),
+  rdf_string(Resource, ckan:url, URL, _),
   (
-    rdf_datatype(Resource, ckan:mimetype, xsd:string, MIME, _)
+    rdf_string(Resource, ckan:mimetype, MIME, _)
   ->
     format(atom(Accept), '~w; q=0.9', [MIME])
   ;
     Accept = ''
   ),
-  ap_download_to_directory(AP_Stage, ToDir, URL, Accept).
+  ap_download_to_directory(ApStage, ToDir, URL, Accept).
 
 
 rdf_format('RDF').

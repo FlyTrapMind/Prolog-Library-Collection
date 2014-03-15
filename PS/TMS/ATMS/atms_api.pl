@@ -137,7 +137,7 @@
 The API for ATMSs.
 
 @author Wouter Beek
-@version 2012/04
+@version 2012/04, 2014/03
 */
 
 :- use_module(atms(atms_db)).
@@ -175,10 +175,8 @@ atms(Label, ATMS):-
 
 % An assumption has exactly one ATMS.
 atms_assumption(ATMS, Assumption):-
-  nonvar(Assumption),
-  !,
-  atms_assumption_(ATMS, Assumption),
-  !.
+  nonvar(Assumption), !,
+  atms_assumption_(ATMS, Assumption), !.
 atms_assumption(ATMS, Assumption):-
   atms_assumption_(ATMS, Assumption).
 
@@ -196,13 +194,11 @@ atms_assumption_(ATMS, Assumption):-
 
 atms_contradiction(ATMS, Contradiction):-
   var(ATMS),
-  var(Contradiction),
-  !,
+  var(Contradiction), !,
   atms_contradiction_node_(ATMS, Contradiction).
 % There is a one-to-one mapping between ATMSs and contradiction nodes.
 atms_contradiction(ATMS, Contradiction):-
-  atms_contradiction_node_(ATMS, Contradiction),
-  !.
+  atms_contradiction_node_(ATMS, Contradiction), !.
 
 atms_contradiction_node_(ATMS, Contradiction):-
   rdf(ATMS, atms:has_contradiction_node, Contradiction, ccm).
@@ -217,10 +213,8 @@ atms_contradictory(ATMS, Contradiction):-
   rdf(ATMS, atms:has_contradiction, Contradiction, ccm).
 
 atms_id(ATMS, ID):-
-  nonvar(ATMS),
-  !,
-  atms_id_(ATMS, ID),
-  !.
+  nonvar(ATMS), !,
+  atms_id_(ATMS, ID), !.
 atms_id(ATMS, ID):-
   atms_id_(ATMS, ID).
 
@@ -558,18 +552,17 @@ justification_consequence(Justification, Consequence):-
   rdf(Justification, justification:has_consequence, Consequence, ccm).
 
 justification_id(Justification, JustificationID):-
-  nonvar(Justification),
-  !,
-  justification_id_(Justification, JustificationID),
-  !.
+  nonvar(Justification), !,
+  justification_id_(Justification, JustificationID), !.
 justification_id(Justification, JustificationID):-
   justification_id_(Justification, JustificationID).
 
 justification_id_(Justification, JustificationID):-
-  rdf_datatype(Justification, justification:has_id, xsd:integer, JustificationID, ccm).
+  rdf_datatype(Justification, justification:has_id, xsd:integer,
+      JustificationID, ccm).
 
 justification_informant(Justification, Informant):-
-  rdf_literal(Justification, justification:has_informant, Informant, ccm).
+  rdf_string(Justification, justification:has_informant, Informant, ccm).
 
 justification_label(Justification, LanguageLabel):-
   rdfs_label(Justification, LanguageLabel).
@@ -706,18 +699,14 @@ node_(ATMS, Node):-
 % @arg Node The URI of a node.
 
 node(ATMS, Datum, Node):-
-  nonvar(Node),
-  !,
+  nonvar(Node), !,
   rdf(Node, node:has_datum, Datum, ccm),
-  node(ATMS, Node),
-  !.
+  node(ATMS, Node), !.
 node(ATMS, Datum, Node):-
   nonvar(ATMS),
-  nonvar(Datum),
-  !,
+  nonvar(Datum), !,
   rdf(Node, node:has_datum, Datum, ccm),
-  node(ATMS, Node),
-  !.
+  node(ATMS, Node), !.
 node(ATMS, Datum, Node):-
   node(ATMS, Node),
   rdf(Node, node:has_datum, Datum, ccm).
@@ -733,10 +722,8 @@ node_consequence(Node, Consequence):-
 
 % A node has exactly one datum.
 node_datum(Node, Datum):-
-  nonvar(Node),
-  !,
-  node_datum_(Node, Datum),
-  !.
+  nonvar(Node), !,
+  node_datum_(Node, Datum), !.
 node_datum(Node, Datum):-
   node_datum_(Node, Datum).
 
@@ -751,12 +738,10 @@ node_id(Node, NodeID):-
   node_id_(Datum, NodeID).
 
 node_id_(Datum, DatumID):-
-  point(Datum),
-  !,
+  point(Datum), !,
   point_id(Datum, DatumID).
 node_id_(Datum, DatumID):-
-  component_cloud(Datum),
-  !,
+  component_cloud(Datum), !,
   component_cloud_id(Datum, DatumID).
 node_id_(Datum, Datum).
 
@@ -768,8 +753,7 @@ node_label(Node, Label):-
   node_label_(Datum, Label).
 
 node_label_(Point, PointLabel):-
-  point(Point),
-  !,
+  point(Point), !,
   point_id(Point, PointID),
   point(Expression, Space, Point),
   space_to_ccm_label(Space, SpaceCCMLabel),
@@ -780,8 +764,7 @@ node_label_(Point, PointLabel):-
     [PointID, SpaceCCMLabel, ExpressionCCMLabel]
   ).
 node_label_(ComponentCloud, ComponentCloudLabel):-
-  component_cloud(ComponentCloud),
-  !,
+  component_cloud(ComponentCloud), !,
   component_cloud_id(ComponentCloud, ComponentCloudID),
   component_cloud_abbreviation(ComponentCloud, ComponentCloudAbbreviation),
   format(
@@ -797,12 +780,10 @@ node_to_ccm_label(Node, Label):-
   node_to_ccm_label_(Datum, Label).
 
 node_to_ccm_label_(Datum, Label):-
-  point(Datum),
-  !,
+  point(Datum), !,
   point_to_ccm_label(Datum, Label).
 node_to_ccm_label_(Datum, Label):-
-  component_cloud(Datum),
-  !,
+  component_cloud(Datum), !,
   component_cloud_to_ccm_label(Datum, Label).
 node_to_ccm_label_(Datum, Datum).
 
@@ -859,12 +840,11 @@ nodes(Nodes):-
   ).
 
 nogood(ATMS, Nogood):-
-  nonvar(Nogood),
-  !,
-  nogood_(ATMS, Nogood),
-  !.
+  nonvar(Nogood), !,
+  nogood_(ATMS, Nogood), !.
 nogood(ATMS, Nogood):-
   nogood_(ATMS, Nogood).
 
 nogood_(ATMS, Nogood):-
   rdf(ATMS, atms:has_nogood, Nogood, ccm).
+

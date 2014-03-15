@@ -11,7 +11,7 @@
 Statistics for tracking the progress of automated processes.
 
 @author Wouter Beek
-@version 2013/10-2014/02
+@version 2013/10-2014/03
 */
 
 :- use_module(ap(ap_dir)).
@@ -26,7 +26,8 @@ Statistics for tracking the progress of automated processes.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(server(web_modules)).
 
 http:location(ap, root(ap), []).
@@ -52,11 +53,11 @@ ap_stat(_Request):-
   setoff(
     I-Column,
     (
-      rdfs_individual_of(AP_Stage, ap:'AP-Stage'),
-      rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
+      rdfs_individual_of(ApStage, ap:'AP-Stage'),
+      rdf_string(ApStage, ap:name, Column, ap),
       
       % It takes a while before we have the index...
-      rdf(AP, P, AP_Stage, ap),
+      rdf(AP, P, ApStage, ap),
       rdfs_individual_of(AP, ap:'AP'),
       rdf_global_id(rdf:LocalName, P),
       atom_concat('_', Atom, LocalName),
@@ -77,8 +78,8 @@ ap_stat(_Request):-
       aggregate_all(
         count,
         (
-          rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
-          rdf_datatype(AP_Stage, ap:status, xsd:string, succeed, ap)
+          rdf_string(ApStage, ap:name, Column, ap),
+          rdf_string(ApStage, ap:status, succeed, ap)
         ),
         Succeed0
       ),
@@ -88,8 +89,8 @@ ap_stat(_Request):-
       aggregate_all(
         count,
         (
-          rdf_datatype(AP_Stage, ap:name, xsd:string, Column, ap),
-          rdf_datatype(AP_Stage, ap:status, xsd:string, error, ap)
+          rdf_string(ApStage, ap:name, Column, ap),
+          rdf_string(ApStage, ap:status, error, ap)
         ),
         Fail0
       ),
