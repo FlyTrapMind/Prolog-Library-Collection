@@ -1,14 +1,12 @@
 :- module(
   rdf_plain_literal,
   [
-    rdf_is_plain_literal/1, % +RdfTerm:or([bnode,iri,literal])
     rdf_plain_literal/1, % ?PlainLiteral:compound
-    rdf_plain_literal/2, % ?Graph:atom
-                         % ?PlainLiteral:compound
-    rdf_plain_literal_language_tag/2, % ?PlainLiteral:compound
-                                      % ?LanguageTag:atom
-    rdf_plain_literal_lexical_form/2 % ?PlainLiteral:compound
-                                     % ?LexicalForm:atom
+    rdf_plain_literal/2, % ?PlainLiteral:compound
+                         % ?RdfGraph:atom
+    rdf_plain_literal/3 % ?PlainLiteral:compound
+                        % ?LexicalForm:atom
+                        % ?LangTag:atom
   ]
 ).
 
@@ -29,20 +27,20 @@ in Normal Form C with the set of BCP 47 language tags.
 :- use_module(rdf_term(rdf_simple_literal)).
 :- use_module(rdf_term(rdf_term)).
 
-:- rdf_meta(rdf_is_plain_literal(o)).
 :- rdf_meta(rdf_plain_literal(o)).
-:- rdf_meta(rdf_plain_literal(?,o)).
-:- rdf_meta(rdf_plain_literal_language_tag(o,?)).
-:- rdf_meta(rdf_plain_literal_lexical_form(o,?)).
+:- rdf_meta(rdf_plain_literal(o,?)).
+:- rdf_meta(rdf_plain_literal(o,?,?)).
 
 
 
 %! rdf_is_plain_literal(+RdfTerm:or([bnode,iri,literal])) is semidet.
 
+% Simple plain literal.
 rdf_is_plain_literal(SimpleLiteral):-
   rdf_is_simple_literal(SimpleLiteral).
-rdf_is_plain_literal(literal(lang(LanguageTag,LexicalForm))):-
-  atom(LanguageTag),
+% Non-simple plain literal.
+rdf_is_plain_literal(literal(lang(LangTag,LexicalForm))):-
+  atom(LangTag),
   atom(LexicalForm).
 
 
@@ -58,35 +56,52 @@ rdf_plain_literal(PlainLiteral):-
   rdf_is_plain_literal(PlainLiteral).
 
 
-%! rdf_plain_literal(+RdfGraph:atom, +PlainLiteral:compound) is semidet.
-%! rdf_plain_literal(+RdfGraph:atom, -PlainLiteral:compound) is nondet.
-%! rdf_plain_literal(-RdfGraph:atom, +PlainLiteral:compound) is nondet.
-%! rdf_plain_literal(-RdfGraph:atom, -PlainLiteral:compound) is nondet.
+%! rdf_plain_literal(+PlainLiteral:compound, +RdfGraph:atom) is semidet.
+%! rdf_plain_literal(-PlainLiteral:compound, +RdfGraph:atom) is nondet.
+%! rdf_plain_literal(+PlainLiteral:compound, -RdfGraph:atom) is nondet.
+%! rdf_plain_literal(-PlainLiteral:compound, -RdfGraph:atom) is nondet.
 % Pairs of RDF graphs to plain literals.
 % Enumeration is assured to not deliver any duplicates.
 
-rdf_plain_literal(Graph, PlainLiteral):-
+rdf_plain_literal(PlainLiteral, Graph):-
   rdf_plain_literal(PlainLiteral),
   rdf_object(RdfGraph, PlainLiteral).
 
 
-%! rdf_plain_literal_language_tag(+PlainLiteral:compound, +LanguageTag:atom) is semidet.
-%! rdf_plain_literal_language_tag(+PlainLiteral:compound, -LanguageTag:atom) is semidet.
-%! rdf_plain_literal_language_tag(-PlainLiteral:compound, +LanguageTag:atom) is nondet.
-%! rdf_plain_literal_language_tag(-PlainLiteral:compound, -LanguageTag:atom) is nondet.
+%! rdf_plain_literal(+PlainLiteral:compound, +LexicalForm:atom, ?LangTag:atom) is semidet.
+%! rdf_plain_literal(+PlainLiteral:compound, -LexicalForm:atom, -LangTag:atom) is det.
+%! rdf_plain_literal(-PlainLiteral:compound, +LexicalForm:atom, ?LangTag:atom) is det.
+%! rdf_plain_literal(-PlainLiteral:compound, -LexicalForm:atom, -LangTag:atom) is nondet.
+% Relates a plain literal to its constituent parts:
+% a lexical form and an optional language tag.
+%
+% ### Mode enumeration
+%
+% Mode (-,-,-) enumerates the asserted language-tagged strings.
+% The other modes compose/decompose language-tagged strings without
+% them having to exist in the store.
 
-rdf_plain_literal_language_tag(PlainLiteral, LanguageTag):-
+rdf_plain_literal(PlainLiteral, LexicalForm, LangTag):-
+  var(PlainLiteral),
+  var(LexicalForm),
+  var(LangTag), !,
   % Enumerate all plain literals.
   rdf_plain_literal(PlainLiteral),
-  PlainLiteral = literal(lang(LanguageTag,_)).
+  rdf_plain_literal_compound(PlainLiteral, LexicalForm, LangTag).
+rdf_plain_literal_language_tag(PlainLiteral, LexicalForm, LangTag):-
+  var(PlainLiteral), !,
+  (
+    var(LangTag)
+  ->
+    PlainLiteral = literal(LexicalForm)
+  ;
+    PlainLiteral = literal(lang(LangTag,LexicalForm))
+  ).
+rdf_plain_literal(PlainLiteral, LexicalForm, LangTag):-
+  rdf_plain_literal_compound(PlainLiteral, LexicalForm, LangTag).
 
-
-%! rdf_plain_literal_lexical_form(+PlainLiteral:compound, +LexicalForm:atom) is semidet.
-%! rdf_plain_literal_lexical_form(+PlainLiteral:compound, -LexicalForm:atom) is det.
-%! rdf_plain_literal_lexical_form(-PlainLiteral:compound, +LexicalForm:atom) is nondet.
-%! rdf_plain_literal_lexical_form(-PlainLiteral:compound, -LexicalForm:atom) is nondet.
-
-rdf_plain_literal_lexical_form(PlainLiteral, LexicalForm):-
-  rdf_plain_literal(PlainLiteral),
-  PlainLiteral = literal(lang(_,LexicalForm)).
+rdf_plain_literal_compound(PlainLiteral, LexicalForm, LangTag):-
+  rdf_simple_literal(PlainLiteral), !,
+  rdf_simple_literal_lexical_form(PlainLiteral, LexicalForm).
+rdf_plain_literal_compound(literal(lang(LangTag,LexicalForm)), LexicalForm, LangTag).
 

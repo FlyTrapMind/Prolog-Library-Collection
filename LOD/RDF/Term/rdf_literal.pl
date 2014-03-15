@@ -13,8 +13,8 @@
                           % +LanguageTag:atom
                           % +Graph:atom
     rdf_literal/1, % ?Literal:compound
-    rdf_literal/2, % ?RdfGraph:atom
-                   % ?Literal:compound
+    rdf_literal/2, % ?Literal:compound
+                   % ?RdfGraph:atom
     rdf_literal/4, % ?Literal:compound
                    % ?LexicalForm:atom
                    % ?DatatypeIri:iri
@@ -60,7 +60,7 @@ that contain literal object terms.
 :- rdf_meta(rdf_assert_literal(r,r,+,r,+)).
 :- rdf_meta(rdf_assert_literal(r,r,+,r,+,+)).
 :- rdf_meta(rdf_literal(o)).
-:- rdf_meta(rdf_literal(?,o)).
+:- rdf_meta(rdf_literal(o,?)).
 :- rdf_meta(rdf_literal(o,?,r,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?,?)).
 :- rdf_meta(rdf_retractall_literal(r,r,?,r,?)).
@@ -111,18 +111,18 @@ rdf_assert_literal(Subject, Predicate, LexicalForm, DatatypeIri, _, Graph):-
   rdf_assert(Subject, Predicate, literal(type(DatatypeIri,LexicalForm)), Graph).
 
 
-%! rdf_literal(+Literal) is semidet.
-%! rdf_literal(-Literal) is nondet.
+%! rdf_literal(+Literal:compound) is semidet.
+%! rdf_literal(-Literal:compound) is nondet.
 
 rdf_literal(Literal):-
   % Enumerates all literals.
   rdf_current_literal(Literal).
 
 
-%! rdf_literal(+RdfGraph, +Literal) is semidet.
-%! rdf_literal(-RdfGraph, +Literal) is nondet.
-%! rdf_literal(+RdfGraph, -Literal) is nondet.
-%! rdf_literal(-RdfGraph, -Literal) is nondet.
+%! rdf_literal(+Literal:compound, +RdfGraph:atom) is semidet.
+%! rdf_literal(+Literal:compound, -RdfGraph:atom) is nondet.
+%! rdf_literal(-Literal:compound, +RdfGraph:atom) is nondet.
+%! rdf_literal(-Literal:compound, -RdfGraph:atom) is nondet.
 
 rdf_literal(RdfGraph, Literal):-
   % Enumerated all literals.

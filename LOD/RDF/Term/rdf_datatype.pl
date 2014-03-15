@@ -6,8 +6,8 @@
                            % +Value
                            % +DatatypeIri:iri
                            % +RdfGraph:atom
-    rdf_datatype/2, % ?RdfGraph:atom
-                    % ?DatatypeIri:iri
+    rdf_datatype/2, % ?DatatypeIri:iri
+                    % ?RdfGraph:atom
     rdf_datatype/5, % ?Subject:oneof([bnode,iri])
                     % ?Predicate:iri
                     % ?DatatypeIri:iri
@@ -46,7 +46,7 @@ Support for RDF typed literals.
 :- use_module(xsd(xsd)).
 
 :- rdf_meta(rdf_assert_datatype(r,r,+,r,+)).
-:- rdf_meta(rdf_datatype(?,r)).
+:- rdf_meta(rdf_datatype(r,?)).
 :- rdf_meta(rdf_datatype(r,r,?,r,?)).
 :- rdf_meta(rdf_lexical_map(r,+,-)).
 :- rdf_meta(rdf_overwrite_datatype(r,r,+,r,+)).
@@ -81,10 +81,10 @@ rdf_assert_datatype(S, P, Value, DatatypeIri, G):-
   rdf_assert_literal(S, P, LexicalForm, DatatypeIri, _, G).
 
 
-%! rdf_datatype(?RdfGraph:atom, ?DatatypeIri:iri) is nondet.
+%! rdf_datatype(?DatatypeIri:iri, ?RdfGraph:atom) is nondet.
 
-rdf_datatype(G, DatatypeIri):-
-  rdf_literal(_, _, _, DatatypeIri, _, G).
+rdf_datatype(DatatypeIri, Graph):-
+  rdf_literal(_, _, _, DatatypeIri, _, Graph).
 
 
 %! rdf_datatype(

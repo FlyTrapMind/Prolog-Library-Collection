@@ -5,14 +5,13 @@
                                  % +Predicate:iri,
                                  % +LexicalForm:atom,
                                  % +RdfGraph:atom
-    rdf_is_simple_literal/1, % +RdfTerm:or([bnode,iri,literal])
     rdf_simple_literal/1, % ?SimpleLiteral:compound
-    rdf_simple_literal/2, % ?Graph:atom
-                          % ?SimpleLiteral:compound
+    rdf_simple_literal/2, % ?SimpleLiteral:compound
+                          % ?RdfGraph:atom
     rdf_simple_literal/4, % ?Subject:or([bnode,iri])
                           % ?Predicate:iri
                           % ?LexicalForm:atom
-                          % ?Graph:atom
+                          % ?RdfGraph:atom
     rdf_simple_literal_lexical_form/2 % ?SimpleLiteral:compound
                                       % ?LexicalForm:atom
   ]
@@ -31,6 +30,7 @@ Support for RDF 1.0 and RDF 1.1 simple literals.
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_term(rdf_term)).
 
+:- rdf_meta(rdf_assert_simple_literal(r,r,?,?)).
 :- rdf_meta(rdf_simple_literal(r,r,?,?)).
 
 
@@ -68,14 +68,14 @@ rdf_simple_literal(SimpleLiteral):-
   rdf_is_simple_literal(SimpleLiteral).
 
 
-%! rdf_simple_literal(+RdfGraph:atom, +SimpleLiteral:compound) is semidet.
-%! rdf_simple_literal(+RdfGraph:atom, -SimpleLiteral:compound) is nondet.
-%! rdf_simple_literal(-RdfGraph:atom, +SimpleLiteral:compound) is nondet.
-%! rdf_simple_literal(-RdfGraph:atom, -SimpleLiteral:compound) is nondet.
+%! rdf_simple_literal(+SimpleLiteral:compound, +RdfGraph:atom) is semidet.
+%! rdf_simple_literal(+SimpleLiteral:compound, +RdfGraph:atom) is nondet.
+%! rdf_simple_literal(-SimpleLiteral:compound, -RdfGraph:atom) is nondet.
+%! rdf_simple_literal(-SimpleLiteral:compound, -RdfGraph:atom) is nondet.
 % Relates simple literals to the RDF graph in which they occur.
 % Enumeration is assured to not deliver any pair duplicates.
 
-rdf_simple_literal(Graph, SimpleLiteral):-
+rdf_simple_literal(SimpleLiteral, Graph):-
   % Enumerate all (i.e. any graph) simple literals without duplicates.
   rdf_simple_literal(SimpleLiteral),
   % Relate the simple literal to a graph.

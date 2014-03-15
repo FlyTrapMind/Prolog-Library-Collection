@@ -1,14 +1,12 @@
 :- module(
   rdf_typed_literal,
   [
-    rdf_is_typed_literal/1, % +RdfTerm:or([bnode,iri,literal])
     rdf_typed_literal/1, % ?TypedLiteral:compound
-    rdf_typed_literal/2, % ?RdfGraph:atom
-                         % ?TypedLiteral:compound
-    rdf_typed_literal_datatype_iri/2, % ?TypedLiteral:compound
-                                      % ?Datatype:iri
-    rdf_typed_literal_lexical_form/2 % ?TypedLiteral:compound
-                                     % ?LexicalForm:atom
+    rdf_typed_literal/2, % ?TypedLiteral:compound
+                         % ?RdfGraph:atom
+    rdf_typed_literal/3 % ?TypedLiteral:compound
+                        % ?LexicalForm:atom
+                        % ?DatatypeIri:iri
   ]
 ).
 
@@ -28,11 +26,9 @@ the Unicode strings in Normal Form C with the set of datatype URIs.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_term(rdf_term)).
 
-:- rdf_meta(rdf_is_typed_literal(o)).
 :- rdf_meta(rdf_typed_literal(o)).
-:- rdf_meta(rdf_typed_literal(?,o)).
-:- rdf_meta(rdf_typed_literal_datatype_iri(o,r)).
-:- rdf_meta(rdf_typed_literal_lexical_form(o,?)).
+:- rdf_meta(rdf_typed_literal(o,?)).
+:- rdf_meta(rdf_typed_literal(o,?,r)).
 
 
 
@@ -55,36 +51,35 @@ rdf_typed_literal(TypedLiteral):-
   rdf_is_typed_literal(TypedLiteral).
 
 
-%! rdf_typed_literal(+RdfGraph:atom, +TypedLiteral:compound) is semidet.
-%! rdf_typed_literal(+RdfGraph:atom, -TypedLiteral:compound) is nondet.
-%! rdf_typed_literal(-RdfGraph:atom, +TypedLiteral:compound) is nondet.
-%! rdf_typed_literal(-RdfGraph:atom, -TypedLiteral:compound) is nondet.
+%! rdf_typed_literal(+TypedLiteral:compound, +RdfGraph:atom) is semidet.
+%! rdf_typed_literal(+TypedLiteral:compound, -RdfGraph:atom) is nondet.
+%! rdf_typed_literal(-TypedLiteral:compound, +RdfGraph:atom) is nondet.
+%! rdf_typed_literal(-TypedLiteral:compound, -RdfGraph:atom) is nondet.
 % Pairs of RDF graphs to typed literals.
 % Enumeration is assured to not deliver any duplicates.
 
-rdf_typed_literal(RdfGraph, TypedLiteral):-
+rdf_typed_literal(TypedLiteral, Graph):-
   rdf_typed_literal(TypedLiteral),
-  rdf_object(RdfGraph, TypedLiteral).
+  rdf_object(Graph, TypedLiteral).
 
 
-%! rdf_typed_literal_datatype_iri(+TypedLiteral:compound, +DatatypeIri:iri) is semidet.
-%! rdf_typed_literal_datatype_iri(+TypedLiteral:compound, -DatatypeIri:iri) is det.
-%! rdf_typed_literal_datatype_iri(-TypedLiteral:compound, +DatatypeIri:iri) is det.
-%! rdf_typed_literal_datatype_iri(-TypedLiteral:compound, -DatatypeIri:iri) is nondet.
+%! rdf_typed_literal(+TypedLiteral:compound, +LexicalForm:atom, +DatatypeIri:iri) is semidet.
+%! rdf_typed_literal(+TypedLiteral:compound, -LexicalForm:atom, -DatatypeIri:iri) is det.
+%! rdf_typed_literal(-TypedLiteral:compound, +LexicalForm:atom, +DatatypeIri:iri) is det.
+%! rdf_typed_literal(-TypedLiteral:compound, -LexicalForm:atom, -DatatypeIri:iri) is nondet.
+%
+% ### Mode enumeration
+%
+% Mode (-,-,-) enumerates the asserted language-tagged strings.
+% The other modes compose/decompose language-tagged strings without
+% them having to exist in the store.
 
-rdf_typed_literal_datatype_iri(TypedLiteral, DatatypeIri):-
+rdf_typed_literal_datatype_iri(TypedLiteral, LexicalForm, Datatype):-
+  var(TypedLiteral),
+  var(LexicalForm),
+  var(Datatype), !,
   % Enumerate all typed literals.
   rdf_typed_literal(TypedLiteral),
-  TypedLiteral = literal(type(DatatypeIri,_)).
-
-
-%! rdf_typed_literal_lexical_form(+TypedLiteral:compound, +LexicalForm:iri) is semidet.
-%! rdf_typed_literal_lexical_form(+TypedLiteral:compound, -LexicalForm:iri) is det.
-%! rdf_typed_literal_lexical_form(-TypedLiteral:compound, +LexicalForm:iri) is det.
-%! rdf_typed_literal_lexical_form(-TypedLiteral:compound, -LexicalForm:iri) is nondet.
-
-rdf_typed_literal_lexical_form(TypedLiteral, LexicalForm):-
-  % Enumerate all typed literals.
-  rdf_typed_literal(TypedLiteral),
-  TypedLiteral = literal(type(_,LexicalForm)).
+  TypedLiteral = literal(type(Datatype,LexicalForm)).
+rdf_typed_literal_datatype_iri(literal(type(Datatype,LexicalForm)), LexicalForm, Datatype).
 

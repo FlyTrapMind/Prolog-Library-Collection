@@ -4,26 +4,24 @@
     rdf_assert_language_tagged_string/5, % +Subject:or([bnode,iri])
                                          % +Predicate:iri
                                          % +LexicalForm:atom
-                                         % +LanguageTag:atom
+                                         % +LangTag:atom
                                          % +RdfGraph:atom
-    rdf_is_language_tagged_string/1, % +RdfTerm:or([bnode,iri,literal])
     rdf_language_tagged_string/1, % ?LanguageTaggedString:compound
-    rdf_language_tagged_string/2, % ?RdfGraph:atom
-                                  % ?LanguageTaggedString:compound
+    rdf_language_tagged_string/2, % ?LanguageTaggedString:compound
+                                  % ?RdfGraph:atom
+    rdf_language_tagged_string/3, % ?LanguageTaggedString:compound
+                                  % ?LexicalForm:atom
+                                  % ?LangTag:atom
     rdf_language_tagged_string/5, % ?Subject:or([bnode,iri])
                                   % ?Predicate:iri
                                   % ?LexicalForm:atom
-                                  % ?LanguageTag:atom
+                                  % ?LangTag:atom
                                   % ?RdfGraph:atom
-    rdf_language_tagged_string_language_tag/2, % ?LanguageTaggedString:compound
-                                               % ?LanguageTag:atom
-    rdf_language_tagged_string_lexical_form/2, % ?LanguageTaggedString:compound
-                                               % ?LexicalForm:atom
     rdf_preferred_language_tagged_string/6 % +LanguageTags:or([atom,list(atom)])
                                            % ?Subject:or([bnode,iri])
                                            % ?Predicate:iri
                                            % -LexicalForm:atom
-                                           % -LanguageTag:atom
+                                           % -LangTag:atom
                                            % ?Graph:atom
   ]
 ).
@@ -42,12 +40,10 @@ Support for RDF 1.1 language tagged strings.
 :- use_module(rdf_term(rdf_term)).
 
 :- rdf_meta(rdf_assert_language_tagged_string(r,r,+,+,+)).
-:- rdf_meta(rdf_is_language_tagged_string(o)).
 :- rdf_meta(rdf_language_tagged_string(o)).
-:- rdf_meta(rdf_language_tagged_string(?,o)).
+:- rdf_meta(rdf_language_tagged_string(o,?)).
+:- rdf_meta(rdf_language_tagged_string(o,?,?)).
 :- rdf_meta(rdf_language_tagged_string(r,r,?,?,?)).
-:- rdf_meta(rdf_language_tagged_string_language_tag(o,?)).
-:- rdf_meta(rdf_language_tagged_string_lexical_form(o,?)).
 :- rdf_meta(rdf_preferred_language_tagged_string(+,r,r,-,-,?)).
 
 
@@ -56,18 +52,18 @@ Support for RDF 1.1 language tagged strings.
 %!   +Subject:or([bnode,iri]),
 %!   +Predicate:iri,
 %!   +LexicalForm:atom,
-%!   +LanguageTag:atom,
+%!   +LangTag:atom,
 %!   +RdfGraph:atom
 %! ) is det.
 
-rdf_assert_language_tagged_string(S, P, LexicalForm, LanguageTag, Graph):-
-  rdf_assert_literal(S, P, LexicalForm, rdf:langString, LanguageTag, Graph).
+rdf_assert_language_tagged_string(S, P, LexicalForm, LangTag, Graph):-
+  rdf_assert_literal(S, P, LexicalForm, rdf:langString, LangTag, Graph).
 
 
 %! rdf_is_language_tagged_string(+RdfTerm:or([bnode,iri,literal])) is semidet.
 
-rdf_is_language_tagged_string(literal(lang(LanguageTag,LexicalForm))):-
-  atom(LanguageTag),
+rdf_is_language_tagged_string(literal(lang(LangTag,LexicalForm))):-
+  atom(LangTag),
   atom(LexicalForm).
 
 
@@ -81,55 +77,54 @@ rdf_language_tagged_string(LanguageTaggedString):-
   rdf_is_language_tagged_string(LanguageTaggedString).
 
 
-%! rdf_language_tagged_string(+RdfGraph:atom, +LanguageTaggedString:compound) is semidet.
-%! rdf_language_tagged_string(+RdfGraph:atom, -LanguageTaggedString:compound) is nondet.
-%! rdf_language_tagged_string(-RdfGraph:atom, +LanguageTaggedString:compound) is nondet.
-%! rdf_language_tagged_string(-RdfGraph:atom, -LanguageTaggedString:compound) is nondet.
+%! rdf_language_tagged_string(+LanguageTaggedString:compound, +RdfGraph:atom) is semidet.
+%! rdf_language_tagged_string(+LanguageTaggedString:compound, -RdfGraph:atom) is nondet.
+%! rdf_language_tagged_string(-LanguageTaggedString:compound, +RdfGraph:atom) is nondet.
+%! rdf_language_tagged_string(-LanguageTaggedString:compound, -RdfGraph:atom) is nondet.
 % RDF graphs and their language tagged strings, according to the Semweb format.
 % Enumeration is assured to not deliver any pairs duplicates.
 
-rdf_language_tagged_string(RdfGraph, LanguageTaggedString):-
+rdf_language_tagged_string(LanguageTaggedString, Graph):-
   % Enumerate language tagged strings.
   rdf_language_tagged_string(LanguageTaggedString),
   % Relate to an RDF graph.
-  rdf_object(RdfGraph, LanguageTaggedString).
+  rdf_object(Graph, LanguageTaggedString).
+
+
+%! rdf_language_tagged_string(+LanguageTaggedString:compound, +LexicalForm:atom, +LangTag:atom) is semidet.
+%! rdf_language_tagged_string(+LanguageTaggedString:compound, -LexicalForm:atom, -LangTag:atom) is det.
+%! rdf_language_tagged_string(-LanguageTaggedString:compound, +LexicalForm:atom, +LangTag:atom) is det.
+%! rdf_language_tagged_string(-LanguageTaggedString:compound, -LexicalForm:atom, -LangTag:atom) is nondet.
+% Relates a language-tagged string to its constituent parts:
+% a lexical form and a language tag.
+%
+% ### Mode enumeration
+%
+% Mode (-,-,-) enumerates the asserted language-tagged strings.
+% The other modes compose/decompose language-tagged strings without
+% them having to exist in the store.
+
+rdf_language_tagged_string(LanguageTaggedString, LexicalForm, LangTag):-
+  var(LanguageTaggedString),
+  var(LexicalForm),
+  var(LangTag), !,
+  % Enumerate all language tagged strings.
+  rdf_language_tagged_string(LanguageTaggedString),
+  % Extract the language tag component.
+  LanguageTaggedString = literal(lang(LangTag,LexicalForm)).
+rdf_language_tagged_string(literal(lang(LangTag,LexicalForm)), LexicalForm, LangTag).
 
 
 %! rdf_language_tagged_string(
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
 %!   ?LexicalForm:atom,
-%!   ?LanguageTag:atom,
+%!   ?LangTag:atom,
 %!   ?RdfGraph:atom
 %! ) is nondet.
 
-rdf_language_tagged_string(Subject, Predicate, LexicalForm, LanguageTag, Graph):-
-  rdf_literal(Subject, Predicate, LexicalForm, rdf:langString, LanguageTag, Graph).
-
-
-%! rdf_language_tagged_string_language_tag(+LanguageTaggedString:compound, +LanguageTag:atom) is semidet.
-%! rdf_language_tagged_string_language_tag(+LanguageTaggedString:compound, -LanguageTag:atom) is semidet.
-%! rdf_language_tagged_string_language_tag(-LanguageTaggedString:compound, +LanguageTag:atom) is nondet.
-%! rdf_language_tagged_string_language_tag(-LanguageTaggedString:compound, -LanguageTag:atom) is nondet.
-
-rdf_language_tagged_string_language_tag(LanguageTaggedString, LanguageTag):-
-  % Enumerate all language tagged strings.
-  rdf_language_tagged_string(LanguageTaggedString),
-  % Extract the language tag component.
-  LanguageTaggedString = literal(lang(LanguageTag,_)).
-
-
-%! rdf_language_tagged_string_lexical_form(+LanguageTaggedString:compound, +LexicalForm:atom) is semidet.
-%! rdf_language_tagged_string_lexical_form(+LanguageTaggedString:compound, -LexicalForm:atom) is det.
-%! rdf_language_tagged_string_lexical_form(-LanguageTaggedString:compound, +LexicalForm:atom) is nondet.
-%! rdf_language_tagged_string_lexical_form(-LanguageTaggedString:compound, -LexicalForm:atom) is nondet.
-
-rdf_language_tagged_string_lexical_form(LanguageTaggedString, LexicalForm):-
-  % Enumerate all language tagged strings.
-  rdf_language_tagged_string(LanguageTaggedString),
-  % Extract the lexical form component.
-  LanguageTaggedString = literal(lang(_,LexicalForm)).
-
+rdf_language_tagged_string(Subject, Predicate, LexicalForm, LangTag, Graph):-
+  rdf_literal(Subject, Predicate, LexicalForm, rdf:langString, LangTag, Graph).
 
 
 %! rdf_preferred_language_tagged_string(
@@ -137,7 +132,7 @@ rdf_language_tagged_string_lexical_form(LanguageTaggedString, LexicalForm):-
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
 %!   ?LexicalForm:atom,
-%!   ?LanguageTag:atom,
+%!   ?LangTag:atom,
 %!   ?RdfGraph:atom
 %! ) is nondet.
 % Look for the preferred languages, in order of occurrence in
