@@ -152,6 +152,6 @@ mt_i(G, M, TypedLiteral, Resource, A, A):-
 % IRIs. These map onto properties and resources.
 mt_i(G, M, IRI, ResourceOrProperty, A, A):-
   % Checking for resources is not that good.
-  rdf_is_iri(IRI), !,
+  rdf_iri(IRI), !,
   once(i_s(G, IRI, M, ResourceOrProperty)).
 

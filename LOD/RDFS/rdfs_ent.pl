@@ -104,13 +104,13 @@ rule(rdfs, rdfs1, [rdf(S,P,PlainLit)], B, rdf:type, rdfs:'Literal', G):-
 % [rdfs2] Class membership through domain restriction.
 rule(rdfs, rdfs2, [rdf(P,rdfs:domain,C),rdf(S,P,O)], S, rdf:type, C, G):-
   rdf(P, rdfs:domain, C, G),
-  rdf_is_iri(P),
+  rdf_iri(P),
   rdf(S, P, O, G).
 
 % [rdfs3] Class membership through range restriction.
 rule(rdfs, rdfs3, [rdf(P,rdfs:range,C),rdf(S,P,O)], O, rdf:type, C, G):-
   rdf(P, rdfs:range, C, G),
-  rdf_is_iri(P),
+  rdf_iri(P),
   rdf(S, P, O, G),
   \+ rdf_is_literal(O).
 
@@ -146,8 +146,8 @@ rule(rdfs, rdfs6, [rdf(P,rdf:type,rdf:'Property')], P, rdfs:subPropertyOf, P, G)
 % [rdfs7] Using the property hierarchy.
 rule(rdfs, rdfs7, [rdf(P1,rdfs:subPropertyOf,P2),rdf(S,P1,O)], S, P2, O, G):-
   rdf(P1, rdfs:subPropertyOf, P2, G),
-  rdf_is_iri(P1),
-  rdf_is_iri(P2),
+  rdf_iri(P1),
+  rdf_iri(P2),
   rdf(S, P1, O, G).
 
 % [rdfs8] Classes are instances of =|rdfs:Resource|=.

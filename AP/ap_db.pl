@@ -63,11 +63,8 @@
 
 assert_schema:-
   rdfs_assert_subclass(ap:'AP-Collection', rdf:'Bag', ap),
-  rdfs_assert_label(
-    ap:'AP-Collection',
-    'Collection of automated processes',
-    ap
-  ),
+  rdfs_assert_label(ap:'AP-Collection', 'Collection of automated processes',
+      ap),
 
   rdfs_assert_subclass(ap:'AP', rdf:'Seq', ap),
   rdfs_assert_label(ap:'AP', 'Automated process', ap),

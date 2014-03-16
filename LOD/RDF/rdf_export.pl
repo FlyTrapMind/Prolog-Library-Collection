@@ -399,7 +399,7 @@ rdf_vertex_color(O1, G, V, V_Color):-
      V_Color = V_NamespaceColor
   ;
     % URI resources with unregistered namespace/prefix.
-    rdf_is_iri(V)
+    rdf_iri(V)
   ->
     V_Color = red
   ;

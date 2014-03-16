@@ -66,7 +66,7 @@ owl_disjointWith(M, C1, C2, G):-
 % Returns the identity set for the given IRI.
 
 owl_identity_set(IRI, I_Set):-
-  rdf_is_iri(IRI), !,
+  rdf_iri(IRI), !,
   % No double occurrences.
   findall(
     I_IRI,

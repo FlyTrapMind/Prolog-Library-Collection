@@ -120,7 +120,7 @@ rdf_graph_equivalence_object0(_Graph1, Object, _Graph2, Object):-
 rdf_graph_equivalence_object0(Graph1, Object1, Graph2, Object2):-
   bnode_translation0(Graph1, Object1, Graph2, Object2).
 bnode_translation0(G1, Resource1, G2, Resource2):-
-  maplist(rdf_bnode, [G1,G2], [Resource1,Resource2]), !.
+  maplist(rdf_bnode, [Resource1,Resource2], [G1,G2]), !.
 
 rdf_graph_instance(G, H, Map):-
   rdf_graph(G), rdf_graph(H),
@@ -160,8 +160,8 @@ rdf_graph_merge(Gs, MergedG):-
       % The idea is that we only replace shared blank nodes in
       % the latter graph.
       G1 @< G2,
-      rdf_bnode(G1, SharedBNode),
-      rdf_bnode(G2, SharedBNode)
+      rdf_bnode(SharedBNode, G1),
+      rdf_bnode(SharedBNode, G2)
     ),
     SharedBNodes
   ),
@@ -202,7 +202,7 @@ rdf_graph_proper_instance(G, H, Map):-
   (
     % A node is mapped onto an RDF name.
     member(_-X, Map),
-    rdf_name(G, X)
+    rdf_name(X, G)
   ;
     % Two different blank nodes are mapped onto the same blank node.
     member(X1-Y, Map),

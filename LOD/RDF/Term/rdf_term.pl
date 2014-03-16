@@ -1,30 +1,32 @@
 :- module(
   rdf_term,
   [
-% SYNTACTIC TERMS
-    rdf_bnode/2, % ?RdfGraph:atom
-                 % ?BlankNode:bnode
-    rdf_iri/2, % ?RdfGraph:atom
-               % ?Iri:iri
-    rdf_is_iri/1, % +Iri:iri
-    rdf_name/2, % ?RdfGraph:atom
-                % ?RdfName:oneof([iri,literal])
-    rdf_term/2, % ?RdfGraph:atom
-                % ?RdfTerm:or([bnode,iriliteral])
-    rdf_vocabulary/2, % +RdfGraph:atom
-                      % -RdfVocabulary:ordset(oneof([iriliteral]))
-% POSITIONAL OCUCURRENCE
-    rdf_is_subject/1, % +RdfTerm:or([bnode,iri,literal])
-    rdf_is_predicate/1, % +RdfTerm:or([bnode,iri,literal])
-    rdf_is_object/1, % +RdfTerm:or([bnode,iri,literal])
-    rdf_subject/2, % ?RdfGraph:atom
-                   % ?RdfSubjectTerm:oneof([bnode,iri])
-    rdf_predicate/2, % ?RdfGraph:atom
-                     % ?RdfPredicateTerm:iri
-    rdf_object/2, % ?RdfGraph:atom
-                  % ?RdfObjectTerm:oneof([bnode,literal,iri])
-    rdf_node/2 % ?RdfGraph:atom
-               % ?RdfNode:or([bnode,iri,literal])
+    rdf_bnode_/1, % ?BlankNode:bnode
+    rdf_bnode/2, % ?BlankNode:bnode
+                 % ?RdfGraph:atom
+    rdf_iri/1, % ?Iri:iri
+    rdf_iri/2, % ?Iri:iri
+               % ?RdfGraph:atom
+    rdf_name/1, % ?Name:oneof([iri,literal])
+    rdf_name/2, % ?Name:oneof([iri,literal])
+                % ?RdfGraph:atom
+    rdf_node/1, % ?RdfNode:or([bnode,iri,literal])
+    rdf_node/2, % ?RdfNode:or([bnode,iri,literal])
+                % ?RdfGraph:atom
+    rdf_object/1, % ?Object:oneof([bnode,literal,iri])
+    rdf_object/2, % ?Object:oneof([bnode,literal,iri])
+                  % ?RdfGraph:atom
+    rdf_predicate/1, % ?Predicate:iri
+    rdf_predicate/2, % ?Predicate:iri
+                     % ?RdfGraph:atom
+    rdf_subject/1, % ?Subject:oneof([bnode,iri])
+    rdf_subject/2, % ?Subject:oneof([bnode,iri])
+                   % ?RdfGraph:atom
+    rdf_term/1, % ?Term:or([bnode,iriliteral])
+    rdf_term/2, % ?Term:or([bnode,iriliteral])
+                % ?RdfGraph:atom
+    rdf_vocabulary/2 % +RdfGraph:atom
+                     % -Vocabulary:ordset(or([iri,literal]))
   ]
 ).
 
@@ -44,47 +46,75 @@ Support for RDF literals is found in [rdf_literal].
 :- use_module(generics(typecheck)).
 :- use_module(library(semweb/rdf_db)).
 
-:- rdf_meta(rdf_iri(?,r)).
-:- rdf_meta(rdf_is_iri(r)).
-:- rdf_meta(rdf_name(?,r)).
-:- rdf_meta(rdf_term(?,r)).
+:- rdf_meta(rdf_iri(r)).
+:- rdf_meta(rdf_iri(r,?)).
+:- rdf_meta(rdf_name(r)).
+:- rdf_meta(rdf_name(r,?)).
+:- rdf_meta(rdf_node(r)).
+:- rdf_meta(rdf_node(r,?)).
+:- rdf_meta(rdf_object(r)).
+:- rdf_meta(rdf_object(r,?)).
+:- rdf_meta(rdf_predicate(r)).
+:- rdf_meta(rdf_predicate(r,?)).
+:- rdf_meta(rdf_subject(r)).
+:- rdf_meta(rdf_subject(r,?)).
+:- rdf_meta(rdf_term(r)).
+:- rdf_meta(rdf_term(r,?)).
 :- rdf_meta(rdf_vocabulary(?,t)).
-:- rdf_meta(rdf_is_subject(r)).
-:- rdf_meta(rdf_is_predicate(r)).
-:- rdf_meta(rdf_is_object(r)).
-:- rdf_meta(rdf_subject(?,r)).
-:- rdf_meta(rdf_predicate(?,r)).
-:- rdf_meta(rdf_object(?,r)).
-:- rdf_meta(rdf_node(?,r)).
 
 
 
-% SYNTACTIC TERMS %
+%! rdf_bnode_(+BlankNode:bnode) is semidet.
+% Succeeds if the given RDF term is a blank node.
+%! rdf_bnode_(-BlankNode:bnode) is nondet.
+% Enumerates the blank nodes in the RDF store.
 
-%! rdf_bnode(+Graph:atom, +BNode:bnode) is semidet.
-%! rdf_bnode(+Graph:atom, -BNode:bnode) is nondet.
-%! rdf_bnode(-Graph:atom, +BNode:bnode) is nondet.
-%! rdf_bnode(-Graph:atom, -BNode:bnode) is nondet.
-
-rdf_bnode(Graph, BNode):-
-  % We do not need to consider RDF terms
-  % that occur only in the predicate position.
-  (
-    rdf_subject(Graph, BNode)
-  ;
-    rdf_object(Graph, BNode)
-  ),
+rdf_bnode_(BNode):-
+  nonvar(BNode), !,
   rdf_is_bnode(BNode).
+rdf_bnode_(BNode):-
+  rdf_bnode(BNode, _).
 
 
-%! rdf_iri(+Graph:atom, +IRI:iri) is semidet.
-%! rdf_iri(+Graph:atom, -IRI:iri) is nondet.
-%! rdf_iri(-Graph:atom, +IRI:iri) is nondet.
-%! rdf_iri(-Graph:atom, -IRI:iri) is nondet.
+%! rdf_bnode(+BlankNode:bnode, +RdfGraph:atom) is semidet.
+%! rdf_bnode(-BlankNode:bnode, +RdfGraph:atom) is nondet.
+%! rdf_bnode(+BlankNode:bnode, -RdfGraph:atom) is nondet.
+%! rdf_bnode(-BlankNode:bnode, -RdfGraph:atom) is nondet.
+% Relates blank nodes to RDF graphs in which they occur.
+% Ensures that no pairs occurs twice.
 
-rdf_iri(Graph, IRI):-
-  rdf_term(Graph, IRI),
-  rdf_is_iri(IRI).
+rdf_bnode(BNode, G):-
+  % Enumerates RDF nodes.
+  rdf_resource(BNode),
+  rdf_is_bnode(BNode),
+  % Relate the blank node to a graph.
+  (
+    rdf_subject(BNode, G)
+  ;
+    rdf_object(BNode, G)
+  ).
+
+
+%! rdf_iri(+Iri:iri) is semidet.
+% Succeeds if the given RDF term is an IRI.
+%! rdf_iri(+Iri:iri) is nondet.
+% Enumerates the IRIs in the RDF store.
+
+rdf_iri(Iri):-
+  nonvar(Iri), !,
+  rdf_is_iri(Iri).
+rdf_iri(Iri):-
+  rdf_iri(Iri, _).
+
+
+%! rdf_iri(+Iri:iri, +RdfGraph:atom) is semidet.
+%! rdf_iri(-Iri:iri, +RdfGraph:atom) is nondet.
+%! rdf_iri(+Iri:iri, -RdfGraph:atom) is nondet.
+%! rdf_iri(-Iri:iri, -RdfGraph:atom) is nondet.
+
+rdf_iri(Iri, G):-
+  rdf_term(Iri, G),
+  rdf_is_iri(Iri).
 
 
 %! rdf_is_iri(+IRI:iri) is semidet.
@@ -109,10 +139,17 @@ rdf_is_iri(IRI):-
   is_of_type(iri, IRI).
 
 
-%! rdf_name(+Graph:atom, +RDF_Name:oneof([literal,iri])) is semidet.
-%! rdf_name(+Graph:atom, -RDF_Name:oneof([literal,iri])) is nondet.
-%! rdf_name(-Graph:atom, +RDF_Name:oneof([literal,iri])) is nondet.
-%! rdf_name(-Graph:atom, -RDF_Name:oneof([literal,iri])) is nondet.
+%! rdf_name(+Name:or([iri,literal])) is semidet.
+%! rdf_name(-Name:or([iri,literal])) is nondet.
+
+rdf_name(Name):-
+  rdf_name(Name, _).
+
+
+%! rdf_name(+Name:or([iri,literal]), +RdfGraph:atom) is semidet.
+%! rdf_name(-Name:or([iri,literal]), +RdfGraph:atom) is nondet.
+%! rdf_name(+Name:or([iri,literal]), -RdfGraph:atom) is nondet.
+%! rdf_name(-Name:or([iri,literal]), -RdfGraph:atom) is nondet.
 % RDF names are IRIs and RDF literals.
 %
 % # Instatiations
@@ -124,95 +161,140 @@ rdf_is_iri(IRI):-
 %                  An RDF name may occur nowhere.                          |
 % | -- | nondet  | Enumerate pars of RDF graphs and RDF names.             |
 %
-% @arg Graph The atomic name of an RDF graph.
-% @arg RDF_Name Either an IRI or an RDF literal.
+% @arg Name Either an IRI or an RDF literal.
+% @arg RdfGraph The atomic name of an RDF graph.
 %
 % @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
 
-rdf_name(Graph, Name):-
-  rdf_subject(Graph, Name),
+rdf_name(Name, G):-
+  rdf_subject(Name, G),
   \+ rdf_is_bnode(Name).
-rdf_name(Graph, Name):-
-  rdf_predicate(Graph, Name).
-rdf_name(Graph, Name):-
-  rdf_object(Graph, Object),
-  \+ rdf_is_bnode(Object),
-  % Specifically include datatypes that are strictly speaking not RDF terms.
+rdf_name(Name, G):-
+  rdf_predicate(Name, G).
+rdf_name(Name, G):-
+  rdf_object(Object, G),
+  \+ rdf_is_bnode(Object).
+
+
+
+%! rdf_node(+RdfNode:or([bnode,iri,literal])) is semidet.
+%! rdf_node(-RdfNode:or([bnode,iri,literal])) is nondet.
+
+rdf_node(Node):-
+  nonvar(Node), !,
+  rdf_is_node(Node).
+rdf_node(Node):-
+  rdf_node(Node, _).
+
+
+%! rdf_node(+RdfNode:or([bnode,iri,literal]), +RdfGraph:atom) is semidet.
+%! rdf_node(-RdfNode:or([bnode,iri,literal]), +RdfGraph:atom) is nondet.
+%! rdf_node(+RdfNode:or([bnode,iri,literal]), -RdfGraph:atom) is nondet.
+%! rdf_node(-RdfNode:or([bnode,iri,literal]), -RdfGraph:atom) is nondet.
+% Pairs of RDF nodes and RDF graphs in which they occur.
+%
+% The set of RDF nodes of an RDF graph is
+% the set of subjects and objects of triples in the graph.
+%
+% It is possible for a predicate IRI to also occur as a node
+% in the same graph.
+
+rdf_node(Node, G):-
+  nonvar(Node),
+  % Enumerates the nodes.
+  rdf_resource(Node),
+  % Relate node to graph.
   (
-    Name = Object
+    rdf_subject(Node, G)
   ;
-    Object = literal(type(Name,_))
+    rdf_object(Node, G)
   ).
+rdf_node(Node, G):-
+  rdf_subject(Node, G).
+rdf_node(Node, G):-
+  rdf_object(Node, G).
 
 
-%! rdf_term(+Graph:graph, +Term:or([bnode,iri,literal])) is semidet.
-%! rdf_term(+Graph:graph, -Term:or([bnode,iri,literal])) is nondet.
-%! rdf_term(-Graph:graph, +Term:or([bnode,iri,literal])) is nondet.
-%! rdf_term(-Graph:graph, -Term:or([bnode,iri,literal])) is nondet.
-% Pairs of graphs and terms that occur in that graph.
-%
-% A term is either a subject, predicate or object term
-% in an RDF triple.
-%
-% @arg Graph The atomic name of a graph.
-% @arg Term A resource.
+%! rdf_is_node(+RdfTerm:or([bnode,iri,literal]) is semidet.
 
-rdf_term(Graph, Term):-
-  rdf_node(Graph, Term).
-rdf_term(Graph, Term):-
-  rdf_predicate(Graph, Term).
-
-%! rdf_vocabulary(+Graph:atom, -Vocabulary:ordset([literal,iri])) is det.
-% Returns the vocabulary of the given graph.
-%
-% The vocabulary of a graph is the set of RDF names that occur
-% in the triples of the graph.
-%
-% @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
-
-rdf_vocabulary(Graph, Vocabulary):-
-  setoff(RdfName, rdf_name(Graph, RdfName), Vocabulary).
+rdf_is_node(Node):-
+  rdf_is_object(Node).
 
 
+%! rdf_object(+Object:or([bnode,iri,literal])) is semidet.
+%! rdf_object(-Object:or([bnode,iri,literal])) is nondet.
+
+rdf_object(O):-
+  rdf_object(O, _).
 
 
+%! rdf_object(+Object:or([bnode,iri,literal]), +RdfGraph:atom) is semidet.
+%! rdf_object(-Object:or([bnode,iri,literal]), +RdfGraph:atom) is nondet.
+%! rdf_object(+Object:or([bnode,iri,literal]), -RdfGraph:atom) is nondet.
+%! rdf_object(-Object:or([bnode,iri,literal]), -RdfGraph:atom) is nondet.
 
-% POSITIONAL OCCURRENCE %
+rdf_object(O, G):-
+  % Enumerates the subject and object terms.
+  rdf_resource(O),
+  % Excludes RDF nodes that only occur in the subject position.
+  % Relates to an RDF graph.
+  rdf(_, _, O, G).
 
-%! rdf_is_subject(+RdfTerm:or([bnode,iri,literal])) is semidet.
-%! rdf_is_predicate(+RdfTerm:or([bnode,iri,literal])) is semidet.
+
 %! rdf_is_object(+RdfTerm:or([bnode,iri,literal])) is semidet.
-% Succeeds if the given syntactic term could occur in the indicated
-% position of an RDF triple.
-%
-% This is independent of the term occurring in an actual triple or graph.
 
-rdf_is_subject(Subject):-
-  rdf_is_bnode(Subject), !.
-rdf_is_subject(Subject):-
-  rdf_is_iri(Subject).
-
-rdf_is_predicate(Predicate):-
-  rdf_is_iri(Predicate).
-
-rdf_is_object(Object):-
-  rdf_is_subject(Object), !.
-rdf_is_object(Object):-
-  rdf_is_literal(Object).
+rdf_is_object(O):-
+  rdf_is_subject(O), !.
+rdf_is_object(O):-
+  rdf_is_literal(O).
 
 
-%! rdf_subject(+Graph:atom, +Subject:or([bnode,iri])) is semidet.
-%! rdf_subject(+Graph:atom, -Subject:or([bnode,iri])) is nondet.
-%! rdf_subject(-Graph:atom, +Subject:or([bnode,iri])) is nondet.
-%! rdf_subject(-Graph:atom, -Subject:or([bnode,iri])) is nondet.
-%! rdf_predicate(+Graph:atom, +Predicate:iri) is semidet.
-%! rdf_predicate(+Graph:atom, -Predicate:iri) is nondet.
-%! rdf_predicate(-Graph:atom, +Predicate:iri) is nondet.
-%! rdf_predicate(-Graph:atom, -Predicate:iri) is nondet.
-%! rdf_object(+Graph:atom, +Object:or([bnode,iri,literal])) is semidet.
-%! rdf_object(+Graph:atom, -Object:or([bnode,iri,literal])) is nondet.
-%! rdf_object(-Graph:atom, +Object:or([bnode,iri,literal])) is nondet.
-%! rdf_object(-Graph:atom, -Object:or([bnode,iri,literal])) is nondet.
+%! rdf_predicate(+RdfTerm:or([bnode,iri,literal])) is semidet.
+% Succeeds if the given RDF term could occur in the predicate position
+% of an RDF triple.
+%! rdf_predicate(-Predicate:iri) is nondet.
+% Enumerates the RDF predicate terms in the triple store.
+% Ensures there are no duplicates.
+
+rdf_predicate(P):-
+  nonvar(P), !,
+  rdf_is_predicate(P).
+rdf_predicate(P):-
+  rdf_current_predicate(P).
+
+
+%! rdf_predicate(+Predicate:iri, +RdfGraph:atom) is semidet.
+%! rdf_predicate(-Predicate:iri, +RdfGraph:atom) is nondet.
+%! rdf_predicate(+Predicate:iri, -RdfGraph:atom) is nondet.
+%! rdf_predicate(-Predicate:iri, -RdfGraph:atom) is nondet.
+
+rdf_predicate(P, G):-
+  % Enumerates the RDF predicate term.
+  rdf_current_predicate(P),
+  % Relate to an RDF graph.
+  rdf(_, P, _, G).
+
+
+%! rdf_is_predicate(+RdfTerm:or([bnode,iri,literal])) is semidet.
+% Succeeds if the given RDF term could occur in the predicate position.
+
+rdf_is_predicate(P):-
+  rdf_is_iri(P).
+
+
+%! rdf_subject(+Subject:or([bnode,iri])) is semidet.
+
+rdf_subject(S):-
+  nonvar(S), !,
+  rdf_is_subject(S).
+rdf_subject(S):-
+  rdf_subject(S, _).
+
+
+%! rdf_subject(+Subject:or([bnode,iri]), +RdfGraph:atom) is semidet.
+%! rdf_subject(-Subject:or([bnode,iri]), +RdfGraph:atom) is nondet.
+%! rdf_subject(+Subject:or([bnode,iri]), -RdfGraph:atom) is nondet.
+%! rdf_subject(-Subject:or([bnode,iri]), -RdfGraph:atom) is nondet.
 % Triples consist of the following kinds of terms:
 %   * _Subject_, which is an RDF URI reference or a blank node
 %   * _Predicate_, which is an RDF URI reference
@@ -229,28 +311,63 @@ rdf_is_object(Object):-
 %  and generate the terms in a graphs
 %  and the graphs in which a term occurs.
 
-rdf_subject(G, S):-
+rdf_subject(S, G):-
   rdf(S, _, _, G).
 
-rdf_predicate(G, P):-
-  rdf(_, P, _, G).
 
-rdf_object(G, O):-
-  rdf(_, _, O, G).
-
-
-%! rdf_node(+Graph:atom, +Node:or([bnode,iri,literal])) is semidet.
-%! rdf_node(+Graph:atom, -Node:or([bnode,iri,literal])) is nondet.
-%! rdf_node(-Graph:atom, +Node:or([bnode,iri,literal])) is nondet.
-%! rdf_node(-Graph:atom, -Node:or([bnode,iri,literal])) is nondet.
-% The set of nodes of an RDF graph is
-% the set of subjects and objects of triples in the graph.
+%! rdf_is_subject(+Term:or([bnode,iri,literal])) is semidet.
+%! rdf_is_predicate(+Term:or([bnode,iri,literal])) is semidet.
+%! rdf_is_object(+Term:or([bnode,iri,literal])) is semidet.
+% Succeeds if the given syntactic term could occur in the indicated
+% position of an RDF triple.
 %
-% It is possible for a predicate IRI to also occur as a node
-% in the same graph.
+% This is independent of the term occurring in an actual triple or graph.
 
-rdf_node(Graph, Node):-
-  rdf_subject(Graph, Node).
-rdf_node(Graph, Node):-
-  rdf_object(Graph, Node).
+rdf_is_subject(Subject):-
+  rdf_is_bnode(Subject), !.
+rdf_is_subject(Subject):-
+  rdf_is_iri(Subject).
+
+
+%! rdf_term(+Term:or([bnode,iri,literal])) is semidet.
+%! rdf_term(-Term:or([bnode,iri,literal])) is nondet.
+% Enumerates all RDF terms.
+%
+% Duplicates occur only for RDF terms that are
+% an RDF node and an RDF predicate term.
+
+rdf_term(Term):-
+  rdf_resource(Term).
+rdf_term(Term):-
+  rdf_current_predicate(Term).
+
+
+%! rdf_term(+Term:or([bnode,iri,literal]), +RdfGraph:atom) is semidet.
+%! rdf_term(+Term:or([bnode,iri,literal]), -RdfGraph:atom) is nondet.
+%! rdf_term(-Term:or([bnode,iri,literal]), +RdfGraph:atom) is nondet.
+%! rdf_term(-Term:or([bnode,iri,literal]), -RdfGraph:atom) is nondet.
+% Pairs of graphs and terms that occur in that graph.
+%
+% A term is either a subject, predicate or object term
+% in an RDF triple.
+
+rdf_term(Term, G):-
+  rdf_term(Term),
+  (
+    rdf_node(Term, G)
+  ;
+    rdf_predicate(Term, G)
+  ).
+
+
+%! rdf_vocabulary(+Graph:atom, -Vocabulary:ordset([literal,iri])) is det.
+% Returns the vocabulary of the given graph.
+%
+% The vocabulary of a graph is the set of RDF names that occur
+% in the triples of the graph.
+%
+% @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
+
+rdf_vocabulary(G, Vocabulary):-
+  setoff(Name, rdf_name(Name, G), Vocabulary).
 
