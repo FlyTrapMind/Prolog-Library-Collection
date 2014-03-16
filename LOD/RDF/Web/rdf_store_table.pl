@@ -1,8 +1,8 @@
 :- module(
   rdf_store_table,
   [
-    rdf_store_table/1, % +Quadruples:ordset(quadruple(or([bnode,iri]),iri,or([bnode,iri,literal]),atom))
-    rdf_store_table/4 % ?Subject:or([bnode,iri])
+    rdf_store_rows/1, % +Quadruples:ordset(quadruple(or([bnode,iri]),iri,or([bnode,iri,literal]),atom))
+    rdf_store_rows/4 % ?Subject:or([bnode,iri])
                       % ?Predicate:iri
                       % ?Object:or([bnode,iri,literal])
                       % ?Graph:atom
@@ -27,46 +27,38 @@ Predicates that allows RDF tables to be asserted
 :- use_module(library(www_browser)).
 :- use_module(rdf_web(rdf_html_table)).
 
-:- rdf_meta(rdf_store_table(t)).
-:- rdf_meta(rdf_store_table(r,r,r,+)).
+:- rdf_meta(rdf_store_rows(t)).
+:- rdf_meta(rdf_store_rows(r,r,r,+)).
 
-:- http_handler(root(rdf_store_table), rdf_store_table, []).
+http:location(rdf, root(rdf), []).
+:- http_handler(rdf(store_table), rdf_store_table, []).
 
-%! rdf_store_table(
+%! rdf_store_rows(
 %!   ?Timestamp:positive_integer,
-%!   ?Quadruples:list(list)
+%!   ?Rows:list(list(ground))
 %! ) is nondet.
 
-:- dynamic(rdf_store_table/2).
+:- dynamic(rdf_store_rows/2).
 
 
 
-%! rdf_store_table(
-%!   +Quadruples:ordset(quadruple(or([bnode,iri]),iri,or([bnode,iri,literal]),atom))
-%! ) is det.
-% Stores the given number of quadrupes into Prolog memory
+%! rdf_store_rows(+Rows:list(list(ground))) is det.
+% Stores the given number of rows into Prolog memory
 % in a form that allows easy retrieval for Web table construction.
 % Then, opens the default Web browser (if any) to display
-% such a table.
+% this table.
 %
-% A quadruple is a list of
-%   1. an RDF subject term,
-%   2. an RDF predicate term,
-%   3. an RDF object term, and
-%   4. an RDF graph name.
-%
-% The quadruples must all be fully instantiated.
-% @see rdf_store_table/4 is a predicate that produces such ground quadruples
-%      while allowing itself to be called with uninstantiated arguments.
+% @see rdf_store_rows/4 is a predicate that produces
+%      such rows (and that are S-P-O-G quadruples).
 
-rdf_store_table(Quadruples):-
+rdf_store_rows(Rows):-
   get_time(Time),
-  assert(rdf_store_table(Time, Quadruples)),
-  http_absolute_uri(root(rdf_store_table), Link),
+  assert(rdf_store_rows(Time, Rows)),
+  http_absolute_uri(rdf(store_table), Link),
   www_open_url(Link).
 
 
-%! rdf_store_table(
+%! rdf_store_rows(
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
 %!   ?Object:or([bnode,iri,literal]),
@@ -77,24 +69,24 @@ rdf_store_table(Quadruples):-
 % -- or partially instantiated in the case of a literal object term --
 % in order to match more ground quadruples.
 
-rdf_store_table(S, P, O, G):-
+rdf_store_rows(S, P, O, G):-
   setoff(
     [S,P,O,G],
     rdf(S, P, O, G),
     Quadruples
   ),
-  rdf_store_table(Quadruples).
+  rdf_store_rows(Quadruples).
 
 
 %! rdf_store_table(+Request:list(nvpair)) is det.
 % Generates an HTML page describing the most recently asserted RDF table.
 %
-% @see rdf_store_table/[1,4] for asserting RDF tables from the Prolog console.
+% @see rdf_store_rows/[1,4] for asserting RDF tables from the Prolog console.
 
 rdf_store_table(_Request):-
   findall(
     Timestamp-Quadruples,
-    rdf_store_table(Timestamp, Quadruples),
+    rdf_store_rows(Timestamp, Quadruples),
     Pairs1
   ),
   keysort(Pairs1, Pairs2),

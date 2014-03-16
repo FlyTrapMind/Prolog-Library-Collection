@@ -1,10 +1,6 @@
 :- module(
   rdf_clean,
   [
-    rdf_expand_namespace/4, % ?Subject:oneof([atom,bnode,uri])
-                            % ?Predicate:oneof([atom,uri])
-                            % ?Object:oneof([atom,bnode,literal,uri])
-                            % ?Graph:atom
     rdf_split_literal/5, % +Options:list(nvpair)
                          % ?Subject:oneof([bnode,uri])
                          % ?Predicate:uri
@@ -49,74 +45,11 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(xsd(xsd)).
 :- use_module(xml(xml_namespace)).
 
-:- rdf_meta(rdf_expand_namespace(r,r,r,?)).
 :- rdf_meta(rdf_split_literal(+,r,r,?,+)).
 :- rdf_meta(rdf_strip_literal(+,+,r,r,?)).
 :- rdf_meta(rdf_remove(r,r,r,?)).
 :- rdf_meta(rdf_remove_datatype(r,r,r,?,?)).
 
-
-
-rdf_expand_namespace(BNode, BNode):-
-  rdf_is_bnode(BNode), !.
-rdf_expand_namespace(
-  literal(lang(Language, Literal)),
-  literal(lang(Language, Literal))
-):- !.
-% Datatypes in typed literals are treaded in a special way.
-rdf_expand_namespace(literal(type(Atom, Value)), literal(type(URI, Value))):-
-  rdf_expand_namespace(Atom, URI).
-% No namespace.
-rdf_expand_namespace(literal(Literal), literal(Literal)):- !.
-% Already a URI.
-rdf_expand_namespace(URI, URI):-
-  must_be(iri, URI), !.
-% An atom that can be converted to a URI.
-rdf_expand_namespace(Atom, URI):-
-  atomic_list_concat([Namespace,LocalName], ':', Atom),
-  rdf_global_id(Namespace:LocalName, URI).
-
-%! rdf_expand_namespace(
-%!   ?Subject:oneof([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?Object:oneof([bnode,literal,iri]),
-%!   ?Graph:atom
-%! ) is det.
-% Expands namespaces that currently occur as atoms.
-%
-% This was used for several RDF files from the OAEI where the datatypes
-% of typed literals would sometimes be 'xsd:float' instea of 'xsd':'float'.
-
-rdf_expand_namespace(S1, P1, O1, G):-
-  findall(
-    [S1,P1,O1,G],
-    (
-      rdf(S1, P1, O1, G),
-      (
-        rdf_expand_namespace(S1, S2),
-        S1 \== S2
-      ;
-        rdf_expand_namespace(P1, P2),
-        P1 \== P2
-      ;
-        rdf_expand_namespace(O1, O2),
-        O1 \== O2
-      )
-    ),
-    Tuples
-  ),
-  user_interaction(
-    [],
-    'EXPAND-NAMESPACE',
-    rdf_expand_namespace0,
-    ['Subject','Predicate','Object','Graph'],
-    Tuples
-  ).
-:- rdf_meta(rdf_expand_namespace0(r,r,r,?)).
-rdf_expand_namespace0(S1, P1, 1, G):-
-  maplist(rdf_expand_namespace, [S1,P1,O1], [S2,P2,O2]),
-  rdf_retractall(S1, P1, O1, G),
-  rdf_assert(S2, P2, O2, G).
 
 
 rdf_split_literal(O1, S, P, G, Split):-

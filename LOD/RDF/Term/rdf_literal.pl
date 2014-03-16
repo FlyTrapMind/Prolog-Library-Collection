@@ -1,17 +1,6 @@
 :- module(
   rdf_literal,
   [
-    rdf_assert_literal/5, % +Subject:oneof([bnode,iri])
-                          % +Predicate:iri
-                          % +LexicalForm:atom
-                          % +DatatypeIri:iri
-                          % +RdfGraph:atom
-    rdf_assert_literal/6, % +Subject:oneof([bnode,iri])
-                          % +Predicate:iri
-                          % +LexicalForm:atom
-                          % +DatatypeIri:iri
-                          % +LanguageTag:atom
-                          % +RdfGraph:atom
     rdf_literal/1, % ?Literal:compound
     rdf_literal/2, % ?Literal:compound
                    % ?RdfGraph:atom
@@ -27,35 +16,16 @@
                    % ?RdfGraph:atom
     rdf_literal_equality/2, % +Literal1:compound
                             % +Literal2:compound
-    rdf_literal_map/4, % ?LexicalForm:atom
-                       % ?DatatypeIri:iri
-                       % ?LanguageTag:atom
-                       % ?Value
-    rdf_retractall_literal/5, % ?Subject:oneof([bnode,iri])
-                              % ?Predicate:iri
-                              % ?LexicalForm:atom
-                              % ?DatatypeIri:iri
-                              % ?RdfGraph:atom
-    rdf_retractall_literal/6, % ?Subject:oneof([bnode,iri])
-                              % ?Predicate:iri
-                              % ?LexicalForm:atom
-                              % ?DatatypeIri:iri
-                              % ?LanguageTag:atom
-                              % ?RdfGraph:atom
-    rdf_update_literal/7 % ?Subject:oneof([bnode,iri])
-                         % ?Predicate:iri
-                         % ?FromLexicalForm:atom
-                         % ?FromDatatypeIri:iri
-                         % ?FromLanguageTag:atom
-                         % ?RdfGraph:atom
-                         % +Action:compound
+    rdf_literal_map/4 % ?LexicalForm:atom
+                      % ?DatatypeIri:iri
+                      % ?LanguageTag:atom
+                      % ?Value
   ]
 ).
 
 /** <module> RDF literal
 
-Support for asserting/retracting/reading triples
-that contain literal object terms.
+Support for reading triples with literal object terms.
 
 @author Wouter Beek
 @version 2013/10, 2014/03
@@ -69,77 +39,12 @@ that contain literal object terms.
 :- use_module(xsd(xsd)).
 :- use_module(xsd(xsd_clean)).
 
-:- rdf_meta(rdf_assert_literal(r,r,+,r,+)).
-:- rdf_meta(rdf_assert_literal(r,r,+,r,+,+)).
 :- rdf_meta(rdf_literal(o)).
 :- rdf_meta(rdf_literal(o,?)).
 :- rdf_meta(rdf_literal(o,?,r,?)).
 :- rdf_meta(rdf_literal(r,r,?,?,?,?)).
 :- rdf_meta(rdf_literal_map(?,r,?,?)).
-:- rdf_meta(rdf_retractall_literal(r,r,?,r,?)).
-:- rdf_meta(rdf_retractall_literal(r,r,?,r,?,?)).
-:- rdf_meta(rdf_update_literal(r,r,?,r,?,?,t)).
 
-
-
-%! rdf_assert_literal(
-%!   +Subject:oneof([bnode,iri]),
-%!   +Predicate:iri,
-%!   +LexicalForm:atom,
-%!   ?DatatypeIri:iri,
-%!   +RdfGraph:atom
-%! ) is det.
-% Asserts a triple with a literal object term.
-%
-% If the datatype IRI is omitted, the XSD string datatype is used.
-%
-% This cannot be used to assert triples with a literal object term
-% that is of type =|rdf:langString|=
-
-rdf_assert_literal(S, P, LexicalForm, Datatype, Graph):-
-  rdf_assert_literal(S, P, LexicalForm, Datatype, _, Graph).
-
-
-%! rdf_assert_literal(
-%!   +Subject:oneof([bnode,iri]),
-%!   +Predicate:iri,
-%!   +LexicalForm:atom,
-%!   ?DatatypeIri:iri,
-%!   +LanguageTag:atom,
-%!   +RdfGraph:atom
-%! ) is det.
-% Asserts a triple with a literal object term.
-
-% Language-tagged strings.
-rdf_assert_literal(S, P, LexicalForm, Datatype, LangTag, G):-
-  nonvar(LangTag), !,
-  % The datatype IRI is =|rdf:langString|= iff the language tag is set.
-  rdf_equal(rdf:langString, Datatype),
-  rdf_assert(S, P, literal(lang(LangTag,LexicalForm)), G).
-% Simple literals.
-rdf_assert_literal(S, P, LexicalForm, Datatype, _, G):-
-  var(Datatype), !,
-  rdf_assert_literal(S, P, LexicalForm, xsd:string, _, G).
-% Others.
-rdf_assert_literal(S, P, LexicalForm, Datatype, _, G):-
-  rdf_assert(S, P, literal(type(Datatype,LexicalForm)), G).
-
-
-%! rdf_convert_literal(
-%!   +FromLexicalForm:atom,
-%!   +FromDatatypeIri:iri,
-%!   +FromLanguageTag:atom,
-%!   -ToLexicalForm:atom,
-%!   -ToDatatypeIri:iri,
-%!   -ToLanguageTag:atom
-%! ) .
-
-rdf_convert_literal(
-  FromLexicalForm, FromDatatype, FromLanguageTag,
-  ToLexicalForm,   ToDatatype,   ToLanguageTag
-):-
-  rdf_literal_map(FromLexicalForm, FromDatatype, FromLanguageTag, Value),
-  rdf_literal_map(ToLexicalForm,   ToDatatype,   ToLanguageTag,   Value).
 
 
 %! rdf_literal(+Literal:compound) is semidet.
@@ -167,10 +72,10 @@ rdf_literal(Literal, G):-
 %! rdf_literal(-Literal:compound, +LexicalForm:atom, +DatatypeIri:iri, ?LanguageTag:atom) is det.
 % Construct/disassemble an RDF literal compound term in the Semweb format.
 
-rdf_literal(literal(lang(LangTag,LexicalForm)), LexicalForm, rdf:langString, LangTag).
-rdf_literal(literal(type(Datatype,LexicalForm)), LexicalForm, Datatype, _).
+rdf_literal(literal(lang(LangTag,LexicalForm)), LexicalForm, rdf:langString, LangTag):- !.
+rdf_literal(literal(type(Datatype,LexicalForm)), LexicalForm, Datatype, _):- !.
 rdf_literal(literal(LexicalForm), LexicalForm, xsd:string, _):-
-  atom(LexicalForm).
+  atom(LexicalForm), !.
 
 
 %! rdf_literal(
@@ -189,6 +94,7 @@ rdf_literal(S, P, LexicalForm, Datatype, LangTag, G):-
 % Typed literals.
 rdf_literal(S, P, LexicalForm, Datatype, LangTag, G):-
   var(LangTag),
+  nonvar(Datatype), !,
   rdf(S, P, literal(type(Datatype,LexicalForm)), G).
 % Simple literals.
 rdf_literal(S, P, LexicalForm, Datatype, LangTag, G):-
@@ -254,87 +160,5 @@ rdf_literal_map(LexicalForm, Datatype, LangTag, Value):-
     nonvar(LexicalForm)
   ->
     xsd_lexical_map(Datatype, LexicalForm, Value)
-  ).
-
-
-%! rdf_retractall_literal(
-%!   ?Subject:oneof([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?LexicalForm:atom,
-%!   ?DatatypeIri:iri,
-%!   ?RdfGraph:atom
-%! ) is det.
-% Retracts all matching RDF triples that have literal object terms.
-%
-% Does not retract language-tagged strings for specific language tags.
-
-rdf_retractall_literal(S, P, LexicalForm, Datatype, G):-
-  rdf_retractall_literal(S, P, LexicalForm, Datatype, _, G).
-
-
-%! rdf_retractall_literal(
-%!   ?Subject:oneof([bnode,iri]),
-%!   ?Predicate:iri,
-%!   ?LexicalForm:atom,
-%!   ?DatatypeIri:iri,
-%!   ?LanguageTag:atom,
-%!   ?RdfGraph:atom
-%! ) is det.
-% Retracts all matching RDF triples that have literal object terms.
-%
-% Implementation note: this assumes that simple literals are always
-% asserted with datatype IRI =|xsd:string|=.
-% We do not retract literal compound terms of the form
-% =|literal(LexicalForm:atom)|=.
-
-% Retract language-tagged strings.
-rdf_retractall_literal(S, P, LexicalForm, Datatype, LangTag, G):-
-  (rdf_equal(rdf:langString, Datatype) ; nonvar(LangTag)), !,
-  rdf_retractall(S, P, literal(lang(LangTag,LexicalForm)), G).
-% Retract others.
-rdf_retractall_literal(S, P, LexicalForm, Datatype, _, G):-
-  rdf_retractall(S, P, literal(type(Datatype,LexicalForm)), G).
-
-
-%! rdf_update_literal(
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?FromLexicalForm:atom,
-%!   ?FromDatatype:iri,
-%!   +FromLanguageTag:atom,
-%!   +RdfGraph:atom,
-%!   +Action:compound
-%! ) is det.
-
-rdf_update_literal(
-  S,
-  P,
-  FromLexicalForm,
-  FromDatatype,
-  FromLanguageTag,
-  G,
-  literal(ToLexicalForm,ToDatatype,ToLanguageTag)
-):-
-  forall(
-    rdf_literal(S, P, FromLexicalForm, FromDatatype, FromLanguageTag, G),
-    (
-      rdf_convert_literal(
-        FromLexicalForm,
-        FromDatatype,
-        FromLanguageTag,
-        ToLexicalForm,
-        ToDatatype,
-        ToLanguageTag
-      ),
-      rdf_retractall_literal(
-        S,
-        P,
-        FromLexicalForm,
-        FromDatatype,
-        FromLanguageTag,
-        G
-      ),
-      rdf_assert_literal(S, P, ToLexicalForm, ToDatatype, ToLanguageTag, G)
-    )
   ).
 

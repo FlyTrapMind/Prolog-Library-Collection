@@ -48,7 +48,7 @@ Predicates for RDFS labels.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf_term(rdf_language_tagged_string)).
-:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal_build)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 

@@ -1,4 +1,4 @@
-:- module(rdf_duplicates, []).
+:- module(rdf_man_duplicates, []).
 
 /** <module> RDF duplicates
 
@@ -18,17 +18,22 @@ Support for visualizing and managing duplicates in an RDF store.
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_modules)).
 
-http:location(rdf, root(rdf), []).
-:- http_handler(rdf(duplicates), rdf_duplicates, []).
+http:location(rdf,     root(rdf), []).
+http:location(rdf_man, rdf(man),  []).
+:- http_handler(rdf_man(duplicates), rdf_man_duplicates, []).
 
-:- web_module_add('RDF duplicates', rdf_duplicates).
+:- web_module_add('RDFm duplicates', rdf_man_duplicates).
 
 
 
-rdf_duplicates(_Request):-
-  reply_html_page(app_style, title('RDF duplicates'), html(\rdf_duplicates)).
+rdf_man_duplicates(_Request):-
+  reply_html_page(
+    app_style,
+    title('RDFm duplicates'),
+    html(\rdf_man_duplicates)
+  ).
 
-rdf_duplicates -->
+rdf_man_duplicates -->
   {
     % Find all duplicate triples.
     setoff(

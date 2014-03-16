@@ -187,7 +187,7 @@ cache_it2(Graph, Goal, [H|T], Resources, Propositions):- !,
     member([S,P,O], Propositions),
     Quadruples
   ),
-  rdf_store_table(Quadruples).
+  rdf_store_rows(Quadruples).
 cache_it2(Graph, Goal, Resource, Resources, Propositions):-
   cache_it2(Graph, Goal, [Resource], Resources, Propositions).
 

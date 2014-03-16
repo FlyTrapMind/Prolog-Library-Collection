@@ -36,6 +36,7 @@ Support for RDF 1.1 language tagged strings.
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal_build)).
 :- use_module(rdf_term(rdf_simple_literal)).
 :- use_module(rdf_term(rdf_term)).
 

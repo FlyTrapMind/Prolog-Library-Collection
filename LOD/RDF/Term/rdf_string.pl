@@ -27,6 +27,7 @@ with datatype IRI xsd:string.
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal_build)).
 
 :- rdf_meta(rdf_assert_string(r,r,+,+)).
 :- rdf_meta(rdf_retractall_string(r,r,?,?)).
@@ -42,7 +43,9 @@ with datatype IRI xsd:string.
 %! ) is det.
 
 rdf_assert_string(S, P, String, G):-
-  rdf_assert_literal(S, P, String, xsd:string, G).
+  % @tbd ...
+  rdf_global_id(xsd:string, Datatype),
+  rdf_assert_literal(S, P, String, Datatype, G).
 
 
 %! rdf_retractall_string(?Subject:or([bnode,iri]), ?Predicate:iri, ?RdfGraph:atom) is det.
