@@ -129,13 +129,13 @@ ap_end(O1, AP):-
   debug(ap, 'Ended AP ~w at ~w.', [Alias,DateTime]).
 
 
-ap_stage_duration(ApStage, Months, Seconds):-
-  rdf_datatype(
-    ApStage,
-    ap:duration,
-    xsd:duration,
-    duration(Months,Seconds),
-    ap
-  ), !.
+%! ap_stage_duration(
+%!   +ApStage:iri,
+%!   +Months:nonneg,
+%!   +Seconds:between(0.0,_)
+%! ) is det.
+
+ap_stage_duration(ApStage, Ms, Ss):-
+  rdf_datatype(ApStage, ap:duration, duration(Ms,Ss), xsd:duration, ap), !.
 ap_stage_duration(_, 0, 0.0).
 

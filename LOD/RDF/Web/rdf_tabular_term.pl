@@ -56,8 +56,8 @@ rdf_tabular_term1(Graph, P) -->
 % Show all its values.
 rdf_tabular_term1(Graph, D) -->
   {
-    rdf_datatype(_, D), !,
-    setoff([Value], rdf_datatype(_, _, D, Value, Graph), Values)
+    rdf_datatype(D, _), !,
+    setoff([Value], rdf_datatype(_, _, Value, D, Graph), Values)
   },
   rdf_html_table(
     [graph(Graph)],

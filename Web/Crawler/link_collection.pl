@@ -21,7 +21,7 @@
 Link collection gathered by crawler.
 
 @author Wouter Beek
-@version 2012/09
+@version 2012/09, 2014/03
 */
 
 :- use_module(library(debug)).
@@ -32,6 +32,7 @@ Link collection gathered by crawler.
 :- use_module(rdfs(rdfs_read)).
 
 
+
 increment_indegree(Link):-
   rdf_increment(Link, rdf:indegree, prasem).
 
@@ -39,29 +40,25 @@ increment_outdegree(Link):-
   rdf_increment(Link, rdf:outdegree, prasem).
 
 indegree(Link, Indegree):-
-  nonvar(Link),
-  !,
-  indegree_(Link, Indegree),
-  !.
+  nonvar(Link), !,
+  indegree_(Link, Indegree), !.
 indegree(Link, Indegree):-
   indegree_(Link, Indegree).
 
 indegree_(Link, Indegree):-
-  rdf_datatype(Link, rdf:indegree, xsd:integer, Indegree, prasem).
+  rdf_datatype(Link, rdf:indegree, Indegree, xsd:integer, prasem).
 
 link(Local, Remote):-
   rdf(Local, rdf:link, Remote, prasem).
 
 outdegree(Link, Outdegree):-
-  nonvar(Link),
-  !,
-  outdegree_(Link, Outdegree),
-  !.
+  nonvar(Link), !,
+  outdegree_(Link, Outdegree), !.
 outdegree(Link, Outdegree):-
   outdegree_(Link, Outdegree).
 
 outdegree_(Link, Outdegree):-
-  rdf_datatype(Link, rdf:outdegree, xsd:integer, Outdegree, prasem).
+  rdf_datatype(Link, rdf:outdegree, Outdegree, xsd:integer, prasem).
 
 site(Link):-
   rdfs_individual_of(Link, rdf:site).
@@ -74,3 +71,4 @@ store_new_uri(URI):-
   rdf_assert_datatype(URI, rdf:indegree, xsd:integer, 0, prasem),
   rdf_assert_datatype(URI, rdf:outdegree, xsd:integer, 0, prasem),
   debug(link_collection, 'New URI: ~w', [URI]).
+

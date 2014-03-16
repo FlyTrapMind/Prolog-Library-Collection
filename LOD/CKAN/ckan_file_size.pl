@@ -68,7 +68,7 @@ ckan_file_size:-
 ckan_file_size_rows(Rows):-
   findall(
     FileSize-Resource,
-    rdf_datatype(Resource, ap:file_size, xsd:integer, FileSize, _),
+    rdf_datatype(Resource, ap:file_size, FileSize, xsd:integer, _),
     Pairs1
   ),
   keysort(Pairs1, Pairs2),

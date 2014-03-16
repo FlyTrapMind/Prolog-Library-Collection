@@ -191,7 +191,7 @@ rdf_list(O1, RDFList, [H1 | T]):-
     option(datatype(D), O1)
   ->
     rdf_global_id(rdf:value, P),
-    rdf_datatype(H, P, D, H1, _)
+    rdf_datatype(H, P, H1, D, _)
   ;
     H1 = H
   ),

@@ -69,11 +69,11 @@ void_statistics_on_graph(ApStage, NVPairs, ReadGraph):-
     objects-NO,
     triples-NT
   ],
-  rdf_datatype(Resource, void:classes, NC, xsd:integer, WriteGraph),
-  rdf_datatype(Resource, void:distinctObjects, NS, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:classes,          NC, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:distinctObjects,  NS, xsd:integer, WriteGraph),
   rdf_datatype(Resource, void:distinctSubjects, NP, xsd:integer, WriteGraph),
-  rdf_datatype(Resource, void:properties, NO, xsd:integer, WriteGraph),
-  rdf_datatype(Resource, void:triples, NT, xsd:integer, WriteGraph).
+  rdf_datatype(Resource, void:properties,       NO, xsd:integer, WriteGraph),
+  rdf_datatype(Resource, void:triples,          NT, xsd:integer, WriteGraph).
 
 
 count_classes(ReadGraph, Resource, WriteGraph):-

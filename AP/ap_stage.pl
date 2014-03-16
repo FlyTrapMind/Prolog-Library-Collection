@@ -116,7 +116,7 @@ ap_stage(O1, ApStage, Goal):-
   ap_stage_dirs(O1, ApStage, FromDir, ToDir, Goal).
 
 is_initial_stage(ApStage):-
-  rdf_datatype(ApStage, ap:stage, xsd:integer, -1, ap).
+  rdf_datatype(ApStage, ap:stage, -1, xsd:integer, ap).
 
 
 :- meta_predicate(ap_stage_dirs(+,+,+,+,:)).
@@ -177,7 +177,7 @@ ap_stage_from_arg(O1, _, FromDir, FromArg):-
 % Initialization of the input stage.
 % No "from" directory.
 ap_stage_from_arg(_, ApStage, _NoFromDir, _NoFromArg):-
-  rdf_datatype(ApStage, ap:stage, xsd:integer, -1, ap), !.
+  rdf_datatype(ApStage, ap:stage, -1, xsd:integer, ap), !.
 % Read from the previous stage directory.
 ap_stage_from_arg(_, _, FromDir, FromDir):-
   access_file(FromDir, read).
@@ -248,7 +248,7 @@ ap_stage_to_directory(O1, _, ToDir3):-
   ).
 % The directory for the next stage.
 ap_stage_to_directory(_, ApStage, ToDir):-
-  rdf_datatype(ApStage, ap:stage, xsd:integer, StageNum1, ap),
+  rdf_datatype(ApStage, ap:stage, StageNum1, xsd:integer, ap),
   StageNum2 is StageNum1 + 1,
   ap_stage_directory_name(StageNum2, StageName),
   rdf_collection_member(ApStage, AP, ap),

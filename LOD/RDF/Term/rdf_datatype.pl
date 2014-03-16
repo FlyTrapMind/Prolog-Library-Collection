@@ -10,8 +10,8 @@
                     % ?RdfGraph:atom
     rdf_datatype/5, % ?Subject:oneof([bnode,iri])
                     % ?Predicate:iri
-                    % ?DatatypeIri:iri
                     % ?Value
+                    % ?DatatypeIri:iri
                     % ?RdfGraph:atom
     rdf_overwrite_datatype/5, % +Subject:oneof([bnode,iri])
                               % +Predicate:iri
@@ -80,8 +80,8 @@ rdf_assert_datatype(S, P, Value, DatatypeIri, G):-
 
 %! rdf_datatype(?DatatypeIri:iri, ?RdfGraph:atom) is nondet.
 
-rdf_datatype(DatatypeIri, Graph):-
-  rdf_literal(_, _, _, DatatypeIri, _, Graph).
+rdf_datatype(D, G):-
+  rdf_literal(_, _, _, D, _, G).
 
 
 %! rdf_datatype(
@@ -117,25 +117,25 @@ rdf_datatype(S, P, Value, Datatype, G):-
 % value is already asserted. In that case none of the other values gets
 % retracted.
 
-rdf_overwrite_datatype(S, P, LexicalForm2, DatatypeIri, G):-
+rdf_overwrite_datatype(S, P, LexicalForm2, Datatype, G):-
   % Make sure there is exactly one value that would be overwritten.
   findall(
-    [S,P,DatatypeIri,LexicalForm1,G],
-    rdf_datatype(S, P, LexicalForm1, DatatypeIri, G),
+    [S,P,Datatype,LexicalForm1,G],
+    rdf_datatype(S, P, LexicalForm1, Datatype, G),
     Tuples
   ),
-  Tuples = [[S,P,DatatypeIri,LexicalForm1,G]], !,
+  Tuples = [[S,P,Datatype,LexicalForm1,G]], !,
 
   % Remove the old value and assert the new value.
-  rdf_retractall_datatype(S, P, DatatypeIri, G),
-  rdf_assert_datatype(S, P, LexicalForm2, DatatypeIri, G),
+  rdf_retractall_datatype(S, P, Datatype, G),
+  rdf_assert_datatype(S, P, LexicalForm2, Datatype, G),
 
   % DEB: Old object term.
-  rdf_typed_literal(Literal1, LexicalForm1, DatatypeIri),
+  rdf_typed_literal(Literal1, LexicalForm1, Datatype),
   dcg_with_output_to(atom(T1), rdf_triple_name(S, P, Literal1, G)),
   
   % DEB: New object term.
-  rdf_typed_literal(Literal2, LexicalForm2, DatatypeIri),
+  rdf_typed_literal(Literal2, LexicalForm2, Datatype),
   dcg_with_output_to(atom(T2), rdf_triple_name(S, P, Literal2, G)),
   
   % DEB: Show old and new object term in debug message.

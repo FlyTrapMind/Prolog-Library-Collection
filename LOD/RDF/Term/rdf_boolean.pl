@@ -7,6 +7,12 @@
     rdf_assert_true/3 % +Subject:or([bnode,iri])
                       % +Predicate:iri
                       % +RdfGraph:atom
+    rdf_false/3, % ?Subjet:or([bnode,iri])
+                 % ?Predicate:iri
+                 % ?RdfGraph:atom
+    rdf_true/3 % ?Subjet:or([bnode,iri])
+               % ?Predicate:iri
+               % ?RdfGraph:atom
   ]
 ).
 
@@ -25,15 +31,31 @@ with datatype IRI xsd:boolean.
 
 :- rdf_meta(rdf_assert_false(r,r,+)).
 :- rdf_meta(rdf_assert_true(r,r,+)).
+:- rdf_meta(rdf_false(r,r,?)).
+:- rdf_meta(rdf_true(r,r,?)).
 
 
 
-%! rdf_assert_false(+Subject:or([bnode,iri]), +Predicate:iri, +Graph:atom) is det.
-%! rdf_assert_true(+Subject:or([bnode,iri]), +Predicate:iri, +Graph:atom) is det.
+%! rdf_assert_false(+Subject:or([bnode,iri]), +Predicate:iri, +RdfGraph:atom) is det.
 
 rdf_assert_false(S, P, G):-
   rdf_assert_false(S, P, false, xsd:boolean, G).
 
+
+%! rdf_assert_true(+Subject:or([bnode,iri]), +Predicate:iri, +RdfGraph:atom) is det.
+
 rdf_assert_true(S, P, G):-
   rdf_assert_datatype(S, P, true, xsd:boolean, G).
+
+
+%! rdf_false(?Subject:or([bnode,iri]), ?Predicate:iri, ?RdfGrapg:atom) is nondet.
+
+rdf_false(S, P, G):-
+  rdf(S, P, false, xsd:boolean, G).
+
+
+%! rdf_true(?Subject:or([bnode,iri]), ?Predicate:iri, ?RdfGrapg:atom) is nondet.
+
+rdf_true(S, P, G):-
+  rdf(S, P, true, xsd:boolean, G).
 

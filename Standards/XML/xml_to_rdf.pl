@@ -209,7 +209,7 @@ rdf_object_trans(S, P, literal, Content, G):- !,
 % the given XML content.
 rdf_object_trans(S, P, DName, Content, G):-
   xsd_datatype(DName, _), !,
-  rdf_datatype(S, P, DName, Content, G).
+  rdf_datatype(S, P, Content, DName, G).
 
 %! rdf_property_trans(
 %!   +XML_DOM:list,

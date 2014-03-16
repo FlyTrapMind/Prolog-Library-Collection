@@ -57,7 +57,7 @@ After these operations all 4053 datasets have fully described
 | ckan:License/ukcrown-withrights               | 14  | 1  | 8 |                    |
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(ckan(opendefinition_licenses)).
@@ -67,12 +67,14 @@ After these operations all 4053 datasets have fully described
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(owl(owl_read)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_read)).
+:- use_module(rdf_term(rdf_boolean)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf(rdf_read)).
-:- use_module(rdfs(rdfs_build)).
 :- use_module(rdf_web(rdf_html_table)).
+:- use_module(rdfs(rdfs_build)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
 
@@ -125,8 +127,8 @@ ckan_license_table -->
         ;
           LicenseName = '∅'
         ),
-        rdf_datatype(License, ckan:is_okd_compliant, xsd:boolean, OKD, _),
-        rdf_datatype(License, ckan:is_osi_compliant, xsd:boolean, OSI, _)
+        rdf_datatype(License, ckan:is_okd_compliant, OKD, xsd:boolean, _),
+        rdf_datatype(License, ckan:is_osi_compliant, OSI, xsd:boolean, _)
       ),
       Rows
     ),
@@ -212,10 +214,10 @@ license_is_none(ckan:'License/None').
 license_is_none(ckan:'License/notspecified').
 
 license_is_open(License):-
-  rdf_datatype(License, ckan:is_okd_compliant, xsd:boolean, true, _), !.
+  rdf_true(License, ckan:is_okd_compliant, _), !.
 license_is_open(License):-
-  rdf_datatype(License, ckan:is_osi_compliant, xsd:boolean, true, _), !.
+  rdf_true(License, ckan:is_osi_compliant, _), !.
 license_is_open(License1):-
-  rdf(License1, owl:sameAs, License2),
+  owl_resource_identity(License1, License2),
   license_is_open(License2).
 

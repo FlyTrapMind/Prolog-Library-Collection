@@ -71,13 +71,7 @@ mime_type(Registration, Type, Subtype):-
 mime_type_file_extension(MIME, DefaultExtension):-
   nonvar(MIME), !,
   atomic_list_concat([Type,Subtype], '/', MIME),
-  rdf_datatype(
-    Registration,
-    iana:template,
-    xsd_string,
-    Subtype,
-    _
-  ),
+  rdf_string(Registration, iana:template, Subtype, _),
   rdf(Registration, rdf:type, Class),
   rdfs_label(Class, _, Type, _),
   rdf_string(Registration, iana:default_extension, DefaultExtension, _).

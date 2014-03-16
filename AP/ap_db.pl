@@ -175,7 +175,7 @@ create_stage(AP, StageNum, ApStage):-
 
 
 create_next_stage(AP_Stage1, AP_Stage2):-
-  rdf_datatype(AP_Stage1, ap:stage, xsd:integer, StageNum1, ap),
+  rdf_datatype(AP_Stage1, ap:stage, StageNum1, xsd:integer, ap),
   once(rdf_collection_member(AP_Stage1, AP, ap)),
   StageNum2 is StageNum1 + 1,
   create_stage(AP, StageNum2, AP_Stage2).

@@ -37,6 +37,7 @@ specification.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(standards(record_jar)). % Used in phrase_from_stream/2.
 :- use_module(uri(rfc2396_dcg)).
@@ -122,15 +123,15 @@ rfc5646_rdf_record_(G, I, [Name=Value|T]):-
   rfc5646_rdf_record_(G, I, T).
 
 % Added
-rfc5646_rdf_nvpair(G, I, 'Added', Literal):- !,
-  rdf_datatype(xsd:date, Literal, Value),
+rfc5646_rdf_nvpair(G, I, 'Added', LexicalForm):- !,
+  rdf_literal_map(LexicalForm, xsd:date, _, Value),
   rdf_assert_datatype(I, rfc5646:added, Value, xsd:date, G).
 % Comment
 rfc5646_rdf_nvpair(G, I, 'Comments', V):- !,
   rdf_assert_language_tagged_string(I, rfc5646:comments, V, en, G).
 % Deprecated
-rfc5646_rdf_nvpair(G, I, 'Deprecated', Literal):- !,
-  rdf_datatype(xsd:date, Literal, Value),
+rfc5646_rdf_nvpair(G, I, 'Deprecated', LexicalForm):- !,
+  rdf_literal_map(LexicalForm, xsd:date, _, Value),
   rdf_assert_datatype(I, rfc5646:deprecated, Value, xsd:date, G).
 % Description
 rfc5646_rdf_nvpair(G, I, 'Description', V):- !,

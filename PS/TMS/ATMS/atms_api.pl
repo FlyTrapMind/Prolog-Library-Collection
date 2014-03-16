@@ -148,6 +148,8 @@ The API for ATMSs.
 :- use_module(library(semweb/rdfs)).
 :- use_module(qr(qr_api)).
 :- use_module(rdf(rdf_read)).
+:- use_module(rdf_term(rdf_boolean)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_read)).
 
 
@@ -219,7 +221,7 @@ atms_id(ATMS, ID):-
   atms_id_(ATMS, ID).
 
 atms_id_(ATMS, ID):-
-  rdf_datatype(ATMS, atms:has_id, xsd:integer, ID, ccm).
+  rdf_datatype(ATMS, atms:has_id, ID, xsd:integer, ccm).
 
 %% atms_label(?ATMS:atms, ?Label:atom) is nondet.
 % Pairs of ATMSs and their labels.
@@ -408,13 +410,11 @@ environment(ATMS, Assumptions, Environment):-
 
 environment_assumptions(Environment, Assumptions):-
   var(Environment),
-  var(Assumptions),
-  !,
+  var(Assumptions), !,
   environment_assumptions_(Environment, Assumptions).
 % There is a one-to-one mapping between environments and assumptions.
 environment_assumptions(Environment, Assumptions):-
-  environment_assumptions_(Environment, Assumptions),
-  !.
+  environment_assumptions_(Environment, Assumptions), !.
 
 environment_assumptions_(Environment, Assumptions):-
   has_label(_Length, Environment, Assumptions).
@@ -430,16 +430,14 @@ environment_cardinality(Environment, Cardinality):-
 % @arg EnvironmentID The numeric identifier of an environment.
 
 environment_id(Environment, EnvironmentID):-
-  nonvar(Environment),
-  !,
-  environment_id_(Environment, EnvironmentID),
-  !.
+  nonvar(Environment), !,
+  environment_id_(Environment, EnvironmentID), !.
 environment_id(Environment, EnvironmentID):-
   environment_id_(Environment, EnvironmentID).
 
 environment_id_(Environment, EnvironmentID):-
-  rdf_datatype(Environment, environment:has_id, xsd:integer,
-    EnvironmentID, ccm).
+  rdf_datatype(Environment, environment:has_id, EnvironmentID, xsd:integer,
+      ccm).
 
 %% environment_label(
 %%   ?Environment:environment,
@@ -558,8 +556,8 @@ justification_id(Justification, JustificationID):-
   justification_id_(Justification, JustificationID).
 
 justification_id_(Justification, JustificationID):-
-  rdf_datatype(Justification, justification:has_id, xsd:integer,
-      JustificationID, ccm).
+  rdf_datatype(Justification, justification:has_id, JustificationID,
+      xsd:integer, ccm).
 
 justification_informant(Justification, Informant):-
   rdf_string(Justification, justification:has_informant, Informant, ccm).
@@ -590,10 +588,10 @@ justifications(Justifications):-
 % NODES %
 
 is_assumption(Node):-
-  rdf_datatype(Node, node:is_assumption, xsd:boolean, true, ccm).
+  rdf_true(Node, node:is_assumption, ccm).
 
 is_contradiction(Node):-
-  rdf_datatype(Node, node:is_contradiction, xsd:boolean, true, ccm).
+  rdf_true(Node, node:is_contradiction, ccm).
 
 is_consistent_with(Node, Environment):-
   node(ATMS, Node),

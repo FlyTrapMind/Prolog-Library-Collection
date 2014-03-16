@@ -431,7 +431,7 @@ rdf_vertex_peripheries(_RDF_Term, 1).
 
 rdf_vertex_picture(G, V, V_Picture):-
   % Only display the first picture that is related to this vertex.
-  once(rdf_datatype(V, _P, image, V_Picture, G)).
+  once(rdf_datatype(V, _, V_Picture, rdf_image:image, G)).
 
 %! rdf_vertex_shape(+RDF_Term:oneof([bnode,literal,uri]), -Shape:atom) is det.
 % The following shapes are supported:
