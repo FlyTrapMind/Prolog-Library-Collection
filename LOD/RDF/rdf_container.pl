@@ -56,7 +56,7 @@ Support for RDF containers (sequence, bag, and alternatives).
 :- rdf_meta(rdf_alt(r,-,?)).
 rdf_alt(Alt, Contents, G):-
   rdfs_individual_of(Alt, rdf:'Alt'),
-  rdf_subject(G, Alt),
+  rdf_subject(Alt, G),
   rdf_collection_contents(Alt, Contents, G).
 
 
@@ -81,7 +81,7 @@ rdf_assert_collection_member(Collection, Member, Graph):-
 :- rdf_meta(rdf_bag(r,-,?)).
 rdf_bag(Bag, Contents, G):-
   rdfs_individual_of(Bag, rdf:'Bag'),
-  rdf_subject(G, Bag),
+  rdf_subject(Bag, G),
   rdf_collection_contents(Bag, Contents, G).
 
 
@@ -192,6 +192,6 @@ rdf_container_membership_property(P, Index):-
 :- rdf_meta(rdf_seq(r,-,?)).
 rdf_seq(Seq, Contents, G):-
   rdfs_individual_of(Seq, rdf:'Seq'),
-  rdf_subject(G, Seq),
+  rdf_subject(Seq, G),
   rdf_collection_contents(Seq, Contents, G).
 

@@ -8,7 +8,7 @@
                              % ?Object:or([bnode,literal,iri])
                              % ?Graph:atom
     rdf_namespaces/2, % +Graph:atom
-                      % -XML_Namespaces:ordset(atom)
+                      % -XmlNamespaces:ordset(atom)
     rdf_resource_to_namespace/3 % +Resource:uri
                                 % -Namespace:atom
                                 % -Name:atom
@@ -69,14 +69,14 @@ rdf_convert_namespace(FromNS, ToNs, S1, P1, O1, G):-
   ).
 
 
-rdf_namespaces(Graph, XML_Namespaces):-
+rdf_namespaces(G, XmlNamespaces):-
   setoff(
-    XML_Namespace,
+    XmlNamespace,
     (
-      rdf_term(Graph, Term),
-      rdf_global_id(XML_Namespace:_, Term)
+      rdf_term(Term, G),
+      rdf_global_id(XmlNamespace:_, Term)
     ),
-    XML_Namespaces
+    XmlNamespaces
   ).
 
 

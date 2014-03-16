@@ -75,11 +75,11 @@ rdf_simple_literal(SimpleLiteral):-
 % Relates simple literals to the RDF graph in which they occur.
 % Enumeration is assured to not deliver any pair duplicates.
 
-rdf_simple_literal(SimpleLiteral, Graph):-
+rdf_simple_literal(SimpleLiteral, G):-
   % Enumerate all (i.e. any graph) simple literals without duplicates.
   rdf_simple_literal(SimpleLiteral),
   % Relate the simple literal to a graph.
-  rdf_object(Graph, SimpleLiteral).
+  rdf_object(SimpleLiteral, G).
 
 
 %! rdf_simple_literal(

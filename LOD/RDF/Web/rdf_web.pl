@@ -105,7 +105,7 @@ rdf_web -->
     setoff(
       option(value=SLabel,SLabel),
       (
-        rdf_subject(G, STerm),
+        rdf_subject(STerm, G),
         dcg_with_output_to(atom(SLabel), rdf_term_name(STerm))
       ),
       SItems
@@ -113,7 +113,7 @@ rdf_web -->
     setoff(
       option(value=PLabel,PLabel),
       (
-        rdf_predicate(G, PTerm),
+        rdf_predicate(PTerm, G),
         dcg_with_output_to(atom(PLabel), rdf_term_name(PTerm))
       ),
       PItems
@@ -121,7 +121,7 @@ rdf_web -->
     setoff(
       option(value=OLabel,OLabel),
       (
-        rdf_object(G, OTerm),
+        rdf_object(OTerm, G),
         dcg_with_output_to(atom(OLabel), rdf_term_name(OTerm))
       ),
       OItems

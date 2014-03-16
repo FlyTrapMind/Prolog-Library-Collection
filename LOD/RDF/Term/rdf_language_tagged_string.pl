@@ -85,11 +85,11 @@ rdf_language_tagged_string(LanguageTaggedString):-
 % RDF graphs and their language tagged strings, according to the Semweb format.
 % Enumeration is assured to not deliver any pairs duplicates.
 
-rdf_language_tagged_string(LanguageTaggedString, Graph):-
+rdf_language_tagged_string(LanguageTaggedString, G):-
   % Enumerate language tagged strings.
   rdf_language_tagged_string(LanguageTaggedString),
   % Relate to an RDF graph.
-  rdf_object(Graph, LanguageTaggedString).
+  rdf_object(LanguageTaggedString, G).
 
 
 %! rdf_language_tagged_string(+LanguageTaggedString:compound, +LexicalForm:atom, +LangTag:atom) is semidet.

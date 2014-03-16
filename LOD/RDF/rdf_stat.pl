@@ -84,7 +84,7 @@ count_classes(G, Count):-
 % @see Based on the definition of =|void:entities|=.
 
 count_entities(G, Count):-
-  setoff(E, rdf_iri(G, E), Es),
+  setoff(E, rdf_iri(E, G), Es),
   length(Es, Count).
 
 %! count_individuals(

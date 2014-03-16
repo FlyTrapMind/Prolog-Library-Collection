@@ -58,9 +58,9 @@ rdf_typed_literal(TypedLiteral):-
 % Pairs of RDF graphs to typed literals.
 % Enumeration is assured to not deliver any duplicates.
 
-rdf_typed_literal(TypedLiteral, Graph):-
+rdf_typed_literal(TypedLiteral, G):-
   rdf_typed_literal(TypedLiteral),
-  rdf_object(Graph, TypedLiteral).
+  rdf_object(TypedLiteral, G).
 
 
 %! rdf_typed_literal(+TypedLiteral:compound, +LexicalForm:atom, +DatatypeIri:iri) is semidet.

@@ -33,7 +33,7 @@ Generates HTML tables that descrive RDF predicate terms.
 
 %! rdf_tabular_property(+Graph:atom, +Property:iri)// is det.
 
-rdf_tabular_property(Graph, P) -->
+rdf_tabular_property(G, P) -->
   % The extension of the interpretation of the property consists of pairs.
   % We enumerate the classes of individuals that occur in these pairs.
   % We distinguish between individuals that occur in
@@ -41,49 +41,49 @@ rdf_tabular_property(Graph, P) -->
   % (classes denoting the domain of the property)
   % and the second argument position
   % (classes denoting the range of the property).
-  rdf_tabular_property_domain(Graph, P),
-  rdf_tabular_property_range(Graph, P),
+  rdf_tabular_property_domain(G, P),
+  rdf_tabular_property_range(G, P),
   
   % For literal ranges we also display the values that occur.
-  rdf_tabular_predicate_literals(Graph, P),
+  rdf_tabular_predicate_literals(G, P),
   
   % Triples that describe the property, if any.
-  rdf_tabular_triples(P, _, _, Graph).
+  rdf_tabular_triples(P, _, _, G).
 
 
-rdf_tabular_property_domain(Graph, P) -->
+rdf_tabular_property_domain(G, P) -->
   {setoff(
     [Domain],
     (
-      rdf(S, P, _, Graph),
+      rdf(S, P, _, G),
       rdfs_individual_of(S, Domain)
     ),
     Rows
   )},
   rdf_html_table(
-    [graph(Graph),header_row(true)],
+    [graph(G),header_row(true)],
     html(['Domain of property ',\rdf_term_html(P),'.']),
     [['Class']|Rows]
   ).
 
 
-rdf_tabular_property_range(Graph, P) -->
+rdf_tabular_property_range(G, P) -->
   {setoff(
     [Range],
     (
-      rdf(_, P, O, Graph),
+      rdf(_, P, O, G),
       rdfs_individual_of(O, Range)
     ),
     Rows
   )},
   rdf_html_table(
-    [graph(Graph),header_row(true)],
+    [graph(G),header_row(true)],
     html(['Range of property ',\rdf_term_html(P),'.']),
     [['Class']|Rows]
   ).
 
 
-rdf_tabular_predicate_literals(Graph, P) -->
+rdf_tabular_predicate_literals(G, P) -->
   {
     setoff(
       [LiteralValue],
@@ -100,17 +100,17 @@ rdf_tabular_predicate_literals(Graph, P) -->
     list_truncate(Rows1, 100, Rows2)
   },
   rdf_html_table(
-    [graph(Graph),header_row(true)],
+    [graph(G),header_row(true)],
     html(['Values that occur for property ',\rdf_term_html(P),'.']),
     [['Literal value']|Rows2]
   ).
 
 
-rdf_tabular_properties(Graph) -->
+rdf_tabular_properties(G) -->
   {
     setoff(
       Predicate,
-      rdf_predicate(Graph, Predicate),
+      rdf_predicate(Predicate, G),
       Predicates
     ),
     findall(
@@ -119,7 +119,7 @@ rdf_tabular_properties(Graph) -->
         member(Predicate, Predicates),
         aggregate_all(
           count,
-          rdf(_, Predicate, _, Graph),
+          rdf(_, Predicate, _, G),
           NumberOfOccurrences
         )
       ),
@@ -134,7 +134,7 @@ rdf_tabular_properties(Graph) -->
     )
   },
   rdf_html_table(
-    [graph(Graph),header_row(true)],
+    [graph(G),header_row(true)],
     html('Overview of properties.'),
     [['Predicate','Occurrences']|Rows]
   ).

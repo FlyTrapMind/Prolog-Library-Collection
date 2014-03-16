@@ -48,13 +48,13 @@ rdf_tabular_class(Graph, Class1) -->
   ).
 
 
-rdf_tabular_classes(Graph) -->
+rdf_tabular_classes(G) -->
   {
     setoff(
       Class,
       (
         rdfs_individual_of(Class, rdfs:'Class'),
-        rdf_term(Graph, Class)
+        rdf_term(Class, G)
       ),
       Classes
     ),

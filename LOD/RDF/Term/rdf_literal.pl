@@ -64,7 +64,7 @@ rdf_literal(Literal, G):-
   % Enumerated all literals.
   rdf_literal(Literal),
   % Relates to an RDF graph.
-  rdf_object(G, Literal).
+  rdf_object(Literal, G).
 
 
 %! rdf_literal(+Literal:compound, +LexicalForm:atom, +DatatypeIri:iri, ?LanguageTag:atom) is semidet.

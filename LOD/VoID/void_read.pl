@@ -44,8 +44,8 @@ as it appears in the VoID specification.
 
 rdf_link(T1, G1, P, T2, G2):-
   rdf(T1, P, T2),
-  rdf_term(G1, T1),
-  rdf_term(G2, T2),
+  rdf_term(T1, G1),
+  rdf_term(T2, G2),
   G1 \== G2.
 
 

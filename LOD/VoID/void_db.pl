@@ -65,5 +65,5 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
 
 void_dataset(VoidGraph, VoidDataset):-
   rdfs_individual_of(VoidDataset, void:'Dataset'),
-  once(rdf_term(VoidGraph, VoidDataset)).
+  once(rdf_term(VoidDataset, VoidGraph)).
 

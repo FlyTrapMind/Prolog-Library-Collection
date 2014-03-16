@@ -31,14 +31,14 @@ Support for the OpenDefinition licenses and their descriptions.
 
 
 enrich_license(Graph, License):-
-  license_descriptions(JSON_Descriptions),
-  enrich_license(JSON_Descriptions, Graph, License).
+  license_descriptions(JsonDescription),
+  enrich_license(JsonDescription, Graph, License).
 
-enrich_license(JSON_Descriptions, Graph, License):-
+enrich_license(JsonDescription, Graph, License):-
   rdf_global_id(_:LocalName, License),
   atomic_list_concat([_,Tmp], '/', LocalName),
   downcase_atom(Tmp, Key),
-  memberchk(Key=JSON_Description, JSON_Descriptions), !,
+  memberchk(Key=JSON_Description, JsonDescription), !,
   json_to_rdf(temp, ckan, ckan, JSON_Description, Dummy),
   forall(
     rdf(Dummy, P, O, temp),
@@ -50,17 +50,17 @@ enrich_license(_, Graph, License):-
   debug(ckan, 'Could not find license ~w in OpenDefinition descriptions.', [License]).
 
 
-enrich_licenses(Graph):-
-  license_descriptions(JSON_Descriptions),
+enrich_licenses(G):-
+  license_descriptions(JsonDescription),
   setoff(
     License,
     (
       rdfs_individual_of(License, ckan:'License'),
-      rdf_term(Graph, License)
+      rdf_term(License, G)
     ),
     Licenses
   ),
-  maplist(enrich_license(JSON_Descriptions, Graph), Licenses).
+  maplist(enrich_license(JsonDescription, G), Licenses).
 
 
 license_descriptions(Reply):-

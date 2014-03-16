@@ -23,22 +23,22 @@
 
 
 
-rdf_randomize_iris(Graph):-
-  rdf_graph(Graph),
+rdf_randomize_iris(G):-
+  rdf_graph(G),
   setoff(
     IRI1-IRI2,
     (
-      rdf_iri(Graph, IRI1),
+      rdf_iri(IRI1, G),
       once(randomize_iri(IRI1, IRI2))
     ),
     Dict
   ),
   findall(
     S-P-O,
-    rdf(S, P, O, Graph),
+    rdf(S, P, O, G),
     Triples
   ),
-  maplist(randomize_triple(Graph, Dict), Triples).
+  maplist(randomize_triple(G, Dict), Triples).
 
 random_character -->
   {random_between(97, 122, X)},

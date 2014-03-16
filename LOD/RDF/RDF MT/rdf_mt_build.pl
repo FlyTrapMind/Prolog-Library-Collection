@@ -91,7 +91,7 @@ rdf_add_i_l(G, TypedLiteral1, M, Resource):-
 
 rdf_add_i_s(G, IRI, M, X):-
   rdf_graph(G),
-  rdf_iri(G, IRI),
+  rdf_iri(IRI, G),
   model(M),
   (resource(M, X) ; property(M, X)), !,
   db_add_novel(rdf_mt:i_s(G, IRI, M, X)).

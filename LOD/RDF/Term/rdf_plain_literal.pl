@@ -63,9 +63,9 @@ rdf_plain_literal(PlainLiteral):-
 % Pairs of RDF graphs to plain literals.
 % Enumeration is assured to not deliver any duplicates.
 
-rdf_plain_literal(PlainLiteral, Graph):-
+rdf_plain_literal(PlainLiteral, G):-
   rdf_plain_literal(PlainLiteral),
-  rdf_object(RdfGraph, PlainLiteral).
+  rdf_object(PlainLiteral, G).
 
 
 %! rdf_plain_literal(+PlainLiteral:compound, +LexicalForm:atom, ?LangTag:atom) is semidet.
