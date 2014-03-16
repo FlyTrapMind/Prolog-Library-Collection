@@ -1,6 +1,10 @@
 :- module(
   uri_ext,
   [
+    atom_to_email/2, % +Atom:atom
+                     % -Email:atom
+    atom_to_iri/2, % +Atom:atom
+                   % -Iri:iri
     download_to_file/3, % +Options:list(nvpair)
                         % +URL:atom
                         % ?File:atom
@@ -32,6 +36,7 @@
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)).
+:- use_module(generics(atom_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(http(http)).
@@ -41,6 +46,53 @@
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
+
+
+%! atom_to_email(+Atom:atom, -Email:atom) is det.
+% Try to make some minor alterations to non-email atoms
+% in the hope that they become email addresses.
+
+atom_to_email(Email, Email):-
+  is_of_type(email, Email), !.
+% Add scheme and scheme-authority separator.
+atom_to_email(A1, Email):-
+  atomic_list_concat([mailto,A1], ':', A2)
+  atom_to_email(A2, Email).
+% Remove leading and trailing spaces.
+atom_to_email(A1, Email):-
+  strip_atom([' '], A1, A2),
+  A1 \== A2,
+  atom_to_email(A2, Email).
+
+
+%! atom_to_iri(+Atom:atom, -Iri:iri) is det.
+% Try to make some minor alterations to non-IRI atoms
+% in the hope that they become IRIs.
+
+atom_to_iri(IRI, IRI):-
+  is_of_type(iri, IRI), !.
+% Add percent-encoding for spaces!
+atom_to_iri(A1, IRI):-
+  dcg_phrase(dcg_replace(space, percent_encoding(space)), A1, A2),
+  A1 \== A2, !,
+  atom_to_iri(A2, IRI).
+% Add scheme and scheme-authority separator.
+atom_to_iri(A1, IRI):-
+  uri_components(A1, uri_components(Scheme,Authority,Path,Query,FragmentId)), !,
+  (
+    var(Authority)
+  ->
+    atomic_concat('http://', A2, A3)
+  ;
+    var(Scheme)
+  ->
+    uri_components(A3, uri_components(http,Authority,Path,Query,FragmentId)
+  ).
+% Remove leading and trailing spaces.
+atom_to_iri(A1, IRI):-
+  strip_atom([' '], A1, A2),
+  A1 \== A2,
+  atom_to_iri(A2, IRI).
 
 
 %! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.
