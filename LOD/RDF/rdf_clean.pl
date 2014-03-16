@@ -1,16 +1,6 @@
 :- module(
   rdf_clean,
   [
-    rdf_split_literal/5, % +Options:list(nvpair)
-                         % ?Subject:oneof([bnode,uri])
-                         % ?Predicate:uri
-                         % ?Graph:atom
-                         % +Split:atom
-    rdf_strip_literal/5, % +Options:list(nvpair)
-                         % +Strips:list(char)
-                         % ?Subject:oneof([bnode,uri])
-                         % ?Predicate:uri
-                         % ?Graph:atom
     rdf_remove/4, % ?Subject:oneof([bnode,uri])
                   % ?Predicate:uri
                   % ?Object:oneof([bnode,literal,uri])
@@ -45,71 +35,9 @@ Predicates that allow RDF graphs to be cleaned in a controlled way.
 :- use_module(xsd(xsd)).
 :- use_module(xml(xml_namespace)).
 
-:- rdf_meta(rdf_split_literal(+,r,r,?,+)).
-:- rdf_meta(rdf_strip_literal(+,+,r,r,?)).
 :- rdf_meta(rdf_remove(r,r,r,?)).
 :- rdf_meta(rdf_remove_datatype(r,r,r,?,?)).
 
-
-
-rdf_split_literal(O1, S, P, G, Split):-
-  findall(
-    [S,P,LexicalForm,G],
-    (
-      rdf_string(S, P, LexicalForm, G),
-      atomic_list_concat(Sublits, Split, LexicalForm), % split
-      length(Sublits, Length),
-      Length > 1
-    ),
-    Tuples
-  ),
-  user_interaction(
-    O1,
-    'SPLIT-RDF-DATATYPE-STRING',
-    rdf_split_string0(Split),
-    ['Subject','Predicate','Literal','Graph'],
-    Tuples
-  ).
-:- rdf_meta(rdf_split_string0(+,r,r,+,+)).
-rdf_split_string0(Split, S, P, OldLexicalForm, G):-
-  atomic_list_concat(NewLexicalForms, Split, OldLexicalForm), % split
-  forall(
-    member(NewLexicalForm, NewLexicalForms),
-    rdf_assert_string(S, P, NewLexicalForm, G)
-  ),
-  rdf_retractall_string(S, P, OldLexicalForm, G).
-
-%! rdf_strip_literal(
-%!   +Options:list(nvpair),
-%!   +Strips:list(char),
-%!   ?Subject:oneof([bnode,uri]),
-%!   ?Predicate:uri,
-%!   ?Graph:atom
-%! ) is det.
-% Strip RDF literals.
-
-rdf_strip_literal(O1, Strips, S, P, G):-
-  findall(
-    [S,P,LexicalForm1,G],
-    (
-      rdf_string(S, P, LexicalForm1, G),
-      strip_atom(Strips, LexicalForm1, LexicalForm2),
-      LexicalForm1 \= LexicalForm2
-    ),
-    Tuples
-  ),
-  user_interaction(
-    O1,
-    'STRIP-RDF-DATATYPE-STRING',
-    rdf_strip_literal0(Strips),
-    ['Subject','Predicate','Literal','Graph'],
-    Tuples
-  ).
-:- rdf_meta(rdf_strip_literal0(+,r,r,+,+)).
-rdf_strip_literal0(Strips, S, P, OldLiteral, G):-
-  strip_atom(Strips, OldLiteral, NewLiteral),
-  rdf_assert_string(S, P, NewLiteral, G),
-  rdf_retractall_string(S, P, OldLiteral, G).
 
 
 %! rdf_remove(
@@ -133,6 +61,7 @@ rdf_remove(S, P, O, G):-
     ['Subject','Predicate','Object','Graph'],
     Tuples
   ).
+
 
 %! rdf_remove_datatype(
 %!   ?Subject:oneof([bnode,uri]),
@@ -158,6 +87,7 @@ rdf_remove_datatype(S, P, Datatype, Value, G):-
   ).
 rdf_retractall_datatype0(S, P, Datatype, _Value, G):-
   rdf_retractall_datatype(S, P, Datatype, G).
+
 
 /*
 % URL.
