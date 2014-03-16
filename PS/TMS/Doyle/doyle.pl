@@ -145,12 +145,11 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(library(semweb/rdfs)).
 :- use_module(programming(prolog_control)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_reification)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_ext)).
@@ -678,7 +677,7 @@ set_support_status(TMS, Node, SupportStatus):-
   rdf_graph(TMS),
   is_node(Node),
   memberchk(SupportStatus, [in,nil,out]),
-  rdf_retractall_string(Node, doyle:has_support_status, TMS),
+  rdf_retractall_string(Node, doyle:has_support_status, _, TMS),
   rdf_assert_string(Node, doyle:has_support_status, SupportStatus, TMS).
 
 %! set_supporting_justification(

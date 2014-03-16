@@ -11,16 +11,12 @@
                     % +Set2:oneof([list,ordset])
     is_minimal/2, % +Set:ordset(object)
                   % +Sets:ordset(ordset(object))
-    random_subset/3, % +Set:ordset
-                     % +LengthOrPercentage:or([nonneg,between(0.0,1.0)])
+    random_subset/2, % +Set:ordset
                      % -Subset:ordset
     subsets/2, % +Universe:list(object)
                % -Subsets:list(list(boolean))
-    superset/2, % +Super:ordset
-                % +Sub:ordset
-    transitive_closure/3 % +Predicate:atom
-                         % +Input:object
-                         % -Outputs:ordset(object)
+    superset/2 % +Super:ordset
+	       % +Sub:ordset
   ]
 ).
 
@@ -33,15 +29,10 @@ Extra set functions for use in SWI-Prolog.
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
-:- use_module(library(random)).
 :- use_module(programming(prolog_mode)).
-
-:- meta_predicate(transitive_closure(2,+,-)).
 
 
 
