@@ -47,10 +47,6 @@ This requires a Prolog module whose name is also registered as
 
 
 
-percent_encoding(space) -->
-  percent_sign,
-  integer(20).
-
 arg_spec_match(Args, ArgSpecs, Length):-
   maplist(arg_to_name, Args, Names1),
   maplist(arg_spec_to_name, ArgSpecs, Names2),

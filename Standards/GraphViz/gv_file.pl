@@ -74,6 +74,7 @@ graph_to_gv_file(O1, GIF, ToFile):-
   once(phrase(gv_graph(GIF), Codes)),
   to_gv_file(O1, Codes, ToFile).
 
+
 %! graph_to_svg_dom(
 %!   +Options:list(nvpair),
 %!   +GraphInterchangeFormat:compound,
@@ -90,6 +91,7 @@ graph_to_svg_dom(O1, GIF, SVG):-
   graph_to_gv_file(O2, GIF, ToFile),
   file_to_svg(ToFile, SVG),
   safe_delete_file(ToFile).
+
 
 %! tree_to_gv_file(
 %!   +Options:list(nvpair),
@@ -195,12 +197,10 @@ to_gv_file(O1, Codes, ToFile):-
   convert_gv(O1, FromFile, ToFile),
 
   % DEB: Store DOT file.
-  (
+  ignore((
     file_type_alternative(ToFile, graphviz, DOT_File),
     safe_copy_file(FromFile, DOT_File)
-  ;
-    true
-  ),
+  )),
 
   safe_delete_file(FromFile).
 

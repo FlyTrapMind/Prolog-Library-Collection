@@ -34,6 +34,7 @@
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
@@ -56,7 +57,7 @@ atom_to_email(Email, Email):-
   is_of_type(email, Email), !.
 % Add scheme and scheme-authority separator.
 atom_to_email(A1, Email):-
-  atomic_list_concat([mailto,A1], ':', A2)
+  atomic_list_concat([mailto,A1], ':', A2),
   atom_to_email(A2, Email).
 % Remove leading and trailing spaces.
 atom_to_email(A1, Email):-
@@ -66,33 +67,38 @@ atom_to_email(A1, Email):-
 
 
 %! atom_to_iri(+Atom:atom, -Iri:iri) is det.
-% Try to make some minor alterations to non-IRI atoms
+% Try to make some minor alterations to non-Iri atoms
 % in the hope that they become IRIs.
 
-atom_to_iri(IRI, IRI):-
-  is_of_type(iri, IRI), !.
+atom_to_iri(Iri, Iri):-
+  is_of_type(iri, Iri), !.
 % Add percent-encoding for spaces!
-atom_to_iri(A1, IRI):-
+atom_to_iri(A1, Iri):-
   dcg_phrase(dcg_replace(space, percent_encoding(space)), A1, A2),
   A1 \== A2, !,
-  atom_to_iri(A2, IRI).
+  atom_to_iri(A2, Iri).
 % Add scheme and scheme-authority separator.
-atom_to_iri(A1, IRI):-
+atom_to_iri(A1, Iri):-
   uri_components(A1, uri_components(Scheme,Authority,Path,Query,FragmentId)), !,
   (
     var(Authority)
   ->
-    atomic_concat('http://', A2, A3)
+    atomic_concat('http://', A1, A2)
   ;
     var(Scheme)
   ->
-    uri_components(A3, uri_components(http,Authority,Path,Query,FragmentId)
-  ).
+    uri_components(A2, uri_components(http,Authority,Path,Query,FragmentId))
+  ),
+  atom_to_iri(A2, Iri).
 % Remove leading and trailing spaces.
-atom_to_iri(A1, IRI):-
+atom_to_iri(A1, Iri):-
   strip_atom([' '], A1, A2),
   A1 \== A2,
-  atom_to_iri(A2, IRI).
+  atom_to_iri(A2, Iri).
+
+percent_encoding(space) -->
+  percent_sign,
+  integer(20).
 
 
 %! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.

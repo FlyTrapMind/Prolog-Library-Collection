@@ -10,7 +10,7 @@
     rdf_name/1, % ?Name:oneof([iri,literal])
     rdf_name/2, % ?Name:oneof([iri,literal])
                 % ?RdfGraph:atom
-    rdf_node/1, % ?RdfNode:or([bnode,iri,literal])
+    rdf_node_/1, % ?RdfNode:or([bnode,iri,literal])
     rdf_node/2, % ?RdfNode:or([bnode,iri,literal])
                 % ?RdfGraph:atom
     rdf_object/1, % ?Object:oneof([bnode,literal,iri])
@@ -19,7 +19,7 @@
     rdf_predicate/1, % ?Predicate:iri
     rdf_predicate/2, % ?Predicate:iri
                      % ?RdfGraph:atom
-    rdf_subject/1, % ?Subject:oneof([bnode,iri])
+    rdf_subject_/1, % ?Subject:oneof([bnode,iri])
     rdf_subject/2, % ?Subject:oneof([bnode,iri])
                    % ?RdfGraph:atom
     rdf_term/1, % ?Term:or([bnode,iriliteral])
@@ -50,13 +50,13 @@ Support for RDF literals is found in [rdf_literal].
 :- rdf_meta(rdf_iri(r,?)).
 :- rdf_meta(rdf_name(r)).
 :- rdf_meta(rdf_name(r,?)).
-:- rdf_meta(rdf_node(r)).
+:- rdf_meta(rdf_node_(r)).
 :- rdf_meta(rdf_node(r,?)).
 :- rdf_meta(rdf_object(r)).
 :- rdf_meta(rdf_object(r,?)).
 :- rdf_meta(rdf_predicate(r)).
 :- rdf_meta(rdf_predicate(r,?)).
-:- rdf_meta(rdf_subject(r)).
+:- rdf_meta(rdf_subject_(r)).
 :- rdf_meta(rdf_subject(r,?)).
 :- rdf_meta(rdf_term(r)).
 :- rdf_meta(rdf_term(r,?)).
@@ -198,13 +198,13 @@ rdf_is_name(Name):-
   rdf_is_iri(Name).
 
 
-%! rdf_node(+RdfNode:or([bnode,iri,literal])) is semidet.
-%! rdf_node(-RdfNode:or([bnode,iri,literal])) is nondet.
+%! rdf_node_(+RdfNode:or([bnode,iri,literal])) is semidet.
+%! rdf_node_(-RdfNode:or([bnode,iri,literal])) is nondet.
 
-rdf_node(Node):-
+rdf_node_(Node):-
   nonvar(Node), !,
   rdf_is_node(Node).
-rdf_node(Node):-
+rdf_node_(Node):-
   rdf_node(Node, _).
 
 
@@ -232,7 +232,7 @@ rdf_node(Node, G):-
   ).
 
 
-%! rdf_is_node(+RdfTerm:or([bnode,iri,literal]) is semidet.
+%! rdf_is_node(+RdfTerm:or([bnode,iri,literal])) is semidet.
 
 rdf_is_node(Node):-
   rdf_is_object(Node).
@@ -313,17 +313,17 @@ rdf_is_predicate(P):-
   rdf_is_iri(P).
 
 
-%! rdf_subject(+Term) is semidet.
+%! rdf_subject_(+Term) is semidet.
 % Succeeds if the given term occurs in the subject position of some RDF triple.
-%! rdf_subject(-Subject:or([bnode,iri])) is nondet.
+%! rdf_subject_(-Subject:or([bnode,iri])) is nondet.
 % Enumerates the RDF terms that occur in the subject position
 % of some RDF triple.
 % Ensures there are no duplicates.
 
-rdf_subject(S):-
+rdf_subject_(S):-
   nonvar(S), !,
   rdf_is_subject(S).
-rdf_subject(S):-
+rdf_subject_(S):-
   rdf_resource(S),
   once(rdf(S, _, _, _)).
 

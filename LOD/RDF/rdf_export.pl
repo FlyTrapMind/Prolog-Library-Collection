@@ -77,6 +77,9 @@ The procedure for determining the color of a vertex:
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(svg(svg_colors)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(rdf_image, 'http://www.wouterbeek.com/RDF-Image.owl#').
 
 :- dynamic(rdf_class_color/3).
 :- dynamic(rdf_namespace_color/3).

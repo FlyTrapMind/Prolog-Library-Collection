@@ -79,7 +79,7 @@ rdf_tabular_classes(G) -->
     )
   },
   rdf_html_table(
-    [graph(Graph),header_row(true)],
+    [graph(G),header_row(true)],
     html('Overview of classes.'),
     [['Class','Members']|Rows]
   ).
