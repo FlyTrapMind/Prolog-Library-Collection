@@ -380,6 +380,8 @@
     w_uppercase//0,
     w_uppercase//1, % ?Code:code
     white//1, % ?Code:code
+    ascii_white//0,
+    ascii_white//1, % ?Code:code
     x//0,
     x//1, % ?Code:code
     x_lowercase//0,

@@ -26,7 +26,7 @@
 */
 
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf_term(rdf_plain_literal)).
+:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_reasoning(rdf_bnode_map)).
 :- use_module(xml(xml_namespace)).
@@ -97,7 +97,7 @@ explanation(
 ).
 rule(rdfs, rdfs1, [rdf(S,P,PlainLit)], B, rdf:type, rdfs:'Literal', G):-
   rdf(S, P, PlainLit, G),
-  rdf_plain_literal(PlainLit),
+  rdf_is_plain_literal(PlainLit),
 
   r2b(G, PlainLit, B).
 

@@ -82,6 +82,7 @@ load_pgc:-
       assert(user:file_search_path(http_headers,    http('Headers'))),
       assert(user:file_search_path(http_parameters, http('Parameters'))),
     assert(user:file_search_path(lang,            standards('Language'))),
+    assert(user:file_search_path(latex,           standards('LaTeX'))),
     assert(user:file_search_path(svg,             standards('SVG'))),
     assert(user:file_search_path(tests,           standards('Tests'))),
     assert(user:file_search_path(uri,             standards('URI'))),

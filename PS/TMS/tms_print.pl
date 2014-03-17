@@ -40,17 +40,17 @@ Support for printing (aspects of) a TMS.
 :- rdf_meta(tms_print_justification(+,+,r,?,?)).
 tms_print_justification(O1, TMS, J) -->
   {once(tms_justification(TMS, As, R, C, J))},
-
+  
   % Write the reason.
   {default_option(O1, indent, 0, I, O2)},
   indent(I),
   bracketed(square, atom(R)),
   space,
-
+  
   % Write the consequent.
   tms_print_node(O2, TMS, C),
   nl,
-
+  
   % Write the antecendents.
   {update_option(O2, indent, succ, _, O3)},
   tms_print_nodes(O3, TMS, As).
@@ -60,7 +60,7 @@ tms_print_nodes(_, _, []) --> !, [].
 tms_print_nodes(O1, TMS, [H|T]) -->
   tms_print_node(O1, TMS, H),
   tms_print_nodes(O1, TMS, T).
-
+  
 
 %! tms_print_node(
 %!   +Options:list(nvpair),
@@ -73,7 +73,7 @@ tms_print_nodes(O1, TMS, [H|T]) -->
 
 tms_print_node(O1, TMS, C) -->
   {default_option(O1, indent, 0, O2)},
-
+  
   ({
     tms_node(TMS, C),
     rdf_has(J, tms:has_consequent, C)
@@ -93,10 +93,10 @@ tms_print_node(O1, TMS, C) -->
 % The following options are supported:
 %   * =|lang(+LangTag:atom)|=
 
-tms_print_node_dead_end(O1, Node) -->
+tms_print_node_dead_end(O1, N) -->
   {
-    option(lang(LangTag), O1, en),
-    rdfs_preferred_label([LangTag], Node, LexicalForm, _, _)
+    option(lang(Lang), O1, en),
+    rdfs_preferred_label(N, Lang, _PreferredLang, L)
   },
-  atom(LexicalForm).
+  atom(L).
 

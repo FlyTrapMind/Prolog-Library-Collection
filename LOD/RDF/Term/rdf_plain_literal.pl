@@ -37,7 +37,7 @@ in Normal Form C with the set of BCP 47 language tags.
 
 % Simple plain literal.
 rdf_is_plain_literal(SimpleLiteral):-
-  rdf_simple_literal:rdf_is_simple_literal(SimpleLiteral).
+  rdf_is_simple_literal(SimpleLiteral).
 % Non-simple plain literal.
 rdf_is_plain_literal(literal(lang(LangTag,LexicalForm))):-
   atom(LangTag),
@@ -88,7 +88,7 @@ rdf_plain_literal(PlainLiteral, LexicalForm, LangTag):-
   % Enumerate all plain literals.
   rdf_plain_literal(PlainLiteral),
   rdf_plain_literal_compound(PlainLiteral, LexicalForm, LangTag).
-rdf_plain_literal(PlainLiteral, LexicalForm, LangTag):-
+rdf_plain_literal_language_tag(PlainLiteral, LexicalForm, LangTag):-
   var(PlainLiteral), !,
   (
     var(LangTag)
@@ -100,7 +100,7 @@ rdf_plain_literal(PlainLiteral, LexicalForm, LangTag):-
 rdf_plain_literal(PlainLiteral, LexicalForm, LangTag):-
   rdf_plain_literal_compound(PlainLiteral, LexicalForm, LangTag).
 
-rdf_plain_literal_compound(PlainLiteral, LexicalForm, _):-
+rdf_plain_literal_compound(PlainLiteral, LexicalForm, LangTag):-
   rdf_simple_literal(PlainLiteral), !,
   rdf_simple_literal_lexical_form(PlainLiteral, LexicalForm).
 rdf_plain_literal_compound(literal(lang(LangTag,LexicalForm)), LexicalForm, LangTag).

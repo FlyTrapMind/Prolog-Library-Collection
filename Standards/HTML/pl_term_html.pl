@@ -13,14 +13,13 @@
 /** <module> HTML Prolog term
 
 @author Wouter Beek
-@version 2014/01-2014/03
+@version 2014/01-2014/02
 */
 
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(error_ext)).
-:- use_module(html(html)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(library(http/html_write)).
 :- use_module(math(float_ext)).
@@ -307,10 +306,7 @@ pl_term_html(Term) -->
 pl_term_html(Atom) -->
   {atomic(Atom)}, !,
   html(span(class=atomic, Atom)).
-% HTML link.
-pl_term_html(URL-Label) --> !,
-  html_link(URL-Label).
-% Compound terms are converted to an atom first.
+% Compound terms are converted to atom first.
 pl_term_html(PL_Term) -->
   {term_to_atom(PL_Term, Atom)},
   html(span(class=compound, Atom)).
