@@ -136,7 +136,7 @@ text/xml
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(server(web_modules)).
 :- use_module(xml(xml_namespace)).
 

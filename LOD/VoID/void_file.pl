@@ -1,9 +1,8 @@
 :- module(
   void_file,
   [
-    void_load/1, % +VoidGraph:atom
     void_load/2, % +File:atom
-                 % -VoidGraph:atom
+                 % :Options:list(nvpair)
     void_save/3 % +Options:list(nvpair)
                 % +VoidGraph:atom
                 % ?File:atom
@@ -37,6 +36,8 @@ VoiD covers four areas of metadata:
 
 :- use_module(generics(thread_ext)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
+:- use_module(library(thread)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(void(void_db)).
@@ -44,49 +45,31 @@ VoiD covers four areas of metadata:
 
 
 
-%! void_load(+VoidGraph:atom) is det.
+%! void_load is det.
 
-void_load(VoidGraph):-
+void_load:-
   % NO THREADS:
-  forall(
-    void_dataset(VoidGraph, VoidDataset),
-    void_load_dataset(VoidGraph, VoidDataset)
-  ).
-  /*% THREADS:
-  forall_thread(
+  findall(
+    rdf_load(Location, []),
     (
-      void_dataset(VoidGraph, VoidDataset),
-      format(atom(Msg), 'Loading dataset ~w.', [VoidDataset])
+      rdfs_individual_of(VoidDataset, void:'Dataset'),
+      rdf(VoidDataset, void:dataDump, Location)
     ),
-    void_load_dataset(VoidGraph, VoidDataset),
-    void_file,
-    Msg
-  ).*/
+    Goals
+  ),
+  current_prolog_flag(cpu_count, N),
+  concurrent(N, Goals, []).
 
 
-%! void_load(+File:atom, ?VoidGraph:atom) is det.
+%! void_load(+FileOrList, +Options:list(nvpair)) is det.
 % Loads a VoID file and all the datasets defined in it.
 %
 % Also calculates VoID statistics for all datasets and asserts those
 %  in the VoID file.
-%
-% @arg File The atomic name of the absolute file path of a VoID file.
-% @VoidGraph
 
-% The RDF graph already exists.
-void_load(File, VoidGraph):-
-  rdf_graph_property(VoidGraph, source(File)), !,
-  print_message(warning, 'Cannot load VoID file. File already loaded.').
-void_load(File, VoidGraph):-
-  rdf_load([], VoidGraph, File),
-  void_load(VoidGraph).
-
-
-%! void_load_dataset(+VoidGraph:atom, +VoidDataset:iri) is det.
-
-void_load_dataset(VoidGraph, VoidDataset):-
-  void_dataset_location(VoidGraph, VoidDataset, DatadumpFile),
-  rdf_load([], VoidDataset, DatadumpFile).
+void_load(In, O1):-
+  rdf_load(In, O1),
+  void_load.
 
 
 %! void_save(+Options:list(nvpair), +VoidGraph:atom, ?File:atom) is det.

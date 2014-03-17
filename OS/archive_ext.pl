@@ -5,6 +5,7 @@
                       % +Archive:atom
     create_tarball/2, % +Files:list(atom)
                       % +Tarball:atom
+    extract_archive/1, % +FromFile:atom
     extract_archive/2, % +FromFile:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
     is_archive/1 % +File:atom
@@ -67,6 +68,10 @@ create_archive(Files, Archive):-
 create_tarball(Files, Archive):-
   findall(file(File), member(File, Files), O1),
   process_create(path(tar), ['-cf',file(Archive)|O1], []).
+
+
+extract_archive(File):-
+  extract_archive(File, []).
 
 
 %! extract_archive(

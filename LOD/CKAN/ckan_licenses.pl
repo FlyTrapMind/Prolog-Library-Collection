@@ -73,6 +73,7 @@ After these operations all 4053 datasets have fully described
 :- use_module(rdf_term(rdf_boolean)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(server(web_modules)).

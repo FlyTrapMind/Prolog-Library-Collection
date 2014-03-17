@@ -93,7 +93,7 @@ Row terms are used in [library(csv)] and [library(semweb/sparql_client)].
 % catch-all option.
 
 categorize_rows([X], L1, L2, L3):- !,
-  categorize_rows([X,Y], L1, L2, L3).
+  categorize_rows([X,_], L1, L2, L3).
 categorize_rows([_,_], [], [], []):- !.
 categorize_rows([X,Y], [H1|T1], [H2|T2], L3):-
   H1 =.. [row,X|Args], !,

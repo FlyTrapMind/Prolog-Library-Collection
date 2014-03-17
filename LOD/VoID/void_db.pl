@@ -40,6 +40,14 @@ void_init:-
 
 
 
+%! void_graph_datasets(+VoidGraph:atom, -VoidDataset:iri) is semidet.
+% Translates between VoID graphs and the RDF datasets described by them.
+
+void_dataset(VoidGraph, VoidDataset):-
+  rdfs_individual_of(VoidDataset, void:'Dataset'),
+  once(rdf_term(VoidDataset, VoidGraph)).
+
+
 void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
   % Every dataset has exactly one datadump property.
   % @tbd Is this assumption correct?l
@@ -58,12 +66,4 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
     file_name(VoidFile, VoidDirectory, _, _),
     relative_file_path(DatadumpFile, VoidDirectory, DatadumpLocation)
   ).
-
-
-%! void_graph_datasets(+VoidGraph:atom, -VoidDataset:iri) is semidet.
-% Translates between VoID graphs and the RDF datasets described by them.
-
-void_dataset(VoidGraph, VoidDataset):-
-  rdfs_individual_of(VoidDataset, void:'Dataset'),
-  once(rdf_term(VoidDataset, VoidGraph)).
 

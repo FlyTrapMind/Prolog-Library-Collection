@@ -54,12 +54,39 @@ since most datasets are published in a non-standard way.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
+:- use_module(library(http/http_ssl_plugin)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+% rdf_file_type(xml,   xml    ).
+% rdf_file_type(rdf,   xml    ).
+% rdf_file_type(rdfs,  xml    ).
+% rdf_file_type(owl,   xml    ).
+% rdf_file_type(htm,   xhtml  ).
+% rdf_file_type(html,  xhtml  ).
+% rdf_file_type(xhtml, xhtml  ).
+% rdf_file_type(trp,   triples).
+% rdf_storage_encoding('', plain).
+% url_protocol(file).
 :- use_module(library(semweb/rdf_db)).
+% rdf_open_hook(http,  ...)
+% rdf_open_hook(https, ...)
+% rdf_storage_encoding(_, gzip).
+% url_protocol(http).
+% url_protocol(https).
+:- use_module(library(semweb/rdf_http_plugin)).
+% rdf_file_type(nt,       ntriples).
+% rdf_file_type(ntriples, ntriples).
+% rdf_file_type(nq,       nquads  ).
+% rdf_file_type(nquads,   nquads  ).
 :- use_module(library(semweb/rdf_ntriples)).
-:- use_module(library(semweb/rdf_turtle)).
 :- use_module(library(semweb/rdf_turtle_write)).
+% rdf_open_decode(gzip, ...)
+% rdf_storage_encoding(gz, gzip)
+:- use_module(library(semweb/rdf_zlib_plugin)).
+% rdf_file_type(ttl,  turtle).
+% rdf_file_type(n3,   turtle).
+% rdf_file_type(trig, trig  ).
+:- use_module(library(semweb/turtle)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
@@ -260,16 +287,10 @@ rdf_load(O1, Graph, File):-
   rdf_load(File, O2),
 
   % Send a debug message notifying that the RDF file was successfully loaded.
-  debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]),
+  debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
 
-  % Optionally load described datasets.
-  (
-    option(void(true), O1)
-  ->
-    rdf_load(O2, Graph, Graph)
-  ;
-    true
-  ).
+
+
 % Load more graphs into another graph.
 rdf_load(O1, Graph, Graphs):-
   is_list(Graphs),
