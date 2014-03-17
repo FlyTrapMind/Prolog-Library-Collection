@@ -30,17 +30,8 @@ Cell contents are represented by Prolog ground terms that are elements
 
 
 
-%! html_table(
-%!   +Options:list(nvpair),
-%!   :Caption,
-%!   +Rows:list(list(ground))
-%! )// is det.
-%! html_table(
-%!   +Options:list(nvpair),
-%!   :Caption,
-%!   :Cell,
-%!   +Rows:list(list(ground))
-%! )// is det.
+%! html_table(+Options:list(nvpair), :Caption, +Rows:list(list(ground)))// is det.
+%! html_table(+Options:list(nvpair), :Caption, :Cell, +Rows:list(list(ground)))// is det.
 % Generates the HTML markup for a table.
 %
 % The following options are supported:

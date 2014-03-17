@@ -19,17 +19,15 @@ Takes axioms, rules, and the RDF index and performs materializations.
 */
 
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_collection)).
+:- use_module(dcg(dcg_collection)). % DCG-meta.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(doyle(doyle)).
 :- use_module(generics(deb_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
-:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_name)).
 :- use_module(
   rdf_reasoning(rdf_ent),
   [
@@ -47,7 +45,6 @@ Takes axioms, rules, and the RDF index and performs materializations.
   ]
 ).
 :- use_module(tms(tms)).
-:- use_module(tms(tms_export)).
 :- use_module(tms(tms_print)).
 
 :- dynamic(recent_triple/4).

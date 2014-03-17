@@ -96,7 +96,7 @@ tms_print_node(O1, TMS, C) -->
 tms_print_node_dead_end(O1, N) -->
   {
     option(lang(Lang), O1, en),
-    rdfs_preferred_label(N, Lang, _PreferredLang, L)
+    rdfs_preferred_label([Lang], M, L, _, _)
   },
   atom(L).
 
