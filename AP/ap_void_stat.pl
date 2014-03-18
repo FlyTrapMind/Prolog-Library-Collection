@@ -46,7 +46,7 @@ void_statistics(FromDir, ToDir, ApStage):-
     ),
     Files
   ),
-  (Files == [] -> existence_error('LOD', 'No LOD here') ; true),
+  (Files == [] -> existence_error(lod, 'No LOD here') ; true),
   link_directory_contents(FromDir, ToDir).
 
 

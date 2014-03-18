@@ -53,6 +53,8 @@
                             % -Path:atom
     is_absolute_file_name2/1, % ?File:atom
     is_image_file/1, % +File:atom
+    last_path_component/2, % +Path:atom
+                           % -BaseOrLastSubdir:atom
     link_file/2, % +ToDirectory:atom
                  % +FromFile:atom
     merge_into_one_file/2, % +FromDir:atom
@@ -410,6 +412,19 @@ is_absolute_file_name2(F):-
 is_image_file(File):-
   file_name_extension(_, Extension, File),
   image_extension(Extension).
+
+
+%! last_path_component(+Path:atom, -BaseOrLastSubdir:atom) is det.
+% Returns the last path component.
+% If `Path` is a (non-directory) file, then this is the base name.
+% If `Path` is a directory, then this is the last subdirectory name.
+
+last_path_component(Path, Base):-
+  file_base_name(Path, Base),
+  Base \== '', !.
+last_path_component(Dir, LastSubdir):-
+  directory_subdirectories(Dir, Subdirs),
+  last(Subdirs, LastSubdir).
 
 
 %! link_file(+ToDir:atom, +FromFile:atom) is det.

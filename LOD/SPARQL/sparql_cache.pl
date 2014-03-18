@@ -1,9 +1,9 @@
 :- module(
-  'SPARQL_cache',
+  sparql_cache,
   [
-    'SPARQL_cache'/2, % +Resource:or([bnode,iri,literal])
+    sparql_cache/2, % +Resource:or([bnode,iri,literal])
                       % +Graph:atom
-    'SPARQL_cache'/3 % +Resource:or([bnode,iri,literal])
+    sparql_cache/3 % +Resource:or([bnode,iri,literal])
                      % -Resources:ordset(or([bnode,iri,literal]))
                      % -Propositions:ordset(list)
   ]
@@ -23,25 +23,25 @@ Locally caches triples that are relevant for specific resources.
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
-:- use_module('SPARQL'('SPARQL_build')).
-:- use_module('SPARQL'('SPARQL_db')).
-:- use_module('SPARQL'('SPARQL_ext')).
+:- use_module(sparql(sparql_build)).
+:- use_module(sparql(sparql_db)).
+:- use_module(sparql(sparql_ext)).
 
-:- debug('SPARQL_cache').
+:- debug(sparql_cache).
 
 
 
-%! 'SPARQL_cache'(+Resource:iri, +Graph:atom) is det.
+%! sparql_cache(+Resource:iri, +Graph:atom) is det.
 
-'SPARQL_cache'(Resource, Graph):-
-  'SPARQL_cache'(Resource, _, Propositions),
+sparql_cache(Resource, Graph):-
+  sparql_cache(Resource, _, Propositions),
   maplist(assert_proposition(Graph), Propositions).
 
 assert_proposition(Graph, [S,P,O]):-
   rdf_assert(S, P, O, Graph).
 
 
-%! 'SPARQL_cache'(
+%! sparql_cache(
 %!   +Resource:or([bnode,iri,literal]),
 %!   -Resources:ordset(or([bnode,iri,literal])),
 %!   -Propositions:ordset(list(or([bnode,iri,literal])))
@@ -52,15 +52,15 @@ assert_proposition(Graph, [S,P,O]):-
 %  a registered SPARQL endpoint.
 
 % Blank node.
-'SPARQL_cache'(Resource, [], []):-
+sparql_cache(Resource, [], []):-
   rdf_is_bnode(Resource), !.
 
 % Literal.
-'SPARQL_cache'(Resource, [], []):-
+sparql_cache(Resource, [], []):-
   rdf_is_literal(Resource), !.
 
 % Skip IRI based on parsing (part of) the IRI itself.
-'SPARQL_cache'(Resource, [], []):-
+sparql_cache(Resource, [], []):-
   uri_components(
     Resource,
     uri_components(Scheme,Domain,Path,_Fragment,_Search)
@@ -68,11 +68,11 @@ assert_proposition(Graph, [S,P,O]):-
   skip_iri(Scheme, Domain, Path).
 
 % IRI with registered SPARQL endpoint.
-'SPARQL_cache'(Resource, Resources, Propositions):-
+sparql_cache(Resource, Resources, Propositions):-
   uri_components(Resource, uri_components(_, Domain, _, _, _)),
-  'SPARQL_current_remote_domain'(Remote, Domain), !,
+  sparql_current_remote_domain(Remote, Domain), !,
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       _,
       _,
       [],
@@ -86,7 +86,7 @@ assert_proposition(Graph, [S,P,O]):-
     ),
     Query
   ),
-  'SPARQL_query'(Remote, Query, _VarNames, Rows),
+  sparql_query(Remote, Query, _VarNames, Rows),
 
   % Conversion
   rows_to_propositions([Resource], Rows, Propositions),

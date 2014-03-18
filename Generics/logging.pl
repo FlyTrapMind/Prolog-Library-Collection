@@ -51,6 +51,7 @@ logging started.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
+:- discontiguous(prolog:message/1).
 :- multifile(prolog:message/1).
 
 :- dynamic(current_log_file/1).

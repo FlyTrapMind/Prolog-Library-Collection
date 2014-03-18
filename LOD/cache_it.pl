@@ -32,8 +32,8 @@ Possible instantiations for `Goal` are SPARQL_cache/4 and LOD_cache/4.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_read)).
-:- use_module(rdf_web(rdf_table)).
-:- use_module('SPARQL'('SPARQL_db')).
+:- use_module(rdf_web(rdf_store_table)).
+:- use_module(sparql(sparql_db)).
 
 :- debug(cache_it).
 
@@ -72,7 +72,7 @@ cache_it1(Graph, Goal, PredicatesFilter, [H|T]):- !,
     Pairs
   ),
   (nonvar(PredicatesFilter), ! ; default_predicate_filter(PredicatesFilter)),
-  cache_it1('depth-first', Graph, Goal, PredicatesFilter, Pairs).
+  cache_it1(depth_first, Graph, Goal, PredicatesFilter, Pairs).
 cache_it1(Graph, Goal, PredicatesFilter, Resource):-
   cache_it1(Graph, Goal, PredicatesFilter, [Resource]).
 
@@ -109,11 +109,11 @@ cache_it1(Mode, Graph, Goal, PredicatesFilter, [X-HistX|T1]):-
   % Update resources that have to be visited.
   % Support breadth-first and depth-first modes.
   (
-    Mode == 'breadth-first'
+    Mode == breadth_first
   ->
     append(T1, NewPairs, T2)
   ;
-    Mode == 'depth-first'
+    Mode == depth_first
   ->
     append(NewPairs, T1, T2)
   ),
@@ -172,7 +172,7 @@ unwanted_neighbor(_, Resource):-
 cache_it2(_, _, [], [], []):- !.
 cache_it2(Graph, Goal, [H|T], Resources, Propositions):- !,
   cache_it2(
-    'breadth-first',
+    breadth_first,
     Graph,
     Goal,
     [H|T],
@@ -193,7 +193,7 @@ cache_it2(Graph, Goal, Resource, Resources, Propositions):-
 
 
 %! cache_it2(
-%!   +Mode:oneof(['breadth-first','depth-first']),
+%!   +Mode:oneof([breadth_first,depth_first]),
 %!   +Graph:atom,
 %!   :Goal,
 %!   +QueryTargets:list(or([bnode,iri,literal])),
@@ -236,11 +236,11 @@ cache_it2(Mode, Graph, Goal, [H1|T1], Vs1, VSol, Props1, PropsSol):-
   % Update resources that have to be visited.
   % Support breadth-first and depth-first modes.
   (
-    Mode == 'breadth-first'
+    Mode == breadth_first
   ->
     append(T1, NewNeighbors, T2)
   ;
-    Mode == 'depth-first'
+    Mode == depth_first
   ->
     append(NewNeighbors, T1, T2)
   ),

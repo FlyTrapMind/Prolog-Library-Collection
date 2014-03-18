@@ -1,12 +1,12 @@
 :- module(
-  'SPARQL_build',
+  sparql_build,
   [
-    'SPARQL_count'//5, % +Regime:oneof([owl])
+    sparql_count//5, % +Regime:oneof([owl])
                        % +DefaultGraph:iri
                        % +Prefixes:list(atom)
                        % +Variable:atom
                        % +BGPs:or([compound,list(compound)])
-    'SPARQL_formulate'//10 % ?Regime:oneof([owl])
+    sparql_formulate//10 % ?Regime:oneof([owl])
                            % ?DefaultGraph:iri
                            % +Prefixes:list(atom)
                            % +Mode:oneof([select])
@@ -157,7 +157,7 @@ regex_flags1([case_insensitive|T]) -->
   regex_flags1(T).
 
 
-%! 'SPARQL_count'(
+%! sparql_count(
 %!   +Regime:oneof([owl]),
 %!   +DefaultGraph:iri,
 %!   +Prefixes:list(atom),
@@ -165,7 +165,7 @@ regex_flags1([case_insensitive|T]) -->
 %!   +BGPs:or([compound,list(compound)])
 %! )// is det.
 
-'SPARQL_count'(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
+sparql_count(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
   inference_regime(Regime),
   default_graph(DefaultGraph),
   prefixes(Prefixes),
@@ -175,7 +175,7 @@ regex_flags1([case_insensitive|T]) -->
   where(BGPs).
 
 
-%! 'SPARQL_formulate'(
+%! sparql_formulate(
 %!   +Regime:oneof([owl]),
 %!   +DefaultGraph:iri,
 %!   +Prefixes:list(atom),
@@ -224,7 +224,7 @@ regex_flags1([case_insensitive|T]) -->
 %
 % @tbd Update examples in predicate documentation.
 
-'SPARQL_formulate'(
+sparql_formulate(
   Regime,
   DefaultGraph,
   Prefixes,

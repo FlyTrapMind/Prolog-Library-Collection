@@ -70,6 +70,9 @@ create_tarball(Files, Archive):-
   process_create(path(tar), ['-cf',file(Archive)|O1], []).
 
 
+%! extract_archive(+FromFile:atom) is det.
+% @see Wrapper around extract_archive/2.
+
 extract_archive(File):-
   extract_archive(File, []).
 

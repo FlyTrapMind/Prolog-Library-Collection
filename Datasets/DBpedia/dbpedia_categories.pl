@@ -17,14 +17,14 @@ DBpedia publishes the following three kind of files about categories:
     related using the SKOS Vocabulary.
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02-2014/03
 */
 
 :- use_module(generics(uri_ext)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(os(archive_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_serial)).
 
 :- initialization(dbpedia_load_categories).
 
@@ -33,39 +33,23 @@ DBpedia publishes the following three kind of files about categories:
 %! dbpedia_load_categories is det.
 % Loads the SKOS hierarchy of categories.
 
+dbpedia_categories_url:-
+gtrace,
+  dbpedia_categories_url(Url),
+  dbpedia_load_categories(Url).
+
 % Load the hierarchy.
-dbpedia_load_categories:-
-  url_to_file_name(
-    'http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2',
-    File1
-  ),
-  directory_file_path(Directory, _, File1),
-  absolute_file_name(
-    skos_categories_en,
-    File2,
-    [access(read),file_errors(fail),file_type(turtle),relative_to(Directory)]
-  ), !,
-  rdf_load([format(turtle)], dbpedia_categories, File2).
-% First download the file from DBpedia, then load the hierarchy.
-dbpedia_load_categories:-
-  download_to_file(
-    [],
-    'http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2',
-    File1
-  ),
-  extract_archive(File1, _),
-  directory_file_path(Dir, _, File1),
-  directory_files(
-    [
-      file_types([turtle]),
-      include_directories(false),
-      include_self(false),
-      recursive(false)
-    ],
-    Dir,
-    [File2|_]
-  ),
-  create_file(data('.'), skos_categories_en, turtle, File3),
-  rdf_convert_file(_, File2, 'application/x-turtle', File3),
-  dbpedia_load_categories.
+dbpedia_load_categories(Url):-
+  url_to_file_name(Url, File1),
+  file_name_extension(File2, bz2, File1),
+  exists_file(File), !,
+  access_file(File, read),
+  rdf_load(File, [format(turtle),graph(dbpedia_categories)]).
+dbpedia_load_categories(Url):-
+  download_to_file([], Url, File),
+  extract_archive(File),
+  dbpedia_load_categories(Url).
+
+
+dbpedia_categories_url('http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2').
 

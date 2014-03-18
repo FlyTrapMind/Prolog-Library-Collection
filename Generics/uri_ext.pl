@@ -6,16 +6,16 @@
     atom_to_iri/2, % +Atom:atom
                    % -Iri:iri
     download_to_file/3, % +Options:list(nvpair)
-                        % +URL:atom
+                        % +Url:url
                         % ?File:atom
-    is_image_url/1, % +URL:url
+    is_image_url/1, % +Url:url
     uri_path/2, % +PathComponents:list(term)
                 % -Path:atom
-    url_to_directory_name/2, % +URL:iri
+    url_to_directory_name/2, % +Url:iri
                              % -Directory:atom
-    url_to_file_name/2, % +URL:atom
+    url_to_file_name/2, % +Url:atom
                         % -File:atom
-    url_to_graph_name/2, % +URL:url
+    url_to_graph_name/2, % +Url:url
                          % -Graph:atom
     uri_query_add/4, % +FromURI:uri
                      % +Name:atom
@@ -42,7 +42,9 @@
 :- use_module(generics(typecheck)).
 :- use_module(http(http)).
 :- use_module(library(apply)).
+:- use_module(library(filesex)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
@@ -101,32 +103,54 @@ percent_encoding(space) -->
   integer(20).
 
 
-%! download_to_file(+Options:list(nvpair), +URL:atom, ?File:atom) is det.
-% Options are passed to http_goal/3 and, subsequently, http_open/3.
+%! download_to_file(+Options:list(nvpair), +Url:url, ?File:atom) is det.
+% Downloads files from a URL to either the given file (when instantiated)
+% of to the a file name that is created based on the URL.
+%
+% The following options are supported:
+%   * =|force(+Redownload:boolean)|=
+%     Sets whether files that were downloaded in the past
+%     are overwritten or not.
+%     Default: `false`.
+%   * Other options are passed to http_goal/3 and, subsequently, http_open/3.
+%
+% @see url_to_file_name/2 for how the file name is created based on the URL.
 
-download_to_file(O1, URL, File):-
-  (
-    nonvar(File),
-    is_absolute_file_name(File)
-  ->
-    download_to_file0(O1, URL, File)
-  ;
-    url_to_file_name(URL, File),
-    download_to_file0(O1, URL, File)
-  ).
+% The file was already downloaded in the past.
+download_to_file(O1, _, File):-
+  nonvar(File),
+  option(force(false), O1, false),
+  exists_file(File), !,
+  access_file(File, read).
+% An absolute file name is specified.
+download_to_file(O1, Url, File):-
+  nonvar(File),
+  is_absolute_file_name(File), !,
 
-download_to_file0(O1, URL, File1):-
+  % Check write access to the file.
+  access_file(File, write),
+
   % Check the URL.
-  uri_is_global(URL),
+  uri_is_global(Url),
 
+  % Multiple threads could be downloading the same file,
+  % so we cannot download to the file's systematic name.
+  % Instead we save to a thread-specific name.
   thread_self(Id),
-  atomic_list_concat([tmp,Id], '_', Name2),
-  file_alternative(File1, _, Name2, _, File2),
+  atomic_list_concat([tmp,Id], '_', ThreadName),
+  file_name_extension(File, ThreadName, TmpFile),
 
+  % The actual downloading part.
   merge_options([nocatch(true)], O1, O2),
-  http_goal(URL, O2, file_from_stream(File2)),
+  http_goal(Url, O2, file_from_stream(TmpFile)),
 
-  rename_file(File2, File1).
+  % Give the file its original name.
+  rename_file(TmpFile, File).
+% No file name is given; create a file name is a standardized way,
+% based on the URL.
+download_to_file(O1, Url, File):-
+  url_to_file_name(Url, File),
+  download_to_file(O1, Url, File).
 
 
 file_from_stream(File, HTTP_Stream):-
@@ -137,13 +161,13 @@ file_from_stream(File, HTTP_Stream):-
   ).
 
 
-%! is_image_url(+URL:url) is semidet.
-% Succeeds if the given URL locates an image file.
+%! is_image_url(+Url:url) is semidet.
+% Succeeds if the given Url locates an image file.
 
-is_image_url(URL):-
-  is_of_type(iri, URL),
+is_image_url(Url):-
+  is_of_type(iri, Url),
   uri_components(
-    URL,
+    Url,
     uri_components(_Scheme, _Authority, Path, _Search, _Fragment)
   ),
   is_image_file(Path).
@@ -178,44 +202,38 @@ url_to_directory_name(URI, Dir):-
   create_nested_directory(data([Scheme,Authority|Subdirs]), Dir).
 
 
-%! url_to_file_name(+URL:atom, -File:atom) is det.
+%! url_to_file_name(+Url:atom, -File:atom) is det.
 % Returns a file name based on the given URI.
 %
-% @param URL The universal location of a file.
-% @param File The atomic name of a file based on the given URL,
+% @param Url The universal location of a file.
+% @param File The atomic name of a file based on the given Url,
 %         relative to the given root.
 
-url_to_file_name(URI, File):-
-  uri_components(
-    URI,
-    uri_components(Scheme, Authority, Path, _Search, _Fragment)
+url_to_file_name(Url, File):-
+  uri_components(Url, uri_components(Scheme,Authority,UrlPath,_,_)),
+  directory_subdirectories(UrlPath, UrlPathComponents),
+  directory_subdirectories(
+    RelativePath,
+    [Scheme,Authority|UrlPathComponents]
   ),
-
-  % Split path into directory and file names.
-  file_directory_name(Path, PathDir),
-  file_base_name(Path, PathFile1),
-  % When the URL path is a directory,
-  %  then the relative file is the empty string.
-  % This causes problems when creating the absolute file name,
-  %  since the resulting `File` must not be a directory.
-  (
-    PathFile1 == ''
-  ->
-    PathFile2 = dummy
-  ;
-    PathFile2 = PathFile1
+  absolute_file_name(
+    data(.),
+    RelativeTo,
+    [access(read),file_type(directory)]
   ),
+  relative_file_path(Path, RelativeTo, RelativePath),
 
-  % Create the local directory.
-  directory_subdirectories(PathDir, PathDirComponents),
-  create_nested_directory(data([Scheme,Authority|PathDirComponents]), Dir),
+  % Ensure the directory exists.
+  file_directory_name(Path, Dir),
+  make_directory_path(Dir),
 
-  % Construct the local file name.
-  absolute_file_name(PathFile2, File, [access(write),relative_to(Dir)]).
+  % Create the file name.
+  last_path_component(Path, BaseName),
+  absolute_file_name(BaseName, File, [access(write),relative_to(Dir)]).
 
 
-url_to_graph_name(URL, G):-
-  dcg_phrase(url_to_graph, URL, G).
+url_to_graph_name(Url, G):-
+  dcg_phrase(url_to_graph, Url, G).
 
 url_to_graph --> dcg_end, !.
 url_to_graph, [X] -->

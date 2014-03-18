@@ -12,6 +12,9 @@
     nvpair//3, % :ElementWriter
                % +Name:ground
                % +Value:ground
+    pair//3,  % +Mode:oneof([ascii,html])
+              % :ElementWriter
+              % +Pair:pair(ground)
     pair//4,  % +Mode:oneof([ascii,html])
               % :ElementWriter
               % +Element1:ground
@@ -29,7 +32,7 @@
 DCG rules for parsing/generating collections.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/01
+@version 2013/07-2013/09, 2013/11-2014/01 2014/03
 */
 
 :- use_module(generics(option_ext)).
@@ -40,6 +43,15 @@ DCG rules for parsing/generating collections.
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(library(option)).
+
+:- meta_predicate(collection(//,//,2,//,3,+,?,?)).
+:- meta_predicate(collection_inner(//,//,2,//,3,+,?,?)).
+:- meta_predicate(list(3,+,?,?)).
+:- meta_predicate(nvpair(3,+,+,?,?)).
+:- meta_predicate(pair(+,3,+,?,?)).
+:- meta_predicate(pair(+,3,+,+,?,?)).
+:- meta_predicate(set(3,+,?,?)).
+:- meta_predicate(tuple(+,3,+,?,?)).
 
 
 
@@ -61,7 +73,6 @@ DCG rules for parsing/generating collections.
 % @arg Elements A list of ground terms that denote
 %      the members of the collection.
 
-:- meta_predicate(collection(//,//,2,//,3,+,?,?)).
 collection(Begin, End, Ordering, Separator, ElementWriter, Elements1) -->
   % E.g., list -> set.
   {(
@@ -81,7 +92,6 @@ collection(Begin, End, Ordering, Separator, ElementWriter, Elements1) -->
   % End a collection.
   End.
 
-:- meta_predicate(collection_inner(//,//,2,//,3,+,?,?)).
 % Done!
 collection_inner(_, _, _, _, _, []) --> !, [].
 % Nested collection.
@@ -110,16 +120,24 @@ collection_inner(Begin, End, Ordering, Separator, ElementWriter, [H|T]) -->
 % Lists are printed recursively, using indentation relative to the given
 % indentation level.
 
-:- meta_predicate(list(3,+,?,?)).
 list(ElementWriter, Elements) -->
   collection(`[`, `]`, =, `,`, ElementWriter, Elements).
 
 
 %! nvpair(:ElementWriter, +Name:ground, +Value:ground)// is det.
 
-:- meta_predicate(nvpair(3,+,+,?,?)).
 nvpair(ElementWriter, Name, Value) -->
   collection(``, `;`, =, `: `, ElementWriter, [Name,Value]).
+
+
+%! pair(
+%!   +Mode:oneof([ascii,html]),
+%!   :ElementWriter,
+%!   +Pairs:pair(ground)
+%! )// is det.
+
+pair(Mode, ElementWriter, E1-E2) -->
+  pair(Mode, ElementWriter, E1, E2).
 
 
 %! pair(
@@ -137,7 +155,6 @@ nvpair(ElementWriter, Name, Value) -->
 % @arg Element1
 % @arg Element2
 
-:- meta_predicate(pair(+,3,+,+,?,?)).
 pair(Mode1, ElementWriter, E1, E2) -->
   {default(Mode1, ascii, Mode2)},
   collection(langle(Mode2), rangle(Mode2), =, `,`, ElementWriter, [E1,E2]).
@@ -145,7 +162,6 @@ pair(Mode1, ElementWriter, E1, E2) -->
 
 %! set(:ElementWriter, +Elements:list(ground))// is det.
 
-:- meta_predicate(set(3,+,?,?)).
 set(ElementWriter, L) -->
   collection(`{`, `}`, list_to_ord_set, `,`, ElementWriter, L).
 
@@ -159,7 +175,6 @@ set(ElementWriter, L) -->
 % @arg ElementWriter
 % @arg Elements
 
-:- meta_predicate(tuple(+,3,+,?,?)).
 tuple(Mode1, ElementWriter, L) -->
   {default(Mode1, ascii, Mode2)},
   collection(langle(Mode2), rangle(Mode2), =, `,`, ElementWriter, L).

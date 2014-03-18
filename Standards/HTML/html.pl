@@ -2,6 +2,11 @@
   html,
   [
     html_link//1, % +Link:pair(url,atom)
+    html_pair//2, % +Element1
+                  % +Element2
+    html_pair//3, % :WriteMethod
+                  % +Element1
+                  % +Element2
     reply_html_file/2, % +Style:atom
                        % +File:atom
 
@@ -41,6 +46,7 @@ HTML attribute parsing, used in HTML table generation.
 @version 2012/09-2013/06, 2013/11, 2014/03
 */
 
+:- use_module(dcg(dcg_meta)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
@@ -56,6 +62,8 @@ HTML attribute parsing, used in HTML table generation.
 :- db_add_novel(user:prolog_file_type(htm, html)).
 :- db_add_novel(user:prolog_file_type(html, html)).
 
+:- meta_predicate(html_pair(//,+,+)).
+
 
 
 %! html_link(+Link:or([atom,pair(url,atom)]))// is det.
@@ -67,6 +75,27 @@ html_link(URL-Label) --> !,
 % Also allow elements with no link.
 html_link(Label) -->
   html(Label).
+
+
+%! html_pair(+Element1, +Element2)// is det.
+% @see Simplified version of html_pair//3
+%      that uses the default Prolog term-to-HTML writer.
+
+html_pair(E1, E2) -->
+  html_pair(pl_term_html, E1, E2).
+
+
+%! html_pair(:WriteMethod, +Element1, +Element2)// is det.
+
+html_pair(DCG, E1, E2) -->
+  html([
+    &(lang),
+    \dcg_call(DCG, E1),
+    ',',
+    \dcg_call(DCG, E2),
+    &(rlang)
+  ]).
+
 
 %! reply_html_file(+Style:atom, +File:atom) is det.
 % Serve the given HTML file using the given styling.

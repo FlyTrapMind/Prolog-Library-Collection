@@ -20,9 +20,9 @@
 :- use_module(rdf(rdf_serial)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
-:- use_module(sparql('SPARQL_ext')).
+:- use_module(sparql(sparql_ext)).
 
-:- 'SPARQL_register_remote'(kadaster, 'brk.kadaster.nl', default, '/sparql').
+:- sparql_register_remote(kadaster, 'brk.kadaster.nl', default, '/sparql').
 
 
 
@@ -32,7 +32,7 @@ load_kadaster:-
 
 query_kadaster(Resources):-
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       _,
       _,
       [],
@@ -46,11 +46,11 @@ query_kadaster(Resources):-
     ),
     Query
   ),
-  'SPARQL_query'(kadaster, Query, _VarNames, Resources).
+  sparql_query(kadaster, Query, _VarNames, Resources).
 
 query_kadaster(S, Resources):-
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       _,
       _,
       [],
@@ -64,11 +64,11 @@ query_kadaster(S, Resources):-
     ),
     Query
   ),
-  'SPARQL_query'(kadaster, Query, _VarNames, Resources).
+  sparql_query(kadaster, Query, _VarNames, Resources).
 
 scrape_kadaster:-
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       _,
       _,
       [],
@@ -82,7 +82,7 @@ scrape_kadaster:-
     ),
     Query
   ),
-  'SPARQL_query'(kadaster, Query, _VarNames, Resources),
+  sparql_query(kadaster, Query, _VarNames, Resources),
   forall(
     member(row(S,P,O), Resources),
     rdf_assert(S, P, O, kadaster)

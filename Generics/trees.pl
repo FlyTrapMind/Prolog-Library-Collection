@@ -58,8 +58,6 @@ all_subpaths_to_tree(Lists, List, List-Trees):-
     Trees
   ).
 
-identity(X, X).
-
 is_meta(transformation).
 
 print_node(O1, Node1) -->

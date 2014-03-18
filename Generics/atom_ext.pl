@@ -14,6 +14,9 @@
     atomic_atom/3, % ?Type:oneof([atom,codes,number,string])
                    % ?AtomicOrCodes:or([atom,list(code),number,string])
                    % ?Atom:atom
+    first_split/3, % +Atom:atom
+                   % +Split:atom
+                   % -FirstSubatom:atom
     format_integer/3, % +Integer:integer
                       % +Length:integer
                       % -Atom:atom
@@ -208,7 +211,7 @@ atomic_atom_nondet(atom, Atom, Atom):-
 % ~~~{.pl}
 % atomic_list_concat(Subatoms, Split, Atom),
 % Subatoms = [FirstSubatom|_]
-% ~~
+% ~~~
 
 first_split(Atom, Split, FirstSubatom):-
   atom_concat(Subatom, _, Atom),

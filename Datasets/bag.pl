@@ -20,11 +20,11 @@ info@geodan.nl
 :- use_module(dcg(dcg_generic)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
-:- use_module(sparql('SPARQL_ext')).
+:- use_module(sparql(sparql_ext)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(bag).
-:- 'SPARQL_register_remote'(bag, 'lod.geodan.nl', '/BAG/sparql').
+:- sparql_register_remote(bag, 'lod.geodan.nl', '/BAG/sparql').
 
 :- xml_register_namespace(bags).
 
@@ -32,7 +32,7 @@ info@geodan.nl
 
 test:-
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       _,
       _,
       [bags],
@@ -46,6 +46,6 @@ test:-
     ),
     Query
   ),
-  'SPARQL_query'(bag, Query, _VarNames, Resources),
+  sparql_query(bag, Query, _VarNames, Resources),
   dcg_with_output_to(current_user, list(pl_term, Resources)).
 

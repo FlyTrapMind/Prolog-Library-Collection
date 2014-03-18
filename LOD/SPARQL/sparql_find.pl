@@ -1,7 +1,7 @@
 :- module(
-  'SPARQL_find',
+  sparql_find,
   [
-    'SPARQL_find'/3 % +Remote:atom
+    sparql_find/3 % +Remote:atom
                     % +SearchTerm:or([atom,iri])
                     % -Resource:iri
   ]
@@ -17,13 +17,13 @@ Find a single resource based on a search term.
 
 :- use_module(generics(typecheck)).
 :- use_module(library(debug)).
-:- use_module('SPARQL'('SPARQL_build')).
-:- use_module('SPARQL'('SPARQL_cache')).
-:- use_module('SPARQL'('SPARQL_ext')).
+:- use_module(sparql(sparql_build)).
+:- use_module(sparql(sparql_cache)).
+:- use_module(sparql(sparql_ext)).
 
 
 
-%! 'SPARQL_find'(
+%! sparql_find(
 %!   +Remote:atom,
 %!   +SearchTerm:or([atom,iri]),
 %!   -Resource:iri
@@ -38,12 +38,12 @@ Find a single resource based on a search term.
 % @arg SearchTerm
 % @arg Resource
 
-'SPARQL_find'(Remote, Resource, Resource):-
+sparql_find(Remote, Resource, Resource):-
   is_of_type(iri, Resource), !,
   % @tbd This can be done more efficiently by just looking for
   %      the first triple.
   phrase(
-      'SPARQL_formulate'(
+      sparql_formulate(
 	  _,
 	  _,
 	  [],
@@ -57,17 +57,17 @@ Find a single resource based on a search term.
       ),
       Query
   ),
-  'SPARQL_query'(Remote, Query, _VarNames, Results),
+  sparql_query(Remote, Query, _VarNames, Results),
   (
     Results == []
   ->
-		  debug('SPARQL_find', 'No results for resource ~w.', [Resource])
+		  debug(sparql_find, 'No results for resource ~w.', [Resource])
 		    ;
 		    true
 		).
-'SPARQL_find'(Remote, SearchTerm, Resource):-
+sparql_find(Remote, SearchTerm, Resource):-
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       _,
       _,
       [rdfs],
@@ -84,11 +84,11 @@ Find a single resource based on a search term.
     ),
     Query
   ),
-  'SPARQL_query'(Remote, Query, _VarNames, Resources),
+  sparql_query(Remote, Query, _VarNames, Resources),
   (
     Resources = []
   ->
-    debug('SPARQL_find', 'Could not find a resource for \'~w\'.', [SearchTerm]),
+    debug(sparql_find, 'Could not find a resource for \'~w\'.', [SearchTerm]),
     fail
   ;
     Resources = [row(Resource)|_]

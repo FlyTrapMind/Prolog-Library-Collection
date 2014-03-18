@@ -1,12 +1,12 @@
 :- module(
   pair_ext,
   [
-    ord_sets_to_pairs/2, % +Sets:list(ordset)
-                         % -Pairs:ordset(pair)
+    ordsets_to_pairs/2, % +Sets:list(ordset)
+                        % -Pairs:ordset(pair)
     pairs_to_members/2, % +Pairs:list(pair)
                         % -Members:list
-    pairs_to_ord_sets/2 % +Pairs:list(pair(iri))
-                        % -Sets:list(ordset(iri))
+    pairs_to_ordsets/2 % +Pairs:list(pair(iri))
+                       % -Sets:list(ordset(iri))
   ]
 ).
 
@@ -26,13 +26,13 @@ Support predicates for working with pairs.
 
 
 
-%! ord_sets_to_pairs(+Sets:list(ordset), -Pairs:ordset(pair)) is det.
+%! ordsets_to_pairs(+Sets:list(ordset), -Pairs:ordset(pair)) is det.
 
-ord_sets_to_pairs(Sets, Pairs):-
-  ord_sets_to_pairs(Sets, [], Pairs).
+ordsets_to_pairs(Sets, Pairs):-
+  ordsets_to_pairs(Sets, [], Pairs).
 
-ord_sets_to_pairs([], Sol, Sol).
-ord_sets_to_pairs([H|T], L1, Sol):-
+ordsets_to_pairs([], Sol, Sol).
+ordsets_to_pairs([H|T], L1, Sol):-
   findall(
     X-Y,
     (
@@ -43,7 +43,7 @@ ord_sets_to_pairs([H|T], L1, Sol):-
     L2
   ),
   ord_union(L1, L2, L3),
-  ord_sets_to_pairs(T, L3, Sol).
+  ordsets_to_pairs(T, L3, Sol).
 
 
 
@@ -56,7 +56,7 @@ pairs_to_members(Pairs, Members):-
 
 
 
-%! pairs_to_ord_sets(
+%! pairs_to_ordsets(
 %!   +Pairs:list(pair(iri)),
 %!   -Sets:ordset(ordset(iri))
 %! ) is det.
@@ -71,12 +71,12 @@ pairs_to_members(Pairs, Members):-
 % {{a,b,c},{d,e}}
 % ~~~
 
-pairs_to_ord_sets(Pairs, Sets):-
-  pairs_to_ord_sets(Pairs, [], Sets).
+pairs_to_ordsets(Pairs, Sets):-
+  pairs_to_ordsets(Pairs, [], Sets).
 
-pairs_to_ord_sets([], Sol, Sol).
+pairs_to_ordsets([], Sol, Sol).
 % Connect two sets.
-pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
+pairs_to_ordsets([X-Y|T], Sets1, Sol):-
   member(OldSet1, Sets1),
   member(X, OldSet1),
   member(OldSet2, Sets1),
@@ -86,9 +86,9 @@ pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
   ord_del_element(Sets1, OldSet1, Sets2),
   ord_del_element(Sets2, OldSet2, Sets3),
   ord_add_element(Sets3, NewSet, Sets4),
-  pairs_to_ord_sets(T, Sets4, Sol).
+  pairs_to_ordsets(T, Sets4, Sol).
 % Add to an existing set.
-pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
+pairs_to_ordsets([X-Y|T], Sets1, Sol):-
   member(OldSet, Sets1),
   (
     member(X, OldSet)
@@ -101,12 +101,12 @@ pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
   ), !,
   ord_del_element(Sets1, OldSet, Sets2),
   ord_add_element(Sets2, NewSet, Sets3),
-  pairs_to_ord_sets(T, Sets3, Sol).
+  pairs_to_ordsets(T, Sets3, Sol).
 % New set.
-pairs_to_ord_sets([X-Y|T], Sets1, Sol):-
+pairs_to_ordsets([X-Y|T], Sets1, Sol):-
   list_to_ord_set([X,Y], NewSet),
   ord_add_element(Sets1, NewSet, Sets2),
-  pairs_to_ord_sets(T, Sets2, Sol).
+  pairs_to_ordsets(T, Sets2, Sol).
 
 
 
@@ -126,10 +126,10 @@ pairs_to_ord_sets_example([a-b,c-d], [[a,b],[c,d]]).
 pairs_to_ord_sets_example([a-b,c-d,d-b], [[a,b,c,d]]).
 
 test(
-  pairs_to_ord_sets,
+  pairs_to_ordsets,
   [forall(pairs_to_ord_sets_example(Pairs,Sets)),true]
 ):-
-  pairs_to_ord_sets(Pairs, Sets).
+  pairs_to_ordsets(Pairs, Sets).
 
 :- end_tests(pair_ext).
 

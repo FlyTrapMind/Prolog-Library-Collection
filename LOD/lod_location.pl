@@ -1,18 +1,16 @@
 :- module(
-  'LOD_location',
+  lod_location,
   [
-% HEADER
-    'LOD_header'/3, % +Prefix:atom
+    lod_header/3, % +Prefix:atom
                     % ?Name:atom
                     % ?Value:atom
-    'LOD_register_header'/3, % +Prefix:atom
-                             % +Name:atom
-                             % +Value:atom
-% LOCATION
-    'LOD_location'/2, % +Prefix:atom
+    lod_location/2, % +Prefix:atom
                       % -Location:atom
-    'LOD_register_location'/2 % +Prefix:atom
-                              % +Location:atom
+    lod_register_header/3, % +Prefix:atom
+                           % +Name:atom
+                           % +Value:atom
+    lod_register_location/2 % +Prefix:atom
+                            % +Location:atom
   ]
 ).
 
@@ -32,22 +30,22 @@ Support for Web locations that store LOD descriptions.
 
 
 
-% 'LOD_header'(+Prefix:atom, ?Name:atom, ?Value:atom) is nondet.
+% lod_header(+Prefix:atom, ?Name:atom, ?Value:atom) is nondet.
 
-'LOD_header'(Prefix, Name, Value):-
+lod_header(Prefix, Name, Value):-
   lod_header(Prefix, Name, Value).
 
-'LOD_register_header'(Prefix, Name, Value):-
+lod_register_header(Prefix, Name, Value):-
   db_add_novel(lod_header(Prefix, Name, Value)).
 
 
-% 'LOD_location'(+Prefix:atom, -Location:iri) is det.
+% lod_location(+Prefix:atom, -Location:iri) is det.
 % Used in case the XML namespace does not denote
 %  a machine-readable description of the vocabulary, e.g. Dublin Core.
 
-'LOD_location'(Prefix, Location):-
+lod_location(Prefix, Location):-
   lod_location(Prefix, Location).
 
-'LOD_register_location'(Prefix, Location):-
+lod_register_location(Prefix, Location):-
   db_add_novel(lod_location(Prefix, Location)).
 

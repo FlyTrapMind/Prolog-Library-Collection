@@ -103,7 +103,7 @@ Mismatch types:
     * Data semantic transformation
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/08-2013/09, 2013/12-2014/01
+@version 2013/04-2013/05, 2013/08-2013/09, 2013/12-2014/01, 2014/03
 */
 
 :- use_module(generics(db_ext)).
@@ -120,11 +120,11 @@ Mismatch types:
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(programming(prolog_mode)).
-:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(align, 'http://knowledgeweb.semanticweb.org/heterogeneity/alignment#').
@@ -212,7 +212,7 @@ oaei_file_to_alignments_(G, A_Pairs):-
 tsv_convert_directory(FromDir, ToDir, ap(status(succeed),files(ToFiles))):-
   tsv_convert_directory(FromDir, ToDir, _, ToFiles).
 
-tsv_convert_directory(FromDir, ToDir, ToMIME, ToFiles):-
+tsv_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
   default(ToMIME1, 'application/x-turtle', ToMIME2),
   directory_files([file_types([tsv])], FromDir, FromFiles),
   findall(

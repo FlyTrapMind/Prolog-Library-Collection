@@ -1,16 +1,16 @@
 :- module(
-  'SPARQL_ext',
+  sparql_ext,
   [
-    'SPARQL_enqueue'/5, % +Remote:atom
+    sparql_enqueue/5, % +Remote:atom
                         % +Query:atom
                         % +Attempts:or([oneof([inf]),positive_integer])
                         % -VarNames:list
                         % -Results:list
-    'SPARQL_query'/4, % +Remote:atom
+    sparql_query/4, % +Remote:atom
                       % +Query:atom
                       % -VarNames:list
                       % -Results:list
-    'SPARQL_query_sameAs'/3 % +Remote:atom
+    sparql_query_sameas/3 % +Remote:atom
                             % +Resource:iri
                             % -IdenticalResources:ordset
   ]
@@ -101,6 +101,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 */
 
 :- use_module(generics(atom_ext)).
+:- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(row_ext)).
 :- use_module(generics(typecheck)).
@@ -115,8 +116,8 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
 :- use_module(math(math_ext)).
-:- use_module('SPARQL'('SPARQL_build')).
-:- use_module('SPARQL'('SPARQL_db')).
+:- use_module(sparql(sparql_build)).
+:- use_module(sparql(sparql_db)).
 :- use_module(xml(xml_namespace)).
 
 % OWL
@@ -125,12 +126,12 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- if(predicate_property(user:debug_project, visible)).
   :-
     once(http_server_property(Port, _)),
-    'SPARQL_register_remote'(localhost, localhost, Port, '/sparql/').
+    sparql_register_remote(localhost, localhost, Port, '/sparql/').
 :- endif.
 
 
 
-%! 'SPARQL_enqueue'(
+%! sparql_enqueue(
 %!   +Remote:atom,
 %!   +Query:atom,
 %!   +Retries:or([oneof([inf]),positive_integer]),
@@ -140,20 +141,20 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % @error =|existence_error(url,URL)|= with context
 %        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
 
-'SPARQL_enqueue'(_, _, 0, [], []):- !.
-'SPARQL_enqueue'(Remote, Query, Attempts1, VarNames, Results):-
+sparql_enqueue(_, _, 0, [], []):- !.
+sparql_enqueue(Remote, Query, Attempts1, VarNames, Results):-
   catch(
-    'SPARQL_query_no_catch'(Remote, Query, VarNames, Results),
+    sparql_query_no_catch(Remote, Query, VarNames, Results),
     E,
     (
       http_exception(E),
       count_down(Attempts1, Attempts2),
-      'SPARQL_enqueue'(Remote, Query, Attempts2, VarNames, Results)
+      sparql_enqueue(Remote, Query, Attempts2, VarNames, Results)
     )
   ).
 
 
-%! 'SPARQL_query'(
+%! sparql_query(
 %!   +Remote:atom,
 %!   +Query:atom,
 %!   -VarNames:list,
@@ -161,17 +162,17 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 %! ) is det.
 % Simply performs a SPARQL query (no additional options, closures).
 
-'SPARQL_query'(Remote, Query1, VarNames, Results):-
+sparql_query(Remote, Query1, VarNames, Results):-
   catch(
-    'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results),
+    sparql_query_no_catch(Remote, Query1, VarNames, Results),
     E,
     (http_exception(E), Results = [])
   ).
 
-'SPARQL_query_no_catch'(Remote, Query1, VarNames, Results):-
+sparql_query_no_catch(Remote, Query1, VarNames, Results):-
   atomic_codes(Query2, Query1),
-  debug('SPARQL_ext', '~w', [Query2]),
-  once('SPARQL_current_remote'(Remote, Host, Port, Path)),
+  debug(sparql_ext, '~w', [Query2]),
+  once(sparql_current_remote(Remote, Host, Port, Path)),
   O1 = [host(Host),timeout(1),path(Path),variable_names(VarNames)],
   (
     Port == default
@@ -187,7 +188,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
   ).
 
 
-%! 'SPARQL_query_sameAs'(
+%! sparql_query_sameas(
 %!   +Remote:atom,
 %!   +Resource:uri,
 %!   -IdenticalResources:ordset
@@ -196,9 +197,9 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % @arg Resource The URI of a resource.
 % @arg IdenticalResources An ordered set of identical resources.
 
-'SPARQL_query_sameAs'(Remote, Resource, Resources2):-
+sparql_query_sameas(Remote, Resource, Resources2):-
   phrase(
-    'SPARQL_formulate'(
+    sparql_formulate(
       owl,
       _,
       [owl],
@@ -212,7 +213,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
     ),
     Query
   ),
-  'SPARQL_query'(Remote, Query, _, Rows),
+  sparql_query(Remote, Query, _, Rows),
   rows_to_resources(Rows, Resources1),
   ord_add_element(Resources1, Resource, Resources2).
 

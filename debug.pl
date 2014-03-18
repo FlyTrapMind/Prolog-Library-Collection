@@ -10,6 +10,8 @@
 % Forward error messages from consulting Prolog code to PceEmacs.
 % ed/1 and edit/1 call PceEmacs.
 :- use_module(library(pce_emacs)).
+:- use_module(library(swi_ide)).
+:- prolog_ide(thread_monitor).
 
 % Print code strings with their code table replacements.
 :- use_module(library(portray_text)).

@@ -67,6 +67,8 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(math(radix)).
 :- use_module(os(shell_ext)).
 
+:- meta_predicate(quoted(//,?,?)).
+
 % The number of spaces that go into one indent.
 :- setting(
   indent_size,
@@ -312,7 +314,6 @@ pl_term(PrologTerm) -->
 
 %! quoted(:DCG)// .
 
-:- meta_predicate(quoted(//,?,?)).
 quoted(DCG) -->
   dcg_between(double_quote, DCG).
 

@@ -43,6 +43,8 @@
     binary_digit//1, % ?Code:code
     bracket//0,
     bracket//1, % ?Code:code
+    bracket//2, % ?Type:oneof([curly,round,square])
+                % ?Code:code
     c//0,
     c//1, % ?Code:code
     c_lowercase//0,

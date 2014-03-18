@@ -63,10 +63,8 @@ file_mime(MIME) -->
 
 xml_comment -->
   atom('<!--'),
-  dcg_until([end_mode(inclusive)], test, _),
+  dcg_until([end_mode(inclusive)], `-->`, _),
   blanks_to_nl.
-test -->
-  atom('-->').
 
 %! xml_declaration(?Version:float)// .
 % The XML specification also permits an XML declaration at
