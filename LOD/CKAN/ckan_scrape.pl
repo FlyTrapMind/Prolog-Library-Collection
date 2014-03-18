@@ -16,8 +16,6 @@ Automated script that scraped CKAN.
 :- use_module(ckan(data_gov_uk)). % Meta-call.
 :- use_module(ckan(datahub_io)). % Meta-call.
 :- use_module(ckan(rdf_tabular_ckan)). % Load Web interface.
-:- use_module(generics(db_ext)).
-:- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_serial)).
 
 ckan_site(datahub_io).

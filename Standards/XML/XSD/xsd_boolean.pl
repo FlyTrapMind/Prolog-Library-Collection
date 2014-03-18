@@ -26,8 +26,6 @@ xsd_boolean_map ::= 'true' | 'false' | '1' | '0'
 @version 2013/08, 2014/03
 */
 
-:- use_module(dcg(dcg_content)).
-
 
 
 %! xsd_boolean_canonical_map(+Boolean:boolean)// is det.
@@ -39,7 +37,7 @@ xsd_boolean_map ::= 'true' | 'false' | '1' | '0'
 % @arg Boolean A boolean value.
 
 xsd_boolean_canonical_map(Boolean) -->
-  xsd_boolean_map(Boolean).
+  xsd_boolean_map(Boolean), !.
 
 
 %! xsd_boolean_lexical_map(-Boolean:boolean)// is det.

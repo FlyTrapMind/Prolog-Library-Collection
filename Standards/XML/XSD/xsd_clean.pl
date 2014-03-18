@@ -1,6 +1,9 @@
 :- module(
   xsd_clean,
   [
+    pl_to_xsd_value/3, % +DatatypeIri:or([atom,iri])
+                       % +PlValue
+                       % -XsdValue
     xsd_canonize_graph/1, % +Graph:atom
     xsd_convert_value/4, % +FromDatatype:iri
                          % +FromLexicalForm:atom
@@ -13,12 +16,9 @@
     xsd_lexical_canonical_map/3, % +DatatypeIri:iri
                                  % +LexicalForm:atom
                                  % -CanonicalLexicalForm:atom
-    xsd_value/3, % +DatatypeIri:or([atom,iri])
-                 % +Value
-                 % -XsdValue
-    xsd_value/3 % -DatatypeIri:iri
-                % +Value
-                % -XsdValue
+    xsd_value/3 % ?DatatypeIri:or([atom,iri])
+                % ?Value
+                % ?XsdValue
   ]
 ).
 
@@ -30,13 +30,32 @@ Predicates for cleaning XML Scheme 1.1 datatypes.
 @version 2013/08-2013/10, 2014/01, 2014/03
 */
 
+:- use_module(generics(boolean_ext)).
 :- use_module(generics(codes_ext)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(xsd(xsd)).
 
+:- rdf_meta(pl_to_xsd_value(r,+,-)).
 :- rdf_meta(xsd_convert_value(r,+,r,-)).
 :- rdf_meta(xsd_value(+,r,-)).
 
+
+
+%! pl_to_xsd_value(
+%!   +DatatypeIri:iri,
+%!   +PlValue1:compound,
+%!   -XsdValue:compound
+%! ) is det.
+% A layer on top of xsd_value/3 which supports more input values.
+% Ideally, it would be possible to transform lots of different kinds
+% of Prolog values to their XSD equivalent.
+
+pl_to_xsd_value(Datatype, PlValue1, XsdValue):-
+  rdf_equal(xsd:boolean, Datatype), !,
+  to_boolean(PlValue1, PlValue2),
+  xsd_value(Datatype, PlValue2, XsdValue).
+pl_to_xsd_value(Datatype, PlValue, XsdValue):-
+  xsd_value(Datatype, PlValue, XsdValue).
 
 
 %! xsd_canonize_graph(+Graph:atom) is det.
@@ -71,10 +90,10 @@ xsd_canonize_graph(Graph):-
 xsd_canonize_triple(Subject, Predicate, DatatypeIri, LexicalForm, Graph):-
   xsd_datatype(DatatypeIri),
   xsd_lexical_canonical_map(DatatypeIri, LexicalForm, CanonicalLexicalForm),
-  
+
   % Only changes need to be written.
   LexicalForm \== CanonicalLexicalForm,
-  
+
   % Update the object term.
   rdf_update(
     Subject,

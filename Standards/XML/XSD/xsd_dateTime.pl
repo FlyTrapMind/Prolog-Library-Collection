@@ -327,7 +327,7 @@ xsd_dateTime_compare(
 ):-
   nonvar(TZ1),
   var(TZ2), !,
-  
+
   % Calculate the order if we assume the minimum timezone.
   minimum_timezone(MinTZ),
   xsd_dateTime_compare(
@@ -335,7 +335,7 @@ xsd_dateTime_compare(
     dateTime(Y1,M1,D1,H1,MM1,S1,TZ1),
     dateTime(Y2,M2,D2,H2,MM2,S2,MinTZ)
   ),
-  
+
   % Calculate the order if we assume the maximum timezone.
   maximum_timezone(MaxTZ),
   xsd_dateTime_compare(

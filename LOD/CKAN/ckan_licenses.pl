@@ -219,6 +219,7 @@ license_is_open(License):-
 license_is_open(License):-
   rdf_true(License, ckan:is_osi_compliant, _), !.
 license_is_open(License1):-
-  owl_resource_identity(License1, License2),
+  % Using symmetry here would cause loops.
+  rdf(License1, owl:sameAs, License2),
   license_is_open(License2).
 

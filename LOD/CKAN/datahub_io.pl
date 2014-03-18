@@ -12,10 +12,6 @@
 
 # Question on syntax and semantics of object properties
 
-Hi Datahubbers,
-
-First of all, thanks for this great Web service!
-
 Datahub/CKAN uses several types objects (e.g. organizations, packages, resources). I have problems understanding the properties these resources have.
 
 Syntax:
@@ -28,9 +24,6 @@ Semantics:
 5) There seem to be spurious properties in the Datahub, e.g. resource X has the `SpirosAlexiou` property. Doing a Web search on that string brings up the Datahub user page of a person named Spiros Alexiou (URL: http://datahub.io/nl/user/salexiou).
 
 I have more examples of spurious proprties. If an overview of these is considered helpful I can make it available.
-
-Cheers!,
-Wouter.
 
 --
 
@@ -67,7 +60,6 @@ options([
   scheme(Scheme)
 ]):-
   Auth = 'datahub.io',
-  %user_input('Enter the API key for datahub.io.', codes, Key),
-  Key = '78cecbc1-f84e-47dc-8625-1bff7ac0eca0',
+  user_input('Enter the API key for datahub.io.', codes, Key),
   Scheme = http.
 

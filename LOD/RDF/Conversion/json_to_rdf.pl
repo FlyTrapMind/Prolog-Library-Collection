@@ -17,17 +17,12 @@ This requires a Prolog module whose name is also registered as
  the XML namespace that is used for the RDF vocabulary.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)). % Meta-argument.
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)). % Meta-argument.
-:- use_module(generics(atom_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -35,12 +30,9 @@ This requires a Prolog module whose name is also registered as
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf(rdf_image)).
 :- use_module(rdf(rdf_list)).
-:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal_build)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(standards(json_ext)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 :- use_module(xsd(xsd_clean)).
@@ -254,6 +246,6 @@ json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, DatatypeName, Value1
   % Convert the JSON value to an RDF object term.
   % This is where we validate that the value is of the required type.
   xsd_datatype(DatatypeName, Datatype),
-  xsd_value(Datatype, Value1, Value2),
-  rdf_assert_datatype(Individual, Predicate, Value2, Datatype, Graph).
+  pl_to_xsd_value(Datatype, Value1, Value2),
+  rdf_assert_literal(Individual, Predicate, Value2, Datatype, Graph).
 

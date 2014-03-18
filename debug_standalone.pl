@@ -16,22 +16,18 @@ run_debug_standalone:-
   assert(user:file_search_path(project, ThisDir)),
   set_data_path,
   ensure_loaded(debug),
-  use_module(rdfs(rdfs_proof)).
-
+  use_module(ckan(ckan_scrape)).
 
 set_data_path:-
-  current_prolog_flag(argv, [Directory]),
-  exists_directory(Directory), !,
-  set_data_path(Directory).
+  current_prolog_flag(argv, [Dir]),
+  exists_directory(Dir), !,
+  set_data_path(Dir).
 set_data_path:-
-  absolute_file_name(
-    project('Data'),
-    Directory,
-    [access(write),file_type(directory)]
-  ),
-  set_data_path(Directory).
+  absolute_file_name(project('.'), Dir1, [access(write),file_type(directory)]),
+  directory_file_path(Dir1, 'Data', Dir2),
+  set_data_path(Dir2).
 
-set_data_path(Directory):-
-  make_directory_path(Directory),
-  assert(user:file_search_path(data, Directory)).
+set_data_path(Dir):-
+  make_directory_path(Dir),
+  assert(user:file_search_path(data, Dir)).
 
