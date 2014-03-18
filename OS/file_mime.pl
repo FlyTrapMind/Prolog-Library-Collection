@@ -11,9 +11,10 @@
 Returns the MIME of a given file.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)). % Meta-DCG
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
@@ -22,13 +23,6 @@ Returns the MIME of a given file.
 
 
 
-/*DEB
-:- use_module(os(io_ext)).
-file_mime(File, Mime):-
-  file_to_atom(File, Atom),
-  atom_codes(Atom, Codes),
-  phrase(file_mime(Mime), Codes), !.
-*/
 file_mime(File, _):-
   \+ access_file(File, read), !,
   debug(file_mime, 'Cannot read from file ~w.', [File]),
@@ -44,13 +38,13 @@ file_mime('application/x-turtle') -->
   ci_string(`@prefix`), !,
   dcg_done.
 file_mime('text/html') -->
-  atom('<!'), ci_string(`DOCTYPE`), blanks,
+  atom('<!'), ci_string(`DOCTYPE`), ascii_whites,
   ci_string(`HTML`), !,
   dcg_done.
 file_mime(MIME) -->
-  blanks,
-  (xml_declaration(_) ; ""), blanks,
-  (xml_comment ; ""), blanks,
+  ascii_whites,
+  (xml_declaration(_) ; ""), ascii_whites,
+  xml_comments,
 
   (
     atom('<rdf:RDF')
@@ -61,10 +55,23 @@ file_mime(MIME) -->
   ),
   dcg_done.
 
+
+utf8 -->
+  ci_string(`UTF`), `-8`.
+
+
 xml_comment -->
   atom('<!--'),
   dcg_until([end_mode(inclusive)], `-->`, _),
-  blanks_to_nl.
+  ascii_whites.
+
+
+xml_comments -->
+  xml_comment,
+  ascii_whites,
+  xml_comments.
+xml_comments --> [].
+
 
 %! xml_declaration(?Version:float)// .
 % The XML specification also permits an XML declaration at
@@ -72,21 +79,21 @@ xml_comment -->
 %  the XML content encoding. This is optional but recommended.
 
 xml_declaration(Version) -->
-  atom('<?'), ci_string(`XML`), whites,
-  (xml_version(Version), whites ; ""),
-  (xml_encoding, whites ; ""),
-  atom('?>'), blanks_to_nl.
+  atom('<?'), ci_string(`XML`), ascii_whites,
+  (xml_version(Version), ascii_whites ; ""),
+  (xml_encoding, ascii_whites ; ""),
+  atom('?>'), ascii_whites.
+
 
 xml_doctype('application/rdf+xml') -->
-  atom('<!'), ci_string(`DOCTYPE`), blanks, atom('rdf:RDF'), !,
+  atom('<!'), ci_string(`DOCTYPE`), ascii_whites, atom('rdf:RDF'), !,
   dcg_done.
+
 
 xml_encoding -->
   atom('encoding='),
   quoted(utf8).
 
-utf8 -->
-  ci_string(`UTF`), `-8`.
 
 xml_version(Version) -->
   atom('version='),

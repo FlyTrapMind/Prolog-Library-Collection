@@ -147,11 +147,6 @@ latex_text([word(Word)|T]) -->
   latex_text(T).
 latex_text([]) --> [].
 
-ascii_whites -->
-  ascii_white,
-  ascii_whites.
-ascii_whites --> [].
-
 section_level(section, 1).
 section_level(subsection, 2).
 section_level(subsubsection, 3).

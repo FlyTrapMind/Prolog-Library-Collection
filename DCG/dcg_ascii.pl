@@ -384,6 +384,7 @@
     white//1, % ?Code:code
     ascii_white//0,
     ascii_white//1, % ?Code:code
+    ascii_whites//0,
     x//0,
     x//1, % ?Code:code
     x_lowercase//0,
@@ -1334,6 +1335,11 @@ ascii_white(C) --> ascii_end_of_line(C).
 ascii_white(C) --> form_feed(C).
 ascii_white(C) --> space(C).
 ascii_white(C) --> ascii_tab(C).
+
+ascii_whites -->
+  ascii_white,
+  ascii_whites.
+ascii_whites --> [].
 
 x --> x_lowercase.
 x --> x_uppercase.
