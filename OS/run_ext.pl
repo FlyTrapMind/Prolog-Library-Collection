@@ -48,7 +48,7 @@ Predicates for running external programs.
 % This is used to relate programs to modules.
 :- dynamic(user:module_uses_program/2).
 
-:- initialization(db_add_novel(at_halt(kill_processes))).
+:- at_halt(kill_processes).
 
 % DOT
 :- db_add_novel(user:prolog_file_type(dot, dot)).

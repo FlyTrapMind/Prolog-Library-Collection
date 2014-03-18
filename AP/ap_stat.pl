@@ -33,7 +33,7 @@ Statistics for tracking the progress of automated processes.
 http:location(ap, root(ap), []).
 :- http_handler(ap(stat), ap_stat, []).
 
-:- initialization(web_module_add('AP Stat', ap_stat)).
+:- web_module_add('AP Stat', ap_stat).
 
 
 

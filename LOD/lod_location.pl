@@ -23,20 +23,19 @@ Support for Web locations that store LOD descriptions.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(xml(xml_namespace)).
 
-:- dynamic(lod_header/3).
-:- dynamic(lod_location/2).
+:- dynamic(lod_header_/3).
+:- dynamic(lod_location_/2).
 
 
 
 % lod_header(+Prefix:atom, ?Name:atom, ?Value:atom) is nondet.
 
 lod_header(Prefix, Name, Value):-
-  lod_header(Prefix, Name, Value).
+  lod_header_(Prefix, Name, Value).
 
 lod_register_header(Prefix, Name, Value):-
-  db_add_novel(lod_header(Prefix, Name, Value)).
+  db_add_novel(lod_header_(Prefix, Name, Value)).
 
 
 % lod_location(+Prefix:atom, -Location:iri) is det.
@@ -44,8 +43,8 @@ lod_register_header(Prefix, Name, Value):-
 %  a machine-readable description of the vocabulary, e.g. Dublin Core.
 
 lod_location(Prefix, Location):-
-  lod_location(Prefix, Location).
+  lod_location_(Prefix, Location).
 
 lod_register_location(Prefix, Location):-
-  db_add_novel(lod_location(Prefix, Location)).
+  db_add_novel(lod_location_(Prefix, Location)).
 

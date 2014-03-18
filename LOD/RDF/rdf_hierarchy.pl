@@ -54,11 +54,11 @@ rdf_export_hierarchy(FromGs, Predicate) -->
         ),
         
         export_rdf_graph([], ToG, GIF),
-        graph_to_svg_dom([method(dot)], GIF, SVG),
-        xml_dom_to_atom([], SVG, Atom)
+        graph_to_svg_dom([method(dot)], GIF, SvgDom)
       ),
       % Remove the temporary graph.
       rdf_unload_graph(ToG)
     )
   },
-  html(\[Atom]).
+  html(\xml_dom_as_atom(SvgDom)).
+

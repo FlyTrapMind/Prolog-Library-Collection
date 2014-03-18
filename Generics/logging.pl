@@ -242,7 +242,7 @@ start_log:-
   set_current_log_stream(Stream),
   append_to_log(build, 'Goodday!', []),
   % Make sure logging stops once the program ends.
-  assert(user:at_halt(end_log)).
+  at_halt(end_log).
 prolog:message(already_logging):-
   [ansi([], 'Logging was already started. End logging before starting it again.', [])].
 

@@ -1,14 +1,12 @@
 :- module(
-  vertex_coord,
+  vertex_coordinate,
   [
     vertice_coordinates_to_size/3, % +Options:list(nvpair)
                                    % +VertexCoords:list(vertex_coord)
                                    % -Size:size
-    vertice_coordinates_table/2, % +VertexCoords:list(vertex_coord)
-                                 % -MarkupElement:element
-    vertice_coordinates_web/3 % +Graph:graph
-                              % +VertexCoords:list(vertex_coord)
-                              % -MarkupElement:element
+    vertice_coordinates_table//1, % +VertexCoords:list(vertex_coord)
+    vertice_coordinates_web//2 % +Graph:graph
+                               % +VertexCoords:list(vertex_coord)
   ]
 ).
 
@@ -20,13 +18,15 @@ These are used for visualizing graphs and for calculating the vertex
 positions in iterations of spring embedding.
 
 @author Wouter Beek
-@version 2013/01, 2013/07
+@version 2013/01, 2013/07, 2014/03
 */
 
 :- use_module(generics(list_ext)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(html(html_table)).
+:- use_module(library(http/html_write)).
 :- use_module(library(option)).
+:- use_module(xml(xml_dom)).
 
 
 
@@ -77,59 +77,60 @@ vertice_coordinates_to_size(Options, VCs, size(Dimension, Limits)):-
     Limits
   ).
 
-%! vertice_coordinates_table(
-%!   +VertexCoords:list(vertex_coord),
-%!   -MarkupElement:element
-%! ) is det.
-% Returns the markup for a table showing vertex coordinates.
+%! vertice_coordinates_table(+VertexCoords:list(vertex_coord))// is det.
+% Generates an HTML table showing vertex coordinates.
 
-vertice_coordinates_table(VertexCoords, MarkupElement):-
-  % Generate the header row for the table.
-  memberchk(
-    vertex_coord(_Vertex, coordinate(MaxDimension, _Coordinates)),
-    VertexCoords
-  ),
-  MaxDimension0 is MaxDimension - 1,
-  findall(
-    DimensionName,
-    (
-      between(0, MaxDimension0, Dimension),
-      format(atom(DimensionName), 'Dimension ~w', [Dimension])
-    ),
-    DimensionNames
-  ),
-  % Generate the data rows for the table.
-  findall(
-    [Vertex | Coordinates],
-    member(
-      vertex_coord(Vertex, coordinate(_Dimension, Coordinates)),
+vertice_coordinates_table(VertexCoords) -->
+  {
+    % Generate the header row for the table.
+    memberchk(
+      vertex_coord(_Vertex, coordinate(MaxDimension, _Coordinates)),
       VertexCoords
     ),
-    Rows
-  ),
+    MaxDimension0 is MaxDimension - 1,
+    findall(
+      DimensionName,
+      (
+        between(0, MaxDimension0, Dimension),
+        format(atom(DimensionName), 'Dimension ~w', [Dimension])
+      ),
+      DimensionNames
+    ),
+    % Generate the data rows for the table.
+    findall(
+      [Vertex|Coordinates],
+      member(
+        vertex_coord(Vertex, coordinate(_,Coordinates)),
+        VertexCoords
+      ),
+      Rows
+    )
+  },
   html_table(
     [header_row(true)],
-    [['Vertex'|DimensionNames]|Rows],
-    MarkupElement
+    html('Vertex coordinates'),
+    [['Vertex'|DimensionNames]|Rows]
   ).
 
 %! vertice_coordinates_web(
 %!   +Graph:graph,
-%!   +VertexCoords:list(vertex_coord),
-%!   -MarkupElement:element
-%! ) is det.
-% Returns the markup for the given graph and vertex coordinates.
+%!   +VertexCoords:list(vertex_coord)
+%! )// is det.
+% Generates the markup for the given graph and vertex coordinates.
 
-vertice_coordinates_web(Graph, VertexCoords, SVG_DOM):-
-  export_graph(
-    [
-      out(svg),
-      vertex_coord(lookup_vertice_coordinates),
-      vertice_coordinates(VertexCoords)
-    ],
-    Graph,
-    SVG_DOM
-  ).
+vertice_coordinates_web(Graph, VertexCoords) -->
+  {
+    export_graph(
+      [
+        out(svg),
+        vertex_coord(lookup_vertice_coordinates),
+        vertice_coordinates(VertexCoords)
+      ],
+      Graph,
+      SvgDom
+    )
+  },
+  html(\xml_dom_as_atom(SvgDom)).
 
 lookup_vertice_coordinates(Options, Vertex, Coordinate):-
   option(vertice_coordinates(VertexCoords), Options),

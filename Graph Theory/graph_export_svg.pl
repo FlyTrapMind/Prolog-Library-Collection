@@ -2,7 +2,7 @@
   graph_export_svg,
   [
     export_graph_svg/2 % +GraphTerm:compound
-                       % -SVG_DOM:element
+                       % -SvgDom:element
   ]
 ).
 
@@ -20,7 +20,6 @@ Predicates for exporting an intermediate graph structure to SVG.
 :- use_module(library(settings)).
 :- use_module(svg(svg_generic)).
 :- use_module(standards(markup)).
-:- use_module(standards(standards)).
 
 :- setting(
   default_surface,

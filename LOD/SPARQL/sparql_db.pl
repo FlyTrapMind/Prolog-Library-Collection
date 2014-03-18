@@ -52,8 +52,8 @@ Persistency store for SPARQL-related information.
 sparql_register_remote(Remote, Domain, Port, Path):-
   sparql_current_remote(Remote, Domain, Port, Path), !,
   debug(sparql_db, 'SPARQL remote ~w is already set. No changes.', [Remote]).
-sparql_register_remote(Remote, _Server1, _Port1, _Path1):-
-  sparql_current_remote(Remote, _Server2, _Port2, _Path2), !,
+sparql_register_remote(Remote, _, _, _):-
+  sparql_current_remote(Remote, _, _, _), !,
   debug(
     sparql_db,
     'SPARQL remote ~w is already set DIFFERENTLY. First remove.',

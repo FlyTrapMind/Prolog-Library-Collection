@@ -27,8 +27,9 @@ http:location(rdf, root(rdf), []).
 
 :- dynamic(rdf_graph/3).
 
+:- web_module_add('RDF GC Graph', rdf_gc_graph).
+
 :- initialization(init_rdf_gc_graph).
-:- initialization(web_module_add('RDF GC Graph', rdf_gc_graph)).
 
 
 

@@ -33,8 +33,7 @@ DBpedia publishes the following three kind of files about categories:
 %! dbpedia_load_categories is det.
 % Loads the SKOS hierarchy of categories.
 
-dbpedia_categories_url:-
-gtrace,
+dbpedia_load_categories:-
   dbpedia_categories_url(Url),
   dbpedia_load_categories(Url).
 
@@ -42,9 +41,9 @@ gtrace,
 dbpedia_load_categories(Url):-
   url_to_file_name(Url, File1),
   file_name_extension(File2, bz2, File1),
-  exists_file(File), !,
-  access_file(File, read),
-  rdf_load(File, [format(turtle),graph(dbpedia_categories)]).
+  exists_file(File2), !,
+  access_file(File2, read),
+  rdf_load(File2, [format(turtle),graph(dbpedia_categories)]).
 dbpedia_load_categories(Url):-
   download_to_file([], Url, File),
   extract_archive(File),

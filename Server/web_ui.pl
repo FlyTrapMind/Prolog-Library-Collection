@@ -3,7 +3,6 @@
   [
     category//1, % +Category:atom
     clear_button//1, % +Fields:list(atom)
-    dom_as_atom//1, % +DOM:atom
     external_link//1 % +IRI:iri
   ]
 ).
@@ -67,6 +66,7 @@ category(C1) -->
   {upcase_atom(C1, C2)},
   html(tr(td(valign=bottom, p(class=c1,C2)))).
 
+
 %! clear_button(+Fields:list(atom))// is det.
 
 clear_button(Fields) -->
@@ -81,12 +81,11 @@ clear_button(Fields) -->
     ])
   ).
 
-dom_as_atom(DOM_Atom) -->
-  html(\[DOM_Atom]).
 
 external_link(IRI) -->
   {http_absolute_location(img('url.gif'), LinkImage, [])},
   html(a(href=IRI, img(src=LinkImage))).
+
 
 menu -->
   {http_absolute_location(img('api_explorer.png'), RelativeURI, [])},

@@ -6,7 +6,7 @@
                         % ?ToFile:atom
     graph_to_svg_dom/3, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
-                        % -SVG:list
+                        % -SvgDom:list(compound)
     tree_to_gv_file/3 % +Options:list(nvpair)
                       % +Tree:compound
                       % ?ToFile:atom
@@ -78,26 +78,22 @@ graph_to_gv_file(O1, GIF, ToFile):-
 %! graph_to_svg_dom(
 %!   +Options:list(nvpair),
 %!   +GraphInterchangeFormat:compound,
-%!   -SVG:list
+%!   -SvgDom:list(compound)
 %! ) is det.
 % The following options are supported:
 %   * =|method(+Method:oneof([dot,sfdp])|=
 %     The algorithm used by GraphViz for positioning the tree nodes.
 %     Either =dot= (default) or =sfdp=.
 
-graph_to_svg_dom(O1, GIF, SVG):-
-  % Make sure the file type of the output file is SVG.
+graph_to_svg_dom(O1, GIF, SvgDom):-
+  % Make sure the file type of the output file is SvgDom.
   merge_options([to_file_type(svg)], O1, O2),
   graph_to_gv_file(O2, GIF, ToFile),
-  file_to_svg(ToFile, SVG),
+  file_to_svg(ToFile, SvgDom),
   safe_delete_file(ToFile).
 
 
-%! tree_to_gv_file(
-%!   +Options:list(nvpair),
-%!   +Tree:compound,
-%!   ?ToFile:atom
-%! ) is det.
+%! tree_to_gv_file(+Options:list(nvpair), +Tree:compound, ?ToFile:atom) is det.
 % Stores the given tree term into a GraphViz file.
 %
 % The following options are supported:

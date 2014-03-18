@@ -87,7 +87,7 @@ Also includes a status bar with updates/messages.
   'The number of previously issued Web commands that are shown in the UI.'
 ).
 
-:- initialization(web_module_add('Web Console', web_console)).
+:- web_module_add('Web Console', web_console).
 
 
 

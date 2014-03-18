@@ -3,20 +3,21 @@
   [
     xml_doctype/2, % +Stream:stream
                    % -DocType
+    xml_dom_as_atom//1, % +DOM:atom
     xml_dom_to_atom/3, % +Options:list(nvpair)
-                       % +XML_DOM:list
+                       % +XmlDom:list
                        % -XML:atom
     xml_dom_to_file/3, % +Options:list(nvpair)
-                       % +XML_DOM:list
+                       % +XmlDom:list
                        % +File:atom
     xml_file_to_dom/2, % +File:atom
-                       % -XML:dom
+                       % -XmlDom:list(compound)
     xml_inject_dom_with_attribute/4, % +OldDOM:dom
                                      % +Class:atom
                                      % AttributeValuePairs:list(nvpair)
                                      % -NewDOM:dom
     xml_url_to_dom/2 % +URI:uri
-                     % -XML_DOM:list
+                     % -XmlDom:list(compound)
   ]
 ).
 
@@ -26,11 +27,12 @@ Predicates that operate on / generate XML DOM.
 
 @author Wouter Beek
 @tbd HTTP-serve DTD files.
-@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11
+@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11, 2014/03
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(html(html)). % This is required for the HTML DTD file path.
+:- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
@@ -61,8 +63,10 @@ on_begin(Tag, Attributes, _Parser):-
   memberchk(xmlns:_=_, Attributes),
   throw(tag(Tag)).
 
+
 on_cdata(_CDATA, _Parser):-
   throw(error(cdata)).
+
 
 stylesheet_pi(CSS_FileSpecification, PI):-
   stylesheet_pi('text/css', CSS_FileSpecification, PI).
@@ -70,6 +74,7 @@ stylesheet_pi(CSS_FileSpecification, PI):-
 stylesheet_pi(Type, CSS_FileSpecification, pi(PI)):-
   http_absolute_location(CSS_FileSpecification, CSS_File, []),
   format(atom(PI), 'xml-stylesheet type="~w" href="~w"', [Type,CSS_File]).
+
 
 %! xml_doctype(+Stream, -DocType) is semidet.
 % Parse a _repositional_ stream and get the  name of the first XML
@@ -105,7 +110,25 @@ xml_doctype(Stream, DocType):-
   nonvar(Exception),
   Exception = tag(DocType).
 
-%! xml_dom_to_atom(+Options:list(nvpair), +DOM:list, -XML:atom) is det.
+
+%! xml_dom_as_atom(+Dom:or([atom,list(compound)]))// is det.
+% Includes the given DOM inside the generated HTML page.
+%
+% DOM is either a list or compound term or an atom.
+
+xml_dom_as_atom(DomAtom) -->
+  {atom(DomAtom)}, !,
+  html(\[DomAtom]).
+xml_dom_as_atom(Dom) -->
+  {xml_dom_to_atom([], Dom, DomAtom)},
+  xml_dom_as_atom(DomAtom).
+
+
+%! xml_dom_to_atom(
+%!   +Options:list(nvpair),
+%!   +XmlDom:list(compound),
+%!   -XmlAtom:atom
+%! ) is det.
 % The following options are supported:
 %   * =|dtd(+Doctype:atom)|=
 %     The atomic name of the DTD that should be used for the XML DOM.
@@ -115,16 +138,16 @@ xml_doctype(Stream, DocType):-
 %   * =|style(+StyleName:atom)|=
 %     The atomic name of a style file on the =css= search path.
 
-xml_dom_to_atom(O1, DOM1, XML):-
+xml_dom_to_atom(O1, XmlDom1, XmlAtom):-
   % Add style to XML DOM.
   (
     select_option(style(StyleName), O1, O2)
   ->
     file_name_type(StyleName, css, StyleFile),
     stylesheet_pi(css(StyleFile), PI),
-    DOM2 = [PI|DOM1]
+    XmlDom2 = [PI|XmlDom1]
   ;
-    DOM2 = DOM1,
+    XmlDom2 = XmlDom1,
     O2 = O1
   ),
 
@@ -135,14 +158,14 @@ xml_dom_to_atom(O1, DOM1, XML):-
     % a Web page.
     % We do add the stylesheet parsing instruction, since this is allowed by
     % Firefox.
-    xml_dom_to_stream([header(false)|O2], DOM2, Out),
+    xml_dom_to_stream([header(false)|O2], XmlDom2, Out),
     close(Out)
   ),
 
   % Stream to atom.
   setup_call_cleanup(
     open(TmpFile, read, In, [encoding(utf8),type(text)]),
-    stream_to_atom(In, XML),
+    stream_to_atom(In, XmlAtom),
     (
       close(In),
       % Do not safe-delete temporary files.
@@ -150,18 +173,24 @@ xml_dom_to_atom(O1, DOM1, XML):-
     )
   ).
 
-%! xml_dom_to_file(+Options:list(nvpair), +DOM:list, +File:atom) is det.
 
-xml_dom_to_file(O1, DOM, File):-
+%! xml_dom_to_file(
+%!   +Options:list(nvpair),
+%!   +XmlDom:list(compound),
+%!   +File:atom
+%! ) is det.
+
+xml_dom_to_file(O1, XmlDom, File):-
   setup_call_cleanup(
     open(File, write, OutputStream, [encoding(utf8),type(test)]),
-    xml_dom_to_stream(O1, DOM, OutputStream),
+    xml_dom_to_stream(O1, XmlDom, OutputStream),
     close(OutputStream)
   ).
 
+
 %! xml_dom_to_stream(
 %!   +Options:list(nvpair),
-%!   +XML_DOM:list,
+%!   +XmlDom:list(compound),
 %!   +OutputStream:stream
 %! ) is det.
 % The following options are supported:
@@ -172,27 +201,29 @@ xml_dom_to_file(O1, DOM, File):-
 %     it searches for a file using the file search path =dtd=.
 %     Default: =html=
 
-xml_dom_to_stream(O1, DOM, OutputStream):-
+xml_dom_to_stream(O1, XmlDom, OutputStream):-
   option(dtd(Doctype), O1, html),
-  dtd(Doctype, DTD),
-  merge_options([dtd(DTD)], O1, O2),
-  xml_write(OutputStream, DOM, O2).
+  dtd(Doctype, Dtd),
+  merge_options([dtd(Dtd)], O1, O2),
+  xml_write(OutputStream, XmlDom, O2).
 
-%! xml_file_to_dom(+File:atom, -XML:dom) is det.
+
+%! xml_file_to_dom(+File:atom, -XmlDom:list(compound)) is det.
 % Reads the XML from the given file and return the DOM.
 
-xml_file_to_dom(File, XML):-
+xml_file_to_dom(File, XmlDom):-
   setup_call_cleanup(
     open(File, read, Stream, [encoding(utf8),type(test)]),
-    xml_stream_to_dom(Stream, XML),
+    xml_stream_to_dom(Stream, XmlDom),
     close(Stream)
   ).
 
+
 %! xml_inject_dom_with_attribute(
-%!   +OldDOM:dom,
+%!   +FromXmlDom:list(compound),
 %!   +Class:atom,
 %!   +AttributeValuePairs:pair,
-%!   -NewDOM:dom
+%!   -NewXmlDom:list(compound)
 %! ) is det.
 % Sometimes we use a DOM that is generated by some external application.
 % This DOM may then miss some attribute that we want to amplify it with.
@@ -205,20 +236,20 @@ xml_file_to_dom(File, XML):-
 % given class.
 
 % onclick="function(){...};"
-xml_inject_dom_with_attribute([], _Class, _AttributeValuePair, []):- !.
+xml_inject_dom_with_attribute([], _, _, []):- !.
 xml_inject_dom_with_attribute(
-  [Atom|DOM1],
+  [Atom|XmlDom1],
   Class,
   AttributeValuePair,
-  [Atom|DOM2]
+  [Atom|XmlDom2]
 ):-
   atom(Atom), !,
-  xml_inject_dom_with_attribute(DOM1, Class, AttributeValuePair, DOM2).
+  xml_inject_dom_with_attribute(XmlDom1, Class, AttributeValuePair, XmlDom2).
 xml_inject_dom_with_attribute(
-  [element(Type,Attributes1,Contents1)|DOM1],
+  [element(Type,Attributes1,Contents1)|XmlDom1],
   Class,
   AttributeValuePair,
-  [element(Type,Attributes2,Contents2)|DOM2]
+  [element(Type,Attributes2,Contents2)|XmlDom2]
 ):-
   (
     member(class=Class, Attributes1)
@@ -236,15 +267,16 @@ xml_inject_dom_with_attribute(
     AttributeValuePair,
     Contents2
   ),
-  xml_inject_dom_with_attribute(DOM1, Class, AttributeValuePair, DOM2).
+  xml_inject_dom_with_attribute(XmlDom1, Class, AttributeValuePair, XmlDom2).
 
-%! xml_stream_to_dom(+Stream:stream, -XML:dom) is det.
+
+%! xml_stream_to_dom(+Stream:stream, -XmlDom:list(compound)) is det.
 % Reads the XML DOM from the given stream.
 
-xml_stream_to_dom(Stream, XML):-
+xml_stream_to_dom(Stream, XmlDom):-
   load_structure(
     stream(Stream),
-    XML,
+    XmlDom,
     [
       dialect(xml),
       max_errors(-1),
@@ -254,16 +286,17 @@ xml_stream_to_dom(Stream, XML):-
     ]
   ).
 
-%! xml_url_to_dom(+URI:uri, -XML:dom) is det.
+
+%! xml_url_to_dom(+URI:uri, -XmlDom:list(compound)) is det.
 % Returns the HTML Document Object Model (DOM)
 % for the website with the given URI.
 
-xml_url_to_dom(URI, XML):-
+xml_url_to_dom(URI, XmlDom):-
   setup_call_cleanup(
     % First perform this setup once/1.
     http_open(URI, Stream, [timeout(60)]),
     % The try to make this goal succeed.
-    xml_stream_to_dom(Stream, XML),
+    xml_stream_to_dom(Stream, XmlDom),
     % If goal succeeds, then perform this cleanup.
     close(Stream)
   ).

@@ -31,7 +31,7 @@ Web-interface for truth maintenance systems.
 :- db_add_novel(http:location(tms, root(tms), [])).
 :- http_handler(root(tms), tms_web, [prefix]).
 
-:- initialization(web_module_add('TMS', tms_web)).
+:- web_module_add('TMS', tms_web).
 
 
 
@@ -49,14 +49,13 @@ tms_web(Request):-
   % From TMS node to SVG DOM.
   http_absolute_uri(tms(.), BaseURL),
   tms_export_node([base_url(BaseURL),recursive(false)], N, GIF),
-  graph_to_svg_dom([method(dot)], GIF, SVG_DOM),
+  graph_to_svg_dom([method(dot)], GIF, SvgDom),
   
   % Insert SVG DOM into Web page.
-  xml_dom_to_atom([], SVG_DOM, SVG_Atom),
   reply_html_page(
     app_style,
     title(['TMS node ',NLocal]),
-    \dom_as_atom(SVG_Atom)
+    \xml_dom_as_atom(SvgDom)
   ).
 % A graph representation of the given TMS.
 tms_web(Request):-
@@ -66,11 +65,14 @@ tms_web(Request):-
   % From TMS to SVG DOM representation.
   http_absolute_uri(tms(.), BaseURL),
   tms_export_graph([base_url(BaseURL)], TMS, GIF),
-  graph_to_svg_dom([method(sfdp)], GIF, SVG_DOM),
+  graph_to_svg_dom([method(sfdp)], GIF, SvgDom),
   
   % Insert SVG DOM into Web page.
-  xml_dom_to_atom([], SVG_DOM, SVG_Atom),
-  reply_html_page(app_style, title(['TMS ',TMS]), \dom_as_atom(SVG_Atom)).
+  reply_html_page(
+    app_style,
+    title(['TMS ',TMS]),
+    \xml_dom_as_atom(SvgDom)
+  ).
 % A table of all TMS-es.
 tms_web(_Request):-
   findall(

@@ -93,7 +93,7 @@ load_pgc:-
     assert(user:file_search_path(crawler,         web('Crawler'))),
   
   % Check SWI-Prolog version.
-  use_module(os(swipl_ext)),
+  use_module(programming(prolog_version)),
   check_prolog_version,
   
   % Initialize Web module registration.
@@ -109,7 +109,8 @@ load_pgc:-
   
   % Install packages.
   % This requires user interaction on the first load.
-  maplist(load_pack, [regex,smtp]),
+  use_module(programming(prolog_package)),
+  maplist(load_prolog_package, [regex,smtp]),
   
   % Start logging.
   use_module(generics(logging)),
@@ -119,15 +120,4 @@ load_pgc:-
   use_module(os(archive_ext)),
   use_module(void(void_db)),
   use_module(void(void_file)).
-
-
-user:load_pack(Pack):-
-  catch(
-    use_module(library(Pack)),
-    _,
-    (
-      pack_install(Pack),
-      use_module(library(Pack))
-    )
-  ).
 

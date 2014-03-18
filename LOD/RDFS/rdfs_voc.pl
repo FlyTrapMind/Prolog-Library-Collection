@@ -1,15 +1,15 @@
 :- module(
   rdfs_voc,
   [
-    load_rdfs_vocabulary/1, % +Graph:atom
+    load_rdfs_vocabulary/1, % +RdfGraph:atom
     rdf_voc_pdf/1, % ?File:atom
-    rdf_voc_web/1, % -SVG:dom
+    rdf_voc_web/1, % -SvgDom:list(compound)
     rdfs_voc_pdf/1, % ?File:atom
-    rdfs_voc_web/1 % -SVG:dom
+    rdfs_voc_web/1 % -SvgDom:list(compound)
   ]
 ).
 
-/** <module> RDFS_VOC
+/** <module> RDFS vocabulary
 
 Exports the vocabulary for RDFS.
 
@@ -84,9 +84,9 @@ rdf_voc_pdf(File):-
   rdf_voc(GIF),
   graph_to_gv_file([method(sfdp),to_file_type(pdf)], GIF, File).
 
-rdf_voc_web(SVG):-
+rdf_voc_web(SvgDom):-
   rdf_voc(GIF),
-  graph_to_svg_dom([method(sfdp)], GIF, SVG).
+  graph_to_svg_dom([method(sfdp)], GIF, SvgDom).
 
 
 
@@ -118,7 +118,7 @@ rdfs_voc_pdf(File):-
   rdfs_voc(GIF),
   graph_to_gv_file([method(sfdp),to_file_type(pdf)], GIF, File).
 
-rdfs_voc_web(SVG):-
+rdfs_voc_web(SvgDom):-
   rdfs_voc(GIF),
-  graph_to_svg_dom([method(sfdp)], GIF, SVG).
+  graph_to_svg_dom([method(sfdp)], GIF, SvgDom).
 

@@ -49,7 +49,6 @@ See [rdf_graph.pl].
 :- use_module(library(lists)).
 :- use_module(library(settings)).
 :- use_module(server(web_error)).
-:- use_module(standards(standards)).
 :- use_module(svg(svg_generic)).
 
 :- setting(
