@@ -38,8 +38,7 @@ html_error_action(Action) -->
 
 
 html_error_context(VAR) -->
-  {var(VAR)}, !,
-  [].
+  {var(VAR)}, !, [].
 html_error_context(context(Module:Name/Arity,Msg)) --> !,
   html(
     div(class=context, [
@@ -53,8 +52,7 @@ html_error_context(Context) -->
 
 
 html_error_formal(VAR) -->
-  {var(VAR)}, !,
-  [].
+  {var(VAR)}, !, [].
 html_error_formal(domain_error(Type,Term)) --> !,
   html(
     div(class=domain_error, [
@@ -169,8 +167,7 @@ html_error_formal(type_error(Type,Term)) --> !,
 
 
 html_error_message(VAR) -->
-  {var(VAR)}, !,
-  [].
+  {var(VAR)}, !, [].
 html_error_message(Msg) -->
   html(span(class=message, Msg)).
 

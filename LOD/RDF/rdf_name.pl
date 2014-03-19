@@ -104,6 +104,7 @@ rdf_term_name(_, PL_Term) -->
 
 rdf_triple_name(S, P, O) -->
   tuple(ascii, rdf_term_name, [S,P,O]).
+
 rdf_triple_name(S, P, O, G) -->
   tuple(ascii, rdf_term_name, [S,P,O,G]).
 

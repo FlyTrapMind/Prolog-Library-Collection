@@ -7,8 +7,15 @@
                          % +LanguageTag:atom
                          % +RdfGraph:atom
     rdf_term_html//1, % +RdfTerm:compound
-    rdf_term_html//2 % +RdfGraph:atom
-                     % +RdfTerm:compound
+    rdf_term_html//2, % +RdfGraph:atom
+                      % +RdfTerm:compound
+    rdf_triple_html//3, % +Subject:or([bnode,iri])
+                        % +Predicate:iri
+                        % +Object:or([bnode,iri,literal])
+    rdf_triple_html//4 % +Subject:or([bnode,iri])
+                       % +Predicate:iri
+                       % +Object:or([bnode,iri,literal])
+                       % +RdfGraph:atom
   ]
 ).
 
@@ -23,6 +30,7 @@ HTML generation for RDF terms.
 :- use_module(dcg(dcg_collection)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
+:- use_module(html(html)).
 :- use_module(html(html_list)).
 :- use_module(html(pl_term_html)).
 :- use_module(library(apply)).
@@ -36,6 +44,9 @@ HTML generation for RDF terms.
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(server(web_ui)).
 :- use_module(xml(xml_namespace)).
+
+:- rdf_meta(rdf_triple_html(r,r,r,?,?)).
+:- rdf_meta(rdf_triple_html(r,r,r,+,?,?)).
 
 
 
@@ -192,4 +203,28 @@ rdf_iri_html(IRI1, Graph) -->
   ->
     html(span(class='iri', a(href=IRI1, IRI1)))
   ).
+
+
+
+% TRIPLE %
+
+%! rdf_triple_html(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Object:or([bnode,iri,literal])
+%! )// is det.
+
+rdf_triple_html(S, P, O) -->
+  html_triple(rdf_term_html, S, P, O).
+
+
+%! rdf_triple_html(
+%!   +Subject:or([bnode,iri]),
+%!   +Predicate:iri,
+%!   +Object:or([bnode,iri,literal]),
+%!   +RdfGraph:atom
+%! )// is det.
+
+rdf_triple_html(S, P, O, G) -->
+  html_quadruple(rdf_term_html, S, P, O, G).
 

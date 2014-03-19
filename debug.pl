@@ -74,7 +74,6 @@ http:location(pldoc, root(help), [priority(10)]).
 :- use_module(server(web_modules)).
 :- use_module(server(pldoc_web)).
 :- use_module(server(web_console)).
-%:- use_module(rdf_web(rdf_web)).
 :- use_module(tms(tms_web)).
 
 %:- use_module(library(apply)).

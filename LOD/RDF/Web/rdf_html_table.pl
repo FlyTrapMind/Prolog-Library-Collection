@@ -149,7 +149,7 @@ rdf_html_table(O1, Caption, Rows1) -->
     select_option(graph(Graph), O1, O2, _NoGraph),
     
     % See whether a header row should be added.
-    select_option(header_row(HeaderRow), O2, O3, false),
+    select_option(header_row(HeaderRow1), O2, O3, false),
     header_row_presets(HeaderRow1, Rows1, HeaderRow2, Rows2),
     merge_options([header_row(HeaderRow2)], O3, O4)
   },

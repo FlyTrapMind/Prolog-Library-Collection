@@ -66,7 +66,6 @@ The generic predicates for Truth-Maintenance Systems.
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
-:- rdf_meta(tms_argument(r,-)).
 :- rdf_meta(tms_create_justification_iri(+,+,+,r,-)).
 :- rdf_meta(tms_justification(?,r)).
 :- rdf_meta(tms_justification(?,?,?,r,r)).
