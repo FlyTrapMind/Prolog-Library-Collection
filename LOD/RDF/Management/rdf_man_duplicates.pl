@@ -59,9 +59,9 @@ rdf_man_duplicates -->
   },
   html(
     \rdf_html_table(
-      [header_row(true)],
-      html(p('Overview of RDF duplicates')),
-      [['Subject','Predicate','Object','Graphs']|Rows]
+      [header_row(spog)],
+      html('Overview of RDF duplicates'),
+      Rows
     )
   ).
 

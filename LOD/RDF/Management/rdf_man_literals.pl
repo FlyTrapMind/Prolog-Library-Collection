@@ -59,19 +59,19 @@ rdf_man_correct_literals -->
 rdf_man_incorrect_literals -->
   {
     setoff(
-      [S,P,O,G],
+      [S,P,L,G],
       (
-        rdf(S, P, O, G),
-        rdf_literal(O, LexicalForm, Datatype, LangTag),
+        rdf(S, P, L, G),
+        rdf_literal(L, LexicalForm, Datatype, LangTag),
         \+ rdf_literal_map(LexicalForm, Datatype, LangTag, PlValue)
       ),
       IncorrectRows
     )
   },
   rdf_html_table(
-    [header_row(true)],
-    html(p('Overview of incorrect RDF literals.')),
-    [['Subject','Predicate','Literal','Graph']|IncorrectRows]
+    [header_row(splg)],
+    html('Overview of incorrect RDF literals.'),
+    IncorrectRows
   ).
 
 
