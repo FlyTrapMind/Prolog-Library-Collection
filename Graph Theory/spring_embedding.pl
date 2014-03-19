@@ -69,7 +69,7 @@ spring_embedding([1-[9],2-[9],3-[9],4-[9],5-[10],6-[10],7-[10],8-[10],9-[1,2,3,4
 :- use_module(library(debug)).
 :- use_module(library(settings)).
 :- use_module(math(math_ext)).
-:- use_module(programming(prolog_mode)).
+:- use_module(programming(pl_mode)).
 
 :- dynamic(tempval0/2).
 

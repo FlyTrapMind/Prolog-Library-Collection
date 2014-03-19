@@ -12,11 +12,11 @@
 load_pgc:-
   use_module(library(apply)),
   use_module(library(prolog_pack)),
-
+  
   source_file(load_pgc, ThisFile),
   file_directory_name(ThisFile, ThisDirectory),
   assert(user:file_search_path(pgc, ThisDirectory)),
-
+  
   % If there is no outer project, then PGC is the project.
   once((
     user:file_search_path(pgc, _)
@@ -92,9 +92,13 @@ load_pgc:-
   assert(user:file_search_path(web,             pgc('Web'  ))),
     assert(user:file_search_path(crawler,         web('Crawler'))),
   
+  % Set data subdirectory.
+  use_module(programming(pl_clas)),
+  set_data_path,
+  
   % Check SWI-Prolog version.
-  use_module(programming(prolog_version)),
-  check_prolog_version,
+  use_module(programming(pl_version)),
+  check_pl_version,
   
   % Initialize Web module registration.
   use_module(generics(db_ext)),
@@ -109,8 +113,8 @@ load_pgc:-
   
   % Install packages.
   % This requires user interaction on the first load.
-  use_module(programming(prolog_package)),
-  maplist(load_prolog_package, [regex,smtp]),
+  use_module(programming(pl_package)),
+  maplist(load_pl_package, [regex,smtp]),
   
   % Start logging.
   use_module(generics(logging)),

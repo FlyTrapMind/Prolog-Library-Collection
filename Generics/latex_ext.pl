@@ -34,7 +34,7 @@ Predicates for handling LaTeX files.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(run_ext)).
-:- use_module(programming(prolog_control)).
+:- use_module(programming(pl_control)).
 
 :- db_add_novel(user:prolog_file_type(aux, aux      )).
 :- db_add_novel(user:prolog_file_type(aux, latex_out)).

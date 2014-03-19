@@ -1,7 +1,7 @@
 :- module(
-  prolog_package,
+  pl_package,
   [
-    load_prolog_package/1 % +Pack:atom
+    load_pl_package/1 % +Pack:atom
   ]
 ).
 
@@ -18,7 +18,7 @@ Support for SWI-Prolog packages.
 
 
 
-load_prolog_package(Pack):-
+load_pl_package(Pack):-
   catch(
     use_module(library(Pack)),
     _,

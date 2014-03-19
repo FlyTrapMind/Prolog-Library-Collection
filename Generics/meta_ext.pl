@@ -57,7 +57,7 @@ Extensions to the SWI-Prolog meta predicates.
 
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(programming(prolog_control)).
+:- use_module(programming(pl_control)).
 
 :- meta_predicate(generic(:,:,+)).
 :- meta_predicate(maplist_pairs(3,+,-)).

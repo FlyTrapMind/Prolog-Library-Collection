@@ -1,5 +1,5 @@
 :- module(
-  prolog_control,
+  pl_control,
   [
     if_else/2, % :If
                % :Else
@@ -43,11 +43,13 @@ Control structures for Prolog.
 if_else(If, Else):-
   if_then_else(If, true, Else).
 
+
 %! if_then(:If, :Then) is det.
 % Procedural control structure.
 
 if_then(If, Then):-
   if_then_else(If, Then, true).
+
 
 %! if_then_else(:If, :Then, :Else) is det.
 % Procedural control structure.
@@ -60,6 +62,7 @@ if_then_else(If, Then, Else):-
   ;
     call(Else)
   ).
+
 
 %! switch(+Value, +Maps:list(pair)) is det.
 
@@ -76,6 +79,7 @@ switch(_Value, _Maps, Default):-
   % Make sure the variables in the goal are bound outside the switch call.
   call(Default).
 
+
 unless(Unless, Do):-
   (
     call(Unless)
@@ -84,6 +88,7 @@ unless(Unless, Do):-
   ;
     call(Do)
   ).
+
 
 xor(X, _Y):-
   call(X), !.

@@ -1,15 +1,15 @@
 :- module(
-  prolog_version,
+  pl_version,
   [
-    check_prolog_version/0,
-    check_prolog_version/1, % +MinimumVersion:nonneg
-    check_prolog_version/3 % ?MinimumMajor:nonneg
+    check_pl_version/0,
+    check_pl_version/1, % +MinimumVersion:nonneg
+    check_pl_version/3 % ?MinimumMajor:nonneg
                            % ?MinimumMinor:nonneg
                            % ?MinimumPatch:nonneg
   ]
 ).
 
-/** <module> SWIPL_EXT
+/** <module> Prolog version checking
 
 Predicates that are specific to the operation of SWI-Prolog.
 
@@ -25,21 +25,21 @@ Predicates that are specific to the operation of SWI-Prolog.
 
 
 
-%! check_prolog_version is semidet.
+%! check_pl_version is semidet.
 % Checks whether a sufficient version of SWI-Prolog is installed for the PGC.
 
-check_prolog_version:-
+check_pl_version:-
   minimum_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch),
-  check_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch).
+  check_pl_version(MinimumMajor, MinimumMinor, MinimumPatch).
 
-%! check_prolog_version(+MinimumVersion:nonneg) is semidet.
+%! check_pl_version(+MinimumVersion:nonneg) is semidet.
 % Checks whether at least the given version of SWI-Prolog is installed.
 % (to be used for non-PGC project requirements that exceed
 % the PGC requirement).
 %
 % @arg MinimumVersion:
 
-check_prolog_version(MinimumVersion):-
+check_pl_version(MinimumVersion):-
   % Type check.
   must_be(nonneg, MinimumVersion), !,
 
@@ -53,7 +53,7 @@ check_prolog_version(MinimumVersion):-
   ;
     atom_codes(CurrentVersion1, Codes),
     % The representation used before SWI-Prolog 2.7.10.
-    phrase(prolog_version(CurrentVersion2), Codes)
+    phrase(pl_version(CurrentVersion2), Codes)
   ),
 
   (
@@ -65,7 +65,8 @@ check_prolog_version(MinimumVersion):-
     )
   ).
 
-%! check_prolog_version(
+
+%! check_pl_version(
 %!   ?MinimumMajor:nonneg,
 %!   ?MinimumMinor:nonneg,
 %!   ?MinimumPatch:nonneg
@@ -74,7 +75,7 @@ check_prolog_version(MinimumVersion):-
 % (to be used for non-PGC project requirements that exceed
 % the PGC requirement).
 
-check_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch):-
+check_pl_version(MinimumMajor, MinimumMinor, MinimumPatch):-
   % Calculate the minimum version as an integer.
   major_minor_patch_to_integer(
     MinimumMajor,
@@ -82,7 +83,8 @@ check_prolog_version(MinimumMajor, MinimumMinor, MinimumPatch):-
     MinimumPatch,
     MinimumVersion
   ),
-  check_prolog_version(MinimumVersion).
+  check_pl_version(MinimumVersion).
+
 
 %! major_minor_patch_to_integer(
 %!   ?Major:nonneg,
@@ -96,6 +98,7 @@ major_minor_patch_to_integer(Major1, Minor1, Patch1, Version):-
   default(Minor1, 0, Minor2),
   default(Patch1, 0, Patch2),
   Version is (Major2 * 10000) + (Minor2 * 100) + Patch2.
+
 
 %! minimum_prolog_version(
 %!   ?Major:nonneg,
@@ -127,6 +130,7 @@ major_minor_patch_to_integer(Major1, Minor1, Patch1, Version):-
 
 minimum_prolog_version(6, 5, 2).
 
+
 prolog:message(outdated_version(Component, Current, Minimum)) -->
   [
     ansi([fg(red),intensity(normal)], 'Your version of ', []),
@@ -154,10 +158,11 @@ prolog:message(version(Version)) -->
   },
   ['~w.~w.~w'-[Major,Minor,Patch]].
 
-%! prolog_version(-Version:nonneg)//
+
+%! pl_version(-Version:nonneg)// .
 % Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.
 
-prolog_version(Version) -->
+pl_version(Version) -->
   dcg_multi1(decimal_number, 3, [Major,Minor,Patch], [separator(comma)]),
   {major_minor_patch_to_integer(Major, Minor, Patch, Version)}.
 

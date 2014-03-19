@@ -1,5 +1,5 @@
 :- module(
-  prolog_mode,
+  pl_mode,
   [
     call_complete/3, % :Goal
                      % +Input
@@ -29,7 +29,7 @@
   ]
 ).
 
-/** <module> Prolog mode
+/** <module> Prolog modes
 
 Automated checks for Prolog mode enforcement.
 
