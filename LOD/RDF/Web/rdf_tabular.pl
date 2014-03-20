@@ -17,15 +17,17 @@ Generated RDF HTML tables.
 @tbd Add namespace legend.
 @tbd Add local/remote distinction.
 @tbd Include images.
-@version 2013/12-2014/02
+@version 2013/12-2014/03
 */
 
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_parse)).
 :- use_module(rdf_web(rdf_tabular_graph)).
 :- use_module(rdf_web(rdf_tabular_term)).
 :- use_module(rdf_web(rdf_html_table)).
@@ -40,23 +42,42 @@ http:location(rdf_tabular, root(rdf_tabular), []).
 
 
 
+%! rdf_tabular(+Request:list(nvpair)) is det.
+% Serves an HTML page describing RDF data.
+%
+% The following variants are supported, based on the URL search string:
+%   * =|graph=Graph|=
+%     Serves a description of the given RDF graph.
+%   * =|term=Term|=
+%     Serves a description of the given RDF term.
+%     The atom `Term` is parsed by a grammar rule
+%     that extract the corresponding RDF term.
+%     This also allows atomic renditions of prefix-abbreviated IRIs as input,
+%     e.g. `'dbpedia:Monkey'`.
+%   * No search string.
+%     Serves a description of all currently loaded RDF graphs.
+
 % RDF term.
 rdf_tabular(Request):-
   memberchk(search(Search), Request),
   memberchk(term=Term, Search), !,
   
-  % The graph is optional (in which case it is left uninstantiated).
+  % Parse the tern atom to extract the corresponding RDF term.
+  once(dcg_phrase(rdf_parse_term(RdfTerm1), Term)),
+  rdf_global_id(RdfTerm1, RdfTerm2),
+  
+  % The graph parameter is optional
+  % (in which case it is left uninstantiated).
   ignore(memberchk(graph=Graph, Search)),
 
   reply_html_page(
     app_style,
     title(['Overview of RDF resource ',Term]),
     [
-      h1(['Description of RDF term ',\rdf_term_html(Term)]),
-      \rdf_tabular_term(Graph, Term)
+      h1(['Description of RDF term ',\rdf_term_html(RdfTerm2)]),
+      \rdf_tabular_term(Graph, RdfTerm2)
     ]
   ).
-
 % RDF graph.
 rdf_tabular(Request):-
   memberchk(search(Search), Request),
@@ -70,7 +91,6 @@ rdf_tabular(Request):-
       \rdf_tabular_graph(Graph)
     ]
   ).
-
 % Default: RDF graphs.
 rdf_tabular(_Request):-
   reply_html_page(

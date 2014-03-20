@@ -20,9 +20,17 @@
                       % ?Object:or([bnode,iri,literal])
                       % +Graph:atom
                       % -Count:nonneg
-    rdf_property_table/3 % +Property:iri
-                         % +Graph:atom
-                         % -Table:list(list)
+    rdf_property_table/3, % +Property:iri
+                          % +Graph:atom
+                          % -Table:list(list)
+    rdf_triples_by_pattern/5, % ?Subject:or([bnode,iri])
+                              % ?Predicate:iri
+                              % ?Object:or([bnode,iri,literal])
+                              % ?RdfGraph:atom
+                              % -NumberOfTriples:nonneg
+    rdf_triples_by_term/3 % ?RdfGraph:atom
+                          % ?RdfTerm:or([bnode,iri,literal])
+                          % -NumberOfTriples:nonneg
   ]
 ).
 
@@ -33,7 +41,7 @@ Statistics for RDF data.
 @author Wouter Beek
 @see Based on the definitions in section 4.6 of the VoID W3C specification,
      http://www.w3.org/TR/2011/NOTE-void-20110303/
-@version 2013/01, 2013/03-2013/04, 2013/07, 2013/09
+@version 2013/01, 2013/03-2013/04, 2013/07, 2013/09, 2014/03
 */
 
 :- use_module(generics(meta_ext)).
@@ -51,6 +59,7 @@ Statistics for RDF data.
 :- rdf_meta(count_properties(r,r,+,-)).
 :- rdf_meta(count_subjects(r,r,+,-)).
 :- rdf_meta(rdf_property_table(r,+,-)).
+:- rdf_meta(rdf_triples_by_pattern(r,r,o,?,-)).
 
 
 
@@ -182,4 +191,29 @@ rdf_property_table(P, G, T):-
     ),
     T
   ).
+
+
+%! rdf_triples_by_pattern(
+%!   ?Subject:or([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?Object:or([bnode,iri,literal]),
+%!   ?RdfGraph:atom,
+%!   -NumberOfTriples:nonneg
+%! ) is det.
+
+rdf_triples_by_pattern(S, P, O, G, N):-
+  aggregate_all(count, rdf(S, P, O, G), N).
+
+
+%! rdf_triples_by_term(
+%!   ?RdfGraph:atom,
+%!   ?RdfTerm:or([bnode,iri,literal]),
+%!   -NumberOfTriples:nonneg
+%! ) is det.
+
+rdf_triples_by_term(G, T, N):-
+  rdf_triples_by_pattern(T, _, _, G, NS),
+  rdf_triples_by_pattern(_, T, _, G, NP),
+  rdf_triples_by_pattern(_, _, T, G, NO),
+  sum_list([NS,NP,NO], N).
 
