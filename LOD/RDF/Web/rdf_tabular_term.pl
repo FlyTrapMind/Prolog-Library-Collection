@@ -27,6 +27,7 @@ Generates HTML tables for overviews of singular RDF terms.
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_tabular)).
 :- use_module(rdf_web(rdf_tabular_class)).
+:- use_module(rdf_web(rdf_tabular_datatype)).
 :- use_module(rdf_web(rdf_tabular_property)).
 
 
@@ -67,16 +68,9 @@ rdf_tabular_term(Graph, P) -->
   {rdfs_property(P)}, !,
   rdf_tabular_property(Graph, P).
 % Datatype Iri.
-rdf_tabular_term(Graph, D) -->
-  {
-    rdf_datatype(D, _), !,
-    setoff([Value], rdf_datatype(_, _, Value, D, Graph), Values)
-  },
-  rdf_html_table(
-    [graph(Graph)],
-    html(['Ordered value list for datatype ',D,'.']),
-    [['Value']|Values]
-  ).
+rdf_tabular_term(G, D) -->
+  {rdf_datatype(D, _)}, !,
+  rdf_tabular_datatype(G, D).
 % Other
 rdf_tabular_term(Graph, RdfTerm) -->
   html([

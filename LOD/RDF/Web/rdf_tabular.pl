@@ -60,22 +60,22 @@ http:location(rdf_tabular, root(rdf_tabular), []).
 % RDF term.
 rdf_tabular(Request):-
   memberchk(search(Search), Request),
-  memberchk(term=Term, Search), !,
+  memberchk(term=T, Search), !,
   
   % Parse the tern atom to extract the corresponding RDF term.
-  once(dcg_phrase(rdf_parse_term(RdfTerm1), Term)),
-  rdf_global_id(RdfTerm1, RdfTerm2),
+  once(dcg_phrase(rdf_parse_term(T1), T)),
+  rdf_global_id(T1, T2),
   
   % The graph parameter is optional
   % (in which case it is left uninstantiated).
-  ignore(memberchk(graph=Graph, Search)),
+  ignore(memberchk(graph=G, Search)),
 
   reply_html_page(
     app_style,
-    title(['Overview of RDF resource ',Term]),
+    title(['Overview of RDF resource ',\rdf_term_in_graph_html(T2, G)]),
     [
-      h1(['Description of RDF term ',\rdf_term_html(RdfTerm2)]),
-      \rdf_tabular_term(Graph, RdfTerm2)
+      h1(['Description of RDF term ',\rdf_term_in_graph_html(T2, G)]),
+      \rdf_tabular_term(G, T2)
     ]
   ).
 % RDF graph.
@@ -85,21 +85,21 @@ rdf_tabular(Request):-
   
   reply_html_page(
     app_style,
-    title(['Overview of RDF graph ',\rdf_term_html(Graph)]),
-    [
-      h1(['Description of RDF graph ',\rdf_term_html(Graph)]),
+    title(['Overview of RDF graph ',\rdf_graph_html(Graph)]),
+    html([
+      h1(['Description of RDF graph ',\rdf_graph_html(Graph),'.']),
       \rdf_tabular_graph(Graph)
-    ]
+    ])
   ).
 % Default: RDF graphs.
 rdf_tabular(_Request):-
   reply_html_page(
     app_style,
     title('Overview of RDF graphs'),
-    [
+    html([
       h1('Overview of RDF graphs'),
       \rdf_tabular_graphs
-    ]
+    ])
   ).
 
 

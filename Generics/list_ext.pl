@@ -45,18 +45,34 @@
     member_default/3, % +Member
                       % +List:list
                       % +Default
-    nth_minus_0/3, % +Index:integer
-                   % +List:list
-                   % -Element:term
-    nth_minus_1/3, % +Index:integer
-                   % +List:list
-                   % -Element:term
-    nth0chk/3, % ?Index:integer
+    nth0_minus/3, % ?Index:nonneg
+                  % ?List:list
+                  % ?Element:term
+    nth0_minus/4, % ?Index:nonneg
+                  % ?List:list
+                  % ?Element:term
+                  % ?Rest:list
+    nth1_minus/3, % ?Index:nonneg
+                  % ?List:list
+                  % ?Element:term
+    nth1_minus/4, % ?Index:nonneg
+                  % ?List:list
+                  % ?Element:term
+                  % ?Rest:list
+    nth0chk/3, % ?Index:nonneg
                % ?List:List
                % ?Element
-    nth1chk/3, % ?Index:integer
+    nth0chk/4, % ?Index:nonneg
                % ?List:List
                % ?Element
+               % ?Rest:list
+    nth1chk/3, % ?Index:nonneg
+               % ?List:List
+               % ?Element
+    nth1chk/4, % ?Index:nonneg
+               % ?List:List
+               % ?Element
+               % ?Rest:list
     postfix/2, % ?Part:list
                % ?Whole:list
     random_sublist/2, % +List:list
@@ -349,7 +365,7 @@ member_default(Member, List, _):-
 member_default(Default, _, Default).
 
 
-%! nth_minus_0(+I:integer, +L:list, -Element) is det.
+%! nth0_minus(?Index:nonneg, ?List:list, ?Element) is nondet.
 % Succeeds if the given element occurs at =|length(List) - I|= in list =L=.
 %
 % @arg I The index, an integer in =|[0, length(List) - 1]|=.
@@ -357,12 +373,20 @@ member_default(Default, _, Default).
 % @arg Element An element occurring in the given list.
 % @see The inverse of default method nth0/3.
 
-nth_minus_0(I, L, Element):-
-  reverse(L, RevL),
-  nth0(I, RevL, Element).
+nth0_minus(I, L1, E):-
+  reverse(L1, L2),
+  nth0(I, L2, E).
 
 
-%! nth_minus_1(-I:integer, +L:list, +Element) is semidet.
+%! nth0_minus(?Index:nonneg, ?List:list, ?Element, Rest:list) is nondet.
+
+nth0_minus(I, L1, E, R1):-
+  reverse(L1, L2),
+  nth0(I, L2, E, R2),
+  reverse(R1, R2).
+
+
+%! nth1_minus(?Index:nonneg, ?List:list, ?Element) is nondet.
 % Succeeds if the given element occurs at =|length(L) - I|= in list =L=.
 %
 % @arg I The index, an integer in =|[0, length(List)]|=.
@@ -370,21 +394,41 @@ nth_minus_0(I, L, Element):-
 % @arg Element An element occurring in the given list.
 % @see The inverse of default method nth1/3.
 
-nth_minus_1(I, L, Element):-
-  reverse(L, RevL),
-  nth1(I, RevL, Element).
+nth1_minus(I, L1, E):-
+  reverse(L1, L2),
+  nth1(I, L2, E).
 
 
-%! nth0chk(?Index:integer, ?List:list, ?Element) is det.
+%! nth1_minus(?Index:nonneg, ?List:list, ?Element, Rest:list) is nondet.
 
-nth0chk(Index, List, Element):-
-  once(nth0(Index, List, Element)).
+nth1_minus(I, L1, E, R1):-
+  reverse(L1, L2),
+  nth1(I, L2, E, R2),
+  reverse(R1, R2).
 
 
-%! nth1chk(?Index:integer, ?List:list, ?Element) is det.
+%! nth0chk(?Index:nonneg, ?List:list, ?Element) is nondet.
 
-nth1chk(Index, List, Element):-
-  once(nth1(Index, List, Element)).
+nth0chk(I, L, E):-
+  once(nth0(I, L, E)).
+
+
+%! nth0chk(?Index:nonneg, ?List:list, ?Element, ?Rest:list) is nondet.
+
+nth0chk(I, L, E, R):-
+  once(nth0(I, L, E, R)).
+
+
+%! nth1chk(?Index:nonneg, ?List:list, ?Element) is nondet.
+
+nth1chk(I, L, E):-
+  once(nth1(I, L, E)).
+
+
+%! nth1chk(?Index:nonneg, ?List:list, ?Element, ?Rest:list) is nondet.
+
+nth1chk(I, L, E, R):-
+  once(nth1(I, L, E, R)).
 
 
 %! postfix(?Part:list, ?Whole:list) is nondet.

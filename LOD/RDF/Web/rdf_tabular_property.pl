@@ -62,7 +62,7 @@ rdf_tabular_property_domain(G, P) -->
   )},
   rdf_html_table(
     [graph(G),header_row(true)],
-    html(['Domain of property ',\rdf_term_html(P),'.']),
+    html(['Domain of property ',\rdf_term_in_graph_html(P, G),'.']),
     [['Class']|Rows]
   ).
 
@@ -78,7 +78,7 @@ rdf_tabular_property_range(G, P) -->
   )},
   rdf_html_table(
     [graph(G),header_row(true)],
-    html(['Range of property ',\rdf_term_html(P),'.']),
+    html(['Range of property ',\rdf_term_in_graph_html(P, G),'.']),
     [['Class']|Rows]
   ).
 
@@ -101,7 +101,11 @@ rdf_tabular_predicate_literals(G, P) -->
   },
   rdf_html_table(
     [graph(G),header_row(true)],
-    html(['Values that occur for property ',\rdf_term_html(P),'.']),
+    html([
+      'Values that occur for property ',
+      \rdf_term_in_graph_html(P, G),
+      '.'
+    ]),
     [['Literal value']|Rows2]
   ).
 

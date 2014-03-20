@@ -278,6 +278,6 @@ uri_to_subdirectory_file_fragment(URI, Directory, FileName, Fragment):-
     uri_components(http, 'www.w3.org', URI_Path, _Search, Fragment)
   ),
   atomic_list_concat(List, '/', URI_Path), % split
-  nth_minus_0(0, List, FileName),
-  nth_minus_0(1, List, Directory).
+  nth0_minus(0, List, FileName),
+  nth0_minus(1, List, Directory).
 

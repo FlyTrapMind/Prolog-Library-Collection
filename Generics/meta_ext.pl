@@ -35,6 +35,13 @@
     mapset/3, % :Goal
               % +List:list
               % -Set:ordset
+    nth0_call/3, % :Goal
+                 % +Index:nonneg
+                 % +Argument
+    nth0_call/4, % +Options:list(nvpair)
+                 % :Goal
+                 % +Index:nonneg
+                 % +Argument
 
 % MODULES
     modules/1, % -Modules:list(atom)
@@ -63,6 +70,8 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(maplist_pairs(3,+,-)).
 :- meta_predicate(mapset(2,+,-)).
 :- meta_predicate(memo(0)).
+:- meta_predicate(nth0_call(1,+,+)).
+:- meta_predicate(nth0_call(+,1,+,+)).
 :- meta_predicate(setoff(+,0,-)).
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(temporarily_set_flag(+,+,0)).
@@ -221,6 +230,31 @@ maplist_pairs(Goal, List1, List2):-
 mapset(Goal, List, Set):-
   maplist(Goal, List, NewList),
   sort(NewList, Set).
+
+
+%! nth0_call(:Goal, +Index:nonneg, +Argument) .
+%! nth0_call(+Options:list(nvpair), :Goal, +Index:nonneg, +Argument) .
+% The following options are supported:
+%   * =|minus(+UseMinus:boolean)|=
+%     When `true` (default `false`), uses nth0_minus/4
+%     instead of nth0/4. See module [list_ext].
+
+nth0_call(Goal, I, X):-
+  nth0_call([], Goal, I, X).
+
+nth0_call(O1, Goal, I, X):-
+  Goal =.. [Pred|Args1],
+  
+  % Insert the extra argument.
+  (
+    option(minus(true), O1, false)
+  ->
+    nth0_minus(I, Args2, X, Args1)
+  ;
+    nth0(I, Args2, X, Args1)
+  ),
+  
+  apply(Pred, Args2).
 
 
 

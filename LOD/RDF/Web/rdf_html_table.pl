@@ -19,8 +19,9 @@ Generates HTML tables with RDF content.
 @version 2014/01-2014/03
 */
 
-:- use_module(generics(typecheck)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
+:- use_module(generics(typecheck)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
@@ -153,8 +154,14 @@ rdf_html_table(O1, Caption, Rows1) -->
     header_row_presets(HeaderRow1, Rows1, HeaderRow2, Rows2),
     merge_options([header_row(HeaderRow2)], O3, O4)
   },
-  html(\html_table(O4, Caption, rdf_term_html(Graph), Rows2)).
-
+  html(
+    \html_table(
+      O4,
+      Caption,
+      dcg_nth0_call([minus(true)], rdf_term_html(Graph), 0),
+      Rows2
+    )
+  ).
 
 rdf_html_tables(_, []) --> !, [].
 rdf_html_tables(O1, [H|T]) -->

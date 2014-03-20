@@ -2,20 +2,23 @@
   rdf_term_html,
   [
     rdf_graph_html//1, % +RdfGraph:atom
+    rdf_in_graph_html//1, % ?RdfGraph:atom
     rdf_literal_html//4, % +LexicalForm:atom
                          % +DatatypeIri:iri
                          % +LanguageTag:atom
-                         % +RdfGraph:atom
-    rdf_term_html//1, % +RdfTerm:compound
-    rdf_term_html//2, % +RdfGraph:atom
-                      % +RdfTerm:compound
+                         % ?RdfGraph:atom
+    rdf_term_html//1, % +RdfTerm:or([bnode,iri,literal])
+    rdf_term_html//2, % +RdfTerm:or([bnode,iri,literal])
+                      % ?RdfGraph:atom
+    rdf_term_in_graph_html//2, % +RdfTerm:or([bnode,iri,literal])
+                               % ?RdfGraph:atom
     rdf_triple_html//3, % +Subject:or([bnode,iri])
                         % +Predicate:iri
                         % +Object:or([bnode,iri,literal])
     rdf_triple_html//4 % +Subject:or([bnode,iri])
                        % +Predicate:iri
                        % +Object:or([bnode,iri,literal])
-                       % +RdfGraph:atom
+                       % ?RdfGraph:atom
   ]
 ).
 
@@ -45,8 +48,12 @@ HTML generation for RDF terms.
 :- use_module(server(web_ui)).
 :- use_module(xml(xml_namespace)).
 
-:- rdf_meta(rdf_triple_html(r,r,r,?,?)).
-:- rdf_meta(rdf_triple_html(r,r,r,+,?,?)).
+:- rdf_meta(rdf_literal_html(+,r,+,?)).
+:- rdf_meta(rdf_term_html(o,?,?)).
+:- rdf_meta(rdf_term_html(o,?,?,?)).
+:- rdf_meta(rdf_term_in_graph_html(?,o,?,?)).
+:- rdf_meta(rdf_triple_html(r,r,o,?,?)).
+:- rdf_meta(rdf_triple_html(r,r,o,?,?,?)).
 
 
 
@@ -85,6 +92,16 @@ rdf_term_html(_, PlTerm) -->
   html(span(class='prolog-term', \pl_term_html(PlTerm))).
 
 
+%! rdf_term_in_graph_html(
+%!   +RdfGraph:atom,
+%!   +RdfTerm:or([bnode,iri,literal])
+%! )// is det.
+
+rdf_term_in_graph_html(G, T) -->
+  rdf_term_html(T),
+  rdf_in_graph_html(G).
+
+
 
 % GRAPH %
 
@@ -94,6 +111,11 @@ rdf_graph_html(Graph) -->
     uri_query_add(Location1, graph, Graph, Location2)
   },
   html(span(class='rdf-graph', a(href=Location2, Graph))).
+
+rdf_in_graph_html(G) -->
+  {var(G)}, !.
+rdf_in_graph_html(G) -->
+  html([' in graph ',\rdf_graph_html(G)]).
 
 
 

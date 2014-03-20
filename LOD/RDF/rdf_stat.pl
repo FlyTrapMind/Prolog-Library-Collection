@@ -23,10 +23,22 @@
     rdf_property_table/3, % +Property:iri
                           % +Graph:atom
                           % -Table:list(list)
+    rdf_triples_by_datatype/3, % ?RdfGraph:atom
+                               % ?Datatype:iri
+                               % -NumberOfTriples:nonneg
+    rdf_triples_by_object/3, % ?RdfGraph:atom
+                             % ?Object:or([bnode,iri,literal])
+                             % -NumberOfTriples:nonneg
     rdf_triples_by_pattern/5, % ?Subject:or([bnode,iri])
                               % ?Predicate:iri
                               % ?Object:or([bnode,iri,literal])
                               % ?RdfGraph:atom
+                              % -NumberOfTriples:nonneg
+    rdf_triples_by_predicate/3, % ?RdfGraph:atom
+                                % ?Predicate:iri
+                                % -NumberOfTriples:nonneg
+    rdf_triples_by_subject/3, % ?RdfGraph:atom
+                              % ?Subject:or([bnode,iri])
                               % -NumberOfTriples:nonneg
     rdf_triples_by_term/3 % ?RdfGraph:atom
                           % ?RdfTerm:or([bnode,iri,literal])
@@ -59,7 +71,12 @@ Statistics for RDF data.
 :- rdf_meta(count_properties(r,r,+,-)).
 :- rdf_meta(count_subjects(r,r,+,-)).
 :- rdf_meta(rdf_property_table(r,+,-)).
+:- rdf_meta(rdf_triples_by_datatype(?,r,-)).
+:- rdf_meta(rdf_triples_by_object(?,o,-)).
 :- rdf_meta(rdf_triples_by_pattern(r,r,o,?,-)).
+:- rdf_meta(rdf_triples_by_predicate(?,r,-)).
+:- rdf_meta(rdf_triples_by_subject(?,r,-)).
+:- rdf_meta(rdf_triples_by_term(?,o,-)).
 
 
 
@@ -193,6 +210,26 @@ rdf_property_table(P, G, T):-
   ).
 
 
+%! rdf_triples_by_datatype(
+%!   ?RdfGraph:atom,
+%!   +Datatype:iri,
+%!   -NumberOfTriples:nonneg
+%! ) is det.
+
+rdf_triples_by_datatype(G, D, ND):-
+  rdf_triples_by_pattern(_, _, literal(type(D,_)), G, ND).
+
+
+%! rdf_triples_by_object(
+%!   ?RdfGraph:atom,
+%!   +Object:or([bnode,iri,literal]),
+%!   -NumberOfTriples:nonneg
+%! ) is det.
+
+rdf_triples_by_object(G, O, NO):-
+  rdf_triples_by_pattern(_, _, O, G, NO).
+
+
 %! rdf_triples_by_pattern(
 %!   ?Subject:or([bnode,iri]),
 %!   ?Predicate:iri,
@@ -205,6 +242,26 @@ rdf_triples_by_pattern(S, P, O, G, N):-
   aggregate_all(count, rdf(S, P, O, G), N).
 
 
+%! rdf_triples_by_predicate(
+%!   ?RdfGraph:atom,
+%!   +Predicate:iri,
+%!   -NumberOfTriples:nonneg
+%! ) is det.
+
+rdf_triples_by_predicate(G, P, NP):-
+  rdf_triples_by_pattern(_, P, _, G, NP).
+
+
+%! rdf_triples_by_subject(
+%!   ?RdfGraph:atom,
+%!   +Subject:or([bnode,iri]),
+%!   -NumberOfTriples:nonneg
+%! ) is det.
+
+rdf_triples_by_subject(G, S, NS):-
+  rdf_triples_by_pattern(S, _, _, G, NS).
+
+
 %! rdf_triples_by_term(
 %!   ?RdfGraph:atom,
 %!   ?RdfTerm:or([bnode,iri,literal]),
@@ -212,8 +269,9 @@ rdf_triples_by_pattern(S, P, O, G, N):-
 %! ) is det.
 
 rdf_triples_by_term(G, T, N):-
-  rdf_triples_by_pattern(T, _, _, G, NS),
-  rdf_triples_by_pattern(_, T, _, G, NP),
-  rdf_triples_by_pattern(_, _, T, G, NO),
-  sum_list([NS,NP,NO], N).
+  rdf_triples_by_subject(  G, T, NS),
+  rdf_triples_by_predicate(G, T, NP),
+  rdf_triples_by_object(   G, T, NO),
+  rdf_triples_by_datatype( G, T, ND),
+  sum_list([NS,NP,NO,ND], N).
 
