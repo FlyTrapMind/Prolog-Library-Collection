@@ -1,7 +1,8 @@
 :- module(
   pl_clas,
   [
-    process_options/1, % -RemainingOptions:list(nvpair)
+    process_options/2, % -ExecutedOptions:list(nvpair)
+                       % -RemainingOptions:list(nvpair)
     read_options/1, % -Options:list(nvpair)
     set_data_path/0
   ]
@@ -18,7 +19,6 @@ Support for command line arguments given at Prolog startup.
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
 
 :- multifile(prolog:message//1).
 
@@ -85,7 +85,8 @@ user:process_cmd_option(help(true)):-
   forall(
     user:cmd_option(Short, Long, _, Comment),
     describe_option(Short, Long, Comment)
-  ).
+  ),
+  halt.
 user:process_cmd_option(help(false)).
 
 % Help obsoletes all other options.
@@ -99,10 +100,16 @@ user:process_cmd_options(O1, [help(true)]):-
 user:cmd_option(v, version, boolean, 'Display version information.').
 
 user:process_cmd_option(version(true)):-
+  format(
+    user_output,
+    '  PraSem: Pragmatic Semantics for the Web of Data\n',
+    []
+  ),
   forall(
     user:project(ProjectName, ProjectDescription),
-    format(user_output, '    ~w~t~w\n', [ProjectName,ProjectDescription])
-  ).
+    format(user_output, '    * ~w: ~w\n', [ProjectName,ProjectDescription])
+  ),
+  halt.
 user:process_cmd_option(version(false)).
 
 % Version obsoletes all other options.
@@ -117,9 +124,9 @@ user:process_cmd_options(O1, [version(true)]):-
 
 describe_option(Short, Long, Comment):-
   var(Short), !,
-  format(user_output, '    --~w~t~40|~w~n', [Long,Comment]).
+  format(user_output,  '        --~w~t~20|~w~n', [Long,Comment]).
 describe_option(Short, Long, Comment):-
-  format(user_output, '    -~w, --~w~t~40|~w~n', [Short,Long,Comment]).
+  format(user_output, '    -~w, --~w~t~20|~w~n', [Short,Long,Comment]).
 
 
 %! long_option(+Name:atom, +Value:atom, -Option:compound) is det.
@@ -185,7 +192,10 @@ parse_options([H|T], [Option|Options], Rest):-
 parse_options(Rest, [], Rest).
 
 
-%! process_options(-RemainingOptions:list(nvpair)) is det.
+%! process_options(
+%!   -ExecutedOptions:list(nvpair),
+%!   -RemainingOptions:list(nvpair)
+%! ) is det.
 % Reads the command-line arguments and executes those that are common
 % among the PGC-using projects,
 % e.g. setting the directory for reading/writing data files
@@ -194,20 +204,25 @@ parse_options(Rest, [], Rest).
 % Only the options that are not processed in a generic way,
 % i.e. those that are application-specific, are returned.
 
-process_options(O3):-
-gtrace,
-  read_options(O1),
-  process_options(O1, O2),
+process_options(O2, O3):-
+  read_options(O1), !,
+  process_cmd_options(O1, O2),
   exclude(user:process_cmd_option, O2, O3).
+process_options(_, _):-
+  print_message(warning, clas_parse_failed),
+  halt.
+
+prolog:message(clas_parse_failed) -->
+  ['Could not parse command-line arguments.'].
 
 
-%! process_options(+Options1:list(nvpair), -Options2:list(nvpair)) is det.
+%! process_cmd_options(+Options1:list(nvpair), -Options2:list(nvpair)) is det.
 
-process_options(O1, O3):-
+process_cmd_options(O1, O3):-
   user:process_cmd_options(O1, O2),
   O1 \== O2, !,
-  process_options(O2, O3).
-process_options(O1, O1).
+  process_cmd_options(O2, O3).
+process_cmd_options(O1, O1).
 
 
 %! read_options(-Options:list(nvpair)) is det.
