@@ -15,7 +15,6 @@ Unit testing for XSD support in PGC.
 
 % Testing =|xsd_duration:dateTimePlusDuration/3|=
 
-dateTime	duration	result
 dateTimePlusDuration_test(
   'P1Y3M5DT7H10M3.3S',
   '2000-01-12T12:13:14Z',

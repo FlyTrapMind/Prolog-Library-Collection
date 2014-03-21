@@ -50,8 +50,8 @@ test2:-
   nogood_nodes(ATMS, 'nogood', [A, B]),
   print_atms(ATMS, 'Now register nogood {A,B}'),
   find_or_add_justification(j4, Y, [X, YX], _J4),
-  print_atms(ATMS, 'x=1, y=x =\> y=1'),
+  print_atms(ATMS, 'x=1, y=x => y=1'),
   find_or_add_justification('Premise', Z, [], _JP),
   print_atms(ATMS, 'We have a premise z=1'),
   find_or_add_justification(j5, X, [Z, XZ], _J5),
-  print_atms(ATMS, 'z=1, x=z =\> x=1').
+  print_atms(ATMS, 'z=1, x=z => x=1').

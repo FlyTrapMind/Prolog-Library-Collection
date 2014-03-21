@@ -272,19 +272,19 @@ dcg_speech_bubble(LineWidth, CodeLines) -->
   dcg_speech_bubble_bottom(LineWidth), newline.
 
 dcg_speech_bubble_bottom(LineWidth) -->
-  "\\-",
-  dcg_multi("-", LineWidth),
-  "-/".
+  `\\-`,
+  dcg_multi(`-`, LineWidth),
+  `-/`.
 
 dcg_speech_bubble_line(LineWidth, CodeLine) -->
-  "| ",
+  `| `,
   CodeLine,
   {
     length(CodeLine, ContentLength),
     NumberOfSpaces is LineWidth - ContentLength
   },
-  dcg_multi(" ", NumberOfSpaces),
-  " |",
+  dcg_multi(` `, NumberOfSpaces),
+  ` |`,
   newline.
 
 dcg_speech_bubble_lines(_LineWidth, []) --> !, [].
@@ -293,9 +293,9 @@ dcg_speech_bubble_lines(LineWidth, [CodeLine|CodeLines]) -->
   dcg_speech_bubble_lines(LineWidth, CodeLines).
 
 dcg_speech_bubble_top(LineWidth) -->
-  "/-",
-  dcg_multi("-", LineWidth),
-  "-\\".
+  `/-`,
+  dcg_multi(`-`, LineWidth),
+  `-\\`.
 
 %! cowspeak_web(+Content, -Markup:list) is det.
 %! cowspeak_web(+Options, +Content, -Markup:list) is det.

@@ -30,6 +30,7 @@
     quoted//1, % :DCG
     transition//2, % :From
                    % :To
+    void//0,
     word//1 % ?Word:atom
   ]
 ).
@@ -54,7 +55,7 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/02
+@version 2013/07-2013/09, 2013/11-2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -329,6 +330,9 @@ transition(From, To) -->
   dcg_call(From),
   dcg_between(space, arrow([head(right)], 2)),
   dcg_call(To).
+
+
+void --> [].
 
 
 %! word(?Word:atom)// .

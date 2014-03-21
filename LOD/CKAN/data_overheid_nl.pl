@@ -19,7 +19,7 @@
 
 
 
-ckan(Predicate, Arguments):-
+data_overheid_nl_ckan(Predicate, Arguments):-
   Auth = 'data.overheid.nl',
   current_api_key('data.overheid.nl', ckan, Key),
   Scheme = https,

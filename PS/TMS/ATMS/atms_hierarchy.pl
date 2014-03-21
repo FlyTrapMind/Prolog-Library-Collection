@@ -3,11 +3,18 @@
 /** <module> ATMS hierarchy
 
 @author Wouter Beek
-@version Dec 2011, Mrt 2012
+@version 2011/12, 2012/03, 2014/03
 */
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdfs(rdfs_label_ext)).
+:- use_module(xml(xml_namespace)).
+
+:- xml_register_namespace(atms, 'http://www.wouterbeek.com/atms#').
+:- xml_register_namespace(environment, 'http://www.wouterbeek.com/environment#').
+:- xml_register_namespace(justification, 'http://www.wouterbeek.com/justification#').
+:- xml_register_namespace(node, 'http://www.wouterbeek.com/node#').
 
 
 

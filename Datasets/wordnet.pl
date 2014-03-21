@@ -26,19 +26,25 @@
 
 /** <module> Wordnet
 
-Wordnet access API.
+Wordnet API.
 
 @author Wouter Beek
-@version 2012/10.
+@version 2012/10, 2014/03
 */
 
 :- use_module(os(file_ext)).
 
-:- dynamic loaded/0.
+:- dynamic(ant/4).
+:- dynamic(g/2).
+:- dynamic(hyp/2).
+:- dynamic(ins/2).
+:- dynamic(mm/2).
+:- dynamic(s/6).
+:- dynamic(wordnet_loaded/0).
 
 
 
-%% antonym(+Word:atom, -Antonym:atom) is nondet.
+%! antonym(+Word:atom, -Antonym:atom) is nondet.
 % Antonyms of words.
 % A word can have multiple antonyms.
 
@@ -47,7 +53,8 @@ antonym(Word, Antonym):-
   ant(SynsetID, WordNumber, AntonymSynsetID, AntonymNumber),
   word(AntonymSynsetID, AntonymNumber, Antonym).
 
-%% gloss(+Word:atom, -Gloss) is nondet.
+
+%! gloss(+Word:atom, -Gloss) is nondet.
 % Glosses of words.
 % A word can have multiple glosses.
 
@@ -56,12 +63,14 @@ gloss(Word, Gloss):-
   word(SynsetID, Word),
   g(SynsetID, Gloss).
 
+
 has_instance(Class, Instance):-
   word(SetSynsetID, Class),
   ins(SetSynsetID, InstanceSynsetID),
   word(InstanceSynsetID, Instance).
 
-%% holonym(?While:atom, ?Part:atom) is nondet.
+
+%! holonym(?While:atom, ?Part:atom) is nondet.
 % Holonymy relations, i.e., inverted semantic part-of or member-of relations.
 %
 %   1. =X= is a holonym of =Y= if =Y=s are parts of =X=s.
@@ -72,7 +81,8 @@ has_instance(Class, Instance):-
 holonym(Whole, Part):-
   meronym(Part, Whole).
 
-%% hypernym(+Word:atom, -Hypernym:atom) is nondet.
+
+%! hypernym(+Word:atom, -Hypernym:atom) is nondet.
 % Hypernyms, i.e., word that share a type-of relationship.
 % A word can have multiple hypernyms.
 
@@ -82,19 +92,21 @@ hypernym(Word, Hypernym):-
   hyp(SynsetID, HypernymSynsetID),
   word(HypernymSynsetID, Hypernym).
 
+
 instance_of(Instance, Class):-
   has_instance(Class, Instance).
 
+
 load:-
-  loaded,
-  !.
+  wordnet_loaded, !.
 load:-
   absolute_file_name(data_wordnet(.), WordnetDirectory),
   path_walk_tree(WordnetDirectory, '.*.pl$', WordnetFiles),
   maplist(ensure_loaded, WordnetFiles),
-  assert(loaded).
+  assert(wordnet_loaded).
 
-%% meronym(?Part:atom, ?Whole:atom) is nondet.
+
+%! meronym(?Part:atom, ?Whole:atom) is nondet.
 % Meronym relations, i.e., semantic part-of or member-of relations.
 %
 %   1. =X= is a meronym of =Y= if =X=s are parts of =Y=(s).
@@ -107,7 +119,8 @@ meronym(Part, Whole):-
   mm(PartSynsetID, WholeSynsetID),
   word(WholeSynsetID, Whole).
 
-%% n_plus_7(+Word:atom, -NewWord:atom) is det.
+
+%! n_plus_7(+Word:atom, -NewWord:atom) is det.
 % Implementation of the Oulipo method commonly called *|N + 7|*.
 %
 % @see n_plus_m/3.
@@ -115,7 +128,8 @@ meronym(Part, Whole):-
 n_plus_7(Word, NewWord):-
   n_plus_m(Word, 7, NewWord).
 
-%% n_plus_m(+Word:atom, +M:natnum, -NewWord:atom) is det.
+
+%! n_plus_m(+Word:atom, +M:nonneg, -NewWord:atom) is det.
 % Returns the word that is stored in a codeline with the given
 % natural number relative to the codeline the given word is
 % stored at.

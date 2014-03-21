@@ -113,7 +113,8 @@ condorcet_matrix(ScoreMethod, DB):-
   ).
 
 number_of_votes_ranking_former_above_latter(X, Y, NumberOfVotes, DB):-
-  count(
+  aggregate_all(
+    count,
     (
       call(DB, _Voter, Ranking),
       before(X, Y, Ranking)
@@ -274,3 +275,4 @@ copeland_loser(CopelandLoser):-
 loser(Loser):-
   runner_score_runner_pairs(RunnerScoreRunnerPairs),
   first(RunnerScoreRunnerPairs, _LoserScore-Loser).
+

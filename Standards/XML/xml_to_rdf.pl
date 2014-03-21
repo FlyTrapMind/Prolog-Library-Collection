@@ -22,10 +22,11 @@
 Converts XML DOMs to RDF graphs.
 
 @author Wouter Beek
-@version 2013/06, 2013/09-2013/11, 2014/01
+@version 2013/06, 2013/09-2013/11, 2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -33,6 +34,7 @@ Converts XML DOMs to RDF graphs.
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xsd(xsd)).
 
 :- meta_predicate(create_resource(+,+,3,+,+,-,-)).
@@ -71,7 +73,7 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   dcg_phrase(
     dcg_maplist(dcg_replace, [[32],[96]], [[37,50,48],[37,54,48]]),
     Name3,
-    Names4
+    Name4
   ),
   
   rdf_global_id(Ns:Name4, S),

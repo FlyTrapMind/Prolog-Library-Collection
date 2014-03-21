@@ -45,9 +45,9 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(flp(rfc4234_basic)).
 :- use_module(library(apply)).
 :- use_module(library(plunit)).
-:- use_module(standards(abnf)).
 
 
 

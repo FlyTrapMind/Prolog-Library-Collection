@@ -23,20 +23,20 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_graph_name)).
+:- use_module(rdf(rdf_serial)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
 
-:- initialization(void_init).
+:- initialization(void_init(_)).
 
-%! void_init is det.
+%! void_init(?RdfGraph:atom) is det.
 % Loads the VoID vocabulary.
 
-void_init:-
-  rdf_new_graph(void_schema, Graph),
-  absolute_file_name(void('VoID'), File, [access(read),extensions([ttl])]),
-  rdf_load(File, [format(turtle),graph(Graph)]).
+void_init(G):-
+  void_url(Url),
+  rdf_download_extract_load(Url, [graph(G)]).
 
 
 
@@ -66,4 +66,7 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
     file_name(VoidFile, VoidDirectory, _, _),
     relative_file_path(DatadumpFile, VoidDirectory, DatadumpLocation)
   ).
+
+
+void_url('http://vocab.deri.ie/void.ttl').
 

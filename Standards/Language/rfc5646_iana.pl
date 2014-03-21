@@ -32,14 +32,17 @@ specification.
 @version 2013/07-2013/08, 2014/03
 */
 
+:- use_module(flp(record_jar)). % Used in phrase_from_stream/2.
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_language_tagged_string)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(standards(record_jar)). % Used in phrase_from_stream/2.
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).

@@ -5,7 +5,7 @@
 Web-interface to Doyle's TMS.
 
 @author Wouter Beek
-@version 2013/05, 2014/01
+@version 2013/05, 2014/01, 2014/03
 */
 
 :- use_module(doyle(doyle)).
@@ -20,8 +20,8 @@ Web-interface to Doyle's TMS.
 
 
 
-doyle_web(TMS) -->
-  {findall(
+doyle_web(_Request):-
+  findall(
     [
       Node,
       SupportStatus,
@@ -51,31 +51,29 @@ doyle_web(TMS) -->
       doyle:believed_repercussions(Node, BelievedRepercussions)
     ),
     Rows
-  )},
+  ),
   reply_html_page(
     app_style,
     title('Doyle'),
-    \html_table(
-      [header_row(true)],
-      html('Doyle\'s TMS overview'),
-      [
+    html(
+      \html_table(
+        [header_row(true)],
+        html('Doyle\'s TMS overview'),
         [
-          'Node',
-          'Support status',
-          %'Supporting justification',
-          'Supporting nodes',
-          'Antecedents',
-          'Foundations',
-          %'Ancestors',
-          'Consequences',
-          'Affected consequences',
-          'Believed consequences',
-          'Repercussions',
-          'Believed repercussions'
-        ]
-      |
-        Rows
-      ],
+          ['Node',
+           'Support status',
+           %'Supporting justification',
+           'Supporting nodes',
+           'Antecedents',
+           'Foundations',
+           %'Ancestors',
+           'Consequences',
+           'Affected consequences',
+           'Believed consequences',
+           'Repercussions',
+           'Believed repercussions'
+          ]|Rows]
+      )
     )
   ).
 

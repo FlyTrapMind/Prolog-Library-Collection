@@ -4,13 +4,15 @@
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
     'BIT'//0,
-    'BIT'//1, % ?Integer:between(0,1)
+    'BIT'//1, % ?Bit:between(0,1)
+    '1*BIT'//1, % ?Bits:list(between(0,1))
     'CHAR'//0,
     'CHAR'//1, % ?Code:code
     'LWSP'//0,
     'VCHAR'//0,
-    'VCHAR'//1,
-    'WSP'//0
+    'VCHAR'//1, % ?Code:code
+    'WSP'//0,
+    'WSP'//1 % ?Code:code
   ]
 ).
 :- reexport(
@@ -27,10 +29,12 @@
     'HEX'//0 as 'HEXDIG',
     'HEX'//1 as 'HEXDIG', % ?Integer:between(0,15)
     'HT'//0 as 'HTAB',
+    'HT'//1 as 'HTAB',
     'LF'//0,
     'OCTET'//0,
     'OCTET'//1, % ?Code:code
-    'SP'//0
+    'SP'//0,
+    'SP'//1
   ]
 ).
 
@@ -87,6 +91,14 @@ DCGs for the basic rules defined in RFC 4234,
 'BIT'(D) -->
   binary_digit(_, D).
 
+
+%! '1*BIT'(?Bits:list(between(0,1)))//
+
+'1*BIT'([H|T]) -->
+  'BIT'(H),
+  '1*BIT'(T).
+'1*BIT'([H]) -->
+  'BIT'(H).
 
 
 %! 'CHAR'// .
@@ -195,7 +207,10 @@ DCGs for the basic rules defined in RFC 4234,
 % @see RFC 4234
 
 'WSP' -->
-  'SP'.
-'WSP' -->
-  'HTAB'.
+  'WSP'(_).
+
+'WSP'(C) -->
+  'SP'(C).
+'WSP'(C) -->
+  'HTAB'(C).
 

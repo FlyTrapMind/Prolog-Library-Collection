@@ -96,7 +96,6 @@ since most datasets are published in a non-standard way.
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_ntriples_write)).
 :- use_module(rdf(rdf_serial)).
-:- use_module(void(void_db)).
 
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
 :- db_add_novel(user:prolog_file_type(nt,      rdf     )).
@@ -324,8 +323,8 @@ rdf_load(O1, Graph, Graph):-
   findall(
     Location,
     (
-      void_dataset(Graph, Dataset),
-      void_dataset_location(Graph, Dataset, Location)
+      void_db:void_dataset(Graph, Dataset),
+      void_db:void_dataset_location(Graph, Dataset, Location)
     ),
     Locations
   ),

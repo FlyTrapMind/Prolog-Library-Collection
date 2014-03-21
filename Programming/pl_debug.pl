@@ -139,7 +139,7 @@ load_modules_for_pldoc:-
             doyle,
         server,
         standards,
-          datatime,
+          datetime,
           geo,
           gv,
           html,

@@ -13,7 +13,7 @@
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(os(run_ext)).
+:- use_module(os(java_ext)).
 
 :- db_add_novel(user:prolog_file_type(jar, jar)).
 

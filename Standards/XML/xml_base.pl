@@ -68,8 +68,10 @@ The full URIs:
 
 @author Wouter Beek
 @see XML Base 1-2 http://www.w3.org/TR/2009/REC-xmlbase-20090128/
-@version 2013/08
+@version 2013/08, 2014/03
 */
+
+:- use_module(uri(rfc2396_dcg)).
 
 :- meta_predicate(xml_base(-,//,?,?,?,?,?,?,?)).
 

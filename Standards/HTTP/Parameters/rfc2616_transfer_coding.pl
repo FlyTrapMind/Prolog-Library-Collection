@@ -74,7 +74,7 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 %
 % @tbd Notice that this is not an ABNF rule!
 
-'chunk-data'('chunk-data'(T0), ChunkSize, ChunkData) -->
+'chunk-data'('chunk-data'(ChunkSize,ChunkData), ChunkSize, ChunkData) -->
   dcg_multi('OCTET', ChunkSize-ChunkSize, ChunkData).
 
 
@@ -126,7 +126,7 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
   ;
     ""
   ),
-  {parse_tree('chunk-extension', [T1,T2], T0)}.
+  {parse_tree('chunk-extension', [T1,T2|Ts], T0)}.
 
 
 
@@ -190,14 +190,14 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % last-chunk     = 1*("0") [ chunk-extension ] CRLF
 % ~~~
 
-'last-chunk'(T0, ChunkExtensions) -->
+'last-chunk'(T0, ChunkExtension) -->
   dcg_multi1(zero, 1-_),
   (
     'chunk-extension'(T1, ChunkExtension)
   ;
     ""
   ),
-  {parse_tree('last-chunk', Ts, T0)},
+  {parse_tree('last-chunk', [T1], T0)},
   'CRLF'.
 
 
@@ -241,7 +241,7 @@ trailer(T0, EntityHeaders) -->
   dcg_multi2('_entity-header_and_CRLF', _-_, Ts, EntityHeaders),
   {parse_tree(trailer, Ts, T0)}.
 '_entity-header_and_CRLF'(T0, EntityHeader) -->
-  'entity-header(T0, EntityHeader),
+  'entity-header'(T0, EntityHeader),
   'CRLF'.
 
 

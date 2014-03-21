@@ -20,10 +20,11 @@ Also contains predicates for the definition of RDF links and RDF linksets
 as it appears in the VoID specification.
 
 @author Wouter Beek
-@version 2013/10
+@version 2013/10, 2014/03
 */
 
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf_term(rdf_term)).
 
 :- rdf_meta(rdf_link(r,r,o,?,?)).
 :- rdf_meta(rdf_linkset(t,?,?)).

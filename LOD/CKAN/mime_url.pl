@@ -1,4 +1,9 @@
-:- module(mime_url, []).
+:- module(
+  mime_url,
+  [
+    mime_url/0
+  ]
+).
 
 /** <module> MIME URL
 
@@ -6,6 +11,8 @@ Generates a CSV file with the following columns:
   - URL (not always syntactically conformant)
   - Format (according to CKAN metadata)
   - MIME (according to CKAN metadata)
+
+I have written this script to create a file for JW.
 
 @author Wouter Beek
 @version 2013/03
@@ -17,8 +24,6 @@ Generates a CSV file with the following columns:
 :- use_module(rdf(rdf_meta)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf_term(rdf_string)).
-
-:- initialization(mime_url).
 
 
 

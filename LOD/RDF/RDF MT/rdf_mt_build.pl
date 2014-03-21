@@ -53,6 +53,7 @@ Build semantic models and syntax-to-semantics maps.
 
 :- use_module(generics(db_ext)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
+:- use_module(rdf_term(rdf_plain_literal)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_term(rdf_typed_literal)).
 :- use_module(rdf_mt(rdf_mt)).
@@ -127,7 +128,7 @@ rdf_add_plain_literals(G, M):-
   rdf_graph(G),
   model(M), !,
   forall(
-    rdf_plain_literal(G, Lit),
+    rdf_plain_literal(Lit, G),
     % $LV \subseteq IR$ can be determined using syntax.
     rdf_add_resource(M, Lit)
   ).

@@ -21,13 +21,6 @@ Text-to-speech predicates.
 
 :- db_add_novel(user:module_uses_program(tts_ext, espeak)).
 
-:- initialization(init).
-
-init:-
-  exists_program(espeak), !.
-init:-
-  debug(tts_ext, 'eSpeak is not installed.', []).
-
 
 
 %! text_to_speech(+Contents) is det.

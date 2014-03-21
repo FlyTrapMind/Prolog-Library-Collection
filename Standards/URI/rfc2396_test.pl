@@ -1,6 +1,6 @@
-:- module(rfc2396_test).
+:- module(rfc2396_test, []).
 
-/** <module> RFC2396_TEST
+/** <module> RFC 2396 test
 
 @author Wouter Beek
 @version 2013/07

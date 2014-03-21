@@ -16,12 +16,12 @@
 
 /** <module> RFC 1123
 
-The standard for datatime that is used by HTTP 1.1.
+The standard for datetime that is used by HTTP 1.1.
 
 @author Wouter Beek
 @compat RFC 1123
 @see http://www.ietf.org/rfc/rfc1123.txt
-@version 2013/07
+@version 2013/07, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -55,8 +55,8 @@ rfc1123_date(date(day(DD),T1,year(YYYY)), DD, Month, YYYY) -->
 rfc1123_date(date(day(DD),T1,year(YYYY)), DD, Month, YYYY) -->
   rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6),
   {
-    digits_to_decimal([D1,D2], Day),
-    digits_to_decimal([D3,D4,D5,D6], Year)
+    digits_to_decimal([D1,D2], DD),
+    digits_to_decimal([D3,D4,D5,D6], YYYY)
   }.
 
 rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6) -->

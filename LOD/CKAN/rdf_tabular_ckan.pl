@@ -13,9 +13,9 @@ CKAN-specific configuration of RDF Tabular.
 :- use_module(rdf_web(rdf_tabular_class)).
 :- use_module(server(web_modules)).
 
-:- initialization(web_module_add('CKAN Tabular', rdf_tabular_ckan)).
-
 :- http_handler(rdf_tabular(ckan), rdf_tabular_ckan, []).
+
+:- web_module_add('CKAN Tabular', rdf_tabular_ckan).
 
 
 

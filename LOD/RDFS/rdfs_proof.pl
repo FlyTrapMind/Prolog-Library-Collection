@@ -31,6 +31,7 @@ calculated via backward chaining.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(run_ext)).
 :- use_module(rdf(rdf_name)). % Meta-DCG.
+:- use_module(rdfs(rdfs_voc)).
 
 :- rdf_meta(rdfs_proof(r,r,o,+)).
 :- rdf_meta(rdfs_proof(r,r,o,+,-)).
@@ -41,11 +42,8 @@ calculated via backward chaining.
 :- discontiguous(rdfs_rule/7).
 :- discontiguous(rdfs_rule/10).
 
-:- initialization(load_rdfs_voc(test)).
+:- initialization(load_rdf_vocabulary(_)).
 
-load_rdfs_voc(Graph):-
-  absolute_file_name(rdfs(rdfs), File, [access(read),extensions([rdf])]),
-  rdf_load(File, [graph(Graph)]).
 
 
 rdfs_proof(S, P, O, G):-

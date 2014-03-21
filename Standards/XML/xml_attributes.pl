@@ -33,13 +33,14 @@ DCG rules for XML attributes.
 
 @author Wouter Beek
 @see XML 1.0-5 http://www.w3.org/TR/2008/REC-xml-20081126/
-@version 2013/07
+@version 2013/07, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(lang(rfc3066)).
+:- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_datatypes)).
 :- use_module(xml(xml)).
 

@@ -10,11 +10,12 @@
 Predicates supporting the Roman notation for numerals.
 
 @author Wouter Beek
-@version 2013/06
+@version 2013/06, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(generics(meta_ext)).
+:- use_module(programming(pl_control)).
 
 
 

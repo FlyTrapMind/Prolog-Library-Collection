@@ -73,7 +73,7 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
    When I add it RDF/XML files load 0 triples!
 
 @author Wouter Beek
-@version 2013/04, 2013/06-2013/07
+@version 2013/04, 2013/06-2013/07, 2014/03
 */
 
 :- use_module(generics(atom_ext)).
@@ -82,9 +82,10 @@ Q: How should option =|base_uri(+URI)|= for =|rdf_load/2|= be used?
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(test, 'http://www.w3.org/2000/10/rdf-tests/rdfcore/testSchema#').
@@ -181,7 +182,7 @@ run_test0(Test, 'PASS'):-
   ;
     rdf(Test, test:inputDocument, URI)
   ),
-  _download_to_file(URI, File),
+  download_to_file(URI, File),
 
   % Throw an exception or fail, please.
   catch(
@@ -195,7 +196,7 @@ run_test0(Test, 'SKIPPED'):-
 /*
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
-  _download_to_file(Premise_URI, Premise_File),
+  download_to_file(Premise_URI, Premise_File),
   %%%%rdf_load([base_uri(Premise_URI)], in, Premise_File),
   rdf_load([], premise, Premise_File),
 */
@@ -205,7 +206,7 @@ run_test0(Test, 'PASS'):-
 
   % The premise graph.
   rdf(Test, test:premiseDocument, Premise_URI),
-  _download_to_file(Premise_URI, Premise_File),
+  download_to_file(Premise_URI, Premise_File),
   rdf_load([base_uri(Premise_URI)], premise, Premise_File),
 
   % Run materialization.
@@ -221,7 +222,7 @@ run_test0(Test, 'PASS'):-
     % The premise graph must be inconsistent.
     rdfs_inconsistent(premise)
   ;
-    _download_to_file(Conclusion_URI, Conclusion_File),
+    download_to_file(Conclusion_URI, Conclusion_File),
     rdf_load([base_uri(Conclusion_URI)], conclusion, Conclusion_File),
     % The materialized premise graph must be equivalent to the
     % conclusion graph.
@@ -233,13 +234,13 @@ run_test0(Test, 'PASS'):-
 
   % The input graph.
   rdf(Test, test:inputDocument, Input_URI),
-  _download_to_file(Input_URI, Input_File),
+  download_to_file(Input_URI, Input_File),
   %%%%rdf_load([base_uri(Input_URI)], in, Input_File),
   rdf_load([], in, Input_File),
 
   % The output graph.
   rdf(Test, test:outputDocument, Output_URI),
-  _download_to_file(Output_URI, Output_File),
+  download_to_file(Output_URI, Output_File),
   %%%%rdf_load([base_uri(Output_URI)], out, Output_File),
   rdf_load([], out, Output_File),
 
@@ -247,12 +248,12 @@ run_test0(Test, 'PASS'):-
   rdf_graph_equivalence(in, out), !.
 run_test0(_Test, 'FAIL').
 
-%! _download_to_file(+URI:uri, -File:atom) is det.
+%! download_to_file(+URI:uri, -File:atom) is det.
 % Returns the atomic name of the locally stored file that the given URI
 % refers to.
 % This assumes that the test files are stored locally.
 
-_download_to_file(URI, File):-
+download_to_file(URI, File):-
   uri_to_subdirectory_file_fragment(URI, Directory, FileName, _Fragment),
   absolute_file_name(
     tests(Directory),

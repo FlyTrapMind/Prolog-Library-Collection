@@ -16,6 +16,7 @@
     'HEX'//0,
     'HEX'//1, % ?HexadecimalDigit:between(0,15)
     'HT'//0,
+    'HT'//1, % ?Code:code
     'LF'//0,
     'LOALPHA'//0,
     'LOALPHA'//1, % ?Code:code
@@ -23,6 +24,7 @@
     'OCTET'//0,
     'OCTET'//1, % ?Code:code
     'SP'//0,
+    'SP'//1, % ?Code:code
     'TEXT'//0,
     'TEXT'//1, % ?Code:code
     'UPALPHA'//0,
@@ -237,6 +239,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 %! 'HT'// .
+%! 'HT'(?Code:code)// .
 % The horizontal tab.
 %
 % ~~~{.abnf}
@@ -246,7 +249,10 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2616
 
 'HT' -->
-  horizontal_tab.
+  'HT'(_).
+
+'HT'(C) -->
+  horizontal_tab(C).
 
 
 
@@ -339,6 +345,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 
 %! 'SP'// .
+%! 'SP'(?Code:code)// .
 % The space.
 %
 % ~~~{.abnf}
@@ -348,7 +355,10 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2612
 
 'SP' -->
-  space.
+  'SP'(_).
+
+'SP'(C) -->
+  space(C).
 
 
 

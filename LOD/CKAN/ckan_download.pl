@@ -1,4 +1,9 @@
-:- module(ckan_download, []).
+:- module(
+  ckan_download,
+  [
+    ckan_download/0
+  ]
+).
 
 /** <module> CKAN Download
 
@@ -23,8 +28,6 @@ Downloads CKAN datasets to the given directory.
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_serial)).
-
-:- initialization(ckan_download).
 
 :- debug(ap).
 

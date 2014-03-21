@@ -79,6 +79,7 @@ De Kleer 1993 book 'Building Problem Solvers'.
 
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_build)).
+:- use_module(atms(atms_hierarchy)). % XML namespace.
 :- use_module(atms(atms_env)).
 :- use_module(atms(atms_update)).
 :- use_module(generics(meta_ext)).

@@ -3,14 +3,17 @@
 /** <module> Text Categorization
 
 @author Wouter Beek
-@version 2013/01
+@version 2013/01, 2014/03
 @tbd This is work in progress.
 */
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
+:- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
 :- dynamic(doc/1).
@@ -83,7 +86,7 @@ load_examples(Stream):-
   at_end_of_stream(Stream), !.
 load_examples(Stream):-
   read_line_to_codes(Stream, Line),
-  phrase(dcg_separated_list(" ", ListOfCodes), Line),
+  phrase(dcg_separated_list(` `, ListOfCodes), Line),
   flag(ex, Examples, Examples + 1),
   format(atom(Doc), 'd~w', [Examples]),
   assert(doc(Doc)),
@@ -145,7 +148,7 @@ test:-
 
 tfidf(Term, Doc, TFIDF):-
   document_frequency(Term, DF),
-  count(doc(_), Docs),
+  aggregate_all(count, doc(_), Docs),
   Temp is Docs / DF,
   term_in_doc(Term, Doc, Occur),
   TFIDF is Occur * log10(Temp).

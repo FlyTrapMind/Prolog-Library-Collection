@@ -1,7 +1,7 @@
 :- module(
   rfc2616_url,
   [
-    http_URL//5 % -Tree:compound
+    http_url//5 % -Tree:compound
                 % ?Host:list(atomic)
                 % ?Port:integer
                 % ?Path:list(list(atom))
@@ -103,7 +103,7 @@ The following three URIs are equivalent:
 
 
 
-%! http_URL(
+%! http_url(
 %!   -Tree:compound,
 %!   ?Host:list(atomic),
 %!   ?Port:integer,
@@ -117,7 +117,7 @@ The following three URIs are equivalent:
 % # Syntax
 %
 % ~~~{.abnf}
-% http_URL = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
+% http_url = "http:" "//" host [ ":" port ] [ abs_path [ "?" query ]]
 % ~~~
 %
 % ## Absent `abs_path`

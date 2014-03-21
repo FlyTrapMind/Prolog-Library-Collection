@@ -1,177 +1,172 @@
 :- module(
   wordnet_web,
   [
-    antonym_web/2, % +Word:atom
-                   % -AntonymMarkup:list
-    gloss_web/2, % +Word:atom
-                 % -GlossMarkup:list
-    has_instance_web/2, % +Class:atom
-                        % -InstanceMarkup:list
-    holonym_web/2, % +Whole:atom
-                   % -PartMarkup:list
-    hypernym_web/2, % +Word:atom
-                    % -HypernymMarkup:list
-    instance_of_web/2, % +Instance:atom
-                       % -ClassMarkup:list
-    meronym_web/2, % +Part:atom
-                   % -WholeMarkup:list
-    n_plus_7_web/2, % +Word:atom
-                    % -Markup:list
-    n_plus_m_web/3, % +Word:atom
-                    % +M:natnum
-                    % -Markup:list
-    statistics_web/1, % -Markup:list
-    word_web/2 % +Word:atom
-               % -Markup
+    antonym//1, % +Word:atom
+    gloss//1, % +Word:atom
+    has_instance//1, % +Class:atom
+    holonym//1, % +Whole:atom
+    hypernym//1, % +Word:atom
+    instance_of//1, % +Instance:atom
+    meronym//1, % +Part:atom
+    n_plus_7//1, % +Word:atom
+    n_plus_m//2, % +Word:atom
+                 % +M:nonneg
+    statistics//0,
+    word//1 % +Word:atom
   ]
 ).
 
 /** <module> Wordnet Web
 
-Wordnet Web module.
+Web-interface for Wordnet.
 
 @author Wouter Beek
-@version Oct2012
+@version 2012/11, 2014/03
 */
 
 :- use_module(datasets(wordnet)).
+:- use_module(html(html_table)).
+:- use_module(library(aggregate)).
+:- use_module(library(http/html_write)).
 
 
 
-antonym_web(Word, [element(p, [], [Antonym])]):-
-  antonym(Word, Antonym).
+%! antonyms(+Word:atom)// is det.
+% Generates an HTML description for the antonyms of the given word.
 
-%% gloss_web(+Word:atom, -Markup) is nondet.
-% Returns a gloss of the given word in markup form.
-% A word can have multiple glosses associated with it.
+antonyms(Word) -->
+  {findall(A, antonym(Word, A), As)},
+  html(
+    \html_table(
+      [header_row(true)],
+      html(['Antonyms of ',Word,'.']),
+      [['Antonym']|As]
+    )
+  ).
 
-gloss_web(Word, [element(p, [], [Gloss])]):-
-  gloss(Word, Gloss).
 
-has_instance_web(Class, [element(p, [], [Instance])]):-
-  has_instance(Class, Instance).
+%! glosses(+Word:atom)// is det.
+% Generates an HTML description for the glosses of the given word.
 
-holonym_web(Whole, [element(p, [], [Part])]):-
-  holonym(Whole, Part).
+glosses(Word) -->
+  {findall(G, gloss(Word, G), Gs)},
+  html(
+    \html_table(
+      [header_row(true)],
+      html(['Glosses of ',Word,'.']),
+      [['Gloss']|Gs]
+    )
+  ).
 
-hypernym_web(Word, [element(p, [], [Hypernym])]):-
-  hypernym(Word, Hypernym).
 
-instance_of_web(Instance, [element(p, [], [Class])]):-
-  instance_of(Instance, Class).
+%! has_instance(+Class:atom)// is det.
 
-meronym_web(Part, [element(p, [], [Whole])]):-
-  meronym(Part, Whole).
+has_instance(Class) -->
+  {findall(Instance, has_instance(Class, Instance), Instances)},
+  html(
+    \html_table(
+      [header_row(true)],
+      html(['Instances of ',Word,'.']),
+      [['Instance']|Instances]
+    )
+  ).
 
-n_plus_7_web(Word, Markup):-
-  n_plus_7(Word, NewWord),
-  word_web(NewWord, Markup).
 
-n_plus_m_web(Word, M, Markup):-
-  n_plus_m(Word, M, NewWord),
-  word_web(NewWord, Markup).
+%! hypernyms(+Word:atom)// is det.
+% Generates an HTML description for the hypernyms of the given word.
 
-statistics_web(
-  [
-    element(
-      table,
-      [border=1, summary='This table shows Wordnet statistics.'],
+hypernyms(Word) -->
+  {findall(H, hypernym(Word, H), Hs)},
+  html(
+    \html_table(
+      [header_row(true)],
+      html(['Hypernyms of ',Word,'.']),
+      [['Hypernym']|Hs]
+    )
+  ).
+
+
+%! instance_of(+Instance:atom)// is det.
+% Generates an HTML overview of the classes of the given instance.
+
+instance_of(Instance) -->
+  {findall(Class, instance_of(Instance, Class), Classes)},
+  html(
+    \html_table(
+      [header_row(true)],
+      html(['Classes of ',Word,'.']),
+      [['Class']|Classes]
+    )
+  ).
+
+
+%! meronyms(+Part:atom)// is det.
+% Generates an HTML overview of the meronyms of the given word.
+
+meronyms(Part) -->
+  {findall(Whole, meronym(Part, Whole), Wholes)},
+  html(
+    \html_table(
+      [header_row(true)],
+      html(['Meronyms of ',Part,'.']),
+      [['Meronym']|Wholes]
+    )
+  ).
+
+
+n_plus_7(W1) -->
+  {n_plus_7(W1, W2)},
+  html([
+    h2([Word,' plus 7']),
+    \word(W2)
+  ]).
+
+
+%! n_plus_m_web(+Word:atom, +M:nonneg)// is det.
+% Generates an HTML overview of the word
+% which occurs _M_ positions later in the dictionary.
+
+n_plus_m(W1, M) -->
+  {n_plus_m(W1, M, W2)},
+  html([
+    h2([Word,'plus ',M]),
+    \word(W2)
+  ]).
+
+
+%! statistics// is det.
+% Generates an HTML table of Wordnet statistics.
+
+statistics -->
+  {
+    aggregate_all(count, antonym(_X1, _Y1),  NumberOfAntonyms ),
+    aggregate_all(count, gloss(_X2, _Y2),    NumberOfGlosses  ),
+    aggregate_all(count, hypernym(_X3, _Y3), NumberOfHypernyms),
+    aggregate_all(count, meronym(_X4, _Y4),  NumberOfMeronyms ),
+  },
+  html(
+    \html_table(
+      [header_row(true)],
+      html('Overview of Wordnet statistics.'),
       [
-        element(caption, [], ['Wordnet statistics']),
-        element(
-          tr,
-          [],
-          [
-            element(td, [], ['Antonym']),
-            element(td, [], [AtomicNumberOfAntonyms])
-          ]
-        ),
-        element(
-          tr,
-          [],
-          [
-            element(td, [], ['Glosses']),
-            element(td, [], [AtomicNumberOfGlosses])
-          ]
-        ),
-        element(
-          tr,
-          [],
-          [
-            element(td, [], ['Hypernyms']),
-            element(td, [], [AtomicNumberOfHypernyms])
-          ]
-        ),
-        element(
-          tr,
-          [],
-          [
-            element(td, [], ['Meronyms']),
-            element(td, [], [AtomicNumberOfMeronyms])
-          ]
-        )
+        ['Type',     'Number of words'],
+        ['Antonym',  NumberOfAntonyms ],
+        ['Glosses',  NumberOfGlosses  ],
+        ['Hypernyms',NumberOfHypernyms],
+        ['Meronyms', NumberOfMeronyms ]
       ]
     )
-  ]
-):-
-  count(antonym(_X1, _Y1), NumberOfAntonyms),
-  atom_number(AtomicNumberOfAntonyms, NumberOfAntonyms),
-  count(gloss(_X2, _Y2), NumberOfGlosses),
-  atom_number(AtomicNumberOfGlosses, NumberOfGlosses),
-  count(hypernym(_X3, _Y3), NumberOfHypernyms),
-  atom_number(AtomicNumberOfHypernyms, NumberOfHypernyms),
-  count(meronym(_X4, _Y4), NumberOfMeronyms),
-  atom_number(AtomicNumberOfMeronyms, NumberOfMeronyms).
-
-%% word_web(+Word:atom, -Markup) is det.
-% Returns the markup representation for the given word's Wordnet entry.
-% The markup contains the following information:
-%   1. The word itself.
-%   2. A numbered list of its glosses.
-
-word_web(
-  Word,
-  [
-    element(h1, [], [Word]),
-    element(h2, [], ['Glosses']),
-    Glosses,
-    element(h2, [], ['Antonyms']),
-    Antonyms,
-    element(h2, [], ['Hypernyms']),
-    Hypernyms
-  ]
-):-
-  glosses_web_(Word, Glosses),
-  antonyms_web_(Word, Antonyms),
-  hypernyms_web_(Word, Hypernyms).
-
-antonym_web_(Word, element(li, [], [Antonym])):-
-  antonym(Word, Antonym).
-
-antonyms_web_(Word, element(ol, [], Antonyms)):-
-  findall(
-    Antonym,
-    antonym_web_(Word, Antonym),
-    Antonyms
   ).
 
-gloss_web_(Word, element(li, [], [Gloss])):-
-  gloss(Word, Gloss).
 
-glosses_web_(Word, element(ol, [], Glosses)):-
-  findall(
-    Gloss,
-    gloss_web_(Word, Gloss),
-    Glosses
-  ).
+%% word(+Word:atom)// is det.
+% Generates an HTML description for the given word.
 
-hypernym_web_(Word, element(li, [], [Hypernym])):-
-  hypernym(Word, Hypernym).
-
-hypernyms_web_(Word, element(ol, [], Hypernyms)):-
-  findall(
-    Hypernym,
-    hypernym_web_(Word, Hypernym),
-    Hypernyms
-  ).
+word(Word) -->
+  html([
+    h1('Word'),
+    \antonyms(Word),
+    \glosses(Word),
+    \hypernyms(Word)
+  ]).
 

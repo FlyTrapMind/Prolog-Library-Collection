@@ -47,6 +47,7 @@ dbpedia_eq(Resource, EntityOrQuantity):-
 
 
 dbpedia_eq(Resource, EConf, QConf):-
+  dbpedia_load_categories,
   cache_it1(_, lod_cache, _, Resource),
   findall(
     EConf-QConf,

@@ -61,23 +61,24 @@ iprivate        ::= %xE000-F8FF / %xE0000-E0FFF / %xF0000-FFFFD
 
 @author Wouter Beek
 @see http://www.w3.org/TR/2008/NOTE-leiri-20081103/
-@version 2013/08
+@version 2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_multi)).
-:- use_module(standards(abnf)).
+:- use_module(flp(rfc4234_abnf)).
+:- use_module(http(rfc2616_basic)).
 
 
 
 'LEIRI' -->
   scheme,
-  ":",
+  `:`,
   'ihier-part',
-  ("?", iquery ; ""),
-  ("#", ifragment; "").
+  (`?`, iquery ; ``),
+  (`#`, ifragment; ``).
 
 'ihier-part' -->
-  "//",
+  `//`,
   iauthority,
   ( 'ipath-abempty'
   ; 'ipath-absolute'
@@ -91,17 +92,17 @@ iprivate        ::= %xE000-F8FF / %xE0000-E0FFF / %xF0000-FFFFD
 
 'absolute-LEIRI' -->
   scheme,
-  ":",
+  `:`,
   'ihier-part',
-  ("?", iquery ; "").
+  (`?`, iquery ; ``).
 
 'irelative-ref' -->
   'irelative-part',
-  ("?", iquery ; ""),
-  ("#", ifragment ; "").
+  (`?`, iquery ; ``),
+  (`#`, ifragment ; ``).
 
 'irelative-part' -->
-  "//",
+  `//`,
   iauthority,
   ( 'ipath-abempty'
   ; 'ipath-absolute'
@@ -109,9 +110,9 @@ iprivate        ::= %xE000-F8FF / %xE0000-E0FFF / %xF0000-FFFFD
   ; 'ipath-empty').
 
 iauthority -->
-  (iuserinfo, "@" ; ""),
+  (iuserinfo, `@` ; ``),
   ihost,
-  (":", port ; "").
+  (`:`, port ; ``).
 
 iuserinfo -->
   dcg_multi(iuserinfo_).
@@ -120,15 +121,11 @@ iuserinfo_ --> 'pct-encoded'.
 iuserinfo_ --> 'sub-delims'.
 iuserinfo_ --> ":".
 
-ihost -->
-  'IP-literal'.
-ihost -->
-  'IPv4address'.
-ihost -->
-  'ireg-name'.
+ihost --> 'IP-literal'.
+ihost --> 'IPv4address'.
+ihost --> 'ireg-name'.
 
-'ireg-name' -->
-  dcg_multi('ireg-name_').
+'ireg-name' --> dcg_multi('ireg-name_').
 'ireg-name_' --> iunreserved.
 'ireg-name_' --> 'pct-encoded'.
 'ireg-name_' --> 'sub-delims'.
@@ -152,31 +149,34 @@ ipath -->
 'ipath-abempty' -->
   dcg_multi('ipath-abempty_').
 'ipath-abempty_' -->
-  "/",
+  `/`,
   isegment.
 
 'ipath-absolute' -->
-  "/",
-  ('isegment-nz', dcg_multi('ipath-absolute_') ; "").
+  `/`,
+  ('isegment-nz', dcg_multi('ipath-absolute_') ; ``).
 'ipath-absolute_' -->
-  "/",
+  `/`,
   isegment.
 
 'ipath-noscheme' -->
   'isegment-nz-nc',
   dcg_multi('ipath-noscheme_', _).
 'ipath-noscheme_' -->
-  "/",
+  `/`,
   isegment.
 
 'ipath-rootless' -->
   'isegment-nz',
   dcg_multi('ipath-rootless_').
 'ipath-rootless_' -->
-  "/",
+  `/`,
   isegment.
 
-'ipath-empty' --> 0<ipchar>
+'ipath-empty' --> [].
+'ipath-empty' -->
+  ipchar,
+  'ipath-empty'.
 
 isegment -->
   dcg_multi(ipchar).
@@ -189,46 +189,32 @@ isegment -->
 'isegment-nz-nc_' --> iunreserved.
 'isegment-nz-nc_' --> 'pct-encoded'.
 'isegment-nz-nc_' --> 'sub-delims'.
-'isegment-nz-nc_' --> "@".
+'isegment-nz-nc_' --> `@`.
 
-ipchar -->
-  iunreserved.
-ipchar -->
-  'pct-encoded'.
-ipchar -->
-  'sub-delims'.
-ipchar -->
-  ":".
-ipchar -->
-  "@".
+ipchar --> iunreserved.
+ipchar --> 'pct-encoded'.
+ipchar --> 'sub-delims'.
+ipchar --> `:`.
+ipchar --> `@`.
 
-iquery -->
-  dcg_multi(iquery_).
+iquery --> dcg_multi(iquery_).
 iquery_ --> ipchar.
 iquery_ --> iprivate.
-iquery_ --> "/".
-iquery_ --> "?".
+iquery_ --> `/`.
+iquery_ --> `?`.
 
-ifragment -->
-  dcg_multi(ifragment_).
+ifragment --> dcg_multi(ifragment_).
 ifragment_ --> ipchar.
-ifragment_ --> "/".
-ifragment_ --> "?".
+ifragment_ --> `/`.
+ifragment_ --> `?`.
 
-iunreserved -->
-  'ALPHA'.
-iunreserved -->
-  'DIGIT'.
-iunreserved -->
-  "-".
-iunreserved -->
-  ".".
-iunreserved -->
-  "_".
-iunreserved -->
-  "~".
-iunreserved -->
-  ucschar.
+iunreserved --> 'ALPHA'.
+iunreserved --> 'DIGIT'.
+iunreserved --> `-`.
+iunreserved --> `.`.
+iunreserved --> `_`.
+iunreserved --> `~`.
+iunreserved --> ucschar.
 
 %! iprivate//
 % | *Hexadecimal*  | *Decimal*           |

@@ -22,8 +22,6 @@ DBpedia publishes the following three kind of files about categories:
 
 :- use_module(rdf(rdf_serial)).
 
-:- initialization(dbpedia_load_categories).
-
 
 
 %! dbpedia_load_categories is det.
@@ -31,7 +29,9 @@ DBpedia publishes the following three kind of files about categories:
 
 dbpedia_load_categories:-
   dbpedia_categories_url(Url),
-  rdf_download_extract_load(Url, [graph(dbpedia_categories)]).
+  rdf_download_extract_load(Url, [graph(G)]),
+gtrace,
+write(G).
 
 dbpedia_categories_url(
   'http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2'

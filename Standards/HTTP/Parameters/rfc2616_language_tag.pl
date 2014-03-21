@@ -53,8 +53,9 @@ DCG for RFC 2616 language tags.
 
 
 
-%! 'primary-tag'(-ParseTree:compound, ?Tag:atom)//
-%! subtag(-ParseTree:compound, ?Subtag:atom)//
+%! 'primary-tag'(-ParseTree:compound, ?Tag:atom)// .
+
+%! subtag(-ParseTree:compound, ?Subtag:atom)// .
 %
 % # Syntax
 %

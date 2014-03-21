@@ -39,7 +39,7 @@ The following options are supported:
      Whether word wrapping or line wrapping is used.
 
 @author Wouter Beek
-@version 2013/07, 2013/09, 2014/01
+@version 2013/07, 2013/09, 2014/01, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -135,7 +135,7 @@ dcg_line_wrap(O1) -->
 dcg_line_wrap(false, _Separator, _Remaining, _WrapMargin) --> !, dcg_end.
 % The last character was consumed add space padding occurs (option).
 dcg_line_wrap(true, _Separator, Remaining, _WrapMargin),
-    dcg_multi(" ", Remaining-Remaining) --> !, dcg_end.
+    dcg_multi(space, Remaining-Remaining) --> !, dcg_end.
 % The number of characters for one line have been parsed,
 %  so it is time for a separator.
 % Also, reset the character count and start parsing the next line.
@@ -184,7 +184,7 @@ dcg_word_wrap(O1) -->
 dcg_word_wrap(false, _Separator, _Remaining, _WrapMargin) --> dcg_end, !.
 % No more characters and add space padding (option).
 dcg_word_wrap(true, _Separator, Remaining, _WrapMargin),
-    dcg_multi(" ", Remaining-Remaining) --> dcg_end, !.
+    dcg_multi(space, Remaining-Remaining) --> dcg_end, !.
 % Process another character. Notice that there are several options here.
 dcg_word_wrap(Padding, Separator, Remaining, WrapMargin),
     codes(Word2),

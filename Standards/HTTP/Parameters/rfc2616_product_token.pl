@@ -27,7 +27,6 @@ product(
 */
 
 :- use_module(dcg(parse_tree)).
-:- use_module(rfc2616_generic)).
 
 
 
