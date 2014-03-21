@@ -88,11 +88,11 @@ rdf_tabular_predicate_literals(G, P) -->
     setoff(
       [LiteralValue],
       ((
-        rdf(_, P, literal(type(_,LiteralValue)))
+        rdf(_, P, literal(type(_,LiteralValue)), G)
       ;
-        rdf(_, P, literal(lang(_,LiteralValue)))
+        rdf(_, P, literal(lang(_,LiteralValue)), G)
       ;
-        rdf(_, P, literal(LiteralValue)),
+        rdf(_, P, literal(LiteralValue), G),
         \+ compound(LiteralValue)
       )),
       Rows1
@@ -139,7 +139,7 @@ rdf_tabular_properties(G) -->
   },
   rdf_html_table(
     [graph(G),header_row(true)],
-    html('Overview of properties.'),
+    html(['Overview of properties in RDF graph ',\rdf_graph_html(G),'.']),
     [['Predicate','Occurrences']|Rows]
   ).
 

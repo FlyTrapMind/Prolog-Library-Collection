@@ -60,7 +60,7 @@ rdf_man_duplicates -->
   html(
     \rdf_html_table(
       [header_row(spog)],
-      html('Overview of RDF duplicates'),
+      html('Overview of RDF duplicates accross all RDF graphs.'),
       Rows
     )
   ).

@@ -29,22 +29,22 @@ Generates HTML tables for overviews of RDFS classes.
 
 
 
-rdf_tabular_class(Graph, Class1) -->
+rdf_tabular_class(G, Class1) -->
   {
     rdf_global_id(Class1, Class2),
     setoff(
       [Instance],
       (
         rdfs_individual_of(Instance, Class2),
-        rdf(Instance, _, _, Graph)
+        rdf_subject(Instance, G)
       ),
       Instances1
     ),
     list_truncate(Instances1, 50, Instances2)
   },
   rdf_html_table(
-    [graph(Graph)],
-    html(['Instances of ',\rdf_term_html(Class2),'.']),
+    [graph(G),header_row(true)],
+    html(['Instances of ',\rdf_term_in_graph_html(Class2, G),'.']),
     [['Instance']|Instances2]
   ).
 
@@ -81,7 +81,7 @@ rdf_tabular_classes(G) -->
   },
   rdf_html_table(
     [graph(G),header_row(true)],
-    html('Overview of classes.'),
+    html(['Overview of classes in RDF graph ',\rdf_graph_html(G),'.']),
     [['Class','Members']|Rows]
   ).
 

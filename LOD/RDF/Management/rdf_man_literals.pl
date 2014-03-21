@@ -51,7 +51,7 @@ rdf_man_correct_literals -->
   },
   rdf_html_table(
     [header_row(true)],
-    html(p('Overview of correct RDF literals.')),
+    html(p('Overview of correct RDF literals in all RDF graphs.')),
     [['Subject','Predicate','Literal','Prolog value','Graph']|CorrectRows]
   ).
 
@@ -70,7 +70,7 @@ rdf_man_incorrect_literals -->
   },
   rdf_html_table(
     [header_row(splg)],
-    html('Overview of incorrect RDF literals.'),
+    html('Overview of incorrect RDF literals in all RDF graphs.'),
     IncorrectRows
   ).
 
