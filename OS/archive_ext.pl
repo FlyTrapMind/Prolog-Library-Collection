@@ -74,7 +74,7 @@ create_tarball(Files, Archive):-
 % @see Wrapper around extract_archive/2.
 
 extract_archive(File):-
-  extract_archive(File, []).
+  extract_archive(File, _).
 
 
 %! extract_archive(

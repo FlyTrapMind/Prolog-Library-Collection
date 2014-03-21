@@ -5,6 +5,9 @@
                      % -Email:atom
     atom_to_iri/2, % +Atom:atom
                    % -Iri:iri
+    download_and_extract_to_files/3, % +Options:list(nvpair)
+                                     % +Url:url
+                                     % -Files:ordset(atom)
     download_to_file/3, % +Options:list(nvpair)
                         % +Url:url
                         % ?File:atom
@@ -103,6 +106,28 @@ percent_encoding(space) -->
   integer(20).
 
 
+%! download_and_extract_to_files(
+%!   +Options:list(nvpair),
+%!   +Url:url,
+%!   -Files:list(atom)
+%! ) is det.
+
+download_and_extract_to_files(O1, Url, Files):-
+  download_to_file(O1, Url, File),
+  file_directory_name(File, Dir),
+  extract_archive(File),
+  directory_files(
+    [
+      include_directories(true),
+      include_self(false),
+      order(lexicographic),
+      recursive(true)
+    ],
+    Dir,
+    Files
+  ).
+
+
 %! download_to_file(+Options:list(nvpair), +Url:url, ?File:atom) is det.
 % Downloads files from a URL to either the given file (when instantiated)
 % of to the a file name that is created based on the URL.
@@ -126,6 +151,8 @@ download_to_file(O1, _, File):-
 download_to_file(O1, Url, File):-
   nonvar(File),
   is_absolute_file_name(File), !,
+  file_directory_name(File, Dir),
+  make_directory_path(Dir),
 
   % Check write access to the file.
   access_file(File, write),
@@ -221,15 +248,7 @@ url_to_file_name(Url, File):-
     RelativeTo,
     [access(read),file_type(directory)]
   ),
-  relative_file_path(Path, RelativeTo, RelativePath),
-
-  % Ensure the directory exists.
-  file_directory_name(Path, Dir),
-  make_directory_path(Dir),
-
-  % Create the file name.
-  last_path_component(Path, BaseName),
-  absolute_file_name(BaseName, File, [access(write),relative_to(Dir)]).
+  relative_file_path(File, RelativeTo, RelativePath).
 
 
 url_to_graph_name(Url, G):-
