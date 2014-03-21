@@ -98,8 +98,7 @@ load_pgc:-
 
   % Set data subdirectory.
   use_module(programming(pl_clas)),
-  process_options(O1, _),
-  set_data_path,
+  process_options(_),
 
   % Initialize Web module registration.
   use_module(generics(db_ext)),

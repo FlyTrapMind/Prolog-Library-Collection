@@ -1,10 +1,8 @@
 :- module(
   pl_clas,
   [
-    process_options/2, % -ExecutedOptions:list(nvpair)
-                       % -RemainingOptions:list(nvpair)
-    read_options/1, % -Options:list(nvpair)
-    set_data_path/0
+    process_options/1, % -RemainingOptions:list(nvpair)
+    read_options/1 % -Options:list(nvpair)
   ]
 ).
 
@@ -16,9 +14,12 @@ Support for command line arguments given at Prolog startup.
 @version 2014/03
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
+:- use_module(library(lists)).
+:- use_module(library(option)).
 
 :- multifile(prolog:message//1).
 
@@ -40,14 +41,12 @@ Support for command line arguments given at Prolog startup.
 :- multifile(user:process_cmd_option/1).
 
 
-%! process_cmd_options(+Options1:list(nvpair), -Options2:list(nvpair)) is det.
+%! process_cmd_options(+Options1:list(nvpair)) is det.
 % Runs on all options at once.
 %
-% This can be used to remove duplicates,
-% to check whether some option does not occur,
-% or to remove options based on the presence of others.
+% This can be used to check whether some option does _not_ occur.
 
-:- multifile(user:process_cmd_options/2).
+:- multifile(user:process_cmd_options/1).
 
 
 
@@ -62,8 +61,7 @@ user:process_cmd_option(data(Dir)):-
   print_message(warning, incorrect_path(Dir)).
 
 prolog:message(incorrect_path(Dir)) -->
-  `The given value could not be resolved to a directory: ~w`,
-  atom(Dir), nl.
+  ['The given value could not be resolved to a directory: ',Dir,'.~n'].
 
 
 % Option: debug.
@@ -89,10 +87,6 @@ user:process_cmd_option(help(true)):-
   halt.
 user:process_cmd_option(help(false)).
 
-% Help obsoletes all other options.
-% (Help takes priority over version.)
-user:process_cmd_options(O1, [help(true)]):-
-  memberchk(help(true), O1), !.
 
 
 % Option: version.
@@ -105,17 +99,18 @@ user:process_cmd_option(version(true)):-
     '  PraSem: Pragmatic Semantics for the Web of Data\n',
     []
   ),
+  findall(
+    Name-Description,
+    user:project(Name, Description),
+    Pairs1
+  ),
+  keysort(Pairs1, Pairs2),
   forall(
-    user:project(ProjectName, ProjectDescription),
-    format(user_output, '    * ~w: ~w\n', [ProjectName,ProjectDescription])
+    member(Name-Description, Pairs2),
+    format(user_output, '    * ~w: ~w\n', [Name,Description])
   ),
   halt.
 user:process_cmd_option(version(false)).
-
-% Version obsoletes all other options.
-% (Help takes priority over version.)
-user:process_cmd_options(O1, [version(true)]):-
-  memberchk(version(true), O1), !.
 
 
 
@@ -204,11 +199,20 @@ parse_options(Rest, [], Rest).
 % Only the options that are not processed in a generic way,
 % i.e. those that are application-specific, are returned.
 
-process_options(O2, O3):-
+process_options(O3):-
   read_options(O1), !,
-  process_cmd_options(O1, O2),
+  
+  % First set the data directory,
+  % since other command-line arguments may depend on it being set,
+  % e.g. `project=NAME`.
+  set_data_path(O1, O2),
+  
+  % Process command-line arguments that change the set of options,
+  % e.g. `help`.
+  process_all_options(O2),
+  
   exclude(user:process_cmd_option, O2, O3).
-process_options(_, _):-
+process_options(_):-
   print_message(warning, clas_parse_failed),
   halt.
 
@@ -216,13 +220,13 @@ prolog:message(clas_parse_failed) -->
   ['Could not parse command-line arguments.'].
 
 
-%! process_cmd_options(+Options1:list(nvpair), -Options2:list(nvpair)) is det.
+%! process_all_options(+Options1:list(nvpair)) is det.
 
-process_cmd_options(O1, O3):-
-  user:process_cmd_options(O1, O2),
-  O1 \== O2, !,
-  process_cmd_options(O2, O3).
-process_cmd_options(O1, O1).
+process_all_options(O1):-
+  user:process_cmd_options(O1),
+  % Enumerate by fail.
+  fail, !.
+process_all_options(_).
 
 
 %! read_options(-Options:list(nvpair)) is det.
@@ -251,10 +255,15 @@ short_option(Short1, Option):-
 
 
 % Data directory was already set.
-set_data_path:-
+set_data_path(O1, O1):-
   user:file_search_path(data, _), !.
+% Set data directory based on `data=DIR` command-line argument.
+set_data_path(O1, O2):-
+  select_option(data(Dir1), O1, O2),
+  absolute_file_name(Dir1, Dir2, [access(write),file_type(directory)]), !,
+  set_data_path(Dir2).
 % Set default data directory.
-set_data_path:-
+set_data_path(O1, O1):-
   absolute_file_name(
     project('.'),
     Dir1,
