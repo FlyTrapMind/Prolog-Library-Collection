@@ -1,38 +1,41 @@
 :- module(
   rdf_list,
   [
-    rdf_is_list/1, % +RDF_List:uri
+    rdf_is_list/1, % +RdfList:iri
     rdf_assert_list/3, % +List:list
-                       % -RDF_List:uri
+                       % -RdfList:iri
                        % +Graph:atom
     rdf_assert_list/4, % +Options:list(nvpair)
                        % +List:list
-                       % -RDF_List:uri
+                       % -RdfList:iri
                        % +Graph:atom
-    rdf_list/2, % +RDF_List:uri
+    rdf_list/2, % +RdfList:iri
                 % -List:list
     rdf_list/3, % +Options:list(nvpair)
-                % +RDF_List:uri
+                % +RdfList:iri
                 % -List:list
-    rdf_list_first/2, % +List:uri
-                      % -FirstElement:uri
-    rdf_list_last/2, % +List:uri
-                     % -LastElement:uri
-    rdf_list_length/2, % +List:uri
+    rdf_list_first/2, % +List:iri
+                      % -FirstElement:iri
+    rdf_list_last/2, % +List:iri
+                     % -LastElement:iri
+    rdf_list_length/2, % +List:iri
                        % -Length:number
-    rdf_list_next/2, % ?Element:uri
-                     % ?NextElement:uri
-    rdf_list_occurs_after/2, % +After:uri
-                             % +Before:uri
-    rdf_list_occurs_before/2, % +Before:uri
-                              % +After:uri
-    rdf_list_previous/2, % ?Element:uri
-                         % ?PreviousElement:uri
+    rdf_list_next/2, % ?Element:iri
+                     % ?NextElement:iri
+    rdf_list_occurs_after/2, % +After:iri
+                             % +Before:iri
+    rdf_list_occurs_before/2, % +Before:iri
+                              % +After:iri
+    rdf_list_previous/2, % ?Element:iri
+                         % ?PreviousElement:iri
     rdf_list_member/2, % ?Element
-                       % ?RDF_List:uri
+                       % ?RdfList:iri
+    rdf_list_nth0/3, % +Index:nonneg
+                     % +RdfList:iri
+                     % -Element:or([bnode,iri])
 % DEBUG
     rdf_list_name//2 % +Options:list(nvpair)
-                     % +RDF_List:or([bnode,iri])
+                     % +RdfList:or([bnode,iri])
   ]
 ).
 
@@ -74,7 +77,7 @@ Support for RDF lists.
 
 
 
-%! rdf_is_list(?RDF_List:rdf_list) is semidet.
+%! rdf_is_list(?RdfList:rdf_list) is semidet.
 % Succeeds if the given term is an RDF list.
 %
 % ## Tricky stuff
@@ -95,11 +98,11 @@ rdf_is_list(RDF_List1):-
   (b2r(_, RDF_List1, RDF_List2), ! ; RDF_List2 = RDF_List1),
   rdfs_individual(m(t,f,f), RDF_List2, C, _).
 
-%! rdf_assert_list(+PrologList:list, -RDF_List:uri, +Graph:atom) is det.
+%! rdf_assert_list(+PrologList:list, -RdfList:iri, +Graph:atom) is det.
 %! rdf_assert_list(
 %!   +Options:list(nvpair),
 %!   +PrologList:list,
-%!   -RDF_List:uri,
+%!   -RdfList:iri,
 %!   +Graph:atom
 %! ) is det.
 % Asserts the given, possibly nested list into RDF.
@@ -109,7 +112,7 @@ rdf_is_list(RDF_List1):-
 %
 % @arg Options A list of name-value pairs.
 % @arg PrologList The, possibly nested, Prolog list.
-% @arg RDF_List The URI of the node at which the RDF list starts.
+% @arg RdfList The URI of the node at which the RDF list starts.
 % @arg Graph The atomic name of a graph or unbound.
 %
 % @author Wouter Beek, elaborating on Sanders original, allowing the graph
@@ -117,15 +120,15 @@ rdf_is_list(RDF_List1):-
 % @author Sander Latour, who wrote the original version, dealing with
 %         nested lists.
 
-rdf_assert_list(List, RDF_List, G):-
-  rdf_assert_list([], List, RDF_List, G).
+rdf_assert_list(List, RdfList, G):-
+  rdf_assert_list([], List, RdfList, G).
 
-rdf_assert_list(O1, List, RDF_List, G):-
-  add_blank_list_individual(RDF_List, G),
-  rdf_assert_list0(O1, List, RDF_List, G).
+rdf_assert_list(O1, List, RdfList, G):-
+  add_blank_list_individual(RdfList, G),
+  rdf_assert_list0(O1, List, RdfList, G).
 
 rdf_assert_list0(_, [], rdf:nil, _Graph).
-rdf_assert_list0(O1, [H|T], RDF_List, G):-
+rdf_assert_list0(O1, [H|T], RdfList, G):-
   (
     is_list(H)
   ->
@@ -139,7 +142,7 @@ rdf_assert_list0(O1, [H|T], RDF_List, G):-
   ;
     H1 = H
   ),
-  rdf_assert(RDF_List, rdf:first, H1, G),
+  rdf_assert(RdfList, rdf:first, H1, G),
   (
     T == []
   ->
@@ -148,19 +151,19 @@ rdf_assert_list0(O1, [H|T], RDF_List, G):-
     add_blank_list_individual(TList, G),
     rdf_assert_list0(O1, T, TList, G)
   ),
-  rdf_assert(RDF_List, rdf:rest, TList, G).
+  rdf_assert(RdfList, rdf:rest, TList, G).
 
 add_blank_list_individual(Blank, G):-
   rdf_bnode(Blank),
   rdf_assert_individual(Blank, rdf:'List', G).
 
-%! rdf_list(+RDF_List:rdf_list, -List:list) is det.
+%! rdf_list(+RdfList:rdf_list, -List:list) is det.
 % @see Wrapper around rdf_list/3.
 
-rdf_list(RDF_List, List):-
-  rdf_list([], RDF_List, List).
+rdf_list(RdfList, List):-
+  rdf_list([], RdfList, List).
 
-%! rdf_list(+Options:list(nvpair), +RDFList:uri, -List:list) is det
+%! rdf_list(+Options:list(nvpair), +RDFList:iri, -List:list) is det
 % Returns the list that starts at the given node.
 %
 % The following options are supported:
@@ -198,7 +201,7 @@ rdf_list(O1, RDFList, [H1 | T]):-
   rdf_has(RDFList, rdf:rest, RDFTail), !,
   rdf_list(O1, RDFTail, T).
 
-%! rdf_list_first(?List:uri, ?First:uri) is nondet.
+%! rdf_list_first(?List:iri, ?First:iri) is nondet.
 % Pairs of lists and their first element.
 %
 % @arg List an RDF list.
@@ -207,7 +210,7 @@ rdf_list(O1, RDFList, [H1 | T]):-
 rdf_list_first(List, First):-
   rdf_has(List, rdf:first, First).
 
-%! rdf_list_first(?List:uri, ?Last:uri) is nondet.
+%! rdf_list_first(?List:iri, ?Last:iri) is nondet.
 % Pairs of lists and their last element.
 %
 % @arg List an RDF list.
@@ -220,7 +223,7 @@ rdf_list_last(List, Last):-
   rdf_has(List, rdf:rest, NextList),
   rdf_list_last(NextList, Last).
 
-%! rdf_list_length(+List:uri, -Length:integer) is det.
+%! rdf_list_length(+List:iri, -Length:integer) is det.
 % Returns the number of elements in the given list.
 %
 % @arg List An RDF list.
@@ -273,11 +276,11 @@ rdf_list_occurs_before0(Before1, After):-
 rdf_list_previous(Element, PreviousElement):-
   rdf_list_next(PreviousElement, Element).
 
-%! rdf_list_member(?Element, ?RDF_List:rdf_list) is nondet.
+%! rdf_list_member(?Element, ?RdfList:rdf_list) is nondet.
 % @see Variant of member/2 for RDF lists.
 
-rdf_list_member(Element, RDF_List):-
-  rdf_list_first(RDF_List, FirstElement),
+rdf_list_member(Element, RdfList):-
+  rdf_list_first(RdfList, FirstElement),
   rdf_list_member_(Element, FirstElement).
 rdf_list_member_(Element, Element).
 rdf_list_member_(Element, TempElement1):-
@@ -285,16 +288,29 @@ rdf_list_member_(Element, TempElement1):-
   rdf_list_member_(Element, TempElement2).
 
 
+%! rdf_list_nth0(+Index:nonneg, +RdfList:iri, -Element:or([bnode,iri])) is det.
+
+rdf_list_nth0(I, L, E):-
+  rdf_list_first(L, E1),
+  rdf_list_nth0_(I, E1, E).
+
+rdf_list_nth0_(0, E, E):- !.
+rdf_list_nth0_(I1, E1, E):-
+  rdf_list_next(E1, E2),
+  I2 is I1 - 1,
+  rdf_list_nth0_(I2, E2, E).
+
+
 
 % DEBUG %
 
-rdf_list_name(O1, RDF_List) -->
+rdf_list_name(O1, RdfList) -->
   % Recursively retrieve the contents of the RDF list.
   % This has to be done non-recursively, since the nested
   % Prolog list `[a,[b,c]]` would bring rdf_term_name//1 into
   % trouble when it comes accross `[b,c]`
   % (which fails the check for RDF list).
-  {rdf_list([recursive(false)], RDF_List, RDF_Terms)},
+  {rdf_list([recursive(false)], RdfList, RDF_Terms)},
   
   list(rdf_term_name(O1), RDF_Terms).
 

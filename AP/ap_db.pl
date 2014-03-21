@@ -46,6 +46,7 @@
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf_term(rdf_boolean)).

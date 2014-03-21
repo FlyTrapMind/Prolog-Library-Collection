@@ -10,12 +10,13 @@
 Automated script that scraped CKAN.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
 :- use_module(ckan(data_gov_uk)). % Meta-call.
 :- use_module(ckan(datahub_io)). % Meta-call.
 :- use_module(ckan(rdf_tabular_ckan)). % Load Web interface.
+:- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_serial)).
 
 ckan_site(datahub_io).

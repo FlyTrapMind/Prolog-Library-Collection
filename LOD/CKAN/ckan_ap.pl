@@ -31,9 +31,11 @@ Automated processes for CKAN data.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % MD5
+:- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_name)). % Used in meta-DCG.
+:- use_module(rdf(rdf_serial)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_label_ext)).

@@ -28,14 +28,11 @@ Generates HTML tables with RDF content.
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_list)).
+:- use_module(rdf(rdf_table)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_web(rdf_term_html)).
-:- use_module(xml(xml_namespace)).
-
 :- meta_predicate(rdf_html_table(+,//,+,?,?)).
 :- rdf_meta(rdf_html_table(r,?,?)).
-
-:- xml_register_namespace(rdf_table, 'http://www.wouterbeek.com/rdf_table#').
 
 
 
@@ -83,11 +80,11 @@ rdf_html_table(O1, Table) -->
     option(header_column(HasHeaderColumn), O1),
     option(header_row(HasHeaderRow), O1),
     rdf_string(Table, rdf_table:caption, Caption, _),
-    rdf(Table, rdf_table:columns, Columns1),
-    rdf_list([datatype(xsd:string)], Columns1, Columns2),
-    rdf(Table, rdf_table:rows, Rows1),
-    rdf_list([datatype(xsd:string)], Rows1, Rows2),
-    table1(Table, HasHeaderColumn, Columns2, Rows2, L1),
+    rdf(Table, rdf_table:columns, Columns),
+    rdf_list([], Columns, ColumnHeaders),
+    rdf(Table, rdf_table:rows, Rows),
+    rdf_list([], Rows, RowHeaders),
+    rdf_table_get_rows(Table, HasHeaderColumn, ColumnHeaders, RowHeaders, L1),
     (
       HasHeaderRow == true
     ->
@@ -98,25 +95,48 @@ rdf_html_table(O1, Table) -->
   },
   rdf_html_table(O1, rdf_term_html(Caption), L2).
 
-table1(_, _, _, [], []):- !.
-table1(Table, HasHeaderColumn, Columns, [Row|Rows], [H2|T]):-
-  table2(Table, Columns, Row, H1),
+
+%! rdf_table_get_rows(
+%!   +Table:iri,
+%!   +HadHeaderColumn:boolean,
+%!   +ColumnHeaders:list(iri),
+%!   +RowHeaders:list(iri),
+%!   -Rows:list(list(ground))
+%! ) is det.
+
+rdf_table_get_rows(_, _, _, [], []):- !.
+rdf_table_get_rows(
+  Table,
+  HasHeaderColumn,
+  ColumnHeaders,
+  [RowHeader|RowHeaders],
+  [Row2|Rows]
+):-
+  rdf_table_get_row(Table, ColumnHeaders, RowHeader, Row1),
   (
     HasHeaderColumn == true
   ->
-    H2 = [Row|H1]
+    Row2 = [RowHeader|Row1]
   ;
-    H2 = H1
+    Row2 = Row1
   ),
-  table1(Table, HasHeaderColumn, Columns, Rows, T).
+  rdf_table_get_rows(Table, HasHeaderColumn, ColumnHeaders, RowHeaders, Rows).
 
-table2(_, [], _, []):- !.
-table2(Table, [Column|Columns], Row, [H|T]):-
+
+%! rdf_table_get_row(
+%!   +Table:iri,
+%!   +ColumnHeaders:list(iri),
+%!   +RowHeader:iri,
+%!   -Row:list(ground)
+%! ) is det.
+
+rdf_table_get_row(_, [], _, []):- !.
+rdf_table_get_row(Table, [ColumnHeader|ColumnHeaders], RowHeader, [H|T]):-
   rdf(Table, rdf_table:cell, Cell),
-  rdf_string(Cell, rdf_table:column, Column, _),
-  rdf_string(Cell, rdf_table:row, Row, _),
+  rdf_string(Cell, rdf_table:column, ColumnHeader, _),
+  rdf_string(Cell, rdf_table:row, RowHeader, _),
   rdf(Cell, rdf:value, H), !,
-  table2(Table, Columns, Row, T).
+  rdf_table_get_row(Table, ColumnHeaders, RowHeader, T).
 
 
 %! rdf_html_table(
