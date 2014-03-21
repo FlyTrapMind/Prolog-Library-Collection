@@ -84,16 +84,22 @@ rdf_html_table(O1, Table) -->
     rdf_list([], Columns, ColumnHeaders),
     rdf(Table, rdf_table:rows, Rows),
     rdf_list([], Rows, RowHeaders),
-    rdf_table_get_rows(Table, HasHeaderColumn, ColumnHeaders, RowHeaders, L1),
+    rdf_table_get_rows(
+      Table,
+      HasHeaderColumn,
+      ColumnHeaders,
+      RowHeaders,
+      Rows1
+    ),
     (
       HasHeaderRow == true
     ->
-      L2 = [Columns2|L1]
+      Rows2 = [ColumnHeaders|Rows1]
     ;
-      L2 = L1
+      Rows2 = Rows1
     )
   },
-  rdf_html_table(O1, rdf_term_html(Caption), L2).
+  rdf_html_table(O1, rdf_term_html(Caption), Rows2).
 
 
 %! rdf_table_get_rows(
