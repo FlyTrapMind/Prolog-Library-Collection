@@ -22,6 +22,7 @@ Generates HTML tables for overviews of singular RDF terms.
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(rdf_web(rdf_html_table)).
