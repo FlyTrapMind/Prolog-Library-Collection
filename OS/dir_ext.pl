@@ -174,10 +174,10 @@ create_personal_directory:-
   file_search_path(personal, _), !.
 create_personal_directory:-
   % Make sure that the project name has been asserted.
-  current_predicate(project_name/1),
+  current_predicate(project/2),
   expand_file_name('~', [Home]),
   db_add_novel(user:file_search_path(home, Home)),
-  project_name(Project),
+  project(Project, _),
   hidden_file_name(Project, Hidden),
   create_nested_directory(home(Hidden), _Dir),
   db_add_novel(user:file_search_path(personal, home(Hidden))).
@@ -193,7 +193,7 @@ create_personal_directory:-
 % This can be used to write files to. Something that is not guaranteed for
 % the location where the code is run from.
 %
-% This requires that the project name has been set using project_name/1.
+% This requires that the project name has been set using project/2.
 
 create_personal_subdirectory(Nested, Abs):-
   create_personal_directory,

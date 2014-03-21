@@ -144,7 +144,7 @@ console_output(Request):-
   serve_nothing(Request).
 
 user:head(dev_style, _Head) -->
-  {project_name(Project)},
+  {project(Project)},
   html(head(title(Project))).
 
 history(History, HistoryLength) -->

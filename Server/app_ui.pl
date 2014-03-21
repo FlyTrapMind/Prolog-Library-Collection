@@ -33,7 +33,7 @@ width: 50em;
 
 :- http_handler(root(.), home, []).
 
-:- if(predicate_property(user:debug_project, visible)).
+:- if(predicate_property(user:debug_mode, visible)).
   :- html_resource(css('pure-debug-0.4.2.css'), []).
   :- html_resource(css('app_ui.css'), [requires([css('pure-debug-0.4.2.css')])]).
 :- else.

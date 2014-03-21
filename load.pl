@@ -12,30 +12,30 @@
 load_pgc:-
   use_module(library(apply)),
   use_module(library(prolog_pack)),
-  
+
   source_file(load_pgc, ThisFile),
   file_directory_name(ThisFile, ThisDirectory),
   assert(user:file_search_path(pgc, ThisDirectory)),
-  
+
   % If there is no outer project, then PGC is the project.
   once((
     user:file_search_path(pgc, _)
   ;
     assert(user:file_search_path(pgc, ThisDirectory))
   )),
-  
+
   % If there is no outer project, then PGC is the project.
   % (For debug purposes only.)
   once((
-    current_predicate(project_name/1)
+    current_predicate(project/2)
   ;
-    assert(user:project_name('PGC'))
+    assert(user:project('PGC', 'Prolog Generics Collection'))
   )),
-  
+
   assert(user:prolog_file_type(html, 'text/html')),
   assert(user:prolog_file_type(md,   'text/markdown')),
   assert(user:prolog_file_type(txt,  'text/plain')),
-  
+
   % Assert the various search paths.
   assert(user:file_search_path(ap,              pgc('AP'      ))),
   assert(user:file_search_path(datasets,        pgc('Datasets'))),
@@ -91,15 +91,17 @@ load_pgc:-
   assert(user:file_search_path(stat,            pgc('Stats'))),
   assert(user:file_search_path(web,             pgc('Web'  ))),
     assert(user:file_search_path(crawler,         web('Crawler'))),
-  
-  % Set data subdirectory.
-  use_module(programming(pl_clas)),
-  set_data_path,
-  
+
   % Check SWI-Prolog version.
   use_module(programming(pl_version)),
   check_pl_version,
-  
+
+  % Set data subdirectory.
+  use_module(programming(pl_clas)),
+  process_options(_),
+
+  set_data_path,
+
   % Initialize Web module registration.
   use_module(generics(db_ext)),
   db_add_novel(user:prolog_file_type(db, database)),
@@ -109,18 +111,18 @@ load_pgc:-
     [access(write),file_type(database)]
   ),
   use_module(os(file_ext)),
-  safe_delete_file(File),
-  
+  (exists_file(File) -> safe_delete_file(File) ; true),
+
   % Install packages.
   % This requires user interaction on the first load.
   use_module(programming(pl_package)),
   maplist(load_pl_package, [regex,smtp]),
-  
+
   % Start logging.
   use_module(generics(logging)),
   % @tbd Strange module problem again...
   logging:start_log,
-  
+
   use_module(os(archive_ext)),
   use_module(void(void_db)),
   use_module(void(void_file)).

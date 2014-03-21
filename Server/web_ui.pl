@@ -46,7 +46,7 @@ This module also defines the dependencies for the JavaScript generics.
 
 :- html_resource(js('json2html.js'), []).
 :- html_resource(js('jquery.json2html.js'), [requires([js('json2html.js')])]).
-:- if(predicate_property(user:debug_project, visible)).
+:- if(predicate_property(user:debug_mode, visible)).
   :- html_resource(js('jquery-debug-2.0.3.js'), []).
   :- html_resource(
     js('generics.js'),

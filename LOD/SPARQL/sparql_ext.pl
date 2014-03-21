@@ -123,7 +123,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 % OWL
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
 
-:- if(predicate_property(user:debug_project, visible)).
+:- if(predicate_property(user:debug_mode, visible)).
   :-
     once(http_server_property(Port, _)),
     sparql_register_remote(localhost, localhost, Port, '/sparql/').

@@ -84,8 +84,8 @@ HTML attribute parsing, used in HTML table generation.
 
 :- meta_predicate(html_pair(3,+,+,?,?)).
 :- rdf_meta(html_pair(:,r,r,?,?)).
-:- meta_predicate(html_quadruple(3,+,+,+,+)).
-:- rdf_meta(html_quadruple(:,r,r,r,r)).
+:- meta_predicate(html_quadruple(3,+,+,+,+,?,?)).
+:- rdf_meta(html_quadruple(:,r,r,r,r,?,?)).
 :- meta_predicate(html_triple(3,+,+,+,?,?)).
 :- rdf_meta(html_triple(:,r,r,r,?,?)).
 :- meta_predicate(html_tuple(3,+,?,?)).

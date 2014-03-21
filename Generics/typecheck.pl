@@ -1,4 +1,11 @@
-:- module(typecheck, []).
+:- module(
+  typecheck,
+  [
+    atom_to_value/3 % +Atom
+                    % +Type
+                    % -Value
+  ]
+).
 :- reexport(library(error), [
   is_of_type/2, % +Type
                 % @Term
@@ -10,40 +17,40 @@
 
 Predicates used for parsing and checking value-type conformance.
 
-| *Type*               | *|Defined here|* |
-| atom                 |                  |
-| atomic               |                  |
-| between/2            |                  |
-| boolean              |                  |
-| callable             |                  |
-| char                 |                  |
-| chars                |                  |
-| code                 |                  |
-| codes                |                  |
-| compound             |                  |
-| constant             |                  |
-| email                |                  |
-| encoding             |                  |
-| float                |                  |
-| ground               |                  |
-| integer              |                  |
-| list                 |                  |
-| list/1               | Yes              |
-| list_or_partial_list |                  |
-| negative_integer     |                  |
-| nonneg               |                  |
-| nonvar               |                  |
-| number               |                  |
-| oneof/1              |                  |
-| or/1                 | Yes              |
-| positive_integer     |                  |
-| rational             |                  |
-| string               |                  |
-| symbol               |                  |
-| text                 |                  |
-| uri                  | Yes              |
-| iri                  | Yes              |
-| var                  |                  |
+| *Type*               | *|Defined here|* | *|Atom-conversion|* |
+| atom                 |                  | Yes                 |
+| atomic               |                  |                     |
+| between/2            |                  | Yes                 |
+| boolean              |                  | Yes                 |
+| callable             |                  |                     |
+| char                 |                  | Yes                 |
+| chars                |                  | Yes                 |
+| code                 |                  | Yes                 |
+| codes                |                  | Yes                 |
+| compound             |                  |                     |
+| constant             |                  |                     |
+| email                |                  |                     |
+| encoding             |                  |                     |
+| float                |                  | Yes                 |
+| ground               |                  |                     |
+| integer              |                  | Yes                 |
+| list                 |                  |                     |
+| list/1               | Yes              |                     |
+| list_or_partial_list |                  |                     |
+| negative_integer     |                  | Yes                 |
+| nonneg               |                  | Yes                 |
+| nonvar               |                  |                     |
+| number               |                  | Yes                 |
+| oneof/1              |                  | Yes                 |
+| or/1                 | Yes              |                     |
+| positive_integer     |                  | Yes                 |
+| rational             |                  |                     |
+| string               |                  | Yes                 |
+| symbol               |                  |                     |
+| text                 |                  |                     |
+| uri                  | Yes              |                     |
+| iri                  | Yes              |                     |
+| var                  |                  |                     |
 
 --
 
@@ -52,11 +59,69 @@ Predicates used for parsing and checking value-type conformance.
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(boolean_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 :- use_module(uri(rfc3987_dcg)).
 
+
+
+%! atom_to_value(+Atom:atom, +Type:compound, -Value) is det.
+% Interpret `Atom` according to `Type`.
+
+% Atom.
+atom_to_value(Atom, atom, Atom):- !.
+% Between two integers (inclusive).
+atom_to_value(Atom, between(L,H), I):- !,
+  atom_to_value(Atom, integer, I),
+  L =< I,
+  H >= I.
+% Boolean.
+atom_to_value(Atom, boolean, Boolean):- !,
+  to_boolean(Atom, Boolean).
+% Character.
+atom_to_value(Char, char, Char):- !,
+  atom_length(Char, 1).
+% List of characters.
+atom_to_value(Atom, chars, Chars):- !,
+  atom_chars(Atom, Chars).
+% Code.
+atom_to_value(Atom, code, Code):- !,
+  atom_to_value(Atom, char, Char),
+  char_code(Char, Code).
+% Codes.
+atom_to_value(Atom, codes, Codes):- !,
+  atom_codes(Atom, Codes).
+% Float.
+atom_to_value(Atom, float, Float):- !,
+  atom_number(Atom, Number),
+  Float = float(Number).
+% Integer.
+atom_to_value(Atom, integer, I):- !,
+  atom_number(Atom, I),
+  integer(I).
+% Negative integer.
+atom_to_value(Atom, negative_integer, I):- !,
+  atom_to_value(Atom, integer, I),
+  I < 0.
+% Non-negative integer.
+atom_to_value(Atom, nonneg, I):- !,
+  atom_to_value(Atom, integer, I),
+  I >= 0.
+% Number.
+atom_to_value(Atom, number, Number):- !,
+  atom_number(Atom, Number).
+% Positive integer.
+atom_to_value(Atom, positive_integer, I):- !,
+  atom_to_value(Atom, integer, I),
+  I > 0.
+% One from a given list of atoms.
+atom_to_value(Atom, oneof(L), Atom):- !,
+  memberchk(Atom, L).
+% String.
+atom_to_value(Atom, string, String):- !,
+  atom_string(Atom, String).
 
 
 % char/0
@@ -94,6 +159,7 @@ error:has_type(iri, Term):-
   maplist(nonvar, [Scheme,Authority,Path]).
   % @tbd
   %%%%once(dcg_phrase('IRI'(_), Term)),
+
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).

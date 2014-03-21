@@ -21,6 +21,7 @@
     graphic//1, % ?Codes:list(code)
     horizontal_line//0,
     horizontal_line//1, % +Length:nonneg
+    indent//0,
     indent//1, % +Indent:nonneg
     indent//2, % +Indent:nonneg
                % :DCG
@@ -76,6 +77,11 @@ DCG rules for parsing/generating often-occuring content.
   2,
   'The number of spaces that go into one indent.'
 ).
+
+:- meta_predicate(indent(+,//,?,?)).
+:- meta_predicate(bracketed(//,?,?)).
+:- meta_predicate(bracketed(+,//,?,?)).
+:- meta_predicate(transition(//,//,?,?)).
 
 
 
@@ -153,11 +159,9 @@ between_hex(LowHex, HighHex, Code) -->
 %! bracketed(:DCG)// .
 %! bracketed(+Mode:oneof([curly,round,square]), :DCG)// .
 
-:- meta_predicate(bracketed(//,?,?)).
 bracketed(DCG) -->
   bracketed(round, DCG).
 
-:- meta_predicate(bracketed(+,//,?,?)).
 bracketed(Mode, DCG) -->
   dcg_between(
     opening_bracket(_, Mode),
@@ -281,7 +285,12 @@ horizontal_line(Length) -->
   dcg_multi(hyphen, Length).
 
 
-%! indent(+Indent:nonneg)// .
+%! indent// is det.
+%! indent(+Indent:nonneg)// is det.
+%! indent(+Indent:nonneg, :DCG)// is det.
+
+indent -->
+  indent(1).
 
 indent(I) -->
   {
@@ -290,10 +299,6 @@ indent(I) -->
   },
   dcg_multi(space, NumberOfSpaces).
 
-
-%! indent(+Indent:nonneg, :DCG)// is det.
-
-:- meta_predicate(indent(+,//,?,?)).
 indent(I, DCG) -->
   indent(I),
   dcg_call(DCG).
@@ -320,7 +325,6 @@ quoted(DCG) -->
 
 %! transition(:From, :To)// is det.
 
-:- meta_predicate(transition(//,//,?,?)).
 transition(From, To) -->
   dcg_call(From),
   dcg_between(space, arrow([head(right)], 2)),
