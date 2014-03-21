@@ -142,19 +142,19 @@ dcg_maplist(Dcg, [H1|T1], [H2|T2]) -->
 dcg_nth0_call(Dcg, I, X) -->
   dcg_nth0_call([], Dcg, I, X).
 
-dcg_nth0_call(O1, Dcg, I1, X) -->
+dcg_nth0_call(O1, Dcg1, I, X) -->
   {
-    Dcg =.. [Pred|Args1],
-    
+    strip_module(Dcg1, Mod, Dcg2),
+    Dcg2 =.. [Pred|Args1],
+
     % Insert the extra argument.
     (
       option(minus(true), O1, false)
     ->
-      I2 is I1 + 2,
-      nth0_minus(I2, Args2, X, Args1)
+      nth0_minus(I, Args2, X, Args1)
     ;
-      nth0(I1, Args2, X, Args1)
+      nth0(I, Args2, X, Args1)
     )
   },
-  dcg_apply(Pred, Args2).
+  dcg_apply(Mod:Pred, Args2).
 

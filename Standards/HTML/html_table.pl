@@ -28,6 +28,17 @@ Cell contents are represented by Prolog ground terms that are elements
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
 
+:- meta_predicate(html_table(:,//,+,?,?)).
+:- meta_predicate(html_table(:,//,3,+,?,?)).
+:- meta_predicate(html_table_caption(//,?,?)).
+:- meta_predicate(html_table_cells(+,3,+,?,?)).
+:- meta_predicate(html_table_cell(+,3,+,?,?)).
+:- meta_predicate(html_table_data_rows(+,+,1,3,+,?,?)).
+:- meta_predicate(html_table_data_row(+,+,1,3,+,?,?)).
+:- meta_predicate(html_table_header(+,+,+,3,+,-,?,?)).
+:- meta_predicate(html_table_header_row(3,+,?,?)).
+:- meta_predicate(html_table_index_cell(+,+,3,+,?,?)).
+
 
 
 %! html_table(+Options:list(nvpair), :Caption, +Rows:list(list(ground)))// is det.
@@ -50,11 +61,9 @@ Cell contents are represented by Prolog ground terms that are elements
 %      Counts starts at 0. The header row, if included, is not counted.
 %      Default is `false`.
 
-:- meta_predicate(html_table(:,//,+,?,?)).
 html_table(O1, Caption, Rows) -->
   html_table(O1, Caption, pl_term_html, Rows).
 
-:- meta_predicate(html_table(:,//,3,+,?,?)).
 is_meta(highlighted_row).
 html_table(O1, Caption, Cell, Rows) -->
   {
@@ -101,7 +110,6 @@ fail(_):-
 % @arg Caption A DCG rule generating the content of the caption element,
 %      or uninstantiated, in which case no caption is generated at all.
 
-:- meta_predicate(html_table_caption(//,?,?)).
 html_table_caption(VAR) -->
   {var(VAR)}, !,
   [].
@@ -118,7 +126,6 @@ html_table_caption(Caption) -->
 %!   +Elements:list(ground)
 %! )// is det.
 
-:- meta_predicate(html_table_cells(+,3,+,?,?)).
 html_table_cells(Type, Cell, [H|T]) -->
   html_table_cell(Type, Cell, H),
   html_table_cells(Type, Cell, T).
@@ -141,7 +148,6 @@ html_table_cells(_, _, []) --> [].
 % we interpret the first element in the pair as an options list
 % (i.e. HTML attributes) to the list item tag.
 
-:- meta_predicate(html_table_cell(+,3,+,?,?)).
 html_table_cell(data, Cell, Element) -->
   html(td(\dcg_call(Cell, Element))), !.
 html_table_cell(data, Cell, O1-Element) -->
@@ -165,7 +171,6 @@ html_table_cell(header, Cell, O1-Element) --> !,
 %!   +DataRows
 %! )// is det.
 
-:- meta_predicate(html_table_data_rows(+,+,1,3,+,?,?)).
 html_table_data_rows(_, _, _, _, []) --> !, [].
 html_table_data_rows(HasHeaderColumn, IsIndexed, Highlighted, Cell, [H|T]) -->
   html_table_data_row(HasHeaderColumn, IsIndexed, Highlighted, Cell, H),
@@ -180,7 +185,6 @@ html_table_data_rows(HasHeaderColumn, IsIndexed, Highlighted, Cell, [H|T]) -->
 %!   +DataRows:list(list(ground))
 %! )// is det.
 
-:- meta_predicate(html_table_data_row(+,+,1,3,+,?,?)).
 html_table_data_row(
   HasHeaderColumn,
   IsIndexed,
@@ -233,7 +237,6 @@ html_table_data_row(
 %!   -DataRows:list(list(ground))
 %! )// is det.
 
-:- meta_predicate(html_table_header(+,+,+,3,+,-,?,?)).
 % The options state that there should be a header row, but there is no
 % content to display.
 html_table_header(_,true, _, _, [], []) --> !, [].
@@ -269,7 +272,6 @@ html_table_header(_, false, _, _, DataRows, DataRows) --> [].
 %! html_table_header_row(:Cell, +HeaderRow:list(ground))// is det.
 % Generates the HTML table header row with given contents.
 
-:- meta_predicate(html_table_header_row(3,+,?,?)).
 html_table_header_row(Cell, HeaderRow) -->
   html(tr(\html_table_cells(header, Cell, HeaderRow))).
 
@@ -284,7 +286,6 @@ html_table_header_row(Cell, HeaderRow) -->
 %!   +Index:ground
 %! )// is det.
 
-:- meta_predicate(html_table_index_cell(+,+,3,+,?,?)).
 html_table_index_cell(HasHeaderColumn, true, Cell, Index) -->
   {(
     HasHeaderColumn == true

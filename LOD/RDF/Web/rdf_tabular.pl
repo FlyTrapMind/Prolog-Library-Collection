@@ -82,7 +82,6 @@ rdf_tabular(Request):-
 rdf_tabular(Request):-
   memberchk(search(Search), Request),
   memberchk(graph=Graph, Search), !,
-  
   reply_html_page(
     app_style,
     title(['Overview of RDF graph ',\rdf_graph_html(Graph)]),

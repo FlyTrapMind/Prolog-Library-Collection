@@ -216,6 +216,11 @@ rdf_property_table(P, G, T):-
 %!   -NumberOfTriples:nonneg
 %! ) is det.
 
+% For datatype IRI `rdf:langString`.
+rdf_triples_by_datatype(G, D, ND):-
+  rdf_equal(rdf:langString, D), !,
+  rdf_triples_by_pattern(_, _, literal(lang(_,_)), G, ND).
+% For all other datatype IRIs.
 rdf_triples_by_datatype(G, D, ND):-
   rdf_triples_by_pattern(_, _, literal(type(D,_)), G, ND).
 

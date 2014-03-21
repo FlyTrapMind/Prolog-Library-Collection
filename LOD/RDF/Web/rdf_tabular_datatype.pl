@@ -38,6 +38,7 @@ datatype IRIs.
 rdf_tabular_datatype(G, D) -->
   {
     rdf_equal(rdf:langString, D), !,
+gtrace,
     setoff(
       N-[LexicalForm,LangTag],
       (
@@ -76,9 +77,9 @@ rdf_tabular_datatype_table(G, D, Pairs1, ColumnHeader) -->
     )
   },
   rdf_html_table(
-    [graph(G)],
-    html(['Overview of datatype ',\rdf_term_in_graph_html(D, G)]),
-    [['Lexical expression',ColumnHeader]|Rows]
+    [graph(G),header_row(true)],
+    html(['Overview of datatype IRI ',\rdf_term_in_graph_html(D, G),'.']),
+    [['Number of literals','Lexical expression',ColumnHeader]|Rows]
   ).
 
 
@@ -106,8 +107,8 @@ rdf_tabular_datatypes(G) -->
     )
   },
   rdf_html_table(
-    [graph(G)],
-    html(['Overview of datatype ',\rdf_term_in_graph_html(D, G)]),
+    [graph(G),header_row(true)],
+    html(['Overview of datatype IRIs in graph ',\rdf_graph_html(G),'.']),
     [['Number of literals','Datatype']|Rows]
   ).
 

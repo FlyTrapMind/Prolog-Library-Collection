@@ -2,7 +2,6 @@
   rdf_term_html,
   [
     rdf_graph_html//1, % +RdfGraph:atom
-    rdf_in_graph_html//1, % ?RdfGraph:atom
     rdf_literal_html//4, % +LexicalForm:atom
                          % +DatatypeIri:iri
                          % +LanguageTag:atom
@@ -51,7 +50,7 @@ HTML generation for RDF terms.
 :- rdf_meta(rdf_literal_html(+,r,+,?)).
 :- rdf_meta(rdf_term_html(o,?,?)).
 :- rdf_meta(rdf_term_html(o,?,?,?)).
-:- rdf_meta(rdf_term_in_graph_html(?,o,?,?)).
+:- rdf_meta(rdf_term_in_graph_html(o,?,?,?)).
 :- rdf_meta(rdf_triple_html(r,r,o,?,?)).
 :- rdf_meta(rdf_triple_html(r,r,o,?,?,?)).
 
@@ -93,11 +92,11 @@ rdf_term_html(_, PlTerm) -->
 
 
 %! rdf_term_in_graph_html(
-%!   +RdfGraph:atom,
-%!   +RdfTerm:or([bnode,iri,literal])
+%!   +RdfTerm:or([bnode,iri,literal]),
+%!   +RdfGraph:atom
 %! )// is det.
 
-rdf_term_in_graph_html(G, T) -->
+rdf_term_in_graph_html(T, G) -->
   rdf_term_html(T),
   rdf_in_graph_html(G).
 

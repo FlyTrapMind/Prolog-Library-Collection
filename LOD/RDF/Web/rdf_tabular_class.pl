@@ -12,7 +12,7 @@
 Generates HTML tables for overviews of RDFS classes.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/03
 */
 
 :- use_module(dcg(dcg_content)).
@@ -25,6 +25,7 @@ Generates HTML tables for overviews of RDFS classes.
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
+:- use_module(rdf_web(rdf_term_html)).
 
 
 
@@ -43,7 +44,7 @@ rdf_tabular_class(Graph, Class1) -->
   },
   rdf_html_table(
     [graph(Graph)],
-    html(['Instances of ',\rdf_term_name(Class2),'.']),
+    html(['Instances of ',\rdf_term_html(Class2),'.']),
     [['Instance']|Instances2]
   ).
 

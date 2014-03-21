@@ -75,9 +75,9 @@ rdf_tabular_term(G, D) -->
 % Other
 rdf_tabular_term(Graph, RdfTerm) -->
   html([
-    h1('Predicate-object pairs'),
+    h2('Predicate-object pairs'),
     \rdf_tabular_triples(RdfTerm, _, _, Graph),
-    h1('Subject-object pairs'),
+    h2('Subject-object pairs'),
     \rdf_tabular_triples(_, _, RdfTerm, Graph)
   ]).
 
