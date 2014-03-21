@@ -23,10 +23,10 @@ info@geodan.nl
 :- use_module(sparql(sparql_ext)).
 :- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(bag).
-:- sparql_register_remote(bag, 'lod.geodan.nl', '/BAG/sparql').
+:- xml_register_namespace(bag, 'http://lod.geodan.nl/BAG/').
+:- sparql_register_remote(bag, 'lod.geodan.nl', default, '/BAG/sparql').
 
-:- xml_register_namespace(bags).
+:- xml_register_namespace(bags, 'http://lod.geodan.nl/BAG-schema/').
 
 
 

@@ -32,7 +32,7 @@ Wordnet access API.
 @version 2012/10.
 */
 
-:- use_module(generics(file_ext)).
+:- use_module(os(file_ext)).
 
 :- dynamic loaded/0.
 

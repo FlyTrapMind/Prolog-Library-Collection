@@ -144,8 +144,8 @@ console_output(Request):-
   serve_nothing(Request).
 
 user:head(dev_style, _Head) -->
-  {project(Project)},
-  html(head(title(Project))).
+  {project(Name, Description)},
+  html(head(title([Name,' - ',Description]))).
 
 history(History, HistoryLength) -->
   html(textarea([cols=60,name=history,rows=HistoryLength], History)).

@@ -34,7 +34,7 @@ Wordnet Web module.
 @version Oct2012
 */
 
-:- use_module(wordnet(wordnet)).
+:- use_module(datasets(wordnet)).
 
 
 
