@@ -111,7 +111,7 @@ load_pgc:-
     [access(write),file_type(database)]
   ),
   use_module(os(file_ext)),
-  (exists_file(File) -> safe_delete_file(File) ; true),
+  safe_delete_file(File),
 
   % Install packages.
   % This requires user interaction on the first load.
