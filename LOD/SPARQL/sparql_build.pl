@@ -2,20 +2,20 @@
   sparql_build,
   [
     sparql_count//5, % +Regime:oneof([owl])
-                       % +DefaultGraph:iri
-                       % +Prefixes:list(atom)
-                       % +Variable:atom
-                       % +BGPs:or([compound,list(compound)])
+                     % +DefaultGraph:iri
+                     % +Prefixes:list(atom)
+                     % +Variable:atom
+                     % +BGPs:or([compound,list(compound)])
     sparql_formulate//10 % ?Regime:oneof([owl])
-                           % ?DefaultGraph:iri
-                           % +Prefixes:list(atom)
-                           % +Mode:oneof([select])
-                           % +Distinct:boolean
-                           % +Variables:list(atom)
-                           % +BGPs:or([compound,list(compound)])
-                           % ?Limit:or([nonneg,oneof([inf])])
-                           % ?Offset:nonneg
-                           % ?Order:pair(oneof([asc]),list(atom))
+                         % ?DefaultGraph:iri
+                         % +Prefixes:list(atom)
+                         % +Mode:oneof([select])
+                         % +Distinct:boolean
+                         % +Variables:list(atom)
+                         % +BGPs:or([compound,list(compound)])
+                         % ?Limit:or([nonneg,oneof([inf])])
+                         % ?Offset:nonneg
+                         % ?Order:pair(oneof([asc]),list(atom))
   ]
 ).
 
@@ -74,21 +74,36 @@ distinct(true) -->
   " DISTINCT".
 distinct(false) --> [].
 
+
+%! filter(+Filter:compound)// is det.
+% The following filters are supported:
+%   * =|regex(+Term, +ReMatch:compound, +ReFlags:list(oneof([case_sensitive])))|=
+%     Succeeds when `Term` matches `ReMatch` under the given `ReFlags`.
+%     The following RE matches are supported:
+%       * =|at_start(+String:atom)|=
+%     The following RE flags are supported:
+%       * `case_insensitive`
+%   * =|strends(+Term, +Match:compound)|=
+%     Succeeds if `Term` is instantiated by a string that ends in `Match`.
+%     The following matching terms are supported:
+%       * =|string(+String:atom)|=
+
 filter(regex(Arg1,Arg2)) -->
   filter(regex(Arg1,Arg2,[])).
 filter(regex(Arg1,Arg2,Flags)) -->
   "REGEX(",
-  term(Arg1),
-  ",",
-  term(Arg2),
-  regex_flags(Flags),
+    term(Arg1),
+    ",",
+    term(Arg2),
+    regex_flags(Flags),
   ")".
 filter(strends(Arg1,Arg2)) -->
   "STRENDS(",
-  term(Arg1),
-  ",",
-  term(Arg2),
+    term(Arg1),
+    ",",
+    term(Arg2),
   ")".
+
 
 inference_regime(VAR) -->
   {var(VAR)}, !,
@@ -96,10 +111,13 @@ inference_regime(VAR) -->
 inference_regime(Regime) -->
   define(inference(Regime)).
 
-iri(IRI) -->
-  "<",
-  atom(IRI),
-  ">".
+
+%! iri(+Iri:iri)// is det.
+% An IRI term.
+
+iri(Iri) -->
+  bracketed(angular, atom(Iri)).
+
 
 limit(VAR) -->
   {var(VAR)}, !,
@@ -134,11 +152,11 @@ order_criterion(ascending) -->
   "ASC".
 
 prefix(Prefix) -->
-  {xml_current_namespace(Prefix, IRI)},
+  {xml_current_namespace(Prefix, Iri)},
   "PREFIX ",
   atom(Prefix),
   ": ",
-  iri(IRI),
+  iri(Iri),
   "\n".
 
 prefixes([]) --> [].
@@ -273,8 +291,8 @@ term(at_start(String)) -->
 term(closure(Term,Closure)) -->
   term(Term),
   term_closure(Closure).
-term(iri(IRI)) --> !,
-  iri(IRI).
+term(iri(Iri)) --> !,
+  iri(Iri).
 term(string(String)) --> !,
   quoted(atom(String)).
 term(var(Variable)) --> !,

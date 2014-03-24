@@ -43,28 +43,28 @@ sparql_find(Remote, Resource, Resource):-
   % @tbd This can be done more efficiently by just looking for
   %      the first triple.
   phrase(
-      sparql_formulate(
-	  _,
-	  _,
-	  [],
-	  select,
-	  true,
-	  [p,o],
-	  [rdf(iri(Resource), var(p), var(o))],
-	  1,
-    _,
-	  _
-      ),
-      Query
+    sparql_formulate(
+      _,
+      _,
+      [],
+      select,
+      true,
+      [p,o],
+      [rdf(iri(Resource), var(p), var(o))],
+      1,
+      _,
+      _
+    ),
+    Query
   ),
   sparql_query(Remote, Query, _VarNames, Results),
   (
     Results == []
   ->
-		  debug(sparql_find, 'No results for resource ~w.', [Resource])
-		    ;
-		    true
-		).
+    debug(sparql_find, 'No results for resource ~w.', [Resource])
+  ;
+    true
+  ).
 sparql_find(Remote, SearchTerm, Resource):-
   phrase(
     sparql_formulate(

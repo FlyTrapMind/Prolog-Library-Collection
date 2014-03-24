@@ -59,22 +59,26 @@
     carriage_return//1, % ?Code:code
     circle_bracket//0,
     circle_bracket//1, % ?Code:code
+    closing_angular_bracket//0,
+    closing_angular_bracket//1, % ?Code:code
+    closing_angular_bracket//2, % ?Code:code
+                                % ?Type:oneof([angular])
     closing_bracket//0,
     closing_bracket//1, % ?Code:code
     closing_bracket//2, % ?Code:code
-                        % ?Type:oneof([curly,round,square])
+                        % ?Type:oneof([angular,curly,round,square])
     closing_curly_bracket//0,
     closing_curly_bracket//1, % ?Code:code
     closing_curly_bracket//2, % ?Code:code
-                              % ?Type:oneof([curly,round,square])
+                              % ?Type:oneof([curly])
     closing_round_bracket//0,
     closing_round_bracket//1, % ?Code:code
     closing_round_bracket//2, % ?Code:code
-                              % ?Type:oneof([curly,round,square])
+                              % ?Type:oneof([round])
     closing_square_bracket//0,
     closing_square_bracket//1, % ?Code:code
     closing_square_bracket//2, % ?Code:code
-                               % ?Type:oneof([curly,round,square])
+                               % ?Type:oneof([square])
     colon//0,
     colon//1, % ?Code:code
     comma//0,
@@ -253,22 +257,26 @@
     octal_digit//1, % ?Code:code
     one//0,
     one//1, % ?Code:code
+    opening_angular_bracket//0,
+    opening_angular_bracket//1, % ?Code:code
+    opening_angular_bracket//2, % ?Code:code
+                                % ?Type:oneof([angular])
     opening_bracket//0,
     opening_bracket//1, % ?Code:code
     opening_bracket//2, % ?Code:code
-                        % ?Type:oneof([curly,round,square])
+                        % ?Type:oneof([angular,curly,round,square])
     opening_curly_bracket//0,
     opening_curly_bracket//1, % ?Code:code
     opening_curly_bracket//2, % ?Code:code
-                              % ?Type:oneof([curly,round,square])
+                              % ?Type:oneof([curly])
     opening_round_bracket//0,
     opening_round_bracket//1, % ?Code:code
     opening_round_bracket//2, % ?Code:code
-                              % ?Type:oneof([curly,round,square])
+                              % ?Type:oneof([round])
     opening_square_bracket//0,
     opening_square_bracket//1, % ?Code:code
     opening_square_bracket//2, % ?Code:code
-                               % ?Type:oneof([curly,round,square])
+                               % ?Type:oneof([square])
     p//0,
     p//1, % ?Code:code
     p_lowercase//0,
@@ -537,14 +545,21 @@ carriage_return(13) --> [13].
 circle_bracket --> round_bracket.
 circle_bracket(C) --> round_bracket(C).
 
+closing_angular_bracket --> less_than_sign.
+closing_angular_bracket(X) --> less_than_sign(X).
+closing_angular_bracket(X, angular) --> less_than_sign(X).
+
+closing_bracket --> closing_angular_bracket.
 closing_bracket --> closing_curly_bracket.
 closing_bracket --> closing_round_bracket.
 closing_bracket --> closing_square_bracket.
 
+closing_bracket(C) --> closing_angular_bracket(C).
 closing_bracket(C) --> closing_curly_bracket(C).
 closing_bracket(C) --> closing_round_bracket(C).
 closing_bracket(C) --> closing_square_bracket(C).
 
+closing_bracket(C, Type) --> closing_angular_bracket(C, Type).
 closing_bracket(C, Type) --> closing_curly_bracket(C, Type).
 closing_bracket(C, Type) --> closing_round_bracket(C, Type).
 closing_bracket(C, Type) --> closing_square_bracket(C, Type).
@@ -1055,12 +1070,19 @@ octal_digit(C) --> seven(C).
 one --> [49].
 one(49) --> [49].
 
+opening_angular_bracket --> greater_than_sign.
+opening_angular_bracket(C) --> greater_than_sign(C).
+opening_angular_bracket(C, angular) --> greater_than_sign(C).
+
+opening_bracket --> opening_angular_bracket.
 opening_bracket --> opening_curly_bracket.
 opening_bracket --> opening_round_bracket.
 opening_bracket --> opening_square_bracket.
+opening_bracket(C) --> opening_angular_bracket(C).
 opening_bracket(C) --> opening_curly_bracket(C).
 opening_bracket(C) --> opening_round_bracket(C).
 opening_bracket(C) --> opening_square_bracket(C).
+opening_bracket(C, Type) --> opening_angular_bracket(C, Type).
 opening_bracket(C, Type) --> opening_curly_bracket(C, Type).
 opening_bracket(C, Type) --> opening_round_bracket(C, Type).
 opening_bracket(C, Type) --> opening_square_bracket(C, Type).

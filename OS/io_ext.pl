@@ -3,6 +3,8 @@
   [
     atom_to_file/2, % +Atom:atom
                     % +File:atom
+    codes_to_file/2, % +Codes:list(code)
+                     % +File:atom
     copy_stream_line/2, % +From:stream
                         % +To:stream
     file_to_atom/2, % +File:atom
@@ -30,7 +32,7 @@
 Predicates that extend the swipl builtin I/O predicates operating on streams.
 
 @author Wouter Beek
-@version 2013/01, 2013/06, 2013/08, 2014/01
+@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03
 */
 
 :- use_module(generics(codes_ext)).

@@ -10,7 +10,7 @@
                     % +HighHex:atom
                     % ?Code:code
     bracketed//1, % :DCG
-    bracketed//2, % +Type:oneof([curly,round,square])
+    bracketed//2, % +Type:oneof([angular,curly,round,square])
                   % :DCG
     capitalize//0,
     ci_code//1, % ?Code:code
@@ -158,7 +158,7 @@ between_hex(LowHex, HighHex, Code) -->
 
 
 %! bracketed(:DCG)// .
-%! bracketed(+Mode:oneof([curly,round,square]), :DCG)// .
+%! bracketed(+Mode:oneof([angular,curly,round,square]), :DCG)// .
 
 bracketed(DCG) -->
   bracketed(round, DCG).

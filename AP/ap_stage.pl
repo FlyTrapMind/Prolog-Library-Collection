@@ -1,8 +1,8 @@
 :- module(
   ap_stage,
   [
-    ap_stages/2 % +AP:iri
-                % +AP_Stages:list(compound)
+    ap_stages/2 % +Ap:iri
+                % +ApStages:list(compound)
   ]
 ).
 
@@ -43,11 +43,11 @@ The following options can be added to AP stages:
 
 
 
-%! ap_stages(+AP:iri, +AP_Stages:list(compound)) is det.
+%! ap_stages(+Ap:iri, +ApStages:list(compound)) is det.
 
-ap_stages(AP, AP_Stages):-
-  create_initial_stage(AP, ApStage),
-  ap_stages0(ApStage, AP_Stages).
+ap_stages(Ap, ApStages):-
+  create_initial_stage(Ap, ApStage),
+  ap_stages0(ApStage, ApStages).
 
 ap_stages0(_, []):- !.
 ap_stages0(AP_Stage1, [Mod:ap_stage(O1,Goal)|T]):-
@@ -71,12 +71,12 @@ ap_stage_begin(O1, ApStage):-
   current_date_time(DateTime),
   debug(ap, '  Starting AP Stage ~w at ~w.', [Name,DateTime]).
 
-ap_catcher(ApStage, Error, AP_Stages):-
+ap_catcher(ApStage, Error, ApStages):-
   rdf_assert_individual(ApStage, ap:'Error', ap),
   rdf_assert_string(ApStage, ap:status, error, ap),
   with_output_to(atom(Atom), write_canonical_catch(Error)),
   rdf_assert_string(ApStage, ap:error, Atom, ap),
-  never_reached(ApStage, AP_Stages).
+  never_reached(ApStage, ApStages).
 
 never_reached(_, []):- !.
 never_reached(AP_Stage1, [_:ap_stage(O1,_)|T]):-
@@ -107,8 +107,8 @@ never_reached(AP_Stage1, [_:ap_stage(O1,_)|T]):-
 :- meta_predicate(ap_stage(+,+,:)).
 ap_stage(O1, ApStage, Goal):-
   is_initial_stage(ApStage), !,
-  once(rdf_collection_member(ApStage, AP, ap)),
-  ap_directory(AP, write, input, ToDir),
+  once(rdf_collection_member(ApStage, Ap, ap)),
+  ap_directory(Ap, write, input, ToDir),
   ap_stage_dirs(O1, ApStage, _NoFromDir, ToDir, Goal).
 ap_stage(O1, ApStage, Goal):-
   ap_stage_from_directory(O1, ApStage, FromDir),
@@ -195,8 +195,8 @@ ap_stage_from_arg(_, _, FromDir, FromDir):-
 ap_stage_from_directory(O1, ApStage, FromDir):-
   option(from(FromDirName,_,_), O1),
   nonvar(FromDirName), !,
-  rdf_collection_member(ApStage, AP, ap),
-  ap_directory(AP, write, FromDirName, FromDir).
+  rdf_collection_member(ApStage, Ap, ap),
+  ap_directory(Ap, write, FromDirName, FromDir).
 ap_stage_from_directory(_, ApStage, StageDir):-
   ap_stage_directory(ApStage, write, StageDir).
 
@@ -251,8 +251,8 @@ ap_stage_to_directory(_, ApStage, ToDir):-
   rdf_datatype(ApStage, ap:stage, StageNum1, xsd:integer, ap),
   StageNum2 is StageNum1 + 1,
   ap_stage_directory_name(StageNum2, StageName),
-  rdf_collection_member(ApStage, AP, ap),
-  ap_directory(AP, write, StageName, ToDir).
+  rdf_collection_member(ApStage, Ap, ap),
+  ap_directory(Ap, write, StageName, ToDir).
 
 
 :- meta_predicate(execute_goal(+,:,+)).
