@@ -345,7 +345,7 @@ file_name_type(Name, Type, Path):-
   nonvar(Path),
   file_name_extension(Name, Ext, Path),
   Ext \== '',
-  user:prolog_file_type(Ext, Type).
+  user:prolog_file_type(Ext, Type), !.
 file_name_type(_, Type, _):-
   % Type is uninstantiated,
   % make sure it stays that way.

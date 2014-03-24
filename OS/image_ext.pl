@@ -1,5 +1,5 @@
 :- module(
-  image_file,
+  image_ext,
   [
     image_dimensions/3 % +File:atom
                        % -Width:float
@@ -7,7 +7,7 @@
   ]
 ).
 
-/** <module> Image file
+/** <module> Image extensions
 
 Support for image files.
 

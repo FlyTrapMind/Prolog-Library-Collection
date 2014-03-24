@@ -34,7 +34,7 @@ Support for the HTML image tag.
 :- use_module(library(option)).
 :- use_module(math(dimension)).
 :- use_module(os(file_ext)).
-:- use_module(os(image_file)).
+:- use_module(os(image_ext)).
 
 % Register the supported image file types.
 % These are shared with module RDF_DATATYPE.
@@ -65,19 +65,19 @@ html_image_thumbnail(DivO1, Alt, Width2, Height2, File) -->
     absolute_file_name(data(.), DataDir, [access(read),file_type(directory)]),
     relative_file_path(File, DataDir, RelativeFile),
     http_absolute_location(img(RelativeFile), RelativeUri, []),
-gtrace,
     absolute_file_name(img(RelativeFile), AbsoluteFile, [access(read)]),
     image_dimensions(AbsoluteFile, Width1, Height1),
     (
       var(Width2),
       var(Height2)
     ->
-      Width3 = Width2,
-      Height3 = Height2
+      Width3 = Width1,
+      Height3 = Height1
     ;
       dimension_scale([Width1,Height1], [Width2,Height2], [Width3,Height3])
     ),
-    merge_options([class=image_thumbnail], DivO1, DivO2)
+    format(atom(Style), 'height: ~a; width: ~a;', [Height2,Width2]),
+    merge_options([class=image_thumbnail,style=Style], DivO1, DivO2)
   },
   % Make the image clickable, linking to the image file.
   html(
