@@ -29,7 +29,7 @@ Support predicates for floating point values.
 
 
 float_div(X, Y, Z):-
-  Z is floor(X / Y).
+  Z is X / Y.
 
 
 float_fractional_part2(N, N_F):-

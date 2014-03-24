@@ -57,7 +57,7 @@ p {
 
 
 
-/* Table */
+/* TABLE */
 
 caption {
   font-weight: bold;
@@ -70,52 +70,5 @@ table {
 td:hover {
   background-color: black;
   color: white;
-}
-
-
-
-/* Images */
-
-*.image_description {
-  font-weight: normal;
-  margin: 2px;
-  text-align: center;
-  width: 220px;
-}
-
-*.image_thumbnail {
-  height: 180px;
-  max-width: 220px;
-  width: auto;
-}
-*.image_thumbnail {
-  height: auto;
-  max-height: 180px;
-  width: 220px;
-}
-
-div.image {
-  display: inline-block;
-  height: auto;
-  margin: 2px;
-  text-align: center;
-  width: auto;
-}
-
-div.image a:hover img {
-  border: 1px solid #0000ff;
-}
-
-div.image img {
-  border: 1px solid #ffffff;
-  display: inline;
-  margin: 6px;
-}
-
-*.image_group {
-  display: block;
-  height: auto;
-  margin: 6px;
-  width: auto;
 }
 

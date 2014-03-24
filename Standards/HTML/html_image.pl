@@ -1,12 +1,21 @@
 :- module(
   html_image,
   [
-    html_image//2, % +IMG_Options:list(nvpair)
-                   % +File:atom
-    html_image//4 % +DIV_Options:list(nvpair)
-                  % +Description:atom
-                  % +IMG_Options:list(nvpair)
-                  % +File:atom
+    html_image_thumbnail//5, % +DivOptions:list(nvpair)
+                             % +Alt:atom
+                             % +Width:float
+                             % +Height:float
+                             % +File:atom
+    html_image_thumbnail_box//5, % +DivOptions:list(nvpair)
+                                 % +Description:atom
+                                 % +Width:float
+                                 % +Height:float
+                                 % +File:atom
+    html_image_thumbnail_box_grid//5 % +Columns:positive_integer
+                                     % +Rows:positive_integer
+                                     % +Width:float
+                                     % +Height:float
+                                     % +Pairs:list(pair)
   ]
 ).
 
@@ -15,14 +24,17 @@
 Support for the HTML image tag.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/10
+@version 2012/09-2013/06, 2013/10, 2014/03
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
+:- use_module(library(option)).
+:- use_module(math(dimension)).
 :- use_module(os(file_ext)).
+:- use_module(os(image_file)).
 
 % Register the supported image file types.
 % These are shared with module RDF_DATATYPE.
@@ -37,56 +49,141 @@ Support for the HTML image tag.
 
 
 
-%! html_image(+IMG_Options:list(nvpair), +File:atom) is det.
-% @see Wrapper for html_image//4.
+%! html_image_thumbnail(
+%!   +DivOptions:list(nvpair),
+%!   +Alt:atom,
+%!   +Width:float,
+%!   +Height:float,
+%!   +File:atom
+%! )// is det.
 
-html_image(IMG_O1, File) -->
+html_image_thumbnail(DivO1, Alt, Width2, Height2, File) -->
   {
     % Make sure the file has a supported image file type.
     file_type(Type, File),
     user:image_file_type(Type),
-    http_absolute_location(img(File), RelativeURI, [])
+    absolute_file_name(data(.), DataDir, [access(read),file_type(directory)]),
+    relative_file_path(File, DataDir, RelativeFile),
+    http_absolute_location(img(RelativeFile), RelativeUri, []),
+gtrace,
+    absolute_file_name(img(RelativeFile), AbsoluteFile, [access(read)]),
+    image_dimensions(AbsoluteFile, Width1, Height1),
+    (
+      var(Width2),
+      var(Height2)
+    ->
+      Width3 = Width2,
+      Height3 = Height2
+    ;
+      dimension_scale([Width1,Height1], [Width2,Height2], [Width3,Height3])
+    ),
+    merge_options([class=image_thumbnail], DivO1, DivO2)
   },
-
+  % Make the image clickable, linking to the image file.
   html(
-    % Make the image clickable, linking to the image file.
-    a(
-      [href=RelativeURI,target='_blank'],
-      % The image itself, using the description as alternative text.
-      img([class=image_thumbnail,src=RelativeURI|IMG_O1], [])
+    div(
+      DivO2,
+      a([href=RelativeUri,target='_blank'],
+        img([alt=Alt,height=Height3,src=RelativeUri,width=Width3], [])
+      )
     )
   ).
 
-%! html_image(
-%!   +DIV_Options:list(nvpair),
+
+%! html_image_thumbnail_box(
+%!   +DivOptions:list(nvpair),
 %!   +Description:atom,
-%!   +IMG_Options:list(nvpair),
+%!   +Width:float,
+%!   +Height:float,
 %!   +File:atom
 %! ) is det.
-% Constructs an IMG element.
-%
-% @arg DIV_Options A list of name-value pairs that apply to
-%        the =div= element.
-% @arg Description An atomic description of the image.
-% @arg IMG_Options A list of name-value pairs that apply to
-%        the image element.
-% @arg File The atomic name of the image file.
+% Generates an HTML thumbnail box for an image.
 
-html_image(DIV_O1, Description, IMG_O1, File) -->
-  % If no alternative text has been set, then we use the description text.
-  {
-    default_option(IMG_O1, alt, Description, _Alt, IMG_O2),
-    merge_options(DIV_O1, [class(image)], DIV_O2)
-  },
+html_image_thumbnail_box(DivO1, Description, Width, Height, File) -->
+  % Construe the DIV containing the image, the link, and the description.
   html(
-    % Construe the DIV containing the image, the link, and the description.
+    div(class=image_thumbnail_box, [
+      \html_image_thumbnail(DivO1, Description, Width, Height, File),
+      \html_image_thumbnail_caption(Description)
+    ])
+  ).
+
+
+%! html_image_thumbnail_box_grid(
+%!   +Columns:positive_integer,
+%!   +Rows:positive_integer,
+%!   +Width:float,
+%!   +Height:float,
+%!   +Pairs:list(pair)
+%! )// is det.
+% Generates an HTML grid of boxes containing image thumbnails.
+
+html_image_thumbnail_box_grid(Columns, Rows, Width, Height, Pairs) -->
+  html(
     div(
-      DIV_O2,
-      [
-        \html_image(IMG_O2, File),
-        % The DIV containing the image description.
-        div(class=image_description,Description)
-      ]
+      class=image_thumbnail_box_grid,
+      \html_image_thumbnail_box_rows(Columns, Rows, Width, Height, Pairs)
     )
   ).
+
+
+%! html_image_thumbnail_box_row(
+%!   +Columns:positive_integer,
+%!   +Width:float,
+%!   +Height:float,
+%!   +Pairs1:list(pair)
+%!   -Pairs2:list(pair)
+%! )// is det.
+% Generates an HTML row of boxes containing image thumbnails.
+% The rows are part of a grid.
+
+% No more pairs: the last row may not have the full length.
+html_image_thumbnail_box_row(_, _, _, [], []) --> !.
+% No more columns: the row is full, return the remaining pairs,
+% for use in any further rows.
+html_image_thumbnail_box_row(0, _, _, Pairs, Pairs) --> !.
+html_image_thumbnail_box_row(
+  Columns1,
+  Width,
+  Height,
+  [Description-File|Pairs1],
+  Pairs2
+) -->
+  {Columns2 is Columns1 - 1},
+  html([
+    \html_image_thumbnail_box([], Description, Width, Height, File),
+    \html_image_thumbnail_box_row(Columns2, Width, Height, Pairs1, Pairs2)
+  ]).
+
+
+%! html_image_thumbnail_box_rows(
+%!   +Columns:positive_integer,
+%!   +Rows:positive_integer,
+%!   +Width:float,
+%!   +Height:float,
+%!   +Pairs:list(pair)
+%! )// is det.
+% Generates HTML rows of boxes containing image thumbnails.
+% The rows are part of a grid.
+
+% No more pairs: no further rows will be generated.
+html_image_thumbnail_box_rows(_, _, _, _, []) --> !.
+% No more rows. The remaining pairs are discarded.
+html_image_thumbnail_box_rows(_, 0, _, _, _) --> !.
+html_image_thumbnail_box_rows(Columns, Rows1, Width, Height, Pairs1) -->
+  {Rows2 is Rows1 - 1},
+  html([
+    div(class=image_row,
+      \html_image_thumbnail_box_row(Columns, Width, Height, Pairs1, Pairs2)
+    ),
+    \html_image_thumbnail_box_rows(Columns, Rows2, Width, Height, Pairs2)
+  ]).
+
+
+%! html_image_thumbnail_caption(+Caption:atom)// is det.
+% Generates an HTML image caption.
+
+html_image_thumbnail_caption(Caption) -->
+  % The DIV containing the image description.
+  html(div(class=image_caption, Caption)).
 

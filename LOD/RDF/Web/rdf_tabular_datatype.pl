@@ -38,7 +38,6 @@ datatype IRIs.
 rdf_tabular_datatype(G, D) -->
   {
     rdf_equal(rdf:langString, D), !,
-gtrace,
     setoff(
       N-[LexicalForm,LangTag],
       (

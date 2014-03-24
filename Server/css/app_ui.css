@@ -121,10 +121,7 @@ aside {
 
 /* The content div is placed as a wrapper around all the docs */
 .content {
-  margin: 0 auto;
-  padding: 0 2em;
-  max-width: 800px;
-  margin-bottom: 50px;
+  margin: 2.5% 2.5% 10% 5%;
 }
   .content p {
     line-height: 1.6em;
@@ -499,47 +496,5 @@ pre .attribute, pre .variable, pre .support {
 pre .string, pre .support.value  {
   font-weight: normal;
   color: #3b8bba; /* skinbuilder block-mine-text-low with #1f8dd6 as primary */
-}
-
-
-
-/* ERROR MESSAGES */
-
-.action {
-  font-weight: bold;
-}
-
-.error, .fail {
-  background-color: LightCoral;
-}
-
-.never_reached {
-  background-color: Orange;
-}
-
-.skip {
-  background-color: Yellow;
-}
-
-.succeed {
-  background-color: LightGreen;
-}
-.succeed caption {
-  background-color: black;
-  color: #e0e0e0;
-  font-weight: bold;
-}
-.succeed th {
-  background-color: #e0e0e0;
-  border-bottom: 1px solid #cbcbcb;/*  inner column border */
-}
-
-.error_kind {
-  color: Maroon;
-  font-weight: bold;
-}
-
-.exit_status_code, .file, .max_errors, .mime, .program {
-  font-family: monospace;
 }
 

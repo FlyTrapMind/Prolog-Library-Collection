@@ -72,8 +72,9 @@ http_dateTime(DateTime):-
 %     Never give up upon receiving an HTTP 5xx status code.
 %     Default: `false`.
 %   * =|nocatch(+DoNotCatchExceptions:boolean)|=
-%     When set to `true` (default `false`) exceptions are not caught
+%     When set to `true` exceptions are not caught
 %     and no automated retrying occurs.
+%     Default: `false`.
 % Other options are given to http_open/3.
 
 http_goal(URL, O1, Goal):-
