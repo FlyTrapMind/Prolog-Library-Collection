@@ -32,3 +32,4 @@ dcg_peek(DCG), DCG -->
 dcg_peek(Length, Peek), Peek -->
   {length(Peek, Length)},
   Peek.
+

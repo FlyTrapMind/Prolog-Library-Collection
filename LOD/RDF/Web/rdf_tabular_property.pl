@@ -23,6 +23,7 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
@@ -46,6 +47,9 @@ rdf_tabular_property(G, P) -->
   
   % For literal ranges we also display the values that occur.
   rdf_tabular_predicate_literals(G, P),
+  
+  % Subject-object pairs.
+  rdf_tabular_triples(_, P, _, G),
   
   % Triples that describe the property, if any.
   rdf_tabular_triples(P, _, _, G).
@@ -97,24 +101,32 @@ rdf_tabular_predicate_literals(G, P) -->
       )),
       Rows1
     ),
-    list_truncate(Rows1, 100, Rows2)
+    length(Rows1, L),
+    list_truncate(Rows1, 50, Rows2)
   },
-  rdf_html_table(
-    [graph(G),header_row(true)],
-    html([
-      'Values that occur for property ',
-      \rdf_term_in_graph_html(P, G),
-      '.'
-    ]),
-    [['Literal value']|Rows2]
-  ).
+  html([
+    p([\rdf_term_html(P, G), ' has ',pl_term_html(L), ' unique values.']),
+    \rdf_html_table(
+      [graph(G),header_row(true)],
+      html([
+        'Values that occur for property ',
+        \rdf_term_in_graph_html(P, G),
+        '.'
+      ]),
+      [['Literal value']|Rows2]
+    )
+  ]).
 
 
 rdf_tabular_properties(G) -->
   {
     setoff(
       Predicate,
-      rdf_predicate(Predicate, G),
+      (
+        rdf_predicate(Predicate, G),
+        % Exclude RDF container membership properties.
+        \+ rdf_container_membership_property(Predicate, _)
+      ),
       Predicates
     ),
     findall(

@@ -135,6 +135,7 @@ peek_atom(Stream, Atom):-
   length(Codes, Length),
   peek_length(Stream, Length, Codes).
 
+
 %! peek_length(
 %!   +Stream:stream,
 %!   +Length:integer,

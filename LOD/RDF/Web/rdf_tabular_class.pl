@@ -18,6 +18,7 @@ Generates HTML tables for overviews of RDFS classes.
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(html(pl_term_html)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -40,13 +41,22 @@ rdf_tabular_class(G, Class1) -->
       ),
       Instances1
     ),
+    length(Instances1, L),
     list_truncate(Instances1, 50, Instances2)
   },
-  rdf_html_table(
-    [graph(G),header_row(true)],
-    html(['Instances of ',\rdf_term_in_graph_html(Class2, G),'.']),
-    [['Instance']|Instances2]
-  ).
+  html([
+    p([
+      \rdf_term_html(Class2, G),
+      ' is an RDF class with ',
+      \pl_term_html(L),
+      ' instances.'
+    ]),
+    \rdf_html_table(
+      [graph(G),header_row(true)],
+      html(['Instances of ',\rdf_term_in_graph_html(Class2, G),'.']),
+      [['Instance']|Instances2]
+    )
+  ]).
 
 
 rdf_tabular_classes(G) -->

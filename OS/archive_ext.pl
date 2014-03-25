@@ -88,11 +88,12 @@ extract_archive(FromFile1, Conversions):-
   rename_file(FromFile1, FromFile2),
   extract_archive(FromFile2, Conversions).
 :- db_add_novel(user:prolog_file_type(tgz, archive)).
-extract_archive(FromFile, [Conversion|Conversions]):-
+extract_archive(FromFile, L):-
   file_name_extension(Base, Ext, FromFile),
   prolog_file_type(Ext, archive), !,
-  extract_archive(Ext, FromFile, Conversion),
-  extract_archive(Base, Conversions).
+  extract_archive(Ext, FromFile, H),
+  extract_archive(Base, T),
+  L = [H|T].
 extract_archive(_, []).
 
 

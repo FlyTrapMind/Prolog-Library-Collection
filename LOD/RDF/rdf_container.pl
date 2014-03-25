@@ -28,7 +28,7 @@
   ]
 ).
 
-/** <module> RDF_CONTAINER
+/** <module> RDF container
 
 Support for RDF containers (sequence, bag, and alternatives).
 
@@ -47,20 +47,28 @@ Support for RDF containers (sequence, bag, and alternatives).
 
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
+:- rdf_meta(rdf_alt(r,-,?)).
+:- rdf_meta(rdf_assert_collection_member(r,r,+)).
+:- rdf_meta(rdf_bag(r,-,?)).
+:- rdf_meta(rdf_collection(r,-,?)).
+:- rdf_meta(rdf_collection0(r,-,?)).
+:- rdf_meta(rdf_collection_member(r,r,?)).
+:- rdf_meta(rdf_collection_nth(?,r,r,?)).
+:- rdf_meta(rdf_container_membership_property(r,?)).
+:- rdf_meta(rdf_seq(r,-,?)).
+
 
 
 %! rdf_alt(?Alt:uri, -Contents:list(uri), ?Graph:atom) is nondet.
 % Alternative collections.
 % No duplicates and unordered.
 
-:- rdf_meta(rdf_alt(r,-,?)).
 rdf_alt(Alt, Contents, G):-
   rdfs_individual_of(Alt, rdf:'Alt'),
   rdf_subject(Alt, G),
   rdf_collection_contents(Alt, Contents, G).
 
 
-:- rdf_meta(rdf_assert_collection_member(r,r,+)).
 rdf_assert_collection_member(Collection, Member, Graph):-
   rdf_collection(Collection, Contents, Graph),
   length(Contents, Length),
@@ -72,27 +80,24 @@ rdf_assert_collection_member(Collection, Member, Graph):-
 
 %! rdf_bag(+Bag:uri, -Contents:list(uri), +Graph:atom) is nondet.
 % Returns bags and their contents in the given graph.
-% Unordered & duplicated allowed.
+% Unordered & duplicates allowed.
 %
 % @arg Bag An RDF bag.
 % @arg Contents A list of resources.
 % @arg Graph The atomic name of a graph.
 
-:- rdf_meta(rdf_bag(r,-,?)).
 rdf_bag(Bag, Contents, G):-
   rdfs_individual_of(Bag, rdf:'Bag'),
   rdf_subject(Bag, G),
   rdf_collection_contents(Bag, Contents, G).
 
 
-:- rdf_meta(rdf_collection(r,-,?)).
 rdf_collection(Collection, Contents, Graph):-
   nonvar(Collection), !,
   rdf_collection0(Collection, Contents, Graph), !.
 rdf_collection(Collection, Contents, Graph):-
   rdf_collection0(Collection, Contents, Graph).
 
-:- rdf_meta(rdf_collection0(r,-,?)).
 rdf_collection0(Collection, Contents, G):-
   rdf_alt(Collection, Contents, G).
 rdf_collection0(Collection, Contents, G):-
@@ -126,7 +131,6 @@ rdf_collection_contents(Collection, Contents, G):-
 %!   ?Graph
 %! ) is nondet.
 
-:- rdf_meta(rdf_collection_member(r,r,?)).
 rdf_collection_member(Member, Collection, Graph):-
   rdf_collection_nth(_, Collection, Member, Graph).
 
@@ -138,7 +142,6 @@ rdf_collection_member(Member, Collection, Graph):-
 %!   ?Graph:atom
 %! ) is nondet.
 
-:- rdf_meta(rdf_collection_nth(?,r,r,?)).
 rdf_collection_nth(I, Collection, Member, Graph):-
   maplist(var, [Collection,Member]), !,
   rdf_container_membership_property(P, I),
@@ -162,7 +165,6 @@ rdf_collection_nth(I, Collection, Member, Graph):-
 %! ) is nondet.
 % Succeeds if =Predicate= is a container membership property with =Index=.
 
-:- rdf_meta(rdf_container_membership_property(r,?)).
 % (+,?)
 rdf_container_membership_property(P, Index):-
   must_be(nonvar, P), !,
@@ -189,7 +191,6 @@ rdf_container_membership_property(P, Index):-
 %! ) is nondet.
 % Ordered.
 
-:- rdf_meta(rdf_seq(r,-,?)).
 rdf_seq(Seq, Contents, G):-
   rdfs_individual_of(Seq, rdf:'Seq'),
   rdf_subject(Seq, G),

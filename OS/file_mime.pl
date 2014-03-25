@@ -1,8 +1,9 @@
 :- module(
   file_mime,
   [
-    file_mime/2 % +File:atom
-                % -MIME:atom
+    file_mime/2, % +File:atom
+                 % -MIME:atom
+    xml_declaration//1 % ?Version:float
   ]
 ).
 
@@ -82,7 +83,7 @@ xml_declaration(Version) -->
   atom('<?'), ci_string(`XML`), ascii_whites,
   (xml_version(Version), ascii_whites ; ""),
   (xml_encoding, ascii_whites ; ""),
-  atom('?>'), ascii_whites.
+  atom('?>'), ascii_whites, !.
 
 
 xml_doctype('application/rdf+xml') -->

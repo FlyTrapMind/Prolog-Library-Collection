@@ -109,15 +109,44 @@ rdf_tabular(_Request):-
 %!   ?Graph:atom
 %! )// is det.
 
-rdf_tabular_triples(S, P, O, Graph) -->
+rdf_tabular_triples(S, P, O, G) -->
   {
     setoff(
-      [S,P,O,Graph],
-      rdf(S, P, O, Graph),
+      [S,P,O,G],
+      rdf(S, P, O, G),
       Rows1
     ),
     % Restrict the number of rows in the table arbitrarily.
-    list_truncate(Rows1, 1000, Rows2)
+    list_truncate(Rows1, 50, Rows2)
   },
-  rdf_html_table([header_row(spog)], html('RDF triples'), Rows2).
+  rdf_html_table(
+    [graph(G),header_row(spog)],
+    rdf_tabular_triples_title(S, P, O, G),
+    Rows2
+  ).
+
+
+rdf_tabular_triples_title(S, P, O, G) -->
+  {nonvar(S), var(P), var(O), nonvar(G)}, !,
+  html([
+    'RDF triples in which ',
+    \rdf_term_html(S, G),
+    ' occurs in the subject position.'
+  ]).
+rdf_tabular_triples_title(S, P, O, G) -->
+  {var(S), nonvar(P), var(O), nonvar(G)},
+  html([
+    'RDF triples in which ',
+    \rdf_term_html(P, G),
+    ' occurs in the predicate position.'
+  ]).
+rdf_tabular_triples_title(S, P, O, G) -->
+  {var(S), var(P), nonvar(O), nonvar(G)},
+  html([
+    'RDF triples in which ',
+    \rdf_term_html(O, G),
+    ' occurs in the object position.'
+  ]).
+rdf_tabular_triples_title(_, _, _, _) -->
+  html('RDF triples').
 

@@ -90,6 +90,7 @@ log_web(Max) -->
     )
   ).
 
+/*
 %prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
 %  web_error(Exception, Markup),
 %  push(status_pane, html, app_style, Markup), !.
@@ -115,6 +116,7 @@ prolog:debug_print_hook(Type, Format, Args):-
   append_to_log(Type, Format, Args),
 
   email(Type, Format, Args).
+*/
 
 email(email, Format, Args):- !,
   format(codes(Body), Format, Args),
