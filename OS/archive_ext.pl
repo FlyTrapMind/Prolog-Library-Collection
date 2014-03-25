@@ -8,6 +8,8 @@
     extract_archive/1, % +FromFile:atom
     extract_archive/2, % +FromFile:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
+    extract_directory/2, % +Options:list(nvpair)
+                         % +Directory:atom
     is_archive/1 % +File:atom
   ]
 ).
@@ -16,13 +18,24 @@
 
 Extensions to the support for archived files.
 
+There are two groups of predicates here:
+  1. Those that directly call GNU tools:
+     - create_archive/2
+     - create_tarball/2
+     - extract_archive/[1,2]
+     - is_archive/1
+  2. Those that use =|library(archive)|= and `libarchive`:
+     - extract_directory/2
+
 @author Wouter Beek
 @version 2013/12-2014/03
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(library(archive)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
+:- use_module(os(dir_ext)).
 :- use_module(os(mime_type)).
 
 % application/x-bzip2
@@ -120,6 +133,44 @@ extract_archive(Extension, File, unzipped):-
   directory_file_path(Directory, _, File),
   process_create(path(unzip), [file(File),'-fo','-d',file(Directory)], []),
   delete_file(File).
+
+
+%! extract_directory(+Options:list(nvpair), +Directory:atom) is det.
+% Extracts all archives in the given directory.
+% Extract files recursively, e.g. first `gunzip`, then `tar`.
+%
+% Options are passed to directory_files/3.
+% Important are options =|file_types(+FileTypes:list(atom))|=,
+% for only extracting files of the given types,
+% and =|recursive(+Recursive:boolean)|=,
+% for the inclusion of archives that reside in subdirectories.
+
+extract_directory(O1, Dir):-
+  directory_files(O1, Dir, Files),
+  extract_directory(O1, Dir, Files).
+
+extract_directory(_, _, []):- !.
+extract_directory(O1, Dir, PreviouslyExtractedFiles):-
+  PreviouslyExtractedFiles \== [], !,
+  directory_files(O1, Dir, Files),
+  % Leaves files that are candidates for further extraction.
+  include(extract_file, Files, ExtractedFiles),
+  extract_directory(O1, Dir, ExtractedFiles).
+
+
+%! extract_file(+File:atom) is semidet.
+% Succeeds if the given file can be extracted.
+
+extract_file(File):-
+  file_directory_name(File, Dir),
+  catch(
+    (
+      archive_extract(File, Dir, []),
+      delete_file(File)
+    ),
+    error(archive_error(25, _UnrecognizedArchiveFormat), _),
+    fail
+  ).
 
 
 %! is_archive(+File:atom) is semidet.

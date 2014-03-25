@@ -10,6 +10,8 @@
     xml_name//1, % ?Name:atom
     xml_namespaced_name//2, % :DCG_Namespace
                             % :DCG_Name
+    xml_space//0,
+    xml_space//1, % ?Code:code
     xml_yes_no//2 % -Tree:compound
                   % ?Boolean:boolean
   ]
@@ -34,6 +36,7 @@ DCG rules for XML datatypes.
 
 xml_boolean(xml_boolean(false), false) --> "false".
 xml_boolean(xml_boolean(true),  true) --> "true".
+
 
 %! xml_char_10(?Char:between(9,1114111))//
 % An **XML Character** is an atomic unit of text specified by ISO/IEC 10646.
@@ -89,13 +92,13 @@ xml_char_10(X) -->
 % Space, punctuation, numbers, letters
 % =|#x20-#xD7FF|=
 xml_char_10(X) -->
-  between(20, 55295, X).
+  [X], between(20, 55295, X).
 % =|#xE000-#xFFFD|=
 xml_char_10(X) -->
-  between(57344, 65533, X).
+  [X], between(57344, 65533, X).
 % =|#x10000-#x10FFFF|=
 xml_char_10(X) -->
-  between(65536, 1114111, X).
+  [X], between(65536, 1114111, X).
 
 
 %! xml_char_11(?Code:between(1,1114111))// is nondet.
@@ -111,13 +114,13 @@ xml_char_10(X) -->
 
 % =|#x1-#xD7FF|=
 xml_char_11(X) -->
-  between(1, 55295, X).
+  [X], between(1, 55295, X).
 % =|#xE000-#xFFFD|=
 xml_char_11(X) -->
-  between(57344, 65533, X).
+  [X], between(57344, 65533, X).
 % =|#x10000-#x10FFFF|=
 xml_char_11(X) -->
-  between(65536, 1114111, X).
+  [X], between(65536, 1114111, X).
 
 
 xml_chars_10([H|T]) -->
@@ -174,6 +177,7 @@ xml_name_([H1,H2]) -->
 xml_name_([H]) -->
   xml_name_start_char(H).
 
+
 %! xml_name_char(?Char:code)//
 % ~~~{.bnf}
 % NameChar ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] |
@@ -187,7 +191,7 @@ xml_name_char(C) --> decimal_digit(C).
 % #xB7
 xml_name_char(C) --> middle_dot(C).
 % #x0300-#x036F
-xml_name_char(C) --> {between(768, 879, C)}.
+xml_name_char(C) --> [C], {between(768, 879, C)}.
 % #x203F
 xml_name_char(C) --> undertie(C).
 % #x2040
@@ -197,6 +201,7 @@ xml_name_chars([H|T]) -->
   xml_name_char(H),
   xml_name_chars(T).
 xml_name_chars([]) --> [].
+
 
 %! xml_name_start_char(?Code:code)//
 % ~~~{.bnf}
@@ -211,30 +216,31 @@ xml_name_start_char(C) --> colon(C).
 xml_name_start_char(C) --> ascii_letter(C).
 xml_name_start_char(C) --> underscore(C).
 % #xC0-#xD6
-xml_name_start_char(C) --> {between(192, 214, C)}.
+xml_name_start_char(C) --> [C], {between(192, 214, C)}.
 % #xD8-#xF6
-xml_name_start_char(C) --> {between(216, 246, C)}.
+xml_name_start_char(C) --> [C], {between(216, 246, C)}.
 % #xF8-#x2FF
-xml_name_start_char(C) --> {between(248, 767, C)}.
+xml_name_start_char(C) --> [C], {between(248, 767, C)}.
 % #x370-#x37D
-xml_name_start_char(C) --> {between(880, 893, C)}.
+xml_name_start_char(C) --> [C], {between(880, 893, C)}.
 % #x37F-#x1FFF
-xml_name_start_char(C) --> {between(895, 8191, C)}.
+xml_name_start_char(C) --> [C], {between(895, 8191, C)}.
 % #x200C-#x200D
 xml_name_start_char(C) --> zero_width_non_joiner(C).
 xml_name_start_char(C) --> zero_width_joiner(C).
 % #x2070-#x218F
-xml_name_start_char(C) --> {between(8304, 8591, C)}.
+xml_name_start_char(C) --> [C], {between(8304, 8591, C)}.
 % #x2C00-#x2FEF
-xml_name_start_char(C) --> {between(11264, 12271, C)}.
+xml_name_start_char(C) --> [C], {between(11264, 12271, C)}.
 % #x3001-#xD7FF
-xml_name_start_char(C) --> {between(12289, 55295, C)}.
+xml_name_start_char(C) --> [C], {between(12289, 55295, C)}.
 % #xF900-#xFDCF
-xml_name_start_char(C) --> {between(63744, 64975, C)}.
+xml_name_start_char(C) --> [C], {between(63744, 64975, C)}.
 % #xFDF0-#xFFFD
-xml_name_start_char(C) --> {between(65008, 65533, C)}.
+xml_name_start_char(C) --> [C], {between(65008, 65533, C)}.
 % #x10000-#xEFFFF
-xml_name_start_char(C) --> {between(65536, 983039, C)}.
+xml_name_start_char(C) --> [C], {between(65536, 983039, C)}.
+
 
 %! xml_namespaced_name(:DCG_Namespace, :DCG_Name)//
 
@@ -245,6 +251,7 @@ xml_namespaced_name(DCG_Namespace, DCG_Name) -->
   DCG_Namespace,
   colon,
   DCG_Name.
+
 
 %! xml_restricted_char(?Char:code)//
 % ~~~{.bnf}
@@ -274,7 +281,9 @@ xml_restricted_char(C) -->
   % Not ..
   {\+ between(134, 159, C)}.
 
-%! xml_space
+
+%! xml_space// .
+%! xml_space(?Code:code)// .
 % White space.
 %
 % ~~~{.bnf}
@@ -289,24 +298,13 @@ xml_restricted_char(C) -->
 % or replaced by line_feed// (i.e., `#xA`) characters before any other
 % processing is done.
 
-xml_space(Space) -->
-  {nonvar(Space)}, !,
-  {atom_codes(Space, Codes)},
-  xml_space_(Codes).
-xml_space(Space) -->
-  xml_space_(Codes),
-  {atom_codes(Space, Codes)}.
+xml_space -->
+  xml_space(_).
 
-xml_space_([H|T]) -->
-  xml_space__(H),
-  xml_space_(T).
-xml_space_([H]) -->
-  xml_space__(H).
-
-xml_space__(C) --> carriage_return(C).
-xml_space__(C) --> horizontal_tab(C).
-xml_space__(C) --> line_feed(C).
-xml_space__(C) --> space(C).
+xml_space(C) --> carriage_return(C).
+xml_space(C) --> horizontal_tab(C).
+xml_space(C) --> line_feed(C).
+xml_space(C) --> space(C).
 
 xml_yes_no(xml_yes_no(no), false) --> "no".
 xml_yes_no(xml_yes_no(yes), true) --> "yes".
