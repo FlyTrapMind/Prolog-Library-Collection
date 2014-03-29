@@ -27,6 +27,7 @@ http:location(pldoc, root(help), [priority(10)]).
 % We only load this in debug mode,
 % since this may give information to hackers.
 :- use_module(library(http/http_error)).
+:- use_module(library(http/http_path)).
 
 :- use_module(library(lists)).
 
@@ -60,16 +61,16 @@ http:location(pldoc, root(help), [priority(10)]).
 pl_debug:-
   % Start the SWI-Prolog thread monitor.
   %%%%prolog_ide(thread_monitor),
-  
+
   % Before doing much else, we start the documentation server that
   % generates Web sites based on the plDoc commenting in the swipl code files.
   %%%doc_server(4000),
-  
+
   % Write lists of ASCII numbers as strings to the terminal.
   portray_text(true),
   set_portray_text(ellipsis, 1000),
   set_portray_text(min_length, 2),
-  
+
   % Enforce more stringent style checking.
   style_check(+atom),
   style_check(+charset),
@@ -77,18 +78,18 @@ pl_debug:-
   style_check(+no_effect),
   style_check(+singleton),
   style_check(+var_branches),
-  
+
   % Prolog unit tests.
   set_test_options([load(normal),run(manual)]),
   %%%%set_test_options([load(normal),run(make(all))]),
-  
+
   % Debug monitor.
   %%%%prolog_ide(debug_monitor),
   debug(high),
-  
+
   % Full lDoc.
   %%%%load_modules_for_pldoc,
-  
+
   true.
 
 

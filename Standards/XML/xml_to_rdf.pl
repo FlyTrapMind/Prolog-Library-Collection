@@ -1,6 +1,9 @@
 :- module(
   xml_to_rdf,
   [
+    parse_file/3, % +File:atom
+                  % +Namespace:atom
+                  % ?RdfGraph:atom
     create_resource/7, % +XML_DOM:list
                        % +XML_PrimaryProperties:list(atom)
                        % :XML2RDF_Translation
@@ -25,16 +28,24 @@ Converts XML DOMs to RDF graphs.
 @version 2013/06, 2013/09-2013/11, 2014/01, 2014/03
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
+:- use_module(dcg(dcg_peek)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
+:- use_module(library(pure_input)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(os(file_ext)).
+:- use_module(os(file_mime)).
 :- use_module(rdf(rdf_build)).
+:- use_module(rdf(rdf_container)).
+:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_string)).
+:- use_module(xml(xml_word)).
 :- use_module(xsd(xsd)).
 
 :- meta_predicate(create_resource(+,+,3,+,+,-,-)).
@@ -44,7 +55,94 @@ Converts XML DOMs to RDF graphs.
 :- rdf_meta(create_resource(+,+,:,r,+,-,-)).
 :- rdf_meta(create_triples(+,+,:,r,+,-)).
 
+:- debug(xml_to_rdf).
 
+
+
+ensure_graph_name(_, G):-
+  nonvar(G), !.
+ensure_graph_name(F, G):-
+  file_to_graph_name(F, G).
+
+
+parse_file(File1, NS, G):-
+  ensure_graph_name(File1, G),
+  phrase_from_file(xml_parse(NS, G), File1),
+  %%%%file_to_atom(File, Atom), %DEB
+  %%%%dcg_phrase(xml_parse(el), Atom), %DEB
+  debug(xml_to_rdf, 'Done parsing file ~w', [File1]), %DEB
+  file_type_alternative(File1, turtle, File2),
+  rdf_save(File2, [format(turtle),graph(G)]),
+  rdf_unload_graph(G).
+
+
+%! xml_parse(+XmlNamespace:atom, +RdfGraph:atom)// is det.
+% Parses the root tag.
+
+xml_parse(NS, G) -->
+  xml_declaration(_),
+  xml_start_tag(RootTag), skip_whites,
+  {rdf_create_next_resource(NS, RootTag, S, G)},
+  xml_parses(NS, S, G),
+  xml_end_tag(RootTag), dcg_done.
+
+
+%! xml_parse(+RdfContainer:iri, +RdfGraph:atom)// is det.
+
+% Non-tag content.
+xml_parse(NS, S, G) -->
+  xml_start_tag(PTag), skip_whites,
+  xml_content(PTag, Codes), !,
+  {
+    atom_codes(O, Codes),
+    rdf_global_id(NS:PTag, P),
+    rdf_assert_string(S, P, O, G)
+  }.
+% Skip short tags.
+xml_parse(_, _, _) -->
+  xml_empty_tag(_), !,
+  skip_whites, !.
+% Nested tag.
+xml_parse(NS, S, G) -->
+  xml_start_tag(OTag), !,
+  skip_whites, !,
+  {rdf_create_next_resource(NS, OTag, O, G)},
+  xml_parses(NS, O, G),
+  xml_end_tag(OTag), skip_whites,
+  {
+    rdf_assert_individual(S, rdf:'Bag', G),
+    rdf_assert_collection_member(S, O, G)
+  }.
+
+
+skip_whites -->
+  ascii_whites, !.
+
+
+xml_parses(NS, S, G) -->
+  xml_parse(NS, S, G), !,
+  xml_parses(NS, S, G).
+xml_parses(_, _, _) --> [], !.
+xml_parses(_, _, _) -->
+  {gtrace},
+  dcg_all([output_format(atom)], Remains),
+  {format(user_output, '~w', [Remains])}.
+
+
+% The tag closes: end of content codes.
+xml_content(Tag, []) -->
+  xml_end_tag(Tag), skip_whites, !.
+% Another XML tag starts, this is not XML content.
+xml_content(_, []) -->
+  dcg_peek(xml_start_tag(_)), !, {fail}.
+% Parse a code of content.
+xml_content(Tag, [H|T]) -->
+  [H],
+  xml_content(Tag, T).
+
+
+
+% OLD APPROACH %
 
 %! create_resource(
 %!   +XML_DOM:list,
@@ -68,14 +166,14 @@ create_resource(DOM1, XML_PrimaryPs, Trans, C, G, S, DOM2):-
   ),
   atomic_list_concat(Values, '_', Name2),
   atomic_list_concat([Name1,Name2], '/', Name3),
-  
+
   % Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT -> `%60`).
   dcg_phrase(
     dcg_maplist(dcg_replace, [[32],[96]], [[37,50,48],[37,54,48]]),
     Name3,
     Name4
   ),
-  
+
   rdf_global_id(Ns:Name4, S),
 
   rdf_assert_individual(S, C, G),

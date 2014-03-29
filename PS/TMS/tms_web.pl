@@ -28,7 +28,7 @@ Web-interface for truth maintenance systems.
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 
-:- db_add_novel(http:location(tms, root(tms), [])).
+http:location(tms, root(tms), []).
 :- http_handler(root(tms), tms_web, [prefix]).
 
 :- web_module_add('TMS', tms_web).

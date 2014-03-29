@@ -325,7 +325,8 @@ file_name_extensions(File, L, L, File).
 % @arg Name The atomic name of a file, without a directory and without
 %           an extension.
 % @arg Type An atomic file type. These are registered with
-%           prolog_file_type/2.
+%	    prolog_file_type/2, or uninstantiated in case the type
+%	    could not be established.
 % @arg Path The full name of a file.
 
 file_name_type(Path, directory, Path):-
@@ -345,7 +346,16 @@ file_name_type(Name, Type, Path):-
   nonvar(Path),
   file_name_extension(Name, Ext, Path),
   Ext \== '',
-  user:prolog_file_type(Ext, Type), !.
+  (
+    user:prolog_file_type(Ext, Type)
+  ->
+    % The file extension is registered with a type.
+    true
+  ;
+    % The file extension is not registered with a type.
+    % Make sure the file type is uninstantiated.
+    var(Type)
+  ).
 file_name_type(_, Type, _):-
   % Type is uninstantiated,
   % make sure it stays that way.

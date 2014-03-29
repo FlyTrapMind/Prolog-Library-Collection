@@ -53,8 +53,8 @@ Predicates that operate on / generate XML DOM.
 :- db_add_novel(user:prolog_file_type(xml, xml)).
 
 % /css
-:- db_add_novel(http:location(css, root(css),  [])).
-:- db_add_novel(user:file_search_path(css, server(css))).
+http:location(css, root(css),  []).
+user:file_search_path(css, server(css)).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix,priority(10)]).
 
 

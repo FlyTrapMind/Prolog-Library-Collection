@@ -18,6 +18,7 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(html(pl_term_html)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
@@ -44,13 +45,13 @@ rdf_tabular_property(G, P) -->
   % (classes denoting the range of the property).
   rdf_tabular_property_domain(G, P),
   rdf_tabular_property_range(G, P),
-  
+
   % For literal ranges we also display the values that occur.
   rdf_tabular_predicate_literals(G, P),
-  
+
   % Subject-object pairs.
   rdf_tabular_triples(_, P, _, G),
-  
+
   % Triples that describe the property, if any.
   rdf_tabular_triples(P, _, _, G).
 

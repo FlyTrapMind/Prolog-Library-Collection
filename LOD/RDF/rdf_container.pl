@@ -69,13 +69,20 @@ rdf_alt(Alt, Contents, G):-
   rdf_collection_contents(Alt, Contents, G).
 
 
-rdf_assert_collection_member(Collection, Member, Graph):-
-  rdf_collection(Collection, Contents, Graph),
-  length(Contents, Length),
-  Index is Length + 1,
-  atomic_list_concat(['',Index], '_', LocalName),
-  rdf_global_id(rdf:LocalName, MembershipRelation),
-  rdf_assert(Collection, MembershipRelation, Member, Graph).
+%! rdf_assert_collection_member(
+%!   +Collection:or([bnode,iri]),
+%!   +Member:or([bnode,iri]),
+%!   +RdfGraph:atom
+%! ) is det.
+
+rdf_assert_collection_member(Collection, Member, G):-
+  % Since it is too expensive to calculate the number of elements
+  % in a collection each time a new element is added,
+  % we store this number in a global variable.
+  flag(Collection, MemberId, MemberId + 1),
+  atomic_concat('_', MemberId, PName),
+  rdf_global_id(rdf:PName, P),
+  rdf_assert(Collection, P, Member, G).
 
 
 %! rdf_bag(+Bag:uri, -Contents:list(uri), +Graph:atom) is nondet.

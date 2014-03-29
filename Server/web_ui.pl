@@ -25,23 +25,24 @@ This module also defines the dependencies for the JavaScript generics.
 :- use_module(generics(db_ext)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(http/js_write)).
 
 % CSS files can be loaded from the `/css` path.
-:- db_add_novel(http:location(css, root(css), [])).
-:- db_add_novel(user:file_search_path(css, server(css))).
+http:location(css, root(css), []).
+user:file_search_path(css, server(css)).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 
 % Image files can be loaded from the `/img` path.
-:- db_add_novel(http:location(img, root(img), [])).
-:- db_add_novel(user:file_search_path(img, server(img))).
+http:location(img, root(img), []).
+user:file_search_path(img, server(img)).
 :- http_handler(img(.), serve_files_in_directory(img), [prefix]).
 
 % JavaScript files can be loaded from the `/js` path.
-:- db_add_novel(http:location(js, root(js), [])).
-:- db_add_novel(user:file_search_path(js, server(js))).
+http:location(js, root(js), []).
+user:file_search_path(js, server(js)).
 :- http_handler(js(.), serve_files_in_directory(js), [prefix]).
 
 :- html_resource(js('json2html.js'), []).
