@@ -72,6 +72,9 @@ parse_file(File1, NS, G):-
   %%%%dcg_phrase(xml_parse(el), Atom), %DEB
   debug(xml_to_rdf, 'Done parsing file ~w', [File1]), %DEB
   file_type_alternative(File1, turtle, File2),
+  prolog_stack_property(global, limit(Limit)),
+  debug(xml_to_rdf, 'About to save triples to file with ~:d global stack.',
+      [Limit]),
   rdf_save(File2, [format(turtle),graph(G)]),
   rdf_unload_graph(G).
 
@@ -124,7 +127,6 @@ xml_parses(NS, S, G) -->
   xml_parses(NS, S, G).
 xml_parses(_, _, _) --> [], !.
 xml_parses(_, _, _) -->
-  {gtrace},
   dcg_all([output_format(atom)], Remains),
   {format(user_output, '~w', [Remains])}.
 
