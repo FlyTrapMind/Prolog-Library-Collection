@@ -76,11 +76,11 @@ HTML attribute parsing, used in HTML table generation.
 :- use_module(library(sgml)).
 
 % Assert DTD file locations.
-:- db_add_novel(user:file_search_path(dtd, html(.))).
+user:file_search_path(dtd, html(.)).
 
 % Assert the HTML file types.
-:- db_add_novel(user:prolog_file_type(htm, html)).
-:- db_add_novel(user:prolog_file_type(html, html)).
+user:prolog_file_type(htm, html).
+user:prolog_file_type(html, html).
 
 :- meta_predicate(html_pair(3,+,+,?,?)).
 :- rdf_meta(html_pair(:,r,r,?,?)).

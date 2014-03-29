@@ -15,15 +15,13 @@ Generates HTML tables for overviews of RDFS classes.
 @version 2014/01-2014/03
 */
 
-:- use_module(dcg(dcg_content)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(html(pl_term_html)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_term_html)).
@@ -33,8 +31,8 @@ Generates HTML tables for overviews of RDFS classes.
 rdf_tabular_class(G, Class1) -->
   {
     rdf_global_id(Class1, Class2),
-    setoff(
-      [Instance],
+    aggregate_all(
+      set([Instance]),
       (
         rdfs_individual_of(Instance, Class2),
         rdf_subject(Instance, G)
@@ -61,8 +59,8 @@ rdf_tabular_class(G, Class1) -->
 
 rdf_tabular_classes(G) -->
   {
-    setoff(
-      Class,
+    aggregate_all(
+      set(Class),
       (
         rdfs_individual_of(Class, rdfs:'Class'),
         rdf_term(Class, G)

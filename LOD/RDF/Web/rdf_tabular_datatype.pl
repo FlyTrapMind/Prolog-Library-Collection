@@ -38,8 +38,8 @@ datatype IRIs.
 rdf_tabular_datatype(G, D) -->
   {
     rdf_equal(rdf:langString, D), !,
-    setoff(
-      N-[LexicalForm,LangTag],
+    aggregate_all(
+      set(N-[LexicalForm,LangTag]),
       (
         rdf_language_tagged_string(Literal, G),
         rdf_language_tagged_string(Literal, LexicalForm, LangTag),
@@ -52,8 +52,8 @@ rdf_tabular_datatype(G, D) -->
 % All other datatypes.
 rdf_tabular_datatype(G, D) -->
   {
-    setoff(
-      N-[LexicalForm,Value],
+    aggregate_all(
+      set(N-[LexicalForm,Value]),
       (
         rdf_literal(_, _, LexicalForm, D, _, G),
         rdf_literal_map(LexicalForm, D, _, Value),
@@ -89,8 +89,8 @@ rdf_tabular_datatype_table(G, D, Pairs1, ColumnHeader) -->
 
 rdf_tabular_datatypes(G) -->
   {
-    setoff(
-      N-D,
+    aggregate_all(
+      set(N-D),
       (
         rdf_datatype(D, G),
         rdf_triples_by_datatype(G, D, N)

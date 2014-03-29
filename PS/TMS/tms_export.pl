@@ -18,7 +18,7 @@ Exports TMS belief states,
 @version 2013/05, 2013/09-2013/10
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
@@ -39,8 +39,16 @@ Exports TMS belief states,
 
 tms_export_graph(O1, TMS, GIF):-
   tms(TMS),
-  setoff(N, tms_node(TMS, N), Ns),
-  setoff(J, tms_justification(TMS, J), Js),
+  aggregate_all(
+    set(N),
+    tms_node(TMS, N),
+    Ns
+  ),
+  aggregate_all(
+    set(J),
+    tms_justification(TMS, J),
+    Js
+  ),
   tms_export_graph(O1, TMS, Ns, Js, GIF).
 
 %! tms_export_graph(
@@ -79,8 +87,8 @@ tms_export_graph(O1, TMS, Ns, Js, graph(Vs,Es4,G_Attrs)):-
 
 tms_export_node(O1, N, GIF):-
   % The argument for the node consists of a list of justifications.
-  setoff(
-    J,
+  aggregate_all(
+    set(J),
     (
       (
         rdf_has(J, tms:has_antecedent, N)
@@ -93,8 +101,8 @@ tms_export_node(O1, N, GIF):-
 
   % Collect the nodes that are involved in the justifications.
   % Notice that the exported node `N` is also part of the antecedent nodes `A_Ns`.
-  setoff(
-    A_N,
+  aggregate_all(
+    set(A_N),
     (
       member(J, Js),
       (
@@ -127,8 +135,8 @@ tms_export_node(O1, N, GIF):-
 %! ) is det.
 
 tms_export_edges(TMS, Inv, J, P, Es1, Es2):-
-  setoff(
-    edge(From,To,E_Attrs),
+  aggregate_all(
+    set(edge(From,To,E_Attrs)),
     (
       rdf(J, P, N, TMS),
       rdf_global_id(_:N_Id, N),

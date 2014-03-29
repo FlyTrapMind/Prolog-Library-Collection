@@ -26,8 +26,8 @@ Automated processes for CKAN data.
 :- use_module(ap(ap_void_fetch)). % Used in AP stage.
 :- use_module(ap(ap_void_stat)). % Used in AP stage.
 :- use_module(ckan(ckan_scrape)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)). % Used in AP stage.
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % MD5
@@ -109,8 +109,8 @@ ckan_ap_site(Graph, ExtraStages):-
 
 
 take_lod_sample(Graph, Resources):-
-  setoff(
-    Resource,
+  aggregate_all(
+    set(Resource),
     (
       rdfs_individual_of(Resource, ckan:'Resource'),
       (
@@ -144,7 +144,7 @@ ckan_ap_site(AP_Collection, ExtraStages, Resource):-
   % The directory name is based on the URL.
   rdf_atom_md5(URL, 1, Hash),
   create_nested_directory(data(Hash), Dir),
-  db_add_novel(user:file_search_path(Hash, Dir)),
+  assert(user:file_search_path(Hash, Dir)),
 
   create_ap(AP_Collection, AP),
   rdf_assert(AP, ap:resource, Resource, ap),

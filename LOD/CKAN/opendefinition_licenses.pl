@@ -17,7 +17,7 @@ Support for the OpenDefinition licenses and their descriptions.
 */
 
 :- use_module(ckan(ckan)). % Legen declarations.
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/json)).
@@ -52,8 +52,8 @@ enrich_license(_, Graph, License):-
 
 enrich_licenses(G):-
   license_descriptions(JsonDescription),
-  setoff(
-    License,
+  aggregate_all(
+    set(License),
     (
       rdfs_individual_of(License, ckan:'License'),
       rdf_term(License, G)

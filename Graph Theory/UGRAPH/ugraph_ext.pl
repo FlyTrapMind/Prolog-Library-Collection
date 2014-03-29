@@ -104,12 +104,12 @@ a 2D representation of a vertex.
 It has the form =|vertex_coordinate(<vertive>, <2d_coordinate>)|=.
 
 @author Wouter Beek
-@version 2012/09-2013/02, 2013/07
+@version 2012/09-2013/02, 2013/07, 2014/03
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_generic)).
+:- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(math(math_ext)).
@@ -245,7 +245,7 @@ ugraph_harary(G, P, N, H):-
 % Returns the line graph for the given graph.
 %
 % *Definition*: The line graph G' of graph G has V(G') = E(G) and
-%               $E(G') = \setoff{\tuple{\tuple{x, y},\tuple{y, z}} \vert
+%               $E(G') = \  {\tuple{\tuple{x, y},\tuple{y, z}} \vert
 %               \tuple{x, y}, \tuple{y, z} \in E(G)}$.
 %
 % *Representation*: Vertex $V \in V(LineG)$ that is based on edge
@@ -343,8 +343,8 @@ ugraph_subgraph_(SubG, [V | G], In, Out):-
 
 ugraph_unsymmetric_edges(G, UnsymmetricEs):-
   ugraph_edges(G, Es),
-  setoff(
-    V-W,
+  aggregate_all(
+    set(V-W),
     (
       member(V-W, Es),
       V < W

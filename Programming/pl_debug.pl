@@ -21,13 +21,14 @@ Loads debug tools for Prolog programming.
 % This produces errors if the priority option is omitted,
 % due to conflicting HTTP location declarations.
 % SWI-Prolog asserts `pldoc=root(.)`.
+:- use_module(library(http/http_path)).
+:- multifile(http:location/3).
 http:location(pldoc, root(help), [priority(10)]).
 :- use_module(library(doc_http)).
 
 % We only load this in debug mode,
 % since this may give information to hackers.
 :- use_module(library(http/http_error)).
-:- use_module(library(http/http_path)).
 
 :- use_module(library(lists)).
 

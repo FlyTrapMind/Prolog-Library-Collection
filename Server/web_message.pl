@@ -15,8 +15,8 @@ Acts on messages printed by print_message/2.
 
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(logging)).
-:- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
+:- use_module(library(aggregate)).
 :- use_module(library(csv)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -61,8 +61,8 @@ log_web(_) -->
 log_web(Max) -->
   {
     current_log_file(File),
-    setoff(
-      [DateTime,Category,Message],
+    aggregate_all(
+      set([DateTime,Category,Message]),
       (
         csv_read_file_row(
           File,

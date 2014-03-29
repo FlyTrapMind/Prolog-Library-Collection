@@ -20,10 +20,10 @@ Generated RDF HTML tables.
 @version 2013/12-2014/03
 */
 
-:- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
+:- use_module(generics(uri_query)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
@@ -59,16 +59,15 @@ http:location(rdf_tabular, root(rdf_tabular), []).
 
 % RDF term.
 rdf_tabular(Request):-
-  memberchk(search(Search), Request),
-  memberchk(term=T, Search), !,
-  
+  request_query_read(Request, term, T), !,
+
   % Parse the tern atom to extract the corresponding RDF term.
   once(dcg_phrase(rdf_parse_term(T1), T)),
   rdf_global_id(T1, T2),
-  
+
   % The graph parameter is optional
   % (in which case it is left uninstantiated).
-  ignore(memberchk(graph=G, Search)),
+  ignore(request_query_read(Request, graph, G)),
 
   reply_html_page(
     app_style,
@@ -80,8 +79,7 @@ rdf_tabular(Request):-
   ).
 % RDF graph.
 rdf_tabular(Request):-
-  memberchk(search(Search), Request),
-  memberchk(graph=Graph, Search), !,
+  request_query_read(Request, graph, Graph), !,
   reply_html_page(
     app_style,
     title(['Overview of RDF graph ',\rdf_graph_html(Graph)]),
@@ -111,8 +109,8 @@ rdf_tabular(_Request):-
 
 rdf_tabular_triples(S, P, O, G) -->
   {
-    setoff(
-      [S,P,O,G],
+    aggregate_all(
+      set([S,P,O,G]),
       rdf(S, P, O, G),
       Rows1
     ),

@@ -6,7 +6,7 @@
 @version 2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -26,8 +26,8 @@ http:location(void, root(void), []).
 
 
 void_tabular(_Request):-
-  setoff(
-    RdfDataset,
+  aggregate_all(
+    set(RdfDataset),
     rdf_dataset(RdfDataset),
     RdfDatasets
   ),

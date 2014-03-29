@@ -53,7 +53,8 @@ The generic predicates for Truth-Maintenance Systems.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(uri_ext)).
+:- use_module(generics(uri_query)).
+:- use_module(library(aggregate)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -171,7 +172,11 @@ tms_justifications(O1, N, Js):-
   ).
 tms_justifications(_O1, N, Js):-
   tms_node(TMS, N),
-  setoff(J, tms_justification(TMS, _As, _R, N, J), Js).
+  aggregate_all(
+    set(J),
+    tms_justification(TMS, _, _, N, J),
+    Js
+  ).
 
 %! tms_leaf_node(?TMS:atom, ?LeafNode:iri) is nondet.
 % TMS leaf nodes are nodes in the TMS that are antecedent to no justification.

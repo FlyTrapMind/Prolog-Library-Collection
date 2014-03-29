@@ -25,7 +25,7 @@
 
 :- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(random_vertex_coordinates)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_hierarchy)).
@@ -48,16 +48,16 @@ skos_narrower(Narrower, Broader, Graph):-
   rdf(Narrower, skos:narrower, Broader, Graph).
 
 tree_to_triples(Nodes, AllTriples):-
-  setoff(
-    rdf(Node, skos:broader, DownNode),
+  aggregate_all(
+    set(rdf(Node, skos:broader, DownNode)),
     (
       member(Node, Nodes),
       rdf(Node, skos:broader, DownNode)
     ),
     Triples
   ),
-  setoff(
-    DownNode,
+  aggregate_all(
+    set(DownNode),
     member(rdf(_Node, _, DownNode), Triples),
     DownNodes
   ),
@@ -65,8 +65,8 @@ tree_to_triples(Nodes, AllTriples):-
   ord_union(Triples, DownTriples, AllTriples).
 
 tree_to_nodes(Nodes, AllNodes):-
-  setoff(
-    DownNode,
+  aggregate_all(
+    set(DownNode),
     (
       member(Node, Nodes),
       skos_broader(Node, DownNode, _Graph)

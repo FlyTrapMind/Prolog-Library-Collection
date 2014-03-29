@@ -20,9 +20,9 @@ Registration infrastructure for Web modules.
 */
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(html(html)). % Meta-DCG.
 :- use_module(html(html_list)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
@@ -145,8 +145,8 @@ web_module_delete(InternalName):-
 web_modules(Pairs):-
   with_mutex(
     web_modules,
-    setoff(
-      ExternalName-InternalName,
+    aggregate_all(
+      set(ExternalName-InternalName),
       web_module_db(ExternalName, InternalName),
       Pairs
     )

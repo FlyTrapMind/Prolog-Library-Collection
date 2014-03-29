@@ -29,9 +29,9 @@ HTML generation for RDF terms.
 @version 2014/01-2014/03
 */
 
-:- use_module(dcg(dcg_collection)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
+:- use_module(generics(uri_query)).
 :- use_module(html(html)).
 :- use_module(html(html_list)).
 :- use_module(html(pl_term_html)).

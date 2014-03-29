@@ -23,7 +23,7 @@ Namespace support for RDF(S), building on namespace prefix support for XML.
 @version 2013/03-2013/05, 2014/01
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_term(rdf_term)).
@@ -70,8 +70,8 @@ rdf_convert_namespace(FromNS, ToNs, S1, P1, O1, G):-
 
 
 rdf_namespaces(G, XmlNamespaces):-
-  setoff(
-    XmlNamespace,
+  aggregate_all(
+    set(XmlNamespace),
     (
       rdf_term(Term, G),
       rdf_global_id(XmlNamespace:_, Term)

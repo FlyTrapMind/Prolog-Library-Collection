@@ -8,8 +8,8 @@ Web-based overview of the currently running threads.
 @version 2014/02
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(html(html_table)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(server(web_modules)).
@@ -30,8 +30,8 @@ web_threads(_Request):-
 
 thread_overview -->
   {
-    setoff(
-      Alias,
+    aggregate_all(
+      set(Alias),
       (
         thread_property(Id, status(running)),
         thread_property(Id, alias(Alias))

@@ -34,8 +34,8 @@ While caching, location [2] is reached via triple [1],
 @version 2014/01
 */
 
-:- use_module(generics(meta_ext)).
-:- use_module(generics(uri_ext)).
+:- use_module(generics(uri_query)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
@@ -68,8 +68,8 @@ flickrwrappr_cache(Graph):-
   maplist(assert_proposition(Graph), Propositions).
 
 flickrwrappr_cache(Graph, Resources, Propositions):-
-  setoff(
-    IRI-URL,
+  aggregate_all(
+    set(IRI-URL),
     rdf(IRI, dbpprop:hasPhotoCollection, URL, Graph),
     Pairs
   ),

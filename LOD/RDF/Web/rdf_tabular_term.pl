@@ -96,8 +96,8 @@ rdf_tabular_term(Graph, RdfTerm) -->
 rdf_tabular_terms(G, Ts) -->
   {
     % Order all resources based on the number of triples describing them.
-    setoff(
-      N-T,
+    aggregate_all(
+      set(N-T),
       (
         member(T, Ts),
         rdf_triples_by_term(G, T, N)

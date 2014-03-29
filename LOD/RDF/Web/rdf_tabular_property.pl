@@ -57,8 +57,8 @@ rdf_tabular_property(G, P) -->
 
 
 rdf_tabular_property_domain(G, P) -->
-  {setoff(
-    [Domain],
+  {aggregate_all(
+    set([Domain]),
     (
       rdf(S, P, _, G),
       rdfs_individual_of(S, Domain)
@@ -77,14 +77,16 @@ rdf_tabular_property_domain(G, P) -->
 
 
 rdf_tabular_property_range(G, P) -->
-  {setoff(
-    [Range],
-    (
-      rdf(_, P, O, G),
-      rdfs_individual_of(O, Range)
-    ),
-    Rows
-  )},
+  {
+    aggregate_all(
+      set([Range]),
+      (
+        rdf(_, P, O, G),
+        rdfs_individual_of(O, Range)
+      ),
+      Rows
+    )
+  },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
@@ -98,8 +100,8 @@ rdf_tabular_property_range(G, P) -->
 
 rdf_tabular_predicate_literals(G, P) -->
   {
-    setoff(
-      [LiteralValue],
+    aggregate_all(
+      set([LiteralValue]),
       ((
         rdf(_, P, literal(type(_,LiteralValue)), G)
       ;
@@ -129,8 +131,8 @@ rdf_tabular_predicate_literals(G, P) -->
 
 rdf_tabular_properties(G) -->
   {
-    setoff(
-      Predicate,
+    aggregate_all(
+      set(Predicate),
       (
         rdf_predicate(Predicate, G),
         % Exclude RDF container membership properties.

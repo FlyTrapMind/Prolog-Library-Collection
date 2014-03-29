@@ -8,7 +8,7 @@ Support for managing RDF literals.
 @version 2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
@@ -39,8 +39,8 @@ rdf_man_literals -->
 
 rdf_man_correct_literals -->
   {
-    setoff(
-      [S,P,O,PlValue,G],
+    aggregate_all(
+      set([S,P,O,PlValue,G]),
       (
         rdf(S, P, O, G),
         rdf_literal(O, LexicalForm, Datatype, LangTag),
@@ -58,8 +58,8 @@ rdf_man_correct_literals -->
 
 rdf_man_incorrect_literals -->
   {
-    setoff(
-      [S,P,L,G],
+    aggregate_all(
+      set([S,P,L,G]),
       (
         rdf(S, P, L, G),
         rdf_literal(L, LexicalForm, Datatype, LangTag),

@@ -11,7 +11,7 @@ Web-interface for truth maintenance systems.
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(uri_ext)).
+:- use_module(generics(uri_query)).
 :- use_module(gv(gv_file)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
@@ -40,8 +40,7 @@ http:location(tms, root(tms), []).
 
 % A graph representation of the given TMS node.
 tms_web(Request):-
-  memberchk(search(Search), Request),
-  memberchk(node=NLocal, Search), !,
+  request_query_read(Request, node, NLocal), !,
   
   % From TMS node name to TMS name denoted by that name.
   rdf_global_id(doyle:NLocal, N),
@@ -59,8 +58,7 @@ tms_web(Request):-
   ).
 % A graph representation of the given TMS.
 tms_web(Request):-
-  memberchk(search(Search), Request),
-  memberchk(tms=TMS, Search), !,
+  request_query_read(Request, tms, TMS), !,
   
   % From TMS to SVG DOM representation.
   http_absolute_uri(tms(.), BaseURL),
@@ -81,9 +79,17 @@ tms_web(_Request):-
       tms(Type, TMS),
       http_absolute_uri(tms(.), BaseURL),
       uri_query_add(BaseURL, tms, TMS, TMS_URL),
-      setoff(J, tms_justification(TMS, J), Js),
+      aggregate_all(
+        set(J),
+        tms_justification(TMS, J),
+        Js
+      ),
       length(Js, NumberOfJs),
-      setoff(N, tms_node(TMS, N), Ns),
+      aggregate_all(
+        set(N),
+        tms_node(TMS, N),
+        Ns
+      ),
       length(Ns, NumberOfNs)
     ),
     Rows

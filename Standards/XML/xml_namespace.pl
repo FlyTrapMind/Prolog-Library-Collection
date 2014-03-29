@@ -70,8 +70,8 @@ URI references can contain characters that are not allowed in names.
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(www_browser)).
 
@@ -106,8 +106,8 @@ xml_current_namespace(Namespace, URI):-
 % @arg Namespaces A list of atomic alias names.
 
 xml_current_namespaces(Namespaces):-
-  setoff(
-    Namespace,
+  aggregate_all(
+    set(Namespace),
     rdf_current_prefix(Namespace, _URI),
     Namespaces
   ).

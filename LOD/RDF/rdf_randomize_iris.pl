@@ -13,8 +13,8 @@
 
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
@@ -25,8 +25,8 @@
 
 rdf_randomize_iris(G):-
   rdf_graph(G),
-  setoff(
-    IRI1-IRI2,
+  aggregate_all(
+    set(IRI1-IRI2),
     (
       rdf_iri(IRI1, G),
       once(randomize_iri(IRI1, IRI2))

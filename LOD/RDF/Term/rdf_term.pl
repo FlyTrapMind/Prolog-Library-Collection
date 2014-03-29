@@ -42,8 +42,8 @@ Support for RDF literals is found in [rdf_literal].
 @version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/03
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
 
 :- rdf_meta(rdf_iri(r)).
@@ -407,5 +407,9 @@ rdf_term(Term, G):-
 % @see RDF Semantics http://www.w3.org/TR/2004/REC-rdf-mt-20040210/
 
 rdf_vocabulary(G, Vocabulary):-
-  setoff(Name, rdf_name(Name, G), Vocabulary).
+  aggregate_all(
+    set(Name),
+    rdf_name(Name, G),
+    Vocabulary
+  ).
 

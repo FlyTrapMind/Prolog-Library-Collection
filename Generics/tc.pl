@@ -9,7 +9,6 @@
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -46,8 +45,8 @@ cosine_normalization(Term, Doc, Weight):-
 
 doc_to_vec(Doc, Vec):-
   doc(Doc), !,
-  setoff(
-    Word-Occur,
+  aggregate_all(
+    set(Word-Occur),
     (
       word0(Word, _Sum, Docs),
       (

@@ -9,7 +9,7 @@ Web-based tools for loading/saving/searching RDF.
 */
 
 :- use_module(dcg(dcg_generic)).
-:- use_module(generic(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
@@ -37,24 +37,24 @@ rdf_online -->
 rdf_filter -->
   {
     once(rdf_graph(G)), !,
-    setoff(
-      option(value=SLabel,SLabel),
+    aggregate_all(
+      set(option(value=SLabel,SLabel)),
       (
         rdf_subject(STerm, G),
         dcg_with_output_to(atom(SLabel), rdf_term_name(STerm))
       ),
       SItems
     ),
-    setoff(
-      option(value=PLabel,PLabel),
+    aggregate_all(
+      set(option(value=PLabel,PLabel)),
       (
         rdf_predicate(PTerm, G),
         dcg_with_output_to(atom(PLabel), rdf_term_name(PTerm))
       ),
       PItems
     ),
-    setoff(
-      option(value=OLabel,OLabel),
+    aggregate_all(
+      set(option(value=OLabel,OLabel)),
       (
         rdf_object(OTerm, G),
         dcg_with_output_to(atom(OLabel), rdf_term_name(OTerm))

@@ -82,7 +82,7 @@ De Kleer 1993 book 'Building Problem Solvers'.
 :- use_module(atms(atms_hierarchy)). % XML namespace.
 :- use_module(atms(atms_env)).
 :- use_module(atms(atms_update)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
@@ -467,8 +467,8 @@ nogood_nodes(ATMS, Informant, [Node|Nodes]):-
   % yet.
   % We sort the nodes, since we assume that the antecedents are sorted
   % when searching for an existing justification.
-  setoff(
-    Node1,
+  aggregate_all(
+    set(Node1),
     (
       member(Datum, [Node | Nodes]),
       find_or_add_node(ATMS, Datum, Node1)

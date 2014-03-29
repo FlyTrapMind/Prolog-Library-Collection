@@ -56,7 +56,6 @@ Statistics for RDF data.
 @version 2013/01, 2013/03-2013/04, 2013/07, 2013/09, 2014/03
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -98,7 +97,11 @@ Statistics for RDF data.
 % @see Based on the definition of =|void:classes|=.
 
 count_classes(G, Count):-
-  setoff(O, rdf(_, rdf:type, O, G), Os),
+  aggregate_all(
+    set(O),
+    rdf(_, rdf:type, O, G),
+    Os
+  ),
   length(Os, Count).
 
 %! count_entities(+Graph:atom, -Count:nonneg) is det.
@@ -110,7 +113,11 @@ count_classes(G, Count):-
 % @see Based on the definition of =|void:entities|=.
 
 count_entities(G, Count):-
-  setoff(E, rdf_iri(E, G), Es),
+  aggregate_all(
+    set(E),
+    rdf_iri(E, G),
+    Es
+  ),
   length(Es, Count).
 
 %! count_individuals(
@@ -120,8 +127,8 @@ count_entities(G, Count):-
 %! ) is det.
 
 count_individuals(C, G, N):-
-  setoff(
-    I,
+  aggregate_all(
+    set(I),
     rdfs_individual(m(t,f,f), I, C, G),
     Is
   ),
@@ -142,7 +149,11 @@ count_individuals(C, G, N):-
 % @see Based on the definition of =|void:distinctObjects|=.
 
 count_objects(S, P, G, Count):-
-  setoff(O, rdf(S, P, O, G), Os),
+  aggregate_all(
+    set(O),
+    rdf(S, P, O, G),
+    Os
+  ),
   length(Os, Count).
 
 %! count_properties(
@@ -168,7 +179,11 @@ count_objects(S, P, G, Count):-
 % @see Based on the definition of =|void:properties|=.
 
 count_properties(S, O, G, Count):-
-  setoff(P, rdf(S, P, O, G), Ps),
+  aggregate_all(
+    set(P),
+    rdf(S, P, O, G),
+    Ps
+  ),
   length(Ps, Count).
 
 %! count_subjects(
@@ -187,12 +202,16 @@ count_properties(S, O, G, Count):-
 % @see Based on the definition of =|void:distinctSubjects|=.
 
 count_subjects(P, O, G, Count):-
-  setoff(S, rdf(S, P, O, G), Ss),
+  aggregate_all(
+    set(S),
+    rdf(S, P, O, G),
+    Ss
+  ),
   length(Ss, Count).
 
 rdf_property_table(P, G, T):-
-  setoff(
-    O,
+  aggregate_all(
+    set(O),
     rdf([graph_mode(no_index)], _, P, O, G),
     Os
   ),

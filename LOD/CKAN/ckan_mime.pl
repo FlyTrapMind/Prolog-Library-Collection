@@ -125,10 +125,10 @@ text/xml
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(meta_ext)).
 :- use_module(html(pl_term_html)).
 :- use_module(html(html_table)).
 :- use_module(http_parameters(rfc2616_media_type)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -164,8 +164,8 @@ ckan_mime(_Request):-
 
 ckan_mime_table -->
   {
-    setoff(
-      MIME,
+    aggregate_all(
+      set(MIME),
       rdf_string(_, ckan:mimetype, MIME, _),
       MIMEs
     ),
@@ -173,8 +173,8 @@ ckan_mime_table -->
       NumberOfResources-MIME,
       (
         member(MIME, MIMEs),
-        setoff(
-          Resource,
+        aggregate_all(
+          set(Resource),
           rdf_string(Resource, ckan:mimetype, MIME, _),
           Resources
         ),
@@ -182,8 +182,8 @@ ckan_mime_table -->
       ),
       Pairs1
     ),
-    setoff(
-      ResourceWithoutMIME,
+    aggregate_all(
+      set(ResourceWithoutMIME),
       (
         rdfs_individual_of(ResourceWithoutMIME, ckan:'Resource'),
         \+ rdf_string(ResourceWithoutMIME, ckan:mimetype, _, _)

@@ -5,12 +5,13 @@
 Web-interface for RDF materialization.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11-2014/01
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11-2014/01, 2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(generics(uri_query)).
 :- use_module(html(html_dropdown_list)).
 :- use_module(html(html_form)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(rdf_term(rdf_term)).
@@ -24,9 +25,8 @@ http:location(rdf, root(rdf), []).
 
 
 rdf_mat_web(Request):-
-  memberchk(search(Search), Request),
-  memberchk(graph(Graph), Search),
-  memberchk(regime(Regime), Search), !,
+  request_query_read(Request, graph, Graph),
+  request_query_read(Request, regime, Graph), !,
   
   % Run materialization.
   materialize(
@@ -70,21 +70,27 @@ rdf_mat_web(Request):-
 % Collect the legend for the blank nodes that occur in
 %  at least one of the recently deduced triples.
 blank_node_legend -->
-  {setoff(
-    [B,R,G],
-    (
-      rdf_mat:recent_triple(S, _, O, G),
-      
-      % Blank nodes can occur in the subject and object positions.
-      (B = S ; B = O),
-      rdf_is_bnode(B),
-      
-      % Look in the blank node-to-resource mapping for a mapped resource
-      % for this blank node.
-      b2r(G, B, R)
-    ),
-    L
-  )},
+  {
+    aggregate_all(
+      set([B,R,G]),
+      (
+        rdf_mat:recent_triple(S, _, O, G),
+        
+        % Blank nodes can occur in the subject and object positions.
+        (
+          B = S
+        ;
+          B = O
+        ),
+        rdf_is_bnode(B),
+        
+        % Look in the blank node-to-resource mapping for a mapped resource
+        % for this blank node.
+        b2r(G, B, R)
+      ),
+      L
+    )
+  },
   % Display the blank node mapping in an HTML table.
   html(
     \rdf_html_table(
@@ -96,11 +102,13 @@ blank_node_legend -->
 
 % Collect all recently deduced triples.
 recent_triples -->
-  {setoff(
-    [S,P,O,G],
-    rdf_mat:recent_triple(S, P, O, G),
-    Quadruples
-  )},
+  {
+    aggregate_all(
+      set([S,P,O,G]),
+      rdf_mat:recent_triple(S, P, O, G),
+      Quadruples
+    )
+  },
   html(
     \rdf_html_table(
       [],

@@ -1,12 +1,19 @@
 :- module(
   pl_term_html,
   [
-    pl_term_html//1, % +PL_Term
+    pl_term_html//1, % @PL_Term
 % CONSTITUENTS
     html_file//1, % +File:atom
     html_files//1, % +Files:list(atom)
     html_mime//1, % +MIME:atom
-    html_nvpairs//1 % +NVPairs:list(nvpair)
+    html_nvpairs//1, % +NVPairs:list(nvpair)
+    html_operator//1, % @Operator
+    html_predicate//1, % @Predicate
+    html_predicate//2, % +Functor:atom
+                       % +Arity:nonneg
+    html_predicate//3 % +Module:atom
+                      % +Functor:atom
+                      % +Arity:nonneg
   ]
 ).
 
@@ -20,9 +27,11 @@
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(error_ext)).
+:- use_module(generics(uri_query)).
 :- use_module(html(html)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_path)).
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
 :- use_module(rdf_web(rdf_term_html)).
@@ -313,20 +322,45 @@ pl_term_html(PL_Term) -->
   html(span(class=compound, Atom)).
 
 
+html_operator(Operator) -->
+  {
+    http_absolute_location(pl(operator), Location1, []),
+    uri_query_add(Location1, term, Operator, Location2)
+  },
+  html(span(class=operator, a(href=Location2, Operator))).
+
+
+html_predicate(Module:Functor/Arity) --> !,
+  html_predicate(Module, Functor, Arity).
+html_predicate(Functor/Arity) -->
+  html_predicate(Functor, Arity).
+
+
 html_predicate(Functor, Arity) -->
+  {
+    http_absolute_location(pl(predicate), Location1, []),
+    uri_query_add(Location1, predicate, Functor/Arity, Location2)
+  },
   html(
     span(class=predicate,
-      \html_functor_and_arity(Functor, Arity)
+      a(href=Location2,
+        \html_functor_and_arity(Functor, Arity))
     )
   ).
 
 html_predicate(Module, Functor, Arity) -->
+  {
+    http_absolute_location(pl(predicate), Location1, []),
+    uri_query_add(Location1, predicate, Module:Functor/Arity, Location2)
+  },
   html(
-    span(class=predicate, [
-      \html_module(Module),
-      ':',
-      \html_functor_and_arity(Functor, Arity)
-    ])
+    span(class=predicate,
+      a(href=Location2, [
+        \html_module(Module),
+        ':',
+        \html_functor_and_arity(Functor, Arity)
+      ])
+    )
   ).
 
 

@@ -22,7 +22,7 @@
 
 
 % DTD file location.
-:- db_add_novel(user:file_search_path(dtd, svg(.))).
+user:file_search_path(dtd, svg(.)).
 
 % A special SVG file extension is used on Macintosh HFS file systems.
 :- if(is_apple).

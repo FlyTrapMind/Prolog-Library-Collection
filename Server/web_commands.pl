@@ -20,7 +20,7 @@ that can be issued via the Web interface.
 @version 2012/10, 2013/02-2013/06, 2013/11, 2014/01
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(doc_http)).
 :- use_module(library(http/html_write)).
@@ -59,15 +59,16 @@ documentation_web([element(p,[],['Documentation was opened.'])]):-
 fail_web([element(h1,[],['False'])]).
 
 help_web([element(ul,[],ModuleItems)]):-
-  setoff(
-    element(li,[],[
-      element(p,[],
-        [element(b,[],[ExternalName]),':'|T])]),
+  aggregate_all(
+    set(
+      element(li,[],[
+        element(p,[],
+          [element(b,[],[ExternalName]),':'|T])])),
     (
       web_module(ExternalName, InternalName),
       module_property(InternalName, exports(WebPredicates)),
-      setoff(
-        element(li,[],[Label]),
+      aggregate_all(
+        set(element(li,[],[Label])),
         (
           member(WebPredicate/WebArity, WebPredicates),
           atom_concat(Predicate, '_web', WebPredicate),

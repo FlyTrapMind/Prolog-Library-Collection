@@ -18,7 +18,7 @@ Predicates that allows RDF tables to be asserted
 @version 2014/01-2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
@@ -70,8 +70,8 @@ rdf_store_rows(Rows):-
 % in order to match more ground quadruples.
 
 rdf_store_rows(S, P, O, G):-
-  setoff(
-    [S,P,O,G],
+  aggregate_all(
+    set([S,P,O,G]),
     rdf(S, P, O, G),
     Quadruples
   ),

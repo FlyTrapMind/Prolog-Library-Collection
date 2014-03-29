@@ -23,7 +23,7 @@
 /** <module> TREES
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/07-2013/08
+@version 2013/04-2013/05, 2013/07-2013/08, 2014/03
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -32,8 +32,8 @@
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
@@ -48,8 +48,8 @@ all_subpaths_to_tree(Subpaths, [Trees]):-
   all_subpaths_to_tree(Subpaths, [], Trees).
 
 all_subpaths_to_tree(Lists, List, List-Trees):-
-  setoff(
-    Tree,
+  aggregate_all(
+    set(Tree),
     (
       member(LongerList, Lists),
       append(List, [_], LongerList),
@@ -111,8 +111,8 @@ print_tree(O1, Tree) -->
   print_trees(O2, Trees).
 
 some_subpaths_to_tree(SomeSubPaths, Tree):-
-  setoff(
-    SubPath,
+  aggregate_all(
+    set(SubPath),
     (
       member(SomeSubPath, SomeSubPaths),
       sublist(SubPath, SomeSubPath),

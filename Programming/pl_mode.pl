@@ -40,7 +40,7 @@ Automated checks for Prolog mode enforcement.
 
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 
 :- meta_predicate(call_complete(2,+,-)).
 :- meta_predicate(call_count(0,-)).
@@ -93,7 +93,11 @@ call_complete(_Goal, Input, [Input]).
 call_count(Goal1, Count):-
   strip_module(Goal1, _Module, Goal2),
   Goal2 =.. [_Pred|Args],
-  setoff(Args, Goal1, Argss),
+  aggregate_all(
+    set(Args),
+    Goal1,
+    Argss
+  ),
   length(Argss, Count).
 
 

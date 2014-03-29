@@ -79,7 +79,7 @@ Binary relations can be efficiently represented as =|list(pair)|=
 @version 2012/11, 2013/08
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 
 :- meta_predicate(closure(*,0,+,*)).
 :- meta_predicate(equivalence_class(+,2,+,-)).
@@ -113,8 +113,8 @@ bijective(F):-
 
 closure(S, Antecedent, Consequence, NewS):-
   % These are the elements that are added by the closure.
-  setoff(
-    Consequence,
+  aggregate_all(
+    set(Consequence),
     call(Antecedent),
     Consequences
   ),
@@ -239,8 +239,8 @@ preimage(X, X).
 % @arg QuotS The quotient set of =S=. An ordered set.
 
 quotient_set(S, EqR, QuotS):-
-  setoff(
-    EqX,
+  aggregate_all(
+    set(EqX),
     (
       member(X, S),
       equivalence_class(S, EqR, X, EqX)

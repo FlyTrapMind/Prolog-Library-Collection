@@ -41,12 +41,12 @@
 /** <module> Graph traversal
 
 @author Wouter Beek
-@version 2013/01-2013/04, 2013/07, 2013/09, 2013/12
+@version 2013/01-2013/04, 2013/07, 2013/09, 2013/12, 2014/03
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
@@ -301,8 +301,8 @@ travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
 %      last resources.
 
 travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, Vs, Es, History):-
-  setoff(
-    Distance-History,
+  aggregate_all(
+    set(Distance-History),
     traverse(O, G, E_P, N_P, First, Last, Distance, Vs, Es, History),
     Pairs
   ),

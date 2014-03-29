@@ -143,7 +143,7 @@ The API for ATMSs.
 :- use_module(atms(atms_db)).
 :- use_module(atms(atms_env)).
 :- use_module(atms(atms_hierarchy)). % XML namespace.
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_read)).
@@ -244,8 +244,8 @@ atms_premise(ATMS, Premise):-
   environment_node(EmptyEnvironment, Premise).
 
 atms_to_assumptions(ATMS, Assumptions):-
-  setoff(
-    Assumption,
+  aggregate_all(
+    set(Assumption),
     atms_assumption(ATMS, Assumption),
     Assumptions
   ).
@@ -270,8 +270,8 @@ atms_to_dot_name(ATMS, ATMSDOTName):-
 % @arg Environments An ordered set of environments.
 
 atms_to_environments(ATMS, Environments):-
-  setoff(
-    Environment,
+  aggregate_all(
+    set(Environment),
     environment(ATMS, Environment),
     Environments
   ).
@@ -286,8 +286,8 @@ atms_to_environments(ATMS, Environments):-
 % @arg Justifications An ordered set of justifications.
 
 atms_to_justifications(ATMS, Justifications):-
-  setoff(
-    Justification,
+  aggregate_all(
+    set(Justification),
     justification(ATMS, Justification),
     Justifications
   ).
@@ -299,8 +299,8 @@ atms_to_justifications(ATMS, Justifications):-
 % @arg Nodes An ordered set of nodes.
 
 atms_to_nodes(ATMS, Nodes):-
-  setoff(
-    Node,
+  aggregate_all(
+    set(Node),
     node(ATMS, Node),
     Nodes
   ).
@@ -312,8 +312,8 @@ atms_to_nodes(ATMS, Nodes):-
 % @arg Nogoods An ordered set of environments.
 
 atms_to_nogoods(ATMS, Nogoods):-
-  setoff(
-    Nogood,
+  aggregate_all(
+    set(Nogood),
     nogood(ATMS, Nogood),
     Nogoods
   ).
@@ -326,8 +326,8 @@ atms_to_nogoods(ATMS, Nogoods):-
 % @arg Premises An ordered set of nodes.
 
 atms_to_premises(ATMS, Premises):-
-  setoff(
-    Premise,
+  aggregate_all(
+    set(Premise),
     atms_premise(ATMS, Premise),
     Premises
   ).
@@ -347,13 +347,11 @@ empty_environment(EmptyEnvironment):-
 
 empty_environment(ATMS, EmptyEnvironment):-
   var(ATMS),
-  var(EmptyEnvironment),
-  !,
+  var(EmptyEnvironment), !,
   atms_empty_environment_(ATMS, EmptyEnvironment).
 % An ATMS has exactly one empty environment.
 empty_environment(ATMS, EmptyEnvironment):-
-  atms_empty_environment_(ATMS, EmptyEnvironment),
-  !.
+  atms_empty_environment_(ATMS, EmptyEnvironment), !.
 
 atms_empty_environment_(ATMS, EmptyEnvironment):-
   rdf(ATMS, atms:has_empty_environment, EmptyEnvironment, ccm).
@@ -496,8 +494,8 @@ environment_to_dui_label(Environment, DUILabel):-
   ).
 
 environment_to_nodes(Environment, Nodes):-
-  setoff(
-    Node,
+  aggregate_all(
+    set(Node),
     environment_node(Environment, Node),
     Nodes
   ).
@@ -508,8 +506,8 @@ environment_to_nodes(Environment, Nodes):-
 % @arg Environments An ordered set of environments.
 
 environments(Environments):-
-  setoff(
-    Environment,
+  aggregate_all(
+    set(Environment),
     environment(Environment),
     Environments
   ).
@@ -566,8 +564,8 @@ justification_label(Justification, LanguageLabel):-
   rdfs_label(Justification, LanguageLabel).
 
 justification_to_antecedents(Justification, Antecedents):-
-  setoff(
-    Antecedent,
+  aggregate_all(
+    set(Antecedent),
     justification_antecedent(Justification, Antecedent),
     Antecedents
   ).
@@ -577,8 +575,8 @@ justification_to_dot_name(Justification, JustificationDOTName):-
   atomic_concat('j_', JustificationID, JustificationDOTName).
 
 justifications(Justifications):-
-  setoff(
-    Justification,
+  aggregate_all(
+    set(Justification),
     justification(Justification),
     Justifications
   ).
@@ -795,8 +793,8 @@ node_to_ccm_label_(Datum, Datum).
 % @arg Consequences An ordered set of justifications.
 
 node_to_consequences(Node, Consequences):-
-  setoff(
-    Consequence,
+  aggregate_all(
+    set(Consequence),
     node_consequence(Node, Consequence),
     Consequences
   ).
@@ -806,33 +804,31 @@ node_to_dot_name(Node, NodeDOTName):-
   node_to_dot_name_(Datum, NodeDOTName).
 
 node_to_dot_name_(Datum, DatumDOTName):-
-  point(Datum),
-  !,
+  point(Datum), !,
   point_to_dot_name(Datum, DatumDOTName).
 node_to_dot_name_(Datum, DatumDOTName):-
-  component_cloud(Datum),
-  !,
+  component_cloud(Datum), !,
   component_cloud_to_dot_name(Datum, DatumDOTName).
 % This is used for falsum nodes.
 node_to_dot_name_(Datum, Datum).
 
 node_to_justifications(Node, Justifications):-
-  setoff(
-    Justification,
+  aggregate_all(
+    set(Justification),
     node_justification(Node, Justification),
     Justifications
   ).
 
 node_to_label(Node, Label):-
-  setoff(
-    Environment,
+  aggregate_all(
+    set(Environment),
     node_environment(Node, Environment),
     Label
   ).
 
 nodes(Nodes):-
-  setoff(
-    Node,
+  aggregate_all(
+    set(Node),
     node(Node),
     Nodes
   ).

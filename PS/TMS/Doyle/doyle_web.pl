@@ -15,7 +15,8 @@ Web-interface to Doyle's TMS.
 :- use_module(library(http/http_dispatch)).
 :- use_module(tms(tms)).
 
-:- db_add_novel(http:location(tms, root(tms), [])).
+:- multifile(http:location/3).
+http:location(tms, root(tms), []).
 :- http_handler(tms(doyle), doyle_web, []).
 
 

@@ -31,7 +31,7 @@ In the furture services like Google translate
 :- use_module(os(file_ext)).
 :- use_module(os(mime_type)).
 
-:- db_add_novel(user:file_search_path(audio, project(audio))).
+user:file_search_path(audio, project(audio)).
 :- mime_register_type(audio, mpeg, mp3).
 
 

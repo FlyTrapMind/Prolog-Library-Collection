@@ -26,8 +26,8 @@
     rdf_same_graph/2, % +Graph1:atom
                       % +Graph2:atom
     rdf_schema/4, % +Graph:atom
-                  % -RDFS_Classes:ordset(iri)
-                  % -RDF_Properties:ordset(iri)
+                  % -RdfsClasses:ordset(iri)
+                  % -RdfProperties:ordset(iri)
                   % -Triples:ordset(compound)
     rdf_subgraph/2, % +Graph1:atom
                     % +Graph2:atom
@@ -50,7 +50,7 @@ Predicates that apply to entire RDF graphs.
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
@@ -257,11 +257,26 @@ rdf_same_graph(Graph1, Graph2):-
   rdf_is_graph(Graph1, Graph),
   rdf_is_graph(Graph2, Graph).
 
-rdf_schema(G, RDFS_Classes, RDF_Properties, Triples):-
-  setoff(C, rdfs_individual_of(C, rdfs:'Class'), RDFS_Classes),
-  setoff(P, rdfs_individual_of(P, rdf:'Property'), RDF_Properties),
-  ord_union(RDFS_Classes, RDF_Properties, Vocabulary),
-  setoff(rdf(S,P,O), (member(S, O, Vocabulary), rdf(S, P, O, G)), Triples).
+rdf_schema(G, RdfsClasses, RdfProperties, Triples):-
+  aggregate_all(
+    set(C),
+    rdfs_individual_of(C, rdfs:'Class'),
+    RdfsClasses
+  ),
+  aggregate_all(
+    set(P),
+    rdfs_individual_of(P, rdf:'Property'),
+    RdfProperties
+  ),
+  ord_union(RdfsClasses, RdfProperties, Vocabulary),
+  aggregate_all(
+    set(rdf(S,P,O)),
+    (
+      member(S, O, Vocabulary),
+      rdf(S, P, O, G)
+    ),
+    Triples
+  ).
 
 %! rdf_subgraph(+Graph1:atom, +Graph2:atom) is semidet.
 % Succeeds if the former graph is a subgraph of the latter.

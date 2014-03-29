@@ -36,12 +36,12 @@
 Allows one to monitor running threads that register.
 
 @author Wouter Beek
-@version 2013/03, 2013/09
+@version 2013/03, 2013/09, 2014/03
 */
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
@@ -104,8 +104,8 @@ print_thread(Alias):-
 
 print_threads:-
   % Print the threads in the alphabetical order of their alias.
-  setoff(
-    Alias,
+  aggregate_all(
+    set(Alias),
     thread_property(_, alias(Alias)),
     Aliases
   ),
@@ -196,8 +196,8 @@ thread_overview:-
   ).
 
 thread_overview(Atoms):-
-  setoff(
-    ThreadAlias/Current/End,
+  aggregate_all(
+    set(ThreadAlias/Current/End),
     (
       end_flag(ThreadAlias, End),
       flag(ThreadAlias, Current, Current)

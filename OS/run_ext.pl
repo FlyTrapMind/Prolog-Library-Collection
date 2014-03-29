@@ -28,14 +28,13 @@ Predicates for running external programs.
 :- use_module(generics(error_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
-:- use_module(library(debug)).
 :- use_module(library(process)).
 :- use_module(library(www_browser)).
 :- use_module(os(ansi_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(os_ext)).
-:- use_module(os(shell_ext)).
 
 :- multifile(prolog:message/3).
 
@@ -122,8 +121,8 @@ kill_processes:-
 % and whether a file type's external dependencies are met.
 
 list_external_programs:-
-  setoff(
-    Module,
+  aggregate_all(
+    set(Module),
     module_uses_program(Module, _Program),
     Modules
   ),

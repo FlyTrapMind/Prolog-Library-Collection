@@ -60,13 +60,13 @@ the edges and vertices.
 
 @author Wouter Beek
 @tbd Compare shortest path and travel predicates two versions.
-@version 2013/01-2013/04, 2013/07
+@version 2013/01-2013/04, 2013/07, 2014/03
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_traversal)).
+:- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
@@ -213,8 +213,8 @@ depth(O, N_P, V, Depth, Vs, Es):-
 depth_(_O, _N_P, Vs, 0, VerticesH, AllVs, AllEs, AllEs):- !,
   ord_union(VerticesH, Vs, AllVs).
 depth_(O, N_P, CurrentVs, Depth, VerticesH, AllVs, EdgesH, AllEs):-
-  setoff(
-    V-N,
+  aggregate_all(
+    set(V-N),
     (
       member(V, CurrentVs),
       call(N_P, V, N)
@@ -222,8 +222,8 @@ depth_(O, N_P, CurrentVs, Depth, VerticesH, AllVs, EdgesH, AllEs):-
     CurrentEdges0
   ),
   ord_subtract(CurrentEdges0, EdgesH, CurrentEs),
-  setoff(
-    N,
+  aggregate_all(
+    set(N),
     member(_V-N, CurrentEs),
     Ns
   ),

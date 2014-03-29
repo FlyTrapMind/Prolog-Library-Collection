@@ -13,8 +13,8 @@ Asserts statistics for VoID descriptions.
 @version 2013/03-2013/05, 2013/09-2014/03
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(regex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -81,8 +81,8 @@ void_update_dataset(VoidGraph, VoidDataset):-
   (
     rdf_string(VoidDataset, void:uriRegexPattern, RegularExpression, VoidGraph)
   ->
-    setoff(
-      Entity,
+    aggregate_all(
+      set(Entity),
       (
         rdf(Entity, _, _, VoidDataset),
         Entity=~RegularExpression

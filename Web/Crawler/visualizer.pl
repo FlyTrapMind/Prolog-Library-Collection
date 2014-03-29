@@ -15,15 +15,15 @@ Visualizer predicates.
 @version 2012/09
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(os(file_ext)).
 :- use_module(server(link_collection)).
 
 
 
 statistics_db:-
-  setoff(
-    Indegree/Outdegree/Link,
+  aggregate_all(
+    set(Indegree/Outdegree/Link),
     (
       site(Link),
       indegree(Link, Indegree),

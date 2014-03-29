@@ -21,7 +21,7 @@ The Brewer color scheme standard version 1.1.
 @version 2013/01, 2013/03, 2013/07
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 
 :- discontiguous(
   brewer_color(_Colorscheme, _Color, _StrangeLetter, _R, _G, _B)
@@ -30,8 +30,8 @@ The Brewer color scheme standard version 1.1.
 
 
 brewer_colorschemes(Colorschemes):-
-  setoff(
-    Colorscheme,
+  aggregate_all(
+    set(Colorscheme),
     brewer_color(Colorscheme, _Color, _StrangeLetter, _R, _G, _B),
     Colorschemes
   ).
@@ -43,8 +43,8 @@ brewer_colorschemes(Colorschemes):-
 % @arg ColorNames A list of atomic color names.
 
 brewer_colors(Colorscheme, Colors):-
-  setoff(
-    Color2,
+  aggregate_all(
+    set(Color2),
     (
       brewer_color(Colorscheme, Color1, _StrangeLetter, _R, _G, _B),
       atom_number(Color2, Color1)

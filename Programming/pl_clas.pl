@@ -14,6 +14,7 @@ Support for command line arguments given at Prolog startup.
 @version 2014/03
 */
 
+:- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
@@ -275,5 +276,5 @@ set_data_path(O1, O1):-
 
 set_data_path(Dir):-
   make_directory_path(Dir),
-  assert(user:file_search_path(data, Dir)).
+  db_replace_novel(user:file_search_path(data, Dir), [e,r]).
 

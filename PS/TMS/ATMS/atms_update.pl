@@ -35,7 +35,7 @@ are a strict superset of the assumptions in any of the other members of
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_db)).
 :- use_module(atms(atms_env)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 
 
@@ -267,8 +267,8 @@ weave(ATMS, Node, NewEnvironments, [Antecedent | Antecedents], NewLabel):-
   %          inconsistencies.
   %          Remove from =TempLabel= all duplicates and nogoods, as well
   %          as any environment subsumed by any other.
-  setoff(
-    TempEnvironment,
+  aggregate_all(
+    set(TempEnvironment),
     (
       member(TempEnvironment, TempLabel),
       \+(nogood(ATMS, TempEnvironment))

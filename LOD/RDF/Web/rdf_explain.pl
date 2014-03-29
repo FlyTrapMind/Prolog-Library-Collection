@@ -17,11 +17,11 @@ Web predicates for RDF graphs.
 */
 
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(gv(gv_file)).
 :- use_module(html(html_table)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
@@ -69,8 +69,8 @@ rdf_explain(_Request):-
 
 rdf_explain(S, P, O, G) -->
   {
-    setoff(
-      [S,P,O,G],
+    aggregate_all(
+      set([S,P,O,G]),
       rdf(S, P, O, G),
       Quadruples
     )

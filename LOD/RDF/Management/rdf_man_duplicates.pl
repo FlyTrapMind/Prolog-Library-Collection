@@ -8,7 +8,7 @@ Support for visualizing and managing duplicates in an RDF store.
 @version 2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(apply)).
@@ -36,8 +36,8 @@ rdf_man_duplicates(_Request):-
 rdf_man_duplicates -->
   {
     % Find all duplicate triples.
-    setoff(
-      [S,P,O],
+    aggregate_all(
+      set([S,P,O]),
       (
         rdf(S, P, O, G1),
         rdf(S, P, O, G2),
@@ -49,7 +49,11 @@ rdf_man_duplicates -->
       [S,P,O,Gs2],
       (
         member([S,P,O], DuplicateTriples),
-        setoff(G1, rdf(S, P, O, G1), Gs1),
+        aggregate_all(
+          set(G1),
+          rdf(S, P, O, G1),
+          Gs1
+        ),
         % Remove line numbers / indices
         % if a triple is not a duplicate within a graph.
         once(maplist(remove_graph_index(Gs1), Gs1, Gs2))

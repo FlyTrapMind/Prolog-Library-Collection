@@ -137,8 +137,8 @@ Only SL-justifications can be well-founded justifications.
 */
 
 :- use_module(dcg(dcg_generic)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(set_theory)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -444,8 +444,8 @@ add_supporting_node(TMS, Node, SupportingNode):-
 
 affected_consequences(N, AffectedConsequences):-
   is_node(N),
-  setoff(
-    AffectedConsequence,
+  aggregate_all(
+    set(AffectedConsequence),
     (
       rdf(N, doyle:has_consequence, AffectedConsequence),
       rdf(AffectedConsequence, doyle:has_supporting_node, N)
@@ -496,8 +496,8 @@ assumption_node(TMS, N):-
 
 believed_consequences(N, BelievedConsequences):-
   is_node(N),
-  setoff(
-    BelievedConsequence,
+  aggregate_all(
+    set(BelievedConsequence),
     (
       rdf(BelievedConsequence, doyle:has_supporting_node, N),
       rdf(N, doyle:has_consequence, BelievedConsequence)
@@ -523,8 +523,8 @@ believed_repercussions(N, Repercussions):-
 
 consequences(Node, Consequences):-
   is_node(Node),
-  setoff(
-    Consequence,
+  aggregate_all(
+    set(Consequence),
     rdf(Node, doyle:has_consequence, Consequence),
     Consequences
   ).
@@ -752,8 +752,8 @@ support_status(Node, SupportStatus):-
 %! supporting_nodes(+Node:iri, -SupportingNodes:ordset(node)) is det.
 
 supporting_nodes(Node, SupportingNodes):-
-  setoff(
-    SupportingNode,
+  aggregate_all(
+    set(SupportingNode),
     rdf(Node, doyle:has_supporting_node, SupportingNode),
     SupportingNodes
   ).

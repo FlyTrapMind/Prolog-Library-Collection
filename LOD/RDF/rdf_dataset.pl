@@ -22,7 +22,7 @@
 @version 2013/09-2013/10, 2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
@@ -47,8 +47,8 @@ rdf_assert_named_graph(DefaultGraph, NamedGraph):-
 
 rdf_dataset(RdfDataset):-
   rdf([graph_mode(no_index)], _, rdf:type, void:'Dataset', DefaultGraph),
-  setoff(
-    NamedGraph,
+  aggregate_all(
+    set(NamedGraph),
     rdf(
       [graph_mode(no_index)],
       NamedGraph,

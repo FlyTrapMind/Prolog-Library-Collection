@@ -22,7 +22,7 @@ Searching through an RDF graph.
 @version 2013/05
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
@@ -48,8 +48,8 @@ rdf_beam(O, V, Ps, Vs, Es):-
 rdf_beam(_O, [], _Ps, AllVs, AllEs, AllEs):-
   rdf_edges_to_vertices(AllEs, AllVs), !.
 rdf_beam(O, Vs, Ps, AllVs, Es, AllEs):-
-  setoff(
-    V-NextV,
+  aggregate_all(
+    set(V-NextV),
     (
       member(V, Vs),
       member(P, Ps),
@@ -87,9 +87,25 @@ rdf_breadth_first(Element, R1, R2, Sol1, Sol2):-
 rdf_breadth_first([], _R_AB, _R_BA, SolA, SolB, SolA, SolB):- !.
 rdf_breadth_first(A1, R_AB, R_BA, HistA1, HistB1, SolA, SolB):-
   % Find all Bs that can be reached from some A using the former relation.
-  setoff(B, (member(A, A1), rdf_has(B, R_AB, A), \+ member(B, HistB1)), B2),
+  aggregate_all(
+    set(B),
+    (
+      member(A, A1),
+      rdf_has(B, R_AB, A),
+      \+ member(B, HistB1)
+    ),
+    B2
+  ),
   % Find all As that can be reached from some B using the latter relation.
-  setoff(A, (member(B, B2), rdf_has(B, R_BA, A), \+ member(A, HistA1)), A2),
+  aggregate_all(
+    set(A),
+    (
+      member(B, B2),
+      rdf_has(B, R_BA, A),
+      \+ member(A, HistA1)
+    ),
+    A2
+  ),
   
   % Update the histories, so we will not visit the same resource twice.
   ord_union(HistA1, A2, HistA2),

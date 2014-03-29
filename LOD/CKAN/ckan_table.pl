@@ -7,7 +7,7 @@
 */
 
 :- use_module(ap(ap_table)).
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_container)).
@@ -50,8 +50,8 @@ ckan_row([H|T], [Resource,Name,Title,Organization,Users,Tags,H|T]):-
   once(rdf_string(X, ckan:display_name, Organization, _)),
 
   % Users.
-  setoff(
-    UserName,
+  aggregate_all(
+    set(UserName),
     (
       rdf(X, ckan:users, User, _),
       rdf_string(User, ckan:fullname, UserName, _)
@@ -61,8 +61,8 @@ ckan_row([H|T], [Resource,Name,Title,Organization,Users,Tags,H|T]):-
   atomic_list_concat(UserNames, '\n', Users),
 
   % Tags.
-  setoff(
-    TagName,
+  aggregate_all(
+    set(TagName),
     (
       rdf(Package, ckan:tags, Tag, _),
       rdf_string(Tag, ckan:name, TagName, _)

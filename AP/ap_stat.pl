@@ -17,7 +17,6 @@ Statistics for tracking the progress of automated processes.
 :- use_module(ap(ap_dir)).
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(atom_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(thread_ext)).
 :- use_module(html(html_table)).
 :- use_module(library(aggregate)).
@@ -51,8 +50,8 @@ ap_stat(_Request):-
   % Each has a distinguished index that we use for sorting.
   % The index is maintained in the statistics table
   %  we are about to generate.
-  setoff(
-    I-Column,
+  aggregate_all(
+    set(I-Column),
     (
       rdfs_individual_of(ApStage, ap:'AP-Stage'),
       rdf_string(ApStage, ap:name, Column, ap),

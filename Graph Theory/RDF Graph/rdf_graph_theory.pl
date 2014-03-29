@@ -54,7 +54,7 @@ This means that the definitions 'edge' and 'vertex' for graph theoretic
 @version 2012/01-2013/03, 2013/08, 2014/03
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
@@ -108,10 +108,22 @@ rdf_edges(G, Es):-
   rdf_edges([], G, Es).
 
 rdf_edges(O, G, Es):-
-  setoff(E, rdf_edge(O, G, E), Es).
+  aggregate_all(
+    set(E),
+    rdf_edge(O, G, E),
+    Es
+  ).
 
 rdf_edges_to_vertices(Es, Vs):-
-  setoff(V, (member(V-_W1, Es) ; member(_W2-V, Es)), Vs).
+  aggregate_all(
+    V,
+    (
+      member(V-_W1, Es)
+    ;
+      member(_-V, Es)
+    ),
+    Vs
+  ).
 
 %! rdf_graph_to_ugraph(+Graph:atom, -UGraph:ugraph) is det.
 % Returns the UG representation of a loaded RDF graph.
@@ -120,12 +132,12 @@ rdf_edges_to_vertices(Es, Vs):-
 % @arg UG:ugraph A UG datastructure.
 
 rdf_graph_to_ugraph(G, UG):-
-  setoff(
-    From-Neighbors,
+  aggregate_all(
+    set(From-Neighbors),
     (
       rdf_vertex(G, From),
-      setoff(
-        To,
+      aggregate_all(
+        set(To),
         rdf_edge(G, From-To),
         Neighbors
       )
@@ -144,13 +156,31 @@ rdf_neighbor(G, V1, V2):-
   rdf_edge(G, V1-V2).
 
 rdf_neighbors(G, V, Ns):-
-  setoff(N, rdf_neighbor(G, V, N), Ns).
+  aggregate_all(
+    set(N),
+    rdf_neighbor(G, V, N),
+    Ns
+  ).
 
 rdf_triples_to_edges(Ts, Es):-
-  setoff(FromV-ToV, member(rdf(FromV,_P,ToV), Ts), Es).
+  aggregate_all(
+    set(FromV-ToV),
+    member(rdf(FromV,_P,ToV), Ts),
+    Es
+  ).
 
 rdf_triples_to_vertices(Ts, Vs):-
-  setoff(V, (member(rdf(V1,_P,V2), Ts), (V = V1 ; V = V2)), Vs).
+  aggregate_all(
+    set(V),
+    (
+      member(rdf(V1,_P,V2), Ts),
+      (
+        V = V1
+      ;
+        V = V2)
+      ),
+    Vs
+  ).
 
 rdf_vertex(G, V):-
   rdf_vertex([], G, V).
@@ -275,5 +305,9 @@ rdf_vertices( G, Vs):-
   rdf_vertices([], G, Vs).
 
 rdf_vertices(O, G, Vs):-
-  setoff(V, rdf_vertex(O, G, V), Vs).
+  aggregate_all(
+    set(V),
+    rdf_vertex(O, G, V),
+    Vs
+  ).
 

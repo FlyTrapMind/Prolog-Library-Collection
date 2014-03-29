@@ -15,11 +15,6 @@
                % :Context
                % +Arguments:list
 
-% FINDALL RELATED PREDICATES
-    setoff/3, % +Format:compound
-              % :Goal
-              % -Set:ordset
-
 % FLAGS
     temporarily_set_flag/3, % +Flag:atom
                             % +TemporaryValue
@@ -64,6 +59,7 @@ Extensions to the SWI-Prolog meta predicates.
 
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(library(aggregate)).
 :- use_module(programming(pl_control)).
 
 :- meta_predicate(generic(:,:,+)).
@@ -72,7 +68,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(memo(0)).
 :- meta_predicate(nth0_call(1,+,+)).
 :- meta_predicate(nth0_call(+,1,+,+)).
-:- meta_predicate(setoff(+,0,-)).
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(temporarily_set_flag(+,+,0)).
 :- meta_predicate(temporarily_set_existing_flag(+,+,+,0)).
@@ -145,18 +140,6 @@ generic(P1, Context, Args):-
 
 
 % FINDALL RELATED PREDICATES %
-
-%! setoff(+Format, :Goal, -Set:ordset) is det.
-% The sorted version of forall/2.
-%
-% @arg Format A compound term.
-% @arg Goal A predicate name.
-% @arg Set An ordered set.
-% @see forall/2
-
-setoff(Format, Goal, Set):-
-  findall(Format, Goal, List),
-  sort(List, Set).
 
 % @tbd Run this with help_web/1!
 setoff_alt(Format, Goal, _Set):-

@@ -22,7 +22,7 @@ See also: [http://www.w3.org/wiki/Languages_as_RDF_Resources]
 @version 2013/01
 */
 
-:- use_module(generics(meta_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -62,16 +62,16 @@ find_resource(Options, Query, Resource):-
   % left out, then pose the query regardless of its language.
   (
     option(language(LanguageCode), Options),
-    setoff(
-      Resource,
+    aggregate_all(
+      set(Resource),
       rdfs_label(Resource, LanguageCode, Query),
       Resources
     ),
     Resource \== [],
     !
   ;
-    setoff(
-      Resource,
+    aggregate_all(
+      set(Resource),
       rdfs_label(Resource, Query),
       Resources
     )

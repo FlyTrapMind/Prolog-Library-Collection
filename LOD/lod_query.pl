@@ -21,9 +21,9 @@
 @version 2014/01-2014/02
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(sgml)).
@@ -130,8 +130,8 @@ lod_local_query_on_graph(
   ).
 
 lod_local_query_on_loaded_graph(Resource, Resources, Propositions, Graph):-
-  setoff(
-    [Resource,P,O],
+  aggregate_all(
+    set([Resource,P,O]),
     rdf(Resource, P, O, Graph),
     Propositions
   ),

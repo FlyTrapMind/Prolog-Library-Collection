@@ -17,8 +17,8 @@
   ]
 ).
 
-:- use_module(generics(meta_ext)).
 :- use_module(graph_theory(graph_traversal)).
+:- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
@@ -46,8 +46,8 @@
 % @arg Pass This one is optional. "Wir haben ein Abstich gemacht."
 
 shortest_paths1(G, E_P, N_P, From, To, Pass, ShortestPaths):-
-  setoff(
-    Length-Path,
+  aggregate_all(
+    set(Length-Path),
     (
       traverse(
         [unique_vertex(true)],
@@ -76,8 +76,8 @@ shortest_paths1(G, E_P, N_P, From, To, Pass, ShortestPaths):-
 
 shortest_paths2(G, N_P, FromV, ToV, ViaV, ShortestLength-ShortestPath):-
   % @tbd Why sorted?
-  setoff(
-    Length-Path,
+  aggregate_all(
+    set(Length-Path),
     (
       traverse(G, N_P, FromV, ToV, Length, Vs, Path),
       member(ViaV, Vs)
