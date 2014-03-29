@@ -12,6 +12,10 @@
               % ?List:list
     combination/2, % +Lists:list(list)
                    % -Combination:list
+    complement_list/4, % +FromList:list
+                       % +Length:nonneg
+                       % +FillElement
+                       % -ToList:list
     element_cut/4, % +List:list
                    % +Element
                    % -List1:list
@@ -208,6 +212,23 @@ combination([], []).
 combination([ListH|ListT], [H|T]):-
   member(H, ListH),
   combination(ListT, T).
+
+
+%! complement_list(
+%!   +FromList:list,
+%!   +Length:nonneg,
+%!   +FillElement,
+%!   -ToList:list
+%! ) is det.
+
+complement_list(L, Length2, _, L):-
+  length(L, Length1),
+  Length1 >= Length2, !.
+complement_list(L1, Length2, Fill, L2):-
+  length(L1, Length1),
+  FillLength is Length2 - Length1,
+  repeating_list(Fill, FillLength, FillList),
+  append(L1, FillList, L2).
 
 
 %! element_cut(+L:list, +Element:atom, -L1:list, -L2:list) is det.

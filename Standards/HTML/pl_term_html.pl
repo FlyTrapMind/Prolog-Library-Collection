@@ -322,12 +322,24 @@ pl_term_html(PL_Term) -->
   html(span(class=compound, Atom)).
 
 
-html_operator(Operator) -->
+html_operator(op(Precedence,Type,Name)) -->
   {
     http_absolute_location(pl(operator), Location1, []),
-    uri_query_add(Location1, term, Operator, Location2)
+    uri_query_add(Location1, operator, op(Precedence,Type,Name), Location2)
   },
-  html(span(class=operator, a(href=Location2, Operator))).
+  html(
+    span(class=operator,
+      a(href=Location2, [
+        'op(',
+        span(class=operator_precedence, \pl_term_html(Precedence)),
+        ',',
+        span(class=operator_type, \pl_term_html(Type)),
+        ',',
+        span(class=operator_name, \pl_term_html(Name)),
+        ')'
+      ])
+    )
+  ).
 
 
 html_predicate(Module:Functor/Arity) --> !,

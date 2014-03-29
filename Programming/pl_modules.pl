@@ -8,6 +8,7 @@ Web interface to Prolog modules.
 @version 2014/03
 */
 
+:- use_module(generics(list_ext)).
 :- use_module(generics(uri_query)).
 :- use_module(html(html_list)).
 :- use_module(html(html_table)).
@@ -49,16 +50,21 @@ pl_modules -->
     ),
     % Properties of modules.
     findall(
-      [Module|Properties],
+      Row,
       (
         member(Module, Modules),
-        findall(Property, module_property(Module, Property), Properties)
+        findall(
+          Property,
+          module_property(Module, Property),
+          Properties
+        ),
+        complement_list([Module|Properties], 6, [], Row)
       ),
       Rows
     )
   },
   html_table(
-    [header_row(true)],
+    [header_row(true),indexed(true)],
     html('Overview of modules.'),
     pl_module_term_html,
     [['Module','Class','File','Line count','Exported predicates',
