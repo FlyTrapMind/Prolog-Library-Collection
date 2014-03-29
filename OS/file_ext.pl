@@ -108,6 +108,7 @@ We use the following abbreviations in this module:
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).

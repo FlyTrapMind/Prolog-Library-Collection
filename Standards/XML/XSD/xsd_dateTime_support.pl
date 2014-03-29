@@ -63,6 +63,7 @@ that represent date, time, and duration in a standards-compliant way.
 @version 2013/08-2013/11, 2014/03
 */
 
+:- use_module(generics(meta_ext)).
 :- use_module(math(math_ext)).
 
 
