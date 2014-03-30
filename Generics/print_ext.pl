@@ -37,8 +37,8 @@ proof(Conclusion, Premises)
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(os(shell_ext)).
-:- use_module(programming(pl_mode)).
-:- use_module(programming(pl_control)).
+:- use_module(pl(pl_control)).
+:- use_module(pl(pl_mode)).
 
 % The number of spaces that go into one indent.
 :- setting(

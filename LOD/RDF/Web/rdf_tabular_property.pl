@@ -18,12 +18,12 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(html(pl_term_html)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_term)).
@@ -116,7 +116,7 @@ rdf_tabular_predicate_literals(G, P) -->
     list_truncate(Rows1, 50, Rows2)
   },
   html([
-    p([\rdf_term_html(P, G), ' has ',\pl_term_html(L), ' unique values.']),
+    p([\rdf_term_html(P, G), ' has ',\html_pl_term(L), ' unique values.']),
     \rdf_html_table(
       [graph(G),header_row(true)],
       html([

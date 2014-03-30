@@ -5,8 +5,10 @@
                         % -Pairs:ordset(pair)
     pairs_to_members/2, % +Pairs:list(pair)
                         % -Members:list
-    pairs_to_ordsets/2 % +Pairs:list(pair(iri))
-                       % -Sets:list(ordset(iri))
+    pairs_to_ordsets/2, % +Pairs:list(pair(iri))
+                        % -Sets:list(ordset(iri))
+    term_to_pair/2 % @Term
+                   % -Pair:pair
   ]
 ).
 
@@ -15,7 +17,7 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12
+@version 2013/09-2013/10, 2013/12, 2014/03
 */
 
 :- use_module(generics(list_ext)).
@@ -107,6 +109,23 @@ pairs_to_ordsets([X-Y|T], Sets1, Sol):-
   list_to_ord_set([X,Y], NewSet),
   ord_add_element(Sets1, NewSet, Sets2),
   pairs_to_ordsets(T, Sets2, Sol).
+
+
+%! term_to_pair(@Term, -Pair:pair) is det.
+% Retrusn the pair notation `First-Second` if the given term
+% can be interpreted as a pair.
+%
+% The following pair notations are recognized:
+%   1. `X-Y`
+%   2. `X=Y`
+%   3. `[X,Y]`
+%   4. `X(Y)`
+
+term_to_pair(X-Y, X-Y):- !.
+term_to_pair(X=Y, X-Y):- !.
+term_to_pair([X,Y], X-Y):- !.
+term_to_pari(Compound, X-Y):-
+  Compound =.. [X,Y].
 
 
 

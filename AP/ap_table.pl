@@ -18,13 +18,14 @@
 :- use_module(generics(uri_ext)).
 :- use_module(html(html_list)).
 :- use_module(html(html_table)).
-:- use_module(html(pl_term_html)).
+:- use_module(html(html_tuple)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
@@ -128,7 +129,7 @@ ap_message(ApStage) -->
     rdf_string(ApStage, ap:error, Atom, ap),
     read_term_from_atom(Atom, Error, [])
   },
-  html(\pl_term_html(Error)).
+  html(\html_pl_term(Error)).
 ap_message(ApStage) -->
   {rdfs_individual_of(ApStage, ap:'Skip')}, !,
   html('Skip').
@@ -164,7 +165,7 @@ ap_message(ApStage) -->
     ),
     keysort(NVPairs1, NVPairs2)
   },
-  html(\html_nvpairs(NVPairs2)).
+  html(\html_pairs(html_pl_term, NVPairs2)).
 ap_message(ApStage) -->
   {
     rdfs_individual_of(ApStage, ap:'Tables'), !,

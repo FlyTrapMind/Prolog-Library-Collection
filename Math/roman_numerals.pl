@@ -15,7 +15,7 @@ Predicates supporting the Roman notation for numerals.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(generics(meta_ext)).
-:- use_module(programming(pl_control)).
+:- use_module(pl(pl_control)).
 
 
 

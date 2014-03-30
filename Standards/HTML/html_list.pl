@@ -21,12 +21,12 @@ Support for generating HTML lists.
 
 :- use_module(dcg(dcg_meta)).
 :- use_module(html(html)).
-:- use_module(html(pl_term_html)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(server(web_modules)).
 
 :- meta_predicate(html_list(+,3,+,?,?)).
@@ -65,7 +65,7 @@ html_handler_list(O1, ParentPath) -->
 %     Whether an order =ol= or unordered =ul= HTML list is used.
 
 html_list(O1, Elements) -->
-  html_list(O1, pl_term_html, Elements).
+  html_list(O1, html_pl_term, Elements).
 
 html_list(O1, Cell, Elements) -->
   {select_option(ordered(Ordered), O1, O2, false)},

@@ -16,13 +16,13 @@ Web interface to Prolog predicates.
 :- use_module(generics(uri_query)).
 :- use_module(html(html_list)).
 :- use_module(html(html_table)).
-:- use_module(html(pl_term_html)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(lists)).
 :- use_module(library(prolog_xref)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(server(web_modules)).
 
 http:location(pl, root(pl), []).
@@ -66,7 +66,7 @@ pl_predicate(Predicate) -->
   html_table(
     [header_row(true)],
     html(['Overview of predicate ',Predicate,'.']),
-    pl_term_html,
+    html_pl_term,
     Rows
   ).
 

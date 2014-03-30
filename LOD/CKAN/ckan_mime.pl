@@ -125,7 +125,6 @@ text/xml
 
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(html(pl_term_html)).
 :- use_module(html(html_table)).
 :- use_module(http_parameters(rfc2616_media_type)).
 :- use_module(library(aggregate)).
@@ -134,6 +133,7 @@ text/xml
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_string)).
@@ -207,7 +207,7 @@ ckan_mime_table -->
   html([
     p([
       'There are ',
-      \pl_term_html(NumberOfResourcesWithoutMIME),
+      \html_pl_term(NumberOfResourcesWithoutMIME),
       ' resources with no MIME type.'
     ]),
     \mime_table(`Correct MIME types`, TruePairs),
@@ -244,7 +244,7 @@ mime_content_type -->
     )
   },
   html([
-    p(['There are ',\pl_term_html(L1),' resources that have the same MIME type in their CKAN metadata and in their HTTP reply.']),
+    p(['There are ',\html_pl_term(L1),' resources that have the same MIME type in their CKAN metadata and in their HTTP reply.']),
     \html_table(
       [header_row(true),indexed(false)],
       html('Resources with conflicting MIME types.'),
@@ -329,9 +329,9 @@ ckan_mime_table_structured_open -->
         [NumberOfNoMIMEResources,'No MIME','false','false','false']
       |Rows]
     ),
-    p(['There are ',\pl_term_html(N1),' resources with a structured MIME format (2-star).']),
-    p(['There are ',\pl_term_html(N2),' resources with an open MIME format.']),
-    p(['There are ',\pl_term_html(N3),' resources with a structured and open MIME format (3-stars).'])
+    p(['There are ',\html_pl_term(N1),' resources with a structured MIME format (2-star).']),
+    p(['There are ',\html_pl_term(N2),' resources with an open MIME format.']),
+    p(['There are ',\html_pl_term(N3),' resources with a structured and open MIME format (3-stars).'])
   ]).
 
 boolean_and(true, true, true ):- !.

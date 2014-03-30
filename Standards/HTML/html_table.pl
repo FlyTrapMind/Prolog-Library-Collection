@@ -24,9 +24,9 @@ Cell contents are represented by Prolog ground terms that are elements
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
-:- use_module(html(pl_term_html)).
 :- use_module(library(http/html_write)).
 :- use_module(library(option)).
+:- use_module(pl_web(html_pl_term)).
 
 :- meta_predicate(html_table(:,//,+,?,?)).
 :- meta_predicate(html_table(:,//,3,+,?,?)).
@@ -62,7 +62,7 @@ Cell contents are represented by Prolog ground terms that are elements
 %      Default is `false`.
 
 html_table(O1, Caption, Rows) -->
-  html_table(O1, Caption, pl_term_html, Rows).
+  html_table(O1, Caption, html_pl_term, Rows).
 
 is_meta(highlighted_row).
 html_table(O1, Caption, Cell, Rows) -->

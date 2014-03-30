@@ -45,7 +45,7 @@ Allows one to monitor running threads that register.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists)).
-:- use_module(programming(pl_control)).
+:- use_module(pl(pl_control)).
 
 :- meta_predicate(forall_thread(0,0,+,+)).
 :- meta_predicate(intermittent_goal(:,:,+)).

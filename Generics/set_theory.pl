@@ -32,7 +32,7 @@ Extra set functions for use in SWI-Prolog.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
-:- use_module(programming(pl_mode)).
+:- use_module(pl(pl_mode)).
 
 
 

@@ -16,12 +16,12 @@ Generates HTML tables for overviews of RDFS classes.
 */
 
 :- use_module(generics(list_ext)).
-:- use_module(html(pl_term_html)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_term_html)).
@@ -46,7 +46,7 @@ rdf_tabular_class(G, Class1) -->
     p([
       \rdf_term_html(Class2, G),
       ' is an RDF class with ',
-      \pl_term_html(L),
+      \html_pl_term(L),
       ' instances.'
     ]),
     \rdf_html_table(

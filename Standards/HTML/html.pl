@@ -2,30 +2,6 @@
   html,
   [
     html_link//1, % +Link:pair(url,atom)
-    html_pair//2, % +Element1
-                  % +Element2
-    html_pair//3, % :WriteMethod
-                  % +Element1
-                  % +Element2
-    html_quadruple//4, % +Element1
-                       % +Element2
-                       % +Element3
-                       % +Element4
-    html_quadruple//5, % :WriteMethod
-                       % +Element1
-                       % +Element2
-                       % +Element3
-                       % +Element4
-    html_triple//3, % +Element1
-                    % +Element2
-                    % +Element3
-    html_triple//4, % :WriteMethod
-                    % +Element1
-                    % +Element2
-                    % +Element3
-    html_tuple//1, % +Elements:list
-    html_tuple//2, % :WriteMethod
-                   % +Elements:list
     reply_html_file/2, % +Style:atom
                        % +File:atom
 
@@ -69,11 +45,11 @@ HTML attribute parsing, used in HTML table generation.
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(html(pl_term_html)).
 :- use_module(http(http)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(sgml)).
+:- use_module(pl_web(html_pl_term)).
 
 % Assert DTD file locations.
 user:file_search_path(dtd, html(.)).
@@ -81,16 +57,6 @@ user:file_search_path(dtd, html(.)).
 % Assert the HTML file types.
 user:prolog_file_type(htm, html).
 user:prolog_file_type(html, html).
-
-:- meta_predicate(html_pair(3,+,+,?,?)).
-:- rdf_meta(html_pair(:,r,r,?,?)).
-:- meta_predicate(html_quadruple(3,+,+,+,+,?,?)).
-:- rdf_meta(html_quadruple(:,r,r,r,r,?,?)).
-:- meta_predicate(html_triple(3,+,+,+,?,?)).
-:- rdf_meta(html_triple(:,r,r,r,?,?)).
-:- meta_predicate(html_tuple(3,+,?,?)).
-:- meta_predicate(html_tuple_(+,3,+,?,?)).
-:- rdf_meta(html_tuple(:,t,?,?)).
 
 
 
@@ -103,77 +69,6 @@ html_link(URL-Label) --> !,
 % Also allow elements with no link.
 html_link(Label) -->
   html(Label).
-
-
-%! html_pair(+Element1, +Element2)// is det.
-% @see html_pair//3
-
-html_pair(E1, E2) -->
-  html_pair(pl_term_html, E1, E2).
-
-%! html_pair(:WriteMethod, +Element1, +Element2)// is det.
-% Generates an HTML representation for a pair.
-
-html_pair(Dcg, E1, E2) -->
-  html_tuple_(pair, Dcg, [E1,E2]).
-
-
-%! html_quadruple(+Element1, +Elememt2, +Element3, +Element4)// is det.
-% @see html_quadruple//5
-
-html_quadruple(E1, E2, E3, E4) -->
-  html_quadruple(pl_term_html, E1, E2, E3, E4).
-
-%! html_quadruple(:Dcg, +Element1, +Elememt2, +Element3, +Element4)// is det.
-% Generates an HTML representation for a triple.
-
-html_quadruple(Dcg, E1, E2, E3, E4) -->
-  html_tuple_(triple, Dcg, [E1,E2,E3,E4]).
-
-
-%! html_triple(:Dcg, +Elements:list)// is det.
-% @see html_tripl//2
-
-html_triple(E1, E2, E3) -->
-  html_triple(pl_term_html, E1, E2, E3).
-
-%! html_triple(:Dcg, +Elements:list)// is det.
-% Generates an HTML representation for a triple.
-
-html_triple(Dcg, E1, E2, E3) -->
-  html_tuple_(triple, Dcg, [E1,E2,E3]).
-
-
-%! html_tuple(+Elements:list)// is det.
-% @see html_tuple//2
-
-html_tuple(L) -->
-  html_tuple(pl_term_html, L).
-
-%! html_tuple(:Dcg, +Elements:list)// is det.
-% Generates an HTML representation for a tuple.
-
-html_tuple(Dcg, L) -->
-  html_tuple_(tuple, Dcg, L).
-
-html_tuple_(Class, Dcg, L) -->
-  html(
-    span(class=Class, [
-      &(lang),
-      \html_tuple_elements(Dcg, L),
-      &(rlang)
-    ])
-  ).
-
-html_tuple_elements(_, []) --> !, [].
-html_tuple_elements(Dcg, [H]) --> !,
-  html(span(class=element, \dcg_call(Dcg, H))).
-html_tuple_elements(Dcg, [H|T]) -->
-  html([
-    span(class=element, \dcg_call(Dcg, H)),
-    ',',
-    \html_tuple_elements(Dcg, T)
-  ]).
 
 
 %! reply_html_file(+Style:atom, +File:atom) is det.

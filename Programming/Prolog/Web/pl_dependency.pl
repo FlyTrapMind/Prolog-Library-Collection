@@ -10,13 +10,13 @@ Web interface to Prolog dependencies.
 
 :- use_module(generics(uri_query)).
 :- use_module(html(html_table)).
-:- use_module(html(pl_term_html)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_path)).
 :- use_module(library(lists)).
 :- use_module(library(prolog_xref)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(server(web_modules)).
 
 http:location(pl, root(pl), []).
@@ -111,5 +111,5 @@ pl_dependencies_term_html(Source) -->
   },
   html(span(class=source, a(href=Location2, Source))).
 pl_dependencies_term_html(X) -->
-  pl_term_html(X).
+  html_pl_term(X).
 

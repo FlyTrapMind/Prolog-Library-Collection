@@ -32,15 +32,15 @@ HTML generation for RDF terms.
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(generics(uri_query)).
-:- use_module(html(html)).
 :- use_module(html(html_list)).
-:- use_module(html(pl_term_html)).
+:- use_module(html(html_tuple)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(pl_web(html_pl_term)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_literal)).
@@ -88,7 +88,7 @@ rdf_term_html(Graph, RdfTerm) -->
   rdf_iri_html(RdfTerm, Graph).
 % Prolog term.
 rdf_term_html(_, PlTerm) -->
-  html(span(class='prolog-term', \pl_term_html(PlTerm))).
+  html(span(class='prolog-term', \html_pl_term(PlTerm))).
 
 
 %! rdf_term_in_graph_html(

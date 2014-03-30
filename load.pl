@@ -68,6 +68,8 @@ load_pgc:-
   assert(user:file_search_path(math,            pgc('Math'       ))),
   assert(user:file_search_path(os,              pgc('OS'         ))),
   assert(user:file_search_path(programming,     pgc('Programming'))),
+    assert(user:file_search_path(pl,              programming('Prolog'))),
+      assert(user:file_search_path(pl_web,        pl('Web'))),
   assert(user:file_search_path(ps,              pgc('PS'         ))),
     assert(user:file_search_path(tms,             ps('TMS'))),
       assert(user:file_search_path(atms,            tms('ATMS' ))),
@@ -93,11 +95,11 @@ load_pgc:-
     assert(user:file_search_path(crawler,         web('Crawler'))),
 
   % Check SWI-Prolog version.
-  use_module(programming(pl_version)),
+  use_module(pl(pl_version)),
   check_pl_version,
 
   % Set data subdirectory.
-  use_module(programming(pl_clas)),
+  use_module(pl(pl_clas)),
   process_options(_),
 
   % Initialize Web module registration.
@@ -113,7 +115,7 @@ load_pgc:-
 
   % Install packages.
   % This requires user interaction on the first load.
-  use_module(programming(pl_package)),
+  use_module(pl(pl_package)),
   maplist(load_pl_package, [regex,smtp]),
 
   % Start logging.

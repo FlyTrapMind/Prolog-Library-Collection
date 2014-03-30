@@ -72,7 +72,7 @@ user:cmd_option(d, debug, boolean,
 
 user:process_cmd_option(debug(true)):-
   assert(user:debug_mode),
-  use_module(programming(pl_debug)).
+  use_module(pl(pl_debug)).
 user:process_cmd_option(debug(false)).
 
 
