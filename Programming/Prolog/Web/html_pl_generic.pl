@@ -5,9 +5,7 @@
     html_files//1, % +Files:list(atom)
     html_module//1, % +Module:atom
     html_operator//1, % +Operator:compound
-    html_predicate//1, % +Predicate
-    html_predicate//2, % +Functor:atom
-                       % +Arity:nonneg
+    html_predicate//1, % +Predicate:compound
     html_predicate//3, % +Module:atom
                        % +Functor:atom
                        % +Arity:nonneg
@@ -80,7 +78,7 @@ html_module(Module) -->
 
 html_operator(op(Precedence,Type,Name)) -->
   {
-    http_absolute_location(pl(operator), Location1, []),
+    http_absolute_location(pl(dev), Location1, []),
     uri_query_add(Location1, operator, op(Precedence,Type,Name), Location2)
   },
   html(
@@ -98,37 +96,21 @@ html_operator(op(Precedence,Type,Name)) -->
   ).
 
 
-html_predicate(Module:Functor/Arity) --> !,
+html_predicate(Module:Functor/Arity) -->
   html_predicate(Module, Functor, Arity).
-html_predicate(Functor/Arity) -->
-  html_predicate(Functor, Arity).
 
-
-html_predicate(Functor, Arity) -->
-  {
-    http_absolute_location(pl(predicate), Location1, []),
-    uri_query_add(Location1, predicate, Functor/Arity, Location2)
-  },
-  html(
-    span(class=predicate,
-      a(href=Location2,
-        \html_functor_and_arity(Functor, Arity))
-    )
-  ).
 
 html_predicate(Module, Functor, Arity) -->
   {
-    http_absolute_location(pl(predicate), Location1, []),
+    http_absolute_location(pl(dev), Location1, []),
     uri_query_add(Location1, predicate, Module:Functor/Arity, Location2)
   },
   html(
-    span(class=predicate,
-      a(href=Location2, [
-        \html_module(Module),
-        ':',
-        \html_functor_and_arity(Functor, Arity)
-      ])
-    )
+    span(class=predicate, [
+      \html_module(Module),
+      ':',
+      a(href=Location2, \html_functor_and_arity(Functor, Arity))
+    ])
   ).
 
 

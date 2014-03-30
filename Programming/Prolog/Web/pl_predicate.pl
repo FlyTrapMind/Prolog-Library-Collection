@@ -1,6 +1,7 @@
 :- module(
   pl_predicates,
   [
+    pl_predicate//1, % :Predicate
     pl_predicates//2 % +Modules:atom
                      % +Predicates:list
   ]
@@ -36,17 +37,6 @@ http:location(pl, root(pl), []).
 
 
 
-% A single predicate term.
-pl_predicates(Request):-
-  request_query_read(Request, predicate, Predicate), !,
-  reply_html_page(
-    app_style,
-    title(['Prolog predicates - Predicate ',Predicate]),
-    \pl_predicate(Predicate)
-  ).
-pl_predicates(_Request):-
-  reply_html_page(app_style, title('Prolog predicates'), html('TODO')).
-
 pl_predicate(Module:Functor/Arity) -->
   {
     length(Args, Arity),
@@ -80,6 +70,17 @@ pl_predicate(Module:Functor/Arity) -->
     Rows
   ).
 
+
+% A single predicate term.
+pl_predicates(Request):-
+  request_query_read(Request, predicate, Predicate), !,
+  reply_html_page(
+    app_style,
+    title(['Prolog predicates - Predicate ',Predicate]),
+    \pl_predicate(Predicate)
+  ).
+pl_predicates(_Request):-
+  reply_html_page(app_style, title('Prolog predicates'), html('TODO')).
 
 pl_predicates(Module, [H|T]) -->
   pl_predicate(Module:H),
