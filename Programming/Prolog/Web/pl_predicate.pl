@@ -1,7 +1,8 @@
 :- module(
   pl_predicates,
   [
-    pl_predicates//1 % +Predicates:list
+    pl_predicates//2 % +Modules:atom
+                     % +Predicates:list
   ]
 ).
 
@@ -22,8 +23,11 @@ Web interface to Prolog predicates.
 :- use_module(library(http/http_path)).
 :- use_module(library(lists)).
 :- use_module(library(prolog_xref)).
+:- use_module(pl_web(html_pl_generic)).
 :- use_module(pl_web(html_pl_term)).
 :- use_module(server(web_modules)).
+
+:- meta_predicate(pl_predicate(:,?,?)).
 
 http:location(pl, root(pl), []).
 :- http_handler(pl(predicates), pl_predicates, []).
@@ -43,14 +47,16 @@ pl_predicates(Request):-
 pl_predicates(_Request):-
   reply_html_page(app_style, title('Prolog predicates'), html('TODO')).
 
-
-pl_predicate(Predicate) -->
+pl_predicate(Module:Functor/Arity) -->
   {
+    length(Args, Arity),
+    Predicate =.. [Functor|Args],
     % Enumerate all predicate properties.
     findall(
       [Name,Value],
       (
-        predicate_property(Predicate, Property),
+
+        predicate_property(Module:Predicate, Property),
         Property =.. [Name|T],
         (
           T == []
@@ -65,14 +71,18 @@ pl_predicate(Predicate) -->
   },
   html_table(
     [header_row(true)],
-    html(['Overview of predicate ',Predicate,'.']),
+    html([
+      'Overview of predicate ',
+      \html_predicate(Module, Functor, Arity),
+      '.'
+    ]),
     html_pl_term,
     Rows
   ).
 
 
-pl_predicates([H|T]) -->
-  pl_predicate(H),
-  pl_predicates(T).
-pl_predicates([]) --> [].
+pl_predicates(Module, [H|T]) -->
+  pl_predicate(Module:H),
+  pl_predicates(Module, T).
+pl_predicates(_, []) --> [].
 

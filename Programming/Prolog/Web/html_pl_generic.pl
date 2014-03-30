@@ -3,14 +3,15 @@
   [
     html_file//1, % +File:atom
     html_files//1, % +Files:list(atom)
-    html_program//1, % +Program:atom
+    html_module//1, % +Module:atom
     html_operator//1, % +Operator:compound
     html_predicate//1, % +Predicate
     html_predicate//2, % +Functor:atom
                        % +Arity:nonneg
-    html_predicate//3 % +Module:atom
-                      % +Functor:atom
-                      % +Arity:nonneg
+    html_predicate//3, % +Module:atom
+                       % +Functor:atom
+                       % +Arity:nonneg
+    html_program//1 % +Program:atom
   ]
 ).
 
@@ -70,7 +71,11 @@ html_functor_and_arity(Functor, Arity) -->
 
 
 html_module(Module) -->
-  html(span(class=module, Module)).
+  {
+    http_absolute_location(pl(dev), Location1, []),
+    uri_query_add(Location1, module, Module, Location2)
+  },
+  html(span(class=module, a(href=Location2, Module))).
 
 
 html_operator(op(Precedence,Type,Name)) -->

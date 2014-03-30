@@ -40,12 +40,8 @@ html_pl_term(error(Formal,Context)) --> !,
   ).
 % Prolog module.
 html_pl_term(Module) -->
-  {
-    current_module(Module), !,
-    http_absolute_location(pl(modules), Location1, []),
-    uri_query_add(Location1, module, Module, Location2)
-  },
-  html(span(class=module, a(href=Location2, Module))).
+  {current_module(Module)}, !,
+  html_module(Module).
 % Class compound term.
 html_pl_term(class(Class)) --> !,
   html(span(class=class, Class)).
@@ -54,10 +50,10 @@ html_pl_term(file(File)) --> !,
   html_file(File).
 % Prolog predicate terms.
 html_pl_term(predicates(Predicates)) --> !,
-  html_list([ordered(true)], html_predicate, Predicates).
+  html_list([ordered(false)], html_predicate, Predicates).
 % Prolog operators.
 html_pl_term(operators(Operators)) --> !,
-  html_list([ordered(true)], html_operator, Operators).
+  html_list([ordered(false)], html_operator, Operators).
 % Integer.
 html_pl_term(Integer) -->
   {integer(Integer)}, !,

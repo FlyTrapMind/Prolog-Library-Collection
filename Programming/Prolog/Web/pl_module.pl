@@ -1,6 +1,7 @@
 :- module(
   pl_module,
   [
+    pl_module//1, % +Module:atom
     pl_modules//0
   ]
 ).
@@ -23,12 +24,12 @@ Web interface to Prolog modules.
 :- use_module(library(http/http_path)).
 :- use_module(library(lists)).
 :- use_module(library(prolog_xref)).
-:- use_module(pl_web(pl_predicates)).
+:- use_module(pl_web(pl_predicate)).
 :- use_module(pl_web(html_pl_term)).
 
 
 
-%! module_to_row(+Module:atom, -Row:list) is det.
+%! module_properties(+Module:atom, -Row:list) is det.
 % Returns a list of module properties.
 %
 % The list is ensured to consist of the following members:
@@ -37,16 +38,21 @@ Web interface to Prolog modules.
 %    3. The list of exported predicates.
 %    4. The list of exported operators.
 
-module_to_row(
+module_properties(
   Module,
   [class(Class),file(File),predicates(Predicates2),operators(Operators2)]
 ):-
-  module_property(Module, class(Class),
+  module_property(Module, class(Class)),
   module_property(Module, file(File)),
   ignore(module_property(Module, exports(Predicates1))),
   default(Predicates1, [], Predicates2),
   ignore(module_property(Module, exported_operators(Operators1))),
   default(Operators1, [], Operators2).
+
+
+pl_module(Module) -->
+  {module_property(Module, exports(Predicates))},
+  pl_predicates(Module, Predicates).
 
 
 pl_modules -->
@@ -59,10 +65,10 @@ pl_modules -->
     ),
     % Properties of modules.
     findall(
-      Row,
+      [Module|Properties],
       (
         member(Module, Modules),
-        module_to_row(Module, Row)
+        module_properties(Module,Properties)
       ),
       Rows
     )
@@ -71,12 +77,7 @@ pl_modules -->
     [header_row(true),indexed(true)],
     html('Overview of modules.'),
     html_pl_term,
-    [['Module','Class','File','Line count','Exported predicates',
-      'Exported operators']|Rows]
+    [['Module','Class','File','Exported predicates','Exported operators']
+        |Rows]
   ).
-
-
-pl_module(Module) -->
-  {module_property(Module, exports(Predicates))},
-  pl_predicates(Predicates).
 

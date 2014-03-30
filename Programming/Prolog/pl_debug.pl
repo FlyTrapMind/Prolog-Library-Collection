@@ -48,6 +48,9 @@ http:location(pldoc, root(help), [priority(10)]).
 
 :- use_module(library(swi_ide)).
 
+% plDev
+:- use_module(pl_web(pl_dev)).
+
 % Load PGC documentation and debugging tools.
 :- use_module(rdf(rdf_serial)).
 :- use_module(rdf_web(rdf_tabular)).
@@ -56,6 +59,8 @@ http:location(pldoc, root(help), [priority(10)]).
 :- use_module(server(web_console)).
 :- use_module(server(web_message)).
 :- use_module(tms(tms_web)).
+
+:- initialization(pl_debug).
 
 
 
@@ -90,7 +95,6 @@ pl_debug:-
 
   % Full lDoc.
   %%%%load_modules_for_pldoc,
-
   true.
 
 
@@ -135,6 +139,8 @@ load_modules_for_pldoc:-
         math,
         os,
         programming,
+          pl,
+            pl_web,
         ps,
           tms,
             atms,
