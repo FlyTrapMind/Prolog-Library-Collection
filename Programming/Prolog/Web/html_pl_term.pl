@@ -49,11 +49,11 @@ html_pl_term(class(Class)) --> !,
 html_pl_term(file(File)) --> !,
   html_file(File).
 % Prolog predicate terms.
-html_pl_term(predicates(Predicates)) --> !,
-  html_list([ordered(false)], html_predicate, Predicates).
+html_pl_term(predicates(Module, Predicates)) --> !,
+  html_list([ordered(false)], html_predicate(Module), Predicates).
 % Prolog operators.
-html_pl_term(operators(Operators)) --> !,
-  html_list([ordered(false)], html_operator, Operators).
+html_pl_term(operators(Module, Operators)) --> !,
+  html_list([ordered(false)], html_operator(Module), Operators).
 % Integer.
 html_pl_term(Integer) -->
   {integer(Integer)}, !,

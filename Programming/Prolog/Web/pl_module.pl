@@ -40,7 +40,12 @@ Web interface to Prolog modules.
 
 module_properties(
   Module,
-  [class(Class),file(File),predicates(Predicates2),operators(Operators2)]
+  [
+    class(Class),
+    file(File),
+    predicates(Module, Predicates2),
+    operators(Module, Operators2)
+  ]
 ):-
   module_property(Module, class(Class)),
   module_property(Module, file(File)),

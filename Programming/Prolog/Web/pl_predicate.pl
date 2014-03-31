@@ -45,7 +45,6 @@ pl_predicate(Module:Functor/Arity) -->
     findall(
       [Name,Value],
       (
-
         predicate_property(Module:Predicate, Property),
         Property =.. [Name|T],
         (
