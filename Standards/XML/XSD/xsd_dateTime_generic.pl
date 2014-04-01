@@ -33,7 +33,6 @@ conforming to the XSD 1.1 specification.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(math(math_ext)).
 :- use_module(xsd(xsd_number_generic)).
 
 
@@ -212,10 +211,12 @@ secondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsTwoDigitCanonicalFragmentMap(S).
 secondCanonicalFragmentMap(S1) -->
-  {N1 is S1 div 1},
+  % Notice that div/2 would not work here since seconds is a float.
+  {N1 is floor(S1 / 1)},
   unsTwoDigitCanonicalFragmentMap(N1),
   `.`,
-  {N2 is S1 mod 1},
+  % Notice that mod/2 would not work here since seconds is a float.
+  {N2 is S1 - 1 * floor(S1 / 1)},
   fractionDigitsCanonicalFragmentMap(N2).
 
 

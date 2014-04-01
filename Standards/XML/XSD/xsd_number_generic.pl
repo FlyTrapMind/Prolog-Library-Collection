@@ -57,13 +57,13 @@ fracFrag(_, 0.0) --> !, [].
 %! fractionDigitsCanonicalFragmentMap(?Fraction:rational)//
 
 fractionDigitsCanonicalFragmentMap(F) -->
-  {F =:= 0}, !,
+  {F =:= 0.0}, !,
   [].
 fractionDigitsCanonicalFragmentMap(F) -->
   {
     G is F * 10,
-    H is G div 1,
-    NewF is G mod 1
+    H is floor(G / 1.0),
+    NewF is G - 1.0 * floor(G / 1.0)
   },
   decimal_digit(_, H), !,
   fractionDigitsCanonicalFragmentMap(NewF).

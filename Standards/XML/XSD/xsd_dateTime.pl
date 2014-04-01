@@ -185,19 +185,12 @@ the original two values are incomparable.
 @see USNO Historical List includes the times when the difference between
      TAI and UTC has changed tai_utc.txt.
 @tbd Document what TAI and UT1 are.
-@version 2013/08-2013/11, 2014/03
+@version 2013/08-2013/11, 2014/03-2014/04
 */
 
-:- use_module(datetime(iso8601)).
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
-:- use_module(generics(meta_ext)).
-:- use_module(math(math_ext)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
-:- use_module(xsd(xsd_decimal)).
 
 
 

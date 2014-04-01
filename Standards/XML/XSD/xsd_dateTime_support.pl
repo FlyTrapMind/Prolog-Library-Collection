@@ -327,9 +327,11 @@ normalizeMonth(Y1, M1, Y2, M2):-
 % ~~~
 
 normalizeSecond(Y1, M1, D1, H1, MM1, S1, Y2, M2, D2, H2, MM2, S2):-
-  MM2 is MM1 + (S1 div 60),
-  S2 is S1 mod 60,
-  normalizeMinute(Y1, M1, D1, H1, MMY, Y2, M2, D2, H2, MM2).
+  % Notice that div/2 would not work since seconds is a float.
+  MM0 is MM1 + floor(S1 / 60),
+  % Notice that mod/2 would not work since seconds is a float.
+  S2 is S1 - 60 * floor(S1 / 60),
+  normalizeMinute(Y1, M1, D1, H1, MM0, Y2, M2, D2, H2, MM2).
 
 
 %! timeOnTimeline(+DateTime:compound, -Seconds:float) is det.
