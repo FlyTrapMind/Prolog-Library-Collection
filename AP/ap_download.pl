@@ -16,6 +16,7 @@
 
 :- use_module(ap(ap_db)).
 :- use_module(generics(uri_ext)).
+:- use_module(http(http_download)).
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).

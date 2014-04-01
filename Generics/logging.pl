@@ -49,6 +49,7 @@ logging started.
 :- use_module(library(http/http_client)).
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
+:- use_module(os(dir_infra)).
 :- use_module(os(file_ext)).
 
 :- discontiguous(prolog:message/1).

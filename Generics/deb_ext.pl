@@ -1,6 +1,9 @@
 :- module(
   deb_ext,
   [
+    catch_debug/3, % +DebugFlag:atom
+                   % +Message:atom
+                   % :Goal
     fail_mode/1, % +FailMode:compound
     if_debug/2, % +Flag:atom
                 % :Goal
@@ -20,15 +23,31 @@ Extensions for debugging and running in debug mode.
 Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
-@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02
+@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02, 2014/04
 */
 
 :- use_module(library(debug)).
 
+:- meta_predicate(catch_debug(+,+,:)).
 :- meta_predicate(if_debug(+,:)).
 :- meta_predicate(test(0,+)).
 :- meta_predicate(test(0,+,+)).
 
+
+
+%! catch_debug(+DebugFlag:atom, +Message:atom, :Goal) is det.
+% Displays the given message when an exception is thrown
+% during the execution of `Goal`.
+
+catch_debug(Debug, Msg, Goal):-
+  catch(Goal, Exception, true),
+  catch_debug_exception(Debug, Msg, Exception).
+
+
+catch_debug_exception(_, _, Exception):-
+  var(Exception), !.
+catch_debug_exception(Debug, Msg, Exception):-
+  debug(Debug, '[*****] ~w (~w)', [Msg,Exception]).
 
 
 fail_mode(debug(Category-Format-Args)):- !,

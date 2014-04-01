@@ -45,7 +45,7 @@ HTML attribute parsing, used in HTML table generation.
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(http(http)).
+:- use_module(http(http_goal)).
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(sgml)).

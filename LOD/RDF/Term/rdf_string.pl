@@ -5,6 +5,9 @@
                          % +Predicate:iri
                          % +String:or([atom,list(code),string])
                          % +RdfGraph:atom
+    rdf_retractall_string/3, % ?Subject:or([bnode,iri])
+                             % ?Predicate:iri
+                             % ?RdfGraph:atom
     rdf_retractall_string/4, % ?Subject:or([bnode,iri])
                              % ?Predicate:iri
                              % ?String:or([atom,list(code),string])

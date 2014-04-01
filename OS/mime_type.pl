@@ -33,9 +33,6 @@ Support for IANA-registered MIME types.
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
-:- use_module(rdfs(rdfs_label_ext)).
-:- use_module(rdfs(rdfs_label_ext)).
-:- use_module(rdfs(rdfs_build)).
 :- use_module(standards(iana_to_rdf)).
 :- use_module(xml(xml_namespace)).
 
@@ -73,7 +70,7 @@ mime_type_file_extension(MIME, DefaultExtension):-
   atomic_list_concat([Type,Subtype], '/', MIME),
   rdf_string(Registration, iana:template, Subtype, _),
   rdf(Registration, rdf:type, Class),
-  rdfs_label(Class, _, Type, _),
+  rdfs_label(Class, _, Type),
   rdf_string(Registration, iana:default_extension, DefaultExtension, _).
 mime_type_file_extension(MIME, DefaultExtension):-
   rdf_string(Registration, iana:default_extension, DefaultExtension, _),
@@ -94,34 +91,34 @@ mime_register_type(Type, Subtype, _):-
 mime_register_type(Type, Subtype, DefaultExtension):-
   mime_register_type(Type, Subtype, DefaultExtension, mime_ext).
 
-mime_register_type(Type1, Subtype, DefaultExtension, Graph):-
+mime_register_type(Type1, Subtype, DefaultExtension, G):-
   % The table of the Website we scrape for file extensions
   %  contains a typo: `applicaiton` i.o. `application`.
   (Type1 == applicaiton -> Type2 = application ; Type2 = Type1),
 
   % Assert type.
   rdf_global_id(iana:Type2, Class),
-  rdfs_assert_subclass(Class, iana:'Registration', Graph),
-  rdfs_assert_label(Class, Type2, Graph),
+  rdf_assert(Class, rdfs:subClassOf, iana:'Registration', G),
+  rdf_assert(Class, rdfs:label, literal(type(xsd:string,Type2)), G),
 
   % Assert subtype.
   rdf_bnode(Registration),
-  rdf_assert_individual(Registration, Class, Graph),
-  rdf_assert_string(Registration, iana:template, Subtype, Graph),
-  rdfs_assert_label(Registration, Subtype, Graph),
+  rdf_assert_individual(Registration, Class, G),
+  rdf_assert(Registration, iana:template, literal(type(xsd:string,Subtype)), G),
+  rdf_assert(Registration, rdfs:label, literal(type(xsd:string,Subtype)), G),
 
-  assert_mime_schema_ext(Graph),
-  rdf_assert_string(Registration, iana:default_extension, DefaultExtension, Graph),
+  assert_mime_schema_ext(G),
+  rdf_assert(Registration, iana:default_extension, literal(type(xsd:string,DefaultExtension)), G),
 
   atomic_list_concat([Type2,Subtype], '/', MIME),
   db_add_novel(user:prolog_file_type(DefaultExtension, MIME)).
 
-assert_mime_schema_ext(Graph):-
+assert_mime_schema_ext(G):-
   % Property default file extension.
-  rdf_assert_property(iana:default_extension, Graph),
-  rdfs_assert_domain(iana:default_extension, iana:'Registration', Graph),
-  rdfs_assert_range(iana:default_extension, xsd:string, Graph),
-  rdfs_assert_label(iana:default_extension, 'default file extension', Graph).
+  rdf_assert_property(iana:default_extension, G),
+  rdf_assert(iana:default_extension, rdfs:domain, iana:'Registration', G),
+  rdf_assert(iana:default_extension, rdfs:range, xsd:string, G),
+  rdf_assert(iana:default_extension, rdfs:label, literal(type(xsd:string,'default file extension')), G).
 
 
 init_mime:-
@@ -152,7 +149,7 @@ init_mime:-
   init_mime.
 
 
-assert_mime_extensions(Graph):-
+assert_mime_extensions(G):-
   download_html(
     [html_dialect(html4)],
     'http://www.webmaster-toolkit.com/mime-types.shtml',
@@ -167,7 +164,7 @@ assert_mime_extensions(Graph):-
     ),
     (
       atomic_list_concat([Type,Subtype], '/', MIME),
-      mime_register_type(Type, Subtype, DefaultExtension, Graph)
+      mime_register_type(Type, Subtype, DefaultExtension, G)
     )
   ).
 

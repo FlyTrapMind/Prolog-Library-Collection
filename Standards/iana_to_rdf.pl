@@ -15,11 +15,11 @@
 */
 
 :- use_module(generics(uri_ext)).
+:- use_module(http(http_download)).
 :- use_module(library(apply)).
 :- use_module(library(csv)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_ext)).
@@ -48,7 +48,7 @@ assert_iana(Graph, URL_Prefix, ParentClass, Categories):-
 assert_iana_category(Graph, URL_Prefix, ParentClass, Category):-
   rdf_global_id(iana:Category, Class),
   rdfs_assert_subclass(Class, ParentClass, Graph),
-  rdfs_assert_label(Class, Category, Graph),
+  rdf_assert(Class, rdfs:label, literal(type(xsd:string,Category)), Graph),
 
   atomic_list_concat([URL_Prefix,Category,'.csv'], URL),
   setup_call_cleanup(
@@ -75,43 +75,43 @@ assert_iana_row1(
   (
     Description == '', !
   ;
-    rdf_assert_string(Registration, iana:description, Description, Graph)
+    rdf_assert(Registration, iana:description, literal(type(xsd:string,Description)), Graph)
   ), !.
 assert_iana_row1(Graph, Registration, row(Name,Template,Reference)):-
   (
     Template == '', !
   ;
-    rdf_assert_string(Registration, iana:template, Template, Graph)
+    rdf_assert(Registration, iana:template, literal(type(xsd:string,Template)), Graph)
   ),
   (
     Reference == '', !
   ;
-    rdf_assert_string(Registration, iana:reference, Reference, Graph)
+    rdf_assert(Registration, iana:reference, literal(type(xsd:string,Reference)), Graph)
   ),
-  rdfs_assert_label(Registration, Name, Graph).
+  rdf_assert(Registration, rdfs:label, literal(type(xsd:string,Name)), Graph).
 
 
 assert_iana_schema(Graph, Class):-
   % Class registration.
   rdfs_assert_class(iana:'Registration', Graph),
-  rdfs_assert_label(iana:'Registration', 'IANA registration', Graph),
+  rdf_assert(iana:'Registration', rdfs:label, literal(type(xsd:string,'IANA registration')), Graph),
   rdfs_assert_subclass(Class, iana:'Registration', Graph),
 
   % Property description.
   rdf_assert_property(iana:description, Graph),
   rdfs_assert_domain(iana:description, iana:'Registration', Graph),
   rdfs_assert_range(iana:description, xsd:string, Graph),
-  rdfs_assert_label(iana:description, description, Graph),
+  rdf_assert(iana:description, rdfs:label, literal(type(xsd:string,description)), Graph),
 
   % Property template.
   rdf_assert_property(iana:template, Graph),
   rdfs_assert_domain(iana:template, iana:'Registration', Graph),
   rdfs_assert_range(iana:template, xsd:string, Graph),
-  rdfs_assert_label(iana:template, template, Graph),
+  rdf_assert(iana:template, rdfs:label, literal(type(xsd:string,template)), Graph),
 
   % Property reference.
   rdf_assert_property(iana:reference, Graph),
   rdfs_assert_domain(iana:reference, iana:'Registration', Graph),
   rdfs_assert_range(iana:reference, xsd:string, Graph),
-  rdfs_assert_label(iana:reference, reference, Graph).
+  rdf_assert(iana:reference, rdfs:label, literal(type(xsd:string,reference)), Graph).
 

@@ -16,6 +16,7 @@ File MIME type identification for the AP architecture.
 */
 
 :- use_module(ap(ap_db)).
+:- use_module(ckan(ckan_db)).
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(os(dir_ext)).
@@ -23,9 +24,6 @@ File MIME type identification for the AP architecture.
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_string)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(ckan, 'http://www.wouterbeek.com/ckan#').
 
 
 

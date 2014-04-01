@@ -42,9 +42,7 @@ Predicates for RDFS labels.
 :- use_module(dcg(dcg_collection)). % Meta-called.
 :- use_module(dcg(dcg_content)). % Meta-called.
 :- use_module(dcg(dcg_generic)).
-:- use_module(library(apply)).
-:- use_module(library(option)).
-:- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdf_db)). % RDF-meta.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf_term(rdf_language_tagged_string)).

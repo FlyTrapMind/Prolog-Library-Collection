@@ -24,7 +24,6 @@ Generates HTML tables with RDF content.
 :- use_module(generics(typecheck)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
-:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_list)).
@@ -174,7 +173,7 @@ rdf_html_table(O1, Caption, Rows1) -->
   {
     % Retrieve the RDF graph relative to which hyperlinks work, if any.
     select_option(graph(Graph), O1, O2, _NoGraph),
-    
+
     % See whether a header row should be added.
     select_option(header_row(HeaderRow1), O2, O3, false),
     header_row_presets(HeaderRow1, Rows1, HeaderRow2, Rows2),

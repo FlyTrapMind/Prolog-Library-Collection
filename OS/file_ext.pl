@@ -64,13 +64,6 @@
     relative_file_path/3, % ?Path:atom
                           % ?RelativeTo:atom
                           % ?RelativePath:atom
-    safe_copy_file/2, % +From:atom
-                      % +To:atom
-    safe_delete_file/1, % +File:atom
-    safe_move_file/2, % +From:atom
-                      % +To:atom
-    safe_rename_file/2, % +From:atom
-                        % +To:atom
     spec_atomic_concat/3, % +Spec
                           % +Atomic:atom
                           % -NewSpec
@@ -530,59 +523,6 @@ uplength(['..'|T1], N1, T2):- !,
   N1 is N2 + 1.
 uplength(L, 0, L).
 
-
-safe_copy_file(From, To):-
-  access_file(From, read),
-  access_file(To, write), !,
-  safe_delete_file(To),
-  copy_file(From, To),
-  debug(file_ext, 'File ~w was safe-copied to ~w.', [From,To]).
-
-%! safe_delete_file(+File:atom) is det.
-% Delete the given file, but keep a copy around in thake trashcan.
-
-safe_delete_file(File):-
-  \+ exists_file(File), !,
-  debug(
-    file_ext,
-    'File ~w cannot be deleted since it does not exist.',
-    [File]
-  ).
-safe_delete_file(File):-
-  access_file(File, write), !,
-  absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
-  relative_file_name(File, ProjectDir, RelativeFile),
-  trashcan(Trashcan),
-  directory_file_path(Trashcan, RelativeFile, CopyFile),
-  % Copying to a nonexisting directory does not work, so first
-  % we need to recursively create the directory.
-  file_directory_name(CopyFile, CopyDirectory),
-  create_directory(CopyDirectory),
-  copy_file(File, CopyFile),
-  catch(
-    (
-      delete_file(File),
-      debug(file_ext, 'File ~w was safe-deleted.', [File])
-    ),
-    Exception,
-    debug(file_ext, '~w', [Exception])
-  ).
-
-safe_move_file(From, To):-
-  safe_copy_file(From, To),
-  safe_delete_file(From),
-  debug(file_ext, 'File ~w was safe-moved to ~w.', [From,To]).
-
-safe_rename_file(From, To):-
-  access_file(From, write),
-  \+ exists_file(To), !,
-  rename_file(From, To).
-safe_rename_file(From, To):-
-  access_file(From, write),
-  exists_file(To), !,
-  safe_delete_file(To),
-  safe_rename_file(From, To),
-  debug(file_ext, 'File ~w was safe-renamed to ~w.', [From,To]).
 
 %! spec_atomic_concat(+Spec, +Atomic:atom, -NewSpec) is det.
 % Concatenates the given atom to the inner atomic term of the given

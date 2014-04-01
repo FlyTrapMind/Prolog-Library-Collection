@@ -28,7 +28,7 @@ There are two groups of predicates here:
      - extract_directory/2
 
 @author Wouter Beek
-@version 2013/12-2014/03
+@version 2013/12-2014/04
 */
 
 :- use_module(generics(db_ext)).
@@ -36,6 +36,7 @@ There are two groups of predicates here:
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 :- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
 :- use_module(os(mime_type)).
 
 % application/x-bzip2
@@ -139,11 +140,11 @@ extract_archive(Extension, File, unzipped):-
 % Extracts all archives in the given directory.
 % Extract files recursively, e.g. first `gunzip`, then `tar`.
 %
-% Options are passed to directory_files/3.
-% Important are options =|file_types(+FileTypes:list(atom))|=,
-% for only extracting files of the given types,
-% and =|recursive(+Recursive:boolean)|=,
-% for the inclusion of archives that reside in subdirectories.
+% Options are passed to directory_files/3. Important are:
+%   * =|file_types(+FileTypes:list(atom))|=
+%     Only extracts files of the given types.
+%   * =|recursive(+Recursive:boolean)|=
+%     Includes archives that reside in subdirectories.
 
 extract_directory(O1, Dir):-
   directory_files(O1, Dir, Files),

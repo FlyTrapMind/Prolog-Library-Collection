@@ -5,18 +5,15 @@
                      % -Email:atom
     atom_to_iri/2, % +Atom:atom
                    % -Iri:iri
-    download_and_extract_to_files/3, % +Options:list(nvpair)
-                                     % +Url:url
-                                     % -Files:ordset(atom)
-    download_to_file/3, % +Options:list(nvpair)
-                        % +Url:url
-                        % ?File:atom
     is_image_url/1, % +Url:url
+    url_directory/3, % +ParentDirectory:atom
+                     % +Url:url
+                     % -UrlDirectory:atom
     uri_path/2, % +PathComponents:list(term)
                 % -Path:atom
-    url_to_directory_name/2, % +Url:iri
+    url_to_directory_name/2, % +Url:url
                              % -Directory:atom
-    url_to_file_name/2, % +Url:atom
+    url_to_file_name/2, % +Url:url
                         % -File:atom
     url_to_graph_name/2 % +Url:url
                         % -Graph:atom
@@ -26,7 +23,7 @@
 /** <module> URI extensions
 
 @author Wouter Beek
-@version 2013/05, 2013/09, 2013/11-2014/03
+@version 2013/05, 2013/09, 2013/11-2014/04
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -34,13 +31,10 @@
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
-:- use_module(generics(option_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(http(http)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
-:- use_module(library(option)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
@@ -99,88 +93,6 @@ percent_encoding(space) -->
   integer(20).
 
 
-%! download_and_extract_to_files(
-%!   +Options:list(nvpair),
-%!   +Url:url,
-%!   -Files:list(atom)
-%! ) is det.
-
-download_and_extract_to_files(O1, Url, Files):-
-  download_to_file(O1, Url, File),
-  file_directory_name(File, Dir),
-  extract_archive(File),
-  directory_files(
-    [
-      include_directories(true),
-      include_self(false),
-      order(lexicographic),
-      recursive(true)
-    ],
-    Dir,
-    Files
-  ).
-
-
-%! download_to_file(+Options:list(nvpair), +Url:url, ?File:atom) is det.
-% Downloads files from a URL to either the given file (when instantiated)
-% of to the a file name that is created based on the URL.
-%
-% The following options are supported:
-%   * =|force(+Redownload:boolean)|=
-%     Sets whether files that were downloaded in the past
-%     are overwritten or not.
-%     Default: `false`.
-%   * Other options are passed to http_goal/3 and, subsequently, http_open/3.
-%
-% @see url_to_file_name/2 for how the file name is created based on the URL.
-
-% The file was already downloaded in the past.
-download_to_file(O1, _, File):-
-  nonvar(File),
-  option(force(false), O1, false),
-  exists_file(File), !,
-  access_file(File, read).
-% An absolute file name is specified.
-download_to_file(O1, Url, File):-
-  nonvar(File),
-  is_absolute_file_name(File), !,
-  file_directory_name(File, Dir),
-  make_directory_path(Dir),
-
-  % Check write access to the file.
-  access_file(File, write),
-
-  % Check the URL.
-  uri_is_global(Url),
-
-  % Multiple threads could be downloading the same file,
-  % so we cannot download to the file's systematic name.
-  % Instead we save to a thread-specific name.
-  thread_self(Id),
-  atomic_list_concat([tmp,Id], '_', ThreadName),
-  file_name_extension(File, ThreadName, TmpFile),
-
-  % The actual downloading part.
-  merge_options([nocatch(true)], O1, O2),
-  http_goal(Url, O2, file_from_stream(TmpFile)),
-
-  % Give the file its original name.
-  rename_file(TmpFile, File).
-% No file name is given; create a file name is a standardized way,
-% based on the URL.
-download_to_file(O1, Url, File):-
-  url_to_file_name(Url, File),
-  download_to_file(O1, Url, File).
-
-
-file_from_stream(File, HTTP_Stream):-
-  setup_call_cleanup(
-    open(File, write, FileStream, [type(binary)]),
-    copy_stream_data(HTTP_Stream, FileStream),
-    close(FileStream)
-  ).
-
-
 %! is_image_url(+Url:url) is semidet.
 % Succeeds if the given Url locates an image file.
 
@@ -191,6 +103,14 @@ is_image_url(Url):-
     uri_components(_Scheme, _Authority, Path, _Search, _Fragment)
   ),
   is_image_file(Path).
+
+
+%! url_directory(+ParentDirectory:atom, +Url:url, -UrlDirectory:atom) is det.
+
+url_directory(ParentDir, Url, UrlDir):-
+  rdf_atom_md5(Url, 1, Hash),
+  directory_file_path(ParentDir, Hash, UrlDir),
+  make_directory_path(UrlDir).
 
 
 %! uri_path(+URI_PathComponents:list(term), -URI_Path:atom) is det.
@@ -213,9 +133,9 @@ uri_path(T1, Path):-
   atomic_list_concat([''|T2], '/', Path).
 
 
-url_to_directory_name(URI, Dir):-
+url_to_directory_name(Uri, Dir):-
   uri_components(
-    URI,
+    Uri,
     uri_components(Scheme, Authority, Path, _Search, _Fragment)
   ),
   atomic_list_concat(Subdirs, '/', Path),
@@ -227,7 +147,7 @@ url_to_directory_name(URI, Dir):-
 %
 % @param Url The universal location of a file.
 % @param File The atomic name of a file based on the given Url,
-%         relative to the given root.
+%        relative to the given root.
 
 url_to_file_name(Url, File):-
   uri_components(Url, uri_components(Scheme,Authority,UrlPath,_,_)),

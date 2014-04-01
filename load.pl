@@ -92,37 +92,6 @@ load_pgc:-
   assert(user:file_search_path(stat,            pgc('Stats'))),
   assert(user:file_search_path(web,             pgc('Web'  ))),
     assert(user:file_search_path(crawler,         web('Crawler'))),
-
-  % Check SWI-Prolog version.
-  use_module(pl(pl_version)),
-  check_pl_version,
-
-  % Set data subdirectory.
-  use_module(pl(pl_clas)),
-  process_options(_),
-
-  % Initialize Web module registration.
-  use_module(generics(db_ext)),
-  db_add_novel(user:prolog_file_type(db, database)),
-  absolute_file_name(
-    project(web_modules),
-    File,
-    [access(write),file_type(database)]
-  ),
-  use_module(os(file_ext)),
-  safe_delete_file(File),
-
-  % Install packages.
-  % This requires user interaction on the first load.
-  use_module(pl(pl_package)),
-  maplist(load_pl_package, [regex,smtp]),
-
-  % Start logging.
-  use_module(generics(logging)),
-  % @tbd Strange module problem again...
-  logging:start_log,
-
-  use_module(os(archive_ext)),
-  use_module(void(void_db)),
-  use_module(void(void_file)).
+  
+  ensure_loaded(pgc(init)).
 

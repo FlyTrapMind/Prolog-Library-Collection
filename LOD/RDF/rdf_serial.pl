@@ -47,12 +47,14 @@ since most datasets are published in a non-standard way.
 @author Wouter Beek
 @tbd Writing in the N-triples format is not supported.
 @version 2012/01, 2012/03, 2012/09, 2012/11, 2013/01-2013/06,
-         2013/08-2013/09, 2013/11, 2014/01-2014/03
+         2013/08-2013/09, 2013/11, 2014/01-2014/04
 */
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
+:- use_module(http(http_download)).
+:- use_module(http(http_download_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
@@ -224,6 +226,18 @@ rdf_download_extract_load(Url, O1):-
 
 rdf_extension(Ext, MIME):-
   rdf_serialization(Ext, _, _, [MIME|_], _).
+
+
+%! rdf_file_correct_extension(+FromFile:atom, -ToFile:atom) is det.
+
+rdf_file_correct_extension(File1, File2):-
+  file_mime(File1, Mime),
+  rdf_serialization(Extension, _, _, Mimes, _),
+  memberchk(Mime, Mimes),
+  file_alternative(File1, _, _, Extension, File2),
+  File1 \== File2, !,
+  link_file(File1, File2, symbolic).
+rdf_file_correct_extension(File, File).
 
 
 %! rdf_merge_directory(

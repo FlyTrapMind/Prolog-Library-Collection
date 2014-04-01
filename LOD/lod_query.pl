@@ -23,6 +23,7 @@
 
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
+:- use_module(http(http_download)).
 :- use_module(library(aggregate)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).

@@ -11,7 +11,7 @@
 Support for command line arguments given at Prolog startup.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03-2014/04
 */
 
 :- use_module(generics(db_ext)).
@@ -21,6 +21,7 @@ Support for command line arguments given at Prolog startup.
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(os(dir_infra)).
 
 :- multifile(prolog:message//1).
 
@@ -57,7 +58,7 @@ user:cmd_option(_, data, atom, 'Directory where data is read and written.').
 
 user:process_cmd_option(data(Dir1)):-
   absolute_file_name(Dir1, Dir2, [access(write),file_type(directory)]), !,
-  set_data_path(Dir2).
+  set_data_directory(Dir2).
 user:process_cmd_option(data(Dir)):-
   print_message(warning, incorrect_path(Dir)).
 
@@ -207,7 +208,9 @@ process_options(O3):-
   % First set the data directory,
   % since other command-line arguments may depend on it being set,
   % e.g. `project=NAME`.
-  set_data_path(O1, O2),
+
+  select_option(data(Dir), O1, O2),
+  user:process_cmd_option(data(Dir)),
   
   % Process command-line arguments that change the set of options,
   % e.g. `help`.
@@ -254,27 +257,4 @@ short_option(Short1, Option):-
   % Do not match against options with no short name.
   Short1 == Short2,
   Option =.. [Long,true].
-
-
-% Data directory was already set.
-set_data_path(O1, O1):-
-  user:file_search_path(data, _), !.
-% Set data directory based on `data=DIR` command-line argument.
-set_data_path(O1, O2):-
-  select_option(data(Dir1), O1, O2),
-  absolute_file_name(Dir1, Dir2, [access(write),file_type(directory)]), !,
-  set_data_path(Dir2).
-% Set default data directory.
-set_data_path(O1, O1):-
-  absolute_file_name(
-    project('.'),
-    Dir1,
-    [access(write),file_type(directory)]
-  ),
-  directory_file_path(Dir1, 'Data', Dir2),
-  set_data_path(Dir2).
-
-set_data_path(Dir):-
-  make_directory_path(Dir),
-  db_replace_novel(user:file_search_path(data, Dir), [e,r]).
 
