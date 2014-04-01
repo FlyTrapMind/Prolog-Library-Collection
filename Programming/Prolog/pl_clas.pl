@@ -208,14 +208,20 @@ process_options(O3):-
   % First set the data directory,
   % since other command-line arguments may depend on it being set,
   % e.g. `project=NAME`.
+  (
+    select_option(data(Dir), O1, O2)
+  ->
+    user:process_cmd_option(data(Dir))
+  ;
+    % Use the default data directory.
+    set_data_directory,
+     O2 = O1
+  ),
 
-  select_option(data(Dir), O1, O2),
-  user:process_cmd_option(data(Dir)),
-  
   % Process command-line arguments that change the set of options,
   % e.g. `help`.
   process_all_options(O2),
-  
+
   exclude(user:process_cmd_option, O2, O3).
 process_options(_):-
   print_message(warning, clas_parse_failed),

@@ -20,7 +20,7 @@ DBpedia publishes the following three kind of files about categories:
 @version 2014/02-2014/03
 */
 
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 
 
 
@@ -30,8 +30,7 @@ DBpedia publishes the following three kind of files about categories:
 dbpedia_load_categories:-
   dbpedia_categories_url(Url),
   rdf_download_extract_load(Url, [graph(G)]),
-gtrace,
-write(G).
+  write(G).
 
 dbpedia_categories_url(
   'http://downloads.dbpedia.org/3.9/en/skos_categories_en.ttl.bz2'

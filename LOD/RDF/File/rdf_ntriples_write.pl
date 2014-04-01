@@ -1,8 +1,8 @@
 :- module(
-  rdf_save_ntriples,
+  rdf_ntriples_write,
   [
-    monkey/2 % +File:atom
-                        % +Options:list
+    rdf_ntriples_write/2 % +File:atom
+                         % +Options:list
   ]
 ).
 
@@ -37,7 +37,7 @@ This means that we can guarantee that the number of triples
 
 
 
-%! monkey(+File:atom, +Options:list) is det.
+%! rdf_ntriples_write(+File:atom, +Options:list) is det.
 % Writes RDF data serialization in the N-Triples format to the given file.
 %
 % The following options are supported:
@@ -50,7 +50,7 @@ This means that we can guarantee that the number of triples
 % @arg File The atomic name of a file.
 % @arg Options A list of name-value pairs.
 
-monkey(File1, O1):-
+rdf_ntriples_write(File1, O1):-
   absolute_file_name(File1, File2, [access(write)]),
   setup_call_cleanup(
     open(File2, write, Out),

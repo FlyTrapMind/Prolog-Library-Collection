@@ -20,7 +20,7 @@ Asserts statistics for VoID descriptions.
 :- use_module(library(semweb/rdfs)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(rdf_term(rdf_dateTime)).
 :- use_module(rdf_term(rdf_string)).

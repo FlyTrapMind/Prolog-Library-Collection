@@ -54,6 +54,7 @@ load_pgc:-
     assert(user:file_search_path(owl,             lod('OWL' ))),
     assert(user:file_search_path(rdf,             lod('RDF' ))),
       assert(user:file_search_path(rdf_conv,        rdf('Conversion'))),
+      assert(user:file_search_path(rdf_file,        rdf('File'))),
       assert(user:file_search_path(rdf_man,         rdf('Management'))),
       assert(user:file_search_path(rdf_mt,          rdf('RDF MT'    ))),
       assert(user:file_search_path(rdf_reasoning,   rdf('Reasoning' ))),

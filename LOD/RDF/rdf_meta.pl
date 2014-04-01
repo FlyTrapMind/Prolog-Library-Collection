@@ -25,7 +25,8 @@ Meta-callings on an RDF graph.
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_file)).
+:- use_module(rdf_file(rdf_serial)).
 
 :- meta_predicate(rdf_setup_call_cleanup(+,+,1)).
 :- meta_predicate(rdf_setup_call_cleanup(+,+,1,+,?)).

@@ -154,6 +154,7 @@ json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args1), Individual
   ->
     memberchk(PrimaryKey=Id, Args1)
   ;
+    % This means that the resource will be represented by a blank node.
     true
   ),
 

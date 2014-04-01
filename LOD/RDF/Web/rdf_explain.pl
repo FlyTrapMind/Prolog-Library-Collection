@@ -31,7 +31,7 @@ Web predicates for RDF graphs.
 :- use_module(rdf(rdf_meta_auto_expand)).
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_namespace)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_reasoning(rdf_bnode_map)).
 :- use_module(rdf_reasoning(rdf_mat)).

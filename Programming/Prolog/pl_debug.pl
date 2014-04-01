@@ -52,7 +52,7 @@ http:location(pldoc, root(help), [priority(10)]).
 :- use_module(pl_web(pl_dev)).
 
 % Load PGC documentation and debugging tools.
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_web(rdf_tabular)).
 :- use_module(server(web_modules)).
 :- use_module(server(pldoc_web)).

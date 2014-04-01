@@ -1,36 +1,12 @@
 :- module(
   rdf_serial,
   [
-    rdf_directory_files/2, % +Directory:atom
-                           % -Files:list(atom)
-    rdf_convert_directory/4, % +FromDirectory:atom
-                             % +ToDirectory:atom
-                             % ?ToMIME:atom
-                             % -ToFiles:list(atom)
-    rdf_convert_file/4, % +FromMIME:atom
-                        % +FromFile:atom
-                        % ?ToMIME:atom
-                        % ?ToFile:atom
-    rdf_download_extract_load/2, % +Url:url
-                                 % +Options:list(nvpair)
-    rdf_merge_directory/4, % +Options:list(nvpair)
-                           % +FromDirectory:atom
-                           % +ToFile:atom
-                           % +SaveOptions:list(nvpair)
     rdf_load/3, % +Options:list(nvpair)
                 % ?Graph:atom
                 % +File:atom
-    rdf_mime/1, % ?MIME:atom
-    rdf_mime_format/2, % ?MIME:atom
-                       % ?Format:atom
-    rdf_save/3, % +Options:list(nvpair)
-                % +Graph:atom
-                % ?File:atom
-    rdf_serialization/5 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
-                        % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
-                        % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
-                        % ?MIMEs:list(atom)
-                        % ?URL:atom
+    rdf_save/3 % +Options:list(nvpair)
+               % +Graph:atom
+               % ?File:atom
   ]
 ).
 
@@ -91,166 +67,17 @@ since most datasets are published in a non-standard way.
 % rdf_file_type(n3,   turtle).
 % rdf_file_type(trig, trig  ).
 :- use_module(library(semweb/turtle)).
+:- use_module(os(archive_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
-:- use_module(rdf(rdf_ntriples_write)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_file)).
+:- use_module(rdf_file(rdf_ntriples_write)).
+:- use_module(rdf_file(rdf_serial)).
+:- use_module(void(void_db)).
 
-:- db_add_novel(user:prolog_file_type(nt,      ntriples)).
-:- db_add_novel(user:prolog_file_type(nt,      rdf     )).
-:- db_add_novel(user:prolog_file_type(owl,     rdf_xml )).
-:- db_add_novel(user:prolog_file_type(owl,     rdf     )).
-:- db_add_novel(user:prolog_file_type(rdf,     rdf_xml )).
-:- db_add_novel(user:prolog_file_type(rdf,     rdf     )).
-:- db_add_novel(user:prolog_file_type(rdfs,    rdf_xml )).
-:- db_add_novel(user:prolog_file_type(rdfs,    rdf     )).
-:- db_add_novel(user:prolog_file_type(triples, triples)).
-:- db_add_novel(user:prolog_file_type(triples, rdf     )).
-:- db_add_novel(user:prolog_file_type(ttl,     turtle  )).
-:- db_add_novel(user:prolog_file_type(ttl,     rdf     )).
-:- db_add_novel(user:prolog_file_type(xml,     rdf_xml )).
-:- db_add_novel(user:prolog_file_type(xml,     rdf     )).
-
-
-
-%! is_rdf_file(+File:atom) is semidet.
-% Succeeds if the given file contains an RDF serialization.
-
-is_rdf_file(File):-
-  file_mime(File, MIME),
-  rdf_mime(MIME), !.
-is_rdf_file(File):-
-  file_name_extension(_, Ext, File),
-  rdf_extension(Ext, _).
-
-
-%! rdf_directory_files(+Directory:atom, -RdfFiles:list(atom)) is det.
-%! rdf_directory_files(
-%!   +Options:list(nvpair),
-%!   +Directory:atom,
-%!   -RdfFiles:list(atom)
-%! ) is det.
-% Returns RDF files from the given directory.
-% This is based on parsing (the top of) the contents of these files.
-%
-% @arg Options Passed to directory_files/3.
-% @arg Directory The atomic name of a directory.
-% @arg RdfFiles A list of atomic file names of RDF files.
-
-rdf_directory_files(Dir, RdfFiles):-
-  rdf_directory_files(
-    [include_directories(false),include_self(false),recursive(true)],
-    Dir,
-    RdfFiles
-  ).
-
-rdf_directory_files(O1, Dir, RdfFiles):-
-  % Retrieve all files.
-  directory_files(O1, Dir, Files),
-  include(is_rdf_file, Files, RdfFiles).
-
-
-%! rdf_convert_directory(
-%!   +FromDirectory:atom,
-%!   +ToDirectory:atom,
-%!   ?ToMIME:atom,
-%!   -ToFiles:list(atom)
-%! ) is det.
-
-rdf_convert_directory(FromDir, ToDir, ToMime, ToFiles):-
-  rdf_directory_files(FromDir, FromFiles),
-
-  default('application/x-turtle', ToMime),
-  once((
-    rdf_serialization(ToExt, _, _, Mimes, _),
-    memberchk(ToMime, Mimes)
-  )),
-
-  findall(
-    ToFile,
-    (
-      member(FromFile, FromFiles),
-      file_alternative(FromFile, ToDir, _, ToExt, ToFile),
-      rdf_convert_file(_, FromFile, ToMime, ToFile)
-    ),
-    ToFiles
-  ).
-
-
-%! rdf_convert_file(
-%!   ?FromMIME:atom,
-%!   +FromFile:atom,
-%!   +SaveOptions:atom,
-%!   ?ToFile:atom
-%! ) is det.
-
-rdf_convert_file(FromMIME, FromFile, ToMIME, ToFile):-
-  (
-    var(FromMIME)
-  ->
-    LoadOptions = []
-  ;
-    LoadOptions = [mime(FromMIME)]
-  ),
-  rdf_setup_call_cleanup(
-    LoadOptions,
-    FromFile,
-    rdf_graph,
-    [mime(ToMIME)],
-    ToFile
-  ).
-
-
-%! rdf_download_extract_load(+Url:url, +Options:list(nvpair)) is det.
-
-rdf_download_extract_load(Url, O1):-
-  url_to_file_name(Url, File),
-  % The directory not the file (which may be deleted by now).
-  file_directory_name(File, Dir),
-  exists_directory(Dir), !,
-
-  % Make sure all files are extracted.
-  directory_files([], Dir, Files),
-  maplist(extract_archive, Files),
-
-  % These are all the RDF files we can get for this URL.
-  rdf_directory_files(Dir, RdfFiles),
-  rdf_load(RdfFiles, O1).
-rdf_download_extract_load(Url, O1):-
-  download_and_extract_to_files([], Url, _),
-  rdf_download_extract_load(Url, O1).
-
-
-rdf_extension(Ext, MIME):-
-  rdf_serialization(Ext, _, _, [MIME|_], _).
-
-
-%! rdf_file_correct_extension(+FromFile:atom, -ToFile:atom) is det.
-
-rdf_file_correct_extension(File1, File2):-
-  file_mime(File1, Mime),
-  rdf_serialization(Extension, _, _, Mimes, _),
-  memberchk(Mime, Mimes),
-  file_alternative(File1, _, _, Extension, File2),
-  File1 \== File2, !,
-  link_file(File1, File2, symbolic).
-rdf_file_correct_extension(File, File).
-
-
-%! rdf_merge_directory(
-%!   +Options:list(nvpair),
-%!   +FromDirectory:atom,
-%!   +ToFile:atom,
-%!   +SaveOptions:list(nvpair)
-%! ) is det.
-
-rdf_merge_directory(O1, FromDir, ToFile, SaveOptions):-
-  rdf_directory_files(FromDir, FromFiles),
-  FromFiles \== [],
-  rdf_setup_call_cleanup(O1, FromFiles, rdf_graph, SaveOptions, ToFile).
 
 
 %! rdf_load(
@@ -384,21 +211,6 @@ ensure_graph(File, Graph):-
   file_to_graph_name(File, Graph).
 
 
-rdf_mime(MIME):-
-  rdf_serialization(_, _, _, MIMEs, _),
-  member(MIME, MIMEs).
-
-
-%! rdf_mime_format(+MIME:atom, +Format:atom) is semidet.
-%! rdf_mime_format(+MIME:atom, -Format:atom) is det.
-%! rdf_mime_format(-MIME:atom, +Format:atom) is det.
-% Relates RDF media content types and RDF formats.
-
-rdf_mime_format(MIME, Format):-
-  rdf_serialization(_, _, Format, MIMEs, _),
-  memberchk(MIME, MIMEs).
-
-
 %! rdf_save(+Options:list, +Graph:atom, ?File:atom) is det.
 % If the file name is not given, then a file name is construed.
 % There are two variants here:
@@ -466,7 +278,7 @@ rdf_save(O1, rdf_xml, Graph, File):- !,
 % Save to N-Triples.
 rdf_save(O1, ntriples, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
-  monkey(File, O2).
+  rdf_ntriples_write(File, O2).
 % Save to Triples (binary storage format).
 rdf_save(_, triples, Graph, File):- !,
   rdf_save_db(File, Graph).
@@ -474,29 +286,4 @@ rdf_save(_, triples, Graph, File):- !,
 rdf_save(O1, turtle, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
   rdf_save_canonical_turtle(File, O2).
-
-
-%! rdf_serialization(
-%!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
-%!   ?FileType:oneof([ntriples,rdf_xml,triples,turtle]),
-%!   ?Format:oneof([ntriples,xml,triples,turtle]),
-%!   ?MIME:list(atom),
-%!   ?URL:atom
-%! ) is nondet.
-%
-% @arg DefaultExtension The default extension of the RDF serialization.
-%      RDF serializations may have multiple non-default extensions,
-%      e.g. =owl= and =xml= for RDF/XML.
-% @arg DefaultFileType The default file type of the RDF serialization.
-%      Every file type has the non-default file type =rdf=.
-% @arg Format The format name that is used by the Semweb library.
-% @arg MIMEs A list of MIME types.
-% @arg URL The URL at which the serialization is described, if any.
-
-rdf_serialization(nq, nquads, nquads, ['application/n-quads'], '').
-rdf_serialization(nt, ntriples, ntriples, ['application/n-triples'], 'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf, rdf_xml, xml, ['application/rdf+xml'], 'http://www.w3.org/ns/formats/RDF_XML'  ).
-rdf_serialization(trig, trig, trig, ['application/x-trig'], 'http://wifo5-03.informatik.uni-mannheim.de/bizer/trig/').
-rdf_serialization(ttl, turtle, turtle, ['application/x-turtle','text/turtle'], 'http://www.w3.org/ns/formats/Turtle'   ).
-rdf_serialization(n3, n3, turtle, ['text/n3'], '').
 

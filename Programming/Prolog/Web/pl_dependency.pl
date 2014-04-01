@@ -71,7 +71,6 @@ pl_dependencies -->
 
 pl_dependencies(Source) -->
   {
-gtrace,
     % The set of callables defined in source.
     aggregate_all(
       set(Callable),

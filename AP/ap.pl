@@ -40,7 +40,7 @@ Support for running automated processing.
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 

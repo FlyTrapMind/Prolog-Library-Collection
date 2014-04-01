@@ -121,7 +121,7 @@ Mismatch types:
 :- use_module(os(file_ext)).
 :- use_module(pl(pl_mode)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_string)).

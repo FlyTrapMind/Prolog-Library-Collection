@@ -21,7 +21,7 @@ Exports the vocabulary for RDFS.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_export)).
 :- use_module(rdf(rdf_graph)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_reasoning(rdf_mat)).
 :- use_module(xml(xml_dom)).
 :- use_module(xml(xml_namespace)).
