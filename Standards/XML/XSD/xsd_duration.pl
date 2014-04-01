@@ -95,10 +95,9 @@ duDayTimeFrag ::= (duDayFrag duTimeFrag?) | duTimeFrag
 --
 
 @author Wouter Beek
-@version 2013/07-2013/08, 2014/03
+@version 2013/07-2013/08, 2014/03-2014/04
 */
 
-:- use_module(math(math_ext)).
 :- use_module(xsd(xsd_dateTime)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
@@ -182,18 +181,18 @@ duDayTimeCanonicalFragmentMap(NumberOfSeconds) -->
 duDayTimeCanonicalFragmentMap(NumberOfSeconds1) -->
   {
     % Days.
-    div(NumberOfSeconds1, 86400, NumberOfDays),
+    NumberOfDays is NumberOfSeconds1 div 86400,
     % Hours.
     % h is (ss mod 86400) div 3600.
-    mod(NumberOfSeconds1, 86400, X),
-    div(X, 3600, NumberOfHours),
+    X is NumberOfSeconds1 mod 86400,
+    NumberOfHours is X div 3600,
     % Minutes.
     % m is (ss mod 3600) div 60.
-    mod(NumberOfSeconds1, 3600, Y),
-    div(Y, 60, NumberOfMinutes),
+    Y is NumberOfSeconds1 mod 3600,
+    NumberOfMinutes is Y div 60, 
     % Seconds.
     % s is ss mod 60.
-    mod(NumberOfSeconds1, 60, NumberOfSeconds2)
+    NumberOfSeconds2 is NumberOfSeconds1 mod 60
   },
   duDayCanonicalFragmentMap(NumberOfDays),
   duTimeCanonicalFragmentMap(

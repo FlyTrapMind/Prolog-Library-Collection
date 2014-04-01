@@ -19,11 +19,10 @@
 Grammar rules that are used by various XSD numeric datatypes.
 
 @author Wouter Beek
-@version 2013/07-2013/08, 2013/10, 2014/03
+@version 2013/07-2013/08, 2013/10, 2014/03-2014/04
 */
 
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(math(math_ext)).
 :- use_module(math(rational_ext)).
 
 
@@ -63,8 +62,8 @@ fractionDigitsCanonicalFragmentMap(F) -->
 fractionDigitsCanonicalFragmentMap(F) -->
   {
     G is F * 10,
-    div(G, 1, H),
-    mod(G, 1, NewF)
+    H is G div 1,
+    NewF is G mod 1
   },
   decimal_digit(_, H), !,
   fractionDigitsCanonicalFragmentMap(NewF).
@@ -128,8 +127,8 @@ unsignedNoDecimalPtCanonicalMap(F) -->
 unsignedNoDecimalPtCanonicalMap_(0) --> !, [].
 unsignedNoDecimalPtCanonicalMap_(F) -->
   {
-    mod(F, 10, G),
-    div(F, 10 ,H)
+    G is F mod 10,
+    H is F div 10
   },
   unsignedNoDecimalPtCanonicalMap_(H),
   decimal_digit(_, G).

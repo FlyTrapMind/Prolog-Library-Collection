@@ -110,7 +110,7 @@ between =−1074= and =971=, inclusive.
 @see IEEE 754-2008
 @tbd Implement restrictions to the lexical map as defined in IEEE 754-2008.
 @tbd Implement the efficient rounding algorithm in Clinger1990.
-@version 2013/08, 2014/02-2014/03
+@version 2013/08, 2014/02-2014/04
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -214,7 +214,7 @@ largest_l(_Precision, TooBigL, _C, _E, Round, Approx, Approx):-
 
 round(N, K, D):-
   X is (N / 10 ** K) + 0.5,
-  div(X, 1, Y),
+  Y is X div 1,
   D is Y * 10 ** K.
 
 
@@ -233,7 +233,7 @@ smallest_c(ABS, E2, C):-
 smallest_c(C, ABS, E, C):-
   E is log10(ABS / C),
   % =E= must be an integer.
-  mod(E, 1, MOD),
+  MOD is E mod 1,
   MOD =:= 0, !,
   debug(xsd_float, '~w = ~w * 10 ** ~w', [ABS,C,E]).
 smallest_c(C, ABS, SolE, SolC):-
@@ -261,14 +261,14 @@ specialRepCanonicalMap(positiveInfinity) -->
 unsignedScientificCanonicalMap(N) -->
   {
     X1 is log10(N),
-    div(X1, 1, Y1),
+    Y1 is X1 div 1,
     N1 is N / 10 ** Y1
   },
   unsignedDecimalPtCanonicalMap(N1),
   `E`,
   {
     X2 is log10(N),
-    div(X2, 1, N2)
+    N2 is X2 div 1
   },
   noDecimalPtCanonicalMap(N2).
 

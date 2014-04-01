@@ -50,7 +50,7 @@ The lexical representations for gDay are "projections" of those of dateTime.
 --
 
 @author Wouter Beek
-@version 2013/08, 2014/03
+@version 2013/08, 2014/03-2014/04
 */
 
 :- use_module(dcg(dcg_ascii)).

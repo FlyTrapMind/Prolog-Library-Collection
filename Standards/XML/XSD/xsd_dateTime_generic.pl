@@ -27,7 +27,7 @@ Generic DCG rules that are used in defining the grammar for XSD datatypes
 conforming to the XSD 1.1 specification.
 
 @author Wouter Beek
-@version 2013/08-2013/11, 2014/03
+@version 2013/08-2013/11, 2014/03-2014/04
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -94,9 +94,17 @@ endOfDayFrag(24, 0, 0) -->
 % @arg Integer An integer whose absolute value is less than =10000=.
 
 fourDigitCanonicalFragmentMap(I1) -->
-  ({I1 < 0} -> minus_sign ; ""),
-  {I2 is copysign(I1, 1)},
-  {N1 is I2 div 100},
+  (
+    {I1 < 0}
+  ->
+    `-`
+  ;
+    ``
+  ),
+  {
+    I2 is copysign(I1, 1),
+    N1 is I2 div 100
+  },
   unsTwoDigitCanonicalFragmentMap(N1),
   {N2 is I2 mod 100},
   unsTwoDigitCanonicalFragmentMap(N2).
@@ -203,11 +211,11 @@ nonzero_decimal_digit(C, D) -->
 secondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsTwoDigitCanonicalFragmentMap(S).
-secondCanonicalFragmentMap(S) -->
-  {div(S, 1.0, N1)},
+secondCanonicalFragmentMap(S1) -->
+  {N1 is S1 div 1},
   unsTwoDigitCanonicalFragmentMap(N1),
   `.`,
-  {mod(S, 1.0, N2)},
+  {N2 is S1 mod 1},
   fractionDigitsCanonicalFragmentMap(N2).
 
 
@@ -243,8 +251,10 @@ timezoneCanonicalFragmentMap(0) -->
   `Z`.
 timezoneCanonicalFragmentMap(TZ1) -->
   `-`,
-  {TZ2 is copysign(TZ1, 1)},
-  {N1 is TZ2 div 60},
+  {
+    TZ2 is copysign(TZ1, 1),
+    N1 is TZ2 div 60
+  },
   unsTwoDigitCanonicalFragmentMap(N1),
   `:`,
   {N2 is TZ2 mod 60},
@@ -345,5 +355,4 @@ yearFrag(Y) -->
     phrase(noDecimalPtNumeral(S, I), Cs),
     Y is copysign(I, S)
   }.
-
 

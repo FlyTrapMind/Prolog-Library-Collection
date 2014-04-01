@@ -74,8 +74,8 @@ conforming to recommendation version 1.1.
 
 %! xsd_canonical_map(+DatatypeIri:iri, +Value, -LexicalForm:atom) is det.
 
-xsd_canonical_map(DatatypeIri, Boolean, LexicalForm):-
-  xsd_canonical_map_(DatatypeIri, Boolean, Codes),
+xsd_canonical_map(DatatypeIri, Value, LexicalForm):-
+  xsd_canonical_map_(DatatypeIri, Value, Codes),
   atom_codes(LexicalForm, Codes).
 
 xsd_canonical_map_(xsd:boolean, Boolean, LexicalForm):- !,

@@ -60,11 +60,10 @@ Support predicates that are used to implementation the XSD datatypes
 that represent date, time, and duration in a standards-compliant way.
 
 @author Wouter Beek
-@version 2013/08-2013/11, 2014/03
+@version 2013/08-2013/11, 2014/03-2014/04
 */
 
 :- use_module(generics(meta_ext)).
-:- use_module(math(math_ext)).
 
 
 
@@ -181,7 +180,7 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
   default(D1,  1,   D2 ),
   default(H1,  0,   H2 ),
   default(MM1, 0,   MM2),
-  default(S2,  0.0, S2 ),
+  default(S1,  0.0, S2 ),
   normalizeSecond(Y2, M2, D2, H2, MM2, S2, Y3, M3, D3, H3, MM3, S3),
 
   % Variables stay variable.
@@ -301,7 +300,7 @@ normalizeMonth(Y1, M1, Y2, M2):-
   % Add (mo − 1) div 12 to yr.
   Y2 is Y1 + (M1 - 1) div 12,
   % Set mo to (mo − 1) mod 12 + 1.
-  M2 is (M1 - 1) mod 13 + 1.
+  M2 is ((M1 - 1) mod 12) + 1.
 
 
 %! normalizeSecond(
@@ -328,9 +327,8 @@ normalizeMonth(Y1, M1, Y2, M2):-
 % ~~~
 
 normalizeSecond(Y1, M1, D1, H1, MM1, S1, Y2, M2, D2, H2, MM2, S2):-
-  div(S1, 60, MMX),
-  MMY is MM1 + MMX,
-  mod(S1, 60, S2),
+  MM2 is MM1 + (S1 div 60),
+  S2 is S1 mod 60,
   normalizeMinute(Y1, M1, D1, H1, MMY, Y2, M2, D2, H2, MM2).
 
 
