@@ -92,15 +92,15 @@ random_graph_web(G) -->
 %      applications.
 %      Default: `50`.
 
-spring_embedding_web(Graph, I1) -->
+spring_embedding_web(Graph, I) -->
   {
-    default(I1, 50, I2),
+    default(50, I),
     default_spring_embedding(
       Graph,
       ugraph_vertices,
       ugraph_edges,
       ugraph_neighbors,
-      I2,
+      I,
       _FinalVerticeCoordinates,
       History
     )

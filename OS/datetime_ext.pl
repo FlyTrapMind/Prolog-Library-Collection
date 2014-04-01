@@ -153,6 +153,7 @@ seconds(Hours, Minutes, Seconds):-
   Minutes is Seconds mod 60,
   Hours is Seconds / 60.
 seconds(Hours, Minutes, Seconds):-
-  default(Hours, 0, SetHours),
-  default(Minutes, 0, SetMinutes),
-  Seconds is (SetMinutes + (SetHours * 60)) * 60.
+  default(0, Hours),
+  default(0, Minutes),
+  Seconds is (Minutes + (Hours * 60)) * 60.
+

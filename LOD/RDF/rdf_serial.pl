@@ -158,13 +158,13 @@ rdf_directory_files(O1, Dir, RdfFiles):-
 %!   -ToFiles:list(atom)
 %! ) is det.
 
-rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
+rdf_convert_directory(FromDir, ToDir, ToMime, ToFiles):-
   rdf_directory_files(FromDir, FromFiles),
 
-  default(ToMIME1, 'application/x-turtle', ToMIME2),
+  default('application/x-turtle', ToMime),
   once((
-    rdf_serialization(ToExt, _, _, MIMEs, _),
-    memberchk(ToMIME2, MIMEs)
+    rdf_serialization(ToExt, _, _, Mimes, _),
+    memberchk(ToMime, Mimes)
   )),
 
   findall(
@@ -172,7 +172,7 @@ rdf_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
     (
       member(FromFile, FromFiles),
       file_alternative(FromFile, ToDir, _, ToExt, ToFile),
-      rdf_convert_file(_, FromFile, ToMIME2, ToFile)
+      rdf_convert_file(_, FromFile, ToMime, ToFile)
     ),
     ToFiles
   ).

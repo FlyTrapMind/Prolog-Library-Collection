@@ -156,9 +156,9 @@ pair(Mode, ElementWriter, E1-E2) -->
 % @arg Element1
 % @arg Element2
 
-pair(Mode1, ElementWriter, E1, E2) -->
-  {default(Mode1, ascii, Mode2)},
-  collection(langle(Mode2), rangle(Mode2), =, `,`, ElementWriter, [E1,E2]).
+pair(Mode, ElementWriter, E1, E2) -->
+  {default(ascii, Mode)},
+  collection(langle(Mode), rangle(Mode), =, `,`, ElementWriter, [E1,E2]).
 
 
 %! set(:ElementWriter, +Elements:list(ground))// is det.
@@ -176,9 +176,9 @@ set(ElementWriter, L) -->
 % @arg ElementWriter
 % @arg Elements
 
-tuple(Mode1, ElementWriter, L) -->
-  {default(Mode1, ascii, Mode2)},
-  collection(langle(Mode2), rangle(Mode2), =, `,`, ElementWriter, L).
+tuple(Mode, ElementWriter, L) -->
+  {default(ascii, Mode)},
+  collection(langle(Mode), rangle(Mode), =, `,`, ElementWriter, L).
 
 
 

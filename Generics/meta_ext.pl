@@ -6,9 +6,13 @@
     memo/1, % :Goal
 
 % DEFAULTS
-    default/3, % ?Value
-               % +Default:term
-               % +SetValue:term
+    default/2, % +Default
+               % ?Value
+    default/3, % ?FromValue
+               % +DefaultValue
+               % -ToValue
+    default_goal/2, % :DefaultGoal
+                    % ?Value
 
 % GENERIC CALLS
     generic/3, % :GenericPredicate
@@ -62,6 +66,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- use_module(library(aggregate)).
 :- use_module(pl(pl_control)).
 
+:- meta_predicate(default_goal(1,?)).
 :- meta_predicate(generic(:,:,+)).
 :- meta_predicate(maplist_pairs(3,+,-)).
 :- meta_predicate(mapset(2,+,-)).
@@ -100,17 +105,28 @@ reset_memo:-
 
 % DEFAULTS %
 
-%! default(?Value, +Default:term, -SetValue:term) is det.
+%! default(+Default, ?Value) is det.
 % Returns either the given value or the default value in case there is no
 % value given.
-%
-% @arg Value A term or a variable.
-% @arg Default A term.
-% @arg SetValue A term.
 
-default(Value, Default, Default):-
-  var(Value), !.
-default(Value, _Default, Value).
+default(_, X):-
+  nonvar(X), !.
+default(X, X).
+
+
+%! default(?FromValue, +DefaultValue, -ToValue) is det.
+
+default(X, Y, Y):-
+  var(X), !.
+default(X, _, X).
+
+
+%! default_goal(:Goal, ?Value) is det.
+
+default_goal(_, X):-
+  nonvar(X), !.
+default_goal(Goal, X):-
+  call(Goal, X), !.
 
 
 

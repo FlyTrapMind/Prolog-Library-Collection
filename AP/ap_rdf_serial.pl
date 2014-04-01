@@ -29,9 +29,9 @@
 
 
 
-ap_rdf_convert_directory(FromDir, ToDir, ApStage, MIME1):-
-  default(MIME1, 'application/x-turtle', MIME2),
-  rdf_convert_directory(FromDir, ToDir, MIME2, ToFiles),
+ap_rdf_convert_directory(FromDir, ToDir, ApStage, Mime):-
+  default('application/x-turtle', Mime),
+  rdf_convert_directory(FromDir, ToDir, Mime, ToFiles),
   (
     ToFiles == []
   ->
@@ -41,9 +41,9 @@ ap_rdf_convert_directory(FromDir, ToDir, ApStage, MIME1):-
   ).
 
 
-ap_rdf_merge_directory(FromDir, ToDir, ApStage, MIME1):-
-  default(MIME1, 'application/x-turtle', MIME2),
-  rdf_mime_format(MIME2, Format),
+ap_rdf_merge_directory(FromDir, ToDir, ApStage, Mime):-
+  default('application/x-turtle', Mime),
+  rdf_mime_format(Mime, Format),
   absolute_file_name(
     input,
     ToFile,

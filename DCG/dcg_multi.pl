@@ -375,24 +375,24 @@ is_repetition_value(V):-
 % Max = inf.
 % ~~~
 
-repetition(Rep, Min2, Max2):-
+repetition(Rep, Min, Max):-
   (
     Rep == 0
   ->
-    Min2 = 0,
-    Max2 = 0
+    Min = 0,
+    Max = 0
   ;
     % A single value.
     is_repetition_value(Rep)
   ->
-    Min2 = Rep,
-    Max2 = Rep
+    Min = Rep,
+    Max = Rep
   ;
-    Rep = Min1-Max1,
-    default(Min1, 0, Min2),
-    is_repetition_value(Min2),
-    default(Max1, inf, Max2),
-    is_repetition_value(Max2)
+    Rep = Min-Max,
+    default(0, Min),
+    is_repetition_value(Min),
+    default(inf, Max),
+    is_repetition_value(Max)
   ),
-  greater_than_or_equal_to(Max2, Min2).
+  greater_than_or_equal_to(Max, Min).
 

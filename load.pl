@@ -51,7 +51,6 @@ load_pgc:-
     assert(user:file_search_path(ugraph,          graph_theory('UGRAPH'   ))),
   assert(user:file_search_path(ilp,             pgc('ILP'))),
   assert(user:file_search_path(lod,           pgc('LOD'))),
-    assert(user:file_search_path(ckan,            lod('CKAN'))),
     assert(user:file_search_path(owl,             lod('OWL' ))),
     assert(user:file_search_path(rdf,             lod('RDF' ))),
       assert(user:file_search_path(rdf_conv,        rdf('Conversion'))),

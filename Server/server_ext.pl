@@ -151,7 +151,7 @@ start_server(Port, _ServerGoal):-
     [Port,StartTime]
   ).
 % No server is running yet, so start a server.
-start_server(Port, ServerGoal0):-
+start_server(Port, ServerGoal):-
   % Make sure the server is shut down whenever SWI-Prolog shuts down.
   at_halt(http_stop_server(Port, [])),
 
@@ -160,7 +160,7 @@ start_server(Port, ServerGoal0):-
   NumberOfWorkers is NumberOfCores * 2,
 
   % Allow a custom goal for server dispatching.
-  default(ServerGoal0, http_dispatch, ServerGoal),
+  default(http_dispatch, ServerGoal),
 
   start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed),
 

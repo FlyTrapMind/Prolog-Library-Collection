@@ -117,13 +117,13 @@ rdf_assert_literal(S, P, LexicalForm, Datatype, _, G):-
 
 rdf_convert_literal(
   FromLexicalForm, FromDatatype, FromLangTag,
-  ToLexicalForm,   ToDatatype1,  ToLangTag
+  ToLexicalForm,   ToDatatype,   ToLangTag
 ):-
   atom(FromLexicalForm),
   nonvar(FromDatatype),
-  default(ToDatatype1, FromDatatype, ToDatatype2),
+  default(FromDatatype, ToDatatype),
   rdf_literal_map(FromLexicalForm, FromDatatype, FromLangTag, Value),
-  rdf_literal_map(ToLexicalForm,   ToDatatype2,  ToLangTag,   Value).
+  rdf_literal_map(ToLexicalForm,   ToDatatype,   ToLangTag,   Value).
 
 
 %! rdf_retractall_literal(

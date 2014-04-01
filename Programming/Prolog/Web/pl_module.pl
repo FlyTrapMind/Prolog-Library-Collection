@@ -43,16 +43,16 @@ module_properties(
   [
     class(Class),
     file(File),
-    predicates(Module, Predicates2),
-    operators(Module, Operators2)
+    predicates(Module, Predicates),
+    operators(Module, Operators)
   ]
 ):-
   module_property(Module, class(Class)),
   module_property(Module, file(File)),
-  ignore(module_property(Module, exports(Predicates1))),
-  default(Predicates1, [], Predicates2),
-  ignore(module_property(Module, exported_operators(Operators1))),
-  default(Operators1, [], Operators2).
+  ignore(module_property(Module, exports(Predicates))),
+  default([], Predicates),
+  ignore(module_property(Module, exported_operators(Operators))),
+  default([], Operators).
 
 
 pl_module(Module) -->

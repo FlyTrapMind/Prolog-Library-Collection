@@ -212,14 +212,14 @@ oaei_file_to_alignments_(G, A_Pairs):-
 tsv_convert_directory(FromDir, ToDir, ap(status(succeed),files(ToFiles))):-
   tsv_convert_directory(FromDir, ToDir, _, ToFiles).
 
-tsv_convert_directory(FromDir, ToDir, ToMIME1, ToFiles):-
-  default(ToMIME1, 'application/x-turtle', ToMIME2),
+tsv_convert_directory(FromDir, ToDir, ToMime, ToFiles):-
+  default('application/x-turtle', ToMime),
   directory_files([file_types([tsv])], FromDir, FromFiles),
   findall(
     ToFile,
     (
       member(FromFile, FromFiles),
-      once(rdf_serialization(ToExt, _, _, ToMIME2, _)),
+      once(rdf_serialization(ToExt, _, _, ToMime, _)),
       file_alternative(FromFile, ToDir, _, ToExt, ToFile),
       tsv_file_to_oaei_file(FromFile, ToFile)
     ),

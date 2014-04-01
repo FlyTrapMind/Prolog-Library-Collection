@@ -93,11 +93,11 @@ check_pl_version(MinimumMajor, MinimumMinor, MinimumPatch):-
 %!   -Version:integer
 %! ) is det.
 
-major_minor_patch_to_integer(Major1, Minor1, Patch1, Version):-
-  default(Major1, 0, Major2),
-  default(Minor1, 0, Minor2),
-  default(Patch1, 0, Patch2),
-  Version is (Major2 * 10000) + (Minor2 * 100) + Patch2.
+major_minor_patch_to_integer(Major, Minor, Patch, Version):-
+  default(0, Major),
+  default(0, Minor),
+  default(0, Patch),
+  Version is (Major * 10000) + (Minor * 100) + Patch.
 
 
 %! minimum_prolog_version(

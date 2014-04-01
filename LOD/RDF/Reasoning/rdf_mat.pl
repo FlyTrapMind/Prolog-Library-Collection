@@ -224,8 +224,8 @@ rule(Regime, Rule, Premises, S, P, O, G):-
 %
 % @see Performs materialization steps using materialize/1.
 
-start_materializer(O1, N1, G):-
-  default(N1, 30, N2),
-  intermittent_thread(materialize(O1, G), true, N2, _Id, []),
+start_materializer(O1, N, G):-
+  default(30, N),
+  intermittent_thread(materialize(O1, G), true, N, _Id, []),
   debug(rdf_mat, 'A materializer was started on graph ~w.', [G]).
 

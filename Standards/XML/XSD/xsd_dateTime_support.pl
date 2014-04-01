@@ -181,7 +181,7 @@ newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
   default(D1,  1,   D2 ),
   default(H1,  0,   H2 ),
   default(MM1, 0,   MM2),
-  default(S1,  0.0, S2 ),
+  default(S2,  0.0, S2 ),
   normalizeSecond(Y2, M2, D2, H2, MM2, S2, Y3, M3, D3, H3, MM3, S3),
 
   % Variables stay variable.
@@ -398,9 +398,6 @@ timeOnTimeline(dateTime(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
       % Second.
       + S2.
 
-
-
-% SUPPORT %
 
 %! var_or_value(+Argument, +Value, -VariableOrValue) is det.
 
