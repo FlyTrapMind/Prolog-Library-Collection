@@ -23,7 +23,7 @@
 proof(O1, Proof) -->
   {
     meta_options(is_meta, O1, O2),
-    default_option(O2, indent, 0, O3)
+    add_default_option(O2, indent, 0, O3)
   },
   proof_inner(O3, Proof).
 

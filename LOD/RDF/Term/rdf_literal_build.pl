@@ -221,17 +221,21 @@ rdf_update_literal_preview(S, P, FromLexicalForm, FromDatatype, FromLangTag,
   once(
     rdf_update_literal_rule(
       [S,P,FromLexicalForm,FromDatatype,FromLangTag,G,Action],
-      _Header,
+      Header,
       Antecedent,
       Consequent,
       Preview
     )
   ),
-  Antecedent,
-  Consequent,
-  Preview,
-  Rows = [],
-  %%%%findall(Header, (call(Antecedent), call(Consequent), call(Preview)), Rows),
+  findall(
+    Header,
+    (
+      Antecedent,
+      Consequent,
+      Preview
+    ),
+    Rows
+  ),
   rdf_store_rows(Rows).
 
 

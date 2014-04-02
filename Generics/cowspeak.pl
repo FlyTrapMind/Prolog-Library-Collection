@@ -129,7 +129,7 @@ cowspeak(O1, Content):-
 % All content is atomic by now.
 '_cowspeak'(O1, Atoms):-
   % The default wrap mode is wrapping words.
-  default_option(O1, wrap_mode, word, O2),
+  add_default_option(O1, wrap_mode, word, O2),
 
   % Determine the maximum width of the speech bubble.
   setting(default_max_width, DefaultMaxWidth),

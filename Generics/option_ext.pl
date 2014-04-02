@@ -5,15 +5,15 @@
                   % +Name:atom
                   % +Value:atom
                   % +ToOptions:list(nvpair)
-    default_option/4, % +Os1:list(nvpair)
-                      % +Name:atom
-                      % +DefaultValue
-                      % -Os2:list(nvpair)
-    default_option/5, % +Os1:list(nvpair)
-                      % +Name:atom
-                      % +DefaultValue
-                      % -StoredValue
-                      % -Os2:list(nvpair)
+    add_default_option/4, % +Os1:list(nvpair)
+                          % +Name:atom
+                          % +DefaultValue
+                          % -Os2:list(nvpair)
+    add_default_option/5, % +Os1:list(nvpair)
+                          % +Name:atom
+                          % +DefaultValue
+                          % -StoredValue
+                          % -Os2:list(nvpair)
     remove_option/4, % +OldOptions:list(nvpair),
                      % +Name:atom,
                      % +Value,
@@ -45,7 +45,7 @@ first argument position in the given option term (probably under the
 assumption that the option term will always be unary).
 
 @author Wouter Beek
-@version 2013/01, 2013/07-2013/08, 2013/11-2013/12
+@version 2013/01, 2013/07-2013/08, 2013/11-2013/12, 2014/04
 */
 
 :- use_module(library(apply)).
@@ -78,18 +78,20 @@ add_option(O1, N, V, O2):-
   O =.. [N,V],
   merge_options([O], O1, O2).
 
-%! default_option(
+
+%! add_default_option(
 %!   +Os1:list(nvpair),
 %!   +Name:atom,
 %!   +DefaultValue,
 %!   -Os2:list(nvpair)
 %! ) is det.
-% @see default_option/5
+% @see add_default_option/5
 
-default_option(Os1, N, DefaultV, Os2):-
-  default_option(Os1, N, DefaultV, _StoredV, Os2).
+add_default_option(Os1, N, DefaultV, Os2):-
+  add_default_option(Os1, N, DefaultV, _StoredV, Os2).
 
-%! default_option(
+
+%! add_default_option(
 %!   +Os1:list(nvpair),
 %!   +Name:atom,
 %!   +DefaultValue,
@@ -100,11 +102,12 @@ default_option(Os1, N, DefaultV, Os2):-
 %   or the given default value.
 % Also returns the resultant options list.
 
-default_option(Os1, N, _DefaultV, StoredV, Os1):-
+add_default_option(Os1, N, _DefaultV, StoredV, Os1):-
   O =.. [N,StoredV],
   option(O, Os1), !.
-default_option(Os1, N, DefaultV, DefaultV, Os2):-
+add_default_option(Os1, N, DefaultV, DefaultV, Os2):-
   add_option(Os1, N, DefaultV, Os2).
+
 
 %! remove_option(
 %!   +OldOptions:list(nvpair),

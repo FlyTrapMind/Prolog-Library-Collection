@@ -192,10 +192,10 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   {
     shared_attributes(V_Terms, V_Attrs, NewV_Terms),
     shared_attributes(E_Terms, E_Attrs, NewE_Terms),
-    default_option(G_Attrs1, strict, false, Strict, G_Attrs2),
-    default_option(G_Attrs2, dir, none, Dir, G_Attrs3),
+    add_default_option(G_Attrs1, strict, false, Strict, G_Attrs2),
+    add_default_option(G_Attrs2, dir, none, Dir, G_Attrs3),
     select_option(name(G_Name), G_Attrs3, G_Attrs4, noname),
-    default_option(G_Attrs4, overlap, false, G_Attrs5),
+    add_default_option(G_Attrs4, overlap, false, G_Attrs5),
     I = 0
   },
 

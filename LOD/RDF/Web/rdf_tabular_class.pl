@@ -12,12 +12,13 @@
 Generates HTML tables for overviews of RDFS classes.
 
 @author Wouter Beek
-@version 2014/01-2014/03
+@version 2014/01-2014/04
 */
 
 :- use_module(generics(list_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -40,18 +41,23 @@ rdf_tabular_class(G, Class1) -->
       Instances1
     ),
     length(Instances1, L),
-    list_truncate(Instances1, 50, Instances2)
+    list_truncate(Instances1, 50, Instances2),
+    http_location_by_id(rdf(tabular), Location)
   },
   html([
     p([
-      \rdf_term_html(Class2, G),
+      \rdf_term_html(Location, Class2, G),
       ' is an RDF class with ',
       \html_pl_term(L),
       ' instances.'
     ]),
     \rdf_html_table(
       [graph(G),header_row(true)],
-      html(['Instances of ',\rdf_term_in_graph_html(Class2, G),'.']),
+      html([
+        'Overview of instances of ',
+        \rdf_term_in_graph_html(Location, Class2, G),
+        '.'
+      ]),
       [['Instance']|Instances2]
     )
   ]).
@@ -85,11 +91,16 @@ rdf_tabular_classes(G) -->
       [Class,NumberOfIndividuals],
       member(NumberOfIndividuals-Class, Pairs3),
       Rows
-    )
+    ),
+    http_location_by_id(rdf(tabular), Location)
   },
   rdf_html_table(
     [graph(G),header_row(true)],
-    html(['Overview of classes in RDF graph ',\rdf_graph_html(G),'.']),
+    html([
+      'Overview of classes in RDF graph ',
+      \rdf_graph_html(Location, G),
+      '.'
+    ]),
     [['Class','Members']|Rows]
   ).
 

@@ -118,22 +118,21 @@ xsd_canonize_triple(Subject, Predicate, DatatypeIri, LexicalForm, Graph):-
 %!   -ToLexicalForm:list(code)
 %! ) is semidet.
 
-xsd_convert_value(FromDatatype, FromLexical1, ToDatatype, ToLexical1):-
+xsd_convert_value(FromDatatype, FromLexical1, ToDatatype, ToLexical):-
   atomic_codes(FromLexical1, FromLexical2),
-  xsd_convert_value_codes(FromDatatype, ToDatatype, FromLexical2, ToLexical2),
-  atom_codes(ToLexical1, ToLexical2).
+  xsd_convert_value_codes(FromDatatype, ToDatatype, FromLexical2, ToLexical).
 
 % We can simply copy the lexical form, since it can be mapped to the new value space.
-xsd_convert_value_codes(_, ToDatatype, Lexical, Lexical):-
-  xsd_lexical_map(ToDatatype, Lexical, _), !.
+%%%%xsd_convert_value_codes(_, ToDatatype, Lexical, Lexical):-
+  %%%%xsd_lexical_map(ToDatatype, Lexical, _), !.
 xsd_convert_value_codes(FromXsdDatatype, ToXsdDatatype, FromLexical, ToLexical):-
   xsd_lexical_map(FromXsdDatatype, FromLexical, FromValue),
-  
+
   % Convert between values in Prolog.
   xsd_datatype(_, FromXsdDatatype, FromPlDatatype),
   xsd_datatype(_, ToXsdDatatype, ToPlDatatype),
   prolog_convert_value(FromPlDatatype, FromValue, ToPlDatatype, ToValue),
-  
+
   xsd_canonical_map(ToXsdDatatype, ToValue, ToLexical).
 
 

@@ -70,7 +70,8 @@ conforming to recommendation version 1.1.
 :- rdf_meta(xsd_canonical_map(r,+,-)).
 :- rdf_meta(xsd_canonical_map_(r,+,-)).
 :- rdf_meta(xsd_datatype(r)).
-:- rdf_meta(xsd_datatype(+,r)).
+:- rdf_meta(xsd_datatype(?,r)).
+:- rdf_meta(xsd_datatype(?,r,?)).
 :- rdf_meta(xsd_lexical_map(r,+,?)).
 
 

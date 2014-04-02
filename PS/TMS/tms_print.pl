@@ -42,7 +42,7 @@ tms_print_justification(O1, TMS, J) -->
   {once(tms_justification(TMS, As, R, C, J))},
   
   % Write the reason.
-  {default_option(O1, indent, 0, I, O2)},
+  {add_default_option(O1, indent, 0, I, O2)},
   indent(I),
   bracketed(square, atom(R)),
   space,
@@ -72,7 +72,7 @@ tms_print_nodes(O1, TMS, [H|T]) -->
 %   * =|lang(+LangTag:atom)|=
 
 tms_print_node(O1, TMS, C) -->
-  {default_option(O1, indent, 0, O2)},
+  {add_default_option(O1, indent, 0, O2)},
   
   ({
     tms_node(TMS, C),

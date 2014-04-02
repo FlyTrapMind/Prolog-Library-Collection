@@ -4,6 +4,9 @@
     rdf_literal/1, % ?Literal:compound
     rdf_literal/2, % ?Literal:compound
                    % ?RdfGraph:atom
+    rdf_literal/3, % ?Literal:compound
+                   % ?LexicalForm:atom
+                   % ?DatatypeIri:iri
     rdf_literal/4, % ?Literal:compound
                    % ?LexicalForm:atom
                    % ?DatatypeIri:iri
@@ -33,7 +36,7 @@
 Support for reading triples with literal object terms.
 
 @author Wouter Beek
-@version 2013/10, 2014/03
+@version 2013/10, 2014/03-2014/04
 */
 
 :- use_module(library(semweb/rdf_db)).
@@ -43,6 +46,7 @@ Support for reading triples with literal object terms.
 
 :- rdf_meta(rdf_literal(o)).
 :- rdf_meta(rdf_literal(o,?)).
+:- rdf_meta(rdf_literal(o,?,r)).
 :- rdf_meta(rdf_literal(o,?,r,?)).
 :- rdf_meta(rdf_literal(r,r,?,r,?)).
 :- rdf_meta(rdf_literal(r,r,?,r,?,?)).
@@ -68,6 +72,16 @@ rdf_literal(Literal, G):-
   rdf_literal(Literal),
   % Relates to an RDF graph.
   rdf_object(Literal, G).
+
+
+%! rdf_literal(+Literal:compound, +LexicalForm:atom, +DatatypeIri:iri) is semidet.
+%! rdf_literal(+Literal:compound, -LexicalForm:atom, -DatatypeIri:iri) is det.
+%! rdf_literal(-Literal:compound, +LexicalForm:atom, +DatatypeIri:iri) is det.
+% Does not work for datatype `rdf:langTag`.
+
+rdf_literal(Literal, LexicalForm, Datatype):-
+  rdf_literal(Literal, LexicalForm, Datatype, _),
+  \+ rdf_equal(rdf:langTag, Datatype).
 
 
 %! rdf_literal(+Literal:compound, +LexicalForm:atom, +DatatypeIri:iri, ?LanguageTag:atom) is semidet.

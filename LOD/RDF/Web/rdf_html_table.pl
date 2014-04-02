@@ -16,7 +16,7 @@
 Generates HTML tables with RDF content.
 
 @author Wouter Beek
-@version 2014/01-2014/03
+@version 2014/01-2014/04
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -24,14 +24,17 @@ Generates HTML tables with RDF content.
 :- use_module(generics(typecheck)).
 :- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_list)).
 :- use_module(rdf(rdf_table)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_web(rdf_term_html)).
+
 :- meta_predicate(rdf_html_table(+,//,+,?,?)).
-:- rdf_meta(rdf_html_table(r,?,?)).
+
+:- rdf_meta(rdf_html_table(+,r,?,?)).
 
 
 
@@ -73,6 +76,7 @@ header_row_presets(_, L, true, L).
 % The following options are supported:
 %   * =|header_column(HasHeaderColumn:boolean)|=
 %   * =|header_row(HasHeaderRow:boolean)|=
+%   * =|location(Location:iri)|=
 
 rdf_html_table(O1, Table) -->
   {
@@ -96,9 +100,11 @@ rdf_html_table(O1, Table) -->
       Rows2 = [ColumnHeaders|Rows1]
     ;
       Rows2 = Rows1
-    )
+    ),
+    http_location_by_id(rdf(tabular), DefaultLocation),
+    option(location(Location), O1, DefaultLocation)
   },
-  rdf_html_table(O1, rdf_term_html(Caption), Rows2).
+  rdf_html_table(O1, rdf_term_html(Location, Caption), Rows2).
 
 
 %! rdf_table_get_rows(
@@ -158,6 +164,7 @@ rdf_table_get_row(Table, [ColumnHeader|ColumnHeaders], RowHeader, [H|T]):-
 %     Often occurring header rows are atoms that consist of the follow
 %     characters, where the characters correspond to columns,
 %     in the order in which they occur.
+%   * =|location(Location:iri)|=
 %   * Other options are handed to html_table//4.
 %
 % The following characters are supported for the row header option:
@@ -177,13 +184,16 @@ rdf_html_table(O1, Caption, Rows1) -->
     % See whether a header row should be added.
     select_option(header_row(HeaderRow1), O2, O3, false),
     header_row_presets(HeaderRow1, Rows1, HeaderRow2, Rows2),
-    merge_options([header_row(HeaderRow2)], O3, O4)
+    merge_options([header_row(HeaderRow2)], O3, O4),
+    
+    http_location_by_id(rdf(tabular), DefaultLocation),
+    option(location(Location), O2, DefaultLocation)
   },
   html(
     \html_table(
       O4,
       Caption,
-      dcg_nth0_call([minus(true)], rdf_term_html(Graph), 0),
+      dcg_nth0_call([minus(true)], rdf_term_html(Location, Graph), 0),
       Rows2
     )
   ).

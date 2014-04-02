@@ -1,6 +1,4 @@
-:- module(pl_debug, []).
-
-/** <module> Prolog debug
+/* Prolog debug
 
 Loads debug tools for Prolog programming.
 
@@ -63,9 +61,6 @@ http:location(pldoc, root(help), [priority(10)]).
 :- use_module(tms(tms_web)).
 
 :- initialization(pl_debug).
-
-
-
 pl_debug:-
   % Start the SWI-Prolog thread monitor.
   %%%%prolog_ide(thread_monitor),

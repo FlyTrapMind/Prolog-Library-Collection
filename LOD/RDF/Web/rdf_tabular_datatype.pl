@@ -13,11 +13,12 @@ Generated HTML overviews of singular and of multiple
 datatype IRIs.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03-2014/04
 */
 
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf(rdf_stat)).
@@ -73,11 +74,16 @@ rdf_tabular_datatype_table(G, D, Pairs1, ColumnHeader) -->
       [H|T],
       member(H-T, Pairs3),
       Rows
-    )
+    ),
+    http_location_by_id(rdf(tabular), Location)
   },
   rdf_html_table(
     [graph(G),header_row(true)],
-    html(['Overview of datatype IRI ',\rdf_term_in_graph_html(D, G),'.']),
+    html([
+      'Overview of datatype IRI ',
+      \rdf_term_in_graph_html(Location, D, G),
+      '.'
+    ]),
     [['Number of literals','Lexical expression',ColumnHeader]|Rows]
   ).
 
@@ -103,11 +109,16 @@ rdf_tabular_datatypes(G) -->
       [N,D],
       member(N-D, Pairs3),
       Rows
-    )
+    ),
+    http_location_by_id(rdf(tabular), Location)
   },
   rdf_html_table(
     [graph(G),header_row(true)],
-    html(['Overview of datatype IRIs in graph ',\rdf_graph_html(G),'.']),
+    html([
+      'Overview of datatype IRIs in graph ',
+      \rdf_graph_html(Location, G),
+      '.'
+    ]),
     [['Number of literals','Datatype']|Rows]
   ).
 

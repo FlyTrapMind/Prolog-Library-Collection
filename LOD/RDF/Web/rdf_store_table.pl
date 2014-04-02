@@ -1,7 +1,10 @@
 :- module(
   rdf_store_table,
   [
-    rdf_store_rows/1, % +Quadruples:ordset(quadruple(or([bnode,iri]),iri,or([bnode,iri,literal]),atom))
+    rdf_store_rows/1, % +Rows:list(list(ground))
+    rdf_store_rows/3, % :Caption
+                      % +Header:list(ground)
+                      % +Rows:list(list(ground))
     rdf_store_rows/4 % ?Subject:or([bnode,iri])
                       % ?Predicate:iri
                       % ?Object:or([bnode,iri,literal])
@@ -15,9 +18,10 @@ Predicates that allows RDF tables to be asserted
  in the Prolog console and displayed in the Web browser.
 
 @author Wouter Beek
-@version 2014/01-2014/03
+@version 2014/01-2014/04
 */
 
+:- use_module(generics(uri_query)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -27,18 +31,23 @@ Predicates that allows RDF tables to be asserted
 :- use_module(library(www_browser)).
 :- use_module(rdf_web(rdf_html_table)).
 
+:- meta_predicate(rdf_store_rows(:,+,+)).
+
 :- rdf_meta(rdf_store_rows(t)).
+:- rdf_meta(rdf_store_rows(:,+,t)).
 :- rdf_meta(rdf_store_rows(r,r,r,+)).
 
 http:location(rdf, root(rdf), []).
 :- http_handler(rdf(store_table), rdf_store_table, []).
 
-%! rdf_store_rows(
+%! rdf_store_rows_(
 %!   ?Timestamp:positive_integer,
+%!   :Caption,
+%!   ?Header:list(list(ground)),
 %!   ?Rows:list(list(ground))
 %! ) is nondet.
 
-:- dynamic(rdf_store_rows/2).
+:- dynamic(rdf_store_rows_/4).
 
 
 
@@ -52,10 +61,14 @@ http:location(rdf, root(rdf), []).
 %      such rows (and that are S-P-O-G quadruples).
 
 rdf_store_rows(Rows):-
-  get_time(Time),
-  assert(rdf_store_rows(Time, Rows)),
-  http_absolute_uri(rdf(store_table), Link),
-  www_open_url(Link).
+  rdf_store_rows(_, _, Rows).
+
+rdf_store_rows(Caption, Header, Rows):-
+  get_time(Timestamp),
+  assert(rdf_store_rows_(Timestamp, Caption, Header, Rows)),
+  http_absolute_uri(rdf(store_table), Link1),
+  uri_query_add(Link1, timestamp, Timestamp, Link2),
+  www_open_url(Link2).
 
 
 %! rdf_store_rows(
@@ -83,19 +96,31 @@ rdf_store_rows(S, P, O, G):-
 %
 % @see rdf_store_rows/[1,4] for asserting RDF tables from the Prolog console.
 
-rdf_store_table(_Request):-
-  findall(
-    Timestamp-Quadruples,
-    rdf_store_rows(Timestamp, Quadruples),
-    Pairs1
-  ),
-  keysort(Pairs1, Pairs2),
-  reverse(Pairs2, [Timestamp-Quadruples|_]),
+rdf_store_table(Request):-
+  request_query_read(Request, timestamp, Timestamp), !,
+  once(rdf_store_rows_(Timestamp, Caption, Header, Rows)),
   format_time(atom(FormattedTime), '%FT%T%:z', Timestamp),
-  TitleContent = ['RDF Table at ',FormattedTime],
   reply_html_page(
     app_style,
-    title(TitleContent),
-    \rdf_html_table([], html(TitleContent), Quadruples)
+    title(['RDF store table - ',FormattedTime]),
+    \rdf_html_table([header_row(true),index(true)], Caption, [Header|Rows])
+  ).
+rdf_store_table(_Request):-
+  aggregate_all(
+    set([Timestamp,Length]),
+    (
+      rdf_store_rows_(Timestamp, _, _, Rows),
+      length(Rows, Length)
+    ),
+    Rows
+  ),
+  reply_html_page(
+    app_style,
+    title('RDF store table'),
+    \rdf_html_table(
+      [header_row(true),indexed(true)],
+      html('Overview of RDF stored tables'),
+      Rows
+    )
   ).
 

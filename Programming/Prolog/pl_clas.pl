@@ -66,17 +66,6 @@ prolog:message(incorrect_path(Dir)) -->
   ['The given value could not be resolved to a directory: ',Dir,'.~n'].
 
 
-% Option: debug.
-
-user:cmd_option(d, debug, boolean,
-    'Run in debug mode. This shows debug messages and loads debug tools.').
-
-user:process_cmd_option(debug(true)):-
-  assert(user:debug_mode),
-  use_module(pl(pl_debug)).
-user:process_cmd_option(debug(false)).
-
-
 % Option: help.
 
 user:cmd_option(h, help, boolean,

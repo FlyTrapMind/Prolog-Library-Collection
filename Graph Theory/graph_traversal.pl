@@ -161,19 +161,19 @@ traverse(O1, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
   % so we do not have to do this in every iteration.
   
   % Cycles, tours, and Euler tours are closed.
-  default_option(O1, closed, false, O2),
+  add_default_option(O1, closed, false, O2),
   
   % Euler tours must use every edge.
-  default_option(O2, every_edge, false, O3),
+  add_default_option(O2, every_edge, false, O3),
   
   % The default distance metric is edges.
-  default_option(O3, distance, edge, O4),
+  add_default_option(O3, distance, edge, O4),
   
   % Cycles and paths have a unique number of vertices.
-  default_option(O4, unique_vertex, false, O5),
+  add_default_option(O4, unique_vertex, false, O5),
   
   % Trails and Euler tours has a no duplicate edges.
-  default_option(O5, unique_edge, false, O6),
+  add_default_option(O5, unique_edge, false, O6),
   
   meta_options(is_meta, O6, O7),
   

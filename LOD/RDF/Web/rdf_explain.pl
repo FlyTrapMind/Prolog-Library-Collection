@@ -13,7 +13,8 @@
 Web predicates for RDF graphs.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11-2014/01, 2014/03
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/09, 2013/11-2014/01,
+         2014/03-2014/04
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -86,10 +87,11 @@ rdf_explain_web([[S,P,O,G]|T]) -->
     dcg_with_output_to(atom(TripleName), rdf_triple_name(S, P, O, G)),
     tms_create_node_iri(TripleName, N),
     tms_export_node([], N, Gif),
-    graph_to_svg_dom([], Gif, SvgDom)
+    graph_to_svg_dom([], Gif, SvgDom),
+    http_location_by_id(rdf(explain), Location)
   },
   html([
-    h1(\rdf_triple_html(S, P, O, G)),
+    h1(\rdf_triple_html(Location, S, P, O, G)),
     \xml_dom_as_atom(SvgDom),
     \rdf_explain_web(T)
   ]).

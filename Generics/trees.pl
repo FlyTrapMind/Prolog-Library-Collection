@@ -95,7 +95,7 @@ print_tree(Out, Tree):-
 
 print_tree(O1, Out, Tree):-
   meta_options(is_meta, O1, O2),
-  default_option(O2, indent, 0, O3),
+  add_default_option(O2, indent, 0, O3),
   once(phrase(print_tree(O3, Tree), Codes)),
   put_codes(Out, Codes).
 
