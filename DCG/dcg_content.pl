@@ -142,6 +142,10 @@ arrow_right_head(right).
 
 %! between(+Low:nonneg, +High:nonneg, +Code:code)// is semidet.
 %! between(+Low:nonneg, +High:nonneg, -Code:code)// is nondet.
+% Parses or generates an integer between the given limits.
+%
+% @tbd Support for negative integers and zero.
+% @tbd Support for `minf` and `inf`.
 
 between(Low, High, Code) -->
   [Code],

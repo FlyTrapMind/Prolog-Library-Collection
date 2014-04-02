@@ -145,7 +145,7 @@ rdf_load(O1, Graph, File):-
     O2
   ),
 
-  % The real job is performed by a predicate from the semweb library.
+  % The real job is performed by predicates from the Semweb library.
   rdf_load(File, O2),
 
   % Send a debug message notifying that the RDF file was successfully loaded.

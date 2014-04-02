@@ -8,6 +8,11 @@
                    % ?LexicalForm:atom
                    % ?DatatypeIri:iri
                    % ?LanguageTag:atom
+    rdf_literal/5, % ?Subject:or([bnode,iri])
+                   % ?Predicate:iri
+                   % ?LexicalForm:atom
+                   % ?DatatypeIri:iri
+                   % ?RdfGraph:atom
     rdf_literal/6, % ?Subject:or([bnode,iri])
                    % ?Predicate:iri
                    % ?LexicalForm:atom
@@ -39,6 +44,7 @@ Support for reading triples with literal object terms.
 :- rdf_meta(rdf_literal(o)).
 :- rdf_meta(rdf_literal(o,?)).
 :- rdf_meta(rdf_literal(o,?,r,?)).
+:- rdf_meta(rdf_literal(r,r,?,r,?)).
 :- rdf_meta(rdf_literal(r,r,?,r,?,?)).
 :- rdf_meta(rdf_literal_map(?,r,?,?)).
 
@@ -74,6 +80,19 @@ rdf_literal(literal(type(Datatype,LexicalForm)), LexicalForm, Datatype, _):- !.
 rdf_literal(literal(LexicalForm), LexicalForm, xsd:string, _):-
   atom(LexicalForm), !.
 
+%! rdf_literal(
+%!   ?Subject:oneof([bnode,iri]),
+%!   ?Predicate:iri,
+%!   ?LexicalForm:atom,
+%!   ?DatatypeIri:iri,
+%!   ?LanguageTag:atom,
+%!   ?RdfGraph:graph
+%! ) is nondet.
+% This does not work for language-tagged strings.
+
+rdf_literal(S, P, LexicalForm, Datatype, G):-
+  rdf_literal(S, P, LexicalForm, Datatype, _, G),
+  \+ rdf_equal(rdf:langString, Datatype).
 
 %! rdf_literal(
 %!   ?Subject:oneof([bnode,iri]),

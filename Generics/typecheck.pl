@@ -1,9 +1,13 @@
 :- module(
   typecheck,
   [
-    atom_to_value/3 % +Atom
-                    % +Type
-                    % -Value
+    atom_to_value/3, % +Atom
+                     % +Type
+                     % -Value
+    prolog_convert_value/4 % +FromDatatype:atom
+                           % +FromValue
+                           % +ToDatatype:atom
+                           % -ToValue
   ]
 ).
 :- reexport(library(error), [
@@ -55,10 +59,11 @@ Predicates used for parsing and checking value-type conformance.
 --
 
 @author Wouter Beek
-@version 2013/01, 2013/08, 2014/01, 2014/03
+@version 2013/01, 2013/08, 2014/01, 2014/03-2014/04
 */
 
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(atom_ext)).
 :- use_module(generics(boolean_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -166,4 +171,16 @@ error:has_type(iri, Term):-
 email -->
   dcg_until([end_mode(inclusive),output_format(codes)], at_sign, _),
   dcg_all.
+
+
+%! prolog_convert_value(
+%!   +FromDatatype:atom,
+%!   +FromValue,
+%!   +ToDatatype:atom,
+%!   -ToValue
+%! ) is det.
+
+prolog_convert_value(_, FromValue, ToDatatype, ToValue):-
+  format(atom(Atom), '~w', [FromValue]),
+  atom_to_value(Atom, ToDatatype, ToValue).
 

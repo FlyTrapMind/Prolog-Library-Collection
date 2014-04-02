@@ -11,6 +11,9 @@
     xsd_datatype/1, % ?DatatypeIri:iri
     xsd_datatype/2, % ?DatatypeName:atom
                     % ?DatatypeIri:iri
+    xsd_datatype/3, % ?DatatypeName:atom
+                    % ?DatatypeIri:iri
+                    % ?PrologName:atom
     xsd_lexical_map/3 % +DatatypeIri:iri
                       % +LexicalForm:atom
                       % ?Value
@@ -37,7 +40,7 @@ conforming to recommendation version 1.1.
 @tbd Read section E.3.3 on adding durations to dateTime.
 @tbd Read section G on REs.
 @tbd Read section H on implementation-defined datatypes.
-@version 2013/08-2013/10, 2014/01, 2014/03
+@version 2013/08-2013/10, 2014/01, 2014/03-2014/04
 */
 
 :- use_module(dcg(dcg_generic)).
@@ -123,22 +126,27 @@ xsd_datatype(DatatypeIri):-
 %! xsd_datatype(-DatatypeName:atom, +DatatypeIri:iri) is det.
 %! xsd_datatype(-DatatypeName:atom, -DatatypeIri:iri) is nondet.
 
-xsd_datatype(boolean,    xsd:boolean   ).
-xsd_datatype(date,       xsd:date      ).
-xsd_datatype(dateTime,   xsd:dateTime  ).
-xsd_datatype(decimal,    xsd:decimal   ).
-xsd_datatype(double,     xsd:double    ).
-xsd_datatype(duration,   xsd:duration  ).
-xsd_datatype(float,      xsd:float     ).
-xsd_datatype(gDay,       xsd:gDay      ).
-xsd_datatype(gMonth,     xsd:gMonth    ).
-xsd_datatype(gMonthDay,  xsd:gMonthDay ).
-xsd_datatype(gYear,      xsd:gYear     ).
-xsd_datatype(gYearMonth, xsd:gYearMonth).
-xsd_datatype(hexBinary,  xsd:hexBinary ).
-xsd_datatype(integer,    xsd:integer   ).
-xsd_datatype(string,     xsd:string    ).
-xsd_datatype(time,       xsd:time      ).
+xsd_datatype(DatatypeName, DatatypeIri):-
+  xsd_datatype(DatatypeName, DatatypeIri, _).
+
+%! xsd_datatype(?DatatypeName:atom, ?DatatypeIri:iri, ?PrologName:atom) .
+
+xsd_datatype(boolean,    xsd:boolean   , boolean).
+xsd_datatype(date,       xsd:date      , date   ).
+xsd_datatype(dateTime,   xsd:dateTime  , date   ).
+xsd_datatype(decimal,    xsd:decimal   , float  ).
+xsd_datatype(double,     xsd:double    , float  ).
+xsd_datatype(duration,   xsd:duration  , date   ).
+xsd_datatype(float,      xsd:float     , float  ).
+xsd_datatype(gDay,       xsd:gDay      , date   ).
+xsd_datatype(gMonth,     xsd:gMonth    , date   ).
+xsd_datatype(gMonthDay,  xsd:gMonthDay , date   ).
+xsd_datatype(gYear,      xsd:gYear     , date   ).
+xsd_datatype(gYearMonth, xsd:gYearMonth, date   ).
+xsd_datatype(hexBinary,  xsd:hexBinary , unknown).
+xsd_datatype(integer,    xsd:integer   , integer).
+xsd_datatype(string,     xsd:string    , atom   ).
+xsd_datatype(time,       xsd:time      , date   ).
 
 
 %! xsd_lexical_map(+DatatypeIri:iri, +LexicalForm:atom, +Value) is semidet.

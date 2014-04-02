@@ -59,6 +59,7 @@ Support for asserting/retracting triples with literal object terms.
 :- rdf_meta(rdf_retractall_literal(r,r,?,r,?,?)).
 :- rdf_meta(rdf_update_literal(r,r,?,r,?,?,t)).
 :- rdf_meta(rdf_update_literal_preview(r,r,?,r,?,?,+)).
+:- rdf_meta(rdf_update_literal_rule(?,?,:,:,:)).
 
 
 
@@ -214,18 +215,23 @@ rdf_update_literal(S, P, FromLexicalForm, FromDatatype, FromLangTag, G, Action):
 %
 % The supported actions are documented for rdf_update_literal/7.
 
-rdf_update_literal_preview(S, P, FromLexicalForm, FromDatatype, FromLangTag, G, Action):-
+rdf_update_literal_preview(S, P, FromLexicalForm, FromDatatype, FromLangTag,
+    G, Action):-
   % Take the first matching rule.
   once(
     rdf_update_literal_rule(
       [S,P,FromLexicalForm,FromDatatype,FromLangTag,G,Action],
-      Header,
+      _Header,
       Antecedent,
       Consequent,
       Preview
     )
   ),
-  findall(Header, (Antecedent, Consequent, Preview), Rows),
+  Antecedent,
+  Consequent,
+  Preview,
+  Rows = [],
+  %%%%findall(Header, (call(Antecedent), call(Consequent), call(Preview)), Rows),
   rdf_store_rows(Rows).
 
 
@@ -242,7 +248,8 @@ rdf_update_literal_preview(S, P, FromLexicalForm, FromDatatype, FromLangTag, G, 
 
 % Replace literal components.
 rdf_update_literal_rule(
-  [S,P,FromLexicalForm,FromDatatype,FromLangTag,G,literal(ToLexicalForm,ToDatatype,ToLangTag)],
+  [S,P,FromLexicalForm,FromDatatype,FromLangTag,G,
+      literal(ToLexicalForm,ToDatatype,ToLangTag)],
   [S,P,FromLiteral,ToLiteral,G],
   rdf_literal(S, P, FromLexicalForm, FromDatatype, FromLangTag, G),
   (
@@ -276,13 +283,13 @@ rdf_update_literal_rule(
   rdf_literal(S, P, FromLexicalForm, Datatype, LangTag, G),
   (
     call(Goal, FromLexicalForm, ToLexicalForm),
-    
+
     % The lexical form must be altered.
     FromLexicalForm \== ToLexicalForm,
-    
+
     % Make sure the altered lexical form still results in an valid literal.
     rdf_literal_map(ToLexicalForm, Datatype, LangTag, _),
-    
+
     % Assert the new lexical form and retract the old one.
     rdf_assert_literal(    S, P, ToLexicalForm,   Datatype, LangTag, G),
     rdf_retractall_literal(S, P, FromLexicalForm, Datatype, LangTag, G)
@@ -299,16 +306,16 @@ rdf_update_literal_rule(
   rdf_literal(S, P, FromLexicalForm, Datatype, LangTag, G),
   (
     atomic_list_concat(ToLexicalForms, Split, FromLexicalForm),
-    
+
     % The split must be non-trivial.
     ToLexicalForms \== [_],
-    
+
     % Make sure the altered lexical forms still result in valid literals.
     forall(
       member(ToLexicalForm, ToLexicalForms),
       rdf_literal_map(ToLexicalForm, Datatype, LangTag, _)
     ),
-    
+
     % Assert all the splitted lexical forms.
     forall(
       member(ToLexicalForm, ToLexicalForms),

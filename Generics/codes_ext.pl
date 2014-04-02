@@ -145,8 +145,9 @@ atomic_codes_nondet(codes, Codes, Codes):-
 
 atomic_codes_goal(Goal, From1, To1):-
   atomic_codes(Kind, From1, From2),
+  % From codes to codes.
   call(Goal, From2, To2),
-  atomic_codes(Kind, To2, To1).
+  atomic_codes(Kind, To1, To2).
 
 
 %! code_remove(

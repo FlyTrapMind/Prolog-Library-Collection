@@ -146,6 +146,8 @@ rdf_serialization(ttl, turtle, turtle, ['application/x-turtle','text/turtle'], '
 rdf_serialization(n3, n3, turtle, ['text/n3'], '').
 
 % RDF file types.
+:- db_add_novel(user:prolog_file_type(nq,      nquads  )).
+:- db_add_novel(user:prolog_file_type(nq,      rdf     )).
 :- db_add_novel(user:prolog_file_type(nt,      ntriples)).
 :- db_add_novel(user:prolog_file_type(nt,      rdf     )).
 :- db_add_novel(user:prolog_file_type(owl,     rdf_xml )).
