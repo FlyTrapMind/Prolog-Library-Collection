@@ -33,7 +33,7 @@ rdf_man_literals(_Request):-
 
 
 rdf_man_literals -->
-  rdf_man_incorrect_literals,
+  rdf_man_incorrect_literals.
   %rdf_man_correct_literals.
 
 
@@ -63,7 +63,7 @@ rdf_man_incorrect_literals -->
       (
         rdf(S, P, L, G),
         rdf_literal(L, LexicalForm, Datatype, LangTag),
-        \+ rdf_literal_map(LexicalForm, Datatype, LangTag, PlValue)
+        \+ rdf_literal_map(LexicalForm, Datatype, LangTag, _)
       ),
       IncorrectRows
     )
@@ -73,11 +73,4 @@ rdf_man_incorrect_literals -->
     html('Overview of incorrect RDF literals in all RDF graphs.'),
     IncorrectRows
   ).
-
-
-rdf_man_lexical_form_operations(Goal, 
-  findall(
-    [S,P,Literal1,Literal2,G],
-    (
-      rdf_literal(S, P, LexicalForm1, Datatype, LanguageTag, 
 
