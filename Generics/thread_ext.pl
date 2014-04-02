@@ -13,8 +13,9 @@
                            % +Interval:positive_integer
                            % -Id
                            % +Options:list(nvpair)
-    run_on_sublists/2, % +List:list
+    run_on_sublists/3, % +List:list
                        % :Goal
+                       % +NumberOfThreads:positive_integer
     thread_alias/1, % ?ThreadAlias:atom
     thread_end/1, % +ThreadAlias:atom
     thread_overview/0,
@@ -36,7 +37,7 @@
 Allows one to monitor running threads that register.
 
 @author Wouter Beek
-@version 2013/03, 2013/09, 2014/03
+@version 2013/03, 2013/09, 2014/03-2014/04
 */
 
 :- use_module(generics(atom_ext)).
@@ -50,7 +51,7 @@ Allows one to monitor running threads that register.
 :- meta_predicate(forall_thread(0,0,+,+)).
 :- meta_predicate(intermittent_goal(:,:,+)).
 :- meta_predicate(intermittent_thread(:,:,+,-,+)).
-:- meta_predicate(run_on_sublists(+,1)).
+:- meta_predicate(run_on_sublists(+,1,+)).
 
 :- dynamic(end_flag/2).
 :- dynamic(workload/4).
@@ -151,12 +152,12 @@ intermittent_goal(G, EndG, I):-
 intermittent_thread(G, EndG, I, Id, O):-
   thread_create(intermittent_goal(G, EndG, I), Id, O).
 
-%! run_on_sublists(+List, :Goal) is det.
+%! run_on_sublists(+List, :Goal, +NumberOfThreads:positive_integer) is det.
 % Run the given goal in different threads,
 % on different sublists of the given list.
 
-run_on_sublists(List, Mod:Goal):-
-  split_list_by_number_of_sublists(List, 10, Sublists),
+run_on_sublists(List, Mod:Goal, N):-
+  split_list_by_number_of_sublists(List, N, Sublists),
   findall(
     ThreadId,
     (
