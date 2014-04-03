@@ -216,9 +216,9 @@ json_pair_to_rdf(Graph, Module, XmlNamespace, Individual1, Name, Legend/_, Value
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % There are two ways to realize legend types / create resources:
 % 2. JSON strings (sometimes).
-json_pair_to_rdf(Graph, Module, XmlNamespace, Individual1, Name, Legend/_, Value):-
+json_pair_to_rdf(Graph, _, XmlNamespace, Individual1, Name, Legend/_, Value):-
   atom(Value), !,
-  create_resource(Graph, Module, Legend, Value, Individual2),
+  create_resource(Graph, XmlNamespace, Legend, Value, Individual2),
   rdf_global_id(XmlNamespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % A JSON object occurs for which the legend it not yet known.
