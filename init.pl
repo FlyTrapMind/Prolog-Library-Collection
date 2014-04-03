@@ -30,10 +30,6 @@ init_pgc:-
   % @tbd Why?
   delete_file(File),
 
-  % Install packages.
-  % This requires user interaction on the first load.
-  maplist(load_pl_package, [regex,smtp]),
-  
   % Start logging.
   start_log.
 

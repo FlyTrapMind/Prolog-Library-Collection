@@ -191,9 +191,9 @@ parse_options(Rest, [], Rest).
 % Only the options that are not processed in a generic way,
 % i.e. those that are application-specific, are returned.
 
-process_options(O3):-
+process_options(O4):-
   read_options(O1), !,
-  
+
   % First set the data directory,
   % since other command-line arguments may depend on it being set,
   % e.g. `project=NAME`.
@@ -204,14 +204,23 @@ process_options(O3):-
   ;
     % Use the default data directory.
     set_data_directory,
-     O2 = O1
+    O2 = O1
   ),
-
+  
+  % Then set the debug mode and load the debug tools.
+  (
+    select_option(debug(Debug), O2, O3)
+  ->
+    user:process_cmd_option(debug(Debug))
+  ;
+    O3 = O2
+  ),
+  
   % Process command-line arguments that change the set of options,
   % e.g. `help`.
-  process_all_options(O2),
+  process_all_options(O3),
 
-  exclude(user:process_cmd_option, O2, O3).
+  exclude(user:process_cmd_option, O3, O4).
 process_options(_):-
   print_message(warning, clas_parse_failed),
   halt.
