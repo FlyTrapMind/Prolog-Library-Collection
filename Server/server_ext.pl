@@ -152,9 +152,6 @@ start_server(Port, _ServerGoal):-
   ).
 % No server is running yet, so start a server.
 start_server(Port, ServerGoal):-
-  % Make sure the server is shut down whenever SWI-Prolog shuts down.
-  at_halt(http_stop_server(Port, [])),
-
   % Estimate the number of workes based on the number of CPU cores.
   current_prolog_flag(cpu_count, NumberOfCores),
   NumberOfWorkers is NumberOfCores * 2,
@@ -163,6 +160,9 @@ start_server(Port, ServerGoal):-
   default(http_dispatch, ServerGoal),
 
   start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed),
+
+  % Make sure the server is shut down whenever SWI-Prolog shuts down.
+  at_halt(http_stop_server(PortUsed, [])),
 
   % INFO
   print_message(informational, server_ext(started(PortUsed))).

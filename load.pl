@@ -24,13 +24,7 @@ load_pgc:-
     assert(user:file_search_path(pgc, ThisDirectory))
   )),
 
-  % If there is no outer project, then PGC is the project.
-  % (For debug purposes only.)
-  once((
-    current_predicate(project/2)
-  ;
-    assert(user:project('PGC', 'Prolog Generics Collection'))
-  )),
+  set_project,
 
   assert(user:prolog_file_type(html, 'text/html')),
   assert(user:prolog_file_type(md,   'text/markdown')),
@@ -95,4 +89,12 @@ load_pgc:-
     assert(user:file_search_path(crawler,         web('Crawler'))),
   
   ensure_loaded(pgc(init)).
+
+
+% If there is no outer project, then PGC is the project.
+
+set_project:-
+  current_predicate(project/2), !.
+set_project:-
+  assert(user:project('PGC', 'Prolog Generics Collection')).
 
