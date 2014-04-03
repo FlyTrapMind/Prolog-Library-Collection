@@ -15,6 +15,7 @@ Support for managing RDF literals.
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_web(rdf_html_table)).
@@ -38,18 +39,19 @@ has_inconsistent_literal(G, P-TDatatype):-
 
 rdf_man_literals(Request):-
   request_query_read(Request, graph, G), !,
-  http_location_by_id(rdf_man(literals), Location),
   reply_html_page(
     app_style,
-    title(['RDFm literals - RDF graph ',\rdf_graph_html(Location, G)]),
+    title([
+      'RDFm literals - RDF graph ',
+      \rdf_graph_name(G)
+    ]),
     html(\rdf_man_literals(G))
   ).
 rdf_man_literals(_Request):-
-  http_location_by_id(rdf_man(literals), Location),
   reply_html_page(
     app_style,
     title('RDFm literals - RDF graphs'),
-    html(\rdf_graphs_html(Location))
+    html(\rdf_graphs_html(rdf_man_iterals))
   ).
 
 
@@ -69,14 +71,13 @@ rdf_man_correct_literals(G) -->
         rdf_literal_map(LexicalForm, Datatype, LangTag, PlValue)
       ),
       CorrectRows
-    ),
-    http_location_by_id(rdf_man(literals), Location)
+    )
   },
   rdf_html_table(
-    [header_row(true),location(Location)],
+    [header_row(true),location(rdf_man_literals)],
     html([
       'Overview of correct RDF literals in all RDF graph .',
-      \rdf_graph_html(Location, G)
+      \rdf_graph_html(rdf_man_literals, G)
     ]),
     [['Subject','Predicate','Literal','Prolog value']|CorrectRows]
   ).
@@ -105,11 +106,10 @@ rdf_man_property_consistent_literals(Pairs) -->
       [P,D],
       member(P-D, Pairs),
       Rows
-    ),
-    http_location_by_id(rdf_man(literals), Location)
+    )
   },
   rdf_html_table(
-    [header_row(true),indexed(true),location(Location)],
+    [header_row(true),indexed(true),location(rdf_man_literals)],
     html('Overview of RDF properties with consistent literals.'),
     [['Property','Datatype']|Rows]
   ).
@@ -126,14 +126,13 @@ rdf_man_property_inconsistent_literals(G, Pairs) -->
         rdf_literal(Literal, LexicalForm, ADatatype)
       ),
       Rows
-    ),
-    http_location_by_id(rdf_man(literals), Location)
+    )
   },
   rdf_html_table(
-    [header_row(true),indexed(true),location(Location)],
+    [header_row(true),indexed(true),location(rdf_man_literals)],
     html([
       'Overview of inconsistent literals for RDF property ',
-      \rdf_term_in_graph_html(Location, P, G),
+      \rdf_term_in_graph_html(rdf_man_literals, P, G),
       '.'
     ]),
     [['Subject','Predicate','Literal','Graph','ABox datatype']|Rows]
@@ -150,14 +149,13 @@ rdf_man_incorrect_literals(G) -->
         \+ rdf_literal_map(LexicalForm, Datatype, LangTag, _)
       ),
       IncorrectRows
-    ),
-    http_location_by_id(rdf_man(literals), Location)
+    )
   },
   rdf_html_table(
-    [header_row(splg),location(Location)],
+    [header_row(splg),location(rdf_man_literals)],
     html([
       'Overview of incorrect RDF literals in RDF graph ',
-      \rdf_graph_html(Location, G),
+      \rdf_graph_html(rdf_man_literals, G),
       '.'
     ]),
     IncorrectRows

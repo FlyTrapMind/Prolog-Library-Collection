@@ -1,6 +1,7 @@
 :- module(
   rdf_name,
   [
+    rdf_graph_name//1, % +RdfGraph:atom
     rdf_term_name//1, % ?RdfTerm
     rdf_term_name//2, % +Options:list(nvpair)
                       % +RdfTerm
@@ -19,7 +20,7 @@
 Generates names for RDF terms and triples.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2014/01-2014/03
+@version 2013/07-2013/09, 2014/01-2014/04
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -28,6 +29,7 @@ Generates names for RDF terms and triples.
 :- use_module(generics(codes_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_list)).
@@ -42,6 +44,15 @@ Generates names for RDF terms and triples.
 
 
 
+% GRAPH %
+
+%! rdf_graph_name(+RdfGraph:atom)// is det.
+
+rdf_graph_name(G) -->
+  atom(G).
+
+
+
 % TERM %
 
 %! rdf_term_name(+RdfTerm:oneof([bnode,iri,literal]))// is det.
@@ -52,19 +63,21 @@ Generates names for RDF terms and triples.
 % Returns a display name for the given RDF term.
 %
 % The following options are supported:
-%   1. =|language(+Language:atom)|=
-%      The atomic language tag of the language that is preferred for
-%      use in the RDF term's name.
-%      The default value is `en`.
-%   2. =|uri_desc(+DescriptionMode:oneof([
-%        only_literals,
-%        only_preferred_label,
-%        uri_only,
-%        with_literals,
-%        with_preferred_label
-%      ]))|=
-%      Whether or not literals are included in the name of the RDF term.
-%      The default value is `uri_only`.
+%   * =|graph(+Graph:atom)|=
+%     `TERM in GRAPH`
+%   * =|language(+Language:atom)|=
+%     The atomic language tag of the language that is preferred for
+%     use in the RDF term's name.
+%     The default value is `en`.
+%   * =|uri_desc(+DescriptionMode:oneof([
+%       only_literals,
+%       only_preferred_label,
+%       uri_only,
+%       with_literals,
+%       with_preferred_label
+%     ]))|=
+%     Whether or not literals are included in the name of the RDF term.
+%     The default value is `uri_only`.
 %
 % @arg Options A list of name-value pairs.
 % @arg RdfTerm An RDF term.
@@ -72,6 +85,11 @@ Generates names for RDF terms and triples.
 rdf_term_name(RdfTerm) -->
   rdf_term_name([], RdfTerm).
 
+rdf_term_name(O1, RdfTerm) -->
+  {select_option(graph(Graph), O1, O2)}, !,
+  rdf_term_name(O2, RdfTerm),
+  ` in `,
+  rdf_graph_name(Graph).
 % RDF list.
 % @tbd Fix this.
 %rdf_term_name(O1, RDF_List) -->

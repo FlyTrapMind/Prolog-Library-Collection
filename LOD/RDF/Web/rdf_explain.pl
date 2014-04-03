@@ -87,11 +87,10 @@ rdf_explain_web([[S,P,O,G]|T]) -->
     dcg_with_output_to(atom(TripleName), rdf_triple_name(S, P, O, G)),
     tms_create_node_iri(TripleName, N),
     tms_export_node([], N, Gif),
-    graph_to_svg_dom([], Gif, SvgDom),
-    http_location_by_id(rdf(explain), Location)
+    graph_to_svg_dom([], Gif, SvgDom)
   },
   html([
-    h1(\rdf_triple_html(Location, S, P, O, G)),
+    h1(\rdf_triple_html(rdf(explain), S, P, O, G)),
     \xml_dom_as_atom(SvgDom),
     \rdf_explain_web(T)
   ]).

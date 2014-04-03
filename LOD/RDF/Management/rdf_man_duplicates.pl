@@ -59,12 +59,11 @@ rdf_man_duplicates -->
         once(maplist(remove_graph_index(Gs1), Gs1, Gs2))
       ),
       Rows
-    ),
-    http_location_by_id(rdf_man(duplicates), Location)
+    )
   },
   html(
     \rdf_html_table(
-      [header_row(spog),location(Location)],
+      [header_row(spog),indexed(true),location(rdf_man_duplicates)],
       html('Overview of RDF duplicates accross all RDF graphs.'),
       Rows
     )

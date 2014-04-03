@@ -72,11 +72,15 @@ header_row_presets(Abbr, T, true, [H|T]):-
 header_row_presets(_, L, true, L).
 
 
+% A location identifier is set.
+location_option(O1, LocationId):-
+  option(location(LocationId), O1), !.
+% No location identifier is set: use the default location identifier.
+location_option(_, rdf_tabular).
+
+
 %! rdf_html_table(+Options:list(nvpair), +Table:iri)// is det.
-% The following options are supported:
-%   * =|header_column(HasHeaderColumn:boolean)|=
-%   * =|header_row(HasHeaderRow:boolean)|=
-%   * =|location(Location:iri)|=
+% @see rdf_html_table//3 for the supported options.
 
 rdf_html_table(O1, Table) -->
   {
@@ -101,10 +105,9 @@ rdf_html_table(O1, Table) -->
     ;
       Rows2 = Rows1
     ),
-    http_location_by_id(rdf(tabular), DefaultLocation),
-    option(location(Location), O1, DefaultLocation)
+    location_option(O1, LocationId)
   },
-  rdf_html_table(O1, rdf_term_html(Location, Caption), Rows2).
+  rdf_html_table(O1, rdf_term_html(LocationId, Caption), Rows2).
 
 
 %! rdf_table_get_rows(
@@ -161,13 +164,14 @@ rdf_table_get_row(Table, [ColumnHeader|ColumnHeaders], RowHeader, [H|T]):-
 %   * =|header_row(+or([atom,boolean]))|=
 %     Support for often occurring header rows.
 %     A boolean is passed on to html_table//4.
-%     Often occurring header rows are atoms that consist of the follow
-%     characters, where the characters correspond to columns,
+%     Often occurring header rows are atoms that consist of
+%     the here enumerated characters,
+%     where the characters correspond to columns,
 %     in the order in which they occur.
 %   * =|location(Location:iri)|=
 %   * Other options are handed to html_table//4.
 %
-% The following characters are supported for the row header option:
+% The following characters are supported for the header row option:
 %   | `g` | Graph     |
 %   | `l` | Literal   |
 %   | `o` | Object    |
@@ -185,18 +189,20 @@ rdf_html_table(O1, Caption, Rows1) -->
     select_option(header_row(HeaderRow1), O2, O3, false),
     header_row_presets(HeaderRow1, Rows1, HeaderRow2, Rows2),
     merge_options([header_row(HeaderRow2)], O3, O4),
-    
-    http_location_by_id(rdf(tabular), DefaultLocation),
-    option(location(Location), O2, DefaultLocation)
+
+    location_option(O1, LocationId)
   },
   html(
     \html_table(
       O4,
       Caption,
-      dcg_nth0_call([minus(true)], rdf_term_html(Location, Graph), 0),
+      %%%%dcg_nth0_call([minus(true)], rdf_term_html(LocationId, Graph), 0),
+      rdf_term_html_dummy(LocationId, Graph),
       Rows2
     )
   ).
+rdf_term_html_dummy(LocationId, Graph, RdfTerm) -->
+  rdf_term_html(LocationId, RdfTerm, Graph).
 
 rdf_html_tables(_, []) --> !, [].
 rdf_html_tables(O1, [H|T]) -->

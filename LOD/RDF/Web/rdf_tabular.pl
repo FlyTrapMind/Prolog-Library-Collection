@@ -27,6 +27,7 @@ Generated RDF HTML tables.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_parse)).
 :- use_module(rdf_web(rdf_tabular_graph)).
 :- use_module(rdf_web(rdf_tabular_term)).
@@ -60,7 +61,7 @@ http:location(rdf, root(rdf), []).
 % RDF term.
 rdf_tabular(Request):-
   request_query_read(Request, term, T), !,
-
+  
   % Parse the tern atom to extract the corresponding RDF term.
   once(dcg_phrase(rdf_parse_term(T1), T)),
   rdf_global_id(T1, T2),
@@ -69,17 +70,16 @@ rdf_tabular(Request):-
   % (in which case it is left uninstantiated).
   ignore(request_query_read(Request, graph, G)),
 
-  http_location_by_id(rdf(tabular), Location),
   reply_html_page(
     app_style,
     title([
       'Overview of RDF resource ',
-      \rdf_term_in_graph_html(Location, T2, G)
+      \rdf_term_name([graph(G)], T2)
     ]),
     [
       h1([
         'Description of RDF term ',
-        \rdf_term_in_graph_html(Location, T2, G)
+        \rdf_term_in_graph_html(rdf_tabular, T2, G)
       ]),
       \rdf_tabular_term(G, T2)
     ]
@@ -87,12 +87,15 @@ rdf_tabular(Request):-
 % RDF graph.
 rdf_tabular(Request):-
   request_query_read(Request, graph, Graph), !,
-  http_location_by_id(rdf(tabular), Location),
   reply_html_page(
     app_style,
-    title(['Overview of RDF graph ',\rdf_graph_html(Location, Graph)]),
+    title(['Overview of RDF graph ',\rdf_graph_name(Graph)]),
     html([
-      h1(['Description of RDF graph ',\rdf_graph_html(Location, Graph),'.']),
+      h1([
+        'Description of RDF graph ',
+        \rdf_graph_html(rdf_tabular, Graph),
+        '.'
+      ]),
       \rdf_tabular_graph(Graph)
     ])
   ).
@@ -127,50 +130,47 @@ rdf_tabular_triples(S, P, O, G) -->
   },
   rdf_html_table(
     [graph(G),header_row(spog)],
-    rdf_tabular_triples_title(S, P, O, G),
+    rdf_tabular_triples_caption(S, P, O, G),
     Rows2
   ).
 
 
-rdf_tabular_triples_title(S, P, O, G) -->
+rdf_tabular_triples_caption(S, P, O, G) -->
   {
     nonvar(S),
     var(P),
     var(O),
-    nonvar(G),
-    http_location_by_id(rdf(tabular), Location)
+    nonvar(G)
   }, !,
   html([
     'RDF triples in which ',
-    \rdf_term_html(Location, S, G),
+    \rdf_term_html(rdf_tabular, S, G),
     ' occurs in the subject position.'
   ]).
-rdf_tabular_triples_title(S, P, O, G) -->
+rdf_tabular_triples_caption(S, P, O, G) -->
   {
     var(S),
     nonvar(P),
     var(O),
-    nonvar(G),
-    http_location_by_id(rdf(tabular), Location)
+    nonvar(G)
   }, !,
   html([
     'RDF triples in which ',
-    \rdf_term_html(Location, P, G),
+    \rdf_term_html(rdf_tabular, P, G),
     ' occurs in the predicate position.'
   ]).
-rdf_tabular_triples_title(S, P, O, G) -->
+rdf_tabular_triples_caption(S, P, O, G) -->
   {
     var(S),
     var(P),
     nonvar(O),
-    nonvar(G),
-    http_location_by_id(rdf(tabular), Location)
+    nonvar(G)
   }, !,
   html([
     'RDF triples in which ',
-    \rdf_term_html(Location, O, G),
+    \rdf_term_html(rdf_tabular, O, G),
     ' occurs in the object position.'
   ]).
-rdf_tabular_triples_title(_, _, _, _) -->
+rdf_tabular_triples_caption(_, _, _, _) -->
   html('RDF triples').
 

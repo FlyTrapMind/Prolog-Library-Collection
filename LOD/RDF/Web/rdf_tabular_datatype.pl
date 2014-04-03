@@ -18,9 +18,9 @@ datatype IRIs.
 
 :- use_module(generics(meta_ext)).
 :- use_module(library(http/html_write)).
-:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf(rdf_stat)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_language_tagged_string)).
@@ -74,14 +74,13 @@ rdf_tabular_datatype_table(G, D, Pairs1, ColumnHeader) -->
       [H|T],
       member(H-T, Pairs3),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
       'Overview of datatype IRI ',
-      \rdf_term_in_graph_html(Location, D, G),
+      \rdf_term_in_graph_html(rdf_tabular, D, G),
       '.'
     ]),
     [['Number of literals','Lexical expression',ColumnHeader]|Rows]
@@ -109,14 +108,13 @@ rdf_tabular_datatypes(G) -->
       [N,D],
       member(N-D, Pairs3),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
       'Overview of datatype IRIs in graph ',
-      \rdf_graph_html(Location, G),
+      \rdf_graph_html(rdf_tabular, G),
       '.'
     ]),
     [['Number of literals','Datatype']|Rows]

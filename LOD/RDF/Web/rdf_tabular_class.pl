@@ -41,12 +41,11 @@ rdf_tabular_class(G, Class1) -->
       Instances1
     ),
     length(Instances1, L),
-    list_truncate(Instances1, 50, Instances2),
-    http_location_by_id(rdf(tabular), Location)
+    list_truncate(Instances1, 50, Instances2)
   },
   html([
     p([
-      \rdf_term_html(Location, Class2, G),
+      \rdf_term_html(rdf_tabular, Class2, G),
       ' is an RDF class with ',
       \html_pl_term(L),
       ' instances.'
@@ -55,7 +54,7 @@ rdf_tabular_class(G, Class1) -->
       [graph(G),header_row(true)],
       html([
         'Overview of instances of ',
-        \rdf_term_in_graph_html(Location, Class2, G),
+        \rdf_term_in_graph_html(rdf_tabular, Class2, G),
         '.'
       ]),
       [['Instance']|Instances2]
@@ -91,14 +90,13 @@ rdf_tabular_classes(G) -->
       [Class,NumberOfIndividuals],
       member(NumberOfIndividuals-Class, Pairs3),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
       'Overview of classes in RDF graph ',
-      \rdf_graph_html(Location, G),
+      \rdf_graph_html(rdf_tabular, G),
       '.'
     ]),
     [['Class','Members']|Rows]

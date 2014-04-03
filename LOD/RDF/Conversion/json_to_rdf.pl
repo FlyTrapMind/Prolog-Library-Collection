@@ -3,7 +3,7 @@
   [
     json_to_rdf/5 % +Graph:atom
                   % +Module:atom
-                  % +XML_Namespace:atom
+                  % +XmlNamespace:atom
                   % +JSON:compound
                   % -Individual:iri
   ]
@@ -50,7 +50,7 @@ arg_to_name(Name=_, Name).
 
 %! create_resource(
 %!   +Graph:atom,
-%!   +XML_Namespace:atom,
+%!   +XmlNamespace:atom,
 %!   +Legend:atom,
 %!   ?Id:atom,
 %!   -Individual:iri
@@ -64,9 +64,9 @@ arg_to_name(Name=_, Name).
 %      denoted by a blank node; otherwise it is denoted by an IRI.
 % @arg Individual
 
-create_resource(Graph, XML_Namespace, Legend, Id, Individual):-
+create_resource(Graph, XmlNamespace, Legend, Id, Individual):-
   once(dcg_phrase(capitalize, Legend, ClassName)),
-  rdf_global_id(XML_Namespace:ClassName, Class),
+  rdf_global_id(XmlNamespace:ClassName, Class),
   rdfs_assert_class(Class, Graph),
   (
     var(Id)
@@ -82,7 +82,7 @@ create_resource(Graph, XML_Namespace, Legend, Id, Individual):-
 %! json_to_rdf(
 %!   +Graph:atom
 %!   +Module:atom
-%!   +XML_Namespace:atom,
+%!   +XmlNamespace:atom,
 %!   +JSON:compound
 %!   -Individual:iri
 %! ) is det.
@@ -111,20 +111,20 @@ create_resource(Graph, XML_Namespace, Legend, Id, Individual):-
 %      This will be converted to RDF.
 % @arg Individual An IRI denoting the RDF version of the JSON term.
 
-json_to_rdf(Graph, Module, XML_Namespace, JSONs, Individuals):-
+json_to_rdf(Graph, Module, XmlNamespace, JSONs, Individuals):-
   is_list(JSONs), !,
-  maplist(json_to_rdf(Graph, Module, XML_Namespace), JSONs, Individuals).
-json_to_rdf(Graph, Module, XML_Namespace, JSON, Individual):-
- % Namespace.
+  maplist(json_to_rdf(Graph, Module, XmlNamespace), JSONs, Individuals).
+json_to_rdf(Graph, Module, XmlNamespace, JSON, Individual):-
+  % Namespace.
   (
-    xml_current_namespace(XML_Namespace, _), !
+    xml_current_namespace(XmlNamespace, _), !
   ;
     atomic_list_concat(['http://www.wouterbeek.com/',Module,'#'], '', URL),
-    xml_register_namespace(XML_Namespace, URL)
+    xml_register_namespace(XmlNamespace, URL)
   ),
-  json_object_to_rdf(Graph, Module, XML_Namespace, JSON, Individual).
+  json_object_to_rdf(Graph, Module, XmlNamespace, JSON, Individual).
 
-json_object_to_rdf(Graph, Module, XML_Namespace, JSON, Individual):-
+json_object_to_rdf(Graph, Module, XmlNamespace, JSON, Individual):-
   JSON = json(Args0),
 
   % Find the legend to which this JSON term conforms.
@@ -142,11 +142,11 @@ json_object_to_rdf(Graph, Module, XML_Namespace, JSON, Individual):-
   debug(json_to_rdf, 'Legend order found: ~w.', [Legends]),
   last(Legends, Legend),
 
-  json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args), Individual).
+  json_object_to_rdf(Graph, Module, XmlNamespace, Legend, json(Args), Individual).
 
 
 % Now we have a legend based on which we do the conversion.
-json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args1), Individual):-
+json_object_to_rdf(Graph, Module, XmlNamespace, Legend, json(Args1), Individual):-
   Module:legend(Legend, PrimaryKey, Spec),
 
   (
@@ -162,14 +162,14 @@ json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args1), Individual
   (
     var(Individual)
   ->
-    create_resource(Graph, XML_Namespace, Legend, Id, Individual)
+    create_resource(Graph, XmlNamespace, Legend, Id, Individual)
   ;
     true
   ),
 
   % Propositions.
   maplist(
-    json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Spec),
+    json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Spec),
     Args1
   ).
 
@@ -177,7 +177,7 @@ json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args1), Individual
 %! json_pair_to_rdf(
 %!   +Graph:atom,
 %!   +Module:atom,
-%!   +XML_Namespace:atom,
+%!   +XmlNamespace:atom,
 %!   +Individual:iri,
 %!   +ArgumentSpecification:compound,
 %!   +JSON:pair(atom,term)
@@ -185,19 +185,19 @@ json_object_to_rdf(Graph, Module, XML_Namespace, Legend, json(Args1), Individual
 % Make sure a property with the given name exists.
 % Also retrieve the type the value should adhere to.
 
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Spec, Name=Value):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Spec, Name=Value):-
   memberchk(Name-Type-_, Spec),
-  json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, Type, Value), !.
+  json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Name, Type, Value), !.
 % DEB
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Spec, Name=Value):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Spec, Name=Value):-
   gtrace, %DEB
-  json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Spec, Name=Value).
+  json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Spec, Name=Value).
 
 % The value must match at least one of the given types.
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, or(Types), Value):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Name, or(Types), Value):-
   % Notice the choicepoint.
   member(Type, Types),
-  json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, Type, Value), !.
+  json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Name, Type, Value), !.
 % We do not have an RDF equivalent for the JSON null value,
 % so we do not assert pairs with a null value in RDF.
 json_pair_to_rdf(_, _, _, _, _, _, Value):-
@@ -209,41 +209,41 @@ json_pair_to_rdf(_, _, _, _, _, _, ''):- !.
 json_pair_to_rdf(_, _, _, _, _, skip, _):- !.
 % There are two ways to realize legend types / create resources:
 % 1. JSON terms (always).
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Legend/_, Value):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual1, Name, Legend/_, Value):-
   Value = json(_), !,
-  json_object_to_rdf(Graph, Module, XML_Namespace, Legend, Value, Individual2),
-  rdf_global_id(XML_Namespace:Name, Predicate),
+  json_object_to_rdf(Graph, Module, XmlNamespace, Legend, Value, Individual2),
+  rdf_global_id(XmlNamespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % There are two ways to realize legend types / create resources:
 % 2. JSON strings (sometimes).
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Legend/_, Value):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual1, Name, Legend/_, Value):-
   atom(Value), !,
   create_resource(Graph, Module, Legend, Value, Individual2),
-  rdf_global_id(XML_Namespace:Name, Predicate),
+  rdf_global_id(XmlNamespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % A JSON object occurs for which the legend it not yet known.
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual1, Name, Type, Value):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual1, Name, Type, Value):-
   Type \= _/_, Value = json(_), !,
-  json_object_to_rdf(Graph, Module, XML_Namespace, Value, Individual2),
-  rdf_global_id(XML_Namespace:Name, Predicate),
+  json_object_to_rdf(Graph, Module, XmlNamespace, Value, Individual2),
+  rdf_global_id(XmlNamespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
 % Prolog list.
-json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, list(Type), Values):-
+json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Name, list(Type), Values):-
   is_list(Values), !,
   maplist(
-    json_pair_to_rdf(Graph, Module, XML_Namespace, Individual, Name, Type),
+    json_pair_to_rdf(Graph, Module, XmlNamespace, Individual, Name, Type),
     Values
   ).
 % RDF list.
-json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, rdf_list(Type), Values):-
+json_pair_to_rdf(Graph, _, XmlNamespace, Individual, Name, rdf_list(Type), Values):-
   is_list(Values), !,
-  rdf_global_id(XML_Namespace:Name, Predicate),
+  rdf_global_id(XmlNamespace:Name, Predicate),
   rdf_global_id(xsd:Type, Datatype),
   rdf_assert_list([datatype(Datatype)], Values, RDF_List, Graph),
   rdf_assert(Individual, Predicate, RDF_List, Graph).
 % XSD
-json_pair_to_rdf(Graph, _, XML_Namespace, Individual, Name, DatatypeName, Value1):-
-  rdf_global_id(XML_Namespace:Name, Predicate),
+json_pair_to_rdf(Graph, _, XmlNamespace, Individual, Name, DatatypeName, Value1):-
+  rdf_global_id(XmlNamespace:Name, Predicate),
   % Convert the JSON value to an RDF object term.
   % This is where we validate that the value is of the required type.
   xsd_datatype(DatatypeName, Datatype),

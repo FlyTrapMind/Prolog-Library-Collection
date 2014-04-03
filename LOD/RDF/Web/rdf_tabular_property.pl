@@ -20,7 +20,6 @@ Generates HTML tables that descrive RDF predicate terms.
 :- use_module(generics(meta_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
-:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
@@ -66,14 +65,13 @@ rdf_tabular_property_domain(G, P) -->
         rdfs_individual_of(S, Domain)
       ),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
       'Overview of the domain of property ',
-      \rdf_term_in_graph_html(Location, P, G),
+      \rdf_term_in_graph_html(rdf_tabular, P, G),
       '.'
     ]),
     [['Class']|Rows]
@@ -89,14 +87,13 @@ rdf_tabular_property_range(G, P) -->
         rdfs_individual_of(O, Range)
       ),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
       'Overview of the range of property ',
-      \rdf_term_in_graph_html(Location, P, G),
+      \rdf_term_in_graph_html(rdf_tabular, P, G),
       '.'
     ]),
     [['Class']|Rows]
@@ -118,12 +115,11 @@ rdf_tabular_predicate_literals(G, P) -->
       Rows1
     ),
     length(Rows1, L),
-    list_truncate(Rows1, 50, Rows2),
-    http_location_by_id(rdf(tabular), Location)
+    list_truncate(Rows1, 50, Rows2)
   },
   html([
     p([
-      \rdf_term_html(Location, P, G),
+      \rdf_term_html(rdf_tabular, P, G),
       ' has ',
       \html_pl_term(L),
       ' unique values.'
@@ -132,7 +128,7 @@ rdf_tabular_predicate_literals(G, P) -->
       [graph(G),header_row(true)],
       html([
         'Values that occur for property ',
-        \rdf_term_in_graph_html(Location, P, G),
+        \rdf_term_in_graph_html(rdf_tabular, P, G),
         '.'
       ]),
       [['Literal value']|Rows2]
@@ -169,14 +165,13 @@ rdf_tabular_properties(G) -->
       [Predicate,NumberOfOccurrences],
       member(NumberOfOccurrences-Predicate, Pairs3),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   rdf_html_table(
     [graph(G),header_row(true)],
     html([
       'Overview of properties in RDF graph ',
-      \rdf_graph_html(Location, G),
+      \rdf_graph_html(rdf_tabular, G),
       '.'
     ]),
     [['Predicate','Occurrences']|Rows]

@@ -103,7 +103,10 @@ rdf_store_table(Request):-
   reply_html_page(
     app_style,
     title(['RDF store table - ',FormattedTime]),
-    \rdf_html_table([header_row(true),index(true)], Caption, [Header|Rows])
+    \rdf_html_table(
+      [header_row(true),index(true)],
+      Caption,
+      [Header|Rows])
   ).
 rdf_store_table(_Request):-
   aggregate_all(

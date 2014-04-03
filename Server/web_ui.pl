@@ -87,36 +87,3 @@ external_link(IRI) -->
   {http_absolute_location(img('url.gif'), LinkImage, [])},
   html(a(href=IRI, img(src=LinkImage))).
 
-
-menu -->
-  {http_absolute_location(img('api_explorer.png'), RelativeURI, [])},
-  html(
-    tr(
-      td([
-        a([href='home',target='_top'],
-          img([style='border:0;float:left;',src=RelativeURI])
-        ),
-        span(
-          style=
-              'float:right;\c
-               font-family:verdana;\c
-               font-size:10px;\c
-               font-weight:bold;',
-          [
-            a([href=login,target='_top'],'Login'),
-            ' | ',
-            a([href=admin,target='_top'],'Admin'),
-            ' | ',
-            a([href=rdf_db,target='_top'],'RDF DB'),
-            ' | ',
-            a([href=session_db,target='_top'],'Session DB'),
-            ' | ',
-            a([href=session_eq,target='_top'],'Session EQ'),
-            ' | ',
-            a([href=help,target=display],'Help')
-          ]
-        )
-      ])
-    )
-  ).
-

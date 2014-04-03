@@ -51,14 +51,13 @@ rdf_mat_web(Request):-
       Regime-Regime,
       user:regime(Regime),
       RegimeOptions
-    ),
-    http_location_by_id(rdf_mat_web, Location)
+    )
   },
   reply_html_page(
     app_style,
     title('RDF Materialize'),
     submission_form(
-      Location,
+      rdf_mat_web,
       [
         html_dropdown_list(graph, `RDF graph`, GraphOptions),
         html_dropdown_list(regime, `Reasoning regime`, RegimeOptions),
@@ -111,7 +110,7 @@ recent_triples -->
   },
   html(
     \rdf_html_table(
-      [],
+      [header_row(spog)],
       html('The triples that were added in the last materialization run.'),
       Quadruples
     )

@@ -47,6 +47,5 @@ rdf_tabular_graph(Graph) -->
 % We exclude TMS-es from this overview.
 
 rdf_tabular_graphs -->
-  {http_location_by_id(rdf(tabular), Location)},
-  rdf_graphs_html(Location).
+  rdf_graphs_html(rdf_tabular).
 

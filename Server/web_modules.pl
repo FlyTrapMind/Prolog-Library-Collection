@@ -54,10 +54,10 @@ html_web_modules_list -->
   {
     web_modules(Pairs1),
     findall(
-      URL-Label,
+      Location-Label,
       (
         member(Label-InternalName, Pairs1),
-        http_location_by_id(InternalName, URL)
+        http_location_by_id(InternalName, Location)
       ),
       Pairs2
     )

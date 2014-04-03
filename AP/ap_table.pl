@@ -117,8 +117,7 @@ ap_stage_cell(ApStage) -->
   html(div(class=Class, \ap_message(ApStage))).
 % This covers both RDF terms and Prolog terms.
 ap_stage_cell(Term) -->
-  {http_location_by_id(rdf(tabular), Location)},
-  rdf_term_html(Location, Term).
+  rdf_term_html(rdf_tabular, Term).
 
 
 ap_message(ApStage) -->

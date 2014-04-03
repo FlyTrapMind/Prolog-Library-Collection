@@ -56,12 +56,11 @@ rdf_core_graphs -->
         format_time(atom(First2), '%FT%T', First1)
       ),
       Rows
-    ),
-    http_location_by_id(rdf(tabular), Location)
+    )
   },
   html(
     \rdf_html_table(
-      [location(Location)],
+      [header_row(true)],
       html('The core graphs'),
       [['Graph','Added']|Rows]
     )
