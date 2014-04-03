@@ -76,7 +76,7 @@ html_image_thumbnail(DivO1, Alt, Width2, Height2, File) -->
     ;
       dimension_scale([Width1,Height1], [Width2,Height2], [Width3,Height3])
     ),
-    format(atom(Style), 'height: ~a; width: ~a;', [Height2,Width2]),
+    format(atom(Style), 'height: ~a; width: ~a;', [Height3,Width3]),
     merge_options([class=image_thumbnail,style=Style], DivO1, DivO2)
   },
   % Make the image clickable, linking to the image file.

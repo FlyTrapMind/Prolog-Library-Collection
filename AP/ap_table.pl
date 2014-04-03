@@ -39,7 +39,7 @@
 http:location(ap, root(ap), []).
 :- http_handler(ap(table), ap_table, []).
 
-:- web_module_add('AP table', ap_table).
+user:web_module('AP table', ap_table).
 
 
 

@@ -21,7 +21,7 @@
 http:location(void, root(void), []).
 :- http_handler(void(tabular), void_tabular, []).
 
-:- web_module_add('VoID Tabular', void_tabular).
+user:web_module('VoID Tabular', void_tabular).
 
 
 

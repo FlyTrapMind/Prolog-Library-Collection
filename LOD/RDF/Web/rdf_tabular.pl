@@ -39,7 +39,7 @@ Generated RDF HTML tables.
 http:location(rdf, root(rdf), []).
 :- http_handler(rdf(tabular), rdf_tabular, [priority(-1)]).
 
-:- web_module_add('RDF Tabular', rdf_tabular).
+user:web_module('RDF Tabular', rdf_tabular).
 
 
 

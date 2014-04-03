@@ -34,7 +34,7 @@ Acts on messages printed by print_message/2.
 
 :- http_handler(root(msg), web_message, [priority(1)]).
 
-:- web_module_add('Messages', web_message).
+user:web_module('Messages', web_message).
 
 % Enable notification service via email.
 :- debug(email).

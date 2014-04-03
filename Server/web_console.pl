@@ -87,7 +87,7 @@ Also includes a status bar with updates/messages.
   'The number of previously issued Web commands that are shown in the UI.'
 ).
 
-:- web_module_add('Web Console', web_console).
+user:web_module('Web Console', web_console).
 
 
 
@@ -171,7 +171,7 @@ process_web_command_(Command, Markup):-
   compound_name_arity(Compound, Predicate1, Arity),
   WebArity is Arity + 1,
   (
-    web_module(_, InternalName),
+    user:web_module(_, InternalName),
     current_predicate(InternalName:Predicate2/WebArity)
   ->
     get_time(Time),

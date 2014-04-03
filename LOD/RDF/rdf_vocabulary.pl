@@ -31,7 +31,7 @@ Exports the vocabulary for RDFS.
 http:location(rdf, root(rdf), []).
 :- http_handler(rdf(vocabulary), rdf_vocabulary, []).
 
-:- web_module_add('RDF vocabulary', rdf_vocabulary).
+user:web_module('RDF vocabulary', rdf_vocabulary).
 
 
 

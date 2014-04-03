@@ -33,7 +33,7 @@ Web interface to Prolog predicates.
 http:location(pl, root(pl), []).
 :- http_handler(pl(predicates), pl_predicates, []).
 
-:- web_module_add('plPred', pl_predicates).
+user:web_module('plPred', pl_predicates).
 
 
 

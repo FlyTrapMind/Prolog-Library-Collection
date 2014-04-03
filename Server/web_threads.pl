@@ -16,7 +16,7 @@ Web-based overview of the currently running threads.
 
 :- http_handler(root(threads), web_threads, []).
 
-:- web_module_add('Threads', web_threads).
+user:web_module('Threads', web_threads).
 
 
 

@@ -23,7 +23,7 @@ http:location(pl, root(pl), []).
 
 :- http_handler(pl(dependencies), pl_dependencies, []).
 
-:- web_module_add('plDep', pl_dependencies).
+user:web_module('plDep', pl_dependencies).
 
 
 

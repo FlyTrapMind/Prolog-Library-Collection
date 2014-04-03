@@ -28,7 +28,7 @@ http:location(rdf,     root(rdf), []).
 http:location(rdf_man, rdf(man),  []).
 :- http_handler(rdf_man(literals), rdf_man_literals, []).
 
-:- web_module_add('RDFm literals', rdf_man_literals).
+user:web_module('RDFm literals', rdf_man_literals).
 
 
 

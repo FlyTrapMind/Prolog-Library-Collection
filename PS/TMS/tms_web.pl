@@ -31,7 +31,7 @@ Web-interface for truth maintenance systems.
 http:location(tms, root(tms), []).
 :- http_handler(root(tms), tms_web, [prefix]).
 
-:- web_module_add('TMS', tms_web).
+user:web_module('TMS', tms_web).
 
 
 

@@ -31,7 +31,7 @@ that can be issued via the Web interface.
 
 :- http_handler(root(web_commands), web_commands, []).
 
-:- web_module_add('Web commands', web_commands).
+user:web_module('Web commands', web_commands).
 
 
 
@@ -65,7 +65,7 @@ help_web([element(ul,[],ModuleItems)]):-
         element(p,[],
           [element(b,[],[ExternalName]),':'|T])])),
     (
-      web_module(ExternalName, InternalName),
+      user:web_module(ExternalName, InternalName),
       module_property(InternalName, exports(WebPredicates)),
       aggregate_all(
         set(element(li,[],[Label])),

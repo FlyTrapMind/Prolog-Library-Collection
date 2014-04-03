@@ -28,7 +28,7 @@
 :- initialization(init_login_db).
 
 
-
+user:prolog_file_type(db, database).
 init_login_db:-
   absolute_file_name(
     project(login),

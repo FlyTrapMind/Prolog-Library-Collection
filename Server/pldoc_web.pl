@@ -17,7 +17,7 @@ Handle requests to view plDoc via a Web interface.
 http:location(help, root(help), [priority(10)]).
 :- http_handler(help(.), pldoc_web, []).
 
-:- web_module_add('plDoc', pldoc_web).
+user:web_module('plDoc', pldoc_web).
 
 
 

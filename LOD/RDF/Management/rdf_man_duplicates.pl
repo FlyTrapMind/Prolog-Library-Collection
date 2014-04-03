@@ -22,7 +22,7 @@ http:location(rdf,     root(rdf), []).
 http:location(rdf_man, rdf(man),  []).
 :- http_handler(rdf_man(duplicates), rdf_man_duplicates, []).
 
-:- web_module_add('RDFm duplicates', rdf_man_duplicates).
+user:web_module('RDFm duplicates', rdf_man_duplicates).
 
 
 

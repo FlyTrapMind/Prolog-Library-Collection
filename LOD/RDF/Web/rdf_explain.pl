@@ -53,7 +53,7 @@ Web predicates for RDF graphs.
 http:location(rdf, root(rdf), []).
 :- http_handler(rdf(explain), rdf_explain, []).
 
-:- web_module_add('RDF explain', rdf_explain).
+user:web_module('RDF explain', rdf_explain).
 
 
 

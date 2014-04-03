@@ -22,7 +22,7 @@ http:location(pl, root(pl), []).
 
 :- http_handler(pl(dev), pl_dev, []).
 
-:- web_module_add('plDev', pl_dev).
+user:web_module('plDev', pl_dev).
 
 
 
