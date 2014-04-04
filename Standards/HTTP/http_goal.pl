@@ -132,17 +132,22 @@ http_exception(error(http_status(Status),_Context)):- !,
 % Retry upon I/O error.
 http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
   debug(high, '[IO-ERROR] ~w', [Reason]).
-http_exception(error(permission_error(redirect,http,URL),context(_,Reason))):- !,
+http_exception(
+  error(permission_error(redirect,http,URL),context(_,Reason))
+):- !,
   debug(high, '[PERMISSION-ERROR] ~w (reason: ~w)', [URL,Reason]).
 % Retry upon socket error.
 % Thrown by http_open/3.
 http_exception(error(socket_error(Reason),_)):- !,
   debug(high, '[SOCKET-ERROR] ~w', [Reason]).
 % `Mode` is either `read` or `write`.
-http_exception(error(timeout_error(Mode,_Stream),context(PredSignature,_))):- !,
+http_exception(
+  error(timeout_error(Mode,_Stream),context(PredSignature,_))
+):- !,
   debug(high, '[TIMEOUT-ERROR] While ~wing ~w.', [Mode,PredSignature]).
 % DEB
 http_exception(E):-
+gtrace,
   debug(high, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
 
 % Success codes.

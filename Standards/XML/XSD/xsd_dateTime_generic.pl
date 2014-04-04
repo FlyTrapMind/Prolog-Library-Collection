@@ -102,10 +102,10 @@ fourDigitCanonicalFragmentMap(I1) -->
   ),
   {
     I2 is copysign(I1, 1),
-    N1 is I2 div 100
+    xsd_number_generic:(N1 is I2 xsd_div 100)
   },
   unsTwoDigitCanonicalFragmentMap(N1),
-  {N2 is I2 mod 100},
+  {xsd_number_generic:(N2 is I2 xsd_mod 100)},
   unsTwoDigitCanonicalFragmentMap(N2).
 
 
@@ -211,12 +211,10 @@ secondCanonicalFragmentMap(S) -->
   {integer(S)}, !,
   unsTwoDigitCanonicalFragmentMap(S).
 secondCanonicalFragmentMap(S1) -->
-  % Notice that div/2 would not work here since seconds is a float.
-  {N1 is floor(S1 / 1)},
+  {xsd_number_generic:(N1 is S1 xsd_div 1)},
   unsTwoDigitCanonicalFragmentMap(N1),
   `.`,
-  % Notice that mod/2 would not work here since seconds is a float.
-  {N2 is S1 - 1 * floor(S1 / 1)},
+  {xsd_number_generic:(N2 is S1 xsd_mod 1)},
   fractionDigitsCanonicalFragmentMap(N2).
 
 
@@ -254,11 +252,11 @@ timezoneCanonicalFragmentMap(TZ1) -->
   `-`,
   {
     TZ2 is copysign(TZ1, 1),
-    N1 is TZ2 div 60
+    xsd_number_generic:(N1 is TZ2 xsd_div 60)
   },
   unsTwoDigitCanonicalFragmentMap(N1),
   `:`,
-  {N2 is TZ2 mod 60},
+  {xsd_number_generic:(N2 is TZ2 xsd_mod 60)},
   unsTwoDigitCanonicalFragmentMap(N2).
 
 
@@ -311,9 +309,9 @@ timezoneFrag(TZ) -->
 % @arg Integer A nonnegative integer less than =100=.
 
 unsTwoDigitCanonicalFragmentMap(I) -->
-  {D1 is I div 10},
+  {xsd_number_generic:(D1 is I xsd_div 10)},
   decimal_digit(_, D1),
-  {D2 is I mod 10},
+  {xsd_number_generic:(D2 is I xsd_mod 10)},
   decimal_digit(_, D2).
 
 

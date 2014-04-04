@@ -161,7 +161,15 @@ url_to_file_name(Url, File):-
     RelativeTo,
     [access(read),file_type(directory)]
   ),
-  relative_file_path(File, RelativeTo, RelativePath).
+  relative_file_path(FileOrDir, RelativeTo, RelativePath),
+  (
+    sub_atom(FileOrDir, _, 1, 0, '/')
+  ->
+    rdf_atom_md5(Url, 1, Hash),
+    file_name(File, FileOrDir, Hash, _)
+  ;
+    File = FileOrDir
+  ).
 
 
 url_to_graph_name(Url, G):-

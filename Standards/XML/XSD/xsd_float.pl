@@ -214,7 +214,7 @@ largest_l(_Precision, TooBigL, _C, _E, Round, Approx, Approx):-
 
 round(N, K, D):-
   X is (N / 10 ** K) + 0.5,
-  Y is X div 1,
+  xsd_number_generic:(Y is X xsd_div 1),
   D is Y * 10 ** K.
 
 
@@ -233,7 +233,7 @@ smallest_c(ABS, E2, C):-
 smallest_c(C, ABS, E, C):-
   E is log10(ABS / C),
   % =E= must be an integer.
-  MOD is E mod 1,
+  xsd_number_generic:(MOD is E xsd_mod 1),
   MOD =:= 0, !,
   debug(xsd_float, '~w = ~w * 10 ** ~w', [ABS,C,E]).
 smallest_c(C, ABS, SolE, SolC):-
@@ -261,14 +261,14 @@ specialRepCanonicalMap(positiveInfinity) -->
 unsignedScientificCanonicalMap(N) -->
   {
     X1 is log10(N),
-    Y1 is X1 div 1,
+    xsd_number_generic:(Y1 is X1 xsd_div 1),
     N1 is N / 10 ** Y1
   },
   unsignedDecimalPtCanonicalMap(N1),
   `E`,
   {
     X2 is log10(N),
-    N2 is X2 div 1
+    xsd_number_generic:(N2 is X2 xsd_div 1)
   },
   noDecimalPtCanonicalMap(N2).
 

@@ -181,18 +181,18 @@ duDayTimeCanonicalFragmentMap(NumberOfSeconds) -->
 duDayTimeCanonicalFragmentMap(NumberOfSeconds1) -->
   {
     % Days.
-    NumberOfDays is NumberOfSeconds1 div 86400,
+    xsd_number_generic:(NumberOfDays     is NumberOfSeconds1 xsd_div 86400),
     % Hours.
     % h is (ss mod 86400) div 3600.
-    X is NumberOfSeconds1 mod 86400,
-    NumberOfHours is X div 3600,
+    xsd_number_generic:(X                is NumberOfSeconds1 xsd_mod 86400),
+    xsd_number_generic:(NumberOfHours    is X                xsd_div 3600 ),
     % Minutes.
     % m is (ss mod 3600) div 60.
-    Y is NumberOfSeconds1 mod 3600,
-    NumberOfMinutes is Y div 60, 
+    xsd_number_generic:(Y                is NumberOfSeconds1 xsd_mod 3600 ),
+    xsd_number_generic:(NumberOfMinutes  is Y                xsd_div 60   ),
     % Seconds.
     % s is ss mod 60.
-    NumberOfSeconds2 is NumberOfSeconds1 mod 60
+    xsd_number_generic:(NumberOfSeconds2 is NumberOfSeconds1 xsd_mod 60   )
   },
   duDayCanonicalFragmentMap(NumberOfDays),
   duTimeCanonicalFragmentMap(
@@ -278,14 +278,14 @@ duTimeCanonicalFragmentMap(H, M, S) -->
 % @arg NumberOfMonths A nonnegative integer.
 
 duYearMonthCanonicalFragmentMap(NumberOfMonths1) -->
-  {NumberOfYears is NumberOfMonths1 div 12},
+  {xsd_number_generic:(NumberOfYears is NumberOfMonths1 xsd_div 12)},
   (
     {NumberOfYears =:= 0}
   ;
     unsignedNoDecimalPtCanonicalMap(NumberOfYears),
     `Y`
   ), !,
-  {NumberOfMonths2 is NumberOfMonths1 mod 12},
+  {xsd_number_generic:(NumberOfMonths2 is NumberOfMonths1 xsd_mod 12)},
   (
     {NumberOfMonths2 =:= 0}
   ;

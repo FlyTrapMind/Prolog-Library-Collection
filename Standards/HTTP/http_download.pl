@@ -63,18 +63,19 @@ download_to_file(O1, Url, File):-
   file_name_extension(File, ThreadName, TmpFile),
 
   % The actual downloading part.
-  merge_options([nocatch(true)], O1, O2),
-  http_goal(Url, O2, file_from_stream(TmpFile)),
+  http_goal(Url, O1, file_from_stream(TmpFile)),
 
   % Give the file its original name.
   rename_file(TmpFile, File).
 % No file name is given; create a file name is a standardized way,
 % based on the URL.
 download_to_file(O1, Url, File):-
+gtrace,
   url_to_file_name(Url, File),
   download_to_file(O1, Url, File).
 
 file_from_stream(File, HTTP_Stream):-
+gtrace,
   setup_call_cleanup(
     open(File, write, FileStream, [type(binary)]),
     copy_stream_data(HTTP_Stream, FileStream),

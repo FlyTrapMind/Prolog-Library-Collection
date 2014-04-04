@@ -24,6 +24,9 @@ Loads debug tools for Prolog programming.
 http:location(pldoc, root(help), [priority(10)]).
 :- use_module(library(doc_http)).
 
+% GUI tracer support.
+:- use_module(library(gui_tracer)).
+
 % We only load this in debug mode,
 % since this may give information to hackers.
 :- use_module(library(http/http_error)).
@@ -80,7 +83,7 @@ pl_debug:-
   style_check(+discontiguous),
   style_check(+no_effect),
   style_check(+singleton),
-  style_check(+var_branches),
+  %%%%style_check(+var_branches),
 
   % Prolog unit tests.
   set_test_options([load(normal),run(manual)]),

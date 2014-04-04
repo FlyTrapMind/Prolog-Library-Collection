@@ -80,7 +80,6 @@ user:process_cmd_option(help(true)):-
 user:process_cmd_option(help(false)).
 
 
-
 % Option: version.
 
 user:cmd_option(v, version, boolean, 'Display version information.').
@@ -111,7 +110,7 @@ user:process_cmd_option(version(false)).
 
 describe_option(Short, Long, Comment):-
   var(Short), !,
-  format(user_output,  '        --~w~t~20|~w~n', [Long,Comment]).
+  format(user_output, '        --~w~t~20|~w~n', [Long,Comment]).
 describe_option(Short, Long, Comment):-
   format(user_output, '    -~w, --~w~t~20|~w~n', [Short,Long,Comment]).
 

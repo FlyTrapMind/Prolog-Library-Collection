@@ -64,6 +64,7 @@ that represent date, time, and duration in a standards-compliant way.
 */
 
 :- use_module(generics(meta_ext)).
+:- use_module(xsd(xsd_number_generic)).
 
 
 
@@ -270,10 +271,10 @@ normalizeDay_(Y1, M1, D1, Y2, M2, D2):-
 % ~~~
 
 normalizeMinute(Y1, M1, D1, H1, MM1, Y2, M2, D2, H2, MM2):-
-  HX is H1 + MM1 div 60,
-  MM2 is MM1 mod 60,
-  DX is D1 + HX div 24,
-  H2 is HX mod 24,
+  xsd_number_generic:(HX  is H1 + MM1 xsd_div 60),
+  xsd_number_generic:(MM2 is      MM1 xsd_mod 60),
+  xsd_number_generic:(DX  is D1 + HX  xsd_div 24),
+  xsd_number_generic:(H2  is      HX  xsd_mod 24),
   normalizeDay(Y1, M1, DX, Y2, M2, D2).
 
 
@@ -298,9 +299,9 @@ normalizeMinute(Y1, M1, D1, H1, MM1, Y2, M2, D2, H2, MM2):-
 
 normalizeMonth(Y1, M1, Y2, M2):-
   % Add (mo − 1) div 12 to yr.
-  Y2 is Y1 + (M1 - 1) div 12,
+  xsd_number_generic:(Y2 is Y1 + (M1 - 1) xsd_div 12),
   % Set mo to (mo − 1) mod 12 + 1.
-  M2 is ((M1 - 1) mod 12) + 1.
+  xsd_number_generic:(M2 is (M1 - 1) xsd_mod 12 + 1).
 
 
 %! normalizeSecond(
@@ -380,23 +381,23 @@ timeOnTimeline(dateTime(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
     ),
     D3
   ),
-  ToTl is
+  xsd_number_generic:(ToTl is
       % Year.
       31536000 * Y2
       % Leap-year days.
       % Add 86400 × (yr div 400 − yr div 100 + yr div 4) to ToTl.
-      + 86400 * (Y2 div 400 - Y2 div 100 + Y2 div 4)
+      + 86400 * (Y2 xsd_div 400 - Y2 xsd_div 100 + Y2 xsd_div 4)
       % Month.
       + 86400 * D3
       % Day
-      % Add 86400 × da  to ToTl.
+      % Add 86400 × da to ToTl.
       + 86400 * D2
       % Hour.
       + 3600 * H2
       % Minute.
       + 60 * MM3
       % Second.
-      + S2.
+      + S2).
 
 
 %! var_or_value(+Argument, +Value, -VariableOrValue) is det.

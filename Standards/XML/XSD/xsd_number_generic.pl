@@ -10,7 +10,9 @@
     unsignedDecimalPtCanonicalMap//1, % +Decimal:rational
     unsignedDecimalPtNumeral//1, % -Decimal:float
     unsignedNoDecimalPtCanonicalMap//1, %+Integer:nonneg
-    unsignedNoDecimalPtNumeral//1 % -Integer:nonneg
+    unsignedNoDecimalPtNumeral//1, % -Integer:nonneg
+    op(400, yfx, xsd_div),
+    op(400, yfx, xsd_mod)
   ]
 ).
 
@@ -23,7 +25,14 @@ Grammar rules that are used by various XSD numeric datatypes.
 */
 
 :- use_module(dcg(dcg_cardinal)).
+:- use_module(library(arithmetic)).
 :- use_module(math(rational_ext)).
+
+:- op(400, yfx, xsd_div).
+:- arithmetic_function(xsd_div/2).
+
+:- op(400, yfx, xsd_mod).
+:- arithmetic_function(xsd_mod/2).
 
 
 
@@ -127,8 +136,8 @@ unsignedNoDecimalPtCanonicalMap(F) -->
 unsignedNoDecimalPtCanonicalMap_(0) --> !, [].
 unsignedNoDecimalPtCanonicalMap_(F) -->
   {
-    G is F mod 10,
-    H is F div 10
+    xsd_number_generic:(G is F xsd_mod 10),
+    xsd_number_generic:(H is F xsd_div 10)
   },
   unsignedNoDecimalPtCanonicalMap_(H),
   decimal_digit(_, G).
@@ -150,4 +159,12 @@ unsignedNoDecimalPtNumeral(NewToEnd, NewN) -->
     succ(ToEnd, NewToEnd)
   }.
 unsignedNoDecimalPtNumeral(0, 0) --> [].
+
+
+xsd_div(X, Y, Z):-
+  Z is floor(X / Y).
+
+
+xsd_mod(X, Y, Z):-
+  Z is X - Y * (X xsd_div Y).
 
