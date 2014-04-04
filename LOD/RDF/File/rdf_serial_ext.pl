@@ -28,7 +28,7 @@ e.g. unpacking archives, recursively loading VoID.
 %! rdf_download_extract_load(+Url:url, +Options:list(nvpair)) is det.
 
 rdf_download_extract_load(Url, O1):-
-  url_to_file_name(Url, File),
+  url_to_file_name([], Url, File),
   % The directory not the file (which may be deleted by now).
   file_directory_name(File, Dir),
   exists_directory(Dir), !,

@@ -13,7 +13,8 @@
                 % -Path:atom
     url_to_directory_name/2, % +Url:url
                              % -Directory:atom
-    url_to_file_name/2, % +Url:url
+    url_to_file_name/3, % +Options:list(nvpair)
+                        % +Url:url
                         % -File:atom
     url_to_graph_name/2 % +Url:url
                         % -Graph:atom
@@ -142,14 +143,15 @@ url_to_directory_name(Uri, Dir):-
   create_nested_directory(data([Scheme,Authority|Subdirs]), Dir).
 
 
-%! url_to_file_name(+Url:atom, -File:atom) is det.
+%! url_to_file_name(+Options:list(nvpair), +Url:atom, -File:atom) is det.
 % Returns a file name based on the given URI.
 %
+% @param Options
 % @param Url The universal location of a file.
 % @param File The atomic name of a file based on the given Url,
 %        relative to the given root.
 
-url_to_file_name(Url, File):-
+url_to_file_name(O1, Url, File):-
   uri_components(Url, uri_components(Scheme,Authority,UrlPath,_,_)),
   directory_subdirectories(UrlPath, UrlPathComponents),
   directory_subdirectories(
@@ -165,8 +167,15 @@ url_to_file_name(Url, File):-
   (
     sub_atom(FileOrDir, _, 1, 0, '/')
   ->
-    rdf_atom_md5(Url, 1, Hash),
-    file_name(File, FileOrDir, Hash, _)
+    % Retrieve the base name.
+    (
+      option(base(Base), O1)
+    ->
+      true
+    ;
+      rdf_atom_md5(Url, 1, Base)
+    ),
+    directory_file_path(FileOrDir, Base, File)
   ;
     File = FileOrDir
   ).

@@ -67,7 +67,7 @@ rdf_assert_image(O1, S, P, O, G):-
 %   4. `ignore`
 
 rdf_image(O1, URL, File):-
-  url_to_file_name(URL, File),
+  url_to_file_name([], URL, File),
   (
     access_file(File, exist), !
   ;

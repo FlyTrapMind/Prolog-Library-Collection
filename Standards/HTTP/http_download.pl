@@ -71,7 +71,7 @@ download_to_file(O1, Url, File):-
 % based on the URL.
 download_to_file(O1, Url, File):-
 gtrace,
-  url_to_file_name(Url, File),
+  url_to_file_name([], Url, File),
   download_to_file(O1, Url, File).
 
 file_from_stream(File, HTTP_Stream):-
