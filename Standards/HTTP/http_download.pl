@@ -70,12 +70,10 @@ download_to_file(O1, Url, File):-
 % No file name is given; create a file name is a standardized way,
 % based on the URL.
 download_to_file(O1, Url, File):-
-gtrace,
   url_to_file_name([], Url, File),
   download_to_file(O1, Url, File).
 
 file_from_stream(File, HTTP_Stream):-
-gtrace,
   setup_call_cleanup(
     open(File, write, FileStream, [type(binary)]),
     copy_stream_data(HTTP_Stream, FileStream),

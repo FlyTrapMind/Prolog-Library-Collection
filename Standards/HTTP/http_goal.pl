@@ -147,7 +147,7 @@ http_exception(
   debug(high, '[TIMEOUT-ERROR] While ~wing ~w.', [Mode,PredSignature]).
 % DEB
 http_exception(E):-
-gtrace,
+gtrace, %DEB
   debug(high, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
 
 % Success codes.
