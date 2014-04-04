@@ -86,9 +86,9 @@ xsd_decimal_canonical_map(I) -->
 xsd_decimal_canonical_map(F) -->
   {rational(F)}, !,
   decimalPtCanonicalMap(F).
-xsd_decimal_canonical_map(F1) -->
-  {F2 is rationalize(F1)},
-  xsd_decimal_canonical_map(F2).
+%%%%xsd_decimal_canonical_map(F1) -->
+%%%%  {F2 is rationalize(F1)},
+%%%%  xsd_decimal_canonical_map(F2).
 
 
 %! decimalPtCanonicalMap(+Decimal:rational)//
