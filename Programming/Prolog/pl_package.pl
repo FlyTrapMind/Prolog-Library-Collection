@@ -11,7 +11,7 @@ Support for SWI-Prolog packages.
 
 @author Wouter Beek
 @see http://www.swi-prolog.org/pack/list
-@version 2014/03
+@version 2014/03-2014/04
 */
 
 :- use_module(library(prolog_pack)).

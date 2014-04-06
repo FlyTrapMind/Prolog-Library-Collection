@@ -34,7 +34,7 @@ Support for downloading files over HTTP(S).
 %     Default: `false`.
 %   * Other options are passed to http_goal/3 and, subsequently, http_open/3.
 %
-% @see url_to_file_name/2 for how the file name is created based on the URL.
+% @see url_nested_file/3 for how the file name is created based on the URL.
 
 % The file was already downloaded in the past.
 download_to_file(O1, _, File):-
@@ -70,7 +70,7 @@ download_to_file(O1, Url, File):-
 % No file name is given; create a file name is a standardized way,
 % based on the URL.
 download_to_file(O1, Url, File):-
-  url_to_file_name([], Url, File),
+  url_nested_file(data(.), Url, File),
   download_to_file(O1, Url, File).
 
 file_from_stream(File, HTTP_Stream):-

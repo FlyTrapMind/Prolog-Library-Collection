@@ -42,7 +42,7 @@
 Extensions for handling directories.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09, 2013/11-2014/02
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04
 */
 
 :- use_module(generics(atom_ext)).
@@ -66,7 +66,7 @@ append_directories(Dir1, Dir2, Dir3):-
   directory_subdirectories(Dir2, Subdirs2),
   append(Subdirs1, Subdirs2, Subdirs3),
   subdirectories_to_directory(Subdirs3, Dir3),
-  create_directory(Dir3).
+  make_directory_path(Dir3).
 
 
 %! copy_directory(
