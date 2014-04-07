@@ -30,7 +30,7 @@ load_pgc:-
   assert(user:prolog_file_type(md,   'text/markdown')),
   assert(user:prolog_file_type(txt,  'text/plain')),
   
-  ensure_loaded(plc(init)).
+  ensure_remote_loaded(plc(init)).
 
 
 % If there is no outer project, then PGC is the project.

@@ -1,7 +1,13 @@
 % Index for the Prolog Library Collection repository.
 
-index(Dir):-
-  assert(user:file_search_path(plc, Dir)),
+index(ParentDir):-
+trace,
+  absolute_file_name(
+    plc,
+    PlcDir,
+    [access(write),file_type(directory),relative_to(ParentDir)]
+  ),
+  assert(user:file_search_path(plc, PlcDir)),
     assert(user:file_search_path(ap,              plc(ap))),
     assert(user:file_search_path(datasets,        plc(datasets))),
       assert(user:file_search_path(dbpedia,         datasets(dbpedia))),
