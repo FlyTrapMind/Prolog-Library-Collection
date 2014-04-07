@@ -34,7 +34,7 @@
     word//1 % ?Word:atom
   ]
 ).
-:- reexport(
+:- reexport_remote_module(
   library(dcg/basics),
   [
     alpha_to_lower//1,

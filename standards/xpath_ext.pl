@@ -18,7 +18,7 @@ Extensions to the XPath library.
 @version 2013/05
 */
 
-:- reexport(library(xpath)).
+:- reexport_remote_module(library(xpath)).
 
 
 

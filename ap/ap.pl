@@ -6,13 +6,13 @@
          % +AP_Stages:list(compound)
   ]
 ).
-:- reexport(ap(ap_archive_ext)).
-:- reexport(ap(ap_download)).
-:- reexport(ap(ap_file_mime)).
-:- reexport(ap(ap_file_size)).
-:- reexport(ap(ap_rdf_serial)).
-:- reexport(ap(ap_void_fetch)).
-:- reexport(ap(ap_void_stat)).
+:- reexport_remote_module(ap(ap_archive_ext)).
+:- reexport_remote_module(ap(ap_download)).
+:- reexport_remote_module(ap(ap_file_mime)).
+:- reexport_remote_module(ap(ap_file_size)).
+:- reexport_remote_module(ap(ap_rdf_serial)).
+:- reexport_remote_module(ap(ap_void_fetch)).
+:- reexport_remote_module(ap(ap_void_stat)).
 
 /** <module> Auto-process
 

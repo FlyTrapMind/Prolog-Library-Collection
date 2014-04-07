@@ -34,7 +34,7 @@
                                      % -SubGraph:ugraph
   ]
 ).
-:- reexport(
+:- reexport_remote_module(
   library(ugraphs),
   [
     add_edges/3 as ugraph_add_edges, % +Graph

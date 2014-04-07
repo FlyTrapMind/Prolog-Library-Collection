@@ -15,7 +15,7 @@
     'WSP'//1 % ?Code:code
   ]
 ).
-:- reexport(
+:- reexport_remote_module(
   http(rfc2616_basic),
   [
     '"'//0 as 'DQUOTE',

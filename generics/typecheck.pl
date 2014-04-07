@@ -10,7 +10,7 @@
                            % -ToValue
   ]
 ).
-:- reexport(library(error), [
+:- reexport_remote_module(library(error), [
   is_of_type/2, % +Type
                 % @Term
   must_be/2 % +Type
