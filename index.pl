@@ -35,7 +35,7 @@ index(ParentDir):-
     assert(user:file_search_path(programming,     plc(programming))),
       assert(user:file_search_path(pl,              programming(prolog))),
         assert(user:file_search_path(pl_web,        pl(web))),
-    assert(user:file_search_path(ps,              plc(pl))),
+    assert(user:file_search_path(ps,              plc(ps))),
       assert(user:file_search_path(tms,             ps(tms))),
         assert(user:file_search_path(atms,            tms(atms))),
         assert(user:file_search_path(doyle,           tms(doyle))),
