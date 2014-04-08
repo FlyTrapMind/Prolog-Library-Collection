@@ -83,7 +83,7 @@ user:option_specification([
 ]).
 
 cmd_debug_option(O1):-
-  option(debug(Debug), O1), !,
+  option(debug(true), O1), !,
   assert(user:debug_mode),
   ensure_remote_loaded(pl(pl_debug)).
 cmd_debug_option(_).
@@ -167,7 +167,7 @@ process_options:-
 
 read_options(Options):-
   findall(
-    OptionSpec
+    OptionSpec,
     user:option_specification(OptionSpec),
     OptionSpecs
   ),
