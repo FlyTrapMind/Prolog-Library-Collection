@@ -145,7 +145,7 @@ relative_url_path(Url, RelativeTo1, Relative1):-
 %!   +Uri:uri,
 %!   +Field:oneof([scheme,authority,path,search,fragment]),
 %!   -Data:atom
-%! ) is idet.
+%! ) is det.
 %! uri_component(
 %!   +Uri:uri,
 %!   -Field:oneof([scheme,authority,path,search,fragment]),

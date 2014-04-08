@@ -191,6 +191,7 @@ parse_options(Rest, [], Rest).
 % i.e. those that are application-specific, are returned.
 
 process_options(O4):-
+gtrace,
   read_options(O1), !,
 
   % First set the data directory,
