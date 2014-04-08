@@ -92,6 +92,7 @@ The following three URIs are equivalent:
 */
 
 :- use_remote_module(
+  plc,
   uri(rfc2396_dcg),
   [
     abs_path//2,

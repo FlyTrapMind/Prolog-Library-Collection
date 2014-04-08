@@ -155,7 +155,6 @@ cmd_version(_).
 % that are common among the PGC-using projects,
 
 process_options:-
-gtrace,
   read_options(O1), !,
   
   % First set the data directory,
