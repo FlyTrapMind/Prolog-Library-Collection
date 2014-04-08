@@ -16,6 +16,7 @@
   ]
 ).
 :- reexport_remote_module(
+  plc,
   http(rfc2616_basic),
   [
     '"'//0 as 'DQUOTE',
