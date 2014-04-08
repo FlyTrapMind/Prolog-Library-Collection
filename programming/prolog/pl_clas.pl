@@ -36,8 +36,8 @@ Support for command line arguments given at Prolog startup.
 %      These types are registered in module [typecheck].
 % @arg Comment A human-readable description of the command-line option.
 
-:- discontiguous(user:option_specification/4).
-:- multifile(user:option_specification/4).
+:- discontiguous(user:option_specification/1).
+:- multifile(user:option_specification/1).
 
 
 
@@ -174,6 +174,6 @@ process_options:-
 
 
 read_options(Options):-
-  options_specifications(OptionSpecs),
+  option_specifications(OptionSpecs),
   opt_arguments(OptionSpecs, Options, _).
 
