@@ -49,7 +49,7 @@ user:option_specification([
   longflags([data]),
   opt(data),
   shortflags([d]),
-  type(boolean)
+  type(atom)
 ]):-
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
   directory_file_path(ProjectDir, data, DefaultDataDir).
