@@ -145,14 +145,6 @@ cmd_version(_).
 
 
 
-option_specifications(OptionSpecs):-
-  findall(
-    OptionSpec
-    user:option_specification(OptionSpec),
-    OptionSpecs
-  ).
-
-
 %! process_options is det.
 % Reads the command-line arguments and executes those
 % that are common among the PGC-using projects,
@@ -174,6 +166,10 @@ process_options:-
 
 
 read_options(Options):-
-  option_specifications(OptionSpecs),
+  findall(
+    OptionSpec
+    user:option_specification(OptionSpec),
+    OptionSpecs
+  ),
   opt_arguments(OptionSpecs, Options, _).
 
