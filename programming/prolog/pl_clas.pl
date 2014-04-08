@@ -14,14 +14,15 @@ Support for command line arguments given at Prolog startup.
 @version 2014/03-2014/04
 */
 
-:- use_remote_module(generics(db_ext)).
-:- use_remote_module(generics(meta_ext)).
-:- use_remote_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(optparse)).
+
+:- use_remote_module(generics(db_ext)).
+:- use_remote_module(generics(meta_ext)).
+:- use_remote_module(generics(typecheck)).
 :- use_remote_module(os(dir_infra)).
 
 :- multifile(prolog:message//1).
@@ -54,18 +55,22 @@ user:option_specification([
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
   directory_file_path(ProjectDir, data, DefaultDataDir).
 
-cmd_data_directory(Dir1):-
-  absolute_file_name(Dir1, Dir2, [access(write),file_type(directory)]), !,
-  set_data_directory(Dir2).
-cmd_data_directory(Dir):-
-  print_message(warning, incorrect_path(Dir)).
-
+cmd_data_option(_):-
+  user:file_search_path(data, _), !.
 cmd_data_option(O1):-
-  option(data(Dir), O1), !,
-  cmd_data_directory(Dir).
+  option(data(Dir), O1),
+  make_directory_path(Dir), !,
+  assert(user:file_search_path(data, Dir)).
 % Use the default data directory.
 cmd_data_option(_):-
-  set_data_directory.
+  absolute_file_name(
+    project('.'),
+    Dir1,
+    [access(write),file_type(directory)]
+  ),
+  directory_file_path(Dir1, data, Dir2),
+  make_directory_path(Dir2),
+  assert(user:file_search_path(data, Dir2)).
 
 prolog:message(incorrect_path(Dir)) -->
   ['The given value could not be resolved to a directory: ',Dir,'.~n'].

@@ -4,8 +4,6 @@
     create_personal_subdirectory/2, % +NestedDirectories:compound
                                     % -AbsoluteDirectory:atom
     output_directory/1, % -OutputDirectory:atom
-    set_data_directory/0,
-    set_data_directory/1, % +Directory:atom
     trashcan/1 % -Directory:atom
   ]
 ).
@@ -71,32 +69,6 @@ personal_directory_init:-
   hidden_file_name(Project, Hidden),
   create_nested_directory(home(Hidden), _Dir),
   assert(user:file_search_path(personal, home(Hidden))).
-
-
-set_data_directory:-
-  absolute_file_name(
-    project('.'),
-    Dir1,
-    [access(write),file_type(directory)]
-  ),
-  directory_file_path(Dir1, data, Dir2),
-  make_directory_path(Dir2),
-  assert(user:file_search_path(data, Dir2)).
-
-% The data directory was already set.
-set_data_directory(_):-
-  user:file_search_path(data, _), !.
-% Set data directory based on `data=DIR` command-line argument.
-set_data_directory(Dir1):-
-  absolute_file_name(
-    Dir1,
-    Dir2,
-    [access(write),file_errors(fail),file_type(directory)]
-  ), !,
-  set_data_directory(Dir2).
-% Set default data directory.
-set_data_directory(_):-
-  set_data_directory.
 
 
 trashcan(Dir):-
