@@ -17,7 +17,7 @@
                     % +Status:positive_integer
   ]
 ).
-:- reexport_remote_module(
+:- reexport(
   library(error),
   [
     domain_error/2, % +Domain

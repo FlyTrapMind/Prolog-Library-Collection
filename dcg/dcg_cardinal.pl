@@ -31,7 +31,7 @@
                        % ?FractionalComponent:integer
   ]
 ).
-:- reexport_remote_module(
+:- reexport(
   library(dcg/basics),
   [
     digit//1,
