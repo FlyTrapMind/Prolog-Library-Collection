@@ -36,6 +36,7 @@ Support for command line arguments given at Prolog startup.
 %      These types are registered in module [typecheck].
 % @arg Comment A human-readable description of the command-line option.
 
+:- discontiguous(user:option_specification/4).
 :- multifile(user:option_specification/4).
 
 
@@ -63,7 +64,7 @@ cmd_data_option(O1):-
   option(data(Dir), O1), !,
   cmd_data_directory(Dir).
 % Use the default data directory.
-cmd_data_option(O1):-
+cmd_data_option(_):-
   set_data_directory.
 
 prolog:message(incorrect_path(Dir)) -->
