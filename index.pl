@@ -50,7 +50,7 @@ index(ParentDir):-
         assert(user:file_search_path(http_parameters, http(parameters))),
       assert(user:file_search_path(lang,            standards(language))),
       assert(user:file_search_path(latex,           standards(latex))),
-      assert(user:file_search_path(svg,             standards(scg))),
+      assert(user:file_search_path(svg,             standards(svg))),
       assert(user:file_search_path(uri,             standards(uri))),
       assert(user:file_search_path(xml,             standards(xml))),
         assert(user:file_search_path(xsd,             xml(xsd))),

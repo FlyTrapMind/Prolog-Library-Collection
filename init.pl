@@ -5,7 +5,7 @@
 :- use_remote_module(pl(pl_clas)).
 :- use_remote_module(pl(pl_version)).
 
-:- ensure_loaded(plc(pl_debug_option)).
+:- ensure_remote_loaded(plc(pl_debug_option)).
 
 :- initialization(init_pgc).
 
