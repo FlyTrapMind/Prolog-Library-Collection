@@ -306,6 +306,7 @@ use_remote_module(ModuleSpec):-
   use_remote_module(DefaultRepository, ModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
+gtrace,
   flag(level_of_nesting, N, N + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile),
