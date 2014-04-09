@@ -142,6 +142,7 @@ fetch_remote_file(RepositoryId, ModuleSpec, LocalPath):-
 fetch_remote_file(github, _, _, _, LocalPath):-
   exists_file(LocalPath), !.
 fetch_remote_file(github, User, RepositoryName, Components, LocalPath):-
+gtrace,
   atomic_list_concat(
     ['',User,RepositoryName,raw,master|Components],
     '/',
@@ -306,7 +307,6 @@ use_remote_module(ModuleSpec):-
   use_remote_module(DefaultRepository, ModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
-gtrace,
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile),
