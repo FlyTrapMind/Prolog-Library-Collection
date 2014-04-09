@@ -333,5 +333,14 @@ prolog:message(wait) -->
 
 opt_arguments(OptsSpec, Opts, PositionalArgs, ParseOptions):-
   current_prolog_flag(argv, Argv),
-  catch(opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions), E, write(E)).
+  ignore(
+    catch(
+      opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions),
+      E,
+      print_message(warning, error(E))
+    )
+  ).
+
+prolog:message(error(E)) -->
+  [E].
 
