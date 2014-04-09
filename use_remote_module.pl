@@ -344,7 +344,7 @@ opt_arguments(OptsSpec, Opts, PositionalArgs, ParseOptions):-
     catch(
       opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions),
       E,
-      print_message(warning, error(E))
+      print_message(error, error(E))
     )
   ).
 
