@@ -203,14 +203,14 @@ reexport_remote_module(ModuleSpec):-
   reexport_remote_module(DefaultRepository, ModuleSpec).
 
 reexport_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
-  flag(level_of_nesting, N, N + 1),
+  flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:reexport_remote_module(LocalFile),
   flag(level_of_nesting, N, N - 1),
   store_import_relation(CallingModule, CalledModuleSpec).
 
 reexport_remote_module(RepositoryId, CallingModule:CalledModuleSpec, Import):-
-  flag(level_of_nesting, N, N + 1),
+  flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:reexport(LocalFile, Import),
   flag(level_of_nesting, N, N - 1),
@@ -307,14 +307,14 @@ use_remote_module(ModuleSpec):-
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
 gtrace,
-  flag(level_of_nesting, N, N + 1),
+  flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile),
   flag(level_of_nesting, N, N - 1),
   store_import_relation(CallingModule, CalledModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec, ImportList):-
-  flag(level_of_nesting, N, N + 1),
+  flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile, ImportList),
   flag(level_of_nesting, N, N - 1),
@@ -354,19 +354,22 @@ object(module(Module)) -->
   ['module ~w'-[Module]].
 
 prolog:message(downloaded(L)) -->
+  indentation,
   {
-    atomic_list_concat(L, '/', Name),
     flag(number_of_downloaded_files, N, N + 1),
-    flag(level_of_nesting, M, M + 1)
+    atomic_list_concat(L, '/', Name)
   },
-  level_of_indent(M),
   [N,':',Name].
 
-level_of_indent(0) --> [].
-level_of_indent(M1) -->
+indentation:-
+  {flag(level_of_nesting, M, M)},
+  indentation(M).
+
+indentation(0) --> [].
+indentation(M1) -->
   {M2 is M1 - 1},
-  ['  '],
-  level_of_indent(M2).
+  [' '],
+  indentation(M2).
 
 
 
