@@ -46,23 +46,27 @@ init_use_remote_module:-
   flag(number_of_downloaded_files, _, 1),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
-gtrace,
-  opt_arguments([
+  opt_arguments(
     [
-      default(false),
-      help('Force all files to be redownloaded.'),
-      longflags([redownload]),
-      opt(redownload),
-      shortflags([r]),
-      type(boolean)
-    ]], O1, _, []),
+      [
+        default(false),
+        help('Force all files to be redownloaded.'),
+        longflags([redownload]),
+        opt(redownload),
+        shortflags([r]),
+        type(boolean)
+      ]
+    ],
+    O1,
+    _,
+    []
+  ),
   call_remote_goal(
     github,
     [repository('Prolog-Library-Collection'),user(wouterbeek)|O1],
     remotes,
     register_remotes(ThisDir, O1)
   ).
-
 
 
 %! call_remote_goal(
@@ -294,4 +298,12 @@ object(module(Module)) -->
 prolog:message(wait) -->
   {flag(number_of_downloaded_files, N, N + 1)},
   [N].
+
+
+
+% Support predicates.
+
+opt_arguments(OptsSpec, Opts, PositionalArgs, ParseOptions):-
+  current_prolog_flag(argv, Argv),
+  catch(opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions), E, write(E)).
 
