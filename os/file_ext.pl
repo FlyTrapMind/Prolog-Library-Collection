@@ -96,7 +96,6 @@ We use the following abbreviations in this module:
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01
 */
 
-:- use_remote_module(ap(ap_stat)).
 :- use_remote_module(dcg(dcg_cardinal)).
 :- use_remote_module(dcg(dcg_generic)).
 :- use_remote_module(generics(atom_ext)).
@@ -460,25 +459,18 @@ merge_into_one_file(FromDir, ToFile):-
     FromFiles
   ),
 
-  % STATS
-  length(FromFiles, NumberOfFromFiles),
-  ap_stage_init(NumberOfFromFiles),
-
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
-    maplist(merge_into_one_file_(Out), FromFiles),
+    maplist(merge_into_one_stream(Out), FromFiles),
     close(Out)
   ).
 
-merge_into_one_file_(Out, FromFile):-
+merge_into_one_stream(Out, FromFile):-
   setup_call_cleanup(
     open(FromFile, read, In, [type(binary)]),
     copy_stream_data(In, Out),
     close(In)
-  ),
-
-  % STATS
-  ap_stage_tick.
+  ).
 
 
 %! new_file(+OldFile:atom, -NewFile:atom) is det.
