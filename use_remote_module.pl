@@ -165,7 +165,7 @@ guarantee_download(Url, Path):-
       close(HttpStream)
     ),
     _,
-    guarantee_download(URL, Path)
+    guarantee_download(Url, Path)
   ),
   print_message(information, wait).
 
@@ -177,14 +177,14 @@ guarantee_download(Url, Path):-
 %!   +Path:atom
 %! ) is det.
 
-http_process(Status, HttpStream, Url, Path):-
+http_process(Status, HttpStream, _, File):-
   between(200, 299, Status), !,
   setup_call_cleanup(
-    open(LocalPath, write, FileStream, [type(binary)]),
+    open(File, write, FileStream, [type(binary)]),
     copy_stream_data(HttpStream, FileStream),
     close(FileStream)
   ).
-http_process(Status, HttpStream, Url, Path):-
+http_process(_, _, Url, Path):-
   guarantee_download(Url, Path).
 
 
