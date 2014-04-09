@@ -35,6 +35,8 @@ use_module/1 imports local Prolog modules.
 
 :- multifile(prolog:message//1).
 
+:- dynamic(imports/2).
+
 % default_repository(?Repository:atom) is semidet.
 % There is at most one default repository.
 
@@ -148,7 +150,8 @@ fetch_remote_file(github, User, RepositoryName, Components, LocalPath):-
   uri_components(Url, uri_components(htts,'github.com',Path,_,_)),
   file_directory_name(LocalPath, LocalDirectory),
   make_directory_path(LocalDirectory),
-  guarantee_download(Url, LocalPath).
+  guarantee_download(Url, LocalPath),
+  print_message(information, downloaded(Components)).
 
 
 %! guarantee_download(+Url:atom, +Path:atom) is det.
@@ -166,8 +169,7 @@ guarantee_download(Url, Path):-
     ),
     _,
     guarantee_download(Url, Path)
-  ),
-  print_message(information, wait).
+  ).
 
 
 %! http_process(
@@ -284,11 +286,13 @@ use_remote_module(ModuleSpec):-
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  CallingModule:use_module(LocalFile).
+  CallingModule:use_module(LocalFile),
+  assert(imports(CallingModule, CalledModuleSpec)).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec, ImportList):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  CallingModule:use_module(LocalFile, ImportList).
+  CallingModule:use_module(LocalFile, ImportList),
+  assert(imports(CallingModule, CalledModuleSpec)).
 
 
 
@@ -323,9 +327,12 @@ object(file(File)) -->
 object(module(Module)) -->
   ['module ~w'-[Module]].
 
-prolog:message(wait) -->
-  {flag(number_of_downloaded_files, N, N + 1)},
-  [N].
+prolog:message(downloaded(L)) -->
+  {
+    atomic_list_concat(L, '/', Name),
+    flag(number_of_downloaded_files, N, N + 1)
+  },
+  [N,':',Name].
 
 
 
