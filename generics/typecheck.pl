@@ -65,13 +65,11 @@ Predicates used for parsing and checking value-type conformance.
 @version 2013/01, 2013/08, 2014/01, 2014/03-2014/04
 */
 
-:- use_remote_module(dcg(dcg_generic)).
 :- use_remote_module(generics(atom_ext)).
 :- use_remote_module(generics(boolean_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
-:- use_remote_module(uri(rfc3987_dcg)).
 
 
 
@@ -138,9 +136,6 @@ error:has_type(char, Term):-
 % code/0
 error:has_type(code, Term):-
   once(code_type(Term, _)).
-% email/0
-error:has_type(email, Term):-
-  dcg_phrase(email, Term).
 % float_between/2, extension of between/2 for floats
 % allowing uninstiated upper and lower bounds.
 error:has_type(float_between(L,U), X):-
@@ -155,25 +150,6 @@ error:has_type(or(Types), Term):-
 error:has_type(list(Type), Term):-
   must_be(list, Term),
   maplist(must_be(Type), Term).
-% uri/0
-error:has_type(uri, Term):-
-  error:has_type(iri, Term).
-% iri/0
-error:has_type(iri, Term):-
-  uri_components(
-    Term,
-    uri_components(Scheme,Authority,Path,_Search,_Fragment)
-  ),
-  maplist(nonvar, [Scheme,Authority,Path]).
-  % @tbd
-  %%%%once(dcg_phrase('IRI'(_), Term)),
-
-
-:- use_remote_module(dcg(dcg_ascii)).
-:- use_remote_module(dcg(dcg_generic)).
-email -->
-  dcg_until([end_mode(inclusive),output_format(codes)], at_sign, _),
-  dcg_all.
 
 
 %! prolog_convert_value(
@@ -186,4 +162,3 @@ email -->
 prolog_convert_value(_, FromValue, ToDatatype, ToValue):-
   format(atom(Atom), '~w', [FromValue]),
   atom_to_value(Atom, ToDatatype, ToValue).
-

@@ -133,12 +133,13 @@ Extensions to the set of list predicates in SWI-Prolog.
          2013/07, 2013/09, 2013/12, 2014/03
 */
 
-:- use_remote_module(generics(error_ext)).
-:- use_remote_module(generics(meta_ext)).
-:- use_remote_module(generics(typecheck)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(random)).
+
+:- use_remote_module(generics(error_ext)).
+:- use_remote_module(generics(meta_ext)).
+:- use_remote_module(generics(typecheck)).
 
 
 

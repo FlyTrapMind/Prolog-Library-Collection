@@ -47,6 +47,29 @@
 :- use_remote_module(os(dir_ext)).
 :- use_remote_module(os(file_ext)).
 
+:- multifile(error:has_type/2).
+
+
+
+% email/0
+error:has_type(email, Term):-
+  dcg_phrase(email, Term).
+% uri/0
+error:has_type(uri, Term):-
+  error:has_type(iri, Term).
+% iri/0
+error:has_type(iri, Term):-
+  uri_components(
+    Term,
+    uri_components(Scheme,Authority,Path,_Search,_Fragment)
+  ),
+  maplist(nonvar, [Scheme,Authority,Path]).
+  % @tbd
+  %%%%once(dcg_phrase('IRI'(_), Term)),
+
+email -->
+  dcg_until([end_mode(inclusive),output_format(codes)], at_sign, _),
+  dcg_all.
 
 
 %! atom_to_email(+Atom:atom, -Email:atom) is det.
