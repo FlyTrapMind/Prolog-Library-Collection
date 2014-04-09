@@ -15,7 +15,6 @@ Asserts statistics for VoID descriptions.
 
 :- use_remote_module(generics(thread_ext)).
 :- use_module(library(aggregate)).
-:- use_module(library(regex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_remote_module(rdf_term(rdf_datatype)).
@@ -76,7 +75,7 @@ void_update_dataset(VoidGraph, VoidDataset):-
   count_subjects(_, _, VoidDataset, NumberOfSubjects),
   rdf_overwrite_datatype(VoidDataset, void:distinctSubjects, NumberOfSubjects,
        xsd:integer, VoidGraph),
-
+/*
   % void:entities
   (
     rdf_string(VoidDataset, void:uriRegexPattern, RegularExpression, VoidGraph)
@@ -95,6 +94,7 @@ void_update_dataset(VoidGraph, VoidDataset):-
   ;
     true
   ),
+*/
 
   % void:properties
   count_properties(_, _, VoidDataset, NumberOfProperties),

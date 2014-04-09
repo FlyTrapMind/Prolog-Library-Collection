@@ -43,6 +43,7 @@ use_module/1 imports local Prolog modules.
 :- initialization(init_use_remote_module).
 
 init_use_remote_module:-
+  flag(number_of_downloaded_files, _, 0),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
   opt_arguments([
@@ -290,5 +291,6 @@ object(module(Module)) -->
   ['module ~w'-[Module]].
 
 prolog:message(wait) -->
-  ['.'].
+  {flag(number_of_downloaded_files, N, N + 1)},
+  [N].
 
