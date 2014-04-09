@@ -306,7 +306,7 @@ use_remote_module(ModuleSpec):-
   use_remote_module(DefaultRepository, ModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
-(flag(numer_of_downloaded_files, X, X), X >= 34 -> gtrace ; true), %DEB
+(flag(number_of_downloaded_files, X, X), X >= 34 -> gtrace ; true), %DEB
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile),
