@@ -204,11 +204,13 @@ reexport_remote_module(ModuleSpec):-
 
 reexport_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  CallingModule:reexport_remote_module(LocalFile).
+  CallingModule:reexport_remote_module(LocalFile),
+  store_import_relation(CallingModule, CalledModuleSpec).
 
 reexport_remote_module(RepositoryId, CallingModule:CalledModuleSpec, Import):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  CallingModule:reexport(LocalFile, Import).
+  CallingModule:reexport(LocalFile, Import),
+  store_import_relation(CallingModule, CalledModuleSpec).
 
 
 %! register_remote(
@@ -266,6 +268,21 @@ register_remote(github, RepositoryId, Dir, O1):-
   call_remote_goal(github, O1, index, index(Dir)).
 
 
+%! store_import_relation(
+%!   +CallingModule:atom,
+%!   +CalledModuleSpec:compound
+%! ) is det.
+
+store_import_relation(CallingModule, CalledModuleSpec):-
+  module_property(CallingModule, file(CallingModuleFile)),
+  absolute_file_name(
+    CalledModuleSpec,
+    CalledModuleFile,
+    [access(read),file_type(prolog)]
+  ),
+  assert(imports(CallingModuleFile, CalledModuleFile)).
+
+
 %! use_remote_module(:ModuleSpec:compound) is det.
 %! use_remote_module(+RepositoryId:atom, :ModuleSpec:compound) is det.
 %! use_remote_module(
@@ -287,12 +304,12 @@ use_remote_module(ModuleSpec):-
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile),
-  assert(imports(CallingModule, CalledModuleSpec)).
+  store_import_relation(CallingModule, CalledModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec, ImportList):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile, ImportList),
-  assert(imports(CallingModule, CalledModuleSpec)).
+  store_import_relation(CallingModule, CalledModuleSpec).
 
 
 
