@@ -356,9 +356,9 @@ prolog:message(downloaded(L)) -->
   {
     atomic_list_concat(L, '/', Name),
     flag(number_of_downloaded_files, N, N + 1),
-    flag(level_of_nesting, M, M + 1),
-    level_of_indent(M)
+    flag(level_of_nesting, M, M + 1)
   },
+  level_of_indent(M),
   [N,':',Name].
 
 level_of_indent(0) --> [].
