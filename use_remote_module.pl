@@ -256,8 +256,6 @@ use_remote_module(RepositoryId, CallingModule:CalledModuleSpec, ImportList):-
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   CallingModule:use_module(LocalFile, ImportList).
 
-cert_verify(_, _, _, _, _):- !.
-
 
 
 % Informational messages.
