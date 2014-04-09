@@ -148,16 +148,44 @@ fetch_remote_file(github, User, RepositoryName, Components, LocalPath):-
   uri_components(Url, uri_components(htts,'github.com',Path,_,_)),
   file_directory_name(LocalPath, LocalDirectory),
   make_directory_path(LocalDirectory),
-  setup_call_cleanup(
-    http_open(Url, HttpStream, [cert_verify_hook(cert_verify)]),
+  guarantee_download(Url, LocalPath).
+
+
+%! guarantee_download(+Url:atom, +Path:atom) is det.
+
+guarantee_download(Url, Path):-
+  catch(
     setup_call_cleanup(
-      open(LocalPath, write, FileStream, [type(binary)]),
-      copy_stream_data(HttpStream, FileStream),
-      close(FileStream)
+      http_open(
+        Url,
+        HttpStream,
+        [cert_verify_hook(cert_verify),status_code(Status)]
+      ),
+      http_process(Status, HttpStream, Url, Path),
+      close(HttpStream)
     ),
-    close(HttpStream)
+    _,
+    guarantee_download(URL, Path)
   ),
   print_message(information, wait).
+
+
+%! http_process(
+%!   +Status:between(100,999),
+%!   +HttpStream:stream,
+%!   +Url:atom,
+%!   +Path:atom
+%! ) is det.
+
+http_process(Status, HttpStream, Url, Path):-
+  between(200, 299, Status), !,
+  setup_call_cleanup(
+    open(LocalPath, write, FileStream, [type(binary)]),
+    copy_stream_data(HttpStream, FileStream),
+    close(FileStream)
+  ).
+http_process(Status, HttpStream, Url, Path):-
+  guarantee_download(Url, Path).
 
 
 %! reexport_remote_module(+ModuleSpec:compound) is det.
