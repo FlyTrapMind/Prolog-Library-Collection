@@ -6,9 +6,9 @@
   ]
 ).
 
-/** <module> Prolog command line arguments
+/** <module> Prolog command-line arguments
 
-Support for command line arguments given at Prolog startup.
+Support for command-line arguments given at Prolog startup.
 
 @author Wouter Beek
 @version 2014/03-2014/04
