@@ -361,7 +361,7 @@ prolog:message(downloaded(L)) -->
   },
   [N,':',Name].
 
-indentation:-
+indentation -->
   {flag(level_of_nesting, M, M)},
   indentation(M).
 
