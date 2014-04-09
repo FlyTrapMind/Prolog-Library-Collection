@@ -30,7 +30,6 @@ load_pgc:-
   assert(user:prolog_file_type(md,   'text/markdown')),
   assert(user:prolog_file_type(txt,  'text/plain')),
   
-gtrace,
   % Check SWI-Prolog version.
   check_pl_version,
 
