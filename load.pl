@@ -1,6 +1,8 @@
-% On Windows 8 I have had the pleasure of swipl defaulting to the
-% =text= encoding. This did _not_ process special characters correctly.
-:- set_prolog_flag(encoding, utf8).
+% PLC load file.
+
+:- user:prolog_file_type(html, 'text/html'    ).
+:- user:prolog_file_type(md,   'text/markdown').
+:- user:prolog_file_type(txt,  'text/plain'   ).
 
 :- initialization(load_plc).
 
@@ -10,10 +12,6 @@
 
 load_plc:-
   set_project,
-
-  assert(user:prolog_file_type(html, 'text/html')),
-  assert(user:prolog_file_type(md,   'text/markdown')),
-  assert(user:prolog_file_type(txt,  'text/plain')),
   
   % Check SWI-Prolog version.
   use_remote_module(pl(pl_version)),

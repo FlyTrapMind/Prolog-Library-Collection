@@ -17,11 +17,12 @@ Predicates that are specific to the operation of SWI-Prolog.
 @version 2013/06, 2013/08
 */
 
+:- use_module(library(ansi_term)). % Used in markup.
+
 :- use_remote_module(dcg(dcg_cardinal)).
 :- use_remote_module(dcg(dcg_multi)).
 :- use_remote_module(generics(meta_ext)).
 :- use_remote_module(generics(typecheck)).
-:- use_module(library(ansi_term)). % Used in markup.
 
 
 
