@@ -169,10 +169,9 @@ current_situation(no_situation).
 % Ends the current logging activity.
 
 end_log:-
-  \+ current_log_file(_File), !.
+  \+ current_log_file(_), !.
 end_log:-
   append_to_log(build, 'Goodnight!', []),
-  send_current_log_file,
   close_log_stream.
 
 init:-

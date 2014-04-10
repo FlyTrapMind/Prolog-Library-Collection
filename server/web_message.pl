@@ -13,9 +13,6 @@ Acts on messages printed by print_message/2.
 @version 2013/02, 2013/04-2013/05, 2013/08-2013/09, 2013/11, 2014/01
 */
 
-:- use_remote_module(dcg(dcg_content)).
-:- use_remote_module(generics(logging)).
-:- use_remote_module(html(html_table)).
 :- use_module(library(aggregate)).
 :- use_module(library(csv)).
 :- use_module(library(http/html_write)).
@@ -23,9 +20,12 @@ Acts on messages printed by print_message/2.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_path)).
 :- use_module(library(settings)).
+
+:- use_remote_module(dcg(dcg_content)).
+:- use_remote_module(generics(logging)).
+:- use_remote_module(html(html_table)).
 :- use_remote_module(math(math_ext)).
 :- use_remote_module(os(ansi_ext)).
-:- use_remote_module(server(email)).
 :- use_remote_module(server(web_console)).
 :- use_remote_module(server(web_error)).
 :- use_remote_module(server(web_modules)).
@@ -116,10 +116,10 @@ prolog:debug_print_hook(Type, Format, Args):-
   append_to_log(Type, Format, Args),
 
   email(Type, Format, Args).
-*/
 
 email(email, Format, Args):- !,
   format(codes(Body), Format, Args),
   send_email('me@wouterbeek.com', 'Message from script', Body).
 email(_, _, _).
+*/
 

@@ -2,26 +2,24 @@
 % =text= encoding. This did _not_ process special characters correctly.
 :- set_prolog_flag(encoding, utf8).
 
-:- trace, use_remote_module(generics(logging)).
-:- use_remote_module(pl(pl_clas)).
-:- use_remote_module(pl(pl_version)).
-
-:- initialization(load_pgc).
+:- initialization(load_plc).
 
 % The load file for the Prolog Generics Collection.
 % This assumes that the search path =project= is already defined
 % by the parent project (PGC is a library).
 
-load_pgc:-
-  source_file(load_pgc, ThisFile),
-  file_directory_name(ThisFile, ThisDirectory),
-  assert(user:file_search_path(plc, ThisDirectory)),
-
+load_plc:-
+  % Load the index.
+  source_file(load_plc, ThisFile),
+  file_directory_name(ThisFile, ThisDir),
+  ensure_remote_loaded(index),
+  index(ThisDir),
+  
   % If there is no outer project, then PGC is the project.
   once((
     user:file_search_path(plc, _)
   ;
-    assert(user:file_search_path(plc, ThisDirectory))
+    assert(user:file_search_path(plc, ThisDir))
   )),
 
   set_project,
@@ -31,13 +29,15 @@ load_pgc:-
   assert(user:prolog_file_type(txt,  'text/plain')),
   
   % Check SWI-Prolog version.
+  use_remote_module(pl(pl_version)),
   check_pl_version,
 
   % Set data subdirectory.
+  use_remote_module(pl(pl_clas)),
   process_options,
 
   % Start logging.
-gtrace,
+  use_remote_module(generics(logging)),
   start_log.
 
 

@@ -269,7 +269,9 @@ register_remote(github, RepositoryId, Dir, O1):-
   ),
   
   % Load the remote index.
-  call_remote_goal(github, O1, index, index(Dir)).
+  directory_file_path(Dir, RepositoryId, ParentDir),
+  make_directory_path(ParentDir),
+  call_remote_goal(github, O1, index, index(ParentDir)).
 
 
 %! store_import_relation(
@@ -306,7 +308,6 @@ use_remote_module(ModuleSpec):-
   use_remote_module(DefaultRepository, ModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
-(flag(number_of_downloaded_files, X, X), X >= 34 -> gtrace ; true), %DEB
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
   (
