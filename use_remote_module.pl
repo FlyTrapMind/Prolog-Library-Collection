@@ -296,11 +296,11 @@ store_import_relation(CallingModule, CalledModuleSpec):-
   % The absolute file name of the called module.
   absolute_file_name(
     CalledModuleSpec,
-    CalledModuleFile,
+    CalledModuleName,
     [access(read),file_type(prolog)]
   ),
   
-  assert(imports(CallingModuleFile, CalledModuleFile)).
+  assert(imports(CallingModuleName, CalledModuleName)).
 
 
 %! use_remote_module(:ModuleSpec:compound) is det.
