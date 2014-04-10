@@ -1,8 +1,8 @@
 % PLC load file.
 
-:- user:prolog_file_type(html, 'text/html'    ).
-:- user:prolog_file_type(md,   'text/markdown').
-:- user:prolog_file_type(txt,  'text/plain'   ).
+user:prolog_file_type(html, 'text/html'    ).
+user:prolog_file_type(md,   'text/markdown').
+user:prolog_file_type(txt,  'text/plain'   ).
 
 :- initialization(load_plc).
 
@@ -14,6 +14,7 @@ load_plc:-
   set_project,
   
   % Check SWI-Prolog version.
+gtrace,
   use_remote_module(pl(pl_version)),
 gtrace,
   check_pl_version,

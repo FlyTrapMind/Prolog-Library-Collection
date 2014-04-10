@@ -280,12 +280,22 @@ register_remote(github, RepositoryId, Dir, O1):-
 %! ) is det.
 
 store_import_relation(CallingModule, CalledModuleSpec):-
-  module_property(CallingModule, file(CallingModuleFile)),
+  % Retrieve either the file or the class name of the calling module.
+  (
+    module_property(CallingModule, file(CallingModuleName))
+  ->
+    true
+  ;
+    module_proeprty(CallingModule, class(CallingModuleName))
+  ),
+  
+  % The absolute file name of the called module.
   absolute_file_name(
     CalledModuleSpec,
     CalledModuleFile,
     [access(read),file_type(prolog)]
   ),
+  
   assert(imports(CallingModuleFile, CalledModuleFile)).
 
 
