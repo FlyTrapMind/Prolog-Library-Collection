@@ -2,7 +2,7 @@
 % =text= encoding. This did _not_ process special characters correctly.
 :- set_prolog_flag(encoding, utf8).
 
-:- use_remote_module(generics(logging)).
+:- trace, use_remote_module(generics(logging)).
 :- use_remote_module(pl(pl_clas)).
 :- use_remote_module(pl(pl_version)).
 
@@ -37,6 +37,7 @@ load_pgc:-
   process_options,
 
   % Start logging.
+gtrace,
   start_log.
 
 
