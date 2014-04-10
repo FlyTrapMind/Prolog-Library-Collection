@@ -167,8 +167,11 @@ guarantee_download(Url, Path):-
       http_process(Status, HttpStream, Url, Path),
       close(HttpStream)
     ),
-    _,
-    guarantee_download(Url, Path)
+    Error,
+    (
+      print_message(warning, http_error(Error)),
+      guarantee_download(Url, Path)
+    )
   ).
 
 
@@ -186,7 +189,8 @@ http_process(Status, HttpStream, _, File):-
     copy_stream_data(HttpStream, FileStream),
     close(FileStream)
   ).
-http_process(_, _, Url, Path):-
+http_process(Status, _, Url, Path):-
+  print_message(warning, http_status(Status)),
   guarantee_download(Url, Path).
 
 
@@ -286,7 +290,7 @@ store_import_relation(CallingModule, CalledModuleSpec):-
   ->
     true
   ;
-    module_proeprty(CallingModule, class(CallingModuleName))
+    module_property(CallingModule, class(CallingModuleName))
   ),
   
   % The absolute file name of the called module.
@@ -393,6 +397,17 @@ indentation(M1) -->
   {M2 is M1 - 1},
   ['  '],
   indentation(M2).
+
+prolog:message(http_error(Error)) -->
+  ['HTTP error: ',Error,'. '],
+  retrying.
+
+prolog:message(http_status(Status)) -->
+  ['HTTP status code: ',Status,'. '],
+  retrying.
+
+retrying -->
+  ['Retrying...'].
 
 
 

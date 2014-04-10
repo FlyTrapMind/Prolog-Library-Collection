@@ -14,7 +14,6 @@ load_plc:-
   set_project,
   
   % Check SWI-Prolog version.
-gtrace,
   use_remote_module(pl(pl_version)),
 gtrace,
   check_pl_version,
