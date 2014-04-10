@@ -23,6 +23,7 @@ to a trashcan instead of being permanently deleted.
 
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
+
 :- use_remote_module(os(dir_ext)).
 :- use_remote_module(os(dir_infra)).
 :- use_remote_module(os(file_ext)).

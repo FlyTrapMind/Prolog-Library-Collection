@@ -309,14 +309,26 @@ use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
 (flag(number_of_downloaded_files, X, X), X >= 34 -> gtrace ; true), %DEB
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  CallingModule:use_module(LocalFile),
+  (
+    module_property(_, file(LocalFile))
+  ->
+    true
+  ;
+    CallingModule:use_module(LocalFile)
+  ),
   flag(level_of_nesting, N, N - 1),
   store_import_relation(CallingModule, CalledModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec, ImportList):-
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  CallingModule:use_module(LocalFile, ImportList),
+  (
+    module_property(_, file(LocalFile))
+  ->
+    true
+  ;
+    CallingModule:use_module(LocalFile, ImportList)
+  ),
   flag(level_of_nesting, N, N - 1),
   store_import_relation(CallingModule, CalledModuleSpec).
 
@@ -368,7 +380,7 @@ indentation -->
 indentation(0) --> [].
 indentation(M1) -->
   {M2 is M1 - 1},
-  [' '],
+  ['  '],
   indentation(M2).
 
 
