@@ -18,6 +18,12 @@ run_plc:-
   absolute_file_name('.', ProjectDir, [access(read),file_type(directory)]),
   assert(user:file_search_path(project, ProjectDir)),
   
+  % Load the index.
+  source_file(run_plc, ThisFile),
+  file_directory_name(ThisFile, ThisDir),
+  ensure_remote_loaded(index),
+  index(ThisDir),
+  
   % Load PLC.
   ensure_loaded(load).
 

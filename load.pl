@@ -9,19 +9,6 @@
 % by the parent project (PGC is a library).
 
 load_plc:-
-  % Load the index.
-  source_file(load_plc, ThisFile),
-  file_directory_name(ThisFile, ThisDir),
-  ensure_remote_loaded(index),
-  index(ThisDir),
-  
-  % If there is no outer project, then PGC is the project.
-  once((
-    user:file_search_path(plc, _)
-  ;
-    assert(user:file_search_path(plc, ThisDir))
-  )),
-
   set_project,
 
   assert(user:prolog_file_type(html, 'text/html')),
