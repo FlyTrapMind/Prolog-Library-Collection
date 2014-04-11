@@ -402,11 +402,11 @@ retrying -->
 
 % Support predicates.
 
-opt_arguments(OptsSpec, Opts, PositionalArgs, ParseOptions):-
+opt_arguments(OptSpecs, Opts, PositionalArgs, ParseOptions):-
   current_prolog_flag(argv, Argv),
   ignore(
     catch(
-      opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions),
+      opt_parse(OptSpecs, Argv, Opts, PositionalArgs, ParseOptions),
       E,
       print_message(error, E)
     )

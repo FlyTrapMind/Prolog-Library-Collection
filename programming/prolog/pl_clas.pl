@@ -175,11 +175,11 @@ process_options:-
   cmd_version(O1).
 
 
-read_options(Options):-
+read_options(O1):-
   findall(
-    OptionSpec,
-    user:option_specification(OptionSpec),
-    OptionSpecs
+    OptSpec,
+    user:option_specification(OptSpec),
+    OptSpecs
   ),
-  opt_arguments(OptionSpecs, Options, _).
+  opt_arguments(OptSpecs, O1, _, []).
 
