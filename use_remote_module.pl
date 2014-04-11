@@ -92,7 +92,7 @@ call_remote_goal(github, O1, Base, Goal):-
   file_name_extension(Base, pl, File),
   print_message_start_end(
     informational,
-    load(Base),
+    load(file(Base)),
     setup_call_cleanup(
       (
         fetch_remote_file(github, User, RepositoryName, [File], LocalPath),
