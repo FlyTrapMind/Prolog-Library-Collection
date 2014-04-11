@@ -759,7 +759,6 @@ parse_args_([Arg|Args], OptsSpec, Result2):-
   flag_name_value(Arg1, Arg2, Arg, []),
   \+ short_flag_w_equals(Arg1, Arg2),
   flag_name(K, Arg1, []), !,
-gtrace,
   (
     parse_option(OptsSpec, K, Arg2, opt(KID,Val))
   ->
