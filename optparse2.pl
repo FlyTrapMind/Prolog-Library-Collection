@@ -313,6 +313,8 @@ parameter style above (perhaps with asserting appl_config/2).
 :- use_module(library(option)).
 :- use_module(library(error)).
 
+:- meta_predicate(default_defaults(2,+,-)).
+
 :- set_prolog_flag(double_quotes, codes).
 
 :- predicate_options(
@@ -345,7 +347,7 @@ parameter style above (perhaps with asserting appl_config/2).
 % leading arguments for the runtime (up   to  and including '--') are
 % discarded.
 
-opt_arguments(OptionSpecifications, Opts, PositionalArgs):-
+opt_arguments(OptsSpec, Opts, PositionalArgs):-
   current_prolog_flag(argv, Argv),
   opt_parse(OptsSpec, Argv, Opts, PositionalArgs).
 
