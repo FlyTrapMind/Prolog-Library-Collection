@@ -354,7 +354,6 @@ opt_arguments(OptsSpec, Opts, PositionalArgs):-
 
 opt_arguments(OptsSpec, Opts, PositionalArgs, ParseOptions):-
   current_prolog_flag(argv, Argv),
-gtrace,
   opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions).
 
 
@@ -757,10 +756,10 @@ parse_args_([Arg,Arg2|Args], OptsSpec, Result):-
 
 % separate short or long flag run together with its value and parse
 parse_args_([Arg|Args], OptsSpec, Result2):-
-gtrace,
   flag_name_value(Arg1, Arg2, Arg, []),
   \+ short_flag_w_equals(Arg1, Arg2),
   flag_name(K, Arg1, []), !,
+gtrace,
   (
     parse_option(OptsSpec, K, Arg2, opt(KID,Val))
   ->
