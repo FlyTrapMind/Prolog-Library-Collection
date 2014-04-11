@@ -24,7 +24,6 @@ Asserts statistics for VoID descriptions.
 :- use_remote_module(rdf(rdf_stat)).
 :- use_remote_module(rdf_term(rdf_dateTime)).
 :- use_remote_module(rdf_term(rdf_string)).
-:- use_remote_module(regex(regex)).
 :- use_remote_module(void(void_db)). % XML namespace.
 :- use_remote_module(xml(xml_namespace)).
 :- use_remote_module(xsd(xsd_dateTime_ext)).
@@ -78,6 +77,7 @@ void_update_dataset(VoidGraph, VoidDataset):-
   rdf_overwrite_datatype(VoidDataset, void:distinctSubjects, NumberOfSubjects,
        xsd:integer, VoidGraph),
 
+/*
   % void:entities
   (
     rdf_string(VoidDataset, void:uriRegexPattern, RegularExpression, VoidGraph)
@@ -96,6 +96,7 @@ void_update_dataset(VoidGraph, VoidDataset):-
   ;
     true
   ),
+*/
 
   % void:properties
   count_properties(_, _, VoidDataset, NumberOfProperties),
