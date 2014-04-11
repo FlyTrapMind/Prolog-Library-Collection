@@ -354,6 +354,7 @@ opt_arguments(OptsSpec, Opts, PositionalArgs):-
 
 opt_arguments(OptsSpec, Opts, PositionalArgs, ParseOptions):-
   current_prolog_flag(argv, Argv),
+gtrace,
   opt_parse(OptsSpec, Argv, Opts, PositionalArgs, ParseOptions).
 
 
