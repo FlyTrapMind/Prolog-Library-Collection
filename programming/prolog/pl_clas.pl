@@ -165,6 +165,7 @@ process_options:-
   % First set the data directory,
   % since other command-line arguments may depend on it being set,
   % e.g. `project=NAME`.
+gtrace,
   cmd_data_option(O1),
   
   % Then set the debug mode and load the debug tools.
