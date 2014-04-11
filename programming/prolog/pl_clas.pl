@@ -161,12 +161,12 @@ cmd_version(_).
 % that are common among the PGC-using projects,
 
 process_options:-
+gtrace,
   read_options(O1), !,
   
   % First set the data directory,
   % since other command-line arguments may depend on it being set,
   % e.g. `project=NAME`.
-gtrace,
   cmd_data_option(O1),
   
   % Then set the debug mode and load the debug tools.
