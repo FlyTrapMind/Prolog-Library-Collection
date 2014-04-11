@@ -324,26 +324,14 @@ use_remote_module(ModuleSpec):-
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec):-
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  (
-    module_property(_, file(LocalFile))
-  ->
-    true
-  ;
-    CallingModule:use_module(LocalFile)
-  ),
+  CallingModule:use_module(LocalFile),
   flag(level_of_nesting, N, N - 1),
   store_import_relation(CallingModule, CalledModuleSpec).
 
 use_remote_module(RepositoryId, CallingModule:CalledModuleSpec, ImportList):-
   flag(level_of_nesting, M, M + 1),
   fetch_remote_file(RepositoryId, CalledModuleSpec, LocalFile),
-  (
-    module_property(_, file(LocalFile))
-  ->
-    true
-  ;
-    CallingModule:use_module(LocalFile, ImportList)
-  ),
+  CallingModule:use_module(LocalFile, ImportList),
   flag(level_of_nesting, N, N - 1),
   store_import_relation(CallingModule, CalledModuleSpec).
 
