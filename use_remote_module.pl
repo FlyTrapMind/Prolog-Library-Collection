@@ -48,6 +48,7 @@ init_use_remote_module:-
   flag(number_of_downloaded_files, _, 1),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
+gtrace,
   opt_arguments(
     [
       [
