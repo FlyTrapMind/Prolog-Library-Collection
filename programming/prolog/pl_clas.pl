@@ -107,7 +107,7 @@ user:option_specification([
 ]).
 
 cmd_help(O1):-
-  option(help, O1), !,
+  option(help(true), O1), !,
   opt_help(O1, Help),
   print_message(information, help(Help)),
   halt.
@@ -129,7 +129,7 @@ user:option_specification([
 ]).
 
 cmd_version(O1):-
-  option(version, O1), !,
+  option(version(true), O1), !,
   format(
     user_output,
     '  PraSem: Pragmatic Semantics for the Web of Data\n',

@@ -162,7 +162,7 @@ guarantee_download(Url, Path):-
       http_open(
         Url,
         HttpStream,
-        [cert_verify_hook(cert_verify),status_code(Status)]
+        [cert_verify_hook(cert_verify),status_code(Status),timeout(1)]
       ),
       http_process(Status, HttpStream, Url, Path),
       close(HttpStream)
