@@ -15,17 +15,14 @@ load_plc:-
   
   % Check SWI-Prolog version.
   use_remote_module(pl(pl_version)),
-gtrace,
   check_pl_version,
 
   % Set data subdirectory.
   use_remote_module(pl(pl_clas)),
-gtrace,
   process_options,
 
   % Start logging.
   use_remote_module(generics(logging)),
-gtrace,
   start_log.
 
 
