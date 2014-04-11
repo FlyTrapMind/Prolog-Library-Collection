@@ -18,12 +18,12 @@ Support for command-line arguments given at Prolog startup.
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
-:- use_module(library(optparse)).
 
 :- use_remote_module(generics(db_ext)).
 :- use_remote_module(generics(meta_ext)).
 :- use_remote_module(generics(typecheck)).
 :- use_remote_module(os(dir_infra)).
+:- use_remote_module(plc(optparse2)).
 
 :- multifile(prolog:message//1).
 

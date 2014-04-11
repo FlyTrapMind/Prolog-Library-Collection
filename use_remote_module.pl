@@ -12,7 +12,6 @@ use_module/1 imports local Prolog modules.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
 :- use_module(library(option)).
-:- use_module(library(optparse)).
 :- use_module(library(uri)).
 
 :- meta_predicate(use_remote_module(:)).
@@ -48,20 +47,25 @@ init_use_remote_module:-
   flag(number_of_downloaded_files, _, 1),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
-  opt_arguments(
-    [
+  call_remote_goal(
+    github,
+    [repository('Prolog-Library-Collection'),user(wouterbeek)|O1],
+    optparse2,
+    opt_arguments(
       [
-        default(false),
-        help('Force all files to be redownloaded.'),
-        longflags([redownload]),
-        opt(redownload),
-        shortflags([r]),
-        type(boolean)
-      ]
-    ],
-    O1,
-    _,
-    []
+        [
+          default(false),
+          help('Force all files to be redownloaded.'),
+          longflags([redownload]),
+          opt(redownload),
+          shortflags([r]),
+          type(boolean)
+        ]
+      ],
+      O1,
+      _,
+      []
+    )
   ),
   call_remote_goal(
     github,
@@ -397,18 +401,4 @@ prolog:message(http_status(Status)) -->
 
 retrying -->
   ['Retrying...'].
-
-
-
-% Support predicates.
-
-opt_arguments(OptSpecs, Opts, PositionalArgs, ParseOptions):-
-  current_prolog_flag(argv, Argv),
-  ignore(
-    catch(
-      opt_parse(OptSpecs, Argv, Opts, PositionalArgs, ParseOptions),
-      E,
-      print_message(error, E)
-    )
-  ).
 

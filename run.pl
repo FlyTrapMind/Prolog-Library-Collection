@@ -2,7 +2,8 @@
 % This is used to run the PLC independent of any other projects/submodules.
 
 :- use_module(library(filesex)).
-:- use_module(library(optparse)).
+
+:- use_module(optparse2).
 
 :- meta_predicate(user:ensure_remote_loaded(:)).
 :- meta_predicate(user:reexport_remote_module(:)).
@@ -22,7 +23,7 @@ run_plc:-
   % Load the index.
   source_file(run_plc, ThisFile),
   file_directory_name(ThisFile, ThisDir),
-  ensure_remote_loaded(index),
+  ensure_loaded(index),
   index(ThisDir),
   
   % Load PLC.
@@ -49,15 +50,4 @@ user:use_remote_module(_, ModuleSpec):-
 
 user:use_remote_module(_, CallingModule:CalledModuleSpec, ImportList):-
   CallingModule:use_module(CalledModuleSpec, ImportList).
-
-
-opt_arguments(OptSpecs, Opts, PositionalArgs, ParseOptions):-
-  current_prolog_flag(argv, Argv),
-  ignore(
-    catch(
-      opt_parse(OptSpecs, Argv, Opts, PositionalArgs, ParseOptions),
-      E,
-      print_message(error, E)
-    )
-  ).
 
