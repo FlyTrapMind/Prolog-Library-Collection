@@ -47,6 +47,7 @@ init_use_remote_module:-
   flag(number_of_downloaded_files, _, 1),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
+gtrace,
   call_remote_goal(
     github,
     [repository('Prolog-Library-Collection'),user(wouterbeek)|O1],
@@ -92,7 +93,7 @@ call_remote_goal(github, O1, Base, Goal):-
   file_name_extension(Base, pl, File),
   print_message_start_end(
     informational,
-    load(Base),
+    load(file(Base)),
     setup_call_cleanup(
       (
         fetch_remote_file(github, User, RepositoryName, [File], LocalPath),
@@ -151,7 +152,7 @@ fetch_remote_file(github, User, RepositoryName, Components, LocalPath):-
     '/',
     Path
   ),
-  uri_components(Url, uri_components(htts,'github.com',Path,_,_)),
+  uri_components(Url, uri_components(https,'github.com',Path,_,_)),
   file_directory_name(LocalPath, LocalDirectory),
   make_directory_path(LocalDirectory),
   guarantee_download(Url, LocalPath),
