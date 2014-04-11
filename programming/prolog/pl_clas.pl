@@ -59,6 +59,7 @@ cmd_data_option(_):-
   user:file_search_path(data, _), !.
 cmd_data_option(O1):-
   option(data(Dir), O1),
+  nonvar(Dir),
   make_directory_path(Dir), !,
   assert(user:file_search_path(data, Dir)).
 % Use the default data directory.
