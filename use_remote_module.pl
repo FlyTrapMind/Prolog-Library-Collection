@@ -313,7 +313,7 @@ store_import_relation(CallingModule, CalledModuleSpec):-
 % Remote variant of use_module/1, loading a Prolog module from the Web.
 %
 % Example URL:
-% ~~~
+% ~~~{.url}
 % https://github.com/wouterbeek/PGC/raw/master/OS/file_ext.pl
 % ~~~
 
@@ -387,7 +387,8 @@ indentation(M1) -->
   indentation(M2).
 
 prolog:message(http_error(Error)) -->
-  ['HTTP error: ',Error,'. '],
+  {term_to_atom(Error, Atom)},
+  ['HTTP error: ',Atom,'. '],
   retrying.
 
 prolog:message(http_status(Status)) -->
