@@ -742,7 +742,7 @@ parse_options(OptsSpec, Args0, Options, PosArgs):-
   partition_args_(Args2, Options, PosArgs).
 
 % A boolean flag given as `--no-ARG`, expand to `--ARG=false`, re-call.
-parse_args_([Arg,Arg2|Args], OptsSpec, [opt(KID, false)|Result]):-
+parse_args_([Arg,Arg2|Args], OptsSpec, [opt(KID,false)|Result]):-
   flag_name_long_neg(Dashed, NonDashed, Arg, []),
   flag_id_type(OptsSpec, NonDashed, KID, boolean), !,
   parse_args_([Dashed, "false", Arg2|Args], OptsSpec, Result).
@@ -750,9 +750,15 @@ parse_args_([Arg,Arg2|Args], OptsSpec, [opt(KID, false)|Result]):-
 % A ordinary boolean flag with no value, fill in `true` and re-call.
 parse_args_([Arg,Arg2|Args], OptsSpec, Result):-
   flag_name(K, Arg, []),
-  flag_id_type(OptsSpec, K, _KID, boolean),
-  \+ member(Arg2, ["true","false"]), !,
-  parse_args_([Arg, "true", Arg2 | Args], OptsSpec, Result).
+  (
+    flag_id_type(OptsSpec, K, _KID, boolean)
+  ->
+    \+ member(Arg2, ["true","false"]),
+    parse_args_([Arg,"true",Arg2|Args], OptsSpec, Result)
+  ;
+    % Skip this argument.
+    parse_args_([Arg2|Args], OptsSpec, Result)
+  ).
 
 % separate short or long flag run together with its value and parse
 parse_args_([Arg|Args], OptsSpec, Result2):-
