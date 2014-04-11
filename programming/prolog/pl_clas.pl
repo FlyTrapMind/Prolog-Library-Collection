@@ -108,7 +108,12 @@ user:option_specification([
 
 cmd_help(O1):-
   option(help(true), O1), !,
-  opt_help(O1, Help),
+  findall(
+    OptSpec,
+    user:option_specification(OptSpec),
+    OptSpecs
+  ),
+  opt_help(OptSpecs, Help),
   print_message(information, help(Help)),
   halt.
 cmd_help(_).

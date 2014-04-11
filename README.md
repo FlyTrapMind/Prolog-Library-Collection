@@ -1,31 +1,37 @@
-# Prolog Generics Collection (PGC)
+# Prolog Libraries Collection (PLC)
 
-This is a collection of predicates that I use across projects.
-This includes extensions to SWI-Prolog,
-or to one of the standard Prolog libraries;
-support for modeling languages and visualization techniques.
+This is a collection of Prolog libraries that can be remotely imported
+into [SWI-Prolog](www.swi-prolog.org).
 
-## Contents
+### Contents
 
 This repository contains the following subcollections of Prolog modules:
   * Datasets
+    Supports working with certain often used datasets, e.g. dbPedia, Wordnet.
   * DCG
+    Suppor for using Descriptive Clause Grammars.
   * Generics
+    Very generic extensions to the standard set of Prolog predicates,
+    e.g. splitting atoms, additional typechecking.
   * Graph theory
-    * DGRAPH
-    * RDF Graph
-    * UGRAPH
   * Inductive Logic Programming (ILP)
+  * LOD
+    Support for Linked Open Data.
   * Logic
-    * RDF Model Theory
   * Mathematics
+  * Problem Solvers
+    * Truth-Maintenance System (TMS)
   * Operating System interaction
+    Additional support for files, directories, MIME types.
   * Server
+    Additional support for starting a server with Web-based tools
+    such as logging in an HTML table.
   * Standards
     * DateTime
     * Geography
     * GraphViz
     * HTML
+      E.g.
     * HTTP
     * Language
     * OWL
@@ -36,10 +42,7 @@ This repository contains the following subcollections of Prolog modules:
     * Tests
     * URI
     * XML
-      * XML Schema (XSD)
-  * Truth-Maintenance System (TMS)
-  * Vocabularies
-    * SKOS
+      * XML Schema 1.1 Part 2: Datatypes (XSD)
 
 ## Dependencies
 
