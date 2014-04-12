@@ -3,6 +3,7 @@
   [
     arrow//2, % +Options:list(nvpair)
               % +Length:nonneg
+    atom//1, % ?Atom:atom
     between//3, % +Low:nonneg
                 % +High:nonneg
                 % ?Code:code
@@ -38,7 +39,6 @@
   library(dcg/basics),
   [
     alpha_to_lower//1,
-    atom//1, % +Atom:atom
     blank//0,
     blanks//0,
     blanks_to_nl//0,
@@ -138,6 +138,14 @@ arrow_left_head(both).
 arrow_left_head(left).
 arrow_right_head(both).
 arrow_right_head(right).
+
+
+atom(Atom) -->
+  atom(Atom), !,
+  basics:atom(Atom).
+atom(Atom) -->
+  codes(Codes),
+  {atom_codes(Atom, Codes)}.
 
 
 %! between(+Low:nonneg, +High:nonneg, +Code:code)// is semidet.

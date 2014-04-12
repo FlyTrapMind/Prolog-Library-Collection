@@ -47,7 +47,6 @@ init_use_remote_module:-
   flag(number_of_downloaded_files, _, 1),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
-gtrace,
   call_remote_goal(
     github,
     [repository('Prolog-Library-Collection'),user(wouterbeek)|O1],
