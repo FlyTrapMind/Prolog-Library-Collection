@@ -426,7 +426,7 @@ opt_help(OptsSpec, Help, HelpOptions0):-
 
 opt_parse_(OptsSpec0, Args0, Opts, PositionalArgs, ParseOptions):-
   assertion(ground(Args0)),
-  assertion(is_list_of_atoms(Args0)),
+  assertion(maplist(atom, Args0)),
 
   check_opts_spec(OptsSpec0, ParseOptions, OptsSpec),
 
@@ -547,7 +547,7 @@ format_opt(LongestFlagWidth, [SFlagsCW, MTDCW], HelpOptions, Opt, Line):-
   ->
     line_breaks(Help, HelpWidth, HelpIndent, BrokenHelp)
   ;
-    assertion(is_list_of_atoms(Help))
+    assertion(maplist(atom, Help))
   ->
     indent_lines(Help, HelpIndent, BrokenHelp)
   ),
@@ -725,48 +725,54 @@ duplicate_optspec(OptSpec, [Func|Funcs]):-
     ).
 
 
-%}}}
-
-
-%{{{ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARSE OPTIONS
-% NOTE:
-% -sbar could be interpreted in two ways: as short for -s bar, and
-% as short ('clustered') for -s -b -a -r. Here, the former interpretation
+%! parse_options(
+%!   +OptionSpecifications:list(list(nvpair)),
+%!   +Arguments:atom,
+%!   -ParsedOptions:list(nvpair),
+%!   -PositionalArguments:list
+%! ) is det.
+% `-sbar` could be interpreted in two ways: as short for `-s bar`, and
+% as short ('clustered') for `-s -b -a -r`. Here, the former interpretation
 % is chosen.
 % Cf http://perldoc.perl.org/Getopt/Long.html (no clustering by default)
 
-
 parse_options(OptsSpec, Args0, Options, PosArgs):-
-    append(Args0, [""], Args1),
-    parse_args_(Args1, OptsSpec, Args2),
-    partition_args_(Args2, Options, PosArgs).
+  append(Args0, [""], Args1),
+  parse_args_(Args1, OptsSpec, Args2),
+  partition_args_(Args2, Options, PosArgs).
 
-%{{{ PARSE ARGS
+% A boolean flag given as `--no-ARG`, expand to `--ARG=false`, re-call.
+parse_args_([Arg,Arg2|Args], OptsSpec, [opt(KID,false)|Result]):-
+  flag_name_long_neg(Dashed, NonDashed, Arg, []),
+  flag_id_type(OptsSpec, NonDashed, KID, boolean), !,
+  parse_args_([Dashed, "false", Arg2|Args], OptsSpec, Result).
 
-
-%if arg is boolean flag given as --no-my-arg, expand to my-arg, false, re-call
-parse_args_([Arg,Arg2|Args], OptsSpec, [opt(KID, false)|Result]):-
-    flag_name_long_neg(Dashed, NonDashed, Arg, []),
-    flag_id_type(OptsSpec, NonDashed, KID, boolean),
-    !,
-    parse_args_([Dashed, "false", Arg2|Args], OptsSpec, Result).
-
-%if arg is ordinary boolean flag, fill in implicit true if arg absent; re-call
+% A ordinary boolean flag with no value, fill in `true` and re-call.
 parse_args_([Arg,Arg2|Args], OptsSpec, Result):-
-    flag_name(K, Arg, []),
-    flag_id_type(OptsSpec, K, _KID, boolean),
-    \+ member(Arg2, ["true", "false"]),
-    !,
-    parse_args_([Arg, "true", Arg2 | Args], OptsSpec, Result).
+  flag_name(K, Arg, []),
+  (
+    flag_id_type(OptsSpec, K, _KID, boolean)
+  ->
+    \+ member(Arg2, ["true","false"]),
+    parse_args_([Arg,"true",Arg2|Args], OptsSpec, Result)
+  ;
+    % Skip this argument.
+    parse_args_([Arg2|Args], OptsSpec, Result)
+  ).
 
 % separate short or long flag run together with its value and parse
-parse_args_([Arg|Args], OptsSpec, [opt(KID, Val)|Result]):-
-    flag_name_value(Arg1, Arg2, Arg, []),
-    \+ short_flag_w_equals(Arg1, Arg2),
-    flag_name(K, Arg1, []),
-    !,
-    parse_option(OptsSpec, K, Arg2, opt(KID, Val)),
-    parse_args_(Args, OptsSpec, Result).
+parse_args_([Arg|Args], OptsSpec, Result2):-
+  flag_name_value(Arg1, Arg2, Arg, []),
+  \+ short_flag_w_equals(Arg1, Arg2),
+  flag_name(K, Arg1, []), !,
+  (
+    parse_option(OptsSpec, K, Arg2, opt(KID,Val))
+  ->
+    Result2 = [opt(KID,Val)|Result1]
+  ;
+    Result2 = Result1
+  ),
+  parse_args_(Args, OptsSpec, Result1).
 
 %from here, unparsed args have form
 %  PosArg1,Flag1,Val1,PosArg2,PosArg3,Flag2,Val2, PosArg4...
@@ -775,10 +781,9 @@ parse_args_([Arg|Args], OptsSpec, [opt(KID, Val)|Result]):-
 %programming style to assume that)
 
 parse_args_([Arg1,Arg2|Args], OptsSpec, [opt(KID, Val)|Result]):-
-    flag_name(K, Arg1, []),
-    !,
-    parse_option(OptsSpec, K, Arg2, opt(KID, Val)),
-    parse_args_(Args, OptsSpec, Result).
+  flag_name(K, Arg1, []), !,
+  parse_option(OptsSpec, K, Arg2, opt(KID, Val)),
+  parse_args_(Args, OptsSpec, Result).
 
 parse_args_([Arg1,Arg2|Args], OptsSpec, [pos(At)|Result]):-
     \+ flag_name(_, Arg1, []),
@@ -793,14 +798,13 @@ short_flag_w_equals([0'-,_C], [0'=|_]):-
     throw(error(syntax_error('disallowed: <shortflag>=<value>'),_)).
 
 
-
 flag_id_type(OptsSpec, FlagCodes, ID, Type):-
-    atom_codes(Flag, FlagCodes),
-    member(OptSpec, OptsSpec),
-    flags(OptSpec, Flags),
-    member(Flag, Flags),
-    member(type(Type), OptSpec),
-    member(opt(ID), OptSpec).
+  atom_codes(Flag, FlagCodes),
+  member(OptSpec, OptsSpec),
+  flags(OptSpec, Flags),
+  member(Flag, Flags),
+  member(type(Type), OptSpec),
+  member(opt(ID), OptSpec).
 
 %{{{ FLAG DCG
 
@@ -837,16 +841,13 @@ name_char(C):- char_type(C, alpha).
 name_char( 0'- ). %}}}
 
 
-%{{{ PARSE OPTION
 parse_option(OptsSpec, Arg1, Arg2, opt(KID, Val)):-
-    (  flag_id_type(OptsSpec, Arg1, KID, Type)
-    -> parse_val(Arg1, Type, Arg2, Val)
-    ;  format(atom(Msg), '~s', [Arg1]),
-     opt_help(OptsSpec, Help),    %unknown flag: dump usage on stderr
-     nl(user_error),
-     write(user_error, Help),
-     throw(error(domain_error(flag_value, Msg),context(_, 'unknown flag')))
-    ).
+  flag_id_type(OptsSpec, Arg1, KID, Type), !,
+  parse_val(Arg1, Type, Arg2, Val).
+% Unknown flag: print informational.
+parse_option(_, Arg1, _, _):-
+  print_message(informational, unknown_flag(Arg1)),
+  fail.
 
 
 parse_val(Opt, Type, Cs, Val):-
@@ -953,13 +954,13 @@ refunctor_opt(F, opt(OptName, OptVal), Result):-
     Result =.. [F, OptName, OptVal]. %}}}
 
 
-%{{{ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ACCESSORS
-
 flags(OptSpec, Flags):- memberchk(shortflags(Flags), OptSpec).
-flags(OptSpec, Flags):- memberchk(longflags(Flags), OptSpec). %}}}
+flags(OptSpec, Flags):- memberchk(longflags(Flags), OptSpec).
 
-%{{{ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS
-is_list_of_atoms([]).
-is_list_of_atoms([X|Xs]):- atom(X), is_list_of_atoms(Xs).
-%}}}
+
+
+% Messages
+
+prolog:message(unknown_flag(Arg)) -->
+  ['We can accross an unknown flag: ~w',Arg].
 

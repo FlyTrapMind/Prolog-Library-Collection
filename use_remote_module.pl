@@ -174,7 +174,7 @@ guarantee_download(Url, Path):-
     ),
     Error,
     (
-      print_message(warning, http_error(Error)),
+      print_message(warning, http_error(Error,Url)),
       guarantee_download(Url, Path)
     )
   ).
@@ -195,7 +195,7 @@ http_process(Status, HttpStream, _, File):-
     close(FileStream)
   ).
 http_process(Status, _, Url, Path):-
-  print_message(warning, http_status(Status)),
+  print_message(warning, http_status(Status,Url)),
   guarantee_download(Url, Path).
 
 
@@ -391,13 +391,13 @@ indentation(M1) -->
   ['  '],
   indentation(M2).
 
-prolog:message(http_error(Error)) -->
+prolog:message(http_error(Error,Url)) -->
   {term_to_atom(Error, Atom)},
-  ['HTTP error: ',Atom,'. '],
+  ['HTTP error: ',Atom,' for URL ',Url],
   retrying.
 
-prolog:message(http_status(Status)) -->
-  ['HTTP status code: ',Status,'. '],
+prolog:message(http_status(Status,Url)) -->
+  ['HTTP status code: ',Status,' for URL ',Url],
   retrying.
 
 retrying -->
