@@ -16,7 +16,6 @@ DCGs for parsing copyright information.
 
 :- use_remote_module(dcg(dcg_ascii)).
 :- use_remote_module(dcg(dcg_generic)).
-:- use_module(library(dcg/basics)).
 :- use_remote_module(nlp(dcg_year)).
 
 

@@ -59,7 +59,6 @@ S --> [niet, in, druk, verschenen].
 :- use_remote_module(nlp(dcg_volume)).
 :- use_remote_module(nlp(dcg_year)).
 :- use_remote_module(logic(boolean_logic)).
-:- use_module(library(dcg/basics)).
 
 
 

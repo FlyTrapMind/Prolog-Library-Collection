@@ -16,7 +16,6 @@ DCGs for parsing/generating century information.
 @version 2013/05
 */
 
-:- use_module(library(dcg/basics)).
 :- use_remote_module(nlp(dcg_dict)).
 :- use_remote_module(nlp(dcg_ordinal)).
 
