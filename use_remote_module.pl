@@ -95,6 +95,18 @@ init_use_remote_module:-
   ).
 
 
+assert_index(Alias, Path):-
+  is_absolute_file_name(Path), !,
+  make_directory_path(Path),
+  add_index(Alias, Path).
+assert_index(Alias, Path):-
+  Path =.. [Parent,Child],
+  absolute_file_name(Parent, ParentDir, [file_type(directory)]),
+  directory_file_path(ParentDir, Child, ChildDir),
+  make_directory_path(ChildDir),
+  add_index(Alias, ChildDir).
+
+
 %! call_remote_goal(
 %!   +Type:oneof([github]),
 %!   +Options:list(nvpair),
