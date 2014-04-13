@@ -1,7 +1,17 @@
 /* Use remote modules
 
-Allows remote Prolog modules to be imported in the same way in which
-use_module/1 imports local Prolog modules.
+This file allows remote Prolog modules to be imported
+in the same way in which use_module/1 imports local Prolog modules.
+
+The following predicates are supported, displayed next to their local
+alternatives:
+
+| **Remote predicate**         | **Local predicate** |
+| ensure_remote_loaded/1       | ensure_loaded/1     |
+| use_remote_module/[1,2]      | use_module/1        |
+| use_remote_module/3          | use_module/2        |
+| reexport_remote_module/[1,2] | reexport/1          |
+| reexport_remote_module/3     | reexport/2          |
 
 @author Wouter Beek
 @tbd Allow the file argument to be instantiated to a **list** of files.
@@ -43,10 +53,18 @@ use_module/1 imports local Prolog modules.
 
 :- initialization(init_use_remote_module).
 
+
+%! init_use_remote_module is det.
+% Initialization consists of
+%   1. downloading the Prolog file for parsing command-line options,
+%   2. downloading the Prolog file of remote repositories.
+
 init_use_remote_module:-
   flag(number_of_downloaded_files, _, 1),
   source_file(init_use_remote_module, ThisFile),
   file_directory_name(ThisFile, ThisDir),
+  
+  % Load the code for command-line options processing.
   call_remote_goal(
     github,
     [repository('Prolog-Library-Collection'),user(wouterbeek)|O1],
@@ -67,6 +85,8 @@ init_use_remote_module:-
       []
     )
   ),
+  
+  % Load the list of remotes.
   call_remote_goal(
     github,
     [repository('Prolog-Library-Collection'),user(wouterbeek)|O1],
@@ -81,15 +101,30 @@ init_use_remote_module:-
 %!   +Base:atom,
 %!   :Goal
 %! ) is det.
+% Downloads a remote file and loads a goal from that file.
+%
+% ## Parameters
+%
+% @arg Type The type of remote repository used.
+%      Currently only Github is supported.
+% @arg Options A set of type-specific options, see below.
+% @arg Base The base name of the Prolog file that is to be loaded.
+% @arg Goal A custom goal that is executed
+%      based on a predicate definition int eh downloaded file.
+%
+% ## Options
+%
 % The following options are supported for `Type=github`:
 %    * `repository(+RepositoryName:atom)`
 %    * `user(+User:atom)`
 
-call_remote_goal(github, O1, Base, Goal):-
+call_remote_goal(github, O1, Base, Goal):- !,
   option(user(User), O1),
   option(repository(RepositoryName), O1),
+  
   absolute_file_name(Base, LocalPath, [access(write),file_type(prolog)]),
   file_name_extension(Base, pl, File),
+  
   print_message_start_end(
     informational,
     load(file(Base)),
@@ -99,10 +134,7 @@ call_remote_goal(github, O1, Base, Goal):-
         ensure_loaded(LocalPath)
       ),
       call(Goal),
-      (
-        unload_file(LocalPath),
-        delete_file(LocalPath)
-      )
+      unload_file(LocalPath)
     )
   ).
 
@@ -143,22 +175,31 @@ fetch_remote_file(RepositoryId, ModuleSpec, LocalPath):-
 %!   +LocalPath:atom
 %! ) is det.
 
+% The remote file was already fetched previously.
 fetch_remote_file(github, _, _, _, LocalPath):-
   exists_file(LocalPath), !.
+% The remote file has to be fethced.
 fetch_remote_file(github, User, RepositoryName, Components, LocalPath):-
+  % Construct the remote file URL.
   atomic_list_concat(
     ['',User,RepositoryName,raw,master|Components],
     '/',
     Path
   ),
   uri_components(Url, uri_components(https,'github.com',Path,_,_)),
+  
+  % Download the remote file to a local file.
   file_directory_name(LocalPath, LocalDirectory),
   make_directory_path(LocalDirectory),
   guarantee_download(Url, LocalPath),
+  
+  % DEB
   print_message(information, downloaded(Components)).
 
 
 %! guarantee_download(+Url:atom, +Path:atom) is det.
+% Make sure the given URL is downloaded to a local file.
+% We keep retrying this, until a local copy is obtained.
 
 guarantee_download(Url, Path):-
   catch(
@@ -186,6 +227,8 @@ guarantee_download(Url, Path):-
 %!   +Path:atom
 %! ) is det.
 
+% The HTTP status code indicates success,
+% so we make a local copy of the remote data.
 http_process(Status, HttpStream, _, File):-
   between(200, 299, Status), !,
   setup_call_cleanup(
@@ -193,6 +236,8 @@ http_process(Status, HttpStream, _, File):-
     copy_stream_data(HttpStream, FileStream),
     close(FileStream)
   ).
+% The HTTP status code indicates failure,
+% so we retry indifinately.
 http_process(Status, _, Url, Path):-
   print_message(warning, http_status(Status,Url)),
   guarantee_download(Url, Path).
@@ -205,6 +250,7 @@ http_process(Status, _, Url, Path):-
 %!   +ModuleSpec:compound,
 %!   +Import:list(compound)
 %! ) is det.
+% @see Remote variant of reexport/[1,2].
 
 reexport_remote_module(ModuleSpec):-
   default_repository(DefaultRepository),
@@ -231,10 +277,11 @@ reexport_remote_module(RepositoryId, CallingModule:CalledModuleSpec, Import):-
 %!   +LocalDirectory:atom,
 %!   +Options:list(nvpair)
 %! ) is det.
-% We lump generic options and repository-specific parameters together.
+% Registers a remote location that hosts Prolog files and modules.
 %
-% The following options are supported for all
-%    * `default(+DefaultRepository:boolean)`
+% We lump generic options and repository-specific parameters together.
+% The following options are supported for all types:
+%    * `default(+IsDefaultRepository:boolean)`
 %      Set this repository as the default.
 %      When multiple repositories are registered with this option,
 %      only the last one will be the default.
@@ -314,7 +361,9 @@ store_import_relation(CallingModule, CalledModuleSpec):-
 %!   :ModuleSpec:compound,
 %!   +ImportList:list
 %! ) is det.
-% Remote variant of use_module/1, loading a Prolog module from the Web.
+% Loading a Prolog module from the Web.
+%
+% @see Remote variant of use_module/[1,2].
 %
 % Example URL:
 % ~~~{.url}
