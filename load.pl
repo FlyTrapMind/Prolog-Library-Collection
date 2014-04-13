@@ -23,7 +23,12 @@ load_plc:-
 
   % Start logging.
   use_remote_module(generics(logging)),
-  start_log.
+  start_log,
+  
+  % Enumerate the external program support
+  % for the currently loaded modules.
+  use_remote_module(os(run_ext)),
+  list_external_programs.
 
 
 % If there is no outer project, then PGC is the project.
