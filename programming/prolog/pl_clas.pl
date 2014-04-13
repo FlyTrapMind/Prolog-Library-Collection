@@ -23,7 +23,6 @@ Support for command-line arguments given at Prolog startup.
 :- use_remote_module(generics(meta_ext)).
 :- use_remote_module(generics(typecheck)).
 :- use_remote_module(os(dir_infra)).
-:- use_remote_module(plc(optparse2)).
 
 :- multifile(prolog:message//1).
 
