@@ -98,13 +98,13 @@ init_use_remote_module:-
 assert_index(Alias, Path):-
   is_absolute_file_name(Path), !,
   make_directory_path(Path),
-  add_index(Alias, Path).
+  assert(user:file_search_path(Alias, Path)).
 assert_index(Alias, Path):-
   Path =.. [Parent,Child],
   absolute_file_name(Parent, ParentDir, [file_type(directory)]),
   directory_file_path(ParentDir, Child, ChildDir),
   make_directory_path(ChildDir),
-  add_index(Alias, ChildDir).
+  assert(user:file_search_path(Alias, ChildDir)).
 
 
 %! call_remote_goal(
