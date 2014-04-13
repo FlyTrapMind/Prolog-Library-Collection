@@ -141,9 +141,9 @@ arrow_right_head(both).
 arrow_right_head(right).
 
 
-atom(Atom) -->
+atom(Atom, Head, Tail):-
   atom(Atom), !,
-  basics:atom(Atom).
+  format(codes(Head, Tail), '~w', [Atom]).
 atom(Atom) -->
   codes(Codes),
   {atom_codes(Atom, Codes)}.
