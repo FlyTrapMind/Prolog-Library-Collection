@@ -64,7 +64,7 @@ assert_index(Alias, Path):-
   make_directory_path(Path),
   add_index(Alias, Path).
 assert_index(Alias, Path):-
-  Path =.. [Parent(Child)],
+  Path =.. [Parent,Child],
   absolute_file_name(Parent, ParentDir, [file_type(directory)]),
   directory_file_path(ParentDir, Child, ChildDir),
   make_directory_path(ChildDir),
