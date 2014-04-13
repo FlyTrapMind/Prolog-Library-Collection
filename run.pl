@@ -3,16 +3,6 @@
 
 :- use_module(library(filesex)).
 
-:- use_module(optparse2).
-
-:- meta_predicate(user:ensure_remote_loaded(:)).
-:- meta_predicate(user:reexport_remote_module(:)).
-:- meta_predicate(user:reexport_remote_module(+,:)).
-:- meta_predicate(user:reexport_remote_module(+,:,+)).
-:- meta_predicate(user:use_remote_module(:)).
-:- meta_predicate(user:use_remote_module(+,:)).
-:- meta_predicate(user:use_remote_module(+,:,+)).
-
 :- initialization(run_plc).
 
 run_plc:-
@@ -20,34 +10,10 @@ run_plc:-
   absolute_file_name('.', ProjectDir, [access(read),file_type(directory)]),
   assert(user:file_search_path(project, ProjectDir)),
   
-  % Load the index.
-  source_file(run_plc, ThisFile),
-  file_directory_name(ThisFile, ThisDir),
-  ensure_loaded(index),
-  index(ThisDir),
+  % Replace remote loads with local loads.
+  % Also loads the index.
+  ensure_loaded(prolog_local_init),
   
   % Load PLC.
   ensure_loaded(load).
-
-
-user:ensure_remote_loaded(CallingModule:CalledModuleSpec):-
-  CallingModule:ensure_loaded(CalledModuleSpec).
-
-user:reexport_remote_module(CallingModule:CalledModuleSpec):-
-  CallingModule:reexport(CalledModuleSpec).
-
-user:reexport_remote_module(_, ModuleSpec):-
-  user:reexport_remote_module(ModuleSpec).
-
-user:reexport_remote_module(_, CallingModule:CalledModuleSpec, Import):-
-  CallingModule:reexport(CalledModuleSpec, Import).
-
-user:use_remote_module(CallingModule:CalledModuleSpec):-
-  CallingModule:use_module(CalledModuleSpec).
-
-user:use_remote_module(_, ModuleSpec):-
-  user:use_remote_module(ModuleSpec).
-
-user:use_remote_module(_, CallingModule:CalledModuleSpec, ImportList):-
-  CallingModule:use_module(CalledModuleSpec, ImportList).
 
