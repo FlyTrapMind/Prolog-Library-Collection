@@ -3,14 +3,14 @@
 :- use_module(library(filesex)).
 
 index(PlcDir):-
-  add_index(plc,             PlcDir)),
-    add_index(ap,              plc(ap)),
-    add_index(datasets,        plc(datasets)),
-      add_index(dbpedia,         datasets(dbpedia)),
-    add_index(dcg,             plc(dcg)),
-      add_index(flp,             dcg(flp)),
-      add_index(nlp,             dcg(nlp)),
-    add_index(generics,        plc(generics)),
+  assert_index(plc,             PlcDir),
+    assert_index(ap,              plc(ap)),
+    assert_index(datasets,        plc(datasets)),
+      assert_index(dbpedia,         datasets(dbpedia)),
+    assert_index(dcg,             plc(dcg)),
+      assert_index(flp,             dcg(flp)),
+      assert_index(nlp,             dcg(nlp)),
+    assert_index(generics,        plc(generics)),
     add_index(graph_theory,    plc(graph_theory)),
       add_index(dgraph,          graph_theory(dgraph)),
       add_index(rdf_graph,       graph_theory(rdf_graph)),
