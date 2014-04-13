@@ -10,9 +10,8 @@ run_plc:-
   absolute_file_name('.', ProjectDir, [access(read),file_type(directory)]),
   assert(user:file_search_path(project, ProjectDir)),
   
-  % Replace remote loads with local loads.
-  % Also loads the index.
-  ensure_loaded(prolog_local_init),
+  ensure_loaded(prolog_repository),
+  prolog_repository(local, ProjectDir),
   
   % Load PLC.
   ensure_loaded(load).

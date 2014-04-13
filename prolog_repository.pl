@@ -5,11 +5,24 @@
 % over unreliable internet connections,
 % since it simply retries until it succeeds.
 
+:- use_module(library(filesex)).
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
+:- use_module(library(uri)).
 
-:- multifile(prolog:message//1).
 
+
+assert_index(Alias, Path):-
+  catch(is_absolute_file_name(Path), _, fail), !,
+  make_directory_path(Path),
+  assert(user:file_search_path(Alias, Path)).
+assert_index(Alias, Path):-
+  Path =.. [Parent,Child],
+  Spec =.. [Parent,'.'],
+  absolute_file_name(Spec, ParentDir, [file_type(directory)]),
+  directory_file_path(ParentDir, Child, ChildDir),
+  make_directory_path(ChildDir),
+  assert(user:file_search_path(Alias, ChildDir)).
 
 
 base_url(Url):-
@@ -18,7 +31,9 @@ base_url(Url):-
     uri_components(
       https,
       'github.com',
-      'wouterbeek/Prolog-Communities/raw/master'
+      '/wouterbeek/Prolog-Communities/raw/master/',
+      _,
+      _
     )
   ).
 
@@ -26,41 +41,26 @@ base_url(Url):-
 cert_verify(_, _, _, _, _):- !.
 
 
-%! guarantee_download(+Url:atom, +Path:atom) is det.
-% Make sure the given URL is downloaded to a local file.
-% We keep retrying this, until a local copy is obtained.
-
-% The remote file was already fetched previously.
-guarantee_download(_, Path):-
-  exists_file(Path), !.
+guarantee_download(Url, Path):-
+  exists_file(Path), !,
+  delete_file(Path),
+  guarantee_download(Url, Path).
 guarantee_download(Url, Path):-
   catch(
     setup_call_cleanup(
       http_open(
         Url,
         HttpStream,
-        [cert_verify_hook(cert_verify),status_code(Status),timeout(1)]
+        [cert_verify_hook(cert_verify),status_code(Status)]
       ),
       http_process(Status, HttpStream, Url, Path),
       close(HttpStream)
     ),
-    Error,
-    (
-      print_message(warning, http_error(Error,Url)),
-      guarantee_download(Url, Path)
-    )
+    _,
+    guarantee_download(Url, Path)
   ).
 
 
-%! http_process(
-%!   +Status:between(100,999),
-%!   +HttpStream:stream,
-%!   +Url:atom,
-%!   +Path:atom
-%! ) is det.
-
-% The HTTP status code indicates success,
-% so we make a local copy of the remote data.
 http_process(Status, HttpStream, _, File):-
   between(200, 299, Status), !,
   setup_call_cleanup(
@@ -68,21 +68,20 @@ http_process(Status, HttpStream, _, File):-
     copy_stream_data(HttpStream, FileStream),
     close(FileStream)
   ).
-% The HTTP status code indicates failure,
-% so we retry indifinately.
-http_process(Status, _, Url, Path):-
-  print_message(warning, http_status(Status,Url)),
+http_process(_, _, Url, Path):-
   guarantee_download(Url, Path).
 
 
 load_remote_file(Base):-
-  base_url(Url),
+  base_url(Url1),
+  file_name_extension(Base, pl, Name),
+  atom_concat(Url1, Name, Url2),
   absolute_file_name(project(Base), File, [access(write),file_type(prolog)]),
-  guarantee_download(Url, File),
+  guarantee_download(Url2, File),
   ensure_loaded(File).
 
 
-prolog_repository(Mode):-
+prolog_repository(Mode, Dir):-
   load_remote_file(optparse2),
   (
     Mode == remote
@@ -91,22 +90,7 @@ prolog_repository(Mode):-
   ;
     Mode == local
   ->
-    load_remote_file(prolog_repository_local)
+    load_remote_file(prolog_repository_local),
+    prolog_local_init(Dir)
   ).
-
-
-
-% MESSAGES
-
-prolog:message(http_error(Error,Url)) -->
-  {term_to_atom(Error, Atom)},
-  ['HTTP error: ',Atom,' for URL ',Url,' '],
-  retrying.
-
-prolog:message(http_status(Status,Url)) -->
-  ['HTTP status code: ',Status,' for URL ',Url,' '],
-  retrying.
-
-retrying -->
-  ['Retrying...'].
 
