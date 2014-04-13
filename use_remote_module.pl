@@ -96,7 +96,7 @@ init_use_remote_module:-
 
 
 assert_index(Alias, Path):-
-  is_absolute_file_name(Path), !,
+  catch(is_absolute_file_name(Path), _, fail), !,
   make_directory_path(Path),
   assert(user:file_search_path(Alias, Path)).
 assert_index(Alias, Path):-
