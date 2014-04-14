@@ -12,20 +12,19 @@ user:prolog_file_type(txt,  'text/plain'   ).
 
 load_plc:-
   set_project,
-  
+
   % Check SWI-Prolog version.
   use_remote_module(pl(pl_version)),
   check_pl_version,
 
   % Set data subdirectory.
   use_remote_module(pl(pl_clas)),
-gtrace,
   process_options,
 
   % Start logging.
   use_remote_module(generics(logging)),
   start_log,
-  
+
   % Enumerate the external program support
   % for the currently loaded modules.
   use_remote_module(os(run_ext)),
