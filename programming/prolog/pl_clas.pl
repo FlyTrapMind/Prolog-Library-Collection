@@ -164,7 +164,7 @@ process_options:-
   read_options(O1), !,
   cmd_data_option(O1),
   select_option(data(_), O1, O2),
-  maplist(user:process_option, O3).
+  maplist(user:process_option, O2).
 
 
 read_options(O1):-
