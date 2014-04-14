@@ -26,7 +26,6 @@ Support for command-line arguments given at Prolog startup.
 
 :- multifile(prolog:message//1).
 
-
 %! option_specification(?OptionSpecification:list(compound)) is nondet.
 % Command line options registration.
 %
@@ -38,6 +37,9 @@ Support for command-line arguments given at Prolog startup.
 
 :- discontiguous(user:option_specification/1).
 :- multifile(user:option_specification/1).
+
+:- discontiguous(user:process_option/1).
+:- multifile(user:process_option/1).
 
 
 
@@ -76,6 +78,7 @@ prolog:message(incorrect_path(Dir)) -->
   ['The given value could not be resolved to a directory: ',Dir,'.~n'].
 
 
+
 % Option:debug.
 
 user:option_specification([
@@ -87,11 +90,10 @@ user:option_specification([
   type(boolean)
 ]).
 
-cmd_debug_option(O1):-
-  option(debug(true), O1), !,
+user:process_option(debug(true)):- !,
   assert(user:debug_mode),
   ensure_remote_loaded(pl(pl_debug)).
-cmd_debug_option(_).
+user:process_option(debug(false)).
 
 
 
@@ -106,8 +108,7 @@ user:option_specification([
   type(boolean)
 ]).
 
-cmd_help(O1):-
-  option(help(true), O1), !,
+user:process_option(help(true)):- !,
   findall(
     OptSpec,
     user:option_specification(OptSpec),
@@ -116,10 +117,11 @@ cmd_help(O1):-
   opt_help(OptSpecs, Help),
   print_message(information, help(Help)),
   halt.
-cmd_help(_).
+user:process_option(help(false)).
 
 prolog:message(help(Help)) -->
   [Help].
+
 
 
 % Option: version.
@@ -133,8 +135,7 @@ user:option_specification([
   type(boolean)
 ]).
 
-cmd_version(O1):-
-  option(version(true), O1), !,
+user:process_option(version(true)):- !,
   format(
     user_output,
     '  PraSem: Pragmatic Semantics for the Web of Data\n',
@@ -151,7 +152,7 @@ cmd_version(O1):-
     format(user_output, '    * ~w: ~w\n', [Name,Description])
   ),
   halt.
-cmd_version(_).
+user:process_option(version(false)).
 
 
 
@@ -162,17 +163,12 @@ cmd_version(_).
 process_options:-
   read_options(O1), !,
   
-  % First set the data directory,
-  % since other command-line arguments may depend on it being set,
-  % e.g. `project=NAME`.
   cmd_data_option(O1),
+  select_option(O1, data(_), O2),
   
-  % Then set the debug mode and load the debug tools.
-  cmd_debug_option(O1),
-  
-  cmd_help(O1),
-  
-  cmd_version(O1).
+  exclude(unset_option, O2, O3),
+  %%%order_options(O3, O4),
+  maplist(user:process_option, O3).
 
 
 read_options(O1):-
@@ -182,4 +178,9 @@ read_options(O1):-
     OptSpecs
   ),
   opt_arguments(OptSpecs, O1, _, []).
+
+
+unset_option(Option):-
+  Option =.. [Name,Value],
+  var(Value).
 
