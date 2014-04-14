@@ -162,12 +162,8 @@ user:process_option(version(false)).
 
 process_options:-
   read_options(O1), !,
-  
   cmd_data_option(O1),
-  select_option(O1, data(_), O2),
-  
-  exclude(unset_option, O2, O3),
-  %%%order_options(O3, O4),
+  select_option(data(_), O1, O2),
   maplist(user:process_option, O3).
 
 
@@ -178,9 +174,4 @@ read_options(O1):-
     OptSpecs
   ),
   opt_arguments(OptSpecs, O1, _, []).
-
-
-unset_option(Option):-
-  Option =.. [Name,Value],
-  var(Value).
 

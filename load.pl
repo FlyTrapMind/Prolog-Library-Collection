@@ -19,6 +19,7 @@ load_plc:-
 
   % Set data subdirectory.
   use_remote_module(pl(pl_clas)),
+gtrace,
   process_options,
 
   % Start logging.
