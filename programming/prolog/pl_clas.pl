@@ -2,6 +2,7 @@
   pl_clas,
   [
     process_options/0,
+    process_options/1, % +Options:list(nvpair)
     read_options/1 % -Options:list(nvpair)
   ]
 ).
@@ -56,15 +57,12 @@ user:option_specification([
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
   directory_file_path(ProjectDir, data, DefaultDataDir).
 
-cmd_data_option(_):-
+% No need to set the data directory.
+user:process_option(data(_)):-
   user:file_search_path(data, _), !.
-cmd_data_option(O1):-
-  option(data(Dir), O1),
-  nonvar(Dir),
-  make_directory_path(Dir), !,
-  assert(user:file_search_path(data, Dir)).
 % Use the default data directory.
-cmd_data_option(_):-
+user:process_option(data(Data)):-
+  var(Data), !,
   absolute_file_name(
     project('.'),
     Dir1,
@@ -73,6 +71,9 @@ cmd_data_option(_):-
   directory_file_path(Dir1, data, Dir2),
   make_directory_path(Dir2),
   assert(user:file_search_path(data, Dir2)).
+user:process_option(data(Dir)):-
+  make_directory_path(Dir),
+  assert(user:file_search_path(data, Dir)).
 
 prolog:message(incorrect_path(Dir)) -->
   ['The given value could not be resolved to a directory: ',Dir,'.~n'].
@@ -162,9 +163,14 @@ user:process_option(version(false)).
 
 process_options:-
   read_options(O1), !,
-  cmd_data_option(O1),
-  select_option(data(_), O1, O2),
-  maplist(user:process_option, O2).
+  process_options(O1).
+
+process_options(O1):-
+  select_option(data(Data), O1, O2), !,
+  user:process_option(data(Data)),
+  process_options(O2).
+process_options(O1):-
+  maplist(user:process_option, O1).
 
 
 read_options(O1):-
