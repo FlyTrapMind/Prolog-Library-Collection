@@ -1,8 +1,6 @@
 % Index for the Prolog Library Collection repository.
 
-:- use_module(library(filesex)).
-
-index(PlcDir):-
+assert_index(PlcDir):-
   assert_index(plc,             PlcDir),
     assert_index(ap,              plc(ap)),
     assert_index(datasets,        plc(datasets)),
