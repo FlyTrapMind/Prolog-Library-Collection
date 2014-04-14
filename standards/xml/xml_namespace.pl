@@ -156,7 +156,7 @@ xml_register_namespace(Namespace, _):-
     )
   ).
 xml_register_namespace(Namespace, URI1):-
-  must_be(iri, URI1),
+  %%%%must_be(iri, URI1),
   (
     % The XML namespace is already registered, so do nothing.
     rdf_current_prefix(Namespace, URI1)
