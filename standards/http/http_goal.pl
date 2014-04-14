@@ -24,6 +24,8 @@ until the goal succeeds or fails.
 :- use_remote_module(generics(atom_ext)).
 :- use_remote_module(http(rfc2616_status_line)).
 :- use_module(library(debug)).
+:- use_module(library(http/http_header)). % For option `post(...)`.
+:- use_module(library(http/http_json)). % For option `post(json([...]))`.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
 :- use_module(library(option)).
