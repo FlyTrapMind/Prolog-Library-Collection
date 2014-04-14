@@ -18,11 +18,12 @@ Predicates for generating a Web article.
 @version 2013/11, 2014/01-2014/03
 */
 
-:- use_remote_module(dcg(dcg_generic)).
-:- use_remote_module(generics(atom_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(semweb/rdf_db)).
-:- use_remote_module(plp(dcg_c)).
+
+:- use_remote_module(dcg(dcg_generic)).
+:- use_remote_module(generics(atom_ext)).
+:- use_remote_module(flp(dcg_c)).
 :- use_remote_module(rdf_term(rdf_datatype)).
 :- use_remote_module(rdf_term(rdf_string)).
 :- use_remote_module(xml(xml_namespace)).
