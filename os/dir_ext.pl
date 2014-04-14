@@ -50,11 +50,11 @@ Extensions for handling directories.
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 
-:- use_remote_module(generics(atom_ext)).
-:- use_remote_module(generics(db_ext)).
-:- use_remote_module(generics(option_ext)).
-:- use_remote_module(os(file_ext)).
-:- use_remote_module(os(safe_file)).
+:- use_module(generics(atom_ext)).
+:- use_module(generics(db_ext)).
+:- use_module(generics(option_ext)).
+:- use_module(os(file_ext)).
+:- use_module(os(safe_file)).
 
 :- meta_predicate(run_in_working_directory(0,+)).
 

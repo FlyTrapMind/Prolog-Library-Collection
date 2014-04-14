@@ -6,13 +6,13 @@
          % +AP_Stages:list(compound)
   ]
 ).
-:- reexport_remote_module(ap(ap_archive_ext)).
-:- reexport_remote_module(ap(ap_download)).
-:- reexport_remote_module(ap(ap_file_mime)).
-:- reexport_remote_module(ap(ap_file_size)).
-:- reexport_remote_module(ap(ap_rdf_serial)).
-:- reexport_remote_module(ap(ap_void_fetch)).
-:- reexport_remote_module(ap(ap_void_stat)).
+:- reexport(ap(ap_archive_ext)).
+:- reexport(ap(ap_download)).
+:- reexport(ap(ap_file_mime)).
+:- reexport(ap(ap_file_size)).
+:- reexport(ap(ap_rdf_serial)).
+:- reexport(ap(ap_void_fetch)).
+:- reexport(ap(ap_void_stat)).
 
 /** <module> Auto-process
 
@@ -30,19 +30,19 @@ Support for running automated processing.
 @version 2013/06, 2013/10-2013/11, 2014/01-2014/03
 */
 
-:- use_remote_module(ap(ap_db)).
-:- use_remote_module(ap(ap_dir)).
-:- use_remote_module(ap(ap_stage)).
+:- use_module(ap(ap_db)).
+:- use_module(ap(ap_dir)).
+:- use_module(ap(ap_stage)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(process)).
 :- use_module(library(semweb/rdfs)).
-:- use_remote_module(os(datetime_ext)).
-:- use_remote_module(os(dir_ext)).
-:- use_remote_module(rdf(rdf_container)).
-:- use_remote_module(rdf_file(rdf_serial)).
-:- use_remote_module(rdf_term(rdf_datatype)).
-:- use_remote_module(rdf_term(rdf_string)).
+:- use_module(os(datetime_ext)).
+:- use_module(os(dir_ext)).
+:- use_module(rdf(rdf_container)).
+:- use_module(rdf_file(rdf_serial)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 
 
 

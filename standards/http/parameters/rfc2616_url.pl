@@ -91,7 +91,7 @@ The following three URIs are equivalent:
 @version 2013/07, 2013/12
 */
 
-:- use_remote_module(
+:- use_module(
   plc,
   uri(rfc2396_dcg),
   [

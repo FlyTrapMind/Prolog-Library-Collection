@@ -20,10 +20,10 @@ Support for command-line arguments given at Prolog startup.
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
-:- use_remote_module(generics(db_ext)).
-:- use_remote_module(generics(meta_ext)).
-:- use_remote_module(generics(typecheck)).
-:- use_remote_module(os(dir_infra)).
+:- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
+:- use_module(generics(typecheck)).
+:- use_module(os(dir_infra)).
 
 :- multifile(prolog:message//1).
 
@@ -93,7 +93,7 @@ user:option_specification([
 
 user:process_option(debug(true)):- !,
   assert(user:debug_mode),
-  ensure_remote_loaded(pl(pl_debug)).
+  ensure_loaded(pl(pl_debug)).
 user:process_option(debug(false)).
 
 

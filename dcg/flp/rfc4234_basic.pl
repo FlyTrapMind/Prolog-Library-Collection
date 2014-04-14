@@ -15,7 +15,7 @@
     'WSP'//1 % ?Code:code
   ]
 ).
-:- reexport_remote_module(
+:- reexport(
   plc,
   http(rfc2616_basic),
   [
@@ -49,8 +49,8 @@ DCGs for the basic rules defined in RFC 4234,
 @version 2013/07-2013/08, 2013/12
 */
 
-:- use_remote_module(dcg(dcg_ascii)).
-:- use_remote_module(dcg(dcg_cardinal)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 
 
 

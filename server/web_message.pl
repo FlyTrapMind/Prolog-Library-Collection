@@ -21,14 +21,14 @@ Acts on messages printed by print_message/2.
 :- use_module(library(http/http_path)).
 :- use_module(library(settings)).
 
-:- use_remote_module(dcg(dcg_content)).
-:- use_remote_module(generics(logging)).
-:- use_remote_module(html(html_table)).
-:- use_remote_module(math(math_ext)).
-:- use_remote_module(os(ansi_ext)).
-:- use_remote_module(server(web_console)).
-:- use_remote_module(server(web_error)).
-:- use_remote_module(server(web_modules)).
+:- use_module(dcg(dcg_content)).
+:- use_module(generics(logging)).
+:- use_module(html(html_table)).
+:- use_module(math(math_ext)).
+:- use_module(os(ansi_ext)).
+:- use_module(server(web_console)).
+:- use_module(server(web_error)).
+:- use_module(server(web_modules)).
 
 :- dynamic(current_log_row/1).
 

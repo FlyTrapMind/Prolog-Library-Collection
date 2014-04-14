@@ -14,20 +14,20 @@ load_plc:-
   set_project,
 
   % Check SWI-Prolog version.
-  use_remote_module(pl(pl_version)),
+  use_module(pl(pl_version)),
   check_pl_version,
 
   % Set data subdirectory.
-  use_remote_module(pl(pl_clas)),
+  use_module(pl(pl_clas)),
   process_options,
 
   % Start logging.
-  use_remote_module(generics(logging)),
+  use_module(generics(logging)),
   start_log,
 
   % Enumerate the external program support
   % for the currently loaded modules.
-  use_remote_module(os(run_ext)),
+  use_module(os(run_ext)),
   list_external_programs.
 
 

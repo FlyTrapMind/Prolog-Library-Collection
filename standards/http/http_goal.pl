@@ -21,15 +21,15 @@ until the goal succeeds or fails.
 @version 2013/11, 2014/01, 2014/04
 */
 
-:- use_remote_module(generics(atom_ext)).
-:- use_remote_module(http(rfc2616_status_line)).
+:- use_module(generics(atom_ext)).
+:- use_module(http(rfc2616_status_line)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_header)). % For option `post(...)`.
 :- use_module(library(http/http_json)). % For option `post(json([...]))`.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
 :- use_module(library(option)).
-:- use_remote_module(math(math_ext)).
+:- use_module(math(math_ext)).
 
 :- meta_predicate(http_goal(+,+,1)).
 :- meta_predicate(http_goal(+,+,1,+)).

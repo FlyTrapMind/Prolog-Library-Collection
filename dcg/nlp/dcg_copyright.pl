@@ -14,9 +14,9 @@ DCGs for parsing copyright information.
 @version 2013/06
 */
 
-:- use_remote_module(dcg(dcg_ascii)).
-:- use_remote_module(dcg(dcg_generic)).
-:- use_remote_module(nlp(dcg_year)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(nlp(dcg_year)).
 
 
 
