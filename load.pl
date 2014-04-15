@@ -13,12 +13,12 @@ user:prolog_file_type(txt,  'text/plain'   ).
 
 load_plc:-
   % Requirement!
-  user:file_search_path(plc, _),
-  
+  user:file_search_path(plc, _), !,
+
   % Load the PLC index as file search path statements.
   set_project,
-  ensure_loaded(index),
-  
+  ensure_loaded(plc(index)),
+
   % Check SWI-Prolog version.
   use_module(pl(pl_version)),
   check_pl_version,
@@ -35,6 +35,11 @@ load_plc:-
   % for the currently loaded modules.
   use_module(os(run_ext)),
   list_external_programs.
+load_plc:-
+  print_message(warning, required_file_search_path(plc)).
+
+user:message(required_file_search_path(Alias)) -->
+  ['File search path ',Alias,' must be set.'].
 
 
 % If there is no outer project, then PLC is the project.
@@ -43,4 +48,5 @@ set_project:-
   current_predicate(project/2), !.
 set_project:-
   assert(user:project('PLC', 'Prolog Library Collection')).
+
 

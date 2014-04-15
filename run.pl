@@ -7,6 +7,6 @@ run_plc:-
   absolute_file_name('.', ProjectDir, [access(read),file_type(directory)]),
   assert(user:file_search_path(project, ProjectDir)),
   assert(user:file_search_path(plc, ProjectDir)),
-  ensure_loaded(index),
+  ensure_loaded(plc_index),
   ensure_loaded(load).
 
