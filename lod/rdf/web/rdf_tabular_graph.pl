@@ -18,11 +18,19 @@ RDF graphs.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(semweb/rdf_db)).
+
+:- use_module(pl_web(html_pl_term)).
+:- use_module(rdf_web(rdf_tabular)).
 :- use_module(rdf_web(rdf_tabular_class)).
 :- use_module(rdf_web(rdf_tabular_datatype)).
 :- use_module(rdf_web(rdf_tabular_property)).
 :- use_module(rdf_web(rdf_term_html)).
 
+
+
+rdf_is_small_graph(Graph):-
+  rdf_statistics(triples_by_graph(Graph,Triples)),
+  Triples =< 100.
 
 
 %! rdf_tabular_graph(+RdfGraph:atom)// is det.
@@ -36,7 +44,15 @@ RDF graphs.
 rdf_tabular_graph(Graph) -->
   rdf_tabular_classes(Graph),
   rdf_tabular_properties(Graph),
-  rdf_tabular_datatypes(Graph).
+  rdf_tabular_datatypes(Graph),
+  rdf_tabular_triples(Graph).
+
+rdf_tabular_triples(Graph) -->
+  {rdf_is_small_graph(Graph)}, !,
+  rdf_tabular_triples(_, _, _, Graph).
+rdf_tabular_triples(Graph) -->
+  {rdf_statistics(triples_by_graph(Graph,Triples))},
+  html(p(['The graph contains ',\html_pl_term(Triples),' unique triples.'])).
 
 
 %! rdf_tabular_graphs// is det.

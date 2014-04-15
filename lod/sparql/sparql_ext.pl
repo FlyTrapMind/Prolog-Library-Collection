@@ -134,7 +134,7 @@ load_debug:-
 %! ) is det.
 
 sparql_query(Remote, Query, VarNames, Results):-
-  sparql_query(Remote, Query, VarNames, Results, 0).
+  sparql_query(Remote, Query, VarNames, Results, 1).
 
 %! sparql_query(
 %!   +Remote:atom,

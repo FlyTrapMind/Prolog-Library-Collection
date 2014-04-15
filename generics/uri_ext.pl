@@ -205,7 +205,7 @@ uri_component(Uri, Field, Data):-
 uri_path(PathComponents1, Path):-
   % Exclude the variable components.
   exclude(var, PathComponents1, PathComponents2),
-  
+
   % A URI path is similar enough to a POSIX path.
   directory_subdirectories(Path, PathComponents2).
 
@@ -232,10 +232,10 @@ url_flat_directory(ParentDir, Url, UrlDir):-
   % A unique name for each URL that does not contain characters
   % that do not comply with POSIX file names.
   rdf_atom_md5(Url, 1, Hash),
-  
+
   % Make it a subdirectory of the given parent directory
   directory_file_path(ParentDir, Hash, UrlDir),
-  
+
   % Make sure the directory exists.
   make_directory_path(UrlDir).
 
@@ -263,8 +263,18 @@ url_nested_file(ParentDir1, Url, File):-
   uri_component(Url, scheme, Scheme),
   uri_component(Url, authority, Authority),
   uri_component(Url, path, Path),
-  file_directory_name(Path, PathDir),
-  file_base_name(Path, PathBase),
+  % Be very careful here! According to the Prolog library
+  % a file that ends in `.../a/b/` has `.../a` as its directory.
+  % We explicitly circumvent such cases here.
+  (
+    sub_atom(Url, _, 1, 0, '/')
+  ->
+    PathDir = Path,
+    PathBase = directory_dummy
+  ;
+    file_directory_name(Path, PathDir),
+    file_base_name(Path, PathBase)
+  ),
   directory_subdirectories(PathDir, PathDirComponents),
   directory_subdirectories(UrlPath, [Scheme,Authority|PathDirComponents]),
   absolute_file_name(ParentDir1, ParentDir2, [file_type(directory)]),

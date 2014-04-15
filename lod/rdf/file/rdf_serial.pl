@@ -95,6 +95,8 @@ since most datasets are published in a non-standard way.
 % @arg Options A list of name-value pairs.
 % @arg Graph The atomic name of an RDF graph.
 % @arg Input Either a file, a list of files, or a directory.
+%
+% @throws =|mime_error(+File:atom, +Type:oneof(['RDF']), MIME:atom)|=
 
 % Download the file hosted at the given URL locally.
 rdf_load(O1, Graph, Url):-
@@ -136,7 +138,11 @@ rdf_load(O1, Graph, File):-
   ensure_graph(File, Graph),
 
   % Retrieve the RDF format.
-  ensure_format(O1, File, Format),
+  catch(
+    ensure_format(O1, File, Format),
+    E,
+    print_message(error, E)
+  ),
 
   % XML namespace prefixes must be added explicitly.
   merge_options(
@@ -173,6 +179,7 @@ rdf_load(O1, Graph, Graph):-
 
 
 %! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
+% @throws =|mime_error(+File:atom, +Type:oneof(['RDF']), MIME:atom)|=
 
 % Option: format
 ensure_format(O1, _, Format):-
@@ -227,6 +234,8 @@ ensure_graph(File, Graph):-
 %
 % @arg Options A list of name-value pairs.
 % @arg File An atomic absolute file name.
+%
+% @throws =|mime_error(+File:atom, +Type:oneof(['RDF']), MIME:atom)|=
 
 % Derive the file name from the graph.
 % This only works if the graph was loaded form file.
@@ -246,7 +255,11 @@ rdf_save(O1, Graph, File):-
   access_file(File, write),
 
   % Derive the serialization format.
-  ensure_format(O1, File, Format),
+  catch(
+    ensure_format(O1, File, Format),
+    E,
+    print_message(error, E)
+  ),
 
   (
     % We do not need to save the graph if
