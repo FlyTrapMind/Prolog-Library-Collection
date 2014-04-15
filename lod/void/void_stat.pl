@@ -56,8 +56,8 @@ void_update(VoidGraph):-
 
 %! void_update_dataset(+VoidGraph:atom, +VoidDataset:iri) is det.
 
-void_update_dataset(_, VoidDataset):-
-  rdf_graph_property(VoidDataset, modified(false)), !.
+%void_update_dataset(_, VoidDataset):-
+%  rdf_graph_property(VoidDataset, modified(false)), !.
 void_update_dataset(VoidGraph, VoidDataset):-
   % dc:modified.
   rdf_update_today(VoidDataset, dc:modified, VoidGraph),

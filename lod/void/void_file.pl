@@ -3,9 +3,13 @@
   [
     void_load/2, % +File:atom
                  % :Options:list(nvpair)
-    void_save/3 % +Options:list(nvpair)
-                % +VoidGraph:atom
-                % ?File:atom
+    void_save/3, % +Options:list(nvpair)
+                 % +VoidGraph:atom
+                 % ?File:atom
+    void_save_stats/4 % +Options:list(nvpair)
+                      % +RdfGraph:atom
+                      % +VoidGraph:atom
+                      % ?VoidFile:atom
   ]
 ).
 
@@ -31,7 +35,7 @@ VoiD covers four areas of metadata:
 
 @author WouterBeek
 @compat http://www.w3.org/TR/void/
-@version 2013/03-2013/05, 2013/09-2013/11, 2014/03
+@version 2013/03-2013/05, 2013/09-2013/11, 2014/03-2014/04
 */
 
 :- use_module(generics(thread_ext)).
@@ -108,4 +112,16 @@ void_save(O1, VoidGraph, File):-
 void_save_dataset(O1, VoidGraph, VoidDataset):-
   void_dataset_location(VoidGraph, VoidDataset, DatadumpFile),
   rdf_save(O1, VoidDataset, DatadumpFile).
+
+
+%! void_save_stats(
+%!   +Options:list(nvpair)
+%!   +RdfGraph:atom
+%!   +VoidGraph:atom
+%!   ?VoidFile:atom
+%! ) is det.
+
+void_save_stats(O1, RdfG, VoidG, VoidFile):-
+  void_update_dataset(VoidG, RdfG),
+  rdf_save(O1, VoidG, VoidFile).
 

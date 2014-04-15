@@ -65,6 +65,8 @@ cert_verify(_, _, _, _, _):- !.
 %     and no automated retrying occurs.
 %     Default: `false`.
 % Other options are given to http_open/3.
+%
+% @tbd Unify option `never_give_up/1` with argument `Attempts`.
 
 http_goal(URL, O1, Goal):-
   option(nocatch(true), O1, false), !,

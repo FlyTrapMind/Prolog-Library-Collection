@@ -166,7 +166,7 @@ extract_file(File):-
   file_directory_name(File, Dir),
   catch(
     (
-      archive_extract(File, Dir, []),
+      archive_extract(File, Dir, [format(all),format(raw)]),
       delete_file(File)
     ),
     error(archive_error(25, _UnrecognizedArchiveFormat), _),
