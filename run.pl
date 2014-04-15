@@ -4,13 +4,9 @@
 :- initialization(run_plc).
 
 run_plc:-
-  % Assert project file search path.
   absolute_file_name('.', ProjectDir, [access(read),file_type(directory)]),
   assert(user:file_search_path(project, ProjectDir)),
-
-  ensure_loaded(prolog_repository),
-  prolog_repository(local, ProjectDir),
-
-  % Load PLC.
+  assert(user:file_search_path(plc, ProjectDir)),
+  ensure_loaded(index),
   ensure_loaded(load).
 

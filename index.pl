@@ -1,58 +1,57 @@
 % Index for the Prolog Library Collection repository.
+% File search path `plc` must be set for this.
 
-assert_index(PlcDir):-
-  assert_index(plc,             PlcDir),
-    assert_index(ap,              plc(ap)),
-    assert_index(datasets,        plc(datasets)),
-      assert_index(dbpedia,         datasets(dbpedia)),
-    assert_index(dcg,             plc(dcg)),
-      assert_index(flp,             dcg(flp)),
-      assert_index(nlp,             dcg(nlp)),
-    assert_index(generics,        plc(generics)),
-    assert_index(graph_theory,    plc(graph_theory)),
-      assert_index(dgraph,          graph_theory(dgraph)),
-      assert_index(rdf_graph,       graph_theory(rdf_graph)),
-      assert_index(ugraph,          graph_theory(ugraph)),
-    assert_index(ilp,             plc(ilp)),
-    assert_index(lod,           plc(lod)),
-      assert_index(owl,             lod(owl )),
-      assert_index(rdf,             lod(rdf)),
-        assert_index(rdf_conv,        rdf(conversion)),
-        assert_index(rdf_file,        rdf(file)),
-        assert_index(rdf_man,         rdf(management)),
-        assert_index(rdf_mt,          rdf(rdf_mt)),
-        assert_index(rdf_reasoning,   rdf(reasoning)),
-        assert_index(rdf_term,        rdf(term)),
-        assert_index(rdf_web,         rdf(web)),
-      assert_index(rdfs,            lod(rdfs)),
-      assert_index(skos,            lod(skos)),
-      assert_index(sparql,        lod(sparql)),
-      assert_index(void,            lod(void)),
-    assert_index(logic,           plc(logic)),
-    assert_index(math,            plc(math)),
-    assert_index(os,              plc(os)),
-    assert_index(programming,     plc(programming)),
-      assert_index(pl,              programming(prolog)),
-        assert_index(pl_web,          pl(web)),
-    assert_index(ps,              plc(ps)),
-      assert_index(tms,             ps(tms)),
-        assert_index(atms,            tms(atms)),
-        assert_index(doyle,           tms(doyle)),
-    assert_index(server,          plc(server)),
-    assert_index(standards,       plc(standards)),
-      assert_index(datetime,        standards(date_time)),
-      assert_index(geo,             standards(geography)),
-      assert_index(gv,              standards(graphviz)),
-      assert_index(html,            standards(html)),
-      assert_index(http,            standards(http)),
-        assert_index(http_headers,    http(headers)),
-        assert_index(http_parameters, http(parameters)),
-      assert_index(lang,            standards(language)),
-      assert_index(latex,           standards(latex)),
-      assert_index(svg,             standards(svg)),
-      assert_index(uri,             standards(uri)),
-      assert_index(xml,             standards(xml)),
-        assert_index(xsd,             xml(xsd)),
-    assert_index(web,             plc(web)),
-      assert_index(crawler,         web(crawler)).
+user:file_search_path(ap,              plc(ap)).
+user:file_search_path(datasets,        plc(datasets)).
+user:file_search_path(dbpedia,         datasets(dbpedia)).
+user:file_search_path(dcg,             plc(dcg)).
+user:file_search_path(flp,             dcg(flp)).
+user:file_search_path(nlp,             dcg(nlp)).
+user:file_search_path(generics,        plc(generics)).
+user:file_search_path(graph_theory,    plc(graph_theory)).
+user:file_search_path(dgraph,          graph_theory(dgraph)).
+user:file_search_path(rdf_graph,       graph_theory(rdf_graph)).
+user:file_search_path(ugraph,          graph_theory(ugraph)).
+user:file_search_path(ilp,             plc(ilp)).
+user:file_search_path(lod,             plc(lod)).
+user:file_search_path(owl,             lod(owl)).
+user:file_search_path(rdf,             lod(rdf)).
+user:file_search_path(rdf_conv,        rdf(conversion)).
+user:file_search_path(rdf_file,        rdf(file)).
+user:file_search_path(rdf_man,         rdf(management)).
+user:file_search_path(rdf_mt,          rdf(rdf_mt)).
+user:file_search_path(rdf_reasoning,   rdf(reasoning)).
+user:file_search_path(rdf_term,        rdf(term)).
+user:file_search_path(rdf_web,         rdf(web)).
+user:file_search_path(rdfs,            lod(rdfs)).
+user:file_search_path(skos,            lod(skos)).
+user:file_search_path(sparql,          lod(sparql)).
+user:file_search_path(void,            lod(void)).
+user:file_search_path(logic,           plc(logic)).
+user:file_search_path(math,            plc(math)).
+user:file_search_path(os,              plc(os)).
+user:file_search_path(programming,     plc(programming)).
+user:file_search_path(pl,              programming(prolog)).
+user:file_search_path(pl_web,          pl(web)).
+user:file_search_path(ps,              plc(ps)).
+user:file_search_path(tms,             ps(tms)).
+user:file_search_path(atms,            tms(atms)).
+user:file_search_path(doyle,           tms(doyle)).
+user:file_search_path(server,          plc(server)).
+user:file_search_path(standards,       plc(standards)).
+user:file_search_path(datetime,        standards(date_time)).
+user:file_search_path(geo,             standards(geography)).
+user:file_search_path(gv,              standards(graphviz)).
+user:file_search_path(html,            standards(html)).
+user:file_search_path(http,            standards(http)).
+user:file_search_path(http_headers,    http(headers)).
+user:file_search_path(http_parameters, http(parameters)).
+user:file_search_path(lang,            standards(language)).
+user:file_search_path(latex,           standards(latex)).
+user:file_search_path(svg,             standards(svg)).
+user:file_search_path(uri,             standards(uri)).
+user:file_search_path(xml,             standards(xml)).
+user:file_search_path(xsd,             xml(xsd)).
+user:file_search_path(web,             plc(web)).
+user:file_search_path(crawler,         web(crawler)).
 
