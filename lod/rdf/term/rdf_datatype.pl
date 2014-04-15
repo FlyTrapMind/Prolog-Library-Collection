@@ -118,13 +118,17 @@ rdf_datatype(S, P, Value, Datatype, G):-
 % retracted.
 
 rdf_overwrite_datatype(S, P, LexicalForm2, Datatype, G):-
-  % Make sure there is exactly one value that would be overwritten.
+  % Make sure there is at most one value that would be overwritten.
   findall(
     [S,P,Datatype,LexicalForm1,G],
     rdf_datatype(S, P, LexicalForm1, Datatype, G),
     Tuples
   ),
-  Tuples = [[S,P,Datatype,LexicalForm1,G]], !,
+  (
+    Tuples == [], !
+  ;
+    Tuples = [[S,P,Datatype,LexicalForm1,G]], !
+  ),
 
   % Remove the old value and assert the new value.
   rdf_retractall_datatype(S, P, Datatype, G),
@@ -133,11 +137,11 @@ rdf_overwrite_datatype(S, P, LexicalForm2, Datatype, G):-
   % DEB: Old object term.
   rdf_typed_literal(Literal1, LexicalForm1, Datatype),
   dcg_with_output_to(atom(T1), rdf_triple_name(S, P, Literal1, G)),
-  
+
   % DEB: New object term.
   rdf_typed_literal(Literal2, LexicalForm2, Datatype),
   dcg_with_output_to(atom(T2), rdf_triple_name(S, P, Literal2, G)),
-  
+
   % DEB: Show old and new object term in debug message.
   debug(rdf_datatype, 'Updated triple: ~w --> ~w', [T1,T2]).
 
