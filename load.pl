@@ -1,4 +1,5 @@
 % PLC load file.
+% File search path `plc` must be set for this.
 
 user:prolog_file_type(html, 'text/html'    ).
 user:prolog_file_type(md,   'text/markdown').
@@ -11,8 +12,13 @@ user:prolog_file_type(txt,  'text/plain'   ).
 % by the parent project (PGC is a library).
 
 load_plc:-
+  % Requirement!
+  user:file_search_path(plc, _),
+  
+  % Load the PLC index as file search path statements.
   set_project,
-
+  ensure_loaded(index),
+  
   % Check SWI-Prolog version.
   use_remote_module(pl(pl_version)),
   check_pl_version,
@@ -31,10 +37,10 @@ load_plc:-
   list_external_programs.
 
 
-% If there is no outer project, then PGC is the project.
+% If there is no outer project, then PLC is the project.
 
 set_project:-
   current_predicate(project/2), !.
 set_project:-
-  assert(user:project('PGC', 'Prolog Generics Collection')).
+  assert(user:project('PLC', 'Prolog Library Collection')).
 
