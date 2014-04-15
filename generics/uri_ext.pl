@@ -14,6 +14,8 @@
     uri_component/3, % +Uri:uri
                      % +Field:oneof([scheme,authority,path,search,fragment])
                      % +Data:atom
+    url_authority_directory/2, % +Url:atom
+                               % -Directory:atom
     url_flat_directory/3, % +ParentDirectory:atom
                           % +Url:url
                           % -UrlDirectory:atom
@@ -40,6 +42,7 @@
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(generics(uri_query)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(semweb/rdf_db)).
@@ -205,6 +208,17 @@ uri_path(PathComponents1, Path):-
   
   % A URI path is similar enough to a POSIX path.
   directory_subdirectories(Path, PathComponents2).
+
+
+%! url_authority_directory(+Url:atom, -Directory:atom) is det.
+
+url_authority_directory(Url, Dir):-
+  uri_component(Url, scheme, Scheme),
+  uri_component(Url, authority, Authority),
+  absolute_file_name(data(.), DataDir, [access(read),file_type(directory)]),
+  directory_subdirectories(DataDir, DataDirComponents),
+  append(DataDirComponents, [Scheme,Authority], DirComponents),
+  directory_subdirectories(Dir, DirComponents).
 
 
 %! url_flat_directory(+ParentDirectory:atom, +Url:url, -UrlDirectory:atom) is det.

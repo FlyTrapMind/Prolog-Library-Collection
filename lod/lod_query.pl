@@ -18,7 +18,7 @@
 /** <module> LOD query
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/02, 2014/04
 */
 
 :- use_module(generics(typecheck)).
@@ -32,6 +32,7 @@
 :- use_module(lod(lod_location)).
 :- use_module(os(file_mime)).
 :- use_module(rdf(rdf_meta)).
+:- use_module(rdf_file(rdf_file)).
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(sparql(sparql_cache)).
 

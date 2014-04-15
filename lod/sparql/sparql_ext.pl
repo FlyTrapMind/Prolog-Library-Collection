@@ -1,15 +1,15 @@
 :- module(
   sparql_ext,
   [
-    sparql_enqueue/5, % +Remote:atom
-                        % +Query:atom
-                        % +Attempts:or([oneof([inf]),positive_integer])
-                        % -VarNames:list
-                        % -Results:list
     sparql_query/4, % +Remote:atom
-                      % +Query:atom
-                      % -VarNames:list
-                      % -Results:list
+                    % +Query:atom
+                    % -VarNames:list
+                    % -Results:list
+    sparql_query/5, % +Remote:atom
+                    % +Query:atom
+                    % -VarNames:list
+                    % -Results:list
+                    % +Attempts:or([oneof([inf]),positive_integer])
     sparql_query_sameas/3 % +Remote:atom
                             % +Resource:iri
                             % -IdenticalResources:ordset
@@ -98,22 +98,16 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 @see SPARQL 1.1 Recommendation 2013/03
      http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
 @version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
+         2014/04
 */
 
-:- use_module(generics(atom_ext)).
 :- use_module(generics(codes_ext)).
-:- use_module(generics(list_ext)).
 :- use_module(generics(row_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(graph_theory(graph_closure)).
-:- use_module(http(http)).
-:- use_module(library(apply)).
+:- use_module(http(http_goal)).
 :- use_module(library(debug)).
 :- use_module(library(http/thread_httpd)).
-:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
-:- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
 :- use_module(math(math_ext)).
 :- use_module(sparql(sparql_build)).
@@ -124,34 +118,12 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
 
 :- if(predicate_property(user:debug_mode, visible)).
-  :-
-    once(http_server_property(Port, _)),
-    sparql_register_remote(localhost, localhost, Port, '/sparql/').
+:- initialization(load_debug).
+load_debug:-
+  once(http_server_property(Port, _)),
+  sparql_register_remote(localhost, localhost, Port, '/sparql/').
 :- endif.
 
-
-
-%! sparql_enqueue(
-%!   +Remote:atom,
-%!   +Query:atom,
-%!   +Retries:or([oneof([inf]),positive_integer]),
-%!   -VarNames:list,
-%!   -Results:list
-%! ) is det.
-% @error =|existence_error(url,URL)|= with context
-%        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
-
-sparql_enqueue(_, _, 0, [], []):- !.
-sparql_enqueue(Remote, Query, Attempts1, VarNames, Results):-
-  catch(
-    sparql_query_no_catch(Remote, Query, VarNames, Results),
-    E,
-    (
-      http_exception(E),
-      count_down(Attempts1, Attempts2),
-      sparql_enqueue(Remote, Query, Attempts2, VarNames, Results)
-    )
-  ).
 
 
 %! sparql_query(
@@ -160,14 +132,32 @@ sparql_enqueue(Remote, Query, Attempts1, VarNames, Results):-
 %!   -VarNames:list,
 %!   -Results:list
 %! ) is det.
-% Simply performs a SPARQL query (no additional options, closures).
 
-sparql_query(Remote, Query1, VarNames, Results):-
+sparql_query(Remote, Query, VarNames, Results):-
+  sparql_query(Remote, Query, VarNames, Results, 0).
+
+%! sparql_query(
+%!   +Remote:atom,
+%!   +Query:atom,
+%!   -VarNames:list,
+%!   -Results:list,
+%!   +Attempts:or([oneof([inf]),positive_integer])
+%! ) is det.
+% @error =|existence_error(url,URL)|= with context
+%        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
+
+sparql_query(_, _, [], [], 0):- !.
+sparql_query(Remote, Query, VarNames, Results, Attempts1):-
   catch(
-    sparql_query_no_catch(Remote, Query1, VarNames, Results),
+    sparql_query_no_catch(Remote, Query, VarNames, Results),
     E,
-    (http_exception(E), Results = [])
+    (
+      http_exception(E),
+      count_down(Attempts1, Attempts2),
+      sparql_query(Remote, Query, VarNames, Results, Attempts2)
+    )
   ).
+
 
 sparql_query_no_catch(Remote, Query1, VarNames, Results):-
   atomic_codes(Query2, Query1),
