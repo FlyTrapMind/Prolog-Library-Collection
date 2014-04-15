@@ -16,7 +16,6 @@
   ]
 ).
 :- reexport(
-  plc,
   http(rfc2616_basic),
   [
     '"'//0 as 'DQUOTE',
