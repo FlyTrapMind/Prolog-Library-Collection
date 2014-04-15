@@ -115,9 +115,9 @@ void_save_dataset(O1, VoidGraph, VoidDataset):-
 
 
 %! void_save_stats(
-%!   +Options:list(nvpair)
-%!   +RdfGraph:atom
-%!   +VoidGraph:atom
+%!   +Options:list(nvpair),
+%!   +RdfGraph:atom,
+%!   +VoidGraph:atom,
 %!   ?VoidFile:atom
 %! ) is det.
 

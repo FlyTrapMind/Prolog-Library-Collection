@@ -1,7 +1,9 @@
 :- module(
   void_stat,
   [
-    void_update/1 % +VoidGraph:atom
+    void_update/1, % +VoidGraph:atom
+    void_update_dataset/2 % +VoidGraph:atom
+                          % +RdfGraph:atom
   ]
 ).
 
@@ -61,7 +63,7 @@ void_update(VoidGraph):-
 void_update_dataset(VoidGraph, VoidDataset):-
   % dc:modified.
   rdf_update_today(VoidDataset, dc:modified, VoidGraph),
-  
+
   % void:classes
   count_classes(VoidDataset, NumberOfClasses),
   rdf_overwrite_datatype(VoidDataset, void:classes, NumberOfClasses,

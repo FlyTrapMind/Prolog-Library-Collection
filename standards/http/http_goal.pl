@@ -57,16 +57,12 @@ cert_verify(_, _, _, _, _):- !.
 % The arguments of `Goal` are appended with the argument `Stream`.
 %
 % The following options are supported:
-%   * =|never_give_up(+NeverGiveUp:boolean)|=
-%     Never give up upon receiving an HTTP 5xx status code.
-%     Default: `false`.
+%   * =|attempts(+NumberOfAttempts:or([positive_integer,oneof([atom])]))|=
 %   * =|nocatch(+DoNotCatchExceptions:boolean)|=
 %     When set to `true` exceptions are not caught
 %     and no automated retrying occurs.
 %     Default: `false`.
 % Other options are given to http_open/3.
-%
-% @tbd Unify option `never_give_up/1` with argument `Attempts`.
 
 http_goal(URL, O1, Goal):-
   option(nocatch(true), O1, false), !,
@@ -81,10 +77,12 @@ http_goal(URL, O1, Goal):-
     close(Stream)
   ).
 http_goal(URL, O1, Goal):-
-  http_goal(URL, O1, Goal, 10).
+  option(attempts(Attempts), O1, 1),
+  http_goal(URL, O1, Goal, Attempts).
+
 http_goal(URL, O1, Goal, Attempts):-
   merge_options(
-    [cert_verify_hook(cert_verify),status_code(Status),timeout(10)],
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
     O1,
     O2
   ),
@@ -105,18 +103,9 @@ http_catcher(exit, URL, _, Goal, _):- !,
   atom_truncate(Atom1, 120, Atom2),
   debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
 % Permanently fail to receive resource over HTTP.
-http_catcher(E, URL, O1, Goal, 0):- !,
+http_catcher(E, _, _, _, 0):- !,
   http_exception(E),
-  (
-    E = error(http_status(Status),_),
-    between(500, 599, Status),
-    option(never_give_up(true), O1, false)
-  ->
-    sleep(1),
-    http_goal(URL, O1, Goal)
-  ;
-    fail
-  ).
+  fail.
 % Incidental fail: retry.
 http_catcher(_, URL, O1, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),
