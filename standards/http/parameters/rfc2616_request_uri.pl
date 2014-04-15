@@ -49,7 +49,6 @@ Recipients of an HTTP/1.0 request that lacks a `Host` header field
 */
 
 :- use_module(
-  plc,
   uri(rfc2396_dcg),
   [
     abs_path//2,
