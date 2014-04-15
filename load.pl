@@ -30,7 +30,7 @@ load_plc:-
   % Start logging.
   use_module(generics(logging)),
   start_log,
-
+  
   % Enumerate the external program support
   % for the currently loaded modules.
   use_module(os(run_ext)),
