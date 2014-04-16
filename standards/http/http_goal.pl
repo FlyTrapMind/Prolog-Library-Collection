@@ -105,7 +105,7 @@ http_catcher(exit, URL, _, Goal, _):- !,
 % Permanently fail to receive resource over HTTP.
 http_catcher(E, _, _, _, 0):- !,
   http_exception(E),
-  fail.
+  throw(E).
 % Incidental fail: retry.
 http_catcher(_, URL, O1, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),

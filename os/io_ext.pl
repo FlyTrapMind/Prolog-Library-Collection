@@ -18,6 +18,8 @@
                       % -Atom:atom
     stream_to_file/2, % +Stream:stream
                       % +File:atom
+    writeln/2, % +Stream:stream
+               % +Term
 % PEEKING
     peek_atom/2, % +Stream:stream
                  % +Atom:atom
@@ -121,6 +123,10 @@ stream_to_atom(Stream, Atom):-
 stream_to_file(Stream, File):-
   stream_to_atom(Stream, Atom),
   atom_to_file(Atom, File).
+
+writeln(Stream, Term):-
+  write(Stream, Term),
+  nl(Stream).
 
 
 
