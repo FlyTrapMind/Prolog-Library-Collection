@@ -307,16 +307,30 @@ directory_files(O1, Directory, Files4):-
 %!   +Subdirectories:list(atom)
 %! ) is det.
 
-directory_subdirectories(Dir, Subdirs1):-
+directory_subdirectories(Dir1, Subdirs1):-
+  % Whether to include the root or not.
   (
-    nonvar(Dir),
-    \+ is_absolute_file_name(Dir)
+    nonvar(Dir1),
+    \+ is_absolute_file_name(Dir1)
   ->
+    % Relative paths do not start with root.
     Subdirs2 = Subdirs1
   ;
+    % Absolute paths start with root.
     Subdirs2 = [''|Subdirs1]
   ),
-  atomic_list_concat(Subdirs2, '/', Dir).
+
+  % Remove ending slashes, if present.
+  (
+    nonvar(Dir1),
+    sub_atom(Dir1, _, 1, 0, '/')
+  ->
+    once(sub_atom(Dir1, _, _, 1, Dir2))
+  ;
+    Dir2 = Dir1
+  ),
+
+  atomic_list_concat(Subdirs2, '/', Dir2).
 
 
 has_file_type(FileTypes, _):-

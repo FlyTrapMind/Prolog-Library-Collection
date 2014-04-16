@@ -6,9 +6,9 @@
     atom_to_iri/2, % +Atom:atom
                    % -Iri:iri
     is_image_url/1, % +Url:url
-    relative_url_path/3, % +Url:url
-                         % +RelativeTo:url
-                         % -RelativeUrl:url
+    relative_url_path/3, % ?Url:url
+                         % ?RelativeTo:url
+                         % ?RelativeUrl:url
     uri_path/2, % +PathComponents:list(term)
                 % -Path:atom
     uri_component/3, % +Uri:uri

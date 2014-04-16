@@ -330,7 +330,7 @@ yearCanonicalFragmentMap(Y) -->
 
 
 %! yearFrag(-Year:integer)//
-% Processes a year valie, i.e. a numeral consisting of at least four,
+% Processes a year value, i.e. a numeral consisting of at least four,
 % decimal digits optionally preceded by a minus sign;
 % leading '0' digits are prohibited except to bring the digit count
 % up to four.
@@ -342,7 +342,7 @@ yearCanonicalFragmentMap(Y) -->
 % @arg Year An integer.
 
 yearFrag(Y) -->
-  (minus_sign(S), {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
+  (minus_sign(S) -> {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
     nonzero_decimal_digit(Code, _),
     dcg_multi1(decimal_digit, 3-_, Codes)
