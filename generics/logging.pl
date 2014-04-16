@@ -175,7 +175,7 @@ end_log:-
   close_log_stream.
 
 init:-
-  file_search_path(log, _Dir), !.
+  file_search_path(log, _), !.
 init:-
   create_personal_subdirectory('Logging', Absolute),
   assert(user:file_search_path(log, Absolute)).

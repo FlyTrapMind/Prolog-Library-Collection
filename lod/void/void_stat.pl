@@ -106,7 +106,14 @@ void_update_dataset(VoidGraph, VoidDataset):-
       xsd:integer, VoidGraph),
 
   % void:triples
-  rdf_statistics(triples_by_graph(VoidDataset, NumberOfTriples)),
+  % Notice that we may have read 0 triples into a graph.
+  (
+    rdf_graph(VoidDataset)
+  ->
+    rdf_statistics(triples_by_graph(VoidDataset, NumberOfTriples))
+  ;
+    NumberOfTriples = 0
+  ),
   rdf_overwrite_datatype(VoidDataset, void:triples, NumberOfTriples,
       xsd:integer, VoidGraph).
 
