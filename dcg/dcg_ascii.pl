@@ -545,9 +545,9 @@ carriage_return(13) --> [13].
 circle_bracket --> round_bracket.
 circle_bracket(C) --> round_bracket(C).
 
-closing_angular_bracket --> less_than_sign.
-closing_angular_bracket(X) --> less_than_sign(X).
-closing_angular_bracket(X, angular) --> less_than_sign(X).
+closing_angular_bracket --> greater_than_sign.
+closing_angular_bracket(X) --> greater_than_sign(X).
+closing_angular_bracket(X, angular) --> greater_than_sign(X).
 
 closing_bracket --> closing_angular_bracket.
 closing_bracket --> closing_curly_bracket.
@@ -1070,9 +1070,9 @@ octal_digit(C) --> seven(C).
 one --> [49].
 one(49) --> [49].
 
-opening_angular_bracket --> greater_than_sign.
-opening_angular_bracket(C) --> greater_than_sign(C).
-opening_angular_bracket(C, angular) --> greater_than_sign(C).
+opening_angular_bracket --> less_than_sign.
+opening_angular_bracket(C) --> less_than_sign(C).
+opening_angular_bracket(C, angular) --> less_than_sign(C).
 
 opening_bracket --> opening_angular_bracket.
 opening_bracket --> opening_curly_bracket.

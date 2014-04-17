@@ -152,3 +152,12 @@ http_process(Status, _, _):-
   % The catcher has to make a new attempt (if there are any attempts left).
   throw(error(http_status(Status),_Context)).
 
+
+% Messages
+
+:- multifile(prolog:message//1).
+
+prolog:message(exception(error(http_status(Status)))) -->
+  {'Status-Code'(Status, Reason)},
+  ['[HTTP ',Status,'] ',Reason].
+

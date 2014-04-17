@@ -338,8 +338,12 @@ where(Content) -->
   `WHERE `,
   bracketed(curly, where_inner(Content)).
 
-where_inner(union(L)) --> !,
+where_inner(Content) -->
+  line_feed,
+  where_inner2(Content).
+
+where_inner2(union(L)) --> !,
   union(L).
-where_inner(BGP) -->
+where_inner2(BGP) -->
   bgp(BGP).
 
