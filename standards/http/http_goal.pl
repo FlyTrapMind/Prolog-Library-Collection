@@ -157,7 +157,7 @@ http_process(Status, _, _):-
 
 :- multifile(prolog:message//1).
 
-prolog:message(exception(error(http_status(Status)))) -->
+prolog:message(error(http_status(Status))) -->
   {'Status-Code'(Status, Reason)},
   ['[HTTP ',Status,'] ',Reason].
 
