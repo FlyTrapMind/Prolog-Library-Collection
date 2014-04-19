@@ -151,12 +151,15 @@ sparql_query(Remote, Query, VarNames, Results, Attempts1):-
   catch(
     sparql_query_no_catch(Remote, Query, VarNames, Results),
     E,
-    (
-      http_exception(E),
-      count_down(Attempts1, Attempts2),
-      sparql_query(Remote, Query, VarNames, Results, Attempts2)
-    )
+    http_catcher(E, Remote, Query, VarNames, Results)
   ).
+
+http_catcher(exit, _, _, _, _).
+http_catcher(E, _, _, _, _, 1):- !,
+  throw(E).
+http_catcher(E, Remote, Query, VarNames, Results, Attempt1):-
+  count_down(Attempts1, Attempts2),
+  sparql_query(Remote, Query, VarNames, Results, Attempts2).
 
 
 sparql_query_no_catch(Remote, Query1, VarNames, Results):-

@@ -81,23 +81,23 @@ cert_verify(_, _, _, _, _):- !.
 
 http_goal(Url, O1, Goal):-
   % The default number of attempts is 1.
-  option(attempts(Attempts), O1, 1),
-  http_goal(Url, O1, Goal, Attempts).
-
-http_goal(Url, O1, Goal, Attempts):-
+  select_option(attempts(Attempts), O1, 1, O2),
   merge_options(
     [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
-    O1,
-    O2
+    O2,
+    O3
   ),
+  http_goal(Url, O3, Goal, Attempts).
+
+http_goal(Url, O1, Goal, Attempts):-
   catch(
     setup_call_cleanup(
-      http_open(Url, Stream, O2),
+      http_open(Url, Stream, O1),
       http_process(Status, Stream, Goal),
       close(Stream)
     ),
     E,
-    http_catcher(E, Url, O2, Goal, Attempts)
+    http_catcher(E, Url, O1, Goal, Attempts)
   ).
 
 
