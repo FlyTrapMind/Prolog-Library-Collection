@@ -1,11 +1,10 @@
 :- module(
   http_goal,
   [
-    http_exception/1, % +Exception:compound
-    http_goal/3, % +URL:atom
+    http_goal/3, % +Url:atom
                  % +Options:list(nvpair)
                  % :Goal
-    http_goal/4 % +URL:atom
+    http_goal/4 % +Url:atom
                 % +Options:list(nvpair)
                 % :Goal
                 % +Attempts:or([integer,oneof([inf])])
@@ -16,6 +15,22 @@
 
 Execute HTTP goals while catching any exceptions and retrying
 until the goal succeeds or fails.
+
+## http_open/3
+
+It would be nice to have an exhaustive list of exceptions
+thrown by this predicate, since the calling code may have to act upon
+different exceptions in different ways:
+
+  * `error(existence_error(url,Url),Context)`
+  * `error(io_error(Mode:oneof([read,write]),Stream),Context)`
+  * `error(permission_error(redirect,http,Url),Context)`
+  * `error(socket_error(Reason),Context)`
+  * `error(timeout_error(Mode:oneof([read,write]),Stream),Context)`
+
+Another way to detect failure to establish a successful connection over HTTP
+is to look at the value of option `status_code`,
+whenever it does not instantiate to an integer in the range =2xx=.
 
 @author Wouter Beek
 @version 2013/11, 2014/01, 2014/04
@@ -41,9 +56,9 @@ until the goal succeeds or fails.
 cert_verify(_, _, _, _, _):- !.
 
 
-%! http_goal(+URL:atom, +Options:list(nvpair), :Goal) is det.
+%! http_goal(+Url:atom, +Options:list(nvpair), :Goal) is det.
 %! http_goal(
-%!   +URL:atom,
+%!   +Url:atom,
 %!   +Options:list(nvpair),
 %!   :Goal,
 %!   +Attempts:or([integer,oneof([inf])])
@@ -57,30 +72,19 @@ cert_verify(_, _, _, _, _):- !.
 % The arguments of `Goal` are appended with the argument `Stream`.
 %
 % The following options are supported:
-%   * =|attempts(+NumberOfAttempts:or([positive_integer,oneof([atom])]))|=
-%   * =|nocatch(+DoNotCatchExceptions:boolean)|=
-%     When set to `true` exceptions are not caught
-%     and no automated retrying occurs.
-%     Default: `false`.
-% Other options are given to http_open/3.
+%   * =|attempts(+NumberOfAttempts:or([positive_integer,oneof([inf])]))|=
+%     The number of attempts we make,
+%     i.e. the maximum number of times we send an HTTP request
+%     and receive an error.
+%     Default: 1.
+%   * Other options are given to http_open/3.
 
-http_goal(URL, O1, Goal):-
-  option(nocatch(true), O1, false), !,
-  merge_options(
-    [cert_verify_hook(cert_verify),status_code(Status),timeout(10)],
-    O1,
-    O2
-  ),
-  setup_call_cleanup(
-    http_open(URL, Stream, O2),
-    http_process(Status, Stream, Goal),
-    close(Stream)
-  ).
-http_goal(URL, O1, Goal):-
+http_goal(Url, O1, Goal):-
+  % The default number of attempts is 1.
   option(attempts(Attempts), O1, 1),
-  http_goal(URL, O1, Goal, Attempts).
+  http_goal(Url, O1, Goal, Attempts).
 
-http_goal(URL, O1, Goal, Attempts):-
+http_goal(Url, O1, Goal, Attempts):-
   merge_options(
     [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
     O1,
@@ -88,69 +92,39 @@ http_goal(URL, O1, Goal, Attempts):-
   ),
   catch(
     setup_call_cleanup(
-      http_open(URL, Stream, O2),
+      http_open(Url, Stream, O2),
       http_process(Status, Stream, Goal),
       close(Stream)
     ),
     E,
-    http_catcher(E, URL, O2, Goal, Attempts)
+    http_catcher(E, Url, O2, Goal, Attempts)
   ).
 
 
 % Succeed.
-http_catcher(exit, URL, _, Goal, _):- !,
-  term_to_atom(Goal, Atom1),
-  atom_truncate(Atom1, 120, Atom2),
-  debug(http_low, 'Successfully performed goal ~w on URL ~w.', [Atom2,URL]).
-% Permanently fail to receive resource over HTTP.
-http_catcher(E, _, _, _, 0):- !,
-  http_exception(E),
+http_catcher(exit, _, _, _, _).
+% That was the last attempt.
+% Re-throw the last thrown exception as the final one.
+http_catcher(E, Url, _, _, 1):- !,
+  debug(http_goal, 'Permanent failure to execute goal on URL ~w.', [Url]),
   throw(E).
-% Incidental fail: retry.
-http_catcher(_, URL, O1, Goal, Attempts1):-
+% No quite right yet, but we have some attempts left.
+http_catcher(_, Url, O1, Goal, Attempts1):-
   count_down(Attempts1, Attempts2),
-  http_goal(URL, O1, Goal, Attempts2).
+  http_goal(Url, O1, Goal, Attempts2).
 
 
-%! http_exception(+Exception:compound) is det.
-% Handle exceptions thrown by http_open/3.
-
-% Retry after a while upon existence error.
-http_exception(error(existence_error(url, URL),Context)):- !,
-  debug(high, 'URL ~w does not exist (context: ~w).', [URL,Context]).
-% HTTP status code.
-http_exception(error(http_status(Status),_Context)):- !,
-  'Status-Code'(Status, Reason),
-  debug(high, '[HTTP-STATUS] ~d ~w', [Status,Reason]).
-% Retry upon I/O error.
-http_exception(error(io_error(read,_Stream),context(_Predicate,Reason))):- !,
-  debug(high, '[IO-ERROR] ~w', [Reason]).
-http_exception(
-  error(permission_error(redirect,http,URL),context(_,Reason))
-):- !,
-  debug(high, '[PERMISSION-ERROR] ~w (reason: ~w)', [URL,Reason]).
-% Retry upon socket error.
-% Thrown by http_open/3.
-http_exception(error(socket_error(Reason),_)):- !,
-  debug(high, '[SOCKET-ERROR] ~w', [Reason]).
-% `Mode` is either `read` or `write`.
-http_exception(
-  error(timeout_error(Mode,_Stream),context(PredSignature,_))
-):- !,
-  debug(high, '[TIMEOUT-ERROR] While ~wing ~w.', [Mode,PredSignature]).
-% DEB
-http_exception(E):-
-gtrace, %DEB
-  debug(high, '[UNRECOGNIZED-EXCEPTION] ~w', [E]).
-
-% Success codes.
+% HTTP status codes in the range 2xx represent a successful connection.
 http_process(Status, Stream, Goal):-
   between(200, 299, Status), !,
   call(Goal, Stream).
-% Non-success codes.
+% Http status codes not in the range 2xx (mostly 4xx and 5xx) represent
+% a non-successful connection).
 http_process(Status, _, _):-
-  % The catcher has to make a new attempt (if there are any attempts left).
-  throw(error(http_status(Status),_Context)).
+  % The catcher decides whether a new attempts is made,
+  % or whether this exception is thrown to the calling context.
+  throw(error(http_status(Status),_)).
+
 
 
 % Messages

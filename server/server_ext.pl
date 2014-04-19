@@ -140,9 +140,9 @@ server_rebase(Prefix):-
 %! start_server(+Port:between(1000,9999), :ServerGoal) is det.
 
 start_server(Port):-
-  start_server(Port, _ServerGoal).
+  start_server(Port, _).
 % A server is already running at the given port.
-start_server(Port, _ServerGoal):-
+start_server(Port, _):-
   http_server_property(Port, start_time(StartTime)), !,
   debug(
     server_ext,
