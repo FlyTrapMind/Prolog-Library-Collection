@@ -83,21 +83,22 @@ http_goal(Url, O1, Goal):-
   % The default number of attempts is 1.
   select_option(attempts(Attempts), O1, 1, O2),
   merge_options(
-    [cert_verify_hook(cert_verify),status_code(Status),timeout(1)],
+    [cert_verify_hook(cert_verify),timeout(1)],
     O2,
     O3
   ),
   http_goal(Url, O3, Goal, Attempts).
 
 http_goal(Url, O1, Goal, Attempts):-
+  merge_options([status_code(Status)], O1, O2),
   catch(
     setup_call_cleanup(
-      http_open(Url, Stream, O1),
+      http_open(Url, Stream, O2),
       http_process(Status, Stream, Goal),
       close(Stream)
     ),
     E,
-    http_catcher(E, Url, O1, Goal, Attempts)
+    http_catcher(E, Url, O2, Goal, Attempts)
   ).
 
 
