@@ -81,7 +81,7 @@ cert_verify(_, _, _, _, _):- !.
 
 http_goal(Url, O1, Goal):-
   % The default number of attempts is 1.
-  select_option(attempts(Attempts), O1, 1, O2),
+  select_option(attempts(Attempts), O1, O2, 1),
   merge_options(
     [cert_verify_hook(cert_verify),timeout(1)],
     O2,
