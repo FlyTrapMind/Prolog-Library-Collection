@@ -91,7 +91,6 @@ pl_debug:-
 
   % Debug monitor.
   %%%%prolog_ide(debug_monitor),
-  debug(high),
 
   % Full lDoc.
   %%%%load_modules_for_pldoc,
