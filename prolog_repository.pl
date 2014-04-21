@@ -1,5 +1,3 @@
-:- set_prolog_flag(autoload, true).
-
 % This file allows remotely stored file to be locally copied.
 % It presupposes that the file search path named `project` is set.
 %

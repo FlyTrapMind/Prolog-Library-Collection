@@ -847,8 +847,8 @@ parse_option(OptsSpec, Arg1, Arg2, opt(KID, Val)):-
   parse_val(Arg1, Type, Arg2, Val).
 % Unknown flag: print informational.
 parse_option(_, Arg1, _, _):-
-  print_message(informational, unknown_flag(Arg1)),
-  fail.
+  atom_codes(Arg2, Arg1),
+  print_message(informational, unknown_flag(Arg2)).
 
 
 parse_val(Opt, Type, Cs, Val):-
@@ -960,8 +960,10 @@ flags(OptSpec, Flags):- memberchk(longflags(Flags), OptSpec).
 
 
 
-% Messages
+% MESSAGES
+
+:- multifile(prolog:message//1).
 
 prolog:message(unknown_flag(Arg)) -->
-  ['We can accross an unknown flag: ~w',Arg].
+  ['We came accross an unknown flag: ~w',Arg].
 
