@@ -89,7 +89,7 @@ rdf_file_correct_extension(File1, File2):-
   memberchk(Mime, Mimes),
   file_alternative(File1, _, _, Extension, File2),
   File1 \== File2, !,
-  link_file(File1, File2, symbolic).
+  rename_file(File1, File2).
 rdf_file_correct_extension(File, File).
 
 
