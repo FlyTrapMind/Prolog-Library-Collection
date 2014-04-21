@@ -1,11 +1,12 @@
 :- module(
   archive_ext,
   [
+    extract_directory/2, % +Options:list(nvpair)
+                         % +Directory:atom
     extract_file/1, % +File:atom
     extract_file/2, % +File:atom
                     % +Directory:atom
-    info_file/1, % +File:atom
-    is_archive_file/1 % +File:atom
+    info_file/1 % +File:atom
   ]
 ).
 
@@ -17,10 +18,10 @@ Based on library `archive`.
 @version 2014/04
 */
 
+:- use_module(library(apply)).
 :- use_module(library(archive)).
-:- use_module(library(error)).
-:- use_module(library(filesex)).
 
+:- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
@@ -37,10 +38,9 @@ archive_file(Goal, File, Args):-
       Archive,
       [close_parent(true),filter(all),format(all),format(raw)]
     ),
-    apply(Goal, [File|Args]),
+    apply(Goal, [Archive|Args]),
     archive_close(Archive)
-  ),
-  delete_file(File).
+  ).
 
 
 %! extract_archive(+Archive:archive, +Directory:atom) is det.
@@ -61,12 +61,27 @@ extract_archive(Archive, Dir):-
   ).
 
 
+%! extract_directory(+Options:list(nvpair), +Directory:atom) is det.
+% Extracts all archives in the given directory.
+% Extract files recursively, e.g. first `gunzip`, then `tar`.
+%
+% Options are passed to directory_files/3. Important are:
+%   * =|file_types(+FileTypes:list(atom))|=
+%     Only extracts files of the given types.
+%   * =|recursive(+Recursive:boolean)|=
+%     Includes archives that reside in subdirectories.
+
+extract_directory(O1, Dir):-
+  directory_files(O1, Dir, Files),
+  maplist(extract_file, Files).
+
+
 %! extract_file(+File:atom) is semidet.
 % Extracts the given file into its own directory.
 
 extract_file(File):-
   file_directory_name(File, Dir),
-  archive_file(extract_archive, File, Dir).
+  archive_file(extract_archive, File, [Dir]).
 
 
 %! extract_file(+File:atom, +Directory:atom) is semidet.
@@ -99,12 +114,6 @@ info_archive(Archive):-
 
 info_file(File):-
   archive_file(info_archive, File, []).
-
-
-%! is_archive_file(+File:atom) is semidet.
-
-is_archive_file(File):-
-  archive_file(exists_file, File, []).
 
 
 

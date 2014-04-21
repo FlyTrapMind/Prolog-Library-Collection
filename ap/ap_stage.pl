@@ -38,9 +38,6 @@ The following options can be added to AP stages:
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf_term(rdf_string)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
 
 
 

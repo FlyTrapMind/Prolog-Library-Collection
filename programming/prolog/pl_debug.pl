@@ -63,6 +63,8 @@ http:location(pldoc, root(help), [priority(10)]).
 :- use_module(server(web_message)).
 :- use_module(tms(tms_web)).
 
+:- set_prolog_flag(verbose, normal).
+
 :- initialization(pl_debug).
 pl_debug:-
   % Start the SWI-Prolog thread monitor.

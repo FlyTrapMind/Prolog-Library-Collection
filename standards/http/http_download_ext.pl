@@ -16,6 +16,8 @@ e.g. automatically extracting the downloaded files if they are archives.
 @version 2013/05, 2013/09, 2013/11-2014/04
 */
 
+:- use_module(library(option)).
+
 :- use_module(http(http_download)).
 :- use_module(os(archive_ext)).
 :- use_module(os(dir_ext)).
@@ -27,8 +29,13 @@ e.g. automatically extracting the downloaded files if they are archives.
 %!   +Url:url,
 %!   -Files:list(atom)
 %! ) is det.
+% The following options are supported:
+%   * =|file(+File:atom)|=
+%     The file to which the contents at URL are located.
+%   * The other options are passed to download_to_file/3.
 
 download_and_extract(O1, Url, Files):-
+  option(file(File), O1, _),
   setup_call_cleanup(
     download_to_file(O1, Url, File),
     extract_file(File),

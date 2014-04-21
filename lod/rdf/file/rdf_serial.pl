@@ -26,11 +26,6 @@ since most datasets are published in a non-standard way.
          2013/08-2013/09, 2013/11, 2014/01-2014/04
 */
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(generics(uri_ext)).
-:- use_module(http(http_download)).
-:- use_module(http(http_download_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
@@ -67,7 +62,14 @@ since most datasets are published in a non-standard way.
 % rdf_file_type(n3,   turtle).
 % rdf_file_type(trig, trig  ).
 :- use_module(library(semweb/turtle)).
+
+:- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
+:- use_module(generics(uri_ext)).
+:- use_module(http(http_download)).
+:- use_module(http(http_download_ext)).
 :- use_module(os(archive_ext)).
+:- use_module(os(archive_gnu)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).

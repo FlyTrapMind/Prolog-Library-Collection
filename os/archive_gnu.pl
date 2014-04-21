@@ -1,5 +1,5 @@
 :- module(
-  archive_ext,
+  archive_gnu,
   [
     create_archive/2, % +Files:list(atom)
                       % +Archive:atom
@@ -8,8 +8,7 @@
     extract_archive/1, % +FromFile:atom
     extract_archive/2, % +FromFile:atom
                        % -Conversions:list(oneof([gunzipped,untarred,unzipped]))
-    extract_directory/2 % +Options:list(nvpair)
-                        % +Directory:atom
+    is_archive_file/1 % +File:atom
   ]
 ).
 
@@ -27,6 +26,7 @@ These predicates call GNU tools:
 @version 2013/12-2014/04
 */
 
+:- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 
@@ -130,4 +130,11 @@ extract_archive(Extension, File, unzipped):-
   directory_file_path(Directory, _, File),
   process_create(path(unzip), [file(File),'-fo','-d',file(Directory)], []),
   delete_file(File).
+
+
+%! is_archive_file(+File:atom) is semidet.
+
+is_archive_file(File):-
+  file_name_extension(_, Ext, File),
+  prolog_file_type(Ext, archive), !.
 
