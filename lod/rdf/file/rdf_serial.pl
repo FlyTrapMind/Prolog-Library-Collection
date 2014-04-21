@@ -112,7 +112,9 @@ rdf_load(O1, Graph, Files):-
     member(File, Files),
     access_file(File, read)
   ), !,
-  maplist(rdf_load(O1, Graph), Files).
+  rdf_new_graph(Graph),
+  maplist(rdf_load_into_graph(O1, Graph), Files).
+
 % Load all files from a given directory.
 rdf_load(O1, Graph, Dir):-
   exists_directory(Dir), !,
@@ -158,9 +160,6 @@ rdf_load(O1, Graph, File):-
 
   % Send a debug message notifying that the RDF file was successfully loaded.
   debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
-
-
-
 % Load more graphs into another graph.
 rdf_load(O1, Graph, Graphs):-
   is_list(Graphs),
@@ -178,6 +177,21 @@ rdf_load(O1, Graph, Graph):-
     Locations
   ),
   maplist(rdf_load(O1, Graph), Locations).
+
+
+%! rdf_load_into_graph(+Options:ist(nvpair), +Graph, +File:atom) is det.
+
+rdf_load_into_graph(O1, Graph, File):-
+  setup_call_cleanup(
+    % Load all files into separate graphs.
+    rdf_load(O1, TmpGraph, File),
+    % Copy all graphs into a single graph.
+    forall(
+      rdf(S, P, O, TmpGraph),
+      rdf_assert(S, P, O, Graph)
+    ),
+    rdf_unload_graph(TmpGraph)
+  ).
 
 
 %! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.

@@ -4,6 +4,7 @@
 user:prolog_file_type(html, 'text/html'    ).
 user:prolog_file_type(log,  logging        ).
 user:prolog_file_type(md,   'text/markdown').
+user:prolog_file_type(tmp,  temporary      ).
 user:prolog_file_type(txt,  'text/plain'   ).
 
 :- initialization(load_plc).

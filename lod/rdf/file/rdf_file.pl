@@ -1,6 +1,7 @@
 :- module(
   rdf_file,
   [
+    is_rdf_file/1, % +File:atom
     rdf_file_correct_extension/2, % +FromFile:atom
                                   % -ToFile:atom
     rdf_directory_files/2, % +Directory:atom
