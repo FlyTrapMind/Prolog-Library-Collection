@@ -123,10 +123,10 @@ rdf_load(O1, Graph, Dir):-
 % Extract archives.
 rdf_load(O1, Graph, File1):-
   access_file(File1, read),
-  is_archive(File1), !,
+  is_archive_file(File1), !,
 
   file_name(File1, Directory, _, _),
-  extract_archive(File1),
+  extract_file(File1),
   rdf_directory_files(Directory, Files),
 
   maplist(rdf_load(O1, Graph), Files).

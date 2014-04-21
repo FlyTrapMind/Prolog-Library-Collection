@@ -66,9 +66,9 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_unicode)).
-:- use_module(generics(error_ext)).
 :- use_module(math(radix)).
 :- use_module(os(shell_ext)).
+:- use_module(pl(pl_log)).
 
 :- meta_predicate(quoted(//,?,?)).
 
@@ -327,7 +327,7 @@ nl -->
 %! pl_term(+PrologTerm)// is det.
 
 pl_term(PrologTerm) -->
-  {with_output_to(codes(Codes), write_canonical_catch(PrologTerm))},
+  {with_output_to(codes(Codes), write_canonical_blobs(PrologTerm))},
   Codes.
 
 

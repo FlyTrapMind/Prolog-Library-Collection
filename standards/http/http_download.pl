@@ -15,11 +15,13 @@ Support for downloading files over HTTP(S).
 @version 2013/05, 2013/09, 2013/11-2014/04
 */
 
-:- use_module(generics(uri_ext)).
-:- use_module(http(http_goal)).
 :- use_module(library(filesex)).
 :- use_module(library(option)).
 :- use_module(library(uri)).
+
+:- use_module(generics(uri_ext)).
+:- use_module(http(http_goal)).
+:- use_module(os(io_ext)).
 
 
 
@@ -72,11 +74,4 @@ download_to_file(O1, Url, File):-
 download_to_file(O1, Url, File):-
   url_nested_file(data(.), Url, File),
   download_to_file(O1, Url, File).
-
-file_from_stream(File, HTTP_Stream):-
-  setup_call_cleanup(
-    open(File, write, FileStream, [type(binary)]),
-    copy_stream_data(HTTP_Stream, FileStream),
-    close(FileStream)
-  ).
 

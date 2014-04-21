@@ -227,12 +227,14 @@ create_file(NestedDir, Base, TypeOrExtensions, File):-
 
   create_file(File).
 
+
 %! create_file_directory(+File:atom) is det.
 % Ensures that the directory structure for the given file exists.
 
 create_file_directory(File):-
   file_name(File, Dir, _, _),
   create_directory(Dir).
+
 
 %! file_alternative(
 %!   +FromFile:atom,

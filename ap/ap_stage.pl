@@ -27,12 +27,13 @@ The following options can be added to AP stages:
 @version 2013/10-2014/03
 */
 
-:- use_module(ap(ap_db)).
-:- use_module(ap(ap_dir)).
-:- use_module(generics(error_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdfs)).
+
+:- use_module(ap(ap_db)).
+:- use_module(ap(ap_dir)).
 :- use_module(os(datetime_ext)).
+:- use_module(pl(pl_log)).
 :- use_module(rdf(rdf_container)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_build)).
@@ -74,7 +75,7 @@ ap_stage_begin(O1, ApStage):-
 ap_catcher(ApStage, Error, ApStages):-
   rdf_assert_individual(ApStage, ap:'Error', ap),
   rdf_assert_string(ApStage, ap:status, error, ap),
-  with_output_to(atom(Atom), write_canonical_catch(Error)),
+  with_output_to(atom(Atom), write_canonical_blobs(Error)),
   rdf_assert_string(ApStage, ap:error, Atom, ap),
   never_reached(ApStage, ApStages).
 

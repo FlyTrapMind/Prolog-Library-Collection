@@ -8,7 +8,6 @@
     rethrow/3, % :Goal
                % +Catcher
                % +Exception
-    write_canonical_catch/1, % @Term
 % NEW ERRORS
     idle_error/1, % +Reason
     mode_error/2, % +Mode:oneof([det,nondet,semidet])
@@ -86,31 +85,6 @@ extract_error(Error, Error).
 :- meta_predicate rethrow(0,+,+).
 rethrow(Goal, Catcher, Exception):-
   catch(Goal, Catcher, throw(Exception)).
-
-
-%! write_canonical_catch(@Term) is det.
-% Alteration of write_canonical/[1,2] that lives up to the promise that
-%  "terms written with this predicate can always be read back".
-
-write_canonical_catch(Term):-
-  replace_blobs(Term, AtomBlobs),
-  write_term(AtomBlobs, [quoted(true)]).
-
-
-%! replace_blobs(Term0, Term) is det.
-%	Copy Term0 to Term, replacing non-text   blobs. This is required
-%	for error messages that may hold   streams  and other handles to
-%	non-readable objects.
-
-replace_blobs(Blob, Atom):-
-  blob(Blob, Type), Type \== text, !,
-  format(atom(Atom), '~p', [Blob]).
-replace_blobs(Term0, Term):-
-  compound(Term0), !,
-  compound_name_arguments(Term0, Name, Args0),
-  maplist(replace_blobs, Args0, Args),
-  compound_name_arguments(Term, Name, Args).
-replace_blobs(Term, Term).
 
 
 

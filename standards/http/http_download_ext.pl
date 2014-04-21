@@ -1,9 +1,9 @@
 :- module(
   http_download_ext,
   [
-    download_and_extract_to_files/3 % +Options:list(nvpair)
-                                    % +Url:url
-                                    % -Files:ordset(atom)
+    download_and_extract/3 % +Options:list(nvpair)
+                           % +Url:url
+                           % -Files:ordset(atom)
   ]
 ).
 
@@ -22,16 +22,21 @@ e.g. automatically extracting the downloaded files if they are archives.
 
 
 
-%! download_and_extract_to_files(
+%! download_and_extract(
 %!   +Options:list(nvpair),
 %!   +Url:url,
 %!   -Files:list(atom)
 %! ) is det.
 
-download_and_extract_to_files(O1, Url, Files):-
-  download_to_file(O1, Url, File),
+download_and_extract(O1, Url, Files):-
+  setup_call_cleanup(
+    download_to_file(O1, Url, File),
+    extract_file(File),
+    delete_file(File)
+  ),
+  
+  % Gather all files.
   file_directory_name(File, Dir),
-  extract_archive(File),
   directory_files(
     [
       include_directories(true),

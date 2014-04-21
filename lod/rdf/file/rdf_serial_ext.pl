@@ -35,12 +35,12 @@ rdf_download_extract_load(Url, O1):-
 
   % Make sure all files are extracted.
   directory_files([], Dir, Files),
-  maplist(extract_archive, Files),
+  maplist(extract_file, Files),
 
   % These are all the RDF files we can get for this URL.
   rdf_directory_files(Dir, RdfFiles),
   rdf_load(RdfFiles, O1).
 rdf_download_extract_load(Url, O1):-
-  download_and_extract_to_files([], Url, _),
+  download_and_extract([], Url, _),
   rdf_download_extract_load(Url, O1).
 
