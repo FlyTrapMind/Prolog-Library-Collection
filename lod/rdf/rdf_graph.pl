@@ -35,7 +35,7 @@
                   % ?Predicate:iri
                   % ?Object:or([bnode,literal,iri])
                   % ?Triple:triple
-    rdf_unload_graph_deb/1 % +Graph:atom
+    rdf_unload_graph_debug/1 % +Graph:atom
   ]
 ).
 
@@ -299,18 +299,13 @@ rdf_triple(S1, P1, O1, Triple):-
 rdf_triple(S, P, O, rdf(S,P,O)).
 
 
-rdf_unload_graph_deb(Graph):-
-  rdf_statistics(triples_by_graph(Graph,Triples)),
-  rdf_unload_graph(Graph),
-  debug(mem_triples, 'MINUS ~:d triples', [Triples]).
-  %%%%print_message(informational, rdf_unload_graph(Graph,Triples)).
-
-
-
-% MESSAGES
-
-:- multifile(prolog:message//1).
-
-prolog:message(rdf_unload_graph(_,Triples)) -->
-  ['MINUS ~:d triples'-[Triples]].
+rdf_unload_graph_debug(Graph):-
+  rdf_statistics(triples_by_graph(Graph,GraphTriples)),
+  rdf_unload_graph_debug(Graph),
+  rdf_statistics(triples(AllTriples)),
+  debug(
+    mem_triples,
+    'MINUS ~:d triples (~:d total)',
+    [GraphTriples,AllTriples]
+  ).
 

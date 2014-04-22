@@ -22,7 +22,7 @@ Unit testing for RDF graph support.
 
 
 test(rdf_graph_instance, []):-
-  maplist(rdf_unload_graph, [test_graph,test_graph_instance]),
+  maplist(rdf_unload_graph_debug, [test_graph,test_graph_instance]),
   maplist(rdf_bnode, [X1,X2,X3,X4]),
   rdf_assert(X1, rdf:p, X2, test_graph),
   rdf_assert(X3, rdf:p, X4, test_graph),

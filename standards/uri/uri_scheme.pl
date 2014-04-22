@@ -16,6 +16,7 @@ IANA-registered URI schemes.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(semweb/turtle)).
+
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(standards(iana_to_rdf)).
 :- use_module(xml(xml_namespace)).

@@ -64,7 +64,7 @@ dispatch_method(post, Request, _):-
   ;
     reply_json(json([error='Malformed option list']), [width(0)])
   ).
-dispatch_method(delete, Request, _) :-
+dispatch_method(delete, Request, _):-
   http_parameters(Request, [user(Name,[])]),
   catch(
     (
@@ -99,7 +99,7 @@ dispatch_method(get, Request, _):-
 %! list_users(?User:atom, -List:list(nvpair)) is det.
 % Returns pairs of users and their properties.
 
-list_users(User, List) :-
+list_users(User, List):-
   findall(
     User=Properties,
     (

@@ -96,7 +96,7 @@ build_test_syntax(G):-
 
 clean_test(G, M):-
   rdf_unload_model(M),
-  rdf_unload_graph(G).
+  rdf_unload_graph_debug(G).
 
 %! test_name(?Succeeds:boolean, ?Graph:atom, ?Model:atom) is nondet.
 %

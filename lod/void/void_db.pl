@@ -23,9 +23,7 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf_file(rdf_serial)).
-:- use_module(rdf_file(rdf_serial_ext)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(xml(xml_namespace)).
 
@@ -38,7 +36,7 @@ Generic support for VoID, used by other VoID modules.
 
 void_init(G):-
   void_url(Url),
-  rdf_download_extract_load(Url, [graph(G)]).
+  rdf_load_any([graph(G)], Url).
 
 
 

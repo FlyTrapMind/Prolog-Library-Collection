@@ -1,9 +1,11 @@
 :- module(
   rdf_serial,
   [
-    rdf_load/3, % +Options:list(nvpair)
-                % ?Graph:atom
-                % +File:atom
+    rdf_load_any/2, % +Options:list(nvpair)
+                    % +Input
+    rdf_load_any/3, % +Options:list(nvpair)
+                    % +Input
+                    % -Pairs:list(pair(atom))
     rdf_save/3 % +Options:list(nvpair)
                % +Graph:atom
                % ?File:atom
@@ -58,10 +60,12 @@ since most datasets are published in a non-standard way.
 % rdf_open_decode(gzip, ...)
 % rdf_storage_encoding(gz, gzip)
 :- use_module(library(semweb/rdf_zlib_plugin)).
+:- use_module(library(semweb/rdfa)).
 % rdf_file_type(ttl,  turtle).
 % rdf_file_type(n3,   turtle).
 % rdf_file_type(trig, trig  ).
 :- use_module(library(semweb/turtle)).
+:- use_module(library(thread)).
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
@@ -72,19 +76,46 @@ since most datasets are published in a non-standard way.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
+:- use_module(os(unpack)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf(rdf_meta)).
+:- use_module(rdf_file(rdf_detect)).
 :- use_module(rdf_file(rdf_file)).
 :- use_module(rdf_file(rdf_ntriples_write)).
 :- use_module(rdf_file(rdf_serial)).
-:- use_module(void(void_db)).
 
 
 
-%! rdf_load(
+% SUPPORT FOR RDFA
+
+:- multifile
+  rdf_db:rdf_load_stream/3,
+  rdf_db:rdf_file_type/2.
+rdf_db:rdf_load_stream(rdfa, Stream, _:O1):-
+  (
+    option(graph(Graph), O1),
+    nonvar(Graph), !
+  ;
+    option(base_uri(Graph), O1)
+  ),
+  read_rdfa(Stream, Triples, []),
+  forall(
+    member(rdf(S,P,O), Triples),
+    rdf_assert(S, P, O, Graph)
+  ).
+rdf_db:rdf_file_type(rdfa, rdfa).
+
+
+
+% RDF LOADING
+
+rdf_load_any(O1, Input):-
+  rdf_load_any(O1, Input, _).
+
+%! rdf_load_any(
 %!   +Option:list(nvpair),
-%!   ?Graph:atom,
-%!   +Input:or([atom,list(atom)])
+%!   +Input:or([atom,list(atom)]),
+%!   -Pairs:list(pair(atom))
 %! ) is det.
 % Load RDF from a file, a list of files, or a directory.
 %
@@ -99,74 +130,209 @@ since most datasets are published in a non-standard way.
 %
 % @throws =|mime_error(+File:atom, +Type:oneof(['RDF']), MIME:atom)|=
 
-% Download the file hosted at the given URL locally.
-rdf_load(O1, Graph, Url):-
-  is_of_type(iri, Url), !,
-  download_to_file([], Url, File),
-  rdf_load(O1, Graph, File).
-% Loads multiple files and/or directories.
-rdf_load(O1, Graph, Files):-
-  is_list(Files),
-  forall(
-    member(File, Files),
-    access_file(File, read)
-  ), !,
-  rdf_new_graph(Graph),
-  maplist(rdf_load_into_graph(O1, Graph), Files).
+% Loads multiple inputs.
+rdf_load_any(O1, Input, Pairs):-
+  is_list(Input), !,
+  concurrent_maplist(rdf_load_any_1(O1), Input, PairsList),
+  append(PairsList, Pairs),
+  (
+    option(loaded(Pairs0), O1)
+  ->
+    Pairs0 = Pairs
+  ;
+    true
+  ).
 % Load all files from a given directory.
-rdf_load(O1, Graph, Dir):-
+rdf_load_any(O1, Dir, Pairs):-
   exists_directory(Dir), !,
   directory_files(
     [file_types([rdf]),include_directories(false),recursive(true)],
     Dir,
     Files
   ),
-  rdf_load(O1, Graph, Files).
-% Extract archives.
-rdf_load(O1, Graph, File1):-
-  access_file(File1, read),
-  is_archive_file(File1), !,
+  rdf_load_any(O1, Files, Pairs).
+rdf_load_any(O1, Input, Pairs):-
+  rdf_load_any_1(O1, Input, Pairs),
+  (
+    option(loaded(Pairs0), O1)
+  ->
+    Pairs0 = Pairs
+  ;
+    true
+  ).
 
-  file_name(File1, Directory, _, _),
-  extract_file(File1),
-  rdf_directory_files(Directory, Files),
 
-  maplist(rdf_load(O1, Graph), Files).
-% Load a single file.
-rdf_load(O1, Graph, File):-
-  access_file(File, read), !,
+%! rdf_load_into_graph(+Options:ist(nvpair), +Graph, +File:atom) is det.
 
-  % Retrieve the graph name.
-  ensure_graph(File, Graph),
+rdf_load_into_graph(O1, Graph, File):-
+  setup_call_cleanup(
+    % Load all files into separate graphs.
+    rdf_load([graph(TmpGraph)|O1], File),
+    % Copy all graphs into a single graph.
+    forall(
+      rdf(S, P, O, TmpGraph),
+      rdf_assert(S, P, O, Graph)
+    ),
+    rdf_unload_graph_debug(TmpGraph)
+  ).
 
-  % Retrieve the RDF format.
+
+
+% HELPERS
+
+rdf_load_any_1(O1, Input, Pairs):-
+  (
+    select_option(graph(Graph), O1, O2), !
+  ;
+    O2 = O1
+  ),
+  findall(
+    Base-Graph,
+    (
+      unpack(Input, Stream, Location),
+      location_base(Location, Base),
+      call_cleanup(
+        load_stream(Stream, Location, Base, [graph(Graph)|O2]),
+        close(Stream)
+      ),
+      rdf_load_any_debug(Graph)
+    ),
+    Pairs
+  ).
+
+rdf_load_any_debug(Graph):-
+  var(Graph), !.
+rdf_load_any_debug(Graph):-
+  rdf_statistics(triples_by_graph(Graph,GraphTriples)),
+  rdf_statistics(triples(AllTriples)),
+  debug(
+    mem_triples,
+    'PLUS ~:d triples (~:d total)',
+    [GraphTriples,AllTriples]
+  ).
+
+
+load_stream(Stream, Location, Base, O1):-
   catch(
-    ensure_format(O1, File, Format),
+    load_stream_(Stream, Location, Base, O1),
     E,
-    print_message(error, E)
+    print_message(warning, E)
+  ).
+
+load_stream_(Stream, Location, Base, O1):-
+  (
+    (
+      file_name_extension(_, Ext, Base),
+      Ext \== '',
+      guess_format(Location.put(ext, Ext), DefFormat)
+    ;
+      guess_format(Location, DefFormat)
+    )
+  ->
+    O2 = [format(DefFormat)|O1]
+  ;
+    O2 = O1
   ),
+  (
+    rdf_guess_format(Stream, Format, O2)
+  ->
+    print_message(informational, rdf_load_any(rdf(Base, Format))),
+    set_stream(Stream, file_name(Base)),
+    rdf_load(
+      stream(Stream),
+      [format(Format),base_uri(Base),register_namespaces(false)|O1]
+    )
+  ;
+    print_message(warning, rdf_load_any(no_rdf(Base))),
+    fail
+  ).
 
-  % XML namespace prefixes must be added explicitly.
-  merge_options(
-    [format(Format),graph(Graph),register_namespaces(false)],
-    O1,
-    O2
-  ),
 
-  % The real job is performed by predicates from the Semweb library.
-  rdf_load(File, O2),
-  rdf_statistics(triples_by_graph(Graph,Triples)),
-  debug(mem_triples, 'PLUS ~:d triples', [Triples]),
+%! location_base(+Location:atom, -BaseUri:atom) is det.
+%  The base URI describes the location from where the data is loaded.
 
-  % Send a debug message notifying that the RDF file was successfully loaded.
-  debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).
+location_base(Location, Base):-
+  location_base_base(Location, Base1),
+  (
+    location_suffix(Location.data, Suffix)
+  ->
+    atomic_list_concat([Base1, Suffix], /, Base)
+  ;
+    Base = Base1
+  ).
+
+location_base_base(Location, Location.get(url)):- !.
+location_base_base(Location, Base):-
+  uri_file_name(Base, Location.get(path)), !.
+location_base_base(Location, Base):-
+  stream_property(Location.get(stream), file_name(FileName)), !,
+  (
+    uri_is_global(FileName)
+  ->
+    Base = FileName
+  ;
+    uri_file_name(Base, FileName)
+  ).
+location_base_base(_Location, Base):-
+  gensym('stream://', Base).
+
+location_suffix([filter(_)|T], Suffix):- !,
+  location_suffix(T, Suffix).
+location_suffix([Archive|T], Suffix):-
+  _{name:data, format:raw} :< Archive, !,
+  location_suffix(T, Suffix).
+location_suffix([Archive|T], Suffix):-
+  (
+    location_suffix(T, Suffix0)
+  ->
+    atomic_list_concat([Archive.name, Suffix0], /, Suffix)
+  ;
+    Suffix = Archive.name
+  ).
+
+
+guess_format(Location, Format):-
+  rdf_content_type(Location.get(content_type), Format), !.
+guess_format(Location, Format):-
+  rdf_db:rdf_file_type(Location.get(ext), Format).
+
+rdf_content_type('text/rdf',      xml).
+rdf_content_type('text/xml',      xml).
+rdf_content_type('text/rdf+xml',    xml).
+rdf_content_type('application/rdf+xml',    xml).
+rdf_content_type('application/x-turtle',  turtle).
+rdf_content_type('application/turtle',    turtle).
+rdf_content_type('application/trig',    trig).
+rdf_content_type('application/n-triples', ntriples).
+rdf_content_type('application/n-quads',   nquads).
+rdf_content_type('text/turtle',      turtle).
+rdf_content_type('text/rdf+n3',      turtle).  % Bit dubious
+rdf_content_type('text/html',      html).
+rdf_content_type('application/xhtml+xml', xhtml).
+
+
+
+% MESSAGES
+
+:- multifile(prolog:message//1).
+
+prolog:message(rdf_load_any(rdf(Base, Format))) -->
+  [ 'RDF in ~q: ~q'-[Base, Format] ].
+prolog:message(rdf_load_any(no_rdf(Base))) -->
+  [ 'No RDF in ~q'-[Base] ].
+
+
+
+/*
+% VOID SUPPORT
+
 % Load more graphs into another graph.
-rdf_load(O1, Graph, Graphs):-
+rdf_load_any(O1, Graph, Graphs):-
   is_list(Graphs),
   maplist(rdf_graph, Graphs), !,
-  maplist(rdf_load(O1, Graph), Graphs).
+  maplist(rdf_load_any(O1, Graph), Graphs).
 % Look for described datasets that should also be added.
-rdf_load(O1, Graph, Graph):-
+rdf_load_any(O1, Graph, Graph):-
   rdf_graph(Graph), !,
   findall(
     Location,
@@ -176,63 +342,12 @@ rdf_load(O1, Graph, Graph):-
     ),
     Locations
   ),
-  maplist(rdf_load(O1, Graph), Locations).
+  maplist(rdf_load_any(O1, Graph), Locations).
+*/
 
 
-%! rdf_load_into_graph(+Options:ist(nvpair), +Graph, +File:atom) is det.
 
-rdf_load_into_graph(O1, Graph, File):-
-  setup_call_cleanup(
-    % Load all files into separate graphs.
-    rdf_load(O1, TmpGraph, File),
-    % Copy all graphs into a single graph.
-    forall(
-      rdf(S, P, O, TmpGraph),
-      rdf_assert(S, P, O, Graph)
-    ),
-    rdf_unload_graph(TmpGraph)
-  ).
-
-
-%! ensure_format(+Options:list(nvpair), +File:atom, -Format:atom) is det.
-% @throws =|mime_error(+File:atom, +Type:oneof(['RDF']), MIME:atom)|=
-
-% Option: format
-ensure_format(O1, _, Format):-
-  option(format(Format), O1), !.
-% Option: mime
-ensure_format(O1, _, Format):-
-  option(mime(MIME), O1),
-  rdf_serialization(_, _, Format, MIMEs, _),
-  memberchk(MIME, MIMEs), !.
-% Option: mime + cleaning
-ensure_format(O1, File, Format):-
-  select_option(mime(MIME), O1, O2), !,
-  debug(rdf_serial, 'Unrecognized RDF MIME: ~a.', [MIME]),
-  ensure_format(O2, File, Format).
-% File extension
-ensure_format(_, File, Format):-
-  file_name_extension(_, Extension, File),
-  rdf_serialization(Extension, _, Format, _, _), !.
-% Parse file
-ensure_format(_, File, Format):-
-  file_mime(File, MIME), !,
-  (
-    rdf_serialization(_, _, Format, MIMEs, _),
-    memberchk(MIME, MIMEs), !
-  ;
-    throw(error(mime_error(File,'RDF',MIME),_))
-  ).
-% Oops
-ensure_format(_, _, turtle):-
-  debug(rdf_serial, 'We cannot establish the serialization format.', []).
-
-
-ensure_graph(_, Graph):-
-  nonvar(Graph), !.
-ensure_graph(File, Graph):-
-  file_to_graph_name(File, Graph).
-
+% RDF SAVING
 
 %! rdf_save(+Options:list, +Graph:atom, ?File:atom) is det.
 % If the file name is not given, then a file name is construed.
@@ -268,15 +383,6 @@ rdf_save(O1, Graph, File2):-
   ).
 % Make up the format.
 rdf_save(O1, Graph, File):-
-  access_file(File, write),
-
-  % Derive the serialization format.
-  catch(
-    ensure_format(O1, File, Format),
-    E,
-    print_message(error, E)
-  ),
-
   (
     % We do not need to save the graph if
     % (1) the contents of the graph did not change, and

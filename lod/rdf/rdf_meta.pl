@@ -47,10 +47,10 @@ rdf_setup_call_cleanup(O1_Load, From, Goal):-
   setup_call_cleanup(
     (
       rdf_new_graph(temp, Graph),
-      rdf_load(O1_Load, Graph, From)
+      rdf_load_any([graph(Graph)|O1_Load], From)
     ),
     call(Goal, Graph),
-    rdf_unload_graph(Graph)
+    rdf_unload_graph_debug(Graph)
   ).
 
 
@@ -90,12 +90,12 @@ rdf_setup_call_cleanup(O1_Load, From, Goal, O1_Save, ToFile):-
   setup_call_cleanup(
     (
       rdf_new_graph(temp, Graph),
-      rdf_load(O1_Load, Graph, From)
+      rdf_load_any([Graph|O1_Load], From)
     ),
     call(Goal, Graph),
     (
       rdf_save(O1_Save, Graph, ToFile),
-      rdf_unload_graph(Graph)
+      rdf_unload_graph_debug(Graph)
     )
   ).
 

@@ -57,7 +57,7 @@ rdf_export_hierarchy(FromGs, Predicate) -->
         graph_to_svg_dom([method(dot)], GIF, SvgDom)
       ),
       % Remove the temporary graph.
-      rdf_unload_graph(ToG)
+      rdf_unload_graph_debug(ToG)
     )
   },
   html(\xml_dom_as_atom(SvgDom)).

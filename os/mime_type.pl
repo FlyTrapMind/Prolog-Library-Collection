@@ -127,7 +127,7 @@ init_mime:-
     File,
     [access(read),extensions([ttl]),file_errors(fail)]
   ), !,
-  rdf_load(File, [format(turtle),graph(mime)]),
+  rdf_load_any([format(turtle),graph(mime)], File),
   mime_register_type(application, 'atom+xml',         atom),
   mime_register_type(application, 'x-rar-compressed', rar ),
   mime_register_type(application, 'x-bibtex',         bib ),

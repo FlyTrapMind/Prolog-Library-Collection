@@ -105,7 +105,7 @@ rdf_gc_triples_by_graph(_):-
   rdf_statistics(triples_by_graph(Graph,Triples)),
   
   % Unload the graph and all of its contents.
-  rdf_unload_graph(Graph),
+  rdf_unload_graph_debug(Graph),
   
   % Display the debug message.
   format(

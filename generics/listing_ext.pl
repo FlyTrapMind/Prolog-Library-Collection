@@ -22,7 +22,7 @@ list_clauserefs(_Stream, []):- !.
 list_clauserefs(Stream, L):-
   is_list(L), !,
   maplist(list_clauserefs(Stream), L).
-list_clauserefs(Stream, Ref) :-
+list_clauserefs(Stream, Ref):-
   clause(Head, Body, Ref),
   portray_clause(Stream, (Head :- Body)).
 
@@ -37,7 +37,7 @@ list_clauses(Stream, Pred, Source):-
     true
   ).
 
-list_declarations(Stream, Pred, Source) :-
+list_declarations(Stream, Pred, Source):-
   findall(
     Decl,
     prolog_listing:declaration(Pred, Source, Decl),
@@ -56,11 +56,11 @@ list_predicate(Stream, Pred, Context):-
   predicate_property(Pred, undefined), !,
   prolog_listing:decl_term(Pred, Context, Decl),
   format(Stream, '%   Undefined: ~q~n', [Decl]).
-list_predicate(Stream, Pred, Context) :-
+list_predicate(Stream, Pred, Context):-
   predicate_property(Pred, foreign), !,
   prolog_listing:decl_term(Pred, Context, Decl),
   format(Stream, '%   Foreign: ~q~n', [Decl]).
-list_predicate(Stream, Pred, Context) :-
+list_predicate(Stream, Pred, Context):-
   notify_changed(Stream, Pred, Context),
   list_declarations(Stream, Pred, Context),
   list_clauses(Stream, Pred, Context).
@@ -99,7 +99,7 @@ listing(Stream, X):-
     list_predicates(Stream, Preds, X)
 ).
 
-notify_changed(Stream, Pred, Context) :-
+notify_changed(Stream, Pred, Context):-
   strip_module(Pred, user, Head),
   predicate_property(Head, built_in),
   \+ predicate_property(Head, (dynamic)), !,
@@ -112,7 +112,7 @@ notify_changed(Stream, Pred, Context) :-
 notify_changed(_Stream, _Pred, _Context).
 
 write_declarations(_Stream, [], _):- !.
-write_declarations(Stream, [H | T], Module) :-
+write_declarations(Stream, [H | T], Module):-
   format(Stream, ':- ~q.~n', [H]),
   write_declarations(Stream, T, Module).
 

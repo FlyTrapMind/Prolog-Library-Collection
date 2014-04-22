@@ -23,13 +23,13 @@ Is it possible to use DCG pushback lists in order to replace occurrences of an a
 <wbeek>   dcg_replace(FromDCG, ToDCG).
 <wbeek> The above predicate does not have tail recursion. Is it possible to fix this?
 <wbeek> The listing is as follows:
-<wbeek> dcg_replace(_, _, [], []) :- !.
-<wbeek> dcg_replace(A, D, B, F) :-
+<wbeek> dcg_replace(_, _, [], []):- !.
+<wbeek> dcg_replace(A, D, B, F):-
 <wbeek>  phrase(A, B, C), !,
 <wbeek>  E=C,
 <wbeek>  dcg_replace(A, D, E, G),
 <wbeek>  phrase(D, F, G).
-<wbeek> dcg_replace(B, C, A, E) :-
+<wbeek> dcg_replace(B, C, A, E):-
 <wbeek>  A=[F|D],
 <wbeek>  dcg_replace(B, C, D, G),
 <wbeek>  E=[F|G].
@@ -83,12 +83,12 @@ Is it possible to use DCG pushback lists in order to replace occurrences of an a
 <ski> btw, i'm somewhat surprised to see the DCG transpiler residualized `E=C' above, instead of executing it statically, replacing `E' and `C' with a common variable
 <wbeek> ski : not ramblings at all. I find both your initial explanation and your subsequent discussion very useful.
 <wbeek> ski : unification in the head would probably result in the following:
-<wbeek> dcg_replace(_, _, [], []) :- !.
-<wbeek> dcg_replace(A, D, B, F) :-
+<wbeek> dcg_replace(_, _, [], []):- !.
+<wbeek> dcg_replace(A, D, B, F):-
 <wbeek>  phrase(A, B, C), !,
 <wbeek>  dcg_replace(A, D, C, G),
 <wbeek>  phrase(D, F, G).
-<wbeek> dcg_replace(B, C, [F|D], [F|G]) :-
+<wbeek> dcg_replace(B, C, [F|D], [F|G]):-
 <wbeek>  dcg_replace(B, C, D, G).
 <ski> (later compiler phases might remove such goals anyway, but iirc it already goes to some effort to avoid generating such needless trivial goals, so why not here as well ? mayhaps i misremember of the "already goes to some effort")
 <ski> wbeek : yea
@@ -159,7 +159,7 @@ Is it possible to use DCG pushback lists in order to replace occurrences of an a
 <ski> (you'd possibly need to ponder how to do the right thing when the two lists being compared for non-tail-part are partial (can it happen in sensible code ?))
 <ski> i think it's just simpler to declare "don't do that, then". i.e. say in the docs that the predicate can only be expected to work in case `FromDCG' can't match and (possibly) expand on the empty contiguous sublist, and likewise (though conversely) for `ToDCG' (for symmetry, mostly)
 <ski> concretely, this means replacing
-<ski>   dcg_replace(_, _, [], []) :- !.
+<ski>   dcg_replace(_, _, [], []):- !.
 <ski> with
 <ski>   dcg_replace(_, _, Ts, Ts).
 <ski> which is the same as
@@ -185,7 +185,7 @@ Is it possible to use DCG pushback lists in order to replace occurrences of an a
 <ski> so is there an example that doesn't violate that requirement ?
 <ski> hm, actually, i don't think there are
 <ski> considering
-<ski>   dcg_replace(_, _, [], []) :- !.
+<ski>   dcg_replace(_, _, [], []):- !.
 <ski> where we're only considering the mode (+(+,-),+(-,+),+,-) (which is probably how the predicate will normally used anyway)
 <ski> to trigger the non-steadfastness, we need to make the behaviour differ according to whether the "output" (iow last argument) is actually provided as "extra input" or not
 <ski> the the last argument is `[]', then there's no difference
@@ -238,13 +238,13 @@ Is it possible to use DCG pushback lists in order to replace occurrences of an a
 % The listing of the above DCG rule more clearly shows the non-steadfastness:
 %
 % ~~~{.pl
-% dcg_replace(_, _, [], []) :- !.
-% dcg_replace(A, D, B, F) :-
+% dcg_replace(_, _, [], []):- !.
+% dcg_replace(A, D, B, F):-
 %   phrase(A, B, C), !,
 %   E=C,
 %   dcg_replace(A, D, E, G),
 %   phrase(D, F, G).
-% dcg_replace(B, C, A, E) :-
+% dcg_replace(B, C, A, E):-
 %   A=[F|D],
 %   dcg_replace(B, C, D, G),
 %   E=[F|G].
@@ -261,8 +261,8 @@ dcg_replace(FromDCG, ToDCG, X, Y):-
   dcg_replace0(FromDCG, ToDCG, X, Y).
 
 :- meta_predicate(dcg_replace0(//,//,?,?)).
-dcg_replace0(_, _, [], []) :- !.
-dcg_replace0(FromDCG, ToDCG, L1, L2) :-
+dcg_replace0(_, _, [], []):- !.
+dcg_replace0(FromDCG, ToDCG, L1, L2):-
   % Parse.
   nonvar(L1),
   phrase(FromDCG, L1, L11), !,

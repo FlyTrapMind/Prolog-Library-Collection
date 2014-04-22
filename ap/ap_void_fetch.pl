@@ -35,7 +35,7 @@ void_fetch(FromDir, ToDir, ApStage):-
 
 
 void_fetch_file(ApStage, FromFile, RdfDataset):-
-  rdf_load([void(true)], Graph, FromFile),
+  rdf_load_any([graph(Graph),void(true)], FromFile),
   (
     void_dataset(Graph, RdfDataset)
   ->

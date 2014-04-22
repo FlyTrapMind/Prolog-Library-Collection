@@ -84,7 +84,7 @@ rfc5646_init:-
     rdf_graph_property(_, source(File)), !
   ;
     % The RDF graph is availalbe in serialized format but not loaded.
-    rdf_load([], rfc5646, File)
+    rdf_load_any([graph(rfc5646)], File)
   ).
 % The RDF graph is not available, create it from the text file.
 rfc5646_init:-

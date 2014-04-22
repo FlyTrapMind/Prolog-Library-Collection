@@ -28,7 +28,7 @@
 
 load_kadaster:-
   absolute_file_name(kadaster, File, [access(read)]),
-  rdf_load([format(turtle)], kadaster, File).
+  rdf_load_any([format(turtle),graph(kadaster)], File).
 
 query_kadaster(Resources):-
   phrase(

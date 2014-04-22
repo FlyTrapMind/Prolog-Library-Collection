@@ -93,26 +93,26 @@ prolog:allow(_,     _, _,      '/session/eq',       _).
 prolog:allow(admin, _, get,    '/statistics', _).
 
 % Deny if user is using a Safari browser
-% deny(_, _, _, _, Request) :-
+% deny(_, _, _, _, Request):-
 %   memberchk(user_agent(UserAgent), Request),
 %   sub_atom(UserAgent, _, _, _, 'Safari').
 
 % Deny if too late in the night (server-side)
-% deny(_, _, _, _, Request) :-
+% deny(_, _, _, _, Request):-
 %   get_time(TimeStamp),
 %   stamp_date_time(TimeStamp, DateTime, local),
 %   date_time_value(hour, DateTime, Hour),
 %   Hour >= 22.
 
 % Deny if too much content
-% deny(_, _, Method, _, Request) :-
+% deny(_, _, Method, _, Request):-
 %   memberchk(Method, [put, post]),
 %   memberchk(content_length(Bytes), Request),
 %   Bytes > 1000.
 
 % Deny if no quota
 % :- dynamic quota/2.
-% deny(_, User, Method, Path, _) :-
+% deny(_, User, Method, Path, _):-
 %   (   quota(User, N)
 %   ->  (   N > 0
 %     ->  N1 is N - 1,

@@ -54,7 +54,7 @@ logged_in(UserName):-
 %! login(+UserName:atom) is det.
 % Accept the given user as logged into the current session.
 
-login(UserName) :-
+login(UserName):-
   get_time(LoginTime),
   http_session_id(Session),
   with_mutex(

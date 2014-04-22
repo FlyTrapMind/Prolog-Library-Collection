@@ -76,7 +76,7 @@ parse_file(File1, NS, G):-
   debug(xml_to_rdf, 'About to save triples to file with ~:d global stack.',
       [Limit]),
   rdf_save(File2, [format(turtle),graph(G)]),
-  rdf_unload_graph(G).
+  rdf_unload_graph_debug(G).
 
 
 %! xml_parse(+XmlNamespace:atom, +RdfGraph:atom)// is det.
