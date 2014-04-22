@@ -69,7 +69,6 @@ since most datasets are published in a non-standard way.
 :- use_module(http(http_download)).
 :- use_module(http(http_download_ext)).
 :- use_module(os(archive_ext)).
-:- use_module(os(archive_gnu)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
