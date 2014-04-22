@@ -114,7 +114,6 @@ rdf_load(O1, Graph, Files):-
   ), !,
   rdf_new_graph(Graph),
   maplist(rdf_load_into_graph(O1, Graph), Files).
-
 % Load all files from a given directory.
 rdf_load(O1, Graph, Dir):-
   exists_directory(Dir), !,
@@ -157,6 +156,8 @@ rdf_load(O1, Graph, File):-
 
   % The real job is performed by predicates from the Semweb library.
   rdf_load(File, O2),
+  rdf_statistics(triples_by_graph(Graph,Triples)),
+  debug(mem_triples, 'PLUS ~:d triples', [Triples]),
 
   % Send a debug message notifying that the RDF file was successfully loaded.
   debug(rdf_serial, 'RDF graph was loaded from file ~w.', [File]).

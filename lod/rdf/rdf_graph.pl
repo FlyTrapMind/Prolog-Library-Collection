@@ -31,10 +31,11 @@
                   % -Triples:ordset(compound)
     rdf_subgraph/2, % +Graph1:atom
                     % +Graph2:atom
-    rdf_triple/4 % ?Subject:or([bnode,iri])
-                 % ?Predicate:iri
-                 % ?Object:or([bnode,literal,iri])
-                 % ?Triple:triple
+    rdf_triple/4, % ?Subject:or([bnode,iri])
+                  % ?Predicate:iri
+                  % ?Object:or([bnode,literal,iri])
+                  % ?Triple:triple
+    rdf_unload_graph_deb/1 % +Graph:atom
   ]
 ).
 
@@ -46,16 +47,18 @@ Predicates that apply to entire RDF graphs.
 @see Graph theory support for RDF is found in module rdf_graph_theory.pl.
 @see For conversions from/to serialization formats, see module rdf_serial.pl.
 @tbd How to do backward chaining in query/[3,4]?
-@version 2012/01-2013/05, 2013/07-2013/08, 2013/11
+@version 2012/01-2013/05, 2013/07-2013/08, 2013/11, 2014/04
 */
 
-:- use_module(generics(list_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
+:- use_module(library(debug)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+
+:- use_module(generics(list_ext)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf_term(rdf_term)).
 
@@ -294,4 +297,20 @@ rdf_triple(S1, P1, O1, Triple):-
   maplist(rdf_global_id, [S1,P1,O1], [S2,P2,O2]),
   Triple = rdf(S2,P2,O2).
 rdf_triple(S, P, O, rdf(S,P,O)).
+
+
+rdf_unload_graph_deb(Graph):-
+  rdf_statistics(triples_by_graph(Graph,Triples)),
+  rdf_unload_graph(Graph),
+  debug(mem_triples, 'MINUS ~:d triples', [Triples]).
+  %%%%print_message(informational, rdf_unload_graph(Graph,Triples)).
+
+
+
+% MESSAGES
+
+:- multifile(prolog:message//1).
+
+prolog:message(rdf_unload_graph(_,Triples)) -->
+  ['MINUS ~:d triples'-[Triples]].
 
