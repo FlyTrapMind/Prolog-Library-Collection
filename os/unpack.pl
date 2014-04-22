@@ -1,11 +1,15 @@
 :- module(unpack,
 	  [ unpack/3			% +Spec, -Stream, -Location
 	  ]).
-:- use_module(library(http/http_open)).
-:- use_module(library(archive)).
-:- use_module(library(uri)).
-:- use_module(library(lists)).
+
 :- use_module(library(apply)).
+:- use_module(library(archive)).
+:- use_module(library(http/http_cookie)).
+:- use_module(library(http/http_log)).
+:- use_module(library(http/http_open)).
+:- use_module(library(http/http_ssl_plugin.pl)).
+:- use_module(library(lists)).
+:- use_module(library(uri)).
 
 /** <module> Unpack encoded and archived material
 */
