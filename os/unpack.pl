@@ -55,7 +55,8 @@ open_input(In, In, stream{stream:In}, false) :-
 open_input(URL, In, Meta, true) :-
 	uri_components(URL, Components),
 	uri_data(scheme, Components, Scheme),
-	nonvar(Scheme), !,
+	nonvar(Scheme), 
+  Scheme \== file, !,
 	open_url(Scheme, URL, In, Meta).
 open_input(URL, In, file{path:File}, true) :-
 	uri_file_name(URL, File), !,
@@ -95,13 +96,6 @@ open_url(Scheme, URL, In, Meta) :-
 			 last_modified=ModifiedText
 		       ], Pairs),
 	dict_pairs(Meta, url, [url-URL|Pairs]).
-open_url(file, URL, In, Meta) :-
-	uri_file_name(URL, File),
-	Meta = file{path:File},
-	open(File, read, In, [type(binary)]).
-open_input(_, URL, _, _) :-
-	print_message(warning, unpack(cannot_open(URL))),
-	fail.
 
 http_scheme(http).
 http_scheme(https).
