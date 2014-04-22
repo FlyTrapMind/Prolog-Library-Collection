@@ -301,7 +301,7 @@ rdf_triple(S, P, O, rdf(S,P,O)).
 
 rdf_unload_graph_debug(Graph):-
   rdf_statistics(triples_by_graph(Graph,GraphTriples)),
-  rdf_unload_graph_debug(Graph),
+  rdf_unload_graph(Graph),
   rdf_statistics(triples(AllTriples)),
   debug(
     mem_triples,

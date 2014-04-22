@@ -86,27 +86,6 @@ since most datasets are published in a non-standard way.
 
 
 
-% SUPPORT FOR RDFA
-
-:- multifile
-  rdf_db:rdf_load_stream/3,
-  rdf_db:rdf_file_type/2.
-rdf_db:rdf_load_stream(rdfa, Stream, _:O1):-
-  (
-    option(graph(Graph), O1),
-    nonvar(Graph), !
-  ;
-    option(base_uri(Graph), O1)
-  ),
-  read_rdfa(Stream, Triples, []),
-  forall(
-    member(rdf(S,P,O), Triples),
-    rdf_assert(S, P, O, Graph)
-  ).
-rdf_db:rdf_file_type(rdfa, rdfa).
-
-
-
 % RDF LOADING
 
 rdf_load_any(O1, Input):-
@@ -121,14 +100,7 @@ rdf_load_any(O1, Input):-
 %
 % The following options are supported:
 %   * =|format(+Format:oneof([ntriples,turtle,xml]))|=
-%   * =|mime(+MIME:oneof(['application/rdf+xml','application/x-turtle','text/plain','text/rdf+n3']))|=
 %   * =|void(+LoadVoid:boolean)|=
-%
-% @arg Options A list of name-value pairs.
-% @arg Graph The atomic name of an RDF graph.
-% @arg Input Either a file, a list of files, or a directory.
-%
-% @throws =|mime_error(+File:atom, +Type:oneof(['RDF']), MIME:atom)|=
 
 % Loads multiple inputs.
 rdf_load_any(O1, Input, Pairs):-
@@ -191,10 +163,8 @@ rdf_load_any_1(O1, Input, Pairs):-
     (
       unpack(Input, Stream, Location),
       location_base(Location, Base),
-      call_cleanup(
-        load_stream(Stream, Location, Base, [graph(Graph)|O2]),
-        close(Stream)
-      ),
+      load_stream(Stream, Location, Base, [graph(Graph)|O2]),
+      close(Stream),
       rdf_load_any_debug(Graph)
     ),
     Pairs

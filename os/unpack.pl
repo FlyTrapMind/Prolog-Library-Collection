@@ -55,7 +55,7 @@ open_input(In, In, stream{stream:In}, false) :-
 open_input(URL, In, Meta, true) :-
 	uri_components(URL, Components),
 	uri_data(scheme, Components, Scheme),
-	nonvar(Scheme), 
+	nonvar(Scheme),
   Scheme \== file, !,
 	open_url(Scheme, URL, In, Meta).
 open_input(URL, In, file{path:File}, true) :-
