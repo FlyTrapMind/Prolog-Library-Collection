@@ -6,6 +6,8 @@
 :- use_module(library(uri)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(http/http_cookies)).
+:- use_module(library(http/http_ssl_plugin)).
 
 /** <module> Unpack encoded and archived material
 */
