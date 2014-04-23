@@ -79,7 +79,7 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
   ).
 
 
-void_rdf_load_any(O1, Input1, Pairs2):-
+void_rdf_load_any(O1, Input1, Pairs3):-
   rdf_load_any(O1, Input1, Pairs1),
   findall(
     Pair,
@@ -93,7 +93,8 @@ void_rdf_load_any(O1, Input1, Pairs2):-
       member(Pair, Pairs1)
     ),
     Pairs2
-  ).
+  ),
+  union(Pairs1, Pairs2, Pairs3).
 
 
 void_url('http://vocab.deri.ie/void.ttl').
