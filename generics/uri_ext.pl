@@ -255,32 +255,68 @@ url_nested_directory(ParentDir1, Url, Dir):-
   make_directory_path(Dir).
 
 
-%! url_nested_file(+ParentDirectory:atom, +Url:url, -File:atom) is det.
+%! url_nested_file(+ParentDirectory, +Url:url, -File:atom) is det.
 % Returns a nested path denoting a regular file
-% that is as similar as possible to the original URL.
+% that is based on the original URL.
+%
+% The purpose of this predicate is to create file names that
+% resemble the URL as most as possible for a human being to discern.
+%
+% @arg ParentDirectory The directory relative to which
+%      the URL-based files are stored.
+%      This is either (1) an absolute file name of a directory file,
+%      or (2) a relative file name of a directory file,
+%      or (3) a specification of the form `outer(inner)`,
+%      where `outer` can be resolved using `user:file_search_path/2`
+%      declarations.
+% @arg Url A standards-compliant URL on which the file name is based.
+% @arg File A non-directory absolute file name,
+%      whose directory either exists or is created by this predicate.
 
 url_nested_file(ParentDir1, Url, File):-
+  % Extract the URL components that will be used.
   uri_component(Url, scheme, Scheme),
   uri_component(Url, authority, Authority),
   uri_component(Url, path, Path),
-  % Be very careful here! According to the Prolog library
-  % a file that ends in `.../a/b/` has `.../a` as its directory.
-  % We explicitly circumvent such cases here.
+  
+  % Make sure the path ends in a non-directory file.
+  %
+  % According to the Prolog library a file ending in `.../a/b/`
+  % has `.../a` as its directory.
+  % If we do nothing we would end up with the non-directory file `.../a/b`.
+  % Now, a problem occurs in case another file `.../a/b/c` exists,
+  % since `.../a/b` is now supposed to be a directory file.
+  %
+  % We circumvent this by adding a dummy file name.
+  % This means that data about a directory file are stored in
+  % a summy file of that directory.
   (
-    sub_atom(Url, _, 1, 0, '/')
+    sub_atom(Path, _, 1, 0, '/')
   ->
     PathDir = Path,
-    PathBase = directory_dummy
+    Base = directory_dummy
   ;
     file_directory_name(Path, PathDir),
-    file_base_name(Path, PathBase)
+    file_base_name(Path, Base)
   ),
+  
+  % Use (1) the URL scheme, (2) the URL authority,
+  % and (3) the directory-part of the URL path to construct
+  % the directory of the URL-based file.
   directory_subdirectories(PathDir, PathDirComponents),
   directory_subdirectories(UrlPath, [Scheme,Authority|PathDirComponents]),
+  
+  % Resolve the parent directory input to an absolute file name.
   absolute_file_name(ParentDir1, ParentDir2, [file_type(directory)]),
+  
+  % The URL path is now created relative to the parent directory.
   relative_file_path(Dir, ParentDir2, UrlPath),
+  
+  % Make sure the directory exists.
   make_directory_path(Dir),
-  absolute_file_name(PathBase, File, [relative_to(Dir)]).
+  
+  % Return the file.
+  directory_file_path(Dir, Base, File).
 
 
 %! url_rdf_graph(+Url:url, -RdfGraph:atom) is det.
