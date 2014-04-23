@@ -148,7 +148,7 @@ rdf_load_any_1(O1, Input, Pairs):-
     (
       unpack(Input, Stream, Location),
       location_base(Location, Base),
-      load_stream(Stream, Location, Base, [graph(Graph)|O2]),
+      load_stream_(Stream, Location, Base, [graph(Graph)|O2]),
       close(Stream),
       rdf_load_any_debug(Graph)
     ),
