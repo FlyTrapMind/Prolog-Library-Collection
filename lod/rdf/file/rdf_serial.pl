@@ -190,7 +190,7 @@ load_stream_(Stream, Location, Base, O1):-
   (
     rdf_guess_format(Stream, Format, O2)
   ->
-    print_message(informational, rdf_load_any(rdf(Base, Format))),
+    %print_message(informational, rdf_load_any(rdf(Base, Format))),
     set_stream(Stream, file_name(Base)),
     rdf_load(
       stream(Stream),
