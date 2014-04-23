@@ -4,8 +4,11 @@
     void_dataset_location/3, % +VoidGraph:atom
                              % +VoidDataset:iri
                              % -DatadumpFile:atom
-    void_dataset/2 % +VoidGraph:atom
-                   % -VoidDataset:iri
+    void_dataset/2, % +VoidGraph:atom
+                    % -VoidDataset:iri
+    void_rdf_load_any/3 % +Options:list(nvpair)
+                        % +Input
+                        % -Pairs:list(pair(atom))
   ]
 ).
 
@@ -14,14 +17,16 @@
 Generic support for VoID, used by other VoID modules.
 
 @author Wouter Beek
-@version 2013/11, 2014/03
+@version 2013/11, 2014/03-2014/04
 */
+
+:- use_module(library(lists)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
 
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(http(http_download)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
 :- use_module(os(file_ext)).
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_term(rdf_term)).
@@ -36,7 +41,13 @@ Generic support for VoID, used by other VoID modules.
 
 void_init(G):-
   void_url(Url),
-  rdf_load_any([graph(G)], Url).
+  (
+    nonvar(G)
+  ->
+    rdf_load_any([graph(G)], Url)
+  ;
+    rdf_load_any([], Url, [_-G])
+  ).
 
 
 
@@ -65,6 +76,23 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
     rdf_graph_property(VoidGraph, source(VoidFile)),
     file_name(VoidFile, VoidDirectory, _, _),
     relative_file_path(DatadumpFile, VoidDirectory, DatadumpLocation)
+  ).
+
+
+void_rdf_load_any(O1, Input1, Pairs2):-
+  rdf_load_any(O1, Input1, Pairs1),
+  findall(
+    Pair,
+    (
+      member(_-Graph, Pairs1),
+      void_db:void_dataset(Graph, Dataset),
+      void_db:void_dataset_location(Graph, Dataset, Input2),
+      \+ member(Input2-_, Pairs1),
+      merge_options(O1, [graph(Graph)], O2),
+      void_rdf_load_any(O2, Input2, Pairs1),
+      member(Pair, Pairs1)
+    ),
+    Pairs2
   ).
 
 

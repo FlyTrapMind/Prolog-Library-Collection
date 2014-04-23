@@ -90,7 +90,7 @@ rdf_setup_call_cleanup(O1_Load, From, Goal, O1_Save, ToFile):-
   setup_call_cleanup(
     (
       rdf_new_graph(temp, Graph),
-      rdf_load_any([Graph|O1_Load], From)
+      rdf_load_any([graph(Graph)|O1_Load], From)
     ),
     call(Goal, Graph),
     (

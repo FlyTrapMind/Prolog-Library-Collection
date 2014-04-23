@@ -31,11 +31,10 @@
                   % -Triples:ordset(compound)
     rdf_subgraph/2, % +Graph1:atom
                     % +Graph2:atom
-    rdf_triple/4, % ?Subject:or([bnode,iri])
-                  % ?Predicate:iri
-                  % ?Object:or([bnode,literal,iri])
-                  % ?Triple:triple
-    rdf_unload_graph_debug/1 % +Graph:atom
+    rdf_triple/4 % ?Subject:or([bnode,iri])
+                 % ?Predicate:iri
+                 % ?Object:or([bnode,literal,iri])
+                 % ?Triple:triple
   ]
 ).
 
@@ -297,15 +296,4 @@ rdf_triple(S1, P1, O1, Triple):-
   maplist(rdf_global_id, [S1,P1,O1], [S2,P2,O2]),
   Triple = rdf(S2,P2,O2).
 rdf_triple(S, P, O, rdf(S,P,O)).
-
-
-rdf_unload_graph_debug(Graph):-
-  rdf_statistics(triples_by_graph(Graph,GraphTriples)),
-  rdf_unload_graph(Graph),
-  rdf_statistics(triples(AllTriples)),
-  debug(
-    mem_triples,
-    'MINUS ~:d triples (~:d total)',
-    [GraphTriples,AllTriples]
-  ).
 

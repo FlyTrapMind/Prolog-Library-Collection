@@ -188,7 +188,7 @@ oaei_file_to_alignments(F, A_Pairs):-
       file_name(F, _Dir, G1, _Ext),
       % Make sure the graph name is unique.
       rdf_new_graph(G1, G2),
-      rdf_load_any([graph(G2)], F)
+      rdf_load_any([], F, [_-G2])
     ),
     oaei_file_to_alignments_(G2, A_Pairs),
     rdf_unload_graph_debug(G2)

@@ -6,9 +6,10 @@
     rdf_load_any/3, % +Options:list(nvpair)
                     % +Input
                     % -Pairs:list(pair(atom))
-    rdf_save/3 % +Options:list(nvpair)
-               % +Graph:atom
-               % ?File:atom
+    rdf_save/3, % +Options:list(nvpair)
+                % +Graph:atom
+                % ?File:atom
+    rdf_unload_graph_debug/1 % +Graph:atom
   ]
 ).
 
@@ -28,7 +29,6 @@ since most datasets are published in a non-standard way.
          2013/08-2013/09, 2013/11, 2014/01-2014/04
 */
 
-:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(http/http_ssl_plugin)).
@@ -55,38 +55,29 @@ since most datasets are published in a non-standard way.
 % rdf_file_type(ntriples, ntriples).
 % rdf_file_type(nq,       nquads  ).
 % rdf_file_type(nquads,   nquads  ).
-:- use_module(library(semweb/rdf_ntriples)).
+:- use_module(library(semweb/rdf_ntriples)). % Serialization format support.
 :- use_module(library(semweb/rdf_turtle_write)).
 % rdf_open_decode(gzip, ...)
 % rdf_storage_encoding(gz, gzip)
 :- use_module(library(semweb/rdf_zlib_plugin)).
-:- use_module(library(semweb/rdfa)).
+% rdf_file_type(html, rdfs).
+:- use_module(library(semweb/rdfa)). % Serialization format support.
 % rdf_file_type(ttl,  turtle).
 % rdf_file_type(n3,   turtle).
 % rdf_file_type(trig, trig  ).
 :- use_module(library(semweb/turtle)).
 :- use_module(library(thread)).
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(generics(uri_ext)).
-:- use_module(http(http_download)).
-:- use_module(http(http_download_ext)).
-:- use_module(os(archive_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(os(file_mime)).
 :- use_module(os(unpack)).
+:- use_module(rdf(rdf_build)).
 :- use_module(rdf(rdf_graph_name)).
-:- use_module(rdf(rdf_meta)).
 :- use_module(rdf_file(rdf_detect)).
-:- use_module(rdf_file(rdf_file)).
 :- use_module(rdf_file(rdf_ntriples_write)).
 :- use_module(rdf_file(rdf_serial)).
 
 
-
-% RDF LOADING
 
 rdf_load_any(O1, Input):-
   rdf_load_any(O1, Input, _).
@@ -103,11 +94,23 @@ rdf_load_any(O1, Input):-
 %   * =|void(+LoadVoid:boolean)|=
 
 % Loads multiple inputs.
-rdf_load_any(O1, Input, Pairs):-
-  is_list(Input), !,
-  concurrent_maplist(rdf_load_any_1(O1), Input, PairsList),
+rdf_load_any(O1, Inputs, Pairs):-
+  is_list(Inputs), !,
+  concurrent_maplist(rdf_load_any_1(O1), Inputs, PairsList),
   append(PairsList, Pairs),
   (
+    option(graph(Graph), O1),
+    nonvar(Graph)
+  ->
+    % Copy all triples to the central graph.
+    forall(
+      member(_-TmpGraph, Pairs),
+      call_cleanup(
+        rdf_copy(TmpGraph, _, _, _, Graph),
+        rdf_unload_graph_debug(TmpGraph)
+      )
+    )
+  ;
     option(loaded(Pairs0), O1)
   ->
     Pairs0 = Pairs
@@ -123,6 +126,7 @@ rdf_load_any(O1, Dir, Pairs):-
     Files
   ),
   rdf_load_any(O1, Files, Pairs).
+% A single, non-directory input.
 rdf_load_any(O1, Input, Pairs):-
   rdf_load_any_1(O1, Input, Pairs),
   (
@@ -132,25 +136,6 @@ rdf_load_any(O1, Input, Pairs):-
   ;
     true
   ).
-
-
-%! rdf_load_into_graph(+Options:ist(nvpair), +Graph, +File:atom) is det.
-
-rdf_load_into_graph(O1, Graph, File):-
-  setup_call_cleanup(
-    % Load all files into separate graphs.
-    rdf_load([graph(TmpGraph)|O1], File),
-    % Copy all graphs into a single graph.
-    forall(
-      rdf(S, P, O, TmpGraph),
-      rdf_assert(S, P, O, Graph)
-    ),
-    rdf_unload_graph_debug(TmpGraph)
-  ).
-
-
-
-% HELPERS
 
 rdf_load_any_1(O1, Input, Pairs):-
   (
@@ -180,7 +165,6 @@ rdf_load_any_debug(Graph):-
     'PLUS ~:d triples (~:d total)',
     [GraphTriples,AllTriples]
   ).
-
 
 load_stream(Stream, Location, Base, O1):-
   catch(
@@ -260,7 +244,6 @@ location_suffix([Archive|T], Suffix):-
     Suffix = Archive.name
   ).
 
-
 guess_format(Location, Format):-
   rdf_content_type(Location.get(content_type), Format), !.
 guess_format(Location, Format):-
@@ -281,43 +264,6 @@ rdf_content_type('text/html',      html).
 rdf_content_type('application/xhtml+xml', xhtml).
 
 
-
-% MESSAGES
-
-:- multifile(prolog:message//1).
-
-prolog:message(rdf_load_any(rdf(Base, Format))) -->
-  [ 'RDF in ~q: ~q'-[Base, Format] ].
-prolog:message(rdf_load_any(no_rdf(Base))) -->
-  [ 'No RDF in ~q'-[Base] ].
-
-
-
-/*
-% VOID SUPPORT
-
-% Load more graphs into another graph.
-rdf_load_any(O1, Graph, Graphs):-
-  is_list(Graphs),
-  maplist(rdf_graph, Graphs), !,
-  maplist(rdf_load_any(O1, Graph), Graphs).
-% Look for described datasets that should also be added.
-rdf_load_any(O1, Graph, Graph):-
-  rdf_graph(Graph), !,
-  findall(
-    Location,
-    (
-      void_db:void_dataset(Graph, Dataset),
-      void_db:void_dataset_location(Graph, Dataset, Location)
-    ),
-    Locations
-  ),
-  maplist(rdf_load_any(O1, Graph), Locations).
-*/
-
-
-
-% RDF SAVING
 
 %! rdf_save(+Options:list, +Graph:atom, ?File:atom) is det.
 % If the file name is not given, then a file name is construed.
@@ -391,4 +337,28 @@ rdf_save(_, triples, Graph, File):- !,
 rdf_save(O1, turtle, Graph, File):- !,
   merge_options([graph(Graph)], O1, O2),
   rdf_save_canonical_turtle(File, O2).
+
+
+%! rdf_unload_graph_debug(+Graph:atom) is det.
+
+rdf_unload_graph_debug(Graph):-
+  rdf_statistics(triples_by_graph(Graph,GraphTriples)),
+  rdf_unload_graph(Graph),
+  rdf_statistics(triples(AllTriples)),
+  debug(
+    mem_triples,
+    'MINUS ~:d triples (~:d total)',
+    [GraphTriples,AllTriples]
+  ).
+
+
+
+% MESSAGES
+
+:- multifile(prolog:message//1).
+
+prolog:message(rdf_load_any(rdf(Base, Format))) -->
+  [ 'RDF in ~q: ~q'-[Base, Format] ].
+prolog:message(rdf_load_any(no_rdf(Base))) -->
+  [ 'No RDF in ~q'-[Base] ].
 

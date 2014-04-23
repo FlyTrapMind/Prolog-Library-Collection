@@ -43,7 +43,13 @@ user:web_module('RDF vocabulary', rdf_vocabulary).
 
 load_rdf_vocabulary(G):-
   rdfs_vocabulary_url(Url),
-  rdf_load_any([graph(G)], Url).
+  (
+    nonvar(G)
+  ->
+    rdf_load_any([graph(G)], Url)
+  ;
+    rdf_load_any([], Url, [_-G])
+  ),
   materialize(
     [entailment_regimes([rdf,rdfs]),multiple_justifications(false)],
     G

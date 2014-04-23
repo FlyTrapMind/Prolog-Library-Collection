@@ -29,7 +29,7 @@ DBpedia publishes the following three kind of files about categories:
 
 dbpedia_load_categories:-
   dbpedia_categories_url(Url),
-  rdf_load_any([graph(G)], Url),
+  rdf_load_any([], Url, [_-G]),
   write(G).
 
 dbpedia_categories_url(
