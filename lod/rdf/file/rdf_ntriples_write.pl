@@ -23,7 +23,7 @@ This means that we can guarantee that the number of triples
 @compat http://www.w3.org/TR/2014/REC-n-triples-20140225/
 @tbd We would like to serialize no duplicate triples.
      Provide this at least as an option.
-@version 2014/03
+@version 2014/03-2014/04
 */
 
 :- use_module(library(apply)).
@@ -43,9 +43,11 @@ This means that we can guarantee that the number of triples
 % The following options are supported:
 %   * =|graph(?Graph:atom)|=
 %     The atomic name of a currently loaded RDF graph,
-%      to restrict the triples that are saved,
-%      or uninstantiated, in which case
-%      all currently loaded triples are saved.
+%     to restrict the triples that are saved,
+%     or uninstantiated, in which case
+%     all currently loaded triples are saved.
+%   * =|number_of_triples(-Triples:nonneg)|=
+%     The number of triples that was written.
 %
 % @arg File The atomic name of a file.
 % @arg Options A list of name-value pairs.
@@ -59,12 +61,17 @@ rdf_ntriples_write(File1, O1):-
   ).
 
 
+%! rdf_write_ntriples(+Output:stream, +Options:list(nvpair))is det.
+
 rdf_write_ntriples(Out, O1):-
+  % Reset the triple counter.
+  flag(number_of_ntriples, _, 0),
+
   % Reset the blank node store.
   retractall(bnode_counter/1),
   assert(bnode_counter(0)),
   retractall(bnode_map/1),
-  
+
   (
     option(graph(Graph), O1)
   ->
@@ -78,10 +85,21 @@ rdf_write_ntriples(Out, O1):-
       rdf(S, P, O),
       rdf_write_ntriple(Out, S, P, O)
     )
+  ),
+
+  % Statistics option: number of triples written.
+  flag(number_of_ntriples, N, 0),
+  (
+    option(number_of_triples(N0), O1)
+  ->
+    N0 = N
+  ;
+    true
   ).
 
 
 rdf_write_ntriple(Out, S, P, O):-
+  flag(number_of_ntriples, X, X + 1),
   rdf_write_term_space(Out, S),
   rdf_write_term_space(Out, P),
   rdf_write_term_space(Out, O),
