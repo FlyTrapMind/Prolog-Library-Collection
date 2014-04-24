@@ -143,10 +143,12 @@ rdf_load_any_1(O1, Input, Pairs):-
     (
       unpack(Input, Stream, Location),
       call_cleanup(
-	  ( location_base(Location, Base),
-	    load_stream_(Stream, Location, Base, [graph(Graph)|O1])
-	  ),
-	  close(Stream)),
+        (
+          location_base(Location, Base),
+          load_stream_(Stream, Location, Base, [graph(Graph)|O1])
+        ),
+        close(Stream)
+      ),
       rdf_load_any_debug(Graph)
     ),
     Pairs
@@ -188,7 +190,7 @@ load_stream_(Stream, Location, Base, O1):-
   (
     rdf_guess_format(Stream, Format, O2)
   ->
-    %print_message(informational, rdf_load_any(rdf(Base, Format))),
+    print_message(informational, rdf_load_any(rdf(Base, Format))),
     set_stream(Stream, file_name(Base)),
     rdf_load(
       stream(Stream),
