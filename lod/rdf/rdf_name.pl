@@ -164,7 +164,8 @@ rdf_typed_literal_name(literal(type(DatatypeIri,LexicalForm))) -->
     % the lexically mapped value.
     xsd_datatype(DatatypeIri)
   ->
-    xsd_lexical_map(DatatypeIri, LexicalForm, Value)
+    xsd_lexical_map(DatatypeIri, LexicalForm, Value0),
+    with_output_to(atom(Value), write_canonical_blobs(Value0))
   ;
     Value = LexicalForm
   )},
