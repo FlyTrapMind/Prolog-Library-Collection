@@ -21,7 +21,7 @@
 %	  Guessed format from media type and/or file name
 
 rdf_guess_format(Stream, ContentType, Options) :-
-	option(look_ahead(Bytes), Options, 2000),
+	option(look_ahead(Bytes), Options, 10000),
 	peek_string(Stream, Bytes, String),
 	(   string_codes(String, Codes),
 	    phrase(rdf_content_type(ContentType, Options), Codes, _)
