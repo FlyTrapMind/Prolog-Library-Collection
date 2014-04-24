@@ -21,7 +21,7 @@
 %	  Guessed format from media type and/or file name
 
 rdf_guess_format(Stream, ContentType, Options) :-
-	option(look_ahead(Bytes), Options, 10000),
+	option(look_ahead(Bytes), Options, 2000),
 	peek_string(Stream, Bytes, String),
 	(   string_codes(String, Codes),
 	    phrase(rdf_content_type(ContentType, Options), Codes, _)
@@ -132,12 +132,21 @@ nt_object -->
 iri_codes --> iri_code, !, iri_codes.
 iri_codes --> [].
 
+% [18]   IRIREF ::= '<' ([^#x00-#x20<>"{}|^`\] | UCHAR)* '>'
+%        /* #x00=NULL #01-#x1F=control codes #x20=space */
+%iri_code -->
+%	[C],
+%	{ (   C =< 0'\s
+%	  ;   no_iri_code(C)
+%	  ), !, fail
+%	}.
 iri_code -->
-	[C],
-	{ (   C =< 0'\s
-	  ;   no_iri_code(C)
-	  ), !, fail
-	}.
+  [C],
+  {
+    C > 32,
+    \+ member(C, [34,60,62,92,94,96]),
+    \+ between(123, 125, C)
+  }.
 iri_code -->
 	"\\",
 	(   "u"
@@ -190,11 +199,14 @@ string_code --> "\\", !,
 	).
 string_code --> [_].
 
-nt_white --> white, !, nt_white.
+nt_white --> white, !, nt_white_.
 nt_white, " " --> "#", string(_), ( eol1 ; eos ), !, nt_white.
 
+nt_white_ --> nt_white.
+nt_white_ --> [].
+
 nt_end -->
-	nt_white,
+	("" ; nt_white),
 	(   eol
 	->  []
 	;   eos
