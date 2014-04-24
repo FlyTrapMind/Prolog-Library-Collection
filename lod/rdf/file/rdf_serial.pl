@@ -138,18 +138,13 @@ rdf_load_any(O1, Input, Pairs):-
   ).
 
 rdf_load_any_1(O1, Input, Pairs):-
-  (
-    select_option(graph(Graph), O1, O2), !
-  ;
-    O2 = O1
-  ),
   findall(
     Base-Graph,
     (
       unpack(Input, Stream, Location),
       call_cleanup(
 	  ( location_base(Location, Base),
-	    load_stream(Stream, Location, Base, [graph(Graph)|O2])
+	    load_stream_(Stream, Location, Base, [graph(Graph)|O1])
 	  ),
 	  close(Stream)),
       rdf_load_any_debug(Graph)
@@ -168,6 +163,7 @@ rdf_load_any_debug(Graph):-
     [GraphTriples,AllTriples]
   ).
 
+% Adds a catch/3 around laod_stream_/4.
 load_stream(Stream, Location, Base, O1):-
   catch(
     load_stream_(Stream, Location, Base, O1),

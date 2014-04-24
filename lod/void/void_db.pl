@@ -25,7 +25,6 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
 :- use_module(http(http_download)).
 :- use_module(os(file_ext)).
 :- use_module(rdf_file(rdf_serial)).
@@ -79,22 +78,24 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
   ).
 
 
-void_rdf_load_any(O1, Input1, Pairs3):-
-  rdf_load_any(O1, Input1, Pairs1),
-  findall(
-    Pair,
-    (
-      member(_-Graph, Pairs1),
-      void_db:void_dataset(Graph, Dataset),
-      void_db:void_dataset_location(Graph, Dataset, Input2),
-      \+ member(Input2-_, Pairs1),
-      merge_options(O1, [graph(Graph)], O2),
-      void_rdf_load_any(O2, Input2, Pairs1),
-      member(Pair, Pairs1)
-    ),
-    Pairs2
-  ),
-  union(Pairs1, Pairs2, Pairs3).
+void_rdf_load_any(O1, Input, Pairs):-
+  void_rdf_load_any(O1, [Input], [], Pairs).
+
+
+% Done!
+void_rdf_load_any(_, [], Pairs, Pairs):- !.
+% Add another URL to the TODO list.
+void_rdf_load_any(O1, Todo, Pairs, Done):-
+  member(_-Graph, Pairs),
+  void_dataset(Graph, Dataset),
+  void_dataset_location(Graph, Dataset, H),
+  \+ member(H-_, Pairs), !,
+gtrace,
+  void_rdf_load_any(O1, [H|Todo], Pairs, Done).
+void_rdf_load_any(O1, [H|Todo], Pairs1, Done):-
+  rdf_load_any(O1, H, Pairs2),
+  union(Pairs1, Pairs2, Pairs3),
+  void_rdf_load_any(O1, Todo, Pairs3, Done).
 
 
 void_url('http://vocab.deri.ie/void.ttl').
