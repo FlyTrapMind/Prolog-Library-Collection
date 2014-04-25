@@ -31,6 +31,7 @@ This means that we can guarantee that the number of triples
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
+:- use_module(library(uri)).
 
 :- thread_local(bnode_counter/1).
 :- thread_local(bnode_map/2).
@@ -41,6 +42,9 @@ This means that we can guarantee that the number of triples
 % Writes RDF data serialization in the N-Triples format to the given file.
 %
 % The following options are supported:
+%   * =|bnode_base(?Iri:atom)|=
+%     Replace blank nodes with an IRI, defined as per
+%     RDF 1.1 spec (see link below).
 %   * =|graph(?Graph:atom)|=
 %     The atomic name of a currently loaded RDF graph,
 %     to restrict the triples that are saved,
@@ -51,6 +55,8 @@ This means that we can guarantee that the number of triples
 %
 % @arg File The atomic name of a file.
 % @arg Options A list of name-value pairs.
+%
+% @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#section-skolemization
 
 rdf_ntriples_write(File1, O1):-
   absolute_file_name(File1, File2, [access(write)]),
@@ -71,19 +77,37 @@ rdf_write_ntriples(Out, O1):-
   retractall(bnode_counter/1),
   assert(bnode_counter(0)),
   retractall(bnode_map/1),
-
+  
+  % Process the option for replacing blank nodes with IRIs,
+  % establishing the prefix for each blank node.
+  (
+    option(bnode_base(Iri), O1)
+  ->
+    uri_components(Iri, uri_components(Scheme,Authority,_,_,_)),
+    uri_components(IriPrefix, uri_components(Scheme,Authority,_,_,_)),
+    atom_concat(IriPrefix, IriPostfix, Iri),
+    rdf_atom_md5(IriPostfix, 1, Hash),
+    atomic_list_concat(['.well-known',genid,Hash], '_', Path),
+    uri_components(
+      BNodePrefix,
+      uri_components(Scheme,Authority,Path,_,_)
+    )
+  ;
+    BNodePrefix = '_:'
+  ),
+  
   (
     option(graph(Graph), O1)
   ->
     forall(
       rdf(S, P, O, Graph:_),
-      rdf_write_ntriple(Out, S, P, O)
+      rdf_write_ntriple(Out, S, P, O, BNodePrefix)
     )
   ;
     forall(
       % Avoid duplicate triples.
       rdf(S, P, O),
-      rdf_write_ntriple(Out, S, P, O)
+      rdf_write_ntriple(Out, S, P, O, BNodePrefix)
     )
   ),
 
@@ -98,21 +122,41 @@ rdf_write_ntriples(Out, O1):-
   ).
 
 
-rdf_write_ntriple(Out, S, P, O):-
+rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   flag(number_of_ntriples, X, X + 1),
-  rdf_write_term_space(Out, S),
-  rdf_write_term_space(Out, P),
-  rdf_write_term_space(Out, O),
+  rdf_write_subject(Out, S, BNodePrefix),
+  put_char(Out, ' '),
+  rdf_write_predicate(Out, P),
+  put_char(Out, ' '),
+  rdf_write_object(Out, O, BNodePrefix),
   put_char(Out, '.'),
   put_code(Out, 10). % Newline
 
 
-rdf_write_term_space(Out, Term):-
-  rdf_write_term(Out, Term),
-  put_char(Out, ' ').
+% Typed literal.
+rdf_write_object(Out, literal(type(Datatype,Value)), _):- !,
+  turtle:turtle_write_quoted_string(Out, Value),
+  write(Out, '^^'),
+  rdf_write_predicate(Out, Datatype).
+% Language-tagged string.
+rdf_write_object(Out, literal(lang(Language,Value)), _):- !,
+  turtle:turtle_write_quoted_string(Out, Value),
+  format(Out, '@~w', [Language]).
+% XSD string.
+rdf_write_object(Out, literal(Value), _):- !,
+  turtle:turtle_write_quoted_string(Out, Value).
+% Subject.
+rdf_write_object(Out, Term, BNodePrefix):-
+  rdf_write_subject(Out, Term, BNodePrefix).
 
 
-rdf_write_term(Out, BNode):-
+% IRI.
+rdf_write_predicate(Out, Iri):-
+  turtle:turtle_write_uri(Out, Iri).
+
+
+% Blank node.
+rdf_write_subject(Out, BNode, BNodePrefix):-
   rdf_is_bnode(BNode), !,
   (
     bnode_map(BNode, Id2)
@@ -124,16 +168,9 @@ rdf_write_term(Out, BNode):-
     assert(bnode_counter(Id2)),
     assert(bnode_map(BNode, Id2))
   ),
-  format(Out, '_:~w', [Id2]).
-rdf_write_term(Out, literal(type(Datatype,Value))):- !,
-  turtle:turtle_write_quoted_string(Out, Value),
-  write(Out, '^^'),
-  rdf_write_term(Out, Datatype).
-rdf_write_term(Out, literal(lang(Language,Value))):- !,
-  turtle:turtle_write_quoted_string(Out, Value),
-  format(Out, '@~w', [Language]).
-rdf_write_term(Out, literal(Value)):- !,
-  turtle:turtle_write_quoted_string(Out, Value).
-rdf_write_term(Out, IRI):-
-  turtle:turtle_write_uri(Out, IRI).
+  atomic_concat(BNodePrefix, Id2, BNode),
+  write(Out, BNode).
+% Predicate.
+rdf_write_subject(Out, Iri, _):-
+  rdf_write_predicate(Out, Iri).
 
