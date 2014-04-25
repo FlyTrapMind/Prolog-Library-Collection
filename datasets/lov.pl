@@ -1,7 +1,7 @@
 :- module(
   lov,
   [
-    lov_resources/1 % -Pairs:list(pair(atom))
+    lov_resources/1 % -Pairs:ordset(pair(atom))
   ]
 ).
 
@@ -14,6 +14,7 @@ Support for the OKF-managed list of open vocabularies.
 @version 2014/04
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
@@ -28,8 +29,8 @@ lov_resources(Pairs):-
   rdf_transaction(
     (
       rdf_load(Url, []),
-      findall(
-        Resource-Resource,
+      aggreate_all(
+        set(Resource-Resource),
         rdfs_individual_of(Resource, voaf:'Vocabulary'),
         Pairs
       )
