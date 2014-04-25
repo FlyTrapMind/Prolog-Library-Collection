@@ -1,6 +1,7 @@
 :- module(
   rdf_serial,
   [
+    rdf_guess_format/5,
     rdf_load_any/2, % +Options:list(nvpair)
                     % +Input
     rdf_load_any/3, % +Options:list(nvpair)
@@ -77,6 +78,33 @@ since most datasets are published in a non-standard way.
 :- use_module(rdf_file(rdf_ntriples_write)).
 :- use_module(rdf_file(rdf_serial)).
 
+
+
+%! rdf_guess_format(+Options, +Stream, +Location, -Base, -Format) is det.
+
+rdf_guess_format(O1, Stream, Location, Base, Format):-
+  location_base(Location, Base),
+  (
+    (
+      file_name_extension(_, Ext, Base),
+      Ext \== '',
+      guess_format(Location.put(ext, Ext), DefFormat)
+    ;
+      guess_format(Location, DefFormat)
+    )
+  ->
+    O2 = [format(DefFormat)|O1]
+  ;
+    O2 = O1
+  ),
+  (
+    rdf_guess_format(Stream, Format, O2)
+  ->
+    true
+  ;
+    print_message(warning, rdf_load_any(no_rdf(Base))),
+    fail
+  ).
 
 
 rdf_load_any(O1, Input):-

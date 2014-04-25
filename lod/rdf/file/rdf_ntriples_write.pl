@@ -77,7 +77,7 @@ rdf_write_ntriples(Out, O1):-
   retractall(bnode_counter/1),
   assert(bnode_counter(0)),
   retractall(bnode_map/1),
-  
+
   % Process the option for replacing blank nodes with IRIs,
   % establishing the prefix for each blank node.
   (
@@ -87,7 +87,7 @@ rdf_write_ntriples(Out, O1):-
     uri_components(IriPrefix, uri_components(Scheme,Authority,_,_,_)),
     atom_concat(IriPrefix, IriPostfix, Iri),
     rdf_atom_md5(IriPostfix, 1, Hash),
-    atomic_list_concat(['.well-known',genid,Hash], '_', Path),
+    atomic_list_concat(['','.well-known',genid,Hash], '/', Path),
     uri_components(
       BNodePrefix,
       uri_components(Scheme,Authority,Path,_,_)
@@ -95,7 +95,7 @@ rdf_write_ntriples(Out, O1):-
   ;
     BNodePrefix = '_:'
   ),
-  
+
   (
     option(graph(Graph), O1)
   ->
@@ -130,8 +130,10 @@ rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   put_char(Out, ' '),
   rdf_write_object(Out, O, BNodePrefix),
   put_char(Out, '.'),
-  put_code(Out, 10). % Newline
-
+  put_code(Out, 10), !. % Newline
+rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
+  gtrace,
+  rdf_write_ntriple(Out, S, P, O, BNodePrefix).
 
 % Typed literal.
 rdf_write_object(Out, literal(type(Datatype,Value)), _):- !,
@@ -168,8 +170,8 @@ rdf_write_subject(Out, BNode, BNodePrefix):-
     assert(bnode_counter(Id2)),
     assert(bnode_map(BNode, Id2))
   ),
-  atomic_concat(BNodePrefix, Id2, BNode),
-  write(Out, BNode).
+  atomic_list_concat([BNodePrefix,Id2], '/', BNodeName),
+  write(Out, BNodeName).
 % Predicate.
 rdf_write_subject(Out, Iri, _):-
   rdf_write_predicate(Out, Iri).
