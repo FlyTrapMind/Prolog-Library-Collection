@@ -94,10 +94,18 @@ rdf_tabular_datatype_table(G, D, Pairs1, ColumnHeader) -->
 
 rdf_tabular_datatypes(G) -->
   {
+    % First collect all datatype IRIs.
+    aggregate_all(
+      set(D),
+      rdf_datatype(D, G),
+      Ds
+    ),
+    % Then look up the number of triples in which a typed literal
+    % with a specific datatype IRI occurs.
     aggregate_all(
       set(N-D),
       (
-        rdf_datatype(D, G),
+        member(D, Ds),
         rdf_triples_by_datatype(G, D, N)
       ),
       Pairs1
