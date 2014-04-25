@@ -149,7 +149,8 @@ rdf_load_any_1(O1, Input, Pairs):-
         ),
         close(Stream)
       ),
-      rdf_load_any_debug(Graph)
+      %%%%rdf_load_any_debug(Graph),
+      true
     ),
     Pairs
   ).
