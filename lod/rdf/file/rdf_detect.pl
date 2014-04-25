@@ -62,12 +62,12 @@ turtle_like(Format, Options) -->
 	"BASE", blank, !,
 	turtle_or_trig(Format, Options).
 turtle_like(Format, Options) -->
-	iriref, nt_white, iriref, nt_white, nt_object,
-	nt_white,
+	iriref, 'nt_whites+', iriref, 'nt_whites+', nt_object,
+	'nt_whites+',
 	(   "."
 	->  nt_end,
 	    nt_turtle_like(Format, Options)
-	;   iriref, nt_white, nt_end
+	;   iriref, nt_end
 	->  {Format = nquads}
 	).
 turtle_like(Format, Options) -->		% starts with a blank node
@@ -132,21 +132,12 @@ nt_object -->
 iri_codes --> iri_code, !, iri_codes.
 iri_codes --> [].
 
-% [18]   IRIREF ::= '<' ([^#x00-#x20<>"{}|^`\] | UCHAR)* '>'
-%        /* #x00=NULL #01-#x1F=control codes #x20=space */
-%iri_code -->
-%	[C],
-%	{ (   C =< 0'\s
-%	  ;   no_iri_code(C)
-%	  ), !, fail
-%	}.
 iri_code -->
-  [C],
-  {
-    C > 32,
-    \+ member(C, [34,60,62,92,94,96]),
-    \+ between(123, 125, C)
-  }.
+	[C],
+	{ (   C =< 0'\s
+	  ;   no_iri_code(C)
+	  ), !, fail
+	}.
 iri_code -->
 	"\\",
 	(   "u"
@@ -154,6 +145,8 @@ iri_code -->
 	;   "U"
 	->  xdigit8
 	).
+iri_code -->
+	[_].
 
 langtag --> az, azs, sublangs.
 
@@ -199,14 +192,15 @@ string_code --> "\\", !,
 	).
 string_code --> [_].
 
-nt_white --> white, !, nt_white_.
-nt_white, " " --> "#", string(_), ( eol1 ; eos ), !, nt_white.
+'nt_whites+' --> nt_white, 'nt_whites*'.
+'nt_whites*' --> nt_white, 'nt_whites*'.
+'nt_whites*' --> [].
 
-nt_white_ --> nt_white.
-nt_white_ --> [].
+nt_white --> white, !.
+nt_white, " " --> "#", string(_), ( eol1 ; eos ), !.
 
 nt_end -->
-	("" ; nt_white),
+	'nt_whites+',
 	(   eol
 	->  []
 	;   eos
