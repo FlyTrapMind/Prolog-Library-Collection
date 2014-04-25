@@ -29,7 +29,7 @@ lov_resources(Pairs):-
   rdf_transaction(
     (
       rdf_load(Url, []),
-      aggreate_all(
+      aggregate_all(
         set(Resource-Resource),
         rdfs_individual_of(Resource, voaf:'Vocabulary'),
         Pairs
