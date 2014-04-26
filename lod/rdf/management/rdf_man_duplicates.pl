@@ -1,19 +1,27 @@
-:- module(rdf_man_duplicates, []).
+:- module(
+  rdf_man_duplicates,
+  [
+    rdf_duplicates/2 % +Graph:atom
+                     % -Duplicates:nonneg
+  ]
+).
 
 /** <module> RDF duplicates
 
 Support for visualizing and managing duplicates in an RDF store.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03-2014/04
 */
 
 :- use_module(library(aggregate)).
+:- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
+
 :- use_module(rdf(rdf_read)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_modules)).
@@ -24,6 +32,44 @@ http:location(rdf_man, rdf(man),  []).
 
 user:web_module('RDFm duplicates', rdf_man_duplicates).
 
+
+
+%! rdf_duplicates(+Graph:atom, -Duplicates:nonneg) is det.
+% Returns the number of duplicate triples (tokens) in the given graph.
+
+rdf_duplicates(Graph, Duplicates):-
+  % Collect the ordered set of duplicate triples (types).
+  aggregate_all(
+    set(rdf(S,P,O)),
+    (
+      rdf(S, P, O, Graph:N1),
+      nonvar(N1),
+      rdf(S, P, O, Graph:N2),
+      nonvar(N2),
+      N1 \== N2
+    ),
+    Types
+  ),
+  % Collect the number of tokens for each duplicate triple type.
+  findall(
+    rdf(S,P,O)-NumberOfTokens,
+    (
+      member(rdf(S,P,O), Types),
+      aggregate_all(
+        count,
+        rdf(S, P, O, Graph:_),
+        NumberOfTokens
+      )
+    ),
+    Pairs
+  ),
+  % The number of duplicate tokens is the summation of
+  % the number of tokens of each duplicate type,
+  % minus the number of types.
+  pairs_values(Pairs, Values),
+  length(Values, Length),
+  sum_list(Values, Sum),
+  Duplicates is Sum - Length.
 
 
 rdf_man_duplicates(_Request):-
