@@ -128,9 +128,6 @@ rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   rdf_write_object(Out, O, BNodePrefix),
   put_char(Out, '.'),
   put_code(Out, 10), !. % Newline
-%%%%rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
-  %%%%gtrace,
-  %%%%rdf_write_ntriple(Out, S, P, O, BNodePrefix).
 
 % Typed literal.
 rdf_write_object(Out, literal(type(Datatype,Value)), _):- !,
