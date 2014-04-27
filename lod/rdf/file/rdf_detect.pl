@@ -200,7 +200,6 @@ nt_white --> white, !.
 nt_white, " " --> "#", string(_), ( eol1 ; eos ), !.
 
 nt_end -->
-	'nt_whites+',
 	(   eol
 	->  []
 	;   eos

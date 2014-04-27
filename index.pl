@@ -23,6 +23,7 @@ user:file_search_path(rdf_mt,          rdf(rdf_mt)).
 user:file_search_path(rdf_reasoning,   rdf(reasoning)).
 user:file_search_path(rdf_term,        rdf(term)).
 user:file_search_path(rdf_web,         rdf(web)).
+user:file_search_path(turtle,          rdf(turtle)).
 user:file_search_path(rdfs,            lod(rdfs)).
 user:file_search_path(skos,            lod(skos)).
 user:file_search_path(sparql,          lod(sparql)).
