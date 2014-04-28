@@ -147,17 +147,17 @@ sparql_query(Remote, Query, VarNames, Results):-
 %        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
 
 sparql_query(_, _, [], [], 0):- !.
-sparql_query(Remote, Query, VarNames, Results, Attempts1):-
+sparql_query(Remote, Query, VarNames, Results, Attempts):-
   catch(
     sparql_query_no_catch(Remote, Query, VarNames, Results),
     E,
-    http_catcher(E, Remote, Query, VarNames, Results)
+    http_catcher(E, Remote, Query, VarNames, Results, Attempts)
   ).
 
 http_catcher(exit, _, _, _, _).
 http_catcher(E, _, _, _, _, 1):- !,
   throw(E).
-http_catcher(E, Remote, Query, VarNames, Results, Attempt1):-
+http_catcher(_, Remote, Query, VarNames, Results, Attempts1):-
   count_down(Attempts1, Attempts2),
   sparql_query(Remote, Query, VarNames, Results, Attempts2).
 

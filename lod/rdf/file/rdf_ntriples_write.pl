@@ -70,13 +70,10 @@ rdf_ntriples_write(File1, O1):-
 %! rdf_write_ntriples(+Output:stream, +Options:list(nvpair))is det.
 
 rdf_write_ntriples(Out, O1):-
-  % Reset the triple counter.
-  flag(number_of_ntriples, _, 0),
-
   % Reset the blank node store.
-  retractall(bnode_counter/1),
-  assert(bnode_counter(0)),
-  retractall(bnode_map/1),
+  reset_bnode_admin,
+
+  State = state(0),			% number_of_triples
 
   % Process the option for replacing blank nodes with IRIs,
   % establishing the prefix for each blank node.
@@ -95,32 +92,38 @@ rdf_write_ntriples(Out, O1):-
   ;
     BNodePrefix = '_:'
   ),
-
   (
     option(graph(Graph), O1)
   ->
     forall(
       rdf(S, P, O, Graph:_),
-      rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+      ( inc_number_of_triples(State),
+	rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+      )
     )
   ;
     forall(
       % Avoid duplicate triples.
       rdf(S, P, O),
-      rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+      ( inc_number_of_triples(State),
+	rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+      )
     )
   ),
 
   % Statistics option: number of triples written.
-  flag(number_of_ntriples, N, 0),
   (
-    option(number_of_triples(N0), O1)
+    option(number_of_triples(TripleCount), O1)
   ->
-    N0 = N
+    arg(1, State, TripleCount)
   ;
     true
   ).
 
+inc_number_of_triples(State) :-
+  arg(1, State, C0),
+  C1 is C0+1,
+  nb_setarg(1, State, C1).
 
 rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   flag(number_of_ntriples, X, X + 1),
@@ -131,9 +134,6 @@ rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   rdf_write_object(Out, O, BNodePrefix),
   put_char(Out, '.'),
   put_code(Out, 10), !. % Newline
-rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
-  gtrace,
-  rdf_write_ntriple(Out, S, P, O, BNodePrefix).
 
 % Typed literal.
 rdf_write_object(Out, literal(type(Datatype,Value)), _):- !,
@@ -165,14 +165,41 @@ rdf_write_subject(Out, BNode, BNodePrefix):-
   ->
     true
   ;
-    retract(bnode_counter(Id1)),
-    Id2 is Id1 + 1,
-    assert(bnode_counter(Id2)),
+    increment_bnode_counter(Id2),
     assert(bnode_map(BNode, Id2))
   ),
   atomic_list_concat([BNodePrefix,Id2], '/', BNodeName),
-  write(Out, BNodeName).
+
+  % If the blank node is replaced by a well-known IRI,
+  % then we use predicate term writer.
+  (
+    BNodePrefix == '_:'
+  ->
+    write(Out, BNodeName)
+  ;
+    rdf_write_predicate(Out, BNodeName)
+  ).
 % Predicate.
 rdf_write_subject(Out, Iri, _):-
   rdf_write_predicate(Out, Iri).
+
+
+
+% Blank node administration.
+
+increment_bnode_counter(Id2):-
+  retract(bnode_counter(Id1)),
+  Id2 is Id1 + 1,
+  assert(bnode_counter(Id2)).
+
+reset_bnode_admin:-
+  reset_bnode_counter,
+  reset_bnode_map.
+
+reset_bnode_counter:-
+  retractall(bnode_counter(_)),
+  assert(bnode_counter(0)).
+
+reset_bnode_map:-
+  retractall(bnode_map(_,_)).
 

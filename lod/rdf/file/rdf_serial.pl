@@ -73,7 +73,6 @@ since most datasets are published in a non-standard way.
 :- use_module(os(file_ext)).
 :- use_module(os(unpack)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf_file(rdf_detect)).
 :- use_module(rdf_file(rdf_ntriples_write)).
 :- use_module(rdf_file(rdf_serial)).

@@ -76,7 +76,6 @@ pl_debug:-
 
   % Write lists of ASCII numbers as strings to the terminal.
   portray_text(true),
-  set_portray_text(ellipsis, 1000),
   set_portray_text(min_length, 2),
 
   % Enforce more stringent style checking.
