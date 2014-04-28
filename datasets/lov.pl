@@ -17,6 +17,7 @@ Support for the OKF-managed list of open vocabularies.
 :- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(library(uri)).
 
 :- use_module(xml(xml_namespace)).
 
@@ -40,5 +41,9 @@ lov_resources(Pairs):-
   ).
 
 
-lov_url('http://lov.okfn.org/dataset/lov/').
+lov_url(Url):-
+  uri_components(
+    Url,
+    uri_components(http,'lov.okfn.org','/dataset/lov/lov.rdf',_,_)
+  ).
 
