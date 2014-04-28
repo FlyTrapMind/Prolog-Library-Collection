@@ -8,15 +8,17 @@
 /** <module> RDF graph garbage collector
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02, 2014/04
 */
 
-:- use_module(generics(list_ext)).
-:- use_module(generics(thread_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
+
+:- use_module(generics(list_ext)).
+:- use_module(generics(thread_ext)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_modules)).
 
