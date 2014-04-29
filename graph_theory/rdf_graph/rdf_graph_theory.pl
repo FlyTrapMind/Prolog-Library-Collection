@@ -96,21 +96,21 @@ rdf_edge(G, E):-
 % @arg Graph The atomic name of an RDF graph.
 % @arg Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
 
-rdf_edge(O, G, FromV-P-ToV):- !,
+rdf_edge(O1, G, FromV-P-ToV):- !,
   rdf(FromV, P, ToV, G),
   % Make sure the vertices pass the vertex filter.
-  rdf_vertex_check(O, FromV),
-  rdf_vertex_check(O, ToV).
-rdf_edge(O, G, FromV-ToV):-
-  rdf_edge(O, G, FromV-_-ToV).
+  rdf_vertex_check(O1, FromV),
+  rdf_vertex_check(O1, ToV).
+rdf_edge(O1, G, FromV-ToV):-
+  rdf_edge(O1, G, FromV-_-ToV).
 
 rdf_edges(G, Es):-
   rdf_edges([], G, Es).
 
-rdf_edges(O, G, Es):-
+rdf_edges(O1, G, Es):-
   aggregate_all(
     set(E),
-    rdf_edge(O, G, E),
+    rdf_edge(O1, G, E),
     Es
   ).
 

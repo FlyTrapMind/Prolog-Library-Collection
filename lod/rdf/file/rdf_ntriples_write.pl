@@ -132,6 +132,7 @@ rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   rdf_write_predicate(Out, P),
   put_char(Out, ' '),
   rdf_write_object(Out, O, BNodePrefix),
+  put_char(Out, ' '),
   put_char(Out, '.'),
   put_code(Out, 10), !. % Newline
 
