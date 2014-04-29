@@ -89,6 +89,7 @@ rdf_term_html(LocationId, Graphs, _) -->
 rdf_term_html(LocationId, Graph1, _) -->
   {rdf_is_graph(Graph1, Graph2)}, !,
   rdf_graph_html(LocationId, Graph2).
+% RDF list.
 rdf_term_html(LocationId, RdfTerm, _) -->
   {
     rdf_is_resource(RdfTerm),
@@ -146,7 +147,7 @@ external_link_if_url(Graph) -->
     uri_scheme(Scheme)
   }, !,
   html([
-    ` `,
+    ' ',
     \external_link(Graph)
   ]).
 external_link_if_url(_) --> [].
