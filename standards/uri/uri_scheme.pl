@@ -15,8 +15,8 @@ IANA-registered URI schemes.
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(library(semweb/turtle)).
 
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(standards(iana_to_rdf)).
 :- use_module(xml(xml_namespace)).
@@ -29,9 +29,9 @@ init_uri_scheme:-
   absolute_file_name(
     data(uri_scheme),
     File,
-    [access(read),file_errors(fail),extensions([ttl])]
+    [access(read),file_errors(fail),file_type(ntriples)]
   ), !,
-  rdf_load(File, [format(turtle),graph(uri_scheme)]).
+  rdf_load(File, [format(ntriples),graph(uri_scheme)]).
 init_uri_scheme:-
   assert_iana(
     uri_scheme,
@@ -42,14 +42,14 @@ init_uri_scheme:-
   absolute_file_name(
     data(uri_scheme),
     File,
-    [access(write),file_type(turtle)]
+    [access(write),file_type(ntriples)]
   ),
-  rdf_save(File, [format(turtle),graph(uri_scheme)]),
+  rdf_save([format(ntriples)], uri_scheme, File),
   init_uri_scheme.
 
 
 
 uri_scheme(Scheme):-
-  rdfs_label(Registration, _, Scheme, uri_scheme),
+  rdfs_label(Registration, Scheme, _, uri_scheme),
   rdfs_individual_of(Registration, iana:'URISchemaRegistration').
 

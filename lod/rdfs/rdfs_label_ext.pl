@@ -107,6 +107,7 @@ rdfs_assert_label(S, LexicalForm, LangTag, G):-
 %
 % Also returns listified labels for RDF list resources.
 
+% An RDF list, compose the lexical form based on its members.
 rdfs_label(S, LexicalForm, LangTag, G):-
   rdf_is_list(S), !,
   rdf_list([recursive(false)], S, RdfTerms),
@@ -119,8 +120,12 @@ rdfs_label(S, LexicalForm, LangTag, G):-
     RdfsLabels
   ),
   dcg_with_output_to(atom(LexicalForm), list(pl_term, RdfsLabels)).
+% A language-tagged string.
 rdfs_label(S, LexicalForm, LangTag, G):-
   rdf_language_tagged_string(S, rdfs:label, LexicalForm, LangTag, G).
+% A string with no language tag.
+rdfs_label(S, LexicalForm, _, G):-
+  rdf_string(S, rdfs:label, LexicalForm, G).
 
 
 %! rdfs_list_by_label(

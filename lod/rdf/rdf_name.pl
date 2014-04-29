@@ -49,8 +49,8 @@ Generates names for RDF terms and triples.
 
 %! rdf_graph_name(+RdfGraph:atom)// is det.
 
-rdf_graph_name(G) -->
-  atom(G).
+rdf_graph_name(G) --> {var(G)}, !, [].
+rdf_graph_name(G) --> atom(G).
 
 
 

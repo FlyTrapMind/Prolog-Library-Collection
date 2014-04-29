@@ -20,10 +20,7 @@ Meta-callings on an RDF graph.
 @version 2014/01-2014/02
 */
 
-:- use_module(generics(meta_ext)).
-:- use_module(library(semweb/rdf_db)).
 :- use_module(os(file_ext)).
-:- use_module(os(file_mime)).
 :- use_module(rdf(rdf_graph_name)).
 :- use_module(rdf_file(rdf_file)).
 :- use_module(rdf_file(rdf_serial)).
@@ -86,7 +83,7 @@ rdf_setup_call_cleanup(O1_Load, From, Goal, O1_Save, ToFile):-
       file_alternative(FromFile, _, _, ToExt, ToFile)
     )
   ),
-  
+
   setup_call_cleanup(
     (
       rdf_new_graph(temp, Graph),

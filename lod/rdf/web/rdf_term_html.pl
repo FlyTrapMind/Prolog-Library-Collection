@@ -37,11 +37,6 @@ HTML generation for RDF terms.
 @version 2014/01-2014/04
 */
 
-:- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
-:- use_module(generics(uri_query)).
-:- use_module(html(html_list)).
-:- use_module(html(html_tuple)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/html_write)).
@@ -51,6 +46,13 @@ HTML generation for RDF terms.
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+:- use_module(library(uri)).
+
+:- use_module(generics(typecheck)).
+:- use_module(generics(uri_ext)).
+:- use_module(generics(uri_query)).
+:- use_module(html(html_list)).
+:- use_module(html(html_tuple)).
 :- use_module(pl_web(html_pl_term)).
 :- use_module(rdf(rdf_graph)).
 :- use_module(rdf(rdf_name)).
@@ -58,6 +60,7 @@ HTML generation for RDF terms.
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_ui)).
 :- use_module(tms(tms)).
+:- use_module(uri(uri_scheme)).
 :- use_module(xml(xml_namespace)).
 
 :- rdf_meta(rdf_literal_html(+,+,r,+,?)).
@@ -124,10 +127,29 @@ rdf_term_in_graph_html(LocationId, T, G) -->
 
 rdf_graph_html(LocationId, Graph) -->
   {
+    % Construct the internal link to this RDF graph.
     http_location_by_id(LocationId, Location1),
     uri_query_add(Location1, graph, Graph, Location2)
   },
-  html(span(class='rdf-graph', a(href=Location2, Graph))).
+  html(
+    span(class='rdf-graph', [
+      a(href=Location2, Graph),
+      % If the RDF graph name is a URL, then add an anchor link.
+      \external_link_if_url(Graph)
+    ])
+  ).
+
+external_link_if_url(Graph) -->
+  {
+    uri_components(Graph, uri_components(Scheme,_,_,_,_)),
+    nonvar(Scheme),
+    uri_scheme(Scheme)
+  }, !,
+  html([
+    ` `,
+    \external_link(Graph)
+  ]).
+external_link_if_url(_) --> [].
 
 
 rdf_graphs_html(LocationId) -->
@@ -136,6 +158,7 @@ rdf_graphs_html(LocationId) -->
       NumberOfTriples-Graph,
       (
         rdf_graph(Graph),
+        % Exclude RDF graphs that are TMS stores.
         \+ tms(Graph),
         rdf_statistics(triples_by_graph(Graph,NumberOfTriples))
       ),
@@ -158,8 +181,7 @@ rdf_graphs_html(LocationId) -->
   ).
 
 
-rdf_in_graph_html(_, Graph) -->
-  {var(Graph)}, !.
+rdf_in_graph_html(_, Graph) --> {var(Graph)}, !, [].
 rdf_in_graph_html(LocationId, Graph) -->
   html([' in graph ',\rdf_graph_html(LocationId, Graph)]).
 

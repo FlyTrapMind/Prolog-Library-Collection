@@ -83,8 +83,9 @@ rdf_write_ntriples(Out, O1):-
     uri_components(Iri, uri_components(Scheme,Authority,_,_,_)),
     uri_components(IriPrefix, uri_components(Scheme,Authority,_,_,_)),
     atom_concat(IriPrefix, IriPostfix, Iri),
-    rdf_atom_md5(IriPostfix, 1, Hash),
-    atomic_list_concat(['','.well-known',genid,Hash], '/', Path),
+    rdf_atom_md5(IriPostfix, 1, Hash1),
+    atomic_concat(Hash1, '#', Hash2),
+    atomic_list_concat(['','.well-known',genid,Hash2], '/', Path),
     uri_components(
       BNodePrefix,
       uri_components(Scheme,Authority,Path,_,_)
@@ -169,7 +170,7 @@ rdf_write_subject(Out, BNode, BNodePrefix):-
     increment_bnode_counter(Id2),
     assert(bnode_map(BNode, Id2))
   ),
-  atomic_list_concat([BNodePrefix,Id2], '/', BNodeName),
+  atomic_concat(BNodePrefix, Id2, BNodeName),
 
   % If the blank node is replaced by a well-known IRI,
   % then we use predicate term writer.

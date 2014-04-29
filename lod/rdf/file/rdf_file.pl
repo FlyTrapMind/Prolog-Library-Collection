@@ -6,18 +6,10 @@
                                   % -ToFile:atom
     rdf_directory_files/2, % +Directory:atom
                            % -Files:list(atom)
-    rdf_merge_directory/4, % +Options:list(nvpair)
-                           % +FromDirectory:atom
-                           % +ToFile:atom
-                           % +SaveOptions:list(nvpair)
-    rdf_mime/1, % ?MIME:atom
-    rdf_mime_format/2, % ?MIME:atom
-                       % ?Format:atom
-    rdf_serialization/5 % ?DefaultExtension:oneof([nt,rdf,triples,ttl])
-                        % ?DefaultFileType:oneof([ntriples,rdf_xml,turtle])
-                        % ?Format:oneof([ntriples,rdf_xml,triples,turtle])
-                        % ?MIMEs:list(atom)
-                        % ?URL:atom
+    rdf_merge_directory/4 % +Options:list(nvpair)
+                          % +FromDirectory:atom
+                          % +ToFile:atom
+                          % +SaveOptions:list(nvpair)
   ]
 ).
 
@@ -30,13 +22,14 @@ Support for RDF files and file types.
          2013/08-2013/09, 2013/11, 2014/01-2014/04
 */
 
-:- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(file_mime)).
+:- use_module(rdf_file(rdf_file_db)).
 :- use_module(rdf(rdf_meta)).
 
 
@@ -78,10 +71,6 @@ rdf_directory_files(O1, Dir, RdfFiles):-
   include(is_rdf_file, Files, RdfFiles).
 
 
-rdf_extension(Ext, MIME):-
-  rdf_serialization(Ext, _, _, [MIME|_], _).
-
-
 %! rdf_file_correct_extension(+FromFile:atom, -ToFile:atom) is det.
 
 rdf_file_correct_extension(File1, File2):-
@@ -105,62 +94,4 @@ rdf_merge_directory(O1, FromDir, ToFile, SaveOptions):-
   rdf_directory_files(FromDir, FromFiles),
   FromFiles \== [],
   rdf_setup_call_cleanup(O1, FromFiles, rdf_graph, SaveOptions, ToFile).
-
-
-rdf_mime(MIME):-
-  rdf_serialization(_, _, _, MIMEs, _),
-  member(MIME, MIMEs).
-
-
-%! rdf_mime_format(+MIME:atom, +Format:atom) is semidet.
-%! rdf_mime_format(+MIME:atom, -Format:atom) is det.
-%! rdf_mime_format(-MIME:atom, +Format:atom) is det.
-% Relates RDF media content types and RDF formats.
-
-rdf_mime_format(MIME, Format):-
-  rdf_serialization(_, _, Format, MIMEs, _),
-  memberchk(MIME, MIMEs).
-
-
-%! rdf_serialization(
-%!   ?DefaultExtension:oneof([nt,rdf,triples,ttl]),
-%!   ?FileType:oneof([ntriples,rdf_xml,triples,turtle]),
-%!   ?Format:oneof([ntriples,xml,triples,turtle]),
-%!   ?MIME:list(atom),
-%!   ?URL:atom
-%! ) is nondet.
-%
-% @arg DefaultExtension The default extension of the RDF serialization.
-%      RDF serializations may have multiple non-default extensions,
-%      e.g. =owl= and =xml= for RDF/XML.
-% @arg DefaultFileType The default file type of the RDF serialization.
-%      Every file type has the non-default file type =rdf=.
-% @arg Format The format name that is used by the Semweb library.
-% @arg MIMEs A list of MIME types.
-% @arg URL The URL at which the serialization is described, if any.
-
-rdf_serialization(nq, nquads, nquads, ['application/n-quads'], '').
-rdf_serialization(nt, ntriples, ntriples, ['application/n-triples'], 'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf, rdf_xml, xml, ['application/rdf+xml'], 'http://www.w3.org/ns/formats/RDF_XML'  ).
-rdf_serialization(trig, trig, trig, ['application/x-trig'], 'http://wifo5-03.informatik.uni-mannheim.de/bizer/trig/').
-rdf_serialization(ttl, turtle, turtle, ['application/x-turtle','text/turtle'], 'http://www.w3.org/ns/formats/Turtle'   ).
-rdf_serialization(n3, n3, turtle, ['text/n3'], '').
-
-% RDF file types.
-:- db_add_novel(user:prolog_file_type(nq,      nquads  )).
-:- db_add_novel(user:prolog_file_type(nq,      rdf     )).
-:- db_add_novel(user:prolog_file_type(nt,      ntriples)).
-:- db_add_novel(user:prolog_file_type(nt,      rdf     )).
-:- db_add_novel(user:prolog_file_type(owl,     rdf_xml )).
-:- db_add_novel(user:prolog_file_type(owl,     rdf     )).
-:- db_add_novel(user:prolog_file_type(rdf,     rdf_xml )).
-:- db_add_novel(user:prolog_file_type(rdf,     rdf     )).
-:- db_add_novel(user:prolog_file_type(rdfs,    rdf_xml )).
-:- db_add_novel(user:prolog_file_type(rdfs,    rdf     )).
-:- db_add_novel(user:prolog_file_type(triples, triples)).
-:- db_add_novel(user:prolog_file_type(triples, rdf     )).
-:- db_add_novel(user:prolog_file_type(ttl,     turtle  )).
-:- db_add_novel(user:prolog_file_type(ttl,     rdf     )).
-:- db_add_novel(user:prolog_file_type(xml,     rdf_xml )).
-:- db_add_novel(user:prolog_file_type(xml,     rdf     )).
 
