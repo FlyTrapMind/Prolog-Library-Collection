@@ -26,12 +26,11 @@ This means that we can guarantee that the number of triples
 @version 2014/03-2014/04
 */
 
-:- use_module(library(apply)).
 :- use_module(library(option)).
-:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
 :- use_module(library(uri)).
+:- use_module(library(zlib)).
 
 :- thread_local(bnode_counter/1).
 :- thread_local(bnode_map/2).
@@ -45,11 +44,14 @@ This means that we can guarantee that the number of triples
 %   * =|bnode_base(?Iri:atom)|=
 %     Replace blank nodes with an IRI, defined as per
 %     RDF 1.1 spec (see link below).
-%   * =|graph(?Graph:atom)|=
+%   * =|graph(?Graph:atom)|=0
 %     The atomic name of a currently loaded RDF graph,
 %     to restrict the triples that are saved,
 %     or uninstantiated, in which case
 %     all currently loaded triples are saved.
+%   * =|mode(+Mode:oneof([append,write]))|=
+%     `append` adds a new gzip image to the end of the file.
+%     Default: `write`.
 %   * =|number_of_triples(-Triples:nonneg)|=
 %     The number of triples that was written.
 %
@@ -59,9 +61,10 @@ This means that we can guarantee that the number of triples
 % @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#section-skolemization
 
 rdf_ntriples_write(File1, O1):-
-  absolute_file_name(File1, File2, [access(write)]),
+  absolute_file_name(File1, File2, [access(write),extensions([gz])]),
+  option(mode(Mode), O1, write),
   setup_call_cleanup(
-    open(File2, write, Out),
+    gzopen(File2, Mode, Out),
     rdf_write_ntriples(Out, O1),
     close(Out)
   ).
