@@ -42,9 +42,10 @@ Support for RDF literals is found in [rdf_literal].
 @version 2012/01-2013/05, 2013/07-2013/08, 2014/01-2014/03
 */
 
-:- use_module(generics(typecheck)).
 :- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
+
+:- use_module(generics(typecheck)).
 
 :- rdf_meta(rdf_iri(r)).
 :- rdf_meta(rdf_iri(r,?)).

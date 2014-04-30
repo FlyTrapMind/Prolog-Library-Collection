@@ -1,6 +1,7 @@
 :- module(
   rdf_gc_graph,
   [
+    rdf_graph_exclude_from_gc/1, % +Graph:atom
     rdf_graph_touch/1 % +Graph:atom
   ]
 ).
@@ -24,6 +25,10 @@
 
 http:location(rdf, root(rdf), []).
 :- http_handler(rdf(gc_graph), rdf_gc_graph, []).
+
+%! rdf_graph_exlcuded_from_gc(?Graph:atom) is nondet.
+
+:- dynamic(rdf_graph_exlcuded_from_gc/1).
 
 %! rdf_graph(?FirstTouch:float, ?LastTouch:float, ?Graph:atom) is nondet.
 
@@ -70,8 +75,23 @@ rdf_core_graphs -->
 
 
 
+rdf_graph_exclude_from_gc(Graph):-
+  rdf_graph_exlcuded_from_gc(Graph), !.
+rdf_graph_exclude_from_gc(Graph):-
+  with_mutex(
+    rdf_gc_graph,
+    assert(rdf_graph_exlcuded_from_gc(Graph))
+  ).
+
+
+% Can't touch this!
 rdf_graph_touch(Graph):-
-  with_mutex(rdf_gc_graph, rdf_graph_touch_sync(Graph)).
+  rdf_graph_exlcuded_from_gc(Graph).
+rdf_graph_touch(Graph):-
+  with_mutex(
+    rdf_gc_graph,
+    rdf_graph_touch_sync(Graph)
+  ).
 
 rdf_graph_touch_sync(Graph):-
   retract(rdf_graph(First, _, Graph)), !,
