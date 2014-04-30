@@ -70,6 +70,8 @@ rdf_graph_name(G) --> atom(G).
 %     The atomic language tag of the language that is preferred for
 %     use in the RDF term's name.
 %     The default value is `en`.
+%   * =|literal_ellipsis(+MaximumLength:or([oneof([inf]),positive_integer]))|=
+%     Ellipse long literal values.
 %   * =|uri_desc(+DescriptionMode:oneof([
 %       only_literals,
 %       only_preferred_label,
@@ -101,9 +103,9 @@ rdf_term_name(_, BNode) -->
   {rdf_is_bnode(BNode)}, !,
   rdf_bnode_name(BNode).
 % Literal.
-rdf_term_name(_, Literal) -->
+rdf_term_name(O1, Literal) -->
   {rdf_is_literal(Literal)}, !,
-  rdf_literal_name(Literal).
+  rdf_literal_name(O1, Literal).
 % IRI.
 rdf_term_name(O1, IRI1) -->
   {(
@@ -141,22 +143,27 @@ rdf_bnode_name(BNode) -->
 rdf_language_tag_name(Language) -->
   atom(Language).
 
+
 % Typed literals must occur before plain literals.
-rdf_literal_name(Literal) -->
+rdf_literal_name(_, Literal) -->
   rdf_typed_literal_name(Literal).
-rdf_literal_name(Literal) -->
-  rdf_plain_literal_name(Literal).
+rdf_literal_name(O1, Literal) -->
+  rdf_plain_literal_name(O1, Literal).
+
 
 % Non-simple plain literals must occur before simple literals.
-rdf_plain_literal_name(literal(lang(Language,Value))) --> !,
-  rdf_simple_literal_name(Value),
+rdf_plain_literal_name(O1, literal(lang(Language,Value))) --> !,
+  rdf_simple_literal_name(O1, Value),
   "@",
   rdf_language_tag_name(Language).
-rdf_plain_literal_name(literal(Value)) -->
-  rdf_simple_literal_name(Value).
+rdf_plain_literal_name(O1, literal(Value)) -->
+  rdf_simple_literal_name(O1, Value).
 
-rdf_simple_literal_name(Value) -->
-  quoted(atom(Value)).
+
+rdf_simple_literal_name(O1, Value) -->
+  {option(literal_ellipsis(Ellipsis), O1, inf)},
+  quoted(atom(Value, Ellipsis)).
+
 
 rdf_typed_literal_name(literal(type(DatatypeIri,LexicalForm))) -->
   {(

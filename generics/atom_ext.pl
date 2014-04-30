@@ -82,7 +82,7 @@ Titlecase atoms can be created using upcase_atom/2.
 --
 
 @author Wouter Beek
-@version 2011/08-2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03
+@version 2011/08-2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04
 */
 
 :- use_module(library(lists)).
@@ -118,7 +118,11 @@ atom_to_term(Atom, Term):-
   atom_to_term(Atom, Term, _Bindings).
 
 
-%! atom_truncate(+Atom:atom, +MaxLength:integer, -TruncatedAtom:atom) is det.
+%! atom_truncate(
+%!   +Atom:atom,
+%!   +MaxLength:or([oneof([inf]),positive_integer]),
+%!   -TruncatedAtom:atom
+%! ) is det.
 % Returns the truncated version of the given atom.
 % Truncated atoms end in `...` to indicate its truncated nature.
 % The maximum length indicates the exact maximum.
@@ -126,10 +130,12 @@ atom_to_term(Atom, Term):-
 %
 % @arg Atom The original atom.
 % @arg MaxLength The maximum allowed length of an atom.
-%        This must be at least 5.
+%      For values smaller than or equal to 5 the original atom is returned.
+%      With value `inf` the original atom is always returned.
 % @arg TruncatedAtom The truncated atom.
 
 % The maximum allowed length is too short to be used with truncation.
+atom_truncate(A, inf, A):- !.
 atom_truncate(A, Max, A):-
   Max =< 5, !.
 % The atom does not have to be truncated, it is not that long.

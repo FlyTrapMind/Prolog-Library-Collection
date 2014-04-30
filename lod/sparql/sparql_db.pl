@@ -107,19 +107,17 @@ sparql_register_remote_domain(SparqlRemote, Domain):-
 :- lod_register_location(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia ontology
-%:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
-:- xml_register_namespace('dbpedia-owl', 'http://dbpedia.org/ontology/').
+:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
 
 % DBpedia property
-%:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
-:- xml_register_namespace(dbpprop, 'http://dbpedia.org/property/').
+:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
 
 % DBpedia resource
-:- xml_register_namespace(dbp, 'http://dbpedia.org/resource/').
+:- xml_register_namespace(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia localizations
-:- initialization(dbpedia_init).
-dbpedia_init:-
+:- initialization(dbpedia_localizations).
+dbpedia_localizations:-
   forall(
     dbpedia_language_tag(LangTag),
     dbpedia_register(LangTag)
@@ -329,6 +327,9 @@ dbpedia_language_tag(zh_yue).
 
 % ?
 :- xml_register_namespace('powder-s', 'http://www.w3.org/2007/05/powder-s#').
+
+% PROV
+:- xml_register_namespace(prov, 'http://www.w3.org/ns/prov#').
 
 % RDF
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
