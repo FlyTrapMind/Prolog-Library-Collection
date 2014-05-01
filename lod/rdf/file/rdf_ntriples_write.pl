@@ -1,7 +1,7 @@
 :- module(
   rdf_ntriples_write,
   [
-    rdf_ntriples_write/2 % +File:atom
+    rdf_ntriples_write/2 % +Out:stream
                          % +Options:list
   ]
 ).
@@ -37,23 +37,18 @@ This means that we can guarantee that the number of triples
 
 
 
-%! rdf_ntriples_write(+File:atom, +Options:list) is det.
+%! rdf_ntriples_write(+Stream:stream, +Options:list) is det.
 % Writes RDF data serialization in the N-Triples format to the given file.
 %
 % The following options are supported:
 %   * =|bnode_base(?Iri:atom)|=
 %     Replace blank nodes with an IRI, defined as per
 %     RDF 1.1 spec (see link below).
-%   * =|filter(+Filter:atom)|=
-%     Compress data in stream. Only option: ==.
 %   * =|graph(?Graph:atom)|=
 %     The atomic name of a currently loaded RDF graph,
 %     to restrict the triples that are saved,
 %     or uninstantiated, in which case
 %     all currently loaded triples are saved.
-%   * =|mode(+Mode:oneof([append,write]))|=
-%     `append` adds a new gzip image to the end of the file.
-%     Default: `write`.
 %   * =|number_of_triples(-Triples:nonneg)|=
 %     The number of triples that was written.
 %
@@ -62,28 +57,7 @@ This means that we can guarantee that the number of triples
 %
 % @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#section-skolemization
 
-rdf_ntriples_write(File, O1):-
-  setup_call_cleanup(
-    open_filter_stream(O1, File, Out),
-    rdf_write_ntriples(Out, O1),
-    close(Out)
-  ).
-
-open_filter_stream(O1, File, Out):-
-  select_option(mode(Mode), O1, O2, write),
-  open_filter_stream(O2, File, Mode, Out).
-
-open_filter_stream(O1, File1, Mode, Out):-
-  option(filter(gzip), O1), !,
-  absolute_file_name(File1, File2, [access(write),extensions([gz])]),
-  gzopen(File2, Mode, Out).
-open_filter_stream(_, File, Mode, Out):-
-  open(File, Mode, Out).
-
-
-%! rdf_write_ntriples(+Output:stream, +Options:list(nvpair))is det.
-
-rdf_write_ntriples(Out, O1):-
+rdf_ntriples_write(Out, O1):-
   % Reset the blank node store.
   reset_bnode_admin,
 
