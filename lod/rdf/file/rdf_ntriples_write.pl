@@ -62,10 +62,9 @@ This means that we can guarantee that the number of triples
 %
 % @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#section-skolemization
 
-rdf_ntriples_write(File1, O1):-
-  absolute_file_name(File1, File2, [access(write),extensions([gz])]),
+rdf_ntriples_write(File, O1):-
   setup_call_cleanup(
-    open_filter_stream(O1, File2, Out),
+    open_filter_stream(O1, File, Out),
     rdf_write_ntriples(Out, O1),
     close(Out)
   ).
@@ -74,9 +73,10 @@ open_filter_stream(O1, File, Out):-
   select_option(mode(Mode), O1, O2, write),
   open_filter_stream(O2, File, Mode, Out).
 
-open_filter_stream(O1, File, Mode, Out):-
+open_filter_stream(O1, File1, Mode, Out):-
   option(filter(gzip), O1), !,
-  gzopen(File, Mode, Out).
+  absolute_file_name(File1, File2, [access(write),extensions([gz])]),
+  gzopen(File2, Mode, Out).
 open_filter_stream(_, File, Mode, Out):-
   open(File, Mode, Out).
 
