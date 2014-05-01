@@ -26,12 +26,11 @@ This means that we can guarantee that the number of triples
 @version 2014/03-2014/04
 */
 
-:- use_module(library(apply)).
 :- use_module(library(option)).
-:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
 :- use_module(library(uri)).
+:- use_module(library(zlib)).
 
 :- thread_local(bnode_counter/1).
 :- thread_local(bnode_map/2).
@@ -45,11 +44,14 @@ This means that we can guarantee that the number of triples
 %   * =|bnode_base(?Iri:atom)|=
 %     Replace blank nodes with an IRI, defined as per
 %     RDF 1.1 spec (see link below).
-%   * =|graph(?Graph:atom)|=
+%   * =|graph(?Graph:atom)|=0
 %     The atomic name of a currently loaded RDF graph,
 %     to restrict the triples that are saved,
 %     or uninstantiated, in which case
 %     all currently loaded triples are saved.
+%   * =|mode(+Mode:oneof([append,write]))|=
+%     `append` adds a new gzip image to the end of the file.
+%     Default: `write`.
 %   * =|number_of_triples(-Triples:nonneg)|=
 %     The number of triples that was written.
 %
@@ -59,9 +61,10 @@ This means that we can guarantee that the number of triples
 % @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#section-skolemization
 
 rdf_ntriples_write(File1, O1):-
-  absolute_file_name(File1, File2, [access(write)]),
+  absolute_file_name(File1, File2, [access(write),extensions([gz])]),
+  option(mode(Mode), O1, write),
   setup_call_cleanup(
-    open(File2, write, Out),
+    gzopen(File2, Mode, Out),
     rdf_write_ntriples(Out, O1),
     close(Out)
   ).
@@ -83,8 +86,9 @@ rdf_write_ntriples(Out, O1):-
     uri_components(Iri, uri_components(Scheme,Authority,_,_,_)),
     uri_components(IriPrefix, uri_components(Scheme,Authority,_,_,_)),
     atom_concat(IriPrefix, IriPostfix, Iri),
-    rdf_atom_md5(IriPostfix, 1, Hash),
-    atomic_list_concat(['','.well-known',genid,Hash], '/', Path),
+    rdf_atom_md5(IriPostfix, 1, Hash1),
+    atomic_concat(Hash1, '#', Hash2),
+    atomic_list_concat(['','.well-known',genid,Hash2], '/', Path),
     uri_components(
       BNodePrefix,
       uri_components(Scheme,Authority,Path,_,_)
@@ -132,6 +136,7 @@ rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
   rdf_write_predicate(Out, P),
   put_char(Out, ' '),
   rdf_write_object(Out, O, BNodePrefix),
+  put_char(Out, ' '),
   put_char(Out, '.'),
   put_code(Out, 10), !. % Newline
 
@@ -168,7 +173,7 @@ rdf_write_subject(Out, BNode, BNodePrefix):-
     increment_bnode_counter(Id2),
     assert(bnode_map(BNode, Id2))
   ),
-  atomic_list_concat([BNodePrefix,Id2], '/', BNodeName),
+  atomic_concat(BNodePrefix, Id2, BNodeName),
 
   % If the blank node is replaced by a well-known IRI,
   % then we use predicate term writer.

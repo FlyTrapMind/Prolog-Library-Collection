@@ -1,5 +1,5 @@
 :- module(
-  gv_dcg,
+  gv_dot,
   [
     gv_graph//1, % +GraphTerm:compound
     gv_html_like_label//1, % +Content:list(or([atom,compound,list(code)]))
@@ -8,7 +8,7 @@
   ]
 ).
 
-/** <module> GV_DCG
+/** <module> GraphViz DOT generator
 
 DCG rules for GraphViz DOT file generation.
 
@@ -18,22 +18,22 @@ In GraphViz vertices are called 'nodes'.
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09, 2014/03
+@version 2013/07, 2013/09, 2014/03-2014/04
 */
+
+:- use_module(library(apply)).
+:- use_module(library(lists)).
+:- use_module(library(option)).
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(option_ext)).
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
 :- use_module(html(html_dcg)).
-:- use_module(library(apply)).
-:- use_module(library(lists)).
-:- use_module(library(option)).
 :- use_module(ugraph(ugraph_export)).
 
 
@@ -41,76 +41,71 @@ In GraphViz vertices are called 'nodes'.
 %! gv_attribute(+Attribute:nvpair)// is det.
 % A single GraphViz attribute.
 % We assume that the attribute has already been validated.
-%
-% @tbd Add attribute checks.
 
 gv_attribute(Name=Val) --> !,
-  gv_id(Name),
-  "=",
-  gv_id(Val).
+  gv_id(Name), `=`, gv_id(Val).
 % Support for the non-deprecated representation for name-value pairs.
 gv_attribute(Attr) -->
   {Attr =.. [Name,Value]},
   gv_attribute(Name=Value).
 
+%! gv_attribute_list(+Attributes:list(nvpair))// .
+
+gv_attribute_list([]) --> [].
+gv_attribute_list([H|T]) -->
+  gv_attribute(H), `,`,
+  gv_attribute_list(T).
+
 %! gv_attribute_list(
 %!   +GraphAttributes:list(nvpair),
 %!   +Attributes:list(nvpair)
-%! )//
+%! )// .
 % ~~~{.abnf}
 % attr_list = "[" [a_list] "]" [attr_list]
 % a_list = ID "=" ID [","] [a_list]
 % ~~~
 
 % Attributes occur between square brackets.
-gv_attribute_list(G_Attrs, Attrs1) -->
-  opening_square_bracket,
+gv_attribute_list(GraphAttrs, Attrs1) -->
   {
     % The graph attributes have outer scope.
-    merge_options(Attrs1, G_Attrs, AllAttrs),
+    merge_options(Attrs1, GraphAttrs, AllAttrs),
     include(gv_attribute_value(AllAttrs), Attrs1, Attrs2)
   },
-  dcg_multi1(gv_attribute, _Rep, Attrs2, [separator(comma)]),
-  closing_square_bracket.
+  bracketed(square, gv_attribute_list(Attrs2)).
 
-gv_category(edge) --> atom('edge').
-gv_category(graph) --> atom('graph').
-gv_category(node) --> atom('node').
 
-gv_compass_pt --> "_".
-gv_compass_pt --> "c".
-gv_compass_pt --> "e".
-gv_compass_pt --> "n".
-gv_compass_pt --> "ne".
-gv_compass_pt --> "nw".
-gv_compass_pt --> "s".
-gv_compass_pt --> "se".
-gv_compass_pt --> "sw".
-gv_compass_pt --> "w".
+%! gv_compass_pt(+Direction:oneof(['_',c,e,n,ne,nw,s,se,sw,w]))// .
+% ~~~
+% compass_pt : (n | ne | e | se | s | sw | w | nw | c | _)
+% ~~~
 
-%! gv_edge_operator(+Directionality:oneof([forward,none]))// is det.
+gv_compass_pt('_') --> `_`.
+gv_compass_pt(c) --> `c`.
+gv_compass_pt(e) --> `e`.
+gv_compass_pt(n) --> `n`.
+gv_compass_pt(ne) --> `ne`.
+gv_compass_pt(nw) --> `nw`.
+gv_compass_pt(s) --> `s`.
+gv_compass_pt(se) --> `se`.
+gv_compass_pt(sw) --> `sw`.
+gv_compass_pt(w) --> `w`.
+
+
+%! gv_edge_operator(+Directed:boolean)// .
 % The binary edge operator between two vertices.
 % The operator that is used depends on whether the graph is directed or
 % undirected.
 %
-% @arg Directionality Either `forward` (directed, using operator `->`) or
-%        `none` (undirected, using operator `--`).
+% @arg Directed Whether an edge is directed (operator `->`) or
+%               undirected (operator `--`).
 
 gv_edge_operator(forward) --> arrow([head(right)], 2).
-gv_edge_operator(none) --> "--".
+gv_edge_operator(none) --> `--`.
 
-%! gv_edge_rhs(+GraphAttributes:list(nvpair), +ToId:gv_node_id)//
-% The right-hand-side of a GraphViz edge representation.
-% @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1 here.
-% @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
-
-gv_edge_rhs(G_Attrs, To_Id) -->
-  {option(dir(Dir), G_Attrs, none)},
-  gv_edge_operator(Dir), space,
-  gv_node_id(To_Id).
 
 %! gv_edge_statement(
-%!   +Indent:integer,
+%!   +Indent:nonneg,
 %!   +GraphAttributes:list(nvpair),
 %!   +EdgeTerm:compound
 %! )// is det.
@@ -121,27 +116,41 @@ gv_edge_rhs(G_Attrs, To_Id) -->
 %      may be used in the edge statement (e.g., the colorscheme).
 % @arg EdgeTerm A compound term in the GIFormat, representing an edge.
 %
-% @see Module [graph_export.pl] for the GIFormat.
-% @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1 here.
+% @tbd Instead of gv_node_id//1 we could have a gv_subgraph//1
+%      at the from and/or to location.
+% @tbd Add support for multiple, consecutive occurrences of gv_edge_rhs//2.
 
-gv_edge_statement(I, G_Attrs, edge(From_Id, To_Id, E_Attrs)) -->
-  indent(I), gv_node_id(From_Id), space,
-  gv_edge_rhs(G_Attrs, To_Id), space,
+gv_edge_statement(I, GraphAttrs, edge(FromId, ToId, E_Attrs)) -->
+  indent(I),
+  gv_node_id(FromId), ` `,
+
+  {option(dir(Directed), GraphAttrs, false)},
+  gv_edge_operator(Directed), ` `,
+
+  gv_node_id(ToId),
+
   % We want `colorscheme/1` from the edges and
   % `directionality/1` from the graph.
-  gv_attribute_list(G_Attrs, E_Attrs), newline.
+  gv_attribute_list(GraphAttrs, E_Attrs),
+  newline.
+
+gv_edge_statements(_, _, []) --> [].
+gv_edge_statements(I, GraphAttrs, [H|T]) -->
+  gv_edge_statement(I, GraphAttrs, H),
+  gv_edge_statements(I, GraphAttrs, T).
+
 
 %! gv_generic_attributes_statement(
-%!   +Category:oneof([edge,graph,node]),
+%!   +Kind:oneof([edge,graph,node]),
 %!   +Indent:integer,
 %!   +GraphAttributes:list(nvpair),
 %!   +CategoryAttributes:list(nvpair)
 %! )//
 % A GraphViz statement describing generic attributes for a category of items.
 %
-% @arg Category The category of items for to the attributes apply.
-%      Possible values: * `edge`, `graph`, `node`.
-% @arg Indent An integer.
+% @arg Kind The category of items for to the attributes apply.
+%      Possible values: `edge`, `graph`, and `node`.
+% @arg Indent An integer indicating the number of tabs.
 % @arg GraphAttributes A list of name-value pairs.
 % @arg CategoryAttributes A list of name-value pairs.
 %
@@ -149,14 +158,16 @@ gv_edge_statement(I, G_Attrs, edge(From_Id, To_Id, E_Attrs)) -->
 % attr_stmt = (graph / node / edge) attr_list
 % ~~~
 
-gv_generic_attributes_statement(_Cat, _I, _G_Attrs, []) --> [], !.
-gv_generic_attributes_statement(Cat, I, G_Attrs, CatAttrs) -->
-  indent(I), gv_category(Cat), space,
-  gv_attribute_list(G_Attrs, CatAttrs), newline.
+gv_generic_attributes_statement(_, _, _, []) --> [], !.
+gv_generic_attributes_statement(Kind, I, GraphAttrs, KindAttrs) -->
+  indent(I),
+  gv_kind(Kind), ` `,
+  gv_attribute_list(GraphAttrs, KindAttrs), newline.
+
 
 %! gv_graph(+GraphTerm:compound)//
 % The follow graph attributes are supported:
-%   1. `directonality(+Directionality:oneof([directed,undirected]))`
+%   1. `directonality(+Directed:oneof([directed,undirected]))`
 %      A directed graph uses the keyword `digraph`.
 %      An undirected graph uses the keyword `graph`.
 %   2. `name(+GraphName:atom)`
@@ -201,11 +212,11 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 
   % The first statement in the GraphViz output.
   % States that this file represents a graph according to the GraphViz format.
-  indent(I), gv_strict(Strict),
-  {(Dir == forward -> GraphType = digraph ; GraphType = graph)},
-  gv_graph_type(GraphType), space,
-  gv_id(G_Name), space,
-  opening_curly_bracket, newline,
+  indent(I),
+  gv_strict(Strict),
+  gv_graph_type(Dir), ` `,
+  gv_id(G_Name), ` `,
+  `{`, newline,
 
   % The following lines are indented.
   {NewI is I + 1},
@@ -221,14 +232,14 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 
   % Only add a newline if some content was written in the previous three
   % lines.
-  ({(G_Attrs5 == [], V_Attrs == [], E_Attrs == [])} -> "" ; newline),
+  ({(G_Attrs5 == [], V_Attrs == [], E_Attrs == [])} -> `` ; newline),
 
   % The list of GraphViz nodes.
-  dcg_multi1(gv_node_statement(NewI, G_Attrs5), NewV_Terms),
-  ({NewV_Terms == []} -> "" ; newline),
+  gv_node_statements(NewI, G_Attrs5, NewV_Terms),
+  ({NewV_Terms == []} -> `` ; newline),
 
   % The ranked GraphViz nodes (displayed at the same height).
-  dcg_multi1(gv_ranked_node_collection(NewI, G_Attrs5), Ranked_V_Terms),
+  gv_ranked_node_collections(NewI, G_Attrs5, Ranked_V_Terms),
   ({Ranked_V_Terms == []} -> "" ; newline),
 
   {
@@ -245,32 +256,27 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
   },
 
   % The rank edges.
-  dcg_multi1(gv_edge_statement(NewI, G_Attrs5), Rank_Edges),
+  gv_edge_statements(NewI, G_Attrs5, Rank_Edges),
 
   % The non-rank edges.
-  dcg_multi1(gv_edge_statement(NewI, G_Attrs5), NewE_Terms),
+  gv_edge_statements(NewI, G_Attrs5, NewE_Terms),
 
   % Note that we do not include a newline here.
 
-  % The description of the grpah is closed (using the old indent level).
-  indent(I), closing_curly_bracket.
+  % The description of the graph is closed (using the old indent level).
+  indent(I), `}`, newline.
 
-%! gv_graph_type(+Directionality:oneof([digraph,graph]))// is det.
+
+%! gv_graph_type(+Dir:oneof([forward,none]))// .
 % The type of graph that is represented.
 %
-% @arg Directionality Either `digraph` or `graph`.
+% @arg Directed Either `digraph` or `graph`.
 
-gv_graph_type(digraph) --> atom('digraph').
-gv_graph_type(graph) --> atom('graph').
+gv_graph_type(forward) --> `digraph`.
+gv_graph_type(_) --> `graph`.
 
-gv_html_cell --> html_element(td, _, gv_html_label).
-gv_html_cell --> html_element(td, _, html_element(img, _)).
 
-gv_html_cells --> gv_html_cell, gv_html_cells.
-gv_html_cells --> gv_html_cell.
-gv_html_cells --> gv_html_cell, html_element(vr, _), gv_html_cells.
-
-%! gv_html_label(+Codes:list(code))//
+%! gv_html_label(+Codes:list(code))// .
 %
 % @see http://www.graphviz.org/doc/info/shapes.html#html
 
@@ -285,6 +291,19 @@ gv_html_like_label(Content) --> "<", html_dcg(Content), ">".
 gv_html_table --> html_element(table, _, gv_html_rows).
 gv_html_table --> html_element(font, _, html_element(table, _, gv_html_rows)).
 
+gv_html_rows --> gv_html_row, gv_html_rows.
+gv_html_rows --> gv_html_row, html_element(hr, _), gv_html_rows.
+gv_html_rows --> gv_html_row.
+
+gv_html_row --> html_element(tr, _, gv_html_cells).
+
+gv_html_cell --> html_element(td, _, gv_html_label).
+gv_html_cell --> html_element(td, _, html_element(img, _)).
+
+gv_html_cells --> gv_html_cell, gv_html_cells.
+gv_html_cells --> gv_html_cell.
+gv_html_cells --> gv_html_cell, html_element(vr, _), gv_html_cells.
+
 gv_html_text --> gv_html_textitem, gv_html_text.
 gv_html_text --> gv_html_textitem.
 
@@ -298,11 +317,6 @@ gv_html_textitem --> html_element(u, _, gv_html_text), !.
 gv_html_textitem --> html_element(sub, _, gv_html_text), !.
 gv_html_textitem --> html_element(sup, _, gv_html_text), !.
 
-gv_html_rows --> gv_html_row, gv_html_rows.
-gv_html_rows --> gv_html_row, html_element(hr, _), gv_html_rows.
-gv_html_rows --> gv_html_row.
-
-gv_html_row --> html_element(tr, _, gv_html_cells).
 
 %! gv_id(?Atom:atom)// is det.
 % Parse a GraphViz identifier.
@@ -368,23 +382,35 @@ gv_id_rest([H|T]) -->
   (ascii_alpha_numeric(H) ; underscore(H)),
   gv_id_rest(T).
 
+
+%! gv_keyword(+Codes:list(code)) is semidet.
+% Succeeds if the given codes for a GraphViz reserved keyword.
+
 gv_keyword(Codes):-
   % Obviously, the keywords do not occur on the difference list input.
   % So we must use phrase/[2,3].
   phrase(gv_keyword, Codes).
 
-%! gv_keyword//
+%! gv_keyword// .
 % GraphViz has reserved keywords that cannot be used as identifiers.
 % GraphViz keywords are case-insensitive.
 
-gv_keyword --> atom('digraph').
-gv_keyword --> atom('edge').
-gv_keyword --> atom('graph').
-gv_keyword --> atom('node').
-gv_keyword --> atom('strict').
-gv_keyword --> atom('subgraph').
+gv_keyword --> `digraph`.
+gv_keyword --> `edge`.
+gv_keyword --> `graph`.
+gv_keyword --> `node`.
+gv_keyword --> `strict`.
+gv_keyword --> `subgraph`.
 
-%! gv_node_id(+NodeId:atom)//
+
+%! gv_kind(+Kind:oneof([edge,graph,node]))// .
+
+gv_kind(edge) --> `edge`.
+gv_kind(graph) --> `graph`.
+gv_kind(node) --> `node`.
+
+
+%! gv_node_id(+NodeId:atom)// .
 % GraphViz node identifiers can be of the following two types:
 %   1. A GraphViz identifier, see gv_id//1.
 %   2. A GraphViz identifier plus a GraphViz port indicator, see gv_port//0.
@@ -392,46 +418,66 @@ gv_keyword --> atom('subgraph').
 % @tbd Add support for GraphViz port indicators
 %      inside GraphViz node identifiers.
 
-gv_node_id(V_Id) -->
-  gv_id(V_Id).
+gv_node_id(Id) -->
+  gv_id(Id).
 %gv_node_id(_) -->
 %  gv_id(_),
 %  gv_port.
+
 
 %! gv_node_statement(
 %!   +Indent:integer,
 %!   +GraphAttributes,
 %!   +VertexTerm:compound
-%! )// is det.
+%! )// .
 % A GraphViz statement describing a vertex (GraphViz calls vertices 'nodes').
 
-gv_node_statement(I, G_Attrs, vertex(V_Id,_V,V_Attrs)) -->
-  indent(I), gv_node_id(V_Id), space,
-  gv_attribute_list(G_Attrs, V_Attrs), newline.
+gv_node_statement(I, GraphAttrs, vertex(Id,_,V_Attrs)) -->
+  indent(I),
+  gv_node_id(Id), ` `,
+  gv_attribute_list(GraphAttrs, V_Attrs), newline.
+
+
+%! gv_node_statements(
+%!   +Indent:nonneg,
+%!   +GraphAttributes:list(nvpair),
+%!   +VertexTerms:list(compound)
+%! )// .
+
+gv_node_statements(_, _, []) --> [].
+gv_node_statements(I, G_Attrs, [H|T]) -->
+  gv_node_statement(I, G_Attrs, H),
+  gv_node_statements(I, G_Attrs, T).
+
 
 gv_port -->
   gv_port_location,
-  (gv_port_angle ; "").
+  (gv_port_angle ; ``).
 gv_port -->
   gv_port_angle,
-  (gv_port_location ; "").
+  (gv_port_location ; ``).
 gv_port -->
-  ":",
-  gv_compass_pt.
+  `:`,
+  gv_compass_pt(_).
 
 gv_port_angle -->
-  "@",
+  `@`,
   gv_id(_).
 
 gv_port_location -->
-  ":",
+  `:`,
   gv_id(_).
 gv_port_location -->
-  ":(",
-  gv_id(_),
-  ",",
-  gv_id(_),
-  ")".
+  `:`,
+  bracketed(
+    round,
+    (
+      gv_id(_),
+      `,`,
+      gv_id(_)
+    )
+  ).
+
 
 gv_quoted_string([]) --> [].
 % Just to be sure, we do not allow the double quote
@@ -444,26 +490,36 @@ gv_quoted_string([92,34|T]) --> !,
   gv_quoted_string(T).
 % Add the backslash escape character.
 gv_quoted_string([34|T]) --> !,
-  backslash,
-  double_quote,
+  `\\\"`,
   gv_quoted_string(T).
 % All other characters are allowed without escaping.
 gv_quoted_string([H|T]) -->
   [H],
   gv_quoted_string(T).
 
-gv_ranked_node_collection(I, G_Attrs, rank(Rank_V_Term,Content_V_Terms)) -->
+
+gv_ranked_node_collection(
+  I,
+  GraphAttrs,
+  rank(Rank_V_Term,Content_V_Terms)
+) -->
   % Open the subgraph.
-  indent(I), "{", newline,
+  indent(I), `{`, newline,
 
   % The rank attribute.
   {NewI is I + 1},
-  indent(NewI), gv_attribute(rank=same), semi_colon, newline,
+  indent(NewI), gv_attribute(rank=same), `;`, newline,
 
-  dcg_multi1(gv_node_statement(NewI, G_Attrs), [Rank_V_Term|Content_V_Terms]),
+  gv_node_statements(NewI, GraphAttrs, [Rank_V_Term|Content_V_Terms]),
 
   % Close the subgraph.
-  indent(I), "}", newline.
+  indent(I), `}`, newline.
+
+gv_ranked_node_collections(_, _, []) --> [].
+gv_ranked_node_collections(I, GraphAttrs, [H|T]) -->
+  gv_ranked_node_collection(I, GraphAttrs, H),
+  gv_ranked_node_collections(I, GraphAttrs, T).
+
 
 %! gv_strict(+Strict:boolean)// is det.
 % The keyword denoting that the graph is strict, i.e., has no self-arcs and
@@ -471,8 +527,8 @@ gv_ranked_node_collection(I, G_Attrs, rank(Rank_V_Term,Content_V_Terms)) -->
 % This only applies to directed graphs.
 
 gv_strict(false) --> [].
-gv_strict(true) -->
-  atom('strict ').
+gv_strict(true) --> `strict `.
+
 
 gv_tree(O1, T) -->
   {

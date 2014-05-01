@@ -74,6 +74,7 @@ since most datasets are published in a non-standard way.
 :- use_module(os(unpack)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf_file(rdf_detect)).
+:- use_module(rdf_file(rdf_file_db)).
 :- use_module(rdf_file(rdf_ntriples_write)).
 :- use_module(rdf_file(rdf_serial)).
 
@@ -342,7 +343,8 @@ rdf_save(O1, Graph, File):-
   ->
     debug(rdf_serial, 'No need to save graph ~w; no updates.', [Graph])
   ;
-    rdf_save(O1, Format, Graph, File),
+    select_option(format(Format), O1, O2, turtle),
+    rdf_save(O2, Format, Graph, File),
     debug(
       rdf_serial,
       'Graph ~w was saved in ~w serialization to file ~w.',

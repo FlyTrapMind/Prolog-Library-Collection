@@ -1,6 +1,8 @@
 :- module(
   pl_log,
   [
+    run_collect_messages/2, % :Goal
+                            % +File:atom
     run_collect_messages/3, % :Goal
                             % -Status:or([oneof([false,true]),compound])
                             % -Messages:list(compound)
@@ -22,9 +24,16 @@ Logging the performance and results of Prolog predicates.
 
 :- use_module(library(check_installation)).
 
+:- meta_predicate(run_collect_messages(0,+)).
 :- meta_predicate(run_collect_messages(0,-,-)).
 
 
+
+%! run_collect_messages(:Goal, +File:atom) is det.
+
+run_collect_messages(Goal, File):-
+  run_collect_messages(Goal, Status, Messages),
+  maplist(store_term_to_log(File), [Status|Messages]).
 
 %! run_collect_messages(
 %!   :Goal,

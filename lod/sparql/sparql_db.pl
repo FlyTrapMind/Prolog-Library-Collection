@@ -24,13 +24,16 @@
 Persistency store for SPARQL-related information.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01,
+         2014/04
 */
 
-:- use_module(generics(db_ext)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(uri)).
+
+:- use_module(generics(db_ext)).
 :- use_module(lod(lod_location)).
 :- use_module(os(file_ext)).
 :- use_module(xml(xml_namespace)).
@@ -84,7 +87,7 @@ sparql_register_remote_domain(SparqlRemote, Domain):-
 
 
 
-% Registrations
+% REGISTRATIONS
 
 % HTML
 :- db_add_novel(user:prolog_file_type(htm,  html)).
@@ -104,175 +107,201 @@ sparql_register_remote_domain(SparqlRemote, Domain):-
 :- lod_register_location(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia ontology
-%:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
-:- xml_register_namespace('dbpedia-owl', 'http://dbpedia.org/ontology/').
+:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
 
 % DBpedia property
-%:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
-:- xml_register_namespace(dbpprop, 'http://dbpedia.org/property/').
+:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
 
 % DBpedia resource
 :- xml_register_namespace(dbpedia, 'http://dbpedia.org/resource/').
 
 % DBpedia localizations
-:- sparql_register_remote_domain(dbpedia, 'ace.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'af.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'als.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'am.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'an.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ang.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ar.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'arc.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'arz.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'as.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ast.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'av.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ay.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'az.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ba.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bar.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bat_smg.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bcl.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bcl_smg.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'be.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'be-x-old.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'be_x_old.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bg.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bi.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bjn.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bm.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bn.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bo.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bpy.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'br.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bs.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'bxr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ca.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'cdo.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ce.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ceb.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'chr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'chy.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ckb.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'co.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'commons.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'cr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'crh.dbpedia.org').
-:- sparql_register_remote('cs.dbpedia', 'cs.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'cy.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'da.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'diq.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'dv.dbpedia.org').
-:- sparql_register_remote('el.dbpedia', 'el.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'eo.dbpedia.org').
-:- sparql_register_remote('es.dbpedia', 'es.dbpedia.org', default, '/sparql').
-:- sparql_register_remote('eu.dbpedia', 'eu.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'fa.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'fi.dbpedia.org').
-:- sparql_register_remote('fr.dbpedia', 'fr.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'frp.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'fy.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ga.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'gan.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'gd.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'gl.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'gn.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'got.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'gu.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'gv.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ha.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'hak.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'he.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'hi.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'hif.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ht.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'hu.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'hy.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ia.dbpedia.org').
+:- initialization(dbpedia_localizations).
+dbpedia_localizations:-
+  forall(
+    dbpedia_language_tag(LangTag),
+    dbpedia_register(LangTag)
+  ).
 
-:- xml_register_namespace('id-dbpprop', 'http://id.dbpedia.org/property/').
-:- xml_register_namespace('id-dbpedia', 'http://id.dbpedia.org/resource/').
-:- sparql_register_remote('id.dbpedia', 'id.dbpedia.org', default, '/sparql').
+dbpedia_register(LangTag):-
+  atomic_list_concat([LangTag,dbpedia,org], '.', Domain),
+  sparql_register_remote_domain(dbpedia, Domain),
+  
+  atomic_list_concat([LangTag,dbpedia], '.', Remote),
+  sparql_register_remote(Remote, Domain, default, '/sparql'),
+  
+  atomic_list_concat([LangTag,dbp], '.', ResourceNamespace),
+  uri_components(
+    ResourcePrefix,
+    uri_components(http,Domain,'/resource/',_,_)
+  ),
+  xml_register_namespace(ResourceNamespace, ResourcePrefix),
+  
+  atomic_list_concat([LangTag,dbpprop], '.', PropertyNamespace),
+  uri_components(
+    PropertyPrefix,
+    uri_components(http,Domain,'/property/',_,_)
+  ),
+  xml_register_namespace(PropertyNamespace, PropertyPrefix).
 
-:- sparql_register_remote_domain(dbpedia, 'ig.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'io.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'is.dbpedia.org').
-:- sparql_register_remote('it.dbpedia', 'it.dbpedia.org', default, '/sparql').
-:- sparql_register_remote('ja.dbpedia', 'ja.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'jv.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'kaa.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'kab.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'kbd.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ki.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'kk.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'kl.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'km.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'kn.dbpedia.org').
-:- sparql_register_remote('ko.dbpedia', 'ko.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'la.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'lbe.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'lez.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'li.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ln.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'lt.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'lv.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'mhr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'mk.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ml.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'mr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'mrj.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ms.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'my.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'na.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'nah.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ne.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'new.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'nn.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'no.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'nrm.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'nv.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'oc.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'pnb.dbpedia.org').
-:- sparql_register_remote('pl.dbpedia', 'pl.dbpedia.org', default, '/sparql').
-:- sparql_register_remote('pt.dbpedia', 'pt.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'qu.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ro.dbpedia.org').
-:- sparql_register_remote('ru.dbpedia', 'ru.dbpedia.org', default, '/sparql').
-:- sparql_register_remote_domain(dbpedia, 'rw.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sco.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'se.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'simple.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sl.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sn.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sq.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'srn.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'su.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sv.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'sw.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'szl.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ta.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'te.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'tg.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'th.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'tl.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'tr.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'tt.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'tum.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'udm.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'ug.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'uk.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'vi.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'wa.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'war.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'wo.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'xal.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'yi.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'yo.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'yoh.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'zh.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'zh_min_nan.dbpedia.org').
-:- sparql_register_remote_domain(dbpedia, 'zh_yue.dbpedia.org').
+%! dbpedia_language_tag(+LanguageTag:atom) is semidet.
+%! dbpedia_language_tag(-LanguageTag:atom) is multi.
+
+dbpedia_language_tag(ace).
+dbpedia_language_tag(af).
+dbpedia_language_tag(als).
+dbpedia_language_tag(am).
+dbpedia_language_tag(an).
+dbpedia_language_tag(ang).
+dbpedia_language_tag(ar).
+dbpedia_language_tag(arc).
+dbpedia_language_tag(arz).
+dbpedia_language_tag(as).
+dbpedia_language_tag(ast).
+dbpedia_language_tag(av).
+dbpedia_language_tag(ay).
+dbpedia_language_tag(az).
+dbpedia_language_tag(ba).
+dbpedia_language_tag(bar).
+dbpedia_language_tag(bat_smg).
+dbpedia_language_tag(bcl).
+dbpedia_language_tag(bcl_smg).
+dbpedia_language_tag(be).
+dbpedia_language_tag('be-x-old').
+dbpedia_language_tag(bg).
+dbpedia_language_tag(bi).
+dbpedia_language_tag(bjn).
+dbpedia_language_tag(bm).
+dbpedia_language_tag(bn).
+dbpedia_language_tag(bo).
+dbpedia_language_tag(bpy).
+dbpedia_language_tag(br).
+dbpedia_language_tag(bs).
+dbpedia_language_tag(bxr).
+dbpedia_language_tag(ca).
+dbpedia_language_tag(cdo).
+dbpedia_language_tag(ce).
+dbpedia_language_tag(ceb).
+dbpedia_language_tag(chr).
+dbpedia_language_tag(chy).
+dbpedia_language_tag(ckb).
+dbpedia_language_tag(co).
+dbpedia_language_tag(commons).
+dbpedia_language_tag(cr).
+dbpedia_language_tag(crh).
+dbpedia_language_tag(cs).
+dbpedia_language_tag(cy).
+dbpedia_language_tag(da).
+dbpedia_language_tag(diq).
+dbpedia_language_tag(dv).
+dbpedia_language_tag(el).
+dbpedia_language_tag(eo).
+dbpedia_language_tag(es).
+dbpedia_language_tag(eu).
+dbpedia_language_tag(fa).
+dbpedia_language_tag(fi).
+dbpedia_language_tag(fr).
+dbpedia_language_tag(frp).
+dbpedia_language_tag(fy).
+dbpedia_language_tag(ga).
+dbpedia_language_tag(gan).
+dbpedia_language_tag(gd).
+dbpedia_language_tag(gl).
+dbpedia_language_tag(gn).
+dbpedia_language_tag(got).
+dbpedia_language_tag(gu).
+dbpedia_language_tag(gv).
+dbpedia_language_tag(ha).
+dbpedia_language_tag(hak).
+dbpedia_language_tag(he).
+dbpedia_language_tag(hi).
+dbpedia_language_tag(hif).
+dbpedia_language_tag(hsb).
+dbpedia_language_tag(ht).
+dbpedia_language_tag(hu).
+dbpedia_language_tag(hy).
+dbpedia_language_tag(ia).
+dbpedia_language_tag(id).
+dbpedia_language_tag(ig).
+dbpedia_language_tag(io).
+dbpedia_language_tag(is).
+dbpedia_language_tag(it).
+dbpedia_language_tag(ja).
+dbpedia_language_tag(jv).
+dbpedia_language_tag(kaa).
+dbpedia_language_tag(kab).
+dbpedia_language_tag(kbd).
+dbpedia_language_tag(ki).
+dbpedia_language_tag(kk).
+dbpedia_language_tag(kl).
+dbpedia_language_tag(km).
+dbpedia_language_tag(kn).
+dbpedia_language_tag(ko).
+dbpedia_language_tag(la).
+dbpedia_language_tag(lbe).
+dbpedia_language_tag(lez).
+dbpedia_language_tag(li).
+dbpedia_language_tag(ln).
+dbpedia_language_tag(lt).
+dbpedia_language_tag(lv).
+dbpedia_language_tag(mg).
+dbpedia_language_tag(mhr).
+dbpedia_language_tag(mk).
+dbpedia_language_tag(ml).
+dbpedia_language_tag(mr).
+dbpedia_language_tag(mrj).
+dbpedia_language_tag(ms).
+dbpedia_language_tag(my).
+dbpedia_language_tag(na).
+dbpedia_language_tag(nah).
+dbpedia_language_tag(ne).
+dbpedia_language_tag(new).
+dbpedia_language_tag(nn).
+dbpedia_language_tag(no).
+dbpedia_language_tag(nrm).
+dbpedia_language_tag(nv).
+dbpedia_language_tag(oc).
+dbpedia_language_tag(pnb).
+dbpedia_language_tag(pl).
+dbpedia_language_tag(pt).
+dbpedia_language_tag(qu).
+dbpedia_language_tag(ro).
+dbpedia_language_tag(ru).
+dbpedia_language_tag(rw).
+dbpedia_language_tag(sco).
+dbpedia_language_tag(se).
+dbpedia_language_tag(simple).
+dbpedia_language_tag(sl).
+dbpedia_language_tag(sn).
+dbpedia_language_tag(sq).
+dbpedia_language_tag(sr).
+dbpedia_language_tag(srn).
+dbpedia_language_tag(su).
+dbpedia_language_tag(sv).
+dbpedia_language_tag(sw).
+dbpedia_language_tag(szl).
+dbpedia_language_tag(ta).
+dbpedia_language_tag(te).
+dbpedia_language_tag(tg).
+dbpedia_language_tag(th).
+dbpedia_language_tag(tl).
+dbpedia_language_tag(tr).
+dbpedia_language_tag(tt).
+dbpedia_language_tag(tum).
+dbpedia_language_tag(udm).
+dbpedia_language_tag(ug).
+dbpedia_language_tag(uk).
+dbpedia_language_tag(vi).
+dbpedia_language_tag(wa).
+dbpedia_language_tag(war).
+dbpedia_language_tag(wo).
+dbpedia_language_tag(xal).
+dbpedia_language_tag(yi).
+dbpedia_language_tag(yo).
+dbpedia_language_tag(yoh).
+dbpedia_language_tag(zh).
+dbpedia_language_tag(zh_min_nan).
+dbpedia_language_tag(zh_yue).
 
 % Dublin Core elements
 :- xml_register_namespace(dc, 'http://purl.org/dc/elements/1.1/').
@@ -298,6 +327,9 @@ sparql_register_remote_domain(SparqlRemote, Domain):-
 
 % ?
 :- xml_register_namespace('powder-s', 'http://www.w3.org/2007/05/powder-s#').
+
+% PROV
+:- xml_register_namespace(prov, 'http://www.w3.org/ns/prov#').
 
 % RDF
 :- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').

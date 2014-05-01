@@ -336,9 +336,12 @@ directory_subdirectories(Dir1, Subdirs1):-
 has_file_type(FileTypes, _):-
   var(FileTypes), !.
 has_file_type(FileTypes, File):-
+  is_list(FileTypes), !,
   file_type(FileType, File),
   nonvar(FileType),
   memberchk(FileType, FileTypes).
+has_file_type(FileType, File):-
+  has_file_type([FileType], File).
 
 nonfile_entry('.').
 nonfile_entry('..').

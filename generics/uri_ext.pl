@@ -237,7 +237,13 @@ url_flat_directory(ParentDir, Url, UrlDir):-
   directory_file_path(ParentDir, Hash, UrlDir),
 
   % Make sure the directory exists.
-  make_directory_path(UrlDir).
+  (
+    exists_directory(UrlDir)
+  ->
+    true
+  ;
+    make_directory_path(UrlDir)
+  ).
 
 
 %! url_nested_directory(+ParentDirectory:atom, +Url:url, -Directory:atom) is det.

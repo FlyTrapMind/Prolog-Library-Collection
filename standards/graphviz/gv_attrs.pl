@@ -198,6 +198,8 @@ overlap(scalexy).
 overlap(voronoi).
 overlap(vpsc).
 
+gv_attr(_, penwidth, nonneg, [edge], 1).
+
 % @tbd The default value is not correct.
 %      This should be `1` for clusters and the shape default for nodes.
 gv_attr(_Attrs, peripheries, nonneg, [cluster,node], 1).

@@ -61,7 +61,7 @@ user:web_module('RDF Tabular', rdf_tabular).
 % RDF term.
 rdf_tabular(Request):-
   request_query_read(Request, term, T), !,
-  
+
   % Parse the tern atom to extract the corresponding RDF term.
   once(dcg_phrase(rdf_parse_term(T1), T)),
   rdf_global_id(T1, T2),

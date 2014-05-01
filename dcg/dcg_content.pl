@@ -4,6 +4,8 @@
     arrow//2, % +Options:list(nvpair)
               % +Length:nonneg
     atom//1, % ?Atom:atom
+    atom//2, % +Atom:atom
+             % +Ellipsis:positive_integer
     between//3, % +Low:nonneg
                 % +High:nonneg
                 % ?Code:code
@@ -66,6 +68,7 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_unicode)).
+:- use_module(generics(atom_ext)).
 :- use_module(math(radix)).
 :- use_module(os(shell_ext)).
 :- use_module(pl(pl_log)).
@@ -147,6 +150,13 @@ atom(Atom, Head, Tail):-
 atom(Atom) -->
   codes(Codes),
   {atom_codes(Atom, Codes)}.
+
+
+%! atom(+Atom:atom, +Ellipsis:positive_integer)// .
+
+atom(Atom1, Ellipsis) -->
+  {atom_truncate(Atom1, Ellipsis, Atom2)},
+  atom(Atom2).
 
 
 %! between(+Low:nonneg, +High:nonneg, +Code:code)// is semidet.

@@ -92,6 +92,7 @@ Support for RDF lists.
 % ~~~
 
 rdf_is_list(RDF_List1):-
+  nonvar(RDF_List1),
   \+ rdf_is_literal(RDF_List1),
   rdf_global_id(rdf:'List', C),
   % WATCH OUT! THIS IS VERY TRICKY!
@@ -311,6 +312,6 @@ rdf_list_name(O1, RdfList) -->
   % trouble when it comes accross `[b,c]`
   % (which fails the check for RDF list).
   {rdf_list([recursive(false)], RdfList, RDF_Terms)},
-  
+
   list(rdf_term_name(O1), RDF_Terms).
 
