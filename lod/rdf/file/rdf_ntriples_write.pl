@@ -44,7 +44,9 @@ This means that we can guarantee that the number of triples
 %   * =|bnode_base(?Iri:atom)|=
 %     Replace blank nodes with an IRI, defined as per
 %     RDF 1.1 spec (see link below).
-%   * =|graph(?Graph:atom)|=0
+%   * =|filter(+Filter:atom)|=
+%     Compress data in stream. Only option: ==.
+%   * =|graph(?Graph:atom)|=
 %     The atomic name of a currently loaded RDF graph,
 %     to restrict the triples that are saved,
 %     or uninstantiated, in which case
@@ -62,12 +64,21 @@ This means that we can guarantee that the number of triples
 
 rdf_ntriples_write(File1, O1):-
   absolute_file_name(File1, File2, [access(write),extensions([gz])]),
-  option(mode(Mode), O1, write),
   setup_call_cleanup(
-    gzopen(File2, Mode, Out),
+    open_filter_stream(O1, File2, 
     rdf_write_ntriples(Out, O1),
     close(Out)
   ).
+
+open_filter_stream(O1, File, Out):-
+  select_option(mode(Mode), O1, O2, write),
+  open_filter_stream(O2, File, Mode, Out).
+
+open_filter_stream(O1, File, Mode, Out):-
+  option(filter(gzip), O1), !,
+  gzopen(File, Mode, Out).
+open_filter_stream(_, File, Mode, Out):-
+  open(File, Mode, Out).
 
 
 %! rdf_write_ntriples(+Output:stream, +Options:list(nvpair))is det.
@@ -101,16 +112,18 @@ rdf_write_ntriples(Out, O1):-
   ->
     forall(
       rdf(S, P, O, Graph:_),
-      ( inc_number_of_triples(State),
-	rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+      (
+        inc_number_of_triples(State),
+        rdf_write_ntriple(Out, S, P, O, BNodePrefix)
       )
     )
   ;
     forall(
       % Avoid duplicate triples.
       rdf(S, P, O),
-      ( inc_number_of_triples(State),
-	rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+      (
+        inc_number_of_triples(State),
+        rdf_write_ntriple(Out, S, P, O, BNodePrefix)
       )
     )
   ),
@@ -126,7 +139,7 @@ rdf_write_ntriples(Out, O1):-
 
 inc_number_of_triples(State) :-
   arg(1, State, C0),
-  C1 is C0+1,
+  C1 is C0 + 1,
   nb_setarg(1, State, C1).
 
 rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
