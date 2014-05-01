@@ -221,7 +221,7 @@ json_pair_to_rdf(Graph, _, XmlNamespace, Individual1, Name, Legend/_, Value):-
   create_resource(Graph, XmlNamespace, Legend, Value, Individual2),
   rdf_global_id(XmlNamespace:Name, Predicate),
   rdf_assert(Individual1, Predicate, Individual2, Graph).
-% A JSON object occurs for which the legend it not yet known.
+% A JSON object occurs for which the legend is not yet known.
 json_pair_to_rdf(Graph, Module, XmlNamespace, Individual1, Name, Type, Value):-
   Type \= _/_, Value = json(_), !,
   json_object_to_rdf(Graph, Module, XmlNamespace, Value, Individual2),
