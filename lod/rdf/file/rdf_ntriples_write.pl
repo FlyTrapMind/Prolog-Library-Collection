@@ -65,7 +65,7 @@ This means that we can guarantee that the number of triples
 rdf_ntriples_write(File1, O1):-
   absolute_file_name(File1, File2, [access(write),extensions([gz])]),
   setup_call_cleanup(
-    open_filter_stream(O1, File2, 
+    open_filter_stream(O1, File2, Out),
     rdf_write_ntriples(Out, O1),
     close(Out)
   ).
