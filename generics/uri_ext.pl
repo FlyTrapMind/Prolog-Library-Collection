@@ -221,7 +221,11 @@ url_authority_directory(Url, Dir):-
   directory_subdirectories(Dir, DirComponents).
 
 
-%! url_flat_directory(+ParentDirectory:atom, +Url:url, -UrlDirectory:atom) is det.
+%! url_flat_directory(
+%!   +ParentDirectory:or([atom,compound]),
+%!   +Url:url,
+%!   -UrlDirectory:atom
+%! ) is det.
 % Creates a directory for the given URL that is a subdirectory
 % of the given parent directory.
 %
@@ -230,7 +234,16 @@ url_authority_directory(Url, Dir):-
 %
 % This merely gives the directory name,
 % but does *not* ensure that the directory exists.
+%
+% Remote directories are denoted by
+% `remote(User:atom,Machine:atom,Directory:atom)`.
 
+url_flat_directory(
+  remote(User,Machine,ParentDir),
+  Url,
+  remote(User,Machine,UrlDir)
+):- !,
+  url_flat_directory(ParentDir, Url, UrlDir).
 url_flat_directory(ParentDir, Url, UrlDir):-
   % A unique name for each URL that does not contain characters
   % that do not comply with POSIX file names.
