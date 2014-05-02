@@ -227,6 +227,9 @@ url_authority_directory(Url, Dir):-
 %
 % This is an easy way to store files related to separate URLs
 % in separate places.
+%
+% This merely gives the directory name,
+% but does *not* ensure that the directory exists.
 
 url_flat_directory(ParentDir, Url, UrlDir):-
   % A unique name for each URL that does not contain characters
@@ -234,16 +237,7 @@ url_flat_directory(ParentDir, Url, UrlDir):-
   rdf_atom_md5(Url, 1, Hash),
 
   % Make it a subdirectory of the given parent directory
-  directory_file_path(ParentDir, Hash, UrlDir),
-
-  % Make sure the directory exists.
-  (
-    exists_directory(UrlDir)
-  ->
-    true
-  ;
-    make_directory_path(UrlDir)
-  ).
+  directory_file_path(ParentDir, Hash, UrlDir).
 
 
 %! url_nested_directory(+ParentDirectory:atom, +Url:url, -Directory:atom) is det.
@@ -284,7 +278,7 @@ url_nested_file(ParentDir1, Url, File):-
   uri_component(Url, scheme, Scheme),
   uri_component(Url, authority, Authority),
   uri_component(Url, path, Path),
-  
+
   % Make sure the path ends in a non-directory file.
   %
   % According to the Prolog library a file ending in `.../a/b/`
@@ -305,22 +299,22 @@ url_nested_file(ParentDir1, Url, File):-
     file_directory_name(Path, PathDir),
     file_base_name(Path, Base)
   ),
-  
+
   % Use (1) the URL scheme, (2) the URL authority,
   % and (3) the directory-part of the URL path to construct
   % the directory of the URL-based file.
   directory_subdirectories(PathDir, PathDirComponents),
   directory_subdirectories(UrlPath, [Scheme,Authority|PathDirComponents]),
-  
+
   % Resolve the parent directory input to an absolute file name.
   absolute_file_name(ParentDir1, ParentDir2, [file_type(directory)]),
-  
+
   % The URL path is now created relative to the parent directory.
   relative_file_path(Dir, ParentDir2, UrlPath),
-  
+
   % Make sure the directory exists.
   make_directory_path(Dir),
-  
+
   % Return the file.
   directory_file_path(Dir, Base, File).
 
