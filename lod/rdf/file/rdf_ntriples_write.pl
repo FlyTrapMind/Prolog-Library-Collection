@@ -60,9 +60,10 @@ This means that we can guarantee that the number of triples
 rdf_ntriples_write(Out, O1):-
   % Reset the blank node store.
   reset_bnode_admin,
-
-  State = state(0),			% number_of_triples
-
+  
+  % Keep track of the number of triples written.
+  State = state(0),
+  
   % Process the option for replacing blank nodes with IRIs,
   % establishing the prefix for each blank node.
   (
