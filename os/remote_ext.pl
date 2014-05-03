@@ -80,34 +80,28 @@ remote_open(RemotePath, Mode, Stream):-
 %   * `filter(+Filter:oneof([gzip]))`
 %   * Other options are passed to open/4.
 
-remote_open(remote(User,Machine,Path), Mode1, Stream, Options):- !,
+remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_concat(Path, '"', Suffix),
-  atomic_list_concat([ssh,UserMachine,'"cat','>',Suffix], ' ', Command),
-
-  % On remotes mode `append` is not allowed for non-existing files.
+  
+  % CAT append uses a double greater than sign.
   (
-    Mode1 == append
+    Mode == append
   ->
-    (
-      exists_remote_file(remote(User,Machine,Path))
-    ->
-gtrace,
-      Mode2 = append
-    ;
-      Mode2 = write
-    )
+    CatSign = '>>'
   ;
-    Mode2 = Mode1
+    CatSign = '>'
   ),
+
+  atomic_list_concat([ssh,UserMachine,'"cat',CatSign,Suffix], ' ', Command),
 
   % Gzip in stream.
   (
     option(filter(gzip), Options)
   ->
-    gzopen(pipe(Command), Mode2, Stream, Options)
+    gzopen(pipe(Command), Mode, Stream, Options)
   ;
-    open(pipe(Command), Mode2, Stream, Options)
+    open(pipe(Command), Mode, Stream, Options)
   ).
 remote_open(File, Mode, Stream, Options):-
   (

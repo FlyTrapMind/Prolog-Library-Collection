@@ -57,6 +57,9 @@ download_lod(Dir, Pairs1):-
     Pairs2
   ),
   group_pairs_by_key(Pairs2, Pairs3),
+  
+  length(Pairs3, Length), %DEB
+  writeln(Length), %DEB
 
   % Construct the set of goals.
   findall(
@@ -208,20 +211,11 @@ rdf_process_file_call(Dir, Dataset, Read, Location):-
     stream(Read),
     [base_uri(Base),format(Format),register_namespaces(false)]
   ),
-
-  % Log the number of triples before deduplication.
-  aggregate_all(
-    count,
-    rdf(_, _, _, _),
-    T1
-  ),
-  assert(
-    tmp(
-      Dataset,
-      rdf(Dataset, ap:duplicate_triples, literal(type(xsd:integer,T1)))
-    )
-  ),
-
+  
+  % Asssert some statistics for inclusion in the messages file.
+  assert_number_of_triples(Dataset),
+  assert_void_triples(Dataset),
+  
   % Save triples using the N-Triples serialization format.
   lod_resource_path(Dir, Dataset, 'input.nt.gz', Path),
   setup_call_cleanup(
@@ -247,6 +241,43 @@ rdf_process_file_call(Dir, Dataset, Read, Location):-
 
 
 % HELPERS
+
+%! assert_number_of_triples(+Dataset:iri) is det.
+
+assert_number_of_triples(Dataset):-
+  % Log the number of triples before deduplication.
+  aggregate_all(
+    count,
+    rdf(_, _, _, _),
+    N
+  ),
+  assert(
+    tmp(
+      Dataset,
+      rdf(Dataset, ap:duplicate_triples, literal(type(xsd:integer,N)))
+    )
+  ).
+
+
+%! assert_void_triples(+Dataset:iri) is det.
+
+assert_void_triples(Dataset):-
+  aggregate_all
+    set(P),
+    (
+      rdf_current_predicate(P),
+      rdf_current_id(void:_, P)
+    ),
+    Ps
+  ),
+  forall(
+    (
+      member(P, Ps),
+      rdf(S, P, O)
+    ),
+    assert(tmp(Dataset, rdf(S, P, O)))
+  ).
+
 
 %! lod_resource_path(
 %!   +DataDirectory:compound,
