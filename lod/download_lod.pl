@@ -89,6 +89,9 @@ download_lod(Dir, Location):-
 % and a list of CKAN resources that -- according to the metadata --
 % reside at that authority.
 
+% Skip the first N authorities.
+lod_download_authority(I, _, _):-
+  I < 0, !.
 lod_download_authority(I, Dir, _-Pairs):-
   maplist(lod_download_resource(I, Dir), Pairs).
 
@@ -114,6 +117,7 @@ lod_download_url(_, Dir, Dataset, _):-
   lod_resource_path(Dir, Dataset, 'messages.nt', RemotePath),
   exists_remote_file(RemotePath), !.
 lod_download_url(I, Dir, Dataset, Iri):-
+gtrace,
   % Start message.
   print_message(informational, lod_download_start(I,Iri)),
 
