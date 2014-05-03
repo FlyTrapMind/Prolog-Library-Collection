@@ -49,11 +49,11 @@ Support for command-line arguments given at Prolog startup.
 
 user:option_specification([
   default(DefaultDataDir),
-  help('The directory where data is stored.'),
+  help('The directory where data is stored, or a compound term `remote(User,Machine,Path)`.'),
   longflags([data]),
   opt(data),
   shortflags([d]),
-  type(atom)
+  type(term)
 ]):-
   absolute_file_name(project(.), ProjectDir, [file_type(directory)]),
   directory_file_path(ProjectDir, data, DefaultDataDir).

@@ -1,7 +1,7 @@
 :- module(
   rdf_ntriples_write,
   [
-    rdf_ntriples_write/2 % +Out:stream
+    rdf_ntriples_write/2 % +Write:or([atom,stream])
                          % +Options:list
   ]
 ).
@@ -30,14 +30,13 @@ This means that we can guarantee that the number of triples
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
 :- use_module(library(uri)).
-:- use_module(library(zlib)).
 
 :- thread_local(bnode_counter/1).
 :- thread_local(bnode_map/2).
 
 
 
-%! rdf_ntriples_write(+Stream:stream, +Options:list) is det.
+%! rdf_ntriples_write(+Write:or([atom,stream]), +Options:list) is det.
 % Writes RDF data serialization in the N-Triples format to the given file.
 %
 % The following options are supported:
@@ -57,17 +56,20 @@ This means that we can guarantee that the number of triples
 %
 % @see http://www.w3.org/TR/2014/REC-rdf11-concepts-20140225/#section-skolemization
 
-rdf_ntriples_write(Out, O1):-
+% Input is a stream.
+rdf_ntriples_write(Write, Options):-
+  is_stream(Write), !,
+  
   % Reset the blank node store.
   reset_bnode_admin,
-  
+
   % Keep track of the number of triples written.
   State = state(0),
-  
+
   % Process the option for replacing blank nodes with IRIs,
   % establishing the prefix for each blank node.
   (
-    option(bnode_base(Iri), O1)
+    option(bnode_base(Iri), Options)
   ->
     uri_components(Iri, uri_components(Scheme,Authority,_,_,_)),
     uri_components(IriPrefix, uri_components(Scheme,Authority,_,_,_)),
@@ -83,13 +85,13 @@ rdf_ntriples_write(Out, O1):-
     BNodePrefix = '_:'
   ),
   (
-    option(graph(Graph), O1)
+    option(graph(Graph), Options)
   ->
     forall(
       rdf(S, P, O, Graph:_),
       (
         inc_number_of_triples(State),
-        rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+        rdf_write_ntriple(Write, S, P, O, BNodePrefix)
       )
     )
   ;
@@ -98,18 +100,27 @@ rdf_ntriples_write(Out, O1):-
       rdf(S, P, O),
       (
         inc_number_of_triples(State),
-        rdf_write_ntriple(Out, S, P, O, BNodePrefix)
+        rdf_write_ntriple(Write, S, P, O, BNodePrefix)
       )
     )
   ),
 
   % Statistics option: number of triples written.
   (
-    option(number_of_triples(TripleCount), O1)
+    option(number_of_triples(TripleCount), Options)
   ->
     arg(1, State, TripleCount)
   ;
     true
+  ).
+% Input is a file.
+% Open a stream in `write` mode.
+rdf_ntriples_write(File, Options):-
+  is_absolute_file_name(File), !,
+  setup_call_cleanup(
+    open(File, write, Write),
+    rdf_ntriples_write(Write, Options),
+    close(Write)
   ).
 
 inc_number_of_triples(State) :-
@@ -117,41 +128,41 @@ inc_number_of_triples(State) :-
   C1 is C0 + 1,
   nb_setarg(1, State, C1).
 
-rdf_write_ntriple(Out, S, P, O, BNodePrefix):-
+rdf_write_ntriple(Write, S, P, O, BNodePrefix):-
   flag(number_of_ntriples, X, X + 1),
-  rdf_write_subject(Out, S, BNodePrefix),
-  put_char(Out, ' '),
-  rdf_write_predicate(Out, P),
-  put_char(Out, ' '),
-  rdf_write_object(Out, O, BNodePrefix),
-  put_char(Out, ' '),
-  put_char(Out, '.'),
-  put_code(Out, 10), !. % Newline
+  rdf_write_subject(Write, S, BNodePrefix),
+  put_char(Write, ' '),
+  rdf_write_predicate(Write, P),
+  put_char(Write, ' '),
+  rdf_write_object(Write, O, BNodePrefix),
+  put_char(Write, ' '),
+  put_char(Write, '.'),
+  put_code(Write, 10), !. % Newline
 
 % Typed literal.
-rdf_write_object(Out, literal(type(Datatype,Value)), _):- !,
-  turtle:turtle_write_quoted_string(Out, Value),
-  write(Out, '^^'),
-  rdf_write_predicate(Out, Datatype).
+rdf_write_object(Write, literal(type(Datatype,Value)), _):- !,
+  turtle:turtle_write_quoted_string(Write, Value),
+  write(Write, '^^'),
+  rdf_write_predicate(Write, Datatype).
 % Language-tagged string.
-rdf_write_object(Out, literal(lang(Language,Value)), _):- !,
-  turtle:turtle_write_quoted_string(Out, Value),
-  format(Out, '@~w', [Language]).
+rdf_write_object(Write, literal(lang(Language,Value)), _):- !,
+  turtle:turtle_write_quoted_string(Write, Value),
+  format(Write, '@~w', [Language]).
 % XSD string.
-rdf_write_object(Out, literal(Value), _):- !,
-  turtle:turtle_write_quoted_string(Out, Value).
+rdf_write_object(Write, literal(Value), _):- !,
+  turtle:turtle_write_quoted_string(Write, Value).
 % Subject.
-rdf_write_object(Out, Term, BNodePrefix):-
-  rdf_write_subject(Out, Term, BNodePrefix).
+rdf_write_object(Write, Term, BNodePrefix):-
+  rdf_write_subject(Write, Term, BNodePrefix).
 
 
 % IRI.
-rdf_write_predicate(Out, Iri):-
-  turtle:turtle_write_uri(Out, Iri).
+rdf_write_predicate(Write, Iri):-
+  turtle:turtle_write_uri(Write, Iri).
 
 
 % Blank node.
-rdf_write_subject(Out, BNode, BNodePrefix):-
+rdf_write_subject(Write, BNode, BNodePrefix):-
   rdf_is_bnode(BNode), !,
   (
     bnode_map(BNode, Id2)
@@ -168,13 +179,13 @@ rdf_write_subject(Out, BNode, BNodePrefix):-
   (
     BNodePrefix == '_:'
   ->
-    write(Out, BNodeName)
+    write(Write, BNodeName)
   ;
-    rdf_write_predicate(Out, BNodeName)
+    rdf_write_predicate(Write, BNodeName)
   ).
 % Predicate.
-rdf_write_subject(Out, Iri, _):-
-  rdf_write_predicate(Out, Iri).
+rdf_write_subject(Write, Iri, _):-
+  rdf_write_predicate(Write, Iri).
 
 
 
