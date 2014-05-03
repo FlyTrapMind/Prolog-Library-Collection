@@ -352,6 +352,7 @@ register_void_inputs:-
     ),
     VoidTodos
   ),
+  (VoidTodos == [] -> true ; gtrace),
   print_message(informational, found_voids(VoidTodos)),
   maplist(register_input, VoidTodos).
 
