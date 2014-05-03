@@ -60,8 +60,8 @@ download_lod(Dir, Pairs1):-
 
   % Construct the set of goals.
   findall(
-    lod_download_authority(Dir, Pair),
-    member(Pair, Pairs3),
+    lod_download_authority(I, Dir, Pair),
+    nth0(I, Pairs3, Pair),
     Goals
   ),
 
@@ -76,6 +76,7 @@ download_lod(Dir, Location):-
 
 
 %! lod_download_authority(
+%!   +Index:nonneg,
 %!   +DataDirectory:compound,
 %!   +UrlAuthority:pair(atom,list(pair(atom)))
 %! ) is det.
@@ -85,7 +86,8 @@ download_lod(Dir, Location):-
 % and a list of CKAN resources that -- according to the metadata --
 % reside at that authority.
 
-lod_download_authority(Dir, _-Pairs):-
+lod_download_authority(I, Dir, _-Pairs):-
+  format(user_output, '[~D] ', [I]),
   maplist(lod_download_resource(Dir), Pairs).
 
 
