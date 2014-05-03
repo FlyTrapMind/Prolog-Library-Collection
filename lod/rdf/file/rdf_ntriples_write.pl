@@ -140,10 +140,11 @@ rdf_write_ntriple(Write, S, P, O, BNodePrefix):-
   put_code(Write, 10), !. % Newline
 
 % Typed literal.
-rdf_write_object(Write, literal(type(rdf:'XMLLiteral',Value1)), _):- !,
+rdf_write_object(Write, literal(type(Datatype,Value1)), _):-
+  rdf_equal(Datatype, rdf:'XMLLiteral'), !,
 gtrace,
   xml_literal_value(Value1, Value2),
-  rdf_write_object(Write, literal(type(rdf:'XMLLiteral',Value2))).
+  rdf_write_object(Write, literal(type(Datatype,Value2))).
 rdf_write_object(Write, literal(type(Datatype,Value)), _):- !,
   turtle:turtle_write_quoted_string(Write, Value),
   write(Write, '^^'),
