@@ -23,12 +23,13 @@ This means that we can guarantee that the number of triples
 @compat http://www.w3.org/TR/2014/REC-n-triples-20140225/
 @tbd We would like to serialize no duplicate triples.
      Provide this at least as an option.
-@version 2014/03-2014/04
+@version 2014/03-2014/05
 */
 
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
+:- use_module(library(sgml/sgml_write)).
 :- use_module(library(uri)).
 
 :- thread_local(bnode_counter/1).
@@ -140,13 +141,15 @@ rdf_write_ntriple(Write, S, P, O, BNodePrefix):-
   put_code(Write, 10), !. % Newline
 
 % Typed literal.
-rdf_write_object(Write, literal(type(Datatype,Value1)), BNodePrefix):-
-  rdf_equal(Datatype, rdf:'XMLLiteral'), !,
-gtrace,
-  xml_literal_value(Value1, Value2),
-  rdf_write_object(Write, literal(type(Datatype,Value2)), BNodePrefix).
-rdf_write_object(Write, literal(type(Datatype,Value)), _):- !,
-  turtle:turtle_write_quoted_string(Write, Value),
+rdf_write_object(Write, literal(type(Datatype,Value1)), _):- !,
+  (
+    rdf_equal(Datatype, rdf:'XMLLiteral')
+  ->
+    with_output_to(atom(Value2), xml_write(Value1, [header(false)]))
+  ;
+    Value2 = Value1
+  ),
+  turtle:turtle_write_quoted_string(Write, Value2),
   write(Write, '^^'),
   rdf_write_predicate(Write, Datatype).
 % Language-tagged string.
@@ -159,15 +162,6 @@ rdf_write_object(Write, literal(Value), _):- !,
 % Subject.
 rdf_write_object(Write, Term, BNodePrefix):-
   rdf_write_subject(Write, Term, BNodePrefix).
-
-%! xml_literal_value(+Value1:term, -Value:atom) is det.
-% Some literals are lists of XML DOM.
-% These are converted to string of XML markup.
-
-xml_literal_value(Value, Value):-
-  atomic(Value), !.
-xml_literal_value(Dom, Value):-
-  with_output_to(atom(Value), xml_write(Dom, [header(false)])).
 
 
 
