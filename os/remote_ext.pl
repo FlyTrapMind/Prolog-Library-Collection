@@ -86,13 +86,14 @@ remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   
   % CAT append uses a double greater than sign.
   (
-    Mode == append
+    Mode == append,
+    exists_remote_file(remote(User,Machine,Path))
   ->
     CatSign = '>>'
   ;
     CatSign = '>'
   ),
-
+  
   atomic_list_concat([ssh,UserMachine,'"cat',CatSign,Suffix], ' ', Command),
 
   % Gzip in stream.
