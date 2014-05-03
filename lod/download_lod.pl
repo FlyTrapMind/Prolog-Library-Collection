@@ -418,7 +418,7 @@ uri_iri_logged(Dataset, Url, Iri):-
 :- multifile(prolog:message/1).
 
 prolog:message(lod_download_start(I,Url)) -->
-  ['[~D] [~w]'-[I,Url],nl].
+  ['[~D] [~w]'-[I,Url]].
 prolog:message(lod_download_end(Status,Messages)) -->
   prolog_status(Status),
   prolog_messages(Messages),
