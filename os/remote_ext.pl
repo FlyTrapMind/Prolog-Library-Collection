@@ -80,17 +80,19 @@ remote_open(RemotePath, Mode, Stream):-
 %   * `filter(+Filter:oneof([gzip]))`
 %   * Other options are passed to open/4.
 
-remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
+remote_open(remote(User,Machine,Path), Mode1, Stream, Options):- !,
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_concat(Path, '"', Suffix),
   
   % CAT append uses a double greater than sign.
   (
-    Mode == append,
+    Mode1 == append,
     exists_remote_file(remote(User,Machine,Path))
   ->
+    Mode2 = append,
     CatSign = '>>'
   ;
+    Mode2 = write,
     CatSign = '>'
   ),
   
@@ -100,9 +102,9 @@ remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   (
     option(filter(gzip), Options)
   ->
-    gzopen(pipe(Command), Mode, Stream, Options)
+    gzopen(pipe(Command), Mode2, Stream, Options)
   ;
-    open(pipe(Command), Mode, Stream, Options)
+    open(pipe(Command), Mode2, Stream, Options)
   ).
 remote_open(File, Mode, Stream, Options):-
   (
