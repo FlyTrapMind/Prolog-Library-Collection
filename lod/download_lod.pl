@@ -87,19 +87,19 @@ download_lod(Dir, Location):-
 % reside at that authority.
 
 lod_download_authority(I, Dir, _-Pairs):-
-  format(user_output, '[~D] ', [I]),
-  maplist(lod_download_resource(Dir), Pairs).
+  maplist(lod_download_resource(I, Dir), Pairs).
 
 
-%! lod_download_resource(+DataDirectory:compound, +Pair:pair(atom)) is det.
+%! lod_download_resource(+Index:nonneg, +DataDirectory:compound, +Pair:pair(atom)) is det.
 % Processes the given CKAN resource.
 
-lod_download_resource(Dir, Dataset-Iri):-
+lod_download_resource(I, Dir, Dataset-Iri):-
   % Count the number of processed datasets.
-  lod_download_url(Dir, Dataset, Iri).
+  lod_download_url(I, Dir, Dataset, Iri).
 
 
 %! lod_download_url(
+%!   +Index:nonneg,
 %!   +DataDirectory:compound,
 %!   +Dataset:iri,
 %!   +Iri:iri
@@ -107,12 +107,12 @@ lod_download_resource(Dir, Dataset-Iri):-
 % Processes the given CKAN IRI.
 
 % This CKAN resource was already processed in the past.
-lod_download_url(Dir, Dataset, _):-
+lod_download_url(_, Dir, Dataset, _):-
   lod_resource_path(Dir, Dataset, 'messages.nt', RemotePath),
   exists_remote_file(RemotePath), !.
-lod_download_url(Dir, Dataset, Iri):-
+lod_download_url(I, Dir, Dataset, Iri):-
   % Start message.
-  print_message(informational, lod_download_start(Iri)),
+  print_message(informational, lod_download_start(I,Iri)),
 
   % CKAN URLs are sometimes non-URL IRIs.
   uri_iri_logged(Dataset, Url, Iri),
@@ -382,8 +382,8 @@ uri_iri_logged(Dataset, Url, Iri):-
 
 :- multifile(prolog:message/1).
 
-prolog:message(lod_download_start(Url)) -->
-  ['[~w]'-[Url],nl].
+prolog:message(lod_download_start(I,Url)) -->
+  ['[~D] [~w]'-[I,Url],nl].
 prolog:message(lod_download_end(Status,Messages)) -->
   prolog_status(Status),
   prolog_messages(Messages),
