@@ -381,6 +381,7 @@ store_messages_to_file(Dir, Dataset):-
         rdf_assert_triple(S, P, O)
       ),
       lod_resource_path(Dir, Dataset, 'messages.nt', Path),
+gtrace,
       setup_call_cleanup(
         remote_open(Path, write, Write, [filter(gzip)]),
         rdf_ntriples_write(Write, []),
