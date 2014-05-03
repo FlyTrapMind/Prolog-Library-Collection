@@ -91,7 +91,7 @@ download_lod(Dir, Location):-
 
 % Skip the first N authorities.
 lod_download_authority(I, _, _):-
-  I < 0, !.
+  I < 144, !.
 lod_download_authority(I, Dir, _-Pairs):-
   maplist(lod_download_resource(I, Dir), Pairs).
 
@@ -352,7 +352,7 @@ register_void_inputs:-
     ),
     VoidTodos
   ),
-  (VoidTodos == [] -> true ; gtrace),
+  %%%%(VoidTodos == [] -> true ; gtrace), %DEB
   print_message(informational, found_voids(VoidTodos)),
   maplist(register_input, VoidTodos).
 
@@ -428,14 +428,10 @@ prolog:message(found_voids([H|T])) -->
   ['A VoID dataset was found: ',H,nl],
   prolog:message(found_voids(T)).
 prolog:message(rdf_ntriples_written(File,N0)) -->
-  {
-    flag(number_of_triples_written, N1, N1 + N0)%,
-    %N2 is N1 + N0
-  },
+  {flag(number_of_triples_written, N1, N1 + N0)},
   ['~D triples written ('-[N0]],
   remote_file(File),
   [')'].
-  %['); ~D triples written in total.'-[N2]].
 
 
 prolog_status(false) --> !, [].
