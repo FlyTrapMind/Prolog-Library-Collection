@@ -266,7 +266,7 @@ assert_void_triples(Dataset):-
     set(P),
     (
       rdf_current_predicate(P),
-      rdf_current_id(void:_, P)
+      rdf_global_id(void:_, P)
     ),
     Ps
   ),
