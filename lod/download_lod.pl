@@ -429,8 +429,8 @@ prolog:message(found_voids([H|T])) -->
   prolog:message(found_voids(T)).
 prolog:message(rdf_ntriples_written(File,N0)) -->
   {
-    flag(number_of_triples_written, N1, N1 + N0),
-    N2 is N1 + N0
+    flag(number_of_triples_written, N1, N1 + N0)%,
+    %N2 is N1 + N0
   },
   ['~D triples written ('-[N0]],
   remote_file(File),
