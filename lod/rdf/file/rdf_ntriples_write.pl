@@ -59,7 +59,7 @@ This means that we can guarantee that the number of triples
 % Input is a stream.
 rdf_ntriples_write(Write, Options):-
   is_stream(Write), !,
-  
+
   % Reset the blank node store.
   reset_bnode_admin,
 
@@ -140,11 +140,11 @@ rdf_write_ntriple(Write, S, P, O, BNodePrefix):-
   put_code(Write, 10), !. % Newline
 
 % Typed literal.
-rdf_write_object(Write, literal(type(Datatype,Value1)), _):-
+rdf_write_object(Write, literal(type(Datatype,Value1)), BNodePrefix):-
   rdf_equal(Datatype, rdf:'XMLLiteral'), !,
 gtrace,
   xml_literal_value(Value1, Value2),
-  rdf_write_object(Write, literal(type(Datatype,Value2))).
+  rdf_write_object(Write, literal(type(Datatype,Value2)), BNodePrefix).
 rdf_write_object(Write, literal(type(Datatype,Value)), _):- !,
   turtle:turtle_write_quoted_string(Write, Value),
   write(Write, '^^'),
@@ -160,7 +160,7 @@ rdf_write_object(Write, literal(Value), _):- !,
 rdf_write_object(Write, Term, BNodePrefix):-
   rdf_write_subject(Write, Term, BNodePrefix).
 
-%! xml_literal_value(+Value1:term, -Value:atom) is det,
+%! xml_literal_value(+Value1:term, -Value:atom) is det.
 % Some literals are lists of XML DOM.
 % These are converted to string of XML markup.
 

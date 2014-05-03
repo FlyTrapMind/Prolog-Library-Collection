@@ -92,6 +92,7 @@ remote_open(remote(User,Machine,Path), Mode1, Stream, Options):- !,
     (
       exists_remote_file(remote(User,Machine,Path))
     ->
+gtrace,
       Mode2 = append
     ;
       Mode2 = write
