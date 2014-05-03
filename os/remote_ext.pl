@@ -86,8 +86,7 @@ remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   
   % CAT append uses a double greater than sign.
   (
-    Mode == append,
-    exists_remote_file(remote(User,Machine,Path))
+    Mode == append
   ->
     CatSign = '>>'
   ;
