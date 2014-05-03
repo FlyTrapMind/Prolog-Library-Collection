@@ -57,7 +57,7 @@ download_lod(Dir, Pairs1):-
     Pairs2
   ),
   group_pairs_by_key(Pairs2, Pairs3),
-  
+
   length(Pairs3, Length), %DEB
   writeln(Length), %DEB
 
@@ -211,11 +211,11 @@ rdf_process_file_call(Dir, Dataset, Read, Location):-
     stream(Read),
     [base_uri(Base),format(Format),register_namespaces(false)]
   ),
-  
+
   % Asssert some statistics for inclusion in the messages file.
   assert_number_of_triples(Dataset, T1),
   assert_void_triples(Dataset),
-  
+
   % Save triples using the N-Triples serialization format.
   lod_resource_path(Dir, Dataset, 'input.nt.gz', Path),
   setup_call_cleanup(
@@ -262,7 +262,7 @@ assert_number_of_triples(Dataset, N):-
 %! assert_void_triples(+Dataset:iri) is det.
 
 assert_void_triples(Dataset):-
-  aggregate_all
+  aggregate_all(
     set(P),
     (
       rdf_current_predicate(P),
