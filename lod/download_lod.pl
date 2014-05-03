@@ -213,7 +213,7 @@ rdf_process_file_call(Dir, Dataset, Read, Location):-
   ),
   
   % Asssert some statistics for inclusion in the messages file.
-  assert_number_of_triples(Dataset),
+  assert_number_of_triples(Dataset, T1),
   assert_void_triples(Dataset),
   
   % Save triples using the N-Triples serialization format.
@@ -242,9 +242,9 @@ rdf_process_file_call(Dir, Dataset, Read, Location):-
 
 % HELPERS
 
-%! assert_number_of_triples(+Dataset:iri) is det.
+%! assert_number_of_triples(+Dataset:iri, -NumberOfTriples:nonneg) is det.
 
-assert_number_of_triples(Dataset):-
+assert_number_of_triples(Dataset, N):-
   % Log the number of triples before deduplication.
   aggregate_all(
     count,
