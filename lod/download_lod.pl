@@ -91,7 +91,7 @@ download_lod(Dir, Location):-
 
 % Skip the first N authorities.
 lod_download_authority(I, _, _):-
-  I < 144, !.
+  I < 0, !.
 lod_download_authority(I, Dir, _-Pairs):-
   maplist(lod_download_resource(I, Dir), Pairs).
 
@@ -114,7 +114,7 @@ lod_download_resource(I, Dir, Dataset-Iri):-
 
 % This CKAN resource was already processed in the past.
 lod_download_url(_, Dir, Dataset, _):-
-  lod_resource_path(Dir, Dataset, 'messages.nt', RemotePath),
+  lod_resource_path(Dir, Dataset, 'messages.nt.gz', RemotePath),
   exists_remote_file(RemotePath), !.
 lod_download_url(I, Dir, Dataset, Iri):-
   % Start message.
