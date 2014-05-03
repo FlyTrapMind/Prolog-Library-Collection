@@ -140,20 +140,34 @@ rdf_write_ntriple(Write, S, P, O, BNodePrefix):-
   put_code(Write, 10), !. % Newline
 
 % Typed literal.
-rdf_write_object(Write, literal(type(Datatype,Value)), _):- !,
-  turtle:turtle_write_quoted_string(Write, Value),
+rdf_write_object(Write, literal(type(Datatype,Value1)), _):- !,
+  xml_literal_value(Value1, Value2),
+  turtle:turtle_write_quoted_string(Write, Value2),
   write(Write, '^^'),
   rdf_write_predicate(Write, Datatype).
 % Language-tagged string.
-rdf_write_object(Write, literal(lang(Language,Value)), _):- !,
-  turtle:turtle_write_quoted_string(Write, Value),
+rdf_write_object(Write, literal(lang(Language,Value1)), _):- !,
+  xml_literal_value(Value1, Value2),
+  turtle:turtle_write_quoted_string(Write, Value2),
   format(Write, '@~w', [Language]).
 % XSD string.
-rdf_write_object(Write, literal(Value), _):- !,
-  turtle:turtle_write_quoted_string(Write, Value).
+rdf_write_object(Write, literal(Value1), _):- !,
+  xml_literal_value(Value1, Value2),
+  turtle:turtle_write_quoted_string(Write, Value2).
 % Subject.
 rdf_write_object(Write, Term, BNodePrefix):-
   rdf_write_subject(Write, Term, BNodePrefix).
+
+%! xml_literal_value(+Value1:term, -Value:atom) is det,
+% Some literals are lists of XML DOM.
+% These are converted to string of XML markup.
+
+xml_literal_value(Value, Value):-
+  atomic(Value), !.
+xml_literal_value(Dom, Value):-
+gtrace,
+  with_output_to(atom(Value), xml_write(Dom, [])).
+
 
 
 % IRI.
