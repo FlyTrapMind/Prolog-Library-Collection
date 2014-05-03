@@ -434,7 +434,8 @@ prolog:message(rdf_ntriples_written(File,N0)) -->
   },
   ['~D triples written ('-[N0]],
   remote_file(File),
-  ['); ~D triples written in total.'-[N2]].
+  [')'].
+  %['); ~D triples written in total.'-[N2]].
 
 
 prolog_status(false) --> !, [].
