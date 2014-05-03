@@ -29,7 +29,7 @@ This means that we can guarantee that the number of triples
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/turtle)). % Private predicates.
-:- use_module(library(sgml/sgml_write)).
+:- use_module(library(sgml_write)).
 :- use_module(library(uri)).
 
 :- thread_local(bnode_counter/1).
