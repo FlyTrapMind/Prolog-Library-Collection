@@ -117,7 +117,6 @@ lod_download_url(_, Dir, Dataset, _):-
   lod_resource_path(Dir, Dataset, 'messages.nt', RemotePath),
   exists_remote_file(RemotePath), !.
 lod_download_url(I, Dir, Dataset, Iri):-
-gtrace,
   % Start message.
   print_message(informational, lod_download_start(I,Iri)),
 
