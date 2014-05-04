@@ -91,7 +91,7 @@ download_lod(Dir, Location):-
 
 % Skip the first N authorities.
 lod_download_authority(I, _, _):-
-  I < 0, !.
+  I < 207, !.
 lod_download_authority(I, Dir, _-Pairs):-
   maplist(lod_download_resource(I, Dir), Pairs).
 
@@ -157,6 +157,7 @@ lod_process_resource(Dir, Dataset, Url):-
 %! lod_process_files(+DataDirectory:atom, +Dataset:iri) is det.
 
 lod_process_files(Dir, Dataset):-
+gtrace,
   pick_input(Input), !,
   lod_process_file(Dir, Dataset, Input),
   lod_process_files(Dir, Dataset).
