@@ -1,7 +1,8 @@
 :- module(
   remote_ext,
   [
-    exists_remote_file/1, % +File:or([atom,compound])
+    clear_remote_directory/1, % +RemoteDirectory:or([atom,compound])
+    exists_remote_file/1, % +RemoteFile:or([atom,compound])
     make_remote_directory/1, % +RemoteDirectory:or([atom,compound])
     make_remote_directory_path/1, % +RemoteDirectory:or([atom,compound])
     remote_open/3, % +RemoteFile:or([atom,compound]),
@@ -25,6 +26,19 @@ Support for files residing on remote machines.
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 
+:- use_module(os(dir_ext)).
+
+
+
+%! clear_remote_directory(+RemoteDirectory:or([atom,compound])) is det.
+
+clear_remote_directory(remote(User,Machine,Dir)):- !,
+  atomic_list_concat([User,Machine], '@', UserMachine),
+  append_directories(Dir, '*', Regex),
+  atomic_list_concat([ssh,UserMachine,rm,Regex], ' ', Command),
+  process_create(path(sh), ['-c',Command], []).
+clear_remote_directory(Dir):-
+  delete_directory_contents(Dir).
 
 
 %! exists_remote_file(+RemoteFile:or([atom,compound])) is semidet.
