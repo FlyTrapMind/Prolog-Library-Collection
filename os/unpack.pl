@@ -171,7 +171,7 @@ rdf_accept_header_value(Value):-
     Value,
     (
       rdf_content_type(ContentType, Q),
-      format(atom(Value), '~a; q=~f', [ContentType,Q])
+      format(atom(Value), '~a; q=~1f', [ContentType,Q])
     ),
     Values
   ),
@@ -210,7 +210,6 @@ rdf_extra_headers([
   cert_verify_hook(ssl_verify),
   request_header('Accept'=AcceptValue)
 ]):-
-gtrace,
   rdf_accept_header_value(AcceptValue).
 
 
