@@ -166,16 +166,53 @@ wrap_filter(Filter, filter(Filter)).
 
 :- public ssl_verify/5.
 
-rdf_extra_headers(
-        [ request_header('Accept' = 'application/x-turtle, \c
-                                     application/turtle, \c
-                                     application/trig, \c
-                                     text/turtle; q=0.9, \c
-                                     application/rdf+xml, \c
-                                     text/rdf+xml; q=0.8, \c
-                                     */*; q=0.1'),
-          cert_verify_hook(ssl_verify)
-        ]).
+rdf_accept_header_value(Value):-
+  findall(
+    Value,
+    (
+      rdf_content_type(ContentType, Q),
+      format(atom(Value), '~a; q=~f', [ContentType,Q])
+    ),
+    Values
+  ),
+  atomic_list_concat(Values, ', ', Value).
+
+
+% RDFa
+rdf_content_type('text/html',              0.3).
+% N-Quads
+rdf_content_type('application/n-quads',    0.8).
+% N-Triples
+rdf_content_type('application/n-triples',  0.8).
+% RDF/XML
+rdf_content_type('application/rdf+xml',    0.7).
+rdf_content_type('text/rdf+xml',           0.7).
+rdf_content_type('application/xhtml+xml',  0.3).
+rdf_content_type('application/xml',        0.3).
+rdf_content_type('text/xml',               0.3).
+rdf_content_type('application/rss+xml',    0.5).
+% Trig
+rdf_content_type('application/trig',       0.8).
+rdf_content_type('application/x-trig',     0.5).
+% Turtle
+rdf_content_type('text/turtle',            0.9).
+rdf_content_type('application/x-turtle',   0.5).
+rdf_content_type('application/turtle',     0.5).
+rdf_content_type('application/rdf+turtle', 0.5).
+% N3
+rdf_content_type('text/n3',                0.8).
+rdf_content_type('text/rdf+n3',            0.5).
+% All
+rdf_content_type('*/*',                    0.1).
+
+
+rdf_extra_headers([
+  cert_verify_hook(ssl_verify),
+  request_header('Accept'=AcceptValue)
+]):-
+gtrace,
+  rdf_accept_header_value(AcceptValue).
+
 
 %%      ssl_verify(+SSL, +ProblemCert, +AllCerts, +FirstCert, +Error)
 %

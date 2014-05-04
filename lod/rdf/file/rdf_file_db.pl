@@ -86,17 +86,72 @@ rdf_mime_format(Mime, Format):-
 % @arg DefaultFileType The default file type of the RDF serialization.
 %      Every file type has the non-default file type =rdf=.
 % @arg Format The format name that is used by the Semweb library.
-% @arg MIMEs A list of MIME types.
+% @arg MIMEs A list of MIME content types.
+%      The first atom is the standardized MIME content type
+%      according to the 1.1 recommendations.
 % @arg URL The URL at which the serialization is described, if any.
+%
+% @see http://richard.cyganiak.de/blog/2008/03/what-is-your-rdf-browsers-accept-header/
 
-rdf_serialization(nq, nquads, nquads, ['application/n-quads'], '').
-rdf_serialization(nt, ntriples, ntriples, ['application/n-triples'],
-    'http://www.w3.org/ns/formats/N-Triples').
-rdf_serialization(rdf, rdf_xml, xml, ['application/rdf+xml'],
-    'http://www.w3.org/ns/formats/RDF_XML'  ).
-rdf_serialization(trig, trig, trig, ['application/x-trig'],
-    'http://wifo5-03.informatik.uni-mannheim.de/bizer/trig/').
-rdf_serialization(ttl, turtle, turtle, ['application/x-turtle','text/turtle'],
-    'http://www.w3.org/ns/formats/Turtle'   ).
-rdf_serialization(n3, n3, turtle, ['text/n3'], '').
+rdf_serialization(
+  nq,
+  nquads,
+  nquads,
+  ['application/n-quads'],
+  'http://www.w3.org/ns/formats/N-Quads'
+).
+rdf_serialization(
+  nt,
+  ntriples,
+  ntriples,
+  ['application/n-triples'],
+  'http://www.w3.org/ns/formats/N-Triples'
+).
+rdf_serialization(
+  rdf,
+  rdf_xml,
+  xml,
+  [
+    'application/rdf+xml',
+    'text/rdf+xml',
+    'application/xhtml+xml',
+    'application/xml',
+    'text/xml',
+    'application/rss+xml'
+  ],
+  'http://www.w3.org/ns/formats/RDF_XML'
+).
+%rdf_serialization(
+%  rdfa,
+%  rdfa,
+%  rdfa,
+%  ['text/html'],
+%  ''
+%).
+rdf_serialization(
+  trig,
+  trig,
+  trig,
+  ['application/trig','application/x-trig'],
+  'http://www.w3.org/ns/formats/TriG'
+).
+rdf_serialization(
+  ttl,
+  turtle,
+  turtle,
+  [
+    'text/turtle',
+    'application/x-turtle',
+    'application/turtle',
+    'application/rdf+turtle'
+  ],
+  'http://www.w3.org/ns/formats/Turtle'
+).
+rdf_serialization(
+  n3,
+  n3,
+  turtle,
+  ['text/n3','text/rdf+n3'],
+  'http://www.w3.org/TeamSubmission/n3/'
+).
 
