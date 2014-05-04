@@ -47,7 +47,6 @@
 download_lod(Dir, Pairs1):-
   is_list(Pairs1), !,
   flag(number_of_triples_written, _, 0),
-gtrace,
   read_finished,
 
   % Process the resources by authority.
@@ -159,6 +158,7 @@ lod_process_files(Dir, Dataset):-
   lod_process_files(Dir, Dataset).
 % No more inputs to pick.
 lod_process_files(_, Dataset):-
+gtrace,
   write_finished(Dataset).
 
 
@@ -424,7 +424,6 @@ uri_iri_logged(Dataset, Url, Iri):-
 %! write_finished(+Dataset:atom) is det.
 
 write_finished(Dataset):-
-gtrace,
   setup_call_cleanup(
     open('finished.log', append, Write),
     write_term(Write, finished(Dataset), [fullstop(true)]),
