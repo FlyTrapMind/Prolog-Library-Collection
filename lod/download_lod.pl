@@ -127,13 +127,17 @@ download_lod_dataset(I, Dir, Dataset-Iri):-
   % Clear any previous, incomplete results.
   clear_remote_directory(UrlDir),
   
-  process_lod_files(Dir, Dataset).
+  process_lod_files(Dir, Dataset),
+  
+  % Save all messages to a `messages.nt.gz` remote file.
+  store_messages_to_file(Dir, Dataset).
 
 
 %! process_lod_files(+DataDirectory:atom, +Dataset:iri) is det.
 
 process_lod_files(Dir, Dataset):-
   pick_input(Input), !,
+  assert(tmp(Dataset, rdf(Dataset, ap:file, Input))),
   
   % We log the status, all warnings, and all informational messages
   % that are emitted while processing a file.
@@ -143,9 +147,8 @@ process_lod_files(Dir, Dataset):-
     Messages
   ),
   % Store the status and all messages.
-  log_status(Dataset, Status),
-  maplist(log_message(Dataset), Messages),
-  store_messages_to_file(Dir, Dataset),
+  log_status(Dataset, Input, Status),
+  maplist(log_message(Dataset, Input), Messages),
   
   process_lod_files(Dir, Dataset).
 % No more inputs to pick.
@@ -161,7 +164,7 @@ process_lod_files(_, Dataset):-
 
 process_lod_file(Dir, Dataset, Input):-
   unpack(Input, Read, Location),
-  process_rdf_file(Dir, Dataset, Read, Location),
+  process_rdf_file(Dir, Dataset, Input, Read, Location),
   % Unpack the next entry!
   fail.
 process_lod_file(_, _, _).
@@ -170,14 +173,15 @@ process_lod_file(_, _, _).
 %! process_rdf_file(
 %!   +DataDirectory:atom,
 %!   +Dataset:atom,
+%!   +Input:atom,
 %!   +Read:stream,
 %!   +Location:dict
 %! ) is det.
 
-process_rdf_file(Dir, Dataset, Read, Location):-
+process_rdf_file(Dir, Dataset, Input, Read, Location):-
   call_cleanup(
     rdf_transaction(
-      process_rdf_file_call(Dir, Dataset, Read, Location),
+      process_rdf_file_call(Dir, Dataset, Input, Read, Location),
       _,
       [snapshot(true)]
     ),
@@ -188,11 +192,12 @@ process_rdf_file(Dir, Dataset, Read, Location):-
 %! process_rdf_file_call(
 %!   +DataDirectory:or([atom,compound]),
 %!   +Dataset:iri,
+%!   +Input:atom,
 %!   +Read:stream,
 %!   +Location:dict
 %! ) is det.
 
-process_rdf_file_call(Dir, Dataset, Read, Location):-
+process_rdf_file_call(Dir, Dataset, Input, Read, Location):-
   % Guess the serialization format that is used in the given stream.
   rdf_guess_format([], Read, Location, Base, Format),
   set_stream(Read, file_name(Base)),
@@ -205,8 +210,8 @@ process_rdf_file_call(Dir, Dataset, Read, Location):-
   ),
 
   % Asssert some statistics for inclusion in the messages file.
-  assert_number_of_triples(Dataset, T1),
-  assert_void_triples(Dataset),
+  assert_number_of_triples(Dataset, Input, T1),
+  assert_void_triples(Dataset, Input),
 
   % Save triples using the N-Triples serialization format.
   lod_resource_path(Dir, Dataset, 'input.nt.gz', Path),
@@ -234,9 +239,13 @@ process_rdf_file_call(Dir, Dataset, Read, Location):-
 
 % HELPERS
 
-%! assert_number_of_triples(+Dataset:iri, -NumberOfTriples:nonneg) is det.
+%! assert_number_of_triples(
+%!   +Dataset:iri,
+%!   +File:iri,
+%!   -NumberOfTriples:nonneg
+%! ) is det.
 
-assert_number_of_triples(Dataset, N):-
+assert_number_of_triples(Dataset, File, N):-
   % Log the number of triples before deduplication.
   aggregate_all(
     count,
@@ -246,14 +255,14 @@ assert_number_of_triples(Dataset, N):-
   assert(
     tmp(
       Dataset,
-      rdf(Dataset, ap:triples_with_dups, literal(type(xsd:integer,N)))
+      rdf(File, ap:triples_with_dups, literal(type(xsd:integer,N)))
     )
   ).
 
 
-%! assert_void_triples(+Dataset:iri) is det.
+%! assert_void_triples(+Dataset:iri, +File:iri) is det.
 
-assert_void_triples(Dataset):-
+assert_void_triples(Dataset, File):-
   aggregate_all(
     set(P),
     (
@@ -267,8 +276,15 @@ assert_void_triples(Dataset):-
       member(P, Ps),
       rdf(S, P, O)
     ),
-    assert(tmp(Dataset, rdf(S, P, O)))
+    rdf_assert_statement(Dataset, File, S, P, O)
   ).
+
+rdf_assert_statement(Dataset, File, S, P, O):-
+  rdf_bnode(Stmt),
+  assert(tmp(Dataset, rdf(File, ap:statement, Stmt))),
+  assert(tmp(Dataset, rdf(Stmt, rdf:subject, S))),
+  assert(tmp(Dataset, rdf(Stmt, rdf:predicate, P))),
+  assert(tmp(Dataset, rdf(Stmt, rdf:object, O))).
 
 
 %! lod_resource_path(
@@ -290,33 +306,33 @@ lod_resource_path(Dir, Dataset, File, Path):-
   directory_file_path(UrlDir, File, Path).
 
 
-%! log_message(+Dataset:iri, +Message:compound) is det.
+%! log_message(+Dataset:iri, +File:iri, +Message:compound) is det.
 
-log_message(Dataset, Message):-
+log_message(Dataset, File, Message):-
   with_output_to(atom(String), write_canonical_blobs(Message)),
   assert(
     tmp(
       Dataset,
-      rdf(Dataset, ap:message, literal(type(xsd:string,String)))
+      rdf(File, ap:message, literal(type(xsd:string,String)))
     )
   ).
 
 
-%! log_status(+Dataset:iri, +Exception:compound) is det.
+%! log_status(+Dataset:iri, +File:iri, +Exception:compound) is det.
 
-log_status(_, false):- !.
-log_status(_, true):- !.
-log_status(Dataset, exception(Error)):-
+log_status(_, _, false):- !.
+log_status(_, _, true):- !.
+log_status(Dataset, File, exception(Error)):-
   with_output_to(atom(String), write_canonical_blobs(Error)),
   assert(
     tmp(
       Dataset,
-      rdf(Dataset, ap:status, literal(type(xsd:string,String)))
+      rdf(File, ap:status, literal(type(xsd:string,String)))
     )
   ).
 
 
-%! pick_input(-Input) is nondet.
+%! pick_input(-Input:iri) is nondet.
 
 pick_input(Input):-
   retract(todo(Input)).
