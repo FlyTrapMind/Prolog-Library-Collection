@@ -47,9 +47,9 @@
 download_lod(Dir, Pairs1):-
   is_list(Pairs1), !,
   flag(number_of_triples_written, _, 0),
-  
+gtrace,
   read_finished,
-  
+
   % Process the resources by authority.
   % This avoids being blocked by servers that do not allow
   % multiple simultaneous requests.
@@ -334,8 +334,13 @@ pick_input(Input):-
 %! read_finished is det.
 
 read_finished:-
-  read_file_to_terms('finished.log', Terms, []),
-  maplist(assert, Terms).
+  (
+    catch(read_file_to_terms('finished.log', Terms, []), _, fail)
+  ->
+    maplist(assert, Terms)
+  ;
+    true
+  ).
 
 
 %! register_input(+Input:atom) is det.
@@ -419,6 +424,7 @@ uri_iri_logged(Dataset, Url, Iri):-
 %! write_finished(+Dataset:atom) is det.
 
 write_finished(Dataset):-
+gtrace,
   setup_call_cleanup(
     open('finished.log', append, Write),
     write_term(Write, finished(Dataset), [fullstop(true)]),
