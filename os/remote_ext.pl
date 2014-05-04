@@ -38,7 +38,7 @@ clear_remote_directory(remote(User,Machine,Dir)):- !,
   atomic_list_concat([ssh,UserMachine,rm,Regex], ' ', Command),
   ignore(
     catch(
-      process_create(path(sh), ['-c',Command], [stdout(null)]),
+      process_create(path(sh), ['-c',Command], [stderr(null),stdout(null)]),
       _,
       fail
     )
