@@ -42,7 +42,7 @@
 
 
 
-%! download_lod(+Directory:atom, +Input) is det.
+%! download_lod(+DataDirectory:atom, +Input) is det.
 
 download_lod(Dir, Pairs1):-
   is_list(Pairs1), !,
@@ -69,7 +69,7 @@ download_lod(Dir, Pairs1):-
 
   % Construct the set of goals.
   findall(
-    lod_download_authority(I, Dir, Pair),
+    download_lod_authority(I, Dir, Pair),
     nth0(I, Pairs4, Pair),
     Goals
   ),
@@ -87,7 +87,7 @@ finished_pair(Dataset-_):-
   finished(Dataset).
 
 
-%! lod_download_authority(
+%! download_lod_authority(
 %!   +Index:nonneg,
 %!   +DataDirectory:compound,
 %!   +UrlAuthority:pair(atom,list(pair(atom)))
@@ -99,94 +99,85 @@ finished_pair(Dataset-_):-
 % reside at that authority.
 
 % Skip the first N authorities.
-lod_download_authority(I, _, _):-
+download_lod_authority(I, _, _):-
   I < 207, !.
-lod_download_authority(I, Dir, _-Pairs):-
-  maplist(lod_download_dataset(I, Dir), Pairs).
+download_lod_authority(I, Dir, _-Pairs):-
+  maplist(download_lod_dataset(I, Dir), Pairs).
 
 
-%! lod_download_dataset(
+%! download_lod_dataset(
 %!   +Index:nonneg,
 %!   +DataDirectory:compound,
 %!   +Pair:pair(atom)
 %! ) is det.
 % Processes the given CKAN resource / dataset.
 
-lod_download_dataset(I, Dir, Dataset-Iri):-
+download_lod_dataset(I, Dir, Dataset-Iri):-
   % Start message.
   print_message(informational, lod_download_start(I,Iri)),
 
   % CKAN URLs are sometimes non-URL IRIs.
   uri_iri_logged(Dataset, Url, Iri),
-
-  % The CKAN resource is processed.
-  % We log the status of the processing,
-  % and all warnings and informational messages
-  % that were given during the processing.
-  run_collect_messages(
-    lod_process_dataset(Dir, Dataset, Url),
-    Status,
-    Messages
-  ),
-
-  % Store log messages.
-  log_status(Dataset, Status),
-  maplist(log_message(Dataset), Messages),
-  store_messages_to_file(Dir, Dataset),
-
-  % End message.
-  print_message(informational, lod_download_end(Status,Messages)).
-
-
-%! lod_process_dataset(+DataDirectory:atom, +Dataset:iri, +Url:atom) is det.
-
-lod_process_dataset(Dir, Dataset, Url):-
+  
   register_input(Url),
 
   % Make sure the remote directory exists.
   url_flat_directory(Dir, Dataset, UrlDir),
   make_remote_directory_path(UrlDir),
+  % Clear any previous, incomplete results.
+  clear_remote_directory(UrlDir),
+  
+  process_lod_files(Dir, Dataset).
 
-  lod_process_files(Dir, Dataset).
 
+%! process_lod_files(+DataDirectory:atom, +Dataset:iri) is det.
 
-%! lod_process_files(+DataDirectory:atom, +Dataset:iri) is det.
-
-lod_process_files(Dir, Dataset):-
+process_lod_files(Dir, Dataset):-
   pick_input(Input), !,
-  lod_process_file(Dir, Dataset, Input),
-  lod_process_files(Dir, Dataset).
+  
+  % We log the status, all warnings, and all informational messages
+  % that are emitted while processing a file.
+  run_collect_messages(
+    process_lod_file(Dir, Dataset, Input),
+    Status,
+    Messages
+  ),
+  % Store the status and all messages.
+  log_status(Dataset, Status),
+  maplist(log_message(Dataset), Messages),
+  store_messages_to_file(Dir, Dataset),
+  
+  process_lod_files(Dir, Dataset).
 % No more inputs to pick.
-lod_process_files(_, Dataset):-
-gtrace,
+process_lod_files(_, Dataset):-
   write_finished(Dataset).
 
 
-%! lod_process_file(
+%! process_lod_file(
 %!   +DataDirectory:atom,
 %!   +Dataset:atom,
 %!   +Input:dict
 %! ) is det.
 
-lod_process_file(Dir, Dataset, Input):-
+process_lod_file(Dir, Dataset, Input):-
   unpack(Input, Read, Location),
-  rdf_process_file(Dir, Dataset, Read, Location),
+  process_rdf_file(Dir, Dataset, Read, Location),
   % Unpack the next entry!
   fail.
-lod_process_file(_, _, _).
+process_lod_file(_, _, _).
 
 
-%! rdf_process_file(
+%! process_rdf_file(
 %!   +DataDirectory:atom,
 %!   +Dataset:atom,
 %!   +Read:stream,
 %!   +Location:dict
 %! ) is det.
 
-rdf_process_file(Dir, Dataset, Read, Location):-
+process_rdf_file(Dir, Dataset, Read, Location):-
   call_cleanup(
     rdf_transaction(
-      rdf_process_file_call(Dir, Dataset, Read, Location),
+      process_rdf_file_call(Dir, Dataset, Read, Location),
       _,
       [snapshot(true)]
     ),
@@ -194,14 +185,14 @@ rdf_process_file(Dir, Dataset, Read, Location):-
   ).
 
 
-%! rdf_process_file_call(
+%! process_rdf_file_call(
 %!   +DataDirectory:or([atom,compound]),
 %!   +Dataset:iri,
 %!   +Read:stream,
 %!   +Location:dict
 %! ) is det.
 
-rdf_process_file_call(Dir, Dataset, Read, Location):-
+process_rdf_file_call(Dir, Dataset, Read, Location):-
   % Guess the serialization format that is used in the given stream.
   rdf_guess_format([], Read, Location, Base, Format),
   set_stream(Read, file_name(Base)),
@@ -230,7 +221,7 @@ rdf_process_file_call(Dir, Dataset, Read, Location):-
   assert(
     tmp(
       Dataset,
-      rdf(Dataset, void:triples, literal(type(xsd:integer,T2)))
+      rdf(Dataset, ap:triples_without_dups, literal(type(xsd:integer,T2)))
     )
   ),
   flag(number_of_triples_written, X, X),
@@ -255,7 +246,7 @@ assert_number_of_triples(Dataset, N):-
   assert(
     tmp(
       Dataset,
-      rdf(Dataset, ap:duplicate_triples, literal(type(xsd:integer,N)))
+      rdf(Dataset, ap:triples_with_dups, literal(type(xsd:integer,N)))
     )
   ).
 
@@ -438,10 +429,6 @@ write_finished(Dataset):-
 
 prolog:message(lod_download_start(I,Url)) -->
   ['[~D] [~w]'-[I,Url]].
-prolog:message(lod_download_end(Status,Messages)) -->
-  prolog_status(Status),
-  prolog_messages(Messages),
-  [nl].
 prolog:message(found_voids([])) --> !.
 prolog:message(found_voids([H|T])) -->
   ['A VoID dataset was found: ',H,nl],

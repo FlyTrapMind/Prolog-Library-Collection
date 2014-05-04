@@ -42,7 +42,7 @@
 Extensions for handling directories.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04-2014/05
 */
 
 :- use_module(library(apply)).
@@ -61,13 +61,16 @@ Extensions for handling directories.
 
 
 %! append_directories(+Dir1:atom, +Dir2:atom, -Dir3:atom) is det.
+% Returns the directory name obtained by concatenating
+% the given directory names.
+%
+% Does *not* ensure that any of the directories exist.
 
 append_directories(Dir1, Dir2, Dir3):-
   directory_subdirectories(Dir1, Subdirs1),
   directory_subdirectories(Dir2, Subdirs2),
   append(Subdirs1, Subdirs2, Subdirs3),
-  subdirectories_to_directory(Subdirs3, Dir3),
-  make_directory_path(Dir3).
+  subdirectories_to_directory(Subdirs3, Dir3).
 
 
 %! copy_directory(
