@@ -157,7 +157,6 @@ lod_process_resource(Dir, Dataset, Url):-
 %! lod_process_files(+DataDirectory:atom, +Dataset:iri) is det.
 
 lod_process_files(Dir, Dataset):-
-gtrace,
   pick_input(Input), !,
   lod_process_file(Dir, Dataset, Input),
   lod_process_files(Dir, Dataset).
