@@ -100,7 +100,7 @@ finished_pair(Dataset-_):-
 
 % Skip the first N authorities.
 download_lod_authority(I, _, _):-
-  I < 207, !.
+  I < 0, !.
 download_lod_authority(I, Dir, _-Pairs):-
   maplist(download_lod_dataset(I, Dir), Pairs).
 
