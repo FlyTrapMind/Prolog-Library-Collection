@@ -149,6 +149,7 @@ process_lod_files(Dir, Dataset):-
   % Store the status and all messages.
   log_status(Dataset, Input, Status),
   maplist(log_message(Dataset, Input), Messages),
+  print_message(informational, lod_downloaded_file(Status,Messages)),
 
   process_lod_files(Dir, Dataset).
 % No more inputs to pick.
@@ -444,6 +445,10 @@ write_finished(Dataset):-
 
 prolog:message(lod_download_start(I,Url)) -->
   ['[~D] [~w]'-[I,Url]].
+prolog:message(lod_downloaded_file(Status,Messages)) -->
+  prolog_status(Status),
+  prolog_messages(Messages),
+  [nl].
 prolog:message(found_voids([])) --> !.
 prolog:message(found_voids([H|T])) -->
   ['A VoID dataset was found: ',H,nl],
