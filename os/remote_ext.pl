@@ -36,7 +36,7 @@ clear_remote_directory(remote(User,Machine,Dir)):- !,
   atomic_list_concat([User,Machine], '@', UserMachine),
   append_directories(Dir, '*', Regex),
   atomic_list_concat([ssh,UserMachine,rm,Regex], ' ', Command),
-  process_create(path(sh), ['-c',Command], []).
+  ignore(catch(process_create(path(sh), ['-c',Command], []), _, fail)).
 clear_remote_directory(Dir):-
   delete_directory_contents(Dir).
 
@@ -97,7 +97,7 @@ remote_open(RemotePath, Mode, Stream):-
 remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_concat(Path, '"', Suffix),
-  
+
   % CAT append uses a double greater than sign.
   (
     Mode == append
@@ -106,7 +106,7 @@ remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   ;
     CatSign = '>'
   ),
-  
+
   atomic_list_concat([ssh,UserMachine,'"cat',CatSign,Suffix], ' ', Command),
 
   % Gzip in stream.

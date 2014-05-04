@@ -118,7 +118,7 @@ download_lod_dataset(I, Dir, Dataset-Iri):-
 
   % CKAN URLs are sometimes non-URL IRIs.
   uri_iri_logged(Dataset, Url, Iri),
-  
+
   register_input(Url),
 
   % Make sure the remote directory exists.
@@ -126,9 +126,9 @@ download_lod_dataset(I, Dir, Dataset-Iri):-
   make_remote_directory_path(UrlDir),
   % Clear any previous, incomplete results.
   clear_remote_directory(UrlDir),
-  
+
   process_lod_files(Dir, Dataset),
-  
+
   % Save all messages to a `messages.nt.gz` remote file.
   store_messages_to_file(Dir, Dataset).
 
@@ -138,7 +138,7 @@ download_lod_dataset(I, Dir, Dataset-Iri):-
 process_lod_files(Dir, Dataset):-
   pick_input(Input), !,
   assert(tmp(Dataset, rdf(Dataset, ap:file, Input))),
-  
+
   % We log the status, all warnings, and all informational messages
   % that are emitted while processing a file.
   run_collect_messages(
@@ -149,7 +149,7 @@ process_lod_files(Dir, Dataset):-
   % Store the status and all messages.
   log_status(Dataset, Input, Status),
   maplist(log_message(Dataset, Input), Messages),
-  
+
   process_lod_files(Dir, Dataset).
 % No more inputs to pick.
 process_lod_files(_, Dataset):-
@@ -369,7 +369,6 @@ register_void_inputs:-
     ),
     VoidTodos
   ),
-  %%%%(VoidTodos == [] -> true ; gtrace), %DEB
   print_message(informational, found_voids(VoidTodos)),
   maplist(register_input, VoidTodos).
 
