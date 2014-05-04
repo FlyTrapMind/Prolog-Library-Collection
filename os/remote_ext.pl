@@ -36,7 +36,13 @@ clear_remote_directory(remote(User,Machine,Dir)):- !,
   atomic_list_concat([User,Machine], '@', UserMachine),
   append_directories(Dir, '*', Regex),
   atomic_list_concat([ssh,UserMachine,rm,Regex], ' ', Command),
-  ignore(catch(process_create(path(sh), ['-c',Command], []), _, fail)).
+  ignore(
+    catch(
+      process_create(path(sh), ['-c',Command], [stdout(null)]),
+      _,
+      fail
+    )
+  ).
 clear_remote_directory(Dir):-
   delete_directory_contents(Dir).
 
