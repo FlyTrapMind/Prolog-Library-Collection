@@ -36,6 +36,10 @@
 
 :- thread_local(tmp/2).
 
+%! finished(?Dataset:atom) is nondet.
+
+:- dynamic(finished/1).
+
 
 
 %! download_lod(+Directory:atom, +Input) is det.
@@ -43,7 +47,9 @@
 download_lod(Dir, Pairs1):-
   is_list(Pairs1), !,
   flag(number_of_triples_written, _, 0),
-
+  
+  read_finished,
+  
   % Process the resources by authority.
   % This avoids being blocked by servers that do not allow
   % multiple simultaneous requests.
@@ -56,15 +62,16 @@ download_lod(Dir, Pairs1):-
     ),
     Pairs2
   ),
-  group_pairs_by_key(Pairs2, Pairs3),
+  exclude(finished_pair, Pairs2, Pairs3),
+  group_pairs_by_key(Pairs3, Pairs4),
 
-  length(Pairs3, Length), %DEB
+  length(Pairs4, Length), %DEB
   writeln(Length), %DEB
 
   % Construct the set of goals.
   findall(
     lod_download_authority(I, Dir, Pair),
-    nth0(I, Pairs3, Pair),
+    nth0(I, Pairs4, Pair),
     Goals
   ),
 
@@ -76,6 +83,9 @@ download_lod(Dir, Dataset-Location):- !,
   download_lod(Dir, [Dataset-Location]).
 download_lod(Dir, Location):-
   download_lod(Dir, Location-Location).
+
+finished_pair(Dataset-_):-
+  finished(Dataset).
 
 
 %! lod_download_authority(
@@ -93,30 +103,17 @@ download_lod(Dir, Location):-
 lod_download_authority(I, _, _):-
   I < 207, !.
 lod_download_authority(I, Dir, _-Pairs):-
-  maplist(lod_download_resource(I, Dir), Pairs).
+  maplist(lod_download_dataset(I, Dir), Pairs).
 
 
-%! lod_download_resource(+Index:nonneg, +DataDirectory:compound, +Pair:pair(atom)) is det.
-% Processes the given CKAN resource.
-
-lod_download_resource(I, Dir, Dataset-Iri):-
-  % Count the number of processed datasets.
-  lod_download_url(I, Dir, Dataset, Iri).
-
-
-%! lod_download_url(
+%! lod_download_dataset(
 %!   +Index:nonneg,
 %!   +DataDirectory:compound,
-%!   +Dataset:iri,
-%!   +Iri:iri
+%!   +Pair:pair(atom)
 %! ) is det.
-% Processes the given CKAN IRI.
+% Processes the given CKAN resource / dataset.
 
-% This CKAN resource was already processed in the past.
-lod_download_url(_, Dir, Dataset, _):-
-  lod_resource_path(Dir, Dataset, 'messages.nt.gz', RemotePath),
-  exists_remote_file(RemotePath), !.
-lod_download_url(I, Dir, Dataset, Iri):-
+lod_download_dataset(I, Dir, Dataset-Iri):-
   % Start message.
   print_message(informational, lod_download_start(I,Iri)),
 
@@ -128,7 +125,7 @@ lod_download_url(I, Dir, Dataset, Iri):-
   % and all warnings and informational messages
   % that were given during the processing.
   run_collect_messages(
-    lod_process_resource(Dir, Dataset, Url),
+    lod_process_dataset(Dir, Dataset, Url),
     Status,
     Messages
   ),
@@ -142,9 +139,9 @@ lod_download_url(I, Dir, Dataset, Iri):-
   print_message(informational, lod_download_end(Status,Messages)).
 
 
-%! lod_process_resource(+DataDirectory:atom, +Dataset:iri, +Url:atom) is det.
+%! lod_process_dataset(+DataDirectory:atom, +Dataset:iri, +Url:atom) is det.
 
-lod_process_resource(Dir, Dataset, Url):-
+lod_process_dataset(Dir, Dataset, Url):-
   register_input(Url),
 
   % Make sure the remote directory exists.
@@ -161,7 +158,8 @@ lod_process_files(Dir, Dataset):-
   lod_process_file(Dir, Dataset, Input),
   lod_process_files(Dir, Dataset).
 % No more inputs to pick.
-lod_process_files(_, _).
+lod_process_files(_, Dataset):-
+  write_finished(Dataset).
 
 
 %! lod_process_file(
@@ -333,6 +331,13 @@ pick_input(Input):-
   retract(todo(Input)).
 
 
+%! read_finished is det.
+
+read_finished:-
+  read_file_to_terms('finished.log', Terms, []),
+  maplist(assert, Terms).
+
+
 %! register_input(+Input:atom) is det.
 
 register_input(Input):-
@@ -391,7 +396,6 @@ store_messages_to_file(Dir, Dataset):-
     [snapshot(true)]
   ).
 
-
 rdf_assert_triple(S1, P1, O1):-
   maplist(rdf_convert_term, [S1,P1,O1], [S2,P2,O2]),
   rdf_assert(S2, P2, O2).
@@ -410,6 +414,16 @@ uri_iri_logged(Dataset, Url, Iri):-
   url_iri(Url, Iri),
   assert(tmp(Dataset, rdf(Dataset, ap:iri, Iri))),
   assert(tmp(Dataset, rdf(Dataset, ap:url, Url))).
+
+
+%! write_finished(+Dataset:atom) is det.
+
+write_finished(Dataset):-
+  setup_call_cleanup(
+    open('finished.log', append, Write),
+    write_term(Write, finished(Dataset), [fullstop(true)]),
+    close(Write)
+  ).
 
 
 
