@@ -221,8 +221,13 @@ process_rdf_file(Dataset, Read, UrlDir, Location):-
   % Log the number of triples after deduplication.
   store_triple(Dataset, ap:triples_without_dups,
       literal(type(xsd:integer,T2))),
-  flag(number_of_triples_written, All1, All1 + T2),
-  All0 is All1 + T2,
+  with_mutex(
+    number_of_triples_written,
+    (
+      flag(number_of_triples_written, All1, All1 + T2),
+      All0 is All1 + T2
+    )
+  ),
   format(current_output, '~D --[deduplicate]--> ~D (All: ~D)~n', [T1,T2,All0]),
 
   % Make sure any VoID datadumps are considered as well.
