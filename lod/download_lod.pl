@@ -1,8 +1,9 @@
 :- module(
   download_lod,
   [
-    download_lod/2 % +Directory:or([atom,compound])
+    download_lod/3 % +Directory:or([atom,compound])
                    % +Input:or([atom,pair(atom)])
+                   % +NumberOfThreads:nonneg
   ]
 ).
 
@@ -47,9 +48,13 @@
 
 
 
-%! download_lod(+DataDirectory:atom, +Input:or([atom,pair(atom)])) is det.
+%! download_lod(
+%!   +DataDirectory:atom,
+%!   +Input:or([atom,pair(atom)]),
+%!   +NumberOfThreads:nonneg
+%! ) is det.
 
-download_lod(DataDir, Pairs1):-
+download_lod(DataDir, Pairs1, N):-
   is_list(Pairs1), !,
   flag(number_of_triples_written, _, 0),
   read_finished(DataDir),
@@ -86,7 +91,7 @@ download_lod(DataDir, Pairs1):-
   % Run the goals in threads.
   % The number of threads can be given as an option.
   rdf_retractall(_, _, _),
-  run_goals_in_threads(Goals).
+  run_goals_in_threads(N, Goals).
 download_lod(DataDir, Dataset-Location):- !,
   download_lod(DataDir, [Dataset-Location]).
 download_lod(DataDir, Location):-
@@ -324,18 +329,13 @@ register_void_datasets:-
   ).
 
 
-%! run_goals_in_threads(:Goals) is det.
+%! run_goals_in_threads(+NumberOfThreads:nonneg, :Goals) is det.
 
-run_goals_in_threads(Goals):-
-  once(read_options(O1)),
-  (
-    option(threads(NumberOfThreads), O1),
-    NumberOfThreads > 1
-  ->
-    concurrent(NumberOfThreads, Goals, [])
-  ;
-    maplist(call, Goals)
-  ).
+run_goals_in_threads(N, Goals):-
+  N > 1, !,
+  concurrent(N, Goals, []).
+run_goals_in_threads(_, Goals):-
+  maplist(call, Goals).
 
 
 %! store_location_properties(+Url:url, +Location:dict) is det.
