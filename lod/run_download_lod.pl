@@ -1,4 +1,10 @@
-:- module(run_download_lod, []).
+:- module(
+  run_download_lod,
+  [
+    run_download_lod/0,
+    run_download_lod/1 % +NumberOfThreads:nonneg
+  ]
+).
 
 /** <module> Run download LOD
 
@@ -13,9 +19,12 @@ Initializes the downloading of LOD.
 :- use_module(generics(pair_ext)).
 :- use_module(lod(download_lod)).
 
-:- initialization(run_download_lod).
+
 
 run_download_lod:-
+  run_download_lod(1).
+
+run_download_lod(N):-
   % Collect pairs.
   absolute_file_name(data(pairs), File, [access(read),file_type(prolog)]),
   pair_ext:read_pairs_from_file(File, Pairs),
@@ -25,5 +34,5 @@ run_download_lod:-
   directory_file_path(DataDir, 'Output', OutputDir),
   make_directory_path(OutputDir),
 
-  download_lod(OutputDir, Pairs).
+  download_lod(OutputDir, Pairs, N).
 
