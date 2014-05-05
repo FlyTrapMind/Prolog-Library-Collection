@@ -217,11 +217,13 @@ process_rdf_file(Dataset, Read, UrlDir, Location):-
     close(Write)
   ),
   print_message(informational, rdf_ntriples_written(Path,T2)),
-
+  
   % Log the number of triples after deduplication.
-  store_triple(Dataset, ap:triples_without_dups, literal(type(xsd:integer,T2))),
-  flag(number_of_triples_written, X, X),
-  format(current_output, '~D --[deduplicate]--> ~D (All: ~D)~n', [T1,T2,X]),
+  store_triple(Dataset, ap:triples_without_dups,
+      literal(type(xsd:integer,T2))),
+  flag(number_of_triples_written, All1, All1 + T2),
+  All0 is All1 + T2,
+  format(current_output, '~D --[deduplicate]--> ~D (All: ~D)~n', [T1,T2,All0]),
 
   % Make sure any VoID datadumps are considered as well.
   register_void_datasets.
@@ -448,7 +450,6 @@ prolog:message(found_void_datadumps([Dataset-File|Pairs])) -->
   ['A VoID dataset was found: (~a,~a)'-[Dataset,File],nl],
   prolog:message(found_void_datadumps(Pairs)).
 prolog:message(rdf_ntriples_written(File,N0)) -->
-  {flag(number_of_triples_written, N1, N1 + N0)},
   ['~D triples written ('-[N0]],
   remote_file(File),
   [')'].
