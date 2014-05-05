@@ -125,7 +125,7 @@ remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
   ).
 remote_open(File, Mode, Stream, Options):-
   (
-    option(filer(gzip), Options)
+    option(filter(gzip), Options)
   ->
     gzopen(File, Mode, Stream, Options)
   ;

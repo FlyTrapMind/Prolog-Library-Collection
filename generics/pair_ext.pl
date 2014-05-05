@@ -7,6 +7,10 @@
                         % -Members:list
     pairs_to_ordsets/2, % +Pairs:list(pair(iri))
                         % -Sets:list(ordset(iri))
+    read_pairs_from_file/2, % +File:atom
+                            % -Pairs:ordset(pair(atom))
+    store_pairs_to_file/2, % +Pairs:list(pair(atom))
+                           % +File:atom
     term_to_pair/2 % @Term
                    % -Pair:pair
   ]
@@ -17,14 +21,19 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05
 */
 
-:- use_module(generics(list_ext)).
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
+
+:- use_module(generics(list_ext)).
+
+% Used for loading pairs from file.
+:- dynamic(pair/2).
 
 
 
@@ -109,6 +118,37 @@ pairs_to_ordsets([X-Y|T], Sets1, Sol):-
   list_to_ord_set([X,Y], NewSet),
   ord_add_element(Sets1, NewSet, Sets2),
   pairs_to_ordsets(T, Sets2, Sol).
+
+
+%! read_pairs_from_file(+File:atom, -Pairs:ordset(pair(atom))) is det.
+
+read_pairs_from_file(File, Pairs):-
+  setup_call_cleanup(
+    ensure_loaded(File),
+    findall(
+      X-Y,
+      pair(X, Y),
+      Pairs
+    ),
+    unload_file(File)
+  ).
+
+
+%! store_pairs_to_file(+Pairs:list(pair(atom)), +File:atom) is det.
+
+store_pairs_to_file(Pairs, File):-
+  setup_call_cleanup(
+    open(File, write, Stream),
+    forall(
+      member(X-Y, Pairs),
+      (
+        writeq(Stream, pair(X,Y)),
+        write(Stream, '.'),
+        nl(Stream)
+      )
+    ),
+    close(Stream)
+  ).
 
 
 %! term_to_pair(@Term, -Pair:pair) is det.
