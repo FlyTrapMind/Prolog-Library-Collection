@@ -61,16 +61,16 @@ download_lod(DataDir, Pairs1):-
   % Process the resources by authority.
   % This avoids being blocked by servers that do not allow
   % multiple simultaneous requests.
+  exclude(finished_pair, Pairs1, Pairs2),
   findall(
     UrlAuthority-(Dataset-Iri),
     (
-      member(Dataset-Iri, Pairs1),
+      member(Dataset-Iri, Pairs2),
       uri_components(Iri, Components),
       uri_data(authority, Components, UrlAuthority)
     ),
-    Pairs2
+    Pairs3
   ),
-  exclude(finished_pair, Pairs2, Pairs3),
   group_pairs_by_key(Pairs3, Pairs4),
 
   length(Pairs4, Length), %DEB
@@ -164,6 +164,7 @@ process_lod_files(_, _).
 process_lod_file(Dataset, Url, UrlDir):-
   % Non-deterministic for multiple entries in one archive stream.
   unpack(Url, Read, Location),
+  store_location_properties(Url, Location),
 
   % Process individual RDF files in a separate RDF transaction and snapshot.
   call_cleanup(
@@ -236,24 +237,11 @@ assert_number_of_triples(Dataset, N):-
   store_triple(Dataset, ap:triples_with_dups, literal(type(xsd:integer,N))).
 
 
-%! store_void_triples is det.
+%! iri_to_url_conversion(+Dataset:iri, +Iri:atom, -Url:atom) is det.
 
-store_void_triples:-
-  aggregate_all(
-    set(P),
-    (
-      rdf_current_predicate(P),
-      rdf_global_id(void:_, P)
-    ),
-    Ps
-  ),
-  forall(
-    (
-      member(P, Ps),
-      rdf(S, P, O)
-    ),
-    store_triple(S, P, O)
-  ).
+iri_to_url_conversion(Dataset, Iri, Url):-
+  url_iri(Url, Iri),
+  store_triple(Dataset, ap:url, Url).
 
 
 %! lod_resource_path(
@@ -350,6 +338,38 @@ run_goals_in_threads(Goals):-
   ).
 
 
+%! store_location_properties(+Url:url, +Location:dict) is det.
+
+store_location_properties(Url, Location):-
+  store_triple(Url, ap:content_type,
+      literal(type(xsd:string,Location.get(content_type)))),
+  store_triple(Url, ap:content_length,
+      literal(type(xsd:integer,Location.get(content_length)))),
+  store_triple(Url, ap:last_modified,
+      literal(type(xsd:string,Location.get(last_modified)))),
+  store_triple(Url, ap:url, literal(type(xsd:string,Location.get(url)))),
+  (
+    Data1 = Location.get(data),
+    exclude(filter, Data1, Data2),
+    Data2 = [ArchiveEntry]
+  ->
+    rdf_bnode(BNode),
+    store_triple(Url, ap:archive_entry, BNode),
+    store_archive_entry_properties(BNode, ArchiveEntry)
+  ;
+    true
+  ).
+filter(filter(_)).
+
+store_archive_entry_properties(BNode, ArchiveEntry):-
+  store_triple(BNode, ap:format,
+      literal(type(xsd:string,ArchiveEntry.get(format)))),
+  store_triple(BNode, ap:name,
+      literal(type(xsd:string,ArchiveEntry.get(name)))),
+  store_triple(BNode, ap:size,
+      literal(type(xsd:integer,ArchiveEntry.get(size)))).
+
+
 %! store_triple(
 %!   +Subject:or([bnode,iri]),
 %!   +Predicate:iri,
@@ -373,11 +393,24 @@ store_triple_mutex(S, P, O):-
   ).
 
 
-%! iri_to_url_conversion(+Dataset:iri, +Iri:atom, -Url:atom) is det.
+%! store_void_triples is det.
 
-iri_to_url_conversion(Dataset, Iri, Url):-
-  url_iri(Url, Iri),
-  store_triple(Dataset, ap:url, Url).
+store_void_triples:-
+  aggregate_all(
+    set(P),
+    (
+      rdf_current_predicate(P),
+      rdf_global_id(void:_, P)
+    ),
+    Ps
+  ),
+  forall(
+    (
+      member(P, Ps),
+      rdf(S, P, O)
+    ),
+    store_triple(S, P, O)
+  ).
 
 
 %! write_finished(+Dataset:atom) is det.
