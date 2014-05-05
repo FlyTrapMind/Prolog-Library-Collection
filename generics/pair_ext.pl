@@ -24,7 +24,6 @@ Support predicates for working with pairs.
 @version 2013/09-2013/10, 2013/12, 2014/03, 2014/05
 */
 
-:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).

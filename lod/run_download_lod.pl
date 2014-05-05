@@ -16,8 +16,8 @@ Initializes the downloading of LOD.
 
 :- use_module(library(filesex)).
 
-:- use_module(generics(pair_ext)).
 :- use_module(lod(download_lod)).
+:- use_module(lod(lod_urls)).
 
 
 
@@ -25,14 +25,17 @@ run_download_lod:-
   run_download_lod(1).
 
 run_download_lod(N):-
-  % Collect pairs.
-  absolute_file_name(data(pairs), File, [access(read),file_type(prolog)]),
-  pair_ext:read_pairs_from_file(File, Pairs),
-
   % Make sure the output directory is there.
   absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
   directory_file_path(DataDir, 'Output', OutputDir),
   make_directory_path(OutputDir),
+  
+  % Collect URLs.
+  findall(
+    Url,
+    lod_url(Url),
+    Urls
+  ),
 
-  download_lod(OutputDir, Pairs, N).
+  download_lod(OutputDir, Urls, N).
 

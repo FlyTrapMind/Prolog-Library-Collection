@@ -2,7 +2,7 @@
   download_lod,
   [
     download_lod/3 % +Directory:or([atom,compound])
-                   % +Input:or([atom,pair(atom)])
+                   % +URLs:or([iri,list(iri)])
                    % +NumberOfThreads:nonneg
   ]
 ).
@@ -34,30 +34,31 @@
 
 :- rdf_meta(store_triple(r,r,o)).
 
-%! seen_dataset(?Dataset:atom, ?File:atom) is nondet.
+%! seen_dataset(?Url:url) is nondet.
 
-:- thread_local(seen_dataset/2).
+:- thread_local(seen_dataset/1).
 
-%! todo_dataset(?Dataset:atom, ?File:atom) is nondet.
+%! todo_dataset(?Url:url) is nondet.
 
-:- thread_local(todo_dataset/2).
+:- thread_local(todo_dataset/1).
 
-%! finished(?Dataset:atom) is nondet.
+%! finished_lod_url(?Dataset:atom) is nondet.
 
-:- dynamic(finished/1).
+:- dynamic(finished_lod_url/1).
 
 
 
 %! download_lod(
 %!   +DataDirectory:atom,
-%!   +Input:or([atom,pair(atom)]),
+%!   +Urls:or([iri,list(iri)]),
 %!   +NumberOfThreads:nonneg
 %! ) is det.
 
-download_lod(DataDir, Pairs1, N):-
-  is_list(Pairs1), !,
+download_lod(DataDir, Iris1, N):-
+  is_list(Iris1), !,
+  flag(number_of_processed_files, _, 0),
   flag(number_of_triples_written, _, 0),
-  read_finished(DataDir),
+  read_finished_lod_urls(DataDir),
 
   % Assert the data directory.
   retractall(data_directory(_)),
@@ -66,45 +67,37 @@ download_lod(DataDir, Pairs1, N):-
   % Process the resources by authority.
   % This avoids being blocked by servers that do not allow
   % multiple simultaneous requests.
-  exclude(finished_pair, Pairs1, Pairs2),
+  exclude(finished_lod_url, Iris1, Iris2),
   findall(
-    UrlAuthority-(Dataset-Iri),
+    Authority-Uri,
     (
-      member(Dataset-Iri, Pairs2),
-      uri_components(Iri, Components),
-      uri_data(authority, Components, UrlAuthority)
+      member(Iri, Iris2),
+      uri_iri(Uri, Iri),
+      uri_components(Uri, Components),
+      uri_data(authority, Components, Authority)
     ),
-    Pairs3
+    Pairs1
   ),
-  group_pairs_by_key(Pairs3, Pairs4),
-
-  length(Pairs4, Length), %DEB
-  writeln(Length), %DEB
+  group_pairs_by_key(Pairs1, Pairs2),
 
   % Construct the set of goals.
   findall(
-    download_lod_authority(I, DataDir, Pair),
-    nth0(I, Pairs4, Pair),
+    download_lod_authority(DataDir, Pair),
+    member(Pair, Pairs2),
     Goals
   ),
 
   % Run the goals in threads.
   % The number of threads can be given as an option.
   rdf_retractall(_, _, _),
-  run_goals_in_threads(N, Goals).
-download_lod(DataDir, Dataset-Location):- !,
-  download_lod(DataDir, [Dataset-Location]).
-download_lod(DataDir, Location):-
-  download_lod(DataDir, Location-Location).
-
-finished_pair(Dataset-_):-
-  finished(Dataset).
+  thread_create(run_goals_in_threads(N, Goals), _, []).
+download_lod(DataDir, Iri, N):-
+  download_lod(DataDir, [Iri], N).
 
 
 %! download_lod_authority(
-%!   +Index:nonneg,
 %!   +DataDirectory:compound,
-%!   +UrlAuthority:pair(atom,list(pair(atom)))
+%!   +AuthorityPair:pair(atom,list(pair(atom)))
 %! ) is det.
 % Downloads the datasets at the given authority.
 %
@@ -113,30 +106,25 @@ finished_pair(Dataset-_):-
 % reside at that authority.
 
 % Skip the first N authorities.
-download_lod_authority(I, _, _):-
-  I < 0, !.
-download_lod_authority(I, DataDir, _-Pairs):-
+download_lod_authority(DataDir, _-Urls):-
   forall(
-    member(Dataset-Iri, Pairs),
+    member(Url, Urls),
     (
       % Add another LOD input to the pool.
-      register_input(Dataset, Iri),
-      process_lod_files(I, DataDir)
+      register_input(Url),
+      process_lod_files(DataDir)
     )
   ).
 
 
-%! process_lod_files(+Index:nonneg, +DataDirectory:or([atom,compound])) is det.
+%! process_lod_files(+DataDirectory:or([atom,compound])) is det.
 
-process_lod_files(I, DataDir):-
+process_lod_files(DataDir):-
   % Take another LOD input from the pool.
-  pick_input(Dataset, Iri), !,
+  pick_input(Url), !,
 
   % Start message.
-  print_message(informational, lod_download_start(I,Iri)),
-
-  % CKAN URLs are sometimes non-URL IRIs.
-  iri_to_url_conversion(Dataset, Iri, Url),
+  print_message(informational, lod_download_start(Url)),
 
   % Make sure the remote directory exists.
   url_flat_directory(DataDir, Url, UrlDir),
@@ -148,33 +136,33 @@ process_lod_files(I, DataDir):-
   % We log the status, all warnings, and all informational messages
   % that are emitted while processing a file.
   run_collect_messages(
-    process_lod_file(Dataset, Url, UrlDir),
+    process_lod_file(Url, UrlDir),
     Status,
     Messages
   ),
   % Store the status and all messages.
-  log_status(Dataset, Status),
-  maplist(log_message(Dataset), Messages),
+  log_status(Url, Status),
+  maplist(log_message(Url), Messages),
   print_message(informational, lod_downloaded_file(Status,Messages)),
 
-  write_finished(Dataset),
+  write_finished_lod_url(Url),
 
-  process_lod_files(I, DataDir).
+  process_lod_files(DataDir).
 % No more inputs to pick.
-process_lod_files(_, _).
+process_lod_files(_).
 
 
-%! process_lod_file(+Dataset:iri, +Url:url, +UrlDirectory:or([atom,compound])) is det.
+%! process_lod_file(+Url:url, +UrlDirectory:or([atom,compound])) is det.
 
-process_lod_file(Dataset, Url, UrlDir):-
+process_lod_file(Url1, UrlDir):-
   % Non-deterministic for multiple entries in one archive stream.
-  unpack(Url, Read, Location),
-  store_location_properties(Url, Location),
+  unpack(Url1, Read, Location),
+  store_location_properties(Url1, Location, Url2),
 
   % Process individual RDF files in a separate RDF transaction and snapshot.
   call_cleanup(
     rdf_transaction(
-      process_rdf_file(Dataset, Read, UrlDir, Location),
+      process_rdf_file(Url2, Read, UrlDir, Location),
       _,
       [snapshot(true)]
     ),
@@ -183,21 +171,23 @@ process_lod_file(Dataset, Url, UrlDir):-
 
   % Unpack the next entry by backtracking.
   fail.
-process_lod_file(_, _, _).
+process_lod_file(_, _).
 
 
 %! process_rdf_file(
-%!   +Dataset:iri,
+%!   +Url:url,
 %!   +Read:stream,
 %!   +UrlDirectory:atom,
 %!   +Location:dict
 %! ) is det.
 
-process_rdf_file(Dataset, Read, UrlDir, Location):-
+process_rdf_file(Url, Read, UrlDir, Location):-
   % Guess the serialization format that is used in the given stream.
   rdf_guess_format([], Read, Location, Base, Format),
+  store_triple(Url, ap:rdf_serialization_format,
+      literal(type(xsd:string,Format))),
+  store_triple(Url, ap:base_iri, Base),
   set_stream(Read, file_name(Base)),
-  print_message(informational, rdf_load_any(rdf(Base, Format))),
 
   % Load triples in any serialization format.
   rdf_load(
@@ -206,7 +196,7 @@ process_rdf_file(Dataset, Read, UrlDir, Location):-
   ),
 
   % Asssert some statistics for inclusion in the messages file.
-  assert_number_of_triples(Dataset, T1),
+  assert_number_of_triples(Url, T1),
   store_void_triples,
 
   % Save triples using the N-Triples serialization format.
@@ -216,19 +206,10 @@ process_rdf_file(Dataset, Read, UrlDir, Location):-
     rdf_ntriples_write(Write, [bnode_base(Base),number_of_triples(T2)]),
     close(Write)
   ),
-  print_message(informational, rdf_ntriples_written(Path,T2)),
-  
+
   % Log the number of triples after deduplication.
-  store_triple(Dataset, ap:triples_without_dups,
-      literal(type(xsd:integer,T2))),
-  with_mutex(
-    number_of_triples_written,
-    (
-      flag(number_of_triples_written, All1, All1 + T2),
-      All0 is All1 + T2
-    )
-  ),
-  format(current_output, '~D --[deduplicate]--> ~D (All: ~D)~n', [T1,T2,All0]),
+  store_triple(Url, ap:triples_without_dups, literal(type(xsd:integer,T2))),
+  print_message(informational, rdf_ntriples_written(Path,T1,T2)),
 
   % Make sure any VoID datadumps are considered as well.
   register_void_datasets.
@@ -237,23 +218,16 @@ process_rdf_file(Dataset, Read, UrlDir, Location):-
 
 % HELPERS
 
-%! assert_number_of_triples(+Dataset:iri, -NumberOfTriples:nonneg) is det.
+%! assert_number_of_triples(+Url:url, -NumberOfTriples:nonneg) is det.
 
-assert_number_of_triples(Dataset, N):-
+assert_number_of_triples(Url, N):-
   % Log the number of triples before deduplication.
   aggregate_all(
     count,
     rdf(_, _, _, _),
     N
   ),
-  store_triple(Dataset, ap:triples_with_dups, literal(type(xsd:integer,N))).
-
-
-%! iri_to_url_conversion(+Dataset:iri, +Iri:atom, -Url:atom) is det.
-
-iri_to_url_conversion(Dataset, Iri, Url):-
-  url_iri(Url, Iri),
-  store_triple(Dataset, ap:url, Url).
+  store_triple(Url, ap:triples_with_dups, literal(type(xsd:integer,N))).
 
 
 %! lod_resource_path(
@@ -291,16 +265,16 @@ log_status(Dataset, exception(Error)):-
   store_triple(Dataset, ap:status, literal(type(xsd:string,String))).
 
 
-%! pick_input(-Dataset:atom, -File:atom) is nondet.
+%! pick_input(-Url:url) is nondet.
 
-pick_input(Dataset, File):-
-  retract(todo_dataset(Dataset, File)).
+pick_input(Url):-
+  retract(todo_dataset(Url)).
 
 
-%! read_finished(+DataDirectory:atom) is det.
+%! read_finished_lod_urls(+DataDirectory:atom) is det.
 
-read_finished(DataDir):-
-  directory_file_path(DataDir, 'finished.log', File),
+read_finished_lod_urls(DataDir):-
+  directory_file_path(DataDir, 'finished_lod_urls.log', File),
   (
     catch(read_file_to_terms(File, Terms, []), _, fail)
   ->
@@ -310,11 +284,11 @@ read_finished(DataDir):-
   ).
 
 
-%! register_input(+Dataset:iri, +Url:url) is det.
+%! register_input(+Url:url) is det.
 
-register_input(Dataset, Url):-
-  assert(todo_dataset(Dataset, Url)),
-  assert(seen_dataset(Dataset, Url)).
+register_input(Url):-
+  assert(todo_dataset(Url)),
+  assert(seen_dataset(Url)).
 
 
 %! register_void_datasets is det.
@@ -322,17 +296,17 @@ register_input(Dataset, Url):-
 register_void_datasets:-
   % Add all VoID datadumps to the TODO list.
   aggregate_all(
-    set(Dataset-Url),
+    set(Url),
     (
-      rdf(Dataset, void:dataDump, Url),
-      \+ seen_dataset(Dataset, Url)
+      rdf(_, void:dataDump, Url),
+      \+ seen_dataset(Url)
     ),
-    VoidPairs
+    Urls
   ),
-  print_message(informational, found_void_datadumps(VoidPairs)),
+  print_message(informational, found_void_lod_urls(Urls)),
   forall(
-    member(Dataset-Url, VoidPairs),
-    register_input(Dataset, Url)
+    member(Url, Urls),
+    register_input(Url)
   ).
 
 
@@ -345,36 +319,32 @@ run_goals_in_threads(_, Goals):-
   maplist(call, Goals).
 
 
-%! store_location_properties(+Url:url, +Location:dict) is det.
+%! store_location_properties(+Url1:url, +Location:dict, -Url2:url) is det.
 
-store_location_properties(Url, Location):-
+store_location_properties(Url1, Location, Url2):-
+  (
+    Data1 = Location.get(data),
+    exclude(filter, Data1, Data2),
+    Data2 = [ArchiveEntry]
+  ->
+    Name = ArchiveEntry.get(name),
+    atomic_list_concat([Url1,Name], '/', Url2),
+    store_triple(Url2, ap:format,
+        literal(type(xsd:string,ArchiveEntry.get(format)))),
+    store_triple(Url2, ap:size,
+        literal(type(xsd:integer,ArchiveEntry.get(size))))
+  ;
+    Url2 = Url1
+  ),
+  store_triple(Url2, rdf:type, ap:'LOD-URL'),
   store_triple(Url, ap:content_type,
       literal(type(xsd:string,Location.get(content_type)))),
   store_triple(Url, ap:content_length,
       literal(type(xsd:integer,Location.get(content_length)))),
   store_triple(Url, ap:last_modified,
       literal(type(xsd:string,Location.get(last_modified)))),
-  store_triple(Url, ap:url, literal(type(xsd:string,Location.get(url)))),
-  (
-    Data1 = Location.get(data),
-    exclude(filter, Data1, Data2),
-    Data2 = [ArchiveEntry]
-  ->
-    rdf_bnode(BNode),
-    store_triple(Url, ap:archive_entry, BNode),
-    store_archive_entry_properties(BNode, ArchiveEntry)
-  ;
-    true
-  ).
+  store_triple(Url, ap:url, literal(type(xsd:string,Location.get(url)))).
 filter(filter(_)).
-
-store_archive_entry_properties(BNode, ArchiveEntry):-
-  store_triple(BNode, ap:format,
-      literal(type(xsd:string,ArchiveEntry.get(format)))),
-  store_triple(BNode, ap:name,
-      literal(type(xsd:string,ArchiveEntry.get(name)))),
-  store_triple(BNode, ap:size,
-      literal(type(xsd:integer,ArchiveEntry.get(size)))).
 
 
 %! store_triple(
@@ -384,19 +354,21 @@ store_archive_entry_properties(BNode, ArchiveEntry):-
 %! ) is det.
 
 store_triple(S, P, O):-
-  with_mutex(store_triple, store_triple_mutex(S, P, O)).
-
-store_triple_mutex(S, P, O):-
-  data_directory(DataDir),
-  absolute_file_name('messages.log', File, [relative_to(DataDir)]),
-  setup_call_cleanup(
-    remote_open(File, append, Stream),
+  with_mutex(
+    store_triple,
     (
-      writeq(Stream, rdf(S, P, O)),
-      write(Stream, '.'),
-      nl(Stream)
-    ),
-    close(Stream)
+      data_directory(DataDir),
+      absolute_file_name('messages.log', File, [relative_to(DataDir)]),
+      setup_call_cleanup(
+        remote_open(File, append, Stream),
+        (
+          writeq(Stream, rdf(S, P, O)),
+          write(Stream, '.'),
+          nl(Stream)
+        ),
+        close(Stream)
+      )
+    )
   ).
 
 
@@ -420,22 +392,24 @@ store_void_triples:-
   ).
 
 
-%! write_finished(+Dataset:atom) is det.
+%! write_finished_lod_url(+Dataset:atom) is det.
 
-write_finished(Dataset):-
-  with_mutex(finished, write_finished_mutex(Dataset)).
-
-write_finished_mutex(Dataset):-
-  data_directory(DataDir),
-  directory_file_path(DataDir, 'finished.log', File),
-  setup_call_cleanup(
-    open(File, append, Stream),
+write_finished_lod_url(Url):-
+  with_mutex(
+    finished,
     (
-      writeq(Stream, finished(Dataset)),
-      write(Stream, '.'),
-      nl(Stream)
-    ),
-    close(Stream)
+      data_directory(DataDir),
+      directory_file_path(DataDir, 'finished_lod_urls.log', File),
+      setup_call_cleanup(
+        open(File, append, Stream),
+        (
+          writeq(Stream, finished_lod_url(Url)),
+          write(Stream, '.'),
+          nl(Stream)
+        ),
+        close(Stream)
+      )
+    )
   ).
 
 
@@ -444,21 +418,36 @@ write_finished_mutex(Dataset):-
 
 :- multifile(prolog:message/1).
 
-prolog:message(lod_download_start(I,Url)) -->
-  ['[~D] [~w]'-[I,Url]].
+prolog:message(lod_download_start(Url)) -->
+  {flag(number_of_processed_files, X, X + 1)},
+  ['[~D] [~w]'-[X,Url]].
 prolog:message(lod_downloaded_file(Status,Messages)) -->
   prolog_status(Status),
   prolog_messages(Messages),
   [nl].
-prolog:message(found_void_datadumps([])) --> !.
-prolog:message(found_void_datadumps([Dataset-File|Pairs])) -->
-  ['A VoID dataset was found: (~a,~a)'-[Dataset,File],nl],
-  prolog:message(found_void_datadumps(Pairs)).
-prolog:message(rdf_ntriples_written(File,N0)) -->
-  ['~D triples written ('-[N0]],
-  remote_file(File),
-  [')'].
+prolog:message(found_void_lod_urls([])) --> !.
+prolog:message(found_void_lod_urls([H|T])) -->
+  ['A VoID dataset was found: ',H,nl],
+  prolog:message(found_void_lod_urls(T)).
 
+prolog:message(rdf_ntriples_written(File,T1,T2)) -->
+  ['['],
+    number_of_triples_written(T2),
+    number_of_duplicates_written(T1, T2),
+    total_number_of_triples_written(T2),
+  ['] ['],
+    remote_file(File),
+  [']'].
+
+number_of_duplicates_written(0) --> !, [].
+number_of_duplicates_written(T) --> [' (~D dups)'-[T]].
+
+number_of_duplicates_written(T1, T2) -->
+  {T0 is T2 - T1},
+  number_of_duplicates_written(T0).
+
+number_of_triples_written(0) --> !, [].
+number_of_triples_written(T) --> ['+~D'-[T]].
 
 prolog_status(false) --> !, [].
 prolog_status(true) --> !, [].
@@ -481,4 +470,17 @@ remote_file(remote(User,Machine,Path)) --> !,
   [User,'@',Machine,':',Path].
 remote_file(File) -->
   [File].
+
+total_number_of_triples_written(0) --> !, [].
+total_number_of_triples_written(T) -->
+  {
+    with_mutex(
+      number_of_triples_written,
+      (
+        flag(number_of_triples_written, All1, All1 + T),
+        All2 is All1 + T
+      )
+    )
+  },
+  [' (~D tot)'-[All2]].
 
