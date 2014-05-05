@@ -357,6 +357,9 @@ run_goals_in_threads(Goals):-
 %! ) is det.
 
 store_triple(S, P, O):-
+  with_mutex(store_triple, store_triple_mutex(S, P, O)).
+
+store_triple_mutex(S, P, O):-
   data_directory(DataDir),
   absolute_file_name('messages.log', File, [relative_to(DataDir)]),
   setup_call_cleanup(
@@ -380,6 +383,9 @@ iri_to_url_conversion(Dataset, Iri, Url):-
 %! write_finished(+Dataset:atom) is det.
 
 write_finished(Dataset):-
+  with_mutex(finished, write_finished_mutex(Dataset)).
+
+write_finished_mutex(Dataset):-
   data_directory(DataDir),
   directory_file_path(DataDir, 'finished.log', File),
   setup_call_cleanup(
