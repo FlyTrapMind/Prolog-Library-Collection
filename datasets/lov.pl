@@ -1,7 +1,7 @@
 :- module(
   lov,
   [
-    lov_resources/1 % -Pairs:ordset(pair(atom))
+    lov_resources/1 % -Iris:ordset(iri)
   ]
 ).
 
@@ -25,15 +25,15 @@ Support for the OKF-managed list of open vocabularies.
 
 
 
-lov_resources(Pairs):-
+lov_resources(Iris):-
   lov_url(Url),
   rdf_transaction(
     (
       rdf_load(Url, []),
       aggregate_all(
-        set(Resource-Resource),
-        rdfs_individual_of(Resource, voaf:'Vocabulary'),
-        Pairs
+        set(Iri),
+        rdfs_individual_of(Iri, voaf:'Vocabulary'),
+        Iris
       )
     ),
     _,
