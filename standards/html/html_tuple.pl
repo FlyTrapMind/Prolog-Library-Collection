@@ -86,7 +86,7 @@ html_pair(Dcg, E1, E2) -->
 
 html_pairs(_, []) --> [].
 html_pairs(Dcg, [H|T]) -->
-  {term_to_pair(H, X-Y)},
+  {pair_ext:term_to_pair(H, X-Y)},
   html_pair(Dcg, X, Y),
   html_pairs(Dcg, T).
 
