@@ -15,13 +15,13 @@
 
 %lod_url('ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/rdf/taxonomy.rdf.gz').
 %lod_url('ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/rdf/uniprot.rdf.gz').
-%lod_url('http:// http://commondatastorage.googleapis.com/m-lab/').
-%lod_url('http://54.213.4.161/lod/load-it/loadit.nq').
-%lod_url('http://<http://isbndb.com/api> . ').
-%lod_url('http://acm.rkbexplorer.com/id/998550').
-%lod_url('http://acm.rkbexplorer.com/models/dump.tgz').
-%lod_url('http://acm.rkbexplorer.com/models/void.ttl').
-%lod_url('http://acm.rkbexplorer.com/ontologies/acm#B.1.3.1').
+lod_url('http:// http://commondatastorage.googleapis.com/m-lab/').
+lod_url('http://54.213.4.161/lod/load-it/loadit.nq').
+lod_url('http://<http://isbndb.com/api> . ').
+lod_url('http://acm.rkbexplorer.com/id/998550').
+lod_url('http://acm.rkbexplorer.com/models/dump.tgz').
+lod_url('http://acm.rkbexplorer.com/models/void.ttl').
+lod_url('http://acm.rkbexplorer.com/ontologies/acm#B.1.3.1').
 lod_url('http://aemet.linkeddata.es/files/aemet%20ontology%20network%20v2.rar').
 lod_url('http://aemet.linkeddata.es/files/aemetontologynetworkv2.rar').
 lod_url('http://aemet.linkeddata.es/metadata').
