@@ -329,6 +329,7 @@ store_location_properties(Url1, Location, Url2):-
   ->
     Name = ArchiveEntry.get(name),
     atomic_list_concat([Url1,Name], '/', Url2),
+    store_triple(Url1, ap:archive_contains, Url2),
     store_triple(Url2, ap:format,
         literal(type(xsd:string,ArchiveEntry.get(format)))),
     store_triple(Url2, ap:size,
