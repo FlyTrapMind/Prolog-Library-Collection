@@ -362,7 +362,7 @@ store_triple(S, P, O):-
       setup_call_cleanup(
         remote_open(File, append, Stream),
         (
-          writeq(Stream, rdf(S, P, O)),
+          writeq(Stream, rdf_triple(S, P, O)),
           write(Stream, '.'),
           nl(Stream)
         ),
