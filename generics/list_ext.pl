@@ -138,7 +138,6 @@ Extensions to the set of list predicates in SWI-Prolog.
 :- use_module(library(random)).
 
 :- use_module(generics(error_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 
 

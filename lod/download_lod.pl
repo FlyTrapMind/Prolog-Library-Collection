@@ -196,20 +196,20 @@ process_rdf_file(Url, Read, UrlDir, Location):-
   ),
 
   % Asssert some statistics for inclusion in the messages file.
-  assert_number_of_triples(Url, T1),
+  assert_number_of_triples(Url, TIn),
   store_void_triples,
 
   % Save triples using the N-Triples serialization format.
   directory_file_path(UrlDir, 'input.nt.gz', Path),
   setup_call_cleanup(
     remote_open(Path, append, Write, [filter(gzip)]),
-    rdf_ntriples_write(Write, [bnode_base(Base),number_of_triples(T2)]),
+    rdf_ntriples_write(Write, [bnode_base(Base),number_of_triples(TOut)]),
     close(Write)
   ),
 
   % Log the number of triples after deduplication.
-  store_triple(Url, ap:triples_without_dups, literal(type(xsd:integer,T2))),
-  print_message(informational, rdf_ntriples_written(Path,T1,T2)),
+  store_triple(Url, ap:triples_without_dups, literal(type(xsd:integer,TOut))),
+  print_message(informational, rdf_ntriples_written(Path,TIn,TOut)),
 
   % Make sure any VoID datadumps are considered as well.
   register_void_datasets.
@@ -337,13 +337,13 @@ store_location_properties(Url1, Location, Url2):-
     Url2 = Url1
   ),
   store_triple(Url2, rdf:type, ap:'LOD-URL'),
-  store_triple(Url, ap:content_type,
+  store_triple(Url2, ap:content_type,
       literal(type(xsd:string,Location.get(content_type)))),
-  store_triple(Url, ap:content_length,
+  store_triple(Url2, ap:content_length,
       literal(type(xsd:integer,Location.get(content_length)))),
-  store_triple(Url, ap:last_modified,
+  store_triple(Url2, ap:last_modified,
       literal(type(xsd:string,Location.get(last_modified)))),
-  store_triple(Url, ap:url, literal(type(xsd:string,Location.get(url)))).
+  store_triple(Url2, ap:url, literal(type(xsd:string,Location.get(url)))).
 filter(filter(_)).
 
 
@@ -430,11 +430,11 @@ prolog:message(found_void_lod_urls([H|T])) -->
   ['A VoID dataset was found: ',H,nl],
   prolog:message(found_void_lod_urls(T)).
 
-prolog:message(rdf_ntriples_written(File,T1,T2)) -->
+prolog:message(rdf_ntriples_written(File,TIn,TOut)) -->
   ['['],
-    number_of_triples_written(T2),
-    number_of_duplicates_written(T1, T2),
-    total_number_of_triples_written(T2),
+    number_of_triples_written(TOut),
+    number_of_duplicates_written(TIn, TOut),
+    total_number_of_triples_written(TOut),
   ['] ['],
     remote_file(File),
   [']'].
@@ -442,8 +442,8 @@ prolog:message(rdf_ntriples_written(File,T1,T2)) -->
 number_of_duplicates_written(0) --> !, [].
 number_of_duplicates_written(T) --> [' (~D dups)'-[T]].
 
-number_of_duplicates_written(T1, T2) -->
-  {T0 is T2 - T1},
+number_of_duplicates_written(TIn, TOut) -->
+  {T0 is TIn - TOut},
   number_of_duplicates_written(T0).
 
 number_of_triples_written(0) --> !, [].

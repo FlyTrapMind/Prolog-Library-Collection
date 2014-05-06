@@ -39,10 +39,11 @@ including dedicated support for pairs, quadruples, and triples.
 @version 2014/03
 */
 
-:- use_module(dcg(dcg_meta)).
-:- use_module(generics(pair_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
+
+:- use_module(dcg(dcg_meta)).
+:- use_module(generics(pair_ext)).
 :- use_module(pl_web(html_pl_term)).
 
 :- meta_predicate(html_pair(3,+,+,?,?)).

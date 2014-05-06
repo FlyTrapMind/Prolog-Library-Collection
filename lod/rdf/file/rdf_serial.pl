@@ -166,6 +166,13 @@ rdf_load_any(O1, Input, Pairs):-
   ).
 
 rdf_load_any_1(O1, Input, Pairs):-
+  % Instantiate the RDF graph name.
+  (
+    select_option(graph(Graph), O1, O2), !
+  ;
+    O2 = O1
+  ),
+  
   findall(
     Base-Graph,
     (
@@ -173,7 +180,7 @@ rdf_load_any_1(O1, Input, Pairs):-
       call_cleanup(
         (
           location_base(Location, Base),
-          load_stream_(Stream, Location, Base, [graph(Graph)|O1])
+          load_stream_(Stream, Location, Base, [graph(Graph)|O2])
         ),
         close(Stream)
       ),

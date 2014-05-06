@@ -65,11 +65,12 @@ Predicates used for parsing and checking value-type conformance.
 @version 2013/01, 2013/08, 2014/01, 2014/03-2014/04
 */
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(boolean_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
+
+:- use_module(generics(atom_ext)).
+:- use_module(generics(boolean_ext)).
 
 
 
