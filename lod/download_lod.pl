@@ -122,7 +122,8 @@ download_lod_authority(DataDir, _-Urls):-
 process_lod_files(DataDir):-
   % Take another LOD input from the pool.
   pick_input(Url), !,
-
+  store_triple(Url2, rdf:type, ap:'LOD-URL'),
+  
   % Start message.
   print_message(informational, lod_download_start(Url)),
 
@@ -337,7 +338,6 @@ store_location_properties(Url1, Location, Url2):-
   ;
     Url2 = Url1
   ),
-  store_triple(Url2, rdf:type, ap:'LOD-URL'),
   store_triple(Url2, ap:content_type,
       literal(type(xsd:string,Location.get(content_type)))),
   store_triple(Url2, ap:content_length,
