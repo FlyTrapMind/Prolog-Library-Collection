@@ -122,7 +122,7 @@ download_lod_authority(DataDir, _-Urls):-
 process_lod_files(DataDir):-
   % Take another LOD input from the pool.
   pick_input(Url), !,
-  store_triple(Url2, rdf:type, ap:'LOD-URL'),
+  store_triple(Url, rdf:type, ap:'LOD-URL'),
   
   % Start message.
   print_message(informational, lod_download_start(Url)),
