@@ -166,9 +166,6 @@ start_server(Port, ServerGoal):-
 
   % INFO
   print_message(informational, server_ext(started(PortUsed))).
-prolog:message(server_ext(started(Port))) -->
-  {setting(http:prefix, Prefix)},
-  ['You can access the server at http://localhost:~w/~w'-[Port,Prefix]].
 
 
 %! start_server_on_next_port(
@@ -203,4 +200,12 @@ start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed):-
 % by trying out the lowest port number.
 start_server_on_next_port(_Port, NumberOfWorkers, ServerGoal, PortUsed):-
   start_server_on_next_port(1000, NumberOfWorkers, ServerGoal, PortUsed).
+
+
+
+% MESSAGES
+
+prolog:message(server_ext(started(Port))) -->
+  {setting(http:prefix, Prefix)},
+  ['You can access the server at http://localhost:~w/~w'-[Port,Prefix]].
 
