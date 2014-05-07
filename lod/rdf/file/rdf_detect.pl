@@ -62,9 +62,12 @@ turtle_like(Format, Options) -->
   "BASE", blank, !,
   turtle_or_trig(Format, Options).
 turtle_like(Format, Options) -->
-  iriref, 'nt_whites+', iriref, 'nt_whites+', nt_object,
+  iriref, 'nt_whites+', iriref_pred, 'nt_whites+', nt_object,
   'nt_whites+',
   (   "."
+  ->  nt_end,
+      nt_turtle_like(Format, Options)
+  ;   ";"
   ->  nt_end,
       nt_turtle_like(Format, Options)
   ;   iriref, nt_end
@@ -119,6 +122,9 @@ nt_turtle_like(ntriples).
 nt_turtle_like(nquads).
 
 iriref --> "<", iri_codes, ">".
+
+iriref_pred --> `a`.
+iriref_pred --> iriref.
 
 nt_object --> iriref, !.
 nt_object -->
@@ -196,6 +202,8 @@ string_code --> [_].
 'nt_whites*' --> nt_white, 'nt_whites*'.
 'nt_whites*' --> [].
 
+nt_white --> [10], !.
+nt_white --> [13], !.
 nt_white --> white, !.
 nt_white, " " --> "#", string(_), ( eol1 ; eos ), !.
 

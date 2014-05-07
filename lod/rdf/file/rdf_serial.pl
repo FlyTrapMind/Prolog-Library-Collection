@@ -119,6 +119,7 @@ rdf_load_any(O1, Input):-
 %
 % The following options are supported:
 %   * =|format(+Format:oneof([ntriples,turtle,xml]))|=
+%   * =|graph(+Graph:atom)|=
 %   * =|void(+LoadVoid:boolean)|=
 
 % Loads multiple inputs.
