@@ -124,7 +124,7 @@ rdf_literal(S, P, LexicalForm, Datatype, LangTag, G):-
 % Typed literals.
 rdf_literal(S, P, LexicalForm, Datatype, LangTag, G):-
   var(LangTag),
-  nonvar(Datatype), !,
+  nonvar(Datatype),
   rdf(S, P, literal(type(Datatype,LexicalForm)), G).
 % Simple literals.
 rdf_literal(S, P, LexicalForm, Datatype, LangTag, G):-

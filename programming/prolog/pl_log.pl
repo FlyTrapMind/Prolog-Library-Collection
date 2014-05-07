@@ -77,6 +77,8 @@ write_canonical_blobs(Stream, Term):-
 % This is required for error messages that may hold streams
 % and other handles to non-readable objects.
 
+replace_blobs(NIL, NIL):-
+  NIL == [], !.
 replace_blobs(Blob, Atom):-
   blob(Blob, Type), Type \== text, !,
   format(atom(Atom), '~p', [Blob]).
