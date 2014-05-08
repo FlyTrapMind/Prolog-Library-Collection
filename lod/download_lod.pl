@@ -47,8 +47,6 @@
 
 :- dynamic(finished_lod_url/1).
 
-:- meta_predicate(lod_messages(+,+,0)).
-
 
 
 download_lod(Iris):-
@@ -136,15 +134,16 @@ download_lod_authority(DataDir, _-Urls):-
 process_lod_files(DataDir):-
   % Take another LOD input from the pool.
   pick_input(Url), !,
-  lod_messages(
-    _,
-    Url,
-    process_lod_file(Url, DataDir)
+  store_triple(Url, rdf:type, ap:'LOD-URL'),
+  
+  run_collect_messages(
+    process_lod_file(Url, DataDir),
+    Status,
+    Messages
   ),
-
-  % Write all collected 'triples'.
-  write_finished_lod_url(Url),
-
+  log_status(Url, Status),
+  maplist(log_message(Url), Messages),
+  
   process_lod_files(DataDir).
 % No more inputs to pick.
 process_lod_files(_).
@@ -152,57 +151,54 @@ process_lod_files(_).
 
 %! process_lod_file(+Url:url, +DataDirectory:or([atom,compound])) is det.
 
-process_lod_file(Url1, DataDir):-
-  store_triple(Url1, rdf:type, ap:'LOD-URL'),
-  print_message(informational, lod_download_start(false,Url1,X1)),
-
+process_lod_file(Url0, DataDir):-
   % NON-DETERMINISTIC for multiple entries in one archive stream.
-  unpack(Url1, Read, Location),
-  store_location_properties(Url1, X1, Location, Url2, X2),
-  store_stream_properties(Url2, Read),
-
+  unpack(Url0, Read, Location),
+  
+  store_location_properties(Url0, Location, Url),
+  store_stream_properties(Url, Read),
+  
+  print_message(informational, lod_download_start(X,Url)),
+  
   % Make sure the remote directory exists.
-  url_flat_directory(DataDir, Url2, UrlDir),
+  url_flat_directory(DataDir, Url, UrlDir),
   make_remote_directory_path(UrlDir),
   % Clear any previous, incomplete results.
   clear_remote_directory(UrlDir),
-
-  (
-    X1 == X2
-  ->
-    Indent = false
-  ;
-    Indent = true
-  ),
-
+  
   % Process individual RDF files in a separate RDF transaction and snapshot.
-  lod_messages(
-    X2,
-    Url2,
+  run_collect_messages(
     call_cleanup(
       rdf_transaction(
-        process_rdf_file(Indent, Url2, Read, UrlDir, Location),
+        process_rdf_file(Url, Read, UrlDir, Location),
         _,
         [snapshot(true)]
       ),
       close(Read)
-    )
+    ),
+    Status,
+    Messages
   ),
-
+  log_status(Url, Status),
+  maplist(log_message(Url), Messages),
+  print_message(informational, lod_downloaded_file(X,Status,Messages)),
+  
+  % Write all collected 'triples'.
+  write_finished_lod_url(Url),
+  
   % Unpack the next entry by backtracking.
   fail.
 process_lod_file(_, _).
 
 
 %! process_rdf_file(
-%!   +Indent:boolean,
 %!   +Url:url,
 %!   +Read:stream,
 %!   +UrlDirectory:atom,
 %!   +Location:dict
 %! ) is det.
 
-process_rdf_file(Indent, Url, Read, UrlDir, Location):-
+process_rdf_file(Url, Read, UrlDir, Location):-
   % Guess the serialization format that is used in the given stream.
   rdf_guess_format([], Read, Location, Base, Format),
   store_triple(Url, ap:serialization_format, literal(type(xsd:string,Format))),
@@ -214,7 +210,9 @@ process_rdf_file(Indent, Url, Read, UrlDir, Location):-
     stream(Read),
     [base_uri(Base),format(Format),register_namespaces(false)]
   ),
-  % Count the number of triples including duplicates.
+
+  % Count the number of triples including duplicates
+  % (in between loading and saving the data).
   aggregate_all(
     count,
     rdf(_, _, _, _),
@@ -230,43 +228,28 @@ process_rdf_file(Indent, Url, Read, UrlDir, Location):-
   ),
 
   % Asssert some statistics for inclusion in the messages file.
-  assert_number_of_triples(Indent, Url, Path, TIn, TOut),
+  assert_number_of_triples(Url, Path, TIn, TOut),
   store_void_triples,
 
   % Make sure any VoID datadumps are considered as well.
-  register_void_datasets(Indent).
+  register_void_datasets.
 
 
 
 % HELPERS
 
 %! assert_number_of_triples(
-%!   +Indent:boolean,
 %!   +Url:url,
 %!   +Path:atom,
 %!   +ReadTriples:nonneg,
 %!   +WrittenTriples:nonneg
 %! ) is det.
 
-assert_number_of_triples(Indent, Url, Path, TIn, TOut):-
+assert_number_of_triples(Url, Path, TIn, TOut):-
   store_triple(Url, ap:triples, literal(type(xsd:integer,TOut))),
   TDup is TIn - TOut,
   store_triple(Url, ap:duplicates, literal(type(xsd:integer,TDup))),
-  print_message(informational, rdf_ntriples_written(Indent,Path,TDup,TOut)).
-
-
-
-%! lod_messages(+X:nonneg, +Url:url, :Goal) is det.
-
-lod_messages(X, Url, Goal):-
-  run_collect_messages(
-    Goal,
-    Status,
-    Messages
-  ),
-  log_status(Url, Status),
-  maplist(log_message(Url), Messages),
-  print_message(informational, lod_downloaded_file(X,Status,Messages)).
+  print_message(informational, rdf_ntriples_written(Path,TDup,TOut)).
 
 
 %! lod_resource_path(
@@ -330,9 +313,9 @@ register_input(Url):-
   assert(seen_dataset(Url)).
 
 
-%! register_void_datasets(+Indent:boolean) is det.
+%! register_void_datasets is det.
 
-register_void_datasets(Indent):-
+register_void_datasets:-
   % Add all VoID datadumps to the TODO list.
   aggregate_all(
     set(Url),
@@ -342,7 +325,7 @@ register_void_datasets(Indent):-
     ),
     Urls
   ),
-  print_message(informational, found_void_lod_urls(Indent,Urls)),
+  print_message(informational, found_void_lod_urls(Urls)),
   forall(
     member(Url, Urls),
     register_input(Url)
@@ -366,7 +349,7 @@ run_goals_in_threads(_, Goals):-
 %!   -X2:nonneg
 %! ) is det.
 
-store_location_properties(Url1, X1, Location, Url2, X2):-
+store_location_properties(Url1, Location, Url2):-
   (
     Data1 = Location.get(data),
     exclude(filter, Data1, Data2),
@@ -379,12 +362,9 @@ store_location_properties(Url1, X1, Location, Url2, X2):-
         literal(type(xsd:string,ArchiveEntry.get(format)))),
     store_triple(Url2, ap:size,
         literal(type(xsd:integer,ArchiveEntry.get(size)))),
-
-    store_triple(Url2, rdf:type, ap:'LOD-URL'),
-    print_message(informational, lod_download_start(true,Url2,X2))
+    store_triple(Url2, rdf:type, ap:'LOD-URL')
   ;
-    Url2 = Url1,
-    X2 = X1
+    Url2 = Url1
   ),
   store_triple(Url2, ap:http_content_type,
       literal(type(xsd:string,Location.get(content_type)))),
@@ -491,26 +471,20 @@ write_finished_lod_url(Url):-
 
 :- multifile(prolog:message/1).
 
-prolog:message(lod_download_start(Indent,Url,X)) -->
-  indent(Indent),
+prolog:message(lod_download_start(X,Url)) -->
   {flag(number_of_processed_files, X, X + 1)},
   ['[START ~D] [~w]'-[X,Url]].
 prolog:message(lod_downloaded_file(X,Status,Messages)) -->
-  indent_x(X),
   prolog_status(Status),
   prolog_messages(Messages),
-  ['[DONE'],
-    number_yn(X),
-  [']'],
+  ['[DONE ~D]'-[X]],
   [nl,nl].
-prolog:message(found_void_lod_urls(_,[])) --> !.
-prolog:message(found_void_lod_urls(Indent,[H|T])) -->
-  indent(Indent),
+prolog:message(found_void_lod_urls([])) --> !.
+prolog:message(found_void_lod_urls([H|T])) -->
   ['[VoID] Found: ',H,nl],
-  prolog:message(found_void_lod_urls(Indent,T)).
+  prolog:message(found_void_lod_urls(T)).
 
-prolog:message(rdf_ntriples_written(Indent,File,TDup,TOut)) -->
-  indent(Indent),
+prolog:message(rdf_ntriples_written(File,TDup,TOut)) -->
   ['['],
     number_of_triples_written(TOut),
     number_of_duplicates_written(TDup),
@@ -518,12 +492,6 @@ prolog:message(rdf_ntriples_written(Indent,File,TDup,TOut)) -->
   ['] ['],
     remote_file(File),
   [']'].
-
-indent(false) --> !, [].
-indent(true) --> ['    '].
-
-indent_x(X) --> {var(X)}, !, [].
-indent_x(_) --> indent(true).
 
 number_of_duplicates_written(0) --> !, [].
 number_of_duplicates_written(T) --> [' (~D dups)'-[T]].
