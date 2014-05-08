@@ -138,6 +138,8 @@ nt_object -->
   ->  iriref
   ;   "@"
   ->  langtag
+  ;
+    {true}
   ).
 
 iri_codes --> iri_code, !, iri_codes.
@@ -284,7 +286,7 @@ xml_doctype(Stream, Dialect, DocType, Attributes) :-
       make_parser(Stream, Parser, State),
       sgml_parse(Parser,
            [ source(Stream),
-             max_errors(1),
+             max_errors(100),
              syntax_errors(quiet),
              call(begin, on_begin),
              call(cdata, on_cdata)

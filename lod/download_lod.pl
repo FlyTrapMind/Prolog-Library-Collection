@@ -16,16 +16,14 @@
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
-:- use_module(library(option)).
+:- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(thread)).
-:- use_module(library(url)).
 
 :- use_module(generics(uri_ext)).
 :- use_module(os(remote_ext)).
 :- use_module(os(unpack)).
-:- use_module(pl(pl_clas)).
 :- use_module(pl(pl_log)).
 :- use_module(rdf_file(rdf_ntriples_write)).
 :- use_module(rdf_file(rdf_serial)).
@@ -135,7 +133,7 @@ process_lod_files(DataDir):-
   % Take another LOD input from the pool.
   pick_input(Url), !,
   store_triple(Url, rdf:type, ap:'LOD-URL'),
-  
+
   run_collect_messages(
     process_lod_file(Url, DataDir),
     Status,
@@ -143,7 +141,7 @@ process_lod_files(DataDir):-
   ),
   log_status(Url, Status),
   maplist(log_message(Url), Messages),
-  
+
   process_lod_files(DataDir).
 % No more inputs to pick.
 process_lod_files(_).
@@ -157,15 +155,15 @@ process_lod_file(Url0, DataDir):-
   
   store_location_properties(Url0, Location, Url),
   store_stream_properties(Url, Read),
-  
+
   print_message(informational, lod_download_start(X,Url)),
-  
+
   % Make sure the remote directory exists.
   url_flat_directory(DataDir, Url, UrlDir),
   make_remote_directory_path(UrlDir),
   % Clear any previous, incomplete results.
   clear_remote_directory(UrlDir),
-  
+
   % Process individual RDF files in a separate RDF transaction and snapshot.
   run_collect_messages(
     call_cleanup(
@@ -182,10 +180,10 @@ process_lod_file(Url0, DataDir):-
   log_status(Url, Status),
   maplist(log_message(Url), Messages),
   print_message(informational, lod_downloaded_file(X,Status,Messages)),
-  
+
   % Write all collected 'triples'.
   write_finished_lod_url(Url),
-  
+
   % Unpack the next entry by backtracking.
   fail.
 process_lod_file(_, _).
@@ -210,7 +208,6 @@ process_rdf_file(Url, Read, UrlDir, Location):-
     stream(Read),
     [base_uri(Base),format(Format),register_namespaces(false)]
   ),
-
   % Count the number of triples including duplicates
   % (in between loading and saving the data).
   aggregate_all(
@@ -353,7 +350,7 @@ store_location_properties(Url1, Location, Url2):-
   (
     Data1 = Location.get(data),
     exclude(filter, Data1, Data2),
-    Data2 = [ArchiveEntry]
+    last(Data2, ArchiveEntry)
   ->
     Name = ArchiveEntry.get(name),
     atomic_list_concat([Url1,Name], '/', Url2),
