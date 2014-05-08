@@ -1,6 +1,11 @@
-:- module(rdf_detect,
-    [ rdf_guess_format/3    % +Stream, -ContentType, +Options
-    ]).
+:- module(
+  rdf_detect,
+  [
+    rdf_guess_format/3 % +Stream:stream
+                       % -ContentType:atom
+                       % +Options:list(nvpair)
+  ]
+).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(sgml)).
 :- use_module(library(memfile)).
