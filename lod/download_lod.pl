@@ -154,7 +154,6 @@ process_lod_file(Url0, DataDir):-
   unpack(Url0, Read, Location),
   
   store_location_properties(Url0, Location, Url),
-  store_stream_properties(Url, Read),
 
   print_message(informational, lod_download_start(X,Url)),
 
@@ -172,7 +171,10 @@ process_lod_file(Url0, DataDir):-
         _,
         [snapshot(true)]
       ),
-      close(Read)
+      (
+        store_stream_properties(Url, Read),
+        close(Read)
+      )
     ),
     Status,
     Messages
