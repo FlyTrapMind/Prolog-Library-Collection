@@ -2,6 +2,8 @@
   download_lod,
   [
     download_lod/1, % +URLs:or([iri,list(iri)])
+    download_lod/2, % +URLs:or([iri,list(iri)])
+                    % -Graph:atom
     download_lod/3 % +Directory:or([atom,compound])
                    % +URLs:or([iri,list(iri)])
                    % +NumberOfThreads:nonneg
@@ -50,6 +52,20 @@
 download_lod(Iris):-
   absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
   download_lod(DataDir, Iris, 1).
+
+download_lod(Iri, messages):-
+  absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
+  download_lod(DataDir, Iri, 1),
+  absolute_file_name(data('Output/messages.log'), FromFile, [access(read)]),
+  setup_call_cleanup(
+    ensure_loaded(FromFile),
+    forall(
+      rdf_triple(S, P, O),
+      rdf_assert(S, P, O, messages)
+    ),
+    unload_file(FromFile)
+  ),
+  delete_file(FromFile).
 
 %! download_lod(
 %!   +DataDirectory:atom,
@@ -340,13 +356,7 @@ run_goals_in_threads(_, Goals):-
   maplist(call, Goals).
 
 
-%! store_location_properties(
-%!   +Url1:url,
-%!   +X1:nonneg,
-%!   +Location:dict,
-%!   -Url2:url,
-%!   -X2:nonneg
-%! ) is det.
+%! store_location_properties(+Url1:url, +Location:dict, -Url2:url) is det.
 
 store_location_properties(Url1, Location, Url2):-
   (
