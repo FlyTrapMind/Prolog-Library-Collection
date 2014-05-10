@@ -142,6 +142,7 @@ rdf_write_ntriple(Write, S, P, O, BNodePrefix):-
 
 % Typed literal.
 rdf_write_object(Write, literal(type(Datatype,Value1)), _):- !,
+  % XSD XML literal.
   (
     rdf_equal(Datatype, rdf:'XMLLiteral')
   ->
@@ -149,7 +150,17 @@ rdf_write_object(Write, literal(type(Datatype,Value1)), _):- !,
   ;
     Value2 = Value1
   ),
-  turtle:turtle_write_quoted_string(Write, Value2),
+
+  % Convert numbers to atom.
+  (
+    number(Value2)
+  ->
+    atom_number(Value3, Value2)
+  ;
+    Value3 = Value2
+  ),
+
+  turtle:turtle_write_quoted_string(Write, Value3),
   write(Write, '^^'),
   rdf_write_predicate(Write, Datatype).
 % Language-tagged string.
