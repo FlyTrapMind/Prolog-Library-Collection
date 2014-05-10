@@ -200,7 +200,7 @@ process_lod_file(Url0, DataDir):-
   print_message(informational, lod_downloaded_file(X,Status,Messages)),
 
   % Write all collected 'triples'.
-  write_finished_lod_url(Url),
+  write_finished_lod_url(Url0),
 
   % Unpack the next entry by backtracking.
   fail.
