@@ -43,9 +43,15 @@
 
 :- thread_local(todo_dataset/1).
 
-%! finished_lod_url(?Dataset:atom) is nondet.
+%! failed(?Url:url) is nondet.
 
-:- dynamic(finished_lod_url/1).
+:- dynamic(failed/1).
+
+%! finished(?Url:url) is nondet.
+
+:- dynamic(finished/1).
+
+:- dynamic(rdf_triple/3).
 
 
 
@@ -76,8 +82,9 @@ download_lod(Iri, messages):-
 download_lod(DataDir, Iris, N):-
   is_list(Iris), !,
   flag(number_of_processed_files, _, 0),
+  flag(number_of_skipped_files, _, 0),
   flag(number_of_triples_written, _, 0),
-  read_finished_lod_urls(DataDir),
+  read_lod_urls(DataDir),
 
   % Assert the data directory.
   retractall(data_directory(_)),
@@ -88,11 +95,12 @@ download_lod(DataDir, Iris, N):-
   % multiple simultaneous requests.
 
   maplist(uri_iri, Uris1, Iris),
-  exclude(finished_lod_url, Uris1, Uris2),
+  exclude(failed, Uris1, Uris2),
+  exclude(finished, Uris2, Uris3),
   findall(
     Authority-Uri,
     (
-      member(Uri, Uris2),
+      member(Uri, Uris3),
       uri_components(Uri, Components),
       uri_data(authority, Components, Authority)
     ),
@@ -151,24 +159,35 @@ process_lod_files(DataDir):-
   store_triple(Url, rdf:type, ap:'LOD-URL'),
 
   run_collect_messages(
-    process_lod_file(Url, DataDir),
+    process_lod_file(Url, DataDir, OldStatus),
     Status,
     Messages
   ),
   log_status(Url, Status),
   maplist(log_message(Url), Messages),
 
+  print_message(
+    informational,
+    lod_skipped_file(Url,OldStatus,Status,Messages)
+  ),
+
+  write_lod_url(finished, Url),
+
   process_lod_files(DataDir).
 % No more inputs to pick.
 process_lod_files(_).
 
 
-%! process_lod_file(+Url:url, +DataDirectory:or([atom,compound])) is det.
+%! process_lod_file(
+%!   +Url:url,
+%!   +DataDirectory:or([atom,compound]),
+%!   -Status:oneof([false,true])
+%! ) is det.
 
-process_lod_file(Url0, DataDir):-
+process_lod_file(Url0, DataDir, Status):-
   % NON-DETERMINISTIC for multiple entries in one archive stream.
   unpack(Url0, Read, Location),
-  
+
   store_location_properties(Url0, Location, Url),
 
   print_message(informational, lod_download_start(X,Url)),
@@ -195,16 +214,19 @@ process_lod_file(Url0, DataDir):-
     Status,
     Messages
   ),
-  log_status(Url, Status),
-  maplist(log_message(Url), Messages),
-  print_message(informational, lod_downloaded_file(X,Status,Messages)),
-
-  % Write all collected 'triples'.
-  write_finished_lod_url(Url0),
-
-  % Unpack the next entry by backtracking.
-  fail.
-process_lod_file(_, _).
+  (
+    Status == false
+  -> !,
+    true
+  ;
+    log_status(Url, Status),
+    maplist(log_message(Url), Messages),
+    print_message(informational, lod_downloaded_file(Url,X,Status,Messages)),
+    
+    % Unpack the next entry by backtracking.
+    fail
+  ).
+process_lod_file(_, _, true).
 
 
 %! process_rdf_file(
@@ -267,6 +289,25 @@ assert_number_of_triples(Url, Path, TIn, TOut):-
   print_message(informational, rdf_ntriples_written(Path,TDup,TOut)).
 
 
+%! read_lod_urls(+DataDirectory:atom) is det.
+
+read_lod_urls(DataDir):-
+  read_lod_urls(failed, DataDir),
+  read_lod_urls(finished, DataDir).
+
+
+%! read_lod_urls(+Kind:oneof([failed,finished]), +DataDirectory:atom) is det.
+
+read_lod_urls(Kind, DataDir):-
+  absolute_file_name(
+    Kind,
+    File,
+    [access(read),file_errors(fail),file_type(log),relative_to(DataDir)]
+  ), !,
+  ensure_loaded(File).
+read_lod_urls(_, _).
+
+
 %! lod_resource_path(
 %!   +DataDirectory:compound,
 %!   +Dataset:iri,
@@ -306,19 +347,6 @@ log_status(Dataset, exception(Error)):-
 
 pick_input(Url):-
   retract(todo_dataset(Url)).
-
-
-%! read_finished_lod_urls(+DataDirectory:atom) is det.
-
-read_finished_lod_urls(DataDir):-
-  directory_file_path(DataDir, 'finished_lod_urls.log', File),
-  (
-    catch(read_file_to_terms(File, Terms, []), _, fail)
-  ->
-    maplist(assert, Terms)
-  ;
-    true
-  ).
 
 
 %! register_input(+Url:url) is det.
@@ -367,20 +395,20 @@ store_location_properties(Url1, Location, Url2):-
     Name = ArchiveEntry.get(name),
     atomic_list_concat([Url1,Name], '/', Url2),
     store_triple(Url1, ap:archive_contains, Url2),
-    store_triple(Url2, ap:format,
-        literal(type(xsd:string,ArchiveEntry.get(format)))),
-    store_triple(Url2, ap:size,
-        literal(type(xsd:integer,ArchiveEntry.get(size)))),
+    ignore(store_triple(Url2, ap:format,
+        literal(type(xsd:string,ArchiveEntry.get(format))))),
+    ignore(store_triple(Url2, ap:size,
+        literal(type(xsd:integer,ArchiveEntry.get(size))))),
     store_triple(Url2, rdf:type, ap:'LOD-URL')
   ;
     Url2 = Url1
   ),
-  store_triple(Url2, ap:http_content_type,
-      literal(type(xsd:string,Location.get(content_type)))),
-  store_triple(Url2, ap:http_content_length,
-      literal(type(xsd:integer,Location.get(content_length)))),
-  store_triple(Url2, ap:http_last_modified,
-      literal(type(xsd:string,Location.get(last_modified)))),
+  ignore(store_triple(Url2, ap:http_content_type,
+      literal(type(xsd:string,Location.get(content_type))))),
+  ignore(store_triple(Url2, ap:http_content_length,
+      literal(type(xsd:integer,Location.get(content_length))))),
+  ignore(store_triple(Url2, ap:http_last_modified,
+      literal(type(xsd:string,Location.get(last_modified))))),
   store_triple(Url2, ap:url, literal(type(xsd:string,Location.get(url)))),
 
   (
@@ -454,18 +482,23 @@ store_void_triples:-
   ).
 
 
-%! write_finished_lod_url(+Dataset:atom) is det.
+%! write_lod_url(+Kind:oneof([failed,finished]), +Dataset:atom) is det.
 
-write_finished_lod_url(Url):-
+write_lod_url(Kind, Url):-
   with_mutex(
-    finished,
+    Kind,
     (
       data_directory(DataDir),
-      directory_file_path(DataDir, 'finished_lod_urls.log', File),
+      absolute_file_name(
+        Kind,
+        File,
+        [access(write),file_type(log),relative_to(DataDir)]
+      ),
       setup_call_cleanup(
         open(File, append, Stream),
         (
-          writeq(Stream, finished_lod_url(Url)),
+          Term =.. [Kind,Url],
+          writeq(Stream, Term),
           write(Stream, '.'),
           nl(Stream)
         ),
@@ -480,18 +513,29 @@ write_finished_lod_url(Url):-
 
 :- multifile(prolog:message/1).
 
-prolog:message(lod_download_start(X,Url)) -->
-  {flag(number_of_processed_files, X, X + 1)},
-  ['[START ~D] [~w]'-[X,Url]].
-prolog:message(lod_downloaded_file(X,Status,Messages)) -->
-  prolog_status(Status),
-  prolog_messages(Messages),
-  ['[DONE ~D]'-[X]],
-  [nl,nl].
 prolog:message(found_void_lod_urls([])) --> !.
 prolog:message(found_void_lod_urls([H|T])) -->
   ['[VoID] Found: ',H,nl],
   prolog:message(found_void_lod_urls(T)).
+
+prolog:message(lod_download_start(X,Url)) -->
+  {flag(number_of_processed_files, X, X + 1)},
+  ['[START ~D] [~w]'-[X,Url]].
+
+prolog:message(lod_downloaded_file(Url,X,Status,Messages)) -->
+  prolog_status(Status, Url),
+  prolog_messages(Messages),
+  ['[DONE ~D]'-[X]],
+  [nl,nl].
+
+prolog:message(lod_skipped_file(_,true,_,_)) --> !, [].
+prolog:message(lod_skipped_file(Url,false,_,_)) --> !,
+  {write_lod_url(failed, Url)},
+  [].
+prolog:message(lod_skipped_file(Url,_,Status,Messages)) -->
+  {flag(number_of_skipped_files, X, X + 1)},
+  prolog_status(Status, Url),
+  prolog_messages(Messages).
 
 prolog:message(rdf_ntriples_written(File,TDup,TOut)) -->
   ['['],
@@ -511,9 +555,11 @@ number_of_triples_written(T) --> ['+~D'-[T]].
 number_yn(X) --> {var(X)}, !, [].
 number_yn(X) --> [' ~D'-[X]].
 
-prolog_status(false) --> !, [].
-prolog_status(true) --> !, [].
-prolog_status(exception(Error)) -->
+prolog_status(false, Url) --> !,
+  {write_lod_url(failed, Url)},
+  [].
+prolog_status(true, _) --> !, [].
+prolog_status(exception(Error), _) -->
   {print_message(error, Error)}.
 
 prolog_messages([]) --> !, [].
