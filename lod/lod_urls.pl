@@ -13,8 +13,6 @@
 
 :- dynamic(lod_url/1).
 
-lod_url('http://download.bio2rdf.org/current/hgnc/hgnc.tab.nt.gz').
-
 %lod_url('ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/rdf/taxonomy.rdf.gz').
 %lod_url('ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/rdf/uniprot.rdf.gz').
 lod_url('http:// http://commondatastorage.googleapis.com/m-lab/').

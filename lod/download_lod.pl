@@ -534,6 +534,7 @@ prolog:message(lod_skipped_file(Url,false,_,_)) --> !,
   [].
 prolog:message(lod_skipped_file(Url,_,Status,Messages)) -->
   {flag(number_of_skipped_files, X, X + 1)},
+  ['[SKIP ~D] '-[X],nl],
   prolog_status(Status, Url),
   prolog_messages(Messages).
 
