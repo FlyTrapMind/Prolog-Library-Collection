@@ -103,6 +103,7 @@ sparql_register_remote_domain(SparqlRemote, Domain):-
 
 % DBpedia
 :- sparql_register_remote(dbpedia, 'dbpedia.org', default, '/sparql').
+:- sparql_register_remote('live.dbpedia', 'live.dbpedia.org', default, '/sparql').
 :- lod_register_header(dbpedia, 'Accept', 'application/rdf+xml').
 :- lod_register_location(dbpedia, 'http://dbpedia.org/resource/').
 
