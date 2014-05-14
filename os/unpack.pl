@@ -1,6 +1,6 @@
 :- module(unpack,
-	  [ unpack/3			% +Spec, -Stream, -Location
-	  ]).
+    [ unpack/3      % +Spec, -Stream, -Location
+    ]).
 :- use_module(library(http/http_open)).
 :- use_module(library(archive)).
 :- use_module(library(uri)).
@@ -12,157 +12,170 @@
 /** <module> Unpack encoded and archived material
 */
 
-%%	unpack(+Spec, -Stream, -Location) is nondet.
+%%  unpack(+Spec, -Stream, -Location) is nondet.
 %
-%	Provide access to plain data elements in   a  stream that may be
-%	compressed and/or contain (nested) archives.   For  each element
-%	found, it succeeds with  Stream  unified   to  a  binary  stream
-%	associated with the data  and  Location   is  a  dict containing
-%	information about the  applied  filtering   and  possibly  other
-%	meta-data available about the element.
+%  Provide access to plain data elements in   a  stream that may be
+%  compressed and/or contain (nested) archives.   For  each element
+%  found, it succeeds with  Stream  unified   to  a  binary  stream
+%  associated with the data  and  Location   is  a  dict containing
+%  information about the  applied  filtering   and  possibly  other
+%  meta-data available about the element.
 %
-%	Stream must be closed, but  it  is   not  required  to  read all
-%	content from the stream.  Committing   before  all  elements are
-%	exhausted is allowed and will cause   all allocated resources to
-%	be reclaimed.
+%  Stream must be closed, but  it  is   not  required  to  read all
+%  content from the stream.  Committing   before  all  elements are
+%  exhausted is allowed and will cause   all allocated resources to
+%  be reclaimed.
 %
-%	@arg	Location is a dict.  The tag indicates the type of Spec and
-%		is currently one of =stream=, =file= or =url=. For URLs,
-%		the keys =content_type=, =content_length= and
-%		=last_modified= may be available.
+%  @arg  Location is a dict.  The tag indicates the type of Spec and
+%    is currently one of =stream=, =file= or =url=. For URLs,
+%    the keys =content_type=, =content_length= and
+%    =last_modified= may be available.
 %
-%		The dict contains a key =data=, holding a list that
-%		describes the decoding pipeline used for the data
-%		element. Elements of this list are:
+%    The dict contains a key =data=, holding a list that
+%    describes the decoding pipeline used for the data
+%    element. Elements of this list are:
 %
-%		  - filter(Filter)
-%		  The indicated content filter was applied.
-%		  - archive_entry{}, where the keys provide all
-%		  solutions of archive_header_property/2 and the
-%		  key =name= provides the name of the archive entry.
+%      - filter(Filter)
+%      The indicated content filter was applied.
+%      - archive_entry{}, where the keys provide all
+%      solutions of archive_header_property/2 and the
+%      key =name= provides the name of the archive entry.
 %
-%	@arg	Spec is a stream, URL or file name. If Spec is a stream,
-%		it is _not_ closed after processing.
+%  @arg  Spec is a stream, URL or file name. If Spec is a stream,
+%    it is _not_ closed after processing.
 
 unpack(Spec, Stream, Location) :-
-	open_input(Spec, In, Meta, CloseStream),
-	Location = Meta.put(data, Data),
-	content(In, Stream, Data, CloseStream).
+  open_input(Spec, In, Meta, CloseStream),
+  Location = Meta.put(data, Data),
+  content(In, Stream, Data, CloseStream).
 
-%%	open_input(+Spec, -Stream, -MetaData, -Close) is semidet.
+%%  open_input(+Spec, -Stream, -MetaData, -Close) is semidet.
 
 open_input(stream(In), In, stream{stream:In}, false) :- !.
 open_input(In, In, stream{stream:In}, false) :-
-	is_stream(In), !.
+  is_stream(In), !.
 open_input(URL, In, Meta, true) :-
-	uri_components(URL, Components),
-	uri_data(scheme, Components, Scheme),
-	nonvar(Scheme),
+  uri_components(URL, Components),
+  uri_data(scheme, Components, Scheme),
+  nonvar(Scheme),
   Scheme \== file, !,
-	open_url(Scheme, URL, In, Meta).
+  open_url(Scheme, URL, In, Meta).
 open_input(URL, In, file{path:File}, true) :-
-	uri_file_name(URL, File), !,
-	open(File, In, [type(binary)]).
+  uri_file_name(URL, File), !,
+  open(File, In, [type(binary)]).
 open_input(Spec, In, file{path:Path}, true) :-
-	compound(Spec), !,
-	absolute_file_name(Spec, Path, [access(read)]),
-	open(Path, read, In, [type(binary)]).
+  compound(Spec), !,
+  absolute_file_name(Spec, Path, [access(read)]),
+  open(Path, read, In, [type(binary)]).
 open_input(File, In, file{path:File}, true) :-
-	exists_file(File), !,
-	open(File, read, In, [type(binary)]).
+  exists_file(File), !,
+  open(File, read, In, [type(binary)]).
 open_input(Pattern, In, Location, Close) :-
-	atom(Pattern),
-	expand_file_name(Pattern, Files),
-	Files \== [], Files \== [Pattern], !,
-	member(File, Files),
-	open_input(File, In, Location, Close).
+  atom(Pattern),
+  expand_file_name(Pattern, Files),
+  Files \== [], Files \== [Pattern], !,
+  member(File, Files),
+  open_input(File, In, Location, Close).
 open_input(Input, _, _, _) :-
-	print_message(warning, unpack(cannot_open(Input))),
-	fail.
+  print_message(warning, unpack(cannot_open(Input))),
+  fail.
 
-%%	open_url(+Scheme, +URL, -In, -MetaData) is semidet.
+%%  open_url(+Scheme, +URL, -In, -MetaData) is semidet.
 %
-%	Helper for open_input/4 that deals with URLs
+%  Helper for open_input/4 that deals with URLs
 
 open_url(Scheme, URL, In, Meta) :-
-	http_scheme(Scheme), !,
-	rdf_extra_headers(Extra),
-	http_open(URL, In,
-		  [ header(content_type, ContentType),
-		    header(content_length, ContentLength),
-		    header(last_modified, ModifiedText)
-		  | Extra
-		  ]),
-	url_meta_pairs([ content_type=ContentType,
-			 content_length=ContentLength,
-			 last_modified=ModifiedText
-		       ], Pairs),
-	dict_pairs(Meta, url, [url-URL|Pairs]).
+  http_scheme(Scheme), !,
+  rdf_extra_headers(Extra),
+  http_open(URL, In,
+      [ header(content_type, ContentType),
+        header(content_length, ContentLength),
+        header(last_modified, ModifiedText)
+      | Extra
+      ]),
+  url_meta_pairs([ content_type=ContentType,
+       content_length=ContentLength,
+       last_modified=ModifiedText
+           ], Pairs),
+  dict_pairs(Meta, url, [url-URL|Pairs]).
 
 http_scheme(http).
 http_scheme(https).
 
 url_meta_pairs([], []).
 url_meta_pairs([_=''|T0], T) :- !,
-	url_meta_pairs(T0, T).
+  url_meta_pairs(T0, T).
 url_meta_pairs([content_length=Atom|T0], [content_length-Bytes|T]) :-
-	atom_number(Atom, Bytes), !,
-	url_meta_pairs(T0, T).
+  atom_number(Atom, Bytes), !,
+  url_meta_pairs(T0, T).
 url_meta_pairs([Name=Value|T0], [Name-Value|T]) :- !,
-	url_meta_pairs(T0, T).
+  url_meta_pairs(T0, T).
 
 
 
-%%	content(+Stream, -SubStream, -PipeLine) is nondet.
+%%  content(+Stream, -SubStream, -PipeLine) is nondet.
 %
-%	True when SubStream is a raw content   stream for data in Stream
-%	and PipeLine describes the location of the data.
+%  True when SubStream is a raw content   stream for data in Stream
+%  and PipeLine describes the location of the data.
 %
-%	@arg	PipeLine is a list of applied filters and archive selection
-%		operations.  Elements take the form
+%  @arg  PipeLine is a list of applied filters and archive selection
+%    operations.  Elements take the form
 %
-%		  - filter(Name)
-%		  - archive(Member, Format)
+%      - filter(Name)
+%      - archive(Member, Format)
 
 content(In, Entry, PipeLine, CloseStream) :-
-	content(In, Entry, CloseStream, PipeLine, []).
+  content(In, Entry, CloseStream, PipeLine, []).
 
 content(In, Entry, CloseStream, PipeLine, PipeTail) :-
-	setup_call_cleanup(
-	    archive_open(stream(In), Ar,
-			 [ format(all), format(raw),
-			   close_parent(CloseStream)
-			 ]),
-	    archive_content(Ar, Entry, PipeLine, PipeTail),
-	    archive_close(Ar)).
+  setup_call_cleanup(
+      archive_open(stream(In), Ar,
+       [ format(all), format(raw),
+         close_parent(CloseStream)
+       ]),
+      archive_content(Ar, Entry, PipeLine, PipeTail),
+      archive_close(Ar)).
 
 archive_content(Ar, Entry, PipeLine, PipeTail) :-
-	archive_property(Ar, filter(Filters)),
-	maplist(wrap_filter, Filters, PipeElements),
-	append(PipeElements, RestPipe, PipeLine),
-	repeat,
-	(   archive_next_header(Ar, Name)
-	->  findall(P, archive_header_property(Ar, P), Pl),
-	    dict_create(Pipe, archive_entry, [name(Name)|Pl]),
-	    (   Pipe.filetype == file
-	    ->	archive_open_entry(Ar, Entry0),
-		(   Name == data, Pipe.format == raw
-		->  !, RestPipe = PipeTail,
-		    Entry = Entry0
-		;   RestPipe = [ Pipe | RestPipe1 ],
-		    content(Entry0, Entry, true, RestPipe1, PipeTail)
-		)
-	    ;	fail
-	    )
-	;   !,
-	    fail
-	).
+  archive_property(Ar, filter(Filters)),
+  maplist(wrap_filter, Filters, PipeElements),
+  append(PipeElements, RestPipe, PipeLine),
+  repeat,
+  (
+    archive_next_header(Ar, Name)
+  ->
+    findall(
+      P,
+      archive_header_property(Ar, P),
+      Pl
+    ),
+    dict_create(Pipe, archive_entry, [name(Name)|Pl]),
+    (
+      Pipe.filetype == file
+    ->
+      archive_open_entry(Ar, Entry0),
+      (
+        Name == data,
+        Pipe.format == raw
+      -> !,
+        RestPipe = PipeTail,
+        Entry = Entry0
+      ;
+        RestPipe = [ Pipe | RestPipe1 ],
+        content(Entry0, Entry, true, RestPipe1, PipeTail)
+      )
+    ;
+      fail
+    )
+  ; !,
+    fail
+  ).
 
 wrap_filter(Filter, filter(Filter)).
 
-		 /*******************************
-		 *	    HTTP SUPPORT	*
-		 *******************************/
+     /*******************************
+     *      HTTP SUPPORT  *
+     *******************************/
 
 :- public ssl_verify/5.
 
@@ -222,12 +235,12 @@ ssl_verify(_SSL,
            _Error).
 
 
-		 /*******************************
-		 *	      MESSAGES		*
-		 *******************************/
+     /*******************************
+     *        MESSAGES    *
+     *******************************/
 
 :- multifile
-	prolog:message//1.
+  prolog:message//1.
 
 prolog:message(unpack(cannot_open(Spec))) -->
-	[ 'Unpack: cannot open ~p'-[Spec] ].
+  [ 'Unpack: cannot open ~p'-[Spec] ].

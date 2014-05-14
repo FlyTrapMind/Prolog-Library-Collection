@@ -1,7 +1,13 @@
 :- module(
   rdf_serial,
   [
-    rdf_guess_format/5,
+    location_base/2, % +Location:dict
+                     % -BaseUri:uri
+    rdf_guess_format/5, % +Options:list(nvpair)
+                        % +Stream:stream
+                        % +Location:dict
+                        % -BaseUri:atom
+                        % -Format:atom
     rdf_load_any/2, % +Options:list(nvpair)
                     % +Input
     rdf_load_any/3, % +Options:list(nvpair)
@@ -80,7 +86,13 @@ since most datasets are published in a non-standard way.
 
 
 
-%! rdf_guess_format(+Options, +Stream, +Location, -Base, -Format) is det.
+%! rdf_guess_format(
+%!   +Options:list(nvpair),
+%!   +Stream:stream,
+%!   +Location:dict,
+%!   -Base:atom,
+%!   -Format:atom
+%! ) is det.
 
 rdf_guess_format(O1, Stream, Location, Base, Format):-
   location_base(Location, Base),
@@ -119,6 +131,7 @@ rdf_load_any(O1, Input):-
 %
 % The following options are supported:
 %   * =|format(+Format:oneof([ntriples,turtle,xml]))|=
+%   * =|graph(+Graph:atom)|=
 %   * =|void(+LoadVoid:boolean)|=
 
 % Loads multiple inputs.
@@ -166,6 +179,13 @@ rdf_load_any(O1, Input, Pairs):-
   ).
 
 rdf_load_any_1(O1, Input, Pairs):-
+  % Instantiate the RDF graph name.
+  (
+    select_option(graph(Graph), O1, O2), !
+  ;
+    O2 = O1
+  ),
+  
   findall(
     Base-Graph,
     (
@@ -173,7 +193,7 @@ rdf_load_any_1(O1, Input, Pairs):-
       call_cleanup(
         (
           location_base(Location, Base),
-          load_stream_(Stream, Location, Base, [graph(Graph)|O1])
+          load_stream_(Stream, Location, Base, [graph(Graph)|O2])
         ),
         close(Stream)
       ),

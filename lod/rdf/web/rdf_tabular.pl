@@ -68,20 +68,18 @@ rdf_tabular(Request):-
 
   % The graph parameter is optional
   % (in which case it is left uninstantiated).
-  ignore(request_query_read(Request, graph, G)),
+  ignore(request_query_read(Request, graph, G1)),
 
+  dcg_with_output_to(atom(G2), rdf_term_name([graph(G1)], T2)),
   reply_html_page(
     app_style,
-    title([
-      'Overview of RDF resource ',
-      \rdf_term_name([graph(G)], T2)
-    ]),
+    title(['Overview of RDF resource ',G2]),
     [
       h1([
         'Description of RDF term ',
-        \rdf_term_in_graph_html(rdf_tabular, T2, G)
+        \rdf_term_in_graph_html(rdf_tabular, T2, G1)
       ]),
-      \rdf_tabular_term(G, T2)
+      \rdf_tabular_term(G1, T2)
     ]
   ).
 % RDF graph.

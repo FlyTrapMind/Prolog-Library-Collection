@@ -23,7 +23,7 @@ This produces the home page for the development server.
 :- setting(
   http:port,
   nonneg,
-  env('PORT',5000),
+  env('PORT',3040),
   'Port the http server listens to'
 ).
 

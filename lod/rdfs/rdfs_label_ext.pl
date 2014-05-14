@@ -125,7 +125,9 @@ rdfs_label(S, LexicalForm, LangTag, G):-
   rdf_language_tagged_string(S, rdfs:label, LexicalForm, LangTag, G).
 % A string with no language tag.
 rdfs_label(S, LexicalForm, _, G):-
-  rdf_string(S, rdfs:label, LexicalForm, G).
+  % @tbd This should not be necessary,
+  rdf_global_id(rdfs:label, Dummy),
+  rdf_string(S, Dummy, LexicalForm, G).
 
 
 %! rdfs_list_by_label(

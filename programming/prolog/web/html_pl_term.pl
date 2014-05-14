@@ -8,14 +8,13 @@
 /** <module> HTML Prolog term
 
 @author Wouter Beek
-@version 2014/01-2014/03
+@version 2014/01-2014/03, 2014/05
 */
 
-:- use_module(generics(uri_query)).
+:- use_module(library(http/html_write)).
+
 :- use_module(html(html)).
 :- use_module(html(html_list)).
-:- use_module(library(http/html_write)).
-:- use_module(library(http/http_path)).
 :- use_module(pl_web(html_pl_error)).
 :- use_module(pl_web(html_pl_generic)).
 
@@ -24,6 +23,10 @@
 %! html_pl_term(@PlTerm, +NaturalLanguage:boolean)// is det.
 % @tbd What about blobs?
 
+% Variable.
+html_pl_term(Var) -->
+  {var(Var)}, !,
+  html('unknown').
 % Error term.
 html_pl_term(error(Formal,Context), Natlang) --> !,
   {Formal =.. [ErrorKind|_]},
