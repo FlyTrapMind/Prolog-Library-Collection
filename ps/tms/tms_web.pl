@@ -8,19 +8,20 @@ Web-interface for truth maintenance systems.
 @version 2013/10-2014/01
 */
 
+:- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_path)).
+:- use_module(library(semweb/rdf_db)).
+
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_query)).
 :- use_module(gv(gv_file)).
 :- use_module(html(html_table)).
-:- use_module(library(http/html_write)).
-:- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_path)).
-:- use_module(library(semweb/rdf_db)).
+:- use_module(server(app_ui)).
 :- use_module(server(web_console)).
 :- use_module(server(web_modules)).
-:- use_module(server(web_ui)).
 :- use_module(tms(tms)).
 :- use_module(tms(tms_export)).
 :- use_module(xml(xml_dom)).

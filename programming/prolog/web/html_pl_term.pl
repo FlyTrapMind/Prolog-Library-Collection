@@ -21,11 +21,11 @@
 
 
 
-%! html_pl_term(@PlTerm)// is det.
+%! html_pl_term(@PlTerm, +NaturalLanguage:boolean)// is det.
 % @tbd What about blobs?
 
 % Error term.
-html_pl_term(error(Formal,Context)) --> !,
+html_pl_term(error(Formal,Context), Natlang) --> !,
   {Formal =.. [ErrorKind|_]},
   html(
     div(class=error, [
@@ -33,7 +33,7 @@ html_pl_term(error(Formal,Context)) --> !,
         ErrorKind
       ),
       div(class=error_formal,
-        \html_error_formal(Formal)
+        \html_error_formal(Formal, Natlang)
       ),
       \html_error_context(Context)
     ])

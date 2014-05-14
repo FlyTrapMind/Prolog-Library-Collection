@@ -42,13 +42,13 @@ An undirected graph, see [udgraph_ext.pl].
 See [rdf_graph.pl].
 
 @author Wouter Beek
+@tbd Update to use DCG-based HTML generation i.o. DOM-based.
 @version 2012/10, 2012/12-2013/01, 2013/05, 2013/07
 */
 
 :- use_module(graph_theory(graph_generic)).
 :- use_module(library(lists)).
 :- use_module(library(settings)).
-:- use_module(server(web_error)).
 :- use_module(svg(svg_generic)).
 
 :- setting(
@@ -129,6 +129,4 @@ bipartite_web(UGraph, [SVG_Root, element(p, [], [AtomicG])]):-
   append([EdgeLines, S1Circles, S2Circles], Shapes),
   root_element(svg, SVG_Head, [Line1, Line2 | Shapes], SVG_Root),
   term_to_atom(UGraph, AtomicG), !.
-bipartite_web(UGraph, Markup):-
-  web_error('Graph ~w is not bipartite.', [UGraph], Markup).
 

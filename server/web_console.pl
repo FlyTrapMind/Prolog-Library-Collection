@@ -20,6 +20,7 @@ Displays a form for entering Web predicates and displays the results
 Also includes a status bar with updates/messages.
 
 @author Wouter Beek
+@tbd Update this to use DCG-based HTML generation i.o. DOM-based.
 @version 2012/10, 2013/02-2013/06, 2013/11-2013/12
 */
 
@@ -38,7 +39,6 @@ Also includes a status bar with updates/messages.
 :- use_module(os(datetime_ext)).
 :- use_module(server(app_ui)).
 :- use_module(server(web_commands)).
-:- use_module(server(web_error)).
 :- use_module(server(web_modules)).
 
 % /css
@@ -160,7 +160,11 @@ markup_mold(DOM, html, app_style, DOM):- !.
 
 process_web_command(Command, Markup):-
   % Catch errors and display their error messages in the Web browser.
-  catch_web(process_web_command_(Command), Markup).
+  catch(
+    process_web_command_(Command),
+    Exception,
+    html_pl_term(Exception)
+  ).
 
 % Lets see if we can figure out the predicate
 % indicated by the command issued via the Web console interface.
