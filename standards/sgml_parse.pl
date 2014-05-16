@@ -16,6 +16,21 @@ This module was created by taking predicates from ClioPatria that are not in
 SWI-Prolog. The predicates were created by Jan Wielemaker, I only put them
 together in this file.
 
+### Example of use
+
+~~~{.pl}
+my_parse(File):-
+  setup_call_cleanup(
+    open(File, read, Stream, []),
+    setup_call_cleanup(
+      make_parser(Stream, Parser, State),
+      USE-THE-PARSER
+      cleanup_parser(Stream, Parser, State)
+    ),
+    close(Stream)
+  ).
+~~~
+
 @author Wouter Beek
 @version 2013/04
 */
