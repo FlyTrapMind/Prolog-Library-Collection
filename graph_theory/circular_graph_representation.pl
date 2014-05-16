@@ -85,4 +85,6 @@ circular_vertex_coordinate(Options, Vs, V, coordinate(2,[X_cm,Y_cm])):-
   % (X,Y)-coordinate.
   X is X_Border + GraphRadius + GraphRadius * cos(I * AnglePerVertice),
   Y is Y_Border + GraphRadius + GraphRadius * sin(I * AnglePerVertice),
-  maplist(format_number(cm), [X,Y], [X_cm,Y_cm]).
+  atomic_list_concat([X,cm], X_cm),
+  atomic_list_concat([Y,cm], Y_cm).
+

@@ -49,8 +49,8 @@ svg_head(size(2,[Width,Height]), Head):-
 % height and width.
 
 svg_head(Width, Height, [height=Height_cm, width=Width_cm]):-
-  format_number(cm, Width, Width_cm),
-  format_number(cm, Height, Height_cm).
+  atomic_list_concat([Width,cm], Width_cm),
+  atomic_list_concat([Height,cm], Height_cm).
 
 svg_namespace(DCG_Namespace) -->
   {phrase(DCG_Namespace, "svg")},

@@ -212,6 +212,7 @@ fibonacci(N, F):-
   fibonacci(N2, F2),
   F is F1 + F2.
 
+
 %! log(+Base:integer, +X:integer, -Y:double) is det.
 % Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
 %

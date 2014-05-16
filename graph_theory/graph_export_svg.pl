@@ -61,7 +61,7 @@ export_edge_svg(Vs, edge(FromV/FromV_Id, ToV/ToV_Id, E_Attrs1), E_DOM):-
   % X2 and Y2.
   nth0(ToV_Id, Vs, vertex(ToV_Id, ToV_Attrs)),
   option(coord(coord(2,[X2,Y2])), ToV_Attrs),
-  maplist(format_number(cm), [X1,Y1,X2,Y2], [X1_cm,Y1_cm,X2_cm,Y2_cm]),
+  maplist(add_cm, [X1,Y1,X2,Y2], [X1_cm,Y1_cm,X2_cm,Y2_cm]),
   
   % Name.
   select_option(label(E_Name), E_Attrs1, E_Attrs2, nolabel),
@@ -118,7 +118,7 @@ export_vertex_svg(Vs, V, V_DOM):-
   % Radius.
   setting(default_vertex_radius, DefaultR),
   select_option(radius(R), V_Attrs2, V_Attrs3, DefaultR),
-  maplist(format_number(cm), [X0,Y0,R], [X0_cm,Y0_cm,R_cm]),
+  maplist(add_cm, [X0,Y0,R], [X0_cm,Y0_cm,R_cm]),
   
   % Name.
   select_option(label(Name), V_Attrs3, V_Attrs4, nolabel),
@@ -129,4 +129,7 @@ export_vertex_svg(Vs, V, V_DOM):-
   CircleAttrs = [stroke(V_Color)],
   
   circle(CircleAttrs, X0_cm, Y0_cm, R_cm, Name, V_DOM).
+
+add_cm(X, X_cm):-
+  atomic_list_concat([X,cm], X_cm).
 
