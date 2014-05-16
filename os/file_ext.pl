@@ -67,9 +67,10 @@
     spec_atomic_concat/3, % +Spec
                           % +Atomic:atom
                           % -NewSpec
-    split_into_smaller_files/3 % +BigFile:atom
-                               % +SmallDir:atom
-                               % +Prefix:atom
+    split_into_smaller_files/3, % +BigFile:atom
+                                % +SmallDir:atom
+                                % +Prefix:atom
+    touch/1 % +File:atom
   ]
 ).
 
@@ -93,7 +94,7 @@ We use the following abbreviations in this module:
 
 @author Wouter Beek
 @tbd Remove the dependency on module AP.
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05
 */
 
 :- use_module(library(apply)).
@@ -179,7 +180,7 @@ create_file(File):-
   debug(file_ext, 'File ~w already exists.', [File]).
 create_file(File):-
   is_absolute_file_name(File), !,
-  touch(File).
+  touch_file(File).
 create_file(File):-
   type_error(absolute_file_name, File).
 
@@ -545,4 +546,10 @@ split_into_smaller_files(BigFile, SmallDir, Prefix):-
     'File ~w was split into smaller files in directory ~w.',
     [BigFile,SmallDir]
   ).
+
+
+%! touch_file(+File:atom) is det.
+
+touch_file(File):-
+  process_create(path(touch), [File], [detached(true)]).
 

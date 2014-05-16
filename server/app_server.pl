@@ -18,13 +18,14 @@ This produces the home page for the development server.
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
-% Define the default application server port in agreement with ClioPatria.
+% Use the `PORT` environment variable, if available,
+% or else the explicitly given defaul value
+% as the port of the HTTP server.
+%
+% @see The idea to use eval_default/4 comes from ClioPatria / Jan Wielemaker.
 
-:- setting(
-  http:port,
-  nonneg,
-  env('PORT',3040),
-  'Port the http server listens to'
+:- setting(http:port, nonneg, env('PORT',3040),
+    'Port the http server listens to'
 ).
 
 % If you login, the system will redirect  you to its public address. I.e.,
