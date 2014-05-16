@@ -12,7 +12,7 @@
 Support for image files.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03, 2014/05
 */
 
 :- use_module(library(process)).
@@ -22,6 +22,20 @@ Support for image files.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(os(io_ext)).
+
+% Dynamic multifile predicate for registering
+% which Prolog file types denote images.
+:- dynamic(user:image_file_type/1).
+:- multifile(user:image_file_type/1).
+
+% Register JPG/JPEG.
+user:prolog_file_type(jpeg, jpeg).
+user:prolog_file_type(jpg, jpeg).
+user:image_file_type(jpeg).
+
+% Register PNG.
+user:prolog_file_type(png, png).
+user:image_file_type(png).
 
 
 

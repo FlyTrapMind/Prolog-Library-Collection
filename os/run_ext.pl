@@ -32,8 +32,6 @@ Predicates for running external programs.
 :- use_module(os(file_ext)).
 :- use_module(os(os_ext)).
 
-:- multifile(prolog:message/3).
-
 % This is used to kill the processes that are still running
 % when SWI-Prolog halts.
 :- dynamic(current_process/1).
@@ -43,8 +41,8 @@ Predicates for running external programs.
 :- multifile(user:file_type_program/2).
 
 % This is used to relate programs to modules.
-:- dynamic(user:module_uses_program/2).
-:- multifile(user:module_uses_program/2).
+:- dynamic(user:module_uses/2).
+:- multifile(user:module_uses/2).
 
 :- at_halt(kill_processes).
 
@@ -113,7 +111,7 @@ kill_processes:-
 list_external_programs:-
   aggregate_all(
     set(Module),
-    module_uses_program(Module, _Program),
+    module_uses(Module, _),
     Modules
   ),
   maplist(list_external_programs, Modules).
@@ -144,6 +142,11 @@ list_external_programs(Module):-
     Programs
   ),
   list_external_programs_label(Programs, Module, 'Module').
+module_uses_program(Module, Program):-
+  user:module_uses(Module, file_type(FileType)),
+  user:file_type_program(FileType, Program).
+module_uses_program(Module, Program):-
+  user:module_uses(Module, program(Program)).
 
 list_external_programs_label(Programs, Content, String):-
   include(write_program_support, Programs, SupportedPrograms),

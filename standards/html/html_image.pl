@@ -35,18 +35,8 @@ Support for the HTML image tag.
 :- use_module(os(file_ext)).
 :- use_module(os(image_ext)).
 
-% Register the supported image file types.
-% These are shared with module RDF_DATATYPE.
 :- dynamic(user:image_file_type/1).
 :- multifile(user:image_file_type/1).
-
-% Register JPG/JPEG.
-user:prolog_file_type(jpeg, jpeg).
-user:prolog_file_type(jpg, jpeg).
-user:image_file_type(jpeg).
-% Register PNG.
-user:prolog_file_type(png, png).
-user:image_file_type(png).
 
 
 

@@ -39,8 +39,8 @@ and GraphViz output files or SVG DOM structures.
 :- dynamic(user:file_type_program/2).
 :- multifile(user:file_type_program/2).
 
-:- dynamic(user:module_uses_program/2).
-:- multifile(user:module_uses_program/2).
+:- dynamic(user:module_uses/2).
+:- multifile(user:module_uses/2).
 
 :- dynamic(user:prolog_file_type/2).
 :- multifile(user:prolog_file_type/2).
@@ -50,7 +50,7 @@ user:prolog_file_type(dot, dot).
 user:prolog_file_type(dot, graphviz).
 user:file_type_program(dot, dotty).
 user:file_type_program(dot, dotx).
-user:module_uses_program(gv_file, dot)).
+user:module_uses(gv_file, file_type(dot)).
 
 % Register JPG/JPEG
 user:prolog_file_type(jpeg, jpeg).
