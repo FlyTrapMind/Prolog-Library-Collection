@@ -17,7 +17,6 @@
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(standards(markup)).
 
 :- meta_predicate(svg_namespace(//,?,?)).
 

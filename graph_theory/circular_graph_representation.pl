@@ -19,7 +19,6 @@ Circular graph representation.
 :- use_module(generics(list_ext)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
-:- use_module(standards(markup)).
 
 :- setting(
   default_border_size,
