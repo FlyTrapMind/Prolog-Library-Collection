@@ -45,32 +45,32 @@ and GraphViz output files or SVG DOM structures.
 :- dynamic(user:prolog_file_type/2).
 :- multifile(user:prolog_file_type/2).
 
-% Register DOT
+% Register DOT.
 user:prolog_file_type(dot, dot).
 user:prolog_file_type(dot, graphviz).
 user:file_type_program(dot, dotty).
 user:file_type_program(dot, dotx).
 user:module_uses(gv_file, file_type(dot)).
 
-% Register JPG/JPEG
+% Register JPG/JPEG.
 user:prolog_file_type(jpeg, jpeg).
 user:prolog_file_type(jpeg, graphviz_output).
 user:prolog_file_type(jpg, jpeg).
 user:prolog_file_type(jpg, graphviz_output).
 
-% Register PDF
+% Register PDF.
 user:prolog_file_type(pdf, pdf).
 user:prolog_file_type(pdf, graphviz_output).
 
-% Register PNG
+% Register PNG.
 user:prolog_file_type(png, png).
 user:prolog_file_type(png, graphviz_output).
 
-% Register SVG
+% Register SVG.
 user:prolog_file_type(svg, graphviz_output).
 user:prolog_file_type(svg, svg).
 
-% Register XDOT
+% Register XDOT.
 user:prolog_file_type(xdot, graphviz_output).
 user:prolog_file_type(xdot, xdot).
 

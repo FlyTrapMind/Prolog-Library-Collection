@@ -34,7 +34,6 @@
 Automated checks for Prolog mode enforcement.
 
 @author Wouter Beek
-@tbd Phase out nonvar_det/1 (use enforce_mode/3 instead).
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12
 */
 
@@ -52,7 +51,6 @@ Automated checks for Prolog mode enforcement.
 :- meta_predicate(call_nth(0,-)).
 :- meta_predicate(call_semidet(0)).
 :- meta_predicate(enforce_mode(0,+,+)).
-:- meta_predicate(nonvar_det(0)).
 
 
 

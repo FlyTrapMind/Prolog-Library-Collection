@@ -25,6 +25,7 @@ Predicates for running external programs.
 :- use_module(library(apply)).
 :- use_module(library(process)).
 
+:- use_module(generics(db_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
