@@ -49,9 +49,6 @@ http:location(pldoc, root(help), [priority(10)]).
 
 :- use_module(library(swi_ide)).
 
-% plDev
-:- use_module(pl_web(pl_dev)).
-
 % Load PGC documentation and debugging tools.
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_man(rdf_man_duplicates)).
