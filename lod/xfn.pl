@@ -3,13 +3,15 @@
 /** <module> XFN
 
 @author Wouter Beek
-@version 2012/07, 2013/05
+@version 2012/07, 2013/05, 2014/05
 */
 
 :- use_module(library(apply)).
 :- use_module(library(plunit)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+
+:- use_module(html(html)).
 :- use_module(os(file_ext)).
 :- use_module(rdf(rdf_build)).
 :- use_module(rdf_term(rdf_datatype)).
@@ -98,33 +100,13 @@ find_relationship(L, Relationship):-
   memberchk(rel=Relationship, L).
 find_relationship(_L, nil).
 
-parse_html(File, DOM):-
-  setup_call_cleanup(
-    open(File, read, Stream, [encoding(utf8),type(test)]),
-    (
-      dtd(html, DTD),
-      load_structure(
-        stream(Stream),
-        DOM,
-        [
-          dialect(sgml),
-          dtd(DTD),
-          max_errors(-1),
-          shorttag(false),
-          syntax_errors(quiet)
-        ]
-      )
-    ),
-    close(Stream, [force(true)])
-  ).
-
 
 
 :- begin_tests(xfn).
 
 test(xfn, [true]):-
-  absolute_file_name(debug(tests), AbsoluteFileName, [file_type(hypertext)]),
-  parse_html(AbsoluteFileName, DOM),
+  absolute_file_name(debug(tests), File, [file_type(hypertext)]),
+  file_to_html(File, DOM),
   format(user_output, '~w', [DOM]),
   rdf_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
   rdf_assert_string('http://www.wouterbeek.com', xfn:name, 'Wouter Beek', xfn),

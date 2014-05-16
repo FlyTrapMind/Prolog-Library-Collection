@@ -16,11 +16,11 @@
 
 Support for HTML.
 
-# Generation
+### Generation
 
 From Prolog list to HTML table.
 
-# Parsing
+### Parsing
 
 HTML characters, escaping the '<' and '>' characters.
 
@@ -29,17 +29,18 @@ HTML atom conversion, using HTML characters.
 HTML attribute parsing, used in HTML table generation.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/11, 2014/03, 204/05
+@version 2012/09-2013/06, 2013/11, 2014/03, 2014/05
 */
+
+:- use_module(library(apply)).
+:- use_module(library(http/html_write)).
+:- use_module(library(sgml)).
 
 :- use_module(dcg(dcg_meta)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(http(http_goal)).
-:- use_module(library(apply)).
-:- use_module(library(http/html_write)).
-:- use_module(library(sgml)).
 :- use_module(pl_web(html_pl_term)).
 
 % Assert DTD file locations.

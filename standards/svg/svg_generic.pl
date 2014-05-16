@@ -17,27 +17,22 @@
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(generics(db_ext)).
 :- use_module(standards(markup)).
 
 :- meta_predicate(svg_namespace(//,?,?)).
 
-:- dynamic(user:mime_type/2).
-:- dynamic(user:public_identifier/2).
-:- dynamic(user:system_identifier/2).
-
 % SVG MIME type.
-:- db_add_novel(user:mime_type(svg, 'image/svg+xml')).
+:- dynamic(user:mime_type/2).
+user:mime_type(svg, 'image/svg+xml').
+
 % SVG public identifier.
-:- db_add_novel(
-  user:public_identifier(svg, 'PUBLIC "-//W3C//DTD SVG 1.1//EN"')).
+:- dynamic(user:public_identifier/2).
+user:public_identifier(svg, 'PUBLIC "-//W3C//DTD SVG 1.1//EN"').
+
 % SVG system identifier.
-:- db_add_novel(
-  user:system_identifier(
-    svg,
-    'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'
-  )
-).
+:- dynamic(user:system_identifier/2).
+user:system_identifier(svg,
+    'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd').
 
 
 
