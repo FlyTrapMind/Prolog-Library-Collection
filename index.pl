@@ -43,7 +43,6 @@ user:file_search_path(standards,       plc(standards)).
 user:file_search_path(datetime,        standards(date_time)).
 user:file_search_path(geo,             standards(geography)).
 user:file_search_path(gv,              standards(graphviz)).
-user:file_search_path(html,            standards(html)).
 user:file_search_path(http,            standards(http)).
 user:file_search_path(http_headers,    http(headers)).
 user:file_search_path(http_parameters, http(parameters)).
