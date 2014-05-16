@@ -84,7 +84,7 @@ rdf_term_html(LocationId, Graphs, _) -->
     Graphs \= [],
     maplist(rdf_graph, Graphs)
   }, !,
-  html_list([ordered(false)], rdf_term_html(LocationId), Graphs).
+  html_list(Graphs, rdf_term_html(LocationId), [ordered(false)]).
 % RDF graph.
 rdf_term_html(LocationId, Graph1, _) -->
   {rdf_is_graph(Graph1, Graph2)}, !,

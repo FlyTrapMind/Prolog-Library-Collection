@@ -147,7 +147,7 @@ ap_message(ApStage) -->
     ),
     Modifiers \== []
   }->
-    html(\html_list([], Modifiers))
+    html(\html_list(Modifiers))
   ;
     html([\operation(Operation),'@',\html_file(File)])
   ).

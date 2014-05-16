@@ -19,11 +19,13 @@
 Support for the query string part of URIs.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03, 2014/05
 */
 
-:- use_module(generics(option_ext)).
 :- use_module(library(uri)).
+
+:- use_module(generics(option_ext)).
+:- use_module(pl(pl_log)).
 
 
 
@@ -54,7 +56,7 @@ uri_query_add(Uri1, Name, Value1, Uri2):-
   ),
 
   % Make sure that we can read the Prolog value back later.
-  with_output_to(atom(Value2), write_canonical(Value1)),
+  with_output_to(atom(Value2), write_canonical_blobs(Value1)),
 
   % Search parameters are represented as option lists.
   add_option(SearchOptions1, Name, Value2, SearchOptions2),

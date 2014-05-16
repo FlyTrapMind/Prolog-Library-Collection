@@ -163,7 +163,7 @@ store_pairs_to_file(Pairs, File):-
 term_to_pair(X-Y, X-Y):- !.
 term_to_pair(X=Y, X-Y):- !.
 term_to_pair([X,Y], X-Y):- !.
-term_to_pari(Compound, X-Y):-
+term_to_pair(Compound, X-Y):-
   Compound =.. [X,Y].
 
 
