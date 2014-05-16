@@ -31,16 +31,17 @@ The user administration is based on the following:
 @version 2013/10-2013/12
 */
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(generics(option_ext)).
-:- use_module(generics(user_input)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(http/http_session)).
 :- use_module(library(lists)).
 :- use_module(library(persistency)). % Declarations
-:- use_module(os(os_ext)).
+
+:- use_module(generics(db_ext)).
+:- use_module(generics(meta_ext)).
+:- use_module(generics(option_ext)).
+:- use_module(generics(user_input)).
+:- use_module(os(file_ext)).
 :- use_module(pl(pl_mode)).
 :- use_module(server(login_db)).
 :- use_module(server(password_db)).
@@ -59,7 +60,7 @@ init_user_db:-
   ->
     db_attach(File, [])
   ;
-    touch(File),
+    touch_file(File),
     db_attach(File, []),
     % First time deployment.
     add_user(admin, [roles([admin])]),

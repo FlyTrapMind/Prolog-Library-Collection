@@ -30,7 +30,8 @@ html_dropdown_list(Legend, Options) -->
     ])
   ).
 
+options([]) --> [].
 options([Value-Label|Options]) -->
   html(option(value=Value, Label)),
   options(Options).
-options([]) --> [].
+

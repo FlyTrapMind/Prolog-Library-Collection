@@ -1,10 +1,6 @@
 :- module(
   server_ext,
   [
-    dispatch/1, % +Request:list
-    http_method/2, % +Request:list
-                   % -Method:oneof([delete,get,post])
-    server_rebase/1, % +Prefix:atom
     start_server/1, % +Port:between(1000,9999)
     start_server/2 % +Port:between(1000,9999)
                    % :ServerGoal
@@ -55,92 +51,49 @@ SWI-Prolog defines the following HTTP handlers:
 | =|pldoc_man(.)|=        | |
 | =|pldoc_pkg(.)|=        | |
 
+# Server rebase
+
+In order to rebase an entire Web application:
+~~~{.pl}
+set_setting(http:prefix, Prefix).
+~~~
+@see http://www.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/http.html%27%29
+
+--
+
 @author Wouter Beek
 @version 2013/10-2014/01
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_session)). % Session support.
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(settings)).
-:- use_module(server(web_error)).
-:- use_module(server(authorization)).
 
-:- meta_predicate(dispatch(:)).
+:- use_module(generics(meta_ext)).
 
 :- meta_predicate(start_server(+,:)).
 :- meta_predicate(start_server_on_next_port(+,+,:,-)).
 
-:- multifile(prolog:message//1).
 
 
-
-%! dispatch(:Request:list)
-% Dispatching a request means:
-%   1. Extracting the HTTP method of the request.
-%   2. Checking whether the current user is authorized to perform the request.
-%   3. Dispatching the request-method pair using the given module.
-
-dispatch(Module:Request):-
-  http_method(Request, Method),
-  authorized(Method, Request, User),
-  dispatch_method(Module, Method, Request, User).
-
-%! dispatch_method(
-%!   +Module:atom,
-%!   +Method:oneof([delete,get,send]),
-%!   +Request:list,
-%!   +User:atom
-%! ) is det.
-
-dispatch_method(Module, Method, Request, User):-
-  catch(
-    Module:dispatch_method(Method, Request, User),
-    Error,
-    reply_error(Error)
-  ), !.
-% The dispatcher for the given method is undefined.
-dispatch_method(Module, Method, _Request, _User):-
-  PlainError = 'Undefined HTTP method.',
-  format(
-    atom(Msg),
-    'Method ~w is not defined by module ~w.',
-    [Method,Module]
-  ),
-  reply_json(json([error=PlainError,message=Msg]), [width(0)]).
-
-
-%! http_method(+Request:list, -Method:oneof([delete,get,post])) is det.
-% Returns the HTTP method used in the given request.
-
-http_method(Request, Method):-
-  memberchk(method(Method), Request).
-
-
-%! server_port(Port:between(1000,9999)) is semidet.
-% Type checking for server ports.
+%! server_port(+Port:between(1000,9999)) is semidet.
+%! server_port(-Port:between(1000,9999)) is multi.
+% Valid values for server port.
 
 server_port(Port):-
   between(1000, 9999, Port).
 
 
-%! server_rebase(+Prefix:atom) is det.
-% Rebase the entire Web application.
-%
-% @see http://www.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/http.html%27%29
-
-server_rebase(Prefix):-
-  set_setting(http:prefix, Prefix).
-
-
 %! start_server(+Port:between(1000,9999)) is det.
-%! start_server(+Port:between(1000,9999), :ServerGoal) is det.
 
 start_server(Port):-
   start_server(Port, _).
+
+%! start_server(+Port:between(1000,9999), :ServerGoal) is det.
+
 % A server is already running at the given port.
 start_server(Port, _):-
   http_server_property(Port, start_time(StartTime)), !,
@@ -185,7 +138,7 @@ start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed):-
       http_server(ServerGoal, [port(Port),workers(NumberOfWorkers)]),
       PortUsed = Port
     ),
-    error(socket_error(_Msg), _),
+    error(socket_error(_), _),
     (
       NextPort is Port + 1,
       start_server_on_next_port(
@@ -198,12 +151,14 @@ start_server_on_next_port(Port, NumberOfWorkers, ServerGoal, PortUsed):-
   ).
 % At the end of the port numeber list we start over
 % by trying out the lowest port number.
-start_server_on_next_port(_Port, NumberOfWorkers, ServerGoal, PortUsed):-
+start_server_on_next_port(_, NumberOfWorkers, ServerGoal, PortUsed):-
   start_server_on_next_port(1000, NumberOfWorkers, ServerGoal, PortUsed).
 
 
 
-% MESSAGES
+% Messages
+
+:- multifile(prolog:message//1).
 
 prolog:message(server_ext(started(Port))) -->
   {setting(http:prefix, Prefix)},

@@ -27,7 +27,6 @@ Acts on messages printed by print_message/2.
 :- use_module(math(math_ext)).
 :- use_module(os(ansi_ext)).
 :- use_module(server(web_console)).
-:- use_module(server(web_error)).
 :- use_module(server(web_modules)).
 
 :- dynamic(current_log_row/1).
@@ -89,37 +88,4 @@ log_web(Max) -->
       [['DateTime','Category','Message']|Top2]
     )
   ).
-
-/*
-%prolog:debug_print_hook(_Type, 'EXCEPTION', [Exception]):-
-%  web_error(Exception, Markup),
-%  push(status_pane, html, app_style, Markup), !.
-
-prolog:debug_print_hook(Type, Format, Args):-
-  format(atom(Atom), Format, Args),
-  format(user_output, '[~w] ~w\n', [Type,Atom]), !.
-prolog:debug_print_hook(Type, Format, Args):-
-  % Write to the status pane in the Web front-end.
-  %format(atom(Msg), Format, Args),
-  %push(
-  %  status_pane,
-  %  html,
-  %  app_style,
-  %  [element(p,[],['[',Type,']',' ',Msg])]
-  %),
-
-  % Write to the terminal.
-  %ansi_format(user_output, [bold,fg(green)], '[~w] ', [Type]),
-  %ansi_formatnl(user_output, [fg(green)], '~w', [Msg]),
-
-  % Write to the log stream/file.
-  append_to_log(Type, Format, Args),
-
-  email(Type, Format, Args).
-
-email(email, Format, Args):- !,
-  format(codes(Body), Format, Args),
-  send_email('me@wouterbeek.com', 'Message from script', Body).
-email(_, _, _).
-*/
 

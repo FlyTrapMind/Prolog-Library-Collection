@@ -24,14 +24,13 @@
 Support for the HTML image tag.
 
 @author Wouter Beek
-@version 2012/09-2013/06, 2013/10, 2014/03
+@version 2012/09-2013/06, 2013/10, 2014/03, 2014/05
 */
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(option_ext)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_path)).
 :- use_module(library(option)).
+
 :- use_module(math(dimension)).
 :- use_module(os(file_ext)).
 :- use_module(os(image_ext)).
@@ -41,11 +40,13 @@ Support for the HTML image tag.
 :- dynamic(user:image_file_type/1).
 :- multifile(user:image_file_type/1).
 
-:- db_add_novel(user:prolog_file_type(jpeg, jpeg)).
-:- db_add_novel(user:prolog_file_type(jpg,  jpeg)).
-:- db_add_novel(user:image_file_type( jpeg      )).
-:- db_add_novel(user:prolog_file_type(png,  png )).
-:- db_add_novel(user:image_file_type( png       )).
+% Register JPG/JPEG.
+user:prolog_file_type(jpeg, jpeg).
+user:prolog_file_type(jpg, jpeg).
+user:image_file_type(jpeg).
+% Register PNG.
+user:prolog_file_type(png, png).
+user:image_file_type(png).
 
 
 

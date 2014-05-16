@@ -33,7 +33,6 @@ Web front-end for generic graph visualizations.
 :- use_module(gv(gv_file)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(rdf_graph(rdf_graph_theory)).
-:- use_module(server(web_error)).
 :- use_module(ugraph(ugraph_ext)).
 :- use_module(xml(xml_dom)).
 

@@ -58,7 +58,7 @@ HTML generation for RDF terms.
 :- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_web(rdf_html_table)).
-:- use_module(server(web_ui)).
+:- use_module(server(app_ui)).
 :- use_module(tms(tms)).
 :- use_module(uri(uri_scheme)).
 :- use_module(xml(xml_namespace)).
@@ -148,7 +148,7 @@ external_link_if_url(Graph) -->
   }, !,
   html([
     ' ',
-    \external_link(Graph)
+    \html_external_link(Graph)
   ]).
 external_link_if_url(_) --> [].
 
@@ -286,7 +286,7 @@ rdf_iri_html(LocationId, IRI1, Graph) -->
           span(class=postfix, Postfix)
         ]),
         ' ',
-        \external_link(IRI1)
+        \html_external_link(IRI1)
       ])
     )
   ;

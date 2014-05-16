@@ -6,8 +6,7 @@
     is_windows/0,
     mac_y_pixel/2, % +YPixel:number
                    % -MacYPixel:number
-    os_dependent_call/1, % :Goal
-    touch/1 % +File:atom
+    os_dependent_call/1 % :Goal
   ]
 ).
 
@@ -44,6 +43,7 @@ is_unix:-
 is_windows:-
   current_prolog_flag(windows, true).
 
+
 %! mac_y_pixel(+YPixel:integer, -MacYPixel:integer) is det.
 % Returns the Mac OS-X equivalent of the y-position of an onscreen pixel.
 %
@@ -55,6 +55,7 @@ is_windows:-
 
 mac_y_pixel(YPixel, MacYPixel):-
   MacYPixel is YPixel + 21.
+
 
 %! os_dependent_call(:Goal)
 % Allows goals to be carried out without the caller having to paying
@@ -71,14 +72,14 @@ os_dependent_call(Goal):-
   strip_module(Goal, Module, PlainGoal),
   supported_os(OS),
   format(atom(Check), 'is_~w', [OS]),
-  call(Check),
-  !,
+  call(Check), !,
   PlainGoal =.. [Pred | Args],
   format(atom(OS_Pred), '~w_~w', [Pred, OS]),
   OS_Goal =.. [OS_Pred | Args],
   call(Module:OS_Goal).
 os_dependent_call(Goal):-
   debug(os_ext, 'The call ~w is not supported on your OS.', [Goal]).
+
 
 %! supported_os(?OS_Name:oneof([apple,unix,windows])) is nondet.
 % The names of supported OS-es.
@@ -87,21 +88,4 @@ os_dependent_call(Goal):-
 supported_os(apple).
 supported_os(unix).
 supported_os(windows).
-
-touch(File):-
-  os_dependent_call(touch(File)).
-:- if(is_unix).
-touch_unix(File):-
-  process_create(path(touch), [File], [detached(true)]).
-:- endif.
-:- if(is_windows).
-%! touch_windows(+File:atom) is det.
-% @see http://stackoverflow.com/questions/51435/windows-version-of-the-unix-touch-command
-touch_windows(File):-
-  open(File, write, Stream, [type(binary)]),
-  close(Stream).
-  %%%%% I have never seen process_create/3 work on Windows.
-  %%%%format(atom(Command), 'type nul >>~w & copy ~w +,,', [File, File]),
-  %%%%process_create(path(cmd), [Command], []).
-:- endif.
 
