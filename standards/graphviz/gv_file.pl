@@ -7,6 +7,7 @@
     graph_to_svg_dom/3, % +Options:list(nvpair)
                         % +GraphInterchangeFormat:compound
                         % -SvgDom:list(compound)
+    open_dot/1, % +File:file
     tree_to_gv_file/3 % +Options:list(nvpair)
                       % +Tree:compound
                       % ?ToFile:atom
@@ -22,7 +23,7 @@ Also converts between GraphViz DOT formatted files
 and GraphViz output files or SVG DOM structures.
 
 @author Wouter Beek
-@version 2011-2013/09, 2013/11-2014/01
+@version 2011-2013/09, 2013/11-2014/01, 2014/05
 */
 
 :- use_module(generics(codes_ext)).
@@ -32,24 +33,46 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(library(option)).
 :- use_module(library(process)).
 :- use_module(os(file_ext)).
-:- use_module(os(run_ext)).
 :- use_module(os(safe_file)).
 :- use_module(svg(svg_file)).
 
-:- db_add_novel(user:module_uses_program(gv_file, dot)).
+:- dynamic(user:file_type_program/2).
+:- multifile(user:file_type_program/2).
 
-:- db_add_novel(user:prolog_file_type(dot,  graphviz       )).
-:- db_add_novel(user:prolog_file_type(jpeg, jpeg           )).
-:- db_add_novel(user:prolog_file_type(jpeg, graphviz_output)).
-:- db_add_novel(user:prolog_file_type(jpg,  jpeg           )).
-:- db_add_novel(user:prolog_file_type(jpg,  graphviz_output)).
-:- db_add_novel(user:prolog_file_type(pdf,  pdf            )).
-:- db_add_novel(user:prolog_file_type(pdf,  graphviz_output)).
-:- db_add_novel(user:prolog_file_type(png,  graphviz_output)).
-:- db_add_novel(user:prolog_file_type(svg,  graphviz_output)).
-:- db_add_novel(user:prolog_file_type(svg,  svg            )).
-:- db_add_novel(user:prolog_file_type(xdot, graphviz_output)).
-:- db_add_novel(user:prolog_file_type(xdot, xdot           )).
+:- dynamic(user:module_uses_program/2).
+:- multifile(user:module_uses_program/2).
+
+:- dynamic(user:prolog_file_type/2).
+:- multifile(user:prolog_file_type/2).
+
+% Register DOT
+user:prolog_file_type(dot, dot).
+user:prolog_file_type(dot, graphviz).
+user:file_type_program(dot, dotty).
+user:file_type_program(dot, dotx).
+user:module_uses_program(gv_file, dot)).
+
+% Register JPG/JPEG
+user:prolog_file_type(jpeg, jpeg).
+user:prolog_file_type(jpeg, graphviz_output).
+user:prolog_file_type(jpg, jpeg).
+user:prolog_file_type(jpg, graphviz_output).
+
+% Register PDF
+user:prolog_file_type(pdf, pdf).
+user:prolog_file_type(pdf, graphviz_output).
+
+% Register PNG
+user:prolog_file_type(png, png).
+user:prolog_file_type(png, graphviz_output).
+
+% Register SVG
+user:prolog_file_type(svg, graphviz_output).
+user:prolog_file_type(svg, svg).
+
+% Register XDOT
+user:prolog_file_type(xdot, graphviz_output).
+user:prolog_file_type(xdot, xdot).
 
 
 
@@ -92,6 +115,17 @@ graph_to_svg_dom(O1, GIF, SvgDom):-
   graph_to_gv_file(O2, GIF, ToFile),
   file_to_svg(ToFile, SvgDom),
   safe_delete_file(ToFile).
+
+
+%! open_dot(+File:atom) is det.
+% Opens the given DOT file.
+%
+% @tbd Test support on Windows.
+% @tbd Test support on OS-X.
+
+open_dot(File):-
+  once(find_program_by_file_type(dot, Program)),
+  run_program(Program, [File]).
 
 
 %! tree_to_gv_file(+Options:list(nvpair), +Tree:compound, ?ToFile:atom) is det.

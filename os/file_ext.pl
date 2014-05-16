@@ -70,7 +70,7 @@
     split_into_smaller_files/3, % +BigFile:atom
                                 % +SmallDir:atom
                                 % +Prefix:atom
-    touch/1 % +File:atom
+    touch_file/1 % +File:atom
   ]
 ).
 
