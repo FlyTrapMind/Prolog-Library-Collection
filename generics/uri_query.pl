@@ -96,5 +96,5 @@ uri_query_read(Uri, Name, Atom):-
 
 uri_query_read_pl_term(Uri, Name, Term):-
   uri_query_read(Uri, Name, Atom),
-  read_term_from_atom(Atom, PlTerm, []).
+  read_term_from_atom(Atom, Term, []).
 
