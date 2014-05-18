@@ -1,6 +1,8 @@
 :- module(
   pl_log,
   [
+    canonical_blobs_atom/2, % @Term
+                            % -Atom:atom
     run_collect_messages/2, % :Goal
                             % +File:atom
     run_collect_messages/3, % :Goal
@@ -27,6 +29,12 @@ Logging the performance and results of Prolog predicates.
 :- meta_predicate(run_collect_messages(0,+)).
 :- meta_predicate(run_collect_messages(0,-,-)).
 
+
+
+%! canonical_blobs_atom(@Term, -Atom:atom) is det.
+
+canonical_blobs_atom(Term, Atom):-
+  with_output_to(atom(Atom), write_canonical_blobs(Term)).
 
 
 %! run_collect_messages(:Goal, +File:atom) is det.
