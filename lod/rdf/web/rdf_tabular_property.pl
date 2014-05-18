@@ -114,14 +114,14 @@ rdf_tabular_predicate_literals(G, P) -->
       )),
       Rows1
     ),
-    length(Rows1, L),
+    length(Rows1, NumberOfValues),
     list_truncate(Rows1, 50, Rows2)
   },
   html([
     p([
       \rdf_term_html(rdf_tabular, P, G),
       ' has ',
-      \html_pl_term(L),
+      \html_pl_term(rdf(tabular), NumberOfValues),
       ' unique values.'
     ]),
     \rdf_html_table(

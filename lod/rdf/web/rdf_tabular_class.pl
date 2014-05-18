@@ -12,20 +12,22 @@
 Generates HTML tables for overviews of RDFS classes.
 
 @author Wouter Beek
-@version 2014/01-2014/04
+@version 2014/01-2014/05
 */
 
-:- use_module(generics(list_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(pl_web(html_pl_term)).
+
+:- use_module(generics(list_ext)).
 :- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(rdf_web(rdf_term_html)).
+
+:- use_module(plHtml_pl(html_pl_term)).
 
 
 
@@ -47,7 +49,7 @@ rdf_tabular_class(G, Class1) -->
     p([
       \rdf_term_html(rdf_tabular, Class2, G),
       ' is an RDF class with ',
-      \html_pl_term(L),
+      \html_pl_term(rdf(tabular), L),
       ' instances.'
     ]),
     \rdf_html_table(

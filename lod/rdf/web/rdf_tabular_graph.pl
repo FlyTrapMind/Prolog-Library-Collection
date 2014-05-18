@@ -51,8 +51,14 @@ rdf_tabular_triples(Graph) -->
   {rdf_is_small_graph(Graph)}, !,
   rdf_tabular_triples(_, _, _, Graph).
 rdf_tabular_triples(Graph) -->
-  {rdf_statistics(triples_by_graph(Graph,Triples))},
-  html(p(['The graph contains ',\html_pl_term(Triples),' unique triples.'])).
+  {rdf_statistics(triples_by_graph(Graph,NumberOfTriples))},
+  html(
+    p([
+      'The graph contains ',
+      \html_pl_term(rdf(tabular), NumberOfTriples),
+      ' unique triples.'
+    ])
+  ).
 
 
 %! rdf_tabular_graphs// is det.

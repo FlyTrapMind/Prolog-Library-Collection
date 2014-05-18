@@ -132,7 +132,7 @@ ap_message(ApStage) -->
     rdf_string(ApStage, ap:error, Atom, ap),
     read_term_from_atom(Atom, Error, [])
   },
-  html(\html_pl_term(Error)).
+  html(\html_pl_term(_, Error)).
 ap_message(ApStage) -->
   {rdfs_individual_of(ApStage, ap:'Skip')}, !,
   html('Skip').
@@ -168,7 +168,7 @@ ap_message(ApStage) -->
     ),
     keysort(NVPairs1, NVPairs2)
   },
-  html(\html_pairs(html_pl_term, NVPairs2)).
+  html(\html_pairs(html_pl_term(_), NVPairs2)).
 ap_message(ApStage) -->
   {
     rdfs_individual_of(ApStage, ap:'Tables'), !,

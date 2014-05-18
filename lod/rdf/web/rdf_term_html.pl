@@ -108,8 +108,8 @@ rdf_term_html(LocationId, RdfTerm, Graph) -->
 rdf_term_html(LocationId, RdfTerm, Graph) -->
   rdf_iri_html(LocationId, RdfTerm, Graph).
 % Prolog term.
-rdf_term_html(_, PlTerm, _) -->
-  html(span(class='prolog-term', \html_pl_term(PlTerm))).
+rdf_term_html(_, Term, _) -->
+  html(span(class='prolog-term', \html_pl_term(_, Term))).
 
 
 %! rdf_term_in_graph_html(
