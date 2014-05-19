@@ -47,7 +47,7 @@ conforming to recommendation version 1.1.
 :- use_module(generics(codes_ext)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)). % RDF-meta assertions.
-:- use_module(rdf(rdf_read)).
+:- use_module(plRdf(rdf_read)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd_boolean)).
 :- use_module(xsd(xsd_date)).

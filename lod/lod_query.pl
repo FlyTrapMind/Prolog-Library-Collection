@@ -31,7 +31,7 @@
 :- use_module(lod(flickrwrappr)).
 :- use_module(lod(lod_location)).
 :- use_module(os(file_mime)).
-:- use_module(rdf(rdf_meta)).
+:- use_module(plRdf(rdf_meta)).
 :- use_module(rdf_file(rdf_file)).
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(sparql(sparql_cache)).

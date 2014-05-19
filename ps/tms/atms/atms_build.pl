@@ -43,7 +43,7 @@ ATMS build methods.
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_db)).
 :- use_module(ile(agent)).
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 
 
 

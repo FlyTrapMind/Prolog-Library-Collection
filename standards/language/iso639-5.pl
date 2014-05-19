@@ -19,7 +19,7 @@ The codes are mapped to Lexvo Semantic Web URIs.
 */
 
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).

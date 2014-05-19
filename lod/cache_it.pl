@@ -30,8 +30,8 @@ Possible instantiations for `Goal` are SPARQL_cache/4 and LOD_cache/4.
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_name)).
-:- use_module(rdf(rdf_read)).
+:- use_module(plRdf(rdf_name)).
+:- use_module(plRdf(rdf_read)).
 :- use_module(rdf_web(rdf_store_table)).
 :- use_module(sparql(sparql_db)).
 

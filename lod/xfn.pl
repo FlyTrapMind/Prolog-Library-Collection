@@ -13,9 +13,9 @@
 
 :- use_module(html(html)).
 :- use_module(os(file_ext)).
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 :- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf(rdf_read)).
+:- use_module(plRdf(rdf_read)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 

@@ -30,7 +30,7 @@ Support for IANA-registered MIME types.
 :- use_module(library(semweb/rdf_turtle)). % RDF-serialization.
 :- use_module(library(semweb/rdf_turtle_write)). % RDF-serialization.
 :- use_module(library(xpath)).
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(standards(iana_to_rdf)).

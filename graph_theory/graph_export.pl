@@ -50,7 +50,7 @@ edge(FromVertexId, ToVertexId, EdgeAttributes)
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_export)).
+:- use_module(plRdf(rdf_export)).
 :- use_module(ugraph(ugraph_ext)).
 :- use_module(ugraph(ugraph_export)).
 

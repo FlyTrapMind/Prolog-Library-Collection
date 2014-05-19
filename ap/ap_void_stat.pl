@@ -21,8 +21,8 @@ VoID statistics process for the AP architecture.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_meta)).
-:- use_module(rdf(rdf_stat)).
+:- use_module(plRdf(rdf_meta)).
+:- use_module(plRdf(rdf_stat)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(void(void_stat)). % If only for the namespace.
 :- use_module(xml(xml_namespace)).

@@ -11,7 +11,7 @@
 @version 2013/10
 */
 
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).

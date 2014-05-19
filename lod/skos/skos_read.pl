@@ -28,7 +28,7 @@
 :- use_module(library(aggregate)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf(rdf_hierarchy)).
+:- use_module(plRdf(rdf_hierarchy)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(skos, 'http://www.w3.org/2004/02/skos/core#').

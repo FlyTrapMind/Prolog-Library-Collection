@@ -34,9 +34,9 @@ The following options can be added to AP stages:
 :- use_module(ap(ap_dir)).
 :- use_module(os(datetime_ext)).
 :- use_module(pl(pl_log)).
-:- use_module(rdf(rdf_container)).
+:- use_module(plRdf(rdf_container)).
 :- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 :- use_module(rdf_term(rdf_string)).
 
 

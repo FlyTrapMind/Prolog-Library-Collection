@@ -27,8 +27,8 @@ Link collection gathered by crawler.
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_read)).
+:- use_module(plRdf(rdf_build)).
+:- use_module(plRdf(rdf_read)).
 :- use_module(rdfs(rdfs_read)).
 
 

@@ -72,7 +72,7 @@ the edges and vertices.
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(pl(pl_control)).
-:- use_module(rdf(rdf_export)). % Meta-predicates.
+:- use_module(plRdf(rdf_export)). % Meta-predicates.
 :- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(ugraph(ugraph_ext)).
 

@@ -58,8 +58,8 @@ The generic predicates for Truth-Maintenance Systems.
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_reification)).
-:- use_module(rdf(rdf_search)).
+:- use_module(plRdf(rdf_reification)).
+:- use_module(plRdf(rdf_search)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
 

@@ -14,7 +14,7 @@
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_dataset)).
+:- use_module(plRdf(rdf_dataset)).
 :- use_module(rdf_web(rdf_html_table)).
 :- use_module(server(web_modules)).
 

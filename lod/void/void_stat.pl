@@ -21,9 +21,9 @@ Asserts statistics for VoID descriptions.
 
 :- use_module(generics(thread_ext)).
 :- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf(rdf_graph_name)).
+:- use_module(plRdf(rdf_graph_name)).
 :- use_module(rdf_file(rdf_serial)).
-:- use_module(rdf(rdf_stat)).
+:- use_module(plRdf(rdf_stat)).
 :- use_module(rdf_term(rdf_dateTime)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(void(void_db)). % XML namespace.

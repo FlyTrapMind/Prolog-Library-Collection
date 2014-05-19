@@ -23,9 +23,9 @@
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(uri_ext)).
-:- use_module(rdf(rdf_container)).
-:- use_module(rdf(rdf_list)).
-:- use_module(rdf(rdf_name)).
+:- use_module(plRdf(rdf_container)).
+:- use_module(plRdf(rdf_list)).
+:- use_module(plRdf(rdf_name)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(rdf_web(rdf_html_table)).

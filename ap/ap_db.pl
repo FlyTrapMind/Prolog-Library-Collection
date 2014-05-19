@@ -48,8 +48,8 @@
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(pl(pl_log)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_container)).
+:- use_module(plRdf(rdf_build)).
+:- use_module(plRdf(rdf_container)).
 :- use_module(rdf_term(rdf_boolean)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).

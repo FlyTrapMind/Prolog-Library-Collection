@@ -36,7 +36,7 @@ Directory management for running automated processes.
 :- use_module(library(process)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_container)).
+:- use_module(plRdf(rdf_container)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).

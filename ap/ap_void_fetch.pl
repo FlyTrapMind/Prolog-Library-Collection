@@ -19,8 +19,8 @@ For use in the AP architecture.
 :- use_module(ap(ap_db)).
 :- use_module(library(apply)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf(rdf_dataset)).
-:- use_module(rdf(rdf_package)).
+:- use_module(plRdf(rdf_dataset)).
+:- use_module(plRdf(rdf_package)).
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(void(void_db)).
 

@@ -16,7 +16,7 @@ Suopport for the ISO 3166-1 country code standard.
 */
 
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
-:- use_module(rdf(rdf_build)).
+:- use_module(plRdf(rdf_build)).
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(xml(xml_namespace)).
