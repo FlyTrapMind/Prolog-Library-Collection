@@ -147,9 +147,9 @@ The API for ATMSs.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(plRdf(rdf_read)).
-:- use_module(rdf_term(rdf_boolean)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_string)).
+:- use_module(plRdf_term(rdf_boolean)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_read)).
 
 

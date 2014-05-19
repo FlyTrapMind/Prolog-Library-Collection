@@ -24,7 +24,7 @@
 :- use_module(generics(uri_ext)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(rdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_datatype)).
 :- use_module(rdf_file(rdf_serial)).
 
 

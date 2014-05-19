@@ -42,9 +42,9 @@ Converts XML DOMs to RDF graphs.
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_container)).
 :- use_module(plRdf(rdf_graph_name)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_string)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_literal)).
+:- use_module(plRdf_term(rdf_string)).
 :- use_module(xml(xml_word)).
 :- use_module(xsd(xsd)).
 

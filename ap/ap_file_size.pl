@@ -25,7 +25,7 @@ File size identification and filtering for the AP architecture.
 :- use_module(library(lists)).
 :- use_module(os(dir_ext)).
 :- use_module(plRdf(rdf_build)).
-:- use_module(rdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_datatype)).
 
 
 

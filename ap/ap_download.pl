@@ -21,8 +21,8 @@
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 :- use_module(os(dir_ext)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_string)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_string)).
 :- use_module(uri(uri_scheme)).
 :- use_module(xml(xml_namespace)).
 

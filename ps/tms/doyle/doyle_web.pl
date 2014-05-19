@@ -8,12 +8,14 @@ Web-interface to Doyle's TMS.
 @version 2013/05, 2014/01, 2014/03
 */
 
-:- use_module(doyle(doyle)).
-:- use_module(generics(db_ext)).
-:- use_module(html(html_table)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
+
+:- use_module(doyle(doyle)).
+:- use_module(generics(db_ext)).
 :- use_module(tms(tms)).
+
+:- use_module(plHtml(html_table)).
 
 :- multifile(http:location/3).
 http:location(tms, root(tms), []).

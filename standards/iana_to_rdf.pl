@@ -19,9 +19,10 @@
 :- use_module(library(semweb/rdf_db)).
 
 :- use_module(http(http_download)).
-:- use_module(plRdf(rdf_build)).
-:- use_module(rdfs(rdfs_build)).
 :- use_module(xml(xml_namespace)).
+
+:- use_module(plRdf(rdf_build)).
+:- use_module(plRdf(rdfs_build)).
 
 :- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
 

@@ -23,7 +23,7 @@ Search for agents (e.g. people) on DBpedia.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(owl(owl_read)).
-:- use_module(rdf_term(rdf_term)).
+:- use_module(plRdf_term(rdf_term)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_ext)).
 

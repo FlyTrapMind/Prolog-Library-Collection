@@ -49,16 +49,18 @@ http:location(pldoc, root(help), [priority(10)]).
 
 :- use_module(library(swi_ide)).
 
-% Load PGC documentation and debugging tools.
-:- use_module(rdf_file(rdf_serial)).
-:- use_module(rdf_man(rdf_man_duplicates)).
-:- use_module(rdf_man(rdf_man_literals)).
-:- use_module(rdf_web(rdf_tabular)).
-:- use_module(server(web_modules)).
-:- use_module(server(pldoc_web)).
-:- use_module(server(web_console)).
-:- use_module(server(web_message)).
 :- use_module(tms(tms_web)).
+
+:- use_module(plServer(web_modules)).
+:- use_module(plServer(pldoc_web)).
+:- use_module(plServer(web_console)).
+:- use_module(plServer(web_message)).
+
+:- use_module(plRdf_ser(rdf_serial)).
+
+:- use_module(plRdfDev_man(rdf_man_duplicates)).
+:- use_module(plRdfDev_man(rdf_man_literals)).
+:- use_module(plRdfDev_wui(rdf_tabular)).
 
 :- set_prolog_flag(verbose, normal).
 

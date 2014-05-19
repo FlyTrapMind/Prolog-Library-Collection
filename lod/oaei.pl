@@ -122,9 +122,9 @@ Mismatch types:
 :- use_module(pl(pl_mode)).
 :- use_module(plRdf(rdf_graph_name)).
 :- use_module(rdf_file(rdf_serial)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_string)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_literal)).
+:- use_module(plRdf_term(rdf_string)).
 :- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(align, 'http://knowledgeweb.semanticweb.org/heterogeneity/alignment#').

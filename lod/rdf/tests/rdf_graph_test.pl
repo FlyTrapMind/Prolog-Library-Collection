@@ -17,7 +17,7 @@ Unit testing for RDF graph support.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf_term(rdf_term)).
+:- use_module(plRdf_term(rdf_term)).
 
 
 

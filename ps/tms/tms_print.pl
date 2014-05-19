@@ -15,14 +15,16 @@ Support for printing (aspects of) a TMS.
 @version 2013/05, 2013/09-2013/10, 2014/01
 */
 
+:- use_module(library(option)).
+:- use_module(library(semweb/rdf_db)).
+
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(option_ext)).
-:- use_module(library(option)).
-:- use_module(library(semweb/rdf_db)).
-:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(tms(tms)).
 :- use_module(xml(xml_namespace)).
+
+:- use_module(plRdf(rdfs_label_ext)).
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 

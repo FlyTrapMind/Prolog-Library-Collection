@@ -16,10 +16,11 @@ IANA-registered URI schemes.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
-:- use_module(rdf_file(rdf_serial)).
-:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(standards(iana_to_rdf)).
 :- use_module(xml(xml_namespace)).
+
+:- use_module(plRdf(rdfs_label_ext)).
+:- use_module(plRdf_ser(rdf_serial)).
 
 :- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
 

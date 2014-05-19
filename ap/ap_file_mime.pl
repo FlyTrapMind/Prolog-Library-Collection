@@ -21,9 +21,9 @@ File MIME type identification for the AP architecture.
 :- use_module(library(lists)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_mime)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_string)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_literal)).
+:- use_module(plRdf_term(rdf_string)).
 
 
 

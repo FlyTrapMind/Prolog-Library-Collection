@@ -48,14 +48,15 @@
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(pl(pl_log)).
+:- use_module(xml(xml_namespace)).
+
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_container)).
-:- use_module(rdf_term(rdf_boolean)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_string)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_ext)).
-:- use_module(xml(xml_namespace)).
+:- use_module(plRdf(rdfs_build)).
+:- use_module(plRdf(rdfs_label_ext)).
+:- use_module(plRdf_term(rdf_boolean)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_string)).
 
 :- rdf_meta(ap_resource(r,r,?)).
 :- rdf_meta(ap_stage_resource(r,r,?)).

@@ -14,11 +14,6 @@ Statistics for tracking the progress of automated processes.
 @version 2013/10-2014/03
 */
 
-:- use_module(ap(ap_dir)).
-:- use_module(dcg(dcg_content)).
-:- use_module(generics(atom_ext)).
-:- use_module(generics(thread_ext)).
-:- use_module(html(html_table)).
 :- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(http/html_write)).
@@ -26,9 +21,18 @@ Statistics for tracking the progress of automated processes.
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_string)).
-:- use_module(server(web_modules)).
+
+:- use_module(ap(ap_dir)).
+:- use_module(dcg(dcg_content)).
+:- use_module(generics(atom_ext)).
+:- use_module(generics(thread_ext)).
+
+:- use_module(plHtml(html_table)).
+
+:- use_module(plServer(web_modules)).
+
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_string)).
 
 http:location(ap, root(ap), []).
 :- http_handler(ap(stat), ap_stat, []).

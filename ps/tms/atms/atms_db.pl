@@ -87,7 +87,7 @@ De Kleer 1993 book 'Building Problem Solvers'.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_read)).
-:- use_module(rdf_term(rdf_boolean)).
+:- use_module(plRdf_term(rdf_boolean)).
 
 :- dynamic(has_label/3).
 

@@ -18,14 +18,15 @@ Web-interface for truth maintenance systems.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_query)).
 :- use_module(gv(gv_file)).
-:- use_module(html(html_table)).
-:- use_module(server(app_ui)).
-:- use_module(server(web_console)).
-:- use_module(server(web_modules)).
 :- use_module(tms(tms)).
 :- use_module(tms(tms_export)).
 :- use_module(xml(xml_dom)).
 :- use_module(xml(xml_namespace)).
+
+:- use_module(plHtml(html_table)).
+
+:- use_module(plServer(web_console)).
+:- use_module(plServer(web_modules)).
 
 :- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
 

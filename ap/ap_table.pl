@@ -23,21 +23,22 @@
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(uri_ext)).
-:- use_module(plRdf(rdf_container)).
-:- use_module(plRdf(rdf_list)).
-:- use_module(plRdf(rdf_name)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf_term(rdf_string)).
-:- use_module(rdf_web(rdf_html_table)).
-:- use_module(rdf_web(rdf_term_html)).
 
 :- use_module(plHtml(html_list)).
 :- use_module(plHtml(html_table)).
 :- use_module(plHtml(html_tuple)).
 :- use_module(plHtml(html_pl_term)).
 
-:- use_module(plServer(app_ui)).
 :- use_module(plServer(web_modules)).
+
+:- use_module(plRdf(rdf_container)).
+:- use_module(plRdf(rdf_list)).
+:- use_module(plRdf(rdf_name)).
+:- use_module(plRdf_term(rdf_datatype)).
+:- use_module(plRdf_term(rdf_string)).
+
+:- use_module(plRdfDev_wui(rdf_html_table)).
+:- use_module(plRdfDev_wui(rdf_term_html)).
 
 http:location(ap, root(ap), []).
 :- http_handler(ap(table), ap_table, []).
