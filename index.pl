@@ -15,16 +15,6 @@ user:file_search_path(ugraph,          graph_theory(ugraph)).
 user:file_search_path(ilp,             plc(ilp)).
 user:file_search_path(lod,             plc(lod)).
 user:file_search_path(owl,             lod(owl)).
-user:file_search_path(rdf,             lod(rdf)).
-user:file_search_path(rdf_conv,        rdf(conversion)).
-user:file_search_path(rdf_file,        rdf(file)).
-user:file_search_path(rdf_man,         rdf(management)).
-user:file_search_path(rdf_mt,          rdf(rdf_mt)).
-user:file_search_path(rdf_reasoning,   rdf(reasoning)).
-user:file_search_path(rdf_term,        rdf(term)).
-user:file_search_path(rdf_web,         rdf(web)).
-user:file_search_path(turtle,          rdf(turtle)).
-user:file_search_path(rdfs,            lod(rdfs)).
 user:file_search_path(skos,            lod(skos)).
 user:file_search_path(sparql,          lod(sparql)).
 user:file_search_path(void,            lod(void)).
@@ -33,7 +23,6 @@ user:file_search_path(math,            plc(math)).
 user:file_search_path(os,              plc(os)).
 user:file_search_path(programming,     plc(programming)).
 user:file_search_path(pl,              programming(prolog)).
-user:file_search_path(pl_web,          pl(web)).
 user:file_search_path(ps,              plc(ps)).
 user:file_search_path(tms,             ps(tms)).
 user:file_search_path(atms,            tms(atms)).

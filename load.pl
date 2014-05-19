@@ -18,21 +18,12 @@ load_plc:-
   user:file_search_path(plc, _), !,
 
   % Load the PLC index as file search path statements.
-  set_project,
   ensure_loaded(plc(index)),
 
   % Check SWI-Prolog version.
   use_module(pl(pl_version)),
   check_pl_version,
 
-  % Set data subdirectory.
-  use_module(pl(pl_clas)),
-  process_options,
-
-  % Start logging.
-  use_module(generics(logging)),
-  start_log,
-  
   % Enumerate the external program support
   % for the currently loaded modules.
   use_module(os(run_ext)),
@@ -40,15 +31,12 @@ load_plc:-
 load_plc:-
   print_message(warning, required_file_search_path(plc)).
 
+
+% Messages
+
+:- dynamic(prolog:message//1).
+:- multifile(prolog:message//1).
+
 user:message(required_file_search_path(Alias)) -->
   ['File search path ',Alias,' must be set.'].
-
-
-% If there is no outer project, then PLC is the project.
-
-set_project:-
-  current_predicate(project/2), !.
-set_project:-
-  assert(user:project('PLC', 'Prolog Library Collection')).
-
 

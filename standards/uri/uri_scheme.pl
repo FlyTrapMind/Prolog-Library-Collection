@@ -10,7 +10,7 @@
 IANA-registered URI schemes.
 
 @author Wouter Beek
-@version 2014/02-2014/03
+@version 2014/02-2014/03, 2014/05
 */
 
 :- use_module(library(semweb/rdf_db)).
@@ -35,7 +35,7 @@ init_uri_scheme:-
   rdf_load(File, [format(ntriples),graph(uri_scheme)]).
 init_uri_scheme:-
   assert_iana(
-    uri_scheme,
+    iana_uri_scheme,
     'http://www.iana.org/assignments/uri-schemes/',
     iana:'URISchemaRegistration',
     ['uri-schemes-1','uri-schemes-2']
