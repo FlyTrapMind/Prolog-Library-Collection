@@ -156,4 +156,3 @@ git remote add generics https://github.com/wouterbeek/PrologGenerics.git
 git fetch generics
 git merge generics/master
 ~~~
-
