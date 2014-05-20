@@ -3,7 +3,10 @@
   [
     request_query_read/3, % +Request:list(nvpair)
                           % +QueryName:atom
-                          % -PlTerm:term
+                          % -Atom:atom
+    request_query_read_pl_term/3, % +Request:list(nvpair)
+                                  % +QueryName:atom
+                                  % -PlTerm:term
     uri_query_add/4, % +FromUri:uri
                      % +QueryName:atom
                      % +Atom:atom
@@ -36,11 +39,21 @@ Support for the query string part of URIs.
 
 
 
-%! request_query_read(+Request:list(nvpair), +Name:atom, -Term:term) is det.
+%! request_query_read(+Request:list(nvpair), +Name:atom, -Atom:atom) is det.
 
-request_query_read(Request, Name, Term):-
+request_query_read(Request, Name, Atom):-
   memberchk(search(SearchPairs), Request),
-  memberchk(Name=Atom, SearchPairs), !,
+  memberchk(Name=Atom, SearchPairs), !.
+
+
+%! request_query_read_pl_term(
+%!   +Request:list(nvpair),
+%!   +Name:atom,
+%!   -Term:term
+%! ) is det.
+
+request_query_read_pl_term(Request, Name, Term):-
+  request_query_read(Request, Name, Atom),
   read_term_from_atom(Atom, Term, []).
 
 

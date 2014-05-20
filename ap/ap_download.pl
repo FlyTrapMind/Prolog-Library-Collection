@@ -14,17 +14,19 @@
 @version 2014/02-2014/03
 */
 
-:- use_module(ap(ap_db)).
-:- use_module(generics(uri_ext)).
-:- use_module(http(http_download)).
 :- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
+
+:- use_module(ap(ap_db)).
+:- use_module(datasets(iana)).
+:- use_module(generics(uri_ext)).
+:- use_module(http(http_download)).
 :- use_module(os(dir_ext)).
+:- use_module(xml(xml_namespace)).
+
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
-:- use_module(uri(uri_scheme)).
-:- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
 
@@ -66,9 +68,10 @@ first_nonempty_atom([''|T], Atom):- !,
   first_nonempty_atom(T, Atom).
 first_nonempty_atom([H|_], H).
 
-check_url_validity(URL):-
-  uri_components(URL, uri_components(Scheme, _, _, _, _)),
-  uri_scheme(Scheme), !.
-check_url_validity(URL):-
-  domain_error('URL', URL).
+check_url_validity(Url):-
+  uri_components(Url, uri_components(Scheme,_,_,_,_)),
+  nonvar(Scheme),
+  iana_uri_scheme(Scheme), !.
+check_url_validity(Url):-
+  domain_error('URL', Url).
 

@@ -1,7 +1,7 @@
 :- module(
-  uri_scheme,
+  iana,
   [
-    uri_scheme/1 % ?Scheme:atom
+    iana_uri_scheme/1 % ?Scheme:atom
   ]
 ).
 
@@ -14,15 +14,8 @@ IANA-registered URI schemes.
 */
 
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/rdfs)).
 
-:- use_module(standards(iana_to_rdf)).
-:- use_module(xml(xml_namespace)).
-
-:- use_module(plRdf(rdfs_label_ext)).
 :- use_module(plRdf_ser(rdf_serial)).
-
-:- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
 
 :- initialization(init_uri_scheme).
 
@@ -34,12 +27,7 @@ init_uri_scheme:-
   ), !,
   rdf_load(File, [format(ntriples),graph(uri_scheme)]).
 init_uri_scheme:-
-  assert_iana(
-    iana_uri_scheme,
-    'http://www.iana.org/assignments/uri-schemes/',
-    iana:'URISchemaRegistration',
-    ['uri-schemes-1','uri-schemes-2']
-  ),
+  iana_scrape_uri_scheme(uri_scheme),
   absolute_file_name(
     data(uri_scheme),
     File,
@@ -47,10 +35,4 @@ init_uri_scheme:-
   ),
   rdf_save([format(ntriples)], uri_scheme, File),
   init_uri_scheme.
-
-
-
-uri_scheme(Scheme):-
-  rdfs_label(Registration, Scheme, _, uri_scheme),
-  rdfs_individual_of(Registration, iana:'URISchemaRegistration').
 

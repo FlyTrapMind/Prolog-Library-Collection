@@ -112,14 +112,14 @@ atomic_codes_nondet(atom, Atom, Codes):-
   \+ ((
     nonvar(Atom),
     \+ atom(Atom)
-  )),
+  )), !,
   atom_codes(Atom, Codes).
 % Number.
 atomic_codes_nondet(number, Number, Codes):-
   \+ ((
     nonvar(Number),
     \+ number(Number)
-  )),
+  )), !,
   catch(
     number_codes(Number, Codes),
     error(syntax_error(illegal_number),_Context),
@@ -130,7 +130,7 @@ atomic_codes_nondet(string, String, Codes):-
   \+ ((
     nonvar(String),
     \+ string(String)
-  )),
+  )), !,
   string_codes(String, Codes).
 % Codes.
 atomic_codes_nondet(codes, Codes, Codes):-

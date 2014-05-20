@@ -92,6 +92,32 @@ sparql_cache(Resource, Resources, Propositions):-
   rows_to_propositions([Resource], Rows, Propositions),
   ord_union(Propositions, Resources).
 
+%! rows_to_propositions(
+%!   +Prefix:list([bnode,literal,iri]),
+%!   +Rows:list(compound),
+%!   -Propositions:ordset(list)
+%! ) is det.
+% Returns the ordered set of propositions that occur in
+%  the given SPARQL result set rows.
+%
+% @arg Prefix This contains the stable prefix list of each proposition.
+%      This is usually the singleton list of the subject term.
+% @arg Rows
+% @arg Propositions An ordered set of lists of length 3 (s-p-o).
+
+rows_to_propositions(Prefix, Rows, Props):-
+  rows_to_propositions(Prefix, Rows, [], Props).
+
+rows_to_propositions(_, [], Sol, Sol):- !.
+rows_to_propositions(Prefix, [H1|T], L1, Sol):-
+  row_to_proposition(Prefix, H1, H2),
+  ord_add_element(L1, H2, L2),
+  rows_to_propositions(Prefix, T, L2, Sol).
+
+row_to_proposition(Prefix, Row, L):-
+  Row =.. [row|Suffix],
+  append(Prefix,  Suffix, L).
+
 
 skip_iri(_, Domain, _):-
   atomic_list_concat(DomainComponents, '.', Domain),

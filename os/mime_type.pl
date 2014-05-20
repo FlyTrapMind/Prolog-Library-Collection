@@ -134,13 +134,7 @@ init_mime:-
   mime_register_type(application, 'n-quads',          nq  ),
   mime_register_type(application, 'n-triples',        nt  ).
 init_mime:-
-  assert_iana(
-    mime,
-    'http://www.iana.org/assignments/media-types/',
-    iana:'MIMERegistration',
-    [application,audio,image,message,model,multipart,text,video]
-  ),
-
+  iana_scrape_mime(iana),
   assert_mime_extensions(mime),
 
   absolute_file_name(data('mime.ttl'), File, [access(write)]),

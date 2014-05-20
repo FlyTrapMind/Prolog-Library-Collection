@@ -210,3 +210,19 @@ sparql_query_sameas(Remote, Resource, Resources2):-
   rows_to_resources(Rows, Resources1),
   ord_add_element(Resources1, Resource, Resources2).
 
+%! rows_to_resources(
+%!   +Rows:list(compound),
+%!   -Resources:ordset([bnode,iri,literal])
+%! ) is det.
+% Returns the ordered set of resources that occur in
+%  the given SPARQL result set rows.
+
+rows_to_resources(Rows, Resources):-
+  rows_to_resources(Rows, [], Resources).
+
+rows_to_resources([], Resources, Resources).
+rows_to_resources([Row|Rows], Resources1, Sol):-
+  Row =.. [row|NewResources],
+  ord_union(Resources1, NewResources, Resources2),
+  rows_to_resources(Rows, Resources2, Sol).
+
