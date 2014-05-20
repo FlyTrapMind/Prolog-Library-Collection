@@ -116,15 +116,6 @@ directive --> sparqlPrefix.
 directive --> sparqlBase.
 
 
-%! iri// .
-% ~~~{.ebnf}
-% [135s]   iri ::= IRIREF | PrefixedName
-% ~~~
-
-iri --> 'IRIREF'.
-iri --> 'PrefixedName'.
-
-
 %! literal// .
 % ~~~{.ebnf}
 % [13]   literal ::= RDFLiteral | NumericLiteral | BooleanLiteral
@@ -186,15 +177,6 @@ predicateObjectList --> verb, b, objectList, 'predicateObjectList_3*'.
 
 'predicateObjectList_3*' --> b, `;`, (`` ; b, verb, b, objectList), 'predicateObjectList_3*'.
 'predicateObjectList_3*' --> [].
-
-
-%! 'PrefixedName'// .
-% ~~~{.EBNF}
-% [136s]   PrefixedName ::= PNAME_LN | PNAME_NS
-% ~~~
-
-'PrefixedName' --> 'PNAME_LN'.
-'PrefixedName' --> 'PNAME_NS'.
 
 
 %! prefixID// .

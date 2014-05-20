@@ -17,18 +17,19 @@
   ]
 ).
 
-/** <module> XML_DATATYPES
+/** <module> XML datatypes
 
 DCG rules for XML datatypes.
 
 @author Wouter Beek
-@version 2013/07-2013/08, 2014/02-2014/04
+@version 2013/07-2013/08, 2014/02-2014/05
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_unicode)).
+:- use_module(sparql(sparql_update)).
 
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
 
@@ -157,7 +158,7 @@ xml_chars_11([]) --> [].
 % except for namespace purposes, but XML processors must accept the colon as
 % a name character.
 %
-% @see http://www.w3.org/TR/2008/REC-xml-20081126/#NT-Name
+% @compat XML 1.0.5, XML 1.1.2.
 
 'Name'(Name) -->
   {nonvar(Name)}, !,
@@ -167,15 +168,9 @@ xml_chars_11([]) --> [].
   'Name'_(Codes),
   {atom_codes(Name, Codes)}.
 
-'Name'_([H1,H2,H3|T]) -->
-  'NameStartChar'(H1),
-  'NameChar*'([H2,H3|T]),
-  {\+ phrase((x,m,l), [H1,H2,H3])}.
-'Name'_([H1,H2]) -->
-  'NameStartChar'(H1),
-  'NameChar'(H2).
-'Name'_([H]) -->
-  'NameStartChar'(H).
+'Name'_([H|T]) -->
+  'NameStartChar'(H),
+  'NameChar*'([T]).
 
 
 %! 'NameChar'(?Char:code)//
@@ -188,6 +183,8 @@ xml_chars_11([]) --> [].
 %                      [#x0300-#x036F] |
 %                      [#x203F-#x2040]
 % ~~~
+%
+% @compat XML 1.0.5, XML 1.1.2.
 
 'NameChar'(C) --> 'NameStartChar'(C).
 'NameChar'(C) --> hyphen_minus(C).
@@ -196,7 +193,7 @@ xml_chars_11([]) --> [].
 % #x00B7
 'NameChar'(C) --> middle_dot(C).
 % #x0300-#x036F
-'NameChar'(C) --> between_hex('0300', '036F'). [C], {between(768, 879, C)}.
+'NameChar'(C) --> between_hex('0300', '036F', C).
 % #x203F
 'NameChar'(C) --> undertie(C).
 % #x2040
@@ -208,17 +205,33 @@ xml_chars_11([]) --> [].
 'NameChar*'([]) --> [].
 
 
+%! 'Names'(?Names:list(atom))// .
+% ~~~{.ebnf}
+% [6]    Names	 ::= Name (#x20 Name)*
+% ~~~
+
+'Names'([H|T]) -->
+  'Name'(H),
+  '(#x20 Name)*'(T).
+
+'(#x20 Name)*'([]) --> [].
+'(#x20 Name)*'([H|T]) -->
+  ` `,
+  'Name'(H),
+  '(#x20 Name)*'(T).
+
+
 %! 'NameStartChar'(?Code:code)//
 % ~~~{.bnf}
 % [4]    NameStartChar ::= ":" |
 %                          [A-Z] |
 %                          "_" |
 %                          [a-z] |
-%                          [#x00C0-#x00D6] |
-%                          [#x00D8-#x00F6] |
-%                          [#x00F8-#x02FF] |
-%                          [#x0370-#x037D] |
-%                          [#x037F-#x1FFF] |
+%                          [#xC0-#xD6] |
+%                          [#xD8-#xF6] |
+%                          [#xF8-#x2FF] |
+%                          [#x370-#x37D] |
+%                          [#x37F-#x1FFF] |
 %                          [#x200C-#x200D] |
 %                          [#x2070-#x218F] |
 %                          [#x2C00-#x2FEF] |
@@ -227,35 +240,56 @@ xml_chars_11([]) --> [].
 %                          [#xFDF0-#xFFFD] |
 %                          [#x10000-#xEFFFF]
 % ~~~
+%
+% @compat XML 1.0.5, XML 1.1.2.
+% @compat We reuse SPARQL 1.1 Query [164].
 
 'NameStartChar'(C) --> colon(C).
-'NameStartChar'(C) --> ascii_letter(C).
 'NameStartChar'(C) --> underscore(C).
-% #xC0-#xD6
-'NameStartChar'(C) --> between(192, 214, C).
-% #xD8-#xF6
-'NameStartChar'(C) --> between(216, 246, C).
-% #xF8-#x2FF
-'NameStartChar'(C) --> between(248, 767, C).
-% #x370-#x37D
-'NameStartChar'(C) --> between(880, 893, C).
-% #x37F-#x1FFF
-'NameStartChar'(C) --> between(895, 8191, C).
-% #x200C-#x200D
-'NameStartChar'(C) --> zero_width_non_joiner(C).
-'NameStartChar'(C) --> zero_width_joiner(C).
-% #x2070-#x218F
-'NameStartChar'(C) --> between(8304, 8591, C).
-% #x2C00-#x2FEF
-'NameStartChar'(C) --> between(11264, 12271, C).
-% #x3001-#xD7FF
-'NameStartChar'(C) --> between(12289, 55295, C).
-% #xF900-#xFDCF
-'NameStartChar'(C) --> between(63744, 64975, C).
-% #xFDF0-#xFFFD
-'NameStartChar'(C) --> between(65008, 65533, C).
-% #x10000-#xEFFFF
-'NameStartChar'(C) --> between(65536, 983039, C).
+'NameStartChar'(C) --> 'PN_CHARS_BASE'(C).
+
+
+%! 'Nmtoken'(?Code:code)// .
+% ~~~{.ebnf}
+% [7]    Nmtoken ::= (NameChar)+
+% ~~~
+%
+% @compat XML 1.0.5, XML 1.1.2.
+
+'Nmtoken'(Token) -->
+  {nonvar(Token)}, !,
+  {atom_codes(Token, Codes)},
+  'Nmtoken_'(Codes).
+'Nmtoken'(Token) -->
+  'Nmtoken_'(Codes),
+  {atom_codes(Token, Codes)}.
+
+'Nmtoken_'([H|T]) -->
+  'NameChar'(H),
+  'NameChar*'(T).
+
+'NameChar*'([]) --> [].
+'NameChar*'([H|T]) -->
+  'NameChar'(H),
+  'NameChar*'(T).
+
+
+%! 'Nmtokens'(?Codes:list(code))// .
+% ~~~{.ebnf}
+% [8]    Nmtokens ::= Nmtoken (#x20 Nmtoken)*
+% ~~~
+%
+% @compat XML 1.0.5, XML 1.1.2.
+
+'Nmtokens'([H|T]) -->
+  'Nmtoken'(H),
+  '(#x20 Nmtoken)*'(T).
+
+'(#x20 Nmtoken)*'([]) --> [].
+'(#x20 Nmtoken)*'([H|T]) -->
+  ` `,
+  'Nmtoken'(H),
+  '(#x20 Nmtoken)*'(T).
 
 
 %! xml_namespaced_name(:DCG_Namespace, :DCG_Name)//

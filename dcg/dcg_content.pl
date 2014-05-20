@@ -11,6 +11,8 @@
     between_dec//3, % +LowDecimal:nonneg
                     % +HighDecimal:nonneg
                     % ?Code:code
+    between_hex//2, % +LowHex:atom
+                    % +HighHex:atom
     between_hex//3, % +LowHex:atom
                     % +HighHex:atom
                     % ?Code:code
@@ -24,6 +26,9 @@
     codes//1, % +Codes:list(code)
     end_of_line//0,
     graphic//1, % ?Codes:list(code)
+    hex_code//1, % +HexadecimalDigit:atom
+    hex_code//2, % +HexadecimalDigit:atom
+                 % ?Code:code
     horizontal_line//0,
     horizontal_line//1, % +Length:nonneg
     indent//0,
@@ -59,7 +64,7 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/04
+@version 2013/07-2013/09, 2013/11-2014/05
 */
 
 :- use_module(library(option)).
@@ -307,6 +312,14 @@ graphic([H|T]) -->
   u_graphic(H),
   graphic(T).
 graphic([]) --> [].
+
+
+hex_code(Hex) -->
+  hex_code(Hex, _).
+
+hex_code(Hex, C) -->
+  {hex_value(Hex, C)},
+  [C].
 
 
 %! horizontal_line// .

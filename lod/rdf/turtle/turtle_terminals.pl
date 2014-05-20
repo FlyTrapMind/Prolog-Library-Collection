@@ -107,8 +107,11 @@
 
 %! 'HEX'// .
 % ~~~{.ebnf}
-% [171s]   HEX ::= [0-9] | [A-F] | [a-f]
+% HEX ::= [0-9] | [A-F] | [a-f]
 % ~~~
+%
+% @compat Turtle 1.1 [171s].
+% @compat SPARQL Query 1.1 [172].
 
 'HEX' --> '[0-9]'.
 'HEX' --> between_dec(65, 70).
@@ -128,6 +131,9 @@
 % [18]   IRIREF ::= '<' ([^#x00-#x20<>"{}|^`\] | UCHAR)* '>'
 %                   /* #x00=NULL #01, '1F=control codes #x20=space */
 % ~~~
+%
+% @compat Turtle 1.1 [18].
+% @compate SPARQL 1.1 Query [139].
 
 'IRIREF' --> `<`, 'IRIREF_char*', `>`.
 
@@ -161,16 +167,22 @@
 
 %! 'PERCENT'// .
 % ~~~{.ebnf}
-% [170s]   PERCENT ::= '%' HEX HEX
+% PERCENT ::= '%' HEX HEX
 % ~~~
+%
+% @compat Turtle 1.1 [170s].
+% @compat SPARQL Query 1.1 [170].
 
 'PERCENT' --> `%`, 'HEX', 'HEX'.
 
 
 %! 'PLX'// .
 % ~~~{.ebnf}
-% [169s]   PLX ::= PERCENT | PN_LOCAL_ESC
+% PLX ::= PERCENT | PN_LOCAL_ESC
 % ~~~
+%
+% @compat Turtle 1.1 [169s].
+% @compat SPARQL 1.1 Query [170].
 
 'PLX' --> 'PERCENT'.
 'PLX' --> 'PN_LOCAL_ESC'.
@@ -178,9 +190,16 @@
 
 %! 'PN_CHARS'// .
 % ~~~{.ebnf}
-% [166s]   PN_CHARS ::= PN_CHARS_U | '-' | [0-9] | #x00B7 |
-%                       [#x0300-#x036F] | [#x203F-#x2040]
+% PN_CHARS ::= PN_CHARS_U |
+%              '-' |
+%              [0-9] |
+%              #xB7 |
+%              [#x300-#x36F] |
+%              [#x203F-#x2040]
 % ~~~
+%
+% @compat Turtle 1.1 [166s].
+% @compat SPARQL 1.1 Query [167].
 
 'PN_CHARS' --> 'PN_CHARS_U'.
 'PN_CHARS' --> `-`.
@@ -192,28 +211,52 @@
 
 %! 'PN_CHARS_BASE'// .
 % ~~~{.ebnf}
-% [163s]   PN_CHARS_BASE ::= [A-Z] | [a-z] |
-%                            [#x00C0-#x00D6] | [#x00D8-#x00F6] |
-%                            [#x00F8-#x02FF] | [#x0370-#x037D] |
-%                            [#x037F-#x1FFF] | [#x200C-#x200D] |
-%                            [#x2070-#x218F] | [#x2C00-#x2FEF] |
-%                            [#x3001-#xD7FF] | [#xF900-#xFDCF] |
-%                            [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+% PN_CHARS_BASE ::= [A-Z] |
+%                   [a-z] |
+%                   [#xC0-#xD6] |
+%                   [#xD8-#xF6] |
+%                   [#xF8-#x2FF] |
+%                   [#x370-#x37D] |
+%                   [#x37F-#x1FFF] |
+%                   [#x200C-#x200D] |
+%                   [#x2070-#x218F] |
+%                   [#x2C00-#x2FEF] |
+%                   [#x3001-#xD7FF] |
+%                   [#xF900-#xFDCF] |
+%                   [#xFDF0-#xFFFD] |
+%                   [#x10000-#xEFFFF]
 % ~~~
+%
+% @compat Turtle 1.1 [163s].
+% @compat SPARQL 1.1 Query [164].
 
-'PN_CHARS_BASE' --> '[a-zA-Z]'.
-'PN_CHARS_BASE' --> between_hex('00C0', '00D6').
-'PN_CHARS_BASE' --> between_hex('00D8', '00F6').
-'PN_CHARS_BASE' --> between_hex('00F8', '02FF').
-'PN_CHARS_BASE' --> between_hex('0370', '037D').
-'PN_CHARS_BASE' --> between_hex('037F', '1FFF').
-'PN_CHARS_BASE' --> between_hex('200C', '200D').
-'PN_CHARS_BASE' --> between_hex('2070', '218F').
-'PN_CHARS_BASE' --> between_hex('2C00', '2FEF').
-'PN_CHARS_BASE' --> between_hex('3001', 'D7FF').
-'PN_CHARS_BASE' --> between_hex('F900', 'FDCF').
-'PN_CHARS_BASE' --> between_hex('FDF0', 'FFFD').
-'PN_CHARS_BASE' --> between_hex('10000', 'EFFFF').
+% [A-Z] and [a-z]
+'PN_CHARS_BASE'(C) --> ascii_letter(C).
+% #xC0-#xD6
+'PN_CHARS_BASE'(C) --> between_hex('C0', 'D6', C).
+% #xD8-#xF6
+'PN_CHARS_BASE'(C) --> between_hex('D8', 'F6', C).
+% #xF8-#x2FF
+'PN_CHARS_BASE'(C) --> between_hex('F8', '2FF', C).
+% #x370-#x37D
+'PN_CHARS_BASE'(C) --> between_hex('370', '37D', C).
+% #x37F-#x1FFF
+'PN_CHARS_BASE'(C) --> between_hex('37F', '1FFF', C).
+% #x200C-#x200D
+'PN_CHARS_BASE'(C) --> zero_width_non_joiner(C).
+'PN_CHARS_BASE'(C) --> zero_width_joiner(C).
+% #x2070-#x218F
+'PN_CHARS_BASE'(C) --> between_hex('2070', '218F', C).
+% #x2C00-#x2FEF
+'PN_CHARS_BASE'(C) --> between_hex('2C00', '2FEF', C).
+% #x3001-#xD7FF
+'PN_CHARS_BASE'(C) --> between_hex('3001', 'D7FF', C).
+% #xF900-#xFDCF
+'PN_CHARS_BASE'(C) --> between_hex('F900', 'FDCF', C).
+% #xFDF0-#xFFFD
+'PN_CHARS_BASE'(C) --> between_hex('FDF0, 'FFFD', C).
+% #x10000-#xEFFFF
+'PN_CHARS_BASE'(C) --> between_hex('10000', 'EFFFF', C).
 
 
 %! 'PN_CHARS_U'// .
@@ -227,11 +270,18 @@
 
 %! 'PN_LOCAL'// .
 % ~~~{.ebnf}
-% [168s]   PN_LOCAL ::= (PN_CHARS_U | ':' | [0-9] | PLX)
-%                       ((PN_CHARS | '.' | ':' | PLX)*
-%                        (PN_CHARS | ':' | PLX)
-%                       )?
+% PN_LOCAL ::= ( PN_CHARS_U |
+%                ':' |
+%                [0-9] |
+%                PLX
+%              )
+%              ( ( PN_CHARS | '.' | ':' | PLX )*
+%                ( PN_CHARS | ':' | PLX )
+%              )?
 % ~~~
+%
+% @compat Turtle 1.1 [168s].
+% @compat SPARQL 1.1 Query [169].
 
 'PN_LOCAL' --> 'PN_LOCAL_1', (`` ; 'PN_LOCAL_2').
 
@@ -255,12 +305,15 @@
 
 %! 'PN_LOCAL_ESC'// .
 % ~~~{.ebnf}
-% [172s]   PN_LOCAL_ESC ::= '\'
-%                           ('_' | '~' | '.' | '-' | '!' | '$' | '&' |
-%                            "'" | '(' | ')' | '*' | '+' | ',' | ';' |
-%                            '=' | '/' | '?' | '#' | '@' | '%'
-%                           )
+% PN_LOCAL_ESC ::= '\'
+%                  ( '_' | '~' | '.' | '-' | '!' | '$' | '&' |
+%                    "'" | '(' | ')' | '*' | '+' | ',' | ';' |
+%                    '=' | '/' | '?' | '#' | '@' | '%'
+%                  )
 % ~~~
+%
+% @compat Turtle 1.1 [172s].
+% @compat SPARQL 1.1 Query [173].
 
 'PN_LOCAL_ESC' --> `\\`, 'PN_LOCAL_ESC_char'.
 
@@ -288,8 +341,11 @@
 
 %! 'PN_PREFIX'// .
 % ~~~{.ebnf}
-% [167s]   PN_PREFIX ::= PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
+% PN_PREFIX ::= PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
 % ~~~
+%
+% @compat Turtle 1.1 [167s].
+% @compat SPARQL 1.1 Query [168].
 
 'PN_PREFIX' --> 'PN_CHARS_BASE', (`` ; 'PN_PREFIX_2*').
 
@@ -299,8 +355,11 @@
 
 %! 'PNAME_LN'// .
 % ~~~{.ebnf}
-% [140s]   PNAME_LN ::= PNAME_NS PN_LOCAL
+% PNAME_LN ::= PNAME_NS PN_LOCAL
 % ~~~
+%
+% @compat Turtle 1.1 [140s].
+% @compat SPARQL 1.1 Query [141].
 
 'PNAME_LN' -->
   'PNAME_NS',
@@ -309,8 +368,11 @@
 
 %! 'PNAME_NS'// .
 % ~~~{.abn}
-% [139s]   PNAME_NS ::= PN_PREFIX? ':'
+% PNAME_NS ::= PN_PREFIX? ':'
 % ~~~
+%
+% @compat Turtle 1.1 [139s].
+% @compat SPARQL 1.1 Query [140].
 
 'PNAME_NS' --> (`` ; 'PN_PREFIX'), `:`.
 

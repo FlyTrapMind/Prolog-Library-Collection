@@ -13,29 +13,27 @@ Support for the SPARQL 1.1 Update recommendation.
 @version 2014/05
 */
 
+:- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 
 
 
-%! 'PN_CHARS_BASE'// .
+%! 'GraphTerm'// .
 % ~~~{.ebnf}
-% [164]    PN_CHARS_BASE ::= [A-Z] |
-%                            [a-z] |
-%                            [#x00C0-#x00D6] |
-%                            [#x00D8-#x00F6] |
-%                            [#x00F8-#x02FF] |
-%                            [#x0370-#x037D] |
-%                            [#x037F-#x1FFF] |
-%                            [#x200C-#x200D] |
-%                            [#x2070-#x218F] |
-%                            [#x2C00-#x2FEF] |
-%                            [#x3001-#xD7FF] |
-%                            [#xF900-#xFDCF] |
-%                            [#xFDF0-#xFFFD] |
-%                            [#x10000-#xEFFFF]
+% [109]    GraphTerm ::= iri |
+%                        RDFLiteral |
+%                        NumericLiteral |
+%                        BooleanLiteral |
+%                        BlankNode |
+%                        NIL
 % ~~~
 
-
+'GraphTerm' --> iri.
+'GraphTerm' --> 'RDFLiteral'.
+'GraphTerm' --> 'NumericLiteral'.
+'GraphTerm' --> 'BooleanLiteral'.
+'GraphTerm' --> 'BlankNode'.
+'GraphTerm' --> 'NIL'.
 
 
 %! 'PN_CHARS_U'// .
@@ -62,15 +60,29 @@ Support for the SPARQL 1.1 Update recommendation.
 % ~~~
 
 'Quads' -->
-  
+  (`` ; 'TriplesTemplate'),
+  'Quads1*'.
+
+'Quads1*' --> [].
+'Quads1*' -->
+  'QuadsNotTriples',
+  (`` ; `.`),
+  (`` ; 'TriplesTemplate'),
+  'Quads1*'.
+
 
 %! 'TriplesSameSubject'// .
 % ~~~{.ebnf}
-% [75]    TriplesSameSubject ::= VarOrTerm PropertyListNotEmpty | TriplesNode PropertyList
+% [75]    TriplesSameSubject ::= VarOrTerm PropertyListNotEmpty |
+%                                TriplesNode PropertyList
 % ~~~
 
 'TriplesSameSubject' -->
-  
+  'VarOrTerm',
+  'PropertyListNotEmpty'.
+'TriplesSameSubject' -->
+  'TriplesNode',
+  'PropertyList'.
 
 
 % ~~~{.ebfn}
@@ -78,6 +90,9 @@ Support for the SPARQL 1.1 Update recommendation.
 % ~~~
 
 'TriplesTemplate' -->
+  'TriplesSameSubject',
+  (`` ; `.`, (`` ; 'TriplesTemplate')).
+
 
 %! 'Var'// .
 % ~~~{.ebnf}
@@ -104,13 +119,32 @@ Support for the SPARQL 1.1 Update recommendation.
 
 %! 'VARNAME'// .
 % ~~~{.ebnf}
-% [166]    VARNAME ::= ( PN_CHARS_U | [0-9] )
-%                      ( PN_CHARS_U | [0-9] | #x00B7 | [#x0300-#x036F]
-%                      | [#x203F-#x2040] )*
+% [166]    VARNAME ::= ( PN_CHARS_U |
+%                        [0-9] )
+%                      ( PN_CHARS_U |
+%                        [0-9] |
+%                        #x00B7 |
+%                        [#x0300-#x036F] |
+%                        [#x203F-#x2040] )*
 % ~~~
 
 'VARNAME' -->
-  'PN_CHARS_U'
+  (
+    'PN_CHARS_U'
+  ;
+    decimal_digit
+  ),
+  (
+    'PN_CHARS_U'
+  ;
+    decimal_digit
+  ;
+    hex_code('B7')
+  ;
+    between_hex('300', '36F')
+  ;
+    between_hex('203F', '2040')
+  ).
 
 
 %! 'VarOrTerm'// .
