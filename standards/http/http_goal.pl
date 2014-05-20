@@ -83,7 +83,7 @@ http_goal(Url, O1, Goal):-
   % The default number of attempts is 1.
   select_option(attempts(Attempts), O1, O2, 1),
   merge_options(
-    [cert_verify_hook(cert_verify),timeout(1)],
+    [cert_verify_hook(cert_verify),timeout(100)],
     O2,
     O3
   ),

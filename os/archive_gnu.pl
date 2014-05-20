@@ -30,43 +30,42 @@ These predicates call GNU tools:
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 
-:- use_module(datasets(iana)).
 :- use_module(generics(db_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
 % application/x-bzip2
 % .bz,.bz2,.tbz,.tbz2
-:- iana_register_mime(application, 'x-bzip2', bz2).
-:- db_add_novel(user:prolog_file_type(bz, archive)).
-:- db_add_novel(user:prolog_file_type(bz, bunzip2)).
-:- db_add_novel(user:prolog_file_type(bz2, archive)).
-:- db_add_novel(user:prolog_file_type(bz2, bunzip2)).
-:- db_add_novel(user:prolog_file_type(tbz, archive)).
-:- db_add_novel(user:prolog_file_type(tbz, bunzip2)).
-:- db_add_novel(user:prolog_file_type(tbz2, archive)).
-:- db_add_novel(user:prolog_file_type(tbz2, bunzip2)).
+%:- iana_register_mime(application, 'x-bzip2', bz2).
+user:prolog_file_type(bz, archive).
+user:prolog_file_type(bz, bunzip2).
+user:prolog_file_type(bz2, archive).
+user:prolog_file_type(bz2, bunzip2).
+user:prolog_file_type(tbz, archive).
+user:prolog_file_type(tbz, bunzip2).
+user:prolog_file_type(tbz2, archive).
+user:prolog_file_type(tbz2, bunzip2).
 % application/x-gzip
 % .gz
-:- iana_register_mime(application, 'x-gzip', gz).
-:- db_add_novel(user:prolog_file_type(gz, archive)).
-:- db_add_novel(user:prolog_file_type(gz, gunzip)).
+%:- iana_register_mime(application, 'x-gzip', gz).
+user:prolog_file_type(gz, archive).
+user:prolog_file_type(gz, gunzip).
 % application/x-rar-compressed
 % .rar
-:- iana_register_mime(application, 'x-rar-compressed', rar).
-:- db_add_novel(user:prolog_file_type(rar, archive)).
-:- db_add_novel(user:prolog_file_type(rar, rar)).
+%:- iana_register_mime(application, 'x-rar-compressed', rar).
+user:prolog_file_type(rar, archive).
+user:prolog_file_type(rar, rar).
 % application/x-tar
 % .tar
 % .tgz
-:- iana_register_mime(application, 'x-tar', tar).
-:- db_add_novel(user:prolog_file_type(tar, archive)).
-:- db_add_novel(user:prolog_file_type(tar, tar)).
+%:- iana_register_mime(application, 'x-tar', tar).
+user:prolog_file_type(tar, archive).
+user:prolog_file_type(tar, tar).
 % application/zip
 % .zip
-:- iana_register_mime(application, 'zip', zip).
-:- db_add_novel(user:prolog_file_type(zip, archive)).
-:- db_add_novel(user:prolog_file_type(zip, zip)).
+%:- iana_register_mime(application, 'zip', zip).
+user:prolog_file_type(zip, archive).
+user:prolog_file_type(zip, zip).
 
 
 
@@ -97,7 +96,7 @@ extract_archive(FromFile1, Conversions):-
   file_alternative(FromFile1, _, _, '.tar.gz', FromFile2),
   rename_file(FromFile1, FromFile2),
   extract_archive(FromFile2, Conversions).
-:- db_add_novel(user:prolog_file_type(tgz, archive)).
+user:prolog_file_type(tgz, archive).
 extract_archive(FromFile, L):-
   file_name_extension(Base, Ext, FromFile),
   prolog_file_type(Ext, archive), !,

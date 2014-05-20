@@ -33,7 +33,7 @@ In the furture services like Google translate
 :- use_module(os(file_ext)).
 
 user:file_search_path(audio, project(audio)).
-:- initialization(iana_register_mime(audio, mpeg, mp3)).
+%:- iana_register_mime(audio, mpeg, mp3)).
 
 
 
