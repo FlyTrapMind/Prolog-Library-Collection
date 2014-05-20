@@ -29,7 +29,7 @@
 
 xml_empty_tag(Name) -->
   `<`,
-  xml_name(Name),
+  'Name'(Name),
   (`` ; xml_space),
   `/>`, !.
 
@@ -43,7 +43,7 @@ xml_empty_tag(Name) -->
 
 xml_end_tag(Name) -->
   `</`,
-  xml_name(Name),
+  'Name'(Name),
   (`` ; xml_space),
   `>`, !.
 
@@ -59,7 +59,7 @@ xml_end_tag(Name) -->
 
 xml_start_tag(Name) -->
   `<`,
-  xml_name(Name),
+  'Name'(Name),
   (`` ; xml_space),
   `>`, !.
 

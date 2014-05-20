@@ -106,7 +106,7 @@ xml_base(
 ) -->
   xml_attributes:xml_attribute_(
     DCG_Namespace,
-    xml_name(base),
+    'Name'(base),
     rfc2396_uri_reference(T1, Scheme, Authority, Path, Query, Fragment)
   ).
 

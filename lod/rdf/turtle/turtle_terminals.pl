@@ -21,8 +21,10 @@
 /** <module> Turtle terminals
 
 @author Wouter Beek
-@version 2014/04
+@version 2014/04-2014/05
 */
+
+:- use_module(dcg(dcg_content)).
 
 
 
@@ -460,34 +462,7 @@
 '[a-zA-Z0-9]*' --> [].
 
 
-%! between_dec(+BeginDec:between(0,9), +EndDec:between(0,9))// .
-
-between_dec(BeginDec, EndDec) -->
-  [C],
-  {between(BeginDec, EndDec, C)}.
-
-
-%! between_hex(+BeginHex:atom, +EndHex:atom)// .
-
-between_hex(BeginHex, EndHex) -->
-  {maplist(hex_value, [BeginHex,EndHex], [BeginDec,EndDec])},
-  between_dec(BeginDec, EndDec).
-
-
 hex(Hex) -->
   {hex_value(Hex, Dec)},
   [Dec].
-
-
-%! hex_digits(+HexValue:atom, -DecValue:integer) is det.
-
-hex_value(HexValue, DecValue):-
-  atom_chars(HexValue, HexDigits),
-  hex_digits(HexDigits, 0, DecValue).
-
-hex_digits([], N, N).
-hex_digits([H|T], N1, N):-
-  char_type(H, xdigit(N0)),
-  N2 is N1 * 16 + N0,
-  hex_digits(T, N2, N).
 

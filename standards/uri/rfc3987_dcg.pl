@@ -306,7 +306,7 @@ ls32(ls32(T1)) -->
   'DIGIT'(_, N).
 % 10-99
 'dec-octet'('dec-octet'(N)) -->
-  between_digit(1, 9, _, D1),
+  between_decimal_digit(1, 9, _, D1),
   'DIGIT'(_, D2),
   {digits_to_decimal([D1,D2], N)}.
 % 100-199
@@ -317,13 +317,13 @@ ls32(ls32(T1)) -->
 % 200-249
 'dec-octet'('dec-octet'(N)) -->
   "2",
-  between_digit(0, 4, _, D2),
+  between_decimal_digit(0, 4, _, D2),
   'DIGIT'(_, D3),
   {digits_to_decimal([2,D2,D3], N)}.
 % 250-255
 'dec-octet'('dec-octet'(N)) -->
   "25",
-  between_digit(0, 5, _, D3),
+  between_decimal_digit(0, 5, _, D3),
   {digits_to_decimal([2,5,D3], N)}.
 
 

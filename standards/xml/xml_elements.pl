@@ -122,7 +122,7 @@ xml_element_q(DCG_Namespace, DCG_Name, DCG_Attributes) -->
 
 xml_header(header(T1,T2), DCG_Namespace, Version, Standalone) -->
   xml_element_q(
-    % Note that this cannot be processed by xml_name//1.
+    % Note that this cannot be processed by 'Name'//1.
     word(xml),
     [
       xml_version(T1, DCG_Namespace, Version),

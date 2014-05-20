@@ -70,7 +70,7 @@ xlink_attribute(DCG_Namespace, DCG_Name, DCG_Value) -->
 xlink_href(href(iri(IRI)), DCG_Namespace, IRI) -->
   xlink_attribute(
     xlink_namespace(DCG_Namespace),
-    xml_name(href),
+    'Name'(href),
     'IRI-reference'(IRI)
   ).
 

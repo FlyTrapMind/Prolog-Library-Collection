@@ -1,10 +1,12 @@
 :- module(
   dcg_cardinal,
   [
-    between_digit//4, % +Low:between(0,9)
-                      % +High:between(0,9)
-                      % -Code:code
-                      % -Number:between(0,9)
+    between_decimal_digit//2, % +LowDecimal:between(0,9)
+                              % +HighDecimal:between(0,9)
+    between_decimal_digit//4, % +LowDecimal:between(0,9)
+                              % +HighDecimal:between(0,9)
+                              % ?Code:nonneg
+                              % ?DecimalDigit:between(0,9)
     binary_digit//2, % ?Code:code
                      % ?DecimalDigit:between(0,1)
     binary_number//1, % ?DecimalNumber:integer
@@ -65,11 +67,25 @@ DCGs for cardinal numbers.
 
 
 
-between_digit(Low1, High1, Code, DecimalDigit) -->
-  {Low2 is Low1 + 48},
-  {High2 is High1 + 48},
-  between(Low2, High2, Code),
-  {DecimalDigit is Code - 48}.
+%! between_decimal_digit(
+%!   +LowDecimal:between(0,9),
+%!   +HighDecimal:between(0,9)
+%! )// .
+
+between_decimal_digit(LowDec, HighDec) -->
+  between_decimal_digit(LowDec, HighDec, _, _).
+
+%! between_decimal_digit(
+%!   +LowDecimal:between(0,9),
+%!   +HighDecimal:between(0,9),
+%!   ?Code:nonneg,
+%!   ?DecimalDigit:between(0,9)
+%! )// .
+
+between_decimal_digit(LowDec, HighDec, Code, Digit) -->
+  {between(LowDec, HighDec, Digit)},
+  decimal_digit(Code, Digit).
+
 
 %! binary_digit(?Code:code, ?DecimalDigit:between(0,1))//
 

@@ -14,6 +14,8 @@
     digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
                          % +Radix:integer
                          % -DecimalNumber:integer
+    hex_value/2, % +HexadecimalValue:atom
+                 % -DecimalValue:nonneg
     number_to_decimal/3 % +RadixNumber:atomic
                         % +Radix:between(2,16)
                         % -DecimalNumber:integer
@@ -81,6 +83,21 @@ digits_to_decimal(Ds, Radix, D):-
     ),
     D
   ).
+
+
+%! hex_value(+HexadecimalValue:atom, -DecimalValue:nonneg) is det.
+% @tbd Allow negative values.
+
+hex_value(HexValue, DecValue):-
+  atom_chars(HexValue, HexDigits),
+  hex_digits(HexDigits, 0, DecValue).
+
+hex_digits([], N, N).
+hex_digits([H|T], N1, N):-
+  char_type(H, xdigit(N0)),
+  N2 is N1 * 16 + N0,
+  hex_digits(T, N2, N).
+
 
 %! number_to_decimal(
 %!   +RadixNumber:atomic,

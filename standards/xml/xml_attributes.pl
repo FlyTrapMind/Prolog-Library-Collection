@@ -108,7 +108,7 @@ xml_attribute_list([Tree|Trees], DCG_Value1, [A1|A1s], DCG_Separator) -->
 % ~~~
 
 xml_id(id(Name), DCG_Namespace, Name) -->
-  xml_attribute_(DCG_Namespace, xml_name(id), xml_name(Name)).
+  xml_attribute_(DCG_Namespace, 'Name'(id), 'Name'(Name)).
 
 %! xml_inject_attributes(
 %!   :DCG_Namespace,
@@ -155,7 +155,7 @@ xml_inject_attributes(DCG_Namespace, [H1|T1], [H2|T2], [Tree|Trees]):-
 xml_language(xml_language(T1), DCG_Namespace, LanguageTag) -->
   xml_attribute_(
     DCG_Namespace,
-    xml_name(lang),
+    'Name'(lang),
     rfc3066_language_tag(T1, Primary, Secondary)
   ),
   {atomic_list_concat([Primary,Secondary], '-', LanguageTag)}.
@@ -166,7 +166,7 @@ xml_language(xml_language(T1), DCG_Namespace, LanguageTag) -->
 xml_standalone(standalone(T1), DCG_Namespace, Standalone) -->
   xml_attribute_(
     DCG_Namespace,
-    xml_name(standalone),
+    'Name'(standalone),
     xml_yes_no(T1, Standalone)
   ).
 
@@ -194,7 +194,7 @@ xml_version(
 ) -->
   xml_attribute_(
     DCG_Namespace,
-    xml_name(version),
+    'Name'(version),
     (decimal_number(Major), dot, decimal_number(Minor))
   ).
 

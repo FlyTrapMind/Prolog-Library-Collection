@@ -197,7 +197,7 @@ monthFrag(M) -->
 
 
 nonzero_decimal_digit(C, D) -->
-  between_digit(1, 9, C, D).
+  between_decimal_digit(1, 9, C, D).
 
 
 %! secondCanonicalFragmentMap(+Second:between(0.0,60.0))//

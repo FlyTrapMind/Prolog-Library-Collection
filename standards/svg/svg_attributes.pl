@@ -230,7 +230,7 @@ svg_external_resources_required(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    xml_name(externalResourcesRequired),
+    'Name'(externalResourcesRequired),
     xml_boolean(T1, Required)
   ).
 
@@ -393,7 +393,7 @@ svg_referenced_features(T0, DCG_Namespace, Features) -->
 svg_required_extensions(T0, DCG_Namespace, Extensions) -->
   svg_attribute(
     DCG_Namespace,
-    xml_name(requiredExtensions),
+    'Name'(requiredExtensions),
     svg_extension(Trees, Extensions),
     space
   ),

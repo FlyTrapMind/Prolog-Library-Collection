@@ -7,7 +7,7 @@
     xml_char_11//1, % ?Char:code
     xml_chars_10//1, % ?Chars:list(code)
     xml_chars_11//1, % ?Chars:list(code)
-    xml_name//1, % ?Name:atom
+    'Name'//1, % ?Name:atom
     xml_namespaced_name//2, % :DCG_Namespace
                             % :DCG_Name
     xml_space//0,
@@ -135,14 +135,14 @@ xml_chars_11([H|T]) -->
 xml_chars_11([]) --> [].
 
 
-%! xml_name(?Name:atom)//
+%! 'Name'(?Name:atom)//
 % A **XML Name** is an Nmtoken with a restricted set of initial characters.
 %
 % Disallowed initial characters for names include digits, diacritics,
 % the full stop and the hyphen.
 %
 % ~~~{.bnf}
-% Name ::= NameStartChar (NameChar)*
+% [5]    Name ::= NameStartChar (NameChar)*
 % ~~~
 %
 % ## Reserved names
@@ -159,87 +159,103 @@ xml_chars_11([]) --> [].
 %
 % @see http://www.w3.org/TR/2008/REC-xml-20081126/#NT-Name
 
-xml_name(Name) -->
+'Name'(Name) -->
   {nonvar(Name)}, !,
   {atom_codes(Name, Codes)},
-  xml_name_(Codes).
-xml_name(Name) -->
-  xml_name_(Codes),
+  'Name'_(Codes).
+'Name'(Name) -->
+  'Name'_(Codes),
   {atom_codes(Name, Codes)}.
 
-xml_name_([H1,H2,H3|T]) -->
-  xml_name_start_char(H1),
-  xml_name_chars([H2,H3|T]),
+'Name'_([H1,H2,H3|T]) -->
+  'NameStartChar'(H1),
+  'NameChar*'([H2,H3|T]),
   {\+ phrase((x,m,l), [H1,H2,H3])}.
-xml_name_([H1,H2]) -->
-  xml_name_start_char(H1),
-  xml_name_char(H2).
-xml_name_([H]) -->
-  xml_name_start_char(H).
+'Name'_([H1,H2]) -->
+  'NameStartChar'(H1),
+  'NameChar'(H2).
+'Name'_([H]) -->
+  'NameStartChar'(H).
 
 
-%! xml_name_char(?Char:code)//
+%! 'NameChar'(?Char:code)//
 % ~~~{.bnf}
-% NameChar ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] |
-%              [#x203F-#x2040]
+% [4a]    NameChar ::= NameStartChar |
+%                      "-" |
+%                      "." |
+%                      [0-9] |
+%                      #xB7 |
+%                      [#x0300-#x036F] |
+%                      [#x203F-#x2040]
 % ~~~
 
-xml_name_char(C) --> xml_name_start_char(C).
-xml_name_char(C) --> hyphen_minus(C).
-xml_name_char(C) --> dot(C).
-xml_name_char(C) --> decimal_digit(C).
-% #xB7
-xml_name_char(C) --> middle_dot(C).
+'NameChar'(C) --> 'NameStartChar'(C).
+'NameChar'(C) --> hyphen_minus(C).
+'NameChar'(C) --> dot(C).
+'NameChar'(C) --> decimal_digit(C).
+% #x00B7
+'NameChar'(C) --> middle_dot(C).
 % #x0300-#x036F
-xml_name_char(C) --> [C], {between(768, 879, C)}.
+'NameChar'(C) --> between_hex('0300', '036F'). [C], {between(768, 879, C)}.
 % #x203F
-xml_name_char(C) --> undertie(C).
+'NameChar'(C) --> undertie(C).
 % #x2040
-xml_name_char(C) --> character_tie(C).
+'NameChar'(C) --> character_tie(C).
 
-xml_name_chars([H|T]) -->
-  xml_name_char(H),
-  xml_name_chars(T).
-xml_name_chars([]) --> [].
+'NameChar*'([H|T]) -->
+  'NameChar'(H),
+  'NameChar*'(T).
+'NameChar*'([]) --> [].
 
 
-%! xml_name_start_char(?Code:code)//
+%! 'NameStartChar'(?Code:code)//
 % ~~~{.bnf}
-% NameStartChar ::= ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] |
-%                   [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] |
-%                   [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] |
-%                   [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] |
-%                   [#x10000-#xEFFFF]
+% [4]    NameStartChar ::= ":" |
+%                          [A-Z] |
+%                          "_" |
+%                          [a-z] |
+%                          [#x00C0-#x00D6] |
+%                          [#x00D8-#x00F6] |
+%                          [#x00F8-#x02FF] |
+%                          [#x0370-#x037D] |
+%                          [#x037F-#x1FFF] |
+%                          [#x200C-#x200D] |
+%                          [#x2070-#x218F] |
+%                          [#x2C00-#x2FEF] |
+%                          [#x3001-#xD7FF] |
+%                          [#xF900-#xFDCF] |
+%                          [#xFDF0-#xFFFD] |
+%                          [#x10000-#xEFFFF]
 % ~~~
 
-xml_name_start_char(C) --> colon(C).
-xml_name_start_char(C) --> ascii_letter(C).
-xml_name_start_char(C) --> underscore(C).
+'NameStartChar'(C) --> colon(C).
+'NameStartChar'(C) --> ascii_letter(C).
+'NameStartChar'(C) --> underscore(C).
 % #xC0-#xD6
-xml_name_start_char(C) --> between(192, 214, C).
+'NameStartChar'(C) --> between(192, 214, C).
 % #xD8-#xF6
-xml_name_start_char(C) --> between(216, 246, C).
+'NameStartChar'(C) --> between(216, 246, C).
 % #xF8-#x2FF
-xml_name_start_char(C) --> between(248, 767, C).
+'NameStartChar'(C) --> between(248, 767, C).
 % #x370-#x37D
-xml_name_start_char(C) --> between(880, 893, C).
+'NameStartChar'(C) --> between(880, 893, C).
 % #x37F-#x1FFF
-xml_name_start_char(C) --> between(895, 8191, C).
+'NameStartChar'(C) --> between(895, 8191, C).
 % #x200C-#x200D
-xml_name_start_char(C) --> zero_width_non_joiner(C).
-xml_name_start_char(C) --> zero_width_joiner(C).
+'NameStartChar'(C) --> zero_width_non_joiner(C).
+'NameStartChar'(C) --> zero_width_joiner(C).
 % #x2070-#x218F
-xml_name_start_char(C) --> between(8304, 8591, C).
+'NameStartChar'(C) --> between(8304, 8591, C).
 % #x2C00-#x2FEF
-xml_name_start_char(C) --> between(11264, 12271, C).
+'NameStartChar'(C) --> between(11264, 12271, C).
 % #x3001-#xD7FF
-xml_name_start_char(C) --> between(12289, 55295, C).
+'NameStartChar'(C) --> between(12289, 55295, C).
 % #xF900-#xFDCF
-xml_name_start_char(C) --> between(63744, 64975, C).
+'NameStartChar'(C) --> between(63744, 64975, C).
 % #xFDF0-#xFFFD
-xml_name_start_char(C) --> between(65008, 65533, C).
+'NameStartChar'(C) --> between(65008, 65533, C).
 % #x10000-#xEFFFF
-xml_name_start_char(C) --> between(65536, 983039, C).
+'NameStartChar'(C) --> between(65536, 983039, C).
 
 
 %! xml_namespaced_name(:DCG_Namespace, :DCG_Name)//

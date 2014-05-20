@@ -6,9 +6,11 @@
     atom//1, % ?Atom:atom
     atom//2, % +Atom:atom
              % +Ellipsis:positive_integer
-    between//3, % +Low:nonneg
-                % +High:nonneg
-                % ?Code:code
+    between_dec//2, % +LowDecimal:nonneg
+                    % +HighDecimal:nonneg
+    between_dec//3, % +LowDecimal:nonneg
+                    % +HighDecimal:nonneg
+                    % ?Code:code
     between_hex//3, % +LowHex:atom
                     % +HighHex:atom
                     % ?Code:code
@@ -159,25 +161,34 @@ atom(Atom1, Ellipsis) -->
   atom(Atom2).
 
 
-%! between(+Low:nonneg, +High:nonneg, +Code:code)// is semidet.
-%! between(+Low:nonneg, +High:nonneg, -Code:code)// is nondet.
-% Parses or generates an integer between the given limits.
+%! between_dec(+LowDecimal:nonneg, +HighDecimal:nonneg)// .
+% @see Wrapper around between_dec//3.
+
+between_dec(LowDec, HighDec) -->
+  between_dec(LowDec, HighDec, _).
+
+%! between_dec(+LowDecimal:nonneg, +HighDecimal:nonneg, ?Code:code)// .
+% Parses or generates a decimal integer between the given limits.
 %
 % @tbd Support for negative integers and zero.
 % @tbd Support for `minf` and `inf`.
 
-between(Low, High, Code) -->
-  [Code],
-  {between(Low, High, Code)}.
+between_dec(LowDec, HighDec, Code) -->
+  {between(LowDec, HighDec, Code)},
+  [Code].
 
 
-%! between_hex(+LowHex:atom, +HighHex:atom, +Code:code)// is semidet.
-%! between_hex(+LowHex:atom, +HighHex:atom, -Code:code)// is nondet.
+%! between_hex(+LowHexadecimal:atom, +HighHexadecimal:atom)// .
+% @see Wrapper around between_hex//3.
+
+between_hex(LowHex, HighHex) -->
+  between_hex(LowHex, HighHex, _).
+
+%! between_hex(+LowHexadecimal:atom, +HighHexadecimal:atom, ?Code:code)// .
 
 between_hex(LowHex, HighHex, Code) -->
-  {number_to_decimal(LowHex, 16, Low)},
-  {number_to_decimal(HighHex, 16, High)},
-  between(Low, High, Code).
+  {maplist(hex_value, [LowHex,HighHex], [LowDec,HighDec])},
+  between_dec(LowDec, HighDec, Code).
 
 
 %! bracketed(:DCG)// .
