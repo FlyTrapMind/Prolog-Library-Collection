@@ -26,7 +26,7 @@ Support for the Freebase dataset.
 
 freebase_download_latest(LatestFile):-
   freebase_latest_url(LatestUrl),
-  download_to_file([], LatestUrl, LatestFile).
+  download_to_file(LatestUrl, LatestFile).
 
 
 freebase_latest_url(LatestUrl):-

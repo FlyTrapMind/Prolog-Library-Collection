@@ -19,26 +19,26 @@
 Support for IANA-registered MIME types.
 
 @author Wouter Beek
-@version 2014/02-2014/03
+@version 2014/02-2014/03, 2014/05
 */
 
-:- use_module(generics(db_ext)).
-:- use_module(html(html)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(semweb/rdf_turtle)). % RDF-serialization.
 :- use_module(library(semweb/rdf_turtle_write)). % RDF-serialization.
 :- use_module(library(xpath)).
+
+:- use_module(datasets(iana)).
+:- use_module(generics(db_ext)).
+:- use_module(html(html)).
+:- use_module(xml(xml_namespace)).
+
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
-:- use_module(standards(iana_to_rdf)).
-:- use_module(xml(xml_namespace)).
 
 :- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
-
-:- initialization(init_mime).
 
 
 
@@ -121,27 +121,11 @@ assert_mime_schema_ext(G):-
   rdf_assert(iana:default_extension, rdfs:label, literal(type(xsd:string,'default file extension')), G).
 
 
-init_mime:-
-  absolute_file_name(
-    data(mime),
-    File,
-    [access(read),extensions([ttl]),file_errors(fail)]
-  ), !,
-  rdf_load_any([format(turtle),graph(mime)], File),
   mime_register_type(application, 'atom+xml',         atom),
   mime_register_type(application, 'x-rar-compressed', rar ),
   mime_register_type(application, 'x-bibtex',         bib ),
   mime_register_type(application, 'n-quads',          nq  ),
   mime_register_type(application, 'n-triples',        nt  ).
-init_mime:-
-  iana_scrape_mime(iana),
-  assert_mime_extensions(mime),
-
-  absolute_file_name(data('mime.ttl'), File, [access(write)]),
-  rdf_save_turtle(File, [graph(mime)]),
-
-  init_mime.
-
 
 assert_mime_extensions(G):-
   download_html(

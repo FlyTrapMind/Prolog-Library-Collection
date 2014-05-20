@@ -23,7 +23,8 @@ Extensions for debugging and running in debug mode.
 Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
-@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02, 2014/04
+@version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02,
+         2014/04-2014/05
 */
 
 :- use_module(library(debug)).
@@ -40,13 +41,11 @@ Methods that are used while developing and inspecting code.
 % during the execution of `Goal`.
 
 catch_debug(Debug, Msg, Goal):-
-  catch(Goal, Exception, true),
-  catch_debug_exception(Debug, Msg, Exception).
+  catch(Goal, Exception, debug_exception(Exception)).
 
-
-catch_debug_exception(_, _, Exception):-
+debug_exception(_, _, Exception):-
   var(Exception), !.
-catch_debug_exception(Debug, Msg, Exception):-
+debug_exception(Debug, Msg, Exception):-
   debug(Debug, '[*****] ~w (~w)', [Msg,Exception]).
 
 

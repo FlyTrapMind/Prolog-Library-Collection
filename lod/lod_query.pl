@@ -92,8 +92,8 @@ lod_cache(IRI, Resources, Propositions):-
 lod_local_query(_, _, Graph, Resource, Resources, Propositions):-
   rdf_graph(Graph), !,
   lod_local_query_on_loaded_graph(Resource, Resources, Propositions, Graph).
-lod_local_query(O1, URL, Graph, Resource, Resources, Propositions):-
-  catch(download_to_file(O1, URL, File), _, fail),
+lod_local_query(Options, Url, Graph, Resource, Resources, Propositions):-
+  catch(download_to_file(Url, File, Options), _, fail),
   lod_local_query_on_file(File, Graph, Resource, Resources, Propositions).
 
 % Potential RDF! Let's try to load it in a graph.

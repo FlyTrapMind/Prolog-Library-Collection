@@ -1,11 +1,8 @@
 :- module(
   iana,
   [
-% QUERYING
-    iana_uri_scheme/1, % ?Scheme:iri
-% SPECIFIC SCRAPES
-    iana_scrape_mime/1, % +Graph:atom
-    iana_scrape_uri_scheme/1 % +Graph:atom
+    iana_mime/1, % ?Mime:atom
+    iana_uri_scheme/1 % ?Scheme:iri
   ]
 ).
 
@@ -18,12 +15,16 @@ Crawl IANA Web pages and convert their contents to RDF.
 */
 
 :- use_module(library(apply)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(xml(xml_namespace)).
 
+:- use_module(plRdf(rdf_download)).
 :- use_module(plRdf(rdfs_label_ext)).
 :- use_module(plRdf_conv(csv_to_rdf)).
+:- use_module(plRdf_ser(rdf_serial)).
+:- use_module(plRdf_term(rdf_string)).
 
 :- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
 
@@ -31,34 +32,55 @@ Crawl IANA Web pages and convert their contents to RDF.
 
 % QUERYING %
 
+%! iana_mime(+Mime:atom) is semidet.
+%! iana_mime(-Mime:atom) is nondet.
+% @tbd
+
+iana_mime(Mime):-
+  init_iana_mime(mime),
+  Mime = dummy.
+
 iana_uri_scheme(Scheme):-
-  rdfs_label(Registration, Scheme, _, uri_scheme),
-  rdfs_individual_of(Registration, iana:'URISchemaRegistration').
+  init_iana_uri_scheme(uri_scheme),
+  rdf_string(_, iana:uri_scheme, Scheme, uri_scheme).
 
 
 
-% GENERIC SCRAPING %
+% PERFORM SPECIFIC SCRAPES %
 
-iana_scrape_mime(Graph):-
-  iana_scrape_url(
-    Graph,
+init_iana_mime(Graph):-
+  absolute_file_name(data(mime), File, [file_type(ntriples)]),
+  rdf_download(
+    iana_scrape_url_(
+      'MIME-Registration',
+      [application,audio,image,message,model,multipart,text,video]
+    ),
     'http://www.iana.org/assignments/media-types/',
-    'MIME-Registration',
-    [application,audio,image,message,model,multipart,text,video]
-  ).
-
-
-iana_scrape_uri_scheme(Graph):-
-  iana_scrape_url(
+    File,
     Graph,
-    'http://www.iana.org/assignments/uri-schemes/',
-    'URI-Schema-Registration',
-    ['uri-schemes-1','uri-schemes-2']
+    [freshness_lifetime(3600)]
   ).
 
+init_iana_uri_scheme(Graph):-
+  absolute_file_name(data(uri_scheme), File, [file_type(ntriples)]),
+  rdf_download(
+    iana_scrape_url_(
+      'URI-Schema-Registration',
+      ['uri-schemes-1','uri-schemes-2']
+    ),
+    'http://www.iana.org/assignments/uri-schemes/',
+    File,
+    Graph,
+    [freshness_lifetime(3600)]
+  ).
+
+iana_scrape_url_(ResourceClassName, Categories, Url, File, Graph, _):-
+  iana_scrape_url(Graph, Url, ResourceClassName, Categories),
+  rdf_save([graph(Graph),format(ntriples)], Graph, File).
 
 
-% SPECIFIC SCRAPES %
+
+% GENERIC SCRAPING SUPPORT %
 
 %! iana_scrape_url(
 %!   +Graph:atom,

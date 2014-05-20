@@ -32,9 +32,9 @@
 
 
 
-ap_download_to_directory(ApStage, ToDir, URL, Accept):-
-  check_url_validity(URL),
-  uri_components(URL, uri_components(_,_,Path,_,_)),
+ap_download_to_directory(ApStage, ToDir, Url, Accept):-
+  check_url_validity(Url),
+  uri_components(Url, uri_components(_,_,Path,_,_)),
   atomic_list_concat(Components1, '/', Path),
   reverse(Components1, Components2),
   first_nonempty_atom(Components2, FileName),
@@ -47,9 +47,9 @@ ap_download_to_directory(ApStage, ToDir, URL, Accept):-
     O1 = [request_header('Accept'=Accept)]
   ),
   download_to_file(
-    [header('Content-Type',ContentType)|O1],
-    URL,
-    File
+    Url,
+    File,
+    [header('Content-Type',ContentType)|Options]
   ),
   ap_stage_resource(ApStage, Resource, Graph),
   rdf_assert_string(Resource, rfc2616:'Content-Type', ContentType, Graph),

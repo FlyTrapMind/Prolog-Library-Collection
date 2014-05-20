@@ -27,3 +27,4 @@ dcg_catch(DCG, Exception, Recover, X, Y):-
     Exception,
     dcg_call(Recover, X, Y)
   ).
+

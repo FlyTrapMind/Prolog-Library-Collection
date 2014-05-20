@@ -19,6 +19,8 @@
                    % +Type:atom
                    % -File:atom
     create_file_directory/1, % +File:atom
+    file_age/2, % +File:atom
+                % -Age:between(0.0,inf)
     file_alternative/5, % +FromFile:atom
                         % ?Directory:atom
                         % ?Name:atom
@@ -52,6 +54,8 @@
     http_path_correction/2, % +HttpPath:atom
                             % -Path:atom
     is_absolute_file_name2/1, % ?File:atom
+    is_fresh_file/2, % +File:atom
+                     % +FreshnessLifetime:between(0.0,inf)
     is_image_file/1, % +File:atom
     last_path_component/2, % +Path:atom
                            % -BaseOrLastSubdir:atom
@@ -108,6 +112,7 @@ We use the following abbreviations in this module:
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(generics(meta_ext)).
+:- use_module(math(math_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(os_ext)).
 
@@ -235,6 +240,14 @@ create_file(NestedDir, Base, TypeOrExtensions, File):-
 create_file_directory(File):-
   file_name(File, Dir, _, _),
   create_directory(Dir).
+
+
+%! file_age(+File:atom, -Age:between(0.0,inf)) is det.
+
+file_age(File, Age):-
+  time_file(File, LastModified),
+  get_time(Now),
+  Age is Now - LastModified.
 
 
 %! file_alternative(
@@ -412,6 +425,13 @@ is_absolute_file_name2(F):-
   var(F), !, fail.
 is_absolute_file_name2(F):-
   is_absolute_file_name(F).
+
+
+%! is_fresh_file(+File:atom, +FreshnessLifetime:between(0.0,inf)) is semidet.
+
+is_fresh_file(File, FreshnessLifetime):-
+  file_age(File, Age),
+  is_fresh_age(Age, FreshnessLifetime).
 
 
 %! is_image_file(+File:atom) is semidet.

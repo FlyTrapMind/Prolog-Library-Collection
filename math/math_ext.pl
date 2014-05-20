@@ -27,6 +27,8 @@
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
+    is_fresh_age/2, % +Age:between(0.0,inf)
+                    % +FreshnessLifetime:between(0.0,inf)
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -71,7 +73,7 @@
 Extra arithmetic functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05
 */
 
 :- use_module(library(apply)).
@@ -211,6 +213,16 @@ fibonacci(N, F):-
   fibonacci(N1, F1),
   fibonacci(N2, F2),
   F is F1 + F2.
+
+
+%! is_fresh_age(
+%!   +Age:between(0.0,inf),
+%!   +FreshnessLifetime:between(0.0,inf)
+%! ) is semidet.
+
+is_fresh_age(_, inf):- !.
+is_fresh_age(Age, FreshnessLifetime):-
+  Age < FreshnessLifetime.
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.

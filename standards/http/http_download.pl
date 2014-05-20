@@ -1,9 +1,11 @@
 :- module(
   http_download,
   [
-    download_to_file/3 % +Options:list(nvpair)
-                       % +Url:url
+    download_to_file/2, % +Url:url
+                        % ?File:atom
+    download_to_file/3 % +Url:url
                        % ?File:atom
+                       % +Options:list(nvpair)
   ]
 ).
 
@@ -12,7 +14,7 @@
 Support for downloading files over HTTP(S).
 
 @author Wouter Beek
-@version 2013/05, 2013/09, 2013/11-2014/04
+@version 2013/05, 2013/09, 2013/11-2014/05
 */
 
 :- use_module(library(filesex)).
@@ -21,31 +23,46 @@ Support for downloading files over HTTP(S).
 
 :- use_module(generics(uri_ext)).
 :- use_module(http(http_goal)).
+:- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
 
 
-%! download_to_file(+Options:list(nvpair), +Url:url, ?File:atom) is det.
+%! download_to_file(+Url:url, ?File:atom) is det.
+% @see Wrapper for download_to_file/2, which empty options list.
+
+download_to_file(Url, File):-
+  download_to_file(Url, File, []).
+
+%! download_to_file(+Url:url, ?File:atom, +Options:list(nvpair)) is det.
 % Downloads files from a URL to either the given file (when instantiated)
 % of to the a file name that is created based on the URL.
 %
 % The following options are supported:
-%   * =|force(+Redownload:boolean)|=
-%     Sets whether files that were downloaded in the past
-%     are overwritten or not.
-%     Default: `false`.
+%   * freshness_lifetime(+or([between(0.0,inf),oneof([inf])]))
+%     Sets whether -- and if so, when -- files that were downloaded
+%     in the past are redownloaded and overwritten.
 %   * Other options are passed to http_goal/3 and, subsequently, http_open/3.
 %
 % @see url_nested_file/3 for how the file name is created based on the URL.
+%      This requires the file search path `data` to be set to a directory
+%      with write access.
 
 % The file was already downloaded in the past.
-download_to_file(O1, _, File):-
+download_to_file(Url, File, Options):-
   nonvar(File),
-  option(force(false), O1, false),
   exists_file(File), !,
-  access_file(File, read).
+  (
+    option(freshness_lifetime(FreshnessLifetime), Options, inf),
+    is_fresh_file(File, FreshnessLifetime)
+  ->
+    access_file(File, read)
+  ;
+    delete_file(File),
+    download_to_file(Url, File, Options)
+  ).
 % An absolute file name is specified.
-download_to_file(O1, Url, File):-
+download_to_file(Url, File, Options):-
   nonvar(File),
   is_absolute_file_name(File), !,
   file_directory_name(File, Dir),
@@ -65,13 +82,13 @@ download_to_file(O1, Url, File):-
   file_name_extension(File, ThreadName, TmpFile),
 
   % The actual downloading part.
-  http_goal(Url, O1, file_from_stream(TmpFile)),
+  http_goal(Url, Options, file_from_stream(TmpFile)),
 
   % Give the file its original name.
   rename_file(TmpFile, File).
-% No file name is given; create a file name is a standardized way,
+% No file name is given; create a file name in a standardized way,
 % based on the URL.
-download_to_file(O1, Url, File):-
+download_to_file(Url, File, Options):-
   url_nested_file(data(.), Url, File),
-  download_to_file(O1, Url, File).
+  download_to_file(Url, File, Options).
 

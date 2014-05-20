@@ -34,10 +34,10 @@ e.g. automatically extracting the downloaded files if they are archives.
 %     The file to which the contents at URL are located.
 %   * The other options are passed to download_to_file/3.
 
-download_and_extract(O1, Url, Files):-
-  option(file(File), O1, _),
+download_and_extract(Options, Url, Files):-
+  option(file(File), Options, _),
   setup_call_cleanup(
-    download_to_file(O1, Url, File),
+    download_to_file(Url, File, Options),
     extract_file(File),
     delete_file(File)
   ),

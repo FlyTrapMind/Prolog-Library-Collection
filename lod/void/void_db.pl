@@ -64,7 +64,7 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
     is_of_type(iri, DatadumpLocation)
   ->
     % Store locally.
-    download_to_file([], DatadumpLocation, DatadumpFile)
+    download_to_file(DatadumpLocation, DatadumpFile)
   ;
     is_absolute_file_name(DatadumpLocation)
   ->

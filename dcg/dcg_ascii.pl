@@ -1034,32 +1034,32 @@ ascii_letter_uppercase(C) --> w_uppercase(C).
 ascii_letter_uppercase(C) --> x_uppercase(C).
 ascii_letter_uppercase(C) --> y_uppercase(C).
 ascii_letter_uppercase(C) --> z_uppercase(C).
-ascii_letter_uppercase(C, 1) --> a_lowercase(C).
-ascii_letter_uppercase(C, 2) --> b_lowercase(C).
-ascii_letter_uppercase(C, 3) --> c_lowercase(C).
-ascii_letter_uppercase(C, 4) --> d_lowercase(C).
-ascii_letter_uppercase(C, 5) --> e_lowercase(C).
-ascii_letter_uppercase(C, 6) --> f_lowercase(C).
-ascii_letter_uppercase(C, 7) --> g_lowercase(C).
-ascii_letter_uppercase(C, 8) --> h_lowercase(C).
-ascii_letter_uppercase(C, 9) --> i_lowercase(C).
-ascii_letter_uppercase(C, 10) --> j_lowercase(C).
-ascii_letter_uppercase(C, 11) --> k_lowercase(C).
-ascii_letter_uppercase(C, 12) --> l_lowercase(C).
-ascii_letter_uppercase(C, 13) --> m_lowercase(C).
-ascii_letter_uppercase(C, 14) --> n_lowercase(C).
-ascii_letter_uppercase(C, 15) --> o_lowercase(C).
-ascii_letter_uppercase(C, 16) --> p_lowercase(C).
-ascii_letter_uppercase(C, 17) --> q_lowercase(C).
-ascii_letter_uppercase(C, 18) --> r_lowercase(C).
-ascii_letter_uppercase(C, 19) --> s_lowercase(C).
-ascii_letter_uppercase(C, 20) --> t_lowercase(C).
-ascii_letter_uppercase(C, 21) --> u_lowercase(C).
-ascii_letter_uppercase(C, 22) --> v_lowercase(C).
-ascii_letter_uppercase(C, 23) --> w_lowercase(C).
-ascii_letter_uppercase(C, 24) --> x_lowercase(C).
-ascii_letter_uppercase(C, 25) --> y_lowercase(C).
-ascii_letter_uppercase(C, 26) --> z_lowercase(C).
+ascii_letter_uppercase(C, 1) --> a_uppercase(C).
+ascii_letter_uppercase(C, 2) --> b_uppercase(C).
+ascii_letter_uppercase(C, 3) --> c_uppercase(C).
+ascii_letter_uppercase(C, 4) --> d_uppercase(C).
+ascii_letter_uppercase(C, 5) --> e_uppercase(C).
+ascii_letter_uppercase(C, 6) --> f_uppercase(C).
+ascii_letter_uppercase(C, 7) --> g_uppercase(C).
+ascii_letter_uppercase(C, 8) --> h_uppercase(C).
+ascii_letter_uppercase(C, 9) --> i_uppercase(C).
+ascii_letter_uppercase(C, 10) --> j_uppercase(C).
+ascii_letter_uppercase(C, 11) --> k_uppercase(C).
+ascii_letter_uppercase(C, 12) --> l_uppercase(C).
+ascii_letter_uppercase(C, 13) --> m_uppercase(C).
+ascii_letter_uppercase(C, 14) --> n_uppercase(C).
+ascii_letter_uppercase(C, 15) --> o_uppercase(C).
+ascii_letter_uppercase(C, 16) --> p_uppercase(C).
+ascii_letter_uppercase(C, 17) --> q_uppercase(C).
+ascii_letter_uppercase(C, 18) --> r_uppercase(C).
+ascii_letter_uppercase(C, 19) --> s_uppercase(C).
+ascii_letter_uppercase(C, 20) --> t_uppercase(C).
+ascii_letter_uppercase(C, 21) --> u_uppercase(C).
+ascii_letter_uppercase(C, 22) --> v_uppercase(C).
+ascii_letter_uppercase(C, 23) --> w_uppercase(C).
+ascii_letter_uppercase(C, 24) --> x_uppercase(C).
+ascii_letter_uppercase(C, 25) --> y_uppercase(C).
+ascii_letter_uppercase(C, 26) --> z_uppercase(C).
 
 line_feed --> [10].
 line_feed(10) --> [10].
