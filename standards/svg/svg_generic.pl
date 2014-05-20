@@ -20,10 +20,6 @@
 
 :- meta_predicate(svg_namespace(//,?,?)).
 
-% SVG MIME type.
-:- dynamic(user:mime_type/2).
-user:mime_type(svg, 'image/svg+xml').
-
 % SVG public identifier.
 :- dynamic(user:public_identifier/2).
 user:public_identifier(svg, 'PUBLIC "-//W3C//DTD SVG 1.1//EN"').

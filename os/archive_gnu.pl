@@ -23,21 +23,21 @@ These predicates call GNU tools:
   - is_archive/1
 
 @author Wouter Beek
-@version 2013/12-2014/04
+@version 2013/12-2014/05
 */
 
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 
+:- use_module(datasets(iana)).
 :- use_module(generics(db_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
-:- use_module(os(mime_type)).
 
 % application/x-bzip2
 % .bz,.bz2,.tbz,.tbz2
-:- mime_register_type(application, 'x-bzip2', bz2).
+:- iana_register_mime(application, 'x-bzip2', bz2).
 :- db_add_novel(user:prolog_file_type(bz, archive)).
 :- db_add_novel(user:prolog_file_type(bz, bunzip2)).
 :- db_add_novel(user:prolog_file_type(bz2, archive)).
@@ -48,23 +48,23 @@ These predicates call GNU tools:
 :- db_add_novel(user:prolog_file_type(tbz2, bunzip2)).
 % application/x-gzip
 % .gz
-:- mime_register_type(application, 'x-gzip', gz).
+:- iana_register_mime(application, 'x-gzip', gz).
 :- db_add_novel(user:prolog_file_type(gz, archive)).
 :- db_add_novel(user:prolog_file_type(gz, gunzip)).
 % application/x-rar-compressed
 % .rar
-:- mime_register_type(application, 'x-rar-compressed', rar).
+:- iana_register_mime(application, 'x-rar-compressed', rar).
 :- db_add_novel(user:prolog_file_type(rar, archive)).
 :- db_add_novel(user:prolog_file_type(rar, rar)).
 % application/x-tar
 % .tar
 % .tgz
-:- mime_register_type(application, 'x-tar', tar).
+:- iana_register_mime(application, 'x-tar', tar).
 :- db_add_novel(user:prolog_file_type(tar, archive)).
 :- db_add_novel(user:prolog_file_type(tar, tar)).
 % application/zip
 % .zip
-:- mime_register_type(application, 'zip', zip).
+:- iana_register_mime(application, 'zip', zip).
 :- db_add_novel(user:prolog_file_type(zip, archive)).
 :- db_add_novel(user:prolog_file_type(zip, zip)).
 

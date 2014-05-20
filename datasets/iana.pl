@@ -1,7 +1,14 @@
 :- module(
   iana,
   [
-    iana_mime/1, % ?Mime:atom
+    iana_mime/1, % ?ContentType:atom
+    iana_mime/2, % ?Type:atom
+                 % ?Subtype:atom
+    iana_mime_file_extension/2, % ?ContentType:atom
+                                % ?DefaultExtension:atom
+    iana_register_mime/3, % +Type:atom
+                          % +Subtype:atom
+                          % +DefaultExtension:atom
     iana_uri_scheme/1 % ?Scheme:iri
   ]
 ).
@@ -9,6 +16,10 @@
 /** <module> IANA CSV to RDF
 
 Crawl IANA Web pages and convert their contents to RDF.
+
+This module currently supports:
+  - MIME content types.
+  - URI Schemes
 
 @author Wouter Beek
 @version 2014/01-2014/03, 2014/05
@@ -21,6 +32,7 @@ Crawl IANA Web pages and convert their contents to RDF.
 :- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_download)).
+:- use_module(plRdf(rdfs_build)).
 :- use_module(plRdf(rdfs_label_ext)).
 :- use_module(plRdf_conv(csv_to_rdf)).
 :- use_module(plRdf_ser(rdf_serial)).
@@ -37,8 +49,15 @@ Crawl IANA Web pages and convert their contents to RDF.
 % @tbd
 
 iana_mime(Mime):-
+  iana_mime(Type, Subtype),
+  atomic_list_concat([Type,Subtype], '/', Mime).
+
+iana_mime(Type, Subtype):-
   init_iana_mime(mime),
-  Mime = dummy.
+  rdf_string(Registration, iana:name, Subtype, mime),
+  rdf(Registration, rdf:type, Class, mime),
+  rdf(Class, rdfs:label, literal(type(xsd:string,Type)), mime).
+
 
 iana_uri_scheme(Scheme):-
   init_iana_uri_scheme(uri_scheme),
@@ -51,7 +70,7 @@ iana_uri_scheme(Scheme):-
 init_iana_mime(Graph):-
   absolute_file_name(data(mime), File, [file_type(ntriples)]),
   rdf_download(
-    iana_scrape_url_(
+    iana_scrape_url1_(
       'MIME-Registration',
       [application,audio,image,message,model,multipart,text,video]
     ),
@@ -64,7 +83,7 @@ init_iana_mime(Graph):-
 init_iana_uri_scheme(Graph):-
   absolute_file_name(data(uri_scheme), File, [file_type(ntriples)]),
   rdf_download(
-    iana_scrape_url_(
+    iana_scrape_url2_(
       'URI-Schema-Registration',
       ['uri-schemes-1','uri-schemes-2']
     ),
@@ -74,8 +93,22 @@ init_iana_uri_scheme(Graph):-
     [freshness_lifetime(3600)]
   ).
 
-iana_scrape_url_(ResourceClassName, Categories, Url, File, Graph, _):-
-  iana_scrape_url(Graph, Url, ResourceClassName, Categories),
+iana_scrape_url1_(ClassName1, Categories, Url, File, Graph, _):-
+  forall(
+    member(Category, Categories),
+    (
+      atomic_list_concat([ClassName1,Category], '-', ClassName2),
+      rdf_global_id(iana:ClassName1, Class1),
+      rdf_global_id(iana:ClassName2, Class2),
+      rdfs_assert_label(Class2, Category, Graph),
+      rdfs_assert_subclass(Class1, Class2, Graph),
+      iana_scrape_url_category(Graph, Url, ClassName2, Category)
+    )
+  ),
+  rdf_save([graph(Graph),format(ntriples)], Graph, File).
+
+iana_scrape_url2_(ClassName, Categories, Url, File, Graph, _):-
+  iana_scrape_url(Graph, Url, ClassName, Categories),
   rdf_save([graph(Graph),format(ntriples)], Graph, File).
 
 
@@ -89,9 +122,9 @@ iana_scrape_url_(ResourceClassName, Categories, Url, File, Graph, _):-
 %!   +Categories:list(atom)
 %! ) is det.
 
-iana_scrape_url(Graph, IanaUrl, ResourceClassName, Categories):-
+iana_scrape_url(Graph, IanaUrl, ClassName, Categories):-
   maplist(
-    iana_scrape_url_category(Graph, IanaUrl, ResourceClassName),
+    iana_scrape_url_category(Graph, IanaUrl, ClassName),
     Categories
   ).
 
@@ -99,7 +132,7 @@ iana_scrape_url(Graph, IanaUrl, ResourceClassName, Categories):-
 %! iana_scrape_url_category(
 %!   +Graph:atom,
 %!   +IanaUrl:url,
-%!   +ResourceClassName:atom,
+%!   +ClassName:atom,
 %!   +Category:atom
 %! ) is det.
 % @tbd Parse from HTTP stream directly.
@@ -112,7 +145,7 @@ iana_scrape_url(Graph, IanaUrl, ResourceClassName, Categories):-
 %      )
 %      ~~~
 
-iana_scrape_url_category(Graph, IanaUrl, ResourceClassName, Category):-
+iana_scrape_url_category(Graph, IanaUrl, ClassName, Category):-
   atomic_list_concat([IanaUrl,Category,'.csv'], Url),
-  csv_to_rdf(Url, Graph, iana, ResourceClassName).
+  csv_to_rdf(Url, Graph, iana, ClassName).
 

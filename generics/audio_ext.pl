@@ -18,21 +18,22 @@ In the furture services like Google translate
 @author Wouter Beek
 @tbd Catch Unicode characters.
 @tbd Do not fail on empty line.
-@version 2012/10, 2014/01-2014/02
+@version 2012/10, 2014/01-2014/02, 2014/05
 */
 
+:- use_module(library(apply)).
+:- use_module(library(http/http_open)).
+:- use_module(library(uri)).
+
+:- use_module(datasets(iana)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
-:- use_module(library(apply)).
-:- use_module(library(http/http_open)).
-:- use_module(library(uri)).
 :- use_module(os(file_ext)).
-:- use_module(os(mime_type)).
 
 user:file_search_path(audio, project(audio)).
-:- mime_register_type(audio, mpeg, mp3).
+:- initialization(iana_register_mime(audio, mpeg, mp3)).
 
 
 
