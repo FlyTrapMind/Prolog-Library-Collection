@@ -84,17 +84,17 @@ parse_file(File1, NS, G):-
 
 xml_parse(NS, G) -->
   xml_declaration(_),
-  xml_start_tag(RootTag), skip_whites,
+  'STag'(RootTag), skip_whites,
   {rdf_create_next_resource(NS, RootTag, S, G)},
   xml_parses(NS, S, G),
-  xml_end_tag(RootTag), dcg_done.
+  'ETag'(RootTag), dcg_done.
 
 
 %! xml_parse(+RdfContainer:iri, +RdfGraph:atom)// is det.
 
 % Non-tag content.
 xml_parse(NS, S, G) -->
-  xml_start_tag(PTag), skip_whites,
+  'STag'(PTag), skip_whites,
   xml_content(PTag, Codes), !,
   {
     atom_codes(O, Codes),
@@ -103,15 +103,15 @@ xml_parse(NS, S, G) -->
   }.
 % Skip short tags.
 xml_parse(_, _, _) -->
-  xml_empty_tag(_), !,
+  'EmptyElemTag'(_), !,
   skip_whites, !.
 % Nested tag.
 xml_parse(NS, S, G) -->
-  xml_start_tag(OTag), !,
+  'STag'(OTag), !,
   skip_whites, !,
   {rdf_create_next_resource(NS, OTag, O, G)},
   xml_parses(NS, O, G),
-  xml_end_tag(OTag), skip_whites,
+  'ETag'(OTag), skip_whites,
   {
     rdf_assert_individual(S, rdf:'Bag', G),
     rdf_assert_collection_member(S, O, G)
@@ -133,10 +133,10 @@ xml_parses(_, _, _) -->
 
 % The tag closes: end of content codes.
 xml_content(Tag, []) -->
-  xml_end_tag(Tag), skip_whites, !.
+  'ETag'(Tag), skip_whites, !.
 % Another XML tag starts, this is not XML content.
 xml_content(_, []) -->
-  dcg_peek(xml_start_tag(_)), !, {fail}.
+  dcg_peek('STag'(_)), !, {fail}.
 % Parse a code of content.
 xml_content(Tag, [H|T]) -->
   [H],

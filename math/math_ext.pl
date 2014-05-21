@@ -42,8 +42,8 @@
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
     number_parts/3, % ?Number:number
-                         % ?IntegerComponent:integer
-                         % ?FractionalComponent:integer
+                    % ?IntegerComponent:integer
+                    % ?FractionalComponent:integer
     number_length/2, % +Number:number
                      % -Length:integer
     number_length/3, % +Number:number

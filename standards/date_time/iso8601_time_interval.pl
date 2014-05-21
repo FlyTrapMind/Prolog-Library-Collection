@@ -416,7 +416,12 @@ iso8601_recurring_time_interval(
   DateTime2
 ) -->
   iso8601_recurence_designator(T1),
-  ({var(N)} ; decimal_number(N), {T2 = recurrences(N)}),
+  (
+    {var(N)}
+  ;
+    integer(N),
+    {T2 = recurrences(N)}
+  ),
   forward_slash,
   iso8601_time_interval(T3, Variant, Format, DateTime1, DateTime2),
   {parse_tree(recurring_time_interval, [T1,T2,'/',T3], T0)}.
@@ -454,37 +459,37 @@ iso8601_time_interval(T0, 4, Format, DateTime1, DateTime2) -->
 % SUPPORT PREDICATES %
 
 iso8601_day_designator('D') -->
-  "D".
+  `D`.
 
 iso8601_duration_designator(duration_designator('P')) -->
-  "P".
+  `P`.
 
 iso8601_hour_designator('H') -->
-  "H".
+  `H`.
 
 iso8601_interval_separator(interval_separator('/')) -->
-  "/".
+  slash.
 
 iso8601_minute_designator('M') -->
-  "M".
+  `M`.
 
 iso8601_month_designator('M') -->
-  "M".
+  `M`.
 
 iso8601_number_of_days(days(D,X), D) -->
-  decimal_number(D),
+  integer(D),
   iso8601_day_designator(X).
 
 iso8601_number_of_hours(hours(H,X), H) -->
-  decimal_number(H),
+  integer(H),
   iso8601_hour_designator(X).
 
 iso8601_number_of_minutes(minutes(M,X), M) -->
-  decimal_number(M),
+  integer(M),
   iso8601_minute_designator(X).
 
 iso8601_number_of_months(months(M,X), M) -->
-  decimal_number(M),
+  integer(M),
   iso8601_month_designator(X).
 
 iso8601_number_of_seconds(seconds(T1,X), S) -->
@@ -494,11 +499,11 @@ iso8601_number_of_seconds(seconds(T1,X), S) -->
 % Since weeks have no defined carry over point (52 or 53),
 % weeks should not be used in these applications.
 iso8601_number_of_weeks(weeks(W,X), W) -->
-  decimal_number(W),
+  integer(W),
   iso8601_week_designator(X).
 
 iso8601_number_of_years(years(Y,X), Y) -->
-  decimal_number(Y),
+  integer(Y),
   iso8601_year_designator(X).
 
 iso8601_recurence_designator(recurrence_designator('R')) -->

@@ -8,6 +8,8 @@
             % :Dcg3
     dcg_apply//2, % :Dcg
                   % +Arguments:list
+    dcg_atom_codes//2, % :Dcg
+                       % ?Atom:atom
     dcg_call//1,
     dcg_call//2,
     dcg_call//3,
@@ -37,7 +39,7 @@ Meta-DCG rules.
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
-@version 2013/05-2013/09, 2013/11-2013/12, 2014/02-2014/03
+@version 2013/05-2013/09, 2013/11-2013/12, 2014/02-2014/03, 2014/05
 */
 
 :- use_module(library(lists)).
@@ -47,6 +49,7 @@ Meta-DCG rules.
 :- meta_predicate(';'(2,2,?,?)).
 :- meta_predicate(';'(2,2,2,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
+:- meta_predicate(dcg_atom_codes(//,?,?,?)).
 :- meta_predicate(dcg_call(2,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
 :- meta_predicate(dcg_call(4,?,?,?,?)).
@@ -77,6 +80,18 @@ Meta-DCG rules.
 dcg_apply(Dcg, Args1, X, Y):-
   append(Args1, [X,Y], Args2),
   apply(Dcg, Args2).
+
+
+%! dcg_atom_codes(:Dcg, ?Atom:atom)// .
+
+dcg_atom_codes(Dcg, Atom) -->
+  {nonvar(Atom)},
+  {atom_codes(Atom, Codes)},
+  dcg_call(ascii_letters, Codes).
+dcg_atom_codes(Dcg, Atom) -->
+  {var(Atom)},
+  dcg_call(Dcg, Codes),
+  {atom_codes(Atom, Codes)}.
 
 
 %! dcg_call(:Dcg)//

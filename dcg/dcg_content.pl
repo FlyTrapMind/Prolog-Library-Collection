@@ -38,8 +38,11 @@
     nl//0,
     pl_term//1, % +PrologTerm
     quoted//1, % :DCG
+    quoted//2, % +Type:oneof([double_quote,single_quote,triple_quote(double),triple_quote(single)])
+               % :DCG
     transition//2, % :From
                    % :To
+    triple_quote//1, % +Type:oneof([double,single])
     void//0,
     word//1 % ?Word:atom
   ]
@@ -93,6 +96,7 @@ DCG rules for parsing/generating often-occuring content.
 :- meta_predicate(indent(+,//,?,?)).
 :- meta_predicate(bracketed(//,?,?)).
 :- meta_predicate(bracketed(+,//,?,?)).
+:- meta_predicate(quoted(//,//,?,?)).
 :- meta_predicate(transition(//,//,?,?)).
 
 
@@ -197,16 +201,16 @@ between_hex(LowHex, HighHex, Code) -->
 
 
 %! bracketed(:DCG)// .
-%! bracketed(+Mode:oneof([angular,curly,round,square]), :DCG)// .
+%! bracketed(+Type:oneof([angular,curly,round,square]), :DCG)// .
 
 bracketed(DCG) -->
   bracketed(round, DCG).
 
-bracketed(Mode, DCG) -->
+bracketed(Type, DCG) -->
   dcg_between(
-    opening_bracket(_, Mode),
+    opening_bracket(_, Type),
     DCG,
-    closing_bracket(_, Mode)
+    closing_bracket(_, Type)
   ),
   % Remove choicepoints for brackets of other types in [dcg_ascii].
   !.
@@ -365,10 +369,33 @@ pl_term(PrologTerm) -->
   Codes.
 
 
-%! quoted(:DCG)// .
+%! quoted(:Dcg)// .
 
-quoted(DCG) -->
-  dcg_between(double_quote, DCG).
+quoted(Dcd) -->
+  dcg_between(double_quote, Dcd).
+
+%! quoted(
+%!   +Type:oneof([
+%!         double_quote,
+%!         single_quote,
+%!         triple_quote(double),
+%!         triple_quote(single)
+%!       ]),
+%!   :Dcg
+%! )// .
+
+quoted(Type, Dcg) -->
+  is_quoted_type(Type),
+  dcg_between(Type, Dcg).
+
+% '...'
+is_quoted_type(single_quote).
+% "..."
+is_quoted_type(double_quote).
+% '''...'''
+is_quoted_type(triple_quote(single)).
+% """..."""
+is_quoted_type(triple_quote(double)).
 
 
 %! transition(:From, :To)// is det.
@@ -377,6 +404,18 @@ transition(From, To) -->
   dcg_call(From),
   dcg_between(space, arrow([head(right)], 2)),
   dcg_call(To).
+
+
+%! triple_quote(+Type:oneof([double,single]))// .
+
+triple_quote(double) -->
+  double_quote,
+  double_quote,
+  double_quote.
+triple_quote(single) -->
+  single_quote,
+  single_quote,
+  single_quote.
 
 
 void --> [].

@@ -67,7 +67,7 @@
 DCG rules for SVG datatypes.
 
 @author Wouter Beek
-@version 2013/07, 2013/09
+@version 2013/07, 2013/09, 2014/05
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -463,9 +463,9 @@ svg_version(
     DCG_Namespace,
     word(version),
     (
-      decimal_number(Major),
-      dot,
-      decimal_number(Minor)
+      integer(Major),
+      `.`,
+      integer(Minor)
     )
   ).
 

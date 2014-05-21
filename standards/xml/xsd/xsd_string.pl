@@ -47,9 +47,10 @@ The canonical mapping·for =string= is xsd_string_canonical_map/2.
 --
 
 @author Wouter Beek
-@version 2013/08, 2014/03
+@version 2013/08, 2014/03, 2014/05
 */
 
+:- use_module(xml(xml_char)).
 :- use_module(xml(xml_datatypes)).
 
 
@@ -76,13 +77,18 @@ xsd_string_lexical_map(String) -->
   stringRep(String).
 
 
-%! stringRep(?String:atom)// is det.
+%! stringRep(?Atom:atom)// is det.
 
-stringRep(String) -->
-  {var(String)}, !,
-  xml_chars_11(XML_Characters), !,
-  {atom_codes(String, XML_Characters)}.
-stringRep(String) -->
-  {atom_codes(String, XML_Characters)},
-  xml_chars_11(XML_Characters), !.
+stringRep(Atom) -->
+  {var(Atom)}, !,
+  'Char11*'(Codes), !,
+  {atom_codes(Atom, Codes)}.
+stringRep(Atom) -->
+  {atom_codes(Atom, Codes)},
+  'Char11*'(Codes), !.
+
+'Char11*'([]) --> [].
+'Char11*'([H|T]) -->
+  'Char11'(H),
+  'Char11*'(T).
 

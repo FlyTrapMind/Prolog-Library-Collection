@@ -101,7 +101,7 @@ svg_coordinate(coordinate(number(Number),unit(Unit)), Number, Unit) -->
 %   9. `%`
 
 svg_length(length(number(Number),unit(Unit)), Number, Unit) -->
-  unsigned_number(Number),
+  float(Number),
   (svg_unit(Unit) ; percent_sign, {Unit = '%'}).
 
 %! svg_content_type(?MediaType:atom)//

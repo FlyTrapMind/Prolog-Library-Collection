@@ -4,6 +4,10 @@
     atom_to_value/3, % +Atom
                      % +Type
                      % -Value
+    negative_float/1, % @Term
+    negative_integer/1, % @Term
+    positive_float/1, % @Term
+    positive_integer/1, % @Term
     prolog_convert_value/4 % +FromDatatype:atom
                            % +FromValue
                            % +ToDatatype:atom
@@ -62,7 +66,7 @@ Predicates used for parsing and checking value-type conformance.
 --
 
 @author Wouter Beek
-@version 2013/01, 2013/08, 2014/01, 2014/03-2014/04
+@version 2013/01, 2013/08, 2014/01, 2014/03-2014/05
 */
 
 :- use_module(library(apply)).
@@ -153,6 +157,30 @@ error:has_type(list(Type), Term):-
   maplist(must_be(Type), Term).
 
 
+%! negative_float(@Term) is semidet.
+% Fails silently when no negative integer.
+
+negative_float(I):-
+  float(I),
+  I > 0.
+
+
+%! negative_integer(@Term) is semidet.
+% Fails silently when no negative integer.
+
+negative_integer(I):-
+  integer(I),
+  I > 0.
+
+
+%! positive_integer(@Term) is semidet.
+% Fails silently when no negative integer.
+
+positive_integer(I):-
+  integer(I),
+  I > 0.
+
+
 %! prolog_convert_value(
 %!   +FromDatatype:atom,
 %!   +FromValue,
@@ -163,3 +191,4 @@ error:has_type(list(Type), Term):-
 prolog_convert_value(_, FromValue, ToDatatype, ToValue):-
   format(atom(Atom), '~w', [FromValue]),
   atom_to_value(Atom, ToDatatype, ToValue).
+

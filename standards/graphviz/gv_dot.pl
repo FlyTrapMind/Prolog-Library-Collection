@@ -355,7 +355,7 @@ gv_id(Atom) -->
 % Numerals (variant 2)
 gv_id(N) -->
   {number(N)}, !,
-  signed_number(N).
+  signed_number(float, N).
 % Double-quoted strings (variant 3).
 % The quotes are already part of the given atom.
 gv_id(Atom) -->

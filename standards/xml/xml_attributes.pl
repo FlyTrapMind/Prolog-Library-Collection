@@ -33,7 +33,7 @@ DCG rules for XML attributes.
 
 @author Wouter Beek
 @see XML 1.0-5 http://www.w3.org/TR/2008/REC-xml-20081126/
-@version 2013/07, 2014/03
+@version 2013/07, 2014/03, 2014/05
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -195,6 +195,10 @@ xml_version(
   xml_attribute_(
     DCG_Namespace,
     'Name'(version),
-    (decimal_number(Major), dot, decimal_number(Minor))
+    (
+      integer(Major),
+      `.`,
+      integer(Minor)
+    )
   ).
 

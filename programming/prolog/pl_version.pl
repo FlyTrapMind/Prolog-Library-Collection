@@ -14,7 +14,7 @@
 Predicates that are specific to the operation of SWI-Prolog.
 
 @author Wouter Beek
-@version 2013/06, 2013/08
+@version 2013/06, 2013/08, 2014/05
 */
 
 :- use_module(library(ansi_term)). % Used in markup.
@@ -164,6 +164,10 @@ prolog:message(version(Version)) -->
 % Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.
 
 pl_version(Version) -->
-  dcg_multi1(decimal_number, 3, [Major,Minor,Patch], [separator(comma)]),
+  integer(Major),
+  `,`,
+  integer(Minor),
+  `,`,
+  integer(Patch),
   {major_minor_patch_to_integer(Major, Minor, Patch, Version)}.
 

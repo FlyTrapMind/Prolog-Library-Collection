@@ -212,15 +212,16 @@ can determine the value of the four components and fragment as
 @author Wouter Beek
 @compat RFC 2396
 @see http://www.ietf.org/rfc/rfc2396.txt
-@version 2013/05, 2013/07
+@version 2013/05, 2013/07, 2014/05
 */
+
+:- use_module(library(lists)).
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(parse_tree)).
 :- use_module(gv(gv_file)).
-:- use_module(library(lists)).
 
 
 
@@ -501,13 +502,13 @@ host_name(T0, DomainLabels) -->
 %      determined or implemented in practice.
 
 ipv4_address(ipv4_address([N1,N2,N3,N4]), [N1,N2,N3,N4]) -->
-  decimal_number(N1),
-  dot,
-  decimal_number(N2),
-  dot,
-  decimal_number(N3),
-  dot,
-  decimal_number(N4).
+  integer(N1),
+  `.`,
+  integer(N2),
+  `.`,
+  integer(N3),
+  `.`,
+  integer(N4).
 
 mark(C) --> hyphen_minus(C).
 mark(C) --> underscore(C).
@@ -642,7 +643,8 @@ path_segment(T0, [Parameter|PathSegment]) -->
 % port = *digit
 % ~~~
 
-port(port(Port), Port) --> decimal_number(Port).
+port(port(Port), Port) -->
+  integer(Port).
 
 %! query(-Tree:compound, ?Query:atom)//
 % The query component is a string of information to be interpreted by

@@ -36,15 +36,6 @@ Support for the SPARQL 1.1 Update recommendation.
 'GraphTerm' --> 'NIL'.
 
 
-%! 'PN_CHARS_U'// .
-% ~~~{.ebnf}
-% [165]    PN_CHARS_U ::= PN_CHARS_BASE | '_'
-% ~~~
-
-'PN_CHARS_U' --> 'PN_CHARS_BASE'.
-'PN_CHARS_U' --> `_`.
-
-
 %! 'QuadData'(Data)// .
 % ~~~{.ebnf}
 % [49]    QuadData ::= '{' Quads '}'
@@ -101,51 +92,6 @@ Support for the SPARQL 1.1 Update recommendation.
 
 'Var' --> 'VAR1'.
 'Var' --> 'VAR2'.
-
-%! 'VAR1'// .
-% ~~~{.ebnf}
-% [143]    VAR1 ::= '?' VARNAME
-% ~~~
-
-'VAR1' --> `?`, 'VARNAME'.
-
-
-%! 'VAR2'// .
-% ~~~{.ebnf}
-% [144]    VAR2 ::= '$' VARNAME
-% ~~~
-
-'VAR2' --> `$`, 'VARNAME'.
-
-%! 'VARNAME'// .
-% ~~~{.ebnf}
-% [166]    VARNAME ::= ( PN_CHARS_U |
-%                        [0-9] )
-%                      ( PN_CHARS_U |
-%                        [0-9] |
-%                        #x00B7 |
-%                        [#x0300-#x036F] |
-%                        [#x203F-#x2040] )*
-% ~~~
-
-'VARNAME' -->
-  (
-    'PN_CHARS_U'
-  ;
-    decimal_digit
-  ),
-  (
-    'PN_CHARS_U'
-  ;
-    decimal_digit
-  ;
-    hex_code('B7')
-  ;
-    between_hex('300', '36F')
-  ;
-    between_hex('203F', '2040')
-  ).
-
 
 %! 'VarOrTerm'// .
 % ~~~{.ebnf}

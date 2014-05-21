@@ -93,7 +93,7 @@ Note: Converting between versions of HTTP may involve modification of
 --
 
 @author Wouter Beek
-@version 2013/07, 2013/12
+@version 2013/07, 2013/12, 2014/05
 */
 
 :- use_module(dcg(dcg_cardinal)).
@@ -119,7 +119,7 @@ Note: Converting between versions of HTTP may involve modification of
   version(Major,Minor)
 ) -->
   "HTTP/",
-  decimal_number(Major),
-  ".",
-  decimal_number(Minor).
+  integer(Major),
+  `.`,
+  integer(Minor).
 

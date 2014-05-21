@@ -13,24 +13,19 @@
     decimal_digit//2, % ?Code:code
                       % ?DecimalDigit:between(0,9)
     decimal_number//1, % ?DecimalNumber:integer
+    decimal_fraction//1, % ?Decimal:between(0.0,1.0)
     exponent//0,
     exponent_sign//0,
-    exponent_sign//1, % ?Code:code
     hexadecimal_digit//2, % ?Code:code
                           % ?DecimalDigit:between(0,15)
     hexadecimal_number//1, % -DecinalNumber:integer
     int_codes//1, % ?Codes:list(code)
+    'integer?'//1, % ?Integer:integer
     octal_digit//2, % ?Code:code
                     % ?DecimalDigit:between(0,7)
     octal_number//1, % -DecinalNumber:integer
-    sign//1, % ?Sign:code
-    sign//2, % -Tree:compound
-             % ?Sign:oneof([-1,1])
-    signed_number//1, % ?SignedNumber:float
-    unsigned_number//1, % ?UnsignedNumber:float
-    unsigned_number//3 % ?Number:float
-                       % ?IntegerComponent:integer
-                       % ?FractionalComponent:integer
+    sign//1, % ?Sign:oneof([-1,1])
+    'sign?'//1 % ?Sign:oneof([-1,1])
   ]
 ).
 :- reexport(
@@ -111,6 +106,19 @@ decimal_digit_nondet(C, 8) --> eight(C).
 decimal_digit_nondet(C, 9) --> nine(C).
 
 
+%! decimal_fraction(-Decimal:between(0.0,1.0))// .
+
+decimal_fraction(Decimal) -->
+  decimal_fraction(0, 1, Decimal).
+
+decimal_fraction(Sum1, Index1, Decimal) -->
+  digit(Digit), !,
+  Sum2 is Sum1 + Digit * 10 ** (-1 * Index),
+  Index2 is Index1 + 1,
+  decimal_fraction(Sum2, Index2, Decimal).
+decimal_fraction(Decimal, _, Decimal) --> [].
+
+
 %! decimal_number(-DecimalNumber:integer)//
 
 decimal_number(N) -->
@@ -137,7 +145,7 @@ digits_to_decimal_number(_Digit, Radix, M, H, T):-
 digits_to_decimal_number(Digit, Radix, M) -->
   % We start with processing the first digit.
   dcg_call(Digit, N),
-  % We keep track of the decimal equivalent if the digits that we have
+  % We keep track of the decimal equivalent of the digits that we have
   % seen so far, in order to do the radix multiplication with.
   digits_to_decimal_number(Digit, Radix, N, M).
 
@@ -151,13 +159,14 @@ digits_to_decimal_number(Digit, Radix, M1, M) -->
 % End of code segment, the decimal number we have built so far is the result.
 digits_to_decimal_number(_Digit, _Radix, M, M) --> [].
 
+
 exponent -->
   exponent_sign,
   dcg_multi(decimal_digit, 1-_).
 
+
 exponent_sign --> e.
 
-exponent_sign(C) --> e(C).
 
 %! hexadecimal_digit(?Code:code, ?DecimalNumber:between(0,15))//
 
@@ -185,6 +194,30 @@ int_codes([D0|D]) -->
   digit(D0),
   digits(D).
 
+
+%! 'integer?'(?Integer:integer)// .
+% Sometimes, we want to allow an integer to occur
+% optionally.
+% It is often easy to re
+
+% Read integer I, including 0.
+'integer?'(I) -->
+  {var(I)},
+  integer(I), !.
+% Read 0 for the empty list.
+'integer?'(I) -->
+  {var(I)},
+  [], !,
+  {I = 0}.
+% Write 0: [].
+'integer?'(I) -->
+  {I == 0}, !,
+  [].
+% Write I > 0: I.
+'integer?'(I) -->
+  integer(I).
+
+
 %! octal_digit(?Code:code, ?DecimalDigit:between(0,7))//
 
 octal_digit(C, N) --> binary_digit(C, N).
@@ -200,39 +233,27 @@ octal_digit(C, 7) --> seven(C).
 octal_number(N) -->
   digits_to_decimal_number(octal_digit, 8, N).
 
-sign(-1) --> "-". %'
-sign(1) --> "+". %'
+sign(-1) --> `-`.
+sign(1) --> `+`.
 
-sign(sign(-1), -1) --> "-".
-sign(sign(1), 1) --> "+".
 
-signed_number(N, H, T):-
-  number(N), !,
-  format(codes(H, T), '~w', [N]).
-signed_number(N) -->
-  unsigned_number(N).
-signed_number(N) -->
-  sign(Sg),
-  unsigned_number(N1),
-  {N is Sg * N1}.
+%! 'sign?'(?Sign:oneof([-1,1]))// .
 
-unsigned_number(N, H, T):-
-  number(N), !,
-  format(codes(H, T), '~w', [N]).
-unsigned_number(N) -->
-  decimal_number(N).
-unsigned_number(N) -->
-  unsigned_number(N, _Integer, _Fraction).
-
-%! unsigned_number(
-%!   ?Number:float,
-%!   ?IntegerComponent:integer,
-%!   ?FractionalComponent:integer
-%! )//
-
-unsigned_number(N, N_I, N_F) -->
-  ({N_I = 0} ; decimal_number(N_I)),
-  dot,
-  ({N_F = 0} ; decimal_number(N_F)),
-  {number_parts(N, N_I, N_F)}.
+% Read sign: -1 or +1.
+'sign?'(Sign) -->
+  {var(Sign)},
+  sign(Sign).
+% Read no sign: +1.
+'sign?'(Sign) -->
+  {var(Sign)},
+  [],
+  {Sign = 1}.
+% Write sign -1.
+'sign?'(Sign) -->
+  {Sign == -1},
+  sign(Sign).
+% No not write sign +1.
+'sign?'(Sign) -->
+  {Sign == 1},
+  [].
 
