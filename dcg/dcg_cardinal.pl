@@ -24,10 +24,8 @@
     octal_digit//2, % ?Code:code
                     % ?DecimalDigit:between(0,7)
     octal_number//1, % -DecinalNumber:integer
-    sign//1, % +Sign:integer
-    sign//1, % -Sign:oneof([-1,1])
-    'sign?'//1, % +Sign:integer
-    'sign?'//1 % -Sign:oneof([-1,1])
+    sign//1, % ?Sign:integer
+    'sign?'//1 % ?Sign:oneof([-1,1])
   ]
 ).
 :- reexport(
