@@ -24,8 +24,10 @@
     octal_digit//2, % ?Code:code
                     % ?DecimalDigit:between(0,7)
     octal_number//1, % -DecinalNumber:integer
-    sign//1, % ?Sign:oneof([-1,1])
-    'sign?'//1 % ?Sign:oneof([-1,1])
+    sign//1, % +Sign:integer
+    sign//1, % -Sign:oneof([-1,1])
+    'sign?'//1, % +Sign:integer
+    'sign?'//1 % -Sign:oneof([-1,1])
   ]
 ).
 :- reexport(
@@ -47,7 +49,7 @@
 DCGs for cardinal numbers.
 
 @author Wouter Beek
-@version 2013/06-2013/09
+@version 2013/06-2013/09, 2014/05
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -55,6 +57,7 @@ DCGs for cardinal numbers.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
+:- use_module(generics(typecheck)).
 :- use_module(math(math_ext)).
 
 :- meta_predicate(digits_to_decimal_number(//,+,?,?,?)).
@@ -113,8 +116,8 @@ decimal_fraction(Decimal) -->
 
 decimal_fraction(Sum1, Index1, Decimal) -->
   digit(Digit), !,
-  Sum2 is Sum1 + Digit * 10 ** (-1 * Index),
-  Index2 is Index1 + 1,
+  {Sum2 is Sum1 + Digit * 10 ** (-1 * Index1)},
+  {Index2 is Index1 + 1},
   decimal_fraction(Sum2, Index2, Decimal).
 decimal_fraction(Decimal, _, Decimal) --> [].
 
@@ -233,27 +236,39 @@ octal_digit(C, 7) --> seven(C).
 octal_number(N) -->
   digits_to_decimal_number(octal_digit, 8, N).
 
-sign(-1) --> `-`.
-sign(1) --> `+`.
+%! sign(+Sign:integer)// .
+%! sign(-Sign:oneof([-1,1]))// .
+% Mapping: {〈{i ∈ N | i ≧ 0}, 1〉,〈{i ∈ N | i < 0}, -1〉}
+% Canonical inverse: {〈1,1〉,〈-1,-1〉}
+
+sign(I) -->
+  {negative_integer(I)}, !,
+  `-`.
+sign(I) -->
+  {nonneg(I)}, !,
+  `+`.
+sign(-1) -->
+  `-`.
+sign(1) -->
+  `+`.
 
 
-%! 'sign?'(?Sign:oneof([-1,1]))// .
+%! 'sign?'(+Sign:integer)// .
+%! 'sign?'(-Sign:oneof([-1,1]))// .
+% Like sign//1, but the plus sign is not written,
+% and the plus sign is returned if no sign can be read.
 
-% Read sign: -1 or +1.
+% Do not write a sign for positive integers.
 'sign?'(Sign) -->
-  {var(Sign)},
+  {positive_integer(Sign)}, !,
+  [].
+% Write the minus sign based on a negative integer,
+% or read a sign, either negative or positive.
+'sign?'(Sign) -->
   sign(Sign).
-% Read no sign: +1.
+% Read no sign, return +1.
 'sign?'(Sign) -->
   {var(Sign)},
   [],
   {Sign = 1}.
-% Write sign -1.
-'sign?'(Sign) -->
-  {Sign == -1},
-  sign(Sign).
-% No not write sign +1.
-'sign?'(Sign) -->
-  {Sign == 1},
-  [].
 

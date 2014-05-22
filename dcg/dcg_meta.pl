@@ -87,7 +87,7 @@ dcg_apply(Dcg, Args1, X, Y):-
 dcg_atom_codes(Dcg, Atom) -->
   {nonvar(Atom)},
   {atom_codes(Atom, Codes)},
-  dcg_call(ascii_letters, Codes).
+  dcg_call(Dcg, Codes).
 dcg_atom_codes(Dcg, Atom) -->
   {var(Atom)},
   dcg_call(Dcg, Codes),

@@ -98,10 +98,10 @@ hex_value(HexValue, DecValue):-
 %! dec_hex(-Dec:nonneg, +Hex:atom) is det.
 
 dec_hex(Dec, Hex2):-
-  integer(Dec1), !,
+  integer(Dec), !,
   dec_to_hex(Dec, Hex1),
   reverse(Hex1, Hex2).
-dec_hex(Dec, Hex1):-
+dec_hex(Dec, Hex):-
   hex_to_dec(Hex, Dec).
 
 
@@ -130,7 +130,7 @@ hex_to_dec(Hex, Dec):-
 
 hex_to_dec([], Dec, Dec).
 hex_to_dec([Hex|T], Sum1, Dec):-
-  code_type(Hex, xdigit(HDec))
+  code_type(Hex, xdigit(HDec)),
   Sum2 is Sum1 * 16 + HDec,
   hex_to_dec(T, Sum2, Dec).
 

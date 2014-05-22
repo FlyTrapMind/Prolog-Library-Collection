@@ -5,7 +5,6 @@
     'HEX'//1, % ?Weight:between(0,15)
     'PLX'//1, % ?Code:code
     'PERCENT'//1, % ?Weight:between(0,256)
-    'PN_LOCAL'//0,
     'PN_LOCAL_ESC'//1, % ?Code:code
     'PN_CHARS'//1, % ?Code:code
     'PN_CHARS_BASE'//1, % ?Code:code
@@ -23,8 +22,9 @@ DCGs for characters defined by the SPARQL recommendations.
 */
 
 :- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_ebnf)).
+:- use_module(dcg(dcg_unicode)).
 
 
 
@@ -41,12 +41,12 @@ DCGs for characters defined by the SPARQL recommendations.
 
 'ECHAR_char'(C) --> `t`, {horizontal_tab(C, _, _)}.
 'ECHAR_char'(C) --> `b`, {bell(C, _, _)}.
-'ECHAR_char'(C) --> `n`, {line_feed(C, _, )}.
+'ECHAR_char'(C) --> `n`, {line_feed(C, _, _)}.
 'ECHAR_char'(C) --> `r`, {carriage_return(C, _, _)}.
 'ECHAR_char'(C) --> `f`, {form_feed(C, _, _)}.
 'ECHAR_char'(C) --> double_quote(C).
 'ECHAR_char'(C) --> apostrophe(C).
-'ECHAR_char'(C) --> backward_slash(C).
+'ECHAR_char'(C) --> backslash(C).
 
 
 %! 'HEX'(?Weight:between(0,15))// .
@@ -79,7 +79,7 @@ DCGs for characters defined by the SPARQL recommendations.
 'PERCENT'(Weight) -->
   {var(Weight)},
   'PERCENT'(Weight1, Weight2),
-  {Value is Weight1 * 16 + Weight2}.
+  {Weight is Weight1 * 16 + Weight2}.
 
 'PERCENT'(Weight1, Weight2) -->
   `%`,
@@ -117,7 +117,7 @@ DCGs for characters defined by the SPARQL recommendations.
 'PN_CHARS'(C) --> 'PN_CHARS_U'(C).
 'PN_CHARS'(C) --> hyphen_minus(C).
 'PN_CHARS'(C) --> decimal_digit(C).
-'PN_CHARS'(C) --> hex('00B7', C).
+'PN_CHARS'(C) --> hex_code('00B7', C).
 'PN_CHARS'(C) --> between_hex('0300', '036F', C).
 'PN_CHARS'(C) --> between_hex('203F', '2040', C).
 
@@ -168,7 +168,7 @@ DCGs for characters defined by the SPARQL recommendations.
 % #xF900-#xFDCF
 'PN_CHARS_BASE'(C) --> between_hex('F900', 'FDCF', C).
 % #xFDF0-#xFFFD
-'PN_CHARS_BASE'(C) --> between_hex('FDF0, 'FFFD', C).
+'PN_CHARS_BASE'(C) --> between_hex('FDF0', 'FFFD', C).
 % #x10000-#xEFFFF
 'PN_CHARS_BASE'(C) --> between_hex('10000', 'EFFFF', C).
 
@@ -216,13 +216,13 @@ DCGs for characters defined by the SPARQL recommendations.
 'PN_LOCAL_ESC_char'(C) --> asterisk(C).
 'PN_LOCAL_ESC_char'(C) --> plus_sign(C).
 'PN_LOCAL_ESC_char'(C) --> comma(C).
-'PN_LOCAL_ESC_char'(C) --> semicolon(C).
-'PN_LOCAL_ESC_char'(C) --> equal_sign(X).
+'PN_LOCAL_ESC_char'(C) --> semi_colon(C).
+'PN_LOCAL_ESC_char'(C) --> equals_sign(C).
 'PN_LOCAL_ESC_char'(C) --> slash(C).
 'PN_LOCAL_ESC_char'(C) --> question_mark(C).
 'PN_LOCAL_ESC_char'(C) --> number_sign(C).
 'PN_LOCAL_ESC_char'(C) --> at_sign(C).
-'PN_LOCAL_ESC_char'(C) --> percent(C).
+'PN_LOCAL_ESC_char'(C) --> percent_sign(C).
 
 
 %! 'WS'// .

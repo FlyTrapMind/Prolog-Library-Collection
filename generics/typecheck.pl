@@ -6,6 +6,7 @@
                      % -Value
     negative_float/1, % @Term
     negative_integer/1, % @Term
+    nonneg/1, % @Term
     positive_float/1, % @Term
     positive_integer/1, % @Term
     prolog_convert_value/4 % +FromDatatype:atom
@@ -171,6 +172,22 @@ negative_float(I):-
 negative_integer(I):-
   integer(I),
   I > 0.
+
+
+%! nonneg(@Term) is semidet.
+% Fails silently when no positive integer or zero.
+
+nonneg(I):-
+  integer(I),
+  I >= 0.
+
+
+%! positive_float(@Term) is semidet.
+% Fails silently when no negative integer.
+
+positive_float(I):-
+  float(I),
+  I > 0.0.
 
 
 %! positive_integer(@Term) is semidet.

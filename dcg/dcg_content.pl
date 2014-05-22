@@ -98,7 +98,7 @@ DCG rules for parsing/generating often-occuring content.
 :- meta_predicate(bracketed(+,//,?,?)).
 :- meta_predicate(quoted(//,//,?,?)).
 :- meta_predicate(transition(//,//,?,?)).
-:- meta_predicate(triple_quote(//,?,?))).
+:- meta_predicate(triple_quote(//,?,?)).
 
 
 

@@ -19,17 +19,13 @@ DCG rules for XML datatypes.
 */
 
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_unicode)).
-:- use_module(sparql(sparql_update)).
 
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
 
 
 
-xml_boolean(xml_boolean(false), false) --> "false".
-xml_boolean(xml_boolean(true),  true) --> "true".
+xml_boolean(xml_boolean(false), false) --> `false`.
+xml_boolean(xml_boolean(true),  true) --> `true`.
 
 
 %! xml_namespaced_name(:DCG_Namespace, :DCG_Name)//
@@ -43,6 +39,6 @@ xml_namespaced_name(DCG_Namespace, DCG_Name) -->
   DCG_Name.
 
 
-xml_yes_no(xml_yes_no(no), false) --> "no".
-xml_yes_no(xml_yes_no(yes), true) --> "yes".
+xml_yes_no(xml_yes_no(no), false) --> `no`.
+xml_yes_no(xml_yes_no(yes), true) --> `yes`.
 
