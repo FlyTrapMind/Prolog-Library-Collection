@@ -37,12 +37,12 @@
                % :DCG
     nl//0,
     pl_term//1, % +PrologTerm
-    quoted//1, % :DCG
-    quoted//2, % +Type:oneof([double_quote,single_quote,triple_quote(double),triple_quote(single)])
-               % :DCG
+    quoted//1, % :Content
+    quoted//2, % :Quote
+               % :Content
     transition//2, % :From
                    % :To
-    triple_quote//1, % +Type:oneof([double,single])
+    triple_quote//1, % :Quote
     void//0,
     word//1 % ?Word:atom
   ]
@@ -98,6 +98,7 @@ DCG rules for parsing/generating often-occuring content.
 :- meta_predicate(bracketed(+,//,?,?)).
 :- meta_predicate(quoted(//,//,?,?)).
 :- meta_predicate(transition(//,//,?,?)).
+:- meta_predicate(triple_quote(//,?,?))).
 
 
 
@@ -374,28 +375,19 @@ pl_term(PrologTerm) -->
 quoted(Dcd) -->
   dcg_between(double_quote, Dcd).
 
-%! quoted(
-%!   +Type:oneof([
-%!         double_quote,
-%!         single_quote,
-%!         triple_quote(double),
-%!         triple_quote(single)
-%!       ]),
-%!   :Dcg
-%! )// .
+%! quoted(:Quote, :Dcg)// .
+% Typical values for `Quote` are:
+%   * `double_quote`
+%     Result: `"..."`
+%   * `single_quote`
+%     Result: `'...'`
+%   * `triple_quote(double_quote)`
+%     Result: `"""..."""`
+%   * `triple_quote(single_quote)`
+%     Result: `'''...'''`
 
-quoted(Type, Dcg) -->
-  is_quoted_type(Type),
-  dcg_between(Type, Dcg).
-
-% '...'
-is_quoted_type(single_quote).
-% "..."
-is_quoted_type(double_quote).
-% '''...'''
-is_quoted_type(triple_quote(single)).
-% """..."""
-is_quoted_type(triple_quote(double)).
+quoted(Quote, Dcg) -->
+  dcg_between(Quote, Dcg).
 
 
 %! transition(:From, :To)// is det.
@@ -406,16 +398,17 @@ transition(From, To) -->
   dcg_call(To).
 
 
-%! triple_quote(+Type:oneof([double,single]))// .
+%! triple_quote(:Quote)// .
+% Typical values for `Quote` are:
+%   * `double_quote`
+%     Result: `"""`
+%   * `single_quote`
+%     Result: `'''`
 
-triple_quote(double) -->
-  double_quote,
-  double_quote,
-  double_quote.
-triple_quote(single) -->
-  single_quote,
-  single_quote,
-  single_quote.
+triple_quote(Quote) -->
+  Quote,
+  Quote,
+  Quote.
 
 
 void --> [].

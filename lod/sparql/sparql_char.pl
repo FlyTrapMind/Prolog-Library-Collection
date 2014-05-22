@@ -1,9 +1,10 @@
 :- module(
   sparql_char,
   [
-    'ANON'//0,
     'ECHAR'//1, % ?Code:code
-    'HEX'//1, % ?HexadecimalDigit:between(0,15)
+    'HEX'//1, % ?Weight:between(0,15)
+    'PLX'//1, % ?Code:code
+    'PERCENT'//1, % ?Weight:between(0,256)
     'PN_LOCAL'//0,
     'PN_LOCAL_ESC'//1, % ?Code:code
     'PN_CHARS'//1, % ?Code:code
@@ -27,21 +28,6 @@ DCGs for characters defined by the SPARQL recommendations.
 
 
 
-%! 'ANON'// .
-% ~~~{.ebnf}
-% ANON ::= '[' WS* ']'
-% ~~~
-%
-% @compat SPARQL 1.0 [162].
-% @compat SPARQL 1.1 Query [163].
-% @compat Turtle 1.1 [162s].
-
-'ANON' --> `[`, 'WS*', `]`.
-
-'WS*' --> 'WS', 'WS*'.
-'WS*' --> [].
-
-
 %! 'ECHAR'(?Code:code)// .
 % ~~~{.ebnf}
 % ECHAR ::= '\' [tbnrf"'\]
@@ -63,7 +49,7 @@ DCGs for characters defined by the SPARQL recommendations.
 'ECHAR_char'(C) --> backward_slash(C).
 
 
-%! 'HEX'(?HexadecimalDigit:between(0,f))// .
+%! 'HEX'(?Weight:between(0,15))// .
 % ~~~{.ebnf}
 % HEX ::= [0-9] | [A-F] | [a-f]
 % ~~~
@@ -72,10 +58,11 @@ DCGs for characters defined by the SPARQL recommendations.
 % @compat SPARQL 1.1 Query [172].
 % @compat Turtle 1.1 [171s].
 
-'HEX'(D) --> hexadecimal_digit(D).
+'HEX'(Weight) -->
+  hexadecimal_digit(_, Weight).
 
 
-%! 'PERCENT'// .
+%! 'PERCENT'(?Weight:between(0,256))// .
 % ~~~{.ebnf}
 % PERCENT ::= '%' HEX HEX
 % ~~~
@@ -84,10 +71,23 @@ DCGs for characters defined by the SPARQL recommendations.
 % @compat SPARQL Query 1.1 [171].
 % @compat Turtle 1.1 [170s].
 
-'PERCENT' --> `%`, 'HEX', 'HEX'.
+'PERCENT'(Weight) -->
+  {between(0, 256, Weight)},
+  {Weight1 is Weight // 16},
+  {Weight2 is Weight rem 16},
+  'PERCENT'(Weight1, Weight2).
+'PERCENT'(Weight) -->
+  {var(Weight)},
+  'PERCENT'(Weight1, Weight2),
+  {Value is Weight1 * 16 + Weight2}.
+
+'PERCENT'(Weight1, Weight2) -->
+  `%`,
+  'HEX'(Weight1),
+  'HEX'(Weight2).
 
 
-%! 'PLX'// .
+%! 'PLX'(?Code:code)// .
 % ~~~{.ebnf}
 % PLX ::= PERCENT | PN_LOCAL_ESC
 % ~~~
@@ -179,7 +179,7 @@ DCGs for characters defined by the SPARQL recommendations.
 % ~~~
 %
 % @compat SPARQL 1.0 [164].
-% @compat SPARQL 1.1 Query [16].
+% @compat SPARQL 1.1 Query [165].
 % @compat Turtle 1.1 [164s].
 
 'PN_CHARS_U'(C) --> 'PN_CHARS_BASE'(C).
@@ -195,10 +195,13 @@ DCGs for characters defined by the SPARQL recommendations.
 %                  )
 % ~~~
 %
-% @compat Turtle 1.1 [172s].
+% @compat SPARQL 1.0 [172].
 % @compat SPARQL 1.1 Query [173].
+% @compat Turtle 1.1 [172s].
 
-'PN_LOCAL_ESC'(C) --> `\\`, 'PN_LOCAL_ESC_char'(C).
+'PN_LOCAL_ESC'(C) -->
+  `\\`,
+  'PN_LOCAL_ESC_char'(C).
 
 'PN_LOCAL_ESC_char'(C) --> underscore(C).
 'PN_LOCAL_ESC_char'(C) --> tilde(C).
@@ -229,9 +232,9 @@ DCGs for characters defined by the SPARQL recommendations.
 %           #xD=carriage return #xA=new line */
 % ~~~
 %
-% @compat SPARQL 1.0 [162].
-% @compat SPARQL 1.1 Query [163].
-% @compat Turtle 1.1 [162s].
+% @compat SPARQL 1.0 [161].
+% @compat SPARQL 1.1 Query [162].
+% @compat Turtle 1.1 [161s].
 
 'WS' --> space.
 'WS' --> horizontal_tab.

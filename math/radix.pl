@@ -92,6 +92,49 @@ hex_value(HexValue, DecValue):-
   atom_chars(HexValue, HexDigits),
   hex_digits(HexDigits, 0, DecValue).
 
+
+%! dec_hex(+Dec:nonneg, +Hex:atom) is semidet.
+%! dec_hex(+Dec:nonneg, -Hex:atom) is det.
+%! dec_hex(-Dec:nonneg, +Hex:atom) is det.
+
+dec_hex(Dec, Hex2):-
+  integer(Dec1), !,
+  dec_to_hex(Dec, Hex1),
+  reverse(Hex1, Hex2).
+dec_hex(Dec, Hex1):-
+  hex_to_dec(Hex, Dec).
+
+
+%! dec_to_hex(+Dec:nonneg, -Hex:atom) is det.
+
+dec_to_hex(Dec, Hex2):-
+  dec_to_hex_(Dec, Hex1),
+  reverse(Hex1, Hex2).
+
+dec_to_hex_(Dec1, [H|T]):-
+  Rem is Dec1 mod 16,
+  code_type(H, xdigit(Rem)),
+  Dec2 is (Dec1 - Rem) / 16,
+  dec_to_hex_(Dec2, T).
+
+
+%! hex_to_dec(+Hex:atom, -Dec:nonneg) is det.
+
+hex_to_dec(Hex1, Dec):-
+  atom(Hex1), !,
+  atom_codes(Hex1, Hex2),
+  hex_to_dec(Hex2, Dec).
+hex_to_dec(Hex, Dec):-
+  is_list(Hex),
+  hex_to_dec(Hex, 0, Dec).
+
+hex_to_dec([], Dec, Dec).
+hex_to_dec([Hex|T], Sum1, Dec):-
+  code_type(Hex, xdigit(HDec))
+  Sum2 is Sum1 * 16 + HDec,
+  hex_to_dec(T, Sum2, Dec).
+
+
 hex_digits([], N, N).
 hex_digits([H|T], N1, N):-
   char_type(H, xdigit(N0)),

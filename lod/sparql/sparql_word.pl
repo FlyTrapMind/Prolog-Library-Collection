@@ -1,15 +1,18 @@
 :- module(
   sparql_word,
   [
-    'BLANK_NODE_LABEL'//1, % ?Codes:list(code)
-    'IRIREF'//1, % ?Codes:list(code)
+    'ANON'//0,
+    'BLANK_NODE_LABEL'//1, % ?BNodeLabel:atom
+    'IRIREF'//1, % ?Iri:atom
     'LANGTAG'//1, % ?LanguageTag:list(atom)
-    'PN_LOCAL'//1, % ?Codes:list(code)
-    'PNAME_LN'//1, % ?Codes:list(code)
-    'PNAME_NS'//1, % ?Codes:list(code)
-    'VAR1'//1, % ?Name:atom
-    'VAR2'//1, % ?Name:atom
-    'VARNAMES'//1 % ?Codes:list(code)
+    'NIL'//0,
+    'PN_LOCAL'//1, % ?LocalPart:atom
+    'PN_PREFIX'//1, % ?Prefix:atom
+    'PNAME_LN'//1, % ?FullName:pair(atom)
+    'PNAME_NS'//1, % ?Prefix:atom
+    'VAR1'//1, % ?VarName:atom
+    'VAR2'//1, % ?VarName:atom
+    'VARNAME'//1 % ?VarName:atom
   ]
 ).
 
@@ -30,7 +33,19 @@ DCGs for word definitions in SPARQL recommendations.
 
 
 
-%! 'BLANK_NODE_LABEL'(?Codes:list(code))// .
+%! 'ANON'// .
+% ~~~{.ebnf}
+% ANON ::= '[' WS* ']'
+% ~~~
+%
+% @compat SPARQL 1.0 [162].
+% @compat SPARQL 1.1 Query [163].
+% @compat Turtle 1.1 [162s].
+
+'ANON' --> bracketed(square, 'WS*').
+
+
+%! 'BLANK_NODE_LABEL'(?BNodeLabel:atom)// .
 % ~~~{.ebnf}
 % BLANK_NODE_LABEL ::= '_:'
 %                      ( PN_CHARS_U | [0-9] )
@@ -41,7 +56,10 @@ DCGs for word definitions in SPARQL recommendations.
 % @compat SPARQL 1.1 Query [142].
 % @compat Turtle 1.1 [141s].
 
-'BLANK_NODE_LABEL'([H|T2]) -->
+'BLANK_NODE_LABEL'(BNodeLabel) -->
+  dch_atom_codes('BLANK_NODE_LABEL_codes', BNodeLabel) -->
+
+'BLANK_NODE_LABEL_codes'([H|T2]) -->
   `_:`,
   % First character after colon.
   (
@@ -64,7 +82,7 @@ DCGs for word definitions in SPARQL recommendations.
 'BLANK_NODE_LABEL_1*'([]) --> [].
 
 
-%! 'IRIREF'(?Codes:list(code))// .
+%! 'IRIREF'(?Iri:atom)// .
 % ~~~{.ebnf}
 % IRIREF ::= '<' ([^<>"{}|^`\]-[#x00-#x20])* '>'
 % ~~~
@@ -72,8 +90,8 @@ DCGs for word definitions in SPARQL recommendations.
 % @compat SPARQL 1.1 Query [139].
 % @tbd What about DELETE (decimal 127)?
 
-'IRIREF'(Codes) -->
-  bracketed(angular, 'IRIREF_char*'(Codes)).
+'IRIREF'(Iri) -->
+  dcg_atom_codes(bracketed(angular, 'IRIREF_char*'(Codes)), Iri).
 
 'IRIREF_char*'([H|T]) -->
   'IRIREF_char'(H),
@@ -124,22 +142,32 @@ ascii_alphanumerics([H|T]) -->
   ascii_alphanumerics(T).
 
 
-%! 'PN_LOCAL'(?Codes:list(code))// .
+%! 'NIL'// .
 % ~~~{.ebnf}
-% PN_LOCAL ::= ( PN_CHARS_U |
-%                ':' |
-%                [0-9] |
-%                PLX
-%              )
-%              ( ( PN_CHARS | '.' | ':' | PLX )*
-%                ( PN_CHARS | ':' | PLX )
-%              )?
+% '(' WS* ')'
 % ~~~
 %
-% @compat Turtle 1.1 [168s].
-% @compat SPARQL 1.1 Query [169].
+% @compat SPARQL 1.1 Query [161].
 
-'PN_LOCAL'([H|T]) -->
+'NIL' -->
+  bracketed(round, 'WS*').
+
+
+%! 'PN_LOCAL'(?LocalPart:atom)// .
+% ~~~{.ebnf}
+% PN_LOCAL ::= ( PN_CHARS_U | ':' | [0-9] | PLX )
+%              ( ( PN_CHARS | '.' | ':' | PLX )*
+%                ( PN_CHARS | ':' | PLX ) )?
+% ~~~
+%
+% @compat SPARQL 1.0 [168].
+% @compat SPARQL 1.1 Query [169].
+% @compat Turtle 1.1 [168s].
+
+'PN_LOCAL'(LocalPart) -->
+  dcg_atom_codes('PN_LOCAL_codes', LocalPart).
+
+'PN_LOCAL_codes'([H|T]) -->
   'PN_LOCAL_1'(H),
   ('PN_LOCAL_2'(T) ; {T = []}).
 
@@ -148,15 +176,11 @@ ascii_alphanumerics([H|T]) -->
 'PN_LOCAL_1'(C) --> decimal_digit(C).
 'PN_LOCAL_1'(C) --> 'PLX'(C).
 
-'PN_LOCAL_2'(L2) -->
-  'PN_LOCAL_2a*'(L1),
-  'PN_LOCAL_2b'(Last),
-  {append(L1, [Last], L2)}.
-
-'PN_LOCAL_2a*'([H|T]) -->
+'PN_LOCAL_2'([H|T]) -->
   'PN_LOCAL_2a'(H),
-  'PN_LOCAL_2a*'(T).
-'PN_LOCAL_2a*'([]) --> [].
+  'PN_LOCAL_2'(T).
+'PN_LOCAL_2'([Last]) -->
+  'PN_LOCAL_2b'(Last).
 
 'PN_LOCAL_2a'(C) --> dot(C).
 'PN_LOCAL_2a'(C) --> 'PN_LOCAL_2b'(C).
@@ -166,26 +190,30 @@ ascii_alphanumerics([H|T]) -->
 'PN_LOCAL_2b'(C) --> 'PLX'(C).
 
 
-%! 'PN_PREFIX'(?Codes:list(code))// .
+%! 'PN_PREFIX'(?Prefix:atom)// .
 % ~~~{.ebnf}
-% PN_PREFIX ::= PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
+% PN_PREFIX ::= PN_CHARS_BASE ( ( PN_CHARS | '.' )* PN_CHARS )?
 % ~~~
 %
 % @compat SPARQL 1.0 [167].
 % @compat SPARQL 1.1 Query [168].
 % @compat Turtle 1.1 [167s].
 
-'PN_PREFIX'([H|T]) -->
+'PN_PREFIX'(Prefix) -->
+  dcg_atom_codes('PN_PREFIX_codes', Prefix).
+
+'PN_PREFIX_codes'([H|T]) -->
   'PN_CHARS_BASE'(H),
-  (`` ; 'PN_PREFIX_2*'(T)).
+  (`` ; 'PN_PREFIX_rest'(T)).
 
-'PN_PREFIX_2*'([H|T]) -->
+'PN_PREFIX_rest'([H|T]) -->
   ('PN_CHARS'(H) ; dot(H)),
-  'PN_PREFIX_2*'(T).
-'PN_PREFIX_2*'([]) --> [].
+  'PN_PREFIX_rest'(T).
+'PN_PREFIX_rest'([Last]) -->
+  'PN_CHARS'(Last).
 
 
-%! 'PNAME_LN'(?Codes:list(code))// .
+%! 'PNAME_LN'(?Full:pair(atom))// .
 % ~~~{.ebnf}
 % PNAME_LN ::= PNAME_NS PN_LOCAL
 % ~~~
@@ -194,13 +222,12 @@ ascii_alphanumerics([H|T]) -->
 % @compat SPARQL 1.1 Query [141].
 % @compat Turtle 1.1 [140s].
 
-'PNAME_LN'(L3) -->
-  'PNAME_NS'(L1),
-  'PN_LOCAL'(L2),
-  {append(L1, L2, L3)}.
+'PNAME_LN'(Prefix-Local) -->
+  'PNAME_NS'(Prefix),
+  'PN_LOCAL'(Local).
 
 
-%! 'PNAME_NS'(?Codes:list(code))// .
+%! 'PNAME_NS'(?Prefix:atom)// .
 % ~~~{.abn}
 % PNAME_NS ::= PN_PREFIX? ':'
 % ~~~
@@ -209,65 +236,67 @@ ascii_alphanumerics([H|T]) -->
 % @compat SPARQL 1.1 Query [140].
 % @compat Turtle 1.1 [139s].
 
-'PNAME_NS'(L2) -->
-  ('PN_PREFIX'(L1) ; {L1 = []}),
-  colon(Last),
-  {append(L1, [Last], L2)}.
+'PNAME_NS'(Prefix) -->
+  ('PN_PREFIX'(Prefix) ; {Prefix = ''}),
+  `:`.
 
 
-%! 'VAR1'(?Name:atom)// .
+%! 'VAR1'(?VarName:atom)// .
 % ~~~{.ebnf}
 % VAR1 ::= '?' VARNAME
 % ~~~
 %
 % @compat SPARQL 1.1 Query [143].
 
-'VAR1'(Name) -->
+'VAR1'(VarName) -->
   `?`,
-  dcg_atom_codes('VARNAME', Name).
+  'VARNAME'(VarName).
 
 
-%! 'VAR2'(?Name:atom)// .
+%! 'VAR2'(?VarName:atom)// .
 % ~~~{.ebnf}
 % VAR2 ::= '$' VARNAME
 % ~~~
 %
 % @compat SPARQL 1.1 Query [144].
 
-'VAR2'(Name) -->
+'VAR2'(VarName) -->
   `$`,
-  dcg_atom_codes('VARNAME', Name).
+  'VARNAME'(VarName).
 
 
-%! 'VARNAME'(?Codes:list(code))// .
+%! 'VARNAME'(?VarName:atom)// .
 % ~~~{.ebnf}
-% VARNAME ::= ( PN_CHARS_U |
-%               [0-9] )
-%             ( PN_CHARS_U |
-%               [0-9] |
-%               #x00B7 |
-%               [#x0300-#x036F] |
-%               [#x203F-#x2040] )*
+% VARNAME ::= ( PN_CHARS_U | [0-9] )
+%             ( PN_CHARS_U | [0-9] | #x00B7 |
+%               [#x0300-#x036F] | [#x203F-#x2040] )*
 % ~~~
 %
 % @compat SPARQL 1.1 Query [166].
 
-'VARNAME'([H|T]) -->
-  'VARNAME_1'(H),
-  'VARNAME_2*'(T).
+'VARNAME'(VarName) -->
+  dcg_atom_codes('VARNAME_codes', VarName).
 
-'VARNAME_1'(C) -->
+'VARNAME_codes'([H|T]) -->
+  'VARNAME_first'(H),
+  'VARNAME_rest*'(T).
+
+'VARNAME_first'(C) -->
   'PN_CHARS_U'(C).
-'VARNAME_1'(C) -->
+'VARNAME_first'(C) -->
   decimal_digit(C).
 
-'VARNAME_2*'([H|T]) -->
-  'VARNAME_2'(H),
-  'VARNAME_2*'(T).
+'VARNAME_rest*'([H|T]) -->
+  'VARNAME_rest'(H),
+  'VARNAME_rest*'(T).
 
-'VARNAME_2'(C) --> 'PN_CHARS_U'(C).
-'VARNAME_2'(C) --> decimal_digit(C).
-'VARNAME_2'(C) --> hex_code('B7', C).
-'VARNAME_2'(C) --> between_hex('300', '36F', C).
-'VARNAME_2'(C) --> between_hex('203F', '2040', C).
+'VARNAME_rest'(C) --> 'PN_CHARS_U'(C).
+'VARNAME_rest'(C) --> decimal_digit(C).
+'VARNAME_rest'(C) --> hex_code('B7', C).
+'VARNAME_rest'(C) --> between_hex('300', '36F', C).
+'VARNAME_rest'(C) --> between_hex('203F', '2040', C).
+
+
+'WS*' --> 'WS', 'WS*'.
+'WS*' --> [].
 

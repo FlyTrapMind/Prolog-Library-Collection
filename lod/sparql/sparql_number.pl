@@ -10,7 +10,7 @@
     'EXPONENT'//1, % ?Value:integer
     'INTEGER'//1, % ?Value:integer
     'INTEGER_POSITIVE'//1, % ?Value:integer
-    'INTEGER_NEGATIVE'//1, % ?Value:integer
+    'INTEGER_NEGATIVE'//1 % ?Value:integer
   ]
 ).
 
