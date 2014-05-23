@@ -213,7 +213,7 @@ ascii_alphanumerics([H|T]) -->
   'PN_CHARS'(Last).
 
 
-%! 'PNAME_LN'(?Full:pair(atom))// .
+%! 'PNAME_LN'(?FullName:pair(atom))// .
 % ~~~{.ebnf}
 % PNAME_LN ::= PNAME_NS PN_LOCAL
 % ~~~

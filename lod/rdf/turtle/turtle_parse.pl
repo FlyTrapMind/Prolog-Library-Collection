@@ -11,13 +11,14 @@
 /** <module> Turtle
 
 @author Wouter Beek
-@version 2014/04
+@version 2014/04-2014/05
 */
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(readutil)).
 
-:- use_module(turtle(turtle_terminals)).
+:- use_module(sparql(sparql_word)).
+:- use_module(turtle(turtle_number)).
 
 
 
@@ -68,30 +69,12 @@ test(N):-
 base --> `@base`, b, 'IRIREF', b, `.`.
 
 
-%! 'BlankNode'// .
-% ~~~{.ebnf}
-% [137s]   BlankNode ::= BLANK_NODE_LABEL | ANON
-% ~~~
-
-'BlankNode' --> 'BLANK_NODE_LABEL'.
-'BlankNode' --> 'ANON'.
-
-
 %! blankNodePropertyList// .
 % ~~~{.ebnf}
 % [14]   blankNodePropertyList ::= '[' predicateObjectList ']'
 % ~~~
 
 blankNodePropertyList --> `[`, b, predicateObjectList, b, `]`.
-
-
-%! 'BooleanLiteral'// .
-% ~~~{.ebnf}
-% [133s]   BooleanLiteral ::= 'true' | 'false'
-% ~~~
-
-'BooleanLiteral' --> `true`.
-'BooleanLiteral' --> `false`.
 
 
 %! collection// .
@@ -128,8 +111,10 @@ literal --> 'BooleanLiteral'.
 
 %! 'NumericLiteral'// .
 % ~~~{.ebnf}
-% [16]   NumericLiteral ::= INTEGER | DECIMAL | DOUBLE
+% NumericLiteral ::= INTEGER | DECIMAL | DOUBLE
 % ~~~
+%
+% @compat Turtle 1.1 [16].
 
 'NumericLiteral' --> 'DOUBLE'.
 'NumericLiteral' --> 'DECIMAL'.
@@ -187,14 +172,6 @@ predicateObjectList --> verb, b, objectList, 'predicateObjectList_3*'.
 prefixID --> `@prefix`, b, 'PNAME_NS', b, 'IRIREF', b, `.`.
 
 
-%! 'RDFLiteral'// .
-% ~~~{.ebnf}
-% [128s]   RDFLiteral ::= String (LANGTAG | '^^' iri)?
-% ~~~
-
-'RDFLiteral' --> 'String', (`` ; 'LANGTAG' ; `^^`, iri).
-
-
 %! sparqlBase// .
 % ~~~{.ebnf}
 % [5s]   sparqlBase ::= "BASE" IRIREF
@@ -237,11 +214,13 @@ subject --> collection.
 
 %! 'String'// .
 % ~~~{.ebnf}
-% [17]   String ::= STRING_LITERAL_QUOTE |
-%                   STRING_LITERAL_SINGLE_QUOTE |
-%                   STRING_LITERAL_LONG_SINGLE_QUOTE |
-%                   STRING_LITERAL_LONG_QUOTE
+% String ::= STRING_LITERAL_QUOTE |
+%            STRING_LITERAL_SINGLE_QUOTE |
+%            STRING_LITERAL_LONG_SINGLE_QUOTE |
+%            STRING_LITERAL_LONG_QUOTE
 % ~~~
+%
+% @compat Turtle 1.1 [17].
 
 'String' --> 'STRING_LITERAL_QUOTE'.
 'String' --> 'STRING_LITERAL_SINGLE_QUOTE'.
