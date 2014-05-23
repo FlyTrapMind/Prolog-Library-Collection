@@ -62,12 +62,10 @@ personal_directory_init:-
   % Make sure the home directory is there.
   home_init,
 
-  % Make sure that the project name has been asserted.
-  current_predicate(project/2),
-  project(Project, _),
+  user:project(Project, _, _),
 
   hidden_file_name(Project, Hidden),
-  create_nested_directory(home(Hidden), _Dir),
+  create_nested_directory(home(Hidden), _),
   assert(user:file_search_path(personal, home(Hidden))).
 
 

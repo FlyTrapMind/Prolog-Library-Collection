@@ -990,6 +990,6 @@ user_info__(C) -->
 uri_to_gv(URI):-
   atom_codes(URI, Codes),
   once(phrase(rfc2396_uri_reference(Tree), Codes)),
-  absolute_file_name(project(temp), File, [access(write),file_type(jpeg)]),
+  absolute_file_name(data(temp), File, [access(write),file_type(jpeg)]),
   tree_to_gv_file([method(dot),name(URI),to_file_type(jpeg)], Tree, File).
 

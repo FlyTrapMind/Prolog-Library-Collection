@@ -27,6 +27,8 @@
                  % -F:integer
     fibonacci/2, % ?Index:integer
                  % ?Fibonacci:integer
+    fractional_integer/2, % +Number:or([float,integer,rational])
+                          % -Fractional:integer
     is_fresh_age/2, % +Age:between(0.0,inf)
                     % +FreshnessLifetime:between(0.0,inf)
     log/3, % +Base:integer
@@ -41,14 +43,17 @@
     mod/3,
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
-    number_parts/3, % ?Number:number
-                    % ?IntegerComponent:integer
-                    % ?FractionalComponent:integer
+    number_integer_parts/3, % ?Number:number
+                            % ?IntegerPart:integer
+                            % ?FractionalPart:integer
     number_length/2, % +Number:number
                      % -Length:integer
     number_length/3, % +Number:number
                      % +Radix:integer
                      % -Length:integer
+    number_sign_parts/3, % ?Number:number
+                         % ?Sign:oneof([-1,1])
+                         % ?Absolute:number
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -68,9 +73,9 @@
   ]
 ).
 
-/** <module> Artihmetic extensions for SWI-Prolog
+/** <module> Math extensions
 
-Extra arithmetic functions for use in SWI-Prolog.
+Extra arithmetic operations for use in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05
@@ -78,6 +83,8 @@ Extra arithmetic functions for use in SWI-Prolog.
 
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+
+:- use_module(generics(typecheck)).
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
 :- use_module(math(rational_ext)).
@@ -169,6 +176,7 @@ div_zero(X, 0.0, 0.0):-
 div_zero(X, Y, Z):-
   Z is X / Y.
 
+
 %! euclidean_distance(
 %!   +Coordinate1:coordinate,
 %!   +Coordinate2:coordinate,
@@ -186,11 +194,13 @@ euclidean_distance(
   sum_list(X2s, X2),
   EuclideanDistance is sqrt(X2).
 
+
 %! even(+Number:number) is semidet.
 % Succeeds if the integer is even.
 
 even(N):-
   mod(N, 2, 0).
+
 
 %! factorial(+N:integer, -F:integer) is det.
 % Returns the factorial of the given number.
@@ -215,6 +225,22 @@ fibonacci(N, F):-
   F is F1 + F2.
 
 
+%! fractional_integer(
+%!   +Number:or([float,integer,rational]),
+%!   -Fractional:integer
+%! ) is det.
+% Variant of float_fractional_part/2,
+% where the integer value of the fractional part is returned.
+
+fractional_integer(Number, Fractional):-
+  atom_number(NumberAtom, Number),
+  % We assume that there is eactly one split for `.`.
+  once(sub_atom(NumberAtom, IndexOfDot, 1, _, '.')),
+  succ(IndexOfDot, Skip),
+  sub_atom(NumberAtom, Skip, _, 0, FractionalAtom),
+  atom_number(FractionalAtom, Fractional).
+
+
 %! is_fresh_age(
 %!   +Age:between(0.0,inf),
 %!   +FreshnessLifetime:between(0.0,inf)
@@ -237,6 +263,7 @@ log(Base, X, Y):-
   Denominator is log(Base),
   Y is Numerator / Denominator.
 
+
 minus(X, Y, Z):-
   nonvar(X), nonvar(Y), !,
   Z is X - Y.
@@ -247,6 +274,7 @@ minus(X, Y, Z):-
   nonvar(Y), nonvar(Z), !,
   X is Y + Z.
 
+
 %! minus_list(+N:number, +Ms:list(number), -N_Minus_Ms:number) is det.
 % Subtracts the given numbers for the given start number
 % and returns the result.
@@ -255,39 +283,62 @@ minus_list(N, Ms, N_Minus_Ms):-
   sum_list(Ms, M),
   N_Minus_Ms is N - M.
 
+
 mod(X, Y, Z):-
   rational(X), rational(Y), !,
   rational_mod(X, Y, Z).
 mod(X, Y, Z):-
   float_mod(X, Y, Z).
 
+
 %! multiply_list(+List:list(number), -Multiplication:number) is det.
 % Multiplies the numbers in the given list.
 %
 % @arg List A list of numbers.
 % @arg Multiplication A number.
-% @see Extends the builin list manipulators sum_list/2, max_list/2
+%
+% @see Extends the builtin list manipulators sum_list/2, max_list/2
 %      and min_list/2.
 
-multiply_list([], 0):- !.
-multiply_list([Number], Number):- !.
-multiply_list([Number | Numbers], Multiplication):-
-  multiply_list(Numbers, Multiplication1),
-  Multiplication is Number * Multiplication1.
+multiply_list([], 0).
+multiply_list([H|T], M2):-
+  multiply_list(T, M1),
+  M2 is H * M1.
 
-number_parts(N, N_I, N_F):-
-  var(N), !,
-  number_length(N_F, N_F_Length),
-  N is N_I + N_F / 10 ** N_F_Length.
-number_parts(N, N_I, N_F):-
-  integer(N), !,
-  int_parts(N, N_I, N_F).
-number_parts(N, N_I, N_F):-
-  rational(N), !,
-  rational_parts(N, N_I, N_F).
-number_parts(N, N_I, N_F):-
-  float(N), !,
-  float_parts(N, N_I, N_F).
+
+%! number_integer_parts(
+%!   +Number:number,
+%!   -IntegerPart:integer,
+%!   -Fractional:integer
+%! ) is det.
+%! number_integer_parts(
+%!   -Number:number,
+%!   +IntegerPart:integer,
+%!   +Fractional:integer
+%! ) is det.
+% ### Example
+%
+% ~~~{.pl}
+% ?- number_integer_parts(-1.5534633204, X, Y).
+% X = -1,
+% Y = -5534633204.
+% ~~~
+%
+% @throws domain_error If `Fractional` is not nonneg.
+
+number_integer_parts(_, _, Fractional):-
+  nonvar(Fractional),
+  \+ nonneg(Fractional), !,
+  domain_error(nonneg, Fractional).
+number_integer_parts(Number, Integer, Fractional):-
+  nonvar(Number), !,
+  Integer is floor(float_integer_part(Number)),
+  fractional_integer(Number, Fractional).
+number_integer_parts(Number, Integer, Fractional):-
+  number_length(Fractional, Length),
+  Sign is sign(Integer),
+  Number is copysign(abs(Integer) + Fractional * 10 ** (-1 * Length), Sign).
+
 
 %! number_length(+Number:number, -Length:integer) is det.
 % @see number_length/3 with radix set to `10` (decimal).
@@ -313,11 +364,31 @@ number_length(N1, Radix, L1):-
   L1 is L2 + 1.
 number_length(_N, _Radix, 1):- !.
 
+
+%! number_sign_parts(+N:number, +Sign:oneof([-1,1]), +Absolute:number) is semidet.
+%! number_sign_parts(+N:number, -Sign:oneof([-1,1]), -Absolute:number) is det.
+%! number_sign_parts(-N:number, +Sign:oneof([-1,1]), +Absolute:number) is det.
+%! number_sign_parts(-N:number, -Sign:oneof([-1,1]), +Absolute:number) is multi.
+% @throws instantiation_error
+
+number_sign_parts(N, Sign, Abs):-
+  nonvar(Abs), !,
+  member(Sign, [-1,1]),
+  N is copysign(Sign, Abs).
+number_sign_parts(N, Sign, Abs):-
+  nonvar(N), !,
+  Sign is sign(N),
+  Abs is abs(N).
+number_sign_parts(N, Sign, Abs):-
+  instantiation_error(number_sign_parts(N, Sign, Abs)).
+
+
 %! odd(?Number:number) is semidet.
 % Succeeds if the integer is odd.
 
 odd(N):-
   mod(N, 2, 1).
+
 
 %! permutations(
 %!   +NumbersOfObjects:list(integer),

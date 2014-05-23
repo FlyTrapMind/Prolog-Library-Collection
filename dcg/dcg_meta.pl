@@ -25,10 +25,12 @@
     dcg_nth0_call//3, % :Goal
                       % +Index:nonneg
                       % +Argument
-    dcg_nth0_call//4 % +Options:list(nvpair)
-                     % :Goal
-                     % +Index:nonneg
-                     % +Argument
+    dcg_nth0_call//4, % +Options:list(nvpair)
+                      % :Goal
+                      % +Index:nonneg
+                      % +Argument
+    dcg_repeat//2 % :Dcg
+                  % +NumberOfRepeats:nonneg
   ]
 ).
 
@@ -60,6 +62,7 @@ Meta-DCG rules.
 :- meta_predicate(dcg_maplist(4,+,+,?,?)).
 :- meta_predicate(dcg_nth0_call(3,+,+,?,?)).
 :- meta_predicate(dcg_nth0_call(+,3,+,+,?,?)).
+:- meta_predicate(dcg_repeat(//,+,?,?)).
 
 
 
@@ -173,4 +176,14 @@ dcg_nth0_call(O1, Dcg1, I, X) -->
     )
   },
   dcg_apply(Mod:Pred, Args2).
+
+
+%! dcg_repeat(:Dcg, +NumberOfRepeats:nonneg)// .
+
+dcg_repeat(_, N) -->
+  {N =< 0}, !, [].
+dcg_repeat(Dcg, N1) -->
+  Dcg,
+  {N2 is N1 - 1},
+  dcg_repeat(Dcg, N2).
 

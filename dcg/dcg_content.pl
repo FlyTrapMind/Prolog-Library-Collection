@@ -76,7 +76,6 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_unicode)).
 :- use_module(generics(atom_ext)).
 :- use_module(math(radix)).
@@ -139,8 +138,8 @@ arrow(O1, L1) -->
     {L3 = L2}
   ),
   {L3 >= 0},
-  dcg_multi(`-`, L3), !,
-
+  horizontal_line(L3),
+  
   % The right arrow head.
   (
     {arrow_right_head(Head)}
@@ -328,14 +327,14 @@ hex_code(Hex, C) -->
 
 
 %! horizontal_line// .
-%! horizontal_line(+Lenght:nonneg)// .
+%! horizontal_line(+Length:nonneg)// .
 
 horizontal_line -->
   {terminal_screen_width(ScreenWidth)},
   horizontal_line(ScreenWidth).
 
 horizontal_line(Length) -->
-  dcg_multi(hyphen, Length).
+  dcg_repeat(hyphen_minus, Length).
 
 
 %! indent// is det.
@@ -350,7 +349,7 @@ indent(I) -->
     setting(indent_size, Size),
     NumberOfSpaces is I * Size
   },
-  dcg_multi(space, NumberOfSpaces).
+  dcg_repeat(space, NumberOfSpaces).
 
 indent(I, DCG) -->
   indent(I),

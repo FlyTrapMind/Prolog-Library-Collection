@@ -185,7 +185,7 @@ convert_gv(O1, FromFile, ToFile):-
     var(ToFile)
   ->
     absolute_file_name(
-      personal(export),
+      data(export),
       ToFile,
       [access(write),file_type(ToFileType)]
     )
@@ -218,7 +218,7 @@ convert_gv(O1, FromFile, ToFile):-
 
 to_gv_file(O1, Codes, ToFile):-
   absolute_file_name(
-    project(tmp),
+    data(tmp),
     FromFile,
     [access(write),file_type(graphviz)]
   ),

@@ -273,7 +273,7 @@ gv_graph(graph(V_Terms, Ranked_V_Terms, E_Terms, G_Attrs1)) -->
 %
 % @arg Directed Either `digraph` or `graph`.
 
-gv_graph_type(forward) --> `digraph`.
+gv_graph_type(forward) --> !, `digraph`.
 gv_graph_type(_) --> `graph`.
 
 

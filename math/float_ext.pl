@@ -7,9 +7,6 @@
     float_mod/3, % +In1:float
                  % +In2:float
                  % -Out:float
-    float_parts/3, % +Float:float
-                   % -IntegerPart:integer
-                   % -FractionalPart:nonneg
     float_plus/3, % ?X:float
                   % ?Y:float
                   % ?Z:float
@@ -32,40 +29,9 @@ float_div(X, Y, Z):-
   Z is X / Y.
 
 
-float_fractional_part2(N, N_F):-
-  atom_number(N_A, N),
-  % We assume that there is eactly one split for `.`.
-  once(sub_atom(N_A, N_I_Length, 1, _, '.')),
-  succ(N_I_Length, Skip),
-  sub_atom(N_A, Skip, _, 0, N_F_A),
-  atom_number(N_F_A, N_F).
-
-
-float_integer_part2(N, I):-
-  I is integer(float_integer_part(N)).
-
-
 float_mod(X, Y, Z):-
   float_div(X, Y, DIV),
   Z is X - DIV * Y.
-
-
-%! float_parts(
-%!   +Float:float,
-%!   -IntegerPart:integer,
-%!   -FractionalPart:nonneg
-%! ) is det.
-% ### Example
-%
-% ~~~{.pl}
-% ?- float_parts(-1.5534633204, X, Y).
-% X = -1,
-% Y = 5534633204.
-% ~~~
-
-float_parts(F, F_I, F_F):-
-  float_integer_part2(F, F_I),
-  float_fractional_part2(F, F_F).
 
 
 %! float_plus(?X:number, ?Y:number, ?Z:number) is det.

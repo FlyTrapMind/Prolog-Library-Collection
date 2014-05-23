@@ -22,6 +22,7 @@ In the furture services like Google translate
 */
 
 :- use_module(library(apply)).
+:- use_module(library(filesex)).
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
 
@@ -32,8 +33,17 @@ In the furture services like Google translate
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 
-user:file_search_path(audio, project(audio)).
-%:- iana_register_mime(audio, mpeg, mp3)).
+user:prolog_file_type(mp3, audio).
+
+:- initialization(init_audio).
+
+init_audio:-
+  user:file_search_path(audio, _), !.
+init_audio:-
+  absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
+  directory_file_path(DataDir, audio, AudioDir),
+  make_directory_path(AudioDir),
+  assert(user:file_search_path(audio, data(audio))).
 
 
 

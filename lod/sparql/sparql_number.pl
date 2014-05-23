@@ -43,7 +43,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   `.`,
   integer(N2).
 'DECIMAL'(N) -->
-  {var(N)}, !,
+  {var(N)},
   'integer?'(N1),
   `.`,
   decimal_fraction(N2),
@@ -52,7 +52,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
 
 %! 'DECIMAL_NEGATIVE'(?Value:float)// .
 % ~~~{.ebnf}
-% DECIMAL_NEGATIVE	  ::=  	'-' DECIMAL
+% DECIMAL_NEGATIVE ::= '-' DECIMAL
 % ~~~
 %
 % @compat SPARQL 1.1 Query [153].
