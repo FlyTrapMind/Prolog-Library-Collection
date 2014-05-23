@@ -20,7 +20,7 @@ values is in module [xsd_dateTime].
 @version 2013/08-2013/11, 2014/03, 2014/05
 */
 
-:- use_module(dcg(dcg_meta)).
+:- use_module(dcg(dcg_generic)).
 :- use_module(xsd(xsd_dateTime)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
@@ -80,5 +80,5 @@ prolog_date_to_xsd_dateTime(
 get_dateTime(XsdDateTime):-
   get_time(PosixTimestamp),
   posix_timestamp_to_xsd_dateTime(PosixTimestamp, DateTime),
-  dcg_atom_codes(xsd_dateTime_canonical_map(DateTime), XsdDateTime).
+  dcg_phrase(xsd_dateTime_canonical_map(DateTime), XsdDateTime).
 

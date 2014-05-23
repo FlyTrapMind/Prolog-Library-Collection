@@ -118,8 +118,12 @@ dcg_end([], []).
 %! )// is nondet.
 
 dcg_phrase(DCG, X1):-
+  nonvar(X1), !,
   atomic_codes(X1, X2),
   phrase(DCG, X2).
+dcg_phrase(DCG, X1):-
+  phrase(DCG, X2),
+  atomic_codes(X1, X2).
 
 dcg_phrase(DCG, X1, Y1):-
   atomic_codes(X1, X2),
