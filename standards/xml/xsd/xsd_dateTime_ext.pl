@@ -5,7 +5,7 @@
                                        % -XsdDateTime:compound
     prolog_date_to_xsd_dateTime/2, % +PrologDate:compound,
                                    % -XxdDateTime:compound
-    xsd_dateTime/1 % -DateTime:compound
+    get_dateTime/1 % -DateTime:compound
   ]
 ).
 
@@ -17,9 +17,10 @@ The standards-compliant support for parsing/generating XSD dateTime
 values is in module [xsd_dateTime].
 
 @author Wouter Beek
-@version 2013/08-2013/11, 2014/03
+@version 2013/08-2013/11, 2014/03, 2014/05
 */
 
+:- use_module(dcg(dcg_meta)).
 :- use_module(xsd(xsd_dateTime)).
 :- use_module(xsd(xsd_dateTime_generic)).
 :- use_module(xsd(xsd_dateTime_support)).
@@ -71,14 +72,13 @@ prolog_date_to_xsd_dateTime(
   TZ is Offset / 60.
 
 
-%! xsd_dateTime(-XsdDateTime) is det.
+%! get_dateTime(-XsdDateTime) is det.
 % Similar to get_time/1, but returns the date and time in
 % the canonical lexical format of the =dateTime= datatype
 % from XML Schema 2: Datatypes W3C standard.
 
-xsd_dateTime(XsdDateTime):-
+get_dateTime(XsdDateTime):-
   get_time(PosixTimestamp),
   posix_timestamp_to_xsd_dateTime(PosixTimestamp, DateTime),
-  phrase(xsd_dateTime_canonical_map(DateTime), Codes),
-  atom_codes(XsdDateTime, Codes).
+  dcg_atom_codes(xsd_dateTime_canonical_map(DateTime), XsdDateTime).
 
