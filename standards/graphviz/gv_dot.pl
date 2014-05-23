@@ -33,6 +33,7 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
+:- use_module(gv(gv_numeral)).
 :- use_module(ugraph(ugraph_export)).
 
 :- use_module(standards(html_dcg)).
@@ -356,7 +357,7 @@ gv_id(Atom) -->
 % Numerals (variant 2)
 gv_id(N) -->
   {number(N)}, !,
-  float(N).
+  gv_numeral(N).
 % Double-quoted strings (variant 3).
 % The quotes are already part of the given atom.
 gv_id(Atom) -->
