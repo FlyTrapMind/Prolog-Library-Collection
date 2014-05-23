@@ -234,11 +234,12 @@ fibonacci(N, F):-
 
 fractional_integer(Number, Fractional):-
   atom_number(NumberAtom, Number),
-  % We assume that there is eactly one split for `.`.
-  once(sub_atom(NumberAtom, IndexOfDot, 1, _, '.')),
+  % We assume that there is at most one occurrence of `.`.
+  sub_atom(NumberAtom, IndexOfDot, 1, _, '.'), !,
   succ(IndexOfDot, Skip),
   sub_atom(NumberAtom, Skip, _, 0, FractionalAtom),
   atom_number(FractionalAtom, Fractional).
+fractional_integer(_, 0).
 
 
 %! is_fresh_age(

@@ -11,8 +11,7 @@
 @version 2014/05
 */
 
-:- use_module(library(error)).
-:- use_module(library(maplist)).
+:- use_module(dcg(dcg_cardinal)).
 :- use_module(math(math_ext)).
 
 
@@ -25,7 +24,7 @@
 gv_numeral(N) -->
   {nonvar(N)},
   {number_sign_parts(N, Sign, Abs)},
-  ({Sign == -1} -> `-` ; ``),
+  ({Sign =:= -1} -> `-` ; ``),
   gv_numeral_abs(Abs).
 gv_numeral(N) -->
   {var(N)},
@@ -38,7 +37,7 @@ gv_numeral_abs(N) -->
   {nonvar(N)},
   {number_integer_parts(N, N1, N2)},
   (
-    N1 =:= 0
+    {N1 =:= 0}
   ->
     `.`,
     integer(N2)
@@ -68,5 +67,5 @@ gv_numeral_abs(N) -->
       {N2 = 0}
     )
   ),
-  {number_integer_parts(N, 0, N2)}.
+  {number_integer_parts(N, N1, N2)}.
 
