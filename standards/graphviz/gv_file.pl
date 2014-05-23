@@ -14,7 +14,7 @@
   ]
 ).
 
-/** <module> GV_FILE
+/** <module> GraphViz file
 
 Predicates for converting GIF-formatted terms
 into GraphViz output files or SVG DOM structures.
@@ -26,13 +26,15 @@ and GraphViz output files or SVG DOM structures.
 @version 2011-2013/09, 2013/11-2014/01, 2014/05
 */
 
+:- use_module(library(option)).
+:- use_module(library(process)).
+
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(gv(gv_dot)).
-:- use_module(library(option)).
-:- use_module(library(process)).
 :- use_module(os(file_ext)).
+:- use_module(os(run_ext)).
 :- use_module(os(safe_file)).
 :- use_module(svg(svg_file)).
 

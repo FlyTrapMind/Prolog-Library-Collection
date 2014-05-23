@@ -30,8 +30,6 @@ Predicates that operate on / generate XML DOM.
 @version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11, 2014/03
 */
 
-:- use_module(generics(db_ext)).
-:- use_module(html(html)). % This is required for the HTML DTD file path.
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_open)).
@@ -40,11 +38,15 @@ Predicates that operate on / generate XML DOM.
 :- use_module(library(option)).
 :- use_module(library(sgml)).
 :- use_module(library(sgml_write)).
+
+:- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 :- use_module(standards(sgml_parse)).
 :- use_module(uri(rfc3987_dcg)).
 :- use_module(xml(xml_namespace)).
+
+:- use_module(plHtml(html)). % This is required for the HTML DTD file path.
 
 :- xml_register_namespace(svg, 'http://www.w3.org/2000/svg').
 

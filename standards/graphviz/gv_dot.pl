@@ -18,7 +18,7 @@ In GraphViz vertices are called 'nodes'.
 
 @author Wouter Beek
 @see http://www.graphviz.org/content/dot-language
-@version 2013/07, 2013/09, 2014/03-2014/04
+@version 2013/07, 2013/09, 2014/03-2014/05
 */
 
 :- use_module(library(apply)).
@@ -33,8 +33,9 @@ In GraphViz vertices are called 'nodes'.
 :- use_module(generics(trees)).
 :- use_module(graph_theory(graph_export)).
 :- use_module(gv(gv_attrs)).
-:- use_module(html(html_dcg)).
 :- use_module(ugraph(ugraph_export)).
+
+:- use_module(standards(html_dcg)).
 
 
 
@@ -355,7 +356,7 @@ gv_id(Atom) -->
 % Numerals (variant 2)
 gv_id(N) -->
   {number(N)}, !,
-  signed_number(float, N).
+  float(N).
 % Double-quoted strings (variant 3).
 % The quotes are already part of the given atom.
 gv_id(Atom) -->
