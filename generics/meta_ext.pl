@@ -44,11 +44,14 @@
 
 % MODULES
     modules/1, % -Modules:list(atom)
+    update_datastructure/4, % :Goal
+                            % +OldDatastructure
+                            % +Arguments:list
+                            % -NewDatastructurte
 
-    update_datastructure/4 % :Call
-                           % +OldDatastructure
-                           % +Arguments:list
-                           % -NewDatastructurte
+% STEPS IN LOOP
+    after_n_steps/2 % +NumberOfSteps:nonneg
+                    % :Goal
   ]
 ).
 
@@ -58,12 +61,13 @@ Extensions to the SWI-Prolog meta predicates.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/03-2014/04
+         2014/03-2014/05
 */
+
+:- use_module(library(aggregate)).
 
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(library(aggregate)).
 :- use_module(pl(pl_control)).
 
 :- meta_predicate(default_goal(1,?)).
@@ -77,6 +81,7 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(temporarily_set_flag(+,+,0)).
 :- meta_predicate(temporarily_set_existing_flag(+,+,+,0)).
 :- meta_predicate(update_datastructure(3,+,+,-)).
+:- meta_predicate(after_n_steps(+,1)).
 
 :- dynamic(memo_/1).
 :- dynamic(tmp/1).
@@ -274,7 +279,7 @@ modules(Modules):-
 
 
 %! update_datastructure(
-%!   :Call,
+%!   :Goal,
 %!   +OldDatastructure,
 %!   +Arguments:list,
 %!   -NewDatastructurte
@@ -285,8 +290,23 @@ modules(Modules):-
 % Examples of these are in the SWI-Prolog libraries for association lists
 % and ordered sets.
 
-update_datastructure(_Call, Datastructure, [], Datastructure).
-update_datastructure(Call, Datastructure1, [H|T], Datastructure3):-
-  call(Call, Datastructure1, H, Datastructure2),
-  update_datastructure(Call, Datastructure2, T, Datastructure3).
+update_datastructure(_, Datastructure, [], Datastructure).
+update_datastructure(Goal, Datastructure1, [H|T], Datastructure3):-
+  call(Goal, Datastructure1, H, Datastructure2),
+  update_datastructure(Goal, Datastructure2, T, Datastructure3).
+
+
+
+% STEPS IN LOOP %
+
+after_n_steps(N, Goal):-
+  flag(steps, Steps, Steps + 1),
+  (
+    Steps > 0,
+    0 =:= Steps mod N
+  ->
+    call(Goal, Steps)
+  ;
+    true
+  ).
 
