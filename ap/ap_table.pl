@@ -26,6 +26,7 @@
 
 :- use_module(plHtml(html_list)).
 :- use_module(plHtml(html_table)).
+:- use_module(plHtml(html_term)).
 :- use_module(plHtml(html_tuple)).
 :- use_module(plHtml(html_pl_term)).
 

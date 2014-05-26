@@ -15,7 +15,7 @@
 /** <module> AP RDF serial
 
 @author Wouter Beek
-@version 2014/02-2014/03
+@version 2014/02-2014/03, 2014/05
 */
 
 :- use_module(library(apply)).
@@ -26,7 +26,10 @@
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
 
-:- use_module(plRdf_serial(rdf_serial)).
+:- use_module(plRdf_ser(rdf_convert)).
+:- use_module(plRdf_ser(rdf_file)).
+:- use_module(plRdf_ser(rdf_file_db)).
+:- use_module(plRdf_ser(rdf_serial)).
 :- use_module(plRdf_term(rdf_datatype)).
 
 
