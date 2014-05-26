@@ -18,14 +18,16 @@
 @version 2014/02-2014/03
 */
 
+:- use_module(library(apply)).
+:- use_module(library(error)).
+
 :- use_module(ap(ap_db)).
 :- use_module(generics(error_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_ext)).
-:- use_module(library(apply)).
-:- use_module(library(error)).
+
+:- use_module(plRdf_serial(rdf_serial)).
 :- use_module(plRdf_term(rdf_datatype)).
-:- use_module(rdf_file(rdf_serial)).
 
 
 
@@ -50,7 +52,7 @@ ap_rdf_merge_directory(FromDir, ToDir, ApStage, Mime):-
     [access(write),file_type(Format),relative_to(ToDir)]
   ),
   (
-    rdf_merge_directory([void(true)], FromDir, ToFile, [mime(MIME2)])
+    rdf_merge_directory([void(true)], FromDir, ToFile, [mime(Mime)])
   ->
     rdf_directory_files(FromDir, ToFiles),
     maplist(ap_rdf_directory_assertion(ApStage), ToFiles)
