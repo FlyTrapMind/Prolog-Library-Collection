@@ -15,10 +15,12 @@ Archive extraction process for the AP architecture.
 @version 2014/01-2014/02
 */
 
+:- use_module(library(apply)).
+
 :- use_module(ap(ap_db)).
 :- use_module(os(archive_ext)).
 :- use_module(os(dir_ext)).
-:- use_module(library(apply)).
+
 :- use_module(plRdf(rdf_build)).
 
 

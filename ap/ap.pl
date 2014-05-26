@@ -30,17 +30,19 @@ Support for running automated processing.
 @version 2013/06, 2013/10-2013/11, 2014/01-2014/03
 */
 
-:- use_module(ap(ap_db)).
-:- use_module(ap(ap_dir)).
-:- use_module(ap(ap_stage)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(process)).
 :- use_module(library(semweb/rdfs)).
+
+:- use_module(ap(ap_db)).
+:- use_module(ap(ap_dir)).
+:- use_module(ap(ap_stage)).
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).
+
 :- use_module(plRdf(rdf_container)).
-:- use_module(rdf_file(rdf_serial)).
+:- use_module(plRdf_ser(rdf_serial)).
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
 
