@@ -57,7 +57,7 @@ Predicates that operate on / generate XML DOM.
 % /css
 http:location(css, root(css),  []).
 user:file_search_path(css, server(css)).
-:- http_handler(css(.), serve_files_in_directory(css), [prefix,priority(10)]).
+:- http_handler(css(.), serve_files_in_directory(css), [prefix]).
 
 
 
