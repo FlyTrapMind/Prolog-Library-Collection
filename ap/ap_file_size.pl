@@ -16,14 +16,17 @@
 File size identification and filtering for the AP architecture.
 
 @author Wouter Beek
-@version 2014/02
+@version 2014/02, 2014/05
 */
 
-:- use_module(ap(ap_db)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(lists)).
+
+:- use_module(ap(ap_db)).
 :- use_module(os(dir_ext)).
+:- use_module(os(file_ext)).
+
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf_term(rdf_datatype)).
 
