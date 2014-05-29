@@ -3,9 +3,6 @@
   [
     ';'//2, % :Dcg1
             % :Dcg2
-    ';'//3, % :Dcg1
-            % :Dcg2
-            % :Dcg3
     dcg_apply//2, % :Dcg
                   % +Arguments:list
     dcg_atom_codes//2, % :Dcg
@@ -49,7 +46,6 @@ Meta-DCG rules.
 :- use_module(generics(list_ext)).
 
 :- meta_predicate(';'(2,2,?,?)).
-:- meta_predicate(';'(2,2,2,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_atom_codes(//,?,?,?)).
 :- meta_predicate(dcg_call(2,?,?)).
@@ -66,18 +62,13 @@ Meta-DCG rules.
 
 
 
-';'(A, _B, C, D):-
-  dcg_call(A, C, D).
-';'(_A, B, C, D):-
-  dcg_call(B, C, D).
+%! ';'(:Dcg1, :Dcg2)// is nondet.
+% A disjunction of DCG rules.
 
-
-';'(A, _B, _C, D, E):-
-  dcg_call(A, D, E).
-';'(_A, B, _C, D, E):-
-  dcg_call(B, D, E).
-';'(_A, _B, C, D, E):-
-  dcg_call(C, D, E).
+';'(Dcg, _, X, Y):-
+  dcg_call(Dcg, X, Y).
+';'(_, Dcg, X, Y):-
+  dcg_call(Dcg, X, Y).
 
 
 dcg_apply(Dcg, Args1, X, Y):-
@@ -86,6 +77,34 @@ dcg_apply(Dcg, Args1, X, Y):-
 
 
 %! dcg_atom_codes(:Dcg, ?Atom:atom)// .
+% This meta-DCG rule handles the translation
+% between the word and the character level of parsing/generating.
+%
+% Typically, grammar *A* specifies how words can be formed out of characters.
+% A character is a code, and a word is a list of codes.
+% Grammar *B* specifies how sentences can be built out of words.
+% Now the word is an atom, and the sentences in a list of atoms.
+%
+% This means that at some point,
+% words in grammar *A*, i.e. lists of codes,
+% need to be translated to words in grammar *B*, i.e. atoms.
+%
+% This is where dcg_atom_codes//2 comes in.
+% We illustrate this with a schematic example:
+% ~~~{.pl}
+% sentence([W1,...,Wn]) -->
+%   word2(W1),
+%   ...,
+%   word2(Wn).
+% 
+% word2(W) -->
+%   dcg_atom_codes(word1, W).
+% 
+% word1(C1, ..., Cn) --> 
+%   char(C1),
+%   ...,
+%   char(Cn).
+% ~~~
 
 dcg_atom_codes(Dcg, Atom) -->
   {nonvar(Atom)},
@@ -98,7 +117,7 @@ dcg_atom_codes(Dcg, Atom) -->
 
 
 %! dcg_call(:Dcg)//
-% Included for consistency with dcg_call//[1,2,3,4].
+% Included for consistency with dcg_call//[2,3,4].
 % @see Same effect as phrase/3.
 
 dcg_call(Dcg, X, Y):-
