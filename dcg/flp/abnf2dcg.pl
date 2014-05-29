@@ -1,19 +1,14 @@
-:- module(
-  abnf2dcg,
-  [
-    abnf2dcg/1 % +File:atom
-  ]
-).
+:- module(abnf2dcg, []).
 
-/** <module> ABNF2DCG
+/** <module> ABNF-2-DCG
 
 Converts ABNF grammars to DCGs.
-
---
 
 @author Wouter Beek
 @version 2013/08, 2014/03
 */
+
+:- use_module(library(pio)).
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
@@ -21,17 +16,9 @@ Converts ABNF grammars to DCGs.
 :- use_module(dcg(dcg_multi)).
 :- use_module(flp(rfc4234_basic)).
 :- use_module(generics(db_ext)).
-:- use_module(library(pio)).
-:- use_module(library(plunit)).
 :- use_module(math(radix)).
 
-abnf2dcg(File):-
-  access_file(File, read),
-  phrase_from_file(abnf, File).
 
-
-
-% GRAMMAR %
 
 abnf -->
   dcg_multi(rule).
@@ -69,14 +56,4 @@ single_terminal_value(Code) -->
   hexadecimal_digit(_, H1),
   hexadecimal_digit(_, H2),
   {digits_to_decimal([H1,H2], Radix, Code)}.
-
-
-
-:- begin_tests(abnf2dcg).
-
-test(abnf1, [true]):-
-  absolute_file_name(project('abnf.abnf'), File, [access(read)]),
-  abnf2dcg(File).
-
-:- end_tests(abnf2dcg).
 
