@@ -58,9 +58,10 @@ http:location(pldoc, root(help), [priority(10)]).
 
 :- use_module(plRdf_ser(rdf_serial)).
 
-:- use_module(plRdfDev_man(rdf_man_duplicates)).
-:- use_module(plRdfDev_man(rdf_man_literals)).
-:- use_module(plRdfDev_wui(rdf_tabular)).
+:- use_module(plTabular(rdf_tabular)).
+
+:- use_module(plRdfDev(rdf_man_duplicates)).
+:- use_module(plRdfDev(rdf_man_literals)).
 
 :- set_prolog_flag(verbose, normal).
 
