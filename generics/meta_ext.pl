@@ -113,6 +113,19 @@ reset_memo:-
 %! default(+Default, ?Value) is det.
 % Returns either the given value or the default value in case there is no
 % value given.
+%
+% ### Example
+%
+% `Ordering` is a meta-argument that allows
+% a list of elements to be arbitrarily ordered.
+% The use of default/2 here allows
+% the original ordering of elements to be retained
+% in case the `Ordering` argument is not instantiated.
+%
+% ~~~{.pl}
+% default(=, Ordering),
+% once(call(Ordering, Elements1, Elements2))
+% ~~~
 
 default(_, X):-
   nonvar(X), !.

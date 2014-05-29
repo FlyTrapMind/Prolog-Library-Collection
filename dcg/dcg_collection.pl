@@ -6,44 +6,57 @@
                    % :Ordering
                    % :Separator
                    % :ElementWriter
-                   % +Elements:list(ground)
+                   % +Elements:list
     list//2, % :ElementWriter
-             % +Elements:list(ground)
+             % +Elements:list
     nvpair//3, % :ElementWriter
-               % +Name:ground
-               % +Value:ground
-    pair//3,  % +Mode:oneof([ascii,html])
-              % :ElementWriter
-              % +Pair:pair(ground)
-    pair//4,  % +Mode:oneof([ascii,html])
-              % :ElementWriter
-              % +Element1:ground
-              % +Element2:ground
-    set//2,  % :ElementWriter
-             % +Elements:list(ground)
+               % +Name
+               % +Value
+    pair//3, % +Mode:oneof([ascii,html])
+             % :ElementWriter
+             % +Pair:pair
+    pair//4, % +Mode:oneof([ascii,html])
+             % :ElementWriter
+             % +Element1
+             % +Element2
+    set//2, % :ElementWriter
+            % +Elements:list
     tuple//3 % +Mode:oneof([ascii,html])
              % :ElementWriter
-             % +Elements:list(ground)
+             % +Elements:list
   ]
 ).
 
-/** <module> DCG collections
+/** <module> DCG collection
 
-DCG rules for parsing/generating collections.
+DCG rules for generating collections.
+This module supports the following collection properties:
+  - Collections may contain other collections as their elements.
+  - Arbitrary DCGs generate the `Begin` and `End` of the collection.
+  - An arbitrary DCG separates elements in the collection, i.e. `Separator`.
+  - Each element is written with the same DCG rule `ElementWriter`.
+
+For convenience's sake, the following collection instances are supported:
+  - List
+  - Name-value pair
+  - Pair
+  - Set
+  - Tuple
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/01 2014/03
+@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05
 */
 
-:- use_module(generics(meta_ext)).
-:- use_module(generics(option_ext)).
+:- use_module(library(option)).
+
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_error)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_multi)).
-:- use_module(library(option)).
+:- use_module(generics(meta_ext)).
+:- use_module(generics(option_ext)).
 
 :- meta_predicate(collection(//,//,2,//,3,+,?,?)).
 :- meta_predicate(collection_inner(//,//,2,//,3,+,?,?)).
@@ -75,49 +88,30 @@ DCG rules for parsing/generating collections.
 %      the members of the collection.
 
 collection(Begin, End, Ordering, Separator, ElementWriter, Elements1) -->
-  % E.g., list -> set.
-  {(
-    var(Ordering)
-  ->
-    Elements2 = Elements1
-  ;
+  % Allow an arbitrary ordering to be enforced, e.g. list_to_set/2.
+  {
+    default(=, Ordering),
     once(call(Ordering, Elements1, Elements2))
-  )},
-
-  % Open a collection.
+  },
   Begin,
-
-  % The contents of the collection.
   collection_inner(Begin, End, Ordering, Separator, ElementWriter, Elements2),
-
-  % End a collection.
   End.
 
 % Done!
-collection_inner(_, _, _, _, _, []) --> !, [].
+collection_inner(_, _, _, _, _, []) --> [].
 % Nested collection.
 collection_inner(Begin, End, Ordering, Separator, ElementWriter, [H|T]) -->
   {is_list(H)}, !,
-
   collection(Begin, End, Ordering, Separator, ElementWriter, H),
-
   collection_inner(Begin, End, Ordering, Separator, ElementWriter, T).
-% Next set member.
+% Non-collection element in collection.
 collection_inner(Begin, End, Ordering, Separator, ElementWriter, [H|T]) -->
-  % Write a non-collection element.
   dcg_call(ElementWriter, H),
-
-  % The separator does not occur after the last collection member.
-  (
-    {T == []}, !
-  ;
-    Separator
-  ),
-
+  dcg_yn_separator(T, Separator),
   collection_inner(Begin, End, Ordering, Separator, ElementWriter, T).
 
 
-%! list(:ElementWriter, +Elements:list(ground))// is det.
+%! list(:ElementWriter, +Elements:list)// is det.
 % Lists are printed recursively, using indentation relative to the given
 % indentation level.
 
@@ -125,17 +119,13 @@ list(ElementWriter, Elements) -->
   collection(`[`, `]`, =, `,`, ElementWriter, Elements).
 
 
-%! nvpair(:ElementWriter, +Name:ground, +Value:ground)// is det.
+%! nvpair(:ElementWriter, +Name, +Value)// is det.
 
 nvpair(ElementWriter, Name, Value) -->
   collection(``, `;`, =, `: `, ElementWriter, [Name,Value]).
 
 
-%! pair(
-%!   +Mode:oneof([ascii,html]),
-%!   :ElementWriter,
-%!   +Pairs:pair(ground)
-%! )// is det.
+%! pair(+Mode:oneof([ascii,html]), :ElementWriter, +Pairs:pair)// is det.
 
 pair(Mode, ElementWriter, E1-E2) -->
   pair(Mode, ElementWriter, E1, E2).
@@ -144,8 +134,8 @@ pair(Mode, ElementWriter, E1-E2) -->
 %! pair(
 %!   +Mode:oneof([ascii,html]),
 %!   :ElementWriter,
-%!   +Element1:ground,
-%!   +Element2:ground
+%!   +Element1,
+%!   +Element2
 %! )// is det.
 % Prints the given pair.
 %
@@ -161,7 +151,7 @@ pair(Mode, ElementWriter, E1, E2) -->
   collection(langle(Mode), rangle(Mode), =, `,`, ElementWriter, [E1,E2]).
 
 
-%! set(:ElementWriter, +Elements:list(ground))// is det.
+%! set(:ElementWriter, +Elements:list)// is det.
 
 set(ElementWriter, L) -->
   collection(`{`, `}`, list_to_ord_set, `,`, ElementWriter, L).
@@ -189,3 +179,4 @@ langle(html) --> `&lang;`.
 
 rangle(ascii) --> `>`.
 rangle(html) --> `&rang;`.
+

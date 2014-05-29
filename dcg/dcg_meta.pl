@@ -1,8 +1,6 @@
 :- module(
   dcg_meta,
   [
-    ';'//2, % :Dcg1
-            % :Dcg2
     dcg_apply//2, % :Dcg
                   % +Arguments:list
     dcg_atom_codes//2, % :Dcg
@@ -12,8 +10,7 @@
     dcg_call//3,
     dcg_call//4,
     dcg_call//5,
-    dcg_calls//2, % :Dcgs:list
-                  % :Separator
+    dcg_call//6,
     dcg_maplist//2, % :Dcg
                     % +Arguments:list
     dcg_maplist//3, % :Dcg
@@ -26,8 +23,10 @@
                       % :Goal
                       % +Index:nonneg
                       % +Argument
-    dcg_repeat//2 % :Dcg
-                  % +NumberOfRepeats:nonneg
+    dcg_repeat//2, % :Dcg
+                   % +NumberOfRepeats:nonneg
+    dcg_sequence//2 % :Dcgs:list
+                    % :Separator
   ]
 ).
 
@@ -41,11 +40,14 @@ Meta-DCG rules.
 @version 2013/05-2013/09, 2013/11-2013/12, 2014/02-2014/03, 2014/05
 */
 
+:- use_module(library(error)).
 :- use_module(library(lists)).
 
+:- use_module(dcg(dcg_generic)).
 :- use_module(generics(list_ext)).
 
-:- meta_predicate(';'(2,2,?,?)).
+:- meta_predicate('?'(//,?,?)).
+:- meta_predicate('?_det'(//,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_atom_codes(//,?,?,?)).
 :- meta_predicate(dcg_call(2,?,?)).
@@ -53,23 +55,110 @@ Meta-DCG rules.
 :- meta_predicate(dcg_call(4,?,?,?,?)).
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
-:- meta_predicate(dcg_calls(+,//,?,?)).
+:- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
 :- meta_predicate(dcg_maplist(3,+,?,?)).
 :- meta_predicate(dcg_maplist(4,+,+,?,?)).
 :- meta_predicate(dcg_nth0_call(3,+,+,?,?)).
 :- meta_predicate(dcg_nth0_call(+,3,+,+,?,?)).
 :- meta_predicate(dcg_repeat(//,+,?,?)).
+:- meta_predicate(dcg_sequence(:,//,?,?)).
 
 
+%! '+'(:Dcg)// .
 
-%! ';'(:Dcg1, :Dcg2)// is nondet.
-% A disjunction of DCG rules.
+'*+'(Dcg) --> Dcg, '*'(Dcg).
+'+'(_) --> [].
 
-';'(Dcg, _, X, Y):-
-  dcg_call(Dcg, X, Y).
-';'(_, Dcg, X, Y):-
-  dcg_call(Dcg, X, Y).
 
+%! '+'(:Dcg, ?Args1, ...)// .
+
+'+'(Dcg, [H1|T1]) -->
+  dcg_call(Dcg, H1),
+  '+'(Dcg, T1).
+'+'(Dcg, [H1]) -->
+  dcg_call(Dcg, H1).
+
+'+'(Dcg, [H1|T1], [H2|T2]) -->
+  dcg_call(Dcg, H1, H2),
+  '+'(Dcg, T1, T2).
+'+'(Dcg, [H1], [H2]) -->
+  dcg_call(Dcg, H1, H2).
+
+'+'(Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
+  dcg_call(Dcg, H1, H2, H3),
+  '+'(Dcg, T1, T2, T3).
+'+'(Dcg, [H1], [H2], [H3]) -->
+  dcg_call(Dcg, H1, H2, H3).
+
+'+'(Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
+  dcg_call(Dcg, H1, H2, H3, H4),
+  '+'(Dcg, T1, T2, T3, T4).
+'+'(Dcg, [H1], [H2], [H3], [H4]) -->
+  dcg_call(Dcg, H1, H2, H3, H4).
+
+'+'(Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
+  dcg_call(Dcg, H1, H2, H3, H4, H5),
+  '+'(Dcg, T1, T2, T3, T4, T5).
+'+'(Dcg, [H1], [H2], [H3], [H4], [H5]) -->
+  dcg_call(Dcg, H1, H2, H3, H4, H5).
+
+
+%! '+'(:Dcg)// .
+
+'+'(Dcg) --> Dcg, '+'(Dcg).
+'+'(Dcg) --> Dcg.
+
+
+%! '+'(:Dcg, ?Args1, ...)// .
+
+'+'(Dcg, [H1|T1]) -->
+  dcg_call(Dcg, H1),
+  '+'(Dcg, T1).
+'+'(Dcg, [H1]) -->
+  dcg_call(Dcg, H1).
+
+'+'(Dcg, [H1|T1], [H2|T2]) -->
+  dcg_call(Dcg, H1, H2),
+  '+'(Dcg, T1, T2).
+'+'(Dcg, [H1], [H2]) -->
+  dcg_call(Dcg, H1, H2).
+
+'+'(Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
+  dcg_call(Dcg, H1, H2, H3),
+  '+'(Dcg, T1, T2, T3).
+'+'(Dcg, [H1], [H2], [H3]) -->
+  dcg_call(Dcg, H1, H2, H3).
+
+'+'(Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
+  dcg_call(Dcg, H1, H2, H3, H4),
+  '+'(Dcg, T1, T2, T3, T4).
+'+'(Dcg, [H1], [H2], [H3], [H4]) -->
+  dcg_call(Dcg, H1, H2, H3, H4).
+
+'+'(Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
+  dcg_call(Dcg, H1, H2, H3, H4, H5),
+  '+'(Dcg, T1, T2, T3, T4, T5).
+'+'(Dcg, [H1], [H2], [H3], [H4], [H5]) -->
+  dcg_call(Dcg, H1, H2, H3, H4, H5).
+
+
+%! '?'(:Dcg)// .
+% Implements the Regular Expression operator `?`,
+% generating *both* the case of 0 occurrences *and* the case of 1 occurrence.
+
+'?'(Dcg) --> Dcg.
+'?'(_) --> [].
+
+
+%! '?_det'(:Dcg)// .
+% Implements the Regular Expression operator `?`,
+% generating *either* the case of 0 occurrences *or* the case of 1 occurrence.
+
+'?_det'(Dcg) --> Dcg -> [] ; [].
+
+
+%! dcg_apply(:Dcg, +Arguments:list)// .
+% @see Variant of apply/2 for DCGs.
 
 dcg_apply(Dcg, Args1, X, Y):-
   append(Args1, [X,Y], Args2),
@@ -117,39 +206,31 @@ dcg_atom_codes(Dcg, Atom) -->
 
 
 %! dcg_call(:Dcg)//
-% Included for consistency with dcg_call//[2,3,4].
-% @see Same effect as phrase/3.
+% @see Included for consistency with dcg_call//[2,3,4].
+% @see This has the same effect as phrase/3.
 
 dcg_call(Dcg, X, Y):-
   call(Dcg, X, Y).
 
+%! dcg_call(:Dcg, +ExtraArg1, ...)// .
+% Currently only dcg_call//[2-6] are defined.
+%
+% @see Variant of call/[1-5] for DCGs.
 
 dcg_call(Dcg, A1, X, Y):-
   call(Dcg, A1, X, Y).
 
-
 dcg_call(Dcg, A1, A2, X, Y):-
   call(Dcg, A1, A2, X, Y).
-
 
 dcg_call(Dcg, A1, A2, A3, X, Y):-
   call(Dcg, A1, A2, A3, X, Y).
 
-
 dcg_call(Dcg, A1, A2, A3, A4, X, Y):-
   call(Dcg, A1, A2, A3, A4, X, Y).
 
-
-dcg_calls(_:[], _Separator) --> [].
-dcg_calls(Mod:DCG_Rules, Separator) -->
-  {DCG_Rules = [H|T]},
-  dcg_call(Mod:H),
-  (
-    {T == []}, !
-  ;
-    dcg_call(Separator)
-  ),
-  dcg_calls(Mod:T, Separator).
+dcg_call(Dcg, A1, A2, A3, A4, A5, X, Y):-
+  call(Dcg, A1, A2, A3, A4, A5, X, Y).
 
 
 %! dcg_maplist(:Dcg, +Args:list)// .
@@ -197,12 +278,40 @@ dcg_nth0_call(O1, Dcg1, I, X) -->
   dcg_apply(Mod:Pred, Args2).
 
 
+%! dcg_once(:Dcg)// .
+% Calls the given DCG at most one time.
+%
+% @see DCG version of once/1.
+
+dcg_once(Dcg, X, Y):-
+  once(phrase(Dcg, X, Y)).
+
+
+%! dcg_repeat// .
+% @see DCG version of repeat/1.
+
+dcg_repeat(X, X):-
+  repeat.
+
+
 %! dcg_repeat(:Dcg, +NumberOfRepeats:nonneg)// .
 
 dcg_repeat(_, N) -->
-  {N =< 0}, !, [].
+  {N < 0}, !,
+  {domain_error(nonneg, N)}.
+dcg_repeat(_, 0) --> !, [].
 dcg_repeat(Dcg, N1) -->
   Dcg,
   {N2 is N1 - 1},
   dcg_repeat(Dcg, N2).
+
+
+%! dcg_sequence(:Dcgs:list, :Separator)// .
+% Parse/generate a number of DCGs in sequence, separated by `Separator`.
+
+dcg_sequence(_:[], _) --> [].
+dcg_sequence(Mod:[H|T], Sep) -->
+  Mod:H,
+  dcg_yn_separator(T, Sep),
+  dcg_sequence(Mod:T, Sep).
 
