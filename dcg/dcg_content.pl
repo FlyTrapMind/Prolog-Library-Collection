@@ -220,9 +220,9 @@ between_dec(LowDec, HighDec) -->
 % @tbd Support for negative integers and zero.
 % @tbd Support for `minf` and `inf`.
 
-between_dec(LowDec, HighDec, Code) -->
-  {between(LowDec, HighDec, Code)},
-  [Code].
+between_dec(LowDec, HighDec, C) -->
+  [C],
+  {between(LowDec, HighDec, C)}.
 
 
 %! between_hex(+LowHexadecimal:atom, +HighHexadecimal:atom)// .

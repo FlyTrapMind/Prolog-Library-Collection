@@ -213,6 +213,12 @@ but this module does not detect whether a DCG rule is deterministic or not.
 :- meta_predicate('m*'(?,5,?,?,?,?,?)).
 :- meta_predicate('m*'(?,6,?,?,?,?,?,?)).
 :- meta_predicate('m*'(?,7,?,?,?,?,?,?,?)).
+:- meta_predicate('m*_c'(?,-,//,?,?)).
+:- meta_predicate('m*_c'(?,-,3,?,?,?)).
+:- meta_predicate('m*_c'(?,-,4,?,?,?,?)).
+:- meta_predicate('m*_c'(?,-,5,?,?,?,?,?)).
+:- meta_predicate('m*_c'(?,-,6,?,?,?,?,?,?)).
+:- meta_predicate('m*_c'(?,-,7,?,?,?,?,?,?,?)).
 :- meta_predicate('m*_s'(?,//,?,?)).
 :- meta_predicate('m*_s'(?,3,?,?,?)).
 :- meta_predicate('m*_s'(?,4,?,?,?,?)).
@@ -711,23 +717,23 @@ but this module does not detect whether a DCG rule is deterministic or not.
 %! 'm*n'(?M:nonneg, ?N:nonneg,:Dcg)// .
 %! 'm*n'(?M:nonneg, ?N:nonneg, :Dcg, ?Args1:list, ...)// .
 
-'m*n'(M, N, Dcg, X, Y):-
-  'm*n_c'(M, N, _, Dcg, X, Y).
+'m*n'(M, N, Dcg) -->
+  'm*n_c'(M, N, _, Dcg).
 
-'m*n'(M, N, Dcg, L1, X, Y):-
-  'm*n_c'(M, N, _, Dcg, L1, X, Y).
+'m*n'(M, N, Dcg, L1) -->
+  'm*n_c'(M, N, _, Dcg, L1).
 
-'m*n'(M, N, Dcg, L1, L2, X, Y):-
-  'm*n_c'(M, N, _, Dcg, L1, L2, X, Y).
+'m*n'(M, N, Dcg, L1, L2) -->
+  'm*n_c'(M, N, _, Dcg, L1, L2).
 
-'m*n'(M, N, Dcg, L1, L2, L3, X, Y):-
-  'm*n_c'(M, N, _, Dcg, L1, L2, L3, X, Y).
+'m*n'(M, N, Dcg, L1, L2, L3) -->
+  'm*n_c'(M, N, _, Dcg, L1, L2, L3).
 
-'m*n'(M, N, Dcg, L1, L2, L3, L4, X, Y):-
-  'm*n_c'(M, N, _, Dcg, L1, L2, L3, L4, X, Y).
+'m*n'(M, N, Dcg, L1, L2, L3, L4) -->
+  'm*n_c'(M, N, _, Dcg, L1, L2, L3, L4).
 
-'m*n'(M, N, Dcg, L1, L2, L3, L4, L5, X, Y):-
-  'm*n_c'(M, N, _, Dcg, L1, L2, L3, L4, L5, X, Y).
+'m*n'(M, N, Dcg, L1, L2, L3, L4, L5) -->
+  'm*n_c'(M, N, _, Dcg, L1, L2, L3, L4, L5).
 
 
 %! 'm*n_c'(?M:nonneg, ?N:nonneg, -Count:nonneg,:Dcg)// .
@@ -795,23 +801,23 @@ but this module does not detect whether a DCG rule is deterministic or not.
 %! 'm*n_s'(?M:nonneg, ?N:nonneg, :Dcg)// .
 %! 'm*n_s'(?M:nonneg, ?N:nonneg, :Dcg, ?Args1:list, ...)// .
 
-'m*n_s'(M, N, Dcg, X, Y):-
-  'm*n_s_c'(M, N, _, Dcg, X, Y).
+'m*n_s'(M, N, Dcg) -->
+  'm*n_s_c'(M, N, _, Dcg).
 
-'m*n_s'(M, N, Dcg, L1, X, Y):-
-  'm*n_s_c'(M, N, _, Dcg, L1, X, Y).
+'m*n_s'(M, N, Dcg, L1) -->
+  'm*n_s_c'(M, N, _, Dcg, L1).
 
-'m*n_s'(M, N, Dcg, L1, L2, X, Y):-
-  'm*n_s_c'(M, N, _, Dcg, L1, L2, X, Y).
+'m*n_s'(M, N, Dcg, L1, L2) -->
+  'm*n_s_c'(M, N, _, Dcg, L1, L2).
 
-'m*n_s'(M, N, Dcg, L1, L2, L3, X, Y):-
-  'm*n_s_c'(M, N, _, Dcg, L1, L2, L3, X, Y).
+'m*n_s'(M, N, Dcg, L1, L2, L3) -->
+  'm*n_s_c'(M, N, _, Dcg, L1, L2, L3).
 
-'m*n_s'(M, N, Dcg, L1, L2, L3, L4, X, Y):-
-  'm*n_s_c'(M, N, _, Dcg, L1, L2, L3, L4, X, Y).
+'m*n_s'(M, N, Dcg, L1, L2, L3, L4) -->
+  'm*n_s_c'(M, N, _, Dcg, L1, L2, L3, L4).
 
-'m*n_s'(M, N, Dcg, L1, L2, L3, L4, L5, X, Y):-
-  'm*n_s_c'(M, N, _, Dcg, L1, L2, L3, L4, L5, X, Y).
+'m*n_s'(M, N, Dcg, L1, L2, L3, L4, L5) -->
+  'm*n_s_c'(M, N, _, Dcg, L1, L2, L3, L4, L5).
 
 
 %! 'm*n_s_c'(?M:nonneg, ?N:nonneg, -Count:nonneg, :Dcg)// .
@@ -876,7 +882,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_generate'(M, N, C2, C, Dcg).
 
-'m*n_generate'(M, _, C, C, _, _) -->
+'m*n_generate'(M, _, C, C, _, []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_generate'(M, N, C1, C, Dcg, [H1|T1]) -->
@@ -885,7 +891,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_generate'(M, N, C2, C, Dcg, T1).
 
-'m*n_generate'(M, _, C, C, _, _, _) -->
+'m*n_generate'(M, _, C, C, _, [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2]) -->
@@ -894,7 +900,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_generate'(M, N, C2, C, Dcg, T1, T2).
 
-'m*n_generate'(M, _, C, C, _, _, _, _) -->
+'m*n_generate'(M, _, C, C, _, [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
@@ -903,7 +909,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_generate'(M, N, C2, C, Dcg, T1, T2, T3).
 
-'m*n_generate'(M, _, C, C, _, _, _, _, _) -->
+'m*n_generate'(M, _, C, C, _, [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
@@ -912,7 +918,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_generate'(M, N, C2, C, Dcg, T1, T2, T3, T4).
 
-'m*n_generate'(M, _, C, C, _, _, _, _, _, _) -->
+'m*n_generate'(M, _, C, C, _, [], [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
@@ -936,7 +942,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_s_generate'(M, N, C, C2, Dcg).
 
-'m*n_s_generate'(M, _, C, C, _, _) -->
+'m*n_s_generate'(M, _, C, C, _, []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_s_generate'(M, N, C, C1, Dcg, [H1|T1]) -->
@@ -945,7 +951,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_s_generate'(M, N, C, C2, Dcg, T1).
 
-'m*n_s_generate'(M, _, C, C, _, _, _) -->
+'m*n_s_generate'(M, _, C, C, _, [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_s_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2]) -->
@@ -954,7 +960,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_s_generate'(M, N, C2, C, Dcg, T1, T2).
 
-'m*n_s_generate'(M, _, C, C, _, _, _, _) -->
+'m*n_s_generate'(M, _, C, C, _, [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_s_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
@@ -963,7 +969,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_s_generate'(M, N, C2, C, Dcg, T1, T2, T3).
 
-'m*n_s_generate'(M, _, C, C, _, _, _, _, _) -->
+'m*n_s_generate'(M, _, C, C, _, [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_s_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
@@ -972,7 +978,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   {succ(C1, C2)},
   'm*n_s_generate'(M, N, C2, C, Dcg, T1, T2, T3, T4).
 
-'m*n_s_generate'(M, _, C, C, _, _, _, _, _, _) -->
+'m*n_s_generate'(M, _, C, C, _, [], [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 'm*n_s_generate'(M, N, C1, C, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
@@ -1022,7 +1028,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call(Dcg, H1),
   {succ(C1, C2)},
   'm*n_parse'(M, N, C2, C, Dcg, T1).
-'m*n_parse'(M, _, C, C, _, _) -->
+'m*n_parse'(M, _, C, C, _, []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1031,7 +1037,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call(Dcg, H1, H2),
   {succ(C1, C2)},
   'm*n_parse'(M, N, C2, C, Dcg, T1, T2).
-'m*n_parse'(M, _, C, C, _, _, _) -->
+'m*n_parse'(M, _, C, C, _, [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1040,7 +1046,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call(Dcg, H1, H2, H3),
   {succ(C1, C2)},
   'm*n_parse'(M, N, C2, C, Dcg, T1, T2, T3).
-'m*n_parse'(M, _, C, C, _, _, _, _) -->
+'m*n_parse'(M, _, C, C, _, [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1049,7 +1055,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call(Dcg, H1, H2, H3, H4),
   {succ(C1, C2)},
   'm*n_parse'(M, N, C2, C, Dcg, T1, T2, T3, T4).
-'m*n_parse'(M, _, C, C, _, _, _, _, _) -->
+'m*n_parse'(M, _, C, C, _, [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1058,7 +1064,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call(Dcg, H1, H2, H3, H4, H5),
   {succ(C1, C2)},
   'm*n_parse'(M, N, C2, C, Dcg, T1, T2, T3, T4, T5).
-'m*n_parse'(M, _, C, C, _, _, _, _, _, _) -->
+'m*n_parse'(M, _, C, C, _, [], [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1083,7 +1089,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call_s(Dcg, H1),
   {succ(C1, C2)},
   'm*n_s_parse'(M, N, C2, C, Dcg, T1).
-'m*n_s_parse'(M, _, C, C, _, _) -->
+'m*n_s_parse'(M, _, C, C, _, []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1092,7 +1098,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call_s(Dcg, H1, H2),
   {succ(C1, C2)},
   'm*n_s_parse'(M, N, C2, C, Dcg, T1, T2).
-'m*n_s_parse'(M, _, C, C, _, _, _) -->
+'m*n_s_parse'(M, _, C, C, _, [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1101,7 +1107,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call_s(Dcg, H1, H2, H3),
   {succ(C1, C2)},
   'm*n_s_parse'(M, N, C2, C, Dcg, T1, T2, T3).
-'m*n_s_parse'(M, _, C, C, _, _, _, _) -->
+'m*n_s_parse'(M, _, C, C, _, [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1110,7 +1116,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call_s(Dcg, H1, H2, H3, H4),
   {succ(C1, C2)},
   'm*n_s_parse'(M, N, C2, C, Dcg, T1, T2, T3, T4).
-'m*n_s_parse'(M, _, C, C, _, _, _, _, _) -->
+'m*n_s_parse'(M, _, C, C, _, [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 
@@ -1119,7 +1125,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   dcg_call_s(Dcg, H1, H2, H3, H4, H5),
   {succ(C1, C2)},
   'm*n_s_parse'(M, N, C2, C, Dcg, T1, T2, T3, T4, T5).
-'m*n_s_parse'(M, _, C, C, _, _, _, _, _, _) -->
+'m*n_s_parse'(M, _, C, C, _, [], [], [], [], []) -->
   {'m*n_lower'(M, C)},
   [].
 

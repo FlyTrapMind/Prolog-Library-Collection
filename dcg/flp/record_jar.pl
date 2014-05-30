@@ -2,7 +2,7 @@
   record_jar,
   [
     'record-jar'//2 % ?Encoding:atom
-                    % ?Records:list(list(nvpair))
+                    % ?Records:list(list(nvpair(atom,list(atom))))
   ]
 ).
 
@@ -50,24 +50,10 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
+:- use_module(flp(record_jar_char)).
 :- use_module(flp(rfc4234_basic)).
 :- use_module(math(radix)).
 
-
-
-%! 'ASCCHAR'(?Code:code)// .
-% ASCII characters except %x26 (&) and %x5C (\).
-%
-% ~~~{.abnf}
-% ASCCHAR = %x21-25 / %x27-5B / %x5D-7E
-% ~~~
-
-'ASCCHAR'(C) -->
-  between_hex('21', '25', C).
-'ASCCHAR'(C) -->
-  between_hex('27', '5B', C).
-'ASCCHAR'(C) -->
-  between_hex('5D', '7E', C).
 
 
 %! 'blank-line'// .
@@ -80,27 +66,6 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
   'CRLF'.
 
 
-%! character(?Code:code)// .
-% ~~~{.abnf}
-% character = SP / ASCCHAR / UNICHAR / ESCAPE
-% ~~~
-%
-% Note that ampersand// and backslash// are explicitly excluded.
-%
-% ## Inconsistency
-%
-% I assume the horizontal tab is also allowed in comments, as is space.
-
-character(C) -->
-  'ASCCHAR'(C).
-character(C) -->
-  'WSP'(C).
-character(C) -->
-  'ESCAPE'(C).
-character(C) -->
-  'UNICHAR'(C).
-
-
 %! comment(?Comment:list(code))// .
 % ~~~{.abnf}
 % comment = SP *69(character)
@@ -111,6 +76,9 @@ character(C) -->
 % I assume the horizontal tab is also allowed in comments, as is space.
 
 comment(Comment) -->
+  dcg_atom_codes(comment1, Comment).
+
+comment1(Comment) -->
   'WSP',
   '*n'(69, character, Comment).
 
@@ -120,13 +88,22 @@ comment(Comment) -->
 % continuation = ["\"] [[*SP CRLF] 1*SP]
 % ~~~
 %
-% ## Inconsistency
+% ### Suggestion
 %
-% I assume the horizontal tab is also allowed in comments, as is space.
+% I would allow the horizontal tab to occur in comments,
+% for consistency with ???.
 
 continuation -->
   '?'(backslash),
-  '?'(('?'(('*'('SP'), 'CRLF')), '+'('SP'))).
+  '?'(continuation1).
+
+continuation1 -->
+  '?'(continuation2),
+  '+'('SP').
+
+continuation2 -->
+  '*'('SP'),
+  'CRLF'.
 
 
 %! encodingSig(?Encoding:atom)// .
@@ -137,39 +114,23 @@ continuation -->
 encodingSig(Encoding) -->
   `%%encoding`,
   'field-sep',
-  '*'(dcg_atom_codes(encodingSig1), Encoding),
+  dcg_atom_codes(encodingSig1, Encoding),
   'CRLF'.
 
-encodingSig1(C) -->
+encodingSig1(Codes) -->
+  '*'(encodingSig2, Codes).
+
+encodingSig2(C) -->
   'ALPHA'(C).
-encodingSig1(C) -->
+encodingSig2(C) -->
   'DIGIT'(C).
-encodingSig1(C) -->
+encodingSig2(C) -->
   hyphen(C).
-encodingSig1(C) -->
+encodingSig2(C) -->
   underscore(C).
 
 
-%! 'ESCAPE'(?Code:code)// .
-% ~~~{.abnf}
-% ESCAPE = "\" ("\" / "&" / "r" / "n" / "t" ) / "&#x" 2*6HEXDIG ";"
-% ~~~
-
-'ESCAPE'(C) -->
-  backslash,
-  ( backslash(C)
-  ; ampersat(C)
-  ; r_lowercase(C)
-  ; n_lowercase(C)
-  ; t_lowercase(C)
-  ).
-'ESCAPE'(DecimalNumber) -->
-  `&#x`,
-  'm*n'(2, 6, 'HEXDIG', DecimalDigits),
-  {digits_to_decimal(DecimalDigits, 16, DecimalNumber)}.
-
-
-%! field(?Field:nvpair)// .
+%! field(?Field:nvpair(atom,list(atom)))// .
 % ~~~{.abnf}
 % field = ( field-name field-sep field-body CRLF )
 % ~~~
@@ -219,7 +180,7 @@ field(Name=Body) -->
   '+'(character, Codes).
 
 
-%! 'field-name'(?Name:list(code))// .
+%! 'field-name'(?Name:atom)// .
 % The field-name is an identifer. Field-names consist of a sequence of
 % Unicode characters. Whitespace characters and colon (=:=, =%x3A=) are
 % not permitted in a field-name.
@@ -237,23 +198,21 @@ field(Name=Body) -->
 %
 % ### Inconsistency
 %
-% The ABNF seems to be wrong. Th working draft states the following:
+% The ABNF seems to be wrong. The working draft states the following:
 % ~~~{.txt}
 % Whitespace characters and colon (":", %x3A) are not permitted in a
 % field-name.
 % ~~~
 % We therefore introduce the extra DCG rule 'field-name-character'//1.
 
-'field-name'(Codes) -->
-  '+'('field-name-character', Codes).
+'field-name'(Name) -->
+  dcg_atom_codes('field-name1', Name).
 
-'field-name-character'(C) -->
-  character(C),
-  % Explicitly exclude space// and colon//.
-  {\+ memberchk(C, [32, 58])}.
+'field-name1'(Name) -->
+  '+'('field-name-character', Name).
 
 
-%! 'field-sep'//
+%! 'field-sep'// .
 % The field separator is the colon character (=:=, =%x3A=).
 % The separator MAY be surrounded on either side by any amount of
 % horizontal whitespace (tab or space characters). The normal
@@ -274,7 +233,10 @@ field(Name=Body) -->
   '*'('WSP').
 
 
-%! 'record-jar'(?Encoding:atom, ?Records:list(list(nvpair)))// .
+%! 'record-jar'(
+%!   ?Encoding:atom,
+%!   ?Records:list(list(nvpair(atom,list(atom))))
+%! )// .
 % ~~~{.abnf}
 % record-jar = [encodingSig] [separator] *record
 % ~~~
@@ -288,7 +250,7 @@ field(Name=Body) -->
   '*'(record, Records).
 
 
-%! record(?Fields:list(nvpair))// .
+%! record(?Fields:list(nvpair(atom,list(atom))))// .
 % ~~~{.abnf}
 % record = 1*field separator
 % ~~~
@@ -314,31 +276,25 @@ separator(Comments) -->
   '*'(separator1, Comments).
 
 separator1(Comment) -->
-  '#'(2, percent_sign),
+  `%%`,
   '?'(dcg_atom_codes(comment, Comment)),
   'CRLF'.
 
 
-%! 'UNICHAR'(?Code:code)// .
-% ~~~{.abnf}
-% UNICHAR = %x80-10FFFF
-% ~~~
 
-'UNICHAR'(C) -->
-  between_hex('80', '10FFFF', C).
-
-
-
-:- begin_tests(record_jar, [blocked('Takes too long to run each time.')]).
+:- begin_tests(record_jar, []).
+%:- begin_tests(record_jar, [blocked('Takes too long to run each time.')]).
 
 :- use_module(library(apply)).
 :- use_module(library(pio)).
+
+user:prolog_file_type(txt, text).
 
 test(record_jar, []):-
   absolute_file_name(
     lang(rfc5646_iana_registry),
     File,
-    [access(read), file_type(text)]
+    [access(read),file_type(text)]
   ),
   setup_call_cleanup(
     open(File, read, Stream, [type(binary)]),
