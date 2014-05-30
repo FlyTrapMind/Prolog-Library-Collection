@@ -334,7 +334,7 @@ horizontal_line -->
   horizontal_line(ScreenWidth).
 
 horizontal_line(Length) -->
-  dcg_repeat(hyphen_minus, Length).
+  'm*n'(Length, Length, `-`).
 
 
 %! indent// is det.
@@ -349,7 +349,7 @@ indent(I) -->
     setting(indent_size, Size),
     NumberOfSpaces is I * Size
   },
-  dcg_repeat(space, NumberOfSpaces).
+  'm*n'(NumberOfSpaces, NumberOfSpaces, ` `).
 
 indent(I, DCG) -->
   indent(I),

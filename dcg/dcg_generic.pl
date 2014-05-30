@@ -257,11 +257,11 @@ dcg_until_(O1, DCG_End, [H|T]) -->
   dcg_until_(O1, DCG_End, T).
 
 
-%! dcg_yn_separator(+Tail:list)// .
+%! dcg_yn_separator(+Tail:list, :Separator)// .
 % Decides whether a separator is needed or not for the given tail.
 
-dcg_yn_separator([]) --> [].
-dcg_yn_separator([_|_]) --> Separator.
+dcg_yn_separator([], _) --> [].
+dcg_yn_separator([_|_], Separator) --> Separator.
 
 
 void --> [].
