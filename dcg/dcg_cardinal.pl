@@ -50,11 +50,11 @@ DCGs for cardinal numbers.
 @version 2013/06-2013/09, 2014/05
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(generics(typecheck)).
 :- use_module(math(math_ext)).
 
@@ -163,7 +163,7 @@ digits_to_decimal_number(_Digit, _Radix, M, M) --> [].
 
 exponent -->
   exponent_sign,
-  dcg_multi(decimal_digit, 1-_).
+  '+'(decimal_digit).
 
 
 exponent_sign --> e.

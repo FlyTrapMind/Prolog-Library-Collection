@@ -6,7 +6,7 @@
   ]
 ).
 
-/** <module> RECORD_JAR
+/** <module> Record Jar
 
 Support for the =|record-jar|= format for storing multiple records with a
 variable repertoire of fields in a text format.
@@ -40,18 +40,22 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 @see Originally described in *The Art of Unix Programming*.
 @see Latest description was found at
      http://tools.ietf.org/html/draft-phillips-record-jar-02
-@version 2013/07
+@version 2013/07, 2014/05
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_multi)).
-:- use_module(flp(rfc4234_basic)).
 :- use_module(library(apply)).
 :- use_module(library(plunit)).
 
+:- use_module(dcg(dcg_abnf)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_meta)).
+:- use_module(flp(rfc4234_basic)).
+:- use_module(math(radix)).
 
 
-%! 'ASCCHAR'(?Code:code)//
+
+%! 'ASCCHAR'(?Code:code)// .
 % ASCII characters except %x26 (&) and %x5C (\).
 %
 % ~~~{.abnf}
@@ -59,14 +63,14 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 % ~~~
 
 'ASCCHAR'(C) -->
-  [C],
-  {(between(33, 37, C)
-  ; between(39, 91, C)
-  ; between(93, 126, C)
-  )}.
+  between_hex('21', '25', C).
+'ASCCHAR'(C) -->
+  between_hex('27', '5B', C).
+'ASCCHAR'(C) -->
+  between_hex('5D', '7E', C).
 
-%! 'blank-line'//
-%
+
+%! 'blank-line'// .
 % ~~~{.abnf}
 % blank-line = WSP CRLF
 % ~~~
@@ -75,8 +79,8 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
   'WSP',
   'CRLF'.
 
-%! character(?Code:code)//
-%
+
+%! character(?Code:code)// .
 % ~~~{.abnf}
 % character = SP / ASCCHAR / UNICHAR / ESCAPE
 % ~~~
@@ -96,8 +100,8 @@ character(C) -->
 character(C) -->
   'UNICHAR'(C).
 
-%! comment(?Comment:atom)//
-%
+
+%! comment(?Comment:list(code))// .
 % ~~~{.abnf}
 % comment = SP *69(character)
 % ~~~
@@ -108,10 +112,10 @@ character(C) -->
 
 comment(Comment) -->
   'WSP',
-  dcg_multi1(character, 0-69, Comment, [convert(codes_atom)]).
+  '*n'(69, character, Comment).
 
-%! continuation//
-%
+
+%! continuation// .
 % ~~~{.abnf}
 % continuation = ["\"] [[*SP CRLF] 1*SP]
 % ~~~
@@ -121,32 +125,32 @@ comment(Comment) -->
 % I assume the horizontal tab is also allowed in comments, as is space.
 
 continuation -->
-  (backslash ; ""),
-  (
-    (dcg_multi('WSP'), 'CRLF' ; ""),
-    dcg_multi('WSP', 1-_)
-  ;
-    ""
-  ).
+  '?'(backslash),
+  '?'(('?'(('*'('SP'), 'CRLF')), '+'('SP'))).
 
-%! encodingSig(?Encoding:atom)//
-%
+
+%! encodingSig(?Encoding:atom)// .
 % ~~~{.abnf}
 % encodingSig  = "%%encoding" field-sep *(ALPHA / DIGIT / "-" / "_") CRLF
 % ~~~
 
 encodingSig(Encoding) -->
-  "%%encoding",
+  `%%encoding`,
   'field-sep',
-  dcg_multi1(encodingSig_, _N, Encoding, [convert(codes_atom)]),
+  '*'(dcg_atom_codes(encodingSig1), Encoding),
   'CRLF'.
-encodingSig_(C) --> 'ALPHA'(C).
-encodingSig_(C) --> 'DIGIT'(C, _).
-encodingSig_(C) --> hyphen(C).
-encodingSig_(C) --> underscore(C).
 
-%! 'ESCAPE'(?Code:code)//
-%
+encodingSig1(C) -->
+  'ALPHA'(C).
+encodingSig1(C) -->
+  'DIGIT'(C).
+encodingSig1(C) -->
+  hyphen(C).
+encodingSig1(C) -->
+  underscore(C).
+
+
+%! 'ESCAPE'(?Code:code)// .
 % ~~~{.abnf}
 % ESCAPE = "\" ("\" / "&" / "r" / "n" / "t" ) / "&#x" 2*6HEXDIG ";"
 % ~~~
@@ -160,11 +164,12 @@ encodingSig_(C) --> underscore(C).
   ; t_lowercase(C)
   ).
 'ESCAPE'(DecimalNumber) -->
-  "&#x",
-  dcg_multi1('HEXDIG', 2-6, DecimalNumber, [convert(digits_to_decimal)]).
+  `&#x`,
+  'm*n'(2, 6, 'HEXDIG', DecimalDigits),
+  {digits_to_decimal(DecimalDigits, 16, DecimalNumber)}.
 
-%! field(?Field:nvpair)//
-%
+
+%! field(?Field:nvpair)// .
 % ~~~{.abnf}
 % field = ( field-name field-sep field-body CRLF )
 % ~~~
@@ -175,12 +180,13 @@ field(Name=Body) -->
   'field-body'(Body),
   'CRLF'.
 
-%! 'field-body'(?Body:list(atom))//
+
+%! 'field-body'(?Body:list(atom))// .
 % The field-body contains the data value. Logically, the field-body
 % consists of a single line of text using any combination of characters
 % from the Universal Character Set followed by a `CRLF` (newline).
 %
-% ## Escaping
+% ### Escaping
 %
 % The carriage return, newline, and tab characters, when they occur in the
 % data value stored in the field-body, are represented by their common
@@ -190,7 +196,7 @@ field(Name=Body) -->
 % field-body   = *(continuation 1*character)
 % ~~~
 %
-% ## Folding
+% ### Folding
 %
 % To accommodate line limits (enforced by another standard or implementation),
 % readability, and presentational purposes, the field-body portion of a field
@@ -203,17 +209,22 @@ field(Name=Body) -->
 % @see Information on grapheme clusters, UAX29.
 
 'field-body'(Body) -->
-  dcg_multi1('field-body_', _Rep, Body, [convert(atomic_list_concat)]).
-'field-body_'(Body) -->
-  continuation,
-  dcg_multi1(character, 1-_, Body, [convert(codes_atom)]).
+  '*'('field-body1', Body).
 
-%! 'field-name'(-Tree:compound, ?Name:atom)//
+'field-body1'(Word) -->
+  continuation,
+  dcg_atom_codes('field-body2', Word).
+
+'field-body2'(Codes) -->
+  '+'(character, Codes).
+
+
+%! 'field-name'(?Name:list(code))// .
 % The field-name is an identifer. Field-names consist of a sequence of
 % Unicode characters. Whitespace characters and colon (=:=, =%x3A=) are
 % not permitted in a field-name.
 %
-% ## Case
+% ### Case
 %
 % Field-names are case sensitive.  Upper and lowercase letters are
 % often used to visually break up the name, for example using
@@ -224,7 +235,7 @@ field(Name=Body) -->
 % field-name = 1*character
 % ~~~
 %
-% ## Inconsistency
+% ### Inconsistency
 %
 % The ABNF seems to be wrong. Th working draft states the following:
 % ~~~{.txt}
@@ -233,13 +244,14 @@ field(Name=Body) -->
 % ~~~
 % We therefore introduce the extra DCG rule 'field-name-character'//1.
 
-'field-name'(Name) -->
-  dcg_multi1('field-name-character', 1-_, Name, [convert(codes_atom)]).
+'field-name'(Codes) -->
+  '+'('field-name-character', Codes).
 
 'field-name-character'(C) -->
   character(C),
   % Explicitly exclude space// and colon//.
   {\+ memberchk(C, [32, 58])}.
+
 
 %! 'field-sep'//
 % The field separator is the colon character (=:=, =%x3A=).
@@ -251,62 +263,69 @@ field(Name=Body) -->
 % field-sep = *SP ":" *SP
 % ~~~
 %
-% ## Inconsistency
+% ### Inconsistency
 %
 % The ABNF does not mention the (horizontal) tab, only the space character.
 % We solve this by using 'WSP'// instead of 'SP'//.
 
 'field-sep' -->
-  dcg_multi('WSP'),
-  ":",
-  dcg_multi('WSP').
+  '*'('WSP'),
+  `:`,
+  '*'('WSP').
 
-%! 'record-jar'(?Encoding:atom, ?Records:list(list(nvpair)))//
-%
+
+%! 'record-jar'(?Encoding:atom, ?Records:list(list(nvpair)))// .
 % ~~~{.abnf}
 % record-jar = [encodingSig] [separator] *record
 % ~~~
 
 'record-jar'(Encoding, Records) -->
-  (encodingSig(Encoding) ; ""),
+  '?'(encodingSig(Encoding)),
   % The disjunction with the empty string is not needed here,
   % since the production of the separator can process
   % the empty string as well.
-  separator(_Comments),
-  dcg_multi1(record, Records).
+  '?'(separator),
+  '*'(record, Records).
 
-%! record(?Fields:list(nvpair))//
+
+%! record(?Fields:list(nvpair))// .
 % ~~~{.abnf}
 % record = 1*field separator
 % ~~~
 
 record(Fields) -->
-  dcg_multi1(field, 1-_, Fields),
-  separator(_Comments).
+  '+'(field, Fields),
+  separator.
 
-%! separator(?Comments:list(atom))//
-%
+
+%! separator// .
+% @see Wrapper around separator//1.
+
+separator -->
+  separator(_).
+
+%! separator(?Comments:list(atom))// .
 % ~~~{.abnf}
 % separator = [blank-line] *("%%" [comment] CRLF)
 % ~~~
 
 separator(Comments) -->
-  ('blank-line' ; ""),
-  dcg_multi1(separator_, _N, Comments, [convert(exclude(var))]).
-separator_(Comment) -->
-  "%%",
-  (comment(Comment) ; ""),
+  '?'('blank-line'),
+  '*'(separator1, Comments).
+
+separator1(Comment) -->
+  '#'(2, percent_sign),
+  '?'(dcg_atom_codes(comment, Comment)),
   'CRLF'.
 
-%! 'UNICHAR'(?Code:code)//
-%
+
+%! 'UNICHAR'(?Code:code)// .
 % ~~~{.abnf}
 % UNICHAR = %x80-10FFFF
 % ~~~
 
 'UNICHAR'(C) -->
-  [C],
-  {between(128, 1114111, C)}.
+  between_hex('80', '10FFFF', C).
 
 
 

@@ -102,7 +102,7 @@ gv_compass_pt(w) --> `w`.
 % @arg Directed Whether an edge is directed (operator `->`) or
 %               undirected (operator `--`).
 
-gv_edge_operator(forward) --> arrow([head(right)], 2).
+gv_edge_operator(forward) --> arrow(right, 2).
 gv_edge_operator(none) --> `--`.
 
 

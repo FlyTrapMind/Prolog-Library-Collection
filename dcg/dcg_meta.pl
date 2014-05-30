@@ -6,6 +6,7 @@
     dcg_atom_codes//2, % :Dcg
                        % ?Atom:atom
     dcg_call//1, dcg_call//2, dcg_call//3, dcg_call//4, dcg_call//5, dcg_call//6,
+    dcg_call_s//1, dcg_call_s//2, dcg_call_s//3, dcg_call_s//4, dcg_call_s//5, dcg_call_s//6,
     dcg_maplist//2, dcg_maplist//3, dcg_maplist//4, dcg_maplist//5, dcg_maplist//6,
     dcg_nth0_call//3, % :Goal
                       % +Index:nonneg
@@ -31,21 +32,25 @@ Meta-DCG rules.
 @version 2013/05-2013/09, 2013/11-2013/12, 2014/02-2014/03, 2014/05
 */
 
-:- use_module(library(error)).
 :- use_module(library(lists)).
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
 
 :- meta_predicate(dcg_apply(//,+,?,?)).
-:- meta_predicate(dcg_atom_codes(//,?,?,?)).
+:- meta_predicate(dcg_atom_codes(3,?,?,?)).
 :- meta_predicate(dcg_call(//,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
 :- meta_predicate(dcg_call(4,?,?,?,?)).
 :- meta_predicate(dcg_call(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call(7,?,?,?,?,?,?,?)).
+:- meta_predicate(dcg_call_s(//,?,?)).
+:- meta_predicate(dcg_call_s(3,?,?,?)).
+:- meta_predicate(dcg_call_s(4,?,?,?,?)).
+:- meta_predicate(dcg_call_s(5,?,?,?,?,?)).
+:- meta_predicate(dcg_call_s(6,?,?,?,?,?,?)).
+:- meta_predicate(dcg_call_s(7,?,?,?,?,?,?,?)).
 :- meta_predicate(dcg_maplist(3,+,?,?)).
 :- meta_predicate(dcg_maplist(4,+,+,?,?)).
 :- meta_predicate(dcg_maplist(5,+,+,+,?,?)).
@@ -113,27 +118,27 @@ dcg_atom_codes(Dcg, Atom) -->
 % @see Variants of call/[1-5] for DCGs.
 
 dcg_call(Dcg1, X, Y):-
-  {copy_term(Dcg1, Dcg2)},
+  copy_term(Dcg1, Dcg2),
   call(Dcg2, X, Y).
 
 dcg_call(Dcg1, A1, X, Y):-
-  {copy_term(Dcg1, Dcg2)},
+  copy_term(Dcg1, Dcg2),
   call(Dcg2, A1, X, Y).
 
 dcg_call(Dcg1, A1, A2, X, Y):-
-  {copy_term(Dcg1, Dcg2)},
+  copy_term(Dcg1, Dcg2),
   call(Dcg2, A1, A2, X, Y).
 
 dcg_call(Dcg1, A1, A2, A3, X, Y):-
-  {copy_term(Dcg1, Dcg2)},
+  copy_term(Dcg1, Dcg2),
   call(Dcg2, A1, A2, A3, X, Y).
 
 dcg_call(Dcg1, A1, A2, A3, A4, X, Y):-
-  {copy_term(Dcg1, Dcg2)},
+  copy_term(Dcg1, Dcg2),
   call(Dcg2, A1, A2, A3, A4, X, Y).
 
 dcg_call(Dcg1, A1, A2, A3, A4, A5, X, Y):-
-  {copy_term(Dcg1, Dcg2)},
+  copy_term(Dcg1, Dcg2),
   call(Dcg2, A1, A2, A3, A4, A5, X, Y).
 
 
@@ -143,23 +148,23 @@ dcg_call(Dcg1, A1, A2, A3, A4, A5, X, Y):-
 %      (i.e., not copied). This means that multiple calls of the same `Dcg`
 %      share uninstantiated variables.
 
-dcg_call_s(Dcg1, X, Y):-
-  call(Dcg2, X, Y).
+dcg_call_s(Dcg, X, Y):-
+  call(Dcg, X, Y).
 
-dcg_call_s(Dcg1, A1, X, Y):-
-  call(Dcg2, A1, X, Y).
+dcg_call_s(Dcg, A1, X, Y):-
+  call(Dcg, A1, X, Y).
 
-dcg_call_s(Dcg1, A1, A2, X, Y):-
-  call(Dcg2, A1, A2, X, Y).
+dcg_call_s(Dcg, A1, A2, X, Y):-
+  call(Dcg, A1, A2, X, Y).
 
-dcg_call_s(Dcg1, A1, A2, A3, X, Y):-
-  call(Dcg2, A1, A2, A3, X, Y).
+dcg_call_s(Dcg, A1, A2, A3, X, Y):-
+  call(Dcg, A1, A2, A3, X, Y).
 
-dcg_call_s(Dcg1, A1, A2, A3, A4, X, Y):-
-  call(Dcg2, A1, A2, A3, A4, X, Y).
+dcg_call_s(Dcg, A1, A2, A3, A4, X, Y):-
+  call(Dcg, A1, A2, A3, A4, X, Y).
 
-dcg_call_s(Dcg1, A1, A2, A3, A4, A5, X, Y):-
-  call(Dcg2, A1, A2, A3, A4, A5, X, Y).
+dcg_call_s(Dcg, A1, A2, A3, A4, A5, X, Y):-
+  call(Dcg, A1, A2, A3, A4, A5, X, Y).
 
 
 %! dcg_maplist(:Dcg, +Args1:list, ...)// .

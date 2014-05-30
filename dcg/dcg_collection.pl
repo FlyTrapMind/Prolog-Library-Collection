@@ -54,7 +54,6 @@ For convenience's sake, the following collection instances are supported:
 :- use_module(dcg(dcg_error)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(option_ext)).
 

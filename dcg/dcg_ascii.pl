@@ -15,6 +15,8 @@
     ampersand//1, % ?Code:code
     ampersat//0,
     ampersat//1, % ?Code:code
+    angular_bracket//0,
+    angular_bracket//1, % ?Code:code
     apetail//0,
     apetail//1, % ?Code:code
     apostrophe//0,
@@ -473,6 +475,11 @@ ampersand(38) --> [38].
 
 ampersat --> at_sign.
 ampersat(C) --> at_sign(C).
+
+angular_bracket --> opening_angular_bracket.
+angular_bracket --> closing_angular_bracket.
+angular_bracket(C) --> opening_angular_bracket(C).
+angular_bracket(C) --> closing_angular_bracket(C).
 
 apetail --> at_sign.
 apetail(C) --> at_sign(C).

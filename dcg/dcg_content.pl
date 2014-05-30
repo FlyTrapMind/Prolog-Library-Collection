@@ -1,8 +1,8 @@
 :- module(
   dcg_content,
   [
-    arrow//2, % +Options:list(nvpair)
-              % +Length:nonneg
+    arrow//2, % ?Head:oneof([both,left,right])
+              % ?Length:nonneg
     atom//1, % ?Atom:atom
     atom//2, % +Atom:atom
              % +Ellipsis:positive_integer
@@ -30,7 +30,7 @@
     hex_code//2, % +HexadecimalDigit:atom
                  % ?Code:code
     horizontal_line//0,
-    horizontal_line//1, % +Length:nonneg
+    horizontal_line//1, % ?Length:nonneg
     indent//0,
     indent//1, % +Indent:nonneg
     indent//2, % +Indent:nonneg
@@ -74,6 +74,7 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_meta)).
@@ -101,58 +102,95 @@ DCG rules for parsing/generating often-occuring content.
 
 
 
-%! arrow(+Options:list(nvpair), +Length:nonneg)// .
-% A simple ASCII arrow.
+%! arrow(?Head:oneof([both,left,right]), ?Length:nonneg)// .
+% A simple ASCII arrow with a left head, a right head, or left and right heads.
 %
-% The following options are supported:
-%   * =|head(+HeadType:oneof([both,left,right]))|=
+% ### Ambiguity
 %
-% Example:
-% ~~~{.txt}
-% -------->
+% The notation for these ASCII arrows is ambiguous, for example:
+% ~~~{.pl}
+% ?- phrase((arrow(Head1, Length1), arrow(Head2, Length2)), `<--->`).
+% Head1 = left,
+% Length1 = 4,
+% Head2 = right,
+% Length2 = 1 ;
+% Head1 = left,
+% Length1 = 3,
+% Head2 = right,
+% Length2 = 2 ;
+% Head1 = left,
+% Length1 = 2,
+% Head2 = right,
+% Length2 = 3 ;
+% Head1 = left,
+% Length1 = 1,
+% Head2 = right,
+% Length2 = 4 ;
 % ~~~
-%
-% @arg Options A list of name-value pairs.
-% @arg Length A non-negative integer.
 
-arrow(O1, L1) -->
-  % Set the default arrow head.
-  {option(head(Head), O1, right)},
+arrow(Head, Length) -->
+  arrow_left_head(Head),
+  arrow_horizontal_line(Head, Length),
+  arrow_right_head(Head).
 
-  % The left arrow head.
-  (
-    {arrow_left_head(Head)}
-  ->
-    `<`,
-    {L2 is L1 - 1}
-  ;
-    {L2 = L1}
-  ),
+% ! arrow_horizontal_line(Head:oneof([both,left,right]), ?Length:nonneg)// .
 
-  % The dashes in between the arrow heads.
-  (
-    {arrow_right_head(Head)}
-  ->
-    {L3 is L2 - 1}
-  ;
-    {L3 = L2}
-  ),
-  {L3 >= 0},
-  horizontal_line(L3),
+arrow_horizontal_line(Head, L1) -->
+  {nonvar(L1)}, !,
+  {arrow_length_correction(Head, L1, L2)},
+  horizontal_line(L2).
+arrow_horizontal_line(Head, L1) -->
+  horizontal_line(L2),
+  {arrow_length_correction(Head, L1, L2)}.
 
-  % The right arrow head.
-  (
-    {arrow_right_head(Head)}
-  ->
-    `>`
-  ;
-    ``
+%! arrow_head(?Head:oneof([both,left,right])) is multi.
+
+arrow_head(both).
+arrow_head(left).
+arrow_head(right).
+
+%! arrow_left_head(?Head:oneof([both,left,right]))// .
+
+arrow_left_head(Head) -->
+  {arrow_head(Head), Head \== right},
+  opening_angular_bracket.
+arrow_left_head(Head) -->
+  {arrow_head(Head), Head == right},
+  [].
+
+%! arrow_length_correction(+Head:oneof([both,left,right]), +Length1:nonneg,
+%!   -Length2:nonneg) is det.
+%! arrow_lenght_correction(+Head:oneof([both,left,right]), -Length1:nonneg,
+%!   +Length2:nonneg) is det.
+
+arrow_length_correction(Head, L1, L3):-
+  (  nonvar(L1)
+  -> arrow_length_correction_left(Head, L1, L2),
+     arrow_length_correction_right(Head, L2, L3)
+  ;  arrow_length_correction_right(Head, L2, L3),
+     arrow_length_correction_left(Head, L1, L2)
   ).
 
-arrow_left_head(both).
-arrow_left_head(left).
-arrow_right_head(both).
-arrow_right_head(right).
+arrow_length_correction_left(Head, L1, L2):-
+  arrow_head(Head),
+  Head \== right, !,
+  succ(L2, L1).
+arrow_length_correction_left(_, L, L).
+
+arrow_length_correction_right(Head, L1, L2):-
+  arrow_head(Head),
+  Head \== left, !,
+  succ(L2, L1).
+arrow_length_correction_right(_, L, L).
+
+%! arrow_right_head(?Head:oneof([both,left,right]))// .
+
+arrow_right_head(Head) -->
+  {arrow_head(Head), Head \== left},
+  closing_angular_bracket.
+arrow_right_head(Head) -->
+  {arrow_head(Head), Head == left},
+  [].
 
 
 atom(Atom, Head, Tail):-
@@ -327,14 +365,17 @@ hex_code(Hex, C) -->
 
 
 %! horizontal_line// .
-%! horizontal_line(+Length:nonneg)// .
 
 horizontal_line -->
   {terminal_screen_width(ScreenWidth)},
   horizontal_line(ScreenWidth).
 
+%! horizontal_line(?Length:nonneg)// .
+% @throws domain_error if length is not an integer.
+% @throws type_error if length is a negative integer.
+
 horizontal_line(Length) -->
-  'm*n'(Length, Length, `-`).
+  '#'(Length, hyphen_minus).
 
 
 %! indent// is det.
@@ -402,7 +443,7 @@ quoted(Quote, Dcg) -->
 
 transition(From, To) -->
   dcg_call(From),
-  dcg_between(space, arrow([head(right)], 2)),
+  dcg_between(space, arrow(right, 2)),
   dcg_call(To).
 
 

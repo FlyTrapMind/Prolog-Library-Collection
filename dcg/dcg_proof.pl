@@ -12,6 +12,7 @@
 @version 2013/07-2013/09, 2013/11-2014/01
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(option_ext)).
 :- use_module(library(option)).
@@ -45,7 +46,7 @@ proof_inner(O1, Proof) -->
   newline,
 
   % Print premises / subproofs.
-  dcg_multi1(proof(O2), Premises).
+  '*'(proof(O2), Premises).
 
 proposition(O1, Proposition) -->
   {

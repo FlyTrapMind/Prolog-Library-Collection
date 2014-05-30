@@ -258,7 +258,7 @@ ugraph_edge_name(FromV_Name, ToV_Name) -->
   {atom_codes(FromV_Name, FromV_NameCodes)},
   FromV_NameCodes,
   space,
-  arrow([head(both)], 3),
+  arrow(both, 3),
   space,
   {atom_codes(ToV_Name, ToV_NameCodes)},
   ToV_NameCodes.

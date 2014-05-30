@@ -11,10 +11,13 @@
     'CTL'//0,
     'CTL'//1,
     'DIGIT'//0,
+    'DIGIT'//1, % ?Code:code
     'DIGIT'//2, % ?Code:code
-                % ?Integer:between(0,9)
+                % ?DecimalDigit:between(0,9)
     'HEX'//0,
-    'HEX'//1, % ?HexadecimalDigit:between(0,15)
+    'HEX'//1, % ?Code:code
+    'HEX'//2, % ?Code:code
+              % ?DecimalNumber:between(0,15)
     'HT'//0,
     'HT'//1, % ?Code:code
     'LF'//0,
@@ -66,7 +69,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 @author Wouter Beek
 @see RFC 2616
 @see US-ASCII is defined in ANSI X3.4-1986
-@version 2013/12
+@version 2013/12, 2014/05
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -85,8 +88,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2616
 
 '"' -->
-  double_quote(_).
-
+  double_quote.
 
 
 %! 'ALPHA'// .
@@ -110,7 +112,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   'LOALPHA'(C).
 
 
-
 %! 'CHAR'// .
 %! 'CHAR'(?Code:code)// .
 % US-ASCII character (including NULL).
@@ -128,7 +129,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   ascii(C).
 
 
-
 %! 'CR'// .
 % The carriage return.
 %
@@ -142,7 +142,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   carriage_return.
 
 
-
 %! 'CRLF'// .
 % Internet standard newline.
 %
@@ -150,9 +149,9 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % CRLF = CR LF   ; Internet standard newline
 % ~~~
 %
-% # RFC 2616
+% ## RFC 2616
 %
-% ## Syntax
+% ### Syntax
 %
 % The end-of-line marker within an entity-body is defined by
 %  its associated media type, as described in section 3.7.
@@ -162,7 +161,7 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % It is expected that the folding `LWS` will be replaced with a single `SP`
 %  before interpretation of the `TEXT` value.
 %
-% ## Semantics
+% ### Semantics
 %
 % HTTP/1.1 defines the sequence `CR LF` as the end-of-line marker for
 %  all protocol elements except the entity-body (see appendix 19.3 for
@@ -175,7 +174,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 'CRLF' -->
   'CR',
   'LF'.
-
 
 
 %! 'CTL'// .
@@ -195,9 +193,9 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   control(C).
 
 
-
 %! 'DIGIT'// .
-%! 'DIGIT'(?Code:code, ?Integer:between(0,9))// .
+%! 'DIGIT'(?Code:code)// .
+%! 'DIGIT'(?Code:code, ?DecimalDigit:between(0,9))// .
 % Decimal digit.
 %
 % ~~~{.abnf}
@@ -207,16 +205,18 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2616
 
 'DIGIT' -->
-  'DIGIT'(_, _).
+  'DIGIT'(_).
+
+'DIGIT'(C) -->
+  'DIGIT'(C, _).
 
 'DIGIT'(C, D) -->
   decimal_digit(C, D).
 
 
-
-
 %! 'HEX'// .
-%! 'HEX'(?Integer:between(0.15))// .
+%! 'HEX'(?Code:code)// .
+%! 'HEX'(?Code:code, ?DecimalNumber:between(0.15))// .
 % Hexadecimal digit.
 %
 % # RFC 2616
@@ -233,9 +233,11 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 'HEX' -->
   'HEX'(_).
 
-'HEX'(D) -->
-  hexadecimal_digit(_, D).
+'HEX'(C) -->
+  'HEX'(C, _).
 
+'HEX'(C, D) -->
+  hexadecimal_digit(C, D).
 
 
 %! 'HT'// .
@@ -255,7 +257,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   horizontal_tab(C).
 
 
-
 %! 'LF'// .
 % The linefeed.
 %
@@ -267,7 +268,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 'LF' -->
   line_feed.
-
 
 
 %! 'LOALPHA'// .
@@ -285,7 +285,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 'LOALPHA'(C) -->
   ascii_letter_lowercase(C).
-
 
 
 %! 'LWS'// .
@@ -343,7 +342,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
   {between(0, 255, C)}.
 
 
-
 %! 'SP'// .
 %! 'SP'(?Code:code)// .
 % The space.
@@ -359,7 +357,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 
 'SP'(C) -->
   space(C).
-
 
 
 %! 'TEXT'// .
@@ -391,7 +388,6 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 'TEXT'(C) -->
   'OCTET'(C),
   {\+ code_type(C, cntrl)}.
-
 
 
 %! 'UPALPHA'// .

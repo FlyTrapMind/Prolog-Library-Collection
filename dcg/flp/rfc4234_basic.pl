@@ -4,8 +4,9 @@
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
     'BIT'//0,
-    'BIT'//1, % ?Bit:between(0,1)
-    '1*BIT'//1, % ?Bits:list(between(0,1))
+    'BIT'//1, % ?Code:code
+    'BIT'//2, % ?Code:code
+              % ?DecimalDigit:between(0,1)
     'CHAR'//0,
     'CHAR'//1, % ?Code:code
     'LWSP'//0,
@@ -24,10 +25,13 @@
     'CTL'//0,
     'CTL'//1, % ?Code:code
     'DIGIT'//0,
+    'DIGIT'//1, % ?Code:code
     'DIGIT'//2, % ?Code:code
-                % ?Integer:between(0,9)
+                % ?DecimalDigit:between(0,9)
     'HEX'//0 as 'HEXDIG',
-    'HEX'//1 as 'HEXDIG', % ?Integer:between(0,15)
+    'HEX'//1 as 'HEXDIG', % ?Code:code
+    'HEX'//2 as 'HEXDIG', % ?Code:code
+                          % ?DecimalNumber:between(0,15)
     'HT'//0 as 'HTAB',
     'HT'//1 as 'HTAB',
     'LF'//0,
@@ -45,7 +49,7 @@ DCGs for the basic rules defined in RFC 4234,
 
 @author Wouter Beek
 @see RFC 4234
-@version 2013/07-2013/08, 2013/12
+@version 2013/07-2013/08, 2013/12, 2014/05
 */
 
 :- use_module(dcg(dcg_ascii)).
@@ -76,7 +80,8 @@ DCGs for the basic rules defined in RFC 4234,
 
 
 %! 'BIT'// .
-%! 'BIT'(?Integer:between(0,1))// .
+%! 'BIT'(?Code:code)// .
+%! 'BIT'(?Code:code, ?DecimalDigit:between(0,1))// .
 % A binary digit, i.e. `0` or `1`.
 %
 % ~~~{.abnf}
@@ -88,17 +93,11 @@ DCGs for the basic rules defined in RFC 4234,
 'BIT' -->
   'BIT'(_).
 
-'BIT'(D) -->
-  binary_digit(_, D).
+'BIT'(C) -->
+  'BIT'(C, _).
 
-
-%! '1*BIT'(?Bits:list(between(0,1)))//
-
-'1*BIT'([H|T]) -->
-  'BIT'(H),
-  '1*BIT'(T).
-'1*BIT'([H]) -->
-  'BIT'(H).
+'BIT'(C, D) -->
+  binary_digit(C, D).
 
 
 %! 'CHAR'// .

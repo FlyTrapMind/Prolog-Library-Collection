@@ -13,7 +13,6 @@ Converts ABNF grammars to DCGs.
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(flp(rfc4234_basic)).
 :- use_module(generics(db_ext)).
 :- use_module(math(radix)).
@@ -21,7 +20,7 @@ Converts ABNF grammars to DCGs.
 
 
 abnf -->
-  dcg_multi(rule).
+  '*'(rule).
 
 %! base(?Radix:oneof([2,10,16]))//
 
