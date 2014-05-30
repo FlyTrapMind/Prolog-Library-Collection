@@ -1,10 +1,6 @@
 :- module(
   dcg_meta,
   [
-    '*'//1, '*'//2, '*'//3, '*'//4, '*'//5, '*'//6,
-    '+'//1, '+'//2, '+'//3, '+'//4, '+'//5, '+'//6,
-    '?'//1,
-    'm*n'//3, 'm*n'//4, 'm*n'//5, 'm*n'//6, 'm*n'//7, 'm*n'//8,
     dcg_apply//2, % :Dcg
                   % +Arguments:list
     dcg_atom_codes//2, % :Dcg
@@ -42,37 +38,6 @@ Meta-DCG rules.
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 
-:- meta_predicate('*'(//,?,?)).
-:- meta_predicate('*'(3,?,?,?)).
-:- meta_predicate('*'(4,?,?,?,?)).
-:- meta_predicate('*'(5,?,?,?,?,?)).
-:- meta_predicate('*'(6,?,?,?,?,?,?)).
-:- meta_predicate('*'(7,?,?,?,?,?,?,?)).
-:- meta_predicate('+'(//,?,?)).
-:- meta_predicate('+'(3,?,?,?)).
-:- meta_predicate('+'(4,?,?,?,?)).
-:- meta_predicate('+'(5,?,?,?,?,?)).
-:- meta_predicate('+'(6,?,?,?,?,?,?)).
-:- meta_predicate('+'(7,?,?,?,?,?,?,?)).
-:- meta_predicate('m*n'(?,?,//,?,?)).
-:- meta_predicate('m*n'(?,?,3,?,?,?)).
-:- meta_predicate('m*n'(?,?,4,?,?,?,?)).
-:- meta_predicate('m*n'(?,?,5,?,?,?,?,?)).
-:- meta_predicate('m*n'(?,?,6,?,?,?,?,?,?)).
-:- meta_predicate('m*n'(?,?,7,?,?,?,?,?,?,?)).
-:- meta_predicate('m*n_generate'(?,?,+,//,-,?)).
-:- meta_predicate('m*n_generate'(?,?,+,3,?,-,?)).
-:- meta_predicate('m*n_generate'(?,?,+,4,?,?,-,?)).
-:- meta_predicate('m*n_generate'(?,?,+,5,?,?,?,-,?)).
-:- meta_predicate('m*n_generate'(?,?,+,6,?,?,?,?,-,?)).
-:- meta_predicate('m*n_generate'(?,?,+,7,?,?,?,?,?,-,?)).
-:- meta_predicate('m*n_parse'(?,?,+,//,+,?)).
-:- meta_predicate('m*n_parse'(?,?,+,3,?,+,?)).
-:- meta_predicate('m*n_parse'(?,?,+,4,?,?,+,?)).
-:- meta_predicate('m*n_parse'(?,?,+,5,?,?,?,+,?)).
-:- meta_predicate('m*n_parse'(?,?,+,6,?,?,?,?,+,?)).
-:- meta_predicate('m*n_parse'(?,?,+,7,?,?,?,?,?,+,?)).
-:- meta_predicate('?'(//,?,?)).
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_atom_codes(//,?,?,?)).
 :- meta_predicate(dcg_call(//,?,?)).
@@ -91,271 +56,6 @@ Meta-DCG rules.
 :- meta_predicate(dcg_once(//,?,?)).
 :- meta_predicate(dcg_sequence(:,//,?,?)).
 
-
-
-%! '*'(:Dcg)// .
-%! '*'(:Dcg, ?Args1, ...)// .
-% Implements the Regular Expression operator `*` in a nondeterministic way.
-
-'*'(Dcg) -->
-  'm*n'(_, _, Dcg).
-
-'*'(Dcg, L1) -->
-  'm*n'(_, _, Dcg, L1).
-
-'*'(Dcg, L1, L2) -->
-  'm*n'(_, _, Dcg, L1, L2).
-
-'*'(Dcg, L1, L2, L3) -->
-  'm*n'(_, _, Dcg, L1, L2, L3).
-
-'*'(Dcg, L1, L2, L3, L4) -->
-  'm*n'(_, _, Dcg, L1, L2, L3, L4).
-
-'*'(Dcg, L1, L2, L3, L4, L5) -->
-  'm*n'(_, _, Dcg, L1, L2, L3, L4, L5).
-
-
-%! '+'(:Dcg)// .
-%! '+'(:Dcg, ?Args1, ...)// .
-% Implements the Regular Expression operator `+` in a nondeterministic way.
-
-'+'(Dcg) -->
-  'm*n'(1, _, Dcg).
-
-'+'(Dcg, L1) -->
-  'm*n'(1, _, Dcg, L1).
-
-'+'(Dcg, L1, L2) -->
-  'm*n'(1, _, Dcg, L1, L2).
-
-'+'(Dcg, L1, L2, L3) -->
-  'm*n'(1, _, Dcg, L1, L2, L3).
-
-'+'(Dcg, L1, L2, L3, L4) -->
-  'm*n'(1, _, Dcg, L1, L2, L3, L4).
-
-'+'(Dcg, L1, L2, L3, L4, L5) -->
-  'm*n'(1, _, Dcg, L1, L2, L3, L4, L5).
-
-
-%! '?'(:Dcg)// .
-% Implements the Regular Expression operator `?`,
-% generating *both* the case of 0 occurrences *and* the case of 1 occurrence.
-
-'?'(Dcg) -->
-  'm*n'(0, 1, Dcg).
-
-
-%! 'm*n'(?Low:nonneg, ?High:nonneg, :Dcg)// .
-
-% Mode: eager parsing.
-'m*n'(M, N, Dcg, X, Y):-
-  'm*n_typecheck'(M, N),
-  nonvar(X), !,
-  'm*n_parse'(M, N, 0, Dcg, X, Y).
-% Mode: meager generating.
-'m*n'(M, N, Dcg, X, Y):-
-  var(X), !,
-  'm*n_generate'(M, N, 0, Dcg, X, Y).
-
-%! 'm*n'(?Low:nonneg, ?High:nonneg, :Dcg, ?Args1:list, ...)// .
-
-'m*n'(M, N, Dcg, L1, X, Y):-
-  'm*n_typecheck'(M, N),
-  nonvar(X),
-  'm*n_parse'(M, N, 0, Dcg, L1, X, Y).
-'m*n'(M, N, Dcg, L1, X, Y):-
-  var(X),
-  'm*n_generate'(M, N, 0, Dcg, L1, X, Y).
-
-'m*n'(M, N, Dcg, L1, L2, X, Y):-
-  'm*n_typecheck'(M, N),
-  nonvar(X),
-  'm*n_parse'(M, N, 0, Dcg, L1, L2, X, Y).
-'m*n'(M, N, Dcg, L1, L2, X, Y):-
-  var(X),
-  'm*n_generate'(M, N, 0, Dcg, L1, L2, X, Y).
-
-'m*n'(M, N, Dcg, L1, L2, L3, X, Y):-
-  'm*n_typecheck'(M, N),
-  nonvar(X),
-  'm*n_parse'(M, N, 0, Dcg, L1, L2, L3, X, Y).
-'m*n'(M, N, Dcg, L1, L2, L3, X, Y):-
-  var(X),
-  'm*n_generate'(M, N, 0, Dcg, L1, L2, L3, X, Y).
-
-'m*n'(M, N, Dcg, L1, L2, L3, L4, X, Y):-
-  'm*n_typecheck'(M, N),
-  nonvar(X),
-  'm*n_parse'(M, N, 0, Dcg, L1, L2, L3, L4, X, Y).
-'m*n'(M, N, Dcg, L1, L2, L3, L4, X, Y):-
-  var(X),
-  'm*n_generate'(M, N, 0, Dcg, L1, L2, L3, L4, X, Y).
-
-'m*n'(M, N, Dcg, L1, L2, L3, L4, L5, X, Y):-
-  'm*n_typecheck'(M, N),
-  nonvar(X),
-  'm*n_parse'(M, N, 0, Dcg, L1, L2, L3, L4, L5, X, Y).
-'m*n'(M, N, Dcg, L1, L2, L3, L4, L5, X, Y):-
-  var(X),
-  'm*n_generate'(M, N, 0, Dcg, L1, L2, L3, L4, L5, X, Y).
-
-
-%! 'm*n_generate'(?Low:nonneg, ?High:nonneg, +Counter:nonneg, :Dcg)// .
-% Since generating is meager, we try to stop generating
-% instances of `Dcg` as soon as possible.
-
-'m*n_generate'(M, _, C, _) -->
-  % We must have enough repetitions of `Dcg` to pass the lower bound.
-  {\+ ((nonvar(M), M  > C))},
-  [].
-'m*n_generate'(M, N, C1, Dcg) -->
-  % We may not surpass the upper bound.
-  {\+ ((nonvar(N), C1 >= N))},
-  Dcg,
-  {succ(C1, C2)},
-  'm*n_generate'(M, N, C2, Dcg).
-
-%! 'm*n_generate'(
-%!   ?Low:nonneg,
-%!   ?High:nonneg,
-%!   +Counter:nonneg,
-%!   :Dcg,
-%!   -Arguments1:list,
-%!   ...
-%! )// .
-
-'m*n_generate'(M, _, C, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-'m*n_generate'(M, N, C1, Dcg, [H1|T1]) -->
-  {\+ ((nonvar(N), C1 >= N))},
-  dcg_call(Dcg, H1),
-  {succ(C1, C2)},
-  'm*n_generate'(M, N, C2, Dcg, T1).
-
-'m*n_generate'(M, _, C, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-'m*n_generate'(M, N, C1, Dcg, [H1|T1], [H2|T2]) -->
-  {\+ ((nonvar(N), C1 >= N))},
-  dcg_call(Dcg, H1, H2),
-  {succ(C1, C2)},
-  'm*n_generate'(M, N, C2, Dcg, T1, T2).
-
-'m*n_generate'(M, _, C, _, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-'m*n_generate'(M, N, C1, Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
-  {\+ ((nonvar(N), C1 >= N))},
-  dcg_call(Dcg, H1, H2, H3),
-  {succ(C1, C2)},
-  'm*n_generate'(M, N, C2, Dcg, T1, T2, T3).
-
-'m*n_generate'(M, _, C, _, _, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-'m*n_generate'(M, N, C1, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
-  {\+ ((nonvar(N), C1 >= N))},
-  dcg_call(Dcg, H1, H2, H3, H4),
-  {succ(C1, C2)},
-  'm*n_generate'(M, N, C2, Dcg, T1, T2, T3, T4).
-
-'m*n_generate'(M, _, C, _, _, _, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-'m*n_generate'(M, N, C1, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
-  {\+ ((nonvar(N), C1 >= N))},
-  dcg_call(Dcg, H1, H2, H3, H4, H5),
-  {succ(C1, C2)},
-  'm*n_generate'(M, N, C2, Dcg, T1, T2, T3, T4, T5).
-
-
-'m*n_typecheck'(M, _):-
-  nonvar(M),
-  \+ integer(M), !,
-  type_error(integer, M).
-'m*n_typecheck'(_, N):-
-  nonvar(N),
-  \+ integer(N), !,
-  type_error(integer, N).
-'m*n_typecheck'(M, _):-
-  M < 0, !,
-  domain_error(nonneg, M).
-'m*n_typecheck'(M, N):-
-  N < M, !,
-  fail.
-
-
-%! 'm*n_parse'(?Low:nonneg, ?High:nonneg, +Counter:nonneg, :Dcg)// .
-% Since parsing is eager, we try to process
-% as many instances of `Dcg` as possible.
-
-'m*n_parse'(M, N, C1, Dcg) -->
-  % We may not surpass the upper bound.
-  {\+ ((nonvar(N), N >= C1))},
-  Dcg,
-  {succ(C1, C2)},
-  'm*n_parse'(M, N, C2, Dcg).
-'m*n_parse'(M, _, C, _) -->
-  % We must have enough repetitions of `Dcg` to pass the lower bound.
-  {\+ ((nonvar(M), M  > C))},
-  [].
-
-%! 'm*n_parse'(
-%!   ?Low:nonneg,
-%!   ?High:nonneg,
-%!   +Counter:nonneg,
-%!   :Dcg,
-%!   -Arguments1:list,
-%!   ...
-%! )// .
-
-'m*n_parse'(M, N, C1, Dcg, [H1|T1]) -->
-  {\+ ((nonvar(N), N >= C1))},
-  dcg_call(Dcg, H1),
-  {succ(C1, C2)},
-  'm*n_parse'(M, N, C2, Dcg, T1).
-'m*n_parse'(M, _, C, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-
-'m*n_parse'(M, N, C1, Dcg, [H1|T1], [H2|T2]) -->
-  {\+ ((nonvar(N), N >= C1))},
-  dcg_call(Dcg, H1, H2),
-  {succ(C1, C2)},
-  'm*n_parse'(M, N, C2, Dcg, T1, T2).
-'m*n_parse'(M, _, C, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-
-'m*n_parse'(M, N, C1, Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
-  {\+ ((nonvar(N), N >= C1))},
-  dcg_call(Dcg, H1, H2, H3),
-  {succ(C1, C2)},
-  'm*n_parse'(M, N, C2, Dcg, T1, T2, T3).
-'m*n_parse'(M, _, C, _, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-
-'m*n_parse'(M, N, C1, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
-  {\+ ((nonvar(N), N >= C1))},
-  dcg_call(Dcg, H1, H2, H3, H4),
-  {succ(C1, C2)},
-  'm*n_parse'(M, N, C2, Dcg, T1, T2, T3, T4).
-'m*n_parse'(M, _, C, _, _, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
-
-'m*n_parse'(M, N, C1, Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
-  {\+ ((nonvar(N), N >= C1))},
-  dcg_call(Dcg, H1, H2, H3, H4, H5),
-  {succ(C1, C2)},
-  'm*n_parse'(M, N, C2, Dcg, T1, T2, T3, T4, T5).
-'m*n_parse'(M, _, C, _, _, _, _, _, _) -->
-  {\+ ((nonvar(M), M  > C))},
-  [].
 
 
 %! dcg_apply(:Dcg, +Arguments:list)// .
@@ -409,45 +109,60 @@ dcg_atom_codes(Dcg, Atom) -->
 %! dcg_call(:Dcg)//
 % @see Included for consistency with dcg_call//[2,3,4].
 % @see This has the same effect as phrase/3.
-
-dcg_call(Dcg, X, Y):-
-  call(Dcg, X, Y).
-
-%! dcg_call(:Dcg, +Args1)// .
-%! dcg_call(:Dcg, +Args1, +Args2)// .
-%! dcg_call(:Dcg, +Args1, +Args2, +Args3)// .
-%! dcg_call(:Dcg, +Args1, +Args2, +Args3, +Args4)// .
-%! dcg_call(:Dcg, +Args1, +Args2, +Args3, +Args4, +Args5)// .
+%! dcg_call(:Dcg, +Args1:list, ...)// .
 % @see Variants of call/[1-5] for DCGs.
 
-dcg_call(Dcg, A1, X, Y):-
-  call(Dcg, A1, X, Y).
+dcg_call(Dcg1, X, Y):-
+  {copy_term(Dcg1, Dcg2)},
+  call(Dcg2, X, Y).
 
-dcg_call(Dcg, A1, A2, X, Y):-
-  call(Dcg, A1, A2, X, Y).
+dcg_call(Dcg1, A1, X, Y):-
+  {copy_term(Dcg1, Dcg2)},
+  call(Dcg2, A1, X, Y).
 
-dcg_call(Dcg, A1, A2, A3, X, Y):-
-  call(Dcg, A1, A2, A3, X, Y).
+dcg_call(Dcg1, A1, A2, X, Y):-
+  {copy_term(Dcg1, Dcg2)},
+  call(Dcg2, A1, A2, X, Y).
 
-dcg_call(Dcg, A1, A2, A3, A4, X, Y):-
-  call(Dcg, A1, A2, A3, A4, X, Y).
+dcg_call(Dcg1, A1, A2, A3, X, Y):-
+  {copy_term(Dcg1, Dcg2)},
+  call(Dcg2, A1, A2, A3, X, Y).
 
-dcg_call(Dcg, A1, A2, A3, A4, A5, X, Y):-
-  call(Dcg, A1, A2, A3, A4, A5, X, Y).
+dcg_call(Dcg1, A1, A2, A3, A4, X, Y):-
+  {copy_term(Dcg1, Dcg2)},
+  call(Dcg2, A1, A2, A3, A4, X, Y).
+
+dcg_call(Dcg1, A1, A2, A3, A4, A5, X, Y):-
+  {copy_term(Dcg1, Dcg2)},
+  call(Dcg2, A1, A2, A3, A4, A5, X, Y).
 
 
-%! dcg_maplist(:Dcg, +Args1:list)// .
-%! dcg_maplist(:Dcg, +Args1:list, +Args2:list)// .
-%! dcg_maplist(:Dcg, +Args1:list, +Args2:list, +Args3:list)// .
-%! dcg_maplist(:Dcg, +Args1:list, +Args2:list, +Args3:list, +Args4:list)// .
-%! dcg_maplist(
-%!   :Dcg,
-%!   +Args1:list,
-%!   +Args2:list,
-%!   +Args3:list,
-%!   +Args4:list,
-%!   +Args5:list
-%! )// .
+%! dcg_call_s(:Dcg)//
+%! dcg_call_s(:Dcg, +Args1:list, ...)// .
+% @see Variants of dcg_call//[1-6], where `Dcg` is called directly
+%      (i.e., not copied). This means that multiple calls of the same `Dcg`
+%      share uninstantiated variables.
+
+dcg_call_s(Dcg1, X, Y):-
+  call(Dcg2, X, Y).
+
+dcg_call_s(Dcg1, A1, X, Y):-
+  call(Dcg2, A1, X, Y).
+
+dcg_call_s(Dcg1, A1, A2, X, Y):-
+  call(Dcg2, A1, A2, X, Y).
+
+dcg_call_s(Dcg1, A1, A2, A3, X, Y):-
+  call(Dcg2, A1, A2, A3, X, Y).
+
+dcg_call_s(Dcg1, A1, A2, A3, A4, X, Y):-
+  call(Dcg2, A1, A2, A3, A4, X, Y).
+
+dcg_call_s(Dcg1, A1, A2, A3, A4, A5, X, Y):-
+  call(Dcg2, A1, A2, A3, A4, A5, X, Y).
+
+
+%! dcg_maplist(:Dcg, +Args1:list, ...)// .
 % @see Variants of maplist/[1-5] for DCGs.
 
 dcg_maplist(_, []) --> [].

@@ -38,7 +38,7 @@
     nl//0,
     pl_term//1, % +PrologTerm
     quoted//1, % :Content
-    quoted//2, % :Quote
+    quoted//2, % +Quote:oneof([double_quote,single_quote,triple_quote(double_quote),triple_quote(single_quote)])
                % :Content
     transition//2, % :From
                    % :To
@@ -70,6 +70,7 @@ DCG rules for parsing/generating often-occuring content.
 @version 2013/07-2013/09, 2013/11-2014/05
 */
 
+:- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 
@@ -82,8 +83,6 @@ DCG rules for parsing/generating often-occuring content.
 :- use_module(os(shell_ext)).
 :- use_module(pl(pl_log)).
 
-:- meta_predicate(quoted(//,?,?)).
-
 % The number of spaces that go into one indent.
 :- setting(
   indent_size,
@@ -95,7 +94,8 @@ DCG rules for parsing/generating often-occuring content.
 :- meta_predicate(indent(+,//,?,?)).
 :- meta_predicate(bracketed(//,?,?)).
 :- meta_predicate(bracketed(+,//,?,?)).
-:- meta_predicate(quoted(//,//,?,?)).
+:- meta_predicate(quoted(//,?,?)).
+:- meta_predicate(quoted(?,//,?,?)).
 :- meta_predicate(transition(//,//,?,?)).
 :- meta_predicate(triple_quote(//,?,?)).
 
@@ -139,7 +139,7 @@ arrow(O1, L1) -->
   ),
   {L3 >= 0},
   horizontal_line(L3),
-  
+
   % The right arrow head.
   (
     {arrow_right_head(Head)}
@@ -374,7 +374,10 @@ pl_term(PrologTerm) -->
 quoted(Dcd) -->
   dcg_between(double_quote, Dcd).
 
-%! quoted(:Quote, :Dcg)// .
+%! quoted(
+%!   ?Quote:oneof([double_quote,single_quote,triple_quote(double_quote),triple_quote(single_quote)]),
+%!   :Dcg
+%! )// .
 % Typical values for `Quote` are:
 %   * `double_quote`
 %     Result: `"..."`
@@ -386,6 +389,12 @@ quoted(Dcd) -->
 %     Result: `'''...'''`
 
 quoted(Quote, Dcg) -->
+  {member(Quote, [
+      double_quote,
+      single_quote,
+      triple_quote(double_quote),
+      triple_quote(single_quote)
+  ])},
   dcg_between(Quote, Dcg).
 
 

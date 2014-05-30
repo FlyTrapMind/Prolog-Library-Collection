@@ -69,6 +69,7 @@ Generic support for DCG rules.
 :- meta_predicate(dcg_until(+,//,?,?,?)).
 :- meta_predicate(dcg_until_(+,//,?,?,?)).
 :- meta_predicate(dcg_with_output_to(+,//)).
+:- meta_predicate(dcg_yn_separator(+,//,?,?)).
 
 
 
