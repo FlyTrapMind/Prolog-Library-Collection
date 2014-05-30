@@ -1,7 +1,8 @@
 :- module(
   record_jar,
   [
-    'record-jar'//2 % ?Encoding:atom
+    'record-jar'//3 % -Tree:compound
+                    % ?Encoding:atom
                     % ?Records:list(list(nvpair(atom,list(atom))))
   ]
 ).
@@ -50,6 +51,7 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_meta)).
+:- use_module(dcg(parse_tree)).
 :- use_module(flp(record_jar_char)).
 :- use_module(flp(rfc4234_basic)).
 :- use_module(math(radix)).
@@ -106,12 +108,12 @@ continuation2 -->
   'CRLF'.
 
 
-%! encodingSig(?Encoding:atom)// .
+%! encodingSig(-Tree:compound, ?Encoding:atom)// .
 % ~~~{.abnf}
 % encodingSig  = "%%encoding" field-sep *(ALPHA / DIGIT / "-" / "_") CRLF
 % ~~~
 
-encodingSig(Encoding) -->
+encodingSig(encodingSig(Encoding), Encoding) -->
   `%%encoding`,
   'field-sep',
   dcg_atom_codes(encodingSig1, Encoding),
@@ -130,19 +132,20 @@ encodingSig2(C) -->
   underscore(C).
 
 
-%! field(?Field:nvpair(atom,list(atom)))// .
+%! field(-Tree:compound, ?Field:nvpair(atom,list(atom)))// .
 % ~~~{.abnf}
 % field = ( field-name field-sep field-body CRLF )
 % ~~~
 
-field(Name=Body) -->
-  'field-name'(Name),
+field(T0, Name=Body) -->
+  'field-name'(T1, Name),
   'field-sep',
-  'field-body'(Body),
-  'CRLF'.
+  'field-body'(T2, Body),
+  'CRLF',
+  {parse_tree(field, [T1,T2], T0)}.
 
 
-%! 'field-body'(?Body:list(atom))// .
+%! 'field-body'(-Tree:compound, ?Body:list(atom))// .
 % The field-body contains the data value. Logically, the field-body
 % consists of a single line of text using any combination of characters
 % from the Universal Character Set followed by a `CRLF` (newline).
@@ -169,7 +172,7 @@ field(Name=Body) -->
 %      of the file's semantics).
 % @see Information on grapheme clusters, UAX29.
 
-'field-body'(Body) -->
+'field-body'('field-body'(Body), Body) -->
   '*'('field-body1', Body).
 
 'field-body1'(Word) -->
@@ -180,7 +183,7 @@ field(Name=Body) -->
   '+'(character, Codes).
 
 
-%! 'field-name'(?Name:atom)// .
+%! 'field-name'(-Tree:compound, ?Name:atom)// .
 % The field-name is an identifer. Field-names consist of a sequence of
 % Unicode characters. Whitespace characters and colon (=:=, =%x3A=) are
 % not permitted in a field-name.
@@ -205,7 +208,7 @@ field(Name=Body) -->
 % ~~~
 % We therefore introduce the extra DCG rule 'field-name-character'//1.
 
-'field-name'(Name) -->
+'field-name'('field-name'(Name), Name) -->
   dcg_atom_codes('field-name1', Name).
 
 'field-name1'(Name) -->
@@ -234,6 +237,7 @@ field(Name=Body) -->
 
 
 %! 'record-jar'(
+%!   -Tree:compound,
 %!   ?Encoding:atom,
 %!   ?Records:list(list(nvpair(atom,list(atom))))
 %! )// .
@@ -241,22 +245,23 @@ field(Name=Body) -->
 % record-jar = [encodingSig] [separator] *record
 % ~~~
 
-'record-jar'(Encoding, Records) -->
-  '?'(encodingSig(Encoding)),
+'record-jar'(T0, Encoding, Records) -->
+  '?'(encodingSig(T1, Encoding)),
   % The disjunction with the empty string is not needed here,
   % since the production of the separator can process
   % the empty string as well.
   '?'(separator),
-  '*'(record, Records).
+  '*'(record, Ts, Records),
+  {parse_tree('record-jar', [T1|Ts], T0)}.
 
 
-%! record(?Fields:list(nvpair(atom,list(atom))))// .
+%! record(-Tree:compound, ?Fields:list(nvpair(atom,list(atom))))// .
 % ~~~{.abnf}
 % record = 1*field separator
 % ~~~
 
-record(Fields) -->
-  '+'(field, Fields),
+record(Ts, Fields) -->
+  '+'(field, Ts, Fields),
   separator.
 
 
@@ -282,8 +287,8 @@ separator1(Comment) -->
 
 
 
-:- begin_tests(record_jar, []).
-%:- begin_tests(record_jar, [blocked('Takes too long to run each time.')]).
+%:- begin_tests(record_jar, []).
+:- begin_tests(record_jar, [blocked('Takes too long to run each time.')]).
 
 :- use_module(library(apply)).
 :- use_module(library(pio)).
