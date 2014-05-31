@@ -41,7 +41,7 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 @see Originally described in *The Art of Unix Programming*.
 @see Latest description was found at
      http://tools.ietf.org/html/draft-phillips-record-jar-02
-@version 2013/07, 2014/05
+@version 2013/07, 2014/05-2014/06
 */
 
 :- use_module(library(apply)).
@@ -58,17 +58,17 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 
 
 
-%! 'blank-line'// .
+%! 'blank-line'(-Tree:compound)// .
 % ~~~{.abnf}
 % blank-line = WSP CRLF
 % ~~~
 
-'blank-line' -->
+'blank-line'('blank-line'('WSP','CRLF')) -->
   'WSP',
   'CRLF'.
 
 
-%! comment(?Comment:list(code))// .
+%! comment(-Tree:compound, ?Comment:list(code))// .
 % ~~~{.abnf}
 % comment = SP *69(character)
 % ~~~
@@ -77,15 +77,15 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 %
 % I assume the horizontal tab is also allowed in comments, as is space.
 
-comment(Comment) -->
-  dcg_atom_codes(comment1, Comment).
+comment(comment(T1), Comment) -->
+  dcg_atom_codes_pt(comment1, T1, Comment).
 
-comment1(Comment) -->
+comment1(['WSP'|Ts], Comment) -->
   'WSP',
-  '*n'(69, character, Comment).
+  '*n'(69, character, Ts, Comment).
 
 
-%! continuation// .
+%! continuation(-Tree:compound)// .
 % ~~~{.abnf}
 % continuation = ["\"] [[*SP CRLF] 1*SP]
 % ~~~
@@ -95,7 +95,7 @@ comment1(Comment) -->
 % I would allow the horizontal tab to occur in comments,
 % for consistency with ???.
 
-continuation -->
+continuation(continuation) -->
   '?'(backslash),
   '?'(continuation1).
 
@@ -113,23 +113,25 @@ continuation2 -->
 % encodingSig  = "%%encoding" field-sep *(ALPHA / DIGIT / "-" / "_") CRLF
 % ~~~
 
-encodingSig(encodingSig(Encoding), Encoding) -->
+encodingSig(encodingSig('%%encoding',T1,T2,'CRLF'), Encoding) -->
   `%%encoding`,
-  'field-sep',
-  dcg_atom_codes(encodingSig1, Encoding),
+  'field-sep'(T1),
+  dcg_atom_codes_pt(encodingSig1, T2, Encoding),
   'CRLF'.
 
-encodingSig1(Codes) -->
-  '*'(encodingSig2, Codes).
+encodingSig1(Ts, Codes) -->
+  '*'(encodingSig2, Ts, Codes).
 
-encodingSig2(C) -->
-  'ALPHA'(C).
-encodingSig2(C) -->
-  'DIGIT'(C).
-encodingSig2(C) -->
-  hyphen(C).
-encodingSig2(C) -->
-  underscore(C).
+encodingSig2('ALPHA'(Char), Code) -->
+  'ALPHA'(Code),
+  {char_code(Char, Code)}.
+encodingSig2('DIGIT'(Char), Code) -->
+  'DIGIT'(Code),
+  {char_code(Char, Code)}.
+encodingSig2('-', Code) -->
+  hyphen(Code).
+encodingSig2('_', Code) -->
+  underscore(Code).
 
 
 %! field(-Tree:compound, ?Field:nvpair(atom,list(atom)))// .
@@ -137,12 +139,12 @@ encodingSig2(C) -->
 % field = ( field-name field-sep field-body CRLF )
 % ~~~
 
-field(T0, Name=Body) -->
+field(T, Name=Body) -->
   'field-name'(T1, Name),
-  'field-sep',
-  'field-body'(T2, Body),
+  'field-sep'(T2),
+  'field-body'(T3, Body),
   'CRLF',
-  {parse_tree(field, [T1,T2], T0)}.
+  {parse_tree(field, [T1,T2,T3], T)}.
 
 
 %! 'field-body'(-Tree:compound, ?Body:list(atom))// .
@@ -172,15 +174,15 @@ field(T0, Name=Body) -->
 %      of the file's semantics).
 % @see Information on grapheme clusters, UAX29.
 
-'field-body'('field-body'(Body), Body) -->
-  '*'('field-body1', Body).
+'field-body'('field-body'(Tss), Body) -->
+  '*'('field-body1', Tss, Body).
 
-'field-body1'(Word) -->
-  continuation,
-  dcg_atom_codes('field-body2', Word).
+'field-body1'([T1|Ts], Word) -->
+  continuation(T1),
+  dcg_atom_codes_pt('field-body2', Ts, Word).
 
-'field-body2'(Codes) -->
-  '+'(character, Codes).
+'field-body2'(Ts, Codes) -->
+  '+'(character, Ts, Codes).
 
 
 %! 'field-name'(-Tree:compound, ?Name:atom)// .
@@ -208,14 +210,14 @@ field(T0, Name=Body) -->
 % ~~~
 % We therefore introduce the extra DCG rule 'field-name-character'//1.
 
-'field-name'('field-name'(Name), Name) -->
-  dcg_atom_codes('field-name1', Name).
+'field-name'('field-name'(T), Name) -->
+  dcg_atom_codes_pt('field-name1', T, Name).
 
-'field-name1'(Name) -->
-  '+'('field-name-character', Name).
+'field-name1'(Ts, Name) -->
+  '+'('field-name-character', Ts, Name).
 
 
-%! 'field-sep'// .
+%! 'field-sep'(-Tree:compound)// .
 % The field separator is the colon character (=:=, =%x3A=).
 % The separator MAY be surrounded on either side by any amount of
 % horizontal whitespace (tab or space characters). The normal
@@ -230,7 +232,7 @@ field(T0, Name=Body) -->
 % The ABNF does not mention the (horizontal) tab, only the space character.
 % We solve this by using 'WSP'// instead of 'SP'//.
 
-'field-sep' -->
+'field-sep'('field-sep'('*WSP',':','*WSP')) -->
   '*'('WSP'),
   `:`,
   '*'('WSP').
@@ -245,14 +247,14 @@ field(T0, Name=Body) -->
 % record-jar = [encodingSig] [separator] *record
 % ~~~
 
-'record-jar'(T0, Encoding, Records) -->
+'record-jar'(T, Encoding, Records) -->
   '?'(encodingSig(T1, Encoding)),
   % The disjunction with the empty string is not needed here,
   % since the production of the separator can process
   % the empty string as well.
-  '?'(separator),
+  '?'(separator, T2, _),
   '*'(record, Ts, Records),
-  {parse_tree('record-jar', [T1|Ts], T0)}.
+  {parse_tree('record-jar', [T1,T2|Ts], T)}.
 
 
 %! record(-Tree:compound, ?Fields:list(nvpair(atom,list(atom))))// .
@@ -260,29 +262,25 @@ field(T0, Name=Body) -->
 % record = 1*field separator
 % ~~~
 
-record(Ts, Fields) -->
+record(record(T), Fields) -->
   '+'(field, Ts, Fields),
-  separator.
+  separator(T1, _),
+  {append(Ts,T1,T)}.
 
 
-%! separator// .
-% @see Wrapper around separator//1.
-
-separator -->
-  separator(_).
-
-%! separator(?Comments:list(atom))// .
+%! separator(-Tree:compound, ?Comments:list(atom))// .
 % ~~~{.abnf}
 % separator = [blank-line] *("%%" [comment] CRLF)
 % ~~~
 
-separator(Comments) -->
-  '?'('blank-line'),
-  '*'(separator1, Comments).
+separator(T, Comments) -->
+  '?'('blank-line', T1),
+  '*'(separator1, Ts, Comments),
+  {parse_tree(separator, [T1|Ts], T)}.
 
-separator1(Comment) -->
+separator1(['%%',T1,'CRLF'], Comment) -->
   `%%`,
-  '?'(dcg_atom_codes(comment, Comment)),
+  '?'(dcg_atom_codes_pt(comment), T1, Comment),
   'CRLF'.
 
 

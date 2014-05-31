@@ -15,8 +15,8 @@
     '+_c'//2, '+_c'//3, '+_c'//4, '+_c'//5, '+_c'//6, '+_c'//7,
     '+_s'//1, '+_s'//2, '+_s'//3, '+_s'//4, '+_s'//5, '+_s'//6,
     '+_s_c'//2, '+_s_c'//3, '+_s_c'//4, '+_s_c'//5, '+_s_c'//6, '+_s_c'//7,
-    '?'//1,
-    '?_c'//2,
+    '?'//1, '?'//2, '?'//3, '?'//4, '?'//5, '?'//6,
+    '?_c'//2, '?_c'//3, '?_c'//4, '?_c'//5, '?_c'//6, '?_c'//7,
     'm*'//2, 'm*'//3, 'm*'//4, 'm*'//5, 'm*'//6, 'm*'//7,
     'm*_c'//3, 'm*_c'//4, 'm*_c'//5, 'm*_c'//6, 'm*_c'//7, 'm*_c'//8,
     'm*_s'//2, 'm*_s'//3, 'm*_s'//4, 'm*_s'//5, 'm*_s'//6, 'm*_s'//7,
@@ -113,9 +113,10 @@ but this module does not detect whether a DCG rule is deterministic or not.
 --
 
 @author Wouter Beek
-@version 2014/05
+@version 2014/05-2014/06
 */
 
+:- use_module(library(apply)).
 :- use_module(library(error)).
 
 :- use_module(dcg(dcg_meta)).
@@ -206,7 +207,17 @@ but this module does not detect whether a DCG rule is deterministic or not.
 :- meta_predicate('+_s_c'(-,6,?,?,?,?,?,?)).
 :- meta_predicate('+_s_c'(-,7,?,?,?,?,?,?,?)).
 :- meta_predicate('?'(//,?,?)).
+:- meta_predicate('?'(3,?,?,?)).
+:- meta_predicate('?'(4,?,?,?,?)).
+:- meta_predicate('?'(5,?,?,?,?,?)).
+:- meta_predicate('?'(6,?,?,?,?,?,?)).
+:- meta_predicate('?'(7,?,?,?,?,?,?,?)).
 :- meta_predicate('?_c'(-,//,?,?)).
+:- meta_predicate('?_c'(-,3,?,?,?)).
+:- meta_predicate('?_c'(-,4,?,?,?,?)).
+:- meta_predicate('?_c'(-,5,?,?,?,?,?)).
+:- meta_predicate('?_c'(-,6,?,?,?,?,?,?)).
+:- meta_predicate('?_c'(-,7,?,?,?,?,?,?,?)).
 :- meta_predicate('m*'(?,//,?,?)).
 :- meta_predicate('m*'(?,3,?,?,?)).
 :- meta_predicate('m*'(?,4,?,?,?,?)).
@@ -613,17 +624,62 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '?'(:Dcg)// .
+%! '?'(:Dcg, ?Args1:list, ...)// .
 % Implements the Regular Expression operator `?`,
 % generating *both* the case of 0 occurrences *and* the case of 1 occurrence.
 
 '?'(Dcg) -->
   'm*n'(0, 1, Dcg).
 
+'?'(Dcg, A1) -->
+  'm*n'(0, 1, Dcg, L1),
+  {maplist('?_arg', [L1], [A1])}.
+
+'?'(Dcg, A1, A2) -->
+  'm*n'(0, 1, Dcg, L1, L2),
+  {maplist('?_arg', [L1,L2], [A1,A2])}.
+
+'?'(Dcg, A1, A2, A3) -->
+  'm*n'(0, 1, Dcg, L1, L2, L3),
+  {maplist('?_arg', [L1,L2,L3], [A1,A2,A3])}.
+
+'?'(Dcg, A1, A2, A3, A4) -->
+  'm*n'(0, 1, Dcg, L1, L2, L3, L4),
+  {maplist('?_arg', [L1,L2,L3,L4], [A1,A2,A3,A4])}.
+
+'?'(Dcg, A1, A2, A3, A4, A5) -->
+  'm*n'(0, 1, Dcg, L1, L2, L3, L4, L5),
+  {maplist('?_arg', [L1,L2,L3,L4,L5], [A1,A2,A3,A4,A5])}.
+
+'?_arg'([], _).
+'?_arg'([A], A).
+
 
 %! '?_c'(-Count:nonneg, :Dcg)// .
+%! '?_c'(-Count:nonneg, :Dcg, ?Args1:list, ...)// .
 
 '?_c'(C, Dcg) -->
   'm*n_c'(0, 1, C, Dcg).
+
+'?_c'(C, Dcg, A1) -->
+  'm*n_c'(0, 1, C, Dcg, L1),
+  {maplist('?_arg', [L1], [A1])}.
+
+'?_c'(C, Dcg, A1, A2) -->
+  'm*n_c'(0, 1, C, Dcg, L1, L2),
+  {maplist('?_arg', [L1,L2], [A1,A2])}.
+
+'?_c'(C, Dcg, A1, A2, A3) -->
+  'm*n_c'(0, 1, C, Dcg, L1, L2, L3),
+  {maplist('?_arg', [L1,L2,L3], [A1,A2,A3])}.
+
+'?_c'(C, Dcg, A1, A2, A3, A4) -->
+  'm*n_c'(0, 1, C, Dcg, L1, L2, L3, L4),
+  {maplist('?_arg', [L1,L2,L3,L4], [A1,A2,A3,A4])}.
+
+'?_c'(C, Dcg, A1, A2, A3, A4, A5) -->
+  'm*n_c'(0, 1, C, Dcg, L1, L2, L3, L4, L5),
+  {maplist('?_arg', [L1,L2,L3,L4,L5], [A1,A2,A3,A4,A5])}.
 
 
 %! 'm*'(?M:nonneg, :Dcg)// .

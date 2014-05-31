@@ -1,6 +1,9 @@
 :- module(
   parse_tree,
   [
+    dcg_atom_codes_pt//3, % :Dcg
+                          % -Tree:compound
+                          % ?Atom:atom
     parse_tree/3 % +TreeName:atom
                  % +SubTrees:list
                  % -Tree:compound
@@ -12,11 +15,27 @@
 Predicate for manipulating parse trees.
 
 @author Wouter Beek
-@version 2013/05-2013/09, 2013/11-2013/12
+@version 2013/05-2013/09, 2013/11-2013/12, 2014/06
 */
 
 :- use_module(library(apply)).
 
+:- use_module(dcg(dcg_meta)).
+
+:- meta_predicate(dcg_atom_codes_pt(4,-,?,?,?)).
+
+
+
+dcg_atom_codes_pt(Dcg, T, Atom) -->
+  {nonvar(Atom)},
+  {atom_codes(Atom, Codes)},
+  dcg_call(Dcg, SubTs, Codes),
+  {parse_tree(atom, SubTs, T)}.
+dcg_atom_codes_pt(Dcg, T, Atom) -->
+  {var(Atom)},
+  dcg_call(Dcg, SubTs, Codes),
+  {parse_tree(atom, SubTs, T)},
+  {atom_codes(Atom, Codes)}.
 
 
 %! parse_tree(+TreeName:atom, +SubTrees:list, -Tree:compound)// is det.
@@ -31,7 +50,10 @@ Predicate for manipulating parse trees.
 %      and variables (excluded from the created tree).
 % @arg Tree A compound term representing a parse tree.
 
-parse_tree(P, SubT1, T):-
-  include(nonvar, SubT1, SubT2),
-  T =.. [P|SubT2].
+parse_tree(P, SubTs1, T):-
+  include(nonvar, SubTs1, SubTs2),
+  exclude(empty_list, SubTs2, SubTs3),
+  T =.. [P|SubTs3].
+
+empty_list([]).
 
