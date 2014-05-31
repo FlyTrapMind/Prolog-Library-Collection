@@ -8,17 +8,14 @@
                     % :CoordFunc
                     % +Graph:oneof([dgraph,rdf_graph,ugraph])
                     % -GraphTerm:compound
-    export_vertex/4, % +Options:list(nvpair)
-                     % :N_P
-                     % +Vertex
-                     % -GraphTerm:compound
-    shared_attributes/3 % +Terms:list(compound)
-                        % -SharedAttributes:list(nvpair)
-                        % -NewTerms:list(compound)
+    export_vertex/4 % +Options:list(nvpair)
+                    % :N_P
+                    % +Vertex
+                    % -GraphTerm:compound
   ]
 ).
 
-/** <module> GRAPH_EXPORT
+/** <module> Graph export
 
 Generic graph export module.
 
@@ -120,36 +117,4 @@ export_vertex(O1, N_P, V, G_Term):-
   merge_options([directed(false)], O2, O3),
   depth(O3, N_P, V, Depth, Vs, Es),
   export_graph(O1, ugraph(Vs, Es), G_Term).
-
-remove_attribute(Attrs, T, NewT):-
-  T =.. L,
-  append(L1, [T_Attrs], L),
-  subtract(T_Attrs, Attrs, NewT_Attrs),
-  append(L1, [NewT_Attrs], NewL),
-  NewT =.. NewL.
-
-shared_attribute([T1|Ts], N=V):-
-  T1 =.. L1,
-  last(L1, Attrs1),
-  member(Attr1, Attrs1),
-  Attr1 =.. [N,V],
-  % The colorscheme cannot be part of this, apparently.
-  N \== colorscheme,
-  forall(
-    member(T2, Ts),
-    (
-      T2 =.. L2,
-      last(L2, Attrs2),
-      member(Attr2, Attrs2),
-      Attr2 =.. [N,V]
-    )
-  ).
-
-shared_attributes(Terms, SharedAttrs, NewTerms):-
-  findall(
-    SharedAttr,
-    shared_attribute(Terms, SharedAttr),
-    SharedAttrs
-  ),
-  maplist(remove_attribute(SharedAttrs), Terms, NewTerms).
 

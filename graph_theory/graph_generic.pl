@@ -198,7 +198,7 @@ degree_sequence(G, V_P, DegreeSequence):-
 % distance from the given vertex.
 %
 % @arg Options A list of name-value pairs, consisting of the following:
-%      1. `directed(boolean)`
+%      1. `directed(+Directed:boolean)`
 %         Whether only outgoing or also incoming arcs are included
 %         in the export.
 %      2. `graph(Graph:graph)`

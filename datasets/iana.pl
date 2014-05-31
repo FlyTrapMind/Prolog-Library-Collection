@@ -144,13 +144,13 @@ iana_scrape_url1_(ClassName1, Categories, Url, File, Graph, _):-
 assert_mime_extensions:-
   download_html(
     'http://www.webmaster-toolkit.com/mime-types.shtml',
-    DOM,
+    Dom,
     [html_dialect(html4)]
   ),
   forall(
     (
       member(Class, [tablerowdark,tablerowlight]),
-      xpath(DOM, //tr(@class=Class), TR),
+      xpath(Dom, //tr(@class=Class), TR),
       xpath(TR, td(1,content), [DefaultExtension]),
       xpath(TR, td(2,content), [ContentType])
     ),

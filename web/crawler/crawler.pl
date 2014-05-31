@@ -20,18 +20,18 @@ Crawler for HTML sites.
 :- use_module(server(parser)).
 :- use_module(standards(html)).
 
-:- dynamic(unvisited(_Link)).
-:- dynamic(visited(_Link)).
+:- dynamic(unvisited/1).
+:- dynamic(visited/1).
 
 
 
 crawl:-
-  unvisited(URI),
-  store_new_uri(URI),
-  download_html([], URI, HTML),
-  parse_dom(HTML),
-  retract(unvisited(URI)),
-  assert(visited(URI)),
+  unvisited(Url),
+  store_new_uri(Url),
+  download_html(Url, Dom, []),
+  parse_dom(Dom),
+  retract(unvisited(Url)),
+  assert(visited(Url)),
   crawl.
 
 crawl(Local):-
@@ -40,6 +40,6 @@ crawl(Local):-
   crawl.
 
 reset_crawler:-
-  retractall(unvisited(_Link1)),
-  retractall(visited(_Link2)).
+  retractall(unvisited(_)),
+  retractall(visited(_)).
 

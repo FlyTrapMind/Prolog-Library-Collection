@@ -8,9 +8,10 @@
 /** <module> GraphViz numeral
 
 @author Wouter Beek
-@version 2014/05
+@version 2014/05-2014/06
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(math(math_ext)).
 
@@ -37,18 +38,17 @@ gv_numeral_abs(N) -->
   {nonvar(N)},
   {number_integer_parts(N, N1, N2)},
   (
+    {N2 =:= 0}
+  ->
+    integer(N1)
+  ;
     {N1 =:= 0}
   ->
     `.`,
     integer(N2)
   ;
     integer(N1),
-    (
-      `.`,
-      'integer?'(N2)
-    ;
-      ``
-    )
+    '?'((`.`, 'integer?'(N2)))
   ).
 gv_numeral_abs(N) -->
   {var(N)},

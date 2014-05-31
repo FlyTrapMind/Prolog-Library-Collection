@@ -199,7 +199,8 @@ int_codes([D0|D]) -->
 %! 'integer?'(?Integer:integer)// .
 % Sometimes, we want to allow an integer to occur
 % optionally.
-% It is often easy to re
+% It is often easy to assign value 0 to the absence of an integer,
+% in order to perform arithmetic.
 
 % Read integer I, including 0.
 'integer?'(I) -->

@@ -32,11 +32,13 @@ and GraphViz output files or SVG DOM structures.
 :- use_module(generics(codes_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(error_ext)).
+:- use_module(generics(trees)).
 :- use_module(gv(gv_dot)).
 :- use_module(os(file_ext)).
 :- use_module(os(run_ext)).
 :- use_module(os(safe_file)).
 :- use_module(svg(svg_file)).
+:- use_module(ugraph(ugraph_export)).
 
 :- dynamic(user:file_type_program/2).
 :- multifile(user:file_type_program/2).
@@ -113,7 +115,7 @@ graph_to_gv_file(O1, GIF, ToFile):-
 
 graph_to_svg_dom(O1, GIF, SvgDom):-
   % Make sure the file type of the output file is SvgDom.
-  merge_options([to_file_type(svg)], O1, O2),
+  merge_options([to_file_type=svg], O1, O2),
   graph_to_gv_file(O2, GIF, ToFile),
   file_to_svg(ToFile, SvgDom),
   safe_delete_file(ToFile).
@@ -147,6 +149,14 @@ open_dot(File):-
 tree_to_gv_file(O1, Tree, ToFile):-
   once(phrase(gv_tree(O1, Tree), Codes)),
   to_gv_file(O1, Codes, ToFile).
+
+gv_tree(O1, T) -->
+  {
+    tree_to_ugraph(T, UG),
+    merge_options([edge_labels(false)], O1, O2),
+    export_ugraph(O2, UG, G_Term)
+  },
+  gv_graph(G_Term).
 
 
 

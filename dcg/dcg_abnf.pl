@@ -934,7 +934,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   [].
 'm*n_generate'(M, N, C1, C, Dcg) -->
   {'m*n_higher'(N, C1)},
-  dcg_call(Dcg),
+  Dcg,
   {succ(C1, C2)},
   'm*n_generate'(M, N, C2, C, Dcg).
 
@@ -994,7 +994,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
   [].
 'm*n_s_generate'(M, N, C, C1, Dcg) -->
   {'m*n_higher'(N, C1)},
-  dcg_call_s(Dcg),
+  Dcg,
   {succ(C1, C2)},
   'm*n_s_generate'(M, N, C, C2, Dcg).
 
@@ -1072,7 +1072,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 'm*n_parse'(M, N, C1, C, Dcg) -->
   {'m*n_higher'(N, C1)},
-  dcg_call(Dcg),
+  Dcg,
   {succ(C1, C2)},
   'm*n_parse'(M, N, C2, C, Dcg).
 'm*n_parse'(M, _, C, C, _) -->
@@ -1133,7 +1133,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 'm*n_s_parse'(M, N, C1, C, Dcg) -->
   % We may not surpass the upper bound.
   {'m*n_higher'(N, C1)},
-  dcg_call_s(Dcg),
+  Dcg,
   {succ(C1, C2)},
   'm*n_s_parse'(M, N, C2, C, Dcg).
 'm*n_s_parse'(M, _, C, C, _) -->

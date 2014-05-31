@@ -235,7 +235,7 @@ secondFrag(S) -->
   decimal_digit(C2),
   (
     dot(C3),
-    dcg_multi1(decimal_digit, 1-_, CT),
+    '+'(decimal_digit, CT),
     {phrase(unsignedDecimalPtNumeral(S), [C1,C2,C3|CT])}
   ;
     {phrase(unsignedNoDecimalPtNumeral(S), [C1,C2])}
@@ -348,10 +348,10 @@ yearFrag(Y) -->
   (minus_sign(S) -> {Cs = [S,Code|Codes]} ; {Cs = [Code|Codes]}),
   (
     nonzero_decimal_digit(Code, _),
-    dcg_multi1(decimal_digit, 3-_, Codes)
+    'm*'(3, decimal_digit, Codes)
   ;
     zero(Code),
-    dcg_multi1(decimal_digit, 3, Codes)
+    '#'(3, decimal_digit, Codes)
   ),
   {
     phrase(noDecimalPtNumeral(S, I), Cs),
