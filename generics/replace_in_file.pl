@@ -18,10 +18,10 @@ Make arbitrary consecutive replacements in text files.
 @version 2013/09
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(codes_ext)).
 :- use_module(library(debug)).
@@ -78,5 +78,5 @@ replace_in_file(_Out, _DCG_From, _DCG_To) --> [].
 %! trim_spaces(+OldFile:atom, ?NewFile:atom) is det.
 
 trim_spaces(F1, F2):-
-  replace_in_file(F1, dcg_multi(space, 1-_), space, F2).
+  replace_in_file(F1, '+'(space), space, F2).
 

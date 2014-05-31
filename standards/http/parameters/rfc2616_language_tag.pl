@@ -15,7 +15,7 @@ DCG for RFC 2616 language tags.
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 
@@ -45,16 +45,14 @@ DCG for RFC 2616 language tags.
 
 'language-tag'(T0, PrimaryTag, Subtags) -->
   'primary-tag'(T1, PrimaryTag),
-  dcg_multi2('_language-tag', _-_, Ts, Subtags),
+  '*'('_language-tag', Ts, Subtags),
   {parse_tree('language-tag', [T1|Ts], T0)}.
 '_language-tag'(T0, Subtag) -->
-  "-",
+  `-`,
   subtag(T0, Subtag).
 
 
-
 %! 'primary-tag'(-ParseTree:compound, ?Tag:atom)// .
-
 %! subtag(-ParseTree:compound, ?Subtag:atom)// .
 %
 % # Syntax
@@ -91,9 +89,11 @@ DCG for RFC 2616 language tags.
 % @see ISO 3166
 
 'primary-tag'('primary-tag'(Tag), Tag) -->
-  dcg_multi('ALPHA', 1-8, Cs),
-  {atom_codes(Tag, Cs)}.
-subtag(subtag(Tag), Subtag) -->
-  dcg_multi('ALPHA', 1-8, Cs),
-  {atom_codes(Subtag, Cs)}.
+  tag(Tag).
+
+subtag(subtag(Subtag), Subtag) -->
+  tag(Subtag).
+
+tag(Tag) -->
+  dcg_atom_codes('m*n'(1, 8, 'ALPHA'), Tag).
 

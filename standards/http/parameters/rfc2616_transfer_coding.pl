@@ -24,8 +24,8 @@ All HTTP/1.1 applications MUST be able to receive and decode the
 @version 2013/12
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic)).
@@ -75,7 +75,7 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % @tbd Notice that this is not an ABNF rule!
 
 'chunk-data'('chunk-data'(ChunkSize,ChunkData), ChunkSize, ChunkData) -->
-  dcg_multi('OCTET', ChunkSize-ChunkSize, ChunkData).
+  '#'(ChunkSize, 'OCTET', ChunkData).
 
 
 
@@ -115,19 +115,17 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % chunk-extension= *( ";" chunk-ext-name [ "=" chunk-ext-val ] )
 % ~~~
 
-'chunk-extension'(T0, ChunkExtensions) -->
-  dcg_multi('_chunk-extension', _-_, Ts, ChunkExtensions).
-'_chunk-extension'(T0, Name-Value) -->
-  ";",
-  'chunk-ext-name'(T1, Name),
-  (
-    "=",
-    'chunk-ext-val'(T2, Value)
-  ;
-    ""
-  ),
-  {parse_tree('chunk-extension', [T1,T2|Ts], T0)}.
+'chunk-extension'('check-extension'(Ts), ChunkExtensions) -->
+  '*'('chunk-extension1', Ts, ChunkExtensions).
 
+'chunk-extension1'([T1,T2], Name-Value) -->
+  `;`,
+  'chunk-ext-name'(T1, Name),
+  '?'('chunk-extension2'(T2, Value)).
+
+'chunk-extension2'(T, Value) -->
+  `=`,
+  'chunk-ext-val'(T, Value).
 
 
 %! 'chunk-size'(-ParseTree:compound, -ChunkSize:positive_integer)//
@@ -139,10 +137,9 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % ~~~
 
 'chunk-size'('chunk-size'(H), ChunkSize) -->
-  dcg_multi('HEX', 1-_, Hs),
+  '+'('HEX', Hs),
   {atomic_list_concat(Hs, H)},
   {digits_to_decimal(Hs, 16, ChunkSize)}.
-
 
 
 %! 'Chunked-Body'(
@@ -184,22 +181,16 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
   'CRLF'.
 
 
-
 %! 'last-chunk'(-ParseTree:compound, ?ChunkExtensions:list(pair(atom,atom)))//
 % ~~~{.abnf}
 % last-chunk     = 1*("0") [ chunk-extension ] CRLF
 % ~~~
 
 'last-chunk'(T0, ChunkExtension) -->
-  dcg_multi1(zero, 1-_),
-  (
-    'chunk-extension'(T1, ChunkExtension)
-  ;
-    ""
-  ),
+  '+'(zero),
+  '?'('chunk-extension'(T1, ChunkExtension)),
   {parse_tree('last-chunk', [T1], T0)},
   'CRLF'.
-
 
 
 %! trailer(-ParseTree:compound, ?EntityHeaders:list)//
@@ -238,12 +229,12 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 % @tbd Document the type of the `EntityHeaders` parameter.
 
 trailer(T0, EntityHeaders) -->
-  dcg_multi2('_entity-header_and_CRLF', _-_, Ts, EntityHeaders),
+  '*'(trailer1, Ts, EntityHeaders),
   {parse_tree(trailer, Ts, T0)}.
-'_entity-header_and_CRLF'(T0, EntityHeader) -->
-  'entity-header'(T0, EntityHeader),
-  'CRLF'.
 
+trailer1(T, EntityHeader) -->
+  'entity-header'(T, EntityHeader),
+  'CRLF'.
 
 
 %! 'transfer-coding'(
@@ -322,10 +313,9 @@ trailer(T0, EntityHeaders) -->
 % @see RFC 2616
 
 'transfer-coding'('transfer-coding'(chunked), chunked, []) -->
-  "chunked".
-'transfer-coding'('transfer-coding'(T0), TransferCoding, Params) -->
-  'transfer-extension'(T0, TransferCoding, Params).
-
+  `chunked`.
+'transfer-coding'('transfer-coding'(T), TransferCoding, Params) -->
+  'transfer-extension'(T, TransferCoding, Params).
 
 
 %! 'transfer-extension'(
@@ -337,11 +327,12 @@ trailer(T0, EntityHeaders) -->
 % transfer-extension = token *( ";" parameter )
 % ~~~
 
-'transfer-extension'(T0, Token, Parameters) -->
+'transfer-extension'(T, Token, Parameters) -->
   token(Token),
-  dcg_multi2('_;_and_parameter', _-_, Ts, Parameters),
-  {parse_tree('transfer-extension', [Token|Ts], T0)}.
-'_;_and_parameter'(T0, Parameter) -->
-  ";",
-  parameter(T0, Parameter).
+  '*'('transfer-extension1', Ts, Parameters),
+  {parse_tree('transfer-extension', [Token|Ts], T)}.
+
+'transfer-extension1'(T, Parameter) -->
+  `;`,
+  parameter(T, Parameter).
 

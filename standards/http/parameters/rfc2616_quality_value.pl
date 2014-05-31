@@ -15,8 +15,8 @@ DCG for RFC 2616 quality values.
 @version 2013/12
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(math(radix)).
 
@@ -58,21 +58,19 @@ DCG for RFC 2616 quality values.
 %  relative degradation in desired quality.
 
 qvalue(qvalue(D2), D2) -->
-  "0",
-  (
-    ".",
-    dcg_multi2('DIGIT', 0-3, _, Ds),
-    {digits_to_decimal(Ds, D1)},
-    {D2 is D1 / 10}
-  ;
-    ""
-  ).
+  `0`,
+  '?'(qvalue1).
 qvalue(qvalue(1.0), 1.0) -->
-  "1",
-  (
-    ".",
-    dcg_multi(zero, 0-3)
-  ;
-    ""
-  ).
+  `1`,
+  '?'(qvalue2).
+
+qvalue1 -->
+  `.`,
+  'm*n'(0, 3, 'DIGIT', _, Digits),
+  {digits_to_decimal(Digits, D1)},
+  {D2 is D1 / 10}.
+
+qvalue2 -->
+  `.`,
+  'm*n'(0, 3, zero).
 

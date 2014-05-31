@@ -70,10 +70,10 @@ are physically possible (given the birth and death years of James Joyce).
 @version 2013/05-2013/06
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(nlp(dcg_century)).
 :- use_module(nlp(dcg_dict)).
 
@@ -186,22 +186,23 @@ year_separator --> hyphen_minus.
 year_uncertainty(Year1-Year2) -->
   digits(Ds),
   {Ds \== []},
-  dcg_multi(uncertainty_sign, 1-_, [], N),
+  '+'(uncertainty_sign),
   {
     number_codes(X, Ds),
-    Multiplier is 10**N,
+    Multiplier is 10 ** N,
     Year1 is X * Multiplier,
     Y is X + 1,
     Z is Y * Multiplier,
     Year2 is Z - 1
   }.
 
-uncertainty_sign --> "X".
-uncertainty_sign --> "?".
+uncertainty_sign --> `X`.
+uncertainty_sign --> `?`.
 
 convert_epoch(Year, 'AD', Year):- !.
 convert_epoch(UnsignedYear, 'BC', SignedYear):-
   SignedYear is -1 * UnsignedYear.
 
-epoch('BC') --> "v", blanks, ".", blanks, "Chr".
+epoch('BC') --> `v`, blanks, `.`, blanks, `Chr`.
 epoch('AD').
+

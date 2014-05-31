@@ -25,9 +25,9 @@ Based on `cowsay` by Tony Monroe,
 @version 2012/09-2012/10, 2013/05-2013/09, 2014/01
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(dcg(dcg_wrap)).
 :- use_module(generics(codes_ext)).
@@ -216,51 +216,51 @@ dcg_cow(O1) -->
   },
 
   % First line.
-  dcg_multi(space, Indent), backslash, "   ^__^", newline,
+  '#'(Indent, space), backslash, "   ^__^", newline,
 
   % Second line.
-  dcg_multi(space, Indent), space, backslash,
-  "  (", dcg_cow_eyes(O2), ")",
-  backslash, "___", dcg_multi(underscore, CowLength), newline,
+  '#'(Indent, space), space, backslash,
+  `  `, dcg_bracketed(round, dcg_cow_eyes(O2)),
+  backslash, `___`, '#'(CowLength, underscore), newline,
 
   % Third line.
-  dcg_multi(space, AddedIndent),
-  "(__)", backslash, "   ", dcg_multi(space, CowLength), ")",
+  '#'(AddedIndent, space),
+  `(__)`, backslash, `   `, '#'(CowLength, space), `)`,
   dcg_cow_tail, newline,
 
   % Fourth line.
-  dcg_multi(space, AddedIndent),
-  " ", dcg_cow_tongue(O2),
-  " ||", dcg_multi(hyphen, CowLength), "w |", newline,
+  '#'(AddedIndent, space),
+  ` `, dcg_cow_tongue(O2),
+  ` ||`, '#'(CowLength, hyphen), `w |`, newline,
 
   % Fifth line.
-  dcg_multi(space, AddedIndent),
-  "    ", "||", dcg_multi(space, CowLength), " ||", newline.
+  '#'(AddedIndent, space),
+  `    ||`, '#'(CowLength, space), ` ||`, newline.
 
 dcg_cow_eyes(O) -->
   {
-    option(eyes(Eyes1), O, "oo"),
+    option(eyes(Eyes1), O, `oo`),
     % Enusre that the eyes are codes
     % (i.e., apply atom2code conversion if needed).
     once(atomic_codes(Eyes1, Eyes2)),
     Eyes2 = [X,Y|_], !
   },
   [X,Y].
-dcg_cow_eyes(_O) --> "oo".
+dcg_cow_eyes(_) --> `oo`.
 
 dcg_cow_tail -->
   backslash, forward_slash, backslash.
 
 dcg_cow_tongue(O) -->
   {
-    option(tongue(Tongue1), O, "  "),
+    option(tongue(Tongue1), O, `  `),
     % Enusre that the eyes are codes
     % (i.e., apply atom2code conversion if needed).
     once(atomic_codes(Tongue1, Tongue2)),
     Tongue2 = [X,Y|_], !
   },
   [X,Y].
-dcg_cow_tongue(_O) --> "  ".
+dcg_cow_tongue(_) --> `  `.
 
 %! dcg_speech_bubble(+LineWidth:integer, +CodeLines:list(list(code)))//
 % Draws a speech bubble with the given content,
@@ -273,7 +273,7 @@ dcg_speech_bubble(LineWidth, CodeLines) -->
 
 dcg_speech_bubble_bottom(LineWidth) -->
   `\\-`,
-  dcg_multi(`-`, LineWidth),
+  '#'(LineWidth, hyphen),
   `-/`.
 
 dcg_speech_bubble_line(LineWidth, CodeLine) -->
@@ -283,7 +283,7 @@ dcg_speech_bubble_line(LineWidth, CodeLine) -->
     length(CodeLine, ContentLength),
     NumberOfSpaces is LineWidth - ContentLength
   },
-  dcg_multi(` `, NumberOfSpaces),
+  '#'(NumberOfSpaces, ` `),
   ` |`,
   newline.
 
@@ -294,7 +294,7 @@ dcg_speech_bubble_lines(LineWidth, [CodeLine|CodeLines]) -->
 
 dcg_speech_bubble_top(LineWidth) -->
   `/-`,
-  dcg_multi(`-`, LineWidth),
+  '#'(LineWidth, hyphen),
   `-\\`.
 
 %! cowspeak_web(+Content, -Markup:list) is det.
@@ -312,14 +312,14 @@ cowspeak_web(
   merge_options([output(atom(Atom))], O2, O3),
   cowspeak(O3, Content).
 
-mode('Borg', [eyes("==")]).
-mode(dead, [eyes("XX"), tongue("U")]).
-mode(greedy, [eyes("$$")]).
-mode(paranoia, [eyes("@@")]).
-mode(stoned, [eyes("**"), tongue("U")]).
-mode(tired, [eyes("--")]).
-mode(wired, [eyes("OO")]).
-mode(youth, [eyes("..")]).
+mode('Borg', [eyes(`==`)]).
+mode(dead, [eyes(`XX`), tongue(`U`)]).
+mode(greedy, [eyes(`$$`)]).
+mode(paranoia, [eyes(`@@`)]).
+mode(stoned, [eyes(`**`), tongue(`U`)]).
+mode(tired, [eyes(`--`)]).
+mode(wired, [eyes(`OO`)]).
+mode(youth, [eyes(`..`)]).
 
 process_modes(O1, O3):-
   option(mode(Mode), O1),

@@ -122,7 +122,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_abnf)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(math(radix)).
 
@@ -146,9 +146,8 @@ Note: HTTP requirements for the date/time stamp format apply only
   'SP',
   time(T3, Time),
   'SP',
-  dcg_multi2('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
+  '#'(4, 'DIGIT', [Y1,Y2,Y3,Y4]),
   {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
-
 
 
 %! date1(
@@ -168,7 +167,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 
 date1(date1(Day,T1,Year), Year, Month, Day) -->
   % Day
-  dcg_multi2('DIGIT', 2-2, _, [D1,D2]),
+  '#'(2, 'DIGIT', [D1,D2]),
   {digits_to_decimal([D1,D2], Day)},
   'SP',
   
@@ -177,7 +176,7 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
   'SP',
   
   % Year
-  dcg_multi2('DIGIT', 4-4, _, [Y1,Y2,Y3,Y4]),
+  '#'(4, 'DIGIT', [Y1,Y2,Y3,Y4]),
   {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
@@ -199,16 +198,16 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
 
 date2(date2(Year,T1,Day), Year, Month, Day) -->
   % Day
-  dcg_multi2('DIGIT', 2-2, _, [Y1,Y2]),
+  '#'(2, 'DIGIT', [Y1,Y2]),
   {digits_to_decimal([Y1,Y2], Year)},
-  "-",
+  `-`,
   
   % Month
   month(T1, Month),
-  "-",
+  `-`,
   
   % Year
-  dcg_multi2('DIGIT', 2-2, _, [D1,D2]),
+  '#'(2, 'DIGIT', [D1,D2]),
   {digits_to_decimal([D1,D2], Day)}.
 
 
@@ -230,7 +229,7 @@ date3(date3(T1,Day), Month, Day) -->
   
   % Day
   (
-    dcg_multi2('DIGIT', 2-2, _, [D1,D2]),
+    '#'(2, 'DIGIT', [D1,D2]),
     {digits_to_decimal([D1,D2], Day)}
   ;
     'SP',
@@ -251,9 +250,8 @@ date3(date3(T1,Day), Month, Day) -->
 % @see RFC 2616
 
 'delta-seconds'('delta-seconds'(Seconds), Seconds) -->
-  dcg_multi2('DIGIT', 1-_, _, Ss),
+  '+'('DIGIT', _, Ss),
   {digits_to_decimal(Ss, Seconds)}.
-
 
 
 %! 'HTTP-date'(-ParseTree:compound, ?Date:compound)//
@@ -277,7 +275,6 @@ date3(date3(T1,Day), Month, Day) -->
   'rfc850-date'(T1, Date).
 'HTTP-date'('HTTP-date'(T1), Date) -->
   'asctime-date'(T1, Date).
-
 
 
 %! month(-ParseTree:compound, ?Month:between(1,12))//
@@ -314,7 +311,6 @@ month(month('Nov'), 11) -->
   "Nov".
 month(month('Dec'), 12) -->
   "Dec".
-
 
 
 %! 'rfc1123-date'(-ParseTree:compound, ?Date:compound)//
@@ -372,15 +368,19 @@ month(month('Dec'), 12) -->
 
 time(time(Hour,Minute,Second), time(Hour,Minute,Second)) -->
   % Hour
-  dcg_multi2('DIGIT', 2-2, _, [H1,H2]),
+  '#'(2, 'DIGIT', _, [H1,H2]),
   {digits_to_decimal([H1,H2], Hour)},
-  ":",
+  
+  `:`,
+  
   % Minute
-  dcg_multi2('DIGIT', 2-2, _, [M1,M2]),
+  '#'(2, 'DIGIT', _, [M1,M2]),
   {digits_to_decimal([M1,M2], Minute)},
-  ":",
+  
+  `:`,
+  
   % Second
-  dcg_multi2('DIGIT', 2-2, _, [S1,S2]),
+  '#'(2, 'DIGIT', _, [S1,S2]),
   {digits_to_decimal([S1,S2], Second)}.
 
 

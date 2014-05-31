@@ -567,33 +567,36 @@ regular([zh,xiang]).
 %      with arguments.
 
 rfc5646_extended_language_subtag(T0, L) -->
-  dcg_multi1(ascii_letter, 3, X1, [out(atom)]),
+  dcg_atom_codes('#'(3, ascii_letter), X1),
   {rfc5646_class(X1, 'Subtag')},
   (
-    "", {L = [X1]}
+    ``, {L = [X1]}
   ;
     hyphen_minus, {H1 = '-'},
-    dcg_multi1(ascii_letter, 3, X2, [convert(atom_codes)]),
+    dcg_atom_codes('#'(3, ascii_letter), X2),
     {rfc5646_class(X2, 'Subtag')},
     (
-      "",
+      ``,
       {L = [X1,X2]}
     ;
-      hyphen_minus, {H2 = '-'},
-      dcg_multi1(ascii_letter, 3, X3, [convert(atom_codes)]),
+      hyphen_minus,
+      {H2 = '-'},
+      dcg_atom_codes('#'(3, ascii_letter), X3),
       {rfc5646_class(X3, 'Subtag')},
       (
-        "",
+        ``,
         {L = [X1,X2,X3]}
       ;
-        hyphen_minus, {H3 = '-'},
-        dcg_multi1(ascii_letter, 3, X4, [convert(atom_codes)]),
+        hyphen_minus,
+        {H3 = '-'},
+        dcg_atom_cods('#'(3, ascii_letter), X4),
         {rfc5646_class(X4, 'Subtag')},
         {L = [X1,X2,X3,X4]}
       )
     )
   ),
   {parse_tree(extended_language_subtag, [X1,H1,X2,H2,X3,H3,X4], T0)}.
+
 
 %! rfc5646_extension(-Tree:compound, ?Extension:list(atomic))//
 % Extensions provide a mechanism for extending language tags for use in
@@ -655,17 +658,19 @@ rfc5646_extension(extension(T1, T2), [Singleton|ExtensionComponents]) -->
   rfc5646_singleton(T1, Singleton),
   rfc5646_extension_components(T2, ExtensionComponents).
 
+
 %! rfc5646_extension_components(-Tree:compound, ?ExtensionComponents:list(atom))//
 
 rfc5646_extension_components(extension_components('-',H,T1), [H|T]) -->
   hyphen_minus,
-  dcg_multi1(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
+  dcg_atom_codes('m*n'(2, 8, ascii_alpha_numeric), H),
   {rfc5646_class(H, 'Extension')},
   rfc5646_extension_components(T1, T).
 rfc5646_extension_components(extension_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_multi1(ascii_alpha_numeric, 2-8, H, [convert(atom_codes)]),
+  dcg_atom_codes('m*n'(2, 8, ascii_alpha_numeric), H),
   {rfc5646_class(H, 'Extension')}.
+
 
 %! rfc5646_extensions(-Tree:compound, ?Extensions:list(list(atomic)))//
 
@@ -676,6 +681,7 @@ rfc5646_extensions(extensions('-',T1,T2), [H|T]) -->
 rfc5646_extensions(extensions('-',T1), [H]) -->
   hyphen_minus,
   rfc5646_extension(T1, H).
+
 
 %! rfc5646_grandfathered_language_tag(-Tree:compound, ?LanguageTag:list(atom))//
 % Non-redundant (see below) tags registered during the RFC 1766 and/or
@@ -747,6 +753,7 @@ rfc5646_grandfathered_language_tag(T0, Tag) -->
     append_intersperse(L1, '-', L2),
     parse_tree(irregular_grandfathered_language_tag, L2, T0)
   }.
+
 
 %! rfc5646_language_tag//
 % ~~~{.abnf}

@@ -18,9 +18,9 @@ DCG for the `Accept-Language` request header in RFC 2616.
 @version 2013/12
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
 :- use_module(http(rfc2616_basic)).
@@ -154,14 +154,21 @@ DCG for the `Accept-Language` request header in RFC 2616.
 %  this tag is a prefix.
 % The prefix rule simply allows the use of prefix tags if this is the case.
 
-'language-range'('language-range'(LanguageTag), LanguageTag) -->
-  dcg_multi1('_language-range', 1-_, LanguageTag, [separator(hyphen)]).
+'language-range'('language-range'([H|T]), [H|T]) -->
+  dcg_atom_codes('language-range1', H),
+  'language-range2'(T).
 'language-range'('language-range'('*'), '*') -->
-  "*".
-'_language-range'(LanguageSubtag) -->
-  dcg_multi1('ALPHA', 1-8, Codes),
-  {atom_codes(LanguageSubtag, Codes)}.
+  `*`.
 
+'language-range1'(Codes) -->
+  'm*n'(1, 8, 'ALPHA', Codes).
+
+'language-range2'(T) -->
+  '+'('language-range3', T).
+
+'language-range3'(Atom) -->
+  `-`,
+  dcg_atom_codes('language-range1', Atom).
 
 
 'parse_Accept-Language'(Request, TO):-

@@ -135,7 +135,9 @@ charset(charset(Charset), Charset) -->
 % ~~~
 
 comment(comment(Comm), Cs) -->
-  bracketed(dcg_multi1('ctext_or_quoted-pair_or_comment', _-_, Css)),
+  bracketed(
+    '*'('ctext_or_quoted-pair_or_comment', Css)
+  ),
   {flatten(Css, Cs)},
   {atom_codes(Comm, Cs)}.
 
@@ -145,7 +147,6 @@ comment(comment(Comm), Cs) -->
   'quoted-pair'(C).
 'ctext_or_quoted-pair_or_comment'(Cs) -->
   comment(_, Cs).
-
 
 
 %! ctext(?Code:code)//
@@ -218,14 +219,12 @@ qdtext(C) -->
 % @see RFC 2616
 
 'quoted-string'(QuotedString) -->
-  quoted(dcg_multi1('qdtex_or_quoted-pair', Cs)),
-  {atom_codes(QuotedString, Cs)}.
+  quoted(dcg_atom_codes('quoted-string1', QuotedString)).
 
-'qdtex_or_quoted-pair'(C) -->
+'quoted-string1'(C) -->
   qdtext(C).
-'qdtex_or_quoted'(C) -->
+'quoted-string1'(C) -->
   'quoted-pair'(C).
-
 
 
 %! separator//
@@ -259,7 +258,6 @@ separator --> 'SP'. % 32
 separator --> 'HT'. % 9
 
 
-
 %! token(?Token:atom)//
 % ~~~{.abnf}
 % token = 1*<any CHAR except CTLs or separators>
@@ -268,12 +266,11 @@ separator --> 'HT'. % 9
 % @see RFC 2616
 
 token(Token) -->
-  dcg_multi1(token_, 1-_, Token, [convert(codes_to_atom)]).
+  dcg_atom_codes('+'(token1), Token).
 
-token_(C) -->
+token1(C) -->
   'CHAR'(C),
   {\+ phrase('CTL', [C]), \+ phrase(separator, [C])}.
-
 
 
 %! value(-ParseTree:compound, ?Value:atom)//

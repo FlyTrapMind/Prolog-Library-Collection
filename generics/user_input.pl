@@ -30,16 +30,17 @@ Handles user input and sequences in which user input is needed continuously
 @version 2013/10-2013/12
 */
 
-:- use_module(ap(ap_stat)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(readutil)).
+
+:- use_module(ap(ap_stat)).
+:- use_module(dcg(dcg_abnf)).
+:- use_module(dcg(dcg_ascii)).
+:- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_generic)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(os(dir_ext)).
 
 :- meta_predicate(user_input(+,3,+)).
@@ -89,8 +90,7 @@ legal_directory(Dir) -->
   {subdirectories_to_directory(L, Dir)}.
 
 legal_file(File) -->
-  dcg_multi1(legal_file_char, 1-_, Codes),
-  {atom_codes(File, Codes)}.
+  dcg_atom_codes(legal_file_char, File).
 
 legal_file_char(C) --> ascii_alpha_numeric(C).
 legal_file_char(C) --> dot(C).
@@ -104,8 +104,7 @@ legal_filepath(Path) -->
   {directory_file_path(Dir, File, Path)}.
 
 legal_filepath_segment(Segment) -->
-  dcg_multi1(legal_filepath_char, 1-_, Codes),
-  {atom_codes(Segment, Codes)}.
+  dcg_atom_codes(legal_filepath_char, Segment).
 
 legal_filepath_segments([H|T]) -->
   legal_filepath_segment(H),
@@ -129,7 +128,7 @@ legal_filepath_char(C) --> plus_sign(C).
 legal_filepath_char(C) --> underscore(C).
 
 legal_password(Codes) -->
-  dcg_multi1(ascii_graphic, 7-_, Codes).
+  'm*'(7, ascii_graphic, Codes).
 
 %! legal_user_interaction(-LegalUserInput:char)// is semidet.
 

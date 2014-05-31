@@ -20,7 +20,6 @@ Predicates that are specific to the operation of SWI-Prolog.
 :- use_module(library(ansi_term)). % Used in markup.
 
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
 

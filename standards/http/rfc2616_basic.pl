@@ -72,9 +72,9 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 @version 2013/12, 2014/05
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_multi)).
 
 
 
@@ -315,8 +315,8 @@ UPALPHA = <any US-ASCII uppercase letter "A".."Z">
 % @see RFC 2616
 
 'LWS' -->
-  dcg_multi('CRLF', 0-1),
-  dcg_multi('SP_or_HT', 1-_).
+  '?'('CRLF'),
+  '+'('SP_or_HT').
 
 'SP_or_HT' -->
   'SP'.

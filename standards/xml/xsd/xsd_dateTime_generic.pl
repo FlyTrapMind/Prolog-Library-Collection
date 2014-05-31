@@ -30,9 +30,9 @@ conforming to the XSD 1.1 specification.
 @version 2013/08-2013/11, 2014/03-2014/04
 */
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(xsd(xsd_number_generic)).
 
 
@@ -82,8 +82,11 @@ dayFrag(D) -->
 
 endOfDayFrag(24, 0, 0) -->
   `24:00:00`,
+  '?'(endOfDayFrag1).
+
+endOfDayFrag1 -->
   `.`,
-  dcg_multi(zero).
+  '+'(zero).
 
 
 %! fourDigitCanonicalFragmentMap(+Integer:between(-9999,9999))//

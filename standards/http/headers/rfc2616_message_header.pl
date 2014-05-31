@@ -15,7 +15,7 @@ DCG for generic message headers in RFC 2616.
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_multi)).
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic)).
@@ -46,19 +46,18 @@ DCG for generic message headers in RFC 2616.
 % @tbd This BNF rules is **very** unclear!
 
 'field-content'('field-content'(FieldContent), [FieldContent]) -->
-  dcg_multi1('TEXT', _-_, TEXTs),
-  {atom_codes(FieldContent, TEXTs)}.
+  dcg_atom_codes('*'('TEXT'), FieldContent).
 'field-content'(T0, FieldContent) -->
-  dcg_multi2('_field-content', _-_, Ts, FieldContent),
-  dcg_multi(separator),
+  '*'('field-content1', Ts, FieldContent),
+  '*'(separator),
   {parse_tree('field-content', Ts, T0)}.
-'_field-content'(FieldContent, FieldContent) -->
-  dcg_multi(separator),
-  token(FieldContent).
-'_field-content'(FieldContent, FieldContent) -->
-  dcg_multi(separator),
-  'quoted-string'(FieldContent).
 
+'field-content1'(FieldContent, FieldContent) -->
+  '*'(separator),
+  token(FieldContent).
+'field-content1'(FieldContent, FieldContent) -->
+  '*'(separator),
+  'quoted-string'(FieldContent).
 
 
 %! 'field-name'(-ParseTree:compound, ?FieldName:atom)//
@@ -70,20 +69,19 @@ DCG for generic message headers in RFC 2616.
   token(FieldName).
 
 
-
 %! 'field-value'(-ParseTree:compound, ?FieldValue:atom)//
 % ~~~{.abnf}
 % field-value = *( field-content | LWS )
 % ~~~
 
 'field-value'(T0, FieldContents) -->
-  dcg_multi2('_field-value', Ts, FieldContents),
-  dcg_multi('LWS'),
+  '*'('field-value1', Ts, FieldContents),
+  '*'('LWS'),
   {parse_tree('field-value', Ts, T0)}.
-'_field-value'(T1, FieldContents) -->
-   dcg_multi('LWS'),
-  'field-content'(T1, FieldContents).
 
+'field-value1'(T1, FieldContents) -->
+   '*'('LWS'),
+  'field-content'(T1, FieldContents).
 
 
 %! 'message-header'(-ParseTree:compound, ?MessageHeader)//

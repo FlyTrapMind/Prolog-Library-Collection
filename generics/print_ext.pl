@@ -29,7 +29,6 @@ proof(Conclusion, Premises)
 */
 
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(meta_ext)).

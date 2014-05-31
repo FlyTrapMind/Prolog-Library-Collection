@@ -28,7 +28,6 @@ DCGs for word definitions in SPARQL recommendations.
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_multi)).
 :- use_module(sparql(sparql_char)).
 
 
@@ -42,7 +41,8 @@ DCGs for word definitions in SPARQL recommendations.
 % @compat SPARQL 1.1 Query [163].
 % @compat Turtle 1.1 [162s].
 
-'ANON' --> bracketed(square, 'WS*').
+'ANON' -->
+  bracketed(square, 'WS*').
 
 
 %! 'BLANK_NODE_LABEL'(?BNodeLabel:atom)// .
@@ -57,7 +57,7 @@ DCGs for word definitions in SPARQL recommendations.
 % @compat Turtle 1.1 [141s].
 
 'BLANK_NODE_LABEL'(BNodeLabel) -->
-  dch_atom_codes('BLANK_NODE_LABEL_codes', BNodeLabel) -->
+  dcg_atom_codes('BLANK_NODE_LABEL_codes', BNodeLabel) -->
 
 'BLANK_NODE_LABEL_codes'([H|T2]) -->
   `_:`,

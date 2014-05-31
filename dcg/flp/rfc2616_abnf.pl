@@ -70,7 +70,7 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 %  and at most `m` elements, each separated by one or more commas
 %  and OPTIONAL `LWS`.
 %
-% # Motivation & example
+% ### Motivation & example
 %
 % This makes the usual form of lists very easy; a rule such as
 % ~~~{.abnf}
@@ -81,7 +81,7 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 % 1#element
 % ~~~
 %
-% # Null elements
+% ### Null elements
 %
 % Wherever this construct is used, null elements are allowed,
 %  but do not contribute to the count of elements present.
@@ -90,7 +90,7 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 % Therefore, where at least one element is required,
 %  at least one non-null element MUST be present.
 %
-% # Default values
+% ### Default values
 %
 % Default values are 0 and infinity so that `#element` allows any number,
 %  including zero;
