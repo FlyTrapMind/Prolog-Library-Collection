@@ -145,7 +145,7 @@ tree_to_ugraph(T, G):-
 %! ) is det.
 
 tree_to_vertices_and_edges(T, Vs, Es):-
-  flag(vertex, _Id, 0),
+  flag(vertex, _, 0),
   tree_to_vertices_and_edges(T, Vs, Es, _TopV_Term).
 
 tree_to_vertices_and_edges(Leaf, [V_Term], [], V_Term):-

@@ -9,7 +9,8 @@
                               % ?Path:list(list(atom))
                               % ?Query:atom
                               % ?Fragment:atom
-    uri_to_gv/1, % +URI:atom
+    uri_to_tree/2, % +URI:atom
+                   % -ParseTree:compound
 
 % DEEP PREDICATES
     abs_path//2, % -Tree:compound
@@ -221,7 +222,6 @@ can determine the value of the four components and fragment as
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(parse_tree)).
-:- use_module(gv(gv_file)).
 
 
 
@@ -987,9 +987,7 @@ user_info__(C) -->
 %
 % ![An example parse of a URI, according to RFC standard 2396.](rfc2396_example.jpeg)
 
-uri_to_gv(URI):-
+uri_to_tree(URI, ParseTree):-
   atom_codes(URI, Codes),
-  once(phrase(rfc2396_uri_reference(Tree), Codes)),
-  absolute_file_name(data(temp), File, [access(write),file_type(jpeg)]),
-  tree_to_gv_file([method(dot),name(URI),to_file_type(jpeg)], Tree, File).
+  once(phrase(rfc2396_uri_reference(ParseTree), Codes)).
 

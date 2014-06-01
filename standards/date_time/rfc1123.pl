@@ -10,7 +10,8 @@
                          % ?Hour:integer
                          % ?Minute:integer
                          % ?Seconds:integer
-    rfc1123_datetime_to_gv/1 % +Datetime:atom
+    rfc1123_datetime_to_tree/2 % +Datetime:atom
+                               % -ParseTree:compound
   ]
 ).
 
@@ -24,10 +25,10 @@ The standard for datetime that is used by HTTP 1.1.
 @version 2013/07, 2014/03
 */
 
+:- use_module(library(plunit)).
+
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
-:- use_module(gv(gv_file)).
-:- use_module(library(plunit)).
 :- use_module(math(radix)).
 
 
@@ -120,15 +121,9 @@ rfc1123_datetime(
   space,
   "GMT".
 
-rfc1123_datetime_to_gv(Datetime):-
+rfc1123_datetime_to_tree(Datetime, ParseTree):-
   atom_codes(Datetime, Codes),
-  once(phrase(rfc1123_datetime(Tree), Codes)),
-  absolute_file_name(data(temp), File, [access(write),file_type(jpeg)]),
-  tree_to_gv_file(
-    [method(dot),name(Datetime),to_file_type(jpeg)],
-    Tree,
-    File
-  ).
+  once(phrase(rfc1123_datetime(ParseTree), Codes)).
 
 %! rfc1123_time(
 %!   -Tree:compound,
@@ -207,6 +202,7 @@ test(rfc123_parse, [forall(rfc1123_atom(Datetime))]):-
   maplist(formatnl, [Tree, Weekday, Day, Month, Year, Hour, Minute, Second]).
 
 test(rfc1123_parse_gv, [forall(rfc1123_atom(Datetime))]):-
-  rfc1123_datetime_to_gv(Datetime).
+  rfc1123_datetime_to_tree(Datetime).
 
 :- end_tests(rfc1123).
+
