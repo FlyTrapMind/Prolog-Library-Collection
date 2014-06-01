@@ -19,7 +19,8 @@ Predicates for exporting an intermediate graph structure to an HTML table.
 :- use_module(library(settings)).
 
 :- use_module(dcg(dcg_generic)).
-:- use_module(standards(html_dcg)).
+
+:- use_module(plHtml(html_dcg)).
 
 :- setting(
   default_border_width,
