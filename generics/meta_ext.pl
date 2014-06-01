@@ -261,7 +261,7 @@ nth0_call(Goal, I, X):-
 
 nth0_call(O1, Goal, I, X):-
   Goal =.. [Pred|Args1],
-  
+
   % Insert the extra argument.
   (
     option(minus(true), O1, false)
@@ -270,7 +270,7 @@ nth0_call(O1, Goal, I, X):-
   ;
     nth0(I, Args2, X, Args1)
   ),
-  
+
   apply(Pred, Args2).
 
 
