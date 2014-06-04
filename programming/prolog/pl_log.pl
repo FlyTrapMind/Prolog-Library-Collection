@@ -3,6 +3,7 @@
   [
     canonical_blobs_atom/2, % @Term
                             % -Atom:atom
+    run_collect_messages/1, % :Goal
     run_collect_messages/2, % :Goal
                             % +File:atom
     run_collect_messages/3, % :Goal
@@ -21,11 +22,12 @@
 Logging the performance and results of Prolog predicates.
 
 @author Wouter Beek
-@version 2014/04
+@version 2014/04, 2014/06
 */
 
 :- use_module(library(check_installation)).
 
+:- meta_predicate(run_collect_messages(0)).
 :- meta_predicate(run_collect_messages(0,+)).
 :- meta_predicate(run_collect_messages(0,-,-)).
 
@@ -37,17 +39,33 @@ canonical_blobs_atom(Term, Atom):-
   with_output_to(atom(Atom), write_canonical_blobs(Term)).
 
 
+%! run_collect_messages(:Goal) is det.
+% Write an abbreviated version of status and messages to the console.
+
+run_collect_messages(Goal):-
+  run_collect_messages(Goal, Status, Messages),
+  length(Messages, NumberOfMessages),
+  format(
+    current_output,
+    'Status: ~a; #messages: ~D~n',
+    [Status,NumberOfMessages]
+  ).
+
+
 %! run_collect_messages(:Goal, +File:atom) is det.
+% Write status and messages to file.
 
 run_collect_messages(Goal, File):-
   run_collect_messages(Goal, Status, Messages),
   maplist(store_term_to_log(File), [Status|Messages]).
+
 
 %! run_collect_messages(
 %!   :Goal,
 %!   -Status:or([oneof([false,true]),compound]),
 %!   -Messages:list(compound)
 %! ) is det.
+% Return status and messages to the calling context for further processing.
 
 run_collect_messages(Goal, Status, Messages):-
   check_installation:run_collect_messages(Goal, Status, Messages).
