@@ -20,11 +20,17 @@
   ]
 ).
 
-/** <module> TREES
+/** <module> Trees
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/07-2013/08, 2014/03
+@version 2013/04-2013/05, 2013/07-2013/08, 2014/03, 2014/06
 */
+
+:- use_module(library(aggregate)).
+:- use_module(library(apply)).
+:- use_module(library(lists)).
+:- use_module(library(option)).
+:- use_module(library(ordsets)).
 
 :- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
@@ -33,30 +39,57 @@
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(option_ext)).
-:- use_module(library(aggregate)).
-:- use_module(library(apply)).
-:- use_module(library(lists)).
-:- use_module(library(option)).
-:- use_module(library(ordsets)).
 :- use_module(ugraph(ugraph_ext)).
 
 :- meta_predicate(print_tree(:,?,+)).
 
 
 
-all_subpaths_to_tree(Subpaths, [Trees]):-
-  all_subpaths_to_tree(Subpaths, [], Trees).
+%! all_subpaths_to_tree(+Subpaths:list(list), -Tree:compound) is det.
+% Creates the tree based on the given subpaths.
+%
+% ### Examples
+%
+% ~~~{.pl}
+% ?- all_subpaths_to_tree([[a,b],[a,c]], T).
+% T = [a-[b-[], c-[]]].
+%
+% ?- all_subpaths_to_tree([[a,b],[a,c],[a,d]], T).
+% T = [a-[b-[], c-[], d-[]]].
+%
+% ?- all_subpaths_to_tree([[a,b],[a,c,e],[a,d]], T).
+% T = [a-[b-[], c-[e-[]], d-[]]].
+%
+% ?- all_subpaths_to_tree([[a,b],[a,c,e],[a,c,f],[a,d]], T).
+% T = [a-[b-[], c-[e-[], f-[]], d-[]]].
+% ~~~
 
-all_subpaths_to_tree(Lists, List, List-Trees):-
-  aggregate_all(
-    set(Tree),
+% Only the empty tree has zero subpaths.
+all_subpaths_to_tree([], []):- !.
+% The subpaths may have different lengths.
+% If one subpath is fully processed, we still need to process the rest.
+all_subpaths_to_tree([[]|Ls], Tree):- !,
+  all_subpaths_to_tree(Ls, Tree).
+% Create the (sub)trees for the given subpaths recursively.
+all_subpaths_to_tree(Ls1, Trees):-
+  % Groups paths by parent node.
+  findall(
+    H-T,
+    member([H|T], Ls1),
+    Pairs1
+  ),
+  group_pairs_by_key(Pairs1, Pairs2),
+  
+  % For each parent node, construct its subtrees.
+  findall(
+    H-Subtrees,
     (
-      member(LongerList, Lists),
-      append(List, [_], LongerList),
-      all_subpaths_to_tree(Lists, LongerList, Tree)
+      member(H-Ls2, Pairs2),
+      all_subpaths_to_tree(Ls2, Subtrees)
     ),
     Trees
   ).
+
 
 is_meta(transformation).
 
