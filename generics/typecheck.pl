@@ -4,6 +4,7 @@
     atom_to_value/3, % +Atom
                      % +Type
                      % -Value
+    is_url/1, % +Url:url
     negative_float/1, % @Term
     negative_integer/1, % @Term
     nonneg/1, % @Term
@@ -67,13 +68,15 @@ Predicates used for parsing and checking value-type conformance.
 --
 
 @author Wouter Beek
-@version 2013/01, 2013/08, 2014/01, 2014/03-2014/05
+@version 2013/01, 2013/08, 2014/01, 2014/03-2014/06
 */
 
 :- use_module(library(apply)).
+:- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 
+:- use_module(datasets(iana)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(boolean_ext)).
 
@@ -156,6 +159,16 @@ error:has_type(or(Types), Term):-
 error:has_type(list(Type), Term):-
   must_be(list, Term),
   maplist(must_be(Type), Term).
+
+
+%! is_url(+Url:url) is semidet.
+
+is_url(Url):-
+  uri_components(Url, uri_components(Scheme,_,_,_,_)),
+  nonvar(Scheme),
+  iana_uri_scheme(Scheme), !.
+is_url(Url):-
+  domain_error('URL', Url).
 
 
 %! negative_float(@Term) is semidet.

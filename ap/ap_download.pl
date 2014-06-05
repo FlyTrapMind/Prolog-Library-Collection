@@ -20,6 +20,7 @@
 
 :- use_module(ap(ap_db)).
 :- use_module(datasets(iana)).
+:- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(http(http_download)).
 :- use_module(os(dir_ext)).
@@ -33,7 +34,7 @@
 
 
 ap_download_to_directory(ApStage, ToDir, Url, Accept):-
-  check_url_validity(Url),
+  is_url(Url),
   uri_components(Url, uri_components(_,_,Path,_,_)),
   atomic_list_concat(Components1, '/', Path),
   reverse(Components1, Components2),
@@ -67,11 +68,4 @@ first_nonempty_atom([], dummy):- !.
 first_nonempty_atom([''|T], Atom):- !,
   first_nonempty_atom(T, Atom).
 first_nonempty_atom([H|_], H).
-
-check_url_validity(Url):-
-  uri_components(Url, uri_components(Scheme,_,_,_,_)),
-  nonvar(Scheme),
-  iana_uri_scheme(Scheme), !.
-check_url_validity(Url):-
-  domain_error('URL', Url).
 
