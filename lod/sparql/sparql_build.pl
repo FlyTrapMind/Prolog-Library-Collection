@@ -36,42 +36,45 @@ DCGs for constructing SPARQL queries.
 
 bgp([]) --> [].
 bgp([filter(Filter)|T]) -->
-  "FILTER ",
+  `FILTER `,
   filter(Filter),
   bgp(T).
 bgp([optional(Optional)|T]) -->
-  "  OPTIONAL {\n",
+  `  OPTIONAL {\n`,
   bgp(Optional),
-  "  }\n",
+  `  }\n`,
   bgp(T).
 bgp([rdf(S,P,O)|T]) -->
-  "  ",
+  `  `,
   term(S),
-  " ",
+  ` `,
   term(P),
-  " ",
+  ` `,
   term(O),
-  " .\n",
+  ` .\n`,
   bgp(T).
 
 default_graph(VAR) -->
   {var(VAR)}, !,
   [].
 default_graph(DefaultGraph) -->
-  "# Default graph (located at ",
-  atom(DefaultGraph),
-  ")\n".
+  `# Default graph `,
+  bracketed(round, (
+    `located at `,
+    atom(DefaultGraph)
+  )),
+  `\n`.
 
 define(inference(Regime)) -->
-  "define input:inference ",
+  `define input:inference `,
   define_inference_regime(Regime),
-  "\n".
+  `\n`.
 
 define_inference_regime(owl) -->
   quoted(atom('http://www.w3.org/2002/07/owl#')).
 
 distinct(true) -->
-  " DISTINCT".
+  ` DISTINCT`.
 distinct(false) --> [].
 
 
@@ -91,18 +94,18 @@ distinct(false) --> [].
 filter(regex(Arg1,Arg2)) -->
   filter(regex(Arg1,Arg2,[])).
 filter(regex(Arg1,Arg2,Flags)) -->
-  "REGEX(",
-    term(Arg1),
-    ",",
-    term(Arg2),
-    regex_flags(Flags),
-  ")".
+  `REGEX(`,
+  term(Arg1),
+  `,`,
+  term(Arg2),
+  regex_flags(Flags),
+  `)`.
 filter(strends(Arg1,Arg2)) -->
-  "STRENDS(",
-    term(Arg1),
-    ",",
-    term(Arg2),
-  ")".
+  `STRENDS(`,
+  term(Arg1),
+  `,`,
+  term(Arg2),
+  `)`.
 
 
 inference_regime(VAR) -->
@@ -116,7 +119,9 @@ inference_regime(Regime) -->
 % An IRI term.
 
 iri(Iri) -->
-  bracketed(angular, atom(Iri)).
+  bracketed(angular,
+    atom(Iri)
+  ).
 
 
 limit(VAR) -->
@@ -124,40 +129,40 @@ limit(VAR) -->
   [].
 limit(inf) --> !, [].
 limit(Limit) -->
-  "LIMIT ",
+  `LIMIT `,
   integer(Limit),
-  "\n".
+  `\n`.
 
 mode(select) -->
-  "SELECT".
+  `SELECT`.
 
 offset(VAR) -->
   {var(VAR)}, !,
   [].
 offset(Offset) -->
-  "OFFSET ",
+  `OFFSET `,
   integer(Offset),
-  "\n".
+  `\n`.
 
 order(VAR) -->
   {var(VAR)}, !,
   [].
 order(Criterion-Variables) -->
-  "ORDER BY ",
+  `ORDER BY `,
   order_criterion(Criterion),
   bracketed(variables(Variables)),
-  "\n".
+  `\n`.
 
 order_criterion(ascending) -->
-  "ASC".
+  `ASC`.
 
 prefix(Prefix) -->
   {xml_current_namespace(Prefix, Iri)},
-  "PREFIX ",
+  `PREFIX `,
   atom(Prefix),
-  ": ",
+  `: `,
   iri(Iri),
-  "\n".
+  `\n`.
 
 prefixes([]) --> [].
 prefixes([H|T]) -->
@@ -166,12 +171,12 @@ prefixes([H|T]) -->
 
 regex_flags([]) --> [].
 regex_flags(Flags) -->
-  ",",
+  `,`,
   quoted(regex_flags1(Flags)).
 
 regex_flags1([]) --> [].
 regex_flags1([case_insensitive|T]) -->
-  "i",
+  `i`,
   regex_flags1(T).
 
 
@@ -189,7 +194,7 @@ sparql_count(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
   prefixes(Prefixes),
   `SELECT COUNT`,
   bracketed(variable(Variable)),
-  "\n",
+  `\n`,
   where(BGPs).
 
 
@@ -259,9 +264,9 @@ sparql_formulate(
   prefixes(Prefixes),
   mode(Mode),
   distinct(Distinct),
-  " ",
+  ` `,
   variables(Variables),
-  "\n",
+  `\n`,
   where(BGPs),
   limit(Limit),
   offset(Offset),
@@ -282,10 +287,10 @@ sparql_formulate(
 %     Prefixed IRI.
 
 term(a) --> !,
-  "a".
+  `a`.
 term(at_start(String)) -->
   double_quote,
-  "^",
+  `^`,
   atom(String),
   double_quote.
 term(closure(Term,Closure)) -->
@@ -299,13 +304,13 @@ term(var(Variable)) --> !,
   variable(Variable).
 term(Prefix:Postfix) --> !,
   atom(Prefix),
-  ":",
+  `:`,
   atom(Postfix).
 
 term_closure([reflexive,transitive]) -->
-  "*".
+  `*`.
 term_closure([transitive]) -->
-  "+".
+  `+`.
 
 
 union([]) --> [].
@@ -318,28 +323,30 @@ union([H|T]) -->
 
 
 variable(Variable) -->
-  "?",
+  `?`,
   atom(Variable).
 
 variables('*') -->
-  "*".
+  `*`.
 variables([H|T]) -->
   variable(H),
   variables1(T).
 
 variables1([]) --> [].
 variables1([H|T]) -->
-  " ",
+  ` `,
   variable(H),
   variables1(T).
 
 
 where(Content) -->
   `WHERE `,
-  bracketed(curly, where_inner(Content)).
+  bracketed(curly,
+    where_inner(Content)
+  ).
 
 where_inner(Content) -->
-  line_feed,
+  `\n`,
   where_inner2(Content).
 
 where_inner2(union(L)) --> !,

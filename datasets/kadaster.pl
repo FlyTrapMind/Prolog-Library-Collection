@@ -46,7 +46,7 @@ query_kadaster(Resources):-
     ),
     Query
   ),
-  sparql_query(kadaster, Query, _VarNames, Resources).
+  sparql_query(kadaster, Query, _, Resources).
 
 query_kadaster(S, Resources):-
   phrase(
