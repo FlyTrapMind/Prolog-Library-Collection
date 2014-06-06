@@ -60,10 +60,9 @@ Support predicates that are used to implementation the XSD datatypes
 that represent date, time, and duration in a standards-compliant way.
 
 @author Wouter Beek
-@version 2013/08-2013/11, 2014/03-2014/04
+@version 2013/08-2013/11, 2014/03-2014/04, 2016/06
 */
 
-:- use_module(generics(meta_ext)).
 :- use_module(xsd(xsd_number_generic)).
 
 
@@ -175,7 +174,7 @@ daysInMonth(_Y, M, 31):-
 % ~~~
 
 newDateTime(Y1, M1, D1, H1, MM1, S1, TZ, DT):-
-  % Set the values that are used for performing the nprmalization.
+  % Set the values that are used for performing the normalization.
   default(Y1,  1,   Y2 ),
   default(M1,  1,   M2 ),
   default(D1,  1,   D2 ),
@@ -398,6 +397,16 @@ timeOnTimeline(dateTime(Y1,M1,D1,H1,MM1,S1,UTC), ToTl):-
       + 60 * MM3
       % Second.
       + S2).
+
+
+
+% HELPERS
+
+%! default(?FromValue, +DefaultValue, -ToValue) is det.
+
+default(X, Y, Y):-
+  var(X), !.
+default(X, _, X).
 
 
 %! var_or_value(+Argument, +Value, -VariableOrValue) is det.

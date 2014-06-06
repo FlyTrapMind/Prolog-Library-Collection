@@ -8,9 +8,6 @@
 % DEFAULTS
     default/2, % +Default
                % ?Value
-    default/3, % ?FromValue
-               % +DefaultValue
-               % -ToValue
     default_goal/2, % :DefaultGoal
                     % ?Value
 
@@ -61,7 +58,7 @@ Extensions to the SWI-Prolog meta predicates.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/03-2014/05
+         2014/03-2014/06
 */
 
 :- use_module(library(aggregate)).
@@ -111,8 +108,8 @@ reset_memo:-
 % DEFAULTS %
 
 %! default(+Default, ?Value) is det.
-% Returns either the given value or the default value in case there is no
-% value given.
+% Returns either the given value or the default value,
+% in case there is no value given.
 %
 % ### Example
 %
@@ -132,14 +129,22 @@ default(_, X):-
 default(X, X).
 
 
-%! default(?FromValue, +DefaultValue, -ToValue) is det.
-
-default(X, Y, Y):-
-  var(X), !.
-default(X, _, X).
-
-
 %! default_goal(:Goal, ?Value) is det.
+% Runs the given goal, whenever the given value is uninstantiated.
+% The given goal is assumed to be unary and deterministic,
+% always returning an instantiation for `Value`.
+%
+% ### Example
+%
+% The following code allows a specific start node to be given for traveral,
+% but also allows the start node to be uninstantiated, instantiating it
+% to a randomly chosen start node.
+%
+% ~~~{.pl}
+% graph_traversal(StartNode):-
+%   default_goal(random_start_node, StartNode),
+%   ...
+% ~~~
 
 default_goal(_, X):-
   nonvar(X), !.
