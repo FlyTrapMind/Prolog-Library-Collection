@@ -81,6 +81,8 @@
                % ?Whole:list
     random_sublist/2, % +List:list
                       % -Sublist:list
+    remove_sublists/2, % +Lists1:list(list)
+                       % -Lists2:list(list)
     repeating_list/3, % ?Term:term
                       % ?Repeats:nonneg
                       % ?List:list
@@ -130,7 +132,7 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12, 2014/03
+         2013/07, 2013/09, 2013/12, 2014/03, 2014/06
 */
 
 :- use_module(library(lists)).
@@ -483,6 +485,23 @@ random_sublist(L1, Length1, [X|L3]):-
   random_sublist(L2, Length2, L3).
 
 
+%! remove_sublists(+Lists1:list(list), -Lists2:list(list)) is det.
+%
+% ### Example
+%
+% ~~~{.pl}
+% ?- remove_sublists([[a],[a,b],[a,b]], Ls).
+% Ls = [[a, b], [a, b]].
+% ~~~
+
+remove_sublists(Ls1, Ls3):-
+  select(SubL, Ls1, Ls2),
+  member(L, Ls1),
+  strict_sublist(SubL, L), !,
+  remove_sublists(Ls2, Ls3).
+remove_sublists(Ls, Ls).
+
+
 %! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
 %! repeating_list(?Term:term, ?Repeats:integer, +List:list(term)) is det.
 % Returns the list of the given number of repeats of the given term.
@@ -661,13 +680,21 @@ split_list_exclusive(
 split_list_exclusive([Part | List], Split, Chunk, Chunks):-
   split_list_exclusive(List, Split, [Part | Chunk], Chunks).
 
+
+%! strict_sublist(?SubList:list, +List:list) is nondet.
+
+strict_sublist(SubList, List):-
+  sublist(SubList, List),
+  SubList \== List.
+
+
 %! sublist(?SubList:list, +List:list) is nondet.
 % Returns sublists of the given list.
 
 sublist([], []).
-sublist([H | SubT], [H | T]):-
+sublist([H|SubT], [H|T]):-
   sublist(SubT, T).
-sublist(SubT, [_H | T]):-
+sublist(SubT, [_|T]):-
   sublist(SubT, T).
 
 
@@ -732,8 +759,4 @@ sort(Options, List, Sorted):-
   ;
     Sorted = Sorted0
   ).
-
-strict_sublist(SubList, List):-
-  sublist(SubList, List),
-  SubList \== List.
 
