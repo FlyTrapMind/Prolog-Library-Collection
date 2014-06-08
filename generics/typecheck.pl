@@ -167,8 +167,6 @@ is_url(Url):-
   uri_components(Url, uri_components(Scheme,_,_,_,_)),
   nonvar(Scheme),
   iana_uri_scheme(Scheme), !.
-is_url(Url):-
-  domain_error('URL', Url).
 
 
 %! negative_float(@Term) is semidet.
