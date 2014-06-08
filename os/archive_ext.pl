@@ -19,7 +19,7 @@
 
 /** <module> Archive extraction
 
-Based on library `archive`.
+Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
 @version 2014/04, 2014/06
