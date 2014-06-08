@@ -1,15 +1,21 @@
 :- module(
   archive_ext,
   [
-    archive_extract/1, % +File:atom
-    archive_extract/2, % +Source
-                       % +Directory:atom
+    archive_extract/3, % +Source
+                       % ?Directory:atom
+                       % -EntryFiles:list(atom)
     archive_extract_directory/2, % +Directory:atom
                                  % +Options:list(nvpair)
+    archive_goal/2, % +Source
+                    % :Goal
     archive_goal/3, % +Source
                     % :Goal
                     % +Arguments:list
     archive_info/1, % +Source
+    archive_nth0_entry/4, % +Index:nonneg
+                          % +Archive:blob
+                          % -EntryName:atom
+                          % -Read:blob
     archive_tree/2, % +Source
                     % -Tree:compound
     archive_tree_coords/2 % +Source
@@ -32,13 +38,15 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(lists)).
 
 :- use_module(generics(list_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(generics(trees)).
 :- use_module(generics(typecheck)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
-:- thread_local(archive_subpath/1).
+:- thread_local(archive_entry_file/1).
+:- thread_local(archive_entry_path/1).
 
 :- meta_predicate(archive_goal(+,1)).
 :- meta_predicate(archive_goal(+,2,+)).
@@ -47,27 +55,20 @@ Extensions to SWI-Prolog's library archive.
 
 
 
-%! archive_extract(+File:atom) is semidet.
-% Extracts the given file into its own directory.
-%
-% @throws type_error When `Source` is neither an absolute file name nor a URL.
-% @throws instantiation_error When File is a variable.
-
-archive_extract(File):-
-  is_absolute_file_name(File), !,
-  file_directory_name(File, Dir),
-  archive_extract(File, Dir).
-archive_extract(File):-
-  type_error(file, File).
-
-%! archive_extract(+Source, +Directory:atom) is semidet.
+%! archive_extract(+Source, +Directory:atom, -EntryFiles:list(atom)) is det.
 % Extracts the given file into the given directory.
 %
 % @throws type_error When `Source` is neither an absolute file name nor a URL.
 % @throws instantiation_error When File is a variable.
 
-archive_extract(Source, Dir):-
-  archive_goal(Source, archive_extract0, Dir).
+archive_extract(Source, Dir, EntryFiles):-
+  default_goal(file_directory_name(File), Dir),
+  archive_goal(Source, archive_extract0, Dir),
+  findall(
+    EntryFile,
+    retract(archive_entry_file(EntryFile)),
+    EntryFiles
+  ).
 
 archive_extract0(Archive, Dir):-
   repeat,
@@ -75,11 +76,12 @@ archive_extract0(Archive, Dir):-
     archive_next_header(Archive, RelativeFile)
   ->
     setup_call_cleanup(
-      archive_open_entry(Archive, Stream),
+      archive_open_entry(Archive, Read),
       (
         relative_file_path(File, Dir, RelativeFile),
-        create_file_directory(File),
-        file_from_stream(File, Stream),
+        assert(archive_entry_file(RelativeFile)),
+        create_file_directory(EntryFile),
+        file_from_stream(File, Read),
         print_message(informational, archive_extracted(File))
       ),
       close(Stream)
@@ -112,36 +114,42 @@ archive_extract_directory(Dir, Options):-
 % @throws type_error When `Source` is neither an absolute file name nor a URL.
 % @throws instantiation_error When File is a variable.
 
+archive_goal(Read, Goal):-
+  is_stream(Read), !,
+  archive_goal0(Read, Goal).
 archive_goal(File, Goal):-
   is_absolute_file_name(File), !,
   setup_call_cleanup(
-    open(File, read, Stream),
-    archive_goal0(Stream, Goal),
-    close(Stream)
+    open(File, read, Read),
+    archive_goal0(Read, Goal),
+    close(Read)
   ).
 archive_goal(Url, Goal):-
   is_url(Url), !,
   setup_call_cleanup(
-    http_open(Url, Stream, []),
-    archive_goal0(Stream, Goal),
-    close(Stream)
+    http_open(Url, Read, []),
+    archive_goal0(Read, Goal),
+    close(Read)
   ).
 archive_goal(Source, _):-
   type_error(file_or_url, Source).
 
+archive_goal(Read, Goal, Arg1):-
+  is_stream(Read), !,
+  archive_goal0(Read, Goal, Arg1).
 archive_goal(File, Goal, Arg1):-
   is_absolute_file_name(File), !,
   setup_call_cleanup(
-    open(File, read, Stream),
-    archive_goal0(Stream, Goal, Arg1),
-    close(Stream)
+    open(File, read, Read),
+    archive_goal0(Read, Goal, Arg1),
+    close(Read)
   ).
 archive_goal(Url, Goal, Arg1):-
   is_url(Url), !,
   setup_call_cleanup(
-    http_open(Url, Stream, []),
-    archive_goal0(Stream, Goal, Arg1),
-    close(Stream)
+    http_open(Url, Read, []),
+    archive_goal0(Read, Goal, Arg1),
+    close(Read)
   ).
 archive_goal(Source, _, _):-
   type_error(file_or_url, Source).
@@ -238,6 +246,22 @@ archive_info0(Archive, Indent1):-
   ).
 
 
+%! archive_nth0_entry(
+%!   +Index:nonneg,
+%!   +Archive:blob,
+%!   -EntryName:atom,
+%!   -Read:blob
+%! ) is det.
+
+archive_nth0_entry(0, Archive, EntryName, Read):- !,
+  archive_next_header(Archive, EntryName),
+  archive_open_entry(Archive, Read).
+archive_nth0_entry(Index1, Archive, EntryName, Read):-
+  archive_next_header(Archive, _),
+  succ(Index2, Index1),
+  archive_nth0_entry(Index2, Archive, EntryName, Read).
+
+
 %! archive_tree(+Source, -Tree:compound) is det.
 %
 % ### Example
@@ -262,7 +286,7 @@ archive_subpaths(Source, Subpaths):-
   archive_goal(Source, archive_assert_subpaths, [Source]),
   findall(
     Subpath,
-    retract(archive_subpath(Subpath)),
+    retract(archive_entry_path(Subpath)),
     Subpaths
   ).
 
@@ -274,7 +298,7 @@ archive_assert_subpaths(Archive, T):-
   ->
     L = [EntryName|T],
     reverse(L, Subpath),
-    assert(archive_subpath(Subpath)),
+    assert(archive_entry_path(Subpath)),
     % Recurse archive entries.
     setup_call_cleanup(
       archive_open_entry(Archive, Stream2),

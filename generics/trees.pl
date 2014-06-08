@@ -175,6 +175,7 @@ tree_depth(_, 0).
 
 %! tree_to_leaf_coord(+Tree:compound, -Coord:list(nonneg)) is nondet.
 
+tree_to_leaf_coord([], []):- !.
 tree_to_leaf_coord(_-[], []):- !.
 tree_to_leaf_coord(_-Children, [Index|Coord]):-
   nth0(Index, Children, Child),
