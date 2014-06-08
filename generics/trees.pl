@@ -12,6 +12,8 @@
                              % -Tree:tree
     tree_depth/2, % +Tree:compound
                   % -Depth:nonneg
+    tree_to_leaf_coord/2, % +Tree:compound
+                          % -Coord:list(nonneg)
     tree_to_ugraph/2, % +Tree:compound
                       % -UGraph:ugraph
     tree_to_vertices_and_edges/3 % +Tree:compound,
@@ -64,14 +66,18 @@
 % T = [a-[b-[], c-[e-[], f-[]], d-[]]].
 % ~~~
 
+all_subpaths_to_tree(Subpaths, Tree):-
+  all_subpaths_to_tree0(Subpaths, [Tree]), !.
+all_subpaths_to_tree(_, []).
+
 % Only the empty tree has zero subpaths.
-all_subpaths_to_tree([], []):- !.
+all_subpaths_to_tree0([], []):- !.
 % The subpaths may have different lengths.
 % If one subpath is fully processed, we still need to process the rest.
-all_subpaths_to_tree([[]|Ls], Tree):- !,
+all_subpaths_to_tree0([[]|Ls], Tree):- !,
   all_subpaths_to_tree(Ls, Tree).
 % Create the (sub)trees for the given subpaths recursively.
-all_subpaths_to_tree(Ls1, Trees):-
+all_subpaths_to_tree0(Ls1, Trees):-
   % Groups paths by parent node.
   findall(
     H-T,
@@ -79,13 +85,13 @@ all_subpaths_to_tree(Ls1, Trees):-
     Pairs1
   ),
   group_pairs_by_key(Pairs1, Pairs2),
-  
+
   % For each parent node, construct its subtrees.
   findall(
     H-Subtrees,
     (
       member(H-Ls2, Pairs2),
-      all_subpaths_to_tree(Ls2, Subtrees)
+      all_subpaths_to_tree0(Ls2, Subtrees)
     ),
     Trees
   ).
@@ -167,9 +173,18 @@ tree_depth(Tree, Depth2):-
 tree_depth(_, 0).
 
 
+%! tree_to_leaf_coord(+Tree:compound, -Coord:list(nonneg)) is nondet.
+
+tree_to_leaf_coord(_-[], []):- !.
+tree_to_leaf_coord(_-Children, [Index|Coord]):-
+  nth0(Index, Children, Child),
+  tree_to_leaf_coord(Child, Coord).
+
+
 tree_to_ugraph(T, G):-
   tree_to_vertices_and_edges(T, Vs, Es),
   ugraph_vertices_edges_to_ugraph(Vs, Es, G).
+
 
 %! tree_to_vertices_and_edges(
 %!   +Tree:compound,
