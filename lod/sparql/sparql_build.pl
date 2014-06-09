@@ -6,16 +6,20 @@
                      % +Prefixes:list(atom)
                      % +Variable:atom
                      % +BGPs:or([compound,list(compound)])
-    sparql_formulate//10 % ?Regime:oneof([owl])
-                         % ?DefaultGraph:iri
-                         % +Prefixes:list(atom)
-                         % +Mode:oneof([select])
-                         % +Distinct:boolean
-                         % +Variables:list(atom)
-                         % +BGPs:or([compound,list(compound)])
-                         % ?Limit:or([nonneg,oneof([inf])])
-                         % ?Offset:nonneg
-                         % ?Order:pair(oneof([asc]),list(atom))
+    sparql_formulate//10, % ?Regime:oneof([owl])
+                          % ?DefaultGraph:iri
+                          % +Prefixes:list(atom)
+                          % +Mode:oneof([ask,select])
+                          % +Distinct:boolean
+                          % +Variables:list(atom)
+                          % +BGPs:or([compound,list(compound)])
+                          % ?Limit:or([nonneg,oneof([inf])])
+                          % ?Offset:nonneg
+                          % ?Order:pair(oneof([asc]),list(atom))
+    sparql_formulate_ask//4 % ?Regime:oneof([owl])
+                             % ?DefaultGraph:iri
+                             % +Prefixes:list(atom)
+                             % +BGPs:or([compound,list(compound)])
   ]
 ).
 
@@ -133,6 +137,8 @@ limit(Limit) -->
   integer(Limit),
   `\n`.
 
+mode(ask) -->
+  `ASK`.
 mode(select) -->
   `SELECT`.
 
@@ -169,6 +175,22 @@ prefixes([H|T]) -->
   prefix(H),
   prefixes(T).
 
+
+%! query_form(+Mode:oneof([ask,select]), ?Distinct:boolean, ?Variables:list)// .
+
+query_form(Mode, _, _) -->
+  {Mode == ask}, !,
+  mode(Mode),
+  `\n`.
+query_form(Mode, Distinct, Variables) -->
+  {Mode == select}, !,
+  mode(Mode),
+  distinct(Distinct),
+  ` `,
+  variables(Variables),
+  `\n`.
+
+
 regex_flags([]) --> [].
 regex_flags(Flags) -->
   `,`,
@@ -202,7 +224,7 @@ sparql_count(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
 %!   +Regime:oneof([owl]),
 %!   +DefaultGraph:iri,
 %!   +Prefixes:list(atom),
-%!   +Mode:oneof([select]),
+%!   +Mode:oneof([ask,select]),
 %!   +Distinct:boolean,
 %!   +Variables:list(atom),
 %!   +BGP:or([compound,list(compound)]),
@@ -262,15 +284,22 @@ sparql_formulate(
   inference_regime(Regime),
   default_graph(DefaultGraph),
   prefixes(Prefixes),
-  mode(Mode),
-  distinct(Distinct),
-  ` `,
-  variables(Variables),
-  `\n`,
+  query_form(Mode, Distinct, Variables),
   where(BGPs),
   limit(Limit),
   offset(Offset),
   order(Order).
+
+
+%! sparql_formulate_ask(
+%!   ?Regime:oneof([owl]),
+%!   ?DefaultGraph:iri,
+%!   +Prefixes:list(atom),
+%!   +BGPs:or([compound,list(compound)])
+%! )// .
+
+sparql_formulate_ask(Regime, DefaultGraph, Prefixes, Bgps) -->
+  sparql_formulate(Regime, DefaultGraph, Prefixes, ask, _, _, Bgps, _, _, _).
 
 
 %! term(+Term)// is det.

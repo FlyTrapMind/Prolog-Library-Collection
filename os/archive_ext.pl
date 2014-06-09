@@ -1,9 +1,9 @@
 :- module(
   archive_ext,
   [
-    archive_extract/3, % +Source
-                       % ?Directory:atom
-                       % -EntryFiles:list(atom)
+    archive_extract2/3, % +Source
+                        % ?Directory:atom
+                        % -EntryPairs:list(pair(atom,list(nvpair)))
     archive_extract_directory/2, % +Directory:atom
                                  % +Options:list(nvpair)
     archive_goal/2, % +Source
@@ -36,6 +36,7 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(error)).
 :- use_module(library(http/http_open)).
 :- use_module(library(lists)).
+:- use_module(library(pairs)).
 
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
@@ -45,8 +46,8 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
-:- thread_local(archive_entry_file/1).
-:- thread_local(archive_entry_path/1).
+:- thread_local(entry_path/1).
+:- thread_local(entry_property/2).
 
 :- meta_predicate(archive_goal(+,1)).
 :- meta_predicate(archive_goal(+,2,+)).
@@ -55,36 +56,44 @@ Extensions to SWI-Prolog's library archive.
 
 
 
-%! archive_extract(+Source, +Directory:atom, -EntryFiles:list(atom)) is det.
+%! archive_extract2(
+%!   +Source,
+%!   +Directory:atom,
+%!   -EntryPairs:list(pair(atom,list(nvpair)))
+%! ) is det.
 % Extracts the given file into the given directory.
 %
 % @throws type_error When `Source` is neither an absolute file name nor a URL.
 % @throws instantiation_error When File is a variable.
 
-archive_extract(Source, Dir, EntryFiles):-
-  default_goal(file_directory_name(File), Dir),
+archive_extract2(Source, Dir, EntryPairs2):-
+  default_goal(file_directory_name(Source), Dir),
   archive_goal(Source, archive_extract0, Dir),
   findall(
-    EntryFile,
-    retract(archive_entry_file(EntryFile)),
-    EntryFiles
-  ).
+    EntryName-EntryProperty,
+    retract(entry_property(EntryName, EntryProperty)),
+    EntryPairs1
+  ),
+  group_pairs_by_key(EntryPairs1, EntryPairs2).
 
 archive_extract0(Archive, Dir):-
   repeat,
   (
-    archive_next_header(Archive, RelativeFile)
+    archive_next_header(Archive, RelativeFile),
+    forall(
+      archive_header_property(Archive, Property),
+      assert(entry_property(RelativeFile, Property))
+    )
   ->
     setup_call_cleanup(
       archive_open_entry(Archive, Read),
       (
         relative_file_path(File, Dir, RelativeFile),
-        assert(archive_entry_file(RelativeFile)),
-        create_file_directory(EntryFile),
+        create_file_directory(File),
         file_from_stream(File, Read),
         print_message(informational, archive_extracted(File))
       ),
-      close(Stream)
+      close(Read)
     ),
     fail
   ; !,
@@ -104,7 +113,10 @@ archive_extract0(Archive, Dir):-
 
 archive_extract_directory(Dir, Options):-
   directory_files(Options, Dir, Files),
-  maplist(archive_extract, Files).
+  forall(
+    member(File, Files),
+    archive_extract2(File, Dir, Options)
+  ).
 
 
 %! archive_goal(+Source:atom, :Goal) is det.
@@ -286,7 +298,7 @@ archive_subpaths(Source, Subpaths):-
   archive_goal(Source, archive_assert_subpaths, [Source]),
   findall(
     Subpath,
-    retract(archive_entry_path(Subpath)),
+    retract(entry_path(Subpath)),
     Subpaths
   ).
 
@@ -298,7 +310,7 @@ archive_assert_subpaths(Archive, T):-
   ->
     L = [EntryName|T],
     reverse(L, Subpath),
-    assert(archive_entry_path(Subpath)),
+    assert(entry_path(Subpath)),
     % Recurse archive entries.
     setup_call_cleanup(
       archive_open_entry(Archive, Stream2),
