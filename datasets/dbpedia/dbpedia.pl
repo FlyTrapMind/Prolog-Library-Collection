@@ -32,8 +32,10 @@ WHERE
 ~~~
 
 @author Wouter Beek
-@version 2013/03-2013/05, 2013/08, 2013/12-2014/01
+@version 2013/03-2013/05, 2013/08, 2013/12-2014/01, 2014/06
 */
+
+:- use_module(library(uri)).
 
 :- use_module(generics(db_ext)).
 :- use_module(sparql(sparql_db)).
@@ -41,29 +43,25 @@ WHERE
 
 :- db_add_novel(user:prolog_file_type(ttl, turtle)).
 
+:- initialization(init_dbpedia).
 
 
-% XML and SPARQL namespace prefixes that often occur in DBpedia.
 
-:- xml_register_namespace(dbo, 'http://dbpedia.org/ontology/').
+%! init_dbpedia is det.
+% Registers XML and SPARQL namespace prefixes that often occur in DBpedia.
 
-:- xml_register_namespace(dt, 'http://dbpedia.org/datatype/').
-
-:- xml_register_namespace(dbp, 'http://dbpedia.org/property/').
-
-:- xml_register_namespace(dbpedia, 'http://dbpedia.org/resource/').
-:- sparql_register_remote(dbpedia, 'dbpedia.org', default, '/sparql').
-
-:- xml_register_namespace(fb, 'http://rdf.freebase.com/ns/').
-
-:- xml_register_namespace(foaf, 'http://xmlns.com/foaf/0.1/').
-
-:- xml_register_namespace('powder-s', 'http://www.w3.org/2007/05/powder-s#').
-
-:- xml_register_namespace(rdfs, 'http://www.w3.org/2000/01/rdf-schema#').
-
-:- xml_register_namespace(umbel, 'http://umbel.org/umbel/rc/').
-
-:- xml_register_namespace(yago, 'http://yago-knowledge.org/resource/').
-
+init_dbpedia:-
+  uri_components(Url, uri_components(http,'dbpedia.org','/sparql',_,_)),
+  sparql_register_endpoint(dbpedia, query, Url),
+  
+  xml_register_namespace(dbo,        'http://dbpedia.org/ontology/'),
+  xml_register_namespace(dt,         'http://dbpedia.org/datatype/'),
+  xml_register_namespace(dbp,        'http://dbpedia.org/property/'),
+  xml_register_namespace(dbpedia,    'http://dbpedia.org/resource/'),
+  xml_register_namespace(fb,         'http://rdf.freebase.com/ns/'),
+  xml_register_namespace(foaf,       'http://xmlns.com/foaf/0.1/'),
+  xml_register_namespace('powder-s', 'http://www.w3.org/2007/05/powder-s#'),
+  xml_register_namespace(rdfs,       'http://www.w3.org/2000/01/rdf-schema#'),
+  xml_register_namespace(umbel,      'http://umbel.org/umbel/rc/'),
+  xml_register_namespace(yago,       'http://yago-knowledge.org/resource/').
 

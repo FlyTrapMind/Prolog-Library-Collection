@@ -1,21 +1,19 @@
 :- module(
   sparql_db,
   [
-    sparql_register_remote/4, % +SparqlRemote:atom
-                              % +Server:atom
-                              % +Port:or([oneof([default]),nonneg])
-                              % +Path:atom
-    sparql_current_remote/4, % ?SparqlRemote:atom
-                             % ?Server:atom
-                             % ?Port:or([oneof([default]),nonneg])
-                             % ?Path:atom
-    sparql_remove_remote/1, % +SparqlRemote:atom
-    sparql_current_remote_domain/2, % ?SparqlRemote:atom
-                                    % ?Domain:atom
-    sparql_register_remote_domain/2, % +SparqlRemote:atom
-                                     % +Domain:atom
-    sparql_remote_domain/2 % +SparqlRemote:atom
-                           % +Domain:atom
+    sparql_endpoint/3, % ?Endpoint:atom
+                       % ?Feature:oneof([query,update])
+                       % ?Location:url
+    sparql_prefix/2, % ?Endpoint:atom
+                     % ?Prefix:url
+    sparql_register_endpoint/2, % +Endpoint:atom
+                                % +Location:url
+    sparql_register_endpoint/3, % +Endpoint:atom
+                                % +Feature:oneof([query,update])
+                                % +Location:url
+    sparql_remove_endpoint/1, % +SparqlRemote:atom
+    sparql_register_prefix/2 % +Endpoint:atom
+                             % +Prefix:url
   ]
 ).
 
@@ -25,10 +23,10 @@ Persistency store for SPARQL-related information.
 
 @author Wouter Beek
 @version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01,
-         2014/04
+         2014/04, 2014/06
 */
 
-:- use_module(library(debug)).
+:- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
@@ -38,56 +36,50 @@ Persistency store for SPARQL-related information.
 :- use_module(os(file_ext)).
 :- use_module(xml(xml_namespace)).
 
-%! sparql_remote(
-%!   ?Remote:atom,
-%!   ?Server:atom,
-%!   ?Port:atomic,
-%!   ?Path:atom
-%! ) is nondet.
+%! sparql_endpoint(?Endpoint:atom, ?Feature:oneof([query,update]), ?Url:url) is nondet.
 
-:- dynamic(sparql_remote/4).
-:- dynamic(sparql_remote_domain/2).
+:- dynamic(sparql_endpoint/3).
+
+:- dynamic(sparql_prefix0/1).
 
 
 
 % SPARQL remote
 
-sparql_register_remote(Remote, Domain, Port, Path):-
-  sparql_current_remote(Remote, Domain, Port, Path), !,
-  debug(sparql_db, 'SPARQL remote ~w is already set. No changes.', [Remote]).
-sparql_register_remote(Remote, _, _, _):-
-  sparql_current_remote(Remote, _, _, _), !,
-  debug(
-    sparql_db,
-    'SPARQL remote ~w is already set DIFFERENTLY. First remove.',
-    [Remote]
-  ).
-sparql_register_remote(Remote, Domain, Port, Path):-
-  db_add_novel(sparql_remote(Remote, Domain, Port, Path)).
+sparql_prefix(Endpoint, Prefix):-
+  sparql_prefix0(Endpoint, Prefix).
+sparql_prefix(Endpoint, Prefix):-
+  sparql_endpoint(Endpoint, query, Location),
+  uri_components(Location, uri_components(Scheme,Authortity,_,_,_)),
+  uri_components(Prefix, uri_components(Scheme,Authortity,_,_,_)).
 
+sparql_register_endpoint(Endpoint, Location):-
+  sparql_register_endpoint(Endpoint, query, Location),
+  sparql_register_endpoint(Endpoint, update, Location).
 
-sparql_current_remote(Remote, Domain, Port, Path):-
-  sparql_remote(Remote, Domain, Port, Path).
+%sparql_register_endpoint(Endpoint, Feature, _):-
+%  sparql_endpoint(Endpoint, Feature, _), !,
+%  print_message(warning, endpoint_already_set(Endpoint,Feature)).
+%  ['The ~w location for enpoint ~w has already set.'-[Endpoint,Feature]].
+sparql_register_endpoint(Endpoint, Feature, Location):-
+  db_add_novel(sparql_endpoint(Endpoint, Feature, Location)).
 
+sparql_remove_endpoint(Endpoint):-
+  maplist(sparql_remove_endpoint(Endpoint), [query,update]).
 
-sparql_remove_remote(Remote):-
-  once(sparql_remote(Remote, Domain, Port, Path)), !,
-  retractall(sparql_remote(Remote, Domain, Port, Path)).
-sparql_remove_remote(Remote):-
-  existence_error('SPARQL remote', Remote).
+sparql_remove_endpoint(Endpoint, Feature):-
+  once(sparql_endpoint(Endpoint, Feature, Location)), !,
+  retractall(sparql_endpoint(Endpoint, Feature, Location)).
+sparql_remove_endpoint(Endpoint, Feature):-
+  existence_error(sparql_endpoint, Endpoint-Feature).
 
-sparql_current_remote_domain(SparqlRemote, Domain):-
-  sparql_current_remote(SparqlRemote, Domain, _, _).
-sparql_current_remote_domain(SparqlRemote, Domain):-
-  sparql_remote_domain(SparqlRemote, Domain).
-
-sparql_register_remote_domain(SparqlRemote, Domain):-
-  sparql_current_remote(SparqlRemote, _, _, _),
-  db_add_novel(sparql_remote_domain(SparqlRemote, Domain)).
+sparql_register_prefix(Endpoint, Prefix):-
+  sparql_endpoint(Endpoint, _, _),
+  assert(sparql_prefix0(Endpoint, Prefix)).
 
 
 
-% REGISTRATIONS
+% Registrations
 
 % HTML
 :- db_add_novel(user:prolog_file_type(htm,  html)).
@@ -102,8 +94,11 @@ sparql_register_remote_domain(SparqlRemote, Domain):-
 
 
 % DBpedia
-:- sparql_register_remote(dbpedia, 'dbpedia.org', default, '/sparql').
-:- sparql_register_remote('live.dbpedia', 'live.dbpedia.org', default, '/sparql').
+:-
+  uri_components(Url1, uri_components(http,'dbpedia.org','/sparql',_,_)),
+  sparql_register_endpoint(dbpedia, query, Url1),
+  uri_components(Url2, uri_components(http,'live.dbpedia.org','/sparql',_,_)),
+  sparql_register_endpoint(dbpedia, query, Url2).
 :- lod_register_header(dbpedia, 'Accept', 'application/rdf+xml').
 :- lod_register_location(dbpedia, 'http://dbpedia.org/resource/').
 
@@ -125,24 +120,25 @@ dbpedia_localizations:-
   ).
 
 dbpedia_register(LangTag):-
-  atomic_list_concat([LangTag,dbpedia,org], '.', Domain),
-  sparql_register_remote_domain(dbpedia, Domain),
+  % The generic DBpedia SPARQL endpoint can be used to query
+  % for any of the natural languages.
+  atomic_list_concat([LangTag,dbpedia,org], '.', Authortity),
+  uri_components(Prefix, uri_components(http,Authority,_,_,_)),
+  sparql_register_prefix(dbpedia, Prefix),
   
-  atomic_list_concat([LangTag,dbpedia], '.', Remote),
-  sparql_register_remote(Remote, Domain, default, '/sparql'),
+  % Some languages have their own SPARQL endpoint.
+  atomic_list_concat([LangTag,dbpedia], '.', Endpoint),
+  uri_components(Url, uri_components(http,Authority,'/sparql',_,_)),
+  sparql_register_endpoint(Endpoint, query, Url),
   
+  % XML namespace for resources.
   atomic_list_concat([LangTag,dbp], '.', ResourceNamespace),
-  uri_components(
-    ResourcePrefix,
-    uri_components(http,Domain,'/resource/',_,_)
-  ),
+  uri_components(ResourcePrefix, uri_components(http,Authortity,'/resource/',_,_)),
   xml_register_namespace(ResourceNamespace, ResourcePrefix),
   
+  % XML namespace for properties.
   atomic_list_concat([LangTag,dbpprop], '.', PropertyNamespace),
-  uri_components(
-    PropertyPrefix,
-    uri_components(http,Domain,'/property/',_,_)
-  ),
+  uri_components(PropertyPrefix, uri_components(http,Authortity,'/property/',_,_)),
   xml_register_namespace(PropertyNamespace, PropertyPrefix).
 
 %! dbpedia_language_tag(+LanguageTag:atom) is semidet.

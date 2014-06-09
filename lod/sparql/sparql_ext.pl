@@ -1,18 +1,18 @@
 :- module(
   sparql_ext,
   [
-    sparql_query/4, % +Remote:atom
+    sparql_query/4, % +Endpoint:atom
                     % +Query:atom
                     % -VarNames:list
                     % -Results:list
-    sparql_query/5, % +Remote:atom
+    sparql_query/5, % +Endpoint:atom
                     % +Query:atom
                     % -VarNames:list
                     % -Results:list
                     % +Attempts:or([oneof([inf]),positive_integer])
-    sparql_query_sameas/3 % +Remote:atom
-                            % +Resource:iri
-                            % -IdenticalResources:ordset
+    sparql_query_sameas/3 % +Endpoint:atom
+                          % +Resource:iri
+                          % -IdenticalResources:ordset
   ]
 ).
 
@@ -98,46 +98,41 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 @see SPARQL 1.1 Recommendation 2013/03
      http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
 @version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/01
-         2014/04
+         2014/04, 2014/06
 */
 
-:- use_module(generics(codes_ext)).
-:- use_module(generics(row_ext)).
-:- use_module(http(http_goal)).
 :- use_module(library(debug)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/sparql_client)).
+:- use_module(library(uri)).
+
+:- use_module(generics(codes_ext)).
+:- use_module(generics(row_ext)).
+:- use_module(http(http_goal)).
 :- use_module(math(math_ext)).
-:- use_module(sparql(sparql_build)).
+:- use_module(sparql(sparql_api)).
 :- use_module(sparql(sparql_db)).
 :- use_module(xml(xml_namespace)).
 
 % OWL
 :- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
 
-:- if(predicate_property(user:debug_mode, visible)).
-:- initialization(load_debug).
-load_debug:-
-  once(http_server_property(Port, _)),
-  sparql_register_remote(localhost, localhost, Port, '/sparql/').
-:- endif.
-
 
 
 %! sparql_query(
-%!   +Remote:atom,
+%!   +Endpoint:atom,
 %!   +Query:atom,
 %!   -VarNames:list,
 %!   -Results:list
 %! ) is det.
 
-sparql_query(Remote, Query, VarNames, Results):-
-  sparql_query(Remote, Query, VarNames, Results, 1).
+sparql_query(Endpoint, Query, VarNames, Results):-
+  sparql_query(Endpoint, Query, VarNames, Results, 1).
 
 %! sparql_query(
-%!   +Remote:atom,
+%!   +Endpoint:atom,
 %!   +Query:atom,
 %!   -VarNames:list,
 %!   -Results:list,
@@ -147,42 +142,44 @@ sparql_query(Remote, Query, VarNames, Results):-
 %        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
 
 sparql_query(_, _, [], [], 0):- !.
-sparql_query(Remote, Query, VarNames, Results, Attempts):-
+sparql_query(Endpoint, Query, VarNames, Results, Attempts):-
   catch(
-    sparql_query_no_catch(Remote, Query, VarNames, Results),
+    sparql_query_no_catch(Endpoint, Query, VarNames, Results),
     E,
-    http_catcher(E, Remote, Query, VarNames, Results, Attempts)
+    http_catcher(E, Endpoint, Query, VarNames, Results, Attempts)
   ).
 
-http_catcher(exit, _, _, _, _).
+http_catcher(exit, _, _, _, _, _).
 http_catcher(E, _, _, _, _, 1):- !,
   throw(E).
-http_catcher(_, Remote, Query, VarNames, Results, Attempts1):-
+http_catcher(_, Endpoint, Query, VarNames, Results, Attempts1):-
   count_down(Attempts1, Attempts2),
-  sparql_query(Remote, Query, VarNames, Results, Attempts2).
+  sparql_query(Endpoint, Query, VarNames, Results, Attempts2).
 
 
-sparql_query_no_catch(Remote, Query1, VarNames, Results):-
+sparql_query_no_catch(Endpoint, Query1, VarNames, Results):-
   atomic_codes(Query2, Query1),
   debug(sparql_ext, '~w', [Query2]),
-  once(sparql_current_remote(Remote, Host, Port, Path)),
-  O1 = [host(Host),timeout(1),path(Path),variable_names(VarNames)],
+  once(sparql_endpoint(Endpoint, query, Location)),
+  uri_components(Location, uri_component(_,Authority,Path,_,_)),
+  uri_authority_components(Authority, uri_authority_components(_,_,Host,Port)),
+  Options1 = [host(Host),timeout(1),path(Path),variable_names(VarNames)],
   (
-    Port == default
+    nonvar(Port)
   ->
-    O2 = O1
+    merge_options([port(Port)], Options1, Options2)
   ;
-    merge_options([port(Port)], O1, O2)
+    Options2 = Options1
   ),
   findall(
     Result,
-    sparql_query(Query2, Result, O2),
+    sparql_query(Query2, Result, Options2),
     Results
   ).
 
 
 %! sparql_query_sameas(
-%!   +Remote:atom,
+%!   +Endpoint:atom,
 %!   +Resource:uri,
 %!   -IdenticalResources:ordset
 %! ) is det.
@@ -190,23 +187,9 @@ sparql_query_no_catch(Remote, Query1, VarNames, Results):-
 % @arg Resource The URI of a resource.
 % @arg IdenticalResources An ordered set of identical resources.
 
-sparql_query_sameas(Remote, Resource, Resources2):-
-  phrase(
-    sparql_formulate(
-      owl,
-      _,
-      [owl],
-      select,
-      true,
-      [x],
-      [rdf(iri(Resource), owl:sameAs, var(x))],
-      inf,
-      _,
-      _
-    ),
-    Query
-  ),
-  sparql_query(Remote, Query, _, Rows),
+sparql_query_sameas(Endpoint, Resource, Resources2):-
+  sparql_select(Endpoint, owl, [owl], true, [x],
+      [rdf(iri(Resource),owl:sameAs,var(x))], inf, _, _, Rows),
   rows_to_resources(Rows, Resources1),
   ord_add_element(Resources1, Resource, Resources2).
 

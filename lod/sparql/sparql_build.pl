@@ -335,6 +335,9 @@ term(Prefix:Postfix) --> !,
   atom(Prefix),
   `:`,
   atom(Postfix).
+% Assume IRI.
+term(Iri) -->
+  term(iri(Iri)).
 
 term_closure([reflexive,transitive]) -->
   `*`.
@@ -380,6 +383,10 @@ where_inner(Content) -->
 
 where_inner2(union(L)) --> !,
   union(L).
-where_inner2(BGP) -->
-  bgp(BGP).
+where_inner2(not(Bgp)) -->
+  `  FILTER NOT EXISTS {\n`,
+  bgp(Bgp),
+  `  }`.
+where_inner2(Bgp) -->
+  bgp(Bgp).
 

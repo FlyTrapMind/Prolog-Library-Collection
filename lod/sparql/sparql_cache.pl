@@ -2,10 +2,10 @@
   sparql_cache,
   [
     sparql_cache/2, % +Resource:or([bnode,iri,literal])
-                      % +Graph:atom
+                    % +Graph:atom
     sparql_cache/3 % +Resource:or([bnode,iri,literal])
-                     % -Resources:ordset(or([bnode,iri,literal]))
-                     % -Propositions:ordset(list)
+                   % -Resources:ordset(or([bnode,iri,literal]))
+                   % -Propositions:ordset(list)
   ]
 ).
 
@@ -14,18 +14,18 @@
 Locally caches triples that are relevant for specific resources.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/02, 2014/06
 */
 
-:- use_module(generics(row_ext)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
-:- use_module(sparql(sparql_build)).
+
+:- use_module(generics(row_ext)).
+:- use_module(sparql(sparql_api)).
 :- use_module(sparql(sparql_db)).
-:- use_module(sparql(sparql_ext)).
 
 :- debug(sparql_cache).
 
@@ -69,24 +69,14 @@ sparql_cache(Resource, [], []):-
 
 % IRI with registered SPARQL endpoint.
 sparql_cache(Resource, Resources, Propositions):-
-  uri_components(Resource, uri_components(_, Domain, _, _, _)),
-  sparql_current_remote_domain(Remote, Domain), !,
-  phrase(
-    sparql_formulate(
-      _,
-      _,
-      [],
-      select,
-      true,
-      [p,o],
-      [rdf(iri(Resource), var(p), var(o))],
-      inf,
-      _,
-      _
-    ),
-    Query
-  ),
-  sparql_query(Remote, Query, _VarNames, Rows),
+  % Find an endpoint for the given resource.
+  uri_components(Resource, uri_components(Scheme,Authority,_,_,_)),
+  uri_components(Prefix, uri_components(Scheme,Authority,_,_,_)),
+  sparql_prefix(Endpoint, Prefix),
+  
+  % Query.
+  sparql_select(Endpoint, _, [], true, [p,o],
+      [rdf(iri(Resource), var(p), var(o))], inf, _, _, Rows),
 
   % Conversion
   rows_to_propositions([Resource], Rows, Propositions),
