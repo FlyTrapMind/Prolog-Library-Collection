@@ -19,7 +19,6 @@
 :- use_module(library(uri)).
 
 :- use_module(ap(ap_db)).
-:- use_module(datasets(iana)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(http(http_download)).

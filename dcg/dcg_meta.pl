@@ -142,8 +142,8 @@ dcg_call(Dcg1, A1, A2, A3, A4, A5, X, Y):-
   call(Dcg2, A1, A2, A3, A4, A5, X, Y).
 
 
-%! dcg_call_s(:Dcg)//
-%! dcg_call_s(:Dcg, +Args1:list, ...)// .
+%! dcg_call_s(:Dcg)// .
+%! dcg_call_s(:Dcg, +Args1:list)// .
 % @see Variants of dcg_call//[1-6], where `Dcg` is called directly
 %      (i.e., not copied). This means that multiple calls of the same `Dcg`
 %      share uninstantiated variables.
@@ -167,7 +167,7 @@ dcg_call_s(Dcg, A1, A2, A3, A4, A5, X, Y):-
   call(Dcg, A1, A2, A3, A4, A5, X, Y).
 
 
-%! dcg_maplist(:Dcg, +Args1:list, ...)// .
+%! dcg_maplist(:Dcg, +Args1:list)// .
 % @see Variants of maplist/[1-5] for DCGs.
 
 dcg_maplist(_, []) --> [].

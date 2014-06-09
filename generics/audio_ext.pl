@@ -26,7 +26,6 @@ In the furture services like Google translate
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
 
-:- use_module(datasets(iana)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).

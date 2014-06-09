@@ -43,6 +43,11 @@ bgp([filter(Filter)|T]) -->
   `FILTER `,
   filter(Filter),
   bgp(T).
+bgp([not(Bgp)|T]) -->
+  `  FILTER NOT EXISTS {\n`,
+  bgp(Bgp),
+  `  }\n`,
+  bgp(T).
 bgp([optional(Optional)|T]) -->
   `  OPTIONAL {\n`,
   bgp(Optional),
@@ -383,10 +388,6 @@ where_inner(Content) -->
 
 where_inner2(union(L)) --> !,
   union(L).
-where_inner2(not(Bgp)) -->
-  `  FILTER NOT EXISTS {\n`,
-  bgp(Bgp),
-  `  }`.
 where_inner2(Bgp) -->
   bgp(Bgp).
 

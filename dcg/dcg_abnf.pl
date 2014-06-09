@@ -294,7 +294,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '#'(+N:nonneg, :Dcg)// .
-%! '#'(+N:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '#'(+N:nonneg, :Dcg, ?Args1:list)// .
 % @see Wrappers around 'm*n'//[3-8], using the same value for `M` and `N`.
 
 '#'(N, Dcg) -->
@@ -317,7 +317,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '#_s'(+N:nonneg, :Dcg)// .
-%! '#_s'(+N:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '#_s'(+N:nonneg, :Dcg, ?Args1:list)// .
 % @see Wrappers around 'm*n'//[3-8], using the default value for `M`.
 
 '#_s'(N, Dcg) -->
@@ -340,7 +340,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*'(:Dcg)// .
-%! '*'(:Dcg, ?Args1:list, ...)// .
+%! '*'(:Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `*` in a nondeterministic way.
 
 '*'(Dcg) -->
@@ -363,7 +363,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*_c'(-Count:nonneg, :Dcg)// .
-%! '*_c'(-Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '*_c'(-Count:nonneg, :Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `*` in a nondeterministic way.
 
 '*_c'(C, Dcg) -->
@@ -386,7 +386,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*_s'(:Dcg)// .
-%! '*_s'(:Dcg, ?Args1:list, ...)// .
+%! '*_s'(:Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `*` in a nondeterministic way.
 
 '*_s'(Dcg) -->
@@ -409,7 +409,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*_s_c'(-Count:nonneg, :Dcg)// .
-%! '*_s_c'(-Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '*_s_c'(-Count:nonneg, :Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `*` in a nondeterministic way.
 
 '*_s_c'(C, Dcg) -->
@@ -432,7 +432,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*n'(+N:nonneg, :Dcg)// .
-%! '*n'(+N:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '*n'(+N:nonneg, :Dcg, ?Args1:list)// .
 % @see Wrappers around 'm*n'//[3-8], using the default value for `M`.
 
 '*n'(N, Dcg) -->
@@ -455,7 +455,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*n_c'(+N:nonneg, -Count:nonneg, :Dcg)// .
-%! '*n_c'(+N:nonneg, -Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '*n_c'(+N:nonneg, -Count:nonneg, :Dcg, ?Args1:list)// .
 % @see Wrappers around 'm*n'//[3-8], using the default value for `M`.
 
 '*n_c'(N, C, Dcg) -->
@@ -478,7 +478,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*n_s'(+N:nonneg, :Dcg)// .
-%! '*n_s'(+N:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '*n_s'(+N:nonneg, :Dcg, ?Args1:list)// .
 % @see Wrappers around 'm*n'//[3-8], using the default value for `M`.
 
 '*n_s'(N, Dcg) -->
@@ -501,7 +501,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '*n_s_c'(+N:nonneg, -Count:nonneg, :Dcg)// .
-%! '*n_s_c'(+N:nonneg, -Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '*n_s_c'(+N:nonneg, -Count:nonneg, :Dcg, ?Args1:list)// .
 % @see Wrappers around 'm*n'//[3-8], using the default value for `M`.
 
 '*n_s_c'(N, C, Dcg) -->
@@ -524,7 +524,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '+'(:Dcg)// .
-%! '+'(:Dcg, ?Args1:list, ...)// .
+%! '+'(:Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `+` in a nondeterministic way.
 %
 % @see Implementation-wise these are wrappers around 'm*n'//[3-8].
@@ -549,7 +549,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '+_c'(-Count:nonneg, :Dcg)// .
-%! '+_c'(-Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '+_c'(-Count:nonneg, :Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `+` in a nondeterministic way.
 %
 % @see Implementation-wise these are wrappers around 'm*n'//[3-8].
@@ -574,7 +574,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '+_s'(:Dcg)// .
-%! '+_s'(:Dcg, ?Args1:list, ...)// .
+%! '+_s'(:Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `+` in a nondeterministic way.
 %
 % @see Implementation-wise these are wrappers around 'm*n'//[3-8].
@@ -599,7 +599,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '+_s'(-Count:nonneg, :Dcg)// .
-%! '+_s'(-Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '+_s'(-Count:nonneg, :Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `+` in a nondeterministic way.
 %
 % @see Implementation-wise these are wrappers around 'm*n'//[3-8].
@@ -624,7 +624,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '?'(:Dcg)// .
-%! '?'(:Dcg, ?Args1:list, ...)// .
+%! '?'(:Dcg, ?Args1:list)// .
 % Implements the Regular Expression operator `?`,
 % generating *both* the case of 0 occurrences *and* the case of 1 occurrence.
 
@@ -656,7 +656,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! '?_c'(-Count:nonneg, :Dcg)// .
-%! '?_c'(-Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! '?_c'(-Count:nonneg, :Dcg, ?Args1:list)// .
 
 '?_c'(C, Dcg) -->
   'm*n_c'(0, 1, C, Dcg).
@@ -683,7 +683,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*'(?M:nonneg, :Dcg)// .
-%! 'm*'(?M:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*'(?M:nonneg, :Dcg, ?Args1:list)// .
 
 'm*'(M, Dcg) -->
   'm*n'(M, _, Dcg).
@@ -705,7 +705,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*_c'(?M:nonneg, -Count:nonneg, :Dcg)// .
-%! 'm*_c'(?M:nonneg, -Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*_c'(?M:nonneg, -Count:nonneg, :Dcg, ?Args1:list)// .
 
 'm*_c'(M, C, Dcg) -->
   'm*n_c'(M, _, C, Dcg).
@@ -727,7 +727,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*_s'(?M:nonneg, :Dcg)// .
-%! 'm*_s'(?M:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*_s'(?M:nonneg, :Dcg, ?Args1:list)// .
 
 'm*_s'(M, Dcg) -->
   'm*n_s'(M, _, Dcg).
@@ -749,7 +749,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*_s_c'(?M:nonneg, -Count:nonneg, :Dcg)// .
-%! 'm*_s_c'(?M:nonneg, -Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*_s_c'(?M:nonneg, -Count:nonneg, :Dcg, ?Args1:list)// .
 
 'm*_s_c'(M, C, Dcg) -->
   'm*n_s_c'(M, _, C, Dcg).
@@ -771,7 +771,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*n'(?M:nonneg, ?N:nonneg,:Dcg)// .
-%! 'm*n'(?M:nonneg, ?N:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*n'(?M:nonneg, ?N:nonneg, :Dcg, ?Args1:list)// .
 
 'm*n'(M, N, Dcg) -->
   'm*n_c'(M, N, _, Dcg).
@@ -793,7 +793,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*n_c'(?M:nonneg, ?N:nonneg, -Count:nonneg,:Dcg)// .
-%! 'm*n_c'(?M:nonneg, ?N:nonneg, -Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*n_c'(?M:nonneg, ?N:nonneg, -Count:nonneg, :Dcg, ?Args1:list)// .
 % This predicate lies at the bases of all the other public predicates
 % in this module.
 %
@@ -855,7 +855,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*n_s'(?M:nonneg, ?N:nonneg, :Dcg)// .
-%! 'm*n_s'(?M:nonneg, ?N:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*n_s'(?M:nonneg, ?N:nonneg, :Dcg, ?Args1:list)// .
 
 'm*n_s'(M, N, Dcg) -->
   'm*n_s_c'(M, N, _, Dcg).
@@ -877,7 +877,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 
 %! 'm*n_s_c'(?M:nonneg, ?N:nonneg, -Count:nonneg, :Dcg)// .
-%! 'm*n_s_c'(?M:nonneg, ?N:nonneg, -Count:nonneg, :Dcg, ?Args1:list, ...)// .
+%! 'm*n_s_c'(?M:nonneg, ?N:nonneg, -Count:nonneg, :Dcg, ?Args1:list)// .
 
 'm*n_s_c'(M, N, C, Dcg, X, Y):-
   'm*n_typecheck'(M, N),
@@ -925,7 +925,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 %! 'm*n_generate'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg,
 %!     :Dcg)// .
 %! 'm*n_generate'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg,
-%!     :Dcg, -Args1:list, ...)// .
+%!     :Dcg, -Args1:list)// .
 % Since generating is meager, we try to stop generating
 % instances of `Dcg` as soon as possible.
 
@@ -987,7 +987,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 %! 'm*n_s_generate'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg,
 %!     :Dcg)// .
 %! 'm*n_s_generate'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg,
-%!     :Dcg, -Args1:list, ...)// .
+%!     :Dcg, -Args1:list)// .
 
 'm*n_s_generate'(M, _, C, C, _) -->
   {'m*n_lower'(M, C)},
@@ -1066,7 +1066,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 
 %! 'm*n_parse'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg, :Dcg)// .
 %! 'm*n_parse'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg, :Dcg,
-%!     -Args1:list, ...)// .
+%!     -Args1:list)// .
 % Since parsing is eager, we try to process
 % as many instances of `Dcg` as possible.
 
@@ -1128,7 +1128,7 @@ but this module does not detect whether a DCG rule is deterministic or not.
 %! 'm*n_s_parse'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg,
 %!     :Dcg)// .
 %! 'm*n_s_parse'(?M:nonneg, ?N:nonneg, +Counter:nonneg, -Count:nonneg,
-%!     :Dcg, -Args1:list, ...)// .
+%!     :Dcg, -Args1:list)// .
 
 'm*n_s_parse'(M, N, C1, C, Dcg) -->
   % We may not surpass the upper bound.

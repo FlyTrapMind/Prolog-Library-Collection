@@ -76,7 +76,7 @@ Predicates used for parsing and checking value-type conformance.
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 
-:- use_module(datasets(iana)).
+%%%%:- use_module(datasets(iana)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(boolean_ext)).
 
@@ -166,7 +166,8 @@ error:has_type(list(Type), Term):-
 is_url(Url):-
   uri_components(Url, uri_components(Scheme,_,_,_,_)),
   nonvar(Scheme),
-  iana_uri_scheme(Scheme), !.
+  memberchk(Scheme, [ftp,http,https]).
+  %%%%iana_uri_scheme(Scheme), !.
 
 
 %! negative_float(@Term) is semidet.
