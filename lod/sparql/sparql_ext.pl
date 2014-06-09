@@ -161,8 +161,8 @@ sparql_query_no_catch(Endpoint, Query1, VarNames, Results):-
   atomic_codes(Query2, Query1),
   debug(sparql_ext, '~w', [Query2]),
   once(sparql_endpoint(Endpoint, query, Location)),
-  uri_components(Location, uri_component(_,Authority,Path,_,_)),
-  uri_authority_components(Authority, uri_authority_components(_,_,Host,Port)),
+  uri_components(Location, uri_components(_,Authority,Path,_,_)),
+  uri_authority_components(Authority, uri_authority(_,_,Host,Port)),
   Options1 = [host(Host),timeout(1),path(Path),variable_names(VarNames)],
   (
     nonvar(Port)
