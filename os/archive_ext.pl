@@ -1,9 +1,10 @@
 :- module(
   archive_ext,
   [
-    archive_extract2/3, % +Source
-                        % ?Directory:atom
-                        % -EntryPairs:list(pair(atom,list(nvpair)))
+    archive_extract/4, % +Source
+                       % ?Directory:atom
+                       % -ArchiveFilters:list(atom)
+                       % -EntryPairs:list(pair(atom,list(nvpair)))
     archive_extract_directory/2, % +Directory:atom
                                  % +Options:list(nvpair)
     archive_goal/2, % +Source
@@ -51,14 +52,17 @@ Extensions to SWI-Prolog's library archive.
 
 :- meta_predicate(archive_goal(+,1)).
 :- meta_predicate(archive_goal(+,2,+)).
+:- meta_predicate(archive_goal(+,3,+,+)).
 :- meta_predicate(archive_goal0(+,1)).
 :- meta_predicate(archive_goal0(+,2,+)).
+:- meta_predicate(archive_goal0(+,3,+,+)).
 
 
 
-%! archive_extract2(
+%! archive_extract(
 %!   +Source,
 %!   +Directory:atom,
+%!   -ArchiveFilters:list(atom),
 %!   -EntryPairs:list(pair(atom,list(nvpair)))
 %! ) is det.
 % Extracts the given file into the given directory.
@@ -66,9 +70,9 @@ Extensions to SWI-Prolog's library archive.
 % @throws type_error When `Source` is neither an absolute file name nor a URL.
 % @throws instantiation_error When File is a variable.
 
-archive_extract2(Source, Dir, EntryPairs2):-
+archive_extract(Source, Dir, Filters, EntryPairs2):-
   default_goal(file_directory_name(Source), Dir),
-  archive_goal(Source, archive_extract0, Dir),
+  archive_goal(Source, archive_extract0, Filters, Dir),
   findall(
     EntryName-EntryProperty,
     retract(entry_property(EntryName, EntryProperty)),
@@ -76,7 +80,8 @@ archive_extract2(Source, Dir, EntryPairs2):-
   ),
   group_pairs_by_key(EntryPairs1, EntryPairs2).
 
-archive_extract0(Archive, Dir):-
+archive_extract0(Archive, Filters, Dir):-
+  archive_filters(Archive, Filters),
   repeat,
   (
     archive_next_header(Archive, RelativeFile),
@@ -115,12 +120,13 @@ archive_extract_directory(Dir, Options):-
   directory_files(Options, Dir, Files),
   forall(
     member(File, Files),
-    archive_extract2(File, Dir, Options)
+    archive_extract(File, Dir, _, Options)
   ).
 
 
 %! archive_goal(+Source:atom, :Goal) is det.
-%! archive_goal(+Source:atom, :Goal, +Argument) is det.
+%! archive_goal(+Source:atom, :Goal, ?Argument1) is det.
+%! archive_goal(+Source:atom, :Goal, ?Argument1, ?Argument2) is det.
 % `Source` is either an absolute file name or a URL.
 %
 % @throws type_error When `Source` is neither an absolute file name nor a URL.
@@ -166,6 +172,27 @@ archive_goal(Url, Goal, Arg1):-
 archive_goal(Source, _, _):-
   type_error(file_or_url, Source).
 
+archive_goal(Read, Goal, Arg1, Arg2):-
+  is_stream(Read), !,
+  archive_goal0(Read, Goal, Arg1, Arg2).
+archive_goal(File, Goal, Arg1, Arg2):-
+  is_absolute_file_name(File), !,
+  setup_call_cleanup(
+    open(File, read, Read),
+    archive_goal0(Read, Goal, Arg1, Arg2),
+    close(Read)
+  ).
+archive_goal(Url, Goal, Arg1, Arg2):-
+  is_url(Url), !,
+  setup_call_cleanup(
+    http_open(Url, Read, []),
+    archive_goal0(Read, Goal, Arg1, Arg2),
+    close(Read)
+  ).
+archive_goal(Source, _, _, _):-
+  type_error(file_or_url, Source).
+
+
 archive_goal0(Source, Goal):-
   setup_call_cleanup(
     archive_open(
@@ -185,6 +212,17 @@ archive_goal0(Source, Goal, Arg1):-
       [close_parent(false),filter(all),format(all),format(raw)]
     ),
     call(Goal, Archive, Arg1),
+    archive_close(Archive)
+  ).
+
+archive_goal0(Source, Goal, Arg1, Arg2):-
+  setup_call_cleanup(
+    archive_open(
+      Source,
+      Archive,
+      [close_parent(false),filter(all),format(all),format(raw)]
+    ),
+    call(Goal, Archive, Arg1, Arg2),
     archive_close(Archive)
   ).
 
@@ -349,6 +387,11 @@ archive_tree_coords(Source, Coords):-
 
 
 % HELPERS
+
+archive_filters(Archive, Filters):-
+  archive_property(Archive, filters(Filters)), !.
+archive_filters(_, []).
+
 
 is_leaf_entry(Archive, EntryName):-
   archive_header_property(Archive, format(EntryFormat)),
