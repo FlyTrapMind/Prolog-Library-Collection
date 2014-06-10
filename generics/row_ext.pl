@@ -38,8 +38,10 @@
                    % +Rows:list(compound)
                    % ?Elems:list
                    % ?Rest:list(compound)
-    row_to_list/2 % +Row:compound
-                  % -List:list
+    row_to_list/2, % +Row:compound
+                   % -List:list
+    rows_to_resources/2 % +Rows:list(compound)
+                        % -Resources:ordset(or([bnode,iri,literal]))
   ]
 ).
 
@@ -53,7 +55,7 @@ row(Arg1, ..., ArgN)
 Row terms are used in [library(csv)] and [library(semweb/sparql_client)].
 
 @author Wouter Beek
-@version 2013/12-2014/01, 2014/03
+@version 2013/12-2014/01, 2014/03, 2014/06
 */
 
 :- use_module(library(apply)).
@@ -152,4 +154,21 @@ nth1_column(N, Row1, X, Row2):-
 
 row_to_list(Row, List):-
   Row =.. [row|List].
+
+
+%! rows_to_resource(
+%!   +Rows:list(compound),
+%!   -Resources:ordset(or([bnode,iri,literal]))
+%! ) is det.
+% Returns the ordered set of resources that occur in
+%  the given SPARQL result set rows.
+
+rows_to_resources(Rows, Resources):-
+  rows_to_resources(Rows, [], Resources).
+
+rows_to_resources([], Resources, Resources).
+rows_to_resources([Row|Rows], Resources1, Sol):-
+  Row =.. [row|NewResources],
+  ord_union(Resources1, NewResources, Resources2),
+  rows_to_resources(Rows, Resources2, Sol).
 

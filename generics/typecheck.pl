@@ -80,6 +80,8 @@ Predicates used for parsing and checking value-type conformance.
 :- use_module(generics(atom_ext)).
 :- use_module(generics(boolean_ext)).
 
+:- multifile(error:has_type/2).
+
 
 
 %! atom_to_value(+Atom:atom, +Type:compound, -Value) is det.

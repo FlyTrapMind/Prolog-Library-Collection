@@ -4,11 +4,11 @@
     sparql_query/4, % +Endpoint:atom
                     % +Query:atom
                     % -VarNames:list
-                    % -Results:list
+                    % -Result:or([boolean,list(list)])
     sparql_query/5, % +Endpoint:atom
                     % +Query:atom
                     % -VarNames:list
-                    % -Results:list
+                    % -Result:or([boolean,list(list)])
                     % +Attempts:or([oneof([inf]),positive_integer])
     sparql_query_sameas/3 % +Endpoint:atom
                           % +Resource:iri
@@ -20,80 +20,6 @@
 
 Predicates for executing SPARQL queries.
 
-# SPARQL 1.1 Query Language
-
-`true` and `false` are `xsd:boolean`.
-Numbers with `e` are `xsd:double`.
-Numbers with `.` are `xsd:decimal`.
-Integers are `xsd:integer`.
-
-`a` abbreviates `rdf:type`.
-
-Blank nodes are denotated by `_:LABEL`,
- where `LABEL` need not reflect the label that is used in the triple store.
-
-Predicate-object lists `;`
-
-Object-lists `,`
-
-`()` is `rdf:nil`.
-`a` is `rdf:type`.
-
-Alternatives `UNION`.
-
-~~~{.sparql}
-FILTER NOT EXISTS { pattern }
-FILTER EXISTS { pattern }
-{ pattern } MINUS { pattern }
-~~~
-
-~~~{.sparql}
-PREFIX dc: <http://purl.org/dc/elements/1.1/>
-PREFIX ns: <http://example.org/ns#>
-SELECT ?title ?price
-WHERE {
-  ?x ns:price ?price .
-  FILTER (?price < 30.5)
-  ?x dc:title ?title .
-}
-~~~
-
-Count the number of employees in each department:
-
-~~~{.sparql}
-SELECT DISTINCT ?dept (COUNT(?emp) AS ?count)
-WHERE {
-  ?dept a f:dept .
-  ?emp f:Dept ?dept .
-} GROUP BY ?dept
-~~~
-
-# Sample query
-
-~~~{.sparql}
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT *
-WHERE {
-  ?s rdf:type rdfs:Class .
-}
-LIMIT 10
-~~~
-
-# Warnings
-
-When the results from a SPARQL endpoint are in XML/RDF without
- proper end tags, the following warnings will be given by
- the XML parser:
-
-~~~{.txt}
-Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "uri"
-Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "binding"
-Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "result"
-Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "results"
-Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "sparql"
-~~~
-
 @author Wouter Beek
 @see SPARQL 1.1 Recommendation 2013/03
      http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
@@ -101,6 +27,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
          2014/04, 2014/06
 */
 
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(option)).
@@ -110,6 +37,7 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 
 :- use_module(generics(codes_ext)).
 :- use_module(generics(row_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(http(http_goal)).
 :- use_module(math(math_ext)).
 :- use_module(sparql(sparql_api)).
@@ -125,28 +53,29 @@ Warning: [Thread t03] SGML2PL(xmlns): []:216: Inserted omitted end-tag for "spar
 %!   +Endpoint:atom,
 %!   +Query:atom,
 %!   -VarNames:list,
-%!   -Results:list
+%!   -Result:or([boolean,list(list)])
 %! ) is det.
 
-sparql_query(Endpoint, Query, VarNames, Results):-
-  sparql_query(Endpoint, Query, VarNames, Results, 1).
+sparql_query(Endpoint, Query, VarNames, Result):-
+  sparql_query(Endpoint, Query, VarNames, Result, 1).
 
 %! sparql_query(
 %!   +Endpoint:atom,
 %!   +Query:atom,
 %!   -VarNames:list,
-%!   -Results:list,
+%!   -Result:or([boolean,list(list)]),
 %!   +Attempts:or([oneof([inf]),positive_integer])
 %! ) is det.
+%
 % @error =|existence_error(url,URL)|= with context
 %        =|context(_, status(509, 'Bandwidth Limit Exceeded'))|=
 
 sparql_query(_, _, [], [], 0):- !.
-sparql_query(Endpoint, Query, VarNames, Results, Attempts):-
+sparql_query(Endpoint, Query, VarNames, Result, Attempts):-
   catch(
-    sparql_query_no_catch(Endpoint, Query, VarNames, Results),
+    sparql_query_no_catch(Endpoint, Query, VarNames, Result),
     E,
-    http_catcher(E, Endpoint, Query, VarNames, Results, Attempts)
+    http_catcher(E, Endpoint, Query, VarNames, Result, Attempts)
   ).
 
 http_catcher(exit, _, _, _, _, _).
@@ -157,9 +86,12 @@ http_catcher(_, Endpoint, Query, VarNames, Results, Attempts1):-
   sparql_query(Endpoint, Query, VarNames, Results, Attempts2).
 
 
-sparql_query_no_catch(Endpoint, Query1, VarNames, Results):-
+sparql_query_no_catch(Endpoint, Query1, VarNames, Result2):-
+  % Debug message.
   atomic_codes(Query2, Query1),
   debug(sparql_ext, '~w', [Query2]),
+  
+  % Options are based on the given endpoint registration.
   once(sparql_endpoint(Endpoint, query, Location)),
   uri_components(Location, uri_components(_,Authority,Path,_,_)),
   uri_authority_components(Authority, uri_authority(_,_,Host,Port)),
@@ -171,10 +103,19 @@ sparql_query_no_catch(Endpoint, Query1, VarNames, Results):-
   ;
     Options2 = Options1
   ),
-  findall(
-    Result,
-    sparql_query(Query2, Result, Options2),
-    Results
+  
+  % The actual SPARQL query.
+  sparql_query(Query2, Result1, Options2),
+  
+  % Result post-processing.
+  (
+    is_of_type(Result1, boolean)
+  ->
+    % For queries of kind ASK.
+    Result2 = Result1
+  ;
+    % For queries of kind SELECT.
+    maplist(row_to_list, Result1, Result2)
   ).
 
 
@@ -192,20 +133,4 @@ sparql_query_sameas(Endpoint, Resource, Resources2):-
       [rdf(iri(Resource),owl:sameAs,var(x))], inf, _, _, Rows),
   rows_to_resources(Rows, Resources1),
   ord_add_element(Resources1, Resource, Resources2).
-
-%! rows_to_resources(
-%!   +Rows:list(compound),
-%!   -Resources:ordset([bnode,iri,literal])
-%! ) is det.
-% Returns the ordered set of resources that occur in
-%  the given SPARQL result set rows.
-
-rows_to_resources(Rows, Resources):-
-  rows_to_resources(Rows, [], Resources).
-
-rows_to_resources([], Resources, Resources).
-rows_to_resources([Row|Rows], Resources1, Sol):-
-  Row =.. [row|NewResources],
-  ord_union(Resources1, NewResources, Resources2),
-  rows_to_resources(Rows, Resources2, Sol).
 
