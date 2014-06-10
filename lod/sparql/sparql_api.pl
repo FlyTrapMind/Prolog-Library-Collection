@@ -14,7 +14,7 @@
                       % ?Limit:or([nonneg,oneof([inf])])
                       % ?Offset:nonneg
                       % ?Order:pair(oneof([asc]),list(atom))
-                      % -Rows:list(list)
+                      % -Result:list(list)
     sparql_update/3 % +Endpoint:atom
                     % +Triples:list(list(or([bnode,iri,literal])))
                     % +Options:list(nvpair)
@@ -26,6 +26,8 @@
 High-level API for making SPARQL queries.
 
 @author Wouter Beek
+@see SPARQL 1.1 Recommendation 2013/03
+     http://www.w3.org/TR/2013/REC-sparql11-overview-20130321/
 @version 2014/06
 */
 
@@ -34,10 +36,11 @@ High-level API for making SPARQL queries.
 :- use_module(library(http/http_client)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/sparql_client)).
 
+:- use_module(generics(row_ext)).
 :- use_module(sparql(sparql_build)).
 :- use_module(sparql(sparql_db)).
-:- use_module(sparql(sparql_ext)).
 
 :- use_module(plRdf_ser(rdf_ntriples_write)).
 
@@ -53,13 +56,15 @@ High-level API for making SPARQL queries.
 sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
   % Construct the query.
   phrase(sparql_formulate_ask(Regime, _, Prefixes, Bgps), Query),
-  
+
   % Debug message.
   atom_codes(Atom, Query),
   debug(sparql_api, '~w', [Atom]),
-  
-  % Execute the query.
-  sparql_query(Endpoint, Query, _, true).
+
+  % Execute the ASK query.
+  sparql_query_options(Endpoint, Options),
+  sparql_query(Query, true, Options).
+
 
 
 %! sparql_select(
@@ -85,7 +90,7 @@ sparql_select(
   Limit,
   Offset,
   Order,
-  Rows
+  Result
 ):-
   phrase(
     sparql_formulate(
@@ -102,11 +107,19 @@ sparql_select(
     ),
     Query
   ),
-  
+
+  % Debug message.
   atom_codes(Atom, Query),
   debug(sparql_api, '~w', Atom),
-  
-  sparql_query(Endpoint, Query, _, Rows).
+
+  % Execute the SELECT query.
+  sparql_query_options(Endpoint, Options),
+  findall(
+    Row,
+    sparql_query(Query, Row, Options),
+    Rows
+  ),
+  maplist(row_to_list, Rows, Result).
 
 
 %! sparql_update(
@@ -126,11 +139,11 @@ sparql_update0(Endpoint, Triples, Options1):-
   % Construct the contents of the request message.
   maplist(assert_triple, Triples),
   with_output_to(codes(Content), sparql_insert_data([])),
-  
+
   % Debug message.
   atom_codes(Atom, Content),
   debug(sparql_api, '~w', [Atom]),
-  
+
   % Set options.
   sparql_endpoint(Endpoint, update, Location),
   merge_options(
@@ -138,7 +151,7 @@ sparql_update0(Endpoint, Triples, Options1):-
     [request_header('Accept'='application/json')],
     Options2
   ),
-  
+
   % The actual SPARQL Update request.
   http_post(
     Location,
@@ -146,15 +159,42 @@ sparql_update0(Endpoint, Triples, Options1):-
     Reply,
     Options2
   ),
-  
+
   % Debug message showing the HTTP POST reply.
   debug(sparql_api, '~w', [Reply]).
 
+
+
+% Helpers
+
+%! assert_triple(+List:list(or([bnode,iri,literal]))) is det.
+
 assert_triple([S,P,O]):-
   rdf_assert(S, P, O).
+
+
+%! sparql_insert_data(+Options:list(nvpair)) is det.
+% Intended to be run from within an rdf_transaction/3 with `snapshot(true)`.
 
 sparql_insert_data(Options):-
   writeln('INSERT DATA {'),
   rdf_ntriples_write(Options),
   writeln('}').
+
+
+%! sparql_query_options(+Endpoint:atom, -Options:list(nvpair)) is det.
+
+sparql_query_options(Endpoint, Options2):-
+  % Options are based on the given endpoint registration.
+  once(sparql_endpoint(Endpoint, query, Location)),
+  uri_components(Location, uri_components(_,Authority,Path,_,_)),
+  uri_authority_components(Authority, uri_authority(_,_,Host,Port)),
+  Options1 = [host(Host),timeout(1),path(Path)],
+  (
+    nonvar(Port)
+  ->
+    merge_options([port(Port)], Options1, Options2)
+  ;
+    Options2 = Options1
+  ).
 

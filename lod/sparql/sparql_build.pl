@@ -17,9 +17,9 @@
                           % ?Offset:nonneg
                           % ?Order:pair(oneof([asc]),list(atom))
     sparql_formulate_ask//4 % ?Regime:oneof([owl])
-                             % ?DefaultGraph:iri
-                             % +Prefixes:list(atom)
-                             % +BGPs:or([compound,list(compound)])
+                            % ?DefaultGraph:iri
+                            % +Prefixes:list(atom)
+                            % +BGPs:or([compound,list(compound)])
   ]
 ).
 
@@ -38,13 +38,15 @@ DCGs for constructing SPARQL queries.
 
 
 
+%! bgp(+Bgp:list(compound))// .
+
 bgp([]) --> [].
 bgp([filter(Filter)|T]) -->
   `FILTER `,
   filter(Filter),
   bgp(T).
 bgp([not(Bgp)|T]) -->
-  `  FILTER NOT EXISTS {\n`,
+  `  FILTER NOT EXISTS {\n  `,
   bgp(Bgp),
   `  }\n`,
   bgp(T).
@@ -63,6 +65,9 @@ bgp([rdf(S,P,O)|T]) -->
   ` .\n`,
   bgp(T).
 
+
+%! default_graph(?DefaultGraph:atom)// .
+
 default_graph(VAR) -->
   {var(VAR)}, !,
   [].
@@ -74,20 +79,25 @@ default_graph(DefaultGraph) -->
   )),
   `\n`.
 
+
 define(inference(Regime)) -->
   `define input:inference `,
   define_inference_regime(Regime),
   `\n`.
 
+
 define_inference_regime(owl) -->
   quoted(atom('http://www.w3.org/2002/07/owl#')).
+
+
+%! distinct(+Distinct:boolean)// .
 
 distinct(true) -->
   ` DISTINCT`.
 distinct(false) --> [].
 
 
-%! filter(+Filter:compound)// is det.
+%! filter(+Filter:compound)// .
 % The following filters are supported:
 %   * =|regex(+Term, +ReMatch:compound, +ReFlags:list(oneof([case_sensitive])))|=
 %     Succeeds when `Term` matches `ReMatch` under the given `ReFlags`.
@@ -117,6 +127,8 @@ filter(strends(Arg1,Arg2)) -->
   `)`.
 
 
+%! inference_regime(+Regime:atom)// .
+
 inference_regime(VAR) -->
   {var(VAR)}, !,
   [].
@@ -124,7 +136,7 @@ inference_regime(Regime) -->
   define(inference(Regime)).
 
 
-%! iri(+Iri:iri)// is det.
+%! iri(+Iri:iri)// .
 % An IRI term.
 
 iri(Iri) -->
@@ -132,6 +144,8 @@ iri(Iri) -->
     atom(Iri)
   ).
 
+
+%! limit(+Limit:or([nonneg,oneof([inf])]))// .
 
 limit(VAR) -->
   {var(VAR)}, !,
@@ -142,10 +156,16 @@ limit(Limit) -->
   integer(Limit),
   `\n`.
 
+
+%! mode(+Mode:oneof([ask,select]))// .
+
 mode(ask) -->
   `ASK`.
 mode(select) -->
   `SELECT`.
+
+
+%! offset(?Offset:nonneg)// .
 
 offset(VAR) -->
   {var(VAR)}, !,
@@ -154,6 +174,9 @@ offset(Offset) -->
   `OFFSET `,
   integer(Offset),
   `\n`.
+
+
+%! order(?Order)// .
 
 order(VAR) -->
   {var(VAR)}, !,
@@ -167,6 +190,9 @@ order(Criterion-Variables) -->
 order_criterion(ascending) -->
   `ASC`.
 
+
+%! prefix(+Prefix:atom)// .
+
 prefix(Prefix) -->
   {xml_current_namespace(Prefix, Iri)},
   `PREFIX `,
@@ -175,13 +201,20 @@ prefix(Prefix) -->
   iri(Iri),
   `\n`.
 
+
+%! prefixes(+Prefixes:list(atom))// .
+
 prefixes([]) --> [].
 prefixes([H|T]) -->
   prefix(H),
   prefixes(T).
 
 
-%! query_form(+Mode:oneof([ask,select]), ?Distinct:boolean, ?Variables:list)// .
+%! query_form(
+%!   +Mode:oneof([ask,select]),
+%!   ?Distinct:boolean,
+%!   ?Variables:list
+%! )// .
 
 query_form(Mode, _, _) -->
   {Mode == ask}, !,
@@ -213,7 +246,7 @@ regex_flags1([case_insensitive|T]) -->
 %!   +Prefixes:list(atom),
 %!   +Variable:atom,
 %!   +BGPs:or([compound,list(compound)])
-%! )// is det.
+%! )// .
 
 sparql_count(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
   inference_regime(Regime),
@@ -236,7 +269,7 @@ sparql_count(Regime, DefaultGraph, Prefixes, Variable, BGPs) -->
 %!   +Limit:or([nonneg,oneof([inf])]),
 %!   +Offset:nonneg,
 %!   +Order:pair(oneof([asc]),list(atom))
-%! )// is det.
+%! )// .
 %
 % # Example
 %
@@ -344,6 +377,7 @@ term(Prefix:Postfix) --> !,
 term(Iri) -->
   term(iri(Iri)).
 
+
 term_closure([reflexive,transitive]) -->
   `*`.
 term_closure([transitive]) -->
@@ -358,6 +392,8 @@ union([H|T]) -->
   `} UNION {`,
   union(T).
 
+
+%! variable(+Variable:atom)// .
 
 variable(Variable) -->
   `?`,
@@ -380,7 +416,8 @@ where(Content) -->
   `WHERE `,
   bracketed(curly,
     where_inner(Content)
-  ).
+  ),
+  `\n`.
 
 where_inner(Content) -->
   `\n`,
