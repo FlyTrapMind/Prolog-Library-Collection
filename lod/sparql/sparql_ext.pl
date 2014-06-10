@@ -90,7 +90,7 @@ sparql_query_no_catch(Endpoint, Query1, VarNames, Result2):-
   % Debug message.
   atomic_codes(Query2, Query1),
   debug(sparql_ext, '~w', [Query2]),
-  
+
   % Options are based on the given endpoint registration.
   once(sparql_endpoint(Endpoint, query, Location)),
   uri_components(Location, uri_components(_,Authority,Path,_,_)),
@@ -103,13 +103,13 @@ sparql_query_no_catch(Endpoint, Query1, VarNames, Result2):-
   ;
     Options2 = Options1
   ),
-  
+
   % The actual SPARQL query.
   sparql_query(Query2, Result1, Options2),
-  
+
   % Result post-processing.
   (
-    is_of_type(Result1, boolean)
+    is_of_type(boolean, Result1)
   ->
     % For queries of kind ASK.
     Result2 = Result1
