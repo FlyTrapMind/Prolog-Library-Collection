@@ -247,10 +247,10 @@ url_flat_directory(
 url_flat_directory(ParentDir, Url, UrlDir):-
   % A unique name for each URL that does not contain characters
   % that do not comply with POSIX file names.
-  rdf_atom_md5(Url, 1, Hash),
+  rdf_atom_md5(Url, 1, Md5),
 
   % Make it a subdirectory of the given parent directory
-  directory_file_path(ParentDir, Hash, UrlDir).
+  directory_file_path(ParentDir, Md5, UrlDir).
 
 
 %! url_nested_directory(+ParentDirectory:atom, +Url:url, -Directory:atom) is det.

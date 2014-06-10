@@ -55,15 +55,15 @@ High-level API for making SPARQL queries.
 
 sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
   % Construct the query.
-  phrase(sparql_formulate_ask(Regime, _, Prefixes, Bgps), Query),
+  phrase(sparql_formulate_ask(Regime, _, Prefixes, Bgps), Query1),
 
   % Debug message.
-  atom_codes(Atom, Query),
-  debug(sparql_api, '~w', [Atom]),
+  atom_codes(Query2, Query1),
+  debug(sparql_api, '~w', [Query2]),
 
   % Execute the ASK query.
   sparql_query_options(Endpoint, Options),
-  sparql_query(Query, true, Options).
+  sparql_query(Query2, true, Options).
 
 
 
@@ -90,7 +90,7 @@ sparql_select(
   Limit,
   Offset,
   Order,
-  Result
+  Result1
 ):-
   phrase(
     sparql_formulate(
@@ -105,21 +105,22 @@ sparql_select(
       Offset,
       Order
     ),
-    Query
+    Query1
   ),
 
   % Debug message.
-  atom_codes(Atom, Query),
-  debug(sparql_api, '~w', Atom),
+  atom_codes(Query2, Query1),
+  debug(sparql_api, '~w', Query2),
 
   % Execute the SELECT query.
   sparql_query_options(Endpoint, Options),
   findall(
     Row,
-    sparql_query(Query, Row, Options),
+    sparql_query(Query2, Row, Options),
     Rows
   ),
-  maplist(row_to_list, Rows, Result).
+  maplist(row_to_list, Rows, Result2),
+  Result1 = Result2.
 
 
 %! sparql_update(
@@ -138,11 +139,11 @@ sparql_update(Endpoint, Triples, Options):-
 sparql_update0(Endpoint, Triples, Options1):-
   % Construct the contents of the request message.
   maplist(assert_triple, Triples),
-  with_output_to(codes(Content), sparql_insert_data([])),
+  with_output_to(codes(Content1), sparql_insert_data([])),
 
   % Debug message.
-  atom_codes(Atom, Content),
-  debug(sparql_api, '~w', [Atom]),
+  atom_codes(Content2, Content1),
+  debug(sparql_api, '~w', [Content2]),
 
   % Set options.
   sparql_endpoint(Endpoint, update, Location),
@@ -155,7 +156,7 @@ sparql_update0(Endpoint, Triples, Options1):-
   % The actual SPARQL Update request.
   http_post(
     Location,
-    codes('application/sparql-update', Content),
+    codes('application/sparql-update', Content1),
     Reply,
     Options2
   ),

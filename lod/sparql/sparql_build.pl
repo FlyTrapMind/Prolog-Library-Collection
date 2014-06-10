@@ -365,6 +365,11 @@ term(closure(Term,Closure)) -->
   term_closure(Closure).
 term(iri(Iri)) --> !,
   iri(Iri).
+term(literal(Datatype1,String)) --> !,
+  quoted(atom(String)),
+  `^^`,
+  {rdf_global_id(Datatype1, Datatype2)},
+  term(iri(Datatype2)).
 term(string(String)) --> !,
   quoted(atom(String)).
 term(var(Variable)) --> !,

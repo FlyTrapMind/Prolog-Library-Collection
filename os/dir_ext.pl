@@ -310,6 +310,9 @@ directory_files(O1, Directory, Files4):-
 %!   +Subdirectories:list(atom)
 %! ) is det.
 
+% Relative file with empty subdirectories.
+directory_subdirectories(Dir, []):-
+  Dir == '.', !.
 directory_subdirectories(Dir1, Subdirs1):-
   % Whether to include the root or not.
   (
