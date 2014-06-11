@@ -276,36 +276,35 @@ sparql_query(Endpoint, Query, Row, Options1):-
 %!   -Result:compound
 %! ) is det.
 
-sparql_read_reply('application/rdf+xml', Read, _, Row):- !,
+sparql_read_reply('application/rdf+xml', Read, _, Result):- !,
   call_cleanup(
     load_rdf(stream(Read), RDF),
     close(Read)
   ),
-  member(Row, RDF).
-sparql_read_reply('text/rdf+n3', Read, _, Row):- !,
+  member(Result, RDF).
+sparql_read_reply('text/rdf+n3', Read, _, Result):- !,
   call_cleanup(
     rdf_read_turtle(stream(Read), RDF, []),
     close(Read)
   ),
-  member(Row, RDF).
+  member(Result, RDF).
 % SPARQL 1.1 Query Results XML Format
 % @see http://www.w3.org/TR/2013/REC-rdf-sparql-XMLres-20130321/
-sparql_read_reply('application/sparql-results+xml', Read, VarNames, Row):- !,
+sparql_read_reply('application/sparql-results+xml', Read, VarNames, Result2):- !,
   call_cleanup(
     sparql_read_xml_result(stream(Read), Result),
     close(Read)
   ),
-  varnames(Result, VarNames),
-  xml_result(Result, Row).
+  varnames(Result1, VarNames),
+  xml_result(Result1, Result2).
 % SPARQL 1.1 Query Results JSON Format.
 % @see http://www.w3.org/TR/sparql11-results-json/
-sparql_read_reply('application/sparql-results+json', Read, VarNames, Row):- !,
+sparql_read_reply('application/sparql-results+json', Read, VarNames, Result):- !,
   call_cleanup(
     sparql_read_json_result(stream(Read), Result),
     close(Read)
   ),
-  varnames(Result, VarNames),
-  xml_result(Result, Row).
+  varnames(Result, VarNames).
 sparql_read_reply(Type, Read, _, _):-
   close(Read),
   domain_error(sparql_result_document, Type).
