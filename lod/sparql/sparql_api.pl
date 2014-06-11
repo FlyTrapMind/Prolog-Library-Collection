@@ -259,11 +259,14 @@ sparql_insert_data(Options):-
 sparql_query(Endpoint, Query, Row, Options1):-
   once(sparql_endpoint(Endpoint, query, Url1)),
   merge_options(
-    [header(content_type,ContentType),variable_names(VariableNames)],
+    [header(content_type,ContentType),
+     request_header('Accept'='application/sparql-results+json'),
+     variable_names(VariableNames)],
     Options1,
     Options2
   ),
   uri_search_add(Url1, query, Query, Url2),
+gtrace,
   http_open(Url2, Read, Options2),
   clean_content_type(ContentType, CleanType),
   sparql_read_reply(CleanType, Read, VariableNames, Row).
