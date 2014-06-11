@@ -48,7 +48,7 @@ dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
        rdf(var(writer), dbpprop:dateOfBirth, var(birth)),
        filter(regex(var(birth), string(Birth))),
        rdf(var(writer), dbpprop:dateOfDeath, var(death)),
-       filter(regex(var(death), string(Death)))], 10, _, _, Rows),
+       filter(regex(var(death), string(Death)))], 10, _, _, Rows, []),
   rows_to_resources(Rows, Resources),
   
   (

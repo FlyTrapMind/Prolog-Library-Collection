@@ -1,11 +1,12 @@
 :- module(
   sparql_api,
   [
-    sparql_ask/4, % +Endpoint:atom
+    sparql_ask/5, % +Endpoint:atom
                   % ?Regime:oneof([owl])
                   % +Prefixes:list(atom)
                   % +Bbps:or([compound,list(compound)])
-    sparql_select/10, % +Endpoint:atom
+                  % +Options:list(nvpair)
+    sparql_select/11, % +Endpoint:atom
                       % ?Regime:oneof([owl])
                       % +Prefixes:list(atom)
                       % +Distinct:boolean
@@ -15,6 +16,7 @@
                       % ?Offset:nonneg
                       % ?Order:pair(oneof([asc]),list(atom))
                       % -Result:list(list)
+                      % +Options:list(nvpair)
     sparql_update/3 % +Endpoint:atom
                     % +Triples:list(list(or([bnode,iri,literal])))
                     % +Options:list(nvpair)
@@ -56,10 +58,11 @@ High-level API for making SPARQL queries.
 %!   +Endpoint:atom,
 %!   ?Regime:oneof([owl]),
 %!   +Prefixes:list(atom),
-%!   +Bbps:or([compound,list(compound)])
+%!   +Bbps:or([compound,list(compound)]),
+%!   +Options:list(nvpair)
 %! ) is semidet.
 
-sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
+sparql_ask(Endpoint, Regime, Prefixes, Bgps, Options):-
   % Construct the query.
   phrase(sparql_formulate_ask(Regime, _, Prefixes, Bgps), Query1),
 
@@ -68,8 +71,7 @@ sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
   debug(sparql_api, '~w', [Query2]),
 
   % Execute the ASK query.
-  sparql_query(Endpoint, Query2, true, []).
-
+  sparql_query(Endpoint, Query2, true, Options).
 
 
 %! sparql_select(
@@ -82,7 +84,8 @@ sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
 %!   ?Limit:or([nonneg,oneof([inf])]),
 %!   ?Offset:nonneg,
 %!   ?Order:pair(oneof([asc]),list(atom)),
-%!   -Rows:list(list)
+%!   -Result:list(list),
+%!   +Options:list(nvpair)
 %! ) is det.
 
 sparql_select(
@@ -95,7 +98,8 @@ sparql_select(
   Limit,
   Offset,
   Order,
-  Result
+  Result,
+  Options
 ):-
   phrase(
     sparql_formulate(
@@ -120,7 +124,7 @@ sparql_select(
   % Execute the SELECT query.
   findall(
     Row,
-    sparql_query(Endpoint, Query2, Row, []),
+    sparql_query(Endpoint, Query2, Row, Options),
     Rows
   ),
   Rows = Result.
@@ -247,8 +251,10 @@ sparql_insert_data(Options):-
 %!   +Options:list(nvpair)
 %! ) is det.
 % The following options are supported:
-%    * =|variable_names(-VariableNames:list(atom))|=
-%    * Other options are passed on to http_open/3.
+%   * =|query_method(+Method:oneof([direct,get,url_encoded]))|=
+%     Default: `direct`.
+%   * =|variable_names(-VariableNames:list(atom))|=
+%   * Other options are passed on to http_open/3.
 
 sparql_query(Endpoint, Query, Row, Options1):-
   once(sparql_endpoint(Endpoint, query, Url1)),

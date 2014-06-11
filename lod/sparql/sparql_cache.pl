@@ -76,7 +76,7 @@ sparql_cache(Resource, Resources, Propositions):-
   
   % Query.
   sparql_select(Endpoint, _, [], true, [p,o],
-      [rdf(iri(Resource), var(p), var(o))], inf, _, _, Rows),
+      [rdf(iri(Resource), var(p), var(o))], inf, _, _, Rows, []),
 
   % Conversion
   rows_to_propositions([Resource], Rows, Propositions),

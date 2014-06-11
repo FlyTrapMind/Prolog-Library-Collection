@@ -37,7 +37,7 @@ sparql_find(Endpoint, Resource, Resource):-
   % @tbd This can be done more efficiently by just looking for
   %      the first triple.
   sparql_select(Endpoint, _, [], true, [p,o],
-      [rdf(iri(Resource),var(p),var(o))], 1, _, _, Rows),
+      [rdf(iri(Resource),var(p),var(o))], 1, _, _, Rows, []),
   
   (
     Rows == []
@@ -50,7 +50,7 @@ sparql_find(Endpoint, SearchTerm, Resource):-
   sparql_select(Endpoint, _, [rdfs], true, [resource],
       [rdf(var(resource),rdfs:label,var(label)),
        filter(regex(var(label),at_start(SearchTerm),[case_insensitive]))],
-      inf, _, _, Rows),
+      inf, _, _, Rows, []),
   
   (
     Rows = []
