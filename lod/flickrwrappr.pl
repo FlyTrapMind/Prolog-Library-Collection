@@ -34,7 +34,7 @@ While caching, location [2] is reached via triple [1],
 @version 2014/01
 */
 
-:- use_module(generics(uri_query)).
+:- use_module(generics(uri_search)).
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(ordsets)).
@@ -77,7 +77,7 @@ flickrwrappr_cache(Graph, Resources, Propositions):-
   maplist(ord_union, [Resourcess,Propositionss], [Resources,Propositions]).
 
 flickrwrappr_cache_url(URL1-IRI, Resources, Propositions):-
-  uri_query_add(URL1, format, rdf, URL2),
+  uri_search_add(URL1, format, rdf, URL2),
   lod_local_query([], URL2, _NoGraph, IRI, Resources, Propositions).
 
 assert_proposition(Graph, [S,P,O]):-

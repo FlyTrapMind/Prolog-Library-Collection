@@ -42,7 +42,7 @@
 :- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(generics(uri_query)).
+:- use_module(generics(uri_search)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(semweb/rdf_db)).
