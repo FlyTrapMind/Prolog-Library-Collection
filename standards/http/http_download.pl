@@ -86,7 +86,7 @@ download_to_file(Url, File, Options):-
   http_goal(Url, Options, file_from_stream(TmpFile)),
 
   % Give the file its original name.
-  catch(rename_file(TmpFile, File), E, (gtrace, writeln(E))).
+  rename_file(TmpFile, File).
 % No file name is given; create a file name in a standardized way,
 % based on the URL.
 download_to_file(Url, File, Options):-
