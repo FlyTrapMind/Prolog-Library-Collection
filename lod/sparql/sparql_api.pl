@@ -295,7 +295,7 @@ sparql_read_reply('text/rdf+n3', Read, _, Result):- !,
 % @see http://www.w3.org/TR/2013/REC-rdf-sparql-XMLres-20130321/
 sparql_read_reply('application/sparql-results+xml', Read, VarNames, Result2):- !,
   call_cleanup(
-    sparql_read_xml_result(stream(Read), Result),
+    sparql_read_xml_result(stream(Read), Result1),
     close(Read)
   ),
   varnames(Result1, VarNames),
