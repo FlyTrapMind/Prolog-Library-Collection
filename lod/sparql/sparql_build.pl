@@ -28,8 +28,11 @@
 DCGs for constructing SPARQL queries.
 
 @author Wouter Beek
-@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/02
+@version 2012/12-2013/01, 2013/03-2013/05, 2013/07, 2013/09, 2013/11-2014/02.
+         2014/06
 */
+
+:- use_module(library(semweb/rdf_db)).
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
