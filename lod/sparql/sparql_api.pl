@@ -167,10 +167,11 @@ sparql_update0(Endpoint, Triples, Options1):-
   sparql_update_post(Url, Content1, Method, Options3).
 
 % Method: URL encoded.
-sparql_update_post(Url, Query, url_encoded, Options1):- !,
+sparql_update_post(Url, Query1, url_encoded, Options1):- !,
 gtrace,
   graph_search_parameters(Options1, GraphParams, Options2),
-  uri_query_components(Search1, [query=Query|GraphParams]),
+  atom_codes(Query2, Query1),
+  uri_query_components(Search1, [query=Query2|GraphParams]),
   atom_codes(Search1, Search2),
   http_post(
     Url,
