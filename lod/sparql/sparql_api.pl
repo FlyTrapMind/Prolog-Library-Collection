@@ -34,6 +34,7 @@ High-level API for making SPARQL queries.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_client)).
+:- use_module(library(http/http_open)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/sparql_client)).
@@ -116,7 +117,7 @@ sparql_select(
   sparql_query_options(Endpoint, Options),
   findall(
     Row,
-    sparql_query(Query2, Row, Options),
+    sparql_query2(Query2, Row, Options),
     Rows
   ),
   maplist(row_to_list, Rows, Result2),
@@ -182,6 +183,25 @@ sparql_insert_data(Options):-
   rdf_ntriples_write(Options),
   writeln('}').
 
+
+sparql_query2(Query, Row, Options):-
+  sparql_client:sparql_param(host(Host), Options,  Options1),
+  sparql_client:sparql_param(port(Port), Options1, Options2),
+  sparql_client:sparql_param(path(Path), Options2, Options3),
+  select_option(search(Extra), Options3, Options4, []),
+  select_option(variable_names(VarNames), Options4, Options5, _),
+  http_open(
+    [protocol(http),
+     host(Host),
+     port(Port),
+     path(Path),
+     search([query=Query|Extra])
+    |Options5],
+    In,
+    [header(content_type, ContentType)]
+  ),
+  sparql_client:plain_content_type(ContentType, CleanType),
+  sparql_client:read_reply(CleanType, In, VarNames, Row).
 
 %! sparql_query_options(+Endpoint:atom, -Options:list(nvpair)) is det.
 
