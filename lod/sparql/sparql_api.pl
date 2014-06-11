@@ -228,5 +228,5 @@ sparql_query_options(Endpoint, UrlOptions2, HttpOptions):-
   ;
     UrlOptions2 = UrlOptions1
   ),
-  HttpOptions =  [request_header('Accept'='application/sparql-results+json')].
+  HttpOptions =  [request_header('Accept'='application/sparql-results+xml')].
 
