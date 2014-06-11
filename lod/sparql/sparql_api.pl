@@ -136,9 +136,11 @@ sparql_select(
 %!   +Options:list(nvpair)
 %! ) is det.
 % The following options are supported:
-%   - =|update_method(+Method:oneof([direct,url_encoded]))|=
+%  * =|default_graph(+DefaultGraph:atom)|=
+%  * =|named_graphs(+NamedGraphs:list(atom))|=
+%  * =|update_method(+Method:oneof([direct,url_encoded]))|=
 %     Default: `direct`.
-%   - Other options are passed on to http_post/4.
+%  * Other options are passed on to http_post/4.
 
 sparql_update(Endpoint, Triples, Options):-
   rdf_transaction(
@@ -166,6 +168,7 @@ sparql_update0(Endpoint, Triples, Options1):-
 
 % Method: URL encoded.
 sparql_update_post(Url, Query, url_encoded, Options1):- !,
+gtrace,
   graph_search_parameters(Options1, GraphParams, Options2),
   uri_query_components(Search1, [query=Query|GraphParams]),
   atom_codes(Search1, Search2),
@@ -266,7 +269,6 @@ sparql_query(Endpoint, Query, Row, Options1):-
     Options2
   ),
   uri_search_add(Url1, query, Query, Url2),
-gtrace,
   http_open(Url2, Read, Options2),
   clean_content_type(ContentType, CleanType),
   sparql_read_reply(CleanType, Read, VariableNames, Row).
