@@ -63,8 +63,8 @@ sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
   debug(sparql_api, '~w', [Query2]),
 
   % Execute the ASK query.
-  sparql_query_options(Endpoint, Options),
-  sparql_query2(Query2, true, Options).
+  sparql_query_options(Endpoint, UrlOptions, HttpOptions),
+  sparql_query2(Query2, true, UrlOptions, HttpOptions).
 
 
 
@@ -114,10 +114,10 @@ sparql_select(
   debug(sparql_api, '~w', Query2),
 
   % Execute the SELECT query.
-  sparql_query_options(Endpoint, Options),
+  sparql_query_options(Endpoint, UrlOptions, HttpOptions),
   findall(
     Row,
-    sparql_query2(Query2, Row, Options),
+    sparql_query2(Query2, Row, UrlOptions, HttpOptions),
     Rows
   ),
   maplist(row_to_list, Rows, Result2),
@@ -184,43 +184,49 @@ sparql_insert_data(Options):-
   writeln('}').
 
 
-sparql_query2(Query, Row, Options):-
-  sparql_client:sparql_param(host(Host), Options,  Options1),
-  sparql_client:sparql_param(port(Port), Options1, Options2),
-  sparql_client:sparql_param(path(Path), Options2, Options3),
-  select_option(search(Extra), Options3, Options4, []),
-  select_option(variable_names(VarNames), Options4, Options5, _),
+sparql_query2(Query, Row, UrlOptions6, HttpOptions):-
+  sparql_client:sparql_param(host(Host), UrlOptions1, UrlOptions2),
+  sparql_client:sparql_param(port(Port), UrlOptions2, UrlOptions3),
+  sparql_client:sparql_param(path(Path), UrlOptions3, UrlOptions4),
+  select_option(search(Extra), UrlOptions4, UrlOptions5, []),
+  select_option(variable_names(VarNames), UrlOptions5, UrlOptions6, _),
+  merge_options(
+    [header(content_type, ContentType)],
+    HttpOptions,
+    HttpOptions1
+  ),
   http_open(
     [protocol(http),
      host(Host),
      port(Port),
      path(Path),
      search([query=Query|Extra])
-    |Options5],
+    |UrlOptions6],
     In,
-    [header(content_type, ContentType)]
+    HttpOptions
   ),
   sparql_client:plain_content_type(ContentType, CleanType),
   sparql_client:read_reply(CleanType, In, VarNames, Row).
 
-%! sparql_query_options(+Endpoint:atom, -Options:list(nvpair)) is det.
 
-sparql_query_options(Endpoint, Options3):-
+%! sparql_query_options(
+%!   +Endpoint:atom,
+%!   -UrlOptions:list(nvpair),
+%!   -HttpOptions:list(nvpair)
+%! ) is det.
+
+sparql_query_options(Endpoint, UrlOptions2, HttpOptions):-
   % Options are based on the given endpoint registration.
   once(sparql_endpoint(Endpoint, query, Location)),
   uri_components(Location, uri_components(_,Authority,Path,_,_)),
   uri_authority_components(Authority, uri_authority(_,_,Host,Port)),
-  Options1 = [host(Host),timeout(1),path(Path)],
+  UrlOptions1 = [host(Host),timeout(1),path(Path)],
   (
     nonvar(Port)
   ->
-    merge_options([port(Port)], Options1, Options2)
+    merge_options([port(Port)], UrlOptions1, UrlOptions2)
   ;
-    Options2 = Options1
+    UrlOptions2 = UrlOptions1
   ),
-  merge_options(
-    Options2,
-    [request_header('Accept'='application/sparql-results+json')],
-    Options3
-  ).
+  HttpOptions =  [request_header('Accept'='application/sparql-results+json')].
 
