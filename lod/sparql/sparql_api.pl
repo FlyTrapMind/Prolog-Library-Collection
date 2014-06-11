@@ -64,7 +64,7 @@ sparql_ask(Endpoint, Regime, Prefixes, Bgps):-
 
   % Execute the ASK query.
   sparql_query_options(Endpoint, Options),
-  sparql_query(Query2, true, Options).
+  sparql_query2(Query2, true, Options).
 
 
 
