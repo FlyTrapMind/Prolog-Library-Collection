@@ -269,6 +269,19 @@ sparql_query(Endpoint, Query, Row, Options1):-
   sparql_read_reply(CleanType, Read, VariableNames, Row).
 
 
+%! sparql_query_result(
+%!   +Result1:compound,
+%!   -Result2:or([boolean,list])
+%! ) is nondet.
+
+sparql_query_result(ask(Result1), Result2):- !,
+  Result1 = Result2.
+sparql_query_result(select(_, Rows), Result):-
+  % NONDET
+  member(Row, Rows),
+  row_to_list(Row, Result).
+
+
 %! sparql_read_reply(
 %!   +ContentType:atom,
 %!   +Read:blob,
@@ -290,21 +303,32 @@ sparql_read_reply('text/rdf+n3', Read, _, Result):- !,
   member(Result, RDF).
 % SPARQL 1.1 Query Results XML Format
 % @see http://www.w3.org/TR/2013/REC-rdf-sparql-XMLres-20130321/
-sparql_read_reply('application/sparql-results+xml', Read, VarNames, Result2):- !,
+sparql_read_reply(
+  'application/sparql-results+xml',
+  Read,
+  VarNames,
+  Result2
+):- !,
   call_cleanup(
     sparql_read_xml_result(stream(Read), Result),
     close(Read)
   ),
   varnames(Result1, VarNames),
-  xml_result(Result1, Result2).
+  sparql_query_result(Result1, Result2).
 % SPARQL 1.1 Query Results JSON Format.
 % @see http://www.w3.org/TR/sparql11-results-json/
-sparql_read_reply('application/sparql-results+json', Read, VarNames, Result):- !,
+sparql_read_reply(
+  'application/sparql-results+json',
+  Read,
+  VarNames,
+  Result
+):- !,
   call_cleanup(
     sparql_read_json_result(stream(Read), Result),
     close(Read)
   ),
-  varnames(Result, VarNames).
+  varnames(Result1, VarNames),
+  sparql_query_result(Result1, Result2).
 sparql_read_reply(Type, Read, _, _):-
   close(Read),
   domain_error(sparql_result_document, Type).
@@ -313,14 +337,4 @@ sparql_read_reply(Type, Read, _, _):-
 varnames(ask(_), _).
 varnames(select(VarTerm, _Rows), VarNames):-
   VarTerm =.. [_|VarNames].
-
-
-%! xml_result(+Result:compound, -Result:or([boolean,list])) is nondet.
-
-xml_result(ask(Result1), Result2):- !,
-  Result1 = Result2.
-xml_result(select(_, Rows), Result):-
-  % NONDET
-  member(Row, Rows),
-  row_to_list(Row, Result).
 
