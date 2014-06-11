@@ -184,7 +184,7 @@ sparql_insert_data(Options):-
   writeln('}').
 
 
-sparql_query2(Query, Row, UrlOptions6, HttpOptions):-
+sparql_query2(Query, Row, UrlOptions1, HttpOptions1):-
   sparql_client:sparql_param(host(Host), UrlOptions1, UrlOptions2),
   sparql_client:sparql_param(port(Port), UrlOptions2, UrlOptions3),
   sparql_client:sparql_param(path(Path), UrlOptions3, UrlOptions4),
@@ -192,8 +192,8 @@ sparql_query2(Query, Row, UrlOptions6, HttpOptions):-
   select_option(variable_names(VarNames), UrlOptions5, UrlOptions6, _),
   merge_options(
     [header(content_type, ContentType)],
-    HttpOptions,
-    HttpOptions1
+    HttpOptions1,
+    HttpOptions2
   ),
   http_open(
     [protocol(http),
@@ -203,7 +203,7 @@ sparql_query2(Query, Row, UrlOptions6, HttpOptions):-
      search([query=Query|Extra])
     |UrlOptions6],
     In,
-    HttpOptions
+    HttpOptions2
   ),
   sparql_client:plain_content_type(ContentType, CleanType),
   sparql_client:read_reply(CleanType, In, VarNames, Row).
