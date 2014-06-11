@@ -37,7 +37,7 @@ High-level API for making SPARQL queries.
 :- use_module(library(http/http_open)).
 :- use_module(library(option)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(semweb/sparql_client)).
+:- use_module(library(semweb/sparql_client)). % JW
 
 :- use_module(generics(row_ext)).
 :- use_module(sparql(sparql_build)).
@@ -148,11 +148,7 @@ sparql_update0(Endpoint, Triples, Options1):-
 
   % Set options.
   sparql_endpoint(Endpoint, update, Location),
-  merge_options(
-    Options1,
-    [request_header('Accept'='application/sparql-results+json')],
-    Options2
-  ),
+  merge_options(Options1, [request_header('Accept'='*/*')], Options2),
 
   % The actual SPARQL Update request.
   http_post(
