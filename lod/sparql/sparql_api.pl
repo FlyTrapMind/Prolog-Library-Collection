@@ -82,7 +82,7 @@ sparql_ask(Endpoint, Regime, Prefixes, Bgps, Options):-
 
 sparql_drop(Endpoint, Graph, Options):-
   once(sparql_endpoint(Endpoint, update, Url)),
-  atomic_list_concat(['DROP GRAPH <',Graph,'>'], Query),
+  atomic_list_concat(['DROP SILENT GRAPH <',Graph,'>'], Query),
   sparql_update_post(Url, Query, Options).
 
 
@@ -165,7 +165,7 @@ sparql_update(Endpoint, Mode, Triples, Options):-
 sparql_update0(Endpoint, Mode, Triples, Options1):-
   % Construct the contents of the request message.
   maplist(assert_triple, Triples),
-  
+
   (
     Mode == delete
   ->
