@@ -149,7 +149,7 @@ sparql_update0(Endpoint, Triples, Options1):-
   sparql_endpoint(Endpoint, update, Location),
   merge_options(
     Options1,
-    [request_header('Accept'='application/json')],
+    [request_header('Accept'='application/sparql-results+json')],
     Options2
   ),
 
@@ -185,7 +185,7 @@ sparql_insert_data(Options):-
 
 %! sparql_query_options(+Endpoint:atom, -Options:list(nvpair)) is det.
 
-sparql_query_options(Endpoint, Options2):-
+sparql_query_options(Endpoint, Options3):-
   % Options are based on the given endpoint registration.
   once(sparql_endpoint(Endpoint, query, Location)),
   uri_components(Location, uri_components(_,Authority,Path,_,_)),
@@ -197,5 +197,10 @@ sparql_query_options(Endpoint, Options2):-
     merge_options([port(Port)], Options1, Options2)
   ;
     Options2 = Options1
+  ),
+  merge_options(
+    Options2,
+    [request_header('Accept'='application/sparql-results+json')],
+    Options3
   ).
 
