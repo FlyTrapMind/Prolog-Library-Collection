@@ -324,10 +324,10 @@ sparql_read_reply(
   'application/sparql-results+json',
   Read,
   VarNames,
-  Result
+  Result2
 ):- !,
   call_cleanup(
-    sparql_read_json_result(stream(Read), Result),
+    sparql_read_json_result(stream(Read), Result1),
     close(Read)
   ),
   varnames(Result1, VarNames),
