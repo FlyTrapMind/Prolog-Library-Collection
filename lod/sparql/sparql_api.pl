@@ -6,6 +6,9 @@
                   % +Prefixes:list(atom)
                   % +Bbps:or([compound,list(compound)])
                   % +Options:list(nvpair)
+    sparql_drop/3, % +Endpoint:atom
+                   % +Graph:atom
+                   % +Options:list(nvpair)
     sparql_select/11, % +Endpoint:atom
                       % ?Regime:oneof([owl])
                       % +Prefixes:list(atom)
@@ -17,7 +20,8 @@
                       % ?Order:pair(oneof([asc]),list(atom))
                       % -Result:list(list)
                       % +Options:list(nvpair)
-    sparql_update/3 % +Endpoint:atom
+    sparql_update/4 % +Endpoint:atom
+                    % +Mode:oneof([delete,insert])
                     % +Triples:list(list(or([bnode,iri,literal])))
                     % +Options:list(nvpair)
   ]
@@ -72,6 +76,14 @@ sparql_ask(Endpoint, Regime, Prefixes, Bgps, Options):-
 
   % Execute the ASK query.
   sparql_query(Endpoint, Query2, true, Options).
+
+
+%! sparql_drop(+Endpoint:atom, +Graph:atom, +Options:list(nvpair)) is det.
+
+sparql_drop(Endpoint, Graph, Options):-
+  once(sparql_endpoint(Endpoint, update, Url)),
+  atomic_list_concat(['DROP GRAPH <',Graph,'>'], Query),
+  sparql_update_post(Url, Query, Options).
 
 
 %! sparql_select(
@@ -132,6 +144,7 @@ sparql_select(
 
 %! sparql_update(
 %!   +Endpoint:atom,
+%!   +Mode:oneof([delete,insert]),
 %!   +Triples:list(list(or([bnode,iri,literal]))),
 %!   +Options:list(nvpair)
 %! ) is det.
@@ -142,17 +155,26 @@ sparql_select(
 %     Default: `direct`.
 %  * Other options are passed on to http_post/4.
 
-sparql_update(Endpoint, Triples, Options):-
+sparql_update(Endpoint, Mode, Triples, Options):-
   rdf_transaction(
-    sparql_update0(Endpoint, Triples, Options),
+    sparql_update0(Endpoint, Mode, Triples, Options),
     _,
     [snapshot(true)]
   ).
 
-sparql_update0(Endpoint, Triples, Options1):-
+sparql_update0(Endpoint, Mode, Triples, Options1):-
   % Construct the contents of the request message.
   maplist(assert_triple, Triples),
-  with_output_to(codes(Content1), sparql_insert_data([])),
+  
+  (
+    Mode == delete
+  ->
+    with_output_to(codes(Content1), sparql_delete_data([]))
+  ;
+    Mode == insert
+  ->
+    with_output_to(codes(Content1), sparql_insert_data([]))
+  ),
 
   % Debug message.
   atom_codes(Content2, Content1),
@@ -163,14 +185,16 @@ sparql_update0(Endpoint, Triples, Options1):-
   merge_options(Options1, [request_header('Accept'='*/*')], Options2),
 
   % The actual SPARQL Update request.
-  select_option(update_method(Method), Options2, Options3, direct),
-  sparql_update_post(Url, Content1, Method, Options3).
+  sparql_update_post(Url, Content2, Options2).
+
+sparql_update_post(Url, Query, Options1):- !,
+  select_option(update_method(Method), Options1, Options2, direct),
+  sparql_update_post(Url, Query, Method, Options2).
 
 % Method: URL encoded.
-sparql_update_post(Url, Query1, url_encoded, Options1):- !,
+sparql_update_post(Url, Query, url_encoded, Options1):- !,
   graph_search_parameters(Options1, GraphParams, Options2),
-  atom_codes(Query2, Query1),
-  uri_query_components(Search1, [query=Query2|GraphParams]),
+  uri_query_components(Search1, [query=Query|GraphParams]),
   atom_codes(Search1, Search2),
   http_post(
     Url,
@@ -236,6 +260,12 @@ graph_search_parameters(Options1, Params3, Options3):-
     NamedGraphPairs
   ),
   append(Params2, NamedGraphPairs, Params3).
+
+
+sparql_delete_data(Options):-
+  writeln('DELETE DATA {'),
+  rdf_ntriples_write(Options),
+  writeln('}').
 
 
 %! sparql_insert_data(+Options:list(nvpair)) is det.
