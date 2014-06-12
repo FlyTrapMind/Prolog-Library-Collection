@@ -381,7 +381,6 @@ varnames(select(VarTerm, _Rows), VarNames):-
 
 % Messages
 
-:- dynamic(prolog:message//1).
 :- multifile(prolog:message//1).
 
 prolog:message(sparql_insert_data(N)) -->

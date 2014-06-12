@@ -32,9 +32,9 @@ load_plc:-
   print_message(warning, required_file_search_path(plc)).
 
 
+
 % Messages
 
-:- dynamic(prolog:message//1).
 :- multifile(prolog:message//1).
 
 prolog:message(required_file_search_path(Alias)) -->
