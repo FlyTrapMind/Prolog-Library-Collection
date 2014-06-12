@@ -149,6 +149,8 @@ sparql_select(
 %!   +Options:list(nvpair)
 %! ) is det.
 % The following options are supported:
+%  * =|bnode_base(+Prefix:uri)|=
+%    Passed on to rdf_ntriples_write/1.
 %  * =|default_graph(+DefaultGraph:atom)|=
 %  * =|named_graphs(+NamedGraphs:list(atom))|=
 %  * =|update_method(+Method:oneof([direct,url_encoded]))|=
@@ -165,15 +167,15 @@ sparql_update(Endpoint, Mode, Triples, Options):-
 sparql_update0(Endpoint, Mode, Triples, Options1):-
   % Construct the contents of the request message.
   maplist(assert_triple, Triples),
-
+  
   (
     Mode == delete
   ->
-    with_output_to(codes(Content1), sparql_delete_data([]))
+    with_output_to(codes(Content1), sparql_delete_data(Options1))
   ;
     Mode == insert
   ->
-    with_output_to(codes(Content1), sparql_insert_data([]))
+    with_output_to(codes(Content1), sparql_insert_data(Options1))
   ),
 
   % Debug message.
