@@ -273,10 +273,12 @@ sparql_delete_data(Options):-
 %! sparql_insert_data(+Options:list(nvpair)) is det.
 % Intended to be run from within an rdf_transaction/3 with `snapshot(true)`.
 
-sparql_insert_data(Options):-
+sparql_insert_data(Options1):-
+  merge_options(Options1, [number_of_triples(N)], Options2),
   writeln('INSERT DATA {'),
-  rdf_ntriples_write(Options),
-  writeln('}').
+  rdf_ntriples_write(Options2),
+  writeln('}'),
+  print_message(informational, sparql_insert_data(N)).
 
 
 %! sparql_query(
@@ -374,4 +376,14 @@ sparql_read_reply(Type, Read, _, _):-
 varnames(ask(_), _).
 varnames(select(VarTerm, _Rows), VarNames):-
   VarTerm =.. [_|VarNames].
+
+
+
+% Messages
+
+:- dynamic(prolog:message//1).
+:- multifile(prolog:message//1).
+
+prolog:message(sparql_insert_data(N)) -->
+  ['SPARQL INSERT DATA: ~D triples.'-[N]].
 

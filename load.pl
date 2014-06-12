@@ -37,6 +37,6 @@ load_plc:-
 :- dynamic(prolog:message//1).
 :- multifile(prolog:message//1).
 
-user:message(required_file_search_path(Alias)) -->
+prolog:message(required_file_search_path(Alias)) -->
   ['File search path ',Alias,' must be set.'].
 
