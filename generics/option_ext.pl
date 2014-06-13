@@ -14,6 +14,12 @@
                           % +DefaultValue
                           % -StoredValue
                           % -Os2:list(nvpair)
+    if_option/3, % +Option:nvpair
+                 % +Options:list(nvpair)
+                 % :Goal
+    if_option//3, % +Option:nvpair
+                  % +Options:list(nvpair)
+                  % :Goal
     remove_option/4, % +OldOptions:list(nvpair),
                      % +Name:atom,
                      % +Value,
@@ -45,13 +51,15 @@ first argument position in the given option term (probably under the
 assumption that the option term will always be unary).
 
 @author Wouter Beek
-@version 2013/01, 2013/07-2013/08, 2013/11-2013/12, 2014/04
+@version 2013/01, 2013/07-2013/08, 2013/11-2013/12, 2014/04, 2014/06
 */
 
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
+:- meta_predicate(if_option(+,+,0)).
+:- meta_predicate(if_option(+,+,//,?,?)).
 :- meta_predicate(update_option(+,+,2,-)).
 :- meta_predicate(update_option(+,+,2,-,-)).
 
@@ -107,6 +115,22 @@ add_default_option(Os1, N, _DefaultV, StoredV, Os1):-
   option(O, Os1), !.
 add_default_option(Os1, N, DefaultV, DefaultV, Os2):-
   add_option(Os1, N, DefaultV, Os2).
+
+
+%! if_option(+Option:nvpair, +Options:list(nvpair), :Goal) is det.
+
+if_option(Option, Options, Goal):-
+  option(Option, Options), !,
+  Goal.
+if_option(_, _, _).
+
+
+%! if_option(+Option:nvpair, +Options:list(nvpair), :Goal)// is det.
+
+if_option(Option, Options, Goal, X, Y):-
+  option(Option, Options), !,
+  call(Goal, X, Y).
+if_option(_, _, _, _, _).
 
 
 %! remove_option(
