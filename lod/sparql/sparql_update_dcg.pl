@@ -1,5 +1,5 @@
 :- module(
-  sparql_update,
+  sparql_update_dcg,
   [
     'BlankNode'//1, % ?BNodeLabel:atom
     'BooleanLiteral'//1 % ?Value:boolean
