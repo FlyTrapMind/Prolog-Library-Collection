@@ -16,8 +16,9 @@ Find a single resource based on a search term.
 */
 
 :- use_module(generics(typecheck)).
-:- use_module(library(debug)).
-:- use_module(sparql(sparql_cache)).
+
+:- use_module(plSparql(sparql_api)).
+:- use_module(plSparql(sparql_cache)).
 
 
 
@@ -34,30 +35,10 @@ Find a single resource based on a search term.
 
 sparql_find(Endpoint, Resource, Resource):-
   is_of_type(iri, Resource), !,
-  % @tbd This can be done more efficiently by just looking for
-  %      the first triple.
-  sparql_select(Endpoint, _, [], true, [p,o],
-      [rdf(iri(Resource),var(p),var(o))], 1, _, _, Rows, []),
-  
-  (
-    Rows == []
-  ->
-    debug(sparql_find, 'No results for resource ~w.', [Resource])
-  ;
-    Rows = [row(Resource)]
-  ).
+  sparql_ask(Endpoint, [], [rdf(iri(Resource),var(p),var(o))], []).
 sparql_find(Endpoint, SearchTerm, Resource):-
-  sparql_select(Endpoint, _, [rdfs], true, [resource],
-      [rdf(var(resource),rdfs:label,var(label)),
-       filter(regex(var(label),at_start(SearchTerm),[case_insensitive]))],
-      inf, _, _, Rows, []),
-  
-  (
-    Rows = []
-  ->
-    debug(sparql_find, 'Could not find a resource for \'~w\'.', [SearchTerm]),
-    fail
-  ;
-    Rows = [row(Resource)|_]
-  ).
+  sparql_select(Endpoint, [rdfs], [resource], [
+      rdf(var(resource),rdfs:label,var(label)),
+      filter(regex(var(label),at_start(SearchTerm),[case_insensitive]))],
+      [Resource], [distinct(true),limit(1)]).
 
