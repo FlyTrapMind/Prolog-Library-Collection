@@ -61,7 +61,8 @@ personal_directory_init:-
 personal_directory_init:-
   % Make sure the home directory is there.
   home_init,
-
+  
+  % @tbd Multiple projects can be loaded at the same time.
   user:project(Project, _, _),
 
   hidden_file_name(Project, Hidden),
