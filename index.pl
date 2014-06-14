@@ -3,7 +3,6 @@
 
 user:file_search_path(ap,              plc(ap)).
 user:file_search_path(datasets,        plc(datasets)).
-user:file_search_path(dbpedia,         datasets(dbpedia)).
 user:file_search_path(dcg,             plc(dcg)).
 user:file_search_path(flp,             dcg(flp)).
 user:file_search_path(nlp,             dcg(nlp)).
