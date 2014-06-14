@@ -16,6 +16,7 @@ DCG for generic message headers in RFC 2616.
 */
 
 :- use_module(dcg(dcg_abnf)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic)).

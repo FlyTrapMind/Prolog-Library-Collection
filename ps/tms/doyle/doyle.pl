@@ -164,6 +164,8 @@ Only SL-justifications can be well-founded justifications.
 
 :- dynamic(cp_consequence/2).
 
+:- meta_predicate(transitive_closure(2,+,-)).
+
 :- rdf_meta(doyle_add_argument(+,+,+,r,r)).
 :- rdf_meta(doyle_add_justification(+,+,+,+,r,r)).
 :- rdf_meta(doyle_add_node(+,+,r)).
