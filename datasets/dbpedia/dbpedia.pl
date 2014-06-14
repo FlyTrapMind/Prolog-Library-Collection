@@ -38,8 +38,9 @@ WHERE
 :- use_module(library(uri)).
 
 :- use_module(generics(db_ext)).
-:- use_module(sparql(sparql_db)).
 :- use_module(xml(xml_namespace)).
+
+:- use_module(plSparql(sparql_db)).
 
 :- db_add_novel(user:prolog_file_type(ttl, turtle)).
 

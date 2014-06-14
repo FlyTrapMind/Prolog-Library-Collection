@@ -31,31 +31,3 @@ Search for agents (e.g. people) on DBpedia.
 
 :- rdf_meta(dbpedia_find_agent(+,+,+,r)).
 
-
-
-%! dbpedia_find_agent(
-%!   +FullName:atom,
-%!   +Birth:integer,
-%!   +Death:integer,
-%!   -DBpediaAuthor:uri
-%! ) is semidet.
-
-dbpedia_find_agent(Name, Birth, Death, DBpediaAuthor):-
-  sparql_select(dbpedia, _, [dbp,foaf], true, [writer],
-      [rdf(var(writer), rdf:type, foaf:'Person'),
-       rdf(var(writer), rdfs:label, var(label)),
-       filter(regex(var(label), string(Name), [case_insensitive])),
-       rdf(var(writer), dbpprop:dateOfBirth, var(birth)),
-       filter(regex(var(birth), string(Birth))),
-       rdf(var(writer), dbpprop:dateOfDeath, var(death)),
-       filter(regex(var(death), string(Death)))], 10, _, _, Rows, []),
-  rows_to_resources(Rows, Resources),
-  
-  (
-    Resources = []
-  ->
-    debug(dbpedia, 'Could not find a resource for \'~w\'.', [Name])
-  ;
-    first(Resources, row(DBpediaAuthor))
-  ).
-
