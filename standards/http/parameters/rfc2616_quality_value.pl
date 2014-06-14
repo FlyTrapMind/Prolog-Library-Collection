@@ -12,7 +12,7 @@ DCG for RFC 2616 quality values.
 
 @author Wouter Beek
 @see RFC 2616
-@version 2013/12
+@version 2013/12, 2014/06
 */
 
 :- use_module(dcg(dcg_abnf)).
@@ -57,20 +57,20 @@ DCG for RFC 2616 quality values.
 % *|Quality values|* is a misnomer, since these values merely represent
 %  relative degradation in desired quality.
 
-qvalue(qvalue(D2), D2) -->
+qvalue(qvalue(QualityValue2), QualityValue2) -->
   `0`,
-  '?'(qvalue1).
+  '?'(qvalue_any(QualityValue1)),
+  {QualityValue2 is QualityValue1 / 10}.
 qvalue(qvalue(1.0), 1.0) -->
   `1`,
-  '?'(qvalue2).
+  '?'(qvalue_zero).
 
-qvalue1 -->
+qvalue_any(QualityValue) -->
   `.`,
   'm*n'(0, 3, 'DIGIT', _, Digits),
-  {digits_to_decimal(Digits, D1)},
-  {D2 is D1 / 10}.
+  {digits_to_decimal(Digits, QualityValue)}.
 
-qvalue2 -->
+qvalue_zero -->
   `.`,
   'm*n'(0, 3, zero).
 

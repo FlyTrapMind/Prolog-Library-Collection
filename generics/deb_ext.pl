@@ -24,13 +24,13 @@ Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
 @version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02,
-         2014/04-2014/05
+         2014/04-2014/06
 */
 
 :- use_module(library(debug)).
 
-:- meta_predicate(catch_debug(+,+,:)).
-:- meta_predicate(if_debug(+,:)).
+:- meta_predicate(catch_debug(+,+,0)).
+:- meta_predicate(if_debug(+,0)).
 :- meta_predicate(test(0,+)).
 :- meta_predicate(test(0,+,+)).
 
@@ -41,7 +41,7 @@ Methods that are used while developing and inspecting code.
 % during the execution of `Goal`.
 
 catch_debug(Debug, Msg, Goal):-
-  catch(Goal, Exception, debug_exception(Exception)).
+  catch(Goal, Exception, debug_exception(Debug, Msg, Exception)).
 
 debug_exception(_, _, Exception):-
   var(Exception), !.
