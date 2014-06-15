@@ -4,6 +4,8 @@
     between_hex/3, % +LowHex:atom
                    % +HighHex:atom
                    % ?Number:integer
+    dec_to_hex/2, % +DecimalNumber:nonneg,
+                  % -HexadecimalNumber:atom
     decimal_to_digits/2, % +DecimalNumber:integer
                          % -DecimalDigits:list(between(0,9))
     decimal_to_digits/3, % +DecimalNumber:integer
@@ -85,6 +87,7 @@ digits_to_decimal(Ds, Radix, D):-
   ).
 
 
+%! hex_value(-HexadecimalValue:atom, +DecimalValue:nonneg) is det.
 %! hex_value(+HexadecimalValue:atom, -DecimalValue:nonneg) is det.
 % @tbd Allow negative values.
 

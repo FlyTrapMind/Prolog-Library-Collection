@@ -449,10 +449,10 @@ conflict with builtins or with predicates from other modules:
 
 
 
-a --> a_lowercase.
 a --> a_uppercase.
-a(C) --> a_lowercase(C).
+a --> a_lowercase.
 a(C) --> a_uppercase(C).
+a(C) --> a_lowercase(C).
 
 a_lowercase --> [97].
 a_lowercase(97) --> [97].
@@ -503,10 +503,10 @@ at_sign(64) --> [64].
 at_symbol --> at_sign.
 at_symbol(C) --> at_sign(C).
 
-b --> b_lowercase.
 b --> b_uppercase.
-b(C) --> b_lowercase(C).
+b --> b_lowercase.
 b(C) --> b_uppercase(C).
+b(C) --> b_lowercase(C).
 
 b_lowercase --> [98].
 b_lowercase(98) --> [98].
@@ -535,10 +535,10 @@ bracket(C) --> opening_bracket(C).
 bracket(C, Type) --> closing_bracket(C, Type).
 bracket(C, Type) --> opening_bracket(C, Type).
 
-c --> c_lowercase.
 c --> c_uppercase.
-c(C) --> c_lowercase(C).
+c --> c_lowercase.
 c(C) --> c_uppercase(C).
+c(C) --> c_lowercase(C).
 
 c_lowercase --> [99].
 c_lowercase(99) --> [99].
@@ -664,10 +664,10 @@ curly_bracket --> opening_curly_bracket.
 curly_bracket(C) --> closing_curly_bracket(C).
 curly_bracket(C) --> opening_curly_bracket(C).
 
-d --> d_lowercase.
 d --> d_uppercase.
-d(C) --> d_lowercase(C).
+d --> d_lowercase.
 d(C) --> d_uppercase(C).
+d(C) --> d_lowercase(C).
 
 d_lowercase --> [100].
 d_lowercase(100) --> [100].
@@ -719,10 +719,10 @@ dot(46) --> [46].
 double_quote --> [34].
 double_quote(34) --> [34].
 
-e --> e_lowercase.
 e --> e_uppercase.
-e(C) --> e_lowercase(C).
+e --> e_lowercase.
 e(C) --> e_uppercase(C).
+e(C) --> e_lowercase(C).
 
 e_lowercase --> [101].
 e_lowercase(101) --> [101].
@@ -770,10 +770,10 @@ escape(27) --> [27].
 exclamation_mark --> [33].
 exclamation_mark(33) --> [33].
 
-f --> f_lowercase.
 f --> f_uppercase.
-f(C) --> f_lowercase(C).
+f --> f_lowercase.
 f(C) --> f_uppercase(C).
+f(C) --> f_lowercase(C).
 
 f_lowercase --> [102].
 f_lowercase(102) --> [102].
@@ -796,10 +796,10 @@ forward_slash(47) --> [47].
 four --> [52].
 four(52) --> [52].
 
-g --> g_lowercase.
 g --> g_uppercase.
-g(C) --> g_lowercase(C).
+g --> g_lowercase.
 g(C) --> g_uppercase(C).
+g(C) --> g_lowercase(C).
 
 g_lowercase --> [103].
 g_lowercase(103) --> [103].
@@ -821,10 +821,10 @@ greater_than_sign(62) --> [62].
 group_separator --> [29].
 group_separator(29) --> [29].
 
-h --> h_lowercase.
 h --> h_uppercase.
-h(C) --> h_lowercase(C).
+h --> h_lowercase.
 h(C) --> h_uppercase(C).
+h(C) --> h_lowercase(C).
 
 h_lowercase --> [104].
 h_lowercase(104) --> [104].
@@ -856,10 +856,10 @@ hyphen(C) --> hyphen_minus(C).
 hyphen_minus --> [45].
 hyphen_minus(45) --> [45].
 
-i --> i_lowercase.
 i --> i_uppercase.
-i(C) --> i_lowercase(C).
+i --> i_lowercase.
 i(C) --> i_uppercase(C).
+i(C) --> i_lowercase(C).
 
 i_lowercase --> [105].
 i_lowercase(105) --> [105].
@@ -867,10 +867,10 @@ i_lowercase(105) --> [105].
 i_uppercase --> [73].
 i_uppercase(73) --> [73].
 
-j --> j_lowercase.
 j --> j_uppercase.
-j(C) --> j_lowercase(C).
+j --> j_lowercase.
 j(C) --> j_uppercase(C).
+j(C) --> j_lowercase(C).
 
 j_lowercase --> [106].
 j_lowercase(106) --> [106].
@@ -878,10 +878,10 @@ j_lowercase(106) --> [106].
 j_uppercase --> [74].
 j_uppercase(74) --> [74].
 
-k --> k_lowercase.
 k --> k_uppercase.
-k(C) --> k_lowercase(C).
+k --> k_lowercase.
 k(C) --> k_uppercase(C).
+k(C) --> k_lowercase(C).
 
 k_lowercase --> [107].
 k_lowercase(107) --> [107].
@@ -889,10 +889,10 @@ k_lowercase(107) --> [107].
 k_uppercase --> [75].
 k_uppercase(75) --> [75].
 
-l --> l_lowercase.
 l --> l_uppercase.
-l(C) --> l_lowercase(C).
+l --> l_lowercase.
 l(C) --> l_uppercase(C).
+l(C) --> l_lowercase(C).
 
 l_lowercase --> [108].
 l_lowercase(108) --> [108].
@@ -1071,10 +1071,10 @@ ascii_letter_uppercase(C, 26) --> z_uppercase(C).
 line_feed --> [10].
 line_feed(10) --> [10].
 
-m --> m_lowercase.
 m --> m_uppercase.
-m(C) --> m_lowercase(C).
+m --> m_lowercase.
 m(C) --> m_uppercase(C).
+m(C) --> m_lowercase(C).
 
 m_lowercase --> [109].
 m_lowercase(109) --> [109].
@@ -1085,10 +1085,10 @@ m_uppercase(77) --> [77].
 minus_sign --> hyphen_minus.
 minus_sign(C) --> hyphen_minus(C).
 
-n --> n_lowercase.
 n --> n_uppercase.
-n(C) --> n_lowercase(C).
+n --> n_lowercase.
 n(C) --> n_uppercase(C).
+n(C) --> n_lowercase(C).
 
 n_lowercase --> [110].
 n_lowercase(110) --> [110].
@@ -1108,10 +1108,10 @@ null(0) --> [0].
 number_sign --> [35].
 number_sign(35) --> [35].
 
-o --> o_lowercase.
 o --> o_uppercase.
-o(C) --> o_lowercase(C).
+o --> o_lowercase.
 o(C) --> o_uppercase(C).
+o(C) --> o_lowercase(C).
 
 o_lowercase --> [111].
 o_lowercase(111) --> [111].
@@ -1166,10 +1166,10 @@ opening_square_bracket --> [91].
 opening_square_bracket(91) --> [91].
 opening_square_bracket(91, square) --> [91].
 
-p --> p_lowercase.
 p --> p_uppercase.
-p(C) --> p_lowercase(C).
+p --> p_lowercase.
 p(C) --> p_uppercase(C).
+p(C) --> p_lowercase(C).
 
 p_lowercase --> [112].
 p_lowercase(112) --> [112].
@@ -1247,10 +1247,10 @@ ascii_punctuation(C) --> tilde(C).
 ascii_punctuation(C) --> underscore(C).
 ascii_punctuation(C) --> vertical_bar(C).
 
-q --> q_lowercase.
 q --> q_uppercase.
-q(C) --> q_lowercase(C).
+q --> q_lowercase.
 q(C) --> q_uppercase(C).
+q(C) --> q_lowercase(C).
 
 q_lowercase --> [113].
 q_lowercase(113) --> [113].
@@ -1261,10 +1261,10 @@ q_uppercase(81) --> [81].
 question_mark --> [63].
 question_mark(63) --> [63].
 
-r --> r_lowercase.
 r --> r_uppercase.
-r(C) --> r_lowercase(C).
+r --> r_lowercase.
 r(C) --> r_uppercase(C).
+r(C) --> r_lowercase(C).
 
 r_lowercase --> [114].
 r_lowercase(114) --> [114].
@@ -1280,10 +1280,10 @@ round_bracket --> opening_round_bracket.
 round_bracket(C) --> closing_round_bracket(C).
 round_bracket(C) --> opening_round_bracket(C).
 
-s --> s_lowercase.
 s --> s_uppercase.
-s(C) --> s_lowercase(C).
+s --> s_lowercase.
 s(C) --> s_uppercase(C).
+s(C) --> s_lowercase(C).
 
 s_lowercase --> [115].
 s_lowercase(115) --> [115].
@@ -1342,10 +1342,10 @@ substitute(26) --> [26].
 synchronous_idle --> [22].
 synchronous_idle(22) --> [22].
 
-t --> t_lowercase.
 t --> t_uppercase.
-t(C) --> t_lowercase(C).
+t --> t_lowercase.
 t(C) --> t_uppercase(C).
+t(C) --> t_lowercase(C).
 
 t_lowercase --> [116].
 t_lowercase(116) --> [116].
@@ -1367,10 +1367,10 @@ tilde(126) --> [126].
 two --> [50].
 two(50) --> [50].
 
-u --> u_lowercase.
 u --> u_uppercase.
-u(C) --> u_lowercase(C).
+u --> u_lowercase.
 u(C) --> u_uppercase(C).
+u(C) --> u_lowercase(C).
 
 u_lowercase --> [117].
 u_lowercase(117) --> [117].
@@ -1384,10 +1384,10 @@ underscore(95) --> [95].
 unit_separator --> [31].
 unit_separator(31) --> [31].
 
-v --> v_lowercase.
 v --> v_uppercase.
-v(C) --> v_lowercase(C).
+v --> v_lowercase.
 v(C) --> v_uppercase(C).
+v(C) --> v_lowercase(C).
 
 v_lowercase --> [118].
 v_lowercase(118) --> [118].
@@ -1401,10 +1401,10 @@ vertical_bar(124) --> [124].
 vertical_tab --> [11].
 vertical_tab(11) --> [11].
 
-w --> w_lowercase.
 w --> w_uppercase.
-w(C) --> w_lowercase(C).
+w --> w_lowercase.
 w(C) --> w_uppercase(C).
+w(C) --> w_lowercase(C).
 
 w_lowercase --> [119].
 w_lowercase(119) --> [119].
@@ -1430,10 +1430,10 @@ ascii_whites -->
   ascii_whites.
 ascii_whites --> [].
 
-x --> x_lowercase.
 x --> x_uppercase.
-x(C) --> x_lowercase(C).
+x --> x_lowercase.
 x(C) --> x_uppercase(C).
+x(C) --> x_lowercase(C).
 
 x_lowercase --> [120].
 x_lowercase(120) --> [120].
@@ -1441,10 +1441,10 @@ x_lowercase(120) --> [120].
 x_uppercase --> [88].
 x_uppercase(88) --> [88].
 
-y --> y_lowercase.
 y --> y_uppercase.
-y(C) --> y_lowercase(C).
+y --> y_lowercase.
 y(C) --> y_uppercase(C).
+y(C) --> y_lowercase(C).
 
 y_lowercase --> [121].
 y_lowercase(121) --> [121].
@@ -1452,10 +1452,10 @@ y_lowercase(121) --> [121].
 y_uppercase --> [89].
 y_uppercase(89) --> [89].
 
-z --> z_lowercase.
 z --> z_uppercase.
-z(C) --> z_lowercase(C).
+z --> z_lowercase.
 z(C) --> z_uppercase(C).
+z(C) --> z_lowercase(C).
 
 z_lowercase --> [122].
 z_lowercase(122) --> [122].

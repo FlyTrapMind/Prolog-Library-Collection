@@ -1,4 +1,4 @@
-:- module(rfc4234_basic, []).
+:- module(rfc5234_basic, []).
 :- reexport(
   rfc2234,
   [
@@ -44,7 +44,9 @@ DCGs for the basic rules defined in RFC 4234,
  Augmented Backus Naur Form (ABNF).
 
 @author Wouter Beek
-@see [RFC 4234](http://tools.ietf.org/html/rfc4234)
+@see Obsoletes RFC 2234
+@see Obsoletes RFC 4234
+@see [RFC 5234](http://tools.ietf.org/html/rfc5234)
 @version 2013/07-2013/08, 2013/12, 2014/05-2014/06
 */
 
