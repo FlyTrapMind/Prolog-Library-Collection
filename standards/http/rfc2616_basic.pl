@@ -19,8 +19,6 @@
   [
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
-    'CHAR'//0,
-    'CHAR'//1, % ?Code:code
     'CR'//0,
     'CRLF'//0,
     'CTL'//0,
@@ -56,7 +54,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 
 
 
-%! '"'//0 .
+%! '"'// .
 % Double quote.
 %
 % ~~~
@@ -231,7 +229,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 
 'LWS' -->
   '?'('CRLF'),
-  '+'('WSP').
+  '+'(('SP' ; 'HT')).
 
 
 %! 'OCTET'// .
