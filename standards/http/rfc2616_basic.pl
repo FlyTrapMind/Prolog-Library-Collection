@@ -1,6 +1,8 @@
 :- module(
   rfc2616_basic,
   [
+    'CHAR'//0,
+    'CHAR'//1, % ?Code:code
     'HEX'//0,
     'HEX'//1, % ?Code:code
     'HEX'//2, % ?Code:code
@@ -19,8 +21,6 @@
   [
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
-    'CHAR'//0,
-    'CHAR'//1, % ?Code:code
     'CR'//0,
     'CRLF'//0,
     'CTL'//0,
@@ -36,7 +36,9 @@
     'OCTET'//0,
     'OCTET'//1, % ?Code:code
     'SP'//0,
-    'SP'//1 % ?Code:code
+    'SP'//1, % ?Code:code
+    'WSP'//0,
+    'WSP'//1 % ?Code:code
   ]
 ).
 
@@ -56,7 +58,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 
 
 
-%! '"'//0 .
+%! '"'// .
 % Double quote.
 %
 % ~~~
