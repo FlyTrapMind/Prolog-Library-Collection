@@ -64,7 +64,13 @@ request_search_read_pl_term(Request, Name, Value2):-
 
 uri_search_add(Uri1, Params0, Uri2):-
   uri_components(Uri1, uri_components(Scheme,Auth,Path,Search1,Frag)),
-  uri_query_components(Search1, Params1),
+  (
+    var(Search1)
+  ->
+    Params1 = []
+  ;
+    uri_query_components(Search1, Params1)
+  ),
   merge_options(Params0, Params1, Params2),
   uri_query_components(Search2, Params2),
   uri_components(Uri2, uri_components(Scheme,Auth,Path,Search2,Frag)).

@@ -58,6 +58,8 @@ assumption that the option term will always be unary).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
+:- use_module(dcg(dcg_meta)).
+
 :- meta_predicate(if_option(+,+,0)).
 :- meta_predicate(if_option(+,+,//,?,?)).
 :- meta_predicate(update_option(+,+,2,-)).
@@ -127,10 +129,10 @@ if_option(_, _, _).
 
 %! if_option(+Option:nvpair, +Options:list(nvpair), :Goal)// is det.
 
-if_option(Option, Options, Goal, X, Y):-
-  option(Option, Options), !,
-  call(Goal, X, Y).
-if_option(_, _, _, _, _).
+if_option(Option, Options, Goal) -->
+  {option(Option, Options)}, !,
+  dcg_call(Goal).
+if_option(_, _, _) --> [].
 
 
 %! remove_option(

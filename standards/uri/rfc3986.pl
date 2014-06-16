@@ -2,7 +2,7 @@
   rfc3986,
   [
     uri_encode//0,
-    uri_search//1 % +Params:list(nvpair)
+    uri_encoded_search//1 % +Parameters:list(nvpair)
   ]
 ).
 
@@ -41,19 +41,21 @@ dec_to_hex_codes(Value, [C1,C2]):-
   hexadecimal_digit(C2, Value2, _, _).
 
 
-%! uri_search(+Params:list(nvpair))// .
+%! uri_encoded_search(+Parameters:list(nvpair))// is det.
 
-uri_search([]) --> [].
-uri_search([N=V|T]) -->
-  uri_search_name(N),
+uri_encoded_search([]) --> [].
+uri_encoded_search([N=V|T]) -->
+  uri_encoded_search_name(N),
   `=`,
-  uri_search_value(V),
-  uri_search(T).
+  uri_encoded_search_value(V),
+  uri_encoded_search(T).
 
-uri_search_name(N) -->
+uri_encoded_search_name(N) -->
   atom(N).
 
-uri_search_value(V1) -->
+uri_encoded_search_value(V1) -->
   {once(dcg_phrase(uri_encode, V1, V2))},
   codes(V2).
+uri_encoded_search_value(V) -->
+  atom(V).
 

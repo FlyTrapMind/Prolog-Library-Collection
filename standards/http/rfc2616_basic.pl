@@ -233,7 +233,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 
 'LWS' -->
   '?'('CRLF'),
-  '+'('WSP').
+  '+'(('SP' ; 'HT')).
 
 
 %! 'OCTET'// .
