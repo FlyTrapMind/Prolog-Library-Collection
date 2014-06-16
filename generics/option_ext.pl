@@ -58,6 +58,8 @@ assumption that the option term will always be unary).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 
+:- use_module(dcg(dcg_meta)).
+
 :- meta_predicate(if_option(+,+,0)).
 :- meta_predicate(if_option(+,+,//,?,?)).
 :- meta_predicate(update_option(+,+,2,-)).

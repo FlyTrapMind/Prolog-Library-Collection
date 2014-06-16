@@ -1,7 +1,8 @@
 :- module(
   rfc3986,
   [
-    uri_encode//0
+    uri_encode//0,
+    uri_encoded_search//1 % +Parameters:list(nvpair)
   ]
 ).
 
@@ -38,4 +39,23 @@ dec_to_hex_codes(Value, [C1,C2]):-
   hexadecimal_digit(C1, Value1, _, _),
   Value2 is Value mod 16,
   hexadecimal_digit(C2, Value2, _, _).
+
+
+%! uri_encoded_search(+Parameters:list(nvpair))// is det.
+
+uri_encoded_search([]) --> [].
+uri_encoded_search([N=V|T]) -->
+  uri_encoded_search_name(N),
+  `=`,
+  uri_encoded_search_value(V),
+  uri_encoded_search(T).
+
+uri_encoded_search_name(N) -->
+  atom(N).
+
+uri_encoded_search_value(V) -->
+  {is_list(V)}, !,
+  codes(V).
+uri_encoded_search_value(V) -->
+  atom(V).
 
