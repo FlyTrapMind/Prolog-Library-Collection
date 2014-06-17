@@ -3,9 +3,9 @@
   [
     java_output_stream/1, % -Output
     java_error_stream/1, % -Error
-    run_jar/2, % +JAR_File:atom
+    run_jar/2, % +JarFile:atom
                % +CommandlineArguments:list(atom
-    run_jar/4 % +JAR_File:atom
+    run_jar/4 % +JarFile:atom
               % +CommandlineArguments:list(atom
               % +Output
               % +Error
@@ -51,20 +51,20 @@ java_error_stream(Error):-
   open(ErrorFile, append, Error, []).
 
 
-%! run_jar(+JAR_File:atom, +CommandlineArguments:list(atom)) is det.
+%! run_jar(+JarFile:atom, +CommandlineArguments:list(atom)) is det.
 % Runs the given JAR file with the given commandline arguments,
 % and uses the Java error and output streams as defined by this module:
 %   - java_error_stream/1
 %   - java_output_stream/1
 
-run_jar(JAR_File, Args):-
+run_jar(JarFile, Args):-
   setup_call_cleanup(
     (
       java_output_stream(Output1),
       java_error_stream(Error1)
     ),
     (
-      run_jar(JAR_File, Args, pipe(Output2), pipe(Error2)),
+      run_jar(JarFile, Args, pipe(Output2), pipe(Error2)),
       copy_stream_data(Output2, Output1),
       copy_stream_data(Error2, Error1)
     ),
@@ -73,7 +73,7 @@ run_jar(JAR_File, Args):-
 
 
 %! run_jar(
-%!   +JAR_File:atom,
+%!   +JarFile:atom,
 %!   +CommandlineArguments:list(atom),
 %!   +Error:stream,
 %!   +Output:stream
@@ -81,16 +81,16 @@ run_jar(JAR_File, Args):-
 % Runs the given JAR file with the given commandline arguments,
 % and uses the given output streams for Java error and Java output.
 
-run_jar(JAR_File, Args, Error, Output):-
+run_jar(JarFile, Args, Error, Output):-
   process_create(
     path(java),
-    ['-jar',file(JAR_File)|Args],
+    ['-jar',file(JarFile)|Args],
     [process(PID),stderr(Error),stdout(Output)]
   ),
   process_wait(PID, exit(ShellStatus)),
   
   % Process shell status.
-  file_base_name(JAR_File, JAR_Name),
+  file_base_name(JarFile, JAR_Name),
   format(atom(Program), 'Java/JAR ~a', [JAR_Name]),
   exit_code_handler(Program, ShellStatus).
 
