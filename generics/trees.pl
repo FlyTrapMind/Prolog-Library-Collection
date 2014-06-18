@@ -3,11 +3,8 @@
   [
     all_subpaths_to_tree/2, % +AllSubPaths:list(list)
                             % -Tree:tree
-    print_tree/2, % ?Out
-                  % +Tree:compound
-    print_tree/3, % :Options:list(nvpair)
-                  % ?Out
-                  % +Tree:compound
+    print_tree/2, % +Tree:compound
+                  % :Options:list(nvpair)
     some_subpaths_to_tree/2, % +SomeSubPaths:list(list)
                              % -Tree:tree
     tree_depth/2, % +Tree:compound
@@ -33,6 +30,7 @@
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
+:- use_module(library(ugraphs)).
 
 :- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
@@ -40,10 +38,8 @@
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(generics(option_ext)).
-:- use_module(ugraph(ugraph_ext)).
 
-:- meta_predicate(print_tree(:,?,+)).
+:- meta_predicate(print_tree(+,:)).
 
 
 
@@ -97,57 +93,60 @@ all_subpaths_to_tree0(Ls1, Trees):-
   ).
 
 
+%! print_tree(+Tree:compound, +Options:list(nvpair)) is det.
+% Prints the given tree compound term to the given output device.
+%
+% The following options are supported:
+%   * =|indent(+Indent:nonneg)|=
+%     The depth of indentation of the root node (default 0).
+%   * =|transformation(:Predicate)|=
+%     The transformation that is performed upon the nodes of the tree,
+%     if any.
+
+print_tree(Tree, Options1):-
+  meta_options(is_meta, Options1, Options2),
+  select_option(indent(I), Options2, Options3, 0),
+  once(phrase(print_tree(Tree, I, Options3), Codes)),
+  put_codes(Codes).
+
 is_meta(transformation).
 
-print_node(O1, Node1) -->
+%! print_tree(+Tree:compound, +Indent:nonneg, +Options:list(nvpair))// .
+
+print_tree(Tree, I1, Options) -->
+  % 'Root' node.
+  {Tree =.. [Node|Trees]},
+  print_node(Node, I1, Options),
+
+  % Alter indentation level.
+  {succ(I1, I2)},
+
+  % Sub trees / child nodes.
+  print_trees(Trees, I2, Options).
+
+%! print_node(+Node, +Indent:nonneg, +Options:list(nvpair))// .
+
+print_node(Node1, I, Options) -->
   % Hierarchic structure prefixing the node representation.
-  {option(indent(I), O1, 0)},
   `|`,
   '#'(I, hyphen),
   `- `,
 
   % The node, written after arbitrary transformation.
-  {option(transformation(Predicate), O1, identity)},
+  {option(transformation(Predicate), Options, identity)},
   {call(Predicate, Node1, Node2)},
   atom(Node2),
 
   % End with a newline.
   newline.
 
-print_trees(_O1, []) --> [].
-print_trees(O1, [H|T]) -->
-  print_tree(O1, H),
-  print_trees(O1, T).
+%! print_trees(+Trees:list(compound), +Indent:nonneg, +Options:list(nvpair))// .
 
-print_tree(Out, Tree):-
-  print_tree([], Out, Tree).
+print_trees([], _, _) --> [].
+print_trees([H|T], I, Options) -->
+  print_tree(H, I, Options),
+  print_trees(T, I, Options).
 
-%! print_tree(+Options:list(nvpair), +Out, +Tree:compound) is det.
-% Prints the given tree compound term to the given output device.
-%
-% The following options are supported:
-%   * =|indent(+Indent:nonneg)|=
-%     The indentation depth of the root node (default 0).
-%   * =|transformation(:Predicate)|=
-%     The transformation that is performed upon the nodes of the tree,
-%     if any.
-
-print_tree(O1, Out, Tree):-
-  meta_options(is_meta, O1, O2),
-  add_default_option(O2, indent, 0, O3),
-  once(phrase(print_tree(O3, Tree), Codes)),
-  put_codes(Out, Codes).
-
-print_tree(O1, Tree) -->
-  % 'Root' node.
-  {Tree =.. [Node|Trees]},
-  print_node(O1, Node),
-
-  % Alter indentation level.
-  {update_option(O1, indent, succ, O2)},
-
-  % Sub trees / child nodes.
-  print_trees(O2, Trees).
 
 some_subpaths_to_tree(SomeSubPaths, Tree):-
   aggregate_all(
@@ -169,7 +168,7 @@ tree_depth(Tree, Depth2):-
   Children \== [], !,
   maplist(tree_depth, Children, Depths),
   max_list(Depths, Depth1),
-  Depth2 is Depth1 + 1.
+  succ(Depth1, Depth2).
 tree_depth(_, 0).
 
 
@@ -182,9 +181,11 @@ tree_to_leaf_coord(_-Children, [Index|Coord]):-
   tree_to_leaf_coord(Child, Coord).
 
 
-tree_to_ugraph(T, G):-
+%! tree_to_ugraph(+Tree:compound, -UGraph:compound) is det.
+
+tree_to_ugraph(T, UG):-
   tree_to_vertices_and_edges(T, Vs, Es),
-  ugraph_vertices_edges_to_ugraph(Vs, Es, G).
+  vertices_edges_to_ugraph(Vs, Es, UG).
 
 
 %! tree_to_vertices_and_edges(
