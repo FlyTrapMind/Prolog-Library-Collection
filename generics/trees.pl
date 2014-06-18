@@ -21,6 +21,26 @@
 
 /** <module> Trees
 
+### Tree representation
+
+Trees are represented in the following way:
+  - Leaf nodes are presented as `x-[]`, with `x` some term content.
+  - Non-leaf nodes are represented as `x-[y1,...,yn]`,
+    with `x` the parent content term,
+    and `y1` through `yn` the child content terms.
+
+A simple example:
+~~~{.pl}
+a-[b-[], c-[]]
+~~~
+
+The above corresponds to the following hierarchical tree visualization.
+~~~{.txt}
+a
+|-b
+|-c
+~~~
+
 @author Wouter Beek
 @version 2013/04-2013/05, 2013/07-2013/08, 2014/03, 2014/06
 */
@@ -30,6 +50,7 @@
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
+:- use_module(library(predicate_options)).
 :- use_module(library(ugraphs)).
 
 :- use_module(dcg(dcg_abnf)).
@@ -39,7 +60,15 @@
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 
+:- predicate_options(print_tree/2, 2, [
+     indent(+nonneg),
+     transformation(+atom)
+   ]).
+
+:- meta_predicate(print_node(+,+,:,?,?)).
 :- meta_predicate(print_tree(+,:)).
+:- meta_predicate(print_tree(+,+,:,?,?)).
+:- meta_predicate(print_trees(+,+,:,?,?)).
 
 
 
@@ -96,12 +125,23 @@ all_subpaths_to_tree0(Ls1, Trees):-
 %! print_tree(+Tree:compound, +Options:list(nvpair)) is det.
 % Prints the given tree compound term to the given output device.
 %
+% ### Options
+%
 % The following options are supported:
 %   * =|indent(+Indent:nonneg)|=
 %     The depth of indentation of the root node (default 0).
 %   * =|transformation(:Predicate)|=
 %     The transformation that is performed upon the nodes of the tree,
 %     if any.
+%
+% ### Example
+%
+% ~~~{.pl}
+% ?- print_tree(a-[b-[], c-[]], []).
+% |- a
+% |-- b
+% |-- c
+% ~~~
 
 print_tree(Tree, Options1):-
   meta_options(is_meta, Options1, Options2),
@@ -113,9 +153,7 @@ is_meta(transformation).
 
 %! print_tree(+Tree:compound, +Indent:nonneg, +Options:list(nvpair))// .
 
-print_tree(Tree, I1, Options) -->
-  % 'Root' node.
-  {Tree =.. [Node|Trees]},
+print_tree(Node-Trees, I1, Options) -->
   print_node(Node, I1, Options),
 
   % Alter indentation level.
@@ -132,8 +170,8 @@ print_node(Node1, I, Options) -->
   '#'(I, hyphen),
   `- `,
 
-  % The node, written after arbitrary transformation.
-  {option(transformation(Predicate), Options, identity)},
+  % The node, written after an arbitrary transformation has been applied.
+  {option(transformation(Predicate), Options, =)},
   {call(Predicate, Node1, Node2)},
   atom(Node2),
 
