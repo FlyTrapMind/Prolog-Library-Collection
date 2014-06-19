@@ -167,11 +167,11 @@ export_ugraph(O, CoordFunc, G, graph(V_Terms, E_Terms, G_Attrs)):-
   setting(overlap, DefaultOverlap),
   option(overlap(Overlap), O, DefaultOverlap),
   G_Attrs = [
-    charset(Charset),
-    colorscheme(Colorscheme),
-    fontsize(FontSize),
-    label(G_Name),
-    overlap(Overlap)
+    charset=Charset,
+    colorscheme=Colorscheme,
+    fontsize=FontSize,
+    label=G_Name,
+    overlap=Overlap
   ].
 
 
@@ -198,9 +198,9 @@ export_ugraph_edge(O, Vs, FromV-ToV, edge(FromV_Id, ToV_Id, E_Attrs)):-
   ugraph_edge_name(O, FromV-ToV, E_NameOptions),
   ugraph_edge_style(FromV-ToV, E_Style),
   E_Attrs = [
-    arrowhead(E_ArrowHead),
-    color(E_Color),
-    style(E_Style)
+    arrowhead=E_ArrowHead,
+    color=E_Color,
+    style=E_Style
   | E_NameOptions
   ].
 
@@ -231,7 +231,7 @@ ugraph_edge_arrow_head(_FromV-_ToV, normal).
 ugraph_edge_color(_FromV-_ToV, black).
 
 ugraph_edge_name(FromV-ToV, EdgeName):-
-  maplist(ugraph_vertex_name, [FromV, ToV], [FromV_Name, ToV_Name]),
+  maplist(ugraph_vertex_name, [FromV,ToV], [FromV_Name,ToV_Name]),
   phrase(ugraph_edge_name(FromV_Name, ToV_Name), Codes),
   atom_codes(EdgeName, Codes).
 
@@ -246,7 +246,7 @@ ugraph_edge_name(FromV-ToV, EdgeName):-
 %      The predicate that is used to assign names to edges.
 
 % Edge names are enabled.
-ugraph_edge_name(O, Edge, [label(EdgeName)]):-
+ugraph_edge_name(O, Edge, [label=EdgeName]):-
   option(edge_labels(true), O, true), !,
   setting(edge_name, DefaultP),
   option(edge_name(P), O, DefaultP),
@@ -299,17 +299,17 @@ export_ugraph_vertex(O, Vs, CoordFunc, V, vertex(V_Id, V, V_Attrs)):-
   nth0(V_Id, Vs, V),
   ugraph_vertex_color(V, V_Color),
   call(CoordFunc, O, Vs, V, V_Coord),
-  %ugraph_vertex_image(V, V_Image),
+  %%%%ugraph_vertex_image(V, V_Image),
   ugraph_vertex_name(V, V_Name),
-  setting(radius, V_R),
+  %%%%setting(radius, V_R),
   ugraph_vertex_shape(V, V_Shape),
   V_Attrs = [
-    color(V_Color),
-    coord(V_Coord),
-    %image(V_Image),
-    label(V_Name),
-    radius(V_R),
-    shape(V_Shape)
+    color=V_Color,
+    coord=V_Coord,
+    %%%%image=V_Image,
+    label=V_Name,
+    %%%%radius=V_R,
+    shape=V_Shape
   ].
 
 ugraph_vertex_color(_V, black).

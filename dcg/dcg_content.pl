@@ -71,7 +71,6 @@ DCG rules for parsing/generating often-occuring content.
 */
 
 :- use_module(library(lists)).
-:- use_module(library(option)).
 :- use_module(library(settings)).
 
 :- use_module(dcg(dcg_abnf)).

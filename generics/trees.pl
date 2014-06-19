@@ -11,10 +11,12 @@
                   % -Depth:nonneg
     tree_to_leaf_coord/2, % +Tree:compound
                           % -Coord:list(nonneg)
-    tree_to_ugraph/2, % +Tree:compound
-                      % -UGraph:ugraph
-    tree_to_vertices_and_edges/3 % +Tree:compound,
-                                 % -Vertices:ordset,
+    tree_to_edges/2, % +Tree:compound
+                     % -Edges:ordset
+    tree_to_vertices/2, % +Tree:compound
+                        % -Vertices:ordset
+    tree_to_vertices_and_edges/3 % +Tree:compound
+                                 % -Vertices:ordset
                                  % -Edges:ordset
   ]
 ).
@@ -51,7 +53,6 @@ a
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(predicate_options)).
-:- use_module(library(ugraphs)).
 
 :- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
@@ -219,11 +220,16 @@ tree_to_leaf_coord(_-Children, [Index|Coord]):-
   tree_to_leaf_coord(Child, Coord).
 
 
-%! tree_to_ugraph(+Tree:compound, -UGraph:compound) is det.
+%! tree_to_edges(+Tree:compound, -Edges:ordset) is det.
 
-tree_to_ugraph(T, UG):-
-  tree_to_vertices_and_edges(T, Vs, Es),
-  vertices_edges_to_ugraph(Vs, Es, UG).
+tree_to_edges(Tree, Es):-
+  tree_to_vertices_and_edges(Tree, _, Es).
+
+
+%! tree_to_vertices(+Tree:compound, -Vertices:ordset) is det.
+
+tree_to_vertices(Tree, Vs):-
+  tree_to_vertices_and_edges(Tree, Vs, _).
 
 
 %! tree_to_vertices_and_edges(
@@ -233,24 +239,22 @@ tree_to_ugraph(T, UG):-
 %! ) is det.
 
 tree_to_vertices_and_edges(T, Vs, Es):-
-  flag(vertex, _, 0),
-  tree_to_vertices_and_edges(T, Vs, Es, _TopV_Term).
+  tree_to_vertices_and_edges(T, Vs, Es, _).
 
-tree_to_vertices_and_edges(Leaf, [V_Term], [], V_Term):-
-  atomic(Leaf), !,
-  create_vertex_term(Leaf, V_Term).
-tree_to_vertices_and_edges(T, V_Terms, E_Terms, V_Term):-
-  T =.. [V|Ts],
-  create_vertex_term(V, V_Term),
-  maplist(tree_to_vertices_and_edges, Ts, V_TermsTs, E_TermsTs, TopV_Terms),
+% A leaf node.
+tree_to_vertices_and_edges(Leaf-[], [Leaf], [], Leaf):- !.
+% A non-leaf node.
+tree_to_vertices_and_edges(Parent-SubTrees, Vs, Es, Parent):-
+  % Extract the vertices and edges for all subtrees.
+  maplist(tree_to_vertices_and_edges, SubTrees, SubVs, SubEs, Children),
+
+  % Connect the root node to its direct child nodes.
   findall(
-    V_Term-W_Term,
-    member(W_Term, TopV_Terms),
-    TopE_Terms
+    Parent-Child,
+    member(Child, Children),
+    ParentChildEs
   ),
-  ord_union([[V_Term]|V_TermsTs], V_Terms),
-  ord_union([TopE_Terms|E_TermsTs], E_Terms).
 
-create_vertex_term(V, vertex(Id, V)):-
-  flag(vertex, Id, Id + 1).
+  ord_union([[Parent]|SubVs], Vs),
+  ord_union([ParentChildEs|SubEs], Es).
 
