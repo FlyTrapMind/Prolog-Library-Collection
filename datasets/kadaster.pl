@@ -26,8 +26,10 @@
 
 :- initialization(init_kadaster).
 init_kadaster:-
-  uri_components(Url, uri_components(http,'brk.kadaster.nl','/sparql',_,_)),
-  sparql_register_endpoint(kadaster, query, Url).
+  sparql_register_endpoint(
+    kadaster,
+    uri_components(http,'brk.kadaster.nl','/sparql',_,_)
+  ).
 
 
 

@@ -28,8 +28,10 @@ info@geodan.nl
 init_bag:-
   xml_register_namespace(bag,  'http://lod.geodan.nl/BAG/'),
   xml_register_namespace(bags, 'http://lod.geodan.nl/BAG-schema/'),
-  uri_components(Url, uri_components(http,'lod.geodan.nl','/BAG/sparql',_,_)),
-  sparql_register_endpoint(bag, query, Url).
+  sparql_register_endpoint(
+    bag,
+    uri_components(http,'lod.geodan.nl','/BAG/sparql',_,_)
+  ).
 
 
 
