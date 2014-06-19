@@ -38,16 +38,16 @@ load_kadaster:-
   rdf_load_any([format(turtle),graph(kadaster)], File).
 
 query_kadaster(Resources):-
-  sparql_select(kadaster, _, [], true, [s,p,o],
-      [rdf(var(s), var(p), var(o))], 10, _, _, Resources, []).
+  sparql_select(kadaster, [], [s,p,o],
+      [rdf(var(s),var(p),var(o))], Resources, [distinct(true),limit(10)]).
 
 query_kadaster(S, Resources):-
-  sparql_select(kadaster, _, [], true, [p,o],
-      [rdf(iri(S), var(p), var(o))], 10, _, _, Resources, []).
+  sparql_select(kadaster, [], [p,o],
+      [rdf(iri(S),var(p),var(o))], Resources, [distinct(true),limit(10)]).
 
 scrape_kadaster:-
-  sparql_select(kadaster, _, [], true, [s,p,o],
-      [rdf(var(s), var(p), var(o))], inf, _, _, Rows, []),
+  sparql_select(kadaster, [], [s,p,o],
+      [rdf(var(s),var(p),var(o))], Rows, [distinct(true)]),
   maplist(assert_row_as_triple, Rows),
   rdf_save([format(turtle)], kadaster, kadaster).
 

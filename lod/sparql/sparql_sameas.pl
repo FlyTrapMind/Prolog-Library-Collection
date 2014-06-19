@@ -36,8 +36,8 @@ Close SPARQL queries under identity.
 % @arg IdenticalResources An ordered set of identical resources.
 
 sparql_query_sameas(Endpoint, Resource, Resources2):-
-  sparql_select(Endpoint, owl, [owl], true, [x],
-      [rdf(iri(Resource),owl:sameAs,var(x))], inf, _, _, Rows, []),
+  sparql_select(Endpoint, [owl], [x], [rdf(iri(Resource),owl:sameAs,var(x))],
+      Rows, [distinct(true),regime(owl)]),
   rows_to_resources(Rows, Resources1),
   ord_add_element(Resources1, Resource, Resources2).
 
