@@ -87,8 +87,8 @@ stringRep(Atom) -->
   {atom_codes(Atom, Codes)},
   'Char11*'(Codes), !.
 
-'Char11*'([]) --> [].
 'Char11*'([H|T]) -->
   'Char11'(H),
   'Char11*'(T).
+'Char11*'([]) --> [].
 
