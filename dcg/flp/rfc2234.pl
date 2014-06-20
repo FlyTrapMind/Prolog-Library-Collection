@@ -186,12 +186,12 @@
   'HEXDIG'(C, _).
 
 'HEXDIG'(C, D) --> 'DIGIT'(C, D).
-'HEXDIG'(C, 10) --> a_lower(C).
-'HEXDIG'(C, 11) --> b_lower(C).
-'HEXDIG'(C, 12) --> c_lower(C).
-'HEXDIG'(C, 13) --> d_lower(C).
-'HEXDIG'(C, 14) --> e_lower(C).
-'HEXDIG'(C, 15) --> f_lower(C).
+'HEXDIG'(C, 10) --> a_lowercase(C).
+'HEXDIG'(C, 11) --> b_lowercase(C).
+'HEXDIG'(C, 12) --> c_lowercase(C).
+'HEXDIG'(C, 13) --> d_lowercase(C).
+'HEXDIG'(C, 14) --> e_lowercase(C).
+'HEXDIG'(C, 15) --> f_lowercase(C).
 
 
 %! 'HTAB'// .
