@@ -19,6 +19,7 @@
     dcg_phrase/3, % :Dcg
                   % ?AtomicOrCodes1:or([atom,list(code),number])
                   % ?AtomicOrCodes2:or([atom,list(code),number])
+    dcg_rest//1, % -Rest:list(code)
     dcg_switch//2, % +Value
                    % +Map:list
     dcg_switch//3, % +Value
@@ -142,6 +143,11 @@ dcg_phrase(DCG, X1, Y1):-
   atomic_codes(X1, X2),
   phrase(DCG, X2, Y2),
   atomic_codes(Y1, Y2).
+
+
+%! dcg_rest(-Rest:list(code))// is det.
+
+dcg_rest(X, X, []).
 
 
 %! dcg_separated_list(
