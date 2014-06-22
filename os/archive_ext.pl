@@ -417,7 +417,7 @@ prolog:message(archive_entry(Indent1,Archive,EntryName)) -->
   archive_properties(Indent2, Properties).
 
 prolog:message(archive_extracted(File)) -->
-  ['Extracted ~w'-[File]].
+  ['  Extracted ~w'-[File]].
 
 archive_header(Indent, EntryName) -->
   indent(Indent),
