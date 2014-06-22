@@ -30,6 +30,7 @@ init_bag:-
   xml_register_namespace(bags, 'http://lod.geodan.nl/BAG-schema/'),
   sparql_register_endpoint(
     bag,
+    query,
     uri_components(http,'lod.geodan.nl','/BAG/sparql',_,_)
   ).
 

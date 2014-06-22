@@ -28,6 +28,7 @@
 init_kadaster:-
   sparql_register_endpoint(
     kadaster,
+    query,
     uri_components(http,'brk.kadaster.nl','/sparql',_,_)
   ).
 
