@@ -7,21 +7,21 @@
     request_search_read_pl_term/3, % +Request:list(nvpair)
                                    % +Name:atom
                                    % -Value:term
-    uri_search_add/3, % +FromUri:uri
+    uri_search_add/3, % +FromUri:or([compound,uri])
                       % +Parameters:list(nvpair)
                       % -ToUri:uri
-    uri_search_add/4, % +FromUri:uri
+    uri_search_add/4, % +FromUri:or([compound,uri])
                       % +Name:atom
                       % +Value:atom
                       % -ToUri:uri
-    uri_search_add_pl_term/4, % +FromUri:uri
+    uri_search_add_pl_term/4, % +FromUri:or([compound,uri])
                               % +Name:atom
                               % +Value:term
                               % -ToUri:uri
-    uri_search_read/3, % +Uri:uri
+    uri_search_read/3, % +Uri:or([compound,uri])
                        % +Name:atom
                        % -Value:atom
-    uri_search_read_pl_term/3 % +Uri:uri
+    uri_search_read_pl_term/3 % +Uri:or([compound,uri])
                               % +Name:atom
                               % -Value:term
   ]
@@ -60,10 +60,14 @@ request_search_read_pl_term(Request, Name, Value2):-
   read_term_from_atom(Value1, Value2, []).
 
 
-%! uri_search_add(+FromUri:uri, +Parameters:list(nvpair), -ToUri:uri) is det.
+%! uri_search_add(
+%!   +FromUri:or([compound,uri]),
+%!   +Parameters:list(nvpair),
+%!   -ToUri:uri
+%! ) is det.
 
 uri_search_add(Uri1, Params0, Uri2):-
-  uri_components(Uri1, uri_components(Scheme,Auth,Path,Search1,Frag)),
+  uri_components0(Uri1, uri_components(Scheme,Auth,Path,Search1,Frag)),
   (
     var(Search1)
   ->
@@ -76,12 +80,17 @@ uri_search_add(Uri1, Params0, Uri2):-
   uri_components(Uri2, uri_components(Scheme,Auth,Path,Search2,Frag)).
 
 
-%! uri_search_add(+FromUri:uri, +Name:atom, +Value:atom, -ToUri:uri) is det.
+%! uri_search_add(
+%!   +FromUri:or([compound,uri]),
+%!   +Name:atom,
+%!   +Value:atom,
+%!   -ToUri:uri
+%! ) is det.
 % Inserts the given name-value pair as a query component into the given URI.
 
 uri_search_add(Uri1, Name, Value, Uri2):-
   % Disasseble the old URI.
-  uri_components(
+  uri_components0(
     Uri1,
     uri_components(Scheme,Authority,Path,SearchString1,Fragment)
   ),
@@ -106,7 +115,7 @@ uri_search_add(Uri1, Name, Value, Uri2):-
 
 
 %! uri_search_add_pl_term(
-%!   +FromUri:uri,
+%!   +FromUri:or([compound,uri]),
 %!   +Name:atom,
 %!   +Value:term,
 %!   -ToUri:uri
@@ -117,21 +126,40 @@ uri_search_add_pl_term(Uri1, Name, Value1, Uri2):-
   uri_search_add(Uri1, Name, Value2, Uri2).
 
 
-%! uri_search_read(+Uri:uri, +Name:atom, -Value:atom) is semidet.
+%! uri_search_read(
+%!   +Uri:or([compound,uri]),
+%!   +Name:atom,
+%!   -Value:atom
+%! ) is semidet.
 % Returns the value for the query item with the given name, if present.
 %
 % @tbd Can the same query name occur multiple times?
 
 uri_search_read(Uri, Name, Value):-
-  uri_components(Uri, UriComponents),
+  uri_components0(Uri, UriComponents),
   uri_data(search, UriComponents, QueryString),
   uri_query_components(QueryString, QueryPairs),
   memberchk(Name=Value, QueryPairs).
 
 
-%! uri_search_read_pl_term(+Uri:uri, +Name:atom, -Value:term) is semidet.
+%! uri_search_read_pl_term(
+%!   +Uri:or([compound,uri]),
+%!   +Name:atom,
+%!   -Value:term
+%! ) is semidet.
 
 uri_search_read_pl_term(Uri, Name, Value2):-
   uri_search_read(Uri, Name, Value1),
   read_term_from_atom(Value1, Value2, []).
+
+
+
+% Helpers
+
+uri_components0(
+  uri_components(Scheme,Authority,Path,Search,Fragment),
+  uri_components(Scheme,Authority,Path,Search,Fragment)
+):- !.
+uri_components0(Uri, UriComponents):-
+  uri_components(Uri, UriComponents).
 
