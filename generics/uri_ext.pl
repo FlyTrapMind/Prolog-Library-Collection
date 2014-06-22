@@ -16,6 +16,8 @@
                      % +Data:atom
     url_authority_directory/2, % +Url:atom
                                % -Directory:atom
+    url_file_extensions/2, % +Url:url
+                           % -FileExtensions:list(atom)
     url_flat_directory/3, % +ParentDirectory:atom
                           % +Url:url
                           % -UrlDirectory:atom
@@ -219,6 +221,25 @@ url_authority_directory(Url, Dir):-
   directory_subdirectories(DataDir, DataDirComponents),
   append(DataDirComponents, [Scheme,Authority], DirComponents),
   directory_subdirectories(Dir, DirComponents).
+
+
+%! url_file_extensions(+Url:url, -FileExtensions:list(atom)) is det.
+% Returns the empty atom in case there is no file extension.
+
+url_file_extensions(Url, FileExtensions):-
+  % Extract the path.
+  uri_components(Url, uri_components(_,_,Path,_,_)),
+
+  % Extract the file.
+  atomic_list_concat(PathComponents, '/', Path),
+  last(PathComponents, FileComponent),
+
+  % Extract the file extensions.
+  atomic_list_concat(FileComponents, '.', FileComponent),
+  length(FileComponents, NumberOfFileComponents),
+  NumberOfFileComponents > 1,
+  FileComponents = [_|FileExtensions].
+url_file_extensions(_, []).
 
 
 %! url_flat_directory(
