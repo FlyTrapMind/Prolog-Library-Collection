@@ -235,12 +235,11 @@ ssl_verify(_SSL,
            _Error).
 
 
-     /*******************************
-     *        MESSAGES    *
-     *******************************/
 
-:- multifile
-  prolog:message//1.
+% Messages
+
+:- multifile(prolog:message//1).
 
 prolog:message(unpack(cannot_open(Spec))) -->
   [ 'Unpack: cannot open ~p'-[Spec] ].
+

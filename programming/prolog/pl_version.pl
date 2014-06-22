@@ -131,6 +131,23 @@ major_minor_patch_to_integer(Major, Minor, Patch, Version):-
 minimum_prolog_version(6, 5, 2).
 
 
+%! pl_version(-Version:nonneg)// .
+% Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.
+
+pl_version(Version) -->
+  integer(Major),
+  `,`,
+  integer(Minor),
+  `,`,
+  integer(Patch),
+  {major_minor_patch_to_integer(Major, Minor, Patch, Version)}.
+
+
+
+% Messages
+
+:- multifile(prolog:message//1).
+
 prolog:message(outdated_version(Component, Current, Minimum)) -->
   [
     ansi([fg(red),intensity(normal)], 'Your version of ', []),
@@ -157,16 +174,4 @@ prolog:message(version(Version)) -->
     Patch is Version rem 100
   },
   ['~w.~w.~w'-[Major,Minor,Patch]].
-
-
-%! pl_version(-Version:nonneg)// .
-% Before SWI-Prolog 2.7.10 the version was stored in a dot-separated atom.
-
-pl_version(Version) -->
-  integer(Major),
-  `,`,
-  integer(Minor),
-  `,`,
-  integer(Patch),
-  {major_minor_patch_to_integer(Major, Minor, Patch, Version)}.
 

@@ -53,9 +53,6 @@ logging started.
 :- use_module(os(dir_infra)).
 :- use_module(os(file_ext)).
 
-:- discontiguous(prolog:message/1).
-:- multifile(prolog:message/1).
-
 :- dynamic(current_log_file/1).
 :- dynamic(current_log_stream/1).
 :- dynamic(situation/1).
@@ -109,13 +106,6 @@ append_to_log_(Category, Msg1):-
     [file_type(comma_separated_values)]
   ),
   flush_output(Stream).
-prolog:message(cannot_log(Kind, Msg)):-
-  [
-    ansi([bold], '[~w] ', [Kind]),
-    ansi([], 'Could not log message "', []),
-    ansi([faint], '~w', [Msg]),
-    ansi([], '".', [])
-  ].
 
 %! close_log_stream is det.
 % Closes the current log stream.
@@ -127,8 +117,6 @@ close_log_stream:-
   current_log_stream(Stream),
   flush_output(Stream),
   close(Stream).
-prolog:message(no_current_log_stream):-
-  [ansi([], 'There is no current log stream.', [])].
 
 %! create_log_file(-File:atom, -Stream) is det.
 % Creates a log file in the log file directory and returns the absolute
@@ -202,8 +190,6 @@ send_current_log_file:-
     fail
   ),
   debug(logging, 'HTTP reply upon sending the log file:\n~w', [Reply]).
-prolog:message(no_current_log_file):-
-  [ansi([], 'There is no current log file.', [])].
 
 %! set_current_log_file(+File:atom) is det.
 % Sets the current file where logging messages are stored to.
@@ -244,6 +230,27 @@ start_log:-
   append_to_log(build, 'Goodday!', []),
   % Make sure logging stops once the program ends.
   at_halt(end_log).
+
+
+
+% Messages
+
+:- multifile(prolog:message/1).
+
 prolog:message(already_logging):-
   [ansi([], 'Logging was already started. End logging before starting it again.', [])].
+
+prolog:message(cannot_log(Kind, Msg)):-
+  [
+    ansi([bold], '[~w] ', [Kind]),
+    ansi([], 'Could not log message "', []),
+    ansi([faint], '~w', [Msg]),
+    ansi([], '".', [])
+  ].
+
+prolog:message(no_current_log_file):-
+  [ansi([], 'There is no current log file.', [])].
+
+prolog:message(no_current_log_stream):-
+  [ansi([], 'There is no current log stream.', [])].
 

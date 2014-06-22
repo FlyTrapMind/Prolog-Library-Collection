@@ -386,7 +386,7 @@ archive_tree_coords(Source, Coords):-
 
 
 
-% HELPERS
+% Helpers
 
 archive_filters(Archive, Filters):-
   archive_property(Archive, filters(Filters)), !.
@@ -400,7 +400,7 @@ is_leaf_entry(Archive, EntryName):-
 
 
 
-% MESSAGES
+% Messages
 
 :- multifile(prolog:message//1).
 

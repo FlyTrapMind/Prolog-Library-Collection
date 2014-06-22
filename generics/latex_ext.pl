@@ -301,8 +301,7 @@ print_output(Codes, 0):-
 print_output(Codes, Status):-
   Status =\= 0,
   print_message(warning, latex(error(Codes))).
-prolog:message(latex(error(Codes))) -->
-  ['~s'-[Codes]].
+
 
 process_wrapper(ProcessName, ProcessArguments, ProcessOptions1):-
   merge_options(
@@ -412,4 +411,13 @@ write_latex_header(Stream, Options):-
 
 write_latex_package(Stream, Package):-
   format(Stream, '\\usepackage{~w}\n', [Package]).
+
+
+
+% Messages
+
+:- multifile(prolog:message//1).
+
+prolog:message(latex(error(Codes))) -->
+  ['~s'-[Codes]].
 
