@@ -237,7 +237,7 @@ url_file_extensions(Url, FileExtensions):-
   % Extract the file extensions.
   atomic_list_concat(FileComponents, '.', FileComponent),
   length(FileComponents, NumberOfFileComponents),
-  NumberOfFileComponents > 1,
+  NumberOfFileComponents > 1, !,
   FileComponents = [_|FileExtensions].
 url_file_extensions(_, []).
 

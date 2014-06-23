@@ -46,6 +46,9 @@
                             % +Arguments:list
                             % -NewDatastructurte
 
+% RETRY
+    loop_until_true/1, % :Goal
+
 % STEPS IN LOOP
     after_n_steps/2 % +NumberOfSteps:nonneg
                     % :Goal
@@ -62,6 +65,7 @@ Extensions to the SWI-Prolog meta predicates.
 */
 
 :- use_module(library(aggregate)).
+:- use_module(library(debug)).
 
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
@@ -74,6 +78,8 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(memo(0)).
 :- meta_predicate(nth0_call(1,+,+)).
 :- meta_predicate(nth0_call(+,1,+,+)).
+:- meta_predicate(loop_until_true(0)).
+:- meta_predicate(loop_until_true0(+,0)).
 :- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(temporarily_set_flag(+,+,0)).
 :- meta_predicate(temporarily_set_existing_flag(+,+,+,0)).
@@ -312,6 +318,25 @@ update_datastructure(_, Datastructure, [], Datastructure).
 update_datastructure(Goal, Datastructure1, [H|T], Datastructure3):-
   call(Goal, Datastructure1, H, Datastructure2),
   update_datastructure(Goal, Datastructure2, T, Datastructure3).
+
+
+
+% RETRY %
+
+%! loop_until_true(:Goal) .
+
+loop_until_true(Goal):-
+  catch(
+    Goal,
+    Exception,
+    loop_until_true0(Exception, Goal)
+  ).
+
+loop_until_true0(Exception, _):-
+  var(Exception), !.
+loop_until_true0(Exception, Goal):-
+  debug(loop_until_true, '~w', Exception),
+  Goal.
 
 
 
