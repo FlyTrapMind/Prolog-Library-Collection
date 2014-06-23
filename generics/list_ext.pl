@@ -41,7 +41,7 @@
     list_to_ordered_pairs/2, % +L:list
                              % -Pairs:ordset(ordset)
     list_truncate/3, % +List:list
-                     % +Max:nonneg
+                     % +MaximumLength:nonneg
                      % -TruncatedList:list
     member/3, % ?Element1
               % ?Element2
@@ -346,7 +346,7 @@ list_to_orderd_pairs_(H1, [H2|T], [Pair|Pairs]):-
   list_to_orderd_pairs_(H1, T, Pairs).
 
 
-%! list_truncate(+List:list, +Max:nonneg, -TruncatedList:list) is det.
+%! list_truncate(+List:list, +MaximumLength:nonneg, -TruncatedList:list) is det.
 % Returns the truncated version of the given list.
 % The maximum length indicates the exact maximum.
 % Truncation will always result in a list which contains
