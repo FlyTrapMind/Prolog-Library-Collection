@@ -62,8 +62,6 @@ assumption that the option term will always be unary).
 @version 2013/01, 2013/07-2013/08, 2013/11-2013/12, 2014/04, 2014/06
 */
 
-:- use_module(library(apply)).
-:- use_module(library(lists)).
 :- use_module(library(option)).
 
 :- use_module(dcg(dcg_meta)).
