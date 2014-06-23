@@ -20,6 +20,14 @@
     if_option//3, % +Option:nvpair
                   % +Options:list(nvpair)
                   % :Goal
+    if_select_option/4, % +Option:nvpair
+                        % +Options:list(nvpair)
+                        % -RestOptions:list(nvpair)
+                        % :Goal
+    if_select_option//4, % +Option:nvpair
+                         % +Options:list(nvpair)
+                         % -RestOptions:list(nvpair)
+                         % :Goal
     remove_option/4, % +OldOptions:list(nvpair),
                      % +Name:atom,
                      % +Value,
@@ -62,6 +70,8 @@ assumption that the option term will always be unary).
 
 :- meta_predicate(if_option(+,+,0)).
 :- meta_predicate(if_option(+,+,//,?,?)).
+:- meta_predicate(if_select_option(+,+,-,0)).
+:- meta_predicate(if_select_option(+,+,-,//,?,?)).
 :- meta_predicate(update_option(+,+,2,-)).
 :- meta_predicate(update_option(+,+,2,-,-)).
 
@@ -133,6 +143,32 @@ if_option(Option, Options, Goal) -->
   {option(Option, Options)}, !,
   dcg_call(Goal).
 if_option(_, _, _) --> [].
+
+
+%! if_select_option(
+%!   +Option:nvpair,
+%!   +Options:list(nvpair),
+%!   -RestOptions:list(nvpair),
+%!   :Goal
+%! ) is det.
+
+if_select_option(Option, Options1, Options2, Goal):-
+  select_option(Option, Options1, Options2), !,
+  Goal.
+if_select_option(_, Options, Options, _).
+
+
+%! if_select_option(
+%!   +Option:nvpair,
+%!   +Options:list(nvpair),
+%!   -RestOptions:list(nvpair),
+%!   :Goal
+%! )// is det.
+
+if_select_option(Option, Options1, Options2, Goal) -->
+  {select_option(Option, Options1, Options2)}, !,
+  dcg_call(Goal).
+if_select_option(_, Options, Options, _) --> [].
 
 
 %! remove_option(
