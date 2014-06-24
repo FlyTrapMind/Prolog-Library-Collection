@@ -47,11 +47,7 @@
                             % -NewDatastructurte
 
 % RETRY
-    loop_until_true/1, % :Goal
-
-% STEPS IN LOOP
-    after_n_steps/2 % +NumberOfSteps:nonneg
-                    % :Goal
+    loop_until_true/1 % :Goal
   ]
 ).
 
@@ -84,7 +80,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(temporarily_set_flag(+,+,0)).
 :- meta_predicate(temporarily_set_existing_flag(+,+,+,0)).
 :- meta_predicate(update_datastructure(3,+,+,-)).
-:- meta_predicate(after_n_steps(+,1)).
 
 :- dynamic(memo_/1).
 :- dynamic(tmp/1).
@@ -337,19 +332,4 @@ loop_until_true0(Exception, _):-
 loop_until_true0(Exception, Goal):-
   debug(loop_until_true, '~w', Exception),
   Goal.
-
-
-
-% STEPS IN LOOP %
-
-after_n_steps(N, Goal):-
-  flag(steps, Steps, Steps + 1),
-  (
-    Steps > 0,
-    0 =:= Steps mod N
-  ->
-    call(Goal, Steps)
-  ;
-    true
-  ).
 
