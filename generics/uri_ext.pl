@@ -5,7 +5,6 @@
                      % -Email:atom
     atom_to_iri/2, % +Atom:atom
                    % -Iri:iri
-    is_image_url/1, % +Url:url
     relative_url_path/3, % ?Url:url
                          % ?RelativeTo:url
                          % ?RelativeUrl:url
@@ -13,7 +12,7 @@
                 % -Path:atom
     uri_component/3, % +Uri:uri
                      % +Field:oneof([scheme,authority,path,search,fragment])
-                     % +Data:atom
+                     % ?Data:atom
     url_authority_directory/2, % +Url:atom
                                % -Directory:atom
     url_file_extensions/2, % +Url:url
@@ -127,15 +126,6 @@ atom_to_iri(A1, Iri):-
 percent_encoding(space) -->
   percent_sign,
   integer(20).
-
-
-%! is_image_url(+Url:url) is semidet.
-% Succeeds if the given Url locates an image file.
-
-is_image_url(Url):-
-  is_of_type(iri, Url),
-  uri_component(Url, path, Path),
-  is_image_file(Path).
 
 
 %! relative_url_path(+Url:url, +RelativeTo:url, -RelativeUrl:url) is det.

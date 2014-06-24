@@ -56,7 +56,6 @@
     is_absolute_file_name2/1, % ?File:atom
     is_fresh_file/2, % +File:atom
                      % +FreshnessLifetime:between(0.0,inf)
-    is_image_file/1, % +File:atom
     last_path_component/2, % +Path:atom
                            % -BaseOrLastSubdir:atom
     link_file/2, % +ToDirectory:atom
@@ -408,14 +407,6 @@ http_path_correction(Path1, Path2):-
 http_path_correction(Path, Path).
 
 
-image_extension(bmp).
-image_extension(gif).
-image_extension(jpg).
-image_extension(jpeg).
-image_extension(png).
-image_extension(svg).
-
-
 %! is_absolute_file_name2(+File:atom) is semidet.
 % Wrapper around is_absolute_file_name/1 that fails for variable arguments.
 %
@@ -432,13 +423,6 @@ is_absolute_file_name2(F):-
 is_fresh_file(File, FreshnessLifetime):-
   file_age(File, Age),
   is_fresh_age(Age, FreshnessLifetime).
-
-
-%! is_image_file(+File:atom) is semidet.
-
-is_image_file(File):-
-  file_name_extension(_, Extension, File),
-  image_extension(Extension).
 
 
 %! last_path_component(+Path:atom, -BaseOrLastSubdir:atom) is det.

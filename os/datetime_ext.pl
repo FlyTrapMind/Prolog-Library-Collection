@@ -18,7 +18,7 @@
   ]
 ).
 
-/** <module> DATETIME_EXT
+/** <module> Datetime extensions
 
 Extensions for date and time.
 
