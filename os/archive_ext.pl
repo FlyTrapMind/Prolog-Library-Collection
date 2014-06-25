@@ -96,7 +96,7 @@ archive_extract0(Archive, Filters, Dir):-
         relative_file_path(File, Dir, RelativeFile),
         create_file_directory(File),
         file_from_stream(File, Read),
-        print_message(informational, archive_extracted(File)),
+        %%%%print_message(informational, archive_extracted(File)),
         true
       ),
       close(Read)
