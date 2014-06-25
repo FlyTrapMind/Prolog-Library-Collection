@@ -5,6 +5,7 @@
       call_every_n/3, % +Flag:atom
                       % +N:positive_integer
                       % :Goal
+      reset_thread_flag/1, % +Flag:atom
       thread_flag/3 % +Flag:atom
                     % -Old
                     % +New
@@ -40,7 +41,18 @@ call_every_n(Flag, N, Goal):-
   ).
 
 
+%! reset_thread_flag(+Flag:atom) is det.
+
+reset_thread_flag(Flag):-
+  thread_self(Thread),
+  flag(Thread-Flag, _, 0).
+
+
 thread_flag(Flag, X, Y):-
   thread_self(Thread),
   flag(Thread-Flag, X, Y).
+
+
+
+
 
