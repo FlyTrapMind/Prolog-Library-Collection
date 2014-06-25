@@ -96,7 +96,8 @@ archive_extract0(Archive, Filters, Dir):-
         relative_file_path(File, Dir, RelativeFile),
         create_file_directory(File),
         file_from_stream(File, Read),
-        print_message(informational, archive_extracted(File))
+        %%%%print_message(informational, archive_extracted(File)),
+        true
       ),
       close(Read)
     ),
@@ -417,7 +418,7 @@ prolog:message(archive_entry(Indent1,Archive,EntryName)) -->
   archive_properties(Indent2, Properties).
 
 prolog:message(archive_extracted(File)) -->
-  ['  [EXTRACTED] ~w'-[File]].
+  ['    [EXTRACTED] ~w'-[File]].
 
 archive_header(Indent, EntryName) -->
   indent(Indent),
