@@ -100,10 +100,10 @@ ap_table(HeaderAugmentation, RowAugmentation, [H|T]) -->
   },
   html(
     \html_table(
-      [header_row(true),indexed(true)],
       html('Automated processes'),
       ap_stage_cell,
-      [Header2|Rows]
+      [Header2|Rows],
+      [header_row(true),indexed(true)]
     )
   ).
 
@@ -201,4 +201,9 @@ ap_message(ApStage) -->
 
 operation(Operation) -->
   html(span(class=operation, Operation)).
+
+rdf_html_tables(_, []) --> !, [].
+rdf_html_tables(Options, [H|T]) -->
+  rdf_html_table(H, Options),
+  rdf_html_tables(Options, T).
 

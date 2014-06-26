@@ -108,9 +108,9 @@ ap_stat(_Request):-
     app_style,
     title('Automated Processes - Statistics'),
     \html_table(
-      [header_row(true)],
       html('AP statistics'),
-      [['Process','Succeed','Fail']|Rows]
+      [['Process','Succeed','Fail']|Rows],
+      [header_row(true)]
     )
   ).
 

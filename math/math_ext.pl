@@ -68,8 +68,10 @@
     rbetween/3, % +Low:integer
                 % +High:integer
                 % ?Value:integer
-    square/2 % +X:float
-             % -Square:float
+    square/2, % +X:float
+              % -Square:float
+    succ_inf/2 % ?X:integer
+               % ?Y:integer
   ]
 ).
 
@@ -264,6 +266,11 @@ log(Base, X, Y):-
   Denominator is log(Base),
   Y is Numerator / Denominator.
 
+
+%! minus(+X:number, +Y:number, +Z:number) is semidet.
+%! minus(+X:number, +Y:number, -Z:number) is det.
+%! minus(+X:number, -Y:number, +Z:number) is det.
+%! minus(-X:number, +Y:number, +Z:number) is det.
 
 minus(X, Y, Z):-
   nonvar(X), nonvar(Y), !,
@@ -496,3 +503,14 @@ smaller_than_or_equal_to(X, Y):-
 
 square(X, Square):-
   Square is X ** 2.
+
+
+%! succ_inf(+X:or([oneof([inf]),nonneg]), +Y:or([oneof([inf]),nonneg])) is semidet.
+%! succ_inf(+X:or([oneof([inf]),nonneg]), -Y:or([oneof([inf]),nonneg])) is det.
+%! succ_inf(-X:or([oneof([inf]),nonneg]), +Y:or([oneof([inf]),nonneg])) is det.
+% Variant of succ/2 that allows the value `inf` to be used.
+
+succ_inf(inf, inf):- !.
+succ_inf(X, Y):-
+  succ(X, Y).
+

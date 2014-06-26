@@ -63,9 +63,9 @@ api_keys -->
   },
   html(
     \html_table(
-      [header_row(true),indexed(true)],
       html('API keys'),
-      [['User','Organization','Service','Key']|Rows]
+      [['User','Organization','Service','Key']|Rows],
+      [header_row(true),indexed(true)]
     )
   ).
 

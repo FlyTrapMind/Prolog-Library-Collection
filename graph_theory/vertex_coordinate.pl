@@ -109,9 +109,9 @@ vertice_coordinates_table(VertexCoords) -->
     )
   },
   html_table(
-    [header_row(true)],
     html('Vertex coordinates'),
-    [['Vertex'|DimensionNames]|Rows]
+    [['Vertex'|DimensionNames]|Rows],
+    [header_row(true)]
   ).
 
 %! vertice_coordinates_web(

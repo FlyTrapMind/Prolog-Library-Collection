@@ -55,27 +55,30 @@ doyle_web(_Request):-
     ),
     Rows
   ),
+  
+  % Assemble the contents of the header row.
+  HeaderRow = [
+      'Node',
+      'Support status',
+      %%%%'Supporting justification',
+      'Supporting nodes',
+      'Antecedents',
+      'Foundations',
+      %%%%'Ancestors',
+      'Consequences',
+      'Affected consequences',
+      'Believed consequences',
+      'Repercussions',
+      'Believed repercussions'],
+  
   reply_html_page(
     app_style,
     title('Doyle'),
     html(
       \html_table(
-        [header_row(true)],
         html('Doyle\'s TMS overview'),
-        [
-          ['Node',
-           'Support status',
-           %'Supporting justification',
-           'Supporting nodes',
-           'Antecedents',
-           'Foundations',
-           %'Ancestors',
-           'Consequences',
-           'Affected consequences',
-           'Believed consequences',
-           'Repercussions',
-           'Believed repercussions'
-          ]|Rows]
+        [HeaderRow|Rows],
+        [header_row(true)]
       )
     )
   ).

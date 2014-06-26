@@ -40,9 +40,9 @@ antonyms(Word) -->
   {findall(A, antonym(Word, A), As)},
   html(
     \html_table(
-      [header_row(true)],
       html(['Antonyms of ',Word,'.']),
-      [['Antonym']|As]
+      [['Antonym']|As],
+      [header_row(true)]
     )
   ).
 
@@ -54,9 +54,9 @@ glosses(Word) -->
   {findall(G, gloss(Word, G), Gs)},
   html(
     \html_table(
-      [header_row(true)],
       html(['Glosses of ',Word,'.']),
-      [['Gloss']|Gs]
+      [['Gloss']|Gs],
+      [header_row(true)]
     )
   ).
 
@@ -67,9 +67,9 @@ has_instance(Class) -->
   {findall(Instance, has_instance(Class, Instance), Instances)},
   html(
     \html_table(
-      [header_row(true)],
       html(['Instances of ',Word,'.']),
-      [['Instance']|Instances]
+      [['Instance']|Instances],
+      [header_row(true)]
     )
   ).
 
@@ -81,9 +81,9 @@ hypernyms(Word) -->
   {findall(H, hypernym(Word, H), Hs)},
   html(
     \html_table(
-      [header_row(true)],
       html(['Hypernyms of ',Word,'.']),
-      [['Hypernym']|Hs]
+      [['Hypernym']|Hs],
+      [header_row(true)]
     )
   ).
 
@@ -95,9 +95,9 @@ instance_of(Instance) -->
   {findall(Class, instance_of(Instance, Class), Classes)},
   html(
     \html_table(
-      [header_row(true)],
       html(['Classes of ',Word,'.']),
-      [['Class']|Classes]
+      [['Class']|Classes],
+      [header_row(true)]
     )
   ).
 
@@ -109,9 +109,9 @@ meronyms(Part) -->
   {findall(Whole, meronym(Part, Whole), Wholes)},
   html(
     \html_table(
-      [header_row(true)],
       html(['Meronyms of ',Part,'.']),
-      [['Meronym']|Wholes]
+      [['Meronym']|Wholes],
+      [header_row(true)]
     )
   ).
 
@@ -148,7 +148,6 @@ statistics -->
   },
   html(
     \html_table(
-      [header_row(true)],
       html('Overview of Wordnet statistics.'),
       [
         ['Type',     'Number of words'],
@@ -156,7 +155,8 @@ statistics -->
         ['Glosses',  NumberOfGlosses  ],
         ['Hypernyms',NumberOfHypernyms],
         ['Meronyms', NumberOfMeronyms ]
-      ]
+      ],
+      [header_row(true)]
     )
   ).
 
