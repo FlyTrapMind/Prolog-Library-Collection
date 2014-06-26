@@ -41,9 +41,9 @@ void_tabular(_Request):-
     title('VoID Tabular'),
     html(
       \rdf_html_table(
-        [],
         html('Overview of currently loaded RDF datasets'),
-        Rows
+        Rows,
+        []
       )
     )
   ).
