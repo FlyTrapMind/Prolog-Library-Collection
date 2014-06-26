@@ -4,7 +4,7 @@
     posix_timestamp_to_xsd_dateTime/2, % +PosixTimeStamp:float
                                        % -XsdDateTime:compound
     prolog_date_to_xsd_dateTime/2, % +PrologDate:compound,
-                                   % -XxdDateTime:compound
+                                   % -XsdDateTime:compound
     get_dateTime/1 % -DateTime:compound
   ]
 ).
