@@ -39,5 +39,5 @@ init_bag:-
 test:-
   sparql_select(bag, _, [bags], true, [],
       [rdf(var(s),vocab:pand_status,var(o))], 10, _, _, Resources, []),
-  dcg_with_output_to(current_user, list(pl_term, Resources)).
+  dcg_with_output_to(current_output, list(pl_term, Resources)).
 
