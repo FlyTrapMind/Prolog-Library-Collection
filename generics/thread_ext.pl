@@ -20,6 +20,8 @@
     thread_end/1, % +ThreadAlias:atom
     thread_overview/0,
     thread_overview_web/1, % -Markup:dom
+    thread_prefix/2, % +Prefix:atom
+                     % -Thread:atom
     thread_recover/0,
     thread_recover/1, % +ThreadAlias:atom
     thread_reset/1, % +ThreadAlias:atom
@@ -229,6 +231,12 @@ thread_overview_web(Markup):-
       Markup
     )
   ).
+
+%! thread_prefix(+Prefix:atom, -Thread:atom) is nondet.
+
+thread_prefix(Prefix, Thread):-
+  thread_property(Thread, status(_)),
+  atom_concat(Prefix, _, Thread).
 
 thread_recover:-
   forall(
