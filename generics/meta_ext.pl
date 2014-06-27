@@ -148,7 +148,7 @@ default(X, X).
 % ~~~
 
 default_goal(_, X):-
-  nonvar(X), !.
+  ground(X), !.
 default_goal(Goal, X):-
   call(Goal, X), !.
 
