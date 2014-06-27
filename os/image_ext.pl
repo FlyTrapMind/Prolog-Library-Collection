@@ -24,23 +24,21 @@ Support for image files.
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
+:- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(os(io_ext)).
 
-% Dynamic multifile predicate for registering
-% which Prolog file types denote images.
-:- dynamic(user:image_file_type/1).
-:- multifile(user:image_file_type/1).
-
-% Register JPG/JPEG.
-user:prolog_file_type(jpeg, jpeg).
-user:prolog_file_type(jpg, jpeg).
-user:image_file_type(jpeg).
-
-% Register PNG.
-user:prolog_file_type(png, png).
-user:image_file_type(png).
+:- db_add_novel(user:prolog_file_type(bmp, bmp)).
+:- db_add_novel(user:prolog_file_type(bmp, image)).
+:- db_add_novel(user:prolog_file_type(gif, gif)).
+:- db_add_novel(user:prolog_file_type(gif, image)).
+:- db_add_novel(user:prolog_file_type(jpeg, jpeg)).
+:- db_add_novel(user:prolog_file_type(jpeg, image)).
+:- db_add_novel(user:prolog_file_type(jpg, jpeg)).
+:- db_add_novel(user:prolog_file_type(jpg, image)).
+:- db_add_novel(user:prolog_file_type(png, png)).
+:- db_add_novel(user:prolog_file_type(png, image)).
 
 
 
@@ -81,8 +79,7 @@ image_file_extension(Ext):-
   image_file_extension0(Ext).
 
 image_file_extension0(Ext):-
-  user:image_file_type(Type),
-  user:prolog_file_type(Ext, Type).
+  user:prolog_file_type(Ext, image).
 
 
 %! image_url(+Url:url) is semidet.
