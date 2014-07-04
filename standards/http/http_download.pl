@@ -39,11 +39,11 @@ download_to_file(Url, File):-
 % of to the a file name that is created based on the URL.
 %
 % The following options are supported:
-%   * freshness_lifetime(+or([between(0.0,inf),oneof([inf])]))
+%   * =|freshness_lifetime(+or([between(0.0,inf),oneof([inf])]))|=
 %     Sets whether -- and if so, when -- files that were downloaded
 %     in the past are redownloaded and overwritten.
 %     Default is `inf`.
-%   * Other options are passed to http_goal/3 and, subsequently, http_open/3.
+%   * Other options are passed to http_goal/3 and http_open/3.
 %
 % @see url_nested_file/3 for how the file name is created based on the URL.
 %      This requires the file search path `data` to be set to a directory
