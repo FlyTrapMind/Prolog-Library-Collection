@@ -122,8 +122,7 @@ init_iana_mime(Graph):-
     ),
     'http://www.iana.org/assignments/media-types/',
     File,
-    Graph,
-    [freshness_lifetime(3600)]
+    [freshness_lifetime(3600),graph(Graph)]
   ),
   assert_mime_extensions.
 
@@ -139,7 +138,7 @@ iana_scrape_url1_(ClassName1, Categories, Url, File, Graph, _):-
       iana_scrape_url_category(Graph, Url, ClassName2, Category)
     )
   ),
-  rdf_save([graph(Graph),format(ntriples)], Graph, File).
+  rdf_save_any(File, [format(ntriples),graph(Graph)]).
 
 assert_mime_extensions:-
   download_html(
@@ -170,13 +169,12 @@ init_iana_uri_scheme(Graph):-
     ),
     'http://www.iana.org/assignments/uri-schemes/',
     File,
-    Graph,
-    [freshness_lifetime(3600)]
+    [freshness_lifetime(3600),graph(Graph)]
   ).
 
 iana_scrape_url2_(ClassName, Categories, Url, File, Graph, _):-
   iana_scrape_url(Graph, Url, ClassName, Categories),
-  rdf_save([graph(Graph),format(ntriples)], Graph, File).
+  rdf_save_any(File, [format(ntriples),graph(Graph)]).
 
 
 

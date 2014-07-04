@@ -36,15 +36,9 @@ Generic support for VoID, used by other VoID modules.
 %! void_init(?RdfGraph:atom) is det.
 % Loads the VoID vocabulary.
 
-void_init(G):-
+void_init(Graph):-
   void_url(Url),
-  (
-    nonvar(G)
-  ->
-    rdf_load_any([graph(G)], Url)
-  ;
-    rdf_load_any([], Url, [_-G])
-  ).
+  rdf_load_any(Url, [graph(Graph)]).
 
 
 

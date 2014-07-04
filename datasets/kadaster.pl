@@ -36,7 +36,7 @@ init_kadaster:-
 
 load_kadaster:-
   absolute_file_name(kadaster, File, [access(read)]),
-  rdf_load_any([format(turtle),graph(kadaster)], File).
+  rdf_load_any(File, [format(turtle),graph(kadaster)]).
 
 query_kadaster(Resources):-
   sparql_select(kadaster, [], [s,p,o],
@@ -50,7 +50,7 @@ scrape_kadaster:-
   sparql_select(kadaster, [], [s,p,o],
       [rdf(var(s),var(p),var(o))], Rows, [distinct(true)]),
   maplist(assert_row_as_triple, Rows),
-  rdf_save([format(turtle)], kadaster, kadaster).
+  rdf_save_any(kadaster, [format(turtle),graph(kadaster)]).
 
 assert_row_as_triple(row(S,P,O)):-
   rdf_assert(S, P, O, kadaster).

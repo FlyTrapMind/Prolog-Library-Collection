@@ -23,7 +23,7 @@
 
 open_data_communities_urls(Urls):-
   setup_call_cleanup(
-    rdf_load_any([], 'http://opendatacommunities.org/data.ttl', [_-Graph]),
+    rdf_load_any('http://opendatacommunities.org/data.ttl', [graph(Graph)]),
     aggregate_all(
       set(Url),
       rdf(_, void:dataDump, Url, Graph),

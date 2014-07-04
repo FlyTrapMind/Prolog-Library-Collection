@@ -38,9 +38,9 @@ void_statistics(FromDir, ToDir, ApStage):-
     (
       member(File, FromFiles),
       rdf_setup_call_cleanup(
-        [],
         File,
-        void_statistics_on_graph(ApStage, NVPairs)
+        void_statistics_on_graph(ApStage, NVPairs),
+        []
       ),
       add_properties_of_file(ApStage, File, NVPairs)
     ),

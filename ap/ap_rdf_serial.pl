@@ -55,7 +55,7 @@ ap_rdf_merge_directory(FromDir, ToDir, ApStage, Mime):-
     [access(write),file_type(Format),relative_to(ToDir)]
   ),
   (
-    rdf_merge_directory([void(true)], FromDir, ToFile, [mime(Mime)])
+    rdf_merge_directory(FromDir, ToFile, [void(true)], [mime(Mime)])
   ->
     rdf_directory_files(FromDir, ToFiles),
     maplist(ap_rdf_directory_assertion(ApStage), ToFiles)

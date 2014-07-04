@@ -1,55 +1,67 @@
-:- module(unpack,
-    [ unpack/3      % +Spec, -Stream, -Location
-    ]).
+:- module(
+  unpack,
+  [
+    unpack/3 % +Spec
+             % -Read:blob,
+             % -Location:dict
+  ]
+).
+
+/** <module> Unpack encoded and archived material
+
+@author Jan Wielemaker
+@author Wouter Beek
+@version 2014/03-2014/07
+*/
+
 :- use_module(library(http/http_open)).
 :- use_module(library(archive)).
 :- use_module(library(uri)).
 :- use_module(library(lists)).
 :- use_module(library(apply)).
-:- use_module(library(http/http_cookie)). % Sometomes redirection requires cookies.
+:- use_module(library(http/http_cookie)). % Sometimes redirection requires cookies.
 :- use_module(library(http/http_ssl_plugin)).
 
-/** <module> Unpack encoded and archived material
-*/
 
-%%  unpack(+Spec, -Stream, -Location) is nondet.
+
+%! unpack(+Spec, -Read:blob, -Location:dict) is nondet.
+% Provide access to plain data elements in   a  stream that may be
+% compressed and/or contain (nested) archives.   For  each element
+% found, it succeeds with  Stream  unified   to  a  binary  stream
+% associated with the data  and  Location   is  a  dict containing
+% information about the  applied  filtering   and  possibly  other
+% meta-data available about the element.
 %
-%  Provide access to plain data elements in   a  stream that may be
-%  compressed and/or contain (nested) archives.   For  each element
-%  found, it succeeds with  Stream  unified   to  a  binary  stream
-%  associated with the data  and  Location   is  a  dict containing
-%  information about the  applied  filtering   and  possibly  other
-%  meta-data available about the element.
+% Stream must be closed, but  it  is   not  required  to  read all
+% content from the stream.  Committing   before  all  elements are
+% exhausted is allowed and will cause   all allocated resources to
+% be reclaimed.
 %
-%  Stream must be closed, but  it  is   not  required  to  read all
-%  content from the stream.  Committing   before  all  elements are
-%  exhausted is allowed and will cause   all allocated resources to
-%  be reclaimed.
+% @arg  Location is a dict.  The tag indicates the type of Spec and
+%   is currently one of =stream=, =file= or =url=. For URLs,
+%   the keys =content_type=, =content_length= and
+%   =last_modified= may be available.
 %
-%  @arg  Location is a dict.  The tag indicates the type of Spec and
-%    is currently one of =stream=, =file= or =url=. For URLs,
-%    the keys =content_type=, =content_length= and
-%    =last_modified= may be available.
+%   The dict contains a key =data=, holding a list that
+%   describes the decoding pipeline used for the data
+%   element. Elements of this list are:
 %
-%    The dict contains a key =data=, holding a list that
-%    describes the decoding pipeline used for the data
-%    element. Elements of this list are:
+%     - filter(Filter)
+%     The indicated content filter was applied.
+%     - archive_entry{}, where the keys provide all
+%     solutions of archive_header_property/2 and the
+%     key =name= provides the name of the archive entry.
 %
-%      - filter(Filter)
-%      The indicated content filter was applied.
-%      - archive_entry{}, where the keys provide all
-%      solutions of archive_header_property/2 and the
-%      key =name= provides the name of the archive entry.
-%
-%  @arg  Spec is a stream, URL or file name. If Spec is a stream,
-%    it is _not_ closed after processing.
+% @arg  Spec is a stream, URL or file name. If Spec is a stream,
+%   it is _not_ closed after processing.
 
 unpack(Spec, Stream, Location) :-
   open_input(Spec, In, Meta, CloseStream),
   Location = Meta.put(data, Data),
   content(In, Stream, Data, CloseStream).
 
-%%  open_input(+Spec, -Stream, -MetaData, -Close) is semidet.
+
+%! open_input(+Spec, -Read:blob, -MetaData:dict, -Close:boolean) is semidet.
 
 open_input(stream(In), In, stream{stream:In}, false) :- !.
 open_input(In, In, stream{stream:In}, false) :-
@@ -80,24 +92,31 @@ open_input(Input, _, _, _) :-
   print_message(warning, unpack(cannot_open(Input))),
   fail.
 
-%%  open_url(+Scheme, +URL, -In, -MetaData) is semidet.
-%
-%  Helper for open_input/4 that deals with URLs
 
-open_url(Scheme, URL, In, Meta) :-
+%! open_url(+Scheme:atom, +Url:url, -In:blob, -MetaData:dict) is semidet.
+% Helper for open_input/4 that deals with URLs
+
+open_url(Scheme, Url, In, Meta) :-
   http_scheme(Scheme), !,
   rdf_extra_headers(Extra),
-  http_open(URL, In,
-      [ header(content_type, ContentType),
-        header(content_length, ContentLength),
-        header(last_modified, ModifiedText)
-      | Extra
-      ]),
-  url_meta_pairs([ content_type=ContentType,
-       content_length=ContentLength,
-       last_modified=ModifiedText
-           ], Pairs),
-  dict_pairs(Meta, url, [url-URL|Pairs]).
+  http_open(
+    Url,
+    In,
+    [
+      header(content_type, ContentType),
+      header(content_length, ContentLength),
+      header(last_modified, ModifiedText)
+    | Extra]
+  ),
+  url_meta_pairs(
+    [
+      content_type=ContentType,
+      content_length=ContentLength,
+      last_modified=ModifiedText
+    ],
+    Pairs
+  ),
+  dict_pairs(Meta, url, [url-Url|Pairs]).
 
 http_scheme(http).
 http_scheme(https).
@@ -112,17 +131,16 @@ url_meta_pairs([Name=Value|T0], [Name-Value|T]) :- !,
   url_meta_pairs(T0, T).
 
 
-
-%%  content(+Stream, -SubStream, -PipeLine) is nondet.
+%% content(+Stream, -SubStream, -PipeLine) is nondet.
 %
-%  True when SubStream is a raw content   stream for data in Stream
-%  and PipeLine describes the location of the data.
+% True when SubStream is a raw content   stream for data in Stream
+% and PipeLine describes the location of the data.
 %
-%  @arg  PipeLine is a list of applied filters and archive selection
-%    operations.  Elements take the form
+% @arg  PipeLine is a list of applied filters and archive selection
+%   operations.  Elements take the form
 %
-%      - filter(Name)
-%      - archive(Member, Format)
+%     - filter(Name)
+%     - archive(Member, Format)
 
 content(In, Entry, PipeLine, CloseStream) :-
   content(In, Entry, CloseStream, PipeLine, []).
@@ -226,9 +244,9 @@ rdf_extra_headers([
   rdf_accept_header_value(AcceptValue).
 
 
-%%      ssl_verify(+SSL, +ProblemCert, +AllCerts, +FirstCert, +Error)
+%%     ssl_verify(+SSL, +ProblemCert, +AllCerts, +FirstCert, +Error)
 %
-%       Currently we accept  all  certificates.
+%      Currently we accept  all  certificates.
 
 ssl_verify(_SSL,
            _ProblemCertificate, _AllCertificates, _FirstCertificate,

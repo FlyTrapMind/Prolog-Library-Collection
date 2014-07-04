@@ -131,7 +131,7 @@ ap_end(O1, AP):-
   rdf_collection_member(AP, AP_Collection, ap),
   once(rdfs_label(AP_Collection, Label)),
   absolute_file_name(data(Label), File, [access(write),extensions([tmp])]),
-  rdf_save([format(turtle)], ap, File),
+  rdf_save_any(File, [format(turtle),graph(ap)]),
   
   % DEB
   rdf_string(AP, ap:alias, Alias, ap),
