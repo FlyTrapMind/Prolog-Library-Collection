@@ -2,8 +2,8 @@
   http,
   [
     http_dateTime/1, % -DateTime:term
-    request_to_local_uri/2, % +Request:list
-                            % -LocalIri:url
+    request_to_local_url/2, % +Request:list
+                            % -LocalUrl:url
     serve_nothing/1, % +Request:list
     xml_serve_atom/1, % +XML:atom
     xml_serve_dom/2 % +Options:list(nvpair)
@@ -35,14 +35,14 @@ http_dateTime(DateTime):-
   http_timestamp(TimeStamp, DateTime).
 
 
-%! request_to_local_uri(+Request:list, -LocalIri:url) is det.
+%! request_to_local_url(+Request:list, -LocalUrl:url) is det.
 % Identifies the resource that is indicated by the URL path.
 
-request_to_local_uri(Request, LocalIri):-
+request_to_local_url(Request, LocalUrl):-
   % As explained in `library(http/http_header)`,
   % the content of the `request_uri` is parsed into `path` and `search`.
   memberchk(path(Path), Request),
-  http_absolute_uri(Path, LocalIri).
+  http_absolute_uri(Path, LocalUrl).
 
 
 serve_nothing(Request):-
