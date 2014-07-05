@@ -2,6 +2,8 @@
   http,
   [
     http_dateTime/1, % -DateTime:term
+    request_to_local_uri/2, % +Request:list
+                            % -LocalURI:url
     serve_nothing/1, % +Request:list
     xml_serve_atom/1, % +XML:atom
     xml_serve_dom/2 % +Options:list(nvpair)
@@ -14,10 +16,11 @@
 Predicates for sending out HTTP requests.
 
 @author Wouter Beek
-@version 2012/10, 2013/02, 2013/11, 2014/01
+@version 2012/10, 2013/02, 2013/11, 2014/01, 2014/07
 */
 
 :- use_module(library(http/http_header)).
+:- use_module(library(http/http_path)).
 :- use_module(xml(xml_dom)).
 
 
@@ -30,6 +33,16 @@ Predicates for sending out HTTP requests.
 http_dateTime(DateTime):-
   get_time(TimeStamp),
   http_timestamp(TimeStamp, DateTime).
+
+
+%! request_to_local_uri(+Request:list, -LocalURI:url) is det.
+% Identifies the resource that is indicated by the URL path.
+
+request_to_local_uri(Request, LocalURI):-
+  % As explained in `library(http/http_header)`,
+  % the content of the `request_uri` is parsed into `path` and `search`.
+  memberchk(path(Path), Request),
+  http_absolute_uri(Path, LocalURI).
 
 
 serve_nothing(Request):-
