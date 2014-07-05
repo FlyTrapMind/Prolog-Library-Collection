@@ -37,7 +37,7 @@ void_tabular(_Request):-
   maplist(rdf_dataset_rows, RdfDatasets, Rowss),
   append(Rowss, Rows),
   reply_html_page(
-    app_style,
+    plServer_style,
     title('VoID Tabular'),
     html(
       \rdf_html_table(

@@ -105,7 +105,7 @@ ap_stat(_Request):-
   
   % Generate the HTML table based on the collected rows.
   reply_html_page(
-    app_style,
+    plServer_style,
     title('Automated Processes - Statistics'),
     \html_table(
       html('AP statistics'),

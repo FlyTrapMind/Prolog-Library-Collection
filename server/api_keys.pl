@@ -97,7 +97,7 @@ dispatch_method(post, Request, User):-
   JSON_Out = [keys=json([key=Key])],
   reply_json(json(JSON_Out)).
 %dispatch_method(get, _, _):-
-%  reply_html_page(app_style, title('API keys'), \api_keys).
+%  reply_html_page(plServer_style, title('API keys'), \api_keys).
 
 init_api_keys_db:-
   absolute_file_name(

@@ -72,7 +72,7 @@ doyle_web(_Request):-
       'Believed repercussions'],
   
   reply_html_page(
-    app_style,
+    plServer_style,
     title('Doyle'),
     html(
       \html_table(

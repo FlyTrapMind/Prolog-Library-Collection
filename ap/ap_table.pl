@@ -74,7 +74,7 @@ ap_table(HeaderAugmentation, RowAugmentation):-
   ->
     maplist(ap_row, APs, Rows),
     reply_html_page(
-      app_style,
+      plServer_style,
       title([
         'Automated Processes - Collection ',
         \rdf_term_name(AP_Collection)
@@ -82,7 +82,7 @@ ap_table(HeaderAugmentation, RowAugmentation):-
       \ap_table(HeaderAugmentation, RowAugmentation, Rows)
     )
   ;
-    reply_html_page(app_style, title('Automated Processes'), [])
+    reply_html_page(plServer_style, title('Automated Processes'), [])
   ).
 
 
