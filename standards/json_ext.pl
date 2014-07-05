@@ -6,10 +6,10 @@
     json_to_prolog/3, % +Module:atom
                       % +JSON:compond
                       % -Term:compound
-    'JSON_Response'/4 % +Request:list
-                      % +Status:between(100,999)
-                      % +Header:list(compound)
-                      % +JSON_Arguments:list(nvpair)
+    json_response/4 % +Request:list
+                    % +Status:between(100,999)
+                    % +Header:list(compound)
+                    % +JSON_Arguments:list(nvpair)
   ]
 ).
 
@@ -206,7 +206,7 @@ to_boolean('True', true).
 to_boolean('False', false).
 
 
-'JSON_Response'(Request, Status, Headers1, D):-
+json_response(Request, Status, Headers1, D):-
   memberchk(pool(client(_,_,_,Out)), Request),
   merge_options(
     Headers1,
