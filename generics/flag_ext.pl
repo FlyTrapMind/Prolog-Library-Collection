@@ -5,6 +5,8 @@
                       % +N:positive_integer
                       % :Goal
       reset_thread_flag/1, % +Flag:atom
+      thread_flag/2, % +Flag:atom
+                     % ?Current
       thread_flag/3, % +Flag:atom
                      % -Old
                      % +New
@@ -48,6 +50,9 @@ reset_thread_flag(Flag):-
   thread_self(Thread),
   flag(Thread-Flag, _, 0).
 
+
+thread_flag(Flag, X):-
+  thread_flag(Flag, X, X).
 
 thread_flag(Flag, X, Y):-
   thread_self(Thread),
