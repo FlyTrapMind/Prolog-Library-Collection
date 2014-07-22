@@ -1,12 +1,16 @@
 :- module(
   pair_ext,
   [
-    ordsets_to_pairs/2, % +Sets:list(ordset)
-                        % -Pairs:ordset(pair)
-    pairs_to_members/2, % +Pairs:list(pair)
-                        % -Members:list
-    pairs_to_ordsets/2, % +Pairs:list(pair(iri))
-                        % -Sets:list(ordset(iri))
+    set_to_pairs/3, % +Set:ordset
+                    % :Comparator
+                    % -Pairs:ordset(pair)
+    sets_to_pairs/3, % +Sets:list(ordset)
+                     % -Pairs:ordset(pair)
+                     % +Options:list(nvpair)
+    pairs_to_set/2, % +Pairs:list(pair)
+                    % -Members:list
+    pairs_to_sets/2, % +Pairs:list(pair(iri))
+                     % -Sets:list(ordset(iri))
     read_pairs_from_file/2, % +File:atom
                             % -Pairs:ordset(pair(atom))
     store_pairs_to_file/2, % +Pairs:list(pair(atom))
@@ -21,11 +25,14 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+:- use_module(library(option)).
+:- use_module(library(predicate_options)). % Declarations.
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
 
@@ -34,43 +41,77 @@ Support predicates for working with pairs.
 % Used for loading pairs from file.
 :- dynamic(pair/2).
 
+:- meta_predicate(set_to_pairs(+,2,-)).
+:- meta_predicate(sets_to_pairs(+,2,+,-)).
 
+:- op(555, xfx, ~).
 
-%! ordsets_to_pairs(+Sets:list(ordset), -Pairs:ordset(pair)) is det.
-
-ordsets_to_pairs(Sets, Pairs):-
-  ordsets_to_pairs(Sets, [], Pairs).
-
-ordsets_to_pairs([], Sol, Sol).
-ordsets_to_pairs([H|T], L1, Sol):-
-  findall(
-    X-Y,
-    (
-      member(X, Y, H),
-      % No reflexive cases.
-      X \== Y
-    ),
-    L2
-  ),
-  ord_union(L1, L2, L3),
-  ordsets_to_pairs(T, L3, Sol).
+:- predicate_options(sets_to_pairs/3, 3, [
+     reflexive(+boolean),
+     symmetric(+boolean)
+   ]).
 
 
 
-%! pairs_to_members(+Pairs:list(pair), -Members:list) is det.
-
-pairs_to_members(Pairs, Members):-
-  pairs_keys_values(Pairs, Keys1, Values1),
-  maplist(sort, [Keys1,Values1], [Keys2,Values2]),
-  ord_union(Keys2, Values2, Members).
-
-
-
-%! pairs_to_ordsets(
-%!   +Pairs:list(pair(iri)),
-%!   -Sets:ordset(ordset(iri))
+%! set_to_pairs(
+%!   +Set:ordset,
+%!   :Comparator,
+%!   -Pairs:ordset(pair)
 %! ) is det.
-% For instance, the following pairs:
+% Returns the pairs that are represented by the given set.
+%
+% The following values are useful for the comparator:
+%
+% | *Comparator* | *Reflexive* | *Symmetic* |
+% | `~`          | true        | true       |
+% | `\=`         | false       | true       |
+% | `@<`         | false       | false      |
+
+set_to_pairs(Set, Comparator, Pairs):-
+  aggregate_all(
+    set(From-To),
+    (
+      member(From, To, Set),
+      % No reflexive cases.
+      call(Comparator, From, To)
+    ),
+    Pairs
+  ).
+
+
+%! sets_to_pairs(
+%!   +Sets:list(ordset),
+%!   -Pairs:ordset(pair),
+%!   +Options:list(nvpair)
+%! ) is det.
+%
+% The following options are supported:
+%   * =|reflexive(+boolean)|=
+%     Whether or not to return reflexive cases.
+%     Default: `true`.
+%   * =|symmetric(+boolean)|=
+%     Whether or not to return symmetric pairs.
+%     Default: `true`.
+
+sets_to_pairs(Sets, Pairs, Options):-
+  option(reflexive(Reflexive), Options),
+  option(symmetric(Symmetric), Options),
+  comparator(Reflexive, Symmetric, Comparator),
+  sets_to_pairs(Sets, Comparator, [], Pairs).
+
+sets_to_pairs([], _, AllPairs, AllPairs).
+sets_to_pairs([Set|Sets], Comparator, Pairs1, AllPairs):-
+  set_to_pairs(Set, Comparator, Pairs2),
+  ord_union(Pairs1, Pairs2, Pairs3),
+  sets_to_pairs(Sets, Pairs3, AllPairs).
+
+
+%! pairs_to_set(+Pairs:list(pair), -Set:ordset) is det.
+% Returns the set of elements that occur in the given pairs.
+%
+% ### Example
+%
+% The following pairs:
 % ~~~
 % <a,b>
 % <a,c>
@@ -78,45 +119,64 @@ pairs_to_members(Pairs, Members):-
 % ~~~
 % result in the following set:
 % ~~~
+% {a,b,c,d,e}
+% ~~~
+
+pairs_to_set(Pairs, Members):-
+  pairs_keys_values(Pairs, Keys1, Values1),
+  maplist(sort, [Keys1,Values1], [Keys2,Values2]),
+  ord_union(Keys2, Values2, Members).
+
+
+%! pairs_to_sets(+Pairs:list(pair), -Sets:ordset(ordset)) is det.
+% Returns the sets of elements that occur in the given pairs,
+% when closed under transitivity.
+%
+% ### Example
+%
+% The following pairs:
+% ~~~
+% <a,b>
+% <a,c>
+% <d,e>
+% ~~~
+% result in the following sets:
+% ~~~
 % {{a,b,c},{d,e}}
 % ~~~
 
-pairs_to_ordsets(Pairs, Sets):-
-  pairs_to_ordsets(Pairs, [], Sets).
+pairs_to_sets(Pairs, Sets):-
+  pairs_to_sets(Pairs, [], Sets).
 
-pairs_to_ordsets([], Sol, Sol).
+pairs_to_sets([], AllSets, AllSets).
 % Connect two sets.
-pairs_to_ordsets([X-Y|T], Sets1, Sol):-
-  member(OldSet1, Sets1),
-  member(X, OldSet1),
-  member(OldSet2, Sets1),
-  OldSet1 \== OldSet2,
-  member(Y, OldSet2), !,
+pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
+  select(OldSet1, Sets1, Sets2),
+  member(From, OldSet1),
+  select(OldSet2, Sets2, Sets3),
+  member(To, OldSet2), !,
   ord_union(OldSet1, OldSet2, NewSet),
-  ord_del_element(Sets1, OldSet1, Sets2),
-  ord_del_element(Sets2, OldSet2, Sets3),
   ord_add_element(Sets3, NewSet, Sets4),
-  pairs_to_ordsets(T, Sets4, Sol).
+  pairs_to_sets(Pairs, Sets4, AllSets).
 % Add to an existing set.
-pairs_to_ordsets([X-Y|T], Sets1, Sol):-
-  member(OldSet, Sets1),
+pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
+  select(OldSet, Sets1, Sets2),
   (
-    member(X, OldSet)
+    member(From, OldSet)
   ->
-    ord_add_element(OldSet, Y, NewSet)
+    ord_add_element(OldSet, To, NewSet)
   ;
-    member(Y, OldSet)
+    member(To, OldSet)
   ->
-    ord_add_element(OldSet, X, NewSet)
+    ord_add_element(OldSet, From, NewSet)
   ), !,
-  ord_del_element(Sets1, OldSet, Sets2),
   ord_add_element(Sets2, NewSet, Sets3),
-  pairs_to_ordsets(T, Sets3, Sol).
+  pairs_to_sets(Pairs, Sets3, AllSets).
 % New set.
-pairs_to_ordsets([X-Y|T], Sets1, Sol):-
-  list_to_ord_set([X,Y], NewSet),
+pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
+  list_to_ord_set([From,To], NewSet),
   ord_add_element(Sets1, NewSet, Sets2),
-  pairs_to_ordsets(T, Sets2, Sol).
+  pairs_to_sets(Pairs, Sets2, AllSets).
 
 
 %! read_pairs_from_file(+File:atom, -Pairs:ordset(pair(atom))) is det.
@@ -124,9 +184,9 @@ pairs_to_ordsets([X-Y|T], Sets1, Sol):-
 read_pairs_from_file(File, Pairs):-
   setup_call_cleanup(
     ensure_loaded(File),
-    findall(
-      X-Y,
-      pair(X, Y),
+    aggregate_all(
+      set(From-To),
+      pair(From, To),
       Pairs
     ),
     unload_file(File)
@@ -139,9 +199,9 @@ store_pairs_to_file(Pairs, File):-
   setup_call_cleanup(
     open(File, write, Stream),
     forall(
-      member(X-Y, Pairs),
+      member(From-To, Pairs),
       (
-        writeq(Stream, pair(X,Y)),
+        writeq(Stream, pair(From,To)),
         write(Stream, '.'),
         nl(Stream)
       )
@@ -168,6 +228,8 @@ term_to_pair(Compound, X-Y):-
 
 
 
+% Unit tests
+
 :- begin_tests(pair_ext).
 
 % Base case.
@@ -184,10 +246,20 @@ pairs_to_ord_sets_example([a-b,c-d], [[a,b],[c,d]]).
 pairs_to_ord_sets_example([a-b,c-d,d-b], [[a,b,c,d]]).
 
 test(
-  pairs_to_ordsets,
+  pairs_to_sets,
   [forall(pairs_to_ord_sets_example(Pairs,Sets)),true]
 ):-
-  pairs_to_ordsets(Pairs, Sets).
+  pairs_to_sets(Pairs, Sets).
 
 :- end_tests(pair_ext).
+
+
+
+% Helpers
+
+%! comparator(+Reflexive:boolean, +Symmetric:boolean, :Comparator) is det.
+
+comparator(true,  true,  ~ ):- !.
+comparator(false, true,  \=):- !.
+comparator(false, false, @<):- !.
 

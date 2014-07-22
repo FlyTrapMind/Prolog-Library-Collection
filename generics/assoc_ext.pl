@@ -67,23 +67,23 @@ get_assoc_ord_member(Key, Assoc, Value):-
 % and stores those values in an ordered set.
 
 % An ordered set already exists as the value of the given key.
-put_assoc_ord_member(Key, Assoc1, Value, Assoc2):-
-  get_assoc(Key, Assoc1, Set1), !,
-  ord_add_element(Set1, Value, Set2),
-  put_assoc(Key, Assoc1, Set2, Assoc2),
+put_assoc_ord_member(Key, OldAssoc, Value, NewAssoc):-
+  get_assoc(Key, OldAssoc, OldSet), !,
+  ord_add_element(OldSet, Value, NewSet),
+  put_assoc(Key, OldAssoc, NewSet, NewAssoc),
 
   % DEB
-  length(Set2, NewSetLength),
+  length(NewSet, NewSetLength),
   debug(
     assoc_ext,
-    'Added <~w,~w> to existing assoc, whose value set is now of length ~w.',
+    'Added <~w,~w> to existing assoc, whose value set cardinality is now ~w.',
     [Key,Value,NewSetLength]
   ).
 % The given key has no value, so a new ordered set is created.
-put_assoc_ord_member(Key, Assoc1, Value, Assoc2):-
+put_assoc_ord_member(Key, OldAssoc, Value, NewAssoc):-
   list_to_ord_set([Value], Set),
-  put_assoc(Key, Assoc1, Set, Assoc2),
-  debug(assoc_ext, 'Added <~w,~w> to NEW assoc.', [Key,Value]).
+  put_assoc(Key, OldAssoc, Set, NewAssoc),
+  debug(assoc_ext, 'Added <~w,~w> to a new assoc.', [Key,Value]).
 
 /* @tbd
 print_assoc(Assoc):-

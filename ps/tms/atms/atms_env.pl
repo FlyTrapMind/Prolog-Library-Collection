@@ -52,7 +52,7 @@ and the GDE (component assumptions).
 :- use_module(diagnosis(diagnosis)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(set_theory)).
+:- use_module(logic(set_theory)).
 :- use_module(ile(agent)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
@@ -72,8 +72,7 @@ and the GDE (component assumptions).
 % @arg Comparison The atomic comparison label. Either 'eq', 's12',
 %        or 's21'.
 
-compare_environments(Environment, Environment, eq):-
-  !.
+compare_environments(Environment, Environment, eq):- !.
 compare_environments(Environment1, Environment2, Comparator):-
   environment_cardinality(Environment1, Count1),
   environment_cardinality(Environment2, Count2),
@@ -82,8 +81,7 @@ compare_environments(Environment1, Environment2, Comparator):-
   environment_assumptions(Environment2, Assumptions2),
   compare_environments1(Assumptions1, Assumptions2, Comparator).
 compare_environments1(Assumptions, Assumptions, s12):-
-  ord_subset(Assumptions, Assumptions),
-  !.
+  ord_subset(Assumptions, Assumptions), !.
 compare_environments1(Assumptions, Assumptions, s21):-
   ord_subset(Assumptions, Assumptions).
 

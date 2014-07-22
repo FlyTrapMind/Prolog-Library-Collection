@@ -4,7 +4,7 @@
     archive_extract/4, % +Source
                        % ?Directory:atom
                        % -ArchiveFilters:list(atom)
-                       % -EntryPairs:list(pair(atom,list(nvpair)))
+                       % -EntryProperties:list(pair(atom,list(nvpair)))
     archive_extract_directory/2, % +Directory:atom
                                  % +Options:list(nvpair)
     archive_goal/2, % +Source
@@ -32,7 +32,7 @@
 Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
-@version 2014/04, 2014/06
+@version 2014/04, 2014/06-2014/07
 */
 
 :- use_module(library(apply)).
@@ -46,6 +46,7 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(generics(meta_ext)).
 :- use_module(generics(trees)).
 :- use_module(generics(typecheck)).
+:- use_module(generics(uri_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
@@ -64,17 +65,19 @@ Extensions to SWI-Prolog's library archive.
 
 %! archive_extract(
 %!   +Source,
-%!   +Directory:atom,
+%!   ?Directory:atom,
 %!   -ArchiveFilters:list(atom),
-%!   -EntryPairs:list(pair(atom,list(nvpair)))
+%!   -EntryProperties:list(pair(atom,list(nvpair)))
 %! ) is det.
 % Extracts the given file into the given directory.
+%
+% In case no directory is given, the directory of the given source is used.
 %
 % @throws type_error When `Source` is neither an absolute file name nor a URL.
 % @throws instantiation_error When File is a variable.
 
 archive_extract(Source, Dir, Filters, EntryPairs2):-
-  default_goal(file_directory_name(Source), Dir),
+  default_goal(source_directory_name(Source), Dir),
   archive_goal(Source, archive_extract0, Filters, Dir),
   findall(
     EntryName-EntryProperty,
@@ -414,6 +417,19 @@ is_leaf_entry(Archive, EntryName):-
   archive_header_property(Archive, format(EntryFormat)),
   EntryName == data,
   EntryFormat == raw.
+
+
+%! source_directory_name(+Source:atom, -Directory:atom) is det.
+% Returns the directory for the given source.
+%
+% The source can be either an absolute file name or a URL.
+
+source_directory_name(File, Dir):-
+  is_absolute_file_name(File), !,
+  file_directory_name(File, Dir).
+source_directory_name(Url, Dir):-
+  is_url(Url), !,
+  url_nested_directory(data, Url, Dir).
 
 
 

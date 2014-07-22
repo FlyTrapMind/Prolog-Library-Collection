@@ -48,7 +48,7 @@ ap_rdf_convert_directory(FromDir, ToDir, ApStage, Mime):-
 
 ap_rdf_merge_directory(FromDir, ToDir, ApStage, Mime):-
   default('application/x-turtle', Mime),
-  rdf_mime_format(Mime, Format),
+  rdf_content_type_format(Mime, Format),
   absolute_file_name(
     input,
     ToFile,
