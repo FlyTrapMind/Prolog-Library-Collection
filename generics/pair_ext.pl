@@ -1,6 +1,9 @@
 :- module(
   pair_ext,
   [
+    number_of_equivalence_pairs/3, % +EquivalenceSets:list(ordset)
+                                   % -NumberOfPairs:nonneg
+                                   % +Options:list(nvpair)
     set_to_pairs/3, % +Set:ordset
                     % :Comparator
                     % -Pairs:ordset(pair)
@@ -13,6 +16,7 @@
                      % -Sets:list(ordset(iri))
     read_pairs_from_file/2, % +File:atom
                             % -Pairs:ordset(pair(atom))
+    reflexive_pair/1, % ?Pair:pair
     store_pairs_to_file/2, % +Pairs:list(pair(atom))
                            % +File:atom
     term_to_pair/2 % @Term
@@ -46,6 +50,12 @@ Support predicates for working with pairs.
 
 :- op(555, xfx, ~).
 
+:- predicate_options(number_of_equivalence_pairs/3, 3, [
+     pass_to(cardinality_to_number_of_pairs/3, 3)
+   ]).
+:- predicate_options(cardinality_to_number_of_pairs/3, 3, [
+     reflexive(+boolean)
+   ]).
 :- predicate_options(sets_to_pairs/3, 3, [
      reflexive(+boolean),
      symmetric(+boolean)
@@ -53,57 +63,38 @@ Support predicates for working with pairs.
 
 
 
-%! set_to_pairs(
-%!   +Set:ordset,
-%!   :Comparator,
-%!   -Pairs:ordset(pair)
-%! ) is det.
-% Returns the pairs that are represented by the given set.
-%
-% The following values are useful for the comparator:
-%
-% | *Comparator* | *Reflexive* | *Symmetic* |
-% | `~`          | true        | true       |
-% | `\=`         | false       | true       |
-% | `@<`         | false       | false      |
-
-set_to_pairs(Set, Comparator, Pairs):-
-  aggregate_all(
-    set(From-To),
-    (
-      member(From, To, Set),
-      % No reflexive cases.
-      call(Comparator, From, To)
-    ),
-    Pairs
-  ).
-
-
-%! sets_to_pairs(
-%!   +Sets:list(ordset),
-%!   -Pairs:ordset(pair),
+%! number_of_equivalence_pairs(
+%!   +EquivalenceSets:list(ordset),
+%!   -NumberOfPairs:nonneg,
 %!   +Options:list(nvpair)
 %! ) is det.
+% Returns the number of equivalence pairs that are encoded in
+% the given collection of equivalence sets.
 %
 % The following options are supported:
 %   * =|reflexive(+boolean)|=
-%     Whether or not to return reflexive cases.
-%     Default: `true`.
-%   * =|symmetric(+boolean)|=
-%     Whether or not to return symmetric pairs.
-%     Default: `true`.
+%     Whether to count reflexive cases. Default: `true`.
 
-sets_to_pairs(Sets, Pairs, Options):-
-  option(reflexive(Reflexive), Options),
-  option(symmetric(Symmetric), Options),
-  comparator(Reflexive, Symmetric, Comparator),
-  sets_to_pairs(Sets, Comparator, [], Pairs).
+number_of_equivalence_pairs(EqSets, NumberOfPairs, Options):-
+  aggregate_all(
+    sum(NumberOfPairs),
+    (
+      member(EqSet, EqSets),
+      length(EqSet, Cardinality),
+      cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options)
+    ),
+    NumberOfPairs
+  ).
 
-sets_to_pairs([], _, AllPairs, AllPairs).
-sets_to_pairs([Set|Sets], Comparator, Pairs1, AllPairs):-
-  set_to_pairs(Set, Comparator, Pairs2),
-  ord_union(Pairs1, Pairs2, Pairs3),
-  sets_to_pairs(Sets, Pairs3, AllPairs).
+cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options):-
+  NumberOfSymmetricAndTransitivePairs is Cardinality * (Cardinality - 1),
+  (
+    option(reflexive(true), Options, true)
+  ->
+    NumberOfPairs is NumberOfSymmetricAndTransitivePairs + Cardinality
+  ;
+    NumberOfPairs = NumberOfSymmetricAndTransitivePairs
+  ).
 
 
 %! pairs_to_set(+Pairs:list(pair), -Set:ordset) is det.
@@ -191,6 +182,64 @@ read_pairs_from_file(File, Pairs):-
     ),
     unload_file(File)
   ).
+
+
+%! reflexive_pair(?Pair:pair) is semidet.
+
+reflexive_pair(X-X).
+
+
+%! set_to_pairs(
+%!   +Set:ordset,
+%!   :Comparator,
+%!   -Pairs:ordset(pair)
+%! ) is det.
+% Returns the pairs that are represented by the given set.
+%
+% The following values are useful for the comparator:
+%
+% | *Comparator* | *Reflexive* | *Symmetic* |
+% | `~`          | true        | true       |
+% | `\=`         | false       | true       |
+% | `@<`         | false       | false      |
+
+set_to_pairs(Set, Comparator, Pairs):-
+  aggregate_all(
+    set(From-To),
+    (
+      member(From, To, Set),
+      % No reflexive cases.
+      call(Comparator, From, To)
+    ),
+    Pairs
+  ).
+
+
+%! sets_to_pairs(
+%!   +Sets:list(ordset),
+%!   -Pairs:ordset(pair),
+%!   +Options:list(nvpair)
+%! ) is det.
+%
+% The following options are supported:
+%   * =|reflexive(+boolean)|=
+%     Whether or not to return reflexive cases.
+%     Default: `true`.
+%   * =|symmetric(+boolean)|=
+%     Whether or not to return symmetric pairs.
+%     Default: `true`.
+
+sets_to_pairs(Sets, Pairs, Options):-
+  option(reflexive(Reflexive), Options),
+  option(symmetric(Symmetric), Options),
+  comparator(Reflexive, Symmetric, Comparator),
+  sets_to_pairs(Sets, Comparator, [], Pairs).
+
+sets_to_pairs([], _, AllPairs, AllPairs).
+sets_to_pairs([Set|Sets], Comparator, Pairs1, AllPairs):-
+  set_to_pairs(Set, Comparator, Pairs2),
+  ord_union(Pairs1, Pairs2, Pairs3),
+  sets_to_pairs(Sets, Pairs3, AllPairs).
 
 
 %! store_pairs_to_file(+Pairs:list(pair(atom)), +File:atom) is det.

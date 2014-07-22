@@ -7,20 +7,23 @@
 
 /** <module> PDF
 
-Support for PDFs.
+Support for PDF files.
 
 @author Wouter Beek
-@version 2014/05
+@version 2014/05, 2014/07
 */
 
+:- use_module(os(os_ext)).
 :- use_module(os(run_ext)).
 
+:- dynamic(user:file_type_program/2).
+:- multifile(user:file_type_program/2).
 :- if((is_apple ; is_unix)).
-user:file_type_program(pdf, evince).
-user:file_type_program(pdf, xpdf).
+   user:file_type_program(pdf, evince).
+   user:file_type_program(pdf, xpdf).
 :- endif.
 :- if(is_windows).
-user:file_type_program(pdf, 'AcroRd32').
+   user:file_type_program(pdf, 'AcroRd32').
 :- endif.
 
 
