@@ -13,8 +13,8 @@
                     % -NumberOfCombinations:integer
     count_down/2, % ?From:or([integer,oneof([inf])])
                   % ?To:or([integer,oneof([inf])])
-    cyclic_numlist/4, % +Min:integer
-                      % +Max:integer
+    cyclic_numlist/4, % +Low:integer
+                      % +High:integer
                       % +CycleLength:integer
                       % -NumList:list(integer)
     div/3,
@@ -31,6 +31,9 @@
                           % -Fractional:integer
     is_fresh_age/2, % +Age:between(0.0,inf)
                     % +FreshnessLifetime:between(0.0,inf)
+    lbetween/3, % +Low:integer
+                % ?High:integer
+                % ?Value:integer
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -65,7 +68,7 @@
                     % -NumberOfPermutations:integer
     pred/2, % +X:integer
             % -Y:integer
-    rbetween/3, % +Low:integer
+    rbetween/3, % ?Low:integer
                 % +High:integer
                 % ?Value:integer
     square/2, % +X:float
@@ -99,12 +102,14 @@ average(Numbers, Average):-
   length(Numbers, NumberOfNumbers),
   Average is Sum / NumberOfNumbers.
 
+
 binomial_coefficient(M, N, BC):-
   factorial(M, F_M),
   factorial(N, F_N),
   MminN is M - N,
   factorial(MminN, F_MminN),
   BC is F_M / (F_N * F_MminN).
+
 
 %! circumfence(+Radius:float, -Circumfence:float) is det.
 % Returns the circumfence of a circle with the given radius.
@@ -146,8 +151,8 @@ count_down(N1, N2):-
 
 
 %! cyclic_numlist(
-%!   +Min:integer,
-%!   +Max:integer,
+%!   +Low:integer,
+%!   +High:integer,
 %!   +CycleLength:integer,
 %!   -NumList:list(integer)
 %! ) is det.
@@ -155,14 +160,15 @@ count_down(N1, N2):-
 % This method works on a off-by-zero basis.
 % We return the numbers in a sorted order.
 
-cyclic_numlist(Min, Max, _CycleLength, NumList):-
-  Min < Max, !,
-  numlist(Min, Max, NumList).
-cyclic_numlist(Min, Max, CycleLength, NumList):-
+cyclic_numlist(Low, High, _CycleLength, NumList):-
+  Low < High, !,
+  numlist(Low, High, NumList).
+cyclic_numlist(Low, High, CycleLength, NumList):-
   Top is CycleLength - 1,
-  numlist(Min, Top, HigherNumList),
-  numlist(0, Max, LowerNumList),
+  numlist(Low, Top, HigherNumList),
+  numlist(0, High, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
+
 
 % @tbd
 div(X, Y, Z):-
@@ -170,6 +176,7 @@ div(X, Y, Z):-
   rational_div(X, Y, Z).
 div(X, Y, Z):-
   float_div(X, Y, Z).
+
 
 div_zero(X, 0, 0):-
   integer(X), !.
@@ -252,6 +259,32 @@ fractional_integer(_, 0).
 is_fresh_age(_, inf):- !.
 is_fresh_age(Age, FreshnessLifetime):-
   Age < FreshnessLifetime.
+
+
+%! lbetween(+Low:integer, ?High:integer, ?Value:integer) is nondet
+% Like ISO between/3, but allowing `High` to be uninstantiated.
+%
+% @see rbetween/3
+
+lbetween(Low, High, Value):-
+  nonvar(Low),
+  (
+    nonvar(High)
+  ->
+    Low =< High
+  ;
+    true
+  ),
+  lbetween(Low, Low, High, Value).
+
+% There is a higher bound, so enforce it.
+lbetween(_, Value, High, Value):-
+  nonvar(High),
+  High == Value, !.
+lbetween(_, Value, _, Value).
+lbetween(Low, Between, High, Value):-
+  NewBetween is Between + 1,
+  lbetween(Low, NewBetween, High, Value).
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
@@ -465,6 +498,7 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
   factorial(Compensation, F2),
   NumberOfPermutations is F1 / F2.
 
+
 %! pred(?Integer:integer, ?Predecessor:integer)
 % A integer and its direct predecessor integer.
 %
@@ -477,26 +511,41 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
 pred(Integer, Predecessor):-
   succ(Predecessor, Integer).
 
-%! rbetween(?Min:integer, +Max:integer, ?Value:integer) is semidet.
-% If `Min` and `Max` are given, `Value` is instantiated with `Max` and
-% with predecessor integers upon backtracking, until `Value` is `Min`.
+
+%! rbetween(+Low:integer, +High:integer, ?Value:integer) is nondet.
+%! rbetween(-Low:integer, +High:integer, ?Value:integer) is multi.
+% If `Low` and `High` are given, `Value` is instantiated with `High` and
+% with predecessor integers upon backtracking, until `Value` is `Low`.
 %
-% If only `Max` is given there is no lowest value for `Value`.
+% If only `High` is given there is no lowest value for `Value`.
+%
+% @see lbetween/3
 
-rbetween(Min, Max, Value):-
-  nonvar(Max), (nonvar(Min) -> Min =< Max ; true),
-  rbetween(Min, Max, Max, Value).
+rbetween(Low, High, Value):-
+  nonvar(High),
+  (
+    nonvar(Low)
+  ->
+    Low =< High
+  ;
+    true
+  ),
+  rbetween(Low, High, High, Value).
 
-rbetween(Min, Value, _Max, Value):-
-  nonvar(Min), Min == Value, !.
-rbetween(_Min, Value, _Max, Value).
-rbetween(Min, Between, Max, Value):-
+% There is a lower bound, so enforce it.
+rbetween(Low, Value, _, Value):-
+  nonvar(Low),
+  Low == Value, !.
+rbetween(_, Value, _, Value).
+rbetween(Low, Between, High, Value):-
   NewBetween is Between - 1,
-  rbetween(Min, NewBetween, Max, Value).
+  rbetween(Low, NewBetween, High, Value).
+
 
 smaller_than_or_equal_to(_, inf):- !.
 smaller_than_or_equal_to(X, Y):-
   X =< Y.
+
 
 %! square(+X:float, -Square:float) is det.
 % Returns the square of the given number.

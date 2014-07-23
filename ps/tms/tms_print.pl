@@ -1,104 +1,165 @@
 :- module(
   tms_print,
   [
-    tms_print_justification//3 % +Options:list(nvpair)
-                               % +TMS:atom
-                               % +Justification:iri
+    tms_print_justification//3, % +Tms:atom
+                                % +Justification:iri
+                                % +Options:list(nvpair)
+    tms_print_node//3 % +Tms:atom
+                      % +Node:iri
+                      % +Options:list(nvpair)
   ]
 ).
 
-/** <module> TMS print
+/** <module> TMS printing
 
 Support for printing (aspects of) a TMS.
 
 @author Wouter Beek
-@version 2013/05, 2013/09-2013/10, 2014/01
+@version 2013/05, 2013/09-2013/10, 2014/01, 2014/07
 */
 
+:- use_module(library(aggregate)).
+:- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(library(predicate_options)). % Declarations.
 :- use_module(library(semweb/rdf_db)).
 
+:- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
 :- use_module(generics(option_ext)).
 :- use_module(tms(tms)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdfs_label_ext)).
 
-:- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
+:- rdf_register_prefix(tms, 'http://www.wouterbeek.com/tms.owl#').
+
+:- rdf_meta(tms_print_justification(+,r,+,?,?)).
+:- rdf_meta(tms_print_node(+,r,+,?,?)).
+
+:- predicate_options(tms_print_justification/3, 3, [
+     pass_to(tms_print_justification0/3, 3)
+   ]).
+:- predicate_options(tms_print_justification0/3, 3, [
+     indent(+nonneg),
+     pass_to(tms_print_node/3, 3)
+   ]).
+:- predicate_options(tms_print_node/3, 3, [
+     pass_to(tms_print_justification0/3, 3),
+     pass_to(tms_print_node0/2, 2)
+   ]).
+:- predicate_options(tms_print_node0/2, 2, [
+     indent(+nonneg),
+     language_preferences(+list(atom))
+   ]).
 
 
 
 %! tms_print_justification(
-%!   +Options:list(nvpair),
-%!   +TMS:atom,
-%!   +Justification:iri
-%! ) is det.
-% The following options are supported:
-%   * =|indent(+Indent:nonneg)|=
-%   * =|lang(+LangTag:atom)|=
-
-:- rdf_meta(tms_print_justification(+,+,r,?,?)).
-tms_print_justification(O1, TMS, J) -->
-  {once(tms_justification(TMS, As, R, C, J))},
-  
-  % Write the reason.
-  {add_default_option(O1, indent, 0, I, O2)},
-  indent(I),
-  bracketed(square, atom(R)),
-  space,
-  
-  % Write the consequent.
-  tms_print_node(O2, TMS, C),
-  nl,
-  
-  % Write the antecendents.
-  {update_option(O2, indent, succ, _, O3)},
-  tms_print_nodes(O3, TMS, As).
-
-
-tms_print_nodes(_, _, []) --> !, [].
-tms_print_nodes(O1, TMS, [H|T]) -->
-  tms_print_node(O1, TMS, H),
-  tms_print_nodes(O1, TMS, T).
-  
-
-%! tms_print_node(
-%!   +Options:list(nvpair),
-%!   +TMS:atom,
-%!   +Conclusion:iri
+%!   +Tms:atom,
+%!   +Justification:iri,
+%!   +Options:list(nvpair)
 %! )// is det.
 % The following options are supported:
-%   * =|indent(+Indent:nonneg)|=
-%   * =|lang(+LangTag:atom)|=
+%   * =|indent(+nonneg)|=
+%     Default: `0`.
+%   * =|language_preferences(+LanguageTags:list(atom))|=
+%     Default: `[en]`.
 
-tms_print_node(O1, TMS, C) -->
-  {add_default_option(O1, indent, 0, O2)},
-  
-  ({
-    tms_node(TMS, C),
-    rdf_has(J, tms:has_consequent, C)
-  } ->
-    tms_print_justification(O2, TMS, J)
-  ;
-    {option(indent(I), O2, 0)},
-    indent(I),
-    bracketed(square, `rdf`),
-    space,
-    tms_print_node_dead_end(O2, C),
-    nl
-  ).
+tms_print_justification(Tms, Justification, Options1) -->
+  {once(tms_justification(Tms, _, _, Consequence, Justification))},
+  % Make sure the indentation option is set.
+  {add_default_option(Options1, indent, 0, Options2)},
+
+  % Print the consequence node.
+  tms_print_node0(Consequence, Options2),
+
+  % Justifications for a node are written with deeper indentation.
+  {update_option(Options2, indent, succ, _, Options3)},
+
+  % Print the justification recursively.
+  tms_print_justification0(Tms, Justification, Options3).
+
+%! tms_print_justification0(
+%!   +Tms:atom,
+%!   +Justification:iri,
+%!   +Options:list(nvpair)
+%! )// is det.
+
+tms_print_justification0(Tms, Justification, Options1) -->
+  {once(tms_justification(Tms, Antecedents, Rule, _, Justification))},
+  % Make sure the indentation option is set.
+  {add_default_option(Options1, indent, 0, I, Options2)},
+
+  % Write the applied rule.
+  indent(I),
+  bracketed(square, atom(Rule)),
+  nl,
+
+  % Antecedents for a justifications are printed with deeper indentation.
+  {update_option(Options2, indent, succ, _, Options3)},
+
+  % Print the antecendents recursively.
+  % @tbd See whether this can be simplified by using
+  %      lambda expressions inside DCGs.
+  %      '*'(\X^tms_print_node(Tms, X, Options3), Antecedents).
+  tms_print_nodes(Tms, Antecedents, Options3).
+
+tms_print_justifications(_, [], _) --> !, [].
+tms_print_justifications(Tms, [H|T], Options) -->
+  tms_print_justification0(Tms, H, Options),
+  tms_print_justifications(Tms, T, Options).
 
 
-%! tms_print_node_dead_end(+Options:list(nvpair), +Node:iri)// is det.
+%! tms_print_node(+Tms:atom, +Node:iri, +Options:list(nvpair))// is det.
+% Prints a TMS node, starting with the consequence and
+% following with incrementally deeper justifications/antecedents.
+%
+% Multiple justifications for the same consequence are printed.
+%
 % The following options are supported:
-%   * =|lang(+LangTag:atom)|=
+%   * =|indent(+nonneg)|=
+%     Default: `0`.
+%   * =|language_preferences(+LanguageTags:list(atom))|=
+%     Default: `[en]`.
 
-tms_print_node_dead_end(O1, N) -->
+% Print upstream justifications (NONDET).
+tms_print_node(Tms, Node, Options1) -->
+  % Make sure the indentation option has been set.
+  {add_default_option(Options1, indent, 0, Options2)},
+
+  % Print the consequence node.
+  tms_print_node0(Node, Options2),
+
+  % Justifications for a node are printed with deeper indentation.
+  {update_option(Options2, indent, succ, _, Options3)},
+
+  % Print the justifications for this consequence node.
   {
-    option(lang(Lang), O1, en),
-    rdfs_preferred_label([Lang], N, L, _, _)
+    aggregate_all(
+      set(Justification),
+      rdf_has(Justification, tms:has_consequent, Node),
+      Justifications
+    )
   },
-  atom(L).
+  % @tbd See whether this can be simplified by using
+  %      lambda expressions inside DCGs.
+  tms_print_justifications(Tms, Justifications, Options3).
+
+%! tms_print_node(+Node:iri, +Options:list(nvpair))// is det.
+
+tms_print_node0(Node, Options1) -->
+  {option(indent(I), Options1, 0)},
+  indent(I),
+  {
+    option(language_preferences(LanguageTags), Options1, [en]),
+    rdfs_preferred_label(LanguageTags, Node, PreferredLabel, _, _)
+  },
+  atom(PreferredLabel),
+  nl.
+
+tms_print_nodes(_, [], _) --> !, [].
+tms_print_nodes(Tms, [H|T], Options) -->
+  tms_print_node(Tms, H, Options),
+  tms_print_nodes(Tms, T, Options).
 
