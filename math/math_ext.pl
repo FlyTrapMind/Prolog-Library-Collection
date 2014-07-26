@@ -3,6 +3,9 @@
   [
     average/2, % +Numbers:list(number)
                % -Average:number
+    betwixt/3, % ?Low:integer
+               % ?High:integer
+               % ?Value:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
                             % -BinomialCoefficient:integer
@@ -31,9 +34,6 @@
                           % -Fractional:integer
     is_fresh_age/2, % +Age:between(0.0,inf)
                     % +FreshnessLifetime:between(0.0,inf)
-    lbetween/3, % +Low:integer
-                % ?High:integer
-                % ?Value:integer
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -68,9 +68,6 @@
                     % -NumberOfPermutations:integer
     pred/2, % +X:integer
             % -Y:integer
-    rbetween/3, % ?Low:integer
-                % +High:integer
-                % ?Value:integer
     square/2, % +X:float
               % -Square:float
     succ_inf/2 % ?X:integer
@@ -87,6 +84,7 @@ Extra arithmetic operations for use in SWI-Prolog.
 */
 
 :- use_module(library(apply)).
+:- use_module(library(error)).
 :- use_module(library(lists)).
 
 :- use_module(generics(typecheck)).
@@ -101,6 +99,45 @@ average(Numbers, Average):-
   sum_list(Numbers, Sum),
   length(Numbers, NumberOfNumbers),
   Average is Sum / NumberOfNumbers.
+
+
+%! betwixt(+Low:integer, +High:integer, +Value:integer) is semidet.
+%! betwixt(+Low:integer, +High:integer, -Value:integer) is multi.
+%! betwixt(-Low:integer, +High:integer, +Value:integer) is semidet.
+%! betwixt(-Low:integer, +High:integer, -Value:integer) is multi.
+%! betwixt(+Low:integer, -High:integer, +Value:integer) is semidet.
+%! betwixt(+Low:integer, -High:integer, -Value:integer) is multi.
+% Like ISO between/3, but allowing either `Low` or `High`
+% to be uninstantiated.
+
+% Instantiation error: at least one bound must be present.
+betwixt(Low, High, Value):-
+  var(Low),
+  var(High), !,
+  instantiation_error(betwixt(Low, High, Value)).
+% Behavior of ISO between/3.
+betwixt(Low, High, Value):-
+  nonvar(Low),
+  nonvar(High), !,
+  between(Low, High, Value).
+% The higher bound is missing.
+betwixt(Low, High, Value):-
+  nonvar(Low), !,
+  betwixt_low(Low, Low, High, Value).
+% The lower bound is missing.
+betwixt(Low, High, Value):-
+  nonvar(High), !,
+  betwixt_high(Low, High, High, Value).
+
+betwixt_high(_, Value, _, Value).
+betwixt_high(Low, Between1, High, Value):-
+  Between2 is Between1 - 1,
+  betwixt_high(Low, Between2, High, Value).
+
+betwixt_low(_, Value, _, Value).
+betwixt_low(Low, Between1, High, Value):-
+  Between2 is Between1 + 1,
+  betwixt_low(Low, Between2, High, Value).
 
 
 binomial_coefficient(M, N, BC):-
@@ -259,32 +296,6 @@ fractional_integer(_, 0).
 is_fresh_age(_, inf):- !.
 is_fresh_age(Age, FreshnessLifetime):-
   Age < FreshnessLifetime.
-
-
-%! lbetween(+Low:integer, ?High:integer, ?Value:integer) is nondet
-% Like ISO between/3, but allowing `High` to be uninstantiated.
-%
-% @see rbetween/3
-
-lbetween(Low, High, Value):-
-  nonvar(Low),
-  (
-    nonvar(High)
-  ->
-    Low =< High
-  ;
-    true
-  ),
-  lbetween(Low, Low, High, Value).
-
-% There is a higher bound, so enforce it.
-lbetween(_, Value, High, Value):-
-  nonvar(High),
-  High == Value, !.
-lbetween(_, Value, _, Value).
-lbetween(Low, Between, High, Value):-
-  NewBetween is Between + 1,
-  lbetween(Low, NewBetween, High, Value).
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
@@ -510,36 +521,6 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
 
 pred(Integer, Predecessor):-
   succ(Predecessor, Integer).
-
-
-%! rbetween(+Low:integer, +High:integer, ?Value:integer) is nondet.
-%! rbetween(-Low:integer, +High:integer, ?Value:integer) is multi.
-% If `Low` and `High` are given, `Value` is instantiated with `High` and
-% with predecessor integers upon backtracking, until `Value` is `Low`.
-%
-% If only `High` is given there is no lowest value for `Value`.
-%
-% @see lbetween/3
-
-rbetween(Low, High, Value):-
-  nonvar(High),
-  (
-    nonvar(Low)
-  ->
-    Low =< High
-  ;
-    true
-  ),
-  rbetween(Low, High, High, Value).
-
-% There is a lower bound, so enforce it.
-rbetween(Low, Value, _, Value):-
-  nonvar(Low),
-  Low == Value, !.
-rbetween(_, Value, _, Value).
-rbetween(Low, Between, High, Value):-
-  NewBetween is Between - 1,
-  rbetween(Low, NewBetween, High, Value).
 
 
 smaller_than_or_equal_to(_, inf):- !.

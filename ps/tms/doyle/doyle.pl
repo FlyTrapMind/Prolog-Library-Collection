@@ -400,7 +400,7 @@ add_justification(Tms, Node, J):-
 
 doyle_add_node(Tms, rdf(S,P,O), N):- !,
   % Create an atomic label.
-  dcg_with_output_to(atom(Label), rdf_triple_name(S, P, O)),
+  dcg_with_output_to(atom(Label), rdf_triple_name(rdf(S,P,O))),
   
   % Use the atomic label to determine the node URL.
   tms_create_node_iri(Label, N),

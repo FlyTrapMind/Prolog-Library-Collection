@@ -96,7 +96,7 @@ tms_print_justification0(Tms, Justification, Options1) -->
   bracketed(square, atom(Rule)),
   nl,
 
-  % Antecedents for a justifications are printed with deeper indentation.
+  % Antecedents for a justification are printed with deeper indentation.
   {update_option(Options2, indent, succ, _, Options3)},
 
   % Print the antecendents recursively.

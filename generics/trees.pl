@@ -44,7 +44,7 @@ a
 ~~~
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/07-2013/08, 2014/03, 2014/06
+@version 2013/04-2013/05, 2013/07-2013/08, 2014/03, 2014/06-2014/07
 */
 
 :- use_module(library(aggregate)).
@@ -57,19 +57,17 @@ a
 :- use_module(dcg(dcg_abnf)).
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
+:- use_module(dcg(dcg_meta)).
 :- use_module(dcg(dcg_os)).
 :- use_module(generics(codes_ext)).
 :- use_module(generics(list_ext)).
 
 :- predicate_options(print_tree/2, 2, [
      indent(+nonneg),
-     transformation(+atom)
+     node_printer(+atom)
    ]).
 
-:- meta_predicate(print_node(+,+,:,?,?)).
 :- meta_predicate(print_tree(+,:)).
-:- meta_predicate(print_tree(+,+,:,?,?)).
-:- meta_predicate(print_trees(+,+,:,?,?)).
 
 
 
@@ -130,10 +128,11 @@ all_subpaths_to_tree0(Ls1, Trees):-
 %
 % The following options are supported:
 %   * =|indent(+Indent:nonneg)|=
-%     The depth of indentation of the root node (default 0).
-%   * =|transformation(:Predicate)|=
-%     The transformation that is performed upon the nodes of the tree,
-%     if any.
+%     The depth of indentation of the root node.
+%     Default: 0.
+%   * =|node_printer(:Predicate)|=
+%     The DCG that prints the nodes of a tree.
+%     Default: atom//1.
 %
 % ### Example
 %
@@ -150,9 +149,9 @@ print_tree(Tree, Options1):-
   once(phrase(print_tree(Tree, I, Options3), Codes)),
   put_codes(Codes).
 
-is_meta(transformation).
+is_meta(node_printer).
 
-%! print_tree(+Tree:compound, +Indent:nonneg, +Options:list(nvpair))// .
+%! print_tree(+Tree:compound, +Indent:nonneg, +Options:list(nvpair))// is det.
 
 print_tree(Node-Trees, I1, Options) -->
   print_node(Node, I1, Options),
@@ -163,18 +162,17 @@ print_tree(Node-Trees, I1, Options) -->
   % Sub trees / child nodes.
   print_trees(Trees, I2, Options).
 
-%! print_node(+Node, +Indent:nonneg, +Options:list(nvpair))// .
+%! print_node(+Node, +Indent:nonneg, +Options:list(nvpair))// is det.
 
-print_node(Node1, I, Options) -->
+print_node(Node, I, Options) -->
   % Hierarchic structure prefixing the node representation.
   `|`,
   '#'(I, hyphen),
   `- `,
 
-  % The node, written after an arbitrary transformation has been applied.
-  {option(transformation(Predicate), Options, =)},
-  {call(Predicate, Node1, Node2)},
-  atom(Node2),
+  % The node is printed by a given DCG.
+  {option(node_printer(Predicate), Options, atom)},
+  dcg_call(Predicate, Node),
 
   % End with a newline.
   newline.

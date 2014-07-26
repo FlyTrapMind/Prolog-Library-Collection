@@ -192,7 +192,7 @@ ap_message(ApStage) -->
     forall(
       rdf(ApStage, P, O),
       (
-        dcg_with_output_to(user_output, rdf_triple_name(ApStage, P, O)),
+        dcg_with_output_to(user_output, rdf_triple_name(rdf(ApStage,P,O))),
         nl(user_output),
         flush_output(user_output)
       )
