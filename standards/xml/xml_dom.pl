@@ -27,7 +27,7 @@ Predicates that operate on / generate XML DOM.
 
 @author Wouter Beek
 @tbd HTTP-serve DTD files.
-@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11, 2014/03
+@version 2012/10, 2013/02-2013/05, 2013/07, 2013/09, 2013/11, 2014/03, 2014/07
 */
 
 :- use_module(library(http/html_write)).
@@ -36,6 +36,7 @@ Predicates that operate on / generate XML DOM.
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(option)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(library(sgml)).
 :- use_module(library(sgml_write)).
 
@@ -44,11 +45,8 @@ Predicates that operate on / generate XML DOM.
 :- use_module(os(io_ext)).
 :- use_module(standards(sgml_parse)).
 :- use_module(uri(rfc3987_dcg)).
-:- use_module(xml(xml_namespace)).
 
-:- use_module(plHtml(html)). % This is required for the HTML DTD file path.
-
-:- xml_register_namespace(svg, 'http://www.w3.org/2000/svg').
+:- rdf_register_prefix(svg, 'http://www.w3.org/2000/svg').
 
 :- db_add_novel(user:prolog_file_type(css, css)).
 :- db_add_novel(user:prolog_file_type(dtd, dtd)).
@@ -256,8 +254,8 @@ xml_inject_dom_with_attribute(
   (
     member(class=Class, Attributes1)
   ->
-    xml_current_namespace(svg, SVG_Namespace),
-    member(element(SVG_Namespace:title, [], [Name]), Contents1),
+    rdf_current_prefix(svg, SvgNamespace),
+    member(element(SvgNamespace:title, [], [Name]), Contents1),
     format(atom(Function), 'clickme(\'~w\')', [Name]),
     Attributes2 = [onclick=Function|Attributes1]
   ;

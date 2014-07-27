@@ -16,11 +16,6 @@
                % :Context
                % +Arguments:list
 
-% FLAGS
-    temporarily_set_flag/3, % +Flag:atom
-                            % +TemporaryValue
-                            % :Goal
-
 % MAPLIST RELATED PREDICATES
     app_list/3, % +Preds:list
                 % +Args:list
@@ -77,8 +72,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(loop_until_true(0)).
 :- meta_predicate(loop_until_true0(+,0)).
 :- meta_predicate(setoff_alt(+,0,-)).
-:- meta_predicate(temporarily_set_flag(+,+,0)).
-:- meta_predicate(temporarily_set_existing_flag(+,+,+,0)).
 :- meta_predicate(update_datastructure(3,+,+,-)).
 
 :- dynamic(memo_/1).
@@ -190,28 +183,6 @@ setoff_alt(_Format, _Goal, Set):-
   findall(Format, tmp(Format), Set0),
   retractall(tmp(_)),
   sort(Set0, Set).
-
-
-
-% FLAGS %
-
-%! temporarily_set_flag(+Flag:atom, +TemporaryValue, :Goal) is det.
-
-temporarily_set_flag(Flag, TemporaryValue, Goal):-
-  current_prolog_flag(Flag, MainValue), !,
-  temporarily_set_existing_flag(Flag, MainValue, TemporaryValue, Goal).
-temporarily_set_flag(Flag, Value, Goal):-
-  create_prolog_flag(Flag, Value, []),
-  temporarily_set_flag(Flag, Value, Goal).
-
-temporarily_set_existing_flag(_, Value, Value, Goal):- !,
-  call(Goal).
-temporarily_set_existing_flag(Flag, MainValue, TemporaryValue, Goal):-
-  setup_call_cleanup(
-    set_prolog_flag(Flag, TemporaryValue),
-    call(Goal),
-    set_prolog_flag(Flag, MainValue)
-  ).
 
 
 

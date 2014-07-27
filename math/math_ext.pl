@@ -3,8 +3,8 @@
   [
     average/2, % +Numbers:list(number)
                % -Average:number
-    betwixt/3, % ?Low:integer
-               % ?High:integer
+    betwixt/3, % +Low:integer
+               % +High:integer
                % ?Value:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
@@ -109,23 +109,35 @@ average(Numbers, Average):-
 %! betwixt(+Low:integer, -High:integer, -Value:integer) is multi.
 % Like ISO between/3, but allowing either `Low` or `High`
 % to be uninstantiated.
+%
+% ### Booundary arguments
+%
+% In some cases it is difficult to call this predicate with uninstantiated
+% boundary arguments, e.g. when these are set by setting/2.
+% For such cases, we allow the boundaries to be `minf` and `inf`,
+% respectively.
+
+betwixt(Low1, High1, Value):-
+  (Low1 == minf -> true ; Low2 = Low1),
+  (High1 == inf -> true ; High2 = High1),
+  betwixt0(Low2, High2, Value).
 
 % Instantiation error: at least one bound must be present.
-betwixt(Low, High, Value):-
+betwixt0(Low, High, Value):-
   var(Low),
   var(High), !,
   instantiation_error(betwixt(Low, High, Value)).
 % Behavior of ISO between/3.
-betwixt(Low, High, Value):-
+betwixt0(Low, High, Value):-
   nonvar(Low),
   nonvar(High), !,
   between(Low, High, Value).
 % The higher bound is missing.
-betwixt(Low, High, Value):-
+betwixt0(Low, High, Value):-
   nonvar(Low), !,
   betwixt_low(Low, Low, High, Value).
 % The lower bound is missing.
-betwixt(Low, High, Value):-
+betwixt0(Low, High, Value):-
   nonvar(High), !,
   betwixt_high(Low, High, High, Value).
 

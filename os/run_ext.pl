@@ -1,13 +1,20 @@
 :- module(
   run_ext,
   [
+    create_process/3, % +Process:atom
+                      % +Arguments:list
+                      % +Options:list(nvpair)
+    create_process/4, % +Process:atom
+                      % +Arguments:list
+                      % :Goal
+                      % +Options:list(nvpair)
     exists_program/1, % +Program:atom
     exit_code_handler/2, % +Program:atom
                          % +Code:or([compound,nonneg])
     find_program_by_file_type/2, % +FileType:atom
                                  % -Predicate:atom
     list_external_programs/0,
-    list_external_programs/1, % +FileType:atom
+    list_external_programs/1, % +FileType:ato
     run_program/2 % +Program:atom
                   % +Arguments:list(atom)
   ]
@@ -18,12 +25,15 @@
 Predicates for running external programs.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/11, 2014/01-2014/02, 2014/05
+@version 2013/06-2013/07, 2013/11, 2014/01-2014/02, 2014/05, 2014/07
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
+:- use_module(library(option)).
+:- use_module(library(predicate_options)). % Declarations.
 :- use_module(library(process)).
+:- use_module(library(readutil)).
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(error_ext)).
@@ -47,6 +57,65 @@ Predicates for running external programs.
 
 :- at_halt(kill_processes).
 
+:- meta_predicate(create_process(+,+,1,+)).
+
+:- predicate_options(create_process/3, 3, [
+     pass_to(create_process/4, 4)
+   ]).
+:- predicate_options(create_process/4, 4, [
+     pass_to(process_create/3, 3)
+   ]).
+
+
+
+%! create_process(
+%!   +Process:atom,
+%!   +Arguments:list,
+%!   +Options:list(nvpair)
+%! ) is det.
+
+create_process(Process, Args, Options):-
+  create_process(Process, Args, idle_goal, Options).
+idle_goal(_).
+
+
+%! create_process(
+%!   +Process:atom,
+%!   +Arguments:list,
+%!   :Goal,
+%!   +Options:list(nvpair)
+%! ) is det.
+% Calls an external process with the given name and arguments,
+% and call an internal goal on the output that is coming from
+% the external process.
+%
+% This predicate is only deterministic if the given goal is deterministic.
+
+create_process(Process, Args, Goal, Options1):-
+  merge_options(
+    [process(Pid),stderr(pipe(Error)),stdout(pipe(Out))],
+    Options1,
+    Options2
+  ),
+  setup_call_cleanup(
+    process_create(path(Process), Args, Options2),
+    (
+      call(Goal, Out),
+      read_stream_to_codes(Error, ErrorCodes, []),
+      process_wait(Pid, Status)
+    ),
+    (
+      close(Out),
+      close(Error)
+    )
+  ),
+  print_error(ErrorCodes),
+  exit_code_handler(Process, Status).
+
+print_error([]):- !.
+print_error(Codes):-
+  string_codes(String, Codes),
+  print_message(warning, String).
 
 
 %! exists_program(+Program:atom) is semidet.
@@ -54,14 +123,14 @@ Predicates for running external programs.
 
 exists_program(Program):-
   catch(
-    process_create(path(Program), [], [process(PID)]),
+    process_create(path(Program), [], [process(Pid)]),
     error(existence_error(_, _), _Context),
     fail
   ),
-  process_kill(PID).
+  process_kill(Pid).
 
 
-%! exit_code_handler(+Program:atom, +Status:or([compound,nonneg])) is det.
+%! exit_code_handler(+Program, +Status:or([compound,nonneg])) is det.
 % Handling of exit codes given by programs that are run from the shell.
 %
 % @arg Program
@@ -169,6 +238,7 @@ list_external_programs_label(Programs, Content, String):-
       '.'
     ]
   ).
+
 
 %! write_program_support(+Program:atom) is semidet.
 % Succeeds if the program with the given name exists on PATH.
