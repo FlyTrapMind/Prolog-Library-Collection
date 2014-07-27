@@ -100,7 +100,7 @@ export_graph(O, G, G_Term):-
 %  export_dgraph(O, CoordFunc, G, G_Term).
 export_graph(O, CoordFunc, G, G_Term):-
   atomic(G), rdf_graph(G), !,
-  export_rdf_graph(O, CoordFunc, G, G_Term).
+  rdf_graph_to_gif(O, CoordFunc, G, G_Term).
 export_graph(O, CoordFunc, G, G_Term):-
   is_ugraph(G), !,
   export_ugraph(O, CoordFunc, G, G_Term).

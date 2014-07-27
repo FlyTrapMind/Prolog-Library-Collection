@@ -26,6 +26,15 @@
              % +Depth:integer
              % -Vertices:ordset
              % -Edges:ordset(edge)
+    edge_components/3, % +Edge:compound
+                       % -FromVertex
+                       % -ToVertex
+    edge_components/4, % +Edge:compound
+                       % -FromVertex
+                       % -EdgeType
+                       % -ToVertex
+    edges_to_vertices/2, % +Edges:list(compound)
+                         % -Vertices:ordset
     graphic_graph/1, % +S:list(integer)
     has_cycle/3, % :V_P
                  % :E_P
@@ -60,7 +69,7 @@ the edges and vertices.
 
 @author Wouter Beek
 @tbd Compare shortest path and travel predicates two versions.
-@version 2013/01-2013/04, 2013/07, 2014/03
+@version 2013/01-2013/04, 2013/07, 2014/03, 2014/07
 */
 
 :- use_module(generics(list_ext)).
@@ -232,6 +241,30 @@ depth_(O, N_P, CurrentVs, Depth, VerticesH, AllVs, EdgesH, AllEs):-
   NewDepth is Depth - 1,
   ord_union(EdgesH, CurrentEdges0, NewEdgesH),
   depth_(O, N_P, NextVs, NewDepth, NewVerticesH, AllVs, NewEdgesH, AllEs).
+
+%! edge_components(+Edge:compound, -FromVertex, -ToVertex) is det.
+%! edge_components(-Edge:compound, +FromVertex, +ToVertex) is det.
+
+edge_components(Edge, FromVertex, ToVertex):-
+  edge_components(Edge, FromVertex, _, ToVertex).
+
+%! edge_components(+Edge:compound, -FromVertex, -EdgeType, -ToVertex) is det.
+%! edge_components(-Edge:compound, +FromVertex, ?EdgeType, +ToVertex) is det.
+
+edge_components(FromV-EdgeType-ToV, FromV, EdgeType, ToV):-
+  nonvar(EdgeType).
+edge_components(FromV-ToV, FromV, _, ToV):-
+  var(EdgeType).
+
+%! edges_to_vertices(+Edges:list(compound), -Vertices:ordset) is det.
+
+edges_to_vertices([], Vs):-
+  ord_empty(Vs).
+edges_to_vertices([E|Es], Vs3):-
+  edges_to_vertices(Es, Vs1),
+  edge_components(E, FromV, ToV),
+  ord_add_element(Vs1, FromV, Vs2),
+  ord_add_element(Vs2, ToV, Vs3).
 
 %! graphic_graph(+Seq:list(integer)) is semidet.
 % Succeeds if the given degree sequence represents a simple graph.

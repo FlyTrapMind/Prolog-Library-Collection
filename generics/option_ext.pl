@@ -28,6 +28,11 @@
                          % +Options:list(nvpair)
                          % -RestOptions:list(nvpair)
                          % :Goal
+    merge_options/2, % +FromOptions:list(nvpair)
+                     % -ToOptions:list(nvpair)
+    nvpair/3, % ?NameValuePair:compound
+              % ?Name:atom
+              % ?Value
     remove_option/4, % +OldOptions:list(nvpair),
                      % +Name:atom,
                      % +Value,
@@ -59,7 +64,7 @@ first argument position in the given option term (probably under the
 assumption that the option term will always be unary).
 
 @author Wouter Beek
-@version 2013/01, 2013/07-2013/08, 2013/11-2013/12, 2014/04, 2014/06
+@version 2013/01, 2013/07-2013/08, 2013/11-2013/12, 2014/04, 2014/06-2014/07
 */
 
 :- use_module(library(option)).
@@ -93,7 +98,7 @@ assumption that the option term will always be unary).
 add_option(O1, _, X, O1):-
   var(X), !.
 add_option(O1, N, V, O2):-
-  O =.. [N,V],
+  nvpair(O, N, V),
   merge_options([O], O1, O2).
 
 
@@ -121,7 +126,7 @@ add_default_option(Os1, N, DefaultV, Os2):-
 % Also returns the resultant options list.
 
 add_default_option(Os1, N, _DefaultV, StoredV, Os1):-
-  O =.. [N,StoredV],
+  nvpair(O, N, StoredV),
   option(O, Os1), !.
 add_default_option(Os1, N, DefaultV, DefaultV, Os2):-
   add_option(Os1, N, DefaultV, Os2).
@@ -169,6 +174,27 @@ if_select_option(Option, Options1, Options2, Goal) -->
 if_select_option(_, Options, Options, _) --> [].
 
 
+%! merge_options(+FromOptions:list(nvpair), -ToOptions:list(nvpair)) is det.
+
+merge_options([], []).
+% Skip uninstantiated values.
+merge_options([H|T1], T2):-
+  merge_options(T1, T2),
+  nvpair(H, _, Value),
+  var(Value), !.
+% Include instantiated values.
+merge_options([H|T1], [H|T2]):-
+  merge_options(T1, T2).
+
+
+%! nvpair(+NameValuePair:compound, -Name:atom, -Value) is det.
+%! nvpair(-NameValuePair:compound, +Name:atom, +Value) is det.
+
+nvpair(Name=Value, Name, Value):- !.
+nvpair(NVPair, Name, Value):-
+  NVPair =.. [Name,Value].
+
+
 %! remove_option(
 %!   +OldOptions:list(nvpair),
 %!   +Name:atom,
@@ -177,7 +203,7 @@ if_select_option(_, Options, Options, _) --> [].
 %! ) is det.
 
 remove_option(Os1, N, V, Os2):-
-  O =.. [N,V],
+  nvpair(O, N, V),
   select_option(O, Os1, Os2).
 
 %! replace_option(
@@ -191,6 +217,7 @@ remove_option(Os1, N, V, Os2):-
 replace_option(Os1, N, V2, V1, Os3):-
   remove_option(Os1, N, V1, Os2),
   add_option(Os2, N, V2, Os3).
+
 
 %! update_option(
 %!   +OldOptions:list(nvpair),
