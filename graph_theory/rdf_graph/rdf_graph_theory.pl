@@ -1,18 +1,8 @@
 :- module(
   rdf_graph_theory,
   [
-    rdf_edge/2, % +Graph:atom
-                % ?Edge:edge
-    rdf_edge/3, % +Options:list(nvpair)
-                % +Graph:atom
-                % ?Edge:edge
-    rdf_edges/2, % +Graph:atom
-                 % ?Edges:ordset(edge)
-    rdf_edges/3, % +Options:list(nvpair)
-                 % +Graph:atom
-                 % ?Edges:ordset(edge)
-    rdf_edges_to_vertices/2, % +Edges:ordset(edge)
-                             % -Vertices:ordset(vertex)
+    rdf_directed_edge/2, % +Graph:atom
+                         % ?DirectedEdge:compound
     rdf_graph_to_ugraph/2, % +Graph:atom
                            % -UG:ugraph
     rdf_neighbor/3, % +Graph:atom
@@ -25,18 +15,15 @@
                             % -Edges:ordset(rdf_term)
     rdf_triples_to_vertices/2, % +Triples:list(rdf_triple)
                                % -Vertices:ordset(rdf_term)
+    rdf_undirected_edge/2, % +Graph:atom
+                           % ?UndirectedEdge:compound
     rdf_vertex/2, % +Graph:atom
                   % ?Vertex:vertex
     rdf_vertex/3, % +Options:list(nvpair)
                   % +Graph:atom
                   % ?Vertex:vertex
-    rdf_vertex_equivalence/2, % +Resource1:uri
-                              % +Resource2:uri
-    rdf_vertices/2, % +Graph:atom
-                    % -Vertices:ordset(vertex)
-    rdf_vertices/3 % +Options:list(nvpair)
-                   % +Graph:atom
-                   % -Vertices:ordset(vertex)
+    rdf_vertex_equivalence/2 % +Resource1:uri
+                             % +Resource2:uri
   ]
 ).
 
@@ -51,29 +38,31 @@ This means that the definitions 'edge' and 'vertex' for graph theoretic
  operations of RDF data must be redefined.
 
 @author Wouter Beek
-@version 2012/01-2013/03, 2013/08, 2014/03
+@version 2012/01-2013/03, 2013/08, 2014/03, 2014/07
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(predicate_options)). % Declaration.
 :- use_module(library(semweb/rdf_db)).
+
 :- use_module(plRdf(rdf_read)).
 :- use_module(plRdf_term(rdf_language_tagged_string)).
 :- use_module(plRdf_term(rdf_literal)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
+:- rdf_register_prefix(rdf, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#').
 
-:- rdf_meta(rdf_edge(+,r)).
-:- rdf_meta(rdf_edge(+,+,r)).
-:- rdf_meta(rdf_edges(+,r)).
-:- rdf_meta(rdf_edges(+,+,r)).
 :- rdf_meta(rdf_neighbor(+,r,r)).
 :- rdf_meta(rdf_neighbors(+,r,-)).
 :- rdf_meta(rdf_vertex(+,r)).
 :- rdf_meta(rdf_vertex(+,+,r)).
 :- rdf_meta(rdf_vertex_equivalence(r,r)).
+
+:- predicate_options(rdf_vertex/3, 3, [
+     literals(+oneog([all,none,preferred_label])),
+     rdf_list(+boolean)
+   ]).
 
 
 
@@ -81,79 +70,41 @@ rdf_bnode_to_var(S, _):-
   rdf_is_bnode(S), !.
 rdf_bnode_to_var(X, X).
 
-rdf_edge(G, E):-
-  rdf_edge([], G, E).
 
-%! rdf_edge(+Options:list(nvpair), +Graph:atom, ?Edge:edge) is nondet.
-% RDF edges between resources.
-%
-% The following options are supported:
-%   1. `literals(+Include:oneof([all,none,preferred_label]))`
-%      Whether all (`all`, default), none (`none`) or only preferred label
-%      literals (`preferred_label`) are included as vertices.
-%
-% @arg Options A list of name-value pairs.
-% @arg Graph The atomic name of an RDF graph.
-% @arg Edge An edge, either `FromV-ToV` or `FromV-P-ToV`.
+%! rdf_directed_edge(+Graph:atom, +DirectedEdge:compound) is semidet.
+%! rdf_directed_edge(+Graph:atom, -DirectedEdge:compound) is det.
 
-rdf_edge(O1, G, FromV-P-ToV):- !,
-  rdf(FromV, P, ToV, G),
-  % Make sure the vertices pass the vertex filter.
-  rdf_vertex_check(O1, FromV),
-  rdf_vertex_check(O1, ToV).
-rdf_edge(O1, G, FromV-ToV):-
-  rdf_edge(O1, G, FromV-_-ToV).
+rdf_directed_edge(Graph, FromV-P-ToV):-
+  rdf(FromV, P, ToV, Graph).
 
-rdf_edges(G, Es):-
-  rdf_edges([], G, Es).
 
-rdf_edges(O1, G, Es):-
-  aggregate_all(
-    set(E),
-    rdf_edge(O1, G, E),
-    Es
-  ).
-
-rdf_edges_to_vertices(Es, Vs):-
-  aggregate_all(
-    V,
-    (
-      member(V-_W1, Es)
-    ;
-      member(_-V, Es)
-    ),
-    Vs
-  ).
-
-%! rdf_graph_to_ugraph(+Graph:atom, -UGraph:ugraph) is det.
+%! rdf_graph_to_ugraph(+Graph:atom, -UGraph:compound) is det.
 % Returns the UG representation of a loaded RDF graph.
 %
 % @arg G The atomic name of a loaded RDF graph.
 % @arg UG:ugraph A UG datastructure.
 
-rdf_graph_to_ugraph(G, UG):-
+rdf_graph_to_ugraph(Graph, UGraph):-
   aggregate_all(
     set(From-Neighbors),
     (
-      rdf_vertex(G, From),
+      rdf_vertex(Graph, From),
       aggregate_all(
         set(To),
-        rdf_edge(G, From-To),
+        rdf_undirected_edge(Graph, From-_-To),
         Neighbors
       )
     ),
-    UG
+    UGraph
   ).
 
-rdf_literal_to_value(literal(lang(_Lang,LitVal)), LitVal):- !.
-rdf_literal_to_value(literal(type(_Type,LitVal)), LitVal):- !.
-rdf_literal_to_value(literal(LitVal), LitVal):- !.
 
 %! rdf_neighbor(+Graph:atom, ?Vertex:vertex, ?Neighbor:vertex) is nondet.
 % Neighboring vertices.
 
-rdf_neighbor(G, V1, V2):-
-  rdf_edge(G, V1-V2).
+rdf_neighbor(Graph, V1, V2):-
+  rdf(V1, _, V2, Graph).
+  rdf_edge(Graph, V1-V2).
 
 rdf_neighbors(G, V, Ns):-
   aggregate_all(
@@ -162,28 +113,37 @@ rdf_neighbors(G, V, Ns):-
     Ns
   ).
 
+
 rdf_triples_to_edges(Ts, Es):-
   aggregate_all(
     set(FromV-ToV),
-    member(rdf(FromV,_P,ToV), Ts),
+    member(rdf(FromV,_,ToV), Ts),
     Es
   ).
+
 
 rdf_triples_to_vertices(Ts, Vs):-
   aggregate_all(
     set(V),
     (
-      member(rdf(V1,_P,V2), Ts),
+      member(rdf(V1,_,V2), Ts),
       (
         V = V1
       ;
-        V = V2)
-      ),
+        V = V2
+      )
+    ),
     Vs
   ).
 
-rdf_vertex(G, V):-
-  rdf_vertex([], G, V).
+%! rdf_undirected_edge(+Graph:atom, +UndirectedEdge:edge) is semidet.
+%! rdf_undirected_edge(+Graph:atom, -UndirectedEdge:edge) is nondet.
+
+rdf_undirected_edge(Graph, FromV-P-ToV):-
+  rdf(FromV, P, ToV, Graph).
+rdf_undirected_edge(Graph, FromV-P-ToV):-
+  rdf(ToV, P, FromV, Graph).
+
 
 %! rdf_vertex(+Options:list(nvpair), +Graph:atom, ?Vertex:rdf_term) is nondet.
 % Pairs of graphs and nodes that occur in that graph.
@@ -202,74 +162,16 @@ rdf_vertex(G, V):-
 % @arg Graph The atomic name of an RDF graph.
 % @arg Vertex An RDF term.
 
-rdf_vertex(O, G, V):-
-  (rdf(V, _, _, G) ; rdf(_, V, _, G) ; rdf(_, _, V, G)),
-  rdf_vertex_check(O, V).
-
-% Typed literals are only included when `literals=all`.
-rdf_vertex_check(O, literal(type(_Datatype,_Value))):-
-  option(literals(all), O, all), !.
-% Untyped literals are included:
-%   * if the language tag is matched, under option `literals=preferred_label`.
-%   * never, under option `literals=none`.
-%   * always, under option `literals=all`
-rdf_vertex_check(O, Literal):-
-  rdf_is_literal(Literal), !,
-  option(literals(IncludeLiterals), O, all),
-
-  % No literal is allowed as vertex under option `literals=none`.
-  IncludeLiterals \== none,
-
-  % Under option `literal=preferred_label`,
-  % the given literal must be the preferred literal
-  % for the subject-predicate pair involved.
+rdf_vertex(IncludeLiterals, G, V):-
   (
-    IncludeLiterals == preferred_label
-  ->
-    % We must know the subject and predicate terms
-    % that occur in the same triple as the given literal.
-    rdf_literal(S, P, LexicalForm1, DatatypeIri, LanguageTag1, _),
-
-    % Make sure the same literal with the preferred language tag does
-    % not exist.
-    % This excludes `literal(aap)` and `literal(aap,nl)` form
-    % being both displayed.
-    (
-      rdf_equal(xsd:string, DatatypeIri),
-      var(LanguageTag1)
-    ->
-      \+ ((
-        rdf_literal(S, P, LexicalForm2, DatatypeIri, LanguageTag2, _),
-	LexicalForm2 \== LexicalForm1,
-        nonvar(LanguageTag2)
-      ))
-    ;
-       true
-    ),
-
-    % Only preferred labels are allowed as vertices.
-    option(language(Lang), O, en),
-    % The given literal must be the preferred literal,
-    % otherwise this predicate should fail.
-    rdf_preferred_language_tagged_string(Lang, S, P, LexicalForm1, _, _)
+    rdf(V, _, _, G)
   ;
-    % All literals are vertices.
-    true
-  ).
-% Non-literal RDF terms.
-% No restriction on RDF lists.
-rdf_vertex_check(O, _V):-
-  option(rdf_list(true), O, true), !.
-% With setting `rdf_list=false` RDF terms should not be part of an RDF list.
-rdf_vertex_check(O, V):-
-  option(rdf_list(false), O, true),
-  % The vertex must have some occurrence outside an RDF list.
-  once((
-    rdf(V, _, _)
+    rdf(_, V, _, G)
   ;
-    rdf(_, P, V),
-    \+ rdf_memberchk(P, [rdf:first,rdf:rest])
-  )).
+    rdf(_, _, V, G),
+    rdf_vertex_check(IncludeLiterals, V)
+  ),
+
 
 % @tbd What is this?
 rdf_vertex_equivalence(X, Y):-
@@ -299,15 +201,5 @@ rdf_vertex_equivalence(X, Y):-
   forall(
     rdf_has(S, P, Y),
     rdf_has(S, P, X)
-  ).
-
-rdf_vertices( G, Vs):-
-  rdf_vertices([], G, Vs).
-
-rdf_vertices(O, G, Vs):-
-  aggregate_all(
-    set(V),
-    rdf_vertex(O, G, V),
-    Vs
   ).
 

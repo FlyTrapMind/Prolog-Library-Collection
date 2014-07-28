@@ -90,7 +90,7 @@ export_graph(O, G, G_Term):-
 %   6. `rdf_list(+Included:boolean)`
 %      Whether vertices that are part of an RDF list should be
 %      included (`true`, default) or not (`false`).
-%   7. `uri_desc(+URI_Description:oneof([uri_only,with_literals,with_preferred_label])`
+%   7. `iri_description(+URI_Description:oneof([iri_only,with_all_literals,with_preferred_label])`
 %      The way in which URI vertices are descibed.
 %
 % @tbd Enforce that language codes belong to the official RFC standard.
