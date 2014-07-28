@@ -229,7 +229,7 @@ depth(NeighborPred, Depth1, Vs1, Vs3, Es1, Es3):-
   edges_to_vertices(NewEs, NewVs),
   ord_union(Es1, NewEs, Es2),
   ord_union(Vs1, NewVs, Vs2),
-  
+
   Depth2 is Depth1 - 1,
   depth(NeighborPred, Depth2, Vs2, Vs3, Es2, Es3).
 
@@ -246,7 +246,7 @@ edge_components(Edge, FromVertex, ToVertex):-
 % Relates a named/typed edge to its constituting vertices and type.
 
 edge_components(FromV-EdgeType-ToV, FromV, EdgeType, ToV):-
-  nonvar(EdgeType).
+  nonvar(EdgeType), !.
 edge_components(FromV-ToV, FromV, EdgeType, ToV):-
   var(EdgeType).
 
@@ -362,7 +362,7 @@ subgraph(V_P, E_P, SubG, G):-
   call(V_P, SubG, SubVs),
   call(V_P, G, Vs),
   ord_subset(SubVs, Vs),
-  
+
   % Edges.
   call(E_P, SubG, SubEs),
   call(E_P, G, Es),
