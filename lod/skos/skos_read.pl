@@ -26,11 +26,9 @@
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(graph_theory(graph_export)).
 :- use_module(graph_theory(random_vertex_coordinates)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(skos, 'http://www.w3.org/2004/02/skos/core#').
+:- rdf_register_prefix(skos, 'http://www.w3.org/2004/02/skos/core#').
 
 :- rdf_meta(skos_export_hierarchy(r)).
 

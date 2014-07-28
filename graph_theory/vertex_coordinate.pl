@@ -25,7 +25,6 @@ positions in iterations of spring embedding.
 :- use_module(library(option)).
 
 :- use_module(generics(list_ext)).
-:- use_module(graph_theory(graph_export)).
 :- use_module(xml(xml_dom)).
 
 :- use_module(plHtml(html_table)).

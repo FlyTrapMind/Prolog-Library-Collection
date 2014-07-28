@@ -20,8 +20,7 @@
     degree_sequence/3, % +Graph
                        % :V_P
                        % -DegreeSequence:list(integer)
-    depth/6, % +Options:list(nvpair)
-             % :N_P
+    depth/5, % :NeighborPred
              % +Vertex
              % +Depth:integer
              % -Vertices:ordset
@@ -72,26 +71,27 @@ the edges and vertices.
 @version 2013/01-2013/04, 2013/07, 2014/03, 2014/07
 */
 
-:- use_module(generics(list_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(graph_theory(graph_traversal)).
 :- use_module(library(aggregate)).
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
+
+:- use_module(generics(list_ext)).
+:- use_module(generics(typecheck)).
+:- use_module(graph_theory(graph_traversal)).
 :- use_module(pl(pl_control)).
-:- use_module(plRdf(rdf_export)). % Meta-predicates.
-:- use_module(rdf_graph(rdf_graph_theory)).
 :- use_module(ugraph(ugraph_ext)).
+
+:- use_module(plRdf(rdf_graph_theory)).
 
 :- meta_predicate(bipartite(+,2,-,-)).
 :- meta_predicate(cubic(2,+)).
 :- meta_predicate(component(2,2,?,+)).
 :- meta_predicate(connected(2,2,+)).
 :- meta_predicate(degree_sequence(+,2,-)).
-:- meta_predicate(depth(+,2,+,?,-,-)).
-:- meta_predicate(depth_(+,2,+,?,+,-,+,-)).
+:- meta_predicate(depth(2,+,+,-,-)).
+:- meta_predicate(depth(2,+,+,-,+,-)).
 :- meta_predicate(has_cycle(2,2,+)).
 :- meta_predicate(is_undirected(2,+)).
 :- meta_predicate(regular(2,+)).
@@ -101,8 +101,7 @@ the edges and vertices.
 :- meta_predicate(subgraph(2,2,?,+)).
 
 :- rdf_meta(degree(+,r,-)).
-:- rdf_meta(depth(+,:,r,?,-,-)).
-:- rdf_meta(depth_(+,:,r,?,+,-,+,-)).
+:- rdf_meta(depth(:,+,r,-,-)).
 
 
 
@@ -129,6 +128,7 @@ bipartite_([W-V | Es], H_S1, Vs1, H_S2, Vs2):-
   ord_add_element(H_S2, W, New_H_S2),
   bipartite_(Es, New_H_S1, Vs1, New_H_S2, Vs2).
 
+
 %! component(:V_P, :E_P, ?Component, +Graph) is nondet.
 % Succeeds of the former graph is a component of the latter.
 %
@@ -142,6 +142,7 @@ component(V_P, E_P, C, G):-
     strict_subgraph(V_P, E_P, C, D),
     connected(V_P, E_P, D)
   )).
+
 
 %! connected(:V_P, :E_P, +Graph) is semidet.
 % Succeeds if the given graph is connected.
@@ -159,6 +160,7 @@ connected(V_P, E_P, G):-
     traverse([unique_vertex(true)], G, V_P, E_P, V1, V2, _Distance)
   ).
 
+
 %! cubic(:V_P, +Graph) is semidet.
 % Succeeds if the given graph is cubic.
 %
@@ -167,6 +169,7 @@ connected(V_P, E_P, G):-
 cubic(V_P, G):-
   regular(V_P, G, 3).
 
+
 %! degree(+Graph, +Vertex:vertex, -Degree:integer) is det.
 % Returns the degree of the given vertex.
 %        2. =|literals(oneof([collapse,hide,labels_only,show]))|=
@@ -174,6 +177,7 @@ cubic(V_P, G):-
 degree(G, V, Degree):-
   neighbors(G, V, Ns),
   length(Ns, Degree).
+
 
 %! degree_sequence(+Graph, :V_P, -DegreeSequence:list(integer)) is det.
 % Returns the degree sequence of the given graph.
@@ -195,76 +199,68 @@ degree_sequence(G, V_P, DegreeSequence):-
     DegreeSequence
   ).
 
+
 %! depth(
-%!   +Options:list(nvpair),
-%!   :N_P,
-%!   +Vertex:vertex,
-%!   +Depth:integer,
-%!   -Vertices:ordset(vertex),
-%!   -Edges:ordset(edge)
+%!   :NeighborPred,
+%!   +Depth:nonneg,
+%!   +SeedVertex,
+%!   -Vertices:ordset,
+%!   -Edges:ordset(compound)
 %! ) is det.
 % Returns all vertices and edges that are found within the given depth
 % distance from the given vertex.
-%
-% @arg Options A list of name-value pairs, consisting of the following:
-%      1. `directed(+Directed:boolean)`
-%         Whether only outgoing or also incoming arcs are included
-%         in the export.
-%      2. `graph(Graph:graph)`
-%      3. `in(Format:oneof([rdf,ugraph]))`
+% This is the same as bounded breadth-first search.
 
-depth(O, N_P, V, Depth, Vs, Es):-
-  if_then(
-    nonvar(Depth),
-    Depth > 0
-  ),
-  depth_(O, N_P, [V], Depth, [], Vs, [], Es).
-depth_(_O, _N_P, Vs, 0, VerticesH, AllVs, AllEs, AllEs):- !,
-  ord_union(VerticesH, Vs, AllVs).
-depth_(O, N_P, CurrentVs, Depth, VerticesH, AllVs, EdgesH, AllEs):-
+depth(NeighborPred, Depth, V, Vs, Es):-
+  depth(NeighborPred, Depth, [V], Vs, [], Es).
+
+% Depth was reached.
+depth(_, 0, Vs, Vs, Es, Es):- !.
+depth(NeighborPred, Depth1, Vs1, Vs3, Es1, Es3):-
   aggregate_all(
-    set(V-N),
+    set(X-Y),
     (
-      member(V, CurrentVs),
-      call(N_P, V, N)
+      member(X, Vs1),
+      call(NeighborPred, X, Y),
+      \+ member(X-Y, Es1)
     ),
-    CurrentEdges0
+    NewEs
   ),
-  ord_subtract(CurrentEdges0, EdgesH, CurrentEs),
-  aggregate_all(
-    set(N),
-    member(_V-N, CurrentEs),
-    Ns
-  ),
-  ord_union(CurrentVs, VerticesH, NewVerticesH),
-  ord_subtract(Ns, NewVerticesH, NextVs),
-  NewDepth is Depth - 1,
-  ord_union(EdgesH, CurrentEdges0, NewEdgesH),
-  depth_(O, N_P, NextVs, NewDepth, NewVerticesH, AllVs, NewEdgesH, AllEs).
+  edges_to_vertices(NewEs, NewVs),
+  ord_union(Es1, NewEs, Es2),
+  ord_union(Vs1, NewVs, Vs2),
+  
+  Depth2 is Depth1 - 1,
+  depth(NeighborPred, Depth2, Vs2, Vs3, Es2, Es3).
+
 
 %! edge_components(+Edge:compound, -FromVertex, -ToVertex) is det.
 %! edge_components(-Edge:compound, +FromVertex, +ToVertex) is det.
+% Relates an unnamed/untyped edge to its constituting vertices.
 
 edge_components(Edge, FromVertex, ToVertex):-
   edge_components(Edge, FromVertex, _, ToVertex).
 
 %! edge_components(+Edge:compound, -FromVertex, -EdgeType, -ToVertex) is det.
 %! edge_components(-Edge:compound, +FromVertex, ?EdgeType, +ToVertex) is det.
+% Relates a named/typed edge to its constituting vertices and type.
 
 edge_components(FromV-EdgeType-ToV, FromV, EdgeType, ToV):-
   nonvar(EdgeType).
-edge_components(FromV-ToV, FromV, _, ToV):-
+edge_components(FromV-ToV, FromV, EdgeType, ToV):-
   var(EdgeType).
 
-%! edges_to_vertices(+Edges:list(compound), -Vertices:ordset) is det.
 
-edges_to_vertices([], Vs):-
-  ord_empty(Vs).
+%! edges_to_vertices(+Edges:list(compound), -Vertices:ordset) is det.
+% Returns the vertices that occur in the given edges.
+
+edges_to_vertices([], []).
 edges_to_vertices([E|Es], Vs3):-
   edges_to_vertices(Es, Vs1),
   edge_components(E, FromV, ToV),
   ord_add_element(Vs1, FromV, Vs2),
   ord_add_element(Vs2, ToV, Vs3).
+
 
 %! graphic_graph(+Seq:list(integer)) is semidet.
 % Succeeds if the given degree sequence represents a simple graph.
