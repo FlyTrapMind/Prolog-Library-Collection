@@ -1,24 +1,27 @@
 ﻿:- module(
   set_theory,
   [
+    arbitrary_intersection/2, % +Sets:list(ordset)
+                              % -Intersection:ordset
+    arbitrary_union/2, % +Sets:list(ordset)
+                       % -Union:ordset
     cardinality/2, % +Set:ordset
                    % -Cardinality:integer
     cartesian_product/2, % +Sets:list(ordset)
                          % -CartesianProduct:ordset(list)
-    delete_supersets/4, % +Original:ordset(ordset)
-                        % +Compare:ordset(ordset)
-                        % -Result:ordset(ordset)
-                        % -Rest:ordset(ordset)
+    emptyset/1, % ?Set:ordset
     equinumerous/2, % +Set1:ordset
                     % +Set2:ordset
-    minimal/2, % +Minimal:ordset
-               % +Sets:ordset(ordset)
+    minimal_set/2, % +MinimalSet:ordset
+                   % +Sets:ordset(ordset)
     random_subset/2, % +Set:ordset
                      % -Subset:ordset
+    strict_subset/2, % ?Subset:ordset
+                     % +Superset:ordset
+    strict_superset/2, % +Superset:ordset
+                       % ?Subset:ordset
     subset/2, % ?Subset:ordset
               % +Superset:ordset
-    subsets/2, % +Universe:list
-               % -Subsets:list(list(boolean))
     superset/2 % +Superset:ordset
                % ?Subset:ordset
   ]
@@ -29,24 +32,39 @@
 Extra set functions for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05, 2013/12, 2014/03,
-         2014/07
+@version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05, 2013/12,
+         2014/03, 2014/07
 */
 
-:- use_module(library(apply)).
+:- use_module(library(error)).
 :- use_module(library(lists), except([subset/2])).
 :- use_module(library(ordsets)).
 
 :- use_module(generics(list_ext)).
-:- use_module(pl(pl_mode)).
 
+
+
+%! arbitrary_intersection(+Sets:list(ordset), -Intersection:ordset) is det.
+
+arbitrary_intersection(Sets, Intersection):-
+  ord_intersection(Sets, Intersection).
+
+
+%! arbitrary_union(+Sets:list(ordset), -Union:ordset) is det.
+
+arbitrary_union(Sets, Union):-
+  ord_union(Sets, Union).
 
 
 %! cardinality(+Set:ordset, -Cardinality:nonneg) is det.
 % Returns the cardinality of the given set.
+%
+% @throws type_error If `Set` is not an ordered set.
 
+cardinality(Set, _):-
+  \+ is_ordset(Set), !,
+  type_error(ordset, Set).
 cardinality(Set, Cardinality):-
-  is_ordset(Set),
   length(Set, Cardinality).
 
 
@@ -61,126 +79,98 @@ cartesian_product([Set|Sets], [H|T]):-
   member(H, Set).
 
 
-%! delete_supersets(
-%!   +Original:ordset(ordset),
-%!   +Compare:ordset(ordset),
-%!   -Result:ordset(ordset),
-%!   -Rest:ordset(ordset)
-%! ) is det.
-% Splits the `Original` sets into those that are and those that are not
-% a superset of some member of `Compare`.
-%
-% @arg Original The original sets.
-% @arg Compare The sets to compare with.
-% @arg Result Supersets of some compare set.
-% @arg Rest Strict subsets of some compare set.
+%! emptyset(+Set:ordset) is semidet.
+%! emptyset(-Set:ordset) is det.
 
-delete_supersets(Original, Compare, Result, Rest):-
-  partition(contains_superset_of(Compare), Original, Rest, Result).
-contains_superset_of(Compare, Set):-
-  member(Superset, Compare),
-  superset(Superset, Set), !.
+emptyset([]).
 
 
 %! equinumerous(+Set1:ordset, +Set2:ordset) is semidet.
-% Succeeds if the given sets are equinumerous, i.e.,
+% Succeeds if the given sets are *equinumerous*, i.e.,
 % if they have the same cardinality.
+%
+% @throws type_error if one of the arguments is not an ordered set.
 
-% @see cardinality/2 takes care of the list-to-set conversion.
+equinumerous(Set1, _):-
+  \+ is_ordset(Set1), !,
+  type_error(ordset, Set1).
+equinumerous(_, Set2):-
+  \+ is_ordset(Set2), !,
+  type_error(ordset, Set2).
 equinumerous(Set1, Set2):-
-  maplist(is_ordset, [Set1,Set2]),
   same_length(Set1, Set2).
 
 
-%! minimal(+Minimal:ordset, +Sets:ordset(ordset)) is semidet.
-%! minimal(-Minimal:ordset, +Sets:ordset(ordset)) is nondet.
+%! minimal_set(+MinimalSet:ordset, +Sets:ordset(ordset)) is semidet.
+%! minimal_set(-MinimalSet:ordset, +Sets:ordset(ordset)) is nondet.
 % Set $s \in S$ is a *|minimal set|* of a set of sets $S$ iff
 % $S$ contains no strict subset of $s$.
 
-minimal(Minimal, Compare1):-
-  select(Minimal, Compare1, Compare2),
+minimal_set(MinimalSet, Compare1):-
+  select(MinimalSet, Compare1, Compare2),
   \+((
     member(Subset, Compare2),
-    subset(Subset, Minimal)
+    subset(Subset, MinimalSet)
   )).
 
 
-%! next_subset(+Subset:list(bit), -NextSubset:list(bit)) is det.
-% Returns the next subset.
+%! random_subset(+Set:ordset, -RandomSubset:ordset) is det.
+% Returns a random subset of the given set.
 %
-% Subsets are represented as lists of bits.
+% @throws type_error If `Set` is not an ordered set.
+
+random_subset(Set, _):-
+  \+ is_ordset(Set), !,
+  type_error(ordset, Set).
+random_subset(Set, RandomSubset):-
+  random_sublist(Set, RandomSubset).
+
+
+%! strict_subset(+Subset:ordset, +Superset:ordset) is semidet.
+%! strict_subset(-Subset:ordset, +Superset:ordset) is nondet.
+% A *|strict subset|* is a non-equivalent subset.
 %
-% Positions in the list correspond to potential elements in the set.
-% For example
-% ~~~{.pl}
-% [1,0,0,1,1,0]
-% ~~~
-% may denote the set
-% ~~~{.txt}
-% {a,d,e}
-% ~~~
+% @throws type_error If `Superset` is not an ordered set.
+
+strict_subset(Subset, Superset):-
+  % Predicate subset/2 throws the type_error.
+  subset(Subset, Superset),
+  Subset \== Superset.
+
+
+%! strict_superset(+Superset:ordset, +Subset:ordset) is semidet.
+%! strict_superset(+Superset:ordset, -Subset:ordset) is nondet.
+% A *|strict superset|* is a non-equivalent superset.
 %
-% @arg Subset A list of bits.
-% @arg NextSubset A list of bits.
+% @throws type_error If `Superset` is not an ordered set.
 
-next_subset([0|T], [1|T]).
-next_subset([1|T1], [0|T2]):-
-  next_subset(T1, T2).
-
-
-%! random_subset(+Set:ordset, -Subset:ordset) is det.
-
-random_subset(S1, S2):-
-  random_sublist(S1, S2).
+strict_superset(Subset, Superset):-
+  % Predicate superset/2 throws the type_error.
+  superset(Superset, Subset),
+  Superset \== Subset.
 
 
 %! subset(+Subset:ordset, +Superset:ordset) is semidet.
 %! subset(-Subset:ordset, +Superset:ordset) is multi.
+% A *|subset|* contains at least the same objects.
+%
+% @see Inverse of superset/2.
+% @throws type_error If `Superset` is not an ordered set.
 
+subset(_, Superset):-
+  \+ is_ordset(Superset), !,
+  type_error(ordset, Superset).
 subset(Subset, Superset):-
   ord_subset(Subset, Superset).
 
 
-%! subsets(+Set:ordset, -Subsets:list(list(bit))) is det.
-% Returns all subsets of the given set as a list of binary lists.
-%
-% @arg Set An ordered set.
-% @arg Subsets A list of bitlists representing subsets of =Set=.
-
-subsets(Set, Subsets):-
-  cardinality(Set, Cardinality),
-  repeating_list(0, Cardinality, BinarySet),
-  call_complete(next_subset, BinarySet, BinarySubsets),
-  maplist(binary_overlay(Set), BinarySubsets, Subsets).
-
-
 %! superset(+Superset:ordset, +Subset:ordset) is semidet.
 %! superset(+Superset:ordset, -Subset:ordset) is multi.
+%
 % @see Inverse of subset/2.
+% @throws type_error If `Superset` is not an ordered set.
 
 superset(Superset, Subset):-
-  ord_subset(Subset, Superset).
-
-
-
-% Helpers.
-
-%! binary_overlay(+Original:list, +Overlay:list, -Result:list) is det.
-%! binary_overlay(+Original:list, -Overlay:list, +Result:list) is det.
-%! binary_overlay(+Original:list, ?Overlay:list, ?Result:list) is nondet.
-% The result is the sublist of the original list,
-%  where the overlay decides on which elements are kept (`1`)
-%  and which are not (`0`).
-
-binary_overlay(Original, Overlay, Result):-
-  enforce_mode(
-    '_binary_overlay'(Original, Overlay, Result),
-    [Original,Overlay,Result],
-    [[+,+,+]-semidet,[+,+,-]-det,[+,-,+]-det]
-  ).
-'_binary_overlay'([], [], []).
-'_binary_overlay'([H|T1], [1|Overlay], [H|T2]):-
-  '_binary_overlay'(T1, Overlay, T2).
-'_binary_overlay'([_|T1], [0|Overlay], T2):-
-  '_binary_overlay'(T1, Overlay, T2).
+  % Predicate subset/2 throws the type_error.
+  subset(Subset, Superset).
 
