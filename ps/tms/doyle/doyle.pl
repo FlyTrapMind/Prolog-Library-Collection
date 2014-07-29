@@ -133,12 +133,12 @@ Well-founded justifications form a non-circular argument for their node.
 Only SL-justifications can be well-founded justifications.
 
 @author Wouter Beek
-@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01, 2014/03
+@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01, 2014/03, 2014/07
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([subset/2])).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
@@ -146,7 +146,6 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(logic(set_theory)).
 :- use_module(pl(pl_control)).
 :- use_module(tms(tms)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_name)).
@@ -158,9 +157,9 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(plRdf_term(rdf_literal)).
 :- use_module(plRdf_term(rdf_string)).
 
-:- xml_register_namespace(doyle, 'http://www.wouterbeek.com/doyle.owl#').
-:- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
-:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
+:- rdf_register_prefix(doyle, 'http://www.wouterbeek.com/doyle.owl#').
+:- rdf_register_prefix(tms, 'http://www.wouterbeek.com/tms.owl#').
+:- rdf_register_prefix(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
 :- dynamic(cp_consequence/2).
 
