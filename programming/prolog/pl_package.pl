@@ -18,6 +18,8 @@ Support for SWI-Prolog packages.
 
 
 
+%! load_pl_package(+Pack:atom) is det.
+
 load_pl_package(Pack):-
   catch(
     use_module(library(Pack)),
