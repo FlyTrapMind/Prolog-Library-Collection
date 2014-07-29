@@ -1,6 +1,10 @@
 ﻿:- module(
   set_theory,
   [
+    arbitrary_intersection/2, % +Sets:list(ordset)
+                              % -Intersection:ordset
+    arbitrary_union/2, % +Sets:list(ordset)
+                       % -Union:ordset
     cardinality/2, % +Set:ordset
                    % -Cardinality:integer
     cartesian_product/2, % +Sets:list(ordset)
@@ -38,6 +42,18 @@ Extra set functions for use in SWI-Prolog.
 
 :- use_module(generics(list_ext)).
 
+
+
+%! arbitrary_intersection(+Sets:list(ordset), -Intersection:ordset) is det.
+
+arbitrary_intersection(Sets, Intersection):-
+  ord_intersection(Sets, Intersection).
+
+
+%! arbitrary_union(+Sets:list(ordset), -Union:ordset) is det.
+
+arbitrary_union(Sets, Union):-
+  ord_union(Sets, Union).
 
 
 %! cardinality(+Set:ordset, -Cardinality:nonneg) is det.
