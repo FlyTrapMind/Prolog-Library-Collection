@@ -12,6 +12,7 @@
                 % ?Tuples:ordset(list)
     relation_tuple/2, % ?Relation:atom
                       % ?Tuple:list
+    universe/1, % -Universe:compound
     universe_of_discourse/1 % -Objects:ordset
   ]
 ).
@@ -54,7 +55,7 @@ add_object(Object):-
 %! add_relation(+Relation:atom, +Tuples:list(list)) is det.
 
 add_relation(Relation, Tuples):-
-  maplist(add_relation(Relation), Tuples).
+  maplist(add_relation_tuple(Relation), Tuples).
 
 %! add_relation_tuple(+Relation:atom, +Tuple:list) is det.
 %! add_relation_tuple(-Relation:atom, +Tuple:list) is det.
@@ -87,14 +88,14 @@ add_relation_tuple(_, Tuple):-
   type_error(list, Tuple).
 % Error: Mismatch between existing relation arity and object tuple length.
 add_relation_tuple(Relation, Tuple):-
-  relation(Relation, Objects0),
-  \+ equinumerous(Tuple, Objects0), !,
+  relation_tuple(Relation, Tuple0),
+  \+ same_length(Tuple, Tuple0), !,
   throw(arity_mismatch(Relation)).
 % Only add if novel.
 add_relation_tuple(Relation, Tuple):-
   % Make sure the objects are part of the universe of discourse.
   maplist(add_object, Tuple),
-  db_add_novel(relation(Relation, Tuple)).
+  db_add_novel(relation_tuple(Relation, Tuple)).
 
 
 %! relation(+Relation:atom) is semidet.
@@ -104,7 +105,7 @@ relation(Relation):-
   % Ensure that no duplicate results are returned.
   aggregate_all(
     set(Relation),
-    relation(Relation, _),
+    relation_tuple(Relation, _),
     Relations
   ),
   % Choicepoint, iterating over the potentially multiple outputs.
@@ -116,14 +117,8 @@ relation(Relation):-
 
 relation(Relation, Tuples):-
   % Enumeration choicepoint for instantiation `(-,-)`.
-  (
-    var(Relation)
-  ->
-    relation(Relation)
-  ;
-    true
-  ),
-  
+  relation(Relation),
+
   % Collect the tuples for a given relation.
   aggregate_all(
     set(Tuple),
@@ -141,6 +136,17 @@ relation(Relation, Tuples):-
 % The order in which the tuples are returned is arbitrary.
 
 
+% universe(-Universe:compound) is det.
+
+universe(universe(Objects,RelationPairs)):-
+  universe_of_discourse(Objects),
+  aggregate_all(
+    set(Relation-Tuples),
+    relation(Relation, Tuples),
+    RelationPairs
+  ).
+
+
 % universe_of_discourse(-Objects:ordset) is det.
 
 universe_of_discourse(Objects):-
@@ -152,18 +158,18 @@ universe_of_discourse(Objects):-
 
 
 
+% Debug.
+
+load_uod1([O1,O2,O3], [R1,R2]):-
+  maplist(add_object, [O1,O2,O3]),
+  maplist(add_relation, [R1,R2], [[[O2]],[[O1,O2],[O1,O3],[O2,O2],[O3,O1]]]).
+
+
+
 % Messages.
 
 :- multifile(prolog:message//1).
 
 prolog:message(arity_mismatch(Relation)) -->
   ['The object tuple length is not relation ~a\'s arity.'-[Relation]].
-
-
-
-% Debug.
-
-load_uod1([O1,O2,O3], [R1,R2]):-
-  maplist(add_object, [O1,O2,O3]),
-  maplist(add_relation, [R1,R2], [[[O2]],[[O1,O2],[O1,O3],[O2,O2],[O3,O1]]]).
 

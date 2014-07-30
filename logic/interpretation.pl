@@ -123,7 +123,7 @@ test(
   'evaluate_formula(+) is semidet. TRUE',
   [
     forall(evaluate_formula_test(Formula, true)),
-    setup(load_fl1)
+    setup(load_i1)
   ]
 ):-
   evaluate_formula(Formula).
