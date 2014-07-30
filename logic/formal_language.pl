@@ -1,25 +1,28 @@
 :- module(
   formal_language,
   [
-    add_individual_constant/2, % +Name:atom
-                               % +Object
-    add_predicate_tuple/2, % +Name:atom
-                           % +Objects:list
+    add_individual_constant/1, % +Name:atom
+    add_predicate/1, % +Predicate:compound
+    add_predicate/2, % +Name:atom
+                     % +Arity:positive_integer
     algebraic_signature/1, % +Signature:compound
     atomic_formula/1, % ?Formula:compound
     formula/1 , % ?Formula:compound
     individual_constant/1, % ?Name:atom
-    individual_constant/2, % ?Name:atom
-                           % ?Object
     logical_connective/1, % ?Name:atom
     logical_connective/2, % ?Name:atom
                           % ?Arity:positive_integer
+    op(900, fx,  ¬),
+    op(900, xfy, ∧),
+    op(900, xfy, ∨),
+    op(900, xfy, ⊕),
+    op(900, xfy, →),
+    op(900, xfy, ↔),
     operator_depth/2, % +Formula:compound
                       % ?Depth:nonneg
+    predicate/1, % ?Predicate:compound
     predicate/2, % ?Name:atom
-                 % ?Objects:list
-    predicate_arity/2, % ?Name:atom
-                       % ?Arity:positive_integer
+                 % ?Arity:positive_integer
     relational_signature/1, % +Signature:compound
     signature/1, % -Signature:compound
     subformula/2, % ?Subformula:compound
@@ -53,86 +56,69 @@
 :- op(900, xfx, →). % U+2192
 :- op(900, xfx, ↔). % U+2194
 
-%! individual_constant(+Name:atom, +Object) is semidet.
-%! individual_constant(+Name:atom, -Object) is semidet.
-%! individual_constant(-Name:atom, +Object) is nondet.
-%! individual_constant(-Name:atom, -Object) is multi.
-% Individual constants.
-% Initially only the truth values.
-
-:- dynamic(individual_constant/2).
-%individual_constant(true, 'Truth').
-%individual_constant(false, 'Falsity').
-
-%! logical_connective(+Name:atom, +Arity:positive_integer) is semidet.
-%! logical_connective(+Name:atom, -Arity:positive_integer) is semidet.
-%! logical_connective(-Name:atom, +Arity:positive_integer) is nondet.
-%! logical_connective(-Name:atom, -Arity:positive_integer) is multi.
+:- dynamic(individual_constant/1).
 
 :- dynamic(logical_connective/2).
-logical_connective(¬, 1).
-logical_connective(∧, 2).
-logical_connective(∨, 2).
-logical_connective(⊕, 2).
-logical_connective(→, 2).
-logical_connective(↔, 2).
-
-%! predicate(+Name, +Objects:list) is semidet.
-%! predicate(+Name, -Objects:list) is nondet.
 
 :- dynamic(predicate/2).
 
 
 
-%! add_individual_constant(+Name:atom, +Object) is det.
-% Adds the extension of the given individual constant symbol.
-
-add_individual_constant(Name, Object):-
-  db_add_novel(individual_constant(Name, Object)).
-
-
-%! add_predicate_tuple(+Name:atom, +Objects:list) is det.
-% Adds a tuple to the extension of the given predicate symbol.
+%! add_individual_constant(+Name:atom) is det.
+% Adds the an individual constant to the current formal language.
 %
-% @throws instantiation_error if `Name` is uninstantiated.
-% @throws instantiation_error if `Objects` is uninstantiated.
-% @throws type_error if `Objects` is not a list.
-% @throws domain_error if `Objects` is the empty list.
+% Succeeds if the given individual constant already exists.
 
-add_predicate_tuple(Name, _):-
+add_individual_constant(Name):-
   var(Name), !,
   instantiation_error(Name).
-add_predicate_tuple(Name, Objects):-
+add_individual_constant(Name):-
+  db_add_novel(individual_constant(Name)).
+
+
+%! add_predicate(+Predicate:compound) is det.
+% Wrapper around add_predicate/2,
+% supporting the Prolog predicate notation.
+%
+% @arg Predicate Uses the Prolog predicate notation `Name/Arity`.
+%
+% @throws instantiation_error if `Name` or `Arity` is uninstantiated.
+% @throws type_error if `Arity` is not an integer.
+% @throws domain_error if `Arity` is a negative integer or zero.
+
+add_predicate(Name/Arity):-
+  add_predicate(Name, Arity).
+
+
+%! add_predicate(+Name:atom, +Arity:positive_integer) is det.
+% Adds a predicate symbol to the current formal language.
+%
+% Succeeds if the given predicate already exists.
+%
+% Predicates with the same name but different arity are different predicates.
+%
+% @arg Name The atomic predicate symbol.
+% @arg Arity The arity of the predicate symbol.
+%      A positive integer.
+%
+% @throws domain_error if `Arity` is a negative integer or zero.
+% @throws instantiation_error if `Name` or `Arity` is uninstantiated.
+% @throws type_error if `Arity` is not an integer.
+
+add_predicate(Name, _):-
   var(Name), !,
-  instantiation_error(Objects).
-add_predicate_tuple(_, Objects):-
-  \+ is_list(Objects), !,
-  type_error(list, Objects).
-add_predicate_tuple(Name, Objects):-
-  length(Objects, Arity),
-  add_predicate_tuple(Name, Arity, Objects).
-
-%! add_predicate_tuple(
-%!   +Name:atom,
-%!   +Arity:positive_integer,
-%!   +Objects:list
-%! ) is det.
-% @throws domain_error if `Artiy` is zero,
-%         i.e. `Objects` is the empty list.
-
-% Tuples for this predicate exists:
-% check whether they have the same arity.
-add_predicate_tuple(Name, Arity, Objects):-
-  predicate_arity(Name, Arity), !,
-  length(Objects, Arity),
-  db_add_novel(predicate(Name, Objects)).
-% Tuples for this predicate do not yet exist:
-% check whether the arity is acceptable.
-add_predicate_tuple(_, Arity, _):-
+  instantiation_error(Name).
+add_predicate(_, Arity):-
+  var(Arity), !,
+  instantiation_error(Arity).
+add_predicate(_, Arity):-
+  \+ integer(Arity), !,
+  type_error(integer, Arity).
+add_predicate(_, Arity):-
   \+ positive_integer(Arity), !,
   domain_error(positive_integer, Arity).
-add_predicate_tuple(Name, _, Objects):-
-  db_add_novel(predicate(Name, Objects)).
+add_predicate(Name, Arity):-
+  db_add_novel(predicate(Name, Arity)).
 
 
 %! algebraic_signature(+Signature:compound) is semidet.
@@ -171,7 +157,7 @@ atomic_formula(Formula):-
   % For example, this excludes `loves(andrea,wouter,teddy)`.
   functor(Formula, Name, Arity),
   % This ensures that arity > 0.
-  predicate_arity(Name, Arity),
+  predicate(Name, Arity),
 
   % Make sure that all arguments are terms.
   % For example, this excludes `loves(dachshund(wouter),andrea)`.
@@ -179,7 +165,7 @@ atomic_formula(Formula):-
   maplist(term, Terms).
 % Generate an atomic formula.
 atomic_formula(Formula):-
-  predicate_arity(Name, Arity),
+  predicate(Name, Arity),
   between(1, Arity, _),
   length(Arguments, Arity),
   maplist(term, Arguments),
@@ -252,18 +238,18 @@ atomic_formula_test(loves(andrea,wouter,teddy), fail).
 %! formula(-Formula:compound) is nondet.
 
 formula(Formula):-
-  formula(Formula, _).
+  formula0(Formula, _).
 
-%! formula(+Formula:compound, +Depth:nonneg) is semidet.
-%! formula(+Formula:compound, -Depth:nonneg) is det.
-%! formula(-Formula:compound, +Depth:nonneg) is nondet.
-%! formula(-Formula:compound, -Depth:nonneg) is nondet.
+%! formula0(+Formula:compound, +Depth:nonneg) is semidet.
+%! formula0(+Formula:compound, -Depth:nonneg) is det.
+%! formula0(-Formula:compound, +Depth:nonneg) is nondet.
+%! formula0(-Formula:compound, -Depth:nonneg) is nondet.
 
 % Atomic formulas have depth 0.
-formula(AtomicFormula, 0):-
+formula0(AtomicFormula, 0):-
   atomic_formula(AtomicFormula).
 % Recursive case: unary logical connective.
-formula(Formula, Depth):-
+formula0(Formula, Depth):-
   % If we do not perform this check, formula/2 will loop.
   (
     nonvar(Formula)
@@ -285,9 +271,9 @@ formula(Formula, Depth):-
     nonvar(Depth)
   ->
     succ(Subdepth, Depth),
-    formula(Subformula, Subdepth)
+    formula0(Subformula, Subdepth)
   ;
-    formula(Subformula, Subdepth),
+    formula0(Subformula, Subdepth),
     succ(Subdepth, Depth)
   ),
 
@@ -301,7 +287,7 @@ formula(Formula, Depth):-
     true
   ).
 % Recursive case: binary logical connective.
-formula(Formula, Depth):-
+formula0(Formula, Depth):-
   (
     nonvar(Formula)
   ->
@@ -319,14 +305,14 @@ formula(Formula, Depth):-
     nonvar(Depth)
   ->
     succ(Subdepth1, Depth),
-    formula(Subformula1, Subdepth1),
+    formula0(Subformula1, Subdepth1),
     betwixt(0, Subdepth1, Subdepth2),
-    formula(Subformula2, Subdepth2)
+    formula0(Subformula2, Subdepth2)
   ;
-    formula(Subformula1, Subdepth1),
+    formula0(Subformula1, Subdepth1),
     succ(Subdepth1, Depth),
     betwixt(0, Subdepth1, Subdepth2),
-    formula(Subformula2, Subdepth2)
+    formula0(Subformula2, Subdepth2)
   ),
   (
     Subformulas = [Subformula1,Subformula2]
@@ -343,10 +329,8 @@ formula(Formula, Depth):-
   ).
 
 
-%! individual_constant(+Name:atom, +Object) is semidet.
-
-individual_constant(Name):-
-  individual_constant(Name, _).
+%! individual_constant(+Name:atom) is semidet.
+%! individual_constant(-Name:atom) is nondet.
 
 
 %! logical_connective(+Name:atom) is semidet.
@@ -355,38 +339,41 @@ individual_constant(Name):-
 logical_connective(Name):-
   logical_connective(Name, _).
 
+%! logical_connective(+Name:atom, +Arity:positive_integer) is semidet.
+%! logical_connective(+Name:atom, -Arity:positive_integer) is semidet.
+%! logical_connective(-Name:atom, +Arity:positive_integer) is nondet.
+%! logical_connective(-Name:atom, -Arity:positive_integer) is multi.
+% Dynamically asserted logical connectives.
+
+logical_connective(¬, 1).
+logical_connective(∧, 2).
+logical_connective(∨, 2).
+logical_connective(⊕, 2).
+logical_connective(→, 2).
+logical_connective(↔, 2).
+
 
 %! operator_depth(+Formula:compound, +Depth:nonneg) is semidet.
 %! operator_depth(+Formula:compound, -Depth:nonneg) is det.
 
 operator_depth(Formula, Depth):-
-  formula(Formula, Depth).
+  formula0(Formula, Depth).
 
 
-%! predicate_arity(+Name, +Arity:positive_integer) is semidet.
-%! predicate_arity(+Name, -Arity:positive_integer) is nondet.
-%! predicate_arity(-Name, +Arity:positive_integer) is nondet.
-%! predicate_arity(-Name, -Arity:positive_integer) is nondet.
+%! predicate(+Predicate:compound) is semidet.
+%! predicate(-Predicate:compound) is nondet.
+% Wrapper around predicate/2,
+% supporting the Prolog notation for predicates.
 
-% Check/find the arity for a given predicate.
-% Instantiations `(+,+)` and `(+,-)`.
-predicate_arity(Name, Arity):-
-  nonvar(Name), !,
-  once(predicate(Name, Objects)),
-  length(Objects, Arity).
-% Enumerate predicates.
-% Instantiations `(-,+)` and `(-,-)`.
-predicate_arity(Name, Arity):-
-  % Since we want to avoid duplicate answers,
-  % we first collect all predicate names.
-  aggregate_all(
-    set(Name),
-    predicate(Name, _),
-    Names
-  ),
-  % Choicepoint for predicate names.
-  member(Name, Names),
-  predicate_arity(Name, Arity).
+predicate(Name/Arity):-
+  predicate(Name, Arity).
+
+
+%! predicate(+Name, +Arity:positive_integer) is semidet.
+%! predicate(+Name, -Arity:positive_integer) is nondet.
+%! predicate(-Name, +Arity:positive_integer) is nondet.
+%! predicate(-Name, -Arity:positive_integer) is nondet.
+% Dynamically asserted predicate symbols.
 
 
 %! relational_signature(+Signature:compound) is semidet.
@@ -418,13 +405,12 @@ relational_signature(signature([_|_],[],_)).
 
 signature(signature(Predicates,FunctionSymbols,ArityFunction)):-
   aggregate_all(
-    set(Name),
-    predicate(Name, _),
-    Predicates
+    set(Name-Arity),
+    predicate(Name, Arity),
+    ArityFunction
   ),
   FunctionSymbols = [],
-  maplist(predicate_arity, Predicates, Arities),
-  pairs_keys_values(ArityFunction, Predicates, Arities).
+  pairs_keys(ArityFunction, Predicates).
 
 
 %! subformula(+Subformula:compound, +Formula:compound) is semidet.
@@ -470,6 +456,9 @@ test(
   subformula(Subformula, Formula).
 
 subformula_test(dachshund(teddy), dachshund(teddy), true).
+subformula_test(⊕(dachshund(wouter),dachshund(teddy)), ⊕(dachshund(wouter),dachshund(teddy)), true).
+subformula_test(dachshund(wouter), ⊕(dachshund(wouter),dachshund(teddy)), true).
+subformula_test(dachshund(teddy), ⊕(dachshund(wouter),dachshund(teddy)), true).
 
 :- end_tests(subformula).
 
@@ -485,15 +474,9 @@ term(IndividualConstant):-
 % Debug
 
 load_fl1:-
-  maplist(add_individual_constant, [andrea,teddy,wouter], [obj1,obj2,obj3]),
-  maplist(add_predicate_tuple(dachshund), [[teddy]]),
-  maplist(
-    add_predicate_tuple(loves),
-    [
-      [andrea,wouter],
-      [andrea,teddy],
-      [teddy,teddy],
-      [wouter,andrea]
-    ]
-  ).
+  load_fl1(_, _).
+
+load_fl1([andrea,teddy,wouter], [dachshund/1,loves/2]):-
+  maplist(add_individual_constant, [andrea,teddy,wouter]),
+  maplist(add_predicate, [dachshund/1,loves/2]).
 
