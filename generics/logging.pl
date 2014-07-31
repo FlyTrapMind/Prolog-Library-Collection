@@ -53,9 +53,9 @@ logging started.
 :- use_module(os(dir_infra)).
 :- use_module(os(file_ext)).
 
-:- dynamic(current_log_file/1).
-:- dynamic(current_log_stream/1).
-:- dynamic(situation/1).
+:- dynamic(Logging:current_log_file/1).
+:- dynamic(logging:current_log_stream/1).
+:- dynamic(logging:situation/1).
 
 :- db_add_novel(user:prolog_file_type(log, log)).
 
@@ -92,10 +92,10 @@ append_to_log(Category, Format, Arguments):-
   append_to_log_(Category, Msg).
 
 append_to_log_(Category, Msg):-
-  \+ current_log_stream(_Stream), !,
+  \+ logging:current_log_stream(_Stream), !,
   print_message(warning, cannot_log(Category, Msg)).
 append_to_log_(Category, Msg1):-
-  current_log_stream(Stream), !,
+  logging:current_log_stream(Stream), !,
   iso8601_dateTime(DateTime),
   atom_codes(Msg1, Codes1),
   codes_remove(Codes1, [10,13], Codes2),
@@ -111,10 +111,10 @@ append_to_log_(Category, Msg1):-
 % Closes the current log stream.
 
 close_log_stream:-
-  \+ current_log_stream(_Stream), !,
+  \+ logging:current_log_stream(_Stream), !,
   print_message(warning, no_current_log_stream).
 close_log_stream:-
-  current_log_stream(Stream),
+  logging:current_log_stream(Stream),
   flush_output(Stream),
   close(Stream).
 
@@ -150,14 +150,14 @@ create_log_file(Situation, AbsoluteFile, Stream):-
   ).
 
 current_situation(Situation):-
-  situation(Situation), !.
+  logging:situation(Situation), !.
 current_situation(no_situation).
 
 %! end_log is det.
 % Ends the current logging activity.
 
 end_log:-
-  \+ current_log_file(_), !.
+  \+ logging:current_log_file(_), !.
 end_log:-
   append_to_log(build, 'Goodnight!', []),
   close_log_stream.
@@ -176,10 +176,10 @@ init:-
 % @tbd Add the PHP script (I seem to have deleted it on the remote :-().
 
 send_current_log_file:-
-  \+ current_log_file(_File), !,
+  \+ logging:current_log_file(_File), !,
   print_message(warning, no_current_log_file).
 send_current_log_file:-
-  current_log_file(File),
+  logging:current_log_file(File),
   open(File, read, Stream, [encoding(utf8),type(test)]),
   read_stream_to_codes(Stream, Codes),
   file_base_name(File, Base),
@@ -198,8 +198,7 @@ send_current_log_file:-
 
 set_current_log_file(File):-
   exists_file(File),
-  retractall(current_log_file(_File)),
-  assert(current_log_file(File)).
+  db_replace(logging:current_log_file(File), [r]).
 
 %! set_current_log_stream(+Stream) is det.
 % Sets the current stream where logging messages are written to.
@@ -208,19 +207,18 @@ set_current_log_file(File):-
 
 set_current_log_stream(Stream):-
   is_stream(Stream),
-  retractall(current_log_stream(_Stream)),
-  assert(current_log_stream(Stream)).
+  db_replace(logging:current_log_stream(Stream), [r]).
 
 set_situation(Situation):-
   nonvar(Situation),
-  db_replace_novel(_, Situation).
+  db_replace(_, Situation).
 
 %! start_log is det.
 % Starts logging.
 % This does nothing in case log mode is turned off.
 
 start_log:-
-  current_log_stream(_Stream), !,
+  logging:current_log_stream(_), !,
   print_message(warning, already_logging).
 start_log:-
   init,

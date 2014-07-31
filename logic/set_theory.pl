@@ -161,7 +161,10 @@ subset(_, Superset):-
   \+ is_ordset(Superset), !,
   type_error(ordset, Superset).
 subset(Subset, Superset):-
+  nonvar(Subset), !,
   ord_subset(Subset, Superset).
+subset(Subset, Superset):-
+  sublist(Subset, Superset).
 
 
 %! superset(+Superset:ordset, +Subset:ordset) is semidet.
