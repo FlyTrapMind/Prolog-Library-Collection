@@ -25,9 +25,6 @@
     first/3, % +List:list,
              % +N:integer
              % -Firsts:list
-    icompare/3, % ?InvertedOrder
-                % @Term1
-                % @Term2
     length_cut/4, % +L:list
                   % +Cut:integer
                   % -L1:list
@@ -116,13 +113,8 @@
                             % -Sublists:list(list)
     strict_sublist/2, % ?SubList:list
                       % +List:list
-    sublist/2, % ?SubList:list
-               % +List:list
-
-% SORTING
-    sort/3 % +Options:list(nvpair)
-           % +:List:list
-           % -Sorted:list
+    sublist/2 % ?SubList:list
+              % +List:list
   ]
 ).
 
@@ -696,67 +688,4 @@ sublist([H|SubT], [H|T]):-
   sublist(SubT, T).
 sublist(SubT, [_|T]):-
   sublist(SubT, T).
-
-
-
-% SORTING %
-
-%! i(?Order1, ?Order2) is nondet.
-% Inverter of order relations.
-% This is used for sorting with the =inverted= option set to =true=.
-%
-% @arg Order1 An order relation, i.e. <, > or =.
-% @arg Order1 An order relation, i.e. <, > or =.
-
-i(<, >).
-i(>, <).
-i(=, =).
-
-%! icompare(?InvertedOrder, @Term1, @Term2) is det.
-% Determine or test the order between two terms in the inversion of the
-% standard order of terms.
-% This allows inverted sorting, useful for some algorithms that can
-% operate (more) quickly on inversely sorted operations, without the
-% cost of reverse/2.
-% This is used for sorting with the =inverted= option set to =true=.
-%
-% @arg InvertedOrder One of <, > or =.
-% @arg Term1
-% @arg Term2
-% @see compare/3 using uninverted order predicates.
-
-icompare(InvertedOrder, Term1, Term2):-
-  compare(Order, Term1, Term2),
-  i(Order, InvertedOrder).
-
-%! sort(+Options:list(nvpair), +List:list, -Sorted:list) is det.
-% @arg Options A list of name-value pairs. The following options are
-%        supported:
-%        1. =|duplicates(boolean)|= Whether duplicate elements are retained
-%           in the sorted list.
-%        2. =|inverted(boolean)|= Whether the sorted list goes from lowest to
-%           highest (standard) or from highest to lowest.
-
-% The combination of _inverted_ and _|no duplicates|_ uses a dedicated
-% comparator. This is cheaper that first sorting and then reversing the
-% results.
-sort(Options, List, Sorted):-
-  option(inverted(true), Options, false),
-  option(duplicates(false), Options, false), !,
-  predsort(icompare, List, Sorted).
-sort(Options, List, Sorted):-
-  (
-    option(duplicates(true), Options, false)
-  ->
-    msort(List, Sorted0)
-  ;
-    sort(List, Sorted0)
-  ),
-  (
-    option(inverted(true), Options, false)
-  ->
-    reverse(Sorted0, Sorted)
-  ;
-    Sorted = Sorted0
-  ).
 

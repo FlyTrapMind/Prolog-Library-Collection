@@ -7,6 +7,7 @@
     call_count/2, % :Goal
                   % -Number:number
     call_det/1, % :Goal
+    call_ground_as_semidet/1, % :Goal
     call_mode/2, % +Mode:oneof([det,multi,nondet,semidet])
                  % :Goal
     call_multi/2, % :Goal
@@ -34,16 +35,19 @@
 Automated checks for Prolog mode enforcement.
 
 @author Wouter Beek
-@version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12
+@version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
+         2014/07
 */
+
+:- use_module(library(aggregate)).
 
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
-:- use_module(library(aggregate)).
 
 :- meta_predicate(call_complete(2,+,-)).
 :- meta_predicate(call_count(0,-)).
 :- meta_predicate(call_det(0)).
+:- meta_predicate(call_ground_as_semidet(0)).
 :- meta_predicate(call_mode(+,0)).
 :- meta_predicate(call_multi(0,+)).
 :- meta_predicate(call_multi(2,+,+,-)).
@@ -101,6 +105,15 @@ call_count(Goal1, Count):-
 
 call_det(Goal):-
   catch(Goal, _, mode_error(det, Goal)).
+
+
+%! call_ground_as_semidet(:Goal)
+
+call_ground_as_semidet(Goal):-
+  ground(Goal), !,
+  Goal, !.
+call_ground_as_semidet(Goal):-
+  Goal.
 
 
 call_mode(det, Goal):- !,

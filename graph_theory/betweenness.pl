@@ -23,11 +23,13 @@ Predicates that calculate betweenness metrics.
 @version 2013/01-2013/04, 2013/07, 2013/09
 */
 
-:- use_module(generics(list_ext)).
-:- use_module(graph_theory(shortest_path)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
+
+:- use_module(generics(list_ext)).
+:- use_module(generics(sort)).
+:- use_module(graph_theory(shortest_path)).
 
 :- meta_predicate(betweenness1(+,2,2,2,-)).
 :- meta_predicate(betweenness1(+,2,2,2,+,-)).
@@ -56,7 +58,7 @@ betweenness1(G, V_P, E_P, N_P, SortedPairs):-
     ),
     Pairs2
   ),
-  sort([duplicates(true),inverted(true)], Pairs2, SortedPairs).
+  sort(Pairs2, SortedPairs, [duplicates(true),inverted(true)]).
 
 %! betweenness1(
 %!   +Graph,
@@ -116,5 +118,5 @@ betweenness2(G, V_P, E_P, N_P, SortedE_Sums):-
     ),
     E_Sums
   ),
-  predsort(icompare, E_Sums, SortedE_Sums).
+  predsort(E_Sums, SortedE_Sums, [duplicates(false),inverted(false)]).
 

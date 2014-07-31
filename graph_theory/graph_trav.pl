@@ -1,42 +1,92 @@
 :- module(
   graphs_trav,
   [
-    cyclic_graph_traversal/5, % +Predicates:list(atom)
-                              % +Sets:list(ordset(object))
-                              % +LastSets:list(ordset(object))
+    bounded_breadthfirst_graph_search/5, % :NeighborPred
+                                         % +Vertex
+                                         % +Depth:integer
+                                         % -Vertices:ordset
+                                         % -Edges:ordset(pair)
+    cyclic_graph_traversal/5, % +Predicates:list
+                              % +Sets:list(ordset)
+                              % +LastSets:list(ordset)
                               % +SetSizes:list(integer)
-                              % -Solution:list(ordset(object))
-    depth_path/4, % +Element:object
+                              % -Solution:list(ordset)
+    depth_path/4, % +Element
                   % +Predicate:term
                   % +Depth:integer
-                  % -Path:list(object)
-    depth_path/5 % +Element:object
+                  % -Path:list
+    depth_path/5 % +Element
                  % +Predicate:term
                  % +Depth:integer
                  % +Inv:boolean
-                 % -Path:list(object)
+                 % -Path:list
   ]
 ).
 
-/** <module> graphs_adv
+/** <module> Graph theory: traversal
 
-Advanced graph theory predicates.
+Predicates for graph traversal.
 
-Two methods created during my ending days at the IvI institute:
-* cyclic_graph_traversal/5
-* depth_path/4
+Two methods created during my last days at the IvI institute:
+  * cyclic_graph_traversal/5
+  * depth_path/4
 
 @author Wouter Beek
-@version 2012/07-2012/08, 2012/10
+@version 2012/07-2012/08, 2012/10, 2014/07
 */
 
+:- use_module(library(aggregate)).
+:- use_module(library(lists)).
+:- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdfs(rdfs_read)).
 
+:- use_module(graph_theory(graph_theory)).
+
+:- use_module(plRdf(rdfs_read)).
+
+:- meta_predicate(bounded_breadthfirst_graph_search(2,+,+,-,-)).
+:- meta_predicate(bounded_breadthfirst_graph_search(2,+,+,-,+,-)).
 :- meta_predicate depth_path(+,0,+,-).
 :- meta_predicate depth_path(+,0,+,+,-).
 :- meta_predicate depth_path(?,*,2,*,*,*).
 
+:- rdf_meta(bounded_breadthfirst_graph_search(:,+,r,-,-)).
+
+
+
+%! bounded_breadthfirst_graph_search(
+%!   :NeighborPred,
+%!   +Depth:nonneg,
+%!   +SeedVertex,
+%!   -Vertices:ordset,
+%!   -Edges:ordset(compound)
+%! ) is det.
+% Returns all vertices and edges that are found within the given depth
+% distance from the given vertex.
+%
+% This is the same as bounded breadth-first search.
+
+bounded_breadthfirst_graph_search(NeighborPred, Depth, V, Vs, Es):-
+  bounded_breadthfirst_graph_search(NeighborPred, Depth, [V], Vs, [], Es).
+
+% Depth was reached.
+bounded_breadthfirst_graph_search(_, 0, Vs, Vs, Es, Es):- !.
+bounded_breadthfirst_graph_search(NeighborPred, Depth1, Vs1, Vs3, Es1, Es3):-
+  aggregate_all(
+    set(X-Y),
+    (
+      member(X, Vs1),
+      call(NeighborPred, X, Y),
+      \+ member(X-Y, Es1)
+    ),
+    NewEs
+  ),
+  edges_to_vertices(NewEs, NewVs),
+  ord_union(Es1, NewEs, Es2),
+  ord_union(Vs1, NewVs, Vs2),
+
+  Depth2 is Depth1 - 1,
+  bounded_breadthfirst_graph_search(NeighborPred, Depth2, Vs2, Vs3, Es2, Es3).
 
 
 %! cyclic_graph_traversal(
@@ -163,3 +213,4 @@ depth_path(Element, History, Predicate, Depth, Inv, [Element | Path]):-
   depth_path(NextElement, [NextElement | History], Predicate, NewDepth, Inv, Path),
   !.
 depth_path(Element, _History, _Predicate, _Depth, _Inv, [Element]).
+
