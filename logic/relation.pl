@@ -2,9 +2,8 @@
   relation,
   [
     equivalence/1, % +Relation:ugraph
-    equivalence_class/4, % +Set:ordset
+    equivalence_class/3, % +Element
                          % +EquivalenceRelation:ugraph
-                         % +Element
                          % -EquivalenceClass:ordset
     quotient_set/3, % +Set:ordset
                     % +EquivalenceRelation:ugraph
@@ -39,11 +38,12 @@ Support for properties of relations.
 :- use_module(library(lambda)).
 :- use_module(library(lists), except([subset/2])).
 
+:- use_module(generics(pair_ext)).
 :- use_module(graph_theory(graph_theory)).
 :- use_module(logic(set_theory)).
 :- use_module(pl(pl_mode)).
 
-:- meta_predicate(relation_closure(+,1,+,-)).
+:- meta_predicate(relational_closure(+,2,-)).
 
 
 
@@ -57,7 +57,6 @@ equivalence(Relation):-
 
 
 %! equivalence_class(
-%!   +Set:ordset,
 %!   +EquivalenceRelation:ugraph,
 %!   +Element,
 %!   -EquivalenceClass:ordset
@@ -67,28 +66,23 @@ equivalence(Relation):-
 % The function that maps from elements onto their equivalence classes is
 % sometimes calles the *|canonical projection map|*.
 %
-% @arg Set The universe of discource.
-%      This must comprise `Element`.
-%      Clearly, `EquivalenceClass` \subseteq `Set`.
-%      Represented as an ordered set.
+% @arg Element The element whose equivalence class is returned.
 % @arg Equivalence An binary equivalence relation,
 %      i.e., a relation that is:
 %        1. Reflexive
 %        2. Symmetric
 %        3. Transitive
 %      Represented as a directed graph (see [ugraph]).
-% @arg Element The element whose equivalence class is returned.
 % @arg EquivalenceClass The equivalence class of `Element`.
 %      This is an ordered set.
 
-equivalence_class(Set, EquivalenceRelation, Element, EquivalenceClass):-
-  % Use of findall/3 ensures that order is preserved in `EquivalenceClass`,
-  % since `Set` is assumed to be ordered.
-  findall(
-    EquivalentElement,
-    (
-      member(EquivalentElement, Set),
-      adjacent(EquivalenceRelation, Element, EquivalentElement)
+equivalence_class(Element, EquivalenceRelation, EquivalenceClass):-
+  closure(
+    [Element],
+    % Since an equivalence relation is symmetric,
+    % we do not need to use e.g. adjacent/3 here.
+    \Element^EquivalentElement^(
+      relation_pair(EquivalenceRelation, Element-EquivalentElement)
     ),
     EquivalenceClass
   ).
@@ -122,7 +116,7 @@ quotient_set(Set, EquivalenceRelation, QuotientSet):-
     set(EquivalenceClass),
     (
       member(Element, Set),
-      equivalence_class(Set, EquivalenceRelation, Element, EquivalenceClass)
+      equivalence_class(Element, EquivalenceRelation, EquivalenceClass)
     ),
     QuotientSet
   ).
@@ -141,10 +135,17 @@ reflexive(Relation):-
 %! reflexive_closure(+Relation:ugraph, -ReflexiveRelation:ugraph) is det.
 
 reflexive_closure(Relation, ReflexiveRelation):-
-  relation_closure(
+  relational_closure(
     Relation,
-    \Pair^(member(X-_, Pair) ; member(_-X, Pair)),
-    X-X,
+    \Pairs^Result^(
+      member(Pair, Pairs),
+      (
+        Result = Pair
+      ;
+        pair_ext:pair_element(Pair, Element),
+        Result = Element-Element
+      )
+    ),
     ReflexiveRelation
   ).
 
@@ -184,10 +185,16 @@ symmetric(Relation):-
 %! symmetric_closure(+Relation:ugraph, -SymmetryRelation:ugraph) is det.
 
 symmetric_closure(Relation, SymmetryRelation):-
-  relation_closure(
+  relational_closure(
     Relation,
-    \Relation^relation_pair(Relation, X-Y),
-    Y-X,
+    \Pairs^Result^(
+      member(Pair, Pairs),
+      (
+        Result = Pair
+      ;
+        pair_ext:inverse_pair(Pair, Result)
+      )
+    ),
     SymmetryRelation
   ).
 
@@ -208,10 +215,15 @@ transitive(Relation):-
 %! transitive_closure(+Relation:ugraph, -TransitiveRelation:ugraph) is det.
 
 transitive_closure(Relation, TransitiveRelation):-
-  relation_closure(
+  relational_closure(
     Relation,
-    \Pairs^(member(X-Y, Pairs), member(Y-Z, Pairs)),
-    X-Z,
+    \Pairs^Result^(
+      member(Result, Pairs)
+    ;
+      member(X-Y, Pairs),
+      member(Y-Z, Pairs),
+      Result = X-Z
+    ),
     TransitiveRelation
   ).
 
@@ -219,10 +231,9 @@ transitive_closure(Relation, TransitiveRelation):-
 
 % Helpers.
 
-%! relation_closure(
+%! relational_closure(
 %!   +Relation:ugraph,
 %!   :Goal,
-%!   +Pattern:compound,
 %!   -ClosedRelation:ugraph
 %! ) .
 % Allows the calculation of the closure of a relation directly.
@@ -231,8 +242,8 @@ transitive_closure(Relation, TransitiveRelation):-
 %
 % The mode is the same as for `Goal`.
 
-relation_closure(Relation, Goal, Pattern, ClosedRelation):-
+relational_closure(Relation, Goal, ClosedRelation):-
   relation(Relation, Set, Pairs),
-  closure(Pairs, Goal, Pattern, ClosedPairs),
+  closure(Pairs, Goal, ClosedPairs),
   relation(ClosedRelation, Set, ClosedPairs).
 

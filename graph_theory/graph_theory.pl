@@ -69,7 +69,7 @@
 Graph theory.
 
 @author Wouter Beek
-@version 2014/07
+@version 2014/07-2014/08
 */
 
 :- use_module(library(aggregate)).
@@ -79,6 +79,7 @@ Graph theory.
 :- use_module(library(ordsets)).
 :- use_module(library(ugraphs), [reachable/3 as reachables]).
 
+:- use_module(generics(pair_ext)).
 :- use_module(generics(sort_ext)).
 :- use_module(logic(set_theory)).
 :- use_module(pl(pl_mode)).
@@ -89,12 +90,15 @@ Graph theory.
 %! adjacent(+Graph:ugraph, +Vertex1, -Vertex2) is nondet.
 %! adjacent(+Graph:ugraph, -Vertex1, +Vertex2) is nondet.
 %! adjacent(+Graph:ugraph, -Vertex1, -Vertex2) is nondet.
+% Vertices are adjacent iff they are the endpoints of the same edge.
+% This means that adjacency does not respect the directedness of edges.
 
 adjacent(Graph, Vertex1, Vertex2):-
   call_ground_as_semidet(adjacent0(Graph, Vertex1, Vertex2)).
 adjacent0(Graph, Vertex1, Vertex2):-
-  member(Vertex1-Vertices, Graph),
-  member(Vertex2, Vertices).
+  edge(Graph, Vertex1, Vertex2).
+adjacent0(Graph, Vertex2, Vertex1):-
+  edge(Graph, Vertex2, Vertex1).
 
 
 %! connected_component(
@@ -172,12 +176,8 @@ direct_subgraph(Subgraph, Graph):-
 % closure of its edges merely by chance.
 
 directed(Graph):-
-  member(X-Ys, Graph),
-  member(Y, Ys),
-  \+((
-    member(Y-Xs, Graph),
-    member(X, Xs)
-  )).
+  edge(Graph, X-Y),
+  \+(edge(Graph, Y-X)).
 
 
 %! edge(+Graph:ugraph, +Edge:pair) is semidet.
@@ -192,7 +192,8 @@ edge(Graph, X-Y):-
 %! edge(-Edge:pair, +Tail, +Head) is det.
 % Relates an unnamed/untyped edge to its constituting vertices.
 
-edge(Tail-Head, Tail, Head).
+edge(Edge, Tail, Head):-
+  pair(Edge, Tail, Head).
 
 
 %! edge_induced_subgraph(
@@ -241,11 +242,12 @@ edges_to_vertices([E|Es], Vs3):-
 empty_graph([]).
 
 
+%! endpoint(+Edge:pair, +Vertex) is semidet.
 %! endpoint(+Edge:pair, -Vertex) is multi.
 % For reflexive edges, the same vertex is returned twice.
 
-endpoint(X-_, X).
-endpoint(_-Y, Y).
+endpoint(Edge, Vertex):-
+  pair_element(Edge, Vertex).
 
 
 %! graph(+Graph:ugraph, -Vertices:ordset, -Edges:ordset(pair)) is det.
@@ -262,7 +264,8 @@ graph(Graph, Vertices, Edges):-
 %! head(+Edge:pair, +Head) is semidet.
 %! head(+Edge:pair, -Head) is det.
 
-head(_-Head, Head).
+head(Edge, Head):-
+  pair(Edge, _, Head).
 
 
 %! link(+Graph:ugraph, +Link:pair) is semidet.
@@ -356,7 +359,8 @@ subgraph(Subgraph, Graph):-
 %! tail(+Edge:pair, +Tail) is semidet.
 %! tail(+Edge:pair, -Tail) is det.
 
-tail(Tail-_, Tail).
+tail(Edge, Tail):-
+  pair(Edge, Tail, _).
 
 
 %! undirected(+Graph:ugraph) is semidet.

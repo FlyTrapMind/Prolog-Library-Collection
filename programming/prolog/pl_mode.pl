@@ -76,14 +76,11 @@ args_instantiation([_|T1], [_|T2]):-
 %
 % @tbd Check whether this can be unified with multi/[4,5].
 
-call_complete(Goal1, Input, [Input | History]):-
-  strip_module(Goal1, Module, Goal2),
-  Goal2 =.. [Pred|Args1],
-  append(Args1, [Input, Intermediate], Args2),
-  Goal3 =.. [Pred|Args2],
-  call_semidet(Module:Goal3), !,
-  call_complete(Goal1, Intermediate, History).
-call_complete(_Goal, Input, [Input]).
+call_complete(Goal, Input, [Input|History]):-
+  once(call(Goal, Input, Output)),
+  Input \== Output, !,
+  call_complete(Goal, Output, History).
+call_complete(_, Input, [Input]).
 
 
 %! call_count(:Goal, -Count:integer) is det.

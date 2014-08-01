@@ -1,15 +1,16 @@
 :- module(
   pair_ext,
   [
+    inverse_pair/2, % ?Pair:pair
+                    % ?Inverse:pair
     number_of_equivalence_pairs/3, % +EquivalenceSets:list(ordset)
                                    % -NumberOfPairs:nonneg
                                    % +Options:list(nvpair)
-    set_to_pairs/3, % +Set:ordset
-                    % :Comparator
-                    % -Pairs:ordset(pair)
-    sets_to_pairs/3, % +Sets:list(ordset)
-                     % -Pairs:ordset(pair)
-                     % +Options:list(nvpair)
+    pair/3, % ?Pair:pair
+            % ?Element1
+            % ?Element2
+    pair_element/2, % ?Pair:pair
+                    % ?Element
     pairs_to_set/2, % +Pairs:list(pair)
                     % -Members:list
     pairs_to_sets/2, % +Pairs:list(pair(iri))
@@ -17,6 +18,12 @@
     read_pairs_from_file/2, % +File:atom
                             % -Pairs:ordset(pair(atom))
     reflexive_pair/1, % ?Pair:pair
+    set_to_pairs/3, % +Set:ordset
+                    % :Comparator
+                    % -Pairs:ordset(pair)
+    sets_to_pairs/3, % +Sets:list(ordset)
+                     % -Pairs:ordset(pair)
+                     % +Options:list(nvpair)
     store_pairs_to_file/2, % +Pairs:list(pair(atom))
                            % +File:atom
     term_to_pair/2 % @Term
@@ -29,7 +36,7 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/08
 */
 
 :- use_module(library(aggregate)).
@@ -61,6 +68,12 @@ Support predicates for working with pairs.
      symmetric(+boolean)
    ]).
 
+
+
+%! inverse_pair(+Pair:pair, -Inverse:pair) is det.
+%! inverse_pair(-Pair:pair, +Inverse:pair) is det.
+
+inverse_pair(X-Y, Y-X).
 
 
 %! number_of_equivalence_pairs(
@@ -95,6 +108,20 @@ cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options):-
   ;
     NumberOfPairs = NumberOfSymmetricAndTransitivePairs
   ).
+
+
+%! pair(+Pair:pair, +X, +Y) is semidet.
+%! pair(+Pair:pair, -X, -Y) is det.
+%! pair(-Pair:pair, +X, +Y) is det.
+
+pair(X-Y, X, Y).
+
+
+%! pair_element(+Pair:pair, +Element) is semidet.
+%! pair_element(+Pair:pair, -Element) is multi.
+
+pair_element(X-_, X).
+pair_element(_-Y, Y).
 
 
 %! pairs_to_set(+Pairs:list(pair), -Set:ordset) is det.
