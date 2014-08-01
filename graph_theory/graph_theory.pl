@@ -79,7 +79,6 @@ Graph theory.
 :- use_module(library(ordsets)).
 :- use_module(library(ugraphs), [reachable/3 as reachables]).
 
-:- use_module(generics(db_ext)).
 :- use_module(generics(sort_ext)).
 :- use_module(logic(set_theory)).
 :- use_module(pl(pl_mode)).

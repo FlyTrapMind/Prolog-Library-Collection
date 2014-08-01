@@ -9,6 +9,10 @@
                    % -Cardinality:integer
     cartesian_product/2, % +Sets:list(ordset)
                          % -CartesianProduct:ordset(list)
+    closure/4, % +Set:ordset
+               % :Antecedent
+               % +Consequence:compound
+               % -ClosedSet:ordset
     emptyset/1, % ?Set:ordset
     equinumerous/2, % +Set1:ordset
                     % +Set2:ordset
@@ -33,7 +37,7 @@ Extra set functions for use in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/11-2011/12, 2012/02, 2012/08, 2012/10, 2013/05, 2013/12,
-         2014/03, 2014/07
+         2014/03, 2014/07-2014/08
 */
 
 :- use_module(library(error)).
@@ -41,6 +45,8 @@ Extra set functions for use in SWI-Prolog.
 :- use_module(library(ordsets)).
 
 :- use_module(generics(list_ext)).
+
+:- meta_predicate(closure(+,1,+,-)).
 
 
 
@@ -77,6 +83,32 @@ cartesian_product([], []).
 cartesian_product([Set|Sets], [H|T]):-
   cartesian_product(Sets, T),
   member(H, Set).
+
+
+%! closure(
+%!   +Set:ordset,
+%!   :Antecedent,
+%!   +Consequence:compound,
+%!   -ClosedSet:ordset
+%! ) is det.
+% Calculates the closure for the given set of pairs.
+%
+% @arg Set An ordered set that will be closed under some operation.
+% @arg Anteceedent An executable goal that takes `Pairs1`
+%      and the free variables in `Consequence`.
+% @arg Consequence A compound term with free variables.
+%      These are the instances that will be included in `Pairs2`.
+% @arg ClosedSet The set `Set` under closure.
+
+closure(Set, Antecedent, Consequence, ClosedSet):-
+  % These are the elements that are added by the closure.
+  aggregate_all(
+    set(Consequence),
+    call(Antecedent, Set),
+    Consequences
+  ),
+  % The original members are included as well.
+  ord_union(Set, Consequences, ClosedSet).
 
 
 %! emptyset(+Set:ordset) is semidet.
