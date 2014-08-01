@@ -58,9 +58,16 @@
     undirected/1, % +Graph:ugraph
     vertex/2, % +Graph:ugraph
               % ?Vertex
-    vertex_induced_subgraph/3 % ?Subgraph:ugraph
-                              % ?KeepVertices:list
-                              % +Graph:ugraph
+    vertex_induced_subgraph/3, % ?Subgraph:ugraph
+                               % ?KeepVertices:list
+                               % +Graph:ugraph
+    walk/3, % +Graph:ugraph
+            % ?StartVertex
+            % ?EndVertex
+    walk/4 % +Graph:ugraph
+           % ?StartVertex
+           % ?EndVertex
+           % ?Path:list(pair)
   ]
 ).
 
@@ -193,7 +200,7 @@ edge(Graph, X-Y):-
 % Relates an unnamed/untyped edge to its constituting vertices.
 
 edge(Edge, Tail, Head):-
-  pair(Edge, Tail, Head).
+  pair_ext:pair(Edge, Tail, Head).
 
 
 %! edge_induced_subgraph(
@@ -247,7 +254,7 @@ empty_graph([]).
 % For reflexive edges, the same vertex is returned twice.
 
 endpoint(Edge, Vertex):-
-  pair_element(Edge, Vertex).
+  pair_ext:pair_element(Edge, Vertex).
 
 
 %! graph(+Graph:ugraph, -Vertices:ordset, -Edges:ordset(pair)) is det.
@@ -265,7 +272,7 @@ graph(Graph, Vertices, Edges):-
 %! head(+Edge:pair, -Head) is det.
 
 head(Edge, Head):-
-  pair(Edge, _, Head).
+  pair_ext:pair(Edge, _, Head).
 
 
 %! link(+Graph:ugraph, +Link:pair) is semidet.
@@ -360,7 +367,7 @@ subgraph(Subgraph, Graph):-
 %! tail(+Edge:pair, -Tail) is det.
 
 tail(Edge, Tail):-
-  pair(Edge, Tail, _).
+  pair_ext:pair(Edge, Tail, _).
 
 
 %! undirected(+Graph:ugraph) is semidet.
@@ -414,4 +421,48 @@ vertex_induced_subgraph(Subgraph, KeepVertices1, Graph):-
   subset(KeepVertices2, Vertices),
   ord_subtract(Vertices, KeepVertices2, RemoveVertices),
   del_vertices(Graph, RemoveVertices, Subgraph).
+
+
+%! walk(+Graph:ugraph, +StartVertex, +EndVertex) is semidet.
+%! walk(+Graph:ugraph, -StartVertex, +EndVertex) is nondet.
+%! walk(+Graph:ugraph, +StartVertex, -EndVertex) is nondet.
+%! walk(+Graph:ugraph, -StartVertex, -EndVertex) is nondet.
+% Suceeds if a path between start and end exists,
+% or enumerates the vertices that can be reached
+%  from a given start or end vertex,
+% or pairs of vertices between which a walk exists.
+
+walk(Graph, Start, End):-
+  walk(Graph, Start, End, _).
+
+%! walk(+Graph:ugraph, +StartVertex, +EndVertex, -Path:list(pair)) is nondet.
+%! walk(+Graph:ugraph, +StartVertex, -EndVertex, -Path:list(pair)) is nondet.
+%! walk(+Graph:ugraph, -StartVertex, +EndVertex, -Path:list(pair)) is nondet.
+%! walk(+Graph:ugraph, -StartVertex, -EndVertex, -Path:list(pair)) is nondet.
+
+walk(Graph, Start, End, Path):-
+  nonvar(Start), !,
+  walk_forward(Graph, Start, End, [Start], Path).
+walk(Graph, Start, End, Path):-
+  nonvar(End), !,
+  walk_backward(Graph, Start, End, [End], Path).
+walk(Graph, Start, End, Path):-
+  vertex(Graph, Start),
+  walk(Graph, Start, End, Path).
+
+walk_backward(_, Start, Start, _, []).
+walk_backward(Graph, Start, End, Vs1, [InBetween-End|Path]):-
+  % Make sure there are no loops or repetitions.
+  edge(Graph, InBetween-End),
+  \+ member(InBetween, Vs1),
+  ord_add_element(Vs1, InBetween, Vs2),
+  walk_backward(Graph, Start, InBetween, Vs2, Path).
+
+walk_forward(_, End, End, _, []).
+walk_forward(Graph, Start, End, Vs1, [Start-InBetween|Path]):-
+  % Make sure there are no loops or repetitions.
+  edge(Graph, Start-InBetween),
+  \+ member(InBetween, Vs1),
+  ord_add_element(Vs1, InBetween, Vs2),
+  walk_forward(Graph, InBetween, End, Vs2, Path).
 
