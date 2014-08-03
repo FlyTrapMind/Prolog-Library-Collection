@@ -76,8 +76,8 @@
                % ?Rest:list
     postfix/2, % ?Part:list
                % ?Whole:list
-    random_sublist/2, % +List:list
-                      % -Sublist:list
+    random_sublist/2, % -Sublist:list
+                      % +List:list
     remove_sublists/2, % +Lists1:list(list)
                        % -Lists2:list(list)
     repeating_list/3, % ?Term:term
@@ -457,24 +457,27 @@ postfix(Part, Whole):-
   append(_, Part, Whole).
 
 
-%! random_sublist(+List:list, -Sublist:list) is det.
+
+
+
+%! random_sublist(-Sublist:list, +List:list) is det.
 % Returns a sublist of the given list that is (1) of random length
 % and that (2) contains randomly selected elements.
 %
 % @tbd Shorter lists are more probable than longer lists,
-%      because these are more sublists of larger length,
+%      because there are more sublists of larger length,
 %      but each length is as probable to occur.
 
-random_sublist(L1, L2):-
-  length(L1, Length1),
-  random_between(0, Length1, Length2),
-  random_sublist(L1, Length2, L2).
+random_sublist(Sublist, List):-
+  length(List, ListLength),
+  random_between(0, ListLength, SublistLength),
+  random_sublist(Sublist, SublistLength, List).
 
-random_sublist(_, 0, []):- !.
-random_sublist(L1, Length1, [X|L3]):-
-  random_select(X, L1, L2),
-  Length2 is Length1 - 1,
-  random_sublist(L2, Length2, L3).
+random_sublist([], 0, _).
+random_sublist([H|Sublist], SublistLength1, List1):-
+  random_select(H, List1, List2),
+  SublistLength2 is SublistLength1 - 1,
+  random_sublist(Sublist, SublistLength2, List2).
 
 
 %! remove_sublists(+Lists1:list(list), -Lists2:list(list)) is det.

@@ -153,7 +153,7 @@ random_subset(Set, _):-
   \+ is_ordset(Set), !,
   type_error(ordset, Set).
 random_subset(Set, RandomSubset):-
-  random_sublist(Set, RandomSubset).
+  random_sublist(RandomSubset, Set).
 
 
 %! strict_subset(+Subset:ordset, +Superset:ordset) is semidet.

@@ -19,32 +19,33 @@ Extensions for sorting lists.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/07
+         2014/07-2014/08
 */
 
 :- use_module(library(lists)).
 :- use_module(library(option)).
+:- use_module(library(predicate_options)). % Declarations.
 
 :- meta_predicate(predmerge_with_duplicates(2,+,+,-)).
 :- meta_predicate(predmerge_with_duplicates(2,+,+,+,+,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
+:- predicate_options(sort/3, 3, [
+     duplicates(+boolean),
+     inverted(+boolean)
+  ]).
 
 
-%! sort(+Options:list(nvpair), +List:list, -Sorted:list) is det.
-% @arg Options A list of name-value pairs. The following options are
-%        supported:
-%        1. =|duplicates(boolean)|= Whether duplicate elements are retained
-%           in the sorted list.
-%        2. =|inverted(boolean)|= Whether the sorted list goes from lowest to
-%           highest (standard) or from highest to lowest.
 
-% The combination of _inverted_ and _|no duplicates|_ uses a dedicated
-% comparator. This is cheaper that first sorting and then reversing the
-% results.
+%! sort(+List:list, -Sorted:list, +Options:list(nvpair)) is det.
+% The following options are supported:
+%   * =|duplicates(+boolean)|= Whether duplicate elements are retained
+%     in the sorted list.
+%   * =|inverted(+boolean)|= Whether the sorted list goes from lowest to
+%     highest (standard) or from highest to lowest.
 
-sort(Options, Unsorted, Sorted):-
+sort(Unsorted, Sorted, Options):-
   option(inverted(Duplicates), Options, false),
   option(duplicates(Inverted), Options, false),
   sort(Duplicates, Inverted, Unsorted, Sorted).
@@ -59,18 +60,17 @@ sort(Options, Unsorted, Sorted):-
 
 % With duplicates & inverted.
 sort(true, true, Unsorted, Sorted):- !,
-  sort(Unsorted, Sorted0),
+  msort(Unsorted, Sorted0),
   reverse(Sorted0, Sorted).
 % With duplicates & uninverted.
 sort(true, false, Unsorted, Sorted):- !,
-  sort(Unsorted, Sorted).
+  msort(Unsorted, Sorted).
 % Without duplicates & inverted
 sort(false, true, Unsorted, Sorted):- !,
-  msort(Unsorted, Sorted0),
-  reverse(Sorted0, Sorted).
+  predsort(icompare, Unsorted, Sorted).
 % Without duplicates & uninverted.
 sort(false, false, Unsorted, Sorted):- !,
-  predsort(icompare, Unsorted, Sorted).
+  sort(Unsorted, Sorted).
 
 
 %! predsort_with_duplicates(

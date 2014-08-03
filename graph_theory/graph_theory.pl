@@ -71,11 +71,14 @@
     reachable/3, % +Graph:ugraph
                  % +FromVertex
                  % ?ToVertex
+    regular/1, % +Graph:ugraph
     size/2, % +Graph:ugraph
             % ?Size:nonneg
+/*
     star/1, % +Graph:ugraph
     star/2, % +Graph:ugraph
             % ?Order:nonneg
+*/
     strict_subgraph/2, % +StrictSubgraph:ugraph
                        % +Graph:ugraph
     subgraph/2, % ?Subgraph:ugraph
@@ -126,6 +129,8 @@ Graph theory.
 %! adjacent_edges(+Graph:ugraph, -Edge1:pair, +Edge2:pair) is nondet.
 %! adjacent_edges(+Graph:ugraph, -Edge1:pair, -Edge2:pair) is nondet.
 % Edges are *adjacent* iff they share exactly one vertex.
+%
+% No guarentees are given about the order in which results are returned.
 
 adjacent_edges(Graph, X-Y1, X-Y2):-
   edge(Graph, X-Y1),
@@ -144,6 +149,17 @@ adjacent_edges(Graph, Y1-X, Y2-X):-
   edge(Graph, Y2-X),
   Y1 \== Y2.
 
+:- begin_tests('adjacent_edges/3').
+
+test(
+  'adjacent_edges(+,+,-) is semidet. TRUE',
+  [set(Edge == [3-2,3-4,3-5,2-3,4-3,5-3])]
+):-
+  test_graph(Graph),
+  adjacent_edges(Graph, 1-3, Edge).
+
+:- end_tests('adjacent_edges/3').
+
 
 
 %! adjacent_vertices(+Graph:ugraph, +Vertex1, +Vertex2) is semidet.
@@ -160,6 +176,17 @@ adjacent_vertices(Graph, Vertex1, Vertex2):-
   ;
     edge(Graph, Vertex2-Vertex1)
   )).
+
+:- begin_tests('adjacent_vertices/3').
+
+test(
+  'adjacent_vertices(+,+,-) is nondet. TRUE',
+  [set(Vertex1-Vertex2 == [1-3,2-3,2-4,2-5,3-1,3-2,3-4,3-5,4-2,4-3,5-2,5-3])]
+):-
+  test_graph(Graph),
+  adjacent_vertices(Graph, Vertex1, Vertex2).
+
+:- end_tests('adjacent_vertices/3').
 
 
 
@@ -243,6 +270,7 @@ cycle([1-[2,3,4],2-[1,3,4],3-[1,2,4],4-[1,2,3]], 4, true).
 
 
 
+%! degree(+Graph, +Degree:nonneg) is semidet.
 %! degree(+Graph, -Degree:nonneg) is semidet.
 % The *degree* of a graph is the degree of each of its vertices.
 %
@@ -280,12 +308,36 @@ degree(Graph, Vertex, Degree2):-
 
 
 
+%! degree_sequence(+Graph:ugraph, +DegreeSequence:list(nonneg)) is semidet.
 %! degree_sequence(+Graph:ugraph, -DegreeSequence:list(nonneg)) is det.
 
 degree_sequence(Graph, DegreeSeq):-
   vertices(Graph, Vertices),
   maplist(\Vertex^Degree^degree(Graph, Vertex, Degree), Vertices, Degrees),
   sort(Degrees, DegreeSeq, [duplicates(true),inverted(true)]).
+
+:- begin_tests('degree_sequence/2').
+
+test(
+  'degree_sequence(+,+) is semidet. TRUE',
+  [forall(degree_sequence_test(Graph,DegreeSeq,true))]
+):-
+  degree_sequence(Graph, DegreeSeq).
+
+test(
+  'degree_sequence(+,+) is semidet. TRUE',
+  [fail,forall(degree_sequence_test(Graph,DegreeSeq,fail))]
+):-
+  degree_sequence(Graph, DegreeSeq).
+
+degree_sequence_test(Graph, [4,3,2,2,1], true):-
+  test_graph(Graph).
+degree_sequence_test(Graph, DegreeSeq2, fail):-
+  degree_sequence_test(Graph, DegreeSeq1, true),
+  permutation(DegreeSeq2, DegreeSeq1),
+  DegreeSeq1 \= DegreeSeq2.
+
+:- end_tests('degree_sequence/2').
 
 
 
@@ -467,6 +519,23 @@ maximum_degree(Graph, MaxDegree):-
     MaxDegree
   ).
 
+:- begin_tests('maximum_degree/2').
+
+test(
+  'maximum_degree(+,+) is semidet. TRUE',
+  [forall(maximum_degree_test(Graph,MaxDegree,true))]
+):-
+  maximum_degree(Graph, MaxDegree).
+
+maximum_degree_test(Graph, 4, true):-
+  test_graph(Graph).
+maximum_degree_test(Graph, Degree2, fail):-
+  maximum_degree_test(Graph, Degree1, true),
+  between(0, Degree1, Degree2),
+  Degree1 =\= Degree2.
+
+:- end_tests('maximum_degree/2').
+
 
 
 %! minimum_degree(+Graph:ugraph, +MinDegree:nonneg) is semidet.
@@ -479,6 +548,18 @@ minimum_degree(Graph, MinDegree):-
     degree(Graph, _, Degree),
     MinDegree
   ).
+
+:- begin_tests(minimum_degree).
+
+test(
+  'minimum_degree(+,+) is semidet. TRUE',
+  [forall(minimum_degree_test(Graph,MinDegree,true))]
+):-
+  minimum_degree(Graph, MinDegree).
+
+minimum_degree_test([1-[3],2-[3,5],3-[1,2,4,5],4-[2,3,5],5-[2,3,4]], 1, true).
+
+:- end_tests(minimum_degree).
 
 
 
@@ -502,6 +583,26 @@ reachable(Graph, FromVertex, ToVertex):-
 
 
 
+%! regular(+Graph:ugraph) is semidet.
+% A *regular* graph is a graph with a (single) degree.
+
+regular(Graph):-
+  degree(Graph, _).
+
+:- begin_tests('regular/1').
+
+test('regular(+) is semidet. TRUE', [forall(regular_test(Graph, true))]):-
+  regular(Graph).
+
+test('regular(+) is semidet. FAIL', [forall(regular_test(Graph, fail))]):-
+  regular(Graph).
+
+regular_test([1-[3],2-[3,5],3-[1,2,4,5],4-[2,3,5],5-[2,3,4]], fail).
+
+:- end_tests('regular/1').
+
+
+
 %! size(+Graph:ugraph, +Size:nonneg) is semidet.
 %! size(+Graph:ugraph, -Size:nonneg) is det.
 % The *size* of a graph is the cardinality of its edges.
@@ -512,6 +613,7 @@ size(Graph, Size):-
 
 
 
+/*
 %! star(+Graph:ugraph) is semidet.
 
 star(Graph):-
@@ -524,6 +626,7 @@ star(Graph, Order):-
   order(Graph, Order),
   degree_sequence(Graph, [Order|Ones]),
   maplist(\One^(One=:=1), Ones).
+*/
 
 
 
@@ -576,7 +679,10 @@ undirected(Graph):-
 %! vertex(+Graph:ugraph, -Vertex) is nondet.
 
 vertex(Graph, Vertex):-
-  call_ground_as_semidet(member(Vertex-_, Graph)).
+  nonvar(Vertex), !,
+  memberchk(Vertex-_, Graph).
+vertex(Graph, Vertex):-
+  member(Vertex-_, Graph).
 
 
 
@@ -652,3 +758,9 @@ walk_forward(Graph, Start, End, Vs1, [Start-InBetween|Path]):-
   \+ member(InBetween, Vs1),
   ord_add_element(Vs1, InBetween, Vs2),
   walk_forward(Graph, InBetween, End, Vs2, Path).
+
+
+
+% Unit tests.
+
+test_graph([1-[3],2-[3,4,5],3-[1,2,4,5],4-[2,3],5-[2,3]]).

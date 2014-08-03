@@ -154,7 +154,7 @@ reflexive_closure(Relation, ReflexiveRelation):-
 %! relation(-Relation:ugraph, +Set:ordset, +Pairs:ordset(pair)) is det.
 
 relation(Relation, Set, Pairs):-
-  graph(Relation, Set, Pairs).
+  graph_theory:graph(Relation, Set, Pairs).
 
 
 %! relation_element(+Relation:ugraph, +Element) is semidet.
@@ -169,7 +169,7 @@ relation_element(Relation, Element):-
 % The extension of a binary relation.
 
 relation_pair(Relation, Pair):-
-  edge(Relation, Pair).
+  graph_theory:edge(Relation, Pair).
 
 
 %! symmetric(+Relation:ugraph) is semidet.

@@ -42,7 +42,6 @@ Automated checks for Prolog mode enforcement.
 :- use_module(library(aggregate)).
 
 :- use_module(generics(error_ext)).
-:- use_module(generics(list_ext)).
 
 :- meta_predicate(call_complete(2,+,-)).
 :- meta_predicate(call_count(0,-)).
@@ -107,7 +106,9 @@ call_det(Goal):-
 %! call_ground_as_semidet(:Goal)
 
 call_ground_as_semidet(Goal):-
-  ground(Goal), !,
+  strip_module(Goal, _, Plain),
+  Plain =.. [_|Args],
+  maplist(ground, Args), !,
   Goal, !.
 call_ground_as_semidet(Goal):-
   Goal.

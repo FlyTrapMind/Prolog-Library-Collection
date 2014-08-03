@@ -169,10 +169,10 @@ regular(V_P, G):-
 
 regular(V_P, G, K):-
   call(V_P, G, [V1 | Vs]),
-  degree(G, V1, K),
+  graph_theory:degree(G, V1, K),
   forall(
     member(V2, Vs),
-    degree(G, V2, K)
+    graph_theory:degree(G, V2, K)
   ).
 
 %! simple(:V_P, :E_P, +Graph) is semidet.
