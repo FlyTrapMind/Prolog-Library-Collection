@@ -1,40 +1,40 @@
 :- module(
   graph_travel,
   [
-    traverse/7, % +Options:list(nvpair)
-                % +Graph
-                % :E_P
-                % :N_P
-                % +First:vertex
-                % +Last:vertex
-                % -Distance:integer
-    traverse/10, % +Options:list(nvpair)
-                 % +Graph
-                 % :E_P
-                 % :N_P
-                 % +First:vertex
-                 % +Last:vertex
-                 % -Distance:integer
-                 % -Vertices:ordset(vertex)
-                 % -Edges:ordset(edge)
+    traverse/7, % +Graph
+                % :EdgePred
+                % :NeighborPred
+                % +First
+                % +Last
+                % -Distance:nonneg
+                % +Options:list(nvpair)
+    traverse/10, % +Graph
+                 % :EdgePred
+                 % :NeighborPred
+                 % +First
+                 % +Last
+                 % -Distance:nonneg
+                 % -Vertices:ordset
+                 % -Edges:ordset(pair)
                  % -History:list
-    travel_min/7, % +Options:list(nvpair)
-                  % +Graph
-                  % :E_P
-                  % :N_P
-                  % +First:vertex
-                  % +Last:vertex
-                  % -MinimumDistance:integer
-    travel_min/10 % +Options:list(nvpair)
-                  % +Graph
-                  % :E_P
-                  % :N_P
-                  % +First:vertex
-                  % +Last:vertex
-                  % -MinimumDistance:integer
-                  % -Vertices:ordset(vertex)
-                  % -Edges:ordset(edge)
+                 % +Options:list(nvpair)
+    travel_min/7, % +Graph
+                  % :EdgePred
+                  % :NeighborPred
+                  % +First
+                  % +Last
+                  % -MinimumDistance:nonneg
+                  % +Options:list(nvpair)
+    travel_min/10 % +Graph
+                  % :EdgePred
+                  % :NeighborPred
+                  % +First
+                  % +Last
+                  % -MinimumDistance:nonneg
+                  % -Vertices:ordset
+                  % -Edges:ordset(pair)
                   % -History:list
+                  % +Options:list(nvpair)
   ]
 ).
 
@@ -44,13 +44,14 @@
 @version 2013/01-2013/04, 2013/07, 2013/09, 2013/12, 2014/03
 */
 
-:- use_module(generics(list_ext)).
-:- use_module(generics(option_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)). % RDF meta predicate declarations.
+
+:- use_module(generics(list_ext)).
+:- use_module(generics(option_ext)).
 
 :- meta_predicate(traverse(+,+,2,3,+,+,-)).
 :- meta_predicate(traverse(+,+,2,3,+,+,-,-,-,-)).
@@ -71,60 +72,67 @@ is_meta(deb_vertex_name).
 
 
 %! traverse(
-%!   +Options:list(nvpair),
 %!   +Graph:atom,
-%!   :E_P,
-%!   :N_P,
-%!   +FirstV:vertex,
-%!   +LastV:vertex,
-%!   -Distance:nonneg
+%!   :EdgePred,
+%!   :NeighborPred,
+%!   +First,
+%!   +Last,
+%!   -Distance:nonneg,
+%!   +Options:list(nvpair)
 %! ) is nondet.
 % @see Wrapper around traverse/10.
 
-traverse(O, G, E_P, N_P, First, Last, Distance):-
-  traverse(O, G, E_P, N_P, First, Last, Distance, _Vertexs, _Edges, _History).
+traverse(Graph, EdgePred, NeighborPred, First, Last, Distance, Options):-
+  traverse(
+    Graph, EdgePred, NeighborPred, First, Last, Distance, _, _, _, Options
+  ).
 
 %! traverse(
-%!   +Options:list(nvpair),
 %!   +Graph:atom,
-%!   :E_P,
-%!   :N_P,
-%!   +First:vertex,
-%!   +Last:vertex,
-%!   -Distance:nonneg
-%!   -Vertices:ordset(vertex),
-%!   -Edges:ordset(edge),
-%!   -History:list
+%!   :EdgePred,
+%!   :NeighborPred,
+%!   +First,
+%!   +Last,
+%!   -Distance:nonneg,
+%!   -Vertices:ordset,
+%!   -Edges:ordset(pair),
+%!   -History:list,
+%!   +Options:list(nvpair)
 %! ) is nondet.
-% Lets travel through graph land.
+% Lets travel through graph land!
 %
 % A *walk* is an alternating sequence of vertices and edges,
-% ending in a vertex.
-%
-% A *tour* is a closed walk. Closed means that the first and the last element
-% in the sequence are the same vertex.
+% starting and ending in a vertex.
 % ~~~{.pl}
-% Options = [closed(true)]
+% Options = []
 % ~~~
 %
-% A *trail* is a walk with unique edges.
+% In a *closed* walk sequence, the first and the last vertex are the same.
+% *Open* walk sequences are not closed.
+%
+% A *trail* is a walk with distinct edges.
 % ~~~{.pl}
-% Options = [unique_edge(true)]
+% Options = [distinct_edges(true)]
 % ~~~
 %
-% A *path* is a walk with unique vertices.
+% A *tour* is a closed trail.
 % ~~~{.pl}
-% Options = [unique_vertex(true)]
+% Options = [closed(true),distinct_edges(true)]
 % ~~~
 %
-% A *cycle* is a closed path trail.
+% A *path* is a trail with distinct vertices.
 % ~~~{.pl}
-% Options = [closed(true),unique_edge(true),unique_vertex(true)]
+% Options = [distinct_edges(true),distinct_vertices(true)]
+% ~~~
+%
+% A *cycle* is a closed path.
+% ~~~{.pl}
+% Options = [closed(true),distinct_edges(true),distinct_vertices(true)]
 % ~~~
 %
 % An *Euler tour* is a tour in which all edges are traversed exactly one.
 % ~~~{.pl}
-% Options = [closed(true),every_edge(true),unique_edge(true)]
+% Options = [closed(true),every_edge(true),distinct_edges(true)]
 % ~~~
 %
 % The following options are defined:
@@ -137,17 +145,16 @@ traverse(O, G, E_P, N_P, First, Last, Distance):-
 %   4. =|every_edge(boolean)|=
 %   5. =|every_vertex(boolean)|=
 %   6. =|graph(Graph)|=
-%   7. =|unique_edge(boolean)=
-%   8. =|unique_vertex(boolean)=
+%   7. =|distinct_edges(boolean)=
+%   8. =|distinct_vertices(boolean)=
 %   9. =|deb_vertex_name(:VertexNaming)|=
 %      Debugging option for assigning readable names to vertices.
 %      The predicate should have the arguments
 %      =|(+Vertex,-VertexName:atom)|=.
 %
-% @arg Options A list of name-value pairs.
 % @arg Graph
-% @arg E_P Maps a graph to its edges.
-% @arg N_P Maps a vertex to its neighbor vertices.
+% @arg EdgePred Maps a graph to its edges.
+% @arg NeighborPred Maps a vertex to its neighbor vertices.
 % @arg First The first vertex in the path.
 % @arg Last The last vertex in the path.
 % @arg Distance An integer representing a distance between the first and
@@ -155,130 +162,128 @@ traverse(O, G, E_P, N_P, First, Last, Distance):-
 % @arg Vertices A list of vertices.
 % @arg Edges A list of edges.
 % @arg History
+% @arg Options A list of name-value pairs.
 
-traverse(O1, G, E_P, N_P, First, Last, Distance, Vertices, Edges, History):-
+traverse(
+  Graph, EdgePred, NeighborPred, First, Last,
+  Distance, Vertices, Edges, History, Options1
+):-
   % First we make sure we have the right options set,
   % so we do not have to do this in every iteration.
   
   % Cycles, tours, and Euler tours are closed.
-  add_default_option(O1, closed, false, O2),
+  add_default_option(Options1, closed, false, Options2),
   
   % Euler tours must use every edge.
-  add_default_option(O2, every_edge, false, O3),
+  add_default_option(Options2, every_edge, false, Options3),
   
   % The default distance metric is edges.
-  add_default_option(O3, distance, edge, O4),
+  add_default_option(Options3, distance, edge, Options4),
   
-  % Cycles and paths have a unique number of vertices.
-  add_default_option(O4, unique_vertex, false, O5),
+  % Cycles and paths have a distinct number of vertices.
+  add_default_option(Options4, distinct_vertices, false, Options5),
   
   % Trails and Euler tours has a no duplicate edges.
-  add_default_option(O5, unique_edge, false, O6),
+  add_default_option(Options5, distinct_edges, false, Options6),
   
-  meta_options(is_meta, O6, O7),
+  meta_options(is_meta, Options6, Options7),
   
   traverse1(
-    O7, G, E_P, N_P, First, Last,
-    Distance, [First], Vertices, [], Edges, History
+    Graph, EdgePred, NeighborPred, First, Last,
+    Distance, [First], Vertices, [], Edges, History, Options7
   ).
 
 % Done, perform some option-dependent checks
 % and calculate some option-dependent statistics.
 traverse1(
-  O, G, E_P, _N_P, Last, Last, Distance, SolV, SolV, SolE, SolE, [Last]
+  Graph, EdgePred, _, Last, Last,
+  Distance, SolV, SolV, SolE, SolE, [Last], Options
 ):-
   % In a closed walk (or tour) the first and the last vertex must be
   % the same.
-  (option(closed(true), O) -> last(SolV, Last) ; true),
+  (  option(closed(true), Options)
+  -> last(SolV, Last)
+  ;  true),
   
   % In an Euler tour all edges must be visited.
-  (
-    option(every_edge(true), O)
-  ->
-    call(E_P, G, AllEs),
-    ord_subtract(AllEs, SolE, UntraversedEdges),
-    ord_empty(UntraversedEdges)
-  ;
-    true
-  ),
-
+  (  option(every_edge(true), Options)
+  -> call(EdgePred, Graph, AllEdges),
+     ord_subtract(AllEdges, SolE, UntraversedEdges),
+     ord_empty(UntraversedEdges)
+  ;  true),
+  
   % Distance metric. The statistics we return.
-  (
-    option(distance(edge), O)
-  ->
-    length(SolE, Distance)
-  ;
-    length(SolV, Distance)
-  ).
+  (  option(distance(edge), Options)
+  -> length(SolE, Distance)
+  ;  length(SolV, Distance)).
 % Recursion: traversal by visiting neighboring vertices.
 traverse1(
-  O, G, E_P, N_P, FirstV, Last,
-  Distance, Vs, SolV, Es, SolE, [FirstV,FirstV-NextV|History]
+  Graph, EdgePred, NeighborPred, FirstV, Last,
+  Distance, Vs, SolV, Es, SolE, [FirstV,FirstV-NextV|History], Options
 ):-
   % Neighbor
-  call(N_P, G, FirstV, NextV),
+  call(NeighborPred, Graph, FirstV, NextV),
   
   % Debugging.
-  (
-    debugging(graph_traversal),
-    option(deb_vertex_name(V_Name), O)
-  ->
-    call(V_Name, FirstV, FirstV_Name),
-    call(V_Name, NextV, NextV_Name),
-    debug(graph_travel, '~w\t--->\t~w', [FirstV_Name,NextV_Name])
-  ;
-    true
-  ),
+  (  debugging(graph_traversal),
+     option(deb_vertex_name(VName), Options)
+  -> call(VName, FirstV, FirstVName),
+     call(VName, NextV, NextVName),
+     debug(graph_travel, '~w\t--->\t~w', [FirstVName,NextVName])
+  ;  true),
   
   % Check the walk restriction: no duplicate vertices.
-  (option(unique_vertex(true), O) -> \+ member(NextV, Vs) ; true),
+  (option(distinct_vertices(true), Options) -> \+ member(NextV, Vs) ; true),
   
   % Check the trail and Euler tour restriction: no duplicate edges.
-  (option(unique_edge(true), O) -> \+ member(FirstV-NextV, Es) ; true),
+  (  option(distinct_edges(true), Options)
+  -> \+ member(FirstV-NextV, Es)
+  ;  true),
   
   ord_add_element(Vs, NextV, NewVs),
   ord_add_element(Es, FirstV-NextV, NewEs),
   traverse1(
-    O, G, E_P, N_P, NextV, Last, Distance, NewVs, SolV, NewEs, SolE, History
+    Graph, EdgePred, NeighborPred, NextV, Last,
+    Distance, NewVs, SolV, NewEs, SolE, History, Options
   ).
 
 /*
-travel2(G, N_P, FromV, ToV, Length, AllVs, Path):-
-  travel2(G, N_P, FromV, ToV, Length, [FromV], AllVs, Path).
+travel2(Graph, NeighborPred, FromV, ToV, Length, AllVs, Path):-
+  travel2(Graph, NeighborPred, FromV, ToV, Length, [FromV], AllVs, Path).
 
 travel2(_G, _N_P, ToV, ToV, Length, AllVs, AllVs, [ToV]):-
   length(AllVs, Length), !.
-travel2(G, N_P, FromV, ToV, Length, Vs, AllVs, [FromV | Path]):-
-  call(N_P, FromV, G, ToVs),
+travel2(Graph, NeighborPred, FromV, ToV, Length, Vs, AllVs, [FromV | Path]):-
+  call(NeighborPred, FromV, Graph, ToVs),
   member(ViaV, ToVs),
   % Make sure we haven't be here yet.
   \+ member(ViaV, Vs),
   ord_add_element(Vs, ToV, NewVs),
-  travel2(G, N_P, ViaV, ToV, Length, NewVs, AllVs, Path).
+  travel2(Graph, NeighborPred, ViaV, ToV, Length, NewVs, AllVs, Path).
 */
 
 %! tarvel_min(
 %!   +Options:list(nvpair),
 %!   +Graph,
-%!   :E_P,
-%!   :N_P,
-%!   +First:vertex,
-%!   +Last:vertex,
-%!   -MinimumDistance:integer
+%!   :EdgePred,
+%!   :NeighborPred,
+%!   +First,
+%!   +Last,
+%!   -MinimumDistance:nonneg
 %! ) is det.
 % @see Wrapper around travel_min/10.
 
-travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
-  travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, _Vs, _Es, _History).
+travel_min(O, Graph, EdgePred, NeighborPred, First, Last, MinimumDistance):-
+  travel_min(O, Graph, EdgePred, NeighborPred, First, Last, MinimumDistance, _Vs, _Es, _History).
 
 %! travel_min(
 %!   +Options:list(nvpair),
 %!   +Graph,
-%!   :E_P,
-%!   :N_P,
-%!   +First:vertex,
-%!   +Last:vertex,
-%!   -MinimumDistance:integer,
+%!   :EdgePred,
+%!   :NeighborPred,
+%!   +First,
+%!   +Last,
+%!   -MinimumDistance:nonneg,
 %!   -Vertices:ordset(vertex),
 %!   -Edges:ordset(edge),
 %!   -History:list
@@ -288,8 +293,8 @@ travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
 % @arg Options A list of name-value pairs.
 %      See travel/7 for the list of supported options.
 % @arg Graph
-% @arg E_P
-% @arg N_P
+% @arg EdgePred
+% @arg NeighborPred
 % @arg First A vertex, the first in the travel.
 % @arg Last A respource, the last in the travel.
 % @arg MinimumDistance An integer representing the minimum distance
@@ -300,10 +305,10 @@ travel_min(O, G, E_P, N_P, First, Last, MinimumDistance):-
 % @arg History A list representing a minimum travel between the first and
 %      last resources.
 
-travel_min(O, G, E_P, N_P, First, Last, MinimumDistance, Vs, Es, History):-
+travel_min(O, Graph, EdgePred, NeighborPred, First, Last, MinimumDistance, Vs, Es, History):-
   aggregate_all(
     set(Distance-History),
-    traverse(O, G, E_P, N_P, First, Last, Distance, Vs, Es, History),
+    traverse(O, Graph, EdgePred, NeighborPred, First, Last, Distance, Vs, Es, History),
     Pairs
   ),
   first(Pairs, MinimumDistance-History).

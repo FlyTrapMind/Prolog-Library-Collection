@@ -34,6 +34,14 @@ Design decisions:
 
 
 
+%! height(+Element, -Height) is det.
+% The *height* of an `Element` is the length of
+% the longest chain from `Element` to a minimal element.
+
+height(Element):-
+  
+
+
 %! identity(+Poset:ugraph, +Element1, +Element2) is semidet.
 %! identity(+Poset:ugraph, +Element1, -Element2) is nondet.
 %! identity(+Poset:ugraph, -Element1, +Element2) is nondet.

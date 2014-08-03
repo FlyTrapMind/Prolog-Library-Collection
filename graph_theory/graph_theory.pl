@@ -1,11 +1,30 @@
 :- module(
   graph_theory,
   [
-    adjacent/3, % +Graph:ugraph
-                % ?Vertex1
-                % ?Vertex2
+    adjacent_edges/3, % +Graph:ugraph
+                      % ?Edge1:pair
+                      % ?Edge2:pair
+    adjacent_vertices/3, % +Graph:ugraph
+                         % ?Vertex1
+                         % ?Vertex2
+/*
+    chain/3, % +Graph:ugraph
+             % ?StartVertex
+             % ?EndVertex
+    chain/4, % +Graph:ugraph
+             % ?StartVertex
+             % ?EndVertex
+             % ?Path:list(pair)
+*/
     connected_component/2, % ?ConnectedComponent:ordset
                            % +Graph:ugraph
+/*
+    cycle/1, % +Graph:ugraph
+    cycle/2, % +Graph:ugraph
+             % ?Order:nonneg
+*/
+    degree/2, % +Graph:ugraph
+              % -Degree:nonneg
     degree/3, % +Graph:ugraph
               % ?Vertex
               % -Degree:nonneg
@@ -14,13 +33,18 @@
     direct_subgraph/2, % ?Subgraph:ugraph
                        % +Graph:ugraph
     directed/1, % +Graph:ugraph
+    dominating_vertex/2, % +Graph:ugraph
+                         % ?Vertex
     head/2, % +Edge:pair
             % ?Vertex
     edge/2, % +Graph:ugraph
             % ?Edge:pair
-    edge/3, % ?Edge:pair
+    edge/3, % +Graph:ugraph
             % ?Tail
             % ?Head
+    edge_components/3, % ?Edge:pair
+                       % ?Tail
+                       % ?Head
     edge_induced_subgraph/3, % ?Subgraph:ugraph
                              % ?KeepEdges:list(pair)
                              % +Graph:ugraph
@@ -49,6 +73,9 @@
                  % ?ToVertex
     size/2, % +Graph:ugraph
             % ?Size:nonneg
+    star/1, % +Graph:ugraph
+    star/2, % +Graph:ugraph
+            % ?Order:nonneg
     strict_subgraph/2, % +StrictSubgraph:ugraph
                        % +Graph:ugraph
     subgraph/2, % ?Subgraph:ugraph
@@ -84,6 +111,7 @@ Graph theory.
 :- use_module(library(lambda)).
 :- use_module(library(lists), except([subset/2])).
 :- use_module(library(ordsets)).
+:- use_module(library(plunit)).
 :- use_module(library(ugraphs), [reachable/3 as reachables]).
 
 :- use_module(generics(pair_ext)).
@@ -93,19 +121,65 @@ Graph theory.
 
 
 
-%! adjacent(+Graph:ugraph, +Vertex1, +Vertex2) is semidet.
-%! adjacent(+Graph:ugraph, +Vertex1, -Vertex2) is nondet.
-%! adjacent(+Graph:ugraph, -Vertex1, +Vertex2) is nondet.
-%! adjacent(+Graph:ugraph, -Vertex1, -Vertex2) is nondet.
-% Vertices are adjacent iff they are the endpoints of the same edge.
-% This means that adjacency does not respect the directedness of edges.
+%! adjacent_edges(+Graph:ugraph, +Edge1:pair, +Edge2:pair) is semidet.
+%! adjacent_edges(+Graph:ugraph, +Edge1:pair, -Edge2:pair) is nondet.
+%! adjacent_edges(+Graph:ugraph, -Edge1:pair, +Edge2:pair) is nondet.
+%! adjacent_edges(+Graph:ugraph, -Edge1:pair, -Edge2:pair) is nondet.
+% Edges are *adjacent* iff they share exactly one vertex.
 
-adjacent(Graph, Vertex1, Vertex2):-
-  call_ground_as_semidet(adjacent0(Graph, Vertex1, Vertex2)).
-adjacent0(Graph, Vertex1, Vertex2):-
-  edge(Graph, Vertex1, Vertex2).
-adjacent0(Graph, Vertex2, Vertex1):-
-  edge(Graph, Vertex2, Vertex1).
+adjacent_edges(Graph, X-Y1, X-Y2):-
+  edge(Graph, X-Y1),
+  edge(Graph, X-Y2),
+  Y1 \== Y2.
+adjacent_edges(Graph, X-Y1, Y2-X):-
+  edge(Graph, X-Y1),
+  edge(Graph, Y2-X),
+  Y1 \== Y2.
+adjacent_edges(Graph, Y1-X, X-Y2):-
+  edge(Graph, Y1-X),
+  edge(Graph, X-Y2),
+  Y1 \== Y2.
+adjacent_edges(Graph, Y1-X, Y2-X):-
+  edge(Graph, Y1-X),
+  edge(Graph, Y2-X),
+  Y1 \== Y2.
+
+
+
+%! adjacent_vertices(+Graph:ugraph, +Vertex1, +Vertex2) is semidet.
+%! adjacent_vertices(+Graph:ugraph, +Vertex1, -Vertex2) is nondet.
+%! adjacent_vertices(+Graph:ugraph, -Vertex1, +Vertex2) is nondet.
+%! adjacent_vertices(+Graph:ugraph, -Vertex1, -Vertex2) is nondet.
+% Vertices are *adjacent* iff they are the endpoints of the same edge.
+%
+% Notice that adjacency does not respect the directedness of edges.
+
+adjacent_vertices(Graph, Vertex1, Vertex2):-
+  call_ground_as_semidet((
+    edge(Graph, Vertex1-Vertex2)
+  ;
+    edge(Graph, Vertex2-Vertex1)
+  )).
+
+
+
+%! chain(+Graph:ugraph, +StartVertex, +EndVertex) is semidet.
+%! chain(+Graph:ugraph, -StartVertex, +EndVertex) is nondet.
+%! chain(+Graph:ugraph, +StartVertex, -EndVertex) is nondet.
+%! chain(+Graph:ugraph, -StartVertex, -EndVertex) is nondet.
+
+chain(Graph, Start, End):-
+  chain(Graph, Start, End, _).
+
+%! chain(+Graph:ugraph, +StartVertex, +EndVertex, -Path:list(pair)) is nondet.
+%! chain(+Graph:ugraph, +StartVertex, -EndVertex, -Path:list(pair)) is nondet.
+%! chain(+Graph:ugraph, -StartVertex, +EndVertex, -Path:list(pair)) is nondet.
+%! chain(+Graph:ugraph, -StartVertex, -EndVertex, -Path:list(pair)) is nondet.
+% @tbd
+
+chain(Graph, Start, End, Path):-
+  walk(Graph, Start, End, Path).
+
 
 
 %! connected_component(
@@ -141,8 +215,55 @@ replace_graph_components(Vs, Es):-
   assert(graph(Vs,Es)).
 
 
+
+/*
+%! cycle(+Graph:ugraph) is semidet.
+
+cycle(Graph):-
+  cycle(Graph, _).
+
+%! cycle(+Graph:ugraph, +Order:nonneg) is semidet.
+%! cycle(+Graph:ugraph, -Order:nonneg) is semidet.
+
+cycle(Graph, Order):-
+  degree_sequence(Graph, [H|T]),
+  maplist(\X^(X=:=H), T),
+  length([H|T], Order).
+
+:- begin_tests(cycle).
+
+test('cycle(+,-) is semidet. TRUE', [forall(cycle(Graph,Order,true))]):-
+  cycle(Graph, Order).
+
+cycle([1-[2,3],2-[1,3],3-[1,2]], 3, true).
+cycle([1-[2,3,4],2-[1,3,4],3-[1,2,4],4-[1,2,3]], 4, true).
+
+:- end_tests(cycle).
+*/
+
+
+
+%! degree(+Graph, -Degree:nonneg) is semidet.
+% The *degree* of a graph is the degree of each of its vertices.
+%
+% This fails silently for non-regular graphs (which do not have a degree).
+
+degree(Graph, Degree):-
+  forall(
+    vertex(Graph, Vertex),
+    degree(Graph, Vertex, Degree)
+  ).
+
+
+
+%! degree(+Graph:ugraph, +Vertex, +Degree:nonneg) is semidet.
 %! degree(+Graph:ugraph, +Vertex, -Degree:nonneg) is det.
 %! degree(+Graph:ugraph, -Vertex, -Degree:nonneg) is nondet.
+% The *degree* of a vertex is the summation, for each edge, of
+% the number of times the vertex occurs in the edge.
+%
+% This means that a reflective edge, if present,
+% is counted twice in calculating the vertex degree.
 
 degree(Graph, Vertex, Degree2):-
   vertex(Graph, Vertex),
@@ -158,20 +279,26 @@ degree(Graph, Vertex, Degree2):-
   ).
 
 
+
 %! degree_sequence(+Graph:ugraph, -DegreeSequence:list(nonneg)) is det.
 
 degree_sequence(Graph, DegreeSeq):-
   vertices(Graph, Vertices),
-  maplist(\Vertex^Degree^degree(Vertex, Graph, Degree), Vertices, Degrees),
+  maplist(\Vertex^Degree^degree(Graph, Vertex, Degree), Vertices, Degrees),
   sort(Degrees, DegreeSeq, [duplicates(true),inverted(true)]).
+
 
 
 %! direct_subgraph(+Subgraph:ugraph, +Graph:ugraph) is semidet.
 %! direct_subgraph(-Subgraph:ugraph, +Graph:ugraph) is nondet.
+% S' is a *direct subgraph* of S iff S' is a subgraph of S
+% and every strict subgraph S'' of S is also a subgraph of S'.
 
 direct_subgraph(Subgraph, Graph):-
-  subgraph(Subgraph, Graph),
-  Subgraph \== Graph.
+  vertices(Graph, Vertices),
+  direct_subset(Subvertices, Vertices),
+  vertex_induced_subgraph(Subgraph, Subvertices, Graph).
+
 
 
 %! directed(+Graph:ugraph) is semidet.
@@ -187,20 +314,42 @@ directed(Graph):-
   \+(edge(Graph, Y-X)).
 
 
+
+%! dominating_vertex(+Graph:ugraph, +Vertex) is semidet.
+%! dominating_vertex(+Graph:ugraph, -Vertex) is nondet.
+% A *dominating* vertex is one that is adjacent to every _other_ vertex.
+
+dominating_vertex(Graph, Vertex):-
+  vertices(Graph, Vertices1),
+  select(Vertex, Vertices1, Vertices2),
+  maplist(edge(Graph, Vertex), Vertices2).
+
+
+
 %! edge(+Graph:ugraph, +Edge:pair) is semidet.
 %! edge(+Graph:ugraph, -Edge:pair) is nondet.
 
-edge(Graph, X-Y):-
-  member(X-Ys, Graph),
-  member(Y, Ys).
+edge(Graph, Tail-Head):-
+  member(Tail-Heads, Graph),
+  member(Head, Heads).
+
+%! edge(+Graph:ugraph, +Tail, +Head) is semidet.
+%! edge(+Graph:ugraph, +Tail, -Head) is nondet.
+%! edge(+Graph:ugraph, -Tail, +Head) is nondet.
+%! edge(+Graph:ugraph, -Tail, -Head) is nondet.
+
+edge(Graph, Tail, Head):-
+  edge(Graph, Tail-Head).
 
 
-%! edge(+Edge:pair, -Tail, -Head) is det.
-%! edge(-Edge:pair, +Tail, +Head) is det.
+
+%! edge_components(+Edge:pair, -Tail, -Head) is det.
+%! edge_components(-Edge:pair, +Tail, +Head) is det.
 % Relates an unnamed/untyped edge to its constituting vertices.
 
-edge(Edge, Tail, Head):-
+edge_components(Edge, Tail, Head):-
   pair_ext:pair(Edge, Tail, Head).
+
 
 
 %! edge_induced_subgraph(
@@ -232,21 +381,24 @@ edge_induced_subgraph(Subgraph, KeepEdges1, Graph):-
   del_edges(Graph, RemoveEdges, Subgraph).
 
 
+
 %! edges_to_vertices(+Edges:list(pair), -Vertices:ordset) is det.
 % Returns the vertices that occur in the given edges.
 
 edges_to_vertices([], []).
 edges_to_vertices([E|Es], Vs3):-
   edges_to_vertices(Es, Vs1),
-  edge(E, FromV, ToV),
+  edge_components(E, FromV, ToV),
   ord_add_element(Vs1, FromV, Vs2),
   ord_add_element(Vs2, ToV, Vs3).
+
 
 
 %! empty_graph(+EmptyGraph:ugraph) is semidet.
 %! empty_graph(-EmptyGraph:ugraph) is det.
 
 empty_graph([]).
+
 
 
 %! endpoint(+Edge:pair, +Vertex) is semidet.
@@ -257,8 +409,10 @@ endpoint(Edge, Vertex):-
   pair_ext:pair_element(Edge, Vertex).
 
 
+
 %! graph(+Graph:ugraph, -Vertices:ordset, -Edges:ordset(pair)) is det.
 %! graph(-Graph:ugraph, +Vertices:ordset, +Edges:ordset(pair)) is det.
+% Decomposes/composes a graph into/based in its vertices and edges.
 
 graph(Graph, Vertices, Edges):-
   nonvar(Graph), !,
@@ -268,15 +422,19 @@ graph(Graph, Vertices, Edges):-
   vertices_edges_to_ugraph(Vertices, Edges, Graph).
 
 
+
 %! head(+Edge:pair, +Head) is semidet.
 %! head(+Edge:pair, -Head) is det.
+% The head of a directed edge is the vertex the edge is "pointing to".
 
 head(Edge, Head):-
   pair_ext:pair(Edge, _, Head).
 
 
+
 %! link(+Graph:ugraph, +Link:pair) is semidet.
 %! link(+Graph:ugraph, -Link:pair) is nondet.
+% A *link* is a non-reflexive edge.
 
 % Optimization for the semidet case where `Link` is a loop.
 link(Graph, X-Y):-
@@ -288,11 +446,14 @@ link(Graph, X-Y):-
   X \== Y.
 
 
+
 %! loop(+Graph:ugraph, +Loop:pair) is semidet.
 %! loop(+Graph:ugraph, -Loop:pair) is nondet.
+% A *loop* is a reflexive edge.
 
 loop(Graph, X-X):-
   edge(Graph, X-X).
+
 
 
 %! maximum_degree(+Graph:ugraph, +MaxDegree:nonneg) is semidet.
@@ -302,9 +463,10 @@ maximum_degree(Graph, MaxDegree):-
   aggregate_all(
     max(Degree),
     % Call degree/3 in generative mode.
-    degree(_, Graph, Degree),
+    degree(Graph, _, Degree),
     MaxDegree
   ).
+
 
 
 %! minimum_degree(+Graph:ugraph, +MinDegree:nonneg) is semidet.
@@ -314,9 +476,10 @@ minimum_degree(Graph, MinDegree):-
   aggregate_all(
     min(Degree),
     % Call degree/3 in generative mode.
-    degree(_, Graph, Degree),
+    degree(Graph, _, Degree),
     MinDegree
   ).
+
 
 
 %! order(+Graph:ugraph, +Order:nonneg) is semidet.
@@ -328,13 +491,15 @@ order(Graph, Order):-
   length(Vertices, Order).
 
 
+
 %! reachable(+Graph:ugraph, +FromVertex, +ToVertex) is semidet.
 %! reachable(+Graph:ugraph, +FromVertex, -ToVertex) is nondet.
 
 reachable(_, Vertex, Vertex).
 reachable(Graph, FromVertex, ToVertex):-
   reachable(Graph, FromVertex, InbetweenVertex),
-  adjacent(Graph, InbetweenVertex, ToVertex).
+  adjacent_vertices(Graph, InbetweenVertex, ToVertex).
+
 
 
 %! size(+Graph:ugraph, +Size:nonneg) is semidet.
@@ -346,12 +511,30 @@ size(Graph, Size):-
   length(Edges, Size).
 
 
+
+%! star(+Graph:ugraph) is semidet.
+
+star(Graph):-
+  star(Graph, _).
+
+%! star(+Graph:ugraph, +Order:nonneg) is semidet.
+%! star(+Graph:ugraph, -Order:nonneg) is semidet.
+
+star(Graph, Order):-
+  order(Graph, Order),
+  degree_sequence(Graph, [Order|Ones]),
+  maplist(\One^(One=:=1), Ones).
+
+
+
 %! strict_subgraph(+StrictSubgraph:ugraph, +Graph:ugraph) is semidet.
 %! strict_subgraph(-StrictSubgraph:ugraph, +Graph:ugraph) is nondet.
+% S' is a *strict subgraph* of S iff S' is a subgraph of S and S' is not S.
 
 strict_subgraph(StrictSubgraph, Graph):-
   subgraph(StrictSubgraph, Graph),
   StrictSubgraph \== Graph.
+
 
 
 %! subgraph(+Subgraph:ugraph, +Graph:ugraph) is semidet.
@@ -363,11 +546,14 @@ subgraph(Subgraph, Graph):-
   graph(Subgraph, Vertices, Subedges).
 
 
+
 %! tail(+Edge:pair, +Tail) is semidet.
 %! tail(+Edge:pair, -Tail) is det.
+% The tail of a directed edge is the vertex the edge is "pointing from".
 
 tail(Edge, Tail):-
   pair_ext:pair(Edge, Tail, _).
+
 
 
 %! undirected(+Graph:ugraph) is semidet.
@@ -385,13 +571,13 @@ undirected(Graph):-
   \+ directed(Graph).
 
 
+
 %! vertex(+Graph:ugraph, +Vertex) is semidet.
 %! vertex(+Graph:ugraph, -Vertex) is nondet.
 
 vertex(Graph, Vertex):-
-  call_ground_as_semidet(vertex0(Graph, Vertex)).
-vertex0(Graph, Vertex):-
-  member(Vertex-_, Graph).
+  call_ground_as_semidet(member(Vertex-_, Graph)).
+
 
 
 %! vertex_induced_subgraph(
@@ -421,6 +607,7 @@ vertex_induced_subgraph(Subgraph, KeepVertices1, Graph):-
   subset(KeepVertices2, Vertices),
   ord_subtract(Vertices, KeepVertices2, RemoveVertices),
   del_vertices(Graph, RemoveVertices, Subgraph).
+
 
 
 %! walk(+Graph:ugraph, +StartVertex, +EndVertex) is semidet.
@@ -465,4 +652,3 @@ walk_forward(Graph, Start, End, Vs1, [Start-InBetween|Path]):-
   \+ member(InBetween, Vs1),
   ord_add_element(Vs1, InBetween, Vs2),
   walk_forward(Graph, InBetween, End, Vs2, Path).
-

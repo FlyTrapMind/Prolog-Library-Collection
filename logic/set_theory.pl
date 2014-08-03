@@ -12,6 +12,8 @@
     closure/3, % +Object
                % :Goal
                % -ClosedSet:ordset
+    direct_subset/2, % ?Subset:ordset
+                     % +Set:ordset
     emptyset/1, % ?Set:ordset
     equinumerous/2, % +Set1:ordset
                     % +Set2:ordset
@@ -98,6 +100,13 @@ closure(Object, Goal, ClosedSet):-
   Object \== Results, !,
   closure(Results, Goal, ClosedSet).
 closure(ClosedSet, _, ClosedSet).
+
+
+%! direct_subset(+Subset:ordset, +Set:ordset) is semidet.
+%! direct_subset(-Subset:ordset, +Set:ordset) is nondet.
+
+direct_subset(Subset, Set):-
+  select(_, Set, Subset).
 
 
 %! emptyset(+Set:ordset) is semidet.
