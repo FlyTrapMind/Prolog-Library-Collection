@@ -7,10 +7,6 @@ user:file_search_path(dcg,             plc(dcg)).
 user:file_search_path(flp,             dcg(flp)).
 user:file_search_path(nlp,             dcg(nlp)).
 user:file_search_path(generics,        plc(generics)).
-user:file_search_path(graph_theory,    plc(graph_theory)).
-user:file_search_path(dgraph,          graph_theory(dgraph)).
-user:file_search_path(rdf_graph,       graph_theory(rdf_graph)).
-user:file_search_path(ugraph,          graph_theory(ugraph)).
 user:file_search_path(ilp,             plc(ilp)).
 user:file_search_path(lod,             plc(lod)).
 user:file_search_path(owl,             lod(owl)).
