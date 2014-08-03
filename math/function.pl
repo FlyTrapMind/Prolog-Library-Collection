@@ -60,8 +60,6 @@ Binary relations can be efficiently represented as =|list(pair)|=
 :- use_module(library(lists)).
 :- use_module(library(ordsets)).
 
-:- use_module(graph_theory(graph_theory)).
-
 
 
 %! bijective(+Function:bourbaki) is semidet.

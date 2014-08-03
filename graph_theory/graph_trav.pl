@@ -40,7 +40,7 @@ Two methods created during my last days at the IvI institute:
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(graph_theory(graph_theory)).
+:- use_module(graph_theory(graph_generic)).
 
 :- use_module(plRdf(rdfs_read)).
 
@@ -81,7 +81,7 @@ bounded_breadthfirst_graph_search(NeighborPred, Depth1, Vs1, Vs3, Es1, Es3):-
     ),
     NewEs
   ),
-  graph_theory:edges_to_vertices(NewEs, NewVs),
+  edges_to_vertices(NewEs, NewVs),
   ord_union(Es1, NewEs, Es2),
   ord_union(Vs1, NewVs, Vs2),
 

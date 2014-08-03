@@ -35,11 +35,12 @@ Support for properties of relations.
 @version 2012/11, 2013/08, 2014/08
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(lambda)).
 :- use_module(library(lists), except([subset/2])).
 
 :- use_module(generics(pair_ext)).
-:- use_module(graph_theory(graph_theory)).
+:- use_module(graph_theory(graph_generic)).
 :- use_module(logic(set_theory)).
 :- use_module(pl(pl_mode)).
 
@@ -154,7 +155,7 @@ reflexive_closure(Relation, ReflexiveRelation):-
 %! relation(-Relation:ugraph, +Set:ordset, +Pairs:ordset(pair)) is det.
 
 relation(Relation, Set, Pairs):-
-  graph_theory:graph(Relation, Set, Pairs).
+  graph_components(Relation, Set, Pairs).
 
 
 %! relation_element(+Relation:ugraph, +Element) is semidet.
@@ -169,7 +170,7 @@ relation_element(Relation, Element):-
 % The extension of a binary relation.
 
 relation_pair(Relation, Pair):-
-  graph_theory:edge(Relation, Pair).
+  edge(Relation, Pair).
 
 
 %! symmetric(+Relation:ugraph) is semidet.

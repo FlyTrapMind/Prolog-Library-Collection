@@ -117,9 +117,6 @@ load_modules_for_pldoc:-
           nlp,
         generics,
         graph_theory,
-          dgraph,
-          rdf_graph,
-          ugraph,
         %ilp, % Many undefined predicates...
         lod,
           ckan,

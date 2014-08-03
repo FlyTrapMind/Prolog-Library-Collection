@@ -49,6 +49,7 @@ the edges and vertices.
 :- use_module(generics(sort_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(graph_theory(graph_traversal)).
+:- use_module(graph_theory(graph_vertex)).
 :- use_module(pl(pl_control)).
 
 :- use_module(plRdf(rdf_graph_theory)).
@@ -169,10 +170,10 @@ regular(V_P, G):-
 
 regular(V_P, G, K):-
   call(V_P, G, [V1 | Vs]),
-  graph_theory:degree(G, V1, K),
+  vertex_degree(G, V1, K),
   forall(
     member(V2, Vs),
-    graph_theory:degree(G, V2, K)
+    vertex_degree(G, V2, K)
   ).
 
 %! simple(:V_P, :E_P, +Graph) is semidet.

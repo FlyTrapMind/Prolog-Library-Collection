@@ -29,7 +29,7 @@ Design decisions:
 @version 2014/08
 */
 
-:- use_module(graph_theory(graph_theory)).
+:- use_module(graph_theory(graph_generic)).
 :- use_module(logic(relation)).
 
 
