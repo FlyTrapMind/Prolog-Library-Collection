@@ -76,7 +76,6 @@ Predicates used for parsing and checking value-type conformance.
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 
-%%%%:- use_module(datasets(iana)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(boolean_ext)).
 
@@ -157,10 +156,6 @@ error:has_type(float_between(L,U), X):-
 error:has_type(or(Types), Term):-
   member(Type, Types),
   error:has_type(Type, Term), !.
-% list/1
-error:has_type(list(Type), Term):-
-  must_be(list, Term),
-  maplist(must_be(Type), Term).
 
 
 %! is_url(+Url:url) is semidet.

@@ -35,8 +35,6 @@
     list_separator_concat/3, % +Lists:list(list)
                              % +Separator:list
                              % ?List:list
-    list_to_ordered_pairs/2, % +L:list
-                             % -Pairs:ordset(ordset)
     list_truncate/3, % +List:list
                      % +MaximumLength:nonneg
                      % -TruncatedList:list
@@ -124,14 +122,14 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12, 2014/03, 2014/06
+         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2017/08
 */
 
+:- use_module(library(error)).
 :- use_module(library(lists)).
 :- use_module(library(option)).
 :- use_module(library(random)).
 
-:- use_module(generics(error_ext)).
 :- use_module(generics(typecheck)).
 
 
@@ -144,6 +142,7 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 after(X, Y, List):-
   before(Y, X, List).
+
 
 %! append_intersperse(+List:list, +Separator, -NewList:list)//
 % Returns a list that is based on the given list, but interspersed with
@@ -318,31 +317,16 @@ list_separator_concat([List | Lists], Separator, NewList):-
   list_separator_concat(Lists, Separator, RestLists),
   append(FirstList, RestLists, NewList).
 
-%! list_to_ordered_pairs(+L:list, -Pairs:ordset(ordset)) is det.
-% Returns the ordered list of ordered pairs that occur in the given list.
-%
-% @arg L The given list.
-% @arg Pairs An ordered list of ordered pairs.
 
-list_to_ordered_pairs([], []):- !.
-% The pairs need to be internally ordered, but the order in which the
-% pairs occur is immaterial.
-list_to_ordered_pairs([H|T], S):-
-  list_to_orderd_pairs_(H, T, S1),
-  list_to_ordered_pairs(T, S2),
-  append(S1, S2, S).
-
-list_to_orderd_pairs_(_, [], []):- !.
-list_to_orderd_pairs_(H1, [H2|T], [Pair|Pairs]):-
-  list_to_ord_set([H1,H2], Pair),
-  list_to_orderd_pairs_(H1, T, Pairs).
-
-
-%! list_truncate(+List:list, +MaximumLength:nonneg, -TruncatedList:list) is det.
+%! list_truncate(
+%!   +List:list,
+%!   +MaximumLength:nonneg,
+%!   -TruncatedList:list
+%! ) is det.
 % Returns the truncated version of the given list.
 % The maximum length indicates the exact maximum.
 % Truncation will always result in a list which contains
-%  at most `Max` elements.
+% at most `Max` elements.
 %
 % @arg List The original list.
 % @arg Max The maximum number of elements that is allowed in the list.
@@ -371,7 +355,7 @@ member(X, Y, L):-
 
 
 %! member_default(?Element, ?List:list, +Default) is nondet.
-% True is `Element` is a member of `List` or is `Default`.
+% True if `Element` is a member of `List` or is `Default`.
 %
 % @see member/2 in library(lists).
 
@@ -455,9 +439,6 @@ nth1chk(I, L, E, R):-
 
 postfix(Part, Whole):-
   append(_, Part, Whole).
-
-
-
 
 
 %! random_sublist(-Sublist:list, +List:list) is det.
@@ -581,6 +562,7 @@ replace_nth_(I1, I, [H|T1], E1, E2, [H|T2]):-
   I2 is I1 + 1,
   replace_nth_(I2, I, T1, E1, E2, T2).
 
+
 %! replace_nth0(
 %!   +Index:integer,
 %!   +OldList:list,
@@ -594,6 +576,7 @@ replace_nth_(I1, I, [H|T1], E1, E2, [H|T2]):-
 
 replace_nth0(I, L1, E1, E2, L2):-
   replace_nth(0, I, L1, E1, E2, L2).
+
 
 %! replace_nth1(
 %!   +Index:integer,
@@ -609,6 +592,7 @@ replace_nth0(I, L1, E1, E2, L2):-
 replace_nth1(I, L1, E1, E2, L2):-
   replace_nth(1, I, L1, E1, E2, L2).
 
+
 %! shorter(+Order:pred/2, +List:list(term), +List2:list(term)) is semidet.
 % Succeeds if =List1= has relation =Order= to =List2=.
 %
@@ -620,6 +604,7 @@ shorter(Order, List1, List2):-
   length(List1, Length1),
   length(List2, Length2),
   compare(Order, Length2, Length1).
+
 
 %! split_list_by_number_of_sublists(
 %!   +List:list,
@@ -634,6 +619,7 @@ split_list_by_number_of_sublists(List, NumberOfSublists, Sublists):-
   SizeOfSublists is Length div ReducedNumberOfSublists,
   split_list_by_size(List, SizeOfSublists, Sublists).
 split_list_by_number_of_sublists(List, _NumberOfSublists, List).
+
 
 %! split_list_by_size(
 %!   +List:list,
