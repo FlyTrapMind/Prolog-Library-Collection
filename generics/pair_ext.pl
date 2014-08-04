@@ -68,6 +68,13 @@ Support predicates for working with pairs.
      symmetric(+boolean)
    ]).
 
+:- multifile(error:has_type/2).
+error:has_type(pair, _-_).
+error:has_type(pair(Type), X-Y):-
+  error:has_type(pair(Type,Type), X-Y).
+error:has_type(pair(Type1,Type2), X-Y):-
+  maplist(error:has_type, [Type1,Type2], [X,Y]).
+
 
 
 %! inverse_pair(+Pair:pair, -Inverse:pair) is det.
