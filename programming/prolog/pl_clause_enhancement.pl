@@ -5,6 +5,8 @@
 Automatic clause enhancement in SWI-Prolog,
 enforcing determinism and/or performing typechecks.
 
+We assume a one-to-one mapping between mode lines an clause heads.
+
 @author Wouter Beek
 @version 2014/08
 */
