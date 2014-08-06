@@ -144,10 +144,17 @@ db_replace(_, Pattern):-
   \+ maplist(pattern_value, Pattern), !,
   domain_error(list(oneof([e,r])), Pattern).
 db_replace(New, Pattern):-
-  forall(
-    find_pattern_match(New, Pattern, Old),
-    db_replace_some(Old, New)
-  ).
+  findall(
+    Old,
+    (
+      find_pattern_match(New, Pattern, Old),
+      db_replace_some(Old, New)
+    ),
+    Olds
+  ),
+  Olds \== [], !.
+db_replace(New, _):-
+  assert(New).
 
 
 %! db_replace_all(:Old, +New:ground) is det.

@@ -40,7 +40,7 @@ Two methods created during my last days at the IvI institute:
 :- use_module(library(ordsets)).
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(graph_theory(graph_generic)).
+:- use_module(plGraph(graph_generic)).
 
 :- use_module(plRdf(rdfs_read)).
 
