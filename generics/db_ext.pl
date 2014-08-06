@@ -76,7 +76,7 @@ db_add_clause(Module, Head, Body1):-
   assert(Module:Clause).
 
 
-%! db_add_dcg_rule(+Head:term, +Body:term) is det,
+%! db_add_dcg_rule(+Head:term, +Body:term) is det.
 % Wrapper around db_add_dcg_rule/3, adding a DCG rule to the `user` module.
 
 db_add_dcg_rule(Head, Body):-
@@ -162,7 +162,7 @@ db_replace_all(Old, New):-
 db_replace_all(_, _).
 
 
-%! dh_replace_first(:Old, +New:ground) is det,
+%! dh_replace_first(:Old, +New:ground) is det.
 % Replace the first match for `Old` with a single occurrence of `New`.
 %
 % Which match is first is chosen arbitrarily.
