@@ -59,7 +59,6 @@ For `:` we assume the type is `any`.
 
 add_typecheck(Clause, TypecheckedClause):-
   clause_to_mode_terms(Clause, ModeTerms),
-gtrace,
   maplist(mode_term_to_arguments, ModeTerms, ArgDs),
   build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
   build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause).
