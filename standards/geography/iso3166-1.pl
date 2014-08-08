@@ -17,13 +17,12 @@ Suopport for the ISO 3166-1 country code standard.
 
 :- use_module(library(semweb/rdf_db)). % rdf_meta/1
 
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdfs_build)).
 :- use_module(plRdf(rdfs_label_ext)).
 
-:- xml_register_namespace('iso3166-1', 'http://lexvo.org/id/iso3166/').
+:- rdf_register_prefix('iso3166-1', 'http://lexvo.org/id/iso3166/').
 
 :- rdf_meta('iso3166-1'(?,?,r)).
 

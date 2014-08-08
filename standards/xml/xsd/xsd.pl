@@ -48,7 +48,6 @@ conforming to recommendation version 1.1.
 
 :- use_module(dcg(dcg_generic)).
 :- use_module(generics(codes_ext)).
-:- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd_boolean)).
 :- use_module(xsd(xsd_date)).
 :- use_module(xsd(xsd_dateTime)).
@@ -67,7 +66,7 @@ conforming to recommendation version 1.1.
 
 :- use_module(plRdf(rdf_read)).
 
-:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
+:- rdf_register_prefix(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
 :- rdf_meta(xsd_canonical_map(r,+,-)).
 :- rdf_meta(xsd_canonical_map_(r,+,-)).

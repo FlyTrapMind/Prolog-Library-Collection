@@ -48,7 +48,6 @@
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(pl(pl_log)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_container)).
@@ -61,7 +60,7 @@
 :- rdf_meta(ap_resource(r,r,?)).
 :- rdf_meta(ap_stage_resource(r,r,?)).
 
-:- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
+:- rdf_register_prefix(ap, 'http://www.wouterbeek.com/ap.owl#').
 
 :- initialization(assert_schema).
 

@@ -52,9 +52,8 @@ Create and describe links between resources from within XML documents.
 :- use_module(dcg(dcg_content)).
 :- use_module(uri(rfc3987_dcg)).
 :- use_module(xml(xml_attributes)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(xlink, 'http://www.w3.org/1999/xlink').
+:- rdf_register_prefix(xlink, 'http://www.w3.org/1999/xlink').
 
 :- meta_predicate(xlink_attribute(//,+,//,?,?)).
 :- meta_predicate(xlink_href(-,//,+,?,?)).

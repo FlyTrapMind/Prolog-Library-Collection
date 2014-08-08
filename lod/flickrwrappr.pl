@@ -41,9 +41,8 @@ While caching, location [2] is reached via triple [1],
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 :- use_module(lod(lod_query)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(dbpprop, 'http://dbpedia.org/property/').
+:- rdf_register_prefix(dbpprop, 'http://dbpedia.org/property/').
 
 
 

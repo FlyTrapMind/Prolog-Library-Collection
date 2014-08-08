@@ -22,12 +22,11 @@ info@geodan.nl
 :- use_module(dcg(dcg_generic)).
 :- use_module(sparql(sparql_api)).
 :- use_module(sparql(sparql_db)).
-:- use_module(xml(xml_namespace)).
 
 :- initialization(init_bag).
 init_bag:-
-  xml_register_namespace(bag,  'http://lod.geodan.nl/BAG/'),
-  xml_register_namespace(bags, 'http://lod.geodan.nl/BAG-schema/'),
+  rdf_register_prefix(bag,  'http://lod.geodan.nl/BAG/'),
+  rdf_register_prefix(bags, 'http://lod.geodan.nl/BAG-schema/'),
   sparql_register_endpoint(
     bag,
     query,

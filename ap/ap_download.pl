@@ -23,12 +23,11 @@
 :- use_module(generics(uri_ext)).
 :- use_module(http(http_download)).
 :- use_module(os(dir_ext)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
 
-:- xml_register_namespace(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
+:- rdf_register_prefix(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
 
 
 

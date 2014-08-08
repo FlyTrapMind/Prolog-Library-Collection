@@ -25,9 +25,8 @@ VoID statistics process for the AP architecture.
 :- use_module(plRdf(rdf_stat)).
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(void(void_stat)). % If only for the namespace.
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
+:- rdf_register_prefix(rfc2616, 'http://tools.ietf.org/html/rfc2616#').
 
 
 

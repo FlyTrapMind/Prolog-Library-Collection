@@ -29,7 +29,6 @@ This module currently supports:
 :- use_module(library(xpath)).
 
 :- use_module(generics(db_ext)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plHtml(html)).
 
@@ -41,7 +40,7 @@ This module currently supports:
 :- use_module(plRdf_ser(rdf_serial)).
 :- use_module(plRdf_term(rdf_string)).
 
-:- xml_register_namespace(iana, 'http://www.iana.org/assignments/').
+:- rdf_register_prefix(iana, 'http://www.iana.org/assignments/').
 
 %:- iana_register_mime(application, 'atom+xml', atom).
 %:- iana_register_mime(application, 'x-rar-compressed', rar).

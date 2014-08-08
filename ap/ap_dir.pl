@@ -39,9 +39,8 @@ Directory management for running automated processes.
 :- use_module(plRdf(rdf_container)).
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(ap, 'http://www.wouterbeek.com/ap.owl#').
+:- rdf_register_prefix(ap, 'http://www.wouterbeek.com/ap.owl#').
 
 
 

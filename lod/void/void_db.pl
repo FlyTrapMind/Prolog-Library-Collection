@@ -24,12 +24,11 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(generics(typecheck)).
 :- use_module(http(http_download)).
 :- use_module(os(file_ext)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf_ser(rdf_serial)).
 :- use_module(plRdf_term(rdf_term)).
 
-:- xml_register_namespace(void, 'http://rdfs.org/ns/void#').
+:- rdf_register_prefix(void, 'http://rdfs.org/ns/void#').
 
 
 

@@ -26,9 +26,8 @@ the DCG representation:
 */
 
 :- use_module(library(semweb/rdf_db)). % For rdf_meta/1.
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace('iso639-3', 'http://lexvo.org/id/iso639-3/').
+:- rdf_register_prefix('iso639-3', 'http://lexvo.org/id/iso639-3/').
 
 :- rdf_meta('iso639-1'(r,?,?)).
 

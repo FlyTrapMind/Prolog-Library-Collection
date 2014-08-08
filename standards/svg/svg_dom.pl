@@ -78,9 +78,8 @@ Raster images have their original sample resampled to the output device.
 :- use_module(svg(svg_generic)).
 :- use_module(svg(svg_elements)).
 :- use_module(xml(xml_elements)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(svg, 'http://www.w3.org/2000/svg').
+:- rdf_register_prefix(svg, 'http://www.w3.org/2000/svg').
 
 :- meta_predicate(svg_document(-,//,?,?,?)).
 :- meta_predicate(svg_fragment(-,//,?,?)).

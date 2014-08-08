@@ -19,9 +19,8 @@ Support for the OKF-managed list of open vocabularies.
 :- use_module(library(semweb/rdfs)).
 :- use_module(library(uri)).
 
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(voaf, 'http://purl.org/vocommons/voaf#').
+:- rdf_register_prefix(voaf, 'http://purl.org/vocommons/voaf#').
 
 
 

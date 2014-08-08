@@ -55,10 +55,9 @@ SGML (Standard Generalized Markup Language).
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_content)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(iso, 'http://www.iso.org/').
-:- xml_register_namespace(std, 'http://www.example.org/standards/').
+:- rdf_register_prefix(iso, 'http://www.iso.org/').
+:- rdf_register_prefix(std, 'http://www.example.org/standards/').
 
 :- meta_predicate(xml_namespace(//,?,?)).
 

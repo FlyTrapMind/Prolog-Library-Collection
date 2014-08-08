@@ -21,9 +21,8 @@
 
 :- use_module(library(semweb/rdf_db)).
 :- use_module(plRdf(rdf_build)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(skos, 'http://www.w3.org/2004/02/skos/core#').
+:- rdf_register_prefix(skos, 'http://www.w3.org/2004/02/skos/core#').
 
 :- rdf_meta(skos_assert_broader(r,r,+)).
 :- rdf_meta(skos_assert_hierarchy(+,r,+)).

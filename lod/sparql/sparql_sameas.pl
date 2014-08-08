@@ -20,9 +20,8 @@ Close SPARQL queries under identity.
 
 :- use_module(generics(row_ext)).
 :- use_module(sparql(sparql_api)).
-:- use_module(xml(xml_namespace)).
 
-:- xml_register_namespace(owl, 'http://www.w3.org/2002/07/owl#').
+:- rdf_register_prefix(owl, 'http://www.w3.org/2002/07/owl#').
 
 
 

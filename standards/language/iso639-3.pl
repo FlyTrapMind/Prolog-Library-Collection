@@ -17,13 +17,12 @@ The ISO 639-3 standard for language codes with Lexvo Semantic Web URIs.
 
 :- use_module(library(semweb/rdf_db)). % For rdf_meta/1.
 
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdfs_build)).
 :- use_module(plRdf(rdfs_label_ext)).
 
-:- xml_register_namespace('iso639-3', 'http://lexvo.org/id/iso639-3/').
+:- rdf_register_prefix('iso639-3', 'http://lexvo.org/id/iso639-3/').
 
 :- rdf_meta('iso639-3'(r,?,?)).
 

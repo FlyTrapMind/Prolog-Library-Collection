@@ -8,15 +8,14 @@
 
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdfs_label_ext)).
 
-:- xml_register_namespace(atms, 'http://www.wouterbeek.com/atms#').
-:- xml_register_namespace(environment, 'http://www.wouterbeek.com/environment#').
-:- xml_register_namespace(justification, 'http://www.wouterbeek.com/justification#').
-:- xml_register_namespace(node, 'http://www.wouterbeek.com/node#').
+:- rdf_register_prefix(atms, 'http://www.wouterbeek.com/atms#').
+:- rdf_register_prefix(environment, 'http://www.wouterbeek.com/environment#').
+:- rdf_register_prefix(justification, 'http://www.wouterbeek.com/justification#').
+:- rdf_register_prefix(node, 'http://www.wouterbeek.com/node#').
 
 
 

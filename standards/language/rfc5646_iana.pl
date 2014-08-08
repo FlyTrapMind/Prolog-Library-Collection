@@ -38,7 +38,6 @@ specification.
 
 :- use_module(flp(record_jar)). % Used in phrase_from_stream/2.
 :- use_module(uri(rfc2396_dcg)).
-:- use_module(xml(xml_namespace)).
 :- use_module(xsd(xsd)).
 
 :- use_module(plRdf(rdf_build)).
@@ -49,8 +48,8 @@ specification.
 :- use_module(plRdf_term(rdf_language_tagged_string)).
 :- use_module(plRdf_term(rdf_literal)).
 
-:- xml_register_namespace(rfc5646, 'http://www.rfc5646.com/').
-:- xml_register_namespace(xsd, 'http://www.w3.org/2001/XMLSchema#').
+:- rdf_register_prefix(rfc5646, 'http://www.rfc5646.com/').
+:- rdf_register_prefix(xsd, 'http://www.w3.org/2001/XMLSchema#').
 
 rfc5646_graph(rfc5646).
 rfc5646_host([www,rfc5646,com]).

@@ -59,7 +59,6 @@ The generic predicates for Truth-Maintenance Systems.
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(uri_search)).
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_reification)).
 :- use_module(plRdf(rdf_search)).
@@ -67,7 +66,7 @@ The generic predicates for Truth-Maintenance Systems.
 
 :- dynamic(tms/2).
 
-:- xml_register_namespace(tms, 'http://www.wouterbeek.com/tms.owl#').
+:- rdf_register_prefix(tms, 'http://www.wouterbeek.com/tms.owl#').
 
 :- rdf_meta(tms_create_justification_iri(+,+,+,r,-)).
 :- rdf_meta(tms_justification(?,r)).

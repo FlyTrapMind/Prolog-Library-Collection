@@ -20,13 +20,12 @@ The codes are mapped to Lexvo Semantic Web URIs.
 
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(xml(xml_namespace)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdfs_build)).
 :- use_module(plRdf(rdfs_label_ext)).
 
-:- xml_register_namespace('iso639-5', 'http://lexvo.org/id/iso639-5/').
+:- rdf_register_prefix('iso639-5', 'http://lexvo.org/id/iso639-5/').
 
 :- rdf_meta('iso639-5'(?,r,?,?)).
 
