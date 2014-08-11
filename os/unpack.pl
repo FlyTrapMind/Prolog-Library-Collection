@@ -14,13 +14,13 @@
 @version 2014/03-2014/07
 */
 
-:- use_module(library(http/http_open)).
-:- use_module(library(archive)).
-:- use_module(library(uri)).
-:- use_module(library(lists)).
 :- use_module(library(apply)).
+:- use_module(library(archive)).
 :- use_module(library(http/http_cookie)). % Sometimes redirection requires cookies.
+:- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
+:- use_module(library(lists)).
+:- use_module(library(uri)).
 
 
 

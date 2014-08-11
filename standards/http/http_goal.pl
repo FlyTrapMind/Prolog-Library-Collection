@@ -39,10 +39,11 @@ whenever it does not instantiate to an integer in the range =2xx=.
 :- use_module(generics(atom_ext)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(library(debug)).
+:- use_module(library(http/http_cookie)). % HTTP redirection requires cookies sometimes.
 :- use_module(library(http/http_header)). % For option `post(...)`.
 :- use_module(library(http/http_json)). % For option `post(json([...]))`.
 :- use_module(library(http/http_open)).
-:- use_module(library(http/http_ssl_plugin)).
+:- use_module(library(http/http_ssl_plugin)). % HTTPS support.
 :- use_module(library(option)).
 :- use_module(math(math_ext)).
 
