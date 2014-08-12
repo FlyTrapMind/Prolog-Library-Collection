@@ -33,9 +33,9 @@
     nvpair/3, % ?NameValuePair:compound
               % ?Name:atom
               % ?Value
-    remove_option/4, % +OldOptions:list(nvpair),
-                     % +Name:atom,
-                     % +Value,
+    remove_option/4, % +OldOptions:list(nvpair)
+                     % +Name:atom
+                     % ?Value
                      % -NewOptions:list(nvpair)
     replace_option/5, % +OldOptions:list(nvpair)
                       % +Name:atom
@@ -187,10 +187,11 @@ merge_options([H|T1], [H|T2]):-
   merge_options(T1, T2).
 
 
+%! nvpair(+NameValuePair:compound, +Name:atom, +Value) is semidet.
 %! nvpair(+NameValuePair:compound, -Name:atom, -Value) is det.
-%! nvpair(-NameValuePair:compound, +Name:atom, +Value) is det.
+%! nvpair(-NameValuePair:compound, +Name:atom, +Value) is multi.
 
-nvpair(Name=Value, Name, Value):- !.
+nvpair(Name=Value, Name, Value).
 nvpair(NVPair, Name, Value):-
   NVPair =.. [Name,Value].
 
@@ -201,10 +202,13 @@ nvpair(NVPair, Name, Value):-
 %!   ?Value,
 %!   -NewOptions:list(nvpair)
 %! ) is det.
+% Removes at most one option (i.e., if at least one appears)
+% with the given name and value from the options list.
 
 remove_option(Os1, N, V, Os2):-
   nvpair(O, N, V),
-  select_option(O, Os1, Os2).
+  select_option(O, Os1, Os2), !.
+remove_option(Os, _, _, Os).
 
 %! replace_option(
 %!   +OldOptions:list(nvpair),
