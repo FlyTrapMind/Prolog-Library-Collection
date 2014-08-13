@@ -1,6 +1,8 @@
 :- module(
   archive_ext,
   [
+    archive_create/2, % +File:atom
+                      % -CompressedFile:atom
     archive_extract/4, % +Source
                        % ?Directory:atom
                        % -ArchiveFilters:list(atom)
@@ -32,7 +34,7 @@
 Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
-@version 2014/04, 2014/06-2014/07
+@version 2014/04, 2014/06-2014/08
 */
 
 :- use_module(library(apply)).
@@ -41,7 +43,9 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(pairs)).
+:- use_module(library(zlib)).
 
+:- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(trees)).
@@ -61,6 +65,32 @@ Extensions to SWI-Prolog's library archive.
 :- meta_predicate(archive_goal0(+,2,+)).
 :- meta_predicate(archive_goal0(+,3,+,+)).
 
+:- db_add_novel(user:prolog_file_type(gz, gzip)).
+
+
+
+%! archive_create(+File:atom, -CompressedFile:atom) is det.
+% Compress the given file using gzip.
+
+archive_create(File, CompressedFile):-
+  % The compressed file can be either set or not.
+  (
+    var(CompressedFile)
+  ->
+    file_type_alternative(File, gzip, CompressedFile)
+  ;
+    true
+  ),
+  
+  setup_call_cleanup(
+    gzopen(CompressedFile, write, Write, [format(gzip)]),
+    setup_call_cleanup(
+      open(File, read, Read),
+      copy_stream_data(Read, Write),
+      close(Read)
+    ),
+    close(Write)
+  ).
 
 
 %! archive_extract(

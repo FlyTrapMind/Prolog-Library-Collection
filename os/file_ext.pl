@@ -328,40 +328,41 @@ file_name_extensions(Base, T, L, File):-
 file_name_extensions(File, L, L, File).
 
 
-%! file_name_type(?Name:atom, ?Type:atom, ?Path:atom) is semidet.
+%! file_name_type(?Base:atom, ?Type:atom, ?File:atom) is semidet.
 % Decomposes a file name into its base name and its file type.
 %
-% @arg Name The atomic name of a file, without a directory and without
-%           an extension.
+% @arg Base The atomic name of a file, without a directory and without
+%      an extension.
 % @arg Type An atomic file type. These are registered with
 %	    prolog_file_type/2, or uninstantiated in case the type
 %	    could not be established.
-% @arg Path The full name of a file.
+% @arg File The full name of a file.
 
-file_name_type(Path, directory, Path):-
-  nonvar(Path),
-  exists_directory(Path), !.
+file_name_type(File, directory, File):-
+  nonvar(File),
+  exists_directory(File), !.
 % (+,+,-)
-file_name_type(Name, Type, Path):-
-  nonvar(Name), nonvar(Type), !,
+file_name_type(Base, Type, File):-
+  maplist(nonvar, [Base,Type]), !,
   prolog_file_type(Ext, Type),
-  file_name_extension(Name, Ext, Path).
+  file_name_extension(Name, Ext, File).
 % For files with no extension and thus no type.
-file_name_type(Path, none, Path):-
-  \+ file_name_extension(_, _, Path),
-  exists_file(Path), !.
+file_name_type(File, none, File):-
+  \+ file_name_extension(_, _, File),
+  exists_file(File), !.
 % (?,?,+)
-file_name_type(Name, Type, Path):-
-  nonvar(Path),
-  file_name_extension(Name, Ext, Path),
-  Ext \== '',
+file_name_type(Base, Type, File):-
+  nonvar(File),
+  file_name_extension(Base, Extension, File),
   (
-    user:prolog_file_type(Ext, Type)
+    Extension \== '',
+    user:prolog_file_type(Extension, Type)
   ->
     % The file extension is registered with a type.
     true
   ;
-    % The file extension is not registered with a type.
+    % The file extension is not registered with a type,
+    % or there is no extension at all.
     % Make sure the file type is uninstantiated.
     var(Type)
   ).
@@ -374,6 +375,9 @@ file_name_type(_, Type, _):-
 file_type(FileType, File):-
   file_name_type(_, FileType, File).
 
+
+%! file_type_alternative(+File1:atom, +File2:atom) is semidet.
+% Succeeds if the files are type-alternatives of each other.
 
 file_type_alternative(File1, File2):-
   file_name_extension(Base, _Extension1, File1),
