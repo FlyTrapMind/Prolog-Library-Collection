@@ -81,7 +81,7 @@ archive_create(File, CompressedFile):-
   ;
     true
   ),
-  
+
   setup_call_cleanup(
     gzopen(CompressedFile, write, Write, [format(gzip)]),
     setup_call_cleanup(
@@ -130,8 +130,16 @@ archive_extract0(Archive, Filters, Dir):-
       archive_open_entry(Archive, Read),
       (
         relative_file_path(File, Dir, RelativeFile),
-        create_file_directory(File),
-        file_from_stream(File, Read),
+	% Directory files are re-created.
+	% Non-directory files are copied from stream.
+	(
+	  entry_property(RelativeFile, filetype(directory))
+	->
+	  make_directory_path(File)
+	;
+          create_file_directory(File),
+          file_from_stream(File, Read)
+	),
         %%%%print_message(informational, archive_extracted(File)),
         true
       ),
