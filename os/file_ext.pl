@@ -344,8 +344,8 @@ file_name_type(File, directory, File):-
 % (+,+,-)
 file_name_type(Base, Type, File):-
   maplist(nonvar, [Base,Type]), !,
-  prolog_file_type(Ext, Type),
-  file_name_extension(Name, Ext, File).
+  prolog_file_type(Extension, Type),
+  file_name_extension(Base, Extension, File).
 % For files with no extension and thus no type.
 file_name_type(File, none, File):-
   \+ file_name_extension(_, _, File),
