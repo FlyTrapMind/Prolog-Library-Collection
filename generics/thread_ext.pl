@@ -232,7 +232,10 @@ thread_overview_web(Markup):-
     )
   ).
 
+%! thread_prefix(+Prefix:atom, +Thread:atom) is semidet.
+% Succeeds if the given thread name starts with the given prefix.
 %! thread_prefix(+Prefix:atom, -Thread:atom) is nondet.
+% Enumerates the currently running threads that start with the given prefix.
 
 thread_prefix(Prefix, Thread):-
   thread_property(Thread, status(_)),
