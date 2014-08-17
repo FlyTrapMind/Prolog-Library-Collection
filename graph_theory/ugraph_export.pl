@@ -49,15 +49,18 @@ The following attributes are supported:
   * `style(Style:atom)`
 
 @author Wouter Beek
+@deprecated
 @version 2013/02-2013/03, 2013/07
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+
+:- use_module(graph_theory(random_vertex_coordinates)).
 :- use_module(ugraph(ugraph_ext)).
+
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
 
 :- meta_predicate(export_ugraph(+,4,+,+)).
 :- meta_predicate(export_ugraph_vertex(+,+,4,+,-)).
