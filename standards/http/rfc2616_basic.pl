@@ -68,6 +68,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 % @see RFC 2234 named this 'DQUOTE'//0 and defined it in ABNF.
 
 
+
 %! 'ALPHA'// .
 %! 'ALPHA'(?Code:code)// .
 %
@@ -76,6 +77,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 % ~~~
 %
 % @see RFC 2234 defined this differently, but produced the same result.
+
 
 
 %! 'CHAR'// .
@@ -93,6 +95,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 
 'CHAR'(C) -->
   ascii(C).
+
 
 
 %! 'CR'// .
@@ -129,6 +132,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 % @see RFC 2234
 
 
+
 %! 'CTL'// .
 %! 'CTL'(?Code:code)// .
 % Control character.
@@ -138,6 +142,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 % ~~~
 %
 % @see RFC 2234 defines this in ABNF.
+
 
 
 %! 'DIGIT'// .
@@ -152,16 +157,21 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 % @see RFC 2234 defined this in ABNF.
 
 
+
 %! 'HEX'// .
 %! 'HEX'(?Code:code)// .
 %! 'HEX'(?Code:code, ?DecimalNumber:between(0.15))// .
 % Hexadecimal numeric characters are used in several protocol elements.
 %
-% ~~~
+% ~~~{.abnf}
 % HEX = "A" | "B" | "C" | "D" | "E" | "F"
 %     | "a" | "b" | "c" | "d" | "e" | "f" | DIGIT
 % ~~~
 %
+% @compat RFC 2616
+% @compat SPARQL 1.0 [171].
+% @compat SPARQL 1.1 Query [172].
+% @compat Turtle 1.1 [171s].
 % @see RFC 2234 defined 'HEXDIG'//[0,1,2], leaving out the lowercase letters.
 
 'HEX' -->
@@ -172,6 +182,7 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 
 'HEX'(C, D) -->
   hexadecimal_digit(C, D).
+
 
 
 %! 'HT'// .

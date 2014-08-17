@@ -50,6 +50,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   N is N1 + N2.
 
 
+
 %! 'DECIMAL_NEGATIVE'(?Value:float)// .
 % ~~~{.ebnf}
 % DECIMAL_NEGATIVE ::= '-' DECIMAL
@@ -68,6 +69,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   {negative_float(N1)}.
 
 
+
 %! 'DECIMAL_POSITIVE'(?Value:float)// .
 % ~~~{.ebnf}
 % DECIMAL_POSITIVE ::= '+' INTEGER
@@ -84,6 +86,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   `+`,
   'DECIMAL'(N1),
   {positive_float(N1)}.
+
 
 
 %! 'DOUBLE'(?Value:float)// .
@@ -130,6 +133,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   integer(N).
 
 
+
 %! 'DOUBLE_POSITIVE'(?Value:float)// .
 % ~~~{.ebnf}
 % DOUBLE_POSITIVE ::= '+' DOUBLE
@@ -146,6 +150,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   `+`,
   'DOUBLE'(N1),
   {positive_float(N1)}.
+
 
 
 %! 'DOUBLE_NEGATIVE'(?Value:float)// .
@@ -165,6 +170,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   `-`,
   'DOUBLE'(N1),
   {N is -1 * N1}.
+
 
 
 %! 'EXPONENT'(?Value:float)// .
@@ -191,6 +197,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   {N is 10 ** (Sign * I)}.
 
 
+
 %! 'INTEGER'(?Value:integer)// .
 % ~~~{.ebnf}
 % INTEGER ::= [0-9]+
@@ -200,6 +207,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
 
 'INTEGER'(N) -->
   integer(N).
+
 
 
 %! 'INTEGER_POSITIVE'(?Value:integer)// .
@@ -220,6 +228,7 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   {positive_integer(N1)}.
 
 
+
 %! 'INTEGER_NEGATIVE'(?Value:integer)// .
 % ~~~{.ebnf}
 % INTEGER_NEGATIVE ::= '-' INTEGER
@@ -237,4 +246,3 @@ DCGs for number-denoting expressions defined in SPARQL recommendations.
   `-`,
   'INTEGER'(N1),
   {N is -1 * N1}.
-

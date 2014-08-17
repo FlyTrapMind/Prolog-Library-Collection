@@ -2,14 +2,20 @@
   sparql_char,
   [
     'ECHAR'//1, % ?Code:code
-    'HEX'//1, % ?Weight:between(0,15)
-    'PLX'//1, % ?Code:code
     'PERCENT'//1, % ?Weight:between(0,256)
+    'PLX'//1, % ?Code:code
     'PN_LOCAL_ESC'//1, % ?Code:code
     'PN_CHARS'//1, % ?Code:code
     'PN_CHARS_BASE'//1, % ?Code:code
     'PN_CHARS_U'//1, % ?Code:code
     'WS'//0
+  ]
+).
+:- reexport(
+  http(rdf2616_basic),
+  [
+    'HEX'//2 % ?Code:code
+             % ?Weight:between(0,15)
   ]
 ).
 
@@ -18,13 +24,16 @@
 DCGs for characters defined by the SPARQL recommendations.
 
 @author Wouter Beek
-@version 2014/04-2014/05
+@version 2014/04-2014/05, 2014/08
 */
 
 :- use_module(dcg(dcg_ascii)).
 :- use_module(dcg(dcg_cardinal)).
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_unicode)).
+:- use_module(flp(rfc2616_basic), ['WSP'//1]).
+
+:- meta_predicate(comma_separated(//)).
 
 
 
@@ -37,29 +46,26 @@ DCGs for characters defined by the SPARQL recommendations.
 % @compat SPARQL 1.1 Query [160].
 % @compat Turtle 1.1 [159s].
 
-'ECHAR'(C) --> `\\`, 'ECHAR_char'(C).
+'ECHAR'(C) --> "\\", 'ECHAR_char'(C).
 
-'ECHAR_char'(C) --> `t`, {horizontal_tab(C, _, _)}.
-'ECHAR_char'(C) --> `b`, {bell(C, _, _)}.
-'ECHAR_char'(C) --> `n`, {line_feed(C, _, _)}.
-'ECHAR_char'(C) --> `r`, {carriage_return(C, _, _)}.
-'ECHAR_char'(C) --> `f`, {form_feed(C, _, _)}.
+'ECHAR_char'(C) --> "t", {horizontal_tab(C, _, _)}.
+'ECHAR_char'(C) --> "b", {bell(C, _, _)}.
+'ECHAR_char'(C) --> "n", {line_feed(C, _, _)}.
+'ECHAR_char'(C) --> "r", {carriage_return(C, _, _)}.
+'ECHAR_char'(C) --> "f", {form_feed(C, _, _)}.
 'ECHAR_char'(C) --> double_quote(C).
 'ECHAR_char'(C) --> apostrophe(C).
 'ECHAR_char'(C) --> backslash(C).
 
 
-%! 'HEX'(?Weight:between(0,15))// .
+
+%! 'HEX'(?Code:code, ?Weight:between(0,15))// .
 % ~~~{.ebnf}
 % HEX ::= [0-9] | [A-F] | [a-f]
 % ~~~
 %
-% @compat SPARQL 1.0 [171].
-% @compat SPARQL 1.1 Query [172].
-% @compat Turtle 1.1 [171s].
+% @see RFC 2616 defined this.
 
-'HEX'(Weight) -->
-  hexadecimal_digit(_, Weight).
 
 
 %! 'PERCENT'(?Weight:between(0,256))// .
@@ -82,9 +88,10 @@ DCGs for characters defined by the SPARQL recommendations.
   {Weight is Weight1 * 16 + Weight2}.
 
 'PERCENT'(Weight1, Weight2) -->
-  `%`,
-  'HEX'(Weight1),
-  'HEX'(Weight2).
+  "%",
+  'HEX'(_, Weight1),
+  'HEX'(_, Weight2).
+
 
 
 %! 'PLX'(?Code:code)// .
@@ -98,6 +105,7 @@ DCGs for characters defined by the SPARQL recommendations.
 
 'PLX'(C) --> 'PERCENT'(C).
 'PLX'(C) --> 'PN_LOCAL_ESC'(C).
+
 
 
 %! 'PN_CHARS'(?Code:code)// .
@@ -120,6 +128,7 @@ DCGs for characters defined by the SPARQL recommendations.
 'PN_CHARS'(C) --> hex_code('00B7', C).
 'PN_CHARS'(C) --> between_hex('0300', '036F', C).
 'PN_CHARS'(C) --> between_hex('203F', '2040', C).
+
 
 
 %! 'PN_CHARS_BASE'(?Code:code)// .
@@ -173,6 +182,7 @@ DCGs for characters defined by the SPARQL recommendations.
 'PN_CHARS_BASE'(C) --> between_hex('10000', 'EFFFF', C).
 
 
+
 %! 'PN_CHARS_U'(?Code:code)// .
 % ~~~{.ebnf}
 % PN_CHARS_U ::= PN_CHARS_BASE | '_'
@@ -184,6 +194,7 @@ DCGs for characters defined by the SPARQL recommendations.
 
 'PN_CHARS_U'(C) --> 'PN_CHARS_BASE'(C).
 'PN_CHARS_U'(C) --> underscore(C).
+
 
 
 %! 'PN_LOCAL_ESC'(?Code:code)// .
@@ -200,7 +211,7 @@ DCGs for characters defined by the SPARQL recommendations.
 % @compat Turtle 1.1 [172s].
 
 'PN_LOCAL_ESC'(C) -->
-  `\\`,
+  "\\",
   'PN_LOCAL_ESC_char'(C).
 
 'PN_LOCAL_ESC_char'(C) --> underscore(C).
@@ -225,6 +236,7 @@ DCGs for characters defined by the SPARQL recommendations.
 'PN_LOCAL_ESC_char'(C) --> percent_sign(C).
 
 
+
 %! 'WS'// .
 % ~~~{.ebnf}
 % WS ::= #x20 | #x9 | #xD | #xA
@@ -236,8 +248,6 @@ DCGs for characters defined by the SPARQL recommendations.
 % @compat SPARQL 1.1 Query [162].
 % @compat Turtle 1.1 [161s].
 
-'WS' --> space.
-'WS' --> horizontal_tab.
+'WS' --> 'WSP'.
 'WS' --> carriage_return.
 'WS' --> line_feed.
-
