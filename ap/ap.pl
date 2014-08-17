@@ -8,7 +8,6 @@
 ).
 :- reexport(ap(ap_archive_ext)).
 :- reexport(ap(ap_download)).
-:- reexport(ap(ap_file_mime)).
 :- reexport(ap(ap_file_size)).
 :- reexport(ap(ap_rdf_serial)).
 :- reexport(ap(ap_void_fetch)).

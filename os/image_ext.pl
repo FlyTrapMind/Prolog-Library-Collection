@@ -18,12 +18,10 @@ Support for image files.
 @version 2014/03, 2014/05-2014/06
 */
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(process)).
 :- use_module(library(pure_input)).
 
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
@@ -55,11 +53,10 @@ image_dimensions(File, Width, Height):-
 
 image_dimensions(File, Width, Height) -->
   atom(File),
-  ` JPEG `,
+  " JPEG ",
   integer(Width),
-  `x`,
-  integer(Height),
-  dcg_done.
+  "x",
+  integer(Height).
 
 
 %! image_file(+File:atom) is semidet.

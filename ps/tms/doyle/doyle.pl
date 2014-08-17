@@ -142,7 +142,6 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
-:- use_module(dcg(dcg_generic)).
 :- use_module(logic(set_theory)).
 :- use_module(pl(pl_control)).
 :- use_module(tms(tms)).

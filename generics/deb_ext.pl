@@ -28,9 +28,11 @@ Methods that are used while developing and inspecting code.
 */
 
 :- use_module(library(debug)).
+:- use_module(library(option)).
 
 :- meta_predicate(catch_debug(+,+,0)).
 :- meta_predicate(if_debug(+,0)).
+:- meta_predicate(test(0)).
 :- meta_predicate(test(0,+)).
 :- meta_predicate(test(0,+,+)).
 
@@ -49,6 +51,7 @@ debug_exception(Debug, Msg, Exception):-
   debug(Debug, '[*****] ~w (~w)', [Msg,Exception]).
 
 
+
 fail_mode(debug(Category-Format-Args)):- !,
   debug(Category, Format, Args).
 fail_mode(error(E)):- !,
@@ -59,16 +62,17 @@ fail_mode(ignore):-
   true.
 
 
+
 %! if_debug(+Flag:atom, :Goal) .
 % Calls the given goal only if the given flag is an active debugging topic.
 %
 % @see library(debug)
 
-:- meta_predicate(if_debug(+,:)).
 if_debug(Flag, _Goal):-
   debugging(Flag, false), !.
 if_debug(_Flag, Goal):-
   call(Goal).
+
 
 
 %! test(:Goal) is det.
@@ -81,16 +85,13 @@ if_debug(_Flag, Goal):-
 % @arg TestName The name of the test.
 % @arg Stream The stream to which the test results are written.
 
-:- meta_predicate(test(:)).
 test(Goal):-
   test(Goal, user_output).
 
-:- meta_predicate(test(:,+)).
 test(Goal, Stream):-
   term_to_atom(Goal, TestName),
   test(Goal, TestName, Stream).
 
-:- meta_predicate(test(:,+,+)).
 test(Goal, TestName, Stream):-
   get_time(BeginTime),
   catch(

@@ -97,23 +97,21 @@ We use the following abbreviations in this module:
 
 @author Wouter Beek
 @tbd Remove the dependency on module AP.
-@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05
+@version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
+%        2014/08
 */
 
 :- use_module(library(apply)).
+:- use_module(library(dcg/basics)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(math(math_ext)).
 :- use_module(os(dir_ext)).
-:- use_module(os(os_ext)).
 
 
 
@@ -275,11 +273,7 @@ file_alternative(FromFile, ToDir1, ToName1, ToExt1, ToFile):-
 file_lines(File, NumberOfLines):-
   process_create(path(wc), ['-l',file(File)], [stdout(pipe(Stream))]),
   read_stream_to_codes(Stream, Codes),
-  phrase(wc_number(NumberOfLines), Codes).
-
-wc_number(NumberOfLines) -->
-  integer(NumberOfLines),
-  dcg_done.
+  phrase(integer(NumberOfLines), Codes).
 
 
 %! file_name(

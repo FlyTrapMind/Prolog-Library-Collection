@@ -24,11 +24,12 @@ Support for printing (aspects of) a TMS.
 :- use_module(library(predicate_options)). % Declarations.
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
 :- use_module(generics(option_ext)).
 :- use_module(tms(tms)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
 
 :- use_module(plRdf(rdfs_label_ext)).
 
