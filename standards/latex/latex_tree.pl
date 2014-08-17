@@ -44,7 +44,7 @@ latex_argument(Arg) -->
 latex_block(Name, DCG) -->
   latex_block_begin(Name),
   (latex_label(_) ; ``),
-  dcg_call(DCG),
+  dcg_call_cp(DCG),
   latex_block_end(Name).
 
 latex_block_begin(Name) -->

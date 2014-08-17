@@ -33,10 +33,10 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 
 :- use_module(library(apply)).
 
+:- use_module(dcg(dcg_multi)).
 :- use_module(http(rfc2616_basic)).
 
 :- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(dcg_multi)).
 
 :- meta_predicate rfc2616_abnf:abnf_list1(3,?,?,?,?).
 :- meta_predicate rfc2616_abnf:abnf_list1(3,?,?,-,?,?).
@@ -133,7 +133,7 @@ abnf_list_nonvar(_DCG, _Max, C, C, []) -->
   [].
 abnf_list_nonvar(DCG, Max, C1, C3, [H|T]) -->
   abnf_list_separator(C1),
-  dcg_call(DCG, H),
+  dcg_call_cp(DCG, H),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), dcg_multi:greater_than_or_equal_to(Max, C2)},
   abnf_list_nonvar(DCG, Max, C2, C3, T).
@@ -143,7 +143,7 @@ abnf_list_nonvar(_DCG, _Max, C, C, [], []) -->
   [].
 abnf_list_nonvar(DCG, Max, C1, C3, [H1|T1], [H2|T2]) -->
   abnf_list_separator(C1),
-  dcg_call(DCG, H1, H2),
+  dcg_call_cp(DCG, H1, H2),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), dcg_multi:greater_than_or_equal_to(Max, C2)},
   abnf_list_nonvar(DCG, Max, C2, C3, T1, T2).
@@ -170,7 +170,7 @@ abnf_list_var_(_DCG, Min, Max, C, C, []) -->
   {dcg_multi:in_between(Min, Max, C)}.
 % Last non-null element.
 abnf_list_var_(DCG, Min, Max, C1, C2, [H]) -->
-  dcg_call(DCG, H),
+  dcg_call_cp(DCG, H),
   {C2 is C1 + 1},
   {dcg_multi:in_between(Min, Max, C2)}.
 % Last null element.
@@ -179,7 +179,7 @@ abnf_list_var_(_DCG, Min, Max, C, C, []) -->
   {dcg_multi:in_between(Min, Max, C)}.
 % Non-last non-null element.
 abnf_list_var_(DCG, Min, Max, C1, C3, [H|T]) -->
-  dcg_call(DCG, H),
+  dcg_call_cp(DCG, H),
   abnf_list_separator,
   {C2 is C1 + 1},
   {dcg_multi:in_between(Min, Max, C2)},
@@ -201,7 +201,7 @@ abnf_list_var_(_DCG, Min, Max, C, C, [], []) -->
   {dcg_multi:in_between(Min, Max, C)}.
 % Last non-null element.
 abnf_list_var_(DCG, Min, Max, C1, C2, [H1], [H2]) -->
-  dcg_call(DCG, H1, H2),
+  dcg_call_cp(DCG, H1, H2),
   {C2 is C1 + 1},
   {dcg_multi:in_between(Min, Max, C2)}.
 % Last null element.
@@ -210,7 +210,7 @@ abnf_list_var_(_DCG, Min, Max, C, C, [], []) -->
   {dcg_multi:in_between(Min, Max, C)}.
 % Non-last non-null element.
 abnf_list_var_(DCG, Min, Max, C1, C3, [H1|T1], [H2|T2]) -->
-  dcg_call(DCG, H1, H2),
+  dcg_call_cp(DCG, H1, H2),
   abnf_list_separator,
   {C2 is C1 + 1},
   {dcg_multi:in_between(Min, Max, C2)},

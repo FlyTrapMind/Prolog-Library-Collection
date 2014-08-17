@@ -248,7 +248,7 @@ dcg_multi_nonvar(_DCG, _Max, C, C, [], _O1) -->
 dcg_multi_nonvar(DCG, Max, C1, C3, [H1|T1], O1) -->
   % Process the separator, if any.
   dcg_multi_separator(C1, O1),
-  dcg_call(DCG, H1),
+  dcg_call_cp(DCG, H1),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C3, T1, O1).
@@ -259,7 +259,7 @@ dcg_multi_nonvar(_DCG, _Max, C, C, [], [], _O1) -->
 dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
   % Process the separator, if any.
   dcg_multi_separator(C1, O1),
-  dcg_call(DCG, H1, H2),
+  dcg_call_cp(DCG, H1, H2),
   % Check that counter does not exceed maximum.
   {succ(C1, C2), greater_than_or_equal_to(Max, C2)},
   dcg_multi_nonvar(DCG, Max, C2, C, T1, T2, O1).
@@ -270,13 +270,13 @@ dcg_multi_nonvar(DCG, Max, C1, C, [H1|T1], [H2|T2], O1) -->
 
 % One argument.
 dcg_multi_var(DCG, Min, Max, C1, C3, [H1|T1], O1) -->
-  dcg_call(DCG, H1),
+  dcg_call_cp(DCG, H1),
   % Process the separator, if any.
   ({option(separator(Separator), O1)} -> Separator ; ""),
   {C2 is C1 + 1},
   dcg_multi_var(DCG, Min, Max, C2, C3, T1, O1).
 dcg_multi_var(DCG, Min, Max, C1, C2, [H1], _O1) -->
-  dcg_call(DCG, H1),
+  dcg_call_cp(DCG, H1),
   {C2 is C1 + 1},
   {in_between(Min, Max, C2)}.
 dcg_multi_var(_DCG, Min, Max, C, C, [], _O1) -->
@@ -284,14 +284,14 @@ dcg_multi_var(_DCG, Min, Max, C, C, [], _O1) -->
 
 % Two arguments
 dcg_multi_var(DCG, Min, Max, C1, C3, [H1|T1], [H2|T2], O1) -->
-  dcg_call(DCG, H1, H2),
+  dcg_call_cp(DCG, H1, H2),
   % Process the separator, if any.
   ({option(separator(Separator), O1)} -> Separator ; ""),
   {C2 is C1 + 1},
   %{in_between(Min, Max, C2)},
   dcg_multi_var(DCG, Min, Max, C2, C3, T1, T2, O1).
 dcg_multi_var(DCG, Min, Max, C1, C2, [H1], [H2], _O1) --> !,
-  dcg_call(DCG, H1, H2),
+  dcg_call_cp(DCG, H1, H2),
   {C2 is C1 + 1},
   {in_between(Min, Max, C2)}.
 dcg_multi_var(_DCG, Min, Max, C, C, [], [], _O1) -->

@@ -482,18 +482,20 @@ a buffer limit in combination with truncation may be applied:
 @version 2013/07-2013/08
 */
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
-:- use_module(plDcg(dcg_multi)).
-:- use_module(plDcg(parse_tree)).
+:- use_module(library(plunit)).
+
+:- use_module(dcg(dcg_multi)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(lang('iso639-1')). % Used in meta-call.
 :- use_module(lang('iso639-2')). % Used in meta-call.
 :- use_module(lang(rfc5646_iana)).
-:- use_module(library(plunit)).
+
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(parse_tree)).
 
 :- db_add_novel(user:prolog_file_type(txt, text)).
 

@@ -17,11 +17,11 @@ DCG for RFC 2616 status lines.
 @version 2013/12
 */
 
-:- use_module(plDcg(dcg_multi)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_version)).
 :- use_module(math(radix)).
 
+:- use_module(plDcg(dcg_abnf)).
 
 
 
@@ -59,7 +59,7 @@ DCG for RFC 2616 status lines.
 %  the unusual status.
 
 'extension-code'('extension-code'(Status), Status) -->
-  dcg_multi2('DIGIT', 3, _, Ds),
+  '#'(3, 'DIGIT', Ds),
   {digits_to_decimal(Ds, Status)}.
 
 

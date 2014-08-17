@@ -17,8 +17,6 @@
 @version 2013/12
 */
 
-:- use_module(plDcg(dcg_multi)).
-:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic_message)).
 :- use_module(http(rfc2616_method)).
@@ -27,6 +25,9 @@
 :- use_module(http_headers(rfc2616_general_header)).
 :- use_module(http_headers(rfc2616_request_header)).
 :- use_module(http_parameters(rfc2616_request_uri)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(parse_tree)).
 
 
 
@@ -60,7 +61,7 @@
 
 'Request'(T0, Method, URI, Version, Headers, Body) -->
   'Request-Line'(T1, Method, URI, Version),
-  dcg_multi2('_Request', _-_, T2s, Headers),
+  '*'('_Request', T2s, Headers),
   'CRLF',
   (
     'message-body'(T3, Body)

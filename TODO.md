@@ -9,3 +9,4 @@
   - Split off and finalize standards/css.pl
   - Split off and finalize standards/date_time/iso8601*.pl
   - Split off and finalize standards/http/*
+  - Split off lod/void/*, requires plXsd, plRdf, PLC.

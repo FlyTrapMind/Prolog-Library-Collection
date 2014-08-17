@@ -19,14 +19,15 @@ DCG for generic messages (comprising request and response messages)
 @version 2013/12
 */
 
-:- use_module(plDcg(dcg_multi)).
-:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_entity)).
 :- use_module(http(rfc2616_request)).
 :- use_module(http(rfc2616_response)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(http_headers(rfc2616_message_header)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(parse_tree)).
 
 
 
@@ -53,7 +54,7 @@ DCG for generic messages (comprising request and response messages)
 
 'generic-message'(T0, MessageHeaders, MessageBody) -->
   'start-line'(T1),
-  dcg_multi2('_generic-message', T2s, MessageHeaders),
+  '*'('_generic-message', T2s, MessageHeaders),
   'CRLF',
   (
     'message-body'(T3, MessageBody)

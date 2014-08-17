@@ -10,8 +10,9 @@ Automated tests for module DCG_MULTI.
 
 :- use_module(library(plunit)).
 
+:- use_module(dcg(dcg_multi)).
+
 :- use_module(pLDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_multi)).
 
 
 

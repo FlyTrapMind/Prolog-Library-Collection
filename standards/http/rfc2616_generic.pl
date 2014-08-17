@@ -33,7 +33,6 @@ Some basic DCG rules that are too specific to be reused outside of
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generic)).
 :- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(dcg_multi)).
 :- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 

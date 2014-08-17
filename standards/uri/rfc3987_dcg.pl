@@ -48,10 +48,10 @@
 @version 2013/09, 2014/01
 */
 
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)). % Used in meta-options.
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_multi)).
 :- use_module(plDcg(parse_tree)).
 :- use_module(flp(rfc4234_basic)).
 :- use_module(math(radix)).
@@ -98,7 +98,7 @@
 
 scheme(scheme(Scheme)) -->
   'ALPHA'(H),
-  dcg_multi1(scheme_, _-_, T),
+  '*'(scheme_, T),
   {atom_codes(Scheme, [H|T])}.
 scheme_(C) --> 'ALPHA'(C).
 scheme_(C) --> 'DIGIT'(C, _).
@@ -121,7 +121,7 @@ scheme_(C) --> dot(C).
 % ~~~
 
 'ihier-part'('ihier-part'(T1,T2)) -->
-  forward_slash, forward_slash,
+  "//",
   iauthority(T1),
   'ipath-abempty'(T2).
 'ihier-part'('ihier-part'(T1)) -->
@@ -158,7 +158,7 @@ iauthority(T0) -->
 %  codes (like iunreserved//1) with code lists (like 'pct-encoded'//1).
 
 iuserinfo(iuserinfo(IUserInfo)) -->
-  dcg_multi1(iuserinfo_, _-_, Codes),
+  '*'(iuserinfo_, Codes),
   {atom_codes(IUserInfo, Codes)}.
 iuserinfo_(C) --> iunreserved(C).
 iuserinfo_(C) --> 'pct-encoded'(C).
@@ -186,26 +186,28 @@ ihost(ihost(T1)) --> 'ireg-name'(T1).
 % ~~~
 
 'IP-literal'('IP-literal'(T1)) -->
-  bracketed(square, 'IP-literal_'(T1)).
+  bracketed(square,
+    'IP-literal_'(T1)
+  ).
 'IP-literal_'(T1) --> 'IPv6address'(T1).
 'IP-literal_'(T1) --> 'IPvFuture'(T1).
 
 
 %! 'IPv6address'(-ParseTree:compound)// .
 % ~~~{.abnf}
-% IPv6address =                           6( h16 ":" ) ls32
-%            /                       "::" 5( h16 ":" ) ls32
-%            / [               h16 ] "::" 4( h16 ":" ) ls32
-%            / [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32
-%            / [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32
-%            / [ *3( h16 ":" ) h16 ] "::"    h16 ":"   ls32
-%            / [ *4( h16 ":" ) h16 ] "::"              ls32
-%            / [ *5( h16 ":" ) h16 ] "::"              h16
-%            / [ *6( h16 ":" ) h16 ] "::"
+% IPv6address =                              6( h16 ":" ) ls32
+%               /                       "::" 5( h16 ":" ) ls32
+%               / [               h16 ] "::" 4( h16 ":" ) ls32
+%               / [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32
+%               / [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32
+%               / [ *3( h16 ":" ) h16 ] "::"    h16 ":"   ls32
+%               / [ *4( h16 ":" ) h16 ] "::"              ls32
+%               / [ *5( h16 ":" ) h16 ] "::"              h16
+%               / [ *6( h16 ":" ) h16 ] "::"
 % ~~~
 
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, 6, [separator(colon)], Ts1),
+  '#'(6, h16, [separator(colon)], Ts1),
   ":",
   ls32(T2),
   {append(Ts1,[T2],Ts)}.

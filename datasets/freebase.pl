@@ -20,7 +20,8 @@ Support for the Freebase dataset.
 :- use_module(generics(uri_ext)).
 :- use_module(http(http_download)).
 :- use_module(xml(xml_dom)).
-:- use_module(xsd(xsd)).
+
+:- use_module(plXsd(xsd)).
 
 
 

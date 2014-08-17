@@ -16,9 +16,10 @@ Stupport for RFC 1766: *Tags for the Identification of Languages*.
 @version 2013/07
 */
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_multi)).
 :- use_module(generics(atom_ext)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
 
 
 
@@ -71,9 +72,9 @@ Stupport for RFC 1766: *Tags for the Identification of Languages*.
 % ~~~
 
 rfc1766_language_header(language_header('Content-Language',':',T), LanguageTags) -->
-  "Content-Language",
-  colon,
+  "Content-Language:",
   rfc1766_language_tags(T, LanguageTags).
+
 
 %! rfc1766_language_tag(-Tree:compound, ?LanguageTag:atom)//
 % A language tag identifies a natural language spoken, written, or
@@ -114,6 +115,7 @@ rfc1766_language_tag(language_tag(T1,T2), LanguageTag) -->
   subtags(T2, SubTags),
   {atomic_list_concat([PrimaryTag|SubTags], '-', LanguageTag)}.
 
+
 %! rfc1766_language_tags(-Tree:compound, ?LanguageTags:list(atom))//
 % @tbd Allow comments in between list items.
 
@@ -122,6 +124,7 @@ rfc1766_language_tags(language_tags(T), [H]) -->
 rfc1766_language_tags(language_tags(T1,',',T2), [H|T]) -->
   rfc1766_language_tag(T1, H),
   rfc1766_language_tags(T2, T).
+
 
 %! primary_tag(-Tree:compound, ?PrimaryTag:atom)//
 % ~~~{.bnf}
@@ -136,14 +139,18 @@ rfc1766_language_tags(language_tags(T1,',',T2), [H|T]) -->
 %     Subtags of `x` will not be registered by the IANA.
 %   * Other values cannot be assigned except by updating this standard.
 
-primary_tag(primary_tag(PrimaryTag), PrimaryTag) --> tag(PrimaryTag).
+primary_tag(primary_tag(PrimaryTag), PrimaryTag) -->
+  tag(PrimaryTag).
+
 
 %! subtag(-Tree:compound, ?SubTag:atom)//
 % ~~~{.bnf}
 % Subtag = 1*8ALPHA
 % ~~~
 
-subtag(subtag(SubTag), SubTag) --> tag(SubTag).
+subtag(subtag(SubTag), SubTag) -->
+  tag(SubTag).
+
 
 %! subtags(-Tree:compound, ?SubTags:list(atom))//
 % In the first subtag:
@@ -164,9 +171,10 @@ subtag(subtag(SubTag), SubTag) --> tag(SubTag).
 
 subtags(subtags([]), []) --> [].
 subtags(subtags('-',T1,T2), [H|T]) -->
-  hyphen_minus,
+  "-",
   subtag(T1, H),
   subtags(T2, T).
+
 
 %! tag(?Tag:atom)//
 % Whitespace is not allowed within the tag.
@@ -183,14 +191,10 @@ subtags(subtags('-',T1,T2), [H|T]) -->
 tag(Tag) -->
   {
     nonvar(Tag),
-    atom_length(Tag, Length),
+    length(Tag, Length),
     between(1, 8, Length)
   }, !,
-  dcg_multi1(ascii_letter, _Rep, Tag, [convert(atom_codes)]).
+  '#'(Length, ascii_letter, Tag).
 tag(Tag) -->
-  dcg_multi1(ascii_letter, Codes),
-  {
-    length(Codes, Length),
-    between(1, 8, Length),
-    atom_codes(Tag, Codes)
-  }.
+  'm*n'(1, 8, ascii_letter, Codes),
+  {atom_codes(Tag, Codes)}.

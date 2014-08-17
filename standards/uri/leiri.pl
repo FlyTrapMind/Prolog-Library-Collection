@@ -64,7 +64,7 @@ iprivate        ::= %xE000-F8FF / %xE0000-E0FFF / %xF0000-FFFFD
 @version 2013/08, 2014/03
 */
 
-:- use_module(plDcg(dcg_multi)).
+:- use_module(dcg(dcg_multi)).
 :- use_module(flp(rfc4234_abnf)).
 :- use_module(http(rfc2616_basic)).
 

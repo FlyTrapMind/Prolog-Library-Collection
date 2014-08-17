@@ -21,6 +21,8 @@ DCG for `Expect` request header in RFC 2616.
 @version 2013/12
 */
 
+:- use_module(plDcg(dcg_abnf)).
+
 
 
 %! 'Expect'(-ParseTree:compound, ?Expect:compound)// .
@@ -100,7 +102,7 @@ expectation(expectation(T1), ExpectationExtension-ExpectationParameters) -->
     ;
       'quoted-string'(Value)
     ),
-    dcg_multi('expect-params', _-_, Ts, ExpectationParameters),
+    '*'('expect-params', Ts, ExpectationParameters),
     {ExpectationExtension =.. [Name,Value]}
   ;
     "",

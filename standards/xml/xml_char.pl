@@ -15,13 +15,12 @@
 DCGs for character definitions in XML recommendations.
 
 @author Wouter Beek
-@version 2014/05
+@version 2014/05, 2014/08
 */
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_unicode)).
-:- use_module(sparql(sparql_char)).
 
 
 
@@ -29,12 +28,12 @@ DCGs for character definitions in XML recommendations.
 % An **XML Character** is an atomic unit of text specified by ISO/IEC 10646.
 %
 % ~~~{.ebnf}
-% Char ::= #x9 |              // Horizontal tab
-%          #xA |              // Line feed
-%          #xD |              // Carriage return
-%          [#x20-#xD7FF] |    // Space, punctuation, numbers, letters
-%          [#xE000-#xFFFD] |
-%          [#x10000-#x10FFFF]
+% Char ::=   #x9              // Horizontal tab
+%          | #xA              // Line feed
+%          | #xD              // Carriage return
+%          | [#x20-#xD7FF]    // Space, punctuation, numbers, letters
+%          | [#xE000-#xFFFD]
+%          | [#x10000-#x10FFFF]
 % ~~~
 %
 % Avoid comapatibility characters [Unicode, section 2.3].
@@ -80,13 +79,14 @@ DCGs for character definitions in XML recommendations.
 'Char'(C) --> between_hex('10000', '10FFFF', C).
 
 
+
 %! 'Char11'(?Code:code)// .
 % ~~~{.ebnf}
-% Char ::= [#x1-#xD7FF] |
-%          [#xE000-#xFFFD] |
-%          [#x10000-#x10FFFF]
-%          /* any Unicode character, excluding the surrogate blocks,
-%             FFFE, and FFFF. */
+% Char ::=   [#x1-#xD7FF]
+%          | [#xE000-#xFFFD]
+%          | [#x10000-#x10FFFF]
+%             /* any Unicode character, excluding the surrogate blocks,
+%                FFFE, and FFFF. */
 % ~~~
 %
 % @compat XML 1.1.2 [2].
@@ -99,15 +99,16 @@ DCGs for character definitions in XML recommendations.
 'Char11'(C) --> between_hex('10000', '10FFFF', C).
 
 
-%! 'NameChar'(?Code:code)//
+
+%! 'NameChar'(?Code:code)// .
 % ~~~{.ebnf}
-% NameChar ::= NameStartChar |
-%              "-" |
-%              "." |
-%              [0-9] |
-%              #xB7 |
-%              [#x0300-#x036F] |
-%              [#x203F-#x2040]
+% NameChar ::=   NameStartChar
+%              | "-"
+%              | "."
+%              | [0-9]
+%              | #xB7
+%              | [#x0300-#x036F]
+%              | [#x203F-#x2040]
 % ~~~
 %
 % @compat XML 1.0.5 [4a].
@@ -127,54 +128,83 @@ DCGs for character definitions in XML recommendations.
 'NameChar'(C) --> character_tie(C).
 
 
-%! 'NameStartChar'(?Code:code)//
+
+%! 'NameStartChar'(?Code:code)// .
 % ~~~{.ebnf}
-% NameStartChar ::= ":" |
-%                   [A-Z] |
-%                   "_" |
-%                   [a-z] |
-%                   [#xC0-#xD6] |
-%                   [#xD8-#xF6] |
-%                   [#xF8-#x2FF] |
-%                   [#x370-#x37D] |
-%                   [#x37F-#x1FFF] |
-%                   [#x200C-#x200D] |
-%                   [#x2070-#x218F] |
-%                   [#x2C00-#x2FEF] |
-%                   [#x3001-#xD7FF] |
-%                   [#xF900-#xFDCF] |
-%                   [#xFDF0-#xFFFD] |
-%                   [#x10000-#xEFFFF]
+% NameStartChar ::=   ":"
+%                   | [A-Z]
+%                   | "_"
+%                   | [a-z]
+%                   | [#xC0-#xD6]
+%                   | [#xD8-#xF6]
+%                   | [#xF8-#x2FF]
+%                   | [#x370-#x37D]
+%                   | [#x37F-#x1FFF]
+%                   | [#x200C-#x200D]
+%                   | [#x2070-#x218F]
+%                   | [#x2C00-#x2FEF]
+%                   | [#x3001-#xD7FF]
+%                   | [#xF900-#xFDCF]
+%                   | [#xFDF0-#xFFFD]
+%                   | [#x10000-#xEFFFF]
 % ~~~
 %
 % @compat XML 1.0.5 [4].
 % @compat XML 1.1.2 [4].
-% @compat Reuses SPARQL 1.1 Query [164].
 
+% [A-Z] and [a-z]
+'NameStartChar'(C) --> ascii_letter(C).
+% ":"
 'NameStartChar'(C) --> colon(C).
+% "_"
 'NameStartChar'(C) --> underscore(C).
-'NameStartChar'(C) --> 'PN_CHARS_BASE'(C).
+% #xC0-#xD6
+'NameStartChar'(C) --> between_hex('C0', 'D6', C).
+% #xD8-#xF6
+'NameStartChar'(C) --> between_hex('D8', 'F6', C).
+% #xF8-#x2FF
+'NameStartChar'(C) --> between_hex('F8', '2FF', C).
+% #x370-#x37D
+'NameStartChar'(C) --> between_hex('370', '37D', C).
+% #x37F-#x1FFF
+'NameStartChar'(C) --> between_hex('37F', '1FFF', C).
+% #x200C-#x200D
+'NameStartChar'(C) --> zero_width_non_joiner(C).
+'NameStartChar'(C) --> zero_width_joiner(C).
+% #x2070-#x218F
+'NameStartChar'(C) --> between_hex('2070', '218F', C).
+% #x2C00-#x2FEF
+'NameStartChar'(C) --> between_hex('2C00', '2FEF', C).
+% #x3001-#xD7FF
+'NameStartChar'(C) --> between_hex('3001', 'D7FF', C).
+% #xF900-#xFDCF
+'NameStartChar'(C) --> between_hex('F900', 'FDCF', C).
+% #xFDF0-#xFFFD
+'NameStartChar'(C) --> between_hex('FDF0', 'FFFD', C).
+% #x10000-#xEFFFF
+'NameStartChar'(C) --> between_hex('10000', 'EFFFF', C).
 
 
-%! 'RestrictedChar'(?Code:code)//
+
+%! 'RestrictedChar'(?Code:code)// .
 % ~~~{.ebnf}
 % RestrictedChar ::=
 %     \\ Start of heading, start of text, end of text, end of transmission,
 %     \\ enquiry, positive acknowledgement, bell, backspace.
-%     [#x1-#x8] |
+%       [#x1-#x8]
 %
 %     \\ Vertical tab, form feed.
-%     [#xB-#xC] |
+%     | [#xB-#xC]
 %
 %     \\ Shift out, shift in, data link escape, device control (1, 2, 3, 4),
 %     \\ negative acknowledgement, synchronous idle,
 %     \\ end of transmission block, cancel, end of medium, substitute,
 %     \\ escape, file separator, group separator, record separator,
 %     \\ unit separator.
-%     [#xE-#x1F] |
+%     | [#xE-#x1F]
 %
-%     [#x7F-#x84] |
-%     [#x86-#x9F]
+%     | [#x7F-#x84]
+%     | [#x86-#x9F]
 % ~~~
 %
 % @compat XML 1.1.2 [2a].
@@ -184,6 +214,7 @@ DCGs for character definitions in XML recommendations.
 'RestrictedChar'(C) --> between_hex('E', '1F', C).
 'RestrictedChar'(C) --> between_hex('7F', '84', C).
 'RestrictedChar'(C) --> between_hex('86', '9F', C).
+
 
 
 %! 'S'// .
