@@ -14,10 +14,10 @@ DCG rules for the C programming language.
 @version 2013/02, 2013/06, 2014/01-2014/02
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_replace)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_meta)).
+:- use_module(plDcg(dcg_replace)).
 
 
 

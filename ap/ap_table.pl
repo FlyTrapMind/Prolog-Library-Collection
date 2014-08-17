@@ -20,9 +20,10 @@
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(ap(ap_db)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(uri_ext)).
+
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
 
 :- use_module(plHtml(html_list)).
 :- use_module(plHtml(html_table)).

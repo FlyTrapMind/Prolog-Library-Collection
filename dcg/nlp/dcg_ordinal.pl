@@ -14,7 +14,7 @@ DCGs for ordinal numbers.
 @version 2013/05-2013/06
 */
 
-:- use_module(dcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_cardinal)).
 
 
 

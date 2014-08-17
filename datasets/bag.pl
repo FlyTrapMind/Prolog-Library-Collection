@@ -13,15 +13,17 @@ http://lod.geodan.nl/BAG/sparql?query=SELECT+DISTINCT+*+WHERE+{%0D%0A++%3Fs+%3Fp
 info@geodan.nl
 
 @author Wouter Beek
-@version 2013/04, 2013/12-2014/01, 2014/06
+@version 2013/04, 2013/12-2014/01, 2014/06, 2014/08
 */
 
+:- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(sparql(sparql_api)).
-:- use_module(sparql(sparql_db)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+
+:- use_module(plSparql(sparql_api)).
+:- use_module(plSparql(sparql_db)).
 
 :- initialization(init_bag).
 init_bag:-

@@ -23,9 +23,10 @@ Statistics for tracking the progress of automated processes.
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(ap(ap_dir)).
-:- use_module(dcg(dcg_content)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(thread_ext)).
+
+:- use_module(plDcg(dcg_content)).
 
 :- use_module(plHtml(html_table)).
 

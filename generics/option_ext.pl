@@ -17,17 +17,10 @@
     if_option/3, % +Option:nvpair
                  % +Options:list(nvpair)
                  % :Goal
-    if_option//3, % +Option:nvpair
-                  % +Options:list(nvpair)
-                  % :Goal
     if_select_option/4, % +Option:nvpair
                         % +Options:list(nvpair)
                         % -RestOptions:list(nvpair)
                         % :Goal
-    if_select_option//4, % +Option:nvpair
-                         % +Options:list(nvpair)
-                         % -RestOptions:list(nvpair)
-                         % :Goal
     merge_options/2, % +FromOptions:list(nvpair)
                      % -ToOptions:list(nvpair)
     nvpair/3, % ?NameValuePair:compound
@@ -69,12 +62,8 @@ assumption that the option term will always be unary).
 
 :- use_module(library(option)).
 
-:- use_module(dcg(dcg_meta)).
-
 :- meta_predicate(if_option(+,+,0)).
-:- meta_predicate(if_option(+,+,//,?,?)).
 :- meta_predicate(if_select_option(+,+,-,0)).
-:- meta_predicate(if_select_option(+,+,-,//,?,?)).
 :- meta_predicate(update_option(+,+,2,-)).
 :- meta_predicate(update_option(+,+,2,-,-)).
 
@@ -140,14 +129,6 @@ if_option(Option, Options, Goal):-
 if_option(_, _, _).
 
 
-%! if_option(+Option:nvpair, +Options:list(nvpair), :Goal)// is det.
-
-if_option(Option, Options, Goal) -->
-  {option(Option, Options)}, !,
-  dcg_call(Goal).
-if_option(_, _, _) --> [].
-
-
 %! if_select_option(
 %!   +Option:nvpair,
 %!   +Options:list(nvpair),
@@ -159,19 +140,6 @@ if_select_option(Option, Options1, Options2, Goal):-
   select_option(Option, Options1, Options2), !,
   Goal.
 if_select_option(_, Options, Options, _).
-
-
-%! if_select_option(
-%!   +Option:nvpair,
-%!   +Options:list(nvpair),
-%!   -RestOptions:list(nvpair),
-%!   :Goal
-%! )// is det.
-
-if_select_option(Option, Options1, Options2, Goal) -->
-  {select_option(Option, Options1, Options2)}, !,
-  dcg_call(Goal).
-if_select_option(_, Options, Options, _) --> [].
 
 
 %! merge_options(+FromOptions:list(nvpair), -ToOptions:list(nvpair)) is det.

@@ -17,11 +17,12 @@ LaTeX DCGs.
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_replace)).
 :- use_module(generics(codes_ext)).
+
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_replace)).
 
 
 

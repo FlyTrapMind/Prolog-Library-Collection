@@ -27,10 +27,11 @@ Support for natural language dictionaries.
 :- use_module(library(readutil)).
 :- use_module(library(uri)).
 
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(db_ext)).
 :- use_module(os(archive_ext)).
 :- use_module(os(file_ext)).
+
+:- use_module(plDcg(dcg_generic)).
 
 :- db_add_novel(user:prolog_file_type(dic, dictionary)).
 

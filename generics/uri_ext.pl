@@ -23,11 +23,9 @@
     url_nested_directory/3, % +ParentDirectory:atom
                             % +Url:url
                             % -Directory:atom
-    url_nested_file/3, % +ParentDirectory:atom
-                       % +Url:url
-                       % -File:atom
-    url_rdf_graph/2 % +Url:url
-                    % -Graph:atom
+    url_nested_file/3 % +ParentDirectory:atom
+                      % +Url:url
+                      % -File:atom
   ]
 ).
 
@@ -37,17 +35,14 @@
 @version 2013/05, 2013/09, 2013/11-2014/04
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_replace)).
-:- use_module(generics(atom_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(generics(uri_search)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
+
+:- use_module(generics(atom_ext)).
+:- use_module(generics(typecheck)).
+:- use_module(generics(uri_search)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
@@ -341,19 +336,3 @@ url_nested_file(ParentDir1, Url, File):-
 
   % Return the file.
   directory_file_path(Dir, Base, File).
-
-
-%! url_rdf_graph(+Url:url, -RdfGraph:atom) is det.
-
-url_rdf_graph(Url, G):-
-  dcg_phrase(url_to_graph, Url, G).
-
-url_to_graph --> dcg_end, !.
-url_to_graph, [X] -->
-  [X],
-  {code_type(X, alnum)}, !,
-  url_to_graph.
-url_to_graph, "_" -->
-  [_],
-  url_to_graph.
-

@@ -26,13 +26,14 @@ In the furture services like Google translate
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
 
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_replace)).
 :- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 
-user:prolog_file_type(mp3, audio).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_replace)).
+
+:- db_add_novel(user:prolog_file_type(mp3, audio)).
 
 :- initialization(init_audio).
 
