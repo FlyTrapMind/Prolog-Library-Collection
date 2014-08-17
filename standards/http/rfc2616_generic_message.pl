@@ -19,8 +19,8 @@ DCG for generic messages (comprising request and response messages)
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_multi)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_multi)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_entity)).
 :- use_module(http(rfc2616_request)).

@@ -27,9 +27,10 @@ The standard for datetime that is used by HTTP 1.1.
 
 :- use_module(library(plunit)).
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
 :- use_module(math(radix)).
+
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_cardinal)).
 
 
 

@@ -26,9 +26,9 @@
 @version 2013/07-2013/09
 */
 
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(library(plunit)).
 :- use_module(svg(svg_generic)).
 :- use_module(svg(svg_attributes)).

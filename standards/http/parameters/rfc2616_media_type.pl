@@ -13,9 +13,9 @@
 @version 2013/12, 2014/02
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_generic)).
 
 

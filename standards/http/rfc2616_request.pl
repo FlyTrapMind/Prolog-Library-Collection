@@ -17,8 +17,8 @@
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_multi)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_multi)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic_message)).
 :- use_module(http(rfc2616_method)).

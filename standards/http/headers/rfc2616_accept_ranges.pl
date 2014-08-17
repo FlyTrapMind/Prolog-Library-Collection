@@ -25,9 +25,10 @@ DCG for accept ranges header in RFC 2616.
 @version 2013/12
 */
 
-:- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
 :- use_module(http_parameters(rfc2616_range_unit)).
+
+:- use_module(plDcg(parse_tree)).
 
 
 

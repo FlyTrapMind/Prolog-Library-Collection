@@ -96,7 +96,7 @@ Note: Converting between versions of HTTP may involve modification of
 @version 2013/07, 2013/12, 2014/05
 */
 
-:- use_module(dcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_cardinal)).
 
 
 

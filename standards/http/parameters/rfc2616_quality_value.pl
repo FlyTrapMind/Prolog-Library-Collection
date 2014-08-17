@@ -15,8 +15,8 @@ DCG for RFC 2616 quality values.
 @version 2013/12, 2014/06
 */
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(math(radix)).
 

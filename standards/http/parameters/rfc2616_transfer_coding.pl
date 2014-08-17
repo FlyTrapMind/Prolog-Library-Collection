@@ -24,9 +24,9 @@ All HTTP/1.1 applications MUST be able to receive and decode the
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic)).
 :- use_module(http_headers(rfc2616_entity_header)).

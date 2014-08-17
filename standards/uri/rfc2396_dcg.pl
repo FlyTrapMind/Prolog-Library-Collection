@@ -218,10 +218,10 @@ can determine the value of the four components and fragment as
 
 :- use_module(library(lists)).
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(parse_tree)).
 
 
 

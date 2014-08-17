@@ -21,7 +21,7 @@ DCG for RFC 2616 response.
 @version 2013/12-2014/01
 */
 
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(generics(codes_ext)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(http(rfc2616_generic_message)).

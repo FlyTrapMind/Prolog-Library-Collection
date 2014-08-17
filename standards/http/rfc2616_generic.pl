@@ -28,13 +28,13 @@ Some basic DCG rules that are too specific to be reused outside of
 */
 
 :- use_module(generics(codes_ext)). % Used in dcg_multi1//4.
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
-:- use_module(dcg(dcg_multi)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_meta)).
+:- use_module(plDcg(dcg_multi)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(http(rfc2616_basic)).
 
 

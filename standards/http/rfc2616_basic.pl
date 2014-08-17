@@ -52,9 +52,9 @@ DCGs for the basic rules defined in RFC 2616 (HTTP 1.1).
 @version 2013/12, 2014/05-2014/06
 */
 
-:- use_module(dcg(dcg_abnf)).
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_cardinal)).
 
 
 

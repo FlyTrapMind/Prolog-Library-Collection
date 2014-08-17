@@ -122,9 +122,10 @@ Note: HTTP requirements for the date/time stamp format apply only
 @version 2013/12
 */
 
-:- use_module(dcg(dcg_abnf)).
 :- use_module(http(rfc2616_basic)).
 :- use_module(math(radix)).
+
+:- use_module(plDcg(dcg_abnf)).
 
 
 

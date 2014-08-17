@@ -18,9 +18,9 @@ DCGs for character definitions in XML recommendations.
 @version 2014/05
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_unicode)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_unicode)).
 :- use_module(sparql(sparql_char)).
 
 

@@ -12,9 +12,9 @@
 @version 2014/06
 */
 
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
 :- use_module(flp(rfc2234)).
 
 

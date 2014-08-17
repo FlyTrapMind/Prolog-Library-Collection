@@ -18,7 +18,7 @@ DCG rules for XML datatypes.
 @version 2013/07-2013/08, 2014/02-2014/05
 */
 
-:- use_module(dcg(dcg_ascii)).
+:- use_module(plDcg(dcg_ascii)).
 
 :- meta_predicate(xml_namespaced_name(//,//,?,?)).
 

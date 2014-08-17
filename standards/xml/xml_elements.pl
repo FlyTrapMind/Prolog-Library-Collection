@@ -22,10 +22,10 @@ DCG rules for XML entities.
 @version 2013/07, 2014/05
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(dcg_meta)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_meta)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
 

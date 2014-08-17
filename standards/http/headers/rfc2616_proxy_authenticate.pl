@@ -25,8 +25,9 @@ DCG for the `Proxy-Authenticate` response header in RFC 2616.
 @version 2013/12
 */
 
-:- use_module(dcg(parse_tree)).
 :- use_module(flp(rfc2616_abnf)).
+
+:- use_module(plDcg(parse_tree)).
 
 
 

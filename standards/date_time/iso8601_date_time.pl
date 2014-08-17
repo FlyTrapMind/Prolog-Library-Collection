@@ -105,8 +105,9 @@ may be use.
 :- use_module(datetime(iso8601_date)).
 :- use_module(datetime(iso8601_generic)).
 :- use_module(datetime(iso8601_time_point)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(dcg(parse_tree)).
+
+:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(parse_tree)).
 
 
 

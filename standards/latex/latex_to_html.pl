@@ -14,8 +14,8 @@ of SWI-Prolog.
 @version 2014/03
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
 :- use_module(latex(latex_db)).
 :- use_module(latex(latex_tree)).
 :- use_module(library(http/html_write)).

@@ -48,11 +48,11 @@
 @version 2013/09, 2014/01
 */
 
-:- use_module(dcg(dcg_ascii)). % Used in meta-options.
-:- use_module(dcg(dcg_cardinal)).
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_multi)).
-:- use_module(dcg(parse_tree)).
+:- use_module(plDcg(dcg_ascii)). % Used in meta-options.
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_multi)).
+:- use_module(plDcg(parse_tree)).
 :- use_module(flp(rfc4234_basic)).
 :- use_module(math(radix)).
 

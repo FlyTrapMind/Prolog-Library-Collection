@@ -53,8 +53,8 @@ SGML (Standard Generalized Markup Language).
 @version 2013/07
 */
 
-:- use_module(dcg(dcg_ascii)).
-:- use_module(dcg(dcg_content)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_content)).
 
 :- rdf_register_prefix(iso, 'http://www.iso.org/').
 :- rdf_register_prefix(std, 'http://www.example.org/standards/').
