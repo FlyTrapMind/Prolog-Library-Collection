@@ -27,7 +27,7 @@ Some basic DCG rules that are too specific to be reused outside of
 @version 2013/12
 */
 
-:- use_module(generics(codes_ext)). % Used in dcg_multi1//4.
+:- use_module(generics(codes_ext)).
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
