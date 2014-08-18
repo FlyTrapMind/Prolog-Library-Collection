@@ -22,7 +22,7 @@ DCG for the `Accept-Language` request header in RFC 2616.
 :- use_module(library(pairs)).
 
 :- use_module(flp(rfc2616_abnf)).
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 :- use_module(http_parameters(rfc2616_quality_value)).
 
 :- use_module(plDcg(dcg_abnf)).

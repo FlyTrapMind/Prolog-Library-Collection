@@ -30,7 +30,7 @@ The entity-length of a message is the length of the message-body
 */
 
 :- use_module(plDcg(dcg_content)).
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 
 
 

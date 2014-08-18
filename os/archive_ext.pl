@@ -48,7 +48,6 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(generics(db_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(trees)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
 :- use_module(os(dir_ext)).

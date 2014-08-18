@@ -17,7 +17,7 @@ DCG for RFC 2616 language tags.
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(parse_tree)).
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 
 
 

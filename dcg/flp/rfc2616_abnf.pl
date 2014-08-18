@@ -34,7 +34,7 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 :- use_module(library(apply)).
 
 :- use_module(dcg(dcg_multi)).
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 
 :- use_module(plDcg(dcg_meta)).
 

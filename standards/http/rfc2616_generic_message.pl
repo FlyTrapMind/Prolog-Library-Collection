@@ -19,7 +19,7 @@ DCG for generic messages (comprising request and response messages)
 @version 2013/12
 */
 
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 :- use_module(http(rfc2616_entity)).
 :- use_module(http(rfc2616_request)).
 :- use_module(http(rfc2616_response)).

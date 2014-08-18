@@ -17,7 +17,7 @@
 @version 2013/12
 */
 
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 :- use_module(http(rfc2616_generic_message)).
 :- use_module(http(rfc2616_method)).
 :- use_module(http(rfc2616_version)).

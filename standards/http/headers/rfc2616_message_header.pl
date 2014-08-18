@@ -19,7 +19,7 @@ DCG for generic message headers in RFC 2616.
 :- use_module(plDcg(dcg_meta)).
 :- use_module(plDcg(parse_tree)).
 
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 :- use_module(http(rfc2616_generic)).
 
 

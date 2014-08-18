@@ -17,7 +17,7 @@ DCG for RFC 2616 status lines.
 @version 2013/12
 */
 
-:- use_module(http(rfc2616_basic)).
+:- use_module(plDcg_rfc(rfc2616_basic)).
 :- use_module(http(rfc2616_version)).
 :- use_module(math(radix)).
 
