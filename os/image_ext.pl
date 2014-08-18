@@ -21,11 +21,11 @@ Support for image files.
 :- use_module(library(dcg/basics)).
 :- use_module(library(process)).
 :- use_module(library(pure_input)).
+:- use_module(library(readutil)).
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 :- use_module(generics(uri_ext)).
-:- use_module(os(io_ext)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
@@ -43,10 +43,14 @@ Support for image files.
 %! image_dimensions(+File:atom, -Width:float, -Height:float) is det.
 
 image_dimensions(File, Width, Height):-
-  process_create(path(identify), [file(File)], [stdout(pipe(Stream))]),
-  stream_to_atom(Stream, Atom),
-  dcg_phrase(image_dimensions(File, Width, Height), Atom),
-  close(Stream).
+  setup_call_cleanup(
+    process_create(path(identify), [file(File)], [stdout(pipe(Stream))]),
+    (
+      read_stream_to_codes(Stream, Codes),
+      phrase(image_dimensions(File, Width, Height), Codes)
+    ),
+    close(Stream)
+  ).
 
 
 %! image_dimensions(+File:atom, -Width:float, -Height:float)// is det.
