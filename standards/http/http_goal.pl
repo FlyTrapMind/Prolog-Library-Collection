@@ -36,8 +36,7 @@ whenever it does not instantiate to an integer in the range =2xx=.
 @version 2013/11, 2014/01, 2014/04
 */
 
-:- use_module(generics(atom_ext)).
-:- use_module(http(rfc2616_status_line)).
+%%%%:- use_module(http(rfc2616_status_line)).
 :- use_module(library(debug)).
 :- use_module(library(http/http_cookie)). % HTTP redirection requires cookies sometimes.
 :- use_module(library(http/http_header)). % For option `post(...)`.
@@ -131,9 +130,9 @@ http_process(Status, _, _):-
 
 % Messages
 
-:- multifile(prolog:message//1).
+/*:- multifile(prolog:message//1).
 
 prolog:message(error(http_status(Status))) -->
   {'Status-Code'(Status, Reason)},
-  ['[HTTP ',Status,'] ',Reason].
+  ['[HTTP ',Status,'] ',Reason].*/
 

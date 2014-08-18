@@ -1,10 +1,6 @@
 :- module(
   uri_ext,
   [
-    atom_to_email/2, % +Atom:atom
-                     % -Email:atom
-    atom_to_iri/2, % +Atom:atom
-                   % -Iri:iri
     relative_url_path/3, % ?Url:url
                          % ?RelativeTo:url
                          % ?RelativeUrl:url
@@ -47,80 +43,19 @@
 :- use_module(os(file_ext)).
 
 :- multifile(error:has_type/2).
+   error:has_type(email, Term):-
+     sub_atom(Term, Before, 1, After, '@'),
+     Before > 0,
+     After > 0.
+   error:has_type(uri, Term):-
+     error:has_type(iri, Term).
+   error:has_type(iri, Term):-
+     uri_components(
+       Term,
+       uri_components(Scheme,Authority,Path,_Search,_Fragment)
+     ),
+     maplist(nonvar, [Scheme,Authority,Path]).
 
-
-
-% email/0
-error:has_type(email, Term):-
-  dcg_phrase(email, Term).
-% uri/0
-error:has_type(uri, Term):-
-  error:has_type(iri, Term).
-% iri/0
-error:has_type(iri, Term):-
-  uri_components(
-    Term,
-    uri_components(Scheme,Authority,Path,_Search,_Fragment)
-  ),
-  maplist(nonvar, [Scheme,Authority,Path]).
-  % @tbd
-  %%%%once(dcg_phrase('IRI'(_), Term)),
-
-email -->
-  dcg_until([end_mode(inclusive),output_format(codes)], at_sign, _),
-  dcg_all.
-
-
-%! atom_to_email(+Atom:atom, -Email:atom) is det.
-% Try to make some minor alterations to non-email atoms
-% in the hope that they become email addresses.
-
-atom_to_email(Email, Email):-
-  is_of_type(email, Email), !.
-% Add scheme and scheme-authority separator.
-atom_to_email(A1, Email):-
-  atomic_list_concat([mailto,A1], ':', A2),
-  atom_to_email(A2, Email).
-% Remove leading and trailing spaces.
-atom_to_email(A1, Email):-
-  strip_atom([' '], A1, A2),
-  A1 \== A2,
-  atom_to_email(A2, Email).
-
-
-%! atom_to_iri(+Atom:atom, -Iri:iri) is det.
-% Try to make some minor alterations to non-Iri atoms
-% in the hope that they become IRIs.
-
-atom_to_iri(Iri, Iri):-
-  is_of_type(iri, Iri), !.
-% Add percent-encoding for spaces!
-atom_to_iri(A1, Iri):-
-  dcg_phrase(dcg_replace(space, percent_encoding(space)), A1, A2),
-  A1 \== A2, !,
-  atom_to_iri(A2, Iri).
-% Add scheme and scheme-authority separator.
-atom_to_iri(A1, Iri):-
-  uri_components(A1, uri_components(Scheme,Authority,Path,Query,FragmentId)), !,
-  (
-    var(Authority)
-  ->
-    atomic_concat('http://', A1, A2)
-  ;
-    var(Scheme)
-  ->
-    uri_components(A2, uri_components(http,Authority,Path,Query,FragmentId))
-  ),
-  atom_to_iri(A2, Iri).
-% Remove leading and trailing spaces.
-atom_to_iri(A1, Iri):-
-  strip_atom([' '], A1, A2),
-  A1 \== A2,
-  atom_to_iri(A2, Iri).
-
-percent_encoding(space) -->
-  percent_sign,
-  integer(20).
 
 
 %! relative_url_path(+Url:url, +RelativeTo:url, -RelativeUrl:url) is det.

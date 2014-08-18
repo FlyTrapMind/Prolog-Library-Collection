@@ -15,7 +15,7 @@
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generic)).
-:- use_module(flp(rfc2234)).
+:- use_module(plDcg_rfc(rfc2234)).
 
 
 

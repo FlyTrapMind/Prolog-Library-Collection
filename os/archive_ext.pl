@@ -34,6 +34,7 @@
 Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
+@tbd Remove dependency of plTree.
 @version 2014/04, 2014/06-2014/08
 */
 
@@ -53,6 +54,8 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
+
+:- use_module(plTree(tree)).
 
 :- thread_local(entry_path/1).
 :- thread_local(entry_property/2).
