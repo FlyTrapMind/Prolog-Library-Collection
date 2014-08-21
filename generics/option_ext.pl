@@ -76,8 +76,8 @@ assumption that the option term will always be unary).
 %!   +ToOptions:list(nvpair)
 %! ) is det.
 % Adds an option with the given name and value (i.e. `Name(Value)`),
-%  and ensures that old options are overwritten and
-%  that the resultant options list is sorted.
+% and ensures that old options are overwritten and
+% that the resultant options list is sorted.
 %
 % @arg Options1
 % @arg Name
@@ -87,15 +87,15 @@ assumption that the option term will always be unary).
 add_option(O1, _, X, O1):-
   var(X), !.
 add_option(O1, N, V, O2):-
-  nvpair(O, N, V),
+  once(nvpair(O, N, V)),
   merge_options([O], O1, O2).
 
 
 %! add_default_option(
-%!   +Os1:list(nvpair),
+%!   +FromOptions:list(nvpair),
 %!   +Name:atom,
 %!   +DefaultValue,
-%!   -Os2:list(nvpair)
+%!   -ToOptions:list(nvpair)
 %! ) is det.
 % @see add_default_option/5
 
@@ -104,21 +104,21 @@ add_default_option(Os1, N, DefaultV, Os2):-
 
 
 %! add_default_option(
-%!   +Os1:list(nvpair),
+%!   +FromOptions:list(nvpair),
 %!   +Name:atom,
 %!   +DefaultValue,
 %!   -StoredValue,
-%!   -Os2:list(nvpair)
+%!   -ToOptions:list(nvpair)
 %! ) is det.
 % Gives either the stored value, if it is available,
-%   or the given default value.
+% or the given default value.
 % Also returns the resultant options list.
 
-add_default_option(Os1, N, _DefaultV, StoredV, Os1):-
-  nvpair(O, N, StoredV),
-  option(O, Os1), !.
-add_default_option(Os1, N, DefaultV, DefaultV, Os2):-
-  add_option(Os1, N, DefaultV, Os2).
+add_default_option(Os1, Name, _DefaultV, StoredV, Os1):-
+  nvpair(Option, Name, StoredV),
+  option(Option, Os1), !.
+add_default_option(Os1, Name, DefaultV, DefaultV, Os2):-
+  add_option(Os1, Name, DefaultV, Os2).
 
 
 %! if_option(+Option:nvpair, +Options:list(nvpair), :Goal) is det.
@@ -159,8 +159,14 @@ merge_options([H|T1], [H|T2]):-
 %! nvpair(+NameValuePair:compound, -Name:atom, -Value) is det.
 %! nvpair(-NameValuePair:compound, +Name:atom, +Value) is multi.
 
-nvpair(Name=Value, Name, Value).
 nvpair(NVPair, Name, Value):-
+  nonvar(NVPair), !,
+  nvpair0(NVPair, Name, Value), !.
+nvpair(NVPair, Name, Value):-
+  nvpair0(NVPair, Name, Value).
+
+nvpair0(Name=Value, Name, Value).
+nvpair0(NVPair, Name, Value):-
   NVPair =.. [Name,Value].
 
 
