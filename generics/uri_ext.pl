@@ -11,8 +11,8 @@
                      % ?Data:atom
     url_authority_directory/2, % +Url:atom
                                % -Directory:atom
-    url_file_extensions/2, % +Url:url
-                           % -FileExtensions:list(atom)
+    url_file_extension/2, % +Url:url
+                          % ?FileExtension:atom
     url_flat_directory/3, % +ParentDirectory:atom
                           % +Url:url
                           % -UrlDirectory:atom
@@ -143,10 +143,11 @@ url_authority_directory(Url, Dir):-
   directory_subdirectories(Dir, DirComponents).
 
 
-%! url_file_extensions(+Url:url, -FileExtensions:list(atom)) is det.
+%! url_file_extension(+Url:url, +FileExtension:atom) is semidet.
+%! url_file_extension(+Url:url, -FileExtension:atom) is semidet.
 % Returns the empty atom in case there is no file extension.
 
-url_file_extensions(Url, FileExtensions):-
+url_file_extension(Url, FileExtension):-
   % Extract the path.
   uri_components(Url, uri_components(_,_,Path,_,_)),
 
@@ -156,10 +157,9 @@ url_file_extensions(Url, FileExtensions):-
 
   % Extract the file extensions.
   atomic_list_concat(FileComponents, '.', FileComponent),
-  length(FileComponents, NumberOfFileComponents),
-  NumberOfFileComponents > 1, !,
-  FileComponents = [_|FileExtensions].
-url_file_extensions(_, []).
+  length(FileComponents, Length),
+  Length > 1,
+  last(FileComponents, FileExtension).
 
 
 %! url_flat_directory(
