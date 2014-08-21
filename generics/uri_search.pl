@@ -3,10 +3,14 @@
   [
     request_search_read/3, % +Request:list(nvpair)
                            % +Name:atom
-                           % -Value:atom
+                           % -Value
+    request_search_read/4, % +Request:list(nvpair)
+                           % +Name:atom
+                           % -Value
+                           % +Default
     request_search_read_pl_term/3, % +Request:list(nvpair)
                                    % +Name:atom
-                                   % -Value:term
+                                   % -Value
     uri_search_add/3, % +FromUri:or([compound,uri])
                       % +Parameters:list(nvpair)
                       % -ToUri:uri
@@ -32,7 +36,7 @@
 Support for the search string part of URIs.
 
 @author Wouter Beek
-@version 2014/03, 2014/05-2014/06
+@version 2014/03, 2014/05-2014/06, 2014/08
 */
 
 :- use_module(library(uri)).
@@ -42,11 +46,22 @@ Support for the search string part of URIs.
 
 
 
-%! request_search_read(+Request:list(nvpair), +Name:atom, -Value:atom) is det.
+%! request_search_read(+Request:list(nvpair), +Name:atom, -Value) is det.
 
 request_search_read(Request, Name, Value):-
   memberchk(search(SearchPairs), Request),
   memberchk(Name=Value, SearchPairs), !.
+
+%! request_search_read(
+%!   +Request:list(nvpair),
+%!   +Name:atom,
+%!   -Value,
+%!   +Default
+%! ) is det.
+
+request_search_read(Request, Name, Value, _):-
+  request_search_read(Request, Name, Value), !.
+request_search_read(_, _, Default, Default).
 
 
 %! request_search_read_pl_term(
