@@ -36,9 +36,6 @@
                  % +Dir:atom
                  % +Name:atom
                  % +Ext:atom
-    file_name_extensions/3, % ?Base:atom
-                            % ?Extensions:list(atom)
-                            % ?File:atom
     file_name_type/3, % ?Base:atom
                       % ?Type:atom
                       % ?Name:atom
@@ -196,12 +193,11 @@ create_file(File):-
 %      can be resolved by subsequent applications of
 %      absolute_file_name/[2,3], e.g. =|aaa(bbb(ccc))|=.
 % @arg Base The atomic base name of a file.
-% @arg TypeOrExtensions The atomic name of a file type, as registered with
-%      prolog_file_type/2, e.g. =|mp3|=. Or a list of extensions,
-%      see file_name_extensions/3.
+% @arg TypeOrExtension The atomic name of a file type, as registered with
+%      prolog_file_type/2, e.g. =|mp3|=.
 % @arg File The atomic absolute name of a file.
 
-create_file(NestedDir, Base, TypeOrExtensions, File):-
+create_file(NestedDir, Base, TypeOrExtension, File):-
   % Resolve the directory in case the compound term notation employed
   % by absolute_file_name/3 is used.
   (
@@ -218,11 +214,11 @@ create_file(NestedDir, Base, TypeOrExtensions, File):-
   % Create the local file name by appending the base and extension names.
   % The extension must be of the given type.
   (
-    file_name_type(Base, TypeOrExtensions, Local)
+    file_name_type(Base, TypeOrExtension, Local)
   ->
     true
   ;
-    file_name_extensions(Base, TypeOrExtensions, Local)
+    file_name_extension(Base, TypeOrExtension, Local)
   ),
 
   % Append directory and file name.
@@ -303,23 +299,6 @@ file_name(Path1, Directory, Base, Extension):-
     directory_file_path(Directory, File, Path2),
     file_name_extension(Base, Extension, File)
   ).
-
-
-%! file_name_extensions(+Base:atom, +Extensions:list(atom), +File:atom) is semidet.
-%! file_name_extensions(+Base:atom, +Extensions:list(atom), -File:atom) is det.
-%! file_name_extensions(-Base:atom, -Extensions:list(atom), +File:atom) is det.
-
-file_name_extensions(Base, Exts, File):-
-  var(File), !,
-  atomic_list_concat([Base|Exts], '.', File).
-file_name_extensions(Base, Exts, File):-
-  file_name_extensions(Base, [], Exts, File).
-
-file_name_extensions(Base, T, L, File):-
-  file_name_extension(Temp, H, File),
-  H \= '', !,
-  file_name_extensions(Base, [H|T], L, Temp).
-file_name_extensions(File, L, L, File).
 
 
 %! file_name_type(?Base:atom, ?Type:atom, ?File:atom) is semidet.
