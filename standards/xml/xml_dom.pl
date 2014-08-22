@@ -44,7 +44,6 @@ Predicates that operate on / generate XML DOM.
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 :- use_module(standards(sgml_parse)).
-:- use_module(uri(rfc3987_dcg)).
 
 :- rdf_register_prefix(svg, 'http://www.w3.org/2000/svg').
 
