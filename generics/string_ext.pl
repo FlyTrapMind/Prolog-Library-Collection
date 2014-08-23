@@ -21,7 +21,7 @@ Additional support for strings in SWI-Prolog.
 
 string_list_concat(Strings, Separator, String):-
   maplist(nonvar, [Strings,Separator]), !,
-  maplist(atom_string, [Separator0|Atoms], [Separator|Strings),
+  maplist(atom_string, [Separator0|Atoms], [Separator|Strings]),
   atomic_list_concat(Atoms, Separator0, Atom),
   atom_string(Atom, String).
 string_list_concat(Strings, Separator, String):-
