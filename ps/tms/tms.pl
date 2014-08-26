@@ -58,7 +58,7 @@ The generic predicates for Truth-Maintenance Systems.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(generics(uri_search)).
+:- use_module(generics(uri_query)).
 
 :- use_module(plRdf(rdf_reification)).
 :- use_module(plRdf(rdf_search)).
@@ -209,5 +209,5 @@ tms_node_to_url(N, BaseURL, N):-
   var(BaseURL), !.
 tms_node_to_url(N, BaseURL, N_URL):-
   rdf_global_id(_NS:LocalN, N),
-  uri_search_add(BaseURL, node, LocalN, N_URL).
+  uri_add_nvpair(BaseURL, node, LocalN, N_URL).
 

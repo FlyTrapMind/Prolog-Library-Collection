@@ -30,10 +30,8 @@
                                % +ToFileType:atom
                                % :Goal
                                % +Args:list
-    run_in_working_directory/2, % :Call
-                                % +WorkingDirectory:atom
-    subdirectories_to_directory/2 % +Subdirectories:list(atom)
-                                  % -Directory:atom
+    run_in_working_directory/2 % :Call
+                               % +WorkingDirectory:atom
   ]
 ).
 
@@ -42,7 +40,7 @@
 Extensions for handling directories.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04-2014/05
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04-2014/05, 2014/08
 */
 
 :- use_module(library(apply)).
@@ -51,6 +49,7 @@ Extensions for handling directories.
 :- use_module(library(lists)).
 
 :- use_module(generics(atom_ext)).
+:- use_module(generics(char_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(os(file_ext)).
@@ -70,7 +69,7 @@ append_directories(Dir1, Dir2, Dir3):-
   directory_subdirectories(Dir1, Subdirs1),
   directory_subdirectories(Dir2, Subdirs2),
   append(Subdirs1, Subdirs2, Subdirs3),
-  subdirectories_to_directory(Subdirs3, Dir3).
+  directory_subdirectories(Dir3, Subdirs3).
 
 
 %! copy_directory(
@@ -142,6 +141,7 @@ create_nested_directory(NestedDir, AbsoluteDir):-
   create_nested_directory(NestedOuterDir, AbsoluteOuterDir),
   % Then we add the inner directories recursively.
   create_nested_directory(NestedInnerDir, AbsoluteOuterDir, AbsoluteDir).
+
 
 %! create_nested_directory(
 %!   +NestedDirectory:compound,
@@ -309,27 +309,27 @@ directory_files(O1, Directory, Files4):-
 %!   -Directory:atom,
 %!   +Subdirectories:list(atom)
 %! ) is det.
+% This can be used to decompose a directory into subdirectories,
+% and it can be used to compose a directory out of subdirectories.
+%
+% @tbd Add support for `..`?
 
-% Relative file with empty subdirectories.
-directory_subdirectories(Dir, []):-
-  Dir == '.', !.
+directory_subdirectories('.', []):- !.
 directory_subdirectories(Dir1, Subdirs1):-
   % Whether to include the root or not.
   (
-    nonvar(Dir1),
-    \+ is_absolute_file_name(Dir1)
+    is_absolute_file_name2(Dir1)
   ->
-    % Relative paths do not start with root.
-    Subdirs2 = Subdirs1
-  ;
     % Absolute paths start with root.
     Subdirs2 = [''|Subdirs1]
+  ;
+    % Relative paths do not start with root.
+    Subdirs2 = Subdirs1
   ),
 
   % Remove ending slashes, if present.
   (
-    nonvar(Dir1),
-    sub_atom(Dir1, _, 1, 0, '/')
+    last_char(Dir1, '/')
   ->
     once(sub_atom(Dir1, _, _, 1, Dir2))
   ;
@@ -419,9 +419,3 @@ run_in_working_directory(Goal, WD1):-
   working_directory(WD1, WD2),
   call(Goal),
   working_directory(WD2, WD1).
-
-
-subdirectories_to_directory(Subdirs, Dir2):-
-  atomic_list_concat(Subdirs, '/', Dir1),
-  atomic_concat('/', Dir1, Dir2).
-

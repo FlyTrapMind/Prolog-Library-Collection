@@ -9,11 +9,11 @@
     atom_truncate/3, % +Atom:atom
                      % +MaximumLength:integer
                      % -TruncatedAtom:atom
-    atomic_atom/2, % ?AtomicOrCodes:or([atom,list(code),number,string])
-                   % ?Atom:atom
-    atomic_atom/3, % ?Type:oneof([atom,codes,number,string])
-                   % ?AtomicOrCodes:or([atom,list(code),number,string])
-                   % ?Atom:atom
+    to_atom/2, % +Input:or([atom,list(code),number,string])
+               % -Atom:atom
+    to_atom/3, % ?Type:oneof([atom,codes,number,string])
+               % +Input:or([atom,list(code),number,string])
+               % -Atom:atom
     first_split/3, % +Atom:atom
                    % +Split:atom
                    % -FirstSubatom:atom
@@ -89,10 +89,12 @@ Titlecase atoms can be created using upcase_atom/2.
 --
 
 @author Wouter Beek
-@version 2011/08-2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04
+@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04, 2014/08
 */
 
 :- use_module(library(lists)).
+
+:- use_module(generics(char_ext)).
 
 
 
@@ -158,64 +160,31 @@ atom_truncate(A1, Max, A3):-
   atom_concat(A2, ' ...', A3).
 
 
-%! atomic_atom(
-%!   +Atomic:or([atom,list(code),number,string]),
-%!   -Atom:atom) is det.
-%! atomic_atom(
-%!   -Atomic:or([atom,list(code),number,string]),
-%!   +Atom:atom
-%! ) is nondet.
+%! to_atom(+Input:or([atom,list(char),list(code),string]), -Atom:atom) is det.
 
-atomic_atom(Atomic, Atom):-
-  atomic_atom(_, Atomic, Atom).
-
-%! atomic_codes(
-%!   ?Type:oneof([atom,codes,number,string]),
-%!   +Atomic:or([atom,list(code),number,string]),
-%!   -Atom:atom
-%! ) is det.
-%! atomic_codes(
-%!   ?Type:oneof([atom,codes,number,string]),
-%!   -Atomic:or([atom,list(code),number,string]),
-%!   +Atom:atom
-%! ) is nondet.
-% Instantiation `(?,-,+)` is non-deterministic since a codelist
-% could map to an atom, a number, a codelist, and a string.
-
-atomic_atom(Kind, AtomicOrCodes, Atom):-
-  nonvar(AtomicOrCodes), !,
-  atomic_atom_nondet(Kind, AtomicOrCodes, Atom), !.
-atomic_atom(Kind, AtomicOrCodes, Atom):-
-  atomic_atom_nondet(Kind, AtomicOrCodes, Atom).
-
-% Number.
-atomic_atom_nondet(number, Number, Atom):-
-  \+ ((
-    nonvar(Number),
-    \+ number(Number)
-  )),
-  catch(
-    atom_number(Atom, Number),
-    error(syntax_error(illegal_number),_Context),
-    fail
-  ).
-% String.
-atomic_atom_nondet(string, String, Atom):-
-  \+ ((
-    nonvar(String),
-    \+ string(String)
-  )),
-  atom_string(Atom, String).
-% Codes.
-atomic_atom_nondet(codes, Codes, Atom):-
-  \+ ((
-    nonvar(Codes),
-    \+ is_list(Codes)
-  )),
-  atom_codes(Atom, Codes).
 % Atom.
-atomic_atom_nondet(atom, Atom, Atom):-
-  atom(Atom).
+to_atom(Atom, Atom):-
+  atom(Atom), !.
+% Empty list of chars or codes.
+% Both map onto the empty atom.
+to_atom([], ''):- !.
+to_atom([], ''):- !.
+% Chars
+to_atom([H|T], Atom):-
+  is_char(H), !,
+  atom_chars(Atom, [H|T]).
+% Codes.
+to_atom(Codes, codes, Atom):-
+  is_list(Codes), !,
+  atom_codes(Atom, Codes).
+% Number.
+to_atom(Number, number, Atom):-
+  number(Number), !,
+  atom_number(Atom, Number).
+% String.
+to_atom(String, string, Atom):-
+  string(String), !,
+  atom_string(Atom, String).
 
 
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
