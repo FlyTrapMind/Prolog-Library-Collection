@@ -11,9 +11,6 @@
                      % -TruncatedAtom:atom
     to_atom/2, % +Input:or([atom,list(code),number,string])
                % -Atom:atom
-    to_atom/3, % ?Type:oneof([atom,codes,number,string])
-               % +Input:or([atom,list(code),number,string])
-               % -Atom:atom
     first_split/3, % +Atom:atom
                    % +Split:atom
                    % -FirstSubatom:atom
@@ -174,15 +171,15 @@ to_atom([H|T], Atom):-
   is_char(H), !,
   atom_chars(Atom, [H|T]).
 % Codes.
-to_atom(Codes, codes, Atom):-
+to_atom(Codes, Atom):-
   is_list(Codes), !,
   atom_codes(Atom, Codes).
 % Number.
-to_atom(Number, number, Atom):-
+to_atom(Number, Atom):-
   number(Number), !,
   atom_number(Atom, Number).
 % String.
-to_atom(String, string, Atom):-
+to_atom(String, Atom):-
   string(String), !,
   atom_string(Atom, String).
 
