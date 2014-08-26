@@ -1,26 +1,26 @@
 :- module(
   uri_query,
   [
-    uri_add_name/3, % +FromUri:or([compound,url])
-                    % +Name:atom
-                    % -ToUri:url
-    uri_add_nvpair/4, % +FromUri:or([compound,url])
-                      % +Name:atom
-                      % +Value:atom
-                      % -ToUri:url
-    uri_add_nvpairs/3, % +FromUri:or([compound,url])
-                       % +NVPairs:list(nvpair)
-                       % -ToUri:url
-    uri_add_pl_term/4, % +FromUri:or([compound,uri])
-                       % +Name:atom
-                       % +Value:term
-                       % -ToUri:uri
+    uri_query_add_name/3, % +FromUri:or([compound,url])
+                          % +Name:atom
+                          % -ToUri:url
+    uri_query_add_nvpair/4, % +FromUri:or([compound,url])
+                            % +Name:atom
+                            % +Value:atom
+                            % -ToUri:url
+    uri_query_add_nvpairs/3, % +FromUri:or([compound,url])
+                             % +NVPairs:list(nvpair)
+                             % -ToUri:url
+    uri_query_add_pl_nvpair/4, % +FromUri:or([compound,uri])
+                               % +Name:atom
+                               % +Value:term
+                               % -ToUri:uri
     uri_query_nvpair/3, % +Uri:or([compound,uri])
                         % +Name:atom
                         % -Value:atom
-    uri_query_pl_term/3 % +Uri:or([compound,uri])
-                        % +Name:atom
-                        % -Value:term
+    uri_query_pl_nvpair/3 % +Uri:or([compound,uri])
+                          % +Name:atom
+                          % -Value:term
   ]
 ).
 
@@ -45,13 +45,13 @@ Support for the query string part of URIs.
 
 
 
-%! uri_add_nvpairs(
+%! uri_query_add_nvpairs(
 %!   +FromUri:or([compound,url]),
 %!   +NewNVPairs:list(nvpair),
 %!   -ToUri:url
 %! ) is det.
 
-uri_add_nvpairs(Uri1, NewNVPairs, Uri2):-
+uri_query_add_nvpairs(Uri1, NewNVPairs, Uri2):-
   uri_change_query_nvpairs(
     Uri1,
     \NVPairs1^NVPairs2^merge_options(NewNVPairs, NVPairs1, NVPairs2),
@@ -59,9 +59,9 @@ uri_add_nvpairs(Uri1, NewNVPairs, Uri2):-
   ).
 
 
-%! uri_add_name(+FromUri:or([compound,url]), +Name:atom, -ToUri:url) is det.
+%! uri_query_add_name(+FromUri:or([compound,url]), +Name:atom, -ToUri:url) is det.
 
-uri_add_name(Uri1, Name, Uri2):-
+uri_query_add_name(Uri1, Name, Uri2):-
   uri_change_query_string(
     Uri1,
     \Query1^Query2^atomic_list_concat([Query1,Name], '&', Query2),
@@ -69,7 +69,7 @@ uri_add_name(Uri1, Name, Uri2):-
   ).
 
 
-%! uri_add_nvpair(
+%! uri_query_add_nvpair(
 %!   +FromUri:or([compound,url]),
 %!   +Name:atom,
 %!   +Value:atom,
@@ -77,7 +77,7 @@ uri_add_name(Uri1, Name, Uri2):-
 %! ) is det.
 % Inserts the given name-value pair as a query component into the given URI.
 
-uri_add_nvpair(Uri1, Name, Value, Uri2):-
+uri_query_add_nvpair(Uri1, Name, Value, Uri2):-
   uri_change_query_nvpairs(
     Uri1,
     \NVPairs1^NVPairs2^add_option(NVPairs1, Name, Value, NVPairs2),
@@ -85,16 +85,16 @@ uri_add_nvpair(Uri1, Name, Value, Uri2):-
   ).
 
 
-%! uri_add_pl_term(
+%! uri_query_add_pl_nvpair(
 %!   +FromUri:or([compound,uri]),
 %!   +Name:atom,
 %!   +Value:term,
 %!   -ToUri:uri
 %! ) is det.
 
-uri_add_pl_term(Uri1, Name, Value1, Uri2):-
+uri_query_add_pl_nvpair(Uri1, Name, Value1, Uri2):-
   canonical_blobs_atom(Value1, Value2),
-  uri_add_nvpair(Uri1, Name, Value2, Uri2).
+  uri_query_add_nvpair(Uri1, Name, Value2, Uri2).
 
 
 %! uri_query_nvpair(
@@ -113,13 +113,13 @@ uri_query_nvpair(Uri, Name, Value):-
   memberchk(Name=Value, QueryPairs).
 
 
-%! uri_query_pl_term(
+%! uri_query_pl_nvpair(
 %!   +Uri:or([compound,uri]),
 %!   +Name:atom,
 %!   -Value:term
 %! ) is semidet.
 
-uri_query_pl_term(Uri, Name, Value2):-
+uri_query_pl_nvpair(Uri, Name, Value2):-
   uri_query_nvpair(Uri, Name, Value1),
   read_term_from_atom(Value1, Value2, []).
 
