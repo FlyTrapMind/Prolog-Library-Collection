@@ -30,3 +30,4 @@ nvpair(Name, Value, NVPair):-
 nvpair0(Name, Value, Name=Value).
 nvpair0(Name, Value, NVPair):-
   NVPair =.. [Name,Value].
+
