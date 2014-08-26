@@ -40,7 +40,6 @@ Support for the query string part of URIs.
 :- use_module(pl(pl_log)).
 
 :- meta_predicate(uri_change_query_nvpairs(+,2,-)).
-:- meta_predicate(uri_change_query_nvpairs0(+,2,-)).
 :- meta_predicate(uri_change_query_string(+,2,-)).
 
 
@@ -144,12 +143,15 @@ uri_components0(Uri, UriComponents):-
 %! uri_change_query_nvpairs(+FromUri:url, :Goal, -ToUri:url) is det.
 
 uri_change_query_nvpairs(Uri1, Goal, Uri2):-
-  uri_change_query_string(Uri1, uri_change_query_nvpairs0(Goal), Uri2).
-
-uri_change_query_nvpairs0(Goal, Query1, Query2):-
-  uri_query_components(Query1, NVPairs1),
-  call(Goal, NVPairs1, NVPairs2),
-  uri_query_components(Query2, NVPairs2).
+  uri_change_query_string(
+    Uri1,
+    \Query1^Query2^(
+      uri_query_components(Query1, NVPairs1),
+      call(Goal, NVPairs1, NVPairs2),
+      uri_query_components(Query2, NVPairs2)
+    ),
+    Uri2
+  ).
 
 
 %! uri_change_query_string(+FromUri:url, :Goal, -ToUri:url) is det.
@@ -171,12 +173,11 @@ uri_change_query_string(Uri1, Goal, Uri2):-
   % then uri_components/2 does not give back the empty atom.
   % Instead, it leaves `Query1` uninstantiated.
   default('', Query1),
-  
+
   call(Goal, Query1, Query2),
-  
+
   % Back to URL form.
   uri_components(
     Uri2,
     uri_components(Scheme,Authority,Path,Query2,Fragment)
   ).
-
