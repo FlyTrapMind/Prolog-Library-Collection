@@ -12,6 +12,9 @@
               % ?List:list
     combination/2, % +Lists:list(list)
                    % -Combination:list
+    common_sublist/3, % +List1:list
+                      % +List2:list
+                      % ?Sublist:list
     complement_list/4, % +FromList:list
                        % +Length:nonneg
                        % +FillElement
@@ -205,6 +208,15 @@ combination([], []).
 combination([ListH|ListT], [H|T]):-
   member(H, ListH),
   combination(ListT, T).
+
+
+%! common_sublist(+List1:list, +List2:list, +Sublist:list) is semidet.
+%! common_sublist(+List1:list, +List2:list, -Sublist:list) is det.
+
+common_sublist([H1|_], [H2|_], []):-
+  H1 \= H2, !.
+common_sublist([H|T1], [H|T2], [H|T3]):-
+  common_sublist(T1, T2, T3).
 
 
 %! complement_list(

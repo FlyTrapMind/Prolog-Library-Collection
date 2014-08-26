@@ -8,6 +8,9 @@
     base_or_file_to_file/3, % +BaseOrFile:atom
                             % ?FileType:atom
                             % -File:atom
+    common_prefix_path/3, % +Path1:atom
+                          % +Path2:atom
+                          % ?CommonPrefixPath:atom
     copy_file/5, % ?ToDirectory:atom
                  % ?ToName:atom
                  % ?ToExtension:atom
@@ -61,6 +64,8 @@
                            % +ToFile:atom
     new_file/2, % +File1:atom
                 % -File2:atom
+    prefix_path/2, % ?PrefixPath:atom
+                   % +Path:atom
     relative_file_path/3, % ?Path:atom
                           % ?RelativeTo:atom
                           % ?RelativePath:atom
@@ -102,11 +107,13 @@ We use the following abbreviations in this module:
 :- use_module(library(dcg/basics)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
+:- use_module(library(lists)).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
+:- use_module(generics(list_ext)).
 :- use_module(math(math_ext)).
 :- use_module(os(dir_ext)).
 
@@ -127,6 +134,7 @@ absolute_file_name_number(Spec, Options, Number, Absolute):-
   atom_number(Atomic, Number),
   spec_atomic_concat(Spec, Atomic, NumberSpec),
   absolute_file_name(NumberSpec, Absolute, Options).
+
 
 %! base_or_file_to_file(
 %!   +BaseOrFile:atom,
@@ -161,6 +169,24 @@ base_or_file_to_file(BaseOrFile, FileType, File):-
   !.
 
 
+%! common_prefix_path(
+%!   +Path1:atom,
+%!   +Path2:atom,
+%!   +CommonPrefixPath:atom
+%! ) is semidet.
+%! common_prefix_path(
+%!   +Path1:atom,
+%!   +Path2:atom,
+%!   -CommonPrefixPath:atom
+%! ) is det.
+
+common_prefix_path(Path1, Path2, CommonPrefixPath):-
+  directory_subdirectories(Path1, PathComponents1),
+  directory_subdirectories(Path2, PathComponents2),
+  common_sublist(PathComponents1, PathComponents2, CommonComponentPrefix),
+  directory_subdirectories(CommonPrefixPath, CommonComponentPrefix).
+
+
 %! copy_file(
 %!   ?ToDirectory:atom,
 %!   ?ToName:atom,
@@ -182,6 +208,7 @@ create_file(File):-
   touch_file(File).
 create_file(File):-
   type_error(absolute_file_name, File).
+
 
 %! create_file(+NestedDir:term, +Name:atom, +Type:atom, -File:atom) is det.
 % Creates a file with the given name, inside the given directory, and that
@@ -456,6 +483,23 @@ merge_into_one_stream(Out, FromFile):-
     copy_stream_data(In, Out),
     close(In)
   ).
+
+
+%! prefix_path(+PrefixPath:atom, +Path:atom) is semidet.
+%! prefix_path(-PrefixPath:atom, +Path:atom) is multi.
+
+prefix_path(PrefixPath, Path):-
+  var(PrefixPath), !,
+  directory_subdirectories(Path, Components),
+  prefix(PrefixComponents, Components),
+  directory_subdirectories(PrefixPath, PrefixComponents).
+prefix_path(PrefixPath, Path):-
+  maplist(
+    directory_subdirectories,
+    [PrefixPath,Path],
+    [PrefixComponents,Components]
+  ),
+  prefix(PrefixComponents, Components).
 
 
 %! new_file(+OldFile:atom, -NewFile:atom) is det.

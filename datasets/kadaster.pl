@@ -20,9 +20,10 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 
-:- use_module(rdf_file(rdf_serial)).
-:- use_module(sparql(sparql_api)).
-:- use_module(sparql(sparql_db)).
+:- use_module(plRdf_set(rdf_serial)).
+
+:- use_module(plSparql(sparql_db)).
+:- use_module(plSparql_query(sparql_query_api)).
 
 :- initialization(init_kadaster).
 init_kadaster:-

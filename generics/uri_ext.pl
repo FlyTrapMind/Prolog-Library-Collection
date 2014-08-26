@@ -38,7 +38,7 @@
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(generics(uri_search)).
+:- use_module(generics(uri_query)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 

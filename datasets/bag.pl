@@ -22,8 +22,8 @@ info@geodan.nl
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generic)).
 
-:- use_module(plSparql(sparql_api)).
 :- use_module(plSparql(sparql_db)).
+:- use_module(plSparql_query(sparql_query_api)).
 
 :- initialization(init_bag).
 init_bag:-
