@@ -48,9 +48,6 @@ Extensions for handling directories.
 :- use_module(library(filesex)).
 :- use_module(library(lists)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(char_ext)).
-:- use_module(generics(db_ext)).
 :- use_module(generics(option_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(safe_file)).
@@ -314,29 +311,23 @@ directory_files(O1, Directory, Files4):-
 %
 % @tbd Add support for `..`?
 
-directory_subdirectories('.', []):- !.
-directory_subdirectories(Dir1, Subdirs1):-
-  % Whether to include the root or not.
-  (
-    is_absolute_file_name2(Dir1)
-  ->
-    % Absolute paths start with root.
-    Subdirs2 = [''|Subdirs1]
-  ;
-    % Relative paths do not start with root.
-    Subdirs2 = Subdirs1
-  ),
+directory_subdirectories(Dir, Subdirs):-
+  nonvar(Dir), !,
+  atomic_list_concat(Subdirs, '/', Dir).
+directory_subdirectories(Dir, Subdirs1):-
+  nonvar(Subdirs1),
+  (  Subdirs1 = ['',''|Subdirs0]
+  -> directory_subdirectories(Dir0, Subdirs0),
+     atomic_concat('/', Dir0, Dir)
+  ;  remove_consecutive_empty_atoms(Subdirs1, Subdirs2),
+     atomic_list_concat(Subdirs2, '/', Dir)
+  ).
 
-  % Remove ending slashes, if present.
-  (
-    last_char(Dir1, '/')
-  ->
-    once(sub_atom(Dir1, _, _, 1, Dir2))
-  ;
-    Dir2 = Dir1
-  ),
-
-  atomic_list_concat(Subdirs2, '/', Dir2).
+remove_consecutive_empty_atoms([], []).
+remove_consecutive_empty_atoms(['',''|T], L):- !,
+  remove_consecutive_empty_atoms([''|T], L).
+remove_consecutive_empty_atoms([H|T1], [H|T2]):-
+  remove_consecutive_empty_atoms(T1, T2).
 
 
 has_file_type(FileTypes, _):-
