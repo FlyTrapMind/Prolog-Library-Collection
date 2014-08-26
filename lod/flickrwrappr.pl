@@ -76,7 +76,7 @@ flickrwrappr_cache(Graph, Resources, Propositions):-
   maplist(ord_union, [Resourcess,Propositionss], [Resources,Propositions]).
 
 flickrwrappr_cache_url(URL1-IRI, Resources, Propositions):-
-  uri_add_nvpair(URL1, format, rdf, URL2),
+  uri_query_add_nvpair(URL1, format, rdf, URL2),
   lod_local_query([], URL2, _NoGraph, IRI, Resources, Propositions).
 
 assert_proposition(Graph, [S,P,O]):-
