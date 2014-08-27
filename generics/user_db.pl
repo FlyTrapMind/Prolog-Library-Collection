@@ -19,10 +19,9 @@ Persistent store for user+password registrations.
 */
 
 :- use_module(library(error)).
-:- use_module(library(persistency)).
+:- use_module(library(persistency)). % Declarations.
 
 :- use_module(generics(persistent_db_ext)).
-:- use_module(os(file_ext)).
 
 %! user(?Service:atom, ?User:atom, ?Password:atom) is nondet.
 
@@ -43,21 +42,12 @@ Persistent store for user+password registrations.
 register_user(Service, _, _):-
   var(Service), !,
   instantiation_error(Service).
-register_user(Service, _, _):-
-  \+ atom(Service), !,
-  type_error(Service, atom).
 register_user(_, User, _):-
   var(User), !,
   instantiation_error(User).
-register_user(_, User, _):-
-  \+ atom(User), !,
-  type_error(User, atom).
 register_user(_, _, Password):-
   var(Password), !,
   instantiation_error(Password).
-register_user(_, _, Password):-
-  \+ atom(Password), !,
-  type_error(Password, atom).
 register_user(Service, User, Password):-
   user(Service, User, Password), !.
 register_user(Service, User, Password):-
@@ -75,7 +65,7 @@ user_db_file(File):-
 
 %! user_db_init is det.
 
-user_db_init:-
+user_db_init:-gtrace,
   user_db_file(File),
   persistent_db_init(File, user_db_update).
 

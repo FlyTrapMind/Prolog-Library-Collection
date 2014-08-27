@@ -25,16 +25,16 @@ Additional support for persistent databases in Prolog.
 
 
 
-%! persistent_db_attach(+File:atom) is det.
+%! persistent_db_attach(+Module:atom, +File:atom) is det.
 % Safe attachement of a persistent database dump.
 % This first make sure the given file exists.
 
-persistent_db_attach(File):-
+persistent_db_attach(Module, File):-
   exists_file(File), !,
-  db_attach(File, []).
-persistent_db_attach(File):-
+  Module:db_attach(File, []).
+persistent_db_attach(Module, File):-
   touch_file(File),
-  persistent_db_attach(File).
+  persistent_db_attach(Module, File).
 
 
 %! persistent_db_init(+File:atom, :Goal) is det.
@@ -43,8 +43,9 @@ persistent_db_attach(File):-
 % `Goal` is the update goal that is set by a specific persistent database.
 % It takes the persistency file's age as an argument.
 
-persistent_db_init(File, Goal):-
-  persistent_db_attach(File),
+persistent_db_init(File, Module:Goal):-
+  persistent_db_attach(Module, File),
   file_age(File, Age),
-  call(Goal, Age).
+  call(Module:Goal, Age).
+
 
