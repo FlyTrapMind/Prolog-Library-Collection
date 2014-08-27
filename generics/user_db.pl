@@ -35,19 +35,7 @@ Persistent store for user+password registrations.
 % Registers a user to the persistent user database.
 %
 % Succeeds without change in case the exact same registration already exists.
-%
-% @throws instantiation_error for each uninstantiated argument.
-% @throws type_error for each argument that is instantiated to a non-atom.
 
-register_user(Service, _, _):-
-  var(Service), !,
-  instantiation_error(Service).
-register_user(_, User, _):-
-  var(User), !,
-  instantiation_error(User).
-register_user(_, _, Password):-
-  var(Password), !,
-  instantiation_error(Password).
 register_user(Service, User, Password):-
   user(Service, User, Password), !.
 register_user(Service, User, Password):-
