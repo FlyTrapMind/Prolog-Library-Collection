@@ -53,7 +53,7 @@ user_db_file(File):-
 
 %! user_db_init is det.
 
-user_db_init:-gtrace,
+user_db_init:-
   user_db_file(File),
   persistent_db_init(File, user_db_update).
 
