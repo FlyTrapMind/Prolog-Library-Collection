@@ -15,7 +15,7 @@
 Support for natural language dictionaries.
 
 @author Wouter Beek
-@version 2014/06
+@version 2014/06, 2014/08
 */
 
 :- use_module(library(aggregate)).
@@ -28,6 +28,7 @@ Support for natural language dictionaries.
 :- use_module(library(uri)).
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(persistent_db_ext)).
 :- use_module(os(archive_ext)).
 :- use_module(os(file_ext)).
 
@@ -139,9 +140,7 @@ dictionary_init:-
 
 dictionary_init(Lang):-
   dictionary_file(Lang, File),
-  safe_db_attach(File),
-  file_age(File, Age),
-  dictionary_update(Lang, Age).
+  persistent_db_init(File, dictionary_update(Lang)).
 
 
 %! dictionary_update(+Language:atom, +Age:float) is det.
@@ -168,16 +167,6 @@ dictionary_url(
     _
   )
 ).
-
-
-%! safe_db_attach(+File:atom) is det.
-
-safe_db_attach(File):-
-  exists_file(File), !,
-  db_attach(File, []).
-safe_db_attach(File):-
-  touch_file(File),
-  safe_db_attach(File).
 
 
 %! word_entry(-Word:atom, -Something:atom)// is det.
