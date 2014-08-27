@@ -9,8 +9,10 @@
 /** <module> RFC 3986
 
 @author Wouter Beek
-@version 2014/06
+@version 2014/06, 2014/08
 */
+
+:- use_module(generics(nvpair_ext)).
 
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
@@ -44,7 +46,8 @@ dec_to_hex_codes(Value, [C1,C2]):-
 %! uri_encoded_search(+Parameters:list(nvpair))// is det.
 
 uri_encoded_search([]) --> [].
-uri_encoded_search([N=V|T]) -->
+uri_encoded_search([NVPair|T]) -->
+  {nvpair(N, V, NVPair)},
   uri_encoded_search_name(N),
   `=`,
   uri_encoded_search_value(V),
