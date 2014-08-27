@@ -16,6 +16,8 @@ info@geodan.nl
 @version 2013/04, 2013/12-2014/01, 2014/06, 2014/08
 */
 
+:- use_module(library(apply)).
+:- use_module(library(lambda)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 
@@ -26,19 +28,30 @@ info@geodan.nl
 :- use_module(plSparql_query(sparql_query_api)).
 
 :- initialization(init_bag).
+
+
+
+test:-
+  sparql_select(
+    bag,
+    [vocab],
+    [s,o],
+    [rdf(var(s),vocab:pand_status,var(o))],
+    Rows,
+    [distinct(true),limit(10)]
+  ),
+  maplist(\Row^dcg_with_output_to(current_output, list(pl_term, Row)), Rows).
+
+
+
+% Initialization.
+
 init_bag:-
   rdf_register_prefix(bag,  'http://lod.geodan.nl/BAG/'),
   rdf_register_prefix(bags, 'http://lod.geodan.nl/BAG-schema/'),
   sparql_register_endpoint(
     bag,
-    query,
-    uri_components(http,'lod.geodan.nl','/BAG/sparql',_,_)
+    uri_components(http,uri_authority(_,_,'lod.geodan.nl',_),'/BAG/',_,_),
+    virtuoso
   ).
-
-
-
-test:-
-  sparql_select(bag, _, [bags], true, [],
-      [rdf(var(s),vocab:pand_status,var(o))], 10, _, _, Resources, []),
-  dcg_with_output_to(current_output, list(pl_term, Resources)).
 

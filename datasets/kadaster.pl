@@ -26,12 +26,6 @@
 :- use_module(plSparql_query(sparql_query_api)).
 
 :- initialization(init_kadaster).
-init_kadaster:-
-  sparql_register_endpoint(
-    kadaster,
-    query,
-    uri_components(http,'brk.kadaster.nl','/sparql',_,_)
-  ).
 
 
 
@@ -55,4 +49,15 @@ scrape_kadaster:-
 
 assert_row_as_triple(row(S,P,O)):-
   rdf_assert(S, P, O, kadaster).
+
+
+
+% Initialization.
+
+init_kadaster:-
+  sparql_register_endpoint(
+    kadaster,
+    uri_components(http,uri_authority(_,_,'brk.kadaster.nl',_),_,_,_),
+    virtuoso
+  ).
 
