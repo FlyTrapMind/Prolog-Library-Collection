@@ -24,6 +24,9 @@
                      % +ToCodes:list(code)
     codes_to_atom/2, % +Codes:list(code)
                      % -Atom:atom
+    common_atom_prefix/3, % +Atom1:atom
+                          % +Atom2:atom
+                          % -Prefix:atom
     put_codes/1, % +Codes:list(code)
     put_codes/2, % +Stream:stream
                  % +Codes:list(code)
@@ -65,12 +68,13 @@ Stripping codes lists is simply done using append,
 --
 
 @author Wouter Beek
-@version 2013/05-2013/07, 2013/12-2014/03
+@version 2013/05-2013/07, 2013/12-2014/03, 2014/08
 */
 
-:- use_module(generics(codes_ext)).
 :- use_module(library(apply)).
 :- use_module(library(lists)).
+
+:- use_module(generics(codes_ext)).
 
 :- meta_predicate(atomic_codes_goal(2,?,?)).
 
@@ -207,6 +211,16 @@ codes_replace([H|T1], Pairs, [H|T2]):-
 
 codes_to_atom(Codes, Atom):-
   atom_codes(Atom, Codes).
+
+
+%! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is semidet.
+%! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is nondet.
+% Returns the longest common prefix of the given two atoms.
+
+common_atom_prefix(Atom1, Atom2, Prefix):-
+  maplist(atom_codes, [Atom1,Atom2], [Codes1,Codes2]),
+  common_list_prefic(Codes1, Codes2, PrefixCodes),
+  atom_codes(Prefix, PrefixCodes).
 
 
 %! put_codes(+Codes:list(code)) is det.

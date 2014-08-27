@@ -12,7 +12,7 @@
               % ?List:list
     combination/2, % +Lists:list(list)
                    % -Combination:list
-    common_sublist/3, % +List1:list
+    common_list_prefix/3, % +List1:list
                       % +List2:list
                       % ?Sublist:list
     complement_list/4, % +FromList:list
@@ -210,13 +210,14 @@ combination([ListH|ListT], [H|T]):-
   combination(ListT, T).
 
 
-%! common_sublist(+List1:list, +List2:list, +Sublist:list) is semidet.
-%! common_sublist(+List1:list, +List2:list, -Sublist:list) is det.
+%! common_list_prefix(+List1:list, +List2:list, +Sublist:list) is semidet.
+%! common_list_prefix(+List1:list, +List2:list, -Sublist:list) is det.
+% Returns the longest common prefix of the given two lists.
 
-common_sublist([H1|_], [H2|_], []):-
+common_list_prefix([H1|_], [H2|_], []):-
   H1 \= H2, !.
-common_sublist([H|T1], [H|T2], [H|T3]):-
-  common_sublist(T1, T2, T3).
+common_list_prefix([H|T1], [H|T2], [H|T3]):-
+  common_list_prefix(T1, T2, T3).
 
 
 %! complement_list(

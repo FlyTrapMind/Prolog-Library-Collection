@@ -183,7 +183,7 @@ base_or_file_to_file(BaseOrFile, FileType, File):-
 common_prefix_path(Path1, Path2, CommonPrefixPath):-
   directory_subdirectories(Path1, PathComponents1),
   directory_subdirectories(Path2, PathComponents2),
-  common_sublist(PathComponents1, PathComponents2, CommonComponentPrefix),
+  common_list_prefix(PathComponents1, PathComponents2, CommonComponentPrefix),
   directory_subdirectories(CommonPrefixPath, CommonComponentPrefix).
 
 
