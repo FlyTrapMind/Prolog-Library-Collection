@@ -37,9 +37,9 @@ Persistent store for user+password registrations for services.
 % Succeeds without change in case the exact same registration already exists.
 
 register_service(Service, User, Password):-
-  user(Service, User, Password), !.
+  service(Service, User, Password), !.
 register_service(Service, User, Password):-
-  assert_user(Service, User, Password).
+  assert_service(Service, User, Password).
 
 
 
