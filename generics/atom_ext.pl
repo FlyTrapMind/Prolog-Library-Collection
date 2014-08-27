@@ -96,6 +96,7 @@ Titlecase atoms can be created using upcase_atom/2.
 :- use_module(library(lists)).
 
 :- use_module(generics(char_ext)).
+:- use_module(generics(list_ext)).
 
 
 
@@ -167,7 +168,7 @@ atom_truncate(A1, Max, A3):-
 
 common_atom_prefix(Atom1, Atom2, Prefix):-
   maplist(atom_codes, [Atom1,Atom2], [Codes1,Codes2]),
-  common_list_prefic(Codes1, Codes2, PrefixCodes),
+  common_list_prefix(Codes1, Codes2, PrefixCodes),
   atom_codes(Prefix, PrefixCodes).
 
 

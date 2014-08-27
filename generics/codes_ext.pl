@@ -65,7 +65,7 @@ Stripping codes lists is simply done using append,
 --
 
 @author Wouter Beek
-@version 2013/05-2013/07, 2013/12-2014/03, 2014/08
+@version 2013/05-2013/07, 2013/12-2014/03
 */
 
 :- use_module(library(apply)).
