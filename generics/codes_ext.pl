@@ -24,9 +24,6 @@
                      % +ToCodes:list(code)
     codes_to_atom/2, % +Codes:list(code)
                      % -Atom:atom
-    common_atom_prefix/3, % +Atom1:atom
-                          % +Atom2:atom
-                          % -Prefix:atom
     put_codes/1, % +Codes:list(code)
     put_codes/2, % +Stream:stream
                  % +Codes:list(code)
@@ -211,16 +208,6 @@ codes_replace([H|T1], Pairs, [H|T2]):-
 
 codes_to_atom(Codes, Atom):-
   atom_codes(Atom, Codes).
-
-
-%! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is semidet.
-%! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is nondet.
-% Returns the longest common prefix of the given two atoms.
-
-common_atom_prefix(Atom1, Atom2, Prefix):-
-  maplist(atom_codes, [Atom1,Atom2], [Codes1,Codes2]),
-  common_list_prefic(Codes1, Codes2, PrefixCodes),
-  atom_codes(Prefix, PrefixCodes).
 
 
 %! put_codes(+Codes:list(code)) is det.

@@ -9,8 +9,9 @@
     atom_truncate/3, % +Atom:atom
                      % +MaximumLength:integer
                      % -TruncatedAtom:atom
-    to_atom/2, % +Input:or([atom,list(code),number,string])
-               % -Atom:atom
+    common_atom_prefix/3, % +Atom1:atom
+                          % +Atom2:atom
+                          % -Prefix:atom
     first_split/3, % +Atom:atom
                    % +Split:atom
                    % -FirstSubatom:atom
@@ -34,9 +35,11 @@
     strip_atom_begin/3, % +Strips:list(atom)
                         % +In:atom
                         % -Out:atom
-    strip_atom_end/3 % +Strips:list(atom)
-                     % +In:atom
-                     % -Out:atom
+    strip_atom_end/3, % +Strips:list(atom)
+                      % +In:atom
+                      % -Out:atom
+    to_atom/2 % +Input:or([atom,list(code),number,string])
+              % -Atom:atom
   ]
 ).
 
@@ -89,6 +92,7 @@ Titlecase atoms can be created using upcase_atom/2.
 @version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04, 2014/08
 */
 
+:- use_module(library(apply)).
 :- use_module(library(lists)).
 
 :- use_module(generics(char_ext)).
@@ -157,31 +161,14 @@ atom_truncate(A1, Max, A3):-
   atom_concat(A2, ' ...', A3).
 
 
-%! to_atom(+Input:or([atom,list(char),list(code),string]), -Atom:atom) is det.
+%! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is semidet.
+%! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is nondet.
+% Returns the longest common prefix of the given two atoms.
 
-% Atom.
-to_atom(Atom, Atom):-
-  atom(Atom), !.
-% Empty list of chars or codes.
-% Both map onto the empty atom.
-to_atom([], ''):- !.
-to_atom([], ''):- !.
-% Chars
-to_atom([H|T], Atom):-
-  is_char(H), !,
-  atom_chars(Atom, [H|T]).
-% Codes.
-to_atom(Codes, Atom):-
-  is_list(Codes), !,
-  atom_codes(Atom, Codes).
-% Number.
-to_atom(Number, Atom):-
-  number(Number), !,
-  atom_number(Atom, Number).
-% String.
-to_atom(String, Atom):-
-  string(String), !,
-  atom_string(Atom, String).
+common_atom_prefix(Atom1, Atom2, Prefix):-
+  maplist(atom_codes, [Atom1,Atom2], [Codes1,Codes2]),
+  common_list_prefic(Codes1, Codes2, PrefixCodes),
+  atom_codes(Prefix, PrefixCodes).
 
 
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
@@ -348,4 +335,31 @@ strip_atom_end(Strips, A1, A3):-
   atom_concat(A2, Strip, A1), !,
   strip_atom_end(Strips, A2, A3).
 strip_atom_end(_, A, A).
+
+
+%! to_atom(+Input:or([atom,list(char),list(code),string]), -Atom:atom) is det.
+
+% Atom.
+to_atom(Atom, Atom):-
+  atom(Atom), !.
+% Empty list of chars or codes.
+% Both map onto the empty atom.
+to_atom([], ''):- !.
+to_atom([], ''):- !.
+% Chars
+to_atom([H|T], Atom):-
+  is_char(H), !,
+  atom_chars(Atom, [H|T]).
+% Codes.
+to_atom(Codes, Atom):-
+  is_list(Codes), !,
+  atom_codes(Atom, Codes).
+% Number.
+to_atom(Number, Atom):-
+  number(Number), !,
+  atom_number(Atom, Number).
+% String.
+to_atom(String, Atom):-
+  string(String), !,
+  atom_string(Atom, String).
 
