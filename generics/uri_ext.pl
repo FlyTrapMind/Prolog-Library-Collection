@@ -7,7 +7,7 @@
     uri_path/2, % +PathComponents:list(term)
                 % -Path:atom
     uri_component/3, % +Uri:uri
-                     % +Field:oneof([scheme,authority,path,search,fragment])
+                     % +Field:oneof([authority,fragment,host,password,path,port,search,scheme,user])
                      % ?Data:atom
     url_authority_directory/2, % +Url:atom
                                % -Directory:atom
@@ -28,7 +28,7 @@
 /** <module> URI extensions
 
 @author Wouter Beek
-@version 2013/05, 2013/09, 2013/11-2014/04
+@version 2013/05, 2013/09, 2013/11-2014/04, 2014/08
 */
 
 :- use_module(library(apply)).
@@ -36,9 +36,6 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(generics(uri_query)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 
@@ -86,26 +83,33 @@ relative_url_path(Url, RelativeTo1, Relative1):-
 
 %! uri_component(
 %!   +Uri:uri,
-%!   +Field:oneof([scheme,authority,path,search,fragment]),
+%!   +Field:oneof([authority,fragment,host,password,path,port,search,scheme,user]),
 %!   +Data:atom
 %! ) is semidet.
 %! uri_component(
 %!   +Uri:uri,
-%!   +Field:oneof([scheme,authority,path,search,fragment]),
+%!   +Field:oneof([authority,fragment,host,password,path,port,search,scheme,user]),
 %!   -Data:atom
 %! ) is det.
-%! uri_component(
-%!   +Uri:uri,
-%!   -Field:oneof([scheme,authority,path,search,fragment]),
-%!   -Data:atom
-%! ) is nondet.
-% Abbreviates two predicates from `library(uri)` into one:
+% Abbreviates multiple predicates from `library(uri)`:
+%   - uri_authority_components/2
+%   - uri_authority_data/3
 %   - uri_components/2
 %   - uri_data/3
 
 uri_component(Uri, Field, Data):-
   uri_components(Uri, Components),
-  uri_data(Field, Components, Data).
+  (   authority_field(Field)
+  ->  uri_data(authority, Components, Authority),
+      uri_authority_components(Authority, AuthorityComponents),
+      uri_authority_data(Field, AuthorityComponents, Data)
+  ;   uri_data(Field, Components, Data)
+  ).
+
+authority_field(host).
+authority_field(password).
+authority_field(port).
+authority_field(user).
 
 
 %! uri_path(+PathComponents:list(atom), -Path:atom) is det.

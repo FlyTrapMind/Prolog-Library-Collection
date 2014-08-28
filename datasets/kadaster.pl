@@ -55,9 +55,5 @@ assert_row_as_triple(row(S,P,O)):-
 % Initialization.
 
 init_kadaster:-
-  sparql_register_endpoint(
-    kadaster,
-    uri_components(http,uri_authority(_,_,'brk.kadaster.nl',_),_,_,_),
-    virtuoso
-  ).
+  sparql_register_endpoint(kadaster, ['http://brk.kadaster.nl'], virtuoso).
 

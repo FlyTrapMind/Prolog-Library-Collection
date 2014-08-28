@@ -49,9 +49,5 @@ test:-
 init_bag:-
   rdf_register_prefix(bag,  'http://lod.geodan.nl/BAG/'),
   rdf_register_prefix(bags, 'http://lod.geodan.nl/BAG-schema/'),
-  sparql_register_endpoint(
-    bag,
-    uri_components(http,uri_authority(_,_,'lod.geodan.nl',_),'/BAG/',_,_),
-    virtuoso
-  ).
+  sparql_register_endpoint(bag, ['http://lod.geodan.nl/BAG/'], virtuoso).
 
