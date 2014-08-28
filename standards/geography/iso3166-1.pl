@@ -35,7 +35,7 @@ Suopport for the ISO 3166-1 country code standard.
     'iso3166-1'(Name, Country1, _, _),
     (
       rdf_global_id(Country1, Country2),
-      rdf_assert_individual(Country2, 'iso3166-1':'Country', G),
+      rdf_assert_instance(Country2, 'iso3166-1':'Country', G),
       rdfs_assert_label(Country2, en, Name, G)
     )
   ).

@@ -84,7 +84,7 @@ find_contacts(Person1, element(a, LinkAttributes, [Name])):- !,
         rdf_assert(Relationship, rdfs:subPropertyOf, xfn:relation, xfn)
       ),
       rdf_assert(Person1, Relationship, Person2, xfn),
-      rdf_assert_individual(Person2, xfn:person, xfn)
+      rdf_assert_instance(Person2, xfn:person, xfn)
     )
   ).
 find_contacts(Person1, element(_Tag, _Attributes, ListOfContents)):- !,
@@ -107,7 +107,7 @@ test(xfn, [true]):-
   absolute_file_name(debug(tests), File, [file_type(hypertext)]),
   file_to_html(File, DOM),
   format(user_output, '~w', [DOM]),
-  rdf_assert_individual('http://www.wouterbeek.com', xfn:person, xfn),
+  rdf_assert_instance('http://www.wouterbeek.com', xfn:person, xfn),
   rdf_assert_string('http://www.wouterbeek.com', xfn:name, 'Wouter Beek', xfn),
   find_contacts('http://www.wouterbeek.com', DOM),
   export_contacts.

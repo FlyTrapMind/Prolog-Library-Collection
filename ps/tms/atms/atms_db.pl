@@ -235,7 +235,7 @@ add_environment(ATMS, Assumptions, Environment):-
   rdf_global_id(environment:AtomicID, Environment),
 
   % Assert the instance/definition relationship.
-  rdf_assert_individual(Environment, environment:environment, ccm),
+  rdf_assert_instance(Environment, environment:environment, ccm),
 
   % Assert the identifier.
   rdf_assert_datatype(Environment, environment:has_id, ID, xsd:integer, ccm),
@@ -312,7 +312,7 @@ add_justification(Informant, Consequence, Antecedents, Justification):-
   flag(JustificationsFlag, ID, ID + 1),
   atom_number(AtomicID, ID),
   rdf_global_id(justification:AtomicID, Justification),
-  rdf_assert_individual(Justification, justification:justification, ccm),
+  rdf_assert_instance(Justification, justification:justification, ccm),
   rdf_assert_datatype(Justification, justification:has_id, ID, xsd:integer, ccm),
   rdfs_assert_label(Justification, AtomicID, ccm),
   rdf_assert(ATMS, atms:has_justification, Justification, ccm),
@@ -390,12 +390,12 @@ add_node(ATMS, Datum, IsAssumption, IsContradiction, Node):-
     atom_number(AtomicID, ID),
     atomic_concat(falsum, AtomicID, NodeName),
     rdf_global_id(node:NodeName, Node),
-    rdf_assert_individual(Node, node:falsum, ccm)
+    rdf_assert_instance(Node, node:falsum, ccm)
   ;
     atom(Datum)
   ->
     rdf_global_id(node:Datum, Node),
-    rdf_assert_individual(Node, node:nnode, ccm),
+    rdf_assert_instance(Node, node:nnode, ccm),
     NodeName = Datum
   ;
     % This should never be the case.

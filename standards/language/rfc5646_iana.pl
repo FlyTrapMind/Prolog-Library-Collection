@@ -180,7 +180,7 @@ create_subtag_resource(Type, Subtag, G, LanguageSubtag2):-
   ),
   atom_codes(LanguageSubtag2, LanguageSubtag1),
   rdfs_label(Class, Type),
-  rdf_assert_individual(LanguageSubtag2, Class, G),
+  rdf_assert_instance(LanguageSubtag2, Class, G),
   rdfs_assert_label(LanguageSubtag2, Subtag, G).
 
 init_rfc5646_schema:-

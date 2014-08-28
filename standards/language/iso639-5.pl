@@ -41,7 +41,7 @@ The codes are mapped to Lexvo Semantic Web URIs.
     'iso639-5'(Name, Lang1, _, _),
     (
       rdf_global_id(Lang1, Lang2),
-      rdf_assert_individual(Lang2, 'iso639-5':'LanguageFamily', G),
+      rdf_assert_instance(Lang2, 'iso639-5':'LanguageFamily', G),
       rdfs_assert_label(Lang2, en, Name, G)
     )
   ).

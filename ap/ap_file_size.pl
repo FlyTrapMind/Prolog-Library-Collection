@@ -68,7 +68,7 @@ file_size(FromDir, ToDir, ApStage):-
 
 
 file_size_filter(FromDir, ToDir, ApStage, MAX_Size_MB):-
-  rdf_assert_individual(ApStage, ap:'Filter', ap),
+  rdf_assert_instance(ApStage, ap:'Filter', ap),
   directory_files([], FromDir, FromFiles),
   MAX_Size is MAX_Size_MB * 1024 * 1024,
   maplist(file_size_is_smaller_than(MAX_Size), FromFiles),

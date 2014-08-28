@@ -201,7 +201,7 @@ doyle_add_justification(Tms, InNs, OutNs, Label, Consequence, J):-
     true
   ;
     % @tbd For now we only support SL-justifications.
-    rdf_assert_individual(J, doyle:'SL-Justification', Tms),
+    rdf_assert_instance(J, doyle:'SL-Justification', Tms),
     rdfs_assert_label(J, Label, Tms),
 
     % Add the new justification to the node's justification-set.
@@ -407,7 +407,7 @@ doyle_add_node(Tms, rdf(S,P,O), N):- !,
   rdf_assert_statement(rdf(S,P,O), Tms, N),
   
   % @tbd Should we unify `tms:Node` and `rdf:Statement`?
-  rdf_assert_individual(N, tms:'Node', Tms),
+  rdf_assert_instance(N, tms:'Node', Tms),
   
   % Assert the RDFS label.
   rdfs_assert_label(N, Label, Tms),
@@ -421,7 +421,7 @@ doyle_add_node(Tms, Label, N):-
   ->
     true
   ;
-    rdf_assert_individual(N, tms:'Node', Tms),
+    rdf_assert_instance(N, tms:'Node', Tms),
     rdfs_assert_label(N, Label, Tms),
     % The initial support status.
     set_support_status(Tms, N, out)

@@ -93,7 +93,7 @@ add_done(AP):-
 
 
 add_operation_on_file(ApStage, File, Operation, Modifiers):-
-  rdf_assert_individual(ApStage, ap:'FileOperation', ap),
+  rdf_assert_instance(ApStage, ap:'FileOperation', ap),
   rdf_assert_string(ApStage, ap:file, File, ap),
   rdf_assert_string(ApStage, ap:operation, Operation, ap),
   forall(
@@ -103,7 +103,7 @@ add_operation_on_file(ApStage, File, Operation, Modifiers):-
 
 
 add_properties_of_file(ApStage, File, NVPairs):-
-  rdf_assert_individual(ApStage, ap:'FileProperties', ap),
+  rdf_assert_instance(ApStage, ap:'FileProperties', ap),
   rdf_assert_string(ApStage, ap:file, File, ap),
   maplist(add_nvpair, NVPairs, BNodes),
   forall(
@@ -113,14 +113,14 @@ add_properties_of_file(ApStage, File, NVPairs):-
 
 
 add_table(ApStage, Table):-
-  rdf_assert_individual(ApStage, ap:'Tables', ap),
+  rdf_assert_instance(ApStage, ap:'Tables', ap),
   rdf_assert(ApStage, ap:table, Table, ap).
 
 
 %! add_skip(+ApStage:iri) is det.
 
 add_skip(ApStage):-
-  rdf_assert_individual(ApStage, ap:'Skip', ap),
+  rdf_assert_instance(ApStage, ap:'Skip', ap),
   rdf_assert_string(ApStage, ap:status, skip, ap).
 
 

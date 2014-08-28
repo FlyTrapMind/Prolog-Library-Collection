@@ -35,9 +35,9 @@ skos_assert_broader(Broader, Narrower, Graph):-
   rdf_assert(Broader, skos:broader, Narrower, Graph).
 
 skos_assert_hierarchy(Root-Branches, Scheme, Graph):-
-  rdf_assert_individual(Scheme, skos:'ConceptScheme', Graph),
+  rdf_assert_instance(Scheme, skos:'ConceptScheme', Graph),
   rdf_assert(Scheme, skos:hasTopConcept, Root, Graph),
-  rdf_assert_individual(Root, skos:'Concept', Graph),
+  rdf_assert_instance(Root, skos:'Concept', Graph),
   skos_assert_tree(Root-Branches, Scheme, Graph).
 
 skos_assert_narrower(Narrower, Broader, Graph):-

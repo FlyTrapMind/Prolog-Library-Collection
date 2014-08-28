@@ -87,7 +87,7 @@ iana_register_mime(Type1, Subtype, DefaultExtension):-
 
   % Subtype.
   rdf_bnode(Registration),
-  rdf_assert_individual(Registration, Class, Graph),
+  rdf_assert_instance(Registration, Class, Graph),
   rdf_assert_string(Registration, iana:name, Subtype, Graph),
   rdfs_assert_label(Registration, Subtype, Graph),
   

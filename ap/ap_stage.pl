@@ -70,7 +70,7 @@ ap_stage_begin(O1, ApStage):-
   debug(ap, '  Starting AP Stage ~w at ~w.', [Name,DateTime]).
 
 ap_catcher(ApStage, Error, ApStages):-
-  rdf_assert_individual(ApStage, ap:'Error', ap),
+  rdf_assert_instance(ApStage, ap:'Error', ap),
   rdf_assert_string(ApStage, ap:status, error, ap),
   with_output_to(atom(Atom), write_canonical_blobs(Error)),
   rdf_assert_string(ApStage, ap:error, Atom, ap),
@@ -79,7 +79,7 @@ ap_catcher(ApStage, Error, ApStages):-
 never_reached(_, []):- !.
 never_reached(AP_Stage1, [_:ap_stage(O1,_)|T]):-
   create_next_stage(AP_Stage1, AP_Stage2),
-  rdf_assert_individual(AP_Stage2, ap:'NeverReached', ap),
+  rdf_assert_instance(AP_Stage2, ap:'NeverReached', ap),
   ap_stage_begin(O1, AP_Stage2),
   rdf_assert_string(AP_Stage2, ap:status, never_reached, ap),
   never_reached(AP_Stage2, T).

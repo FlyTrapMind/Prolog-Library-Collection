@@ -36,7 +36,7 @@ The ISO 639-3 standard for language codes with Lexvo Semantic Web URIs.
     'iso639-3'(Lang1, _, _),
     (
       rdf_global_id(Lang1, Lang2),
-      rdf_assert_individual(Lang2, 'iso639-3':'Language', G)
+      rdf_assert_instance(Lang2, 'iso639-3':'Language', G)
     )
   ).
 
