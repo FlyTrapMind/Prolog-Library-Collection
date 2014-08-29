@@ -165,7 +165,6 @@ is_url(Url):-
   uri_components(Url, uri_components(Scheme,_,_,_,_)),
   nonvar(Scheme),
   memberchk(Scheme, [ftp,http,https]).
-  %%%%iana_uri_scheme(Scheme), !.
 
 
 %! negative_float(@Term) is semidet.
