@@ -9,6 +9,7 @@
     run_collect_messages/3, % :Goal
                             % -Status:or([oneof([false,true]),compound])
                             % -Messages:list(compound)
+    run_print_messages/1, % :Goal
     store_term_to_log/2, % +File:atom
                          % @Term
     write_canonical_blobs/1, % @Term
@@ -30,6 +31,7 @@ Logging the performance and results of Prolog predicates.
 :- meta_predicate(run_collect_messages(0)).
 :- meta_predicate(run_collect_messages(0,+)).
 :- meta_predicate(run_collect_messages(0,-,-)).
+:- meta_predicate(run_print_messages(0)).
 
 
 
@@ -37,6 +39,24 @@ Logging the performance and results of Prolog predicates.
 
 canonical_blobs_atom(Term, Atom):-
   with_output_to(atom(Atom), write_canonical_blobs(Term)).
+
+
+%! replace_blobs(Term0, Term) is det.
+% Copy Term0 to Term, replacing non-text blobs.
+% This is required for error messages that may hold streams
+% and other handles to non-readable objects.
+
+replace_blobs(NIL, NIL):-
+  NIL == [], !.
+replace_blobs(Blob, Atom):-
+  blob(Blob, Type), Type \== text, !,
+  format(atom(Atom), '~p', [Blob]).
+replace_blobs(Term0, Term):-
+  compound(Term0), !,
+  compound_name_arguments(Term0, Name, Args0),
+  maplist(replace_blobs, Args0, Args),
+  compound_name_arguments(Term, Name, Args).
+replace_blobs(Term, Term).
 
 
 %! run_collect_messages(:Goal) is det.
@@ -71,6 +91,13 @@ run_collect_messages(Goal, Status, Messages):-
   check_installation:run_collect_messages(Goal, Status, Messages).
 
 
+%! run_print_messages(:Goal) is det.
+
+run_print_messages(Goal):-
+  run_collect_messages(Goal, Status, Warnings),
+  print_message(run_print_messages(Status,Warnings)).
+
+
 %! store_term_to_log(+File:atom, @Term) is det.
 
 store_term_to_log(File, exception(Error)):- !,
@@ -98,20 +125,35 @@ write_canonical_blobs(Stream, Term):-
   replace_blobs(Term, AtomBlobs),
   write_term(Stream, AtomBlobs, [quoted(true)]).
 
-%! replace_blobs(Term0, Term) is det.
-% Copy Term0 to Term, replacing non-text blobs.
-% This is required for error messages that may hold streams
-% and other handles to non-readable objects.
 
-replace_blobs(NIL, NIL):-
-  NIL == [], !.
-replace_blobs(Blob, Atom):-
-  blob(Blob, Type), Type \== text, !,
-  format(atom(Atom), '~p', [Blob]).
-replace_blobs(Term0, Term):-
-  compound(Term0), !,
-  compound_name_arguments(Term0, Name, Args0),
-  maplist(replace_blobs, Args0, Args),
-  compound_name_arguments(Term, Name, Args).
-replace_blobs(Term, Term).
+
+% Messages
+
+:- multifile(prolog:message/1).
+
+prolog:message(run_print_messages(Status,Warnings)) -->
+  status(Md5, Status),
+  warnings(Warnings).
+
+lines([]) --> [].
+lines([H|T]) -->
+  [H],
+  lines(T).
+
+% @tbd Send an email whenever an MD5 fails.
+status(_, false) --> !,
+  ['    [STATUS] FALSE',nl].
+status(_, true) --> !.
+status(_, Status) -->
+  ['    [STATUS] ~w'-[Status],nl].
+
+warning(message(_,Kind,Lines)) -->
+  ['    [MESSAGE(~w)] '-[Kind]],
+  lines(Lines),
+  [nl].
+
+warnings([]) --> !, [].
+warnings([H|T]) -->
+  warning(H),
+  warnings(T).
 
