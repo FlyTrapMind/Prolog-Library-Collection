@@ -23,10 +23,10 @@
 Logging the performance and results of Prolog predicates.
 
 @author Wouter Beek
-@version 2014/04, 2014/06
+@version 2014/04, 2014/06, 2014/08
 */
 
-:- use_module(library(check_installation)).
+:- use_module(library(check_installation)). % Private predicates.
 
 :- meta_predicate(run_collect_messages(0)).
 :- meta_predicate(run_collect_messages(0,+)).
@@ -95,7 +95,7 @@ run_collect_messages(Goal, Status, Messages):-
 
 run_print_messages(Goal):-
   run_collect_messages(Goal, Status, Warnings),
-  print_message(run_print_messages(Status,Warnings)).
+  print_message(informational, run_print_messages(Status,Warnings)).
 
 
 %! store_term_to_log(+File:atom, @Term) is det.
@@ -132,7 +132,7 @@ write_canonical_blobs(Stream, Term):-
 :- multifile(prolog:message/1).
 
 prolog:message(run_print_messages(Status,Warnings)) -->
-  status(Md5, Status),
+  status(Status),
   warnings(Warnings).
 
 lines([]) --> [].
@@ -141,10 +141,10 @@ lines([H|T]) -->
   lines(T).
 
 % @tbd Send an email whenever an MD5 fails.
-status(_, false) --> !,
+status(false) --> !,
   ['    [STATUS] FALSE',nl].
-status(_, true) --> !.
-status(_, Status) -->
+status(true) --> !.
+status(Status) -->
   ['    [STATUS] ~w'-[Status],nl].
 
 warning(message(_,Kind,Lines)) -->
