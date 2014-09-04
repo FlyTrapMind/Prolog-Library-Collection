@@ -37,7 +37,7 @@ text_to_speech(Input):-
 
 :- if(is_unix).
 text_to_speech_unix(Input):-
-  process_create(path(espeak), [Input], [detached(true)]).
+  process_create(path(espeak), ['--',Input], [detached(true)]).
 :- endif.
 
 :- if(is_windows).
