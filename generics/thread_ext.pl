@@ -51,8 +51,8 @@ Allows one to monitor running threads that register.
 :- use_module(pl(pl_control)).
 
 :- meta_predicate(forall_thread(0,0,+,+)).
-:- meta_predicate(intermittent_goal(:,:,+)).
-:- meta_predicate(intermittent_thread(:,:,+,-,+)).
+:- meta_predicate(intermittent_goal(0,0,+)).
+:- meta_predicate(intermittent_thread(0,0,+,-,+)).
 :- meta_predicate(run_on_sublists(+,1,+)).
 
 :- dynamic(end_flag/2).
