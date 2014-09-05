@@ -6,9 +6,9 @@
   ]
 ).
 
-/** <module> RFC 2616 Content-Length header
+/** <module> RFC 2616 Content-Type header
 
-Support for the `Content-Length` header in RFC 2616.
+Support for the `Content-Type` header in RFC 2616.
 
 @author Wouter Beek
 @version 2014/01
@@ -20,9 +20,9 @@ Support for the `Content-Length` header in RFC 2616.
 
 %! 'Content-Type'(-ParseTree:compound, +ContentType:compound)// is det.
 % The `Content-Type` entity-header field indicates the media type
-%  of the entity-body sent to the recipient or,
-%  in the case of the `HEAD` method, the media type that would have been sent
-%  had the request been a `GET`.
+% of the entity-body sent to the recipient or,
+% in the case of the `HEAD` method, the media type that would have been sent
+% had the request been a `GET`.
 %
 % ~~~{.abnf}
 % Content-Type = "Content-Type" ":" media-type
@@ -39,4 +39,4 @@ Support for the `Content-Length` header in RFC 2616.
 'Content-Type'('Content-Type'(T1), 'Content-Type'(MediaType)) -->
   "Content-Type:",
   'media-type'(T1, MediaType).
-  
+

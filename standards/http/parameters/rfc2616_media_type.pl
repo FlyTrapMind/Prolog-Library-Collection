@@ -6,17 +6,20 @@
   ]
 ).
 
-/** <module> RFC 2616 media types
+/** <module> RFC 2616 media type
+
+Implementation of the media type parameter in RFC 2616.
 
 @author Wouter Beek
 @see RFC 2616
 @version 2013/12, 2014/02
 */
 
+:- use_module(http(rfc2616_generic)).
+
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(parse_tree)).
-:- use_module(http(rfc2616_generic)).
 
 
 
@@ -37,7 +40,7 @@
 %
 % Parameter values might or might not be case-sensitive,
 %  depending on the semantics of the parameter name.
-% `LWS` MUST NOT be used between an attribute and its value.
+%  `LWS` MUST NOT be used between an attribute and its value.
 %
 % # Semantics
 %
@@ -152,19 +155,21 @@
 
 'media-type'(T0, media_type(Type,Subtype,Params)) -->
   type(T1, Type),
-  forward_slash,
+  "/",
   subtype(T2, Subtype),
   parameters(Ts, Params),
   {parse_tree('media-type', [T1,T2|Ts], T0)}.
 
+
 parameters([T1|Ts], [H|T]) -->
-  semi_colon, blanks,
+  ";", blanks,
   parameter(T1, H),
   parameters(Ts, T).
 parameters([], []) --> [].
 
-%! subtype(-ParseTree:compound, Subtype:atom)// .
-%! type(-ParseTree:compound, Type:atom)// .
+
+%! subtype(-ParseTree:compound, ?Subtype:atom)// .
+%! type(-ParseTree:compound, ?Type:atom)// .
 %
 % # Syntax
 %
@@ -177,8 +182,9 @@ parameters([], []) --> [].
 %
 % `LWS` MUST NOT be used between the type and subtype.
 
-type(type(Type), Type) -->
-  token(Type).
 subtype(subtype(Subtype), Subtype) -->
   token(Subtype).
+
+type(type(Type), Type) -->
+  token(Type).
 

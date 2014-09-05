@@ -10,6 +10,8 @@
                             % -Status:or([oneof([false,true]),compound])
                             % -Messages:list(compound)
     run_print_messages/1, % :Goal
+    run_print_messages/2, % :Goal
+                          % -Status
     store_term_to_log/2, % +File:atom
                          % @Term
     write_canonical_blobs/1, % @Term
@@ -23,7 +25,7 @@
 Logging the performance and results of Prolog predicates.
 
 @author Wouter Beek
-@version 2014/04, 2014/06, 2014/08
+@version 2014/04, 2014/06, 2014/08-2014/09
 */
 
 :- use_module(library(check_installation)). % Private predicates.
@@ -32,6 +34,7 @@ Logging the performance and results of Prolog predicates.
 :- meta_predicate(run_collect_messages(0,+)).
 :- meta_predicate(run_collect_messages(0,-,-)).
 :- meta_predicate(run_print_messages(0)).
+:- meta_predicate(run_print_messages(0,-)).
 
 
 
@@ -94,6 +97,12 @@ run_collect_messages(Goal, Status, Messages):-
 %! run_print_messages(:Goal) is det.
 
 run_print_messages(Goal):-
+  run_print_messages(Goal, _).
+
+
+%! run_print_messages(:Goal, -Status) is det.
+
+run_print_messages(Goal, Status):-
   run_collect_messages(Goal, Status, Warnings),
   print_message(warning, run_print_messages(Status,Warnings)).
 
