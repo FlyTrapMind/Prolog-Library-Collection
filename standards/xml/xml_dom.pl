@@ -16,7 +16,7 @@
                                      % +Class:atom
                                      % AttributeValuePairs:list(nvpair)
                                      % -NewDOM:dom
-    xml_url_to_dom/2 % +Url:rl
+    xml_url_to_dom/2 % +Url:url
                      % -XmlDom:list(compound)
   ]
 ).
