@@ -5,11 +5,6 @@
                       % +Method:oneof([delete,get,head,option,post,put])
                       % +Accept:pair(atom)
                       % -Location:url
-    request_filter/5, % +Request:list(nvpair)
-                      % +Method:oneof([delete,get,head,option,post,put])
-                      % +Accept:atom
-                      % -Location:url
-                      % -LocationComponents:pair(url,atom)
     request_query_nvpair/3, % +Request:list(nvpair)
                             % +Name:atom
                             % -Value
@@ -31,26 +26,19 @@ Additional support for requests.
 @version 2014/08-2014/09
 */
 
-:- use_module(library(http/http_cors)).
+:- use_module(library(http/http_path)).
 
 
 
 request_filter(Request, Method, Accept, Location):-
-gtrace,
-  cors_enable,
-  writeln(Request),
-  Method = Request,
-  Accept = Request,
-  Location = Request.
+  memberchk(method(Method), Request),
+  request_filter_accept(Accept, Request),
+  memberchk(path(Path), Request),
+  http_absolute_uri(Path, Location).
 
-
-request_filter(Request, Method, Accept, Location, LocationComponents):-
-  request_filter(Request, Method, Accept, Location),
-  split_location(Request, Location, LocationComponents).
-
-split_location(_Request, Location, Base-Path):-
-  Base = Location,
-  Path = Location.
+request_filter_accept(X/Y, Request):-
+  memberchk(accept(Accept), Request),
+  memberchk(media(X/Y,_,_,_), Accept).
 
 
 %! request_query_nvpair(+Request:list(nvpair), +Name:atom, -Value) is det.
