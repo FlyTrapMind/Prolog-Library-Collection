@@ -38,7 +38,13 @@ request_filter(Request, Method, Accept, Location):-
 
 request_filter_accept(X/Y, Request):-
   memberchk(accept(Accept), Request),
-  memberchk(media(X/Y,_,_,_), Accept).
+  once((
+    % For some entries in `Request`
+    % the media type may be uninstantiated.
+    member(media(X0/Y0,_,_,_), Accept),
+    ground(X0/Y0),
+    X/Y = X0/Y0
+  )).
 
 
 %! request_query_nvpair(+Request:list(nvpair), +Name:atom, -Value) is det.
