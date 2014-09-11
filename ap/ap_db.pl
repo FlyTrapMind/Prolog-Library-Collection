@@ -39,7 +39,7 @@
 /** <module> Automated Processes databases
 
 @author Wouter Beek
-@version 2014/02-2014/03
+@version 2014/02-2014/03, 2014/09
 */
 
 :- use_module(library(apply)).
@@ -182,5 +182,7 @@ create_next_stage(AP_Stage1, AP_Stage2):-
 
 
 create_resource(BaseName, Resource):-
-  rdf_create_next_resource(ap, BaseName, Resource, ap).
+  rdf_global_id(ap:BaseName, Class),
+  rdf_create_next_resource(BaseName, ap, Resource),
+  rdf_assert_instance(Resource, Class, ap).
 
