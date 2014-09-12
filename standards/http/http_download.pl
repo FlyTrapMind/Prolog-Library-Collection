@@ -83,7 +83,7 @@ download_to_file(Url, File, Options):-
   file_name_extension(File, ThreadName, TmpFile),
 
   % The actual downloading part.
-  http_goal(Url, Options, file_from_stream(TmpFile)),
+  http_goal(Url, file_from_stream(TmpFile), Options),
 
   % Give the file its original name.
   rename_file(TmpFile, File).
