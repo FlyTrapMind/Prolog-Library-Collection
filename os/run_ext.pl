@@ -31,7 +31,6 @@ Predicates for running external programs.
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
-:- use_module(library(predicate_options)). % Declarations.
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
