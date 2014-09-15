@@ -152,6 +152,8 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(plRdf(rdf_reification)).
 :- use_module(plRdf(rdfs_build)).
 :- use_module(plRdf(rdfs_label_ext)).
+:- use_module(plRdf_rei(rdf_reification_read)).
+:- use_module(plRdf_rei(rdf_reification_write)).
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_literal)).
 :- use_module(plRdf_term(rdf_string)).

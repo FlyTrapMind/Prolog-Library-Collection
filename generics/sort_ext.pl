@@ -24,7 +24,6 @@ Extensions for sorting lists.
 
 :- use_module(library(lists)).
 :- use_module(library(option)).
-:- use_module(library(predicate_options)). % Declarations.
 
 :- meta_predicate(predmerge_with_duplicates(2,+,+,-)).
 :- meta_predicate(predmerge_with_duplicates(2,+,+,+,+,+,-)).

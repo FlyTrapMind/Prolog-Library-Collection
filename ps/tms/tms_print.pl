@@ -21,7 +21,6 @@ Support for printing (aspects of) a TMS.
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(option)).
-:- use_module(library(predicate_options)). % Declarations.
 :- use_module(library(semweb/rdf_db)).
 
 :- use_module(generics(option_ext)).
