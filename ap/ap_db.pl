@@ -183,6 +183,6 @@ create_next_stage(AP_Stage1, AP_Stage2):-
 
 create_resource(BaseName, Resource):-
   rdf_global_id(ap:BaseName, Class),
-  rdf_create_next_resource(BaseName, ap, Resource),
+  rdf_create_next_resource(BaseName, ap, [], Resource),
   rdf_assert_instance(Resource, Class, ap).
 

@@ -32,7 +32,7 @@ Support for the query string part of URIs.
 @version 2014/03, 2014/05-2014/06, 2014/08
 */
 
-:- use_module(library(lambda)).
+:- use_module(generics(lambda_meta)).
 :- use_module(library(uri)).
 
 :- use_module(generics(meta_ext)).

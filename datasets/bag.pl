@@ -17,7 +17,7 @@ info@geodan.nl
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lambda)).
+:- use_module(generics(lambda_meta)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 
