@@ -60,6 +60,8 @@
                            % -BaseOrLastSubdir:atom
     link_file/2, % +ToDirectory:atom
                  % +FromFile:atom
+    mv2/2, % +From:atom
+           % +To:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
     new_file/2, % +File1:atom
@@ -100,7 +102,7 @@ We use the following abbreviations in this module:
 @author Wouter Beek
 @tbd Remove the dependency on module AP.
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-%        2014/08
+%        2014/08-2014/09
 */
 
 :- use_module(library(apply)).
@@ -450,6 +452,13 @@ last_path_component(Dir, LastSubdir):-
 link_file(ToDir, FromFile):-
   file_alternative(FromFile, ToDir, _, _, ToFile),
   link_file(FromFile, ToFile, symbolic).
+
+
+%! mv2(+From:atom, +To:atom) is det.
+
+mv2(From, To):-
+  copy_file(From, To),
+  delete_file(From).
 
 
 %! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.
