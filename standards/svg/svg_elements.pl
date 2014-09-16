@@ -27,7 +27,7 @@
 */
 
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 :- use_module(library(plunit)).
 :- use_module(svg(svg_generic)).

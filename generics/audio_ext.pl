@@ -30,7 +30,7 @@ In the furture services like Google translate
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
 
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_replace)).
 
 :- db_add_novel(user:prolog_file_type(mp3, audio)).

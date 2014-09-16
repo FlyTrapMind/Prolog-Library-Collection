@@ -494,7 +494,7 @@ a buffer limit in combination with truncation may be applied:
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 
 :- db_add_novel(user:prolog_file_type(txt, text)).

@@ -57,7 +57,7 @@ This requires the atom to be translated to/from a list of numeric codes.
 For example, escaping spaces and grave accent (e.g. in URIs):
 
 ~~~{.pl}
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
 :- use_module(plDcg(dcg_replace)).
 % Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT to `%60`).

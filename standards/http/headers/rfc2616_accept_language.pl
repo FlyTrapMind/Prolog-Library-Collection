@@ -27,7 +27,7 @@ DCG for the `Accept-Language` request header in RFC 2616.
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 
 

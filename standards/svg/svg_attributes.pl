@@ -73,7 +73,7 @@ DCG rules for SVG datatypes.
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 :- use_module(lang(rfc5646_dcg)).
 :- use_module(svg(svg_generic)).

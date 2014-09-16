@@ -16,7 +16,7 @@ Language tag parsing.
 */
 
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(lang('iso639-1')). % Used in meta-call.
 :- use_module(lang('iso639-2')). % Used in meta-call.
 

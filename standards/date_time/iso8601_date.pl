@@ -229,7 +229,7 @@ Example: =|+001985-W15|=
 :- use_module(datetime(iso8601_generic)).
 
 :- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 
 

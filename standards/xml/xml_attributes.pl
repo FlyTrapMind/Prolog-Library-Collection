@@ -38,7 +38,7 @@ DCG rules for XML attributes.
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(lang(rfc3066)).
 :- use_module(uri(rfc2396_dcg)).
 :- use_module(xml(xml_datatypes)).

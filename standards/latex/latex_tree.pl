@@ -16,7 +16,7 @@ Parses a LaTeX file and returns its syntax tree.
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
 :- use_module(library(pure_input)).
 

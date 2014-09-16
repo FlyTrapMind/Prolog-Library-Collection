@@ -32,7 +32,7 @@ Support for natural language dictionaries.
 :- use_module(os(archive_ext)).
 :- use_module(os(file_ext)).
 
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 
 :- db_add_novel(user:prolog_file_type(dic, dictionary)).
 

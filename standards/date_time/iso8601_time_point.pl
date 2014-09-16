@@ -305,7 +305,7 @@ reduced accuracy and/or with decimal fraction.
 :- use_module(math(math_ext)).
 
 :- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 
 

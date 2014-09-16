@@ -251,7 +251,7 @@ Function =|strftime()|= and utility =date=.
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(parse_tree)).
 
 

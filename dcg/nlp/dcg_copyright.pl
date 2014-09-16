@@ -17,7 +17,7 @@ DCGs for parsing copyright information.
 :- use_module(nlp(dcg_year)).
 
 :- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generic)).
+:- use_module(plDcg(dcg_generics)).
 
 
 
