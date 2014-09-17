@@ -38,7 +38,6 @@ Extensions to SWI-Prolog's library archive.
 @version 2014/04, 2014/06-2014/08
 */
 
-:- use_module(library(apply)).
 :- use_module(library(archive)).
 :- use_module(library(error)).
 :- use_module(library(http/http_open)).
@@ -54,8 +53,6 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
-
-:- use_module(plTree(tree)).
 
 :- thread_local(entry_path/1).
 :- thread_local(entry_property/2).
