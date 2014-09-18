@@ -1,6 +1,9 @@
 :- module(
   float_ext,
   [
+    float_between/3, % ?Low:float
+                     % ?High:float
+                     % +Number:float
     float_div/3, % +In1:float
                  % +In2:float
                  % -Out:float
@@ -20,9 +23,25 @@
 Support predicates for floating point values.
 
 @author Wouter Beek
-@version 2013/08, 2014/05
+@version 2013/08, 2014/05, 2014/09
 */
 
+
+
+%! float_between(?Low:float, ?High:float, +Number:float) is semidet.
+
+float_between(Low, High, Number):-
+  % Meet the lower boundary requirement.
+  (   var(Low)
+  ->  true
+  ;   Low =< Number
+  ),
+  
+  % Meet the higher boundary requirement.
+  (   var(High)
+  ->  true
+  ;   Number =< High
+  ).
 
 
 float_div(X, Y, Z):-
