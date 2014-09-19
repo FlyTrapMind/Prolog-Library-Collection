@@ -16,7 +16,6 @@
 
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg_rfc(rfc2234)).
 
 
@@ -62,7 +61,7 @@ uri_encoded_nvpair(NVPair) -->
   uri_encoded_atom(V).
 
 
-uri_encoded_atom(Atom) -->
+uri_encoded_atom(Atom1) -->
   {
     atom_codes(Atom1, Codes1),
     once(phrase(uri_encode, Codes1, Codes2))
