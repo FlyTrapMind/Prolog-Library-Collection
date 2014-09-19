@@ -55,20 +55,17 @@ uri_encoded_search([NVPair|T]) -->
   uri_encoded_search(T).
 
 
-uri_encoded_name(N) -->
-  atom(N).
-
-
 uri_encoded_nvpair(NVPair) -->
   {nvpair(N, V, NVPair)},
-  uri_encoded_name(N),
+  uri_encoded_atom(N),
   "=",
-  uri_encoded_value(V).
+  uri_encoded_atom(V).
 
 
-uri_encoded_value(V1) -->
-  {once(dcg_phrase(uri_encode, V1, V2))},
-  codes(V2).
-uri_encoded_value(V) -->
-  atom(V).
+uri_encoded_atom(Atom) -->
+  {
+    atom_codes(Atom1, Codes1),
+    once(phrase(uri_encode, Codes1, Codes2))
+  },
+  codes(Codes2).
 
