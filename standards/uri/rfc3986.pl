@@ -9,7 +9,7 @@
 /** <module> RFC 3986
 
 @author Wouter Beek
-@version 2014/06, 2014/08
+@version 2014/06, 2014/08-2014/09
 */
 
 :- use_module(generics(nvpair_ext)).
@@ -43,22 +43,32 @@ dec_to_hex_codes(Value, [C1,C2]):-
   hexadecimal_digit(C2, Value2, _, _).
 
 
+
 %! uri_encoded_search(+Parameters:list(nvpair))// is det.
 
-uri_encoded_search([]) --> [].
+uri_encoded_search([]) --> !, [].
+uri_encoded_search([NVPair]) --> !,
+  uri_encoded_nvpair(NVPair).
 uri_encoded_search([NVPair|T]) -->
-  {nvpair(N, V, NVPair)},
-  uri_encoded_search_name(N),
-  `=`,
-  uri_encoded_search_value(V),
+  uri_encoded_nvpair(NVPair),
+  "&",
   uri_encoded_search(T).
 
-uri_encoded_search_name(N) -->
+
+uri_encoded_name(N) -->
   atom(N).
 
-uri_encoded_search_value(V1) -->
+
+uri_encoded_nvpair(NVPair) -->
+  {nvpair(N, V, NVPair)},
+  uri_encoded_name(N),
+  "=",
+  uri_encoded_value(V).
+
+
+uri_encoded_value(V1) -->
   {once(dcg_phrase(uri_encode, V1, V2))},
   codes(V2).
-uri_encoded_search_value(V) -->
+uri_encoded_value(V) -->
   atom(V).
 
