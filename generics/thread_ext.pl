@@ -92,7 +92,7 @@ forall_thread(Antecedent, Consequent, Topic, Msg):-
   ).
 
 forall_thread_end(Topic, _Msg):-
-  debugging(Topic, false), !.
+  \+ debugging(Topic), !.
 forall_thread_end(Topic, Msg):-
   thread_self(Id),
   thread_property(Id, status(Status)),

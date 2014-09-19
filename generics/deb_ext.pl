@@ -69,7 +69,7 @@ fail_mode(ignore):-
 % @see library(debug)
 
 if_debug(Flag, _Goal):-
-  debugging(Flag, false), !.
+  \+ debugging(Flag), !.
 if_debug(_Flag, Goal):-
   call(Goal).
 
