@@ -3,6 +3,8 @@
   [
     atom_to_file/2, % +Atom:atom
                     % +File:atom
+    atom_to_stream/2, % +Atom:atom
+                      % -Read:stream
     codes_to_file/2, % +Codes:list(code)
                      % +File:atom
     copy_stream_line/2, % +From:stream
@@ -31,20 +33,22 @@
   ]
 ).
 
-/** <module> IO_EXT
+/** <module> Input/Output Extensions
 
 Predicates that extend the swipl builtin I/O predicates operating on streams.
 
 @author Wouter Beek
-@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03-2014/04
+@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03-2014/04, 2014/09
 */
 
-:- use_module(generics(codes_ext)).
+:- use_module(library(memfile)).
 :- use_module(library(readutil)).
 
+:- use_module(generics(codes_ext)).
 
 
-%! atom_to_file(+Atom:atom, -File:atom) is det.
+
+%! atom_to_file(+Atom:atom, +File:atom) is det.
 % Stores the given atom in the given file.
 %
 % @arg Atom An atom.
@@ -53,15 +57,23 @@ Predicates that extend the swipl builtin I/O predicates operating on streams.
 atom_to_file(Atom, File):-
   access_file(File, write),
   setup_call_cleanup(
-    open(File, write, Stream, [encoding(utf8),type(test)]),
-    format(Stream, '~w', [Atom]),
-    close(Stream)
+    open(File, write, Write),
+    format(Write, '~w', [Atom]),
+    close(Write)
   ).
+
+
+%! atom_to_stream(+Atom:atom, -Read:stream) is det.
+
+atom_to_stream(Atom, Read):-
+  atom_to_memory_file(Atom, Handle),
+  open_memory_file(Handle, read, Read, [free_on_close(true)]).
+
 
 codes_to_file(Codes, File):-
   access_file(File, write),
   setup_call_cleanup(
-    open(File, write, Stream, [encoding(utf8),type(test)]),
+    open(File, write, Stream, [encoding(utf8),type(text)]),
     put_codes(Stream, Codes),
     close(Stream)
   ).
@@ -94,14 +106,14 @@ file_from_stream(File, Read):-
 
 file_to_atom(File, Atom):-
   setup_call_cleanup(
-    open(File, read, Stream, [encoding(utf8),type(test)]),
+    open(File, read, Stream, [encoding(utf8),type(text)]),
     stream_to_atom(Stream, Atom),
     close(Stream)
   ).
 
 file_to_codes(File, Codes):-
   setup_call_cleanup(
-    open(File, read, Stream, [encoding(utf8),type(test)]),
+    open(File, read, Stream, [encoding(utf8),type(text)]),
     read_stream_to_codes(Stream, Codes),
     close(Stream)
   ).
