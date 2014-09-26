@@ -2,8 +2,8 @@
   service_db,
   [
     register_service/3, % +Service:atom
-                     % +User:atom
-                     % +Password:atom
+                        % +User:atom
+                        % +Password:atom
     service/3 % ?Service:atom
               % ?User:atom
               % ?Password:atom
