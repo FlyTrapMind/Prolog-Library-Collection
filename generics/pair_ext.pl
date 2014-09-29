@@ -3,6 +3,8 @@
   [
     inverse_pair/2, % ?Pair:pair
                     % ?Inverse:pair
+    list_pair/2, % ?List:list
+                 % ?Pair:pair
     number_of_equivalence_pairs/3, % +EquivalenceSets:list(ordset)
                                    % -NumberOfPairs:nonneg
                                    % +Options:list(nvpair)
@@ -36,7 +38,7 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/08
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/09
 */
 
 :- use_module(library(aggregate)).
@@ -80,6 +82,13 @@ error:has_type(pair(Type1,Type2), X-Y):-
 %! inverse_pair(-Pair:pair, +Inverse:pair) is det.
 
 inverse_pair(X-Y, Y-X).
+
+
+%! list_pair(+List:list, +Pair:pair) is semidet.
+%! list_pair(+List:list, -Pair:pair) is det.
+%! list_pair(-List:list, +Pair:pair) is det.
+
+list_pair([X,Y], X-Y).
 
 
 %! number_of_equivalence_pairs(
