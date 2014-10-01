@@ -55,5 +55,5 @@ single_terminal_value(Code) -->
   base(Radix),
   hexadecimal_digit(_, H1),
   hexadecimal_digit(_, H2),
-  {digits_to_decimal([H1,H2], Radix, Code)}.
+  {digits_decimal([H1,H2], Radix, Code)}.
 

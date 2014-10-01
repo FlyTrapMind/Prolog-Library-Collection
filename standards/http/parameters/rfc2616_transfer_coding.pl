@@ -139,7 +139,7 @@ chunk(T0, ChunkExtensions, ChunkSize, ChunkData) -->
 'chunk-size'('chunk-size'(H), ChunkSize) -->
   '+'('HEX', Hs),
   {atomic_list_concat(Hs, H)},
-  {digits_to_decimal(Hs, 16, ChunkSize)}.
+  {digits_decimal(Hs, 16, ChunkSize)}.
 
 
 %! 'Chunked-Body'(

@@ -310,23 +310,23 @@ ls32(ls32(T1)) -->
 'dec-octet'('dec-octet'(N)) -->
   between_decimal_digit(1, 9, _, D1),
   'DIGIT'(_, D2),
-  {digits_to_decimal([D1,D2], N)}.
+  {digits_decimal([D1,D2], N)}.
 % 100-199
 'dec-octet'('dec-octet'(N)) -->
   "1",
   dcg_multi2('DIGIT', 2, _, [D2,D3]),
-  {digits_to_decimal([1,D2,D3], N)}.
+  {digits_decimal([1,D2,D3], N)}.
 % 200-249
 'dec-octet'('dec-octet'(N)) -->
   "2",
   between_decimal_digit(0, 4, _, D2),
   'DIGIT'(_, D3),
-  {digits_to_decimal([2,D2,D3], N)}.
+  {digits_decimal([2,D2,D3], N)}.
 % 250-255
 'dec-octet'('dec-octet'(N)) -->
   "25",
   between_decimal_digit(0, 5, _, D3),
-  {digits_to_decimal([2,5,D3], N)}.
+  {digits_decimal([2,5,D3], N)}.
 
 
 %! 'IPvFuture'(-ParseTree:compound)// .
@@ -578,7 +578,7 @@ iunreserved(C) --> ucschar(C).
   "%",
   'HEXDIG'(H1),
   'HEXDIG'(H2),
-  {digits_to_decimal([H1,H2], 16, C)}.
+  {digits_decimal([H1,H2], 16, C)}.
 
 
 %! 'sub-delims'(?Code:code)// .

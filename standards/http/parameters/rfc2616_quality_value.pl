@@ -68,7 +68,7 @@ qvalue(qvalue(1.0), 1.0) -->
 qvalue_any(QualityValue) -->
   `.`,
   'm*n'(0, 3, 'DIGIT', _, Digits),
-  {digits_to_decimal(Digits, QualityValue)}.
+  {digits_decimal(Digits, QualityValue)}.
 
 qvalue_zero -->
   `.`,

@@ -6,16 +6,11 @@
                    % ?Number:integer
     dec_to_hex/2, % +DecimalNumber:nonneg,
                   % -HexadecimalNumber:atom
-    decimal_to_digits/2, % +DecimalNumber:integer
-                         % -DecimalDigits:list(between(0,9))
-    decimal_to_digits/3, % +DecimalNumber:integer
-                         % +Radix:oneof([2,8,10])
-                         % -DecimalDigits:list(between(0,9))
-    digits_to_decimal/2, % +DecimalDigits:list(between(0,9))
-                         % -DecimalNumber:integer
-    digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
-                         % +Radix:integer
-                         % -DecimalNumber:integer
+    digits_decimal/2, % +DecimalDigits:list(nonneg)
+                      % -DecimalNumber:nonneg
+    digits_decimal/3, % +DecimalDigits:list(nonneg)
+                      % +Radix:positive_integer
+                      % -DecimalNumber:nonneg
     hex_value/2, % +HexadecimalValue:atom
                  % -DecimalValue:nonneg
     number_to_decimal/3 % +RadixNumber:atomic
@@ -31,11 +26,12 @@ Predicate for transforming numbers with a different radix.
 @author Wouter Beek
 @tbd Study the radix topic further and reimplement these predicates
      in a more generic way.
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2014/09
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
 
 
 
@@ -43,57 +39,6 @@ between_hex(LowHex, HighHex, Number):-
   number_to_decimal(LowHex, 16, Low),
   number_to_decimal(HighHex, 16, High),
   between(Low, High, Number).
-
-decimal_to_digits(DecimalNumber, DecimalDigits):-
-  atom_chars(DecimalNumber, Chars),
-  maplist(atom_number, Chars, DecimalDigits).
-
-decimal_to_digits(D, R, Sol):-
-  decimal_to_digits(D, R, [], Sol).
-
-decimal_to_digits(D, R, A, A):-
-  D < R, !.
-decimal_to_digits(D, R, A, Sol):-
-  H is D mod R,
-  NewD is D // R,
-  decimal_to_digits(NewD, R, [H|A], Sol).
-
-digits_to_decimal(DecimalDigits, DecimalNumber):-
-  digits_to_decimal(DecimalDigits, 10, DecimalNumber).
-
-%! digits_to_decimal(
-%!   +DecimalDigits:list(integer),
-%!   +Radix:integer,
-%!   -DecimalNumber:integer
-%! ) is det.
-% Process the decimal digits from left to right, using the radix to multiply
-% the result at each step; returning the decimal number.
-%
-% @arg DecimalDigits A list of decimal digits.
-%      Conversion from -- for instance -- hexadecimal digits has
-%      already occured before this predicate is invoked.
-% @arg Radix An integer indicating the radix of the decimal digits.
-% @arg DecimalNumber An integer that is the given decimal digits
-%      under the given radix.
-
-digits_to_decimal(Ds, Radix, D):-
-  aggregate_all(
-    sum(ToDPart),
-    (
-      nth0(Position, Ds, FromD),
-      ToDPart is FromD * Radix ** Position
-    ),
-    D
-  ).
-
-
-%! hex_value(-HexadecimalValue:atom, +DecimalValue:nonneg) is det.
-%! hex_value(+HexadecimalValue:atom, -DecimalValue:nonneg) is det.
-% @tbd Allow negative values.
-
-hex_value(HexValue, DecValue):-
-  atom_chars(HexValue, HexDigits),
-  hex_digits(HexDigits, 0, DecValue).
 
 
 %! dec_hex(+Dec:nonneg, +Hex:atom) is semidet.
@@ -119,6 +64,46 @@ dec_to_hex_(Dec1, [H|T]):-
   code_type(H, xdigit(Rem)),
   Dec2 is (Dec1 - Rem) / 16,
   dec_to_hex_(Dec2, T).
+
+
+%! digits_decimal(+Digits:list(nonneg), -Decimal:nonneg) is det.
+%! digits_decimal(-Digits:list(nonneg), +Decimal:nonneg) is det.
+
+digits_decimal(Digits, Decimal):-
+  digits_decimal(Digits, 10, Decimal).
+
+
+%! digits_decimal(+Digits:list(nonneg), +Radix:nonneg, -Decimal:nonneg) is det.
+%! digits_decimal(-Digits:list(nonneg), +Radix:nonneg, +Decimal:nonneg) is det.
+
+digits_decimal(Digits, Radix, Decimal):-
+  (   nonvar(Decimal)
+  ->  decimal_to_digits(Decimal, Radix, Digits0),
+      reverse(Digits0, Digits)
+  ;   digits_to_decimal(Digits, Radix, _, Decimal)
+  ).
+
+decimal_to_digits(Digit, Radix, [Digit]):-
+  Digit =< Radix, !.
+decimal_to_digits(Decimal, Radix, [Digit|Digits]):-
+  Digit is Decimal mod Radix,
+  Decimal0 is Decimal // Radix,
+  decimal_to_digits(Decimal0, Radix, Digits).
+
+digits_to_decimal([Digit], _, 0, Digit):- !.
+digits_to_decimal([Digit|Digits], Radix, Position, Decimal):-
+  digits_to_decimal(Digits, Radix, Position0, Decimal0),
+  succ(Position0, Position),
+  Decimal is Decimal0 + Digit * Radix ** Position.
+
+
+%! hex_value(-HexadecimalValue:atom, +DecimalValue:nonneg) is det.
+%! hex_value(+HexadecimalValue:atom, -DecimalValue:nonneg) is det.
+% @tbd Allow negative values.
+
+hex_value(HexValue, DecValue):-
+  atom_chars(HexValue, HexDigits),
+  hex_digits(HexDigits, 0, DecValue).
 
 
 %! hex_to_dec(+Hex:atom, -Dec:nonneg) is det.
@@ -154,7 +139,7 @@ hex_digits([H|T], N1, N):-
 number_to_decimal(RadixNumber, Radix, DecimalNumber):-
   atom_chars(RadixNumber, RadixDigits),
   maplist(number_to_decimal, RadixDigits, DecimalDigits),
-  digits_to_decimal(DecimalDigits, Radix, DecimalNumber).
+  digits_decimal(DecimalDigits, Radix, DecimalNumber).
 
 number_to_decimal(RadixDigit, DecimalNumber):-
   char_type(RadixDigit, xdigit(DecimalNumber)).
