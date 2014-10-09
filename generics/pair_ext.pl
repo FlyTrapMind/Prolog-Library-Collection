@@ -13,6 +13,10 @@
             % ?Element2
     pair_element/2, % ?Pair:pair
                     % ?Element
+    pair_first/2, % +Pair:pair
+                  % ?First
+    pair_second/2, % +Pair:pair
+                   % ?Second
     pairs_to_set/2, % +Pairs:list(pair)
                     % -Members:list
     pairs_to_sets/2, % +Pairs:list(pair(iri))
@@ -137,6 +141,18 @@ pair(X-Y, X, Y).
 
 pair_element(X-_, X).
 pair_element(_-Y, Y).
+
+
+%! pair_first(+Pair:pair, +First) is semidet.
+%! pair_first(+Pair:pair, -First) is det.
+
+pair_first(X-_, X).
+
+
+%! pair_second(+Pair:pair, +Second) is semidet.
+%! pair_second(+Pair:pair, -Second) is det.
+
+pair_second(X-_, X).
 
 
 %! pairs_to_set(+Pairs:list(pair), -Set:ordset) is det.
