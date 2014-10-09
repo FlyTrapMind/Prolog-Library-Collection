@@ -113,35 +113,29 @@ archive_extract(Source, Dir, Filters, EntryPairs2):-
 archive_extract0(Archive, Filters, Dir):-
   archive_filters(Archive, Filters),
   repeat,
-  (
-    archive_next_header(Archive, RelativeFile),
-    forall(
-      archive_header_property(Archive, Property),
-      assert(entry_property(RelativeFile, Property))
-    )
-  ->
-    setup_call_cleanup(
-      archive_open_entry(Archive, Read),
-      (
-        relative_file_path(File, Dir, RelativeFile),
-	% Directory files are re-created.
-	% Non-directory files are copied from stream.
-	(
-	  entry_property(RelativeFile, filetype(directory))
-	->
-	  make_directory_path(File)
-	;
-          create_file_directory(File),
-          file_from_stream(File, Read)
-	),
-        %%%%print_message(informational, archive_extracted(File)),
-        true
+  (   archive_next_header(Archive, RelativeFile),
+      forall(
+        archive_header_property(Archive, Property),
+        assert(entry_property(RelativeFile, Property))
+      )
+  ->  setup_call_cleanup(
+        archive_open_entry(Archive, Read),
+        (
+          relative_file_path(File, Dir, RelativeFile),
+          % Directory files are re-created.
+          % Non-directory files are copied from stream.
+          (   entry_property(RelativeFile, filetype(directory))
+          ->  make_directory_path(File)
+          ;   create_file_directory(File),
+              file_from_stream(File, Read)
+          ),
+          %%%%print_message(informational, archive_extracted(File))
+        ),
+        close(Read)
       ),
-      close(Read)
-    ),
-    fail
-  ; !,
-    true
+      fail
+  ;   !,
+      true
   ).
 
 
