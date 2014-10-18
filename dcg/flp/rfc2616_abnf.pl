@@ -1,69 +1,55 @@
 :- module(
   rfc2616_abnf,
   [
-    % One argument
-    abnf_list1//3, % :ElementDCG
-                   % ?Repetition:pair(nonneg,or([nonneg,oneof([inf])]))
-                   % ?Arguments:list
-    abnf_list1//4, % :ElementDCG
-                   % ?Repetition:pair(nonneg,or([nonneg,oneof([inf])]))
-                   % ?Arguments:list
-                   % -Count:nonneg
-    % Two arguments
-    abnf_list2//4, % :ElementDCG
-                   % ?Repetition:pair(nonneg,or([nonneg,oneof([inf])]))
-                   % ?Arguments1:list
-                   % ?Arguments2:list
-    abnf_list2//5 % :ElementDCG
-                  % ?Repetition:pair(nonneg,or([nonneg,oneof([inf])]))
-                  % ?Arguments1:list
-                  % ?Arguments2:list
-                  % -Count:nonneg
+    'm#n'//4, 'm#n'//5, 'm#n'//6, 'm#n'//7, 'm#n'//8, 'm#n'//9
   ]
 ).
 
-/** <module> RFC 2616 ABNF
+/** <module> RFC 2616: ABNF
 
-DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
+DCG implementation of the ABNF extension rules defined by RFC 2616 (HTTP 1.1).
 
 @author Wouter Beek
 @see RFC 2616
-@version 2013/12
+@version 2013/12, 2014/10
 */
 
 :- use_module(library(apply)).
 
-:- use_module(plDcg(dcg_multi)).
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg_rfc(rfc2616_basic)).
 
 :- use_module(plDcg(dcg_meta)).
 
-:- meta_predicate rfc2616_abnf:abnf_list1(3,?,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list1(3,?,?,-,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list2(4,?,?,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list2(4,?,?,?,-,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_nonvar(3,+,+,-,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_nonvar(4,+,+,-,?,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var(3,+,+,+,-,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var(4,+,+,+,-,?,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var_(3,+,+,+,-,?,?,?).
-:- meta_predicate rfc2616_abnf:abnf_list_var_(4,+,+,+,-,?,?,?,?).
+:- meta_predicate('m#n'(?,?,//,+,?,?)).
+:- meta_predicate('m#n'(?,?,3,+,?,?,?)).
+:- meta_predicate('m#n'(?,?,4,+,?,?,?,?)).
+:- meta_predicate('m#n'(?,?,5,+,?,?,?,?,?)).
+:- meta_predicate('m#n'(?,?,6,+,?,?,?,?,?,?)).
+:- meta_predicate('m#n'(?,?,7,+,?,?,?,?,?,?,?)).
+
+:- predicate_options('m#n'//4, 4, [
+     pass_to('m*n'//4, 4)
+   ]).
+:- predicate_options('m#n'//5, 5, [
+     pass_to('m*n'//5, 5)
+   ]).
+:- predicate_options('m#n'//6, 6, [
+     pass_to('m*n'//6, 6)
+   ]).
+:- predicate_options('m#n'//7, 7, [
+     pass_to('m*n'//7, 7)
+   ]).
+:- predicate_options('m#n'//8, 8, [
+     pass_to('m*n'//8, 8)
+   ]).
+:- predicate_options('m#n'//9, 9, [
+     pass_to('m*n'//9, 9)
+   ]).
 
 
 
-%! abnf_list1(
-%!   :ElementDCG,
-%!   ?Repetitions:pair(nonneg,or([nonneg,oneof([inf])])),
-%!   ?Arguments:list,
-%!   -Count:nonneg
-%! )// .
-%! abnf_list2(
-%!   :ElementDCG,
-%!   ?Repetitions:pair(nonneg,or([nonneg,oneof([inf])])),
-%!   ?Arguments1:list,
-%!   ?Arguments2:list,
-%!   -Count:nonneg
-%! )// .
+%! 'm#n'(?M:nonneg, ?N:nonneg, :Dcg, +Options:list(nvpair))// .
 % Implements the ABNF `#rule`, as defined in RFC 2616 (HTTP 1.1).
 %
 % A construct `<m>#<n>` is defined, similar to `<m>*<n>`,
@@ -102,122 +88,35 @@ DCGs implementing the ABNF grammar rules defined in RFC 2616 (HTTP 1.1).
 % @see RFC 2616
 % @see This grammatical construct is *not* defined in RFC 4234 (ABNF).
 
-abnf_list1(DCG, Rep, L) -->
-  abnf_list1(DCG, Rep, L, _C).
+% The full form is `<n>#<m>element` indicating at least `n`
+%  and at most `m` elements, each separated by one or more commas
+%  and OPTIONAL `LWS`.
 
-abnf_list1(DCG, Rep, L, C) -->
-  {nonvar(L)}, !,
-  {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_nonvar(DCG, Max, 0, C, L),
-  {dcg_multi:in_between(Min, Max, C)}, !.
-abnf_list1(DCG, Rep, L, C) -->
-  {var(L)}, !,
-  {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_var(DCG, Min, Max, 0, C, L).
+'m#n'(M, N, Dcg, Options1) -->
+  {merge_options([separator('m#n_separator')], Options1, Options2)},
+  'm*n'(M, N, Dcg, Options2).
 
-abnf_list2(DCG, Rep, L1, L2) -->
-  abnf_list2(DCG, Rep, L1, L2, _C).
+'m#n'(M, N, Dcg, L1, Options1) -->
+  {merge_options([separator('m#n_separator')], Options1, Options2)},
+  'm*n'(M, N, Dcg, L1, Options2).
 
-abnf_list2(DCG, Rep, L1, L2, C) -->
-  {maplist(nonvar, [L1,L2])}, !,
-  {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_nonvar(DCG, Max, 0, C, L1, L2),
-  {dcg_multi:in_between(Min, Max, C)}, !.
-abnf_list2(DCG, Rep, L1, L2, C) -->
-  {maplist(var, [L1,L2])}, !,
-  {dcg_multi:repetition(Rep, Min, Max)},
-  abnf_list_var(DCG, Min, Max, 0, C, L1, L2).
+'m#n'(M, N, Dcg, L1, L2, Options1) -->
+  {merge_options([separator('m#n_separator')], Options1, Options2)},
+  'm*n'(M, N, Dcg, L1, L2, Options2).
 
-% One argument.
-abnf_list_nonvar(_DCG, _Max, C, C, []) -->
-  [].
-abnf_list_nonvar(DCG, Max, C1, C3, [H|T]) -->
-  abnf_list_separator(C1),
-  dcg_call_cp(DCG, H),
-  % Check that counter does not exceed maximum.
-  {succ(C1, C2), dcg_multi:greater_than_or_equal_to(Max, C2)},
-  abnf_list_nonvar(DCG, Max, C2, C3, T).
+'m#n'(M, N, Dcg, L1, L2, L3, Options1) -->
+  {merge_options([separator('m#n_separator')], Options1, Options2)},
+  'm*n'(M, N, Dcg, L1, L2, L3, Options2).
 
-% Two arguments.
-abnf_list_nonvar(_DCG, _Max, C, C, [], []) -->
-  [].
-abnf_list_nonvar(DCG, Max, C1, C3, [H1|T1], [H2|T2]) -->
-  abnf_list_separator(C1),
-  dcg_call_cp(DCG, H1, H2),
-  % Check that counter does not exceed maximum.
-  {succ(C1, C2), dcg_multi:greater_than_or_equal_to(Max, C2)},
-  abnf_list_nonvar(DCG, Max, C2, C3, T1, T2).
+'m#n'(M, N, Dcg, L1, L2, L3, L4, Options1) -->
+  {merge_options([separator('m#n_separator')], Options1, Options2)},
+  'm*n'(M, N, Dcg, L1, L2, L3, L4, Options2).
 
-abnf_list_separator -->
-  dcg_multi('LWS'),
+'m#n'(M, N, Dcg, L1, L2, L3, L4, L5, Options1) -->
+  {merge_options([separator('m#n_separator')], Options1, Options2)},
+  'm*n'(M, N, Dcg, L1, L2, L3, L4, L5, Options2).
+
+'m#n_separator' -->
+  '*'('LWS', []),
   ",",
-  dcg_multi('LWS').
-
-abnf_list_separator(C) -->
-  {C == 0}, !,
-  dcg_multi('LWS').
-abnf_list_separator(_C) -->
-  abnf_list_separator.
-
-
-% One agument.
-
-abnf_list_var(DCG, Min, Max, C1, C2, L) -->
-  dcg_multi('LWS'),
-  abnf_list_var_(DCG, Min, Max, C1, C2, L).
-
-abnf_list_var_(_DCG, Min, Max, C, C, []) -->
-  {dcg_multi:in_between(Min, Max, C)}.
-% Last non-null element.
-abnf_list_var_(DCG, Min, Max, C1, C2, [H]) -->
-  dcg_call_cp(DCG, H),
-  {C2 is C1 + 1},
-  {dcg_multi:in_between(Min, Max, C2)}.
-% Last null element.
-abnf_list_var_(_DCG, Min, Max, C, C, []) -->
-  abnf_list_separator,
-  {dcg_multi:in_between(Min, Max, C)}.
-% Non-last non-null element.
-abnf_list_var_(DCG, Min, Max, C1, C3, [H|T]) -->
-  dcg_call_cp(DCG, H),
-  abnf_list_separator,
-  {C2 is C1 + 1},
-  {dcg_multi:in_between(Min, Max, C2)},
-  abnf_list_var_(DCG, Min, Max, C2, C3, T).
-% Null element.
-abnf_list_var_(DCG, Min, Max, C1, C2, L) -->
-  abnf_list_separator,
-  {dcg_multi:in_between(Min, Max, C1)},
-  abnf_list_var_(DCG, Min, Max, C1, C2, L).
-
-
-% Two arguments.
-
-abnf_list_var(DCG, Min, Max, C1, C2, L1, L2) -->
-  dcg_multi('LWS'),
-  abnf_list_var_(DCG, Min, Max, C1, C2, L1, L2).
-
-abnf_list_var_(_DCG, Min, Max, C, C, [], []) -->
-  {dcg_multi:in_between(Min, Max, C)}.
-% Last non-null element.
-abnf_list_var_(DCG, Min, Max, C1, C2, [H1], [H2]) -->
-  dcg_call_cp(DCG, H1, H2),
-  {C2 is C1 + 1},
-  {dcg_multi:in_between(Min, Max, C2)}.
-% Last null element.
-abnf_list_var_(_DCG, Min, Max, C, C, [], []) -->
-  abnf_list_separator,
-  {dcg_multi:in_between(Min, Max, C)}.
-% Non-last non-null element.
-abnf_list_var_(DCG, Min, Max, C1, C3, [H1|T1], [H2|T2]) -->
-  dcg_call_cp(DCG, H1, H2),
-  abnf_list_separator,
-  {C2 is C1 + 1},
-  {dcg_multi:in_between(Min, Max, C2)},
-  abnf_list_var_(DCG, Min, Max, C2, C3, T1, T2).
-% Null element.
-abnf_list_var_(DCG, Min, Max, C1, C2, L1, L2) -->
-  abnf_list_separator,
-  {dcg_multi:in_between(Min, Max, C1)},
-  abnf_list_var_(DCG, Min, Max, C1, C2, L1, L2).
-
+  '*'('LWS', []).

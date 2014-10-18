@@ -62,7 +62,7 @@ DCG for the `Proxy-Authenticate` response header in RFC 2616.
 
 'Proxy-Authenticate'(T0, 'Proxy-Authenticate'(Challenges)) -->
   "Proxy-Authenticate:",
-  abnf_list2(challenge, 1-_, Ts, Challenges),
+  'm#n'(1, _, challenge, Ts, Challenges, []),
   {parse_tree('Proxy-Authenticate', Ts, T0)}.
 
 % @tbd

@@ -63,7 +63,7 @@ DCG for accept ranges header in RFC 2616.
   'acceptable-ranges'(T1, RangeUnits).
 
 'acceptable-ranges'(T0, RangeUnits) -->
-  abnf_list2('range-unit', 1-_, Ts, RangeUnits),
+  'm#n'(1, _, 'range-unit', Ts, RangeUnits, []),
   {parse_tree('acceptable-ranges', Ts, T0)}.
 'acceptable-ranges'('acceptable-ranges'(none), []) -->
   "none".

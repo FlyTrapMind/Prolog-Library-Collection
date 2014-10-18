@@ -133,7 +133,7 @@ Well-founded justifications form a non-circular argument for their node.
 Only SL-justifications can be well-founded justifications.
 
 @author Wouter Beek
-@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01, 2014/03, 2014/07
+@version 2012/06, 2013/05, 2013/09, 2013/12-2014/01, 2014/03, 2014/07, 2014/10
 */
 
 :- use_module(library(aggregate)).
@@ -142,14 +142,16 @@ Only SL-justifications can be well-founded justifications.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
-:- use_module(logic(set_theory)).
 :- use_module(pl(pl_control)).
 :- use_module(tms(tms)).
+
+:- use_module(plDcg(dcg_generics)).
+
+:- use_module(plSet(set_theory)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_name)).
 :- use_module(plRdf(rdf_read)).
-:- use_module(plRdf(rdf_reification)).
 :- use_module(plRdf(rdfs_build)).
 :- use_module(plRdf(rdfs_label_ext)).
 :- use_module(plRdf_rei(rdf_reification_read)).

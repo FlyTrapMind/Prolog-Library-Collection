@@ -43,8 +43,11 @@ Contains all environment methods, used by both the ATMS (environments)
 and the GDE (component assumptions).
 
 @author Wouter Beek
-@version 2011/12-2012/08, 2013/12
+@version 2011/12-2012/08, 2013/12, 2014/10
 */
+
+:- use_module(library(apply)).
+:- use_module(library(lists)).
 
 :- use_module(atms(atms_api)).
 :- use_module(atms(atms_build)).
@@ -52,10 +55,9 @@ and the GDE (component assumptions).
 :- use_module(diagnosis(diagnosis)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(meta_ext)).
-:- use_module(logic(set_theory)).
 :- use_module(ile(agent)).
-:- use_module(library(apply)).
-:- use_module(library(lists)).
+
+:- use_module(plSet(set_theory)).
 
 
 

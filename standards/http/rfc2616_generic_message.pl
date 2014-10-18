@@ -54,7 +54,7 @@ DCG for generic messages (comprising request and response messages)
 
 'generic-message'(T0, MessageHeaders, MessageBody) -->
   'start-line'(T1),
-  '*'('_generic-message', T2s, MessageHeaders),
+  '*'('_generic-message', T2s, MessageHeaders, []),
   'CRLF',
   (
     'message-body'(T3, MessageBody)

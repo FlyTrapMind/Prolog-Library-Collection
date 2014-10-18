@@ -282,7 +282,7 @@ If at any point an error status is received, the client
 
 'Connection'('Connection'(Ts), 'Connection'(ConnectionTokens)) -->
   "Connection:",
-  abnf_list2('connection-token', 1-_, Ts, ConnectionTokens).
+  'm#n'(1, _, 'connection-token', Ts, ConnectionTokens, []).
 
 
 
