@@ -267,7 +267,8 @@ separator --> 'HT'. % 9
 % @see RFC 2616
 
 token(Token) -->
-  dcg_atom_codes('+'(token1, []), Token).
+	{atom_codes(Token, Codes)},
+  '+'(token1, Codes, []).
 
 token1(C) -->
   'CHAR'(C),

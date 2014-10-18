@@ -6,17 +6,19 @@
     json_to_prolog/3, % +Module:atom
                       % +JSON:compond
                       % -Term:compound
-    json_response/4 % +Request:list
-                    % +Status:between(100,999)
-                    % +Header:list(compound)
-                    % +JSON_Arguments:list(nvpair)
+    json_response/4 % +Request:list(nvpair)
+                    % +Status:between(100,599)
+                    % +Headers:list(compound)
+                    % +Content:dict
   ]
 ).
 
-/** <module> JSON_EXT
+/** <module> JSON extensions
+
+Extensions to JSON support in SWI-Prolog.
 
 @author Wouter Beek
-@version 2013/07, 2013/11, 2014/01-2014/02
+@version 2013/07, 2013/11, 2014/01-2014/02, 2014/10
 */
 
 :- use_module(generics(codes_ext)).
@@ -205,6 +207,13 @@ to_boolean(0, false).
 to_boolean('True', true).
 to_boolean('False', false).
 
+
+%! json_response(
+%!   +Request:list(nvpair),
+%!   +Status:between(100,599),
+%!   +Headers:list(compound),
+%!   +Content:dict
+%! ) is det.
 
 json_response(Request, Status, Headers1, D):-
   memberchk(pool(client(_,_,_,Out)), Request),
