@@ -3,8 +3,6 @@
   [
     atom_to_file/2, % +Atom:atom
                     % +File:atom
-    atom_to_stream/2, % +Atom:atom
-                      % -Read:stream
     codes_to_file/2, % +Codes:list(code)
                      % +File:atom
     copy_stream_line/2, % +From:stream
@@ -22,6 +20,8 @@
                       % -Atom:atom
     stream_to_file/2, % +Stream:stream
                       % +File:atom
+    term_to_stream/2, % +Term:term
+                      % -Stream:stream
     writeln/2, % +Stream:stream
                % +Term
 % PEEKING
@@ -38,7 +38,7 @@
 Predicates that extend the swipl builtin I/O predicates operating on streams.
 
 @author Wouter Beek
-@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03-2014/04, 2014/09
+@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03-2014/04, 2014/09-2014/10
 */
 
 :- use_module(library(memfile)).
@@ -61,13 +61,6 @@ atom_to_file(Atom, File):-
     format(Write, '~w', [Atom]),
     close(Write)
   ).
-
-
-%! atom_to_stream(+Atom:atom, -Read:stream) is det.
-
-atom_to_stream(Atom, Read):-
-  atom_to_memory_file(Atom, Handle),
-  open_memory_file(Handle, read, Read, [free_on_close(true)]).
 
 
 codes_to_file(Codes, File):-
@@ -148,6 +141,17 @@ stream_to_atom(Stream, Atom):-
 stream_to_file(Stream, File):-
   stream_to_atom(Stream, Atom),
   atom_to_file(Atom, File).
+
+
+%! term_to_stream(+Term:term, -Stream:stream) is det.
+
+term_to_stream(Term, Stream):-
+  term_to_atom(Term, Atom),
+  atom_to_memory_file(Atom, Handle),
+  open_memory_file(Handle, read, Read, [free_on_close(true)]).
+
+
+%! writeln(+Stream:stream, +Term:term) is det.
 
 writeln(Stream, Term):-
   write(Stream, Term),
