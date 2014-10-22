@@ -22,6 +22,8 @@
 :- use_module(library(lists)).
 :- use_module(library(uri)).
 
+:- use_module(plRdf_ser(rdf_file_db)).
+
 
 
 %! unpack(+Spec, -Read:blob, -Location:dict) is nondet.
@@ -78,7 +80,6 @@ unpack(Spec, Stream, Location) :-
 %   - `url(+Url:atom)`
 %   - `stream(+Read:stream)`
 
-
 % File
 open_input(file(File), Read, file{path:File}, true) :-
   exists_file(File), !,
@@ -91,7 +92,7 @@ open_input(stream(Read), Read, stream{stream:Read}, false):-
 
 % URI Components: opens files and URLs.
 open_input(UriComponents, Read, Meta, StreamClose):-
-  UriComponents = uri_components(Scheme,Authority,Path,Search,Fragment), !,
+  UriComponents = uri_components(Scheme,Authority,_,_,_), !,
   
   % Make sure the URL may be syntactically correct,
   % haivng at least the requires `Scheme` and `Authority` components.
@@ -103,12 +104,12 @@ open_input(UriComponents, Read, Meta, StreamClose):-
   ->  uri_components(Uri, UriComponents),
       uri_file_name(Uri, File),
       open_input(file(File), Read, Meta, StreamClose)
-  ;   open_url(Scheme, URL, In, Meta),
+  ;   open_url(Scheme, UriComponents, Read, Meta),
       StreamClose = true
   ).
 
 % URL: convert to URI components term.
-open_input(url(Url), In, Meta, CloseStream):- !,
+open_input(url(Url), Read, Meta, CloseStream):- !,
   uri_components(Url, UriComponents),
   open_input(UriComponents, Read, Meta, CloseStream).
 
@@ -141,12 +142,12 @@ open_input(Input, _, _, _):-
 %
 % @compat Only supports URLs with schemes `http` or `https`.
 
-open_url(Scheme, Url, In, Meta) :-
+open_url(Scheme, Url, Read, Meta) :-
   http_scheme(Scheme), !,
   rdf_extra_headers(Extra),
   http_open(
     Url,
-    In,
+    Read,
     [
       header(content_type, ContentType),
       header(content_length, ContentLength),
@@ -241,49 +242,6 @@ wrap_filter(Filter, filter(Filter)).
      *******************************/
 
 :- public ssl_verify/5.
-
-rdf_accept_header_value(Value):-
-  findall(
-    Value,
-    (
-      rdf_content_type(ContentType, Q),
-      format(atom(Value), '~a; q=~1f', [ContentType,Q])
-    ),
-    Values
-  ),
-  atomic_list_concat(Values, ', ', Value).
-
-
-% RDFa
-rdf_content_type('text/html',              0.3).
-% N-Quads
-rdf_content_type('application/n-quads',    0.8).
-% N-Triples
-rdf_content_type('application/n-triples',  0.8).
-% RDF/XML
-rdf_content_type('application/rdf+xml',    0.7).
-rdf_content_type('text/rdf+xml',           0.7).
-rdf_content_type('application/xhtml+xml',  0.3).
-rdf_content_type('application/xml',        0.3).
-rdf_content_type('text/xml',               0.3).
-rdf_content_type('application/rss+xml',    0.5).
-% Trig
-rdf_content_type('application/trig',       0.8).
-rdf_content_type('application/x-trig',     0.5).
-% Turtle
-rdf_content_type('text/turtle',            0.9).
-rdf_content_type('application/x-turtle',   0.5).
-rdf_content_type('application/turtle',     0.5).
-rdf_content_type('application/rdf+turtle', 0.5).
-% N3
-rdf_content_type('text/n3',                0.8).
-rdf_content_type('text/rdf+n3',            0.5).
-% All
-rdf_content_type('*/*',                    0.1).
-
-
-  rdf_accept_header_value(AcceptValue),
-
 
 rdf_extra_headers([
   cert_verify_hook(ssl_verify),
