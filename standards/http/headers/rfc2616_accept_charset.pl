@@ -89,7 +89,7 @@ DCG for `Accept-Charset` request header of RFC 2616.
 
 'Accept-Charset'(T0, Statements) -->
   "Accept-Charset:",
-  abnf_list2('_Accept-Charset', 1-_, Ts, Statements),
+  'm#n'(1, _, '_Accept-Charset', Ts, Statements, []),
   {parse_tree('Accept-Charset', Ts, T0)}.
 '_Accept-Charset'(T0, Charset-QualityValue) -->
   (

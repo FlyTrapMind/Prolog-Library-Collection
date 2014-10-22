@@ -101,7 +101,7 @@ DCG for the `Accept-Language` request header in RFC 2616.
 
 'Accept-Language'('Accept-Language'(Ts), TO5) -->
   "Accept-Language:",
-  abnf_list2('_Accept-Language', 1-_, Ts, TO1),
+  'm#n'(1, _, '_Accept-Language', Ts, TO1, []),
   dcg_end,
   {
     keysort(TO1, TO2),

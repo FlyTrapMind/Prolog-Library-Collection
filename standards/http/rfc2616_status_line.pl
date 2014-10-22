@@ -60,7 +60,7 @@ DCG for RFC 2616 status lines.
 
 'extension-code'('extension-code'(Status), Status) -->
   '#'(3, 'DIGIT', Ds),
-  {digits_to_decimal(Ds, Status)}.
+  {digits_decimal(Ds, Status)}.
 
 
 

@@ -61,12 +61,12 @@ iprivate        ::= %xE000-F8FF / %xE0000-E0FFF / %xF0000-FFFFD
 
 @author Wouter Beek
 @see http://www.w3.org/TR/2008/NOTE-leiri-20081103/
-@version 2013/08, 2014/03
+@version 2013/08, 2014/03, 2014/10
 */
 
 :- use_module(flp(rfc4234_abnf)).
 
-:- use_module(plDcg(dcg_multi)).
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg_rfc(rfc2616_basic)).
 
 
@@ -116,7 +116,7 @@ iauthority -->
   (`:`, port ; ``).
 
 iuserinfo -->
-  dcg_multi(iuserinfo_).
+  '*'(iuserinfo_, []).
 iuserinfo_ --> iunreserved.
 iuserinfo_ --> 'pct-encoded'.
 iuserinfo_ --> 'sub-delims'.
@@ -126,7 +126,7 @@ ihost --> 'IP-literal'.
 ihost --> 'IPv4address'.
 ihost --> 'ireg-name'.
 
-'ireg-name' --> dcg_multi('ireg-name_').
+'ireg-name' --> '*'('ireg-name_', []).
 'ireg-name_' --> iunreserved.
 'ireg-name_' --> 'pct-encoded'.
 'ireg-name_' --> 'sub-delims'.
@@ -148,28 +148,28 @@ ipath -->
   'ipath-empty'.
 
 'ipath-abempty' -->
-  dcg_multi('ipath-abempty_').
+  '*'('ipath-abempty_', []).
 'ipath-abempty_' -->
   `/`,
   isegment.
 
 'ipath-absolute' -->
   `/`,
-  ('isegment-nz', dcg_multi('ipath-absolute_') ; ``).
+  ('isegment-nz', '*'('ipath-absolute_', []) ; ``).
 'ipath-absolute_' -->
   `/`,
   isegment.
 
 'ipath-noscheme' -->
   'isegment-nz-nc',
-  dcg_multi('ipath-noscheme_', _).
+  '*'('ipath-noscheme_', _, []).
 'ipath-noscheme_' -->
   `/`,
   isegment.
 
 'ipath-rootless' -->
   'isegment-nz',
-  dcg_multi('ipath-rootless_').
+  '*'('ipath-rootless_', []).
 'ipath-rootless_' -->
   `/`,
   isegment.
@@ -180,13 +180,13 @@ ipath -->
   'ipath-empty'.
 
 isegment -->
-  dcg_multi(ipchar).
+  '*'(ipchar, []).
 
 'isegment-nz' -->
-  dcg_multi(ipchar, 1-_).
+  '+'(ipchar, []).
 % Non-zero-length segment without any colon ":".
 'isegment-nz-nc' -->
-  dcg_multi('isegment-nz-nc_', 1-_).
+  '+'('isegment-nz-nc_', []).
 'isegment-nz-nc_' --> iunreserved.
 'isegment-nz-nc_' --> 'pct-encoded'.
 'isegment-nz-nc_' --> 'sub-delims'.
@@ -198,13 +198,13 @@ ipchar --> 'sub-delims'.
 ipchar --> `:`.
 ipchar --> `@`.
 
-iquery --> dcg_multi(iquery_).
+iquery --> '*'(iquery_, []).
 iquery_ --> ipchar.
 iquery_ --> iprivate.
 iquery_ --> `/`.
 iquery_ --> `?`.
 
-ifragment --> dcg_multi(ifragment_).
+ifragment --> '*'(ifragment_, []).
 ifragment_ --> ipchar.
 ifragment_ --> `/`.
 ifragment_ --> `?`.

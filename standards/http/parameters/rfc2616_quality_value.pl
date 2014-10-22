@@ -15,10 +15,11 @@ DCG for RFC 2616 quality values.
 @version 2013/12, 2014/06
 */
 
+:- use_module(math(radix)).
+
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg_rfc(rfc2616_basic)).
-:- use_module(math(radix)).
 
 
 
@@ -59,18 +60,18 @@ DCG for RFC 2616 quality values.
 
 qvalue(qvalue(QualityValue2), QualityValue2) -->
   `0`,
-  '?'(qvalue_any(QualityValue1)),
+  '?'(qvalue_any(QualityValue1), []),
   {QualityValue2 is QualityValue1 / 10}.
 qvalue(qvalue(1.0), 1.0) -->
   `1`,
-  '?'(qvalue_zero).
+  '?'(qvalue_zero, []).
 
 qvalue_any(QualityValue) -->
   `.`,
-  'm*n'(0, 3, 'DIGIT', _, Digits),
-  {digits_to_decimal(Digits, QualityValue)}.
+  'm*n'(0, 3, 'DIGIT', _, Digits, []),
+  {digits_decimal(Digits, QualityValue)}.
 
 qvalue_zero -->
   `.`,
-  'm*n'(0, 3, zero).
+  'm*n'(0, 3, zero, []).
 

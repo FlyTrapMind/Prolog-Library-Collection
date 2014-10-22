@@ -131,7 +131,7 @@ media_range(
 
 'Accept'('Accept'(Ts), Accepts) -->
   "Accept:",
-  abnf_list2('_Accept', _-_, Ts, Accepts).
+  'm#n'(_-_, '_Accept', Ts, Accepts, []).
 '_Accept'(T0, accept(MediaRange,QualityValue, AcceptExtensions)) -->
   'media-range'(T1, MediaRange),
   (
@@ -212,7 +212,7 @@ media_range(
 'accept-params'(T0, QualityValue, AcceptExtensions) -->
   ";q=",
   qvalue(T1, QualityValue),
-  '*'('accept-extension', T2s, AcceptExtensions),
+  '*'('accept-extension', T2s, AcceptExtensions, []),
   {parse_tree('accept-params', [T1|T2s], T0)}.
 
 
@@ -258,18 +258,18 @@ media_range(
 
 'media-range'(T0, media_range('*','*',Parameters)) -->
   `*/*`, %*/
-  '*'('_;_and_parameter', Ts, Parameters),
+  '*'('_;_and_parameter', Ts, Parameters, []),
   {parse_tree('media-range', Ts, T0)}.
 'media-range'(T0, media_range(Type,'*',Parameters)) -->
   rfc2616_media_type:type(T1, Type),
   `/*`, %*/
-  '*'('_;_and_parameter', Ts, Parameters),
+  '*'('_;_and_parameter', Ts, Parameters, []),
   {parse_tree('media-range', [T1|Ts], T0)}.
 'media-range'(T0, media_range(Type,Subtype,Parameters)) -->
   rfc2616_media_type:type(T1, Type),
   `/`,
   rfc2616_media_type:subtype(T2, Subtype),
-  '*'('_;_and_parameter', Ts, Parameters),
+  '*'('_;_and_parameter', Ts, Parameters, []),
   {parse_tree('media-range', [T1,T2|Ts], T0)}.
 '_;_and_parameter'(T1, Parameter) -->
   `;`,

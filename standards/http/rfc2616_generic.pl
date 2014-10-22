@@ -137,7 +137,7 @@ charset(charset(Charset), Charset) -->
 
 comment(comment(Comm), Cs) -->
   bracketed(
-    '*'('ctext_or_quoted-pair_or_comment', Css)
+    '*'('ctext_or_quoted-pair_or_comment', Css, [])
   ),
   {flatten(Css, Cs)},
   {atom_codes(Comm, Cs)}.
@@ -267,7 +267,8 @@ separator --> 'HT'. % 9
 % @see RFC 2616
 
 token(Token) -->
-  dcg_atom_codes('+'(token1), Token).
+	{atom_codes(Token, Codes)},
+  '+'(token1, Codes, []).
 
 token1(C) -->
   'CHAR'(C),

@@ -50,15 +50,15 @@ The standard for datetime that is used by HTTP 1.1.
 rfc1123_date(date(day(DD),T1,year(YYYY)), DD, Month, YYYY) -->
   {maplist(nonvar, [DD,Month,YYYY])}, !,
   {
-    decimal_to_digits(DD, [D1,D2]),
-    decimal_to_digits(YYYY, [Y1,Y2,Y3,Y4])
+    digits_decimal([D1,D2], DD),
+    digits_decimal([Y1,Y2,Y3,Y4], YYYY)
   },
   rfc1123_date(D1, D2, T1, Month, Y1, Y2, Y3, Y4).
 rfc1123_date(date(day(DD),T1,year(YYYY)), DD, Month, YYYY) -->
   rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6),
   {
-    digits_to_decimal([D1,D2], DD),
-    digits_to_decimal([D3,D4,D5,D6], YYYY)
+    digits_decimal([D1,D2], DD),
+    digits_decimal([D3,D4,D5,D6], YYYY)
   }.
 
 rfc1123_date(D1, D2, T1, Month, D3, D4, D5, D6) -->
@@ -146,9 +146,9 @@ rfc1123_time(
 ) -->
   {maplist(nonvar, [Hour,Minute,Second])}, !,
   {
-    decimal_to_digits(Hour, [D1,D2]),
-    decimal_to_digits(Minute, [D3,D4]),
-    decimal_to_digits(Second, [D5,D6])
+    digits_decimal([D1,D2], Hour),
+    digits_decimal([D3,D4], Minute),
+    digits_decimal([D5,D6], Second)
   },
   rfc1123_time(D1, D2, D3, D4, D5, D6).
 rfc1123_time(
@@ -159,9 +159,9 @@ rfc1123_time(
 ) -->
   rfc1123_time(D1, D2, D3, D4, D5, D6),
   {
-    digits_to_decimal([D1,D2], Hour),
-    digits_to_decimal([D3,D4], Minute),
-    digits_to_decimal([D5,D6], Second)
+    digits_decimal([D1,D2], Hour),
+    digits_decimal([D3,D4], Minute),
+    digits_decimal([D5,D6], Second)
   }.
 
 rfc1123_time(D1, D2, D3, D4, D5, D6) -->

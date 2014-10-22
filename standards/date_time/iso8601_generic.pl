@@ -306,7 +306,7 @@ iso8601_integer(T0, Name, Length, I) -->
   '#'(Length, decimal_digit, Is),
   % Notice that we cannot use the decimal number in the parse tree,
   % because then we would miss any padding zeros.
-  {digits_to_decimal(Is, I)},
+  {digits_decimal(Is, I)},
   {parse_tree(Name, Is, T0)}.
 iso8601_integer(T0, Name, Length, I) -->
   {(nonvar(Length) -> Length_ = Length ; number_length(I, Length_))},
@@ -364,7 +364,7 @@ padded_list(L1, N, [0|L2]):-
 % Turns a decimal number into a list of decimal digits, padded with zeros.
 
 padded_number(DecimalNumber, Length, DecimalDigits2):-
-  decimal_to_digits(DecimalNumber, DecimalDigits1),
+  digits_decimal(DecimalDigits1, DecimalNumber),
   length(DecimalDigits1, NumberOfDigits),
   NumberOfZeros is Length - NumberOfDigits,
   padded_list(DecimalDigits1, NumberOfZeros, DecimalDigits2).

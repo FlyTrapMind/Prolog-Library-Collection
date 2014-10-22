@@ -48,17 +48,17 @@ DCG for generic message headers in RFC 2616.
 % @tbd This BNF rules is **very** unclear!
 
 'field-content'('field-content'(FieldContent), [FieldContent]) -->
-  dcg_atom_codes('*'('TEXT'), FieldContent).
+  dcg_atom_codes('*'('TEXT', []), FieldContent).
 'field-content'(T0, FieldContent) -->
-  '*'('field-content1', Ts, FieldContent),
-  '*'(separator),
+  '*'('field-content1', Ts, FieldContent, []),
+  '*'(separator, []),
   {parse_tree('field-content', Ts, T0)}.
 
 'field-content1'(FieldContent, FieldContent) -->
-  '*'(separator),
+  '*'(separator, []),
   token(FieldContent).
 'field-content1'(FieldContent, FieldContent) -->
-  '*'(separator),
+  '*'(separator, []),
   'quoted-string'(FieldContent).
 
 
@@ -77,12 +77,12 @@ DCG for generic message headers in RFC 2616.
 % ~~~
 
 'field-value'(T0, FieldContents) -->
-  '*'('field-value1', Ts, FieldContents),
-  '*'('LWS'),
+  '*'('field-value1', Ts, FieldContents, []),
+  '*'('LWS', []),
   {parse_tree('field-value', Ts, T0)}.
 
 'field-value1'(T1, FieldContents) -->
-   '*'('LWS'),
+   '*'('LWS', []),
   'field-content'(T1, FieldContents).
 
 

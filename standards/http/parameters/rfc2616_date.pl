@@ -148,7 +148,7 @@ Note: HTTP requirements for the date/time stamp format apply only
   time(T3, Time),
   'SP',
   '#'(4, 'DIGIT', [Y1,Y2,Y3,Y4]),
-  {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
+  {digits_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
 %! date1(
@@ -169,7 +169,7 @@ Note: HTTP requirements for the date/time stamp format apply only
 date1(date1(Day,T1,Year), Year, Month, Day) -->
   % Day
   '#'(2, 'DIGIT', [D1,D2]),
-  {digits_to_decimal([D1,D2], Day)},
+  {digits_decimal([D1,D2], Day)},
   'SP',
   
   % Month
@@ -178,7 +178,7 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
   
   % Year
   '#'(4, 'DIGIT', [Y1,Y2,Y3,Y4]),
-  {digits_to_decimal([Y1,Y2,Y3,Y4], Year)}.
+  {digits_decimal([Y1,Y2,Y3,Y4], Year)}.
 
 
 
@@ -200,7 +200,7 @@ date1(date1(Day,T1,Year), Year, Month, Day) -->
 date2(date2(Year,T1,Day), Year, Month, Day) -->
   % Day
   '#'(2, 'DIGIT', [Y1,Y2]),
-  {digits_to_decimal([Y1,Y2], Year)},
+  {digits_decimal([Y1,Y2], Year)},
   `-`,
   
   % Month
@@ -209,7 +209,7 @@ date2(date2(Year,T1,Day), Year, Month, Day) -->
   
   % Year
   '#'(2, 'DIGIT', [D1,D2]),
-  {digits_to_decimal([D1,D2], Day)}.
+  {digits_decimal([D1,D2], Day)}.
 
 
 
@@ -231,7 +231,7 @@ date3(date3(T1,Day), Month, Day) -->
   % Day
   (
     '#'(2, 'DIGIT', [D1,D2]),
-    {digits_to_decimal([D1,D2], Day)}
+    {digits_decimal([D1,D2], Day)}
   ;
     'SP',
     'DIGIT'(_, Day)
@@ -252,7 +252,7 @@ date3(date3(T1,Day), Month, Day) -->
 
 'delta-seconds'('delta-seconds'(Seconds), Seconds) -->
   '+'('DIGIT', _, Ss),
-  {digits_to_decimal(Ss, Seconds)}.
+  {digits_decimal(Ss, Seconds)}.
 
 
 %! 'HTTP-date'(-ParseTree:compound, ?Date:compound)//
@@ -370,19 +370,19 @@ month(month('Dec'), 12) -->
 time(time(Hour,Minute,Second), time(Hour,Minute,Second)) -->
   % Hour
   '#'(2, 'DIGIT', _, [H1,H2]),
-  {digits_to_decimal([H1,H2], Hour)},
+  {digits_decimal([H1,H2], Hour)},
   
   `:`,
   
   % Minute
   '#'(2, 'DIGIT', _, [M1,M2]),
-  {digits_to_decimal([M1,M2], Minute)},
+  {digits_decimal([M1,M2], Minute)},
   
   `:`,
   
   % Second
   '#'(2, 'DIGIT', _, [S1,S2]),
-  {digits_to_decimal([S1,S2], Second)}.
+  {digits_decimal([S1,S2], Second)}.
 
 
 

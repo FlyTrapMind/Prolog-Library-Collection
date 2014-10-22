@@ -45,8 +45,8 @@ Extensions for sorting lists.
 %     highest (standard) or from highest to lowest.
 
 sort(Unsorted, Sorted, Options):-
-  option(inverted(Duplicates), Options, false),
-  option(duplicates(Inverted), Options, false),
+  option(inverted(Inverted), Options, false),
+  option(duplicates(Duplicates), Options, false),
   sort(Duplicates, Inverted, Unsorted, Sorted).
 
 %! sort(

@@ -207,56 +207,56 @@ ihost(ihost(T1)) --> 'ireg-name'(T1).
 % ~~~
 
 'IPv6address'('IPv6address'(Ts)) -->
-  '#'(6, h16, [separator(colon)], Ts1),
+  '#'(6, h16, Ts1, [separator(colon)]),
   ":",
   ls32(T2),
   {append(Ts1,[T2],Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
   "::",
-  dcg_multi1(h16, 5, [separator(colon)], Ts1),
+  '#'(5, h16, Ts1, [separator(colon)]),
   ":",
   ls32(T2),
   {append(Ts1,[T2],Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-1, [separator(colon)], Ts1),
+  '*n'(1, h16, Ts1, [separator(colon)]),
   "::",
-  dcg_multi1(h16, 4, [separator(colon)], Ts2),
+  '#'(4, h16, Ts2, [separator(colon)]),
   ":",
   ls32(T3),
   {append([Ts1,Ts2,[T3]], Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-2, [separator(colon)], Ts1),
+  '*n'(2, h16, Ts1, [separator(colon)]),
   "::",
-  dcg_multi1(h16, 3, [separator(colon)], Ts2),
+  '#'(3, h16, Ts2, [separator(colon)]),
   ":",
   ls32(T3),
   {append([Ts1,Ts2,[T3]], Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-3, [separator(colon)], Ts1),
+  '*n'(3, h16, Ts1, [separator(colon)]),
   "::",
-  dcg_multi1(h16, 2, [separator(colon)], Ts2),
+  '#'(2, h16, Ts2, [separator(colon)]),
   ":",
   ls32(T3),
   {append([Ts1,Ts2,[T3]], Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-4, [separator(colon)], Ts1),
+  '*n'(4, h16, Ts1, [separator(colon)]),
   "::",
-  dcg_multi1(h16, 1, [separator(colon)], Ts2),
+  '#'(1, h16, Ts2, [separator(colon)]),
   ":",
   ls32(T3),
   {append([Ts1,Ts2,[T3]], Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-5, [separator(colon)], Ts1),
+  '*n'(5, h16, Ts1, [separator(colon)]),
   "::",
   ls32(T2),
   {append(Ts1, [T2], Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-6, [separator(colon)], Ts1),
+  '*n'(6, h16, Ts1, [separator(colon)]),
   "::",
   h16(T2),
   {append(Ts1, [T2], Ts)}.
 'IPv6address'('IPv6address'(Ts)) -->
-  dcg_multi1(h16, _-7, [separator(colon)], Ts),
+  '*n'(7, h16, Ts, [separator(colon)]),
   "::".
 
 
@@ -268,7 +268,7 @@ ihost(ihost(T1)) --> 'ireg-name'(T1).
 % ~~~
 
 h16(h16(Hex)) -->
-  dcg_multi1('HEXDIG', 1-4, Codes),
+  'm*n'(1, 4, 'HEXDIG', Codes, []),
   {atom_codes(Hex, Codes)}.
 
 
@@ -291,7 +291,7 @@ ls32(ls32(T1)) -->
 % ~~~
 
 'IPv4address'('IPv4address'(T1,T2,T3,T4)) -->
-  dcg_multi1('dec-octet', 4, [separator(dot)], [T1,T2,T3,T4]).
+  '#'(4, 'dec-octet', [T1,T2,T3,T4], [separator(dot)]).
 
 
 %! 'dec-octet'(-ParseTree:compound)// .
@@ -310,23 +310,23 @@ ls32(ls32(T1)) -->
 'dec-octet'('dec-octet'(N)) -->
   between_decimal_digit(1, 9, _, D1),
   'DIGIT'(_, D2),
-  {digits_to_decimal([D1,D2], N)}.
+  {digits_decimal([D1,D2], N)}.
 % 100-199
 'dec-octet'('dec-octet'(N)) -->
   "1",
-  dcg_multi2('DIGIT', 2, _, [D2,D3]),
-  {digits_to_decimal([1,D2,D3], N)}.
+  '+'('DIGIT', [D2,D3], []),
+  {digits_decimal([1,D2,D3], N)}.
 % 200-249
 'dec-octet'('dec-octet'(N)) -->
   "2",
   between_decimal_digit(0, 4, _, D2),
   'DIGIT'(_, D3),
-  {digits_to_decimal([2,D2,D3], N)}.
+  {digits_decimal([2,D2,D3], N)}.
 % 250-255
 'dec-octet'('dec-octet'(N)) -->
   "25",
   between_decimal_digit(0, 5, _, D3),
-  {digits_to_decimal([2,5,D3], N)}.
+  {digits_decimal([2,5,D3], N)}.
 
 
 %! 'IPvFuture'(-ParseTree:compound)// .
@@ -336,9 +336,9 @@ ls32(ls32(T1)) -->
 
 'IPvFuture'('IPvFuture'(major(T1),minor(T2))) -->
   "v",
-  dcg_multi1('HEXDIG', 1-_, Codes1),
+  '+'('HEXDIG', Codes1, []),
   ".",
-  dcg_multi1('IPvFuture_', 1-_, Codes2),
+  '+'('IPvFuture_', Codes2, []),
   {
     atom_codes(T1, Codes1),
     atom_codes(T2, Codes2)
@@ -354,7 +354,7 @@ ls32(ls32(T1)) -->
 % ~~~
 
 'ireg-name'('ireg-name'(Atom)) -->
-  dcg_multi1('ireg-name_', _-_, Codes),
+  '*'('ireg-name_', Codes, []),
   {atom_codes(Atom, Codes)}.
 'ireg-name_'(C) --> iunreserved(C).
 'ireg-name_'(C) --> 'pct-encoded'(C).
@@ -367,7 +367,7 @@ ls32(ls32(T1)) -->
 % ~~~
 
 'ipath-abempty'('ipath-abempty'(Segments)) -->
-  dcg_multi1(forwardslash_segment, _-_, Segments).
+  '*'(forwardslash_segment, Segments, []).
 forwardslash_segment(Segment) -->
   "/",
   isegment(Segment).
@@ -379,7 +379,7 @@ forwardslash_segment(Segment) -->
 % ~~~
 
 isegment(isegment(Segment)) -->
-  dcg_multi1(ipchar, _-_, Codes),
+  '*'(ipchar, Codes, []),
   {atom_codes(Segment, Codes)}.
 
 
@@ -392,7 +392,7 @@ isegment(isegment(Segment)) -->
   "/",
   (
     'isegment-nz'(T1),
-    dcg_multi1(forwardslash_segment, _-_, Ts)
+    '*'(forwardslash_segment, Ts, [])
   ;
     ""
   ),
@@ -405,7 +405,7 @@ isegment(isegment(Segment)) -->
 % ~~~
 
 'isegment-nz'('isegment-nz'(Segment)) -->
-  dcg_multi1(ipchar, 1-_, Codes),
+  '+'(ipchar, Codes, []),
   {atom_codes(Segment, Codes)}.
 
 
@@ -416,7 +416,7 @@ isegment(isegment(Segment)) -->
 
 'ipath-rootless'('ipath-rootless'([H|T])) -->
   'isegment-nz'(H),
-   dcg_multi1(forwardslash_segment, _-_, T).
+   '*'(forwardslash_segment, T, []).
 
 
 %! 'ipath-empty'
@@ -435,7 +435,7 @@ isegment(isegment(Segment)) -->
 % ~~~
 
 port(port(Port)) -->
-  dcg_multi2('DIGIT', _-_, Codes, _),
+  '*'('DIGIT', Codes, _, []),
   {number_codes(Port, Codes)}.
 
 
@@ -447,7 +447,7 @@ port(port(Port)) -->
 % ~~~
 
 iquery(iquery(Query)) -->
-  dcg_multi1(iquery_, _-_, Codes),
+  '*'(iquery_, Codes, []),
   {atom_codes(Query, Codes)}.
 iquery_(C) --> ipchar(C).
 iquery_(C) --> iprivate(C).
@@ -463,7 +463,7 @@ iquery_(C) --> question_mark(C).
 % ~~~
 
 ifragment(ifragment(IFragment)) -->
-  dcg_multi1(ifragment_, _-_, Codes),
+  '*'(ifragment_, Codes, []),
   {atom_codes(IFragment, Codes)}.
 ifragment_(C) --> ipchar(C).
 ifragment_(C) --> forward_slash(C).
@@ -508,7 +508,7 @@ ifragment_(C) --> question_mark(C).
 
 'ipath-noscheme'('ipath-noscheme'([H|T])) -->
   'isegment-nz-nc'(H),
-  dcg_multi1(forwardslash_segment, _-_, T).
+  '*'(forwardslash_segment, T, []).
 
 %! 'isegment-nz-nc'(?Segment:atom)// .
 % Non-zero-length segment without any colon ":".
@@ -519,7 +519,7 @@ ifragment_(C) --> question_mark(C).
 % ~~~
 
 'isegment-nz-nc'('isegment-nz-nc'(Segment)) -->
-  dcg_multi1('isegment-nz-nc_', 1-_, Codes),
+  '+'('isegment-nz-nc_', Codes, []),
   {atom_codes(Segment, Codes)}.
 'isegment-nz-nc_'(C) --> iunreserved(C).
 'isegment-nz-nc_'(C) --> 'pct-encoded'(C).
@@ -578,7 +578,7 @@ iunreserved(C) --> ucschar(C).
   "%",
   'HEXDIG'(H1),
   'HEXDIG'(H2),
-  {digits_to_decimal([H1,H2], 16, C)}.
+  {digits_decimal([H1,H2], 16, C)}.
 
 
 %! 'sub-delims'(?Code:code)// .
