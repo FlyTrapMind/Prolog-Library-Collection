@@ -61,40 +61,85 @@ unpack(Spec, Stream, Location) :-
   content(In, Stream, Data, CloseStream).
 
 
-%! open_input(+Spec, -Read:blob, -MetaData:dict, -Close:boolean) is semidet.
+%! open_input(
+%!   +Spec:compound,
+%!   -Read:blob,
+%!   -MetaData:dict,
+%!   -Close:boolean
+%! ) is semidet.
+% Spec can be of the following forms:
+%   - `uri_components(
+%         +Scheme:atom,
+%         +Authority:atom,
+%         ?Path:atom,
+%         ?Search:atom,
+%         ?Fragment:atom
+%     )`
+%   - `url(+Url:atom)`
+%   - `stream(+Read:stream)`
 
-open_input(stream(In), In, stream{stream:In}, false) :- !.
-open_input(In, In, stream{stream:In}, false) :-
-  is_stream(In), !.
-open_input(URL, In, Meta, true) :-
-  uri_components(URL, Components),
-  uri_data(scheme, Components, Scheme),
-  nonvar(Scheme),
-  Scheme \== file, !,
-  open_url(Scheme, URL, In, Meta).
-open_input(URL, In, file{path:File}, true) :-
-  uri_file_name(URL, File), !,
-  open(File, In, [type(binary)]).
-open_input(Spec, In, file{path:Path}, true) :-
+
+% File
+open_input(file(File), Read, file{path:File}, true) :-
+  exists_file(File), !,
+  open(File, read, Read, [type(binary)]).
+
+% Stream: already opened.
+% @tbd Can we check for read access?
+open_input(stream(Read), Read, stream{stream:Read}, false):-
+  is_stream(Read), !.
+
+% URI Components: opens files and URLs.
+open_input(UriComponents, Read, Meta, StreamClose):-
+  UriComponents = uri_components(Scheme,Authority,Path,Search,Fragment), !,
+  
+  % Make sure the URL may be syntactically correct,
+  % haivng at least the requires `Scheme` and `Authority` components.
+  maplist(atom, [Scheme,Authority]),
+  
+  % If the URI scheme is `file` we must open a file.
+  % Otherwise, a proper URL has to be opened.
+  (   Scheme == file
+  ->  uri_components(Uri, UriComponents),
+      uri_file_name(Uri, File),
+      open_input(file(File), Read, Meta, StreamClose)
+  ;   open_url(Scheme, URL, In, Meta),
+      StreamClose = true
+  ).
+
+% URL: convert to URI components term.
+open_input(url(Url), In, Meta, CloseStream):- !,
+  uri_components(Url, UriComponents),
+  open_input(UriComponents, Read, Meta, CloseStream).
+
+% File specification.
+% @see absolute_file_name/3
+open_input(Spec, Read, file{path:Path}, true):-
   compound(Spec), !,
   absolute_file_name(Spec, Path, [access(read)]),
-  open(Path, read, In, [type(binary)]).
-open_input(File, In, file{path:File}, true) :-
-  exists_file(File), !,
-  open(File, read, In, [type(binary)]).
-open_input(Pattern, In, Location, Close) :-
+  open(Path, read, Read, [type(binary)]).
+
+% File pattern
+% @see expand_file_name/2
+open_input(Pattern, Read, Meta, Close) :-
   atom(Pattern),
   expand_file_name(Pattern, Files),
-  Files \== [], Files \== [Pattern], !,
+  Files \== [],
+  Files \== [Pattern], !,
+  % Backtrack over files.
   member(File, Files),
-  open_input(File, In, Location, Close).
-open_input(Input, _, _, _) :-
+  open_input(File, Read, Meta, Close).
+
+% Out of options...
+open_input(Input, _, _, _):-
   print_message(warning, unpack(cannot_open(Input))),
   fail.
 
 
-%! open_url(+Scheme:atom, +Url:url, -In:blob, -MetaData:dict) is semidet.
-% Helper for open_input/4 that deals with URLs
+%! open_url(+Scheme:atom, +Url:atom, -Read:blob, -Metadata:dict) is semidet.
+% Helper for open_input/4 that deals with URLs.
+%
+% @compat Only supports URLs with schemes `http` or `https`.
 
 open_url(Scheme, Url, In, Meta) :-
   http_scheme(Scheme), !,
@@ -235,6 +280,9 @@ rdf_content_type('text/n3',                0.8).
 rdf_content_type('text/rdf+n3',            0.5).
 % All
 rdf_content_type('*/*',                    0.1).
+
+
+  rdf_accept_header_value(AcceptValue),
 
 
 rdf_extra_headers([
