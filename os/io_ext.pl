@@ -143,9 +143,9 @@ stream_to_file(Stream, File):-
   atom_to_file(Atom, File).
 
 
-%! term_to_stream(+Term:term, -Stream:stream) is det.
+%! term_to_stream(+Term:term, -Read:stream) is det.
 
-term_to_stream(Term, Stream):-
+term_to_stream(Term, Read):-
   term_to_atom(Term, Atom),
   atom_to_memory_file(Atom, Handle),
   open_memory_file(Handle, read, Read, [free_on_close(true)]).
