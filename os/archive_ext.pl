@@ -31,10 +31,11 @@ Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
 @tbd Remove dependency of plTree.
-@version 2014/04, 2014/06-2014/08
+@version 2014/04, 2014/06-2014/08, 2014/10
 */
 
 :- use_module(library(archive)).
+:- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(http/http_open)).
 :- use_module(library(lists)).
@@ -129,7 +130,7 @@ archive_extract0(Archive, Filters, Dir):-
           ;   create_file_directory(File),
               file_from_stream(File, Read)
           ),
-          %%%%print_message(informational, archive_extracted(File))
+          debug(archive_ext, 'Extracted entry ~a', [File])
         ),
         close(Read)
       ),
@@ -401,9 +402,6 @@ prolog:message(archive_entry(Indent1,Archive,EntryName)) -->
     succ(Indent1, Indent2)
   },
   archive_properties(Indent2, Properties).
-
-prolog:message(archive_extracted(File)) -->
-  ['    [EXTRACTED] ~w'-[File]].
 
 archive_header(Indent, EntryName) -->
   indent(Indent),
