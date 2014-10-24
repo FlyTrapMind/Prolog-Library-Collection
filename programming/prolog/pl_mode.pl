@@ -7,6 +7,9 @@
     call_count/2, % :Goal
                   % -Number:number
     call_det/1, % :Goal
+    call_det/2, % :Goal
+                % +Argument1:pair
+    call_det/3, call_det/4, call_det/5, call_det/6, call_det/7, call_det/8,
     call_ground_as_semidet/1, % :Goal
     call_mode/2, % +Mode:oneof([det,multi,nondet,semidet])
                  % :Goal
@@ -36,16 +39,24 @@ Automated checks for Prolog mode enforcement.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/07
+         2014/07, 2014/10
 */
 
 :- use_module(library(aggregate)).
+:- use_module(library(error)).
 
 :- use_module(generics(error_ext)).
 
 :- meta_predicate(call_complete(2,+,-)).
 :- meta_predicate(call_count(0,-)).
 :- meta_predicate(call_det(0)).
+:- meta_predicate(call_det(1,+)).
+:- meta_predicate(call_det(2,+,+)).
+:- meta_predicate(call_det(3,+,+,+)).
+:- meta_predicate(call_det(4,+,+,+,+)).
+:- meta_predicate(call_det(5,+,+,+,+,+)).
+:- meta_predicate(call_det(6,+,+,+,+,+,+)).
+:- meta_predicate(call_det(7,+,+,+,+,+,+,+)).
 :- meta_predicate(call_ground_as_semidet(0)).
 :- meta_predicate(call_mode(+,0)).
 :- meta_predicate(call_multi(0,+)).
@@ -102,6 +113,70 @@ call_count(Goal1, Count):-
 call_det(Goal):-
   catch(Goal, _, mode_error(det, Goal)).
 
+call_det(Goal, Type1-Arg1):-
+  is_of_type(Type1, Arg1), !,
+  call(Goal, Arg1), !.
+call_det(Goal, _-Arg1):-
+  call(Goal, Arg1).
+
+call_det(Goal, Type1-Arg1, Type2-Arg2):-
+  is_of_type(Type1, Arg1),
+  is_of_type(Type2, Arg2), !,
+  call(Goal, Arg1, Arg2), !.
+call_det(Goal, _-Arg1, _-Arg2):-
+  call(Goal, Arg1, Arg2).
+
+call_det(Goal, Type1-Arg1, Type2-Arg2, Type3-Arg3):-
+  is_of_type(Type1, Arg1),
+  is_of_type(Type2, Arg2),
+  is_of_type(Type3, Arg3), !,
+  call(Goal, Arg1, Arg2, Arg3), !.
+call_det(Goal, _-Arg1, _-Arg2, _-Arg3):-
+  call(Goal, Arg1, Arg2, Arg3).
+
+call_det(Goal, Type1-Arg1, Type2-Arg2, Type3-Arg3, Type4-Arg4):-
+  is_of_type(Type1, Arg1),
+  is_of_type(Type2, Arg2),
+  is_of_type(Type3, Arg3),
+  is_of_type(Type4, Arg4), !,
+  call(Goal, Arg1, Arg2, Arg3, Arg4), !.
+call_det(Goal, _-Arg1, _-Arg2, _-Arg3, _-Arg4):-
+  call(Goal, Arg1, Arg2, Arg3, Arg4).
+
+call_det(Goal, Type1-Arg1, Type2-Arg2, Type3-Arg3, Type4-Arg4, Type5-Arg5):-
+  is_of_type(Type1, Arg1),
+  is_of_type(Type2, Arg2),
+  is_of_type(Type3, Arg3),
+  is_of_type(Type4, Arg4),
+  is_of_type(Type5, Arg5), !,
+  call(Goal, Arg1, Arg2, Arg3, Arg4, Arg5), !.
+call_det(Goal, _-Arg1, _-Arg2, _-Arg3, _-Arg4, _-Arg5):-
+  call(Goal, Arg1, Arg2, Arg3, Arg4, Arg5).
+
+call_det(Goal, Type1-Arg1, Type2-Arg2, Type3-Arg3, Type4-Arg4, Type5-Arg5, Type6-Arg6):-
+  is_of_type(Type1, Arg1),
+  is_of_type(Type2, Arg2),
+  is_of_type(Type3, Arg3),
+  is_of_type(Type4, Arg4),
+  is_of_type(Type5, Arg5),
+  is_of_type(Type6, Arg6), !,
+  call(Goal, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6), !.
+call_det(Goal, _-Arg1, _-Arg2, _-Arg3, _-Arg4, _-Arg5, _-Arg6):-
+  call(Goal, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6).
+
+call_det(Goal, Type1-Arg1, Type2-Arg2, Type3-Arg3, Type4-Arg4, Type5-Arg5, Type6-Arg6, Type7-Arg7):-
+  is_of_type(Type1, Arg1),
+  is_of_type(Type2, Arg2),
+  is_of_type(Type3, Arg3),
+  is_of_type(Type4, Arg4),
+  is_of_type(Type5, Arg5),
+  is_of_type(Type6, Arg6),
+  is_of_type(Type7, Arg7), !,
+  call(Goal, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7), !.
+call_det(Goal, _-Arg1, _-Arg2, _-Arg3, _-Arg4, _-Arg5, _-Arg6, _-Arg7):-
+  call(Goal, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7).
+
+
 
 %! call_ground_as_semidet(:Goal)
 
@@ -152,12 +227,9 @@ call_nth(Goal, C):-
 %        context(call_semidet/1, 'Message left empty.'))
 
 call_semidet(Goal):-
-  (
-    call_nth(Goal, 2)
-  ->
-    mode_error(semidet, Goal)
-  ;
-    once(Goal)
+  (   call_nth(Goal, 2)
+  ->  mode_error(semidet, Goal)
+  ;   once(Goal)
   ).
 
 

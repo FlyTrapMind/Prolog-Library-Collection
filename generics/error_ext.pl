@@ -39,10 +39,12 @@
 Exception handling predicates.
 
 @author Wouter Beek
-@version 2013/01, 2013/12-2014/03
+@version 2013/01, 2013/12-2014/03, 2014/10
 */
 
 :- use_module(library(debug)).
+
+:- meta_predicate rethrow(0,+,+).
 
 
 
@@ -82,7 +84,6 @@ extract_error(Error, Error).
 % @arg Catcher
 % @arg Exception
 
-:- meta_predicate rethrow(0,+,+).
 rethrow(Goal, Catcher, Exception):-
   catch(Goal, Catcher, throw(Exception)).
 
