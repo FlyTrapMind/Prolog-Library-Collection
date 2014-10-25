@@ -26,7 +26,8 @@ See also: [http://www.w3.org/wiki/Languages_as_RDF_Resources]
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf_file(rdf_serial)).
+
+:- use_module(plRdf_ser(rdf_load_any)).
 
 :- rdf_register_prefix(lexvo, 'http://lexvo.org/id/').
 

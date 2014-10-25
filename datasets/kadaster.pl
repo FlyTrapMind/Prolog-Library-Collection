@@ -20,7 +20,8 @@
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 
-:- use_module(plRdf_set(rdf_serial)).
+:- use_module(plRdf_ser(rdf_load_any)).
+:- use_module(plRdf_ser(rdf_save_any)).
 
 :- use_module(plSparql(sparql_db)).
 :- use_module(plSparql_query(sparql_query_api)).

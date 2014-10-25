@@ -51,8 +51,6 @@
                              % -ToFile:atom
     hidden_file_name/2, % +File:atom
                         % -HiddenFile:atom
-    http_path_correction/2, % +HttpPath:atom
-                            % -Path:atom
     is_absolute_file_name2/1, % ?File:atom
     is_fresh_file/2, % +File:atom
                      % +FreshnessLifetime:between(0.0,inf)
@@ -102,7 +100,7 @@ We use the following abbreviations in this module:
 @author Wouter Beek
 @tbd Remove the dependency on module AP.
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-%        2014/08-2014/09
+%        2014/08-2014/10
 */
 
 :- use_module(library(apply)).
@@ -112,6 +110,7 @@ We use the following abbreviations in this module:
 :- use_module(library(lists)).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
+:- use_module(library(uri)).
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
@@ -317,7 +316,7 @@ file_name(Path, Directory, Base, Extension):-
   directory_file_path(Directory, File, Path).
 file_name(Path1, Directory, Base, Extension):-
   nonvar(Path1), !,
-  http_path_correction(Path1, Path2),
+  uri_file_name(Path1, Path2),
   (
     exists_directory(Path2)
   ->
@@ -406,11 +405,6 @@ file_type_alternative(FromFile, ToFileType, ToFile):-
 hidden_file_name(FileName, HiddenFileName):-
   atomic(FileName), !,
   atomic_concat('.', FileName, HiddenFileName).
-
-
-http_path_correction(Path1, Path2):-
-  atom_concat('file://', Path2, Path1), !.
-http_path_correction(Path, Path).
 
 
 %! is_absolute_file_name2(+File:atom) is semidet.

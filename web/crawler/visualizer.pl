@@ -16,8 +16,11 @@ Visualizer predicates.
 */
 
 :- use_module(library(aggregate)).
+
 :- use_module(os(file_ext)).
 :- use_module(server(link_collection)).
+
+:- use_module(plRdf_ser(rdf_save_any)).
 
 
 

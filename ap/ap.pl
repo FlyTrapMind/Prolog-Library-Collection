@@ -41,7 +41,7 @@ Support for running automated processing.
 :- use_module(os(dir_ext)).
 
 :- use_module(plRdf(rdf_container)).
-:- use_module(plRdf_ser(rdf_serial)).
+:- use_module(plRdf_ser(rdf_save_any)).
 :- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
 

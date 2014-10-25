@@ -16,13 +16,15 @@ For use in the AP architecture.
 @version 2014/03
 */
 
-:- use_module(ap(ap_db)).
 :- use_module(library(apply)).
+
+:- use_module(ap(ap_db)).
 :- use_module(os(dir_ext)).
-:- use_module(plRdf(rdf_dataset)).
-:- use_module(plRdf(rdf_package)).
-:- use_module(rdf_file(rdf_serial)).
 :- use_module(void(void_db)).
+
+:- use_module(plRdf(rdf_dataset)).
+:- use_module(plRdf_ser(rdf_package)).
+:- use_module(plRdf_ser(rdf_load_any)).
 
 
 
