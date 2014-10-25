@@ -12,7 +12,7 @@ Implementation of the media type parameter in RFC 2616.
 
 @author Wouter Beek
 @see RFC 2616
-@version 2013/12, 2014/02
+@version 2013/12, 2014/02, 2014/10
 */
 
 :- use_module(http(rfc2616_generic)).
@@ -162,7 +162,7 @@ Implementation of the media type parameter in RFC 2616.
 
 
 parameters([T1|Ts], [H|T]) -->
-  ";", blanks,
+  ";",
   parameter(T1, H),
   parameters(Ts, T).
 parameters([], []) --> [].
