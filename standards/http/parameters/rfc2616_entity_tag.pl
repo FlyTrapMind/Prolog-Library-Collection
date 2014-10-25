@@ -17,7 +17,7 @@ DCG for RFC 2616 entity tags.
 */
 
 :- use_module(plDcg_rfc(rfc2616_basic)).
-:- use_module(http(rfc2616_generic)).
+:- use_module(http(rfc2616_generics)).
 
 
 

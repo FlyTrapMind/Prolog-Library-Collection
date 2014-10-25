@@ -242,7 +242,7 @@ If at any point an error status is received, the client
 */
 
 :- use_module(flp(rfc2616_abnf)).
-:- use_module(http(rfc2616_generic)).
+:- use_module(http(rfc2616_generics)).
 
 
 

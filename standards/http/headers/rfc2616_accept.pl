@@ -43,7 +43,7 @@ media_range(
 :- use_module(plDcg(parse_tree)).
 
 :- use_module(flp(rfc2616_abnf)).
-:- use_module(http(rfc2616_generic)).
+:- use_module(http(rfc2616_generics)).
 :- use_module(http_parameters(rfc2616_media_type)).
 :- use_module(http_parameters(rfc2616_quality_value)).
 
@@ -131,8 +131,8 @@ media_range(
 
 'Accept'('Accept'(Ts), Accepts) -->
   "Accept:",
-  'm#n'(_-_, '_Accept', Ts, Accepts, []).
-'_Accept'(T0, accept(MediaRange,QualityValue, AcceptExtensions)) -->
+  '#'('Accept0', Ts, Accepts, []).
+'Accept0'(T0, accept(MediaRange,QualityValue, AcceptExtensions)) -->
   'media-range'(T1, MediaRange),
   (
     'accept-params'(T2, QualityValue, AcceptExtensions)

@@ -15,7 +15,7 @@ Implementation of the media type parameter in RFC 2616.
 @version 2013/12, 2014/02, 2014/10
 */
 
-:- use_module(http(rfc2616_generic)).
+:- use_module(http(rfc2616_generics)).
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
@@ -168,15 +168,14 @@ parameters([T1|Ts], [H|T]) -->
 parameters([], []) --> [].
 
 
+
 %! subtype(-ParseTree:compound, ?Subtype:atom)// .
-%! type(-ParseTree:compound, ?Type:atom)// .
 %
 % # Syntax
 %
 % The type, subtype, and parameter attribute names are case-insensitive.
 %
 % ~~~{.abnf}
-% type    = token
 % subtype = token
 % ~~~
 %
@@ -184,6 +183,16 @@ parameters([], []) --> [].
 
 subtype(subtype(Subtype), Subtype) -->
   token(Subtype).
+
+
+
+%! type(-ParseTree:compound, ?Type:atom)// .
+%
+% # Syntax
+%
+% ~~~{.abnf}
+% type = token
+% ~~~
 
 type(type(Type), Type) -->
   token(Type).

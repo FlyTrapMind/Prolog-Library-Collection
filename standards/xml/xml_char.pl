@@ -15,9 +15,10 @@
 DCGs for character definitions in XML recommendations.
 
 @author Wouter Beek
-@version 2014/05, 2014/08
+@version 2014/05, 2014/08, 2014/10
 */
 
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_unicode)).
@@ -235,10 +236,7 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.0.5 [3].
 % @compat XML 1.1.2 [3].
 
-'S' --> 'S_char', 'S*'.
-
-'S*' --> [].
-'S*' --> 'S_char', 'S*'.
+'S' --> '+'('S_char').
 
 'S_char' --> carriage_return.
 'S_char' --> horizontal_tab.

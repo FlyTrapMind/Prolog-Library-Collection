@@ -1,5 +1,5 @@
 :- module(
-  rfc2616_generic,
+  rfc2616_generics,
   [
     charset//2, % -ParseTree:compound
                 % ?Charset:atom
@@ -13,7 +13,7 @@
   ]
 ).
 
-/** <module> HTTP basic rules
+/** <module> HTTP: generics
 
 Some basic DCG rules that are too specific to be reused outside of
   the HTTP specification, but that are too generic to be included in
@@ -21,13 +21,14 @@ Some basic DCG rules that are too specific to be reused outside of
 
 @author Wouter Beek
 @see RFC 2616
-@see Redundant `LWS`
-@see Case sensitivity
-@see Backwards compatibility
-@version 2013/12
+@tbd Redundant `LWS`
+@tbd Case sensitivity
+@tbd Backwards compatibility
+@version 2013/12, 2014/10
 */
 
 :- use_module(generics(codes_ext)).
+
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
@@ -135,19 +136,23 @@ charset(charset(Charset), Charset) -->
 % comment = "(" *( ctext | quoted-pair | comment ) ")"
 % ~~~
 
-comment(comment(Comm), Cs) -->
-  bracketed(
-    '*'('ctext_or_quoted-pair_or_comment', Css, [])
-  ),
-  {flatten(Css, Cs)},
-  {atom_codes(Comm, Cs)}.
+comment(comment, Comment) -->
+  dcg_atom_codes(
+    bracketed(
+      '*'(comment0, Codes, [])
+    ),
+    Comment
+  ).
 
-'ctext_or_quoted-pair_or_comment'([C]) -->
-  ctext(C).
-'ctext_or_quoted-pair_or_comment'([C]) -->
-  'quoted-pair'(C).
-'ctext_or_quoted-pair_or_comment'(Cs) -->
-  comment(_, Cs).
+comment0([H|T]) -->
+  ctext(H),
+  comment(T).
+comment0([H|T]) -->
+  'quoted-pair'(H),
+  comment(T).
+comment0(L) -->
+  comment(_, L).
+
 
 
 %! ctext(?Code:code)//
@@ -162,10 +167,9 @@ comment(comment(Comm), Cs) -->
 %
 % @see RFC 2616
 
-ctext(C) -->
-  'TEXT'(C),
-  {C \= 40}, % "("
-  {C \= 41}. % ")"
+ctext(Code) -->
+  'TEXT'(Code),
+  {\+ round_bracket(Code)}.
 
 
 
@@ -187,9 +191,9 @@ parameter(paramter(T1,T2), Attribute-Value) -->
 % qdtext = <any TEXT except <">>
 % ~~~
 
-qdtext(C) -->
-  'TEXT'(C),
-  {C \= 34}.
+qdtext(Code) -->
+  'TEXT'(Code),
+  {\+ less_than_sign(Code)}.
 
 
 
@@ -203,9 +207,9 @@ qdtext(C) -->
 %
 % @see RFC 2616
 
-'quoted-pair'(C) -->
+'quoted-pair'(Code) -->
   "\\",
-  'CHAR'(C).
+  'CHAR'(Code).
 
 
 
@@ -220,12 +224,13 @@ qdtext(C) -->
 % @see RFC 2616
 
 'quoted-string'(QuotedString) -->
-  quoted(dcg_atom_codes('quoted-string1', QuotedString)).
+  quoted(dcg_atom_codes('quoted-string_codes', QuotedString)).
 
-'quoted-string1'(C) -->
-  qdtext(C).
-'quoted-string1'(C) -->
-  'quoted-pair'(C).
+'quoted-string_codes'(Codes) -->
+  qdtext(Codes).
+'quoted-string_codes'(Codes) -->
+  'quoted-pair'(Codes).
+
 
 
 %! separator//
@@ -259,6 +264,7 @@ separator --> 'SP'. % 32
 separator --> 'HT'. % 9
 
 
+
 %! token(?Token:atom)//
 % ~~~{.abnf}
 % token = 1*<any CHAR except CTLs or separators>
@@ -267,12 +273,18 @@ separator --> 'HT'. % 9
 % @see RFC 2616
 
 token(Token) -->
-	{atom_codes(Token, Codes)},
-  '+'(token1, Codes, []).
+  dcg_atom_codes(token_codes, Token).
 
-token1(C) -->
+token_codes(Codes) -->
+  '+'(token_code, Codes, []).
+
+token_code(C) -->
   'CHAR'(C),
-  {\+ phrase('CTL', [C]), \+ phrase(separator, [C])}.
+  {
+    \+ 'CTL'(C, _, _),
+    \+ separator(C, _, _)
+  }.
+
 
 
 %! value(-ParseTree:compound, ?Value:atom)//

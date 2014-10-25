@@ -15,10 +15,14 @@
 
 @author Wouter Beek
 @see http://www.w3.org/TR/REC-xml/
-@version 2014/03-2014/05
+@version 2014/03-2014/05, 2014/10
 */
 
 :- use_module(xml(xml_datatypes)).
+
+:- use_module(plDcg(dcg_abnf)).
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_meta)).
 
 
 
@@ -32,10 +36,11 @@
 % @tbd Add support for attributes.
 
 'EmptyElemTag'(Name) -->
-  `<`,
+  "<",
   'Name'(Name),
-  (`` ; 'S'),
-  `/>`, !.
+  '?'('S', []),
+  "/>".
+
 
 
 %! 'ETag'(Name)// .
@@ -46,10 +51,11 @@
 % ~~~
 
 'ETag'(Name) -->
-  `</`,
+  "</",
   'Name'(Name),
-  (`` ; 'S'),
-  `>`, !.
+  '?'('S', []),
+  ">".
+
 
 
 %! 'Name'(?Name:atom)//
@@ -78,16 +84,12 @@
 % @compat XML 1.1.2 [5].
 
 'Name'(Name) -->
-  {nonvar(Name)}, !,
-  {atom_codes(Name, Codes)},
-  'Name'_(Codes).
-'Name'(Name) -->
-  'Name'_(Codes),
-  {atom_codes(Name, Codes)}.
+  dcg_atom_codes('Name_codes', Name).
 
-'Name'_([H|T]) -->
+'Name_codes'([H|T]) -->
   'NameStartChar'(H),
-  'NameChar*'([T]).
+  '*'('NameChar', T, []).
+
 
 
 %! 'Names'(?Names:list(atom))// .
@@ -98,15 +100,9 @@
 % @compat XML 1.0.5 [6].
 % @compat XML 1.1.2 [6].
 
-'Names'([H|T]) -->
-  'Name'(H),
-  '(#x20 Name)*'(T).
+'Names'(Names) -->
+  '+'('Name', Names, [separator(space)]).
 
-'(#x20 Name)*'([]) --> [].
-'(#x20 Name)*'([H|T]) -->
-  ` `,
-  'Name'(H),
-  '(#x20 Name)*'(T).
 
 
 %! 'Nmtoken'(?Token:atom)// .
@@ -118,21 +114,11 @@
 % @compat XML 1.1.2 [7].
 
 'Nmtoken'(Token) -->
-  {nonvar(Token)}, !,
-  {atom_codes(Token, Codes)},
-  'Nmtoken_'(Codes).
-'Nmtoken'(Token) -->
-  'Nmtoken_'(Codes),
-  {atom_codes(Token, Codes)}.
+  dcg_atom_codes('Nmtoken_codes', Token).
 
-'Nmtoken_'([H|T]) -->
-  'NameChar'(H),
-  'NameChar*'(T).
+'Nmtoken_codes'(Codes) -->
+  '+'('NameChar', Codes, []).
 
-'NameChar*'([]) --> [].
-'NameChar*'([H|T]) -->
-  'NameChar'(H),
-  'NameChar*'(T).
 
 
 %! 'Nmtokens'(?Tokens:list(atom))// .
@@ -143,15 +129,9 @@
 % @compat XML 1.0.5 [8].
 % @compat XML 1.1.2 [8].
 
-'Nmtokens'([H|T]) -->
-  'Nmtoken'(H),
-  '(#x20 Nmtoken)*'(T).
+'Nmtokens'(Tokens) -->
+  '+'('Nmtoken', Tokens, [separator(space)]).
 
-'(#x20 Nmtoken)*'([]) --> [].
-'(#x20 Nmtoken)*'([H|T]) -->
-  ` `,
-  'Nmtoken'(H),
-  '(#x20 Nmtoken)*'(T).
 
 
 % 'STag'(?Name:atom)// .
@@ -165,8 +145,8 @@
 % @tbd Add support for attributes.
 
 'STag'(Name) -->
-  `<`,
+  "<",
   'Name'(Name),
-  (`` ; 'S'),
-  `>`, !.
+  '?'('S', []),
+  ">", !.
 
