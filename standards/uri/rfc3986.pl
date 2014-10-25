@@ -9,10 +9,10 @@
 /** <module> RFC 3986
 
 @author Wouter Beek
-@version 2014/06, 2014/08-2014/09
+@version 2014/06, 2014/08-2014/10
 */
 
-:- use_module(generics(nvpair_ext)).
+:- use_module(generics(pair_ext)).
 
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
@@ -55,7 +55,7 @@ uri_encoded_search([NVPair|T]) -->
 
 
 uri_encoded_nvpair(NVPair) -->
-  {nvpair(N, V, NVPair)},
+  {term_to_pair(NVPair, N-V)},
   uri_encoded_atom(N),
   "=",
   uri_encoded_atom(V).

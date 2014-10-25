@@ -60,6 +60,7 @@ Predicates used for parsing and checking value-type conformance.
 | rational             |                  |                     |
 | string               |                  | Yes                 |
 | symbol               |                  |                     |
+| term                 | Yes              |                     |
 | text                 |                  |                     |
 | uri                  | Yes              |                     |
 | iri                  | Yes              |                     |
@@ -68,7 +69,7 @@ Predicates used for parsing and checking value-type conformance.
 --
 
 @author Wouter Beek
-@version 2013/01, 2013/08, 2014/01, 2014/03-2014/06
+@version 2013/01, 2013/08, 2014/01, 2014/03-2014/06, 2014/10
 */
 
 :- use_module(library(apply)).
@@ -157,6 +158,8 @@ error:has_type(float_between(L,U), X):-
 error:has_type(or(Types), Term):-
   member(Type, Types),
   error:has_type(Type, Term), !.
+% term
+error:has_type(term, _).
 
 
 %! is_url(+Url:url) is semidet.

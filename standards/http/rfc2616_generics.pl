@@ -28,6 +28,8 @@ the main DCGs.
 @version 2013/12, 2014/10
 */
 
+:- use_module(generics(pair_ext)).
+
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
@@ -175,7 +177,8 @@ ctext(Code) -->
 % parameter = attribute "=" value
 % ~~~
 
-parameter(paramter(T1,T2), Attribute-Value) -->
+parameter(paramter(T1,T2), AVPair) -->
+	{term_to_pair(AVPair, Attribute-Value)},
   attribute(T1, Attribute),
   "=",
   value(T2, Value).
