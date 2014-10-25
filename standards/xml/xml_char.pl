@@ -236,7 +236,7 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.0.5 [3].
 % @compat XML 1.1.2 [3].
 
-'S' --> '+'('S_char').
+'S' --> '+'('S_char', []).
 
 'S_char' --> carriage_return.
 'S_char' --> horizontal_tab.

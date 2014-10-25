@@ -9,6 +9,7 @@
                   % ?Parameter:pair(atom,atom)
     'quoted-string'//1, % ?Codes:list(code)
     separator//0,
+    separator//1, % ?Code:code
     token//1 % ?Token:atom
   ]
 ).
@@ -16,8 +17,8 @@
 /** <module> HTTP: generics
 
 Some basic DCG rules that are too specific to be reused outside of
-  the HTTP specification, but that are too generic to be included in
-  the main DCGs.
+the HTTP specification, but that are too generic to be included in
+the main DCGs.
 
 @author Wouter Beek
 @see RFC 2616
@@ -27,14 +28,10 @@ Some basic DCG rules that are too specific to be reused outside of
 @version 2013/12, 2014/10
 */
 
-:- use_module(generics(codes_ext)).
-
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(parse_tree)).
 :- use_module(plDcg_rfc(rfc2616_basic)).
 
 
@@ -137,21 +134,20 @@ charset(charset(Charset), Charset) -->
 % ~~~
 
 comment(comment, Comment) -->
-  dcg_atom_codes(
-    bracketed(
-      '*'(comment0, Codes, [])
-    ),
-    Comment
-  ).
+  "(",
+	dcg_atom_codes(comment_codes, Comment),
+	")".
 
-comment0([H|T]) -->
+comment_codes([H|T]) -->
   ctext(H),
-  comment(T).
-comment0([H|T]) -->
+  comment_codes(T).
+comment_codes([H|T]) -->
   'quoted-pair'(H),
-  comment(T).
-comment0(L) -->
-  comment(_, L).
+  comment_codes(T).
+comment_codes(L) -->
+  "(",
+	comment_codes(L),
+	")".
 
 
 
@@ -169,7 +165,7 @@ comment0(L) -->
 
 ctext(Code) -->
   'TEXT'(Code),
-  {\+ round_bracket(Code)}.
+  {\+ round_bracket(Code, _, _)}.
 
 
 
@@ -193,7 +189,7 @@ parameter(paramter(T1,T2), Attribute-Value) -->
 
 qdtext(Code) -->
   'TEXT'(Code),
-  {\+ less_than_sign(Code)}.
+  {\+ less_than_sign(Code, _, _)}.
 
 
 
@@ -262,6 +258,21 @@ separator --> "?". % 63
 separator --> "=". % 61
 separator --> 'SP'. % 32
 separator --> 'HT'. % 9
+
+separator(C) --> bracket(C). % 40,41,91,93,123,125
+separator(62) --> ">". % 62
+separator(60) --> "<". % 60
+separator(64) --> "@". % 64
+separator(44) --> ",". %44
+separator(59) --> ";". % 59
+separator(58) --> ":". % 58
+separator(92) --> "\\". % 92
+separator(34) --> '"'. %34
+separator(47) --> "/". % 47
+separator(63) --> "?". % 63
+separator(61) --> "=". % 61
+separator(32) --> 'SP'. % 32
+separator(9) --> 'HT'. % 9
 
 
 
