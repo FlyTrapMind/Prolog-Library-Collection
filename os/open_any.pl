@@ -1,8 +1,9 @@
 :- module(
   open_any,
   [
-    open_any/3 % +Input
+    open_any/4 % +Input
                % -Substream:stream
+               % -Metadata:dict
                % -Options:list(nvpair)
   ]
 ).
@@ -26,8 +27,7 @@ Load RDF data from various sources.
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
-:- predicate_options(open_any/3, 3, [
-     metadata(-dict),
+:- predicate_options(open_any/4, 4, [
      pass_to(open_input/4, 4)
    ]).
 :- predicate_options(open_input/4, 4, [
@@ -81,7 +81,12 @@ archive_content(Archive, Entry, Pipeline, PipeTail) :-
   ).
 
 
-%! open_any(+Input, -Out:stream, +Options:list(nvpair)) is nondet.
+%! open_any(
+%!   +Input,
+%!   -Out:stream,
+%!   -Metadata:dict,
+%!   +Options:list(nvpair)
+%! ) is nondet.
 % Provide access to plain data elements in   a  stream that may be
 % compressed and/or contain (nested) archives.   For  each element
 % found, it succeeds with  Stream  unified   to  a  binary  stream
@@ -111,7 +116,7 @@ archive_content(Archive, Entry, Pipeline, PipeTail) :-
 %       i.e., as a plain atom, stream handle, file pattern, etc.
 %       In these cases the interpretation is ambiguous
 %       and the following heuristics are used (in that order):
-%         
+%
 %         1. A file if exists_file/1 succeeds.
 %         2. A URI if uri_components/2 succeeds.
 %         3. A file if absolute_file_name/3 succeeds.
@@ -124,11 +129,11 @@ archive_content(Archive, Entry, Pipeline, PipeTail) :-
 %       is currently one of =stream=, =file= or =url=.
 %       For URLs, the keys =content_type=, =content_length= and
 %       =last_modified= may be available.
-%       
+%
 %       The dict contains a key =data=, holding a list that
 %       describes the decoding pipeline used for the data
 %       element. Elements of this list are:
-%         
+%
 %         - filter(Filter)
 %           The indicated content filter was applied.
 %         - archive_entry{}, where the keys provide all
@@ -137,15 +142,9 @@ archive_content(Archive, Entry, Pipeline, PipeTail) :-
 %
 % @arg  Options
 
-open_any(Input, Out, Options):-
+open_any(Input, Out, Metadata, Options):-
   open_input(Input, FileOut, Metadata0, Close, Options),
-
-  % Metadata option.
-  (   option(metadata(Metadata), Options)
-  ->  Metadata = Metadata0.put(data, Data)
-  ;   true
-  ),
-  
+  Metadata = Metadata0.put(data, Data),
   open_substream(FileOut, Out, Data, Close).
 
 
@@ -156,7 +155,7 @@ open_any(Input, Out, Options):-
 % @arg  Pipeline is a list of applied filters and archive selection
 %       operations.
 %       List elements take the form:
-%         
+%
 %         - `archive(Member, Format)`
 %         - `filter(Name)`
 
@@ -199,11 +198,11 @@ open_input(stream(Out), Out, stream{stream:Out}, false, _):-
 % @compat Only supports URLs with schemes `http` or `https`.
 open_input(UriComponents, Out, Metadata, Close, Options1):-
   UriComponents = uri_components(Scheme,Authority,_,_,_), !,
-  
+
   % Make sure the URL may be syntactically correct,
   % haivng at least the requires `Scheme` and `Authority` components.
   maplist(atom, [Scheme,Authority]),
-  
+
   % If the URI scheme is `file` we must open a file.
   % Otherwise, a proper URL has to be opened.
   uri_components(Uri, UriComponents),
@@ -234,62 +233,62 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
   ).
 
 % A4. URI: convert to URI components term.
-open_input(uri(Url), Out, Metadata, Close):- !,
+open_input(uri(Url), Out, Metadata, Close, Options):- !,
   uri_components(Url, UriComponents),
-  open_input(UriComponents, Out, Metadata, Close).
+  open_input(UriComponents, Out, Metadata, Close, Options).
 
 % A4'. URL: same as URI.
-open_input(url(Url), Out, Metadata, Close):- !,
-  open_input(uri(Url), Out, Metadata, Close).
+open_input(url(Url), Out, Metadata, Close, Options):- !,
+  open_input(uri(Url), Out, Metadata, Close, Options).
 
 % A5. File pattern
-open_input(pattern(Pattern), Out, Metadata, Close) :-
+open_input(pattern(Pattern), Out, Metadata, Close, Options):-
   atom(Pattern),
   expand_file_name(Pattern, Files),
   Files \== [],
   Files \== [Pattern], !,
   % Backtrack over files.
   member(File, Files),
-  open_input(File, Out, Metadata, Close).
+  open_input(File, Out, Metadata, Close, Options).
 
 % A6. File specification.
-open_input(file_spec(Spec), Out, file{path:Path}, true):-
+open_input(file_spec(Spec), Out, Metadata, Close, Options):-
   compound(Spec), !,
-  absolute_file_name(Spec, Path, [access(read)]),
-  open(Path, read, Out, [type(binary)]).
+  absolute_file_name(Spec, File, [access(read)]),
+  open_input(file(File), Out, Metadata, Close, Options).
 
 
 % B. Stream
-open_input(Stream, Out, Metadata, Close):-
+open_input(Stream, Out, Metadata, Close, Options):-
   is_stream(Stream), !,
-  open_input(stream(Stream), Out, Metadata, Close).
+  open_input(stream(Stream), Out, Metadata, Close, Options).
 
 
 % C1. File
-open_input(File, Out, Metadata, Close):-
+open_input(File, Out, Metadata, Close, Options):-
   exists_file(File), !,
-  open_input(file(File), Out, Metadata, Close).
+  open_input(file(File), Out, Metadata, Close, Options).
 
 % C2. URI
-open_input(Uri, Out, Metadata, Close):-
+open_input(Uri, Out, Metadata, Close, Options):-
   uri_components(Uri, UriComponents), !,
-  open_input(UriComponents, Out, Metadata, Close).
+  open_input(UriComponents, Out, Metadata, Close, Options).
 
 % C3. File specification
-open_input(Spec, Out, Metadata, Close):-
+open_input(Spec, Out, Metadata, Close, Options):-
   absolute_file_name(Spec, File, [access(read),file_errors(fail)]), !,
-  open_input(file(File), Out, Metadata, Close).
+  open_input(file(File), Out, Metadata, Close, Options).
 
 % C4. File pattern
-open_input(Pattern, Out, Metadata, Close):-
+open_input(Pattern, Out, Metadata, Close, Options):-
   expand_file_name(Pattern, Files),
   File \== [], !,
   member(File, Files),
-  open_input(file(File), Out, Metadata, Close).
+  open_input(file(File), Out, Metadata, Close, Options).
 
 
 % D. Out of options...
-open_input(Input, _, _, _):-
+open_input(Input, _, _, _, _):-
   print_message(warning, cannot_open(Input)),
   fail.
 
