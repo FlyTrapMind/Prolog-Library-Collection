@@ -6,6 +6,8 @@
     current_time/1, % ?Time:atom
     date_directories/2, % +Dir:atom
                         % -DateDir:atom
+    date_time_json/2, % ?DateTime:compound
+                      % ?Dict:dict
     hash_date/1, % -Hash:atom
     iso8601_dateTime/1, % -DateTime:atom
     latest_file/2, % +Files:list(atom)
@@ -23,7 +25,7 @@
 Extensions for date and time.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/11
+@version 2013/06-2013/07, 2013/11, 2014/10
 */
 
 :- use_module(generics(meta_ext)).
@@ -62,7 +64,7 @@ current_time(Time):-
   format_time(atom(Time), '%H_%M_%S', TimeStamp).
 
 %! date_directories(+Dir:atom, -DateDir:atom) is det.
-% Create and retuns the current date subdirectory of the given absolute
+% Create and return the current date subdirectory of the given absolute
 % directory name.
 %
 % Example: from =|/home/wouterbeek/tmp|= to
@@ -77,6 +79,27 @@ date_directories(Dir, DateDir):-
   RelativeSubDirs2 =.. [Year,RelativeSubDirs1],
   RelativeDirs =.. [Dir,RelativeSubDirs2],
   create_nested_directory(RelativeDirs, DateDir).
+
+
+
+%! date_time_json(?DateTime:compound, ?Dict:dict) is det.
+
+date_time_json(
+  date(Year,Month,Day,Hour,Minute,Second,Offset,Timezone,DaylightSavingTime),
+  json{
+    day:Day,
+    'daylight-saving-time':DaylightSavingTime,
+    hour:Hour,
+    minute:Minute,
+    month:Month,
+    offset:Offset,
+    second:Second,
+    timezone:Timezone,
+    year:Year
+  }
+).
+
+
 
 %! hash_date(-Hash:atom) is det.
 % Returns the hash of the current timestamp.

@@ -27,6 +27,11 @@ Load RDF data from various sources.
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
+:- use_module(http(rfc2616_status_line)).
+:- use_module(http_parameters(rfc2616_media_type)).
+
+:- use_module(plDcg(dcg_generics)).
+
 :- predicate_options(open_any/4, 4, [
      pass_to(open_input/4, 4)
    ]).
@@ -210,25 +215,36 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
   ->  uri_file_name(Uri, File),
       open_input(file(File), Out, Metadata, Close, Options1)
   ;   http_scheme(Scheme),
-      merge_options(
-        [
-          header(content_type, ContentType),
-          header(content_length, ContentLength),
-          header(last_modified, ModifiedText)
-        ],
-        Options1,
-        Options2
-      ),
+      Headers1 = [
+          header('Access-Control-Allow-Origin', _),
+          header('Accept-Ranges', _),
+          header('Cache-Control', _),
+          header('Connection', _),
+          header('Content-Type', _),
+          header('Content-Length', _),
+          header('Date', _),
+          header('ETag', _),
+          header('Expires', _),
+          header('Last-Modified', _),
+          header('Server', _)
+      ],
+      merge_options([status_code(Code)|Headers1], Options1, Options2),
       http_open(Uri, Out, Options2),
-      url_meta_pairs(
-        [
-          content_type=ContentType,
-          content_length=ContentLength,
-          last_modified=ModifiedText
-        ],
-        HeaderPairs
+      % Exclude headers that did not occur in the HTTP response.
+      exclude(=(header(_,'')), Headers1, Headers2),
+      % Convert headers to JSON-compatible pairs.
+      maplist(header_json, Headers2, Headers3),
+      % HTTP header JSON object.
+      dict_pairs(HeadersDict, json, Headers3),
+      % HTTP status.
+      'Status-Code'(Code, Reason),
+      dict_pairs(StatusDict, json, [code-Code,'reason-phrase'-Reason]),
+      % HTTP response/request dictionary.
+      dict_pairs(
+        Metadata,
+        json,
+        [headers-HeadersDict,status-StatusDict,'URI'-Uri]
       ),
-      dict_pairs(Metadata, url, [url-Uri|HeaderPairs]),
       Close = true
   ).
 
@@ -296,26 +312,34 @@ open_input(Input, _, _, _, _):-
 
 % HELPERS
 
+%! header_json(+Header:compound, -ConvertedHeader:pair) is det.
+% Converts a given HTTP header compound term to its JSON equivalent.
+
+header_json(header(Key,Value1), Key-Value2):-
+  header_value_json(Key, Value1, Value2).
+
+
+%! header_value_json(+Key:atom, +Value:atom, -ConvertedValue) is det.
+% Converts a given HTTP header value to its JSON equivalent.
+
+header_value_json('Content-Length', Atom, Number):- !,
+  atom_number(Atom, Number).
+header_value_json('Content-Type', Atom, Dict):- !,
+  dcg_phrase('media-type'(_, MediaType), Atom),
+  media_type_json(MediaType, Dict).
+header_value_json(Key, Atom, Dict):-
+  memberchk(Key, ['Date','Expires','Last-Modified']), !,
+  parse_time(Atom, rfc_1123, Stamp),
+  stamp_date_time(Stamp, DateTime, 'UTC'),
+  date_time_json(DateTime, Dict).
+header_value_json(_, Atom, Atom).
+
+
 %! http_scheme(+Scheme:atom) is semidet.
 %! http_scheme(-Scheme:atom) is multi.
 
 http_scheme(http).
 http_scheme(https).
-
-
-%! url_meta_pair(
-%!   +Metadata1:list(nvpair),
-%!   -Metadata2:list(pair(atomic))
-%! ) is det.
-
-url_meta_pairs([], []).
-url_meta_pairs([_=''|T0], T):- !,
-  url_meta_pairs(T0, T).
-url_meta_pairs([content_length=Atom|T0], [content_length-Bytes|T]):-
-  atom_number(Atom, Bytes), !,
-  url_meta_pairs(T0, T).
-url_meta_pairs([Name=Value|T0], [Name-Value|T]):- !,
-  url_meta_pairs(T0, T).
 
 
 %! wrap_filter(+FilterName:atom, -FilterTerm:compound) is det.

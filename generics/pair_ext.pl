@@ -3,6 +3,8 @@
   [
     inverse_pair/2, % ?Pair:pair
                     % ?Inverse:pair
+    json_pair/2, % ?Pair:pair
+                 % ?Dict:dict
     list_pair/2, % ?List:list
                  % ?Pair:pair
     number_of_equivalence_pairs/3, % +EquivalenceSets:list(ordset)
@@ -42,7 +44,7 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/09
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/10
 */
 
 :- use_module(library(aggregate)).
@@ -127,6 +129,14 @@ cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options):-
   ;
     NumberOfPairs = NumberOfSymmetricAndTransitivePairs
   ).
+
+
+%! json_pair(+Pair:pair, +Dict:dict) is semidet.
+%! json_pair(+Pair:pair, -Dict:dict) is det.
+%! json_pair(-Pair:pair, +Dict:dict) is det.
+
+json_pair(Pair, Dict):-
+  dict_pairs(Dict, json, [Pair]).
 
 
 %! pair(+Pair:pair, +X, +Y) is semidet.

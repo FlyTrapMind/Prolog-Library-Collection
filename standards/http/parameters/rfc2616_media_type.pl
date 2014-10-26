@@ -1,6 +1,8 @@
 :- module(
   rfc2616_media_type,
   [
+    media_type_json/2, % ?MediaType:compound
+                       % ?Dict:dict
     'media-type'//2 % -ParseTree:compound
                     % ?MediaType:compound
   ]
@@ -11,15 +13,32 @@
 Implementation of the media type parameter in RFC 2616.
 
 @author Wouter Beek
-@see RFC 2616
+@compat RFC 7231
+@see http://tools.ietf.org/html/rfc7231#section-3.1.1.1
 @version 2013/12, 2014/02, 2014/10
 */
 
+:- use_module(library(apply)).
+
+:- use_module(generics(pair_ext)).
 :- use_module(http(rfc2616_generics)).
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(parse_tree)).
+
+
+
+%! media_type_json(+MediaType:compound, -Dict:dict) is det.
+
+media_type_json(media_type(Type,Subtype,Parameters), Dict):-
+  maplist(term_to_pair, Parameters, ParameterPairs),
+  maplist(json_pair, ParameterPairs, ParameterDicts),
+  dict_pairs(
+    Dict,
+    json,
+    [parameters-ParameterDicts,subtype-Subtype,type-Type]
+  ).
 
 
 
@@ -31,7 +50,7 @@ Implementation of the media type parameter in RFC 2616.
 % # Syntax
 %
 % ~~~{.abnf}
-% media-type = type "/" subtype *( ";" parameter )
+% media-type = type "/" subtype *( OWS ";" OWS parameter )
 % ~~~
 %
 % Parameters MAY follow the type/subtype in the form of attribute/value pairs.
@@ -162,7 +181,7 @@ Implementation of the media type parameter in RFC 2616.
 
 
 parameters([T1|Ts], [H|T]) -->
-  ";",
+  'OWS', ";", 'OWS',
   parameter(T1, H),
   parameters(Ts, T).
 parameters([], []) --> [].

@@ -5,6 +5,7 @@
                 % ?Charset:atom
     comment//2, % -ParseTree:compound
                 % ?Codes:list(code)
+    'OWS'//0,
     parameter//2, % -ParseTree:compound
                   % ?Parameter:pair(atom,atom)
     'quoted-string'//1, % ?Codes:list(code)
@@ -21,7 +22,7 @@ the HTTP specification, but that are too generic to be included in
 the main DCGs.
 
 @author Wouter Beek
-@see RFC 2616
+@compat RFC 7231
 @tbd Redundant `LWS`
 @tbd Case sensitivity
 @tbd Backwards compatibility
@@ -42,6 +43,8 @@ the main DCGs.
 % ~~~{.abnf}
 % attribute = token
 % ~~~
+%
+% @compat RFC 2616
 
 attribute(attribute(Attribute), Attribute) -->
   token(Attribute).
@@ -171,10 +174,37 @@ ctext(Code) -->
 
 
 
+%! 'OWS'// .
+% Optional whitespace.
+%
+% ~~~{.abfn}
+% OWS = *( SP / HTAB )
+% ~~~
+
+'OWS' -->
+  '*'('OWS_inner', []).
+
+'OWS_inner' -->	'SP'.
+'OWS_inner' -->	'HT'.
+
+
+
 %! parameter(-ParseTree:compound, ?AttributeValuePair:kvpair(atom,atom))//
 % Parameters are in the form of attribute/value pairs.
+% Both are tokens.
+%
+% # Syntax
+%
+% ## RFC 2616
+%
 % ~~~{.abnf}
 % parameter = attribute "=" value
+% ~~~
+%
+% ## RFC 7231
+%
+% ~~~{.abnf}
+% parameter = token "=" ( token / quoted-string )
 % ~~~
 
 parameter(paramter(T1,T2), AVPair) -->
@@ -303,7 +333,7 @@ token_code(C) -->
 
 %! value(-ParseTree:compound, ?Value:atom)//
 % ~~~{.abnf}
-% value     = token | quoted-string
+% value = token | quoted-string
 % ~~~
 
 value(value(Value), Value) -->
