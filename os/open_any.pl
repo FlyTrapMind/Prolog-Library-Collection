@@ -1,6 +1,8 @@
 :- module(
   open_any,
   [
+    close_any/2, % +Outstream
+                 % -Metadata:dict
     open_any/4 % +Input
                % -Substream:stream
                % -Metadata:dict
@@ -27,15 +29,16 @@ Load RDF data from various sources.
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
+:- use_module(os(datetime_ext)).
 :- use_module(http(rfc2616_status_line)).
 :- use_module(http_parameters(rfc2616_media_type)).
 
 :- use_module(plDcg(dcg_generics)).
 
 :- predicate_options(open_any/4, 4, [
-     pass_to(open_input/4, 4)
+     pass_to(open_input/5, 5)
    ]).
-:- predicate_options(open_input/4, 4, [
+:- predicate_options(open_input/5, 5, [
      pass_to(http_open/3, 3),
      pass_to(open/4, 4)
    ]).
@@ -84,6 +87,39 @@ archive_content(Archive, Entry, Pipeline, PipeTail) :-
   ;   !,
       fail
   ).
+
+
+%! close_any(+Outstream, -Metadata:dict) is det.
+
+close_any(Out, Metadata):-
+  % A BOM (Byte Order Mark) was detected while opening the file for reading
+  (   stream_property(Out, bom(Bom))
+  ->  true
+  ;   Bom = false
+  ),
+  stream_property(Out, encoding(Encoding)),
+  stream_property(Out, locale(CurrentLocale)),
+  stream_property(Out, newline(NewlineMode)),
+  stream_property(Out, type(Type)),
+  byte_count(Out, Bytes),
+  character_count(Out, Characters),
+  line_count(Out, Lines),
+  dict_pairs(
+    Metadata,
+    json,
+    [
+      'bom-detected'-Bom,
+      'byte-count'-Bytes,
+      'character-count'-Characters,
+      encoding-Encoding,
+      'current-locale'-CurrentLocale,
+      'line-count'-Lines,
+      'newline-mode'-NewlineMode,
+      'stream-type'-Type
+    ]
+  ),
+  close(Out).
+
 
 
 %! open_any(
@@ -231,7 +267,7 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
       merge_options([status_code(Code)|Headers1], Options1, Options2),
       http_open(Uri, Out, Options2),
       % Exclude headers that did not occur in the HTTP response.
-      exclude(=(header(_,'')), Headers1, Headers2),
+      exclude(empty_header, Headers1, Headers2),
       % Convert headers to JSON-compatible pairs.
       maplist(header_json, Headers2, Headers3),
       % HTTP header JSON object.
@@ -311,6 +347,12 @@ open_input(Input, _, _, _, _):-
 
 
 % HELPERS
+
+%! empty_header(+Header:compound) is semidet.
+% Succeeds for HTTP headers with empty value.
+
+empty_header(header(_,'')).
+
 
 %! header_json(+Header:compound, -ConvertedHeader:pair) is det.
 % Converts a given HTTP header compound term to its JSON equivalent.
