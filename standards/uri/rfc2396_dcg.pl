@@ -321,7 +321,7 @@ authority(authority(T), Authority) -->
   registry_based_naming_authority(T, Authority).
 
 dashed_alpha_numerics([H|T]) -->
-  (ascii_alpha_numeric(H) ; hyphen_minus(H)),
+  (alpha_numeric(H) ; hyphen_minus(H)),
   dashed_alpha_numerics(T).
 dashed_alpha_numerics([]) --> [].
 
@@ -333,26 +333,26 @@ dashed_alpha_numerics([]) --> [].
 domain_label(domain_label(Char), Char) -->
   {nonvar(Char), atom_length(Char, 1)}, !,
   {char_code(Char, Code)},
-  ascii_alpha_numeric(Code).
+  alpha_numeric(Code).
 domain_label(domain_label(DomainLabel), DomainLabel) -->
   {nonvar(DomainLabel)}, !,
   {
     atom_codes(DomainLabel, Codes),
     append([H|T], [X], Codes)
   },
-  ascii_alpha_numeric(H),
+  alpha_numeric(H),
   dashed_alpha_numerics(T),
-  ascii_alpha_numeric(X).
+  alpha_numeric(X).
 domain_label(domain_label(DomainLabel), DomainLabel) -->
-  ascii_alpha_numeric(H),
+  alpha_numeric(H),
   dashed_alpha_numerics(T),
-  ascii_alpha_numeric(X),
+  alpha_numeric(X),
   {
     append([H|T], [X], Codes),
     atom_codes(DomainLabel, Codes)
   }.
 domain_label(domain_label(Char), Char) -->
-  ascii_alpha_numeric(Code),
+  alpha_numeric(Code),
   {char_code(Char, Code)}.
 
 %! domain_labels(-Tree:compound, ?DomainLabels:list(atom))//
@@ -754,8 +754,8 @@ reserved_character(C) --> comma(C).
 % remainder of the URI string.
 %
 % Scheme names consist of a sequence of characters beginning with an
-% ascii_letter_lowercase// and followed by any combination of
-% ascii_letter_lowercase//,
+% letter_lowercase// and followed by any combination of
+% letter_lowercase//,
 % decimal_digit//, plus_sign//, dot//, or hyphen_minus//.
 % For resiliency, programs interpreting URI should treat upper case letters
 % as equivalent to lower case in scheme names (e.g., allow `HTTP` as
@@ -776,7 +776,7 @@ scheme_([H|T]) -->
   ascii_letter(H),
   scheme_characters(T).
 
-scheme_character(C) --> ascii_alpha_numeric(C).
+scheme_character(C) --> alpha_numeric(C).
 scheme_character(C) --> plus_sign(C).
 scheme_character(C) --> hyphen_minus(C).
 scheme_character(C) --> dot(C).
@@ -853,7 +853,7 @@ top_label(top_label(TopLabel), TopLabel) --> ascii_letter(TopLabel).
 % of the URI, but this should not be done unless the URI is being used
 % in a context that does not allow the unescaped character to appear.
 
-unreserved_character(C) --> ascii_alpha_numeric(C).
+unreserved_character(C) --> alpha_numeric(C).
 unreserved_character(C) --> mark(C).
 
 %! uri_character(+Code:code)//

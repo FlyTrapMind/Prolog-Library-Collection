@@ -549,9 +549,9 @@ ipchar(C) --> at_symbol(C).
 
 iprivate(C) -->
   [C],
-  {( between_hex('E000',   'F8FF',   C), !
-  ;  between_hex('F0000',  'FFFFD',  C), !
-  ;  between_hex('100000', '10FFFD', C)
+  {( between(hex('E000'),   hex('F8FF'),   C), !
+  ;  between(hex('F0000'),  hex('FFFFD'),  C), !
+  ;  between(hex('100000'), hex('10FFFD'), C)
   )}.
 
 
@@ -610,23 +610,23 @@ iunreserved(C) --> ucschar(C).
 
 ucschar(C) -->
   [C],
-  {( between_hex('A0',    'D7FF',  C), !
-  ;  between_hex('F900',  'FDCF',  C), !
-  ;  between_hex('FDF0',  'FFEF',  C), !
-  ;  between_hex('10000', '1FFFD', C), !
-  ;  between_hex('20000', '2FFFD', C), !
-  ;  between_hex('30000', '3FFFD', C), !
-  ;  between_hex('40000', '4FFFD', C), !
-  ;  between_hex('50000', '5FFFD', C), !
-  ;  between_hex('60000', '6FFFD', C), !
-  ;  between_hex('70000', '7FFFD', C), !
-  ;  between_hex('80000', '8FFFD', C), !
-  ;  between_hex('90000', '9FFFD', C), !
-  ;  between_hex('A0000', 'AFFFD', C), !
-  ;  between_hex('B0000', 'BFFFD', C), !
-  ;  between_hex('C0000', 'CFFFD', C), !
-  ;  between_hex('D0000', 'DFFFD', C), !
-  ;  between_hex('E1000', 'EFFFD', C)
+  {( between(hex('A0'),    hex('D7FF'),  C), !
+  ;  between(hex('F900'),  hex('FDCF'),  C), !
+  ;  between(hex('FDF0'),  hex('FFEF'),  C), !
+  ;  between(hex('10000'), hex('1FFFD'), C), !
+  ;  between(hex('20000'), hex('2FFFD'), C), !
+  ;  between(hex('30000'), hex('3FFFD'), C), !
+  ;  between(hex('40000'), hex('4FFFD'), C), !
+  ;  between(hex('50000'), hex('5FFFD'), C), !
+  ;  between(hex('60000'), hex('6FFFD'), C), !
+  ;  between(hex('70000'), hex('7FFFD'), C), !
+  ;  between(hex('80000'), hex('8FFFD'), C), !
+  ;  between(hex('90000'), hex('9FFFD'), C), !
+  ;  between(hex('A0000'), hex('AFFFD'), C), !
+  ;  between(hex('B0000'), hex('BFFFD'), C), !
+  ;  between(hex('C0000'), hex('CFFFD'), C), !
+  ;  between(hex('D0000'), hex('DFFFD'), C), !
+  ;  between(hex('E1000'), hex('EFFFD'), C)
   )}.
 
 

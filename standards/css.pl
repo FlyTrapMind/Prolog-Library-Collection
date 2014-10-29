@@ -29,7 +29,7 @@ css_escape -->
   (carriage_return ; form_feed ; horizontal_tab ; line_feed ; space ; "").
 
 nmstart --> underscore.
-nmstart --> ascii_letter_lowercase.
+nmstart --> letter_lowercase.
 nmstart --> css_escape.
 
 

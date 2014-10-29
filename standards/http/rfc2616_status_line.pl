@@ -3,18 +3,18 @@
   [
     'Status-Code'/2, % ?Status:between(100,999)
                      % ?Description:atom
-    'Status-Line'//3 % -ParseTree:compound
-                     % ?Version:compound
+    'Status-Line'//2 % ?Version:compound
                      % ?Status:compound
   ]
 ).
 
-/** <module> RFC 2616 status line
+/** <module> RFC 2616: Status line
 
-DCG for RFC 2616 status lines.
+Grammar for status lines in RFC 2616.
 
 @author Wouter Beek
-@version 2013/12
+@compat RFC 2616
+@version 2013/12, 2014/10
 */
 
 :- use_module(http(rfc2616_version)).
@@ -25,7 +25,7 @@ DCG for RFC 2616 status lines.
 
 
 
-%! 'extension-code'(-ParseTree:compound, ?Status:between(100,999))// .
+%! 'extension-code'(?Status:between(100,999))// .
 % HTTP status codes are extensible.
 %
 % # Syntax
@@ -58,23 +58,27 @@ DCG for RFC 2616 status lines.
 %  to include human-readable information which will explain
 %  the unusual status.
 
-'extension-code'('extension-code'(Status), Status) -->
-  '#'(3, 'DIGIT', Ds),
-  {digits_decimal(Ds, Status)}.
+'extension-code'(Status) -->
+  '#'(3, 'DIGIT', Weights, []),
+  {weights_number(Weights, Status)}.
 
 
 
-%! 'Reason-Phrase'(-ParseTree:compound, ?Reason:atom)//
+%! 'Reason-Phrase'(?Reason:atom)//
 % ~~~{.abnf}
 % Reason-Phrase = *<TEXT, excluding CR, LF>
 % ~~~
 
-'Reason-Phrase'('Reason-Phrase'(Reason), Reason) -->
+'Reason-Phrase'(Reason) -->
   {atom_codes(Reason, Cs)},
-  '*'('_Reason-Phrase', Cs, []).
-'_Reason-Phrase'(C) -->
-  'TEXT'(C),
-  {\+ phrase('CR', [C]), \+ phrase('LF', [C])}.
+  '*'('Reason-Phrase0', Cs, []).
+'Reason-Phrase0'(Code) -->
+  'TEXT'(Code),
+  {
+    \+ 'CR'(Code, _, _),
+    \+ 'LF'(Code, _, _)
+  }.
+
 
 
 %! 'Status-Code'(?Status:between(100,505), ?Reason:atom) is nondet.
@@ -82,12 +86,10 @@ DCG for RFC 2616 status lines.
 'Status-Code'(Status, Reason):-
   'Status-Code'(Status, Reason, _, _).
 
-%! 'Status-Code'(-Tree:compound, ?Status:between(100,505), ?Reason:atom)// .
-%! 'Status-Code'(
-%!   -ParseTree:compound,
-%!   ?Status:between(100,999),
-%!   ?Reason:atom
-%! )// .
+
+
+%! 'Status-Code'(?Status:between(100,505), ?Reason:atom)// .
+%! 'Status-Code'(?Status:between(100,999), ?Reason:atom)// .
 % # Syntax
 %
 % The `Status-Code` element is a 3-digit integer result code of the attempt
@@ -350,15 +352,15 @@ Requirements for HTTP/1.1 origin servers:
   "505".
 
 % This clause is implicit in RFC 2616.
-'Status-Code'('Status-Code'(Status,Reason), Status, Reason) -->
+'Status-Code'(Status, Reason) -->
   'Status-Code'(Status, Reason).
-'Status-Code'('Status-Code'(T1,T2), Status, Reason) -->
-  'extension-code'(T1, Status),
-  'Reason-Phrase'(T2, Reason).
+'Status-Code'(Status, Reason) -->
+  'extension-code'(Status),
+  'Reason-Phrase'(Reason).
 
 
 
-%! 'Status-Line'(-ParseTree:compound, ?Version:compound, ?Status:compound)// .
+%! 'Status-Line'(?Version:compound, ?Status:compound)// .
 % # Syntax
 %
 % The first line of a `Response` message is the `Status-Line`,
@@ -377,11 +379,10 @@ Requirements for HTTP/1.1 origin servers:
 % @arg Status A compound term of the form
 %        `status(StatusCode:between(100,500),ReasonPhrase:atom)`
 
-'Status-Line'('Status-Line'(T1,T2,T3), Version, status(Status, Reason)) -->
-  'HTTP-Version'(T1, Version),
+'Status-Line'(Version, status(Status, Reason)) -->
+  'HTTP-version'(Version),
   'SP',
-  'Status-Code'(T2, Status, Reason),
+  'Status-Code'(Status, Reason),
   'SP',
-  'Reason-Phrase'(T3, Reason),
+  'Reason-Phrase'(Reason),
   'CRLF'.
-

@@ -665,12 +665,12 @@ rfc5646_extension(extension(T1, T2), [Singleton|ExtensionComponents]) -->
 
 rfc5646_extension_components(extension_components('-',H,T1), [H|T]) -->
   hyphen_minus,
-  dcg_atom_codes('m*n'(2, 8, ascii_alpha_numeric), H),
+  dcg_atom_codes('m*n'(2, 8, alpha_numeric), H),
   {rfc5646_class(H, 'Extension')},
   rfc5646_extension_components(T1, T).
 rfc5646_extension_components(extension_components('-',H), [H]) -->
   hyphen_minus,
-  dcg_atom_codes('m*n'(2, 8, ascii_alpha_numeric), H),
+  dcg_atom_codes('m*n'(2, 8, alpha_numeric), H),
   {rfc5646_class(H, 'Extension')}.
 
 
@@ -907,11 +907,11 @@ rfc5646_privateuse(pivateuse(T1), PrivateTags) -->
 
 rfc5646_privateuse_components(privateuse_components('-',H), [H]) -->
   "-",
-  'm*n'(1, 8, ascii_alpha_numeric, Codes, []),
+  'm*n'(1, 8, alpha_numeric, Codes, []),
   {atom_codes(H, Codes)}.
 rfc5646_privateuse_components(privateuse_components('-',H,T2), [H|T]) -->
   "-",
-  'm*n'(1, 8, ascii_alpha_numeric, Codes, []),
+  'm*n'(1, 8, alpha_numeric, Codes, []),
   {atom_codes(H, Codes)},
   rfc5646_privateuse_components(T2, T).
 
@@ -1153,13 +1153,13 @@ rfc5646_standard_language_tag(
 
 rfc5646_variant(variant(Variant), Variant) -->
   decimal_digit(H),
-  '#'(3, ascii_alpha_numeric, T),
+  '#'(3, alpha_numeric, T),
   {
     atom_codes(Variant, [H|T]),
     rfc5646_class(Variant, 'Variant')
   }.
 rfc5646_variant(variant(Variant), Variant) -->
-  'm*n'(5, 8, ascii_alpha_numeric, Codes, [convert(atom_codes)]),
+  'm*n'(5, 8, alpha_numeric, Codes, [convert(atom_codes)]),
   {atom_codes(Variant, Codes)},
   {rfc5646_class(Variant, 'Variant')}.
 

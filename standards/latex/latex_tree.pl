@@ -11,14 +11,16 @@
 Parses a LaTeX file and returns its syntax tree.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03, 2014/10
 */
 
+:- use_module(library(pure_input)).
+
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
-:- use_module(library(pure_input)).
 
 :- meta_predicate(latex_block(?,//,?,?)).
 
@@ -29,12 +31,12 @@ latex_to_tree(File, Tree):-
 
 latex_tree([section(Level,Name)|T]) -->
   latex_section(Level, Name),
-  (ascii_whites, latex_label(_) ; ``),
-  ascii_whites,
+  (skip_whites, latex_label(_) ; ``),
+  skip_whites,
   latex_tree(T).
 latex_tree([H|T]) -->
   latex_text(H),
-  ascii_whites,
+  skip_whites,
   latex_tree(T).
 
 
@@ -110,40 +112,40 @@ latex_text([quote_inline(Inner)|T]) -->
   latex_text(Inner),
   apostrophe,
   apostrophe,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text(T) -->
   latex_citation(_), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([math(H)|T]) -->
   latex_math(H), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([quote_block(Content)|T]) -->
   latex_quote(Content), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([definition(Name,Content)|T]) -->
   latex_definition(Name, Content), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([emphasis(Content)|T]) -->
   latex_emphasis(Content), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([bold(Content)|T]) -->
   latex_bold(Content), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text(T) -->
   latex_reference(_), !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([word(Word)|T]) -->
   word(Word),
   {Word \== ''}, !,
-  ascii_whites,
+  skip_whites,
   latex_text(T).
 latex_text([]) --> [].
 
@@ -151,3 +153,5 @@ section_level(section, 1).
 section_level(subsection, 2).
 section_level(subsubsection, 3).
 
+skip_whites -->
+  '*'(white, []), !.

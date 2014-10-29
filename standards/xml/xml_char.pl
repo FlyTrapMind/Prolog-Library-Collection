@@ -73,11 +73,11 @@ DCGs for character definitions in XML recommendations.
 'Char'(C) --> carriage_return(C).
 % Space, punctuation, numbers, letters
 % =|#x20-#xD7FF|=
-'Char'(C) --> between_hex('20', 'D7FF', C).
+'Char'(C) --> between(hex('20'), hex('D7FF'), C).
 % =|#xE000-#xFFFD|=
-'Char'(C) --> between_hex('E000', 'FFFD', C).
+'Char'(C) --> between(hex('E000'), hex('FFFD'), C).
 % =|#x10000-#x10FFFF|=
-'Char'(C) --> between_hex('10000', '10FFFF', C).
+'Char'(C) --> between(hex('10000'), hex('10FFFF'), C).
 
 
 
@@ -93,11 +93,11 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.1.2 [2].
 
 % #x1-#xD7FF
-'Char11'(C) --> between_hex('1', 'D7FF', C).
+'Char11'(C) --> between(hex('1'), hex('D7FF'), C).
 % #xE000-#xFFFD
-'Char11'(C) --> between_hex('E000', 'FFFD', C).
+'Char11'(C) --> between(hex('E000'), hex('FFFD'), C).
 % #x10000-#x10FFFF
-'Char11'(C) --> between_hex('10000', '10FFFF', C).
+'Char11'(C) --> between(hex('10000'), hex('10FFFF'), C).
 
 
 
@@ -122,7 +122,7 @@ DCGs for character definitions in XML recommendations.
 % #x00B7
 'NameChar'(C) --> middle_dot(C).
 % #x0300-#x036F
-'NameChar'(C) --> between_hex('0300', '036F', C).
+'NameChar'(C) --> between(hex('0300'), hex('036F'), C).
 % #x203F
 'NameChar'(C) --> undertie(C).
 % #x2040
@@ -160,30 +160,30 @@ DCGs for character definitions in XML recommendations.
 % "_"
 'NameStartChar'(C) --> underscore(C).
 % #xC0-#xD6
-'NameStartChar'(C) --> between_hex('C0', 'D6', C).
+'NameStartChar'(C) --> between(hex('C0'), hex('D6'), C).
 % #xD8-#xF6
-'NameStartChar'(C) --> between_hex('D8', 'F6', C).
+'NameStartChar'(C) --> between(hex('D8'), hex('F6'), C).
 % #xF8-#x2FF
-'NameStartChar'(C) --> between_hex('F8', '2FF', C).
+'NameStartChar'(C) --> between(hex('F8'), hex('2FF'), C).
 % #x370-#x37D
-'NameStartChar'(C) --> between_hex('370', '37D', C).
+'NameStartChar'(C) --> between(hex('370'), hex('37D'), C).
 % #x37F-#x1FFF
-'NameStartChar'(C) --> between_hex('37F', '1FFF', C).
+'NameStartChar'(C) --> between(hex('37F'), hex('1FFF'), C).
 % #x200C-#x200D
 'NameStartChar'(C) --> zero_width_non_joiner(C).
 'NameStartChar'(C) --> zero_width_joiner(C).
 % #x2070-#x218F
-'NameStartChar'(C) --> between_hex('2070', '218F', C).
+'NameStartChar'(C) --> between(hex('2070'), hex('218F'), C).
 % #x2C00-#x2FEF
-'NameStartChar'(C) --> between_hex('2C00', '2FEF', C).
+'NameStartChar'(C) --> between(hex('2C00'), hex('2FEF'), C).
 % #x3001-#xD7FF
-'NameStartChar'(C) --> between_hex('3001', 'D7FF', C).
+'NameStartChar'(C) --> between(hex('3001'), hex('D7FF'), C).
 % #xF900-#xFDCF
-'NameStartChar'(C) --> between_hex('F900', 'FDCF', C).
+'NameStartChar'(C) --> between(hex('F900'), hex('FDCF'), C).
 % #xFDF0-#xFFFD
-'NameStartChar'(C) --> between_hex('FDF0', 'FFFD', C).
+'NameStartChar'(C) --> between(hex('FDF0'), hex('FFFD'), C).
 % #x10000-#xEFFFF
-'NameStartChar'(C) --> between_hex('10000', 'EFFFF', C).
+'NameStartChar'(C) --> between(hex('10000'), hex('EFFFF'), C).
 
 
 
@@ -210,11 +210,11 @@ DCGs for character definitions in XML recommendations.
 %
 % @compat XML 1.1.2 [2a].
 
-'RestrictedChar'(C) --> between_hex('1', '8', C).
-'RestrictedChar'(C) --> between_hex('B', 'C', C).
-'RestrictedChar'(C) --> between_hex('E', '1F', C).
-'RestrictedChar'(C) --> between_hex('7F', '84', C).
-'RestrictedChar'(C) --> between_hex('86', '9F', C).
+'RestrictedChar'(C) --> between(hex('1'), hex('8'), C).
+'RestrictedChar'(C) --> between(hex('B'), hex('C'), C).
+'RestrictedChar'(C) --> between(hex('E'), hex('1F'), C).
+'RestrictedChar'(C) --> between(hex('7F'), hex('84'), C).
+'RestrictedChar'(C) --> between(hex('86'), hex('9F'), C).
 
 
 

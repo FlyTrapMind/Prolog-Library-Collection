@@ -50,13 +50,13 @@ c_convert -->
 c_name -->
   dcg_end.
 c_name, [C] -->
-  ascii_letter_lowercase(C),
+  letter_lowercase(C),
   c_name.
 c_name, [C] -->
   decimal_digit(C),
   c_name.
 c_name, [C2] -->
-  ascii_letter_uppercase(C1),
+  letter_uppercase(C1),
   {to_lower(C1, C2)},
   c_name.
 c_name, "_" -->

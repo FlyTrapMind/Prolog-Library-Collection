@@ -89,7 +89,8 @@ Titlecase atoms can be created using upcase_atom/2.
 --
 
 @author Wouter Beek
-@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04, 2014/08
+@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04, 2014/08,
+         2014/10
 */
 
 :- use_module(library(apply)).
@@ -338,22 +339,24 @@ strip_atom_end(Strips, A1, A3):-
 strip_atom_end(_, A, A).
 
 
-%! to_atom(+Input:or([atom,list(char),list(code),string]), -Atom:atom) is det.
+%! to_atom(
+%!   +Input:or([atom,list(char),list(code),number,string]),
+%!   -Atom:atom
+%! ) is det.
+% Notice that the empty codes list and the empty character list
+% both map onto the empty atom.
 
 % Atom.
 to_atom(Atom, Atom):-
   atom(Atom), !.
-% Empty list of chars or codes.
-% Both map onto the empty atom.
-to_atom([], ''):- !.
-to_atom([], ''):- !.
-% Chars
-to_atom([H|T], Atom):-
-  is_char(H), !,
-  atom_chars(Atom, [H|T]).
-% Codes.
+% Empty list.
+to_atom([], '').
+% Non-empty list of characters.
+to_atom(Chars, Atom):-
+  maplist(is_char, Chars), !,
+  atom_chars(Atom, Chars).
+% Non-empty list of codes.
 to_atom(Codes, Atom):-
-  is_list(Codes), !,
   atom_codes(Atom, Codes).
 % Number.
 to_atom(Number, Atom):-

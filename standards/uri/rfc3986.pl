@@ -30,7 +30,7 @@ uri_encode, [C] -->
   'DIGIT'(C), !,
   uri_encode.
 uri_encode, [37|Cs] -->
-  between_dec(0, 256, N), !,
+  between_code(dec(0), dec(256), N), !,
   {dec_to_hex_codes(N, Cs)},
   uri_encode.
 uri_encode --> [].

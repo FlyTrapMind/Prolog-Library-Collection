@@ -1,8 +1,7 @@
 :- module(
   rfc2616_request,
   [
-    'Request'//6 % -ParseTree:compound
-                 % ?Method:atom
+    'Request'//5 % ?Method:atom
                  % ?URI:compound
                  % ?Version:compound
                  % ?Headers:list(pair(atom,atom))
@@ -10,11 +9,11 @@
   ]
 ).
 
-/** <module> RFC 2616 request
+/** <module> RFC 2616: Request
 
 @author Wouter Beek
-@see RFC 2616
-@version 2013/12
+@compat RFC 2616
+@version 2013/12, 2014/10
 */
 
 :- use_module(plDcg_rfc(rfc2616_basic)).
@@ -32,7 +31,6 @@
 
 
 %! 'Request'(
-%!   -ParseTree:compound,
 %!   ?Method:atom,
 %!   ?URI:compound,
 %!   ?Version:compound,
@@ -59,46 +57,38 @@
 %      and 'entity-header'//.
 % @tbd Implement requested resource determination.
 
-'Request'(T0, Method, URI, Version, Headers, Body) -->
-  'Request-Line'(T1, Method, URI, Version),
-  '*'('_Request', T2s, Headers, []),
+'Request'(Method, URI, Version, Headers, Body) -->
+  'Request-Line'(Method, URI, Version),
+  '*'('Request0', Headers, []),
   'CRLF',
-  (
-    'message-body'(T3, Body)
-  ;
-    "",
-    {Body = []}
+  (   'message-body'(Body)
+  ;   {Body = []}
+  ).
+'Request0'(Header) -->
+  (   'general-header'(Header)
+  ;   'request-header'(Header)
+  ;   'entity-header'(Header)
   ),
-  {parse_tree(request, [T1,headers(T2s),T3], T0)}.
-'_Request'(T1, Header) -->
-  'general-header'(T1, Header),
-  'CRLF'.
-'_Request'(T1, Header) -->
-  'request-header'(T1, Header),
-  'CRLF'.
-'_Request'(T1, Header) -->
-  'entity-header'(T1, Header),
   'CRLF'.
 
 
 
 %! 'Request-Line'(
-%!   -Tree:compound,
 %!   ?Method:compound,
 %!   ?RequestURI:compound,
 %!   ?Version:compound
-%! )//
+%! )// .
 % The first line of an HTTP request.
 %
 % ~~~{.abnf}
 % Request-Line = Method SP Request-URI SP HTTP-Version CRLF
 % ~~~
 
-'Request-Line'('Request-Line'(T1,T2,T3), Method, RequestURI, Version) -->
-  'Method'(T1, Method),
+'Request-Line'(Method, RequestURI, Version) -->
+  'Method'(Method),
   'SP',
-  'Request-URI'(T2, RequestURI),
+  'Request-URI'(RequestURI),
   'SP',
-  'HTTP-Version'(T3, Version),
+  'HTTP-version'(Version),
   'CRLF'.
 

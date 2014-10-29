@@ -80,7 +80,8 @@
 Extra arithmetic operations for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05,
+         2014/10
 */
 
 :- use_module(library(apply)).
@@ -217,6 +218,7 @@ cyclic_numlist(Low, High, CycleLength, NumList):-
   numlist(Low, Top, HigherNumList),
   numlist(0, High, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
+
 
 
 % @tbd
