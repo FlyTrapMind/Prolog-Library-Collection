@@ -47,7 +47,7 @@ See [rdf_graph.pl].
 */
 
 :- use_module(graph_theory(graph_generic)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(settings)).
 :- use_module(svg(svg_generic)).
 

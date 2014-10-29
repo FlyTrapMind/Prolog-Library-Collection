@@ -1,6 +1,8 @@
 :- module(
   math_ext,
   [
+    absolute/2, % ?Number:number
+                % ?Absolute:number
     average/2, % +Numbers:list(number)
                % -Average:number
     betwixt/3, % +Low:integer
@@ -86,12 +88,30 @@ Extra arithmetic operations for use in SWI-Prolog.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(generics(typecheck)).
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
 :- use_module(math(rational_ext)).
+
+
+
+%! absolute(+Number:number, +Absolute:number) is semidet.
+%! absolute(+Number:number, -Absolute:number) is det.
+%! absolute(-Number:number, +Absolute:number) is multi.
+% @throws instantiation_error If both arguments are uninstantiated.
+
+absolute(N, Abs):-
+  nonvar(N), !,
+  Abs is abs(N).
+absolute(N, Abs):-
+  nonvar(Abs), !,
+  (   N is Abs
+  ;   N is -1 * Abs
+  ).
+absolute(_, _):-
+  instantiation_error(_).
 
 
 

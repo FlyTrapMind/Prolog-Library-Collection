@@ -22,7 +22,7 @@ Extensions for sorting lists.
          2014/07-2014/08
 */
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(option)).
 
 :- meta_predicate(predmerge_with_duplicates(2,+,+,-)).

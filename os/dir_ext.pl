@@ -46,7 +46,7 @@ Extensions for handling directories.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(generics(option_ext)).
 :- use_module(os(file_ext)).

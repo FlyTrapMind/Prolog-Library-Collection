@@ -23,7 +23,7 @@ Predicates that calculate betweenness metrics.
 @version 2013/01-2013/04, 2013/07, 2013/09
 */
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 

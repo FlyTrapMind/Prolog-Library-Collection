@@ -91,8 +91,8 @@ Example:
 command = "command string"
 ~~~
 
-@see Module DCG_CONTENT supports case-insensitive string parsing
-     with ci_string//1.
+@see Module [[dcg_content]] supports case-insensitive string parsing
+     with code_ci//1.
 
 ### External encodings
 

@@ -18,7 +18,7 @@ VoID statistics process for the AP architecture.
 :- use_module(ap(ap_db)).
 :- use_module(http_parameters(rfc2616_media_type)). % DCG-meta.
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(os(dir_ext)).
 :- use_module(plRdf(rdf_meta)).

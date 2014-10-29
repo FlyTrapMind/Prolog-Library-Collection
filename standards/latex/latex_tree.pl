@@ -84,7 +84,7 @@ latex_label(Name) -->
   latex_argument(Name).
 
 latex_math(Math2) -->
-  dcg_between(dollar_sign, codes(Math1)),
+  dcg_between(dollar_sign, '*'(code, Math1, [])),
   {atom_codes(Math2, Math1)}.
 
 latex_option(Name) -->

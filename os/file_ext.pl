@@ -107,7 +107,7 @@ We use the following abbreviations in this module:
 :- use_module(library(dcg/basics)).
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 :- use_module(library(uri)).

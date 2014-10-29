@@ -26,9 +26,10 @@ The entity-length of a message is the length of the message-body
 
 @author Wouter Beek
 @see RFC 2616
-@version 2013/12
+@version 2013/12, 2014/10
 */
 
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg_rfc(rfc2616_basic)).
 
@@ -77,5 +78,4 @@ The entity-length of a message is the length of the message-body
 % @tbd Feature between `Content-Type` header and `entity-body`.
 
 'entity-body'('entity-body'(EntityBody), EntityBody) -->
-  codes(EntityBody).
-
+  '*'(code, EntityBody, []).

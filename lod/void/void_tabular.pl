@@ -10,7 +10,7 @@
 :- use_module(library(apply)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).

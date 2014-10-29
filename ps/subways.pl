@@ -18,7 +18,7 @@ A search problem for the Classical Problem Solver.
 @version 2013/09
 */
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(plunit)).
 :- use_module(math(math_ext)).
 :- use_module(ps(boston)).

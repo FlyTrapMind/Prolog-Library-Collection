@@ -59,7 +59,7 @@ Row terms are used in [library(csv)] and [library(semweb/sparql_client)].
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(ordsets)).
 
 

@@ -5,7 +5,7 @@
 Converts ABNF grammars to DCGs.
 
 @author Wouter Beek
-@version 2013/08, 2014/03
+@version 2013/08, 2014/03, 2014/10
 */
 
 :- use_module(library(pio)).
@@ -14,9 +14,10 @@ Converts ABNF grammars to DCGs.
 :- use_module(generics(db_ext)).
 :- use_module(math(radix)).
 
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_code)).
 
 
 
@@ -37,7 +38,7 @@ element(Name) -->
   {db_add_dcg_rule(Name, [Code])}.
 
 name(Name) -->
-  ci_string(Name).
+  '*'(code_ci, Name, []).
 
 rule -->
   name(Name),

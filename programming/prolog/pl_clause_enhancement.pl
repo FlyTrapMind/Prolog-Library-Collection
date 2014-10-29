@@ -11,7 +11,7 @@ We assume a one-to-one mapping between mode lines an clause heads.
 @version 2014/08
 */
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(pl(pl_determinism)).
 :- use_module(pl(pl_typecheck)).

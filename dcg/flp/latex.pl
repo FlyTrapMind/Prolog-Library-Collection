@@ -56,19 +56,14 @@ file_to_latex_title(PrologFile, Local):-
 
 latex(Command) -->
   % Allow Prolog multiline commenting.
-  (
-    forward_slash, asterisk % Avoid colorization in bad editors.
-  ;
-    ``
+  (   forward_slash, asterisk % Avoids colorization in bad editors.
+  ;   ""
   ),
   atom(Command),
   bracketed(round, atom(latex)),
-  
   % Allow Prolog multiline commenting.
-  (
-    asterisk, forward_slash % Avoid colorization in bad editors.
-  ;
-    ``
+  (   asterisk, forward_slash % Avoids colorization in bad editors.
+  ;   ""
   ).
 
 

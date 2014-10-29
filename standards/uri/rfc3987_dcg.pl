@@ -45,16 +45,17 @@
 
 @author Wouter Beek
 @see http://tools.ietf.org/html/rfc3987
-@version 2013/09, 2014/01
+@version 2013/09, 2014/01, 2014/10
 */
+
+:- use_module(flp(rfc4234_basic)).
+:- use_module(math(radix)).
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)). % Used in meta-options.
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(parse_tree)).
-:- use_module(flp(rfc4234_basic)).
-:- use_module(math(radix)).
 
 
 
@@ -72,6 +73,7 @@
   {parse_tree('IRI', [T1,T2,T3,T4], T0)}.
 
 
+
 % ! 'IRI-reference'(-ParseTree:compound)// .
 % There are two types of IRI reference: (1) IRI, (2) IRI relative reference.
 %
@@ -81,6 +83,8 @@
 
 'IRI-reference'('IRI-reference'(T1)) --> 'IRI'(T1).
 'IRI-reference'('IRI-reference'(T1)) --> 'irelative-ref'(T1).
+
+
 
 
 
@@ -100,15 +104,35 @@ scheme(scheme(Scheme)) -->
   'ALPHA'(H),
   '*'(scheme_, T),
   {atom_codes(Scheme, [H|T])}.
-scheme_(C) --> 'ALPHA'(C).
-scheme_(C) --> 'DIGIT'(C, _).
-scheme_(C) --> plus_sign(C).
-scheme_(C) --> minus_sign(C).
-scheme_(C) --> dot(C).
+scheme_(Code) --> 'ALPHA'(Code).
+scheme_(Code) --> 'DIGIT'(_, Code).
+scheme_(Code) --> plus_sign(Code).
+scheme_(Code) --> minus_sign(Code).
+scheme_(Code) --> dot(Code).
+
+
 
 
 
 % HIERARCHICAL PART %
+
+%! iauthority(-ParseTree:compound)// .
+% IRI-2.1: IRI authority.
+%
+% ~~~{.abnf}
+% iauthority = [ iuserinfo "@" ] ihost [ ":" port ]
+% ~~~
+%
+% If the user info occurs, it is separated from the host with an ampesat.
+% If the port occurs, it is separated from the host with a colon.
+
+iauthority(T0) -->
+  (iuserinfo(T1), "@" ; ""),
+  ihost(T2),
+  (":", port(T3) ; ""),
+  {parse_tree(iauthority, [T1,T2,T3], T0)}.
+
+
 
 %! 'ihier-part'(-ParseTree:compound)// .
 % IRI-2: IRI hierarchical part.
@@ -130,41 +154,6 @@ scheme_(C) --> dot(C).
 'ihier-part'('ihier-part'(T1)) --> 'ipath-empty'(T1).
 
 
-%! iauthority(-ParseTree:compound)// .
-% IRI-2.1: IRI authority.
-%
-% ~~~{.abnf}
-% iauthority = [ iuserinfo "@" ] ihost [ ":" port ]
-% ~~~
-%
-% If the user info occurs, it is separated from the host with an ampesat.
-% If the port occurs, it is separated from the host with a colon.
-
-iauthority(T0) -->
-  (iuserinfo(T1), "@" ; ""),
-  ihost(T2),
-  (":", port(T3) ; ""),
-  {parse_tree(iauthority, [T1,T2,T3], T0)}.
-
-
-%! iuserinfo(-ParseTree:compound)// .
-% IRI-2.1.1: User info.
-%
-% ~~~{.abnf}
-% iuserinfo = *( iunreserved / pct-encoded / sub-delims / ":" )
-% ~~~
-%
-% This is a difficult DCG rule, since it combines
-%  codes (like iunreserved//1) with code lists (like 'pct-encoded'//1).
-
-iuserinfo(iuserinfo(IUserInfo)) -->
-  '*'(iuserinfo_, Codes),
-  {atom_codes(IUserInfo, Codes)}.
-iuserinfo_(C) --> iunreserved(C).
-iuserinfo_(C) --> 'pct-encoded'(C).
-iuserinfo_(C) --> 'sub-delims'(C).
-iuserinfo_(C) --> colon(C).
-
 
 %! ihost(-ParseTree:compound)// .
 % IRI-2.1.2: Host.
@@ -180,17 +169,37 @@ ihost(ihost(T1)) --> 'IPv4address'(T1).
 ihost(ihost(T1)) --> 'ireg-name'(T1).
 
 
+
+%! iuserinfo(-ParseTree:compound)// .
+% IRI-2.1.1: User info.
+%
+% ~~~{.abnf}
+% iuserinfo = *( iunreserved / pct-encoded / sub-delims / ":" )
+% ~~~
+%
+% This is a difficult DCG rule, since it combines
+%  codes (like iunreserved//1) with code lists (like 'pct-encoded'//1).
+
+iuserinfo(iuserinfo(IUserInfo)) -->
+  '*'(iuserinfo_, Codes),
+  {atom_codes(IUserInfo, Codes)}.
+iuserinfo_(Code) --> iunreserved(Code).
+iuserinfo_(Code) --> 'pct-encoded'(Code).
+iuserinfo_(Code) --> 'sub-delims'(Code).
+iuserinfo_(Code) --> colon(Code).
+
+
+
 %! 'IP-literal'(-ParseTree:compound)// .
 % ~~~{.abnf}
 % IP-literal = "[" ( IPv6address / IPvFuture  ) "]"
 % ~~~
 
 'IP-literal'('IP-literal'(T1)) -->
-  bracketed(square,
-    'IP-literal_'(T1)
-  ).
+  bracketed(square, 'IP-literal_'(T1)).
 'IP-literal_'(T1) --> 'IPv6address'(T1).
 'IP-literal_'(T1) --> 'IPvFuture'(T1).
+
 
 
 %! 'IPv6address'(-ParseTree:compound)// .
@@ -260,6 +269,7 @@ ihost(ihost(T1)) --> 'ireg-name'(T1).
   "::".
 
 
+
 %! h16(-ParseTree:compound)// .
 % 16-bit hexadecimal.
 %
@@ -267,9 +277,10 @@ ihost(ihost(T1)) --> 'ireg-name'(T1).
 % h16 = 1*4HEXDIG
 % ~~~
 
-h16(h16(Hex)) -->
-  'm*n'(1, 4, 'HEXDIG', Codes, []),
-  {atom_codes(Hex, Codes)}.
+h16(h16(Number)) -->
+  'm*n'(1, 4, 'HEXDIG', Weights, []),
+  {weights_radix(Weights, dec(Number))}.
+
 
 
 %! ls32(-ParseTree:compound)// .
@@ -285,6 +296,7 @@ ls32(ls32(T1)) -->
   'IPv4address'(T1).
 
 
+
 %! 'IPv4address'(-ParseTree:compound)// .
 % ~~~{.abnf}
 % IPv4address = dec-octet "." dec-octet "." dec-octet "." dec-octet
@@ -292,6 +304,7 @@ ls32(ls32(T1)) -->
 
 'IPv4address'('IPv4address'(T1,T2,T3,T4)) -->
   '#'(4, 'dec-octet', [T1,T2,T3,T4], [separator(dot)]).
+
 
 
 %! 'dec-octet'(-ParseTree:compound)// .
@@ -304,29 +317,30 @@ ls32(ls32(T1)) -->
 % ~~~
 
 % 0-9
-'dec-octet'('dec-octet'(N)) -->
-  'DIGIT'(_, N).
+'dec-octet'('dec-octet'(Number)) -->
+  'DIGIT'(Number, _).
 % 10-99
-'dec-octet'('dec-octet'(N)) -->
-  between_decimal_digit(1, 9, _, D1),
-  'DIGIT'(_, D2),
-  {digits_decimal([D1,D2], N)}.
+'dec-octet'('dec-octet'(Number)) -->
+  between_digit(1, 9, D1),
+  'DIGIT'(D2),
+  {weights_radix([D1,D2], Number)}.
 % 100-199
-'dec-octet'('dec-octet'(N)) -->
+'dec-octet'('dec-octet'(Number)) -->
   "1",
-  '+'('DIGIT', [D2,D3], []),
-  {digits_decimal([1,D2,D3], N)}.
+  '#'(2, 'DIGIT', [D2,D3], []),
+  {weights_radix([1,D2,D3], Number)}.
 % 200-249
-'dec-octet'('dec-octet'(N)) -->
+'dec-octet'('dec-octet'(Number)) -->
   "2",
-  between_decimal_digit(0, 4, _, D2),
-  'DIGIT'(_, D3),
-  {digits_decimal([2,D2,D3], N)}.
+  between_digit(0, 4, D2),
+  'DIGIT'(D3),
+  {weights_radix([2,D2,D3], Number)}.
 % 250-255
-'dec-octet'('dec-octet'(N)) -->
+'dec-octet'('dec-octet'(Number)) -->
   "25",
-  between_decimal_digit(0, 5, _, D3),
-  {digits_decimal([2,5,D3], N)}.
+  between_digit(0, 5, D3),
+  {weights_radix([2,5,D3], Number)}.
+
 
 
 %! 'IPvFuture'(-ParseTree:compound)// .
@@ -336,16 +350,17 @@ ls32(ls32(T1)) -->
 
 'IPvFuture'('IPvFuture'(major(T1),minor(T2))) -->
   "v",
-  '+'('HEXDIG', Codes1, []),
+  '+'('HEXDIG', _, Codes1, []),
   ".",
   '+'('IPvFuture_', Codes2, []),
   {
     atom_codes(T1, Codes1),
     atom_codes(T2, Codes2)
   }.
-'IPvFuture_'(C) --> unreserved(C).
-'IPvFuture_'(C) --> 'sub-delims'(C).
-'IPvFuture_'(C) --> colon(C).
+'IPvFuture_'(Code) --> unreserved(Code).
+'IPvFuture_'(Code) --> 'sub-delims'(Code).
+'IPvFuture_'(Code) --> colon(Code).
+
 
 
 %! 'ireg-name'(?IRegName:atom)// .
@@ -356,9 +371,10 @@ ls32(ls32(T1)) -->
 'ireg-name'('ireg-name'(Atom)) -->
   '*'('ireg-name_', Codes, []),
   {atom_codes(Atom, Codes)}.
-'ireg-name_'(C) --> iunreserved(C).
-'ireg-name_'(C) --> 'pct-encoded'(C).
-'ireg-name_'(C) --> 'sub-delims'(C).
+'ireg-name_'(Code) --> iunreserved(Code).
+'ireg-name_'(Code) --> 'pct-encoded'(Code).
+'ireg-name_'(Code) --> 'sub-delims'(Code).
+
 
 
 %! 'ipath-abempty'// .
@@ -373,6 +389,7 @@ forwardslash_segment(Segment) -->
   isegment(Segment).
 
 
+
 %! isegment(-ParseTree:compound)// .
 % ~~~{.abnf}
 % isegment = *ipchar
@@ -383,6 +400,7 @@ isegment(isegment(Segment)) -->
   {atom_codes(Segment, Codes)}.
 
 
+
 %! 'ipath-absolute'// .
 % ~~~{.abnf}
 % ipath-absolute = "/" [ isegment-nz *( "/" isegment ) ]
@@ -390,13 +408,12 @@ isegment(isegment(Segment)) -->
 
 'ipath-absolute'(T0) -->
   "/",
-  (
-    'isegment-nz'(T1),
-    '*'(forwardslash_segment, Ts, [])
-  ;
-    ""
+  (   'isegment-nz'(T1),
+      '*'(forwardslash_segment, Ts, []), !
+  ;   ""
   ),
   {parse_tree('ipath-absolute', [T1|Ts], T0)}.
+
 
 
 %! 'isegment-nz'(?Segment:atom)// .
@@ -409,6 +426,7 @@ isegment(isegment(Segment)) -->
   {atom_codes(Segment, Codes)}.
 
 
+
 %! 'ipath-rootless'(?Segments:list(atom))// .
 % ~~~{.abnf}
 % ipath-rootless = isegment-nz *( "/" isegment )
@@ -419,12 +437,14 @@ isegment(isegment(Segment)) -->
    '*'(forwardslash_segment, T, []).
 
 
+
 %! 'ipath-empty'
 % ~~~{.abnf}
 % ipath-empty = 0<ipchar>
 % ~~~
 
 'ipath-empty'('ipath-empty') --> [].
+
 
 
 %! post(?Port:nonneg)// .
@@ -435,8 +455,9 @@ isegment(isegment(Segment)) -->
 % ~~~
 
 port(port(Port)) -->
-  '*'('DIGIT', Codes, _, []),
+  '*'('DIGIT', _, Codes, []),
   {number_codes(Port, Codes)}.
+
 
 
 %! iquery(?Query:atom)// .
@@ -449,10 +470,11 @@ port(port(Port)) -->
 iquery(iquery(Query)) -->
   '*'(iquery_, Codes, []),
   {atom_codes(Query, Codes)}.
-iquery_(C) --> ipchar(C).
-iquery_(C) --> iprivate(C).
-iquery_(C) --> forward_slash(C).
-iquery_(C) --> question_mark(C).
+iquery_(Code) --> ipchar(Code).
+iquery_(Code) --> iprivate(Code).
+iquery_(Code) --> forward_slash(Code).
+iquery_(Code) --> question_mark(Code).
+
 
 
 %! ifragment(?IFragment:atom)// .
@@ -465,9 +487,10 @@ iquery_(C) --> question_mark(C).
 ifragment(ifragment(IFragment)) -->
   '*'(ifragment_, Codes, []),
   {atom_codes(IFragment, Codes)}.
-ifragment_(C) --> ipchar(C).
-ifragment_(C) --> forward_slash(C).
-ifragment_(C) --> question_mark(C).
+ifragment_(Code) --> ipchar(Code).
+ifragment_(Code) --> forward_slash(Code).
+ifragment_(Code) --> question_mark(Code).
+
 
 
 %! 'irelative-part'(-ParseTree:compound)// .
@@ -484,6 +507,7 @@ ifragment_(C) --> question_mark(C).
   {parse_tree('irelative-ref', [T1,T2,T3], T0)}.
 
 
+
 %! 'irelative-part'(-ParseTree:compound)// .
 % ~~~{.abnf}
 % irelative-part = "//" iauthority ipath-abempty
@@ -493,12 +517,13 @@ ifragment_(C) --> question_mark(C).
 % ~~~
 
 'irelative-part'('irelative-part'(T1,T2)) -->
-  forward_slash, forward_slash,
+  "//",
   iauthority(T1),
   'ipath-abempty'(T2).
 'irelative-part'('irelative-part'(T1)) --> 'ipath-absolute'(T1).
 'irelative-part'('irelative-part'(T1)) --> 'ipath-noscheme'(T1).
 'irelative-part'('irelative-part'(T1)) --> 'ipath-empty'(T1).
+
 
 
 %! 'ipath-noscheme'(-ParseTree:compound)// .
@@ -509,6 +534,8 @@ ifragment_(C) --> question_mark(C).
 'ipath-noscheme'('ipath-noscheme'([H|T])) -->
   'isegment-nz-nc'(H),
   '*'(forwardslash_segment, T, []).
+
+
 
 %! 'isegment-nz-nc'(?Segment:atom)// .
 % Non-zero-length segment without any colon ":".
@@ -521,10 +548,12 @@ ifragment_(C) --> question_mark(C).
 'isegment-nz-nc'('isegment-nz-nc'(Segment)) -->
   '+'('isegment-nz-nc_', Codes, []),
   {atom_codes(Segment, Codes)}.
-'isegment-nz-nc_'(C) --> iunreserved(C).
-'isegment-nz-nc_'(C) --> 'pct-encoded'(C).
-'isegment-nz-nc_'(C) --> 'sub-delims'(C).
-'isegment-nz-nc_'(C) --> at_sign(C).
+'isegment-nz-nc_'(Code) --> iunreserved(Code).
+'isegment-nz-nc_'(Code) --> 'pct-encoded'(Code).
+'isegment-nz-nc_'(Code) --> 'sub-delims'(Code).
+'isegment-nz-nc_'(Code) --> at_sign(Code).
+
+
 
 
 
@@ -535,11 +564,12 @@ ifragment_(C) --> question_mark(C).
 % ipchar = iunreserved / pct-encoded / sub-delims / ":" / "@"
 % ~~~
 
-ipchar(C) --> iunreserved(C).
-ipchar(C) --> 'pct-encoded'(C).
-ipchar(C) --> 'sub-delims'(C).
-ipchar(C) --> colon(C).
-ipchar(C) --> at_symbol(C).
+ipchar(Code) --> iunreserved(Code).
+ipchar(Code) --> 'pct-encoded'(Code).
+ipchar(Code) --> 'sub-delims'(Code).
+ipchar(Code) --> colon(Code).
+ipchar(Code) --> at_symbol(Code).
+
 
 
 %! iprivate(?Code:code)// .
@@ -547,12 +577,13 @@ ipchar(C) --> at_symbol(C).
 % iprivate = %xE000-F8FF / %xF0000-FFFFD / %x100000-10FFFD
 % ~~~
 
-iprivate(C) -->
-  [C],
-  {( between(hex('E000'),   hex('F8FF'),   C), !
-  ;  between(hex('F0000'),  hex('FFFFD'),  C), !
-  ;  between(hex('100000'), hex('10FFFD'), C)
+iprivate(Code) -->
+  [Code],
+  {( between_code(hex('E000'),   hex('F8FF'),   Code), !
+  ;  between_code(hex('F0000'),  hex('FFFFD'),  Code), !
+  ;  between_code(hex('100000'), hex('10FFFD'), Code)
   )}.
+
 
 
 %! iunreserved(?Code:code)// .
@@ -560,13 +591,14 @@ iprivate(C) -->
 % iunreserved = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
 % ~~~
 
-iunreserved(C) --> 'ALPHA'(C).
-iunreserved(C) --> 'DIGIT'(C, _).
-iunreserved(C) --> hyphen(C).
-iunreserved(C) --> dot(C).
-iunreserved(C) --> underscore(C).
-iunreserved(C) --> tilde(C).
-iunreserved(C) --> ucschar(C).
+iunreserved(Code) --> 'ALPHA'(Code).
+iunreserved(Code) --> 'DIGIT'(_, Code).
+iunreserved(Code) --> hyphen(Code).
+iunreserved(Code) --> dot(Code).
+iunreserved(Code) --> underscore(Code).
+iunreserved(Code) --> tilde(Code).
+iunreserved(Code) --> ucschar(Code).
+
 
 
 %! 'pct-encoded'(?Code:code)// .
@@ -574,11 +606,11 @@ iunreserved(C) --> ucschar(C).
 % pct-encoded = "%" HEXDIG HEXDIG
 % ~~~
 
-'pct-encoded'(C) -->
+'pct-encoded'(Code) -->
   "%",
-  'HEXDIG'(H1),
-  'HEXDIG'(H2),
-  {digits_decimal([H1,H2], 16, C)}.
+  '#'(2, 'HEXDIG', _, Codes, []),
+  {number_codes(Code, Codes)}.
+
 
 
 %! 'sub-delims'(?Code:code)// .
@@ -586,16 +618,17 @@ iunreserved(C) --> ucschar(C).
 % sub-delims = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
 % ~~~
 
-'sub-delims'(C) --> exclamation_mark(C).
-'sub-delims'(C) --> dollar_sign(C).
-'sub-delims'(C) --> ampersand(C).
-'sub-delims'(C) --> single_quote(C).
-'sub-delims'(C) --> round_bracket(C).
-'sub-delims'(C) --> asterisk(C).
-'sub-delims'(C) --> plus_sign(C).
-'sub-delims'(C) --> comma(C).
-'sub-delims'(C) --> semi_colon(C).
-'sub-delims'(C) --> equals_sign(C).
+'sub-delims'(Code) --> exclamation_mark(Code).
+'sub-delims'(Code) --> dollar_sign(Code).
+'sub-delims'(Code) --> ampersand(Code).
+'sub-delims'(Code) --> single_quote(Code).
+'sub-delims'(Code) --> round_bracket(Code).
+'sub-delims'(Code) --> asterisk(Code).
+'sub-delims'(Code) --> plus_sign(Code).
+'sub-delims'(Code) --> comma(Code).
+'sub-delims'(Code) --> semi_colon(Code).
+'sub-delims'(Code) --> equals_sign(Code).
+
 
 
 %! ucschar(?Code:code)// .
@@ -608,36 +641,39 @@ iunreserved(C) --> ucschar(C).
 %         / %xD0000-DFFFD / %xE1000-EFFFD
 % ~~~
 
-ucschar(C) -->
-  [C],
-  {( between(hex('A0'),    hex('D7FF'),  C), !
-  ;  between(hex('F900'),  hex('FDCF'),  C), !
-  ;  between(hex('FDF0'),  hex('FFEF'),  C), !
-  ;  between(hex('10000'), hex('1FFFD'), C), !
-  ;  between(hex('20000'), hex('2FFFD'), C), !
-  ;  between(hex('30000'), hex('3FFFD'), C), !
-  ;  between(hex('40000'), hex('4FFFD'), C), !
-  ;  between(hex('50000'), hex('5FFFD'), C), !
-  ;  between(hex('60000'), hex('6FFFD'), C), !
-  ;  between(hex('70000'), hex('7FFFD'), C), !
-  ;  between(hex('80000'), hex('8FFFD'), C), !
-  ;  between(hex('90000'), hex('9FFFD'), C), !
-  ;  between(hex('A0000'), hex('AFFFD'), C), !
-  ;  between(hex('B0000'), hex('BFFFD'), C), !
-  ;  between(hex('C0000'), hex('CFFFD'), C), !
-  ;  between(hex('D0000'), hex('DFFFD'), C), !
-  ;  between(hex('E1000'), hex('EFFFD'), C)
+ucschar(Code) -->
+  [Code],
+  {( between_code(hex('A0'),    hex('D7FF'),  Code), !
+  ;  between_code(hex('F900'),  hex('FDCF'),  Code), !
+  ;  between_code(hex('FDF0'),  hex('FFEF'),  Code), !
+  ;  between_code(hex('10000'), hex('1FFFD'), Code), !
+  ;  between_code(hex('20000'), hex('2FFFD'), Code), !
+  ;  between_code(hex('30000'), hex('3FFFD'), Code), !
+  ;  between_code(hex('40000'), hex('4FFFD'), Code), !
+  ;  between_code(hex('50000'), hex('5FFFD'), Code), !
+  ;  between_code(hex('60000'), hex('6FFFD'), Code), !
+  ;  between_code(hex('70000'), hex('7FFFD'), Code), !
+  ;  between_code(hex('80000'), hex('8FFFD'), Code), !
+  ;  between_code(hex('90000'), hex('9FFFD'), Code), !
+  ;  between_code(hex('A0000'), hex('AFFFD'), Code), !
+  ;  between_code(hex('B0000'), hex('BFFFD'), Code), !
+  ;  between_code(hex('C0000'), hex('CFFFD'), Code), !
+  ;  between_code(hex('D0000'), hex('DFFFD'), Code), !
+  ;  between_code(hex('E1000'), hex('EFFFD'), Code)
   )}.
+
 
 
 %! unreserved(?Code:code)// .
 
-unreserved(C) --> 'ALPHA'(C).
-unreserved(C) --> 'DIGIT'(C, _).
-unreserved(C) --> hyphen(C).
-unreserved(C) --> dot(C).
-unreserved(C) --> underscore(C).
-unreserved(C) --> tilde(C).
+unreserved(Code) --> 'ALPHA'(Code).
+unreserved(Code) --> 'DIGIT'(_, Code).
+unreserved(Code) --> hyphen(Code).
+unreserved(Code) --> dot(Code).
+unreserved(Code) --> underscore(Code).
+unreserved(Code) --> tilde(Code).
+
+
 
 
 
@@ -652,13 +688,12 @@ unreserved(C) --> tilde(C).
   scheme(T1),
   ":",
   'ihier-part'(T2),
-  (
-    "?",
-    iquery(T3)
-  ;
-    ""
+  (   "?",
+      iquery(T3)
+  ;   ""
   ),
   {parse_tree('absolute-IRI', [T1,T2,T3], T0)}.
+
 
 
 %! 'gen-delims'(?Code:code)// .
@@ -666,12 +701,13 @@ unreserved(C) --> tilde(C).
 % gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
 % ~~~
 
-'gen-delims'(C) --> colon(C).
-'gen-delims'(C) --> forward_slash(C).
-'gen-delims'(C) --> question_mark(C).
-'gen-delims'(C) --> number_sign(C).
-'gen-delims'(C) --> square_bracket(C).
-'gen-delims'(C) --> at_sign(C).
+'gen-delims'(Code) --> colon(Code).
+'gen-delims'(Code) --> forward_slash(Code).
+'gen-delims'(Code) --> question_mark(Code).
+'gen-delims'(Code) --> number_sign(Code).
+'gen-delims'(Code) --> square_bracket(Code).
+'gen-delims'(Code) --> at_sign(Code).
+
 
 
 %! ipath(-ParseTree:compound)// .
@@ -695,8 +731,8 @@ ipath(ipath(T1)) --> 'ipath-rootless'(T1).
 ipath(ipath(T1)) --> 'ipath-empty'(T1).
 
 
+
 %! reserved(?Code:code)// .
 
-reserved(C) --> 'gen-delims'(C).
-reserved(C) --> 'sub-delims'(C).
-
+reserved(Code) --> 'gen-delims'(Code).
+reserved(Code) --> 'sub-delims'(Code).

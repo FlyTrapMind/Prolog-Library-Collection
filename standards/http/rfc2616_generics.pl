@@ -35,6 +35,7 @@ the main DCGs.
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_meta)).
+:- use_module(plDcg(dcg_quote)).
 :- use_module(plDcg_rfc(rfc2616_basic)).
 
 

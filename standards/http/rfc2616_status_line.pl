@@ -60,7 +60,7 @@ Grammar for status lines in RFC 2616.
 
 'extension-code'(Status) -->
   '#'(3, 'DIGIT', Weights, []),
-  {weights_number(Weights, Status)}.
+  {weights_radix(Weights, Status)}.
 
 
 

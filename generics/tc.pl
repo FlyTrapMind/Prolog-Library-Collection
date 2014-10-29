@@ -9,7 +9,7 @@
 
 :- use_module(library(aggregate)).
 :- use_module(library(debug)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(generics(meta_ext)).
 :- use_module(os(dir_ext)).

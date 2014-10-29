@@ -35,7 +35,7 @@ Classical Problem Solving.
 */
 
 :- use_module(library(debug)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- meta_predicate(bsolve(1,2,+,3,1,2,+,-,-)).
 :- meta_predicate(bdsolve(+,1,2,+,3,1,2,+,-,-)).

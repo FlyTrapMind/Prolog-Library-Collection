@@ -15,7 +15,7 @@ Predicates for exporting an intermediate graph structure to SVG.
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(option)).
 :- use_module(library(settings)).
 :- use_module(svg(svg_generic)).

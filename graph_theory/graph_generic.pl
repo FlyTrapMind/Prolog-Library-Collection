@@ -40,7 +40,7 @@ the edges and vertices.
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(generics(lambda_meta)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db)).

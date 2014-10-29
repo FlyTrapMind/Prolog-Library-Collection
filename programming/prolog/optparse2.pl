@@ -311,7 +311,7 @@ parameter style above (perhaps with asserting appl_config/2).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(option)).
 
 :- meta_predicate(default_defaults(2,+,-)).

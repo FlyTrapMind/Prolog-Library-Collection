@@ -4,15 +4,17 @@
     between_radix/3, % +Low:compound
                      % +High:compound
                      % ?Number:compound
-    digits_number/2, % ?Digits:list(hex)
-                     % ?Number:compound
+    digit_weight/2, % ?Digit:hex
+                    % ?Weight:between(0,15)
+    digits_radix/2, % ?Digits:list(hex)
+                    % ?Number:compound
+    hexadecimal_digit/1, % ?Digit:hex
+    hexadecimal_digit_weight/2, % ?Digit:hex
+                                % ?Weight:between(0,15)
     radix/2, % +From:compound
              % ?To:compound
-    radix_chars_to_atomic/3, % +Radix:rad_name
-                             % +Chars:list(char)
-                             % -Value:or([atom,nonneg])
-    weights_number/2 % ?Weights:between(0,15)
-                     % ?Number:compound
+    weights_radix/2 % ?Weights:list(between(0,15))
+                    % ?Number:compound
   ]
 ).
 
@@ -64,17 +66,54 @@ between_radix(Low, High, Number):-
 
 
 
-%! digits_number(+Digits:list(hex), -Number:compound) is det.
-%! digits_number(-Digits:list(hex), +Number:compound) is det.
+%! digit_weight(+Digit:hex, -Weight:between(0,15)) is det.
+%! digit_weight(-Digit:hex, +Weight:between(0,15)) is det.
 
-digits_number(Digits, Number):-
+digit_weight(Weight, Weight):-
+  between(0, 9, Weight).
+digit_weight(a, 10).
+digit_weight(b, 11).
+digit_weight(c, 12).
+digit_weight(d, 13).
+digit_weight(e, 14).
+digit_weight(f, 15).
+
+
+
+%! digits_radix(+Digits:list(hex), -Number:compound) is det.
+%! digits_radix(-Digits:list(hex), +Number:compound) is det.
+
+digits_radix(Digits, Number):-
   nonvar(Digits), !,
-  maplist(hex_weight, Digits, Weights),
-  weights_number(Weights, Number).
-digits_number(Digits, Number):-
+  maplist(hexadecimal_digit_weight, Digits, Weights),
+  weights_radix(Weights, Number).
+digits_radix(Digits, Number):-
   nonvar(Number), !,
-  weights_number(Weights, Number),
-  maplist(hex_weight, Digits, Weights).
+  weights_radix(Weights, Number),
+  maplist(hexadecimal_digit_weight, Digits, Weights).
+
+
+
+%! hexadecimal_digit(+Digit:hex) is semidet.
+%! hexadecimal_digit(-Digit:hex) is multi.
+
+hexadecimal_digit(Digit):-
+  hexadecimal_digit_weight(Digit, _).
+
+
+
+%! hexadecimal_digit_weight(+Digit:hex, +Weight:between(0,15)) is semidet.
+%! hexadecimal_digit_weight(+Digit:hex, -Weight:between(0,15)) is det.
+%! hexadecimal_digit_weight(-Digit:hex, +Weight:between(0,15)) is det.
+
+hexadecimal_digit_weight(Weight, Weight):-
+  between(0, 9, Weight), !.
+hexadecimal_digit_weight(a, 10).
+hexadecimal_digit_weight(b, 11).
+hexadecimal_digit_weight(c, 12).
+hexadecimal_digit_weight(d, 13).
+hexadecimal_digit_weight(e, 14).
+hexadecimal_digit_weight(f, 15).
 
 
 
@@ -124,24 +163,10 @@ radix(From, To):-
 
 
 
-%! radix_chars_to_atomic(
-%!   +Radix:rad_name,
-%!   +Chars:list(char),
-%!   -Value:atomic
-%! ) is det.
+%! weights_radix(+Weights:between(0,15), -Number:compound) is det.
+%! weights_radix(-Weights:between(0,15), +Number:compound) is det.
 
-radix_chars_to_atomic(hex, Chars, Atom):- !,
-  atom_chars(Atom, Chars).
-radix_chars_to_atomic(Radix, Chars, Value):-
-  memberchk(Radix, [bin,oct,dec]),
-  number_chars(Value, Chars).
-
-
-
-%! weights_number(+Weights:between(0,15), -Number:compound) is det.
-%! weights_number(-Weights:between(0,15), +Number:compound) is det.
-
-weights_number(Weights, Number):-
+weights_radix(Weights, Number):-
   nonvar(Weights),
   Number =.. [Radix,Value], !,
   maplist(char_weight, Chars, Weights),
@@ -149,7 +174,7 @@ weights_number(Weights, Number):-
   ->  atom_chars(Value, Chars)
   ;   number_chars(Value, Chars)
   ).
-weights_number(Weights, Number):-
+weights_radix(Weights, Number):-
   nonvar(Number), !,
   atom_chars(Number, Chars),
   maplist(char_weight, Chars, Weights).
@@ -189,18 +214,17 @@ from_decimal(Decimal, Radix, Chars, Sol):-
 
 
 
-%! hex_weight(+Digit:hex, +Weight:between(0,15)) is semidet.
-%! hex_weight(+Digit:hex, -Weight:between(0,15)) is det.
-%! hex_weight(-Digit:hex, +Weight:between(0,15)) is det.
+%! radix_chars_to_atomic(
+%!   +Radix:rad_name,
+%!   +Chars:list(char),
+%!   -Value:atomic
+%! ) is det.
 
-hex_weight(Weight, Weight):-
-  between(0, 9, Weight), !.
-hex_weight(a, 10).
-hex_weight(b, 11).
-hex_weight(c, 12).
-hex_weight(d, 13).
-hex_weight(e, 14).
-hex_weight(f, 15).
+radix_chars_to_atomic(hex, Chars, Atom):- !,
+  atom_chars(Atom, Chars).
+radix_chars_to_atomic(Radix, Chars, Value):-
+  memberchk(Radix, [bin,oct,dec]),
+  number_chars(Value, Chars).
 
 
 

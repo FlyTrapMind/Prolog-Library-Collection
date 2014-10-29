@@ -14,6 +14,7 @@
 
 :- use_module(generics(pair_ext)).
 
+:- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg_rfc(rfc2234)).
@@ -66,5 +67,4 @@ uri_encoded_atom(Atom1) -->
     atom_codes(Atom1, Codes1),
     once(phrase(uri_encode, Codes1, Codes2))
   },
-  codes(Codes2).
-
+  '*'(code, Codes2, []).

@@ -25,7 +25,7 @@ Load RDF data from various sources.
 :- use_module(library(http/http_cookie)). % Redirection may require cookies.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(option)).
 :- use_module(library(uri)).
 

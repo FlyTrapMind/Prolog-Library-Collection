@@ -29,6 +29,7 @@ Support for printing (aspects of) a TMS.
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generics)).
 
 :- use_module(plRdf(rdfs_label_ext)).
 

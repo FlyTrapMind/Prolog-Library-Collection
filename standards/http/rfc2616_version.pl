@@ -159,7 +159,7 @@ Thus, HTTP/2.4 is a lower version than HTTP/2.13, which in turn is
 'obs-HTTP-Version'(version(Major,Minor)) -->
   "HTTP/",
   '*'('DIGIT', _, MajorWeights, []),
-  {weights_number(MajorWeights, Major)},
+  {weights_radix(MajorWeights, Major)},
   ".",
   '*'('DIGIT', _, MinorWeights, []),
-  {weights_number(MinorWeights, Minor)}.
+  {weights_radix(MinorWeights, Minor)}.

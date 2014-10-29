@@ -23,7 +23,7 @@
 */
 
 :- use_module(library(aggregate)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(ordsets)).
 
 :- use_module(generics(list_ext)).

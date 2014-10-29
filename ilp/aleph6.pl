@@ -66,7 +66,7 @@ please contact Ashwin Srinivasan first.
 :- use_module(generics(logging)).
 :- use_module(generics(meta_ext)).
 :- use_module(library(dialect/hprolog), [memberchk_eq/2]).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(settings)).
 :- use_module(library(time)).
 :- use_module(os(file_ext)).

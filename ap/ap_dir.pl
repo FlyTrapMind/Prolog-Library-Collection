@@ -32,7 +32,7 @@ Directory management for running automated processes.
 :- use_module(generics(typecheck)).
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(process)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(os(dir_ext)).

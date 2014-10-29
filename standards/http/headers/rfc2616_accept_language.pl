@@ -18,7 +18,7 @@ DCG for the `Accept-Language` request header in RFC 2616.
 @version 2013/12
 */
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(pairs)).
 
 :- use_module(flp(rfc2616_abnf)).

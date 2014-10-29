@@ -216,7 +216,7 @@ can determine the value of the four components and fragment as
 @version 2013/05, 2013/07, 2014/05
 */
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).

@@ -28,7 +28,7 @@ A compound term of the form =|g(-Var,+Val:atom)|=
 
 :- use_module(generics(db_ext)).
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
 

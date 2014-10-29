@@ -31,7 +31,7 @@ http:location(pldoc, root(help), [priority(10)]).
 % since this may give information to hackers.
 :- use_module(library(http/http_error)).
 
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 % Forward error messages from consulting Prolog code to PceEmacs.
 % Also, ed/1 and edit/1 call PceEmacs.

@@ -21,7 +21,7 @@ File size identification and filtering for the AP architecture.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(ap(ap_db)).
 :- use_module(os(dir_ext)).

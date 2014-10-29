@@ -19,7 +19,7 @@ Parser for HTML Web sites.
 
 :- use_module(generics(atom_ext)).
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(http/http_open)).
 :- use_module(server(crawler)).
 :- use_module(server(link_collection)).

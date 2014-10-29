@@ -20,7 +20,7 @@ Extensions to character support in Prolog.
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 
 

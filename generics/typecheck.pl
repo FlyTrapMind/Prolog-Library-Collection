@@ -74,7 +74,7 @@ Predicates used for parsing and checking value-type conformance.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(uri)).
 
 :- use_module(generics(atom_ext)).
@@ -148,9 +148,9 @@ error:has_type(char, Term):-
 % code/0
 error:has_type(code, Term):-
   once(code_type(Term, _)).
-% float_between/2, extension of between/2 for floats
+% between_float/2, extension of between/2 for floats
 % allowing uninstiated upper and lower bounds.
-error:has_type(float_between(L,U), X):-
+error:has_type(between_float(L,U), X):-
   number(X),
   (number(L) -> X >= L ; true),
   (number(U) -> X =< L ; true).
