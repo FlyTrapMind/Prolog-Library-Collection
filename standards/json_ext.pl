@@ -21,18 +21,20 @@ Extensions to JSON support in SWI-Prolog.
 @version 2013/07, 2013/11, 2014/01-2014/02, 2014/10
 */
 
-:- use_module(generics(codes_ext)).
-:- use_module(generics(db_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(http(rfc2616_response)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(http/json)).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(pairs)).
+
+:- use_module(generics(codes_ext)).
+:- use_module(generics(db_ext)).
+:- use_module(generics(typecheck)).
 :- use_module(math(int_ext)).
 :- use_module(os(io_ext)).
+
+:- use_module(plHttp(rfc2616_response)).
 
 :- db_add_novel(user:prolog_file_type(json, json)).
 

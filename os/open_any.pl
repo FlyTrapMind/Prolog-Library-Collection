@@ -30,10 +30,11 @@ Load RDF data from various sources.
 :- use_module(library(uri)).
 
 :- use_module(os(datetime_ext)).
-:- use_module(http(rfc2616_status_line)).
-:- use_module(http_parameters(rfc2616_media_type)).
 
 :- use_module(plDcg(dcg_generics)).
+
+:- use_module(plHttp(rfc2616_status_line)).
+:- use_module(plHttp_par(rfc2616_media_type)).
 
 :- predicate_options(open_any/4, 4, [
      pass_to(open_input/5, 5)

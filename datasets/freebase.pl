@@ -18,8 +18,10 @@ Support for the Freebase dataset.
 :- use_module(library(xpath)).
 
 :- use_module(generics(uri_ext)).
-:- use_module(http(http_download)).
-:- use_module(xml(xml_dom)).
+
+:- use_module(plHttp(http_download)).
+
+:- use_module(plXml(xml_dom)).
 
 :- use_module(plXsd(xsd)).
 

@@ -22,8 +22,9 @@ Generic support for VoID, used by other VoID modules.
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(generics(typecheck)).
-:- use_module(http(http_download)).
 :- use_module(os(file_ext)).
+
+:- use_module(plHttp(http_download)).
 
 :- use_module(plRdf_ser(rdf_load_any)).
 :- use_module(plRdf_term(rdf_term)).
