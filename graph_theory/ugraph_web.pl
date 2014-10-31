@@ -46,9 +46,9 @@ See [rdf_graph.pl].
 @version 2012/10, 2012/12-2013/01, 2013/05, 2013/07
 */
 
-:- use_module(graph_theory(graph_generic)).
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(settings)).
+
 :- use_module(svg(svg_generic)).
 
 :- setting(

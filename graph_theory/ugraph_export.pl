@@ -56,9 +56,6 @@ The following attributes are supported:
 :- use_module(library(apply)).
 :- use_module(library(lists), except([delete/3])).
 
-:- use_module(graph_theory(random_vertex_coordinates)).
-:- use_module(ugraph(ugraph_ext)).
-
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_arrow)).
 :- use_module(plDcg(dcg_content)).
