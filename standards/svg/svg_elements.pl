@@ -20,7 +20,7 @@
   ]
 ).
 
-/** <module> SVG_ENTITIES
+/** <module> SVG: Elements
 
 @author Wouter Beek
 @version 2013/07-2013/09

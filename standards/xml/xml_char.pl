@@ -10,7 +10,7 @@
   ]
 ).
 
-/** <module> XML character
+/** <module> XML: Character
 
 DCGs for character definitions in XML recommendations.
 
@@ -19,7 +19,22 @@ DCGs for character definitions in XML recommendations.
 */
 
 :- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_ascii), [
+     carriage_return//0,
+     carriage_return//1,
+     colon//1,
+     decimal_digit//2,
+     dot//1,
+     horizontal_tab//0,
+     horizontal_tab//1,
+     hyphen_minus//1,
+     letter//1,
+     line_feed//0,
+     line_feed//1,
+     space//0,
+     underscore//1
+   ]).
+:- use_module(plDcg(dcg_code)).
 :- use_module(plDcg(dcg_unicode), [
      character_tie//1,
      middle_dot//1,
@@ -123,7 +138,7 @@ DCGs for character definitions in XML recommendations.
 'NameChar'(Code) --> 'NameStartChar'(Code).
 'NameChar'(Code) --> hyphen_minus(Code).
 'NameChar'(Code) --> dot(Code).
-'NameChar'(Code) --> decimal_digit(Code).
+'NameChar'(Code) --> decimal_digit(_, Code).
 % #x00B7
 'NameChar'(Code) --> middle_dot(Code).
 % #x0300-#x036F
@@ -159,7 +174,7 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.1.2 [4].
 
 % [A-Z] and [a-z]
-'NameStartChar'(Code) --> ascii_letter(Code).
+'NameStartChar'(Code) --> letter(Code).
 % ":"
 'NameStartChar'(Code) --> colon(Code).
 % "_"
