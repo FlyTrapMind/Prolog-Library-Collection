@@ -17,7 +17,7 @@ Converts ABNF grammars to DCGs.
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_code)).
-:- use_module(plDcg_flp(rfc4234_basic)).
+:- use_module(plDcg_rfc(rfc4234_basic)).
 
 
 
