@@ -1,9 +1,6 @@
 ﻿:- module(
   meta_ext,
   [
-    either_or/2, % :Either
-                 % :Or
-
 % CACHING
     reset_memo/0,
     memo/1, % :Goal
@@ -78,15 +75,6 @@ Extensions to the SWI-Prolog meta predicates.
 
 :- dynamic(memo_/1).
 :- dynamic(tmp/1).
-
-
-
-%! either_or(:Either, :Or) .
-
-either_or(Either, _):-
-  Either, !.
-either_or(_, Or):-
-  Or, !.
 
 
 

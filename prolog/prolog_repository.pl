@@ -88,7 +88,6 @@ load_remote_file(Base):-
 
 
 prolog_repository(Mode, Dir):-
-  load_remote_file(optparse2),
   (
     Mode == remote
   ->

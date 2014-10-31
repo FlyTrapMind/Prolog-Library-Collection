@@ -90,8 +90,8 @@ unless(Unless, Do):-
   ).
 
 
-xor(X, _Y):-
+xor(X, _):-
   call(X), !.
-xor(_X, Y):-
+xor(_, Y):-
   call(Y), !.
 

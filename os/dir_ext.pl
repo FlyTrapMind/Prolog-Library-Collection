@@ -44,6 +44,7 @@ Extensions for handling directories.
 :- use_module(generics(option_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(safe_file)).
+:- use_module(pl(pl_control)).
 
 :- meta_predicate(directory_files(+,-,:)).
 :- meta_predicate(run_in_working_directory(0,+)).
@@ -139,7 +140,7 @@ create_directory(CurrentSpec, Subdirs, Abs):-
 create_directory0(Abs, [], Abs):- !.
 create_directory0(Current, [Sub|Subs], Abs):-
   directory_file_path(Current, Sub, Dir),
-  either_or(
+  xor(
     exists_directory(Dir),
     make_directory(Dir)
   ),

@@ -14,8 +14,7 @@ user:file_search_path(sparql,          lod(sparql)).
 user:file_search_path(void,            lod(void)).
 user:file_search_path(math,            plc(math)).
 user:file_search_path(os,              plc(os)).
-user:file_search_path(programming,     plc(programming)).
-user:file_search_path(pl,              programming(prolog)).
+user:file_search_path(pl,              plc(prolog)).
 user:file_search_path(ps,              plc(ps)).
 user:file_search_path(tms,             ps(tms)).
 user:file_search_path(atms,            tms(atms)).

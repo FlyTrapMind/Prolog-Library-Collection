@@ -14,13 +14,15 @@ email:smtp('smtp.gmail.com).
 email:from('me@wouterbeek.com').
 
 @author Wouter Beek
-@version 2014/08
+@version 2014/08, 2014/10
 */
 
 :- use_module(library(settings)).
-:- use_module(library(smtp)).
 
 :- use_module(generics(codes_ext)).
+:- use_module(pl(pl_package)).
+
+:- use_module(library(smtp)).
 
 :- meta_predicate(send_email(+,+,//)).
 :- meta_predicate(body(//,+)).
