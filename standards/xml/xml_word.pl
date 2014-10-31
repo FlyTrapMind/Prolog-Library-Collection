@@ -11,13 +11,14 @@
   ]
 ).
 
-/** <module> XML word
+/** <module> XML: Word
 
 @author Wouter Beek
-@see http://www.w3.org/TR/REC-xml/
+@compat http://www.w3.org/TR/REC-xml/
 @version 2014/03-2014/05, 2014/10
 */
 
+:- use_module(xml(xml_char)).
 :- use_module(xml(xml_datatypes)).
 
 :- use_module(plDcg(dcg_abnf)).
