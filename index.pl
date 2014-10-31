@@ -15,10 +15,6 @@ user:file_search_path(void,            lod(void)).
 user:file_search_path(math,            plc(math)).
 user:file_search_path(os,              plc(os)).
 user:file_search_path(pl,              plc(prolog)).
-user:file_search_path(ps,              plc(ps)).
-user:file_search_path(tms,             ps(tms)).
-user:file_search_path(atms,            tms(atms)).
-user:file_search_path(doyle,           tms(doyle)).
 user:file_search_path(standards,       plc(standards)).
 user:file_search_path(datetime,        standards(date_time)).
 user:file_search_path(geo,             standards(geography)).
