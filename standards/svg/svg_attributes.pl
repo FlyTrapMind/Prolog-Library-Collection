@@ -67,14 +67,9 @@
 DCG rules for SVG datatypes.
 
 @author Wouter Beek
-@version 2013/07, 2013/09, 2014/05
+@version 2013/07, 2013/09, 2014/05, 2014/10
 */
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(parse_tree)).
 :- use_module(lang(rfc5646_dcg)).
 :- use_module(svg(svg_generic)).
 :- use_module(svg(svg_datatypes)).
@@ -82,6 +77,13 @@ DCG rules for SVG datatypes.
 :- use_module(xml(xlink)).
 :- use_module(xml(xml_attributes)).
 :- use_module(xml(xml_datatypes)).
+:- use_module(xml(xml_word)).
+
+:- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_cardinal)).
+:- use_module(plDcg(dcg_content)).
+:- use_module(plDcg(dcg_generics)).
+:- use_module(plDcg(parse_tree)).
 
 :- meta_predicate(svg_attribute(//,//,//,?,?)).
 :- meta_predicate(svg_attribute(//,//,//,//,?,?)).
@@ -131,7 +133,7 @@ svg_attribute(DCG_Namespace, DCG_Name, DCG_Value, DCG_Separator) -->
 svg_base_profile(base_profile(T1), DCG_Namespace, ProfileName) -->
   svg_attribute(
     DCG_Namespace,
-    word(baseProfile),
+    atom(baseProfile),
     svg_profile_name(T1, ProfileName)
   ).
 
@@ -156,7 +158,7 @@ svg_content_script_type(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    word(contentScriptType),
+    atom(contentScriptType),
     svg_content_type(MediaType)
   ).
 
@@ -179,7 +181,7 @@ svg_content_style_type(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    word(contentStyleType),
+    atom(contentStyleType),
     svg_content_type(MediaType)
   ).
 
@@ -246,7 +248,7 @@ svg_external_resources_required(
 % were specified.
 
 svg_height(height(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, word(height), svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, atom(height), svg_length(T1, Number, Unit)).
 
 %! svg_preserve_aspect_ratio(
 %!   -Tree:compound,
@@ -315,7 +317,7 @@ svg_preserve_aspect_ratio(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    word(preserveAspectRatio),
+    atom(preserveAspectRatio),
     (
       svg_defer(T1, Defer),
       svg_align(T2, XAlign, YAlign),
@@ -348,7 +350,7 @@ svg_preserve_aspect_ratio(
 svg_referenced_features(T0, DCG_Namespace, Features) -->
   svg_attribute(
     DCG_Namespace,
-    word(referencedFeatures),
+    atom(referencedFeatures),
     svg_feature_string(Trees, Features),
     space
   ),
@@ -400,12 +402,12 @@ svg_required_extensions(T0, DCG_Namespace, Extensions) -->
   {parse_tree(required_extensions, Trees, T0)}.
 
 svg_stroke(stroke(T1), DCG_Namespace, Color) -->
-  svg_attribute(DCG_Namespace, word(stroke), svg_color(T1, Color)).
+  svg_attribute(DCG_Namespace, atom(stroke), svg_color(T1, Color)).
 
 svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
   svg_attribute(
     DCG_Namespace,
-    (word(stroke), hyphen_minus, word(width)),
+    (atom(stroke), hyphen_minus, atom(width)),
     svg_length(T1, Number, Unit)
   ).
 
@@ -440,7 +442,7 @@ svg_stroke_width(stroke_width(T1), DCG_Namespace, Number, Unit) -->
 svg_system_language(T0, DCG_Namespace, LanguageTags) -->
   svg_attribute(
     DCG_Namespace,
-    word(systemLanguage),
+    atom(systemLanguage),
     rfc5646_language_tag(Trees, LanguageTags),
     space
   ),
@@ -461,10 +463,10 @@ svg_version(
 ) -->
   svg_attribute(
     DCG_Namespace,
-    word(version),
+    atom(version),
     (
       integer(Major),
-      `.`,
+      ".",
       integer(Minor)
     )
   ).
@@ -481,7 +483,7 @@ svg_version(
 % were specified.
 
 svg_width(width(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, word(width), svg_length(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, atom(width), svg_length(T1, Number, Unit)).
 
 %! svg_x(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The x-axis coordinate of one corner of the rectangular region
@@ -491,12 +493,12 @@ svg_width(width(T1), DCG_Namespace, Number, Unit) -->
 % were specified.
 
 svg_x(x(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, word(x), svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, atom(x), svg_coordinate(T1, Number, Unit)).
 
 %! svg_xml_namespace(-Tree:compound, :DCG_Namespace, +IRI:iri)//
 
 svg_xml_namespace(xml_namespace(iri(IRI)), DCG_Namespace, IRI) -->
-  svg_attribute(DCG_Namespace, word(xmlns), 'IRI-reference'(IRI)).
+  svg_attribute(DCG_Namespace, atom(xmlns), 'IRI-reference'(IRI)).
 
 %! svg_y(-Tree:compound, :DCG_Namespace, ?Number:float, ?Unit:atom)//
 % The y-axis coordinate of one corner of the rectangular region
@@ -506,7 +508,7 @@ svg_xml_namespace(xml_namespace(iri(IRI)), DCG_Namespace, IRI) -->
 % were specified.
 
 svg_y(y(T1), DCG_Namespace, Number, Unit) -->
-  svg_attribute(DCG_Namespace, word(y), svg_coordinate(T1, Number, Unit)).
+  svg_attribute(DCG_Namespace, atom(y), svg_coordinate(T1, Number, Unit)).
 
 %! svg_zoom_and_pan(
 %!   -Tree:compound,
@@ -526,5 +528,8 @@ svg_y(y(T1), DCG_Namespace, Number, Unit) -->
 
 svg_zoom_and_pan(zoom_and_pan(Value), DCG_Namespace, Value) -->
   {member(Value, [disable,magnify])},
-  svg_attribute(DCG_Namespace, word(zoomAndPan), word(Value)).
+  svg_attribute(DCG_Namespace, atom(zoomAndPan), atom(Value)).
+
+
+
 
