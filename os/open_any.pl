@@ -23,6 +23,7 @@ Load RDF data from various sources.
 :- use_module(library(apply)).
 :- use_module(library(archive)).
 :- use_module(library(http/http_cookie)). % Redirection may require cookies.
+:- use_module(library(http/http_header)). % Private predicates.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
 :- use_module(library(lists), except([delete/3])).
@@ -30,11 +31,6 @@ Load RDF data from various sources.
 :- use_module(library(uri)).
 
 :- use_module(os(datetime_ext)).
-
-:- use_module(plDcg(dcg_generics)).
-
-:- use_module(plHttp(rfc2616_status_line)).
-:- use_module(plHttp_par(rfc2616_media_type)).
 
 :- predicate_options(open_any/4, 4, [
      pass_to(open_input/5, 5)
@@ -274,8 +270,9 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
       % HTTP header JSON object.
       dict_pairs(HeadersDict, json, Headers3),
       % HTTP status.
-      'Status-Code'(Code, Reason),
-      dict_pairs(StatusDict, json, [code-Code,'reason-phrase'-Reason]),
+      http_header:status_number_fact(ReasonKey, Code),
+      phrase(http_header:status_comment(ReasonKey), ReasonPhrase),
+      dict_pairs(StatusDict, json, [code-Code,'reason-phrase'-ReasonPhrase]),
       % HTTP response/request dictionary.
       dict_pairs(
         Metadata,
@@ -368,14 +365,28 @@ header_json(header(Key,Value1), Key-Value2):-
 header_value_json('Content-Length', Atom, Number):- !,
   atom_number(Atom, Number).
 header_value_json('Content-Type', Atom, Dict):- !,
-  dcg_phrase('media-type'(_, MediaType), Atom),
-  media_type_json(MediaType, Dict).
+  atomic_list_concat([Type|Parameters0], ';', Atom),
+  maplist(media_type_parameter, Parameters0, Parameters),
+  atomic_list_concat([Type,Subtype], '/', Type),
+  maplist(json_pair, Parameters, ParameterDicts),
+  dict_pairs(
+    Dict,
+    json,
+    [parameters-ParameterDicts,subtype-Subtype,type-Type]
+  ).
 header_value_json(Key, Atom, Dict):-
   memberchk(Key, ['Date','Expires','Last-Modified']), !,
   parse_time(Atom, rfc_1123, Stamp),
   stamp_date_time(Stamp, DateTime, 'UTC'),
   date_time_json(DateTime, Dict).
 header_value_json(_, Atom, Atom).
+
+
+%! media_type_parameter(+Atom:atom, -Parameter:pair) is det.
+
+media_type_parameter(Parameter0, Name-Value):-
+  strip_atom([' '], Parameter0, Parameter),
+  atomic_list_concat([Name,Value], '=', Parameter).
 
 
 %! http_scheme(+Scheme:atom) is semidet.
