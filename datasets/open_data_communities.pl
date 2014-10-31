@@ -14,7 +14,7 @@
 :- use_module(library(aggregate)).
 :- use_module(library(semweb/rdf_db)).
 
-:- use_module(rdf_file(rdf_load_any)).
+:- use_module(plRdf_ser(rdf_load_any)).
 
 
 

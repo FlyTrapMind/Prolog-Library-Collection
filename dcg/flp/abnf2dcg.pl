@@ -10,7 +10,6 @@ Converts ABNF grammars to DCGs.
 
 :- use_module(library(pio)).
 
-:- use_module(flp(rfc4234_basic)).
 :- use_module(generics(db_ext)).
 :- use_module(math(radix)).
 
@@ -18,6 +17,7 @@ Converts ABNF grammars to DCGs.
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_code)).
+:- use_module(plDcg_flp(rfc4234_basic)).
 
 
 

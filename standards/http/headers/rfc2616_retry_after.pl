@@ -1,7 +1,8 @@
 :- module(
   rfc2616_retry_after,
   [
-    'Retry-After'//2
+    'Retry-After'//2 % ?ParseTree:compound
+                     % ?Seconds:nonneg
   ]
 ).
 
@@ -10,13 +11,13 @@
 DCG for the `Retry-After` response header in RFC 2616.
 
 @author Wouter Beek
-@see RFC 2616
-@version 2013/12
+@compat RFC 2616
+@version 2013/12, 2014/10
 */
 
 
 
-%! 'Retry-After'(-ParseTree:compound)//
+%! 'Retry-After'(-ParseTree:compound, ?Seconds:nonneg)//
 % # Syntax
 %
 % The value of this field can be either an `HTTP-date` or
@@ -48,10 +49,10 @@ DCG for the `Retry-After` response header in RFC 2616.
 % ~~~
 % In [2] the delay is 2 minutes.
 
-'Retry-After'('Retry-After'(T1), ) -->
+'Retry-After'('Retry-After'(T1), _) -->
   "Retry-After:",
   'HTTP-date'(T1).
-'Retry-After'('Retry-After'(T1), ) -->
+'Retry-After'('Retry-After'(T1), Seconds) -->
   "Retry-After:",
   'delta-seconds'(T1, Seconds).
 

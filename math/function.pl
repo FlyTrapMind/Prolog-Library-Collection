@@ -73,7 +73,7 @@ bijective(Function):-
 %! codomain(+Function:bourbaki, -Codomain:ordset) is det.
 % Returns the codomain of a Bourbaki function definition.
 
-codomain(bourbaki(_,Codomain, _), Codoman).
+codomain(bourbaki(_,Codomain, _), Codomain).
 
 
 %! domain(+Function:bourbaki, -Domain:ordset) is det.

@@ -14,7 +14,7 @@ Content coding is primarily used for compression.
 Content coding is a property of the original entity.
 
 @author Wouter Beek
-@version 2013/12
+@version 2013/12, 2014/10
 */
 
 :- use_module(http(rfc2616_generics)).
@@ -104,15 +104,12 @@ Content coding is a property of the original entity.
 % @tbd Value `identity` cannot occur in the `Content-Encoding` header.
 % @tbd Check whether IANA has registered additional content encodings.
 
-'content-coding'('content-coding'(T0), ContentCoding) -->
+'content-coding'('content-coding', ContentCoding) -->
   % GENERATING
   % Only canonical values are allowed.
-  (
-    nonvar(ContentCoding)
-  ->
-    'content-coding_value'(ContentCoding, _)
-  ;
-    true
+  (   {nonvar(ContentCoding)}
+  ->  'content-coding_value'(ContentCoding, _)
+  ;   ""
   ),
   
   token(ContentToken),
@@ -120,13 +117,10 @@ Content coding is a property of the original entity.
   % PARSING
   % There could be non-canonical content-coding values.
   % Translate these to their canonical value.
-  (
-    {var(ContentCoding)}
-  ->
-    'content-coding_value'(CanonicalValue, ContentTokens),
-    memberchk(ContentToken, ContentTokens).
-  ;
-    ConnectionToken = ContentToken
+  (   {var(ContentCoding)}
+  ->  'content-coding_value'(CanonicalValue, ContentTokens),
+      {memberchk(ContentToken, ContentTokens)}
+  ;   {ConnectionToken = ContentToken}
   ).
 
 'content-coding_value'(compress, [compress,'x-compress']).

@@ -48,7 +48,6 @@
 @version 2013/09, 2014/01, 2014/10
 */
 
-:- use_module(flp(rfc4234_basic)).
 :- use_module(math(radix)).
 
 :- use_module(plDcg(dcg_abnf)).
@@ -56,6 +55,7 @@
 :- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(parse_tree)).
+:- use_module(plDcg_flp(rfc4234_basic)).
 
 
 

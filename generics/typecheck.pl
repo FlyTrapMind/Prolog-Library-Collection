@@ -72,14 +72,11 @@ Predicates used for parsing and checking value-type conformance.
 @version 2013/01, 2013/08, 2014/01, 2014/03-2014/06, 2014/10
 */
 
-:- use_module(library(apply)).
-:- use_module(library(error)).
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(uri)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(char_ext)).
 :- use_module(generics(boolean_ext)).
+:- use_module(generics(char_ext)).
 
 :- multifile(error:has_type/2).
 
@@ -144,7 +141,7 @@ atom_to_value(Atom, string, String):- !,
 
 % char/0
 error:has_type(char, Term):-
-  char(Term).
+  is_char(Term).
 % code/0
 error:has_type(code, Term):-
   once(code_type(Term, _)).

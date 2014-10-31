@@ -20,13 +20,12 @@ Asserts statistics for VoID descriptions.
 :- use_module(library(semweb/rdfs)).
 
 :- use_module(generics(thread_ext)).
-:- use_module(void(void_db)). % XML namespace.
+:- use_module(void(void_db)). % RDF prefix registration.
 
-:- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf(rdf_graph_name)).
-:- use_module(rdf_file(rdf_serial)).
 :- use_module(plRdf(rdf_stat)).
 :- use_module(plRdf_term(rdf_dateTime)).
+:- use_module(plRdf_term(rdf_datatype)).
 :- use_module(plRdf_term(rdf_string)).
 
 :- use_module(plXsd_datetime(xsd_dateTime_ext)).
@@ -108,12 +107,9 @@ void_update_dataset(VoidGraph, VoidDataset):-
 
   % void:triples
   % Notice that we may have read 0 triples into a graph.
-  (
-    rdf_graph(VoidDataset)
-  ->
-    rdf_statistics(triples_by_graph(VoidDataset, NumberOfTriples))
-  ;
-    NumberOfTriples = 0
+  (   rdf_graph(VoidDataset)
+  ->  rdf_statistics(triples_by_graph(VoidDataset, NumberOfTriples))
+  ;   NumberOfTriples = 0
   ),
   rdf_overwrite_datatype(VoidDataset, void:triples, NumberOfTriples,
       xsd:integer, VoidGraph).

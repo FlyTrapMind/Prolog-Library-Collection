@@ -138,7 +138,7 @@ write_canonical_blobs(Stream, Term):-
 
 % Messages
 
-:- multifile(prolog:message/1).
+:- multifile(prolog:message//1).
 
 prolog:message(run_print_messages(Status,Warnings)) -->
   status(Status),

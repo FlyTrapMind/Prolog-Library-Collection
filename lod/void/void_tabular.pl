@@ -1,9 +1,11 @@
 :- module(void_tabular, []).
 
-/** <module> VoID Tabular
+/** <module> VoID: Tabular
+
+Tabular browser for VoID data.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03, 2014/10
 */
 
 :- use_module(library(aggregate)).
@@ -19,10 +21,16 @@
 
 :- use_module(plRdf(rdf_dataset)).
 
-:- use_module(plRdfDev_wui(rdf_html_table)).
+:- use_module(plTabular(rdf_html_table)).
+
+:- dynamic(http:location/3).
+:- multifile(http:location/3).
 
 http:location(void, root(void), []).
+
 :- http_handler(void(tabular), void_tabular, []).
+
+:- multifile(user:web_module/2).
 
 user:web_module('VoID Tabular', void_tabular).
 

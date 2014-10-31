@@ -6,6 +6,8 @@
                      % ?Number:compound
     digit_weight/2, % ?Digit:hex
                     % ?Weight:between(0,15)
+    digits_decimal/2, % ?Digits:list(hex)
+                      % ?Decimal:nonneg
     digits_radix/2, % ?Digits:list(hex)
                     % ?Number:compound
     hexadecimal_digit/1, % ?Digit:hex
@@ -77,6 +79,14 @@ digit_weight(c, 12).
 digit_weight(d, 13).
 digit_weight(e, 14).
 digit_weight(f, 15).
+
+
+
+%! digits_decimal(+Digits:list(hex), -Decimal:nonneg) is det.
+%! digits_decimal(-Digits:list(hex), +Decimal:nonneg) is det.
+
+digits_decimal(Digits, Decimal):-
+  digits_radix(Digits, dec(Decimal)).
 
 
 

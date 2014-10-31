@@ -1,8 +1,8 @@
-:- module
+:- module(
   rfc2616_host,
   [
-    'Host'//2 % -ParseTree:compound
-              % ?Host:compound
+%    'Host'//2 % -ParseTree:compound
+%              % ?Host:compound
   ]
 ).
 

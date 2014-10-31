@@ -36,8 +36,9 @@ specification.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
-:- use_module(flp(record_jar)). % Used in phrase_from_stream/2.
 :- use_module(uri(rfc2396_dcg)).
+
+:- use_module(plDcg_record_jar(record_jar)).
 
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdfs_build)).

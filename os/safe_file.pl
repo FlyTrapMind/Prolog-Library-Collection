@@ -56,16 +56,16 @@ safe_delete_file(File):-
   directory_file_path(Trashcan, RelativeFile, CopyFile),
   % Copying to a nonexisting directory does not work, so first
   % we need to recursively create the directory.
-  file_directory_name(CopyFile, CopyDirectory),
-  create_directory(CopyDirectory),
+  file_directory_name(CopyFile, CopyDir),
+  create_directory(CopyDir),
   copy_file(File, CopyFile),
   catch(
     (
       delete_file(File),
       debug(safe_file, 'File ~w was safe-deleted.', [File])
     ),
-    Exception,
-    debug(safe_file, '~w', [Exception])
+    E,
+    debug(safe_file, '~w', [E])
   ).
 
 

@@ -1,13 +1,13 @@
 :- module(
   http,
   [
-    http_dateTime/1, % -DateTime:term
-    request_to_local_url/2, % +Request:list
-                            % -LocalUrl:url
-    serve_nothing/1, % +Request:list
-    xml_serve_atom/1, % +XML:atom
-    xml_serve_dom/2 % +Options:list(nvpair)
-                    % +DOM:list
+    http_dateTime/1, % -DateTime:compound
+    request_to_local_url/2, % +Request:list(nvpair)
+                            % -LocalUrl:atom
+    serve_nothing/1, % +Request:list(nvpair)
+    xml_serve_atom/1, % +Xml:atom
+    xml_serve_dom/2 % +Dom:list(compound)
+                    % +Options:list(nvpair)
   ]
 ).
 
@@ -16,7 +16,7 @@
 Predicates for sending out HTTP requests.
 
 @author Wouter Beek
-@version 2012/10, 2013/02, 2013/11, 2014/01, 2014/07
+@version 2012/10, 2013/02, 2013/11, 2014/01, 2014/07, 2014/10
 */
 
 :- use_module(library(http/http_header)).
@@ -35,6 +35,7 @@ http_dateTime(DateTime):-
   http_timestamp(TimeStamp, DateTime).
 
 
+
 %! request_to_local_url(+Request:list, -LocalUrl:url) is det.
 % Identifies the resource that is indicated by the URL path.
 
@@ -45,23 +46,26 @@ request_to_local_url(Request, LocalUrl):-
   http_absolute_uri(Path, LocalUrl).
 
 
+
 serve_nothing(Request):-
   memberchk(pool(client(_, _ , _In, Out)), Request),
   http_reply_header(Out, status(no_content), []).
 
 
-%! xml_serve_atom(+XML:atom) is det.
+
+%! xml_serve_atom(+Xml:atom) is det.
 % Serves the given XML-formatted atom.
 
-xml_serve_atom(XML):-
+xml_serve_atom(Xml):-
   % The User Agent needs to know the content type and encoding.
   % If the UTF-8 encoding is not given here explicitly,
   % Prolog throws an IO exception on `format(XML)`.
   format('Content-type: application/xml; charset=utf-8~n~n'),
-  format(XML).
+  format(Xml).
 
 
-%! xml_serve_dom(+Options:list(nvpair), +DOM:list) is det.
+
+%! xml_serve_dom(+Dom:list(compound), +Options:list(nvpair)) is det.
 % Serves the given XML DOM.
 %
 % The following options are supported:
@@ -73,7 +77,7 @@ xml_serve_atom(XML):-
 %   * =|style(+StyleName:atom)|=
 %     The atomic name of a style file on the =css= search path.
 
-xml_serve_dom(O1, DOM):-
-  xml_dom_to_atom(O1, DOM, XML),
-  xml_serve_atom(XML).
+xml_serve_dom(Dom, Options):-
+  xml_dom_to_atom(Dom, Xml, Options),
+  xml_serve_atom(Xml).
 

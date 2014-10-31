@@ -4,7 +4,7 @@
     current_date/1, % ?Date:atom
     current_date_time/1, % ?DateTime:atom
     current_time/1, % ?Time:atom
-    date_directories/2, % +Dir:atom
+    date_directories/2, % +Spec:compound
                         % -DateDir:atom
     date_time_json/2, % ?DateTime:compound
                       % ?Dict:dict
@@ -63,22 +63,21 @@ current_time(Time):-
   get_time(TimeStamp),
   format_time(atom(Time), '%H_%M_%S', TimeStamp).
 
-%! date_directories(+Dir:atom, -DateDir:atom) is det.
+%! date_directories(+Spec:compound, -DateDir:atom) is det.
 % Create and return the current date subdirectory of the given absolute
 % directory name.
 %
 % Example: from =|/home/wouterbeek/tmp|= to
 % =|/home/wouterbeek/tmp/2013/05/10|=
 
-date_directories(Dir, DateDir):-
+date_directories(Spec, Dir):-
   get_time(TimeStamp),
   format_time(atom(Day), '%d', TimeStamp),
   format_time(atom(Month), '%m', TimeStamp),
-  RelativeSubDirs1 =.. [Month,Day],
   format_time(atom(Year), '%Y', TimeStamp),
-  RelativeSubDirs2 =.. [Year,RelativeSubDirs1],
-  RelativeDirs =.. [Dir,RelativeSubDirs2],
-  create_nested_directory(RelativeDirs, DateDir).
+  absolute_file_name(Spec, PrefixDir, [access(write),file_type(directory)]),
+  directory_subdirectories(PostfixDir, [Year,Month,Day]),
+  append_directories(PrefixDir, PostfixDir, Dir).
 
 
 

@@ -557,11 +557,6 @@ pred(Integer, Predecessor):-
   succ(Predecessor, Integer).
 
 
-smaller_than_or_equal_to(_, inf):- !.
-smaller_than_or_equal_to(X, Y):-
-  X =< Y.
-
-
 %! square(+X:float, -Square:float) is det.
 % Returns the square of the given number.
 

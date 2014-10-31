@@ -50,8 +50,10 @@ SGML (Standard Generalized Markup Language).
 @author Wouter Beek
 @compat XML 1.0 (Fifth Edition)
 @see http://www.w3.org/TR/2008/REC-xml-20081126/
-@version 2013/07
+@version 2013/07, 2014/10
 */
+
+:- use_module(library(semweb/rdf_db)).
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).

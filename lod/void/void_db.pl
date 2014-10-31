@@ -64,7 +64,7 @@ void_dataset_location(VoidGraph, VoidDataset, DatadumpFile):-
     DatadumpFile = DatadumpLocation
   ;
     rdf_graph_property(VoidGraph, source(VoidFile)),
-    file_name(VoidFile, VoidDirectory, _, _),
+    file_components(VoidFile, VoidDirectory, _, _),
     relative_file_path(DatadumpFile, VoidDirectory, DatadumpLocation)
   ).
 

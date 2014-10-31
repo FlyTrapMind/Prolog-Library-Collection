@@ -1,9 +1,9 @@
 :- module(void_test, []).
 
-:- use_module(plRdf(rdf_package)).
-:- use_module(rdf_file(rdf_serial)).
 :- use_module(void(void_file)).
 :- use_module(void(void_tabular)). % Debug tool.
+
+:- use_module(plRdf_ser(rdf_package)).
 
 :- initialization(void_test).
 

@@ -20,8 +20,13 @@ DCGs for character definitions in XML recommendations.
 
 :- use_module(plDcg(dcg_abnf)).
 :- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_unicode)).
+:- use_module(plDcg(dcg_unicode), [
+     character_tie//1,
+     middle_dot//1,
+     undertie//1,
+     zero_width_joiner//1,
+     zero_width_non_joiner//1
+   ]).
 
 
 
@@ -66,18 +71,18 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.0.5 [2].
 
 % Horizontal tab =|#x9|=
-'Char'(C) --> horizontal_tab(C).
+'Char'(Code) --> horizontal_tab(Code).
 % Line feed =|#xA|=
-'Char'(C) --> line_feed(C).
+'Char'(Code) --> line_feed(Code).
 % Carriage return =|#xD|=
-'Char'(C) --> carriage_return(C).
+'Char'(Code) --> carriage_return(Code).
 % Space, punctuation, numbers, letters
 % =|#x20-#xD7FF|=
-'Char'(C) --> between(hex('20'), hex('D7FF'), C).
+'Char'(Code) --> between_code(hex('20'), hex('D7FF'), dec(Code)).
 % =|#xE000-#xFFFD|=
-'Char'(C) --> between(hex('E000'), hex('FFFD'), C).
+'Char'(Code) --> between_code(hex('E000'), hex('FFFD'), dec(Code)).
 % =|#x10000-#x10FFFF|=
-'Char'(C) --> between(hex('10000'), hex('10FFFF'), C).
+'Char'(Code) --> between_code(hex('10000'), hex('10FFFF'), dec(Code)).
 
 
 
@@ -93,11 +98,11 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.1.2 [2].
 
 % #x1-#xD7FF
-'Char11'(C) --> between(hex('1'), hex('D7FF'), C).
+'Char11'(Code) --> between_code(hex('1'), hex('D7FF'), dec(Code)).
 % #xE000-#xFFFD
-'Char11'(C) --> between(hex('E000'), hex('FFFD'), C).
+'Char11'(Code) --> between_code(hex('E000'), hex('FFFD'), dec(Code)).
 % #x10000-#x10FFFF
-'Char11'(C) --> between(hex('10000'), hex('10FFFF'), C).
+'Char11'(Code) --> between_code(hex('10000'), hex('10FFFF'), dec(Code)).
 
 
 
@@ -115,18 +120,18 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.0.5 [4a].
 % @compat XML 1.1.2 [4a].
 
-'NameChar'(C) --> 'NameStartChar'(C).
-'NameChar'(C) --> hyphen_minus(C).
-'NameChar'(C) --> dot(C).
-'NameChar'(C) --> decimal_digit(C).
+'NameChar'(Code) --> 'NameStartChar'(Code).
+'NameChar'(Code) --> hyphen_minus(Code).
+'NameChar'(Code) --> dot(Code).
+'NameChar'(Code) --> decimal_digit(Code).
 % #x00B7
-'NameChar'(C) --> middle_dot(C).
+'NameChar'(Code) --> middle_dot(Code).
 % #x0300-#x036F
-'NameChar'(C) --> between(hex('0300'), hex('036F'), C).
+'NameChar'(Code) --> between_code(hex('0300'), hex('036F'), dec(Code)).
 % #x203F
-'NameChar'(C) --> undertie(C).
+'NameChar'(Code) --> undertie(Code).
 % #x2040
-'NameChar'(C) --> character_tie(C).
+'NameChar'(Code) --> character_tie(Code).
 
 
 
@@ -154,36 +159,36 @@ DCGs for character definitions in XML recommendations.
 % @compat XML 1.1.2 [4].
 
 % [A-Z] and [a-z]
-'NameStartChar'(C) --> ascii_letter(C).
+'NameStartChar'(Code) --> ascii_letter(Code).
 % ":"
-'NameStartChar'(C) --> colon(C).
+'NameStartChar'(Code) --> colon(Code).
 % "_"
-'NameStartChar'(C) --> underscore(C).
+'NameStartChar'(Code) --> underscore(Code).
 % #xC0-#xD6
-'NameStartChar'(C) --> between(hex('C0'), hex('D6'), C).
+'NameStartChar'(Code) --> between_code(hex('C0'), hex('D6'), dec(Code)).
 % #xD8-#xF6
-'NameStartChar'(C) --> between(hex('D8'), hex('F6'), C).
+'NameStartChar'(Code) --> between_code(hex('D8'), hex('F6'), dec(Code)).
 % #xF8-#x2FF
-'NameStartChar'(C) --> between(hex('F8'), hex('2FF'), C).
+'NameStartChar'(Code) --> between_code(hex('F8'), hex('2FF'), dec(Code)).
 % #x370-#x37D
-'NameStartChar'(C) --> between(hex('370'), hex('37D'), C).
+'NameStartChar'(Code) --> between_code(hex('370'), hex('37D'), dec(Code)).
 % #x37F-#x1FFF
-'NameStartChar'(C) --> between(hex('37F'), hex('1FFF'), C).
+'NameStartChar'(Code) --> between_code(hex('37F'), hex('1FFF'), dec(Code)).
 % #x200C-#x200D
-'NameStartChar'(C) --> zero_width_non_joiner(C).
-'NameStartChar'(C) --> zero_width_joiner(C).
+'NameStartChar'(Code) --> zero_width_non_joiner(Code).
+'NameStartChar'(Code) --> zero_width_joiner(Code).
 % #x2070-#x218F
-'NameStartChar'(C) --> between(hex('2070'), hex('218F'), C).
+'NameStartChar'(Code) --> between_code(hex('2070'), hex('218F'), dec(Code)).
 % #x2C00-#x2FEF
-'NameStartChar'(C) --> between(hex('2C00'), hex('2FEF'), C).
+'NameStartChar'(Code) --> between_code(hex('2C00'), hex('2FEF'), dec(Code)).
 % #x3001-#xD7FF
-'NameStartChar'(C) --> between(hex('3001'), hex('D7FF'), C).
+'NameStartChar'(Code) --> between_code(hex('3001'), hex('D7FF'), dec(Code)).
 % #xF900-#xFDCF
-'NameStartChar'(C) --> between(hex('F900'), hex('FDCF'), C).
+'NameStartChar'(Code) --> between_code(hex('F900'), hex('FDCF'), dec(Code)).
 % #xFDF0-#xFFFD
-'NameStartChar'(C) --> between(hex('FDF0'), hex('FFFD'), C).
+'NameStartChar'(Code) --> between_code(hex('FDF0'), hex('FFFD'), dec(Code)).
 % #x10000-#xEFFFF
-'NameStartChar'(C) --> between(hex('10000'), hex('EFFFF'), C).
+'NameStartChar'(Code) --> between_code(hex('10000'), hex('EFFFF'), dec(Code)).
 
 
 
@@ -210,11 +215,11 @@ DCGs for character definitions in XML recommendations.
 %
 % @compat XML 1.1.2 [2a].
 
-'RestrictedChar'(C) --> between(hex('1'), hex('8'), C).
-'RestrictedChar'(C) --> between(hex('B'), hex('C'), C).
-'RestrictedChar'(C) --> between(hex('E'), hex('1F'), C).
-'RestrictedChar'(C) --> between(hex('7F'), hex('84'), C).
-'RestrictedChar'(C) --> between(hex('86'), hex('9F'), C).
+'RestrictedChar'(Code) --> between_code(hex('1'), hex('8'), dec(Code)).
+'RestrictedChar'(Code) --> between_code(hex('B'), hex('Code'), dec(Code)).
+'RestrictedChar'(Code) --> between_code(hex('E'), hex('1F'), dec(Code)).
+'RestrictedChar'(Code) --> between_code(hex('7F'), hex('84'), dec(Code)).
+'RestrictedChar'(Code) --> between_code(hex('86'), hex('9F'), dec(Code)).
 
 
 
@@ -242,4 +247,3 @@ DCGs for character definitions in XML recommendations.
 'S_char' --> horizontal_tab.
 'S_char' --> line_feed.
 'S_char' --> space.
-

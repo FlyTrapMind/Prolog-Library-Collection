@@ -72,7 +72,7 @@ archive_create(File, CompressedFile):-
   (
     var(CompressedFile)
   ->
-    file_type_alternative(File, gzip, CompressedFile)
+    file_kind_alternative(File, gzip, CompressedFile)
   ;
     true
   ),

@@ -833,13 +833,11 @@ rfc5646_language_tag(rfc5646_language_tag(T1), LanguageTag) -->
 % The shortest ISO639 code, sometimes followed by extended language subtags.
 rfc5646_language(T0, Language, LanguageExtensions) -->
   'm*n'(2, 3, ascii_letter, Codes, []),
-  {atom_codes(Language, Codes)}.
+  {atom_codes(Language, Codes)},
   {rfc5646_class(Language, 'Language')},
-  (
-    "-",
-    rfc5646_extended_language_subtag(T2, LanguageExtensions)
-  ;
-    ""
+  (   "-",
+      rfc5646_extended_language_subtag(T2, LanguageExtensions)
+  ;   ""
   ),
   {parse_tree(language, [Language,T2], T0)}.
 rfc5646_language(language(Language), Language, []) -->

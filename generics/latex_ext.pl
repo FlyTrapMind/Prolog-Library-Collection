@@ -40,7 +40,7 @@ Predicates for handling LaTeX files.
 %! bibtex_convert_file(+File:atom) is det.
 
 bibtex_convert_file(File):-
-  file_name_type(Base, tex, File),
+  file_component(File, base, Base),
   file_directory_name(File, Dir),
   create_process(bibtex, [Base], [cwd(Dir)]).
 
@@ -68,7 +68,7 @@ latex_clean_file(File):-
   access_file(File, read), !,
   forall(
     (
-      file_type_alternative(File, latex_out, DeleteFile),
+      file_kind_alternative(File, latex_out, DeleteFile),
       access_file(DeleteFile, write)
     ),
     safe_delete_file(DeleteFile)

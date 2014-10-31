@@ -11,13 +11,14 @@
 Additional support for persistent databases in Prolog.
 
 @author Wouter Beek
-@version 2014/08
+@version 2014/08, 2014/10
 */
 
 :- use_module(library(persistency)).
 
 :- use_module(generics(db_ext)).
 :- use_module(os(file_ext)).
+:- use_module(os(file_gnu)).
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 

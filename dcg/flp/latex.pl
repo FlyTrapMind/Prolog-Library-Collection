@@ -46,7 +46,7 @@ file_to_latex_title(PrologFile, Title):-
   % Underscores must be escaped in LaTeX.
   dcg_phrase(dcg_replace(`_`, `\\_`), Module, Title).
 file_to_latex_title(PrologFile, Local):-
-  file_name(PrologFile, _, Local, _).
+  file_components(PrologFile, _, Local, _).
 
 
 %! latex(+Command:oneof([begin,end]))// is semidet.

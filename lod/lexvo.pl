@@ -68,8 +68,7 @@ find_resource(Options, Query, Resource):-
       rdfs_label(Resource, LanguageCode, Query),
       Resources
     ),
-    Resource \== [],
-    !
+    Resource \== [], !
   ;
     aggregate_all(
       set(Resource),
@@ -77,17 +76,12 @@ find_resource(Options, Query, Resource):-
       Resources
     )
   ),
-  (
-    Resources = [Resource]
-  ->
-    debug(lexvo, 'Found resource ~w for query ~w.', [Resource, Query])
-  ;
-    Resources == []
-  ->
-    debug(lexvo, 'Could not find a resource for query ~w.', [Query])
-  ;
-    length(Resources, NumberOfResources),
-    debug(lexvo, 'Found ~w resources that match query ~w.', [NumberOfResources, Query])
+  (   Resources = [Resource]
+  ->  debug(lexvo, 'Found resource ~w for query ~w.', [Resource, Query])
+  ;   Resources == []
+  ->  debug(lexvo, 'Could not find a resource for query ~w.', [Query])
+  ;   length(Resources, NumberOfResources),
+      debug(lexvo, 'Found ~w resources that match query ~w.', [NumberOfResources,Query])
   ).
 
 %! load is det.
@@ -97,14 +91,13 @@ find_resource(Options, Query, Resource):-
 % @version 2012/03/04
 
 load:-
-  rdf_graph(lexvo),
-  !,
+  rdf_graph(lexvo), !,
   debug(lexvo, 'The lexvo dataset is already loaded.', []).
 load:-
   absolute_file_name(
     data_standards(lexvo),
     File,
-    [access(read), file_type(rdf)]
+    [access(read),file_type(rdf)]
   ),
   rdf_load_any(File, [graph(lexvo)]).
 

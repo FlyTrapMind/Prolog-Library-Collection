@@ -56,8 +56,6 @@ http:location(pldoc, root(help), [priority(10)]).
 :- use_module(plServer(web_console)).
 :- use_module(plServer(web_message)).
 
-:- use_module(plRdf_ser(rdf_serial)).
-
 :- use_module(plTabular(rdf_tabular)).
 
 :- use_module(plRdfDev(rdf_man_duplicates)).

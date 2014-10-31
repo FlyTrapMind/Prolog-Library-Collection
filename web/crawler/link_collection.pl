@@ -21,15 +21,16 @@
 Link collection gathered by crawler.
 
 @author Wouter Beek
-@version 2012/09, 2014/03
+@version 2012/09, 2014/03, 2014/10
 */
 
 :- use_module(library(debug)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
+
 :- use_module(plRdf(rdf_build)).
 :- use_module(plRdf(rdf_read)).
-:- use_module(rdfs(rdfs_read)).
+:- use_module(plRdf(rdfs_read)).
 
 
 
