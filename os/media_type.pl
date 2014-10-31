@@ -2,7 +2,7 @@
   media_type,
   [
     media_type_string/2, % ?MediaType:compound
-                         % ?String:string) is det.
+                         % ?String:string
     remove_media_type_encoding/2 % +MediaTypeEncoding:string
                                  % -MediaType:string
   ]
