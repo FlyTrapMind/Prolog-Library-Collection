@@ -3,6 +3,7 @@
   [
     create_personal_subdirectory/2, % +Subdirs:list(atom)
                                     % -AbsoluteDir:atom
+    home_directory/1, % -HomeDir:atom
     output_directory/1, % -OutputDir:atom
     trashcan/1 % -TrashDir:atom
   ]
@@ -14,7 +15,7 @@ Predicates for creating an maintaining a specific infrastructure of
 directories that are used for certain purposes, e.g. output, data, trash.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04, 2014/10
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04, 2014/10-2014/11
 */
 
 :- use_module(library(filesex)).
@@ -41,6 +42,13 @@ create_personal_subdirectory(Subdirs, AbsDir):-
   % Make sure the personal directory is there.
   personal_directory_init,
   create_directory(personal, Subdirs, AbsDir).
+
+
+
+%! home_directory(-HomeDir:atom) is det.
+
+home_directory(HomeDir):-
+  expand_file_name('~/', HomeDir).
 
 
 

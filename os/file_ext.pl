@@ -58,6 +58,7 @@
     relative_file_path/3, % ?Path:atom
                           % ?RelativeTo:atom
                           % ?RelativePath:atom
+    root_prefix/1, % ?Prefix:atom
     younger_file/2 % +Path1:atom
                    % +Path2:atom
   ]
@@ -128,7 +129,7 @@ In line with the terminology this modules uses the following variable names:
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/10
+         2014/08-2014/11
 */
 
 :- use_module(library(apply)).
@@ -533,14 +534,24 @@ prefix_path(PrefixPath, Path):-
 %!   +RelativeTo:atom,
 %!   +RelativePath:atom
 %! ) is det.
-% @see Adds instantiation (-,+,+) to relative_file_name/3
-%      in SWI-Prolog library [[filesex]].
+% Relates one relative path to two absolute paths.
+%
+% Resolves potential occurrences of `..` in any of the arguments.
+%
+% Supports 
+%
+% @see relative_file_name/3 in library [[filesex]]
+%      only supports instantiation `(+,+,-)`.
 
-relative_file_path(Path, RelativeTo, RelativePath):-
-  maplist(nonvar, [Path,RelativeTo]), !,
+relative_file_path(Path0, RelativeTo0, RelativePath):-
+  maplist(term_to_path, [Path0,RelativeTo0], [Path,RelativeTo]), !,
   relative_file_name(Path, RelativeTo, RelativePath).
-relative_file_path(Path, RelativeTo, RelativePath):-
-  maplist(nonvar, [RelativeTo,RelativePath]), !,
+relative_file_path(Path, RelativeTo0, RelativePath0):-
+  maplist(
+    term_to_path,
+    [RelativeTo0,RelativePath0],
+    [RelativeTo,RelativePath]
+  ), !,
   directory_subdirectories(RelativePath, RelativePathSubs1),
   uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
   directory_subdirectories(RelativeTo, RelativeToSubs1),
@@ -556,6 +567,18 @@ uplength(['..'|T1], N1, T2):- !,
   uplength(T1, N2, T2),
   N1 is N2 + 1.
 uplength(L, 0, L).
+
+
+
+%! root_prefix(+Prefix:atom) is semidet.
+%! root_prefix(-Prefix:atom) is multi.
+
+:- if(is_unix).
+root_prefix('/').
+:- endif.
+:- if(is_windows).
+root_prefix('C:\\').
+:- endif.
 
 
 
@@ -587,16 +610,20 @@ spec_atomic_concat(Spec1, Atomic, Spec2):-
 
 
 
-%! root_prefix(+Prefix:atom) is semidet.
-%! root_prefix(-Prefix:atom) is multi.
-% @tbd I have no idea what the/a root element for Windows is/are.
+%! term_to_path(@Term, -Path:atom) is semidet.
+% Allow file paths to be specified in either one of the following ways:
+%   - As atom.
+%   - As wildcard expression to expand_file_name/2.
+%   - As compound term to absolute_file_name/3.
+%
+% Fails in any other way.
 
-:- if(is_unix).
-root_prefix('/').
-:- endif.
-:- if(is_windows).
-root_prefix('C:\\').
-:- endif.
+term_to_path(Atom, Path):-
+  atom(Atom), !,
+  expand_file_name(Atom, [Path|_]).
+term_to_path(Spec, Path):-
+  nonvar(Spec),
+  absolute_file_name(Spec, Path, [file_errors(fail),file_type(directory)]).
 
 
 
