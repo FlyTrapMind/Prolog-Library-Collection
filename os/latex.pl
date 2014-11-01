@@ -1,4 +1,4 @@
-module(
+:- module(
   latex,
   [
     latex_code_convert/1 % +PrologFile:atom
@@ -7,17 +7,17 @@ module(
 
 /** <module> LaTeX
 
-LaTeX DCGs.
+Grammar snippets for LaTeX.
 
 @author Wouter Beek
-@version 2014/07
+@version 2014/07, 2014/10
 */
 
 :- use_module(library(option)).
-:- use_module(library(process)).
 :- use_module(library(readutil)).
 
 :- use_module(generics(codes_ext)).
+:- use_module(os(file_ext)).
 
 :- use_module(plDcg(dcg_ascii)).
 :- use_module(plDcg(dcg_content)).
@@ -46,7 +46,7 @@ file_to_latex_title(PrologFile, Title):-
   % Underscores must be escaped in LaTeX.
   dcg_phrase(dcg_replace(`_`, `\\_`), Module, Title).
 file_to_latex_title(PrologFile, Local):-
-  file_components(PrologFile, _, Local, _).
+  file_component(PrologFile, local, Local).
 
 
 %! latex(+Command:oneof([begin,end]))// is semidet.
@@ -82,7 +82,7 @@ latex_code_convert(PrologFile):-
   setup_call_cleanup(
     (
       open(PrologFile, read, Read, [encoding(utf8),type(text)]),
-      open(TeXFile, write, Write, [encoding(utf8),type(test)])
+      open(TexFile, write, Write, [encoding(utf8),type(test)])
     ),
     (
       file_to_latex_title(PrologFile, Title),
@@ -133,12 +133,10 @@ latex_code_convert(_).
 % End of stream.
 latex_code_convert(Read, Write, Mode):-
   at_end_of_stream(Read), !,
-  if_then(
-    Mode == prolog,
-    (
-      write(Write, '\\end{lstlisting}'),
+  (   Mode == prolog
+  ->  write(Write, '\\end{lstlisting}'),
       nl(Write)
-    )
+  ;   true
   ).
 % No mode.
 latex_code_convert(Read, Write, none):- !,
@@ -168,16 +166,13 @@ latex_code_convert(Read, Write, latex):- !,
 % Prolog mode.
 latex_code_convert(Read, Write, prolog):- !,
   read_line_to_codes(Read, Codes),
-  (
-    phrase(latex(begin), Codes)
-  ->
-    % LaTeX begin found: end listing.
-    write(Write, '\\end{lstlisting}'),
-    nl(Write),
-    Mode = latex
-  ;
-    write_latex_codes_nl(Write, Codes),
-    Mode = prolog
+  (   phrase(latex(begin), Codes)
+  ->  % LaTeX begin found: end listing.
+      write(Write, '\\end{lstlisting}'),
+      nl(Write),
+      Mode = latex
+  ;   write_latex_codes_nl(Write, Codes),
+      Mode = prolog
   ),
   latex_code_convert(Read, Write, Mode).
 
@@ -206,42 +201,33 @@ write_latex_header(Stream, Options):-
   nl(Stream),
 
   % Use packages.
-  if_then(
-    (
-      option(packages(Packages), Options),
+  (   option(packages(Packages), Options),
       Packages \== []
-    ),
-    (
-      maplist(write_latex_package(Stream), Packages),
+  ->  maplist(write_latex_package(Stream), Packages),
       nl(Stream)
-    )
+  ;   true
   ),
 
   % Arbitary lines, since we cannot cater for *every* possible header setting.
-  if_then(
-    option(arbitrary_lines(ArbitraryLines), Options),
-    (
-      maplist(format(Stream, '~w\n'), ArbitraryLines),
+  (   option(arbitrary_lines(ArbitraryLines), Options)
+  ->  maplist(format(Stream, '~w\n'), ArbitraryLines),
       nl(Stream)
-    )
+  ;   true
   ),
 
   % Information for the title.
-  if_then(
-    option(author(Author), Options),
-    format(Stream, '\\author{~w}\n', [Author])
+  (   option(author(Author), Options)
+  ->  format(Stream, '\\author{~w}\n', [Author])
+  ;   true
   ),
-  if_then(
-    option(title(Title), Options),
-    format(Stream, '\\title{~w}\n', [Title])
+  (   option(title(Title), Options)
+  ->  format(Stream, '\\title{~w}\n', [Title])
+  ;   true
   ),
-  if_then(
-    (
-      option(author(_Author1), Options)
-    ;
-      option(title(_Title1), Options)
-    ),
-    nl(Stream)
+  (   ( option(author(_Author1), Options)
+      ; option(title(_Title1), Options)
+      )
+  ->  nl(Stream)
   ),
 
   % End of header.
@@ -249,16 +235,12 @@ write_latex_header(Stream, Options):-
   nl(Stream),
 
   % Display the title.
-  if_then(
-    (
-      option(author(_), Options)
-    ;
-      option(title(_), Options)
-    ),
-    (
-      format(Stream, '\\maketitle\n', []),
+  (   ( option(author(_), Options)
+      ; option(title(_), Options)
+      )
+  ->  format(Stream, '\\maketitle\n', []),
       nl(Stream)
-    )
+  ;   true
   ).
 
 write_latex_package(Stream, Package):-

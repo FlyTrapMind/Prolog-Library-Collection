@@ -26,7 +26,7 @@
   ]
 ).
 
-/** <module> Dir extensions
+/** <module> Directory extensions
 
 Extensions for handling directories.
 

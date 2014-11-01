@@ -24,7 +24,7 @@
                         % ?Ext:atom
                         % -ToPath:atom
     file_component/3, % +Path:atom
-                      % ?Field:oneof([base,directory,extension,file_type])
+                      % ?Field:oneof([base,directory,extension,file_type,local])
                       % ?Component:atom
     file_components/4, % +Path:atom
                        % ?Dir:atom
@@ -139,6 +139,7 @@ In line with the terminology this modules uses the following variable names:
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(math(math_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_gnu)).
@@ -227,19 +228,19 @@ create_file(Spec, Base, FileKind, Path):-
   % Resolve the directory in case the compound term notation employed
   % by absolute_file_name/3 is used.
   absolute_file_name(Spec, Dir, [access(write),file_type(directory)]),
-  
+
   % Make sure that the directory exists.
   create_directory(Dir),
-  
+
   % Create the local file name by appending the file base name
   % and the file extension.
   % The extension must be of the given type.
   once(file_kind_extension(FileKind, Ext)),
   local_file_components(Local, Base, Ext),
-  
+
   % Append directory and file name.
   directory_file_path(Dir, Local, Path),
-  
+
   create_file(Path).
 
 
@@ -261,7 +262,7 @@ create_file_directory(Path):-
 
 create_file_link(File, Dir):-
   file_alternative(File, Dir, _, _, Link),
-  create_file_link(File, Link, symbolic).
+  link_file(File, Link, symbolic).
 
 
 
@@ -299,17 +300,17 @@ file_alternative(FromPath, ToDir, ToBase, ToExt, ToPath):-
 
 %! file_component(
 %!   +Path:atom,
-%!   +Field:oneof([base,directory,extension,file_type]),
+%!   +Field:oneof([base,directory,extension,file_type,local]),
 %!   +Component:atom
 %! ) is semidet.
 %! file_component(
 %!   +Path:atom,
-%!   +Field:oneof([base,directory,extension,file_type]),
+%!   +Field:oneof([base,directory,extension,file_type,local]),
 %!   -Component:atom
 %! ) is multi.
 %! file_component(
 %!   +Path:atom,
-%!   -Field:oneof([base,directory,extension,file_type]),
+%!   -Field:oneof([base,directory,extension,file_type,local]),
 %!   -Component:atom
 %! ) is multi.
 
@@ -325,6 +326,8 @@ file_component0(Path, extension, Ext):-
 file_component0(Path, file_type, FileType):-
   file_component0(Path, extension, Ext),
   user:prolog_file_type(Ext, FileType).
+file_component0(Path, local, Local):-
+  directory_file_path(_, Local, Path).
 
 
 
@@ -381,7 +384,7 @@ file_kind_alternative(FromFile, ToFileKind, ToFile):-
 
 
 %! file_kind_extension(+FileKind:atom, +Ext:atom) is semidet.
-%! file_kind_extension(+FileKind:atom, -Ext:atom) is nonder.
+%! file_kind_extension(+FileKind:atom, -Ext:atom) is nondet.
 % Returns the extensions associated with the given file kind.
 %
 % These are either:
@@ -408,7 +411,7 @@ file_kind_extension(FileType, Ext):-
 hidden_file_name(Path, HiddenPath):-
   file_components(Path, Dir, Base, Ext),
   atomic_concat('.', Base, HiddenBase),
-  file_coponents(HiddenPath, Dir, HiddenBase, Ext).
+  file_components(HiddenPath, Dir, HiddenBase, Ext).
 
 
 
