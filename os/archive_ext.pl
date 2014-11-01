@@ -40,12 +40,12 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(http/http_open)).
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(pairs)).
+:- use_module(library(semweb/rdf_db), [rdf_atom_md5/3]).
 :- use_module(library(zlib)).
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
@@ -383,7 +383,8 @@ source_directory_name(File, Dir):-
   file_directory_name(File, Dir).
 source_directory_name(Url, Dir):-
   is_url(Url), !,
-  url_nested_directory(data, Url, Dir).
+  rdf_atom_md5(Url, 1, Md5),
+  create_directory(data, [Md5], Dir).
 
 
 

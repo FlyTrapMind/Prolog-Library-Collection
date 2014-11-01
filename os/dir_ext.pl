@@ -11,7 +11,7 @@
                         % +Subdirs:list(atom)
     create_directory/3, % +CurrentSpec:compound
                         % +Subdirs:list(atom)
-                        % -AbsioluteDir:atom
+                        % -AbsoluteDir:atom
     delete_directory/2, % +Dir:atom
                         % +Options:list(nvpair)
     directory_files/3, % +Dir:atom
@@ -284,10 +284,9 @@ directory_subdirectories(Dir1, Subdirs):-
   ->  relative_file_name(Dir1, '/', Dir2)
   ;   nonvar(Subdirs)
   ->  Dir2 = Dir1
+  ;   instantiation_error(_)
   ),
   atomic_list_concat(Subdirs, '/', Dir2).
-directory_subdirectories(_, _):-
-  instantiation_error(_).
 
 
 

@@ -25,7 +25,8 @@ Support for image files.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
+
+:- use_module(plUri(uri_ext)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
