@@ -17,6 +17,8 @@
                     % ?Element
     pair_first/2, % +Pair:pair
                   % ?First
+    pair_list/2, % ?Pair:pair
+                 % ?List:list
     pair_second/2, % +Pair:pair
                    % ?Second
     pairs_to_set/2, % +Pairs:list(pair)
@@ -44,7 +46,7 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/10
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/11
 */
 
 :- use_module(library(aggregate)).
@@ -90,11 +92,13 @@ error:has_type(pair(Type1,Type2), X-Y):-
 inverse_pair(X-Y, Y-X).
 
 
+
 %! list_pair(+List:list, +Pair:pair) is semidet.
 %! list_pair(+List:list, -Pair:pair) is det.
 %! list_pair(-List:list, +Pair:pair) is det.
 
 list_pair([X,Y], X-Y).
+
 
 
 %! number_of_equivalence_pairs(
@@ -131,12 +135,14 @@ cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options):-
   ).
 
 
+
 %! json_pair(+Pair:pair, +Dict:dict) is semidet.
 %! json_pair(+Pair:pair, -Dict:dict) is det.
 %! json_pair(-Pair:pair, +Dict:dict) is det.
 
 json_pair(Pair, Dict):-
   dict_pairs(Dict, json, [Pair]).
+
 
 
 %! pair(+Pair:pair, +X, +Y) is semidet.
@@ -146,11 +152,13 @@ json_pair(Pair, Dict):-
 pair(X-Y, X, Y).
 
 
+
 %! pair_element(+Pair:pair, +Element) is semidet.
 %! pair_element(+Pair:pair, -Element) is multi.
 
 pair_element(X-_, X).
 pair_element(_-Y, Y).
+
 
 
 %! pair_first(+Pair:pair, +First) is semidet.
@@ -159,10 +167,20 @@ pair_element(_-Y, Y).
 pair_first(X-_, X).
 
 
+
+%! pair_list(+Pair:pair, +List:list) is semidet.
+%! pair_list(+Pair:pair, -List:list) is det.
+%! pair_list(-Pair:pair, +List:list) is det.
+
+pair_list(X-Y, [X,Y]).
+
+
+
 %! pair_second(+Pair:pair, +Second) is semidet.
 %! pair_second(+Pair:pair, -Second) is det.
 
 pair_second(X-_, X).
+
 
 
 %! pairs_to_set(+Pairs:list(pair), -Set:ordset) is det.
@@ -185,6 +203,7 @@ pairs_to_set(Pairs, Members):-
   pairs_keys_values(Pairs, Keys1, Values1),
   maplist(sort, [Keys1,Values1], [Keys2,Values2]),
   ord_union(Keys2, Values2, Members).
+
 
 
 %! pairs_to_sets(+Pairs:list(pair), -Sets:ordset(ordset)) is det.
@@ -238,6 +257,7 @@ pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
   pairs_to_sets(Pairs, Sets2, AllSets).
 
 
+
 %! read_pairs_from_file(+File:atom, -Pairs:ordset(pair(atom))) is det.
 
 read_pairs_from_file(File, Pairs):-
@@ -252,9 +272,11 @@ read_pairs_from_file(File, Pairs):-
   ).
 
 
+
 %! reflexive_pair(?Pair:pair) is semidet.
 
 reflexive_pair(X-X).
+
 
 
 %! set_to_pairs(
@@ -281,6 +303,7 @@ set_to_pairs(Set, Comparator, Pairs):-
     ),
     Pairs
   ).
+
 
 
 %! sets_to_pairs(
@@ -310,6 +333,7 @@ sets_to_pairs([Set|Sets], Comparator, Pairs1, AllPairs):-
   sets_to_pairs(Sets, Pairs3, AllPairs).
 
 
+
 %! store_pairs_to_file(+Pairs:list(pair(atom)), +File:atom) is det.
 
 store_pairs_to_file(Pairs, File):-
@@ -325,6 +349,7 @@ store_pairs_to_file(Pairs, File):-
     ),
     close(Stream)
   ).
+
 
 
 %! term_to_pair(@Term, -Pair:pair) is det.
@@ -345,7 +370,17 @@ term_to_pair(Compound, X-Y):-
 
 
 
-% Unit tests
+% HELPERS
+
+%! comparator(+Reflexive:boolean, +Symmetric:boolean, :Comparator) is det.
+
+comparator(true,  true,  ~ ):- !.
+comparator(false, true,  \=):- !.
+comparator(false, false, @<):- !.
+
+
+
+% UNIT TESTS
 
 :- begin_tests(pair_ext).
 
@@ -369,14 +404,3 @@ test(
   pairs_to_sets(Pairs, Sets).
 
 :- end_tests(pair_ext).
-
-
-
-% Helpers
-
-%! comparator(+Reflexive:boolean, +Symmetric:boolean, :Comparator) is det.
-
-comparator(true,  true,  ~ ):- !.
-comparator(false, true,  \=):- !.
-comparator(false, false, @<):- !.
-
