@@ -330,14 +330,14 @@ iso8601_week_date(T0, Format, date(Y,M,W,D)) -->
 % SPECIFIC SUPPORT PREDICATES %
 
 iso8601_century(T0, C) -->
-  {var(C)}, !,
+  {var(Code)}, !,
   iso8601_integer(T0, century, 2, C_),
   {C is C_ * 100},
-  {iso8601_year(C)}.
+  {iso8601_year(Code)}.
 iso8601_century(T0, C) -->
   {C_ is C / 100},
   iso8601_integer(T0, century, 2, C_),
-  {iso8601_year(C)}.
+  {iso8601_year(Code)}.
 
 iso8601_day_in_month(T0, D) -->
   iso8601_integer(T0, day_in_month, 2, D),
