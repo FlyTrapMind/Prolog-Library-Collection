@@ -49,6 +49,8 @@ See [rdf_graph.pl].
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(settings)).
 
+:- use_module(plSvg(svg_generics)).
+
 :- setting(
   border_size,
   compound,
