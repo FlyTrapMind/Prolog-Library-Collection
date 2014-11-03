@@ -50,7 +50,6 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
-:- thread_local(entry_path/1).
 :- thread_local(entry_property/2).
 
 :- meta_predicate(archive_goal(+,1)).
