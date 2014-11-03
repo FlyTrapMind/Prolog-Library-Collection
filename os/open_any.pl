@@ -17,7 +17,7 @@ Load RDF data from various sources.
 @author Jan Wielemaker
 @author Wouter Beek
 @tbd Only supports URI schemes `http` and `https`.
-@version 2014/03-2014/07, 2014/10
+@version 2014/03-2014/07, 2014/10-2014/11
 */
 
 :- use_module(library(apply)).
@@ -30,6 +30,8 @@ Load RDF data from various sources.
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
+:- use_module(generics(atom_ext)).
+:- use_module(generics(pair_ext)).
 :- use_module(os(datetime_ext)).
 
 :- predicate_options(open_any/4, 4, [

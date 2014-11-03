@@ -32,7 +32,7 @@ Predicates for loading Prolog files in the Quick Load Format (QLF).
 % @arg QlfFile The atomic name of a QLF file.
 
 compiled_file(PlFile, QlfFile):-
-  file_alternatives(PlFile, _, _, quick_load_file, QlfFile),
+  file_alternative(PlFile, _, _, quick_load_file, QlfFile),
   (   exists_file(QlfFile),
       younger_file(QlfFile, PlFile)
   ->  true
