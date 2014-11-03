@@ -5,8 +5,7 @@
                         % -Width:float
                         % -Height:float
     image_file/1, % +File:atom
-    image_file_extension/1, % ?FileExtension:atom
-    image_url/1 % +Url:url
+    image_file_extension/1 % ?FileExtension:atom
   ]
 ).
 
@@ -20,11 +19,9 @@ Support for image files.
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(process)).
-:- use_module(library(pure_input)).
 :- use_module(library(readutil)).
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(typecheck)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
