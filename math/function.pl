@@ -136,5 +136,6 @@ preimage(X, X).
 
 surjective(Function):-
   codomain(Function, Codomain),
-  image(Function, Image).
+  domain(Function, Domain),
+  image(Domain, Function, Codomain).
 

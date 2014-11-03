@@ -45,7 +45,7 @@ compiled_file(PlFile, QlfFile):-
 
 % MESSAGES
 
-:- dynamic(prolog:message//1).
+:- multifile(prolog:message//1).
 
 prolog:message(cannot_write_qlf(PlFile)) -->
   ['Cannot write to QLF, loading from ',PlFile,'.'].

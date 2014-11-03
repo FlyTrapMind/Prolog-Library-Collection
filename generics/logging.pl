@@ -53,7 +53,7 @@ logging started.
 :- use_module(os(dir_infra)).
 :- use_module(os(file_ext)).
 
-:- dynamic(Logging:current_log_file/1).
+:- dynamic(logging:current_log_file/1).
 :- dynamic(logging:current_log_stream/1).
 :- dynamic(logging:situation/1).
 

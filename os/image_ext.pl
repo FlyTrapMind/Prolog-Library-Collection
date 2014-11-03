@@ -26,8 +26,6 @@ Support for image files.
 :- use_module(generics(db_ext)).
 :- use_module(generics(typecheck)).
 
-:- use_module(plUri(uri_ext)).
-
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
 :- db_add_novel(user:prolog_file_type(gif, gif)).
@@ -82,13 +80,3 @@ image_file_extension(Ext):-
 
 image_file_extension0(Ext):-
   user:prolog_file_type(Ext, image).
-
-
-%! image_url(+Url:url) is semidet.
-% Succeeds if the given Url locates an image file.
-
-image_url(Url):-
-  is_url(Url),
-  uri_component(Url, path, Path),
-  image_file(Path).
-
