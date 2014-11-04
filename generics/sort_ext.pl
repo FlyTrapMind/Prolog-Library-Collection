@@ -5,8 +5,8 @@
                 % @Term1
                 % @Term2
     predsort_with_duplicates/3, % :Goal:atom
-                                % +List:list
-                                % -SortedList:list
+                                % +Unsorted:list
+                                % -Sorted:list
     sort/3 % +Unsorted:list
            % -Sorted:list
            % +Options:list(nvpair)
@@ -19,14 +19,14 @@ Extensions for sorting lists.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/07-2014/08
+         2014/07-2014/08, 2014/11
 */
 
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(option)).
 
-:- meta_predicate(predmerge_with_duplicates(2,+,+,-)).
-:- meta_predicate(predmerge_with_duplicates(2,+,+,+,+,+,-)).
+:- meta_predicate(merge_with_duplicates(3,+,+,-)).
+:- meta_predicate(merge_with_duplicates(3,+,+,+,+,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
@@ -37,7 +37,7 @@ Extensions for sorting lists.
 
 
 
-%! sort(+List:list, -Sorted:list, +Options:list(nvpair)) is det.
+%! sort(+Unsorted:list, -Sorted:list, +Options:list(nvpair)) is det.
 % The following options are supported:
 %   * =|duplicates(+boolean)|= Whether duplicate elements are retained
 %     in the sorted list.
@@ -72,83 +72,71 @@ sort(false, false, Unsorted, Sorted):- !,
   sort(Unsorted, Sorted).
 
 
-%! predsort_with_duplicates(
-%!    +Predicate:atom,
-%!    +UnsortedList:list,
-%!    -SortedList:list
-%! ) is det.
+
+%! predsort_with_duplicates(:Goal, +Unsorted:list, -Sorted:list) is det.
 % Variation of the standard predicate predsort/3 that does keeps any
 % duplicates (instead of removing them).
 %
-% @arg Predicate An atomic predicate name of a tertiary predicate.
-% @arg UnsortedList ...
-% @arg SortedList ...
-% @see Slight alteration of predsort/3.
+% @see predsort/3.
 
-predsort_with_duplicates(Predicate, UnsortedList, SortedList):-
-  length(UnsortedList, Length),
+predsort_with_duplicates(Goal, Unsorted, Sorted):-
+  length(Unsorted, Length),
   predsort_with_duplicates(
-    Predicate,
+    Goal,
     Length,
-    UnsortedList,
+    Unsorted,
     _,
-    SortedList
+    Sorted
   ).
 
 %! predsort_with_duplicates(
-%!   +Predicate:atom,
+%!   :Goal,
 %!   +Length:integer,
-%!   -SortedListHalf:list(term),
-%!   -UnsortedListHalf:list(term),
-%!   -SortedList:ordset(term)
+%!   -SortedHalf:list,
+%!   -UnsortedHalf:list,
+%!   -Sorted:ordset
 %! ) is det.
-% The division between =SortedListHalf1= and =UnsortedListHalf2= is defined
+% The division between =Sorted1= and =Unsorted2= is defined
 % by =Length=, which is the approximate length of both lists.
-% The =SortedListHalf= is sorted in this predicate. The
-% =UnsortedListHalf= will be sorted in the next iteration.
+% The =SortedHalf= is sorted in this predicate. The
+% =UnsortedHalf= will be sorted in the next iteration.
 %
-% @arg Predicate The atomic name of a binary semideterministic predicate.
+% @arg Goal The atomic name of a binary semideterministic predicate.
 % @arg Length An integer.
-% @arg SortedListHalf A list of terms that are already sorted.
-% @arg UnsortedListHalf A list of terms that are not yet sorted.
-% @arg SortedList An ordered set of terms.
+% @arg SortedHalf A list of terms that are already sorted.
+% @arg UnsortedHalf A list of terms that are not yet sorted.
+% @arg Sorted An ordered set of terms.
 
 % There are 2 more unsorted terms.
 predsort_with_duplicates(
-  Predicate,
+  Goal,
   2,
-  [H1,H2|TailUnsortedList],
-  TailUnsortedList,
-  SortedList
+  [H1,H2|TailUnsorted],
+  TailUnsorted,
+  Sorted
 ):- !,
   % We perform one last call to finalize the sorting.
-  call(Predicate, Delta, H1, H2),
-  sort_with_duplicates(Delta, H1, H2, SortedList).
+  call(Goal, Delta, H1, H2),
+  sort_with_duplicates(Delta, H1, H2, Sorted).
 % There is 1 more unsorted term.
-predsort_with_duplicates(
-  _Predicate,
-  1,
-  [H|UnsortedList],
-  UnsortedList,
-  [H]
-):- !.
+predsort_with_duplicates(_, 1, [H|Unsorted], Unsorted, [H]):- !.
 % There are no more unsorted terms.
-predsort_with_duplicates(_Predicate, 0, UnsortedList, UnsortedList, []):- !.
+predsort_with_duplicates(_, 0, Unsorted, Unsorted, []):- !.
 % The recursive case.
-predsort_with_duplicates(Predicate, Length, L1, L3, SortedList):-
+predsort_with_duplicates(Goal, Length, L1, L3, Sorted):-
   % Rounded division of the given length.
   HalfLength1 is Length // 2,
   plus(HalfLength1, HalfLength2, Length),
-  predsort_with_duplicates(Predicate, HalfLength1, L1, L2, Result1),
-  predsort_with_duplicates(Predicate, HalfLength2, L2, L3, Result2),
+  predsort_with_duplicates(Goal, HalfLength1, L1, L2, Sorted1),
+  predsort_with_duplicates(Goal, HalfLength2, L2, L3, Sorted2),
 
   % The two results are themselves ordered, but when put together they may
   % be not sorted anymore. This is what the merge does.
-  predmerge_with_duplicates(Predicate, Result1, Result2, SortedList).
+  merge_with_duplicates(Goal, Sorted1, Sorted2, Sorted).
 
 
 
-% Helpers.
+% HELPERS
 
 %! i(?Order1, ?Order2) is nondet.
 % Inverter of order relations.
@@ -160,6 +148,8 @@ predsort_with_duplicates(Predicate, Length, L1, L3, SortedList):-
 i(<, >).
 i(>, <).
 i(=, =).
+
+
 
 %! icompare(?InvertedOrder, @Term1, @Term2) is det.
 % Determine or test the order between two terms in the inversion of the
@@ -179,48 +169,57 @@ icompare(InvertedOrder, Term1, Term2):-
   i(Order, InvertedOrder).
 
 
-%! predmerge_with_duplicates(+Predicate, +List1, +List2, -Solution)
-% Merges the given lists based on the given sort predicate.
-% @precondition It is assumed that both lists are themselves sorted.
-% @arg Predicate The sort predicate. It should be tertiary, of the form
-% <{ <, =, > }, Element1, Element2>.
-%
-% @arg List1 An ordered list.
-% @arg List2 An ordered list.
-% @arg Solution An ordered list.
 
-predmerge_with_duplicates(_Predicate, [], MergeResult, MergeResult):- !.
-predmerge_with_duplicates(_Predicate, MergeResult, [], MergeResult):- !.
-predmerge_with_duplicates(Predicate, [H1 | T1], [H2 | T2], Result):-
-  call(Predicate, Delta, H1, H2),
-  predmerge_with_duplicates(Delta, Predicate, H1, H2, T1, T2, Result).
+%! merge_with_duplicates(
+%!   :Goal,
+%!   +Sorted1:list,
+%!   +Sorted2:list,
+%!   -Sorted:list
+%! ) is det.
+% Merges the given two sorted lists into a single sorted list,
+% according to the given sorting Goal.
+% 
+% Notice that the sort predicate is tertiary, i.e., of the following form:
+% ~~~
+% Goal({<|=|>},Element1,Element2)
+% ~~~
 
-%! predmerge_with_duplicates(
-%!   +Delta,
-%!   +Predicate,
-%!   +ElementHalf1,
-%!   +ElementHalf2,
-%!   +SortedListHalf1,
-%!   +SortedListHalf2,
-%!   -SortedList
+merge_with_duplicates(_, [], Sorted, Sorted):- !.
+merge_with_duplicates(_, Sorted, [], Sorted):- !.
+merge_with_duplicates(Goal, [H1|T1], [H2|T2], Sorted):-
+  call(Goal, Delta, H1, H2),
+  merge_with_duplicates(Delta, Goal, H1, H2, T1, T2, Sorted).
+
+%! merge_with_duplicates(
+%!   +Delta:oneof([<,=,>]),
+%!   :Goal,
+%!   +Element1,
+%!   +Element2,
+%!   +Sorted1:list,
+%!   +Sorted2:list,
+%!   -Sorted:list
 %! ) is det.
 
 % H1 > H2, so place H2 in front of the result, and run again with H1.
-predmerge_with_duplicates(>, Predicate, H1, H2, T1, T2, [H2 | Result]):-
-  predmerge_with_duplicates(Predicate, [H1 | T1], T2, Result).
+merge_with_duplicates(>, Goal, H1, H2, T1, T2, [H2|Sorted]):-
+  merge_with_duplicates(Goal, [H1|T1], T2, Sorted).
 % H1 = H2, so place both H1 and H2 in the result (the order does not matter).
-predmerge_with_duplicates(=, Predicate, H1, H2, T1, T2, [H1, H2 | Result]):-
-  predmerge_with_duplicates(Predicate, T1, T2, Result).
+merge_with_duplicates(=, Goal, H1, H2, T1, T2, [H1,H2|Sorted]):-
+  merge_with_duplicates(Goal, T1, T2, Sorted).
 % H1 < H2, so place H1 in front of the result, and run again with H2.
+merge_with_duplicates(<, Goal, H1, H2, T1, T2, [H1|Sorted]):-
+  merge_with_duplicates(Goal, T1, [H2|T2], Sorted).
 
-predmerge_with_duplicates(<, Predicate, H1, H2, T1, T2, [H1 | Result]):-
-  predmerge_with_duplicates(Predicate, T1, [H2 | T2], Result).
 
 
-%! sort_with_duplicates(+Delta, +Element1, +Element2, -SortedList:list)
+%! sort_with_duplicates(
+%!   +Delta:oneof([<,=,>]),
+%!   +Element1,
+%!   +Element2,
+%!   -Sorted:list
+%! ) is det.
 % Returns the sorted list of the two given elements according to Delta.
 
 sort_with_duplicates(<, H1, H2, [H1,H2]).
 sort_with_duplicates(=, H1, H2, [H1,H2]).
 sort_with_duplicates(>, H1, H2, [H2,H1]).
-
