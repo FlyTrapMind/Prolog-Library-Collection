@@ -37,7 +37,7 @@ file_lines(File, NumberOfLines):-
 
 
 
-%! split_into_smaller_files(BigFile, OutputDir, Prefix):-
+%! split_into_smaller_files(BigFile, OutputDir, Prefix) is det.
 
 split_into_smaller_files(BigFile, OutputDir, Prefix):-
   % Split the big file by byte size into small files.

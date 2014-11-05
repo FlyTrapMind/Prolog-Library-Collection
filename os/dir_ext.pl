@@ -41,7 +41,6 @@ Extensions for handling directories.
 :- use_module(library(option)).
 
 :- use_module(generics(lambda_meta)).
-:- use_module(generics(option_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(safe_file)).
 :- use_module(pl(pl_control)).
@@ -62,7 +61,8 @@ is_meta(order).
      file_types(+list(atom)),
      include_directories(+boolean),
      include_self(+boolean),
-     order(+oneof([lexicographic]))
+     order(+oneof([lexicographic])),
+     recursive(+boolean)
    ]).
 
 
@@ -211,18 +211,18 @@ delete_directory(File, Options):-
 
 directory_files(Dir, Files4, Options1):-
   meta_options(is_meta, Options1, Options2),
-  
+
   % Note that the list of files is *not* ordered!
   directory_files(Dir, New1),
-  
+
   % Remove `.` and `..`.
   exclude(nonfile_entry, New1, New2),
-  
+
   % Make the file names absolute.
   maplist(directory_file_path(Dir), New2, New3),
-  
+
   partition(exists_directory, New3, NewDirectories, NewFiles1),
-  
+
   % Filter based on a list of file types, if given.
   (   option(file_types(FileTypes), Options2)
   ->  include(
@@ -235,11 +235,11 @@ directory_files(Dir, Files4, Options1):-
       )
   ;   NewFiles2 = NewFiles1
   ),
-  
+
   % Make sure the `include_self` option is excluded from
   % the processing of subdirectories.
   select_option(include_self(IncludeSelf), Options2, Options3, false),
-  
+
   % Include directories and files from deeper recursion levels.
   (   option(recursive(true), Options3)
   ->  maplist(
@@ -262,7 +262,7 @@ directory_files(Dir, Files4, Options1):-
   ->  Files3 = [Dir|Files2]
   ;   Files3 = Files2
   ),
-  
+
   % Apply requested ordering.
   option(order(Order), Options3, =),
   call(Order, Files3, Files4).

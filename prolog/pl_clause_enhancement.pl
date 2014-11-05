@@ -31,21 +31,15 @@ pl_clause_enhancement(AddTypecheck, AddDeterminism, Clause, Clauses):-
   \+ member(Module, [pl_clause_enhancement,pl_determinism,pl_typecheck]),
 
   % Add typechecking.
-  (
-    AddTypecheck == true
-  ->
-    add_typecheck(Clause, TypecheckedClause)
-  ;
-    TypecheckedClause = Clause
+  (   AddTypecheck == true
+  ->  add_typecheck(Clause, TypecheckedClause)
+  ;   TypecheckedClause = Clause
   ),
 
   % Add determinism.
-  (
-    AddDeterminism == true
-  ->
-    add_determinism(TypecheckedClause, Clauses)
-  ;
-    Clauses = [TypecheckedClause]
+  (   AddDeterminism == true
+  ->  add_determinism(TypecheckedClause, Clauses)
+  ;   Clauses = [TypecheckedClause]
   ).
 
 user:term_expansion(Clause, Clauses):-
