@@ -4,7 +4,7 @@
     atom_to_value/3, % +Atom
                      % +Type
                      % -Value
-    is_url/1, % +Url:url
+    is_uri/1, % +Uri:atom
     negative_float/1, % @Term
     negative_integer/1, % @Term
     nonneg/1, % @Term
@@ -159,10 +159,11 @@ error:has_type(or(Types), Term):-
 error:has_type(term, _).
 
 
-%! is_url(+Url:url) is semidet.
+%! is_uri(+Uri:atom) is semidet.
 
-is_url(Url):-
-  uri_components(Url, uri_components(Scheme,_,_,_,_)),
+is_uri(Uri):-
+  uri_components(Uri, UriComponents),
+  uri_data(scheme, UriComponents, Scheme),
   nonvar(Scheme),
   memberchk(Scheme, [ftp,http,https]).
 
