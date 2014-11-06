@@ -27,7 +27,7 @@ For `:` we assume the type is `any`.
 
 @author Michael Hendrix
 @author Wouter Beek
-@version 2014/08
+@version 2014/08, 2014/11
 */
 
 :- use_module(library(apply)).
@@ -58,10 +58,14 @@ For `:` we assume the type is `any`.
 % Builds a goal which asserts all types associated with the given head.
 
 add_typecheck(Clause, TypecheckedClause):-
-  clause_to_mode_terms(Clause, ModeTerms),
-  maplist(mode_term_to_arguments, ModeTerms, ArgDs),
-  build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
-  build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause).
+gtrace,
+  forall(
+    mode(Clause, Mode),
+    (
+      build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
+      build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause)
+    )
+  ).
 
 
 %! build_clause(
