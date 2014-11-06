@@ -176,7 +176,7 @@ archive_goal(File, Goal):-
     close(Read)
   ).
 archive_goal(Url, Goal):-
-  is_url(Url), !,
+  is_uri(Url), !,
   setup_call_cleanup(
     http_open(Url, Read, []),
     archive_goal0(Read, Goal),
@@ -196,7 +196,7 @@ archive_goal(File, Goal, Arg1):-
     close(Read)
   ).
 archive_goal(Url, Goal, Arg1):-
-  is_url(Url), !,
+  is_uri(Url), !,
   setup_call_cleanup(
     http_open(Url, Read, []),
     archive_goal0(Read, Goal, Arg1),
@@ -216,7 +216,7 @@ archive_goal(File, Goal, Arg1, Arg2):-
     close(Read)
   ).
 archive_goal(Url, Goal, Arg1, Arg2):-
-  is_url(Url), !,
+  is_uri(Url), !,
   setup_call_cleanup(
     http_open(Url, Read, []),
     archive_goal0(Read, Goal, Arg1, Arg2),
@@ -381,7 +381,7 @@ source_directory_name(File, Dir):-
   is_absolute_file_name(File), !,
   file_directory_name(File, Dir).
 source_directory_name(Url, Dir):-
-  is_url(Url), !,
+  is_uri(Url), !,
   rdf_atom_md5(Url, 1, Md5),
   create_directory(data, [Md5], Dir).
 
