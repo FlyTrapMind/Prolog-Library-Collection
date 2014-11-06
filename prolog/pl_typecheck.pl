@@ -34,6 +34,7 @@ For `:` we assume the type is `any`.
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(pldoc)).
 
+:- use_module(library(pldoc/doc_modes)).
 :- use_module(library(pldoc/doc_process)).
 :- use_module(library(pldoc/doc_wiki)).
 
@@ -56,14 +57,15 @@ For `:` we assume the type is `any`.
 % Builds a goal which asserts all types associated with the given head.
 
 add_typecheck(Clause, TypecheckedClause):-
-gtrace,
-  forall(
+  findall(
+    Mode,
     mode(Clause, Mode),
-    (
-      build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
-      build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause)
-    )
-  ).
+    Modes
+  ),
+	(Modes \== [] -> gtrace ; true),
+  maplist(mode_term_to_arguments, Modes, ArgDs),
+  build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
+  build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause).
 
 
 %! build_clause(
