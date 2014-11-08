@@ -9,6 +9,8 @@
     atom_truncate/3, % +Atom:atom
                      % +MaximumLength:integer
                      % -TruncatedAtom:atom
+    codes_atom/2, % ?Codes:list(nonneg)
+                  % ?Atom:atom
     common_atom_prefix/3, % +Atom1:atom
                           % +Atom2:atom
                           % -Prefix:atom
@@ -43,7 +45,7 @@
   ]
 ).
 
-/** <module> Atom extensions
+/** <module> Atom: Extensions
 
 Predicates for manipulating atoms.
 
@@ -89,8 +91,8 @@ Titlecase atoms can be created using upcase_atom/2.
 --
 
 @author Wouter Beek
-@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04, 2014/08,
-         2014/10
+@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04,
+         2014/08, 2014/10-2014/11
 */
 
 :- use_module(library(apply)).
@@ -119,6 +121,7 @@ atom_splits(Splits, Atom1, [H|T]):-
 atom_splits(_, Subatom, [Subatom]).
 
 
+
 %! atom_to_term(+Atom:atom, -Term:term) is det.
 % Returns the term described by the atom.
 %
@@ -128,6 +131,7 @@ atom_splits(_, Subatom, [Subatom]).
 
 atom_to_term(Atom, Term):-
   atom_to_term(Atom, Term, _Bindings).
+
 
 
 %! atom_truncate(
@@ -163,6 +167,16 @@ atom_truncate(A1, Max, A3):-
   atom_concat(A2, ' ...', A3).
 
 
+
+%! codes_atom(+Codes:list(nonneg), +Atom:atom) is semidet.
+%! codes_atom(+Codes:list(nonneg), -Atom:atom) is det.
+%! codes_atom(-Codes:list(nonneg), +Atom:atom) is det.
+
+codes_atom(Codes, Atom):-
+  atom_codes(Atom, Codes).
+
+
+
 %! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is semidet.
 %! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is nondet.
 % Returns the longest common prefix of the given two atoms.
@@ -171,6 +185,7 @@ common_atom_prefix(Atom1, Atom2, Prefix):-
   maplist(atom_codes, [Atom1,Atom2], [Codes1,Codes2]),
   common_list_prefix(Codes1, Codes2, PrefixCodes),
   atom_codes(Prefix, PrefixCodes).
+
 
 
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
@@ -184,6 +199,7 @@ common_atom_prefix(Atom1, Atom2, Prefix):-
 first_split(Atom, Split, FirstSubatom):-
   atom_concat(Subatom, _, Atom),
   atom_concat(FirstSubatom, Split, Subatom).
+
 
 
 %! format_integer(+Integer:integer, +Length:integer, -Atom:atom) is det.
@@ -204,6 +220,7 @@ format_integer(I, L, Out):-
   ZeroLength is L - IL,
   repeating_atom('0', ZeroLength, Zeros),
   atomic_concat(Zeros, I, Out).
+
 
 
 %! new_atom(+Old:atom, -New:atom) is det.
@@ -229,6 +246,7 @@ new_atom(A1, A2):-
   atomic_list_concat(NewSplits, '_', A2).
 
 
+
 %! progress_bar(+Current:integer, End:integer, ProgressBar:atom) is det.
 % Returns an atomic progress bar that displays the current value
 %  onto a scale that runs from `1` to the given end value.
@@ -244,20 +262,14 @@ progress_bar(Current, End, ProgressBar):-
   progress_bar_(Current, End, ProgressBar).
 
 progress_bar_(Current1, End, ProgressBar):-
-  (
-     End =:= 0
-  ->
-     Percentage = 100
-  ;
-     Percentage is round(Current1 / End * 100)
+  (   End =:= 0
+  ->  Percentage = 100
+  ;   Percentage is round(Current1 / End * 100)
   ),
   format_integer(Percentage, 3, Percentage1),
-  (
-     End =:= 0
-  ->
-    Progress = 10
-  ;
-    Progress is round(Current1 / (End / 10))
+  (   End =:= 0
+  ->  Progress = 10
+  ;   Progress is round(Current1 / (End / 10))
   ),
   atom_number(EndAtom, End),
   atom_length(EndAtom, EndLength),
@@ -270,6 +282,7 @@ progress_bar_(Current1, End, ProgressBar):-
     '~w% ~w~w (~w/~w)',
     [Percentage1, Bar, NonBar, Current2, End]
   ).
+
 
 
 %! repeating_atom(+SubAtom:atom, +Repeats:integer, -Atom:atom) is det.
@@ -287,6 +300,7 @@ repeating_atom(SubAtom, Repeats, Atom):-
   NewRepeats is Repeats - 1,
   repeating_atom(SubAtom, NewRepeats, Atom1),
   atomic_concat(Atom1, SubAtom, Atom).
+
 
 
 %! split_atom_length(
@@ -309,6 +323,7 @@ split_atom_length(A1, L, [H|T]):-
   atom_concat(H, A2, A1),
   split_atom_length(A2, L, T).
 split_atom_length(A, _, [A]).
+
 
 
 %! strip_atom(+Strips:list(atom), +In:atom, -Out:atom) is det.
@@ -337,6 +352,7 @@ strip_atom_end(Strips, A1, A3):-
   atom_concat(A2, Strip, A1), !,
   strip_atom_end(Strips, A2, A3).
 strip_atom_end(_, A, A).
+
 
 
 %! to_atom(

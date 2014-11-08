@@ -15,8 +15,16 @@
                                 % ?Weight:between(0,15)
     radix/2, % +From:compound
              % ?To:compound
+    weights_binary//2, % ?Weights:list(between(0,15))
+                       % ?Binary:nonneg
+    weights_decimal//2, % ?Weights:list(between(0,15))
+                        % ?Decimal:nonneg
     weights_fraction/2, % +Weights:list(between(0,9))
                         % -Fraction:between(0.0,1.0)
+    weights_hexadecimal//2, % ?Weights:list(between(0,15))
+                            % ?Hexadecimal:atom
+    weights_octal//2, % ?Weights:list(between(0,15))
+                      % ?Octal:nonneg
     weights_radix/2 % ?Weights:list(between(0,15))
                     % ?Number:compound
   ]
@@ -175,6 +183,22 @@ radix(From, To):-
 
 
 
+%! weights_binary(+Weights:list(between(0,15)), -Binary:nonneg) is det.
+%! weights_binary(-Weights:list(between(0,1)), +Binary:nonneg) is det.
+
+weights_binary(Weights, Binary):-
+  weights_radix(Weights, bin(Binary)).
+
+
+
+%! weights_decimal(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
+%! weights_decimal(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
+
+weights_decimal(Weights, Decimal):-
+  weights_radix(Weights, dec(Decimal)).
+
+
+
 %! weights_fraction(
 %!   +Weights:list(between(0,9)),
 %!   -Fraction:between(0.0,1.0)
@@ -189,6 +213,22 @@ weights_fraction(Weights, Fraction):-
     ),
     Fraction
   ).
+
+
+
+%! weights_hexadecimal(+Weights:list(between(0,15)), -Hexadecimal:atom) is det.
+%! weights_hexadecimal(-Weights:list(between(0,15)), +Hexadecimal:atom) is det.
+
+weights_hexadecimal(Weights, Hexadecimal):-
+  weights_radix(Weights, hex(Hexadecimal)).
+
+
+
+%! weights_octal(+Weights:list(between(0,15)), -Octal:nonneg) is det.
+%! weights_octal(-Weights:list(between(0,7)), +Octal:nonneg) is det.
+
+weights_octal(Weights, Octal):-
+  weights_radix(Weights, oct(Octal)).
 
 
 
