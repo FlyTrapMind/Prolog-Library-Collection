@@ -15,6 +15,8 @@
                                 % ?Weight:between(0,15)
     radix/2, % +From:compound
              % ?To:compound
+    weights_fraction/2, % +Weights:list(between(0,9))
+                        % -Fraction:between(0.0,1.0)
     weights_radix/2 % ?Weights:list(between(0,15))
                     % ?Number:compound
   ]
@@ -26,7 +28,7 @@ Predicate for transforming numbers between
 positional notations of different radix.
 
 @author Wouter Beek
-@version 2013/07-2013/08, 2014/09-2014/10
+@version 2013/07-2013/08, 2014/09-2014/11
 */
 
 :- use_module(library(aggregate)).
@@ -170,6 +172,23 @@ radix(From, To):-
   ;   To =.. [ToRadix,ToValue]
 	),
   from_decimal(Decimal, ToRadix, ToValue).
+
+
+
+%! weights_fraction(
+%!   +Weights:list(between(0,9)),
+%!   -Fraction:between(0.0,1.0)
+%! ) is det.
+
+weights_fraction(Weights, Fraction):-
+  aggregate_all(
+    sum(N),
+    (
+      nth1(Index, Weights, Weight),
+      N is Weight * 10 ** (-1 * Index)
+    ),
+    Fraction
+  ).
 
 
 
