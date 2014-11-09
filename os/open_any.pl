@@ -237,6 +237,8 @@ open_input(stream(Out), Out, stream{stream:Out}, false, _):-
 % A3. URI Components: opens files and URLs.
 % @compat Only supports URLs with schemes `http` or `https`.
 open_input(UriComponents, Out, Metadata, Close, Options1):-
+  Method = get,
+  
   UriComponents = uri_components(Scheme,Authority,_,_,_), !,
 
   % Make sure the URL may be syntactically correct,
@@ -261,20 +263,34 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
           header('ETag', _),
           header('Expires', _),
           header('Last-Modified', _),
-          header('Server', _)
+          header('Server', _),
+          header('Transfer-Encoding', _)
       ],
-      merge_options([status_code(Code)|Headers1], Options1, Options2),
+      merge_options(
+        [method(Method),status_code(StatusCode)|Headers1],
+        Options1,
+        Options2
+      ),
       http_open(Uri, Out, Options2),
+      
       % Exclude headers that did not occur in the HTTP response.
       exclude(empty_header, Headers1, Headers2),
+      
       % Convert headers to JSON-compatible pairs.
       maplist(header_json, Headers2, Headers3),
+      
       % HTTP header JSON object.
       dict_pairs(HeadersDict, json, Headers3),
+      
       % HTTP status.
-      http_header:status_number_fact(ReasonKey, Code),
+      http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase),
-      dict_pairs(StatusDict, json, [code-Code,'reason-phrase'-ReasonPhrase]),
+      dict_pairs(
+        StatusDict,
+        json,
+        [code-StatusCode,'reason-phrase'-ReasonPhrase]
+      ),
+      
       % HTTP response/request dictionary.
       dict_pairs(
         Metadata,
@@ -348,10 +364,95 @@ open_input(Input, _, _, _, _):-
 
 % HELPERS
 
+/* Body length (RFC 7230)
+      % Determine message body length.
+      (   option(body_length(BodyLength), Options1)
+      ->  body_length(
+            Method,
+            StatusCode,
+            TransferEncoding,
+            ContentLength,
+            BodyLength
+          )
+      ;   true
+      ),
+
+%! body_length(
+%!   +Method:oneof([connect,get,head,options,post,put]),
+%!   +StatusCode:between(100,599),
+%!   ?TransferEncoding:atom,
+%!   ?ContentLength:atom,
+%!   -BodyLength:nonneg
+%! ) is det.
+% @tbd If a Transfer-Encoding header field is present and the chunked
+%      transfer coding (Section 4.1) is the final encoding, the message
+%      body length is determined by reading and decoding the chunked
+%      data until the transfer coding indicates the data is complete.
+% @tbd If a Transfer-Encoding header field is present in a response and
+%      the chunked transfer coding is not the final encoding, the
+%      message body length is determined by reading the connection until
+%      it is closed by the server.  If a Transfer-Encoding header field
+%      is present in a request and the chunked transfer coding is not
+%      the final encoding, the message body length cannot be determined
+%      reliably; the server MUST respond with the 400 (Bad Request)
+%      status code and then close the connection.
+% @tbd If a message is received with both a Transfer-Encoding and a
+%      Content-Length header field, the Transfer-Encoding overrides the
+%      Content-Length.  Such a message might indicate an attempt to
+%      perform request smuggling (Section 9.5) or response splitting
+%      (Section 9.4) and ought to be handled as an error.  A sender MUST
+%      remove the received Content-Length field prior to forwarding such
+%      a message downstream.
+% @tbd If a message is received without Transfer-Encoding and with
+%      either multiple Content-Length header fields having differing
+%      field-values or a single Content-Length header field having an
+%      invalid value, then the message framing is invalid and the
+%      recipient MUST treat it as an unrecoverable error.
+%      If this is a response message received by a user agent,
+%      the user agent MUST close the connection to the server
+%      and discard the received response.
+
+% Any response to a HEAD request and any response with a 1xx
+% (Informational), 204 (No Content), or 304 (Not Modified) status
+% code is always terminated by the first empty line after the
+% header fields, regardless of the header fields present in the
+% message, and thus cannot contain a message body.
+body_length(head, _, _, _, 0):- !.
+body_length(_, StatusCode, _, _, 0):-
+  between(100, 199, StatusCode), !.
+body_length(_, 204, _, _, 0):- !.
+body_length(_, 304, _, _, 0):- !.
+% Any 2xx (Successful) response to a CONNECT request implies that
+% the connection will become a tunnel immediately after the empty
+% line that concludes the header fields.  A client MUST ignore any
+% Content-Length or Transfer-Encoding header fields received in
+% such a message.
+body_length(connect, StatusCode, _, _, 0):-
+  between(200, 299, StatusCode), !.
+% If a valid Content-Length header field is present without
+% Transfer-Encoding, its decimal value defines the expected message
+% body length in octets.  If the sender closes the connection or
+% the recipient times out before the indicated number of octets are
+% received, the recipient MUST consider the message to be
+% incomplete and close the connection.
+body_length(_, _, TransferEncoding, ContentLength, Length):-
+  var(TranferEncoding),
+  integer(ContentLength), !,
+  Length = ContentLength.
+% Otherwise, this is a response message without a declared message
+% body length, so the message body length is determined by the
+% number of octets received prior to the server closing the
+% connection.
+body_length(_, _, _, _, _).
+*/
+
+
+
 %! empty_header(+Header:compound) is semidet.
 % Succeeds for HTTP headers with empty value.
 
 empty_header(header(_,'')).
+
 
 
 %! header_json(+Header:compound, -ConvertedHeader:pair) is det.
@@ -359,6 +460,7 @@ empty_header(header(_,'')).
 
 header_json(header(Key,Value1), Key-Value2):-
   header_value_json(Key, Value1, Value2).
+
 
 
 %! header_value_json(+Key:atom, +Value:atom, -ConvertedValue) is det.
@@ -384,6 +486,7 @@ header_value_json(Key, Atom, Dict):-
 header_value_json(_, Atom, Atom).
 
 
+
 %! media_type_parameter(+Atom:atom, -Parameter:pair) is det.
 
 media_type_parameter(Parameter0, Name-Value):-
@@ -391,11 +494,13 @@ media_type_parameter(Parameter0, Name-Value):-
   atomic_list_concat([Name,Value], '=', Parameter).
 
 
+
 %! http_scheme(+Scheme:atom) is semidet.
 %! http_scheme(-Scheme:atom) is multi.
 
 http_scheme(http).
 http_scheme(https).
+
 
 
 %! wrap_filter(+FilterName:atom, -FilterTerm:compound) is det.
