@@ -1,8 +1,8 @@
 :- module(
   string_ext,
   [
-    codes_atom/2, % ?Codes:list(nonneg)
-                  % ?Atom:atom
+    codes_string/2, % ?Codes:list(nonneg)
+                    % ?String:string
     string_list_concat/3 % ?Strings:list(string)
                          % ?Separator:string
                          % ?String:string
@@ -21,11 +21,11 @@ Additional support for strings in SWI-Prolog.
 
 
 
-%! codes_atom(+Codes:list(nonneg), +Atom:atom) is semidet.
-%! codes_atom(+Codes:list(nonneg), -Atom:atom) is det.
-%! codes_atom(-Codes:list(nonneg), +Atom:atom) is det.
+%! codes_string(+Codes:list(nonneg), +String:string) is semidet.
+%! codes_string(+Codes:list(nonneg), -String:string) is det.
+%! codes_string(-Codes:list(nonneg), +String:string) is det.
 
-codes_atom(Codes, Atom):-
+codes_string(Codes, Atom):-
   atom_codes(Atom, Codes).
 
 
