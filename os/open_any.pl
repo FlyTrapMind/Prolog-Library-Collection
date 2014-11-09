@@ -238,7 +238,7 @@ open_input(stream(Out), Out, stream{stream:Out}, false, _):-
 % @compat Only supports URLs with schemes `http` or `https`.
 open_input(UriComponents, Out, Metadata, Close, Options1):-
   Method = get,
-  
+
   UriComponents = uri_components(Scheme,Authority,_,_,_), !,
 
   % Make sure the URL may be syntactically correct,
@@ -272,25 +272,26 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
         Options2
       ),
       http_open(Uri, Out, Options2),
-      
+
       % Exclude headers that did not occur in the HTTP response.
       exclude(empty_header, Headers1, Headers2),
-      
+
       % Convert headers to JSON-compatible pairs.
       maplist(header_json, Headers2, Headers3),
-      
+
       % HTTP header JSON object.
       dict_pairs(HeadersDict, json, Headers3),
-      
+
       % HTTP status.
       http_header:status_number_fact(ReasonKey, StatusCode),
-      phrase(http_header:status_comment(ReasonKey), ReasonPhrase),
+      phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),
+      atom_codes(ReasonPhrase, ReasonPhrase0),
       dict_pairs(
         StatusDict,
         json,
         [code-StatusCode,'reason-phrase'-ReasonPhrase]
       ),
-      
+
       % HTTP response/request dictionary.
       dict_pairs(
         Metadata,
@@ -469,9 +470,9 @@ header_json(header(Key,Value1), Key-Value2):-
 header_value_json('Content-Length', Atom, Number):- !,
   atom_number(Atom, Number).
 header_value_json('Content-Type', Atom, Dict):- !,
-  atomic_list_concat([Type|Parameters0], ';', Atom),
+  atomic_list_concat([Type0|Parameters0], ';', Atom),
   maplist(media_type_parameter, Parameters0, Parameters),
-  atomic_list_concat([Type,Subtype], '/', Type),
+  atomic_list_concat([Type,Subtype], '/', Type0),
   maplist(json_pair, Parameters, ParameterDicts),
   dict_pairs(
     Dict,
