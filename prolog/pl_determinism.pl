@@ -95,13 +95,13 @@ mode_term_to_determinism(_, nondet).
 %
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- xfy_list(',', (a,b,c), L).
 % L = [a, b, c].
 %
 % ?- xfy_list(Op, 4^3^2, [4,3,2]).
 % Op = (^).
-% ~~~
+% ```
 
 xfy_list(Op, Term, [Left|List]):-
   Term =.. [Op,Left,Right],

@@ -131,16 +131,13 @@ average(Numbers, Average):-
 % Like ISO between/3, but allowing either `Low` or `High`
 % to be uninstantiated.
 %
-% ### Booundary arguments
-%
-% In some cases it is difficult to call this predicate with uninstantiated
-% boundary arguments, e.g. when these are set by setting/2.
-% For such cases, we allow the boundaries to be `minf` and `inf`,
-% respectively.
+%	We allow `Low` to be instantiated to `minf` and `High` to be
+%	instantiated to `inf`. In these cases, their values are replaced by
+%	fresh variables.
 
 betwixt(Low1, High1, Value):-
-  (Low1 == minf -> true ; Low2 = Low1),
-  (High1 == inf -> true ; High2 = High1),
+	betwixt_lower_bound(Low1, Low2),
+	betwixt_higher_bound(High1, High2),
   betwixt0(Low2, High2, Value).
 
 % Instantiation error: at least one bound must be present.
@@ -164,13 +161,20 @@ betwixt0(Low, High, Value):-
 
 betwixt_high(_, Value, _, Value).
 betwixt_high(Low, Between1, High, Value):-
-  Between2 is Between1 - 1,
+  succ(Between2, Between1),
   betwixt_high(Low, Between2, High, Value).
+
+betwixt_higher_bound(inf, _):- !.
+betwixt_higher_bound(High, High).
 
 betwixt_low(_, Value, _, Value).
 betwixt_low(Low, Between1, High, Value):-
-  Between2 is Between1 + 1,
+  succ(Between1, Between2),
   betwixt_low(Low, Between2, High, Value).
+
+betwixt_lower_bound(minf, _):- !.
+betwixt_lower_bound(Low, Low).
+
 
 
 binomial_coefficient(M, N, BC):-
@@ -404,11 +408,11 @@ multiply_list([H|T], M2):-
 %! ) is det.
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- number_integer_parts(-1.5534633204, X, Y).
 % X = -1,
 % Y = -5534633204.
-% ~~~
+% ```
 %
 % @throws domain_error If `Fractional` is not nonneg.
 

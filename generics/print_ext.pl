@@ -18,9 +18,9 @@ Predicates for printing.
 ## Proof
 
 A datatype of the following form:
-~~~{.pl}
+```prolog
 proof(Conclusion, Premises)
-~~~
+```
 
 @author Wouter Beek
 @tbd Remove all predicate variants that have an `Out` parameter.

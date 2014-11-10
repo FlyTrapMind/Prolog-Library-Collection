@@ -284,9 +284,10 @@ directory_subdirectories(Dir1, Subdirs):-
   ->  relative_file_name(Dir1, '/', Dir2)
   ;   nonvar(Subdirs)
   ->  Dir2 = Dir1
-  ;   instantiation_error(_)
   ),
   atomic_list_concat(Subdirs, '/', Dir2).
+directory_subdirectories(_, _):-
+  instantiation_error(_).
 
 
 

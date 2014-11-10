@@ -189,15 +189,15 @@ pair_second(X-_, X).
 % ### Example
 %
 % The following pairs:
-% ~~~
+% ```
 % <a,b>
 % <a,c>
 % <d,e>
-% ~~~
+% ```
 % result in the following set:
-% ~~~
+% ```
 % {a,b,c,d,e}
-% ~~~
+% ```
 
 pairs_to_set(Pairs, Members):-
   pairs_keys_values(Pairs, Keys1, Values1),
@@ -213,15 +213,15 @@ pairs_to_set(Pairs, Members):-
 % ### Example
 %
 % The following pairs:
-% ~~~
+% ```
 % <a,b>
 % <a,c>
 % <d,e>
-% ~~~
+% ```
 % result in the following sets:
-% ~~~
+% ```
 % {{a,b,c},{d,e}}
-% ~~~
+% ```
 
 pairs_to_sets(Pairs, Sets):-
   pairs_to_sets(Pairs, [], Sets).

@@ -112,10 +112,10 @@ reset_memo:-
 % the original ordering of elements to be retained
 % in case the `Ordering` argument is not instantiated.
 %
-% ~~~{.pl}
+% ```prolog
 % default(=, Ordering),
 % once(call(Ordering, Elements1, Elements2))
-% ~~~
+% ```
 
 default(_, X):-
   nonvar(X), !.
@@ -134,11 +134,11 @@ default(X, X).
 % but also allows the start node to be uninstantiated, instantiating it
 % to a randomly chosen start node.
 %
-% ~~~{.pl}
+% ```prolog
 % graph_traversal(StartNode):-
 %   default_goal(random_start_node, StartNode),
 %   ...
-% ~~~
+% ```
 
 default_goal(_, X):-
   ground(X), !.

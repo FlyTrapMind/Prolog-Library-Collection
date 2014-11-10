@@ -166,7 +166,7 @@ append_intersperse([H|T1], S, [H,S|T2]):-
 %
 % # Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- before(X, Y, [a,b,c]).
 % X = a,
 % Y = b ;
@@ -175,7 +175,7 @@ append_intersperse([H|T1], S, [H,S|T2]):-
 % X = a,
 % Y = c ;
 % false.
-% ~~~
+% ```
 
 before(X, Y, L):-
   nextto(X, Y, L).
@@ -190,7 +190,7 @@ before(X, Y, L):-
 %
 % ## Example
 %
-% ~~~
+% ```
 % ?- combination([[1,2,3],[4,5]], C).
 % C = [1, 4] ;
 % C = [1, 5] ;
@@ -198,7 +198,7 @@ before(X, Y, L):-
 % C = [2, 5] ;
 % C = [3, 4] ;
 % C = [3, 5].
-% ~~~
+% ```
 %
 % @arg Lists A list of lists of terms.
 % @arg Combination A list of terms.
@@ -477,10 +477,10 @@ random_sublist([H|Sublist], SublistLength1, List1):-
 %
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- remove_sublists([[a],[a,b],[a,b]], Ls).
 % Ls = [[a, b], [a, b]].
-% ~~~
+% ```
 
 remove_sublists(Ls1, Ls3):-
   select(SubL, Ls1, Ls2),
@@ -532,23 +532,23 @@ repeating_list(_, Reps, _):-
 % ## Examples
 %
 % Consecutive applications:
-% ~~~
+% ```
 % ?- L1 = [[1,2,3],[4,5,6],[7,8,9]], replace_nth0(1, L1, E1, E2, L2), replace_nth0(2, E1, 6, a, E2).
 % L1 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
 % E1 = [4, 5, 6],
 % E2 = [4, 5, a],
 % L2 = [[1, 2, 3], [4, 5, a], [7, 8, 9]].
-% ~~~
+% ```
 %
 % Alternative indexes:
-% ~~~
+% ```
 % ?- list_ext:replace_nth1(I, [a,b,a], a, x, L2).
 % I = 1,
 % L2 = [x, b, a] ;
 % I = 3,
 % L2 = [a, b, x] ;
 % false.
-% ~~~
+% ```
 %
 % @author Jan Wielemaker
 % @author Richard O'Keefe

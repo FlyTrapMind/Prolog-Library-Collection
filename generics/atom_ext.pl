@@ -58,7 +58,7 @@ In-atom replacements can best be made using DCGs.
 This requires the atom to be translated to/from a list of numeric codes.
 For example, escaping spaces and grave accent (e.g. in URIs):
 
-~~~{.pl}
+```prolog
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
 :- use_module(plDcg(dcg_replace)).
@@ -68,7 +68,7 @@ dcg_phrase(
   AtomIn,
   AtomOut
 )
-~~~
+```
 
 # Split
 
@@ -191,10 +191,10 @@ common_atom_prefix(Atom1, Atom2, Prefix):-
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
 % Returns the first split.
 % For the first result this is behaviorally equivalent to:
-% ~~~{.pl}
+% ```prolog
 % atomic_list_concat(Subatoms, Split, Atom),
 % Subatoms = [FirstSubatom|_]
-% ~~~
+% ```
 
 first_split(Atom, Split, FirstSubatom):-
   atom_concat(Subatom, _, Atom),

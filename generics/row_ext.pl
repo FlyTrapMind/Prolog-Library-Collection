@@ -48,9 +48,9 @@
 /** <module> Row extensions
 
 Support for row compound terms, i.e. terms of the following form:
-~~~{.pl}
+```prolog
 row(Arg1, ..., ArgN)
-~~~
+```
 
 Row terms are used in [library(csv)] and [library(semweb/sparql_client)].
 

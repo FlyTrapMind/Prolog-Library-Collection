@@ -46,16 +46,16 @@ Predicates for handling codes.
 # Replace
 
 Replacements in list of codes can be made using:
-~~~{.pl}
+```prolog
 phrase(dcg_maplist(dcg_replace, [FromDCG|FromDCGs], [ToDCG|ToDCGs]), In, Out)
-~~~
+```
 
 # Split
 
 Lists of codes can be splitted using:
-~~~{.pl}
+```prolog
 phrase(dcg_separated_list(:SeparatorDCG,-Sublists:list(list(code))), Codes)
-~~~
+```
 
 # Strip
 

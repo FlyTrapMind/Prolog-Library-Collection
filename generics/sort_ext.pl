@@ -180,9 +180,9 @@ icompare(InvertedOrder, Term1, Term2):-
 % according to the given sorting Goal.
 % 
 % Notice that the sort predicate is tertiary, i.e., of the following form:
-% ~~~
+% ```
 % Goal({<|=|>},Element1,Element2)
-% ~~~
+% ```
 
 merge_with_duplicates(_, [], Sorted, Sorted):- !.
 merge_with_duplicates(_, Sorted, [], Sorted):- !.

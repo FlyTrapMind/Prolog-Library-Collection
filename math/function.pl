@@ -25,9 +25,9 @@
 
 We use function definitions as in Bourbaki1957:
 
-~~~{.pl}
+```prolog
 bourbaki(Domain:ordset,Codomain:ordset,Graph:ugraph)
-~~~
+```
 
 Where =X= is the domain, =Y= is the codomain, and =G= is the graph.
 
@@ -130,7 +130,7 @@ preimage(X, X).
 %
 % For efficiency we do not run a loop on all elements in the codomain etc.
 % Instead we use the following theorem:
-% ~~~
+% ```
 % A function f is surjective iff
 % the codomain of f is the image of f's domain (under f).
 

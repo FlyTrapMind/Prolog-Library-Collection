@@ -265,7 +265,7 @@ archive_goal0(Source, Goal, Arg1, Arg2):-
 %
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- absolute_file_name(data('abcde.tar.gz'), File, [access(read)]),
 %    archive_info(File).
 % ab.tar.gz
@@ -304,7 +304,7 @@ archive_goal0(Source, Goal, Arg1, Arg2):-
 %   size(2)
 %   format(posix ustar format)
 % File = '.../data/abcde.tar.gz'.
-% ~~~
+% ```
 
 archive_info(Source):-
   archive_goal(Source, archive_info0, 0).

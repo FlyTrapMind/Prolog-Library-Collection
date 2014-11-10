@@ -18,14 +18,14 @@ Described by HP for their series of RPN calculators:
 As was demonstrated in the Algebraic mode, it is usually easier
 (fewer keystrokes) in working a problem like this to begin with
 the arithmetic operations inside the parentheses first.
-~~~
+```
 
 E.g., [2] i.o. [1]:
 
-~~~{.pl}
+```prolog
 [1]   rpn([5,1,2,+,4,*,+,3,-], 14).
 [2]   rpn([1,2,+,4,*,5,+,3,-], 14).
-~~~
+```
 
 --
 
