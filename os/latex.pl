@@ -16,7 +16,7 @@ Grammar snippets for LaTeX.
 :- use_module(library(option)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(codes_ext)).
+:- use_module(generics(code_ext)).
 :- use_module(os(file_ext)).
 
 :- use_module(plDcg(dcg_ascii)).

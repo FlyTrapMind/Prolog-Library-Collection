@@ -46,7 +46,7 @@ logging started.
 :- use_module(library(debug)).
 :- use_module(library(http/http_client)).
 
-:- use_module(generics(codes_ext)).
+:- use_module(generics(code_ext)).
 :- use_module(generics(db_ext)).
 :- use_module(os(datetime_ext)).
 :- use_module(os(dir_ext)).

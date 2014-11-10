@@ -1,5 +1,5 @@
 :- module(
-  codes_ext,
+  code_ext,
   [
     atomic_codes/2, % ?AtomicOrCodes:or([atom,list(code),number,string])
                     % ?Codes:list(code)
@@ -9,6 +9,8 @@
     atomic_codes_goal/3, % :Goal
                          % ?AtomicOrCodes1:or([atom,list(code),number,string])
                          % ?AtomicOrCodes2:or([atom,list(code),number,string])
+    code_ci/2, % +Code:nonneg
+               % -CiCode:nonneg
     code_remove/3, % +FromCodes:list(code)
                    % +Remove:code
                    % -ToCodes:list(code)
@@ -39,7 +41,7 @@
   ]
 ).
 
-/** <module> Codes extensions
+/** <module> Code extensions
 
 Predicates for handling codes.
 
@@ -65,13 +67,13 @@ Stripping codes lists is simply done using append,
 --
 
 @author Wouter Beek
-@version 2013/05-2013/07, 2013/12-2014/03
+@version 2013/05-2013/07, 2013/12-2014/03, 2014/11
 */
 
 :- use_module(library(apply)).
 :- use_module(library(lists), except([delete/3])).
 
-:- use_module(generics(codes_ext)).
+:- use_module(generics(code_ext)).
 
 :- meta_predicate(atomic_codes_goal(2,?,?)).
 
@@ -138,6 +140,7 @@ atomic_codes_nondet(codes, Codes, Codes):-
   is_list(Codes).
 
 
+
 %! atomic_codes_goal(
 %!   :Goal,
 %!   ?AtomicOrCodes:or([atom,list(code),number,string]),
@@ -151,6 +154,22 @@ atomic_codes_goal(Goal, From1, To1):-
   atomic_codes(Kind, To1, To2).
 
 
+
+%! code_ci(+Code:nonneg, -CiCode:nonneg) is nondet.
+% Returns case-insensitive variants of the given code,
+%  including the code itself.
+
+% Lowercase is a case-insensitive variant of uppercase.
+code_ci(Upper, Lower):-
+  code_type(Upper, upper(Lower)).
+% Uppercase is a case-insensitive variant of lowercase.
+code_ci(Lower, Upper):-
+  code_type(Lower, lower(Upper)).
+% Every code is a case-insensitive variant of itself.
+code_ci(Code, Code).
+
+
+
 %! code_remove(
 %!   +FromCodes:list(code),
 %!   +Remove:code,
@@ -160,6 +179,7 @@ atomic_codes_goal(Goal, From1, To1):-
 
 code_remove(FromCodes, Remove, ToCodes):-
   codes_remove(FromCodes, [Remove], ToCodes).
+
 
 
 %! code_replace(
@@ -172,6 +192,7 @@ code_remove(FromCodes, Remove, ToCodes):-
 
 code_replace(FromCodes, From, To, ToCodes):-
   codes_replace(FromCodes, [From-To], ToCodes).
+
 
 
 %! code_remove(
@@ -188,6 +209,7 @@ codes_remove([H|T1], Xs, [H|T2]):- !,
   codes_remove(T1, Xs, T2).
 
 
+
 %! codes_replace(
 %!   +FromCodes:list(code),
 %!   +Pairs:list(pair(code)),
@@ -202,12 +224,14 @@ codes_replace([H|T1], Pairs, [H|T2]):-
   codes_replace(T1, Pairs, T2).
 
 
+
 %! codes_to_atom(+Codes:list(code), -Atom:atom) is det.
 % This is solely used in contexts where the argument order is fixed,
 %  and the codes parameter just happends to occur before the atom parameter.
 
 codes_to_atom(Codes, Atom):-
   atom_codes(Atom, Codes).
+
 
 
 %! put_codes(+Codes:list(code)) is det.
@@ -219,6 +243,7 @@ put_codes(Codes):-
   maplist(put_code, Codes).
 put_codes(Out, Codes):-
   with_output_to(Out, maplist(put_code, Codes)).
+
 
 
 %! strip_codes(+Strips:list(list(code)), +In:list(code), -Out:list(code)) is det.
