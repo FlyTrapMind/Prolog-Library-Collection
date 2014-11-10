@@ -13,6 +13,8 @@
 Support for media types.
 
 @author Wouter Beek
+@see [Media Type Specifications and Registrtation Procedure](https://tools.ietf.org/html/rfc6838)
+@see [IANA Media Type Register](http://www.iana.org/assignments/media-types/media-types.xhtml)
 @version 2014/10
 */
 
