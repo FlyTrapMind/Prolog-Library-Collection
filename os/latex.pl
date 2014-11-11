@@ -20,6 +20,7 @@ Grammar snippets for LaTeX.
 :- use_module(os(file_ext)).
 
 :- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_bracket)).
 :- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_replace)).
@@ -141,26 +142,20 @@ latex_code_convert(Read, Write, Mode):-
 % No mode.
 latex_code_convert(Read, Write, none):- !,
   read_line_to_codes(Read, Codes),
-  (
-    phrase(latex(begin), Codes)
-  ->
-    Mode = latex
-  ;
-    Mode = none
+  (   phrase(latex(begin), Codes)
+  ->  Mode = latex
+  ;   Mode = none
   ),
   latex_code_convert(Read, Write, Mode).
 % LaTeX mode.
 latex_code_convert(Read, Write, latex):- !,
   read_line_to_codes(Read, Codes),
-  (
-    phrase(latex(end), Codes)
-  ->
-    nl(Write),
-    write(Write, '\\begin{lstlisting}'),
-    LaTeXMode = prolog
-  ;
-    write_latex_codes_nl(Write, Codes),
-    LaTeXMode = latex
+  (   phrase(latex(end), Codes)
+  ->  nl(Write),
+      write(Write, '\\begin{lstlisting}'),
+      LaTeXMode = prolog
+  ;   write_latex_codes_nl(Write, Codes),
+      LaTeXMode = latex
   ),
   latex_code_convert(Read, Write, LaTeXMode).
 % Prolog mode.
@@ -224,8 +219,8 @@ write_latex_header(Stream, Options):-
   ->  format(Stream, '\\title{~w}\n', [Title])
   ;   true
   ),
-  (   ( option(author(_Author1), Options)
-      ; option(title(_Title1), Options)
+  (   (   option(author(_Author1), Options)
+      ;   option(title(_Title1), Options)
       )
   ->  nl(Stream)
   ),
@@ -235,8 +230,8 @@ write_latex_header(Stream, Options):-
   nl(Stream),
 
   % Display the title.
-  (   ( option(author(_), Options)
-      ; option(title(_), Options)
+  (   (   option(author(_), Options)
+      ;   option(title(_), Options)
       )
   ->  format(Stream, '\\maketitle\n', []),
       nl(Stream)
