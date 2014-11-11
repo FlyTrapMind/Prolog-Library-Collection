@@ -8,11 +8,16 @@ Markdown hyperlink swap
 
 From:
 
-    \[([^\]]*)\]\(([^\)]*)\)
+```re
+\[([^\]]*)\]\(([^\)]*)\)
+```
 
 To:
 
-    \[$2\]\($1\)
+```re
+\[$2\]\($1\)
+```
+
 
 
 Prolog arguments must be compounds
@@ -20,8 +25,29 @@ Prolog arguments must be compounds
 
 From:
 
-    between_hex\(\'([0-9A-Z]+)\', \'([0-9A-Z]+)\'\)
+```re
+between_hex\(\'([0-9A-Z]+)\', \'([0-9A-Z]+)\'\)
+```
 
 To:
 
-    between\(hex\(\'$1\'\), hex\(\'$2\'\)\)
+```re
+between\(hex\(\'$1\'\), hex\(\'$2\'\)\)
+```
+
+
+
+ISO language tag conversion
+---------------------------
+
+From:
+
+```re
+'iso639-1'\('iso639-3':([a-z]+)\) --> "([a-z]+)".
+```
+
+To:
+
+```re
+owl_assert_identity\('iso639-1':$2, 'iso639-3':$1\).
+```
