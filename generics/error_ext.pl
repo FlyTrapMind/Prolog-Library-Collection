@@ -23,11 +23,11 @@
                     % +Term
     existence_error/2, % +Type
                        % +Term
-    instantiation_error/1,	% +Term
+    instantiation_error/1, % +Term
     permission_error/3, % +Action
                         % +Type
                         % +Term
-    representation_error/1,	% +Reason
+    representation_error/1, % +Reason
     syntax_error/1, % +Culprit
     type_error/2 % +Type
                  % +Term
@@ -56,7 +56,7 @@ exit_code_reason(126, 'Command cannot be executed. Permission problem or \c
 exit_code_reason(127, 'Command not found.').
 exit_code_reason(128, 'Invalid argument to the exit command; \c
     only takes integer args in the range 0-255.').
-exit_code_reason(130,	'Script terminated by Control-C	.').
+exit_code_reason(130, 'Script terminated by Control-C.').
 exit_code_reason(_, 'Unknown reason').
 
 

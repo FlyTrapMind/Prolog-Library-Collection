@@ -54,11 +54,11 @@ rpn([Operand|Notation], Stack, Outcome):-
   rpn(Notation, [Operand|Stack], Outcome).
 % Evaluate n-ary operators w.r.t. the top n operands on the stack.
 rpn([Op|Notation], Stack, Outcome):-
-	% Notice that there can be multiple operators with the same name.
+  % Notice that there can be multiple operators with the same name.
   current_op(_, OpType, Op),
   op_type_arity(OpType, OpArity),
 
-	% Select the appropriate operands.
+  % Select the appropriate operands.
   length(OperandsRev, OpArity),
   append(OperandsRev, NewStack, Stack),
 

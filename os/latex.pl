@@ -10,7 +10,7 @@
 Grammar snippets for LaTeX.
 
 @author Wouter Beek
-@version 2014/07, 2014/10
+@version 2014/07, 2014/10-2014/11
 */
 
 :- use_module(library(option)).
@@ -20,8 +20,8 @@ Grammar snippets for LaTeX.
 :- use_module(os(file_ext)).
 
 :- use_module(plDcg(dcg_ascii)).
+:- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_content)).
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_replace)).
 
@@ -83,7 +83,7 @@ latex_code_convert(PrologFile):-
   setup_call_cleanup(
     (
       open(PrologFile, read, Read, [encoding(utf8),type(text)]),
-      open(TexFile, write, Write, [encoding(utf8),type(test)])
+      open(TexFile, write, Write, [encoding(utf8),type(text)])
     ),
     (
       file_to_latex_title(PrologFile, Title),

@@ -69,7 +69,7 @@ between_radix(Low, High, Number):-
   % and then check whether it is between (rather than generating values
   % that are between).
   % This also makes the `(+,+,+)`-case semi-deterministic.
-  (	  ground(Number)
+  (   ground(Number)
   ->  radix(Number, dec(NumberDec)),
       between(LowDec, HighDec, NumberDec)
   ;   between(LowDec, HighDec, NumberDec),
@@ -176,9 +176,9 @@ radix(From, To):-
   % If there is no radix for the output value then we assume decimal base.
   (   var(To)
   ->  ToRadix = dec,
-			To = dec(ToValue)
+      To = dec(ToValue)
   ;   To =.. [ToRadix,ToValue]
-	),
+  ),
   from_decimal(Decimal, ToRadix, ToValue).
 
 
@@ -325,7 +325,7 @@ radix_value(Radix, Char, Value):-
 %! ) is det.
 
 to_decimal(dec, Decimal, Decimal):-
-	 nonneg(Decimal), !.
+  nonneg(Decimal), !.
 to_decimal(Radix, Value, Decimal):-
   radix_value(Radix, RadixValue),
   to_chars(Value, Chars),

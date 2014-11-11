@@ -131,13 +131,13 @@ average(Numbers, Average):-
 % Like ISO between/3, but allowing either `Low` or `High`
 % to be uninstantiated.
 %
-%	We allow `Low` to be instantiated to `minf` and `High` to be
-%	instantiated to `inf`. In these cases, their values are replaced by
-%	fresh variables.
+% We allow `Low` to be instantiated to `minf` and `High` to be
+% instantiated to `inf`. In these cases, their values are replaced by
+% fresh variables.
 
 betwixt(Low1, High1, Value):-
-	betwixt_lower_bound(Low1, Low2),
-	betwixt_higher_bound(High1, High2),
+  betwixt_lower_bound(Low1, Low2),
+  betwixt_higher_bound(High1, High2),
   betwixt0(Low2, High2, Value).
 
 % Instantiation error: at least one bound must be present.
