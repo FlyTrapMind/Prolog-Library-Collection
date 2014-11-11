@@ -14,7 +14,7 @@ Evaluating arithmetic expressions in Reverse Polish Notation (RPN).
 
 Described by HP for their series of RPN calculators:
 
-```{.txt}
+```
 As was demonstrated in the Algebraic mode, it is usually easier
 (fewer keystrokes) in working a problem like this to begin with
 the arithmetic operations inside the parentheses first.
