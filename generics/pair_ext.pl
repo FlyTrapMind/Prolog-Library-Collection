@@ -21,6 +21,10 @@
                  % ?List:list
     pair_second/2, % +Pair:pair
                    % ?Second
+    pairs_to_ascending_values/2, % +Pairs:list(pair)
+                                 % -Values:list
+    pairs_to_descending_values/2, % +Pairs:list(pair)
+                                  % -Values:list
     pairs_to_set/2, % +Pairs:list(pair)
                     % -Members:list
     pairs_to_sets/2, % +Pairs:list(pair(iri))
@@ -180,6 +184,23 @@ pair_list(X-Y, [X,Y]).
 %! pair_second(+Pair:pair, -Second) is det.
 
 pair_second(X-_, X).
+
+
+
+%! pairs_to_ascending_values(+Pairs:list(pair), -Values:list) is det.
+
+pairs_to_ascending_values(Pairs1, Values):-
+  keysort(Pairs1, Pairs2),
+  pairs_values(Pairs2, Values).
+
+
+
+%! pairs_to_descending_values(+Pairs:list(pair), -Values:list) is det.
+
+pairs_to_descending_values(Pairs1, Values):-
+  keysort(Pairs1, Pairs2),
+  reverse(Pairs2, Pairs3),
+  pairs_values(Pairs3, Values).
 
 
 
@@ -370,6 +391,8 @@ term_to_pair(Compound, X-Y):-
 
 
 
+
+
 % HELPERS
 
 %! comparator(+Reflexive:boolean, +Symmetric:boolean, :Comparator) is det.
@@ -377,6 +400,8 @@ term_to_pair(Compound, X-Y):-
 comparator(true,  true,  ~ ):- !.
 comparator(false, true,  \=):- !.
 comparator(false, false, @<):- !.
+
+
 
 
 
