@@ -1,8 +1,6 @@
 :- module(
   download_to_file,
   [
-    download_to_file/2, % +Url:url
-                        % ?File:atom
     download_to_file/3 % +Url:url
                        % ?File:atom
                        % +Options:list(nvpair)
@@ -14,10 +12,14 @@
 Support for downloading files over HTTP(S).
 
 @author Wouter Beek
-@version 2013/05, 2013/09, 2013/11-2014/05
+@version 2013/05, 2013/09, 2013/11-2014/05, 2014/11
 */
 
+:- use_module(library(debug)).
 :- use_module(library(filesex)).
+:- use_module(library(http/http_cookie)). % HTTP redirection.
+:- use_module(library(http/http_open)).
+:- use_module(library(http/http_ssl_plugin)). % HTTPS support.
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
@@ -25,15 +27,7 @@ Support for downloading files over HTTP(S).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
-:- use_module(plHttp(http_goal)).
 
-
-
-%! download_to_file(+Url:url, ?File:atom) is det.
-% @see Wrapper for download_to_file/2, which empty options list.
-
-download_to_file(Url, File):-
-  download_to_file(Url, File, []).
 
 %! download_to_file(+Url:url, ?File:atom, +Options:list(nvpair)) is det.
 % Downloads files from a URL to either the given file (when instantiated)
@@ -54,17 +48,14 @@ download_to_file(Url, File):-
 download_to_file(Url, File, Options):-
   nonvar(File),
   exists_file(File), !,
-  (
-    option(freshness_lifetime(FreshnessLifetime), Options, inf),
-    is_fresh_file(File, FreshnessLifetime)
-  ->
-    access_file(File, read)
-  ;
-    delete_file(File),
-    download_to_file(Url, File, Options)
+  (   option(freshness_lifetime(FreshnessLifetime), Options, inf),
+      is_fresh_file(File, FreshnessLifetime)
+  ->  access_file(File, read)
+  ;   delete_file(File),
+      download_to_file(Url, File, Options)
   ).
 % An absolute file name is specified.
-download_to_file(Url, File, Options):-
+download_to_file(Url, File, Options1):-
   nonvar(File),
   is_absolute_file_name(File), !,
   file_directory_name(File, Dir),
@@ -84,8 +75,20 @@ download_to_file(Url, File, Options):-
   file_name_extension(File, ThreadName, TmpFile),
 
   % The actual downloading part.
-  http_goal(Url, file_from_stream(TmpFile), Options),
-
+  merge_options(
+    Options1,
+    [cert_verify_hook(cert_verify),status_code(Status),timeout(100)],
+    Options2
+  ),
+  setup_call_cleanup(
+    http_open(Url, In, Options2),
+    file_from_stream(In, TmpFile),
+    close(In)
+  ),
+  
+  % DEB
+  debug(download_to_file, '[HTTP ~d] ~a', [Status,Url]),
+  
   % Give the file its original name.
   rename_file(TmpFile, File).
 % No file name is given; create a file name in a standardized way,
