@@ -12,10 +12,10 @@
 
 /** <module> RDF: load any
 
-Load RDF data from various sources.
+Open a recursive data stream from files/URIs.
 
-@author Jan Wielemaker
 @author Wouter Beek
+@author Jan Wielemaker
 @tbd Only supports URI schemes `http` and `https`.
 @version 2014/03-2014/07, 2014/10-2014/11
 */
