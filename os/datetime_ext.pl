@@ -45,6 +45,8 @@ current_date(Date):-
   get_time(TimeStamp),
   format_time(atom(Date), '%Y_%m_%d', TimeStamp).
 
+
+
 %! current_date_time(+DateTime:atom) is semidet.
 %! current_date_time(-DateTime:atom) is det.
 % @see Combines the result of current_date/1 and current_time/1.
@@ -53,6 +55,8 @@ current_date_time(DateTime):-
   current_date(Date),
   current_time(Time),
   atomic_list_concat([Date,Time], ':', DateTime).
+
+
 
 %! current_time(-Time:atom) is det.
 % Returns an atomic representation of the current time.
@@ -63,12 +67,14 @@ current_time(Time):-
   get_time(TimeStamp),
   format_time(atom(Time), '%H_%M_%S', TimeStamp).
 
+
+
 %! date_directories(+Spec:compound, -DateDir:atom) is det.
 % Create and return the current date subdirectory of the given absolute
 % directory name.
 %
-% Example: from =|/home/wouterbeek/tmp|= to
-% =|/home/wouterbeek/tmp/2013/05/10|=
+% Example: from `/home/wouterbeek/tmp` to
+% `/home/wouterbeek/tmp/2013/05/10`
 
 date_directories(Spec, Dir):-
   get_time(TimeStamp),
@@ -109,11 +115,15 @@ hash_date(Hash):-
   get_time(TimeStamp),
   variant_sha1(TimeStamp, Hash).
 
+
+
 %! iso8601_dateTime(-ISO8601_DateTime) is det.
 
 iso8601_dateTime(DT):-
   get_time(TimeStamp),
   format_time(atom(DT), '%FT%T%z', TimeStamp).
+
+
 
 %! latest_file(+Files:list(atom), -Latest:atom) is det.
 % Returns the most recently created or altered file from within a list of
@@ -140,6 +150,8 @@ latest_file([File | Files], TopTime/TopFile, Latest):-
   ),
   latest_file(Files, NewTopTime-NewTopFile, Latest).
 
+
+
 %! posix_date(-Date:atom) is det.
 % Returns the current date in POSIX format.
 %
@@ -152,6 +164,8 @@ posix_date(Date):-
   get_time(TimeStamp),
   format_time(atom(Date), '%F', TimeStamp).
 
+
+
 %! posix_time(Time) is det.
 % Returns the current time in POSIX format.
 %
@@ -162,6 +176,8 @@ posix_date(Date):-
 posix_time(Time):-
   get_time(TimeStamp),
   format_time(atom(Time), '%T', TimeStamp).
+
+
 
 %! seconds(?Hours:integer, ?Minutes:integer, ?Seconds:integer) is det.
 % Converts hours and minutes into seconds and vice versa.

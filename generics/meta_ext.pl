@@ -215,7 +215,7 @@ mapset(Goal, List, Set):-
 %! nth0_call(:Goal, +Index:nonneg, +Argument) .
 %! nth0_call(+Options:list(nvpair), :Goal, +Index:nonneg, +Argument) .
 % The following options are supported:
-%   * =|minus(+UseMinus:boolean)|=
+%   * `minus(+UseMinus:boolean)`
 %     When `true` (default `false`), uses nth0_minus/4
 %     instead of nth0/4. See module [list_ext].
 

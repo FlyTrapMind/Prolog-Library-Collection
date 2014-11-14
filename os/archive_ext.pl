@@ -144,9 +144,9 @@ archive_extract0(Archive, Filters, Dir):-
 % Extract files recursively, e.g. first `gunzip`, then `tar`.
 %
 % Options are passed to directory_files/3. Important are:
-%   * =|file_types(+FileTypes:list(atom))|=
+%   * `file_types(+FileTypes:list(atom))`
 %     Only extracts files of the given types.
-%   * =|recursive(+Recursive:boolean)|=
+%   * `recursive(+Recursive:boolean)`
 %     Includes archives that reside in subdirectories.
 
 archive_extract_directory(Dir, Options):-

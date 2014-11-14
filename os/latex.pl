@@ -53,7 +53,7 @@ file_to_latex_title(PrologFile, Local):-
 %! latex(+Command:oneof([begin,end]))// is semidet.
 % Succeeds if the codes list starts with a LaTeX commmand.
 %
-% Currently the commands =|begin(latex)|= and =|end(latex)|= are defined.
+% Currently the commands `begin(latex)` and `end(latex)` are defined.
 
 latex(Command) -->
   % Allow Prolog multiline commenting.

@@ -97,7 +97,7 @@ Currently contains the following subdirectories:
    codebase, e.g. `lexvo.rdf` for language and country URIs based on
    various ISO standards.
 3. *STCN* The _redactiebladen_ that are used by the parser in
-   =|DB/STCN/|=.
+   `DB/STCN/`.
 4. *Wordnet* The Prolog version of the _Wordnet_ lexical corpus.
 
 ### `debug`

@@ -43,14 +43,14 @@ function. We represent them as ordered sets of pairs.
 Traditionally, pairs are represented using sets, i.e.,
 $\langle x, y \rangle =_{def} \{ x, \{ x, y \} \}$.
 
-We represent pairs as compound terms of the form =|X-Y|=.
+We represent pairs as compound terms of the form `X-Y`.
 
 ## Relation
 
 ### Binary relations
 
-Binary relations can be efficiently represented as =|list(pair)|=
-=|[x_1-y_1, \ldots, x_m-y_m]|=.
+Binary relations can be efficiently represented as `list(pair)`
+`[x_1-y_1, \ldots, x_m-y_m]`.
 
 @author Wouter Beek
 @version 2012/11, 2013/08, 2014/07

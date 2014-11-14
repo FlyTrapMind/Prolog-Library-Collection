@@ -337,7 +337,7 @@ is_fresh_age(Age, FreshnessLifetime):-
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
-% Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
+% Logarithm with arbitrary base `Y = log_{Base}(X)`.
 %
 % @arg Base An integer.
 % @arg X An integer.

@@ -83,7 +83,7 @@ append_directories(Dir1, Dir2, Dir3):-
 
 %! copy_directory(+FromDir:atom, +ToDir:atom, +Options:list(nvpair)) is det.
 % The following options are supported:
-%   * =|safe(+SafeOrNot:boolean)|=
+%   * `safe(+SafeOrNot:boolean)`
 
 copy_directory(FromDir, ToDir, Options):-
   delete_directory(ToDir, Options),
@@ -152,8 +152,8 @@ create_directory0(Current, [Sub|Subs], Abs):-
 % Deletes all file in the given directory that are of the given file type.
 %
 % The following options are supported:
-%   * =|include_self(+IncludeOrNot:boolean)|=
-%   * =|safe(+SafeOrNot:boolean)|=
+%   * `include_self(+IncludeOrNot:boolean)`
+%   * `safe(+SafeOrNot:boolean)`
 
 % Directories.
 delete_directory(Dir, Options):-
@@ -192,20 +192,20 @@ delete_directory(File, Options):-
 % instead of relative ones and excludes non-file entries.
 %
 % The following options are supported:
-%   * =|file_types(+FileTypes:list(atom))|=
+%   * `file_types(+FileTypes:list(atom))`
 %     A list of atomic file types that are used as a filter.
 %     Default: no file type filter.
-%   * =|include_directories(+IncludeDirectories:boolean)|=
+%   * `include_directories(+IncludeDirectories:boolean)`
 %     Whether (sub)directories are included or not.
 %     Default: `false`.
-%   * =|include_self(+IncludeSelf:boolean)|=
+%   * `include_self(+IncludeSelf:boolean)`
 %     Whether or not the enclosing directory is included.
 %     Default: `false`.
-%   * =|order(+Order:oneof([lexicographic,none]))|=
+%   * `order(+Order:oneof([lexicographic,none]))`
 %     The order in which the files are returned.
 %     Lexicographic order uses ordsets.
 %     Default: `none`.
-%   * =|recursive(+Recursive:boolean)|=
+%   * `recursive(+Recursive:boolean)`
 %     Whether subdirectories are searched recursively.
 %     Default: `true`.
 

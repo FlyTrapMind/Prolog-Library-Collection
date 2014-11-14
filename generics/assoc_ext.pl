@@ -48,8 +48,8 @@ get_assoc_ord_member(Key, Assoc, Value):-
 
 %! '_old_member'(+Member, +Set:ordset) is semidet.
 %! '_old_member'(-Member, +Set:ordset) is nondet.
-% @see Wrapper around ord_memberchk/2 (when instantiation is =|(+,+)|=)
-%      and member/2 (when instantiation is =|(-,+)|=).
+% @see Wrapper around ord_memberchk/2 (when instantiation is `(+,+)`)
+%      and member/2 (when instantiation is `(-,+)`).
 
 '_old_member'(Value, Ordset):-
   nonvar(Value), !,

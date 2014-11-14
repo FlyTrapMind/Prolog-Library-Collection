@@ -39,9 +39,9 @@ Extensions for sorting lists.
 
 %! sort(+Unsorted:list, -Sorted:list, +Options:list(nvpair)) is det.
 % The following options are supported:
-%   * =|duplicates(+boolean)|= Whether duplicate elements are retained
+%   * `duplicates(+boolean)` Whether duplicate elements are retained
 %     in the sorted list.
-%   * =|inverted(+boolean)|= Whether the sorted list goes from lowest to
+%   * `inverted(+boolean)` Whether the sorted list goes from lowest to
 %     highest (standard) or from highest to lowest.
 
 sort(Unsorted, Sorted, Options):-
@@ -181,7 +181,7 @@ icompare(InvertedOrder, Term1, Term2):-
 % 
 % Notice that the sort predicate is tertiary, i.e., of the following form:
 % ```
-% Goal({<|=|>},Element1,Element2)
+% Goal({<|`>},Element1,Element2)
 % ```
 
 merge_with_duplicates(_, [], Sorted, Sorted):- !.

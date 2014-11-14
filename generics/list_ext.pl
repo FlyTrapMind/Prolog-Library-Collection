@@ -301,7 +301,7 @@ length_cut(L, Cut, L1, L2):-
 % Returns the given list in which the given replacements have been made.
 %
 % @arg List The original list.
-% @arg Replacements A list of replacements of the form =|term-term|=.
+% @arg Replacements A list of replacements of the form `term-term`.
 % @arg NewList The list in which all replacants have been replaced.
 
 % Done!
@@ -377,9 +377,9 @@ member_default(Default, _, Default).
 
 
 %! nth0_minus(?Index:nonneg, ?List:list, ?Element) is nondet.
-% Succeeds if the given element occurs at =|length(List) - I|= in list =L=.
+% Succeeds if the given element occurs at `length(List) - I` in list =L=.
 %
-% @arg I The index, an integer in =|[0, length(List) - 1]|=.
+% @arg I The index, an integer in `[0, length(List) - 1]`.
 % @arg L Any list.
 % @arg Element An element occurring in the given list.
 % @see The inverse of default method nth0/3.
@@ -398,9 +398,9 @@ nth0_minus(I, L1, E, R1):-
 
 
 %! nth1_minus(?Index:nonneg, ?List:list, ?Element) is nondet.
-% Succeeds if the given element occurs at =|length(L) - I|= in list =L=.
+% Succeeds if the given element occurs at `length(L) - I` in list =L=.
 %
-% @arg I The index, an integer in =|[0, length(List)]|=.
+% @arg I The index, an integer in `[0, length(List)]`.
 % @arg L Any list.
 % @arg Element An element occurring in the given list.
 % @see The inverse of default method nth1/3.

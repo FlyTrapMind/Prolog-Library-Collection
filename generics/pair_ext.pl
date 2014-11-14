@@ -114,7 +114,7 @@ list_pair([X,Y], X-Y).
 % the given collection of equivalence sets.
 %
 % The following options are supported:
-%   * =|reflexive(+boolean)|=
+%   * `reflexive(+boolean)`
 %     Whether to count reflexive cases. Default: `true`.
 
 number_of_equivalence_pairs(EqSets, NumberOfPairs, Options):-
@@ -334,10 +334,10 @@ set_to_pairs(Set, Comparator, Pairs):-
 %! ) is det.
 %
 % The following options are supported:
-%   * =|reflexive(+boolean)|=
+%   * `reflexive(+boolean)`
 %     Whether or not to return reflexive cases.
 %     Default: `true`.
-%   * =|symmetric(+boolean)|=
+%   * `symmetric(+boolean)`
 %     Whether or not to return symmetric pairs.
 %     Default: `true`.
 
