@@ -28,6 +28,8 @@
     first/3, % +List:list,
              % +N:integer
              % -Firsts:list
+    first_duplicate/2, % ?FirstDuplicate
+                       % +List:list
     length_cut/4, % +L:list
                   % +Cut:integer
                   % -L1:list
@@ -125,9 +127,10 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2017/08
+         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2014/08, 2014/11
 */
 
+:- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(random)).
@@ -146,6 +149,7 @@ after(X, Y, List):-
   before(Y, X, List).
 
 
+
 %! append_intersperse(+List:list, +Separator, -NewList:list)//
 % Returns a list that is based on the given list, but interspersed with
 % copies of the separator term.
@@ -157,6 +161,7 @@ append_intersperse([], _S, []):- !.
 append_intersperse([H], _S, [H]):- !.
 append_intersperse([H|T1], S, [H,S|T2]):-
   append_intersperse(T1, S, T2).
+
 
 
 %! before(?X, ?Y, ?List:list) is nondet.
@@ -185,6 +190,7 @@ before(X, Y, L):-
   before(Z, Y, L).
 
 
+
 %! combination(+Lists:list(list), -Combination:list) is nondet.
 % Returns a combination of items from the given lists.
 %
@@ -209,6 +215,7 @@ combination([ListH|ListT], [H|T]):-
   combination(ListT, T).
 
 
+
 %! common_list_prefix(+List1:list, +List2:list, +Sublist:list) is semidet.
 %! common_list_prefix(+List1:list, +List2:list, -Sublist:list) is det.
 % Returns the longest common prefix of the given two lists.
@@ -217,6 +224,7 @@ common_list_prefix([H1|_], [H2|_], []):-
   H1 \= H2, !.
 common_list_prefix([H|T1], [H|T2], [H|T3]):-
   common_list_prefix(T1, T2, T3).
+
 
 
 %! complement_list(
@@ -236,6 +244,7 @@ complement_list(L1, Length2, Fill, L2):-
   append(L1, FillList, L2).
 
 
+
 %! element_cut(+L:list, +Element:atom, -L1:list, -L2:list) is det.
 % Cuts the given list at the given element, returning the two cut lists.
 % The cut element is itself not part of any of the results.
@@ -251,6 +260,7 @@ element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
   element_cut(L, Element, L1, L2).
 
 
+
 %! first(+List:list, ?Element:term) is semidet.
 % Succeeds if the given element is the head of the given list.
 % Fails if the list has no head.
@@ -260,6 +270,7 @@ element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
 % @see This is the inverse of the default method last/2.
 
 first([H|_], H).
+
 
 
 %! first(+L:list, +N:integer, -First:list) is det.
@@ -274,6 +285,57 @@ first([H|_], H).
 
 first(L, N, First):-
   length_cut(L, N, First, _L2).
+
+
+
+%! first_duplicate(+FirstDuplicate, +List:list) is semidet.
+%! first_duplicate(-FirstDuplicate, +List:list) is semidet.
+% Succeeds if FirstDuplicate is the first term that appears twice in List
+%  when reading from left to right.
+%
+% ### Use of dif/2
+%
+% The following naive implementation:
+% 
+% ```prolog
+% first_dup(E, [E|L]):-
+%   member(E, L).
+% first_dup(E, [N|L]):-
+%   \+ memberchk(N, L),
+%   first_dup(E, L).
+% ```
+%
+% gives the following answers:
+%
+% ```prolog
+% ?- first_dup(E, [A,B,C]).
+% E = A, A = B ;
+% E = A, A = C ;
+% false.
+% ```
+%
+% missing out on one of the anwers we get when using dif/2:
+%
+% ```swipl
+% ?- first_dup(E, [A,B,C]).
+% E = A, A = B ;
+% E = A, A = C ;
+% E = B, B = C,
+% dif(A, C),
+% dif(A, C) ;
+% false.
+% ```
+%
+% @author Ulrich Neumerkel
+% @see http://stackoverflow.com/questions/10260672/prolog-first-duplicate-value/10322639#10322639
+% @tbd Not sure why SWI-Prolog shows the dif/2 constaint twice...
+
+first_duplicate(X, [_|T]):-
+  member(X, T).
+first_duplicate(X, [H|T]):-
+  maplist(dif(H), T),
+  first_duplicate(X, T).
+
 
 
 %! length_cut(+L:list, +Cut:integer, -L1:list, -L2:list) is det.
