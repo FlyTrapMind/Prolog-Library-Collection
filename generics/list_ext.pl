@@ -1,14 +1,14 @@
 :- module(
   list_ext,
   [
-    after/3, % ?Element2
-             % ?Element1
+    after/3, % ?After
+             % ?Before
              % ?List:list
     append_intersperse/3, % +List:list
                           % +Separator
                           % -NewList:list
-    before/3, % ?Element1
-              % ?Element2
+    before/3, % ?Before
+              % ?After
               % ?List:list
     combination/2, % +Lists:list(list)
                    % -Combination:list
@@ -19,19 +19,25 @@
                        % +Length:nonneg
                        % +FillElement
                        % -ToList:list
+    directly_after/3, % ?After
+                      % ?Before
+                      % ?List:list
+    directly_before/3, % ?After
+                       % ?Before
+                       % ?List:list
     element_cut/4, % +List:list
                    % +Element
                    % -List1:list
                    % -List2:list
-    first/2, % +List:list,
+    first/2, % +List:list
              % ?First
-    first/3, % +List:list,
+    first/3, % +List:list
              % +N:integer
              % -Firsts:list
     first_duplicate/2, % ?FirstDuplicate
                        % +List:list
     length_cut/4, % +L:list
-                  % +Cut:integer
+                  % +Cut:nonneg
                   % -L1:list
                   % -L2:list
     list_replace/3, % +List:list
@@ -135,18 +141,19 @@ Extensions to the set of list predicates in SWI-Prolog.
 :- use_module(library(lists), except([delete/3])).
 :- use_module(library(random)).
 
+:- use_module(generics(closure)).
+:- use_module(generics(lambda_meta)).
 :- use_module(generics(typecheck)).
 
 
 
-%! after(?X, ?Y, ?List:list) is nondet.
-% X appears after Y in the given list.
+%! after(?After, ?Before, ?List:list) is nondet.
+% Succeeds if After appears after Before in List.
 %
 % @see The inverse of before/3.
-% @see The inverse of the transitive closure of nextto/3 in library(lists).
 
-after(X, Y, List):-
-  before(Y, X, List).
+after(After, Before, List):-
+  before(Before, After, List).
 
 
 
@@ -164,30 +171,13 @@ append_intersperse([H|T1], S, [H,S|T2]):-
 
 
 
-%! before(?X, ?Y, ?List:list) is nondet.
-% X appears before Y in the given list.
+%! before(?Before, ?After, ?List:list) is nondet.
+% Succeeds if Before appears before After in List.
 %
-% @see The transitive closure of nextto/3 in library(lists).
-%
-% # Example
-%
-% ```prolog
-% ?- before(X, Y, [a,b,c]).
-% X = a,
-% Y = b ;
-% X = b,
-% Y = c ;
-% X = a,
-% Y = c ;
-% false.
-% ```
+% @see The transitive closure of directly_before/3.
 
-before(X, Y, L):-
-  nextto(X, Y, L).
-before(X, Y, L):-
-  nextto(X, Z, L),
-%format(user_output, '~w\n', [Z]),
-  before(Z, Y, L).
+before(Before, After, List):-
+  closure0(\Before^After^directly_before(Before, After, List), Before, After).
 
 
 
@@ -242,6 +232,35 @@ complement_list(L1, Length2, Fill, L2):-
   FillLength is Length2 - Length1,
   repeating_list(Fill, FillLength, FillList),
   append(L1, FillList, L2).
+
+
+
+%! directly_after(?After, ?Before, ?List:list) is nondet.
+% Succeeds if After occurs directly after Before in List.
+%
+% @see Inverse of directly_before/3.
+
+directly_after(After, Before, List):-
+  directly_before(Before, After, List).
+
+
+
+%! directly_before(?Before, ?After, ?List:list) is nondet.
+% Is not semi-deterministic for any instantiation.
+% Example for `(+,+,+)`:
+%
+% ```prolog
+% ?- directly_before(1, 2, [1,2,1,2]).
+% true ;
+% true ;
+% false.
+%
+% ```
+%
+% @see Terminological variant of nextto/3.
+
+directly_before(Before, After, List):-
+  nextto(Before, After, List).
 
 
 
@@ -338,12 +357,12 @@ first_duplicate(X, [H|T]):-
 
 
 
-%! length_cut(+L:list, +Cut:integer, -L1:list, -L2:list) is det.
+%! length_cut(+L:list, +Cut:nonneg, -L1:list, -L2:list) is det.
 % Cuts the given list in two sublists, where the former sublist
 % has the given length.
 %
 % @arg L The full list.
-% @arg Cut An integer indicating the length of the former sublist.
+% @arg Cut A non-negative integer indicating the length of the former sublist.
 % @arg L1 The sublist that is the beginning of =L= with length =Cut=.
 % @arg L2 The sublist that remains after =L1= has been removed from =L=.
 
