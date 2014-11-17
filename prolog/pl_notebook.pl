@@ -72,7 +72,18 @@ predicate([N|L]):- (condition -> something2 ; something3).
 
 
 
-# Prolog flag: unknown
+# Prolog flags
+
+## Double quotes
+
+```prolog
+[1]   set_prolog_flag(double_quotes, atom).
+[2]   set_prolog_flag(double_quotes, chars).
+[3]   set_prolog_flag(double_quotes, codes).
+```
+
+
+## Unknown
 
 ```prolog
 [1]   set_prolog_flag(unknown, error).
