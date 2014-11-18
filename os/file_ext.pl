@@ -424,6 +424,14 @@ is_fresh_file(File, FreshnessLifetime):-
 
 
 
+%! is_stale_file(+File:atom, +FreshnessLifetime:between(0.0,inf)) is semidet.
+
+is_stale_file(File, FreshnessLifetime):-
+  file_age(File, Age),
+  is_stale_age(Age, FreshnessLifetime).
+
+
+
 %! local_file_component(
 %!   +Local:atom,
 %!   +Field:oneof([base,extension]),

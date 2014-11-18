@@ -7,7 +7,8 @@
     formatnl/3, % +Output
                 % +Format
                 % :Arguments
-    indent/1 % +Indent:integer
+    indent/1, % +Indent:integer
+    tab/0
   ]
 ).
 
@@ -25,7 +26,7 @@ proof(Conclusion, Premises)
 @author Wouter Beek
 @tbd Remove all predicate variants that have an `Out` parameter.
      The calling context should use with_output_to/2 instead.
-@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11, 2014/11
 */
 
 :- use_module(library(settings)).
@@ -79,3 +80,9 @@ indent(Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(NumberOfSpaces).
 
+
+
+%! tab.
+
+tab:-
+  write('\t').

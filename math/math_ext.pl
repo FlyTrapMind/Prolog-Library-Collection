@@ -36,6 +36,8 @@
                           % -Fractional:integer
     is_fresh_age/2, % +Age:between(0.0,inf)
                     % +FreshnessLifetime:between(0.0,inf)
+    is_stale_age/2, % +Age:between(0.0,inf)
+                    % +FreshnessLifetime:between(0.0,inf)
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -333,7 +335,17 @@ fractional_integer(_, 0).
 
 is_fresh_age(_, inf):- !.
 is_fresh_age(Age, FreshnessLifetime):-
-  Age < FreshnessLifetime.
+  Age =< FreshnessLifetime.
+
+
+%! is_stale_age(
+%!   +Age:between(0.0,inf),
+%!   +FreshnessLifetime:between(0.0,inf)
+%! ) is semidet.
+
+is_stale_age(_, inf):- !, fail.
+is_stale_age(Age, FreshnessLifetime):-
+  Age > FreshnessLifetime.
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
