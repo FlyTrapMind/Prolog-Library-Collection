@@ -61,7 +61,7 @@ latex(Command) -->
   ;   ""
   ),
   atom(Command),
-  bracketed(round, atom(latex)),
+  bracketed(atom(latex)),
   % Allow Prolog multiline commenting.
   (   asterisk, forward_slash % Avoids colorization in bad editors.
   ;   ""
