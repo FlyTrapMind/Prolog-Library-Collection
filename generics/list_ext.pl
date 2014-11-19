@@ -177,7 +177,11 @@ append_intersperse([H|T1], S, [H,S|T2]):-
 % @see The transitive closure of directly_before/3.
 
 before(Before, After, List):-
-  closure0(\Before^After^directly_before(Before, After, List), Before, After).
+  closure0(
+    \Before^After^directly_before(Before, After, List),
+    Before,
+    After
+  ).
 
 
 
