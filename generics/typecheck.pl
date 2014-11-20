@@ -181,7 +181,7 @@ negative_float(I):-
 
 negative_integer(I):-
   integer(I),
-  I > 0.
+  I < 0.
 
 
 %! nonneg(@Term) is semidet.
