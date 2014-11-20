@@ -3,10 +3,13 @@
   [
     close_any/2, % +Outstream
                  % -Metadata:dict
+    open_any/3, % +Input
+                % -Substream:stream
+                % +Options:list(nvpair)
     open_any/4 % +Input
                % -Substream:stream
                % -Metadata:dict
-               % -Options:list(nvpair)
+               % +Options:list(nvpair)
   ]
 ).
 
@@ -34,6 +37,9 @@ Open a recursive data stream from files/URIs.
 :- use_module(generics(pair_ext)).
 :- use_module(os(datetime_ext)).
 
+:- predicate_options(open_any/3, 3, [
+     pass_to(open_any/4, 4)
+   ]).
 :- predicate_options(open_any/4, 4, [
      pass_to(open_input/5, 5)
    ]).
@@ -121,9 +127,15 @@ close_any(Out, Metadata):-
 
 
 
+%! open_any(+Input, -In:stream, +Options:list(nvpair)) is nondet.
+
+open_any(Input, In, Options):-
+  open_any(Input, In, _, Options).
+
+
 %! open_any(
 %!   +Input,
-%!   -Out:stream,
+%!   -In:stream,
 %!   -Metadata:dict,
 %!   +Options:list(nvpair)
 %! ) is nondet.
@@ -162,7 +174,7 @@ close_any(Out, Metadata):-
 %         3. A file if absolute_file_name/3 succeeds.
 %         4. A file if expand_file_name/2 succeeds with at least one file.
 %
-% @arg  Out An output stream possibly containing RDF data.
+% @arg  In An input stream.
 %
 % @arg  Metadata is a dict.
 %       The tag indicates the type of Input and
@@ -182,10 +194,10 @@ close_any(Out, Metadata):-
 %
 % @arg  Options
 
-open_any(Input, Out, Metadata, Options):-
+open_any(Input, In, Metadata, Options):-
   open_input(Input, FileOut, Metadata0, Close, Options),
   Metadata = Metadata0.put(data, Data),
-  open_substream(FileOut, Out, Data, Close).
+  open_substream(FileOut, In, Data, Close).
 
 
 %! open_substream(+Stream:stream, -Substream:stream, -Pipeline:dict) is nondet.
