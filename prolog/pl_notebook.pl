@@ -12,6 +12,10 @@ Scattered ideas about programming in Prolog that I learned mostly
  from other, more experience Prolog programmers, either on IRC or on the Web.
 
 
+# Resources
+
+  - [Production Logic](http://youtu.be/G_eYTctGZw8), Michael Hendricks,
+    Presentation at Strangeloop.
 
 # Answer, Solution, Success
 
