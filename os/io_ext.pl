@@ -7,8 +7,8 @@
                      % +File:atom
     copy_stream_line/2, % +From:stream
                         % +To:stream
-    file_from_stream/2, % +File:atom
-                        % +Stream:stream
+    file_from_stream/2, % +Stream:stream
+                        % +File:atom
     file_to_atom/2, % +File:atom
                     % -Atom:atom
     file_to_codes/2, % +File:atom
@@ -81,9 +81,9 @@ copy_stream_line(From, To):-
   flush_output(To).
 
 
-%! file_from_stream(+File:atom, +Stream:stream) is det.
+%! file_from_stream(+Stream:stream, +File:atom) is det.
 
-file_from_stream(File, Read):-
+file_from_stream(Read, File):-
   setup_call_cleanup(
     open(File, write, Write, [type(binary)]),
     copy_stream_data(Read, Write),

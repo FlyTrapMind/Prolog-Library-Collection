@@ -278,16 +278,24 @@ directory_files(Dir, Files4, Options1):-
 %
 % For absolute directory names the first subdirectory name is the empty atom.
 
-directory_subdirectories(Dir1, Subdirs):-
-  % Resolve potential occurrences of `..`.
-  (   nonvar(Dir1)
-  ->  relative_file_name(Dir1, '/', Dir2)
-  ;   nonvar(Subdirs)
-  ->  Dir2 = Dir1
-  ),
-  atomic_list_concat(Subdirs, '/', Dir2).
+directory_subdirectories(Dir, Subdirs):-
+  nonvar(Dir), !,
+  atomic_list_concat(Subdirs0, '/', Dir),
+  resolve_double_dots(Subdirs0, Subdirs).
+directory_subdirectories(Dir, Subdirs0):-
+	nonvar(Subdirs0), !,
+  resolve_double_dots(Subdirs0, Subdirs),
+  atomic_list_concat(Subdirs, '/', Dir).
 directory_subdirectories(_, _):-
   instantiation_error(_).
+
+%! resolve_double_dots(+Subdirs:list(atom), -ResoledSubdirs:list(atom)) is det.
+
+resolve_double_dots([], []).
+resolve_double_dots([_,'..'|T1], T2):-
+  resolve_double_dots(T1, T2).
+resolve_double_dots([H|T1], [H|T2]):-
+  resolve_double_dots(T1, T2).
 
 
 
