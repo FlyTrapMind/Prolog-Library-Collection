@@ -88,7 +88,7 @@ Stripping atoms of an arbitrary number of subatoms can be done using
 
 Titlecase atoms can be created using upcase_atom/2.
 
---
+---
 
 @author Wouter Beek
 @version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04,

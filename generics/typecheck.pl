@@ -66,7 +66,7 @@ Predicates used for parsing and checking value-type conformance.
 | iri                  | Yes              |                     |
 | var                  |                  |                     |
 
---
+---
 
 @author Wouter Beek
 @version 2013/01, 2013/08, 2014/01, 2014/03-2014/06, 2014/10

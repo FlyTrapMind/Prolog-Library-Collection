@@ -23,7 +23,7 @@ For `:` we assume the type is `any`.
 | --X:Type           | var                   | Type          |
 |  @X:Type           | Type                  | ==            |
 
---
+---
 
 @author Michael Hendrix
 @author Wouter Beek

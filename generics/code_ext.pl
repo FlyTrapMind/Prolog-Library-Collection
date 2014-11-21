@@ -64,7 +64,7 @@ phrase(dcg_separated_list(:SeparatorDCG,-Sublists:list(list(code))), Codes)
 Stripping codes lists is simply done using append,
  see strip_codes/3, strip_codes_begin/3, and strip_codes_end/3.
 
---
+---
 
 @author Wouter Beek
 @version 2013/05-2013/07, 2013/12-2014/03, 2014/11

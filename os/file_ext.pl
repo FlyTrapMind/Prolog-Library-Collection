@@ -125,7 +125,7 @@ In line with the terminology this modules uses the following variable names:
   * `Spec` for file specifications (i.e., compound terms)
      handled by absolute_file_name/[2,3].
 
---
+---
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,

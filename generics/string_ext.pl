@@ -18,7 +18,7 @@ Non-native string representations in Prolog:
     Strings cannot be distinguished from lists of (non-negative) integers.
   - List of characters
 
---
+---
 
 @author Wouter Beek
 @version 2014/08, 2014/11
