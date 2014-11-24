@@ -30,7 +30,7 @@ Closures come in handy in many Prolog programs!
 
 
 
-%! closure(+X1, :Goal, -X2) is nondet.
+%! closure(:Goal, +X1, -X2) is nondet.
 % Calculates the transitive closure of binary predicate `Goal`.
 %
 % @author Ulrich Neumerkel
@@ -45,7 +45,7 @@ closure(Goal, X0, X):-
 
 
 
-%! closure0(+X1, :Goal, -X2) is multi.
+%! closure0(:Goal, +X1, -X2) is multi.
 % Calculates the transitive-reflexive closure of binary predicate `Goal`.
 %
 % @author Ulrich Neumerkel
