@@ -41,7 +41,7 @@
     row_to_list/2, % +Row:compound
                    % -List:list
     rows_to_resources/2 % +Rows:list(compound)
-                        % -Resources:ordset(or([bnode,iri,literal]))
+                        % -Resources:ordset(rdf_term)
   ]
 ).
 
@@ -158,7 +158,7 @@ row_to_list(Row, List):-
 
 %! rows_to_resource(
 %!   +Rows:list(compound),
-%!   -Resources:ordset(or([bnode,iri,literal]))
+%!   -Resources:ordset(rdf_term)
 %! ) is det.
 % Returns the ordered set of resources that occur in
 %  the given SPARQL result set rows.
