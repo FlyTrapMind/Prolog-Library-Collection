@@ -7,6 +7,8 @@
                  % ?Dict:dict
     list_pair/2, % ?List:list
                  % ?Pair:pair
+    merge_pairs_by_key/2, % +Pairs:list(pair)
+                          % -Merged:list(pair)
     number_of_equivalence_pairs/3, % +EquivalenceSets:list(ordset)
                                    % -NumberOfPairs:nonneg
                                    % +Options:list(nvpair)
@@ -105,6 +107,22 @@ list_pair([X,Y], X-Y).
 
 
 
+%! merge_pairs_by_key(+Pairs:list(pair), -Merged:list(pair)) is det.
+
+merge_pairs_by_key([], []).
+merge_pairs_by_key([K-V|T1], [K-VMerge|T3]):-
+  same_key(K, [K-V|T1], VMerge, T2),
+  merge_pairs_by_key(T2, T3).
+
+same_key(_, L, [], L).
+same_key(K, [K-V|L1], VMerge2, L2):- !,
+  same_key(K, L1, VMerge1, L2),
+  ord_union(VMerge1, V, VMerge2).
+same_key(K, [_|L1], VMerge, L2):-
+  same_key(K, L1, VMerge, L2).
+
+
+
 %! number_of_equivalence_pairs(
 %!   +EquivalenceSets:list(ordset),
 %!   -NumberOfPairs:nonneg,
@@ -130,12 +148,9 @@ number_of_equivalence_pairs(EqSets, NumberOfPairs, Options):-
 
 cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options):-
   NumberOfSymmetricAndTransitivePairs is Cardinality * (Cardinality - 1),
-  (
-    option(reflexive(true), Options, true)
-  ->
-    NumberOfPairs is NumberOfSymmetricAndTransitivePairs + Cardinality
-  ;
-    NumberOfPairs = NumberOfSymmetricAndTransitivePairs
+  (   option(reflexive(true), Options, true)
+  ->  NumberOfPairs is NumberOfSymmetricAndTransitivePairs + Cardinality
+  ;   NumberOfPairs = NumberOfSymmetricAndTransitivePairs
   ).
 
 
@@ -260,14 +275,10 @@ pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
 % Add to an existing set.
 pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
   select(OldSet, Sets1, Sets2),
-  (
-    member(From, OldSet)
-  ->
-    ord_add_element(OldSet, To, NewSet)
-  ;
-    member(To, OldSet)
-  ->
-    ord_add_element(OldSet, From, NewSet)
+  (   member(From, OldSet)
+  ->  ord_add_element(OldSet, To, NewSet)
+  ;   member(To, OldSet)
+  ->  ord_add_element(OldSet, From, NewSet)
   ), !,
   ord_add_element(Sets2, NewSet, Sets3),
   pairs_to_sets(Pairs, Sets3, AllSets).
