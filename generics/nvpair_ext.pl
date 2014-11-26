@@ -27,6 +27,7 @@ nvpair(Name, Value, NVPair):-
   call_det(nvpair0, term-Name, term-Value, nonvar-NVPair).
 
 nvpair0(Name, Value, Name=Value).
+nvpair0(Name, Value, Name-Value).
 nvpair0(Name, Value, NVPair):-
   NVPair =.. [Name,Value].
 
