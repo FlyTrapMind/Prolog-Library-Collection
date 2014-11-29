@@ -14,6 +14,7 @@
     common_atom_prefix/3, % +Atom1:atom
                           % +Atom2:atom
                           % -Prefix:atom
+    empty_atom/1, % ?Empty:atom
     first_split/3, % +Atom:atom
                    % +Split:atom
                    % -FirstSubatom:atom
@@ -185,6 +186,14 @@ common_atom_prefix(Atom1, Atom2, Prefix):-
   maplist(atom_codes, [Atom1,Atom2], [Codes1,Codes2]),
   common_list_prefix(Codes1, Codes2, PrefixCodes),
   atom_codes(Prefix, PrefixCodes).
+
+
+
+%! empty_atom(+Empty:atom) is semidet.
+%! empty_atom(-Empty:atom) is det.
+% Succeeds only on the empty atom.
+
+empty_atom('').
 
 
 
