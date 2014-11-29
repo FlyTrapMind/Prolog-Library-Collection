@@ -5,8 +5,7 @@
                         % -Width:float
                         % -Height:float
     image_file/1, % +File:atom
-    image_file_extension/1, % ?FileExtension:atom
-    image_url/1 % +Url:url
+    image_file_extension/1 % ?FileExtension:atom
   ]
 ).
 
@@ -20,12 +19,9 @@ Support for image files.
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(process)).
-:- use_module(library(pure_input)).
 :- use_module(library(readutil)).
 
 :- use_module(generics(db_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
@@ -81,13 +77,3 @@ image_file_extension(Ext):-
 
 image_file_extension0(Ext):-
   user:prolog_file_type(Ext, image).
-
-
-%! image_url(+Url:url) is semidet.
-% Succeeds if the given Url locates an image file.
-
-image_url(Url):-
-  is_url(Url),
-  uri_component(Url, path, Path),
-  image_file(Path).
-

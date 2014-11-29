@@ -41,16 +41,16 @@
     row_to_list/2, % +Row:compound
                    % -List:list
     rows_to_resources/2 % +Rows:list(compound)
-                        % -Resources:ordset(or([bnode,iri,literal]))
+                        % -Resources:ordset(rdf_term)
   ]
 ).
 
 /** <module> Row extensions
 
 Support for row compound terms, i.e. terms of the following form:
-~~~{.pl}
+```prolog
 row(Arg1, ..., ArgN)
-~~~
+```
 
 Row terms are used in [library(csv)] and [library(semweb/sparql_client)].
 
@@ -59,7 +59,7 @@ Row terms are used in [library(csv)] and [library(semweb/sparql_client)].
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(ordsets)).
 
 
@@ -158,7 +158,7 @@ row_to_list(Row, List):-
 
 %! rows_to_resource(
 %!   +Rows:list(compound),
-%!   -Resources:ordset(or([bnode,iri,literal]))
+%!   -Resources:ordset(rdf_term)
 %! ) is det.
 % Returns the ordered set of resources that occur in
 %  the given SPARQL result set rows.

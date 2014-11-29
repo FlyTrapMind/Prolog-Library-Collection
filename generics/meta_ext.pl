@@ -52,7 +52,7 @@ Extensions to the SWI-Prolog meta predicates.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/03-2014/06
+         2014/03-2014/06, 2014/10
 */
 
 :- use_module(library(aggregate)).
@@ -71,7 +71,6 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(nth0_call(+,1,+,+)).
 :- meta_predicate(loop_until_true(0)).
 :- meta_predicate(loop_until_true0(+,0)).
-:- meta_predicate(setoff_alt(+,0,-)).
 :- meta_predicate(update_datastructure(3,+,+,-)).
 
 :- dynamic(memo_/1).
@@ -113,14 +112,15 @@ reset_memo:-
 % the original ordering of elements to be retained
 % in case the `Ordering` argument is not instantiated.
 %
-% ~~~{.pl}
+% ```prolog
 % default(=, Ordering),
 % once(call(Ordering, Elements1, Elements2))
-% ~~~
+% ```
 
 default(_, X):-
   nonvar(X), !.
 default(X, X).
+
 
 
 %! default_goal(:Goal, ?Value) is det.
@@ -134,11 +134,11 @@ default(X, X).
 % but also allows the start node to be uninstantiated, instantiating it
 % to a randomly chosen start node.
 %
-% ~~~{.pl}
+% ```prolog
 % graph_traversal(StartNode):-
 %   default_goal(random_start_node, StartNode),
 %   ...
-% ~~~
+% ```
 
 default_goal(_, X):-
   ground(X), !.
@@ -169,20 +169,6 @@ generic(P1, Context, Args):-
     current_predicate(M:P2/Arity),
     apply(M:P2, Args)
   ).
-
-
-
-% FINDALL RELATED PREDICATES %
-
-% @tbd Run this with help_web/1!
-setoff_alt(Format, Goal, _Set):-
-  call(Goal),
-  (tmp(Format) -> true ; assertz(tmp(Format))),
-  fail.
-setoff_alt(_Format, _Goal, Set):-
-  findall(Format, tmp(Format), Set0),
-  retractall(tmp(_)),
-  sort(Set0, Set).
 
 
 
@@ -229,7 +215,7 @@ mapset(Goal, List, Set):-
 %! nth0_call(:Goal, +Index:nonneg, +Argument) .
 %! nth0_call(+Options:list(nvpair), :Goal, +Index:nonneg, +Argument) .
 % The following options are supported:
-%   * =|minus(+UseMinus:boolean)|=
+%   * `minus(+UseMinus:boolean)`
 %     When `true` (default `false`), uses nth0_minus/4
 %     instead of nth0/4. See module [list_ext].
 

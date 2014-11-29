@@ -31,25 +31,25 @@ Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
 @tbd Remove dependency of plTree.
-@version 2014/04, 2014/06-2014/08
+@version 2014/04, 2014/06-2014/08, 2014/10
 */
 
 :- use_module(library(archive)).
+:- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(http/http_open)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(pairs)).
+:- use_module(library(semweb/rdf_db), [rdf_atom_md5/3]).
 :- use_module(library(zlib)).
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(meta_ext)).
 :- use_module(generics(typecheck)).
-:- use_module(generics(uri_ext)).
 :- use_module(os(dir_ext)).
 :- use_module(os(file_ext)).
 :- use_module(os(io_ext)).
 
-:- thread_local(entry_path/1).
 :- thread_local(entry_property/2).
 
 :- meta_predicate(archive_goal(+,1)).
@@ -71,7 +71,7 @@ archive_create(File, CompressedFile):-
   (
     var(CompressedFile)
   ->
-    file_type_alternative(File, gzip, CompressedFile)
+    file_kind_alternative(File, gzip, CompressedFile)
   ;
     true
   ),
@@ -113,35 +113,29 @@ archive_extract(Source, Dir, Filters, EntryPairs2):-
 archive_extract0(Archive, Filters, Dir):-
   archive_filters(Archive, Filters),
   repeat,
-  (
-    archive_next_header(Archive, RelativeFile),
-    forall(
-      archive_header_property(Archive, Property),
-      assert(entry_property(RelativeFile, Property))
-    )
-  ->
-    setup_call_cleanup(
-      archive_open_entry(Archive, Read),
-      (
-        relative_file_path(File, Dir, RelativeFile),
-	% Directory files are re-created.
-	% Non-directory files are copied from stream.
-	(
-	  entry_property(RelativeFile, filetype(directory))
-	->
-	  make_directory_path(File)
-	;
-          create_file_directory(File),
-          file_from_stream(File, Read)
-	),
-        %%%%print_message(informational, archive_extracted(File)),
-        true
+  (   archive_next_header(Archive, RelativeFile),
+      forall(
+        archive_header_property(Archive, Property),
+        assert(entry_property(RelativeFile, Property))
+      )
+  ->  setup_call_cleanup(
+        archive_open_entry(Archive, Read),
+        (
+          relative_file_path(File, Dir, RelativeFile),
+          % Directory files are re-created.
+          % Non-directory files are copied from stream.
+          (   entry_property(RelativeFile, filetype(directory))
+          ->  make_directory_path(File)
+          ;   create_file_directory(File),
+              write_stream_to_file(Read, File)
+          ),
+          debug(archive_ext, 'Extracted entry ~a', [File])
+        ),
+        close(Read)
       ),
-      close(Read)
-    ),
-    fail
-  ; !,
-    true
+      fail
+  ;   !,
+      true
   ).
 
 
@@ -150,9 +144,9 @@ archive_extract0(Archive, Filters, Dir):-
 % Extract files recursively, e.g. first `gunzip`, then `tar`.
 %
 % Options are passed to directory_files/3. Important are:
-%   * =|file_types(+FileTypes:list(atom))|=
+%   * `file_types(+FileTypes:list(atom))`
 %     Only extracts files of the given types.
-%   * =|recursive(+Recursive:boolean)|=
+%   * `recursive(+Recursive:boolean)`
 %     Includes archives that reside in subdirectories.
 
 archive_extract_directory(Dir, Options):-
@@ -182,7 +176,7 @@ archive_goal(File, Goal):-
     close(Read)
   ).
 archive_goal(Url, Goal):-
-  is_url(Url), !,
+  is_uri(Url), !,
   setup_call_cleanup(
     http_open(Url, Read, []),
     archive_goal0(Read, Goal),
@@ -202,7 +196,7 @@ archive_goal(File, Goal, Arg1):-
     close(Read)
   ).
 archive_goal(Url, Goal, Arg1):-
-  is_url(Url), !,
+  is_uri(Url), !,
   setup_call_cleanup(
     http_open(Url, Read, []),
     archive_goal0(Read, Goal, Arg1),
@@ -222,7 +216,7 @@ archive_goal(File, Goal, Arg1, Arg2):-
     close(Read)
   ).
 archive_goal(Url, Goal, Arg1, Arg2):-
-  is_url(Url), !,
+  is_uri(Url), !,
   setup_call_cleanup(
     http_open(Url, Read, []),
     archive_goal0(Read, Goal, Arg1, Arg2),
@@ -271,7 +265,7 @@ archive_goal0(Source, Goal, Arg1, Arg2):-
 %
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- absolute_file_name(data('abcde.tar.gz'), File, [access(read)]),
 %    archive_info(File).
 % ab.tar.gz
@@ -310,7 +304,7 @@ archive_goal0(Source, Goal, Arg1, Arg2):-
 %   size(2)
 %   format(posix ustar format)
 % File = '.../data/abcde.tar.gz'.
-% ~~~
+% ```
 
 archive_info(Source):-
   archive_goal(Source, archive_info0, 0).
@@ -387,8 +381,9 @@ source_directory_name(File, Dir):-
   is_absolute_file_name(File), !,
   file_directory_name(File, Dir).
 source_directory_name(Url, Dir):-
-  is_url(Url), !,
-  url_nested_directory(data, Url, Dir).
+  is_uri(Url), !,
+  rdf_atom_md5(Url, 1, Md5),
+  create_directory(data, [Md5], Dir).
 
 
 
@@ -407,9 +402,6 @@ prolog:message(archive_entry(Indent1,Archive,EntryName)) -->
     succ(Indent1, Indent2)
   },
   archive_properties(Indent2, Properties).
-
-prolog:message(archive_extracted(File)) -->
-  ['    [EXTRACTED] ~w'-[File]].
 
 archive_header(Indent, EntryName) -->
   indent(Indent),

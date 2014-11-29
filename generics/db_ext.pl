@@ -29,11 +29,11 @@ Replacement predicates should specify which parameters
  are to be replaced and which are to stay the same.
 
 For example [1] should replace [2] but not [3].
-~~~{.pl}
+```prolog
 [1]   rdf_namespace_color(rdf, red)
 [2]   rdf_namespace_color(rdf, blue)
 [3]   rdf_namespace_color(rdfs, blue)
-~~~
+```
 
 @author Wouter Beek
 @version 2013/04-2013/05, 2013/08, 2014/07

@@ -1,161 +1,340 @@
 :- module(
   radix,
   [
-    between_hex/3, % +LowHex:atom
-                   % +HighHex:atom
-                   % ?Number:integer
-    dec_to_hex/2, % +DecimalNumber:nonneg,
-                  % -HexadecimalNumber:atom
-    decimal_to_digits/2, % +DecimalNumber:integer
-                         % -DecimalDigits:list(between(0,9))
-    decimal_to_digits/3, % +DecimalNumber:integer
-                         % +Radix:oneof([2,8,10])
-                         % -DecimalDigits:list(between(0,9))
-    digits_to_decimal/2, % +DecimalDigits:list(between(0,9))
-                         % -DecimalNumber:integer
-    digits_to_decimal/3, % +DecimalDigits:list(between(0,15))
-                         % +Radix:integer
-                         % -DecimalNumber:integer
-    hex_value/2, % +HexadecimalValue:atom
-                 % -DecimalValue:nonneg
-    number_to_decimal/3 % +RadixNumber:atomic
-                        % +Radix:between(2,16)
-                        % -DecimalNumber:integer
+    between_radix/3, % +Low:compound
+                     % +High:compound
+                     % ?Number:compound
+    digit_weight/2, % ?Digit:hex
+                    % ?Weight:between(0,15)
+    digits_decimal/2, % ?Digits:list(hex)
+                      % ?Decimal:nonneg
+    digits_radix/2, % ?Digits:list(hex)
+                    % ?Number:compound
+    hexadecimal_digit/1, % ?Digit:hex
+    hexadecimal_digit_weight/2, % ?Digit:hex
+                                % ?Weight:between(0,15)
+    radix/2, % +From:compound
+             % ?To:compound
+    weights_binary/2, % ?Weights:list(between(0,15))
+                      % ?Binary:nonneg
+    weights_decimal/2, % ?Weights:list(between(0,15))
+                       % ?Decimal:nonneg
+    weights_fraction/2, % +Weights:list(between(0,9))
+                        % -Fraction:between(0.0,1.0)
+    weights_hexadecimal/2, % ?Weights:list(between(0,15))
+                           % ?Hexadecimal:atom
+    weights_octal/2, % ?Weights:list(between(0,15))
+                     % ?Octal:nonneg
+    weights_radix/2 % ?Weights:list(between(0,15))
+                    % ?Number:compound
   ]
 ).
 
-/** <module> RADIX
+/** <module> Mathematics: Radix conversion
 
-Predicate for transforming numbers with a different radix.
+Predicate for transforming numbers between
+positional notations of different radix.
 
 @author Wouter Beek
-@tbd Study the radix topic further and reimplement these predicates
-     in a more generic way.
-@version 2013/07-2013/08
+@version 2013/07-2013/08, 2014/09-2014/11
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
+:- use_module(library(error)).
+
+:- use_module(generics(char_ext)).
+:- use_module(generics(list_ext)).
+:- use_module(generics(typecheck)).
+
+:- multifile(error:has_type/2).
+error:has_type(hex, Value):-
+  error:has_type(or([between(0,9),oneof([a,b,c,d,e,f])]), Value).
+error:has_type(rad_name, Value):-
+  error:has_type(oneof([bin,oct,dec,hex]), Value).
+error:has_type(rad_number, Value):-
+  error:has_type(oneof([2,8,10,16]), Value).
 
 
 
-between_hex(LowHex, HighHex, Number):-
-  number_to_decimal(LowHex, 16, Low),
-  number_to_decimal(HighHex, 16, High),
-  between(Low, High, Number).
 
-decimal_to_digits(DecimalNumber, DecimalDigits):-
-  atom_chars(DecimalNumber, Chars),
-  maplist(atom_number, Chars, DecimalDigits).
 
-decimal_to_digits(D, R, Sol):-
-  decimal_to_digits(D, R, [], Sol).
+%! between_radix(+Low:compound, +High:compound, +Number:compound) is semidet.
+%! between_radix(+Low:compound, +High:compound, -Number:compound) is nondet.
 
-decimal_to_digits(D, R, A, A):-
-  D < R, !.
-decimal_to_digits(D, R, A, Sol):-
-  H is D mod R,
-  NewD is D // R,
-  decimal_to_digits(NewD, R, [H|A], Sol).
-
-digits_to_decimal(DecimalDigits, DecimalNumber):-
-  digits_to_decimal(DecimalDigits, 10, DecimalNumber).
-
-%! digits_to_decimal(
-%!   +DecimalDigits:list(integer),
-%!   +Radix:integer,
-%!   -DecimalNumber:integer
-%! ) is det.
-% Process the decimal digits from left to right, using the radix to multiply
-% the result at each step; returning the decimal number.
-%
-% @arg DecimalDigits A list of decimal digits.
-%      Conversion from -- for instance -- hexadecimal digits has
-%      already occured before this predicate is invoked.
-% @arg Radix An integer indicating the radix of the decimal digits.
-% @arg DecimalNumber An integer that is the given decimal digits
-%      under the given radix.
-
-digits_to_decimal(Ds, Radix, D):-
-  aggregate_all(
-    sum(ToDPart),
-    (
-      nth0(Position, Ds, FromD),
-      ToDPart is FromD * Radix ** Position
-    ),
-    D
+between_radix(Low, High, Number):-
+  radix(Low, dec(LowDec)),
+  radix(High, dec(HighDec)),
+  % If Number is ground it is more efficient to first convert it to decimal
+  % and then check whether it is between (rather than generating values
+  % that are between).
+  % This also makes the `(+,+,+)`-case semi-deterministic.
+  (   ground(Number)
+  ->  radix(Number, dec(NumberDec)),
+      between(LowDec, HighDec, NumberDec)
+  ;   between(LowDec, HighDec, NumberDec),
+      radix(Number, dec(NumberDec))
   ).
 
 
-%! hex_value(-HexadecimalValue:atom, +DecimalValue:nonneg) is det.
-%! hex_value(+HexadecimalValue:atom, -DecimalValue:nonneg) is det.
-% @tbd Allow negative values.
 
-hex_value(HexValue, DecValue):-
-  atom_chars(HexValue, HexDigits),
-  hex_digits(HexDigits, 0, DecValue).
+%! digit_weight(+Digit:hex, -Weight:between(0,15)) is det.
+%! digit_weight(-Digit:hex, +Weight:between(0,15)) is det.
 
-
-%! dec_hex(+Dec:nonneg, +Hex:atom) is semidet.
-%! dec_hex(+Dec:nonneg, -Hex:atom) is det.
-%! dec_hex(-Dec:nonneg, +Hex:atom) is det.
-
-dec_hex(Dec, Hex2):-
-  integer(Dec), !,
-  dec_to_hex(Dec, Hex1),
-  reverse(Hex1, Hex2).
-dec_hex(Dec, Hex):-
-  hex_to_dec(Hex, Dec).
+digit_weight(Weight, Weight):-
+  between(0, 9, Weight).
+digit_weight(a, 10).
+digit_weight(b, 11).
+digit_weight(c, 12).
+digit_weight(d, 13).
+digit_weight(e, 14).
+digit_weight(f, 15).
 
 
-%! dec_to_hex(+Dec:nonneg, -Hex:atom) is det.
 
-dec_to_hex(Dec, Hex2):-
-  dec_to_hex_(Dec, Hex1),
-  reverse(Hex1, Hex2).
+%! digits_decimal(+Digits:list(hex), -Decimal:nonneg) is det.
+%! digits_decimal(-Digits:list(hex), +Decimal:nonneg) is det.
 
-dec_to_hex_(Dec1, [H|T]):-
-  Rem is Dec1 mod 16,
-  code_type(H, xdigit(Rem)),
-  Dec2 is (Dec1 - Rem) / 16,
-  dec_to_hex_(Dec2, T).
+digits_decimal(Digits, Decimal):-
+  digits_radix(Digits, dec(Decimal)).
 
 
-%! hex_to_dec(+Hex:atom, -Dec:nonneg) is det.
 
-hex_to_dec(Hex1, Dec):-
-  atom(Hex1), !,
-  atom_codes(Hex1, Hex2),
-  hex_to_dec(Hex2, Dec).
-hex_to_dec(Hex, Dec):-
-  is_list(Hex),
-  hex_to_dec(Hex, 0, Dec).
+%! digits_radix(+Digits:list(hex), -Number:compound) is det.
+%! digits_radix(-Digits:list(hex), +Number:compound) is det.
 
-hex_to_dec([], Dec, Dec).
-hex_to_dec([Hex|T], Sum1, Dec):-
-  code_type(Hex, xdigit(HDec)),
-  Sum2 is Sum1 * 16 + HDec,
-  hex_to_dec(T, Sum2, Dec).
+digits_radix(Digits, Number):-
+  nonvar(Digits), !,
+  maplist(hexadecimal_digit_weight, Digits, Weights),
+  weights_radix(Weights, Number).
+digits_radix(Digits, Number):-
+  nonvar(Number), !,
+  weights_radix(Weights, Number),
+  maplist(hexadecimal_digit_weight, Digits, Weights).
 
 
-hex_digits([], N, N).
-hex_digits([H|T], N1, N):-
-  char_type(H, xdigit(N0)),
-  N2 is N1 * 16 + N0,
-  hex_digits(T, N2, N).
+
+%! hexadecimal_digit(+Digit:hex) is semidet.
+%! hexadecimal_digit(-Digit:hex) is multi.
+
+hexadecimal_digit(Digit):-
+  hexadecimal_digit_weight(Digit, _).
 
 
-%! number_to_decimal(
-%!   +RadixNumber:atomic,
-%!   +Radix:between(2,16),
-%!   -DecimalNumber:integer
+
+%! hexadecimal_digit_weight(+Digit:hex, +Weight:between(0,15)) is semidet.
+%! hexadecimal_digit_weight(+Digit:hex, -Weight:between(0,15)) is det.
+%! hexadecimal_digit_weight(-Digit:hex, +Weight:between(0,15)) is det.
+
+hexadecimal_digit_weight(Weight, Weight):-
+  between(0, 9, Weight), !.
+hexadecimal_digit_weight(a, 10).
+hexadecimal_digit_weight(b, 11).
+hexadecimal_digit_weight(c, 12).
+hexadecimal_digit_weight(d, 13).
+hexadecimal_digit_weight(e, 14).
+hexadecimal_digit_weight(f, 15).
+
+
+
+%! radix(+From:compound, +To:compound) is det.
+%! radix(+From:compound, -To:compound) is det.
+% Radix conversion between often used bases.
+%
+% From and To make use of the followig radix notations:
+%   - bin(+nonneg)
+%   - dec(+nonneg)
+%   - hex(+atom)
+%   - oct(+nonneg)
+%
+% If From is an atom it is assumed to be `hex(+atom)`.
+% If From is a non-negative integer it is assumed to be `dec(+nonneg)`.
+%
+% @throws instantiation_error If both From and To are uninstantiated.
+
+% Swap arguments or
+% instantiation error.
+radix(From, To):-
+  \+ ground(From), !,
+  % One argument has to be ground.
+  (   \+ ground(To)
+  ->  instantiation_error(To)
+  ;   radix(To, From)
+  ).
+% Non-radix notation for input: hexadecimal.
+radix(From, To):-
+  atom(From), !,
+  radix(hex(From), To).
+% Non-radix notation for input: decimal.
+radix(From, To):-
+  nonneg(From), !,
+  radix(dec(From), To).
+% Radix notation for input: binary, octal, decimal, hexadecimal.
+radix(From, To):-
+  From =.. [FromRadix,FromValue], !,
+  to_decimal(FromRadix, FromValue, Decimal),
+  % If there is no radix for the output value then we assume decimal base.
+  (   var(To)
+  ->  ToRadix = dec,
+      To = dec(ToValue)
+  ;   To =.. [ToRadix,ToValue]
+  ),
+  from_decimal(Decimal, ToRadix, ToValue).
+
+
+
+%! weights_binary(+Weights:list(between(0,15)), -Binary:nonneg) is det.
+%! weights_binary(-Weights:list(between(0,1)), +Binary:nonneg) is det.
+
+weights_binary(Weights, Binary):-
+  weights_radix(Weights, bin(Binary)).
+
+
+
+%! weights_decimal(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
+%! weights_decimal(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
+
+weights_decimal(Weights, Decimal):-
+  weights_radix(Weights, dec(Decimal)).
+
+
+
+%! weights_fraction(
+%!   +Weights:list(between(0,9)),
+%!   -Fraction:between(0.0,1.0)
 %! ) is det.
 
-number_to_decimal(RadixNumber, Radix, DecimalNumber):-
-  atom_chars(RadixNumber, RadixDigits),
-  maplist(number_to_decimal, RadixDigits, DecimalDigits),
-  digits_to_decimal(DecimalDigits, Radix, DecimalNumber).
+weights_fraction(Weights, Fraction):-
+  aggregate_all(
+    sum(N),
+    (
+      nth1(Index, Weights, Weight),
+      N is Weight * 10 ** (-1 * Index)
+    ),
+    Fraction
+  ).
 
-number_to_decimal(RadixDigit, DecimalNumber):-
-  char_type(RadixDigit, xdigit(DecimalNumber)).
 
+
+%! weights_hexadecimal(+Weights:list(between(0,15)), -Hexadecimal:atom) is det.
+%! weights_hexadecimal(-Weights:list(between(0,15)), +Hexadecimal:atom) is det.
+
+weights_hexadecimal(Weights, Hexadecimal):-
+  weights_radix(Weights, hex(Hexadecimal)).
+
+
+
+%! weights_octal(+Weights:list(between(0,15)), -Octal:nonneg) is det.
+%! weights_octal(-Weights:list(between(0,7)), +Octal:nonneg) is det.
+
+weights_octal(Weights, Octal):-
+  weights_radix(Weights, oct(Octal)).
+
+
+
+%! weights_radix(+Weights:between(0,15), -Number:compound) is det.
+%! weights_radix(-Weights:between(0,15), +Number:compound) is det.
+
+weights_radix(Weights, Number):-
+  nonvar(Weights),
+  Number =.. [Radix,Value], !,
+  maplist(char_weight, Chars, Weights),
+  (   Radix == hex
+  ->  atom_chars(Value, Chars)
+  ;   number_chars(Value, Chars)
+  ).
+weights_radix(Weights, Number):-
+  nonvar(Number), !,
+  atom_chars(Number, Chars),
+  maplist(char_weight, Chars, Weights).
+
+
+
+
+
+% HELPERS
+
+%! char_weight(+Char:char, -Weight:between(0,15)) is det.
+%! char_weight(-Char:char, +Weight:between(0,15)) is det.
+
+char_weight(Char, Weight):-
+  char_type(Char, xdigit(Weight)).
+
+
+
+%! from_decimal(
+%!   +Decimal:nonneg,
+%!   +Radix:rad_name,
+%!   -Value:or([atom,nonneg])
+%! ) is det.
+
+from_decimal(Decimal, dec, Decimal):- !.
+from_decimal(Decimal, Radix, Value):-
+  radix_value(Radix, RadixValue),
+  from_decimal(Decimal, RadixValue, [], Chars),
+  radix_chars_to_atomic(Radix, Chars, Value).
+
+from_decimal(0, _, Chars, Chars):- !.
+from_decimal(Decimal, Radix, Chars, Sol):-
+  Value is Decimal mod Radix,
+  radix_value(Radix, Char, Value),
+  Remainder is Decimal div Radix,
+  from_decimal(Remainder, Radix, [Char|Chars], Sol).
+
+
+
+%! radix_chars_to_atomic(
+%!   +Radix:rad_name,
+%!   +Chars:list(char),
+%!   -Value:atomic
+%! ) is det.
+
+radix_chars_to_atomic(hex, Chars, Atom):- !,
+  atom_chars(Atom, Chars).
+radix_chars_to_atomic(Radix, Chars, Value):-
+  memberchk(Radix, [bin,oct,dec]),
+  number_chars(Value, Chars).
+
+
+
+%! radix_value(+Radix:rad_name, -Value:rad_number) is det.
+
+radix_value(bin,  2).
+radix_value(dec, 10).
+radix_value(hex, 16).
+radix_value(oct,  8).
+
+
+
+%! radix_value(+Radix:rad_number, +Char:char, +Value:between(0,15)) is semidet.
+%! radix_value(+Radix:rad_number, +Char:char, -Value:between(0,15)) is det.
+%! radix_value(+Radix:rad_number, -Char:char, +Value:between(0,15)) is det.
+
+radix_value(16, Char, Value):- !,
+  char_type(Char, xdigit(Value)).
+radix_value(Radix, Char, Value):-
+  char_type(Char, digit(Value)),
+  Value < Radix.
+
+
+
+%! to_decimal(
+%!   +Radix:rad_number,
+%!   +Value:or([atom,list(char),list(code),nonneg,string]),
+%!   -Decimal:nonneg
+%! ) is det.
+
+to_decimal(dec, Decimal, Decimal):-
+  nonneg(Decimal), !.
+to_decimal(Radix, Value, Decimal):-
+  radix_value(Radix, RadixValue),
+  to_chars(Value, Chars),
+  aggregate_all(
+    sum(PositionalValue),
+    (
+      nth0_minus(Position, Chars, Char),
+      radix_value(RadixValue, Char, Weight),
+      PositionalValue is Weight * RadixValue ** Position
+    ),
+    Decimal
+  ).

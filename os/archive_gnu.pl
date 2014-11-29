@@ -61,6 +61,8 @@ user:prolog_file_type(rar, rar).
 %:- iana_register_mime(application, 'x-tar', tar).
 user:prolog_file_type(tar, archive).
 user:prolog_file_type(tar, tar).
+user:prolog_file_type(tgz, tar).
+user:prolog_file_type(tgz, archive).
 % application/zip
 % .zip
 %:- iana_register_mime(application, 'zip', zip).
@@ -96,7 +98,6 @@ extract_archive(FromFile1, Conversions):-
   file_alternative(FromFile1, _, _, '.tar.gz', FromFile2),
   rename_file(FromFile1, FromFile2),
   extract_archive(FromFile2, Conversions).
-user:prolog_file_type(tgz, archive).
 extract_archive(FromFile, L):-
   file_name_extension(Base, Ext, FromFile),
   prolog_file_type(Ext, archive), !,

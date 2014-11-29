@@ -9,9 +9,12 @@
     atom_truncate/3, % +Atom:atom
                      % +MaximumLength:integer
                      % -TruncatedAtom:atom
+    codes_atom/2, % ?Codes:list(nonneg)
+                  % ?Atom:atom
     common_atom_prefix/3, % +Atom1:atom
                           % +Atom2:atom
                           % -Prefix:atom
+    empty_atom/1, % ?Empty:atom
     first_split/3, % +Atom:atom
                    % +Split:atom
                    % -FirstSubatom:atom
@@ -43,7 +46,7 @@
   ]
 ).
 
-/** <module> Atom extensions
+/** <module> Atom: Extensions
 
 Predicates for manipulating atoms.
 
@@ -56,7 +59,7 @@ In-atom replacements can best be made using DCGs.
 This requires the atom to be translated to/from a list of numeric codes.
 For example, escaping spaces and grave accent (e.g. in URIs):
 
-~~~{.pl}
+```prolog
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_meta)).
 :- use_module(plDcg(dcg_replace)).
@@ -66,7 +69,7 @@ dcg_phrase(
   AtomIn,
   AtomOut
 )
-~~~
+```
 
 # Split
 
@@ -86,14 +89,15 @@ Stripping atoms of an arbitrary number of subatoms can be done using
 
 Titlecase atoms can be created using upcase_atom/2.
 
---
+---
 
 @author Wouter Beek
-@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04, 2014/08
+@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04,
+         2014/08, 2014/10-2014/11
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(generics(char_ext)).
 :- use_module(generics(list_ext)).
@@ -118,6 +122,7 @@ atom_splits(Splits, Atom1, [H|T]):-
 atom_splits(_, Subatom, [Subatom]).
 
 
+
 %! atom_to_term(+Atom:atom, -Term:term) is det.
 % Returns the term described by the atom.
 %
@@ -127,6 +132,7 @@ atom_splits(_, Subatom, [Subatom]).
 
 atom_to_term(Atom, Term):-
   atom_to_term(Atom, Term, _Bindings).
+
 
 
 %! atom_truncate(
@@ -162,6 +168,16 @@ atom_truncate(A1, Max, A3):-
   atom_concat(A2, ' ...', A3).
 
 
+
+%! codes_atom(+Codes:list(nonneg), +Atom:atom) is semidet.
+%! codes_atom(+Codes:list(nonneg), -Atom:atom) is det.
+%! codes_atom(-Codes:list(nonneg), +Atom:atom) is det.
+
+codes_atom(Codes, Atom):-
+  atom_codes(Atom, Codes).
+
+
+
 %! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is semidet.
 %! common_atom_prefix(+Atom1:atom, +Atom2:atom, -Prefix:atom) is nondet.
 % Returns the longest common prefix of the given two atoms.
@@ -172,17 +188,27 @@ common_atom_prefix(Atom1, Atom2, Prefix):-
   atom_codes(Prefix, PrefixCodes).
 
 
+
+%! empty_atom(+Empty:atom) is semidet.
+%! empty_atom(-Empty:atom) is det.
+% Succeeds only on the empty atom.
+
+empty_atom('').
+
+
+
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
 % Returns the first split.
 % For the first result this is behaviorally equivalent to:
-% ~~~{.pl}
+% ```prolog
 % atomic_list_concat(Subatoms, Split, Atom),
 % Subatoms = [FirstSubatom|_]
-% ~~~
+% ```
 
 first_split(Atom, Split, FirstSubatom):-
   atom_concat(Subatom, _, Atom),
   atom_concat(FirstSubatom, Split, Subatom).
+
 
 
 %! format_integer(+Integer:integer, +Length:integer, -Atom:atom) is det.
@@ -203,6 +229,7 @@ format_integer(I, L, Out):-
   ZeroLength is L - IL,
   repeating_atom('0', ZeroLength, Zeros),
   atomic_concat(Zeros, I, Out).
+
 
 
 %! new_atom(+Old:atom, -New:atom) is det.
@@ -228,6 +255,7 @@ new_atom(A1, A2):-
   atomic_list_concat(NewSplits, '_', A2).
 
 
+
 %! progress_bar(+Current:integer, End:integer, ProgressBar:atom) is det.
 % Returns an atomic progress bar that displays the current value
 %  onto a scale that runs from `1` to the given end value.
@@ -243,20 +271,14 @@ progress_bar(Current, End, ProgressBar):-
   progress_bar_(Current, End, ProgressBar).
 
 progress_bar_(Current1, End, ProgressBar):-
-  (
-     End =:= 0
-  ->
-     Percentage = 100
-  ;
-     Percentage is round(Current1 / End * 100)
+  (   End =:= 0
+  ->  Percentage = 100
+  ;   Percentage is round(Current1 / End * 100)
   ),
   format_integer(Percentage, 3, Percentage1),
-  (
-     End =:= 0
-  ->
-    Progress = 10
-  ;
-    Progress is round(Current1 / (End / 10))
+  (   End =:= 0
+  ->  Progress = 10
+  ;   Progress is round(Current1 / (End / 10))
   ),
   atom_number(EndAtom, End),
   atom_length(EndAtom, EndLength),
@@ -269,6 +291,7 @@ progress_bar_(Current1, End, ProgressBar):-
     '~w% ~w~w (~w/~w)',
     [Percentage1, Bar, NonBar, Current2, End]
   ).
+
 
 
 %! repeating_atom(+SubAtom:atom, +Repeats:integer, -Atom:atom) is det.
@@ -286,6 +309,7 @@ repeating_atom(SubAtom, Repeats, Atom):-
   NewRepeats is Repeats - 1,
   repeating_atom(SubAtom, NewRepeats, Atom1),
   atomic_concat(Atom1, SubAtom, Atom).
+
 
 
 %! split_atom_length(
@@ -308,6 +332,7 @@ split_atom_length(A1, L, [H|T]):-
   atom_concat(H, A2, A1),
   split_atom_length(A2, L, T).
 split_atom_length(A, _, [A]).
+
 
 
 %! strip_atom(+Strips:list(atom), +In:atom, -Out:atom) is det.
@@ -338,22 +363,25 @@ strip_atom_end(Strips, A1, A3):-
 strip_atom_end(_, A, A).
 
 
-%! to_atom(+Input:or([atom,list(char),list(code),string]), -Atom:atom) is det.
+
+%! to_atom(
+%!   +Input:or([atom,list(char),list(code),number,string]),
+%!   -Atom:atom
+%! ) is det.
+% Notice that the empty codes list and the empty character list
+% both map onto the empty atom.
 
 % Atom.
 to_atom(Atom, Atom):-
   atom(Atom), !.
-% Empty list of chars or codes.
-% Both map onto the empty atom.
-to_atom([], ''):- !.
-to_atom([], ''):- !.
-% Chars
-to_atom([H|T], Atom):-
-  is_char(H), !,
-  atom_chars(Atom, [H|T]).
-% Codes.
+% Empty list.
+to_atom([], '').
+% Non-empty list of characters.
+to_atom(Chars, Atom):-
+  maplist(is_char, Chars), !,
+  atom_chars(Atom, Chars).
+% Non-empty list of codes.
 to_atom(Codes, Atom):-
-  is_list(Codes), !,
   atom_codes(Atom, Codes).
 % Number.
 to_atom(Number, Atom):-

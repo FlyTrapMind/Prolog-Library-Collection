@@ -1,6 +1,8 @@
 :- module(
   math_ext,
   [
+    absolute/2, % ?Number:number
+                % ?Absolute:number
     average/2, % +Numbers:list(number)
                % -Average:number
     betwixt/3, % +Low:integer
@@ -33,6 +35,8 @@
     fractional_integer/2, % +Number:or([float,integer,rational])
                           % -Fractional:integer
     is_fresh_age/2, % +Age:between(0.0,inf)
+                    % +FreshnessLifetime:between(0.0,inf)
+    is_stale_age/2, % +Age:between(0.0,inf)
                     % +FreshnessLifetime:between(0.0,inf)
     log/3, % +Base:integer
            % +X:float
@@ -80,17 +84,36 @@
 Extra arithmetic operations for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05
+@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05,
+         2014/10
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(generics(typecheck)).
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
 :- use_module(math(rational_ext)).
+
+
+
+%! absolute(+Number:number, +Absolute:number) is semidet.
+%! absolute(+Number:number, -Absolute:number) is det.
+%! absolute(-Number:number, +Absolute:number) is multi.
+% @throws instantiation_error If both arguments are uninstantiated.
+
+absolute(N, Abs):-
+  nonvar(N), !,
+  Abs is abs(N).
+absolute(N, Abs):-
+  nonvar(Abs), !,
+  (   N is Abs
+  ;   N is -1 * Abs
+  ).
+absolute(_, _):-
+  instantiation_error(_).
 
 
 
@@ -110,16 +133,13 @@ average(Numbers, Average):-
 % Like ISO between/3, but allowing either `Low` or `High`
 % to be uninstantiated.
 %
-% ### Booundary arguments
-%
-% In some cases it is difficult to call this predicate with uninstantiated
-% boundary arguments, e.g. when these are set by setting/2.
-% For such cases, we allow the boundaries to be `minf` and `inf`,
-% respectively.
+% We allow `Low` to be instantiated to `minf` and `High` to be
+% instantiated to `inf`. In these cases, their values are replaced by
+% fresh variables.
 
 betwixt(Low1, High1, Value):-
-  (Low1 == minf -> true ; Low2 = Low1),
-  (High1 == inf -> true ; High2 = High1),
+  betwixt_lower_bound(Low1, Low2),
+  betwixt_higher_bound(High1, High2),
   betwixt0(Low2, High2, Value).
 
 % Instantiation error: at least one bound must be present.
@@ -143,13 +163,20 @@ betwixt0(Low, High, Value):-
 
 betwixt_high(_, Value, _, Value).
 betwixt_high(Low, Between1, High, Value):-
-  Between2 is Between1 - 1,
+  succ(Between2, Between1),
   betwixt_high(Low, Between2, High, Value).
+
+betwixt_higher_bound(inf, _):- !.
+betwixt_higher_bound(High, High).
 
 betwixt_low(_, Value, _, Value).
 betwixt_low(Low, Between1, High, Value):-
-  Between2 is Between1 + 1,
+  succ(Between1, Between2),
   betwixt_low(Low, Between2, High, Value).
+
+betwixt_lower_bound(minf, _):- !.
+betwixt_lower_bound(Low, Low).
+
 
 
 binomial_coefficient(M, N, BC):-
@@ -217,6 +244,7 @@ cyclic_numlist(Low, High, CycleLength, NumList):-
   numlist(Low, Top, HigherNumList),
   numlist(0, High, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
+
 
 
 % @tbd
@@ -307,11 +335,21 @@ fractional_integer(_, 0).
 
 is_fresh_age(_, inf):- !.
 is_fresh_age(Age, FreshnessLifetime):-
-  Age < FreshnessLifetime.
+  Age =< FreshnessLifetime.
+
+
+%! is_stale_age(
+%!   +Age:between(0.0,inf),
+%!   +FreshnessLifetime:between(0.0,inf)
+%! ) is semidet.
+
+is_stale_age(_, inf):- !, fail.
+is_stale_age(Age, FreshnessLifetime):-
+  Age > FreshnessLifetime.
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
-% Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
+% Logarithm with arbitrary base `Y = log_{Base}(X)`.
 %
 % @arg Base An integer.
 % @arg X An integer.
@@ -382,11 +420,11 @@ multiply_list([H|T], M2):-
 %! ) is det.
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- number_integer_parts(-1.5534633204, X, Y).
 % X = -1,
 % Y = -5534633204.
-% ~~~
+% ```
 %
 % @throws domain_error If `Fractional` is not nonneg.
 
@@ -533,11 +571,6 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
 
 pred(Integer, Predecessor):-
   succ(Predecessor, Integer).
-
-
-smaller_than_or_equal_to(_, inf):- !.
-smaller_than_or_equal_to(X, Y):-
-  X =< Y.
 
 
 %! square(+X:float, -Square:float) is det.

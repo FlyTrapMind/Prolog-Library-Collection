@@ -1,14 +1,14 @@
 :- module(
   list_ext,
   [
-    after/3, % ?Element2
-             % ?Element1
+    after/3, % ?After
+             % ?Before
              % ?List:list
     append_intersperse/3, % +List:list
                           % +Separator
                           % -NewList:list
-    before/3, % ?Element1
-              % ?Element2
+    before/3, % ?Before
+              % ?After
               % ?List:list
     combination/2, % +Lists:list(list)
                    % -Combination:list
@@ -19,17 +19,25 @@
                        % +Length:nonneg
                        % +FillElement
                        % -ToList:list
+    directly_after/3, % ?After
+                      % ?Before
+                      % ?List:list
+    directly_before/3, % ?After
+                       % ?Before
+                       % ?List:list
     element_cut/4, % +List:list
                    % +Element
                    % -List1:list
                    % -List2:list
-    first/2, % +List:list,
+    first/2, % +List:list
              % ?First
-    first/3, % +List:list,
+    first/3, % +List:list
              % +N:integer
              % -Firsts:list
+    first_duplicate/2, % ?FirstDuplicate
+                       % +List:list
     length_cut/4, % +L:list
-                  % +Cut:integer
+                  % +Cut:nonneg
                   % -L1:list
                   % -L2:list
     list_replace/3, % +List:list
@@ -125,25 +133,28 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2017/08
+         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2014/08, 2014/11
 */
 
+:- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(random)).
 
+:- use_module(generics(closure)).
+:- use_module(generics(lambda_meta)).
 :- use_module(generics(typecheck)).
 
 
 
-%! after(?X, ?Y, ?List:list) is nondet.
-% X appears after Y in the given list.
+%! after(?After, ?Before, ?List:list) is nondet.
+% Succeeds if After appears after Before in List.
 %
 % @see The inverse of before/3.
-% @see The inverse of the transitive closure of nextto/3 in library(lists).
 
-after(X, Y, List):-
-  before(Y, X, List).
+after(After, Before, List):-
+  before(Before, After, List).
+
 
 
 %! append_intersperse(+List:list, +Separator, -NewList:list)//
@@ -159,30 +170,19 @@ append_intersperse([H|T1], S, [H,S|T2]):-
   append_intersperse(T1, S, T2).
 
 
-%! before(?X, ?Y, ?List:list) is nondet.
-% X appears before Y in the given list.
-%
-% @see The transitive closure of nextto/3 in library(lists).
-%
-% # Example
-%
-% ~~~{.pl}
-% ?- before(X, Y, [a,b,c]).
-% X = a,
-% Y = b ;
-% X = b,
-% Y = c ;
-% X = a,
-% Y = c ;
-% false.
-% ~~~
 
-before(X, Y, L):-
-  nextto(X, Y, L).
-before(X, Y, L):-
-  nextto(X, Z, L),
-%format(user_output, '~w\n', [Z]),
-  before(Z, Y, L).
+%! before(?Before, ?After, ?List:list) is nondet.
+% Succeeds if Before appears before After in List.
+%
+% @see The transitive closure of directly_before/3.
+
+before(Before, After, List):-
+  closure0(
+    \Before^After^directly_before(Before, After, List),
+    Before,
+    After
+  ).
+
 
 
 %! combination(+Lists:list(list), -Combination:list) is nondet.
@@ -190,7 +190,7 @@ before(X, Y, L):-
 %
 % ## Example
 %
-% ~~~
+% ```
 % ?- combination([[1,2,3],[4,5]], C).
 % C = [1, 4] ;
 % C = [1, 5] ;
@@ -198,7 +198,7 @@ before(X, Y, L):-
 % C = [2, 5] ;
 % C = [3, 4] ;
 % C = [3, 5].
-% ~~~
+% ```
 %
 % @arg Lists A list of lists of terms.
 % @arg Combination A list of terms.
@@ -209,6 +209,7 @@ combination([ListH|ListT], [H|T]):-
   combination(ListT, T).
 
 
+
 %! common_list_prefix(+List1:list, +List2:list, +Sublist:list) is semidet.
 %! common_list_prefix(+List1:list, +List2:list, -Sublist:list) is det.
 % Returns the longest common prefix of the given two lists.
@@ -217,6 +218,7 @@ common_list_prefix([H1|_], [H2|_], []):-
   H1 \= H2, !.
 common_list_prefix([H|T1], [H|T2], [H|T3]):-
   common_list_prefix(T1, T2, T3).
+
 
 
 %! complement_list(
@@ -236,6 +238,36 @@ complement_list(L1, Length2, Fill, L2):-
   append(L1, FillList, L2).
 
 
+
+%! directly_after(?After, ?Before, ?List:list) is nondet.
+% Succeeds if After occurs directly after Before in List.
+%
+% @see Inverse of directly_before/3.
+
+directly_after(After, Before, List):-
+  directly_before(Before, After, List).
+
+
+
+%! directly_before(?Before, ?After, ?List:list) is nondet.
+% Is not semi-deterministic for any instantiation.
+% Example for `(+,+,+)`:
+%
+% ```prolog
+% ?- directly_before(1, 2, [1,2,1,2]).
+% true ;
+% true ;
+% false.
+%
+% ```
+%
+% @see Terminological variant of nextto/3.
+
+directly_before(Before, After, List):-
+  nextto(Before, After, List).
+
+
+
 %! element_cut(+L:list, +Element:atom, -L1:list, -L2:list) is det.
 % Cuts the given list at the given element, returning the two cut lists.
 % The cut element is itself not part of any of the results.
@@ -251,6 +283,7 @@ element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
   element_cut(L, Element, L1, L2).
 
 
+
 %! first(+List:list, ?Element:term) is semidet.
 % Succeeds if the given element is the head of the given list.
 % Fails if the list has no head.
@@ -260,6 +293,7 @@ element_cut([OtherElement | L], Element, [OtherElement | L1], L2):-
 % @see This is the inverse of the default method last/2.
 
 first([H|_], H).
+
 
 
 %! first(+L:list, +N:integer, -First:list) is det.
@@ -276,12 +310,63 @@ first(L, N, First):-
   length_cut(L, N, First, _L2).
 
 
-%! length_cut(+L:list, +Cut:integer, -L1:list, -L2:list) is det.
+
+%! first_duplicate(+FirstDuplicate, +List:list) is semidet.
+%! first_duplicate(-FirstDuplicate, +List:list) is semidet.
+% Succeeds if FirstDuplicate is the first term that appears twice in List
+%  when reading from left to right.
+%
+% ### Use of dif/2
+%
+% The following naive implementation:
+% 
+% ```prolog
+% first_dup(E, [E|L]):-
+%   member(E, L).
+% first_dup(E, [N|L]):-
+%   \+ memberchk(N, L),
+%   first_dup(E, L).
+% ```
+%
+% gives the following answers:
+%
+% ```prolog
+% ?- first_dup(E, [A,B,C]).
+% E = A, A = B ;
+% E = A, A = C ;
+% false.
+% ```
+%
+% missing out on one of the anwers we get when using dif/2:
+%
+% ```swipl
+% ?- first_dup(E, [A,B,C]).
+% E = A, A = B ;
+% E = A, A = C ;
+% E = B, B = C,
+% dif(A, C),
+% dif(A, C) ;
+% false.
+% ```
+%
+% @author Ulrich Neumerkel
+% @see http://stackoverflow.com/questions/10260672/prolog-first-duplicate-value/10322639#10322639
+% @tbd Not sure why SWI-Prolog shows the dif/2 constaint twice...
+
+first_duplicate(X, [_|T]):-
+  member(X, T).
+first_duplicate(X, [H|T]):-
+  maplist(dif(H), T),
+  first_duplicate(X, T).
+
+
+
+%! length_cut(+L:list, +Cut:nonneg, -L1:list, -L2:list) is det.
 % Cuts the given list in two sublists, where the former sublist
 % has the given length.
 %
 % @arg L The full list.
-% @arg Cut An integer indicating the length of the former sublist.
+% @arg Cut A non-negative integer indicating the length of the former sublist.
 % @arg L1 The sublist that is the beginning of =L= with length =Cut=.
 % @arg L2 The sublist that remains after =L1= has been removed from =L=.
 
@@ -301,7 +386,7 @@ length_cut(L, Cut, L1, L2):-
 % Returns the given list in which the given replacements have been made.
 %
 % @arg List The original list.
-% @arg Replacements A list of replacements of the form =|term-term|=.
+% @arg Replacements A list of replacements of the form `term-term`.
 % @arg NewList The list in which all replacants have been replaced.
 
 % Done!
@@ -377,9 +462,9 @@ member_default(Default, _, Default).
 
 
 %! nth0_minus(?Index:nonneg, ?List:list, ?Element) is nondet.
-% Succeeds if the given element occurs at =|length(List) - I|= in list =L=.
+% Succeeds if the given element occurs at `length(List) - I` in list =L=.
 %
-% @arg I The index, an integer in =|[0, length(List) - 1]|=.
+% @arg I The index, an integer in `[0, length(List) - 1]`.
 % @arg L Any list.
 % @arg Element An element occurring in the given list.
 % @see The inverse of default method nth0/3.
@@ -398,9 +483,9 @@ nth0_minus(I, L1, E, R1):-
 
 
 %! nth1_minus(?Index:nonneg, ?List:list, ?Element) is nondet.
-% Succeeds if the given element occurs at =|length(L) - I|= in list =L=.
+% Succeeds if the given element occurs at `length(L) - I` in list =L=.
 %
-% @arg I The index, an integer in =|[0, length(List)]|=.
+% @arg I The index, an integer in `[0, length(List)]`.
 % @arg L Any list.
 % @arg Element An element occurring in the given list.
 % @see The inverse of default method nth1/3.
@@ -477,10 +562,10 @@ random_sublist([H|Sublist], SublistLength1, List1):-
 %
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- remove_sublists([[a],[a,b],[a,b]], Ls).
 % Ls = [[a, b], [a, b]].
-% ~~~
+% ```
 
 remove_sublists(Ls1, Ls3):-
   select(SubL, Ls1, Ls2),
@@ -532,23 +617,23 @@ repeating_list(_, Reps, _):-
 % ## Examples
 %
 % Consecutive applications:
-% ~~~
+% ```
 % ?- L1 = [[1,2,3],[4,5,6],[7,8,9]], replace_nth0(1, L1, E1, E2, L2), replace_nth0(2, E1, 6, a, E2).
 % L1 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
 % E1 = [4, 5, 6],
 % E2 = [4, 5, a],
 % L2 = [[1, 2, 3], [4, 5, a], [7, 8, 9]].
-% ~~~
+% ```
 %
 % Alternative indexes:
-% ~~~
+% ```
 % ?- list_ext:replace_nth1(I, [a,b,a], a, x, L2).
 % I = 1,
 % L2 = [x, b, a] ;
 % I = 3,
 % L2 = [a, b, x] ;
 % false.
-% ~~~
+% ```
 %
 % @author Jan Wielemaker
 % @author Richard O'Keefe

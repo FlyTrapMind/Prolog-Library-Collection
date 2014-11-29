@@ -1,174 +1,181 @@
 :- module(
   file_ext,
   [
-    absolute_file_name_number/4, % +Spec
-                                 % +Options:list(nvpair)
+    absolute_file_name_number/4, % +Spec:compound
                                  % +Number:integer
-                                 % -Absolute:atom
-    base_or_file_to_file/3, % +BaseOrFile:atom
-                            % ?FileType:atom
-                            % -File:atom
+                                 % -Abs:atom
+                                 % +Options:list(nvpair)
     common_prefix_path/3, % +Path1:atom
                           % +Path2:atom
                           % ?CommonPrefixPath:atom
-    copy_file/5, % ?ToDirectory:atom
-                 % ?ToName:atom
-                 % ?ToExtension:atom
-                 % +FromFile:atom
-                 % -ToFile:atom
     create_file/1, % +File:atom
-    create_file/4, % +NestedDir:term
+    create_file/4, % +Spec:term
                    % +Name:atom
                    % +Type:atom
                    % -File:atom
     create_file_directory/1, % +File:atom
+    create_file_link/2, % +File:atom
+                        % +Dir:atom
     file_age/2, % +File:atom
                 % -Age:between(0.0,inf)
-    file_alternative/5, % +FromFile:atom
-                        % ?Directory:atom
+    file_alternative/5, % +FromPath:atom
+                        % ?Dir:atom
                         % ?Name:atom
-                        % ?Extension:atom
-                        % -ToFile:atom
-    file_lines/2, % +File:atom
-                  % -NumberOfLines:nonneg
-    file_name/4, % +File:atom
-                 % ?Dir:atom
-                 % ?Name:atom
-                 % ?Ext:atom
-    file_name/4, % -File:atom
-                 % +Dir:atom
-                 % +Name:atom
-                 % +Ext:atom
-    file_name_type/3, % ?Base:atom
-                      % ?Type:atom
-                      % ?Name:atom
-    file_type/2, % ?FileType:atom
-                 % ?File:atom
-    file_type_alternative/2, % +FromFile:atom
-                             % ?ToFile:atom
-    file_type_alternative/3, % +FromFile:atom
-                             % +ToFileType:atom
-                             % -ToFile:atom
-    hidden_file_name/2, % +File:atom
-                        % -HiddenFile:atom
-    http_path_correction/2, % +HttpPath:atom
-                            % -Path:atom
-    is_absolute_file_name2/1, % ?File:atom
+                        % ?Ext:atom
+                        % -ToPath:atom
+    file_component/3, % +Path:atom
+                      % ?Field:oneof([base,directory,extension,file_type,local])
+                      % ?Component:atom
+    file_components/4, % +Path:atom
+                       % ?Dir:atom
+                       % ?Base:atom
+                       % ?Ext:atom
+    file_kind_alternative/2, % +Path1:atom
+                             % ?Path2:atom
+    file_kind_alternative/3, % +FromPath:atom
+                             % +ToFileKind:atom
+                             % -ToPath:atom
+    file_kind_extension/2, % +FileKind:atom
+                           % ?Ext:atom
+    hidden_file_name/2, % +Path:atom
+                        % ?HiddenPath:atom
     is_fresh_file/2, % +File:atom
                      % +FreshnessLifetime:between(0.0,inf)
-    last_path_component/2, % +Path:atom
-                           % -BaseOrLastSubdir:atom
-    link_file/2, % +ToDirectory:atom
-                 % +FromFile:atom
+    local_file_component/3, % ?Local:atom
+                            % ?Field:oneof([base,extension])
+                            % ?Component:atom
+    local_file_components/3, % ?Local:atom
+                             % ?Base:atom
+                             % ?Ext:atom
     mv2/2, % +From:atom
            % +To:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
-    new_file/2, % +File1:atom
-                % -File2:atom
+    new_file_name/2, % +Path1:atom
+                     % -Path2:atom
     prefix_path/2, % ?PrefixPath:atom
                    % +Path:atom
     relative_file_path/3, % ?Path:atom
                           % ?RelativeTo:atom
                           % ?RelativePath:atom
-    spec_atomic_concat/3, % +Spec
-                          % +Atomic:atom
-                          % -NewSpec
-    split_into_smaller_files/3, % +BigFile:atom
-                                % +SmallDir:atom
-                                % +Prefix:atom
-    touch_file/1 % +File:atom
+    root_prefix/1, % ?Prefix:atom
+    younger_file/2 % +Path1:atom
+                   % +Path2:atom
   ]
 ).
 
-/** <module> File methods extending the standart SWI-Prolog repertoire.
+/** <module> File extensions
 
-Extra methods for creating, opening, removing, and searching files.
+Additional support predicates for creating, opening, removing,
+and searching files.
+These are to be used in addition to
+[SWI-Prolog file build-ins](http://www.swi-prolog.org/pldoc/man?section=files)
+and
+[`library(filesex)`](http://www.swi-prolog.org/pldoc/man?section=filesex).
 
-# Abbreviations
+# Terminology
 
-We use the following abbreviations in this module:
-  * Dir
-    Directory
-  * Ext
-    Extension
-  * PL
-    Prolog
-  * QLF
-    QuickLoadFormat
-  * RE
-    RegularExpression
+I am not aware of a standardized vocabulary about files
+(although the POSIX standard may contain one?).
+Here is my ad-hoc attempt:
+
+Concepts:
+  * **File**
+  * **Directory**
+  * **File link**
+
+Terms:
+  * **Abs path**
+    A path whose first character is a root character.
+  * **Base file name**
+    An atom.
+  * **Directory name**
+    A file name that is a sequence of atoms separated by directory separators.
+    Every prefix of a directory name that ends at a directory separator
+    denoted a directory.
+  * **File extension**
+    An atom.
+  * **Local file name**
+    A local file name is
+    (1) a base file name that is optionally followed by
+    (2a) the file extension separator and (2b) a file extension.
+  * **Path**
+    A file name that consists of
+    (1) directories separated by directory separators
+    and an optional (2) local file name
+    If a local file name is present the path denotes a file.
+    If no local file name is present the path denotes a directory.
+  * **Relative path**
+    A path whose first character is not a root character.
+
+## Variable names
+
+In line with the terminology this modules uses the following variable names:
+  * `Abs` to denote absolute paths.
+  * `Base` to denote base file names.
+  * `Dir` to denote directory names.
+  * `Ext` to denote file extensions.
+  * `FileKind` to denote either a registered file type or a file extension
+     (in that order).
+  * `FileType` to denote a registered file type mapped onto
+     at least one file extension.
+  * `Local` to denote local file names.
+  * `Path` to denote paths.
+  * `Rel` to denote relative paths.
+  * `Spec` for file specifications (i.e., compound terms)
+     handled by absolute_file_name/[2,3].
+
+---
 
 @author Wouter Beek
-@tbd Remove the dependency on module AP.
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-%        2014/08-2014/09
+         2014/08-2014/11
 */
 
 :- use_module(library(apply)).
-:- use_module(library(dcg/basics)).
-:- use_module(library(debug)).
+:- use_module(library(error)).
 :- use_module(library(filesex)).
-:- use_module(library(lists)).
-:- use_module(library(process)).
-:- use_module(library(readutil)).
+:- use_module(library(lists), except([delete/3])).
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(meta_ext)).
 :- use_module(math(math_ext)).
 :- use_module(os(dir_ext)).
+:- use_module(os(file_gnu)).
+:- use_module(os(os_ext)).
+:- use_module(pl(pl_mode)).
+
+:- predicate_options(absolute_file_name_number/4, 4, [
+     pass_to(absolute_file_name/3, 3)
+   ]).
+
+error:has_type(absolute_path, Term):-
+  error:has_type(atom, Term),
+  root_prefix(Root),
+  atom_concat(Root, _, Term).
 
 
 
 %! absolute_file_name_number(
-%!   +Spec,
-%!   +Options:list(nvpair),
-%!   +Number:integer,
-%!   -Absolute:atom
+%!   +Spec:compound,
+%!   +Number:nonneg,
+%!   -Abs:atom,
+%!   +Options:list(nvpair)
 %! ) is det.
 % This comes in handy for numbered files, e.g. '/home/some_user/test_7.txt'.
 %
 % The order of the arguments differs from absolute_file_name/3
 % to be compliant with =library(apply)=.
-
-absolute_file_name_number(Spec, Options, Number, Absolute):-
-  atom_number(Atomic, Number),
-  spec_atomic_concat(Spec, Atomic, NumberSpec),
-  absolute_file_name(NumberSpec, Absolute, Options).
-
-
-%! base_or_file_to_file(
-%!   +BaseOrFile:atom,
-%!   +FileType:atom,
-%!   -File:atom
-%! ) is semidet.
-% Predicates that take file arguments can use this to allow either
-% absolute file names or file base names to be accepted.
 %
-% This is useful when there are multiple file extensions associated with
-% the same file type and the calling predicate only looks at the file type
-% level.
-%
-% @arg BaseOrFile Either a full file name or the base name of a file.
-%      In the former case we check for a supported file extension.
-%      In the latter case we add a supported file extension.
-% @arg FileType The atomic name of a registered file type.
-% @arg File An absolute file name.
+% Options are passed to absolute_file_name/3.
 
-base_or_file_to_file(BaseOrFile, FileType, File):-
-  (
-    file_type(FileType, BaseOrFile)
-  ->
-    File = BaseOrFile
-  ;
-    file_name_type(BaseOrFile, FileType, File)
-  ),
-  access_file(File, read),
-  % Since there may be multiple file type / file extension translations,
-  % the above may backtrack. Therefore we discard these choice-points here.
-  % I.e., we only use the first file we find.
-  !.
+absolute_file_name_number(Spec, Number, Abs, Options):-
+  format(atom(Atom), '_~d', [Number]),
+  spec_atomic_concat(Spec, Atom, NumberedSpec),
+  absolute_file_name(NumberedSpec, Abs, Options).
+
 
 
 %! common_prefix_path(
@@ -181,6 +188,7 @@ base_or_file_to_file(BaseOrFile, FileType, File):-
 %!   +Path2:atom,
 %!   -CommonPrefixPath:atom
 %! ) is det.
+% Succeeds id Path1 and Path2 share the same CommonPrefixPath.
 
 common_prefix_path(Path1, Path2, CommonPrefixPath):-
   directory_subdirectories(Path1, PathComponents1),
@@ -189,82 +197,78 @@ common_prefix_path(Path1, Path2, CommonPrefixPath):-
   directory_subdirectories(CommonPrefixPath, CommonComponentPrefix).
 
 
-%! copy_file(
-%!   ?ToDirectory:atom,
-%!   ?ToName:atom,
-%!   ?ToExtension:atom,
-%!   +FromFile:atom,
-%!   -ToFile:atom
-%! ) is det.
 
-copy_file(ToDir, ToName, ToExt, FromFile, ToFile):-
-  file_alternative(FromFile, ToDir, ToName, ToExt, ToFile),
-  copy_file(FromFile, ToFile).
+%! create_file(+Abs:atom) is det.
 
-
-create_file(File):-
-  exists_file(File), !,
-  debug(file_ext, 'File ~w already exists.', [File]).
-create_file(File):-
-  is_absolute_file_name(File), !,
-  touch_file(File).
-create_file(File):-
-  type_error(absolute_file_name, File).
+create_file(Abs):-
+  exists_file(Abs), !,
+  print_message(informational, already_exists(Abs)).
+create_file(Abs):-
+  is_absolute_file_name(Abs), !,
+  touch_file(Abs).
+create_file(Abs):-
+  type_error(absolute_file_name, Abs).
 
 
-%! create_file(+NestedDir:term, +Name:atom, +Type:atom, -File:atom) is det.
-% Creates a file with the given name, inside the given directory, and that
-% is of the given file type.
+
+%! create_file(+Spec:compound, +Base:atom, +FileKind:atom, -Abs:atom) is det.
+% Creates a file with:
+%   - the given directory
+%   - the given base name
+%   - the given file type
 %
 % File types are resolved using prolog_file_type/2.
 %
-% @arg NestedDir The atomic name of a directory or a compound term that
-%      can be resolved by subsequent applications of
-%      absolute_file_name/[2,3], e.g. =|aaa(bbb(ccc))|=.
-% @arg Base The atomic base name of a file.
-% @arg TypeOrExtension The atomic name of a file type, as registered with
-%      prolog_file_type/2, e.g. =|mp3|=.
-% @arg File The atomic absolute name of a file.
+% @arg Spec The atomic name of a directory or a compound term that
+%      can be resolved by absolute_file_name/2.
+% @arg Base A file base name.
+% @arg FileKind Either a registered file type or a file extension.
+% @arg Abs An absolute file path.
 
-create_file(NestedDir, Base, TypeOrExtension, File):-
+create_file(Spec, Base, FileKind, Path):-
   % Resolve the directory in case the compound term notation employed
   % by absolute_file_name/3 is used.
-  (
-    compound(NestedDir)
-  ->
-    absolute_file_name(NestedDir, Directory)
-  ;
-    Directory = NestedDir
-  ),
+  absolute_file_name(Spec, Dir, [access(write),file_type(directory)]),
 
   % Make sure that the directory exists.
-  create_directory(Directory),
+  create_directory(Dir),
 
-  % Create the local file name by appending the base and extension names.
+  % Create the local file name by appending the file base name
+  % and the file extension.
   % The extension must be of the given type.
-  (
-    file_name_type(Base, TypeOrExtension, Local)
-  ->
-    true
-  ;
-    file_name_extension(Base, TypeOrExtension, Local)
-  ),
+  once(file_kind_extension(FileKind, Ext)),
+  local_file_components(Local, Base, Ext),
 
   % Append directory and file name.
-  directory_file_path(Directory, Local, File),
+  directory_file_path(Dir, Local, Path),
 
-  create_file(File).
+  create_file(Path).
 
 
-%! create_file_directory(+File:atom) is det.
+
+%! create_file_directory(+Path:atom) is det.
 % Ensures that the directory structure for the given file exists.
 
-create_file_directory(File):-
-  file_name(File, Dir, _, _),
+create_file_directory(Path):-
+  file_components(Path, Dir, _, _),
   create_directory(Dir).
 
 
+
+%! create_file_link(+File:atom, +Dir:atom) is det.
+% Create a symbolic link pointing to File in Dir.
+%
+% The symbolic link has the same file base name and file extension
+% as the file linked to.
+
+create_file_link(File, Dir):-
+  file_alternative(File, Dir, _, _, Link),
+  link_file(File, Link, symbolic).
+
+
+
 %! file_age(+File:atom, -Age:between(0.0,inf)) is det.
+% Returns a file's age in seconds.
 
 file_age(File, Age):-
   time_file(File, LastModified),
@@ -272,156 +276,144 @@ file_age(File, Age):-
   Age is Now - LastModified.
 
 
+
 %! file_alternative(
-%!   +FromFile:atom,
+%!   +FromPath:atom,
 %!   ?ToDirectory:atom,
-%!   ?ToName:atom,
+%!   ?ToBase:atom,
 %!   ?ToExtension:atom,
-%!   -ToFile:atom
+%!   -ToPath:atom
 %! ) is det.
-% Creates similar file names, allowing a different
-% directory, base name, and/or extension to be specified.
+% Creates a file name that is similar to a given file name,
+% by allowing different components to be specified:
+%   - directory name
+%   - base file name
+%   - file extension
 
-file_alternative(FromFile, ToDir1, ToName1, ToExt1, ToFile):-
-  file_name(FromFile, FromDir, FromName, FromExt),
-  maplist(
-    default,
-    [ToDir1,ToName1,ToExt1],
-    [FromDir,FromName,FromExt],
-    [ToDir2,ToName2,ToExt2]
-  ),
-  file_name(ToFile, ToDir2, ToName2, ToExt2).
-
-
-%! file_lines(+File:atom, -NumberOfLines:nonneg) is det.
-
-file_lines(File, NumberOfLines):-
-  process_create(path(wc), ['-l',file(File)], [stdout(pipe(Stream))]),
-  read_stream_to_codes(Stream, Codes),
-  phrase(integer(NumberOfLines), Codes).
+file_alternative(FromPath, ToDir, ToBase, ToExt, ToPath):-
+  file_components(FromPath, FromDir, FromBase, FromExt),
+  default(FromDir, ToDir),
+  default(FromBase, ToBase),
+  default(FromExt, ToExt),
+  file_components(ToPath, ToDir, ToBase, ToExt).
 
 
-%! file_name(
-%!   ?Path:atom,
-%!   ?Directory:atom,
-%!   ?Base:atom,
-%!   ?Extension:atom
+
+%! file_component(
+%!   +Path:atom,
+%!   +Field:oneof([base,directory,extension,file_type,local]),
+%!   +Component:atom
 %! ) is semidet.
-% The splitting of a file into its directory, local name and type parts.
+%! file_component(
+%!   +Path:atom,
+%!   +Field:oneof([base,directory,extension,file_type,local]),
+%!   -Component:atom
+%! ) is multi.
+%! file_component(
+%!   +Path:atom,
+%!   -Field:oneof([base,directory,extension,file_type,local]),
+%!   -Component:atom
+%! ) is multi.
+
+file_component(Path, Field, Component):-
+  call_det(file_component0, nonvar-Path, nonvar-Field, any-Component).
+
+file_component0(Path, base, Base):-
+  file_components(Path, _, Base, _).
+file_component0(Path, directory, Dir):-
+  file_components(Path, Dir, _, _).
+file_component0(Path, extension, Ext):-
+  file_components(Path, _, _, Ext).
+file_component0(Path, file_type, FileType):-
+  file_component0(Path, extension, Ext),
+  user:prolog_file_type(Ext, FileType).
+file_component0(Path, local, Local):-
+  directory_file_path(_, Local, Path).
+
+
+
+%! file_components(+Path:atom, +Dir:atom, +Base:atom, +Ext:atom) is semidet.
+%! file_components(+Path:atom, -Dir:atom, -Base:atom, -Ext:atom) is det.
+%! file_components(-Path:atom, +Dir:atom, +Base:atom, +Ext:atom) is det.
+% Relates a file path to its components:
+%   - directory
+%   - base name
+%   - file extension
 %
-% For directories, the base and extension are the empty atom.
+% For directories, the base name and file extension are the empty atom.
 
-file_name(Path, Directory, Base, Extension):-
-  nonvar(Directory), nonvar(Base), nonvar(Extension), !,
-  file_name_extension(Base, Extension, File),
-  directory_file_path(Directory, File, Path).
-file_name(Path1, Directory, Base, Extension):-
-  nonvar(Path1), !,
-  http_path_correction(Path1, Path2),
-  (
-    exists_directory(Path2)
-  ->
-    Directory = Path2,
-    Base = '',
-    Extension = ''
-  ;
-    directory_file_path(Directory, File, Path2),
-    file_name_extension(Base, Extension, File)
+file_components(Path, Dir, Base, Ext):-
+  nonvar(Path), !,
+  (   exists_directory(Path)
+  ->  Dir = Path,
+      Base = '',
+      Ext = ''
+  ;   directory_file_path(Dir, Local, Path),
+      file_name_extension(Base, Ext, Local)
   ).
+file_components(Path, Dir, Base, Ext):-
+  maplist(nonvar, [Dir,Base,Ext]), !,
+  file_name_extension(Base, Ext, Local),
+  directory_file_path(Dir, Local, Path).
+file_components(_, _, _, _):-
+  instantiation_error(_).
 
 
-%! file_name_type(?Base:atom, ?Type:atom, ?File:atom) is semidet.
-% Decomposes a file name into its base name and its file type.
-%
-% @arg Base The atomic name of a file, without a directory and without
-%      an extension.
-% @arg Type An atomic file type. These are registered with
-%	    prolog_file_type/2, or uninstantiated in case the type
-%	    could not be established.
-% @arg File The full name of a file.
 
-file_name_type(File, directory, File):-
-  nonvar(File),
-  exists_directory(File), !.
-% (+,+,-)
-file_name_type(Base, Type, File):-
-  maplist(nonvar, [Base,Type]), !,
-  prolog_file_type(Extension, Type),
-  file_name_extension(Base, Extension, File).
-% For files with no extension and thus no type.
-file_name_type(File, none, File):-
-  \+ file_name_extension(_, _, File),
-  exists_file(File), !.
-% (?,?,+)
-file_name_type(Base, Type, File):-
-  nonvar(File),
-  file_name_extension(Base, Extension, File),
-  (
-    Extension \== '',
-    user:prolog_file_type(Extension, Type)
-  ->
-    % The file extension is registered with a type.
-    true
-  ;
-    % The file extension is not registered with a type,
-    % or there is no extension at all.
-    % Make sure the file type is uninstantiated.
-    var(Type)
-  ).
-file_name_type(_, Type, _):-
-  % Type is uninstantiated,
-  % make sure it stays that way.
-  var(Type).
-
-
-file_type(FileType, File):-
-  file_name_type(_, FileType, File).
-
-
-%! file_type_alternative(+File1:atom, +File2:atom) is semidet.
+%! file_kind_alternative(+Path1:atom, +Path2:atom) is semidet.
 % Succeeds if the files are type-alternatives of each other.
 
-file_type_alternative(File1, File2):-
-  file_name_extension(Base, _Extension1, File1),
-  file_name_extension(Base, _Extension2, File2).
+file_kind_alternative(Path1, Path2):-
+  file_component(Path1, directory, Dir),
+  file_component(Path2, directory, Dir),
+  file_component(Path1, base, Dir),
+  file_component(Path2, base, Dir).
 
-%! file_type_alternative(
+
+
+%! file_kind_alternative(
 %!   +FromFile:atom,
-%!   +ToFileType:atom,
+%!   +ToFileKind:atom,
 %!   -ToFile:atom
 %! ) is det.
 % Returns an alternative of the given file with the given file type.
+
+file_kind_alternative(FromFile, ToFileKind, ToFile):-
+  file_kind_extension(ToFileKind, ToExt),
+  file_alternative(FromFile, _, _, ToExt, ToFile).
+
+
+
+%! file_kind_extension(+FileKind:atom, +Ext:atom) is semidet.
+%! file_kind_extension(+FileKind:atom, -Ext:atom) is nondet.
+% Returns the extensions associated with the given file kind.
 %
-% @arg FromFile The atomic name of a file.
-% @arg ToFileType The atomic name of a file type.
-% @arg ToFile The atomic name of a file.
+% These are either:
+%   - all extensions registered with file type FileKind, or
+%   - FileKind itself.
+%
+% @throws instantiation_error If FileKind is uninstantiated.
 
-file_type_alternative(FromFile, ToFileType, ToFile):-
-  file_name_type(Base, _FromFileType, FromFile),
-  file_name_type(Base, ToFileType, ToFile), !.
+file_kind_extension(FileType, _):-
+  var(FileType), !,
+  instantiation_error(FileType).
+file_kind_extension(FileType, Ext):-
+  \+ user:prolog_file_type(_, FileType), !,
+  Ext = FileType.
+file_kind_extension(FileType, Ext):-
+  user:prolog_file_type(Ext, FileType).
 
-%! hidden_file_name(+FileName:atom, -HiddenFileName:atom) is det.
+
+
+%! hidden_file_name(+Path:atom, +HiddenPath:atom) is semidet.
+%! hidden_file_name(+Path:atom, -HiddenPath:atom) is det.
 % Returns the hidden file name for the given atomic name.
 
-hidden_file_name(FileName, HiddenFileName):-
-  atomic(FileName), !,
-  atomic_concat('.', FileName, HiddenFileName).
+hidden_file_name(Path, HiddenPath):-
+  file_components(Path, Dir, Base, Ext),
+  atomic_concat('.', Base, HiddenBase),
+  file_components(HiddenPath, Dir, HiddenBase, Ext).
 
-
-http_path_correction(Path1, Path2):-
-  atom_concat('file://', Path2, Path1), !.
-http_path_correction(Path, Path).
-
-
-%! is_absolute_file_name2(+File:atom) is semidet.
-% Wrapper around is_absolute_file_name/1 that fails for variable arguments.
-%
-% @see is_absolute_file_name/1
-
-is_absolute_file_name2(F):-
-  var(F), !, fail.
-is_absolute_file_name2(F):-
-  is_absolute_file_name(F).
 
 
 %! is_fresh_file(+File:atom, +FreshnessLifetime:between(0.0,inf)) is semidet.
@@ -431,27 +423,56 @@ is_fresh_file(File, FreshnessLifetime):-
   is_fresh_age(Age, FreshnessLifetime).
 
 
-%! last_path_component(+Path:atom, -BaseOrLastSubdir:atom) is det.
-% Returns the last path component.
-% If `Path` is a (non-directory) file, then this is the base name.
-% If `Path` is a directory, then this is the last subdirectory name.
 
-last_path_component(Path, Base):-
-  file_base_name(Path, Base),
-  Base \== '', !.
-last_path_component(Dir, LastSubdir):-
-  directory_subdirectories(Dir, Subdirs),
-  last(Subdirs, LastSubdir).
+%! is_stale_file(+File:atom, +FreshnessLifetime:between(0.0,inf)) is semidet.
+
+is_stale_file(File, FreshnessLifetime):-
+  file_age(File, Age),
+  is_stale_age(Age, FreshnessLifetime).
 
 
-%! link_file(+ToDir:atom, +FromFile:atom) is det.
-% Create a single symbolic link for the given file.
-% The symbolic link has the same base nane and extension as the file
-%  linked to.
 
-link_file(ToDir, FromFile):-
-  file_alternative(FromFile, ToDir, _, _, ToFile),
-  link_file(FromFile, ToFile, symbolic).
+%! local_file_component(
+%!   +Local:atom,
+%!   +Field:oneof([base,extension]),
+%!   +Component:atom
+%! ) is semidet.
+
+local_file_component(Local, base, Base):-
+  call_det(local_file_component0(Local, base, Base)).
+
+local_file_component0(Local, base, Base):-
+  local_file_components(Local, Base, _).
+local_file_component0(Local, extension, Ext):-
+  local_file_components(Local, _, Ext).
+
+
+
+%! local_file_components(+Local:atom, +Base:atom, +Ext:atom) is semidet.
+%! local_file_components(+Local:atom, -Base:atom, -Ext:atom) is semidet.
+%! local_file_components(-Local:atom, +Base:atom, +Ext:atom) is semidet.
+% Relates a local file name to its components:
+%   - base file name
+%   - file extension
+%
+% @throws instantiation_error
+
+local_file_components(Local, Base, Ext):-
+  nonvar(Local), !,
+  (   atomic_list_concat([Base,Ext], '.', Local)
+  ->  true
+  ;   Base = Local,
+      Ext = ''
+  ).
+local_file_components(Local, Base, Ext):-
+  maplist(nonvar, [Base,Ext]), !,
+  (   Ext == ''
+  ->  Local = Base
+  ;   atomic_list_concat([Base,Ext], '.', Local)
+  ).
+local_file_components(_, _, _):-
+  instantiation_error(_).
+
 
 
 %! mv2(+From:atom, +To:atom) is det.
@@ -461,25 +482,10 @@ mv2(From, To):-
   delete_file(From).
 
 
-%! merge_into_one_file(+FromDir:atom, +ToFile:atom) is det.
-% RE and To must be in the same directory.
-% How arbitrary this restriction is!
 
-merge_into_one_file(FromDir, ToFile):-
-  directory_files(
-    [
-      file_types([text]),
-      include_directories(false),
-      % It may for instance be reasonable to assume that
-      % files with names ending in numbers are merged in the order
-      % that is indicated by those numbers.
-      order(lexicographic),
-      recursive(true)
-    ],
-    FromDir,
-    FromFiles
-  ),
+%! merge_into_one_file(+FromFiles:list(atom), +ToFile:atom) is det.
 
+merge_into_one_file(FromFiles, ToFile):-
   setup_call_cleanup(
     open(ToFile, write, Out, [type(binary)]),
     maplist(merge_into_one_stream(Out), FromFiles),
@@ -494,33 +500,36 @@ merge_into_one_stream(Out, FromFile):-
   ).
 
 
+
+%! new_file_name(+Path1:atom, -Path2:atom) is det.
+% If a file with the same name exists in the same directory,
+% then a distinguishing integer is appended to the file name.
+
+new_file_name(Path, Path):-
+  \+ exists_file(Path), !.
+new_file_name(Path1, Path2):-
+  file_component(Path1, base, Base1),
+  new_atom(Base1, Base2),
+  file_alternative(Path1, _, Base2, _, Path2).
+
+
+
 %! prefix_path(+PrefixPath:atom, +Path:atom) is semidet.
 %! prefix_path(-PrefixPath:atom, +Path:atom) is multi.
 
+prefix_path(_, Path):-
+  var(Path), !,
+  instantiation_error(Path).
 prefix_path(PrefixPath, Path):-
   var(PrefixPath), !,
   directory_subdirectories(Path, Components),
   prefix(PrefixComponents, Components),
   directory_subdirectories(PrefixPath, PrefixComponents).
 prefix_path(PrefixPath, Path):-
-  maplist(
-    directory_subdirectories,
-    [PrefixPath,Path],
-    [PrefixComponents,Components]
-  ),
+  directory_subdirectories(PrefixPath, PrefixComponents),
+  directory_subdirectories(Path, Components),
   prefix(PrefixComponents, Components).
 
-
-%! new_file(+OldFile:atom, -NewFile:atom) is det.
-% If a file with the same name exists in the same directory, then
-% then distinguishing integer is appended to the file name.
-
-new_file(F, F):-
-  \+ exists_file(F), !.
-new_file(F1, F2):-
-  file_name_extension(Base1, Ext, F1),
-  new_atom(Base1, Base2),
-  file_name_extension(Base2, Ext, F2).
 
 
 %! relative_file_path(
@@ -533,12 +542,24 @@ new_file(F1, F2):-
 %!   +RelativeTo:atom,
 %!   +RelativePath:atom
 %! ) is det.
+% Relates one relative path to two absolute paths.
+%
+% Resolves potential occurrences of `..` in any of the arguments.
+%
+% Supports 
+%
+% @see relative_file_name/3 in library [[filesex]]
+%      only supports instantiation `(+,+,-)`.
 
-relative_file_path(Path, RelativeTo, RelativePath):-
-  maplist(nonvar, [Path,RelativeTo]), !,
+relative_file_path(Path0, RelativeTo0, RelativePath):-
+  maplist(term_to_path, [Path0,RelativeTo0], [Path,RelativeTo]), !,
   relative_file_name(Path, RelativeTo, RelativePath).
-relative_file_path(Path, RelativeTo, RelativePath):-
-  maplist(nonvar, [RelativeTo,RelativePath]), !,
+relative_file_path(Path, RelativeTo0, RelativePath0):-
+  maplist(
+    term_to_path,
+    [RelativeTo0,RelativePath0],
+    [RelativeTo,RelativePath]
+  ), !,
   directory_subdirectories(RelativePath, RelativePathSubs1),
   uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
   directory_subdirectories(RelativeTo, RelativeToSubs1),
@@ -547,12 +568,40 @@ relative_file_path(Path, RelativeTo, RelativePath):-
   once(append(RelativeToSubs2, Postfix, RelativeToSubs1)),
   append(RelativeToSubs2, RelativePathSubs2, PathSubs),
   directory_subdirectories(Path, PathSubs).
+relative_file_path(_, _, _):-
+  instantiation_error(_).
 
 uplength(['..'|T1], N1, T2):- !,
   uplength(T1, N2, T2),
   N1 is N2 + 1.
 uplength(L, 0, L).
 
+
+
+%! root_prefix(+Prefix:atom) is semidet.
+%! root_prefix(-Prefix:atom) is multi.
+
+:- if(is_unix).
+root_prefix('/').
+:- endif.
+:- if(is_windows).
+root_prefix('C:\\').
+:- endif.
+
+
+
+%! younger_file(+Path1:atom, +Path2:atom) is semidet.
+% Succeeds if the file denoted by Path1 is younger than
+% the file denoted by Path2.
+
+younger_file(Path1, Path2):-
+  time_file(Path1, Time1),
+  time_file(Path2, Time2),
+  Time1 > Time2.
+
+
+
+% HELPERS
 
 %! spec_atomic_concat(+Spec, +Atomic:atom, -NewSpec) is det.
 % Concatenates the given atom to the inner atomic term of the given
@@ -563,27 +612,32 @@ spec_atomic_concat(Atomic1, Atomic2, Atom):-
   atomic_concat(Atomic1, Atomic2, Atom).
 spec_atomic_concat(Spec1, Atomic, Spec2):-
   compound(Spec1), !,
-  Spec1 =.. [Outer, Inner1],
+  Spec1 =.. [Outer,Inner1],
   spec_atomic_concat(Inner1, Atomic, Inner2),
-  Spec2 =.. [Outer, Inner2].
-
-split_into_smaller_files(BigFile, SmallDir, Prefix):-
-  % Split the big file by byte size into small files.
-  % (We cannot split on the number of lines since the file is one big line.)
-  process_create(
-    path(split),
-    ['--bytes=1m','-d','--suffix-length=4',BigFile,Prefix],
-    [cwd(SmallDir)]
-  ),
-  debug(
-    file_ext,
-    'File ~w was split into smaller files in directory ~w.',
-    [BigFile,SmallDir]
-  ).
+  Spec2 =.. [Outer,Inner2].
 
 
-%! touch_file(+File:atom) is det.
 
-touch_file(File):-
-  process_create(path(touch), [File], [detached(true)]).
+%! term_to_path(@Term, -Path:atom) is semidet.
+% Allow file paths to be specified in either one of the following ways:
+%   - As atom.
+%   - As wildcard expression to expand_file_name/2.
+%   - As compound term to absolute_file_name/3.
+%
+% Fails in any other way.
 
+term_to_path(Atom, Path):-
+  atom(Atom), !,
+  expand_file_name(Atom, [Path|_]).
+term_to_path(Spec, Path):-
+  nonvar(Spec),
+  absolute_file_name(Spec, Path, [file_errors(fail),file_type(directory)]).
+
+
+
+% MESSAGES
+
+:- multifile(prolog:message//1).
+
+prolog:message(already_exists(File)) -->
+  ['File ',File,' already exists.'].

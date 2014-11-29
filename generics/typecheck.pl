@@ -4,16 +4,22 @@
     atom_to_value/3, % +Atom
                      % +Type
                      % -Value
-    is_url/1, % +Url:url
+    boolean/1, % @Term
+    char/1, % @Term
+    chars/1, % @Term
+    code/1, % @Term
+    codes/1, % @Term
+    is_uri/1, % @Term
     negative_float/1, % @Term
     negative_integer/1, % @Term
     nonneg/1, % @Term
     positive_float/1, % @Term
     positive_integer/1, % @Term
-    prolog_convert_value/4 % +FromDatatype:atom
-                           % +FromValue
-                           % +ToDatatype:atom
-                           % -ToValue
+    prolog_convert_value/4, % +FromDatatype:atom
+                            % +FromValue
+                            % +ToDatatype:atom
+                            % -ToValue
+    text/1 % @Term
   ]
 ).
 :- reexport(
@@ -60,25 +66,23 @@ Predicates used for parsing and checking value-type conformance.
 | rational             |                  |                     |
 | string               |                  | Yes                 |
 | symbol               |                  |                     |
+| term                 | Yes              |                     |
 | text                 |                  |                     |
 | uri                  | Yes              |                     |
 | iri                  | Yes              |                     |
 | var                  |                  |                     |
 
---
+---
 
 @author Wouter Beek
-@version 2013/01, 2013/08, 2014/01, 2014/03-2014/06
+@version 2013/01, 2013/08, 2014/01, 2014/03-2014/06, 2014/10-2014/11
 */
 
-:- use_module(library(apply)).
-:- use_module(library(error)).
-:- use_module(library(lists)).
+:- use_module(library(lists), except([delete/3])).
 :- use_module(library(uri)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(char_ext)).
 :- use_module(generics(boolean_ext)).
+:- use_module(generics(char_ext)).
 
 :- multifile(error:has_type/2).
 
@@ -141,15 +145,16 @@ atom_to_value(Atom, string, String):- !,
   atom_string(Atom, String).
 
 
+
 % char/0
 error:has_type(char, Term):-
-  char(Term).
+  is_char(Term).
 % code/0
 error:has_type(code, Term):-
   once(code_type(Term, _)).
-% float_between/2, extension of between/2 for floats
+% between_float/2, extension of between/2 for floats
 % allowing uninstiated upper and lower bounds.
-error:has_type(float_between(L,U), X):-
+error:has_type(between_float(L,U), X):-
   number(X),
   (number(L) -> X >= L ; true),
   (number(U) -> X =< L ; true).
@@ -157,14 +162,55 @@ error:has_type(float_between(L,U), X):-
 error:has_type(or(Types), Term):-
   member(Type, Types),
   error:has_type(Type, Term), !.
+% term
+error:has_type(term, _).
 
 
-%! is_url(+Url:url) is semidet.
 
-is_url(Url):-
-  uri_components(Url, uri_components(Scheme,_,_,_,_)),
+%! boolean(@Term) is semidet.
+
+boolean(Term):-
+  error:has_type(boolean, Term).
+
+
+
+%! char(@Term) is semidet.
+
+char(Term):-
+  error:has_type(char, Term).
+
+
+
+%! chars(@Term) is semidet
+
+chars(Term):-
+  error:has_type(chars, Term).
+
+
+
+%! code(@Term) is semidet.
+
+code(Term):-
+  error:has_type(code, Term).
+
+
+
+%! codes(@Term) is semidet
+
+codes(Term):-
+  error:has_type(codes, Term).
+
+
+
+%! is_uri(@Term) is semidet.
+
+is_uri(Uri):-
+  text(Uri),
+  uri_components(Uri, UriComponents),
+  uri_data(scheme, UriComponents, Scheme),
   nonvar(Scheme),
   memberchk(Scheme, [ftp,http,https]).
+
 
 
 %! negative_float(@Term) is semidet.
@@ -175,12 +221,14 @@ negative_float(I):-
   I > 0.
 
 
+
 %! negative_integer(@Term) is semidet.
 % Fails silently when no negative integer.
 
 negative_integer(I):-
   integer(I),
-  I > 0.
+  I < 0.
+
 
 
 %! nonneg(@Term) is semidet.
@@ -191,6 +239,7 @@ nonneg(I):-
   I >= 0.
 
 
+
 %! positive_float(@Term) is semidet.
 % Fails silently when no negative integer.
 
@@ -199,12 +248,14 @@ positive_float(I):-
   I > 0.0.
 
 
+
 %! positive_integer(@Term) is semidet.
 % Fails silently when no negative integer.
 
 positive_integer(I):-
   integer(I),
   I > 0.
+
 
 
 %! prolog_convert_value(
@@ -218,3 +269,10 @@ prolog_convert_value(_, FromValue, ToDatatype, ToValue):-
   format(atom(Atom), '~w', [FromValue]),
   atom_to_value(Atom, ToDatatype, ToValue).
 
+
+
+%! text(@Term) is semidet.
+% Text is one of atom, string, chars or codes.
+
+text(Term):-
+  error:has_type(text, Term).

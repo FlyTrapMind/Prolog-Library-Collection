@@ -1,7 +1,7 @@
 :- module(
   float_ext,
   [
-    float_between/3, % ?Low:float
+    between_float/3, % ?Low:float
                      % ?High:float
                      % +Number:float
     float_div/3, % +In1:float
@@ -13,7 +13,7 @@
     float_plus/3, % ?X:float
                   % ?Y:float
                   % ?Z:float
-    to_float/2 % +Atomic:or([atom,float])
+    to_float/2 % +Atomic:or([atom,float,string])
                % -Float:float
   ]
 ).
@@ -23,14 +23,14 @@
 Support predicates for floating point values.
 
 @author Wouter Beek
-@version 2013/08, 2014/05, 2014/09
+@version 2013/08, 2014/05, 2014/09-2014/10
 */
 
 
 
-%! float_between(?Low:float, ?High:float, +Number:float) is semidet.
+%! between_float(?Low:float, ?High:float, +Number:float) is semidet.
 
-float_between(Low, High, Number):-
+between_float(Low, High, Number):-
   % Meet the lower boundary requirement.
   (   var(Low)
   ->  true
@@ -44,13 +44,20 @@ float_between(Low, High, Number):-
   ).
 
 
+
+%! float_div(+X:float, +Y:float, -Z:float) is det.
+
 float_div(X, Y, Z):-
   Z is X / Y.
 
 
+
+%! float_mod(+X:float, +Y:float, -Z:float) is det.
+
 float_mod(X, Y, Z):-
   float_div(X, Y, DIV),
   Z is X - DIV * Y.
+
 
 
 %! float_plus(?X:number, ?Y:number, ?Z:number) is det.
@@ -70,12 +77,19 @@ float_plus(X, Y, Z):-
   X is Z - Y.
 
 
-%! to_float(+Atomic:or([atom,float]), -Float:float) is det.
 
-to_float(Float, Float):-
-  float(Float), !.
+%! to_float(+Atomic:or([atom,float,string]), -Float:float) is det.
+
+% Atom.
 to_float(Atom, Float):-
-  atom(Atom),
+  atom(Atom), !,
   atom_number(Atom, Number),
   to_float(Number, Float).
-
+% Float.
+to_float(Float, Float):-
+  float(Float), !.
+% String.
+to_float(String, Float):-
+  string(String), !,
+  number_string(Number, String),
+  to_float(Number, Float).

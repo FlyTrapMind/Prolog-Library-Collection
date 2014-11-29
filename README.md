@@ -65,9 +65,9 @@ This loads the code documentation server (using swipl package plDoc).
 The documentation front-end is accessed using the `documentation` command
 in the Web console.
 
-~~~{.sh}
+```bash
 [1]   swipl -s debug_standalone.pl
-~~~
+```
 
 Note: `debug.pl` is used for loading PGC from within another project.
 
@@ -97,7 +97,7 @@ Currently contains the following subdirectories:
    codebase, e.g. `lexvo.rdf` for language and country URIs based on
    various ISO standards.
 3. *STCN* The _redactiebladen_ that are used by the parser in
-   =|DB/STCN/|=.
+   `DB/STCN/`.
 4. *Wordnet* The Prolog version of the _Wordnet_ lexical corpus.
 
 ### `debug`
@@ -120,7 +120,7 @@ in `pldoc/doc_wiki.pl`. This code cannot be included in SWI-Prolog
 releases because of the security implications of running arbitrary code on
 a server.
 
-~~~
+```
 take_block(
   [_-['!', '!', w(Module), '!', '!', w(Predicate), '!', '!', w(Arity0), '!', '!'] | Lines],
   _BaseIndent,
@@ -151,8 +151,8 @@ take_block(
 The following Git commands can be used to include this repository in
 other projects:
 
-~~~{.bash}
+```bash
 git remote add generics https://github.com/wouterbeek/PrologGenerics.git
 git fetch generics
 git merge generics/master
-~~~
+```
