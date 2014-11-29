@@ -1,6 +1,8 @@
 :- module(
   boolean_ext,
   [
+    and/3,
+    or/3,
     to_boolean/2 % +Value:oneof([0,1,@(false),@(true),false,'False',off,on,true,'True'])
                  % -Boolean:boolean
   ]
@@ -11,8 +13,26 @@
 Support for Boolean values.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03, 2014/11
 */
+
+
+
+%! and(?X:boolean, ?Y:boolean, ?Z:boolean) is nondet.
+
+and(false, false, false).
+and(false, true,  false).
+and(true,  false, false).
+and(true,  true,  true ).
+
+
+
+%! or(?X:boolean, ?Y:boolean, ?Z:boolean) is nondet.
+
+or(false, false, false).
+or(false, true,  true ).
+or(true,  false, true ).
+or(true,  true,  true ).
 
 
 
