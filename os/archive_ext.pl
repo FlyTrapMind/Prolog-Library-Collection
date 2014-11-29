@@ -127,7 +127,7 @@ archive_extract0(Archive, Filters, Dir):-
           (   entry_property(RelativeFile, filetype(directory))
           ->  make_directory_path(File)
           ;   create_file_directory(File),
-              file_from_stream(Read, File)
+              write_stream_to_file(Read, File)
           ),
           debug(archive_ext, 'Extracted entry ~a', [File])
         ),

@@ -8,7 +8,9 @@
                 % +Format
                 % :Arguments
     indent/1, % +Indent:integer
-    tab/0
+    tab/0,
+    writeln/2 % +Stream:stream
+              % +Term
   ]
 ).
 
@@ -16,16 +18,7 @@
 
 Predicates for printing.
 
-## Proof
-
-A datatype of the following form:
-```prolog
-proof(Conclusion, Premises)
-```
-
 @author Wouter Beek
-@tbd Remove all predicate variants that have an `Out` parameter.
-     The calling context should use with_output_to/2 instead.
 @version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11, 2014/11
 */
 
@@ -45,6 +38,8 @@ proof(Conclusion, Premises)
   80,
   'The default width of the screen in number of characters.'
 ).
+
+
 
 
 
@@ -70,6 +65,8 @@ formatnl(Out, Format, Arguments):-
   format(Out, Format, Arguments),
   nl(Out).
 
+
+
 %! indent(+Indent:integer) is det.
 % @see Like tab/1, but writes the given number of indents, where
 %      a single indent can be multiple spaces.
@@ -86,3 +83,11 @@ indent(Indent):-
 
 tab:-
   write('\t').
+
+
+
+%! writeln(+Stream:stream, +Term:term) is det.
+
+writeln(Stream, Term):-
+  write(Stream, Term),
+  nl(Stream).
