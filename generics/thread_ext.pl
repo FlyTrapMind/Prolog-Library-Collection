@@ -17,6 +17,7 @@
                        % :Goal
                        % +NumberOfThreads:positive_integer
     thread_alias/1, % ?ThreadAlias:atom
+    thread_create/1, % :Goal
     thread_end/1, % +ThreadAlias:atom
     thread_overview/0,
     thread_overview_web/1, % -Markup:dom
@@ -39,7 +40,7 @@
 Allows one to monitor running threads that register.
 
 @author Wouter Beek
-@version 2013/03, 2013/09, 2014/03-2014/04
+@version 2013/03, 2013/09, 2014/03-2014/04, 2014/12
 */
 
 :- use_module(generics(atom_ext)).
@@ -54,6 +55,7 @@ Allows one to monitor running threads that register.
 :- meta_predicate(intermittent_goal(0,0,+)).
 :- meta_predicate(intermittent_thread(0,0,+,-,+)).
 :- meta_predicate(run_on_sublists(+,1,+)).
+:- meta_predicate(thread_create(0)).
 
 :- dynamic(end_flag/2).
 :- dynamic(workload/4).
@@ -183,6 +185,9 @@ thread_alias(ThreadAlias):-
   flag(thread_alias, ID, ID + 1),
   format_integer(ID, 2, ID1),
   format(atom(ThreadAlias), 't~w', [ID1]).
+
+thread_create(Goal):-
+  thread_create(Goal, _, []).
 
 thread_end(ThreadAlias):-
   thread_property(ThreadId, alias(ThreadAlias)),
