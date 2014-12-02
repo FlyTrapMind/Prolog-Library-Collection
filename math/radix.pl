@@ -36,7 +36,7 @@ Predicate for transforming numbers between
 positional notations of different radix.
 
 @author Wouter Beek
-@version 2013/07-2013/08, 2014/09-2014/11
+@version 2013/07-2013/08, 2014/09-2014/12
 */
 
 :- use_module(library(aggregate)).
@@ -238,15 +238,23 @@ weights_octal(Weights, Octal):-
 weights_radix(Weights, Number):-
   nonvar(Weights),
   Number =.. [Radix,Value], !,
-  maplist(char_weight, Chars, Weights),
-  (   Radix == hex
-  ->  atom_chars(Value, Chars)
-  ;   number_chars(Value, Chars)
+  % A special case occurs when there are no weights, mapped to zero.
+  (   Weights == []
+  ->  Value = 0
+  ;   maplist(char_weight, Chars, Weights),
+      (   Radix == hex
+      ->  atom_chars(Value, Chars)
+      ;   number_chars(Value, Chars)
+      )
   ).
 weights_radix(Weights, Number):-
   nonvar(Number), !,
-  atom_chars(Number, Chars),
-  maplist(char_weight, Chars, Weights).
+  % A special case occurs when there are no weights, mapped onto zero.
+  (   Number =:= 0
+  ->  Weights = []
+  ;   atom_chars(Number, Chars),
+      maplist(char_weight, Chars, Weights)
+  ).
 
 
 
