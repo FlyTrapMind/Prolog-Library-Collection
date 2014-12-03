@@ -46,6 +46,7 @@ positional notations of different radix.
 :- use_module(generics(char_ext)).
 :- use_module(generics(list_ext)).
 :- use_module(generics(typecheck)).
+:- use_module(math(math_ext)).
 
 :- multifile(error:has_type/2).
 error:has_type(hex, Value):-
@@ -205,6 +206,7 @@ weights_decimal(Weights, Decimal):-
 %! ) is det.
 
 weights_fraction(Weights, Fraction):-
+  nonvar(Weights), !,
   aggregate_all(
     sum(N),
     (
@@ -213,6 +215,12 @@ weights_fraction(Weights, Fraction):-
     ),
     Fraction
   ).
+weights_fraction(Weights, Fraction):-
+  nonvar(Fraction), !,
+  fractional_integer(Fraction, Integer),
+  weights_decimal(Weights, Integer).
+weights(_, _):-
+  instantiation_error(_).
 
 
 
@@ -236,8 +244,8 @@ weights_octal(Weights, Octal):-
 %! weights_radix(-Weights:between(0,15), +Number:compound) is det.
 
 weights_radix(Weights, Number):-
-  nonvar(Weights),
-  Number =.. [Radix,Value], !,
+  nonvar(Weights), !,
+  Number =.. [Radix,Value],
   % A special case occurs when there are no weights, mapped to zero.
   (   Weights == []
   ->  Value = 0
@@ -249,12 +257,15 @@ weights_radix(Weights, Number):-
   ).
 weights_radix(Weights, Number):-
   nonvar(Number), !,
+  Number =.. [_,Value],
   % A special case occurs when there are no weights, mapped onto zero.
-  (   Number =:= 0
+  (   Value =:= 0
   ->  Weights = []
-  ;   atom_chars(Number, Chars),
+  ;   atom_chars(Value, Chars),
       maplist(char_weight, Chars, Weights)
   ).
+weights_radix(_, _):-
+  instantiation_error(_).
 
 
 

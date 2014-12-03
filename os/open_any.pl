@@ -20,9 +20,10 @@ Open a recursive data stream from files/URIs.
 @author Wouter Beek
 @author Jan Wielemaker
 @tbd Only supports URI schemes `http` and `https`.
-@version 2014/03-2014/07, 2014/10-2014/11
+@version 2014/03-2014/07, 2014/10-2014/12
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(archive)).
 :- use_module(library(http/http_cookie)). % Redirection may require cookies.
@@ -63,29 +64,49 @@ ssl_verify(
 
 
 
-%! archive_content(+Archive:archive, -Entry:stream, -Pipeline:dict, +PipeTail:list) is nondet.
 
-archive_content(Archive, Entry, Pipeline, PipeTail) :-
+
+%! archive_content(
+%!   +Archive:archive,
+%!   -Entry:stream,
+%!   -PipeMetadata:list(dict),
+%!   +PipeTail:list
+%! ) is nondet.
+
+archive_content(
+  Archive,
+  Entry,
+  [EntryMetadata|PipeMetadataTail],
+  PipeMetadata2
+):-
   archive_property(Archive, filter(Filters)),
-  maplist(wrap_filter, Filters, PipeElements),
-  append(PipeElements, RestPipe, Pipeline),
   repeat,
-  (   archive_next_header(Archive, Name)
+  (   archive_next_header(Archive, EntryName)
   ->  findall(
-        ArchiveProperty,
-        archive_header_property(Archive, ArchiveProperty),
-        ArchiveProperties
+        EntryProperty,
+        archive_header_property(Archive, EntryProperty),
+        EntryProperties0
       ),
-      dict_create(Pipe, archive_entry, [name(Name)|ArchiveProperties]),
-      (   Pipe.filetype == file
+      sort(
+        [filters(Filters),name(EntryName)|EntryProperties0],
+        EntryProperties
+      ),
+      dict_create(EntryMetadata, json, EntryProperties),
+      (   EntryMetadata.filetype == file
       ->  archive_open_entry(Archive, Entry0),
-          (   Name == data,
-              Pipe.format == raw
+          (   EntryName == data,
+              EntryMetadata.format == raw
           ->  !,
-              RestPipe = PipeTail,
+              PipeMetadataTail = PipeMetadata2,
               Entry = Entry0
-          ;   RestPipe = [Pipe|RestPipe1],
-              open_substream(Entry0, Entry, true, RestPipe1, PipeTail)
+          ;   PipeMetadataTail = PipeMetadata1,
+              open_substream(
+                Entry0,
+                Entry,
+                true,
+                PipeMetadata1,
+                PipeMetadata2
+              )
           )
       ;   fail
       )
@@ -196,11 +217,15 @@ open_any(Input, In, Options):-
 
 open_any(Input, In, Metadata, Options):-
   open_input(Input, FileOut, Metadata0, Close, Options),
-  Metadata = Metadata0.put(data, Data),
-  open_substream(FileOut, In, Data, Close).
+  Metadata = Metadata0.put(archive, ArchiveMetadata),
+  open_substream(FileOut, In, ArchiveMetadata, Close).
 
 
-%! open_substream(+Stream:stream, -Substream:stream, -Pipeline:dict) is nondet.
+%! open_substream(
+%!   +Stream:stream,
+%!   -Substream:stream,
+%!   -ArchiveMetadata:dict
+%! ) is nondet.
 % True when SubStream is a raw content stream for data in Stream
 % and Pipeline describes the location of SubStream in the substream tree.
 %
@@ -209,19 +234,19 @@ open_any(Input, In, Metadata, Options):-
 %       List elements take the form:
 %
 %         - `archive(Member, Format)`
-%         - `filter(Name)`
+%         - `filter(EntryName)`
 
-open_substream(In, Entry, Pipeline, Close) :-
-  open_substream(In, Entry, Close, Pipeline, []).
+open_substream(In, Entry, ArchiveMetadata, Close):-
+  open_substream(In, Entry, Close, ArchiveMetadata, []).
 
-open_substream(In, Entry, Close, Pipeline, PipeTail) :-
+open_substream(In, Entry, Close, ArchiveMetadata, PipeTailMetadata):-
   setup_call_cleanup(
     archive_open(
       stream(In),
       Archive,
       [close_parent(Close),format(all),format(raw)]
     ),
-    archive_content(Archive, Entry, Pipeline, PipeTail),
+    archive_content(Archive, Entry, ArchiveMetadata, PipeTailMetadata),
     archive_close(Archive)
   ).
 
@@ -290,11 +315,8 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
 
       % Convert headers to JSON-compatible pairs.
       maplist(header_json, Headers2, Headers3),
-
-      % HTTP header JSON object.
-      dict_pairs(HeadersDict, json, Headers3),
-
-      % HTTP status.
+      
+      % HTTP status JSON object.
       http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),
       atom_codes(ReasonPhrase, ReasonPhrase0),
@@ -304,12 +326,11 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
         [code-StatusCode,'reason-phrase'-ReasonPhrase]
       ),
 
+      % HTTP JSON object: status and headers.
+      dict_pairs(HttpMetadata, json, [status-StatusDict|Headers3]),
+
       % HTTP response/request dictionary.
-      dict_pairs(
-        Metadata,
-        json,
-        [headers-HeadersDict,status-StatusDict,'URI'-Uri]
-      ),
+      dict_pairs(Metadata, json, ['HTTP'-HttpMetadata,'URI'-Uri]),
       Close = true
   ).
 
@@ -515,10 +536,6 @@ http_scheme(http).
 http_scheme(https).
 
 
-
-%! wrap_filter(+FilterName:atom, -FilterTerm:compound) is det.
-
-wrap_filter(Filter, filter(Filter)).
 
 
 
