@@ -219,7 +219,7 @@ weights_fraction(Weights, Fraction):-
   nonvar(Fraction), !,
   fractional_integer(Fraction, Integer),
   weights_decimal(Weights, Integer).
-weights(_, _):-
+weights_fraction(_, _):-
   instantiation_error(_).
 
 
