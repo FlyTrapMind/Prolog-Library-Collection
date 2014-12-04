@@ -503,7 +503,8 @@ merge_into_one_stream(Out, FromFile):-
 
 %! new_file_name(+Path1:atom, -Path2:atom) is det.
 % If a file with the same name exists in the same directory,
-% then a distinguishing integer is appended to the file name.
+%  then a distinguishing integer is appended to the file name.
+% Otherwise the file itself is returned.
 
 new_file_name(Path, Path):-
   \+ exists_file(Path), !.
