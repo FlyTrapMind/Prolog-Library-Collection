@@ -25,10 +25,11 @@
 Logging the performance and results of Prolog predicates.
 
 @author Wouter Beek
-@version 2014/04, 2014/06, 2014/08-2014/09
+@version 2014/04, 2014/06, 2014/08-2014/09, 2014/12
 */
 
 :- use_module(library(check_installation)). % Private predicates.
+:- use_module(library(debug)).
 
 :- meta_predicate(run_collect_messages(0)).
 :- meta_predicate(run_collect_messages(0,+)).
@@ -68,8 +69,8 @@ replace_blobs(Term, Term).
 run_collect_messages(Goal):-
   run_collect_messages(Goal, Status, Messages),
   length(Messages, NumberOfMessages),
-  format(
-    current_output,
+  debug(
+    pl_log,
     'Status: ~a; #messages: ~D~n',
     [Status,NumberOfMessages]
   ).
