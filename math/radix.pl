@@ -259,7 +259,8 @@ weights_radix(Weights, Number):-
   nonvar(Number), !,
   Number =.. [_,Value],
   % A special case occurs when there are no weights, mapped onto zero.
-  (   Value =:= 0
+  (   integer(Value),
+      Value =:= 0
   ->  Weights = []
   ;   atom_chars(Value, Chars),
       maplist(char_weight, Chars, Weights)
