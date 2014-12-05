@@ -36,7 +36,7 @@ Closures come in handy in many Prolog programs!
 % @author Ulrich Neumerkel
 % @see [StackOverflow](http://stackoverflow.com/questions/26964782/determining-if-graph-is-connected-in-prolog/26965843?noredirect=1#comment42472120_26965843)
 %      for a discussion about the predicate names closure/3 and closure0/3
-% @see [StackOverflow]http://stackoverflow.com/questions/15473065/hilog-terms-in-xsb-prolog/15483764#15483764
+% @see [StackOverflow](http://stackoverflow.com/questions/15473065/hilog-terms-in-xsb-prolog/15483764#15483764)
 %      for the definition of closure/3 in terms of closure0/3.
 
 closure(Goal, X0, X):-

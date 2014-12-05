@@ -89,9 +89,9 @@
                       % +List:list
     remove_sublists/2, % +Lists1:list(list)
                        % -Lists2:list(list)
-    repeating_list/3, % ?Term:term
-                      % ?Repeats:nonneg
-                      % ?List:list
+    repeating_list/3, % ?X
+                      % ?N:nonneg
+                      % ?L:list
     replace_nth/6, % +StartIndex:index
                    % ?Index:index
                    % +OldList:list
@@ -575,33 +575,12 @@ remove_sublists(Ls1, Ls3):-
 remove_sublists(Ls, Ls).
 
 
-%! repeating_list(+Term:term, +Repeats:integer, -List:list(term)) is det.
-%! repeating_list(?Term:term, ?Repeats:integer, +List:list(term)) is det.
-% Returns the list of the given number of repeats of the given term.
-%
-% @arg Term
-% @arg Repeats
-% @arg List
+%! repeating_list(?X, ?N:nonneg, ?L:list) is nondet.
+% True when L is a list with N repeats of X
 
-repeating_list(_, 0, []):- !.
-% The term and number of repetitions are known given the list.
-repeating_list(H, Reps, L):-
-  nonvar(L), !,
-  L = [H|T],
-  forall(
-    member(X, T),
-    % ==/2, since `[a,X]` does not contain 2 repetitions of `a`.
-    X == H
-  ),
-  length([H|T], Reps).
-% Repetitions is given, then we generate the list.
-repeating_list(H, Reps1, [H|T]):-
-  must_be(nonneg, Reps1), !,
-  Reps2 is Reps1 - 1,
-  repeating_list(H, Reps2, T).
-% Repetitions is not `nonneg`.
-repeating_list(_, Reps, _):-
-  domain_error(nonneg, Reps).
+repeating_list(X, N, L) :-
+  length(L, N),
+  maplist(=(X), L).
 
 
 %! replace_nth(
