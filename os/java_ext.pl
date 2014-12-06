@@ -1,14 +1,12 @@
 :- module(
   java_ext,
   [
-    java_output_stream/1, % -Output
-    java_error_stream/1, % -Error
-    run_jar/2, % +JarFile:atom
-               % +CommandlineArguments:list(atom
-    run_jar/4 % +JarFile:atom
-              % +CommandlineArguments:list(atom
-              % +Output
-              % +Error
+    run_jar/2, % +Jar:atom
+               % +Args:list
+    run_jar/4 % +Jar:atom
+              % +Args:list
+              % ?Error:stream
+              % ?Output:stream
   ]
 ).
 
@@ -17,80 +15,43 @@
 Extensions for executing Java JARs from within Prolog.
 
 @author Wouter Beek
-@version 2014/01-2014/02
+@version 2014/01-2014/02, 2014/12
 */
 
-:- use_module(generics(db_ext)).
 :- use_module(library(apply)).
 :- use_module(library(process)).
+
+:- use_module(generics(db_ext)).
 :- use_module(os(run_ext)).
 
-% JAR
 :- db_add_novel(user:prolog_file_type(jar, jar)).
-
-% LOG
 :- db_add_novel(user:prolog_file_type(log, log)).
 
 
 
-java_output_stream(Output):-
-  absolute_file_name(
-    data(java_output),
-    OutputFile,
-    [access(write),file_type(log)]
-  ),
-  open(OutputFile, append, Output, []).
 
 
-java_error_stream(Error):-
-  absolute_file_name(
-    data(java_error),
-    ErrorFile,
-    [access(write),file_type(log)]
-  ),
-  open(ErrorFile, append, Error, []).
-
-
-%! run_jar(+JarFile:atom, +CommandlineArguments:list(atom)) is det.
+%! run_jar(+Jar:atom, +Args:list(atom)) is det.
 % Runs the given JAR file with the given commandline arguments,
-% and uses the Java error and output streams as defined by this module:
-%   - java_error_stream/1
-%   - java_output_stream/1
+% but does not use the output or error stream.
 
-run_jar(JarFile, Args):-
-  setup_call_cleanup(
-    (
-      java_output_stream(Output1),
-      java_error_stream(Error1)
-    ),
-    (
-      run_jar(JarFile, Args, pipe(Output2), pipe(Error2)),
-      copy_stream_data(Output2, Output1),
-      copy_stream_data(Error2, Error1)
-    ),
-    maplist(close, [Error1,Error2,Output1,Output2])
-  ).
+run_jar(Jar, Args):-
+  run_jar(Jar, Args, Output, Error),
+  maplist(close, [Output,Error]).
 
 
-%! run_jar(
-%!   +JarFile:atom,
-%!   +CommandlineArguments:list(atom),
-%!   +Error:stream,
-%!   +Output:stream
-%! ) is det.
+
+%! run_jar(+Jar:atom, +Args:list(atom), -Error:stream, -Output:stream) is det.
 % Runs the given JAR file with the given commandline arguments,
 % and uses the given output streams for Java error and Java output.
 
-run_jar(JarFile, Args, Error, Output):-
+run_jar(Jar, Args, Error, Output):-
   process_create(
     path(java),
-    ['-jar',file(JarFile)|Args],
-    [process(PID),stderr(Error),stdout(Output)]
+    ['-jar',file(Jar)|Args],
+    [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))]
   ),
-  process_wait(PID, exit(ShellStatus)),
-  
-  % Process shell status.
-  file_base_name(JarFile, JAR_Name),
-  format(atom(Program), 'Java/JAR ~a', [JAR_Name]),
+  process_wait(Pid, exit(ShellStatus)),
+  file_base_name(Jar, JarName),
+  format(atom(Program), 'Java/JAR ~a', [JarName]),
   exit_code_handler(Program, ShellStatus).
-
