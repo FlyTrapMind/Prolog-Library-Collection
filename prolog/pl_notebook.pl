@@ -17,6 +17,7 @@ Scattered ideas about programming in Prolog that I learned mostly
   - [Production Logic](http://youtu.be/G_eYTctGZw8), Michael Hendricks,
     Presentation at Strangeloop.
 
+
 # Answer, Solution, Success
 
 "Success is not what it used to be."
@@ -30,7 +31,6 @@ An answer need not contain a solution (e.g., `X = t(_)`).
 Beginning with Prolog IV, answer can be returned as executable queries
 E.g., `yes` -> `true`, `no` -> `false`.
 This allows answers to be inserted into the next query.
-
 
 
 # Constraints
@@ -51,6 +51,28 @@ yes
 ?- setof(t, (I in 1..3 ; I in 3..5 ),_).
 I = 3.
 ```
+
+
+# `dif/2`
+
+```prolog
+union([], X, X).
+union([X|Y], L, S):-
+  memberchk(X, L),
+  union(Y, L, S).
+union([X|Y], L, [X|S]):-
+  maplist(dif(X), L),
+  union(Y, L, S).
+```
+
+```prolog
+?- union([A],[B],[C,D]).
+A = C,
+B = D,
+dif(C, D).
+```
+
+@author Ulrich Neumerkel
 
 
 
@@ -131,7 +153,7 @@ true.
 ---
 
 @author Wouter Beek
-@version 2014/11
+@version 2014/11-2014/12
 */
 
 
@@ -141,7 +163,6 @@ true.
 %
 % @author Paulo Moura
 % @see http://stackoverflow.com/questions/20711893/prolog-compare-list-structure/20713406#comment31025646_20711893
-% @version 2014/11
 
 variant2(Term1, Term2):-
   \+ \+ subsumes_term(Term1, Term2),

@@ -114,12 +114,12 @@ merge_pairs_by_key([K-V|T1], [K-VMerge|T3]):-
   same_key(K, [K-V|T1], VMerge, T2),
   merge_pairs_by_key(T2, T3).
 
-same_key(_, L, [], L).
 same_key(K, [K-V|L1], VMerge2, L2):- !,
   same_key(K, L1, VMerge1, L2),
   ord_union(VMerge1, V, VMerge2).
-same_key(K, [_|L1], VMerge, L2):-
+same_key(K, [_|L1], VMerge, L2):- !,
   same_key(K, L1, VMerge, L2).
+same_key(_, L, [], L).
 
 
 
