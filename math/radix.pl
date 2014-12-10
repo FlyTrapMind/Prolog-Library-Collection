@@ -211,7 +211,7 @@ weights_fraction(Weights, Fraction):-
     sum(N),
     (
       nth1(Index, Weights, Weight),
-      N is Weight * 10 ** (-1 * Index)
+      N is Weight * 10 ^ -Index
     ),
     Fraction
   ).
