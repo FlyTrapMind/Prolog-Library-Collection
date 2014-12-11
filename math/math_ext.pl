@@ -439,7 +439,7 @@ number_integer_parts(Number, Integer, Fractional):-
 number_integer_parts(Number, Integer, Fractional):-
   number_length(Fractional, Length),
   Sign is sign(Integer),
-  Number is copysign(abs(Integer) + Fractional * 10 ^ -Length, Sign).
+  Number is copysign(abs(Integer) + Fractional * 10 ** -(Length), Sign).
 
 
 %! number_length(+Number:number, -Length:integer) is det.
