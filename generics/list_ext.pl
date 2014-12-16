@@ -13,8 +13,8 @@
     combination/2, % +Lists:list(list)
                    % -Combination:list
     common_list_prefix/3, % +List1:list
-                      % +List2:list
-                      % ?Sublist:list
+                          % +List2:list
+                          % ?Sublist:list
     complement_list/4, % +FromList:list
                        % +Length:nonneg
                        % +FillElement
