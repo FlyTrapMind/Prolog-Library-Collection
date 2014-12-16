@@ -243,14 +243,11 @@ format_integer(I, L, Out):-
 new_atom(A1, A2):-
   atomic_list_concat(Splits, '_', A1), % split
   reverse(Splits, [LastSplit|RestSplits]),
-  (
-    atom_number(LastSplit, OldNumber)
-  ->
-    NewNumber is OldNumber + 1,
-    atom_number(NewLastSplit, NewNumber),
-    reverse([NewLastSplit|RestSplits], NewSplits)
-  ;
-    reverse(['1',LastSplit|RestSplits], NewSplits)
+  (   atom_number(LastSplit, OldNumber)
+  ->  NewNumber is OldNumber + 1,
+      atom_number(NewLastSplit, NewNumber),
+      reverse([NewLastSplit|RestSplits], NewSplits)
+  ;   reverse(['1',LastSplit|RestSplits], NewSplits)
   ),
   atomic_list_concat(NewSplits, '_', A2).
 

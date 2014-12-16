@@ -158,6 +158,8 @@ error:has_type(absolute_path, Term):-
 
 
 
+
+
 %! absolute_file_name_number(
 %!   +Spec:compound,
 %!   +Number:nonneg,
@@ -165,9 +167,6 @@ error:has_type(absolute_path, Term):-
 %!   +Options:list(nvpair)
 %! ) is det.
 % This comes in handy for numbered files, e.g. '/home/some_user/test_7.txt'.
-%
-% The order of the arguments differs from absolute_file_name/3
-% to be compliant with =library(apply)=.
 %
 % Options are passed to absolute_file_name/3.
 
@@ -506,12 +505,15 @@ merge_into_one_stream(Out, FromFile):-
 %  then a distinguishing integer is appended to the file name.
 % Otherwise the file itself is returned.
 
+% The file does not yet exist; done.
 new_file_name(Path, Path):-
   \+ exists_file(Path), !.
-new_file_name(Path1, Path2):-
+% The file already exists.
+new_file_name(Path1, Path3):-
   file_component(Path1, base, Base1),
   new_atom(Base1, Base2),
-  file_alternative(Path1, _, Base2, _, Path2).
+  file_alternative(Path1, _, Base2, _, Path2),
+  new_file_name(Path2, Path3).
 
 
 
@@ -547,7 +549,7 @@ prefix_path(PrefixPath, Path):-
 %
 % Resolves potential occurrences of `..` in any of the arguments.
 %
-% Supports 
+% Supports
 %
 % @see relative_file_name/3 in library [[filesex]]
 %      only supports instantiation `(+,+,-)`.
