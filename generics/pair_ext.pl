@@ -325,7 +325,8 @@ reflexive_pair(X-X).
 % Assumes that the Original and Remove pairs are ordered in the same way.
 
 remove_pairs(L1, RemoveKeys, L2):-
-  pairs_keys(L1, Keys),
+  pairs_keys(L1, Keys0),
+  list_to_ord_set(Keys0, Keys),
   ord_subtract(Keys, RemoveKeys, RetainKeys),
   subpairs(L1, RetainKeys, L2).
 
