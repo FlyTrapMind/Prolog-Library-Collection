@@ -38,7 +38,7 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(debug)).
 :- use_module(library(error)).
 :- use_module(library(http/http_open)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(pairs)).
 :- use_module(library(semweb/rdf_db), [rdf_atom_md5/3]).
 :- use_module(library(zlib)).

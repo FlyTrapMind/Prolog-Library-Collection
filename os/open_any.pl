@@ -30,7 +30,7 @@ Open a recursive data stream from files/URIs.
 :- use_module(library(http/http_header)). % Private predicates.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 :- use_module(library(uri)).
 

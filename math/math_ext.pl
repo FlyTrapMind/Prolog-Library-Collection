@@ -90,7 +90,7 @@ Extra arithmetic operations for use in SWI-Prolog.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(generics(typecheck)).
 :- use_module(math(float_ext)).

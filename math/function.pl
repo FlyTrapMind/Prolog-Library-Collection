@@ -57,7 +57,7 @@ Binary relations can be efficiently represented as `list(pair)`
 */
 
 :- use_module(library(aggregate)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 
 

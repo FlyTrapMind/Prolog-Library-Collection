@@ -140,7 +140,7 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(random)).
 
 :- use_module(generics(closure)).
@@ -794,10 +794,11 @@ strict_sublist(SubList, List):-
 
 %! sublist(?SubList:list, +List:list) is nondet.
 % Returns sublists of the given list.
+% Construction proceeds from smaller to greater sublists.
 
 sublist([], []).
-sublist([H|SubT], [H|T]):-
-  sublist(SubT, T).
 sublist(SubT, [_|T]):-
+  sublist(SubT, T).
+sublist([H|SubT], [H|T]):-
   sublist(SubT, T).
 

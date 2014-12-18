@@ -31,7 +31,7 @@ For `:` we assume the type is `any`.
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(pldoc)).
 
 :- use_module(library(pldoc/doc_modes)).

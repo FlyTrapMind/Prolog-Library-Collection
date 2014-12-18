@@ -135,7 +135,7 @@ In line with the terminology this modules uses the following variable names:
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(filesex)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(generics(atom_ext)).
 :- use_module(generics(error_ext)).

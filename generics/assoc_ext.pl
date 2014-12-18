@@ -24,7 +24,7 @@ An association list with multiple values per key, using ordered sets.
 
 :- use_module(library(assoc)).
 :- use_module(library(debug)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 
 

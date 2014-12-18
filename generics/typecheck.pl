@@ -78,7 +78,7 @@ Predicates used for parsing and checking value-type conformance.
 @version 2013/01, 2013/08, 2014/01, 2014/03-2014/06, 2014/10-2014/11
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(uri)).
 
 :- use_module(generics(boolean_ext)).
