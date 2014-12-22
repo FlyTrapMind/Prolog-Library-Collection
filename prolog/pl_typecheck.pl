@@ -62,7 +62,6 @@ add_typecheck(Clause, TypecheckedClause):-
     mode(Clause, Mode),
     Modes
   ),
-  (Modes \== [] -> gtrace ; true),
   maplist(mode_term_to_arguments, Modes, ArgDs),
   build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
   build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause).
