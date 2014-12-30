@@ -33,23 +33,11 @@ For `:` we assume the type is `any`.
 :- use_module(library(apply)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(pldoc)).
-
 :- use_module(library(pldoc/doc_modes)).
 :- use_module(library(pldoc/doc_process)).
 :- use_module(library(pldoc/doc_wiki)).
 
 :- doc_collect(true).
-
-% Debug settings.
-:- set_prolog_flag(
-  answer_write_options,
-  [max_depth(10),portrayed(true),spacing(next_argument)]
-).
-:- set_prolog_flag(
-  debugger_write_options,
-  [max_depth(10),portrayed(true),spacing(next_argument)]
-).
-:- set_portray_text(ellipsis, 100).
 
 
 
