@@ -247,11 +247,7 @@ open_substream(In, Entry, Close, ArchiveMetadata, PipeTailMetadata):-
       [close_parent(Close),format(all),format(raw)]
     ),
     archive_content(Archive, Entry, ArchiveMetadata, PipeTailMetadata),
-    (
-      archive_close(Archive),
-      aggregate_all(count, current_blob(_, archive), N),
-      format(user_output, 'Archives: ~D\n', [N])
-    )
+    archive_close(Archive)
   ).
 
 
