@@ -96,8 +96,7 @@ archive_content(
       ->  archive_open_entry(Archive, Entry0),
           (   EntryName == data,
               EntryMetadata.format == raw
-          ->  !,
-              PipeMetadataTail = PipeMetadata2,
+          ->  PipeMetadataTail = PipeMetadata2,
               Entry = Entry0
           ;   PipeMetadataTail = PipeMetadata1,
               open_substream(
@@ -110,7 +109,8 @@ archive_content(
           )
       ;   fail
       )
-  ;   !,
+  ;   % No more entries, so end repeat.
+      !,
       fail
   ).
 
@@ -247,7 +247,12 @@ open_substream(In, Entry, Close, ArchiveMetadata, PipeTailMetadata):-
       [close_parent(Close),format(all),format(raw)]
     ),
     archive_content(Archive, Entry, ArchiveMetadata, PipeTailMetadata),
-    archive_close(Archive)
+    (
+      archive_close(Archive),
+      aggregate_all(count, current_blob(_, archive), N),
+      gtrace,
+      format(user_output, 'Archives: ~D\n', [N])
+    )
   ).
 
 
@@ -315,7 +320,7 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
 
       % Convert headers to JSON-compatible pairs.
       maplist(header_json, Headers2, Headers3),
-      
+
       % HTTP status JSON object.
       http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),
