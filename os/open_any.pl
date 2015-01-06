@@ -250,7 +250,6 @@ open_substream(In, Entry, Close, ArchiveMetadata, PipeTailMetadata):-
     (
       archive_close(Archive),
       aggregate_all(count, current_blob(_, archive), N),
-      gtrace,
       format(user_output, 'Archives: ~D\n', [N])
     )
   ).
