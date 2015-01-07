@@ -37,7 +37,7 @@ Extensions for handling directories.
 
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 
 :- use_module(generics(lambda_meta)).

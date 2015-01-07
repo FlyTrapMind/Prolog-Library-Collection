@@ -30,7 +30,7 @@ Predicates for using ANSI markup in Unix consoles.
 */
 
 :- use_module(library(ansi_term)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 
 

@@ -210,8 +210,8 @@ weights_fraction(Weights, Fraction):-
   aggregate_all(
     sum(N),
     (
-      nth1(Index, Weights, Weight),
-      N is Weight * 10 ** (-1 * Index)
+      nth1(I, Weights, Weight),
+      N is Weight * 10 ** -(I)
     ),
     Fraction
   ).

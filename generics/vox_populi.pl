@@ -25,7 +25,7 @@
 @version 2014/06
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(generics(thread_ext)).
 

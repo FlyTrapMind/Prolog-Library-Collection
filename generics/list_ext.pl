@@ -13,8 +13,8 @@
     combination/2, % +Lists:list(list)
                    % -Combination:list
     common_list_prefix/3, % +List1:list
-                      % +List2:list
-                      % ?Sublist:list
+                          % +List2:list
+                          % ?Sublist:list
     complement_list/4, % +FromList:list
                        % +Length:nonneg
                        % +FillElement
@@ -36,6 +36,8 @@
              % -Firsts:list
     first_duplicate/2, % ?FirstDuplicate
                        % +List:list
+    inflist/2, % +Element
+               % -List
     length_cut/4, % +L:list
                   % +Cut:nonneg
                   % -L1:list
@@ -133,12 +135,12 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2014/08, 2014/11
+         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2014/08, 2014/11-2014/12
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(random)).
 
 :- use_module(generics(closure)).
@@ -358,6 +360,30 @@ first_duplicate(X, [_|T]):-
 first_duplicate(X, [H|T]):-
   maplist(dif(H), T),
   first_duplicate(X, T).
+
+
+
+%! inflist(+Element, -List:list) is det.
+% Lazy-lists containing an infinitely re-occurring element.
+%
+% # Example of use
+%
+% ```prolog
+% ?- inflist(0, L), append([A,B,C,D,E,F|_], _, L).
+% L = [0, 0, 0, 0, 0, 0|_G29924368],
+% A = B, B = C, C = D, D = E, E = F, F = 0,
+% freeze(_G29924368, list_ext: (_G29924368=[0|_G29924422], inflist(0, _G29924422))) 
+% ```
+%
+% @see Based on
+%      [a StackOverflow answer](http://stackoverflow.com/questions/8869485/lazy-lists-in-prolog)
+%      by Michael Hendricks.
+
+inflist(X, L):-
+  freeze(L, (
+    L = [X|T],
+    inflist(X, T)
+  )).
 
 
 
@@ -747,10 +773,11 @@ strict_sublist(SubList, List):-
 
 %! sublist(?SubList:list, +List:list) is nondet.
 % Returns sublists of the given list.
+% Construction proceeds from smaller to greater sublists.
 
 sublist([], []).
-sublist([H|SubT], [H|T]):-
-  sublist(SubT, T).
 sublist(SubT, [_|T]):-
+  sublist(SubT, T).
+sublist([H|SubT], [H|T]):-
   sublist(SubT, T).
 

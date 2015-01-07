@@ -30,7 +30,7 @@ Open a recursive data stream from files/URIs.
 :- use_module(library(http/http_header)). % Private predicates.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/http_ssl_plugin)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
@@ -96,8 +96,7 @@ archive_content(
       ->  archive_open_entry(Archive, Entry0),
           (   EntryName == data,
               EntryMetadata.format == raw
-          ->  !,
-              PipeMetadataTail = PipeMetadata2,
+          ->  PipeMetadataTail = PipeMetadata2,
               Entry = Entry0
           ;   PipeMetadataTail = PipeMetadata1,
               open_substream(
@@ -110,7 +109,8 @@ archive_content(
           )
       ;   fail
       )
-  ;   !,
+  ;   % No more entries, so end repeat.
+      !,
       fail
   ).
 
@@ -315,7 +315,7 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
 
       % Convert headers to JSON-compatible pairs.
       maplist(header_json, Headers2, Headers3),
-      
+
       % HTTP status JSON object.
       http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),

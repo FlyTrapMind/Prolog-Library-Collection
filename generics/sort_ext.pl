@@ -22,11 +22,11 @@ Extensions for sorting lists.
          2014/07-2014/08, 2014/11
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 
 :- meta_predicate(merge_with_duplicates(3,+,+,-)).
-:- meta_predicate(merge_with_duplicates(3,+,+,+,+,+,-)).
+:- meta_predicate(merge_with_duplicates(+,3,+,+,+,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
@@ -178,7 +178,7 @@ icompare(InvertedOrder, Term1, Term2):-
 %! ) is det.
 % Merges the given two sorted lists into a single sorted list,
 % according to the given sorting Goal.
-% 
+%
 % Notice that the sort predicate is tertiary, i.e., of the following form:
 % ```
 % Goal({<|`>},Element1,Element2)

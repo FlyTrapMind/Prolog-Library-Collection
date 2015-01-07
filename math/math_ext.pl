@@ -90,7 +90,7 @@ Extra arithmetic operations for use in SWI-Prolog.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(generics(typecheck)).
 :- use_module(math(float_ext)).
@@ -439,7 +439,7 @@ number_integer_parts(Number, Integer, Fractional):-
 number_integer_parts(Number, Integer, Fractional):-
   number_length(Fractional, Length),
   Sign is sign(Integer),
-  Number is copysign(abs(Integer) + Fractional * 10 ** (-1 * Length), Sign).
+  Number is copysign(abs(Integer) + Fractional * 10 ** -(Length), Sign).
 
 
 %! number_length(+Number:number, -Length:integer) is det.

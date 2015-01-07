@@ -84,9 +84,12 @@ read_stream_to_atom(Stream, Atom):-
 %! read_stream_to_file(+Stream:stream, +File:atom) is det.
 % Stores an atomic stream to the given file.
 
-read_stream_to_file(Stream, File):-
-  read_stream_to_atom(Stream, Atom),
-  write_atom_to_file(Atom, File).
+read_stream_to_file(Read, File):-
+  setup_call_cleanup(
+    open(File, write, Write, [type(binary)]),
+    copy_stream_data(Read, Write),
+    close(Write)
+  ).
 
 
 

@@ -15,7 +15,7 @@ Support for enforced semi-determinism in Prolog.
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 
 

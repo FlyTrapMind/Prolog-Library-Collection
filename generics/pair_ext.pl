@@ -34,6 +34,9 @@
     read_pairs_from_file/2, % +File:atom
                             % -Pairs:ordset(pair(atom))
     reflexive_pair/1, % ?Pair:pair
+    remove_pairs/3, % +Original:ordset(pair)
+                    % +Remove:ordset
+                    % -Result:ordset(pair)
     set_to_pairs/3, % +Set:ordset
                     % :Comparator
                     % -Pairs:ordset(pair)
@@ -42,6 +45,9 @@
                      % +Options:list(nvpair)
     store_pairs_to_file/2, % +Pairs:list(pair(atom))
                            % +File:atom
+    subpairs/3, % +Pairs:ordset(pair)
+                % +Subkeys:ordset
+                % -Subpairs:ordset(pair)
     term_to_pair/2 % @Term
                    % -Pair:pair
   ]
@@ -52,12 +58,12 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/11
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/12
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
@@ -114,12 +120,12 @@ merge_pairs_by_key([K-V|T1], [K-VMerge|T3]):-
   same_key(K, [K-V|T1], VMerge, T2),
   merge_pairs_by_key(T2, T3).
 
-same_key(_, L, [], L).
 same_key(K, [K-V|L1], VMerge2, L2):- !,
   same_key(K, L1, VMerge1, L2),
   ord_union(VMerge1, V, VMerge2).
-same_key(K, [_|L1], VMerge, L2):-
+same_key(K, [_|L1], VMerge, L2):- !,
   same_key(K, L1, VMerge, L2).
+same_key(_, L, [], L).
 
 
 
@@ -311,6 +317,21 @@ reflexive_pair(X-X).
 
 
 
+%! remove_pairs(
+%!   +Original:ordset(pair),
+%!   +RemoveKeys:ordset,
+%!   -Result:ordset(pair)
+%! ) is det.
+% Assumes that the Original and Remove pairs are ordered in the same way.
+
+remove_pairs(L1, RemoveKeys, L2):-
+  pairs_keys(L1, Keys0),
+  list_to_ord_set(Keys0, Keys),
+  ord_subtract(Keys, RemoveKeys, RetainKeys),
+  subpairs(L1, RetainKeys, L2).
+
+
+
 %! set_to_pairs(
 %!   +Set:ordset,
 %!   :Comparator,
@@ -381,6 +402,21 @@ store_pairs_to_file(Pairs, File):-
     ),
     close(Stream)
   ).
+
+
+
+%! subpairs(
+%!   +Pairs:ordset(pair),
+%!   +Subkeys:ordset,
+%!   -Subpairs:ordset(pair)
+%! ) is det.
+% This assumes that pairs and keys are ordered in the same way.
+
+subpairs([], [], []).
+subpairs([K-V|T1], [K|T2], [K-V|T3]):- !,
+  subpairs(T1, T2, T3).
+subpairs([_|T1], L2, L3):-
+  subpairs(T1, L2, L3).
 
 
 

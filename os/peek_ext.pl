@@ -3,16 +3,19 @@
   [
     peek_atom/2, % +Stream:stream
                  % +Atom:atom
-    peek_length/3 % +Stream:stream
+    peek_length/3, % +Stream:stream
                   % +Length:nonneg
                   % ?Codes:list(code)
+    peek_until_code/3 % +Stream:stream
+                      % +Code:code
+                      % -Codes:list(code)
   ]
 ).
 
 /** <module> Input stream peeking
 
 @author Wouter Beek
-@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03-2014/04, 2014/09-2014/11
+@version 2013/01, 2013/06, 2013/08, 2014/01, 2014/03-2014/04, 2014/09-2014/12
 */
 
 
@@ -55,3 +58,16 @@ peek_length0(Stream, Length, [H|T]):-
   NewLength is Length - 1,
   peek_length0(Stream, NewLength, T).
 
+
+
+%! peek_until_code(+Stream:stream, +Code:code, -Codes:list(code)) is nondet.
+
+peek_until_code(Stream, Code, L):-
+  get_code(Stream, H), !,
+  (   H == -1
+  ->  fail
+  ;   H == Code
+  ->  L = []
+  ;   L = [H|T],
+      peek_until_code(Stream, Code, T)
+  ).
