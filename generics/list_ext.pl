@@ -42,6 +42,9 @@
                   % +Cut:nonneg
                   % -L1:list
                   % -L2:list
+    list_binary_term/3, % ?List:list
+                            % ?Operator
+                            % ?Term:compound
     list_replace/3, % +List:list
                     % +Replacements:list(pair)
                     % -NewList:list
@@ -402,6 +405,17 @@ length_cut(L, Cut, L, []):-
 length_cut(L, Cut, L1, L2):-
   length(L1, Cut),
   append(L1, L2, L).
+
+
+
+%! list_binary_term(+List:list, +Operator, -Term:compound) is det.
+%! list_binary_term(-List:list, -Operator, +Term:compound) is det.
+
+list_binary_term([H], H).
+list_binary_term([H|T1], L2):-
+  list_binary_term(T1, T2),
+  L2 =.. [Op,H,T2].
+
 
 
 %! list_replace(
