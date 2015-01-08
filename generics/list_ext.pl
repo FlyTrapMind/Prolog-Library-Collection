@@ -324,7 +324,7 @@ first(L, N, First):-
 % ### Use of dif/2
 %
 % The following naive implementation:
-% 
+%
 % ```prolog
 % first_dup(E, [E|L]):-
 %   member(E, L).
@@ -375,7 +375,7 @@ first_duplicate(X, [H|T]):-
 % ?- inflist(0, L), append([A,B,C,D,E,F|_], _, L).
 % L = [0, 0, 0, 0, 0, 0|_G29924368],
 % A = B, B = C, C = D, D = E, E = F, F = 0,
-% freeze(_G29924368, list_ext: (_G29924368=[0|_G29924422], inflist(0, _G29924422))) 
+% freeze(_G29924368, list_ext: (_G29924368=[0|_G29924422], inflist(0, _G29924422)))
 % ```
 %
 % @see Based on
@@ -411,9 +411,9 @@ length_cut(L, Cut, L1, L2):-
 %! list_binary_term(+List:list, +Operator, -Term:compound) is det.
 %! list_binary_term(-List:list, -Operator, +Term:compound) is det.
 
-list_binary_term([H], H).
-list_binary_term([H|T1], L2):-
-  list_binary_term(T1, T2),
+list_binary_term([H], _, H).
+list_binary_term([H|T1], Op, L2):-
+  list_binary_term(T1, Op, T2),
   L2 =.. [Op,H,T2].
 
 
