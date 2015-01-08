@@ -15,12 +15,14 @@
 /** <module> Counter
 
 @author Wouter Beek
-@version 2014/12
+@version 2014/12-2015/01
 */
 
 :- use_module(library(error)).
 
-:- dynamic(counter0/2).
+%! counter0(?Hash:atom, ?Term:compound, ?Count:integer) is nondet.
+
+:- dynamic(counter0/3).
 
 
 
@@ -37,7 +39,7 @@ decrement_counter(Term):-
 %! enumerate_counter(-Term, -Count:integer) is nondet.
 
 enumerate_counter(Term, Count):-
-  counter0(Term, Count).
+  counter0(_, Term, Count).
 
 
 
@@ -49,7 +51,10 @@ get_count(Term, _):-
   var(Term), !,
   instantiation_error(Term).
 get_count(Term, Count):-
-  counter0(Term, Count), !.
+  term_hash(Term, Hash),
+  with_mutex(counter,
+    counter0(Hash, Term, Count)
+  ), !.
 get_count(_, 0).
 
 
@@ -69,8 +74,12 @@ increment_counter(Term, _):-
   var(Term), !,
   instantiation_error(Term).
 increment_counter(Term, Increment):-
-  retract(counter0(Term, Count0)), !,
-  Count is Count0 + Increment,
-  assert(counter0(Term, Count)).
+  with_mutex(counter, (
+    retract(counter0(Hash, Term, Count0)),
+    Count is Count0 + Increment,
+    assert(counter0(Hash, Term, Count))
+  )), !.
 increment_counter(Term, Increment):-
-  assert(counter0(Term, Increment)).
+  term_hash(Term, Hash),
+  assert(counter0(Hash, Term, Increment)).
+
