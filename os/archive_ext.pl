@@ -68,12 +68,9 @@ Extensions to SWI-Prolog's library archive.
 
 archive_create(File, CompressedFile):-
   % The compressed file can be either set or not.
-  (
-    var(CompressedFile)
-  ->
-    file_kind_alternative(File, gzip, CompressedFile)
-  ;
-    true
+  (   var(CompressedFile)
+  ->  file_kind_alternative(File, gzip, CompressedFile)
+  ;   true
   ),
 
   setup_call_cleanup(
