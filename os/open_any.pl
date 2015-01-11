@@ -96,7 +96,12 @@ archive_content(
       ->  archive_open_entry(Archive, Entry0),
           (   EntryName == data,
               EntryMetadata.format == raw
-          ->  PipeMetadataTail = PipeMetadata2,
+          ->  % This is the last entry in this nested branch.
+	      % We therefore close the choicepoint created by repeat/0.
+	      % Not closing this choicepoint would cause
+	      % archive_next_header/2 to throw an exception.
+	      !,
+	      PipeMetadataTail = PipeMetadata2,
               Entry = Entry0
           ;   PipeMetadataTail = PipeMetadata1,
               open_substream(
