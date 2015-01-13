@@ -37,7 +37,8 @@ Extensions for sorting lists.
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
 :- predicate_options(gnu_sort/2, 2, [
-     unique(+boolean)
+     duplicates(+boolean),
+     output(+atom)
    ]).
 
 :- predicate_options(sort/3, 3, [
@@ -65,7 +66,9 @@ gnu_sort(File, Options):-
   handle_process(sort, [file(File)|Args], [program('GNU sort')]).
 
 gnu_sort_args([], []).
-gnu_sort_args([unique(true)|T1], ['-u'|T2]):- !,
+gnu_sort_args([duplicates(false)|T1], ['-u'|T2]):- !,
+  gnu_sort_args(T1, T2).
+gnu_sort_args([output(File)|T1], ['-o',file(File)|T2]):- !,
   gnu_sort_args(T1, T2).
 gnu_sort_args([_|T1], L2):-
   gnu_sort_args(T1, L2).
