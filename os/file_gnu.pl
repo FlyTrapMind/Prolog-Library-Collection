@@ -15,25 +15,25 @@
 Interface to GNU tools for file-processing.
 
 @author Wouter Beek
-@tbd Replace with native Prolog / OS-independent predicates
-     in module [[file_ext]].
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/10
+         2014/08-2014/10, 2015/01
 */
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
+:- use_module(os(run_ext)).
+
+
+
 
 
 %! file_lines(+File:atom, -NumberOfLines:nonneg) is det.
-% @tbd Make this OS-independent.
 
 file_lines(File, NumberOfLines):-
-  process_create(path(wc), ['-l',file(File)], [stdout(pipe(Stream))]),
-  read_stream_to_codes(Stream, Codes),
-  phrase(integer(NumberOfLines), Codes).
+  handle_process(wc, ['-l',file(File)], [output(OutputCodes)]),
+  phrase(integer(NumberOfLines), OutputCodes).
 
 
 
@@ -58,7 +58,9 @@ touch_file(File):-
 
 
 
-% MESSAGE
+
+
+% MESSAGE %
 
 prolog:message(split_file(BigFile,OutputDir)) -->
   [

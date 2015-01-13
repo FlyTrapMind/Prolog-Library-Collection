@@ -1,6 +1,8 @@
 :- module(
   sort_ext,
   [
+    gnu_sort/2, % +File:atom
+                % +Options:list(nvpair)
     icompare/3, % ?InvertedOrder
                 % @Term1
                 % @Term2
@@ -19,21 +21,54 @@ Extensions for sorting lists.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/07-2014/08, 2014/11
+         2014/07-2014/08, 2014/11, 2015/01
 */
 
+:- use_module(library(error)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
+:- use_module(library(process)).
+
+:- use_module(os(run_ext)).
 
 :- meta_predicate(merge_with_duplicates(3,+,+,-)).
 :- meta_predicate(merge_with_duplicates(+,3,+,+,+,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
+:- predicate_options(gnu_sort/2, 2, [
+     unique(+boolean)
+   ]).
+
 :- predicate_options(sort/3, 3, [
      duplicates(+boolean),
      inverted(+boolean)
   ]).
+
+
+
+
+
+%! gnu_sort(+File:atom, +Options:list(nvpair)) is det.
+
+gnu_sort(File, _):-
+  var(File), !,
+  instantiation_error(File).
+gnu_sort(File, _):-
+  \+ exists_file(File), !,
+  existence_error(file, File).
+gnu_sort(File, _):-
+  \+ access_file(File, read), !,
+  permission_error(read, file, File).
+gnu_sort(File, Options):-
+  gnu_sort_args(Options, Args),
+  handle_process(sort, [file(File)|Args], [program('GNU sort')]).
+
+gnu_sort_args([], []).
+gnu_sort_args([unique(true)|T1], ['-u'|T2]):- !,
+  gnu_sort_args(T1, T2).
+gnu_sort_args([_|T1], L2):-
+  gnu_sort_args(T1, L2).
 
 
 

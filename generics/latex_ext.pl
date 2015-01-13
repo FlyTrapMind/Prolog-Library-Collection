@@ -42,7 +42,7 @@ Predicates for handling LaTeX files.
 bibtex_convert_file(File):-
   file_component(File, base, Base),
   file_directory_name(File, Dir),
-  create_process(bibtex, [Base], [cwd(Dir)]).
+  handle_process(bibtex, [Base], [cwd(Dir)]).
 
 
 %! latex_clean_directory(+Directory:atom) is det.
@@ -111,5 +111,5 @@ latex_convert_file(FromFile, ToDir):-
   access_file(ToDir, write),
 
   % Exit with an error code when an error is encountered.
-  create_process(pdflatex, ['-halt-on-error',FromFile], [cwd(ToDir)]).
+  handle_process(pdflatex, ['-halt-on-error',FromFile], [cwd(ToDir)]).
 

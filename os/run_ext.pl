@@ -1,16 +1,10 @@
 :- module(
   run_ext,
   [
-    create_process/3, % +Process:atom
+    handle_process/3, % +Process:atom
                       % +Arguments:list
-                      % +Options:list(nvpair)
-    create_process/4, % +Process:atom
-                      % +Arguments:list
-                      % :Goal
                       % +Options:list(nvpair)
     exists_program/1, % +Program:atom
-    exit_code_handler/2, % +Program:atom
-                         % +Code:or([compound,nonneg])
     find_program_by_file_type/2, % +FileType:atom
                                  % -Predicate:atom
     list_external_programs/0,
@@ -25,7 +19,7 @@
 Predicates for running external programs.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/11, 2014/01-2014/02, 2014/05, 2014/07
+@version 2013/06-2013/07, 2013/11, 2014/01-2014/02, 2014/05, 2014/07, 2015/01
 */
 
 :- use_module(library(aggregate)).
@@ -56,65 +50,71 @@ Predicates for running external programs.
 
 :- at_halt(kill_processes).
 
-:- meta_predicate(create_process(+,+,1,+)).
-
-:- predicate_options(create_process/3, 3, [
-     pass_to(create_process/4, 4)
-   ]).
-:- predicate_options(create_process/4, 4, [
-     pass_to(process_create/3, 3)
+:- predicate_options(handle_process/3, 3, [
+      pass_to(process_create/3, 3),
+      status(-nonneg),
+      output(-list(code)),
+      program(+atom)
    ]).
 
 
 
-%! create_process(
+
+
+%! handle_process(
 %!   +Process:atom,
 %!   +Arguments:list,
-%!   +Options:list(nvpair)
-%! ) is det.
-
-create_process(Process, Args, Options):-
-  create_process(Process, Args, idle_goal, Options).
-idle_goal(_).
-
-
-%! create_process(
-%!   +Process:atom,
-%!   +Arguments:list,
-%!   :Goal,
 %!   +Options:list(nvpair)
 %! ) is det.
 % Calls an external process with the given name and arguments,
 % and call an internal goal on the output that is coming from
 % the external process.
 %
-% This predicate is only deterministic if the given goal is deterministic.
+% The following options are supported:
+%   - `status(-Status:nonneg)`
+%   - `output(-Output:list(code))`
+%   - `program(+Program:atom)`
+%     The name of the program as displayed in debug messages.
 
-create_process(Process, Args, Goal, Options1):-
+handle_process(Process, Args, Options1):-
   merge_options(
-    [process(Pid),stderr(pipe(Error)),stdout(pipe(Out))],
+    [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))],
     Options1,
     Options2
   ),
   setup_call_cleanup(
     process_create(path(Process), Args, Options2),
     (
-      call(Goal, Out),
+      read_stream_to_codes(Output, OutputCodes, []),
       read_stream_to_codes(Error, ErrorCodes, []),
-      process_wait(Pid, Status)
+      process_wait(Pid, exit(Status))
     ),
     (
-      close(Out),
+      close(Output),
       close(Error)
     )
   ),
+  
+  % Process the output stream.
+  (   option(output(OutputCodes0), Options2)
+  ->  OutputCodes0 = OutputCodes
+  ;   true
+  ),
+  
+  % Process the error stream.
   print_error(ErrorCodes),
-  exit_code_handler(Process, Status).
+  (   option(program(Program), Options1)
+  ->  true
+  ;   Program = Process
+  ),
+  
+  % Process the status code.
+  exit_code_handler(Program, Status),
+  (   option(status(Status0), Options2)
+  ->  Status0 = Status
+  ;   true
+  ).
 
-print_error([]):- !.
-print_error(Codes):-
-  string_codes(String, Codes),
-  print_message(warning, String).
 
 
 %! exists_program(+Program:atom) is semidet.
@@ -129,25 +129,6 @@ exists_program(Program):-
   process_kill(Pid).
 
 
-%! exit_code_handler(+Program, +Status:or([compound,nonneg])) is det.
-% Handling of exit codes given by programs that are run from the shell.
-%
-% @arg Program
-% @arg Status Either an integer status code,
-%      or an integer status code wrapped in functor `exit`.
-%
-% @throws shell_error Throws a shell error when a shell process exits with
-%         a non-zero code.
-
-% Unwrap code.
-exit_code_handler(Program, exit(StatusCode)):- !,
-  exit_code_handler(Program, StatusCode).
-% Success code.
-exit_code_handler(_, 0):- !.
-% Error/exception code.
-exit_code_handler(Program, StatusCode):-
-  process_error(Program, StatusCode).
-
 
 %! find_program_by_file_type(+FileType:atom, -Program:atom) is nondet.
 % Succeeds if there is at least one existing program that is registered to
@@ -156,6 +137,7 @@ exit_code_handler(Program, StatusCode):-
 find_program_by_file_type(FileType, Program):-
   user:file_type_program(FileType, Program),
   exists_program(Program), !.
+
 
 
 %! kill_processes is det.
@@ -168,6 +150,7 @@ kill_processes:-
     current_process(PID),
     process_kill(PID)
   ).
+
 
 
 %! list_external_programs is det.
@@ -184,6 +167,7 @@ list_external_programs:-
     Modules
   ),
   maplist(list_external_programs, Modules).
+
 
 
 %! list_external_programs(+Filter:atom) is det.
@@ -239,6 +223,55 @@ list_external_programs_label(Programs, Content, String):-
   ).
 
 
+
+%! run_program(+Program:atom, +Arguments:list(atom)) is det.
+
+run_program(Program, Args):-
+  thread_create(
+    (
+      process_create(path(Program), Args, [process(PID)]),
+      db_add(current_process(PID)),
+      process_wait(PID, exit(ShellStatus)),
+      exit_code_handler(Program, ShellStatus)
+    ),
+    _,
+    [detached(true)]
+  ).
+
+
+
+
+
+% HELPERS %
+
+%! exit_code_handler(+Program, +Status:or([compound,nonneg])) is det.
+% Handling of exit codes given by programs that are run from the shell.
+%
+% @arg Program
+% @arg Status Either an integer status code,
+%      or an integer status code wrapped in functor `exit`.
+%
+% @throws shell_error Throws a shell error when a shell process exits with
+%         a non-zero code.
+
+% Unwrap code.
+exit_code_handler(Program, exit(StatusCode)):- !,
+  exit_code_handler(Program, StatusCode).
+% Success code.
+exit_code_handler(_, 0):- !.
+% Error/exception code.
+exit_code_handler(Program, StatusCode):-
+  process_error(Program, StatusCode).
+
+
+
+print_error([]):- !.
+print_error(Codes):-
+  string_codes(String, Codes),
+  print_message(warning, String).
+
+
+
 %! write_program_support(+Program:atom) is semidet.
 % Succeeds if the program with the given name exists on PATH.
 % Always writes a message to the standard user output as side effect.
@@ -264,19 +297,4 @@ write_program_support(Program):-
       ' is not supported.'
     ]
   ), !, fail.
-
-
-%! run_program(+Program:atom, +Arguments:list(atom)) is det.
-
-run_program(Program, Args):-
-  thread_create(
-    (
-      process_create(path(Program), Args, [process(PID)]),
-      db_add(current_process(PID)),
-      process_wait(PID, exit(ShellStatus)),
-      exit_code_handler(Program, ShellStatus)
-    ),
-    _,
-    [detached(true)]
-  ).
 
