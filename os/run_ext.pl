@@ -30,11 +30,8 @@ Predicates for running external programs.
 
 :- use_module(generics(db_ext)).
 :- use_module(generics(error_ext)).
-:- use_module(generics(meta_ext)).
 :- use_module(generics(print_ext)).
 :- use_module(os(ansi_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(os_ext)).
 
 % This is used to kill the processes that are still running
 % when SWI-Prolog halts.
@@ -51,7 +48,6 @@ Predicates for running external programs.
 :- at_halt(kill_processes).
 
 :- predicate_options(handle_process/3, 3, [
-      pass_to(process_create/3, 3),
       status(-nonneg),
       output(-list(code)),
       program(+atom)
@@ -76,14 +72,13 @@ Predicates for running external programs.
 %   - `program(+Program:atom)`
 %     The name of the program as displayed in debug messages.
 
-handle_process(Process, Args, Options1):-
-  merge_options(
-    [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))],
-    Options1,
-    Options2
-  ),
+handle_process(Process, Args, Options):-
   setup_call_cleanup(
-    process_create(path(Process), Args, Options2),
+    process_create(
+      path(Process),
+      Args,
+      [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))]
+    ),
     (
       read_stream_to_codes(Output, OutputCodes, []),
       read_stream_to_codes(Error, ErrorCodes, []),
@@ -94,23 +89,23 @@ handle_process(Process, Args, Options1):-
       close(Error)
     )
   ),
-  
+gtrace,
   % Process the output stream.
-  (   option(output(OutputCodes0), Options2)
+  (   option(output(OutputCodes0), Options)
   ->  OutputCodes0 = OutputCodes
   ;   true
   ),
-  
+
   % Process the error stream.
   print_error(ErrorCodes),
-  (   option(program(Program), Options1)
+  (   option(program(Program), Options)
   ->  true
   ;   Program = Process
   ),
-  
+
   % Process the status code.
   exit_code_handler(Program, Status),
-  (   option(status(Status0), Options2)
+  (   option(status(Status0), Options)
   ->  Status0 = Status
   ;   true
   ).
