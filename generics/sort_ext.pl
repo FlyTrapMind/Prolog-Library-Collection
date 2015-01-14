@@ -40,7 +40,8 @@ Extensions for sorting lists.
 :- predicate_options(gnu_sort/2, 2, [
      duplicates(+boolean),
      output(+atom),
-     parallel(+positive_integer)
+     parallel(+positive_integer),
+     utf8(+boolean)
    ]).
 
 :- predicate_options(sort/3, 3, [
@@ -64,8 +65,12 @@ gnu_sort(File, _):-
   \+ access_file(File, read), !,
   permission_error(read, file, File).
 gnu_sort(File, Options):-
+  (   option(utf8(true), Options)
+  ->  Env = []
+  ;   Env = ['LC_ALL'='C']
+  ),
   gnu_sort_args(Options, Args),
-  handle_process(sort, [file(File)|Args], [program('GNU sort')]).
+  handle_process(sort, [file(File)|Args], [env(Env),program('GNU sort')]).
 
 gnu_sort_args([], []).
 gnu_sort_args([duplicates(false)|T1], ['-u'|T2]):- !,
