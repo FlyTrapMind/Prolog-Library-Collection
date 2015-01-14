@@ -33,7 +33,7 @@ Interface to GNU tools for file-processing.
 
 file_lines(File, NumberOfLines):-
   handle_process(wc, ['-l',file(File)], [output(OutputCodes)]),
-  phrase(integer(NumberOfLines), OutputCodes).
+  phrase(integer(NumberOfLines), OutputCodes, _).
 
 
 
