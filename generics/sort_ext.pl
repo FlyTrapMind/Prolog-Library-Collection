@@ -29,6 +29,7 @@ Extensions for sorting lists.
 :- use_module(library(option)).
 :- use_module(library(process)).
 
+:- use_module(os(cli_ext)).
 :- use_module(os(run_ext)).
 
 :- meta_predicate(merge_with_duplicates(3,+,+,-)).
@@ -38,7 +39,8 @@ Extensions for sorting lists.
 
 :- predicate_options(gnu_sort/2, 2, [
      duplicates(+boolean),
-     output(+atom)
+     output(+atom),
+     parallel(+positive_integer)
    ]).
 
 :- predicate_options(sort/3, 3, [
@@ -69,6 +71,9 @@ gnu_sort_args([], []).
 gnu_sort_args([duplicates(false)|T1], ['-u'|T2]):- !,
   gnu_sort_args(T1, T2).
 gnu_sort_args([output(File)|T1], ['-o',file(File)|T2]):- !,
+  gnu_sort_args(T1, T2).
+gnu_sort_args([parallel(Threads)|T1], [Arg|T2]):- !,
+  cli_long_flag(parallel, Threads, Arg),
   gnu_sort_args(T1, T2).
 gnu_sort_args([_|T1], L2):-
   gnu_sort_args(T1, L2).
