@@ -89,7 +89,7 @@ handle_process(Process, Args, Options):-
       close(Error)
     )
   ),
-gtrace,
+
   % Process the output stream.
   (   option(output(OutputCodes0), Options)
   ->  OutputCodes0 = OutputCodes
