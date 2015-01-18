@@ -38,6 +38,7 @@ Extensions for sorting lists.
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
 :- predicate_options(gnu_sort/2, 2, [
+     buffer_size(+nonneg),
      duplicates(+boolean),
      output(+atom),
      parallel(+positive_integer),
@@ -73,6 +74,9 @@ gnu_sort(File, Options):-
   handle_process(sort, [file(File)|Args], [env(Env),program('GNU sort')]).
 
 gnu_sort_args([], []).
+gnu_sort_args([buffer_size(Size)|T1], [Arg|T2]):- !,
+  cli_long_flag('buffer-size', Size, Arg),
+  gnu_sort_args(T1, T2).
 gnu_sort_args([duplicates(false)|T1], ['-u'|T2]):- !,
   gnu_sort_args(T1, T2).
 gnu_sort_args([output(File)|T1], ['-o',file(File)|T2]):- !,
