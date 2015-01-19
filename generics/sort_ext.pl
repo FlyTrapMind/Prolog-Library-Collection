@@ -27,7 +27,6 @@ Extensions for sorting lists.
 :- use_module(library(error)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
-:- use_module(library(process)).
 
 :- use_module(os(cli_ext)).
 :- use_module(os(run_ext)).
@@ -42,6 +41,7 @@ Extensions for sorting lists.
      duplicates(+boolean),
      output(+atom),
      parallel(+positive_integer),
+     temporary_directory(+atom),
      utf8(+boolean)
    ]).
 
@@ -77,9 +77,10 @@ gnu_sort_args([], []).
 gnu_sort_args([buffer_size(Size)|T1], [Arg|T2]):- !,
   cli_long_flag('buffer-size', Size, Arg),
   gnu_sort_args(T1, T2).
-gnu_sort_args([duplicates(false)|T1], ['-u'|T2]):- !,
+gnu_sort_args([duplicates(false)|T1], ['--unique'|T2]):- !,
   gnu_sort_args(T1, T2).
-gnu_sort_args([output(File)|T1], ['-o',file(File)|T2]):- !,
+gnu_sort_args([output(File)|T1], [Arg|T2]):- !,
+  cli_long_flag(output, File, Arg),
   gnu_sort_args(T1, T2).
 gnu_sort_args([parallel(Threads)|T1], [Arg|T2]):- !,
   cli_long_flag(parallel, Threads, Arg),

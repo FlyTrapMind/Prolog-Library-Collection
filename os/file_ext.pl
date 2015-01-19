@@ -182,8 +182,8 @@ absolute_file_name_number(Spec, Number, Abs, Options):-
 %! buffer_size_file(+File:atom, -BufferSize:nonneg) is det.
 
 buffer_size_file(File, BufferSize):-
-  file_size(File, FileSize),
-  BufferSize is FileSize * log(FileSize).
+  size_file(File, FileSize),
+  BufferSize is round(FileSize * log(FileSize)).
 
 
 
