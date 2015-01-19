@@ -84,6 +84,9 @@ gnu_sort_args([output(File)|T1], ['-o',file(File)|T2]):- !,
 gnu_sort_args([parallel(Threads)|T1], [Arg|T2]):- !,
   cli_long_flag(parallel, Threads, Arg),
   gnu_sort_args(T1, T2).
+gnu_sort_args([temporary_directory(Dir)|T1], [Arg|T2]):- !,
+  cli_long_flag('temporary-directory', Dir, Arg),
+  gnu_sort_args(T1, T2).
 gnu_sort_args([_|T1], L2):-
   gnu_sort_args(T1, L2).
 

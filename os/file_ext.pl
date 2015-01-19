@@ -5,6 +5,8 @@
                                  % +Number:integer
                                  % -Abs:atom
                                  % +Options:list(nvpair)
+    buffer_size_file/2, % +File:atom
+                        % -BufferSize:nonneg
     common_prefix_path/3, % +Path1:atom
                           % +Path2:atom
                           % ?CommonPrefixPath:atom
@@ -129,7 +131,7 @@ In line with the terminology this modules uses the following variable names:
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/11
+         2014/08-2014/11, 2015/01
 */
 
 :- use_module(library(apply)).
@@ -174,6 +176,14 @@ absolute_file_name_number(Spec, Number, Abs, Options):-
   format(atom(Atom), '_~d', [Number]),
   spec_atomic_concat(Spec, Atom, NumberedSpec),
   absolute_file_name(NumberedSpec, Abs, Options).
+
+
+
+%! buffer_size_file(+File:atom, -BufferSize:nonneg) is det.
+
+buffer_size_file(File, BufferSize):-
+  file_size(File, FileSize),
+  BufferSize is FileSize * log(FileSize).
 
 
 
