@@ -17,7 +17,7 @@
              % ?To:compound
     weights_binary/2, % ?Weights:list(between(0,15))
                       % ?Binary:nonneg
-    weights_decimal/2, % ?Weights:list(between(0,15))
+    weights_nonneg/2, % ?Weights:list(between(0,15))
                        % ?Decimal:nonneg
     weights_fraction/2, % +Weights:list(between(0,9))
                         % -Fraction:between(0.0,1.0)
@@ -192,18 +192,15 @@ weights_binary(Weights, Binary):-
 
 
 
-%! weights_decimal(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
-%! weights_decimal(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
+%! weights_nonneg(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
+%! weights_nonneg(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
 
-weights_decimal(Weights, Decimal):-
+weights_nonneg(Weights, Decimal):-
   weights_radix(Weights, dec(Decimal)).
 
 
 
-%! weights_fraction(
-%!   +Weights:list(between(0,9)),
-%!   -Fraction:between(0.0,1.0)
-%! ) is det.
+%! weights_fraction(+Weights:list(between(0,9)), -Fraction:compound) is det.
 
 weights_fraction(Weights, Fraction):-
   nonvar(Weights), !,
@@ -211,14 +208,14 @@ weights_fraction(Weights, Fraction):-
     sum(N),
     (
       nth1(I, Weights, Weight),
-      N is Weight * 10 ** -(I)
+      N is Weight rdiv (10 * I)
     ),
     Fraction
   ).
 weights_fraction(Weights, Fraction):-
   nonvar(Fraction), !,
   fractional_integer(Fraction, Integer),
-  weights_decimal(Weights, Integer).
+  weights_nonneg(Weights, Integer).
 weights_fraction(_, _):-
   instantiation_error(_).
 

@@ -50,7 +50,7 @@
     mod/3,
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
-    number_integer_parts/3, % ?Number:number
+    decimal_parts/3, % ?Number:number
                             % ?IntegerPart:integer
                             % ?FractionalPart:integer
     number_length/2, % +Number:number
@@ -408,35 +408,27 @@ multiply_list([H|T], M2):-
   M2 is H * M1.
 
 
-%! number_integer_parts(
-%!   +Number:number,
-%!   -IntegerPart:integer,
+%! decimal_parts(
+%!   +Decimal:compound,
+%!   -Integer:integer,
 %!   -Fractional:integer
 %! ) is det.
-%! number_integer_parts(
-%!   -Number:number,
-%!   +IntegerPart:integer,
+%! decimal_parts(
+%!   -Decimal:compound,
+%!   +Integer:integer,
 %!   +Fractional:integer
 %! ) is det.
-% ### Example
-%
-% ```prolog
-% ?- number_integer_parts(-1.5534633204, X, Y).
-% X = -1,
-% Y = -5534633204.
-% ```
-%
-% @throws domain_error If `Fractional` is not nonneg.
+% @throws domain_error If `Fractional` is negative.
 
-number_integer_parts(_, _, Fractional):-
+decimal_parts(_, _, Fractional):-
   nonvar(Fractional),
-  \+ nonneg(Fractional), !,
+  Fractional < 0, !,
   domain_error(nonneg, Fractional).
-number_integer_parts(Number, Integer, Fractional):-
-  nonvar(Number), !,
-  Integer is floor(float_integer_part(Number)),
-  fractional_integer(Number, Fractional).
-number_integer_parts(Number, Integer, Fractional):-
+decimal_parts(Decimal, Integer, Fractional):-
+  nonvar(Decimal), !,
+  Integer is floor(float_integer_part(Decimal)),
+  fractional_integer(Decimal, Fractional).
+decimal_parts(Number, Integer, Fractional):-
   number_length(Fractional, Length),
   Sign is sign(Integer),
   Number is copysign(abs(Integer) + Fractional * 10 ** -(Length), Sign).
