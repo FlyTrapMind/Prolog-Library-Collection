@@ -7,9 +7,12 @@
     rational_mod/3, % +X:compound
                     % +Y:compound
                     % -Z:compound
-    rational_parts/3 % +Decimal:compound
-                     % -Integer:integer
-                     % -Fractional:compound
+    rational_parts/3, % +Decimal:compound
+                      % -Integer:integer
+                      % -Fractional:compound
+    rational_parts_weights/3 % +Decimal:compound
+                             % -IntegerWeights:list(between(0,9))
+                             % -FractionalWeights:list(between(0,9))
   ]
 ).
 
@@ -18,6 +21,8 @@
 @author Wouter Beek
 @version 2013/08, 2015/01
 */
+
+:- use_module(math(radix)).
 
 
 
@@ -66,3 +71,15 @@ rational_parts(D, I, F):-
   rational_div(D, 1, I),
   rational_mod(D, 1, F).
 
+
+
+%! rational_parts_weights(
+%!   +Decimal:compound,
+%!   -IntegerWeights:list(between(0,9)),
+%!   -FractionalWeights:list(between(0,9))
+%! ) is det.
+
+rational_parts_weights(D, IW, FW):-
+  rational_parts(D, I, F),
+  weights_nonneg(IW, I),
+  weights_fraction(FW, F).

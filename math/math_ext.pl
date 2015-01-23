@@ -61,9 +61,6 @@
     number_length/3, % +Number:number
                      % +Radix:integer
                      % -Length:integer
-    number_sign_parts/3, % ?Number:number
-                         % ?Sign:oneof([-1,1])
-                         % ?Absolute:number
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -272,8 +269,7 @@ decimal_parts(Decimal, Integer, Fractional):-
   fractional_integer(Decimal, Fractional).
 decimal_parts(Number, Integer, Fractional):-
   number_length(Fractional, Length),
-  Sign is sign(Integer),
-  Number is copysign(abs(Integer) + (Fractional rdiv (10 ^ Length)), Sign).
+  Number is copysign(abs(Integer) + (Fractional rdiv (10 ^ Length)), Integer).
 
 
 
@@ -454,7 +450,7 @@ multiply_list([H|T], M2):-
 
 normalized_number(D, D, 0):-
   1.0 =< D,
-	D < 10.0, !.
+  D < 10.0, !.
 normalized_number(D1, ND, Exp1):-
   D1 >= 10.0, !,
   D2 is D1 / 10.0,
@@ -493,29 +489,13 @@ number_length(N1, Radix, L1):-
 number_length(_N, _Radix, 1):- !.
 
 
-%! number_sign_parts(+N:number, +Sign:oneof([-1,1]), +Absolute:number) is semidet.
-%! number_sign_parts(+N:number, -Sign:oneof([-1,1]), -Absolute:number) is det.
-%! number_sign_parts(-N:number, +Sign:oneof([-1,1]), +Absolute:number) is det.
-%! number_sign_parts(-N:number, -Sign:oneof([-1,1]), +Absolute:number) is multi.
-% @throws instantiation_error
-
-number_sign_parts(N, Sign, Abs):-
-  nonvar(Abs), !,
-  member(Sign, [-1,1]),
-  N is copysign(Sign, Abs).
-number_sign_parts(N, Sign, Abs):-
-  nonvar(N), !,
-  Sign is sign(N),
-  Abs is abs(N).
-number_sign_parts(N, Sign, Abs):-
-  instantiation_error(number_sign_parts(N, Sign, Abs)).
-
 
 %! odd(?Number:number) is semidet.
 % Succeeds if the integer is odd.
 
 odd(N):-
   mod(N, 2, 1).
+
 
 
 %! permutations(

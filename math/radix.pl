@@ -237,8 +237,8 @@ weights_octal(Weights, Octal):-
 
 
 
-%! weights_radix(+Weights:between(0,15), -Number:compound) is det.
-%! weights_radix(-Weights:between(0,15), +Number:compound) is det.
+%! weights_radix(+Weights:list(between(0,15)), -Number:compound) is det.
+%! weights_radix(-Weights:list(between(0,15)), +Number:compound) is det.
 
 weights_radix(Weights, Number):-
   nonvar(Weights), !,
