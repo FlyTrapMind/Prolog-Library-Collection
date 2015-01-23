@@ -201,23 +201,23 @@ weights_nonneg(Weights, Decimal):-
 
 
 %! weights_fraction(+Weights:list(between(0,9)), -Fraction:compound) is det.
+%! weights_fraction(-Weights:list(between(0,9)), +Fraction:compound) is det.
 
-weights_fraction(Weights, Fraction):-
-  nonvar(Weights), !,
-  aggregate_all(
-    sum(N),
-    (
-      nth1(I, Weights, Weight),
-      N is Weight rdiv (10 * I)
-    ),
-    Fraction
+weights_fraction(Ws, F):-
+  (   ground(Ws)
+  ->  aggregate_all(
+        sum(N),
+        (
+          nth1(I, Ws, W),
+          N is W rdiv (10 * I)
+        ),
+        F
+      )
+  ;   ground(F)
+  ->  fractional_integer(F, I),
+      weights_nonneg(Ws, I)
+  ;   instantiation_error(_)
   ).
-weights_fraction(Weights, Fraction):-
-  nonvar(Fraction), !,
-  fractional_integer(Fraction, Integer),
-  weights_nonneg(Weights, Integer).
-weights_fraction(_, _):-
-  instantiation_error(_).
 
 
 
