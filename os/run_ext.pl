@@ -1,12 +1,14 @@
 :- module(
   run_ext,
   [
-    handle_process/3, % +Process:atom
-                      % +Arguments:list
-                      % +Options:list(nvpair)
+    exit_code_handler/2, % +Program
+                         % +Status:or([compound,nonneg])
     exists_program/1, % +Program:atom
     find_program_by_file_type/2, % +FileType:atom
                                  % -Predicate:atom
+    handle_process/3, % +Process:atom
+                      % +Arguments:list
+                      % +Options:list(nvpair)
     list_external_programs/0,
     list_external_programs/1, % +FileType:ato
     run_program/2 % +Program:atom
