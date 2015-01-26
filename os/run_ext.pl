@@ -51,8 +51,10 @@ Predicates for running external programs.
 
 :- predicate_options(handle_process/3, 3, [
       status(-nonneg),
-      output(-list(code)),
-      program(+atom)
+      output_codes(-list(code)),
+      output_stream(-list(code)),
+      program(+atom),
+      pass_to(process_create/3, 3)
    ]).
 
 
@@ -69,48 +71,64 @@ Predicates for running external programs.
 % the external process.
 %
 % The following options are supported:
-%   - `status(-Status:nonneg)`
-%   - `output(-Output:list(code))`
+%   - `output_codes(-Output:list(code))`
+%   - `output_stream(-Output:stream)`
 %   - `program(+Program:atom)`
 %     The name of the program as displayed in debug messages.
+%   - `status(-Status:nonneg)`
+%   - Other options are passed to process_create/3.
 
-handle_process(Process, Args, Options):-
+handle_process(Process, Args, Options1):-
+  include(process_create_option, Options1, Options2),
+  merge_options(
+    Options2,
+    [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))],
+    Options3
+  ),
   setup_call_cleanup(
-    process_create(
-      path(Process),
-      Args,
-      [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))]
-    ),
+    process_create(path(Process), Args, Options3),
     (
-      read_stream_to_codes(Output, OutputCodes, []),
+      (   option(output_stream(Output0), Options1)
+      ->  Output0 = Output
+      ;   read_stream_to_codes(Output, OutputCodes, [])
+      ),
       read_stream_to_codes(Error, ErrorCodes, []),
       process_wait(Pid, exit(Status))
     ),
     (
-      close(Output),
+      (   option(output_stream(_), Options1)
+      ->  true
+      ;   close(Output)
+      ),
       close(Error)
     )
   ),
 
   % Process the output stream.
-  (   option(output(OutputCodes0), Options)
+  (   option(output_codes(OutputCodes0), Options1)
   ->  OutputCodes0 = OutputCodes
   ;   true
   ),
 
   % Process the error stream.
   print_error(ErrorCodes),
-  (   option(program(Program), Options)
+  (   option(program(Program), Options1)
   ->  true
   ;   Program = Process
   ),
 
   % Process the status code.
   exit_code_handler(Program, Status),
-  (   option(status(Status0), Options)
+  (   option(status(Status0), Options1)
   ->  Status0 = Status
   ;   true
   ).
+
+process_create_option(cwd(_)).
+process_create_option(detached(_)).
+process_create_option(env(_)).
+process_create_option(priority(_)).
+process_create_option(window(_)).
 
 
 
