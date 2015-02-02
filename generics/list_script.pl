@@ -39,18 +39,22 @@ i.e. denoting the remaining items.
 To process the same items again one should have copied the orginal TODO list.
 
 @author Wouter Beek
-@version 2013/06, 2014/01
+@version 2013/06, 2014/01, 2015/02
 */
 
-:- use_module(generics(atom_ext)).
+:- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(ordsets)).
 :- use_module(library(readutil)).
+
+:- use_module(generics(atom_ext)).
 
 :- meta_predicate(file_script(1,+,+,+)).
 :- meta_predicate(list_script(1,+,+,-)).
 :- meta_predicate(list_script(1,+,+,+,-,-)).
 :- meta_predicate(list_script(1,+,+,+,+,-,+,-)).
+
+
 
 
 
@@ -67,6 +71,8 @@ file_script(Goal, Msg, TODO_File, DONE_File):-
   list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL, NOT_DONE_SOL),
   maplist(items_to_file, [DONE_SOL,NOT_DONE_SOL], [DONE_File,TODO_File]).
 
+
+
 %! file_to_items(+File:atom, -Items:list) is det.
 % Reads a list of items from the given text file.
 %
@@ -80,8 +86,12 @@ file_to_items(File, Items):-
     close(Stream)
   ).
 
+
+
 item_to_stream(Stream, Item):-
   format(Stream, '~a\n', [Item]).
+
+
 
 items_to_file(Items, File):-
   setup_call_cleanup(
@@ -90,12 +100,19 @@ items_to_file(Items, File):-
     close(Stream)
   ).
 
+
+
 %! list_script(
 %!   :Goal,
 %!   +Message:atom,
 %!   +TODO:list(term),
 %!   -NOT_DONE_SOL:list(term)
 %! ) is det.
+% @see list_script/5
+
+list_script(Goal, Msg, TODO, NOT_DONE_SOL):-
+  list_script(Goal, Msg, TODO, [], _, NOT_DONE_SOL).
+
 %! list_script(
 %!   :Goal,
 %!   +Message:atom,
@@ -107,16 +124,6 @@ items_to_file(Items, File):-
 % Processes the items in `TODO` using the given goal
 % and places the items either in the `DONE` or in the `NOT_DONE` list.
 % The `DONE` list can be pre-instantiated.
-%
-% @arg Goal
-% @arg Message
-% @arg TODO
-% @arg DONE_INIT
-% @arg DONE_SOL
-% @arg NOT_DONE_SOL
-
-list_script(Goal, Msg, TODO, NOT_DONE_SOL):-
-  list_script(Goal, Msg, TODO, [], _, NOT_DONE_SOL).
 
 list_script(_, _, [], DONE_SOL, DONE_SOL, []):- !.
 list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL2, NOT_DONE_SOL):-
@@ -155,6 +162,8 @@ list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE1, NOT_DONE_SOL):
   debug(high, '[NOT-DONE] ~a ~:d/~:d', [Msg,I2,L]),
   ord_add_element(NOT_DONE1, X, NOT_DONE2),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE2, NOT_DONE_SOL).
+
+
 
 %! stream_to_items(+Stream:stream, -Items:list) is det.
 % @see Helper predicate for file_to_items/2.

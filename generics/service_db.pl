@@ -1,12 +1,14 @@
 :- module(
   service_db,
   [
-    register_service/3, % +Service:atom
+    register_service/4, % +Service:atom
                         % +User:atom
                         % +Password:atom
-    service/3 % ?Service:atom
+                        % +Api:atom
+    service/4 % ?Service:atom
               % ?User:atom
               % ?Password:atom
+              % ?Api:atom
   ]
 ).
 
@@ -25,7 +27,7 @@ Persistent store for user+password registrations for services.
 
 %! service(?Service:atom, ?User:atom, ?Password:atom) is nondet.
 
-:- persistent(service(service:atom,user:atom,password:atom)).
+:- persistent(service(service:atom,user:atom,password:atom,api:atom)).
 
 :- initialization(service_db_init).
 
@@ -36,14 +38,16 @@ Persistent store for user+password registrations for services.
 %
 % Succeeds without change in case the exact same registration already exists.
 
-register_service(Service, User, Password):-
-  service(Service, User, Password), !.
-register_service(Service, User, Password):-
-  assert_service(Service, User, Password).
+register_service(Service, User, Password, Api):-
+  service(Service, User, Password, Api), !.
+register_service(Service, User, Password, Api):-
+  assert_service(Service, User, Password, Api).
 
 
 
-% Initialization.
+
+
+% INITIALIZATION %
 
 %! service_db_file(-File:atom) is det.
 
