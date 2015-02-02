@@ -120,11 +120,11 @@ write_codes_to_file(Codes, File):-
 
 %! write_stream_to_file(+Stream:stream, +File:atom) is det.
 
-write_stream_to_file(Read, File):-
+write_stream_to_file(In, File):-
   setup_call_cleanup(
-    open(File, write, Write, [type(binary)]),
-    copy_stream_data(Read, Write),
-    close(Write)
+    open(File, write, Out, [type(binary)]),
+    copy_stream_data(In, Out),
+    close(Out)
   ).
 
 
