@@ -133,7 +133,7 @@ list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL2, NOT_DONE_SOL):-
   list_script(Goal, Msg, 0-L, TODO, DONE_INIT, DONE_SOL1, [], NOT_DONE_SOL),
   length(DONE_SOL1, L1),
   progress_bar(L1, L, Bar),
-  debug(high, '[EVAL] ~w: ~w', [Msg,Bar]),
+  debug(list_script, '[EVAL] ~w: ~w', [Msg,Bar]),
   ord_union(DONE_INIT, DONE_SOL1, DONE_SOL2).
 
 % Nothing `TODO`.
@@ -142,7 +142,7 @@ list_script(_, _Msg, L-L, [], DONE_SOL, DONE_SOL, NOT_DONE_SOL, NOT_DONE_SOL):- 
 list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE, NOT_DONE_SOL):-
   memberchk(X, DONE), !,
   I2 is I1 + 1,
-  debug(high, '[DONE] ~a ~:d/~:d', [Msg,I2,L]),
+  debug(list_script, '[DONE] ~a ~:d/~:d', [Msg,I2,L]),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE, NOT_DONE_SOL).
 % Could process a `TODO` item, pushed to `DONE`.
 list_script(Goal1, Msg, I1-L, [X|TODO], DONE1, DONE_SOL, NOT_DONE, NOT_DONE_SOL):-
@@ -153,13 +153,13 @@ list_script(Goal1, Msg, I1-L, [X|TODO], DONE1, DONE_SOL, NOT_DONE, NOT_DONE_SOL)
   Module:call(Goal3), !,
   % Retrieve the current index, based on the previous index.
   I2 is I1 + 1,
-  debug(high, '[TODO] ~a ~:d/~:d', [Msg,I2,L]),
+  debug(list_script, '[TODO] ~a ~:d/~:d', [Msg,I2,L]),
   ord_add_element(DONE1, X, DONE2),
   list_script(Goal1, Msg, I2-L, TODO, DONE2, DONE_SOL, NOT_DONE, NOT_DONE_SOL).
 % Could not process a `TODO` item, pushed to `NOT_DONE`.
 list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE1, NOT_DONE_SOL):-
   I2 is I1 + 1,
-  debug(high, '[NOT-DONE] ~a ~:d/~:d', [Msg,I2,L]),
+  debug(list_script, '[NOT-DONE] ~a ~:d/~:d', [Msg,I2,L]),
   ord_add_element(NOT_DONE1, X, NOT_DONE2),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE2, NOT_DONE_SOL).
 

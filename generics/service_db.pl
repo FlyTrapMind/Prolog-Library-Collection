@@ -33,6 +33,8 @@ Persistent store for user+password registrations for services.
 
 
 
+
+
 %! register_service(+Service:atom, +User:atom, +Password:atom) is det.
 % Registers a user to the persistent user database.
 %
