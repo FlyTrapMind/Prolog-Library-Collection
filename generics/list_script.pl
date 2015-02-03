@@ -4,7 +4,7 @@
     file_script/4, % :Goal
                    % +Message:atom
                    % +TODO_File:atom
-                   % DONE_File:atom
+                   % -DONE_File:atom
     list_script/4, % :Goal
                    % +Message:atom
                    % +TODO:list(term)
@@ -24,9 +24,9 @@ List scripting is the practice of running some arbitrary goal on items
 that are read in from a list that may be stored in a file.
 
 There are two lists:
-  * =TODO.txt=
+  - `TODO.txt`
     Contains all items the goal has to be run on.
-  * =DONE.txt=
+  - `DONE.txt`
     Contains only those items for which goal was run at some point
     in the past.
 
@@ -125,10 +125,11 @@ list_script(Goal, Msg, TODO, NOT_DONE_SOL):-
 % and places the items either in the `DONE` or in the `NOT_DONE` list.
 % The `DONE` list can be pre-instantiated.
 
-list_script(_, _, [], DONE_SOL, DONE_SOL, []):- !.
+list_script(_, _, [], DONE, DONE, []):- !.
 list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL2, NOT_DONE_SOL):-
   length(TODO, L),
-  % We instantiate the initial index to `0`, but this will be incremented before
+  % We instantiate the initial index to `0`,
+  % but this will be incremented before
   % it is used, thus effectively counting from `1` onwards.
   list_script(Goal, Msg, 0-L, TODO, DONE_INIT, DONE_SOL1, [], NOT_DONE_SOL),
   length(DONE_SOL1, L1),
@@ -137,15 +138,33 @@ list_script(Goal, Msg, TODO, DONE_INIT, DONE_SOL2, NOT_DONE_SOL):-
   ord_union(DONE_INIT, DONE_SOL1, DONE_SOL2).
 
 % Nothing `TODO`.
-list_script(_, _Msg, L-L, [], DONE_SOL, DONE_SOL, NOT_DONE_SOL, NOT_DONE_SOL):- !.
+list_script(_, _Msg, L-L, [], Done, Done, NotDone, NotDone):- !.
 % A `TODO` items that is already in `DONE`.
-list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE, NOT_DONE_SOL):-
+list_script(
+  Goal,
+  Msg,
+  I1-L,
+  [X|TODO],
+  DONE,
+  DONE_SOL,
+  NOT_DONE,
+  NOT_DONE_SOL
+):-
   memberchk(X, DONE), !,
   I2 is I1 + 1,
-  debug(list_script, '[DONE] ~a ~:d/~:d', [Msg,I2,L]),
+  debug(list_script, '[DONE] ~a ~:D/~:D', [Msg,I2,L]),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE, NOT_DONE_SOL).
 % Could process a `TODO` item, pushed to `DONE`.
-list_script(Goal1, Msg, I1-L, [X|TODO], DONE1, DONE_SOL, NOT_DONE, NOT_DONE_SOL):-
+list_script(
+  Goal1,
+  Msg,
+  I1-L,
+  [X|TODO],
+  DONE1,
+  DONE_SOL,
+  NOT_DONE,
+  NOT_DONE_SOL
+):-
   strip_module(Goal1, Module, Goal2),
   Goal2 =.. [Pred|Args1],
   append(Args1, [X], Args2),
@@ -153,13 +172,13 @@ list_script(Goal1, Msg, I1-L, [X|TODO], DONE1, DONE_SOL, NOT_DONE, NOT_DONE_SOL)
   Module:call(Goal3), !,
   % Retrieve the current index, based on the previous index.
   I2 is I1 + 1,
-  debug(list_script, '[TODO] ~a ~:d/~:d', [Msg,I2,L]),
+  debug(list_script, '[TODO] ~a ~:D/~:D', [Msg,I2,L]),
   ord_add_element(DONE1, X, DONE2),
   list_script(Goal1, Msg, I2-L, TODO, DONE2, DONE_SOL, NOT_DONE, NOT_DONE_SOL).
 % Could not process a `TODO` item, pushed to `NOT_DONE`.
 list_script(Goal, Msg, I1-L, [X|TODO], DONE, DONE_SOL, NOT_DONE1, NOT_DONE_SOL):-
   I2 is I1 + 1,
-  debug(list_script, '[NOT-DONE] ~a ~:d/~:d', [Msg,I2,L]),
+  debug(list_script, '[NOT-DONE] ~a ~:D/~:D', [Msg,I2,L]),
   ord_add_element(NOT_DONE1, X, NOT_DONE2),
   list_script(Goal, Msg, I2-L, TODO, DONE, DONE_SOL, NOT_DONE2, NOT_DONE_SOL).
 
