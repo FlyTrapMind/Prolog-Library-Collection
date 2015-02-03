@@ -193,7 +193,7 @@ http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/ISO-Hiord
    copy_term_nat(GV+FC,GV+C),call(C,V1,V2,V3,V4,V5,V6).
 
 
-%% no_hat_call(:Goal)
+%! no_hat_call(:Goal)
 %
 % Like call, but issues an error for a goal (^)/2.  Such goals are
 % likely the result of an insufficient number of arguments.
