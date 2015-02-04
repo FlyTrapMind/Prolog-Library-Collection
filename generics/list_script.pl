@@ -75,7 +75,7 @@ list_script(Goal_1, Todo0, Options):-
   (   option(skip(I), Options)
   ->  length(Skip, I),
       append(Skip, Todo, Todo0)
-  ;   I = 1,
+  ;   I = 0,
       Todo = Todo0
   ),
 
@@ -121,10 +121,4 @@ list_script(Goal_1, Msg, I1-L, [X|Todo], Done, [X|NotDone]):-
   I2 is I1 + 1,
   debug(list_script, '[NOT-DONE] ~a ~:D/~:D', [Msg,I2,L]),
   list_script(Goal_1, Msg, I2-L, Todo, Done, NotDone).
-
-
-
-
-
-
 
