@@ -25,7 +25,7 @@ Persistent store for user+password registrations for services.
 
 :- use_module(generics(persistent_db_ext)).
 
-%! service(?Service:atom, ?User:atom, ?Password:atom) is nondet.
+%! service(?Service:atom, ?User:atom, ?Password:atom, ?Api:atom) is nondet.
 
 :- persistent(service(service:atom,user:atom,password:atom,api:atom)).
 
