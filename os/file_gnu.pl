@@ -32,7 +32,7 @@ Interface to GNU tools for file-processing.
 %! file_lines(+File:atom, -NumberOfLines:nonneg) is det.
 
 file_lines(File, NumberOfLines):-
-  handle_process(wc, ['-l',file(File)], [output(OutputCodes)]),
+  handle_process(wc, ['-l',file(File)], [output_codes(OutputCodes)]),
   phrase(integer(NumberOfLines), OutputCodes, _).
 
 

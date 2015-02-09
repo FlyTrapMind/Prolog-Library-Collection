@@ -183,7 +183,7 @@ absolute_file_name_number(Spec, Number, Abs, Options):-
 
 buffer_size_file(File, BufferSize):-
   size_file(File, FileSize),
-  (   FileSize < 1024
+  (   FileSize =:= 0
   ->  BufferSize = 1024
   ;   BufferSize is round(FileSize * log(FileSize))
   ).

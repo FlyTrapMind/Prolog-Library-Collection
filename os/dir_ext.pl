@@ -100,6 +100,8 @@ copy_directory(FromDir, ToDir, Options):-
 %
 % @see http://www.swi-prolog.org/pldoc/doc_for?object=absolute_file_name/3
 
+% Current directory: nothing to create.
+create_directory('.'):- !.
 % Not an absolute path.
 create_directory(Abs):-
   \+ is_absolute_file_name(Abs), !,

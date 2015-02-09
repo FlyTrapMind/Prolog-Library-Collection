@@ -22,6 +22,9 @@
                       % +High:integer
                       % +CycleLength:integer
                       % -NumList:list(integer)
+    decimal_parts/3, % ?Decimal:compound
+                     % ?Integer:integer
+                     % ?Fraction:compound
     div/3,
     div_zero/3,
     euclidean_distance/3, % +Coordinate1:coordinate
@@ -50,17 +53,14 @@
     mod/3,
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
-    number_integer_parts/3, % ?Number:number
-                            % ?IntegerPart:integer
-                            % ?FractionalPart:integer
+    normalized_number/3, % +Decimal:compound
+                         % -NormalizedDecimal:compound
+                         % -Exponent:nonneg
     number_length/2, % +Number:number
                      % -Length:integer
     number_length/3, % +Number:number
                      % +Radix:integer
                      % -Length:integer
-    number_sign_parts/3, % ?Number:number
-                         % ?Sign:oneof([-1,1])
-                         % ?Absolute:number
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -247,6 +247,32 @@ cyclic_numlist(Low, High, CycleLength, NumList):-
 
 
 
+%! decimal_parts(
+%!   +Decimal:compound,
+%!   -Integer:integer,
+%!   -Fractional:integer
+%! ) is det.
+%! decimal_parts(
+%!   -Decimal:compound,
+%!   +Integer:integer,
+%!   +Fractional:integer
+%! ) is det.
+% @throws domain_error If `Fractional` is negative.
+
+decimal_parts(_, _, Fractional):-
+  nonvar(Fractional),
+  Fractional < 0, !,
+  domain_error(nonneg, Fractional).
+decimal_parts(Decimal, Integer, Fractional):-
+  nonvar(Decimal), !,
+  Integer is floor(float_integer_part(Decimal)),
+  fractional_integer(Decimal, Fractional).
+decimal_parts(Number, Integer, Fractional):-
+  number_length(Fractional, Length),
+  Number is copysign(abs(Integer) + (Fractional rdiv (10 ^ Length)), Integer).
+
+
+
 % @tbd
 div(X, Y, Z):-
   rational(X), rational(Y), !,
@@ -408,38 +434,34 @@ multiply_list([H|T], M2):-
   M2 is H * M1.
 
 
-%! number_integer_parts(
-%!   +Number:number,
-%!   -IntegerPart:integer,
-%!   -Fractional:integer
-%! ) is det.
-%! number_integer_parts(
-%!   -Number:number,
-%!   +IntegerPart:integer,
-%!   +Fractional:integer
-%! ) is det.
-% ### Example
-%
-% ```prolog
-% ?- number_integer_parts(-1.5534633204, X, Y).
-% X = -1,
-% Y = -5534633204.
-% ```
-%
-% @throws domain_error If `Fractional` is not nonneg.
 
-number_integer_parts(_, _, Fractional):-
-  nonvar(Fractional),
-  \+ nonneg(Fractional), !,
-  domain_error(nonneg, Fractional).
-number_integer_parts(Number, Integer, Fractional):-
-  nonvar(Number), !,
-  Integer is floor(float_integer_part(Number)),
-  fractional_integer(Number, Fractional).
-number_integer_parts(Number, Integer, Fractional):-
-  number_length(Fractional, Length),
-  Sign is sign(Integer),
-  Number is copysign(abs(Integer) + Fractional * 10 ** -(Length), Sign).
+%! normalized_number(
+%!   +Decimal:compound,
+%!   -NormalizedDecimal:compound,
+%!   -Exponent:integer
+%! ) is det.
+% A form of **Scientific notation**, i.e., $a \times 10^b$,
+% in which $0 \leq a < 10$.
+%
+% The exponent $b$ is negative for a number with absolute value between
+% $0$ and $1$ (e.g. $0.5$ is written as $5×10^{-1}$).
+%
+% The $10$ and exponent are often omitted when the exponent is $0$.
+
+normalized_number(D, D, 0):-
+  1.0 =< D,
+  D < 10.0, !.
+normalized_number(D1, ND, Exp1):-
+  D1 >= 10.0, !,
+  D2 is D1 / 10.0,
+  normalized_number(D2, ND, Exp2),
+  Exp1 is Exp2 + 1.
+normalized_number(D1, ND, Exp1):-
+  D1 < 1.0, !,
+  D2 is D1 * 10.0,
+  normalized_number(D2, ND, Exp2),
+  Exp1 is Exp2 - 1.
+
 
 
 %! number_length(+Number:number, -Length:integer) is det.
@@ -467,29 +489,13 @@ number_length(N1, Radix, L1):-
 number_length(_N, _Radix, 1):- !.
 
 
-%! number_sign_parts(+N:number, +Sign:oneof([-1,1]), +Absolute:number) is semidet.
-%! number_sign_parts(+N:number, -Sign:oneof([-1,1]), -Absolute:number) is det.
-%! number_sign_parts(-N:number, +Sign:oneof([-1,1]), +Absolute:number) is det.
-%! number_sign_parts(-N:number, -Sign:oneof([-1,1]), +Absolute:number) is multi.
-% @throws instantiation_error
-
-number_sign_parts(N, Sign, Abs):-
-  nonvar(Abs), !,
-  member(Sign, [-1,1]),
-  N is copysign(Sign, Abs).
-number_sign_parts(N, Sign, Abs):-
-  nonvar(N), !,
-  Sign is sign(N),
-  Abs is abs(N).
-number_sign_parts(N, Sign, Abs):-
-  instantiation_error(number_sign_parts(N, Sign, Abs)).
-
 
 %! odd(?Number:number) is semidet.
 % Succeeds if the integer is odd.
 
 odd(N):-
   mod(N, 2, 1).
+
 
 
 %! permutations(
