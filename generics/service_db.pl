@@ -55,7 +55,7 @@ register_service(Service, User, Password, Api):-
 
 service_db_file(File):-
   absolute_file_name(
-    data(service),
+    project('service.db'),
     File,
     [access(write),file_type(database)]
   ).
