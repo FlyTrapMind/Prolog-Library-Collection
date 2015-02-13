@@ -20,7 +20,7 @@ Open a recursive data stream from files/URIs.
 @author Wouter Beek
 @author Jan Wielemaker
 @tbd Only supports URI schemes `http` and `https`.
-@version 2014/03-2014/07, 2014/10-2014/12
+@version 2014/03-2014/07, 2014/10-2014/12, 2015/02
 */
 
 :- use_module(library(aggregate)).
@@ -66,60 +66,6 @@ ssl_verify(
 
 
 
-%! archive_content(
-%!   +Archive:archive,
-%!   -Entry:stream,
-%!   -PipeMetadata:list(dict),
-%!   +PipeTail:list
-%! ) is nondet.
-
-archive_content(
-  Archive,
-  Entry,
-  [EntryMetadata|PipeMetadataTail],
-  PipeMetadata2
-):-
-  archive_property(Archive, filter(Filters)),
-  repeat,
-  (   archive_next_header(Archive, EntryName)
-  ->  findall(
-        EntryProperty,
-        archive_header_property(Archive, EntryProperty),
-        EntryProperties0
-      ),
-      sort(
-        [filters(Filters),name(EntryName)|EntryProperties0],
-        EntryProperties
-      ),
-      dict_create(EntryMetadata, json, EntryProperties),
-      (   EntryMetadata.filetype == file
-      ->  archive_open_entry(Archive, Entry0),
-          (   EntryName == data,
-              EntryMetadata.format == raw
-          ->  % This is the last entry in this nested branch.
-	      % We therefore close the choicepoint created by repeat/0.
-	      % Not closing this choicepoint would cause
-	      % archive_next_header/2 to throw an exception.
-	      !,
-	      PipeMetadataTail = PipeMetadata2,
-              Entry = Entry0
-          ;   PipeMetadataTail = PipeMetadata1,
-              open_substream(
-                Entry0,
-                Entry,
-                true,
-                PipeMetadata1,
-                PipeMetadata2
-              )
-          )
-      ;   fail
-      )
-  ;   % No more entries, so end repeat.
-      !,
-      fail
-  ).
-
-
 %! close_any(+Outstream, -Metadata:dict) is det.
 
 close_any(Out, Metadata):-
@@ -153,15 +99,15 @@ close_any(Out, Metadata):-
 
 
 
-%! open_any(+Input, -In:stream, +Options:list(nvpair)) is nondet.
+%! open_any(+Input, -Substream:stream, +Options:list(nvpair)) is nondet.
 
-open_any(Input, In, Options):-
-  open_any(Input, In, _, Options).
+open_any(Input, Substream, Options):-
+  open_any(Input, Substream, _, Options).
 
 
 %! open_any(
 %!   +Input,
-%!   -In:stream,
+%!   -Substream:stream,
 %!   -Metadata:dict,
 %!   +Options:list(nvpair)
 %! ) is nondet.
@@ -220,38 +166,19 @@ open_any(Input, In, Options):-
 %
 % @arg  Options
 
-open_any(Input, In, Metadata, Options):-
-  open_input(Input, FileOut, Metadata0, Close, Options),
+open_any(Input, Substream, Metadata, Options):-
+  open_input(Input, Stream, Metadata0, Close, Options),
   Metadata = Metadata0.put(archive, ArchiveMetadata),
-  open_substream(FileOut, In, ArchiveMetadata, Close).
-
-
-%! open_substream(
-%!   +Stream:stream,
-%!   -Substream:stream,
-%!   -ArchiveMetadata:dict
-%! ) is nondet.
-% True when SubStream is a raw content stream for data in Stream
-% and Pipeline describes the location of SubStream in the substream tree.
-%
-% @arg  Pipeline is a list of applied filters and archive selection
-%       operations.
-%       List elements take the form:
-%
-%         - `archive(Member, Format)`
-%         - `filter(EntryName)`
-
-open_substream(In, Entry, ArchiveMetadata, Close):-
-  open_substream(In, Entry, Close, ArchiveMetadata, []).
-
-open_substream(In, Entry, Close, ArchiveMetadata, PipeTailMetadata):-
   setup_call_cleanup(
     archive_open(
-      stream(In),
+      stream(Stream),
       Archive,
       [close_parent(Close),format(all),format(raw)]
     ),
-    archive_content(Archive, Entry, ArchiveMetadata, PipeTailMetadata),
+    % True when Substream is a raw content stream for data in Substream
+    % and ArchiveMetadata describes the location of Substream
+    % in the substream tree.
+    archive_data_stream(Archive, Substream, [metadata(ArchiveMetadata)]),
     archive_close(Archive)
   ).
 
