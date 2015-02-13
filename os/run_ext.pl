@@ -73,6 +73,7 @@ Predicates for running external programs.
 % The following options are supported:
 %   - `output_codes(-Output:list(code))`
 %   - `output_stream(-Output:stream)`
+%     If this is absent then the output stream is closed.
 %   - `program(+Program:atom)`
 %     The name of the program as displayed in debug messages.
 %   - `status(-Status:nonneg)`
