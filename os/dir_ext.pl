@@ -32,7 +32,7 @@ Extensions for handling directories.
 
 @author Wouter Beek
 @version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04-2014/05, 2014/08,
-         2014/10
+         2014/10, 2015/02
 */
 
 :- use_module(library(apply)).
@@ -64,6 +64,8 @@ is_meta(order).
      order(+oneof([lexicographic])),
      recursive(+boolean)
    ]).
+
+
 
 
 
@@ -108,8 +110,7 @@ create_directory(Abs):-
   domain_error(absolute_path, Abs).
 % Directory already exists.
 create_directory(Abs):-
-  exists_directory(Abs), !,
-  print_message(informational, already_exists(Abs)).
+  exists_directory(Abs), !.
 % Create directory.
 create_directory(Abs):-
   directory_subdirectories(Abs, Subdirs),
@@ -323,6 +324,8 @@ run_in_working_directory(Goal, Dir1):-
 
 
 
+
+
 % HELPERS
 
 %! nonfile_entry(+Entry:atom) is semidet.
@@ -330,11 +333,3 @@ run_in_working_directory(Goal, Dir1):-
 nonfile_entry('.').
 nonfile_entry('..').
 
-
-
-% MESSAGES
-
-:- multifile(prolog:message//1).
-
-prolog:message(already_exists(Dir)) -->
-  ['Dir ',Dir,' already exists.'].
