@@ -131,7 +131,7 @@ In line with the terminology this modules uses the following variable names:
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/11, 2015/01
+         2014/08-2014/11, 2015/01-2015/02
 */
 
 :- use_module(library(apply)).
@@ -213,8 +213,7 @@ common_prefix_path(Path1, Path2, CommonPrefixPath):-
 %! create_file(+Abs:atom) is det.
 
 create_file(Abs):-
-  exists_file(Abs), !,
-  print_message(informational, already_exists(Abs)).
+  exists_file(Abs), !.
 create_file(Abs):-
   is_absolute_file_name(Abs), !,
   touch_file(Abs).
@@ -649,11 +648,3 @@ term_to_path(Spec, Path):-
   nonvar(Spec),
   absolute_file_name(Spec, Path, [file_errors(fail),file_type(directory)]).
 
-
-
-% MESSAGES
-
-:- multifile(prolog:message//1).
-
-prolog:message(already_exists(File)) -->
-  ['File ',File,' already exists.'].
