@@ -178,7 +178,7 @@ open_any(Input, Substream, Metadata, Options):-
     % True when Substream is a raw content stream for data in Substream
     % and ArchiveMetadata describes the location of Substream
     % in the substream tree.
-    archive_data_stream(Archive, Substream, [metadata(ArchiveMetadata)]),
+    archive_data_stream(Archive, Substream, [meta_data(ArchiveMetadata)]),
     archive_close(Archive)
   ).
 
