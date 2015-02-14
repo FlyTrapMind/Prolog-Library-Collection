@@ -3,6 +3,8 @@
   [
     file_lines/2, % +File:atom
                   % -NumberOfLines:nonneg
+    gnu_mv/2, % +From:atom
+              % +To:atom
     split_into_smaller_files/3, % +BigFile:atom
                                 % +OutputDir:atom
                                 % +Prefix:atom
@@ -16,7 +18,7 @@ Interface to GNU tools for file-processing.
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/10, 2015/01
+         2014/08-2014/10, 2015/01-2015/02
 */
 
 :- use_module(library(dcg/basics)).
@@ -34,6 +36,14 @@ Interface to GNU tools for file-processing.
 file_lines(File, NumberOfLines):-
   handle_process(wc, ['-l',file(File)], [output_codes(OutputCodes)]),
   phrase(integer(NumberOfLines), OutputCodes, _).
+
+
+
+%! gnu_mv(+From:atom, +To:atom) is det.
+
+gnu_mv(From, To):-
+  handle_process(mv, [file(From),to(File)], []).
+
 
 
 

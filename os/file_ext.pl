@@ -487,6 +487,11 @@ local_file_components(_, _, _):-
 
 
 %! mv2(+From:atom, +To:atom) is det.
+% Since this implementation uses copying, not moving, it is much slower
+% than gnu_mv/2.
+% However, that predicate depends on the availability of GNU mv (Linux).
+% mv2/2 is not subject to the fallacious brace expansion of the built-in
+% mv/2.
 
 mv2(From, To):-
   copy_file(From, To),
