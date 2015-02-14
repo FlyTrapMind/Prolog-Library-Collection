@@ -42,7 +42,7 @@ file_lines(File, NumberOfLines):-
 %! gnu_mv(+From:atom, +To:atom) is det.
 
 gnu_mv(From, To):-
-  handle_process(mv, [file(From),to(File)], []).
+  handle_process(mv, [file(From),file(To)], []).
 
 
 
