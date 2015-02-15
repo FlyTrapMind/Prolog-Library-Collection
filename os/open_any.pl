@@ -242,13 +242,14 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
       exclude(empty_http_header, Headers1, Headers2),
 
       maplist(http_header_dict, Headers2, Headers3),
+      dict_pairs(HttpHeaders, 'http-headers', Headers3),
       http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),
       string_codes(ReasonPhrase, ReasonPhrase0),
       Metadata = meta_data{
-          'HTTP':http_metadata{
-              headers:Headers3,
-              status:http_status{
+          'HTTP':'http-metadata'{
+              headers:HttpHeaders,
+              status:'http-status'{
                   code:StatusCode,
                   'reason-phrase':ReasonPhrase
               }
@@ -413,11 +414,11 @@ empty_http_header(header(_,'')).
 
 
 
-%! http_header_dict(+Header:compound, -Header:dict) is det.
+%! http_header_dict(+Header:compound, -Header:pair) is det.
 % Converts a given HTTP header compound term to its JSON equivalent.
 
-http_header_dict(header(Key,Value1), http_header{key:Key, value:Value2}):-
-  http_header_value_dict(Key, Value1, Value2).
+http_header_dict(header(Key,Value0), Key-Value):-
+  http_header_value_dict(Key, Value0, Value).
 
 
 
@@ -426,12 +427,15 @@ http_header_dict(header(Key,Value1), http_header{key:Key, value:Value2}):-
 
 http_header_value_dict('Content-Length', Atom, Number):- !,
   atom_number(Atom, Number).
-http_header_value_dict('Content-Type', Atom, Dict):- !,
+http_header_value_dict(
+  'Content-Type',
+  Atom,
+  'media-type'{type:Type, subtype:Subtype, parameters:ParameterDicts}
+):- !,
   atomic_list_concat([Type0|Parameters0], ';', Atom),
   maplist(media_type_parameter, Parameters0, Parameters),
   atomic_list_concat([Type,Subtype], '/', Type0),
-  maplist(json_pair, Parameters, ParameterDicts),
-  Dict = media_type{parameters:ParameterDicts, subtype:Subtype, type:Type}.
+  maplist(json_pair, Parameters, ParameterDicts).
 http_header_value_dict(Key, Atom, Dict):-
   memberchk(Key, ['Date','Expires','Last-Modified']), !,
   parse_time(Atom, rfc_1123, Stamp),
