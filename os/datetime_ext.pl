@@ -6,7 +6,7 @@
     current_time/1, % ?Time:atom
     date_directories/2, % +Spec:compound
                         % -DateDir:atom
-    date_time_json/2, % ?DateTime:compound
+    date_time_dict/2, % ?DateTime:compound
                       % ?Dict:dict
     hash_date/1, % -Hash:atom
     iso8601_dateTime/1, % -DateTime:atom
@@ -25,7 +25,7 @@
 Extensions for date and time.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/11, 2014/10
+@version 2013/06-2013/07, 2013/11, 2014/10, 2015/02
 */
 
 :- use_module(generics(meta_ext)).
@@ -87,11 +87,11 @@ date_directories(Spec, Dir):-
 
 
 
-%! date_time_json(?DateTime:compound, ?Dict:dict) is det.
+%! date_time_dict(?DateTime:compound, ?Dict:dict) is det.
 
-date_time_json(
+date_time_dict(
   date(Year,Month,Day,Hour,Minute,Second,Offset,Timezone,DaylightSavingTime),
-  json{
+  date_time{
     day:Day,
     'daylight-saving-time':DaylightSavingTime,
     hour:Hour,
