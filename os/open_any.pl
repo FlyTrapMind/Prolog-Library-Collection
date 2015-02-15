@@ -81,20 +81,16 @@ close_any(Out, Metadata):-
   byte_count(Out, Bytes),
   character_count(Out, Characters),
   line_count(Out, Lines),
-  dict_pairs(
-    Metadata,
-    json,
-    [
-      'bom-detected'-Bom,
-      'byte-count'-Bytes,
-      'character-count'-Characters,
-      encoding-Encoding,
-      'current-locale'-CurrentLocale,
-      'line-count'-Lines,
-      'newline-mode'-NewlineMode,
-      'stream-type'-Type
-    ]
-  ),
+  Metadata = stream{
+      'bom-detected':Bom,
+      'byte-count':Bytes,
+      'character-count':Characters,
+      encoding:Encoding,
+      'current-locale':CurrentLocale,
+      'line-count':Lines,
+      'newline-mode':NewlineMode,
+      'stream-type':Type
+  },
   close(Out).
 
 
@@ -243,26 +239,22 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
       http_open(Uri, Out, Options2),
 
       % Exclude headers that did not occur in the HTTP response.
-      exclude(empty_header, Headers1, Headers2),
+      exclude(empty_http_header, Headers1, Headers2),
 
-      % Convert headers to JSON-compatible pairs.
-      maplist(header_json, Headers2, Headers3),
-
-      % HTTP status JSON object.
+      maplist(http_header_dict, Headers2, Headers3),
       http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),
-      atom_codes(ReasonPhrase, ReasonPhrase0),
-      dict_pairs(
-        StatusDict,
-        json,
-        [code-StatusCode,'reason-phrase'-ReasonPhrase]
-      ),
-
-      % HTTP JSON object: status and headers.
-      dict_pairs(HttpMetadata, json, [status-StatusDict|Headers3]),
-
-      % HTTP response/request dictionary.
-      dict_pairs(Metadata, json, ['HTTP'-HttpMetadata,'URI'-Uri]),
+      string_codes(ReasonPhrase, ReasonPhrase0),
+      Metadata = meta_data{
+          'HTTP':http_metadata{
+              headers:Headers3,
+              status:http_status{
+                  code:StatusCode,
+                  'reason-phrase':ReasonPhrase
+              }
+          },
+          'URI':Uri
+      },
       Close = true
   ).
 
@@ -414,42 +406,38 @@ body_length(_, _, _, _, _).
 
 
 
-%! empty_header(+Header:compound) is semidet.
+%! empty_http_header(+Header:compound) is semidet.
 % Succeeds for HTTP headers with empty value.
 
-empty_header(header(_,'')).
+empty_http_header(header(_,'')).
 
 
 
-%! header_json(+Header:compound, -ConvertedHeader:pair) is det.
+%! http_header_dict(+Header:compound, -Header:dict) is det.
 % Converts a given HTTP header compound term to its JSON equivalent.
 
-header_json(header(Key,Value1), Key-Value2):-
-  header_value_json(Key, Value1, Value2).
+http_header_dict(header(Key,Value1), http_header{key:Key, value:Value2}):-
+  http_header_value_dict(Key, Value1, Value2).
 
 
 
-%! header_value_json(+Key:atom, +Value:atom, -ConvertedValue) is det.
+%! http_header_value_dict(+Key:atom, +Value:atom, -Value:dict) is det.
 % Converts a given HTTP header value to its JSON equivalent.
 
-header_value_json('Content-Length', Atom, Number):- !,
+http_header_value_dict('Content-Length', Atom, Number):- !,
   atom_number(Atom, Number).
-header_value_json('Content-Type', Atom, Dict):- !,
+http_header_value_dict('Content-Type', Atom, Dict):- !,
   atomic_list_concat([Type0|Parameters0], ';', Atom),
   maplist(media_type_parameter, Parameters0, Parameters),
   atomic_list_concat([Type,Subtype], '/', Type0),
   maplist(json_pair, Parameters, ParameterDicts),
-  dict_pairs(
-    Dict,
-    json,
-    [parameters-ParameterDicts,subtype-Subtype,type-Type]
-  ).
-header_value_json(Key, Atom, Dict):-
+  Dict = media_type{parameters:ParameterDicts, subtype:Subtype, type:Type}.
+http_header_value_dict(Key, Atom, Dict):-
   memberchk(Key, ['Date','Expires','Last-Modified']), !,
   parse_time(Atom, rfc_1123, Stamp),
   stamp_date_time(Stamp, DateTime, 'UTC'),
-  date_time_json(DateTime, Dict).
-header_value_json(_, Atom, Atom).
+  date_time_dict(DateTime, Dict).
+http_header_value_dict(_, Atom, Atom).
 
 
 
