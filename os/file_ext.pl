@@ -566,8 +566,6 @@ prefix_path(PrefixPath, Path):-
 %
 % Resolves potential occurrences of `..` in any of the arguments.
 %
-% Supports
-%
 % @see relative_file_name/3 in library [[filesex]]
 %      only supports instantiation `(+,+,-)`.
 
