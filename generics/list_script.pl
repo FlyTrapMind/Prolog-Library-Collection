@@ -24,7 +24,11 @@ Also keeps track of items that could not be processed.
 
 :- use_module(generics(atom_ext)).
 
+:- use_module(plDcg(dcg_atom)).
+:- use_module(plDcg(dcg_bracket)).
+:- use_module(plDcg(dcg_cardinal)).
 :- use_module(plDcg(dcg_debug)).
+:- use_module(plDcg(dcg_pl_term)).
 
 :- predicate_options(list_script/3, 3, [
      message(+atom),
@@ -128,10 +132,15 @@ list_script(Goal_1, Msg, counter(M0,N), [X|Todo], Done, [X|NotDone], Mutex):-
 % DEBUG %
 
 counter(counter(M,N)) -->
-  ['[~D/~D]'-[M,N]].
+  bracketed(square, (
+    thousands_integer(M),
+    "/",
+    thousands_integer(N))
+  ).
 
 enumerate_item(X) -->
-  ['- ~w'-[X]].
+  "  - ",
+  dcg_pl_term(X).
 
 enumerate_items([]) --> [].
 enumerate_items([H|T]) -->
@@ -140,7 +149,7 @@ enumerate_items([H|T]) -->
 
 goal(Goal, Args) -->
   {Call =.. [Goal|Args]},
-  ['~w'-[Call]].
+  dcg_pl_term(Call).
 
 item_done(Counter, Msg, Goal_1, Arg) -->
   item_processed(done, Counter, Msg, Goal_1, Arg).
@@ -150,11 +159,11 @@ item_not_done(Counter, Msg, Goal_1, Arg) -->
 
 item_processed(Mode, Counter, Msg, Goal_1, Arg) -->
   mode(Mode),
-  space,
+  " ",
   counter(Counter),
-  space,
+  " ",
   message(Msg),
-  space,
+  " ",
   goal(Goal_1, [Arg]).
 
 items_done(L, N) -->
@@ -166,19 +175,20 @@ items_not_done(L, N) -->
 
 items_processed(Mode, L, N) -->
   mode(Mode),
-  space,
+  " ",
   progress_bar(L, N).
 
-message(Msg) --> [Msg].
+message(Msg) -->
+  atom(Msg).
 
-mode(done) --> ['[DONE]'].
-mode(not_done) --> ['[NOT-DONE]'].
+mode(done) -->
+  atom('[DONE]').
+mode(not_done) -->
+  atom('[NOT-DONE]').
 
 progress_bar(L, N) -->
   {
     length(L, M),
     progress_bar(M, N, Bar)
   },
-  [Bar].
-
-space --> [' '].
+  atom(Bar).
