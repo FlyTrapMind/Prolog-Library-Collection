@@ -18,12 +18,13 @@ Also keeps track of items that could not be processed.
 */
 
 :- use_module(library(apply)).
-:- use_module(library(debug)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 :- use_module(library(readutil)).
 
 :- use_module(generics(atom_ext)).
+
+:- use_module(plDcg(dcg_debug)).
 
 :- predicate_options(list_script/3, 3, [
      message(+atom),
@@ -86,8 +87,8 @@ list_script(Goal_1, Todo0, Options):-
   
   % Show an overview of processing the list.
   (   option(overview(true), Options)
-  ->  print_message(informational, items_done(Done,N)),
-      print_message(warning, items_not_done(NotDone,N))
+  ->  dcg_debug(list_script, items_done(Done, N)),
+      dcg_debug(list_script, items_not_done(NotDone,N))
   ;   true
   ).
 
@@ -112,34 +113,19 @@ list_script(Goal_1, Msg, counter(M0,N), [X|Todo], [X|Done], NotDone, Mutex):-
   ), !,
   M is M0 + 1,
   % Retrieve the current index, based on the previous index.
-  print_message(informational, item_done(counter(M,N), Msg, Goal_1, X)),
+  dcg_debug(list_script, item_done(counter(M,N), Msg, Goal_1, X)),
   list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex).
 % A TODO item could not be processed; pushed to NOT-DONE.
 list_script(Goal_1, Msg, counter(M0,N), [X|Todo], Done, [X|NotDone], Mutex):-
   M is M0 + 1,
-  print_message(warning, item_not_done(counter(M,N), Msg, Goal_1, X)),
+  dcg_debug(list_script, item_not_done(counter(M,N), Msg, Goal_1, X)),
   list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex).
 
 
 
 
 
-% MESSAGES %
-
-:- multifile(prolog:message//1).
-
-prolog:message(item_done(Counter,Msg,Goal_1,Arg)) -->
-  item_processed(done, Counter, Msg, Goal_1, Arg).
-
-prolog:message(item_not_done(Counter,Msg,Goal_1,Arg)) -->
-  item_processed(not_done, Counter, Msg, Goal_1, Arg).
-
-prolog:message(items_done(L,N)) -->
-  items_processed(done, L, N).
-
-prolog:message(items_not_done(L,N)) -->
-  items_processed(not_done, L, N),
-  enumerate_items(L).
+% DEBUG %
 
 counter(counter(M,N)) -->
   ['[~D/~D]'-[M,N]].
@@ -156,6 +142,12 @@ goal(Goal, Args) -->
   {Call =.. [Goal|Args]},
   ['~w'-[Call]].
 
+item_done(Counter, Msg, Goal_1, Arg) -->
+  item_processed(done, Counter, Msg, Goal_1, Arg).
+
+item_not_done(Counter, Msg, Goal_1, Arg) -->
+  item_processed(not_done, Counter, Msg, Goal_1, Arg).
+
 item_processed(Mode, Counter, Msg, Goal_1, Arg) -->
   mode(Mode),
   space,
@@ -164,6 +156,13 @@ item_processed(Mode, Counter, Msg, Goal_1, Arg) -->
   message(Msg),
   space,
   goal(Goal_1, [Arg]).
+
+items_done(L, N) -->
+  items_processed(done, L, N).
+
+items_not_done(L, N) -->
+  items_processed(not_done, L, N),
+  enumerate_items(L).
 
 items_processed(Mode, L, N) -->
   mode(Mode),
