@@ -163,6 +163,7 @@ item_processed(Mode, Counter, Msg) -->
 items_done(L, N) -->
   items_processed(done, L, N).
 
+items_not_done([], _) --> !, [].
 items_not_done(L, N) -->
   items_processed(not_done, L, N),
   enumerate_items(L).
