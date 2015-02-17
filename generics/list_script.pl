@@ -9,26 +9,12 @@
 
 /** <module> List script
 
-List scripting is the practice of running some arbitrary goal on items
-that are read in from a list that may be stored in a file.
-
-There are two lists:
-  - `Todo.txt`
-    Contains all items the goal has to be run on.
-  - `DONE.txt`
-    Contains only those items for which goal was run at some point
-    in the past.
-
-The main method reads both of these files, applies a given goal to
-the members of (Todo minus DONE), and adds the processed items to DONE.
-
-The list stored in Todo changes accordingly,
-i.e. denoting the remaining items.
-
-To process the same items again one should have copied the orginal Todo list.
+Runs a given goal for a given list of arguments and prints the process
+on a per-item basis.
+Also keeps track of items that could not be processed.
 
 @author Wouter Beek
-@version 2013/06, 2014/01, 2015/02
+@version 2015/02
 */
 
 :- use_module(library(apply)).
@@ -40,30 +26,39 @@ To process the same items again one should have copied the orginal Todo list.
 :- use_module(generics(atom_ext)).
 
 :- predicate_options(list_script/3, 3, [
-      message(+atom),
-      notdone(-list),
-      skip(+nonneg)
+     message(+atom),
+     notdone(-list),
+     overview(+boolean),
+     skip(+nonneg),
+     with_mutex(+boolean)
    ]).
 
 :- meta_predicate(list_script(1,+,+)).
-:- meta_predicate(list_script(1,+,+,+,-,-)).
+:- meta_predicate(list_script(1,+,+,+,-,-,?)).
 
 
 
 
 
-%! list_script(:Goal_1, +Todo:list(term), +Options:list(nvpair)) is det.
+%! list_script(:Goal_1, +Todo:list, +Options:list(nvpair)) is det.
 % Processes the items in `Todo` using the given goal
 % and places the items either in the `Done` or in the `NotDone` list.
 % The `Done` list can be pre-instantiated.
 %
 % The following options are supported:
 %   - message(+atom)
+%     Set the message that is displayed upon completing an item.
 %   - notdone(-list)
+%     Returns the sublist of items that could not be processed.
+%   - overview(+boolean)
+%     Whether to show an overview afterwards (`false` by default).
 %   - skip(+nonneg)
+%     Skips the first _M_ items in Todo.
+%   - with_mutex(+atom)
+%     Run the goal for each item inside the given mutex.
 
 list_script(Goal_1, Todo0, Options):-
-  length(Todo0, L),
+  length(Todo0, N),
 
   % Process option `message`.
   (   option(message(Msg0), Options)
@@ -72,31 +67,30 @@ list_script(Goal_1, Todo0, Options):-
   ),
 
   % Process option `skip`.
-  (   option(skip(I), Options)
-  ->  length(Skip, I),
+  (   option(skip(M), Options)
+  ->  length(Skip, M),
       append(Skip, Todo, Todo0)
-  ;   I = 0,
+  ;   M = 0,
       Todo = Todo0
   ),
-
+  
+  % Process list.
+  option(with_mutex(Mutex), Options, _VAR),
+  list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex),
+  
   % Process option `notdone`.
-  list_script(Goal_1, Msg, I-L, Todo, Done, NotDone),
   (   option(notdone(NotDone0), Options)
   ->  NotDone0 = NotDone
   ;   true
   ),
-
-  % DEB
-  (   debugging(list_script)
-  ->  length(Done, L1),
-      progress_bar(L1, L, Bar),
-      debug(list_script, '[EVAL] ~w: ~w', [Msg,Bar]),
-      forall(
-        member(X, NotDone),
-        debug(list_script, '[NOT-DONE] ~w\n', [X])
-      )
+  
+  % Show an overview of processing the list.
+  (   option(overview(true), Options)
+  ->  print_message(informational, items_done(Done,N)),
+      print_message(warning, items_not_done(NotDone,N))
   ;   true
   ).
+
 
 %! list_script(
 %!   :Goal_1,
@@ -104,21 +98,88 @@ list_script(Goal_1, Todo0, Options):-
 %!   +Counter:pair(nonneg),
 %!   +Todo:list(term),
 %!   -Done:list(term),
-%!   -NotDone:list(term)
+%!   -NotDone:list(term),
+%!   ?Mutex:atom
 %! ) is det.
 
-% Nothing `Todo`.
-list_script(_, _, L-L, [], [], []):- !.
-% Could process a `Todo` item; pushed to `Done`.
-list_script(Goal_1, Msg, I1-L, [X|Todo], [X|Done], NotDone):-
-  call(Goal_1, X), !,
+% Nothing to do.
+list_script(_, _, counter(N,N), [], [], [], _):- !.
+% One more TODO item gets pushed to DONE.
+list_script(Goal_1, Msg, counter(M0,N), [X|Todo], [X|Done], NotDone, Mutex):-
+  (   ground(Mutex)
+  ->  with_mutex(Mutex, call(Goal_1, X))
+  ;   call(Goal_1, X)
+  ), !,
+  M is M0 + 1,
   % Retrieve the current index, based on the previous index.
-  I2 is I1 + 1,
-  debug(list_script, '[TODO] ~a ~:D/~:D', [Msg,I2,L]),
-  list_script(Goal_1, Msg, I2-L, Todo, Done, NotDone).
-% Could not process a `Todo` item; pushed to `NotDone`.
-list_script(Goal_1, Msg, I1-L, [X|Todo], Done, [X|NotDone]):-
-  I2 is I1 + 1,
-  debug(list_script, '[NOT-DONE] ~a ~:D/~:D', [Msg,I2,L]),
-  list_script(Goal_1, Msg, I2-L, Todo, Done, NotDone).
+  print_message(informational, item_done(counter(M,N), Msg, Goal_1, X)),
+  list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex).
+% A TODO item could not be processed; pushed to NOT-DONE.
+list_script(Goal_1, Msg, counter(M0,N), [X|Todo], Done, [X|NotDone], Mutex):-
+  M is M0 + 1,
+  print_message(warning, item_not_done(counter(M,N), Msg, Goal_1, X)),
+  list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex).
 
+
+
+
+
+% MESSAGES %
+
+:- multifile(prolog:message//1).
+
+prolog:message(item_done(Counter,Msg,Goal_1,Arg)) -->
+  item_processed(done, Counter, Msg, Goal_1, Arg).
+
+prolog:message(item_not_done(Counter,Msg,Goal_1,Arg)) -->
+  item_processed(not_done, Counter, Msg, Goal_1, Arg).
+
+prolog:message(items_done(L,N)) -->
+  items_processed(done, L, N).
+
+prolog:message(items_not_done(L,N)) -->
+  items_processed(not_done, L, N),
+  enumerate_items(L).
+
+counter(counter(M,N)) -->
+  ['[~D/~D]'-[M,N]].
+
+enumerate_item(X) -->
+  ['- ~w'-[X]].
+
+enumerate_items([]) --> [].
+enumerate_items([H|T]) -->
+  enumerate_item(H),
+  enumerate_items(T).
+
+goal(Goal, Args) -->
+  {Call =.. [Goal|Args]},
+  ['~w'-[Call]].
+
+item_processed(Mode, Counter, Msg, Goal_1, Arg) -->
+  mode(Mode),
+  space,
+  counter(Counter),
+  space,
+  message(Msg),
+  space,
+  goal(Goal_1, [Arg]).
+
+items_processed(Mode, L, N) -->
+  mode(Mode),
+  space,
+  progress_bar(L, N).
+
+message(Msg) --> [Msg].
+
+mode(done) --> ['[DONE]'].
+mode(not_done) --> ['[NOT-DONE]'].
+
+progress_bar(L, N) -->
+  {
+    length(L, M),
+    progress_bar(M, N, Bar)
+  },
+  [Bar].
+
+space --> [' '].
