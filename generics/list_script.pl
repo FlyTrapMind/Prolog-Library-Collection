@@ -117,12 +117,12 @@ list_script(Goal_1, Msg, counter(M0,N), [X|Todo], [X|Done], NotDone, Mutex):-
   ), !,
   M is M0 + 1,
   % Retrieve the current index, based on the previous index.
-  dcg_debug(list_script, item_done(counter(M,N), Msg, Goal_1, X)),
+  dcg_debug(list_script, item_done(counter(M,N), Msg)),
   list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex).
 % A TODO item could not be processed; pushed to NOT-DONE.
 list_script(Goal_1, Msg, counter(M0,N), [X|Todo], Done, [X|NotDone], Mutex):-
   M is M0 + 1,
-  dcg_debug(list_script, item_not_done(counter(M,N), Msg, Goal_1, X)),
+  dcg_debug(list_script, item_not_done(counter(M,N), Msg)),
   list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex).
 
 
@@ -147,24 +147,18 @@ enumerate_items([H|T]) -->
   enumerate_item(H),
   enumerate_items(T).
 
-goal(Goal, Args) -->
-  {Call =.. [Goal|Args]},
-  dcg_pl_term(Call).
+item_done(Counter, Msg) -->
+  item_processed(done, Counter, Msg).
 
-item_done(Counter, Msg, Goal_1, Arg) -->
-  item_processed(done, Counter, Msg, Goal_1, Arg).
+item_not_done(Counter, Msg) -->
+  item_processed(not_done, Counter, Msg).
 
-item_not_done(Counter, Msg, Goal_1, Arg) -->
-  item_processed(not_done, Counter, Msg, Goal_1, Arg).
-
-item_processed(Mode, Counter, Msg, Goal_1, Arg) -->
+item_processed(Mode, Counter, Msg) -->
   mode(Mode),
   " ",
   counter(Counter),
   " ",
-  message(Msg),
-  " ",
-  goal(Goal_1, [Arg]).
+  message(Msg).
 
 items_done(L, N) -->
   items_processed(done, L, N).
