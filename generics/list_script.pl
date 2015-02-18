@@ -160,6 +160,7 @@ item_processed(Mode, Counter, Msg) -->
   " ",
   message(Msg).
 
+items_done([], _) --> !, [].
 items_done(L, N) -->
   items_processed(done, L, N).
 
