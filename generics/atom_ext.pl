@@ -93,7 +93,7 @@ Titlecase atoms can be created using upcase_atom/2.
 
 @author Wouter Beek
 @version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04,
-         2014/08, 2014/10-2014/11
+         2014/08, 2014/10-2014/11, 2015/02
 */
 
 :- use_module(library(apply)).
@@ -101,6 +101,9 @@ Titlecase atoms can be created using upcase_atom/2.
 
 :- use_module(generics(char_ext)).
 :- use_module(generics(list_ext)).
+:- use_module(generics(typecheck)).
+
+
 
 
 
@@ -379,6 +382,7 @@ to_atom(Chars, Atom):-
   atom_chars(Atom, Chars).
 % Non-empty list of codes.
 to_atom(Codes, Atom):-
+  maplist(code, Codes), !,
   atom_codes(Atom, Codes).
 % Number.
 to_atom(Number, Atom):-
