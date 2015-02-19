@@ -569,15 +569,11 @@ prefix_path(PrefixPath, Path):-
 % @see relative_file_name/3 in library [[filesex]]
 %      only supports instantiation `(+,+,-)`.
 
-relative_file_path(Path0, RelativeTo0, RelativePath):-
-  maplist(term_to_path, [Path0,RelativeTo0], [Path,RelativeTo]), !,
+relative_file_path(Path, RelativeTo, RelativePath):-
+  maplist(ground, [Path,RelativeTo]), !,
   relative_file_name(Path, RelativeTo, RelativePath).
-relative_file_path(Path, RelativeTo0, RelativePath0):-
-  maplist(
-    term_to_path,
-    [RelativeTo0,RelativePath0],
-    [RelativeTo,RelativePath]
-  ), !,
+relative_file_path(Path, RelativeTo, RelativePath):-
+  maplist(ground, [RelativeTo,RelativePath]), !,
   directory_subdirectories(RelativePath, RelativePathSubs1),
   uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
   directory_subdirectories(RelativeTo, RelativeToSubs1),
@@ -633,21 +629,4 @@ spec_atomic_concat(Spec1, Atomic, Spec2):-
   Spec1 =.. [Outer,Inner1],
   spec_atomic_concat(Inner1, Atomic, Inner2),
   Spec2 =.. [Outer,Inner2].
-
-
-
-%! term_to_path(@Term, -Path:atom) is semidet.
-% Allow file paths to be specified in either one of the following ways:
-%   - As atom.
-%   - As wildcard expression to expand_file_name/2.
-%   - As compound term to absolute_file_name/3.
-%
-% Fails in any other way.
-
-term_to_path(Atom, Path):-
-  atom(Atom), !,
-  expand_file_name(Atom, [Path|_]).
-term_to_path(Spec, Path):-
-  nonvar(Spec),
-  absolute_file_name(Spec, Path, [file_errors(fail),file_type(directory)]).
 
