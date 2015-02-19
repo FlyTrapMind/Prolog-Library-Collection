@@ -23,7 +23,6 @@ Open a recursive data stream from files/URIs.
 @version 2014/03-2014/07, 2014/10-2014/12, 2015/02
 */
 
-:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(archive)).
 :- use_module(library(http/http_cookie)). % Redirection may require cookies.
@@ -193,22 +192,35 @@ open_input(file(File), Out, file{path:File}, true, Options1):-
   merge_options([type(binary)], Options1, Options2),
   open(File, read, Out, Options2).
 
-% A2. Stream: already opened.
+% A2. File pattern
+%     @see expand_file_name/2
+open_input(file_pattern(Wildcard), Out, Metadata, Close, Options):-
+  atom(Wildcard),
+  expand_file_name(Wildcard, Files),
+  Files \== [], !,
+  % NONDET: Backtracking over files.
+  member(File, Files),
+  open_input(File, Out, Metadata, Close, Options).
+
+% A3. File specification.
+open_input(file_spec(Spec), Out, Metadata, Close, Options):-
+  compound(Spec), !,
+  absolute_file_name(Spec, File, [access(read)]),
+  open_input(file(File), Out, Metadata, Close, Options).
+
+% A4. Stream: already opened.
 % @tbd Can we check for read access?
 open_input(stream(Out), Out, stream{stream:Out}, false, _):-
   is_stream(Out),
   stream_property(Out, input), !.
 
-% A3. URI Components: opens files and URLs.
+% A5. URI Components: opens files and URLs.
 % @compat Only supports URLs with schemes `http` or `https`.
-open_input(UriComponents, Out, Metadata, Close, Options1):-
-  Method = get,
-
-  UriComponents = uri_components(Scheme,Authority,_,_,_), !,
-
+open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
+  UriComponents = uri_components(Scheme,Authority,_,_,_),
   % Make sure the URL may be syntactically correct,
-  % haivng at least the requires `Scheme` and `Authority` components.
-  maplist(atom, [Scheme,Authority]),
+  % having at least the required `Scheme` and `Authority` components.
+  maplist(atom, [Scheme,Authority]), !,
 
   % If the URI scheme is `file` we must open a file.
   % Otherwise, a proper URL has to be opened.
@@ -232,7 +244,7 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
           header('Transfer-Encoding', _)
       ],
       merge_options(
-        [method(Method),status_code(StatusCode)|Headers1],
+        [method(get),status_code(StatusCode)|Headers1],
         Options1,
         Options2
       ),
@@ -259,30 +271,14 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
       Close = true
   ).
 
-% A4. URI: convert to URI components term.
+% A6. URI: convert to URI components term.
 open_input(uri(Url), Out, Metadata, Close, Options):- !,
   uri_components(Url, UriComponents),
   open_input(UriComponents, Out, Metadata, Close, Options).
 
-% A4'. URL: same as URI.
+% A6'. URL: same as URI.
 open_input(url(Url), Out, Metadata, Close, Options):- !,
   open_input(uri(Url), Out, Metadata, Close, Options).
-
-% A5. File pattern
-open_input(pattern(Pattern), Out, Metadata, Close, Options):-
-  atom(Pattern),
-  expand_file_name(Pattern, Files),
-  Files \== [],
-  Files \== [Pattern], !,
-  % Backtrack over files.
-  member(File, Files),
-  open_input(File, Out, Metadata, Close, Options).
-
-% A6. File specification.
-open_input(file_spec(Spec), Out, Metadata, Close, Options):-
-  compound(Spec), !,
-  absolute_file_name(Spec, File, [access(read)]),
-  open_input(file(File), Out, Metadata, Close, Options).
 
 
 % B. Stream
@@ -299,19 +295,17 @@ open_input(File, Out, Metadata, Close, Options):-
 % C2. URI
 open_input(Uri, Out, Metadata, Close, Options):-
   uri_components(Uri, UriComponents), !,
-  open_input(UriComponents, Out, Metadata, Close, Options).
+  open_input(uri_components(UriComponents), Out, Metadata, Close, Options).
 
 % C3. File specification
 open_input(Spec, Out, Metadata, Close, Options):-
-  absolute_file_name(Spec, File, [access(read),file_errors(fail)]), !,
-  open_input(file(File), Out, Metadata, Close, Options).
+  compound(Spec),
+  absolute_file_name(Spec, _, [access(read),file_errors(fail)]), !,
+  open_input(file_spec(Spec), Out, Metadata, Close, Options).
 
 % C4. File pattern
-open_input(Pattern, Out, Metadata, Close, Options):-
-  expand_file_name(Pattern, Files),
-  File \== [], !,
-  member(File, Files),
-  open_input(file(File), Out, Metadata, Close, Options).
+open_input(Wildcard, Out, Metadata, Close, Options):-
+  open_input(file_pattern(Wildcard), Out, Metadata, Close, Options).
 
 
 % D. Out of options...
