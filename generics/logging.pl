@@ -45,6 +45,8 @@ Logging infrastructure.
 :- multifile(prolog:debug_print_hook/3).
 
 prolog:debug_print_hook(Topic, Format, Args):-
+  format(user_output, Format, Args),
+  format(user_output, '\n', []),
   append_to_log(Topic, Format, Args).
 
 :- initialization(start_logging).
