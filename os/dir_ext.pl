@@ -286,7 +286,7 @@ directory_subdirectories(Dir, Subdirs):-
   atomic_list_concat(Subdirs0, '/', Dir),
   resolve_double_dots(Subdirs0, Subdirs).
 directory_subdirectories(Dir, Subdirs0):-
-	nonvar(Subdirs0), !,
+  nonvar(Subdirs0), !,
   resolve_double_dots(Subdirs0, Subdirs),
   atomic_list_concat(Subdirs, '/', Dir).
 directory_subdirectories(_, _):-
