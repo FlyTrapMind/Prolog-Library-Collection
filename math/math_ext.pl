@@ -8,6 +8,10 @@
     betwixt/3, % +Low:integer
                % +High:integer
                % ?Value:integer
+    betwixt/4, % +Low:integer
+               % +High:integer
+               % +Interval:integer
+               % ?Value:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
                             % -BinomialCoefficient:integer
@@ -85,7 +89,7 @@ Extra arithmetic operations for use in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05,
-         2014/10
+         2014/10, 2015/02
 */
 
 :- use_module(library(apply)).
@@ -96,6 +100,8 @@ Extra arithmetic operations for use in SWI-Prolog.
 :- use_module(math(float_ext)).
 :- use_module(math(int_ext)).
 :- use_module(math(rational_ext)).
+
+
 
 
 
@@ -122,6 +128,7 @@ average(Numbers, Average):-
   sum_list(Numbers, Sum),
   length(Numbers, NumberOfNumbers),
   Average is Sum / NumberOfNumbers.
+
 
 
 %! betwixt(+Low:integer, +High:integer, +Value:integer) is semidet.
@@ -176,6 +183,30 @@ betwixt_low(Low, Between1, High, Value):-
 
 betwixt_lower_bound(minf, _):- !.
 betwixt_lower_bound(Low, Low).
+
+
+
+%! betwixt(
+%!   +Low:integer,
+%!   +High:integer,
+%!   +Interval:integer,
+%!   +Value:integer
+%! ) is semidet.
+%! betwixt(
+%!   +Low:integer,
+%!   +High:integer,
+%!   +Interval:integer,
+%!   -Value:integer
+%! ) is nondet.
+
+betwixt(Low, _, _, Low).
+betwixt(Low0, High, Interval, Value):-
+  Low is Low0 + Interval,
+  (   High == inf
+  ->  true
+  ;   Low =< High
+  ),
+  betwixt(Low, High, Interval, Value).
 
 
 
