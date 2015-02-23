@@ -45,6 +45,8 @@ Logging infrastructure.
 :- multifile(prolog:debug_print_hook/3).
 
 prolog:debug_print_hook(Topic, Format, Args):-
+  format(user_output, Format, Args),
+  format(user_output, '\n', []),
   append_to_log(Topic, Format, Args).
 
 :- initialization(start_logging).
@@ -83,9 +85,11 @@ append_to_log0(Topic, Msg1):-
   codes_remove(Codes1, [10,13], Codes2),
   atom_codes(Msg2, Codes2),
   assert(log_entry(DateTime, Topic, Msg2)),
+  % The topic need not be atomic.
+  term_to_atom(Topic, TopicName),
   csv_write_stream(
     Stream,
-    [row(DateTime,Topic,Msg2)],
+    [row(DateTime,TopicName,Msg2)],
     [file_type(comma_separated_values)]
   ),
   flush_output(Stream).

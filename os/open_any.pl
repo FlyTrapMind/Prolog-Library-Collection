@@ -20,10 +20,9 @@ Open a recursive data stream from files/URIs.
 @author Wouter Beek
 @author Jan Wielemaker
 @tbd Only supports URI schemes `http` and `https`.
-@version 2014/03-2014/07, 2014/10-2014/12
+@version 2014/03-2014/07, 2014/10-2014/12, 2015/02
 */
 
-:- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(archive)).
 :- use_module(library(http/http_cookie)). % Redirection may require cookies.
@@ -66,55 +65,6 @@ ssl_verify(
 
 
 
-%! archive_content(
-%!   +Archive:archive,
-%!   -Entry:stream,
-%!   -PipeMetadata:list(dict),
-%!   +PipeTail:list
-%! ) is nondet.
-
-archive_content(
-  Archive,
-  Entry,
-  [EntryMetadata|PipeMetadataTail],
-  PipeMetadata2
-):-
-  archive_property(Archive, filter(Filters)),
-  repeat,
-  (   archive_next_header(Archive, EntryName)
-  ->  findall(
-        EntryProperty,
-        archive_header_property(Archive, EntryProperty),
-        EntryProperties0
-      ),
-      sort(
-        [filters(Filters),name(EntryName)|EntryProperties0],
-        EntryProperties
-      ),
-      dict_create(EntryMetadata, json, EntryProperties),
-      (   EntryMetadata.filetype == file
-      ->  archive_open_entry(Archive, Entry0),
-          (   EntryName == data,
-              EntryMetadata.format == raw
-          ->  PipeMetadataTail = PipeMetadata2,
-              Entry = Entry0
-          ;   PipeMetadataTail = PipeMetadata1,
-              open_substream(
-                Entry0,
-                Entry,
-                true,
-                PipeMetadata1,
-                PipeMetadata2
-              )
-          )
-      ;   fail
-      )
-  ;   % No more entries, so end repeat.
-      !,
-      fail
-  ).
-
-
 %! close_any(+Outstream, -Metadata:dict) is det.
 
 close_any(Out, Metadata):-
@@ -130,33 +80,29 @@ close_any(Out, Metadata):-
   byte_count(Out, Bytes),
   character_count(Out, Characters),
   line_count(Out, Lines),
-  dict_pairs(
-    Metadata,
-    json,
-    [
-      'bom-detected'-Bom,
-      'byte-count'-Bytes,
-      'character-count'-Characters,
-      encoding-Encoding,
-      'current-locale'-CurrentLocale,
-      'line-count'-Lines,
-      'newline-mode'-NewlineMode,
-      'stream-type'-Type
-    ]
-  ),
+  Metadata = stream{
+      'bom-detected':Bom,
+      'byte-count':Bytes,
+      'character-count':Characters,
+      encoding:Encoding,
+      'current-locale':CurrentLocale,
+      'line-count':Lines,
+      'newline-mode':NewlineMode,
+      'stream-type':Type
+  },
   close(Out).
 
 
 
-%! open_any(+Input, -In:stream, +Options:list(nvpair)) is nondet.
+%! open_any(+Input, -Substream:stream, +Options:list(nvpair)) is nondet.
 
-open_any(Input, In, Options):-
-  open_any(Input, In, _, Options).
+open_any(Input, Substream, Options):-
+  open_any(Input, Substream, _, Options).
 
 
 %! open_any(
 %!   +Input,
-%!   -In:stream,
+%!   -Substream:stream,
 %!   -Metadata:dict,
 %!   +Options:list(nvpair)
 %! ) is nondet.
@@ -215,38 +161,19 @@ open_any(Input, In, Options):-
 %
 % @arg  Options
 
-open_any(Input, In, Metadata, Options):-
-  open_input(Input, FileOut, Metadata0, Close, Options),
+open_any(Input, Substream, Metadata, Options):-
+  open_input(Input, Stream, Metadata0, Close, Options),
   Metadata = Metadata0.put(archive, ArchiveMetadata),
-  open_substream(FileOut, In, ArchiveMetadata, Close).
-
-
-%! open_substream(
-%!   +Stream:stream,
-%!   -Substream:stream,
-%!   -ArchiveMetadata:dict
-%! ) is nondet.
-% True when SubStream is a raw content stream for data in Stream
-% and Pipeline describes the location of SubStream in the substream tree.
-%
-% @arg  Pipeline is a list of applied filters and archive selection
-%       operations.
-%       List elements take the form:
-%
-%         - `archive(Member, Format)`
-%         - `filter(EntryName)`
-
-open_substream(In, Entry, ArchiveMetadata, Close):-
-  open_substream(In, Entry, Close, ArchiveMetadata, []).
-
-open_substream(In, Entry, Close, ArchiveMetadata, PipeTailMetadata):-
   setup_call_cleanup(
     archive_open(
-      stream(In),
+      stream(Stream),
       Archive,
       [close_parent(Close),format(all),format(raw)]
     ),
-    archive_content(Archive, Entry, ArchiveMetadata, PipeTailMetadata),
+    % True when Substream is a raw content stream for data in Substream
+    % and ArchiveMetadata describes the location of Substream
+    % in the substream tree.
+    archive_data_stream(Archive, Substream, [meta_data(ArchiveMetadata)]),
     archive_close(Archive)
   ).
 
@@ -265,22 +192,35 @@ open_input(file(File), Out, file{path:File}, true, Options1):-
   merge_options([type(binary)], Options1, Options2),
   open(File, read, Out, Options2).
 
-% A2. Stream: already opened.
+% A2. File pattern
+%     @see expand_file_name/2
+open_input(file_pattern(Wildcard), Out, Metadata, Close, Options):-
+  atom(Wildcard),
+  expand_file_name(Wildcard, Files),
+  Files \== [], !,
+  % NONDET: Backtracking over files.
+  member(File, Files),
+  open_input(File, Out, Metadata, Close, Options).
+
+% A3. File specification.
+open_input(file_spec(Spec), Out, Metadata, Close, Options):-
+  compound(Spec), !,
+  absolute_file_name(Spec, File, [access(read)]),
+  open_input(file(File), Out, Metadata, Close, Options).
+
+% A4. Stream: already opened.
 % @tbd Can we check for read access?
 open_input(stream(Out), Out, stream{stream:Out}, false, _):-
   is_stream(Out),
   stream_property(Out, input), !.
 
-% A3. URI Components: opens files and URLs.
+% A5. URI Components: opens files and URLs.
 % @compat Only supports URLs with schemes `http` or `https`.
-open_input(UriComponents, Out, Metadata, Close, Options1):-
-  Method = get,
-
-  UriComponents = uri_components(Scheme,Authority,_,_,_), !,
-
+open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
+  UriComponents = uri_components(Scheme,Authority,_,_,_),
   % Make sure the URL may be syntactically correct,
-  % haivng at least the requires `Scheme` and `Authority` components.
-  maplist(atom, [Scheme,Authority]),
+  % having at least the required `Scheme` and `Authority` components.
+  maplist(atom, [Scheme,Authority]), !,
 
   % If the URI scheme is `file` we must open a file.
   % Otherwise, a proper URL has to be opened.
@@ -304,60 +244,41 @@ open_input(UriComponents, Out, Metadata, Close, Options1):-
           header('Transfer-Encoding', _)
       ],
       merge_options(
-        [method(Method),status_code(StatusCode)|Headers1],
+        [method(get),status_code(StatusCode)|Headers1],
         Options1,
         Options2
       ),
       http_open(Uri, Out, Options2),
 
       % Exclude headers that did not occur in the HTTP response.
-      exclude(empty_header, Headers1, Headers2),
+      exclude(empty_http_header, Headers1, Headers2),
 
-      % Convert headers to JSON-compatible pairs.
-      maplist(header_json, Headers2, Headers3),
-
-      % HTTP status JSON object.
+      maplist(http_header_dict, Headers2, Headers3),
+      dict_pairs(HttpHeaders, 'http-headers', Headers3),
       http_header:status_number_fact(ReasonKey, StatusCode),
       phrase(http_header:status_comment(ReasonKey), ReasonPhrase0),
-      atom_codes(ReasonPhrase, ReasonPhrase0),
-      dict_pairs(
-        StatusDict,
-        json,
-        [code-StatusCode,'reason-phrase'-ReasonPhrase]
-      ),
-
-      % HTTP JSON object: status and headers.
-      dict_pairs(HttpMetadata, json, [status-StatusDict|Headers3]),
-
-      % HTTP response/request dictionary.
-      dict_pairs(Metadata, json, ['HTTP'-HttpMetadata,'URI'-Uri]),
+      string_codes(ReasonPhrase, ReasonPhrase0),
+      Metadata = meta_data{
+          'HTTP':'http-metadata'{
+              headers:HttpHeaders,
+              status:'http-status'{
+                  code:StatusCode,
+                  'reason-phrase':ReasonPhrase
+              }
+          },
+          'URI':Uri
+      },
       Close = true
   ).
 
-% A4. URI: convert to URI components term.
+% A6. URI: convert to URI components term.
 open_input(uri(Url), Out, Metadata, Close, Options):- !,
   uri_components(Url, UriComponents),
   open_input(UriComponents, Out, Metadata, Close, Options).
 
-% A4'. URL: same as URI.
+% A6'. URL: same as URI.
 open_input(url(Url), Out, Metadata, Close, Options):- !,
   open_input(uri(Url), Out, Metadata, Close, Options).
-
-% A5. File pattern
-open_input(pattern(Pattern), Out, Metadata, Close, Options):-
-  atom(Pattern),
-  expand_file_name(Pattern, Files),
-  Files \== [],
-  Files \== [Pattern], !,
-  % Backtrack over files.
-  member(File, Files),
-  open_input(File, Out, Metadata, Close, Options).
-
-% A6. File specification.
-open_input(file_spec(Spec), Out, Metadata, Close, Options):-
-  compound(Spec), !,
-  absolute_file_name(Spec, File, [access(read)]),
-  open_input(file(File), Out, Metadata, Close, Options).
 
 
 % B. Stream
@@ -374,19 +295,17 @@ open_input(File, Out, Metadata, Close, Options):-
 % C2. URI
 open_input(Uri, Out, Metadata, Close, Options):-
   uri_components(Uri, UriComponents), !,
-  open_input(UriComponents, Out, Metadata, Close, Options).
+  open_input(uri_components(UriComponents), Out, Metadata, Close, Options).
 
 % C3. File specification
 open_input(Spec, Out, Metadata, Close, Options):-
-  absolute_file_name(Spec, File, [access(read),file_errors(fail)]), !,
-  open_input(file(File), Out, Metadata, Close, Options).
+  compound(Spec),
+  absolute_file_name(Spec, _, [access(read),file_errors(fail)]), !,
+  open_input(file_spec(Spec), Out, Metadata, Close, Options).
 
 % C4. File pattern
-open_input(Pattern, Out, Metadata, Close, Options):-
-  expand_file_name(Pattern, Files),
-  File \== [], !,
-  member(File, Files),
-  open_input(file(File), Out, Metadata, Close, Options).
+open_input(Wildcard, Out, Metadata, Close, Options):-
+  open_input(file_pattern(Wildcard), Out, Metadata, Close, Options).
 
 
 % D. Out of options...
@@ -482,42 +401,41 @@ body_length(_, _, _, _, _).
 
 
 
-%! empty_header(+Header:compound) is semidet.
+%! empty_http_header(+Header:compound) is semidet.
 % Succeeds for HTTP headers with empty value.
 
-empty_header(header(_,'')).
+empty_http_header(header(_,'')).
 
 
 
-%! header_json(+Header:compound, -ConvertedHeader:pair) is det.
+%! http_header_dict(+Header:compound, -Header:pair) is det.
 % Converts a given HTTP header compound term to its JSON equivalent.
 
-header_json(header(Key,Value1), Key-Value2):-
-  header_value_json(Key, Value1, Value2).
+http_header_dict(header(Key,Value0), Key-Value):-
+  http_header_value_dict(Key, Value0, Value).
 
 
 
-%! header_value_json(+Key:atom, +Value:atom, -ConvertedValue) is det.
+%! http_header_value_dict(+Key:atom, +Value:atom, -Value:dict) is det.
 % Converts a given HTTP header value to its JSON equivalent.
 
-header_value_json('Content-Length', Atom, Number):- !,
+http_header_value_dict('Content-Length', Atom, Number):- !,
   atom_number(Atom, Number).
-header_value_json('Content-Type', Atom, Dict):- !,
+http_header_value_dict(
+  'Content-Type',
+  Atom,
+  'media-type'{type:Type, subtype:Subtype, parameters:ParameterDicts}
+):- !,
   atomic_list_concat([Type0|Parameters0], ';', Atom),
   maplist(media_type_parameter, Parameters0, Parameters),
   atomic_list_concat([Type,Subtype], '/', Type0),
-  maplist(json_pair, Parameters, ParameterDicts),
-  dict_pairs(
-    Dict,
-    json,
-    [parameters-ParameterDicts,subtype-Subtype,type-Type]
-  ).
-header_value_json(Key, Atom, Dict):-
+  maplist(json_pair, Parameters, ParameterDicts).
+http_header_value_dict(Key, Atom, Dict):-
   memberchk(Key, ['Date','Expires','Last-Modified']), !,
   parse_time(Atom, rfc_1123, Stamp),
   stamp_date_time(Stamp, DateTime, 'UTC'),
-  date_time_json(DateTime, Dict).
-header_value_json(_, Atom, Atom).
+  date_time_dict(DateTime, Dict).
+http_header_value_dict(_, Atom, Atom).
 
 
 

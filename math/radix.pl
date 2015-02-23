@@ -17,7 +17,7 @@
              % ?To:compound
     weights_binary/2, % ?Weights:list(between(0,15))
                       % ?Binary:nonneg
-    weights_decimal/2, % ?Weights:list(between(0,15))
+    weights_nonneg/2, % ?Weights:list(between(0,15))
                        % ?Decimal:nonneg
     weights_fraction/2, % +Weights:list(between(0,9))
                         % -Fraction:between(0.0,1.0)
@@ -192,35 +192,32 @@ weights_binary(Weights, Binary):-
 
 
 
-%! weights_decimal(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
-%! weights_decimal(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
+%! weights_nonneg(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
+%! weights_nonneg(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
 
-weights_decimal(Weights, Decimal):-
+weights_nonneg(Weights, Decimal):-
   weights_radix(Weights, dec(Decimal)).
 
 
 
-%! weights_fraction(
-%!   +Weights:list(between(0,9)),
-%!   -Fraction:between(0.0,1.0)
-%! ) is det.
+%! weights_fraction(+Weights:list(between(0,9)), -Fraction:compound) is det.
+%! weights_fraction(-Weights:list(between(0,9)), +Fraction:compound) is det.
 
-weights_fraction(Weights, Fraction):-
-  nonvar(Weights), !,
-  aggregate_all(
-    sum(N),
-    (
-      nth1(I, Weights, Weight),
-      N is Weight * 10 ** -(I)
-    ),
-    Fraction
+weights_fraction(Ws, F):-
+  (   ground(Ws)
+  ->  aggregate_all(
+        sum(N),
+        (
+          nth1(I, Ws, W),
+          N is W rdiv (10 * I)
+        ),
+        F
+      )
+  ;   ground(F)
+  ->  fractional_integer(F, I),
+      weights_nonneg(Ws, I)
+  ;   instantiation_error(_)
   ).
-weights_fraction(Weights, Fraction):-
-  nonvar(Fraction), !,
-  fractional_integer(Fraction, Integer),
-  weights_decimal(Weights, Integer).
-weights_fraction(_, _):-
-  instantiation_error(_).
 
 
 
@@ -240,39 +237,38 @@ weights_octal(Weights, Octal):-
 
 
 
-%! weights_radix(+Weights:between(0,15), -Number:compound) is det.
-%! weights_radix(-Weights:between(0,15), +Number:compound) is det.
+%! weights_radix(+Weights:list(between(0,15)), -Number:compound) is det.
+%! weights_radix(-Weights:list(between(0,15)), +Number:compound) is det.
 
 weights_radix(Weights, Number):-
-  nonvar(Weights), !,
-  Number =.. [Radix,Value],
-  % A special case occurs when there are no weights, mapped to zero.
-  (   Weights == []
-  ->  Value = 0
-  ;   maplist(char_weight, Chars, Weights),
-      (   Radix == hex
-      ->  atom_chars(Value, Chars)
-      ;   number_chars(Value, Chars)
+  (   ground(Number)
+  ->  Number =.. [_,Value],
+      % A special case occurs when there are no weights, mapped onto zero.
+      (   integer(Value),
+          Value =:= 0
+      ->  Weights = [0]
+      ;   atom_chars(Value, Chars),
+          maplist(char_weight, Chars, Weights)
       )
+  ;   ground(Weights)
+  ->  Number =.. [Radix,Value],
+      % A special case occurs when there are no weights, mapped to zero.
+      (   Weights == []
+      ->  Value = 0
+      ;   maplist(char_weight, Chars, Weights),
+          (   Radix == hex
+          ->  atom_chars(Value, Chars)
+          ;   number_chars(Value, Chars)
+          )
+      )
+  ;   instantiation_error(_)
   ).
-weights_radix(Weights, Number):-
-  nonvar(Number), !,
-  Number =.. [_,Value],
-  % A special case occurs when there are no weights, mapped onto zero.
-  (   integer(Value),
-      Value =:= 0
-  ->  Weights = []
-  ;   atom_chars(Value, Chars),
-      maplist(char_weight, Chars, Weights)
-  ).
-weights_radix(_, _):-
-  instantiation_error(_).
 
 
 
 
 
-% HELPERS
+% HELPERS %
 
 %! char_weight(+Char:char, -Weight:between(0,15)) is det.
 %! char_weight(-Char:char, +Weight:between(0,15)) is det.

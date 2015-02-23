@@ -32,7 +32,7 @@ Extensions for handling directories.
 
 @author Wouter Beek
 @version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04-2014/05, 2014/08,
-         2014/10
+         2014/10, 2015/02
 */
 
 :- use_module(library(apply)).
@@ -64,6 +64,8 @@ is_meta(order).
      order(+oneof([lexicographic])),
      recursive(+boolean)
    ]).
+
+
 
 
 
@@ -100,14 +102,15 @@ copy_directory(FromDir, ToDir, Options):-
 %
 % @see http://www.swi-prolog.org/pldoc/doc_for?object=absolute_file_name/3
 
+% Current directory: nothing to create.
+create_directory('.'):- !.
 % Not an absolute path.
 create_directory(Abs):-
   \+ is_absolute_file_name(Abs), !,
   domain_error(absolute_path, Abs).
 % Directory already exists.
 create_directory(Abs):-
-  exists_directory(Abs), !,
-  print_message(informational, already_exists(Abs)).
+  exists_directory(Abs), !.
 % Create directory.
 create_directory(Abs):-
   directory_subdirectories(Abs, Subdirs),
@@ -283,7 +286,7 @@ directory_subdirectories(Dir, Subdirs):-
   atomic_list_concat(Subdirs0, '/', Dir),
   resolve_double_dots(Subdirs0, Subdirs).
 directory_subdirectories(Dir, Subdirs0):-
-	nonvar(Subdirs0), !,
+  nonvar(Subdirs0), !,
   resolve_double_dots(Subdirs0, Subdirs),
   atomic_list_concat(Subdirs, '/', Dir).
 directory_subdirectories(_, _):-
@@ -321,6 +324,8 @@ run_in_working_directory(Goal, Dir1):-
 
 
 
+
+
 % HELPERS
 
 %! nonfile_entry(+Entry:atom) is semidet.
@@ -328,11 +333,3 @@ run_in_working_directory(Goal, Dir1):-
 nonfile_entry('.').
 nonfile_entry('..').
 
-
-
-% MESSAGES
-
-:- multifile(prolog:message//1).
-
-prolog:message(already_exists(Dir)) -->
-  ['Dir ',Dir,' already exists.'].

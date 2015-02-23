@@ -5,6 +5,8 @@
                                  % +Number:integer
                                  % -Abs:atom
                                  % +Options:list(nvpair)
+    buffer_size_file/2, % +File:atom
+                        % -BufferSize:nonneg
     common_prefix_path/3, % +Path1:atom
                           % +Path2:atom
                           % ?CommonPrefixPath:atom
@@ -129,7 +131,7 @@ In line with the terminology this modules uses the following variable names:
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/11
+         2014/08-2014/11, 2015/01-2015/02
 */
 
 :- use_module(library(apply)).
@@ -177,6 +179,17 @@ absolute_file_name_number(Spec, Number, Abs, Options):-
 
 
 
+%! buffer_size_file(+File:atom, -BufferSize:nonneg) is det.
+
+buffer_size_file(File, BufferSize):-
+  size_file(File, FileSize),
+  (   FileSize =:= 0
+  ->  BufferSize = 1024
+  ;   BufferSize is round(FileSize * log(FileSize))
+  ).
+
+
+
 %! common_prefix_path(
 %!   +Path1:atom,
 %!   +Path2:atom,
@@ -200,8 +213,7 @@ common_prefix_path(Path1, Path2, CommonPrefixPath):-
 %! create_file(+Abs:atom) is det.
 
 create_file(Abs):-
-  exists_file(Abs), !,
-  print_message(informational, already_exists(Abs)).
+  exists_file(Abs), !.
 create_file(Abs):-
   is_absolute_file_name(Abs), !,
   touch_file(Abs).
@@ -475,6 +487,11 @@ local_file_components(_, _, _):-
 
 
 %! mv2(+From:atom, +To:atom) is det.
+% Since this implementation uses copying, not moving, it is much slower
+% than gnu_mv/2.
+% However, that predicate depends on the availability of GNU mv (Linux).
+% mv2/2 is not subject to the fallacious brace expansion of the built-in
+% mv/2.
 
 mv2(From, To):-
   copy_file(From, To),
@@ -549,20 +566,14 @@ prefix_path(PrefixPath, Path):-
 %
 % Resolves potential occurrences of `..` in any of the arguments.
 %
-% Supports
-%
 % @see relative_file_name/3 in library [[filesex]]
 %      only supports instantiation `(+,+,-)`.
 
-relative_file_path(Path0, RelativeTo0, RelativePath):-
-  maplist(term_to_path, [Path0,RelativeTo0], [Path,RelativeTo]), !,
+relative_file_path(Path, RelativeTo, RelativePath):-
+  maplist(ground, [Path,RelativeTo]), !,
   relative_file_name(Path, RelativeTo, RelativePath).
-relative_file_path(Path, RelativeTo0, RelativePath0):-
-  maplist(
-    term_to_path,
-    [RelativeTo0,RelativePath0],
-    [RelativeTo,RelativePath]
-  ), !,
+relative_file_path(Path, RelativeTo, RelativePath):-
+  maplist(ground, [RelativeTo,RelativePath]), !,
   directory_subdirectories(RelativePath, RelativePathSubs1),
   uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
   directory_subdirectories(RelativeTo, RelativeToSubs1),
@@ -619,28 +630,3 @@ spec_atomic_concat(Spec1, Atomic, Spec2):-
   spec_atomic_concat(Inner1, Atomic, Inner2),
   Spec2 =.. [Outer,Inner2].
 
-
-
-%! term_to_path(@Term, -Path:atom) is semidet.
-% Allow file paths to be specified in either one of the following ways:
-%   - As atom.
-%   - As wildcard expression to expand_file_name/2.
-%   - As compound term to absolute_file_name/3.
-%
-% Fails in any other way.
-
-term_to_path(Atom, Path):-
-  atom(Atom), !,
-  expand_file_name(Atom, [Path|_]).
-term_to_path(Spec, Path):-
-  nonvar(Spec),
-  absolute_file_name(Spec, Path, [file_errors(fail),file_type(directory)]).
-
-
-
-% MESSAGES
-
-:- multifile(prolog:message//1).
-
-prolog:message(already_exists(File)) -->
-  ['File ',File,' already exists.'].

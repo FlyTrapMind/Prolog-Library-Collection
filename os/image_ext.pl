@@ -14,14 +14,17 @@
 Support for image files.
 
 @author Wouter Beek
-@version 2014/03, 2014/05-2014/06
+@version 2014/03, 2014/05-2014/06, 2015/02
 */
 
-:- use_module(library(dcg/basics)).
+:- use_module(library(dcg/basics), except([atom//1])).
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
 :- use_module(generics(db_ext)).
+
+:- use_module(plDcg(dcg_atom)).
+:- use_module(plDcg(dcg_generics)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
@@ -33,6 +36,8 @@ Support for image files.
 :- db_add_novel(user:prolog_file_type(jpg, image)).
 :- db_add_novel(user:prolog_file_type(png, png)).
 :- db_add_novel(user:prolog_file_type(png, image)).
+
+
 
 
 
@@ -53,10 +58,13 @@ image_dimensions(File, Width, Height):-
 
 image_dimensions(File, Width, Height) -->
   atom(File),
-  " JPEG ",
+  " ",
+  atom(_FileType),
+  " ",
   integer(Width),
   "x",
-  integer(Height).
+  integer(Height),
+  dcg_done.
 
 
 %! image_file(+File:atom) is semidet.

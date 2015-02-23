@@ -16,6 +16,13 @@
                % :Context
                % +Arguments:list
 
+% IDLE
+    true/1,
+    true/2,
+    true/3,
+    true/4,
+    true/5,
+
 % MAPLIST RELATED PREDICATES
     app_list/3, % +Preds:list
                 % +Args:list
@@ -169,6 +176,17 @@ generic(P1, Context, Args):-
     current_predicate(M:P2/Arity),
     apply(M:P2, Args)
   ).
+
+
+
+% IDLE %
+
+true(_).
+true(_,_).
+true(_,_,_).
+true(_,_,_,_).
+true(_,_,_,_,_).
+
 
 
 
