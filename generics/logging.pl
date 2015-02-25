@@ -26,11 +26,11 @@ Logging infrastructure.
 :- use_module(library(ansi_term)). % Used in markup.
 :- use_module(library(debug)).
 
-:- use_module(generics(code_ext)).
-:- use_module(generics(db_ext)).
-:- use_module(os(datetime_ext)).
-:- use_module(os(dir_ext)).
-:- use_module(os(file_ext)).
+:- use_module(plc(generics/code_ext)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(os/datetime_ext)).
+:- use_module(plc(os/dir_ext)).
+:- use_module(plc(os/file_ext)).
 
 :- dynamic(logging:current_log_file/1).
 :- dynamic(logging:current_log_stream/1).

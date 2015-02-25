@@ -33,7 +33,7 @@ Predicates that extend the swipl builtin I/O predicates operating on streams.
 :- use_module(library(memfile)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(code_ext)).
+:- use_module(plc(generics/code_ext)).
 
 
 

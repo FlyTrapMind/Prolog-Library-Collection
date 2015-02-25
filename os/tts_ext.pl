@@ -15,7 +15,7 @@ Text-to-speech predicates.
 
 :- use_module(library(process)).
 
-:- use_module(os(os_ext)).
+:- use_module(plc(os/os_ext)).
 
 :- dynamic(user:module_uses/2).
 :- multifile(user:module_uses/2).

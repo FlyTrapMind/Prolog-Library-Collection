@@ -30,10 +30,10 @@ Predicates for running external programs.
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(error_ext)).
-:- use_module(generics(print_ext)).
-:- use_module(os(ansi_ext)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(generics/error_ext)).
+:- use_module(plc(generics/print_ext)).
+:- use_module(plc(os/ansi_ext)).
 
 % This is used to kill the processes that are still running
 % when SWI-Prolog halts.

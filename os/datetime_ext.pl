@@ -28,8 +28,10 @@ Extensions for date and time.
 @version 2013/06-2013/07, 2013/11, 2014/10, 2015/02
 */
 
-:- use_module(generics(meta_ext)).
-:- use_module(os(dir_ext)).
+:- use_module(plc(generics/meta_ext)).
+:- use_module(plc(os/dir_ext)).
+
+
 
 
 

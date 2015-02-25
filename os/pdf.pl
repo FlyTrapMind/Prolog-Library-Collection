@@ -13,8 +13,8 @@ Support for PDF files.
 @version 2014/05, 2014/07
 */
 
-:- use_module(os(os_ext)).
-:- use_module(os(run_ext)).
+:- use_module(plc(os/os_ext)).
+:- use_module(plc(os/run_ext)).
 
 :- dynamic(user:file_type_program/2).
 :- multifile(user:file_type_program/2).

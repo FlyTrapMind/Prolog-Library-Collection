@@ -82,49 +82,49 @@ I am not aware of a standardized vocabulary about files
 Here is my ad-hoc attempt:
 
 Concepts:
-  * **File**
-  * **Directory**
-  * **File link**
+  - **File**
+  - **Directory**
+  - **File link**
 
 Terms:
-  * **Abs path**
+  - **Abs path**
     A path whose first character is a root character.
-  * **Base file name**
+  - **Base file name**
     An atom.
-  * **Directory name**
+  - **Directory name**
     A file name that is a sequence of atoms separated by directory separators.
     Every prefix of a directory name that ends at a directory separator
     denoted a directory.
-  * **File extension**
+  - **File extension**
     An atom.
-  * **Local file name**
+  - **Local file name**
     A local file name is
     (1) a base file name that is optionally followed by
     (2a) the file extension separator and (2b) a file extension.
-  * **Path**
+  - **Path**
     A file name that consists of
     (1) directories separated by directory separators
     and an optional (2) local file name
     If a local file name is present the path denotes a file.
     If no local file name is present the path denotes a directory.
-  * **Relative path**
+  - **Relative path**
     A path whose first character is not a root character.
 
 ## Variable names
 
 In line with the terminology this modules uses the following variable names:
-  * `Abs` to denote absolute paths.
-  * `Base` to denote base file names.
-  * `Dir` to denote directory names.
-  * `Ext` to denote file extensions.
-  * `FileKind` to denote either a registered file type or a file extension
+  - `Abs` to denote absolute paths.
+  - `Base` to denote base file names.
+  - `Dir` to denote directory names.
+  - `Ext` to denote file extensions.
+  - `FileKind` to denote either a registered file type or a file extension
      (in that order).
-  * `FileType` to denote a registered file type mapped onto
+  - `FileType` to denote a registered file type mapped onto
      at least one file extension.
-  * `Local` to denote local file names.
-  * `Path` to denote paths.
-  * `Rel` to denote relative paths.
-  * `Spec` for file specifications (i.e., compound terms)
+  - `Local` to denote local file names.
+  - `Path` to denote paths.
+  - `Rel` to denote relative paths.
+  - `Spec` for file specifications (i.e., compound terms)
      handled by absolute_file_name/[2,3].
 
 ---
@@ -139,15 +139,15 @@ In line with the terminology this modules uses the following variable names:
 :- use_module(library(filesex)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(error_ext)).
-:- use_module(generics(list_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(math(math_ext)).
-:- use_module(os(dir_ext)).
-:- use_module(os(file_gnu)).
-:- use_module(os(os_ext)).
-:- use_module(pl(pl_mode)).
+:- use_module(plc(generics/atom_ext)).
+:- use_module(plc(generics/error_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(generics/meta_ext)).
+:- use_module(plc(math/math_ext)).
+:- use_module(plc(os/dir_ext)).
+:- use_module(plc(os/file_gnu)).
+:- use_module(plc(os/os_ext)).
+:- use_module(plc(prolog/pl_mode)).
 
 :- predicate_options(absolute_file_name_number/4, 4, [
      pass_to(absolute_file_name/3, 3)

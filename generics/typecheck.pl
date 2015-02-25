@@ -81,8 +81,8 @@ Predicates used for parsing and checking value-type conformance.
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(uri)).
 
-:- use_module(generics(boolean_ext)).
-:- use_module(generics(char_ext)).
+:- use_module(plc(generics/boolean_ext)).
+:- use_module(plc(generics/char_ext)).
 
 :- multifile(error:has_type/2).
 

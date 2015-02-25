@@ -99,9 +99,9 @@ Titlecase atoms can be created using upcase_atom/2.
 :- use_module(library(apply)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(char_ext)).
-:- use_module(generics(list_ext)).
-:- use_module(generics(typecheck)).
+:- use_module(plc(generics/char_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(generics/typecheck)).
 
 
 

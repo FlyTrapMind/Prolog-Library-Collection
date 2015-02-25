@@ -68,7 +68,7 @@ Support predicates for working with pairs.
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
 
-:- use_module(generics(list_ext)).
+:- use_module(plc(generics/list_ext)).
 
 % Used for loading pairs from file.
 :- dynamic(pair/2).

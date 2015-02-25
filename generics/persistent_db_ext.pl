@@ -16,13 +16,15 @@ Additional support for persistent databases in Prolog.
 
 :- use_module(library(persistency)).
 
-:- use_module(generics(db_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(file_gnu)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(os/file_ext)).
+:- use_module(plc(os/file_gnu)).
 
 :- db_add_novel(user:prolog_file_type(db, database)).
 
 :- meta_predicate(persistent_db_init(+,1)).
+
+
 
 
 

@@ -43,12 +43,12 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(semweb/rdf_db), except([rdf_node/1])).
 :- use_module(library(zlib)).
 
-:- use_module(generics(db_ext)).
-:- use_module(generics(meta_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(os(dir_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(io_ext)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(generics/meta_ext)).
+:- use_module(plc(generics/typecheck)).
+:- use_module(plc(os/dir_ext)).
+:- use_module(plc(os/file_ext)).
+:- use_module(plc(os/io_ext)).
 
 :- thread_local(entry_property/2).
 

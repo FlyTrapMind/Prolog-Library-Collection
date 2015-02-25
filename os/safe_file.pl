@@ -24,9 +24,11 @@ to a trashcan instead of being permanently deleted.
 :- use_module(library(debug)).
 :- use_module(library(filesex)).
 
-:- use_module(os(dir_ext)).
-:- use_module(os(dir_infra)).
-:- use_module(os(file_ext)).
+:- use_module(plc(os/dir_ext)).
+:- use_module(plc(os/dir_infra)).
+:- use_module(plc(os/file_ext)).
+
+
 
 
 

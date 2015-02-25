@@ -40,10 +40,10 @@ Extensions for handling directories.
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 
-:- use_module(generics(lambda_meta)).
-:- use_module(os(file_ext)).
-:- use_module(os(safe_file)).
-:- use_module(pl(pl_control)).
+:- use_module(plc(generics/lambda_meta)).
+:- use_module(plc(os/file_ext)).
+:- use_module(plc(os/safe_file)).
+:- use_module(plc(prolog/pl_control)).
 
 :- meta_predicate(directory_files(+,-,:)).
 :- meta_predicate(run_in_working_directory(0,+)).

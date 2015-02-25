@@ -26,7 +26,9 @@ Support for files residing on remote machines.
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 
-:- use_module(os(dir_ext)).
+:- use_module(plc(os/dir_ext)).
+
+
 
 
 

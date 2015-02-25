@@ -25,7 +25,7 @@ Interface to GNU tools for file-processing.
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
-:- use_module(os(run_ext)).
+:- use_module(plc(os/run_ext)).
 
 
 

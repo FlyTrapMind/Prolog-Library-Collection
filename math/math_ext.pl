@@ -96,10 +96,10 @@ Extra arithmetic operations for use in SWI-Prolog.
 :- use_module(library(error)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(typecheck)).
-:- use_module(math(float_ext)).
-:- use_module(math(int_ext)).
-:- use_module(math(rational_ext)).
+:- use_module(plc(generics/typecheck)).
+:- use_module(plc(math/float_ext)).
+:- use_module(plc(math/int_ext)).
+:- use_module(plc(math/rational_ext)).
 
 
 

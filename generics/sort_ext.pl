@@ -28,8 +28,8 @@ Extensions for sorting lists.
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 
-:- use_module(os(cli_ext)).
-:- use_module(os(run_ext)).
+:- use_module(plc(os/cli_ext)).
+:- use_module(plc(os/run_ext)).
 
 :- meta_predicate(merge_with_duplicates(3,+,+,-)).
 :- meta_predicate(merge_with_duplicates(+,3,+,+,+,+,-)).

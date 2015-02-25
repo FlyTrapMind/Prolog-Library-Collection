@@ -69,7 +69,7 @@ currently not checked. Violations may lead to unexpected bindings.
 In the following example the parentheses around X>3 are necessary.
 
 ==
-?- use_module(generics(lambda_meta)).
+?- use_module(plc(generics/lambda_meta)).
 ?- use_module(library(apply)).
 
 ?- maplist(\X^(X>3),[4,5,9]).

@@ -18,12 +18,12 @@ Predicates for handling LaTeX files.
 
 :- use_module(library(apply)).
 
-:- use_module(generics(db_ext)).
-:- use_module(os(dir_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(run_ext)).
-:- use_module(os(safe_file)).
-:- use_module(pl(pl_control)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(os/dir_ext)).
+:- use_module(plc(os/file_ext)).
+:- use_module(plc(os/run_ext)).
+:- use_module(plc(os/safe_file)).
+:- use_module(plc(prolog/pl_control)).
 
 :- db_add_novel(user:prolog_file_type(aux, aux      )).
 :- db_add_novel(user:prolog_file_type(aux, latex_out)).
@@ -34,6 +34,8 @@ Predicates for handling LaTeX files.
 :- db_add_novel(user:prolog_file_type(pdf, latex_out)).
 :- db_add_novel(user:prolog_file_type(tex, tex      )).
 :- db_add_novel(user:prolog_file_type(tex, latex_in )).
+
+
 
 
 

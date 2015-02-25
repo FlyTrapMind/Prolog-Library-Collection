@@ -43,13 +43,14 @@ Allows one to monitor running threads that register.
 @version 2013/03, 2013/09, 2014/03-2014/04, 2014/12
 */
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(list_ext)).
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(lists), except([delete/3,subset/2])).
-:- use_module(pl(pl_control)).
+
+:- use_module(plc(generics/atom_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(prolog/pl_control)).
 
 :- meta_predicate(forall_thread(0,0,+,+)).
 :- meta_predicate(intermittent_goal(0,0,+)).

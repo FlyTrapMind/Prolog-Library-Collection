@@ -73,7 +73,7 @@ Stripping codes lists is simply done using append,
 :- use_module(library(apply)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(code_ext)).
+:- use_module(plc(generics/code_ext)).
 
 :- meta_predicate(atomic_codes_goal(2,?,?)).
 

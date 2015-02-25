@@ -33,9 +33,9 @@ Open a recursive data stream from files/URIs.
 :- use_module(library(option)).
 :- use_module(library(uri)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(pair_ext)).
-:- use_module(os(datetime_ext)).
+:- use_module(plc(generics/atom_ext)).
+:- use_module(plc(generics/pair_ext)).
+:- use_module(plc(os/datetime_ext)).
 
 :- predicate_options(open_any/3, 3, [
      pass_to(open_any/4, 4)

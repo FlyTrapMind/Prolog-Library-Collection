@@ -33,7 +33,9 @@ E.g., [2] i.o. [1]:
 @version 2014/10
 */
 
-:- use_module(generics(op_ext)).
+:- use_module(plc(generics/op_ext)).
+
+
 
 
 

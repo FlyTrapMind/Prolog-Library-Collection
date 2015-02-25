@@ -22,7 +22,7 @@ Also keeps track of items that could not be processed.
 :- use_module(library(ordsets)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(atom_ext)).
+:- use_module(plc(generics/atom_ext)).
 
 :- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_bracket)).

@@ -20,7 +20,7 @@ Support for name-value pairs.
 
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(pl(pl_mode)).
+:- use_module(plc(prolog/pl_mode)).
 
 
 

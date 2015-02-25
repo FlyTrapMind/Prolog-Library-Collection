@@ -13,8 +13,10 @@ We assume a one-to-one mapping between mode lines an clause heads.
 
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(pl(pl_determinism)).
-:- use_module(pl(pl_typecheck)).
+:- use_module(plc(prolog/pl_determinism)).
+:- use_module(plc(prolog/pl_typecheck)).
+
+
 
 
 

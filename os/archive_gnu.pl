@@ -30,9 +30,9 @@ These predicates call GNU tools:
 :- use_module(library(filesex)).
 :- use_module(library(process)).
 
-:- use_module(generics(db_ext)).
-:- use_module(os(dir_ext)).
-:- use_module(os(file_ext)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(os/dir_ext)).
+:- use_module(plc(os/file_ext)).
 
 % application/x-bzip2
 % .bz,.bz2,.tbz,.tbz2

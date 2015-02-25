@@ -21,7 +21,7 @@ Support for image files.
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(db_ext)).
+:- use_module(plc(generics/db_ext)).
 
 :- use_module(plDcg(dcg_atom)).
 :- use_module(plDcg(dcg_generics)).

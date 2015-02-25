@@ -22,7 +22,7 @@
 @version 2013/08, 2015/01
 */
 
-:- use_module(math(radix)).
+:- use_module(plc(math/radix)).
 
 
 

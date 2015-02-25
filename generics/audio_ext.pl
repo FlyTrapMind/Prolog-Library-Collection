@@ -18,7 +18,7 @@ In the furture services like Google translate
 @author Wouter Beek
 @tbd Catch Unicode characters.
 @tbd Do not fail on empty line.
-@version 2012/10, 2014/01-2014/02, 2014/05
+@version 2012/10, 2014/01-2014/02, 2014/05, 2015/02
 */
 
 :- use_module(library(apply)).
@@ -26,9 +26,9 @@ In the furture services like Google translate
 :- use_module(library(http/http_open)).
 :- use_module(library(uri)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(db_ext)).
-:- use_module(os(file_ext)).
+:- use_module(plc(generics/atom_ext)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(os/file_ext)).
 
 :- use_module(plDcg(dcg_generics)).
 :- use_module(plDcg(dcg_replace)).
@@ -37,13 +37,7 @@ In the furture services like Google translate
 
 :- initialization(init_audio).
 
-init_audio:-
-  user:file_search_path(audio, _), !.
-init_audio:-
-  absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
-  directory_file_path(DataDir, audio, AudioDir),
-  make_directory_path(AudioDir),
-  assert(user:file_search_path(audio, data(audio))).
+
 
 
 
@@ -102,6 +96,8 @@ google_tts(Enc, Lang, Line1, URI):-
 
 
 
+
+
 % TEST %
 
 test('One art', 'The art of losing isn\'t hard to master;').
@@ -154,3 +150,16 @@ test:-
   % Do it.
   lines_to_mp3(Lines, MP3).
 
+
+
+
+
+% INITIALIZATION %
+
+init_audio:-
+  user:file_search_path(audio, _), !.
+init_audio:-
+  absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
+  directory_file_path(DataDir, audio, AudioDir),
+  make_directory_path(AudioDir),
+  assert(user:file_search_path(audio, data(audio))).

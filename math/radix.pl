@@ -43,10 +43,10 @@ positional notations of different radix.
 :- use_module(library(apply)).
 :- use_module(library(error)).
 
-:- use_module(generics(char_ext)).
-:- use_module(generics(list_ext)).
-:- use_module(generics(typecheck)).
-:- use_module(math(math_ext)).
+:- use_module(plc(generics/char_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(generics/typecheck)).
+:- use_module(plc(math/math_ext)).
 
 :- multifile(error:has_type/2).
 error:has_type(hex, Value):-
