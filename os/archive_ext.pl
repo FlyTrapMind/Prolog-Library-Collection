@@ -31,7 +31,7 @@ Extensions to SWI-Prolog's library archive.
 
 @author Wouter Beek
 @tbd Remove dependency of plTree.
-@version 2014/04, 2014/06-2014/08, 2014/10
+@version 2014/04, 2014/06-2014/08, 2014/10, 2015/02
 */
 
 :- use_module(library(archive)).
@@ -40,7 +40,7 @@ Extensions to SWI-Prolog's library archive.
 :- use_module(library(http/http_open)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(pairs)).
-:- use_module(library(semweb/rdf_db), [rdf_atom_md5/3]).
+:- use_module(library(semweb/rdf_db), except([rdf_node/1])).
 :- use_module(library(zlib)).
 
 :- use_module(generics(db_ext)).
