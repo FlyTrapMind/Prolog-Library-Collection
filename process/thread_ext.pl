@@ -40,7 +40,7 @@
 Allows one to monitor running threads that register.
 
 @author Wouter Beek
-@version 2013/03, 2013/09, 2014/03-2014/04, 2014/12
+@version 2013/03, 2013/09, 2014/03-2014/04, 2014/12, 2015/02
 */
 
 :- use_module(library(aggregate)).
@@ -50,6 +50,7 @@ Allows one to monitor running threads that register.
 
 :- use_module(plc(generics/atom_ext)).
 :- use_module(plc(generics/list_ext)).
+:- use_module(plc(process/progress)).
 :- use_module(plc(prolog/pl_control)).
 
 :- meta_predicate(forall_thread(0,0,+,+)).
