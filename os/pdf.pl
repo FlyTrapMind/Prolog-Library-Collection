@@ -14,7 +14,7 @@ Support for PDF files.
 */
 
 :- use_module(plc(os/os_ext)).
-:- use_module(plc(os/run_ext)).
+:- use_module(plc(process/run_ext)).
 
 :- dynamic(user:file_type_program/2).
 :- multifile(user:file_type_program/2).

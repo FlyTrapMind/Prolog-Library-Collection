@@ -27,7 +27,7 @@
 
 :- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(plc(generics/thread_ext)).
+:- use_module(plc(process/thread_ext)).
 
 
 

@@ -1,9 +1,9 @@
 :- module(
   progress,
   [
-    progress_bar/3, % +Current:number
-                    % +End:number
-                    % -ProgressBar:atom
+    progress_bar/3 % +Current:number
+                   % +End:number
+                   % -ProgressBar:atom
   ]
 ).
 
@@ -14,6 +14,8 @@ Tools for tracking the progress of (parallelized) batch processing.
 @author Wouter Beek
 @version 2015/02
 */
+
+:- use_module(plc(generics/atom_ext)).
 
 
 
@@ -28,12 +30,12 @@ Tools for tracking the progress of (parallelized) batch processing.
 % @arg ProgressBar The atomic representation of a progress bar.
 
 progress_bar(End, End, ProgressBar2):- !,
-  progress_bar_(End, End, ProgressBar1),
+  progress_bar0(End, End, ProgressBar1),
   format(atom(ProgressBar2), '~w [done]', [ProgressBar1]).
 progress_bar(Current, End, ProgressBar):-
-  progress_bar_(Current, End, ProgressBar).
+  progress_bar0(Current, End, ProgressBar).
 
-progress_bar_(Current1, End, ProgressBar):-
+progress_bar0(Current1, End, ProgressBar):-
   (   End =:= 0
   ->  Percentage = 100
   ;   Percentage is round(Current1 / End * 100)

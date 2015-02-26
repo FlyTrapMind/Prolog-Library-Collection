@@ -2,7 +2,7 @@
   dcg_bracket,
   [
     bracketed//1, % :Dcg
-    bracketed//2 % +Type:oneof([angular,curly,round,square])
+    bracketed//2 % +Type:oneof([angular,curly,langular,round,square])
                  % :Dcg
   ]
 ).
@@ -12,28 +12,30 @@
 Grammar for processing bracketed phrases.
 
 @author Wouter Beek
-@version 2014/11
+@version 2014/11-2014/12
 */
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generics)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_unicode)).
 
 :- meta_predicate(bracketed(//,?,?)).
 :- meta_predicate(bracketed(+,//,?,?)).
 
 
 
+
+
 %! bracketed(:Dcg)// .
-%! bracketed(+Type:oneof([angular,curly,round,square]), :Dcg)// .
+%! bracketed(+Type:oneof([angular,curly,langular,round,square]), :Dcg)// .
 
 bracketed(Dcg) -->
   bracketed(round, Dcg).
 
 bracketed(Type, Dcg) -->
   dcg_between(
-    opening_bracket(_, Type),
+    opening_bracket(Type, _),
     Dcg,
-    closing_bracket(_, Type)
+    closing_bracket(Type, _)
   ),
-  % Remove choicepoints for brackets of other types in [dcg_ascii].
+  % Remove choicepoints for brackets of other types in dcg_ascii.pl.
   !.

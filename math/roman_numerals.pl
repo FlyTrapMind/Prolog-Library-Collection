@@ -14,8 +14,8 @@
 
 :- use_module(library(option)).
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_char)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_char)).
 
 :- predicate_options(roman_digit/2, 2, [
      case(+oneof([lower,upper])),

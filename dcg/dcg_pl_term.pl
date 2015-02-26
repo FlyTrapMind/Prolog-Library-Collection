@@ -16,14 +16,16 @@ DCG rules for printing SWI-Prolog 7 terms.
 @version 2014/10-2014/11
 */
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(dcg_entries(4,+,+,?,?)).
+
+
 
 
 
@@ -39,7 +41,7 @@ dcg_pl_term(Dict, I1) -->
   {is_dict(Dict), dict_pairs(Dict, _, Pairs)}, !,
   % The empty dictionary does not use lusious spacing.
   (   {Pairs == []}
-  ->  indent(I1, bracketed(curly, void))
+  ->  indent(I1, bracketed(curly, dcg_void))
   ;   indent(I1, opening_curly_bracket),
       nl,
       {I2 is I1 + 1},
@@ -51,7 +53,7 @@ dcg_pl_term(Dict, I1) -->
 dcg_pl_term(List, I1) -->
   {is_list(List)}, !,
   (   {List == []}
-  ->  indent(I1, bracketed(square, void))
+  ->  indent(I1, bracketed(square, dcg_void))
   ;   indent(I1, opening_square_bracket),
       nl,
       {I2 is I1 + 1},

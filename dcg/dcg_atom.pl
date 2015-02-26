@@ -2,6 +2,7 @@
   dcg_atom,
   [
     atom//1, % ?Atom:atom
+    atom_capitalize//0,
     atom_ci//1, % ?Atom:atom
     atom_ellipsis//2, % +Atom:atom
                       % +Ellipsis:positive_integer
@@ -16,25 +17,36 @@
 Grammar rules for processing atoms.
 
 @author Wouter Beek
-@version 2014/11
+@version 2014/11-2014/12
 */
 
-:- use_module(generics(atom_ext)).
-:- use_module(generics(code_ext)). % Meta-option.
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_code)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_unicode)).
+:- use_module(plc(generics/atom_ext)).
 
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_code)).
+
 
 
 
 %! atom(?Atom:atom)// .
 
-atom(Atom, Head, Tail):-
-  atom(Atom), !,
-  format(codes(Head,Tail), '~w', [Atom]).
 atom(Atom) -->
+  {var(Atom)}, !,
   '*'(code, Atom, [convert1(codes_atom)]).
+atom(Atom, Head, Tail):-
+  format(codes(Head,Tail), '~a', [Atom]).
+
+
+
+%! atom_capitalize// .
+
+atom_capitalize, [Upper] -->
+  [Lower],
+  {code_type(Upper, to_upper(Lower))}, !,
+  dcg_copy.
+atom_capitalize --> "".
 
 
 

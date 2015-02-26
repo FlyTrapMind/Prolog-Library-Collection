@@ -1,14 +1,13 @@
 :- module(
   dcg_content,
   [
-    capitalize//0,
+    '...'//0,
     indent//0,
     indent//1, % +Indent:nonneg
     indent//2, % +Indent:nonneg
                % :Dcg
     nl//0,
-    pl_term//1, % +PrologTerm
-    void//0
+    pl_term//1 % +PrologTerm
   ]
 ).
 :- reexport(
@@ -30,20 +29,20 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/05, 2014/10
+@version 2013/07-2013/09, 2013/11-2014/05, 2014/10, 2014/12
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(settings)).
 
-:- use_module(generics(atom_ext)).
-:- use_module(pl(pl_log)).
-
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii), [line_feed//0,space//0]).
-:- use_module(plDcg(dcg_code)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_code)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(dcg/dcg_unicode)).
+:- use_module(plc(generics/atom_ext)).
+:- use_module(plc(prolog/pl_log)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -57,16 +56,9 @@ DCG rules for parsing/generating often-occuring content.
 
 
 
-%! capitalize// .
-
-capitalize, [Upper] -->
-  [Lower],
-  {code_type(Upper, to_upper(Lower))}, !,
-  dcg_copy.
-capitalize -->
-  dcg_end.
 
 
+'...' --> [] | [_], '...'.
 
 %! indent// is det.
 %! indent(+Indent:nonneg)// is det.
@@ -99,9 +91,3 @@ nl --> line_feed.
 pl_term(PrologTerm) -->
   {with_output_to(codes(Codes), write_canonical_blobs(PrologTerm))},
   Codes.
-
-
-
-%! void// .
-
-void --> "".

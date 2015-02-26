@@ -16,14 +16,15 @@ Grammar snippets for LaTeX.
 :- use_module(library(option)).
 :- use_module(library(readutil)).
 
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_replace)).
 :- use_module(plc(generics/code_ext)).
-:- use_module(plc(os/file_ext)).
+:- use_module(plc(io/file_ext)).
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_replace)).
+
 
 
 

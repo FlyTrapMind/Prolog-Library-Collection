@@ -20,9 +20,11 @@ Predicate for manipulating parse trees.
 
 :- use_module(library(apply)).
 
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(dcg_atom_codes_pt(4,-,?,?,?)).
+
+
 
 
 

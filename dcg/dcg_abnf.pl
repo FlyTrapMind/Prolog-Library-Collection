@@ -123,7 +123,7 @@ The output shows that the single and double quote characters
 do not occur in the same string.
 
 ```prolog
-?- phrase('*n'(2, quoted(3, double, arrow(right, 8)), [copy_term(false)]), Codes),
+?- phrase('*n'(2, quoted(3, double_quote, arrow(right, 8)), [copy_term(false)]), Codes),
    atom_codes(Atom, Codes).
 Codes = [],
 Atom = '' ;
@@ -145,7 +145,7 @@ The output shows that the single and double quote characters
 do not occur in the same string.
 
 ```prolog
-?- phrase('*n'(2, quoted(3, double, arrow(right, 8)), [copy_term(true)]), Codes),
+?- phrase('*n'(2, quoted(3, double_quote, arrow(right, 8)), [copy_term(true)]), Codes),
    atom_codes(Atom, Codes).
 Codes = [],
 Atom = '' ;
@@ -164,19 +164,19 @@ Atom = '\'\'\'------->\'\'\'\'\'\'------->\'\'\'' ;
 false.
 ```
 
---
+---
 
 @author Wouter Beek
-@version 2014/05-2014/06, 2014/08, 2014/10-2014/11
+@version 2014/05-2014/06, 2014/08, 2014/10-2014/12, 2015/02
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(option)).
 
-:- use_module(generics(meta_ext)).
-
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_generics)). % Meta-option.
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(generics/meta_ext)).
 
 :- meta_predicate('#'(?,//,:,?,?)).
 :- meta_predicate('#'(?,3,?,:,?,?)).
@@ -208,12 +208,12 @@ false.
 :- meta_predicate('+n'(?,5,?,?,?,:,?,?)).
 :- meta_predicate('+n'(?,6,?,?,?,?,:,?,?)).
 :- meta_predicate('+n'(?,7,?,?,?,?,?,:,?,?)).
-:- meta_predicate('?'(//,:,?,?)).
-:- meta_predicate('?'(3,?,:,?,?)).
-:- meta_predicate('?'(4,?,?,:,?,?)).
-:- meta_predicate('?'(5,?,?,?,:,?,?)).
-:- meta_predicate('?'(6,?,?,?,?,:,?,?)).
-:- meta_predicate('?'(7,?,?,?,?,?,:,?,?)).
+:- meta_predicate('?'(//,+,?,?)).
+:- meta_predicate('?'(3,?,+,?,?)).
+:- meta_predicate('?'(4,?,?,+,?,?)).
+:- meta_predicate('?'(5,?,?,?,+,?,?)).
+:- meta_predicate('?'(6,?,?,?,?,+,?,?)).
+:- meta_predicate('?'(7,?,?,?,?,?,+,?,?)).
 :- meta_predicate(call_dcg_sep(+,//,//,+,+,?,?)).
 :- meta_predicate(call_dcg_sep(+,3,//,+,+,?,?)).
 :- meta_predicate(call_dcg_sep(+,4,//,+,+,?,?)).
@@ -340,38 +340,30 @@ false.
      pass_to('m*n'//9, 9)
    ]).
 
-:- predicate_options('?'//2, 2, [
-     pass_to('m*n'//4, 4)
-   ]).
 :- predicate_options('?'//3, 3, [
-     empty1(+term),
-     pass_to('m*n'//5, 5)
+     empty1(+term)
    ]).
 :- predicate_options('?'//4, 4, [
      empty1(+term),
-     empty2(+term),
-     pass_to('m*n'//6, 6)
+     empty2(+term)
    ]).
 :- predicate_options('?'//5, 5, [
      empty1(+term),
      empty2(+term),
-     empty3(+term),
-     pass_to('m*n'//7, 7)
+     empty3(+term)
    ]).
 :- predicate_options('?'//6, 6, [
      empty1(+term),
      empty2(+term),
      empty3(+term),
-     empty4(+term),
-     pass_to('m*n'//8, 8)
+     empty4(+term)
    ]).
 :- predicate_options('?'//7, 7, [
      empty1(+term),
      empty2(+term),
      empty3(+term),
      empty4(+term),
-     empty5(+term),
-     pass_to('m*n'//9, 9)
+     empty5(+term)
    ]).
 
 :- predicate_options('m*'//3, 3, [
@@ -396,12 +388,14 @@ false.
 :- predicate_options('m*n'//4, 4, [
      copy_term(+boolean),
      count(-nonneg),
+     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//5, 5, [
      convert1(+callable),
      copy_term(+boolean),
      count(-nonneg),
+     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//6, 6, [
@@ -409,6 +403,7 @@ false.
      convert2(+callable),
      copy_term(+boolean),
      count(-nonneg),
+     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//7, 7, [
@@ -417,6 +412,7 @@ false.
      convert3(+callable),
      copy_term(+boolean),
      count(-nonneg),
+     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//8, 8, [
@@ -426,6 +422,7 @@ false.
      convert4(+callable),
      copy_term(+boolean),
      count(-nonneg),
+     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//9, 9, [
@@ -436,6 +433,7 @@ false.
      convert5(+callable),
      copy_term(+boolean),
      count(-nonneg),
+     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 
@@ -445,6 +443,8 @@ is_meta(convert3).
 is_meta(convert4).
 is_meta(convert5).
 is_meta(separator).
+
+
 
 
 
@@ -608,12 +608,12 @@ is_meta(separator).
 
 
 
-%! '?'(:Dcg, :Options:list(nvpair))// .
-%! '?'(:Dcg, ?Args1:list, :Options:list(nvpair))// .
-%! '?'(:Dcg, ?Args1:list, ?Args2:list, :Options:list(nvpair))// .
-%! '?'(:Dcg, ?Args1:list, ?Args2:list, ?Args3:list, :Options:list(nvpair))// .
-%! '?'(:Dcg, ?Args1:list, ?Args2:list, ?Args3:list, ?Args4:list, :Options:list(nvpair))// .
-%! '?'(:Dcg, ?Args1:list, ?Args2:list, ?Args3:list, ?Args4:list, ?Args5:list, :Options:list(nvpair))// .
+%! '?'(:Dcg, +Options:list(nvpair))// .
+%! '?'(:Dcg, ?Args1:list, +Options:list(nvpair))// .
+%! '?'(:Dcg, ?Args1:list, ?Args2:list, +Options:list(nvpair))// .
+%! '?'(:Dcg, ?Args1:list, ?Args2:list, ?Args3:list, +Options:list(nvpair))// .
+%! '?'(:Dcg, ?Args1:list, ?Args2:list, ?Args3:list, ?Args4:list, +Options:list(nvpair))// .
+%! '?'(:Dcg, ?Args1:list, ?Args2:list, ?Args3:list, ?Args4:list, ?Args5:list, +Options:list(nvpair))// .
 % Implements the Regular Expression operator `?`,
 % generating *both* the case of 0 occurrences *and* the case of 1 occurrence.
 %
@@ -629,49 +629,47 @@ is_meta(separator).
 '?'(Dcg, Options) -->
   'm*n'(0, 1, Dcg, Options).
 
-'?'(Dcg, A1, Options) -->
-  'm*n'(0, 1, Dcg, L1, Options),
+'?'(Dcg, L1, _) -->
+  call(Dcg, L1), !.
+'?'(_, E1, Options) -->
+  {option(empty1(E1), Options, _Var1)}.
+
+'?'(Dcg, L1, L2, _) -->
+  call(Dcg, L1, L2), !.
+'?'(_, E1, E2, Options) -->
   {
     option(empty1(E1), Options, _Var1),
-    maplist('?_arg', [E1], [L1], [A1])
+    option(empty2(E2), Options, _Var2)
   }.
 
-'?'(Dcg, A1, A2, Options) -->
-  'm*n'(0, 1, Dcg, L1, L2, Options),
+'?'(Dcg, L1, L2, L3, _) -->
+  call(Dcg, L1, L2, L3), !.
+'?'(_, E1, E2, E3, Options) -->
   {
     option(empty1(E1), Options, _Var1),
     option(empty2(E2), Options, _Var2),
-    maplist('?_arg', [E1,E2], [L1,L2], [A1,A2])
+    option(empty3(E3), Options, _Var3)
   }.
 
-'?'(Dcg, A1, A2, A3, Options) -->
-  'm*n'(0, 1, Dcg, L1, L2, L3, Options),
+'?'(Dcg, L1, L2, L3, L4, _) -->
+  call(Dcg, L1, L2, L3, L4), !.
+'?'(_, E1, E2, E3, E4, Options) -->
   {
     option(empty1(E1), Options, _Var1),
     option(empty2(E2), Options, _Var2),
     option(empty3(E3), Options, _Var3),
-    maplist('?_arg', [E1,E2,E3], [L1,L2,L3], [A1,A2,A3])
+    option(empty4(E4), Options, _Var4)
   }.
 
-'?'(Dcg, A1, A2, A3, A4, Options) -->
-  'm*n'(0, 1, Dcg, L1, L2, L3, L4, Options),
+'?'(Dcg, L1, L2, L3, L4, L5, _) -->
+  call(Dcg, L1, L2, L3, L4, L5), !.
+'?'(_, E1, E2, E3, E4, E5, Options) -->
   {
     option(empty1(E1), Options, _Var1),
     option(empty2(E2), Options, _Var2),
     option(empty3(E3), Options, _Var3),
     option(empty4(E4), Options, _Var4),
-    maplist('?_arg', [E1,E2,E3,E4], [L1,L2,L3,L4], [A1,A2,A3,A4])
-  }.
-
-'?'(Dcg, A1, A2, A3, A4, A5, Options) -->
-  'm*n'(0, 1, Dcg, L1, L2, L3, L4, L5, Options),
-  {
-    option(empty1(E1), Options, _Var1),
-    option(empty2(E2), Options, _Var2),
-    option(empty3(E3), Options, _Var3),
-    option(empty4(E4), Options, _Var4),
-    option(empty5(E5), Options, _Var5),
-    maplist('?_arg', [E1,E2,E3,E4,E5], [L1,L2,L3,L4,L5], [A1,A2,A3,A4,A5])
+    option(empty5(E5), Options, _Var5)
   }.
 
 
@@ -739,8 +737,8 @@ is_meta(separator).
   'm*n_typecheck'(M, N),
   meta_options(is_meta, Options1, Options2),
   option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, void),
-  (   var(X)
+  option(separator(Sep), Options2, dcg_void),
+  (   dcg_abnf_mode(Options2, X, generate)
   ->  'm*n_generate'(M, N, 0, C, Dcg, Sep, CP, X, Y)
   ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, CP, X, Y)
   ),
@@ -754,8 +752,8 @@ is_meta(separator).
   meta_options(is_meta, Options1, Options2),
   option(convert1(Conv1), Options2, =),
   option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, void),
-  (   var(X)
+  option(separator(Sep), Options2, dcg_void),
+  (   dcg_abnf_mode(Options2, X, generate)
   ->  call(Conv1, L1_in, L1_out),
       'm*n_generate'(M, N, 0, C, Dcg, Sep, L1_in, CP, X, Y)
   ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, L1_in, CP, X, Y),
@@ -772,8 +770,8 @@ is_meta(separator).
   option(convert1(Conv1), Options2, =),
   option(convert2(Conv2), Options2, =),
   option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, void),
-  (   var(X)
+  option(separator(Sep), Options2, dcg_void),
+  (   dcg_abnf_mode(Options2, X, generate)
   ->  call(Conv1, L1_in, L1_out),
       call(Conv2, L2_in, L2_out),
       'm*n_generate'(M, N, 0, C, Dcg, Sep, L1_in, L2_in, CP, X, Y)
@@ -793,8 +791,8 @@ is_meta(separator).
   option(convert2(Conv2), Options2, =),
   option(convert3(Conv3), Options2, =),
   option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, void),
-  (   var(X)
+  option(separator(Sep), Options2, dcg_void),
+  (   dcg_abnf_mode(Options2, X, generate)
   ->  call(Conv1, L1_in, L1_out),
       call(Conv2, L2_in, L2_out),
       call(Conv3, L3_in, L3_out),
@@ -817,8 +815,8 @@ is_meta(separator).
   option(convert3(Conv3), Options2, =),
   option(convert4(Conv4), Options2, =),
   option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, void),
-  (   var(X)
+  option(separator(Sep), Options2, dcg_void),
+  (   dcg_abnf_mode(Options2, X, generate)
   ->  call(Conv1, L1_in, L1_out),
       call(Conv2, L2_in, L2_out),
       call(Conv3, L3_in, L3_out),
@@ -846,8 +844,8 @@ is_meta(separator).
   option(convert4(Conv4), Options2, =),
   option(convert5(Conv5), Options2, =),
   option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, void),
-  (   var(X)
+  option(separator(Sep), Options2, dcg_void),
+  (   dcg_abnf_mode(Options2, X, generate)
   ->  call(Conv1, L1_in, L1_out),
       call(Conv2, L2_in, L2_out),
       call(Conv3, L3_in, L3_out),
@@ -876,20 +874,6 @@ is_meta(separator).
 
 % HELPERS
 
-%! '?_arg'(?Empty, +Value1, -Value2) is det.
-% Converts argument values for '?'//[2-7].
-
-% Something processed: remove the singleton list.
-'?_arg'(_, [Value], Value).
-% Nothing processed: returns the empty value, if given.
-'?_arg'(Empty, [], Value):-
-  (   nonvar(Empty)
-  ->  Value = Empty
-  ;   Value = _VAR
-  ).
-
-
-
 %! call_dcg_sep(
 %!   +Count:nonneg,
 %!   :Dcg,
@@ -899,17 +883,32 @@ is_meta(separator).
 %! )// .
 
 call_dcg_sep(C, Dcg, Sep, Args, false) --> !,
-  dcg_apply(Dcg, Args),
   (   {C =:= 0}
   ->  ""
   ;   dcg_call(Sep)
-  ).
+  ),
+  dcg_apply(Dcg, Args).
 call_dcg_sep(C, Dcg, Sep, Args, true) -->
-  dcg_apply_cp(Dcg, Args),
   (   {C =:= 0}
   ->  ""
   ;   dcg_call_cp(Sep)
-  ).
+  ),
+  dcg_apply_cp(Dcg, Args).
+
+
+
+%! dcg_abnf(
+%!   +Options:list(nvpair),
+%!   ?List,
+%!   +Mode:oneof([generate,parse])
+%! ) is semidet.
+
+dcg_abnf_mode(Options, _, Mode):-
+  option(mode(Mode0), Options), !,
+  Mode == Mode0.
+dcg_abnf_mode(_, X, generate):-
+  var(X), !.
+dcg_abnf_mode(_, _, parse).
 
 
 
@@ -1120,7 +1119,3 @@ call_dcg_sep(C, Dcg, Sep, Args, true) -->
   fail.
 % Everything else succeeds.
 'm*n_typecheck'(_, _).
-
-
-void --> "".
-

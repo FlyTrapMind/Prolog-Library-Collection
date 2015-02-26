@@ -21,10 +21,9 @@ Support for image files.
 :- use_module(library(process)).
 :- use_module(library(readutil)).
 
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(generics/db_ext)).
-
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_generics)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).

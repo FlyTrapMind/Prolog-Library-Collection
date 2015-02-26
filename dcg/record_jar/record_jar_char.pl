@@ -1,16 +1,12 @@
 :- module(
   record_jar_char,
   [
-    'ASCCHAR'//2, % -Tree:compound
-                  % ?Code:code
-    character//2, % -Tree:compound
-                  % ?Code:code
-    'ESCAPE'//2, % -Tree:compound
-                 % ?Code:code
-    'field-name-character'//2, % -Tree:compound
-                                % ?Code:code
-    'UNICHAR'//2 % -Tree:compound
-                 % ?Code:code
+    'character@record-jar'//0,
+    'character@record-jar'//1, % ?Code:code
+    'ESCAPE'//0,
+    'ESCAPE'//1, % ?Code:code
+    'UNICHAR'//0,
+    'UNICHAR'//1 % ?Code:code
   ]
 ).
 
@@ -22,32 +18,38 @@ DCGs for characters that occur in the Record Jar representation format.
 @version 2013/07, 2014/05, 2014/10-2014/11
 */
 
-:- use_module(math(radix)).
-
-:- use_module(plDcg(abnf_core_rules)).
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_code)).
-
+:- use_module(plc(dcg/abnf_core_rules)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_code)).
+:- use_module(plc(math/radix)). % Meta-option.
 
 
-%! 'ASCCHAR'(-Tree:compound, ?Code:code)// .
+
+
+
+%! 'ASCCHAR'// .
+%! 'ASCCHAR'(?Code:code)// .
 % ASCII characters except %x26 (&) and %x5C (\).
 %
 % ```abnf
 % ASCCHAR = %x21-25 / %x27-5B / %x5D-7E
 % ```
 
-'ASCCHAR'('ASCCHAR'(Code), Code) -->
+'ASCCHAR' -->
+  'ASCCHAR'(_).
+
+'ASCCHAR'(Code) -->
   between_code_radix(hex('21'), hex('25'), Code).
-'ASCCHAR'('ASCCHAR'(Code), Code) -->
+'ASCCHAR'(Code) -->
   between_code_radix(hex('27'), hex('5B'), Code).
-'ASCCHAR'('ASCCHAR'(Code), Code) -->
+'ASCCHAR'(Code) -->
   between_code_radix(hex('5D'), hex('7E'), Code).
 
 
 
-%! character(-Tree:compound, ?Code:code)// .
+%! 'character@record-jar'// .
+%! 'character@record-jar'(?Code:code)// .
 % ```abnf
 % character = SP / ASCCHAR / UNICHAR / ESCAPE
 % ```
@@ -58,23 +60,26 @@ DCGs for characters that occur in the Record Jar representation format.
 %
 % I assume the horizontal tab is also allowed in comments, as is space.
 
-character(character(T), Code) -->
-  'ASCCHAR'(T, Code).
-character(character('WSP'(Code)), Code) -->
-  'WSP'(Code).
-character(character(T1), Code) -->
-  'ESCAPE'(T1, Code).
-character(character(T1), Code) -->
-  'UNICHAR'(T1, Code).
+'character@record-jar' -->
+  'character@record-jar'(_).
+
+'character@record-jar'(Code) --> 'SP'(Code).
+'character@record-jar'(Code) --> 'ASCCHAR'(Code).
+'character@record-jar'(Code) --> 'UNICHAR'(Code).
+'character@record-jar'(Code) --> 'ESCAPE'(Code).
 
 
 
-%! 'ESCAPE'(-Tree:compound, ?Code:code)// .
+%! 'ESCAPE'// .
+%! 'ESCAPE'(?Code:code)// .
 % ```abnf
 % ESCAPE = "\" ("\" / "&" / "r" / "n" / "t" ) / "&#x" 2*6HEXDIG ";"
 % ```
 
-'ESCAPE'('ESCAPE'('\\',Code), Code) -->
+'ESCAPE' -->
+  'ESCAPE'(_).
+
+'ESCAPE'(Code) -->
   "\\",
   (   backslash(Code)
   ;   ampersat(Code)
@@ -82,32 +87,20 @@ character(character(T1), Code) -->
   ;   n_lowercase(Code)
   ;   t_lowercase(Code)
   ).
-'ESCAPE'('ESCAPE'('&#x',Number), Number) -->
+'ESCAPE'(Code) -->
   "&#x",
-  'm*n'(2, 6, 'HEXDIG', Weights, []),
-  {weights_radix(Weights, dec(Number))}.
+  'm*n'(2, 6, 'HEXDIG', Code, [convert1(weights_nonneg)]).
 
 
 
-%! 'field-name-character'(-Tree:compound, ?Code:code)// .
-% This rule does not occur in the specified grammar,
-% but I have added it since there are additional requirements mentioned
-% in the documentation.
-%
-% To stay close to the grammar, we display applications of this rule
-% as `charcter` nodes in the parse tree.
-
-'field-name-character'(T, Code) -->
-  character(T, Code),
-  % Explicitly exclude space// and colon//.
-  {\+ memberchk(Code, [32, 58])}.
-
-
-
-%! 'UNICHAR'(-Tree:compound, ?Code:code)// .
+%! 'UNICHAR'// .
+%! 'UNICHAR'(?Code:code)// .
 % ```abnf
 % UNICHAR = %x80-10FFFF
 % ```
 
-'UNICHAR'('UNICHAR'(Code), Code) -->
+'UNICHAR' -->
+  'UNICHAR'(_).
+
+'UNICHAR'(Code) -->
   between_code_radix(hex('80'), hex('10FFFF'), Code).

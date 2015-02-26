@@ -26,15 +26,14 @@
 Grammar support for entering character codes.
 
 @author Wouter Beek
-@version 2014/10-2014/11
+@version 2014/10-2014/12
 */
 
-:- use_module(library(apply)).
+:- use_module(plc(dcg/dcg_unicode)).
+:- use_module(plc(generics/code_ext)).
+:- use_module(plc(math/radix)).
 
-:- use_module(generics(code_ext)).
-:- use_module(math(radix)).
 
-:- use_module(plDcg(dcg_ascii)).
 
 
 
@@ -59,8 +58,11 @@ between_code_radix(Low, High) -->
 
 between_code_radix(dec(Low), dec(High), Code) --> !,
   between_code(Low, High, Code).
-between_code_radix(hex(Low1), hex(High1), Code) -->
-  {maplist(radix, [Low1,High1], [Low2,High2])},
+between_code_radix(Low1, High1, Code) -->
+  {
+    radix(Low1, dec(Low2)),
+    radix(High1, dec(High2))
+  },
   between_code_radix(dec(Low2), dec(High2), Code).
 
 

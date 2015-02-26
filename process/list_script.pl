@@ -17,18 +17,14 @@ Also keeps track of items that could not be processed.
 @version 2015/02
 */
 
-:- use_module(library(apply)).
 :- use_module(library(lists), except([delete/3,subset/2])).
-:- use_module(library(ordsets)).
-:- use_module(library(readutil)).
 
-:- use_module(plc(generics/atom_ext)).
-
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_debug)).
-:- use_module(plDcg(dcg_pl_term)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_cardinal)).
+:- use_module(plc(dcg/dcg_debug)).
+:- use_module(plc(dcg/dcg_pl_term)).
+:- use_module(plc(process/progress)).
 
 :- predicate_options(list_script/3, 3, [
      message(+atom),
@@ -78,17 +74,17 @@ list_script(Goal_1, Todo0, Options):-
   ;   M = 0,
       Todo = Todo0
   ),
-  
+
   % Process list.
   option(with_mutex(Mutex), Options, _VAR),
   list_script(Goal_1, Msg, counter(M,N), Todo, Done, NotDone, Mutex),
-  
+
   % Process option `notdone`.
   (   option(notdone(NotDone0), Options)
   ->  NotDone0 = NotDone
   ;   true
   ),
-  
+
   % Show an overview of processing the list.
   (   option(overview(true), Options)
   ->  dcg_debug(list_script, items_done(Done, N)),

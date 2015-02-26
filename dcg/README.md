@@ -1,5 +1,5 @@
-dcg
-===
+plDcg
+=====
 
 A collection of Descriptive Clause Grammar modules for (SWI-)Prolog.
 
@@ -10,11 +10,10 @@ Contents
 
 Library plDcg consists of the following modules:
 
-  - [`dcg_abnf`](https://github.com/wouterbeek/plDcg#dcg_abnf)
-    Supports constructs derived from
-    Advanced Backus Naur Form-notation (ABNF).
-  - [`dcg_arrow`](https://github.com/wouterbeek/plDcg#dcg_arrow)
-    Supports drawing simple ASCII arrows and horizontal lines.
+  - [`dcg_abnf`](https://github.com/wouterbeek/plDcg#dcg_abnf):
+    Bauckus-Naur Form (BNF) constructs in DCGs.
+  - [`dcg_arrow`](https://github.com/wouterbeek/plDcg#dcg_arrow):
+    Simple ASCII arrows and horizontal lines.
   - [`dcg_ascii`](https://github.com/wouterbeek/plDcg#dcg_ascii)
     Provides support for all ASCII characters
     and common ASCII character groups.
@@ -25,24 +24,32 @@ Library plDcg consists of the following modules:
   - `dcg_generics` Generic extensions for the use of DCGs
     (e.g., meta-calls for DCGs, peeking, REs, replacements).
   - `dcg_unicode` DCG rules for Unicode support.
-  - `dcg_wrap` DCG rules for text wrapping
-    (e.g., line wrapping, word wrapping).
+  - `dcg_word_wrap` DCG rules for word wrapping:
+    *soft word wrap* at word boundaries,
+    or *hard word wrap* at character boundaries.
   - `emoticons` DCG rules for emoticons, contributed by Anne Ogborn :-)
 
 
 
-`dcg_abnf`
-----------
+`dcg_abnf`: Bauckus-Naur Form (BNF) constructs in DCGs
+======================================================
 
 While DCGs are nice, the use of Backus Naur Form-notation (BNF)
 sometimes results in simpler code.
 
-For example, the following is quite common in DCGs:
+A simple example
+----------------
+
+The following is quite common in DCGs: define a word as a (possibly empty) sequence of letters. Letters are represented by codes (= numeric character codes) but words are represented by atoms (e.g., allowing sentences to be represented by lists of atoms). Since we want the same grammar to both parse and generate, we have to put the conversion between atoms and codes either first (for generating) or last (for parsing). In code:
 
 ```prolog
 word(Word) -->
+  {var(Word)}, !,
   letters(Codes),
-  atom_codes(Word, Codes).
+  {atom_codes(Word, Codes)}.
+word(Word) -->
+  {atom_codes(Word, Codes)},
+  letters(Codes).
 
 letters([H|T]) -->
   letter(H),
@@ -50,66 +57,82 @@ letters([H|T]) -->
 letters([]) --> "".
 ```
 
-This can be written down simpler using the Kleene star (`*`):
+Now we write the same thing more concisely by using the Kleene star (`*`):
 
 ```prolog
 word(Word) -->
-  '*'(letter, Codes ,[convert1(codes_atom)]).
+  '*'(letter, Word ,[convert1(codes_atom)]).
 ```
 
-Inspired by
-[RFC 5234: Advanced Backus Naur Form (ABNF)](https://tools.ietf.org/html/rfc5234),
-library `dcg_abnf` introduces the following operators:
+Specification
+-------------
 
-| **Expression**            | **Meaning**                       |
-| ------------------------- | --------------------------------- |
-| `'#'(?N, :Dcg, [])`       | Process `Dcg` exactly `N` times.  |
-| `'*'(:Dcg, [])`           | Process `Dcg` 0 or more times.    |
-| `'*n'(?N, :Dcg, [])`      | Process `Dcg` at most `N` times.  |
-| `'+'(:Dcg, [])`           | Process `Dcg` 1 or more times.    |
-| `'?'(:Dcg, [])`           | Process `Dcg` 0 or 1 times. Alternatively: `Dcg` is optional. |
-| `'m*'(?M, :Dcg, [])`      | Process `Dcg` at least `M` times. |
-| `'m*n'(?M, ?N, :Dcg, [])` | Process `Dcg` at least `M` and at most `N` times.            |
+Different BNFs have been defined.
+This module was inspired by
+[RFC 5234: Advanced Backus Naur Form (ABNF)](https://tools.ietf.org/html/rfc5234), which is used in many RFC documents, and by EBNF, which is used in many W3C documents.
 
-In the previous table the last argument is the empty list.
-This list can contain any of the following options:
+In the example above we were using the Kleene star (`*`) which says: "the following rule must be processed (i.e., generated/parsed) 0 or more times". In other words, the Kleene star restricts the number of applications of a rule to the range `[0,inf)`.
+Similarly, the plus sign (`+`) says: "the following rules must be processed at least 1 time" (i.e., range: `[1,inf)`).
+
+The most generic ABNF construct is `m*n` which says: "the following rule must be processed at least `m` and at most `n` times". Notice that the Kleene start and the plus sign can both be defined in terms of this generic construct.
+
+The following constructs are defined by library `dcg_abnf`:
+
+| **Construct** | **Generic expression** | **Meaning**                   |
+|:-------------:| ---------------------- | ----------------------------- |
+| `#`   | `'#'(?N, :Dcg, [])`       | Process `Dcg` exactly `N` times.   |
+| `*`   | `'*'(:Dcg, [])`           | Process `Dcg` 0 or more times.     |
+| `*n`  | `'*n'(?N, :Dcg, [])`      | Process `Dcg` at most `N` times.   |
+| `+`   | `'+'(:Dcg, [])`           | Process `Dcg` 1 or more times.     |
+| `?`   | `'?'(:Dcg, [])`           | Process `Dcg` 0 or 1 times. Alternatively: `Dcg` is optional. |
+| `m*`  | `'m*'(?M, :Dcg, [])`      | Process `Dcg` at least `M` times.  |
+| `m*n` | `'m*n'(?M, ?N, :Dcg, [])` | Process `Dcg` at least `M` and at most `N` times. |
+
+Every ABNF construct takes a list of options as its last argument.
+The following options are defined:
 
 | **Option**             | **Meaning** |
-| ---------------------- | ----------- |
+|:----------------------:|:----------- |
 | `copy_term(+boolean)`  | Whether or not `Dcg` should first be copied before being processed. |
+| `convert1`(+callable)  | An arbitrary conversion applied to the first argument. `convert2` allows an arbitrary conversion to be applied to the second argument, etc. |
 | `count(-nonneg)`       | The exact number of times `Dcg` is processed. For `'#'//[3-8]` this is the same as `N`. For all other ABNF operators this returns a non-trivial results that may be informative to the calling context. |
+| `empty1(+term)`        | The Prolog term that is returned as the first argument in the case of zero productions of `Dcg`. |
 | `separator(+callable)` | If `Dcg` is processed more than once, the separator DCG rule is processed in between any two productions of `Dcg`. |
 
-In the following example we state that a sentence consists of
-one or more words that are separated by whitespace.
-We also want to keep track of the number of words:
+Another example
+---------------
+
+Continuing our previous example, we now state that a sentence consists of one or more
+ words that are separated by whitespace.
+In addition, we want to keep track of the number of words in the sentence:
 
 ```prolog
-sentence(N1, [H|T]) -->
+sentence(Count1, [H|T]) -->
   word(H),
   white,
-  {succ(N1, N2)},
-  words(N2, T).
+  {succ(Count1, Count2)},
+  words(Count2, T).
 
-words(N1, [H|T]) -->
+words(Count1, [H|T]) -->
   word(H),
   white,
-  {succ(N1, N2)},
-  words(N2, T).
+  {succ(Count1, Count2)},
+  words(Count2, T).
 words(0, []) --> "".
 ```
 
-Using library `dcg_abnf` we can write this in a more concise way:
+Using library `dcg_abnf` we can write this in a more concise way
+ using the plsu sign (`+`) construct together with options `count` and `separator`:
 
 ```prolog
 sentence(N, Words) -->
   '+'(word, Words, [count(N),separator(white)]).
 ```
 
+---
 
-
-`dcg_arrow`
------------
+`dcg_arrow`: Simple ASCII arrows and horizontal lines
+=====================================================
 
 The following generates all sequences of at most 2 arrows
 surrounded by triple quotes, *with uninstantiated variables shared*
@@ -162,7 +185,7 @@ false.
 
 
 `dcg_ascii`
------------
+===========
 
 Provides support for all individual
 [ASCII characters](http://en.wikipedia.org/wiki/ASCII)
@@ -252,23 +275,6 @@ The following DCG rules process integers between a lower and an unpper bound:
     X = 17,
     Codes = [49, 53].
     ```
-
-The following DCG rules process numbers in different bases,
-where the value can be given/returned in a specified base
-(`bin/1`, `oct/1`, `dec/1`, `hex/1`):
-
-  - `binary_number(?Value:compound)`
-  - `decimal_number(?Value:compound)`
-  - `octal_number(?Value:compound)`
-  - `hexadecimal_number(?Value:compound)`
-
-Other rules in this module:
-
-  - `decimal_fraction(?Fraction:between(0.0,1.0))`
-  - `exponent(?Value:compound)`
-  - `exponent_sign`
-  - `sign(?Sign:number)`
-  - `signed_number(?Number:number)`
 
 --
 

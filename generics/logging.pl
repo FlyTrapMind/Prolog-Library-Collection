@@ -29,8 +29,8 @@ Logging infrastructure.
 :- use_module(plc(generics/code_ext)).
 :- use_module(plc(generics/db_ext)).
 :- use_module(plc(os/datetime_ext)).
-:- use_module(plc(os/dir_ext)).
-:- use_module(plc(os/file_ext)).
+:- use_module(plc(io/dir_ext)).
+:- use_module(plc(io/file_ext)).
 
 :- dynamic(logging:current_log_file/1).
 :- dynamic(logging:current_log_stream/1).

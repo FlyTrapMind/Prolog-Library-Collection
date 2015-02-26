@@ -1,8 +1,7 @@
 :- module(
   dcg_file,
   [
-    directory_name//1, % -Dir:atom
-    file_path_name//1, % -Path:atom
+    file_path//1, % -Dir:atom
     local_file_name//1, % % -Local:atom
     root_prefix//0
   ]
@@ -13,22 +12,22 @@
 Grammar snippets for files.
 
 @author Wouter Beek
-@version 2014/11
+@version 2014/11-2014/12
 */
 
-:- use_module(os(dir_ext)).
-:- use_module(os(file_ext)).
-:- use_module(os(os_ext)).
-
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(generics/atom_ext)). % Meta-option.
+:- use_module(plc(io/file_ext)).
+:- use_module(plc(os/os_ext)).
 
 
 
-%! directory_name(-Dir:atom)// is semidet.
+
+
+%! file_path(-Path:atom)// is semidet.
 % Parses legal directory names,
 % where both Unix and Windows formats are supported.
 %
@@ -45,28 +44,18 @@ Grammar snippets for files.
 % ```
 
 % Relative directory with respect to the home directory (Unix only).
-directory_name(Dir) -->
+file_path(Path) -->
   "~/", !,
-  '*'(directory_segment, DirSegments, [separator(directory_separator)]),
+  '*'(path_segment, Segments, [separator(directory_separator)]),
   {
-    directory_subdirectories(RelPath, DirSegments),
-    relative_file_path(Dir, '~', RelPath)
+    atomic_list_concat(Segments, '/', RelPath),
+    relative_file_path(Path, '~', RelPath)
   }.
 % Absolute directory.
-directory_name(Dir) -->
+file_path(Path) -->
   root_prefix,
-  '*'(directory_segment, DirSegments, [separator(directory_separator)]),
-  {directory_subdirectories(Dir, DirSegments)}.
-
-
-
-%! file_path_name(-Path:atom)// is semidet.
-
-% Directory relative to the user's home directory.
-file_path_name(Path) -->
-  directory_name(Dir),
-  local_file_name(File),
-  {directory_file_path(Dir, File, Path)}.
+  '*'(path_segment, Segments, [separator(directory_separator)]),
+  {atomic_list_concat([''|Segments], '/', Path)}.
 
 
 
@@ -85,12 +74,14 @@ root_prefix -->
 
 
 
+
+
 % HELPERS
 
 %! directory_char(?Code:nonneg)// .
 % Character that are allowed to occur in a file path.
 
-directory_char(Code) --> letter(Code).
+directory_char(Code) --> ascii_letter(Code).
 directory_char(Code) --> decimal_digit(Code).
 directory_char(Code) --> dot(Code).
 directory_char(Code) --> minus_sign(Code).
@@ -99,10 +90,10 @@ directory_char(Code) --> underscore(Code).
 
 
 
-%! directory_segment(-Segment:atom)// .
+%! path_segment(-Segment:atom)// .
 
-directory_segment(Segment) -->
-  dcg_atom_codes(directory_char, Segment).
+path_segment(Segment) -->
+  '*'(directory_char, Segment, [convert1(codes_atom)]).
 
 
 
@@ -119,5 +110,6 @@ directory_separator --> "\\".
 
 %! local_file_char(?Code:nonneg)// .
 
-local_file_char(Code) --> alpha_numeric(Code).
+local_file_char(Code) --> ascii_alpha_numeric(Code).
 local_file_char(Code) --> dot(Code).
+

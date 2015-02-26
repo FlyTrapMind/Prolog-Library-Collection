@@ -19,7 +19,7 @@ The output shows that the single and double quote characters
 do not occur in the same string.
 
 ```prolog
-?- phrase('*n'(2, quoted(3, double, arrow(right, 8)), [copy_term(false)]), Codes),
+?- phrase('*n'(2, quoted(3, double_quote, arrow(right, 8)), [copy_term(false)]), Codes),
    atom_codes(Atom, Codes).
 Codes = [],
 Atom = '' ;
@@ -41,7 +41,7 @@ The output shows that the single and double quote characters
 do not occur in the same string.
 
 ```prolog
-?- phrase('*n'(2, quoted(3, double, arrow(right, 8)), [copy_term(true)]), Codes),
+?- phrase('*n'(2, quoted(3, double_quote, arrow(right, 8)), [copy_term(true)]), Codes),
    atom_codes(Atom, Codes).
 Codes = [],
 Atom = '' ;
@@ -60,18 +60,20 @@ Atom = '\'\'\'------->\'\'\'\'\'\'------->\'\'\'' ;
 false.
 ```
 
---
+---
 
 @author Wouter Beek
 @version 2014/10-2014/11
 */
 
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(transition(//,//,?,?)).
+
+
 
 
 
@@ -121,7 +123,7 @@ horizontal_line -->
 % @throws type_error if length is a negative integer.
 
 horizontal_line(Length) -->
-  '#'(Length, "-", []).
+  '#'(Length, hyphen, []).
 
 
 

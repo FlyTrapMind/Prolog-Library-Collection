@@ -40,7 +40,7 @@ Generic code for debugging a project:
 
 
 debug_all_files:-
-  ensure_loaded(plc(os/dir_ext)),
+  ensure_loaded(plc(io/dir_ext)),
   absolute_file_name(project(.), Dir, [access(read),file_type(directory)]),
   directory_files(
     Dir,

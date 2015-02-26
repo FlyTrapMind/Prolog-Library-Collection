@@ -22,13 +22,13 @@ Generates tables for text-based display.
 
 :- use_module(library(option)).
 
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_arrow)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_arrow)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(dcg_table(//,+,?,?,:)).
 :- meta_predicate(dcg_table(//,3,+,?,?,:)).
@@ -50,6 +50,8 @@ is_meta(highlighted_row).
      highlighted_row(+callable),
      indexed(+boolean)
    ]).
+
+
 
 
 

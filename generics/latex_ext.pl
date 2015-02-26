@@ -19,11 +19,11 @@ Predicates for handling LaTeX files.
 :- use_module(library(apply)).
 
 :- use_module(plc(generics/db_ext)).
-:- use_module(plc(os/dir_ext)).
-:- use_module(plc(os/file_ext)).
-:- use_module(plc(os/run_ext)).
-:- use_module(plc(os/safe_file)).
+:- use_module(plc(io/dir_ext)).
+:- use_module(plc(io/file_ext)).
+:- use_module(plc(io/safe_file)).
 :- use_module(plc(prolog/pl_control)).
+:- use_module(plc(process/run_ext)).
 
 :- db_add_novel(user:prolog_file_type(aux, aux      )).
 :- db_add_novel(user:prolog_file_type(aux, latex_out)).

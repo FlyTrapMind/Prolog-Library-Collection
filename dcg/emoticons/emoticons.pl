@@ -14,9 +14,10 @@ Japanese (^_^) style emoticons not covered.
 @tbd various IM client icons.
 @tbd Consider moving all this to a special annie emoticon dcg
 @tbd Japanese (^_^) style emoticons
+@version 2013
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
 
 
@@ -69,7 +70,7 @@ meaning(nose, "c", "").
 meaning(nose, "C", "big nose").
 meaning(nose, "c:", "button nose").
 meaning(nose, [X], "non annie nose, reference to others"):-
-  member(X, "2^o-uUOvV>").
+  member(X, `2^o-uUOvV>`).
 meaning(mouth, "*", "kissing").
 meaning(mouth, "+", "puckered mouth").
 meaning(mouth, "(", "sad").
@@ -104,4 +105,4 @@ meaning(
   "tongue hanging out (delicious, distaste, or concentration)"
 ).
 meaning(mouth, [X], "irony"):-
-  member(X, "/\\").
+  member(X, `/\\`).

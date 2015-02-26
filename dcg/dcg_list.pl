@@ -11,14 +11,14 @@
 Support for generating lists using DCG rules.
 
 @author Wouter Beek
-@version 2014/03, 2014/07
+@version 2014/03, 2014/07, 2015/02
 */
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(option)).
 
-:- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(dcg_list(+,:,?,?)).
 :- meta_predicate(dcg_list_item(3,+,+,+,?,?)).

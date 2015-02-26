@@ -2,6 +2,8 @@
   dcg_char,
   [
     char//1, % ?Char:char
+    char_case//2, % ?Char:char
+                  % ?Case:oneof([lower,upper])
     char_ci//1, % ?Char:char
     char_lower//1, % ?Char:char
     char_upper//1 % ?Char:char
@@ -35,16 +37,18 @@ It does not matter in which case the letters are supplied
 Atom = 'Q'.
 ```
 
---
+---
 
 @author Wouter Beek
-@version 2014/11
+@version 2014/11-2014/12
 */
 
-:- use_module(plDcg(dcg_code)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_code)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(char_code_metacall(3,?,?,?)).
+
+
 
 
 
@@ -52,6 +56,19 @@ Atom = 'Q'.
 
 char(Char) -->
   char_code_metacall(code, Char).
+
+
+
+%! char_case(?Char:char, ?Case:oneof([lower,upper]))// .
+% Allows the calling context to set the case on a per-char basis.
+%
+% Also allows the calling context to apply the same case consistently across
+% chracters without worrying which case.
+
+char_case(Char, lower) -->
+  char_lower(Char).
+char_case(Char, upper) -->
+  char_upper(Char).
 
 
 
@@ -73,6 +90,8 @@ char_lower(Char) -->
 
 char_upper(Char) -->
   char_code_metacall(code_upper, Char).
+
+
 
 
 

@@ -60,14 +60,16 @@
         which this module considers to be legacy.
 @compat [RFC 4234 Appendix B.1 Core Rules](https://tools.ietf.org/html/rfc4234)
 @compat [RFC 5234](http://tools.ietf.org/html/rfc5234)
-@version 2013/07-2013/08, 2013/12, 2014/05-2014/06, 2014/10-2014/11
+@version 2013/07-2013/08, 2013/12, 2014/05-2014/06, 2014/10-2014/12
 */
 
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_cardinal)).
-:- use_module(plDcg(dcg_code)).
-:- use_module(plDcg(dcg_content)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_cardinal)).
+:- use_module(plc(dcg/dcg_code)).
+:- use_module(plc(dcg/dcg_content)).
+
+
 
 
 
@@ -118,7 +120,7 @@
   'ALPHA'(_).
 
 'ALPHA'(Code) -->
-  letter(Code).
+  ascii_letter(Code).
 
 
 
@@ -219,6 +221,8 @@
 'CRLF' -->
   'CR',
   'LF'.
+'CRLF' -->
+  'LF'.
 
 
 
@@ -313,10 +317,13 @@
 % Case-sensitive notation for hexadecimal digits.
 %
 % ```abnf
-% HEX =   "A" | "B" | "C" | "D" | "E" | "F"
-%       | "a" | "b" | "c" | "d" | "e" | "f" | DIGIT
+% [RFC 2616]    HEX =     "A" | "B" | "C" | "D" | "E" | "F"
+%                       | "a" | "b" | "c" | "d" | "e" | "f"
+%                       | DIGIT
+% [N-Triples]   HEX ::= [0-9] | [A-F] | [a-f]
 % ```
 %
+% @compat N-Triples 1.1 [162s].
 % @compat RFC 2616
 % @compat SPARQL 1.0 [171].
 % @compat SPARQL 1.1 Query [172].
@@ -447,7 +454,7 @@
   'LOALPHA'(_).
 
 'LOALPHA'(Code) -->
-  letter_lowercase(Code).
+  ascii_letter_lowercase(Code).
 
 
 
@@ -550,26 +557,6 @@
 
 
 
-%! 'VCHAR'// .
-%! 'VCHAR'(?Code:code)// .
-% Visible characters.
-%
-% ```abnf
-% VCHAR = %x21-7E   ; visible (printing) characters
-% ```
-%
-% @compat RFC 2234
-% @compat RFC 4234
-% @compat RFC 5234
-
-'VCHAR' -->
-  'VCHAR'(_).
-
-'VCHAR'(Code) -->
-  graphic(Code).
-
-
-
 %! 'TEXT'// .
 %! 'TEXT'(?Code:code)// .
 % Used in RFC 2616 for descriptive field contents and values that are
@@ -607,7 +594,27 @@
   'UPALPHA'(_).
 
 'UPALPHA'(Code) -->
-  letter_uppercase(Code).
+  ascii_letter_uppercase(Code).
+
+
+
+%! 'VCHAR'// .
+%! 'VCHAR'(?Code:code)// .
+% Visible characters.
+%
+% ```abnf
+% VCHAR = %x21-7E   ; visible (printing) characters
+% ```
+%
+% @compat RFC 2234
+% @compat RFC 4234
+% @compat RFC 5234
+
+'VCHAR' -->
+  'VCHAR'(_).
+
+'VCHAR'(Code) -->
+  ascii_graphic(Code).
 
 
 

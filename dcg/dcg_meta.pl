@@ -28,11 +28,10 @@ Meta-DCG rules.
          2014/08-2014/09
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(list_ext)).
-
-:- use_module(plDcg(dcg_generics)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(generics/list_ext)).
 
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_apply_cp(//,+,?,?)).

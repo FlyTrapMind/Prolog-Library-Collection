@@ -15,23 +15,24 @@
 Make arbitrary consecutive replacements in text files.
 
 @author Wouter Beek
-@version 2013/09, 2014/10-2014/11
+@version 2013/09, 2014/10-2014/12
 */
 
 :- use_module(library(debug)).
 
-:- use_module(generics(code_ext)).
-:- use_module(os(file_ext)).
-:- use_module(pl(pl_control)).
-
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_replace)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_replace)).
+:- use_module(plc(generics/atom_ext)). % Meta-option.
+:- use_module(plc(generics/code_ext)).
+:- use_module(plc(io/file_ext)).
+:- use_module(plc(prolog/pl_control)).
 
 :- meta_predicate(replace_in_file(+,//,//,-)).
 :- meta_predicate(replace_in_file(+,//,//,?,?)).
+
+
 
 
 
@@ -56,11 +57,11 @@ replace_in_file(F1, FromDCG, ToDCG, F2):-
 %! replace_in_file(+Output:stream, :FromDCG, :ToDCG)// is det.
 
 replace_in_file(Out, FromDCG, ToDCG) -->
-  dcg_until([end_mode(inclusive),output_format(codes)], end_of_line, L1), !,
+  dcg_until(end_of_line, L1, [convert(codes_atom),end_mode(inclusive)]), !,
   {
     % Replace line
     phrase(dcg_replace(FromDCG, ToDCG), L1, L2),
-    
+
     % DEB
     (
       L1 \= L2
@@ -71,7 +72,7 @@ replace_in_file(Out, FromDCG, ToDCG) -->
     ;
       true
     ),
-    
+
     % Write line
     put_codes(Out, L2),
     flush_output(Out)

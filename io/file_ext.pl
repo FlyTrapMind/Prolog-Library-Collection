@@ -144,8 +144,8 @@ In line with the terminology this modules uses the following variable names:
 :- use_module(plc(generics/list_ext)).
 :- use_module(plc(generics/meta_ext)).
 :- use_module(plc(math/math_ext)).
-:- use_module(plc(os/dir_ext)).
-:- use_module(plc(os/file_gnu)).
+:- use_module(plc(io/dir_ext)).
+:- use_module(plc(io/file_gnu)).
 :- use_module(plc(os/os_ext)).
 :- use_module(plc(prolog/pl_mode)).
 

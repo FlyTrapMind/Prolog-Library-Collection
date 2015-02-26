@@ -12,6 +12,9 @@
                              % -Path:atom
     input_password/2, % +Message:string
                       % -UnencryptedPassword:list(code)
+    user_input/3, % +Message:atom
+                  % :LegalAnswer
+                  % -Answer
     user_interaction/5 % +Action:atom
                        % :Goal
                        % +Headers:list(atom)
@@ -26,26 +29,28 @@ Handles user input and sequences in which user input is needed continuously
 (called "user interaction").
 
 @author Wouter Beek
-@version 2013/10-2013/12, 2014/11
+@version 2013/10-2013/12, 2014/11-2014/12
 */
 
 :- use_module(library(filesex)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(string_ext)).
-:- use_module(os(file_ext)).
-
-:- use_module(plDcg(dcg_abnf)).
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_file)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_file)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(dcg/dcg_unicode)).
+:- use_module(plc(generics/string_ext)).
+:- use_module(plc(io/file_ext)).
 
 :- meta_predicate(user_input(+,3,+)).
 :- meta_predicate(user_interaction(+,+,:,+,+)).
 :- meta_predicate(user_interaction(+,+,:,+,+,+,+)).
 :- meta_predicate(user_interaction(+,+,+,:,+,+,+,+)).
+
+
 
 
 
@@ -115,6 +120,19 @@ input_password(Msg0, UnencryptedPassword):-
 
 input_password(Codes) -->
   'm*'(7, graphic, Codes, []).
+
+
+
+%! user_input(+Message:atom, :LegalAnswer, -Answer) is det.
+
+user_input(Msg, Legal, Answer):-
+  repeat,
+  format(user_output, '~w\n', [Msg]),
+  read_line_to_codes(user_input, Codes),
+  (   once(phrase(dcg_call_cp(Legal, Answer), Codes))
+  ->  !
+  ;   fail
+  ).
 
 
 
@@ -226,20 +244,9 @@ user_interaction(y, Act, G, I1, L, Hs, Ts, Options):- !,
 
 
 
-% HELPERS
-
-%! user_input(+Message:atom, :LegalAnswer, -Answer) is det.
-
-user_input(Msg, Legal, Answer):-
-  repeat,
-  format(user_output, '~w\n', [Msg]),
-  read_line_to_codes(user_input, Codes),
-  (   once(phrase(dcg_call_cp(Legal, Answer), Codes))
-  ->  !
-  ;   fail
-  ).
 
 
+% HELPERS %
 
 %! user_interaction(-LegalUserInput:char)// is semidet.
 

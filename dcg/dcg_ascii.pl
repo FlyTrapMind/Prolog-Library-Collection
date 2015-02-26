@@ -15,8 +15,8 @@
                     % ?Index:between(1,26)
     acknowledgement//0,
     acknowledgement//1, % ?Code:code
-    alpha_numeric//0,
-    alpha_numeric//1, % ?Code:code
+    ascii_alpha_numeric//0,
+    ascii_alpha_numeric//1, % ?Code:code
     ampersand//0,
     ampersand//1, % ?Code:code
     ampersat//0,
@@ -57,10 +57,10 @@
     binary_digit//1, % ?Code:code
     binary_digit//2, % ?Weight:between(0,1)
                      % ?Code:code
-    bracket//0,
-    bracket//1, % ?Code:code
-    bracket//2, % ?Type:oneof([angular,curly,round,square])
-                % ?Code:code
+    ascii_bracket//0,
+    ascii_bracket//1, % ?Code:code
+    ascii_bracket//2, % ?Type:oneof([angular,curly,round,square])
+                      % ?Code:code
     c//0,
     c//1, % ?Code:code
     c//2, % ?Code:code
@@ -91,10 +91,10 @@
     closing_angular_bracket//1, % ?Code:code
     closing_angular_bracket//2, % ?Type:oneof([angular])
                                 % ?Code:code
-    closing_bracket//0,
-    closing_bracket//1, % ?Code:code
-    closing_bracket//2, % ?Type:oneof([angular,curly,round,square])
-                        % ?Code:code
+    ascii_closing_bracket//0,
+    ascii_closing_bracket//1, % ?Code:code
+    ascii_closing_bracket//2, % ?Type:oneof([angular,curly,round,square])
+                              % ?Code:code
     closing_curly_bracket//0,
     closing_curly_bracket//1, % ?Code:code
     closing_curly_bracket//2, % ?Type:oneof([curly])
@@ -231,8 +231,8 @@
     g_uppercase//1, % ?Code:code
     g_uppercase//2, % ?Code:code
                     % ?Index:between(1,26)
-    graphic//0,
-    graphic//1, % ?Code:code
+    ascii_graphic//0,
+    ascii_graphic//1, % ?Code:code
     grave_accent//0,
     grave_accent//1, % ?Code:code
     greater_than_sign//0,
@@ -311,24 +311,24 @@
                     % ?Index:between(1,26)
     less_than_sign//0,
     less_than_sign//1, % ?Code:code
-    letter//0,
-    letter//1, % ?Code:code
-    letter//2, % ?Code:code
-               % ?Index:between(1,26)
-    letter_lowercase//0,
-    letter_lowercase//1, % ?Code:code
-    letter_lowercase//2, % ?Code:code
-                         % ?Index:between(1,26)
-    letter_uppercase//0,
-    letter_uppercase//1, % ?Code:code
-    letter_uppercase//2, % ?Code:code
-                         % ?Index:between(1,26)
+    ascii_letter//0,
+    ascii_letter//1, % ?Code:code
+    ascii_letter//2, % ?Code:code
+                     % ?Index:between(1,26)
+    ascii_letter_lowercase//0,
+    ascii_letter_lowercase//1, % ?Code:code
+    ascii_letter_lowercase//2, % ?Code:code
+                               % ?Index:between(1,26)
+    ascii_letter_uppercase//0,
+    ascii_letter_uppercase//1, % ?Code:code
+    ascii_letter_uppercase//2, % ?Code:code
+                               % ?Index:between(1,26)
     line_feed//0,
     line_feed//1, % ?Code:code
     line_tabulation//0,
     line_tabulation//1, % ?Code:code
-    line_terminator//0,
-    line_terminator//1, % ?Code:code
+    ascii_line_terminator//0,
+    ascii_line_terminator//1, % ?Code:code
     m//0,
     m//1, % ?Code:code
     m//2, % ?Code:code
@@ -389,10 +389,10 @@
     opening_angular_bracket//1, % ?Code:code
     opening_angular_bracket//2, % ?Type:oneof([angular])
                                 % ?Code:code
-    opening_bracket//0,
-    opening_bracket//1, % ?Code:code
-    opening_bracket//2, % ?Type:oneof([angular,curly,round,square])
-                        % ?Code:code
+    ascii_opening_bracket//0,
+    ascii_opening_bracket//1, % ?Code:code
+    ascii_opening_bracket//2, % ?Type:oneof([angular,curly,round,square])
+                              % ?Code:code
     opening_curly_bracket//0,
     opening_curly_bracket//1, % ?Code:code
     opening_curly_bracket//2, % ?Type:oneof([curly])
@@ -425,10 +425,10 @@
     plus_sign//1, % ?Code:code
     positive_acknowledgement//0,
     positive_acknowledgement//1, % ?Code:code
-    print//0,
-    print//1, % ?Code:code
-    punctuation//0,
-    punctuation//1, % ?Code:code
+    ascii_print//0,
+    ascii_print//1, % ?Code:code
+    ascii_punctuation//0,
+    ascii_punctuation//1, % ?Code:code
     q//0,
     q//1, % ?Code:code
     q//2, % ?Code:code
@@ -521,8 +521,8 @@
     t_uppercase//1, % ?Code:code
     t_uppercase//2, % ?Code:code
                     % ?Index:between(1,26)
-    tab//0,
-    tab//1, % ?Code:code
+    ascii_tab//0,
+    ascii_tab//1, % ?Code:code
     three//0,
     three//1, % ?Code:code
     three//2, % ?Weight:between(3,3)
@@ -577,8 +577,8 @@
     w_uppercase//1, % ?Code:code
     w_uppercase//2, % ?Code:code
                     % ?Index:between(1,26)
-    white//0,
-    white//1, % ?Code:code
+    ascii_white//0,
+    ascii_white//1, % ?Code:code
     x//0,
     x//1, % ?Code:code
     x//2, % ?Code:code
@@ -664,9 +664,9 @@ possibly returning the bracket type to the calling context:
 
 ```prolog
 bracketed_content(Type, Dcg) -->
-  opening_bracket(Type, _),
+  ascii_opening_bracket(Type, _),
   Dcg,
-  closing_bracket(Type, _).
+  ascii_closing_bracket(Type, _).
 ```
 
 The above can e.g. be use to parse
@@ -678,7 +678,7 @@ markdown_url(Label, Url) -->
   bracketed_content(round, Url).
 ```
 
---
+---
 
 @author Wouter Beek
 @compat http://www.ascii-code.com/
@@ -719,13 +719,13 @@ acknowledgement --> acknowledgement(_).
 acknowledgement(Code) --> negative_acknowledgement(Code).
 acknowledgement(Code) --> positive_acknowledgement(Code).
 
-%! alpha_numeric// .
-%! alpha_numeric(?Code:code)// .
+%! ascii_alpha_numeric// .
+%! ascii_alpha_numeric(?Code:code)// .
 % ASCII alpha-numeric characters are ASCII letters and digits.
 
-alpha_numeric --> alpha_numeric(_).
-alpha_numeric(Code) --> letter(Code).
-alpha_numeric(Code) --> decimal_digit(_, Code).
+ascii_alpha_numeric --> ascii_alpha_numeric(_).
+ascii_alpha_numeric(Code) --> ascii_letter(Code).
+ascii_alpha_numeric(Code) --> decimal_digit(_, Code).
 
 %! ampersand// .
 %! ampersand(?Code:code)// .
@@ -833,14 +833,14 @@ binary_digit(Weight) --> binary_digit(Weight, _).
 binary_digit(Weight, Code) --> zero(Weight, Code).
 binary_digit(Weight, Code) --> one(Weight, Code).
 
-%! bracket// .
-%! bracket(?Code:code)// .
+%! ascii_bracket// .
+%! ascii_bracket(?Code:code)// .
 %! bracket(?Type:oneof([angular,curly,round,square]), ?Code:code)// .
 
-bracket --> bracket(_).
-bracket(Code) --> bracket(_, Code).
-bracket(Type, Code) --> closing_bracket(Type, Code).
-bracket(Type, Code) --> opening_bracket(Type, Code).
+ascii_bracket --> ascii_bracket(_).
+ascii_bracket(Code) --> ascii_bracket(_, Code).
+ascii_bracket(Type, Code) --> ascii_closing_bracket(Type, Code).
+ascii_bracket(Type, Code) --> ascii_opening_bracket(Type, Code).
 
 %! c// .
 %! c(?Code:code)// .
@@ -891,8 +891,8 @@ carriage_return(13) --> [13].
 
 character --> character(_).
 character(Code) --> control(Code).
-character(Code) --> graphic(Code).
-character(Code) --> white(Code).
+character(Code) --> ascii_graphic(Code).
+character(Code) --> ascii_white(Code).
 
 %! character_tabulation// .
 %! character_tabulation(?Code:code)// .
@@ -917,19 +917,19 @@ closing_angular_bracket --> closing_angular_bracket(_).
 closing_angular_bracket(Code) --> closing_angular_bracket(_, Code).
 closing_angular_bracket(angular, Code) --> greater_than_sign(Code).
 
-%! closing_bracket// .
-%! closing_bracket(?Code:code)// .
-%! closing_bracket(
+%! ascii_closing_bracket// .
+%! ascii_closing_bracket(?Code:code)// .
+%! ascii_closing_bracket(
 %!   ?Type:oneof([angular,curly,round,square]),
 %!   ?Code:code
 %! )// .
 
-closing_bracket --> closing_bracket(_).
-closing_bracket(Code) --> closing_bracket(_, Code).
-closing_bracket(Type, Code) --> closing_angular_bracket(Type, Code).
-closing_bracket(Type, Code) --> closing_curly_bracket(Type, Code).
-closing_bracket(Type, Code) --> closing_round_bracket(Type, Code).
-closing_bracket(Type, Code) --> closing_square_bracket(Type, Code).
+ascii_closing_bracket --> ascii_closing_bracket(_).
+ascii_closing_bracket(Code) --> ascii_closing_bracket(_, Code).
+ascii_closing_bracket(Type, Code) --> closing_angular_bracket(Type, Code).
+ascii_closing_bracket(Type, Code) --> closing_curly_bracket(Type, Code).
+ascii_closing_bracket(Type, Code) --> closing_round_bracket(Type, Code).
+ascii_closing_bracket(Type, Code) --> closing_square_bracket(Type, Code).
 
 %! closing_curly_bracket// .
 %! closing_curly_bracket(?Code:code)// .
@@ -1004,7 +1004,7 @@ control(Code) --> start_of_heading(Code).
 control(Code) --> start_of_text(Code).
 control(Code) --> substitute(Code).
 control(Code) --> synchronous_idle(Code).
-control(Code) --> tab(Code).
+control(Code) --> ascii_tab(Code).
 control(Code) --> unit_separator(Code).
 
 %! copyright// .
@@ -1304,14 +1304,14 @@ g_uppercase --> g_uppercase(_).
 g_uppercase(Code) --> g_uppercase(Code, _).
 g_uppercase(71, 7) --> [71].
 
-%! graphic// .
-%! graphic(?Code:code)// .
+%! ascii_graphic// .
+%! ascii_graphic(?Code:code)// .
 % ASCII graphic characters are ASCII alpha-numeric characters
 % and ASCII punctuation.
 
-graphic --> graphic(_).
-graphic(Code) --> alpha_numeric(Code).
-graphic(Code) --> punctuation(Code).
+ascii_graphic --> ascii_graphic(_).
+ascii_graphic(Code) --> ascii_alpha_numeric(Code).
+ascii_graphic(Code) --> ascii_punctuation(Code).
 
 %! grave_accent// .
 %! grave_accent(?Code:code)// .
@@ -1494,79 +1494,79 @@ l_uppercase(76, 12) --> [76].
 less_than_sign --> less_than_sign(_).
 less_than_sign(60) --> [60].
 
-%! letter// .
-%! letter(?Code:code)// .
+%! ascii_letter// .
+%! ascii_letter(?Code:code)// .
 
-letter --> letter(_).
-letter(Code) --> letter(Code, _).
-letter(Code, Index) --> letter_lowercase(Code, Index).
-letter(Code, Index) --> letter_uppercase(Code, Index).
+ascii_letter --> ascii_letter(_).
+ascii_letter(Code) --> ascii_letter(Code, _).
+ascii_letter(Code, Index) --> ascii_letter_lowercase(Code, Index).
+ascii_letter(Code, Index) --> ascii_letter_uppercase(Code, Index).
 
-%! letter_lowercase// .
-%! letter_lowercase(?Code:code)// .
-%! letter_lowercase(?Code:code, ?Index:between(1,26))// .
+%! ascii_letter_lowercase// .
+%! ascii_letter_lowercase(?Code:code)// .
+%! ascii_letter_lowercase(?Code:code, ?Index:between(1,26))// .
 
-letter_lowercase --> letter_lowercase(_).
-letter_lowercase(Code) --> letter_lowercase(Code, _).
-letter_lowercase(Code, Index) --> a_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> b_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> c_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> d_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> e_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> f_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> g_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> h_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> i_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> j_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> k_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> l_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> m_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> n_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> o_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> p_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> q_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> r_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> s_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> t_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> u_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> v_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> w_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> x_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> y_lowercase(Code, Index).
-letter_lowercase(Code, Index) --> z_lowercase(Code, Index).
+ascii_letter_lowercase --> ascii_letter_lowercase(_).
+ascii_letter_lowercase(Code) --> ascii_letter_lowercase(Code, _).
+ascii_letter_lowercase(Code, Index) --> a_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> b_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> c_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> d_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> e_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> f_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> g_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> h_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> i_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> j_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> k_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> l_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> m_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> n_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> o_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> p_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> q_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> r_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> s_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> t_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> u_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> v_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> w_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> x_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> y_lowercase(Code, Index).
+ascii_letter_lowercase(Code, Index) --> z_lowercase(Code, Index).
 
-%! letter_uppercase// .
-%! letter_uppercase(?Code:code)// .
-%! letter_uppercase(?Code:code, ?Index:between(1,26))// .
+%! ascii_letter_uppercase// .
+%! ascii_letter_uppercase(?Code:code)// .
+%! ascii_letter_uppercase(?Code:code, ?Index:between(1,26))// .
 
-letter_uppercase --> letter_uppercase(_).
-letter_uppercase(Code) --> letter_uppercase(Code, _).
-letter_uppercase(Code, Index) --> a_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> b_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> c_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> d_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> e_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> f_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> g_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> h_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> i_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> j_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> k_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> l_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> m_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> n_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> o_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> p_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> q_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> r_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> s_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> t_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> u_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> v_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> w_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> x_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> y_uppercase(Code, Index).
-letter_uppercase(Code, Index) --> z_uppercase(Code, Index).
+ascii_letter_uppercase --> ascii_letter_uppercase(_).
+ascii_letter_uppercase(Code) --> ascii_letter_uppercase(Code, _).
+ascii_letter_uppercase(Code, Index) --> a_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> b_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> c_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> d_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> e_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> f_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> g_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> h_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> i_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> j_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> k_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> l_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> m_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> n_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> o_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> p_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> q_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> r_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> s_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> t_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> u_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> v_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> w_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> x_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> y_uppercase(Code, Index).
+ascii_letter_uppercase(Code, Index) --> z_uppercase(Code, Index).
 
 %! line_feed// .
 %! line_feed(?Code:code)// .
@@ -1580,14 +1580,14 @@ line_feed(10) --> [10].
 line_tabulation --> line_tabulation(_).
 line_tabulation(Code) --> vertical_tab(Code).
 
-%! line_terminator// .
-%! line_terminator(?Code:code)// .
+%! ascii_line_terminator// .
+%! ascii_line_terminator(?Code:code)// .
 
-line_terminator --> line_terminator(_).
-line_terminator(Code) --> carriage_return(Code).
-line_terminator(Code) --> form_feed(Code).
-line_terminator(Code) --> line_feed(Code).
-line_terminator(Code) --> vertical_tab(Code).
+ascii_line_terminator --> ascii_line_terminator(_).
+ascii_line_terminator(Code) --> carriage_return(Code).
+ascii_line_terminator(Code) --> form_feed(Code).
+ascii_line_terminator(Code) --> line_feed(Code).
+ascii_line_terminator(Code) --> vertical_tab(Code).
 
 %! m// .
 %! m(?Code:code)// .
@@ -1726,19 +1726,19 @@ opening_angular_bracket --> opening_angular_bracket(_).
 opening_angular_bracket(Code) --> less_than_sign(Code).
 opening_angular_bracket(angular, Code) --> opening_angular_bracket(Code).
 
-%! opening_bracket// .
-%! opening_bracket(?Code:code)// .
-%! opening_bracket(
+%! ascii_opening_bracket// .
+%! ascii_opening_bracket(?Code:code)// .
+%! ascii_opening_bracket(
 %!   ?Type:oneof([angular,curly,round,square]),
 %!   ?Code:code
 %! )// .
 
-opening_bracket --> opening_bracket(_).
-opening_bracket(Code) --> opening_bracket(_, Code).
-opening_bracket(Type, Code) --> opening_angular_bracket(Type, Code).
-opening_bracket(Type, Code) --> opening_curly_bracket(Type, Code).
-opening_bracket(Type, Code) --> opening_round_bracket(Type, Code).
-opening_bracket(Type, Code) --> opening_square_bracket(Type, Code).
+ascii_opening_bracket --> ascii_opening_bracket(_).
+ascii_opening_bracket(Code) --> ascii_opening_bracket(_, Code).
+ascii_opening_bracket(Type, Code) --> opening_angular_bracket(Type, Code).
+ascii_opening_bracket(Type, Code) --> opening_curly_bracket(Type, Code).
+ascii_opening_bracket(Type, Code) --> opening_round_bracket(Type, Code).
+ascii_opening_bracket(Type, Code) --> opening_square_bracket(Type, Code).
 
 %! opening_curly_bracket// .
 %! opening_curly_bracket(?Code:code)// .
@@ -1813,45 +1813,45 @@ plus_sign(43) --> [43].
 positive_acknowledgement --> positive_acknowledgement(_).
 positive_acknowledgement(6) --> [6].
 
-%! print// .
-%! print(?Code:code)// .
+%! ascii_print// .
+%! ascii_print(?Code:code)// .
 % ASCII print characters are ASCII graphic characters and space.
 
-print --> print(_).
-print(Code) --> graphic(Code).
-print(Code) --> space(Code).
+ascii_print --> ascii_print(_).
+ascii_print(Code) --> ascii_graphic(Code).
+ascii_print(Code) --> space(Code).
 
-%! punctuation// .
-%! punctuation(?Code:code)// .
+%! ascii_punctuation// .
+%! ascii_punctuation(?Code:code)// .
 % ASCII punctuation characters.
 
-punctuation --> punctuation(_).
-punctuation(Code) --> ampersand(Code).
-punctuation(Code) --> apostrophe(Code).
-punctuation(Code) --> asterisk(Code).
-punctuation(Code) --> at_sign(Code).
-punctuation(Code) --> bracket(Code).
-punctuation(Code) --> caret(Code).
-punctuation(Code) --> colon(Code).
-punctuation(Code) --> comma(Code).
-punctuation(Code) --> dollar_sign(Code).
-punctuation(Code) --> dot(Code).
-punctuation(Code) --> double_quote(Code).
-punctuation(Code) --> equals_sign(Code).
-punctuation(Code) --> exclamation_mark(Code).
-punctuation(Code) --> grave_accent(Code).
-punctuation(Code) --> greater_than_sign(Code).
-punctuation(Code) --> hyphen_minus(Code).
-punctuation(Code) --> less_than_sign(Code).
-punctuation(Code) --> number_sign(Code).
-punctuation(Code) --> percent_sign(Code).
-punctuation(Code) --> plus_sign(Code).
-punctuation(Code) --> question_mark(Code).
-punctuation(Code) --> semi_colon(Code).
-punctuation(Code) --> slash(Code).
-punctuation(Code) --> tilde(Code).
-punctuation(Code) --> underscore(Code).
-punctuation(Code) --> vertical_bar(Code).
+ascii_punctuation --> ascii_punctuation(_).
+ascii_punctuation(Code) --> ampersand(Code).
+ascii_punctuation(Code) --> apostrophe(Code).
+ascii_punctuation(Code) --> asterisk(Code).
+ascii_punctuation(Code) --> at_sign(Code).
+ascii_punctuation(Code) --> ascii_bracket(Code).
+ascii_punctuation(Code) --> caret(Code).
+ascii_punctuation(Code) --> colon(Code).
+ascii_punctuation(Code) --> comma(Code).
+ascii_punctuation(Code) --> dollar_sign(Code).
+ascii_punctuation(Code) --> dot(Code).
+ascii_punctuation(Code) --> double_quote(Code).
+ascii_punctuation(Code) --> equals_sign(Code).
+ascii_punctuation(Code) --> exclamation_mark(Code).
+ascii_punctuation(Code) --> grave_accent(Code).
+ascii_punctuation(Code) --> greater_than_sign(Code).
+ascii_punctuation(Code) --> hyphen_minus(Code).
+ascii_punctuation(Code) --> less_than_sign(Code).
+ascii_punctuation(Code) --> number_sign(Code).
+ascii_punctuation(Code) --> percent_sign(Code).
+ascii_punctuation(Code) --> plus_sign(Code).
+ascii_punctuation(Code) --> question_mark(Code).
+ascii_punctuation(Code) --> semi_colon(Code).
+ascii_punctuation(Code) --> slash(Code).
+ascii_punctuation(Code) --> tilde(Code).
+ascii_punctuation(Code) --> underscore(Code).
+ascii_punctuation(Code) --> vertical_bar(Code).
 
 %! q// .
 %! q(?Code:code)// .
@@ -2078,13 +2078,13 @@ t_uppercase --> t_uppercase(_).
 t_uppercase(Code) --> t_uppercase(Code, _).
 t_uppercase(84, 20) --> [84].
 
-%! tab// .
-%! tab(?Code:code)// .
+%! ascii_tab// .
+%! ascii_tab(?Code:code)// .
 % Horizontal and vertical tabs are both **tabs**.
 
-tab --> tab(_).
-tab(Code) --> horizontal_tab(Code).
-tab(Code) --> vertical_tab(Code).
+ascii_tab --> ascii_tab(_).
+ascii_tab(Code) --> horizontal_tab(Code).
+ascii_tab(Code) --> vertical_tab(Code).
 
 %! three// .
 %! three(?Code:code)// .
@@ -2105,8 +2105,8 @@ tilde(126) --> [126].
 %! two(?Weight:between(2,2), ?Code:code)// .
 
 two --> two(_).
-two(50) --> [50].
-two(2, Code) --> two(Code).
+two(Code) --> two(_, Code).
+two(2, 50) --> [50].
 
 %! u// .
 %! u(?Code:code)// .
@@ -2207,18 +2207,18 @@ w_uppercase --> w_uppercase(_).
 w_uppercase(Code) --> w_uppercase(Code, _).
 w_uppercase(87, 23) --> [87].
 
-%! white// .
-%! white(?Code:code)// .
+%! ascii_white// .
+%! ascii_white(?Code:code)// .
 % ASCII **whites** are end-of-line, form feed, space and the two tabs.
 %
 % @compat http://en.wikipedia.org/wiki/Whitespace_character
 
-white --> white(_).
-white(Code) --> carriage_return(Code).
-white(Code) --> form_feed(Code).
-white(Code) --> line_feed(Code).
-white(Code) --> space(Code).
-white(Code) --> tab(Code).
+ascii_white --> ascii_white(_).
+ascii_white(Code) --> carriage_return(Code).
+ascii_white(Code) --> form_feed(Code).
+ascii_white(Code) --> line_feed(Code).
+ascii_white(Code) --> space(Code).
+ascii_white(Code) --> ascii_tab(Code).
 
 %! x// .
 %! x(?Code:code)// .

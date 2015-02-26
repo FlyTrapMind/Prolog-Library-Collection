@@ -18,7 +18,7 @@ Extensions for executing Java JARs from within Prolog.
 :- use_module(library(option)).
 
 :- use_module(plc(generics/db_ext)).
-:- use_module(plc(os/run_ext)).
+:- use_module(plc(process/run_ext)).
 
 :- db_add_novel(user:prolog_file_type(jar, jar)).
 :- db_add_novel(user:prolog_file_type(log, log)).

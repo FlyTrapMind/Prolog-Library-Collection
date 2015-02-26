@@ -29,7 +29,7 @@ Extensions for date and time.
 */
 
 :- use_module(plc(generics/meta_ext)).
-:- use_module(plc(os/dir_ext)).
+:- use_module(plc(io/dir_ext)).
 
 
 

@@ -44,27 +44,28 @@ For convenience's sake, the following collection instances are supported:
   - Tuple
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05
+@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05, 2015/01
 */
 
 :- use_module(library(option)).
 
-:- use_module(generics(meta_ext)).
-:- use_module(generics(option_ext)).
-
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
+:- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(generics/meta_ext)).
+:- use_module(plc(generics/option_ext)).
 
 :- meta_predicate(collection(//,//,2,//,3,+,?,?)).
-:- meta_predicate(collection_inner(//,//,2,//,3,+,?,?)).
 :- meta_predicate(list(3,+,?,?)).
 :- meta_predicate(nvpair(3,+,+,?,?)).
 :- meta_predicate(pair(+,3,+,?,?)).
 :- meta_predicate(pair(+,3,+,+,?,?)).
 :- meta_predicate(set(3,+,?,?)).
 :- meta_predicate(tuple(+,3,+,?,?)).
+
+
 
 
 
@@ -89,34 +90,21 @@ For convenience's sake, the following collection instances are supported:
 collection(Begin, End, Ordering, Separator, ElementWriter, Elements1) -->
   % Allow an arbitrary ordering to be enforced, e.g. list_to_set/2.
   {
+    is_list(Elements1), !,
     default(=, Ordering),
     once(call(Ordering, Elements1, Elements2))
   },
   dcg_between(
     Begin,
-    collection_inner(
-      Begin,
-      End,
-      Ordering,
-      Separator,
-      ElementWriter,
-      Elements2
+    '*'(
+      collection(Begin, End, Ordering, Separator, ElementWriter),
+      Elements2,
+      [separator(Separator)]
     ),
     End
   ).
-
-% Done!
-collection_inner(_, _, _, _, _, []) --> !, [].
-% Nested collection.
-collection_inner(Begin, End, Ordering, Separator, ElementWriter, [H|T]) -->
-  {is_list(H)}, !,
-  collection(Begin, End, Ordering, Separator, ElementWriter, H),
-  collection_inner(Begin, End, Ordering, Separator, ElementWriter, T).
-% Non-collection element in collection.
-collection_inner(Begin, End, Ordering, Separator, ElementWriter, [H|T]) -->
-  dcg_call_cp(ElementWriter, H),
-  dcg_yn_separator(T, Separator),
-  collection_inner(Begin, End, Ordering, Separator, ElementWriter, T).
+collection(_, _, _, _, ElementWriter, Element) -->
+  dcg_call_cp(ElementWriter, Element).
 
 
 

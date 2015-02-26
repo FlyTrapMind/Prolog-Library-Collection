@@ -3,8 +3,16 @@
   [
     alpha_numeric//0,
     alpha_numeric//1, % ?Code:nonneg
+    bracket//0,
+    bracket//1, % ?Code:code
+    bracket//2, % ?Type:oneof([angular,curly,langular,round,square])
+                % ?Code:code
     character_tie//0,
     character_tie//1, % ?Code:nonneg
+    closing_bracket//0,
+    closing_bracket//1, % ?Code:code
+    closing_bracket//2, % ?Type:oneof([angular,curly,langular,round,square])
+                        % ?Code:code
     graphic//0,
     graphic//1, % ?Code:nonneg
     letter//0,
@@ -19,8 +27,14 @@
     line_terminator//1, % ?Code:nonneg
     middle_dot//0,
     middle_dot//1, % ?Code:nonneg
+    models//0,
+    models//1, % ?Code:nonneg
     next_line//0,
     next_line//1, % ?Code:nonneg
+    opening_bracket//0,
+    opening_bracket//1, % ?Code:code
+    opening_bracket//2, % ?Type:oneof([angular,curly,langular,round,square])
+                        % ?Code:code
     orgham_space_mark//0,
     orgham_space_mark//1, % ?Code:nonneg
     punctuation//0,
@@ -41,16 +55,12 @@
 DCG rules that encode characters from the UNICODE standard.
 
 @author Wouter Beek
-@version 2013/07, 2013/09, 2014/10
+@version 2013/07, 2013/09, 2014/10, 2014/12
 */
 
-:- use_module(
-  dcg_ascii,
-  [
-    line_terminator//1 as ascii_line_terminator, % ?Code:nonneg
-    white//1 as ascii_white % ?Code:nonneg
-  ]
-).
+:- use_module(plc(dcg/dcg_ascii)).
+
+
 
 
 
@@ -66,11 +76,32 @@ alpha_numeric(Code) -->
   [Code],
   {code_type(Code, alnum)}.
 
+%! bracket// .
+%! bracket(?Code:code)// .
+%! bracket(?Type:oneof([angular,curly,langular,round,square]), ?Code:code)// .
+
+bracket --> bracket(_).
+bracket(Code) --> bracket(_, Code).
+bracket(Type, Code) --> closing_bracket(Type, Code).
+bracket(Type, Code) --> opening_bracket(Type, Code).
+
 %! character_tie// .
 %! character_tie(?Code:nonneg)// .
 
 character_tie --> character_tie(_).
 character_tie(8256) --> [8256].
+
+%! closing_bracket// .
+%! closing_bracket(?Code:code)// .
+%! closing_bracket(
+%!   ?Type:oneof([angular,curly,langular,round,square]),
+%!   ?Code:code
+%! )// .
+
+closing_bracket --> closing_bracket(_).
+closing_bracket(Code) --> closing_bracket(_, Code).
+closing_bracket(Type, Code) --> ascii_closing_bracket(Type, Code).
+closing_bracket(langular, 12297) --> [12297].
 
 %! graphic// .
 %! graphic(?Code:nonneg)// .
@@ -125,6 +156,12 @@ line_terminator(Code) --> paragraph_separator(Code).
 middle_dot --> middle_dot(_).
 middle_dot(183) --> [183].
 
+%! models// .
+%! models(?Code:nonneg)// .
+
+models --> models(_).
+models(8871) --> [8871].
+
 %! next_line// .
 %! next_line(?Code:nonneg)// .
 
@@ -136,6 +173,18 @@ next_line(133) --> [133].
 
 nonbreaking_space --> nonbreaking_space(_).
 nonbreaking_space(160) --> [160].
+
+%! opening_bracket// .
+%! opening_bracket(?Code:code)// .
+%! opening_bracket(
+%!   ?Type:oneof([angular,curly,langular,round,square]),
+%!   ?Code:code
+%! )// .
+
+opening_bracket --> opening_bracket(_).
+opening_bracket(Code) --> opening_bracket(_, Code).
+opening_bracket(Type, Code) --> ascii_opening_bracket(Type, Code).
+opening_bracket(langular, 12296) --> [12296].
 
 %! orgham_space_mark// .
 %! orgham_space_mark(?Code:nonneg)// .

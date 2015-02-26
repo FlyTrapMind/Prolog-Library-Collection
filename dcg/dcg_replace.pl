@@ -209,11 +209,13 @@ Is it possible to use DCG pushback lists in order to replace occurrences of an a
 
 :- use_module(library(error)).
 
-:- use_module(plDcg(dcg_generics)).
+:- use_module(plc(dcg/dcg_generics)).
 
 :- meta_predicate(dcg_replace(//,//,?,?)).
 :- meta_predicate(dcg_replace0(//,//,?,?)).
 :- meta_predicate(is_not_nullable(//)).
+
+
 
 
 

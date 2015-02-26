@@ -18,11 +18,8 @@ directories that are used for certain purposes, e.g. output, data, trash.
 @version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04, 2014/10-2014/11
 */
 
-:- use_module(library(filesex)).
-:- use_module(library(option)).
-
-:- use_module(plc(os/dir_ext)).
-:- use_module(plc(os/file_ext)).
+:- use_module(plc(io/dir_ext)).
+:- use_module(plc(io/file_ext)).
 
 
 
@@ -84,10 +81,10 @@ personal_directory_init:-
 personal_directory_init:-
   % Make sure the home directory is there.
   home_init,
-  
+
   % @tbd Multiple projects can be loaded at the same time.
   user:project(Project, _, _),
-  
+
   hidden_file_name(Project, Hidden),
   create_directory(home, [Hidden], _),
   assert(user:file_search_path(personal, home(Hidden))).

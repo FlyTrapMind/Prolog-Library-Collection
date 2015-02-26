@@ -16,11 +16,11 @@ Grammar for printing proofs.
 
 :- use_module(library(option)).
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_atom)).
-:- use_module(plDcg(dcg_bracket)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_generics)).
 
 :- predicate_options(proof//2, 2, [
      pass_to(proofs//3, 3)
@@ -30,6 +30,8 @@ Grammar for printing proofs.
    ]).
 
 :- meta_predicate(proof(:,+,?,?)).
+
+
 
 
 

@@ -1,7 +1,8 @@
 :- module(
-  dcg_c,
+  c,
   [
     c_convert//0,
+    c_double//1,
     c_name//0
   ]
 ).
@@ -9,13 +10,17 @@
 /** <module> DCG rules for the C programming language.
 
 @author Wouter Beek
-@version 2013/02, 2013/06, 2014/01-2014/02
+@version 2013/02, 2013/06, 2014/01-2014/02, 2014/12-2015/01
 */
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(dcg_replace)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_char)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(dcg/dcg_replace)).
+:- use_module(plc(dcg/language/sw_number)).
+
+
 
 
 
@@ -27,7 +32,7 @@
 % ### Example
 %
 % ```prolog
-% ?- use_module(generics(code_ext)).
+% ?- use_module(plc(generics/code_ext)).
 % ?- phrase(c_convert, `aaa\bbbb\nccc\tddd`, X), put_codes(current_output, X).
 % aaabbb
 % cccddd
@@ -37,7 +42,16 @@ c_convert -->
   dcg_maplist(dcg_replace, [`\b`,`\n`,`\t`], [bell,line_feed,horizontal_tab]).
 
 
-%! c_name// is nondet.
+
+%! c_double(?Float:float)// .
+
+c_double(N) -->
+  'DOUBLE'(sparql, N),
+  (char_ci(f) ; char_ci(l) ; "").
+
+
+
+%! c_name// .
 % ### Example
 %
 % ```prolog
@@ -48,13 +62,13 @@ c_convert -->
 c_name -->
   dcg_end.
 c_name, [C] -->
-  letter_lowercase(C),
+  ascii_letter_lowercase(C),
   c_name.
 c_name, [C] -->
   decimal_digit(C),
   c_name.
 c_name, [C2] -->
-  letter_uppercase(C1),
+  ascii_letter_uppercase(C1),
   {to_lower(C1, C2)},
   c_name.
 c_name, "_" -->
