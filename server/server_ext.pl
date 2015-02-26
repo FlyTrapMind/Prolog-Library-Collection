@@ -179,15 +179,15 @@ stop_server(_).
 :- multifile(prolog:message//1).
 
 prolog:message(server_running(Port,StartTime)) -->
-  ['The plServer at port ~d is already in use (start time: '-[Port]],
+  ['The server at port ~d is already in use (start time: '-[Port]],
   time_started(StartTime),
   [').'].
 prolog:message(server_started(Port)) -->
-  ['The plServer started on port ~w.'-[Port]].
+  ['The server started on port ~w.'-[Port]].
 prolog:message(server_stopped(Port)) -->
-  ['The plServer at port ~d has stopped.'-[Port]].
+  ['The server at port ~d has stopped.'-[Port]].
 prolog:message(server_using_existing(Port)) -->
-  ['The plServer at port ~d is reused (start time: '-[Port]],
+  ['The server at port ~d is reused (start time: '-[Port]],
   time_started(Port),
   [').'].
 
