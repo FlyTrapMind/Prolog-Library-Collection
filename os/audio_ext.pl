@@ -34,8 +34,6 @@ In the furture services like Google translate
 
 :- db_add_novel(user:prolog_file_type(mp3, audio)).
 
-:- initialization(init_audio).
-
 
 
 
@@ -74,23 +72,13 @@ google_tts(Line, URI):-
 % Returns the URI for the request to Google for returning
 %  the verbalization of `Line`.
 
-google_tts(Enc, Lang, Line1, URI):-
-%  % Google translate uses plusses.
-%  uri_normalized(Line, NormalizedQuery),
-  
-  % Replace SPACEs with PLUSes.
-  dcg_phrase(dcg_replace([32], [43]), Line1, Line2),
-
-%  % The swipl builtin uri_query_components/3 turns spaces and
-%  % plusses into their symbolic equivalents.
-%  uri_query_components(Search, [ie=Encoding, tl=Language, q=NormalizedQuery]),
-  
-  format(atom(Search), 'ie=~w&tl=~w&q=~w', [Enc,Lang,Line2]),
-
-  % Create the URI.
+google_tts(Encoding, Language, Line, Uri):-
+  % Replace spaces by plus signs.
+  dcg_phrase(dcg_replace([32], [43]), Line, NormalizedQuery),
+  uri_query_components(Search, [ie=Encoding,tl=Language,q=NormalizedQuery]),
   uri_components(
-    URI,
-    uri_components(http, 'translate.google.com', '/translate_tts', Search, '')
+    Uri,
+    uri_components(http,'translate.google.com','/translate_tts',Search,'')
   ).
 
 
@@ -144,21 +132,8 @@ test:-
   
   % Create a test file.
   new_atom(test, Base),
-  create_file(audio(.), Base, mp3, MP3),
+  create_file(data(.), Base, mp3, MP3),
   
   % Do it.
   lines_to_mp3(Lines, MP3).
 
-
-
-
-
-% INITIALIZATION %
-
-init_audio:-
-  user:file_search_path(audio, _), !.
-init_audio:-
-  absolute_file_name(data(.), DataDir, [access(write),file_type(directory)]),
-  directory_file_path(DataDir, audio, AudioDir),
-  make_directory_path(AudioDir),
-  assert(user:file_search_path(audio, data(audio))).

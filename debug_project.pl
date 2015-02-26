@@ -12,7 +12,7 @@ Generic code for debugging a project:
   * Load all subdirectories and Prolog files contained in those directories.
 
 @author Wouter Beek
-@version 2014/12/30
+@version 2015/02/26
 */
 
 :- use_module(library(ansi_term)).
