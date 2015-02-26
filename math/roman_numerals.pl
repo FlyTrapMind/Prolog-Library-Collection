@@ -18,9 +18,9 @@
 :- use_module(plc(dcg/dcg_char)).
 
 :- predicate_options(roman_digit/2, 2, [
-     case(+oneof([lower,upper])),
-     subtractive_notation(+boolean)
-   ]).
+  case(+oneof([lower,upper])),
+  subtractive_notation(+boolean)
+]).
 
 
 
@@ -42,8 +42,8 @@
 %
 % ### Case
 %
-% Option `case(+oneof([lower,upper]))` is used to set the case of the roman
-% digits.
+% Option `case(+oneof([lower,upper]))` (default `upper`)
+% is used to set the case of the roman digits.
 
 roman_number(N, Options) -->
   {
@@ -103,3 +103,4 @@ roman_digit(9,   true, Case) --> char_case(i, Case), char_case(x, Case).
 roman_digit(5,   _,    Case) --> char_case(v, Case).
 roman_digit(4,   true, Case) --> char_case(i, Case), char_case(v, Case).
 roman_digit(1,   _,    Case) --> char_case(i, Case).
+
