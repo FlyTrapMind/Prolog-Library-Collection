@@ -289,18 +289,18 @@ open_input(Stream, Out, Metadata, Close, Options):-
 
 % C1. File
 open_input(File, Out, Metadata, Close, Options):-
-  exists_file(File), !,
+  catch(exists_file(File), _, fail), !,
   open_input(file(File), Out, Metadata, Close, Options).
 
 % C2. URI
 open_input(Uri, Out, Metadata, Close, Options):-
-  uri_components(Uri, UriComponents), !,
+  catch(uri_components(Uri, UriComponents), _, fail), !,
   open_input(uri_components(UriComponents), Out, Metadata, Close, Options).
 
 % C3. File specification
 open_input(Spec, Out, Metadata, Close, Options):-
-  compound(Spec),
-  absolute_file_name(Spec, _, [access(read),file_errors(fail)]), !,
+  compound(Spec), !,
+  absolute_file_name(Spec, _, [access(read),file_errors(fail)]),
   open_input(file_spec(Spec), Out, Metadata, Close, Options).
 
 % C4. File pattern
