@@ -2,6 +2,7 @@
   dcg_content,
   [
     '...'//0,
+    '...'//1, % -Codes:list(code)
     indent//0,
     indent//1, % +Indent:nonneg
     indent//2, % +Indent:nonneg
@@ -29,7 +30,7 @@
 DCG rules for parsing/generating often-occuring content.
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/05, 2014/10, 2014/12
+@version 2013/07-2013/09, 2013/11-2014/05, 2014/10, 2014/12, 2015/02
 */
 
 :- use_module(library(lists), except([delete/3,subset/2])).
@@ -58,7 +59,20 @@ DCG rules for parsing/generating often-occuring content.
 
 
 
+%! '...'// is nondet.
+
 '...' --> [] | [_], '...'.
+
+
+
+%! '...'(-Codes:list(code))// is nondet.
+
+'...'([]) --> [].
+'...'([H|T]) -->
+  [H],
+  '...'(T).
+
+
 
 %! indent// is det.
 %! indent(+Indent:nonneg)// is det.

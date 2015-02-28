@@ -18,7 +18,7 @@
     weights_binary/2, % ?Weights:list(between(0,15))
                       % ?Binary:nonneg
     weights_nonneg/2, % ?Weights:list(between(0,15))
-                       % ?Decimal:nonneg
+                      % ?Decimal:nonneg
     weights_fraction/2, % +Weights:list(between(0,9))
                         % -Fraction:between(0.0,1.0)
     weights_hexadecimal/2, % ?Weights:list(between(0,15))
