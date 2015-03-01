@@ -48,6 +48,7 @@ replace_in_file(F1, FromDcg, ToDcg, F2):-
     catch(is_absolute_file_name(F2), _, fail),
     new_file_name(F1, F2)
   ),
+  flag(replace_lines, _, 0),
   setup_call_cleanup(
     open(F2, write, Out, [encoding(utf8),type(text)]),
     phrase_from_file(replace_in_file(Out, FromDcg, ToDcg), F1),
@@ -74,6 +75,7 @@ replace_in_file(Out, FromDcg, ToDcg) -->
 
     % Write line
     put_codes(Out, Line2),
+    nl(Out),
     flush_output(Out)
   },
   replace_in_file(Out, FromDcg, ToDcg).
