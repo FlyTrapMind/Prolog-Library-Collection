@@ -272,9 +272,9 @@ open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
   ).
 
 % A6. URI: convert to URI components term.
-open_input(uri(Url), Out, Metadata, Close, Options):- !,
-  uri_components(Url, UriComponents),
-  open_input(UriComponents, Out, Metadata, Close, Options).
+open_input(uri(Uri), Out, Metadata, Close, Options):- !,
+  uri_components(Uri, UriComponents),
+  open_input(uri_components(UriComponents), Out, Metadata, Close, Options).
 
 % A6'. URL: same as URI.
 open_input(url(Url), Out, Metadata, Close, Options):- !,
