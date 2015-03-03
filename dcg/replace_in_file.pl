@@ -51,13 +51,9 @@ replace_in_file(F1, FromDcg, ToDcg, F2):-
   ),
   flag(replace_lines, _, 0),
   setup_call_cleanup(
-    gzopen(F1, read, In),
-    setup_call_cleanup(
-      gzopen(F2, write, Out, [encoding(utf8),type(text)]),
-      phrase_from_stream(replace_in_file(Out, FromDcg, ToDcg), In),
-      close(Out)
-    ),
-    close(In)
+    open(F2, write, Out),
+    phrase_from_file(replace_in_file(Out, FromDcg, ToDcg), F1),
+    close(Out)
   ).
 
 
