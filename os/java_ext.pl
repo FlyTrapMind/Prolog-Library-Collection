@@ -29,7 +29,7 @@ Extensions for executing Java JARs from within Prolog.
 
 :- meta_predicate(run_jar(+,+,:)).
 
-:- is_meta(output_goal).
+is_meta(output_goal).
 
 
 
@@ -42,7 +42,7 @@ Extensions for executing Java JARs from within Prolog.
 
 run_jar(Jar, Args, Options1):-
   meta_options(is_meta, Options1, Options2),
-  
+
   % Set the program option.
   file_base_name(Jar, JarName),
   format(atom(Program), 'Java/JAR ~a', [JarName]),
