@@ -44,7 +44,7 @@ For convenience's sake, the following collection instances are supported:
   - Tuple
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05, 2015/01
+@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05, 2015/01, 2015/03
 */
 
 :- use_module(library(option)).
@@ -113,14 +113,17 @@ collection(_, _, _, _, ElementWriter, Element) -->
 % indentation level.
 
 list(ElementWriter, Elements) -->
-  collection(`[`, `]`, =, `,`, ElementWriter, Elements).
+  collection(`[`, `]`, =, comma, ElementWriter, Elements).
 
 
 
 %! nvpair(:ElementWriter, +Name, +Value)// is det.
 
 nvpair(ElementWriter, Name, Value) -->
-  collection(``, `;`, =, `: `, ElementWriter, [Name,Value]).
+  collection(``, `;`, =, nvpair_sep, ElementWriter, [Name,Value]).
+
+nvpair_sep -->
+  ": ".
 
 
 
@@ -147,14 +150,14 @@ pair(Mode, ElementWriter, E1-E2) -->
 
 pair(Mode, ElementWriter, E1, E2) -->
   {default(ascii, Mode)},
-  collection(langle(Mode), rangle(Mode), =, `,`, ElementWriter, [E1,E2]).
+  collection(langle(Mode), rangle(Mode), =, comma, ElementWriter, [E1,E2]).
 
 
 
 %! set(:ElementWriter, +Elements:list)// is det.
 
 set(ElementWriter, L) -->
-  collection(`{`, `}`, list_to_ord_set, `,`, ElementWriter, L).
+  collection(`{`, `}`, list_to_ord_set, comma, ElementWriter, L).
 
 
 
@@ -169,7 +172,7 @@ set(ElementWriter, L) -->
 
 tuple(Mode, ElementWriter, L) -->
   {default(ascii, Mode)},
-  collection(langle(Mode), rangle(Mode), =, `,`, ElementWriter, L).
+  collection(langle(Mode), rangle(Mode), =, comma, ElementWriter, L).
 
 
 
@@ -177,8 +180,8 @@ tuple(Mode, ElementWriter, L) -->
 
 % HELPERS %
 
-langle(ascii) --> `<`.
-langle(html) --> `&lang;`.
+langle(ascii) --> "<".
+langle(html) --> "&lang;".
 
-rangle(ascii) --> `>`.
-rangle(html) --> `&rang;`.
+rangle(ascii) --> ">".
+rangle(html) --> "&rang;".
