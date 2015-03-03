@@ -50,12 +50,13 @@ Predicates for running external programs.
 :- at_halt(kill_processes).
 
 :- predicate_options(handle_process/3, 3, [
-      status(-nonneg),
-      output_codes(-list(code)),
-      output_stream(-list(code)),
-      program(+atom),
-      pass_to(process_create/3, 3)
-   ]).
+  status(-nonneg),
+  output_codes(-list(code)),
+  output_stream(-list(code)),
+  program(+atom),
+  pass_to(process_create/3, 3),
+  retry(+nonneg)
+]).
 
 
 
