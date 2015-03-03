@@ -20,6 +20,7 @@ Make arbitrary consecutive replacements in text files.
 
 :- use_module(library(apply)).
 :- use_module(library(debug)).
+:- use_module(library(zlib)).
 
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
@@ -50,9 +51,13 @@ replace_in_file(F1, FromDcg, ToDcg, F2):-
   ),
   flag(replace_lines, _, 0),
   setup_call_cleanup(
-    open(F2, write, Out, [encoding(utf8),type(text)]),
-    phrase_from_file(replace_in_file(Out, FromDcg, ToDcg), F1),
-    close(Out)
+    gzopen(F1, read, In),
+    setup_call_cleanup(
+      gzopen(F2, write, Out, [encoding(utf8),type(text)]),
+      phrase_from_stream(replace_in_file(Out, FromDcg, ToDcg), In),
+      close(Out)
+    ),
+    close(In)
   ).
 
 
