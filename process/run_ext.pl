@@ -52,11 +52,15 @@ Predicates for running external programs.
 :- predicate_options(handle_process/3, 3, [
   status(-nonneg),
   output_codes(-list(code)),
-  output_stream(-list(code)),
+  output_goal(+callable),
   program(+atom),
   pass_to(process_create/3, 3),
   retry(+nonneg)
 ]).
+
+:- meta_predicate(handle_process(+,+,:)).
+
+is_meta(output_goal).
 
 
 
@@ -73,57 +77,51 @@ Predicates for running external programs.
 %
 % The following options are supported:
 %   - `output_codes(-Output:list(code))`
-%   - `output_stream(-Output:stream)`
-%     If this is absent then the output stream is closed.
+%   - `output_goal(:Goal)`
+%     Call this goal on the output stream.
 %   - `program(+Program:atom)`
 %     The name of the program as displayed in debug messages.
 %   - `status(-Status:nonneg)`
 %   - Other options are passed to process_create/3.
+%
+% @tbd Output and error is separate threads.
 
 handle_process(Process, Args, Options1):-
-  include(process_create_option, Options1, Options2),
+  meta_options(is_meta, Options1, Options2),
+  include(process_create_option, Options2, Options3),
   merge_options(
-    Options2,
+    Options3,
     [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))],
-    Options3
+    Options4
   ),
   setup_call_cleanup(
-    process_create(path(Process), Args, Options3),
+    process_create(path(Process), Args, Options4),
     (
-      (   option(output_stream(Output0), Options1)
-      ->  Output0 = Output
-      ;   read_stream_to_codes(Output, OutputCodes, [])
+      (   option(output_goal(Goal), Options2)
+      ->  call(Goal, Output)
+      ;   true
       ),
-      read_stream_to_codes(Error, ErrorCodes, []),
-      process_wait(Pid, exit(Status))
+      % Process the status code.
+      process_wait(Pid, exit(Status)),
+      exit_code_handler(Program, Status),
+      (   option(status(Status0), Options2)
+      ->  Status0 = Status
+      ;   true
+      ),
+      % Process the error.
+      read_stream_to_codes(Error, ErrorCodes, [])
     ),
     (
-      (   option(output_stream(_), Options1)
-      ->  true
-      ;   close(Output)
-      ),
+      close(Output),
       close(Error)
     )
   ),
 
-  % Process the output stream.
-  (   option(output_codes(OutputCodes0), Options1)
-  ->  OutputCodes0 = OutputCodes
-  ;   true
-  ),
-
   % Process the error stream.
   print_error(ErrorCodes),
-  (   option(program(Program), Options1)
+  (   option(program(Program), Options2)
   ->  true
   ;   Program = Process
-  ),
-
-  % Process the status code.
-  exit_code_handler(Program, Status),
-  (   option(status(Status0), Options1)
-  ->  Status0 = Status
-  ;   true
   ).
 
 process_create_option(cwd(_)).
