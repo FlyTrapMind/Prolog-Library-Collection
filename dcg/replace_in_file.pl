@@ -20,7 +20,6 @@ Make arbitrary consecutive replacements in text files.
 
 :- use_module(library(apply)).
 :- use_module(library(debug)).
-:- use_module(library(zlib)).
 
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
