@@ -24,8 +24,12 @@ Extensions for executing Java JARs from within Prolog.
 :- db_add_novel(user:prolog_file_type(log, log)).
 
 :- predicate_options(run_jar/3, 3, [
-     pass_to(handle_process/3, 3)
-   ]).
+  pass_to(handle_process/3, 3)
+]).
+
+:- meta_predicate(run_jar(+,+,:)).
+
+:- is_meta(output_goal).
 
 
 
@@ -37,10 +41,12 @@ Extensions for executing Java JARs from within Prolog.
 % Options are passed to process_create/3.
 
 run_jar(Jar, Args, Options1):-
+  meta_options(is_meta, Options1, Options2),
+  
   % Set the program option.
   file_base_name(Jar, JarName),
   format(atom(Program), 'Java/JAR ~a', [JarName]),
-  merge_options([program(Program)], Options1, Options2),
+  merge_options([program(Program)], Options2, Options3),
 
-  handle_process(java, ['-jar',file(Jar)|Args], Options2).
+  handle_process(java, ['-jar',file(Jar)|Args], Options3).
 
