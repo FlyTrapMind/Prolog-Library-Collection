@@ -67,19 +67,19 @@ ssl_verify(
 
 %! close_any(+Outstream, -Metadata:dict) is det.
 
-close_any(Out, Metadata):-
+close_any(In, Metadata):-
   % A BOM (Byte Order Mark) was detected while opening the file for reading
-  (   stream_property(Out, bom(Bom))
+  (   stream_property(In, bom(Bom))
   ->  true
   ;   Bom = false
   ),
-  stream_property(Out, encoding(Encoding)),
-  stream_property(Out, locale(CurrentLocale)),
-  stream_property(Out, newline(NewlineMode)),
-  stream_property(Out, type(Type)),
-  byte_count(Out, Bytes),
-  character_count(Out, Characters),
-  line_count(Out, Lines),
+  stream_property(In, encoding(Encoding)),
+  stream_property(In, locale(CurrentLocale)),
+  stream_property(In, newline(NewlineMode)),
+  stream_property(In, type(Type)),
+  byte_count(In, Bytes),
+  character_count(In, Characters),
+  line_count(In, Lines),
   Metadata = stream{
       'bom-detected':Bom,
       'byte-count':Bytes,
@@ -90,7 +90,7 @@ close_any(Out, Metadata):-
       'newline-mode':NewlineMode,
       'stream-type':Type
   },
-  close(Out).
+  close(In).
 
 
 
@@ -122,11 +122,11 @@ open_any(Input, Substream, Options):-
 %         - `file(+atom)`
 %         - `file_pattern(+atom)`
 %           File pattern, handled by expand_file_name/2.
-%         - `file_spec(+atom)`
+%         - `file_spec(+compound)`
 %           File specification, handled by absolute_file_name/3.
 %         - `stream(+stream)`
 %            A stream which is _not_ automatically closed after processing.
-%         - `uri(+atom)` / `url(+atom)`
+%         - `uri(+atom)`
 %         - `uri_components(+atom,+atom,?atom,?atom,?atom)`
 %
 %       In addition, Input can be given directly as a stream handle.
@@ -180,43 +180,43 @@ open_any(Input, Substream, Metadata, Options):-
 
 %! open_input(
 %!   +Input,
-%!   -Out:stream,
+%!   -In:stream,
 %!   -Metadata:dict,
 %!   -Close:boolean,
 %!   +Options:list(nvpair)
 %! ) is det.
 
 % A1. File
-open_input(file(File), Out, file{path:File}, true, Options1):-
+open_input(file(File), In, file{path:File}, true, Options1):-
   exists_file(File), !,
   merge_options([type(binary)], Options1, Options2),
-  open(File, read, Out, Options2).
+  open(File, read, In, Options2).
 
 % A2. File pattern
 %     @see expand_file_name/2
-open_input(file_pattern(Wildcard), Out, Metadata, Close, Options):-
+open_input(file_pattern(Wildcard), In, Metadata, Close, Options):-
   atom(Wildcard),
   expand_file_name(Wildcard, Files),
   Files \== [], !,
   % NONDET: Backtracking over files.
   member(File, Files),
-  open_input(File, Out, Metadata, Close, Options).
+  open_input(File, In, Metadata, Close, Options).
 
 % A3. File specification.
-open_input(file_spec(Spec), Out, Metadata, Close, Options):-
+open_input(file_spec(Spec), In, Metadata, Close, Options):-
   compound(Spec), !,
   absolute_file_name(Spec, File, [access(read)]),
-  open_input(file(File), Out, Metadata, Close, Options).
+  open_input(file(File), In, Metadata, Close, Options).
 
 % A4. Stream: already opened.
 % @tbd Can we check for read access?
-open_input(stream(Out), Out, stream{stream:Out}, false, _):-
-  is_stream(Out),
-  stream_property(Out, input), !.
+open_input(stream(In), In, stream{stream:In}, false, _):-
+  is_stream(In),
+  stream_property(In, input), !.
 
 % A5. URI Components: opens files and URLs.
 % @compat Only supports URLs with schemes `http` or `https`.
-open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
+open_input(uri_components(UriComponents), In, Metadata, Close, Options1):-
   UriComponents = uri_components(Scheme,Authority,_,_,_),
   % Make sure the URL may be syntactically correct,
   % having at least the required `Scheme` and `Authority` components.
@@ -227,7 +227,7 @@ open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
   uri_components(Uri, UriComponents),
   (   Scheme == file
   ->  uri_file_name(Uri, File),
-      open_input(file(File), Out, Metadata, Close, Options1)
+      open_input(file(File), In, Metadata, Close, Options1)
   ;   http_scheme(Scheme),
       Headers1 = [
           header('Access-Control-Allow-Origin', _),
@@ -248,7 +248,7 @@ open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
         Options1,
         Options2
       ),
-      http_open(Uri, Out, Options2),
+      http_open(Uri, In, Options2),
 
       % Exclude headers that did not occur in the HTTP response.
       exclude(empty_http_header, Headers1, Headers2),
@@ -272,43 +272,39 @@ open_input(uri_components(UriComponents), Out, Metadata, Close, Options1):-
   ).
 
 % A6. URI: convert to URI components term.
-open_input(uri(Url), Out, Metadata, Close, Options):- !,
+open_input(uri(Url), In, Metadata, Close, Options):- !,
   uri_components(Url, UriComponents),
-  open_input(UriComponents, Out, Metadata, Close, Options).
-
-% A6'. URL: same as URI.
-open_input(url(Url), Out, Metadata, Close, Options):- !,
-  open_input(uri(Url), Out, Metadata, Close, Options).
+  open_input(UriComponents, In, Metadata, Close, Options).
 
 
 % B. Stream
-open_input(Stream, Out, Metadata, Close, Options):-
+open_input(Stream, In, Metadata, Close, Options):-
   is_stream(Stream), !,
-  open_input(stream(Stream), Out, Metadata, Close, Options).
+  open_input(stream(Stream), In, Metadata, Close, Options).
 
 
 % C1. File
-open_input(File, Out, Metadata, Close, Options):-
+open_input(File, In, Metadata, Close, Options):-
   catch(exists_file(File), _, fail), !,
-  open_input(file(File), Out, Metadata, Close, Options).
+  open_input(file(File), In, Metadata, Close, Options).
 
 % C2. URI
-open_input(Uri, Out, Metadata, Close, Options):-
+open_input(Uri, In, Metadata, Close, Options):-
   catch(uri_components(Uri, UriComponents), _, fail), !,
-  open_input(uri_components(UriComponents), Out, Metadata, Close, Options).
+  open_input(uri_components(UriComponents), In, Metadata, Close, Options).
 
 % C3. File specification
-open_input(Spec, Out, Metadata, Close, Options):-
+open_input(Spec, In, Metadata, Close, Options):-
   compound(Spec), !,
   absolute_file_name(Spec, _, [access(read),file_errors(fail)]),
-  open_input(file_spec(Spec), Out, Metadata, Close, Options).
+  open_input(file_spec(Spec), In, Metadata, Close, Options).
 
 % C4. File pattern
-open_input(Wildcard, Out, Metadata, Close, Options):-
-  open_input(file_pattern(Wildcard), Out, Metadata, Close, Options).
+open_input(Wildcard, In, Metadata, Close, Options):-
+  open_input(file_pattern(Wildcard), In, Metadata, Close, Options).
 
 
-% D. Out of options...
+% D. In of options...
 open_input(Input, _, _, _, _):-
   print_message(warning, cannot_open(Input)),
   fail.
