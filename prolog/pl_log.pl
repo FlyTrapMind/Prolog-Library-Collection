@@ -62,7 +62,6 @@ replace_blobs(Term, Term).
 
 run_collect_messages(Goal):-
   run_collect_messages(Goal, Status, Warnings),
-gtrace,
   process_warnings(Warnings),
   process_status(Status).
 
