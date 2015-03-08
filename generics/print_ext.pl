@@ -8,6 +8,8 @@
                 % +Format
                 % :Arguments
     indent/1, % +Indent:integer
+    report_on_process/2, % +Message:atom
+                         % :Goal
     tab/0,
     writeln/2 % +Stream:stream
               % +Term
@@ -19,10 +21,13 @@
 Predicates for printing.
 
 @author Wouter Beek
-@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11, 2014/11
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11, 2014/11,
+         2015/03
 */
 
 :- use_module(library(settings)).
+
+:- meta_predicate(report_on_process(+,0)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -79,6 +84,21 @@ indent(Indent):-
 
 
 
+%! report_on_process(+Message:atom, :Goal) is det.
+
+report_on_process(Msg, Goal):-
+  setup_call_catcher_cleanup(
+    print_message(informational, start_process(Msg)),
+    Goal,
+    Exception,
+    (   Exception == true
+    ->  print_message(informational, end_process)
+    ;   print_message(warning, end_process(Exception))
+    )
+  ).
+
+
+
 %! tab.
 
 tab:-
@@ -91,3 +111,20 @@ tab:-
 writeln(Stream, Term):-
   write(Stream, Term),
   nl(Stream).
+
+
+
+
+
+% MESSAGES %
+
+:- multifile(prolog:message//1).
+
+prolog:message(end_process) -->
+  ['done.'].
+
+prolog:message(end_process(Exception)) -->
+  [Exception].
+
+prolog:message(start_process(Msg)) -->
+  [Msg].
