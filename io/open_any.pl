@@ -274,7 +274,7 @@ open_input(uri_components(UriComponents), In, Metadata, Close, Options1):-
 % A6. URI: convert to URI components term.
 open_input(uri(Url), In, Metadata, Close, Options):- !,
   uri_components(Url, UriComponents),
-  open_input(UriComponents, In, Metadata, Close, Options).
+  open_input(uri_components(UriComponents), In, Metadata, Close, Options).
 
 
 % B. Stream
