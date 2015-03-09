@@ -9,6 +9,8 @@
     '[a-zA-Z]*'//1, % ?Codes:list(code)
     '[a-zA-Z]+'//1, % ?Codes:list(code)
     '[0-9]'//1, % ?Digit:between(0,9)
+    '[0-9]'//2, % ?Digit:between(0,9)
+                % ?Code:code
     '[0-9]*'//1, % ?Digits:list(between(0,9))
     '[0-9]+'//1 % ?Digits:list(between(0,9))
   ]
@@ -21,7 +23,7 @@ but that occur often enough to legitimate a dedicated and more efficient
 implementation.
 
 @author Wouter Beek
-@version 2015/01-2015/02
+@version 2015/01-2015/03
 */
 
 :- use_module(plc(dcg/dcg_abnf)).
@@ -112,8 +114,13 @@ implementation.
 
 %! '[0-9]'(?Weight:between(0,9))// .
 
-'[0-9]'(X) -->
-  decimal_digit(X).
+'[0-9]'(Weight) -->
+  decimal_digit(Weight).
+
+%! '[0-9]'(?Weight:between(0,9), ?Code:code)// .
+
+'[0-9]'(Weight, Code) -->
+  decimal_digit(Weight, Code).
 
 
 
