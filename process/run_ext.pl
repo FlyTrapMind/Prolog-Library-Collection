@@ -50,12 +50,10 @@ Predicates for running external programs.
 :- at_halt(kill_processes).
 
 :- predicate_options(handle_process/3, 3, [
-  status(-nonneg),
-  output_codes(-list(code)),
   output_goal(+callable),
   program(+atom),
-  pass_to(process_create/3, 3),
-  retry(+nonneg)
+  status(-nonneg),
+  pass_to(process_create/3, 3)
 ]).
 
 :- meta_predicate(handle_process(+,+,:)).
@@ -76,7 +74,6 @@ is_meta(output_goal).
 % the external process.
 %
 % The following options are supported:
-%   - `output_codes(-Output:list(code))`
 %   - `output_goal(:Goal)`
 %     Call this goal on the output stream.
 %   - `program(+Program:atom)`
