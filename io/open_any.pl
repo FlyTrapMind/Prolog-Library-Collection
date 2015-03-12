@@ -13,14 +13,14 @@
   ]
 ).
 
-/** <module> RDF: load any
+/** <module> RDF: Load any
 
 Open a recursive data stream from files/URIs.
 
 @author Wouter Beek
 @author Jan Wielemaker
 @tbd Only supports URI schemes `http` and `https`.
-@version 2014/03-2014/07, 2014/10-2014/12, 2015/02
+@version 2014/03-2014/07, 2014/10-2014/12, 2015/02-2015/03
 */
 
 :- use_module(library(apply)).
@@ -35,18 +35,19 @@ Open a recursive data stream from files/URIs.
 
 :- use_module(plc(generics/atom_ext)).
 :- use_module(plc(generics/pair_ext)).
+:- use_module(plc(io/remote_ext)).
 :- use_module(plc(os/datetime_ext)).
 
 :- predicate_options(open_any/3, 3, [
-     pass_to(open_any/4, 4)
-   ]).
+  pass_to(open_any/4, 4)
+]).
 :- predicate_options(open_any/4, 4, [
-     pass_to(open_input/5, 5)
-   ]).
+  pass_to(open_input/5, 5)
+]).
 :- predicate_options(open_input/5, 5, [
-     pass_to(http_open/3, 3),
-     pass_to(open/4, 4)
-   ]).
+  pass_to(http_open/3, 3),
+  pass_to(open/4, 4)
+]).
 
 :- public(ssl_verify/5).
 
@@ -208,13 +209,23 @@ open_input(file_spec(Spec), In, Metadata, Close, Options):-
   absolute_file_name(Spec, File, [access(read)]),
   open_input(file(File), In, Metadata, Close, Options).
 
-% A4. Stream: already opened.
+% A4. Remote file.
+open_input(
+  remote_file(remote_file(User,Machine,Path)),
+  In,
+  remote_file{user:User,machine:Machine,path:Path,stream:In},
+  true,
+  Options
+):-
+  remote_open(remote_file(User,Machine,Path), read, In, Options).
+
+% A5. Stream: already opened.
 % @tbd Can we check for read access?
 open_input(stream(In), In, stream{stream:In}, false, _):-
   is_stream(In),
   stream_property(In, input), !.
 
-% A5. URI Components: opens files and URLs.
+% A6. URI Components: opens files and URLs.
 % @compat Only supports URLs with schemes `http` or `https`.
 open_input(uri_components(UriComponents), In, Metadata, Close, Options1):-
   UriComponents = uri_components(Scheme,Authority,_,_,_),
@@ -271,40 +282,66 @@ open_input(uri_components(UriComponents), In, Metadata, Close, Options1):-
       Close = true
   ).
 
-% A6. URI: convert to URI components term.
+% A7. URI: convert to URI components term.
 open_input(uri(Url), In, Metadata, Close, Options):- !,
   uri_components(Url, UriComponents),
   open_input(uri_components(UriComponents), In, Metadata, Close, Options).
 
 
-% B. Stream
+% B. Stream.
 open_input(Stream, In, Metadata, Close, Options):-
   is_stream(Stream), !,
   open_input(stream(Stream), In, Metadata, Close, Options).
 
 
-% C1. File
+% C1. Remote file.
+open_input(remote_file(User,Machine,Path), In, Metadata, Close, Options):-
+  open_input(
+    remote_file(remote_file(User,Machine,Path)),
+    In,
+    Metadata,
+    Close,
+    Options
+  ).
+
+% C2. URI components.
+open_input(
+  uri_components(Scheme,Authority,Path,Query,Fragment),
+  In,
+  Metadata,
+  Close,
+  Options
+):-
+  open_input(
+    uri_components(uri_components(Scheme,Authority,Path,Query,Fragment)),
+    In,
+    Metadata,
+    Close,
+    Options
+  ).
+
+% C4. File.
 open_input(File, In, Metadata, Close, Options):-
   catch(exists_file(File), _, fail), !,
   open_input(file(File), In, Metadata, Close, Options).
 
-% C2. URI
+% C5. URI.
 open_input(Uri, In, Metadata, Close, Options):-
   catch(uri_components(Uri, UriComponents), _, fail), !,
   open_input(uri_components(UriComponents), In, Metadata, Close, Options).
 
-% C3. File specification
+% C6. File specification.
 open_input(Spec, In, Metadata, Close, Options):-
   compound(Spec), !,
   absolute_file_name(Spec, _, [access(read),file_errors(fail)]),
   open_input(file_spec(Spec), In, Metadata, Close, Options).
 
-% C4. File pattern
+% C7. File pattern.
 open_input(Wildcard, In, Metadata, Close, Options):-
   open_input(file_pattern(Wildcard), In, Metadata, Close, Options).
 
 
-% D. In of options...
+% D. Out of options.
 open_input(Input, _, _, _, _):-
   print_message(warning, cannot_open(Input)),
   fail.
