@@ -1,16 +1,16 @@
 :- module(
   remote_ext,
   [
-    clear_remote_directory/1, % +RemoteDirectory:or([atom,compound])
-    exists_remote_file/1, % +RemoteFile:or([atom,compound])
-    make_remote_directory/1, % +RemoteDirectory:or([atom,compound])
-    make_remote_directory_path/1, % +RemoteDirectory:or([atom,compound])
-    remote_open/3, % +RemoteFile:or([atom,compound]),
-                   % +Mode:oneof([append,read,write]),
-                   % -Stream:stream,
-    remote_open/4 % +RemoteFile:or([atom,compound]),
-                  % +Mode:oneof([append,read,write]),
-                  % -Stream:stream,
+    clear_remote_directory/1, % +RemoteDirectory:compound
+    exists_remote_file/1, % +RemoteFile:compound
+    make_remote_directory/1, % +RemoteDirectory:compound
+    make_remote_directory_path/1, % +RemoteDirectory:compound
+    remote_open/3, % +RemoteFile:compound
+                   % +Mode:oneof([append,read,write])
+                   % -Stream:stream
+    remote_open/4 % +RemoteFile:compound
+                  % +Mode:oneof([append,read,write])
+                  % -Stream:stream
                   % +Options:list(nvpair)
   ]
 ).
@@ -20,71 +20,61 @@
 Support for files residing on remote machines.
 
 @author Wouter Beek
-@version 2014/05
+@version 2014/05, 2015/03
 */
 
 :- use_module(library(filesex)).
-:- use_module(library(process)).
 
 :- use_module(plc(io/dir_ext)).
+:- use_module(plc(process/run_ext)).
+
+:- predicate_options(remote_open/4, 4, [
+  pass_to(open/4, 4)
+]).
 
 
 
 
 
-%! clear_remote_directory(+RemoteDirectory:or([atom,compound])) is det.
+%! clear_remote_directory(+RemoteDirectory:compound) is det.
 
-clear_remote_directory(remote(User,Machine,Dir)):- !,
+clear_remote_directory(remote_file(User,Machine,Dir)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   append_directories(Dir, '*', Regex),
   atomic_list_concat([ssh,UserMachine,rm,Regex], ' ', Command),
-  ignore(
-    catch(
-      process_create(path(sh), ['-c',Command], [stderr(null),stdout(null)]),
-      _,
-      fail
-    )
-  ).
-clear_remote_directory(Dir):-
-  delete_directory_contents(Dir).
+  handle_process(path(sh), ['-c',Command], [program(Command)]).
 
 
-%! exists_remote_file(+RemoteFile:or([atom,compound])) is semidet.
 
-exists_remote_file(remote(User,Machine,File)):- !,
+%! exists_remote_file(+RemoteFile:compound) is semidet.
+
+exists_remote_file(remote_file(User,Machine,File)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_list_concat([ssh,UserMachine,ls,File], ' ', Command),
-  catch(
-    process_create(path(sh), ['-c',Command], []),
-    _,
-    fail
-  ).
-exists_remote_file(File):-
-  exists_file(File).
+  handle_process(path(sh), ['-c',Command], [program(Command)]).
 
 
-%! make_remote_directory(+RemoteDirectory:or([atom,compound])) is det.
 
-make_remote_directory(remote(User,Machine,Dir)):- !,
+%! make_remote_directory(+RemoteDirectory:compound) is det.
+
+make_remote_directory(remote_file(User,Machine,Dir)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_list_concat([ssh,UserMachine,mkdir,Dir], ' ', Command),
-  process_create(path(sh), ['-c',Command], []).
-make_remote_directory(Dir):-
-  make_directory(Dir).
+  handle_process(path(sh), ['-c',Command], [program(Command)]).
 
 
-%! make_remote_directory_path(+RemoteDirectory:or([atom,compound])) is det.
 
-make_remote_directory_path(remote(User,Machine,Dir)):- !,
+%! make_remote_directory_path(+RemoteDirectory:compound) is det.
+
+make_remote_directory_path(remote_file(User,Machine,Dir)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_list_concat([ssh,UserMachine,mkdir,'-p',Dir], ' ', Command),
-  process_create(path(sh), ['-c',Command], []).
-make_remote_directory_path(Dir):-
-  make_directory_path(Dir).
+  handle_process(path(sh), ['-c',Command], [program(Command)]).
+
 
 
 %! remote_open(
-%!   +RemoteFile:or([atom,compound]),
+%!   +RemoteFile:compound,
 %!   +Mode:oneof([append,read,write]),
 %!   -Stream:stream
 %! ) is det.
@@ -93,44 +83,30 @@ remote_open(RemotePath, Mode, Stream):-
   remote_open(RemotePath, Mode, Stream, []).
 
 %! remote_open(
-%!   +RemoteFile:or([atom,compound]),
+%!   +RemoteFile:compound,
 %!   +Mode:oneof([append,read,write]),
 %!   -Stream:stream,
 %!   +Options:list(nvpair)
 %! ) is det.
-% The following options are supported:
-%   * `filter(+Filter:oneof([gzip]))`
-%   * Other options are passed to open/4.
+% Options are passed to open/4.
 
-remote_open(remote(User,Machine,Path), Mode, Stream, Options):- !,
+remote_open(remote_file(User,Machine,Path), Mode, Stream, Options):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_concat(Path, '"', Suffix),
 
   % CAT append uses a double greater than sign.
-  (
-    Mode == append
-  ->
-    CatSign = '>>'
-  ;
-    CatSign = '>'
-  ),
-
+  once(mode_cat_sign(Mode, CatSign)),
+  
   atomic_list_concat([ssh,UserMachine,'"cat',CatSign,Suffix], ' ', Command),
+  
+  open(pipe(Command), Mode, Stream, Options).
 
-  % Gzip in stream.
-  (
-    option(filter(gzip), Options)
-  ->
-    gzopen(pipe(Command), write, Stream, Options)
-  ;
-    open(pipe(Command), write, Stream, Options)
-  ).
-remote_open(File, Mode, Stream, Options):-
-  (
-    option(filter(gzip), Options)
-  ->
-    gzopen(File, Mode, Stream, Options)
-  ;
-    open(File, Mode, Stream, Options)
-  ).
+%! mode_cat_sign(
+%!   ?Mode:oneof([append,read,write]),
+%!   ?Sign:oneof(['<','>','>>'])
+%! ) is multi.
+
+mode_cat_sign(append, '>>').
+mode_cat_sign(read, '<').
+mode_cat_sign(write, '>').
 

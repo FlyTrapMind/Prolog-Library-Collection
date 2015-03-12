@@ -18,11 +18,12 @@ Interface to GNU tools for file-processing.
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/10, 2015/01-2015/02
+         2014/08-2014/10, 2015/01-2015/03
 */
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(process)).
+:- use_module(library(pure_input)).
 
 :- use_module(plc(process/run_ext)).
 
@@ -33,8 +34,15 @@ Interface to GNU tools for file-processing.
 %! file_lines(+File:atom, -NumberOfLines:nonneg) is det.
 
 file_lines(File, NumberOfLines):-
-  handle_process(wc, ['-l',file(File)], [output_codes(OutputCodes)]),
-  phrase(integer(NumberOfLines), OutputCodes, _).
+  handle_process(
+    wc,
+    ['-l',file(File)],
+    [output_goal(parse_wc_output(NumberOfLines))]
+  ).
+
+parse_wc_output(NumberOfLines, Out):-
+  read_stream_to_codes(Out, Codes),
+  phrase(integer(NumberOfLines), Codes, _).
 
 
 
