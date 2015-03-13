@@ -7,6 +7,7 @@
                      % +DebugMessage:atom
     print_thread/1, % +Alias:atom
     print_threads/0,
+    thread_create/1, % :Goal
 % RUN ON SUBLISTS INFRASTRUCTURE
     intermittent_thread/5, % :Goal
                            % :EndGoal
@@ -17,7 +18,6 @@
                        % :Goal
                        % +NumberOfThreads:positive_integer
     thread_alias/1, % ?ThreadAlias:atom
-    thread_create/1, % :Goal
     thread_end/1, % +ThreadAlias:atom
     thread_overview/0,
     thread_overview_web/1, % -Markup:dom
@@ -120,6 +120,9 @@ print_threads:-
   write('Status'),nl,
   maplist(print_thread, Aliases), !.
 
+thread_create(Goal):-
+  thread_create(Goal, _, []).
+
 
 
 % RUN ON SUBLIST INFRASTRUCTURE %
@@ -187,9 +190,6 @@ thread_alias(ThreadAlias):-
   flag(thread_alias, ID, ID + 1),
   format_integer(ID, 2, ID1),
   format(atom(ThreadAlias), 't~w', [ID1]).
-
-thread_create(Goal):-
-  thread_create(Goal, _, []).
 
 thread_end(ThreadAlias):-
   thread_property(ThreadId, alias(ThreadAlias)),
