@@ -26,8 +26,8 @@ Logging infrastructure.
 :- dynamic(logging:message_kind/1).
 :- multifile(logging:message_kind/1).
 
-logging:message_kind(error).
-logging:message_kind(warning).
+%logging:message_kind(error).
+%logging:message_kind(warning).
 
 :- dynamic(user:message_hook/3).
 :- multifile(user:message_hook/3).
