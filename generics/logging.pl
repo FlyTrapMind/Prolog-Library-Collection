@@ -1,4 +1,12 @@
-:- module(logging, []).
+:- module(
+  logging,
+  [
+    read_log_entry/4 % ?DateTime:atom
+                     % ?Kind:atom
+                     % ?Term:compound
+                     % ?Message:atom
+  ]
+).
 
 /** <module> Logging
 
@@ -43,3 +51,16 @@ init:-
   absolute_file_name(data('error.log'), File, [access(write)]),
   db_attach(File, []).
 
+
+
+
+
+%! read_log_entry(
+%!   ?DateTime:atom,
+%!   ?Kind:atom,
+%!   ?Term:compound,
+%!   ?Message:atom
+%! ) is det.
+
+read_log_entry(DateTime, Kind, Term, Msg):-
+  log_entry(DateTime, Kind, Term, Msg).
