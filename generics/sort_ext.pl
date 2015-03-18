@@ -37,18 +37,18 @@ Extensions for sorting lists.
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
 :- predicate_options(gnu_sort/2, 2, [
-     buffer_size(+nonneg),
-     duplicates(+boolean),
-     output(+atom),
-     parallel(+positive_integer),
-     temporary_directory(+atom),
-     utf8(+boolean)
-   ]).
+  buffer_size(+nonneg),
+  duplicates(+boolean),
+  output(+atom),
+  parallel(+positive_integer),
+  temporary_directory(+atom),
+  utf8(+boolean)
+]).
 
 :- predicate_options(sort/3, 3, [
-     duplicates(+boolean),
-     inverted(+boolean)
-  ]).
+  duplicates(+boolean),
+  inverted(+boolean)
+]).
 
 
 

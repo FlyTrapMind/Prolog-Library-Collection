@@ -85,6 +85,7 @@ is_meta(output_goal).
 
 handle_process(Process, Args, Options1):-
   meta_options(is_meta, Options1, Options2),
+  option(program(Program), Options2, Process),
   include(process_create_option, Options2, Options3),
   merge_options(
     Options3,
@@ -95,7 +96,7 @@ handle_process(Process, Args, Options1):-
     process_create(path(Process), Args, Options4),
     (
       (   option(output_goal(Goal), Options2)
-      ->  call(Goal, Output)
+      ->  call(Goal, Error)
       ;   true
       ),
       % Process the status code.
@@ -115,11 +116,7 @@ handle_process(Process, Args, Options1):-
   ),
 
   % Process the error stream.
-  print_error(ErrorCodes),
-  (   option(program(Program), Options2)
-  ->  true
-  ;   Program = Process
-  ).
+  print_error(ErrorCodes).
 
 process_create_option(cwd(_)).
 process_create_option(detached(_)).
@@ -273,7 +270,12 @@ exit_code_handler(Program, exit(StatusCode)):- !,
 exit_code_handler(_, 0):- !.
 % Error/exception code.
 exit_code_handler(Program, StatusCode):-
-  process_error(Program, StatusCode).
+  print_message(warning, status(Program,StatusCode)).
+
+:- multifile(prolog:message//1).
+
+prolog:message(status(Program,StatusCode)) -->
+  ['Program ~w returned status code ~w.'-[Program,StatusCode]].
 
 
 
