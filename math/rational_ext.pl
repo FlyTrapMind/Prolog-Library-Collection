@@ -4,6 +4,8 @@
     rational_div/3, % +X:compound
                     % +Y:compound
                     % -Z:compound
+    rational_float/2, % ?Rational:compound
+                      % ?Float:float
     rational_mod/3, % +X:compound
                     % +Y:compound
                     % -Z:compound
@@ -41,6 +43,17 @@
 
 rational_div(X, Y, Z):-
   Z is floor(X rdiv Y).
+
+
+
+%! rational_float(?Rational:compound, ?Float:float) is det.
+
+rational_float(X, Y):-
+  (   float(Y)
+  ->  X is rationalize(Y)
+  ;   X = X1 rdiv X2,
+      Y is X1 / X2
+  ).
 
 
 
@@ -83,3 +96,4 @@ rational_parts_weights(D, IW, FW):-
   rational_parts(D, I, F),
   weights_nonneg(IW, I),
   weights_fraction(FW, F).
+
