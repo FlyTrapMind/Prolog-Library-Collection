@@ -20,10 +20,15 @@
 :- use_module(library(readutil)).
 :- use_module(library(thread)).
 
-:- use_module(plc(generics/db_ext)).
-
 % Processes are registered so that they can be killed.
 :- dynamic(current_process/1).
+
+%! thread_id(
+%!   ?Pid:nonneg,
+%!   ?StreamType:oneof([error,output]),
+%!   ?ThreadId:atom
+%! ) is nondet.
+:- dynamic(thread_id/3).
 
 :- predicate_options(handle_process/3, 3, [
   output_goal(+callable),
@@ -84,35 +89,64 @@ handle_process_inner(Process, Args, Options1):-
   include(process_create_option, Options1, Options2),
   merge_options(
     Options2,
-    [process(Pid),stderr(pipe(Error)),stdout(pipe(Output))],
+    [process(Pid),stderr(pipe(ErrorStream)),stdout(pipe(OutputStream))],
     Options3
   ),
   setup_call_cleanup(
     process_create(path(Process), Args, Options3),
     (
-      db_add(current_process(Pid)),
-      (   option(output_goal(Goal), Options1)
-      ->  call(Goal, Error)
+      % Register the PID so it can be killed upon Prolog halt.
+      assert(current_process(Pid)),
+      
+      % Process the goal supplied for the error stream.
+      (   option(error_goal(ErrorGoal), Options1, print_error)
+      ->  thread_create(
+            call(ErrorGoal, ErrorStream),
+            ErrorThreadId,
+            [at_exit(close(ErrorStream))]
+          ),
+          assert(thread_id(Pid,error,ErrorThreadId))
       ;   true
       ),
+      
+      % Process the goal supplied for the output stream.
+      (   option(output_goal(OutputGoal), Options1)
+      ->  call(OutputGoal, OutputStream)
+      ;   true
+      ),
+      
       % Process the status code.
-      process_wait(Pid, exit(Status)),
-      exit_code_handler(Program, Status),
-      (   option(status(Status0), Options1)
-      ->  Status0 = Status
+      with_mutex(process_ext, (
+        process_wait(Pid, exit(PidStatus)),
+        retract(current_process(Pid))
+      )),
+      process_status(Program, PidStatus),
+      (   option(status(PidStatus0), Options1)
+      ->  PidStatus0 = PidStatus
       ;   true
-      ),
-      % Process the error.
-      read_stream_to_codes(Error, ErrorCodes, [])
+      )
     ),
     (
-      close(Output),
-      close(Error)
+      % Make sure the streams have been fully processed.
+      (   retract(thread_id(Pid,error,ErrorThreadId))
+      ->  thread_join(ErrorThreadId, ErrorThreadStatus),
+          thread_status(Pid,error,ErrorThreadStatus)
+      ;   true
+      )
     )
-  ),
+  ).
 
-  % Process the error stream.
-  print_error(ErrorCodes).
+close_output(OutputStream, OutputArgs):-
+  close(OutputStream),
+  thread_exit(args(OutputArgs)).
+
+print_error(In):-
+  read_stream_to_codes(In, Codes, []),
+  (   Codes == []
+  ->  true
+  ;   string_codes(String, Codes),
+      print_message(warning, String)
+  ).
 
 process_create_option(cwd(_)).
 process_create_option(detached(_)).
@@ -120,7 +154,7 @@ process_create_option(env(_)).
 process_create_option(priority(_)).
 process_create_option(window(_)).
 
-%! exit_code_handler(+Program, +Status:or([compound,nonneg])) is det.
+%! process_status(+Program, +Status:or([compound,nonneg])) is det.
 % Handling of exit codes given by programs that are run from the shell.
 %
 % @arg Program
@@ -131,23 +165,38 @@ process_create_option(window(_)).
 %         a non-zero code.
 
 % Unwrap code.
-exit_code_handler(Program, exit(StatusCode)):- !,
-  exit_code_handler(Program, StatusCode).
+process_status(Program, exit(StatusCode)):- !,
+  process_status(Program, StatusCode).
 % Success code.
-exit_code_handler(_, 0):- !.
+process_status(_, 0):- !.
 % Error/exception code.
-exit_code_handler(Program, StatusCode):-
-  print_message(warning, status(Program,StatusCode)).
+process_status(Program, StatusCode):-
+  print_message(warning, process_status(Program,StatusCode)).
+
+%! thread_status(
+%!   +Pid:nonneg,
+%!   +StreamType:oneof([error,output]),
+%!   +Status:compound
+%! ) is det.
+
+thread_status(_, _, true):- !.
+thread_status(Pid, StreamType, false):- !,
+  print_message(warning, thread_status(Pid,StreamType,fail,_)).
+thread_status(Pid, StreamType, exception(Exception)):- !,
+  print_message(warning, thread_status(Pid,StreamType,exception,Exception)).
+thread_status(Pid, StreamType, exited(Term)):-
+  print_message(warning, thread_status(Pid,StreamType,exited,Term)).
 
 :- multifile(prolog:message//1).
 
-prolog:message(status(Program,StatusCode)) -->
+prolog:message(process_status(Program,StatusCode)) -->
   ['Program ~w returned status code ~w.'-[Program,StatusCode]].
-
-print_error([]):- !.
-print_error(Codes):-
-  string_codes(String, Codes),
-  print_message(warning, String).
+prolog:message(thread_status(Pid,StreamType,fail)) -->
+  ['The ~a stream of process ~d failed.'-[StreamType,Pid]].
+prolog:message(thread_status(Pid,StreamType,exception,Term)) -->
+  ['The ~a stream of process ~d threw exception ~w '-[StreamType,Pid,Term]].
+prolog:message(thread_status(Pid,StreamType,exited,Term)) -->
+  ['The ~a stream of process ~d exited with ~w '-[StreamType,Pid,Term]].
 
 
 
@@ -157,9 +206,11 @@ print_error(Codes):-
 kill_processes:-
   % Make sure the PIDs are unique.
   % We do not want to kill the same process twice.
-  aggregate_all(
-    set(Pid),
-    current_process(Pid),
-    Pids
-  ),
-  concurrent_maplist(process_kill, Pids).
+  with_mutex(process_ext, (
+    aggregate_all(
+      set(Pid),
+      current_process(Pid),
+      Pids
+    ),
+    concurrent_maplist(process_kill, Pids)
+  )).
