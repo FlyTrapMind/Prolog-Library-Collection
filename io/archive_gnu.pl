@@ -23,16 +23,16 @@ These predicates call GNU tools:
   - is_archive/1
 
 @author Wouter Beek
-@version 2013/12-2014/05
+@version 2013/12-2014/05, 2015/03
 */
 
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
-:- use_module(library(process)).
 
 :- use_module(plc(generics/db_ext)).
 :- use_module(plc(io/dir_ext)).
 :- use_module(plc(io/file_ext)).
+:- use_module(plc(process/process_ext)).
 
 % application/x-bzip2
 % .bz,.bz2,.tbz,.tbz2
@@ -72,13 +72,17 @@ user:prolog_file_type(zip, zip).
 
 
 create_archive(Files, Archive):-
-  findall(file(File), member(File, Files), O1),
-  process_create(path(tar), ['-cjf',file(Archive)|O1], []).
+  maplist(file_term, Files, EntryArgs),
+  handle_process(tar, ['-cjf',file(Archive)|EntryArgs], [program(tar)]).
+
+file_term(File, file(File)).
+
 
 
 create_tarball(Files, Archive):-
-  findall(file(File), member(File, Files), O1),
-  process_create(path(tar), ['-cf',file(Archive)|O1], []).
+  maplist(file_term, Files, EntryArgs),
+  handle_process(tar, ['-cf',file(Archive)|EntryArgs], [program(tar)]).
+
 
 
 %! extract_archive(+FromFile:atom) is det.
@@ -115,20 +119,24 @@ extract_archive(_, []).
 
 extract_archive(Extension, File, gunzipped):-
   prolog_file_type(Extension, bunzip2), !,
-  process_create(path(bunzip2), ['-f',file(File)], []).
+  handle_process(bunzip2, ['-f',file(File)], [program(bunzip2)]).
 extract_archive(Extension, File, gunzipped):-
   prolog_file_type(Extension, gunzip), !,
-  process_create(path(gunzip), ['-f',file(File)], []).
+  handle_process(gunzip, ['-f',file(File)], [program(gunzip)]).
 extract_archive(Extension, File, untarred):-
   prolog_file_type(Extension, tar), !,
   directory_file_path(Directory, _, File),
   atomic_list_concat(['--directory',Directory], '=', C),
-  process_create(path(tar), [xvf,file(File),C], []),
+  handle_process(tar, [xvf,file(File),C], [program(tar)]),
   delete_file(File).
 extract_archive(Extension, File, unzipped):-
   prolog_file_type(Extension, zip), !,
   directory_file_path(Directory, _, File),
-  process_create(path(unzip), [file(File),'-fo','-d',file(Directory)], []),
+  handle_process(
+    unzip,
+    [file(File),'-fo','-d',file(Directory)],
+    [program(unzip)]
+  ),
   delete_file(File).
 
 

@@ -25,7 +25,7 @@ Interface to GNU tools for file-processing.
 :- use_module(library(process)).
 :- use_module(library(pure_input)).
 
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
 
 
 
@@ -59,10 +59,10 @@ gnu_mv(From, To):-
 split_into_smaller_files(BigFile, OutputDir, Prefix):-
   % Split the big file by byte size into small files.
   % (We cannot split on the number of lines since the file is one big line.)
-  process_create(
-    path(split),
+  handle_process(
+    split,
     ['--bytes=1m','-d','--suffix-length=4',BigFile,Prefix],
-    [cwd(OutputDir)]
+    [cwd(OutputDir),program(split)]
   ),
   print_message(informational, split_file(BigFile,OutputDir)).
 
@@ -71,7 +71,7 @@ split_into_smaller_files(BigFile, OutputDir, Prefix):-
 %! touch_file(+File:atom) is det.
 
 touch_file(File):-
-  process_create(path(touch), [File], [detached(true)]).
+  handle_process(touch, [File], [program(touch)]).
 
 
 

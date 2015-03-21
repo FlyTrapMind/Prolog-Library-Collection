@@ -26,7 +26,7 @@ Support for files residing on remote machines.
 :- use_module(library(filesex)).
 
 :- use_module(plc(io/dir_ext)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
 
 :- predicate_options(remote_open/4, 4, [
   pass_to(open/4, 4)
@@ -42,7 +42,7 @@ clear_remote_directory(remote_file(User,Machine,Dir)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   append_directories(Dir, '*', Regex),
   atomic_list_concat([ssh,UserMachine,rm,Regex], ' ', Command),
-  handle_process(path(sh), ['-c',Command], [program(Command)]).
+  handle_process(sh, ['-c',Command], [program(Command)]).
 
 
 
@@ -51,7 +51,7 @@ clear_remote_directory(remote_file(User,Machine,Dir)):-
 exists_remote_file(remote_file(User,Machine,File)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_list_concat([ssh,UserMachine,ls,File], ' ', Command),
-  handle_process(path(sh), ['-c',Command], [program(Command)]).
+  handle_process(sh, ['-c',Command], [program(Command)]).
 
 
 
@@ -60,7 +60,7 @@ exists_remote_file(remote_file(User,Machine,File)):-
 make_remote_directory(remote_file(User,Machine,Dir)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_list_concat([ssh,UserMachine,mkdir,Dir], ' ', Command),
-  handle_process(path(sh), ['-c',Command], [program(Command)]).
+  handle_process(sh, ['-c',Command], [program(Command)]).
 
 
 
@@ -69,7 +69,7 @@ make_remote_directory(remote_file(User,Machine,Dir)):-
 make_remote_directory_path(remote_file(User,Machine,Dir)):-
   atomic_list_concat([User,Machine], '@', UserMachine),
   atomic_list_concat([ssh,UserMachine,mkdir,'-p',Dir], ' ', Command),
-  handle_process(path(sh), ['-c',Command], [program(Command)]).
+  handle_process(sh, ['-c',Command], [program(Command)]).
 
 
 

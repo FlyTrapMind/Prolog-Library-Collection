@@ -18,7 +18,7 @@ Extensions for executing Java JARs from within Prolog.
 :- use_module(library(option)).
 
 :- use_module(plc(generics/db_ext)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
 
 :- db_add_novel(user:prolog_file_type(jar, jar)).
 :- db_add_novel(user:prolog_file_type(log, log)).
@@ -38,7 +38,7 @@ is_meta(output_goal).
 %! run_jar(+Jar:atom, +Args:list, +Options:list(nvpair)) is det.
 % Runs the given JAR file with the given commandline arguments.
 %
-% Options are passed to process_create/3.
+% Options are passed to handle_process/3.
 
 run_jar(Jar, Args, Options1):-
   meta_options(is_meta, Options1, Options2),

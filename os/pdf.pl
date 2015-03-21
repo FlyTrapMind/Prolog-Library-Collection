@@ -10,31 +10,25 @@
 Support for PDF files.
 
 @author Wouter Beek
-@version 2014/05, 2014/07
+@version 2014/05, 2014/07, 2015/03
 */
 
 :- use_module(plc(os/os_ext)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
+:- use_module(plc(process/program_db)).
 
 :- dynamic(user:file_type_program/2).
 :- multifile(user:file_type_program/2).
-:- if((is_apple ; is_unix)).
-   user:file_type_program(pdf, evince).
-   user:file_type_program(pdf, xpdf).
-:- endif.
-:- if(is_windows).
-   user:file_type_program(pdf, 'AcroRd32').
-:- endif.
+user:file_type_program(pdf, evince).
+user:file_type_program(pdf, xpdf).
+
+
 
 
 
 %! open_pdf(+File:atom) is det.
 % Opens the given PDF file.
-%
-% @tbd Test support on Windows.
-% @tbd Test support on OS-X.
 
 open_pdf(File):-
   once(find_program_by_file_type(pdf, Program)),
-  run_program(Program, [File]).
-
+  handle_process(Program, [File], [program(Program)]).
