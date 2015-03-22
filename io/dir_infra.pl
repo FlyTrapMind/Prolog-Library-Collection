@@ -5,6 +5,9 @@
                                     % -AbsoluteDir:atom
     home_directory/1, % -HomeDir:atom
     output_directory/1, % -OutputDir:atom
+    project_abbreviation/1, % ?Name:atom
+    project_description/1, % ?Name:atom
+    project_name/1, % ?Name:atom
     trashcan/1 % -TrashDir:atom
   ]
 ).
@@ -15,7 +18,8 @@ Predicates for creating an maintaining a specific infrastructure of
 directories that are used for certain purposes, e.g. output, data, trash.
 
 @author Wouter Beek
-@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04, 2014/10-2014/11
+@version 2013/06-2013/07, 2013/09, 2013/11-2014/02, 2014/04, 2014/10-2014/11,
+         2015/03
 */
 
 :- use_module(plc(io/dir_ext)).
@@ -55,6 +59,32 @@ home_directory(HomeDir):-
 
 output_directory(OutputDir):-
   create_directory(data, ['Output'], OutputDir).
+
+
+
+%! project_abbreviation(?Abbreviation:atom) .
+
+project_abbreviation(Abbr):-
+  (   user:project(_, _, Abbr)
+  ->  true
+  ;   user:project(Abbr, _)
+  ).
+
+%! project_description(?Description:atom) .
+
+project_description(Desc):-
+  (   user:project(_, Desc, _)
+  ->  true
+  ;   user:project(_, Desc)
+  ).
+
+%! project_name(?Name:atom) .
+
+project(Name):-
+  (   user:project(Name, _, _)
+  ->  true
+  ;   user:project(Name, _)
+  ).
 
 
 
