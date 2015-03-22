@@ -43,8 +43,13 @@ create_project_subdirectory(Child, Path):-
         [access(read),file_type(directory),file_errors(fail)]
       )
   ->  true
-  ;   absolute_file_name(Parent, Dir, [access(write),file_type(directory)]),
-      directory_file_path(Dir, Child, Path),
+  ;   ParentSpec =.. [Parent,'.'],
+      absolute_file_name(
+        ParentSpec,
+        ParentDir,
+        [access(write),file_type(directory)]
+      ),
+      directory_file_path(ParentDir, Child, Path),
       make_directory_path(Path)
   ).
 
