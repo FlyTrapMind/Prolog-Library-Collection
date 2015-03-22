@@ -17,7 +17,8 @@
     code_radix//1, % ?RadixCode:compound
     code_radix//2, % ?RadixCode:compound
                    % -Code:code
-    code_upper//1 % ?Code:code
+    code_upper//1, % ?Code:code
+    codes//1 % +Codes:list(code)
   ]
 ).
 
@@ -26,7 +27,7 @@
 Grammar support for entering character codes.
 
 @author Wouter Beek
-@version 2014/10-2014/12
+@version 2014/10-2014/12, 2015/03
 */
 
 :- use_module(plc(dcg/dcg_unicode)).
@@ -179,3 +180,12 @@ code_upper(Code) -->
 code_upper(Code) -->
   {to_upper(Code, Code0)},
   letter_uppercase(Code0).
+
+
+
+%! codes(+Codes:list(code))// is det.
+
+codes([]) --> "".
+codes([H|T]) -->
+  code(H),
+  codes(T).
