@@ -42,7 +42,6 @@ Extensions for handling directories.
 
 :- use_module(plc(generics/lambda_meta)).
 :- use_module(plc(io/file_ext)).
-:- use_module(plc(io/safe_file)).
 :- use_module(plc(prolog/pl_control)).
 
 :- meta_predicate(directory_files(+,-,:)).
@@ -54,8 +53,7 @@ is_meta(order).
      pass_to(delete_directory/2, 2)
    ]).
 :- predicate_options(delete_directory/2, 2, [
-     include_self(+boolean),
-     safe(+boolean)
+     include_self(+boolean)
    ]).
 :- predicate_options(directory_files/3, 3, [
      file_types(+list(atom)),
@@ -84,8 +82,6 @@ append_directories(Dir1, Dir2, Dir3):-
 
 
 %! copy_directory(+FromDir:atom, +ToDir:atom, +Options:list(nvpair)) is det.
-% The following options are supported:
-%   * `safe(+SafeOrNot:boolean)`
 
 copy_directory(FromDir, ToDir, Options):-
   delete_directory(ToDir, Options),
@@ -155,8 +151,7 @@ create_directory0(Current, [Sub|Subs], Abs):-
 % Deletes all file in the given directory that are of the given file type.
 %
 % The following options are supported:
-%   * `include_self(+IncludeOrNot:boolean)`
-%   * `safe(+SafeOrNot:boolean)`
+%   - include_self(+IncludeOrNot:boolean)
 
 % Directories.
 delete_directory(Dir, Options):-
@@ -169,7 +164,7 @@ delete_directory(Dir, Options):-
   maplist(\Child^delete_directory(Child, Options), Children),
   (   option(include_self(true), Options)
   ->  delete_directory(Dir),
-      debug(dir_ext, 'Dir ~w was safe-deleted.', [Dir])
+      debug(dir_ext, 'Dir ~w was deleted.', [Dir])
   ;   true
   ).
 % Non-file entries.
@@ -178,11 +173,8 @@ delete_directory(Dir, _):-
   last(SubDirs, Last),
   memberchk(Last, ['.','..']), !.
 % Files.
-delete_directory(File, Options):-
-  (   option(safe(true), Options)
-  ->  safe_delete_file(File)
-  ;   delete_file(File)
-  ).
+delete_directory(File, _):-
+  delete_file(File).
 
 
 

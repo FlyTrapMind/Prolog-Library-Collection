@@ -21,7 +21,6 @@ Predicates for handling LaTeX files.
 :- use_module(plc(generics/db_ext)).
 :- use_module(plc(io/dir_ext)).
 :- use_module(plc(io/file_ext)).
-:- use_module(plc(io/safe_file)).
 :- use_module(plc(prolog/pl_control)).
 :- use_module(plc(process/process_ext)).
 
@@ -60,7 +59,7 @@ latex_clean_directory(Directory):-
     ],
     Files
   ),
-  maplist(safe_delete_file, Files).
+  maplist(delete_file, Files).
 
 
 %! latex_clean_file(+File:atom) is det.
@@ -73,7 +72,7 @@ latex_clean_file(File):-
       file_kind_alternative(File, latex_out, DeleteFile),
       access_file(DeleteFile, write)
     ),
-    safe_delete_file(DeleteFile)
+    delete_file(DeleteFile)
   ).
 
 
