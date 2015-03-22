@@ -29,7 +29,7 @@ Extensions for sorting lists.
 :- use_module(library(option)).
 
 :- use_module(plc(os/cli_ext)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
 
 :- meta_predicate(merge_with_duplicates(3,+,+,-)).
 :- meta_predicate(merge_with_duplicates(+,3,+,+,+,+,-)).
@@ -37,18 +37,18 @@ Extensions for sorting lists.
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
 :- predicate_options(gnu_sort/2, 2, [
-     buffer_size(+nonneg),
-     duplicates(+boolean),
-     output(+atom),
-     parallel(+positive_integer),
-     temporary_directory(+atom),
-     utf8(+boolean)
-   ]).
+  buffer_size(+nonneg),
+  duplicates(+boolean),
+  output(+atom),
+  parallel(+positive_integer),
+  temporary_directory(+atom),
+  utf8(+boolean)
+]).
 
 :- predicate_options(sort/3, 3, [
-     duplicates(+boolean),
-     inverted(+boolean)
-  ]).
+  duplicates(+boolean),
+  inverted(+boolean)
+]).
 
 
 

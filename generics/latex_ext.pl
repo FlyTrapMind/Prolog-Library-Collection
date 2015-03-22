@@ -13,7 +13,7 @@
 Predicates for handling LaTeX files.
 
 @author Wouter Beek
-@version 2013/06, 2013/08, 2014/01, 2014/07
+@version 2013/06, 2013/08, 2014/01, 2014/07, 2015/03
 */
 
 :- use_module(library(apply)).
@@ -23,7 +23,7 @@ Predicates for handling LaTeX files.
 :- use_module(plc(io/file_ext)).
 :- use_module(plc(io/safe_file)).
 :- use_module(plc(prolog/pl_control)).
-:- use_module(plc(process/run_ext)).
+:- use_module(plc(process/process_ext)).
 
 :- db_add_novel(user:prolog_file_type(aux, aux      )).
 :- db_add_novel(user:prolog_file_type(aux, latex_out)).
@@ -44,7 +44,7 @@ Predicates for handling LaTeX files.
 bibtex_convert_file(File):-
   file_component(File, base, Base),
   file_directory_name(File, Dir),
-  handle_process(bibtex, [Base], [cwd(Dir)]).
+  handle_process(bibtex, [Base], [cwd(Dir),program('BibTeX')]).
 
 
 %! latex_clean_directory(+Directory:atom) is det.

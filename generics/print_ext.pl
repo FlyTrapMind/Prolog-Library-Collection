@@ -10,9 +10,7 @@
     indent/1, % +Indent:integer
     report_on_process/2, % +Message:atom
                          % :Goal
-    tab/0,
-    writeln/2 % +Stream:stream
-              % +Term
+    tab/0
   ]
 ).
 
@@ -103,14 +101,6 @@ report_on_process(Msg, Goal):-
 
 tab:-
   write('\t').
-
-
-
-%! writeln(+Stream:stream, +Term:term) is det.
-
-writeln(Stream, Term):-
-  write(Stream, Term),
-  nl(Stream).
 
 
 
