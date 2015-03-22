@@ -49,7 +49,6 @@ For convenience's sake, the following collection instances are supported:
 
 :- use_module(library(option)).
 
-:- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_content)).
 :- use_module(plc(dcg/dcg_generics)).
@@ -58,6 +57,7 @@ For convenience's sake, the following collection instances are supported:
 :- use_module(plc(generics/option_ext)).
 
 :- meta_predicate(collection(//,//,2,//,3,+,?,?)).
+:- meta_predicate(collection_items(//,//,2,//,3,+,?,?)).
 :- meta_predicate(list(3,+,?,?)).
 :- meta_predicate(nvpair(3,+,+,?,?)).
 :- meta_predicate(pair(+,3,+,?,?)).
@@ -87,24 +87,28 @@ For convenience's sake, the following collection instances are supported:
 % @arg Elements A list of ground terms that denote
 %      the members of the collection.
 
-collection(Begin, End, Ordering, Separator, ElementWriter, Elements1) -->
+collection(Begin, End, Ordering, Separator, ElementWriter, L1) -->
   % Allow an arbitrary ordering to be enforced, e.g. list_to_set/2.
   {
-    is_list(Elements1), !,
+    is_list(L1), !,
     default(=, Ordering),
-    once(call(Ordering, Elements1, Elements2))
+    once(call(Ordering, L1, L2))
   },
   dcg_between(
     Begin,
-    '*'(
-      collection(Begin, End, Ordering, Separator, ElementWriter),
-      Elements2,
-      [separator(Separator)]
-    ),
+    collection_items(Begin, End, Ordering, Separator, ElementWriter, L2),
     End
   ).
 collection(_, _, _, _, ElementWriter, Element) -->
   dcg_call_cp(ElementWriter, Element).
+
+collection_items(_, _, _, _, _, []) --> !, "".
+collection_items(Begin, End, Ordering, Separator, ElementWriter, [H]) --> !,
+  collection(Begin, End, Ordering, Separator, ElementWriter, H).
+collection_items(Begin, End, Ordering, Separator, ElementWriter, [H|T]) -->
+  collection(Begin, End, Ordering, Separator, ElementWriter, H),
+  Separator,
+  collection_items(Begin, End, Ordering, Separator, ElementWriter, T).
 
 
 
