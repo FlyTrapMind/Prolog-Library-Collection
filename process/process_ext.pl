@@ -127,6 +127,7 @@ handle_process_inner(Process, Args, Options1):-
       )
     ),
     (
+      close(OutputStream),
       % Make sure the streams have been fully processed.
       (   retract(thread_id(Pid,error,ErrorThreadId))
       ->  thread_join(ErrorThreadId, ErrorThreadStatus),
@@ -135,10 +136,6 @@ handle_process_inner(Process, Args, Options1):-
       )
     )
   ).
-
-close_output(OutputStream, OutputArgs):-
-  close(OutputStream),
-  thread_exit(args(OutputArgs)).
 
 print_error(In):-
   read_stream_to_codes(In, Codes, []),
@@ -214,3 +211,4 @@ kill_processes:-
     ),
     concurrent_maplist(process_kill, Pids)
   )).
+
