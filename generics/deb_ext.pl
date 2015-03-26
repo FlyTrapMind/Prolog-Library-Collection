@@ -7,6 +7,7 @@
     fail_mode/1, % +FailMode:compound
     if_debug/2, % +Flag:atom
                 % :Goal
+    number_of_open_files/1, % -N:nonneg
     test/1, % :Goal
     test/2, % :Goal
             % +Stream
@@ -24,9 +25,10 @@ Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
 @version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02,
-         2014/04-2014/06
+         2014/04-2014/06, 2015/03
 */
 
+:- use_module(library(aggregate)).
 :- use_module(library(debug)).
 :- use_module(library(option)).
 
@@ -72,6 +74,17 @@ if_debug(Flag, _Goal):-
   \+ debugging(Flag), !.
 if_debug(_Flag, Goal):-
   call(Goal).
+
+
+
+%! number_of_open_files(-N:nonneg) is det.
+
+number_of_open_files(N):-
+  aggregate_all(
+    count,
+    stream_property(_, output),
+    N
+  ).
 
 
 
