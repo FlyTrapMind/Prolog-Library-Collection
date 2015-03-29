@@ -6,6 +6,7 @@
                                    % -Path:atom
     project_abbreviation/1, % ?Name:atom
     project_description/1, % ?Name:atom
+    project_directory/1, % ?Directory:atom
     project_name/1 % ?Name:atom
   ]
 ).
@@ -70,6 +71,13 @@ project_description(Desc):-
   ->  true
   ;   user:project(_, Desc)
   ).
+
+%! project_directory(?Directory:atom) .
+
+project_directory(Dir):-
+  project_abbreviation(Abbr),
+  Spec =.. [Abbr,'.'],
+  absolute_file_name(Spec, Dir, [access(read),file_type(directory)]).
 
 %! project_name(?Name:atom) .
 
