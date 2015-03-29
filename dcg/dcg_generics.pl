@@ -1,6 +1,11 @@
 :- module(
   dcg_generics,
   [
+    atom_phrase/2, % :Dcg
+                   % ?Atom:atom
+    atom_phrase/3, % :Dcg
+                   % ?Atom1:atom
+                   % ?Atom2:atom
     dcg_all//0,
     dcg_all//2, % +Options:list(nvpair)
                 % -Result:or([atom,list(code)])
@@ -14,11 +19,6 @@
     dcg_end//0,
     dcg_separated_list//2, % :Separator:callable
                            % ?Codess:list(list(codes))
-    atom_phrase/2, % :Dcg
-                  % ?AtomicOrCodes:or([atom,list(code),number])
-    atom_phrase/3, % :Dcg
-                  % ?AtomicOrCodes1:or([atom,list(code),number])
-                  % ?AtomicOrCodes2:or([atom,list(code),number])
     dcg_rest//1, % -Rest:list(code)
     dcg_switch//2, % +Value
                    % +Map:list
@@ -33,8 +33,13 @@
     dcg_void//0,
     dcg_with_output_to/2, % +Output:compound
                           % :Dcg
-    dcg_yn_separator//2 % +Tail:list
-                        % :Separator
+    dcg_yn_separator//2, % +Tail:list
+                         % :Separator
+    string_phrase/2, % :Dcg
+                     % ?String:string
+    string_phrase/3 % :Dcg
+                    % ?String1:string
+                    % ?String2:string
   ]
 ).
 
@@ -51,7 +56,8 @@ Concepts
     (i.e., strings of characters).
 
 @author Wouter Beek
-@version 2013/05-2013/09, 2013/11-2014/01, 2014/03, 2014/05, 2014/10, 2014/12
+@version 2013/05-2013/09, 2013/11-2014/01, 2014/03, 2014/05, 2014/10, 2014/12,
+         2015/03
 */
 
 :- use_module(library(lists), except([delete/3,subset/2])).
@@ -61,10 +67,10 @@ Concepts
 
 is_meta(convert).
 
-:- meta_predicate(dcg_between(//,//,?,?)).
-:- meta_predicate(dcg_between(//,//,//,?,?)).
 :- meta_predicate(atom_phrase(//,?)).
 :- meta_predicate(atom_phrase(//,?,?)).
+:- meta_predicate(dcg_between(//,//,?,?)).
+:- meta_predicate(dcg_between(//,//,//,?,?)).
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
@@ -74,13 +80,36 @@ is_meta(convert).
 :- meta_predicate(dcg_until0(//,?,+,?,?)).
 :- meta_predicate(dcg_with_output_to(+,//)).
 :- meta_predicate(dcg_yn_separator(+,//,?,?)).
+:- meta_predicate(string_phrase(//,?)).
+:- meta_predicate(string_phrase(//,?,?)).
 
 :- predicate_options(dcg_until//2, 2, [
-     convert(+callable),
-     end_mode(+oneof([exclusive,inclusive]))
-   ]).
+  convert(+callable),
+  end_mode(+oneof([exclusive,inclusive]))
+]).
 
 
+
+
+
+%! atom_phrase(:Dcg, ?Atom:atom)// is nondet.
+
+atom_phrase(Dcg, Atom):-
+  (   var(Atom)
+  ->  phrase(Dcg, Codes),
+      atomic_codes(Atom, Codes)
+  ;   atomic_codes(Atom, Codes),
+      phrase(Dcg, Codes)
+  ).
+
+
+
+%! atom_phrase(:Dcg, ?Atom1:atom, ?Atom2:atom)// is nondet.
+
+atom_phrase(Dcg, Atom1, Atom2):-
+  atomic_codes(Atom1, Codes1),
+  phrase(Dcg, Codes1, Codes2),
+  atomic_codes(Atom2, Codes2).
 
 
 
@@ -94,12 +123,9 @@ dcg_all -->
 
 dcg_all(O1, Result) -->
   dcg_all_(Codes),
-  {(
-    option(output_format(atom), O1, codes)
-  ->
-    atom_codes(Result, Codes)
-  ;
-    Result = Codes
+  {(  option(output_format(atom), O1, codes)
+  ->  atom_codes(Result, Codes)
+  ;   Result = Codes
   )}.
 
 dcg_all_([H|T]) -->
@@ -133,28 +159,6 @@ dcg_done(_, _).
 
 
 dcg_end([], []).
-
-
-
-%! atom_phrase(:DCG, ?AtomicOrCodes:or([atom,list(code),number]))// is nondet.
-%! atom_phrase(
-%!   :DCG,
-%!   ?AtomicOrCodes1:or([atom,list(code),number]),
-%!   ?AtomicOrCodes2:or([atom,list(code),number])
-%! )// is nondet.
-
-atom_phrase(DCG, X1):-
-  nonvar(X1), !,
-  atomic_codes(X1, X2),
-  phrase(DCG, X2).
-atom_phrase(DCG, X1):-
-  phrase(DCG, X2),
-  atomic_codes(X1, X2).
-
-atom_phrase(DCG, X1, Y1):-
-  atomic_codes(X1, X2),
-  phrase(DCG, X2, Y2),
-  atomic_codes(Y1, Y2).
 
 
 
@@ -257,10 +261,10 @@ dcg_void --> [].
 
 
 
-%! dcg_with_output_to(+Output:compound, :DCG) is det.
+%! dcg_with_output_to(+Output:compound, :Dcg) is det.
 
-dcg_with_output_to(Out, DCG):-
-  once(phrase(DCG, Codes)),
+dcg_with_output_to(Out, Dcg):-
+  once(phrase(Dcg, Codes)),
   with_output_to(Out, put_codes(Codes)).
 
 
@@ -270,3 +274,24 @@ dcg_with_output_to(Out, DCG):-
 
 dcg_yn_separator([], _) --> [].
 dcg_yn_separator([_|_], Separator) --> Separator.
+
+
+
+%! string_phrase(:Dcg, ?String:string)// is nondet.
+
+string_phrase(Dcg, String):-
+  (   var(String)
+  ->  phrase(Dcg, Codes),
+      string_codes(String, Codes)
+  ;   string_codes(String, Codes),
+      phrase(Dcg, Codes)
+  ).
+
+
+
+%! string_phrase(:Dcg, ?String1:atom, ?String2:atom)// is nondet.
+
+string_phrase(Dcg, String1, String2):-
+  string_codes(String1, Codes1),
+  phrase(Dcg, Codes1, Codes2),
+  string_codes(String2, Codes2).
