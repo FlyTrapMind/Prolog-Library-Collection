@@ -27,5 +27,5 @@ DCG-based debug tools.
 %! dcg_debug(+Topic:atom, :Dcg) is det.
 
 dcg_debug(Topic, Dcg):-
-  dcg_phrase(Dcg, Atom),
+  atom_phrase(Dcg, Atom),
   debug(Topic, Atom, []).

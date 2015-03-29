@@ -46,7 +46,7 @@ file_to_latex_title(PrologFile, Title):-
   \+ module_property(Module, class(test)), !,
 
   % Underscores must be escaped in LaTeX.
-  dcg_phrase(dcg_replace(`_`, `\\_`), Module, Title).
+  atom_phrase(dcg_replace(`_`, `\\_`), Module, Title).
 file_to_latex_title(PrologFile, Local):-
   file_component(PrologFile, local, Local).
 

@@ -14,9 +14,9 @@
     dcg_end//0,
     dcg_separated_list//2, % :Separator:callable
                            % ?Codess:list(list(codes))
-    dcg_phrase/2, % :Dcg
+    atom_phrase/2, % :Dcg
                   % ?AtomicOrCodes:or([atom,list(code),number])
-    dcg_phrase/3, % :Dcg
+    atom_phrase/3, % :Dcg
                   % ?AtomicOrCodes1:or([atom,list(code),number])
                   % ?AtomicOrCodes2:or([atom,list(code),number])
     dcg_rest//1, % -Rest:list(code)
@@ -63,8 +63,8 @@ is_meta(convert).
 
 :- meta_predicate(dcg_between(//,//,?,?)).
 :- meta_predicate(dcg_between(//,//,//,?,?)).
-:- meta_predicate(dcg_phrase(//,?)).
-:- meta_predicate(dcg_phrase(//,?,?)).
+:- meta_predicate(atom_phrase(//,?)).
+:- meta_predicate(atom_phrase(//,?,?)).
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
@@ -136,22 +136,22 @@ dcg_end([], []).
 
 
 
-%! dcg_phrase(:DCG, ?AtomicOrCodes:or([atom,list(code),number]))// is nondet.
-%! dcg_phrase(
+%! atom_phrase(:DCG, ?AtomicOrCodes:or([atom,list(code),number]))// is nondet.
+%! atom_phrase(
 %!   :DCG,
 %!   ?AtomicOrCodes1:or([atom,list(code),number]),
 %!   ?AtomicOrCodes2:or([atom,list(code),number])
 %! )// is nondet.
 
-dcg_phrase(DCG, X1):-
+atom_phrase(DCG, X1):-
   nonvar(X1), !,
   atomic_codes(X1, X2),
   phrase(DCG, X2).
-dcg_phrase(DCG, X1):-
+atom_phrase(DCG, X1):-
   phrase(DCG, X2),
   atomic_codes(X1, X2).
 
-dcg_phrase(DCG, X1, Y1):-
+atom_phrase(DCG, X1, Y1):-
   atomic_codes(X1, X2),
   phrase(DCG, X2, Y2),
   atomic_codes(Y1, Y2).

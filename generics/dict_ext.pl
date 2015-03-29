@@ -33,7 +33,7 @@ dict_tag(Dict1, Tag, Dict2):-
 %! print_dict(Dict:dict) is det.
 
 print_dict(Dict):-
-  dcg_phrase(dcg_pl_term(Dict), Atom),
+  atom_phrase(dcg_pl_term(Dict), Atom),
   writeln(Atom).
 
 

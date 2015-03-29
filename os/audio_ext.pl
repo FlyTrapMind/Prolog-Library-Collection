@@ -74,7 +74,7 @@ google_tts(Line, URI):-
 
 google_tts(Encoding, Language, Line, Uri):-
   % Replace spaces by plus signs.
-  dcg_phrase(dcg_replace([32], [43]), Line, NormalizedQuery),
+  atom_phrase(dcg_replace([32], [43]), Line, NormalizedQuery),
   uri_query_components(Search, [ie=Encoding,tl=Language,q=NormalizedQuery]),
   uri_components(
     Uri,

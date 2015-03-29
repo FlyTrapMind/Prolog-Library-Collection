@@ -20,7 +20,7 @@ Read letters in either case, prefering lowercase
  (i.e., the first solution is all-lowercase).
 
 ```prolog
-?- dcg_phrase(char_upper(Char), 'Q').
+?- atom_phrase(char_upper(Char), 'Q').
 Char = 'q';
 Char = 'Q'.
 ```
@@ -33,7 +33,7 @@ It does not matter in which case the letters are supplied
  in the instantiated argument.
 
 ```prolog
-?- dcg_phrase(char_upper(q), Atom).
+?- atom_phrase(char_upper(q), Atom).
 Atom = 'Q'.
 ```
 
