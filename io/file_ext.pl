@@ -144,6 +144,7 @@ In line with the terminology this modules uses the following variable names:
 :- use_module(plc(math/math_ext)).
 :- use_module(plc(io/dir_ext)).
 :- use_module(plc(io/file_gnu)).
+:- use_module(plc(io/io_dateTime)).
 :- use_module(plc(os/os_ext)).
 :- use_module(plc(prolog/pl_mode)).
 
@@ -280,7 +281,7 @@ create_file_link(File, Dir):-
 % Returns a file's age in seconds.
 
 file_age(File, Age):-
-  time_file(File, LastModified),
+  dateTime_file(File, LastModified),
   get_time(Now),
   Age is Now - LastModified.
 
@@ -594,8 +595,8 @@ root_prefix('C:\\').
 % the file denoted by Path2.
 
 younger_file(Path1, Path2):-
-  time_file(Path1, Time1),
-  time_file(Path2, Time2),
+  dateTime_file(Path1, Time1),
+  dateTime_file(Path2, Time2),
   Time1 > Time2.
 
 

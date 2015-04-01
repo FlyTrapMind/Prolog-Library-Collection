@@ -71,7 +71,7 @@ split_into_smaller_files(BigFile, OutputDir, Prefix):-
 %! touch_file(+File:atom) is det.
 
 touch_file(File):-
-  handle_process(touch, [File], [program(touch)]).
+  handle_process(touch, [file(File)], []).
 
 
 

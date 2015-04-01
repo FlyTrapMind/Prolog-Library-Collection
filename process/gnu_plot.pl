@@ -11,6 +11,15 @@
 
 Support for calling GNU Plot.
 
+Example
+-------
+
+```bash
+$ gnuplot -e "input_file='data/2015/04/01/16_33_29.csv';output_dir='data/';" su_plot.plt
+```
+
+---
+
 @author Wouter Beek
 @version 2015/04
 */
@@ -37,24 +46,34 @@ Support for calling GNU Plot.
 
 gnu_plot(ScriptSpec, Args, Options):-
   absolute_file_name(ScriptSpec, Script, [access(execute),extensions([plt])]),
-  atom_phrase(gnu_plot_args(Args), Arg),
+  relative_file(Script, RelScript),
+  atom_phrase(gnu_plot_args(Args), Arg0),
+  format(atom(Arg), '"~a"', [Arg0]),
+format(user_error, 'gnuplot -e ~a ~a\n', [Arg,RelScript]),
   handle_process(
     gnuplot,
-    ['-e',Arg,file(Script)],
+    ['-e',Arg,file(RelScript)],
     Options
   ).
 
-gnu_plot_args(Args) -->
-  quoted(gnu_plot_args0(Args)).
-
-gnu_plot_args0([]).
-gnu_plot_args0([K=V|T]) -->
+gnu_plot_args([]) --> "".
+gnu_plot_args([K=V|T]) -->
   gnu_plot_arg(K, V),
-  gnu_plot_args0(T).
+  gnu_plot_args(T).
 
 gnu_plot_arg(K, V) -->
   atom(K),
-  "='",
-  atom(V),
-  "';".
+  "=\'",
+  gnu_plot_value(V),
+  "\';".
+
+gnu_plot_value(file(File)) --> !,
+  {relative_file(File, RelFile)},
+  atom(RelFile).
+gnu_plot_value(V) -->
+  atom(V).
+
+relative_file(File, RelFile):-
+  absolute_file_name(., Dir, [access(read),file_type(directory)]),
+  relative_file_name(File, Dir, RelFile).
 
