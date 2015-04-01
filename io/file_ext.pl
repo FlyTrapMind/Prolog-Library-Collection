@@ -49,8 +49,6 @@
     local_file_components/3, % ?Local:atom
                              % ?Base:atom
                              % ?Ext:atom
-    mv2/2, % +From:atom
-           % +To:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
     new_file_name/2, % +Path1:atom
@@ -131,7 +129,7 @@ In line with the terminology this modules uses the following variable names:
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/11, 2015/01-2015/02
+         2014/08-2014/11, 2015/01-2015/02, 2015/04
 */
 
 :- use_module(library(apply)).
@@ -483,19 +481,6 @@ local_file_components(Local, Base, Ext):-
   ).
 local_file_components(_, _, _):-
   instantiation_error(_).
-
-
-
-%! mv2(+From:atom, +To:atom) is det.
-% Since this implementation uses copying, not moving, it is much slower
-% than gnu_mv/2.
-% However, that predicate depends on the availability of GNU mv (Linux).
-% mv2/2 is not subject to the fallacious brace expansion of the built-in
-% mv/2.
-
-mv2(From, To):-
-  copy_file(From, To),
-  delete_file(From).
 
 
 
