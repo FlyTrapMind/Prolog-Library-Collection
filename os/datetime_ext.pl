@@ -4,14 +4,10 @@
     current_date/1, % ?Date:atom
     current_date_time/1, % ?DateTime:atom
     current_time/1, % ?Time:atom
-    date_directories/2, % +Spec:compound
-                        % -DateDir:atom
     date_time_dict/2, % ?DateTime:compound
                       % ?Dict:dict
     hash_date/1, % -Hash:atom
     iso8601_dateTime/1, % -DateTime:atom
-    latest_file/2, % +Files:list(atom)
-                   % -File:atom
     posix_date/1, % -Date:atom
     posix_time/1, % -Time:atom
     seconds/3 % ?Hours:integer
@@ -71,24 +67,6 @@ current_time(Time):-
 
 
 
-%! date_directories(+Spec:compound, -DateDir:atom) is det.
-% Create and return the current date subdirectory of the given absolute
-% directory name.
-%
-% Example: from `/home/wouterbeek/tmp` to
-% `/home/wouterbeek/tmp/2013/05/10`
-
-date_directories(Spec, Dir):-
-  get_time(TimeStamp),
-  format_time(atom(Day), '%d', TimeStamp),
-  format_time(atom(Month), '%m', TimeStamp),
-  format_time(atom(Year), '%Y', TimeStamp),
-  absolute_file_name(Spec, PrefixDir, [access(write),file_type(directory)]),
-  directory_subdirectories(PostfixDir, [Year,Month,Day]),
-  append_directories(PrefixDir, PostfixDir, Dir).
-
-
-
 %! date_time_dict(?DateTime:compound, ?Dict:dict) is det.
 
 date_time_dict(
@@ -124,33 +102,6 @@ hash_date(Hash):-
 iso8601_dateTime(DT):-
   get_time(TimeStamp),
   format_time(atom(DT), '%FT%T%z', TimeStamp).
-
-
-
-%! latest_file(+Files:list(atom), -Latest:atom) is det.
-% Returns the most recently created or altered file from within a list of
-% files.
-%
-% @arg Files A list of atomic absolute file names.
-% @arg Latest An atomic absolute file name.
-
-latest_file([First | Files], Latest):-
-  time_file(First, FirstTime),
-  latest_file(Files, FirstTime-First, Latest).
-
-latest_file([], _Time-Latest, Latest).
-latest_file([File | Files], TopTime/TopFile, Latest):-
-  time_file(File, Time),
-  (
-    Time > TopTime
-  ->
-    NewTopTime = Time,
-    NewTopFile = File
-  ;
-    NewTopTime = TopTime,
-    NewTopFile = TopFile
-  ),
-  latest_file(Files, NewTopTime-NewTopFile, Latest).
 
 
 
