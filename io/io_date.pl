@@ -1,11 +1,14 @@
 :- module(
   io_date,
   [
-    date_directory/2, % +Spec:compound
+    date_directory/2, % +DirectorySpec:compound
                         % -Directory:atom
-    date_file/2, % +Spec:compound
+    date_file/2, % +DirectorySpec:compound
                  % -File:atom
-    latest_date_file/2, % +Directory:atom
+    date_file/3, % +DirectorySpec:compound
+                 % +Extension:atom
+                 % -File:atom
+    latest_date_file/2, % +DirectorySpec:compound
                         % -File:atom
     latest_file/2 % +Files:list(atom)
                   % -File:atom
@@ -14,7 +17,7 @@
 
 /** <module> I/O date
 
-Predicates for 
+Predicates for
 
 @author Wouter Beek
 @version 2015/04
@@ -50,23 +53,32 @@ date_directory(Spec, Dir):-
 
 
 
-%! date_file(+Spec:compound, -File:atom) is det.
+%! date_file(+DirectorySpec:compound, -File:atom) is det.
 
-date_file(Spec, Path):-
-  date_directory(Spec, Dir),
+date_file(DirSpec, Path):-
+  date_file(DirSpec, _, Path).
+
+%! date_file(+DirectorySpec:compound, +Extension:atom, -File:atom) is det.
+
+date_file(DirSpec, Ext, Path):-
+  date_directory(DirSpec, Dir),
   get_time(TimeStamp),
   format_time(atom(Hour), '%H', TimeStamp),
   format_time(atom(Minute), '%M', TimeStamp),
-  format_time(atom(Second0), '%S', TimeStamp),
-  Second is floor(Second0),
-  format(atom(LocalName), '~d_~d_~d', [Hour,Minute,Second]),
+  format_time(atom(Second), '%S', TimeStamp),
+  format(atom(Base), '~a_~a_~a', [Hour,Minute,Second]),
+  (   var(Ext)
+  ->  LocalName = Base
+  ;   file_name_extension(Base, Ext, LocalName)
+  ),
   directory_file_path(Dir, LocalName, Path).
 
 
 
-%! latest_date_file(+Directory:atom, -File:atom) is det.
+%! latest_date_file(+DirectorySpec:compound, -File:atom) is det.
 
-latest_date_file(Dir, Latest):-
+latest_date_file(DirSpec, Latest):-
+  absolute_file_name(DirSpec, Dir, [access(read),file_type(directory)]),
   directory_files(Dir, Subdirs),
   include(atom_phrase(date_or_time), Subdirs, DateSubdirs),
   max_member(LatestSubdir, DateSubdirs),
