@@ -47,8 +47,7 @@ $ gnuplot -e "input_file='data/2015/04/01/16_33_29.csv';output_dir='data/';" su_
 gnu_plot(ScriptSpec, Args, Options):-
   absolute_file_name(ScriptSpec, Script, [access(execute),extensions([plt])]),
   relative_file(Script, RelScript),
-  atom_phrase(gnu_plot_args(Args), Arg0),
-  format(atom(Arg), '"~a"', [Arg0]),
+  atom_phrase(gnu_plot_args(Args), Arg),
 format(user_error, 'gnuplot -e ~a ~a\n', [Arg,RelScript]),
   handle_process(
     gnuplot,
