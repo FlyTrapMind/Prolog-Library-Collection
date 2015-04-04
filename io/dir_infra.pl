@@ -4,8 +4,8 @@
     create_project_subdirectory/1, % +Subdir:atom
     create_project_subdirectory/2, % +Subdir:atom
                                    % -Path:atom
-    project_abbreviation/1, % ?Name:atom
-    project_description/1, % ?Name:atom
+    project_abbreviation/1, % ?Abbreviation:atom
+    project_description/1, % ?Description:string
     project_directory/1, % ?Directory:atom
     project_name/1 % ?Name:atom
   ]
@@ -64,13 +64,17 @@ project_abbreviation(Abbr):-
   ;   user:project(Abbr, _)
   ).
 
-%! project_description(?Description:atom) .
 
-project_description(Desc):-
-  (   user:project(_, Desc, _)
+
+%! project_description(?Description:string) .
+
+project_description(Descr):-
+  (   user:project(_, Descr, _)
   ->  true
-  ;   user:project(_, Desc)
+  ;   user:project(_, Descr)
   ).
+
+
 
 %! project_directory(?Directory:atom) .
 
@@ -78,6 +82,8 @@ project_directory(Dir):-
   project_abbreviation(Abbr),
   Spec =.. [Abbr,'.'],
   absolute_file_name(Spec, Dir, [access(read),file_type(directory)]).
+
+
 
 %! project_name(?Name:atom) .
 
