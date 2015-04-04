@@ -6,7 +6,7 @@
     copy_directory/3, % +FromDir:atom
                       % +ToDir:atom
                       % +Options:list(nvpair)
-    create_directory/1, % +Dir:atom
+    create_directory/1, % +Directory:atom
     create_directory/2, % +CurrentSpec:compound
                         % +Subdirs:list(atom)
     create_directory/3, % +CurrentSpec:compound
