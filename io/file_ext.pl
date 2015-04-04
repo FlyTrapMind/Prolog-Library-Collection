@@ -49,8 +49,6 @@
     local_file_components/3, % ?Local:atom
                              % ?Base:atom
                              % ?Ext:atom
-    mv2/2, % +From:atom
-           % +To:atom
     merge_into_one_file/2, % +FromDir:atom
                            % +ToFile:atom
     new_file_name/2, % +Path1:atom
@@ -131,7 +129,7 @@ In line with the terminology this modules uses the following variable names:
 
 @author Wouter Beek
 @version 2011/08-2012/05, 2012/09, 2013/04-2013/06, 2013/09-2014/01, 2014/05,
-         2014/08-2014/11, 2015/01-2015/02
+         2014/08-2014/11, 2015/01-2015/02, 2015/04
 */
 
 :- use_module(library(apply)).
@@ -146,6 +144,7 @@ In line with the terminology this modules uses the following variable names:
 :- use_module(plc(math/math_ext)).
 :- use_module(plc(io/dir_ext)).
 :- use_module(plc(io/file_gnu)).
+:- use_module(plc(io/io_dateTime)).
 :- use_module(plc(os/os_ext)).
 :- use_module(plc(prolog/pl_mode)).
 
@@ -282,7 +281,7 @@ create_file_link(File, Dir):-
 % Returns a file's age in seconds.
 
 file_age(File, Age):-
-  time_file(File, LastModified),
+  dateTime_file(File, LastModified),
   get_time(Now),
   Age is Now - LastModified.
 
@@ -486,19 +485,6 @@ local_file_components(_, _, _):-
 
 
 
-%! mv2(+From:atom, +To:atom) is det.
-% Since this implementation uses copying, not moving, it is much slower
-% than gnu_mv/2.
-% However, that predicate depends on the availability of GNU mv (Linux).
-% mv2/2 is not subject to the fallacious brace expansion of the built-in
-% mv/2.
-
-mv2(From, To):-
-  copy_file(From, To),
-  delete_file(From).
-
-
-
 %! merge_into_one_file(+FromFiles:list(atom), +ToFile:atom) is det.
 
 merge_into_one_file(FromFiles, ToFile):-
@@ -609,8 +595,8 @@ root_prefix('C:\\').
 % the file denoted by Path2.
 
 younger_file(Path1, Path2):-
-  time_file(Path1, Time1),
-  time_file(Path2, Time2),
+  dateTime_file(Path1, Time1),
+  dateTime_file(Path2, Time2),
   Time1 > Time2.
 
 
