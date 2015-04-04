@@ -281,7 +281,7 @@ create_file_link(File, Dir):-
 % Returns a file's age in seconds.
 
 file_age(File, Age):-
-  dateTime_file(File, LastModified),
+  time_file(File, LastModified),
   get_time(Now),
   Age is Now - LastModified.
 
