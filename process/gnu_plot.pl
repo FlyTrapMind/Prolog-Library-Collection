@@ -48,7 +48,6 @@ gnu_plot(ScriptSpec, Args, Options):-
   absolute_file_name(ScriptSpec, Script, [access(execute),extensions([plt])]),
   relative_file(Script, RelScript),
   atom_phrase(gnu_plot_args(Args), Arg),
-format(user_error, 'gnuplot -e ~a ~a\n', [Arg,RelScript]),
   handle_process(
     gnuplot,
     ['-e',Arg,file(RelScript)],
