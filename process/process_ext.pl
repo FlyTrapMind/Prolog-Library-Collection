@@ -92,8 +92,12 @@ handle_process_inner(Process, Args, Options1):-
     [process(Pid),stderr(pipe(ErrorStream)),stdout(pipe(OutputStream))],
     Options3
   ),
+  (   is_absolute_file_name(Process)
+  ->  Exec = Process
+  ;   Exec =.. path(Process)
+  ),
   setup_call_cleanup(
-    process_create(path(Process), Args, Options3),
+    process_create(Exec, Args, Options3),
     (
       % Register the PID so it can be killed upon Prolog halt.
       assert(current_process(Pid)),
