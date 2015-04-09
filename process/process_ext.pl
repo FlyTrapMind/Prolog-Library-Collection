@@ -94,14 +94,14 @@ handle_process_inner(Process, Args, Options1):-
   ),
   (   is_absolute_file_name(Process)
   ->  Exec = Process
-  ;   Exec =.. path(Process)
+  ;   Exec = path(Process)
   ),
   setup_call_cleanup(
     process_create(Exec, Args, Options3),
     (
       % Register the PID so it can be killed upon Prolog halt.
       assert(current_process(Pid)),
-      
+
       % Process the goal supplied for the error stream.
       (   option(error_goal(ErrorGoal), Options1, print_error)
       ->  thread_create(
@@ -112,13 +112,13 @@ handle_process_inner(Process, Args, Options1):-
           assert(thread_id(Pid,error,ErrorThreadId))
       ;   true
       ),
-      
+
       % Process the goal supplied for the output stream.
       (   option(output_goal(OutputGoal), Options1)
       ->  call(OutputGoal, OutputStream)
       ;   true
       ),
-      
+
       % Process the status code.
       with_mutex(process_ext, (
         process_wait(Pid, exit(PidStatus)),
