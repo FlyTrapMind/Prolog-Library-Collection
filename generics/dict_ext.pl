@@ -23,6 +23,7 @@
 
 %! dict_tag(+Dict1:dict, +Tag:atom, +Dict2:dict) is semidet.
 %! dict_tag(+Dict1:dict, +Tag:atom, -Dict2:dict) is det.
+% Converts between dictionaries that differ only in their outer tag name.
 
 dict_tag(Dict1, Tag, Dict2):-
   dict_pairs(Dict1, _, Pairs),
