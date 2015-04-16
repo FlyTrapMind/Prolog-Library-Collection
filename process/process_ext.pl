@@ -107,7 +107,7 @@ handle_process_inner(Process, Args, Options1):-
       ->  thread_create(
             call(ErrorGoal, ErrorStream),
             ErrorThreadId,
-            [at_exit(close(ErrorStream))]
+            [at_exit(close(ErrorStream)),debug(false)]
           ),
           assert(thread_id(Pid,error,ErrorThreadId))
       ;   true
