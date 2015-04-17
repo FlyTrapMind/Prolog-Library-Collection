@@ -10,7 +10,7 @@
 /** <module> Process extensions
 
 @author Wouter Beek
-@version 2015/01, 2015/03
+@version 2015/01, 2015/03-2015/04
 */
 
 :- use_module(library(aggregate)).
@@ -31,6 +31,12 @@
 :- dynamic(thread_id/3).
 
 :- predicate_options(handle_process/3, 3, [
+  detached(+boolean),
+  pass_to(handle_process_inner/3, 3)
+]).
+:- predicate_options(handle_process_inner/3, 3, [
+  error_goal(+callable),
+  nice(+between(-20,20)),
   output_goal(+callable),
   program(+atom),
   status(-nonneg),
@@ -63,6 +69,8 @@ is_meta(output_goal).
 %     Default is `false`.
 %   - error_goal(:Goal)
 %     Call this goal on the error stream.
+%   - nice(+between(-20,20))
+%     Default is 0.
 %   - output_goal(:Goal)
 %     Call this goal on the output stream.
 %   - program(+Program:atom)
@@ -99,6 +107,12 @@ handle_process_inner(Process, Args, Options1):-
   setup_call_cleanup(
     process_create(Exec, Args, Options3),
     (
+      (   option(nice(Nice), Options1),
+          Nice =\= 0
+      ->  handle_process(renice, [10,Pid], [nice(0)])
+      ;   true
+      ),
+
       % Register the PID so it can be killed upon Prolog halt.
       assert(current_process(Pid)),
 
