@@ -1496,6 +1496,7 @@ less_than_sign(60) --> [60].
 
 %! ascii_letter// .
 %! ascii_letter(?Code:code)// .
+%! ascii_letter(?Code:code, ?Index:between(1,26))// .
 
 ascii_letter --> ascii_letter(_).
 ascii_letter(Code) --> ascii_letter(Code, _).
