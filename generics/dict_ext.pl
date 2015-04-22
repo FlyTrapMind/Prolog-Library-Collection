@@ -4,6 +4,9 @@
     dict_tag/3, % +Dict1:dict
                 % +Tag:atom
                 % ?Dict2:dict
+    merge_dict/3, % +Dict1:dict
+                  % +Dict2:dict
+                  % -Dict:dict
     print_dict/1 % +Dict:dict
   ]
 ).
@@ -11,7 +14,7 @@
 /** <module> Dictionary extensions
 
 @author Wouter Beek
-@version 2014/11, 2015/03
+@version 2014/11, 2015/03-2015/04
 */
 
 :- use_module(plc(dcg/dcg_generics)).
@@ -28,6 +31,17 @@
 dict_tag(Dict1, Tag, Dict2):-
   dict_pairs(Dict1, _, Pairs),
   dict_pairs(Dict2, Tag, Pairs).
+
+
+
+%! merge_dict(+Dict1:dict, +Dict2:dict, -Dict:dict) is det.
+
+merge_dict(D1, D2, D):-
+  dict_pairs(D1, Tag1, P1),
+  dict_pairs(D2, Tag2, P2),
+  append(P1, P2, P),
+  (Tag1 = Tag2 -> true ; Tag = Tag1),
+  dict_pairs(D, Tag, P).
 
 
 
