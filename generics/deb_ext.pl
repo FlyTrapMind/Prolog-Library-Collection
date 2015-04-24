@@ -11,6 +11,11 @@
                                 % :Goal
                                 % +Args1:list
                                 % +Args2:list
+    concurrent_maplist_debug/5, % +Flag
+                                % :Goal
+                                % +Args1:list
+                                % +Args2:list
+                                % +Args3:list
     fail_mode/1, % +FailMode:compound
     if_debug/2, % +Flag:atom
                 % :Goal
@@ -42,6 +47,7 @@ Methods that are used while developing and inspecting code.
 :- meta_predicate(catch_debug(+,+,0)).
 :- meta_predicate(concurrent_maplist_debug(+,1,+)).
 :- meta_predicate(concurrent_maplist_debug(+,2,+,+)).
+:- meta_predicate(concurrent_maplist_debug(+,3,+,+,+)).
 :- meta_predicate(if_debug(+,0)).
 :- meta_predicate(test(0)).
 :- meta_predicate(test(0,+)).
@@ -69,12 +75,26 @@ concurrent_maplist_debug(Flag, Goal, Args1):-
   ;   concurrent_maplist(Goal, Args1)
   ).
 
-%! concurrent_maplist_debug(+Flag, :Goal, +Args1:list, Args2:list) is det.
+%! concurrent_maplist_debug(+Flag, :Goal, +Args1:list, +Args2:list) is det.
 
 concurrent_maplist_debug(Flag, Goal, Args1, Args2):-
   (   debugging(Flag)
   ->  maplist(Goal, Args1, Args2)
   ;   concurrent_maplist(Goal, Args1, Args2)
+  ).
+
+%! concurrent_maplist_debug(
+%!   +Flag,
+%!   :Goal,
+%!   +Args1:list,
+%!   +Args2:list,
+%!   +Args3:list
+%! ) is det.
+
+concurrent_maplist_debug(Flag, Goal, Args1, Args2, Args3):-
+  (   debugging(Flag)
+  ->  maplist(Goal, Args1, Args2, Args3)
+  ;   concurrent_maplist(Goal, Args1, Args2, Args3)
   ).
 
 
