@@ -4,6 +4,13 @@
     catch_debug/3, % +DebugFlag:atom
                    % +Message:atom
                    % :Goal
+    concurrent_maplist_debug/3, % +Flag
+                                % :Goal
+                                % +Args1:list
+    concurrent_maplist_debug/4, % +Flag
+                                % :Goal
+                                % +Args1:list
+                                % +Args2:list
     fail_mode/1, % +FailMode:compound
     if_debug/2, % +Flag:atom
                 % :Goal
@@ -25,7 +32,7 @@ Methods that are used while developing and inspecting code.
 
 @author Wouter Beek
 @version 2011/11-2012/07, 2012/09, 2013/06, 2013/10, 2013/12-2014/02,
-         2014/04-2014/06, 2015/03
+         2014/04-2014/06, 2015/03-2015/04
 */
 
 :- use_module(library(aggregate)).
@@ -33,10 +40,14 @@ Methods that are used while developing and inspecting code.
 :- use_module(library(option)).
 
 :- meta_predicate(catch_debug(+,+,0)).
+:- meta_predicate(concurrent_maplist_debug(+,1,+)).
+:- meta_predicate(concurrent_maplist_debug(+,2,+,+)).
 :- meta_predicate(if_debug(+,0)).
 :- meta_predicate(test(0)).
 :- meta_predicate(test(0,+)).
 :- meta_predicate(test(0,+,+)).
+
+
 
 
 
@@ -46,6 +57,27 @@ Methods that are used while developing and inspecting code.
 
 catch_debug(Debug, Msg, Goal):-
   catch(Goal, Exception, debug_exception(Debug, Msg, Exception)).
+
+
+
+
+%! concurrent_maplist_debug(+Flag, :Goal, +Args1:list) is det.
+
+concurrent_maplist_debug(Flag, Goal, Args1):-
+  (   debugging(Flag)
+  ->  maplist(Goal, Args1)
+  ;   concurrent_maplist(Goal, Args1)
+  ).
+
+%! concurrent_maplist_debug(+Flag, :Goal, +Args1:list, Args2:list) is det.
+
+concurrent_maplist_debug(Flag, Goal, Args1, Args2):-
+  (   debugging(Flag)
+  ->  maplist(Goal, Args1, Args2)
+  ;   concurrent_maplist(Goal, Args1, Args2)
+  ).
+
+
 
 debug_exception(_, _, Exception):-
   var(Exception), !.
