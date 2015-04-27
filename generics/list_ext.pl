@@ -113,6 +113,9 @@
                     % ?OldElement
                     % +NewElement
                     % -NewList:list
+    selectchk_eq/3, % +Element
+                    % +List:list
+                    % -Rest:list
     shorter/3, % +Comparator:pred
                % +List1:list
                % +List2:list
@@ -138,7 +141,8 @@ Extensions to the set of list predicates in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/03, 2013/05,
-         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2014/08, 2014/11-2014/12
+         2013/07, 2013/09, 2013/12, 2014/03, 2014/06, 2014/08,
+         2014/11-2014/12, 2015/04
 */
 
 :- use_module(library(apply)).
@@ -707,6 +711,17 @@ replace_nth0(I, L1, E1, E2, L2):-
 
 replace_nth1(I, L1, E1, E2, L2):-
   replace_nth(1, I, L1, E1, E2, L2).
+
+
+%! selectchk_eq(+Element, +List, -Rest) is det.
+% @see Inspired by memberchk_eq in hProlog.
+
+selectchk_eq(X, [Y|Ys1], Zs) :-
+  (   X == Y
+  ->  Zs = Ys1
+  ;   Zs = [Y|Ys2],
+      selectchk_eq(X, Ys1, Ys2)
+  ).
 
 
 %! shorter(+Order:pred/2, +List:list(term), +List2:list(term)) is semidet.
