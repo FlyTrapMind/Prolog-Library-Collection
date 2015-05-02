@@ -17,8 +17,8 @@
              % ?To:compound
     weights_binary/2, % ?Weights:list(between(0,15))
                       % ?Binary:nonneg
-    weights_decimal/2, % ?Weights:list(between(0,15))
-                       % ?Decimal:nonneg
+    weights_nonneg/2, % ?Weights:list(between(0,15))
+                      % ?Decimal:nonneg
     weights_fraction/2, % +Weights:list(between(0,9))
                         % -Fraction:between(0.0,1.0)
     weights_hexadecimal/2, % ?Weights:list(between(0,15))
@@ -36,16 +36,17 @@ Predicate for transforming numbers between
 positional notations of different radix.
 
 @author Wouter Beek
-@version 2013/07-2013/08, 2014/09-2014/11
+@version 2013/07-2013/08, 2014/09-2014/12
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
 
-:- use_module(generics(char_ext)).
-:- use_module(generics(list_ext)).
-:- use_module(generics(typecheck)).
+:- use_module(plc(generics/char_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(generics/typecheck)).
+:- use_module(plc(math/math_ext)).
 
 :- multifile(error:has_type/2).
 error:has_type(hex, Value):-
@@ -69,7 +70,7 @@ between_radix(Low, High, Number):-
   % and then check whether it is between (rather than generating values
   % that are between).
   % This also makes the `(+,+,+)`-case semi-deterministic.
-  (	  ground(Number)
+  (   ground(Number)
   ->  radix(Number, dec(NumberDec)),
       between(LowDec, HighDec, NumberDec)
   ;   between(LowDec, HighDec, NumberDec),
@@ -176,9 +177,9 @@ radix(From, To):-
   % If there is no radix for the output value then we assume decimal base.
   (   var(To)
   ->  ToRadix = dec,
-			To = dec(ToValue)
+      To = dec(ToValue)
   ;   To =.. [ToRadix,ToValue]
-	),
+  ),
   from_decimal(Decimal, ToRadix, ToValue).
 
 
@@ -191,27 +192,31 @@ weights_binary(Weights, Binary):-
 
 
 
-%! weights_decimal(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
-%! weights_decimal(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
+%! weights_nonneg(+Weights:list(between(0,15)), -Decimal:nonneg) is det.
+%! weights_nonneg(-Weights:list(between(0,9)), +Decimal:nonneg) is det.
 
-weights_decimal(Weights, Decimal):-
+weights_nonneg(Weights, Decimal):-
   weights_radix(Weights, dec(Decimal)).
 
 
 
-%! weights_fraction(
-%!   +Weights:list(between(0,9)),
-%!   -Fraction:between(0.0,1.0)
-%! ) is det.
+%! weights_fraction(+Weights:list(between(0,9)), -Fraction:compound) is det.
+%! weights_fraction(-Weights:list(between(0,9)), +Fraction:compound) is det.
 
-weights_fraction(Weights, Fraction):-
-  aggregate_all(
-    sum(N),
-    (
-      nth1(Index, Weights, Weight),
-      N is Weight * 10 ** (-1 * Index)
-    ),
-    Fraction
+weights_fraction(Ws, F):-
+  (   ground(Ws)
+  ->  aggregate_all(
+        sum(N),
+        (
+          nth1(I, Ws, W),
+          N is W rdiv (10 * I)
+        ),
+        F
+      )
+  ;   ground(F)
+  ->  fractional_integer(F, I),
+      weights_nonneg(Ws, I)
+  ;   instantiation_error(_)
   ).
 
 
@@ -232,27 +237,38 @@ weights_octal(Weights, Octal):-
 
 
 
-%! weights_radix(+Weights:between(0,15), -Number:compound) is det.
-%! weights_radix(-Weights:between(0,15), +Number:compound) is det.
+%! weights_radix(+Weights:list(between(0,15)), -Number:compound) is det.
+%! weights_radix(-Weights:list(between(0,15)), +Number:compound) is det.
 
 weights_radix(Weights, Number):-
-  nonvar(Weights),
-  Number =.. [Radix,Value], !,
-  maplist(char_weight, Chars, Weights),
-  (   Radix == hex
-  ->  atom_chars(Value, Chars)
-  ;   number_chars(Value, Chars)
+  (   ground(Number)
+  ->  Number =.. [_,Value],
+      % A special case occurs when there are no weights, mapped onto zero.
+      (   integer(Value),
+          Value =:= 0
+      ->  Weights = [0]
+      ;   atom_chars(Value, Chars),
+          maplist(char_weight, Chars, Weights)
+      )
+  ;   ground(Weights)
+  ->  Number =.. [Radix,Value],
+      % A special case occurs when there are no weights, mapped to zero.
+      (   Weights == []
+      ->  Value = 0
+      ;   maplist(char_weight, Chars, Weights),
+          (   Radix == hex
+          ->  atom_chars(Value, Chars)
+          ;   number_chars(Value, Chars)
+          )
+      )
+  ;   instantiation_error(_)
   ).
-weights_radix(Weights, Number):-
-  nonvar(Number), !,
-  atom_chars(Number, Chars),
-  maplist(char_weight, Chars, Weights).
 
 
 
 
 
-% HELPERS
+% HELPERS %
 
 %! char_weight(+Char:char, -Weight:between(0,15)) is det.
 %! char_weight(-Char:char, +Weight:between(0,15)) is det.
@@ -325,7 +341,7 @@ radix_value(Radix, Char, Value):-
 %! ) is det.
 
 to_decimal(dec, Decimal, Decimal):-
-	 nonneg(Decimal), !.
+  nonneg(Decimal), !.
 to_decimal(Radix, Value, Decimal):-
   radix_value(Radix, RadixValue),
   to_chars(Value, Chars),

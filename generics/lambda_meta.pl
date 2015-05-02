@@ -35,10 +35,10 @@ official policies, either expressed or implied, of Ulrich Neumerkel.
 */
 
 :- module(lambda_meta, [
-		   (^)/3, (^)/4, (^)/5, (^)/6, (^)/7, (^)/8, (^)/9,
-		   (\)/1, (\)/2, (\)/3, (\)/4, (\)/5, (\)/6, (\)/7,
-		   (+\)/2, (+\)/3, (+\)/4, (+\)/5, (+\)/6, (+\)/7,
-		   op(201,xfx,+\)]).
+       (^)/3, (^)/4, (^)/5, (^)/6, (^)/7, (^)/8, (^)/9,
+       (\)/1, (\)/2, (\)/3, (\)/4, (\)/5, (\)/6, (\)/7,
+       (+\)/2, (+\)/3, (+\)/4, (+\)/5, (+\)/6, (+\)/7,
+       op(201,xfx,+\)]).
 
 /** <module> Lambda expressions
 
@@ -69,7 +69,7 @@ currently not checked. Violations may lead to unexpected bindings.
 In the following example the parentheses around X>3 are necessary.
 
 ==
-?- use_module(generics(lambda_meta)).
+?- use_module(plc(generics/lambda_meta)).
 ?- use_module(library(apply)).
 
 ?- maplist(\X^(X>3),[4,5,9]).
@@ -119,29 +119,29 @@ http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/ISO-Hiord
 
 :- meta_predicate no_hat_call(0).
 :- meta_predicate
-	^(?,0,?),
-	^(?,1,?,?),
-	^(?,2,?,?,?),
-	^(?,3,?,?,?,?),
-	^(?,4,?,?,?,?,?),
-	^(?,5,?,?,?,?,?,?),
-	^(?,6,?,?,?,?,?,?,?).
+  ^(?,0,?),
+  ^(?,1,?,?),
+  ^(?,2,?,?,?),
+  ^(?,3,?,?,?,?),
+  ^(?,4,?,?,?,?,?),
+  ^(?,5,?,?,?,?,?,?),
+  ^(?,6,?,?,?,?,?,?,?).
 :- meta_predicate
-	\(0),
-	\(1,?),
-	\(2,?,?),
-	\(3,?,?,?),
-	\(4,?,?,?,?),
-	\(5,?,?,?,?,?),
-	\(6,?,?,?,?,?,?).
+  \(0),
+  \(1,?),
+  \(2,?,?),
+  \(3,?,?,?),
+  \(4,?,?,?,?),
+  \(5,?,?,?,?,?),
+  \(6,?,?,?,?,?,?).
 :- meta_predicate
-	+\(?,0),
-	+\(?,1,?),
-	+\(?,2,?,?),
-	+\(?,3,?,?,?),
-	+\(?,4,?,?,?,?),
-	+\(?,5,?,?,?,?,?),
-	+\(?,6,?,?,?,?,?,?).
+  +\(?,0),
+  +\(?,1,?),
+  +\(?,2,?,?),
+  +\(?,3,?,?,?),
+  +\(?,4,?,?,?,?),
+  +\(?,5,?,?,?,?,?),
+  +\(?,6,?,?,?,?,?,?).
 
 
 
@@ -193,7 +193,7 @@ http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/ISO-Hiord
    copy_term_nat(GV+FC,GV+C),call(C,V1,V2,V3,V4,V5,V6).
 
 
-%% no_hat_call(:Goal)
+%! no_hat_call(:Goal)
 %
 % Like call, but issues an error for a goal (^)/2.  Such goals are
 % likely the result of an insufficient number of arguments.

@@ -4,18 +4,11 @@
     canonical_blobs_atom/2, % @Term
                             % -Atom:atom
     run_collect_messages/1, % :Goal
-    run_collect_messages/2, % :Goal
-                            % +File:atom
     run_collect_messages/3, % :Goal
                             % -Status:or([oneof([false,true]),compound])
                             % -Messages:list(compound)
-    run_print_messages/1, % :Goal
-    run_print_messages/2, % :Goal
-                          % -Status
-    store_term_to_log/2, % +File:atom
-                         % @Term
     write_canonical_blobs/1, % @Term
-    write_canonical_blobs/2 % +Stream:stream
+    write_canonical_blobs/2 % +Out:stream
                             % @Term
   ]
 ).
@@ -25,16 +18,16 @@
 Logging the performance and results of Prolog predicates.
 
 @author Wouter Beek
-@version 2014/04, 2014/06, 2014/08-2014/09
+@version 2014/04, 2014/06, 2014/08-2014/09, 2014/12, 2015/03
 */
 
 :- use_module(library(check_installation)). % Private predicates.
+:- use_module(library(debug)).
 
 :- meta_predicate(run_collect_messages(0)).
-:- meta_predicate(run_collect_messages(0,+)).
 :- meta_predicate(run_collect_messages(0,-,-)).
-:- meta_predicate(run_print_messages(0)).
-:- meta_predicate(run_print_messages(0,-)).
+
+
 
 
 
@@ -42,6 +35,7 @@ Logging the performance and results of Prolog predicates.
 
 canonical_blobs_atom(Term, Atom):-
   with_output_to(atom(Atom), write_canonical_blobs(Term)).
+
 
 
 %! replace_blobs(Term0, Term) is det.
@@ -62,25 +56,15 @@ replace_blobs(Term0, Term):-
 replace_blobs(Term, Term).
 
 
-%! run_collect_messages(:Goal) is det.
+
+%! run_collect_messages(:Goal) .
 % Write an abbreviated version of status and messages to the console.
 
 run_collect_messages(Goal):-
-  run_collect_messages(Goal, Status, Messages),
-  length(Messages, NumberOfMessages),
-  format(
-    current_output,
-    'Status: ~a; #messages: ~D~n',
-    [Status,NumberOfMessages]
-  ).
+  run_collect_messages(Goal, Status, Warnings),
+  process_warnings(Warnings),
+  process_status(Status).
 
-
-%! run_collect_messages(:Goal, +File:atom) is det.
-% Write status and messages to file.
-
-run_collect_messages(Goal, File):-
-  run_collect_messages(Goal, Status, Messages),
-  maplist(store_term_to_log(File), [Status|Messages]).
 
 
 %! run_collect_messages(
@@ -94,32 +78,6 @@ run_collect_messages(Goal, Status, Messages):-
   check_installation:run_collect_messages(Goal, Status, Messages).
 
 
-%! run_print_messages(:Goal) is det.
-
-run_print_messages(Goal):-
-  run_print_messages(Goal, _).
-
-
-%! run_print_messages(:Goal, -Status) is det.
-
-run_print_messages(Goal, Status):-
-  run_collect_messages(Goal, Status, Warnings),
-  print_message(warning, run_print_messages(Status,Warnings)).
-
-
-%! store_term_to_log(+File:atom, @Term) is det.
-
-store_term_to_log(File, exception(Error)):- !,
-  store_term_to_log(File, Error).
-store_term_to_log(_, false):- !.
-store_term_to_log(_, true):- !.
-store_term_to_log(File, Term):-
-  setup_call_cleanup(
-    open(File, append, Stream),
-    with_output_to(Stream, write_canonical_blobs(Term)),
-    close(Stream)
-  ).
-
 
 %! write_canonical_blobs(@Term) is det.
 % Alteration of write_canonical/[1,2] that lives up to the promise that
@@ -127,6 +85,8 @@ store_term_to_log(File, Term):-
 
 write_canonical_blobs(Term):-
   write_canonical_blobs(current_output, Term).
+
+
 
 %! write_canonical_blobs(+Stream:stream, @Term) is det.
 
@@ -136,33 +96,38 @@ write_canonical_blobs(Stream, Term):-
 
 
 
-% Messages
+
+
+% HELPERS %
+
+process_status(true):- !.
+process_status(fail):- !,
+  fail.
+process_status(Exception):-
+  print_message(warning, Exception).
+
+
+
+process_warnings(Warnings):-
+  debugging(pl_log), !,
+  forall(
+    member(Warning, Warnings),
+    debug(pl_log, '[WARNING] ~a', [Warning])
+  ).
+process_warnings(Warnings):-
+  length(Warnings, NumberOfWarnings),
+  (   NumberOfWarnings =:= 0
+  ->  true
+  ;   print_message(warnings, number_of_warnings(NumberOfWarnings))
+  ).
+
+
+
+
+
+% MESSAGES %
 
 :- multifile(prolog:message//1).
 
-prolog:message(run_print_messages(Status,Warnings)) -->
-  status(Status),
-  warnings(Warnings).
-
-lines([]) --> [].
-lines([H|T]) -->
-  [H],
-  lines(T).
-
-% @tbd Send an email whenever an MD5 fails.
-status(false) --> !,
-  ['    [STATUS] FALSE',nl].
-status(true) --> !.
-status(Status) -->
-  ['    [STATUS] ~w'-[Status],nl].
-
-warning(message(_,Kind,Lines)) -->
-  ['    [MESSAGE(~w)] '-[Kind]],
-  lines(Lines),
-  [nl].
-
-warnings([]) --> !, [].
-warnings([H|T]) -->
-  warning(H),
-  warnings(T).
-
+prolog:message(number_of_warnings(NumberOfWarnings)) -->
+  ['~D warnings'-[NumberOfWarnings]].

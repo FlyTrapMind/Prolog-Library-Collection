@@ -45,7 +45,7 @@ Automated checks for Prolog mode enforcement.
 :- use_module(library(aggregate)).
 :- use_module(library(error)).
 
-:- use_module(generics(error_ext)).
+:- use_module(plc(generics/error_ext)).
 
 :- meta_predicate(call_complete(2,+,-)).
 :- meta_predicate(call_count(0,-)).

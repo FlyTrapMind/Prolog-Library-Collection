@@ -1,6 +1,8 @@
 :- module(
   sort_ext,
   [
+    gnu_sort/2, % +File:atom
+                % +Options:list(nvpair)
     icompare/3, % ?InvertedOrder
                 % @Term1
                 % @Term2
@@ -19,29 +21,83 @@ Extensions for sorting lists.
 
 @author Wouter Beek
 @version 2012/07-2012/08, 2013/01, 2013/03-2013/04, 2013/09-2013/10, 2013/12,
-         2014/07-2014/08, 2014/11
+         2014/07-2014/08, 2014/11, 2015/01
 */
 
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(error)).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 
+:- use_module(plc(os/cli_ext)).
+:- use_module(plc(process/process_ext)).
+
 :- meta_predicate(merge_with_duplicates(3,+,+,-)).
-:- meta_predicate(merge_with_duplicates(3,+,+,+,+,+,-)).
+:- meta_predicate(merge_with_duplicates(+,3,+,+,+,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-)).
 :- meta_predicate(predsort_with_duplicates(3,+,-,-,-)).
 
+:- predicate_options(gnu_sort/2, 2, [
+  buffer_size(+nonneg),
+  duplicates(+boolean),
+  output(+atom),
+  parallel(+positive_integer),
+  temporary_directory(+atom),
+  utf8(+boolean)
+]).
+
 :- predicate_options(sort/3, 3, [
-     duplicates(+boolean),
-     inverted(+boolean)
-  ]).
+  duplicates(+boolean),
+  inverted(+boolean)
+]).
+
+
+
+
+
+%! gnu_sort(+File:atom, +Options:list(nvpair)) is det.
+
+gnu_sort(File, _):-
+  var(File), !,
+  instantiation_error(File).
+gnu_sort(File, _):-
+  \+ exists_file(File), !,
+  existence_error(file, File).
+gnu_sort(File, _):-
+  \+ access_file(File, read), !,
+  permission_error(read, file, File).
+gnu_sort(File, Options):-
+  (   option(utf8(true), Options)
+  ->  Env = []
+  ;   Env = ['LC_ALL'='C']
+  ),
+  gnu_sort_args(Options, Args),
+  handle_process(sort, [file(File)|Args], [env(Env),program('GNU sort')]).
+
+gnu_sort_args([], []).
+gnu_sort_args([buffer_size(Size)|T1], [Arg|T2]):- !,
+  cli_long_flag('buffer-size', Size, Arg),
+  gnu_sort_args(T1, T2).
+gnu_sort_args([duplicates(false)|T1], ['--unique'|T2]):- !,
+  gnu_sort_args(T1, T2).
+gnu_sort_args([output(File)|T1], [Arg|T2]):- !,
+  cli_long_flag(output, File, Arg),
+  gnu_sort_args(T1, T2).
+gnu_sort_args([parallel(Threads)|T1], [Arg|T2]):- !,
+  cli_long_flag(parallel, Threads, Arg),
+  gnu_sort_args(T1, T2).
+gnu_sort_args([temporary_directory(Dir)|T1], [Arg|T2]):- !,
+  cli_long_flag('temporary-directory', Dir, Arg),
+  gnu_sort_args(T1, T2).
+gnu_sort_args([_|T1], L2):-
+  gnu_sort_args(T1, L2).
 
 
 
 %! sort(+Unsorted:list, -Sorted:list, +Options:list(nvpair)) is det.
 % The following options are supported:
-%   * =|duplicates(+boolean)|= Whether duplicate elements are retained
+%   * `duplicates(+boolean)` Whether duplicate elements are retained
 %     in the sorted list.
-%   * =|inverted(+boolean)|= Whether the sorted list goes from lowest to
+%   * `inverted(+boolean)` Whether the sorted list goes from lowest to
 %     highest (standard) or from highest to lowest.
 
 sort(Unsorted, Sorted, Options):-
@@ -178,11 +234,11 @@ icompare(InvertedOrder, Term1, Term2):-
 %! ) is det.
 % Merges the given two sorted lists into a single sorted list,
 % according to the given sorting Goal.
-% 
+%
 % Notice that the sort predicate is tertiary, i.e., of the following form:
-% ~~~
-% Goal({<|=|>},Element1,Element2)
-% ~~~
+% ```
+% Goal({<|`>},Element1,Element2)
+% ```
 
 merge_with_duplicates(_, [], Sorted, Sorted):- !.
 merge_with_duplicates(_, Sorted, [], Sorted):- !.

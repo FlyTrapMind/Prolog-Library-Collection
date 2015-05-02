@@ -1,9 +1,13 @@
-# TODO
+TODO
+====
 
-  - Split off legacy DCG modules.
-  - Split off generics/audio.pl
-  - Split off flp/latex.pl
-  - Split off TMS code, requires plDcg, plRdf, PLC.
-  - Split off and finalize standards/date_time/iso8601*.pl
-  - Split off lod/void/*, requires plXsd, plRdf, PLC.
+  [ ] `opt_arguments/3` is not steadfast.
+      The following throws an exception:
+      ```prolog
+      opt_arguments(
+        [[default(''),opt(debug),longflags([debug]),type(atom)]],
+        _,
+        [Dir]
+      ),
+     ```
 

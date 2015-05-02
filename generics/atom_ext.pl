@@ -14,6 +14,7 @@
     common_atom_prefix/3, % +Atom1:atom
                           % +Atom2:atom
                           % -Prefix:atom
+    empty_atom/1, % ?Empty:atom
     first_split/3, % +Atom:atom
                    % +Split:atom
                    % -FirstSubatom:atom
@@ -22,9 +23,6 @@
                       % -Atom:atom
     new_atom/2, % +Old:atom
                 % -New:atom
-    progress_bar/3, % +Current:number
-                    % +End:number
-                    % -ProgressBar:atom
     repeating_atom/3, % +SubAtom:atom
                       % +Repeats:integer
                       % -Atom:atom
@@ -58,17 +56,17 @@ In-atom replacements can best be made using DCGs.
 This requires the atom to be translated to/from a list of numeric codes.
 For example, escaping spaces and grave accent (e.g. in URIs):
 
-~~~{.pl}
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_meta)).
-:- use_module(plDcg(dcg_replace)).
+```prolog
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(plc(dcg/dcg_replace)).
 % Escape space (SPACE to `%20`) and grave accent (GRAVE-ACCENT to `%60`).
-dcg_phrase(
+atom_phrase(
   dcg_maplist(dcg_replace, [[32],[96]], [[37,50,48],[37,54,48]]),
   AtomIn,
   AtomOut
 )
-~~~
+```
 
 # Split
 
@@ -88,18 +86,21 @@ Stripping atoms of an arbitrary number of subatoms can be done using
 
 Titlecase atoms can be created using upcase_atom/2.
 
---
+---
 
 @author Wouter Beek
 @version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04,
-         2014/08, 2014/10-2014/11
+         2014/08, 2014/10-2014/11, 2015/02
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(char_ext)).
-:- use_module(generics(list_ext)).
+:- use_module(plc(generics/char_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(generics/typecheck)).
+
+
 
 
 
@@ -188,13 +189,21 @@ common_atom_prefix(Atom1, Atom2, Prefix):-
 
 
 
+%! empty_atom(+Empty:atom) is semidet.
+%! empty_atom(-Empty:atom) is det.
+% Succeeds only on the empty atom.
+
+empty_atom('').
+
+
+
 %! first_split(+Atom:atom, +Split:atom, -FirstSubatom:atom) is nondet.
 % Returns the first split.
 % For the first result this is behaviorally equivalent to:
-% ~~~{.pl}
+% ```prolog
 % atomic_list_concat(Subatoms, Split, Atom),
 % Subatoms = [FirstSubatom|_]
-% ~~~
+% ```
 
 first_split(Atom, Split, FirstSubatom):-
   atom_concat(Subatom, _, Atom),
@@ -234,54 +243,13 @@ format_integer(I, L, Out):-
 new_atom(A1, A2):-
   atomic_list_concat(Splits, '_', A1), % split
   reverse(Splits, [LastSplit|RestSplits]),
-  (
-    atom_number(LastSplit, OldNumber)
-  ->
-    NewNumber is OldNumber + 1,
-    atom_number(NewLastSplit, NewNumber),
-    reverse([NewLastSplit|RestSplits], NewSplits)
-  ;
-    reverse(['1',LastSplit|RestSplits], NewSplits)
+  (   atom_number(LastSplit, OldNumber)
+  ->  NewNumber is OldNumber + 1,
+      atom_number(NewLastSplit, NewNumber),
+      reverse([NewLastSplit|RestSplits], NewSplits)
+  ;   reverse(['1',LastSplit|RestSplits], NewSplits)
   ),
   atomic_list_concat(NewSplits, '_', A2).
-
-
-
-%! progress_bar(+Current:integer, End:integer, ProgressBar:atom) is det.
-% Returns an atomic progress bar that displays the current value
-%  onto a scale that runs from `1` to the given end value.
-%
-% @arg Current An integer, representing the current processed value.
-% @arg End An integer, representing the last value to be processed.
-% @arg ProgressBar The atomic representation of a progress bar.
-
-progress_bar(End, End, ProgressBar2):- !,
-  progress_bar_(End, End, ProgressBar1),
-  format(atom(ProgressBar2), '~w [done]', [ProgressBar1]).
-progress_bar(Current, End, ProgressBar):-
-  progress_bar_(Current, End, ProgressBar).
-
-progress_bar_(Current1, End, ProgressBar):-
-  (   End =:= 0
-  ->  Percentage = 100
-  ;   Percentage is round(Current1 / End * 100)
-  ),
-  format_integer(Percentage, 3, Percentage1),
-  (   End =:= 0
-  ->  Progress = 10
-  ;   Progress is round(Current1 / (End / 10))
-  ),
-  atom_number(EndAtom, End),
-  atom_length(EndAtom, EndLength),
-  format_integer(Current1, EndLength, Current2),
-  repeating_atom('=', Progress, Bar),
-  Fill is 10 - Progress,
-  repeating_atom('-', Fill, NonBar),
-  format(
-    atom(ProgressBar),
-    '~w% ~w~w (~w/~w)',
-    [Percentage1, Bar, NonBar, Current2, End]
-  ).
 
 
 
@@ -373,6 +341,7 @@ to_atom(Chars, Atom):-
   atom_chars(Atom, Chars).
 % Non-empty list of codes.
 to_atom(Codes, Atom):-
+  maplist(code, Codes), !,
   atom_codes(Atom, Codes).
 % Number.
 to_atom(Number, Atom):-

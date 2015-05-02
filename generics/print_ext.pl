@@ -7,7 +7,10 @@
     formatnl/3, % +Output
                 % +Format
                 % :Arguments
-    indent/1 % +Indent:integer
+    indent/1, % +Indent:integer
+    report_on_process/2, % +Message:atom
+                         % :Goal
+    tab/0
   ]
 ).
 
@@ -15,20 +18,14 @@
 
 Predicates for printing.
 
-## Proof
-
-A datatype of the following form:
-~~~{.pl}
-proof(Conclusion, Premises)
-~~~
-
 @author Wouter Beek
-@tbd Remove all predicate variants that have an `Out` parameter.
-     The calling context should use with_output_to/2 instead.
-@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11
+@version 2013/01-2013/02, 2013/04-2013/05, 2013/07-2013/09, 2013/11, 2014/11,
+         2015/03
 */
 
 :- use_module(library(settings)).
+
+:- meta_predicate(report_on_process(+,0)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -44,6 +41,8 @@ proof(Conclusion, Premises)
   80,
   'The default width of the screen in number of characters.'
 ).
+
+
 
 
 
@@ -69,6 +68,8 @@ formatnl(Out, Format, Arguments):-
   format(Out, Format, Arguments),
   nl(Out).
 
+
+
 %! indent(+Indent:integer) is det.
 % @see Like tab/1, but writes the given number of indents, where
 %      a single indent can be multiple spaces.
@@ -79,3 +80,41 @@ indent(Indent):-
   NumberOfSpaces is IndentSize * Indent,
   tab(NumberOfSpaces).
 
+
+
+%! report_on_process(+Message:atom, :Goal) is det.
+
+report_on_process(Msg, Goal):-
+  setup_call_catcher_cleanup(
+    print_message(informational, start_process(Msg)),
+    Goal,
+    Exception,
+    (   Exception == true
+    ->  print_message(informational, end_process)
+    ;   print_message(warning, end_process(Exception))
+    )
+  ).
+
+
+
+%! tab.
+
+tab:-
+  write('\t').
+
+
+
+
+
+% MESSAGES %
+
+:- multifile(prolog:message//1).
+
+prolog:message(end_process) -->
+  ['done.'].
+
+prolog:message(end_process(Exception)) -->
+  [Exception].
+
+prolog:message(start_process(Msg)) -->
+  [Msg].

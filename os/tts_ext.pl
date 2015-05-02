@@ -10,17 +10,20 @@
 Text-to-speech predicates.
 
 @author Wouter Beek
-@version 2013/06-2013/07
+@version 2013/06-2013/07, 2015/03
 */
 
 :- use_module(library(process)).
 
-:- use_module(os(os_ext)).
+:- use_module(plc(os/os_ext)).
+:- use_module(plc(process/process_ext)).
 
 :- dynamic(user:module_uses/2).
 :- multifile(user:module_uses/2).
 
 user:module_uses(tts_ext, program(espeak)).
+
+
 
 
 
@@ -35,12 +38,5 @@ user:module_uses(tts_ext, program(espeak)).
 text_to_speech(Input):-
   os_dependent_call(text_to_speech(Input)).
 
-:- if(is_unix).
 text_to_speech_unix(Input):-
-  process_create(path(espeak), ['--',Input], [detached(true)]).
-:- endif.
-
-:- if(is_windows).
-text_to_speech_windows(_).
-:- endif.
-
+  handle_process(espeak, ['--',Input], [detached(true),program(espeak)]).

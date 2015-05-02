@@ -18,7 +18,7 @@ Extensions to operator support in Prolog.
 
 :- use_module(library(error)).
 
-:- use_module(pl(pl_mode)).
+:- use_module(plc(prolog/pl_mode)).
 
 :- multifile(error:has_type/2).
 

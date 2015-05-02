@@ -17,8 +17,11 @@ Operations in dimensions.
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3])).
-:- use_module(math(float_ext)).
+:- use_module(library(lists), except([delete/3,subset/2])).
+
+:- use_module(plc(math/float_ext)).
+
+
 
 
 

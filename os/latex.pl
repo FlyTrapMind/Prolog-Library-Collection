@@ -10,19 +10,21 @@
 Grammar snippets for LaTeX.
 
 @author Wouter Beek
-@version 2014/07, 2014/10
+@version 2014/07, 2014/10-2014/11
 */
 
 :- use_module(library(option)).
 :- use_module(library(readutil)).
 
-:- use_module(generics(codes_ext)).
-:- use_module(os(file_ext)).
+:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_bracket)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_replace)).
+:- use_module(plc(generics/code_ext)).
+:- use_module(plc(io/file_ext)).
 
-:- use_module(plDcg(dcg_ascii)).
-:- use_module(plDcg(dcg_content)).
-:- use_module(plDcg(dcg_generics)).
-:- use_module(plDcg(dcg_replace)).
+
 
 
 
@@ -44,7 +46,7 @@ file_to_latex_title(PrologFile, Title):-
   \+ module_property(Module, class(test)), !,
 
   % Underscores must be escaped in LaTeX.
-  dcg_phrase(dcg_replace(`_`, `\\_`), Module, Title).
+  atom_phrase(dcg_replace(`_`, `\\_`), Module, Title).
 file_to_latex_title(PrologFile, Local):-
   file_component(PrologFile, local, Local).
 
@@ -52,7 +54,7 @@ file_to_latex_title(PrologFile, Local):-
 %! latex(+Command:oneof([begin,end]))// is semidet.
 % Succeeds if the codes list starts with a LaTeX commmand.
 %
-% Currently the commands =|begin(latex)|= and =|end(latex)|= are defined.
+% Currently the commands `begin(latex)` and `end(latex)` are defined.
 
 latex(Command) -->
   % Allow Prolog multiline commenting.
@@ -60,7 +62,7 @@ latex(Command) -->
   ;   ""
   ),
   atom(Command),
-  bracketed(round, atom(latex)),
+  bracketed(atom(latex)),
   % Allow Prolog multiline commenting.
   (   asterisk, forward_slash % Avoids colorization in bad editors.
   ;   ""
@@ -82,7 +84,7 @@ latex_code_convert(PrologFile):-
   setup_call_cleanup(
     (
       open(PrologFile, read, Read, [encoding(utf8),type(text)]),
-      open(TexFile, write, Write, [encoding(utf8),type(test)])
+      open(TexFile, write, Write, [encoding(utf8),type(text)])
     ),
     (
       file_to_latex_title(PrologFile, Title),
@@ -141,26 +143,20 @@ latex_code_convert(Read, Write, Mode):-
 % No mode.
 latex_code_convert(Read, Write, none):- !,
   read_line_to_codes(Read, Codes),
-  (
-    phrase(latex(begin), Codes)
-  ->
-    Mode = latex
-  ;
-    Mode = none
+  (   phrase(latex(begin), Codes)
+  ->  Mode = latex
+  ;   Mode = none
   ),
   latex_code_convert(Read, Write, Mode).
 % LaTeX mode.
 latex_code_convert(Read, Write, latex):- !,
   read_line_to_codes(Read, Codes),
-  (
-    phrase(latex(end), Codes)
-  ->
-    nl(Write),
-    write(Write, '\\begin{lstlisting}'),
-    LaTeXMode = prolog
-  ;
-    write_latex_codes_nl(Write, Codes),
-    LaTeXMode = latex
+  (   phrase(latex(end), Codes)
+  ->  nl(Write),
+      write(Write, '\\begin{lstlisting}'),
+      LaTeXMode = prolog
+  ;   write_latex_codes_nl(Write, Codes),
+      LaTeXMode = latex
   ),
   latex_code_convert(Read, Write, LaTeXMode).
 % Prolog mode.
@@ -224,8 +220,8 @@ write_latex_header(Stream, Options):-
   ->  format(Stream, '\\title{~w}\n', [Title])
   ;   true
   ),
-  (   ( option(author(_Author1), Options)
-      ; option(title(_Title1), Options)
+  (   (   option(author(_Author1), Options)
+      ;   option(title(_Title1), Options)
       )
   ->  nl(Stream)
   ),
@@ -235,8 +231,8 @@ write_latex_header(Stream, Options):-
   nl(Stream),
 
   % Display the title.
-  (   ( option(author(_), Options)
-      ; option(title(_), Options)
+  (   (   option(author(_), Options)
+      ;   option(title(_), Options)
       )
   ->  format(Stream, '\\maketitle\n', []),
       nl(Stream)

@@ -14,14 +14,16 @@
 Support for image files.
 
 @author Wouter Beek
-@version 2014/03, 2014/05-2014/06
+@version 2014/03, 2014/05-2014/06, 2015/02-2015/03
 */
 
-:- use_module(library(dcg/basics)).
-:- use_module(library(process)).
+:- use_module(library(dcg/basics), except([atom//1])).
 :- use_module(library(readutil)).
 
-:- use_module(generics(db_ext)).
+:- use_module(plc(dcg/dcg_atom)).
+:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(generics/db_ext)).
+:- use_module(plc(process/process_ext)).
 
 :- db_add_novel(user:prolog_file_type(bmp, bmp)).
 :- db_add_novel(user:prolog_file_type(bmp, image)).
@@ -36,27 +38,34 @@ Support for image files.
 
 
 
+
+
 %! image_dimensions(+File:atom, -Width:float, -Height:float) is det.
 
 image_dimensions(File, Width, Height):-
-  setup_call_cleanup(
-    process_create(path(identify), [file(File)], [stdout(pipe(Stream))]),
-    (
-      read_stream_to_codes(Stream, Codes),
-      phrase(image_dimensions(File, Width, Height), Codes)
-    ),
-    close(Stream)
+  handle_process(
+    identify,
+    [file(File)],
+    [output_goal(process_identify_output(File,Width,Height)),program(identify)]
   ).
+
+process_identify_output(File, Width, Height, Stream):-
+  read_stream_to_codes(Stream, Codes),
+  phrase(image_dimensions(File, Width, Height), Codes).
+
 
 
 %! image_dimensions(+File:atom, -Width:float, -Height:float)// is det.
 
 image_dimensions(File, Width, Height) -->
   atom(File),
-  " JPEG ",
+  " ",
+  atom(_FileType),
+  " ",
   integer(Width),
   "x",
-  integer(Height).
+  integer(Height),
+  dcg_done.
 
 
 %! image_file(+File:atom) is semidet.

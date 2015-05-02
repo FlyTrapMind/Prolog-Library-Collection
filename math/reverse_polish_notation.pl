@@ -14,26 +14,28 @@ Evaluating arithmetic expressions in Reverse Polish Notation (RPN).
 
 Described by HP for their series of RPN calculators:
 
-~~~{.txt}
+```
 As was demonstrated in the Algebraic mode, it is usually easier
 (fewer keystrokes) in working a problem like this to begin with
 the arithmetic operations inside the parentheses first.
-~~~
+```
 
 E.g., [2] i.o. [1]:
 
-~~~{.pl}
+```prolog
 [1]   rpn([5,1,2,+,4,*,+,3,-], 14).
 [2]   rpn([1,2,+,4,*,5,+,3,-], 14).
-~~~
+```
 
---
+---
 
 @author Wouter Beek
 @version 2014/10
 */
 
-:- use_module(generics(op_ext)).
+:- use_module(plc(generics/op_ext)).
+
+
 
 
 
@@ -54,11 +56,11 @@ rpn([Operand|Notation], Stack, Outcome):-
   rpn(Notation, [Operand|Stack], Outcome).
 % Evaluate n-ary operators w.r.t. the top n operands on the stack.
 rpn([Op|Notation], Stack, Outcome):-
-	% Notice that there can be multiple operators with the same name.
+  % Notice that there can be multiple operators with the same name.
   current_op(_, OpType, Op),
   op_type_arity(OpType, OpArity),
 
-	% Select the appropriate operands.
+  % Select the appropriate operands.
   length(OperandsRev, OpArity),
   append(OperandsRev, NewStack, Stack),
 

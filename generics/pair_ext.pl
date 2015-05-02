@@ -7,6 +7,8 @@
                  % ?Dict:dict
     list_pair/2, % ?List:list
                  % ?Pair:pair
+    merge_pairs_by_key/2, % +Pairs:list(pair)
+                          % -Merged:list(pair)
     number_of_equivalence_pairs/3, % +EquivalenceSets:list(ordset)
                                    % -NumberOfPairs:nonneg
                                    % +Options:list(nvpair)
@@ -21,6 +23,10 @@
                  % ?List:list
     pair_second/2, % +Pair:pair
                    % ?Second
+    pairs_to_ascending_values/2, % +Pairs:list(pair)
+                                 % -Values:list
+    pairs_to_descending_values/2, % +Pairs:list(pair)
+                                  % -Values:list
     pairs_to_set/2, % +Pairs:list(pair)
                     % -Members:list
     pairs_to_sets/2, % +Pairs:list(pair(iri))
@@ -28,6 +34,9 @@
     read_pairs_from_file/2, % +File:atom
                             % -Pairs:ordset(pair(atom))
     reflexive_pair/1, % ?Pair:pair
+    remove_pairs/3, % +Original:ordset(pair)
+                    % +Remove:ordset
+                    % -Result:ordset(pair)
     set_to_pairs/3, % +Set:ordset
                     % :Comparator
                     % -Pairs:ordset(pair)
@@ -36,6 +45,9 @@
                      % +Options:list(nvpair)
     store_pairs_to_file/2, % +Pairs:list(pair(atom))
                            % +File:atom
+    subpairs/3, % +Pairs:ordset(pair)
+                % +Subkeys:ordset
+                % -Subpairs:ordset(pair)
     term_to_pair/2 % @Term
                    % -Pair:pair
   ]
@@ -46,17 +58,17 @@
 Support predicates for working with pairs.
 
 @author Wouter Beek
-@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/11
+@version 2013/09-2013/10, 2013/12, 2014/03, 2014/05, 2014/07-2014/12
 */
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 :- use_module(library(ordsets)).
 :- use_module(library(plunit)).
 
-:- use_module(generics(list_ext)).
+:- use_module(plc(generics/list_ext)).
 
 % Used for loading pairs from file.
 :- dynamic(pair/2).
@@ -101,6 +113,22 @@ list_pair([X,Y], X-Y).
 
 
 
+%! merge_pairs_by_key(+Pairs:list(pair), -Merged:list(pair)) is det.
+
+merge_pairs_by_key([], []).
+merge_pairs_by_key([K-V|T1], [K-VMerge|T3]):-
+  same_key(K, [K-V|T1], VMerge, T2),
+  merge_pairs_by_key(T2, T3).
+
+same_key(K, [K-V|L1], VMerge2, L2):- !,
+  same_key(K, L1, VMerge1, L2),
+  ord_union(VMerge1, V, VMerge2).
+same_key(K, [_|L1], VMerge, L2):- !,
+  same_key(K, L1, VMerge, L2).
+same_key(_, L, [], L).
+
+
+
 %! number_of_equivalence_pairs(
 %!   +EquivalenceSets:list(ordset),
 %!   -NumberOfPairs:nonneg,
@@ -110,7 +138,7 @@ list_pair([X,Y], X-Y).
 % the given collection of equivalence sets.
 %
 % The following options are supported:
-%   * =|reflexive(+boolean)|=
+%   * `reflexive(+boolean)`
 %     Whether to count reflexive cases. Default: `true`.
 
 number_of_equivalence_pairs(EqSets, NumberOfPairs, Options):-
@@ -126,12 +154,9 @@ number_of_equivalence_pairs(EqSets, NumberOfPairs, Options):-
 
 cardinality_to_number_of_pairs(Cardinality, NumberOfPairs, Options):-
   NumberOfSymmetricAndTransitivePairs is Cardinality * (Cardinality - 1),
-  (
-    option(reflexive(true), Options, true)
-  ->
-    NumberOfPairs is NumberOfSymmetricAndTransitivePairs + Cardinality
-  ;
-    NumberOfPairs = NumberOfSymmetricAndTransitivePairs
+  (   option(reflexive(true), Options, true)
+  ->  NumberOfPairs is NumberOfSymmetricAndTransitivePairs + Cardinality
+  ;   NumberOfPairs = NumberOfSymmetricAndTransitivePairs
   ).
 
 
@@ -183,21 +208,38 @@ pair_second(X-_, X).
 
 
 
+%! pairs_to_ascending_values(+Pairs:list(pair), -Values:list) is det.
+
+pairs_to_ascending_values(Pairs1, Values):-
+  keysort(Pairs1, Pairs2),
+  pairs_values(Pairs2, Values).
+
+
+
+%! pairs_to_descending_values(+Pairs:list(pair), -Values:list) is det.
+
+pairs_to_descending_values(Pairs1, Values):-
+  keysort(Pairs1, Pairs2),
+  reverse(Pairs2, Pairs3),
+  pairs_values(Pairs3, Values).
+
+
+
 %! pairs_to_set(+Pairs:list(pair), -Set:ordset) is det.
 % Returns the set of elements that occur in the given pairs.
 %
 % ### Example
 %
 % The following pairs:
-% ~~~
+% ```
 % <a,b>
 % <a,c>
 % <d,e>
-% ~~~
+% ```
 % result in the following set:
-% ~~~
+% ```
 % {a,b,c,d,e}
-% ~~~
+% ```
 
 pairs_to_set(Pairs, Members):-
   pairs_keys_values(Pairs, Keys1, Values1),
@@ -213,15 +255,15 @@ pairs_to_set(Pairs, Members):-
 % ### Example
 %
 % The following pairs:
-% ~~~
+% ```
 % <a,b>
 % <a,c>
 % <d,e>
-% ~~~
+% ```
 % result in the following sets:
-% ~~~
+% ```
 % {{a,b,c},{d,e}}
-% ~~~
+% ```
 
 pairs_to_sets(Pairs, Sets):-
   pairs_to_sets(Pairs, [], Sets).
@@ -239,14 +281,10 @@ pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
 % Add to an existing set.
 pairs_to_sets([From-To|Pairs], Sets1, AllSets):-
   select(OldSet, Sets1, Sets2),
-  (
-    member(From, OldSet)
-  ->
-    ord_add_element(OldSet, To, NewSet)
-  ;
-    member(To, OldSet)
-  ->
-    ord_add_element(OldSet, From, NewSet)
+  (   member(From, OldSet)
+  ->  ord_add_element(OldSet, To, NewSet)
+  ;   member(To, OldSet)
+  ->  ord_add_element(OldSet, From, NewSet)
   ), !,
   ord_add_element(Sets2, NewSet, Sets3),
   pairs_to_sets(Pairs, Sets3, AllSets).
@@ -276,6 +314,21 @@ read_pairs_from_file(File, Pairs):-
 %! reflexive_pair(?Pair:pair) is semidet.
 
 reflexive_pair(X-X).
+
+
+
+%! remove_pairs(
+%!   +Original:ordset(pair),
+%!   +RemoveKeys:ordset,
+%!   -Result:ordset(pair)
+%! ) is det.
+% Assumes that the Original and Remove pairs are ordered in the same way.
+
+remove_pairs(L1, RemoveKeys, L2):-
+  pairs_keys(L1, Keys0),
+  list_to_ord_set(Keys0, Keys),
+  ord_subtract(Keys, RemoveKeys, RetainKeys),
+  subpairs(L1, RetainKeys, L2).
 
 
 
@@ -313,10 +366,10 @@ set_to_pairs(Set, Comparator, Pairs):-
 %! ) is det.
 %
 % The following options are supported:
-%   * =|reflexive(+boolean)|=
+%   * `reflexive(+boolean)`
 %     Whether or not to return reflexive cases.
 %     Default: `true`.
-%   * =|symmetric(+boolean)|=
+%   * `symmetric(+boolean)`
 %     Whether or not to return symmetric pairs.
 %     Default: `true`.
 
@@ -352,6 +405,21 @@ store_pairs_to_file(Pairs, File):-
 
 
 
+%! subpairs(
+%!   +Pairs:ordset(pair),
+%!   +Subkeys:ordset,
+%!   -Subpairs:ordset(pair)
+%! ) is det.
+% This assumes that pairs and keys are ordered in the same way.
+
+subpairs([], [], []).
+subpairs([K-V|T1], [K|T2], [K-V|T3]):- !,
+  subpairs(T1, T2, T3).
+subpairs([_|T1], L2, L3):-
+  subpairs(T1, L2, L3).
+
+
+
 %! term_to_pair(@Term, -Pair:pair) is det.
 % Retrusn the pair notation `First-Second` if the given term
 % can be interpreted as a pair.
@@ -370,6 +438,8 @@ term_to_pair(Compound, X-Y):-
 
 
 
+
+
 % HELPERS
 
 %! comparator(+Reflexive:boolean, +Symmetric:boolean, :Comparator) is det.
@@ -377,6 +447,8 @@ term_to_pair(Compound, X-Y):-
 comparator(true,  true,  ~ ):- !.
 comparator(false, true,  \=):- !.
 comparator(false, false, @<):- !.
+
+
 
 
 

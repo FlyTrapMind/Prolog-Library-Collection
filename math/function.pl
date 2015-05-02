@@ -25,9 +25,9 @@
 
 We use function definitions as in Bourbaki1957:
 
-~~~{.pl}
+```prolog
 bourbaki(Domain:ordset,Codomain:ordset,Graph:ugraph)
-~~~
+```
 
 Where =X= is the domain, =Y= is the codomain, and =G= is the graph.
 
@@ -43,21 +43,21 @@ function. We represent them as ordered sets of pairs.
 Traditionally, pairs are represented using sets, i.e.,
 $\langle x, y \rangle =_{def} \{ x, \{ x, y \} \}$.
 
-We represent pairs as compound terms of the form =|X-Y|=.
+We represent pairs as compound terms of the form `X-Y`.
 
 ## Relation
 
 ### Binary relations
 
-Binary relations can be efficiently represented as =|list(pair)|=
-=|[x_1-y_1, \ldots, x_m-y_m]|=.
+Binary relations can be efficiently represented as `list(pair)`
+`[x_1-y_1, \ldots, x_m-y_m]`.
 
 @author Wouter Beek
 @version 2012/11, 2013/08, 2014/07
 */
 
 :- use_module(library(aggregate)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(ordsets)).
 
 
@@ -130,7 +130,7 @@ preimage(X, X).
 %
 % For efficiency we do not run a loop on all elements in the codomain etc.
 % Instead we use the following theorem:
-% ~~~
+% ```
 % A function f is surjective iff
 % the codomain of f is the image of f's domain (under f).
 

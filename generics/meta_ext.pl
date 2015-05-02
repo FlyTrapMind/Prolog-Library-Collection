@@ -16,6 +16,13 @@
                % :Context
                % +Arguments:list
 
+% IDLE
+    true/1,
+    true/2,
+    true/3,
+    true/4,
+    true/5,
+
 % MAPLIST RELATED PREDICATES
     app_list/3, % +Preds:list
                 % +Args:list
@@ -58,9 +65,9 @@ Extensions to the SWI-Prolog meta predicates.
 :- use_module(library(aggregate)).
 :- use_module(library(debug)).
 
-:- use_module(generics(error_ext)).
-:- use_module(generics(list_ext)).
-:- use_module(pl(pl_control)).
+:- use_module(plc(generics/error_ext)).
+:- use_module(plc(generics/list_ext)).
+:- use_module(plc(prolog/pl_control)).
 
 :- meta_predicate(default_goal(1,?)).
 :- meta_predicate(generic(:,:,+)).
@@ -112,10 +119,10 @@ reset_memo:-
 % the original ordering of elements to be retained
 % in case the `Ordering` argument is not instantiated.
 %
-% ~~~{.pl}
+% ```prolog
 % default(=, Ordering),
 % once(call(Ordering, Elements1, Elements2))
-% ~~~
+% ```
 
 default(_, X):-
   nonvar(X), !.
@@ -134,11 +141,11 @@ default(X, X).
 % but also allows the start node to be uninstantiated, instantiating it
 % to a randomly chosen start node.
 %
-% ~~~{.pl}
+% ```prolog
 % graph_traversal(StartNode):-
 %   default_goal(random_start_node, StartNode),
 %   ...
-% ~~~
+% ```
 
 default_goal(_, X):-
   ground(X), !.
@@ -169,6 +176,17 @@ generic(P1, Context, Args):-
     current_predicate(M:P2/Arity),
     apply(M:P2, Args)
   ).
+
+
+
+% IDLE %
+
+true(_).
+true(_,_).
+true(_,_,_).
+true(_,_,_,_).
+true(_,_,_,_,_).
+
 
 
 
@@ -215,7 +233,7 @@ mapset(Goal, List, Set):-
 %! nth0_call(:Goal, +Index:nonneg, +Argument) .
 %! nth0_call(+Options:list(nvpair), :Goal, +Index:nonneg, +Argument) .
 % The following options are supported:
-%   * =|minus(+UseMinus:boolean)|=
+%   * `minus(+UseMinus:boolean)`
 %     When `true` (default `false`), uses nth0_minus/4
 %     instead of nth0/4. See module [list_ext].
 

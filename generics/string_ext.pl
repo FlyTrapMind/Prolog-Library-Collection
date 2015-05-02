@@ -11,7 +11,14 @@
 
 /** <module> String: Extensions
 
-Additional support for strings in SWI-Prolog.
+Additional support for native strings in SWI-Prolog.
+
+Non-native string representations in Prolog:
+  - List of character codes
+    Strings cannot be distinguished from lists of (non-negative) integers.
+  - List of characters
+
+---
 
 @author Wouter Beek
 @version 2014/08, 2014/11
@@ -47,12 +54,11 @@ codes_string(Codes, Atom):-
 %! ) is det.
 
 string_list_concat(Strings, Separator, String):-
-  maplist(nonvar, [Strings,Separator]), !,
+  var(String), !,
   maplist(atom_string, [Separator0|Atoms], [Separator|Strings]),
   atomic_list_concat(Atoms, Separator0, Atom),
   atom_string(Atom, String).
 string_list_concat(Strings, Separator, String):-
-  maplist(nonvar, [Separator,String]), !,
-  maplist(atom_string, [Separator,Atom], [Separator0,String]),
+  maplist(atom_string, [Separator0,Atom], [Separator,String]),
   atomic_list_concat(Atoms, Separator0, Atom),
   maplist(atom_string, Atoms, Strings).

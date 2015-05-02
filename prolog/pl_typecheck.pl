@@ -23,7 +23,7 @@ For `:` we assume the type is `any`.
 | --X:Type           | var                   | Type          |
 |  @X:Type           | Type                  | ==            |
 
---
+---
 
 @author Michael Hendrix
 @author Wouter Beek
@@ -31,25 +31,13 @@ For `:` we assume the type is `any`.
 */
 
 :- use_module(library(apply)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(pldoc)).
-
 :- use_module(library(pldoc/doc_modes)).
 :- use_module(library(pldoc/doc_process)).
 :- use_module(library(pldoc/doc_wiki)).
 
 :- doc_collect(true).
-
-% Debug settings.
-:- set_prolog_flag(
-  answer_write_options,
-  [max_depth(10),portrayed(true),spacing(next_argument)]
-).
-:- set_prolog_flag(
-  debugger_write_options,
-  [max_depth(10),portrayed(true),spacing(next_argument)]
-).
-:- set_portray_text(ellipsis, 100).
 
 
 
@@ -62,7 +50,6 @@ add_typecheck(Clause, TypecheckedClause):-
     mode(Clause, Mode),
     Modes
   ),
-	(Modes \== [] -> gtrace ; true),
   maplist(mode_term_to_arguments, Modes, ArgDs),
   build_typechecks(Clause, ArgDs, StartTypecheck, EndTypecheck),
   build_clause(Clause, StartTypecheck, EndTypecheck, TypecheckedClause).
@@ -271,13 +258,13 @@ read_mode_terms(_, []).
 %
 % ### Example
 %
-% ~~~{.pl}
+% ```prolog
 % ?- xfy_list(',', (a,b,c), L).
 % L = [a, b, c].
 %
 % ?- xfy_list(Op, 4^3^2, [4,3,2]).
 % Op = (^).
-% ~~~
+% ```
 
 xfy_list(Op, Term, [Left|List]):-
   Term =.. [Op,Left,Right],

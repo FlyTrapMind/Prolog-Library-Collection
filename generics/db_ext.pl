@@ -12,8 +12,7 @@
     db_add_dcg_rule/3, % +Module:atom
                        % +Head:term
                        % +Body:or([list(term),term])
-    db_add_novel/1, % +New:ground
-    db_read/1, % :Old
+    db_add_novel/1, % :New
     db_replace/2, % +New:ground
                   % +Pattern:list(oneof([e,r]))
     db_replace_all/2, % :Old
@@ -29,22 +28,24 @@ Replacement predicates should specify which parameters
  are to be replaced and which are to stay the same.
 
 For example [1] should replace [2] but not [3].
-~~~{.pl}
+```prolog
 [1]   rdf_namespace_color(rdf, red)
 [2]   rdf_namespace_color(rdf, blue)
 [3]   rdf_namespace_color(rdfs, blue)
-~~~
+```
 
 @author Wouter Beek
-@version 2013/04-2013/05, 2013/08, 2014/07
+@version 2013/04-2013/05, 2013/08, 2014/07, 2014/12
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
 
-:- meta_predicate(db_read(:)).
+:- meta_predicate(db_add_novel(:)).
 :- meta_predicate(db_replace_all(:,+)).
 :- meta_predicate(db_replace_some(:,+)).
+
+
 
 
 
@@ -97,29 +98,14 @@ db_add_dcg_rule(Module, Head, Body1):-
   assert(Module:Clause).
 
 
-%! db_add_novel(+New) is det.
+%! db_add_novel(:New) is det.
 % Asserts the given fact, only if it does not already exist.
 % Succeeds without doing anything, otherwise.
 
-db_add_novel(New):-
-  db_read(New), !.
-db_add_novel(New):-
-  assert(New).
-
-
-%! db_read(Old) .
-% Reads a fact from the dynamic store.
-%
-% Has the same mode as `Old`.
-%
-% Fails silently if the fact does not exist.
-
-db_read(Old):-
-  catch(
-    Old,
-    error(existence_error(_,_),_),
-    fail
-  ).
+db_add_novel(Mod:New):-
+  Mod:New, !.
+db_add_novel(Mod:New):-
+  Mod:assert(New).
 
 
 %! db_replace(+New, +Pattern:list(oneof([e,r]))) is det.

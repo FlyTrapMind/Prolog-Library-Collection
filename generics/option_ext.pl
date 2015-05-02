@@ -59,7 +59,7 @@ assumption that the option term will always be unary).
 
 :- use_module(library(option)).
 
-:- use_module(generics(nvpair_ext)).
+:- use_module(plc(generics/nvpair_ext)).
 
 :- meta_predicate(if_option(+,+,0)).
 :- meta_predicate(if_select_option(+,+,-,0)).

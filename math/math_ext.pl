@@ -8,6 +8,10 @@
     betwixt/3, % +Low:integer
                % +High:integer
                % ?Value:integer
+    betwixt/4, % +Low:integer
+               % +High:integer
+               % +Interval:integer
+               % ?Value:integer
     binomial_coefficient/3, % +M:integer
                             % +N:integer
                             % -BinomialCoefficient:integer
@@ -22,6 +26,9 @@
                       % +High:integer
                       % +CycleLength:integer
                       % -NumList:list(integer)
+    decimal_parts/3, % ?Decimal:compound
+                     % ?Integer:integer
+                     % ?Fraction:compound
     div/3,
     div_zero/3,
     euclidean_distance/3, % +Coordinate1:coordinate
@@ -36,6 +43,8 @@
                           % -Fractional:integer
     is_fresh_age/2, % +Age:between(0.0,inf)
                     % +FreshnessLifetime:between(0.0,inf)
+    is_stale_age/2, % +Age:between(0.0,inf)
+                    % +FreshnessLifetime:between(0.0,inf)
     log/3, % +Base:integer
            % +X:float
            % +Y:float
@@ -48,17 +57,14 @@
     mod/3,
     multiply_list/2, % +Numbers:list(number)
                      % -Multiplication:number
-    number_integer_parts/3, % ?Number:number
-                            % ?IntegerPart:integer
-                            % ?FractionalPart:integer
+    normalized_number/3, % +Decimal:compound
+                         % -NormalizedDecimal:compound
+                         % -Exponent:nonneg
     number_length/2, % +Number:number
                      % -Length:integer
     number_length/3, % +Number:number
                      % +Radix:integer
                      % -Length:integer
-    number_sign_parts/3, % ?Number:number
-                         % ?Sign:oneof([-1,1])
-                         % ?Absolute:number
     odd/1, % +Integer:integer
     permutations/2, % +NumberOfObjects:integer
                     % -NumberOfPermutations:integer
@@ -83,17 +89,19 @@ Extra arithmetic operations for use in SWI-Prolog.
 
 @author Wouter Beek
 @version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05,
-         2014/10
+         2014/10, 2015/02
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3])).
+:- use_module(library(lists), except([delete/3,subset/2])).
 
-:- use_module(generics(typecheck)).
-:- use_module(math(float_ext)).
-:- use_module(math(int_ext)).
-:- use_module(math(rational_ext)).
+:- use_module(plc(generics/typecheck)).
+:- use_module(plc(math/float_ext)).
+:- use_module(plc(math/int_ext)).
+:- use_module(plc(math/rational_ext)).
+
+
 
 
 
@@ -122,6 +130,7 @@ average(Numbers, Average):-
   Average is Sum / NumberOfNumbers.
 
 
+
 %! betwixt(+Low:integer, +High:integer, +Value:integer) is semidet.
 %! betwixt(+Low:integer, +High:integer, -Value:integer) is multi.
 %! betwixt(-Low:integer, +High:integer, +Value:integer) is semidet.
@@ -131,16 +140,13 @@ average(Numbers, Average):-
 % Like ISO between/3, but allowing either `Low` or `High`
 % to be uninstantiated.
 %
-% ### Booundary arguments
-%
-% In some cases it is difficult to call this predicate with uninstantiated
-% boundary arguments, e.g. when these are set by setting/2.
-% For such cases, we allow the boundaries to be `minf` and `inf`,
-% respectively.
+% We allow `Low` to be instantiated to `minf` and `High` to be
+% instantiated to `inf`. In these cases, their values are replaced by
+% fresh variables.
 
 betwixt(Low1, High1, Value):-
-  (Low1 == minf -> true ; Low2 = Low1),
-  (High1 == inf -> true ; High2 = High1),
+  betwixt_lower_bound(Low1, Low2),
+  betwixt_higher_bound(High1, High2),
   betwixt0(Low2, High2, Value).
 
 % Instantiation error: at least one bound must be present.
@@ -164,13 +170,44 @@ betwixt0(Low, High, Value):-
 
 betwixt_high(_, Value, _, Value).
 betwixt_high(Low, Between1, High, Value):-
-  Between2 is Between1 - 1,
+  succ(Between2, Between1),
   betwixt_high(Low, Between2, High, Value).
+
+betwixt_higher_bound(inf, _):- !.
+betwixt_higher_bound(High, High).
 
 betwixt_low(_, Value, _, Value).
 betwixt_low(Low, Between1, High, Value):-
-  Between2 is Between1 + 1,
+  succ(Between1, Between2),
   betwixt_low(Low, Between2, High, Value).
+
+betwixt_lower_bound(minf, _):- !.
+betwixt_lower_bound(Low, Low).
+
+
+
+%! betwixt(
+%!   +Low:integer,
+%!   +High:integer,
+%!   +Interval:integer,
+%!   +Value:integer
+%! ) is semidet.
+%! betwixt(
+%!   +Low:integer,
+%!   +High:integer,
+%!   +Interval:integer,
+%!   -Value:integer
+%! ) is nondet.
+
+betwixt(Low, _, _, Low).
+betwixt(Low0, High, Interval, Value):-
+  Low is Low0 + Interval,
+  (   High == inf
+  ->  true
+  ;   Low =< High
+  ),
+  betwixt(Low, High, Interval, Value).
+
 
 
 binomial_coefficient(M, N, BC):-
@@ -238,6 +275,32 @@ cyclic_numlist(Low, High, CycleLength, NumList):-
   numlist(Low, Top, HigherNumList),
   numlist(0, High, LowerNumList),
   append(LowerNumList, HigherNumList, NumList).
+
+
+
+%! decimal_parts(
+%!   +Decimal:compound,
+%!   -Integer:integer,
+%!   -Fractional:integer
+%! ) is det.
+%! decimal_parts(
+%!   -Decimal:compound,
+%!   +Integer:integer,
+%!   +Fractional:integer
+%! ) is det.
+% @throws domain_error If `Fractional` is negative.
+
+decimal_parts(_, _, Fractional):-
+  nonvar(Fractional),
+  Fractional < 0, !,
+  domain_error(nonneg, Fractional).
+decimal_parts(Decimal, Integer, Fractional):-
+  nonvar(Decimal), !,
+  Integer is floor(float_integer_part(Decimal)),
+  fractional_integer(Decimal, Fractional).
+decimal_parts(Number, Integer, Fractional):-
+  number_length(Fractional, Length),
+  Number is copysign(abs(Integer) + (Fractional rdiv (10 ^ Length)), Integer).
 
 
 
@@ -329,11 +392,21 @@ fractional_integer(_, 0).
 
 is_fresh_age(_, inf):- !.
 is_fresh_age(Age, FreshnessLifetime):-
-  Age < FreshnessLifetime.
+  Age =< FreshnessLifetime.
+
+
+%! is_stale_age(
+%!   +Age:between(0.0,inf),
+%!   +FreshnessLifetime:between(0.0,inf)
+%! ) is semidet.
+
+is_stale_age(_, inf):- !, fail.
+is_stale_age(Age, FreshnessLifetime):-
+  Age > FreshnessLifetime.
 
 
 %! log(+Base:integer, +X:integer, -Y:double) is det.
-% Logarithm with arbitrary base =|Y = log_{Base}(X)|=.
+% Logarithm with arbitrary base `Y = log_{Base}(X)`.
 %
 % @arg Base An integer.
 % @arg X An integer.
@@ -392,38 +465,34 @@ multiply_list([H|T], M2):-
   M2 is H * M1.
 
 
-%! number_integer_parts(
-%!   +Number:number,
-%!   -IntegerPart:integer,
-%!   -Fractional:integer
-%! ) is det.
-%! number_integer_parts(
-%!   -Number:number,
-%!   +IntegerPart:integer,
-%!   +Fractional:integer
-%! ) is det.
-% ### Example
-%
-% ~~~{.pl}
-% ?- number_integer_parts(-1.5534633204, X, Y).
-% X = -1,
-% Y = -5534633204.
-% ~~~
-%
-% @throws domain_error If `Fractional` is not nonneg.
 
-number_integer_parts(_, _, Fractional):-
-  nonvar(Fractional),
-  \+ nonneg(Fractional), !,
-  domain_error(nonneg, Fractional).
-number_integer_parts(Number, Integer, Fractional):-
-  nonvar(Number), !,
-  Integer is floor(float_integer_part(Number)),
-  fractional_integer(Number, Fractional).
-number_integer_parts(Number, Integer, Fractional):-
-  number_length(Fractional, Length),
-  Sign is sign(Integer),
-  Number is copysign(abs(Integer) + Fractional * 10 ** (-1 * Length), Sign).
+%! normalized_number(
+%!   +Decimal:compound,
+%!   -NormalizedDecimal:compound,
+%!   -Exponent:integer
+%! ) is det.
+% A form of **Scientific notation**, i.e., $a \times 10^b$,
+% in which $0 \leq a < 10$.
+%
+% The exponent $b$ is negative for a number with absolute value between
+% $0$ and $1$ (e.g. $0.5$ is written as $5×10^{-1}$).
+%
+% The $10$ and exponent are often omitted when the exponent is $0$.
+
+normalized_number(D, D, 0):-
+  1.0 =< D,
+  D < 10.0, !.
+normalized_number(D1, ND, Exp1):-
+  D1 >= 10.0, !,
+  D2 is D1 / 10.0,
+  normalized_number(D2, ND, Exp2),
+  Exp1 is Exp2 + 1.
+normalized_number(D1, ND, Exp1):-
+  D1 < 1.0, !,
+  D2 is D1 * 10.0,
+  normalized_number(D2, ND, Exp2),
+  Exp1 is Exp2 - 1.
+
 
 
 %! number_length(+Number:number, -Length:integer) is det.
@@ -451,29 +520,13 @@ number_length(N1, Radix, L1):-
 number_length(_N, _Radix, 1):- !.
 
 
-%! number_sign_parts(+N:number, +Sign:oneof([-1,1]), +Absolute:number) is semidet.
-%! number_sign_parts(+N:number, -Sign:oneof([-1,1]), -Absolute:number) is det.
-%! number_sign_parts(-N:number, +Sign:oneof([-1,1]), +Absolute:number) is det.
-%! number_sign_parts(-N:number, -Sign:oneof([-1,1]), +Absolute:number) is multi.
-% @throws instantiation_error
-
-number_sign_parts(N, Sign, Abs):-
-  nonvar(Abs), !,
-  member(Sign, [-1,1]),
-  N is copysign(Sign, Abs).
-number_sign_parts(N, Sign, Abs):-
-  nonvar(N), !,
-  Sign is sign(N),
-  Abs is abs(N).
-number_sign_parts(N, Sign, Abs):-
-  instantiation_error(number_sign_parts(N, Sign, Abs)).
-
 
 %! odd(?Number:number) is semidet.
 % Succeeds if the integer is odd.
 
 odd(N):-
   mod(N, 2, 1).
+
 
 
 %! permutations(
