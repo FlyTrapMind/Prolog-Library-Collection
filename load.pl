@@ -20,10 +20,6 @@ load_plc:-
   % Load the PLC index as file search path statements.
   ensure_loaded(plc(index)),
 
-  % Check SWI-Prolog version.
-  use_module(pl(pl_version)),
-  check_pl_version,
-
   % Enumerate the external program support
   % for the currently loaded modules.
   use_module(os(run_ext)),
