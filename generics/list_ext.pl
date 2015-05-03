@@ -92,6 +92,9 @@
                % ?Whole:list
     random_sublist/2, % -Sublist:list
                       % +List:list
+    random_sublist/3, % -Sublist:list
+                      % +Length:nonneg
+                      % +List:list
     remove_sublists/2, % +Lists1:list(list)
                        % -Lists2:list(list)
     repeating_list/3, % ?X
@@ -594,6 +597,8 @@ random_sublist(Sublist, List):-
   length(List, ListLength),
   random_between(0, ListLength, SublistLength),
   random_sublist(Sublist, SublistLength, List).
+
+%! random_sublist(-Sublist:list, +Length:nonneg, +List:list) is det.
 
 random_sublist([], 0, _).
 random_sublist([H|Sublist], SublistLength1, List1):-
