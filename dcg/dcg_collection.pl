@@ -21,6 +21,11 @@
              % +Element2
     set//2, % :ElementWriter
             % +Elements:list
+    triple//5, % +Mode:oneof([ascii,html])
+               % :ElementWriter
+               % +Element1
+               % +Element2
+               % +Element3
     tuple//3 % +Mode:oneof([ascii,html])
              % :ElementWriter
              % +Elements:list
@@ -44,7 +49,8 @@ For convenience's sake, the following collection instances are supported:
   - Tuple
 
 @author Wouter Beek
-@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05, 2015/01, 2015/03
+@version 2013/07-2013/09, 2013/11-2014/01 2014/03, 2014/05, 2015/01, 2015/03,
+         2015/05
 */
 
 :- use_module(library(option)).
@@ -63,6 +69,7 @@ For convenience's sake, the following collection instances are supported:
 :- meta_predicate(pair(+,3,+,?,?)).
 :- meta_predicate(pair(+,3,+,+,?,?)).
 :- meta_predicate(set(3,+,?,?)).
+:- meta_predicate(triple(+,3,+,+,+,?,?)).
 :- meta_predicate(tuple(+,3,+,?,?)).
 
 
@@ -162,6 +169,19 @@ pair(Mode, ElementWriter, E1, E2) -->
 
 set(ElementWriter, L) -->
   collection(`{`, `}`, list_to_ord_set, comma, ElementWriter, L).
+
+
+
+%! triple(
+%!   +Mode:oneof([ascii,html]),
+%!   :ElementWriter,
+%!   +Element1,
+%!   +Element2,
+%!   +Element3
+%! )// is det.
+
+triple(Mode, Writer, E1, E2, E3) -->
+  tuple(Mode, Writer, [E1,E2,E3]).
 
 
 
