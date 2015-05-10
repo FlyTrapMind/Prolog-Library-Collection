@@ -46,7 +46,11 @@ Register external programs called from within Prolog code.
 
 exists_program(Program):-
   catch(
-    handle_process(Program, [], [process(Pid),program(Program)]),
+    handle_process(
+      Program,
+      [],
+      [detached(true),process(Pid),program(Program)]
+    ),
     error(existence_error(_, _), _),
     fail
   ),
