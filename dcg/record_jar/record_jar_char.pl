@@ -22,6 +22,7 @@ DCGs for characters that occur in the Record Jar representation format.
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_code)).
+:- use_module(plc(dcg/dcg_meta)).
 :- use_module(plc(math/radix)). % Meta-option.
 
 
@@ -89,7 +90,7 @@ DCGs for characters that occur in the Record Jar representation format.
   ).
 'ESCAPE'(Code) -->
   "&#x",
-  'm*n'(2, 6, 'HEXDIG', Code, [convert1(weights_nonneg)]).
+  dcg_number('m*n'(2, 6, 'HEXDIG', []), Code).
 
 
 

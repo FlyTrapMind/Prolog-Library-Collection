@@ -15,7 +15,7 @@ Grammar for processing bracketed phrases.
 @version 2014/11-2014/12
 */
 
-:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
 :- use_module(plc(dcg/dcg_unicode)).
 
 :- meta_predicate(bracketed(//,?,?)).

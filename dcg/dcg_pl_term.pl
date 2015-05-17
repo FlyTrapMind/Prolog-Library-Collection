@@ -16,6 +16,8 @@ DCG rules for printing SWI-Prolog 7 terms.
 @version 2014/10-2014/11
 */
 
+:- use_module(library(dcg/basics)).
+
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_atom)).
 :- use_module(plc(dcg/dcg_bracket)).

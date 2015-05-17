@@ -13,6 +13,7 @@ Grammar snippets for LaTeX.
 @version 2014/07, 2014/10-2014/11
 */
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(option)).
 :- use_module(library(readutil)).
 

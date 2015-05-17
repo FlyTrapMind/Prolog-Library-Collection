@@ -14,6 +14,7 @@ Grammar for printing proofs.
 @version 2013/07-2013/09, 2013/11-2014/01, 2014/11
 */
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(option)).
 
 :- use_module(plc(dcg/dcg_ascii)).

@@ -20,7 +20,7 @@ Grammar for quoted phrases.
 
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
-:- use_module(plc(dcg/dcg_generics)).
+:- use_module(plc(dcg/dcg_meta)).
 
 :- meta_predicate(quoted(//,?,?)).
 :- meta_predicate(quoted(//,//,?,?)).

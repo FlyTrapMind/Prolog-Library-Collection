@@ -20,6 +20,7 @@ Generates tables for text-based display.
 @version 2014/02, 2014/11
 */
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(option)).
 
 :- use_module(plc(dcg/dcg_abnf)).
@@ -42,14 +43,14 @@ Generates tables for text-based display.
 is_meta(highlighted_row).
 
 :- predicate_options(dcg_table//3, 3, [
-     pass_to(dcg_table//4, 4)
-   ]).
+  pass_to(dcg_table//4, 4)
+]).
 :- predicate_options(dcg_table//4, 4, [
-     header_column(+boolean),
-     header_row(+boolean),
-     highlighted_row(+callable),
-     indexed(+boolean)
-   ]).
+  header_column(+boolean),
+  header_row(+boolean),
+  highlighted_row(+callable),
+  indexed(+boolean)
+]).
 
 
 

@@ -14,6 +14,7 @@
 */
 
 :- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_char)).
 :- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(dcg/dcg_meta)).

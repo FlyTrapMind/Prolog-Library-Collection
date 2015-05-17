@@ -36,6 +36,7 @@ Meta-DCG rules.
 
 :- use_module(library(lists), except([delete/3,subset/2])).
 
+:- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(generics/list_ext)).
 :- use_module(plc(math/radix)).
@@ -237,7 +238,7 @@ dcg_string(Dcg, String) -->
   dcg_call(Dcg, Codes),
   {string_codes(String, Codes)}.
 dcg_string(Dcg, String) -->
-  {is_string(String)}, !,
+  {string(String)}, !,
   {string_codes(String, Codes)},
   dcg_call(Dcg, Codes).
 dcg_string(_, String) -->

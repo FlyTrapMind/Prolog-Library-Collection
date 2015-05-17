@@ -1,7 +1,6 @@
 :- module(
   dcg_atom,
   [
-    atom//1, % ?Atom:atom
     atom_capitalize//0,
     atom_ci//1, % ?Atom:atom
     atom_ellipsis//2, % +Atom:atom
@@ -17,26 +16,22 @@
 Grammar rules for processing atoms.
 
 @author Wouter Beek
-@version 2014/11-2014/12
+@version 2014/11-2014/12, 2015/05
 */
+
+:- use_module(library(dcg/basics)).
 
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_code)).
 :- use_module(plc(dcg/dcg_generics)).
-:- use_module(plc(dcg/dcg_unicode)).
+:- use_module(plc(dcg/dcg_meta)).
+:- use_module(
+  plc(dcg/dcg_unicode),
+  [letter_lowercase//1,letter_uppercase//1]
+).
 :- use_module(plc(generics/atom_ext)).
 
 
-
-
-
-%! atom(?Atom:atom)// .
-
-atom(Atom) -->
-  {var(Atom)}, !,
-  '*'(code, Atom, [convert1(codes_atom)]).
-atom(Atom, Head, Tail):-
-  format(codes(Head,Tail), '~a', [Atom]).
 
 
 
@@ -53,7 +48,7 @@ atom_capitalize --> "".
 %! atom_ci(?Atom:atom)// .
 
 atom_ci(Atom) -->
-  '*'(code_ci, Atom, [convert1(codes_atom)]).
+  dcg_atom('*'(code_ci, []), Atom).
 
 
 
@@ -68,7 +63,7 @@ atom_ellipsis(Atom1, Ellipsis) -->
 %! atom_lower(?Atom:atom)// .
 
 atom_lower(Atom) -->
-  '*'(code_lower, Atom, [convert1(codes_atom)]).
+  dcg_atom('*'(code_lower, []), Atom).
 
 
 
@@ -90,4 +85,4 @@ atom_title(Atom) -->
 %! atom_upper(?Atom:atom)// .
 
 atom_upper(Atom) -->
-  '*'(code_lower, Atom, [convert1(codes_atom)]).
+  dcg_atom('*'(code_lower, []), Atom).

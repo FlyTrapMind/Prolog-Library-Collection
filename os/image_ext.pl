@@ -17,7 +17,7 @@ Support for image files.
 @version 2014/03, 2014/05-2014/06, 2015/02-2015/03
 */
 
-:- use_module(library(dcg/basics), except([atom//1])).
+:- use_module(library(dcg/basics)).
 :- use_module(library(readutil)).
 
 :- use_module(plc(dcg/dcg_atom)).

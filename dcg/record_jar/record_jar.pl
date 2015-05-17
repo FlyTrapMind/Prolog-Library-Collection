@@ -50,6 +50,7 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 :- use_module(plc(dcg/abnf_core_rules)).
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
+:- use_module(plc(dcg/dcg_meta)).
 :- use_module(plc(dcg/record_jar/record_jar_char)).
 :- use_module(plc(generics/atom_ext)). % Meta-option.
 
@@ -109,7 +110,7 @@ continuation -->
 encodingSig(Encoding) -->
   "%%encoding",
   'field-sep',
-  '*'(encodingSig_char, Encoding, [convert1(codes_atom)]),
+  dcg_atom('*'(encodingSig_char, []), Encoding),
   'CRLF', !.
 
 encodingSig_char(Code) --> 'ALPHA'(Code).
@@ -165,7 +166,7 @@ field(Name=Body) -->
 
 'field-body0'(Word) -->
   continuation,
-  '+'('character@record-jar', Word, [convert1(codes_atom)]).
+  dcg_atom('+'('character@record-jar', []), Word).
 
 
 
@@ -195,7 +196,7 @@ field(Name=Body) -->
 % We therefore introduce the extra DCG rule 'field-name-character'//1.
 
 'field-name'(Name) -->
-  '+'('field-name-character', Name, [convert1(codes_atom)]).
+  dcg_atom('+'('field-name-character', []), Name).
 
 'field-name-character'(_) --> 'SP', !, {fail}.
 'field-name-character'(_) --> ":", !, {fail}.

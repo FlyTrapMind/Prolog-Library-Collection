@@ -391,51 +391,31 @@ false.
      separator(+callable)
    ]).
 :- predicate_options('m*n'//5, 5, [
-     convert1(+callable),
      copy_term(+boolean),
      count(-nonneg),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//6, 6, [
-     convert1(+callable),
-     convert2(+callable),
      copy_term(+boolean),
      count(-nonneg),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//7, 7, [
-     convert1(+callable),
-     convert2(+callable),
-     convert3(+callable),
      copy_term(+boolean),
      count(-nonneg),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//8, 8, [
-     convert1(+callable),
-     convert2(+callable),
-     convert3(+callable),
-     convert4(+callable),
      copy_term(+boolean),
      count(-nonneg),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//9, 9, [
-     convert1(+callable),
-     convert2(+callable),
-     convert3(+callable),
-     convert4(+callable),
-     convert5(+callable),
      copy_term(+boolean),
      count(-nonneg),
      separator(+callable)
    ]).
 
-is_meta(convert1).
-is_meta(convert2).
-is_meta(convert3).
-is_meta(convert4).
-is_meta(convert5).
 is_meta(separator).
 
 
@@ -734,7 +714,7 @@ is_meta(separator).
     option(copy_term(CP), Options2, false),
     option(separator(Sep), Options2, dcg_void)
   },
-  (   parsing(X, Y)
+  (   parsing
   ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, CP)
   ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, CP)
   ),
@@ -743,7 +723,7 @@ is_meta(separator).
   ;   true
   )}.
 
-'m*n'(M, N, Dcg, L1_out, Options1) -->
+'m*n'(M, N, Dcg, L1, Options1) -->
   {
     'm*n_typecheck'(M, N),
     meta_options(is_meta, Options1, Options2),
@@ -759,7 +739,7 @@ is_meta(separator).
   ;   true
   )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, Options1) -->
+'m*n'(M, N, Dcg, L1, L2, Options1) -->
   {
     'm*n_typecheck'(M, N),
     meta_options(is_meta, Options1, Options2),
@@ -775,7 +755,7 @@ is_meta(separator).
   ;   true
   )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, Options1) -->
+'m*n'(M, N, Dcg, L1, L2, L3, Options1) -->
   {
     'm*n_typecheck'(M, N),
     meta_options(is_meta, Options1, Options2),
@@ -791,7 +771,7 @@ is_meta(separator).
   ;   true
   )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, L4_out, Options1) -->
+'m*n'(M, N, Dcg, L1, L2, L3, L4, Options1) -->
   {
     'm*n_typecheck'(M, N),
     meta_options(is_meta, Options1, Options2),

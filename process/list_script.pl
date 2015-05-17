@@ -17,6 +17,7 @@ Also keeps track of items that could not be processed.
 @version 2015/02
 */
 
+:- use_module(library(dcg/basics)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(plc(dcg/dcg_atom)).

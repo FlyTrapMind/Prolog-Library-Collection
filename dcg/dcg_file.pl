@@ -15,6 +15,8 @@ Grammar snippets for files.
 @version 2014/11-2014/12
 */
 
+:- use_module(library(dcg/basics)).
+
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_atom)).
@@ -93,7 +95,7 @@ directory_char(Code) --> underscore(Code).
 %! path_segment(-Segment:atom)// .
 
 path_segment(Segment) -->
-  '*'(directory_char, Segment, [convert1(codes_atom)]).
+  dcg_atom('*'(directory_char, []), Segment).
 
 
 
