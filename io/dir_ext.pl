@@ -37,10 +37,10 @@ Extensions for handling directories.
 
 :- use_module(library(apply)).
 :- use_module(library(filesex)).
+:- use_module(library(lambda)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(option)).
 
-:- use_module(plc(generics/lambda_meta)).
 :- use_module(plc(io/file_ext)).
 :- use_module(plc(prolog/pl_control)).
 
