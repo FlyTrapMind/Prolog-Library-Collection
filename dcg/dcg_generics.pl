@@ -9,11 +9,6 @@
     dcg_all//0,
     dcg_all//2, % +Options:list(nvpair)
                 % -Result:or([atom,list(code)])
-    dcg_between//2, % :Between
-                    % :Dcg
-    dcg_between//3, % :Begin
-                    % :Dcg
-                    % :End
     dcg_copy//0,
     dcg_done//0,
     dcg_end//0,
@@ -68,8 +63,6 @@ is_meta(convert).
 
 :- meta_predicate(atom_phrase(//,?)).
 :- meta_predicate(atom_phrase(//,?,?)).
-:- meta_predicate(dcg_between(//,//,?,?)).
-:- meta_predicate(dcg_between(//,//,//,?,?)).
 :- meta_predicate(dcg_separated_list(//,?,?,?)).
 :- meta_predicate(dcg_separated_list_nonvar(//,+,?,?)).
 :- meta_predicate(dcg_separated_list_var(//,-,?,?)).
@@ -131,20 +124,6 @@ dcg_all_([H|T]) -->
   dcg_all_(T).
 dcg_all_([]) -->
   [].
-
-
-
-%! dcg_between(:Between, :Dcg)// .
-
-dcg_between(Between, Dcg) -->
-  dcg_between(Between, Dcg, Between).
-
-%! dcg_between(:Begin, :Dcg, :End)// .
-
-dcg_between(Begin, Dcg, End) -->
-  Begin,
-  Dcg,
-  End.
 
 
 

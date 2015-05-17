@@ -5,14 +5,21 @@
                   % +Arguments:list
     dcg_apply_cp//2, % :Dcg
                      % +Arguments:list
-    dcg_atom_codes//2, % :Dcg
-                       % ?Atom:atom
+    dcg_atom//2, % :Dcg
+                 % ?Atom:atom
+    dcg_between//2, % :Between
+                    % :Dcg
+    dcg_between//3, % :Begin
+                    % :Dcg
+                    % :End
     dcg_call//1, dcg_call//2, dcg_call//3, dcg_call//4, dcg_call//5, dcg_call//6,
     dcg_call_cp//1, dcg_call_cp//2, dcg_call_cp//3, dcg_call_cp//4, dcg_call_cp//5, dcg_call_cp//6,
-    dcg_number_codes//2, % :Dcg
+    dcg_number//2, % :Dcg
                          % ?Number:number
     dcg_once//1, % :Dcg
-    dcg_repeat//0
+    dcg_repeat//0,
+    dcg_string//2 % :Dcg
+                  % ?String:string
   ]
 ).
 
@@ -35,7 +42,9 @@ Meta-DCG rules.
 
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_apply_cp(//,+,?,?)).
-:- meta_predicate(dcg_atom_codes(3,?,?,?)).
+:- meta_predicate(dcg_atom(3,?,?,?)).
+:- meta_predicate(dcg_between(//,//,?,?)).
+:- meta_predicate(dcg_between(//,//,//,?,?)).
 :- meta_predicate(dcg_call(//,?,?)).
 :- meta_predicate(dcg_call(3,?,?,?)).
 :- meta_predicate(dcg_call(4,?,?,?,?)).
@@ -48,8 +57,11 @@ Meta-DCG rules.
 :- meta_predicate(dcg_call_cp(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call_cp(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call_cp(7,?,?,?,?,?,?,?)).
-:- meta_predicate(dcg_number_codes(3,?,?,?)).
+:- meta_predicate(dcg_number(3,?,?,?)).
 :- meta_predicate(dcg_once(//,?,?)).
+:- meta_predicate(dcg_string(//,?,?,?)).
+
+
 
 
 
@@ -67,7 +79,7 @@ dcg_apply_cp(Dcg1, Args1, X, Y):-
 
 
 
-%! dcg_atom_codes(:Dcg, ?Atom:atom)// .
+%! dcg_atom(:Dcg, ?Atom:atom)// .
 % This meta-DCG rule handles the translation
 % between the word and the character level of parsing/generating.
 %
@@ -80,7 +92,7 @@ dcg_apply_cp(Dcg1, Args1, X, Y):-
 % words in grammar *A*, i.e. lists of codes,
 % need to be translated to words in grammar *B*, i.e. atoms.
 %
-% This is where dcg_atom_codes//2 comes in.
+% This is where dcg_atom//2 comes in.
 % We illustrate this with a schematic example:
 % ```prolog
 % sentence([W1,...,Wn]) -->
@@ -89,7 +101,7 @@ dcg_apply_cp(Dcg1, Args1, X, Y):-
 %   word2(Wn).
 %
 % word2(W) -->
-%   dcg_atom_codes(word1, W).
+%   dcg_atom(word1, W).
 %
 % word1([C1, ..., Cn]) -->
 %   char(C1),
@@ -97,23 +109,44 @@ dcg_apply_cp(Dcg1, Args1, X, Y):-
 %   char(Cn).
 % ```
 
-dcg_atom_codes(Dcg, Atom) -->
+dcg_atom(Dcg, Atom) -->
   {var(Atom)}, !,
   dcg_call(Dcg, Codes),
   {atom_codes(Atom, Codes)}.
-dcg_atom_codes(Dcg, Atom) -->
+dcg_atom(Dcg, Atom) -->
   {atom(Atom)}, !,
   {atom_codes(Atom, Codes)},
   dcg_call(Dcg, Codes).
-dcg_atom_codes(_, Atom) -->
+dcg_atom(_, Atom) -->
   {type_error(atom, Atom)}.
 
 
+
+%! dcg_between(:Between, :Dcg)// .
+
+dcg_between(Between, Dcg) -->
+  dcg_between(Between, Dcg, Between).
+
+%! dcg_between(:Begin, :Dcg, :End)// .
+
+dcg_between(Begin, Dcg, End) -->
+  Begin,
+  Dcg,
+  End.
+
+
+
 %! dcg_call(:Dcg)// .
-%! dcg_call(:Dcg, +Args1:list)// .
-% @see Variants of dcg_call//[1-6], where `Dcg` is called directly
-%      (i.e., not copied). This means that multiple calls of the same `Dcg`
-%      share uninstantiated variables.
+%! dcg_call(:Dcg, ?Arg1)// .
+%! dcg_call(:Dcg, ?Arg1, ?Arg2)// .
+%! dcg_call(:Dcg, ?Arg1, ?Arg2, ?Arg3)// .
+%! dcg_call(:Dcg, ?Arg1, ?Arg2, ?Arg3, ?Arg4)// .
+%! dcg_call(:Dcg, ?Arg1, ?Arg2, ?Arg3, ?Arg4, ?Arg5)// .
+% `Dcg` is called directly (i.e., not copied).
+% This means that multiple calls of the same Dcg share uninstantiated
+% variables.
+%
+% @see DCG variants of call//[1-6].
 
 dcg_call(Dcg, X, Y):-
   call(Dcg, X, Y).
@@ -134,11 +167,17 @@ dcg_call(Dcg, A1, A2, A3, A4, A5, X, Y):-
   call(Dcg, A1, A2, A3, A4, A5, X, Y).
 
 
+
 %! dcg_call_cp(:Dcg)// .
-% @see Included for consistency with dcg_call//[2,3,4].
-% @see This has the same effect as phrase/3.
-%! dcg_call_cp(:Dcg, +Args1:list)// .
-% @see Variants of call/[1-5] for DCGs.
+%! dcg_call_cp(:Dcg, ?Arg1)// .
+%! dcg_call_cp(:Dcg, ?Arg1, ?Arg2)// .
+%! dcg_call_cp(:Dcg, ?Arg1, ?Arg2, ?Arg3)// .
+%! dcg_call_cp(:Dcg, ?Arg1, ?Arg2, ?Arg3, ?Arg4)// .
+%! dcg_call_cp(:Dcg, ?Arg1, ?Arg2, ?Arg3, ?Arg4, ?Arg5)// .
+% dcg_call_cp//1 is included for consistency.
+% It is operationally equivalent with dcg_call//1.
+%
+% @see This is a syntactic variant of phrase/3.
 
 dcg_call_cp(Dcg1, X, Y):-
   copy_term(Dcg1, Dcg2),
@@ -170,7 +209,7 @@ dcg_number(Dcg, Number) -->
   {var(Number)}, !,
   '*'(dcg_call(Dcg), Weights, []),
   {weights_radix(Weights, Number)}.
-dcg_number_codes(Dcg, Number) -->
+dcg_number(Dcg, Number) -->
   {weights_radix(Weights, Number)},
   '*'(dcg_call(Dcg), Weights, []).
 
@@ -190,3 +229,16 @@ dcg_once(Dcg, X, Y):-
 
 dcg_repeat(X, X):-
   repeat.
+
+
+
+dcg_string(Dcg, String) -->
+  {var(String)}, !,
+  dcg_call(Dcg, Codes),
+  {string_codes(String, Codes)}.
+dcg_string(Dcg, String) -->
+  {is_string(String)}, !,
+  {string_codes(String, Codes)},
+  dcg_call(Dcg, Codes).
+dcg_string(_, String) -->
+  {type_error(string, String)}.
