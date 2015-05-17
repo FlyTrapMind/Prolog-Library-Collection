@@ -33,6 +33,7 @@
     dcg_void//0,
     dcg_with_output_to/2, % +Output:compound
                           % :Dcg
+    parsing//0,
     string_phrase/2, % :Dcg
                      % ?String:string
     string_phrase/3 % :Dcg
@@ -263,6 +264,14 @@ dcg_void --> [].
 dcg_with_output_to(Out, Dcg):-
   once(phrase(Dcg, Codes)),
   with_output_to(Out, put_codes(Codes)).
+
+
+
+%! parsing// is semidet.
+% Succeeds if the DCG is in parse mode.
+
+parsing(H, H):-
+   nonvar(H).
 
 
 

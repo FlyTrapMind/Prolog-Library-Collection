@@ -388,14 +388,12 @@ false.
 :- predicate_options('m*n'//4, 4, [
      copy_term(+boolean),
      count(-nonneg),
-     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//5, 5, [
      convert1(+callable),
      copy_term(+boolean),
      count(-nonneg),
-     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//6, 6, [
@@ -403,7 +401,6 @@ false.
      convert2(+callable),
      copy_term(+boolean),
      count(-nonneg),
-     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//7, 7, [
@@ -412,7 +409,6 @@ false.
      convert3(+callable),
      copy_term(+boolean),
      count(-nonneg),
-     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//8, 8, [
@@ -422,7 +418,6 @@ false.
      convert4(+callable),
      copy_term(+boolean),
      count(-nonneg),
-     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 :- predicate_options('m*n'//9, 9, [
@@ -433,7 +428,6 @@ false.
      convert5(+callable),
      copy_term(+boolean),
      count(-nonneg),
-     mode(+oneof([generate,parse])),
      separator(+callable)
    ]).
 
@@ -733,146 +727,107 @@ is_meta(separator).
 % @throws type_error when `M` or N` is not an integer.
 % @throws domain_error when `M` or `N` is a negative integer.
 
-'m*n'(M, N, Dcg, Options1, X, Y):-
-  'm*n_typecheck'(M, N),
-  meta_options(is_meta, Options1, Options2),
-  option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, dcg_void),
-  (   dcg_abnf_mode(Options2, X, generate)
-  ->  'm*n_generate'(M, N, 0, C, Dcg, Sep, CP, X, Y)
-  ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, CP, X, Y)
+'m*n'(M, N, Dcg, Options1) -->
+  {
+    'm*n_typecheck'(M, N),
+    meta_options(is_meta, Options1, Options2),
+    option(copy_term(CP), Options2, false),
+    option(separator(Sep), Options2, dcg_void)
+  },
+  (   parsing(X, Y)
+  ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, CP)
+  ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, CP)
   ),
-  (   option(count(C0), Options2)
+  {(  option(count(C0), Options2)
   ->  C0 = C
   ;   true
-  ).
+  )}.
 
-'m*n'(M, N, Dcg, L1_out, Options1, X, Y):-
-  'm*n_typecheck'(M, N),
-  meta_options(is_meta, Options1, Options2),
-  option(convert1(Conv1), Options2, =),
-  option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, dcg_void),
-  (   dcg_abnf_mode(Options2, X, generate)
-  ->  call(Conv1, L1_in, L1_out),
-      'm*n_generate'(M, N, 0, C, Dcg, Sep, L1_in, CP, X, Y)
-  ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, L1_in, CP, X, Y),
-      call(Conv1, L1_in, L1_out)
+'m*n'(M, N, Dcg, L1_out, Options1) -->
+  {
+    'm*n_typecheck'(M, N),
+    meta_options(is_meta, Options1, Options2),
+    option(copy_term(CP), Options2, false),
+    option(separator(Sep), Options2, dcg_void)
+  },
+  (   parsing
+  ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, L1, CP)
+  ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, L1, CP)
   ),
-  (   option(count(C0), Options2)
+  {(  option(count(C0), Options2)
   ->  C0 = C
   ;   true
-  ).
+  )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, Options1, X, Y):-
-  'm*n_typecheck'(M, N),
-  meta_options(is_meta, Options1, Options2),
-  option(convert1(Conv1), Options2, =),
-  option(convert2(Conv2), Options2, =),
-  option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, dcg_void),
-  (   dcg_abnf_mode(Options2, X, generate)
-  ->  call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      'm*n_generate'(M, N, 0, C, Dcg, Sep, L1_in, L2_in, CP, X, Y)
-  ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, L1_in, L2_in, CP, X, Y),
-      call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out)
+'m*n'(M, N, Dcg, L1_out, L2_out, Options1) -->
+  {
+    'm*n_typecheck'(M, N),
+    meta_options(is_meta, Options1, Options2),
+    option(copy_term(CP), Options2, false),
+    option(separator(Sep), Options2, dcg_void)
+  },
+  (   parsing
+  ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, L1, L2, CP)
+  ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, L1, L2, CP)
   ),
-  (   option(count(C0), Options2)
+  {(  option(count(C0), Options2)
   ->  C0 = C
   ;   true
-  ).
+  )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, Options1, X, Y):-
-  'm*n_typecheck'(M, N),
-  meta_options(is_meta, Options1, Options2),
-  option(convert1(Conv1), Options2, =),
-  option(convert2(Conv2), Options2, =),
-  option(convert3(Conv3), Options2, =),
-  option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, dcg_void),
-  (   dcg_abnf_mode(Options2, X, generate)
-  ->  call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      call(Conv3, L3_in, L3_out),
-      'm*n_generate'(M, N, 0, C, Dcg, Sep, L1_in, L2_in, L3_in, CP, X, Y)
-  ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, L1_in, L2_in, L3_in, CP, X, Y),
-      call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      call(Conv3, L3_in, L3_out)
+'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, Options1) -->
+  {
+    'm*n_typecheck'(M, N),
+    meta_options(is_meta, Options1, Options2),
+    option(copy_term(CP), Options2, false),
+    option(separator(Sep), Options2, dcg_void)
+  },
+  (   parsing
+  ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, L1, L2, L3, CP)
+  ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, L1, L2, L3, CP)
   ),
-  (   option(count(C0), Options2)
+  {(  option(count(C0), Options2)
   ->  C0 = C
   ;   true
-  ).
+  )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, L4_out, Options1, X, Y):-
-  'm*n_typecheck'(M, N),
-  meta_options(is_meta, Options1, Options2),
-  option(convert1(Conv1), Options2, =),
-  option(convert2(Conv2), Options2, =),
-  option(convert3(Conv3), Options2, =),
-  option(convert4(Conv4), Options2, =),
-  option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, dcg_void),
-  (   dcg_abnf_mode(Options2, X, generate)
-  ->  call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      call(Conv3, L3_in, L3_out),
-      call(Conv4, L4_in, L4_out),
-      'm*n_generate'(
-        M, N, 0, C, Dcg, Sep, L1_in, L2_in, L3_in, L4_in, CP, X, Y
-      )
-  ;   'm*n_parse'(M, N, 0, C, Dcg, Sep, L1_in, L2_in, L3_in, L4_in, CP, X, Y),
-      call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      call(Conv3, L3_in, L3_out),
-      call(Conv4, L4_in, L4_out)
+'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, L4_out, Options1) -->
+  {
+    'm*n_typecheck'(M, N),
+    meta_options(is_meta, Options1, Options2),
+    option(copy_term(CP), Options2, false),
+    option(separator(Sep), Options2, dcg_void)
+  },
+  (   parsing
+  ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, L1, L2, L3, L4, CP)
+  ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, L1, L2, L3, L4, CP)
   ),
-  (   option(count(C0), Options2)
+  {(  option(count(C0), Options2)
   ->  C0 = C
   ;   true
-  ).
+  )}.
 
-'m*n'(M, N, Dcg, L1_out, L2_out, L3_out, L4_out, L5_out, Options1, X, Y):-
-  'm*n_typecheck'(M, N),
-  meta_options(is_meta, Options1, Options2),
-  option(convert1(Conv1), Options2, =),
-  option(convert2(Conv2), Options2, =),
-  option(convert3(Conv3), Options2, =),
-  option(convert4(Conv4), Options2, =),
-  option(convert5(Conv5), Options2, =),
-  option(copy_term(CP), Options2, false),
-  option(separator(Sep), Options2, dcg_void),
-  (   dcg_abnf_mode(Options2, X, generate)
-  ->  call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      call(Conv3, L3_in, L3_out),
-      call(Conv4, L4_in, L4_out),
-      call(Conv5, L5_in, L5_out),
-      'm*n_generate'(
-        M, N, 0, C, Dcg, Sep, L1_in, L2_in, L3_in, L4_in, L5_in, CP, X, Y
-      )
-  ;   'm*n_parse'(
-        M, N, 0, C, Dcg, Sep, L1_in, L2_in, L3_in, L4_in, L5_in, CP, X, Y
-      ),
-      call(Conv1, L1_in, L1_out),
-      call(Conv2, L2_in, L2_out),
-      call(Conv3, L3_in, L3_out),
-      call(Conv4, L4_in, L4_out),
-      call(Conv5, L5_in, L5_out)
+'m*n'(M, N, Dcg, L1, L2, L3, L4, L5, Options1) -->
+  {
+    'm*n_typecheck'(M, N),
+    meta_options(is_meta, Options1, Options2),
+    option(copy_term(CP), Options2, false),
+    option(separator(Sep), Options2, dcg_void)
+  },
+  (   parsing
+  ->  'm*n_parse'(M, N, 0, C, Dcg, Sep, L1, L2, L3, L4, L5, CP)
+  ;   'm*n_generate'(M, N, 0, C, Dcg, Sep, L1, L2, L3, L4, L5, CP)
   ),
-  (   option(count(C0), Options2)
+  {(  option(count(C0), Options2)
   ->  C0 = C
   ;   true
-  ).
+  )}.
 
 
 
 
 
-% HELPERS
+% HELPERS %
 
 %! call_dcg_sep(
 %!   +Count:nonneg,
@@ -894,21 +849,6 @@ call_dcg_sep(C, Dcg, Sep, Args, true) -->
   ;   dcg_call_cp(Sep)
   ),
   dcg_apply_cp(Dcg, Args).
-
-
-
-%! dcg_abnf(
-%!   +Options:list(nvpair),
-%!   ?List,
-%!   +Mode:oneof([generate,parse])
-%! ) is semidet.
-
-dcg_abnf_mode(Options, _, Mode):-
-  option(mode(Mode0), Options), !,
-  Mode == Mode0.
-dcg_abnf_mode(_, X, generate):-
-  var(X), !.
-dcg_abnf_mode(_, _, parse).
 
 
 
@@ -974,7 +914,9 @@ dcg_abnf_mode(_, _, parse).
 'm*n_generate'(M, _, C, C, _, _, [], [], [], [], _) -->
   {'m*n_lower'(M, C)},
   [].
-'m*n_generate'(M, N, C1, C, Dcg, Sep, [H1|T1], [H2|T2], [H3|T3], [H4|T4], CP) -->
+'m*n_generate'(
+  M, N, C1, C, Dcg, Sep, [H1|T1], [H2|T2], [H3|T3], [H4|T4], CP
+) -->
   {'m*n_higher'(N, C1)},
   call_dcg_sep(C1, Dcg, Sep, [H1,H2,H3,H4], CP),
   {succ(C1, C2)},
@@ -983,7 +925,9 @@ dcg_abnf_mode(_, _, parse).
 'm*n_generate'(M, _, C, C, _, _, [], [], [], [], [], _) -->
   {'m*n_lower'(M, C)},
   [].
-'m*n_generate'(M, N, C1, C, Dcg, Sep, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5], CP) -->
+'m*n_generate'(
+  M, N, C1, C, Dcg, Sep, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5], CP
+) -->
   {'m*n_higher'(N, C1)},
   call_dcg_sep(C1, Dcg, Sep, [H1,H2,H3,H4,H5], CP),
   {succ(C1, C2)},
