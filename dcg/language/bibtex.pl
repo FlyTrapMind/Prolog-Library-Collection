@@ -129,8 +129,8 @@ white --> eol.
 
 % VALIDATION %
 
-validate_entry(entry(Class,Name,Pairs)):-
-  validate(_, Call, Required, _),
+validate_entry(entry(Class,_,Pairs)):-
+  validate(_, Class, Required, _),
   forall(
     member(Key, Required),
     check_required(Class, Key, Pairs)
