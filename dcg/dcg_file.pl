@@ -62,7 +62,7 @@ file_path(Path) -->
 %! local_file_name(-Local:atom)// .
 
 local_file_name(Local) -->
-  dcg_atom_codes(local_file_char, Local).
+  dcg_atom(local_file_char, Local).
 
 
 

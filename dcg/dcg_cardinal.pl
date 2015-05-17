@@ -89,7 +89,7 @@ other bases (2, 8, 16).
 
 %! between(+Low:integer, +High:integer)// .
 %! between(+Low:integer, +High:integer, ?Value:integer)// .
-% Process integers between the given lower and higher bounds.
+% Consume integers between the given lower and higher bounds.
 
 between(Low, High) -->
   between(Low, High, _).
@@ -108,7 +108,7 @@ between(Low, High, Value) -->
 %!   -Weight:between(0,15),
 %!   -Code:code
 %! )// .
-% Process digits between the given lower and higher bounds.
+% Consume digits between the given lower and higher bounds.
 %
 % This supports digits of hexadecimal radix.
 %
@@ -134,7 +134,7 @@ between_digit(Low, High, Weight, Code) -->
 
 %! between_radix(+Low:compound, +High:compound)// .
 %! between_radix(+Low:compound, +High:compound, ?Value:compound)// .
-% Process integers that are specified in various bases
+% Consume integers that are specified in various bases
 % (binary, octal, decimal, hexadecimal)
 % and that are between the lower and higher bounds.
 %
