@@ -33,8 +33,6 @@
     dcg_void//0,
     dcg_with_output_to/2, % +Output:compound
                           % :Dcg
-    dcg_yn_separator//2, % +Tail:list
-                         % :Separator
     string_phrase/2, % :Dcg
                      % ?String:string
     string_phrase/3 % :Dcg
@@ -57,7 +55,7 @@ Concepts
 
 @author Wouter Beek
 @version 2013/05-2013/09, 2013/11-2014/01, 2014/03, 2014/05, 2014/10, 2014/12,
-         2015/03
+         2015/03, 2015/05
 */
 
 :- use_module(library(lists), except([delete/3,subset/2])).
@@ -79,7 +77,6 @@ is_meta(convert).
 :- meta_predicate(dcg_until(//,?,:,?,?)).
 :- meta_predicate(dcg_until0(//,?,+,?,?)).
 :- meta_predicate(dcg_with_output_to(+,//)).
-:- meta_predicate(dcg_yn_separator(+,//,?,?)).
 :- meta_predicate(string_phrase(//,?)).
 :- meta_predicate(string_phrase(//,?,?)).
 
@@ -266,14 +263,6 @@ dcg_void --> [].
 dcg_with_output_to(Out, Dcg):-
   once(phrase(Dcg, Codes)),
   with_output_to(Out, put_codes(Codes)).
-
-
-
-%! dcg_yn_separator(+Tail:list, :Separator)// .
-% Decides whether a separator is needed or not for the given tail.
-
-dcg_yn_separator([], _) --> [].
-dcg_yn_separator([_|_], Separator) --> Separator.
 
 
 

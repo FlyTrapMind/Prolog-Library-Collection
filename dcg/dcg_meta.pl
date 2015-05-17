@@ -9,11 +9,10 @@
                        % ?Atom:atom
     dcg_call//1, dcg_call//2, dcg_call//3, dcg_call//4, dcg_call//5, dcg_call//6,
     dcg_call_cp//1, dcg_call_cp//2, dcg_call_cp//3, dcg_call_cp//4, dcg_call_cp//5, dcg_call_cp//6,
-    dcg_maplist//2, dcg_maplist//3, dcg_maplist//4, dcg_maplist//5, dcg_maplist//6,
+    dcg_number_codes//2, % :Dcg
+                         % ?Number:number
     dcg_once//1, % :Dcg
-    dcg_repeat//0,
-    dcg_sequence//2 % :Dcgs:list
-                    % :Separator
+    dcg_repeat//0
   ]
 ).
 
@@ -25,13 +24,14 @@ Meta-DCG rules.
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
 @version 2013/05-2013/09, 2013/11-2013/12, 2014/02-2014/03, 2014/05,
-         2014/08-2014/09
+         2014/08-2014/09, 2015/05
 */
 
 :- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(generics/list_ext)).
+:- use_module(plc(math/radix)).
 
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_apply_cp(//,+,?,?)).
@@ -48,13 +48,8 @@ Meta-DCG rules.
 :- meta_predicate(dcg_call_cp(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call_cp(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call_cp(7,?,?,?,?,?,?,?)).
-:- meta_predicate(dcg_maplist(3,+,?,?)).
-:- meta_predicate(dcg_maplist(4,+,+,?,?)).
-:- meta_predicate(dcg_maplist(5,+,+,+,?,?)).
-:- meta_predicate(dcg_maplist(6,+,+,+,+,?,?)).
-:- meta_predicate(dcg_maplist(7,+,+,+,+,+,?,?)).
+:- meta_predicate(dcg_number_codes(3,?,?,?)).
 :- meta_predicate(dcg_once(//,?,?)).
-:- meta_predicate(dcg_sequence(:,//,?,?)).
 
 
 
@@ -103,13 +98,15 @@ dcg_apply_cp(Dcg1, Args1, X, Y):-
 % ```
 
 dcg_atom_codes(Dcg, Atom) -->
-  {nonvar(Atom)},
-  {atom_codes(Atom, Codes)},
-  dcg_call_cp(Dcg, Codes).
-dcg_atom_codes(Dcg, Atom) -->
-  {var(Atom)},
-  dcg_call_cp(Dcg, Codes),
+  {var(Atom)}, !,
+  dcg_call(Dcg, Codes),
   {atom_codes(Atom, Codes)}.
+dcg_atom_codes(Dcg, Atom) -->
+  {atom(Atom)}, !,
+  {atom_codes(Atom, Codes)},
+  dcg_call(Dcg, Codes).
+dcg_atom_codes(_, Atom) -->
+  {type_error(atom, Atom)}.
 
 
 %! dcg_call(:Dcg)// .
@@ -168,33 +165,15 @@ dcg_call_cp(Dcg1, A1, A2, A3, A4, A5, X, Y):-
   call(Dcg2, A1, A2, A3, A4, A5, X, Y).
 
 
-%! dcg_maplist(:Dcg, +Args1:list)// .
-% @see Variants of maplist/[1-5] for DCGs.
 
-dcg_maplist(_, []) --> [].
-dcg_maplist(Dcg, [H|T]) -->
-  dcg_apply(Dcg, H),
-  dcg_maplist(Dcg, T).
+dcg_number(Dcg, Number) -->
+  {var(Number)}, !,
+  '*'(dcg_call(Dcg), Weights, []),
+  {weights_radix(Weights, Number)}.
+dcg_number_codes(Dcg, Number) -->
+  {weights_radix(Weights, Number)},
+  '*'(dcg_call(Dcg), Weights, []).
 
-dcg_maplist(_, [], []) --> [].
-dcg_maplist(Dcg, [H1|T1], [H2|T2]) -->
-  dcg_call_cp(Dcg, H1, H2),
-  dcg_maplist(Dcg, T1, T2).
-
-dcg_maplist(_, [], [], []) --> [].
-dcg_maplist(Dcg, [H1|T1], [H2|T2], [H3|T3]) -->
-  dcg_call_cp(Dcg, H1, H2, H3),
-  dcg_maplist(Dcg, T1, T2, T3).
-
-dcg_maplist(_, [], [], [], []) --> [].
-dcg_maplist(Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4]) -->
-  dcg_call_cp(Dcg, H1, H2, H3, H4),
-  dcg_maplist(Dcg, T1, T2, T3, T4).
-
-dcg_maplist(_, [], [], [], [], []) --> [].
-dcg_maplist(Dcg, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5]) -->
-  dcg_call_cp(Dcg, H1, H2, H3, H4, H5),
-  dcg_maplist(Dcg, T1, T2, T3, T4, T5).
 
 
 %! dcg_once(:Dcg)// .
@@ -211,14 +190,3 @@ dcg_once(Dcg, X, Y):-
 
 dcg_repeat(X, X):-
   repeat.
-
-
-%! dcg_sequence(:Dcgs:list, :Separator)// .
-% Parse/generate a number of DCGs in sequence, separated by `Separator`.
-
-dcg_sequence(_:[], _) --> [].
-dcg_sequence(Mod:[H|T], Sep) -->
-  Mod:H,
-  dcg_yn_separator(T, Sep),
-  dcg_sequence(Mod:T, Sep).
-
