@@ -1,14 +1,10 @@
 :- module(
   service_db,
   [
-    register_service/4, % +Service:atom
-                        % +User:atom
-                        % +Password:atom
-                        % +Api:atom
-    service/4 % ?Service:atom
-              % ?User:atom
-              % ?Password:atom
-              % ?Api:atom
+    register_service/2, % +Service:term
+                        % +Term:term
+    service/2 % ?Service:term
+              % ?Term:term
   ]
 ).
 
@@ -17,7 +13,7 @@
 Persistent store for user+password registrations for services.
 
 @author Wouter Beek
-@version 2014/08
+@version 2014/08, 2015/05
 */
 
 :- use_module(library(error)).
@@ -25,9 +21,9 @@ Persistent store for user+password registrations for services.
 
 :- use_module(plc(generics/persistent_db_ext)).
 
-%! service(?Service:atom, ?User:atom, ?Password:atom, ?Api:atom) is nondet.
+%! service(?Service:term, ?Term:term) is nondet.
 
-:- persistent(service(service:atom,user:atom,password:atom,api:atom)).
+:- persistent(service(service:term,term:term)).
 
 :- initialization(service_db_init).
 
@@ -35,15 +31,15 @@ Persistent store for user+password registrations for services.
 
 
 
-%! register_service(+Service:atom, +User:atom, +Password:atom) is det.
+%! register_service(+Service:term, +Term:term) is det.
 % Registers a user to the persistent user database.
 %
 % Succeeds without change in case the exact same registration already exists.
 
-register_service(Service, User, Password, Api):-
-  service(Service, User, Password, Api), !.
-register_service(Service, User, Password, Api):-
-  assert_service(Service, User, Password, Api).
+register_service(Service, Term):-
+  service(Service, Term), !.
+register_service(Service, Term):-
+  assert_service(Service, Term).
 
 
 
@@ -61,11 +57,13 @@ service_db_file(File):-
   ).
 
 
+
 %! service_db_init is det.
 
 service_db_init:-
   service_db_file(File),
   persistent_db_init(File, service_db_update).
+
 
 
 %! service_db_update(+Age:nonneg) is det.

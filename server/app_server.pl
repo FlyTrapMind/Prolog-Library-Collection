@@ -12,7 +12,23 @@
 
 Using this module automatically starts the server.
 
+If you login, the system will redirect  you to its public address.
+I.e., if you connected to `http://localhost:5000/` it will redirect you to
+`http://my.domain.org:500/`.
+This can be undesirable on e.g., a notebook that is not always connected to
+the internet and/or may change address and/or may be behind a firewall.
+You can disable redirection using the settings below.
+These settings may also be necessary  if the server is behind a proxy.
+
+```prolog
+:- set_setting_default(http:public_host, localhost).
+:- set_setting_default(http:public_port, setting(http:port)).
+```
+
+---
+
 @author Wouter Beek
+@author Jan Wielemaker (copied from ClioPatria)
 @version 2013/11-2013/12, 2014/05, 2015/01
 */
 
@@ -36,21 +52,6 @@ user:prolog_file_type(db, database).
     env('PORT',3020),
     'The default port the HTTP server listens to.'
   ).
-:- endif.
-
-% If you login, the system will redirect  you to its public address.
-% I.e., if you connected to `http://localhost:5000/` it will redirect you to
-% `http://my.domain.org:500/`.
-% This can be undesirable on e.g., a notebook that is not always connected to
-% the internet and/or may change address and/or may be behind a firewall.
-% You can disable redirection using the settings below.
-% These settings may also be necessary  if the server is behind a proxy.
-%
-% @author Jan Wielemaker (copied from ClioPatria).
-
-:- if(predicate_property(user:debug_mode, visible)).
-  :- set_setting_default(http:public_host, localhost).
-  :- set_setting_default(http:public_port, setting(http:port)).
 :- endif.
 
 
