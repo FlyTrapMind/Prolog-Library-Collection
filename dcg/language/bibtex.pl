@@ -1,7 +1,7 @@
 :- module(
   bibtex,
   [
-    bibtex/2 % +File:atom
+    bibtex/2 % +Input:compound
              % -Entries:list(compound)
   ]
 ).
@@ -13,12 +13,14 @@
 */
 
 :- use_module(library(apply)).
+:- use_module(library(error)).
 :- use_module(library(lists), except([delete/3,subset/2])).
 :- use_module(library(pure_input)).
 
 :- use_module(plc(dcg/dcg_abnf_common)).
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_content)).
+:- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(dcg/dcg_meta)).
 
 :- dynamic(user:prolog_file_type/2).
@@ -28,10 +30,18 @@ user:prolog_file_type(bib, bibtex).
 
 
 
-bibtex(File, Entries):-
+
+
+bibtex(atom(Atom), Entries):- !,
+  atom_phrase(bibtex(Entries), Atom).
+bibtex(file(File), Entries):- !,
   flag(tick, _, 0),
   phrase_from_file(bibtex(Entries), File),
   maplist(validate_entry, Entries).
+bibtex(string(String), Entries):- !,
+  string_phrase(bibtex(Entries), String).
+bibtex(Input, _):-
+  type_error(compound, Input).
 
 
 
