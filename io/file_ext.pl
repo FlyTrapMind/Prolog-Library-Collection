@@ -55,9 +55,9 @@
                      % -Path2:atom
     prefix_path/2, % ?PrefixPath:atom
                    % +Path:atom
-    %relative_file_path/3, % ?Path:atom
-    %                      % ?RelativeTo:atom
-    %                      % ?RelativePath:atom
+    relative_file_path/3, % ?Path:atom
+                          % ?RelativeTo:atom
+                          % ?RelativePath:atom
     root_prefix/1, % ?Prefix:atom
     younger_file/2 % +Path1:atom
                    % +Path2:atom
@@ -537,7 +537,6 @@ prefix_path(PrefixPath, Path):-
   prefix(PrefixComponents, Components).
 
 
-/*
 %! relative_file_path(
 %!   +Path:atom,
 %!   +RelativeTo:atom,
@@ -570,7 +569,6 @@ start_with_slash(Atom, Atom):-
   sub_atom(Atom, 0, 1, _, /), !.
 start_with_slash(Atom0, Atom):-
   atomic_concat(/, Atom0, Atom).
-*/
 
 
 %! root_prefix(+Prefix:atom) is semidet.

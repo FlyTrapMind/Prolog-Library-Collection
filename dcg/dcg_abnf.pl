@@ -167,16 +167,14 @@ false.
 ---
 
 @author Wouter Beek
-@version 2014/05-2014/06, 2014/08, 2014/10-2014/12, 2015/02, 2015/05
+@version 2014-2015
 */
 
-:- use_module(library(apply)).
 :- use_module(library(error)).
 :- use_module(library(option)).
 
 :- use_module(plc(dcg/dcg_generics)). % Meta-option.
 :- use_module(plc(dcg/dcg_meta)).
-:- use_module(plc(generics/meta_ext)).
 
 :- meta_predicate('#'(?,//,:,?,?)).
 :- meta_predicate('#'(?,3,?,:,?,?)).
@@ -245,176 +243,78 @@ false.
 :- meta_predicate('m*n_parse'(?,?,+,-,6,//,?,?,?,?,+,+,?)).
 :- meta_predicate('m*n_parse'(?,?,+,-,7,//,?,?,?,?,?,+,+,?)).
 
-:- predicate_options('#'//3, 3, [
-     pass_to('m*n'//4, 4)
-   ]).
-:- predicate_options('#'//4, 4, [
-     pass_to('m*n'//5, 5)
-   ]).
-:- predicate_options('#'//5, 5, [
-     pass_to('m*n'//6, 6)
-   ]).
-:- predicate_options('#'//6, 6, [
-     pass_to('m*n'//7, 7)
-   ]).
-:- predicate_options('#'//7, 7, [
-     pass_to('m*n'//8, 8)
-   ]).
-:- predicate_options('#'//8, 8, [
-     pass_to('m*n'//9, 9)
-   ]).
+:- predicate_options('#'//3, 3, [pass_to('m*n'//4, 4)]).
+:- predicate_options('#'//4, 4, [pass_to('m*n'//5, 5)]).
+:- predicate_options('#'//5, 5, [pass_to('m*n'//6, 6)]).
+:- predicate_options('#'//6, 6, [pass_to('m*n'//7, 7)]).
+:- predicate_options('#'//7, 7, [pass_to('m*n'//8, 8)]).
+:- predicate_options('#'//8, 8, [pass_to('m*n'//9, 9)]).
 
-:- predicate_options('*'//2, 2, [
-     pass_to('m*n'//4, 4)
-   ]).
-:- predicate_options('*'//3, 3, [
-     pass_to('m*n'//5, 5)
-   ]).
-:- predicate_options('*'//4, 4, [
-     pass_to('m*n'//6, 6)
-   ]).
-:- predicate_options('*'//5, 5, [
-     pass_to('m*n'//7, 7)
-   ]).
-:- predicate_options('*'//6, 6, [
-     pass_to('m*n'//8, 8)
-   ]).
-:- predicate_options('*'//7, 7, [
-     pass_to('m*n'//9, 9)
-   ]).
+:- predicate_options('*'//2, 2, [pass_to('m*n'//4, 4)]).
+:- predicate_options('*'//3, 3, [pass_to('m*n'//5, 5)]).
+:- predicate_options('*'//4, 4, [pass_to('m*n'//6, 6)]).
+:- predicate_options('*'//5, 5, [pass_to('m*n'//7, 7)]).
+:- predicate_options('*'//6, 6, [pass_to('m*n'//8, 8)]).
+:- predicate_options('*'//7, 7, [pass_to('m*n'//9, 9)]).
 
-:- predicate_options('*n'//3, 3, [
-     pass_to('m*n'//4, 4)
-   ]).
-:- predicate_options('*n'//4, 4, [
-     pass_to('m*n'//5, 5)
-   ]).
-:- predicate_options('*n'//5, 5, [
-     pass_to('m*n'//6, 6)
-   ]).
-:- predicate_options('*n'//6, 6, [
-     pass_to('m*n'//7, 7)
-   ]).
-:- predicate_options('*n'//7, 7, [
-     pass_to('m*n'//8, 8)
-   ]).
-:- predicate_options('*n'//8, 8, [
-     pass_to('m*n'//9, 9)
-   ]).
+:- predicate_options('*n'//3, 3, [pass_to('m*n'//4, 4)]).
+:- predicate_options('*n'//4, 4, [pass_to('m*n'//5, 5)]).
+:- predicate_options('*n'//5, 5, [pass_to('m*n'//6, 6)]).
+:- predicate_options('*n'//6, 6, [pass_to('m*n'//7, 7)]).
+:- predicate_options('*n'//7, 7, [pass_to('m*n'//8, 8)]).
+:- predicate_options('*n'//8, 8, [pass_to('m*n'//9, 9)]).
 
-:- predicate_options('+'//2, 2, [
-     pass_to('m*n'//4, 4)
-   ]).
-:- predicate_options('+'//3, 3, [
-     pass_to('m*n'//5, 5)
-   ]).
-:- predicate_options('+'//4, 4, [
-     pass_to('m*n'//6, 6)
-   ]).
-:- predicate_options('+'//5, 5, [
-     pass_to('m*n'//7, 7)
-   ]).
-:- predicate_options('+'//6, 6, [
-     pass_to('m*n'//8, 8)
-   ]).
-:- predicate_options('+'//7, 7, [
-     pass_to('m*n'//9, 9)
-   ]).
+:- predicate_options('+'//2, 2, [pass_to('m*n'//4, 4)]).
+:- predicate_options('+'//3, 3, [pass_to('m*n'//5, 5)]).
+:- predicate_options('+'//4, 4, [pass_to('m*n'//6, 6)]).
+:- predicate_options('+'//5, 5, [pass_to('m*n'//7, 7)]).
+:- predicate_options('+'//6, 6, [pass_to('m*n'//8, 8)]).
+:- predicate_options('+'//7, 7, [pass_to('m*n'//9, 9)]).
 
-:- predicate_options('+n'//3, 3, [
-     pass_to('m*n'//4, 4)
-   ]).
-:- predicate_options('+n'//4, 4, [
-     pass_to('m*n'//5, 5)
-   ]).
-:- predicate_options('+n'//5, 5, [
-     pass_to('m*n'//6, 6)
-   ]).
-:- predicate_options('+n'//6, 6, [
-     pass_to('m*n'//7, 7)
-   ]).
-:- predicate_options('+n'//7, 7, [
-     pass_to('m*n'//8, 8)
-   ]).
-:- predicate_options('+n'//8, 8, [
-     pass_to('m*n'//9, 9)
-   ]).
+:- predicate_options('+n'//3, 3, [pass_to('m*n'//4, 4)]).
+:- predicate_options('+n'//4, 4, [pass_to('m*n'//5, 5)]).
+:- predicate_options('+n'//5, 5, [pass_to('m*n'//6, 6)]).
+:- predicate_options('+n'//6, 6, [pass_to('m*n'//7, 7)]).
+:- predicate_options('+n'//7, 7, [pass_to('m*n'//8, 8)]).
+:- predicate_options('+n'//8, 8, [pass_to('m*n'//9, 9)]).
 
-:- predicate_options('?'//3, 3, [
-     empty1(+term)
-   ]).
-:- predicate_options('?'//4, 4, [
-     empty1(+term),
-     empty2(+term)
-   ]).
-:- predicate_options('?'//5, 5, [
-     empty1(+term),
-     empty2(+term),
-     empty3(+term)
-   ]).
-:- predicate_options('?'//6, 6, [
-     empty1(+term),
-     empty2(+term),
-     empty3(+term),
-     empty4(+term)
-   ]).
-:- predicate_options('?'//7, 7, [
-     empty1(+term),
-     empty2(+term),
-     empty3(+term),
-     empty4(+term),
-     empty5(+term)
-   ]).
-
-:- predicate_options('m*'//3, 3, [
-     pass_to('m*n'//4, 4)
-   ]).
-:- predicate_options('m*'//4, 4, [
-     pass_to('m*n'//5, 5)
-   ]).
-:- predicate_options('m*'//5, 5, [
-     pass_to('m*n'//6, 6)
-   ]).
-:- predicate_options('m*'//6, 6, [
-     pass_to('m*n'//7, 7)
-   ]).
-:- predicate_options('m*'//7, 7, [
-     pass_to('m*n'//8, 8)
-   ]).
-:- predicate_options('m*'//8, 8, [
-     pass_to('m*n'//9, 9)
-   ]).
+:- predicate_options('m*'//3, 3, [pass_to('m*n'//4, 4)]).
+:- predicate_options('m*'//4, 4, [pass_to('m*n'//5, 5)]).
+:- predicate_options('m*'//5, 5, [pass_to('m*n'//6, 6)]).
+:- predicate_options('m*'//6, 6, [pass_to('m*n'//7, 7)]).
+:- predicate_options('m*'//7, 7, [pass_to('m*n'//8, 8)]).
+:- predicate_options('m*'//8, 8, [pass_to('m*n'//9, 9)]).
 
 :- predicate_options('m*n'//4, 4, [
-     copy_term(+boolean),
-     count(-nonneg),
-     separator(+callable)
-   ]).
+  copy_term(+boolean),
+  count(-nonneg),
+  separator(+callable)
+]).
 :- predicate_options('m*n'//5, 5, [
-     copy_term(+boolean),
-     count(-nonneg),
-     separator(+callable)
-   ]).
+  copy_term(+boolean),
+  count(-nonneg),
+  separator(+callable)
+]).
 :- predicate_options('m*n'//6, 6, [
-     copy_term(+boolean),
-     count(-nonneg),
-     separator(+callable)
-   ]).
+  copy_term(+boolean),
+  count(-nonneg),
+  separator(+callable)
+]).
 :- predicate_options('m*n'//7, 7, [
-     copy_term(+boolean),
-     count(-nonneg),
-     separator(+callable)
-   ]).
+  copy_term(+boolean),
+  count(-nonneg),
+  separator(+callable)
+]).
 :- predicate_options('m*n'//8, 8, [
-     copy_term(+boolean),
-     count(-nonneg),
-     separator(+callable)
-   ]).
+  copy_term(+boolean),
+  count(-nonneg),
+  separator(+callable)
+]).
 :- predicate_options('m*n'//9, 9, [
-     copy_term(+boolean),
-     count(-nonneg),
-     separator(+callable)
-   ]).
+  copy_term(+boolean),
+  count(-nonneg),
+  separator(+callable)
+]).
 
 is_meta(separator).
 
@@ -934,6 +834,10 @@ call_dcg_sep(C, Dcg, Sep, Args, true) -->
   M > C, !,
   fail.
 'm*n_lower'(_, _).
+
+default(_, X):-
+  nonvar(X), !.
+default(X, X).
 
 
 

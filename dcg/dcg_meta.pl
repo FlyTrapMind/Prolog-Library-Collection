@@ -30,15 +30,12 @@ Meta-DCG rules.
 @author Wouter Beek
 @tbd The combination of meta_predicate/1 and rdf_meta/1.
 @tbd The combination of DCGs (e.g., `//`) and meta-DCGs (e.g., `3`).
-@version 2013/05-2013/09, 2013/11-2013/12, 2014/02-2014/03, 2014/05,
-         2014/08-2014/09, 2015/05
+@version 2013-2015
 */
 
 :- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_generics)).
-:- use_module(plc(generics/list_ext)).
 :- use_module(plc(math/radix)).
 
 :- meta_predicate(dcg_apply(//,+,?,?)).

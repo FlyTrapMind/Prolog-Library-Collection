@@ -63,7 +63,7 @@ false.
 ---
 
 @author Wouter Beek
-@version 2014/10-2014/11
+@version 2014
 */
 
 :- use_module(plc(dcg/dcg_abnf)).

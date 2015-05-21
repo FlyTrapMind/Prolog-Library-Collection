@@ -27,7 +27,7 @@
 Grammar support for entering character codes.
 
 @author Wouter Beek
-@version 2014/10-2014/12, 2015/03
+@version 2014-2015
 */
 
 :- use_module(plc(dcg/dcg_unicode)).

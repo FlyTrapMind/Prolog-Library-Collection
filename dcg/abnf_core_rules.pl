@@ -60,14 +60,12 @@
         which this module considers to be legacy.
 @compat [RFC 4234 Appendix B.1 Core Rules](https://tools.ietf.org/html/rfc4234)
 @compat [RFC 5234](http://tools.ietf.org/html/rfc5234)
-@version 2013/07-2013/08, 2013/12, 2014/05-2014/06, 2014/10-2014/12
+@version 2013-2014
 */
 
 :- use_module(plc(dcg/dcg_abnf)).
 :- use_module(plc(dcg/dcg_ascii)).
-:- use_module(plc(dcg/dcg_cardinal)).
 :- use_module(plc(dcg/dcg_code)).
-:- use_module(plc(dcg/dcg_content)).
 
 
 

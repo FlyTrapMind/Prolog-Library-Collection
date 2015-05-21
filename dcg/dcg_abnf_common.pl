@@ -23,7 +23,7 @@ but that occur often enough to legitimate a dedicated and more efficient
 implementation.
 
 @author Wouter Beek
-@version 2015/01-2015/03
+@version 2015
 */
 
 :- use_module(plc(dcg/dcg_abnf)).

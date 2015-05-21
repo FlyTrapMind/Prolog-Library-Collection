@@ -16,7 +16,7 @@
 Grammar rules for processing atoms.
 
 @author Wouter Beek
-@version 2014/11-2014/12, 2015/05
+@version 2014-2015
 */
 
 :- use_module(library(dcg/basics)).
@@ -29,7 +29,6 @@ Grammar rules for processing atoms.
   plc(dcg/dcg_unicode),
   [letter_lowercase//1,letter_uppercase//1]
 ).
-:- use_module(plc(generics/atom_ext)).
 
 
 

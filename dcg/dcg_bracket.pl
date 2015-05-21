@@ -12,7 +12,7 @@
 Grammar for processing bracketed phrases.
 
 @author Wouter Beek
-@version 2014/11-2014/12
+@version 2014
 */
 
 :- use_module(plc(dcg/dcg_meta)).

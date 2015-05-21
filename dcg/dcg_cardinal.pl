@@ -70,7 +70,7 @@ other bases (2, 8, 16).
 ---
 
 @author Wouter Beek
-@version 2013/06-2013/09, 2014/05, 2014/10-2015/02
+@version 2013-2015
 */
 
 :- use_module(library(error)).

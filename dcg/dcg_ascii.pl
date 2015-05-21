@@ -682,7 +682,7 @@ markdown_url(Label, Url) -->
 
 @author Wouter Beek
 @compat http://www.ascii-code.com/
-@version 2013/01-2013/02, 2013/05-2013/07, 2013/12, 2014/08, 2014/10-2014/11
+@version 2013-2014
 */
 
 
