@@ -39,4 +39,4 @@ text_to_speech(Input):-
   os_dependent_call(text_to_speech(Input)).
 
 text_to_speech_unix(Input):-
-  handle_process(espeak, ['--',Input], [detached(true),program(espeak)]).
+  handle_process(espeak, ['--',Input], [detached(false),program(espeak)]).
