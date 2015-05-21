@@ -55,9 +55,9 @@
                      % -Path2:atom
     prefix_path/2, % ?PrefixPath:atom
                    % +Path:atom
-    relative_file_path/3, % ?Path:atom
-                          % ?RelativeTo:atom
-                          % ?RelativePath:atom
+    %relative_file_path/3, % ?Path:atom
+    %                      % ?RelativeTo:atom
+    %                      % ?RelativePath:atom
     root_prefix/1, % ?Prefix:atom
     younger_file/2 % +Path1:atom
                    % +Path2:atom
@@ -537,7 +537,7 @@ prefix_path(PrefixPath, Path):-
   prefix(PrefixComponents, Components).
 
 
-
+/*
 %! relative_file_path(
 %!   +Path:atom,
 %!   +RelativeTo:atom,
@@ -558,31 +558,26 @@ prefix_path(PrefixPath, Path):-
 relative_file_path(Path, RelativeTo, RelativePath):-
   maplist(ground, [Path,RelativeTo]), !,
   relative_file_name(Path, RelativeTo, RelativePath).
-relative_file_path(Path, RelativeTo, RelativePath):-
-  maplist(ground, [RelativeTo,RelativePath]), !,
-  directory_subdirectories(RelativePath, RelativePathSubs1),
-  uplength(RelativePathSubs1, Uplength, RelativePathSubs2),
-  directory_subdirectories(RelativeTo, RelativeToSubs1),
-  length(Postfix, Uplength),
-  % Actively close the choicepoint on `Postfix` instantiation.
-  once(append(RelativeToSubs2, Postfix, RelativeToSubs1)),
-  append(RelativeToSubs2, RelativePathSubs2, PathSubs),
-  directory_subdirectories(Path, PathSubs).
+relative_file_path(Path, RelativeTo, RelativePath0):-
+  maplist(ground, [RelativeTo,RelativePath0]), !,
+  file_directory_name(RelativeTo, RelativeToDir),
+  start_with_slash(RelativePath0, RelativePath),
+  atomic_concat(RelativeToDir, RelativePath, Path).
 relative_file_path(_, _, _):-
   instantiation_error(_).
 
-uplength(['..'|T1], N1, T2):- !,
-  uplength(T1, N2, T2),
-  N1 is N2 + 1.
-uplength(L, 0, L).
-
+start_with_slash(Atom, Atom):-
+  sub_atom(Atom, 0, 1, _, /), !.
+start_with_slash(Atom0, Atom):-
+  atomic_concat(/, Atom0, Atom).
+*/
 
 
 %! root_prefix(+Prefix:atom) is semidet.
 %! root_prefix(-Prefix:atom) is multi.
 
 :- if(is_unix).
-root_prefix('/').
+root_prefix(/).
 :- endif.
 :- if(is_windows).
 root_prefix('C:\\').

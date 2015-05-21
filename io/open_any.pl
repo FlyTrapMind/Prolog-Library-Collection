@@ -461,7 +461,7 @@ http_header_value_dict(
 ):- !,
   atomic_list_concat([Type0|Parameters0], ';', Atom),
   maplist(media_type_parameter, Parameters0, Parameters),
-  atomic_list_concat([Type,Subtype], '/', Type0),
+  atomic_list_concat([Type,Subtype], /, Type0),
   maplist(json_pair, Parameters, ParameterDicts).
 http_header_value_dict(Key, Atom, Dict):-
   memberchk(Key, ['Date','Expires','Last-Modified']), !,

@@ -275,12 +275,12 @@ directory_files(Dir, Files4, Options1):-
 
 directory_subdirectories(Dir, Subdirs):-
   nonvar(Dir), !,
-  atomic_list_concat(Subdirs0, '/', Dir),
+  atomic_list_concat(Subdirs0, /, Dir),
   resolve_double_dots(Subdirs0, Subdirs).
 directory_subdirectories(Dir, Subdirs0):-
   nonvar(Subdirs0), !,
   resolve_double_dots(Subdirs0, Subdirs),
-  atomic_list_concat(Subdirs, '/', Dir).
+  atomic_list_concat(Subdirs, /, Dir).
 directory_subdirectories(_, _):-
   instantiation_error(_).
 

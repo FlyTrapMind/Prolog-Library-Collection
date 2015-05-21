@@ -50,14 +50,14 @@ file_path(Path) -->
   "~/", !,
   '*'(path_segment, Segments, [separator(directory_separator)]),
   {
-    atomic_list_concat(Segments, '/', RelPath),
+    atomic_list_concat(Segments, /, RelPath),
     relative_file_path(Path, '~', RelPath)
   }.
 % Absolute directory.
 file_path(Path) -->
   root_prefix,
   '*'(path_segment, Segments, [separator(directory_separator)]),
-  {atomic_list_concat([''|Segments], '/', Path)}.
+  {atomic_list_concat([''|Segments], /, Path)}.
 
 
 
