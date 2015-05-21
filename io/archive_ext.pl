@@ -7,8 +7,6 @@
                        % ?Directory:atom
                        % -ArchiveFilters:list(atom)
                        % -EntryProperties:list(pair(atom,list(nvpair)))
-    archive_extract_directory/2, % +Directory:atom
-                                 % +Options:list(nvpair)
     archive_goal/2, % +Source
                     % :Goal
     archive_goal/3, % +Source
@@ -135,23 +133,6 @@ archive_extract0(Archive, Filters, Dir):-
       true
   ).
 
-
-%! archive_extract_directory(+Directory:atom, +Options:list(nvpair)) is det.
-% Extracts all archives in the given directory.
-% Extract files recursively, e.g. first `gunzip`, then `tar`.
-%
-% Options are passed to directory_files/3. Important are:
-%   * `file_types(+FileTypes:list(atom))`
-%     Only extracts files of the given types.
-%   * `recursive(+Recursive:boolean)`
-%     Includes archives that reside in subdirectories.
-
-archive_extract_directory(Dir, Options):-
-  directory_files(Options, Dir, Files),
-  forall(
-    member(File, Files),
-    archive_extract(File, Dir, _, Options)
-  ).
 
 
 %! archive_goal(+Source:atom, :Goal) is det.
