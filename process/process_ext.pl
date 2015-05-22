@@ -64,20 +64,20 @@ is_meta(output_goal).
 % the external process.
 %
 % The following options are supported:
-%   - detached(+boolean)
+%   * detached(+boolean)
 %     Whether to run the process in a detached thread or not.
 %     Default is `false`.
-%   - error_goal(:Goal)
+%   * error_goal(:Goal)
 %     Call this goal on the error stream.
-%   - nice(+between(-20,20))
+%   * nice(+between(-20,20))
 %     Default is 0.
-%   - output_goal(:Goal)
+%   * output_goal(:Goal)
 %     Call this goal on the output stream.
-%   - program(+Program:atom)
+%   * program(+Program:atom)
 %     The name of the program as displayed in debug messages.
 %     Default is Process.
-%   - status(-Status:nonneg)
-%   - Other options are passed to process_create/3.
+%   * status(-Status:nonneg)
+%   * Other options are passed to process_create/3.
 %
 % @tbd Output and error is separate threads.
 

@@ -25,10 +25,10 @@ Grammar rules for processing atoms.
 :- use_module(plc(dcg/dcg_code)).
 :- use_module(plc(dcg/dcg_generics)).
 :- use_module(plc(dcg/dcg_meta)).
-:- use_module(
-  plc(dcg/dcg_unicode),
+:- use_module(plc(dcg/dcg_unicode),
   [letter_lowercase//1,letter_uppercase//1]
 ).
+:- use_module(plc(generics/atom_ext)).
 
 
 
