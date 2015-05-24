@@ -5,6 +5,7 @@
                         % ?Reason:atom
     extract_error/2, % +Error:compound
                      % -PlainError:compound
+    handle_catcher/1, % +Catcher:compound
     rethrow/3, % :Goal
                % +Catcher
                % +Exception
@@ -67,6 +68,19 @@ exit_code_reason(_, 'Unknown reason').
 extract_error(error(Type,_), Error):- !,
   compound_name_arity(Type, Error, _).
 extract_error(Error, Error).
+
+
+
+handle_catcher(exit):- !.
+handle_catcher(fail):- !,
+  print_message(warning, process_failed_silently).
+handle_catcher(!):- !,
+  print_message(warning, process_succeeded_with_choicepoints).
+handle_catcher(exception(Exception)):- !,
+  print_message(warning, Exception).
+handle_catcher(external_exception(Exception)):- !,
+  print_message(warning, Exception).
+
 
 
 %! retrhow(:Goal, +Catcher, +Exception) is det.

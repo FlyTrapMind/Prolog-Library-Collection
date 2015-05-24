@@ -89,7 +89,7 @@ report_on_process(Msg, Goal):-
     print_message(informational, start_process(Msg)),
     Goal,
     Exception,
-    (   Exception == true
+    (   Exception == exit
     ->  print_message(informational, end_process)
     ;   print_message(warning, end_process(Exception))
     )
