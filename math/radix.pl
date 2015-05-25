@@ -209,7 +209,7 @@ weights_fraction(Ws, F):-
         sum(N),
         (
           nth1(I, Ws, W),
-          N is W rdiv (10 * I)
+          N is W rdiv (10 ^ I)
         ),
         F
       )
