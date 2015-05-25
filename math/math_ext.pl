@@ -375,6 +375,9 @@ fibonacci(N, F):-
 % Variant of float_fractional_part/2,
 % where the integer value of the fractional part is returned.
 
+fractional_integer(N, Frac):-
+  N = A rdiv B, !,
+  Frac is A mod B.
 fractional_integer(Number, Fractional):-
   atom_number(NumberAtom, Number),
   % We assume that there is at most one occurrence of `.`.
