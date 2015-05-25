@@ -1,6 +1,7 @@
 :- module(
   rational_ext,
   [
+    is_rational/1, % @Term
     rational_div/3, % +X:compound
                     % +Y:compound
                     % -Z:compound
@@ -21,12 +22,22 @@
 /** <module> Rational number arithmetic extensions
 
 @author Wouter Beek
-@version 2013/08, 2015/01
+@version 2013-2015
 */
+
+:- use_module(library(apply)).
 
 :- use_module(plc(math/radix)).
 
 
+
+
+
+%! is_rational(@Term) is semidet.
+
+is_rational(T):-
+  T = A rdiv B,
+  maplist(integer, [A,B]).
 
 
 
