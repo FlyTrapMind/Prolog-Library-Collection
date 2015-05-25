@@ -19,7 +19,7 @@ Logging infrastructure.
 %:- use_module(library(debug)).
 :- use_module(library(persistency)).
 
-:- use_module(plc(os/datetime_ext)).
+:- use_module(plc(os/date_ext)).
 
 :- persistent(
   log_entry(datetime:atom, kind:atom, term:compound, message:atom)
@@ -43,8 +43,9 @@ Logging infrastructure.
 user:message_hook(Term, Kind, Lines):-
   once(logging:message_kind(Kind)),
   print_message_lines(atom(Msg), '', Lines),
-  iso8601_dateTime(DateTime),
-  assert_log_entry(DateTime, Kind, Term, Msg).
+  get_date(Date),
+  iso8601_date(Date, Representation),
+  assert_log_entry(Representation, Kind, Term, Msg).
 
 :- initialization(init).
 init:-
