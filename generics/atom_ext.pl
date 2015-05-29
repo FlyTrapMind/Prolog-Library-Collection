@@ -9,6 +9,8 @@
     atom_truncate/3, % +Atom:atom
                      % +MaximumLength:integer
                      % -TruncatedAtom:atom
+    capitalize_atom/2, % +Atom:atom
+                       % -Capitalized:atom
     codes_atom/2, % ?Codes:list(nonneg)
                   % ?Atom:atom
     common_atom_prefix/3, % +Atom1:atom
@@ -89,8 +91,7 @@ Titlecase atoms can be created using upcase_atom/2.
 ---
 
 @author Wouter Beek
-@version 2013/05, 2013/07, 2013/09, 2013/11, 2014/01, 2014/03-2014/04,
-         2014/08, 2014/10-2014/11, 2015/02
+@version 2013-2015
 */
 
 :- use_module(library(apply)).
@@ -166,6 +167,21 @@ atom_truncate(A1, Max, A3):-
   TruncatedL is Max - 4,
   sub_atom(A1, 0, TruncatedL, _, A2),
   atom_concat(A2, ' ...', A3).
+
+
+
+%! capitalize_atom(+Atom:atom, -Capitalized:atom) is det.
+% Succeeds if Capitalized is a copy of Atom where the first character
+% is in upper case.
+%
+% If the first character of Atom is already in upper case then
+% Capitalized is a plain copy of Atom.
+
+capitalize_atom('', '').
+capitalize_atom(A1, A2):-
+  atom_codes(A1, [H1|T]),
+  to_upper(H1, H2),
+  atom_codes(A2, [H2|T]).
 
 
 
