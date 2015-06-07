@@ -1,6 +1,9 @@
 :- module(
   clpfd_ext,
   [
+    clpfd_between/3, % ?Low:integer
+                     % ?High:integer
+                     % ?Integer:integer
     clpfd_copysign/3, % ?Absolute:nonneg
                       % ?Sign:integer
                       % ?Integer:integer
@@ -31,6 +34,14 @@
 :- multifile(clpfd:run_propagator/2).
 
 
+
+
+
+%! clpfd_between(?Low:integer, ?High:integer, ?Integer:integer) is det.
+
+clpfd_between(Low, High, N):-
+  Low #=< N,
+  N #=< High.
 
 
 
