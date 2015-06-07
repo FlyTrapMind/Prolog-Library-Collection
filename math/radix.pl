@@ -27,6 +27,7 @@ positional notations of different radix.
 
 :- use_module(library(aggregate)).
 :- use_module(library(apply)).
+:- use_module(library(clpfd)).
 :- use_module(library(error)).
 
 :- use_module(plc(generics/char_ext)).
@@ -173,14 +174,6 @@ weights_fraction(Ws, F):-
 
 % HELPERS %
 
-%! char_weight(+Char:char, -Weight:between(0,15)) is det.
-%! char_weight(-Char:char, +Weight:between(0,15)) is det.
-
-char_weight(Char, Weight):-
-  char_type(Char, xdigit(Weight)).
-
-
-
 %! from_decimal(
 %!   +Decimal:nonneg,
 %!   +Radix:rad_name,
@@ -247,7 +240,12 @@ to_decimal(dec, Decimal, Decimal):-
   nonneg(Decimal), !.
 to_decimal(Radix, Value, Decimal):-
   radix_value(Radix, RadixValue),
-  to_chars(Value, Chars),
+  to_chars(Value, Chars0),
+  (   Chars0 = [-|Chars]
+  ->  Decimal #= -Decimal0
+  ;   Chars = Chars0,
+      Decimal #= Decimal0
+  ),
   aggregate_all(
     sum(PositionalValue),
     (
@@ -255,5 +253,5 @@ to_decimal(Radix, Value, Decimal):-
       radix_value(RadixValue, Char, Weight),
       PositionalValue is Weight * RadixValue ** Position
     ),
-    Decimal
+    Decimal0
   ).
