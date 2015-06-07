@@ -47,8 +47,8 @@ ESCAPE       = "\" ("\" / "&" / "r" / "n" / "t" )
 
 :- use_module(library(apply)).
 
-:- use_module(plc(dcg/abnf_core_rules)).
 :- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_abnf_rules)).
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_meta)).
 :- use_module(plc(dcg/record_jar/record_jar_char)).

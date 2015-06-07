@@ -27,6 +27,7 @@
 
 :- use_module(library(apply)).
 
+:- use_module(plc(math/positional)).
 :- use_module(plc(math/radix)).
 
 
@@ -105,6 +106,6 @@ rational_parts(D, I, F):-
 
 rational_parts_weights(D, IW, FW):-
   rational_parts(D, I, F),
-  weights_nonneg(IW, I),
+  positional(I, IW),
   weights_fraction(FW, F).
 

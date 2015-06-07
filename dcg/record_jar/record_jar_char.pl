@@ -15,15 +15,14 @@
 DCGs for characters that occur in the Record Jar representation format.
 
 @author Wouter Beek
-@version 2013/07, 2014/05, 2014/10-2014/11
+@version 2013/07, 2014/05, 2014/10-2014/11, 2015/06
 */
 
-:- use_module(plc(dcg/abnf_core_rules)).
+:- use_module(plc(clp/clpfd_ext)).
 :- use_module(plc(dcg/dcg_abnf)).
+:- use_module(plc(dcg/dcg_abnf_rules)).
 :- use_module(plc(dcg/dcg_ascii)).
 :- use_module(plc(dcg/dcg_code)).
-:- use_module(plc(dcg/dcg_meta)).
-:- use_module(plc(math/radix)). % Meta-option.
 
 
 
@@ -90,7 +89,8 @@ DCGs for characters that occur in the Record Jar representation format.
   ).
 'ESCAPE'(Code) -->
   "&#x",
-  dcg_number('m*n'(2, 6, 'HEXDIG', []), Code).
+  {clpfd_positional(Code, Hexs)},
+  'm*n'(2, 6, 'HEXDIG', Hexs, []).
 
 
 

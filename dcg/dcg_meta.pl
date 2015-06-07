@@ -14,8 +14,6 @@
                     % :End
     dcg_call//1, dcg_call//2, dcg_call//3, dcg_call//4, dcg_call//5, dcg_call//6,
     dcg_call_cp//1, dcg_call_cp//2, dcg_call_cp//3, dcg_call_cp//4, dcg_call_cp//5, dcg_call_cp//6,
-    dcg_number//2, % :Dcg
-                         % ?Number:number
     dcg_once//1, % :Dcg
     dcg_repeat//0,
     dcg_string//2 % :Dcg
@@ -36,7 +34,7 @@ Meta-DCG rules.
 :- use_module(library(lists), except([delete/3,subset/2])).
 
 :- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(math/radix)).
+:- use_module(plc(math/positional)).
 
 :- meta_predicate(dcg_apply(//,+,?,?)).
 :- meta_predicate(dcg_apply_cp(//,+,?,?)).
@@ -55,7 +53,6 @@ Meta-DCG rules.
 :- meta_predicate(dcg_call_cp(5,?,?,?,?,?)).
 :- meta_predicate(dcg_call_cp(6,?,?,?,?,?,?)).
 :- meta_predicate(dcg_call_cp(7,?,?,?,?,?,?,?)).
-:- meta_predicate(dcg_number(3,?,?,?)).
 :- meta_predicate(dcg_once(//,?,?)).
 :- meta_predicate(dcg_string(//,?,?,?)).
 
@@ -200,16 +197,6 @@ dcg_call_cp(Dcg1, A1, A2, A3, A4, X, Y):-
 dcg_call_cp(Dcg1, A1, A2, A3, A4, A5, X, Y):-
   copy_term(Dcg1, Dcg2),
   call(Dcg2, A1, A2, A3, A4, A5, X, Y).
-
-
-
-dcg_number(Dcg, Number) -->
-  {var(Number)}, !,
-  '*'(dcg_call(Dcg), Weights, []),
-  {weights_radix(Weights, Number)}.
-dcg_number(Dcg, Number) -->
-  {weights_radix(Weights, Number)},
-  '*'(dcg_call(Dcg), Weights, []).
 
 
 

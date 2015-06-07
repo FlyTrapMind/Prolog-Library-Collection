@@ -121,10 +121,10 @@ between_digit(Low, Hight, Weight) -->
   between_digit(Low, Hight, Weight, _).
 
 between_digit(Low, _, _, _) -->
-  {\+ hexadecimal_digit(Low)}, !,
+  {\+ is_hex(Low)}, !,
   {type_error(hex, Low)}.
 between_digit(_, High, _, _) -->
-  {\+ hexadecimal_digit(High)}, !,
+  {\+ is_hex(High)}, !,
   {type_error(hex, High)}.
 between_digit(Low, High, Weight, Code) -->
   hexadecimal_digit(Weight, Code),

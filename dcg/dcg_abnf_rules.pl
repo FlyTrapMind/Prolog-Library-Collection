@@ -1,5 +1,5 @@
 :- module(
-  abnf_core_rules,
+  dcg_abnf_rules,
   [
     'ALPHA'//0,
     'ALPHA'//1, % ?Code:code
@@ -51,7 +51,7 @@
   ]
 ).
 
-/** <module> ABNF core rules
+/** <module> DCG ABNF rules
 
 @author Wouter Beek
 @compat [RFC 2234 Section 6.1 Core Rules](https://tools.ietf.org/html/rfc2234)
@@ -60,7 +60,7 @@
         which this module considers to be legacy.
 @compat [RFC 4234 Appendix B.1 Core Rules](https://tools.ietf.org/html/rfc4234)
 @compat [RFC 5234](http://tools.ietf.org/html/rfc5234)
-@version 2013-2014
+@version 2013-2015
 */
 
 :- use_module(plc(dcg/dcg_abnf)).

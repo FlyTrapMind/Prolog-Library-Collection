@@ -53,14 +53,14 @@ All occurrences of:
 @compat SPARQL 1.0
 @compat SPARQL 1.1 Query
 @compat Turtle 1.1
-@version 2014/04-2014/05, 2014/11-2015/01
+@version 2014-2015
 */
 
 :- use_module(plc(dcg/dcg_abnf_common)).
 :- use_module(plc(dcg/dcg_cardinal)).
 :- use_module(plc(dcg/dcg_char)).
 :- use_module(plc(math/math_ext)).
-:- use_module(plc(math/radix)).
+:- use_module(plc(math/positional)).
 :- use_module(plc(math/rational_ext)).
 
 
@@ -185,7 +185,7 @@ decimalLiteral(N) -->
       {I is float_integer_part(Norm)},
       {F is float_fractional_part(Norm)},
       {weights_fraction(FW, F)},
-      (   {weights_nonneg(IW, I)},
+      (   {positional(I, IW)},
           '[0-9]+'(IW),
           ".",
           '[0-9]*'(FW),
@@ -209,7 +209,7 @@ decimalLiteral(N) -->
           'EXPONENT'(Exp)
       ),
       {weights_fraction(FW, F)},
-      {weights_nonneg(IW, I)},
+      {positional(I, IW)},
       {N is I + F * 10 ^ Exp}
   ).
 'DOUBLE'(turtle, N) -->
@@ -284,11 +284,11 @@ exponent(Exp) -->
   (   {ground(Exp)}
   ->  {N is log10(Exp)},
       '[+-]?'(Exp),
-      {weights_nonneg(N0, N)},
+      {positional(N, N0)},
       '[0-9]+'(N0)
   ;   '[+-]?'(Sg),
       '[0-9]+'(N0),
-      {weights_nonneg(N0, N)},
+      {positional(N, N0)},
       {Exp is Sg * 10 ^ N}
   ).
 
@@ -362,20 +362,20 @@ floatingPointLiteral(N) -->
 
 'INTEGER'(sparql, N) -->
   (   {ground(N)}
-  ->  {weights_nonneg(NW, N)},
+  ->  {positional(N, NW)},
       '[0-9]+'(NW)
   ;   '[0-9]+'(NW),
-      {weights_nonneg(NW, N)}
+      {positional(N, NW)}
   ).
 'INTEGER'(turtle, N) -->
   (   {ground(N)}
   ->  '[+-]?'(N),
       {N0 is abs(N)},
-      {weights_nonneg(NW, N0)},
+      {positional(N0, NW)},
       '[0-9]+'(NW)
   ;   '[+-]?'(Sg),
       '[0-9]+'(NW),
-      {weights_nonneg(NW, N0)},
+      {positional(N0, NW)},
       {N is copysign(N0, Sg)}
   ).
 
@@ -392,11 +392,11 @@ integerLiteral(N) -->
   (   {ground(N)}
   ->  '[+-]?'(N),
       {N0 is abs(N)},
-      {weights_nonneg(NW, N0)},
+      {positional(N0, NW)},
       '[0-9]+'(NW)
   ;   '[+-]?'(Sg),
       '[0-9]+'(NW),
-      {weights_nonneg(NW, N0)},
+      {positional(N0, NW)},
       {N is copysign(N0, Sg)}
   ).
 
@@ -460,12 +460,12 @@ nonNegativeInteger(N) -->
 
 positiveInteger(N) -->
   (   {ground(N)}
-  ->  {weights_nonneg([H|T], N)},
+  ->  {positional(N, [H|T]},
       '[1-9]'(H),
       '[0-9]*'(T)
   ;   '[1-9]'(H),
       '[0-9]*'(T),
-      {weights_nonneg([H|T], N)}
+      {positional(N, [H|T])}
   ).
 
 
