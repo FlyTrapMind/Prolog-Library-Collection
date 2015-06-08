@@ -377,14 +377,15 @@ fibonacci(N, F):-
 
 fractional_integer(N, Frac):-
   N = A rdiv B, !,
-  Frac is A mod B.
-fractional_integer(Number, Fractional):-
+  Float is A / B,
+  fractional_integer(Float, Frac).
+fractional_integer(Number, Frac):-
   atom_number(NumberAtom, Number),
   % We assume that there is at most one occurrence of `.`.
   sub_atom(NumberAtom, IndexOfDot, 1, _, '.'), !,
   succ(IndexOfDot, Skip),
-  sub_atom(NumberAtom, Skip, _, 0, FractionalAtom),
-  atom_number(FractionalAtom, Fractional).
+  sub_atom(NumberAtom, Skip, _, 0, FracAtom),
+  atom_number(FracAtom, Frac).
 fractional_integer(_, 0).
 
 
