@@ -460,7 +460,7 @@ nonNegativeInteger(N) -->
 
 positiveInteger(N) -->
   (   {ground(N)}
-  ->  {positional(N, [H|T]},
+  ->  {positional(N, [H|T])},
       '[1-9]'(H),
       '[0-9]*'(T)
   ;   '[1-9]'(H),
