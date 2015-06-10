@@ -61,6 +61,7 @@ All occurrences of:
 :- use_module(plc(dcg/dcg_char)).
 :- use_module(plc(math/math_ext)).
 :- use_module(plc(math/positional)).
+:- use_module(plc(math/radix)).
 :- use_module(plc(math/rational_ext)).
 
 
