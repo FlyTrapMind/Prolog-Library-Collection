@@ -1,10 +1,6 @@
 ﻿:- module(
   meta_ext,
   [
-% CACHING
-    reset_memo/0,
-    memo/1, % :Goal
-
 % DEFAULTS
     default/2, % +Default
                % ?Value
@@ -73,35 +69,13 @@ Extensions to the SWI-Prolog meta predicates.
 :- meta_predicate(generic(:,:,+)).
 :- meta_predicate(maplist_pairs(3,+,-)).
 :- meta_predicate(mapset(2,+,-)).
-:- meta_predicate(memo(0)).
 :- meta_predicate(nth0_call(1,+,+)).
 :- meta_predicate(nth0_call(+,1,+,+)).
 :- meta_predicate(loop_until_true(0)).
 :- meta_predicate(loop_until_true0(+,0)).
 :- meta_predicate(update_datastructure(3,+,+,-)).
 
-:- dynamic(memo_/1).
 :- dynamic(tmp/1).
-
-
-
-% CACHING %
-
-%! memo(:Goal) is nondet.
-% Memo goals that take relatively long to compute and that
-% are likely to be recomputed in the future.
-% This is achieved by storing the result along with the call,
-% i.e. the fully instantiated goal.
-% There are no restrictions on the determinism of the goal.
-
-memo(Goal):-
-  memo_(Goal), !.
-memo(Goal):-
-  call(Goal),
-  assertz(memo_(Goal)).
-
-reset_memo:-
-  retractall(memo_(_)).
 
 
 
