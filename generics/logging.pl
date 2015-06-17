@@ -1,10 +1,15 @@
 :- module(
   logging,
   [
-    read_log_entry/4 % ?DateTime:atom
-                     % ?Kind:atom
-                     % ?Term:compound
-                     % ?Message:atom
+    read_log_entry/5, % ?Category:atom
+                      % ?DateTime:atom
+                      % ?Kind:atom
+                      % ?Term:compound
+                      % ?Message:atom
+    write_log_entry/4 % ?Category:atom
+                      % ?Kind:atom
+                      % ?Term:compound
+                      % ?Message:atom
   ]
 ).
 
@@ -13,7 +18,7 @@
 Logging infrastructure.
 
 @author Wouter Beek
-@version 2015/03
+@version 2015/03, 2015/06
 */
 
 %:- use_module(library(debug)).
@@ -22,32 +27,29 @@ Logging infrastructure.
 :- use_module(plc(os/date_ext)).
 
 :- persistent(
-  log_entry(datetime:atom, kind:atom, term:compound, message:atom)
+  log_entry(
+    category:atom,
+    datetime:atom,
+    kind:atom,
+    term:compound,
+    message:atom
+  )
 ).
 
-%:- dynamic(prolog:debug_print_hook/3).
-%:- multifile(prolog:debug_print_hook/3).
-%
-%prolog:debug_print_hook(Topic, Format, Args):-
-%  append_to_log(debug(Topic), Format, Args).
+:- dynamic(prolog:debug_print_hook/3).
+:- multifile(prolog:debug_print_hook/3).
 
 :- dynamic(logging:message_kind/1).
 :- multifile(logging:message_kind/1).
 
-%logging:message_kind(error).
-%logging:message_kind(warning).
+logging:message_kind(error).
+logging:message_kind(warning).
 
 :- dynamic(user:message_hook/3).
 :- multifile(user:message_hook/3).
 
-user:message_hook(Term, Kind, Lines):-
-  once(logging:message_kind(Kind)),
-  print_message_lines(atom(Msg), '', Lines),
-  get_date(Date),
-  iso8601_date(Date, Representation),
-  assert_log_entry(Representation, Kind, Term, Msg).
-
 :- initialization(init).
+
 init:-
   absolute_file_name(data('error.log'), File, [access(write)]),
   db_attach(File, []).
@@ -57,11 +59,45 @@ init:-
 
 
 %! read_log_entry(
+%!   ?Category:atom,
 %!   ?DateTime:atom,
+%!   ?Kind:atom,
+%!   ?Term:compound,
+%!   ?Message:atom
+%! ) is nondet.
+
+read_log_entry(Category, DateTime, Kind, Term, Msg):-
+  log_entry(Category, DateTime, Kind, Term, Msg).
+
+
+
+%! write_log_entry(
+%!   ?Category:atom,
 %!   ?Kind:atom,
 %!   ?Term:compound,
 %!   ?Message:atom
 %! ) is det.
 
-read_log_entry(DateTime, Kind, Term, Msg):-
-  log_entry(DateTime, Kind, Term, Msg).
+write_log_entry(Cat, Kind, Term, Msg):-
+  assert_log_entry(Cat, Kind, Term, Msg).
+
+
+
+
+
+% HOOKS %
+
+prolog:debug_print_hook(Topic, Format, Args):-
+  get_date(Date0),
+  iso8601_date(Date0, Date),
+  format(atom(Msg), Format, Args),
+  assert_log_entry(Topic, Date, informational, debug(Format,Args), Msg).
+
+
+
+user:message_hook(Term, Kind, Lines):-
+  once(logging:message_kind(Kind)),
+  print_message_lines(atom(Msg), '', Lines),
+  get_date(Date0),
+  iso8601_date(Date0, Date),
+  assert_log_entry(unknown, Date, Kind, Term, Msg).
