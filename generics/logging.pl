@@ -79,7 +79,9 @@ read_log_entry(Category, DateTime, Kind, Term, Msg):-
 %! ) is det.
 
 write_log_entry(Cat, Kind, Term, Msg):-
-  assert_log_entry(Cat, Kind, Term, Msg).
+  get_date(Date0),
+  iso8601_date(Date0, Date),
+  assert_log_entry(Cat, Date, Kind, Term, Msg).
 
 
 
@@ -91,6 +93,7 @@ prolog:debug_print_hook(Topic, Format, Args):-
   get_date(Date0),
   iso8601_date(Date0, Date),
   format(atom(Msg), Format, Args),
+  format(user_output, '~a~n', [Msg]),
   assert_log_entry(Topic, Date, informational, debug(Format,Args), Msg).
 
 
@@ -98,6 +101,7 @@ prolog:debug_print_hook(Topic, Format, Args):-
 user:message_hook(Term, Kind, Lines):-
   once(logging:message_kind(Kind)),
   print_message_lines(atom(Msg), '', Lines),
+  format(user_error, '~a~n', [Msg]),
   get_date(Date0),
   iso8601_date(Date0, Date),
   assert_log_entry(unknown, Date, Kind, Term, Msg).
