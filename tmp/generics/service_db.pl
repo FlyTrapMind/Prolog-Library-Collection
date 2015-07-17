@@ -62,7 +62,7 @@ service_db_file(File):-
 
 service_db_init:-
   service_db_file(File),
-  persistent_db_init(File, service_db_update).
+  init_persistent_db(File, service_db_update).
 
 
 

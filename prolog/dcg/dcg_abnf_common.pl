@@ -26,8 +26,8 @@ implementation.
 @version 2015
 */
 
-:- use_module(plc(dcg/dcg_abnf)).
-:- use_module(plc(dcg/dcg_ascii)).
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_ascii)).
 
 
 

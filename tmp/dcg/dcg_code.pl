@@ -30,6 +30,7 @@ DCG support for entering character codes.
 */
 
 :- use_module(library(dcg/dcg_unicode)).
+:- use_module(library(math/radconv)).
 
 
 
@@ -42,7 +43,7 @@ between_code(Low, High) -->
   between_code(Low, High, _).
 
 between_code(Low, High, Code) -->
-  code(Code),
+  [Code],
   {between(Low, High, Code)}.
 
 
@@ -62,14 +63,6 @@ between_code_radix(Low1, High1, Code) -->
     radix(High1, dec(High2))
   },
   between_code_radix(dec(Low2), dec(High2), Code).
-
-
-
-%! code(+Code:code)// is det.
-%! code(-Code:code)// is det.
-
-code(Code) -->
-  [Code].
 
 
 
@@ -159,10 +152,10 @@ code_radix(RadixCode) -->
 
 code_radix(RadixCode, Code) -->
   {var(RadixCode)}, !,
-  code(Code),
-  {radix(RadixCode, dec(Code))}.
+  [Code],
+  {radconv(RadixCode, dec(Code))}.
 code_radix(RadixCode, Code) -->
-  {radix(RadixCode, dec(Code))},
+  {radconv(RadixCode, dec(Code))},
   [Code].
 
 
@@ -177,12 +170,3 @@ code_upper(Code) -->
 code_upper(Code) -->
   {to_upper(Code, Code0)},
   letter_uppercase(Code0).
-
-
-
-%! codes(+Codes:list(code))// is det.
-
-codes([]) --> "".
-codes([H|T]) -->
-  code(H),
-  codes(T).

@@ -11,7 +11,7 @@
 :- use_module(library(dcg/dcg_word)).
 :- use_module(library(default)).
 :- use_module(library(http/http_server)).
-:- use_module(library(math/radixconv)).
+:- use_module(library(math/radconv)).
 :- use_module(library(typecheck)).
 :- use_module(library(typeconv)).
 

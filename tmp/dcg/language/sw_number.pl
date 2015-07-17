@@ -185,7 +185,7 @@ decimalLiteral(N) -->
   ->  {normalized_number(N, Norm, Exp)},
       {I is float_integer_part(Norm)},
       {F is float_fractional_part(Norm)},
-      {weights_fraction(FW, F)},
+      {positional_fraction(FW, F)},
       (   {positional(I, IW)},
           '[0-9]+'(IW),
           ".",
@@ -209,7 +209,7 @@ decimalLiteral(N) -->
       ;   '[0-9]+'(FW),
           'EXPONENT'(Exp)
       ),
-      {weights_fraction(FW, F)},
+      {positional_fraction(FW, F)},
       {positional(I, IW)},
       {N is I + F * 10 ^ Exp}
   ).

@@ -8,9 +8,7 @@
                     % ?Weight:between(0,15)
     digits_radix/2, % ?Digits:list(hex)
                     % ?Number:compound
-    is_hex/1, % @Term
-    weights_fraction/2 % +Weights:list(between(0,9))
-                       % -Fraction:between(0.0,1.0)
+    is_hex/1 % @Term
   ]
 ).
 
@@ -99,24 +97,3 @@ digits_radix(_, _):-
 
 is_hex(X):-
   digit_weight(X, _).
-
-
-
-%! weights_fraction(+Weights:list(between(0,9)), -Fraction:compound) is det.
-%! weights_fraction(-Weights:list(between(0,9)), +Fraction:compound) is det.
-
-weights_fraction(Ws, F):-
-  (   ground(Ws)
-  ->  aggregate_all(
-        sum(N),
-        (
-          nth1(I, Ws, W),
-          N is W rdiv (10 ^ I)
-        ),
-        F
-      )
-  ;   ground(F)
-  ->  fractional_integer(F, I),
-      positional(I, Ws)
-  ;   instantiation_error(_)
-  ).

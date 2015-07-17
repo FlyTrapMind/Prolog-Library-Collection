@@ -88,18 +88,13 @@
 Extra arithmetic operations for use in SWI-Prolog.
 
 @author Wouter Beek
-@version 2011/08-2012/02, 2012/09-2012/10, 2012/12, 2013/07-2013/09, 2014/05,
-         2014/10, 2015/02
+@version 2015/07
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
-:- use_module(library(lists), except([delete/3,subset/2])).
-
-:- use_module(plc(generics/typecheck)).
-:- use_module(plc(math/float_ext)).
-:- use_module(plc(math/int_ext)).
-:- use_module(plc(math/rational_ext)).
+:- use_module(library(lists)).
+:- use_module(library(typecheck)).
 
 
 

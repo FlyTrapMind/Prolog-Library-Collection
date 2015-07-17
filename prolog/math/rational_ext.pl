@@ -22,13 +22,11 @@
 /** <module> Rational number arithmetic extensions
 
 @author Wouter Beek
-@version 2013-2015
+@version 2015/07
 */
 
 :- use_module(library(apply)).
-
-:- use_module(plc(math/positional)).
-:- use_module(plc(math/radix)).
+:- use_module(library(math/positional)).
 
 
 
@@ -107,5 +105,5 @@ rational_parts(D, I, F):-
 rational_parts_weights(D, IW, FW):-
   rational_parts(D, I, F),
   positional(I, IW),
-  weights_fraction(FW, F).
+  positional_fraction(FW, F).
 

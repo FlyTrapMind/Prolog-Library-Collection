@@ -8,8 +8,6 @@
                 % +Format
                 % :Arguments
     indent/1, % +Indent:integer
-    report_on_process/2, % +Message:atom
-                         % :Goal
     tab/0
   ]
 ).
@@ -24,8 +22,6 @@ Predicates for printing.
 */
 
 :- use_module(library(settings)).
-
-:- meta_predicate(report_on_process(+,0)).
 
 % The number of spaces that go into one indent.
 :- setting(
@@ -79,21 +75,6 @@ indent(Indent):-
   setting(indent_size, IndentSize),
   NumberOfSpaces is IndentSize * Indent,
   tab(NumberOfSpaces).
-
-
-
-%! report_on_process(+Message:atom, :Goal) is det.
-
-report_on_process(Msg, Goal):-
-  setup_call_catcher_cleanup(
-    print_message(informational, start_process(Msg)),
-    Goal,
-    Exception,
-    (   Exception == exit
-    ->  print_message(informational, end_process)
-    ;   print_message(warning, end_process(Exception))
-    )
-  ).
 
 
 

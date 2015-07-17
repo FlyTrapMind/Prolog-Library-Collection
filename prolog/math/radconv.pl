@@ -1,7 +1,7 @@
 :- module(
-  radixconv,
+  radconv,
   [
-    radixconv/2 % +From:compound
+    radconv/2 % +From:compound
                 % ?To:compound
   ]
 ).
@@ -23,8 +23,8 @@ Converts between numbers in binary, octal, decimal and hexadecimal radix.
 
 
 
-%! radixconv(+From:compound, +To:compound) is det.
-%! radixconv(+From:compound, -To:compound) is det.
+%! radconv(+From:compound, +To:compound) is det.
+%! radconv(+From:compound, -To:compound) is det.
 % Radix conversion between often used bases.
 %
 % From and To make use of the followig radix notations:
@@ -40,23 +40,23 @@ Converts between numbers in binary, octal, decimal and hexadecimal radix.
 
 % Swap arguments or
 % instantiation error.
-radixconv(From, To):-
+radconv(From, To):-
   \+ ground(From), !,
   % One argument has to be ground.
   (   \+ ground(To)
   ->  instantiation_error(To)
-  ;   radixconv(To, From)
+  ;   radconv(To, From)
   ).
 % Non-radix notation for input: hexadecimal.
-radixconv(From, To):-
+radconv(From, To):-
   atom(From), !,
-  radixconv(hex(From), To).
+  radconv(hex(From), To).
 % Non-radix notation for input: decimal.
-radixconv(From, To):-
+radconv(From, To):-
   nonneg(From), !,
-  radixconv(dec(From), To).
+  radconv(dec(From), To).
 % Radix notation for input: binary, octal, decimal, hexadecimal.
-radixconv(From, To):-
+radconv(From, To):-
   From =.. [FromRadix,FromValue], !,
   to_decimal(FromRadix, FromValue, Decimal),
   % If there is no radix for the output value then we assume decimal base.
