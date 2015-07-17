@@ -1,8 +1,8 @@
 author('Wouter Beek', 'me@wouterbeek.com').
-download('https://github.com/wouterbeek/Prolog-Library-Collection/release/*.zip').
-home('https://github.com/wouterbeek/Prolog-Library-Collection').
+download('https://github.com/wouterbeek/Prolog_Library_Collection/release/*.zip').
+home('https://github.com/wouterbeek/Prolog_Library_Collection').
 maintainer('Wouter Beek', 'me@wouterbeek.com').
-name('Prolog-Library-Collection').
+name('Prolog_Library_Collection').
 packager('Wouter Beek', 'me@wouterbeek.com').
-title('Prolog-Library-Collection').
+title('Prolog_Library_Collection').
 version('0.0.1').
