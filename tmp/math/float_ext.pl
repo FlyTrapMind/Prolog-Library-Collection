@@ -4,9 +4,6 @@
     between_float/3, % ?Low:float
                      % ?High:float
                      % +Number:float
-    float_div/3, % +In1:float
-                 % +In2:float
-                 % -Out:float
     float_mod/3, % +In1:float
                  % +In2:float
                  % -Out:float
@@ -45,18 +42,11 @@ between_float(Low, High, Number):-
 
 
 
-%! float_div(+X:float, +Y:float, -Z:float) is det.
-
-float_div(X, Y, Z):-
-  Z is X / Y.
-
-
-
 %! float_mod(+X:float, +Y:float, -Z:float) is det.
 
 float_mod(X, Y, Z):-
-  float_div(X, Y, DIV),
-  Z is X - DIV * Y.
+  DIV is X / Y,
+  Z is X - round(DIV) * Y.
 
 
 
@@ -67,7 +57,8 @@ float_mod(X, Y, Z):-
 % @see The builin plus/3 only works for integers.
 
 float_plus(X, Y, Z):-
-  nonvar(X), nonvar(Y), !,
+  number(X),
+  number(Y), !,
   Z is X + Y.
 float_plus(X, Y, Z):-
   nonvar(X), nonvar(Z), !,

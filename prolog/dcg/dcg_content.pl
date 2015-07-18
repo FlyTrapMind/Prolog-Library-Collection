@@ -18,6 +18,7 @@ DCG rules for parsing/generating often-occuring content.
 
 :- use_module(library(dcg/dcg_abnf)).
 :- use_module(library(dcg/dcg_unicode)).
+:- use_module(library(pl/pl_term)).
 :- use_module(library(settings)).
 
 % The number of spaces that go into one indent.

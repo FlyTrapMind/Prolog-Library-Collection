@@ -26,12 +26,11 @@ DCG grammar for HTML snippets.
 
 :- use_module(library(dcg/basics)).
 
-:- use_module(plc(library/dcg_abnf)).
-:- use_module(plc(library/dcg_ascii)).
-:- use_module(plc(library/dcg_atom)).
-:- use_module(plc(library/dcg_content)).
-:- use_module(plc(library/dcg_quote)).
-:- use_module(plc(library/dcg_unicode),
+:- use_module(library(dcg/dcg_abnf)).
+:- use_module(library(dcg/dcg_ascii)).
+:- use_module(library(dcg/dcg_content)).
+:- use_module(library(dcg/dcg_quoted)).
+:- use_module(library(dcg/dcg_unicode),
   [alpha_numeric//1,punctuation//1,white//1]
 ).
 

@@ -34,4 +34,4 @@ file_age(File, Age):-
 % @tbd Windows support.
 
 touch(File):-
-  create_process(path(touch), [file(File)], []).
+  process_create(path(touch), [file(File)], []).

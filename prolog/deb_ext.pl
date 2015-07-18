@@ -1,14 +1,14 @@
 :- module(
   deb_ext,
   [
-    emphasis/1, % +Message:atom
-    normal/1, % +Message:atom
-    notification/1, % +Message:atom
-    success/1, % +Message:atom
+    msg_emphasis/1, % +Message:atom
+    msg_normal/1, % +Message:atom
+    msg_notification/1, % +Message:atom
+    msg_success/1, % +Message:atom
     verbose_call/1, % :Goal_0
     verbose_call/2, % +Message:atom
                     % :Goal_0
-    warning/1 % +Message:atom
+    msg_warning/1 % +Message:atom
   ]
 ).
 
@@ -29,22 +29,22 @@ Tools that ease debugging SWI-Prolog programs.
 
 
 
-emphasis(X):-
+msg_emphasis(X):-
   ansi_format([bold], '~a', [X]).
 
 
 
-normal(X):-
+msg_normal(X):-
   ansi_format([], '~a', [X]).
 
 
 
-notification(X):-
+msg_notification(X):-
   ansi_format([bold,fg(yellow)], '~a', [X]).
 
 
 
-success(X):-
+msg_success(X):-
   ansi_format([bold,fg(green)], '~a', [X]).
 
 
@@ -60,35 +60,35 @@ verbose_call(Goal_0):-
 
 verbose_call(Msg, Goal_0):-
   setup_call_catcher_cleanup(
-    start(Msg),
+    call_start(Msg),
     Goal_0,
     E,
     (   E == true
-    ->  success(Msg)
-    ;   failure(Msg)
+    ->  call_success(Msg)
+    ;   call_failure(Msg, E)
     )
   ).
 
-failure(Msg):-
-  warning('[FAILURE]'),
-  normal(' Process '),
-  normal(Msg),
-  normal(':'),
+call_failure(Msg, E):-
+  msg_warning('[FAILURE]'),
+  msg_normal(' Process '),
+  msg_normal(Msg),
+  msg_normal(':'),
   nl,
-  normal(E).
+  msg_normal(E).
 
-start(Msg):-
-  normal('Starting process '),
-  normal(Msg),
-  normal('.').
+call_start(Msg):-
+  msg_normal('Starting process '),
+  msg_normal(Msg),
+  msg_normal('.').
 
-success(Msg):-
-  success('[SUCCESS]'),
-  normal(' Ending process '),
-  normal(Msg),
-  normal('.').
+call_success(Msg):-
+  msg_success('[SUCCESS]'),
+  msg_normal(' Ending process '),
+  msg_normal(Msg),
+  msg_normal('.').
 
 
 
-warning(X):-
+msg_warning(X):-
   ansi_format([bold,fg(red)], '~a', [X]).

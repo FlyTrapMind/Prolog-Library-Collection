@@ -37,14 +37,15 @@ dimension_scale(L1, L2, _):-
   \+ same_length(L1, L2), !,
   domain_error(list, L1).
 dimension_scale(L1, L2, L3):-
-  maplist(float_div, L1, L2, L0),
+  maplist(div, L1, L2, L0),
   max_list(L0, Scale),
   findall(
     Y,
     (
       member(X, L1),
-      float_div(X, Scale, Y)
+      Y is X / Scale
     ),
     L3
   ).
 
+div(X, Y, Z):- Z is X / Y.

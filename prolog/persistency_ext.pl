@@ -34,7 +34,7 @@ attach_persistent_db(Mod, File):-
   exists_file(File), !,
   Mod:db_attach(File, []).
 attach_persistent_db(Mod, File):-
-  touch_file(File),
+  touch(File),
   attach_persistent_db(Mod, File).
 
 

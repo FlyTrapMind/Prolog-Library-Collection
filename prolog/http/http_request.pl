@@ -83,7 +83,7 @@ http_get(Uri, Success_2, Error_2, Opts0):-
   merge_options([method(get),status_code(Status)], Opts0, Opts),
   setup_call_cleanup(
     http_open(Uri, Read, Opts),
-    http_stream(Status, Success_1, Error_1, Read),
+    http_stream(Status, Success_2, Error_2, Read),
     close(Read)
   ).
 

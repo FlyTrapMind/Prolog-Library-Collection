@@ -23,8 +23,8 @@ Extracts data rows from an HTML table.
 
 %! html_table(+Dom:list(compound), -Header:list, -Data:list(list)) is det.
 
-html_table(Dom, Header, Data):-
-  ignore(html_table_row(header, Dom, Header)),
+html_table(Table, Header, Data):-
+  ignore(html_table_row(header, Table, Header)),
   findall(
     Data0,
     html_table_row(data, Table, Data0),

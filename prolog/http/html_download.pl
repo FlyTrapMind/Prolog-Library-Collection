@@ -28,5 +28,5 @@
 html_download(Uri, Dom):-
   http_get(Uri, load_html0(Dom, [dialect(html5),max_errors(-1)])).
 
-load_html0(Dom, Opts, Read):-
+load_html0(Dom, Opts, _, Read):-
   load_html(Read, Dom, Opts).

@@ -1,15 +1,10 @@
 :- module(
   pl_log,
   [
-    canonical_blobs_atom/2, % @Term
-                            % -Atom:atom
     run_collect_messages/1, % :Goal
-    run_collect_messages/3, % :Goal
-                            % -Status:or([oneof([false,true]),compound])
-                            % -Messages:list(compound)
-    write_canonical_blobs/1, % @Term
-    write_canonical_blobs/2 % +Out:stream
-                            % @Term
+    run_collect_messages/3 % :Goal
+                           % -Status:or([oneof([false,true]),compound])
+                           % -Messages:list(compound)
   ]
 ).
 
@@ -28,32 +23,6 @@ Logging the performance and results of Prolog predicates.
 :- meta_predicate(run_collect_messages(0,-,-)).
 
 
-
-
-
-%! canonical_blobs_atom(@Term, -Atom:atom) is det.
-
-canonical_blobs_atom(Term, Atom):-
-  with_output_to(atom(Atom), write_canonical_blobs(Term)).
-
-
-
-%! replace_blobs(Term0, Term) is det.
-% Copy Term0 to Term, replacing non-text blobs.
-% This is required for error messages that may hold streams
-% and other handles to non-readable objects.
-
-replace_blobs(NIL, NIL):-
-  NIL == [], !.
-replace_blobs(Blob, Atom):-
-  blob(Blob, Type), Type \== text, !,
-  format(atom(Atom), '~p', [Blob]).
-replace_blobs(Term0, Term):-
-  compound(Term0), !,
-  compound_name_arguments(Term0, Name, Args0),
-  maplist(replace_blobs, Args0, Args),
-  compound_name_arguments(Term, Name, Args).
-replace_blobs(Term, Term).
 
 
 
@@ -76,23 +45,6 @@ run_collect_messages(Goal):-
 
 run_collect_messages(Goal, Status, Messages):-
   check_installation:run_collect_messages(Goal, Status, Messages).
-
-
-
-%! write_canonical_blobs(@Term) is det.
-% Alteration of write_canonical/[1,2] that lives up to the promise that
-% "terms written with this predicate can always be read back".
-
-write_canonical_blobs(Term):-
-  write_canonical_blobs(current_output, Term).
-
-
-
-%! write_canonical_blobs(+Stream:stream, @Term) is det.
-
-write_canonical_blobs(Stream, Term):-
-  replace_blobs(Term, AtomBlobs),
-  write_term(Stream, AtomBlobs, [quoted(true)]).
 
 
 

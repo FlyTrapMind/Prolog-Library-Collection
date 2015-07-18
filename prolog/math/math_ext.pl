@@ -20,16 +20,9 @@
     combinations/3, % +NumberOfObjects:integer
                     % +CombinationLength:integer
                     % -NumberOfCombinations:integer
-    count_down/2, % ?From:or([integer,oneof([inf])])
-                  % ?To:or([integer,oneof([inf])])
-    cyclic_numlist/4, % +Low:integer
-                      % +High:integer
-                      % +CycleLength:integer
-                      % -NumList:list(integer)
     decimal_parts/3, % ?Decimal:compound
                      % ?Integer:integer
                      % ?Fraction:compound
-    div/3,
     div_zero/3,
     euclidean_distance/3, % +Coordinate1:coordinate
                           % +Coordinate2:coordinate
@@ -51,12 +44,7 @@
     minus/3, % ?X:number
              % ?Y:number
              % ?Z:number
-    minus_list/3, % +N:number
-                  % +Ms:list(number)
-                  % -N_Minus_Ms:number
     mod/3,
-    multiply_list/2, % +Numbers:list(number)
-                     % -Multiplication:number
     normalized_number/3, % +Decimal:compound
                          % -NormalizedDecimal:compound
                          % -Exponent:nonneg
@@ -76,8 +64,8 @@
                     % -NumberOfPermutations:integer
     pred/2, % +X:integer
             % -Y:integer
-    square/2, % +X:float
-              % -Square:float
+    square/2, % ?N:float
+              % ?Square:float
     succ_inf/2 % ?X:integer
                % ?Y:integer
   ]
@@ -87,12 +75,40 @@
 
 Extra arithmetic operations for use in SWI-Prolog.
 
-@author Wouter Beek
+### Library `apply`
+
+Notice that many arithmetic operations can be defined with `library(apply)`.
+
+The following produces the same result as `sum_list([1,-2,3], X)`:
+
+```prolog
+?- foldl(plus, [1,-2,3], 0, X).
+X = 2.
+```
+
+The following calculates the outcome of the given `minus list':
+
+```prolog
+?- foldl(\Y^X^Z^(Z is X - Y), [1,-2,3], 0, X).
+X = -2.
+```
+
+The following calculates the outcome of the given `multiplication list':
+
+```prolog
+?- foldl(\Y^X^Z^(Z is X * Y), [1,-2,3], 1, X).
+X = -6.
+```
+
+---
+
+@Author Wouter Beek
 @version 2015/07
 */
 
 :- use_module(library(apply)).
 :- use_module(library(error)).
+:- use_module(library(lambda)).
 :- use_module(library(lists)).
 :- use_module(library(typecheck)).
 
@@ -103,13 +119,42 @@ Extra arithmetic operations for use in SWI-Prolog.
 %! absolute(+Number:number, +Absolute:number) is semidet.
 %! absolute(+Number:number, -Absolute:number) is det.
 %! absolute(-Number:number, +Absolute:number) is multi.
-% @throws instantiation_error If both arguments are uninstantiated.
+% Succeeds if Absolute is the absolute value of Number.
+%
+% @throws instantiation_error
+% @throws type_error
+%
+% ### Examples
+%
+% ```prolog
+% ?- absolute(1, Y).
+% Y = 1.
+%
+% ?- absolute(-1, Y).
+% Y = 1.
+%
+% ?- absolute(X, 1).
+% X = 1 ;
+% X = -1.
+% ```
+%
+% ### CLP(FD)
+%
+% The integer version of this predicate could have been written
+% in CLP(FD):
+%
+% ```prolog
+% :- use_module(library(clpfd)).
+% absolute(X, Y):- Y #= abs(X), label([X,Y]).
+% ```
 
 absolute(N, Abs):-
-  nonvar(N), !,
+  nonvar(N),
+  must_be(number, N), !,
   Abs is abs(N).
 absolute(N, Abs):-
-  nonvar(Abs), !,
+  nonvar(Abs),
+  must_be(number, Abs), !,
   (   N is Abs
   ;   N is -1 * Abs
   ).
@@ -118,11 +163,27 @@ absolute(_, _):-
 
 
 
-average([], 0.0):- !.
-average(Numbers, Average):-
-  sum_list(Numbers, Sum),
-  length(Numbers, NumberOfNumbers),
-  Average is Sum / NumberOfNumbers.
+%! average(+Numbers:list(number), +Average:number) is semidet.
+%! average(+Numbers:list(number), -Average:number) is det.
+% @throws instantiation_error if Numbers is non-ground.
+%
+% ### Examples
+%
+% ```prolog
+% ?- average([1 rdiv 3, 1 rdiv 6], X).
+% X = 1 rdiv 4.
+% ```
+%
+% ### Special cases
+%
+% Average is the integer 0 in case Numbers is the empty list.
+% This is in line with sum_list/2.
+
+average([], 0):- !.
+average(L, Average):-
+  sum_list(L, Sum),
+  length(L, N),
+  Average is Sum / N.
 
 
 
@@ -136,19 +197,14 @@ average(Numbers, Average):-
 % to be uninstantiated.
 %
 % We allow `Low` to be instantiated to `minf` and `High` to be
-% instantiated to `inf`. In these cases, their values are replaced by
-% fresh variables.
+% instantiated to `inf`.
+% In these cases, their values are replaced by fresh variables.
 
-betwixt(Low1, High1, Value):-
-  betwixt_lower_bound(Low1, Low2),
-  betwixt_higher_bound(High1, High2),
-  betwixt0(Low2, High2, Value).
+betwixt(Low, High, Value):-
+  betwixt_bound(low, Low, Low0),
+  betwixt_bound(high, High, High0),
+  betwixt0(Low0, High0, Value).
 
-% Instantiation error: at least one bound must be present.
-betwixt0(Low, High, Value):-
-  var(Low),
-  var(High), !,
-  instantiation_error(betwixt(Low, High, Value)).
 % Behavior of ISO between/3.
 betwixt0(Low, High, Value):-
   nonvar(Low),
@@ -162,22 +218,26 @@ betwixt0(Low, High, Value):-
 betwixt0(Low, High, Value):-
   nonvar(High), !,
   betwixt_high(Low, High, High, Value).
+% Instantiation error: at least one bound must be present.
+betwixt0(_, _, _):-
+  instantiation_error(_).
+
+betwixt_bound(high, inf, _):- !.
+betwixt_bound(low, minf, _):- !.
+betwixt_bound(_, High, High):-
+  var(High), !.
+betwixt_bound(_, High, High):-
+  must_be(integer, High).
 
 betwixt_high(_, Value, _, Value).
 betwixt_high(Low, Between1, High, Value):-
   succ(Between2, Between1),
   betwixt_high(Low, Between2, High, Value).
 
-betwixt_higher_bound(inf, _):- !.
-betwixt_higher_bound(High, High).
-
 betwixt_low(_, Value, _, Value).
 betwixt_low(Low, Between1, High, Value):-
   succ(Between1, Between2),
   betwixt_low(Low, Between2, High, Value).
-
-betwixt_lower_bound(minf, _):- !.
-betwixt_lower_bound(Low, Low).
 
 
 
@@ -216,8 +276,10 @@ binomial_coefficient(M, N, BC):-
 %! circumfence(+Radius:float, -Circumfence:float) is det.
 % Returns the circumfence of a circle with the given radius.
 
-circumfence(Radius, Circumfence):-
-  Circumfence is Radius * pi * 2.
+circumfence(Rad, Circ):-
+  Circ is Rad * pi * 2.
+
+
 
 %! combinations(
 %!   +NumberOfObjects:integer,
@@ -231,80 +293,43 @@ circumfence(Radius, Circumfence):-
 %               neglected. Therefore, $r!$ permutations correspond to
 %               one combination (with r the combination length).
 
-combinations(NumberOfObjects, CombinationLength, NumberOfCombinations):-
-  permutations(NumberOfObjects, CombinationLength, NumberOfPermutations),
+combinations(NObjects, CombinationLength, NCombinations):-
+  permutations(NObjects, CombinationLength, NPermutations),
   factorial(CombinationLength, F),
-  NumberOfCombinations is NumberOfPermutations / F.
-
-
-%! count_down(
-%!   +From:or([integer,oneof([inf])]),
-%!   -To:or([integer,oneof([inf])])
-%! ) is det.
-%! count_down(
-%!   -From:or([integer,oneof([inf])]),
-%!   +To:or([integer,oneof([inf])])
-%! ) is det.
-% Decrements an integer, allowing the value `inf` as well.
-
-count_down(inf, inf):- !.
-count_down(N1, N2):-
-  succ(N2, N1).
-
-
-%! cyclic_numlist(
-%!   +Low:integer,
-%!   +High:integer,
-%!   +CycleLength:integer,
-%!   -NumList:list(integer)
-%! ) is det.
-% Generates a number list for a cyclic list of numbers.
-% This method works on a off-by-zero basis.
-% We return the numbers in a sorted order.
-
-cyclic_numlist(Low, High, _CycleLength, NumList):-
-  Low < High, !,
-  numlist(Low, High, NumList).
-cyclic_numlist(Low, High, CycleLength, NumList):-
-  Top is CycleLength - 1,
-  numlist(Low, Top, HigherNumList),
-  numlist(0, High, LowerNumList),
-  append(LowerNumList, HigherNumList, NumList).
+  NCombinations is NPermutations / F.
 
 
 
 %! decimal_parts(
-%!   +Decimal:compound,
+%!   +Decimal:number,
 %!   -Integer:integer,
-%!   -Fractional:integer
+%!   -Fractional:nonneg
 %! ) is det.
 %! decimal_parts(
-%!   -Decimal:compound,
+%!   -Decimal:number,
 %!   +Integer:integer,
-%!   +Fractional:integer
+%!   +Fractional:nonneg
 %! ) is det.
-% @throws domain_error If `Fractional` is negative.
+% @throws instantation_error
+% @throws type_error
+%
+% ### Examples
+%
+% ```prolog
+% 
+% ```
 
-decimal_parts(_, _, Fractional):-
-  nonvar(Fractional),
-  Fractional < 0, !,
-  domain_error(nonneg, Fractional).
-decimal_parts(Decimal, Integer, Fractional):-
-  nonvar(Decimal), !,
-  Integer is floor(float_integer_part(Decimal)),
-  fractional_integer(Decimal, Fractional).
-decimal_parts(Number, Integer, Fractional):-
-  number_length(Fractional, Length),
-  Number is copysign(abs(Integer) + (Fractional rdiv (10 ^ Length)), Integer).
+decimal_parts(N, I, Frac):-
+  nonvar(N),
+  must_be(number, N), !,
+  I is floor(float_integer_part(N)),
+  fractional_integer(N, Frac).
+decimal_parts(N, I, Frac):-
+  must_be(integer, I),
+  must_be(nonneg, Frac),
+  number_length(Frac, L),
+  N is copysign(abs(I) + (Frac rdiv (10 ^ L)), I).
 
-
-
-% @tbd
-div(X, Y, Z):-
-  rational(X), rational(Y), !,
-  rational_div(X, Y, Z).
-div(X, Y, Z):-
-  float_div(X, Y, Z).
 
 
 div_zero(X, 0, 0):-
@@ -348,10 +373,10 @@ even(N):-
 % *Definition*: $n! = \prod_{i = 1}^n i$
 
 factorial(N, F):-
-  numlist(1, N, Numbers), !,
-  multiply_list(Numbers, F).
+  numlist(1, N, Ns), !,
+  foldl(\Y^X^Z^(Z is X * Y), Ns, 1, F).  
 % E.g., $0!$.
-factorial(_N, 1).
+factorial(_, 1).
 
 fibonacci(0, 1):- !.
 fibonacci(1, 1):- !.
@@ -363,12 +388,13 @@ fibonacci(N, F):-
   F is F1 + F2.
 
 
+
 %! fractional_integer(
 %!   +Number:or([float,integer,rational]),
 %!   -Fractional:integer
 %! ) is det.
-% Variant of float_fractional_part/2,
-% where the integer value of the fractional part is returned.
+% Variant of float_fractional_part/2 where
+% the integer value of the fractional part is returned.
 
 fractional_integer(N, Frac):-
   N = A rdiv B, !,
@@ -433,36 +459,15 @@ minus(X, Y, Z):-
   X is Y + Z.
 
 
-%! minus_list(+N:number, +Ms:list(number), -N_Minus_Ms:number) is det.
-% Subtracts the given numbers for the given start number
-% and returns the result.
-
-minus_list(N, Ms, N_Minus_Ms):-
-  sum_list(Ms, M),
-  N_Minus_Ms is N - M.
-
-
 mod(X, Y, Z):-
-  rational(X), rational(Y), !,
+  rational(X),
+  rational(Y), !,
   rational_mod(X, Y, Z).
 mod(X, Y, Z):-
-  float_mod(X, Y, Z).
-
-
-%! multiply_list(+List:list(number), -Multiplication:number) is det.
-% Multiplies the numbers in the given list.
-%
-% @arg List A list of numbers.
-% @arg Multiplication A number.
-%
-% @see Extends the builtin list manipulators sum_list/2, max_list/2
-%      and min_list/2.
-
-multiply_list([], 0).
-multiply_list([H|T], M2):-
-  multiply_list(T, M1),
-  M2 is H * M1.
-
+  float(X),
+  float(Y), !,
+  DIV is X / Y,
+  Z is X - round(DIV) * Y.
 
 
 %! normalized_number(
@@ -568,9 +573,9 @@ permutations(NumberOfObjects, NumberOfPermutations):-
 %               of length _|r|_ is $\frac{n!}{\mult_{i = 1}^m(n_i!)(n - r)!}$.
 %
 % @arg NumbersOfObject A list of numbers, each indicating the number of
-%        objects in a certain group.
+%      objects in a certain group.
 % @arg PermutationLength The (exact) number of objects that occur
-%        in a permutation.
+%      in a permutation.
 % @arg NumberOfPermutations The number of permutations that can be created.
 
 permutations(NumbersOfObjects, PermutationLength, NumberOfPermutations):-
@@ -586,7 +591,7 @@ permutations(NumbersOfObjects, PermutationLength, NumberOfPermutations):-
 
   % The groups.
   maplist(factorial, NumbersOfObjects, F2s),
-  multiply_list([F3 | F2s], F23),
+  foldl(\Y^X^Z^(Z is X * Y), [F3|F2s], 1, F23),
 
   NumberOfPermutations is F1 / F23.
 permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
@@ -596,32 +601,35 @@ permutations(NumberOfObjects, PermutationLength, NumberOfPermutations):-
   NumberOfPermutations is F1 / F2.
 
 
-%! pred(?Integer:integer, ?Predecessor:integer)
-% A integer and its direct predecessor integer.
+
+%! pred(?X:integer, ?Y:integer)
+% Succeeds if Y is the direct predecessor of X.
 %
-% This is used by meta-predicates that require uniform instantiation patterns.
-%
-% @arg Integer An integer.
-% @arg Predecessor An integer.
-% @see This extends the builin succ/2.
+% Variant of built-in succ/2.
 
-pred(Integer, Predecessor):-
-  succ(Predecessor, Integer).
+pred(X, Y):-
+  succ(Y, X).
 
 
+
+%! square(+X:float, +Square:float) is semidet.
 %! square(+X:float, -Square:float) is det.
+%! square(-X:float, +Square:float) is det.
 % Returns the square of the given number.
 
-square(X, Square):-
-  Square is X ** 2.
+square(N, Sq):-
+  nonvar(N), !,
+  Sq is N ** 2.
+square(N, Sq):-
+  N is sqrt(Sq).
 
 
-%! succ_inf(+X:or([oneof([inf]),nonneg]), +Y:or([oneof([inf]),nonneg])) is semidet.
-%! succ_inf(+X:or([oneof([inf]),nonneg]), -Y:or([oneof([inf]),nonneg])) is det.
-%! succ_inf(-X:or([oneof([inf]),nonneg]), +Y:or([oneof([inf]),nonneg])) is det.
+
+%! succ_inf(+X:or([oneof([inf]),integer]), +Y:or([oneof([inf]),integer])) is semidet.
+%! succ_inf(+X:or([oneof([inf]),integer]), -Y:or([oneof([inf]),integer])) is det.
+%! succ_inf(-X:or([oneof([inf]),integer]), +Y:or([oneof([inf]),integer])) is det.
 % Variant of succ/2 that allows the value `inf` to be used.
 
 succ_inf(inf, inf):- !.
 succ_inf(X, Y):-
   succ(X, Y).
-
