@@ -141,8 +141,8 @@
     decimal_digit//1, % ?Weight:between(0,9)
     decimal_digit//2, % ?Weight:between(0,9)
                       % ?Code:code
-    delete//0,
-    delete//1, % ?Code:code
+    ascii_delete//0,
+    ascii_delete//1, % ?Code:code
     device_control//0,
     device_control//1, % ?Code:code
     device_control_1//0,
@@ -988,7 +988,7 @@ control(Code) --> bell(Code).
 control(Code) --> cancel(Code).
 control(Code) --> carriage_return(Code).
 control(Code) --> data_link_escape(Code).
-control(Code) --> delete(Code).
+control(Code) --> ascii_delete(Code).
 control(Code) --> device_control(Code).
 control(Code) --> enquiry(Code).
 control(Code) --> end_of_medium(Code).
@@ -1073,11 +1073,11 @@ decimal_digit(Weight, Code) --> octal_digit(Weight, Code).
 decimal_digit(Weight, Code) --> eight(Weight, Code).
 decimal_digit(Weight, Code) --> nine(Weight, Code).
 
-%! delete// .
-%! delete(?Code:code)// .
+%! ascii_delete// .
+%! ascii_delete(?Code:code)// .
 
-delete --> [127].
-delete(127) --> [127].
+ascii_delete --> [127].
+ascii_delete(127) --> [127].
 
 %! device_control// .
 %! device_control(?Code:code)// .
